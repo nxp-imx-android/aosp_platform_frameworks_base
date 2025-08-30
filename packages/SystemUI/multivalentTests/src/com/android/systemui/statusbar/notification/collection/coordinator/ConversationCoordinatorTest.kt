@@ -16,14 +16,11 @@
 
 package com.android.systemui.statusbar.notification.collection.coordinator
 
-import android.app.Flags
 import android.app.NotificationChannel
 import android.app.NotificationChannel.SYSTEM_RESERVED_IDS
 import android.app.NotificationManager.IMPORTANCE_DEFAULT
 import android.app.NotificationManager.IMPORTANCE_HIGH
 import android.app.NotificationManager.IMPORTANCE_LOW
-import android.platform.test.annotations.DisableFlags
-import android.platform.test.annotations.EnableFlags
 import android.testing.TestableLooper
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
@@ -91,13 +88,13 @@ class ConversationCoordinatorTest : SysuiTestCase() {
     fun setUp() {
         MockitoAnnotations.initMocks(this)
         peopleNotificationIdentifier =
-            PeopleNotificationIdentifierImpl(mock(), GroupMembershipManagerImpl())
+            PeopleNotificationIdentifierImpl(GroupMembershipManagerImpl())
         coordinator =
             ConversationCoordinator(
                 peopleNotificationIdentifier,
                 conversationIconManager,
                 HighPriorityProvider(peopleNotificationIdentifier, GroupMembershipManagerImpl()),
-                headerController
+                headerController,
             )
 
         coordinator.attach(pipeline)
@@ -234,7 +231,7 @@ class ConversationCoordinatorTest : SysuiTestCase() {
 
     private fun makeEntryOfPeopleType(
         @PeopleNotificationType type: Int,
-        buildBlock: NotificationEntryBuilder.() -> Unit = {}
+        buildBlock: NotificationEntryBuilder.() -> Unit = {},
     ): NotificationEntry {
         val channel: NotificationChannel = mock()
         whenever(channel.isImportantConversation).thenReturn(type == TYPE_IMPORTANT_PERSON)

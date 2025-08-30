@@ -494,14 +494,16 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                 }
 
                 // Check if display has been rotated between portrait & landscape
-                if (displayId == taskInfo.displayId && taskInfo.isFreeform()
-                        && (fromRotation % 2 != toRotation % 2)) {
+                if (displayId == taskInfo.displayId && (fromRotation % 2 != toRotation % 2)) {
+                    final Rect validDragArea = decoration.getValidDragArea();
+                    // If not draggable, return
+                    if (validDragArea == null) return;
                     // Check if the task bounds on the rotated display will be out of bounds.
                     // If so, then update task bounds to be within reachable area.
                     final Rect taskBounds = new Rect(
                             taskInfo.configuration.windowConfiguration.getBounds());
                     if (DragPositioningCallbackUtility.snapTaskBoundsIfNecessary(
-                            taskBounds, decoration.calculateValidDragArea())) {
+                            taskBounds, validDragArea)) {
                         t.setBounds(taskInfo.token, taskBounds);
                     }
                 }

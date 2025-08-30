@@ -45,10 +45,10 @@
     <string name="title_uninstall_app_not_found" msgid="501803094061097579">"App non trovata"</string>
     <string name="title_uninstall_user_not_allowed" msgid="1555448944495159635">"Impossibile disinstallare l\'app"</string>
     <string name="title_uninstall_failed" msgid="4522950368147075143">"Disinstallazione dell\'app non riuscita"</string>
-    <string name="title_archive" msgid="2876455228073419830">"Vuoi archiviare l\'app?"</string>
-    <string name="title_archive_all_users" msgid="5904736601499520543">"Vuoi archiviare l\'app per tutti gli utenti?"</string>
+    <string name="title_archive" msgid="2876455228073419830">"Archiviare l\'app?"</string>
+    <string name="title_archive_all_users" msgid="5904736601499520543">"Archiviare l\'app per tutti gli utenti?"</string>
     <string name="title_archive_other_user" msgid="6686508642274629645">"Vuoi archiviare questa app per l\'utente \"<xliff:g id="USER_NAME">%1$s</xliff:g>\"?"</string>
-    <string name="title_restore" msgid="8934911753892124574">"Vuoi ripristinare l\'app?"</string>
+    <string name="title_restore" msgid="8934911753892124574">"Ripristinare l\'app?"</string>
     <string name="title_restore_error_user_action_needed" msgid="5696944142011800104">"Azione richiesta"</string>
     <string name="title_restore_error_less_storage" msgid="1702198163928260711">"Spazio di archiviazione insufficiente"</string>
     <string name="title_restore_error_offline" msgid="4611160277876184886">"Sei offline"</string>

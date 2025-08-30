@@ -17,6 +17,7 @@
 package com.android.systemui.shade.ui.viewmodel
 
 import com.android.systemui.desktop.domain.interactor.desktopInteractor
+import com.android.systemui.keyguard.ui.transitions.blurConfig
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.Kosmos.Fixture
 import com.android.systemui.kosmos.testDispatcher
@@ -41,6 +42,7 @@ val Kosmos.notificationsShadeOverlayContentViewModel:
         shadeModeInteractor = shadeModeInteractor,
         disableFlagsInteractor = disableFlagsInteractor,
         mediaCarouselInteractor = mediaCarouselInteractor,
+        blurConfig = blurConfig,
         windowRootViewBlurInteractor = windowRootViewBlurInteractor,
         desktopInteractor = desktopInteractor,
         mediaViewModelFactory = mediaViewModelFactory,

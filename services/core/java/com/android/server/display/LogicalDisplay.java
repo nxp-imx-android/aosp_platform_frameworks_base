@@ -30,6 +30,7 @@ import android.graphics.Rect;
 import android.hardware.display.DisplayManagerInternal;
 import android.util.ArraySet;
 import android.util.DisplayMetrics;
+import android.util.Slog;
 import android.util.SparseArray;
 import android.view.Display;
 import android.view.DisplayEventReceiver;
@@ -1036,6 +1037,8 @@ final class LogicalDisplay {
             return false;
         }
 
+        final int displayId = getDisplayIdLocked();
+        Slog.i(TAG, "Set canHostTasks for display " + displayId + ": " + canHostTasks);
         mCanHostTasks = canHostTasks;
         mBaseDisplayInfo.canHostTasks = canHostTasks;
         mInfo.set(null);

@@ -20,14 +20,16 @@ import com.android.internal.logging.InstanceId;
 import com.android.internal.logging.UiEvent;
 import com.android.internal.logging.UiEventLogger;
 import com.android.internal.util.FrameworkStatsLog;
+import com.android.wm.shell.dagger.WMSingleton;
 
 import javax.inject.Inject;
 
 /**
  * Implementation of UiEventLogger for logging bubble UI events.
  *
- * See UiEventReported atom in atoms.proto for more context.
+ * <p>See UiEventReported atom in atoms.proto for more context.
  */
+@WMSingleton
 public class BubbleLogger {
 
     private final UiEventLogger mUiEventLogger;
@@ -80,6 +82,18 @@ public class BubbleLogger {
 
         @UiEvent(doc = "The previously selected bubble while expanded.")
         BUBBLE_SESSION_SWITCHED_FROM(2428),
+
+        @UiEvent(doc = "New bubble created from a notification for a previously promoted chat.")
+        BUBBLE_CREATED_FROM_NOTIF(2432),
+
+        @UiEvent(doc = "New bubble created by tapping on the bubble button on the notification.")
+        BUBBLE_CREATED_FROM_NOTIF_BUBBLE_BUTTON(2433),
+
+        @UiEvent(doc = "New bubble created from an all apps icon menu.")
+        BUBBLE_CREATED_FROM_ALL_APPS_ICON_MENU(2436),
+
+        @UiEvent(doc = "New bubble created from a launcher icon menu.")
+        BUBBLE_CREATED_FROM_LAUNCHER_ICON_MENU(2437),
 
         // endregion
 
@@ -187,6 +201,27 @@ public class BubbleLogger {
         @UiEvent(doc = "The previously selected bubble bar bubble while expanded.")
         BUBBLE_BAR_SESSION_SWITCHED_FROM(2430),
 
+        @UiEvent(doc = "New bubble created from a notification for a previously promoted chat.")
+        BUBBLE_BAR_CREATED_FROM_NOTIF(2438),
+
+        @UiEvent(doc = "New bubble created by tapping on the bubble button on the notification.")
+        BUBBLE_BAR_CREATED_FROM_NOTIF_BUBBLE_BUTTON(2439),
+
+        @UiEvent(doc = "New bubble created by dragging a taskbar icon.")
+        BUBBLE_BAR_CREATED_FROM_TASKBAR_ICON_DRAG(2440),
+
+        @UiEvent(doc = "New bubble created by dragging an all apps icon.")
+        BUBBLE_BAR_CREATED_FROM_ALL_APPS_ICON_DRAG(2441),
+
+        @UiEvent(doc = "New bubble created from an all apps icon menu.")
+        BUBBLE_BAR_CREATED_FROM_ALL_APPS_ICON_MENU(2442),
+
+        @UiEvent(doc = "New bubble created from a launcher icon menu.")
+        BUBBLE_BAR_CREATED_FROM_LAUNCHER_ICON_MENU(2443),
+
+        @UiEvent(doc = "New bubble created from a taskbar icon menu.")
+        BUBBLE_BAR_CREATED_FROM_TASKBAR_ICON_MENU(2444),
+
         // endregion
         ;
 
@@ -222,8 +257,9 @@ public class BubbleLogger {
     }
 
     /** Log a UiEvent for the specified {@code sessionId}. */
-    public void logWithSessionId(UiEventLogger.UiEventEnum e, InstanceId sessionId) {
-        mUiEventLogger.log(e, sessionId);
+    public void logWithSessionId(UiEventLogger.UiEventEnum e, String packageName,
+            InstanceId sessionId) {
+        mUiEventLogger.logWithInstanceId(e, /* uid= */ 0, packageName, sessionId);
     }
 
     /**

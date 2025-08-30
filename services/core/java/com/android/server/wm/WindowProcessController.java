@@ -93,7 +93,7 @@ import com.android.internal.protolog.ProtoLog;
 import com.android.internal.util.function.pooled.PooledLambda;
 import com.android.server.Watchdog;
 import com.android.server.am.Flags;
-import com.android.server.am.ProcessStateController;
+import com.android.server.am.psc.AsyncBatchSession;
 import com.android.server.am.psc.ProcessRecordInternal;
 import com.android.server.art.ReasonMapping;
 import com.android.server.grammaticalinflection.GrammaticalInflectionManagerInternal;
@@ -1453,8 +1453,7 @@ public class WindowProcessController extends ConfigurationContainer<Configuratio
 
         // Multiple OomAdjuster affecting state changes can occur, wrap those state changes in a
         // BatchSession.
-        try (ProcessStateController.AsyncBatchSession batchSession =
-                     mAtm.mActivityStateUpdater.startBatchSession()) {
+        try (AsyncBatchSession batchSession = mAtm.mActivityStateUpdater.startBatchSession()) {
             if (updateOomAdj) {
                 prepareOomAdjustment();
             }
@@ -1544,8 +1543,7 @@ public class WindowProcessController extends ConfigurationContainer<Configuratio
 
         // Multiple OomAdjuster affecting state changes can occur, wrap those state changes in a
         // BatchSession.
-        try (ProcessStateController.AsyncBatchSession batchSession =
-                     mAtm.mActivityStateUpdater.startBatchSession()) {
+        try (AsyncBatchSession batchSession = mAtm.mActivityStateUpdater.startBatchSession()) {
             prepareOomAdjustment();
             // Posting the message at the front of queue so WM lock isn't held when we call into AM,
             // and the process state of starting activity can be updated quicker which will give it

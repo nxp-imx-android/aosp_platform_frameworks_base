@@ -115,12 +115,22 @@ public class NotificationRoundnessManager implements Dumpable {
     void setRoundnessForAffectedViews(List<TopBottomRoundness> roundnessSet, boolean animate) {
         if (roundnessSet.size() != mCurrentRoundables.size()) return;
 
+        // In case there are fewer actual roundables than the full set/list allows for (for example,
+        // if the notification is within a group and close to the group header), track which is the
+        // first non-null element to avoid unnecessarily rounding the top corners.
+        boolean seenFirst = false;
         for (int i = 0; i < roundnessSet.size(); i++) {
             Roundable roundable = mCurrentRoundables.get(i);
+            TopBottomRoundness roundnessConfig = roundnessSet.get(i);
             if (roundable != null) {
-                TopBottomRoundness roundnessConfig = roundnessSet.get(i);
-                roundable.requestRoundness(roundnessConfig.getTopRoundness(),
-                        roundnessConfig.getBottomRoundness(), DISMISS_ANIMATION, animate);
+                if (!seenFirst) {
+                    seenFirst = true;
+                    roundable.requestBottomRoundness(roundnessConfig.getBottomRoundness(),
+                            DISMISS_ANIMATION, animate);
+                } else {
+                    roundable.requestRoundness(roundnessConfig.getTopRoundness(),
+                            roundnessConfig.getBottomRoundness(), DISMISS_ANIMATION, animate);
+                }
             }
         }
     }

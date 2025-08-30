@@ -25,7 +25,7 @@ import androidx.test.filters.SmallTest
 import com.android.compose.animation.scene.DefaultEdgeDetector
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.classifier.fakeFalsingManager
-import com.android.systemui.desktop.domain.interactor.enableDesktopFeatureSet
+import com.android.systemui.desktop.domain.interactor.enableUsingDesktopStatusBar
 import com.android.systemui.deviceentry.domain.interactor.deviceUnlockedInteractor
 import com.android.systemui.flags.EnableSceneContainer
 import com.android.systemui.keyguard.data.repository.fakeDeviceEntryFingerprintAuthRepository
@@ -438,7 +438,7 @@ class SceneContainerViewModelTest : SysuiTestCase() {
             // GIVEN a device in desktop mode with dual shade enabled and an overlay present
             val currentOverlays by collectLastValue(sceneInteractor.currentOverlays)
             enableDualShade()
-            enableDesktopFeatureSet()
+            enableUsingDesktopStatusBar()
             sceneInteractor.showOverlay(Overlays.QuickSettingsShade, "test")
             assertThat(currentOverlays).isNotEmpty()
 

@@ -48,6 +48,7 @@ import androidx.core.content.getSystemService
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.filters.SmallTest
 import androidx.test.platform.app.InstrumentationRegistry.getInstrumentation
+import com.android.internal.logging.InstanceIdSequence
 import com.android.internal.logging.testing.UiEventLoggerFake
 import com.android.internal.protolog.ProtoLog
 import com.android.internal.statusbar.IStatusBarService
@@ -61,6 +62,8 @@ import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.bubbles.Bubbles.BubbleExpandListener
 import com.android.wm.shell.bubbles.Bubbles.DISMISS_USER_GESTURE
 import com.android.wm.shell.bubbles.Bubbles.SysuiProxy
+import com.android.wm.shell.bubbles.logging.BubbleSessionTracker
+import com.android.wm.shell.bubbles.logging.BubbleSessionTrackerImpl
 import com.android.wm.shell.bubbles.storage.BubblePersistentRepository
 import com.android.wm.shell.common.DisplayController
 import com.android.wm.shell.common.DisplayImeController
@@ -148,6 +151,7 @@ class BubbleControllerTest(flags: FlagsParameterization) {
     private lateinit var displayController: DisplayController
     private lateinit var imeListener: ImeListener
     private lateinit var bubbleTransitions: BubbleTransitions
+    private lateinit var sessionTracker: BubbleSessionTracker
 
     private var isStayAwakeOnFold = false
 
@@ -172,6 +176,8 @@ class BubbleControllerTest(flags: FlagsParameterization) {
         ProtoLog.init()
 
         bubbleLogger = BubbleLogger(uiEventLoggerFake)
+        val instanceIdSequence = InstanceIdSequence(/* instanceIdMax= */ 10)
+        sessionTracker = BubbleSessionTrackerImpl(instanceIdSequence, bubbleLogger)
         eduController = BubbleEducationController(context)
 
         mainExecutor = TestShellExecutor()
@@ -392,6 +398,7 @@ class BubbleControllerTest(flags: FlagsParameterization) {
                 true, /* reorder */
                 false, /* syncHiddenWithVisibilityOnReorder */
                 false, /* nonBlockingIfPossible */
+                null, /* overrideTransaction */
             )
         } else {
             verify(baseTransitions).setTaskViewVisible(taskView, true /* visible */)
@@ -414,6 +421,7 @@ class BubbleControllerTest(flags: FlagsParameterization) {
             any(), /* reorder */
             any(), /* syncHiddenWithVisibilityOnReorder */
             any(), /* nonBlockingIfPossible */
+            any(), /* overrideTransaction */
         )
     }
 
@@ -461,7 +469,7 @@ class BubbleControllerTest(flags: FlagsParameterization) {
         assertThat(bubbleController.hasStableBubbleForTask(777)).isFalse()
     }
 
-    @EnableFlags(FLAG_ROOT_TASK_FOR_BUBBLE)
+    @EnableFlags(FLAG_ENABLE_CREATE_ANY_BUBBLE, FLAG_ROOT_TASK_FOR_BUBBLE)
     @Test
     fun shouldBeAppBubble_parentTaskMatchesBubbleRootTask_returnsTrue() {
         val bubbleController = createBubbleControllerWithRootTask(bubbleRootTaskId = 777)
@@ -470,7 +478,7 @@ class BubbleControllerTest(flags: FlagsParameterization) {
         assertThat(bubbleController.shouldBeAppBubble(taskInfo)).isTrue()
     }
 
-    @EnableFlags(FLAG_ROOT_TASK_FOR_BUBBLE)
+    @EnableFlags(FLAG_ENABLE_CREATE_ANY_BUBBLE, FLAG_ROOT_TASK_FOR_BUBBLE)
     @Test
     fun shouldBeAppBubble_parentTaskDoesNotMatchesBubbleRootTask_returnsFalse() {
         val bubbleController = createBubbleControllerWithRootTask(bubbleRootTaskId = 123)
@@ -991,6 +999,7 @@ class BubbleControllerTest(flags: FlagsParameterization) {
                 { Optional.of(splitScreenController) },
                 Optional.of(unfoldProgressProvider),
                 { isStayAwakeOnFold },
+                sessionTracker,
             )
         bubbleController.setInflateSynchronously(true)
         bubbleController.onInit()
@@ -1019,7 +1028,10 @@ class BubbleControllerTest(flags: FlagsParameterization) {
             captor.lastValue
         }
 
-        val bubbleRootTask = ActivityManager.RunningTaskInfo().apply { taskId = bubbleRootTaskId }
+        val bubbleRootTask = ActivityManager.RunningTaskInfo().apply {
+            taskId = bubbleRootTaskId
+            token = mock<WindowContainerToken>()
+        }
         rootTaskListener.onTaskAppeared(bubbleRootTask, null /* leash */)
 
         return bubbleController

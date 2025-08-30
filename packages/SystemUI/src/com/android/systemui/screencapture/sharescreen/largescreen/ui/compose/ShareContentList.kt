@@ -16,100 +16,122 @@
 
 package com.android.systemui.screencapture.sharescreen.largescreen.ui.compose
 
-import android.graphics.Bitmap
-import android.graphics.Color
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.unit.dp
-import androidx.core.graphics.createBitmap
-
-/**
- * A temporary data class representing a single item in the list. This will be replaced by a
- * ViewModel in the next step.
- */
-private data class ContentItem(val icon: Bitmap?, val label: CharSequence?)
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.android.systemui.lifecycle.rememberViewModel
+import com.android.systemui.screencapture.common.ui.viewmodel.RecentTaskViewModel
+import com.android.systemui.screencapture.sharescreen.largescreen.ui.viewmodel.ShareContentListViewModel
 
 /**
  * A composable that displays a scrollable list of shareable content (e.g., recent apps).
  *
  * @param modifier The modifier to be applied to the composable.
+ * @param viewModel The ViewModel that provides the list of tasks and manages selection state.
+ * @param recentTaskViewModelFactory A factory to create a [RecentTaskViewModel] for each item.
+ * @param selectedRecentTaskViewModel The selected RecentTaskViewModel.
  */
 @Composable
-fun ShareContentList(modifier: Modifier = Modifier) {
-    // TODO(b/436886242): Remove dummy data and inject view model.
-    val contentList =
-        listOf(
-            ContentItem(icon = null, label = "App 1"),
-            ContentItem(icon = null, label = "App 2"),
-            ContentItem(icon = null, label = "App 3"),
-            ContentItem(icon = null, label = "App 4"),
-        )
-
-    LazyColumn(modifier = modifier.height(120.dp).width(148.dp)) {
-        itemsIndexed(contentList) { index, contentItem ->
-            SelectorItem(
-                icon = contentItem.icon,
-                label = contentItem.label,
-                isSelected = index == 0,
-                onItemSelected = {},
-            )
+fun ShareContentList(
+    modifier: Modifier = Modifier,
+    viewModel: ShareContentListViewModel,
+    recentTaskViewModelFactory: RecentTaskViewModel.Factory,
+    selectedRecentTaskViewModel: RecentTaskViewModel?,
+) {
+    val recentTasks by viewModel.recentTasks.collectAsStateWithLifecycle(initialValue = null)
+    Surface(
+        shape = RoundedCornerShape(20.dp),
+        color = MaterialTheme.colorScheme.surfaceBright,
+        modifier = modifier.height(224.dp).width(286.dp),
+    ) {
+        LazyColumn(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+            // Use the real list of recent tasks, handling the nullable case.
+            recentTasks?.let { tasks ->
+                items(items = tasks) { task ->
+                    val currentRecentTaskViewModel: RecentTaskViewModel =
+                        rememberViewModel(
+                            traceName = "ShareContentListItemViewModel#${task.taskId}",
+                            key = task,
+                        ) {
+                            recentTaskViewModelFactory.create(task)
+                        }
+                    SelectorItem(
+                        currentRecentTaskViewModel = currentRecentTaskViewModel,
+                        isSelected =
+                            currentRecentTaskViewModel.task == selectedRecentTaskViewModel?.task,
+                        onItemSelected = {
+                            viewModel.selectedRecentTaskViewModel = currentRecentTaskViewModel
+                        },
+                    )
+                }
+            }
         }
     }
 }
 
 /**
- * A composable that displays a single item in the share content list. It shows an icon and a label,
- * and its appearance changes based on whether it is selected.
+ * A composable that displays a single item in the share content list.
  *
- * @param icon The icon to display for the item. A placeholder is used if null.
- * @param label The text label for the item. A placeholder is used if null.
- * @param isSelected Whether this item is currently selected.
+ * @param currentRecentTaskViewModel The [RecentTaskViewModel] that holds the state for this
+ *   specific item.
+ * @param isSelected The boolean if the currentRecentTaskViewModel is selected.
  * @param onItemSelected The callback to be invoked when this item is clicked.
  */
 @Composable
 private fun SelectorItem(
-    icon: Bitmap?,
-    label: CharSequence?,
+    currentRecentTaskViewModel: RecentTaskViewModel,
     isSelected: Boolean,
     onItemSelected: () -> Unit,
 ) {
+    // Get the icon and label from the item's ViewModel.
+    val icon = currentRecentTaskViewModel.icon?.getOrNull()
+    val label = currentRecentTaskViewModel.label?.getOrNull()
+
     Surface(
-        shape = RoundedCornerShape(20.dp),
+        shape = RoundedCornerShape(4.dp),
         color =
             if (isSelected) MaterialTheme.colorScheme.primary
             else MaterialTheme.colorScheme.surfaceContainer,
-        modifier = Modifier.width(148.dp),
     ) {
         Row(
-            modifier = Modifier.padding(12.dp).clickable(onClick = onItemSelected),
+            modifier =
+                Modifier.padding(start = 8.dp, end = 12.dp, top = 8.dp, bottom = 8.dp)
+                    .clickable(onClick = onItemSelected),
             verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp, Alignment.Start),
         ) {
-            Image(
-                // TODO: Address the hardcoded placeholder color.
-                bitmap = icon?.asImageBitmap() ?: createDefaultColorImageBitmap(20, 20, Color.BLUE),
-                contentDescription = null,
-                modifier = Modifier.size(16.dp).clip(CircleShape),
-            )
-            Spacer(modifier = Modifier.width(8.dp))
+            Box(
+                modifier =
+                    Modifier.size(24.dp)
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.surfaceVariant)
+            ) {
+                if (icon != null) {
+                    Image(bitmap = icon.asImageBitmap(), contentDescription = label?.toString())
+                }
+            }
             Text(
                 text = label?.toString() ?: "Title",
                 style = MaterialTheme.typography.labelMedium,
@@ -117,18 +139,4 @@ private fun SelectorItem(
             )
         }
     }
-}
-
-/**
- * Creates an [ImageBitmap] of a given size, filled with a solid color. Used as a placeholder for
- * when an app icon is not available.
- *
- * @param width The width of the bitmap.
- * @param height The height of the bitmap.
- * @param color The color to fill the bitmap with.
- */
-private fun createDefaultColorImageBitmap(width: Int, height: Int, color: Int): ImageBitmap {
-    val bitmap = createBitmap(width, height)
-    bitmap.eraseColor(color)
-    return bitmap.asImageBitmap()
 }

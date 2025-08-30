@@ -131,7 +131,6 @@ public class CaptionWindowDecoration extends WindowDecoration<WindowDecorLinearL
         mDragPositioningCallback = dragPositioningCallback;
     }
 
-    @Override
     @NonNull
     Rect calculateValidDragArea() {
         final Context displayContext = mDisplayController.getDisplayContext(mTaskInfo.displayId);

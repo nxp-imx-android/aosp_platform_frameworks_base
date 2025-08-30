@@ -34,6 +34,7 @@ android_test {
         "test-apps/TopologyTestApp/src/**/*.java",
     ],
 
+    exclude_srcs: ["src/com/android/server/signalcollector/**/*.java"],
     static_libs: [
         "ActivityContext",
         "CtsAccessibilityCommon",
@@ -54,7 +55,6 @@ android_test {
         "cts-input-lib",
         "cts-wm-util",
         "desktop-test-lib",
-        "flag-junit",
         "flag-junit",
         "framework-protos",
         "frameworks-base-testutils",
@@ -90,7 +90,6 @@ android_test {
         "services.supervision",
         "services.usage",
         "servicestests-utils",
-        "signal_collector_flags_lib",
         "testables",
         // TODO: remove once Android migrates to JUnit 4.12,
         // which provides assertThrows
@@ -98,6 +97,11 @@ android_test {
         "truth",
     ] + select(soong_config_variable("ANDROID", "release_crashrecovery_module"), {
         "true": ["service-crashrecovery-pre-jarjar"],
+        default: [],
+    }) + select(release_flag("RELEASE_ANOMALY_DETECTOR"), {
+        true: [
+            "signal-collector-service-test",
+        ],
         default: [],
     }),
 
@@ -214,6 +218,7 @@ android_ravenwood_test {
         "services.core.ravenwood",
     ],
     srcs: [
+        "src/com/android/server/am/psc/**/*.java",
         "src/com/android/server/am/BoundServiceSessionTests.java",
     ],
 }

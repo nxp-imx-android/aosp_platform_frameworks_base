@@ -47,7 +47,7 @@
     <string name="title_uninstall_failed" msgid="4522950368147075143">"Échec de la désinstallation de l\'application"</string>
     <string name="title_archive" msgid="2876455228073419830">"Archiver cette application ?"</string>
     <string name="title_archive_all_users" msgid="5904736601499520543">"Archiver cette application pour tous les utilisateurs ?"</string>
-    <string name="title_archive_other_user" msgid="6686508642274629645">"Archiver cette application pour l\'utilisateur \"<xliff:g id="USER_NAME">%1$s</xliff:g>\" ?"</string>
+    <string name="title_archive_other_user" msgid="6686508642274629645">"Archiver cette appli pour l\'utilisateur \"<xliff:g id="USER_NAME">%1$s</xliff:g>\" ?"</string>
     <string name="title_restore" msgid="8934911753892124574">"Restaurer cette application ?"</string>
     <string name="title_restore_error_user_action_needed" msgid="5696944142011800104">"Action requise"</string>
     <string name="title_restore_error_less_storage" msgid="1702198163928260711">"Espace de stockage insuffisant"</string>
@@ -85,7 +85,7 @@
     <string name="message_uninstall_keep_data" msgid="3955153594868206983">"Conserver les données de l\'application"</string>
     <string name="message_archive" msgid="943853731737315850">"Les données de votre application seront enregistrées"</string>
     <string name="message_archive_all_users" msgid="4664139369764501351">"Toutes les données de l\'application seront enregistrées"</string>
-    <string name="message_archive_other_user" msgid="6465828676043191175">"Les données de l\'application seront enregistrées"</string>
+    <string name="message_archive_other_user" msgid="6465828676043191175">"Les données de l\'appli seront enregistrées"</string>
     <string name="message_archive_work_profile" msgid="7601504268820630858">"Cette application sera archivée depuis votre profil professionnel. Les données de votre application seront enregistrées."</string>
     <string name="message_archive_private_space" msgid="4873651645762576624">"Cette application sera archivée depuis votre espace privé. Les données de votre application seront enregistrées."</string>
     <string name="message_restore" msgid="8402726798623569969">"Cette application sera téléchargée en arrière-plan depuis <xliff:g id="INSTALLER_NAME">%1$s</xliff:g>"</string>

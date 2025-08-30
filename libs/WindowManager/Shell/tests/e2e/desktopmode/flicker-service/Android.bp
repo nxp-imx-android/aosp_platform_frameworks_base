@@ -44,6 +44,7 @@ test_module_config {
     base: "WMShellFlickerTestsDesktopMode",
     test_suites: ["device-tests"],
     exclude_filters: [
+        "com.android.wm.shell.flicker.appcompat.ResizeActivityEmbeddedAppToMinimumWindowFlickerTest",
         "com.android.wm.shell.flicker.appcompat.ShowAppDialogInDesktopModeFlickerTest",
         "com.android.wm.shell.flicker.exit.ExitDesktopToFullScreenWithAppHeaderMenuFlickerTest",
         "com.android.wm.shell.flicker.exit.ExitDesktopToFullScreenWithDragToTopDragZoneFlickerTest",
@@ -104,6 +105,13 @@ test_module_config {
         "com.android.wm.shell.flicker.tiling.TilingPairBrokenWhenDraggingHeader",
         "com.android.wm.shell.flicker.tiling.TilingPairBrokenWhenEnteringPipFlickerTest",
     ],
+}
+
+test_module_config {
+    name: "WMShellFlickerTestsDesktopMode-appcompat-ResizeActivityEmbeddedAppToMinimumWindowFlickerTest",
+    base: "WMShellFlickerTestsDesktopMode",
+    test_suites: ["device-tests"],
+    include_filters: ["com.android.wm.shell.flicker.appcompat.ResizeActivityEmbeddedAppToMinimumWindowFlickerTest"],
 }
 
 test_module_config {

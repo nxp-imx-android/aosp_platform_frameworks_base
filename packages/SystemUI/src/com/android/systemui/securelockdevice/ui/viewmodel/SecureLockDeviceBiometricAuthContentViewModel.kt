@@ -19,6 +19,7 @@ package com.android.systemui.securelockdevice.ui.viewmodel
 import android.hardware.biometrics.BiometricPrompt
 import android.view.accessibility.AccessibilityManager
 import androidx.annotation.VisibleForTesting
+import androidx.compose.runtime.getValue
 import com.android.systemui.biometrics.shared.model.BiometricModality
 import com.android.systemui.biometrics.ui.viewmodel.BiometricAuthIconViewModel
 import com.android.systemui.biometrics.ui.viewmodel.PromptAuthState
@@ -30,7 +31,7 @@ import com.android.systemui.deviceentry.shared.model.FaceMessage
 import com.android.systemui.deviceentry.shared.model.FingerprintMessage
 import com.android.systemui.deviceentry.shared.model.SuccessFaceAuthenticationStatus
 import com.android.systemui.keyguard.shared.model.SuccessFingerprintAuthenticationStatus
-import com.android.systemui.lifecycle.ExclusiveActivatable
+import com.android.systemui.lifecycle.HydratedActivatable
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.securelockdevice.domain.interactor.SecureLockDeviceInteractor
 import com.android.systemui.util.kotlin.pairwise
@@ -63,7 +64,7 @@ constructor(
     private val deviceEntryFaceAuthInteractor: SystemUIDeviceEntryFaceAuthInteractor,
     deviceEntryFingerprintAuthInteractor: DeviceEntryFingerprintAuthInteractor,
     private val secureLockDeviceInteractor: SecureLockDeviceInteractor,
-) : ExclusiveActivatable() {
+) : HydratedActivatable() {
     private var mDisappearAnimationFinishedRunnable: Runnable? = null
 
     /** @see SecureLockDeviceInteractor.isSecureLockDeviceEnabled */
@@ -97,21 +98,28 @@ constructor(
      * If authenticated and confirmation is not required, or authenticated and explicitly confirmed
      * and confirmation is required.
      */
-    val isAuthenticationComplete: Flow<Boolean> =
-        isAuthenticated.map { authState ->
-            authState.isAuthenticatedAndConfirmed || authState.isAuthenticatedAndExplicitlyConfirmed
-        }
+    val isAuthenticationComplete: Boolean by
+        isAuthenticated
+            .map { authState ->
+                authState.isAuthenticatedAndConfirmed ||
+                    authState.isAuthenticatedAndExplicitlyConfirmed
+            }
+            .hydratedStateOf(traceName = "isAuthenticationComplete", initialValue = false)
 
     private val _isReadyToDismissBiometricAuth: MutableStateFlow<Boolean> = MutableStateFlow(false)
     /**
      * True when the biometric authentication success animation has finished playing, and the
      * biometric auth UI can be dismissed.
      */
-    val isReadyToDismissBiometricAuth: StateFlow<Boolean> =
-        _isReadyToDismissBiometricAuth.asStateFlow()
+    val isReadyToDismissBiometricAuth: Boolean by
+        _isReadyToDismissBiometricAuth.hydratedStateOf(
+            traceName = "isReadyToDismissBiometricAuth",
+            initialValue = false,
+        )
 
     private val _isVisible: MutableStateFlow<Boolean> = MutableStateFlow(false)
-    val isVisible: StateFlow<Boolean> = _isVisible.asStateFlow()
+    val isVisible: Boolean by
+        _isVisible.hydratedStateOf(traceName = "isVisible", initialValue = false)
 
     /**
      * Models UI state for the biometric icon shown in secure lock device biometric authentication.
@@ -261,6 +269,7 @@ constructor(
         }
     }
 
+    /** Whether authentication by [modality] requires explicit user confirmation. */
     private fun needsExplicitConfirmation(modality: BiometricModality): Boolean {
         // Only worry about confirmationRequired if face was used to unlock
         if (modality == BiometricModality.Face) {
@@ -355,6 +364,9 @@ constructor(
         fun create(): SecureLockDeviceBiometricAuthContentViewModel
     }
 
+    /**
+     * Called to activate the view model and start listening for biometric authentication events.
+     */
     override suspend fun onActivated(): Nothing {
         coroutineScope {
             launch {
@@ -367,7 +379,7 @@ constructor(
             }
 
             launch {
-                secureLockDeviceInteractor.shouldShowBiometricAuth
+                secureLockDeviceInteractor.isBiometricAuthVisible
                     .filter { it }
                     .collectLatest { shouldShowBiometricAuth ->
                         showAuthenticating()
@@ -384,7 +396,7 @@ constructor(
                         }
 
                         launch {
-                            isReadyToDismissBiometricAuth
+                            _isReadyToDismissBiometricAuth
                                 .filter { it }
                                 .collectLatest {
                                     secureLockDeviceInteractor.onReadyToDismissBiometricAuth()
@@ -397,37 +409,39 @@ constructor(
         }
     }
 
+    /** Called when the view model is deactivated to cancel any active jobs. */
     override suspend fun onDeactivated() {
         displayErrorJob?.cancel()
         displayErrorJob = null
+        secureLockDeviceInteractor.onBiometricAuthUiHidden()
     }
 
+    /**
+     * Called from [com.android.keyguard.KeyguardSecureLockDeviceBiometricAuthViewController] when
+     * [SceneContainerFlag.isEnabled] is false or from
+     * [com.android.systemui.bouncer.ui.composable.BouncerContent] when
+     * [SceneContainerFlag.isEnabled] is true, to indicate that the secure lock device biometric
+     * authentication screen should be shown.
+     */
     fun startAppearAnimation() {
         _isVisible.value = true
     }
 
-    /**
-     * Called from legacy keyguard controller to set runnable with actions to complete when the
-     * disappear animation has finished.
-     */
-    fun setDisappearAnimationFinishedRunnable(finishRunnable: Runnable?) {
-        mDisappearAnimationFinishedRunnable = finishRunnable
-    }
-
+    // TODO (b/427071498): remove when SceneContainerFlag is removed
     /**
      * Runs actions to complete when the disappear animation has finished in the legacy keyguard
      * implementation.
      */
     fun onDisappearAnimationFinished() {
-        if (SceneContainerFlag.isEnabled) return
-        mDisappearAnimationFinishedRunnable?.run()
+        SceneContainerFlag.assertInLegacyMode()
+        secureLockDeviceInteractor.onDisappearAnimationFinished()
     }
 
     /**
-     * Called from Composable to indicate the final animation (i.e. successful fingerprint, face
-     * confirmed, etc.) has finished playing and the biometric auth screen can be dismissed
+     * Indicates the final animation (i.e. successful fingerprint, face confirmed, etc.) has
+     * finished playing and the biometric auth screen can be dismissed
      */
-    fun onReadyToDismissBiometricAuth() {
+    private fun onReadyToDismissBiometricAuth() {
         _isReadyToDismissBiometricAuth.value = true
     }
 

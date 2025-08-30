@@ -68,7 +68,7 @@ import kotlin.math.min
 import kotlin.math.roundToInt
 
 // The different modes of interaction that the user can have with the RegionBox.
-private enum class DragMode {
+enum class DragMode {
     DRAWING,
     MOVING,
     RESIZING,
@@ -166,9 +166,8 @@ private fun getTappedOrHoveredZone(
  * @param minSizePx The minimum size of the box in pixels.
  * @param touchAreaPx The size of the touch area for resizing in pixels.
  */
-private class RegionBoxState(private val minSizePx: Float, private val touchAreaPx: Float) {
+class RegionBoxState(private val minSizePx: Float, private val touchAreaPx: Float) {
     var rect by mutableStateOf<Rect?>(null)
-        private set
 
     var dragMode by mutableStateOf(DragMode.NONE)
 
@@ -194,7 +193,7 @@ private class RegionBoxState(private val minSizePx: Float, private val touchArea
     var isHoveringButton by mutableStateOf(false)
 
     // The offset of the initial press when the user starts a drag gesture.
-    private var newBoxStartOffset by mutableStateOf(Offset.Zero)
+    var newBoxStartOffset by mutableStateOf(Offset.Zero)
 
     // Must remember the screen size for the drag logic. Initial values are set to 0.
     var screenWidth by mutableStateOf(0f)

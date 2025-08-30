@@ -6138,12 +6138,25 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
         if (!mWmService.mAlwaysSeqId) {
             return mPrepareSyncSeqId > 0;
         }
-        final boolean cancel = Math.max(mSyncSeqId, mBufferSeqId) > seqId;
-        if (cancel) {
-            Trace.instant(TRACE_TAG_WINDOW_MANAGER, "cancelDraw clientSeqId=" + seqId
-                    + " serverSeqId=" + mSyncSeqId + " bufferSeqId=" + mBufferSeqId);
-        }
-        return cancel;
+        return Math.max(mSyncSeqId, mBufferSeqId) > seqId;
+    }
+
+    /**
+     * Normally, if the client hasn't received the latest configuration yet, we can't assume that
+     * the layout parameters are accurate (since they can depend on the configuration).
+     *
+     * However, there are specific situations where layout logic ignores configuration-dependent
+     * layout params AND where we are confident that those layout params aren't, themselves,
+     * configuration-dependent. We can use this information for certain optimizations.
+     *
+     * @return {@code true} if this window's client configuration is irrelevant to layout.
+     */
+    boolean layoutIgnoresClientConfig() {
+        // We are only confident that fullscreen system-ui windows remain fullscreen regardless of
+        // of configuration.
+        return mActivityRecord == null && !mIsWallpaper
+                && mAttrs.width == WindowManager.LayoutParams.MATCH_PARENT
+                && mAttrs.height == WindowManager.LayoutParams.MATCH_PARENT;
     }
 
     public boolean isActivityWindow() {

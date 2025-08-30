@@ -56,7 +56,6 @@ import com.android.systemui.statusbar.notification.row.RowInflaterTask;
 import com.android.systemui.statusbar.notification.row.dagger.ExpandableNotificationRowComponent;
 import com.android.systemui.statusbar.notification.row.shared.AsyncGroupHeaderViewInflation;
 import com.android.systemui.statusbar.notification.row.shared.AsyncHybridViewInflation;
-import com.android.systemui.statusbar.notification.row.shared.LockscreenOtpRedaction;
 import com.android.systemui.statusbar.notification.stack.NotificationListContainer;
 
 import javax.inject.Inject;
@@ -184,9 +183,7 @@ public class NotificationRowBinderImpl implements NotificationRowBinder {
         params.markContentViewsFreeable(FLAG_CONTENT_VIEW_PUBLIC);
         if (AsyncHybridViewInflation.isEnabled()) {
             params.markContentViewsFreeable(FLAG_CONTENT_VIEW_SINGLE_LINE);
-            if (LockscreenOtpRedaction.isSingleLineViewEnabled()) {
-                params.markContentViewsFreeable(FLAG_CONTENT_VIEW_PUBLIC_SINGLE_LINE);
-            }
+            params.markContentViewsFreeable(FLAG_CONTENT_VIEW_PUBLIC_SINGLE_LINE);
         }
         mRowContentBindStage.requestRebind(entry, null);
     }
@@ -271,11 +268,7 @@ public class NotificationRowBinderImpl implements NotificationRowBinder {
                 //  when the group status changes
                 params.markContentViewsFreeable(FLAG_CONTENT_VIEW_SINGLE_LINE);
             }
-        }
-
-        if (LockscreenOtpRedaction.isSingleLineViewEnabled()) {
-            if (inflaterParams.isChildInGroup()
-                    && redactionType != REDACTION_TYPE_NONE) {
+            if (inflaterParams.isChildInGroup() && redactionType != REDACTION_TYPE_NONE) {
                 params.requireContentViews(FLAG_CONTENT_VIEW_PUBLIC_SINGLE_LINE);
             } else {
                 params.markContentViewsFreeable(FLAG_CONTENT_VIEW_PUBLIC_SINGLE_LINE);

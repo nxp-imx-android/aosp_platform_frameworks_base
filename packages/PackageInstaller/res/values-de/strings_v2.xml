@@ -88,7 +88,7 @@
     <string name="message_archive_other_user" msgid="6465828676043191175">"App-Daten werden gespeichert"</string>
     <string name="message_archive_work_profile" msgid="7601504268820630858">"Diese App wird aus deinem Arbeitsprofil archiviert. Deine App-Daten werden gespeichert."</string>
     <string name="message_archive_private_space" msgid="4873651645762576624">"Diese App wird aus deinem vertraulichen Profil archiviert. Deine App-Daten werden gespeichert."</string>
-    <string name="message_restore" msgid="8402726798623569969">"Diese App wird im Hintergrund aus <xliff:g id="INSTALLER_NAME">%1$s</xliff:g> heruntergeladen"</string>
+    <string name="message_restore" msgid="8402726798623569969">"Diese App wird im Hintergrund aus dem <xliff:g id="INSTALLER_NAME">%1$s</xliff:g> heruntergeladen"</string>
     <string name="message_restore_error_user_action_needed" msgid="2206904734076205208">"<xliff:g id="INSTALLER_NAME">%1$s</xliff:g> benötigt weitere Informationen, bevor du diese App wiederherstellen kannst"</string>
     <string name="message_restore_error_less_storage" msgid="4945507738776981462">"Wenn du diese App wiederherstellen möchtest, gib &lt;b&gt;<xliff:g id="BYTES">%1$s</xliff:g>&lt;/b&gt; Speicherplatz frei und versuche es dann noch einmal"</string>
     <string name="message_restore_error_offline" msgid="4212551781323276126">"Wenn du diese App wiederherstellen möchtest, prüfe deine Internetverbindung und versuche es dann noch einmal"</string>

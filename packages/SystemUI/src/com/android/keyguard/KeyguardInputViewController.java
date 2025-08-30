@@ -293,9 +293,10 @@ public abstract class KeyguardInputViewController<T extends KeyguardInputView>
                     && keyguardInputView instanceof KeyguardSecureLockDeviceBiometricAuthView) {
                 return new KeyguardSecureLockDeviceBiometricAuthViewController(
                         (KeyguardSecureLockDeviceBiometricAuthView) keyguardInputView,
-                        mSecureLockDeviceViewModelFactory, mSelectedUserInteractor,
-                        securityMode, keyguardSecurityCallback, emergencyButtonController,
-                        mMessageAreaControllerFactory, mFeatureFlags, mBouncerHapticPlayer);
+                        mSecureLockDeviceViewModelFactory, mSecureLockDeviceInteractor,
+                        mSelectedUserInteractor, securityMode, keyguardSecurityCallback,
+                        emergencyButtonController, mMessageAreaControllerFactory, mFeatureFlags,
+                        mBouncerHapticPlayer);
             }
             if (keyguardInputView instanceof KeyguardPatternView) {
                 return new KeyguardPatternViewController((KeyguardPatternView) keyguardInputView,

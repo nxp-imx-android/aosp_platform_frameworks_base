@@ -231,7 +231,10 @@ public class BubbleExpandedView extends LinearLayout {
                     Rect launchBounds = new Rect();
                     mTaskView.getBoundsOnScreen(launchBounds);
 
-                    options.setTaskAlwaysOnTop(true /* alwaysOnTop */);
+                    final WindowContainerToken rootToken = mManager.getAppBubbleRootTaskToken();
+                    if (rootToken == null) {
+                        options.setTaskAlwaysOnTop(true /* alwaysOnTop */);
+                    }
                     options.setPendingIntentBackgroundActivityStartMode(
                             MODE_BACKGROUND_ACTIVITY_START_ALLOW_ALWAYS);
 
@@ -252,7 +255,6 @@ public class BubbleExpandedView extends LinearLayout {
                                 // Needs to be mutable for the fillInIntent
                                 PendingIntent.FLAG_MUTABLE | PendingIntent.FLAG_UPDATE_CURRENT,
                                 /* options= */ null);
-                        final WindowContainerToken rootToken = mManager.getAppBubbleRootTaskToken();
                         if (rootToken != null) {
                             options.setLaunchRootTask(rootToken);
                         } else {
@@ -265,8 +267,6 @@ public class BubbleExpandedView extends LinearLayout {
                             options.setLaunchedFromBubble(true);
                             options.setApplyActivityFlagsForBubbles(true);
                         } else {
-                            final WindowContainerToken rootToken =
-                                    mManager.getAppBubbleRootTaskToken();
                             if (rootToken != null) {
                                 options.setLaunchRootTask(rootToken);
                             } else {
@@ -321,7 +321,7 @@ public class BubbleExpandedView extends LinearLayout {
             final boolean isAppBubble = mBubble != null
                     && (mBubble.isApp() || mBubble.isShortcut());
             final WindowContainerTransaction wct = getEnterBubbleTransaction(
-                    tvc.getTaskToken(), isAppBubble);
+                    tvc.getTaskToken(), mManager.getAppBubbleRootTaskToken(), isAppBubble);
             tvc.getTaskOrganizer().applyTransaction(wct);
 
             // With the task org, the taskAppeared callback will only happen once the task has

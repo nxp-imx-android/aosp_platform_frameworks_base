@@ -218,6 +218,7 @@ import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 
 /**
  * Manages attached displays.
@@ -658,9 +659,33 @@ public final class DisplayManagerService extends SystemService {
         mUiHandler = UiThread.getHandler();
         mPersistentDataStore = mInjector.getPersistentDataStore();
         mDisplayDeviceRepo = new DisplayDeviceRepository(mSyncRoot, mPersistentDataStore);
-        mLogicalDisplayMapper = new LogicalDisplayMapper(mContext,
-                foldSettingProvider,
-                mDisplayDeviceRepo, new LogicalDisplayListener(), mSyncRoot, mHandler, mFlags);
+        if (mFlags.isDisplayTopologyEnabled()) {
+            final var backupManager = new BackupManager(mContext);
+            Consumer<Pair<DisplayTopology, DisplayTopologyGraph>> topologyChangedCallback =
+                    update -> {
+                        if (mInputManagerInternal != null) {
+                            Slog.d(TAG,
+                                    "Sending topology graph to Input Manager: " + update.second);
+                            mInputManagerInternal.setDisplayTopology(update.second);
+                        } else {
+                            Slog.w(TAG, "Not sending topology, mInputManagerInternal is null");
+                        }
+                        deliverTopologyUpdate(update.first);
+                    };
+            mDisplayTopologyCoordinator = new DisplayTopologyCoordinator(
+                    this::isExtendedDisplayAllowed, this::shouldIncludeDefaultDisplayInTopology,
+                    topologyChangedCallback, new HandlerExecutor(mHandler), mSyncRoot,
+                    backupManager::dataChanged, mFlags,
+                    displayId -> getDisplayInfoInternal(displayId, Process.myUid()));
+        } else {
+            mDisplayTopologyCoordinator = null;
+        }
+        Predicate<DisplayInfo> isDisplayAllowedInTopoogy =
+                info -> mDisplayTopologyCoordinator != null
+                        && mDisplayTopologyCoordinator.isDisplayAllowedInTopology(info);
+        mLogicalDisplayMapper = new LogicalDisplayMapper(mContext, foldSettingProvider,
+                mDisplayDeviceRepo, new LogicalDisplayListener(), mSyncRoot, mHandler, mFlags,
+                isDisplayAllowedInTopoogy);
         mDisplayModeDirector = new DisplayModeDirector(
                 context, mHandler, mFlags, mDisplayDeviceConfigProvider);
         mBrightnessSynchronizer = new BrightnessSynchronizer(mContext, displayThreadLooper);
@@ -692,27 +717,6 @@ public final class DisplayManagerService extends SystemService {
         mDisplayNotificationManager = new DisplayNotificationManager(mFlags, mContext,
                 mExternalDisplayStatsService);
         mExternalDisplayPolicy = new ExternalDisplayPolicy(new ExternalDisplayPolicyInjector());
-        if (mFlags.isDisplayTopologyEnabled()) {
-            final var backupManager = new BackupManager(mContext);
-            Consumer<Pair<DisplayTopology, DisplayTopologyGraph>> topologyChangedCallback =
-                    update -> {
-                        if (mInputManagerInternal != null) {
-                            Slog.d(TAG,
-                                    "Sending topology graph to Input Manager: " + update.second);
-                            mInputManagerInternal.setDisplayTopology(update.second);
-                        } else {
-                            Slog.w(TAG, "Not sending topology, mInputManagerInternal is null");
-                        }
-                        deliverTopologyUpdate(update.first);
-                    };
-            mDisplayTopologyCoordinator = new DisplayTopologyCoordinator(
-                    this::isExtendedDisplayAllowed, this::shouldIncludeDefaultDisplayInTopology,
-                    topologyChangedCallback, new HandlerExecutor(mHandler), mSyncRoot,
-                    backupManager::dataChanged, mFlags,
-                    displayId -> getDisplayInfoInternal(displayId, Process.myUid()));
-        } else {
-            mDisplayTopologyCoordinator = null;
-        }
         mPluginManager = new PluginManager(mContext, mFlags);
     }
 
@@ -1310,6 +1314,9 @@ public final class DisplayManagerService extends SystemService {
             // No change in setting.
             return false;
         }
+
+        Slog.i(TAG, "Update mirrorBuiltInDisplaySetting: " + mirrorBuiltInDisplay
+                + ", shouldSendDisplayChangeEvent: " + shouldSendDisplayChangeEvent);
         mMirrorBuiltInDisplay = mirrorBuiltInDisplay;
         if (mFlags.isDisplayContentModeManagementEnabled()) {
             mLogicalDisplayMapper.forEachLocked(logicalDisplay -> {
@@ -3874,6 +3881,7 @@ public final class DisplayManagerService extends SystemService {
             pw.println("  mStableDisplaySize=" + mStableDisplaySize);
             pw.println("  mMinimumBrightnessCurve=" + mMinimumBrightnessCurve);
             pw.println("  mMaxImportanceForRRCallbacks=" + mMaxImportanceForRRCallbacks);
+            pw.println("  mMirrorBuiltInDisplaySetting=" + mMirrorBuiltInDisplay);
 
             if (mUserPreferredMode != null) {
                 pw.println(" mUserPreferredMode=" + mUserPreferredMode);

@@ -15,10 +15,13 @@
  */
 package com.android.internal.widget.remotecompose.player.player.platform;
 
+
+
 import android.content.Context;
 import android.provider.Settings;
 
 /** Class to retrieve values from {@link Settings}. */
+
 public class SettingsRetriever {
     /** Determines whether the Remove Animations accessibility setting is enabled. */
     public static Boolean animationsEnabled(Context context) {

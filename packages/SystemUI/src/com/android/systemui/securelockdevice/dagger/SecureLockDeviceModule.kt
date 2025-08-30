@@ -24,6 +24,9 @@ import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.deviceentry.domain.interactor.DeviceEntryBiometricSettingsInteractor
 import com.android.systemui.deviceentry.domain.interactor.SystemUIDeviceEntryFaceAuthInteractor
 import com.android.systemui.keyguard.data.repository.BiometricSettingsRepository
+import com.android.systemui.log.LogBuffer
+import com.android.systemui.log.LogBufferFactory
+import com.android.systemui.log.dagger.SecureLockDeviceLog
 import com.android.systemui.securelockdevice.data.repository.SecureLockDeviceRepository
 import com.android.systemui.securelockdevice.data.repository.SecureLockDeviceRepositoryImpl
 import com.android.systemui.securelockdevice.domain.interactor.SecureLockDeviceInteractor
@@ -32,6 +35,7 @@ import dagger.Provides
 import java.util.concurrent.Executor
 import kotlinx.coroutines.CoroutineScope
 
+/** Dagger module for secure lock device feature. */
 @Module
 interface SecureLockDeviceModule {
 
@@ -54,6 +58,7 @@ interface SecureLockDeviceModule {
         @SysUISingleton
         fun providesSecureLockDeviceInteractor(
             @Application applicationScope: CoroutineScope,
+            @SecureLockDeviceLog logBuffer: LogBuffer,
             secureLockDeviceRepository: SecureLockDeviceRepository,
             biometricSettingsInteractor: DeviceEntryBiometricSettingsInteractor,
             deviceEntryFaceAuthInteractor: SystemUIDeviceEntryFaceAuthInteractor,
@@ -62,12 +67,20 @@ interface SecureLockDeviceModule {
         ): SecureLockDeviceInteractor {
             return SecureLockDeviceInteractor(
                 applicationScope = applicationScope,
+                logBuffer = logBuffer,
                 secureLockDeviceRepository = secureLockDeviceRepository,
                 biometricSettingsInteractor = biometricSettingsInteractor,
                 deviceEntryFaceAuthInteractor = deviceEntryFaceAuthInteractor,
                 fingerprintPropertyInteractor = fingerprintPropertyInteractor,
                 facePropertyInteractor = facePropertyInteractor,
             )
+        }
+
+        @Provides
+        @SysUISingleton
+        @SecureLockDeviceLog
+        fun provideSecureLockDeviceLogBuffer(factory: LogBufferFactory): LogBuffer {
+            return factory.create("SecureLockDeviceLog", 100)
         }
     }
 }

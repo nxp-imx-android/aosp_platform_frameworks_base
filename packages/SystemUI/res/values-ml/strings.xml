@@ -684,8 +684,9 @@
     <string name="notification_section_header_conversations" msgid="821834744538345661">"സംഭാഷണങ്ങൾ"</string>
     <string name="accessibility_notification_section_header_gentle_clear_all" msgid="6490207897764933919">"എല്ലാ നിശബ്‌ദ അറിയിപ്പുകളും മായ്ക്കുക"</string>
     <string name="accessibility_notification_section_header_open_settings" msgid="6235202417954844004">"അറിയിപ്പ് ക്രമീകരണം തുറക്കുക"</string>
-    <string name="dnd_suppressing_shade_text" msgid="5588252250634464042">"\'ശല്യപ്പെടുത്തരുത്\' വഴി അറിയിപ്പുകൾ താൽക്കാലികമായി നിർത്തി"</string>
     <string name="modes_suppressing_shade_text" msgid="6037581130837903239">"{count,plural,offset:1 =0{അറിയിപ്പുകൾ ഒന്നുമില്ല}=1{{mode}, അറിയിപ്പുകൾ താൽക്കാലികമായി നിർത്തിയിരിക്കുന്നു}=2{{mode} എന്നതും മറ്റൊരു മോഡും, അറിയിപ്പുകൾ താൽക്കാലികമായി നിർത്തിയിരിക്കുന്നു}other{{mode} എന്നതും മറ്റ് # മോഡുകളും, അറിയിപ്പുകൾ താൽക്കാലികമായി നിർത്തിയിരിക്കുന്നു}}"</string>
+    <!-- no translation found for caught_up_shade_text (8166221989384139659) -->
+    <skip />
     <string name="media_projection_action_text" msgid="3634906766918186440">"ഇപ്പോൾ ആരംഭിക്കുക"</string>
     <string name="empty_shade_text" msgid="8935967157319717412">"അറിയിപ്പുകൾ ഒന്നുമില്ല"</string>
     <string name="no_unseen_notif_text" msgid="395512586119868682">"പുതിയ അറിയിപ്പുകളൊന്നുമില്ല"</string>
@@ -985,6 +986,8 @@
     <string name="group_system_access_notification_shade" msgid="1619028907006553677">"അറിയിപ്പുകൾ കാണുക"</string>
     <string name="group_system_access_quick_settings_panel" msgid="1844771096582064926">"ദ്രുത ക്രമീകരണം കാണുക"</string>
     <string name="group_system_full_screenshot" msgid="5742204844232667785">"സ്ക്രീൻഷോട്ട് എടുക്കുക"</string>
+    <!-- no translation found for group_system_partial_screenshot (2114314797127648010) -->
+    <skip />
     <string name="group_system_access_system_app_shortcuts" msgid="8562482996626694026">"കുറുക്കുവഴികൾ കാണിക്കുക"</string>
     <string name="group_system_go_back" msgid="2730322046244918816">"മടങ്ങുക"</string>
     <string name="group_system_access_home_screen" msgid="4130366993484706483">"ഹോം സ്ക്രീനിലേക്ക് പോകുക"</string>
@@ -1009,8 +1012,7 @@
     <string name="system_desktop_mode_snap_right_window" msgid="2162560187639411929">"വിൻഡോ വലത്തേക്ക് നീക്കുക"</string>
     <string name="system_desktop_mode_toggle_maximize_window" msgid="4084100093691768239">"വിൻഡോ വലുതാക്കുക"</string>
     <string name="system_desktop_mode_minimize_window" msgid="1248714536732927092">"വിൻഡോ ചെറുതാക്കുക"</string>
-    <!-- no translation found for system_desktop_mode_close_window (3072490692608682536) -->
-    <skip />
+    <string name="system_desktop_mode_close_window" msgid="3072490692608682536">"നിലവിലെ വിൻഡോ അടയ്‌ക്കുക"</string>
     <string name="system_multiple_desktop_mode_switch_between_desks" msgid="6093884593003003708">"ഡെസ്‌ക്‌ടോപ്പുകൾക്കിടയിൽ നീക്കുക"</string>
     <string name="keyboard_shortcut_group_input" msgid="6888282716546625610">"ഇൻപുട്ട്"</string>
     <string name="input_switch_input_language_next" msgid="3782155659868227855">"അടുത്ത ഭാഷയിലേക്ക് മാറുക"</string>
@@ -1132,12 +1134,15 @@
     <string name="accessibility_key_gesture_dialog_title" msgid="7614965716626605518">"<xliff:g id="ID_1">%1$s</xliff:g> ഓണാക്കണോ?"</string>
     <string name="accessibility_key_gesture_dialog_content" msgid="4519838108423437794">"Action "<annotation id="action_key_icon">"icon"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> ആണ് <xliff:g id="ID_3">^3</xliff:g> ഉപയോഗിക്കുന്നതിനുള്ള കീബോഡ് കുറുക്കുവഴി. <xliff:g id="ID_4">^4</xliff:g>"</string>
     <string name="accessibility_key_gesture_dialog_talkback_intro" msgid="1617808784388544741">"സ്ക്രീനിലുള്ള കാര്യങ്ങൾ ഉറക്കെ വായിച്ചുകേൾക്കാൻ അനുവദിക്കുന്ന സ്ക്രീൻ റീഡറാണ് <xliff:g id="ID_1">%1$s</xliff:g>. സ്‌ക്രീൻ കാണാൻ ബുദ്ധിമുട്ടുള്ള ആളുകൾക്ക് ഇത് സഹായകരമായേക്കാം."</string>
-    <string name="accessibility_key_gesture_dialog_va_intro" msgid="4709198503441288289">"നിങ്ങളുടെ ഉപകരണം ഹാൻഡ്‌സ്-ഫ്രീ ആയി നിയന്ത്രിക്കാൻ <xliff:g id="ID_1">%1$s</xliff:g> നിങ്ങളെ അനുവദിക്കുന്നു."</string>
     <string name="accessibility_key_gesture_dialog_positive_button_text" msgid="3670746017523589293">"ഓണാക്കുക"</string>
     <string name="accessibility_key_gesture_magnification_dialog_title" msgid="5770691510738701250">"<xliff:g id="ID_1">%1$s</xliff:g> കീബോർഡ് കുറുക്കുവഴി ഓണാക്കി"</string>
     <string name="accessibility_key_gesture_magnification_dialog_content" msgid="7575802369763469379">"പ്രവർത്തന "<annotation id="action_key_icon">"ഐക്കൺ"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> ആണ് <xliff:g id="ID_3">^3</xliff:g> ഉപയോഗിക്കുന്നതിനുള്ള കീബോഡ് കുറുക്കുവഴി. ഉള്ളടക്കം വലുതാക്കുന്നതിനായി വേഗത്തിൽ സ്ക്രീനിൽ സൂം ഇൻ ചെയ്യാൻ ഇത് നിങ്ങളെ അനുവദിക്കുന്നു. സൂം ക്രമീകരിക്കാൻ പ്രവർത്തന "<annotation id="action_key_icon">"ഐക്കൺ"</annotation>" + <xliff:g id="ID_4">^1</xliff:g> ഒപ്പം \"+\" അല്ലെങ്കിൽ \"-\" അമർത്തുക."</string>
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"കുറുക്കുവഴി ഓഫാക്കുക"</string>
     <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"ഓണാക്കി നിർത്തുക"</string>
+    <string name="accessibility_key_gesture_voice_access_dialog_title" msgid="7828090789777023683">"<xliff:g id="ID_1">%1$s</xliff:g> കീബോർഡ് കുറുക്കുവഴി ഓണാക്കണോ?"</string>
+    <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="7934170819801013870">"പ്രവൃത്തി "<annotation id="action_key_icon">"ഐക്കൺ"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> അമർത്തുന്നതിലൂടെ ഉപയോഗസഹായി ഫീച്ചറായ <xliff:g id="ID_3">^3</xliff:g> ഓണാകുന്നു. ഉപകരണം ഹാൻഡ്‌സ്-ഫ്രീ ആയി നിയന്ത്രിക്കാൻ ഇത് നിങ്ങളെ അനുവദിക്കുന്നു."</string>
+    <string name="accessibility_key_gesture_voice_access_dialog_negative_button_text" msgid="3573570279554465078">"ഓണാക്കരുത്"</string>
+    <string name="accessibility_key_gesture_voice_access_dialog_positive_button_text" msgid="2306321856544446858">"കുറുക്കുവഴി ഓണാക്കുക"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"ലോക്ക് സ്‌ക്രീൻ"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"ഷട്ട്‌ഡൗൺ ചെയ്യുന്നു…"</string>
     <string name="thermal_shutdown_dialog_help_text" msgid="6413474593462902901">"പരിപാലന നിർദ്ദേശങ്ങൾ കാണുക"</string>

@@ -158,13 +158,6 @@ flag {
 }
 
 flag {
-  name: "redact_sensitive_content_notifications_on_lockscreen"
-  namespace: "systemui"
-  description: "redacts notifications on the lockscreen if they have the 'sensitiveContent' flag"
-  bug: "343631648"
-}
-
-flag {
   name: "backup_restore_logging"
   namespace: "systemui"
   description: "Adds logging for notification/modes backup and restore events"

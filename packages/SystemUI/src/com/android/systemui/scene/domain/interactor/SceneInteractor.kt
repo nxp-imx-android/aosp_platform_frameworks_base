@@ -344,7 +344,7 @@ constructor(
 
         repository.instantlyTransitionTo(
             scene = resolvedScene,
-            overlays = if (hideAllOverlays) emptySet() else currentOverlays.value,
+            overlays = emptySet<OverlayKey>().takeIf { hideAllOverlays },
         )
     }
 

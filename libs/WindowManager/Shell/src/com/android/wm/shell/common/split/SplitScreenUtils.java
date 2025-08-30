@@ -218,7 +218,9 @@ public class SplitScreenUtils {
 
         Configuration displayConfiguration = displayAreaInfo.configuration;
         if (splitLayout != null) {
-            splitLayout.updateConfiguration(displayConfiguration, displayId);
+            if (splitLayout.updateConfiguration(displayConfiguration, displayId)) {
+                splitLayout.update(null /* t */, false /* resetImePosition */);
+            }
         }
     }
 }

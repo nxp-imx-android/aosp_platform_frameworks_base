@@ -527,6 +527,11 @@ public abstract class ActivityManagerInternal {
      */
     public static final int OOM_ADJ_REASON_BATCH_UPDATE_REQUEST = 26;
 
+    /**
+     * Number of Oom Adj Reasons
+     */
+    public static final int OOM_ADJ_REASON_COUNT = 27;
+
     @IntDef(prefix = {"OOM_ADJ_REASON_"}, value = {
         OOM_ADJ_REASON_NONE,
         OOM_ADJ_REASON_ACTIVITY,

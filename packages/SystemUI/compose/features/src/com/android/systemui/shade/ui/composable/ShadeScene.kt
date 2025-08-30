@@ -66,6 +66,7 @@ import com.android.compose.animation.scene.UserActionResult
 import com.android.compose.animation.scene.animateContentFloatAsState
 import com.android.compose.animation.scene.rememberMutableSceneTransitionLayoutState
 import com.android.compose.animation.scene.transitions
+import com.android.compose.gesture.gesturesDisabled
 import com.android.compose.lifecycle.LaunchedEffectWithLifecycle
 import com.android.compose.modifiers.padding
 import com.android.compose.modifiers.thenIf
@@ -103,6 +104,7 @@ import com.android.systemui.statusbar.notification.stack.ui.viewmodel.Notificati
 import dagger.Lazy
 import javax.inject.Inject
 import kotlin.math.roundToInt
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 
 object Shade {
@@ -231,7 +233,7 @@ private fun ContentScope.SingleShade(
     modifier: Modifier = Modifier,
     shadeSession: SaveableSession,
 ) {
-    val cutout = LocalDisplayCutout.current
+    val cutoutLocation = LocalDisplayCutout.current().location
     val cutoutInsets = WindowInsets.Companion.displayCutout
 
     var maxNotifScrimTop by remember { mutableIntStateOf(0) }
@@ -256,8 +258,7 @@ private fun ContentScope.SingleShade(
     val shadeHorizontalPadding =
         dimensionResource(id = R.dimen.notification_panel_margin_horizontal)
     val shadeMeasurePolicy =
-        remember(cutout, cutoutInsets) {
-            val cutoutLocation = cutout().location
+        remember(cutoutLocation, cutoutInsets) {
             SingleShadeMeasurePolicy(
                 onNotificationsTopChanged = { maxNotifScrimTop = it },
                 cutoutInsetsProvider = {
@@ -431,7 +432,13 @@ private fun ContentScope.SplitShade(
         }
     }
 
-    Box(modifier = modifier.fillMaxSize().graphicsLayer { alpha = contentAlpha }) {
+    Box(
+        modifier =
+            modifier
+                .fillMaxSize()
+                .graphicsLayer { alpha = contentAlpha }
+                .thenIf(brightnessMirrorShowing) { Modifier.gesturesDisabled() }
+    ) {
         ShadePanelScrim(viewModel.isTransparencyEnabled)
 
         Column(modifier = Modifier.fillMaxSize()) {

@@ -61,7 +61,6 @@ class TabbedWriterImpl(private val target: BufferedWriter) : TabbedWriter {
 
     override fun completeLine(str: String) {
         if (!isInProgress) {
-            target.newLine()
             target.append("    ".repeat(tabCount))
         }
 
@@ -90,31 +89,33 @@ class TabbedWriterImpl(private val target: BufferedWriter) : TabbedWriter {
     }
 
     override fun braceBlock(str: String, write: TabbedWriter.() -> Unit) {
-        block(str, " {", "}", true, write)
+        block(str, " {", "}", newLine = true, write)
     }
 
     override fun parenBlock(str: String, write: TabbedWriter.() -> Unit) {
-        block(str, "(", ")", false, write)
+        block(str, "(", ")", newLine = false, write)
     }
 
     private fun block(
         str: String,
         start: String,
         end: String,
-        newLineForEnd: Boolean,
+        newLine: Boolean,
         write: TabbedWriter.() -> Unit,
     ) {
-        appendLine(str)
-        completeLine(start)
+        if (str != "") {
+            startLine(str)
+        }
+        appendLine(start)
 
         tabCount++
         this.write()
         tabCount--
 
-        if (newLineForEnd) {
-            line(end)
+        if (newLine) {
+            completeLine(end)
         } else {
-            startLine(end)
+            appendLine(end)
         }
     }
 }

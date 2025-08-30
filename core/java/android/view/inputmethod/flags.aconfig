@@ -56,17 +56,6 @@ flag {
 }
 
 flag {
-    name: "consistent_get_current_input_method_info"
-    namespace: "input_method"
-    description: "Use BindingController as the source of truth in getCurrentInputMethodInfo"
-    bug: "355034523"
-    is_fixed_read_only: true
-    metadata {
-      purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "ime_switcher_revamp"
     is_exported: true
     namespace: "input_method"
@@ -221,3 +210,14 @@ flag {
   description: "Deprecate unsupported show/hide flags."
   bug: "322992891"
 }
+
+flag {
+  name: "fix_navbar_dead_zone"
+  namespace: "input_method"
+  description: "Fix DeadZone consuming events for navbar"
+  bug: "364856257"
+  metadata {
+    purpose: PURPOSE_BUGFIX
+  }
+}
+

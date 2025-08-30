@@ -21,10 +21,12 @@ import android.content.Context
 import android.graphics.Color
 import android.os.Bundle
 import android.view.Display
+import android.view.KeyEvent
 import android.view.View
 import android.view.WindowManager
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.constraintlayout.widget.ConstraintSet
+import com.android.systemui.keyevent.domain.interactor.SysUIKeyEventHandler
 import com.android.systemui.plugins.keyguard.ui.clocks.ClockController
 import com.android.systemui.plugins.keyguard.ui.clocks.ClockFaceController
 import com.android.systemui.plugins.keyguard.ui.clocks.ClockFaceLayout
@@ -48,6 +50,7 @@ constructor(
     context: Context,
     private val clockRegistry: ClockRegistry,
     private val clockEventController: ClockEventController,
+    private val sysuiKeyEventHandler: SysUIKeyEventHandler,
 ) :
     Presentation(
         context,
@@ -75,6 +78,10 @@ constructor(
         onCreateInternal()
 
         setShowWallpaperFlagOnWindow()
+    }
+
+    override fun dispatchKeyEvent(event: KeyEvent): Boolean {
+        return sysuiKeyEventHandler.dispatchKeyEvent(event)
     }
 
     private fun onCreateInternal() {

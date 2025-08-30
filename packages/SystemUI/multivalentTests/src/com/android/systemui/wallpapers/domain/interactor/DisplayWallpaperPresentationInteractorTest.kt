@@ -69,14 +69,14 @@ class DisplayWallpaperPresentationInteractorTest : SysuiTestCase() {
 
     @Before
     fun setUp() {
-        fakeKeyguardRepository.setKeyguardDismissible(isUnlocked = true)
+        fakeKeyguardRepository.setKeyguardShowing(isShowing = false)
         deviceProvisioningRepository.setDeviceProvisioned(true)
     }
 
     @Test
     fun presentationFactoryFlow_unlocked_provisioned_none() =
         kosmos.runTest {
-            fakeKeyguardRepository.setKeyguardDismissible(isUnlocked = true)
+            fakeKeyguardRepository.setKeyguardShowing(isShowing = false)
             deviceProvisioningRepository.setDeviceProvisioned(true)
 
             val actual by collectLastValue(wallpaperPresentationInteractor.presentationFactoryFlow)
@@ -86,7 +86,7 @@ class DisplayWallpaperPresentationInteractorTest : SysuiTestCase() {
     @Test
     fun presentationFactoryFlow_locked_provisioned_displayCompatible_keyguard() =
         kosmos.runTest {
-            fakeKeyguardRepository.setKeyguardDismissible(isUnlocked = false)
+            fakeKeyguardRepository.setKeyguardShowing(isShowing = true)
             deviceProvisioningRepository.setDeviceProvisioned(true)
 
             val actual by collectLastValue(wallpaperPresentationInteractor.presentationFactoryFlow)
@@ -97,7 +97,7 @@ class DisplayWallpaperPresentationInteractorTest : SysuiTestCase() {
     fun presentationFactoryFlow_locked_provisioned_displayIncompatible_none() =
         kosmos.runTest {
             testDisplayInfo.flags = Display.FLAG_PRIVATE
-            fakeKeyguardRepository.setKeyguardDismissible(isUnlocked = false)
+            fakeKeyguardRepository.setKeyguardShowing(isShowing = true)
             deviceProvisioningRepository.setDeviceProvisioned(true)
 
             val actual by collectLastValue(wallpaperPresentationInteractor.presentationFactoryFlow)
@@ -108,7 +108,7 @@ class DisplayWallpaperPresentationInteractorTest : SysuiTestCase() {
     fun presentationFactoryFlow_provisioning_locked_displayCompatible_provisioning() =
         kosmos.runTest {
             deviceProvisioningRepository.setDeviceProvisioned(false)
-            fakeKeyguardRepository.setKeyguardDismissible(isUnlocked = false)
+            fakeKeyguardRepository.setKeyguardShowing(isShowing = true)
 
             val actual by collectLastValue(wallpaperPresentationInteractor.presentationFactoryFlow)
             assertThat(actual).isEqualTo(PROVISIONING)
@@ -118,7 +118,7 @@ class DisplayWallpaperPresentationInteractorTest : SysuiTestCase() {
     fun presentationFactoryFlow_provisioning_unlocked_displayCompatible_provisioning() =
         kosmos.runTest {
             deviceProvisioningRepository.setDeviceProvisioned(false)
-            fakeKeyguardRepository.setKeyguardDismissible(isUnlocked = true)
+            fakeKeyguardRepository.setKeyguardShowing(isShowing = false)
 
             val actual by collectLastValue(wallpaperPresentationInteractor.presentationFactoryFlow)
             assertThat(actual).isEqualTo(PROVISIONING)

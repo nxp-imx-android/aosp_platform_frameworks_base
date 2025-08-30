@@ -41,6 +41,7 @@ object DesktopTestHelpers {
         displayId: Int = DEFAULT_DISPLAY,
         bounds: Rect? = null,
         userId: Int = ActivityManager.getCurrentUser(),
+        taskId: Int? = null,
     ): RunningTaskInfo =
         TestRunningTaskInfoBuilder()
             .setDisplayId(displayId)
@@ -50,6 +51,7 @@ object DesktopTestHelpers {
             .setWindowingMode(WINDOWING_MODE_FREEFORM)
             .setLastActiveTime(100)
             .setUserId(userId)
+            .apply { taskId?.let { setTaskId(it) } }
             .apply { bounds?.let { setBounds(it) } }
             .build()
 

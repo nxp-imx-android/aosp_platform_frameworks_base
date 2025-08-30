@@ -29,6 +29,7 @@ import com.android.window.flags.Flags
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer
 import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.common.MultiDisplayTestUtil.TestDisplay
+import com.android.wm.shell.desktopmode.FakeShellDesktopState
 import com.android.wm.shell.shared.desktopmode.FakeDesktopState
 import java.util.function.Supplier
 import org.junit.Before
@@ -52,7 +53,7 @@ class MultiDisplayDragMoveIndicatorControllerTest : ShellTestCase() {
     private val displayController = mock<DisplayController>()
     private val rootTaskDisplayAreaOrganizer = mock<RootTaskDisplayAreaOrganizer>()
     private val indicatorSurfaceFactory = mock<MultiDisplayDragMoveIndicatorSurface.Factory>()
-    private val desktopState = FakeDesktopState()
+    private val shellDesktopState = FakeShellDesktopState(FakeDesktopState())
     private val indicatorSurface0 = mock<MultiDisplayDragMoveIndicatorSurface>()
     private val indicatorSurface1 = mock<MultiDisplayDragMoveIndicatorSurface>()
     private val transaction = mock<SurfaceControl.Transaction>()
@@ -80,7 +81,7 @@ class MultiDisplayDragMoveIndicatorControllerTest : ShellTestCase() {
                 displayController,
                 rootTaskDisplayAreaOrganizer,
                 indicatorSurfaceFactory,
-                desktopState,
+                shellDesktopState,
             )
 
         TestDisplay.DISPLAY_0.getSpyDisplayLayout(resources.resources)
@@ -97,7 +98,7 @@ class MultiDisplayDragMoveIndicatorControllerTest : ShellTestCase() {
         whenever(indicatorSurfaceFactory.create(eq(displayContext1), eq(taskLeash)))
             .thenReturn(indicatorSurface1)
         whenever(transactionSupplier.get()).thenReturn(transaction)
-        desktopState.canEnterDesktopMode = true
+        shellDesktopState.canBeWindowDropTarget = true
     }
 
     @Test
@@ -117,7 +118,10 @@ class MultiDisplayDragMoveIndicatorControllerTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_WINDOW_DROP_SMOOTH_TRANSITION)
+    @EnableFlags(
+        Flags.FLAG_ENABLE_WINDOW_DROP_SMOOTH_TRANSITION,
+        Flags.FLAG_ENABLE_BLOCK_NON_DESKTOP_DISPLAY_WINDOW_DRAG_BUGFIX,
+    )
     fun onDrag_boundsIntersectWithStartDisplay_showIndicator() {
         controller.onDragMove(
             RectF(100f, 100f, 200f, 200f), // intersect with display 0
@@ -144,9 +148,12 @@ class MultiDisplayDragMoveIndicatorControllerTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_WINDOW_DROP_SMOOTH_TRANSITION)
+    @EnableFlags(
+        Flags.FLAG_ENABLE_WINDOW_DROP_SMOOTH_TRANSITION,
+        Flags.FLAG_ENABLE_BLOCK_NON_DESKTOP_DISPLAY_WINDOW_DRAG_BUGFIX,
+    )
     fun onDrag_boundsIntersectWithDesktopModeUnsupportedDisplay_noIndicatorOnThatDisplay() {
-        desktopState.overrideDesktopModeSupportPerDisplay[1] = false
+        shellDesktopState.overrideWindowDropTargetEligibility[1] = false
 
         controller.onDragMove(
             RectF(100f, -100f, 200f, 200f), // intersect with display 0 and 1
@@ -163,7 +170,10 @@ class MultiDisplayDragMoveIndicatorControllerTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_WINDOW_DROP_SMOOTH_TRANSITION)
+    @EnableFlags(
+        Flags.FLAG_ENABLE_WINDOW_DROP_SMOOTH_TRANSITION,
+        Flags.FLAG_ENABLE_BLOCK_NON_DESKTOP_DISPLAY_WINDOW_DRAG_BUGFIX,
+    )
     fun onDrag_boundsIntersectWithNonStartDisplayAndMoveAway_showHideAndDisposeIndicator() {
         controller.onDragMove(
             RectF(100f, -100f, 200f, 200f), // intersect with display 0 and 1

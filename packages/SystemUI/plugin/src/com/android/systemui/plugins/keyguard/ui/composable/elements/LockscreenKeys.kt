@@ -40,7 +40,7 @@ object LockscreenElementKeys {
      * typically needed when an AndroidView needs to animate between two of our subscenes, but two
      * copies of the wrapped view cannot be created at the same time.
      */
-    private val ContentPicker =
+    val ContentPicker =
         with(LockscreenSceneKeys) {
             DefaultElementContentPicker(
                 contents = setOf(Lockscreen, CenteredClockScene, TwoColumnScene)

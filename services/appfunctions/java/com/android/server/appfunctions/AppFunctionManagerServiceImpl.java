@@ -305,7 +305,8 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
             properties -> {
                 if (Flags.appFunctionAccessServiceEnabled()) {
                     if (properties.getKeyset().contains(ALLOWLISTED_APP_FUNCTIONS_AGENTS)) {
-                        updateAgentAllowlist(/* readFromDeviceConfig= */ true,
+                        updateAgentAllowlist(
+                                /* readFromDeviceConfig= */ true,
                                 /* readFromSecureSetting= */ false);
                     }
                 }
@@ -731,14 +732,42 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
     private List<SignedPackage> readDeviceConfigAgentAllowlist() {
         final String allowlistString =
                 DeviceConfig.getString(
-                        NAMESPACE_MACHINE_LEARNING, ALLOWLISTED_APP_FUNCTIONS_AGENTS, "");
+                        NAMESPACE_MACHINE_LEARNING, ALLOWLISTED_APP_FUNCTIONS_AGENTS, null);
+        if (allowlistString != null) {
+            try {
+                List<SignedPackage> parsedAllowlist =
+                        SignedPackageParser.parseList(allowlistString);
+                mAgentAllowlistStorage.writeCurrentAllowlist(allowlistString);
+                return parsedAllowlist;
+            } catch (Exception e) {
+                Slog.e(TAG, "Cannot parse agent allowlist from config: " + allowlistString, e);
+            }
+        }
+        List<SignedPackage> stored = mAgentAllowlistStorage.readPreviousValidAllowlist();
+        if (stored != null) {
+            Slog.i(TAG, "Using previously stored valid allowlist.");
+            return stored;
+        }
+        Slog.i(TAG, "No valid stored allowlist, falling back to static list.");
+        return readPreloadedAgentAllowlist();
+    }
+
+    @NonNull
+    private List<SignedPackage> readPreloadedAgentAllowlist() {
+        final String[] preloadedAllowlistArray =
+                mContext.getResources()
+                        .getStringArray(
+                                com.android.internal.R.array
+                                        .config_defaultAppFunctionAgentAllowlist);
+        if (preloadedAllowlistArray.length == 0) {
+            return Collections.emptyList();
+        }
+        final String preloadedAllowlistString = String.join(";", preloadedAllowlistArray);
         try {
-            List<SignedPackage> parsedAllowlist = SignedPackageParser.parseList(allowlistString);
-            mAgentAllowlistStorage.writeCurrentAllowlist(allowlistString);
-            return parsedAllowlist;
+            return SignedPackageParser.parseList(preloadedAllowlistString);
         } catch (Exception e) {
-            Slog.e(TAG, "Cannot parse agent allowlist from config: " + allowlistString, e);
-            return mAgentAllowlistStorage.readPreviousValidAllowlist();
+            Slog.e(TAG, "Cannot parse preloaded allowlist: " + preloadedAllowlistString, e);
+            return Collections.emptyList();
         }
     }
 
@@ -757,8 +786,6 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
             return Collections.emptyList();
         }
     }
-
-
     private boolean accessCheckFlagsEnabled() {
         return android.permission.flags.Flags.appFunctionAccessApiEnabled()
                 && android.permission.flags.Flags.appFunctionAccessServiceEnabled();

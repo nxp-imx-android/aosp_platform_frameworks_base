@@ -14,8 +14,8 @@
 package com.android.systemui.plugins.annotations
 
 /**
- * This annotation marks denotes that an interface should use a proxy layer to protect the plugin
- * host from crashing due to the [Exception] types originating within the plugin's implementation.
+ * This annotation denotes that an interface should use a proxy layer to protect the plugin host
+ * from crashing due to the [Exception] types originating within the plugin's implementation.
  */
 @Target(AnnotationTarget.CLASS)
 @Retention(AnnotationRetention.BINARY)
@@ -24,6 +24,16 @@ annotation class ProtectedInterface(vararg val exTypes: String) {
         val Default = ProtectedInterface("java.lang.Exception", "java.lang.LinkageError")
     }
 }
+
+/**
+ * This annotation denotes an interface that serves as a base-type for other interfaces marked by
+ * [Protectedinterface]. Annotating an interface with this will not generate a proxy implementation,
+ * instead it will generate a static builder method that is used to select the appropriate proxy
+ * implementation for a target object.
+ */
+@Target(AnnotationTarget.CLASS)
+@Retention(AnnotationRetention.BINARY)
+annotation class ProtectedBaseInterface
 
 /**
  * This annotation specifies any additional imports that the processor will require when generating

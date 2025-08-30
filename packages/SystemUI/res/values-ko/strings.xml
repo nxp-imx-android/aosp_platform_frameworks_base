@@ -146,17 +146,12 @@
     <string name="screen_record_retake" msgid="3846643688365398450">"다시 촬영"</string>
     <string name="screen_record_edit" msgid="8733014191240769309">"수정"</string>
     <string name="screen_record_delete" msgid="1023421937978254537">"삭제"</string>
-    <!-- no translation found for screen_record_play (4732544724679889445) -->
-    <skip />
-    <!-- no translation found for screen_record_pause (1715012292444967776) -->
-    <skip />
-    <!-- no translation found for screen_record_mute (8111682249858638168) -->
-    <skip />
-    <!-- no translation found for screen_record_unmute (2207912659365156472) -->
-    <skip />
+    <string name="screen_record_play" msgid="4732544724679889445">"재생"</string>
+    <string name="screen_record_pause" msgid="1715012292444967776">"일시중지"</string>
+    <string name="screen_record_mute" msgid="8111682249858638168">"음소거"</string>
+    <string name="screen_record_unmute" msgid="2207912659365156472">"음소거 해제"</string>
     <string name="screen_capture_fullscreen_screenshot_button" msgid="3173749413928507877">"전체 화면 스크린샷 찍기"</string>
-    <!-- no translation found for screen_capture_fullscreen_record_button (5697594296042198690) -->
-    <skip />
+    <string name="screen_capture_fullscreen_record_button" msgid="5697594296042198690">"전체 화면 녹화"</string>
     <string name="screen_capture_region_selection_button" msgid="515608875142444130">"선택한 영역의 스크린샷 찍기"</string>
     <string name="screen_capture_record_region_selection_button" msgid="3699353194755563053">"선택한 영역 녹화"</string>
     <string name="screen_capture_toolbar_screenshot_button" msgid="5676585348709494125">"스크린샷"</string>
@@ -689,8 +684,9 @@
     <string name="notification_section_header_conversations" msgid="821834744538345661">"대화"</string>
     <string name="accessibility_notification_section_header_gentle_clear_all" msgid="6490207897764933919">"무음 알림 모두 삭제"</string>
     <string name="accessibility_notification_section_header_open_settings" msgid="6235202417954844004">"알림 설정 열기"</string>
-    <string name="dnd_suppressing_shade_text" msgid="5588252250634464042">"방해 금지 모드로 알림이 일시중지됨"</string>
     <string name="modes_suppressing_shade_text" msgid="6037581130837903239">"{count,plural,offset:1 =0{알림 없음}=1{{mode} 모드로 인해 알림이 일시중지되었습니다.}=2{{mode} 및 다른 모드로 인해 알림이 일시중지되었습니다.}other{{mode} 및 다른 모드 #개로 인해 알림이 일시중지되었습니다.}}"</string>
+    <!-- no translation found for caught_up_shade_text (8166221989384139659) -->
+    <skip />
     <string name="media_projection_action_text" msgid="3634906766918186440">"시작하기"</string>
     <string name="empty_shade_text" msgid="8935967157319717412">"알림 없음"</string>
     <string name="no_unseen_notif_text" msgid="395512586119868682">"새로운 알림 없음"</string>
@@ -990,6 +986,8 @@
     <string name="group_system_access_notification_shade" msgid="1619028907006553677">"알림 보기"</string>
     <string name="group_system_access_quick_settings_panel" msgid="1844771096582064926">"빠른 설정 보기"</string>
     <string name="group_system_full_screenshot" msgid="5742204844232667785">"스크린샷 촬영"</string>
+    <!-- no translation found for group_system_partial_screenshot (2114314797127648010) -->
+    <skip />
     <string name="group_system_access_system_app_shortcuts" msgid="8562482996626694026">"단축키 표시"</string>
     <string name="group_system_go_back" msgid="2730322046244918816">"돌아가기"</string>
     <string name="group_system_access_home_screen" msgid="4130366993484706483">"홈 화면으로 이동"</string>
@@ -1014,8 +1012,7 @@
     <string name="system_desktop_mode_snap_right_window" msgid="2162560187639411929">"창을 오른쪽으로 이동"</string>
     <string name="system_desktop_mode_toggle_maximize_window" msgid="4084100093691768239">"창 최대화"</string>
     <string name="system_desktop_mode_minimize_window" msgid="1248714536732927092">"창 최소화"</string>
-    <!-- no translation found for system_desktop_mode_close_window (3072490692608682536) -->
-    <skip />
+    <string name="system_desktop_mode_close_window" msgid="3072490692608682536">"현재 창 닫기"</string>
     <string name="system_multiple_desktop_mode_switch_between_desks" msgid="6093884593003003708">"데스크톱 간에 이동"</string>
     <string name="keyboard_shortcut_group_input" msgid="6888282716546625610">"입력"</string>
     <string name="input_switch_input_language_next" msgid="3782155659868227855">"다음 언어로 전환"</string>
@@ -1137,12 +1134,19 @@
     <string name="accessibility_key_gesture_dialog_title" msgid="7614965716626605518">"<xliff:g id="ID_1">%1$s</xliff:g> 기능을 사용 설정하시겠습니까?"</string>
     <string name="accessibility_key_gesture_dialog_content" msgid="4519838108423437794">"작업 "<annotation id="action_key_icon">"아이콘"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> 키는 <xliff:g id="ID_3">^3</xliff:g> 기능을 사용할 수 있는 단축키입니다. <xliff:g id="ID_4">^4</xliff:g>"</string>
     <string name="accessibility_key_gesture_dialog_talkback_intro" msgid="1617808784388544741">"<xliff:g id="ID_1">%1$s</xliff:g>은 항목을 소리 내어 읽어 주는 스크린 리더입니다. 이 기능은 화면을 보기 어려운 사용자에게 도움을 줄 수 있습니다."</string>
-    <string name="accessibility_key_gesture_dialog_va_intro" msgid="4709198503441288289">"<xliff:g id="ID_1">%1$s</xliff:g>를 사용하면 핸즈프리로 기기를 제어할 수 있습니다."</string>
     <string name="accessibility_key_gesture_dialog_positive_button_text" msgid="3670746017523589293">"사용 설정"</string>
     <string name="accessibility_key_gesture_magnification_dialog_title" msgid="5770691510738701250">"<xliff:g id="ID_1">%1$s</xliff:g> 단축키 사용 설정됨"</string>
     <string name="accessibility_key_gesture_magnification_dialog_content" msgid="7575802369763469379">"작업 "<annotation id="action_key_icon">"아이콘"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> 키는 <xliff:g id="ID_3">^3</xliff:g> 기능을 사용할 수 있는 단축키입니다. 이를 통해 화면을 빠르게 확대하여 콘텐츠를 더 크게 표시할 수 있습니다. 확대/축소를 조정하려면 작업 "<annotation id="action_key_icon">"아이콘"</annotation>" + <xliff:g id="ID_4">^1</xliff:g> 및 \'+\' 또는 \'-\'를 누르세요."</string>
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"단축키 사용 중지"</string>
     <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"계속 사용"</string>
+    <!-- no translation found for accessibility_key_gesture_voice_access_dialog_title (7828090789777023683) -->
+    <skip />
+    <!-- no translation found for accessibility_key_gesture_voice_access_dialog_content (7934170819801013870) -->
+    <skip />
+    <!-- no translation found for accessibility_key_gesture_voice_access_dialog_negative_button_text (3573570279554465078) -->
+    <skip />
+    <!-- no translation found for accessibility_key_gesture_voice_access_dialog_positive_button_text (2306321856544446858) -->
+    <skip />
     <string name="tuner_lock_screen" msgid="2267383813241144544">"잠금 화면"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"종료 중…"</string>
     <string name="thermal_shutdown_dialog_help_text" msgid="6413474593462902901">"해결 방법 확인하기"</string>

@@ -15,6 +15,7 @@
  */
 package com.android.internal.widget.remotecompose.player.platform;
 
+
 import static com.android.internal.widget.remotecompose.core.RemoteClock.nanoTime;
 
 import android.annotation.NonNull;
@@ -51,6 +52,7 @@ import java.util.Set;
  * <p>Its role is to paint a document as an AndroidView as well as handling user interactions
  * (touch/click).
  */
+
 public class RemoteComposeView extends FrameLayout implements View.OnAttachStateChangeListener {
 
     static final boolean USE_VIEW_AREA_CLICK = true; // Use views to represent click areas
@@ -178,6 +180,7 @@ public class RemoteComposeView extends FrameLayout implements View.OnAttachState
      *
      * @param value The {@link RemoteComposeDocument} to set.
      */
+    @SuppressWarnings("ReferenceEquality") // newClock != mClock
     public void setDocument(@NonNull RemoteComposeDocument value) {
         Clock newClock = value.getClock();
         if (newClock != mClock) {
@@ -560,7 +563,6 @@ public class RemoteComposeView extends FrameLayout implements View.OnAttachState
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         int index = event.getActionIndex();
-        int action = event.getActionMasked();
         int pointerId = event.getPointerId(index);
         if (USE_VIEW_AREA_CLICK && mHasClickAreas) {
             return super.onTouchEvent(event);

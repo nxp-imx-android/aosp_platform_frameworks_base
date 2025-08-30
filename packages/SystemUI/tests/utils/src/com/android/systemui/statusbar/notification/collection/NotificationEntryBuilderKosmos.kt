@@ -143,15 +143,26 @@ fun Kosmos.buildNotificationEntry(
         .also { setIconPackWithMockIconViews(it) }
 
 fun Kosmos.buildSummaryNotificationEntry(
-    block: NotificationEntryBuilder.() -> Unit = {}
-): NotificationEntry = buildNotificationEntry {
-    modifyNotification(applicationContext).setGroupSummary(true).setGroup("groupId")
-    updateRanking { it.setChannel(NotificationChannel("channel", "Channel", IMPORTANCE_HIGH)) }
-    updateSbn {
-        setTag("summary")
-        setGroup(applicationContext, "groupId")
+    children: List<NotificationEntry>? = null,
+    block: NotificationEntryBuilder.() -> Unit = {},
+): NotificationEntry {
+    val entry = buildNotificationEntry {
+        modifyNotification(applicationContext).setGroupSummary(true).setGroup("groupId")
+        updateRanking { it.setChannel(NotificationChannel("channel", "Channel", IMPORTANCE_HIGH)) }
+        updateSbn {
+            setTag("summary")
+            setGroup(applicationContext, "groupId")
+        }
+        val groupEntryBuilder = GroupEntryBuilder()
+        children?.forEach {
+            groupEntryBuilder.addChild(it)
+            it.sbn.overrideGroupKey = "groupId"
+        }
+        setParent(groupEntryBuilder.build())
+        apply(block)
     }
-    apply(block)
+    (entry.parent as? GroupEntry)?.summary = entry
+    return entry
 }
 
 fun Kosmos.buildChildNotificationEntry(

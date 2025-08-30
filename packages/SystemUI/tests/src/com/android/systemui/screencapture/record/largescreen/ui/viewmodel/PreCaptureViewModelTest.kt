@@ -37,6 +37,10 @@ import com.android.systemui.lifecycle.activateIn
 import com.android.systemui.res.R
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureUiState
 import com.android.systemui.screencapture.data.repository.screenCaptureUiRepository
+import com.android.systemui.screenrecord.ScreenRecordingAudioSource
+import com.android.systemui.screenrecord.domain.ScreenRecordingParameters
+import com.android.systemui.screenrecord.domain.interactor.ScreenRecordingServiceInteractor
+import com.android.systemui.screenrecord.domain.interactor.screenRecordingServiceInteractor
 import com.android.systemui.screenshot.mockImageCapture
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
@@ -64,10 +68,13 @@ class PreCaptureViewModelTest : SysuiTestCase() {
     private val viewModel: PreCaptureViewModel by lazy {
         kosmos.preCaptureViewModelFactory.create(displayId)
     }
+    @Mock
+    private lateinit var mockScreenRecordingServiceInteractor: ScreenRecordingServiceInteractor
 
     @Before
     fun setUp() {
         MockitoAnnotations.openMocks(this)
+        kosmos.screenRecordingServiceInteractor = mockScreenRecordingServiceInteractor
         viewModel.activateIn(testScope)
     }
 
@@ -211,6 +218,26 @@ class PreCaptureViewModelTest : SysuiTestCase() {
             assertThat(capturedRequest.bitmap).isEqualTo(mockBitmap)
             assertThat(capturedRequest.boundsInScreen).isEqualTo(regionBox)
             assertThat(capturedRequest.displayId).isEqualTo(displayId)
+        }
+
+    @Test
+    fun beginCapture_forFullScreenRecording_startsRecordingWithCorrectParameters() =
+        kosmos.runTest {
+            viewModel.updateCaptureType(ScreenCaptureType.SCREEN_RECORD)
+            viewModel.updateCaptureRegion(ScreenCaptureRegion.FULLSCREEN)
+
+            viewModel.beginCapture()
+
+            val paramsCaptor = argumentCaptor<ScreenRecordingParameters>()
+            verify(mockScreenRecordingServiceInteractor, times(1))
+                .startRecording(paramsCaptor.capture())
+            val capturedParams = paramsCaptor.lastValue
+            with(capturedParams) {
+                assertThat(captureTarget).isNull()
+                assertThat(audioSource).isEqualTo(ScreenRecordingAudioSource.INTERNAL)
+                assertThat(this.displayId).isEqualTo(displayId)
+                assertThat(shouldShowTaps).isFalse()
+            }
         }
 
     @Test

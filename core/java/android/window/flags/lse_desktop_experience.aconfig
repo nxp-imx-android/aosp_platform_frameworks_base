@@ -975,6 +975,16 @@ flag {
 }
 
 flag {
+    name: "enable_external_display_persistence_bugfix"
+    namespace: "lse_desktop_experience"
+    description: "Enables bugfix for desktop persistence on external displays."
+    bug: "437420625"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "enable_freeform_box_shadows"
     namespace: "lse_desktop_experience"
     description: "Enables box shadows for freeform windows."
@@ -1241,6 +1251,16 @@ flag {
     namespace: "lse_desktop_experience"
     description: "Enables per-display package context caching in StatusBarNotification"
     bug: "388886443"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
+    name: "enable_per_display_window_decor_view_host_pool"
+    namespace: "lse_desktop_experience"
+    description: "Enables per-display WindowDecoration ViewHost pooling"
+    bug: "440247561"
     metadata {
         purpose: PURPOSE_BUGFIX
     }
@@ -1802,6 +1822,16 @@ flag {
     namespace: "lse_desktop_experience"
     description: "Re-enables the app handle animations"
     bug: "412647178"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
+    name: "reenable_app_handle_color_animations"
+    namespace: "lse_desktop_experience"
+    description: "Re-enables the app handle color animations"
+    bug: "441497981"
     metadata {
         purpose: PURPOSE_BUGFIX
     }

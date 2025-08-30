@@ -98,6 +98,8 @@ public abstract class PerfettoProtoLogImpl extends IProtoLogClient.Stub implemen
         TracingInstanceStartCallback, TracingInstanceStopCallback, TracingFlushCallback {
     private static final String LOG_TAG = "ProtoLog";
     public static final String NULL_STRING = "null";
+    @VisibleForTesting
+    public static int MAX_INTERNED_STRINGS_SIZE_BYTES_BEFORE_RESET = 4 * 1024 * 1024; // 4MB
     private final AtomicInteger mTracingInstances = new AtomicInteger();
 
     @NonNull
@@ -726,6 +728,18 @@ public abstract class PerfettoProtoLogImpl extends IProtoLogClient.Stub implemen
             @NonNull IProtoLogGroup logGroup, @NonNull String message) {
         final ProtoLogDataSource.IncrementalState incrementalState = ctx.getIncrementalState();
 
+        final Long messageHash = hash(level, logGroup.name(), message);
+
+        if (android.tracing.Flags.protologAutoClearIncrementalState()
+                && !incrementalState.protologMessageInterningSet.contains(messageHash)) {
+            final boolean sizeThresholdReached =
+                    incrementalState.internedStringsSizeBytes + message.length()
+                            >= MAX_INTERNED_STRINGS_SIZE_BYTES_BEFORE_RESET;
+            if (sizeThresholdReached) {
+                incrementalState.reset();
+            }
+        }
+
         if (!incrementalState.clearReported) {
             final ProtoOutputStream os = ctx.newTracePacket(8);
             os.write(SEQUENCE_FLAGS, SEQ_INCREMENTAL_STATE_CLEARED);
@@ -748,9 +762,9 @@ public abstract class PerfettoProtoLogImpl extends IProtoLogClient.Stub implemen
             os.end(protologViewerConfigToken);
         }
 
-        final Long messageHash = hash(level, logGroup.name(), message);
         if (!incrementalState.protologMessageInterningSet.contains(messageHash)) {
             incrementalState.protologMessageInterningSet.add(messageHash);
+            incrementalState.internedStringsSizeBytes += message.length();
 
             final ProtoOutputStream os = ctx.newTracePacket(128);
 
@@ -825,6 +839,16 @@ public abstract class PerfettoProtoLogImpl extends IProtoLogClient.Stub implemen
     ) {
         final ProtoLogDataSource.IncrementalState incrementalState = ctx.getIncrementalState();
 
+        if (android.tracing.Flags.protologAutoClearIncrementalState()
+                && !internMap.containsKey(string)) {
+            final boolean sizeThresholdReached =
+                    incrementalState.internedStringsSizeBytes + string.length()
+                            >= MAX_INTERNED_STRINGS_SIZE_BYTES_BEFORE_RESET;
+            if (sizeThresholdReached) {
+                incrementalState.reset();
+            }
+        }
+
         if (!incrementalState.clearReported) {
             final ProtoOutputStream os = ctx.newTracePacket(8);
             os.write(SEQUENCE_FLAGS, SEQ_INCREMENTAL_STATE_CLEARED);
@@ -834,6 +858,7 @@ public abstract class PerfettoProtoLogImpl extends IProtoLogClient.Stub implemen
         if (!internMap.containsKey(string)) {
             final int internedIndex = internMap.size() + 1;
             internMap.put(string, internedIndex);
+            incrementalState.internedStringsSizeBytes += string.length();
 
             final ProtoOutputStream os = ctx.newTracePacket(64);
             final long token = os.start(INTERNED_DATA);

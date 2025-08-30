@@ -2964,6 +2964,18 @@
      during initialization when the setting is still null. -->
     <bool name="config_dozePickupGestureEnabled">true</bool>
 
+    <!-- Control whether doze is enabled by default. This value will be used during initialization
+     when the setting is still null. -->
+    <bool name="config_dozeEnabled">true</bool>
+
+    <!-- Control whether the single tap gesture is enabled by default. This value will be used
+     during initialization when the setting is still null. -->
+    <bool name="config_dozeTapGestureEnabled">true</bool>
+
+    <!-- Control whether the double tap gesture is enabled by default. This value will be used
+     during initialization when the setting is still null. -->
+    <bool name="config_dozeDoubleTapGestureEnabled">true</bool>
+
     <!-- Control whether the always on display mode is enabled by default. This value will be used
          during initialization when the setting is still null. -->
     <bool name="config_dozeAlwaysOnEnabled">true</bool>

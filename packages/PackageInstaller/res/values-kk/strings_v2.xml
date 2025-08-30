@@ -80,21 +80,21 @@
     <string name="message_uninstall_work_profile" msgid="224587253086750763">"Бұл қолданба жұмыс профилінен жойылады"</string>
     <string name="message_uninstall_private_space" msgid="2815872500665141251">"Бұл қолданба құпия кеңістіктен жойылады"</string>
     <string name="message_uninstall_app_not_found" msgid="1228396155188846293">"Бұл қолданба орнатылған қолданбалар тізімінен табылмады немесе әлдеқашан жойылған"</string>
-    <string name="message_uninstall_user_not_allowed" msgid="4812707444447008148">"Ағымдағы пайдаланушының бұл жою әрекетін орындауына рұқсат берілмеген"</string>
+    <string name="message_uninstall_user_not_allowed" msgid="4812707444447008148">"Берілген пайдаланушыға бұл қолданбаны жоюға рұқсат берілмеген."</string>
     <string name="message_uninstall_failed" msgid="4678598986902459187">"Бұл қолданба жойылмады"</string>
     <string name="message_uninstall_keep_data" msgid="3955153594868206983">"Қолданба деректерін сақтау"</string>
-    <string name="message_archive" msgid="943853731737315850">"Қолданба деректері сақталады"</string>
-    <string name="message_archive_all_users" msgid="4664139369764501351">"Барлық қолданба дерегі сақталады"</string>
+    <string name="message_archive" msgid="943853731737315850">"Қолданба дерегі сақталады."</string>
+    <string name="message_archive_all_users" msgid="4664139369764501351">"Барлық қолданба дерегі сақталады."</string>
     <string name="message_archive_other_user" msgid="6465828676043191175">"Қолданба деректері сақталады"</string>
     <string name="message_archive_work_profile" msgid="7601504268820630858">"Бұл қолданба жұмыс профилінен мұрағатталады. Қолданба деректері сақталады."</string>
     <string name="message_archive_private_space" msgid="4873651645762576624">"Бұл қолданба құпия кеңістіктен мұрағатталады. Қолданба деректері сақталады."</string>
-    <string name="message_restore" msgid="8402726798623569969">"Бұл қолданба <xliff:g id="INSTALLER_NAME">%1$s</xliff:g> орнату құралынан фонда жүктеп алады"</string>
-    <string name="message_restore_error_user_action_needed" msgid="2206904734076205208">"Бұл қолданбаны қалпына келтіру үшін <xliff:g id="INSTALLER_NAME">%1$s</xliff:g> орнату құралына қосымша ақпарат қажет"</string>
-    <string name="message_restore_error_less_storage" msgid="4945507738776981462">"Бұл қолданбаны қалпына келтіру үшін &lt;b&gt;<xliff:g id="BYTES">%1$s</xliff:g>&lt;/b&gt; босатып, әрекетті қайталаңыз"</string>
-    <string name="message_restore_error_offline" msgid="4212551781323276126">"Бұл қолданбаны қалпына келтіру үшін интернет байланысын тексеріп, әрекетті қайталаңыз"</string>
-    <string name="message_restore_error_installer_disabled" msgid="1089791898782445342">"Бұл қолданбаны қалпына келтіру үшін параметрлерден <xliff:g id="INSTALLERNAME">%1$s</xliff:g> орнату құралын қосыңыз"</string>
-    <string name="message_restore_error_installer_absent" msgid="8492838251989389724">"Бұл қолданбаны қалпына келтіру үшін <xliff:g id="INSTALLER_NAME">%1$s</xliff:g> орнату құралын орнатуыңыз керек"</string>
-    <string name="message_restore_error_generic" msgid="5903850636679929406">"Бұл қолданбаны қалпына келтіру кезінде мәселе орын алды"</string>
+    <string name="message_restore" msgid="8402726798623569969">"Бұл қолданба <xliff:g id="INSTALLER_NAME">%1$s</xliff:g> құралынан фонда жүктеп алынады."</string>
+    <string name="message_restore_error_user_action_needed" msgid="2206904734076205208">"Бұл қолданбаны қалпына келтіру үшін <xliff:g id="INSTALLER_NAME">%1$s</xliff:g> құралына қосымша ақпарат қажет."</string>
+    <string name="message_restore_error_less_storage" msgid="4945507738776981462">"Бұл қолданбаны қалпына келтіру үшін &lt;b&gt;<xliff:g id="BYTES">%1$s</xliff:g>&lt;/b&gt; босатып, әрекетті қайталаңыз."</string>
+    <string name="message_restore_error_offline" msgid="4212551781323276126">"Бұл қолданбаны қалпына келтіру үшін интернет байланысын тексеріп, әрекетті қайталаңыз."</string>
+    <string name="message_restore_error_installer_disabled" msgid="1089791898782445342">"Бұл қолданбаны қалпына келтіру үшін параметрлерден <xliff:g id="INSTALLERNAME">%1$s</xliff:g> құралын қосыңыз."</string>
+    <string name="message_restore_error_installer_absent" msgid="8492838251989389724">"Бұл қолданбаны қалпына келтіру үшін <xliff:g id="INSTALLER_NAME">%1$s</xliff:g>  орнатуыңыз керек."</string>
+    <string name="message_restore_error_generic" msgid="5903850636679929406">"Бұл қолданбаны қалпына келтіру мүмкін болмады."</string>
     <string name="message_uninstall_activity" msgid="3263352475743590167">"<xliff:g id="ACTIVITY_NAME">%1$s</xliff:g> – келесі қолданбаның бір бөлігі: <xliff:g id="APP_NAME">%2$s</xliff:g>"</string>
     <!-- no translation found for cannot_install_app_blocked_summary (5439893912308217959) -->
     <skip />

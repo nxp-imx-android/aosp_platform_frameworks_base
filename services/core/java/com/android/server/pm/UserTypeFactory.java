@@ -76,20 +76,6 @@ public final class UserTypeFactory {
 
     private static final String LOG_TAG = "UserTypeFactory";
 
-    /**
-     * Default max number of secondary users allowed on the device at once. The same value is used
-     * for some other switchable user types too. Can override this by changing the number
-     * here or in {@link com.android.internal.R.xml#config_user_types}.
-     */
-    private static final int DEFAULT_MAX_ALLOWED_SWITCHABLE_USERS =
-            // For convenience, the default is tied to getMaxSwitchableUsers().
-            // Switchable users will be capped by the switchable limit anyway (in fact,
-            // they'll generally be capped at it minus 1), so this ensures that the
-            // switchable limit will serve as the limiting factor unless otherwise dictated.
-            android.multiuser.Flags.decoupleMaxUsersFromProfiles() ? getMaxSwitchableUsers() -1 :
-                    (android.multiuser.Flags.consistentMaxUsers() ?
-                            3 : UserTypeDetails.getLegacyUnlimitedNumberOfUsersValue());
-
     /** This is a utility class, so no instantiable constructor. */
     private UserTypeFactory() {}
 
@@ -143,7 +129,7 @@ public final class UserTypeFactory {
         return new UserTypeDetails.Builder()
                 .setName(USER_TYPE_PROFILE_CLONE)
                 .setBaseType(FLAG_PROFILE)
-                .setMaxAllowed(DEFAULT_MAX_ALLOWED_SWITCHABLE_USERS)
+                .setMaxAllowed(getDefaultMaxAllowedSwitchableUsers())
                 .setMaxAllowedPerParent(1)
                 .setProfileParentRequired(true)
                 .setLabels(R.string.profile_label_clone)
@@ -395,7 +381,7 @@ public final class UserTypeFactory {
         return new UserTypeDetails.Builder()
                 .setName(USER_TYPE_FULL_SECONDARY)
                 .setBaseType(FLAG_FULL)
-                .setMaxAllowed(DEFAULT_MAX_ALLOWED_SWITCHABLE_USERS)
+                .setMaxAllowed(getDefaultMaxAllowedSwitchableUsers())
                 .setDefaultRestrictions(getDefaultSecondaryUserRestrictions());
     }
 
@@ -441,7 +427,7 @@ public final class UserTypeFactory {
                 .setName(USER_TYPE_FULL_RESTRICTED)
                 .setBaseType(FLAG_FULL)
                 .setDefaultUserInfoPropertyFlags(FLAG_RESTRICTED)
-                .setMaxAllowed(DEFAULT_MAX_ALLOWED_SWITCHABLE_USERS)
+                .setMaxAllowed(getDefaultMaxAllowedSwitchableUsers())
                 .setProfileParentRequired(false) // they have a "parent", but not a profile parent
                 // NB: UserManagerService.createRestrictedProfile() applies hardcoded restrictions.
                 .setDefaultRestrictions(null);
@@ -567,6 +553,25 @@ public final class UserTypeFactory {
         // mark them as setup.
         settings.putString(android.provider.Settings.Secure.USER_SETUP_COMPLETE, "1");
         return settings;
+    }
+
+    /**
+     * Returns the default max number of secondary users allowed on the device at once. The same
+     * value is used for some other switchable user types too. Can override this by changing the
+     * number here or in {@link com.android.internal.R.xml#config_user_types}.
+     */
+    // NB: Although this should naturally be a static final int, doing so causes tricky mock test
+    //  failures (since a static constant may first be evaluated during a test that modifies one of
+    //  the underlying values, and will then be wrong for subsequent tests). So we make it a method.
+    //  Once the flags are cleaned up, we can inline it as getMaxSwitchableUsers() - 1 if desired.
+    private static int getDefaultMaxAllowedSwitchableUsers() {
+        // For convenience, the default is tied to getMaxSwitchableUsers().
+        // Switchable users will be capped by the switchable limit anyway (in fact,
+        // they'll generally be capped at it minus 1), so this ensures that the
+        // switchable limit will serve as the limiting factor unless otherwise dictated.
+        return android.multiuser.Flags.decoupleMaxUsersFromProfiles() ? getMaxSwitchableUsers() - 1
+                : (android.multiuser.Flags.consistentMaxUsers() ?
+                        3 : UserTypeDetails.getLegacyUnlimitedNumberOfUsersValue());
     }
 
     /**

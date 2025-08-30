@@ -179,7 +179,7 @@ public final class ShadeTouchableRegionManager implements Dumpable {
             if (StatusBarForDesktop.isEnabled()) {
                 javaAdapter.alwaysCollectFlow(shadeModeInteractor.get().getShadeMode(),
                         this::onShadeModeChanged);
-                javaAdapter.alwaysCollectFlow(desktopInteractor.get().isDesktopFeatureSetEnabled(),
+                javaAdapter.alwaysCollectFlow(desktopInteractor.get().getUseDesktopStatusBar(),
                         this::onDesktopStatusBarStateChanged);
             }
         } else {
@@ -227,7 +227,7 @@ public final class ShadeTouchableRegionManager implements Dumpable {
         final boolean isDualShadeEnabled = mode.equals(ShadeMode.dual());
         final boolean desktopStatusBarEnabled = StatusBarForDesktop.isEnabled()
                 && isDualShadeEnabled
-                && mDesktopInteractorProvider.get().isDesktopFeatureSetEnabled().getValue();
+                && mDesktopInteractorProvider.get().getUseDesktopStatusBar().getValue();
 
         if (mIsDesktopStatusBarEnabled == desktopStatusBarEnabled) {
             return;

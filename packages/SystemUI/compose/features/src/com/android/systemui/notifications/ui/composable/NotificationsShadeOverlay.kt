@@ -16,11 +16,17 @@
 
 package com.android.systemui.notifications.ui.composable
 
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.blur
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.dimensionResource
 import com.android.compose.animation.scene.ContentScope
 import com.android.compose.animation.scene.ElementKey
@@ -29,7 +35,6 @@ import com.android.compose.animation.scene.UserActionResult
 import com.android.compose.lifecycle.DisposableEffectWithLifecycle
 import com.android.internal.jank.InteractionJankMonitor
 import com.android.systemui.dagger.SysUISingleton
-import com.android.systemui.keyguard.ui.viewmodel.KeyguardClockViewModel
 import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.media.remedia.ui.compose.Media
 import com.android.systemui.media.remedia.ui.compose.MediaPresentationStyle
@@ -56,7 +61,6 @@ constructor(
     private val contentViewModelFactory: NotificationsShadeOverlayContentViewModel.Factory,
     private val shadeSession: SaveableSession,
     private val stackScrollView: Lazy<NotificationScrollView>,
-    private val keyguardClockViewModel: KeyguardClockViewModel,
     private val jankMonitor: InteractionJankMonitor,
 ) : Overlay {
     override val key = Overlays.NotificationsShade
@@ -92,11 +96,18 @@ constructor(
 
         val isFullWidth = isFullWidthShade()
 
+        val targetBlurRadiusPx: Float by
+            remember(layoutState) {
+                derivedStateOf { viewModel.calculateTargetBlurRadius(layoutState.transitionState) }
+            }
+        val animatedBlurRadiusPx: Float by
+            animateFloatAsState(targetValue = targetBlurRadiusPx, label = "NSOverlay-blurRadius")
+
         OverlayShade(
             panelElement = NotificationsShade.Elements.Panel,
             alignmentOnWideScreens = viewModel.alignmentOnWideScreens,
             enableTransparency = viewModel.isTransparencyEnabled,
-            modifier = modifier,
+            modifier = modifier.blur(with(LocalDensity.current) { animatedBlurRadiusPx.toDp() }),
             onScrimClicked = viewModel::onScrimClicked,
             onBackgroundPlaced = { bounds, _, _ -> viewModel.onShadeOverlayBoundsChanged(bounds) },
             header = {

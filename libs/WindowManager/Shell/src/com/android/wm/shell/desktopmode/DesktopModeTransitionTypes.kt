@@ -50,6 +50,9 @@ object DesktopModeTransitionTypes {
     /** Transition type to animate the minimization triggered when reaching the task limit. */
     const val TRANSIT_DESKTOP_MODE_TASK_LIMIT_MINIMIZE = TRANSIT_DESKTOP_MODE_TYPES + 13
 
+    /** Transition type to animate desk switches within the same display. */
+    const val TRANSIT_DESKTOP_MODE_DESK_TO_DESK_SWITCH = TRANSIT_DESKTOP_MODE_TYPES + 14
+
     /** Return whether the [TransitionType] corresponds to a transition to enter desktop mode. */
     @JvmStatic
     fun @receiver:TransitionType Int.isEnterDesktopModeTransition(): Boolean {
@@ -113,13 +116,14 @@ object DesktopModeTransitionTypes {
      * string.
      */
     @JvmStatic
-    fun transitTypeToString(transitType: Int): String =
+    fun transitTypeToString(transitType: Int?): String =
         when (transitType) {
             TRANSIT_DESKTOP_MODE_START_DRAG_TO_DESKTOP -> "DESKTOP_MODE_START_DRAG_TO_DESKTOP"
             TRANSIT_DESKTOP_MODE_END_DRAG_TO_DESKTOP -> "DESKTOP_MODE_END_DRAG_TO_DESKTOP"
             TRANSIT_DESKTOP_MODE_CANCEL_DRAG_TO_DESKTOP -> "DESKTOP_MODE_CANCEL_DRAG_TO_DESKTOP"
             TRANSIT_DESKTOP_MODE_TOGGLE_RESIZE -> "DESKTOP_MODE_TOGGLE_RESIZE"
             TRANSIT_DESKTOP_MODE_TASK_LIMIT_MINIMIZE -> "DESKTOP_MODE_TASK_LIMIT_MINIMIZE"
+            TRANSIT_DESKTOP_MODE_DESK_TO_DESK_SWITCH -> "DESKTOP_MODE_DESK_TO_DESK_SWITCH"
             else -> ""
         }
 }

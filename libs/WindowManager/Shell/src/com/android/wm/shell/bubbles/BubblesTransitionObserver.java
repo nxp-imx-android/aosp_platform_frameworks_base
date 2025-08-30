@@ -155,6 +155,14 @@ public class BubblesTransitionObserver implements Transitions.TransitionObserver
                     + "task %d is our bubble so skip collapsing", taskId);
             return true;
         }
+
+        // If the opening tasks contains the bubble root task, skip collapsing.
+        if (mBubbleController.isAppBubbleRootTask(taskId)) {
+            ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "BubblesTransitionObserver.onTransitionReady(): "
+                    + "task %d is the root task so skip collapsing", taskId);
+            return true;
+        }
+
         return false;
     }
 

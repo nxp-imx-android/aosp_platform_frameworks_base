@@ -411,8 +411,8 @@ constructor(
                         unlockStatus.isUnlocked &&
                             deviceEntryInteractor.canSwipeToEnter.value == false -> {
                             val loggingReason =
-                                "All SIM cards unlocked and device already unlocked and " +
-                                    "lockscreen doesn't require a swipe to dismiss."
+                                "All SIM cards unlocked and device already unlocked and" +
+                                        " lockscreen doesn't require a swipe to dismiss."
                             switchToScene(
                                 targetSceneKey = Scenes.Gone,
                                 loggingReason = loggingReason,
@@ -539,6 +539,7 @@ constructor(
                                             HideOverlayCommand.HideAll
                                         },
                                     loggingReason = loggingReason,
+                                    instantlySnapScenes = true,
                                 )
                             } else {
                                 if (previousScene.value != Scenes.Gone) {
@@ -549,6 +550,7 @@ constructor(
                                     loggingReason =
                                         "device was unlocked with primary bouncer" +
                                             " showing, from sceneKey=${targetScene.debugName}",
+                                    instantlySnapScenes = true,
                                 )
                             }
                         }
@@ -590,6 +592,7 @@ constructor(
                                 targetSceneKey = command.targetSceneKey,
                                 hideOverlays = command.hideOverlays,
                                 loggingReason = command.loggingReason,
+                                instantlySnapScenes = command.instantlySnapScenes,
                             )
                         }
                         is SwitchSceneCommand.NoOp -> Unit
@@ -1048,6 +1051,7 @@ constructor(
         sceneState: Any? = null,
         freezeAndAnimateToCurrentState: Boolean = false,
         hideOverlays: HideOverlayCommand = HideOverlayCommand.HideAll,
+        instantlySnapScenes: Boolean = false,
     ) {
         if (hideOverlays is HideOverlayCommand.HideSome) {
             hideOverlays.overlays.fastForEach { overlay ->
@@ -1055,13 +1059,21 @@ constructor(
             }
         }
 
-        sceneInteractor.changeScene(
-            toScene = targetSceneKey,
-            loggingReason = loggingReason,
-            sceneState = sceneState,
-            forceSettleToTargetScene = freezeAndAnimateToCurrentState,
-            hideAllOverlays = hideOverlays == HideOverlayCommand.HideAll,
-        )
+        if (instantlySnapScenes) {
+            sceneInteractor.snapToScene(
+                toScene = targetSceneKey,
+                loggingReason = loggingReason,
+                hideAllOverlays = hideOverlays == HideOverlayCommand.HideAll,
+            )
+        } else {
+            sceneInteractor.changeScene(
+                toScene = targetSceneKey,
+                loggingReason = loggingReason,
+                sceneState = sceneState,
+                forceSettleToTargetScene = freezeAndAnimateToCurrentState,
+                hideAllOverlays = hideOverlays == HideOverlayCommand.HideAll,
+            )
+        }
     }
 
     private fun hydrateBackStack() {
@@ -1160,6 +1172,7 @@ constructor(
             val targetSceneKey: SceneKey,
             val loggingReason: String,
             val hideOverlays: HideOverlayCommand = HideOverlayCommand.HideAll,
+            val instantlySnapScenes: Boolean = false,
         ) : SwitchSceneCommand
     }
 

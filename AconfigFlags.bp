@@ -132,6 +132,7 @@ aconfig_declarations_group {
         "libcore_exported_aconfig_flags_lib",
         "libcore_readonly_aconfig_flags_lib",
         "libgui_flags_java_lib",
+        "mediaprovider_exported_aconfig_flag_lib",
         "networksecurity_exported_aconfig_flags_lib",
         "power_flags_lib",
         "sdk_sandbox_exported_flags_lib",
@@ -441,6 +442,7 @@ aconfig_declarations {
     name: "android.nfc.flags-aconfig",
     package: "android.nfc",
     container: "system",
+    exportable: true,
     srcs: ["nfc-non-updatable/flags/*.aconfig"],
 }
 
@@ -461,6 +463,7 @@ java_aconfig_library {
     name: "android.nfc.flags-aconfig-java",
     aconfig_declarations: "android.nfc.flags-aconfig",
     min_sdk_version: "34",
+    mode: "exported",
     apex_available: [
         "//apex_available:platform",
         "com.android.nfcservices",
@@ -1060,6 +1063,18 @@ java_aconfig_library {
     name: "display_flags_lib",
     aconfig_declarations: "display_flags",
     defaults: ["framework-minus-apex-aconfig-java-defaults"],
+}
+
+java_aconfig_library {
+    name: "display_flags_lib-export",
+    aconfig_declarations: "display_flags",
+    defaults: ["framework-minus-apex-aconfig-java-defaults"],
+    min_sdk_version: "30",
+    mode: "exported",
+    apex_available: [
+        "//apex_available:platform",
+        "com.android.nfcservices",
+    ],
 }
 
 cc_aconfig_library {

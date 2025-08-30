@@ -317,7 +317,8 @@ public class ActivityThreadTest {
             newConfig.smallestScreenWidthDp++;
             transaction = newTransaction(activityThread);
             transaction.addTransactionItem(new ActivityConfigurationChangeItem(
-                    activity.getActivityToken(), newConfig, new ActivityWindowInfo()));
+                    activity.getActivityToken(), newConfig, new ActivityWindowInfo(),
+                    DEFAULT_DISPLAY));
             appThread.scheduleTransaction(transaction);
             InstrumentationRegistry.getInstrumentation().waitForIdleSync();
 
@@ -375,7 +376,8 @@ public class ActivityThreadTest {
             newConfig.seq++;
             transaction = newTransaction(activityThread);
             transaction.addTransactionItem(new ActivityConfigurationChangeItem(
-                    activity.getActivityToken(), newConfig, new ActivityWindowInfo()));
+                    activity.getActivityToken(), newConfig, new ActivityWindowInfo(),
+                    DEFAULT_DISPLAY));
             appThread.scheduleTransaction(transaction);
             InstrumentationRegistry.getInstrumentation().waitForIdleSync();
 
@@ -589,11 +591,13 @@ public class ActivityThreadTest {
 
         transaction = newTransaction(activityThread);
         transaction.addTransactionItem(new ActivityConfigurationChangeItem(
-                activity.getActivityToken(), activityConfigLandscape, new ActivityWindowInfo()));
-        transaction.addTransactionItem(
-                new ConfigurationChangeItem(processConfigPortrait, DEVICE_ID_INVALID));
+                activity.getActivityToken(), activityConfigLandscape, new ActivityWindowInfo(),
+                DEFAULT_DISPLAY));
+        transaction.addTransactionItem(new ConfigurationChangeItem(
+                processConfigPortrait, DEVICE_ID_INVALID));
         transaction.addTransactionItem(new ActivityConfigurationChangeItem(
-                activity.getActivityToken(), activityConfigPortrait, new ActivityWindowInfo()));
+                activity.getActivityToken(), activityConfigPortrait, new ActivityWindowInfo(),
+                DEFAULT_DISPLAY));
         appThread.scheduleTransaction(transaction);
 
         activity.mTestLatch.await(TIMEOUT_SEC, TimeUnit.SECONDS);
@@ -959,7 +963,7 @@ public class ActivityThreadTest {
             final ActivityRelaunchItem relaunchItem = new ActivityRelaunchItem(
                     activity.getActivityToken(), null, null, 0,
                     new MergedConfiguration(currentConfig, currentConfig),
-                    false /* preserveWindow */, newInfo);
+                    false /* preserveWindow */, newInfo, DEFAULT_DISPLAY);
             final ClientTransaction transaction = newTransaction(activity);
             transaction.addTransactionItem(relaunchItem);
 
@@ -990,8 +994,8 @@ public class ActivityThreadTest {
             final ActivityWindowInfo activityWindowInfo = new ActivityWindowInfo();
             activityWindowInfo.set(true /* isEmbedded */, taskBounds, taskFragmentBounds);
             final ActivityConfigurationChangeItem activityConfigurationChangeItem =
-                    new ActivityConfigurationChangeItem(
-                            activity.getActivityToken(), config, activityWindowInfo);
+                    new ActivityConfigurationChangeItem(activity.getActivityToken(), config,
+                            activityWindowInfo, DEFAULT_DISPLAY);
             final ClientTransaction transaction = newTransaction(activity);
             transaction.addTransactionItem(activityConfigurationChangeItem);
 
@@ -1007,8 +1011,8 @@ public class ActivityThreadTest {
                     new ActivityWindowInfo(activityWindowInfo);
             config.seq++;
             final ActivityConfigurationChangeItem activityConfigurationChangeItem2 =
-                    new ActivityConfigurationChangeItem(
-                            activity.getActivityToken(), config, activityWindowInfo2);
+                    new ActivityConfigurationChangeItem(activity.getActivityToken(), config,
+                            activityWindowInfo2, DEFAULT_DISPLAY);
             final ClientTransaction transaction2 = newTransaction(activity);
             transaction2.addTransactionItem(activityConfigurationChangeItem2);
 
@@ -1205,7 +1209,7 @@ public class ActivityThreadTest {
         final ClientTransactionItem callbackItem = new ActivityRelaunchItem(
                 activity.getActivityToken(), null, null, 0,
                 new MergedConfiguration(currentConfig, currentConfig),
-                false /* preserveWindow */, activityWindowInfo);
+                false /* preserveWindow */, activityWindowInfo, DEFAULT_DISPLAY);
         final ResumeActivityItem resumeStateRequest =
                 new ResumeActivityItem(activity.getActivityToken(), true /* isForward */,
                         false /* shouldSendCompatFakeFocus*/);
@@ -1243,7 +1247,7 @@ public class ActivityThreadTest {
     private static ClientTransaction newActivityConfigTransaction(@NonNull Activity activity,
             @NonNull Configuration config) {
         final ActivityConfigurationChangeItem item = new ActivityConfigurationChangeItem(
-                activity.getActivityToken(), config, new ActivityWindowInfo());
+                activity.getActivityToken(), config, new ActivityWindowInfo(), DEFAULT_DISPLAY);
 
         final ClientTransaction transaction = newTransaction(activity);
         transaction.addTransactionItem(item);

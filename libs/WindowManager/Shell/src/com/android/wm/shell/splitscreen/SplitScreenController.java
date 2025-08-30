@@ -1085,6 +1085,8 @@ public class SplitScreenController implements SplitDragPolicy.Starter,
                 return "FULLSCREEN_REQUEST";
             case EXIT_REASON_DRAG_TO_FULLSCREEN:
                 return "EXIT_REASON_DRAG_TO_FULLSCREEN";
+            case EXIT_REASON_CHILD_TASK_ENTER_BUBBLE:
+                return "CHILD_TASK_ENTER_BUBBLE";
             default:
                 return "unknown reason, reason int = " + exitReason;
         }

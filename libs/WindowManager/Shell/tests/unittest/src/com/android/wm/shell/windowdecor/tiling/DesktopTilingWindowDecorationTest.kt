@@ -31,6 +31,7 @@ import android.view.WindowManager.TRANSIT_TO_FRONT
 import android.window.TransitionInfo
 import android.window.TransitionInfo.Change
 import android.window.WindowContainerTransaction
+import androidx.test.annotation.UiThreadTest
 import androidx.test.filters.SmallTest
 import com.android.internal.jank.InteractionJankMonitor
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer
@@ -319,11 +320,13 @@ class DesktopTilingWindowDecorationTest : ShellTestCase() {
     }
 
     @Test
+    @UiThreadTest
     fun taskTiled_broughtToFront_alreadyInFrontStillReorder() {
         val task1 = createVisibleTask()
         val task2 = createVisibleTask()
         val stableBounds = STABLE_BOUNDS_MOCK
         whenever(displayController.getDisplayLayout(any())).thenReturn(displayLayout)
+        whenever(displayController.getDisplayContext(any())).thenReturn(mContext)
         whenever(displayLayout.getStableBounds(any())).thenAnswer { i ->
             (i.arguments.first() as Rect).set(stableBounds)
         }
@@ -331,6 +334,7 @@ class DesktopTilingWindowDecorationTest : ShellTestCase() {
         whenever(resources.getDimensionPixelSize(any())).thenReturn(split_divider_width)
         whenever(userRepositories.current.isVisibleTask(eq(task1.taskId))).thenReturn(true)
         whenever(userRepositories.current.isVisibleTask(eq(task2.taskId))).thenReturn(true)
+        whenever(windowDecoration.taskSurface).thenReturn(mock())
 
         tilingDecoration.onAppTiled(
             task1,
@@ -362,11 +366,13 @@ class DesktopTilingWindowDecorationTest : ShellTestCase() {
     }
 
     @Test
+    @UiThreadTest
     fun taskTiled_broughtToFront_uponTilingFocusedTasks() {
         val task1 = createVisibleTask()
         val task2 = createVisibleTask()
         val stableBounds = STABLE_BOUNDS_MOCK
         whenever(displayController.getDisplayLayout(any())).thenReturn(displayLayout)
+        whenever(displayController.getDisplayContext(any())).thenReturn(mContext)
         whenever(displayLayout.getStableBounds(any())).thenAnswer { i ->
             (i.arguments.first() as Rect).set(stableBounds)
         }
@@ -374,6 +380,7 @@ class DesktopTilingWindowDecorationTest : ShellTestCase() {
         whenever(resources.getDimensionPixelSize(any())).thenReturn(split_divider_width)
         whenever(userRepositories.current.isVisibleTask(eq(task1.taskId))).thenReturn(true)
         whenever(userRepositories.current.isVisibleTask(eq(task2.taskId))).thenReturn(true)
+        whenever(windowDecoration.taskSurface).thenReturn(mock())
         task1.isFocused = true
         task2.isFocused = true
 
@@ -399,6 +406,7 @@ class DesktopTilingWindowDecorationTest : ShellTestCase() {
     }
 
     @Test
+    @UiThreadTest
     fun taskTiled_broughtToFront_bringToFront() {
         val task1 = createVisibleTask()
         val task2 = createVisibleTask()
@@ -411,6 +419,8 @@ class DesktopTilingWindowDecorationTest : ShellTestCase() {
         whenever(resources.getDimensionPixelSize(any())).thenReturn(split_divider_width)
         whenever(windowDecoration.taskSurface).thenReturn(surfaceControlMock)
         whenever(userRepositories.current.isVisibleTask(any())).thenReturn(true)
+        whenever(displayController.getDisplayContext(any())).thenReturn(mContext)
+        whenever(displayController.getDisplayLayout(any())).thenReturn(displayLayout)
         tilingDecoration.onAppTiled(
             task1,
             windowDecoration,
@@ -437,6 +447,7 @@ class DesktopTilingWindowDecorationTest : ShellTestCase() {
     }
 
     @Test
+    @UiThreadTest
     fun taskTiled_broughtToFront_taskInfoNotUpdated_bringToFront() {
         val task1 = createVisibleTask()
         val task2 = createVisibleTask()
@@ -449,6 +460,11 @@ class DesktopTilingWindowDecorationTest : ShellTestCase() {
         whenever(resources.getDimensionPixelSize(any())).thenReturn(split_divider_width)
         whenever(windowDecoration.taskSurface).thenReturn(surfaceControlMock)
         whenever(userRepositories.current.isVisibleTask(any())).thenReturn(true)
+        whenever(displayController.getDisplayContext(any())).thenReturn(mContext)
+        whenever(displayController.getDisplayLayout(any())).thenReturn(displayLayout)
+        whenever(displayLayout.getStableBounds(any())).thenAnswer { i ->
+            (i.arguments.first() as Rect).set(stableBounds)
+        }
         tilingDecoration.onAppTiled(
             task1,
             windowDecoration,
@@ -708,7 +724,7 @@ class DesktopTilingWindowDecorationTest : ShellTestCase() {
         whenever(configuration.uiMode).thenReturn(-1)
         tilingDecoration.desktopTilingDividerWindowManager = desktopTilingDividerWindowManager
         tilingDecoration.isTilingManagerInitialised = true
-        tilingDecoration.onConfigurationChanged(newConfig)
+        tilingDecoration.onDisplayConfigurationChanged(displayId, newConfig)
         verify(desktopTilingDividerWindowManager, times(1)).onThemeChange()
     }
 
@@ -739,9 +755,7 @@ class DesktopTilingWindowDecorationTest : ShellTestCase() {
 
         tilingDecoration.leftTaskResizingHelper = tiledTaskHelper
         tilingDecoration.desktopTilingDividerWindowManager = desktopTilingDividerWindowManager
-        assertThrows(NullPointerException::class.java) {
-            tilingDecoration.onDensityOrFontScaleChanged()
-        }
+        assertThrows(NullPointerException::class.java) { tilingDecoration.onDensityChanged() }
     }
 
     @Test

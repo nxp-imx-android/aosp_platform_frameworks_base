@@ -16,6 +16,7 @@
 
 package com.android.externalstorage;
 
+
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.app.usage.StorageStatsManager;
@@ -636,6 +637,35 @@ public class ExternalStorageProvider extends FileSystemProvider {
             }
         }
         return result;
+    }
+
+    @Override
+    protected boolean isTrashSupported(File file) {
+        try {
+            String documentId = getDocIdForFile(file);
+            // Trash not supported on USB devices
+            if (isOnRemovableUsbStorage(documentId)) {
+                return false;
+            }
+
+            final RootInfo root = getRootFromDocId(documentId);
+            final String canonicalPath = getPathFromDocId(documentId);
+            return !isRestrictedPath(root.rootId, canonicalPath);
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    @Nullable
+    @Override
+    public Cursor queryTrashDocuments(String[] projection) throws FileNotFoundException {
+        if (!mRoots.containsKey(ROOT_ID_PRIMARY_EMULATED)) {
+            return null;
+        }
+
+        RootInfo rootInfo = mRoots.get(ROOT_ID_PRIMARY_EMULATED);
+        File trashDir = new File(rootInfo.path, DIRECTORY_TRASH_STORAGE);
+        return queryTrashDocuments(trashDir, projection);
     }
 
     @Override

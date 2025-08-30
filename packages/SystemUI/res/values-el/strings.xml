@@ -146,17 +146,12 @@
     <string name="screen_record_retake" msgid="3846643688365398450">"Νέα λήψη"</string>
     <string name="screen_record_edit" msgid="8733014191240769309">"Επεξεργασία"</string>
     <string name="screen_record_delete" msgid="1023421937978254537">"Διαγραφή"</string>
-    <!-- no translation found for screen_record_play (4732544724679889445) -->
-    <skip />
-    <!-- no translation found for screen_record_pause (1715012292444967776) -->
-    <skip />
-    <!-- no translation found for screen_record_mute (8111682249858638168) -->
-    <skip />
-    <!-- no translation found for screen_record_unmute (2207912659365156472) -->
-    <skip />
+    <string name="screen_record_play" msgid="4732544724679889445">"Αναπαραγωγή"</string>
+    <string name="screen_record_pause" msgid="1715012292444967776">"Παύση"</string>
+    <string name="screen_record_mute" msgid="8111682249858638168">"Σίγαση"</string>
+    <string name="screen_record_unmute" msgid="2207912659365156472">"Κατάργηση σίγασης"</string>
     <string name="screen_capture_fullscreen_screenshot_button" msgid="3173749413928507877">"Λήψη στιγμιότυπου οθόνης ολόκληρης της οθόνης"</string>
-    <!-- no translation found for screen_capture_fullscreen_record_button (5697594296042198690) -->
-    <skip />
+    <string name="screen_capture_fullscreen_record_button" msgid="5697594296042198690">"Εγγραφή ολόκληρης της οθόνης"</string>
     <string name="screen_capture_region_selection_button" msgid="515608875142444130">"Λήψη στιγμιότυπου οθόνης της επιλεγμένης περιοχής"</string>
     <string name="screen_capture_record_region_selection_button" msgid="3699353194755563053">"Εγγραφή επιλεγμένης περιοχής"</string>
     <string name="screen_capture_toolbar_screenshot_button" msgid="5676585348709494125">"Στιγμιότυπο οθόνης"</string>
@@ -689,8 +684,9 @@
     <string name="notification_section_header_conversations" msgid="821834744538345661">"Συνομιλίες"</string>
     <string name="accessibility_notification_section_header_gentle_clear_all" msgid="6490207897764933919">"Διαγραφή όλων των ειδοποιήσεων σε σίγαση"</string>
     <string name="accessibility_notification_section_header_open_settings" msgid="6235202417954844004">"Άνοιγμα ρυθμίσεων ειδοποιήσεων"</string>
-    <string name="dnd_suppressing_shade_text" msgid="5588252250634464042">"Οι ειδοποιήσεις τέθηκαν σε παύση από τη λειτουργία \"Μην ενοχλείτε\""</string>
     <string name="modes_suppressing_shade_text" msgid="6037581130837903239">"{count,plural,offset:1 =0{Δεν υπάρχουν ειδοποιήσεις}=1{Οι ειδοποιήσεις τέθηκαν σε παύση από τη λειτουργία {mode}}=2{Οι ειδοποιήσεις τέθηκαν σε παύση από τη λειτουργία {mode} και μία άλλη λειτουργία}other{Οι ειδοποιήσεις τέθηκαν σε παύση από τη λειτουργία {mode} και # άλλες λειτουργίες}}"</string>
+    <!-- no translation found for caught_up_shade_text (8166221989384139659) -->
+    <skip />
     <string name="media_projection_action_text" msgid="3634906766918186440">"Έναρξη τώρα"</string>
     <string name="empty_shade_text" msgid="8935967157319717412">"Δεν υπάρχουν ειδοποιήσεις"</string>
     <string name="no_unseen_notif_text" msgid="395512586119868682">"Δεν υπάρχουν νέες ειδοποιήσεις"</string>
@@ -990,6 +986,8 @@
     <string name="group_system_access_notification_shade" msgid="1619028907006553677">"Προβολή ειδοποιήσεων"</string>
     <string name="group_system_access_quick_settings_panel" msgid="1844771096582064926">"Προβολή γρήγορων ρυθμίσεων"</string>
     <string name="group_system_full_screenshot" msgid="5742204844232667785">"Λήψη στιγμιότυπου οθόνης"</string>
+    <!-- no translation found for group_system_partial_screenshot (2114314797127648010) -->
+    <skip />
     <string name="group_system_access_system_app_shortcuts" msgid="8562482996626694026">"Εμφάνιση συντομεύσεων"</string>
     <string name="group_system_go_back" msgid="2730322046244918816">"Επιστροφή"</string>
     <string name="group_system_access_home_screen" msgid="4130366993484706483">"Μετάβαση στην αρχική οθόνη"</string>
@@ -1137,12 +1135,19 @@
     <string name="accessibility_key_gesture_dialog_title" msgid="7614965716626605518">"Ενεργοποίηση λειτουργίας <xliff:g id="ID_1">%1$s</xliff:g>;"</string>
     <string name="accessibility_key_gesture_dialog_content" msgid="4519838108423437794">"Η ενέργεια "<annotation id="action_key_icon">"εικονίδιο"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> είναι η συντόμευση πληκτρολογίου για τη χρήση της λειτουργίας <xliff:g id="ID_3">^3</xliff:g>. <xliff:g id="ID_4">^4</xliff:g>"</string>
     <string name="accessibility_key_gesture_dialog_talkback_intro" msgid="1617808784388544741">"Η λειτουργία <xliff:g id="ID_1">%1$s</xliff:g> είναι ένας αναγνώστης οθόνης που σας επιτρέπει να ακούτε την εκφώνηση των στοιχείων. Μπορεί να βοηθήσει άτομα που αντιμετωπίζουν κάποιο πρόβλημα με την παρακολούθηση του περιεχομένου της οθόνης."</string>
-    <string name="accessibility_key_gesture_dialog_va_intro" msgid="4709198503441288289">"Η εφαρμογή <xliff:g id="ID_1">%1$s</xliff:g> σας επιτρέπει να ελέγχετε τη συσκευή σας handsfree."</string>
     <string name="accessibility_key_gesture_dialog_positive_button_text" msgid="3670746017523589293">"Ενεργοποίηση"</string>
     <string name="accessibility_key_gesture_magnification_dialog_title" msgid="5770691510738701250">"Η συντόμευση πληκτρολογίου <xliff:g id="ID_1">%1$s</xliff:g> ενεργοποιήθηκε"</string>
     <string name="accessibility_key_gesture_magnification_dialog_content" msgid="7575802369763469379">"Ο συνδυασμός Ενέργεια "<annotation id="action_key_icon">"εικονίδιο"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> είναι η συντόμευση πληκτρολογίου για τη χρήση της λειτουργίας <xliff:g id="ID_3">^3</xliff:g>. Με αυτόν τον τρόπο, μπορείτε να μεγεθύνετε γρήγορα την οθόνη προκειμένου το περιεχόμενο να εμφανίζεται μεγαλύτερο. Πατήστε Ενέργεια "<annotation id="action_key_icon">"εικονίδιο"</annotation>" + <xliff:g id="ID_4">^1</xliff:g> και \"+\" ή \"-\" για να προσαρμόσετε την εστίαση."</string>
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"Να απενεργοποιηθεί η συντόμευση"</string>
     <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"Να παραμείνει ενεργή"</string>
+    <!-- no translation found for accessibility_key_gesture_voice_access_dialog_title (7828090789777023683) -->
+    <skip />
+    <!-- no translation found for accessibility_key_gesture_voice_access_dialog_content (7934170819801013870) -->
+    <skip />
+    <!-- no translation found for accessibility_key_gesture_voice_access_dialog_negative_button_text (3573570279554465078) -->
+    <skip />
+    <!-- no translation found for accessibility_key_gesture_voice_access_dialog_positive_button_text (2306321856544446858) -->
+    <skip />
     <string name="tuner_lock_screen" msgid="2267383813241144544">"Οθόνη κλειδώματος"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"Τερματισμός λειτουργίας…"</string>
     <string name="thermal_shutdown_dialog_help_text" msgid="6413474593462902901">"Δείτε βήματα αντιμετώπισης."</string>

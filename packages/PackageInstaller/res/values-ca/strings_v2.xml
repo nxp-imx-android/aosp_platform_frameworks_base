@@ -86,8 +86,8 @@
     <string name="message_archive" msgid="943853731737315850">"Les teves dades de l\'aplicació es desaran"</string>
     <string name="message_archive_all_users" msgid="4664139369764501351">"Totes les dades de l\'aplicació es desaran"</string>
     <string name="message_archive_other_user" msgid="6465828676043191175">"Les dades de l\'aplicació es desaran"</string>
-    <string name="message_archive_work_profile" msgid="7601504268820630858">"Aquesta aplicació s\'arxivarà des del teu perfil de treball. Les teves dades de l\'aplicació es desaran."</string>
-    <string name="message_archive_private_space" msgid="4873651645762576624">"Aquesta aplicació s\'arxivarà des del teu espai privat. Les teves dades de l\'aplicació es desaran."</string>
+    <string name="message_archive_work_profile" msgid="7601504268820630858">"Aquesta aplicació s\'arxivarà del teu perfil de treball. Les teves dades de l\'aplicació es desaran."</string>
+    <string name="message_archive_private_space" msgid="4873651645762576624">"Aquesta aplicació s\'arxivarà del teu perfil de treball. Les teves dades de l\'aplicació es desaran."</string>
     <string name="message_restore" msgid="8402726798623569969">"Aquesta aplicació es baixarà de <xliff:g id="INSTALLER_NAME">%1$s</xliff:g> en segon pla"</string>
     <string name="message_restore_error_user_action_needed" msgid="2206904734076205208">"<xliff:g id="INSTALLER_NAME">%1$s</xliff:g> necessita més informació perquè puguis restaurar aquesta aplicació"</string>
     <string name="message_restore_error_less_storage" msgid="4945507738776981462">"Per restaurar aquesta aplicació, allibera &lt;b&gt;<xliff:g id="BYTES">%1$s</xliff:g>&lt;/b&gt; i torna-ho a provar"</string>

@@ -21,11 +21,14 @@ import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.flags.EnableSceneContainer
 import com.android.systemui.kosmos.Kosmos
+import com.android.systemui.kosmos.collectLastValue
 import com.android.systemui.kosmos.runCurrent
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.lifecycle.activateIn
 import com.android.systemui.scene.domain.startable.sceneContainerStartable
+import com.android.systemui.settings.brightness.domain.interactor.brightnessMirrorShowingInteractor
+import com.android.systemui.shade.domain.interactor.disableDualShade
 import com.android.systemui.shade.domain.interactor.enableDualShade
 import com.android.systemui.statusbar.notification.stack.domain.interactor.notificationStackAppearanceInteractor
 import com.android.systemui.statusbar.notification.stack.shared.model.ShadeScrimBounds
@@ -135,5 +138,18 @@ class NotificationScrollViewModelTest : SysuiTestCase() {
             assertThat(actual).isEqualTo(expected)
 
             disposable.dispose()
+        }
+
+    @Test
+    fun noDualShade_brightnessMirrorShowing_notInteractive() =
+        kosmos.runTest {
+            disableDualShade()
+            val interactive by collectLastValue(underTest.interactive)
+
+            brightnessMirrorShowingInteractor.setMirrorShowing(false)
+            assertThat(interactive).isTrue()
+
+            brightnessMirrorShowingInteractor.setMirrorShowing(true)
+            assertThat(interactive).isFalse()
         }
 }

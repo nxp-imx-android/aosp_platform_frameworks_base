@@ -15,6 +15,8 @@
  */
 package com.android.internal.widget.remotecompose.player.platform;
 
+
+
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.graphics.Bitmap;
@@ -45,6 +47,7 @@ import java.util.HashMap;
  *
  * <p>This is used to play the RemoteCompose operations on Android.
  */
+
 public class AndroidRemoteContext extends RemoteContext {
     private static final boolean CHECK_DATA_SIZE = true;
 
@@ -89,8 +92,9 @@ public class AndroidRemoteContext extends RemoteContext {
     ///////////////////////////////////////////////////////////////////////////////////////////////
 
     @Override
-    public void loadPathData(int instanceId, @NonNull float [] floatPath) {
+    public void loadPathData(int instanceId, int winding, @NonNull float [] floatPath) {
         mRemoteComposeState.putPathData(instanceId, floatPath);
+        mRemoteComposeState.putPathWinding(instanceId, winding);
     }
 
     @Override
@@ -201,6 +205,7 @@ public class AndroidRemoteContext extends RemoteContext {
      * @param colorName name of color
      * @param color
      */
+    @Override
     public void setNamedColorOverride(@NonNull String colorName, int color) {
         if (mVarNameHashMap.get(colorName) != null) {
             int id = mVarNameHashMap.get(colorName).mId;
@@ -435,6 +440,7 @@ public class AndroidRemoteContext extends RemoteContext {
      * @param id The ID of the integer to override.
      * @param value The new integer value.
      */
+    @Override
     public void overrideInteger(int id, int value) {
         mRemoteComposeState.overrideInteger(id, value);
     }
@@ -445,6 +451,7 @@ public class AndroidRemoteContext extends RemoteContext {
      * @param id The ID of the text to override.
      * @param valueId The ID of the text value to use for the override.
      */
+    @Override
     public void overrideText(int id, int valueId) {
         String text = getText(valueId);
         overrideText(id, text);
@@ -544,6 +551,7 @@ public class AndroidRemoteContext extends RemoteContext {
      *
      * @param type 0 = none, 1-21 ,see HapticFeedbackConstants
      */
+    @Override
     public void hapticEffect(int type) {
         mDocument.haptic(type);
     }

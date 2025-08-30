@@ -24,6 +24,7 @@ import static android.view.WindowManager.DOCKED_TOP;
 
 import static com.android.internal.jank.InteractionJankMonitor.CUJ_SPLIT_SCREEN_DOUBLE_TAP_DIVIDER;
 import static com.android.internal.jank.InteractionJankMonitor.CUJ_SPLIT_SCREEN_RESIZE;
+import static com.android.window.flags.Flags.enableNonDefaultDisplaySplit;
 import static com.android.wm.shell.common.split.DividerSnapAlgorithm.SNAP_FLEXIBLE_HYBRID;
 import static com.android.wm.shell.shared.animation.Interpolators.EMPHASIZED;
 import static com.android.wm.shell.shared.animation.Interpolators.FAST_OUT_SLOW_IN;
@@ -521,7 +522,13 @@ public final class SplitLayout implements DisplayInsetsController.OnInsetsChange
             return false;
         }
 
-        mContext = mContext.createConfigurationContext(configuration);
+        final Context displayContext = enableNonDefaultDisplaySplit()
+                && mDisplayController.getDisplayContext(displayId) != null
+                ? mDisplayController.getDisplayContext(displayId) : mContext;
+        mContext = displayContext.createConfigurationContext(configuration);
+        if ((enableNonDefaultDisplaySplit())) {
+            mSplitWindowManager.updateDisplayContext(mContext);
+        }
         mSplitWindowManager.setConfiguration(configuration);
         mOrientation = orientation;
         mTempRect.set(mRootBounds);

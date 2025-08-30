@@ -682,8 +682,11 @@ public class KeyguardViewMediator implements CoreStartable,
         Log.d(TAG, String.format("onBeforeUserSwitching %d", userId));
         synchronized (KeyguardViewMediator.this) {
             mHandler.removeCallbacksAndMessages(mDismissToken);
+            mHandler.removeMessages(START_KEYGUARD_EXIT_ANIM);
             mHandler.removeMessages(DISMISS);
             mHandler.removeMessages(HIDE);
+            mIsKeyguardExitAnimationCanceled = true;
+
             notifyTrustedChangedLocked(mUpdateMonitor.getUserHasTrust(userId));
             resetKeyguardDonePendingLocked();
             adjustStatusBarLocked();
@@ -3374,6 +3377,12 @@ public class KeyguardViewMediator implements CoreStartable,
         Log.d(TAG, "handleStartKeyguardExitAnimation startTime=" + startTime
                 + " fadeoutDuration=" + fadeoutDuration);
         int currentUserId = mSelectedUserInteractor.getSelectedUserId();
+
+        // Requests to exit directly from WM are valid if the lockscreen can be dismissed
+        if (mKeyguardStateController.canDismissLockScreen()) {
+            mLastHideRequest = mLastShowRequest;
+        }
+
         String error = null;
         if (mGoingAwayRequestedForUserId != currentUserId) {
             error = "Not executing handleStartKeyguardExitAnimationInner() due to userId "
@@ -3681,6 +3690,12 @@ public class KeyguardViewMediator implements CoreStartable,
         }
     }
 
+    // Allows the runnable to be controlled for tests by overriding this method
+    @VisibleForTesting
+    void postAfterTraversal(Runnable runnable) {
+        DejankUtils.postAfterTraversal(runnable);
+    }
+
     /**
      * Called when we're done running the keyguard exit animation, we should now end up unlocked.
      *
@@ -3700,12 +3715,6 @@ public class KeyguardViewMediator implements CoreStartable,
             return;
         }
 
-        if (mIsKeyguardExitAnimationCanceled) {
-            Log.d(TAG, "Ignoring exitKeyguardAndFinishSurfaceBehindRemoteAnimation. "
-                    + "mIsKeyguardExitAnimationCanceled==true");
-            return;
-        }
-
         // Block the panel from expanding, in case we were doing a swipe to dismiss gesture.
         mKeyguardViewControllerLazy.get().blockPanelExpansionFromCurrentTouch();
         final boolean wasShowing = ENABLE_NEW_KEYGUARD_SHELL_TRANSITIONS
@@ -3713,7 +3722,7 @@ public class KeyguardViewMediator implements CoreStartable,
         InteractionJankMonitor.getInstance().end(CUJ_LOCKSCREEN_UNLOCK_ANIMATION);
 
         // Post layout changes to the next frame, so we don't hang at the end of the animation.
-        DejankUtils.postAfterTraversal(() -> {
+        postAfterTraversal(() -> {
             if (!mPM.isInteractive() && !mPendingLock) {
                 Log.e(TAG, "exitKeyguardAndFinishSurfaceBehindRemoteAnimation#postAfterTraversal:"
                         + " mPM.isInteractive()=" + mPM.isInteractive()
@@ -3726,6 +3735,14 @@ public class KeyguardViewMediator implements CoreStartable,
                 setShowingLocked(true /* showing */, true /* force */,
                         "exitKeyguardAndFinishSurfaceBehindRemoteAnimation - relocked");
 
+                return;
+            }
+            if (mIsKeyguardExitAnimationCanceled) {
+                Log.d(TAG, "Ignoring exitKeyguardAndFinishSurfaceBehindRemoteAnimation. "
+                        + "mIsKeyguardExitAnimationCanceled==true");
+                finishSurfaceBehindRemoteAnimation(true /* showKeyguard */);
+                setShowingLocked(true /* showing */, true /* force */,
+                            "exitKeyguardAndFinishSurfaceBehindRemoteAnimation - canceled");
                 return;
             }
 

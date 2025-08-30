@@ -21,9 +21,11 @@ import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.keyguard.data.repository.DEFAULT_REVEAL_DURATION
+import com.android.systemui.keyguard.data.repository.MINMODE_REVEAL_DURATION
 import com.android.systemui.keyguard.data.repository.LightRevealScrimRepository
 import com.android.systemui.keyguard.shared.model.Edge
 import com.android.systemui.keyguard.shared.model.KeyguardState
+import com.android.systemui.minmode.MinModeManager
 import com.android.systemui.power.domain.interactor.PowerInteractor
 import com.android.systemui.power.shared.model.ScreenPowerState
 import com.android.systemui.power.shared.model.WakeSleepReason
@@ -32,6 +34,7 @@ import com.android.systemui.statusbar.LightRevealEffect
 import com.android.systemui.util.kotlin.BooleanFlowOperators.anyOf
 import com.android.systemui.util.kotlin.sample
 import dagger.Lazy
+import java.util.Optional
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
@@ -52,7 +55,10 @@ constructor(
     private val scrimLogger: ScrimLogger,
     private val powerInteractor: Lazy<PowerInteractor>,
     @Background backgroundDispatcher: CoroutineDispatcher,
+    private val minModeManagerOptional: Optional<MinModeManager>,
 ) {
+    private val minModeManager = minModeManagerOptional.orElse(null)
+
     init {
         listenForStartedKeyguardTransitionStep()
     }
@@ -68,6 +74,8 @@ constructor(
                         // This is needed to play the fold to AOD animation which starts with
                         // fully black screen (see FoldAodAnimationController)
                         0L
+                    } else if (minModeManager?.isMinModeEnabled() == true) {
+                        MINMODE_REVEAL_DURATION
                     } else {
                         DEFAULT_REVEAL_DURATION
                     }

@@ -179,10 +179,10 @@ private constructor(
      * Returns the valid drag area for this task associated with the window decor if the task can be
      * dragged. Otherwise, returns null.
      */
-    fun calculateValidDragArea() =
+    fun getValidDragArea() =
         when {
-            defaultWindowDecor != null -> requireDefaultWindowDecor().calculateValidDragArea()
-            desktopWindowDecor != null -> requireDesktopWindowDecor().calculateValidDragArea()
+            defaultWindowDecor != null -> requireDefaultWindowDecor().lastValidDragArea
+            desktopWindowDecor != null -> requireDesktopWindowDecor().lastValidDragArea
             captionWindowDecoration != null -> requireCaptionWindowDecor().calculateValidDragArea()
             else -> error("Expected Non-null window decoration")
         }

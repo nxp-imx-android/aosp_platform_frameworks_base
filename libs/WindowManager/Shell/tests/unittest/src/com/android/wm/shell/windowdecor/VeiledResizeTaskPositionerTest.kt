@@ -138,7 +138,7 @@ class VeiledResizeTaskPositionerTest : ShellTestCase() {
                     isResizeable = true
                 }
             )
-        `when`(mockWindowDecoration.calculateValidDragArea()).thenReturn(VALID_DRAG_AREA)
+        `when`(mockWindowDecoration.getValidDragArea()).thenReturn(VALID_DRAG_AREA)
         whenever(mockDisplay.displayId).thenAnswer { DISPLAY_ID }
 
         taskPositioner =

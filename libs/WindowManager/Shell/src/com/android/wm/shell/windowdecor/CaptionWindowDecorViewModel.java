@@ -522,7 +522,7 @@ public class CaptionWindowDecorViewModel implements WindowDecorViewModel, FocusT
                             e.getDisplayId(),
                             e.getRawX(dragPointerIdx), e.getRawY(dragPointerIdx));
                     DragPositioningCallbackUtility.snapTaskBoundsIfNecessary(newTaskBounds,
-                            mWindowDecorByTaskId.get(mTaskId).calculateValidDragArea());
+                            mWindowDecorByTaskId.get(mTaskId).getValidDragArea());
                     if (newTaskBounds != taskInfo.configuration.windowConfiguration.getBounds()) {
                         final WindowContainerTransaction wct = new WindowContainerTransaction();
                         wct.setBounds(taskInfo.token, newTaskBounds);

@@ -5770,7 +5770,6 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_PREFERENCES_THROWS_ON_INVALID_UID)
     public void updateNotificationChannelFromPrivilegedListener_invalidPackage_throws()
             throws Exception {
         when(mListeners.checkServiceTokenLocked(any())).thenReturn(mListener);

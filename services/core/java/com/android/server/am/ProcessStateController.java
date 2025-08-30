@@ -40,12 +40,13 @@ import android.util.SparseArray;
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.server.ServiceThread;
+import com.android.server.am.psc.AsyncBatchSession;
 import com.android.server.am.psc.ProcessRecordInternal;
 import com.android.server.am.psc.ServiceRecordInternal;
+import com.android.server.am.psc.SyncBatchSession;
 import com.android.server.wm.WindowProcessController;
 
 import java.lang.ref.WeakReference;
-import java.util.ArrayList;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
@@ -71,6 +72,8 @@ public class ProcessStateController {
 
     private final GlobalState mGlobalState = new GlobalState();
 
+    private SyncBatchSession mBatchSession;
+
     /**
      * Queue for staging asynchronous events. The queue will be drained before each update.
      */
@@ -95,12 +98,35 @@ public class ProcessStateController {
                 }
             }
         });
+
+    }
+
+    /**
+     * Start a batch session. ProcessStateController updates will not be triggered until the
+     * returned SyncBatchSession is closed.
+     */
+    @GuardedBy("mLock")
+    public SyncBatchSession startBatchSession(@OomAdjReason int reason) {
+        if (!Flags.pscBatchUpdate()) return null;
+
+        final SyncBatchSession batchSession = getBatchSession();
+        batchSession.start(reason);
+        return batchSession;
+    }
+
+    private SyncBatchSession getBatchSession() {
+        if (mBatchSession == null) {
+            mBatchSession = new SyncBatchSession(this::runFullUpdateImpl,
+                    this::runPendingUpdateImpl);
+        }
+        return mBatchSession;
     }
 
     /**
      * Get the instance of OomAdjuster that ProcessStateController is using.
      * Must only be interacted with while holding the ActivityManagerService lock.
      */
+    @GuardedBy("mLock")
     public OomAdjuster getOomAdjuster() {
         return mOomAdjuster;
     }
@@ -127,6 +153,17 @@ public class ProcessStateController {
      */
     @GuardedBy("mLock")
     public boolean runUpdate(@NonNull ProcessRecord proc, @OomAdjReason int oomAdjReason) {
+        if (mBatchSession != null && mBatchSession.isActive()) {
+            // BatchSession is active, just enqueue the proc for now. The update will happen
+            // at the end of the session.
+            enqueueUpdateTarget(proc);
+            return false;
+        }
+        return runUpdateimpl(proc, oomAdjReason);
+    }
+
+    @GuardedBy("mLock")
+    private boolean runUpdateimpl(@NonNull ProcessRecord proc, @OomAdjReason int oomAdjReason) {
         commitStagedEvents();
         return mOomAdjuster.updateOomAdjLocked(proc, oomAdjReason);
     }
@@ -136,6 +173,16 @@ public class ProcessStateController {
      */
     @GuardedBy("mLock")
     public void runPendingUpdate(@OomAdjReason int oomAdjReason) {
+        if (mBatchSession != null && mBatchSession.isActive()) {
+            // BatchSession is active, don't trigger the update, it will happen at the end of the
+            // session.
+            return;
+        }
+        runPendingUpdateImpl(oomAdjReason);
+    }
+
+    @GuardedBy("mLock")
+    private void runPendingUpdateImpl(@OomAdjReason int oomAdjReason) {
         commitStagedEvents();
         mOomAdjuster.updateOomAdjPendingTargetsLocked(oomAdjReason);
     }
@@ -145,6 +192,16 @@ public class ProcessStateController {
      */
     @GuardedBy("mLock")
     public void runFullUpdate(@OomAdjReason int oomAdjReason) {
+        if (mBatchSession != null && mBatchSession.isActive()) {
+            // BatchSession is active, just mark the session to run a full update at the end of
+            // the session.
+            getBatchSession().setFullUpdate();
+            return;
+        }
+        runFullUpdateImpl(oomAdjReason);
+    }
+
+    private void runFullUpdateImpl(@OomAdjReason int oomAdjReason) {
         commitStagedEvents();
         mOomAdjuster.updateOomAdjLocked(oomAdjReason);
     }
@@ -870,7 +927,7 @@ public class ProcessStateController {
             if (!Flags.pushActivityStateToOomadjuster()) return null;
 
             final AsyncBatchSession session = getBatchSession();
-            session.start();
+            session.start(OOM_ADJ_REASON_ACTIVITY);
             return session;
         }
 
@@ -1013,141 +1070,6 @@ public class ProcessStateController {
                 mBatchSession = new AsyncBatchSession(h, mPsc.mLock, mStagingQueue, update);
             }
             return mBatchSession;
-        }
-    }
-
-    public static class AsyncBatchSession implements AutoCloseable {
-        final Handler mHandler;
-        final Object mLock;
-        final ConcurrentLinkedQueue<Runnable> mStagingQueue;
-        private final Runnable mUpdateRunnable;
-        private final Runnable mLockedUpdateRunnable;
-        private boolean mRunUpdate = false;
-        private boolean mBoostPriority = false;
-        private int mNestedStartCount = 0;
-
-        private ArrayList<Runnable> mBatchList = new ArrayList<>();
-
-        AsyncBatchSession(Handler handler, Object lock,
-                ConcurrentLinkedQueue<Runnable> stagingQueue, Runnable updateRunnable) {
-            mHandler = handler;
-            mLock = lock;
-            mStagingQueue = stagingQueue;
-            mUpdateRunnable = updateRunnable;
-            mLockedUpdateRunnable = () -> {
-                synchronized (lock) {
-                    updateRunnable.run();
-                }
-            };
-        }
-
-        /**
-         * If the BatchSession is currently active, posting the batched work to the front of the
-         * Handler queue when the session is closed.
-         */
-        public void postToHead() {
-            if (isActive()) {
-                mBoostPriority = true;
-            }
-        }
-
-        /**
-         * Stage the runnable to be run on the next ProcessStateController update. The work may be
-         * opportunistically run if an update triggers before the WindowManager posted update is
-         * handled.
-         */
-        public void stage(Runnable runnable) {
-            mStagingQueue.add(runnable);
-        }
-
-        /**
-         * Enqueue the work to be run asynchronously done on a Handler thread.
-         * If batch session is currently active, queue up the work to be run when the session ends.
-         * Otherwise, the work will be immediately enqueued on to the Handler thread.
-         */
-        public void enqueue(Runnable runnable) {
-            if (isActive()) {
-                mBatchList.add(runnable);
-            } else {
-                // Not in session, just post to the handler immediately.
-                mHandler.post(() -> {
-                    synchronized (mLock) {
-                        runnable.run();
-                    }
-                });
-            }
-        }
-
-        /**
-         * Trigger an update to be asynchronously done on a Handler thread.
-         * If batch session is currently active, the update will be run at the end of the batched
-         * work.
-         * Otherwise, the update will be immediately enqueued on to the Handler thread (and any
-         * previously posted update will be removed in favor of this most recent trigger).
-         */
-        public void runUpdate() {
-            if (isActive()) {
-                // Mark that an update should be done after the batched work is done.
-                mRunUpdate = true;
-            } else {
-                // Not in session, just post to the handler immediately (and clear any existing
-                // posted update).
-                mHandler.removeCallbacks(mLockedUpdateRunnable);
-                mHandler.post(mLockedUpdateRunnable);
-            }
-        }
-
-        void start() {
-            mNestedStartCount++;
-        }
-
-        private boolean isActive() {
-            return mNestedStartCount > 0;
-        }
-
-        @Override
-        public void close() {
-            if (mNestedStartCount == 0) {
-                Slog.wtfStack(TAG, "close() called on an unstarted BatchSession!");
-                return;
-            }
-
-            mNestedStartCount--;
-
-            if (isActive()) {
-                // Still in an active batch session.
-                return;
-            }
-
-            final ArrayList<Runnable> list = new ArrayList<>(mBatchList);
-            final boolean runUpdate = mRunUpdate;
-
-            // Return if there is nothing to do.
-            if (list.isEmpty() && !runUpdate) return;
-
-            mBatchList.clear();
-            mRunUpdate = false;
-
-            // offload all of the queued up work to the ActivityStateHandler thread.
-            final Runnable batchedWorkload = () -> {
-                synchronized (mLock) {
-                    for (int i = 0, size = list.size(); i < size; i++) {
-                        list.get(i).run();
-                    }
-                    if (runUpdate) {
-                        mUpdateRunnable.run();
-                    }
-                }
-            };
-
-            if (mBoostPriority) {
-                // The priority of this BatchSession has been boosted. Post to the front of the
-                // Handler queue.
-                mBoostPriority = false;
-                mHandler.postAtFrontOfQueue(batchedWorkload);
-            } else {
-                mHandler.post(batchedWorkload);
-            }
         }
     }
 

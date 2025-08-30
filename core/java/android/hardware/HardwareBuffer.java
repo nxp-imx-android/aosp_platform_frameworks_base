@@ -78,6 +78,7 @@ public final class HardwareBuffer implements Parcelable, AutoCloseable {
             RGBA_12121212,
             RGBA_14141414,
             BGRA_1010102,
+            BGRX_1010102,
     })
     public @interface Format {
     }
@@ -218,6 +219,17 @@ public final class HardwareBuffer implements Parcelable, AutoCloseable {
      */
     @FlaggedApi(com.android.graphics.hwui.flags.Flags.FLAG_REQUESTED_FORMATS_BGRA_1010102)
     public static final int BGRA_1010102 = 0x43;
+
+    /**
+     * 32-bit packed format that has 2-bit unused, 10-bit R, G, and B components,
+     * in that order, from the most-significant bits to the least-significant
+     * bits.
+     *
+     * The component values are unsigned normalized to the range [0, 1], whose
+     * interpretation is defined by the dataspace.
+     */
+    @FlaggedApi(com.android.graphics.hwui.flags.Flags.FLAG_REQUESTED_FORMATS_BGRA_1010102)
+    public static final int BGRX_1010102 = 0x44;
 
 
     // Note: do not rename, this field is used by native code

@@ -2852,6 +2852,10 @@ class MediaRouter2ServiceImpl {
             if (!Flags.enableRouteVisibilityControlApi()) {
                 return true;
             }
+            if (Flags.enableRouteVisibilityControlCompatFixes()
+                    && route.getTemporaryVisibilityPackages().contains(mPackageName)) {
+                return true;
+            }
             List<Set<String>> permissionSets = route.getRequiredPermissions();
             if (permissionSets.isEmpty()) {
                 return true;

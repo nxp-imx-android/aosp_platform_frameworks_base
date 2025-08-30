@@ -196,7 +196,7 @@ class ShadeTouchableRegionManagerTest : SysuiTestCase() {
     private fun Kosmos.enableStatusBarForDesktop() {
         enableDualShade()
         testableContext.orCreateTestableResources.addOverride(
-            R.bool.config_enableDesktopFeatureSet,
+            R.bool.config_useDesktopStatusBar,
             true,
         )
         configurationController.onConfigurationChanged(Configuration())

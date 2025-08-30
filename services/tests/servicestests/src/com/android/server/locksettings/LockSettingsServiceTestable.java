@@ -39,6 +39,7 @@ import com.android.server.StorageManagerInternal;
 import com.android.server.locksettings.SyntheticPasswordManager.SyntheticPassword;
 import com.android.server.locksettings.recoverablekeystore.RecoverableKeyStoreManager;
 import com.android.server.pm.UserManagerInternal;
+import com.android.server.security.authenticationpolicy.SecureLockDeviceServiceInternal;
 
 import java.io.FileNotFoundException;
 import java.security.KeyStore;
@@ -53,12 +54,14 @@ public class LockSettingsServiceTestable extends LockSettingsService {
 
         private LockSettingsStorage mLockSettingsStorage;
         private final LockSettingsStrongAuth mStrongAuth;
+        private final SynchronizedStrongAuthTracker mStrongAuthTracker;
         private IActivityManager mActivityManager;
         private IStorageManager mStorageManager;
         private StorageManagerInternal mStorageManagerInternal;
         private SyntheticPasswordManager mSpManager;
         private FakeGsiService mGsiService;
         private RecoverableKeyStoreManager mRecoverableKeyStoreManager;
+        private SecureLockDeviceServiceInternal mSecureLockDeviceServiceInternal;
         private UserManagerInternal mUserManagerInternal;
         private DeviceStateCache mDeviceStateCache;
         private Duration mTimeSinceBoot;
@@ -69,6 +72,7 @@ public class LockSettingsServiceTestable extends LockSettingsService {
                 Context context,
                 LockSettingsStorage storage,
                 LockSettingsStrongAuth strongAuth,
+                SynchronizedStrongAuthTracker strongAuthTracker,
                 IActivityManager activityManager,
                 IStorageManager storageManager,
                 StorageManagerInternal storageManagerInternal,
@@ -76,10 +80,12 @@ public class LockSettingsServiceTestable extends LockSettingsService {
                 FakeGsiService gsiService,
                 RecoverableKeyStoreManager recoverableKeyStoreManager,
                 UserManagerInternal userManagerInternal,
-                DeviceStateCache deviceStateCache) {
+                DeviceStateCache deviceStateCache,
+                SecureLockDeviceServiceInternal secureLockDeviceServiceInternal) {
             super(context);
             mLockSettingsStorage = storage;
             mStrongAuth = strongAuth;
+            mStrongAuthTracker = strongAuthTracker;
             mActivityManager = activityManager;
             mStorageManager = storageManager;
             mStorageManagerInternal = storageManagerInternal;
@@ -88,6 +94,7 @@ public class LockSettingsServiceTestable extends LockSettingsService {
             mRecoverableKeyStoreManager = recoverableKeyStoreManager;
             mUserManagerInternal = userManagerInternal;
             mDeviceStateCache = deviceStateCache;
+            mSecureLockDeviceServiceInternal = secureLockDeviceServiceInternal;
         }
 
         @Override
@@ -107,7 +114,7 @@ public class LockSettingsServiceTestable extends LockSettingsService {
 
         @Override
         public SynchronizedStrongAuthTracker getStrongAuthTracker() {
-            return mock(SynchronizedStrongAuthTracker.class);
+            return mStrongAuthTracker;
         }
 
         @Override
@@ -133,6 +140,11 @@ public class LockSettingsServiceTestable extends LockSettingsService {
         @Override
         public SyntheticPasswordManager getSyntheticPasswordManager(LockSettingsStorage storage) {
             return mSpManager;
+        }
+
+        @Override
+        public SecureLockDeviceServiceInternal getSecureLockDeviceServiceInternal() {
+            return mSecureLockDeviceServiceInternal;
         }
 
         @Override

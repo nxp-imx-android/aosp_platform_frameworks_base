@@ -15,6 +15,8 @@
  */
 package com.android.internal.widget.remotecompose.player.accessibility;
 
+
+
 import android.graphics.Rect;
 import android.util.Log;
 
@@ -40,6 +42,7 @@ import java.util.List;
  *
  * @param <N> The type of node this applier works with.
  */
+
 public abstract class BaseSemanticNodeApplier<N> implements SemanticNodeApplier<N> {
     private static final String LOG_TAG = "RemoteCompose";
 

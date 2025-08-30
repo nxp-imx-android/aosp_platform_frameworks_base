@@ -251,13 +251,6 @@ public abstract class WindowDecoration<T extends View & TaskFocusStateConsumer>
     abstract void relayout(RunningTaskInfo taskInfo, boolean hasGlobalFocus,
             @NonNull Region displayExclusionRegion);
 
-    /**
-     * Used by the {@link DragPositioningCallback} associated with the implementing class to
-     * enforce drags ending in a valid position. A null result means no restriction.
-     */
-    @Nullable
-    abstract Rect calculateValidDragArea();
-
     void relayout(RelayoutParams params, SurfaceControl.Transaction startT,
             SurfaceControl.Transaction finishT, WindowContainerTransaction wct, T rootView,
             SurfaceControl newTaskSurface, RelayoutResult<T> outResult) {

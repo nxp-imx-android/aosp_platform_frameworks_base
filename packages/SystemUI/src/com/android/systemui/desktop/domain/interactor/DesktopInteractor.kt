@@ -40,17 +40,27 @@ constructor(
     @Background private val scope: CoroutineScope,
     configurationController: ConfigurationController,
 ) {
-
-    // TODO(441100057): This StateFlow should support Connected Displays.
-    /** Whether the desktop feature set is enabled. */
-    val isDesktopFeatureSetEnabled: StateFlow<Boolean> =
+    /** Whether this is a desktop device for the purposes of falsing. */
+    val isDesktopForFalsingPurposes: StateFlow<Boolean> =
         configurationController.onConfigChanged
-            .map { resources.getBoolean(R.bool.config_enableDesktopFeatureSet) }
-            .onStart { emit(resources.getBoolean(R.bool.config_enableDesktopFeatureSet)) }
+            .map { resources.getBoolean(R.bool.config_isDesktopForFalsingPurposes) }
+            .onStart { emit(resources.getBoolean(R.bool.config_isDesktopForFalsingPurposes)) }
             .stateIn(
                 scope,
                 SharingStarted.WhileSubscribed(),
-                resources.getBoolean(R.bool.config_enableDesktopFeatureSet),
+                resources.getBoolean(R.bool.config_isDesktopForFalsingPurposes),
+            )
+
+    // TODO(441100057): This StateFlow should support Connected Displays.
+    /** Whether showing the desktop status bar is enabled. */
+    val useDesktopStatusBar: StateFlow<Boolean> =
+        configurationController.onConfigChanged
+            .map { resources.getBoolean(R.bool.config_useDesktopStatusBar) }
+            .onStart { emit(resources.getBoolean(R.bool.config_useDesktopStatusBar)) }
+            .stateIn(
+                scope,
+                SharingStarted.WhileSubscribed(),
+                resources.getBoolean(R.bool.config_useDesktopStatusBar),
             )
 
     // TODO(441100057): This should support Connected Displays.

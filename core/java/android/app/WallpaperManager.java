@@ -24,7 +24,6 @@ import static android.os.ParcelFileDescriptor.MODE_READ_ONLY;
 
 import static com.android.server.backup.Flags.FLAG_ENABLE_CROSS_PLATFORM_TRANSFER;
 import static com.android.window.flags.Flags.FLAG_MULTI_CROP;
-import static com.android.window.flags.Flags.multiCrop;
 
 import android.Manifest;
 import android.annotation.FlaggedApi;
@@ -461,7 +460,6 @@ public class WallpaperManager {
     private final Context mContext;
     private final boolean mWcgEnabled;
     private final ColorManagementProxy mCmProxy;
-    private static Boolean sIsMultiCropEnabled = null;
 
     /**
      * Special drawable that draws a wallpaper as fast as possible.  Assumes
@@ -1011,18 +1009,6 @@ public class WallpaperManager {
     @TestApi
     public boolean isLockscreenLiveWallpaperEnabled() {
         return true;
-    }
-
-    /**
-     * Temporary method for project b/270726737
-     * @return true if the wallpaper supports different crops for different display dimensions
-     * @hide
-     */
-    public static boolean isMultiCropEnabled() {
-        if (sIsMultiCropEnabled == null) {
-            sIsMultiCropEnabled = multiCrop();
-        }
-        return sIsMultiCropEnabled;
     }
 
     /**
@@ -1641,12 +1627,7 @@ public class WallpaperManager {
      */
     @Nullable
     public Rect peekBitmapDimensions(@SetWallpaperFlags int which, boolean returnDefault) {
-        if (multiCrop()) {
-            return peekBitmapDimensionsAsUser(which, returnDefault, mContext.getUserId());
-        }
-        checkExactlyOneWallpaperFlagSet(which);
-        return sGlobals.peekWallpaperDimensions(mContext, returnDefault, which,
-                mContext.getUserId());
+        return peekBitmapDimensionsAsUser(which, returnDefault, mContext.getUserId());
     }
 
     /**
@@ -2520,43 +2501,11 @@ public class WallpaperManager {
     public int setBitmap(Bitmap fullImage, Rect visibleCropHint,
             boolean allowBackup, @SetWallpaperFlags int which, int userId)
             throws IOException {
-        if (multiCrop()) {
             SparseArray<Rect> cropMap = new SparseArray<>();
             if (visibleCropHint != null) cropMap.put(ORIENTATION_UNKNOWN, visibleCropHint);
             WallpaperDescription description = new WallpaperDescription.Builder().setCropHints(
                     cropMap).build();
             return setBitmapWithDescription(fullImage, description, allowBackup, which, userId);
-        }
-        validateRect(visibleCropHint);
-        if (sGlobals.mService == null) {
-            Log.w(TAG, "WallpaperService not running");
-            throw new RuntimeException(new DeadSystemException());
-        }
-        final Bundle result = new Bundle();
-        final WallpaperSetCompletion completion = new WallpaperSetCompletion();
-        final List<Rect> crops = visibleCropHint == null ? null : List.of(visibleCropHint);
-        try {
-            // This code no longer executes because multiCrop() is always true. This is just so
-            // that this compiles.
-            WallpaperDescription description = new WallpaperDescription.Builder().build();
-            ParcelFileDescriptor fd = sGlobals.mService.setWallpaper(null,
-                    mContext.getOpPackageName(), description, allowBackup, result, which,
-                    completion, userId);
-            if (fd != null) {
-                FileOutputStream fos = null;
-                try {
-                    fos = new ParcelFileDescriptor.AutoCloseOutputStream(fd);
-                    fullImage.compress(Bitmap.CompressFormat.PNG, 90, fos);
-                    fos.close();
-                    completion.waitForCompletion();
-                } finally {
-                    IoUtils.closeQuietly(fos);
-                }
-            }
-        } catch (RemoteException e) {
-            throw e.rethrowFromSystemServer();
-        }
-        return result.getInt(EXTRA_NEW_WALLPAPER_ID, 0);
     }
 
     /**
@@ -2737,42 +2686,9 @@ public class WallpaperManager {
     public int setStream(InputStream bitmapData, Rect visibleCropHint,
             boolean allowBackup, @SetWallpaperFlags int which)
                     throws IOException {
-        if (multiCrop()) {
             SparseArray<Rect> cropMap = new SparseArray<>();
             if (visibleCropHint != null) cropMap.put(ORIENTATION_UNKNOWN, visibleCropHint);
             return setStreamWithCrops(bitmapData, cropMap, allowBackup, which);
-        }
-        validateRect(visibleCropHint);
-        if (sGlobals.mService == null) {
-            Log.w(TAG, "WallpaperService not running");
-            throw new RuntimeException(new DeadSystemException());
-        }
-        final Bundle result = new Bundle();
-        final WallpaperSetCompletion completion = new WallpaperSetCompletion();
-        final List<Rect> crops = visibleCropHint == null ? null : List.of(visibleCropHint);
-        try {
-            // This code no longer executes because multiCrop() is always true. This is just so
-            // that this compiles.
-            WallpaperDescription description = new WallpaperDescription.Builder().build();
-            ParcelFileDescriptor fd = sGlobals.mService.setWallpaper(null,
-                    mContext.getOpPackageName(), description, allowBackup, result, which,
-                    completion, mContext.getUserId());
-            if (fd != null) {
-                FileOutputStream fos = null;
-                try {
-                    fos = new ParcelFileDescriptor.AutoCloseOutputStream(fd);
-                    copyStreamToWallpaperFile(bitmapData, fos);
-                    fos.close();
-                    completion.waitForCompletion();
-                } finally {
-                    IoUtils.closeQuietly(fos);
-                }
-            }
-        } catch (RemoteException e) {
-            throw e.rethrowFromSystemServer();
-        }
-
-        return result.getInt(EXTRA_NEW_WALLPAPER_ID, 0);
     }
 
     /**

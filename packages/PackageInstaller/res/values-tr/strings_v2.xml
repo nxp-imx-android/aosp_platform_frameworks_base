@@ -92,8 +92,8 @@
     <string name="message_restore_error_user_action_needed" msgid="2206904734076205208">"Bu uygulamayı geri yükleyebilmeniz için <xliff:g id="INSTALLER_NAME">%1$s</xliff:g> programının daha fazla bilgiye ihtiyacı var"</string>
     <string name="message_restore_error_less_storage" msgid="4945507738776981462">"Bu uygulamayı geri yüklemek için &lt;b&gt;<xliff:g id="BYTES">%1$s</xliff:g>&lt;/b&gt; yer açıp tekrar deneyin"</string>
     <string name="message_restore_error_offline" msgid="4212551781323276126">"Bu uygulamayı geri yüklemek için internet bağlantınızı kontrol edip tekrar deneyin"</string>
-    <string name="message_restore_error_installer_disabled" msgid="1089791898782445342">"Bu uygulamayı geri yüklemek için Ayarlar\'da <xliff:g id="INSTALLERNAME">%1$s</xliff:g> yükleyicisini etkinleştirin"</string>
-    <string name="message_restore_error_installer_absent" msgid="8492838251989389724">"Bu uygulamayı geri yüklemek için <xliff:g id="INSTALLER_NAME">%1$s</xliff:g> yükleyicisini yüklemeniz gerekiyor"</string>
+    <string name="message_restore_error_installer_disabled" msgid="1089791898782445342">"Bu uygulamayı geri yüklemek için Ayarlar\'da <xliff:g id="INSTALLERNAME">%1$s</xliff:g> uygulamasını etkinleştirin"</string>
+    <string name="message_restore_error_installer_absent" msgid="8492838251989389724">"Bu uygulamayı geri yüklemek için <xliff:g id="INSTALLER_NAME">%1$s</xliff:g> uygulamasını yüklemeniz gerekiyor"</string>
     <string name="message_restore_error_generic" msgid="5903850636679929406">"Bu uygulamayı geri yüklemeye çalışırken bir sorun oluştu"</string>
     <string name="message_uninstall_activity" msgid="3263352475743590167">"<xliff:g id="ACTIVITY_NAME">%1$s</xliff:g>, şu uygulamanın bir parçasıdır: <xliff:g id="APP_NAME">%2$s</xliff:g>"</string>
     <!-- no translation found for cannot_install_app_blocked_summary (5439893912308217959) -->

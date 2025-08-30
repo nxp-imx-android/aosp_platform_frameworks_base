@@ -325,6 +325,14 @@ class DesktopRepository(
     /** Returns the default desk in the given display. */
     private fun getDefaultDesk(displayId: Int): Desk? = desktopData.getDefaultDesk(displayId)
 
+    /** Returns the index of the given desk in the ordered list of desks. */
+    fun getDeskPosition(deskId: Int): Int? {
+        val desks = desktopData.getOrderedDesks(getDisplayForDesk(deskId))
+        val index = desks.indexOfFirst { it.deskId == deskId }
+        if (index < 0) return null
+        return index
+    }
+
     /** Returns the id of the desk ordered previous to the given one, or null if there isn't one. */
     fun getPreviousDeskId(deskId: Int): Int? {
         val desks = desktopData.getOrderedDesks(getDisplayForDesk(deskId))

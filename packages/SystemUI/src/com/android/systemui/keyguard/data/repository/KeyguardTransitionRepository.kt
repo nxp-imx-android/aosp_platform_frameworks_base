@@ -34,6 +34,7 @@ import com.android.systemui.keyguard.shared.model.TransitionModeOnCanceled
 import com.android.systemui.keyguard.shared.model.TransitionState
 import com.android.systemui.keyguard.shared.model.TransitionStep
 import com.android.systemui.keyguard.shared.transition.KeyguardTransitionAnimationCallback
+import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import java.util.UUID
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineDispatcher
@@ -341,6 +342,15 @@ constructor(
     }
 
     private fun emitTransition(nextStep: TransitionStep, isManual: Boolean = false) {
+        if (SceneContainerFlag.isEnabled) {
+            if (
+                nextStep.from == KeyguardState.UNDEFINED && nextStep.to == KeyguardState.UNDEFINED
+            ) {
+                Log.i(TAG, "Skipping UNDEFINED->UNDEFINED transition")
+                return
+            }
+        }
+
         logAndTrace(nextStep, isManual)
         _transitions.tryEmit(nextStep)
         lastStep = nextStep

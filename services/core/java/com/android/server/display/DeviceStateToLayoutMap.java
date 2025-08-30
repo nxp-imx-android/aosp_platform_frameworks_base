@@ -112,6 +112,14 @@ class DeviceStateToLayoutMap {
         return layout;
     }
 
+    void put(int state, Layout layout) {
+        mLayoutMap.put(state, layout);
+    }
+
+    void remove(int state) {
+        mLayoutMap.remove(state);
+    }
+
     int size() {
         return mLayoutMap.size();
     }

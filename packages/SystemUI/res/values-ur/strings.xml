@@ -146,17 +146,12 @@
     <string name="screen_record_retake" msgid="3846643688365398450">"دوبارہ لیں"</string>
     <string name="screen_record_edit" msgid="8733014191240769309">"ترمیم کریں"</string>
     <string name="screen_record_delete" msgid="1023421937978254537">"حذف کریں"</string>
-    <!-- no translation found for screen_record_play (4732544724679889445) -->
-    <skip />
-    <!-- no translation found for screen_record_pause (1715012292444967776) -->
-    <skip />
-    <!-- no translation found for screen_record_mute (8111682249858638168) -->
-    <skip />
-    <!-- no translation found for screen_record_unmute (2207912659365156472) -->
-    <skip />
+    <string name="screen_record_play" msgid="4732544724679889445">"چلائیں"</string>
+    <string name="screen_record_pause" msgid="1715012292444967776">"موقوف کریں"</string>
+    <string name="screen_record_mute" msgid="8111682249858638168">"خاموش کریں"</string>
+    <string name="screen_record_unmute" msgid="2207912659365156472">"آواز چالو کریں"</string>
     <string name="screen_capture_fullscreen_screenshot_button" msgid="3173749413928507877">"پوری اسکرین کا اسکرین شاٹ لیں"</string>
-    <!-- no translation found for screen_capture_fullscreen_record_button (5697594296042198690) -->
-    <skip />
+    <string name="screen_capture_fullscreen_record_button" msgid="5697594296042198690">"پوری اسکرین کو ریکارڈ کریں"</string>
     <string name="screen_capture_region_selection_button" msgid="515608875142444130">"منتخب علاقے کا اسکرین شاٹ لیں"</string>
     <string name="screen_capture_record_region_selection_button" msgid="3699353194755563053">"منتخب علاقے کو ریکارڈ کریں"</string>
     <string name="screen_capture_toolbar_screenshot_button" msgid="5676585348709494125">"اسکرین شاٹ"</string>
@@ -689,8 +684,9 @@
     <string name="notification_section_header_conversations" msgid="821834744538345661">"گفتگوئیں"</string>
     <string name="accessibility_notification_section_header_gentle_clear_all" msgid="6490207897764933919">"سبھی خاموش اطلاعات کو صاف کریں"</string>
     <string name="accessibility_notification_section_header_open_settings" msgid="6235202417954844004">"اطلاعات کی ترتیبات کھولیں"</string>
-    <string name="dnd_suppressing_shade_text" msgid="5588252250634464042">"\'ڈسٹرب نہ کریں\' کے ذریعے اطلاعات کو موقوف کیا گیا"</string>
     <string name="modes_suppressing_shade_text" msgid="6037581130837903239">"{count,plural,offset:1 =0{کوئی اطلاع نہیں ہے}=1{{mode} کی طرف سے اطلاعات کو روک دیا گیا ہے}=2{{mode} اور ایک دوسرے موڈ کے ذریعہ اطلاعات کو روک دیا گیا ہے}other{{mode} اور # دیگر طریقوں کے ذریعے اطلاعات کو روک دیا گیا ہے}}"</string>
+    <!-- no translation found for caught_up_shade_text (8166221989384139659) -->
+    <skip />
     <string name="media_projection_action_text" msgid="3634906766918186440">"ابھی شروع کریں"</string>
     <string name="empty_shade_text" msgid="8935967157319717412">"کوئی اطلاعات نہیں ہیں"</string>
     <string name="no_unseen_notif_text" msgid="395512586119868682">"کوئی نئی اطلاعات نہیں"</string>
@@ -990,6 +986,8 @@
     <string name="group_system_access_notification_shade" msgid="1619028907006553677">"اطلاعات دیکھیں"</string>
     <string name="group_system_access_quick_settings_panel" msgid="1844771096582064926">"فوری ترتیبات دیکھیں"</string>
     <string name="group_system_full_screenshot" msgid="5742204844232667785">"اسکرین شاٹ لیں"</string>
+    <!-- no translation found for group_system_partial_screenshot (2114314797127648010) -->
+    <skip />
     <string name="group_system_access_system_app_shortcuts" msgid="8562482996626694026">"شارٹ کٹس دکھائيں"</string>
     <string name="group_system_go_back" msgid="2730322046244918816">"واپس جائیں"</string>
     <string name="group_system_access_home_screen" msgid="4130366993484706483">"ہوم اسکرین پر جائیں"</string>
@@ -1014,8 +1012,7 @@
     <string name="system_desktop_mode_snap_right_window" msgid="2162560187639411929">"ونڈو کو بائیں طرف منتقل کریں"</string>
     <string name="system_desktop_mode_toggle_maximize_window" msgid="4084100093691768239">"ونڈو کو بڑا کریں"</string>
     <string name="system_desktop_mode_minimize_window" msgid="1248714536732927092">"ونڈو کو چھوٹا کریں"</string>
-    <!-- no translation found for system_desktop_mode_close_window (3072490692608682536) -->
-    <skip />
+    <string name="system_desktop_mode_close_window" msgid="3072490692608682536">"موجودہ ونڈو کو بند کریں"</string>
     <string name="system_multiple_desktop_mode_switch_between_desks" msgid="6093884593003003708">"ایک ڈیسک ٹاپ سے دوسرے ڈیسک ٹاپ پر جائیں"</string>
     <string name="keyboard_shortcut_group_input" msgid="6888282716546625610">"ان پٹ"</string>
     <string name="input_switch_input_language_next" msgid="3782155659868227855">"اگلی زبان پر سوئچ کریں"</string>
@@ -1137,12 +1134,19 @@
     <string name="accessibility_key_gesture_dialog_title" msgid="7614965716626605518">"‫<xliff:g id="ID_1">%1$s</xliff:g> آن کریں؟"</string>
     <string name="accessibility_key_gesture_dialog_content" msgid="4519838108423437794">"‫<xliff:g id="ID_3">^3</xliff:g> استعمال کرنے کے لیے ایکشن "<annotation id="action_key_icon">"آئیکن"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> کی بورڈ شارٹ کٹ ہے۔ <xliff:g id="ID_4">^4</xliff:g>"</string>
     <string name="accessibility_key_gesture_dialog_talkback_intro" msgid="1617808784388544741">"‫<xliff:g id="ID_1">%1$s</xliff:g> ایک سکرین قاری ہے جو آپ کو بلند آواز میں بولے جانے والے آئٹمز کو سننے کی اجازت دیتی ہے۔ یہ ان لوگوں کیلئے مفید ثابت ہو سکتی ہے جنہیں اسکرین دیکھنے میں دشواری پیش آتی ہے۔"</string>
-    <string name="accessibility_key_gesture_dialog_va_intro" msgid="4709198503441288289">"‫<xliff:g id="ID_1">%1$s</xliff:g> آپ کو اپنے آلے کو ہینڈز فری کنٹرول کرنے دیتی ہے۔"</string>
     <string name="accessibility_key_gesture_dialog_positive_button_text" msgid="3670746017523589293">"آن کریں"</string>
     <string name="accessibility_key_gesture_magnification_dialog_title" msgid="5770691510738701250">"<xliff:g id="ID_1">%1$s</xliff:g> کی بورڈ شارٹ کٹ آن ہے"</string>
     <string name="accessibility_key_gesture_magnification_dialog_content" msgid="7575802369763469379">"<xliff:g id="ID_3">^3</xliff:g> کا استعمال کرنے کیلئے ایکشن "<annotation id="action_key_icon">"آئیکن"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> کی بورڈ شارٹ کٹ ہے۔ اس سے آپ کو مواد کو بڑا کرنے کیلئے اسکرین پر تیزی سے زوم ان کرنے کی سہولت حاصل ہوتی ہے۔ زوم کو ایڈجسٹ کرنے کیلئے، ایکشن "<annotation id="action_key_icon">"آئیکن"</annotation>" + <xliff:g id="ID_4">^1</xliff:g> اور \"+\" یا \"-\" دبائیں۔"</string>
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"شارٹ کٹ آف کریں"</string>
     <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"آن رکھیں"</string>
+    <!-- no translation found for accessibility_key_gesture_voice_access_dialog_title (7828090789777023683) -->
+    <skip />
+    <!-- no translation found for accessibility_key_gesture_voice_access_dialog_content (7934170819801013870) -->
+    <skip />
+    <!-- no translation found for accessibility_key_gesture_voice_access_dialog_negative_button_text (3573570279554465078) -->
+    <skip />
+    <!-- no translation found for accessibility_key_gesture_voice_access_dialog_positive_button_text (2306321856544446858) -->
+    <skip />
     <string name="tuner_lock_screen" msgid="2267383813241144544">"مقفل اسکرین"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"بند ہو رہا ہے…"</string>
     <string name="thermal_shutdown_dialog_help_text" msgid="6413474593462902901">"نگہداشت کے اقدامات ملاحظہ کریں"</string>

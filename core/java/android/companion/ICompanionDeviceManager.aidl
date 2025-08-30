@@ -29,6 +29,7 @@ import android.companion.ObservingDevicePresenceRequest;
 import android.companion.datatransfer.PermissionSyncRequest;
 import android.content.ComponentName;
 import android.os.ParcelUuid;
+import android.os.PersistableBundle;
 import android.companion.DeviceId;
 
 
@@ -153,4 +154,6 @@ interface ICompanionDeviceManager {
     AssociationInfo getAssociationByDeviceId(int userId, in DeviceId deviceId);
 
     DeviceId setDeviceId(int associationId, in DeviceId deviceId);
+
+    void setLocalMetadata(int userId, String key, in PersistableBundle value);
 }

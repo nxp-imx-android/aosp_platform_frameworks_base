@@ -33,7 +33,10 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.MutableIntState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -112,6 +115,7 @@ import com.android.systemui.statusbar.systemstatusicons.SystemStatusIconsInCompo
 import com.android.systemui.statusbar.systemstatusicons.ui.compose.SystemStatusIcons
 import com.android.systemui.statusbar.systemstatusicons.ui.viewmodel.SystemStatusIconsViewModel
 import com.android.systemui.statusbar.ui.viewmodel.StatusBarRegionSamplingViewModel
+import com.android.systemui.util.boundsOnScreen
 import javax.inject.Inject
 import javax.inject.Named
 import kotlinx.coroutines.DisposableHandle
@@ -231,8 +235,8 @@ fun StatusBarRoot(
         }
     }
 
-    // Let the DesktopStatusBar compose all the UI if [isDesktopStatusBarEnabled] is true.
-    if (StatusBarForDesktop.isEnabled && statusBarViewModel.isDesktopStatusBarEnabled) {
+    // Let the DesktopStatusBar compose all the UI if [useDesktopStatusBar] is true.
+    if (StatusBarForDesktop.isEnabled && statusBarViewModel.useDesktopStatusBar) {
         DesktopStatusBar(
             viewModel = statusBarViewModel,
             clockViewModelFactory = clockViewModelFactory,
@@ -336,7 +340,7 @@ fun StatusBarRoot(
                 if (SystemStatusIconsInCompose.isEnabled) {
                     phoneStatusBarView.requireViewById<View>(R.id.system_icons).visibility =
                         View.GONE
-                    addSystemStatusIconsComposable(phoneStatusBarView, statusBarViewModel)
+                    addEndSideComposable(phoneStatusBarView, statusBarViewModel)
                 } else {
                     val statusIconContainer =
                         phoneStatusBarView.requireViewById<StatusIconContainer>(R.id.statusIcons)
@@ -411,7 +415,7 @@ private fun addStartSideComposable(
 
     val composeView =
         ComposeView(context).apply {
-            val showDate = Flags.statusBarDate() && statusBarViewModel.isDesktopStatusBarEnabled
+            val showDate = Flags.statusBarDate() && statusBarViewModel.useDesktopStatusBar
 
             layoutParams =
                 LinearLayout.LayoutParams(
@@ -584,23 +588,30 @@ private fun addBatteryComposable(
 }
 
 /**
- * Create a composable that will replace the existing system_icons view. This is added to the end of
- * the status_bar_end_side_container container
+ * Create a composable that will replace the status_bar_end_side_content. This is added to the end
+ * of the status_bar_end_side_container
  */
-private fun addSystemStatusIconsComposable(
+private fun addEndSideComposable(
     phoneStatusBarView: PhoneStatusBarView,
     statusBarViewModel: HomeStatusBarViewModel,
 ) {
+    val endSideContainerView =
+        phoneStatusBarView.requireViewById<View>(R.id.status_bar_end_side_container)
     val systemStatusIconsComposeView =
         ComposeView(phoneStatusBarView.context).apply {
             setContent {
+                val endSideWidth by rememberViewWidthAsState(endSideContainerView)
+
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    modifier =
+                        Modifier.widthIn(max = with(LocalDensity.current) { endSideWidth.toDp() }),
                 ) {
                     SystemStatusIconsContainer(
                         viewModelFactory = statusBarViewModel.systemStatusIconsViewModelFactory,
                         isDark = statusBarViewModel.areaDark,
+                        modifier = Modifier.weight(1f, fill = false),
                     )
 
                     if (RudimentaryBattery.isEnabled) {
@@ -680,4 +691,24 @@ private fun bindRegionSamplingViewModel(
             awaitCancellation()
         }
     }
+}
+
+/**
+ * Tracks the width of a given [view] in pixels and returns it as a [MutableIntState]. The state is
+ * updated whenever the view's layout changes.
+ */
+@Composable
+private fun rememberViewWidthAsState(view: View): MutableIntState {
+    val viewWidth = remember(view) { mutableIntStateOf(view.boundsOnScreen.width()) }
+
+    DisposableEffect(view) {
+        val layoutListener =
+            View.OnLayoutChangeListener { _, _, _, _, _, _, _, _, _ ->
+                viewWidth.intValue = view.boundsOnScreen.width()
+            }
+        view.addOnLayoutChangeListener(layoutListener)
+
+        onDispose { view.removeOnLayoutChangeListener(layoutListener) }
+    }
+    return viewWidth
 }

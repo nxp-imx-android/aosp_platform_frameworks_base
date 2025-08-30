@@ -529,7 +529,7 @@ public class ActivityRecordTests extends WindowTestsBase {
 
         // The configuration change is still sent to the activity, even if it doesn't relaunch.
         final ActivityConfigurationChangeItem expected = new ActivityConfigurationChangeItem(
-                activity.token, activityConfig, activity.getActivityWindowInfo());
+                activity.token, activityConfig, activity.getActivityWindowInfo(), DEFAULT_DISPLAY);
         verify(mClientLifecycleManager).scheduleTransactionItem(
                 eq(activity.app.getThread()), eq(expected));
     }
@@ -602,7 +602,7 @@ public class ActivityRecordTests extends WindowTestsBase {
         final Configuration currentConfig = activity.getConfiguration();
         assertEquals(expectedOrientation, currentConfig.orientation);
         final ActivityConfigurationChangeItem expected = new ActivityConfigurationChangeItem(
-                activity.token, currentConfig, activity.getActivityWindowInfo());
+                activity.token, currentConfig, activity.getActivityWindowInfo(), DEFAULT_DISPLAY);
         verify(mClientLifecycleManager).scheduleTransactionItem(activity.app.getThread(), expected);
         verify(displayRotation).onSetRequestedOrientation();
     }
@@ -904,7 +904,8 @@ public class ActivityRecordTests extends WindowTestsBase {
             activity.ensureActivityConfiguration(true /* ignoreVisibility */);
 
             final ActivityConfigurationChangeItem expected = new ActivityConfigurationChangeItem(
-                    activity.token, activity.getConfiguration(), activity.getActivityWindowInfo());
+                    activity.token, activity.getConfiguration(), activity.getActivityWindowInfo(),
+                    DEFAULT_DISPLAY);
             verify(mClientLifecycleManager).scheduleTransactionItem(
                     activity.app.getThread(), expected);
         } finally {
@@ -1331,14 +1332,18 @@ public class ActivityRecordTests extends WindowTestsBase {
         activity.finishIfPossible("test", false /* oomAdj */);
 
         verify(activity).setVisibility(eq(false));
-        verify(activity.mDisplayContent, never()).executeAppTransition();
+        if (Flags.fallbackTransitionPlayer()) {
+            assertFalse(mAtm.getTransitionController().getCollectingTransition().allReady());
+        } else {
+            verify(activity.mDisplayContent, never()).executeAppTransition();
+        }
     }
 
     /**
      * Verify that finish request for paused activity will prepare and execute an app transition.
      */
     @Test
-    public void testFinishActivityIfPossible_visibleNotResumedExecutesAppTransition() {
+    public void testFinishActivityIfPossible_visibleNotResumedTransitionReady() {
         final ActivityRecord activity = createActivityWithTask();
         clearInvocations(activity.mDisplayContent);
         activity.finishing = false;
@@ -1347,7 +1352,11 @@ public class ActivityRecordTests extends WindowTestsBase {
         activity.finishIfPossible("test", false /* oomAdj */);
 
         verify(activity, atLeast(1)).setVisibility(eq(false));
-        verify(activity.mDisplayContent).executeAppTransition();
+        if (Flags.fallbackTransitionPlayer()) {
+            assertTrue(mAtm.getTransitionController().getCollectingTransition().allReady());
+        } else {
+            verify(activity.mDisplayContent).executeAppTransition();
+        }
     }
 
     /**

@@ -159,7 +159,7 @@ class MultiDisplayVeiledResizeTaskPositionerTest : ShellTestCase() {
                     isResizeable = true
                 }
             )
-        whenever(mockWindowDecoration.calculateValidDragArea()).thenReturn(VALID_DRAG_AREA)
+        whenever(mockWindowDecoration.getValidDragArea()).thenReturn(VALID_DRAG_AREA)
         whenever(mockWindowDecoration.display).thenReturn(mockDisplay)
         whenever(mockDisplay.displayId).thenAnswer { DISPLAY_ID_0 }
 

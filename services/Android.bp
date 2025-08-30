@@ -367,6 +367,9 @@ java_library {
     ] + select(release_flag("RELEASE_MOVE_VCN_TO_MAINLINE"), {
         true: [],
         default: ["service-connectivity-b-platform"],
+    }) + select(release_flag("RELEASE_ANOMALY_DETECTOR"), {
+        true: ["services.signal-collectors"],
+        default: [],
     }),
 
     libs: [
