@@ -42,6 +42,7 @@ import com.android.server.inputmethod.InputMethodSubtypeSwitchingController.ImeS
 
 import org.junit.Test;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -348,6 +349,49 @@ public final class InputMethodSubtypeSwitchingControllerTest {
                 List.of(hardIme));
     }
 
+    /** Verifies that items are filtered correctly. */
+    @Test
+    public void testGetItems() throws Exception {
+        final var controller = new InputMethodSubtypeSwitchingController();
+
+        final var normalItem = createTestItem("Normal", true /* showInImeSwitcherMenu */,
+                false /* isAuxiliary */);
+        final var hiddenItem = createTestItem("Hidden", false /* showInImeSwitcherMenu */,
+                false /* isAuxiliary */);
+        final var auxItem = createTestItem("Aux", true /* showInImeSwitcherMenu */,
+                true /* isAuxiliary */);
+        final var hiddenAuxItem = createTestItem("HiddenAux", false /* showInImeSwitcherMenu */,
+                true /* isAuxiliary */);
+
+        final var allItems = List.of(normalItem, hiddenItem, auxItem, hiddenAuxItem);
+
+        // Use reflection to set the private mEnabledItems field for testing.
+        final Field enabledItemsField =
+                InputMethodSubtypeSwitchingController.class.getDeclaredField("mEnabledItems");
+        enabledItemsField.setAccessible(true);
+        enabledItemsField.set(controller, allItems);
+
+        // Test case 1: getItems(forMenu=false, includeAuxiliary=false)
+        // Should return non-auxiliary items.
+        var result = controller.getItems(false /* forMenu */, false /* includeAuxiliary */);
+        assertEquals(List.of(normalItem, hiddenItem), result);
+
+        // Test case 2: getItems(forMenu=true, includeAuxiliary=false)
+        // Should return non-auxiliary items that are shown in the menu.
+        result = controller.getItems(true /* forMenu */, false /* includeAuxiliary */);
+        assertEquals(List.of(normalItem), result);
+
+        // Test case 3: getItems(forMenu=false, includeAuxiliary=true)
+        // Should return all items.
+        result = controller.getItems(false /* forMenu */, true /* includeAuxiliary */);
+        assertEquals(allItems, result);
+
+        // Test case 4: getItems(forMenu=true, includeAuxiliary=true)
+        // Should return all items that are shown in the menu.
+        result = controller.getItems(true /* forMenu */, true /* includeAuxiliary */);
+        assertEquals(List.of(normalItem, auxItem), result);
+    }
+
     /** Verifies that switch aware and switch unaware IMEs are combined together. */
     @Test
     public void testSwitchAwareAndUnawareCombined() {
@@ -646,6 +690,16 @@ public final class InputMethodSubtypeSwitchingControllerTest {
         return new ImeSubtypeListItem(imeName, subtypeName, null /* layoutName */,
                 imi, subtypeIndex, true /* showInImeSwitcherMenu */, false /* isAuxiliary */,
                 true /* suitableForHardware */);
+    }
+
+    private static ImeSubtypeListItem createTestItem(@NonNull String imeName,
+            boolean showInImeSwitcherMenu, boolean isAuxiliary) {
+        final var componentName = new ComponentName(TEST_PACKAGE_NAME, imeName);
+        final var imi = createTestImi(componentName, null /* subtypes */,
+                true /* supportsSwitchingToNextInputMethod */);
+        return new ImeSubtypeListItem(imeName, null /* subtypeName */, null /* layoutName */,
+                imi, NOT_A_SUBTYPE_INDEX, showInImeSwitcherMenu, isAuxiliary,
+                false /* suitableForHardware */);
     }
 
     /**
