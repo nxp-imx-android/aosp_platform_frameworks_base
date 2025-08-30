@@ -2010,6 +2010,58 @@ public abstract class CameraMetadata<TKey> {
     public static final int INFO_SUPPORTED_HARDWARE_LEVEL_EXTERNAL = 4;
 
     //
+    // Enumeration values for CameraCharacteristics#INFO_DEVICE_TYPE
+    //
+
+    /**
+     * <p>This camera device is physically a part of this Android device, and the data produced
+     * is always within the device's control before it reaches the application requesting it.</p>
+     * @see CameraCharacteristics#INFO_DEVICE_TYPE
+     */
+    @FlaggedApi(Flags.FLAG_CAMERA_DEVICE_TYPE_API)
+    public static final int INFO_DEVICE_TYPE_BUILT_IN = 0;
+
+    /**
+     * <p>This camera device is not permanently connected to this Android device.  It may be
+     * connected by a wired connection, such as a USB webcam, or it might be connected
+     * wirelessly, such as via WiFi or other communication mechanism.</p>
+     * <p>The provenance of the image data from the external camera cannot be guaranteed, since it
+     * is produced by hardware that is not controlled by this Android device.</p>
+     * <p>Note that an <code>EXTERNAL</code> <code>{@link CameraCharacteristics#INFO_DEVICE_TYPE android.info.deviceType}</code> does not mean the
+     * <code>{@link CameraCharacteristics#INFO_SUPPORTED_HARDWARE_LEVEL android.info.supportedHardwareLevel}</code> must be <code>EXTERNAL</code>. A basic USB webcam would
+     * likely have an <code>EXTERNAL</code> hardware level, but more sophisticated remote camera systems
+     * may have more capabilities than that, and be listed with a <code>LIMITED</code> or better
+     * hardware level.</p>
+     *
+     * @see CameraCharacteristics#INFO_DEVICE_TYPE
+     * @see CameraCharacteristics#INFO_SUPPORTED_HARDWARE_LEVEL
+     * @see CameraCharacteristics#INFO_DEVICE_TYPE
+     */
+    @FlaggedApi(Flags.FLAG_CAMERA_DEVICE_TYPE_API)
+    public static final int INFO_DEVICE_TYPE_EXTERNAL = 1;
+
+    /**
+     * <p>This camera device produces purely virtual images, though they may be based on the
+     * output of a real hardware camera in some cases. For example, a virtual reality headset
+     * may have a virtual camera as the front-facing camera, producing a virtual avatar to
+     * represent the user, which is animated based on sensors on the headset.</p>
+     * <p>The image data should not be assumed to be real.</p>
+     * @see CameraCharacteristics#INFO_DEVICE_TYPE
+     */
+    @FlaggedApi(Flags.FLAG_CAMERA_DEVICE_TYPE_API)
+    public static final int INFO_DEVICE_TYPE_VIRTUAL = 2;
+
+    /**
+     * <p>This camera device has an unknown classification.</p>
+     * <p>This value will be used when new device classifications need to be added in future
+     * Android versions, so that applications targeting older SDK levels do not have to
+     * handle unknown enumeration values.</p>
+     * @see CameraCharacteristics#INFO_DEVICE_TYPE
+     */
+    @FlaggedApi(Flags.FLAG_CAMERA_DEVICE_TYPE_API)
+    public static final int INFO_DEVICE_TYPE_UNKNOWN = 3;
+
+    //
     // Enumeration values for CameraCharacteristics#SYNC_MAX_LATENCY
     //
 
