@@ -520,10 +520,10 @@ public class PipController implements ConfigurationChangeListener,
                     mPipBoundsState.getDisplayLayout().getDisplayCutout();
             boolean requireUnstash = false;
             if (mPipBoundsState.getStashedState() == PipBoundsState.STASH_TYPE_LEFT
-                    && !displayCutout.getBoundingRectLeft().isEmpty()) {
+                    && displayCutout != null && !displayCutout.getBoundingRectLeft().isEmpty()) {
                 requireUnstash = true;
             } else if (mPipBoundsState.getStashedState() == PipBoundsState.STASH_TYPE_RIGHT
-                    && !displayCutout.getBoundingRectRight().isEmpty()) {
+                    && displayCutout != null && !displayCutout.getBoundingRectRight().isEmpty()) {
                 requireUnstash = true;
             }
             if (requireUnstash) {

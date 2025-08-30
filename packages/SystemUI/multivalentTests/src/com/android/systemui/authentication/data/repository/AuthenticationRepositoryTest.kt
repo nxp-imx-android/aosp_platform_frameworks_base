@@ -117,6 +117,13 @@ class AuthenticationRepositoryTest : SysuiTestCase() {
             mobileConnectionsRepository.fake.isAnySimSecure.value = true
             assertThat(authMethod).isEqualTo(AuthenticationMethodModel.Sim)
             assertThat(underTest.getAuthenticationMethod()).isEqualTo(AuthenticationMethodModel.Sim)
+
+            setSecurityModeAndDispatchBroadcast(
+                KeyguardSecurityModel.SecurityMode.SecureLockDeviceBiometricAuth
+            )
+            assertThat(authMethod).isEqualTo(AuthenticationMethodModel.Biometric)
+            assertThat(underTest.getAuthenticationMethod())
+                .isEqualTo(AuthenticationMethodModel.Biometric)
         }
 
     @Test

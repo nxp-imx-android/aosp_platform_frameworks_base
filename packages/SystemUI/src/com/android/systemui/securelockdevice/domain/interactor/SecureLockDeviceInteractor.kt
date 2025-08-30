@@ -16,6 +16,10 @@
 
 package com.android.systemui.securelockdevice.domain.interactor
 
+import android.security.authenticationpolicy.AuthenticationPolicyManager
+import android.security.authenticationpolicy.DisableSecureLockDeviceParams
+import com.android.internal.widget.LockPatternUtils
+import com.android.internal.widget.LockPatternUtils.StrongAuthTracker.PRIMARY_AUTH_REQUIRED_FOR_SECURE_LOCK_DEVICE
 import com.android.systemui.biometrics.domain.interactor.FacePropertyInteractor
 import com.android.systemui.biometrics.domain.interactor.FingerprintPropertyInteractor
 import com.android.systemui.biometrics.shared.model.BiometricModalities
@@ -25,11 +29,15 @@ import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.deviceentry.domain.interactor.DeviceEntryBiometricSettingsInteractor
 import com.android.systemui.deviceentry.domain.interactor.SystemUIDeviceEntryFaceAuthInteractor
+import com.android.systemui.keyguard.domain.interactor.KeyguardTransitionInteractor
+import com.android.systemui.keyguard.shared.model.KeyguardState
 import com.android.systemui.log.LogBuffer
 import com.android.systemui.log.core.LogLevel
 import com.android.systemui.log.dagger.SecureLockDeviceLog
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.securelockdevice.data.repository.SecureLockDeviceRepository
+import com.android.systemui.user.domain.interactor.SelectedUserInteractor
+import dagger.Lazy
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
@@ -39,7 +47,11 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 
 /**
  * Handles business logic for secure lock device.
@@ -56,11 +68,15 @@ class SecureLockDeviceInteractor
 constructor(
     @Application applicationScope: CoroutineScope,
     @SecureLockDeviceLog private val logBuffer: LogBuffer,
-    secureLockDeviceRepository: SecureLockDeviceRepository,
+    private val secureLockDeviceRepository: SecureLockDeviceRepository,
     biometricSettingsInteractor: DeviceEntryBiometricSettingsInteractor,
     private val deviceEntryFaceAuthInteractor: SystemUIDeviceEntryFaceAuthInteractor,
     fingerprintPropertyInteractor: FingerprintPropertyInteractor,
     facePropertyInteractor: FacePropertyInteractor,
+    private val lockPatternUtils: LockPatternUtils,
+    private val authenticationPolicyManager: AuthenticationPolicyManager?,
+    private val selectedUserInteractor: SelectedUserInteractor,
+    private val keyguardTransitionInteractor: Lazy<KeyguardTransitionInteractor>,
 ) {
     /** @see SecureLockDeviceRepository.isSecureLockDeviceEnabled */
     val isSecureLockDeviceEnabled: StateFlow<Boolean> =
@@ -81,6 +97,14 @@ constructor(
     /** @see SecureLockDeviceRepository.requiresStrongBiometricAuthForSecureLockDevice */
     val requiresStrongBiometricAuthForSecureLockDevice: StateFlow<Boolean> =
         secureLockDeviceRepository.requiresStrongBiometricAuthForSecureLockDevice.stateIn(
+            applicationScope,
+            SharingStarted.Eagerly,
+            false,
+        )
+
+    /** @see SecureLockDeviceRepository.suppressBouncerMessageUpdates */
+    val suppressBouncerMessageUpdates: StateFlow<Boolean> =
+        secureLockDeviceRepository.suppressBouncerMessageUpdates.stateIn(
             applicationScope,
             SharingStarted.Eagerly,
             false,
@@ -115,6 +139,21 @@ constructor(
     val isFullyUnlockedAndReadyToDismiss: StateFlow<Boolean> =
         _isFullyUnlockedAndReadyToDismiss.asStateFlow()
 
+    init {
+        if (!SceneContainerFlag.isEnabled) {
+            // TODO (b/427071498): remove when SceneContainerFlag is removed
+            applicationScope.launch {
+                isFullyUnlockedAndReadyToDismiss
+                    .filter { it }
+                    .flatMapLatest {
+                        keyguardTransitionInteractor.get().isFinishedIn(KeyguardState.GONE)
+                    }
+                    .filter { it }
+                    .collect { onGoneTransitionFinished() }
+            }
+        }
+    }
+
     /**
      * Whether the user has completed two-factor authentication (primary authentication and active
      * strong biometric authentication or confirmed passive strong biometric authentication)
@@ -144,6 +183,11 @@ constructor(
             { str1 = authState.toString() },
             { "onBiometricAuthenticatedStateUpdated: authState=$str1" },
         )
+        val pendingConfirmation = authState.needsUserConfirmation
+        _showConfirmBiometricAuthButton.value = pendingConfirmation
+        deviceEntryFaceAuthInteractor.onSecureLockDeviceConfirmButtonShowingChanged(
+            pendingConfirmation
+        )
         _strongBiometricAuthenticationComplete.value = authState.isAuthenticatedAndConfirmed
     }
 
@@ -157,14 +201,68 @@ constructor(
         _isFullyUnlockedAndReadyToDismiss.value = true
     }
 
+    /** @see SecureLockDeviceRepository.suppressBouncerMessageUpdates */
+    fun suppressBouncerMessages() {
+        logBuffer.log(TAG, LogLevel.DEBUG, "suppressBouncerMessages")
+        secureLockDeviceRepository.suppressBouncerMessageUpdates.value = true
+    }
+
+    private val _showConfirmBiometricAuthButton = MutableStateFlow<Boolean>(false)
+
+    /**
+     * Indicates a confirm button should be displayed on the UI for the user to confirm a successful
+     * strong biometric authentication during secure lock device.
+     */
+    val showConfirmBiometricAuthButton: StateFlow<Boolean> =
+        _showConfirmBiometricAuthButton.asStateFlow()
+
+    private val _showTryAgainButton = MutableStateFlow<Boolean>(false)
+    /**
+     * Indicates a try again button should be displayed on the UI for the user to retry
+     * authentication during secure lock device.
+     */
+    val showTryAgainButton: StateFlow<Boolean> = _showTryAgainButton.asStateFlow()
+
+    private val _showingError = MutableStateFlow<Boolean>(false)
+    /**
+     * Indicates an error is being displayed on the UI during secure lock device biometric
+     * authentication.
+     */
+    val showingError: StateFlow<Boolean> = _showingError.asStateFlow()
+
     /**
      * Whether the device should listen for biometric auth while secure lock device is enabled. The
      * device should stop listening when pending authentication, when authenticated, or when the
      * biometric auth screen is exited without authenticating.
      */
     val shouldListenForBiometricAuth: Flow<Boolean> =
-        // TODO (b/405120698, b/405120700): update to consider confirm / try again buttons
-        requiresStrongBiometricAuthForSecureLockDevice
+        combine(
+            requiresStrongBiometricAuthForSecureLockDevice,
+            showConfirmBiometricAuthButton,
+            showTryAgainButton,
+        ) { requiresBiometricAuth, confirmButtonShowing, showTryAgainButton ->
+            requiresBiometricAuth && !confirmButtonShowing && !showTryAgainButton
+        }
+
+    /**
+     * Called after a biometric authentication error during secure lock device when a try again
+     * button should be displayed on the UI to allow the user to restart auth.
+     */
+    fun onRetryAvailableChanged(isAvailable: Boolean) {
+        logBuffer.log(
+            TAG,
+            LogLevel.DEBUG,
+            { bool1 = isAvailable },
+            { "onRetryAvailableChanged=$bool1" },
+        )
+        _showTryAgainButton.value = isAvailable
+        deviceEntryFaceAuthInteractor.onSecureLockDeviceTryAgainButtonShowingChanged(isAvailable)
+    }
+
+    fun onShowingError(showingError: Boolean) {
+        logBuffer.log(TAG, LogLevel.DEBUG, { bool1 = showingError }, { "onShowingError=$bool1" })
+        _showingError.value = showingError
+    }
 
     /** Strong biometric modalities enrolled and enabled on the device. */
     val enrolledStrongBiometricModalities: Flow<BiometricModalities> =
@@ -192,12 +290,47 @@ constructor(
             }
             .distinctUntilChanged()
 
+    /** Whether the device has a strong fingerprint enrollment on the device. */
+    val hasFingerprint: StateFlow<Boolean> =
+        enrolledStrongBiometricModalities
+            .map { it.hasFingerprint }
+            .stateIn(applicationScope, SharingStarted.Eagerly, false)
+
+    /** Whether the device has a strong face enrollment on the device. */
+    val hasFace: StateFlow<Boolean> =
+        enrolledStrongBiometricModalities
+            .map { it.hasFace }
+            .stateIn(applicationScope, SharingStarted.Eagerly, false)
+
     /** Called when biometric authentication is requested for secure lock device. */
-    // TODO: call when secure lock device biometric auth is shown
     fun onBiometricAuthRequested() {
         logBuffer.log(TAG, LogLevel.DEBUG, "onBiometricAuthRequested")
+        resetBiometricAuthState()
+        _isFullyUnlockedAndReadyToDismiss.value = false
         _isBiometricAuthVisible.value = true
         deviceEntryFaceAuthInteractor.onSecureLockDeviceBiometricAuthRequested()
+    }
+
+    /** Called when the user clicks the try again button to resume authentication. */
+    fun onRetryBiometricAuth() {
+        logBuffer.log(TAG, LogLevel.DEBUG, "onRetryBiometricAuth")
+        secureLockDeviceRepository.suppressBouncerMessageUpdates.value = false
+        _showTryAgainButton.value = false
+        _showingError.value = false
+        deviceEntryFaceAuthInteractor.onSecureLockDeviceBiometricAuthRequested()
+    }
+
+    /**
+     * Resets UI state when leaving the biometric auth screen without authenticating, or when the
+     * secure lock device UI state is reset upon the gone transition completing.
+     */
+    private fun resetBiometricAuthState() {
+        logBuffer.log(TAG, LogLevel.DEBUG, "resetBiometricAuthState")
+        secureLockDeviceRepository.suppressBouncerMessageUpdates.value = true
+        _isBiometricAuthVisible.value = false
+        _showConfirmBiometricAuthButton.value = false
+        _showTryAgainButton.value = false
+        _showingError.value = false
     }
 
     /** Called when the biometric auth view or overlay is hidden. */
@@ -208,6 +341,44 @@ constructor(
             { bool1 = _isFullyUnlockedAndReadyToDismiss.value },
             { "onBiometricAuthUiHidden: isFullyUnlockedAndReadyToDismiss=$bool1" },
         )
+        deviceEntryFaceAuthInteractor.onSecureLockDeviceBiometricAuthHidden()
+
+        // Determine if view is hidden for successful biometric auth / confirmation, or if the user
+        // is unauthenticated (back gesture, lockout, screen off) and we should resecure the device.
+        if (!_isFullyUnlockedAndReadyToDismiss.value) {
+            /**
+             * Biometric authentication for secure lock device has been interrupted (e.g. device
+             * went to sleep, back gesture, biometric lockout, etc.)
+             */
+            logBuffer.log(
+                TAG,
+                LogLevel.DEBUG,
+                "User exited secure lock device biometric auth screen without " +
+                    "authenticating, set secure lock device strong auth flag.",
+            )
+            lockPatternUtils.requireStrongAuth(
+                PRIMARY_AUTH_REQUIRED_FOR_SECURE_LOCK_DEVICE,
+                selectedUserInteractor.getSelectedUserId(),
+            )
+            resetBiometricAuthState()
+        }
+    }
+
+    /**
+     * Called when the secure lock device view has fully transitioned to gone, in order to disable
+     * secure lock device and reset the biometric auth state.
+     */
+    fun onGoneTransitionFinished() {
+        logBuffer.log(TAG, LogLevel.DEBUG, "onGoneTransitionFinished")
+        authenticationPolicyManager?.disableSecureLockDevice(
+            DisableSecureLockDeviceParams(
+                "Disabling secure lock device on completed two-factor primary and strong " +
+                    "biometric authentication"
+            )
+        )
+        resetBiometricAuthState()
+        _isFullyUnlockedAndReadyToDismiss.value = false
+        _strongBiometricAuthenticationComplete.value = false
     }
 
     // TODO (b/427071498): remove when SceneContainerFlag is removed

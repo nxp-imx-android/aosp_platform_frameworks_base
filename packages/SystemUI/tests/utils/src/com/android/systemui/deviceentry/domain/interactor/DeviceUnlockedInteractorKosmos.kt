@@ -39,7 +39,7 @@ val Kosmos.deviceUnlockedInteractor by Fixture {
             fingerprintAuthInteractor = deviceEntryFingerprintAuthInteractor,
             powerInteractor = powerInteractor,
             biometricSettingsInteractor = deviceEntryBiometricSettingsInteractor,
-            secureLockDeviceInteractor = secureLockDeviceInteractor,
+            secureLockDeviceInteractor = { secureLockDeviceInteractor },
             systemPropertiesHelper = fakeSystemPropertiesHelper,
             secureSettingsRepository = userAwareSecureSettingsRepository,
             keyguardInteractor = keyguardInteractor,

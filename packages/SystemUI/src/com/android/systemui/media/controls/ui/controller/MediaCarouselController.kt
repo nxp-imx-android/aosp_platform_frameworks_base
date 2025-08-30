@@ -1064,7 +1064,7 @@ constructor(
         onCardVisibilityChanged()
     }
 
-    /** Triggered whenever carousel's scroll position changes, revealing a new card.  */
+    /** Triggered whenever carousel's scroll position changes, revealing a new card. */
     fun onVisibleCardChanged() {
         if (!enableSuggestedDeviceUi()) {
             return
@@ -1088,11 +1088,7 @@ constructor(
         val visibleMediaIndex = mediaCarouselScrollHandler.visibleMediaIndex
         debugLogger.logCardVisibilityChanged(isCarouselVisible, visibleMediaIndex)
 
-        if (
-            !enableSuggestedDeviceUi() ||
-                !isCarouselVisible ||
-                MediaPlayerData.mediaData().all { it.second.resumption }
-        ) {
+        if (!enableSuggestedDeviceUi() || !isCarouselVisible) {
             return
         }
         if (MediaPlayerData.players().size > visibleMediaIndex) {

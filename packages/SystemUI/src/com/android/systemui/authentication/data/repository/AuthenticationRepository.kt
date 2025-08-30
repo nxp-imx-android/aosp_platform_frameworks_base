@@ -28,6 +28,7 @@ import com.android.internal.widget.LockPatternUtils.StrongAuthTracker.STRONG_BIO
 import com.android.internal.widget.LockscreenCredential
 import com.android.keyguard.KeyguardSecurityModel
 import com.android.systemui.authentication.shared.model.AuthenticationMethodModel
+import com.android.systemui.authentication.shared.model.AuthenticationMethodModel.Biometric
 import com.android.systemui.authentication.shared.model.AuthenticationMethodModel.None
 import com.android.systemui.authentication.shared.model.AuthenticationMethodModel.Password
 import com.android.systemui.authentication.shared.model.AuthenticationMethodModel.Pattern
@@ -413,6 +414,7 @@ constructor(
                 KeyguardSecurityModel.SecurityMode.Password -> Password
                 KeyguardSecurityModel.SecurityMode.Pattern -> Pattern
                 KeyguardSecurityModel.SecurityMode.None -> None
+                KeyguardSecurityModel.SecurityMode.SecureLockDeviceBiometricAuth -> Biometric
                 KeyguardSecurityModel.SecurityMode.Invalid -> error("Invalid security mode!")
             }
         }

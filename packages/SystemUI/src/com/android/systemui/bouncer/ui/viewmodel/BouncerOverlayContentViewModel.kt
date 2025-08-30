@@ -57,6 +57,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.map
 
 /** Models UI state for the content of the bouncer overlay. */
@@ -185,6 +186,7 @@ constructor(
             launch { message.activate() }
             launch {
                 authenticationInteractor.authenticationMethod
+                    .filter { it !is AuthenticationMethodModel.Biometric }
                     .map(::getChildViewModel)
                     .collectLatest { childViewModelOrNull ->
                         _authMethodViewModel.value = childViewModelOrNull

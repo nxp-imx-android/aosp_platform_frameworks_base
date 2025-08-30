@@ -483,6 +483,23 @@ public class Transitions implements RemoteCallable<Transitions>,
         mRemoteTransitionHandler.removeFiltered(remoteTransition);
     }
 
+    /**
+     * Check whether a given TransitionInfo object would be handled by the TransitionFilter(s)
+     * registered with the RemoteTransitionHandler.
+     *
+     * @param info the TransitionInfo to check with the RemoteTransitionHandler.
+     * @return true if the info matches with a registered TransitionFilter, otherwise false.
+     */
+    public boolean matchesRemoteFilter(TransitionInfo info) {
+        for (Pair<TransitionFilter, RemoteTransition> filterPair
+                : mRemoteTransitionHandler.mFilters) {
+            if (filterPair.first.matches(info)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     RemoteTransitionHandler getRemoteTransitionHandler() {
         return mRemoteTransitionHandler;
     }

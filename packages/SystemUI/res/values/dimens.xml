@@ -1649,6 +1649,7 @@
     <dimen name="media_output_item_icon_padding">12dp</dimen>
     <dimen name="media_output_item_expand_icon_width">28dp</dimen>
     <dimen name="media_output_item_expand_icon_height">20dp</dimen>
+    <item name="media_output_item_disabled_alpha" format="float" type="dimen">0.6</item>
 
     <!-- Distance that the full shade transition takes in order to complete by tapping on a button
          like "expand". -->

@@ -16,6 +16,7 @@
 
 package com.android.systemui.statusbar.phone;
 
+import static android.security.Flags.secureLockDevice;
 import static android.view.WindowInsets.Type.navigationBars;
 
 import static com.android.systemui.bouncer.shared.constants.KeyguardBouncerConstants.EXPANSION_HIDDEN;
@@ -83,6 +84,7 @@ import com.android.systemui.plugins.statusbar.StatusBarStateController;
 import com.android.systemui.scene.domain.interactor.SceneInteractor;
 import com.android.systemui.scene.shared.flag.SceneContainerFlag;
 import com.android.systemui.scene.shared.model.Overlays;
+import com.android.systemui.securelockdevice.domain.interactor.SecureLockDeviceInteractor;
 import com.android.systemui.shade.ShadeController;
 import com.android.systemui.shade.ShadeExpansionChangeEvent;
 import com.android.systemui.shade.ShadeExpansionListener;
@@ -165,6 +167,7 @@ public class StatusBarKeyguardViewManager implements RemoteInputController.Callb
     private final Lazy<ShadeController> mShadeController;
     private final Lazy<SceneInteractor> mSceneInteractorLazy;
     private final Lazy<DeviceEntryInteractor> mDeviceEntryInteractorLazy;
+    private final Lazy<SecureLockDeviceInteractor> mSecureLockDeviceInteractor;
     private final DismissCallbackRegistry mDismissCallbackRegistry;
     private final CommunalSceneInteractor mCommunalSceneInteractor;
 
@@ -322,6 +325,10 @@ public class StatusBarKeyguardViewManager implements RemoteInputController.Callb
     private OnDismissAction mAfterKeyguardGoneAction;
     private Runnable mKeyguardGoneCancelAction;
     private boolean mDismissActionWillAnimateOnKeyguard;
+    private boolean mSecureLockDeviceBiometricAuthVisible = false;
+    private boolean mSecureLockDeviceEnabled = false;
+    private boolean mSecureLockDeviceUnlockComplete = false;
+
     private final ArrayList<Runnable> mAfterKeyguardGoneRunnables = new ArrayList<>();
 
     // Dismiss action to be launched when we stop dozing or the keyguard is gone.
@@ -395,7 +402,8 @@ public class StatusBarKeyguardViewManager implements RemoteInputController.Callb
             Lazy<DeviceEntryInteractor> deviceEntryInteractorLazy,
             DismissCallbackRegistry dismissCallbackRegistry,
             Lazy<BouncerInteractor> bouncerInteractor,
-            CommunalSceneInteractor communalSceneInteractor
+            CommunalSceneInteractor communalSceneInteractor,
+            Lazy<SecureLockDeviceInteractor> secureLockDeviceInteractor
     ) {
         mContext = context;
         mExecutor = executor;
@@ -431,6 +439,7 @@ public class StatusBarKeyguardViewManager implements RemoteInputController.Callb
         mDeviceEntryInteractorLazy = deviceEntryInteractorLazy;
         mDismissCallbackRegistry = dismissCallbackRegistry;
         mCommunalSceneInteractor = communalSceneInteractor;
+        mSecureLockDeviceInteractor = secureLockDeviceInteractor;
     }
 
     KeyguardTransitionInteractor mKeyguardTransitionInteractor;
@@ -529,6 +538,45 @@ public class StatusBarKeyguardViewManager implements RemoteInputController.Callb
                         Log.d(TAG, "Notifying keyguardShowing=true due to a lockNow event.");
                         mKeyguardStateController.notifyKeyguardState(true, mLastOccluded);
                     });
+        }
+
+        if (secureLockDevice()) {
+            mJavaAdapter.alwaysCollectFlow(
+                    mSecureLockDeviceInteractor.get().isSecureLockDeviceEnabled(),
+                    this::notifySecureLockDeviceEnabledChange);
+            mJavaAdapter.alwaysCollectFlow(
+                    mSecureLockDeviceInteractor.get().isFullyUnlockedAndReadyToDismiss(),
+                    this::onFullyUnlockedAndReadyToDismissInSecureLockDevice);
+            if (!SceneContainerFlag.isEnabled()) {
+                mJavaAdapter.alwaysCollectFlow(
+                        mSecureLockDeviceInteractor.get().isBiometricAuthVisible(),
+                        this::notifySecureLockDeviceBiometricAuthVisibilityChange);
+            }
+        }
+    }
+
+    @VisibleForTesting
+    void notifySecureLockDeviceBiometricAuthVisibilityChange(boolean visible) {
+        SceneContainerFlag.assertInLegacyMode();
+        if (!mSecureLockDeviceUnlockComplete && mSecureLockDeviceBiometricAuthVisible && !visible) {
+            reset(/*hideBouncerWhenShowing =*/ true);
+        }
+        mSecureLockDeviceBiometricAuthVisible = visible;
+
+    }
+
+    @VisibleForTesting
+    void notifySecureLockDeviceEnabledChange(boolean enabled) {
+        mSecureLockDeviceEnabled = enabled;
+    }
+
+    @VisibleForTesting
+    void onFullyUnlockedAndReadyToDismissInSecureLockDevice(boolean readyToDismiss) {
+        mSecureLockDeviceUnlockComplete = readyToDismiss;
+        if (readyToDismiss) {
+            mPrimaryBouncerInteractor.notifyKeyguardAuthenticatedBiometrics(true);
+            mKeyguardDismissTransitionInteractor.startDismissKeyguardTransition(
+                    "SBKVM#onSecureLockDeviceBiometricAuthComplete");
         }
     }
 
@@ -975,6 +1023,10 @@ public class StatusBarKeyguardViewManager implements RemoteInputController.Callb
     }
 
     public void reset(boolean hideBouncerWhenShowing, boolean isFalsingReset) {
+        if (secureLockDevice() && hideBouncerWhenShowing && mSecureLockDeviceEnabled) {
+            mSecureLockDeviceInteractor.get().onBiometricAuthUiHidden();
+        }
+
         if (mKeyguardStateController.isShowing() && !bouncerIsAnimatingAway()) {
             final boolean isOccluded = mKeyguardStateController.isOccluded();
             // Hide quick settings.
@@ -1354,6 +1406,11 @@ public class StatusBarKeyguardViewManager implements RemoteInputController.Callb
         if (!canHandleBackPressed()) {
             return;
         }
+        if (secureLockDevice() && mSecureLockDeviceEnabled
+                && mSecureLockDeviceBiometricAuthVisible) {
+            mSecureLockDeviceInteractor.get().onBiometricAuthUiHidden();
+        }
+
         mStatusBarStateController.setLeaveOpenOnKeyguardHide(false);
 
         boolean hideBouncerOverDreamOrHub = isBouncerShowing()
@@ -1615,6 +1672,13 @@ public class StatusBarKeyguardViewManager implements RemoteInputController.Callb
      * fingerprint and the keyguard should immediately dismiss.
      */
     public void notifyKeyguardAuthenticated(boolean strongAuth) {
+        // Keyguard dismissal handled by KeyguardBouncerViewBinder, because passive authentication
+        // methods like face auth will require manual confirmation of the auth success from the user
+        // on the UI.
+        if (secureLockDevice() && mSecureLockDeviceEnabled) {
+            return;
+        }
+
         mPrimaryBouncerInteractor.notifyKeyguardAuthenticatedBiometrics(strongAuth);
 
         if (mAlternateBouncerInteractor.isVisibleState()) {

@@ -67,7 +67,7 @@ constructor(
 
     private fun sessionStarted(event: SessionEvent.Started) {
         if (currentSession != null) {
-            ProtoLog.d(
+            ProtoLog.e(
                 ShellProtoLogGroup.WM_SHELL_BUBBLES_NOISY,
                 "BubbleSessionTracker: starting to track a new session. " +
                     "previous session still active"
@@ -88,7 +88,7 @@ constructor(
     private fun sessionEnded(event: SessionEvent.Ended) {
         val session = currentSession
         if (session == null) {
-            ProtoLog.d(
+            ProtoLog.e(
                 ShellProtoLogGroup.WM_SHELL_BUBBLES_NOISY,
                 "BubbleSessionTracker: session tracking stopped but current session is null"
             )
@@ -104,7 +104,7 @@ constructor(
     private fun switchedBubble(event: SessionEvent.SwitchedBubble) {
         val session = currentSession
         if (session == null) {
-            ProtoLog.d(
+            ProtoLog.e(
                 ShellProtoLogGroup.WM_SHELL_BUBBLES_NOISY,
                 "BubbleSessionTracker: tracking bubble switch but current session is null"
             )

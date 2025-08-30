@@ -149,7 +149,12 @@ class BouncerOverlayContentViewModelTest : SysuiTestCase() {
     @Test
     fun authMethodsToTest_returnsCompleteSampleOfAllAuthMethodTypes() {
         assertThat(authMethodsToTest().map { it::class }.toSet())
-            .isEqualTo(AuthenticationMethodModel::class.sealedSubclasses.toSet())
+            .isEqualTo(
+                AuthenticationMethodModel::class
+                    .sealedSubclasses
+                    .filter { it != AuthenticationMethodModel.Biometric::class }
+                    .toSet()
+            )
     }
 
     @Test

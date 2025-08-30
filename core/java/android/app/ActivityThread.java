@@ -298,6 +298,7 @@ import java.util.TimeZone;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 /**
  * This manages the execution of the main thread in an
@@ -1166,6 +1167,39 @@ public final class ActivityThread extends ClientTransactionHandler
     private class ApplicationThread extends IApplicationThread.Stub {
         @RavenwoodKeep
         ApplicationThread() {
+        }
+
+        @Override
+        public boolean onTransact(int code, Parcel data, Parcel reply, int flags)
+                throws RemoteException {
+            if (Build.IS_DEBUGGABLE) {
+                int callingUid = Binder.getCallingUid();
+                if (callingUid != Process.SYSTEM_UID) {
+                    String packageName;
+                    if (callingUid == Process.ROOT_UID) {
+                        packageName = "root";
+                    } else {
+                        String[] packagesForUid =
+                                getSystemContext().getPackageManager().getPackagesForUid(
+                                        callingUid);
+                        if (packagesForUid == null || packagesForUid.length == 0) {
+                            packageName = "unknown";
+                        } else if (packagesForUid.length == 1) {
+                            packageName = packagesForUid[0];
+                        } else {
+                            packageName = Arrays.asList(packagesForUid).stream().sorted().collect(
+                                    Collectors.joining(", "));
+                        }
+                    }
+                    Slog.wtf(TAG, "ApplicationThread called by non-system process"
+                            + " (callingUid: " + callingUid
+                            + "; packageName: " + packageName
+                            + "; code: " + code
+                            + "; flags: " + flags
+                            + ")");
+                }
+            }
+            return super.onTransact(code, data, reply, flags);
         }
 
         private static final String DB_CONNECTION_INFO_HEADER = "  %8s %8s %14s %5s %5s %5s  %s";
