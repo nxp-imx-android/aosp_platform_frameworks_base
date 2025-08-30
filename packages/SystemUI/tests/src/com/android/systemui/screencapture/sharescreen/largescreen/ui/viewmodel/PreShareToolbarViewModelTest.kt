@@ -71,4 +71,17 @@ class PreShareToolbarViewModelTest : SysuiTestCase() {
 
             assertThat(uiState).isEqualTo(ScreenCaptureUiState.Invisible)
         }
+
+    @Test
+    fun onShareClicked_hidesUi() =
+        kosmos.runTest {
+            val uiState by
+                collectLastValue(
+                    kosmos.screenCaptureUiRepository.uiState(ScreenCaptureType.SHARE_SCREEN)
+                )
+
+            viewModel.onShareClicked()
+
+            assertThat(uiState).isEqualTo(ScreenCaptureUiState.Invisible)
+        }
 }

@@ -54,6 +54,10 @@ constructor(
         screenCaptureUiInteractor.hide(ScreenCaptureType.SHARE_SCREEN)
     }
 
+    fun onShareClicked() {
+        screenCaptureUiInteractor.hide(ScreenCaptureType.SHARE_SCREEN)
+    }
+
     @AssistedFactory
     interface Factory {
         fun create(): PreShareToolbarViewModel

@@ -90,7 +90,7 @@ fun PreShareToolbar(
             PrimaryButton(
                 icon = shareIcon,
                 text = stringResource(R.string.screen_share_toolbar_share_button),
-                onClick = {},
+                onClick = { preShareToolbarViewModel.onShareClicked() },
                 enabled = shareButtonEnabled,
             )
         }
