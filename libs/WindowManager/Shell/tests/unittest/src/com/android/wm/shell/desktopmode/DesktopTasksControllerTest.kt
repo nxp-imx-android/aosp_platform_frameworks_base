@@ -9266,6 +9266,50 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
+    fun onDesktopDragEnd_noIndicator_noBoundsMovement_noReturnToStartAnimation() {
+        val task = setUpFreeformTask(bounds = STABLE_BOUNDS)
+        val spyController = spy(controller)
+        val mockSurface = mock(SurfaceControl::class.java)
+        val mockDisplayLayout = mock(DisplayLayout::class.java)
+        whenever(displayController.getDisplayLayout(task.displayId)).thenReturn(mockDisplayLayout)
+        whenever(mockDisplayLayout.stableInsets()).thenReturn(Rect(0, 100, 2000, 2000))
+        whenever(mockDisplayLayout.getStableBounds(any())).thenAnswer { i ->
+            (i.arguments.first() as Rect).set(STABLE_BOUNDS)
+        }
+        whenever(spyController.getVisualIndicator()).thenReturn(desktopModeVisualIndicator)
+        whenever(desktopModeVisualIndicator.updateIndicatorType(any(), anyOrNull()))
+            .thenReturn(DesktopModeVisualIndicator.IndicatorType.NO_INDICATOR)
+        whenever(motionEvent.displayId).thenReturn(DEFAULT_DISPLAY)
+
+        // "Drag move" the task, but the bounds aren't actually changing. Which can be the case
+        // on mouse clicks that generate ACTION_MOVE events without position changes.
+        val currentDragBounds = Rect(200, 200, 700, 700)
+        spyController.onDragPositioningMove(
+            taskInfo = task,
+            taskSurface = mockSurface,
+            displayId = DEFAULT_DISPLAY,
+            inputX = 500f,
+            inputY = 210f,
+            taskBounds = currentDragBounds,
+        )
+        spyController.onDragPositioningEnd(
+            taskInfo = task,
+            taskSurface = mockSurface,
+            displayId = DEFAULT_DISPLAY,
+            inputCoordinate = PointF(510f, 210f),
+            currentDragBounds = currentDragBounds,
+            validDragArea = Rect(0, 50, 2000, 2000),
+            dragStartBounds = currentDragBounds,
+            motionEvent = motionEvent,
+        )
+
+        // Even though end bounds are the same as start bounds, there's no need to animate the
+        // return because the current bounds are also the same as start/end.
+        verify(mReturnToDragStartAnimator, never())
+            .start(eq(task.taskId), eq(mockSurface), any(), any(), anyOrNull())
+    }
+
+    @Test
     fun enterSplit_freeformTaskIsMovedToSplit() {
         val task1 = setUpFreeformTask()
         val task2 = setUpFreeformTask()
