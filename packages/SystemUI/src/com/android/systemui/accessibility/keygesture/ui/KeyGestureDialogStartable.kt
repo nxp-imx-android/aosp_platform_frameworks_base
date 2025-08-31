@@ -115,9 +115,9 @@ constructor(
     private class VoiceAccessDialogDelegate(interactor: KeyGestureDialogInteractor) :
         BaseDialogDelegate(interactor) {
         override val negativeButtonTextId: Int =
-            R.string.accessibility_key_gesture_voice_access_dialog_negative_button_text
+            R.string.accessibility_key_gesture_shortcut_not_yet_enabled_negative_button_text
         override val positiveButtonTextId: Int =
-            R.string.accessibility_key_gesture_voice_access_dialog_positive_button_text
+            R.string.accessibility_key_gesture_shortcut_not_yet_enabled_positive_button_text
     }
 
     /**
@@ -141,9 +141,9 @@ constructor(
     private class MagnificationDialogDelegate(interactor: KeyGestureDialogInteractor) :
         BaseDialogDelegate(interactor) {
         override val negativeButtonTextId: Int =
-            R.string.accessibility_key_gesture_magnification_dialog_negative_button_text
+            R.string.accessibility_key_gesture_shortcut_not_yet_enabled_negative_button_text
         override val positiveButtonTextId: Int =
-            R.string.accessibility_key_gesture_magnification_dialog_positive_button_text
+            R.string.accessibility_key_gesture_shortcut_not_yet_enabled_positive_button_text
     }
 
     private fun getDialogDelegate(keyGestureType: Int): DialogBehaviorDelegate {
