@@ -58,6 +58,7 @@ import android.annotation.IntDef;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.media.MediaRoute2ProviderService;
+import android.media.MediaRouter2;
 import android.media.RouteListingPreference;
 import android.media.RoutingChangeInfo;
 import android.media.RoutingChangeInfo.EntryPoint;
@@ -74,6 +75,7 @@ import com.android.internal.annotations.VisibleForTesting;
 import java.io.PrintWriter;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.util.Map;
 
 /**
  * Logs metrics for MediaRouter2.
@@ -112,6 +114,18 @@ final class MediaRouterMetricLogger {
     private static final int REQUEST_INFO_CACHE_CAPACITY = 100;
     private static final int API_COUNT_CACHE_CAPACITY = 20;
 
+    /** Corresponds to {@link MediaRouter2#setDeviceSuggestions calls } */
+    private static final int SUGGESTION_INTERACTION_TYPE_UPDATE = 0;
+
+    /** Corresponds to {@link MediaRouter2#notifyDeviceSuggestionRequested calls } */
+    private static final int SUGGESTION_INTERACTION_TYPE_REQUEST = 1;
+
+    @IntDef(
+            prefix = "SUGGESTION_INTERACTION_TYPE",
+            value = {SUGGESTION_INTERACTION_TYPE_UPDATE, SUGGESTION_INTERACTION_TYPE_REQUEST})
+    @Retention(RetentionPolicy.SOURCE)
+    private @interface SuggestionInteractionType {}
+
     /** LRU cache to store request info. */
     private final EvictionCallbackLruCache<Long, RequestInfo> mRequestInfoCache;
 
@@ -127,6 +141,13 @@ final class MediaRouterMetricLogger {
      */
     private final EvictionCallbackLruCache<Integer, RlpCount> mRlpCountCache;
 
+    /**
+     * LRU cache to store counts of device suggestion calls for a target and suggesting package
+     * pair.
+     */
+    private final EvictionCallbackLruCache<PackagePair, DeviceSuggestionsCount>
+            mDeviceSuggestionsCountCache;
+
     /** Constructor for {@link MediaRouterMetricLogger}. */
     public MediaRouterMetricLogger() {
         mRequestInfoCache =
@@ -141,6 +162,9 @@ final class MediaRouterMetricLogger {
         mRlpCountCache =
                 new EvictionCallbackLruCache<>(
                         API_COUNT_CACHE_CAPACITY, new OnRlpSuggestionCountEvictedListener());
+        mDeviceSuggestionsCountCache =
+                new EvictionCallbackLruCache<>(
+                        API_COUNT_CACHE_CAPACITY, new OnDeviceSuggestionsCountEvictedListener());
     }
 
     /**
@@ -362,6 +386,57 @@ final class MediaRouterMetricLogger {
     }
 
     /**
+     * Increments the count of device suggestion update calls for the target and suggesting package
+     * pair.
+     *
+     * @param targetPackageUid Uid of the package for which devices are suggested.
+     * @param suggestingPackageUid Uid of the package suggesting the devices.
+     */
+    public void notifyDeviceSuggestionsUpdated(int targetPackageUid, int suggestingPackageUid) {
+        notifyDeviceSuggestionInteracted(
+                targetPackageUid, suggestingPackageUid, SUGGESTION_INTERACTION_TYPE_UPDATE);
+    }
+
+    /**
+     * Increments the count of device suggestion request calls for the target and suggesting package
+     * pair.
+     *
+     * @param targetPackageUid Uid of the package for which devices are suggested.
+     * @param suggestingPackageUid Uid of the package suggesting the devices.
+     */
+    public void notifyDeviceSuggestionsRequested(int targetPackageUid, int suggestingPackageUid) {
+        notifyDeviceSuggestionInteracted(
+                targetPackageUid, suggestingPackageUid, SUGGESTION_INTERACTION_TYPE_REQUEST);
+    }
+
+    private void notifyDeviceSuggestionInteracted(
+            int targetPackageUid,
+            int suggestingPackageUid,
+            @SuggestionInteractionType int suggestionInteractionType) {
+        PackagePair packagePair = new PackagePair(targetPackageUid, suggestingPackageUid);
+        DeviceSuggestionsCount deviceSuggestionsCount =
+                mDeviceSuggestionsCountCache.get(packagePair);
+        long updateSuggestionsCount = 0;
+        long requestSuggestionsCount = 0;
+        if (deviceSuggestionsCount != null) {
+            updateSuggestionsCount = deviceSuggestionsCount.updateSuggestionsCount;
+            requestSuggestionsCount = deviceSuggestionsCount.requestSuggestionsCount;
+        }
+
+        switch (suggestionInteractionType) {
+            case SUGGESTION_INTERACTION_TYPE_UPDATE:
+                updateSuggestionsCount++;
+                break;
+            case SUGGESTION_INTERACTION_TYPE_REQUEST:
+                requestSuggestionsCount++;
+                break;
+        }
+        mDeviceSuggestionsCountCache.put(
+                packagePair,
+                new DeviceSuggestionsCount(updateSuggestionsCount, requestSuggestionsCount));
+    }
+
+    /**
      * This is called when a {@link android.media.MediaRouter2} instance is unregistered. It takes
      * care of logging metrics aggregated over the lifecycle of the {@link
      * android.media.MediaRouter2} instance.
@@ -370,12 +445,8 @@ final class MediaRouterMetricLogger {
      *     android.media.MediaRouter2} instance.
      */
     public void notifyRouterUnregistered(int routerPackageUid) {
-        RlpCount rlpCount = mRlpCountCache.remove(routerPackageUid);
-        if (rlpCount == null) {
-            // This helps track scenarios where MediaRouter2 is used but not RLP.
-            rlpCount = new RlpCount(0, 0);
-        }
-        logRlpCountForRouter(routerPackageUid, rlpCount);
+        logRlpCountForRouter(routerPackageUid);
+        logDeviceSuggestionsCountForRouter(routerPackageUid);
     }
 
     /**
@@ -522,12 +593,40 @@ final class MediaRouterMetricLogger {
                 /* routingChangeInfo= */ null);
     }
 
+    private void logRlpCountForRouter(int routerPackageUid) {
+        RlpCount rlpCount = mRlpCountCache.remove(routerPackageUid);
+        if (rlpCount == null) {
+            // This helps track scenarios where MediaRouter2 is used but not RLP.
+            rlpCount = new RlpCount(0, 0);
+        }
+        logRlpCountForRouter(routerPackageUid, rlpCount);
+    }
+
     private void logRlpCountForRouter(int routerPackageId, RlpCount rlpCount) {
         MediaRouterStatsLog.write(
                 MediaRouterStatsLog.ROUTE_LISTING_PREFERENCE_UPDATED,
                 routerPackageId,
                 rlpCount.rlpTotalCount,
                 rlpCount.rlpWithSuggestionCount);
+    }
+
+    private void logDeviceSuggestionsCountForRouter(int routerPackageUid) {
+        for (Map.Entry<PackagePair, DeviceSuggestionsCount> entry :
+                mDeviceSuggestionsCountCache.snapshot().entrySet()) {
+            if (entry.getKey().targetPackageUid == routerPackageUid) {
+                logDeviceSuggestionsAccessed(entry.getKey(), entry.getValue());
+            }
+        }
+    }
+
+    private void logDeviceSuggestionsAccessed(
+            PackagePair packagePair, DeviceSuggestionsCount deviceSuggestionsCount) {
+        MediaRouterStatsLog.write(
+                MediaRouterStatsLog.DEVICE_SUGGESTIONS_INTERACTION_REPORTED,
+                packagePair.targetPackageUid,
+                packagePair.operatingPackageUid,
+                deviceSuggestionsCount.updateSuggestionsCount,
+                deviceSuggestionsCount.requestSuggestionsCount);
     }
 
     /** Class to store request info. */
@@ -626,6 +725,15 @@ final class MediaRouterMetricLogger {
         }
     }
 
+    private class OnDeviceSuggestionsCountEvictedListener
+            implements OnEntryEvictedListener<PackagePair, DeviceSuggestionsCount> {
+        @Override
+        public void onEntryEvicted(PackagePair key, DeviceSuggestionsCount value) {
+            Slog.w(TAG, "Device suggestions count evicted from cache");
+            logDeviceSuggestionsAccessed(key, value);
+        }
+    }
+
     private interface OnEntryEvictedListener<K, V> {
         void onEntryEvicted(K key, V value);
     }
@@ -641,4 +749,22 @@ final class MediaRouterMetricLogger {
 
     /** Tracks the count of changes in route listing preference */
     private record RlpCount(long rlpTotalCount, long rlpWithSuggestionCount) {}
+
+    /** Tracks the count of device suggestion interaction. */
+    private record DeviceSuggestionsCount(
+            // Count of the number of calls made to update device suggestions.
+            long updateSuggestionsCount,
+            // Count of the number of calls made to request device suggestions.
+            long requestSuggestionsCount) {}
+
+    /**
+     * Holds a pair of uids of the target package and the operating package. For example, for device
+     * suggestions the target package would be the package for which suggestions are being made and
+     * the operating package would be the package making the suggestions.
+     */
+    private record PackagePair(
+            // The uid of the package on which the operations are being performed.
+            int targetPackageUid,
+            // The uid of the operating package.
+            int operatingPackageUid) {}
 }
