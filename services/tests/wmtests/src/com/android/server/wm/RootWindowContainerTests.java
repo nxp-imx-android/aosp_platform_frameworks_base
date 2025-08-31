@@ -595,6 +595,37 @@ public class RootWindowContainerTests extends WindowTestsBase {
         assertEquals(taskFragmentBounds, pinnedRootTask.getBounds());
     }
 
+    @Test
+    public void testMoveActivityToPinnedRootTask_singleActivity_recordsSnapshot() {
+        // Create a task with a single activity.
+        final Task task = new TaskBuilder(mSupervisor).setCreateActivity(true).build();
+        final ActivityRecord activity = task.getTopMostActivity();
+        spyOn(mWm.mTaskSnapshotController);
+
+        // Move the activity to the pinned root task.
+        mRootWindowContainer.moveActivityToPinnedRootTaskForTest(activity, "test");
+
+        // Verify that a snapshot of the task was recorded.
+        verify(mWm.mTaskSnapshotController).recordSnapshot(eq(task));
+    }
+
+    @Test
+    public void testMoveActivityToPinnedRootTask_multiActivity_recordsSnapshot() {
+        // Create a task with two activities.
+        final Task originalTask = new TaskBuilder(mSupervisor).setCreateActivity(true).build();
+        new ActivityBuilder(mAtm).setTask(originalTask).build();
+        final ActivityRecord topActivity = originalTask.getTopMostActivity();
+        spyOn(mWm.mTaskSnapshotController);
+
+        // Move the top activity to the pinned root task.
+        mRootWindowContainer.moveActivityToPinnedRootTaskForTest(topActivity, "test");
+
+        // Verify that a snapshot of the original task was recorded.
+        // In the multi-activity case, a new task is created for the PiP activity, but the snapshot
+        // should be taken of the original task before the activity is reparented.
+        verify(mWm.mTaskSnapshotController).recordSnapshot(eq(originalTask));
+    }
+
     private static void ensureTaskPlacement(Task task, ActivityRecord... activities) {
         final ArrayList<ActivityRecord> taskActivities = new ArrayList<>();
 
@@ -1596,4 +1627,3 @@ public class RootWindowContainerTests extends WindowTestsBase {
         return  aInfo;
     }
 }
-
