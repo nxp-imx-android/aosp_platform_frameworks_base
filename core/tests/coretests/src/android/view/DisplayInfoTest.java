@@ -17,6 +17,8 @@
 package android.view;
 
 
+import static com.google.common.truth.Truth.assertThat;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -64,7 +66,7 @@ public class DisplayInfoTest {
     }
 
     @Test
-    public void testRefreshRateOverride_keepsDisplyInfosEqual() {
+    public void testRefreshRateOverride_keepsDisplayInfosEqual() {
         Display.Mode mode = new Display.Mode(
                 /*modeId=*/1, /*width=*/1000, /*height=*/1000, /*refreshRate=*/120);
         DisplayInfo displayInfo1 = new DisplayInfo();
@@ -78,7 +80,7 @@ public class DisplayInfoTest {
     }
 
     @Test
-    public void testRefreshRateOverride_keepsDisplyInfosEqualWhenOverrideIsSame() {
+    public void testRefreshRateOverride_keepsDisplayInfosEqualWhenOverrideIsSame() {
         Display.Mode mode = new Display.Mode(
                 /*modeId=*/1, /*width=*/1000, /*height=*/1000, /*refreshRate=*/120);
         DisplayInfo displayInfo1 = new DisplayInfo();
@@ -174,6 +176,146 @@ public class DisplayInfoTest {
         setSupportedModes(displayInfo2, modes, 0);
 
         assertTrue(displayInfo1.equals(displayInfo2, /* compareOnlyBasicChanges= */ true));
+    }
+
+    @Test
+    public void getBasicChangedGroups_noChanges_returnsEmptyList() {
+        DisplayInfo base = new DisplayInfo();
+        DisplayInfo other = new DisplayInfo(base);
+
+        int changedGroups = base.getBasicChangedGroups(other);
+        assertThat(changedGroups).isEqualTo(0);
+    }
+
+    @Test
+    public void getBasicChangedGroups_basicPropertiesChanged_returnsOnlyBasicProperties() {
+        DisplayInfo base = new DisplayInfo();
+        DisplayInfo other = new DisplayInfo(base);
+        other.flags = Display.FLAG_PRIVATE; // Change a basic property
+
+        int changedGroups = base.getBasicChangedGroups(other);
+        assertThat(changedGroups)
+                .isEqualTo(DisplayInfo.DisplayInfoGroup.BASIC_PROPERTIES.getMask());
+    }
+
+    @Test
+    public void getBasicChangedGroups_dimensionsChanged_returnsOnlyDimensionsAndShapes() {
+        DisplayInfo base = new DisplayInfo();
+        DisplayInfo other = new DisplayInfo(base);
+        other.logicalWidth = 1440; // Change a dimension
+
+        int changedGroups = base.getBasicChangedGroups(other);
+        assertThat(changedGroups)
+                .isEqualTo(DisplayInfo.DisplayInfoGroup.DIMENSIONS_AND_SHAPES.getMask());
+    }
+
+    @Test
+    public void getBasicChangedGroups_rotationChanged_returnsOnlyOrientationAndRotation() {
+        DisplayInfo base = new DisplayInfo();
+        DisplayInfo other = new DisplayInfo(base);
+        other.rotation = Surface.ROTATION_90; // Change rotation
+
+        int changedGroups = base.getBasicChangedGroups(other);
+        assertThat(changedGroups)
+                .isEqualTo(DisplayInfo.DisplayInfoGroup.ORIENTATION_AND_ROTATION.getMask());
+    }
+
+    @Test
+    public void getBasicChangedGroups_modeSizeChanged_returnsOnlyRefreshRateAndMode() {
+        DisplayInfo base = new DisplayInfo();
+        base.supportedModes = new Display.Mode[]{new Display.Mode(1, 1080, 1920, 60f)};
+        base.modeId = 1;
+
+        DisplayInfo other = new DisplayInfo(base);
+        // Change the mode to one with a different physical size.
+        other.supportedModes = new Display.Mode[]{new Display.Mode(2, 1440, 2560, 60f)};
+        other.modeId = 2;
+
+        int changedGroups = base.getBasicChangedGroups(other);
+        assertThat(changedGroups)
+                .isEqualTo(DisplayInfo.DisplayInfoGroup.REFRESH_RATE_AND_MODE.getMask());
+    }
+
+    @Test
+    public void getBasicChangedGroups_colorChanged_returnsOnlyColorAndBrightness() {
+        DisplayInfo base = new DisplayInfo();
+        DisplayInfo other = new DisplayInfo(base);
+        other.brightnessDefault = 0.9f; // Change a brightness property
+
+        int changedGroups = base.getBasicChangedGroups(other);
+        assertThat(changedGroups)
+                .isEqualTo(DisplayInfo.DisplayInfoGroup.COLOR_AND_BRIGHTNESS.getMask());
+    }
+
+    @Test
+    public void getBasicChangedGroups_stateChanged_returnsOnlyState() {
+        DisplayInfo base = new DisplayInfo();
+        DisplayInfo other = new DisplayInfo(base);
+        other.state = Display.STATE_OFF; // Change state
+
+        int changedGroups = base.getBasicChangedGroups(other);
+        assertThat(changedGroups)
+                .isEqualTo(DisplayInfo.DisplayInfoGroup.STATE.getMask());
+    }
+
+    @Test
+    public void getBasicChangedGroups_multipleGroupsChanged_returnsAllChangedGroups() {
+        DisplayInfo base = new DisplayInfo();
+        DisplayInfo other = new DisplayInfo(base);
+        other.ownerUid = 1001; // BASIC_PROPERTIES
+        other.appHeight = 100; // DIMENSIONS_AND_SHAPES
+        other.state = Display.STATE_DOZE; // STATE
+
+        int changedGroups = base.getBasicChangedGroups(other);
+
+        assertThat(changedGroups)
+                .isEqualTo(
+                        DisplayInfo.DisplayInfoGroup.BASIC_PROPERTIES.getMask()
+                        | DisplayInfo.DisplayInfoGroup.DIMENSIONS_AND_SHAPES.getMask()
+                        | DisplayInfo.DisplayInfoGroup.STATE.getMask());
+    }
+
+    @Test
+    public void getBasicChangedGroups_nonBasicChanges_returnsEmptyList() {
+        DisplayInfo base = new DisplayInfo();
+        DisplayInfo other = new DisplayInfo(base);
+        // This field is not considered "basic" changes and should not be reported.
+        other.appVsyncOffsetNanos = 2L;
+
+        int changedGroups = base.getBasicChangedGroups(other);
+        assertThat(changedGroups).isEqualTo(0);
+    }
+
+    @Test
+    public void getBasicChangedGroups_modeChangedToSameSizeMode_returnsEmptyList() {
+        DisplayInfo base = new DisplayInfo();
+        DisplayInfo other = new DisplayInfo();
+
+        Display.Mode[] modes = {
+            new Display.Mode(1, 1080, 1920, 60f), new Display.Mode(2, 1080, 1920, 90f)
+        };
+
+        setSupportedModes(base, modes, 1);
+        // Change mode ID to another mode that has the same physical dimensions.
+        // This is not a basic change.
+        setSupportedModes(other, modes, 2);
+
+        int changedGroups = base.getBasicChangedGroups(other);
+        assertThat(changedGroups).isEqualTo(0);
+    }
+
+    @Test
+    public void getBasicChangedGroups_otherIsNull_returns_all_groups() {
+        DisplayInfo base = new DisplayInfo();
+        int changedGroups = base.getBasicChangedGroups(null);
+        assertThat(changedGroups).isEqualTo(
+                DisplayInfo.DisplayInfoGroup.BASIC_PROPERTIES.getMask()
+                | DisplayInfo.DisplayInfoGroup.ORIENTATION_AND_ROTATION.getMask()
+                | DisplayInfo.DisplayInfoGroup.REFRESH_RATE_AND_MODE.getMask()
+                | DisplayInfo.DisplayInfoGroup.COLOR_AND_BRIGHTNESS.getMask()
+                | DisplayInfo.DisplayInfoGroup.STATE.getMask()
+                | DisplayInfo.DisplayInfoGroup.DIMENSIONS_AND_SHAPES.getMask()
+        );
     }
 
     private void setSupportedModes(DisplayInfo info, Display.Mode[] modes, int modeId) {

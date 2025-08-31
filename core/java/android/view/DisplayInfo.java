@@ -458,67 +458,17 @@ public final class DisplayInfo implements Parcelable {
      *                               could lead to an emission of
      *                    {@link android.hardware.display.DisplayManager.EVENT_TYPE_DISPLAY_CHANGED}
      *                                event
-     * @return
+     * @return {@code true} if the two DisplayInfo objects are equal, {@code false} otherwise
      */
     public boolean equals(DisplayInfo other, boolean compareOnlyBasicChanges) {
         boolean isEqualWithOnlyBasicChanges =  other != null
-                && layerStack == other.layerStack
-                && flags == other.flags
-                && type == other.type
-                && displayId == other.displayId
-                && displayGroupId == other.displayGroupId
-                && Objects.equals(address, other.address)
-                && Objects.equals(deviceProductInfo, other.deviceProductInfo)
-                && Objects.equals(uniqueId, other.uniqueId)
-                && appWidth == other.appWidth
-                && appHeight == other.appHeight
-                && smallestNominalAppWidth == other.smallestNominalAppWidth
-                && smallestNominalAppHeight == other.smallestNominalAppHeight
-                && largestNominalAppWidth == other.largestNominalAppWidth
-                && largestNominalAppHeight == other.largestNominalAppHeight
-                && logicalWidth == other.logicalWidth
-                && logicalHeight == other.logicalHeight
-                && isDisplayModeSizeEqual(other)
-                && Objects.equals(displayCutout, other.displayCutout)
-                && rotation == other.rotation
-                && hasArrSupport == other.hasArrSupport
-                && Objects.equals(frameRateCategoryRate, other.frameRateCategoryRate)
-                && Arrays.equals(supportedRefreshRates, other.supportedRefreshRates)
-                && defaultModeId == other.defaultModeId
-                && userPreferredModeId == other.userPreferredModeId
-                && Arrays.equals(supportedModes, other.supportedModes)
-                && Arrays.equals(appsSupportedModes, other.appsSupportedModes)
-                && colorMode == other.colorMode
-                && Arrays.equals(supportedColorModes, other.supportedColorModes)
-                && Objects.equals(hdrCapabilities, other.hdrCapabilities)
-                && isForceSdr == other.isForceSdr
-                && Arrays.equals(userDisabledHdrTypes, other.userDisabledHdrTypes)
-                && minimalPostProcessingSupported == other.minimalPostProcessingSupported
-                && logicalDensityDpi == other.logicalDensityDpi
-                && physicalXDpi == other.physicalXDpi
-                && physicalYDpi == other.physicalYDpi
-                && state == other.state
-                && ownerUid == other.ownerUid
-                && Objects.equals(ownerPackageName, other.ownerPackageName)
-                && removeMode == other.removeMode
-                && brightnessMinimum == other.brightnessMinimum
-                && brightnessMaximum == other.brightnessMaximum
-                && brightnessDefault == other.brightnessDefault
-                && brightnessDim == other.brightnessDim
-                && Objects.equals(roundedCorners, other.roundedCorners)
-                && installOrientation == other.installOrientation
-                && Objects.equals(displayShape, other.displayShape)
-                && Objects.equals(layoutLimitedRefreshRate, other.layoutLimitedRefreshRate)
-                && BrightnessSynchronizer.floatEquals(hdrSdrRatio, other.hdrSdrRatio)
-                && thermalRefreshRateThrottling.contentEquals(other.thermalRefreshRateThrottling)
-                && Objects.equals(
-                thermalBrightnessThrottlingDataId, other.thermalBrightnessThrottlingDataId)
-                && canHostTasks == other.canHostTasks;
+                && !hasDisplayInfoGroupChanged(DisplayInfoGroup.BASIC_PROPERTIES, other)
+                && !hasDisplayInfoGroupChanged(DisplayInfoGroup.DIMENSIONS_AND_SHAPES, other)
+                && !hasDisplayInfoGroupChanged(DisplayInfoGroup.ORIENTATION_AND_ROTATION, other)
+                && !hasDisplayInfoGroupChanged(DisplayInfoGroup.REFRESH_RATE_AND_MODE, other)
+                && !hasDisplayInfoGroupChanged(DisplayInfoGroup.COLOR_AND_BRIGHTNESS, other)
+                && !hasDisplayInfoGroupChanged(DisplayInfoGroup.STATE, other);
 
-        if (!Flags.committedStateSeparateEvent()) {
-            isEqualWithOnlyBasicChanges = isEqualWithOnlyBasicChanges
-                    && (committedState == other.committedState);
-        }
         if (!compareOnlyBasicChanges) {
             return isEqualWithOnlyBasicChanges
                     && (getRefreshRate() == other.getRefreshRate())
@@ -974,6 +924,153 @@ public final class DisplayInfo implements Parcelable {
         // Apply to size if the configuration is EMPTY because the size is from real display info.
         final boolean applyToSize = configuration != null && appBounds == null;
         compatInfo.applyDisplayMetricsIfNeeded(outMetrics, applyToSize);
+    }
+
+    /**
+     * Groups of related fields within a {@link DisplayInfo} object.
+     * Used to categorize changes between two instances.
+     */
+    public enum DisplayInfoGroup {
+        /** Basic properties like IDs, flags, type, and ownership. */
+        BASIC_PROPERTIES(1),
+        /** Properties related to size, shape, and density. */
+        DIMENSIONS_AND_SHAPES(1 << 1),
+        /** Properties related to screen orientation. */
+        ORIENTATION_AND_ROTATION(1 << 2),
+        /** Properties related to refresh rate and display modes. */
+        REFRESH_RATE_AND_MODE(1 << 3),
+        /** Properties related to color and brightness. */
+        COLOR_AND_BRIGHTNESS(1 << 4),
+        /** Properties related to the display's power state. */
+        STATE(1 << 5);
+
+        /** Use mMask instead of 1 << #ordinal(),
+         * see <a href="https://errorprone.info/bugpattern/EnumOrdinal">...</a>.
+         */
+        private final int mMask;
+
+        DisplayInfoGroup(int mask) {
+            mMask = mask;
+        }
+
+        public int getMask() {
+            return mMask;
+        }
+    }
+
+    /**
+     * Compares this {@link DisplayInfo} with another for "basic" changes
+     * (i.e. when a {@link android.hardware.display.DisplayManager.EVENT_TYPE_DISPLAY_CHANGED}
+     * has been emitted) and returns a set of {@link DisplayInfoGroup}s that have changed.
+     *
+     * This method's logic is aligned with {@link #equals(DisplayInfo, boolean)} when called with
+     * {@code compareOnlyBasicChanges = true}, providing a breakdown of the changes that
+     * would trigger a display update event.
+     * @return An integer bitmask where each bit corresponds to a {@link DisplayInfoGroup} that has
+     * changed. If none have changed, the bitmask will be 0.
+     */
+    public int getBasicChangedGroups(@Nullable DisplayInfo other) {
+        int changedGroups = 0;
+
+        for (DisplayInfoGroup group : DisplayInfoGroup.values()) {
+            if (hasDisplayInfoGroupChanged(group, other)) {
+                changedGroups |= group.getMask();
+            }
+        }
+
+        return changedGroups;
+    }
+
+    /**
+     * Checks whether the specified {@link DisplayInfoGroup} has changed.
+     */
+    private boolean hasDisplayInfoGroupChanged(DisplayInfoGroup group,
+            @Nullable DisplayInfo other) {
+        if (other == null) {
+            return true;
+        }
+        return switch (group) {
+            case BASIC_PROPERTIES -> haveBasicPropertiesChanged(other);
+            case DIMENSIONS_AND_SHAPES -> haveDimensionsAndShapesChanged(other);
+            case ORIENTATION_AND_ROTATION -> haveOrientationAndRotationChanged(other);
+            case REFRESH_RATE_AND_MODE -> haveRefreshRateAndModeChanged(other);
+            case COLOR_AND_BRIGHTNESS -> haveColorAndBrightnessChanged(other);
+            case STATE -> hasStateChanged(other);
+        };
+    }
+
+    private boolean haveBasicPropertiesChanged(@NonNull DisplayInfo other) {
+        return layerStack != other.layerStack
+                || flags != other.flags
+                || type != other.type
+                || displayId != other.displayId
+                || displayGroupId != other.displayGroupId
+                || defaultModeId != other.defaultModeId
+                || !Objects.equals(address, other.address)
+                || !Objects.equals(deviceProductInfo, other.deviceProductInfo)
+                || !Objects.equals(uniqueId, other.uniqueId)
+                || removeMode != other.removeMode
+                || canHostTasks != other.canHostTasks
+                || ownerUid != other.ownerUid
+                || !Objects.equals(ownerPackageName, other.ownerPackageName);
+    }
+
+    private boolean haveDimensionsAndShapesChanged(@NonNull DisplayInfo other) {
+        return appWidth != other.appWidth
+                || appHeight != other.appHeight
+                || smallestNominalAppWidth != other.smallestNominalAppWidth
+                || smallestNominalAppHeight != other.smallestNominalAppHeight
+                || largestNominalAppWidth != other.largestNominalAppWidth
+                || largestNominalAppHeight != other.largestNominalAppHeight
+                || logicalWidth != other.logicalWidth
+                || logicalHeight != other.logicalHeight
+                || !Objects.equals(displayCutout, other.displayCutout)
+                || !Objects.equals(roundedCorners, other.roundedCorners)
+                || !Objects.equals(displayShape, other.displayShape)
+                || logicalDensityDpi != other.logicalDensityDpi
+                || physicalXDpi != other.physicalXDpi
+                || physicalYDpi != other.physicalYDpi;
+    }
+
+    private boolean haveOrientationAndRotationChanged(@NonNull DisplayInfo other) {
+        return rotation != other.rotation
+                || installOrientation != other.installOrientation;
+    }
+
+    private boolean haveRefreshRateAndModeChanged(@NonNull DisplayInfo other) {
+        return !isDisplayModeSizeEqual(other)
+                || hasArrSupport != other.hasArrSupport
+                || !Objects.equals(frameRateCategoryRate, other.frameRateCategoryRate)
+                || !Arrays.equals(supportedRefreshRates, other.supportedRefreshRates)
+                || !Objects.equals(layoutLimitedRefreshRate, other.layoutLimitedRefreshRate)
+                || !thermalRefreshRateThrottling.contentEquals(other.thermalRefreshRateThrottling)
+                || userPreferredModeId != other.userPreferredModeId
+                || !Arrays.equals(supportedModes, other.supportedModes)
+                || !Arrays.equals(appsSupportedModes, other.appsSupportedModes)
+                || minimalPostProcessingSupported != other.minimalPostProcessingSupported;
+    }
+
+    private boolean haveColorAndBrightnessChanged(@NonNull DisplayInfo other) {
+        return colorMode != other.colorMode
+                || !Arrays.equals(supportedColorModes, other.supportedColorModes)
+                || !Objects.equals(hdrCapabilities, other.hdrCapabilities)
+                || !Arrays.equals(userDisabledHdrTypes, other.userDisabledHdrTypes)
+                || isForceSdr != other.isForceSdr
+                || brightnessMinimum != other.brightnessMinimum
+                || brightnessMaximum != other.brightnessMaximum
+                || brightnessDefault != other.brightnessDefault
+                || brightnessDim != other.brightnessDim
+                || !BrightnessSynchronizer.floatEquals(hdrSdrRatio, other.hdrSdrRatio)
+                || !Objects.equals(thermalBrightnessThrottlingDataId,
+                other.thermalBrightnessThrottlingDataId);
+    }
+
+    private boolean hasStateChanged(@NonNull DisplayInfo other) {
+        boolean stateChanged = state != other.state;
+        if (!Flags.committedStateSeparateEvent()) {
+            stateChanged |= (committedState != other.committedState);
+        }
+        return stateChanged;
     }
 
     // For debugging purposes
