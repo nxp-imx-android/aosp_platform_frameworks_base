@@ -10307,7 +10307,10 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
             return UserHandle.USER_NULL;
         }
         Preconditions.checkCallAuthorization(canManageUsers(getCallerIdentity()));
+        return getDeviceOwnerUserIdUnchecked();
+    }
 
+    private @UserIdInt int getDeviceOwnerUserIdUnchecked() {
         synchronized (getLockObject()) {
             return getDeviceOwnerUserIdUncheckedLocked();
         }
@@ -16494,7 +16497,7 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
 
         @Override
         public int getDeviceOwnerUserId() {
-            return DevicePolicyManagerService.this.getDeviceOwnerUserId();
+            return DevicePolicyManagerService.this.getDeviceOwnerUserIdUnchecked();
         }
 
         @Override
