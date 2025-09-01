@@ -4555,6 +4555,37 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
+    fun moveToNextDesktopDisplay_moveIfDestinationFocusesDesktopWallpaper() {
+        // Set up displays
+        whenever(rootTaskDisplayAreaOrganizer.displayIds)
+            .thenReturn(intArrayOf(DEFAULT_DISPLAY, SECOND_DISPLAY))
+        taskRepository.addDesk(displayId = SECOND_DISPLAY, deskId = 2)
+        desktopState.overrideDesktopModeSupportPerDisplay[SECOND_DISPLAY] = true
+
+        // Set up a focused fullscreen task on the secondary display
+        val fullscreenTask = setUpFullscreenTask(displayId = SECOND_DISPLAY)
+        fullscreenTask.isFocused = true
+        fullscreenTask.baseIntent =
+            Intent().apply { component = DesktopWallpaperActivity.wallpaperActivityComponent }
+
+        // Set up a task on the default display
+        val task = setUpFreeformTask(displayId = DEFAULT_DISPLAY)
+
+        controller.moveToNextDesktopDisplay(
+            taskId = task.taskId,
+            userId = taskRepository.userId,
+            enterReason = EnterReason.UNKNOWN_ENTER,
+        )
+
+        verify(transitions)
+            .startTransition(
+                eq(TRANSIT_CHANGE),
+                any<WindowContainerTransaction>(),
+                isA(DesktopModeMoveToDisplayTransitionHandler::class.java),
+            )
+    }
+
+    @Test
     fun getTaskWindowingMode() {
         val fullscreenTask = setUpFullscreenTask()
         val freeformTask = setUpFreeformTask()
