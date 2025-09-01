@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 The Android Open Source Project
+ * Copyright (C) 2025 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.settingslib.bluetooth;
+package com.android.settingslib.bluetooth.hearingdevices.metrics;
 
 import android.bluetooth.BluetoothProfile;
 import android.content.Context;
@@ -26,6 +26,13 @@ import androidx.annotation.Nullable;
 
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.util.FrameworkStatsLog;
+import com.android.settingslib.bluetooth.A2dpProfile;
+import com.android.settingslib.bluetooth.CachedBluetoothDevice;
+import com.android.settingslib.bluetooth.HapClientProfile;
+import com.android.settingslib.bluetooth.HeadsetProfile;
+import com.android.settingslib.bluetooth.HearingAidProfile;
+import com.android.settingslib.bluetooth.LeAudioProfile;
+import com.android.settingslib.bluetooth.LocalBluetoothProfile;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -40,7 +47,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 /** Utils class to report hearing aid metrics to statsd */
-public final class HearingAidStatsLogUtils {
+public final class HearingDeviceStatsLogUtils {
 
     private static final String TAG = "HearingAidStatsLogUtils";
     private static final boolean DEBUG = true;
@@ -217,8 +224,8 @@ public final class HearingAidStatsLogUtils {
 
     /**
      * Maintains a temporarily list of just bonded device address. After the device profiles are
-     * connected, {@link HearingAidStatsLogUtils#removeFromJustBonded} will be called to remove the
-     * address.
+     * connected, {@link HearingDeviceStatsLogUtils#removeFromJustBonded} will be called to remove
+     * the address.
      * @param address the device address
      */
     public static void addToJustBonded(String address) {
@@ -341,7 +348,7 @@ public final class HearingAidStatsLogUtils {
     }
 
     private static boolean isHearingDevice(CachedBluetoothDevice device) {
-        return device.getProfiles().stream().anyMatch(HearingAidStatsLogUtils::isHearingProfile);
+        return device.getProfiles().stream().anyMatch(HearingDeviceStatsLogUtils::isHearingProfile);
     }
 
     private static boolean isHearingProfile(LocalBluetoothProfile profile) {
@@ -349,7 +356,8 @@ public final class HearingAidStatsLogUtils {
     }
 
     private static boolean isHearableDevice(CachedBluetoothDevice device) {
-        return device.getProfiles().stream().anyMatch(HearingAidStatsLogUtils::isHearableProfile);
+        return device.getProfiles().stream().anyMatch(
+                HearingDeviceStatsLogUtils::isHearableProfile);
     }
 
     private static boolean isHearableProfile(LocalBluetoothProfile profile) {
@@ -392,5 +400,5 @@ public final class HearingAidStatsLogUtils {
                 HistoryType.TYPE_LE_HEARABLE_CONNECTED, BT_LE_HEARABLE_DEVICES_CONNECTED_HISTORY);
     }
 
-    private HearingAidStatsLogUtils() {}
+    private HearingDeviceStatsLogUtils() {}
 }

@@ -204,6 +204,7 @@ extern int register_android_view_VelocityTracker(JNIEnv* env);
 extern int register_android_view_VerifiedKeyEvent(JNIEnv* env);
 extern int register_android_view_VerifiedMotionEvent(JNIEnv* env);
 extern int register_android_content_res_ObbScanner(JNIEnv* env);
+extern int register_android_content_res_CameraCompatibilityInfo(JNIEnv* env);
 extern int register_android_content_res_Configuration(JNIEnv* env);
 extern int register_android_animation_PropertyValuesHolder(JNIEnv *env);
 extern int register_android_security_Scrypt(JNIEnv *env);
@@ -1564,6 +1565,7 @@ static const RegJNIRec gRegJNI[] = {
         REG_JNI(register_android_content_StringBlock),
         REG_JNI(register_android_content_XmlBlock),
         REG_JNI(register_android_content_res_ApkAssets),
+        REG_JNI(register_android_content_res_CameraCompatibilityInfo),
         REG_JNI(register_android_content_res_ResourceTimer),
         REG_JNI(register_android_text_AndroidCharacter),
         REG_JNI(register_android_text_Hyphenator),

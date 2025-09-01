@@ -883,13 +883,13 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
         recordDisplay(from.getDisplayContent());
     }
 
-    /** Adds the top non-alwaysOnTop tasks within `task` to `out`. */
+    /** Adds the top visible non-alwaysOnTop tasks within `task` to `out`. */
     private static void addOnTopTasks(Task task, ArrayList<Task> out) {
         for (int i = task.getChildCount() - 1; i >= 0; --i) {
             final Task child = task.getChildAt(i).asTask();
             if (child == null) return;
             if (child.getWindowConfiguration().isAlwaysOnTop()
-                    && (!com.android.window.flags.Flags.polishCloseWallpaperIncludesOpenChange()
+                    || (!com.android.window.flags.Flags.polishCloseWallpaperIncludesOpenChange()
                         || !child.isVisibleRequested())) {
                 continue;
             }

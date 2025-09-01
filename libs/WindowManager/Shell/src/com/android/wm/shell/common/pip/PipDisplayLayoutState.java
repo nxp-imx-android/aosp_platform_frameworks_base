@@ -210,6 +210,7 @@ public class PipDisplayLayoutState {
         pw.println(prefix + TAG);
         pw.println(innerPrefix + "mDisplayId=" + mDisplayId);
         pw.println(innerPrefix + "getDisplayBounds=" + getDisplayBounds());
+        pw.println(innerPrefix + "getDisplayLayout#densityDpi=" + getDisplayLayout().densityDpi());
         pw.println(innerPrefix + "mScreenEdgeInsets=" + mScreenEdgeInsets);
         pw.println(innerPrefix + "mNavigationBarsInsets=" + mNavigationBarsInsets);
     }

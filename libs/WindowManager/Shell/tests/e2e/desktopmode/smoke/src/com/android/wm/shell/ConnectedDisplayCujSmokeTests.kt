@@ -144,6 +144,7 @@ class ConnectedDisplayCujSmokeTests {
 
     fun cuj1() {
         val externalDisplayId = connectedDisplayRule.setupTestDisplay()
+        assertTaskbarVisible(externalDisplayId)
         disableMouseScaling(externalDisplayId)
 
         // Open settings.

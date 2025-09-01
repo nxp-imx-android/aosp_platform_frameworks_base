@@ -1286,7 +1286,9 @@ public class WindowProcessController extends ConfigurationContainer<Configuratio
                 // this process, we'd find out the one with the minimal layer, thus it'll
                 // get a higher adj score.
             } else if (!visible && bestInvisibleState != PAUSING) {
-                if (state == PAUSING) {
+                // Also check RESUMED in case the activity is pending to be stopped by
+                // ActivityRecord#makeInvisible.
+                if (state == PAUSING || state == RESUMED) {
                     bestInvisibleState = PAUSING;
                     // Treat PAUSING as visible in case the next activity in the same process has
                     // not yet been set as visible-requested.

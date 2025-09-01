@@ -16,6 +16,8 @@
 
 package com.android.server.media;
 
+import static android.bluetooth.BluetoothAdapter.ACTIVE_DEVICE_AUDIO;
+
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.bluetooth.BluetoothA2dp;
@@ -247,13 +249,13 @@ import java.util.concurrent.ThreadLocalRandom;
     }
 
     /**
-     * Stops the broadcast, optionally making a new LEA BT device active.
+     * Stops the broadcast, optionally making a new BT device active.
      *
      * <p>This method is expected to use the given device to determine which unicast fallback group
-     * should be set when the broadcast stops.
+     * should be set or which classic device should be active when the broadcast stops.
      *
-     * @param device LEA device that should become active once the broadcast stops, or null if no
-     *     LEA device should become active once broadcast stops.
+     * @param device BT device that should become active once the broadcast stops, or null if no BT
+     *     device should become active once broadcast stops.
      */
     public synchronized void stopBroadcast(@Nullable BluetoothDevice device) {
         if (mBroadcastProfile == null) {
@@ -263,12 +265,19 @@ import java.util.concurrent.ThreadLocalRandom;
         if (mLeAudioProfile == null) {
             Slog.e(TAG, "Fail to set fall back group, LeProfile is null");
         } else {
-            // if no valid group id, set the fallback to -1, no LEA BT device should become active
+            // if no valid group id, set the fallback to -1, no LEA device should become active
             // once broadcast stops
             int groupId =
                     (device == null || !isProfileSupported(BluetoothProfile.LE_AUDIO, device))
                             ? BluetoothLeAudio.GROUP_ID_INVALID
                             : (int) getGroupId(BluetoothProfile.LE_AUDIO, device);
+            if (device != null && groupId == BluetoothLeAudio.GROUP_ID_INVALID) {
+                // for classic device, we need set active for it explicitly, because when broadcast
+                // stops, bt stack will only deal with fallback LEA device.
+                Slog.d(TAG, "stopBroadcast: set active device to " + device.getAnonymizedAddress());
+                mBluetoothAdapter.setActiveDevice(device, ACTIVE_DEVICE_AUDIO);
+            }
+            Slog.d(TAG, "stopBroadcast: set broadcast fallabck group to " + groupId);
             mLeAudioProfile.setBroadcastToUnicastFallbackGroup(groupId);
         }
         mBroadcastProfile.stopBroadcast(mBroadcastId);

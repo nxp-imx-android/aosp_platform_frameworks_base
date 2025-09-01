@@ -323,11 +323,6 @@ import java.util.concurrent.CopyOnWriteArrayList;
             return;
         }
 
-        if (com.android.media.flags.Flags.enableOutputSwitcherPersonalAudioSharing()) {
-            // We need to stop broadcast when we transfer to another route
-            stopBroadcastForTransferIfCurrentlySelected(routeId);
-        }
-
         MediaRoute2InfoHolder mediaRoute2InfoHolder;
         synchronized (this) {
             mediaRoute2InfoHolder = mRouteIdToAvailableDeviceRoutes.get(routeId);
@@ -336,6 +331,21 @@ import java.util.concurrent.CopyOnWriteArrayList;
             Slog.w(TAG, "transferTo: Ignoring transfer request to unknown route id : " + routeId);
             return;
         }
+
+        // We need to stop broadcast when we transfer to another route
+        boolean currentOutputIsBLEBroadcast =
+                com.android.media.flags.Flags.enableOutputSwitcherPersonalAudioSharing()
+                        && currentOutputIsBLEBroadcast();
+        if (currentOutputIsBLEBroadcast) {
+            boolean isBtRoute =
+                    mBluetoothRouteController.isBtRoute(mediaRoute2InfoHolder.mMediaRoute2Info);
+            stopBroadcastForTransfer(isBtRoute ? routeId : null);
+            if (isBtRoute) {
+                Slog.d(TAG, "transferTo: Skip transfer action for BT route in broadcast");
+                return;
+            }
+        }
+
         Runnable transferAction = getTransferActionForRoute(mediaRoute2InfoHolder);
         Runnable guardedTransferAction =
                 () -> {
@@ -387,11 +397,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
         mHandler.post(() -> mBluetoothRouteController.removeRouteFromBroadcast(routeId));
     }
 
-    private void stopBroadcastForTransferIfCurrentlySelected(@NonNull String routeId) {
-        if (!currentOutputIsBLEBroadcast()) {
-            return;
-        }
-
+    private void stopBroadcastForTransfer(@Nullable String routeId) {
         mHandler.post(() -> mBluetoothRouteController.stopBroadcast(routeId));
     }
 

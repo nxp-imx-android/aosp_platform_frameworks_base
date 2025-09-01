@@ -113,7 +113,7 @@ public class ComputerControlSessionProcessor {
         final boolean canCreateWithoutConsent;
         if (Flags.computerControlConsent()) {
             final int isOpAllowed = mAppOpsManager.noteOpNoThrow(
-                    AppOpsManager.OP_AGENT_CONTROL, attributionSource, "create session");
+                    AppOpsManager.OP_COMPUTER_CONTROL, attributionSource, "create session");
             canCreateWithoutConsent = isOpAllowed == AppOpsManager.MODE_ALLOWED;
         } else {
             canCreateWithoutConsent = true;

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 The Android Open Source Project
+ * Copyright (C) 2025 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-package com.android.settingslib.bluetooth;
+package com.android.settingslib.bluetooth.hearingdevices;
 
 import static android.bluetooth.AudioInputControl.MUTE_DISABLED;
 import static android.bluetooth.AudioInputControl.MUTE_MUTED;
 import static android.bluetooth.AudioInputControl.MUTE_NOT_MUTED;
 
-import static com.android.settingslib.bluetooth.HearingDeviceLocalDataManager.Data.INVALID_VOLUME;
+import static com.android.settingslib.bluetooth.hearingdevices.metrics.HearingDeviceLocalDataManager.Data.INVALID_VOLUME;
 
 import android.bluetooth.AudioInputControl;
 import android.bluetooth.BluetoothDevice;
@@ -30,6 +30,9 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+
+import com.android.settingslib.bluetooth.LocalBluetoothProfileManager;
+import com.android.settingslib.bluetooth.VolumeControlProfile;
 
 import java.util.Collections;
 import java.util.List;

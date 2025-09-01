@@ -1738,7 +1738,7 @@ public class AppOpsManager {
      *
      * @hide
      */
-    public static final int OP_AGENT_CONTROL = AppOpEnums.APP_OP_AGENT_CONTROL;
+    public static final int OP_COMPUTER_CONTROL = AppOpEnums.APP_OP_COMPUTER_CONTROL;
 
     /** @hide */
     @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.R, trackingBug = 170729553)
@@ -1913,7 +1913,7 @@ public class AppOpsManager {
             OPSTR_SYSTEM_APPLICATION_OVERLAY,
             OPSTR_READ_CELL_IDENTITY,
             OPSTR_READ_CELL_INFO,
-            OPSTR_AGENT_CONTROL,
+            OPSTR_COMPUTER_CONTROL,
     })
     public @interface AppOpString {}
 
@@ -2724,7 +2724,7 @@ public class AppOpsManager {
     public static final String OPSTR_READ_CELL_INFO = "android:read_cell_info";
 
     /** @hide Control other applications. */
-    public static final String OPSTR_AGENT_CONTROL = "android:agent_control";
+    public static final String OPSTR_COMPUTER_CONTROL = "android:computer_control";
 
     /** {@link #sAppOpsToNote} not initialized yet for this op */
     private static final byte SHOULD_COLLECT_NOTE_OP_NOT_INITIALIZED = 0;
@@ -3399,7 +3399,11 @@ public class AppOpsManager {
                 "READ_CELL_INFO")
                 .setDefaultMode(AppOpsManager.MODE_ALLOWED)
                 .build(),
-        new AppOpInfo.Builder(OP_AGENT_CONTROL, OPSTR_AGENT_CONTROL, "AGENT_CONTROL")
+        // OP_COMPUTER_CONTROL is related to the ACCESS_COMPUTER_CONTROL permission but with
+        // slightly different semantics - the permission must be held in order to request a
+        // computer control session at all, while the op mode determines whether explicit user
+        // consent is required when requesting a computer control session.
+        new AppOpInfo.Builder(OP_COMPUTER_CONTROL, OPSTR_COMPUTER_CONTROL, "COMPUTER_CONTROL")
                 .setDefaultMode(AppOpsManager.MODE_IGNORED)
                 .build(),
     };

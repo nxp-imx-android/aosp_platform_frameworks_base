@@ -116,7 +116,7 @@ public class ComputerControlSessionProcessorTest {
         when(mContext.getSystemService(Context.KEYGUARD_SERVICE)).thenReturn(mKeyguardManager);
         when(mContext.getSystemService(Context.APP_OPS_SERVICE)).thenReturn(mAppOpsManager);
 
-        when(mAppOpsManager.noteOpNoThrow(eq(AppOpsManager.OP_AGENT_CONTROL), any(), any()))
+        when(mAppOpsManager.noteOpNoThrow(eq(AppOpsManager.OP_COMPUTER_CONTROL), any(), any()))
                 .thenReturn(AppOpsManager.MODE_ALLOWED);
 
         when(mVirtualDeviceFactory.createVirtualDevice(any(), any(), any(), any()))
@@ -180,7 +180,7 @@ public class ComputerControlSessionProcessorTest {
     @EnableFlags(Flags.FLAG_COMPUTER_CONTROL_CONSENT)
     @Test
     public void onSessionPending_consentGranted_sessionCreated() throws Exception {
-        when(mAppOpsManager.noteOpNoThrow(eq(AppOpsManager.OP_AGENT_CONTROL), any(), any()))
+        when(mAppOpsManager.noteOpNoThrow(eq(AppOpsManager.OP_COMPUTER_CONTROL), any(), any()))
                 .thenReturn(AppOpsManager.MODE_IGNORED);
 
         mProcessor.processNewSessionRequest(AttributionSource.myAttributionSource(),
@@ -198,7 +198,7 @@ public class ComputerControlSessionProcessorTest {
     @EnableFlags(Flags.FLAG_COMPUTER_CONTROL_CONSENT)
     @Test
     public void onSessionPending_consentDenied_sessionCreationFailed() throws Exception {
-        when(mAppOpsManager.noteOpNoThrow(eq(AppOpsManager.OP_AGENT_CONTROL), any(), any()))
+        when(mAppOpsManager.noteOpNoThrow(eq(AppOpsManager.OP_COMPUTER_CONTROL), any(), any()))
                 .thenReturn(AppOpsManager.MODE_IGNORED);
 
         mProcessor.processNewSessionRequest(AttributionSource.myAttributionSource(),

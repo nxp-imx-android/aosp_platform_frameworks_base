@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 The Android Open Source Project
+ * Copyright (C) 2025 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,39 +14,26 @@
  * limitations under the License.
  */
 
-package com.android.settingslib.bluetooth;
-
-import static com.android.settingslib.bluetooth.HearingAidInfo.DeviceSide.SIDE_LEFT;
-import static com.android.settingslib.bluetooth.HearingAidInfo.DeviceSide.SIDE_RIGHT;
+package com.android.settingslib.bluetooth.hearingdevices.ui;
 
 import android.bluetooth.AudioInputControl;
-import android.bluetooth.BluetoothDevice;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import java.util.List;
-import java.util.Map;
+import java.util.Set;
 
 /** Interface for the ambient volume UI. */
-public interface AmbientVolumeUi {
+public interface AmbientVolumeUi extends ExpandableControlUi {
 
     /** Interface definition for a callback to be invoked when event happens in AmbientVolumeUi. */
-    interface AmbientVolumeUiListener {
-        /** Called when the expand icon is clicked. */
-        void onExpandIconClick();
-
+    interface AmbientVolumeUiListener extends ExpandableControlUiListener {
         /** Called when the ambient volume icon is clicked. */
         void onAmbientVolumeIconClick();
 
         /** Called when the slider of the specified side is changed. */
         void onSliderValueChange(int side, int value);
-    };
-
-    /** The rotation degree of the expand icon when the UI is in collapsed mode. */
-    float ROTATION_COLLAPSED = 0f;
-    /** The rotation degree of the expand icon when the UI is in expanded mode. */
-    float ROTATION_EXPANDED = 180f;
+    }
 
     /**
      * The default ambient volume level for hearing device ambient volume icon
@@ -78,34 +65,6 @@ public interface AmbientVolumeUi {
      */
     int AMBIENT_VOLUME_LEVEL_MAX = 24;
 
-    /**
-     * Ths side identifier for slider in collapsed mode which can unified control the ambient
-     * volume of all devices in the same set.
-     */
-    int SIDE_UNIFIED = 999;
-
-    /** All valid side of the sliders in the UI. */
-    List<Integer> VALID_SIDES = List.of(SIDE_UNIFIED, SIDE_LEFT, SIDE_RIGHT);
-
-    /** Sets if the UI is visible. */
-    void setVisible(boolean visible);
-
-    /**
-     * Sets if the UI is expandable between expanded and collapsed mode.
-     *
-     * <p> If the UI is not expandable, it implies the UI will always stay in collapsed mode
-     */
-    void setControlExpandable(boolean expandable);
-
-    /** @return if the UI is expandable. */
-    boolean isControlExpandable();
-
-    /** Sets if the UI is in expanded mode. */
-    void setControlExpanded(boolean expanded);
-
-    /** @return if the UI is in expanded mode. */
-    boolean isControlExpanded();
-
     /** @return if the UI is capable to mute the ambient of remote device. */
     boolean isMutable();
 
@@ -113,22 +72,23 @@ public interface AmbientVolumeUi {
     boolean isMuted();
 
     /**
-     * Sets listener on the UI.
-     *
+     * Sets the listener to be invoked when events happen in this UI.
      * @see AmbientVolumeUiListener
      */
     void setListener(@Nullable AmbientVolumeUiListener listener);
 
     /**
-     * Sets up sliders in the UI.
+     * Sets up sliders in the UI based on the provided sides.
      *
-     * <p> For each side of device, the UI should hava a corresponding slider to control it's
-     * ambient volume.
-     * <p> For all devices in the same set, the UI should have a slider to control all devices'
-     * ambient volume at once.
-     * @param sideToDeviceMap the side and device mapping of all devices in the same set
+     * <p>A slider will be created for each unique side identifier in the {@code sides} set.
+     * Additionally, a unified slider ({@link ExpandableControlUi#SIDE_UNIFIED}) is always created
+     * to control all sides together when the UI is in a collapsed state.
+     *
+     * @param sides A set of integers representing the device sides for which individual
+     *              sliders should be created (e.g., {@code HearingAidInfo.DeviceSide.SIDE_LEFT},
+     *              {@code HearingAidInfo.DeviceSide.SIDE_RIGHT}).
      */
-    void setupSliders(@NonNull Map<Integer, BluetoothDevice> sideToDeviceMap);
+    void setupSliders(@NonNull Set<Integer> sides);
 
     /**
      * Sets if the slider is enabled.
@@ -170,7 +130,4 @@ public interface AmbientVolumeUi {
      * @return the mute state, see {@link AudioInputControl.Mute}
      */
     int getSliderMuteState(int side);
-
-    /** Updates the UI according to current state. */
-    void updateLayout();
 }

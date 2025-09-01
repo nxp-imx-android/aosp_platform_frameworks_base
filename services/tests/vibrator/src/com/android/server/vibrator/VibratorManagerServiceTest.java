@@ -1465,8 +1465,7 @@ public class VibratorManagerServiceTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_VIBRATION_PIPELINE_FIX_ENABLED)
-    public void vibrate_withPipelineFlagEnabledAndShortEffect_continuesOngoingEffect()
+    public void vibrate_withPipelineMaxDurationConfigAndShortEffect_continuesOngoingEffect()
             throws Exception {
         assumeTrue(mVibrationConfig.getVibrationPipelineMaxDurationMs() > 0);
 

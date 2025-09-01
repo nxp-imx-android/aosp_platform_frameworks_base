@@ -54,6 +54,7 @@ import androidx.annotation.WorkerThread;
 import com.android.internal.util.ArrayUtils;
 import com.android.settingslib.R;
 import com.android.settingslib.Utils;
+import com.android.settingslib.bluetooth.hearingdevices.metrics.HearingDeviceStatsLogUtils;
 import com.android.settingslib.flags.Flags;
 import com.android.settingslib.utils.ThreadUtils;
 import com.android.settingslib.widget.AdaptiveOutlineDrawable;
@@ -361,7 +362,8 @@ public class CachedBluetoothDevice implements Comparable<CachedBluetoothDevice> 
                 updatePreferredTransport();
             }
 
-            HearingAidStatsLogUtils.updateHistoryIfNeeded(mContext, this, profile, newProfileState);
+            HearingDeviceStatsLogUtils.updateHistoryIfNeeded(mContext, this, profile,
+                    newProfileState);
         }
 
         if (Flags.enableBluetoothDiagnosis() && !isBusy()) {
@@ -1146,7 +1148,7 @@ public class CachedBluetoothDevice implements Comparable<CachedBluetoothDevice> 
 
             // Saves this device as just bonded and checks if it's an hearing device after
             // profiles are connected. This is for judging whether to display the survey.
-            HearingAidStatsLogUtils.addToJustBonded(getAddress());
+            HearingDeviceStatsLogUtils.addToJustBonded(getAddress());
 
             if (Flags.enableBluetoothDiagnosis()) {
                 mBondFailureTimeMillis = -1;

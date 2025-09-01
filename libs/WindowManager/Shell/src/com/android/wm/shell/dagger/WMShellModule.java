@@ -41,6 +41,7 @@ import android.view.SurfaceControl;
 import android.view.WindowManager;
 import android.window.DesktopExperienceFlags;
 import android.window.DesktopModeFlags;
+import android.window.TaskSnapshotManager;
 
 import androidx.annotation.OptIn;
 
@@ -968,7 +969,8 @@ public abstract class WMShellModule {
             DesktopState desktopState,
             DesktopConfig desktopConfig,
             VisualIndicatorUpdateScheduler visualIndicatorUpdateScheduler,
-            Optional<DesktopFirstListenerManager> desktopFirstListenerManager) {
+            Optional<DesktopFirstListenerManager> desktopFirstListenerManager,
+            TaskSnapshotManager taskSnapshotManager) {
         return new DesktopTasksController(
                 context,
                 shellInit,
@@ -1017,7 +1019,8 @@ public abstract class WMShellModule {
                 desktopState,
                 desktopConfig,
                 visualIndicatorUpdateScheduler,
-                desktopFirstListenerManager);
+                desktopFirstListenerManager,
+                taskSnapshotManager);
     }
 
     @WMSingleton

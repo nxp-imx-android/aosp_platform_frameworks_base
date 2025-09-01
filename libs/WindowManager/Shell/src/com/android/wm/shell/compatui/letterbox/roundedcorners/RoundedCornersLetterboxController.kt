@@ -20,6 +20,7 @@ import android.graphics.Rect
 import android.view.SurfaceControl
 import android.window.WindowContainerToken
 import com.android.internal.protolog.ProtoLog
+import com.android.window.flags.Flags
 import com.android.wm.shell.common.ShellExecutor
 import com.android.wm.shell.compatui.letterbox.LetterboxController
 import com.android.wm.shell.compatui.letterbox.LetterboxKey
@@ -77,7 +78,13 @@ constructor(
     ) {
         roundedCornersMap.runOnItem(
             key.taskId,
-            onFound = { item -> item.setCornersVisibility(animExecutor, visible, immediate = true) },
+            onFound = { item ->
+                item.setCornersVisibility(
+                    animExecutor,
+                    visible,
+                    immediate = !Flags.appCompatRefactoringRoundedCornersAnimation(),
+                )
+            },
         )
     }
 
