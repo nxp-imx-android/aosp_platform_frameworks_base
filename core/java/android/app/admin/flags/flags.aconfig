@@ -471,6 +471,16 @@ flag {
 }
 
 flag {
+  name: "dont_write_is_system_authority"
+  namespace: "enterprise"
+  description: "Stop writing redundant is-system attribute in EnforcingAdmin XML representation ."
+  bug: "336315393"
+  metadata {
+    purpose: PURPOSE_BUGFIX
+  }
+}
+
+flag {
   name: "cross_profile_widget_provider_bulk_apis"
   namespace: "enterprise"
   description: "Add bulk APIs for cross profile widget providers"
