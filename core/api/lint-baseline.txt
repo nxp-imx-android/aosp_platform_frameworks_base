@@ -448,7 +448,6 @@ MissingGetterMatchingBuilder: android.content.AttributionSource.Builder#setNextA
 MissingGetterMatchingBuilder: android.os.RemoteCallbackList.Builder#setInterfaceDiedCallback(android.os.RemoteCallbackList.Builder.InterfaceDiedCallback<E>):
     android.os.RemoteCallbackList does not declare a `getInterfaceDiedCallback()` method matching method android.os.RemoteCallbackList.Builder.setInterfaceDiedCallback(android.os.RemoteCallbackList.Builder.InterfaceDiedCallback<E>)
 
-
 PublicTypedef: android.telecom.Call.AudioProcessingUseCase:
     Don't expose @IntDef: AduioProcessingUseCase must be hidden.
 
@@ -1045,6 +1044,8 @@ RequiresPermission: android.telephony.TelephonyManager#getSubscriberId():
     Method 'getSubscriberId' documentation mentions permissions already declared by @RequiresPermission
 RequiresPermission: android.telephony.TelephonyManager#getSupportedRadioAccessFamily():
     Method 'getSupportedRadioAccessFamily' documentation mentions permissions already declared by @RequiresPermission
+RequiresPermission: android.telephony.TelephonyManager#getUiccCardsInfo():
+    Method 'getUiccCardsInfo' documentation duplicates auto-generated documentation by @RequiresPermission. If the permissions are only required under certain circumstances use conditional=true to suppress the auto-documentation
 RequiresPermission: android.telephony.TelephonyManager#getVisualVoicemailPackageName():
     Method 'getVisualVoicemailPackageName' documentation mentions permissions already declared by @RequiresPermission
 RequiresPermission: android.telephony.TelephonyManager#getVoiceMailAlphaTag():
