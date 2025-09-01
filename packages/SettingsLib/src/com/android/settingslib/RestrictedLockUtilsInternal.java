@@ -19,6 +19,7 @@ package com.android.settingslib;
 import static android.app.admin.DevicePolicyManager.KEYGUARD_DISABLE_FEATURES_NONE;
 import static android.app.admin.DevicePolicyManager.MTE_NOT_CONTROLLED_BY_POLICY;
 import static android.app.admin.DevicePolicyManager.PROFILE_KEYGUARD_FEATURES_AFFECT_OWNER;
+import static android.app.admin.DpcAuthority.DPC_AUTHORITY;
 import static android.app.role.RoleManager.ROLE_FINANCED_DEVICE_KIOSK;
 
 import static com.android.settingslib.Utils.getColorAttrDefaultColor;
@@ -63,8 +64,10 @@ import androidx.annotation.VisibleForTesting;
 
 import com.android.internal.widget.LockPatternUtils;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Utility class to host methods usable in adding a restricted padlock icon and showing admin
@@ -401,6 +404,78 @@ public class RestrictedLockUtilsInternal extends RestrictedLockUtils {
             }
         } catch (RemoteException e) {
             // Nothing to do
+        }
+        return null;
+    }
+
+    /**
+     * Checks for the user restrictions set on the app either by device admin or system
+     * components. Returns {@link PolicyEnforcementInfo} if the restriction is set with
+     * EnforcingAdmin and empty admin list otherwise.
+     * The {@link PolicyEnforcementInfo} that's returned will contain the information if it's
+     * blocked by admin or the system.
+     */
+    @NonNull
+    public static PolicyEnforcementInfo checkIfUninstallBlockedByAdminOrSystem(Context context,
+            String packageName, int userId) {
+        DevicePolicyManager dpm = context.getSystemService(DevicePolicyManager.class);
+        if (dpm == null) {
+            return new PolicyEnforcementInfo(Collections.emptyList());
+        }
+
+        PolicyEnforcementInfo appsControlAdminEnforcement = dpm.getEnforcingAdminsForPolicy(
+                DevicePolicyIdentifiers.getIdentifierForUserRestriction(
+                        UserManager.DISALLOW_APPS_CONTROL), userId);
+        if (!appsControlAdminEnforcement.getAllAdmins().isEmpty()) {
+            return appsControlAdminEnforcement;
+        }
+
+        PolicyEnforcementInfo uninstallAppsAdminEnforcement = dpm.getEnforcingAdminsForPolicy(
+                DevicePolicyIdentifiers.getIdentifierForUserRestriction(
+                        UserManager.DISALLOW_UNINSTALL_APPS), userId);
+        if (!uninstallAppsAdminEnforcement.getAllAdmins().isEmpty()) {
+            return uninstallAppsAdminEnforcement;
+        }
+
+        IPackageManager ipm = AppGlobals.getPackageManager();
+        try {
+            if (ipm.getBlockUninstallForUser(packageName, userId)) {
+                EnforcingAdmin admin = getProfileOrDeviceOwnerAdmin(context,
+                        getUserHandleOf(userId));
+                if (admin == null) {
+                    Log.w(LOG_TAG, "Uninstall blocked for " + packageName + " but no admin found.");
+                    return new PolicyEnforcementInfo(Collections.emptyList());
+                }
+                return new PolicyEnforcementInfo(List.of(admin));
+            }
+        } catch (RemoteException e) {
+            // Nothing to do
+        }
+        return new PolicyEnforcementInfo(Collections.emptyList());
+    }
+
+    // TODO(b/441922977): PO/DO assumption is not correct in context of policy transparency. This is
+    //  an intermediate step to get around that until the legacy policies are migrated to support
+    //  coexistence. This method needs to be removed when those policies are migrated.
+    private static @Nullable EnforcingAdmin getProfileOrDeviceOwnerAdmin(Context context,
+            UserHandle user) {
+        DevicePolicyManager dpm = context.getSystemService(DevicePolicyManager.class);
+
+        if (dpm == null) {
+            return null;
+        }
+
+        ComponentName adminComponent = dpm.getProfileOwnerAsUser(user);
+        if (adminComponent != null) {
+            return new EnforcingAdmin(adminComponent.getPackageName(), DPC_AUTHORITY, user,
+                    adminComponent);
+        }
+        if (Objects.equals(dpm.getDeviceOwnerUser(), user)) {
+            adminComponent = dpm.getDeviceOwnerComponentOnAnyUser();
+            if (adminComponent != null) {
+                return new EnforcingAdmin(adminComponent.getPackageName(), DPC_AUTHORITY, user,
+                        adminComponent);
+            }
         }
         return null;
     }
@@ -994,6 +1069,30 @@ public class RestrictedLockUtilsInternal extends RestrictedLockUtils {
         }
         int profileId = getManagedProfileId(context, context.getUserId());
         return RestrictedLockUtils.getProfileOrDeviceOwner(context, UserHandle.of(profileId));
+    }
+
+    /**
+     * Check if there are restrictions on an application from being a Credential Manager provider.
+     *
+     * @return PolicyEnforcementInfo Object containing the enforced admin component and admin
+     * user details or {@code null} if the setting is not managed.
+     */
+    public static @NonNull PolicyEnforcementInfo checkIfApplicationCanBeCredentialManagerProvider(
+            @NonNull Context context, @NonNull String packageName, int userId) {
+        final DevicePolicyManager dpm = context.getSystemService(DevicePolicyManager.class);
+        final PackagePolicy pp = dpm.getCredentialManagerPolicy();
+        // TODO : b/454240717 - check if packageName is system app and provide a list of system
+        //  apps to query if package is allowed correctly.
+        if (pp == null || pp.isPackageAllowed(packageName, new HashSet<>())) {
+            return new PolicyEnforcementInfo(Collections.emptyList());
+        }
+
+        EnforcingAdmin admin = getProfileOrDeviceOwnerAdmin(context, UserHandle.of(userId));
+        if (admin == null) {
+            return new PolicyEnforcementInfo(Collections.emptyList());
+        }
+
+        return new PolicyEnforcementInfo(List.of(admin));
     }
 
     /**
