@@ -7604,9 +7604,10 @@ final class ActivityRecord extends WindowToken {
             requestedOverrideConfig.assetsSeq = ASSETS_SEQ_UNDEFINED;
         }
 
-        if (ENABLE_DRAGGING_PIP_ACROSS_DISPLAYS.isTrue() && inPinnedWindowingMode()) {
-            // Retain the following configs for PiP so that the activity doesn't get destroyed and
-            // recreated on display transfer while still remaining in PiP.
+        if (ENABLE_DRAGGING_PIP_ACROSS_DISPLAYS.isTrue() && mLastReportedPictureInPictureMode) {
+            // If the previously resolved full config of the activity is in PiP, retain the
+            // following configs so that the activity doesn't get destroyed and recreated on display
+            // transfer while still remaining in PiP mode.
             if (newParentConfiguration.windowConfiguration.getWindowingMode()
                     == WINDOWING_MODE_PINNED) {
                 final Configuration lastReportedMergedConfig =
