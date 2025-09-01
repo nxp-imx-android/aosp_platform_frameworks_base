@@ -107,6 +107,7 @@ public final class WMShell implements
         CoreStartable,
         CommandQueue.Callbacks {
     private static final String TAG = WMShell.class.getSimpleName();
+    private static final boolean DEBUG = false;
     private static final long INVALID_SYSUI_STATE_MASK =
             SYSUI_STATE_DIALOG_SHOWING
                     | SYSUI_STATE_STATUS_BAR_KEYGUARD_SHOWING
@@ -463,18 +464,48 @@ public final class WMShell implements
             @Override
             public void onActiveDeskChanged(int displayId, int newActiveDeskId,
                     int oldActiveDeskId) {
+                if (DEBUG) {
+                    Log.d(TAG, "onActiveDeskChanged: displayId=" + displayId
+                            + ", newActiveDeskId=" + newActiveDeskId
+                            + ", oldActiveDeskId=" + oldActiveDeskId);
+                }
                 SysUiState sysUiState = mPerDisplaySysUiStateRepository.get(displayId);
-                if (sysUiState != null && shadeAppLaunchAnimationSkipInDesktop()) {
-                    boolean enterFreeform = newActiveDeskId != DesktopRepository.INVALID_DESK_ID
-                            && oldActiveDeskId == DesktopRepository.INVALID_DESK_ID;
-                    boolean exitFreeform = newActiveDeskId == DesktopRepository.INVALID_DESK_ID
-                            && oldActiveDeskId != DesktopRepository.INVALID_DESK_ID;
-                    if (enterFreeform) {
-                        sysUiState.setFlag(SYSUI_STATE_FREEFORM_ACTIVE_IN_DESKTOP_MODE,
-                                true).commitUpdate();
-                    } else if (exitFreeform) {
-                        sysUiState.setFlag(SYSUI_STATE_FREEFORM_ACTIVE_IN_DESKTOP_MODE,
-                                false).commitUpdate();
+                if (sysUiState == null) {
+                    if (DEBUG) {
+                        Log.d(TAG, "onActiveDeskChanged: sysUiState is null for displayId="
+                                + displayId);
+                    }
+                    return;
+                }
+                if (!shadeAppLaunchAnimationSkipInDesktop()) {
+                    if (DEBUG) {
+                        Log.d(TAG, "onActiveDeskChanged displayId=" + displayId
+                                + ": shadeAppLaunchAnimationSkipInDesktop flag is false");
+                    }
+                    return;
+                }
+                boolean enterFreeform = newActiveDeskId != DesktopRepository.INVALID_DESK_ID
+                        && oldActiveDeskId == DesktopRepository.INVALID_DESK_ID;
+                boolean exitFreeform = newActiveDeskId == DesktopRepository.INVALID_DESK_ID
+                        && oldActiveDeskId != DesktopRepository.INVALID_DESK_ID;
+                if (enterFreeform) {
+                    if (DEBUG) {
+                        Log.d(TAG, "onActiveDeskChanged displayId=" + displayId
+                                + ": enter freeform:  FREEFORM_ACTIVE_IN_DESKTOP_MODE -> true");
+                    }
+                    sysUiState.setFlag(SYSUI_STATE_FREEFORM_ACTIVE_IN_DESKTOP_MODE,
+                            true).commitUpdate();
+                } else if (exitFreeform) {
+                    if (DEBUG) {
+                        Log.d(TAG, "onActiveDeskChanged displayId=" + displayId
+                                + ": exit freeform:  FREEFORM_ACTIVE_IN_DESKTOP_MODE -> false");
+                    }
+                    sysUiState.setFlag(SYSUI_STATE_FREEFORM_ACTIVE_IN_DESKTOP_MODE,
+                            false).commitUpdate();
+                } else {
+                    if (DEBUG) {
+                        Log.d(TAG, "onActiveDeskChanged displayId=" + displayId
+                                + ": No state change required");
                     }
                 }
             }

@@ -802,12 +802,28 @@ constructor(
     ): Boolean {
         // TODO(b/294418322): always support launch animations when occluded.
         val ignoreOcclusion = showOverLockscreen || isCommunalWidgetLaunch()
+        val skipInDesktopFlag = shadeAppLaunchAnimationSkipInDesktop()
+        val isDesktopMode = isInDesktopModeOnCurrentShadeDisplay
+        val isDesktopFirst = desktopFirstRepository.isDisplayDesktopFirst(currentShadeDisplayId)
+        val keyguardShowing = keyguardStateController.isShowing
+
+        Log.i(
+            TAG,
+            "shouldAnimateLaunch: " +
+                "isActivityIntent=$isActivityIntent, " +
+                "showOverLockscreen=$showOverLockscreen, " +
+                "ignoreOcclusion=$ignoreOcclusion, " +
+                "skipInDesktopFlag=$skipInDesktopFlag, " +
+                "isInDesktopModeOnCurrentShadeDisplay=$isDesktopMode, " +
+                "isDisplayDesktopFirst=$isDesktopFirst, " +
+                "isKeyguardShowing=$keyguardShowing",
+        )
         if (keyguardStateController.isOccluded && !ignoreOcclusion) {
             return false
         }
 
         if (
-            shadeAppLaunchAnimationSkipInDesktop() &&
+            skipInDesktopFlag &&
                 (isInDesktopModeOnCurrentShadeDisplay ||
                     desktopFirstRepository.isDisplayDesktopFirst(currentShadeDisplayId))
         ) {
@@ -816,7 +832,7 @@ constructor(
 
         // Always animate if we are not showing the keyguard or if we animate over the lockscreen
         // (without unlocking it).
-        if (showOverLockscreen || !keyguardStateController.isShowing) {
+        if (showOverLockscreen || !keyguardShowing) {
             return true
         }
 
