@@ -81,6 +81,7 @@ import android.widget.Toast
 import android.window.DisplayAreaInfo
 import android.window.IWindowContainerToken
 import android.window.RemoteTransition
+import android.window.TaskSnapshotManager
 import android.window.TransitionInfo
 import android.window.TransitionRequestInfo
 import android.window.WindowContainerToken
@@ -301,6 +302,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     @Mock private lateinit var mockAppOpsManager: AppOpsManager
     @Mock private lateinit var visualIndicatorUpdateScheduler: VisualIndicatorUpdateScheduler
     @Mock private lateinit var desktopFirstListenerManager: DesktopFirstListenerManager
+    @Mock private lateinit var taskSnapshotManager: TaskSnapshotManager
 
     private lateinit var controller: DesktopTasksController
     private lateinit var shellInit: ShellInit
@@ -535,6 +537,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
             desktopConfig,
             visualIndicatorUpdateScheduler,
             Optional.of(desktopFirstListenerManager),
+            taskSnapshotManager,
         )
 
     @After
@@ -11212,6 +11215,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
                         this.displayId == SECOND_DISPLAY
                 }
             )
+        verify(taskSnapshotManager).takeTaskSnapshot(secondDisplayTask.taskId, true)
     }
 
     @Test
@@ -11255,6 +11259,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
                         this.deskId == DISCONNECTED_DESK_ID
                 }
             )
+        verify(taskSnapshotManager).takeTaskSnapshot(secondDisplayTask.taskId, true)
     }
 
     @Test
@@ -11296,6 +11301,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
                         this.deskId == DISCONNECTED_DESK_ID
                 }
             )
+        verify(taskSnapshotManager).takeTaskSnapshot(secondDisplayTask.taskId, true)
     }
 
     @Test
@@ -11327,6 +11333,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
                         this.deskId == DISCONNECTED_DESK_ID
                 }
             )
+        verify(taskSnapshotManager, never()).takeTaskSnapshot(any(), any())
     }
 
     @Test
@@ -11361,6 +11368,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
                 secondDisplayTask = secondDisplayTask,
             )
         assertThat(findBoundsChange(wct, secondDisplayTask)).isEqualTo(Rect(33, 61, 299, 327))
+        verify(taskSnapshotManager).takeTaskSnapshot(secondDisplayTask.taskId, true)
     }
 
     private fun performDisplayDisconnectTransition(
