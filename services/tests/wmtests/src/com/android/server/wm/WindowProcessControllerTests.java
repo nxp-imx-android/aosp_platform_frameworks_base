@@ -364,6 +364,12 @@ public class WindowProcessControllerTests extends WindowTestsBase {
         activity.setState(STOPPED, "test");
         flags = mWpc.getActivityStateFlags() & exclusiveFlags;
         assertEquals(0, flags);
+
+        activity.setVisibleRequested(true);
+        activity.setState(RESUMED, "test");
+        activity.makeInvisible();
+        flags = mWpc.getActivityStateFlags() & exclusiveFlags;
+        assertEquals(WindowProcessController.ACTIVITY_STATE_FLAG_IS_PAUSING_OR_PAUSED, flags);
     }
 
     @Test
