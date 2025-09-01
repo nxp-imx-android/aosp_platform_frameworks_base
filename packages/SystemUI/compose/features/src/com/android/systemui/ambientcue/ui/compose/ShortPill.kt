@@ -17,6 +17,7 @@
 package com.android.systemui.ambientcue.ui.compose
 
 import android.view.Surface.ROTATION_90
+import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.animation.core.TweenSpec
 import androidx.compose.animation.core.animateFloat
@@ -48,6 +49,7 @@ import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -83,6 +85,7 @@ import com.android.systemui.ambientcue.ui.utils.FilterUtils
 import com.android.systemui.ambientcue.ui.viewmodel.ActionType
 import com.android.systemui.ambientcue.ui.viewmodel.ActionViewModel
 import com.android.systemui.res.R
+import kotlinx.coroutines.delay
 
 @Composable
 fun ShortPill(
@@ -147,6 +150,15 @@ fun ShortPill(
         ) {
             if (it) 0.4f else 0f
         }
+
+    val blurRadius = remember { Animatable(4f) }
+    LaunchedEffect(Unit) {
+        delay(BLUR_DURATION_MILLIS)
+        blurRadius.animateTo(
+            targetValue = 0f,
+            animationSpec = tween(durationMillis = BLUR_FADE_DURATION_MILLIS),
+        )
+    }
 
     AmbientCueJankMonitorComposable(
         visibleTargetState = visibleState.targetState,
@@ -223,7 +235,6 @@ fun ShortPill(
         val pillModifier =
             Modifier.clip(RoundedCornerShape(16.dp))
                 .background(backgroundColor)
-                .animatedActionBorder(strokeWidth = 1.dp, cornerRadius = 16.dp, visible = visible)
                 .widthIn(0.dp, minSize * 2)
                 .padding(4.dp)
 
@@ -310,10 +321,19 @@ fun ShortPill(
                             }
                         }
 
+                        // Inner glow
                         Box(
                             Modifier.matchParentSize()
-                                .padding(1.dp)
-                                .blur(4.dp, edgeTreatment = BlurredEdgeTreatment.Unbounded)
+                                // Prevent the border from being invisible due to blur.
+                                .animatedActionBorder(
+                                    strokeWidth = 1.dp,
+                                    cornerRadius = 16.dp,
+                                    visible = visible,
+                                )
+                                .blur(
+                                    blurRadius.value.dp,
+                                    edgeTreatment = BlurredEdgeTreatment.Unbounded,
+                                )
                                 .animatedActionBorder(
                                     strokeWidth = 1.dp,
                                     cornerRadius = 16.dp,
@@ -344,14 +364,36 @@ fun ShortPill(
                                 pillContentPosition = coordinates.positionInParent()
                             },
                 ) {
-                    Column(
-                        verticalArrangement =
-                            Arrangement.spacedBy(-4.dp, Alignment.CenterVertically),
-                        modifier = pillModifier.defaultMinSize(minHeight = minSize),
-                    ) {
-                        filteredActions.take(3).fastForEach { action ->
-                            Icon(action, backgroundColor)
+                    Box {
+                        Column(
+                            verticalArrangement =
+                                Arrangement.spacedBy(-4.dp, Alignment.CenterVertically),
+                            modifier = pillModifier.defaultMinSize(minHeight = minSize),
+                        ) {
+                            filteredActions.take(3).fastForEach { action ->
+                                Icon(action, backgroundColor)
+                            }
                         }
+
+                        // Inner glow
+                        Box(
+                            Modifier.matchParentSize()
+                                // Prevent the border from being invisible due to blur.
+                                .animatedActionBorder(
+                                    strokeWidth = 1.dp,
+                                    cornerRadius = 16.dp,
+                                    visible = visible,
+                                )
+                                .blur(
+                                    blurRadius.value.dp,
+                                    edgeTreatment = BlurredEdgeTreatment.Unbounded,
+                                )
+                                .animatedActionBorder(
+                                    strokeWidth = 1.dp,
+                                    cornerRadius = 16.dp,
+                                    visible = visible,
+                                )
+                        )
                     }
                 }
 
@@ -437,3 +479,5 @@ private fun Icon(action: ActionViewModel, backgroundColor: Color, modifier: Modi
 }
 
 private val closeButtonTouchTargetSize = 36.dp
+private const val BLUR_DURATION_MILLIS = 1500L
+private const val BLUR_FADE_DURATION_MILLIS = 500
