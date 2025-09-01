@@ -347,16 +347,6 @@ flag {
 }
 
 flag {
-    name: "enable_defer_down_recents_animation_bugfix"
-    namespace: "lse_desktop_experience"
-    description: "Enable defering start of recents animation by down to prevent showing unintentional animation"
-    bug: "432133436"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "enable_desktop_app_handle_animation"
     namespace: "lse_desktop_experience"
     description: "Enables the animation that occurs when the app handle of a task in immersive mode is shown or hidden."
