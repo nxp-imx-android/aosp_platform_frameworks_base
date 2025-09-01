@@ -23,6 +23,13 @@ flag {
 }
 
 flag {
+    name: "close_fullscreen_and_splitscreen_keyboard_shortcut"
+    namespace: "lse_desktop_experience"
+    description: "Enable keyboard shortcut to close fullscreen and split screen tasks"
+    bug: "441147192"
+}
+
+flag {
     name: "close_task_keyboard_shortcut"
     namespace: "lse_desktop_experience"
     description: "Enable keyboard shortcut to close a task"

@@ -59,6 +59,9 @@ public enum DesktopExperienceFlags {
     BASE_DENSITY_FOR_EXTERNAL_DISPLAYS(
             com.android.server.display.feature.flags.Flags::baseDensityForExternalDisplays, true,
             com.android.server.display.feature.flags.Flags.FLAG_BASE_DENSITY_FOR_EXTERNAL_DISPLAYS),
+    CLOSE_FULLSCREEN_AND_SPLITSCREEN_KEYBOARD_SHORTCUT(
+            Flags::closeFullscreenAndSplitscreenKeyboardShortcut, false,
+            Flags.FLAG_CLOSE_FULLSCREEN_AND_SPLITSCREEN_KEYBOARD_SHORTCUT),
     CLOSE_TASK_KEYBOARD_SHORTCUT(Flags::closeTaskKeyboardShortcut, true,
             Flags.FLAG_CLOSE_TASK_KEYBOARD_SHORTCUT),
     CONNECTED_DISPLAYS_CURSOR(com.android.input.flags.Flags::connectedDisplaysCursor, true,
