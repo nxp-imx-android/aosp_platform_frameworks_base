@@ -2299,4 +2299,11 @@
     <dimen name="tile_details_entry_start_margin">16dp</dimen>
     <!-- Tile Details end -->
 
+    <!-- Bouncer containerization on large screens -->
+    <dimen name="bouncer_container_width">1280dp</dimen>
+    <dimen name="bouncer_container_height">800dp</dimen>
+    <dimen name="bouncer_container_min_padding">28dp</dimen>
+    <dimen name="bouncer_container_corner_radius">28dp</dimen>
+    <!-- Bouncer containerization on large screens end -->
+
 </resources>

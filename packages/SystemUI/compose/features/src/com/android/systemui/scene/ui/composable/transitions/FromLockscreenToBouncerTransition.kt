@@ -16,7 +16,6 @@ fun TransitionBuilder.lockscreenToBouncerTransition(durationScale: Double = 1.0)
         fade(LockscreenElementKeys.AmbientIndicationArea)
         fade(LockscreenElementKeys.Region.Lower)
         fade(LockscreenElementKeys.SettingsMenu)
-        fade(LockscreenElementKeys.BehindScrim)
         translate(LockscreenElementKeys.Region.Upper, y = (-48).dp)
         translate(LockscreenElementKeys.Notifications.Stack, y = (-72).dp)
     }
