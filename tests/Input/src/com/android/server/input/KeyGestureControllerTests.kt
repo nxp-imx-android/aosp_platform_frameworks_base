@@ -69,6 +69,7 @@ import junitparams.JUnitParamsRunner
 import junitparams.Parameters
 import org.junit.Assert.assertArrayEquals
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertThrows
@@ -1349,11 +1350,11 @@ class KeyGestureControllerTests {
     }
 
     @Test
-    fun testLongPressEscape_withKeyCapture_exitCalled() {
+    fun testLongPressEscape_withKeyCapture_exitGestureCompleted() {
         setupKeyGestureController()
         enableKeyCaptureForFocussedWindow()
-        var callback = 0
-        val handler = KeyGestureHandler { _, _ -> callback++ }
+        val events = mutableListOf<KeyGestureEvent>()
+        val handler = KeyGestureHandler { event, _ -> events.add(KeyGestureEvent(event)) }
         keyGestureController.registerKeyGestureHandler(
             intArrayOf(KeyGestureEvent.KEY_GESTURE_TYPE_QUIT_FOCUSED_TASK),
             handler,
@@ -1364,14 +1365,16 @@ class KeyGestureControllerTests {
             timeDelayMs = 2 * LONG_PRESS_DELAY_FOR_ESCAPE_MILLIS,
         )
         keyGestureController.unregisterKeyGestureHandler(handler, TEST_PID)
-        assertEquals(1, callback)
+        assertEquals(2, events.size)
+        assertEquals(KeyGestureEvent.ACTION_GESTURE_COMPLETE, events[1].action)
+        assertFalse(events[1].isCancelled)
     }
 
     @Test
-    fun testLongPressEscape_withoutKeyCapture_exitNotCalled() {
+    fun testLongPressEscape_withoutKeyCapture_exitGestureNotCalled() {
         setupKeyGestureController()
-        var callback = 0
-        val handler = KeyGestureHandler { _, _ -> callback++ }
+        val events = mutableListOf<KeyGestureEvent>()
+        val handler = KeyGestureHandler { event, _ -> events.add(KeyGestureEvent(event)) }
         keyGestureController.registerKeyGestureHandler(
             intArrayOf(KeyGestureEvent.KEY_GESTURE_TYPE_QUIT_FOCUSED_TASK),
             handler,
@@ -1382,15 +1385,15 @@ class KeyGestureControllerTests {
             timeDelayMs = 2 * LONG_PRESS_DELAY_FOR_ESCAPE_MILLIS,
         )
         keyGestureController.unregisterKeyGestureHandler(handler, TEST_PID)
-        assertEquals(0, callback)
+        assertEquals(0, events.size)
     }
 
     @Test
-    fun testLongPressEscape_withKeyCapture_exitNotCalled_insufficientDuration() {
+    fun testLongPressEscape_withKeyCapture_insufficientDuration_exitGestureCancelled() {
         setupKeyGestureController()
         enableKeyCaptureForFocussedWindow()
-        var callback = 0
-        val handler = KeyGestureHandler { _, _ -> callback++ }
+        val events = mutableListOf<KeyGestureEvent>()
+        val handler = KeyGestureHandler { event, _ -> events.add(KeyGestureEvent(event)) }
         keyGestureController.registerKeyGestureHandler(
             intArrayOf(KeyGestureEvent.KEY_GESTURE_TYPE_QUIT_FOCUSED_TASK),
             handler,
@@ -1401,7 +1404,9 @@ class KeyGestureControllerTests {
             timeDelayMs = LONG_PRESS_DELAY_FOR_ESCAPE_MILLIS / 2,
         )
         keyGestureController.unregisterKeyGestureHandler(handler, TEST_PID)
-        assertEquals(0, callback)
+        assertEquals(2, events.size)
+        assertEquals(KeyGestureEvent.ACTION_GESTURE_COMPLETE, events[1].action)
+        assertTrue(events[1].isCancelled)
     }
 
     @Test

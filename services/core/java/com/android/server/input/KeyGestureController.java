@@ -838,6 +838,10 @@ final class KeyGestureController {
                     Toast.makeText(mContext, UiThread.get().getLooper(),
                             mContext.getString(R.string.exit_toast_on_long_press_escape),
                             Toast.LENGTH_SHORT).show();
+                    handleKeyGesture(event.getDeviceId(), new int[]{KeyEvent.KEYCODE_ESCAPE},
+                            metaState, KeyGestureEvent.KEY_GESTURE_TYPE_QUIT_FOCUSED_TASK,
+                            KeyGestureEvent.ACTION_GESTURE_START,
+                            displayId, focusedToken, /* flags= */0, /* appLaunchData= */ null);
                     AidlKeyGestureEvent eventToSend = createKeyGestureEvent(event.getDeviceId(),
                             new int[]{KeyEvent.KEYCODE_ESCAPE},
                             metaState, KeyGestureEvent.KEY_GESTURE_TYPE_QUIT_FOCUSED_TASK,
@@ -846,7 +850,13 @@ final class KeyGestureController {
                     Message msg = Message.obtain(mHandler, MSG_EXIT_FOCUSED_APP, eventToSend);
                     mHandler.sendMessageDelayed(msg, LONG_PRESS_DURATION_FOR_EXIT_APP_MS);
                 } else if (!down) {
-                    mHandler.removeMessages(MSG_EXIT_FOCUSED_APP);
+                    if (mHandler.hasMessages(MSG_EXIT_FOCUSED_APP)) {
+                        mHandler.removeMessages(MSG_EXIT_FOCUSED_APP);
+                        handleKeyGesture(event.getDeviceId(), new int[]{KeyEvent.KEYCODE_ESCAPE},
+                                metaState, KeyGestureEvent.KEY_GESTURE_TYPE_QUIT_FOCUSED_TASK,
+                                KeyGestureEvent.ACTION_GESTURE_COMPLETE, displayId, focusedToken,
+                                KeyGestureEvent.FLAG_CANCELLED, /* appLaunchData= */ null);
+                    }
                 }
                 break;
             case KeyEvent.KEYCODE_ASSIST:

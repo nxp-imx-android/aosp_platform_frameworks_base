@@ -92,6 +92,7 @@ import com.android.wm.shell.common.LockTaskChangeListener;
 import com.android.wm.shell.common.MultiDisplayDragMoveIndicatorController;
 import com.android.wm.shell.common.MultiDisplayDragMoveIndicatorSurface;
 import com.android.wm.shell.common.MultiInstanceHelper;
+import com.android.wm.shell.common.QuitFocusedAppKeyGestureHandler;
 import com.android.wm.shell.common.ShellExecutor;
 import com.android.wm.shell.common.SyncTransactionQueue;
 import com.android.wm.shell.common.TaskStackListenerImpl;
@@ -1265,6 +1266,22 @@ public abstract class WMShellModule {
 
     @WMSingleton
     @Provides
+    static QuitFocusedAppKeyGestureHandler provideQuitFocusedAppKeyGestureHandler(
+            Context context,
+            InputManager inputManager,
+            DisplayController displayController,
+            LockTaskChangeListener lockTaskChangeListener,
+            Optional<DesktopModeKeyGestureHandler> desktopModeKeyGestureHandler,
+            IActivityTaskManager activityTaskManagerService,
+            FocusTransitionObserver focusTransitionObserver,
+            @ShellMainThread ShellExecutor mainExecutor) {
+        return new QuitFocusedAppKeyGestureHandler(context, inputManager, displayController,
+                lockTaskChangeListener, desktopModeKeyGestureHandler, activityTaskManagerService,
+                focusTransitionObserver, mainExecutor);
+    }
+
+    @WMSingleton
+    @Provides
     static Optional<DesktopModeWindowDecorViewModel> provideDesktopModeWindowDecorViewModel(
             Context context,
             @ShellMainThread ShellExecutor shellExecutor,
@@ -2026,7 +2043,8 @@ public abstract class WMShellModule {
             Optional<DisplayDisconnectTransitionHandler> displayDisconnectTransitionHandler,
             Optional<DesktopImeHandler> desktopImeHandler,
             ShellCrashHandler shellCrashHandler,
-            AppToWebEducationController appToWebEducationController) {
+            AppToWebEducationController appToWebEducationController,
+            QuitFocusedAppKeyGestureHandler quitFocusedAppKeyGestureHandler) {
         return new Object();
     }
 
