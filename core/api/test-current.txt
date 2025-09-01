@@ -1131,7 +1131,7 @@ package android.content.pm {
     field public static final long NEVER_SANDBOX_DISPLAY_APIS = 184838306L; // 0xb0468a2L
     field public static final long OVERRIDE_CAMERA_COMPAT_DISABLE_FORCE_ROTATION = 263959004L; // 0xfbbb1dcL
     field public static final long OVERRIDE_CAMERA_COMPAT_DISABLE_REFRESH = 264304459L; // 0xfc0f74bL
-    field @FlaggedApi("com.android.window.flags.enable_camera_compat_for_desktop_windowing_opt_out_api") public static final long OVERRIDE_CAMERA_COMPAT_DISABLE_SIMULATE_REQUESTED_ORIENTATION = 398195815L; // 0x17bbfc67L
+    field public static final long OVERRIDE_CAMERA_COMPAT_DISABLE_SIMULATE_REQUESTED_ORIENTATION = 398195815L; // 0x17bbfc67L
     field public static final long OVERRIDE_CAMERA_COMPAT_ENABLE_REFRESH_VIA_PAUSE = 264301586L; // 0xfc0ec12L
     field public static final long OVERRIDE_ENABLE_COMPAT_FAKE_FOCUS = 263259275L; // 0xfb1048bL
     field @FlaggedApi("com.android.window.flags.app_compat_properties_api") public static final long OVERRIDE_ENABLE_COMPAT_IGNORE_ORIENTATION_REQUEST_WHEN_LOOP_DETECTED = 273509367L; // 0x104d6bf7L
