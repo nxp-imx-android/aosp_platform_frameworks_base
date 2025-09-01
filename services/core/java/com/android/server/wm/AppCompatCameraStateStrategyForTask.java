@@ -29,8 +29,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-/** {@link AppCompatCameraStateStrategy} that tracks task-cameraId (and app) pairs. */
-class AppCompatCameraStateStrategyForTask implements AppCompatCameraStateStrategy {
+// TODO(b/442299565): Rename this class once the other strategies have been removed.
+/** Class that tracks task-cameraId (and app) pairs for camera compat. */
+class AppCompatCameraStateStrategyForTask {
     // Data set for app data and active camera IDs since we need to 1) get a camera id by a task
     // when setting up camera compat mode; 2) get a task by a camera id when camera connection is
     // closed and we need to clean up our records.
@@ -49,7 +50,19 @@ class AppCompatCameraStateStrategyForTask implements AppCompatCameraStateStrateg
         mDisplayContent = displayContent;
     }
 
-    @Override
+    /**
+     * Allows saving information: task, process, cameraId, to be processed later on
+     * {@link AppCompatCameraStateStrategyForTask#notifyPolicyCameraOpenedIfNeeded} after a delay.
+     *
+     * <p>The {@link AppCompatCameraStateStrategyForTask} should track which camera operations have
+     * been started (delayed), as camera opened/closed operations often compete with each other, and
+     * due to built-in delays can cause different order of these operations when they are finally
+     * processed. Examples of quickly closing and opening the camera: activity relaunch due to
+     * configuration change, switching front/back cameras, new app requesting camera and taking the
+     * access rights away from the existing camera app.
+     *
+     * @return CameraAppInfo of the app which opened the camera with given cameraId.
+     */
     @NonNull
     public CameraAppInfo trackOnCameraOpened(@NonNull String cameraId,
             @NonNull String packageName) {
@@ -61,8 +74,10 @@ class AppCompatCameraStateStrategyForTask implements AppCompatCameraStateStrateg
         return cameraAppInfo;
     }
 
-    @Override
-    public void notifyPolicyCameraOpenedIfNeeded(@NonNull CameraAppInfo cameraAppInfo,
+    /**
+     * Processes camera opened signal, and if the change is relevant for {@link
+     * AppCompatCameraStatePolicy} calls {@link AppCompatCameraStatePolicy#onCameraOpened}.
+     */    public void notifyPolicyCameraOpenedIfNeeded(@NonNull CameraAppInfo cameraAppInfo,
             @NonNull AppCompatCameraStatePolicy policy) {
         if (!mPendingCameraUpdateRepository.removePendingCameraOpen(cameraAppInfo)) {
             // Camera compat mode update has happened already or was cancelled
@@ -112,7 +127,19 @@ class AppCompatCameraStateStrategyForTask implements AppCompatCameraStateStrateg
         }
     }
 
-    @Override
+    /**
+     * Allows saving information: task, process, cameraId, to be processed later on
+     * {@link AppCompatCameraStateStrategyForTask#notifyPolicyCameraClosedIfNeeded} after a delay.
+     *
+     * <p>The {@link AppCompatCameraStateStrategyForTask} should track which camera operations have
+     * beenstarted (delayed), as camera opened/closed operations often compete with each other, and
+     * due to built-in delays can cause different order of these operations when they are finally
+     * processed. Examples of quickly closing and opening the camera: activity relaunch due to
+     * configuration change, switching front/back cameras, new app requesting camera and taking the
+     * access rights away from the existing camera app.
+     *
+     * @return CameraAppInfo of the app which closed the camera with given cameraId.
+     */
     @NonNull
     public CameraAppInfo trackOnCameraClosed(@NonNull String cameraId) {
         // This function is synchronous, and cameraClosed signal will come before cameraOpened.
@@ -127,7 +154,13 @@ class AppCompatCameraStateStrategyForTask implements AppCompatCameraStateStrateg
         return cameraAppInfo;
     }
 
-    @Override
+    /**
+     * Processes camera closed signal, and if the change is relevant for {@link
+     * AppCompatCameraStatePolicy} calls {@link AppCompatCameraStatePolicy#onCameraClosed}.
+     *
+     * @return true if policies were able to handle the camera closed event, or false if it needs to
+     * be rescheduled.
+     */
     public boolean notifyPolicyCameraClosedIfNeeded(@NonNull CameraAppInfo cameraAppInfo,
             @NonNull AppCompatCameraStatePolicy policy) {
         if (!mPendingCameraUpdateRepository.removePendingCameraClose(cameraAppInfo)) {
@@ -154,14 +187,14 @@ class AppCompatCameraStateStrategyForTask implements AppCompatCameraStateStrateg
         return canClose;
     }
 
-    @Override
+    /** Returns whether a given activity holds any camera opened. */
     public boolean isCameraRunningForActivity(@NonNull ActivityRecord activity) {
         return activity.getTask() != null && mCameraAppInfoSet
                 .containsAnyCameraForTaskId(activity.getTask().mTaskId);
     }
 
     // TODO(b/336474959): try to decouple `cameraId` from the listeners.
-    @Override
+    /** Returns whether a given activity holds a specific camera opened. */
     public boolean isCameraWithIdRunningForActivity(@NonNull ActivityRecord activity,
             @NonNull String cameraId) {
         return activity.getTask() != null && mCameraAppInfoSet

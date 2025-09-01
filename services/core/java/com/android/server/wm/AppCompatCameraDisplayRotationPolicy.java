@@ -77,10 +77,6 @@ final class AppCompatCameraDisplayRotationPolicy implements AppCompatCameraState
     @NonNull
     private final ActivityRefresher mActivityRefresher;
 
-    // TODO(b/380840084): remove once flag is launched.
-    @Nullable
-    private Task mCameraTask;
-
     @ScreenOrientation
     private int mLastReportedOrientation = SCREEN_ORIENTATION_UNSET;
 
@@ -342,12 +338,6 @@ final class AppCompatCameraDisplayRotationPolicy implements AppCompatCameraState
     @Override
     public void onCameraOpened(@NonNull WindowProcessController appProcess,
             @NonNull Task cameraTask) {
-        // `enableCameraCompatTrackTaskAndAppBugfix` shifts tracking camera task from policies to
-        // the `CameraStateMonitor`.
-        if (!Flags.enableCameraCompatTrackTaskAndAppBugfix()) {
-            mCameraTask = cameraTask;
-        }
-
         final ActivityRecord cameraActivity = getTopActivity(cameraTask);
         if (cameraActivity == null) {
             Slog.w(TAG, "Camera activity is null in onCameraOpened().");
@@ -418,19 +408,7 @@ final class AppCompatCameraDisplayRotationPolicy implements AppCompatCameraState
 
     @Override
     public void onCameraClosed(@Nullable WindowProcessController appProcess, @Nullable Task task) {
-        // Without `enableCameraCompatTrackTaskAndAppBugfix` refactoring, `CameraStateMonitor` might
-        // not be able to fetch the correct task.
-        final ActivityRecord topActivity = getTopActivity(
-                Flags.enableCameraCompatTrackTaskAndAppBugfix() ? task : mCameraTask);
-
-        // TODO(b/380840084): Clean up after `enableCameraCompatTrackTaskAndAppBugfix` flag launch.
-        // Only clean up if the camera is not running - this close signal could be from switching
-        // cameras (e.g. back to front camera, and vice versa).
-        if (topActivity == null || !mCameraStateMonitor.isCameraRunningForActivity(topActivity)) {
-            // Call after getTopActivity(), as that method might use the activity from mCameraTask.
-            mCameraTask = null;
-        }
-
+        final ActivityRecord topActivity = getTopActivity(task);
         if (topActivity == null) {
             return;
         }
