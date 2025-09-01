@@ -226,10 +226,9 @@ public class AppCompatUtilsTest extends WindowTestsBase {
     }
 
     @Test
-    @EnableFlags({Flags.FLAG_ENABLE_CAMERA_COMPAT_FOR_DESKTOP_WINDOWING,
-            Flags.FLAG_ENABLE_CAMERA_COMPAT_CHECK_DEVICE_ROTATION_BUGFIX})
+    @EnableFlags(Flags.FLAG_ENABLE_CAMERA_COMPAT_FOR_DESKTOP_WINDOWING)
     @DisableFlags(Flags.FLAG_ENABLE_CAMERA_COMPAT_COMPATIBILITY_INFO_ROTATE_AND_CROP_BUGFIX)
-    public void testTopActivityInCameraCompatMode_rotationFlagEnabled_rotationSet() {
+    public void testTopActivityInCameraCompatMode_rotationSet() {
         runTestScenario((robot) -> {
             robot.dw().allowEnterDesktopMode(/* isAllowed= */ true);
             robot.applyOnActivity(

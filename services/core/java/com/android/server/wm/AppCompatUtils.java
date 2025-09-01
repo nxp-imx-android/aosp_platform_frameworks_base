@@ -16,7 +16,6 @@
 
 package com.android.server.wm;
 
-import static android.app.WindowConfiguration.ROTATION_UNDEFINED;
 import static android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM;
 import static android.content.res.Configuration.UI_MODE_TYPE_MASK;
 import static android.content.res.Configuration.UI_MODE_TYPE_VR_HEADSET;
@@ -234,9 +233,7 @@ final class AppCompatUtils {
             appCompatTaskInfo.cameraCompatTaskInfo.cameraCompatMode =
                     AppCompatCameraPolicy.getCameraCompatSimReqOrientationMode(top);
             appCompatTaskInfo.cameraCompatTaskInfo.displayRotation =
-                    Flags.enableCameraCompatCheckDeviceRotationBugfix()
-                            ? AppCompatCameraPolicy.getCameraDeviceRotation(top)
-                            : ROTATION_UNDEFINED;
+                    AppCompatCameraPolicy.getCameraDeviceRotation(top);
         }
         appCompatTaskInfo.setHasMinAspectRatioOverride(top.mAppCompatController
                 .getDesktopAspectRatioPolicy().hasMinAspectRatioOverride(task));
