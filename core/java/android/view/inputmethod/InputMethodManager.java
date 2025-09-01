@@ -701,6 +701,16 @@ public final class InputMethodManager {
 
     private final DelegateImpl mDelegate = new DelegateImpl();
 
+    /**
+     * State that stores whether we have already tried to request focus again, after the IME
+     * session has been reset. This will lead to show the IME after tapping on a text field, even
+     * if the {@link android.view.InsetsController#mRequestedVisibleTypes} have not changed.
+     * This forces a call to the system server to re-establish the IME session when it would
+     * otherwise not occur.
+     */
+    @GuardedBy("mH")
+    private boolean mFocusRequestedAfterImeSessionReset = false;
+
     private static boolean sPreventImeStartupUnlessTextEditor;
 
     // -----------------------------------------------------------
@@ -2126,6 +2136,7 @@ public final class InputMethodManager {
         mCurMethod = null; // for @UnsupportedAppUsage
         // We only reset sequence number for input method, but not accessibility.
         mCurBindState = null;
+        mFocusRequestedAfterImeSessionReset = false;
     }
 
     /**
@@ -3897,6 +3908,28 @@ public final class InputMethodManager {
             }
             ImeTracker.forLogging().onProgress(statsToken, ImeTracker.PHASE_CLIENT_VIEW_SERVED);
             setImeVisibilityOnInsetsController(mCurRootView, false, statsToken);
+        }
+    }
+
+
+    /**
+     * @hide
+     */
+    public void requestFocusAfterSessionReset() {
+        synchronized (mH) {
+            if (!mFocusRequestedAfterImeSessionReset && !isImeSessionAvailableLocked()) {
+                final View view = getServedViewLocked();
+                ProtoLog.d(INPUT_METHOD_MANAGER_DEBUG, "requestFocusAfterSessionReset: view=%s",
+                        view);
+                if (view == null) {
+                    return;
+                }
+                // Call into IMMS only once after the binding was cleared (e.g., after pm clear)
+                mFocusRequestedAfterImeSessionReset = true;
+                startInputOnWindowFocusGainInternal(StartInputReason.CHECK_FOCUS,
+                        view /* focusedView */, 0 /* startInputFlags */, 0 /* softInputMode */,
+                        0 /* windowFlags */);
+            }
         }
     }
 

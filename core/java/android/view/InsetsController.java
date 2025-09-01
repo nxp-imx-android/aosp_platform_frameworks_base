@@ -1218,6 +1218,14 @@ public class InsetsController implements WindowInsetsController, InsetsAnimation
                 continue;
             }
             if (isIme) {
+                if (requestedVisible && (mReportedRequestedVisibleTypes & ime()) != 0) {
+                    // If the IME is requested, but has been reported to the server already, the
+                    // request would not go through. Call into IMM to check whether the session was
+                    // reset and in that case, request focus again.
+                    if (mHost.getInputMethodManager() != null) {
+                        mHost.getInputMethodManager().requestFocusAfterSessionReset();
+                    }
+                }
                 ImeTracker.forLogging().onProgress(
                         statsToken, ImeTracker.PHASE_CLIENT_APPLY_ANIMATION);
             }
