@@ -20,6 +20,7 @@ import static android.os.Message.*;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
@@ -298,4 +299,57 @@ public final class MessageStackTest {
         assertEquals(0, stack.freelistSizeForTest());
     }
 
+    /**
+     * Verify that peek() correctly skips over removed messages and returns the first
+     * available non-removed message. Also verifies that the skipped messages are removed
+     * from the heap.
+     */
+    @Test
+    public void testPeekSkipsRemovedMessages() {
+        MessageStack stack = new MessageStack();
+        Handler h = new Handler(Looper.getMainLooper());
+        int removeWhat = 1;
+        int keepWhat = 2;
+
+        // Push 5 messages to keep, with increasing 'when'
+        for (int i = 0; i < 5; i++) {
+            Message m = Message.obtain(h, keepWhat);
+            m.when = 100L + i;
+            stack.pushMessage(m);
+        }
+        // Push 5 messages to remove, with 'when' that interleaves them
+        for (int i = 0; i < 5; i++) {
+            Message m = Message.obtain(h, removeWhat);
+            // earlier 'when' so they are at the top of the min-heap
+            m.when = 95L + i;
+            stack.pushMessage(m);
+        }
+
+        stack.heapSweep();
+        assertEquals(10, stack.sizeForTest());
+        assertEquals(10, stack.combinedHeapSizesForTest());
+
+        // Mark the 'removeWhat' messages as removed
+        stack.moveMatchingToFreelist(new MatchHandlerWhatAndObject(),
+                h, removeWhat, null, null, 0);
+
+        // At this point, the 5 messages are marked as removed but are still in the heap.
+        // The freelist contains these 5 messages.
+        assertEquals(5, stack.sizeForTest()); // sizeForTest only counts non-removed
+        assertEquals(5, stack.freelistSizeForTest());
+        assertEquals(10, stack.combinedHeapSizesForTest());
+
+        // Now, peek the stack. It should skip the 5 removed messages and return the first
+        // message with 'keepWhat'.
+        Message m = stack.peek(false);
+        assertNotNull(m);
+        assertEquals(keepWhat, m.what);
+        assertEquals(100, m.when); // The first 'keep' message
+
+        // After peeking, the 5 removed messages should have been purged from the heap.
+        // The peeked message is still in the heap.
+        assertEquals(5, stack.sizeForTest());
+        assertEquals(5, stack.freelistSizeForTest());
+        assertEquals(5, stack.combinedHeapSizesForTest());
+    }
 }
