@@ -35,8 +35,6 @@ import android.provider.DeviceConfig
 import android.testing.TestableContext
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.android.compatibility.common.util.SystemUtil.callWithShellPermissionIdentity
-import com.android.compatibility.common.util.SystemUtil.runWithShellPermissionIdentity
 import com.android.internal.R
 import com.android.modules.utils.testing.ExtendedMockitoRule
 import com.android.server.LocalServices
@@ -47,7 +45,6 @@ import com.google.common.truth.Truth.assertThat
 import com.google.common.util.concurrent.MoreExecutors
 import kotlinx.coroutines.test.runTest
 import org.junit.After
-import org.junit.Before
 import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
@@ -55,7 +52,6 @@ import org.junit.runner.RunWith
 import org.mockito.kotlin.any
 import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.argumentCaptor
-import org.mockito.kotlin.clearInvocations
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
@@ -101,27 +97,8 @@ class AppFunctionManagerServiceImplTest {
             MoreExecutors.directExecutor(),
         )
 
-    @Before
-    fun setup() {
-        allowlistWasEnabled = callWithShellPermissionIdentity {
-            serviceImpl.isAgentAllowlistEnabled()
-        }
-        if (!allowlistWasEnabled) {
-            runWithShellPermissionIdentity {
-                serviceImpl.setAgentAllowlistEnabled(true)
-                clearInvocations(appFunctionAccessService)
-            }
-        }
-    }
-
     @After
     fun clearState() {
-        if (!allowlistWasEnabled) {
-            runWithShellPermissionIdentity {
-                serviceImpl.setAgentAllowlistEnabled(false)
-                clearInvocations(appFunctionAccessService)
-            }
-        }
         clearDeviceSettingPackages()
         clearPreloadedAllowlist()
         setDeviceConfigAllowlist(null)
@@ -419,8 +396,49 @@ class AppFunctionManagerServiceImplTest {
         FLAG_APP_FUNCTION_ACCESS_API_ENABLED,
     )
     @Test
+    fun onBootPhase_initiateAgentAllowlistToStored_whenDeviceConfigEmpty() {
+        setDeviceConfigAllowlist("")
+        val stored = SignedPackageParser.parseList("com.example.test2:abcdef0123456789")
+        whenever(agentAllowlistStorage.readPreviousValidAllowlist()).thenReturn(stored)
+        setPreloadedAllowlist(arrayOf("com.example.preload1:111111", "com.example.preload2:222222"))
+
+        serviceImpl.onBootPhase(SystemService.PHASE_SYSTEM_SERVICES_READY)
+
+        verify(appFunctionAccessService).setAgentAllowlist(agentAllowlistCaptor.capture())
+        val capturedSet = agentAllowlistCaptor.firstValue
+        val expectedPackages =
+            SignedPackage("com.example.test2", Signature("abcdef0123456789").toByteArray())
+        assertThat(capturedSet).contains(expectedPackages)
+    }
+
+    @RequiresFlagsEnabled(
+        FLAG_APP_FUNCTION_ACCESS_SERVICE_ENABLED,
+        FLAG_APP_FUNCTION_ACCESS_API_ENABLED,
+    )
+    @Test
     fun onBootPhase_initiateAgentAllowlistToPreload_whenDeviceConfigNullNoStored() {
         setDeviceConfigAllowlist(null)
+        setPreloadedAllowlist(arrayOf("com.example.preload1:111111", "com.example.preload2:222222"))
+        whenever(agentAllowlistStorage.readPreviousValidAllowlist()).thenReturn(null)
+
+        serviceImpl.onBootPhase(SystemService.PHASE_SYSTEM_SERVICES_READY)
+
+        verify(appFunctionAccessService).setAgentAllowlist(agentAllowlistCaptor.capture())
+        val capturedSet = agentAllowlistCaptor.firstValue
+        val expectedPackage1 =
+            SignedPackage("com.example.preload1", Signature("111111").toByteArray())
+        val expectedPackage2 =
+            SignedPackage("com.example.preload2", Signature("222222").toByteArray())
+        assertThat(capturedSet).containsAtLeast(expectedPackage1, expectedPackage2)
+    }
+
+    @RequiresFlagsEnabled(
+        FLAG_APP_FUNCTION_ACCESS_SERVICE_ENABLED,
+        FLAG_APP_FUNCTION_ACCESS_API_ENABLED,
+    )
+    @Test
+    fun onBootPhase_initiateAgentAllowlistToPreload_whenDeviceConfigEmptyNoStored() {
+        setDeviceConfigAllowlist("")
         setPreloadedAllowlist(arrayOf("com.example.preload1:111111", "com.example.preload2:222222"))
         whenever(agentAllowlistStorage.readPreviousValidAllowlist()).thenReturn(null)
 
