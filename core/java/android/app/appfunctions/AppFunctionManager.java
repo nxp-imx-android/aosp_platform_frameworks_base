@@ -20,6 +20,7 @@ import static android.Manifest.permission.INTERACT_ACROSS_USERS_FULL;
 import static android.Manifest.permission.MANAGE_APP_FUNCTION_ACCESS;
 import static android.app.appfunctions.AppFunctionException.ERROR_SYSTEM_ERROR;
 import static android.app.appfunctions.flags.Flags.FLAG_ENABLE_APP_FUNCTION_MANAGER;
+import static android.app.appfunctions.flags.Flags.FLAG_ENABLE_CONTEXTUAL_APP_FUNCTIONS;
 import static android.permission.flags.Flags.FLAG_APP_FUNCTION_ACCESS_UI_ENABLED;
 
 import android.Manifest;
@@ -54,6 +55,7 @@ import android.util.ArrayMap;
 import android.util.ArraySet;
 
 import com.android.internal.R;
+import com.android.internal.annotations.GuardedBy;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -467,6 +469,8 @@ public final class AppFunctionManager {
     @Retention(RetentionPolicy.SOURCE)
     public @interface EnabledState {}
 
+    private AppFunctionRegistry mRegistry = new AppFunctionRegistry();
+
     /**
      * Creates an instance.
      *
@@ -527,7 +531,10 @@ public final class AppFunctionManager {
                                 @Override
                                 public void onSuccess(ExecuteAppFunctionResponse result) {
                                     try {
-                                        executor.execute(() -> callback.onResult(result));
+                                        executor.execute(
+                                                () -> {
+                                                    callback.onResult(result);
+                                                });
                                     } catch (RuntimeException e) {
                                         // Ideally shouldn't happen since errors are wrapped into
                                         // the response, but we catch it here for additional safety.
@@ -582,6 +589,56 @@ public final class AppFunctionManager {
             @NonNull Executor executor,
             @NonNull OutcomeReceiver<Boolean, Exception> callback) {
         isAppFunctionEnabledInternal(functionIdentifier, targetPackage, executor, callback);
+    }
+
+    /**
+     * Registers an {@link AppFunction}.
+     *
+     * <p>Use this method to provide a runtime implementation for an app function. This is intended
+     * for functions that are declared in an XML resource file for system discovery, but that do not
+     * specify a {@code <service>} to handle their execution. This allows for lightweight,
+     * in-process function handling while the app is running.
+     *
+     * <h3>Lifecycle management</h3>
+     *
+     * <p>The function is only enabled and available for execution while it is registered. The
+     * registration is tied to the lifecycle of the process that calls this method. If the app
+     * process is killed, the system automatically unregisters the function.
+     *
+     * <p>The system holds a strong reference to the provided {@link AppFunction} implementation as
+     * long as it is registered. To prevent memory leaks and ensure the system is aware that the
+     * function is no longer available, you must explicitly call {@link
+     * AppFunctionRegistration#unregister()} when the function is no longer needed. This is
+     * typically done within a component's lifecycle, such as in {@link
+     * android.app.Activity#onStop()}.
+     *
+     * <p>Only one {@link AppFunction} can be registered for a given {@code functionId} per app.
+     * Attempting to register a second implementation for the same ID without first unregistering
+     * the original will throw an {@link IllegalStateException}.
+     *
+     * <h3>Function Execution</h3>
+     *
+     * <p>While the function is registered, a call to {@link AppFunctionManager#executeAppFunction}
+     * with the app's package name and the provided {@code functionId} in the request will be routed
+     * to the {@link AppFunction} implementation provided here. The implementation will be invoked
+     * on the provided {@link Executor}.
+     *
+     * @param functionId The unique identifier for the function, which must match an entry in the
+     *     app's XML resource declarations.
+     * @param executor The {@link Executor} on which the function will be invoked.
+     * @param appFunction The {@link AppFunction} implementation to be executed when the function is
+     *     triggered.
+     * @return A {@link AppFunctionRegistration} object that can be used to unregister the function.
+     * @throws IllegalStateException if a function with the same {@code functionId} is already
+     *     registered by this app.
+     */
+    @NonNull
+    @FlaggedApi(FLAG_ENABLE_CONTEXTUAL_APP_FUNCTIONS)
+    public AppFunctionRegistration registerAppFunction(
+            @NonNull String functionId,
+            @NonNull Executor executor,
+            @NonNull AppFunction appFunction) {
+        return mRegistry.register(functionId, executor, appFunction);
     }
 
     /**
@@ -1063,7 +1120,80 @@ public final class AppFunctionManager {
                 Binder.restoreCallingIdentity(token);
             }
         }
+    }
 
+    private class AppFunctionRegistry {
+        private final Object mLock = new Object();
+
+        @GuardedBy("mLock")
+        private final ArrayMap<String, AppFunctionRegistrationImpl> mRegistrations =
+                new ArrayMap<>();
+
+        private final IAppFunctionExecutor.Stub mExecutor =
+                new IAppFunctionExecutor.Stub() {
+                    @Override
+                    public void execute(
+                            ExecuteAppFunctionRequest request, IExecuteAppFunctionCallback callback)
+                            throws RemoteException {}
+                    // TODO( b/447140281) : implement execution flow
+                };
+
+        AppFunctionRegistrationImpl register(
+                String functionId, Executor executor, AppFunction function) {
+            // This lock is held during the IPC call to the system server. This is a deliberate
+            // choice to synchronize registration requests from multiple threads within this
+            // process. The server-side implementation is also synchronized, preventing deadlocks
+            // and ensuring that registrations are handled atomically across the entire system.
+            synchronized (mLock) {
+                if (mRegistrations.containsKey(functionId)) {
+                    throw new IllegalStateException(
+                            "Function id " + functionId + " already registered");
+                }
+                try {
+                    mService.registerAppFunction(mContext.getPackageName(), functionId, mExecutor);
+                } catch (RemoteException e) {
+                    throw e.rethrowFromSystemServer();
+                }
+                final AppFunctionRegistrationImpl registration =
+                        new AppFunctionRegistrationImpl(functionId, executor, function);
+                mRegistrations.put(functionId, registration);
+                return registration;
+            }
+        }
+
+        void unregister(
+                @NonNull String functionId, @NonNull AppFunctionRegistrationImpl registration) {
+            synchronized (mLock) {
+                if (mRegistrations.get(functionId) != registration) {
+                    return;
+                }
+
+                try {
+                    mService.unregisterAppFunction(
+                            mContext.getPackageName(), functionId, mExecutor);
+                } catch (RemoteException e) {
+                    throw e.rethrowFromSystemServer();
+                }
+                mRegistrations.remove(functionId);
+            }
+        }
+    }
+
+    private class AppFunctionRegistrationImpl implements AppFunctionRegistration {
+        private final String mFunctionId;
+        private final AppFunction mFunction;
+        private final Executor mExecutor;
+
+        AppFunctionRegistrationImpl(String functionId, Executor executor, AppFunction function) {
+            this.mFunctionId = functionId;
+            this.mFunction = function;
+            this.mExecutor = executor;
+        }
+
+        @Override
+        public void unregister() {
+            mRegistry.unregister(mFunctionId, this);
+        }
     }
 
     private static class CallbackWrapper extends IAppFunctionEnabledCallback.Stub {
