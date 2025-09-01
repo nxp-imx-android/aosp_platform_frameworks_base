@@ -13,22 +13,33 @@
     See the License for the specific language governing permissions and
     limitations under the License.
 -->
-
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:androidprv="http://schemas.android.com/apk/prv/res/android"
     android:layout_width="match_parent"
     android:layout_height="@dimen/hearing_devices_preset_spinner_height"
     android:paddingStart="@dimen/hearing_devices_preset_spinner_padding"
-    android:paddingEnd="@dimen/hearing_devices_preset_spinner_padding">
+    android:paddingEnd="@dimen/hearing_devices_preset_spinner_padding"
+    android:orientation="horizontal">
+
+    <ImageView
+        android:id="@+id/hearing_devices_spinner_check_icon"
+        android:layout_width="@dimen/hearing_devices_preset_spinner_icon_size"
+        android:layout_height="@dimen/hearing_devices_preset_spinner_icon_size"
+        android:layout_gravity="center_vertical"
+        android:layout_marginEnd="12dp"
+        android:tint="@androidprv:color/materialColorOnPrimaryContainer"
+        android:src="@drawable/ic_check"
+        android:contentDescription="@string/hearing_device_spinner_item_selected"/>
     <TextView
         android:id="@+id/hearing_devices_spinner_text"
+        style="?android:attr/spinnerDropDownItemStyle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="center_vertical"
-        android:textAppearance="@style/TextAppearance.HearingDeviceDialog.Title"
-        android:textColor="@androidprv:color/materialColorOnSurface"
-        android:textSize="16sp"
-        android:ellipsize="end"
-        android:maxLines="1" />
+        android:textDirection="locale"
+        android:paddingStart="0dp"
+        android:maxLines="1"
+        android:ellipsize="end" />
+
 </LinearLayout>

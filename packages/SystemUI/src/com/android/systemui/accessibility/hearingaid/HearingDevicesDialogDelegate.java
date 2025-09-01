@@ -59,6 +59,7 @@ import com.android.settingslib.bluetooth.CachedBluetoothDevice;
 import com.android.settingslib.bluetooth.LocalBluetoothManager;
 import com.android.settingslib.bluetooth.LocalBluetoothProfileManager;
 import com.android.settingslib.bluetooth.hearingdevices.ui.AmbientVolumeUiController;
+import com.android.settingslib.bluetooth.hearingdevices.ui.HearingDevicesSpinnerAdapter;
 import com.android.settingslib.bluetooth.hearingdevices.ui.PresetUiController;
 import com.android.systemui.Flags;
 import com.android.systemui.accessibility.hearingaid.HearingDevicesListAdapter.HearingDeviceItemCallback;

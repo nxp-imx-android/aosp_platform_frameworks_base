@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.systemui.accessibility.hearingaid
+package com.android.settingslib.bluetooth.hearingdevices.ui
 
 import android.bluetooth.BluetoothHapClient
 import android.bluetooth.BluetoothHapPresetInfo
@@ -25,7 +25,8 @@ import android.widget.AdapterView
 import android.widget.LinearLayout
 import android.widget.Spinner
 import android.widget.TextView
-import com.android.systemui.res.R
+
+import com.android.settingslib.R
 
 /**
  * A custom view that combines a title and a [Spinner] to display and manage a list of hearing aid
@@ -49,7 +50,7 @@ constructor(
         /**
          * Called when the spinner's selected value changes.
          *
-         * @param spinner The {@link PresetSpinner} that triggered the event.
+         * @param spinner The [PresetSpinner] that triggered the event.
          * @param presetIndex The index of the newly selected preset.
          */
         fun onValueChange(spinner: PresetSpinner, presetIndex: Int)

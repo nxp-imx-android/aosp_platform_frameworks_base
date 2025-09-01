@@ -14,24 +14,21 @@
  * limitations under the License.
  */
 
-package com.android.systemui.accessibility.hearingaid
+package com.android.settingslib.bluetooth.hearingdevices.ui
 
 import android.bluetooth.BluetoothHapPresetInfo
 import android.content.Context
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import androidx.test.filters.SmallTest
-import com.android.systemui.SysuiTestCase
 import com.google.common.truth.Truth.assertThat
-import kotlin.test.Test
 import org.junit.Before
+import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
 
 @RunWith(AndroidJUnit4::class)
-@SmallTest
-class PresetSpinnerTest : SysuiTestCase() {
+class PresetSpinnerTest {
 
     private val context: Context = ApplicationProvider.getApplicationContext()
     private lateinit var spinnerAdapter: HearingDevicesSpinnerAdapter

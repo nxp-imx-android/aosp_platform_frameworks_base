@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.systemui.accessibility.hearingaid;
+package com.android.settingslib.bluetooth.hearingdevices.ui;
 
 import static android.view.View.GONE;
 import static android.view.View.VISIBLE;
@@ -28,7 +28,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.android.systemui.res.R;
+import com.android.settingslib.R;
 
 /**
  * An ArrayAdapter which was used by Spinner in hearing devices dialog.
@@ -39,8 +39,7 @@ public class HearingDevicesSpinnerAdapter extends ArrayAdapter<String> {
     private int mSelectedPosition;
 
     public HearingDevicesSpinnerAdapter(@NonNull Context context) {
-        super(context, R.layout.hearing_devices_spinner_view,
-                R.id.hearing_devices_spinner_text);
+        super(context, R.layout.hearing_devices_spinner_view, R.id.hearing_devices_spinner_text);
         setDropDownViewResource(R.layout.hearing_devices_spinner_dropdown_view);
         mContext = context;
     }
@@ -54,7 +53,7 @@ public class HearingDevicesSpinnerAdapter extends ArrayAdapter<String> {
         final boolean isSelected = position == mSelectedPosition;
         view.setBackgroundResource(isSelected
                 ? R.drawable.hearing_devices_spinner_selected_background
-                : R.drawable.bluetooth_tile_dialog_bg_off);
+                : R.drawable.hearing_devices_spinner_unselected_background);
 
         View checkIcon = view.findViewById(R.id.hearing_devices_spinner_check_icon);
         if (checkIcon != null) {

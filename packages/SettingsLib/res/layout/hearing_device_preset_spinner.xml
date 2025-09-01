@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <!--
     Copyright (C) 2025 The Android Open Source Project
 
@@ -16,23 +17,34 @@
 
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:androidprv="http://schemas.android.com/apk/prv/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginTop="@dimen/hearing_devices_layout_margin"
+    android:layout_marginTop="12dp"
     android:orientation="vertical">
 
     <TextView
         android:id="@+id/preset_title"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        style="@style/HearingDeviceDialog.Title"
-        android:textAppearance="@style/TextAppearance.HearingDeviceDialog.Title"
-        android:text="@string/hearing_devices_preset_label"/>
+        android:layout_marginBottom="4dp"
+        android:paddingStart="16dp"
+        android:gravity="start|center_vertical"
+        android:textColor="@androidprv:color/materialColorSecondary"
+        android:textSize="14sp"
+        android:textDirection="locale"
+        android:fontFamily="@*android:string/config_headlineFontFamilyMedium"
+        android:visibility="gone"/>
     <Spinner
         android:id="@+id/preset_spinner"
         android:layout_width="match_parent"
-        android:layout_height="@dimen/hearing_devices_preset_spinner_height"
-        android:layout_marginTop="4dp"
-        style="@style/HearingDeviceDialog.Spinner" />
+        android:layout_height="56dp"
+        android:focusable="true"
+        android:clickable="true"
+        android:longClickable="false"
+        android:background="@drawable/hearing_devices_spinner_background"
+        android:popupBackground="@drawable/hearing_devices_spinner_popup_background"
+        android:dropDownWidth="match_parent"
+        android:dropDownVerticalOffset="0.5dp" />
 
 </LinearLayout>

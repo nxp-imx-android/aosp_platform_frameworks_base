@@ -248,6 +248,9 @@
     <string name="bluetooth_hearing_device_ambient_error">Couldn\u2019t update surroundings</string>
     <!-- Connected device settings. Message when selecting hearing device preset failed. [CHAR LIMIT=NONE] -->
     <string name="bluetooth_hearing_aids_presets_error">Couldn\u2019t update preset</string>
+    <!-- Content description for the icon in the spinner dropdown that indicates the item is selected [CHAR LIMIT=NONE] -->
+    <string name="hearing_device_spinner_item_selected">Selected</string>
+
 
     <!-- Connected devices settings. Message when Bluetooth is connected and active for media only, showing remote device status and battery level. [CHAR LIMIT=NONE] -->
     <string name="bluetooth_active_media_only_battery_level">Active (media only). <xliff:g id="battery_level_as_percentage">%1$s</xliff:g> battery.</string>

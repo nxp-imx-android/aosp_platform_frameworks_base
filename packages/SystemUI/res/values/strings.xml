@@ -1168,8 +1168,6 @@
         <item>Hearing aid microphone</item>
         <item>This phone\'s microphone</item>
     </string-array>
-    <!-- QuickSettings: Content description for the icon that indicates the item is selected [CHAR LIMIT=NONE]-->
-    <string name="hearing_devices_spinner_item_selected">Selected</string>
     <!-- QuickSettings: Title for ambient controls. [CHAR LIMIT=40]-->
     <string name="hearing_devices_ambient_label">Surroundings</string>
     <!-- QuickSettings: The text to show the control is for left side device. [CHAR LIMIT=30] -->

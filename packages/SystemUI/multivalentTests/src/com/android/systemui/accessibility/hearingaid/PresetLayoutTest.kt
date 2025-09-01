@@ -25,6 +25,7 @@ import androidx.test.filters.SmallTest
 import com.android.settingslib.bluetooth.HearingAidInfo.DeviceSide.SIDE_LEFT
 import com.android.settingslib.bluetooth.HearingAidInfo.DeviceSide.SIDE_RIGHT
 import com.android.settingslib.bluetooth.hearingdevices.ui.ExpandableControlUi.Companion.SIDE_UNIFIED
+import com.android.settingslib.bluetooth.hearingdevices.ui.PresetSpinner
 import com.android.settingslib.bluetooth.hearingdevices.ui.PresetUi
 import com.android.systemui.SysuiTestCase
 import com.google.common.truth.Truth.assertThat

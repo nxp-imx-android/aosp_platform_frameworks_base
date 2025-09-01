@@ -26,6 +26,7 @@ import com.android.settingslib.bluetooth.HearingAidInfo.DeviceSide.SIDE_LEFT
 import com.android.settingslib.bluetooth.HearingAidInfo.DeviceSide.SIDE_RIGHT
 import com.android.settingslib.bluetooth.hearingdevices.ui.ExpandableControlUi.Companion.SIDE_UNIFIED
 import com.android.settingslib.bluetooth.hearingdevices.ui.ExpandableControlUi.Companion.VALID_SIDES
+import com.android.settingslib.bluetooth.hearingdevices.ui.PresetSpinner
 import com.android.settingslib.bluetooth.hearingdevices.ui.PresetUi
 import com.android.systemui.accessibility.hearingaid.HearingDevicesUiEventLogger.Companion.LAUNCH_SOURCE_UNKNOWN
 import com.android.systemui.res.R
