@@ -760,9 +760,13 @@ class InstallRepository(private val context: Context) : EventResultPersister.Eve
             return Pair(null, null)
         }
 
-        val existingUpdateOwnerLabel = getExistingUpdateOwnerLabel(pkgInfo)
+        val existingUpdateOwnerPackageName = getExistingUpdateOwner(pkgInfo)
+        val existingUpdateOwnerLabel = PackageUtil.getApplicationLabel(
+            context,
+            existingUpdateOwnerPackageName.toString()
+        )
 
-        var requestedUpdateOwnerLabel: CharSequence? = if (
+        var requestedPackageName: CharSequence? = if (
             isAppUpdating &&
             !TextUtils.isEmpty(existingUpdateOwnerLabel) &&
             userActionReason == PackageInstaller.REASON_REMIND_OWNERSHIP
@@ -776,16 +780,12 @@ class InstallRepository(private val context: Context) : EventResultPersister.Eve
             }
             val originatingPackageName =
                 getPackageNameForUid(context, uid, callingPackage)
-            getApplicationLabel(originatingPackageName)
+            originatingPackageName
         } else {
             null
         }
 
-        return Pair(existingUpdateOwnerLabel, requestedUpdateOwnerLabel)
-    }
-
-    private fun getExistingUpdateOwnerLabel(pkgInfo: PackageInfo): CharSequence? {
-        return getApplicationLabel(getExistingUpdateOwner(pkgInfo))
+        return Pair(existingUpdateOwnerPackageName, requestedPackageName)
     }
 
     private fun getExistingUpdateOwner(pkgInfo: PackageInfo): String? {
@@ -793,19 +793,6 @@ class InstallRepository(private val context: Context) : EventResultPersister.Eve
             val packageName = pkgInfo.packageName
             val sourceInfo = packageManager.getInstallSourceInfo(packageName)
             sourceInfo.updateOwnerPackageName
-        } catch (e: PackageManager.NameNotFoundException) {
-            null
-        }
-    }
-
-    private fun getApplicationLabel(packageName: String?): CharSequence? {
-        return try {
-            val appInfo = packageName?.let {
-                packageManager.getApplicationInfo(
-                    it, PackageManager.ApplicationInfoFlags.of(0)
-                )
-            }
-            appInfo?.let { packageManager.getApplicationLabel(it) }
         } catch (e: PackageManager.NameNotFoundException) {
             null
         }
