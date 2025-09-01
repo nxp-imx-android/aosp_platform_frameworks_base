@@ -200,6 +200,7 @@ import com.android.systemui.statusbar.policy.DeviceProvisionedController;
 import com.android.systemui.statusbar.policy.ExtensionController;
 import com.android.systemui.statusbar.policy.KeyguardStateController;
 import com.android.systemui.statusbar.policy.UserInfoControllerImpl;
+import com.android.systemui.statusbar.policy.domain.interactor.DeviceProvisioningInteractor;
 import com.android.systemui.statusbar.window.StatusBarWindowController;
 import com.android.systemui.statusbar.window.StatusBarWindowControllerStore;
 import com.android.systemui.statusbar.window.StatusBarWindowStateController;
@@ -448,7 +449,8 @@ public class CentralSurfacesImplTest extends SysuiTestCase {
                         Optional.of(mBubbles),
                         mContext,
                         mNotificationManager,
-                        mNotificationSettingsInteractor);
+                        mNotificationSettingsInteractor,
+                        mock(DeviceProvisioningInteractor.class));
         mVisualInterruptionDecisionProvider.start();
 
         mContext.addMockSystemService(TrustManager.class, mock(TrustManager.class));

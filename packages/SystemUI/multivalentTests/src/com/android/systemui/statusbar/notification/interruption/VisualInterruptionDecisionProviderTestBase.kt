@@ -79,6 +79,7 @@ import com.android.systemui.statusbar.notification.interruption.NotificationInte
 import com.android.systemui.statusbar.notification.interruption.NotificationInterruptStateProviderImpl.NotificationInterruptEvent.FSI_SUPPRESSED_SUPPRESSIVE_GROUP_ALERT_BEHAVIOR
 import com.android.systemui.statusbar.notification.interruption.NotificationInterruptStateProviderImpl.NotificationInterruptEvent.HUN_SUPPRESSED_OLD_WHEN
 import com.android.systemui.statusbar.policy.FakeDeviceProvisionedController
+import com.android.systemui.statusbar.policy.data.repository.fakeDeviceProvisioningRepository
 import com.android.systemui.util.FakeEventLog
 import com.android.systemui.util.settings.SystemSettings
 import com.android.systemui.util.settings.fakeGlobalSettings
@@ -142,6 +143,7 @@ abstract class VisualInterruptionDecisionProviderTestBase : SysuiTestCase() {
     protected val settingsInteractor: NotificationSettingsInteractor = mock()
     protected val packageManager: PackageManager = mock()
     protected val notificationManager: NotificationManager = mock()
+    protected val deviceProvisioningRepository = kosmos.fakeDeviceProvisioningRepository
     protected val logger: VisualInterruptionDecisionLogger = mock()
     protected abstract val provider: VisualInterruptionDecisionProvider
 
