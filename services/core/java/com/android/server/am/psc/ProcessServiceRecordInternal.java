@@ -26,6 +26,14 @@ import java.util.ArrayList;
  * that influence process importance and OOM adjustment.
  */
 public abstract class ProcessServiceRecordInternal {
+    /** Interface for observing changes in ProcessServiceRecordInternal state. */
+    public interface Observer {
+        /** Called when {@link #mHasClientActivities} changes. */
+        void onHasClientActivitiesChanged(boolean hasClientActivities);
+    }
+
+    private final Observer mObserver;
+
     /** Last group set by a connection. */
     private int mConnectionGroup;
     /** Last importance set by a connection. */
@@ -34,8 +42,14 @@ public abstract class ProcessServiceRecordInternal {
     private boolean mTreatLikeActivity;
     /** Whether this process has bound to a service with the BIND_ABOVE_CLIENT flag. */
     private boolean mHasAboveClient;
+    /** Whether this process has any client services with activities. */
+    private boolean mHasClientActivities;
     /** Do we need to be executing services in the foreground? */
     private boolean mExecServicesFg;
+
+    protected ProcessServiceRecordInternal(Observer observer) {
+        mObserver = observer;
+    }
 
     public int getConnectionGroup() {
         return mConnectionGroup;
@@ -67,6 +81,20 @@ public abstract class ProcessServiceRecordInternal {
 
     public void setHasAboveClient(boolean hasAboveClient) {
         mHasAboveClient = hasAboveClient;
+    }
+
+    /**
+     * Sets whether this process has any client services with activities.
+     * This method also notifies the registered observer of the change.
+     */
+    public void setHasClientActivities(boolean hasClientActivities) {
+        mHasClientActivities = hasClientActivities;
+        mObserver.onHasClientActivitiesChanged(hasClientActivities);
+    }
+
+    /** Returns whether this process has any client services with activities. */
+    public boolean hasClientActivities() {
+        return mHasClientActivities;
     }
 
     public boolean isExecServicesFg() {
