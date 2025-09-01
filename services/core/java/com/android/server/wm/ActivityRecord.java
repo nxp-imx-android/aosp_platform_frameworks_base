@@ -7604,20 +7604,28 @@ final class ActivityRecord extends WindowToken {
             requestedOverrideConfig.assetsSeq = ASSETS_SEQ_UNDEFINED;
         }
 
-        // Retain the following configs for PiP so that the activity doesn't get destroyed and
-        // recreated on display transfer.
         if (ENABLE_DRAGGING_PIP_ACROSS_DISPLAYS.isTrue() && inPinnedWindowingMode()) {
-            final Configuration lastReportedMergedConfig =
-                    mLastReportedConfiguration.getMergedConfiguration();
-            int configChanges = info.getRealConfigChanged();
-            if ((configChanges & ActivityInfo.CONFIG_COLOR_MODE) == 0) {
-                requestedOverrideConfig.colorMode = lastReportedMergedConfig.colorMode;
-            }
-            if ((configChanges & ActivityInfo.CONFIG_TOUCHSCREEN) == 0) {
-                requestedOverrideConfig.touchscreen = lastReportedMergedConfig.touchscreen;
-            }
-            if ((configChanges & ActivityInfo.CONFIG_DENSITY) == 0) {
-                requestedOverrideConfig.densityDpi = lastReportedMergedConfig.densityDpi;
+            // Retain the following configs for PiP so that the activity doesn't get destroyed and
+            // recreated on display transfer while still remaining in PiP.
+            if (newParentConfiguration.windowConfiguration.getWindowingMode()
+                    == WINDOWING_MODE_PINNED) {
+                final Configuration lastReportedMergedConfig =
+                        mLastReportedConfiguration.getMergedConfiguration();
+                int configChanges = info.getRealConfigChanged();
+                if ((configChanges & ActivityInfo.CONFIG_COLOR_MODE) == 0) {
+                    requestedOverrideConfig.colorMode = lastReportedMergedConfig.colorMode;
+                }
+                if ((configChanges & ActivityInfo.CONFIG_TOUCHSCREEN) == 0) {
+                    requestedOverrideConfig.touchscreen = lastReportedMergedConfig.touchscreen;
+                }
+                if ((configChanges & ActivityInfo.CONFIG_DENSITY) == 0) {
+                    requestedOverrideConfig.densityDpi = lastReportedMergedConfig.densityDpi;
+                }
+            } else {
+                // Update the configs if we're exiting PiP mode.
+                requestedOverrideConfig.colorMode = newParentConfiguration.colorMode;
+                requestedOverrideConfig.touchscreen = newParentConfiguration.touchscreen;
+                requestedOverrideConfig.densityDpi = newParentConfiguration.densityDpi;
             }
         }
 
