@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 The Android Open Source Project
+ * Copyright (C) 2025 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.settingslib.bluetooth;
+package com.android.settingslib.bluetooth.hearingdevices;
 
 import static com.google.common.truth.Truth.assertThat;
 
@@ -30,6 +30,9 @@ import android.bluetooth.BluetoothProfile;
 import android.content.Context;
 
 import androidx.test.core.app.ApplicationProvider;
+
+import com.android.settingslib.bluetooth.LocalBluetoothProfileManager;
+import com.android.settingslib.bluetooth.VolumeControlProfile;
 
 import org.junit.Before;
 import org.junit.Rule;

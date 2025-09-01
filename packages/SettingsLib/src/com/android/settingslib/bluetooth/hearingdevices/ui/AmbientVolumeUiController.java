@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 The Android Open Source Project
+ * Copyright (C) 2025 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,19 +14,19 @@
  * limitations under the License.
  */
 
-package com.android.settingslib.bluetooth;
+package com.android.settingslib.bluetooth.hearingdevices.ui;
 
 import static android.bluetooth.AudioInputControl.MUTE_DISABLED;
-import static android.bluetooth.AudioInputControl.MUTE_NOT_MUTED;
 import static android.bluetooth.AudioInputControl.MUTE_MUTED;
+import static android.bluetooth.AudioInputControl.MUTE_NOT_MUTED;
 import static android.bluetooth.BluetoothDevice.BOND_BONDED;
 
-import static com.android.settingslib.bluetooth.AmbientVolumeUi.SIDE_UNIFIED;
-import static com.android.settingslib.bluetooth.AmbientVolumeUi.VALID_SIDES;
 import static com.android.settingslib.bluetooth.HearingAidInfo.DeviceSide.SIDE_INVALID;
 import static com.android.settingslib.bluetooth.HearingAidInfo.DeviceSide.SIDE_LEFT;
 import static com.android.settingslib.bluetooth.HearingAidInfo.DeviceSide.SIDE_RIGHT;
-import static com.android.settingslib.bluetooth.HearingDeviceLocalDataManager.Data.INVALID_VOLUME;
+import static com.android.settingslib.bluetooth.hearingdevices.metrics.HearingDeviceLocalDataManager.Data.INVALID_VOLUME;
+import static com.android.settingslib.bluetooth.hearingdevices.ui.ExpandableControlUi.SIDE_UNIFIED;
+import static com.android.settingslib.bluetooth.hearingdevices.ui.ExpandableControlUi.VALID_SIDES;
 
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothProfile;
@@ -40,6 +40,13 @@ import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
 import com.android.settingslib.R;
+import com.android.settingslib.bluetooth.BluetoothCallback;
+import com.android.settingslib.bluetooth.BluetoothEventManager;
+import com.android.settingslib.bluetooth.CachedBluetoothDevice;
+import com.android.settingslib.bluetooth.LocalBluetoothManager;
+import com.android.settingslib.bluetooth.VolumeControlProfile;
+import com.android.settingslib.bluetooth.hearingdevices.AmbientVolumeController;
+import com.android.settingslib.bluetooth.hearingdevices.metrics.HearingDeviceLocalDataManager;
 import com.android.settingslib.utils.ThreadUtils;
 
 import com.google.common.collect.BiMap;
@@ -58,7 +65,6 @@ public class AmbientVolumeUiController implements
     private static final String TAG = "AmbientVolumeUiController";
 
     private final Context mContext;
-    private final LocalBluetoothProfileManager mProfileManager;
     private final BluetoothEventManager mEventManager;
     private final AmbientVolumeUi mAmbientLayout;
     private final AmbientVolumeController mVolumeController;
@@ -75,11 +81,10 @@ public class AmbientVolumeUiController implements
             @NonNull LocalBluetoothManager bluetoothManager,
             @NonNull AmbientVolumeUi ambientLayout) {
         mContext = context;
-        mProfileManager = bluetoothManager.getProfileManager();
         mEventManager = bluetoothManager.getEventManager();
         mAmbientLayout = ambientLayout;
         mAmbientLayout.setListener(this);
-        mVolumeController = new AmbientVolumeController(mProfileManager, this);
+        mVolumeController = new AmbientVolumeController(bluetoothManager.getProfileManager(), this);
         mLocalDataManager = new HearingDeviceLocalDataManager(context);
         mLocalDataManager.setOnDeviceLocalDataChangeListener(this,
                 ThreadUtils.getBackgroundExecutor());
@@ -92,7 +97,6 @@ public class AmbientVolumeUiController implements
             @NonNull AmbientVolumeController volumeController,
             @NonNull HearingDeviceLocalDataManager localDataManager) {
         mContext = context;
-        mProfileManager = bluetoothManager.getProfileManager();
         mEventManager = bluetoothManager.getEventManager();
         mAmbientLayout = ambientLayout;
         mVolumeController = volumeController;
@@ -345,7 +349,7 @@ public class AmbientVolumeUiController implements
         }
 
         mAmbientLayout.setControlExpandable(mSideToDeviceMap.size() >  1);
-        mAmbientLayout.setupSliders(mSideToDeviceMap);
+        mAmbientLayout.setupSliders(mSideToDeviceMap.keySet());
         if (mStarted) {
             refresh();
         }
