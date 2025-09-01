@@ -22,7 +22,6 @@ import android.os.CombinedVibration;
 import android.os.VibrationAttributes;
 import android.os.VibrationEffect;
 import android.os.VibratorInfo;
-import android.os.vibrator.Flags;
 import android.os.vibrator.PrebakedSegment;
 import android.os.vibrator.VibrationEffectSegment;
 import android.util.SparseArray;
@@ -163,7 +162,7 @@ final class HalVibration extends Vibration {
     /** Returns true if this vibration can pipeline with the specified one. */
     public boolean canPipelineWith(HalVibration vib,
             @Nullable SparseArray<VibratorInfo> vibratorInfos, int durationThresholdMs) {
-        long effectDuration = Flags.vibrationPipelineFixEnabled() && (vibratorInfos != null)
+        long effectDuration = vibratorInfos != null
                 ? mEffectToPlay.getDuration(vibratorInfos)
                 : mEffectToPlay.getDuration();
         if (effectDuration == Long.MAX_VALUE) {
@@ -172,8 +171,7 @@ final class HalVibration extends Vibration {
             // if we have a use-case, requiring changes to how pipelined vibrations are cancelled.
             return false;
         }
-        if (Flags.vibrationPipelineFixEnabled()
-                && (effectDuration > 0) && (effectDuration < durationThresholdMs)) {
+        if (effectDuration > 0 && effectDuration < durationThresholdMs) {
             // Duration is known and it's less than the pipeline threshold, so allow it.
             // No need to check UID, as we want to avoid cancelling any short effect and let the
             // vibrator hardware gracefully finish the vibration.

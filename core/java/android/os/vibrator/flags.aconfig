@@ -90,16 +90,6 @@ flag {
 
 flag {
     namespace: "haptics"
-    name: "vibration_pipeline_fix_enabled"
-    description: "Enables functionality to pipeline vibration effects to avoid cancelling short vibrations"
-    bug: "344494220"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
-    namespace: "haptics"
     name: "remove_hidl_support"
     description: "Remove framework code to support HIDL vibrator HALs."
     bug: "409002423"
