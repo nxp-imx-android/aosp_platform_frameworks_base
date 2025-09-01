@@ -189,12 +189,6 @@ final class ServiceRecord extends ServiceRecordInternal implements ComponentName
      */
     boolean mIsNativeIsolated; // is the service a native-only isolated service?
 
-    /**
-     * The last time (in uptime timebase) a bind request was made with BIND_ALMOST_PERCEPTIBLE for
-     * this service while on TOP.
-     */
-    long lastTopAlmostPerceptibleBindRequestUptimeMs;
-
     // any current binding to this service has BIND_ALLOW_BACKGROUND_ACTIVITY_STARTS flag?
     private boolean mIsAllowedBgActivityStartsByBinding;
     // used to clean up the state of mIsAllowedBgActivityStartsByStart after a timeout

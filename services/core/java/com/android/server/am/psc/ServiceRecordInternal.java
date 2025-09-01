@@ -45,6 +45,12 @@ public abstract class ServiceRecordInternal extends Binder {
     /** The bitmask of foreground service types declared for this service. */
     private int mForegroundServiceType;
 
+    /**
+     * The last time (in uptime timebase) a bind request was made with BIND_ALMOST_PERCEPTIBLE for
+     * this service while on TOP.
+     */
+    private long mLastTopAlmostPerceptibleBindRequestUptimeMs;
+
     public ServiceRecordInternal(ComponentName instanceName, long lastActivity) {
         this.instanceName = instanceName;
         mLastActivity = lastActivity;
@@ -89,6 +95,14 @@ public abstract class ServiceRecordInternal extends Binder {
         mForegroundServiceType = foregroundServiceType;
     }
 
+    public long getLastTopAlmostPerceptibleBindRequestUptimeMs() {
+        return mLastTopAlmostPerceptibleBindRequestUptimeMs;
+    }
+
+    public void setLastTopAlmostPerceptibleBindRequestUptimeMs(
+            long lastTopAlmostPerceptibleBindRequestUptimeMs) {
+        mLastTopAlmostPerceptibleBindRequestUptimeMs = lastTopAlmostPerceptibleBindRequestUptimeMs;
+    }
     /**
      * Checks if this foreground service is allowed to access "while-in-use" permissions
      * (e.g., location, camera, microphone) for capability determination.

@@ -869,10 +869,10 @@ public class ProcessStateController {
      * {@link android.content.Context.BIND_ALMOST_PERCEPTIBLE}
      */
     @GuardedBy("mLock")
-    public void setLastTopAlmostPerceptibleBindRequest(@NonNull ServiceRecord sr,
+    public void setLastTopAlmostPerceptibleBindRequest(@NonNull ServiceRecordInternal sr,
             long lastTopAlmostPerceptibleBindRequestUptimeMs) {
-        sr.lastTopAlmostPerceptibleBindRequestUptimeMs =
-                lastTopAlmostPerceptibleBindRequestUptimeMs;
+        sr.setLastTopAlmostPerceptibleBindRequestUptimeMs(
+                lastTopAlmostPerceptibleBindRequestUptimeMs);
     }
 
     /**
