@@ -11,6 +11,13 @@ flag {
 }
 
 flag {
+    name: "containerize_bouncer_on_large_screens"
+    namespace: "desktop_users_and_accounts"
+    description: "Containerize Bouncer to modernize UX on large screens, showing a centered card dialog with all bouncer elements instead of a full screen"
+    bug: "427682946"
+}
+
+flag {
     name: "disable_double_click_swap_on_bouncer"
     namespace: "desktop_users_and_accounts"
     description: "Disable swapping bouncer sides with double click in two-column layout"
