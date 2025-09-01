@@ -3598,14 +3598,14 @@ public class ActivityRecordTests extends WindowTestsBase {
 
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_DRAGGING_PIP_ACROSS_DISPLAYS)
-    public void resolveOverrideConfiguration_windowingModePinned_keepsLastReportedConfigs() {
+    public void resolveOverrideConfiguration_inPipMode_keepsLastReportedConfigs() {
         final ActivityRecord activity = createActivityWithTask();
-        activity.setWindowingMode(WINDOWING_MODE_PINNED);
         final Configuration config = new Configuration();
         config.touchscreen = TOUCHSCREEN_FINGER;
         config.densityDpi = 100;
         config.colorMode = COLOR_MODE_WIDE_COLOR_GAMUT_NO;
         activity.setLastReportedConfiguration(new Configuration(), config);
+        activity.mLastReportedPictureInPictureMode = true;
 
         final Configuration newConfig = new Configuration();
         newConfig.windowConfiguration.setWindowingMode(WINDOWING_MODE_PINNED);
@@ -3621,15 +3621,15 @@ public class ActivityRecordTests extends WindowTestsBase {
 
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_DRAGGING_PIP_ACROSS_DISPLAYS)
-    public void resolveOverrideConfiguration_pinnedActivityInfoHasConfigs_updatesOverrideConfigs() {
+    public void resolveOverrideConfiguration_pipActivityInfoHasConfigs_updatesOverrideConfigs() {
         final ActivityRecord activity = createActivityWithTask();
-        activity.setWindowingMode(WINDOWING_MODE_PINNED);
         final Configuration config = new Configuration();
         config.touchscreen = TOUCHSCREEN_FINGER;
         config.densityDpi = 100;
         config.colorMode = COLOR_MODE_WIDE_COLOR_GAMUT_NO;
         activity.setLastReportedConfiguration(new Configuration(), config);
         activity.info.configChanges = CONFIG_TOUCHSCREEN | CONFIG_DENSITY | CONFIG_COLOR_MODE;
+        activity.mLastReportedPictureInPictureMode = true;
 
         final Configuration newConfig = new Configuration();
         newConfig.windowConfiguration.setWindowingMode(WINDOWING_MODE_PINNED);
@@ -3646,7 +3646,7 @@ public class ActivityRecordTests extends WindowTestsBase {
 
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_DRAGGING_PIP_ACROSS_DISPLAYS)
-    public void resolveOverrideConfiguration_windowingModeUndefined_updatesOverrideConfigs() {
+    public void resolveOverrideConfiguration_notInPipMode_updatesOverrideConfigs() {
         final ActivityRecord activity = createActivityWithTask();
         final Configuration config = new Configuration();
         config.touchscreen = TOUCHSCREEN_FINGER;
@@ -3668,14 +3668,14 @@ public class ActivityRecordTests extends WindowTestsBase {
 
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_DRAGGING_PIP_ACROSS_DISPLAYS)
-    public void resolveOverrideConfiguration_inPinnedMode_newConfigFullscreen_updatesConfigs() {
+    public void resolveOverrideConfiguration_inPipMode_newConfigFullscreen_updatesConfigs() {
         final ActivityRecord activity = createActivityWithTask();
-        activity.setWindowingMode(WINDOWING_MODE_PINNED);
         final Configuration config = new Configuration();
         config.touchscreen = TOUCHSCREEN_FINGER;
         config.densityDpi = 100;
         config.colorMode = COLOR_MODE_WIDE_COLOR_GAMUT_NO;
         activity.setLastReportedConfiguration(new Configuration(), config);
+        activity.mLastReportedPictureInPictureMode = true;
 
         final Configuration newConfig = new Configuration();
         newConfig.windowConfiguration.setWindowingMode(WINDOWING_MODE_FULLSCREEN);
