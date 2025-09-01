@@ -76,6 +76,9 @@ public final class HsumBootUserInitializer {
     /** Whether it should create an initial user, but without setting it as the main user. */
     private final boolean mShouldCreateInitialUser;
 
+    /** The boot strategy. */
+    private final int mBootStrategy;
+
     /** Static factory method for creating a {@link HsumBootUserInitializer} instance. */
     public static @Nullable HsumBootUserInitializer createInstance(UserManagerService ums,
             ActivityManagerService ams, PackageManagerService pms, ContentResolver contentResolver,
@@ -85,19 +88,21 @@ public final class HsumBootUserInitializer {
             return null;
         }
         return new HsumBootUserInitializer(ums, ams, pms, contentResolver,
-                designateMainUserOnBoot(context), createInitialUserOnBoot(context));
+                designateMainUserOnBoot(context), createInitialUserOnBoot(context),
+                getBootStrategy(context));
     }
 
     @VisibleForTesting
     HsumBootUserInitializer(UserManagerService ums, ActivityManagerService ams,
             PackageManagerService pms, ContentResolver contentResolver,
-            boolean shouldDesignateMainUser, boolean shouldCreateInitialUser) {
+            boolean shouldDesignateMainUser, boolean shouldCreateInitialUser, int bootStrategy) {
         mUms = ums;
         mAms = ams;
         mPms = pms;
         mContentResolver = contentResolver;
         mShouldDesignateMainUser = shouldDesignateMainUser;
         mShouldCreateInitialUser = shouldCreateInitialUser;
+        mBootStrategy = bootStrategy;
         mDeviceProvisionedObserver = (Flags.hsuDeviceProvisioner()
                     ? new HsuDeviceProvisioner(new Handler(Looper.getMainLooper()), contentResolver)
                     : new ContentObserver(new Handler(Looper.getMainLooper())) {
@@ -195,7 +200,10 @@ public final class HsumBootUserInitializer {
         int mainUserId = mUms.getMainUserId();
         t.traceEnd();
 
-        if (mShouldDesignateMainUser) {
+        final boolean isHsumBootStrategyOnProvisionedDevice =
+                (mBootStrategy == UserManagerService.BOOT_STRATEGY_TO_HSU_FOR_PROVISIONED_DEVICE
+                        && isDeviceProvisioned());
+        if (mShouldDesignateMainUser && !isHsumBootStrategyOnProvisionedDevice) {
             designateMainUserIfNeeded(t, mainUserId);
             return;
         }
@@ -204,7 +212,7 @@ public final class HsumBootUserInitializer {
         demoteMainUserIfNeeded(t, mainUserId);
         t.traceEnd();
 
-        if (mShouldCreateInitialUser) {
+        if (mShouldCreateInitialUser && !isHsumBootStrategyOnProvisionedDevice) {
             createAdminUserIfNeeded(t);
             return;
         }
@@ -470,5 +478,10 @@ public final class HsumBootUserInitializer {
     @VisibleForTesting
     static boolean createInitialUserOnBoot(Context context) {
         return context.getResources().getBoolean(R.bool.config_createInitialUser);
+    }
+
+    @VisibleForTesting
+    static int getBootStrategy(Context context) {
+        return context.getResources().getInteger(R.integer.config_hsumBootStrategy);
     }
 }
