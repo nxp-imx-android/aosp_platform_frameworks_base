@@ -459,3 +459,13 @@ flag {
      description: "Adds an allowlist mechanism to decide which activities can be launched when the current user is the headless system user"
      bug: "412177078"
 }
+
+flag {
+    name: "private_space_file_limit_check_timeout"
+    namespace: "profile_experiences"
+    description: "Add a timeout for file limit checks during file transfer to private space"
+    bug: "421920538"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
