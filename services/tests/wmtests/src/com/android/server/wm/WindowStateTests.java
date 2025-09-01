@@ -22,6 +22,7 @@ import static android.app.WindowConfiguration.WINDOWING_MODE_MULTI_WINDOW;
 import static android.app.WindowConfiguration.WINDOWING_MODE_PINNED;
 import static android.permission.flags.Flags.FLAG_SENSITIVE_NOTIFICATION_APP_PROTECTION;
 import static android.view.Display.DEFAULT_DISPLAY;
+import static android.view.InsetsFrameProvider.SOURCE_ATTACHED_CONTAINER_BOUNDS;
 import static android.view.InsetsSource.ID_IME;
 import static android.view.WindowInsets.Type.ime;
 import static android.view.WindowInsets.Type.navigationBars;
@@ -92,9 +93,11 @@ import android.app.AppOpsManager;
 import android.content.ContentResolver;
 import android.content.res.CompatibilityInfo;
 import android.content.res.Configuration;
+import android.graphics.Insets;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.graphics.Region;
+import android.os.Binder;
 import android.os.Build;
 import android.os.IBinder;
 import android.os.InputConfig;
@@ -111,6 +114,7 @@ import android.view.Gravity;
 import android.view.IWindow;
 import android.view.InputDevice;
 import android.view.InputWindowHandle;
+import android.view.InsetsFrameProvider;
 import android.view.InsetsSource;
 import android.view.InsetsSourceControl;
 import android.view.InsetsState;
@@ -1580,6 +1584,38 @@ public class WindowStateTests extends WindowTestsBase {
         // target has changed.
         verify(app.getDisplayContent()).updateImeControlTarget(eq(true) /* forceUpdateImeParent */);
         assertEquals(mAppWindow, mDisplayContent.getImeControlTarget().getWindow());
+    }
+
+    @SetupWindows(addWindows = { W_ACTIVITY, W_INPUT_METHOD })
+    @Test
+    public void testLocalInsetsDoesNotCopyToIme() {
+        WindowState app = newWindowBuilder("app", TYPE_BASE_APPLICATION).setWindowToken(
+                mAppWindow.mToken).build();
+
+        Binder owner = new Binder();
+        final Insets attachedInsets = Insets.of(0, 10, 0, 0);
+        app.addLocalInsetsFrameProvider(
+                new InsetsFrameProvider(owner, 0, WindowInsets.Type.captionBar())
+                        .setSource(SOURCE_ATTACHED_CONTAINER_BOUNDS)
+                        .setInsetsSize(attachedInsets),
+                owner);
+
+        mDisplayContent.setRemoteInsetsController(createDisplayWindowInsetsController());
+        mDisplayContent.setImeInputTarget(mAppWindow);
+        mDisplayContent.setImeLayeringTarget(mAppWindow);
+
+        mDisplayContent.getInsetsStateController().updateAboveInsetsState(
+                false /*notifyInsetsChange*/);
+        // Verify the app is having the correct local insets result.
+        assertEquals(1, app.mMergedLocalInsetsSources.size());
+        InsetsSource appLocalSource = app.mMergedLocalInsetsSources.valueAt(0);
+        InsetsSource expectedLocalSource = new InsetsSource(appLocalSource.getId(),
+                WindowInsets.Type.captionBar());
+        expectedLocalSource.setAttachedInsets(attachedInsets).updateSideHint(new Rect());
+        assertEquals(expectedLocalSource, appLocalSource);
+
+        // Verify the IME should not receive any local insets from the target app.
+        assertNull(mImeWindow.mMergedLocalInsetsSources);
     }
 
     @SetupWindows(addWindows = { W_ACTIVITY, W_INPUT_METHOD, W_NOTIFICATION_SHADE })
