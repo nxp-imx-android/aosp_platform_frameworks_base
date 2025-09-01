@@ -402,7 +402,10 @@ public class MediaRouterMetricLoggerTest {
                                 anyBoolean(),
                                 anyInt(),
                                 anyBoolean(),
-                                anyLong()),
+                                anyLong(),
+                                anyBoolean(),
+                                anyBoolean(),
+                                anyBoolean()),
                 never());
     }
 
@@ -449,7 +452,10 @@ public class MediaRouterMetricLoggerTest {
                                 eq(
                                         ROUTING_CHANGE_REPORTED__TRANSFER_REASON__TRANSFER_REASON_SYSTEM_REQUEST),
                                 eq(/* isSuggested= */ false),
-                                sessionLengthCaptor.capture()));
+                                sessionLengthCaptor.capture(),
+                                eq(/* isSuggestedByRlp= */ false),
+                                eq(/* isSuggestedByMediaApp= */ false),
+                                eq(/* isSuggestedByOtherApp= */ false)));
         assertThat(sessionLengthCaptor.getValue()).isEqualTo(sessionTimeInMillis);
     }
 
