@@ -56,7 +56,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.draw.paint
 import androidx.compose.ui.geometry.Offset
@@ -71,7 +70,6 @@ import androidx.compose.ui.graphics.DefaultAlpha
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.graphics.layer.drawLayer
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.Layout
@@ -295,7 +293,7 @@ fun SmallTileContent(
             NonClippedImage(
                 painter = painter,
                 contentDescription = icon.contentDescription?.load(),
-                tint = { animatedColor },
+                colorFilter = ColorFilter.tint(color = animatedColor),
                 modifier = iconModifier,
                 contentScale = ContentScale.Crop,
             )
@@ -308,7 +306,7 @@ fun SmallTileContent(
             )
         }
     } else {
-        Icon(icon = icon, tint = { animatedColor }, modifier = iconModifier)
+        Icon(icon = icon, tint = animatedColor, modifier = iconModifier)
     }
 }
 
@@ -411,6 +409,7 @@ object CommonTileDefaults {
     val LargeTileIconSize = 28.dp
     val SideIconWidth = 32.dp
     val SideIconHeight = 20.dp
+    val ChevronSize = 14.dp
     val ToggleTargetSize = 56.dp
     val TileHeight = 72.dp
     val TileStartPadding = 8.dp
@@ -439,7 +438,7 @@ private fun NonClippedImage(
     alignment: Alignment = Alignment.Center,
     contentScale: ContentScale = ContentScale.Fit,
     alpha: Float = DefaultAlpha,
-    tint: ColorProducer,
+    colorFilter: ColorFilter,
 ) {
     val semantics =
         if (contentDescription != null) {
@@ -456,17 +455,13 @@ private fun NonClippedImage(
     Layout(
         modifier
             .then(semantics)
-            .drawWithCache {
-                // Applying the color filter directly on the layer since it's an animated value.
-                // This is taken from the Material3 Icon implementation
-                val layer = obtainGraphicsLayer()
-                layer.apply {
-                    record { drawContent() }
-                    this@apply.colorFilter = ColorFilter.tint(tint())
-                }
-                onDrawWithContent { drawLayer(graphicsLayer = layer) }
-            }
-            .paint(painter, alignment = alignment, contentScale = contentScale, alpha = alpha)
+            .paint(
+                painter,
+                alignment = alignment,
+                contentScale = contentScale,
+                alpha = alpha,
+                colorFilter = colorFilter,
+            )
     ) { _, constraints ->
         layout(constraints.minWidth, constraints.minHeight) {}
     }
