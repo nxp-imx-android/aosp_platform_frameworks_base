@@ -545,6 +545,9 @@
                     "exclude-annotation":"org.junit.Ignore"
                 }
             ]
+        },
+        {
+            "name": "CtsPackageInstallerCUJDeveloperVerificationTestCases"
         }
     ]
 }
