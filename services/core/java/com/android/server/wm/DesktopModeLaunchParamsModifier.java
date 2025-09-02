@@ -295,9 +295,11 @@ class DesktopModeLaunchParamsModifier implements LaunchParamsModifier {
         if (DesktopModeFlags.INHERIT_TASK_BOUNDS_FOR_TRAMPOLINE_TASK_LAUNCHES.isTrue()) {
             ActivityRecord topVisibleFreeformActivity =
                     task.getDisplayContent().getTopMostVisibleFreeformActivity();
-            if (shouldInheritExistingTaskBounds(topVisibleFreeformActivity, targetActivity, task)) {
+            final Rect inheritedBounds = getInheritedExistingTaskBounds(source,
+                    topVisibleFreeformActivity, targetActivity, task);
+            if (inheritedBounds != null) {
                 appendLog("inheriting bounds from existing closing instance");
-                outParams.mBounds.set(topVisibleFreeformActivity.getBounds());
+                outParams.mBounds.set(inheritedBounds);
                 appendLog("final desktop mode task bounds set to %s", outParams.mBounds);
                 // Return result done to prevent other modifiers from changing or cascading bounds.
                 return RESULT_DONE;
@@ -488,18 +490,37 @@ class DesktopModeLaunchParamsModifier implements LaunchParamsModifier {
     }
 
     /**
-     * Whether the launching task should inherit the task bounds of an existing closing instance.
+     * Return the bounds of an existing closing instance the launching task should inherit..
      */
-    private boolean shouldInheritExistingTaskBounds(
-            @Nullable ActivityRecord existingTaskActivity,
+    private Rect getInheritedExistingTaskBounds(
+            @Nullable ActivityRecord sourceTaskActivity,
+            @Nullable ActivityRecord existingVisibleTaskActivity,
             @Nullable ActivityRecord launchingActivity,
             @NonNull Task launchingTask) {
-        if (existingTaskActivity == null || launchingActivity == null) return false;
-        return (Objects.equals(existingTaskActivity.packageName, launchingActivity.packageName))
-                && (existingTaskActivity.mUserId == launchingTask.mUserId)
-                && existingTaskActivity.getTask().mTaskId != launchingTask.mTaskId
+        if (launchingActivity == null) return null;
+        if (sourceTaskActivity != null && shouldInheritExistingTaskBounds(sourceTaskActivity,
+                launchingActivity, launchingTask)) {
+            return sourceTaskActivity.getBounds();
+        }
+        if (existingVisibleTaskActivity != null && shouldInheritExistingTaskBounds(
+                existingVisibleTaskActivity, launchingActivity, launchingTask)) {
+            return existingVisibleTaskActivity.getBounds();
+        }
+        return null;
+    }
+
+    /**
+     * Whether the launching task should inherit the task bounds of the given activity..
+     */
+    private boolean shouldInheritExistingTaskBounds(
+            @NonNull ActivityRecord activityToCheck,
+            @NonNull ActivityRecord launchingActivity,
+            @NonNull Task launchingTask) {
+        return (Objects.equals(activityToCheck.packageName, launchingActivity.packageName)
+                && (activityToCheck.mUserId == launchingTask.mUserId)
+                && activityToCheck.getTask().mTaskId != launchingTask.mTaskId
                 && isLaunchingNewSingleTask(launchingActivity.launchMode)
-                && isClosingExitingInstance(launchingTask.getBaseIntent().getFlags());
+                && isClosingExitingInstance(launchingTask.getBaseIntent().getFlags()));
     }
 
     /**
