@@ -369,7 +369,7 @@
     <string name="permgrouplab_xr_eye_sensitive" msgid="1709596126334620353">"눈 추적 데이터"</string>
     <string name="permgroupdesc_xr_eye_sensitive" msgid="6050967250223079001">"눈 움직임을 정확하게 추적"</string>
     <string name="permgrouplab_xr_tracking" msgid="766634536453394700">"움직임 및 영역 데이터"</string>
-    <string name="permgroupdesc_xr_tracking" msgid="812429788288001595">"눈, 얼굴, 신체 추적 및 영역 스캔"</string>
+    <string name="permgroupdesc_xr_tracking" msgid="812429788288001595">"눈, 얼굴, 신체 추적 및 영역을 스캔"</string>
     <string name="permgrouplab_xr_tracking_sensitive" msgid="4346975608010051186">"정확한 머리 움직임 및 영역 데이터"</string>
     <string name="permgroupdesc_xr_tracking_sensitive" msgid="7925014193164562556">"머리 움직임을 정확하게 추적 및 영역 스캔"</string>
     <string name="capability_title_canRetrieveWindowContent" msgid="7554282892101587296">"창 콘텐츠 가져오기"</string>
@@ -639,10 +639,8 @@
     <string name="permdesc_uwb_ranging" msgid="2519723069604307055">"앱이 근처의 초광대역 기기 간 상대적 위치를 파악하도록 허용"</string>
     <string name="permlab_nearby_wifi_devices" msgid="392774237063608500">"근처 Wi‑Fi 기기와 상호작용"</string>
     <string name="permdesc_nearby_wifi_devices" msgid="3054307728646332906">"앱이 광역 신호를 보내 근처에 있는 Wi‑Fi 기기의 상대적인 위치를 확인하고 연결할 수 있도록 허용합니다."</string>
-    <!-- no translation found for permlab_access_local_network (3420360767259066877) -->
-    <skip />
-    <!-- no translation found for permdesc_access_local_network (6364679803386822638) -->
-    <skip />
+    <string name="permlab_access_local_network" msgid="3420360767259066877">"로컬 네트워크 기기에 액세스"</string>
+    <string name="permdesc_access_local_network" msgid="6364679803386822638">"앱이 로컬 네트워크 기기에 액세스하도록 허용합니다."</string>
     <string name="permlab_ranging" msgid="2854543350668593390">"근처 기기 간 상대 위치 파악"</string>
     <string name="permdesc_ranging" msgid="6703905535621521710">"앱이 근처 기기 간 상대 위치를 파악하도록 허용"</string>
     <string name="permlab_preferredPaymentInfo" msgid="5274423844767445054">"기본 NFC 결제 서비스 정보"</string>
