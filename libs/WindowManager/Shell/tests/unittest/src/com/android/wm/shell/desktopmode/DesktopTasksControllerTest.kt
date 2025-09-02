@@ -12362,6 +12362,81 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         assertThat(controller.asDesktopMode().isDisplayInDesktopMode(DEFAULT_DISPLAY)).isTrue()
     }
 
+    @Test
+    fun isDesktopTask_desktopTask_isTrue() {
+        assertThat(controller.isDesktopTask(setUpFreeformTask())).isTrue()
+    }
+
+    @Test
+    fun isDesktopTask_desktopTask_isFalse() {
+        assertThat(controller.isDesktopTask(setUpFullscreenTask())).isFalse()
+    }
+
+    @Test
+    @EnableFlags(
+        FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
+        Flags.FLAG_REMOVE_DESK_ON_LAST_TASK_REMOVAL,
+        com.android.launcher3.Flags.FLAG_ENABLE_ALT_TAB_KQS_FLATENNING,
+    )
+    @DisableFlags(Flags.FLAG_ROOT_TASK_FOR_BUBBLE)
+    fun addMoveToBubbleFromDesktopChange_disableRootTaskForBubble_reparentToTda() {
+        val task = setUpFreeformTask()
+        val tda = rootTaskDisplayAreaOrganizer.getDisplayAreaInfo(DEFAULT_DISPLAY)!!
+        val wct = WindowContainerTransaction()
+
+        controller.addMoveToBubbleFromDesktopChange(
+            wct,
+            task,
+            transition = mock<IBinder>(IBinder::class.java),
+        )
+
+        wct.assertHop(ReparentPredicate(token = task.token, parentToken = tda.token, toTop = true))
+        verify(desksOrganizer).removeDesk(wct, deskId = 0, task.userId)
+    }
+
+    @Test
+    @EnableFlags(
+        FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
+        Flags.FLAG_REMOVE_DESK_ON_LAST_TASK_REMOVAL,
+        Flags.FLAG_ROOT_TASK_FOR_BUBBLE,
+        com.android.launcher3.Flags.FLAG_ENABLE_ALT_TAB_KQS_FLATENNING,
+    )
+    fun addMoveToBubbleFromDesktopChange_enableAllFlags_reorder() {
+        val task = setUpFreeformTask()
+        val wct = WindowContainerTransaction()
+
+        controller.addMoveToBubbleFromDesktopChange(
+            wct,
+            task,
+            transition = mock(IBinder::class.java),
+        )
+
+        wct.assertHop(ReorderPredicate(token = task.token, toTop = true))
+        verify(desksOrganizer).removeDesk(wct, deskId = 0, task.userId)
+    }
+
+    @Test
+    @EnableFlags(
+        FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
+        Flags.FLAG_REMOVE_DESK_ON_LAST_TASK_REMOVAL,
+        Flags.FLAG_ROOT_TASK_FOR_BUBBLE,
+    )
+    fun addMoveToBubbleFromDesktopChange_multiTasks_notExitDesktop() {
+        val task = setUpFreeformTask()
+        setUpFreeformTask()
+        val wct = WindowContainerTransaction()
+        rootTaskDisplayAreaOrganizer.setTouchFirst(DEFAULT_DISPLAY)
+
+        controller.addMoveToBubbleFromDesktopChange(
+            wct,
+            task,
+            transition = mock(IBinder::class.java),
+        )
+
+        wct.assertHop(ReorderPredicate(token = task.token, toTop = true))
+        verify(desksOrganizer, never()).removeDesk(wct, deskId = 0, task.userId)
+    }
+
     private class RunOnStartTransitionCallback : ((IBinder) -> Unit) {
         var invocations = 0
             private set

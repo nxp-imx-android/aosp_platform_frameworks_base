@@ -105,7 +105,7 @@ class DesktopModeEventLogger {
             ProtoLog.w(
                 WM_SHELL_DESKTOP_MODE,
                 "DesktopModeLogger: Existing desktop mode session id: %s found on desktop " +
-                        "mode enter",
+                    "mode enter",
                 previousSessionId,
             )
         }
@@ -781,6 +781,7 @@ class DesktopModeEventLogger {
             ),
             RECENTS_DISMISS(FrameworkStatsLog.DESKTOP_MODE_UICHANGED__EXIT_REASON__RECENTS_DISMISS),
             ENTER_PIP(FrameworkStatsLog.DESKTOP_MODE_UICHANGED__EXIT_REASON__ENTER_PIP),
+            ENTER_BUBBLE(FrameworkStatsLog.DESKTOP_MODE_UICHANGED__EXIT_REASON__ENTER_BUBBLE),
         }
 
         /**
