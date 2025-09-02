@@ -72,6 +72,7 @@
         android:paddingHorizontal="@dimen/user_switcher_fullscreen_button_padding"
         android:textSize="@dimen/user_switcher_fullscreen_button_text_size"
         android:textColor="?androidprv:attr/colorAccentPrimary"
+        android:visibility="gone"
         android:text="@string/cancel" />
 
     <TextView
@@ -86,6 +87,7 @@
         android:paddingHorizontal="@dimen/user_switcher_fullscreen_button_padding"
         android:textSize="@dimen/user_switcher_fullscreen_button_text_size"
         android:textColor="?androidprv:attr/colorAccentPrimary"
+        android:visibility="gone"
         android:text="@string/cancel" />
 
     <Space
