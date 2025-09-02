@@ -50,10 +50,6 @@ constructor(
         )
     }
 
-    fun delete() {
-        // TODO(b/430553811) Implement
-    }
-
     fun share() {
         startVideoActivity(
             action = Intent.ACTION_SEND,

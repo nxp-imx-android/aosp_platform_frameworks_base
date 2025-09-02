@@ -366,6 +366,8 @@
     <string name="screen_record_capture_target_choose_app">Choose an app to record</string>
     <!-- Snackbar shows after the screen recording is saved [CHAR LIMIT=20] -->
     <string name="screen_record_video_saved">Video saved</string>
+    <!-- Snackbar shows after the screen recording is deleted. Undo action label [CHAR LIMIT=20] -->
+    <string name="screen_record_undo">Undo</string>
     <!-- Button to retake a screen recording [CHAR LIMIT=20] -->
     <string name="screen_record_retake">Retake</string>
     <!-- Button to edit a screen recording [CHAR LIMIT=20] -->

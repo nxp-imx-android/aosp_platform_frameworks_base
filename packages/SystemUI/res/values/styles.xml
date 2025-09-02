@@ -1038,6 +1038,15 @@
         <item name="android:windowCloseOnTouchOutside">false</item>
     </style>
 
+    <style name="ScreenCapture.PostRecord.SnackbarDialog" parent="@style/Theme.SystemUI.Dialog">
+        <item name="android:backgroundDimEnabled">false</item>
+        <item name="android:showWhenLocked">true</item>
+        <item name="android:windowBackground">@color/transparent</item>
+        <item name="android:enforceNavigationBarContrast">false</item>
+        <item name="android:windowIsFloating">false</item>
+        <item name="android:windowNoTitle">true</item>
+    </style>
+
     <style name="TextAppearance.ScreenRecord" />
 
     <style name="TextAppearance.ScreenRecord.SwitchLabel">
