@@ -458,16 +458,6 @@ flag {
 }
 
 flag {
-    name: "status_bar_inflate_carrier_merged"
-    namespace: "systemui"
-    description: "Allow the status bar to inflate the levels of the carrier merged connection"
-    bug: "423686800"
-    metadata {
-      purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "status_bar_show_icons_in_secure_camera"
     namespace: "systemui"
     description: "Show status bar icons in secure camera if user swipes down from top of screen"

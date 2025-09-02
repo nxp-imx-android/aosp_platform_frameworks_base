@@ -16,8 +16,6 @@
 
 package com.android.systemui.statusbar.pipeline.mobile.data.repository.prod
 
-import android.platform.test.annotations.DisableFlags
-import android.platform.test.annotations.EnableFlags
 import android.telephony.CarrierConfigManager.KEY_INFLATE_SIGNAL_STRENGTH_BOOL
 import android.telephony.TelephonyManager
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -30,7 +28,6 @@ import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.log.table.logcatTableLogBuffer
-import com.android.systemui.statusbar.pipeline.StatusBarInflateCarrierMerged
 import com.android.systemui.statusbar.pipeline.mobile.data.model.DataConnectionState
 import com.android.systemui.statusbar.pipeline.mobile.data.model.NetworkNameModel
 import com.android.systemui.statusbar.pipeline.mobile.data.model.ResolvedNetworkType
@@ -208,7 +205,6 @@ abstract class CarrierMergedConnectionRepositoryTestBase : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(StatusBarInflateCarrierMerged.FLAG_NAME)
     fun numberOfLevels_comesFromCarrierMerged_andInflated() =
         kosmos.runTest {
             val latest by collectLastValue(underTest.numberOfLevels)
@@ -228,42 +224,6 @@ abstract class CarrierMergedConnectionRepositoryTestBase : SysuiTestCase() {
         }
 
     @Test
-    @DisableFlags(StatusBarInflateCarrierMerged.FLAG_NAME)
-    fun numberOfLevels_flagDisabled_ignoresInflated() =
-        kosmos.runTest {
-            val latest by collectLastValue(underTest.numberOfLevels)
-
-            wifiRepository.fake.setWifiNetwork(
-                WifiNetworkModel.CarrierMerged.of(
-                    subscriptionId = SUB_ID,
-                    level = 1,
-                    numberOfLevels = 6,
-                )
-            )
-            systemUiCarrierConfig.processNewCarrierConfig(
-                testCarrierConfigWithOverride(KEY_INFLATE_SIGNAL_STRENGTH_BOOL, true)
-            )
-
-            assertThat(latest).isEqualTo(6)
-        }
-
-    @Test
-    @DisableFlags(StatusBarInflateCarrierMerged.FLAG_NAME)
-    fun inflateSignalStrength_flagDisabled_alwaysFalse() =
-        kosmos.runTest {
-            val latest by collectLastValue(underTest.inflateSignalStrength)
-
-            assertThat(latest).isEqualTo(false)
-
-            systemUiCarrierConfig.processNewCarrierConfig(
-                testCarrierConfigWithOverride(KEY_INFLATE_SIGNAL_STRENGTH_BOOL, true)
-            )
-
-            assertThat(latest).isEqualTo(false)
-        }
-
-    @Test
-    @EnableFlags(StatusBarInflateCarrierMerged.FLAG_NAME)
     fun inflateSignalStrength_usesCarrierConfig() =
         kosmos.runTest {
             val latest by collectLastValue(underTest.inflateSignalStrength)
