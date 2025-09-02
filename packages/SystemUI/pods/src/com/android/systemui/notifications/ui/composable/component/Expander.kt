@@ -36,6 +36,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.android.compose.theme.LocalAndroidColorScheme
 
 // TODO: b/432249649 - Once we move the compose code for bundles into a pod, we should consolidate
 //  these elements with ExpansionControl used there.
@@ -44,7 +45,7 @@ import androidx.compose.ui.unit.sp
 @Composable
 internal fun Expander(expanded: Boolean, modifier: Modifier = Modifier, numberToShow: Int? = null) {
     val textColor = MaterialTheme.colorScheme.onSurface
-    val surfaceColor = notificationProtectionColor()
+    val surfaceColor = LocalAndroidColorScheme.current.surfaceEffect3
 
     Box(modifier = modifier.background(surfaceColor, RoundedCornerShape(100.dp))) {
         Row(
