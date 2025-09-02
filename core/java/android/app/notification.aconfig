@@ -216,6 +216,16 @@ flag {
   }
 }
 
+flag {
+  name: "notification_animated_action_content_description"
+  namespace: "systemui"
+  description: "This flag enables the customized content description for animated actions and replies."
+  bug: "412288906"
+  metadata {
+    purpose: PURPOSE_BUGFIX
+  }
+}
+
 # Start: exported flags that cannot be removed
 
 flag {

@@ -2188,6 +2188,13 @@ public class Notification implements Parcelable
         @Retention(RetentionPolicy.SOURCE)
         public @interface Style {}
 
+
+        /**
+         * {@link #extras} key to a String defining this action's content description.
+         * @hide
+         */
+        public static final String EXTRA_CONTENT_DESCRIPTION = "android.extra.CONTENT_DESCRIPTION";
+
         private final Bundle mExtras;
         @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.P, trackingBug = 115609023)
         private Icon mIcon;

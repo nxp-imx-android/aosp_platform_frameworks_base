@@ -14,12 +14,16 @@
 
 package com.android.systemui.statusbar.policy;
 
+import static android.app.Flags.FLAG_NOTIFICATION_ANIMATED_ACTION_CONTENT_DESCRIPTION;
 import static android.view.View.MeasureSpec;
+
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.verify;
+
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertNull;
 import static junit.framework.Assert.assertTrue;
+
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -34,6 +38,7 @@ import android.content.IntentFilter;
 import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.Icon;
+import android.os.Bundle;
 import android.platform.test.annotations.EnableFlags;
 import android.testing.AndroidTestingRunner;
 import android.testing.TestableLooper;
@@ -44,10 +49,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.LinearLayout;
+
 import androidx.test.filters.SmallTest;
+
 import com.android.internal.logging.nano.MetricsProto.MetricsEvent;
 import com.android.keyguard.KeyguardUpdateMonitor;
-import com.android.systemui.Flags;
 import com.android.systemui.SysuiTestCase;
 import com.android.systemui.plugins.ActivityStarter;
 import com.android.systemui.plugins.ActivityStarter.OnDismissAction;
@@ -61,6 +67,17 @@ import com.android.systemui.statusbar.notification.collection.NotificationEntry;
 import com.android.systemui.statusbar.notification.collection.NotificationEntryBuilder;
 import com.android.systemui.statusbar.notification.headsup.HeadsUpManager;
 import com.android.systemui.statusbar.phone.KeyguardDismissUtil;
+
+import kotlin.sequences.Sequence;
+import kotlin.sequences.SequencesKt;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -69,14 +86,6 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
-import kotlin.sequences.Sequence;
-import kotlin.sequences.SequencesKt;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 
 @RunWith(AndroidTestingRunner.class)
 @TestableLooper.RunWithLooper
@@ -586,11 +595,37 @@ public class SmartReplyViewTest extends SysuiTestCase {
         return spannableString;
     }
 
+    private SpannableString addAnnotationToChoiceWithContentDescription(CharSequence choice,
+            boolean isAnimatedReply, String attrText, String contentDescription) {
+        SpannableString spannableString = addAnnotationToChoice(choice, isAnimatedReply, attrText);
+        if (isAnimatedReply) {
+            spannableString.setSpan(
+                    new Annotation("contentDescription", contentDescription),
+                    0,
+                    choice.length(),
+                    Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+        }
+        return spannableString;
+    }
+
     private Notification.Action createAction(String actionTitle) {
         PendingIntent pendingIntent = PendingIntent.getBroadcast(mContext, 0,
                 new Intent(TEST_ACTION).setPackage(mContext.getPackageName()),
                 PendingIntent.FLAG_MUTABLE);
         return new Notification.Action.Builder(mActionIcon, actionTitle, pendingIntent).build();
+    }
+
+    private Notification.Action createAnimatedAction(String actionTitle,
+            String contentDescription) {
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(mContext, 0,
+                new Intent(TEST_ACTION).setPackage(mContext.getPackageName()),
+                PendingIntent.FLAG_MUTABLE);
+        Bundle extras = new Bundle();
+        extras.putBoolean(Notification.Action.EXTRA_IS_ANIMATED, true);
+        extras.putString(Notification.Action.EXTRA_CONTENT_DESCRIPTION, contentDescription);
+        return new Notification.Action.Builder(mActionIcon, actionTitle, pendingIntent)
+                .addExtras(extras)
+                .build();
     }
 
     private List<Notification.Action> createActions(String[] actionTitles) {
@@ -1585,5 +1620,51 @@ public class SmartReplyViewTest extends SysuiTestCase {
         assertReplyButtonHidden(mView.getChildAt(2));
         verify(mSmartReplyLogger, never()).logAnimatedReplyChipVisibleEvent();
         verify(mSmartReplyLogger).logAnimatedActionChipVisibleEvent();
+    }
+
+    @Test
+    @EnableFlags(FLAG_NOTIFICATION_ANIMATED_ACTION_CONTENT_DESCRIPTION)
+    public void testInflateReplyButton_contentDescriptionSetForAnimatedReply() {
+        String contentDescription = "content description";
+        CharSequence animatedReplyChoice = addAnnotationToChoiceWithContentDescription(
+                "animatedReplyChoice",
+                true,
+                "attr",
+                contentDescription
+        );
+        String smartReplyChoice = "smartReplyChoice";
+        List<Button> replyButtons =
+                inflateSmartReplies(
+                        new CharSequence[] {animatedReplyChoice, smartReplyChoice},
+                        true /* fromAssistant */,
+                        true /* useDelayedOnClickListener */
+                ).toList();
+
+        assertEquals(contentDescription, replyButtons.get(0).getContentDescription().toString());
+        assertNull(replyButtons.get(1).getContentDescription());
+    }
+
+    @Test
+    @EnableFlags(FLAG_NOTIFICATION_ANIMATED_ACTION_CONTENT_DESCRIPTION)
+    public void testInflateActionButton_contentDescriptionSetForAnimatedReply() {
+        String contentDescription = "content description";
+        List<Notification.Action> actions = List.of(
+                createAnimatedAction("action1", contentDescription),
+                createAction("action2")
+        );
+        SmartReplyView.SmartActions smartActions = new SmartReplyView.SmartActions(actions, true);
+        List<Button> actionButtons = IntStream.range(0, smartActions.actions.size())
+                .mapToObj(idx -> mSmartActionInflater.inflateActionButton(
+                        mView,
+                        mEntry,
+                        smartActions,
+                        idx,
+                        smartActions.actions.get(idx),
+                        true /* delayOnClickListener */,
+                        getContext()))
+                .toList();
+
+        assertEquals(contentDescription, actionButtons.get(0).getContentDescription().toString());
+        assertNull(actionButtons.get(1).getContentDescription());
     }
 }
