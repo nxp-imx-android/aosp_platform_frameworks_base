@@ -146,6 +146,7 @@ fun AODPromotedNotificationView(
                 if (notificationView.parent != null) {
                     (notificationView.parent as ViewGroup).removeView(notificationView)
                 }
+
                 val updater =
                     traceSection("$TAG.findViews") {
                         AODPromotedNotificationViewUpdater(notificationView)
@@ -261,7 +262,7 @@ private class AODPromotedNotificationViewUpdater(root: View) {
     private val appNameText: TextView? = root.findViewById(R.id.app_name_text)
     private val bigPicture: BigPictureNotificationImageView? = root.findViewById(R.id.big_picture)
     private val bigText: ImageFloatingTextView? = root.findViewById(R.id.big_text)
-    private var chronometerStub: ViewStub? = root.findViewById(R.id.chronometer)
+    private var chronometerStub: ViewStub? = null
     private var chronometer: Chronometer? = null
     private val closeButton: View? = root.findViewById(R.id.close_button)
     private val conversationIconBadge: View? = root.findViewById(R.id.conversation_icon_badge)
@@ -327,6 +328,12 @@ private class AODPromotedNotificationViewUpdater(root: View) {
     private var smallIconSavedState: SmallIconSavedState? = null
 
     init {
+        val chronometerView = root.findViewById<View>(R.id.chronometer)
+        if (chronometerView is ViewStub) {
+            chronometerStub = chronometerView
+        } else if (chronometerView is Chronometer) {
+            chronometer = chronometerView
+        }
         // Hide views that are never visible in the skeleton promoted notification.
         alternateExpandTarget?.visibility = GONE
         bigPicture?.visibility = GONE
