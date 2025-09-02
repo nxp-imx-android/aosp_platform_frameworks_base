@@ -17,7 +17,6 @@ package com.android.systemui.plugins.keyguard.ui.composable.elements
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.ui.Modifier
-import com.android.compose.animation.scene.BaseContentScope
 import com.android.compose.animation.scene.Key
 
 @Immutable
@@ -25,9 +24,5 @@ import com.android.compose.animation.scene.Key
 interface LockscreenElementFactory {
     @Composable
     /** Finds and renders the composable element at the specified key. */
-    fun BaseContentScope.LockscreenElement(
-        key: Key,
-        context: LockscreenElementContext,
-        modifier: Modifier,
-    )
+    fun LockscreenElement(scope: LockscreenScope<*>, key: Key, modifier: Modifier)
 }

@@ -50,10 +50,7 @@ interface LockscreenElement : BaseLockscreenElement {
     @Composable
     @ThrowsOnFailure
     /** Compose function which renders this element */
-    fun ElementContentScope.LockscreenElement(
-        factory: LockscreenElementFactory,
-        context: LockscreenElementContext,
-    )
+    fun LockscreenScope<ElementContentScope>.LockscreenElement()
 }
 
 @Stable
@@ -66,8 +63,5 @@ interface MovableLockscreenElement : BaseLockscreenElement {
     @Composable
     @ThrowsOnFailure
     /** Compose function which renders this element */
-    fun MovableElementContentScope.LockscreenElement(
-        factory: LockscreenElementFactory,
-        context: LockscreenElementContext,
-    )
+    fun LockscreenScope<MovableElementContentScope>.LockscreenElement()
 }

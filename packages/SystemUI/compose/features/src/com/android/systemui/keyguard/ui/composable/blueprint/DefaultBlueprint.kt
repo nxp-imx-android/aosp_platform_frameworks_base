@@ -31,6 +31,7 @@ import com.android.systemui.keyguard.ui.composable.elements.LockIconElementProvi
 import com.android.systemui.keyguard.ui.composable.elements.LockscreenElementFactoryImpl
 import com.android.systemui.keyguard.ui.composable.elements.LockscreenElementFactoryImpl.Companion.createRemembered
 import com.android.systemui.keyguard.ui.composable.elements.LockscreenLowerRegionElementProvider
+import com.android.systemui.keyguard.ui.composable.elements.LockscreenScopeImpl
 import com.android.systemui.keyguard.ui.composable.elements.LockscreenUpperRegionElementProvider
 import com.android.systemui.keyguard.ui.composable.elements.MediaElementProvider
 import com.android.systemui.keyguard.ui.composable.elements.NotificationStackElementProvider
@@ -131,7 +132,8 @@ constructor(
                     },
                 )
 
-            LockscreenSceneLayout(viewModel, elementFactory, elementContext)
+            LockscreenScopeImpl(this@Content, elementFactory, elementContext)
+                .LockscreenSceneLayout(viewModel)
         }
     }
 }

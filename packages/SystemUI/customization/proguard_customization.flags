@@ -120,6 +120,8 @@
     *** *init*(...);
 }
 
+-keep class com.android.compose.animation.scene.MovableElementContentScope { *; }
+
 -keep class com.android.compose.animation.scene.ElementScope { *; }
 
 -keep class androidx.compose.runtime.internal.ComposableLambdaKt {
