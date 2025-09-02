@@ -61,6 +61,7 @@ import com.android.systemui.statusbar.notification.row.HybridNotificationView;
 import com.android.systemui.statusbar.notification.row.shared.AsyncGroupHeaderViewInflation;
 import com.android.systemui.statusbar.notification.row.shared.AsyncHybridViewInflation;
 import com.android.systemui.statusbar.notification.row.ui.viewmodel.BundleHeaderViewModel;
+import com.android.systemui.statusbar.notification.row.wrapper.BundleHeaderViewWrapper;
 import com.android.systemui.statusbar.notification.row.wrapper.NotificationHeaderViewWrapper;
 import com.android.systemui.statusbar.notification.row.wrapper.NotificationViewWrapper;
 import com.android.systemui.statusbar.notification.shared.NotificationBundleUi;
@@ -131,6 +132,7 @@ public class NotificationChildrenContainer extends ViewGroup
      */
     private ComposeView mBundleHeaderView;
     @Nullable private BundleHeaderViewModel mBundleHeaderViewModel;
+    private BundleHeaderViewWrapper mBundleHeaderWrapper;
 
     private NotificationHeaderView mGroupHeader;
     private NotificationHeaderViewWrapper mGroupHeaderWrapper;
@@ -513,6 +515,9 @@ public class NotificationChildrenContainer extends ViewGroup
         initBundleDimens();
         mBundleHeaderView = view;
         addView(mBundleHeaderView);
+        mBundleHeaderWrapper = (BundleHeaderViewWrapper) NotificationViewWrapper.wrap(getContext(),
+                mBundleHeaderView, mContainingNotification);
+        mBundleHeaderWrapper.setOnRoundnessChangedListener(this::invalidate);
         invalidate();
     }
 
@@ -704,10 +709,17 @@ public class NotificationChildrenContainer extends ViewGroup
         }
     }
 
+    private void updateBundleHeaderRounding() {
+        if (mBundleHeaderWrapper != null) {
+            mBundleHeaderWrapper.recalculateRadius();
+        }
+    }
+
     @Override
     protected void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
         updateGroupOverflow();
+        updateBundleHeaderRounding();
     }
 
     private View inflateDivider() {
@@ -1159,9 +1171,10 @@ public class NotificationChildrenContainer extends ViewGroup
             }
         }
 
-        if (child instanceof NotificationHeaderView
-                && mGroupHeaderWrapper.hasRoundedCorner()) {
-            float[] radii = mGroupHeaderWrapper.getUpdatedRadii();
+        boolean isHeader = child instanceof NotificationHeaderView || (isBundle()
+                && child instanceof ComposeView);
+        if (isHeader && getRoundableHeaderWrapper().hasRoundedCorner()) {
+            float[] radii = getRoundableHeaderWrapper().getUpdatedRadii();
             mHeaderPath.reset();
             mHeaderPath.addRoundRect(
                     child.getLeft(),
@@ -1770,8 +1783,8 @@ public class NotificationChildrenContainer extends ViewGroup
     @Override
     public void applyRoundnessAndInvalidate() {
         boolean last = true;
-        if (mGroupHeaderWrapper != null) {
-            mGroupHeaderWrapper.requestTopRoundness(
+        if (getRoundableHeaderWrapper() != null) {
+            getRoundableHeaderWrapper().requestTopRoundness(
                     /* value = */ getTopRoundness(),
                     /* sourceType = */ FROM_PARENT,
                     /* animate = */ false
@@ -1847,6 +1860,12 @@ public class NotificationChildrenContainer extends ViewGroup
     public void setChildClipPath(@Nullable Path childClipPath) {
         mChildClipPath = childClipPath;
         invalidate();
+    }
+
+    // Returns the Roundable notification header wrapper, generalized to handle either bundle
+    // headers or group headers.
+    public Roundable getRoundableHeaderWrapper() {
+        return isBundle() ? mBundleHeaderWrapper : mGroupHeaderWrapper;
     }
 
     public NotificationHeaderViewWrapper getNotificationHeaderWrapper() {
