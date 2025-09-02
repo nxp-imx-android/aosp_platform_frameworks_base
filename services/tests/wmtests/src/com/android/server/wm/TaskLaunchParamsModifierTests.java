@@ -682,6 +682,27 @@ public class TaskLaunchParamsModifierTests extends
     }
 
     @Test
+    public void testBubbleTaskDoesNotInheritFreeformModeFromSource() {
+        final TestDisplayContent fullscreenDisplay = createNewDisplayContent(
+                WINDOWING_MODE_FULLSCREEN);
+        // Source activity is in a freeform trampoline task.
+        final ActivityRecord source = createSourceActivity(fullscreenDisplay);
+        source.getTask().setWindowingMode(WINDOWING_MODE_FREEFORM);
+        // The task to be launched is a bubble task
+        final Task bubbleTask = new TaskBuilder(mSupervisor)
+                .setTaskDisplayArea(fullscreenDisplay.getDefaultTaskDisplayArea())
+                .setWindowingMode(WINDOWING_MODE_MULTI_WINDOW)
+                .build();
+        bubbleTask.mLaunchNextToBubble = true;
+
+        assertEquals(RESULT_CONTINUE,
+                new CalculateRequestBuilder().setSource(source).setTask(bubbleTask).calculate());
+
+        assertEquivalentWindowingMode(WINDOWING_MODE_MULTI_WINDOW, mResult.mWindowingMode,
+                WINDOWING_MODE_FULLSCREEN /* parentWindowingMode */);
+    }
+
+    @Test
     public void testInheritsSourceTaskWindowingModeWhenActivityIsInDifferentWindowingMode() {
         final TestDisplayContent fullscreenDisplay = createNewDisplayContent(
                 WINDOWING_MODE_FULLSCREEN);
