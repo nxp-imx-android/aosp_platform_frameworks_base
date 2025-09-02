@@ -96,22 +96,14 @@
     <string name="message_restore_error_installer_absent" msgid="8492838251989389724">"Për ta restauruar këtë aplikacion, do të të duhet të instalosh \"<xliff:g id="INSTALLER_NAME">%1$s</xliff:g>\""</string>
     <string name="message_restore_error_generic" msgid="5903850636679929406">"Pati një problem gjatë përpjekjes për të restauruar këtë aplikacion"</string>
     <string name="message_uninstall_activity" msgid="3263352475743590167">"\"<xliff:g id="ACTIVITY_NAME">%1$s</xliff:g>\" është pjesë e aplikacionit të mëposhtëm: <xliff:g id="APP_NAME">%2$s</xliff:g>"</string>
-    <!-- no translation found for cannot_install_app_blocked_summary (5439893912308217959) -->
-    <skip />
-    <!-- no translation found for cannot_update_app_blocked_summary (7817560122951640605) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_no_internet_summary (236829543597389666) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_no_internet_summary (28024736898646891) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_summary (6208343652461257248) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_unavailable_summary (367099122142054088) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_fail_closed_summary (3798407602770929670) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_unavailable_fail_closed_summary (2871425967967934618) -->
-    <skip />
+    <string name="cannot_install_app_blocked_summary" msgid="5439893912308217959">"&lt;p&gt;Ky aplikacion është bllokuar. Për të mbajtur pajisjen dhe të dhënat e tua të sigurta, mund të instalohen vetëm aplikacionet nga zhvilluesit e verifikuar.&lt;/p&gt;"</string>
+    <string name="cannot_update_app_blocked_summary" msgid="7817560122951640605">"&lt;p&gt;Ky aplikacion nuk u përditësua. Për të mbajtur pajisjen dhe të dhënat e tua të sigurta, mund të instalohen vetëm përditësimet nga zhvilluesit e verifikuar.&lt;/p&gt;"</string>
+    <string name="cannot_install_verification_no_internet_summary" msgid="236829543597389666">"&lt;p&gt;Ky aplikacion nuk u instalua. Aplikacionet nga zhvilluesit e paverifikuar mund të jenë të pasigurtë.&lt;/p&gt; &lt;p&gt;Kërkohet një lidhje interneti për të verifikuar zhvilluesin e aplikacionit. Kontrollo lidhjen tënde dhe më pas provo ta instalosh përsëri aplikacionin. &lt;/p&gt;"</string>
+    <string name="cannot_update_verification_no_internet_summary" msgid="28024736898646891">"&lt;p&gt;Ky aplikacion nuk u përditësua. Përditësimet nga zhvilluesit e paverifikuar mund të jenë të pasigurta.&lt;/p&gt; &lt;p&gt;Kërkohet një lidhje interneti për të verifikuar zhvilluesin e aplikacionit. Kontrollo lidhjen tënde dhe më pas provo ta përditësosh përsëri aplikacionin. &lt;/p&gt;"</string>
+    <string name="cannot_install_verification_unavailable_summary" msgid="6208343652461257248">"&lt;p&gt;Pati një problem gjatë verifikimit të zhvilluesit të këtij aplikacioni. Aplikacionet nga zhvilluesit e paverifikuar mund të jenë të pasigurtë, prandaj aplikacioni nuk u instalua.&lt;/p&gt;"</string>
+    <string name="cannot_update_verification_unavailable_summary" msgid="367099122142054088">"&lt;p&gt;Pati një problem gjatë verifikimit të zhvilluesit të këtij aplikacioni. Përditësimet nga zhvilluesit e paverifikuar mund të jenë të pasigurta, prandaj aplikacioni nuk u përditësua.&lt;/p&gt;"</string>
+    <string name="cannot_install_verification_unavailable_fail_closed_summary" msgid="3798407602770929670">"&lt;p&gt;Ky aplikacion është bllokuar sepse pati një problem gjatë verifikimit të zhvilluesit. Për të mbajtur pajisjen dhe të dhënat e tua të sigurta, mund të instalohen vetëm aplikacionet nga zhvilluesit e verifikuar.&lt;/p&gt;"</string>
+    <string name="cannot_update_verification_unavailable_fail_closed_summary" msgid="2871425967967934618">"&lt;p&gt;Ky aplikacion nuk u përditësua sepse pati një problem gjatë verifikimit të zhvilluesit. Për të mbajtur pajisjen dhe të dhënat e tua të sigurta, mund të instalohen vetëm përditësimet nga zhvilluesit e verifikuar.&lt;/p&gt;"</string>
     <string name="more_details_expanded_install_summary" msgid="3545896392881608712">"Nëse e instalon pa e verifikuar, ki parasysh se aplikacionet nga zhvilluesit e paverifikuar mund të vendosin pajisjen dhe të dhënat e tua në rrezik."</string>
     <string name="more_details_expanded_update_summary" msgid="2239162864839036480">"Nëse e përditëson pa e verifikuar, ki parasysh se përditësimet nga zhvilluesit e paverifikuar mund të vendosin pajisjen dhe të dhënat e tua në rrezik."</string>
     <string name="cannot_install_app_blocked_title" msgid="6372444121824751694">"Zhvilluesi i aplikacionit nuk është verifikuar"</string>

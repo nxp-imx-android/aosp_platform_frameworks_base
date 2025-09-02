@@ -96,22 +96,14 @@
     <string name="message_restore_error_installer_absent" msgid="8492838251989389724">"Ak chcete túto aplikáciu obnoviť, musíte si nainštalovať <xliff:g id="INSTALLER_NAME">%1$s</xliff:g>"</string>
     <string name="message_restore_error_generic" msgid="5903850636679929406">"Pri pokuse o obnovenie tejto aplikácie sa vyskytol problém"</string>
     <string name="message_uninstall_activity" msgid="3263352475743590167">"<xliff:g id="ACTIVITY_NAME">%1$s</xliff:g> je súčasťou nasledujúcej aplikácie: <xliff:g id="APP_NAME">%2$s</xliff:g>"</string>
-    <!-- no translation found for cannot_install_app_blocked_summary (5439893912308217959) -->
-    <skip />
-    <!-- no translation found for cannot_update_app_blocked_summary (7817560122951640605) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_no_internet_summary (236829543597389666) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_no_internet_summary (28024736898646891) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_summary (6208343652461257248) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_unavailable_summary (367099122142054088) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_fail_closed_summary (3798407602770929670) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_unavailable_fail_closed_summary (2871425967967934618) -->
-    <skip />
+    <string name="cannot_install_app_blocked_summary" msgid="5439893912308217959">"&lt;p&gt;Táto aplikácia bola zablokovaná. Inštalovať si môžete iba aplikácie od overených vývojárov, aby bola zaistená bezpečnosť vášho zariadenia aj údajov.&lt;/p&gt;"</string>
+    <string name="cannot_update_app_blocked_summary" msgid="7817560122951640605">"&lt;p&gt;Táto aplikácia nebola aktualizovaná. Inštalovať si môžete iba aplikácie od overených vývojárov, aby bola zaistená bezpečnosť vášho zariadenia aj údajov.&lt;/p&gt;"</string>
+    <string name="cannot_install_verification_no_internet_summary" msgid="236829543597389666">"&lt;p&gt;Táto aplikácia nebola nainštalovaná. Aplikácie od neoverených vývojárov môžu byť nebezpečné.&lt;/p&gt; &lt;p&gt;Na overenie vývojára aplikácií sa vyžaduje internetové pripojenie. Skontrolujte pripojenie a potom skúste aplikáciu nainštalovať znova. &lt;/p&gt;"</string>
+    <string name="cannot_update_verification_no_internet_summary" msgid="28024736898646891">"&lt;p&gt;Táto aplikácia nebola aktualizovaná. Aktualizácie od neoverených vývojárov môžu byť nebezpečné.&lt;/p&gt; &lt;p&gt;Na overenie vývojára aplikácií sa vyžaduje internetové pripojenie. Skontrolujte pripojenie a potom skúste aplikáciu aktualizovať znova. &lt;/p&gt;"</string>
+    <string name="cannot_install_verification_unavailable_summary" msgid="6208343652461257248">"&lt;p&gt;Pri overovaní vývojára tejto aplikácie sa vyskytol problém. Aplikácie od neoverených vývojárov môžu byť nebezpečné, preto nebola táto aplikácia nainštalovaná.&lt;/p&gt;"</string>
+    <string name="cannot_update_verification_unavailable_summary" msgid="367099122142054088">"&lt;p&gt;Pri overovaní vývojára tejto aplikácie sa vyskytol problém. Aktualizácie od neoverených vývojárov môžu byť nebezpečné, preto nebola táto aplikácia aktualizovaná.&lt;/p&gt;"</string>
+    <string name="cannot_install_verification_unavailable_fail_closed_summary" msgid="3798407602770929670">"&lt;p&gt;Táto aplikácia bola zablokovaná, pretože sa vyskytol problém s overením vývojára. Inštalovať si môžete iba aplikácie od overených vývojárov, aby bola zaistená bezpečnosť vášho zariadenia aj údajov.&lt;/p&gt;"</string>
+    <string name="cannot_update_verification_unavailable_fail_closed_summary" msgid="2871425967967934618">"&lt;p&gt;Táto aplikácia nebola aktualizovaná, pretože sa vyskytol problém s overením vývojára. Inštalovať si môžete iba aplikácie od overených vývojárov, aby bola zaistená bezpečnosť vášho zariadenia aj údajov.&lt;/p&gt;"</string>
     <string name="more_details_expanded_install_summary" msgid="3545896392881608712">"Ak aplikáciu nainštalujete bez overenia, pamätajte, že aplikácie od neoverených vývojárov môžu ohroziť vaše zariadenie aj údaje."</string>
     <string name="more_details_expanded_update_summary" msgid="2239162864839036480">"Ak aktualizujete bez overenia, pamätajte, že aktualizácie od neoverených vývojárov môžu ohroziť vaše zariadenie aj údaje."</string>
     <string name="cannot_install_app_blocked_title" msgid="6372444121824751694">"Vývojár aplikácie nie je overený"</string>

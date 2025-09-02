@@ -47,7 +47,7 @@
     <string name="title_uninstall_failed" msgid="4522950368147075143">"未卸载应用"</string>
     <string name="title_archive" msgid="2876455228073419830">"要归档此应用吗？"</string>
     <string name="title_archive_all_users" msgid="5904736601499520543">"要为所有用户归档此应用吗？"</string>
-    <string name="title_archive_other_user" msgid="6686508642274629645">"要为用户“<xliff:g id="USER_NAME">%1$s</xliff:g>”归档此应用吗？"</string>
+    <string name="title_archive_other_user" msgid="6686508642274629645">"要为用户“<xliff:g id="USER_NAME">%1$s</xliff:g>”封存此应用吗？"</string>
     <string name="title_restore" msgid="8934911753892124574">"要恢复此应用吗？"</string>
     <string name="title_restore_error_user_action_needed" msgid="5696944142011800104">"需要采取行动"</string>
     <string name="title_restore_error_less_storage" msgid="1702198163928260711">"存储空间不足"</string>
@@ -96,22 +96,14 @@
     <string name="message_restore_error_installer_absent" msgid="8492838251989389724">"若要恢复此应用，您需要安装“<xliff:g id="INSTALLER_NAME">%1$s</xliff:g>”"</string>
     <string name="message_restore_error_generic" msgid="5903850636679929406">"尝试恢复此应用时出现问题"</string>
     <string name="message_uninstall_activity" msgid="3263352475743590167">"“<xliff:g id="ACTIVITY_NAME">%1$s</xliff:g>”属于以下应用：<xliff:g id="APP_NAME">%2$s</xliff:g>"</string>
-    <!-- no translation found for cannot_install_app_blocked_summary (5439893912308217959) -->
-    <skip />
-    <!-- no translation found for cannot_update_app_blocked_summary (7817560122951640605) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_no_internet_summary (236829543597389666) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_no_internet_summary (28024736898646891) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_summary (6208343652461257248) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_unavailable_summary (367099122142054088) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_fail_closed_summary (3798407602770929670) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_unavailable_fail_closed_summary (2871425967967934618) -->
-    <skip />
+    <string name="cannot_install_app_blocked_summary" msgid="5439893912308217959">"&lt;p&gt;已阻止安装此应用。为了确保设备和数据安全，只能安装来自经验证开发者的应用。&lt;/p&gt;"</string>
+    <string name="cannot_update_app_blocked_summary" msgid="7817560122951640605">"&lt;p&gt;此应用未更新。为了确保设备和数据安全，只能安装来自经验证开发者的更新。&lt;/p&gt;"</string>
+    <string name="cannot_install_verification_no_internet_summary" msgid="236829543597389666">"&lt;p&gt;此应用未安装。来自未经验证开发者的应用可能不安全。&lt;/p&gt;&lt;p&gt;需要联网才能验证应用开发者。请检查网络连接，然后再次尝试安装此应用。&lt;/p&gt;"</string>
+    <string name="cannot_update_verification_no_internet_summary" msgid="28024736898646891">"&lt;p&gt;此应用未更新。来自未经验证开发者的更新可能不安全。&lt;/p&gt;&lt;p&gt;需要联网才能验证应用开发者。请检查网络连接，然后再次尝试更新此应用。&lt;/p&gt;"</string>
+    <string name="cannot_install_verification_unavailable_summary" msgid="6208343652461257248">"&lt;p&gt;验证此应用的开发者时出现问题。来自未经验证开发者的应用可能不安全，因此未安装此应用。&lt;/p&gt;"</string>
+    <string name="cannot_update_verification_unavailable_summary" msgid="367099122142054088">"&lt;p&gt;验证此应用的开发者时出现问题。来自未经验证开发者的更新可能不安全，因此未更新此应用。&lt;/p&gt;"</string>
+    <string name="cannot_install_verification_unavailable_fail_closed_summary" msgid="3798407602770929670">"&lt;p&gt;由于验证开发者时出现问题，已阻止安装此应用。为了确保设备和数据安全，只能安装来自经验证开发者的应用。&lt;/p&gt;"</string>
+    <string name="cannot_update_verification_unavailable_fail_closed_summary" msgid="2871425967967934618">"&lt;p&gt;由于验证开发者时出现问题，未更新此应用。为了确保设备和数据安全，只能安装来自经验证开发者的更新。&lt;/p&gt;"</string>
     <string name="more_details_expanded_install_summary" msgid="3545896392881608712">"请注意，如果您跳过验证进行安装，来自未经验证开发者的应用可能会使您的设备和数据面临风险。"</string>
     <string name="more_details_expanded_update_summary" msgid="2239162864839036480">"请注意，如果您跳过验证进行更新，来自未经验证开发者的更新可能会使您的设备和数据面临风险。"</string>
     <string name="cannot_install_app_blocked_title" msgid="6372444121824751694">"应用开发者未经验证"</string>
