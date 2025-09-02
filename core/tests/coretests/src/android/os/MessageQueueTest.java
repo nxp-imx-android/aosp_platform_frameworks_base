@@ -25,6 +25,7 @@ import android.os.MessageQueue.IdleHandler;
 import android.os.MessageQueue.OnFileDescriptorEventListener;
 import android.os.ParcelFileDescriptor.AutoCloseInputStream;
 import android.os.ParcelFileDescriptor.AutoCloseOutputStream;
+import android.platform.test.annotations.DisabledOnRavenwood;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 
@@ -153,6 +154,7 @@ public class MessageQueueTest {
     }
 
     @Test
+    @DisabledOnRavenwood(blockedBy = android.os.ParcelFileDescriptor.class)
     public void testResetClearsFileDescriptorEventListeners() throws Exception {
         final CountDownLatch fdEventLatch = new CountDownLatch(2);
 
