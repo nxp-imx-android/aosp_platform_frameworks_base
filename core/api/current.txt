@@ -13802,6 +13802,7 @@ package android.content.pm {
     field public static final String FEATURE_MANAGED_USERS = "android.software.managed_users";
     field public static final String FEATURE_MICROPHONE = "android.hardware.microphone";
     field public static final String FEATURE_MIDI = "android.software.midi";
+    field @FlaggedApi("com.android.npumanager.npumanager_enabled") public static final String FEATURE_NEURAL_PROCESSING_UNIT = "android.hardware.npu";
     field public static final String FEATURE_NFC = "android.hardware.nfc";
     field public static final String FEATURE_NFC_BEAM = "android.sofware.nfc.beam";
     field @FlaggedApi("android.nfc.enable_nfc_charging") public static final String FEATURE_NFC_CHARGING = "android.hardware.nfc.charging";
