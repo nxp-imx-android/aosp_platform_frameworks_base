@@ -3511,6 +3511,15 @@ public class Notification implements Parcelable
     }
 
     /**
+     * Convert the CharSequence to a string and meke it is safe to put into a bundle.
+     * @hide
+     */
+    public static String safeCharSequenceToString(CharSequence cs) {
+        if (cs == null) return null;
+        return safeString(cs.toString());
+    }
+
+    /**
      * Make sure this CharSequence is safe to put into a bundle, which basically
      * means it had better not be some custom Parcelable implementation.
      * @hide
@@ -11821,7 +11830,7 @@ public class Notification implements Parcelable
                     final Metric.MetricValue.ValueString valueString = metricValue.toValueString(
                             mBuilder.mContext);
 
-                    final String metricLabel;
+                    final CharSequence metricLabel;
                     if (isExpandedView) {
                         if (Flags.metricStyleUnitInLabel()
                                 && !TextUtils.isEmpty(valueString.subtext())) {
@@ -11933,9 +11942,9 @@ public class Notification implements Parcelable
          * @param value one of the subclasses of {@link MetricValue}, such as {@link FixedInt}
          * @param label metric label -- should be 10 characters or fewer
          */
-        public Metric(@NonNull MetricValue value, @NonNull String label) {
+        public Metric(@NonNull MetricValue value, @NonNull CharSequence label) {
             mValue = requireNonNull(value);
-            mLabel = safeString(requireNonNull(label));
+            mLabel = safeCharSequenceToString(requireNonNull(label));
             checkArgument(!mLabel.isBlank(), "Metric label is required");
         }
 
@@ -11995,7 +12004,7 @@ public class Notification implements Parcelable
          * notification, but it's recommended to keep this to 10 characters or fewer.
          */
         @NonNull
-        public String getLabel() {
+        public CharSequence getLabel() {
             return mLabel;
         }
 
@@ -12621,9 +12630,9 @@ public class Notification implements Parcelable
              *
              * @param unit optional unit for the value. Limit this to a few characters.
              */
-            public FixedInt(int value, @Nullable String unit) {
+            public FixedInt(int value, @Nullable CharSequence unit) {
                 mValue = value;
-                mUnit = safeString(unit);
+                mUnit = safeCharSequenceToString(unit);
             }
 
             @NonNull
@@ -12673,7 +12682,7 @@ public class Notification implements Parcelable
              * this to just a few characters.
              */
             @Nullable
-            public String getUnit() {
+            public CharSequence getUnit() {
                 return mUnit;
             }
 
@@ -12716,7 +12725,7 @@ public class Notification implements Parcelable
              * Creates a {@link FixedFloat} instance with 0 minimum and 2 maximum fractional digits.
              * @param unit optional unit for the value. Limit this to a few characters.
              */
-            public FixedFloat(float value, @Nullable String unit) {
+            public FixedFloat(float value, @Nullable CharSequence unit) {
                 this(value, unit, DEFAULT_MIN_FRACTION_DIGITS, DEFAULT_MAX_FRACTION_DIGITS);
             }
 
@@ -12729,13 +12738,13 @@ public class Notification implements Parcelable
              * @throws IllegalArgumentException if {@code minFractionDigits} or {@code
              *     maxFractionDigits} do not respect the specified constraints
              */
-            public FixedFloat(float value, @Nullable String unit,
+            public FixedFloat(float value, @Nullable CharSequence unit,
                     @IntRange(from = LOWER_BOUND_FRACTION_DIGITS, to =
                             UPPER_BOUND_FRACTION_DIGITS) int minFractionDigits,
                     @IntRange(from = LOWER_BOUND_FRACTION_DIGITS, to =
                             UPPER_BOUND_FRACTION_DIGITS) int maxFractionDigits) {
                 mValue = value;
-                mUnit = safeString(unit);
+                mUnit = safeCharSequenceToString(unit);
 
                 checkArgument(minFractionDigits >= LOWER_BOUND_FRACTION_DIGITS
                                 && minFractionDigits <= UPPER_BOUND_FRACTION_DIGITS,
@@ -12807,7 +12816,7 @@ public class Notification implements Parcelable
              * just a few characters.
              */
             @Nullable
-            public String getUnit() {
+            public CharSequence getUnit() {
                 return mUnit;
             }
 
@@ -12848,7 +12857,7 @@ public class Notification implements Parcelable
             /**
              * Creates a {@link FixedString} instance with the specified String.
              */
-            public FixedString(@NonNull String value) {
+            public FixedString(@NonNull CharSequence value) {
                 this(value, null);
             }
 
@@ -12857,9 +12866,9 @@ public class Notification implements Parcelable
              *
              * @param unit optional unit for the value. Limit this to a few characters.
              */
-            public FixedString(@NonNull String value, @Nullable String unit) {
-                mValue = safeString(requireNonNull(value));
-                mUnit = safeString(unit);
+            public FixedString(@NonNull CharSequence value, @Nullable CharSequence unit) {
+                mValue = safeCharSequenceToString(requireNonNull(value));
+                mUnit = safeCharSequenceToString(unit);
             }
 
             @NonNull
@@ -12899,7 +12908,7 @@ public class Notification implements Parcelable
 
             /** The string value. */
             @NonNull
-            public String getValue() {
+            public CharSequence getValue() {
                 return mValue;
             }
 
@@ -12912,7 +12921,7 @@ public class Notification implements Parcelable
              * this to just a few characters.
              */
             @Nullable
-            public String getUnit() {
+            public CharSequence getUnit() {
                 return mUnit;
             }
 
