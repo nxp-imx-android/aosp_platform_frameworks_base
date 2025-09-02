@@ -454,17 +454,19 @@ class KeyguardTransitionScenariosTest(flags: FlagsParameterization?) : SysuiTest
             runTransitionAndSetWakefulness(KeyguardState.LOCKSCREEN, KeyguardState.DREAMING)
             advanceTimeBy(60L)
 
+            reset(transitionRepository)
+
             // WHEN the device wakes up without a keyguard
             keyguardRepository.setKeyguardShowing(false)
             keyguardRepository.setKeyguardDismissible(true)
             keyguardRepository.setDreamingWithOverlay(false)
-            advanceTimeBy(60L)
+            advanceTimeBy(160L)
 
             assertThat(transitionRepository)
                 .startedTransition(
-                    to = KeyguardState.GONE,
                     from = KeyguardState.DREAMING,
-                    ownerName = "FromDreamingTransitionInteractor",
+                    to = KeyguardState.GONE,
+                    ownerName = "FromDreamingTransitionInteractor(No longer dreaming; dismissable)",
                     animatorAssertion = { it.isNotNull() },
                 )
 
