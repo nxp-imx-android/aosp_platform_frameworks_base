@@ -28,7 +28,6 @@ import android.util.ArrayMap;
 import android.util.ArraySet;
 import android.util.Log;
 import android.util.Pools;
-import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityManager;
 
 import com.android.internal.annotations.VisibleForTesting;
@@ -37,7 +36,6 @@ import com.android.internal.logging.UiEvent;
 import com.android.internal.logging.UiEventLogger;
 import com.android.internal.policy.SystemBarUtils;
 import com.android.systemui.EventLogTags;
-import com.android.systemui.Flags;
 import com.android.systemui.dagger.SysUISingleton;
 import com.android.systemui.dagger.qualifiers.Main;
 import com.android.systemui.plugins.statusbar.StatusBarStateController;
@@ -333,9 +331,6 @@ public class HeadsUpManagerImpl
             // Add new entry and begin managing it
             mHeadsUpEntryMap.put(entry.getKey(), headsUpEntry);
             onEntryAdded(headsUpEntry, requestedPinnedStatus);
-            if (!Flags.notificationsHunAccessibilityRefactor()) {
-                entry.sendAccessibilityEvent(AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED);
-            }
             if (!NotificationBundleUi.isEnabled()) {
                 entry.setIsHeadsUpEntry(true);
             }
@@ -409,10 +404,6 @@ public class HeadsUpManagerImpl
             // the entry was released before this update (i.e by a listener) This can happen
             // with the groupmanager
             return;
-        }
-        if (headsUpEntry.mEntry != null && !Flags.notificationsHunAccessibilityRefactor()) {
-            headsUpEntry.mEntry.sendAccessibilityEvent(
-                    AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED);
         }
         if (requestedPinnedStatus.isPinned()) {
             headsUpEntry.updateEntry(true /* updatePostTime */, "updateNotification");
@@ -664,9 +655,6 @@ public class HeadsUpManagerImpl
             entry.demoteStickyHun();
             mHeadsUpEntryMap.remove(key);
             onEntryRemoved(finalHeadsUpEntry, reason);
-            if (!Flags.notificationsHunAccessibilityRefactor()) {
-                entry.sendAccessibilityEvent(AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED);
-            }
             if (NotificationThrottleHun.isEnabled()) {
                 finalHeadsUpEntry.cancelAutoRemovalCallbacks("removeEntry");
             } else {

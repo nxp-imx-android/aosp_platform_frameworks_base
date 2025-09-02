@@ -1366,7 +1366,7 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
         if (intrinsicHeight != getIntrinsicHeight()) {
             notifyHeightChanged(/* needsAnimation= */ false);
         }
-        if (Flags.notificationsHunAccessibilityRefactor() && !pinnedStatus.isPinned()) {
+        if (!pinnedStatus.isPinned()) {
             setAccessibilityLiveRegion(View.ACCESSIBILITY_LIVE_REGION_NONE);
         }
         if (pinnedStatus.isPinned()) {
@@ -3860,7 +3860,7 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
     protected void onAppearAnimationStarted(boolean isAppear) {
         mLogger.logAppearAnimationStarted(mLoggingKey, /* isAppear = */ isAppear);
 
-        if (Flags.notificationsHunAccessibilityRefactor() && !isAppear) {
+        if (!isAppear) {
             // Stop using a live region as soon as a disappear animation starts so that we don't
             // re-announce the notification as it's animating away.
             setAccessibilityLiveRegion(View.ACCESSIBILITY_LIVE_REGION_NONE);
@@ -3881,8 +3881,7 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
                 /* isAppear = */ wasAppearing,
                 /* cancelled = */ cancelled
         );
-        if (Flags.notificationsHunAccessibilityRefactor()
-                && PromotedNotificationUi.isEnabled()
+        if (PromotedNotificationUi.isEnabled()
                 && !cancelled
                 && wasAppearing
                 && mPinnedStatus == PinnedStatus.PinnedByUser) {
