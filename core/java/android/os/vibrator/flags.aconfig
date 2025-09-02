@@ -92,7 +92,7 @@ flag {
     namespace: "haptics"
     name: "remove_hidl_support"
     description: "Remove framework code to support HIDL vibrator HALs."
-    bug: "409002423"
+    bug: "442504716"
     is_fixed_read_only: true
     metadata {
       purpose: PURPOSE_FEATURE
