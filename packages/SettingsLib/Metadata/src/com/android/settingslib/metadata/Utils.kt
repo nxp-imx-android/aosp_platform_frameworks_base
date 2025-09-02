@@ -55,6 +55,15 @@ fun PreferenceMetadata.getPreferenceIcon(context: Context): Int =
     }
 
 /**
+ * Returns whether the preference is indexable.
+ *
+ * @return [PreferenceIndexableProvider.isIndexable] if implemented, otherwise
+ *   [PreferenceMetadata.indexable]
+ */
+fun PreferenceMetadata.isPreferenceIndexable(context: Context): Boolean =
+    if (this is PreferenceIndexableProvider) isIndexable(context) else indexable
+
+/**
  * Performs preference hierarchy operation with a new [CoroutineScope].
  *
  * The coroutine scope will be cancelled automatically (when the block is finished) to cancel

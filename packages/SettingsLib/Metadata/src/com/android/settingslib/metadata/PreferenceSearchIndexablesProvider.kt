@@ -32,7 +32,7 @@ import kotlinx.coroutines.runBlocking
  * A screen is qualified as indexable only when:
  * - [PreferenceScreenMetadata.hasCompleteHierarchy] is true: hybrid mode is not supported to avoid
  *   potential conflict.
- * - **AND** [PreferenceScreenMetadata.isIndexable] is true.
+ * - **AND** [PreferenceScreenMetadata.isPreferenceIndexable] is true.
  * - **AND** [PreferenceScreenMetadata.isFlagEnabled] is true.
  *
  * The strategy to provide indexing data is:
@@ -74,7 +74,7 @@ abstract class PreferenceSearchIndexablesProvider : SearchIndexablesProvider() {
                 val isAvailableOnCondition =
                     isParentAvailableOnCondition || metadata.isAvailableOnCondition
                 if (
-                    metadata.isIndexable(context) &&
+                    metadata.isPreferenceIndexable(context) &&
                         (isAvailableOnCondition || metadata.isDynamic) &&
                         !metadata.isScreenEntryPoint(preferenceScreenMetadata)
                 ) {
@@ -88,7 +88,7 @@ abstract class PreferenceSearchIndexablesProvider : SearchIndexablesProvider() {
             }
             preferenceScreenMetadata
                 .getPreferenceHierarchy(context, coroutineScope)
-                .visitRecursively(false)
+                .visitRecursively(preferenceScreenMetadata is PreferenceIndexableProvider)
         }
         Log.d(TAG, "dynamicRawData: ${cursor.count} in ${SystemClock.elapsedRealtime() - start}ms")
         return cursor
@@ -104,7 +104,7 @@ abstract class PreferenceSearchIndexablesProvider : SearchIndexablesProvider() {
             fun PreferenceHierarchyNode.visitRecursively() {
                 if (metadata.isAvailableOnCondition) return
                 if (
-                    metadata.isIndexable(context) &&
+                    metadata.isPreferenceIndexable(context) &&
                         !metadata.isDynamic &&
                         !metadata.isScreenEntryPoint(preferenceScreenMetadata)
                 ) {
@@ -140,10 +140,18 @@ abstract class PreferenceSearchIndexablesProvider : SearchIndexablesProvider() {
                 val preferenceScreenMetadata = factory.create(context)
                 if (
                     preferenceScreenMetadata.hasCompleteHierarchy() &&
-                        preferenceScreenMetadata.isIndexable(context) &&
+                        preferenceScreenMetadata.isPreferenceIndexable(context) &&
                         preferenceScreenMetadata.isFlagEnabled(context)
                 ) {
-                    action(preferenceScreenMetadata, this)
+                    if (preferenceScreenMetadata.isEnabled(context)) {
+                        action(preferenceScreenMetadata, this)
+                    } else if (preferenceScreenMetadata !is PreferenceIndexableProvider) {
+                        val key = preferenceScreenMetadata.key
+                        Log.e(TAG, "Screen $key does not implement PreferenceIndexableProvider")
+                    } else {
+                        val key = preferenceScreenMetadata.key
+                        Log.d(TAG, "Screen $key is disabled thus not indexable")
+                    }
                 }
             }
         }
@@ -201,7 +209,10 @@ abstract class PreferenceSearchIndexablesProvider : SearchIndexablesProvider() {
      * Dynamic summary is not taken into account because it is not used by settings search now.
      */
     private val PreferenceMetadata.isDynamic: Boolean
-        get() = this is PreferenceTitleProvider || this is PreferenceIconProvider
+        get() =
+            this is PreferenceTitleProvider ||
+                this is PreferenceIconProvider ||
+                this is PreferenceIndexableProvider
 
     /**
      * Returns if the preference is an entry point of another screen.
