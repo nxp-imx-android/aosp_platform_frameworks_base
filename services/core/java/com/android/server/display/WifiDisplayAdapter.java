@@ -39,6 +39,7 @@ import android.view.DisplayShape;
 import android.view.Surface;
 import android.view.SurfaceControl;
 
+import androidx.annotation.VisibleForTesting;
 import com.android.internal.util.DumpUtils;
 import com.android.internal.util.IndentingPrintWriter;
 import com.android.server.display.feature.DisplayManagerFlags;
@@ -118,7 +119,8 @@ final class WifiDisplayAdapter extends DisplayAdapter {
     public void dumpLocked(PrintWriter pw) {
         super.dumpLocked(pw);
 
-        pw.println("mCurrentStatus=" + getWifiDisplayStatusLocked());
+        pw.println("mCurrentStatus=" + getWifiDisplayStatusLocked(
+                /* isDeviceAddressVisible= */ true));
         pw.println("mFeatureState=" + mFeatureState);
         pw.println("mScanState=" + mScanState);
         pw.println("mActiveDisplayState=" + mActiveDisplayState);
@@ -293,7 +295,18 @@ final class WifiDisplayAdapter extends DisplayAdapter {
         }
     }
 
-    public WifiDisplayStatus getWifiDisplayStatusLocked() {
+    public WifiDisplayStatus getWifiDisplayStatusLocked(boolean isDeviceAddressVisible) {
+        if (!isDeviceAddressVisible) {
+            var displaysCopy = new WifiDisplay[mDisplays.length];
+            for (int i = 0; i < mDisplays.length; i++) {
+                displaysCopy[i] = mDisplays[i].copy(isDeviceAddressVisible);
+            }
+            var activeDisplayCopy =
+                mActiveDisplay == null ? null : mActiveDisplay.copy(isDeviceAddressVisible);
+            return new WifiDisplayStatus(mFeatureState, mScanState, mActiveDisplayState,
+                    activeDisplayCopy, displaysCopy, mSessionInfo);
+        }
+
         if (mCurrentStatus == null) {
             mCurrentStatus = new WifiDisplayStatus(
                     mFeatureState, mScanState, mActiveDisplayState,
@@ -304,6 +317,11 @@ final class WifiDisplayAdapter extends DisplayAdapter {
             Slog.d(TAG, "getWifiDisplayStatusLocked: result=" + mCurrentStatus);
         }
         return mCurrentStatus;
+    }
+
+    @VisibleForTesting
+    public WifiDisplayController.Listener getWifiDisplayListener() {
+        return mWifiDisplayListener;
     }
 
     private void updateDisplaysLocked() {
@@ -436,7 +454,7 @@ final class WifiDisplayAdapter extends DisplayAdapter {
             intent = new Intent(DisplayManager.ACTION_WIFI_DISPLAY_STATUS_CHANGED);
             intent.addFlags(Intent.FLAG_RECEIVER_REGISTERED_ONLY);
             intent.putExtra(DisplayManager.EXTRA_WIFI_DISPLAY_STATUS,
-                    getWifiDisplayStatusLocked());
+                    getWifiDisplayStatusLocked(/* isDeviceAddressVisible= */ true));
 
             options = BroadcastOptions.makeBasic();
             options.setDeliveryGroupPolicy(BroadcastOptions.DELIVERY_GROUP_POLICY_MOST_RECENT);
