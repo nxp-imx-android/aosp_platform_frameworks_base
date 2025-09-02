@@ -736,6 +736,7 @@ public class VibratorManagerServiceTest {
     }
 
     @Test
+    @DisableFlags(Flags.FLAG_REMOVE_SEQUENTIAL_COMBINATION)
     public void setAlwaysOnEffect_withNonSyncedEffect_ignoresEffect() {
         mHalHelper.setVibratorIds(new int[]{1});
         mHalHelper.getVibratorHelper(1).setCapabilities(IVibrator.CAP_ALWAYS_ON_CONTROL);
@@ -2122,8 +2123,8 @@ public class VibratorManagerServiceTest {
                 .addPrimitive(PRIMITIVE_TICK, 0.5f)
                 .compose(), HAPTIC_FEEDBACK_ATTRS);
 
-        vibrateAndWaitUntilFinished(service, CombinedVibration.startSequential()
-                .addNext(1, VibrationEffect.createOneShot(100, 125))
+        vibrateAndWaitUntilFinished(service, CombinedVibration.startParallel()
+                .addVibrator(1, VibrationEffect.createOneShot(100, 125))
                 .combine(), NOTIFICATION_ATTRS);
 
         vibrateAndWaitUntilFinished(service, VibrationEffect.startComposition()

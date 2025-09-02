@@ -189,9 +189,9 @@ public class VibrationThreadTest {
 
     @Test
     public void vibrate_missingVibrators_ignoresVibration() {
-        CombinedVibration effect = CombinedVibration.startSequential()
-                .addNext(2, VibrationEffect.get(EFFECT_CLICK))
-                .addNext(3, VibrationEffect.get(EFFECT_TICK))
+        CombinedVibration effect = CombinedVibration.startParallel()
+                .addVibrator(2, VibrationEffect.get(EFFECT_CLICK))
+                .addVibrator(3, VibrationEffect.get(EFFECT_TICK))
                 .combine();
         HalVibration vibration = startThreadAndDispatcher(effect);
         waitForCompletion();
@@ -1478,6 +1478,7 @@ public class VibrationThreadTest {
     }
 
     @Test
+    @DisableFlags(Flags.FLAG_REMOVE_SEQUENTIAL_COMBINATION)
     public void vibrate_multipleSequential_runsVibrationInOrderWithDelays() {
         mockVibrators(1, 2, 3);
         mVibratorHelpers.get(1).setCapabilities(IVibrator.CAP_AMPLITUDE_CONTROL);
@@ -2287,6 +2288,7 @@ public class VibrationThreadTest {
     }
 
     @Test
+    @DisableFlags(Flags.FLAG_REMOVE_SEQUENTIAL_COMBINATION)
     public void vibrate_multipleVibratorsSequentialInSession_runsInOrderWithoutDelaysAndNoOffs() {
         mockVibrators(1, 2, 3);
         mVibratorHelpers.get(1).setCapabilities(IVibrator.CAP_AMPLITUDE_CONTROL);

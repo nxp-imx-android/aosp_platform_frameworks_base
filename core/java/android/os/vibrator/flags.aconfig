@@ -149,3 +149,13 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    namespace: "haptics"
+    name: "remove_sequential_combination"
+    description: "Remove CombinedVibration.SequentialCombination and related types"
+    bug: "421857859"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
