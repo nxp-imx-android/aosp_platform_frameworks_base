@@ -667,9 +667,12 @@ public class StageCoordinatorTests extends ShellTestCase {
                 .filter(op -> op.getType()
                         == HIERARCHY_OP_TYPE_DISALLOW_OVERRIDE_BOUNDS_FOR_CHILDREN)
                 .toList();
-        assertThat(disableChildBoundsOps).hasSize(1);
+        assertThat(disableChildBoundsOps).hasSize(2);
         HierarchyOp op = disableChildBoundsOps.getFirst();
-        assertThat(op.getContainer()).isEqualTo(rootTaskInfo.token.asBinder());
+        assertThat(op.getContainer()).isEqualTo(mMainStage.mRootTaskInfo.token.asBinder());
+        assertThat(op.getDisallowOverrideBoundsForChildren()).isTrue();
+        op = disableChildBoundsOps.get(1);
+        assertThat(op.getContainer()).isEqualTo(mSideStage.mRootTaskInfo.token.asBinder());
         assertThat(op.getDisallowOverrideBoundsForChildren()).isTrue();
     }
 
