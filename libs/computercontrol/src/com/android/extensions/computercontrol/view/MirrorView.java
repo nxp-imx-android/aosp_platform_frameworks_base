@@ -22,6 +22,7 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.SurfaceTexture;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
@@ -29,8 +30,7 @@ import android.util.AttributeSet;
 import android.view.InputDevice;
 import android.view.MotionEvent;
 import android.view.Surface;
-import android.view.SurfaceHolder;
-import android.view.SurfaceView;
+import android.view.TextureView;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
@@ -137,9 +137,9 @@ public class MirrorView extends FrameLayout {
     }
 
     private void init(@NonNull Context context) {
-        SurfaceView surfaceView = new SurfaceView(context);
+        TextureView textureView = new TextureView(context);
         mOverlay = new Overlay(context);
-        addView(surfaceView,
+        addView(textureView,
                 new ViewGroup.LayoutParams(
                         ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
         addView(mOverlay,
@@ -147,8 +147,7 @@ public class MirrorView extends FrameLayout {
                         ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
 
         mMirrorHelper = new MirrorHelper();
-        SurfaceHolder surfaceHolder = surfaceView.getHolder();
-        surfaceHolder.addCallback(mMirrorHelper);
+        textureView.setSurfaceTextureListener(mMirrorHelper);
 
         super.setOnTouchListener((v, event) -> {
             boolean handled = mOnTouchListener != null && mOnTouchListener.onTouch(v, event);
@@ -157,7 +156,7 @@ public class MirrorView extends FrameLayout {
         });
     }
 
-    private static final class MirrorHelper implements SurfaceHolder.Callback {
+    private static final class MirrorHelper implements TextureView.SurfaceTextureListener {
         private final HandlerThread mHandlerThread;
 
         // The following members are always written on the main thread, and always read from the
@@ -176,6 +175,32 @@ public class MirrorView extends FrameLayout {
             mHandlerThread = new HandlerThread("mirrorHelper");
             mHandlerThread.start();
         }
+
+        @Override
+        public void onSurfaceTextureAvailable(@NonNull SurfaceTexture surfaceTexture, int width,
+                int height) {
+            mSurface = new Surface(surfaceTexture);
+            mWidth = width;
+            mHeight = height;
+            createOrResizeMirrorIfPossible();
+        }
+
+        @Override
+        public void onSurfaceTextureSizeChanged(@NonNull SurfaceTexture surfaceTexture, int width,
+                int height) {
+            mWidth = width;
+            mHeight = height;
+            createOrResizeMirrorIfPossible();
+        }
+
+        @Override
+        public boolean onSurfaceTextureDestroyed(@NonNull SurfaceTexture surfaceTexture) {
+            destroyMirror();
+            return true;
+        }
+
+        @Override
+        public void onSurfaceTextureUpdated(@NonNull SurfaceTexture surfaceTexture) {}
 
         void setComputerControlSession(@Nullable ComputerControlSession computerControlSession) {
             if (mComputerControlSession != null) {
@@ -205,23 +230,6 @@ public class MirrorView extends FrameLayout {
                 copy.recycle();
             });
             return true;
-        }
-
-        @Override
-        public void surfaceCreated(@NonNull SurfaceHolder holder) {}
-
-        @Override
-        public void surfaceChanged(
-                @NonNull SurfaceHolder holder, int format, int width, int height) {
-            mSurface = holder.getSurface();
-            mWidth = width;
-            mHeight = height;
-            createOrResizeMirrorIfPossible();
-        }
-
-        @Override
-        public void surfaceDestroyed(@NonNull SurfaceHolder holder) {
-            destroyMirror();
         }
 
         private void createOrResizeMirrorIfPossible() {
