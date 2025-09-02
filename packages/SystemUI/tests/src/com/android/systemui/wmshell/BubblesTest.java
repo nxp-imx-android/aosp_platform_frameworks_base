@@ -156,6 +156,7 @@ import com.android.systemui.statusbar.policy.KeyguardStateController;
 import com.android.systemui.statusbar.policy.SensitiveNotificationProtectionController;
 import com.android.systemui.statusbar.policy.ZenModeController;
 import com.android.systemui.statusbar.policy.data.repository.FakeDeviceProvisioningRepository;
+import com.android.systemui.statusbar.policy.domain.interactor.DeviceProvisioningInteractor;
 import com.android.systemui.user.domain.interactor.SelectedUserInteractor;
 import com.android.systemui.util.FakeEventLog;
 import com.android.systemui.util.settings.FakeGlobalSettings;
@@ -499,7 +500,8 @@ public class BubblesTest extends SysuiTestCase {
                         Optional.of(mock(Bubbles.class)),
                         mContext,
                         mock(NotificationManager.class),
-                        mock(NotificationSettingsInteractor.class)
+                        mock(NotificationSettingsInteractor.class),
+                        mock(DeviceProvisioningInteractor.class)
                 );
         interruptionDecisionProvider.start();
 

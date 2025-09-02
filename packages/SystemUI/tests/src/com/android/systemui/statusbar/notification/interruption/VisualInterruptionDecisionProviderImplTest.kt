@@ -32,6 +32,10 @@ import com.android.systemui.statusbar.notification.collection.NotificationEntry
 import com.android.systemui.statusbar.notification.interruption.VisualInterruptionType.BUBBLE
 import com.android.systemui.statusbar.notification.interruption.VisualInterruptionType.PEEK
 import com.android.systemui.statusbar.notification.interruption.VisualInterruptionType.PULSE
+import com.android.systemui.statusbar.policy.data.repository.DeviceProvisioningRepository
+import com.android.systemui.statusbar.policy.domain.interactor.deviceProvisioningInteractor
+import java.time.Duration
+import java.time.Instant
 import java.util.Optional
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -41,6 +45,7 @@ import org.mockito.Mockito.anyString
 import org.mockito.Mockito.times
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
+import org.mockito.kotlin.never
 import org.mockito.kotlin.whenever
 
 @SmallTest
@@ -71,6 +76,7 @@ class VisualInterruptionDecisionProviderImplTest : VisualInterruptionDecisionPro
             context,
             notificationManager,
             settingsInteractor,
+            kosmos.deviceProvisioningInteractor,
         )
     }
 
@@ -108,17 +114,22 @@ class VisualInterruptionDecisionProviderImplTest : VisualInterruptionDecisionPro
             context,
             notificationManager,
             systemSettings,
+            kosmos.deviceProvisioningInteractor,
         )
     }
 
     @Test
-    fun testAvalancheFilter_suppress_hasNotSeenEdu_showEduHun() {
+    fun testAvalancheFilter_suppress_longAfterProvisioning_showEduHun() {
         setAllowedEmergencyPkg(false)
         whenever(avalancheProvider.timeoutMs).thenReturn(20)
         whenever(avalancheProvider.startTime).thenReturn(whenAgo(10))
 
         val avalancheSuppressor = getAvalancheSuppressor()
         avalancheSuppressor.hasSeenEdu = false
+        deviceProvisioningRepository.setProvisionedTimestamp(
+            DeviceProvisioningRepository.ProvisionedTimestamp.AtInstant(Instant.ofEpochMilli(100L))
+        )
+        systemClock.setCurrentTimeMillis(100L + Duration.ofHours(25).toMillis())
 
         withFilter(avalancheSuppressor) {
             ensurePeekState()
@@ -133,6 +144,32 @@ class VisualInterruptionDecisionProviderImplTest : VisualInterruptionDecisionPro
     }
 
     @Test
+    fun testAvalancheFilter_suppress_tooSoonAfterProvisioning_doesNotShowEduHun() {
+        setAllowedEmergencyPkg(false)
+        whenever(avalancheProvider.timeoutMs).thenReturn(20)
+        whenever(avalancheProvider.startTime).thenReturn(whenAgo(10))
+
+        val avalancheSuppressor = getAvalancheSuppressor()
+        avalancheSuppressor.hasSeenEdu = false
+        deviceProvisioningRepository.setProvisionedTimestamp(
+            DeviceProvisioningRepository.ProvisionedTimestamp.AtInstant(Instant.ofEpochMilli(100L))
+        )
+        systemClock.setCurrentTimeMillis(100L + Duration.ofHours(12).toMillis())
+
+        withFilter(avalancheSuppressor) {
+            ensurePeekState()
+            assertShouldNotHeadsUp(
+                buildEntry {
+                    importance = NotificationManager.IMPORTANCE_HIGH
+                    whenMs = whenAgo(5)
+                }
+            )
+        }
+
+        verify(notificationManager, never()).notify(anyInt(), any())
+    }
+
+    @Test
     fun testAvalancheFilter_suppress_hasSeenEduHun_doNotShowEduHun() {
         setAllowedEmergencyPkg(false)
         whenever(avalancheProvider.timeoutMs).thenReturn(20)
@@ -140,6 +177,10 @@ class VisualInterruptionDecisionProviderImplTest : VisualInterruptionDecisionPro
 
         val avalancheSuppressor = getAvalancheSuppressor()
         avalancheSuppressor.hasSeenEdu = true
+        deviceProvisioningRepository.setProvisionedTimestamp(
+            DeviceProvisioningRepository.ProvisionedTimestamp.AtInstant(Instant.ofEpochMilli(100L))
+        )
+        systemClock.setCurrentTimeMillis(100L + Duration.ofDays(2).toMillis())
 
         withFilter(avalancheSuppressor) {
             ensurePeekState()

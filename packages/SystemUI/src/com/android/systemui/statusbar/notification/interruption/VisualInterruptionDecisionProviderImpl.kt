@@ -42,6 +42,7 @@ import com.android.systemui.statusbar.notification.interruption.VisualInterrupti
 import com.android.systemui.statusbar.policy.BatteryController
 import com.android.systemui.statusbar.policy.DeviceProvisionedController
 import com.android.systemui.statusbar.policy.KeyguardStateController
+import com.android.systemui.statusbar.policy.domain.interactor.DeviceProvisioningInteractor
 import com.android.systemui.util.EventLog
 import com.android.systemui.util.settings.GlobalSettings
 import com.android.systemui.util.settings.SystemSettings
@@ -75,6 +76,7 @@ constructor(
     @ShadeDisplayAware private val context: Context,
     private val notificationManager: NotificationManager,
     private val settingsInteractor: NotificationSettingsInteractor,
+    private val deviceProvisioningInteractor: DeviceProvisioningInteractor,
 ) : VisualInterruptionDecisionProvider {
 
     init {
@@ -192,6 +194,7 @@ constructor(
                 context,
                 notificationManager,
                 systemSettings,
+                deviceProvisioningInteractor,
             )
         )
         avalancheProvider.register()
