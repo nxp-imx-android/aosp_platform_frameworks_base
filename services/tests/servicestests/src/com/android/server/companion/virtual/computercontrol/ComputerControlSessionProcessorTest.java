@@ -133,12 +133,12 @@ public class ComputerControlSessionProcessorTest {
 
     @Test
     public void keyguardLocked_sessionNotCreated() throws Exception {
-        when(mKeyguardManager.isKeyguardLocked()).thenReturn(true);
+        when(mKeyguardManager.isDeviceLocked()).thenReturn(true);
 
         mProcessor.processNewSessionRequest(AttributionSource.myAttributionSource(),
                 mParams, mComputerControlSessionCallback);
         verify(mComputerControlSessionCallback, timeout(CALLBACK_TIMEOUT_MS))
-                .onSessionCreationFailed(ComputerControlSession.ERROR_KEYGUARD_LOCKED);
+                .onSessionCreationFailed(ComputerControlSession.ERROR_DEVICE_LOCKED);
     }
 
     @Test
