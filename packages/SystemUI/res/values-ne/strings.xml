@@ -138,8 +138,16 @@
     <string name="screenrecord_stop_dialog_message" msgid="6262768207331626817">"तपाईं अहिले आफ्नो डिभाइसको पूरै स्क्रिन रेकर्ड गरिरहनुभएको छ"</string>
     <string name="screenrecord_stop_dialog_message_specific_app" msgid="5995770227684523244">"तपाईं अहिले <xliff:g id="APP_NAME">%1$s</xliff:g> रेकर्ड गरिरहनुभएको छ"</string>
     <string name="screenrecord_stop_dialog_button" msgid="2883812564938194350">"रेकर्ड गर्न छाड्नुहोस्"</string>
+    <!-- no translation found for screen_record_entire_screen (66944996337928170) -->
+    <skip />
+    <!-- no translation found for screen_record_single_app (7355880948574569290) -->
+    <skip />
+    <!-- no translation found for screen_record_single_app_no_recents (1023249803854209330) -->
+    <skip />
     <string name="screen_record_record_device_audio_label" msgid="5363057443124085198">"डिभाइसको अडियो रेकर्ड गर्नुहोस्"</string>
     <string name="screen_record_record_microphone_label" msgid="4685753707185662381">"माइक्रोफोनमार्फत रेकर्ड गर्नुहोस्"</string>
+    <!-- no translation found for screen_record_should_show_camera_label (159628971484931357) -->
+    <skip />
     <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"टचसँग सम्बन्धित सेटिङ देखाउनुहोस्"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"स्क्रिन रेकर्ड गर्न कुनै एप छान्नुहोस्"</string>
     <string name="screen_record_video_saved" msgid="1345283626390232282">"भिडियो सेभ गरिएको छ"</string>
@@ -685,8 +693,7 @@
     <string name="accessibility_notification_section_header_gentle_clear_all" msgid="6490207897764933919">"सबै मौन सूचनाहरू हटाउनुहोस्"</string>
     <string name="accessibility_notification_section_header_open_settings" msgid="6235202417954844004">"नोटिफिकेसन सेटिङ खोल्नुहोस्"</string>
     <string name="modes_suppressing_shade_text" msgid="6037581130837903239">"{count,plural,offset:1 =0{कुनै पनि नोटिफिकेसन छैन}=1{{mode} ले गर्दा नोटिफिकेसनहरू पज गरिएका छन्}=2{{mode} र अन्य एक मोडले गर्दा नोटिफिकेसनहरू पज गरिएका छन्}other{{mode} र अन्य # वटा मोडले गर्दा नोटिफिकेसनहरू पज गरिएका छन्}}"</string>
-    <!-- no translation found for caught_up_shade_text (8166221989384139659) -->
-    <skip />
+    <string name="caught_up_shade_text" msgid="8166221989384139659">"तपाईंले सबै नोटिफिकेसन हेरिसक्नुभएको छ"</string>
     <string name="media_projection_action_text" msgid="3634906766918186440">"अहिले न"</string>
     <string name="empty_shade_text" msgid="8935967157319717412">"कुनै सूचनाहरू छैनन्"</string>
     <string name="no_unseen_notif_text" msgid="395512586119868682">"कुनै पनि नयाँ सूचना छैन"</string>
@@ -1139,14 +1146,10 @@
     <string name="accessibility_key_gesture_magnification_dialog_content" msgid="7575802369763469379">"एक्सन "<annotation id="action_key_icon">"आइकन"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> भनेको <xliff:g id="ID_3">^3</xliff:g> प्रयोग गर्नका लागि किबोर्डको सर्टकट हो। तपाईं यसका सहायताले स्क्रिनमा तुरुन्तै जुम इन गरेर त्यसमा भएको कन्टेन्ट अझ ठुलो बनाउन सक्नुहुन्छ। जुम मिलाउन एक्सन "<annotation id="action_key_icon">"आइकन"</annotation>" + <xliff:g id="ID_4">^1</xliff:g> र \"+\" वा \"-\" थिच्नुहोस्।"</string>
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"सर्टकट अफ गर्नुहोस्"</string>
     <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"अन राखिरहनुहोस्"</string>
-    <!-- no translation found for accessibility_key_gesture_voice_access_dialog_title (7828090789777023683) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_voice_access_dialog_content (7934170819801013870) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_voice_access_dialog_negative_button_text (3573570279554465078) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_voice_access_dialog_positive_button_text (2306321856544446858) -->
-    <skip />
+    <string name="accessibility_key_gesture_voice_access_dialog_title" msgid="7828090789777023683">"<xliff:g id="ID_1">%1$s</xliff:g> को किबोर्डका सर्टकट अन गर्ने हो?"</string>
+    <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="7934170819801013870">"तपाईंले कारबाही "<annotation id="action_key_icon">"आइकन"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> थिच्नुभयो भने <xliff:g id="ID_3">^3</xliff:g> अन हुन्छ। यो सर्वसुलभता कायम गर्ने एउटा सुविधा हो। तपाईं यो सुविधा प्रयोग गरेर आफ्नो डिभाइस ह्यान्ड्सफ्री तरिकाले नियन्त्रण गर्न सक्नुहुन्छ।"</string>
+    <string name="accessibility_key_gesture_voice_access_dialog_negative_button_text" msgid="3573570279554465078">"अन नगर्नुहोस्"</string>
+    <string name="accessibility_key_gesture_voice_access_dialog_positive_button_text" msgid="2306321856544446858">"सर्टकट अन गर्नुहोस्"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"लक स्क्रिन"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"सट डाउन गरिँदै छ..."</string>
     <string name="thermal_shutdown_dialog_help_text" msgid="6413474593462902901">"डिभाइसको हेरचाह गर्ने तरिका हेर्नुहोस्"</string>

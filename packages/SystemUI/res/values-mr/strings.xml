@@ -138,8 +138,16 @@
     <string name="screenrecord_stop_dialog_message" msgid="6262768207331626817">"तुम्ही सध्या तुमची संपूर्ण स्क्रीन रेकॉर्ड करत आहात"</string>
     <string name="screenrecord_stop_dialog_message_specific_app" msgid="5995770227684523244">"तुम्ही सध्या <xliff:g id="APP_NAME">%1$s</xliff:g> रेकॉर्ड करत आहात"</string>
     <string name="screenrecord_stop_dialog_button" msgid="2883812564938194350">"रेकॉर्ड करणे थांबवा"</string>
+    <!-- no translation found for screen_record_entire_screen (66944996337928170) -->
+    <skip />
+    <!-- no translation found for screen_record_single_app (7355880948574569290) -->
+    <skip />
+    <!-- no translation found for screen_record_single_app_no_recents (1023249803854209330) -->
+    <skip />
     <string name="screen_record_record_device_audio_label" msgid="5363057443124085198">"डिव्हाइसचा ऑडिओ रेकॉर्ड करा"</string>
     <string name="screen_record_record_microphone_label" msgid="4685753707185662381">"मायक्रोफोन वापरून रेकॉर्ड करा"</string>
+    <!-- no translation found for screen_record_should_show_camera_label (159628971484931357) -->
+    <skip />
     <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"स्पर्श दाखवा"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"रेकॉर्ड करण्यासाठी अ‍ॅप निवडा"</string>
     <string name="screen_record_video_saved" msgid="1345283626390232282">"व्हिडिओ सेव्ह केला आहे"</string>
@@ -685,8 +693,7 @@
     <string name="accessibility_notification_section_header_gentle_clear_all" msgid="6490207897764933919">"सर्व सायलंट सूचना साफ करा"</string>
     <string name="accessibility_notification_section_header_open_settings" msgid="6235202417954844004">"नोटिफिकेशन सेटिंग्ज उघडा"</string>
     <string name="modes_suppressing_shade_text" msgid="6037581130837903239">"{count,plural,offset:1 =0{कोणतेही नोटिफिकेशन नाही}=1{{mode} द्वारे नोटिफिकेशन थांबवली आहेत}=2{{mode} द्वारे आणि आणखी एका मोडद्वारे नोटिफिकेशन थांबवली आहेत}other{{mode} द्वारे आणि आणखी # मोडद्वारे नोटिफिकेशन थांबवली आहेत}}"</string>
-    <!-- no translation found for caught_up_shade_text (8166221989384139659) -->
-    <skip />
+    <string name="caught_up_shade_text" msgid="8166221989384139659">"तुम्ही सर्व पाहिले आहे"</string>
     <string name="media_projection_action_text" msgid="3634906766918186440">"आता सुरू करा"</string>
     <string name="empty_shade_text" msgid="8935967157319717412">"सूचना नाहीत"</string>
     <string name="no_unseen_notif_text" msgid="395512586119868682">"नवीन सूचना नाहीत"</string>
@@ -1139,14 +1146,10 @@
     <string name="accessibility_key_gesture_magnification_dialog_content" msgid="7575802369763469379">"कृती "<annotation id="action_key_icon">"आयकन"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> हा <xliff:g id="ID_3">^3</xliff:g> वापरण्यासाठीचा कीबोर्ड शॉर्टकट आहे. यामुळे आशय मोठा करण्यासाठी तुम्हाला स्क्रीनवर झटपट झूम इन करता येते. झूम अ‍ॅडजस्ट करण्यासाठी कृती "<annotation id="action_key_icon">"आयकन"</annotation>" + <xliff:g id="ID_4">^1</xliff:g> आणि \"+\" किंवा \"-\" प्रेस करा."</string>
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"शॉर्टकट बंद करा"</string>
     <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"सुरू ठेवा"</string>
-    <!-- no translation found for accessibility_key_gesture_voice_access_dialog_title (7828090789777023683) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_voice_access_dialog_content (7934170819801013870) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_voice_access_dialog_negative_button_text (3573570279554465078) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_voice_access_dialog_positive_button_text (2306321856544446858) -->
-    <skip />
+    <string name="accessibility_key_gesture_voice_access_dialog_title" msgid="7828090789777023683">"<xliff:g id="ID_1">%1$s</xliff:g> कीबोर्ड शॉर्टकट सुरू करायचा आहे का?"</string>
+    <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="7934170819801013870">"Action "<annotation id="action_key_icon">"icon"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> प्रेस केल्याने, <xliff:g id="ID_3">^3</xliff:g> हे अ‍ॅक्सेसिबिलिटी वैशिष्ट्ये सुरू होते. यामुळे तुम्हाला तुमचे डिव्हाइस हँड्स-फ्री नियंत्रित करता येते."</string>
+    <string name="accessibility_key_gesture_voice_access_dialog_negative_button_text" msgid="3573570279554465078">"सुरू करू नका"</string>
+    <string name="accessibility_key_gesture_voice_access_dialog_positive_button_text" msgid="2306321856544446858">"शॉर्टकट सुरू करा"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"लॉक स्‍क्रीन"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"बंद होत आहे…"</string>
     <string name="thermal_shutdown_dialog_help_text" msgid="6413474593462902901">"काय काळजी घ्यावी ते पहा"</string>
