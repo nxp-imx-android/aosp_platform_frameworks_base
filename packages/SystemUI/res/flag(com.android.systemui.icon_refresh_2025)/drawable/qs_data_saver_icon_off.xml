@@ -17,105 +17,59 @@
 <animated-vector xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:aapt="http://schemas.android.com/aapt"
     android:drawable="@drawable/vd_data_saver">
-    <target android:name="top">
+    <target android:name="circle_group">
+        <aapt:attr name="android:animation">
+            <set>
+                <objectAnimator
+                    android:duration="500"
+                    android:interpolator="@anim/overshoot"
+                    android:propertyName="rotation"
+                    android:valueFrom="0"
+                    android:valueTo="-180" />
+            </set>
+        </aapt:attr>
+    </target>
+    <target android:name="plus_group_exit">
         <aapt:attr name="android:animation">
             <set android:ordering="together">
                 <objectAnimator
-                    android:duration="200"
+                    android:duration="250"
                     android:interpolator="@anim/ease"
                     android:propertyName="scaleX"
                     android:startOffset="0"
                     android:valueFrom="1"
-                    android:valueTo="0.85" />
+                    android:valueTo=".25" />
                 <objectAnimator
-                    android:duration="400"
-                    android:interpolator="@anim/overshoot"
-                    android:propertyName="scaleX"
-                    android:startOffset="200"
-                    android:valueFrom="0.85"
-                    android:valueTo="1" />
-                <objectAnimator
-                    android:duration="200"
+                    android:duration="250"
                     android:interpolator="@anim/ease"
                     android:propertyName="scaleY"
                     android:startOffset="0"
                     android:valueFrom="1"
-                    android:valueTo="0.85" />
-                <objectAnimator
-                    android:duration="400"
-                    android:interpolator="@anim/overshoot"
-                    android:propertyName="scaleY"
-                    android:startOffset="200"
-                    android:valueFrom="0.85"
-                    android:valueTo="1" />
+                    android:valueTo=".25" />
             </set>
         </aapt:attr>
     </target>
-    <target android:name="bottom">
+    <target android:name="plus_path_exit">
         <aapt:attr name="android:animation">
-            <set android:ordering="together">
+            <set>
                 <objectAnimator
-                    android:duration="200"
-                    android:interpolator="@anim/ease"
-                    android:propertyName="scaleX"
-                    android:startOffset="20"
+                    android:duration="25"
+                    android:propertyName="fillAlpha"
+                    android:startOffset="75"
                     android:valueFrom="1"
-                    android:valueTo="0.85" />
-                <objectAnimator
-                    android:duration="400"
-                    android:interpolator="@anim/overshoot"
-                    android:propertyName="scaleX"
-                    android:startOffset="220"
-                    android:valueFrom="0.85"
-                    android:valueTo="1" />
-                <objectAnimator
-                    android:duration="200"
-                    android:interpolator="@anim/ease"
-                    android:propertyName="scaleY"
-                    android:startOffset="20"
-                    android:valueFrom="1"
-                    android:valueTo="0.85" />
-                <objectAnimator
-                    android:duration="400"
-                    android:interpolator="@anim/overshoot"
-                    android:propertyName="scaleY"
-                    android:startOffset="220"
-                    android:valueFrom="0.85"
-                    android:valueTo="1" />
+                    android:valueTo="0" />
             </set>
         </aapt:attr>
     </target>
-    <target android:name="left">
+    <target android:name="plus_path_entry">
         <aapt:attr name="android:animation">
-            <set android:ordering="together">
+            <set>
                 <objectAnimator
-                    android:duration="200"
-                    android:interpolator="@anim/ease"
-                    android:propertyName="scaleX"
-                    android:startOffset="60"
-                    android:valueFrom="1"
-                    android:valueTo="0.85" />
-                <objectAnimator
-                    android:duration="400"
-                    android:interpolator="@anim/overshoot"
-                    android:propertyName="scaleX"
-                    android:startOffset="260"
-                    android:valueFrom="0.85"
-                    android:valueTo="1" />
-                <objectAnimator
-                    android:duration="200"
-                    android:interpolator="@anim/ease"
-                    android:propertyName="scaleY"
-                    android:startOffset="60"
-                    android:valueFrom="1"
-                    android:valueTo="0.85" />
-                <objectAnimator
-                    android:duration="400"
-                    android:interpolator="@anim/overshoot"
-                    android:propertyName="scaleY"
-                    android:startOffset="260"
-                    android:valueFrom="0.85"
-                    android:valueTo="1" />
+                    android:duration="0"
+                    android:propertyName="fillAlpha"
+                    android:startOffset="0"
+                    android:valueFrom="0"
+                    android:valueTo="0" />
             </set>
         </aapt:attr>
     </target>
