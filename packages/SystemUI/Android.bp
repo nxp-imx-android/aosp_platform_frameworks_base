@@ -702,6 +702,9 @@ java_library {
         "tests/utils/src/com/android/systemui/util/concurrency/FakeExecutor.java",
         "tests/utils/src/com/android/systemui/util/time/FakeSystemClock.java",
     ],
+    libs: [
+        "androidx.annotation_annotation",
+    ],
     jarjar_rules: ":jarjar-rules-shared",
 }
 

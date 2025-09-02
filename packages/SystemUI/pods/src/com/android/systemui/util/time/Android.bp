@@ -24,6 +24,9 @@ java_library {
         "*.java",
         "*.kt",
     ],
+    libs: [
+        "androidx.annotation_annotation",
+    ],
     defaults: [
         "SystemUI_pod_defaults_api",
     ],
