@@ -11794,17 +11794,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         taskRepository.addDesk(displayId = DEFAULT_DISPLAY, deskId = inactiveDesk)
         val launchingTask = setUpFreeformTask(displayId = DEFAULT_DISPLAY, deskId = inactiveDesk)
         val transition = Binder()
-        whenever(
-                desktopMixedTransitionHandler.startLaunchTransition(
-                    eq(TRANSIT_OPEN),
-                    any(),
-                    eq(launchingTask.taskId),
-                    anyOrNull(),
-                    anyOrNull(),
-                    anyOrNull(),
-                    anyOrNull(),
-                )
-            )
+        whenever(desktopMixedTransitionHandler.startSwitchDeskTransition(eq(TRANSIT_OPEN), any()))
             .thenReturn(transition)
 
         val wct = WindowContainerTransaction()

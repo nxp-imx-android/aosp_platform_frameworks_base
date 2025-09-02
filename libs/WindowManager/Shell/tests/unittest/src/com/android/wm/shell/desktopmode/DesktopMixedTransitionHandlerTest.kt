@@ -29,6 +29,7 @@ import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import android.testing.AndroidTestingRunner
 import android.testing.TestableLooper.RunWithLooper
+import android.view.Display.DEFAULT_DISPLAY
 import android.view.SurfaceControl
 import android.view.WindowManager
 import android.view.WindowManager.TRANSIT_CHANGE
@@ -50,6 +51,8 @@ import com.android.wm.shell.desktopmode.DesktopMixedTransitionHandler.PendingMix
 import com.android.wm.shell.desktopmode.DesktopModeTransitionTypes.TRANSIT_DESKTOP_MODE_TASK_LIMIT_MINIMIZE
 import com.android.wm.shell.desktopmode.compatui.SystemModalsTransitionHandler
 import com.android.wm.shell.desktopmode.data.DesktopRepository
+import com.android.wm.shell.desktopmode.multidesks.DeskSwitchTransitionHandler
+import com.android.wm.shell.desktopmode.multidesks.DesksTransitionObserver
 import com.android.wm.shell.freeform.FreeformTaskTransitionHandler
 import com.android.wm.shell.sysui.ShellInit
 import com.android.wm.shell.transition.Transitions
@@ -100,6 +103,8 @@ class DesktopMixedTransitionHandlerTest : ShellTestCase() {
     @Mock lateinit var closingTaskLeash: SurfaceControl
     @Mock lateinit var shellInit: ShellInit
     @Mock lateinit var rootTaskDisplayAreaOrganizer: RootTaskDisplayAreaOrganizer
+    @Mock lateinit var deskSwitchTransitionHandler: DeskSwitchTransitionHandler
+    @Mock lateinit var desksTransitionObserver: DesksTransitionObserver
     @Mock private lateinit var desktopRepository: DesktopRepository
 
     private lateinit var mixedHandler: DesktopMixedTransitionHandler
@@ -133,6 +138,8 @@ class DesktopMixedTransitionHandlerTest : ShellTestCase() {
                 mockHandler,
                 shellInit,
                 rootTaskDisplayAreaOrganizer,
+                desksTransitionObserver,
+                deskSwitchTransitionHandler,
             )
     }
 
@@ -980,6 +987,47 @@ class DesktopMixedTransitionHandlerTest : ShellTestCase() {
                 any(),
                 eq(mixedHandler),
             )
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
+    fun startAnimation_deskToDeskTransition_delegatesToDeskSwitchHandler() {
+        val transition = Binder()
+        val fromDeskId = 1
+        val toDeskId = 2
+        val userId = 10
+        val deskToDeskTransition =
+            DesksTransitionObserver.DeskToDeskTransition(
+                displayId = DEFAULT_DISPLAY,
+                userId = userId,
+                fromDeskId = fromDeskId,
+                toDeskId = toDeskId,
+            )
+        whenever(desksTransitionObserver.findDeskToDeskTransition(transition))
+            .thenReturn(deskToDeskTransition)
+        whenever(deskSwitchTransitionHandler.startAnimation(any(), any(), any(), any(), any()))
+            .thenReturn(true)
+
+        val started =
+            mixedHandler.startAnimation(
+                transition = transition,
+                info = createCloseTransitionInfo(TRANSIT_CHANGE),
+                startTransaction = mock(),
+                finishTransaction = mock(),
+                finishCallback = {},
+            )
+
+        assertTrue("Should start animation", started)
+        verify(deskSwitchTransitionHandler)
+            .addPendingTransition(
+                eq(transition),
+                eq(userId),
+                eq(DEFAULT_DISPLAY),
+                eq(fromDeskId),
+                eq(toDeskId),
+            )
+        verify(deskSwitchTransitionHandler)
+            .startAnimation(eq(transition), any(), any(), any(), any())
     }
 
     private fun createCloseTransitionInfo(

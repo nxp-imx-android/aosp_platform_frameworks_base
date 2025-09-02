@@ -56,7 +56,13 @@ class DesksTransitionObserver(
     @ShellMainThread private val mainScope: CoroutineScope,
     private val desktopModeEventLogger: DesktopModeEventLogger,
 ) {
+    // Tracks the desk transitions used to keep track of the desk state. This is usually removed
+    // when the transition is ready. This map represents what a single shell transition is causing
+    // in terms of the desks state.
     private val deskTransitions = mutableMapOf<IBinder, MutableSet<DeskTransition>>()
+    // Tracks the desk transitions that are ongoing. This won't be removed until transition is
+    // finished.
+    private val runningDesksTransitions = mutableMapOf<IBinder, MutableSet<DeskTransition>>()
 
     /** Adds a pending desk transition to be tracked. */
     fun addPendingTransition(transition: DeskTransition) {
@@ -77,14 +83,16 @@ class DesksTransitionObserver(
             name = "DesksTransitionObserver#onTransitionReady",
         ) {
             if (!DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) return
-            val deskTransitions = deskTransitions.remove(transition)
-            deskTransitions?.forEach { deskTransition ->
-                handleDeskTransition(info, deskTransition)
+            val readyDeskTransitions = deskTransitions.remove(transition)
+            readyDeskTransitions?.forEach { readyDeskTransition ->
+                handleDeskTransition(info, readyDeskTransition)
             }
-            if (deskTransitions.isNullOrEmpty()) {
+            if (readyDeskTransitions.isNullOrEmpty()) {
                 // A desk transition could also occur without shell having started it or
                 // intercepting it, check for that here in case launch roots need to be updated.
                 handleIndependentDeskTransitionIfNeeded(info)
+            } else {
+                runningDesksTransitions[transition] = readyDeskTransitions
             }
         }
 
@@ -94,11 +102,18 @@ class DesksTransitionObserver(
      */
     fun onTransitionMerged(merged: IBinder, playing: IBinder) {
         if (!DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) return
-        val transitions = deskTransitions.remove(merged) ?: return
-        deskTransitions[playing] =
-            transitions
-                .map { deskTransition -> deskTransition.copyWithToken(token = playing) }
-                .toMutableSet()
+        deskTransitions.remove(merged)?.let { transitions ->
+            deskTransitions[playing] =
+                transitions
+                    .map { deskTransition -> deskTransition.copyWithToken(token = playing) }
+                    .toMutableSet()
+        }
+        runningDesksTransitions.remove(merged)?.let { transitions ->
+            runningDesksTransitions[playing] =
+                transitions
+                    .map { deskTransition -> deskTransition.copyWithToken(token = playing) }
+                    .toMutableSet()
+        }
     }
 
     /**
@@ -112,15 +127,17 @@ class DesksTransitionObserver(
      */
     fun onTransitionFinished(transition: IBinder) {
         if (!DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) return
-        val deskTransitions = deskTransitions.remove(transition) ?: return
-        deskTransitions.forEach { deskTransition ->
-            if (deskTransition is DeskTransition.DeactivateDesk) {
-                handleDeactivateDeskTransition(null, deskTransition)
-            } else {
-                logW(
-                    "Unexpected desk transition finished without being handled: %s",
-                    deskTransition,
-                )
+        runningDesksTransitions.remove(transition)
+        deskTransitions.remove(transition)?.let { finishedDeskTransitions ->
+            finishedDeskTransitions.forEach { deskTransition ->
+                if (deskTransition is DeskTransition.DeactivateDesk) {
+                    handleDeactivateDeskTransition(null, deskTransition)
+                } else {
+                    logW(
+                        "Unexpected desk transition finished without being handled: %s",
+                        deskTransition,
+                    )
+                }
             }
         }
     }
@@ -595,6 +612,70 @@ class DesksTransitionObserver(
             }
         return UserSwitch(oldUserId = currentUserId, newUserId = newUserId)
     }
+
+    /**
+     * Given a [transition] finds whether it's a desk to desk transition in the same display.
+     *
+     * A user switch where one users desk deactivates and another user's desk activates does not
+     * count as a desk to desk transition.
+     *
+     * @return A [DeskToDeskTransition] if a valid desk switch is found. Otherwise, returns null.
+     */
+    fun findDeskToDeskTransition(transition: IBinder): DeskToDeskTransition? {
+        val running = runningDesksTransitions[transition] ?: return null
+
+        // Check if it's a user switch where same transition activating one user and deactivating
+        // another.
+        if (running.map { it.userId }.distinct().size > 1) return null
+        val potentialDeskSwitchTransitionsByDisplayId =
+            running
+                .filter { transition ->
+                    transition is DeskTransition.ActivateDesk ||
+                        transition is DeskTransition.ActivateDeskWithTask ||
+                        transition is DeskTransition.DeactivateDesk
+                }
+                .groupBy(
+                    { transition ->
+                        when (transition) {
+                            is DeskTransition.ActivateDesk -> transition.displayId
+                            is DeskTransition.ActivateDeskWithTask -> transition.displayId
+                            is DeskTransition.DeactivateDesk -> transition.displayId
+                            else -> error("Unexpected transition type: $transition")
+                        }
+                    },
+                    { it },
+                )
+        for ((displayId, transitions) in potentialDeskSwitchTransitionsByDisplayId.entries) {
+            val fromDesk =
+                transitions.firstOrNull { it is DeskTransition.DeactivateDesk }
+                    as? DeskTransition.DeactivateDesk ?: continue
+            val toDesk =
+                transitions.firstOrNull {
+                    it is DeskTransition.ActivateDeskWithTask || it is DeskTransition.ActivateDesk
+                } ?: continue
+            val fromDeskId = fromDesk.deskId
+            val toDeskId =
+                when (toDesk) {
+                    is DeskTransition.ActivateDesk -> toDesk.deskId
+                    is DeskTransition.ActivateDeskWithTask -> toDesk.deskId
+                    else -> error("Unexpected transition type: $toDesk")
+                }
+            if (fromDeskId == toDeskId) continue
+            return DeskToDeskTransition(displayId, fromDesk.userId, fromDeskId, toDeskId)
+        }
+        return null
+    }
+
+    /**
+     * Represents a transition between two different desks. [fromDeskId] is never the same as the
+     * [toDeskId].
+     */
+    data class DeskToDeskTransition(
+        val displayId: Int,
+        val userId: Int,
+        val fromDeskId: Int,
+        val toDeskId: Int,
+    )
 
     data class UserSwitch(val oldUserId: Int, val newUserId: Int)
 
