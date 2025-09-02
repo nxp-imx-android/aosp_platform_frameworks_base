@@ -764,7 +764,7 @@ public class DisplayRotation {
                 // setUserRotationSetting may be called.
                 mService.mRoot.mDeviceStateAutoRotateSettingController
                         .requestAccelerometerRotationSettingChange(accelerometerRotation == 1,
-                                userRotation);
+                                userRotation, caller);
             } else {
                 Settings.System.putIntForUser(res, Settings.System.ACCELEROMETER_ROTATION,
                         accelerometerRotation, UserHandle.USER_CURRENT);

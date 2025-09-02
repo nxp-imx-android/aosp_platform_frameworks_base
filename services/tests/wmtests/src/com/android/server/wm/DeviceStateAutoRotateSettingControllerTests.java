@@ -212,7 +212,7 @@ public class DeviceStateAutoRotateSettingControllerTests {
         setDeviceState(FOLDED);
 
         mDeviceStateAutoRotateSettingController.requestAccelerometerRotationSettingChange(true,
-                USE_CURRENT_ROTATION);
+                USE_CURRENT_ROTATION, "");
         mTestLooper.dispatchAll();
 
         verifyAccelerometerRotationSettingSet(ACCELEROMETER_ROTATION_ON);
@@ -234,7 +234,7 @@ public class DeviceStateAutoRotateSettingControllerTests {
         setDeviceState(FOLDED);
 
         mDeviceStateAutoRotateSettingController.requestAccelerometerRotationSettingChange(true,
-                USE_CURRENT_ROTATION);
+                USE_CURRENT_ROTATION, "");
         mTestLooper.dispatchAll();
 
         verifyDeviceStateAutoRotateSettingSet(
@@ -344,7 +344,7 @@ public class DeviceStateAutoRotateSettingControllerTests {
     @Test
     public void requestAccelerometerRotationChange_dSUnavailable_noSettingUpdate() {
         mDeviceStateAutoRotateSettingController.requestAccelerometerRotationSettingChange(true,
-                USE_CURRENT_ROTATION);
+                USE_CURRENT_ROTATION, "");
         mTestLooper.dispatchAll();
 
         verifyAccelerometerRotationSettingSet(ACCELEROMETER_ROTATION_OFF);
@@ -362,7 +362,7 @@ public class DeviceStateAutoRotateSettingControllerTests {
     @Test
     public void requestAccelerometerRotationChange_dSUnavailable_writeAfterReceivingDSUpdate() {
         mDeviceStateAutoRotateSettingController.requestAccelerometerRotationSettingChange(true,
-                USE_CURRENT_ROTATION);
+                USE_CURRENT_ROTATION, "");
         mTestLooper.dispatchAll();
 
         setDeviceState(FOLDED);
@@ -390,7 +390,7 @@ public class DeviceStateAutoRotateSettingControllerTests {
         mDeviceStateAutoRotateSettingController.requestDeviceStateAutoRotateSettingChange(
                 FOLDED.getIdentifier(), true);
         mDeviceStateAutoRotateSettingController.requestAccelerometerRotationSettingChange(false,
-                USE_CURRENT_ROTATION);
+                USE_CURRENT_ROTATION, "");
         mDeviceStateAutoRotateSettingController.requestDeviceStateAutoRotateSettingChange(
                 OPEN.getIdentifier(), true);
         mTestLooper.dispatchAll();
@@ -404,7 +404,7 @@ public class DeviceStateAutoRotateSettingControllerTests {
     @Test
     public void dSUnavailable_sendMultipleRequests_dSAutoRotatePrecedesAfterReceivingDSUpdate() {
         mDeviceStateAutoRotateSettingController.requestAccelerometerRotationSettingChange(false,
-                USE_CURRENT_ROTATION);
+                USE_CURRENT_ROTATION, "");
         mDeviceStateAutoRotateSettingController.requestDeviceStateAutoRotateSettingChange(
                 OPEN.getIdentifier(), true);
         mDeviceStateAutoRotateSettingController.requestDeviceStateAutoRotateSettingChange(
@@ -433,7 +433,7 @@ public class DeviceStateAutoRotateSettingControllerTests {
         setDeviceState(FOLDED);
 
         mDeviceStateAutoRotateSettingController.requestAccelerometerRotationSettingChange(true,
-                Surface.ROTATION_90);
+                Surface.ROTATION_90, "");
         mTestLooper.dispatchAll();
 
         verify(mMockDisplayRotation).setUserRotationSetting(
@@ -448,7 +448,7 @@ public class DeviceStateAutoRotateSettingControllerTests {
         mTestLooper.dispatchAll();
 
         mDeviceStateAutoRotateSettingController.requestAccelerometerRotationSettingChange(
-                false, Surface.ROTATION_180);
+                false, Surface.ROTATION_180, "");
         mTestLooper.dispatchAll();
 
         verify(mMockDisplayRotation).setUserRotationSetting(
@@ -461,7 +461,7 @@ public class DeviceStateAutoRotateSettingControllerTests {
         mTestLooper.dispatchAll();
 
         mDeviceStateAutoRotateSettingController.requestAccelerometerRotationSettingChange(true,
-                USE_CURRENT_ROTATION);
+                USE_CURRENT_ROTATION, "");
         mTestLooper.dispatchAll();
 
         verify(mMockDisplayRotation).setUserRotationSetting(
@@ -476,7 +476,7 @@ public class DeviceStateAutoRotateSettingControllerTests {
         mTestLooper.dispatchAll();
 
         mDeviceStateAutoRotateSettingController.requestAccelerometerRotationSettingChange(
-                false, NATURAL_ROTATION);
+                false, NATURAL_ROTATION, "");
         mTestLooper.dispatchAll();
 
         verify(mMockDisplayRotation).setUserRotationSetting(
@@ -500,7 +500,7 @@ public class DeviceStateAutoRotateSettingControllerTests {
         setDeviceState(FOLDED);
 
         mDeviceStateAutoRotateSettingController.requestAccelerometerRotationSettingChange(
-                false, Surface.ROTATION_90);
+                false, Surface.ROTATION_90, "");
         mTestLooper.dispatchAll();
 
         verify(mMockDisplayRotation).setUserRotationSetting(
