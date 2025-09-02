@@ -204,6 +204,9 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
     public IBinder startRecentsTransition(PendingIntent intent, Intent fillIn, Bundle options,
             @Nullable WindowContainerTransaction wct,
             IApplicationThread appThread, IRecentsAnimationRunner listener) {
+        ProtoLog.v(ShellProtoLogGroup.WM_SHELL_RECENTS_TRANSITION,
+                "startRecentsTransition");
+
         // only care about latest one.
         mAnimApp = appThread;
 
@@ -250,7 +253,7 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
     private IBinder startSyntheticRecentsTransition(@NonNull IRecentsAnimationRunner listener,
             int displayId) {
         ProtoLog.v(ShellProtoLogGroup.WM_SHELL_RECENTS_TRANSITION,
-                "RecentsTransitionHandler.startRecentsTransition(synthetic)");
+                "RecentsTransitionHandler.startSyntheticRecentsTransition");
 
         // Create a new synthetic transition and start it immediately
         final RecentsController controller = new RecentsController(listener, displayId);
@@ -266,7 +269,7 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
             @Nullable WindowContainerTransaction requestWct, IRecentsAnimationRunner listener,
             int displayId) {
         ProtoLog.v(ShellProtoLogGroup.WM_SHELL_RECENTS_TRANSITION,
-                "RecentsTransitionHandler.startRecentsTransition, displayId=%d", displayId);
+                "RecentsTransitionHandler.startRealRecentsTransition(): displayId=%d", displayId);
 
         final WindowContainerTransaction wct = requestWct != null
                 ? requestWct : new WindowContainerTransaction();
@@ -518,8 +521,8 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
             }
 
             ProtoLog.v(ShellProtoLogGroup.WM_SHELL_RECENTS_TRANSITION,
-                    "[%d] RecentsController.cancel: toHome=%b reason=%s",
-                    mInstanceId, toHome, reason);
+                    "[%d] RecentsController.cancel: toHome=%b withScreenshots=%b reason=%s",
+                    mInstanceId, toHome, withScreenshots, reason);
             if (mListener != null) {
                 if (withScreenshots) {
                     sendCancelWithSnapshots();
