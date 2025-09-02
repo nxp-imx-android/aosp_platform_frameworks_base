@@ -138,8 +138,16 @@
     <string name="screenrecord_stop_dialog_message" msgid="6262768207331626817">"আপনি বর্তমানে সম্পূর্ণ স্ক্রিন রেকর্ড করছেন"</string>
     <string name="screenrecord_stop_dialog_message_specific_app" msgid="5995770227684523244">"আপনি বর্তমানে <xliff:g id="APP_NAME">%1$s</xliff:g> রেকর্ড করছেন"</string>
     <string name="screenrecord_stop_dialog_button" msgid="2883812564938194350">"রেকর্ড করা বন্ধ করুন"</string>
+    <!-- no translation found for screen_record_entire_screen (66944996337928170) -->
+    <skip />
+    <!-- no translation found for screen_record_single_app (7355880948574569290) -->
+    <skip />
+    <!-- no translation found for screen_record_single_app_no_recents (1023249803854209330) -->
+    <skip />
     <string name="screen_record_record_device_audio_label" msgid="5363057443124085198">"ডিভাইসের অডিও রেকর্ড করুন"</string>
     <string name="screen_record_record_microphone_label" msgid="4685753707185662381">"মাইক্রোফোন দিয়ে রেকর্ড করুন"</string>
+    <!-- no translation found for screen_record_should_show_camera_label (159628971484931357) -->
+    <skip />
     <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"স্পর্শ করা সংক্রান্ত সেটিং দেখুন"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"রেকর্ড করার জন্য অ্যাপ বেছে নিন"</string>
     <string name="screen_record_video_saved" msgid="1345283626390232282">"ভিডিও সেভ করা হয়েছে"</string>
@@ -685,8 +693,7 @@
     <string name="accessibility_notification_section_header_gentle_clear_all" msgid="6490207897764933919">"সব নীরব বিজ্ঞপ্তি মুছুন"</string>
     <string name="accessibility_notification_section_header_open_settings" msgid="6235202417954844004">"বিজ্ঞপ্তির সেটিংস খুলুন"</string>
     <string name="modes_suppressing_shade_text" msgid="6037581130837903239">"{count,plural,offset:1 =0{কোনও বিজ্ঞপ্তি নেই}=1{{mode}-এর জন্য বিজ্ঞপ্তি পজ করা হয়েছে}=2{{mode} ও অন্য আরেকটি মোডের জন্য বিজ্ঞপ্তি পজ করা হয়েছে}one{{mode} ও অন্য #টি মোডের জন্য বিজ্ঞপ্তি পজ করা হয়েছে}other{{mode} ও অন্য #টি মোডের জন্য বিজ্ঞপ্তি পজ করা হয়েছে}}"</string>
-    <!-- no translation found for caught_up_shade_text (8166221989384139659) -->
-    <skip />
+    <string name="caught_up_shade_text" msgid="8166221989384139659">"সব দেখা হয়ে গেছে"</string>
     <string name="media_projection_action_text" msgid="3634906766918186440">"এখন শুরু করুন"</string>
     <string name="empty_shade_text" msgid="8935967157319717412">"কোনও বিজ্ঞপ্তি নেই"</string>
     <string name="no_unseen_notif_text" msgid="395512586119868682">"নতুন কোনও বিজ্ঞপ্তি নেই"</string>
@@ -1012,8 +1019,7 @@
     <string name="system_desktop_mode_snap_right_window" msgid="2162560187639411929">"উইন্ডো ডানদিকে সরান"</string>
     <string name="system_desktop_mode_toggle_maximize_window" msgid="4084100093691768239">"উইন্ডো বড় করুন"</string>
     <string name="system_desktop_mode_minimize_window" msgid="1248714536732927092">"উইন্ডো ছোট করুন"</string>
-    <!-- no translation found for system_desktop_mode_close_window (3072490692608682536) -->
-    <skip />
+    <string name="system_desktop_mode_close_window" msgid="3072490692608682536">"বর্তমান উইন্ডো বন্ধ করুন"</string>
     <string name="system_multiple_desktop_mode_switch_between_desks" msgid="6093884593003003708">"এক ডেস্কটপ থেকে অন্যতে সরান"</string>
     <string name="keyboard_shortcut_group_input" msgid="6888282716546625610">"ইনপুট"</string>
     <string name="input_switch_input_language_next" msgid="3782155659868227855">"পরবর্তী ভাষায় পাল্টান"</string>
@@ -1140,14 +1146,10 @@
     <string name="accessibility_key_gesture_magnification_dialog_content" msgid="7575802369763469379">"<xliff:g id="ID_3">^3</xliff:g> ব্যবহার করার জন্য কীবোর্ড শর্টকাট হল অ্যাকশন "<annotation id="action_key_icon">"আইকন"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g>। এটি আপনাকে কন্টেন্ট বড় করার জন্য স্ক্রিনে দ্রুত জুম-ইন করার সুযোগ দেয়। জুম অ্যাডজাস্ট করতে অ্যাকশন "<annotation id="action_key_icon">"আইকন"</annotation>" + <xliff:g id="ID_4">^1</xliff:g> এবং \"+\" বা \"-\" প্রেস করুন।"</string>
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"শর্টকাট বন্ধ করুন"</string>
     <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"চালু রাখুন"</string>
-    <!-- no translation found for accessibility_key_gesture_voice_access_dialog_title (7828090789777023683) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_voice_access_dialog_content (7934170819801013870) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_voice_access_dialog_negative_button_text (3573570279554465078) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_voice_access_dialog_positive_button_text (2306321856544446858) -->
-    <skip />
+    <string name="accessibility_key_gesture_voice_access_dialog_title" msgid="7828090789777023683">"<xliff:g id="ID_1">%1$s</xliff:g> কীবোর্ড শর্টকাট চালু করবেন?"</string>
+    <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="7934170819801013870">"অ্যাকশন "<annotation id="action_key_icon">"আইকন"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> প্রেস করলে, অ্যাক্সেসিবিলিটি ফিচার <xliff:g id="ID_3">^3</xliff:g> চালু হয়ে যায়। এটি আপনাকে হ্যান্ডস-ফ্রি সুবিধা ব্যবহার করে ডিভাইস কন্ট্রোল করতে দেয়।"</string>
+    <string name="accessibility_key_gesture_voice_access_dialog_negative_button_text" msgid="3573570279554465078">"চালু করবেন না"</string>
+    <string name="accessibility_key_gesture_voice_access_dialog_positive_button_text" msgid="2306321856544446858">"শর্টকাট চালু করুন"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"লক স্ক্রিন"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"বন্ধ হচ্ছে…"</string>
     <string name="thermal_shutdown_dialog_help_text" msgid="6413474593462902901">"ডিভাইস রক্ষণাবেক্ষণের ধাপগুলি দেখুন"</string>

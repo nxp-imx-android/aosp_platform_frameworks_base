@@ -138,8 +138,12 @@
     <string name="screenrecord_stop_dialog_message" msgid="6262768207331626817">"Kasalukuyan mong nire-record ang iyong buong screen"</string>
     <string name="screenrecord_stop_dialog_message_specific_app" msgid="5995770227684523244">"Kasalukuyan mong nire-record ang <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="screenrecord_stop_dialog_button" msgid="2883812564938194350">"Huminto sa pag-record"</string>
+    <string name="screen_record_entire_screen" msgid="66944996337928170">"Buong screen"</string>
+    <string name="screen_record_single_app" msgid="7355880948574569290">"Isang app"</string>
+    <string name="screen_record_single_app_no_recents" msgid="1023249803854209330">"Isang app (Buksan para piliin)"</string>
     <string name="screen_record_record_device_audio_label" msgid="5363057443124085198">"I-record ang audio ng device"</string>
     <string name="screen_record_record_microphone_label" msgid="4685753707185662381">"I-record ang mikropono"</string>
+    <string name="screen_record_should_show_camera_label" msgid="159628971484931357">"Ipakita ang camera para sa selfie"</string>
     <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"Ipakita ang mga pagpindot"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"Pumili ng app para mag-record"</string>
     <string name="screen_record_video_saved" msgid="1345283626390232282">"Na-save ang video"</string>
@@ -685,8 +689,7 @@
     <string name="accessibility_notification_section_header_gentle_clear_all" msgid="6490207897764933919">"I-clear ang lahat ng silent na notification"</string>
     <string name="accessibility_notification_section_header_open_settings" msgid="6235202417954844004">"Buksan ang mga setting ng notification"</string>
     <string name="modes_suppressing_shade_text" msgid="6037581130837903239">"{count,plural,offset:1 =0{Walang notification}=1{Na-pause ng {mode} ang mga notification}=2{Na-pause ng {mode} at isa pang mode ang mga notification}one{Na-pause ng {mode} at # pang mode ang mga notification}other{Na-pause ng {mode} at # pang mode ang mga notification}}"</string>
-    <!-- no translation found for caught_up_shade_text (8166221989384139659) -->
-    <skip />
+    <string name="caught_up_shade_text" msgid="8166221989384139659">"Nakita mo na lahat"</string>
     <string name="media_projection_action_text" msgid="3634906766918186440">"Magsimula ngayon"</string>
     <string name="empty_shade_text" msgid="8935967157319717412">"Walang mga notification"</string>
     <string name="no_unseen_notif_text" msgid="395512586119868682">"Walang bagong notification"</string>
@@ -1139,14 +1142,10 @@
     <string name="accessibility_key_gesture_magnification_dialog_content" msgid="7575802369763469379">"Ang "<annotation id="action_key_icon">"icon"</annotation>" ng Action + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> ang keyboard shortcut na gagamitin sa <xliff:g id="ID_3">^3</xliff:g>. Nagbibigay-daan ito sa iyong mabilis na mag-zoom in sa screen para palakihin ang content. Pindutin ang "<annotation id="action_key_icon">"icon"</annotation>" ng Action + <xliff:g id="ID_4">^1</xliff:g> at \"+\" o \"-\" para i-adjust ang pag-zoom."</string>
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"I-off ang shortcut"</string>
     <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"Panatilihing naka-on"</string>
-    <!-- no translation found for accessibility_key_gesture_voice_access_dialog_title (7828090789777023683) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_voice_access_dialog_content (7934170819801013870) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_voice_access_dialog_negative_button_text (3573570279554465078) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_voice_access_dialog_positive_button_text (2306321856544446858) -->
-    <skip />
+    <string name="accessibility_key_gesture_voice_access_dialog_title" msgid="7828090789777023683">"I-on ang keyboard shortcut ng <xliff:g id="ID_1">%1$s</xliff:g>?"</string>
+    <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="7934170819801013870">"Kapag pinindot ang "<annotation id="action_key_icon">"icon"</annotation>" na Aksyon + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g>, mao-on ang <xliff:g id="ID_3">^3</xliff:g>, na isang feature ng accessibility. Nagbibigay-daan ito sa iyo na kontrolin ang device mo nang hands-free."</string>
+    <string name="accessibility_key_gesture_voice_access_dialog_negative_button_text" msgid="3573570279554465078">"Huwag i-on"</string>
+    <string name="accessibility_key_gesture_voice_access_dialog_positive_button_text" msgid="2306321856544446858">"I-on ang shortcut"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"Lock screen"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"Nagsa-shut down…"</string>
     <string name="thermal_shutdown_dialog_help_text" msgid="6413474593462902901">"Tingnan ang mga hakbang sa pangangalaga"</string>

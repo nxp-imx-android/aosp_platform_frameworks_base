@@ -138,8 +138,16 @@
     <string name="screenrecord_stop_dialog_message" msgid="6262768207331626817">"يتم حاليًا تسجيل محتوى الشاشة بأكمله"</string>
     <string name="screenrecord_stop_dialog_message_specific_app" msgid="5995770227684523244">"يتم حاليًا تسجيل محتوى \"<xliff:g id="APP_NAME">%1$s</xliff:g>\""</string>
     <string name="screenrecord_stop_dialog_button" msgid="2883812564938194350">"إيقاف التسجيل"</string>
+    <!-- no translation found for screen_record_entire_screen (66944996337928170) -->
+    <skip />
+    <!-- no translation found for screen_record_single_app (7355880948574569290) -->
+    <skip />
+    <!-- no translation found for screen_record_single_app_no_recents (1023249803854209330) -->
+    <skip />
     <string name="screen_record_record_device_audio_label" msgid="5363057443124085198">"تسجيل صوت الجهاز"</string>
     <string name="screen_record_record_microphone_label" msgid="4685753707185662381">"التسجيل من الميكروفون"</string>
+    <!-- no translation found for screen_record_should_show_camera_label (159628971484931357) -->
+    <skip />
     <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"عرض أماكن اللمس"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"يُرجى اختيار تطبيق لتسجيل محتوى شاشته"</string>
     <string name="screen_record_video_saved" msgid="1345283626390232282">"تم حفظ الفيديو"</string>
@@ -685,8 +693,7 @@
     <string name="accessibility_notification_section_header_gentle_clear_all" msgid="6490207897764933919">"محو جميع الإشعارات الصامتة"</string>
     <string name="accessibility_notification_section_header_open_settings" msgid="6235202417954844004">"يؤدي النقر على هذا الزر إلى فتح إعدادات الإشعارات"</string>
     <string name="modes_suppressing_shade_text" msgid="6037581130837903239">"{count,plural,offset:1 =0{ما مِن إشعارات}=1{تم إيقاف الإشعارات مؤقتًا بواسطة \"{mode}\"}=2{تم إيقاف الإشعارات مؤقتًا بواسطة \"{mode}\" ووضع واحد آخر}few{تم إيقاف الإشعارات مؤقتًا بواسطة \"{mode}\" و# أوضاع أخرى}many{تم إيقاف الإشعارات مؤقتًا بواسطة \"{mode}\" و# وضعًا آخر}other{تم إيقاف الإشعارات مؤقتًا بواسطة \"{mode}\" و# وضع آخر}}"</string>
-    <!-- no translation found for caught_up_shade_text (8166221989384139659) -->
-    <skip />
+    <string name="caught_up_shade_text" msgid="8166221989384139659">"ما مِن إشعارات جديدة"</string>
     <string name="media_projection_action_text" msgid="3634906766918186440">"البدء الآن"</string>
     <string name="empty_shade_text" msgid="8935967157319717412">"ما مِن إشعارات"</string>
     <string name="no_unseen_notif_text" msgid="395512586119868682">"ما مِن إشعارات جديدة"</string>
@@ -986,8 +993,7 @@
     <string name="group_system_access_notification_shade" msgid="1619028907006553677">"عرض الإشعارات"</string>
     <string name="group_system_access_quick_settings_panel" msgid="1844771096582064926">"عرض الإعدادات السريعة"</string>
     <string name="group_system_full_screenshot" msgid="5742204844232667785">"أخذ لقطة شاشة"</string>
-    <!-- no translation found for group_system_partial_screenshot (2114314797127648010) -->
-    <skip />
+    <string name="group_system_partial_screenshot" msgid="2114314797127648010">"أخذ لقطة شاشة جزئية"</string>
     <string name="group_system_access_system_app_shortcuts" msgid="8562482996626694026">"عرض الاختصارات"</string>
     <string name="group_system_go_back" msgid="2730322046244918816">"رجوع"</string>
     <string name="group_system_access_home_screen" msgid="4130366993484706483">"الانتقال إلى الشاشة الرئيسية"</string>
@@ -1139,14 +1145,10 @@
     <string name="accessibility_key_gesture_magnification_dialog_content" msgid="7575802369763469379">"‏الإجراء "<annotation id="action_key_icon">"icon"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> هو اختصار لوحة المفاتيح لاستخدام \"<xliff:g id="ID_3">^3</xliff:g>\". يتيح لك هذا الإجراء تكبير الشاشة بسرعة لعرض المحتوى بحجم أكبر. لضبط التكبير أو التصغير، يُرجى الضغط على الإجراء "<annotation id="action_key_icon">"icon"</annotation>" و<xliff:g id="ID_4">^1</xliff:g> والرمز \"+\" أو \"-\"."</string>
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"إيقاف الاختصار"</string>
     <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"عدم الإيقاف"</string>
-    <!-- no translation found for accessibility_key_gesture_voice_access_dialog_title (7828090789777023683) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_voice_access_dialog_content (7934170819801013870) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_voice_access_dialog_negative_button_text (3573570279554465078) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_voice_access_dialog_positive_button_text (2306321856544446858) -->
-    <skip />
+    <string name="accessibility_key_gesture_voice_access_dialog_title" msgid="7828090789777023683">"هل المطلوب تفعيل اختصار لوحة المفاتيح \"<xliff:g id="ID_1">%1$s</xliff:g>\"؟"</string>
+    <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="7934170819801013870">"‏يؤدي الضغط على الإجراء "<annotation id="action_key_icon">"icon"</annotation>" + <xliff:g id="ID_1">^1</xliff:g>‏ + <xliff:g id="ID_2">^2</xliff:g> إلى تفعيل \"<xliff:g id="ID_3">^3</xliff:g>\"، وهي إحدى ميزات تسهيل الاستخدام التي تتيح لك التحكّم في جهازك بدون لمسه."</string>
+    <string name="accessibility_key_gesture_voice_access_dialog_negative_button_text" msgid="3573570279554465078">"عدم التفعيل"</string>
+    <string name="accessibility_key_gesture_voice_access_dialog_positive_button_text" msgid="2306321856544446858">"تفعيل الاختصار"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"شاشة القفل"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"جارٍ إيقاف التشغيل…"</string>
     <string name="thermal_shutdown_dialog_help_text" msgid="6413474593462902901">"الاطّلاع على خطوات العناية"</string>

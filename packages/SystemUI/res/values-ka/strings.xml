@@ -138,8 +138,12 @@
     <string name="screenrecord_stop_dialog_message" msgid="6262768207331626817">"თქვენ ამჟამად იწერთ თქვენს მთლიან ეკრანს"</string>
     <string name="screenrecord_stop_dialog_message_specific_app" msgid="5995770227684523244">"თქვენ ამჟამად იწერთ <xliff:g id="APP_NAME">%1$s</xliff:g>-ს"</string>
     <string name="screenrecord_stop_dialog_button" msgid="2883812564938194350">"ჩაწერის შეწყვეტა"</string>
+    <string name="screen_record_entire_screen" msgid="66944996337928170">"მთელი ეკრანი"</string>
+    <string name="screen_record_single_app" msgid="7355880948574569290">"ერთი აპი"</string>
+    <string name="screen_record_single_app_no_recents" msgid="1023249803854209330">"ერთი აპი (ასარჩევად გახსენით აპი)"</string>
     <string name="screen_record_record_device_audio_label" msgid="5363057443124085198">"მოწყობილობის აუდიოს ჩაწერა"</string>
     <string name="screen_record_record_microphone_label" msgid="4685753707185662381">"მიკროფონის ჩაწერა"</string>
+    <string name="screen_record_should_show_camera_label" msgid="159628971484931357">"სელფის კამერის ჩვენება"</string>
     <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"შეხების ჩვენება"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"აპის არჩევა ჩასაწერად"</string>
     <string name="screen_record_video_saved" msgid="1345283626390232282">"ვიდეო შენახულია"</string>
@@ -685,8 +689,7 @@
     <string name="accessibility_notification_section_header_gentle_clear_all" msgid="6490207897764933919">"ყველა ჩუმი შეტყობინების გასუფთავება"</string>
     <string name="accessibility_notification_section_header_open_settings" msgid="6235202417954844004">"შეტყობინების პარამეტრების გახსნა"</string>
     <string name="modes_suppressing_shade_text" msgid="6037581130837903239">"{count,plural,offset:1 =0{შეტყობინებები არ არის}=1{შეტყობინებები შეჩერებულია {mode}-ის გამო}=2{შეტყობინებები შეჩერებულია {mode}-ის და ერთი სხვა რეჟიმის გამო}other{შეტყობინებები შეჩერებულია {mode}-ის და # სხვა რეჟიმის გამო}}"</string>
-    <!-- no translation found for caught_up_shade_text (8166221989384139659) -->
-    <skip />
+    <string name="caught_up_shade_text" msgid="8166221989384139659">"მეტი არაფერია"</string>
     <string name="media_projection_action_text" msgid="3634906766918186440">"დაწყება ახლავე"</string>
     <string name="empty_shade_text" msgid="8935967157319717412">"შეტყობინებები არ არის."</string>
     <string name="no_unseen_notif_text" msgid="395512586119868682">"ახალი შეტყობინებები არ არის"</string>
@@ -986,8 +989,7 @@
     <string name="group_system_access_notification_shade" msgid="1619028907006553677">"შეტყობინებების ნახვა"</string>
     <string name="group_system_access_quick_settings_panel" msgid="1844771096582064926">"სწრაფი პარამეტრების ნახვა"</string>
     <string name="group_system_full_screenshot" msgid="5742204844232667785">"ეკრანის ანაბეჭდის გადაღება"</string>
-    <!-- no translation found for group_system_partial_screenshot (2114314797127648010) -->
-    <skip />
+    <string name="group_system_partial_screenshot" msgid="2114314797127648010">"ეკრანის ნაწილობრივი ანაბეჭდის გადაღება"</string>
     <string name="group_system_access_system_app_shortcuts" msgid="8562482996626694026">"მალსახმობების ჩვენება"</string>
     <string name="group_system_go_back" msgid="2730322046244918816">"უკან დაბრუნება"</string>
     <string name="group_system_access_home_screen" msgid="4130366993484706483">"მთავარ ეკრანზე გადასვლა"</string>

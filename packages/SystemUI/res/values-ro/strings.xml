@@ -138,8 +138,16 @@
     <string name="screenrecord_stop_dialog_message" msgid="6262768207331626817">"Înregistrezi întregul ecran"</string>
     <string name="screenrecord_stop_dialog_message_specific_app" msgid="5995770227684523244">"Înregistrezi <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="screenrecord_stop_dialog_button" msgid="2883812564938194350">"Oprește înregistrarea"</string>
+    <!-- no translation found for screen_record_entire_screen (66944996337928170) -->
+    <skip />
+    <!-- no translation found for screen_record_single_app (7355880948574569290) -->
+    <skip />
+    <!-- no translation found for screen_record_single_app_no_recents (1023249803854209330) -->
+    <skip />
     <string name="screen_record_record_device_audio_label" msgid="5363057443124085198">"Înregistrează audio de la dispozitiv"</string>
     <string name="screen_record_record_microphone_label" msgid="4685753707185662381">"Înregistrează microfonul"</string>
+    <!-- no translation found for screen_record_should_show_camera_label (159628971484931357) -->
+    <skip />
     <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"Afișează atingerile"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"Alege o aplicație pentru a înregistra"</string>
     <string name="screen_record_video_saved" msgid="1345283626390232282">"Videoclip salvat"</string>
@@ -685,8 +693,7 @@
     <string name="accessibility_notification_section_header_gentle_clear_all" msgid="6490207897764933919">"Șterge toate notificările silențioase"</string>
     <string name="accessibility_notification_section_header_open_settings" msgid="6235202417954844004">"Deschide setările pentru notificări"</string>
     <string name="modes_suppressing_shade_text" msgid="6037581130837903239">"{count,plural,offset:1 =0{Nicio notificare}=1{Notificările au fost întrerupte de {mode}}=2{Notificările au fost întrerupte de {mode} și de un alt mod}few{Notificările au fost întrerupte de {mode} și de alte # moduri}other{Notificările au fost întrerupte de {mode} și de alte # de moduri}}"</string>
-    <!-- no translation found for caught_up_shade_text (8166221989384139659) -->
-    <skip />
+    <string name="caught_up_shade_text" msgid="8166221989384139659">"Ești la zi"</string>
     <string name="media_projection_action_text" msgid="3634906766918186440">"Începe acum"</string>
     <string name="empty_shade_text" msgid="8935967157319717412">"Nicio notificare"</string>
     <string name="no_unseen_notif_text" msgid="395512586119868682">"Nicio notificare nouă"</string>
@@ -1012,8 +1019,7 @@
     <string name="system_desktop_mode_snap_right_window" msgid="2162560187639411929">"Mută fereastra spre dreapta"</string>
     <string name="system_desktop_mode_toggle_maximize_window" msgid="4084100093691768239">"Maximizează fereastra"</string>
     <string name="system_desktop_mode_minimize_window" msgid="1248714536732927092">"Minimizează fereastra"</string>
-    <!-- no translation found for system_desktop_mode_close_window (3072490692608682536) -->
-    <skip />
+    <string name="system_desktop_mode_close_window" msgid="3072490692608682536">"Închide fereastra actuală"</string>
     <string name="system_multiple_desktop_mode_switch_between_desks" msgid="6093884593003003708">"Comută între desktopuri"</string>
     <string name="keyboard_shortcut_group_input" msgid="6888282716546625610">"Introducere"</string>
     <string name="input_switch_input_language_next" msgid="3782155659868227855">"Comută la următoarea limbă"</string>
@@ -1140,14 +1146,10 @@
     <string name="accessibility_key_gesture_magnification_dialog_content" msgid="7575802369763469379">"Acțiunea "<annotation id="action_key_icon">"pictogramă"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> este comanda rapidă de la tastatură pentru a folosi <xliff:g id="ID_3">^3</xliff:g>. Astfel, poți să mărești rapid imaginea de pe ecran pentru a mări conținutul. Apasă pe Acțiunea "<annotation id="action_key_icon">"pictogramă"</annotation>" + <xliff:g id="ID_4">^1</xliff:g> și pe + sau – pentru a ajusta zoomul."</string>
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"Dezactivează comanda rapidă"</string>
     <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"Menține activată"</string>
-    <!-- no translation found for accessibility_key_gesture_voice_access_dialog_title (7828090789777023683) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_voice_access_dialog_content (7934170819801013870) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_voice_access_dialog_negative_button_text (3573570279554465078) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_voice_access_dialog_positive_button_text (2306321856544446858) -->
-    <skip />
+    <string name="accessibility_key_gesture_voice_access_dialog_title" msgid="7828090789777023683">"Activezi comanda rapidă de la tastatură <xliff:g id="ID_1">%1$s</xliff:g>?"</string>
+    <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="7934170819801013870">"Dacă apeși pe pictograma "<annotation id="action_key_icon">"Acțiune"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g>, se activează <xliff:g id="ID_3">^3</xliff:g>, o funcție de accesibilitate. Astfel, poți controla dispozitivul hands-free."</string>
+    <string name="accessibility_key_gesture_voice_access_dialog_negative_button_text" msgid="3573570279554465078">"Nu activa"</string>
+    <string name="accessibility_key_gesture_voice_access_dialog_positive_button_text" msgid="2306321856544446858">"Activează comanda rapidă"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"Ecran de blocare"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"Se închide…"</string>
     <string name="thermal_shutdown_dialog_help_text" msgid="6413474593462902901">"Vezi pașii pentru îngrijire"</string>

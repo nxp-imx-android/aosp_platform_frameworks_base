@@ -138,8 +138,16 @@
     <string name="screenrecord_stop_dialog_message" msgid="6262768207331626817">"Trenutno snimate cijeli ekran"</string>
     <string name="screenrecord_stop_dialog_message_specific_app" msgid="5995770227684523244">"Trenutno snimate aplikaciju <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="screenrecord_stop_dialog_button" msgid="2883812564938194350">"Zaustavi snimanje"</string>
+    <!-- no translation found for screen_record_entire_screen (66944996337928170) -->
+    <skip />
+    <!-- no translation found for screen_record_single_app (7355880948574569290) -->
+    <skip />
+    <!-- no translation found for screen_record_single_app_no_recents (1023249803854209330) -->
+    <skip />
     <string name="screen_record_record_device_audio_label" msgid="5363057443124085198">"Snimaj zvuk s uređaja"</string>
     <string name="screen_record_record_microphone_label" msgid="4685753707185662381">"Snimaj zvuk putem mikrofona"</string>
+    <!-- no translation found for screen_record_should_show_camera_label (159628971484931357) -->
+    <skip />
     <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"Prikaži dodire"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"Odaberite aplikaciju za snimanje"</string>
     <string name="screen_record_video_saved" msgid="1345283626390232282">"Videozapis je sačuvan"</string>
@@ -685,8 +693,7 @@
     <string name="accessibility_notification_section_header_gentle_clear_all" msgid="6490207897764933919">"Obriši sva nečujna obavještenja"</string>
     <string name="accessibility_notification_section_header_open_settings" msgid="6235202417954844004">"Otvaranje postavki obavještenja"</string>
     <string name="modes_suppressing_shade_text" msgid="6037581130837903239">"{count,plural,offset:1 =0{Nema obavještenja}=1{Obavještenja su pauzirana putem načina rada {mode}}=2{Obavještenja su pauzirana putem načina rada {mode} i još jednog načina rada}one{Obavještenja su pauzirana putem načina rada {mode} i još # načina rada}few{Obavještenja su pauzirana putem načina rada {mode} i još # načina rada}other{Obavještenja su pauzirana putem načina rada {mode} i još # načina rada}}"</string>
-    <!-- no translation found for caught_up_shade_text (8166221989384139659) -->
-    <skip />
+    <string name="caught_up_shade_text" msgid="8166221989384139659">"Sve ste pregledali"</string>
     <string name="media_projection_action_text" msgid="3634906766918186440">"Započni odmah"</string>
     <string name="empty_shade_text" msgid="8935967157319717412">"Nema obavještenja"</string>
     <string name="no_unseen_notif_text" msgid="395512586119868682">"Nema novih obavještenja"</string>
@@ -986,8 +993,7 @@
     <string name="group_system_access_notification_shade" msgid="1619028907006553677">"Prikaz obavještenja"</string>
     <string name="group_system_access_quick_settings_panel" msgid="1844771096582064926">"Prikaz brzih postavki"</string>
     <string name="group_system_full_screenshot" msgid="5742204844232667785">"Izrada snimka ekrana"</string>
-    <!-- no translation found for group_system_partial_screenshot (2114314797127648010) -->
-    <skip />
+    <string name="group_system_partial_screenshot" msgid="2114314797127648010">"Pravljenje djelimičnog snimka ekrana"</string>
     <string name="group_system_access_system_app_shortcuts" msgid="8562482996626694026">"Prikaz prečica"</string>
     <string name="group_system_go_back" msgid="2730322046244918816">"Nazad"</string>
     <string name="group_system_access_home_screen" msgid="4130366993484706483">"Odlazak na početni ekran"</string>
@@ -1139,14 +1145,10 @@
     <string name="accessibility_key_gesture_magnification_dialog_content" msgid="7575802369763469379"><annotation id="action_key_icon">"Ikona"</annotation>" radnje + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> je prečica na tastaturi za korištenje funkcije <xliff:g id="ID_3">^3</xliff:g>. Ovo vam omogućava da brzo uvećate sadržaj na ekranu. Pritisnite "<annotation id="action_key_icon">"ikonu"</annotation>" radnje + <xliff:g id="ID_4">^1</xliff:g> i \"+\" ili \"-\" da podesite zumiranje."</string>
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"Isključi prečicu"</string>
     <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"Ostavi uključeno"</string>
-    <!-- no translation found for accessibility_key_gesture_voice_access_dialog_title (7828090789777023683) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_voice_access_dialog_content (7934170819801013870) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_voice_access_dialog_negative_button_text (3573570279554465078) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_voice_access_dialog_positive_button_text (2306321856544446858) -->
-    <skip />
+    <string name="accessibility_key_gesture_voice_access_dialog_title" msgid="7828090789777023683">"Uključiti prečicu za <xliff:g id="ID_1">%1$s</xliff:g> na tastaturi?"</string>
+    <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="7934170819801013870">"Pritisak na "<annotation id="action_key_icon">"ikonu"</annotation>" radnje + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> uključuje funkciju pristupačnosti <xliff:g id="ID_3">^3</xliff:g>. Ovo vam omogućava da upravljate uređajem bez dodira."</string>
+    <string name="accessibility_key_gesture_voice_access_dialog_negative_button_text" msgid="3573570279554465078">"Nemoj uključiti"</string>
+    <string name="accessibility_key_gesture_voice_access_dialog_positive_button_text" msgid="2306321856544446858">"Uključi prečicu"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"Zaključani ekran"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"Isključivanje…"</string>
     <string name="thermal_shutdown_dialog_help_text" msgid="6413474593462902901">"Pogledajte korake za zaštitu"</string>

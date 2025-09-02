@@ -138,8 +138,12 @@
     <string name="screenrecord_stop_dialog_message" msgid="6262768207331626817">"現在、画面全体を録画しています"</string>
     <string name="screenrecord_stop_dialog_message_specific_app" msgid="5995770227684523244">"現在、<xliff:g id="APP_NAME">%1$s</xliff:g>を録画しています"</string>
     <string name="screenrecord_stop_dialog_button" msgid="2883812564938194350">"録画を停止"</string>
+    <string name="screen_record_entire_screen" msgid="66944996337928170">"画面全体"</string>
+    <string name="screen_record_single_app" msgid="7355880948574569290">"1 つのアプリ"</string>
+    <string name="screen_record_single_app_no_recents" msgid="1023249803854209330">"1 つのアプリ（アプリを開いて選択）"</string>
     <string name="screen_record_record_device_audio_label" msgid="5363057443124085198">"デバイスの音声を録音"</string>
     <string name="screen_record_record_microphone_label" msgid="4685753707185662381">"マイク録音"</string>
+    <string name="screen_record_should_show_camera_label" msgid="159628971484931357">"自撮りカメラを表示する"</string>
     <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"タップを表示"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"録画に使用するアプリを選択"</string>
     <string name="screen_record_video_saved" msgid="1345283626390232282">"動画を保存しました"</string>
@@ -687,8 +691,7 @@
     <string name="accessibility_notification_section_header_gentle_clear_all" msgid="6490207897764933919">"サイレント通知がすべて消去されます"</string>
     <string name="accessibility_notification_section_header_open_settings" msgid="6235202417954844004">"通知設定を開く"</string>
     <string name="modes_suppressing_shade_text" msgid="6037581130837903239">"{count,plural,offset:1 =0{通知なし}=1{{mode} により通知は一時停止中です}=2{{mode} と他 1 個のモードにより通知は一時停止中です}other{{mode} と他 # 個のモードにより通知は一時停止中です}}"</string>
-    <!-- no translation found for caught_up_shade_text (8166221989384139659) -->
-    <skip />
+    <string name="caught_up_shade_text" msgid="8166221989384139659">"未読はありません"</string>
     <string name="media_projection_action_text" msgid="3634906766918186440">"今すぐ開始"</string>
     <string name="empty_shade_text" msgid="8935967157319717412">"通知はありません"</string>
     <string name="no_unseen_notif_text" msgid="395512586119868682">"新しい通知はありません"</string>
@@ -988,8 +991,7 @@
     <string name="group_system_access_notification_shade" msgid="1619028907006553677">"お知らせを表示する"</string>
     <string name="group_system_access_quick_settings_panel" msgid="1844771096582064926">"クイック設定の表示"</string>
     <string name="group_system_full_screenshot" msgid="5742204844232667785">"スクリーンショットを撮る"</string>
-    <!-- no translation found for group_system_partial_screenshot (2114314797127648010) -->
-    <skip />
+    <string name="group_system_partial_screenshot" msgid="2114314797127648010">"画面の一部のスクリーンショットを撮影する"</string>
     <string name="group_system_access_system_app_shortcuts" msgid="8562482996626694026">"ショートカットを表示する"</string>
     <string name="group_system_go_back" msgid="2730322046244918816">"戻る"</string>
     <string name="group_system_access_home_screen" msgid="4130366993484706483">"ホーム画面に移動する"</string>

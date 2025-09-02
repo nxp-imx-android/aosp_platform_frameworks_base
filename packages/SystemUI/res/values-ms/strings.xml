@@ -138,8 +138,12 @@
     <string name="screenrecord_stop_dialog_message" msgid="6262768207331626817">"Anda sedang merakam seluruh skrin anda"</string>
     <string name="screenrecord_stop_dialog_message_specific_app" msgid="5995770227684523244">"Anda sedang merakam <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="screenrecord_stop_dialog_button" msgid="2883812564938194350">"Hentikan rakaman"</string>
+    <string name="screen_record_entire_screen" msgid="66944996337928170">"Seluruh skrin"</string>
+    <string name="screen_record_single_app" msgid="7355880948574569290">"Apl tunggal"</string>
+    <string name="screen_record_single_app_no_recents" msgid="1023249803854209330">"Apl tunggal (Buka apl utk dipilih)"</string>
     <string name="screen_record_record_device_audio_label" msgid="5363057443124085198">"Rakam audio peranti"</string>
     <string name="screen_record_record_microphone_label" msgid="4685753707185662381">"Rakam mikrofon"</string>
+    <string name="screen_record_should_show_camera_label" msgid="159628971484931357">"Tunjukkan kamera swafoto"</string>
     <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"Tunjukkan sentuhan"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"Pilih apl untuk dirakam"</string>
     <string name="screen_record_video_saved" msgid="1345283626390232282">"Video disimpan"</string>
@@ -685,8 +689,7 @@
     <string name="accessibility_notification_section_header_gentle_clear_all" msgid="6490207897764933919">"Kosongkan semua pemberitahuan senyap"</string>
     <string name="accessibility_notification_section_header_open_settings" msgid="6235202417954844004">"Buka tetapan pemberitahuan"</string>
     <string name="modes_suppressing_shade_text" msgid="6037581130837903239">"{count,plural,offset:1 =0{Tiada pemberitahuan}=1{Pemberitahuan dijeda oleh {mode}}=2{Pemberitahuan dijeda oleh {mode} dan satu lagi mod yang lain}other{Pemberitahuan dijeda oleh {mode} dan # mod yang lain}}"</string>
-    <!-- no translation found for caught_up_shade_text (8166221989384139659) -->
-    <skip />
+    <string name="caught_up_shade_text" msgid="8166221989384139659">"Anda sudah membaca kesemuanya"</string>
     <string name="media_projection_action_text" msgid="3634906766918186440">"Mulakan sekarang"</string>
     <string name="empty_shade_text" msgid="8935967157319717412">"Tiada pemberitahuan"</string>
     <string name="no_unseen_notif_text" msgid="395512586119868682">"Tiada pemberitahuan baharu"</string>
@@ -986,8 +989,7 @@
     <string name="group_system_access_notification_shade" msgid="1619028907006553677">"Lihat pemberitahuan"</string>
     <string name="group_system_access_quick_settings_panel" msgid="1844771096582064926">"Lihat tetapan pantas"</string>
     <string name="group_system_full_screenshot" msgid="5742204844232667785">"Ambil tangkapan skrin"</string>
-    <!-- no translation found for group_system_partial_screenshot (2114314797127648010) -->
-    <skip />
+    <string name="group_system_partial_screenshot" msgid="2114314797127648010">"Ambil tangkapan skrin separa"</string>
     <string name="group_system_access_system_app_shortcuts" msgid="8562482996626694026">"Tunjukkan pintasan"</string>
     <string name="group_system_go_back" msgid="2730322046244918816">"Kembali"</string>
     <string name="group_system_access_home_screen" msgid="4130366993484706483">"Akses skrin utama"</string>
