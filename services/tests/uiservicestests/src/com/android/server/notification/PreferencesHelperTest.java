@@ -5495,6 +5495,11 @@ public class PreferencesHelperTest extends UiServiceTestCase {
 
         assertEquals(1, convos.size());
         assertTrue(conversationWrapperContainsChannel(convos, channel));
+
+        // Also test the getConversations(pkg, uid) API
+        List<ConversationChannelWrapper> convosByPkgUid = mHelper.getConversations(PKG_O, UID_O);
+        assertEquals(1, convos.size());
+        assertTrue(conversationWrapperContainsChannel(convos, channel));
     }
 
     private boolean conversationWrapperContainsChannel(List<ConversationChannelWrapper> list,
