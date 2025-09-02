@@ -532,6 +532,9 @@ class AppCompatLetterboxPolicy {
             mLetterboxPosition.set(0, 0);
             mInnerBounds.setEmpty();
             mOuterBounds.setEmpty();
+            for (Rect surfacesBounds : mSurfacesBounds) {
+                surfacesBounds.setEmpty();
+            }
         }
 
         @NonNull
