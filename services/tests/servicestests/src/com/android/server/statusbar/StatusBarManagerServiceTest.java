@@ -32,6 +32,7 @@ import static android.app.StatusBarManager.DISABLE_NONE;
 import static android.app.StatusBarManager.DISABLE_RECENT;
 import static android.app.StatusBarManager.DISABLE_SEARCH;
 import static android.app.StatusBarManager.DISABLE_SYSTEM_INFO;
+import static android.view.WindowManagerPolicyConstants.NAV_BAR_MODE_GESTURAL_OVERLAY;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
@@ -712,13 +713,18 @@ public class StatusBarManagerServiceTest {
     }
 
     @Test
-    public void testSetNavBarMode_setsModeNone() throws RemoteException {
+    public void testSetNavBarMode_setsModeGestural() throws Exception {
+        when(mOverlayManager.getDefaultOverlayPackages())
+                .thenReturn(new String[] {NAV_BAR_MODE_GESTURAL_OVERLAY});
+        when(mPackageManager.getPackageInfo(eq(NAV_BAR_MODE_GESTURAL_OVERLAY),
+                any(PackageManager.PackageInfoFlags.class))).thenReturn(new PackageInfo());
         int navBarModeNone = StatusBarManager.NAV_BAR_MODE_DEFAULT;
 
         mStatusBarManagerService.setNavBarMode(navBarModeNone);
 
         assertEquals(navBarModeNone, mStatusBarManagerService.getNavBarMode());
-        verify(mOverlayManager, never()).setEnabledExclusiveInCategory(anyString(), anyInt());
+        verify(mOverlayManager)
+                .setEnabledExclusiveInCategory(eq(NAV_BAR_MODE_GESTURAL_OVERLAY), anyInt());
     }
 
     @Test
