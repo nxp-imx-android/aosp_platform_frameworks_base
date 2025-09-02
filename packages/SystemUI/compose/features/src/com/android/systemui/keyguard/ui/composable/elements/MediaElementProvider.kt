@@ -31,10 +31,9 @@ import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.media.remedia.ui.compose.Media
 import com.android.systemui.media.remedia.ui.compose.MediaPresentationStyle
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElement
-import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementContext
-import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementFactory
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementKeys
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementProvider
+import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenScope
 import com.android.systemui.res.R
 import com.android.systemui.shade.ShadeDisplayAware
 import javax.inject.Inject
@@ -53,10 +52,7 @@ constructor(
         override val context = this@MediaElementProvider.context
 
         @Composable
-        override fun ElementContentScope.LockscreenElement(
-            factory: LockscreenElementFactory,
-            context: LockscreenElementContext,
-        ) {
+        override fun LockscreenScope<ElementContentScope>.LockscreenElement() {
             val horizontalPadding =
                 when (getLayoutType()) {
                     LayoutType.WIDE -> dimensionResource(R.dimen.notification_side_paddings)

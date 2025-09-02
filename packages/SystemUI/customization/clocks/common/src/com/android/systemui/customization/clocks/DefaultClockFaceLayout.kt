@@ -41,9 +41,8 @@ import com.android.systemui.plugins.keyguard.ui.clocks.AodClockBurnInModel
 import com.android.systemui.plugins.keyguard.ui.clocks.ClockFaceLayout
 import com.android.systemui.plugins.keyguard.ui.clocks.ClockPreviewConfig
 import com.android.systemui.plugins.keyguard.ui.clocks.ClockViewIds
-import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementContext
-import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementFactory
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementKeys
+import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenScope
 import com.android.systemui.plugins.keyguard.ui.composable.elements.MovableLockscreenElement
 import kotlin.collections.List
 
@@ -66,14 +65,11 @@ open class DefaultClockFaceLayout(val view: View) : ClockFaceLayout {
         override val context = view.context
 
         @Composable
-        override fun MovableElementContentScope.LockscreenElement(
-            factory: LockscreenElementFactory,
-            context: LockscreenElementContext,
-        ) {
+        override fun LockscreenScope<MovableElementContentScope>.LockscreenElement() {
             clockView(
                 view,
-                smallClockModifier()
-                    .height(dimensionResource(clocksR.dimen.small_clock_height))
+                Modifier.height(dimensionResource(clocksR.dimen.small_clock_height))
+                    .then(contentScope.smallClockModifier())
                     .then(context.burnInModifier),
             )
         }
@@ -84,11 +80,13 @@ open class DefaultClockFaceLayout(val view: View) : ClockFaceLayout {
         override val context = view.context
 
         @Composable
-        override fun MovableElementContentScope.LockscreenElement(
-            factory: LockscreenElementFactory,
-            context: LockscreenElementContext,
-        ) {
-            clockView(view, largeClockModifier().wrapContentSize().then(context.burnInModifier))
+        override fun LockscreenScope<MovableElementContentScope>.LockscreenElement() {
+            clockView(
+                view,
+                Modifier.wrapContentSize()
+                    .then(contentScope.largeClockModifier())
+                    .then(context.burnInModifier),
+            )
         }
     }
 

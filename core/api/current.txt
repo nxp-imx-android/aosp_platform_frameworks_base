@@ -6994,8 +6994,8 @@ package android.app {
   }
 
   @FlaggedApi("android.app.api_metric_style") public static final class Notification.Metric {
-    ctor public Notification.Metric(@NonNull android.app.Notification.Metric.MetricValue, @NonNull String);
-    method @NonNull public String getLabel();
+    ctor public Notification.Metric(@NonNull android.app.Notification.Metric.MetricValue, @NonNull CharSequence);
+    method @NonNull public CharSequence getLabel();
     method @NonNull public android.app.Notification.Metric.MetricValue getValue();
   }
 
@@ -7011,26 +7011,26 @@ package android.app {
 
   public static final class Notification.Metric.FixedFloat extends android.app.Notification.Metric.MetricValue {
     ctor public Notification.Metric.FixedFloat(float);
-    ctor public Notification.Metric.FixedFloat(float, @Nullable String);
-    ctor public Notification.Metric.FixedFloat(float, @Nullable String, @IntRange(from=0x0, to=0x6) int, @IntRange(from=0x0, to=0x6) int);
+    ctor public Notification.Metric.FixedFloat(float, @Nullable CharSequence);
+    ctor public Notification.Metric.FixedFloat(float, @Nullable CharSequence, @IntRange(from=0x0, to=0x6) int, @IntRange(from=0x0, to=0x6) int);
     method @IntRange(from=0x0, to=0x6) public int getMaxFractionDigits();
     method @IntRange(from=0x0, to=0x6) public int getMinFractionDigits();
-    method @Nullable public String getUnit();
+    method @Nullable public CharSequence getUnit();
     method public float getValue();
   }
 
   public static final class Notification.Metric.FixedInt extends android.app.Notification.Metric.MetricValue {
     ctor public Notification.Metric.FixedInt(int);
-    ctor public Notification.Metric.FixedInt(int, @Nullable String);
-    method @Nullable public String getUnit();
+    ctor public Notification.Metric.FixedInt(int, @Nullable CharSequence);
+    method @Nullable public CharSequence getUnit();
     method public int getValue();
   }
 
   public static final class Notification.Metric.FixedString extends android.app.Notification.Metric.MetricValue {
-    ctor public Notification.Metric.FixedString(@NonNull String);
-    ctor public Notification.Metric.FixedString(@NonNull String, @Nullable String);
-    method @Nullable public String getUnit();
-    method @NonNull public String getValue();
+    ctor public Notification.Metric.FixedString(@NonNull CharSequence);
+    ctor public Notification.Metric.FixedString(@NonNull CharSequence, @Nullable CharSequence);
+    method @Nullable public CharSequence getUnit();
+    method @NonNull public CharSequence getValue();
   }
 
   public static final class Notification.Metric.FixedTime extends android.app.Notification.Metric.MetricValue {

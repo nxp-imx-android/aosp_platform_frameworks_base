@@ -961,14 +961,18 @@ constructor(
         object : OnHeadsUpChangedListener {
             override fun onHeadsUpStateChanged(entry: NotificationEntry, isHeadsUp: Boolean) {
                 if (!isHeadsUp) {
-                    mNotifPromoter.invalidateList("headsUpEnded: ${entry.logKey}")
-                    mHeadsUpViewBinder.unbindHeadsUpView(entry)
-                    endNotifLifetimeExtensionIfExtended(entry)
+                    mExecutor.execute {
+                        mNotifPromoter.invalidateList("headsUpEnded: ${entry.logKey}")
+                        mHeadsUpViewBinder.unbindHeadsUpView(entry)
+                        endNotifLifetimeExtensionIfExtended(entry)
+                    }
                 }
             }
 
             override fun onHeadsUpAnimatingAwayEnded(entry: NotificationEntry) {
-                mNotifPromoter.invalidateList("headsUpAnimatingAwayEnded: ${entry.logKey}")
+                mExecutor.execute {
+                    mNotifPromoter.invalidateList("headsUpAnimatingAwayEnded: ${entry.logKey}")
+                }
             }
         }
 

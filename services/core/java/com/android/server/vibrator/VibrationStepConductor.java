@@ -21,7 +21,6 @@ import android.annotation.Nullable;
 import android.os.Build;
 import android.os.CombinedVibration;
 import android.os.VibrationEffect;
-import android.os.vibrator.Flags;
 import android.os.vibrator.PrebakedSegment;
 import android.os.vibrator.PrimitiveSegment;
 import android.os.vibrator.PwleSegment;
@@ -255,25 +254,16 @@ final class VibrationStepConductor {
             // Vibration still running.
             return null;
         }
-        if (Flags.vibrationThreadHandlingHalFailure()) {
-            if (mFailedVibratorOnSteps > 0) {
-                // Some steps failed to dispatch vibration to the vibrator HAL.
-                return new Vibration.EndInfo(Status.IGNORED_ERROR_DISPATCHING);
-            }
-            if (mSuccessfulVibratorOnSteps > 0) {
-                // Some steps played successfully, and there was no failure.
-                return new Vibration.EndInfo(Status.FINISHED);
-            }
-            // No step was successful or failed, nothing played.
-            return new Vibration.EndInfo(Status.IGNORED_UNSUPPORTED);
-        } else {
-            // No pending steps, and something happened.
-            if (mSuccessfulVibratorOnSteps > 0) {
-                return new Vibration.EndInfo(Status.FINISHED);
-            }
-            // If no step was able to turn the vibrator ON successfully.
-            return new Vibration.EndInfo(Status.IGNORED_UNSUPPORTED);
+        if (mFailedVibratorOnSteps > 0) {
+            // Some steps failed to dispatch vibration to the vibrator HAL.
+            return new Vibration.EndInfo(Status.IGNORED_ERROR_DISPATCHING);
         }
+        if (mSuccessfulVibratorOnSteps > 0) {
+            // Some steps played successfully, and there was no failure.
+            return new Vibration.EndInfo(Status.FINISHED);
+        }
+        // No step was successful or failed, nothing played.
+        return new Vibration.EndInfo(Status.IGNORED_UNSUPPORTED);
     }
 
     /**

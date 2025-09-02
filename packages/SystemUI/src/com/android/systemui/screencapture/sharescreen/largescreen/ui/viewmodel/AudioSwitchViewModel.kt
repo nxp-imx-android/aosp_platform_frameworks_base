@@ -19,10 +19,15 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import com.android.systemui.lifecycle.HydratedActivatable
+import com.android.systemui.screencapture.common.ui.viewmodel.DrawableLoaderViewModel
+import com.android.systemui.screencapture.common.ui.viewmodel.DrawableLoaderViewModelImpl
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 
-class AudioSwitchViewModel @AssistedInject constructor() : HydratedActivatable() {
+class AudioSwitchViewModel
+@AssistedInject
+constructor(private val drawableLoaderViewModelImpl: DrawableLoaderViewModelImpl) :
+    HydratedActivatable(), DrawableLoaderViewModel by drawableLoaderViewModelImpl {
     var audioSwitchChecked by mutableStateOf(false)
 
     @AssistedFactory

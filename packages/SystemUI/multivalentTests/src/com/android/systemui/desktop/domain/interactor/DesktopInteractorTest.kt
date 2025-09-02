@@ -16,8 +16,7 @@
 
 package com.android.systemui.desktop.domain.interactor
 
-import android.content.res.mainResources
-import android.content.testableContext
+import android.content.res.Configuration
 import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -26,29 +25,22 @@ import com.android.systemui.Flags
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.flags.EnableSceneContainer
 import com.android.systemui.kosmos.Kosmos
-import com.android.systemui.kosmos.backgroundScope
 import com.android.systemui.kosmos.collectLastValue
 import com.android.systemui.kosmos.runTest
+import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.res.R
 import com.android.systemui.statusbar.policy.configurationController
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 
-@OptIn(ExperimentalCoroutinesApi::class)
 @SmallTest
 @RunWith(AndroidJUnit4::class)
 class DesktopInteractorTest : SysuiTestCase() {
-    private val kosmos = testKosmos()
-    private lateinit var underTest: DesktopInteractor
 
-    @Before
-    fun setUp() {
-        underTest = kosmos.desktopInteractor
-    }
+    private val kosmos = testKosmos().useUnconfinedTestDispatcher()
+    private val Kosmos.underTest: DesktopInteractor by Kosmos.Fixture { desktopInteractor }
 
     @Test
     fun isDesktopForFalsingPurposes_false() =
@@ -56,7 +48,8 @@ class DesktopInteractorTest : SysuiTestCase() {
             val isDesktopForFalsingPurposes by
                 collectLastValue(underTest.isDesktopForFalsingPurposes)
 
-            overrideConfig(R.bool.config_isDesktopForFalsingPurposes, false)
+            overrideResource(R.bool.config_isDesktopForFalsingPurposes, false)
+            configurationController.onConfigurationChanged(Configuration())
 
             assertThat(isDesktopForFalsingPurposes).isFalse()
         }
@@ -67,7 +60,8 @@ class DesktopInteractorTest : SysuiTestCase() {
             val isDesktopForFalsingPurposes by
                 collectLastValue(underTest.isDesktopForFalsingPurposes)
 
-            overrideConfig(R.bool.config_isDesktopForFalsingPurposes, true)
+            overrideResource(R.bool.config_isDesktopForFalsingPurposes, true)
+            configurationController.onConfigurationChanged(Configuration())
 
             assertThat(isDesktopForFalsingPurposes).isTrue()
         }
@@ -77,7 +71,8 @@ class DesktopInteractorTest : SysuiTestCase() {
         kosmos.runTest {
             val useDesktopStatusBar by collectLastValue(underTest.useDesktopStatusBar)
 
-            overrideConfig(R.bool.config_useDesktopStatusBar, false)
+            overrideResource(R.bool.config_useDesktopStatusBar, false)
+            configurationController.onConfigurationChanged(Configuration())
 
             assertThat(useDesktopStatusBar).isFalse()
         }
@@ -87,58 +82,47 @@ class DesktopInteractorTest : SysuiTestCase() {
         kosmos.runTest {
             val useDesktopStatusBar by collectLastValue(underTest.useDesktopStatusBar)
 
-            overrideConfig(R.bool.config_useDesktopStatusBar, true)
+            overrideResource(R.bool.config_useDesktopStatusBar, true)
+            configurationController.onConfigurationChanged(Configuration())
 
             assertThat(useDesktopStatusBar).isTrue()
         }
 
+    @Test
     @EnableFlags(Flags.FLAG_STATUS_BAR_FOR_DESKTOP)
     @EnableSceneContainer
-    @Test
     fun desktopStatusBarEnabled_configEnabled_isNotificationShadeOnTopEndReturnsTrue() =
         kosmos.runTest {
-            overrideConfig(R.bool.config_notificationShadeOnTopEnd, true)
+            overrideResource(R.bool.config_notificationShadeOnTopEnd, true)
 
-            assertThat(createTestInstance().isNotificationShadeOnTopEnd).isTrue()
+            assertThat(underTest.isNotificationShadeOnTopEnd).isTrue()
         }
 
+    @Test
     @EnableFlags(Flags.FLAG_STATUS_BAR_FOR_DESKTOP)
     @EnableSceneContainer
-    @Test
     fun desktopStatusBarEnabled_configDisabled_isNotificationShadeOnTopEndReturnsFalse() =
         kosmos.runTest {
-            overrideConfig(R.bool.config_notificationShadeOnTopEnd, false)
+            overrideResource(R.bool.config_notificationShadeOnTopEnd, false)
 
-            assertThat(createTestInstance().isNotificationShadeOnTopEnd).isFalse()
+            assertThat(underTest.isNotificationShadeOnTopEnd).isFalse()
         }
 
-    @DisableFlags(Flags.FLAG_STATUS_BAR_FOR_DESKTOP)
     @Test
+    @DisableFlags(Flags.FLAG_STATUS_BAR_FOR_DESKTOP)
     fun desktopStatusBarDisabled_configEnabled_isNotificationShadeOnTopEndReturnsFalse() =
         kosmos.runTest {
-            overrideConfig(R.bool.config_notificationShadeOnTopEnd, true)
+            overrideResource(R.bool.config_notificationShadeOnTopEnd, true)
 
-            assertThat(createTestInstance().isNotificationShadeOnTopEnd).isFalse()
+            assertThat(underTest.isNotificationShadeOnTopEnd).isFalse()
         }
 
-    @DisableFlags(Flags.FLAG_STATUS_BAR_FOR_DESKTOP)
     @Test
+    @DisableFlags(Flags.FLAG_STATUS_BAR_FOR_DESKTOP)
     fun desktopStatusBarDisabled_configDisabled_isNotificationShadeOnTopEndReturnsFalse() =
         kosmos.runTest {
-            overrideConfig(R.bool.config_notificationShadeOnTopEnd, false)
+            overrideResource(R.bool.config_notificationShadeOnTopEnd, false)
 
-            assertThat(createTestInstance().isNotificationShadeOnTopEnd).isFalse()
+            assertThat(underTest.isNotificationShadeOnTopEnd).isFalse()
         }
-
-    private fun Kosmos.overrideConfig(configId: Int, value: Boolean) {
-        testableContext.orCreateTestableResources.addOverride(configId, value)
-    }
-
-    private fun Kosmos.createTestInstance(): DesktopInteractor {
-        return DesktopInteractor(
-            resources = mainResources,
-            scope = backgroundScope,
-            configurationController = configurationController,
-        )
-    }
 }

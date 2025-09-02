@@ -157,6 +157,9 @@ public class RemoteTransitionHandler implements Transitions.TransitionHandler {
             @Override
             public void onTransitionFinished(WindowContainerTransaction wct,
                     SurfaceControl.Transaction sct) {
+                ProtoLog.v(ShellProtoLogGroup.WM_SHELL_TRANSITIONS,
+                        "Received remote transition finished callback for (#%d)",
+                        info.getDebugId());
                 unhandleDeath(remote.asBinder(), finishCallback);
                 if (sct != null) {
                     finishTransaction.merge(sct);
@@ -223,16 +226,17 @@ public class RemoteTransitionHandler implements Transitions.TransitionHandler {
         final RemoteTransition remoteTransition = mRequestedRemotes.get(mergeTarget);
         if (remoteTransition == null) return;
 
-        ProtoLog.v(ShellProtoLogGroup.WM_SHELL_TRANSITIONS, "   Merge into remote: %s",
-                remoteTransition);
-
         final IRemoteTransition remote = remoteTransition.getRemoteTransition();
         if (remote == null) return;
 
+        ProtoLog.v(ShellProtoLogGroup.WM_SHELL_TRANSITIONS,
+                "   Requesting merge (#%d) into remote: %s", info.getDebugId(), remoteTransition);
         IRemoteTransitionFinishedCallback cb = new IRemoteTransitionFinishedCallback.Stub() {
             @Override
             public void onTransitionFinished(WindowContainerTransaction wct,
                     SurfaceControl.Transaction sct) {
+                ProtoLog.v(ShellProtoLogGroup.WM_SHELL_TRANSITIONS, "Merged (#%d) into remote",
+                        info.getDebugId());
                 // We have merged, since we sent the transaction over binder, the one in this
                 // process won't be cleared if the remote applied it. We don't actually know if the
                 // remote applied the transaction, but applying twice will break surfaceflinger

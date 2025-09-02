@@ -103,6 +103,8 @@ public class TaskSnapshot implements Parcelable {
     public static final int REFERENCE_WRITE_TO_PARCEL = 1 << 4;
     /** This snapshot object is being used to convert resolution . */
     public static final int REFERENCE_CONVERT_RESOLUTION = 1 << 5;
+    /** This snapshot object should be update to cache at some point. */
+    public static final int REFERENCE_WILL_UPDATE_TO_CACHE = 1 << 6;
 
     @IntDef(flag = true, prefix = { "REFERENCE_" }, value = {
             REFERENCE_NONE,
@@ -111,7 +113,8 @@ public class TaskSnapshot implements Parcelable {
             REFERENCE_PERSIST,
             REFERENCE_CONTENT_SUGGESTION,
             REFERENCE_WRITE_TO_PARCEL,
-            REFERENCE_CONVERT_RESOLUTION
+            REFERENCE_CONVERT_RESOLUTION,
+            REFERENCE_WILL_UPDATE_TO_CACHE
     })
     @Retention(RetentionPolicy.SOURCE)
     public @interface ReferenceFlags {}
@@ -514,6 +517,9 @@ public class TaskSnapshot implements Parcelable {
             mWriteToParcelCount++;
         }
         mInternalReferences |= usage;
+        if (usage == REFERENCE_CACHE) {
+            mInternalReferences &= ~REFERENCE_WILL_UPDATE_TO_CACHE;
+        }
     }
 
     /**

@@ -22,6 +22,7 @@ import android.app.PendingIntent
 import android.content.Intent
 import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
+import android.content.theming.ThemeStyle
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Color
@@ -82,7 +83,6 @@ import com.android.systemui.media.controls.ui.viewmodel.SeekBarViewModel
 import com.android.systemui.media.controls.util.MediaUiEventLogger
 import com.android.systemui.media.dialog.MediaOutputDialogManager
 import com.android.systemui.monet.ColorScheme
-import com.android.systemui.monet.Style
 import com.android.systemui.plugins.ActivityStarter
 import com.android.systemui.plugins.FalsingManager
 import com.android.systemui.res.R
@@ -653,12 +653,12 @@ public class MediaControlPanelTest : SysuiTestCase() {
         // Setup redArtwork and its color scheme.
         val redArt = getColorIcon(Color.RED)
         val redWallpaperColor = player.getWallpaperColor(redArt)
-        val redColorScheme = ColorScheme(redWallpaperColor, true, Style.CONTENT)
+        val redColorScheme = ColorScheme(redWallpaperColor, true, ThemeStyle.CONTENT)
 
         // Setup greenArt and its color scheme.
         val greenArt = getColorIcon(Color.GREEN)
         val greenWallpaperColor = player.getWallpaperColor(greenArt)
-        val greenColorScheme = ColorScheme(greenWallpaperColor, true, Style.CONTENT)
+        val greenColorScheme = ColorScheme(greenWallpaperColor, true, ThemeStyle.CONTENT)
 
         // Add gradient to both icons.
         val redArtwork = player.addGradientToPlayerAlbum(redArt, redColorScheme, 10, 10)

@@ -528,6 +528,37 @@ public class DesktopModeLaunchParamsModifierTests extends
                 AppCompatUtils.computeAspectRatio(mResult.mAppBounds), /* delta */ 0.05);
     }
 
+    @EnableFlags({Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE,
+            Flags.FLAG_INHERIT_TASK_BOUNDS_FOR_TRAMPOLINE_TASK_LAUNCHES})
+    public void testSourceTaskBoundsFromExistingInstanceIfClosing() {
+        setupDesktopModeLaunchParamsModifier();
+
+        final String packageName = "com.same.package";
+        // Setup existing task.
+        final DisplayContent dc = spy(createNewDisplay());
+        final Task sourceTask = new TaskBuilder(mSupervisor).setCreateActivity(true)
+                .setWindowingMode(WINDOWING_MODE_FREEFORM).setPackage(packageName).build();
+        sourceTask.topRunningActivity().launchMode = LAUNCH_SINGLE_INSTANCE;
+        sourceTask.setBounds(
+                /* left */ 0,
+                /* top */ 0,
+                /* right */ 500,
+                /* bottom */ 500);
+        // Set up new instance of already existing task. By default multi instance is not supported
+        // so first instance will close.
+        final Task launchingTask = new TaskBuilder(mSupervisor).setPackage(packageName)
+                .setCreateActivity(true).build();
+        launchingTask.topRunningActivity().launchMode = LAUNCH_SINGLE_INSTANCE;
+        launchingTask.onDisplayChanged(dc);
+
+        // New instance should inherit task bounds of old instance.
+        assertEquals(RESULT_DONE,
+                new CalculateRequestBuilder().setTask(launchingTask)
+                        .setActivity(launchingTask.getRootActivity())
+                        .setSource(sourceTask.getTopMostActivity()).calculate());
+        assertEquals(sourceTask.getBounds(), mResult.mBounds);
+    }
+
     @Test
     @EnableFlags({Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE,
             Flags.FLAG_INHERIT_TASK_BOUNDS_FOR_TRAMPOLINE_TASK_LAUNCHES})

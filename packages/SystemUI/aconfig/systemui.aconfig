@@ -2256,3 +2256,13 @@ flag {
     description: "Enable plugin for ambient cue project"
     bug: "439907833"
 }
+
+flag {
+   name: "update_keyguard_on_wake_and_unlock_earlier"
+   namespace: "systemui"
+   description: "Call updateIsKeyguard earlier than on the dozing callback."
+   bug: "441261701"
+   metadata {
+        purpose: PURPOSE_BUGFIX
+   }
+}

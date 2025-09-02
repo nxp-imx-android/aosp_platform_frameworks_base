@@ -24,7 +24,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -44,6 +44,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
@@ -64,6 +65,7 @@ import com.android.compose.animation.scene.SceneTransitionLayout
 import com.android.compose.animation.scene.rememberMutableSceneTransitionLayoutState
 import com.android.compose.animation.scene.transitions
 import com.android.compose.ui.graphics.painter.rememberDrawablePainter
+import com.android.systemui.res.R
 import com.android.systemui.statusbar.notification.row.ui.viewmodel.BundleHeaderViewModel
 
 object BundleHeader {
@@ -136,7 +138,13 @@ fun BundleHeader(viewModel: BundleHeaderViewModel, modifier: Modifier = Modifier
         onDispose { viewModel.composeScope = null }
     }
 
-    Box(modifier) {
+    // In most cases the height is expected to be equal to the header height dimension's value, but
+    // it is set as the minimum here so that the header can resize if necessary for larger font
+    // or display sizes.
+    Box(
+        modifier =
+            modifier.heightIn(min = dimensionResource(R.dimen.notification_bundle_header_height))
+    ) {
         Background(background = viewModel.backgroundDrawable, modifier = Modifier.matchParentSize())
         SceneTransitionLayout(
             state = state,
@@ -177,7 +185,7 @@ private fun ContentScope.BundleHeaderContent(
 ) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
-        modifier = modifier.height(48.dp).padding(vertical = 12.dp),
+        modifier = modifier.padding(vertical = 12.dp),
     ) {
         BundleIcon(
             viewModel.bundleIcon,

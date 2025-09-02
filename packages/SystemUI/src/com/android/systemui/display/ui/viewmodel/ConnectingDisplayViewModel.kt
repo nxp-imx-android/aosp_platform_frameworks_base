@@ -15,8 +15,6 @@
  */
 package com.android.systemui.display.ui.viewmodel
 
-import android.app.ActivityManager
-import android.app.ActivityManager.LOCK_TASK_MODE_LOCKED
 import android.app.Dialog
 import android.content.Context
 import android.provider.Settings.Secure.MIRROR_BUILT_IN_DISPLAY
@@ -39,6 +37,7 @@ import com.android.systemui.biometrics.Utils.getInsetsOf
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Background
+import com.android.systemui.display.data.repository.KioskModeRepository
 import com.android.systemui.display.domain.interactor.ConnectedDisplayInteractor
 import com.android.systemui.display.domain.interactor.ConnectedDisplayInteractor.PendingDisplay
 import com.android.systemui.display.ui.view.ExternalDisplayConnectionDialogDelegate
@@ -75,7 +74,7 @@ constructor(
     private val context: Context,
     private val desktopState: DesktopState,
     private val secureSettings: SecureSettings,
-    private val activityManager: ActivityManager,
+    private val kioskModeRepository: KioskModeRepository,
     private val connectedDisplayInteractor: ConnectedDisplayInteractor,
     @Application private val scope: CoroutineScope,
     @Background private val bgDispatcher: CoroutineDispatcher,
@@ -91,27 +90,33 @@ constructor(
     @OptIn(FlowPreview::class)
     override fun start() {
         val pendingDisplayFlow = connectedDisplayInteractor.pendingDisplay
+        val kioskModeFlow = kioskModeRepository.isInKioskMode
         val concurrentDisplaysInProgressFlow =
             if (Flags.enableDualDisplayBlocking()) {
                 connectedDisplayInteractor.concurrentDisplaysInProgress
             } else {
                 flow { emit(false) }
             }
-        pendingDisplayFlow
-            // Let's debounce for 2 reasons:
-            // - prevent fast dialog flashes in case pending displays are available for just a few
-            // millis
-            // - Prevent jumps related to inset changes: when in 3 buttons navigation, device
-            // unlock triggers a change in insets that might result in a jump of the dialog (if a
-            // display was connected while on the lockscreen).
-            .debounce(200.milliseconds)
-            .combine(concurrentDisplaysInProgressFlow) {
+
+        // Let's debounce for 2 reasons:
+        // - prevent fast dialog flashes where pending displays are available for just a few millis
+        // - prevent jumps related to inset changes: when in 3 buttons navigation, device unlock
+        //   triggers a change in insets that might result in a jump of the dialog (if a display was
+        //   connected while on the lockscreen).
+        val debouncedPendingDisplayFlow = pendingDisplayFlow.debounce(200.milliseconds)
+
+        combine(debouncedPendingDisplayFlow, kioskModeFlow, concurrentDisplaysInProgressFlow) {
                 pendingDisplay,
+                isInKioskMode,
                 concurrentDisplaysInProgress ->
                 if (pendingDisplay == null) {
                     dismissDialog()
                 } else {
-                    handleNewPendingDisplay(pendingDisplay, concurrentDisplaysInProgress)
+                    handleNewPendingDisplay(
+                        pendingDisplay,
+                        isInKioskMode,
+                        concurrentDisplaysInProgress,
+                    )
                 }
             }
             .launchIn(scope)
@@ -170,6 +175,7 @@ constructor(
 
     private suspend fun handleNewPendingDisplay(
         pendingDisplay: PendingDisplay,
+        isInKioskMode: Boolean,
         concurrentDisplaysInProgress: Boolean,
     ) {
         val useNewDialog =
@@ -180,10 +186,10 @@ constructor(
             return
         }
 
-        val isInKioskMode = activityManager.lockTaskModeState == LOCK_TASK_MODE_LOCKED
         val isInExtendedMode = desktopState.isDesktopModeSupportedOnDisplay(DEFAULT_DISPLAY)
 
         if (isInKioskMode) {
+            dismissDialog()
             pendingDisplay.showNewDialog(concurrentDisplaysInProgress, isInKioskMode)
         } else if (isInExtendedMode) {
             pendingDisplay.enableForDesktop()

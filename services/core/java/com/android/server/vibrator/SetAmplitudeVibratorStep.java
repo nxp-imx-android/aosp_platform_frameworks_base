@@ -20,7 +20,6 @@ import android.annotation.NonNull;
 import android.os.SystemClock;
 import android.os.Trace;
 import android.os.VibrationEffect;
-import android.os.vibrator.Flags;
 import android.os.vibrator.StepSegment;
 import android.os.vibrator.VibrationEffectSegment;
 import android.util.Slog;
@@ -95,7 +94,7 @@ final class SetAmplitudeVibratorStep extends AbstractComposedVibratorStep {
                     long onDuration = getVibratorOnDuration(effect, segmentIndex);
                     if (onDuration > 0) {
                         long vibratorOnResult = startVibrating(onDuration, amplitude);
-                        if (Flags.vibrationThreadHandlingHalFailure() && vibratorOnResult <= 0) {
+                        if (vibratorOnResult <= 0) {
                             // Error turning vibrator ON, cancel the waveform playback.
                             return cancelStep();
                         }
@@ -125,7 +124,7 @@ final class SetAmplitudeVibratorStep extends AbstractComposedVibratorStep {
 
             float expectedAmplitude = vibrator.getCurrentAmplitude();
             long vibratorOnResult = startVibrating(onDuration, expectedAmplitude);
-            if (Flags.vibrationThreadHandlingHalFailure() && vibratorOnResult <= 0) {
+            if (vibratorOnResult <= 0) {
                 // Error turning vibrator back ON, cancel the waveform playback.
                 return cancelStep();
             }

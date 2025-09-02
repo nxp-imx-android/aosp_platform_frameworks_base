@@ -341,6 +341,39 @@ class TraceProtoBuilder(object):
             packet.track_descriptor.name = track_name
         return packet
 
+    def add_thread_track_descriptor(
+        self,
+        process_track: int,
+        thread_track: int,
+        trusted_packet_sequence_id: Optional[int] = None,
+        pid: Optional[int] = None,
+        tid: Optional[int] = None,
+        thread_name: Optional[str] = None,
+    ):
+        """Adds a thread track descriptor to the current packet.
+
+        Args:
+            process_track: The ID of the parent process track.
+            thread_track: The ID of the new thread track.
+            trusted_packet_sequence_id: Optional, trusted packet sequence ID.
+            pid: Optional, process ID of the thread.
+            tid: Optional,thread ID of the thread to be added.
+            thread_name: Optional, name of the thread to be added.
+
+        Returns:
+            The packet containing the newly added track descriptor.
+        """
+        packet = self.add_track_descriptor(thread_track, parent=process_track)
+        if trusted_packet_sequence_id is not None:
+            packet.trusted_packet_sequence_id = trusted_packet_sequence_id
+        if pid is not None:
+            packet.track_descriptor.thread.pid = pid
+        if tid is not None:
+            packet.track_descriptor.thread.tid = tid
+        if thread_name is not None:
+            packet.track_descriptor.thread.thread_name = thread_name
+        return packet
+
     def add_track_event_slice_begin(
         self,
         name: str,

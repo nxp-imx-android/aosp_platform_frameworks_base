@@ -19,6 +19,7 @@ package com.android.systemui.media.remedia.data.repository
 import android.app.WallpaperColors
 import android.content.Context
 import android.content.pm.PackageManager
+import android.content.theming.ThemeStyle
 import android.graphics.drawable.Drawable
 import android.media.MediaMetadata
 import android.media.session.MediaController
@@ -46,7 +47,6 @@ import com.android.systemui.media.remedia.data.model.UpdateArtInfoModel
 import com.android.systemui.media.remedia.shared.model.MediaColorScheme
 import com.android.systemui.media.remedia.shared.model.MediaSessionState
 import com.android.systemui.monet.ColorScheme
-import com.android.systemui.monet.Style
 import com.android.systemui.res.R
 import com.android.systemui.util.settings.SecureSettings
 import com.android.systemui.util.time.SystemClock
@@ -333,7 +333,7 @@ constructor(
     ): MediaColorScheme? {
         val wallpaperColors = getWallpaperColor(applicationContext, backgroundDispatcher, artwork)
         val colorScheme =
-            wallpaperColors?.let { ColorScheme(it, false, Style.CONTENT) }
+            wallpaperColors?.let { ColorScheme(it, false, ThemeStyle.CONTENT) }
                 ?: let {
                     val launcherIcon = getAltIcon(packageName)
                     if (launcherIcon is Icon.Loaded) {
@@ -398,7 +398,7 @@ constructor(
     /** Returns [ColorScheme] of media app given its [icon]. */
     private fun getColorScheme(icon: Drawable): ColorScheme? {
         return try {
-            ColorScheme(WallpaperColors.fromDrawable(icon), false, Style.CONTENT)
+            ColorScheme(WallpaperColors.fromDrawable(icon), false, ThemeStyle.CONTENT)
         } catch (e: PackageManager.NameNotFoundException) {
             Log.w(TAG, "Fail to get media app info", e)
             null

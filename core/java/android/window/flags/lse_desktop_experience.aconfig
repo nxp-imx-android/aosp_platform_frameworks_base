@@ -23,6 +23,13 @@ flag {
 }
 
 flag {
+    name: "close_fullscreen_and_splitscreen_keyboard_shortcut"
+    namespace: "lse_desktop_experience"
+    description: "Enable keyboard shortcut to close fullscreen and split screen tasks"
+    bug: "441147192"
+}
+
+flag {
     name: "close_task_keyboard_shortcut"
     namespace: "lse_desktop_experience"
     description: "Enable keyboard shortcut to close a task"
@@ -341,16 +348,6 @@ flag {
     namespace: "lse_desktop_experience"
     description: "Enables launching an app while it's in PiP on another display."
     bug: "424569682"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
-    name: "enable_defer_down_recents_animation_bugfix"
-    namespace: "lse_desktop_experience"
-    description: "Enable defering start of recents animation by down to prevent showing unintentional animation"
-    bug: "432133436"
     metadata {
         purpose: PURPOSE_BUGFIX
     }

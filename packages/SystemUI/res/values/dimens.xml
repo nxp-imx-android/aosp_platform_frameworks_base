@@ -407,6 +407,9 @@
     <!-- Extra space for guts bundle feedback button -->
     <dimen name="notification_guts_bundle_feedback_size">48dp</dimen>
 
+    <!-- The height of notification bundle headers -->
+    <dimen name="notification_bundle_header_height">48dp</dimen>
+
     <!-- Size of icon buttons in notification info. -->
     <!-- 24dp for the icon itself + 16dp * 2 for top and bottom padding -->
     <dimen name="notification_2025_guts_button_size">56dp</dimen>

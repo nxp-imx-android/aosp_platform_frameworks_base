@@ -1117,9 +1117,6 @@ class SettingsProtoDumpUtil {
                 Settings.Global.SMART_REPLIES_IN_NOTIFICATIONS_FLAGS,
                 GlobalSettingsProto.Notification.SMART_REPLIES_IN_NOTIFICATIONS_FLAGS);
         dumpSetting(s, p,
-                Settings.Global.SMART_SUGGESTIONS_IN_NOTIFICATIONS_FLAGS,
-                GlobalSettingsProto.Notification.SMART_SUGGESTIONS_IN_NOTIFICATIONS_FLAGS);
-        dumpSetting(s, p,
                 Settings.Global.DISABLE_SCREEN_SHARE_PROTECTIONS_FOR_APPS_AND_NOTIFICATIONS,
                 GlobalSettingsProto.Notification
                         .DISABLE_SCREEN_SHARE_PROTECTIONS_FOR_APPS_AND_NOTIFICATIONS);

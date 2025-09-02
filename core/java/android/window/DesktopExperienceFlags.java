@@ -59,6 +59,9 @@ public enum DesktopExperienceFlags {
     BASE_DENSITY_FOR_EXTERNAL_DISPLAYS(
             com.android.server.display.feature.flags.Flags::baseDensityForExternalDisplays, true,
             com.android.server.display.feature.flags.Flags.FLAG_BASE_DENSITY_FOR_EXTERNAL_DISPLAYS),
+    CLOSE_FULLSCREEN_AND_SPLITSCREEN_KEYBOARD_SHORTCUT(
+            Flags::closeFullscreenAndSplitscreenKeyboardShortcut, false,
+            Flags.FLAG_CLOSE_FULLSCREEN_AND_SPLITSCREEN_KEYBOARD_SHORTCUT),
     CLOSE_TASK_KEYBOARD_SHORTCUT(Flags::closeTaskKeyboardShortcut, true,
             Flags.FLAG_CLOSE_TASK_KEYBOARD_SHORTCUT),
     CONNECTED_DISPLAYS_CURSOR(com.android.input.flags.Flags::connectedDisplaysCursor, true,
@@ -108,9 +111,6 @@ public enum DesktopExperienceFlags {
     ENABLE_DEFAULT_DISPLAY_IN_TOPOLOGY_SWITCH(
             com.android.server.display.feature.flags.Flags::enableDefaultDisplayInTopologySwitch,
             true, FLAG_ENABLE_DEFAULT_DISPLAY_IN_TOPOLOGY_SWITCH),
-    ENABLE_DEFER_DOWN_RECENTS_ANIMATION_BUGFIX(
-            Flags::enableDeferDownRecentsAnimationBugfix, true,
-            Flags.FLAG_ENABLE_DEFER_DOWN_RECENTS_ANIMATION_BUGFIX),
     ENABLE_DESKTOP_APP_HEADER_STATE_CHANGE_ANNOUNCEMENTS(
             Flags::enableDesktopAppHeaderStateChangeAnnouncements, false,
             Flags.FLAG_ENABLE_DESKTOP_APP_HEADER_STATE_CHANGE_ANNOUNCEMENTS),

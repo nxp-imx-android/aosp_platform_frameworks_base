@@ -20,14 +20,3 @@ flag {
       purpose: PURPOSE_BUGFIX
     }
 }
-
-flag {
-    name: "enable_omit_accelerometer_rotation_restore"
-    namespace: "windowing_frontend"
-    description: "Prevents restoring the ACCELEROMETER_ROTATION setting on foldable devices \n"
-                 "during backup and restore"
-    bug: "414591058"
-    metadata {
-      purpose: PURPOSE_BUGFIX
-    }
-}

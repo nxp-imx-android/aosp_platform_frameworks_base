@@ -40,6 +40,8 @@ import com.android.systemui.display.data.repository.DisplayWindowPropertiesRepos
 import com.android.systemui.display.data.repository.DisplaysWithDecorationsRepositoryImpl
 import com.android.systemui.display.data.repository.FocusedDisplayRepository
 import com.android.systemui.display.data.repository.FocusedDisplayRepositoryImpl
+import com.android.systemui.display.data.repository.KioskModeRepository
+import com.android.systemui.display.data.repository.KioskModeRepositoryImpl
 import com.android.systemui.display.data.repository.PerDisplayRepoDumpHelper
 import com.android.systemui.display.domain.interactor.ConnectedDisplayInteractor
 import com.android.systemui.display.domain.interactor.ConnectedDisplayInteractorImpl
@@ -76,6 +78,9 @@ interface DisplayModule {
     fun bindsDeviceStateRepository(
         deviceStateRepository: DeviceStateRepositoryImpl
     ): DeviceStateRepository
+
+    @Binds
+    fun bindsKioskModeRepository(kioskModeRepository: KioskModeRepositoryImpl): KioskModeRepository
 
     @Binds
     fun bindsFocusedDisplayRepository(
