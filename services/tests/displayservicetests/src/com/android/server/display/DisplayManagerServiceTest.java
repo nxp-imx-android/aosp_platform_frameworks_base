@@ -310,7 +310,8 @@ public class DisplayManagerServiceTest {
                 LocalDisplayAdapter getLocalDisplayAdapter(SyncRoot syncRoot, Context context,
                         Handler handler, DisplayAdapter.Listener displayAdapterListener,
                         DisplayManagerFlags flags,
-                        DisplayNotificationManager displayNotificationManager) {
+                        DisplayNotificationManager displayNotificationManager,
+                        boolean stableEdidsFlag) {
                     return new LocalDisplayAdapter(syncRoot, context, handler,
                             displayAdapterListener, flags,
                             mMockedDisplayNotificationManager,
@@ -320,7 +321,7 @@ public class DisplayManagerServiceTest {
                                         getSurfaceControlProxy() {
                                     return mSurfaceControlProxy;
                                 }
-                            });
+                            }, stableEdidsFlag);
                 }
 
                 @Override
@@ -367,7 +368,7 @@ public class DisplayManagerServiceTest {
         LocalDisplayAdapter getLocalDisplayAdapter(SyncRoot syncRoot, Context context,
                 Handler handler, DisplayAdapter.Listener displayAdapterListener,
                 DisplayManagerFlags flags,
-                DisplayNotificationManager displayNotificationManager) {
+                DisplayNotificationManager displayNotificationManager, boolean stableEdidsFlag) {
             return new LocalDisplayAdapter(
                     syncRoot,
                     context,
@@ -380,7 +381,7 @@ public class DisplayManagerServiceTest {
                         public LocalDisplayAdapter.SurfaceControlProxy getSurfaceControlProxy() {
                             return mSurfaceControlProxy;
                         }
-                    });
+                    }, false);
         }
 
         @Override
@@ -541,6 +542,7 @@ public class DisplayManagerServiceTest {
                 .thenReturn(mMockDisplayToken);
         SurfaceControl.StaticDisplayInfo staticDisplayInfo = new SurfaceControl.StaticDisplayInfo();
         staticDisplayInfo.isInternal = true;
+        staticDisplayInfo.port = 100;
         when(mSurfaceControlProxy.getStaticDisplayInfo(anyLong()))
                 .thenReturn(staticDisplayInfo);
         SurfaceControl.DynamicDisplayInfo dynamicDisplayMode =

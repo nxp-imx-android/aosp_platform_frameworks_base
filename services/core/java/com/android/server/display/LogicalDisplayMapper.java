@@ -234,12 +234,13 @@ class LogicalDisplayMapper implements DisplayDeviceRepository.Listener {
             @NonNull DisplayDeviceRepository repo,
             @NonNull Listener listener, @NonNull DisplayManagerService.SyncRoot syncRoot,
             @NonNull Handler handler, DisplayManagerFlags flags,
-            Predicate<DisplayInfo> isDisplayAllowedInTopology) {
+            Predicate<DisplayInfo> isDisplayAllowedInTopology, boolean stableEdidsFlag) {
         this(context, foldSettingProvider, repo, listener, syncRoot, handler,
                 new DeviceStateToLayoutMap(
-                        (isDefault) -> isDefault ? DEFAULT_DISPLAY : sNextNonDefaultDisplayId++,
-                        flags), flags, new SyntheticModeManager(flags), new DisplayGroupAllocator(
-                context), isDisplayAllowedInTopology);
+                        (isDefault) -> isDefault ? DEFAULT_DISPLAY
+                                : sNextNonDefaultDisplayId++, stableEdidsFlag),
+                flags, new SyntheticModeManager(flags), new DisplayGroupAllocator(context),
+                isDisplayAllowedInTopology);
     }
 
     LogicalDisplayMapper(@NonNull Context context, FoldSettingProvider foldSettingProvider,

@@ -325,11 +325,10 @@ public class DisplayRotation {
     private int readDefaultDisplayRotation(DisplayAddress displayAddress,
             DisplayContent displayContent) {
         String syspropValue = "";
-        if (displayAddress instanceof DisplayAddress.Physical) {
-            final DisplayAddress.Physical physicalAddress =
-                    (DisplayAddress.Physical) displayAddress;
+        if (displayAddress != null
+                && displayAddress.getPhysicalDisplayId() != DisplayAddress.INVALID_DISPLAY_ID) {
             syspropValue = SystemProperties.get(
-                    "ro.bootanim.set_orientation_" + physicalAddress.getPhysicalDisplayId(), "");
+                    "ro.bootanim.set_orientation_" + displayAddress.getPhysicalDisplayId(), "");
         }
         if ("".equals(syspropValue) && displayContent.isDefaultDisplay) {
             syspropValue = SystemProperties.get(

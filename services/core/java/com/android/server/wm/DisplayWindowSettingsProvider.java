@@ -239,8 +239,8 @@ class DisplayWindowSettingsProvider implements SettingsProvider {
         protected final String getIdentifier(@NonNull DisplayInfo displayInfo) {
             if (mIdentifierType == IDENTIFIER_PORT && displayInfo.address != null) {
                 // Config suggests using port as identifier for physical displays.
-                if (displayInfo.address instanceof DisplayAddress.Physical) {
-                    return "port:" + ((DisplayAddress.Physical) displayInfo.address).getPort();
+                if (displayInfo.address.getPort() != DisplayAddress.INVALID_PORT) {
+                    return "port:" + displayInfo.address.getPort();
                 }
             }
             return displayInfo.uniqueId;

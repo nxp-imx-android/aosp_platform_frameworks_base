@@ -440,11 +440,9 @@ abstract class DisplayDevice {
 
         viewport.uniqueId = info.uniqueId;
 
-        if (info.address instanceof DisplayAddress.Physical) {
-            viewport.physicalPort = ((DisplayAddress.Physical) info.address).getPort();
-        } else {
-            viewport.physicalPort = null;
-        }
+        final int port = info.address != null ? info.address.getPort()
+                : DisplayAddress.INVALID_PORT;
+        viewport.physicalPort = port != DisplayAddress.INVALID_PORT ? port : null;
     }
 
     /**

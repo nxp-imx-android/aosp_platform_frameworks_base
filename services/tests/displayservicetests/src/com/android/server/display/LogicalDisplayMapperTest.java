@@ -194,7 +194,7 @@ public class LogicalDisplayMapperTest {
                 mWindowManagerPolicy);
 
         mDeviceStateToLayoutMapSpy =
-                spy(new DeviceStateToLayoutMap(mIdProducer, mFlagsMock, NON_EXISTING_FILE));
+                spy(new DeviceStateToLayoutMap(mIdProducer, NON_EXISTING_FILE, true));
 
         mDisplayDeviceRepo = new DisplayDeviceRepository(
                 new DisplayManagerService.SyncRoot(),
@@ -211,7 +211,7 @@ public class LogicalDisplayMapperTest {
 
                     @Override
                     public void finishWrite(OutputStream os, boolean success) {}
-                }));
+                }), /* stableEdidsFlag= */ true);
 
         // Disable binder caches in this process.
         PropertyInvalidatedCache.disableForTestMode();

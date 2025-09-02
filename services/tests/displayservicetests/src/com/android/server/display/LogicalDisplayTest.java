@@ -119,7 +119,7 @@ public class LogicalDisplayTest {
 
                     @Override
                     public void finishWrite(OutputStream os, boolean success) {}
-                }));
+                }), /* stableEdidsFlag= */ true);
         mDeviceRepo.onDisplayDeviceEvent(mDisplayDevice, DisplayAdapter.DISPLAY_DEVICE_EVENT_ADDED);
         mLogicalDisplay.updateLocked(mDeviceRepo, mSyntheticModeManager);
     }
