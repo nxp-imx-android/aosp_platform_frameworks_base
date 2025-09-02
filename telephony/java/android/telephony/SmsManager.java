@@ -34,6 +34,7 @@ import android.annotation.SuppressAutoDoc;
 import android.annotation.SuppressLint;
 import android.annotation.SystemApi;
 import android.annotation.TestApi;
+import android.app.AppOpsManager;
 import android.app.PendingIntent;
 import android.app.admin.DevicePolicyManager;
 import android.app.role.RoleManager;
@@ -3789,6 +3790,9 @@ public final class SmsManager {
             for (AssociationInfo info : getAllCdmAssociations(userContext)) {
                 trustedPackages.add(info.getPackageName());
             }
+
+            // Apps with the READ_OTP_SMS app op have access
+            trustedPackages.addAll(getSmsOtpAppOpPackages(userContext));
         } finally {
             Binder.restoreCallingIdentity(token);
             Trace.endSection();
@@ -3848,6 +3852,9 @@ public final class SmsManager {
                 }
             }
 
+            if (hasSmsOtpAppOp(userContext, packageName, uid)) {
+                return true;
+            }
         } finally {
             Trace.endSection();
             Binder.restoreCallingIdentity(token);
@@ -3869,6 +3876,20 @@ public final class SmsManager {
     private static boolean isTrustedOtpSmsRoleHolder(Context context, String packageName, int uid) {
         return getTrustedOtpSmsRolePackages(context, UserHandle.getUserHandleForUid(uid))
                 .contains(packageName);
+    }
+
+    private static boolean hasSmsOtpAppOp(Context context, String packageName, int uid) {
+        AppOpsManager aom = context.getSystemService(AppOpsManager.class);
+        return aom.checkOpNoThrow(AppOpsManager.OP_READ_OTP_SMS, uid, packageName)
+                == AppOpsManager.MODE_ALLOWED;
+    }
+
+
+    @SuppressLint("MissingPermission")
+    private static List<String> getSmsOtpAppOpPackages(Context context) {
+        AppOpsManager aom = context.getSystemService(AppOpsManager.class);
+        return aom.getPackagesWithNonDefaultUidMode(
+                AppOpsManager.OP_READ_OTP_SMS, AppOpsManager.MODE_ALLOWED);
     }
 
     private static boolean isSystemApp(Context context, String packageName) {
