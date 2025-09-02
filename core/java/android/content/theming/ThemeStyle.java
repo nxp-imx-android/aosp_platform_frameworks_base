@@ -22,8 +22,10 @@ import static java.lang.annotation.ElementType.METHOD;
 import static java.lang.annotation.ElementType.PARAMETER;
 import static java.lang.annotation.RetentionPolicy.SOURCE;
 
+import android.annotation.FlaggedApi;
 import android.annotation.IntDef;
 import android.annotation.NonNull;
+import android.annotation.TestApi;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
@@ -34,7 +36,13 @@ import java.lang.annotation.Target;
  *
  * @hide
  */
+@TestApi
+@FlaggedApi(android.server.Flags.FLAG_ENABLE_THEME_SERVICE)
 public final class ThemeStyle {
+    private ThemeStyle() {
+        // Utility class
+    }
+
     /**
      * @hide
      */
@@ -106,7 +114,7 @@ public final class ThemeStyle {
      * @throws NullPointerException if the style value is null.
      */
     @NonNull
-    public static String toString(@Type Integer style) {
+    public static String toString(@Type int style) {
         return switch (style) {
             case SPRITZ -> "SPRITZ";
             case TONAL_SPOT -> "TONAL_SPOT";
@@ -131,7 +139,7 @@ public final class ThemeStyle {
      * @throws NullPointerException if the style name is null.
      */
     @Type
-    public static  int valueOf(String styleName) {
+    public static  int valueOf(@NonNull String styleName) {
         return switch (styleName) {
             case "SPRITZ" -> SPRITZ;
             case "TONAL_SPOT" -> TONAL_SPOT;
@@ -163,6 +171,7 @@ public final class ThemeStyle {
      *
      * @return An array of all style values.
      */
+    @NonNull
     public static int[] values() {
         return new int[]{
                 SPRITZ,

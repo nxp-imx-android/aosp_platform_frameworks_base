@@ -23,6 +23,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.res.Resources
+import android.content.theming.ThemeStyle
 import android.graphics.Rect
 import android.hardware.display.DisplayManager
 import android.os.Handler
@@ -64,7 +65,6 @@ import com.android.systemui.keyguard.ui.viewmodel.KeyguardPreviewSmartspaceViewM
 import com.android.systemui.keyguard.ui.viewmodel.KeyguardPreviewViewModel
 import com.android.systemui.keyguard.ui.viewmodel.KeyguardQuickAffordancesCombinedViewModel
 import com.android.systemui.monet.ColorScheme
-import com.android.systemui.monet.Style
 import com.android.systemui.plugins.keyguard.data.model.WeatherData
 import com.android.systemui.plugins.keyguard.ui.clocks.ClockController
 import com.android.systemui.plugins.keyguard.ui.clocks.ThemeConfig
@@ -136,7 +136,7 @@ constructor(
 
     private val shortcutsBindings = mutableSetOf<KeyguardQuickAffordanceViewBinder.Binding>()
 
-    @Style.Type private var themeStyle: Int? = null
+    @ThemeStyle.Type private var themeStyle: Int? = null
 
     init {
         clockController.isPreview = true
@@ -492,7 +492,7 @@ constructor(
             // Seed color null means users do not override any color on the clock. The default
             // color will need to use wallpaper's extracted color and consider if the
             // wallpaper's color is dark or light.
-            @Style.Type
+            @ThemeStyle.Type
             val style = themeStyle ?: fetchThemeStyleFromSetting().also { themeStyle = it }
             val wallpaperColorScheme = ColorScheme(colors, false, style)
             val lightClockColor = wallpaperColorScheme.accent1.s100
@@ -520,7 +520,7 @@ constructor(
         )
     }
 
-    @Style.Type
+    @ThemeStyle.Type
     private suspend fun fetchThemeStyleFromSetting(): Int {
         val overlayPackageJson =
             withContext(backgroundDispatcher) {
@@ -529,16 +529,16 @@ constructor(
         return if (!overlayPackageJson.isNullOrEmpty()) {
             try {
                 val jsonObject = JSONObject(overlayPackageJson)
-                Style.valueOf(jsonObject.getString(OVERLAY_CATEGORY_THEME_STYLE))
+                ThemeStyle.valueOf(jsonObject.getString(OVERLAY_CATEGORY_THEME_STYLE))
             } catch (e: (JSONException)) {
                 Log.i(TAG, "Failed to parse THEME_CUSTOMIZATION_OVERLAY_PACKAGES.", e)
-                Style.TONAL_SPOT
+                ThemeStyle.TONAL_SPOT
             } catch (e: IllegalArgumentException) {
                 Log.i(TAG, "Failed to parse THEME_CUSTOMIZATION_OVERLAY_PACKAGES.", e)
-                Style.TONAL_SPOT
+                ThemeStyle.TONAL_SPOT
             }
         } else {
-            Style.TONAL_SPOT
+            ThemeStyle.TONAL_SPOT
         }
     }
 
