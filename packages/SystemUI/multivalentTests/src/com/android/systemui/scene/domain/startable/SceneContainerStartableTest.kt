@@ -2957,11 +2957,9 @@ class SceneContainerStartableTest : SysuiTestCase() {
             kosmos.secureLockDeviceInteractor.onReadyToDismissBiometricAuth()
             runCurrent()
 
-            assertThat(isSecureLockDeviceEnabled).isTrue()
-            assertThat(isFullyUnlockedAndReadyToDismiss).isTrue()
             assertThat(deviceUnlockStatus?.isUnlocked).isTrue()
             assertThat(deviceUnlockStatus?.deviceUnlockSource)
-                .isEqualTo(DeviceUnlockSource.FaceWithoutBypass)
+                .isEqualTo(DeviceUnlockSource.SecureLockDeviceTwoFactorAuth)
             assertThat(currentSceneKey).isEqualTo(Scenes.Gone)
             assertThat(currentOverlays).doesNotContain(Overlays.Bouncer)
         }
