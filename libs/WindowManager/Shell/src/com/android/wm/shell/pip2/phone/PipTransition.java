@@ -355,6 +355,11 @@ public class PipTransition extends PipTransitionController implements
             extra.putParcelable(PIP_TASK_INFO, pipChange.getTaskInfo());
             mPipTransitionState.setState(PipTransitionState.ENTERING_PIP, extra);
 
+            // TRUSTED_OVERLAY is granted iff Shell successfully receives the transition.
+            ProtoLog.d(WM_SHELL_PICTURE_IN_PICTURE,
+                    "Set TRUSTED_OVERLAY for Task#%d", pipChange.getTaskInfo().taskId);
+            startTransaction.setTrustedOverlay(pipChange.getLeash(), true);
+
             if (isInSwipePipToHomeTransition()) {
                 // If this is the second transition as a part of swipe PiP to home cuj,
                 // handle this transition as a special case with no-op animation.
