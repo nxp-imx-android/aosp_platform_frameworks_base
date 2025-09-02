@@ -20,21 +20,22 @@ import android.animation.Animator
 import android.animation.ObjectAnimator
 import android.animation.ValueAnimator
 import android.annotation.ColorInt
+import android.content.res.ColorStateList
 import android.graphics.Color
 import android.os.SystemProperties
 import android.view.View
 import android.view.View.Visibility
 import android.view.animation.PathInterpolator
+import android.widget.ImageButton
 import android.window.DesktopExperienceFlags
 import androidx.core.animation.doOnEnd
 import com.android.internal.annotations.VisibleForTesting
 import com.android.internal.protolog.ProtoLog
 import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_WINDOW_DECORATION
 import com.android.wm.shell.shared.animation.Interpolators
-import com.android.wm.shell.windowdecor.common.ColoredAppHandle
 
 /** Animates the Desktop View's app handle. */
-class AppHandleAnimator(appHandleView: View, private val captionHandle: ColoredAppHandle) {
+class AppHandleAnimator(appHandleView: View, private val captionHandle: ImageButton) {
     companion object {
         private val DEBUG_ANIMATOR_STEPS =
             SystemProperties.getBoolean(
@@ -93,7 +94,7 @@ class AppHandleAnimator(appHandleView: View, private val captionHandle: ColoredA
         cancelCaptionHandleAlphaAnimation()
         visibilityAnimator.cancel()
         animator =
-            ObjectAnimator.ofFloat(captionHandle.asView(), View.ALPHA, startValue, endValue).apply {
+            ObjectAnimator.ofFloat(captionHandle, View.ALPHA, startValue, endValue).apply {
                 duration = HANDLE_ANIMATION_DURATION
                 interpolator = HANDLE_ANIMATION_INTERPOLATOR
                 start()
@@ -225,7 +226,7 @@ class AppHandleAnimator(appHandleView: View, private val captionHandle: ColoredA
         }
     }
 
-    private class ColorAnimator(private val targetView: ColoredAppHandle) {
+    private class ColorAnimator(private val targetView: ImageButton) {
         private var currentAnimator: ValueAnimator? = null
         @ColorInt private var currentTarget: Int? = null
 
@@ -253,7 +254,7 @@ class AppHandleAnimator(appHandleView: View, private val captionHandle: ColoredA
                     }
                     if (fromColor == null) {
                         logD("skipping animation, no current color to animate from")
-                        targetView.tint(color)
+                        targetView.imageTintList = ColorStateList.valueOf(color)
                         return
                     }
                     logD("animate from=%s to=%s", fromColor.toArgbString(), color.toArgbString())
@@ -270,7 +271,7 @@ class AppHandleAnimator(appHandleView: View, private val captionHandle: ColoredA
             reset()
         }
 
-        private fun getCurrentColor() = targetView.getColor()
+        private fun getCurrentColor() = targetView.imageTintList?.defaultColor
 
         private fun reset() {
             currentAnimator = null
@@ -283,7 +284,8 @@ class AppHandleAnimator(appHandleView: View, private val captionHandle: ColoredA
                 .setDuration(APP_HANDLE_COLOR_ANIMATION_DURATION_MS)
                 .apply {
                     addUpdateListener { animator ->
-                        targetView.tint(animator.animatedValue as Int)
+                        targetView.imageTintList =
+                            ColorStateList.valueOf(animator.animatedValue as Int)
                         if (DEBUG_ANIMATOR_STEPS) {
                             logD(
                                 "update: animator=ValueAnimator@%s f=%f color=%f",

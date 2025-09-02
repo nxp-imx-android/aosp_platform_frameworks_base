@@ -21,20 +21,17 @@
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:gravity="center">
-    <FrameLayout
+    <com.android.wm.shell.windowdecor.HandleImageButton
+        android:id="@+id/caption_handle"
         android:layout_width="@dimen/desktop_mode_fullscreen_decor_caption_width"
-        android:layout_height="@dimen/desktop_mode_fullscreen_decor_caption_height">
-
-        <ViewStub android:id="@+id/captionStub"
-            android:inflatedId="@+id/caption_handle"
-            android:layout="@layout/app_handle_image_button"
-            android:layout_width="@dimen/desktop_mode_fullscreen_decor_caption_width"
-            android:layout_height="@dimen/desktop_mode_fullscreen_decor_caption_height" />
-
-        <ViewStub android:id="@+id/caption2Stub"
-            android:inflatedId="@+id/caption_handle2"
-            android:layout="@layout/drawing_app_handle"
-            android:layout_width="@dimen/desktop_mode_fullscreen_decor_caption_width"
-            android:layout_height="@dimen/desktop_mode_fullscreen_decor_caption_height" />
-    </FrameLayout>
+        android:layout_height="@dimen/desktop_mode_fullscreen_decor_caption_height"
+        android:paddingVertical="16dp"
+        android:paddingHorizontal="10dp"
+        android:screenReaderFocusable="true"
+        android:importantForAccessibility="yes"
+        android:contentDescription="@string/handle_text"
+        android:src="@drawable/decor_handle_dark"
+        tools:tint="@color/desktop_mode_caption_handle_bar_dark"
+        android:scaleType="fitXY"
+        android:background="@android:color/transparent"/>
 </com.android.wm.shell.windowdecor.WindowDecorLinearLayout>
