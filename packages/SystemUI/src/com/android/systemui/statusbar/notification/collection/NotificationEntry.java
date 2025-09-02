@@ -672,15 +672,6 @@ public final class NotificationEntry extends ListEntry {
         }
     }
 
-    public void sendAccessibilityEvent(int eventType) {
-        if (com.android.systemui.Flags.notificationsHunAccessibilityRefactor()) {
-            return;
-        }
-        if (row != null) {
-            row.sendAccessibilityEvent(eventType);
-        }
-    }
-
     /**
      * Used by NotificationMediaManager to determine... things
      * @return {@code true} if we are a media notification

@@ -161,16 +161,6 @@ flag {
 }
 
 flag {
-    name: "notifications_hun_accessibility_refactor"
-    namespace: "systemui"
-    description: "Refactors where notification HUN accessibility events happen"
-    bug: "397507681"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "notification_avalanche_throttle_hun"
     namespace: "systemui"
     description: "During notification avalanche, throttle HUNs showing in fast succession."
