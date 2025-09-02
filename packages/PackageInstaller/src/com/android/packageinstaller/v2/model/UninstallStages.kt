@@ -17,7 +17,10 @@ package com.android.packageinstaller.v2.model
 
 import android.app.Activity
 import android.app.Notification
+import android.content.Context
 import android.content.Intent
+import android.content.pm.ActivityInfo
+import android.content.pm.ApplicationInfo
 import android.graphics.drawable.Drawable
 import com.android.packageinstaller.R
 
@@ -36,25 +39,72 @@ sealed class UninstallStage(val stageCode: Int) {
 class UninstallReady : UninstallStage(STAGE_READY)
 
 data class UninstallUserActionRequired(
-    val title: String,
-    val message: String? = null,
-    val buttonText: String,
+    val titleResId: Int,
+    val messageResId: Int? = null,
+    val positiveButtonResId: Int,
     val appDataSize: Long = 0,
     val appSnippet: PackageUtil.AppSnippet? = null,
+    val isClonedApp: Boolean = false,
+    val isDifferentActivityName: Boolean = false,
+    val isOtherUser: Boolean = false,
+    val userName: String? = null,
+    val targetAppInfo: ApplicationInfo,
+    val targetActivityInfo: ActivityInfo? = null,
 ) : UninstallStage(STAGE_USER_ACTION_REQUIRED) {
 
     val appIcon: Drawable?
         get() = appSnippet?.icon
 
-    val appLabel: String?
-        get() = appSnippet?.let { appSnippet.label as String? }
+    fun getAppLabel(context: Context): String {
+        val appLabel = targetAppInfo.loadSafeLabel(context.packageManager) as String
+        return if (isClonedApp) {
+            context.getString(R.string.string_cloned_app_label, appLabel)
+        } else {
+            appLabel
+        }
+    }
+
+    fun getMessage(context: Context): String? {
+        return messageResId?.let {
+            if (isDifferentActivityName && targetActivityInfo != null) {
+                val activityLabel = targetActivityInfo.loadSafeLabel(context.packageManager)
+                val appLabel = targetAppInfo.loadSafeLabel(context.packageManager)
+                context.getString(it, activityLabel, appLabel)
+            } else if (isClonedApp) {
+                val appLabel = targetAppInfo.loadSafeLabel(context.packageManager)
+                context.getString(it, appLabel)
+            } else {
+                context.getString(it)
+            }
+        }
+    }
+
+    fun getTitle(context: Context): String {
+        return titleResId.let {
+            if (isOtherUser && userName != null) {
+                context.getString(it, userName)
+            } else {
+                context.getString(it)
+            }
+        }
+    }
 }
 
 data class UninstallSuccess(
+    val appInfo: ApplicationInfo,
     val resultIntent: Intent? = null,
     val activityResultCode: Int = 0,
-    val message: String? = null,
-) : UninstallStage(STAGE_SUCCESS)
+    val messageResId: Int? = null,
+    val isCloneApp: Boolean = false,
+) : UninstallStage(STAGE_SUCCESS) {
+
+    fun getMessage(context: Context): String? {
+        return messageResId?.let {
+            val appLabel = appInfo.loadSafeLabel(context.packageManager)
+            context.getString(it, appLabel)
+        }
+    }
+}
 
 data class UninstallFailed(
     val returnResult: Boolean,

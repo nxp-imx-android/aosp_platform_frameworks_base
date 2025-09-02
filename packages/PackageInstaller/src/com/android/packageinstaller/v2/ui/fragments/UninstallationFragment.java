@@ -171,15 +171,16 @@ public class UninstallationFragment extends DialogFragment {
 
         // Set app icon and label
         mAppIcon.setImageDrawable(uninstallStage.getAppIcon());
-        mAppLabelTextView.setText(uninstallStage.getAppLabel());
+        mAppLabelTextView.setText(uninstallStage.getAppLabel(requireContext()));
 
         // Set title
-        dialog.setTitle(uninstallStage.getTitle());
+        dialog.setTitle(uninstallStage.getTitle(requireContext()));
 
         // Set custom message
-        if (uninstallStage.getMessage() != null) {
+        final String message = uninstallStage.getMessage(requireContext());
+        if (message != null) {
             mCustomMessageTextView.setVisibility(View.VISIBLE);
-            mCustomMessageTextView.setText(uninstallStage.getMessage());
+            mCustomMessageTextView.setText(message);
         } else {
             mCustomMessageTextView.setVisibility(View.GONE);
         }
@@ -199,7 +200,7 @@ public class UninstallationFragment extends DialogFragment {
         Button positiveButton = UiUtil.getAlertDialogPositiveButton(dialog);
         if (positiveButton != null) {
             positiveButton.setVisibility(View.VISIBLE);
-            positiveButton.setText(uninstallStage.getButtonText());
+            positiveButton.setText(uninstallStage.getPositiveButtonResId());
             positiveButton.setOnClickListener(view -> {
                 // Set clickable of the button to false to avoid the user clicks it
                 // more than once quickly

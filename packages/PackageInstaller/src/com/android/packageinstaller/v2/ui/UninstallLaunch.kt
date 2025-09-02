@@ -136,8 +136,9 @@ class UninstallLaunch : FragmentActivity(), UninstallActionListener {
 
             UninstallStage.STAGE_SUCCESS -> {
                 val success = uninstallStage as UninstallSuccess
-                if (success.message != null) {
-                    Toast.makeText(this, success.message, Toast.LENGTH_LONG).show()
+                val message = success.getMessage(this)
+                if (message != null) {
+                    Toast.makeText(this, message, Toast.LENGTH_LONG).show()
                 }
                 setResult(success.activityResultCode, success.resultIntent, true)
             }
