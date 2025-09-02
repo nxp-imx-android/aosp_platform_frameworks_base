@@ -88,6 +88,7 @@ class PhoneStatusBarViewTest : SysuiTestCase() {
         view = spy(createStatusBarView(context))
         whenever(view.rootWindowInsets).thenReturn(emptyWindowInsets())
         whenever(view.viewRootImpl).thenReturn(mock(ViewRootImpl::class.java))
+        view.updateTouchableRegion(DEFAULT_TOUCHABLE_REGION)
 
         val contextForSecondaryDisplay =
             SysuiTestableContext(
@@ -101,6 +102,8 @@ class PhoneStatusBarViewTest : SysuiTestCase() {
                 )
             )
         viewForSecondaryDisplay = spy(createStatusBarView(contextForSecondaryDisplay))
+        whenever(viewForSecondaryDisplay.viewRootImpl).thenReturn(mock(ViewRootImpl::class.java))
+        viewForSecondaryDisplay.updateTouchableRegion(DEFAULT_TOUCHABLE_REGION)
     }
 
     @Test
@@ -584,4 +587,8 @@ class PhoneStatusBarViewTest : SysuiTestCase() {
             /* frameWidth = */ 0,
             /* frameHeight = */ 0,
         )
+
+    companion object {
+        val DEFAULT_TOUCHABLE_REGION = Region(0, 0, 500, 500)
+    }
 }
