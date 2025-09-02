@@ -197,9 +197,9 @@ public class ComputerControlSessionProcessor {
     private boolean checkSessionCreationPreconditionsLocked(
             @NonNull ComputerControlSessionParams params,
             @NonNull IComputerControlSessionCallback callback) {
-        if (mKeyguardManager.isKeyguardLocked()) {
+        if (mKeyguardManager.isDeviceLocked()) {
             dispatchSessionCreationFailed(callback, params,
-                    ComputerControlSession.ERROR_KEYGUARD_LOCKED);
+                    ComputerControlSession.ERROR_DEVICE_LOCKED);
             return false;
         }
         if (mSessions.size() >= MAXIMUM_CONCURRENT_SESSIONS) {

@@ -71,14 +71,14 @@ public final class ComputerControlSession implements AutoCloseable {
     public static final int ERROR_SESSION_LIMIT_REACHED = 1;
 
     /**
-     * Error code indicating that a new session cannot be created because the lock screen (also
-     * known as Keyguard) is showing.
+     * Error code indicating that a new session cannot be created because the device is currently
+     * locked.
      *
      * <p>This is a transient error and the session creation request can be retried later.</p>
      *
-     * @see android.app.KeyguardManager#isKeyguardLocked()
+     * @see android.app.KeyguardManager#isDeviceLocked()
      */
-    public static final int ERROR_KEYGUARD_LOCKED = 2;
+    public static final int ERROR_DEVICE_LOCKED = 2;
 
     /**
      * Error code indicating that the user did not approve the creation of a new session.
@@ -89,7 +89,7 @@ public final class ComputerControlSession implements AutoCloseable {
     @Retention(RetentionPolicy.SOURCE)
     @IntDef(prefix = "ERROR_", value = {
             ERROR_SESSION_LIMIT_REACHED,
-            ERROR_KEYGUARD_LOCKED,
+            ERROR_DEVICE_LOCKED,
             ERROR_PERMISSION_DENIED})
     @Target({ElementType.TYPE_PARAMETER, ElementType.TYPE_USE})
     public @interface SessionCreationError {
