@@ -332,6 +332,37 @@ class NotificationsShadeOverlayContentViewModelTest : SysuiTestCase() {
             assertThat(currentOverlays).doesNotContain(Overlays.NotificationsShade)
         }
 
+    @Test
+    fun shadeModeChanged_betweenNonDualModes_remainsOnShadeScene() =
+        kosmos.runTest {
+            val currentScene by collectLastValue(sceneInteractor.currentScene)
+            val currentOverlays by collectLastValue(sceneInteractor.currentOverlays)
+
+            // GIVEN the shade is an overlay in dual shade mode
+            enableDualShade()
+            shadeInteractor.expandNotificationsShade("test")
+            assertThat(currentOverlays).contains(Overlays.NotificationsShade)
+
+            // WHEN switching to a non-dual (single) shade mode
+            enableSingleShade()
+
+            // THEN the scene snaps to Shade
+            assertThat(currentScene).isEqualTo(Scenes.Shade)
+            assertThat(currentOverlays).doesNotContain(Overlays.NotificationsShade)
+
+            // WHEN switching to another non-dual (split) shade mode
+            enableSplitShade()
+
+            // THEN the scene remains on Shade
+            assertThat(currentScene).isEqualTo(Scenes.Shade)
+
+            // WHEN switching back to the first non-dual (single) shade mode
+            enableSingleShade()
+
+            // THEN the scene still remains on Shade
+            assertThat(currentScene).isEqualTo(Scenes.Shade)
+        }
+
     private fun Kosmos.lockDevice() {
         val currentScene by collectLastValue(sceneInteractor.currentScene)
         powerInteractor.setAsleepForTest()
