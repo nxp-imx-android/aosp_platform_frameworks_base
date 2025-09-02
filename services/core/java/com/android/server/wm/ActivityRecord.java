@@ -6305,6 +6305,10 @@ final class ActivityRecord extends WindowToken {
                 mAtmService.deferWindowLayout();
                 try {
                     taskFragment.completePause(true /* resumeNext */, null /* resumingActivity */);
+                    if (com.android.window.flags.Flags.fixRapidTopResumedSwitch()) {
+                        mTaskSupervisor.handleTopResumedStateReleasedIfNeeded(this,
+                                false /* timeout */);
+                    }
                 } finally {
                     mAtmService.continueWindowLayout();
                 }

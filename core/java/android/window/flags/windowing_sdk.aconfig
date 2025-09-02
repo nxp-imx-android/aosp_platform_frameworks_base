@@ -196,3 +196,13 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    namespace: "windowing_sdk"
+    name: "fix_rapid_top_resumed_switch"
+    description: "Prevent top-resumed-activity rapidly switched in multi-window mode."
+    bug: "417956804"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
