@@ -166,6 +166,12 @@ public final class ComputerControlSessionParams implements Parcelable {
 
         /**
          * Set the package names of all applications that may be automated during this session.
+         *
+         * <p>All package names specified in the list must meet the following requirements:
+         * <ol>
+         *     <li>The package name has a valid launcher Intent.</li>
+         *     <li>The package name is not the device permission controller.</li>
+         * </ol>
          */
         @Nullable  // TODO(b/437849228): Should be non-null
         public Builder setTargetPackageNames(@NonNull List<String> targetPackageNames) {

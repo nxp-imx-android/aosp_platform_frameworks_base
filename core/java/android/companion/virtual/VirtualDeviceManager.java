@@ -230,6 +230,8 @@ public final class VirtualDeviceManager {
      * @param executor An executor to run the callback on.
      * @param callback A callback to get notified about the result of this operation.
      *
+     * @throws IllegalArgumentException when the given params contain invalid information.
+     *
      * @hide
      */
     @RequiresPermission(android.Manifest.permission.ACCESS_COMPUTER_CONTROL)

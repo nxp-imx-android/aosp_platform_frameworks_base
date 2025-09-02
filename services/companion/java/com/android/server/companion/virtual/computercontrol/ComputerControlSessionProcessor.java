@@ -36,6 +36,7 @@ import android.companion.virtualdevice.flags.Flags;
 import android.content.AttributionSource;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.Binder;
 import android.os.Bundle;
 import android.os.Handler;
@@ -70,6 +71,7 @@ public class ComputerControlSessionProcessor {
     private final Context mContext;
     private final KeyguardManager mKeyguardManager;
     private final AppOpsManager mAppOpsManager;
+    private final PackageManager mPackageManager;
     private final VirtualDeviceFactory mVirtualDeviceFactory;
     private final PendingIntentFactory mPendingIntentFactory;
 
@@ -95,6 +97,7 @@ public class ComputerControlSessionProcessor {
         mPendingIntentFactory = pendingIntentFactory;
         mKeyguardManager = context.getSystemService(KeyguardManager.class);
         mAppOpsManager = context.getSystemService(AppOpsManager.class);
+        mPackageManager = context.getPackageManager();
     }
 
     /**
@@ -108,6 +111,7 @@ public class ComputerControlSessionProcessor {
             @NonNull AttributionSource attributionSource,
             @NonNull ComputerControlSessionParams params,
             @NonNull IComputerControlSessionCallback callback) {
+        validateParams(params);
         startHandlerThreadIfNeeded();
 
         final boolean canCreateWithoutConsent;
@@ -143,6 +147,32 @@ public class ComputerControlSessionProcessor {
         } catch (RemoteException e) {
             Slog.e(TAG, "Failed to notify ComputerControlSession " + params.getName()
                     + " about pending session");
+        }
+    }
+
+    private void validateParams(ComputerControlSessionParams params) {
+        if (!Flags.computerControlActivityPolicyStrict()) {
+            return;
+        }
+
+        // TODO(b/437849228): Should be non-null
+        if (params.getTargetPackageNames() == null || params.getTargetPackageNames().isEmpty()) {
+            return;
+        }
+
+        // Ensure all packages the ComputerControl session should be able to launch are:
+        // 1) Applications with a valid launcher Intent
+        // 2) NOT PermissionController
+        for (int i = 0; i < params.getTargetPackageNames().size(); i++) {
+            String packageName = params.getTargetPackageNames().get(i);
+
+            if (packageName == null
+                    || packageName.isEmpty()
+                    || mPackageManager.getPermissionControllerPackageName().equals(packageName)
+                    || mPackageManager.getLaunchIntentForPackage(packageName) == null) {
+                throw new IllegalArgumentException(
+                        "Invalid target package for ComputerControl: " + packageName);
+            }
         }
     }
 
