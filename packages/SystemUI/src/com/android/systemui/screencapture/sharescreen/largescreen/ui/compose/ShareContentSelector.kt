@@ -38,7 +38,9 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.android.systemui.res.R
 import com.android.systemui.screencapture.common.ui.viewmodel.RecentTaskViewModel
 import com.android.systemui.screencapture.sharescreen.largescreen.ui.viewmodel.AudioSwitchViewModel
 import com.android.systemui.screencapture.sharescreen.largescreen.ui.viewmodel.ShareContentListViewModel
@@ -50,6 +52,7 @@ fun ShareContentSelector(
     recentTaskViewModelFactory: RecentTaskViewModel.Factory,
 ) {
     val selectedRecentTaskViewModel = shareContentListViewModel.selectedRecentTaskViewModel
+    val itemSelected = selectedRecentTaskViewModel != null
 
     Surface(color = MaterialTheme.colorScheme.surfaceBright, shape = RoundedCornerShape(20.dp)) {
         Column(
@@ -75,7 +78,8 @@ fun ShareContentSelector(
                 )
                 ItemPreview(
                     preview = selectedRecentTaskViewModel?.thumbnail?.getOrNull()?.asImageBitmap(),
-                    modifier = Modifier.weight(1f).height(140.dp),
+                    modifier = Modifier.weight(1f).height(140.dp).width(230.dp),
+                    itemSelected = itemSelected,
                 )
             }
             DisclaimerText()
@@ -85,7 +89,11 @@ fun ShareContentSelector(
 }
 
 @Composable
-private fun ItemPreview(preview: ImageBitmap?, modifier: Modifier = Modifier) {
+private fun ItemPreview(
+    preview: ImageBitmap?,
+    modifier: Modifier = Modifier,
+    itemSelected: Boolean,
+) {
     Box(
         modifier =
             modifier
@@ -93,12 +101,20 @@ private fun ItemPreview(preview: ImageBitmap?, modifier: Modifier = Modifier) {
                 .background(MaterialTheme.colorScheme.surfaceVariant),
         contentAlignment = Alignment.Center,
     ) {
-        if (preview != null) {
-            Image(
-                bitmap = preview,
-                contentDescription = "preview",
-                modifier = Modifier.matchParentSize(),
-                contentScale = ContentScale.Fit,
+        if (itemSelected) {
+            if (preview != null) {
+                Image(
+                    bitmap = preview,
+                    contentDescription = null,
+                    modifier = Modifier.matchParentSize(),
+                    contentScale = ContentScale.Fit,
+                )
+            }
+        } else {
+            Text(
+                text = stringResource(R.string.screen_share_no_select_app_thumbnail),
+                color = MaterialTheme.colorScheme.primaryContainer,
+                style = MaterialTheme.typography.labelMedium,
             )
         }
     }
