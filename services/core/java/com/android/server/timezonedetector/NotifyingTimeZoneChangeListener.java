@@ -31,9 +31,11 @@ import static com.android.server.SystemTimeZone.TIME_ZONE_CONFIDENCE_LOW;
 import android.annotation.DurationMillisLong;
 import android.annotation.IntDef;
 import android.annotation.NonNull;
+import android.annotation.Nullable;
 import android.annotation.RequiresPermission;
 import android.annotation.UserIdInt;
 import android.app.ActivityManagerInternal;
+import android.app.KeyguardManager;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -121,6 +123,7 @@ public class NotifyingTimeZoneChangeListener implements TimeZoneChangeListener {
     private final Context mContext;
     private final NotificationManager mNotificationManager;
     private final ActivityManagerInternal mActivityManagerInternal;
+    private final KeyguardManager mKeyguardManager;
 
     // For scheduling callbacks
     private final Handler mHandler;
@@ -163,6 +166,10 @@ public class NotifyingTimeZoneChangeListener implements TimeZoneChangeListener {
     @GuardedBy("mConfigurationLock")
     private boolean mIsRegistered;
 
+    @VisibleForTesting
+    @GuardedBy("mConfigurationLock")
+    UserPresentReceiver mUserPresentReceiver;
+
     private int mAcceptedManualChanges;
     private int mAcceptedTelephonyChanges;
     private int mAcceptedLocationChanges;
@@ -184,7 +191,8 @@ public class NotifyingTimeZoneChangeListener implements TimeZoneChangeListener {
                         context,
                         serviceConfigAccessor,
                         context.getSystemService(NotificationManager.class),
-                        environment);
+                        environment,
+                        context.getSystemService(KeyguardManager.class));
 
         // Pretend there was an update to initialize configuration.
         changeTracker.handleConfigurationUpdate();
@@ -198,7 +206,8 @@ public class NotifyingTimeZoneChangeListener implements TimeZoneChangeListener {
             Context context,
             ServiceConfigAccessor serviceConfigAccessor,
             NotificationManager notificationManager,
-            @NonNull Environment environment) {
+            @NonNull Environment environment,
+            KeyguardManager keyguardManager) {
         mHandler = Objects.requireNonNull(handler);
         mContext = Objects.requireNonNull(context);
         mServiceConfigAccessor = Objects.requireNonNull(serviceConfigAccessor);
@@ -207,6 +216,7 @@ public class NotifyingTimeZoneChangeListener implements TimeZoneChangeListener {
         mActivityManagerInternal = LocalServices.getService(ActivityManagerInternal.class);
         mNotificationManager = notificationManager;
         mEnvironment = Objects.requireNonNull(environment);
+        mKeyguardManager = keyguardManager;
     }
 
     @RequiresPermission("android.permission.INTERACT_ACROSS_USERS_FULL")
@@ -387,7 +397,7 @@ public class NotifyingTimeZoneChangeListener implements TimeZoneChangeListener {
 
                 // Schedule a callback for the new time zone so that we can implement "user accepted
                 // the change because they didn't revert it"
-                scheduleChangeAcceptedHeuristicCallback(trackedChangeEvent, AUTO_REVERT_THRESHOLD);
+                scheduleChangeAcceptedHeuristicCallback(trackedChangeEvent.getId());
             }
 
             if (lastTimeZoneChangeRecord != null
@@ -476,10 +486,58 @@ public class NotifyingTimeZoneChangeListener implements TimeZoneChangeListener {
                         < AUTO_REVERT_THRESHOLD);
     }
 
-    private void scheduleChangeAcceptedHeuristicCallback(
-            TimeZoneChangeRecord trackedChangeEvent, @DurationMillisLong long delayMillis) {
-        mHandler.postDelayed(
-                () -> changeAcceptedTimeHeuristicCallback(trackedChangeEvent.getId()), delayMillis);
+    private void scheduleChangeAcceptedHeuristicCallback(int trackedChangeEventId) {
+        if (!android.timezone.flags.Flags.enableAutomaticTimeZoneRejectionLogging()) {
+            mHandler.postDelayed(
+                    () -> changeAcceptedTimeHeuristicCallback(trackedChangeEventId),
+                    AUTO_REVERT_THRESHOLD);
+            return;
+        }
+        if (mKeyguardManager == null || !mKeyguardManager.isDeviceLocked()) {
+            mHandler.postDelayed(
+                    () -> changeAcceptedTimeHeuristicCallback(trackedChangeEventId),
+                    AUTO_REVERT_THRESHOLD);
+            return;
+        }
+        resetUserPresentReceiver(new UserPresentReceiver(trackedChangeEventId));
+    }
+
+    // Registering receiver to wait until device is unlocked.
+    private void resetUserPresentReceiver(@Nullable UserPresentReceiver userPresentReceiver) {
+        synchronized (mConfigurationLock) {
+            if (mUserPresentReceiver != null) {
+                try {
+                    mContext.unregisterReceiver(mUserPresentReceiver);
+                } catch (IllegalArgumentException e) {
+                    // Handle the case where the receiver might have already been unregistered
+                }
+            }
+            mUserPresentReceiver = userPresentReceiver;
+            if (mUserPresentReceiver != null) {
+                IntentFilter filter = new IntentFilter(Intent.ACTION_USER_PRESENT);
+                mContext.registerReceiver(mUserPresentReceiver, filter);
+            }
+        }
+    }
+
+    // BroadcastReceiver to listen for ACTION_USER_PRESENT.
+    @VisibleForTesting
+    class UserPresentReceiver extends BroadcastReceiver {
+        private final int trackedChangeEventId;
+
+        public UserPresentReceiver(int trackedChangeEventId) {
+            this.trackedChangeEventId = trackedChangeEventId;
+        }
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (Intent.ACTION_USER_PRESENT.equals(intent.getAction())) {
+                mHandler.postDelayed(
+                        () -> changeAcceptedTimeHeuristicCallback(trackedChangeEventId),
+                        AUTO_REVERT_THRESHOLD);
+                resetUserPresentReceiver(null);
+            }
+        }
     }
 
     private void changeAcceptedTimeHeuristicCallback(int changeEventId) {
