@@ -171,17 +171,18 @@ public class VirtualDeviceManagerService extends SystemService {
     private final RemoteCallbackList<IVirtualDeviceListener> mVirtualDeviceListeners =
             new RemoteCallbackList<>();
 
+    @GuardedBy("mVirtualDeviceManagerLock")
+    private final ArrayList<VirtualDeviceManagerInternal.AppsOnVirtualDeviceListener>
+            mAppsOnVirtualDeviceListeners = new ArrayList<>();
+    @GuardedBy("mVirtualDeviceManagerLock")
+    private final ArrayList<Consumer<String>> mPersistentDeviceIdRemovedListeners =
+            new ArrayList<>();
+
     /**
      * Mapping from device IDs to virtual devices.
      */
     @GuardedBy("mVirtualDeviceManagerLock")
     private final SparseArray<VirtualDeviceImpl> mVirtualDevices = new SparseArray<>();
-
-    /**
-     * Mapping from device IDs to app UIDs running on the corresponding virtual device.
-     */
-    @GuardedBy("mVirtualDeviceManagerLock")
-    private final SparseArray<ArraySet<Integer>> mAppsOnVirtualDevices = new SparseArray<>();
 
     public VirtualDeviceManagerService(Context context) {
         super(context);
@@ -292,16 +293,31 @@ public class VirtualDeviceManagerService extends SystemService {
     }
 
     @VisibleForTesting
-    void notifyRunningAppsChanged(int deviceId, ArraySet<Integer> uids) {
+    void onRunningAppsChanged(int deviceId, @NonNull ArraySet<Integer> runningUids) {
+        final List<VirtualDeviceManagerInternal.AppsOnVirtualDeviceListener> listeners;
         synchronized (mVirtualDeviceManagerLock) {
-            if (!mVirtualDevices.contains(deviceId)) {
-                Slog.e(TAG, "notifyRunningAppsChanged called for unknown deviceId:" + deviceId
-                        + " (maybe it was recently closed?)");
-                return;
-            }
-            mAppsOnVirtualDevices.put(deviceId, uids);
+            listeners = List.copyOf(mAppsOnVirtualDeviceListeners);
         }
-        mLocalService.onAppsOnVirtualDeviceChanged();
+        mHandler.post(() -> {
+            for (int i = 0; i < listeners.size(); ++i) {
+                listeners.get(i).onAppsRunningOnVirtualDeviceChanged(deviceId, runningUids);
+            }
+        });
+    }
+
+    @VisibleForTesting
+    void onPersistentDeviceIdsRemoved(Set<String> removedPersistentDeviceIds) {
+        final List<Consumer<String>> listeners;
+        synchronized (mVirtualDeviceManagerLock) {
+            listeners = List.copyOf(mPersistentDeviceIdRemovedListeners);
+        }
+        mHandler.post(() -> {
+            for (String persistentDeviceId : removedPersistentDeviceIds) {
+                for (int i = 0; i < listeners.size(); ++i) {
+                    listeners.get(i).accept(persistentDeviceId);
+                }
+            }
+        });
     }
 
     @VisibleForTesting
@@ -322,8 +338,6 @@ public class VirtualDeviceManagerService extends SystemService {
             if (!mVirtualDevices.contains(deviceId)) {
                 return false;
             }
-
-            mAppsOnVirtualDevices.remove(deviceId);
             mVirtualDevices.remove(deviceId);
         }
 
@@ -370,7 +384,7 @@ public class VirtualDeviceManagerService extends SystemService {
         }
 
         if (!removedPersistentDeviceIds.isEmpty()) {
-            mLocalService.onPersistentDeviceIdsRemoved(removedPersistentDeviceIds);
+            onPersistentDeviceIdsRemoved(removedPersistentDeviceIds);
         }
     }
 
@@ -496,12 +510,10 @@ public class VirtualDeviceManagerService extends SystemService {
                     getCameraAccessController(userHandle, params,
                             attributionSource.getPackageName());
             final int deviceId = sNextUniqueIndex.getAndIncrement();
-            final Consumer<ArraySet<Integer>> runningAppsChangedCallback =
-                    runningUids -> notifyRunningAppsChanged(deviceId, runningUids);
             VirtualDeviceImpl virtualDevice = new VirtualDeviceImpl(getContext(), associationInfo,
                     VirtualDeviceManagerService.this, mVirtualDeviceLog, token, attributionSource,
                     deviceId, cameraAccessController, mPendingTrampolineCallback, activityListener,
-                    soundEffectListener, runningAppsChangedCallback, params);
+                    soundEffectListener, params);
             Counter.logIncrement("virtual_devices.value_virtual_devices_created_count");
 
             synchronized (mVirtualDeviceManagerLock) {
@@ -733,15 +745,6 @@ public class VirtualDeviceManagerService extends SystemService {
     }
 
     private final class LocalService extends VirtualDeviceManagerInternal {
-        @GuardedBy("mVirtualDeviceManagerLock")
-        private final ArrayList<AppsOnVirtualDeviceListener> mAppsOnVirtualDeviceListeners =
-                new ArrayList<>();
-        @GuardedBy("mVirtualDeviceManagerLock")
-        private final ArrayList<Consumer<String>> mPersistentDeviceIdRemovedListeners =
-                new ArrayList<>();
-
-        @GuardedBy("mVirtualDeviceManagerLock")
-        private final ArraySet<Integer> mAllUidsOnVirtualDevice = new ArraySet<>();
 
         @Override
         public @NonNull VirtualDeviceManager.VirtualDevice createVirtualDevice(
@@ -809,50 +812,6 @@ public class VirtualDeviceManagerService extends SystemService {
         }
 
         @Override
-        public void onAppsOnVirtualDeviceChanged() {
-            ArraySet<Integer> latestRunningUids = new ArraySet<>();
-            final AppsOnVirtualDeviceListener[] listeners;
-            synchronized (mVirtualDeviceManagerLock) {
-                int size = mAppsOnVirtualDevices.size();
-                for (int i = 0; i < size; i++) {
-                    latestRunningUids.addAll(mAppsOnVirtualDevices.valueAt(i));
-                }
-                if (!mAllUidsOnVirtualDevice.equals(latestRunningUids)) {
-                    mAllUidsOnVirtualDevice.clear();
-                    mAllUidsOnVirtualDevice.addAll(latestRunningUids);
-                    listeners =
-                            mAppsOnVirtualDeviceListeners.toArray(
-                                    new AppsOnVirtualDeviceListener[0]);
-                } else {
-                    listeners = null;
-                }
-            }
-            if (listeners != null) {
-                mHandler.post(() -> {
-                    for (AppsOnVirtualDeviceListener listener : listeners) {
-                        listener.onAppsOnAnyVirtualDeviceChanged(latestRunningUids);
-                    }
-                });
-            }
-        }
-
-        @Override
-        public void onPersistentDeviceIdsRemoved(Set<String> removedPersistentDeviceIds) {
-            final List<Consumer<String>> persistentDeviceIdRemovedListeners;
-            synchronized (mVirtualDeviceManagerLock) {
-                persistentDeviceIdRemovedListeners = List.copyOf(
-                        mPersistentDeviceIdRemovedListeners);
-            }
-            mHandler.post(() -> {
-                for (String persistentDeviceId : removedPersistentDeviceIds) {
-                    for (Consumer<String> listener : persistentDeviceIdRemovedListeners) {
-                        listener.accept(persistentDeviceId);
-                    }
-                }
-            });
-        }
-
-        @Override
         public void onAuthenticationPrompt(int uid) {
             ArrayList<VirtualDeviceImpl> virtualDevicesSnapshot = getVirtualDevicesSnapshot();
             for (int i = 0; i < virtualDevicesSnapshot.size(); i++) {
@@ -872,17 +831,14 @@ public class VirtualDeviceManagerService extends SystemService {
         @Nullable
         public LocaleList getPreferredLocaleListForUid(int uid) {
             // TODO: b/263188984 support the case where an app is running on multiple VDs
-            VirtualDeviceImpl virtualDevice = null;
-            synchronized (mVirtualDeviceManagerLock) {
-                for (int i = 0; i < mAppsOnVirtualDevices.size(); i++) {
-                    if (mAppsOnVirtualDevices.valueAt(i).contains(uid)) {
-                        int deviceId = mAppsOnVirtualDevices.keyAt(i);
-                        virtualDevice = mVirtualDevices.get(deviceId);
-                        break;
-                    }
+            ArrayList<VirtualDeviceImpl> virtualDevicesSnapshot = getVirtualDevicesSnapshot();
+            for (int i = 0; i < virtualDevicesSnapshot.size(); i++) {
+                VirtualDeviceImpl virtualDevice = virtualDevicesSnapshot.get(i);
+                if (virtualDevice.isAppRunningOnVirtualDevice(uid)) {
+                    return virtualDevice.getDeviceLocaleList();
                 }
             }
-            return virtualDevice == null ? null : virtualDevice.getDeviceLocaleList();
+            return null;
         }
 
         @Override
