@@ -574,13 +574,30 @@ public class UiModeManager {
 
         @Override
         public void notifyContrastChanged(float contrast) {
+            final Map<ContrastChangeListener, Executor> listeners;
             synchronized (mGlobalsLock) {
                 // if value changed in the settings, update the cached value and notify listeners
                 if (Math.abs(mContrast - contrast) < 1e-10) return;
                 mContrast = contrast;
-                mContrastChangeListeners.forEach((listener, executor) -> executor.execute(
-                        () -> listener.onContrastChanged(contrast)));
+
+                if (!fixContrastAndForceInvertStateForMultiUser()) {
+                    mContrastChangeListeners.forEach((listener, executor) -> executor.execute(
+                            () -> listener.onContrastChanged(contrast)));
+                    return;
+                }
+                listeners = new ArrayMap<>(mContrastChangeListeners);
             }
+
+            listeners.forEach((listener, executor) -> {
+                final long token = Binder.clearCallingIdentity();
+                try {
+                    executor.execute(() -> listener.onContrastChanged(contrast));
+                } finally {
+                    Binder.restoreCallingIdentity(token);
+                }
+            });
+
+
         }
 
         @Override
