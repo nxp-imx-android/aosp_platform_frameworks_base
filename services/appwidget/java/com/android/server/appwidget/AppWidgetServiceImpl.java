@@ -91,6 +91,7 @@ import android.content.pm.UserPackage;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
 import android.content.res.XmlResourceParser;
+import android.database.ContentObserver;
 import android.graphics.Point;
 import android.graphics.drawable.Icon;
 import android.net.Uri;
@@ -111,6 +112,7 @@ import android.os.Trace;
 import android.os.UserHandle;
 import android.os.UserManager;
 import android.provider.DeviceConfig;
+import android.provider.Settings;
 import android.service.appwidget.AppWidgetServiceDumpProto;
 import android.service.appwidget.GeneratedPreviewsProto;
 import android.service.appwidget.WidgetProto;
@@ -178,6 +180,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -433,6 +436,7 @@ class AppWidgetServiceImpl extends IAppWidgetService.Stub implements WidgetBacku
         computeMaximumWidgetBitmapMemory();
         registerBroadcastReceiver();
         registerOnCrossProfileProvidersChangedListener();
+        registerSettingsObserver();
 
         LocalServices.addService(AppWidgetManagerInternal.class, new AppWidgetManagerLocal());
     }
@@ -606,6 +610,53 @@ class AppWidgetServiceImpl extends IAppWidgetService.Stub implements WidgetBacku
         // The device policy is an optional component.
         if (mDevicePolicyManagerInternal != null) {
             mDevicePolicyManagerInternal.addOnCrossProfileWidgetProvidersChangeListener(this);
+        }
+    }
+
+    /**
+     * Registers a content observer for settings changes.
+     */
+    private void registerSettingsObserver() {
+        final Uri fontScaleUri = Settings.System.getUriFor(Settings.System.FONT_SCALE);
+        final Uri[] urisToObserve = new Uri[]{fontScaleUri};
+
+        final ContentObserver mSettingsObserver = new ContentObserver(mCallbackHandler) {
+            @Override
+            public void onChange(boolean selfChange, @NonNull Collection<Uri> uris, int flags,
+                @NonNull UserHandle user) {
+                for (Uri uri : uris) {
+                    if (uri.equals(fontScaleUri)) {
+                        onFontScaleChanged(user.getIdentifier());
+                    }
+                }
+            }
+        };
+
+        final ContentResolver resolver = mContext.getContentResolver();
+        for (Uri uri : urisToObserve) {
+            resolver.registerContentObserver(uri, /* notifyForDescendants= */ false,
+                mSettingsObserver, UserHandle.USER_ALL);
+        }
+    }
+
+    /**
+     * When the font scale setting changes for a user, request a widget update from all of the
+     * providers for that user.
+     */
+    private void onFontScaleChanged(int userId) {
+        if (DEBUG) {
+            Slog.i(TAG, "onFontScaleChanged " + userId);
+        }
+        synchronized (mLock) {
+            for (Provider provider : mProviders) {
+                if (provider.widgets.isEmpty()
+                    || (userId != UserHandle.getUserId(provider.id.uid)
+                        && userId != UserHandle.USER_ALL)) {
+                    continue;
+                }
+                sendUpdateIntentLocked(provider, getWidgetIds(provider.widgets),
+                    /* interactive= */ true);
+            }
         }
     }
 
