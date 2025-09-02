@@ -57,11 +57,13 @@ import android.view.SurfaceView
 import android.view.View
 import android.view.ViewRootImpl
 import android.view.WindowInsets.Type.statusBars
+import android.view.WindowManager
 import android.window.WindowContainerTransaction
 import android.window.WindowContainerTransaction.HierarchyOp
 import androidx.test.filters.SmallTest
 import com.android.dx.mockito.inline.extended.ExtendedMockito
 import com.android.window.flags.Flags
+import com.android.window.flags.Flags.FLAG_CLOSE_FULLSCREEN_AND_SPLITSCREEN_KEYBOARD_SHORTCUT
 import com.android.wm.shell.R
 import com.android.wm.shell.common.DisplayController
 import com.android.wm.shell.desktopmode.DesktopImmersiveController
@@ -347,6 +349,30 @@ class DesktopModeWindowDecorViewModelTests : DesktopModeWindowDecorViewModelTest
 
         verify(mockSplitScreenController, never()).isTaskInSplitScreen(any())
         verify(mockFreeformTaskTransitionStarter, never()).startRemoveTransition(any())
+    }
+
+    @Test
+    @EnableFlags(FLAG_CLOSE_FULLSCREEN_AND_SPLITSCREEN_KEYBOARD_SHORTCUT)
+    fun testCloseTask_fullscreen_closesTask() {
+        desktopModeWindowDecorViewModel.setFreeformTaskTransitionStarter(
+            mockFreeformTaskTransitionStarter
+        )
+        val decor = createOpenTaskDecoration(windowingMode = WINDOWING_MODE_FULLSCREEN)
+
+        desktopModeWindowDecorViewModel.closeTask(decor.taskInfo)
+
+        val transactionCaptor = argumentCaptor<WindowContainerTransaction>()
+        verify(mockTransitions)
+            .startTransition(
+                eq(WindowManager.TRANSIT_CLOSE),
+                transactionCaptor.capture(),
+                anyOrNull(),
+            )
+        val wct = transactionCaptor.firstValue
+        assertThat(wct.hierarchyOps).hasSize(1)
+        val hierarchyOp = wct.hierarchyOps[0]
+        assertThat(hierarchyOp.type).isEqualTo(HierarchyOp.HIERARCHY_OP_TYPE_REMOVE_TASK)
+        assertThat(hierarchyOp.container).isEqualTo(decor.taskInfo.token.asBinder())
     }
 
     @Test

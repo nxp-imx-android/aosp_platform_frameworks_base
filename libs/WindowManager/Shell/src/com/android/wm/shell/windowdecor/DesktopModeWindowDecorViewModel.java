@@ -72,6 +72,7 @@ import android.view.InsetsState;
 import android.view.MotionEvent;
 import android.view.SurfaceControl;
 import android.view.SurfaceControl.Transaction;
+import android.view.WindowManager;
 import android.window.DesktopExperienceFlags;
 import android.window.DesktopModeFlags;
 import android.window.TaskSnapshot;
@@ -1221,34 +1222,48 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
 
     private void onCloseTask(int taskId) {
         if (isTaskInSplitScreen(taskId)) {
+            ProtoLog.i(WM_SHELL_WINDOW_DECORATION,
+                    "%s: onCloseTask(taskId=%d): closing split screen", TAG, taskId);
             mSplitScreenController.moveTaskToFullscreen(getOtherSplitTask(taskId).taskId,
                     SplitScreenController.EXIT_REASON_DESKTOP_MODE);
-        } else {
-            final WindowDecorationWrapper decoration = mWindowDecorByTaskId.get(taskId);
-            if (decoration == null) {
-                ProtoLog.e(WM_SHELL_WINDOW_DECORATION,
-                        "%s: handled close key gesture but decoration is null, ignoring", TAG);
-                return;
-            }
-            if (DesktopExperienceFlags
-                    .ENABLE_DESKTOP_APP_HEADER_STATE_CHANGE_ANNOUNCEMENTS.isTrue()) {
-                final int nextFocusedTaskId = mDesktopTasksController.getNextFocusedTask(
-                        decoration.getTaskInfo());
-                final WindowDecorationWrapper nextFocusedWindow =
-                        mWindowDecorationFinder.apply(nextFocusedTaskId);
-                if (nextFocusedWindow != null) {
-                    nextFocusedWindow.a11yAnnounceNewFocusedWindow();
-                }
-            }
+            return;
+        }
+        final WindowDecorationWrapper decoration = mWindowDecorByTaskId.get(taskId);
+        if (decoration == null) {
+            ProtoLog.e(WM_SHELL_WINDOW_DECORATION,
+                    "%s: onCloseTask(taskId=%d): decoration is null, ignoring", TAG, taskId);
+            return;
+        }
+        if (DesktopExperienceFlags
+                .CLOSE_FULLSCREEN_AND_SPLITSCREEN_KEYBOARD_SHORTCUT.isTrue()
+                && decoration.getTaskInfo().getWindowingMode() == WINDOWING_MODE_FULLSCREEN) {
+            ProtoLog.i(WM_SHELL_WINDOW_DECORATION,
+                    "%s: onCloseTask(taskId=%d): closing fullscreen task", TAG, taskId);
             final WindowContainerTransaction wct = new WindowContainerTransaction();
-            final Function1<IBinder, Unit> runOnTransitionStart =
-                    mDesktopTasksController.onDesktopWindowClose(wct,
-                            decoration.getTaskInfo().displayId, decoration.getTaskInfo());
-            final IBinder transition = mTaskOperations.closeTask(
-                    decoration.getTaskInfo().token, wct);
-            if (transition != null) {
-                runOnTransitionStart.invoke(transition);
+            wct.removeTask(decoration.getTaskInfo().token);
+            mTransitions.startTransition(WindowManager.TRANSIT_CLOSE, wct, null);
+            return;
+        }
+        if (DesktopExperienceFlags
+                .ENABLE_DESKTOP_APP_HEADER_STATE_CHANGE_ANNOUNCEMENTS.isTrue()) {
+            final int nextFocusedTaskId = mDesktopTasksController.getNextFocusedTask(
+                    decoration.getTaskInfo());
+            final WindowDecorationWrapper nextFocusedWindow =
+                    mWindowDecorationFinder.apply(nextFocusedTaskId);
+            if (nextFocusedWindow != null) {
+                nextFocusedWindow.a11yAnnounceNewFocusedWindow();
             }
+        }
+        ProtoLog.w(WM_SHELL_WINDOW_DECORATION,
+                "%s: onCloseTask(taskId=%d): closing desktop task", TAG, taskId);
+        final WindowContainerTransaction wct = new WindowContainerTransaction();
+        final Function1<IBinder, Unit> runOnTransitionStart =
+                mDesktopTasksController.onDesktopWindowClose(wct,
+                        decoration.getTaskInfo().displayId, decoration.getTaskInfo());
+        final IBinder transition = mTaskOperations.closeTask(
+                decoration.getTaskInfo().token, wct);
+        if (transition != null) {
+            runOnTransitionStart.invoke(transition);
         }
     }
 
