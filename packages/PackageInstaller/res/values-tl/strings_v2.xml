@@ -96,22 +96,14 @@
     <string name="message_restore_error_installer_absent" msgid="8492838251989389724">"Para i-restore ang app na ito, kailangan mong i-install ang <xliff:g id="INSTALLER_NAME">%1$s</xliff:g>"</string>
     <string name="message_restore_error_generic" msgid="5903850636679929406">"Nagkaproblema sa pagsubok na i-restore ang app na ito"</string>
     <string name="message_uninstall_activity" msgid="3263352475743590167">"Bahagi ang <xliff:g id="ACTIVITY_NAME">%1$s</xliff:g> ng sumusunod na app: <xliff:g id="APP_NAME">%2$s</xliff:g>"</string>
-    <!-- no translation found for cannot_install_app_blocked_summary (5439893912308217959) -->
-    <skip />
-    <!-- no translation found for cannot_update_app_blocked_summary (7817560122951640605) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_no_internet_summary (236829543597389666) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_no_internet_summary (28024736898646891) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_summary (6208343652461257248) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_unavailable_summary (367099122142054088) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_fail_closed_summary (3798407602770929670) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_unavailable_fail_closed_summary (2871425967967934618) -->
-    <skip />
+    <string name="cannot_install_app_blocked_summary" msgid="5439893912308217959">"&lt;p&gt;Na-block ang app na ito. Para makatulong na panatilihing ligtas ang iyong device at data, ang mga app lang mula sa mga na-verify na developer ang puwedeng i-install.&lt;/p&gt;"</string>
+    <string name="cannot_update_app_blocked_summary" msgid="7817560122951640605">"&lt;p&gt;Hindi na-update ang app na ito. Para makatulong na panatilihing ligtas ang iyong device at data, ang mga update lang mula sa mga na-verify na developer ang puwedeng i-install.&lt;/p&gt;"</string>
+    <string name="cannot_install_verification_no_internet_summary" msgid="236829543597389666">"&lt;p&gt;Hindi na-install ang app na ito. Posibleng hindi ligtas ang mga app mula sa mga hindi na-verify na developer.&lt;/p&gt; &lt;p&gt;Kinakailangang may koneksyon sa internet para ma-verify ang developer ng app. Suriin ang iyong koneksyon, at pagkatapos ay subukan ulit na i-install ang app. &lt;/p&gt;"</string>
+    <string name="cannot_update_verification_no_internet_summary" msgid="28024736898646891">"&lt;p&gt;Hindi na-update ang app na ito. Posibleng hindi ligtas ang mga update mula sa mga hindi na-verify na developer.&lt;/p&gt; &lt;p&gt;Kailangan ng koneksyon sa internet para ma-verify ang developer ng app. Suriin ang iyong koneksyon, at pagkatapos ay subukan ulit na i-update ang app. &lt;/p&gt;"</string>
+    <string name="cannot_install_verification_unavailable_summary" msgid="6208343652461257248">"&lt;p&gt;Nagkaproblema sa pag-verify ng developer ng app na ito. Posibleng hindi ligtas ang mga app mula sa mga hindi na-verify na developer, kaya hindi na-install ang app.&lt;/p&gt;"</string>
+    <string name="cannot_update_verification_unavailable_summary" msgid="367099122142054088">"&lt;p&gt;Nagkaproblema sa pag-verify ng developer ng app na ito. Posibleng hindi ligtas ang mga update mula sa mga hindi na-verify na developer, kaya hindi na-update ang app.&lt;/p&gt;"</string>
+    <string name="cannot_install_verification_unavailable_fail_closed_summary" msgid="3798407602770929670">"&lt;p&gt;Na-block ang app na ito dahil nagkaproblema sa pag-verify ng developer. Para makatulong na panatilihing ligtas ang iyong device at data, ang mga app lang mula sa mga na-verify na developer ang puwedeng i-install.&lt;/p&gt;"</string>
+    <string name="cannot_update_verification_unavailable_fail_closed_summary" msgid="2871425967967934618">"&lt;p&gt;Hindi na-update ang app na ito dahil nagkaproblema sa pag-verify ng developer. Para makatulong na panatilihing ligtas ang iyong device at data, ang mga update lang mula sa mga na-verify na developer ang puwedeng i-install.&lt;/p&gt;"</string>
     <string name="more_details_expanded_install_summary" msgid="3545896392881608712">"Kung mag-i-install ka nang hindi nagve-verify, tandaang posibleng mailagay sa panganib ang iyong device at data dahil sa mga app mula sa mga hindi na-verify na developer."</string>
     <string name="more_details_expanded_update_summary" msgid="2239162864839036480">"Kung mag-a-update ka nang hindi nagve-verify, tandaang posibleng mailagay sa panganib ang iyong device at data dahil sa mga update mula sa mga hindi na-verify na developer."</string>
     <string name="cannot_install_app_blocked_title" msgid="6372444121824751694">"Hindi na-verify ang developer ng app"</string>

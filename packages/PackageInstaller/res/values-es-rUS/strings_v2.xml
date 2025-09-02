@@ -85,7 +85,7 @@
     <string name="message_uninstall_keep_data" msgid="3955153594868206983">"Conservar datos de la app"</string>
     <string name="message_archive" msgid="943853731737315850">"Se guardarán los datos de la app"</string>
     <string name="message_archive_all_users" msgid="4664139369764501351">"Se guardarán todos los datos de la app"</string>
-    <string name="message_archive_other_user" msgid="6465828676043191175">"Se guardarán los datos de la app"</string>
+    <string name="message_archive_other_user" msgid="6465828676043191175">"Los datos de la app se guardarán"</string>
     <string name="message_archive_work_profile" msgid="7601504268820630858">"Esta app de tu perfil de trabajo se archivará. Se guardarán los datos de tu app"</string>
     <string name="message_archive_private_space" msgid="4873651645762576624">"Esta app de tu espacio privado se archivará. Se guardarán los datos de tu app"</string>
     <string name="message_restore" msgid="8402726798623569969">"Esta app se descargará de <xliff:g id="INSTALLER_NAME">%1$s</xliff:g> en segundo plano"</string>

@@ -96,22 +96,14 @@
     <string name="message_restore_error_installer_absent" msgid="8492838251989389724">"Untuk memulihkan aplikasi ini, Anda harus menginstal <xliff:g id="INSTALLER_NAME">%1$s</xliff:g>"</string>
     <string name="message_restore_error_generic" msgid="5903850636679929406">"Terjadi error saat mencoba memulihkan aplikasi ini"</string>
     <string name="message_uninstall_activity" msgid="3263352475743590167">"<xliff:g id="ACTIVITY_NAME">%1$s</xliff:g> adalah bagian dari aplikasi berikut: <xliff:g id="APP_NAME">%2$s</xliff:g>"</string>
-    <!-- no translation found for cannot_install_app_blocked_summary (5439893912308217959) -->
-    <skip />
-    <!-- no translation found for cannot_update_app_blocked_summary (7817560122951640605) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_no_internet_summary (236829543597389666) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_no_internet_summary (28024736898646891) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_summary (6208343652461257248) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_unavailable_summary (367099122142054088) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_fail_closed_summary (3798407602770929670) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_unavailable_fail_closed_summary (2871425967967934618) -->
-    <skip />
+    <string name="cannot_install_app_blocked_summary" msgid="5439893912308217959">"&lt;p&gt;Aplikasi ini diblokir. Untuk membantu menjaga keamanan perangkat dan data Anda, hanya aplikasi dari developer terverifikasi yang dapat diinstal.&lt;/p&gt;"</string>
+    <string name="cannot_update_app_blocked_summary" msgid="7817560122951640605">"&lt;p&gt;Aplikasi ini tidak diupdate. Untuk membantu menjaga keamanan perangkat dan data Anda, hanya update dari developer terverifikasi yang dapat diinstal.&lt;/p&gt;"</string>
+    <string name="cannot_install_verification_no_internet_summary" msgid="236829543597389666">"&lt;p&gt;Aplikasi ini tidak diinstal. Aplikasi dari developer yang tidak terverifikasi mungkin tidak aman.&lt;/p&gt; &lt;p&gt;Koneksi internet diperlukan untuk memverifikasi developer aplikasi. Periksa koneksi Anda, lalu coba instal aplikasi lagi. &lt;/p&gt;"</string>
+    <string name="cannot_update_verification_no_internet_summary" msgid="28024736898646891">"&lt;p&gt;Aplikasi ini tidak diupdate. Update dari developer yang tidak terverifikasi mungkin tidak aman.&lt;/p&gt; &lt;p&gt;Koneksi internet diperlukan untuk memverifikasi developer aplikasi. Periksa koneksi Anda, lalu coba update aplikasi lagi. &lt;/p&gt;"</string>
+    <string name="cannot_install_verification_unavailable_summary" msgid="6208343652461257248">"&lt;p&gt;Terjadi error saat memverifikasi developer aplikasi ini. Aplikasi dari developer yang tidak terverifikasi mungkin tidak aman, sehingga aplikasi tidak diinstal.&lt;/p&gt;"</string>
+    <string name="cannot_update_verification_unavailable_summary" msgid="367099122142054088">"&lt;p&gt;Terjadi error saat memverifikasi developer aplikasi ini. Update dari developer yang tidak terverifikasi mungkin tidak aman, sehingga aplikasi tidak diupdate.&lt;/p&gt;"</string>
+    <string name="cannot_install_verification_unavailable_fail_closed_summary" msgid="3798407602770929670">"&lt;p&gt;Aplikasi ini diblokir karena terjadi error saat memverifikasi developer. Untuk membantu menjaga keamanan perangkat dan data Anda, hanya aplikasi dari developer terverifikasi yang dapat diinstal.&lt;/p&gt;"</string>
+    <string name="cannot_update_verification_unavailable_fail_closed_summary" msgid="2871425967967934618">"&lt;p&gt;Aplikasi ini tidak diupdate karena terjadi error saat memverifikasi developer. Untuk membantu menjaga keamanan perangkat dan data Anda, hanya update dari developer terverifikasi yang dapat diinstal.&lt;/p&gt;"</string>
     <string name="more_details_expanded_install_summary" msgid="3545896392881608712">"Jika Anda menginstal tanpa melakukan verifikasi, perlu diingat bahwa aplikasi dari developer yang tidak terverifikasi mungkin membahayakan perangkat dan data Anda."</string>
     <string name="more_details_expanded_update_summary" msgid="2239162864839036480">"Jika Anda mengupdate tanpa melakukan verifikasi, perlu diingat bahwa update dari developer yang tidak terverifikasi mungkin membahayakan perangkat dan data Anda."</string>
     <string name="cannot_install_app_blocked_title" msgid="6372444121824751694">"Developer aplikasi tidak terverifikasi"</string>

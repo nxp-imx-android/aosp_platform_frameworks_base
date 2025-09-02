@@ -96,22 +96,14 @@
     <string name="message_restore_error_installer_absent" msgid="8492838251989389724">"ይህን መተግበሪያ ወደነበረበት ለመመለስ፣ <xliff:g id="INSTALLER_NAME">%1$s</xliff:g>ን መጫን አለብዎት"</string>
     <string name="message_restore_error_generic" msgid="5903850636679929406">"ይህን መተግበሪያ ወደነበረበት ለመመለስ እየተሞከረ ሳለ አንድ ችግር ነበር"</string>
     <string name="message_uninstall_activity" msgid="3263352475743590167">"<xliff:g id="ACTIVITY_NAME">%1$s</xliff:g> የሚከተለው መተግበሪያ አካል ነው፦ <xliff:g id="APP_NAME">%2$s</xliff:g>"</string>
-    <!-- no translation found for cannot_install_app_blocked_summary (5439893912308217959) -->
-    <skip />
-    <!-- no translation found for cannot_update_app_blocked_summary (7817560122951640605) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_no_internet_summary (236829543597389666) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_no_internet_summary (28024736898646891) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_summary (6208343652461257248) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_unavailable_summary (367099122142054088) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_fail_closed_summary (3798407602770929670) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_unavailable_fail_closed_summary (2871425967967934618) -->
-    <skip />
+    <string name="cannot_install_app_blocked_summary" msgid="5439893912308217959">"&lt;p&gt;ይህ መተግበሪያ ታግዷል። መሣሪያዎን እና ውሂብዎን ደኅንነታቸው የተጠበቀ አድርጎ ለማቆየት እንዲያግዝ ሊጫኑ የሚችሉት ከተረጋገጡ ገንቢዎች የሚመጡ መተግበሪያዎች ብቻ ናቸው።&lt;/p&gt;"</string>
+    <string name="cannot_update_app_blocked_summary" msgid="7817560122951640605">"&lt;p&gt;ይህ መተግበሪያ አልተዘመነም። መሣሪያዎን እና ውሂብዎን ደኅንነታቸው የተጠበቀ አድርጎ ለማቆየት እንዲያግዝ ሊጫኑ የሚችሉት ከተረጋገጡ ገንቢዎች የሚመጡ ዝማኔዎች ብቻ ናቸው።&lt;/p&gt;"</string>
+    <string name="cannot_install_verification_no_internet_summary" msgid="236829543597389666">"&lt;p&gt;ይህ መተግበሪያ አልተጫነም። ካልተረጋገጡ ገንቢዎች የመጡ መተግበሪያዎች ደኅንነታቸው ያልተጠበቅ ሊሆኑ ይችላሉ።&lt;/p&gt; &lt;p&gt;የመተግበሪያ ገንቢውን ለማረጋገጥ የበይነመረብ ግንኙነት ያስፈልጋል። ግንኙነትዎን ይፈትሹ፣ ከዚያ መተግበሪያውን እንደገና መጫን ይሞክሩ። &lt;/p&gt;"</string>
+    <string name="cannot_update_verification_no_internet_summary" msgid="28024736898646891">"&lt;p&gt;ይህ መተግበሪያ አልተዘመነም። ካልተረጋገጡ ገንቢዎች የመጡ ዝማኔዎች ደኅንነታቸው ያልተጠበቀ ሊሆኑ ይችላሉ።&lt;/p&gt; &lt;p&gt;የመተግበሪያ ገንቢውን ለማረጋገጥ የበይነመረብ ግንኙነት ያስፈልጋል። ግንኙነትዎን ይፈትሹ፣ ከዚያ እንደገና መተግበሪያውን ማዘመን ይሞክሩ። &lt;/p&gt;"</string>
+    <string name="cannot_install_verification_unavailable_summary" msgid="6208343652461257248">"&lt;p&gt;የዚህን መተግበሪያ ገንቢ ማረጋገጥ ላይ ችግር ነበር። ካልተረጋገጡ ገንቢዎች የመጡ መተግበሪያዎች ደኅንነታቸው ያልተጠበቀ ሊሆኑ ይችላሉ፣ ስለዚህ መተግበሪያው አልተጫነም።&lt;/p&gt;"</string>
+    <string name="cannot_update_verification_unavailable_summary" msgid="367099122142054088">"&lt;p&gt;የዚህን መተግበሪያ ገንቢ ማረጋገጥ ላይ ችግር ነበር። ካልተረጋገጡ ዝማኔዎች የመጡ ዝማኔዎች ደኅንነታቸው ያልተጠበቀ ሊሆኑ ይችላሉ፣ ስለዚህ መተግበሪያው አልተዘመነም።&lt;/p&gt;"</string>
+    <string name="cannot_install_verification_unavailable_fail_closed_summary" msgid="3798407602770929670">"&lt;p&gt;ገንቢውን ማረጋገጥ ላይ ችግር ስለነበር ይህ መተግበሪያ ታግዷል። መሣሪያዎን እና ውሂብዎን ደኅንነታቸው የተጠበቀ አድርጎ ለማቆየት እንዲያግዝ ሊጫኑ የሚችሉት ከተረጋገጡ ገንቢዎች የሚመጡ መተግበሪያዎች ብቻ ናቸው።&lt;/p&gt;"</string>
+    <string name="cannot_update_verification_unavailable_fail_closed_summary" msgid="2871425967967934618">"&lt;p&gt;ገንቢውን ማረጋገጥ ላይ ችግር ስለነበር ይህ መተግበሪያ አልተዘመነም። መሣሪያዎን እና ውሂብዎን ደኅንነታቸው የተጠበቀ አድርጎ ለማቆየት እንዲያግዝ ሊጫኑ የሚችሉት ከተረጋገጡ ገንቢዎች የሚመጡ ዝማኔዎች ብቻ ናቸው።&lt;/p&gt;"</string>
     <string name="more_details_expanded_install_summary" msgid="3545896392881608712">"ሳያረጋግጡ ከጫኑ ካልተረጋገጡ ገንቢዎች የመጡ መተግበሪያዎች መሣሪያዎን እና ውሂብዎን ስጋት ላይ ሊጥሉ እንደሚችሉ ያስታውሱ።"</string>
     <string name="more_details_expanded_update_summary" msgid="2239162864839036480">"ሳያረጋግጡ ካዘመኑ ካልተረጋገጡ ገንቢዎች የመጡ ዝማኔዎች መሣሪያዎን እና ውሂብዎን ስጋት ላይ ሊጥሉ እንደሚችሉ ያስታውሱ።"</string>
     <string name="cannot_install_app_blocked_title" msgid="6372444121824751694">"የመተግበሪያ ገንቢ አልተረጋገጠም"</string>

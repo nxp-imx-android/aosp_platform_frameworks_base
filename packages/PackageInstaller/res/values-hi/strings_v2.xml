@@ -96,22 +96,14 @@
     <string name="message_restore_error_installer_absent" msgid="8492838251989389724">"इस ऐप्लिकेशन को वापस लाने के लिए, आपको <xliff:g id="INSTALLER_NAME">%1$s</xliff:g> इंस्टॉल करना होगा"</string>
     <string name="message_restore_error_generic" msgid="5903850636679929406">"इस ऐप्लिकेशन को वापस लाते समय कोई समस्या हुई"</string>
     <string name="message_uninstall_activity" msgid="3263352475743590167">"<xliff:g id="ACTIVITY_NAME">%1$s</xliff:g>, इस ऐप्लिकेशन का एक हिस्सा है: <xliff:g id="APP_NAME">%2$s</xliff:g>"</string>
-    <!-- no translation found for cannot_install_app_blocked_summary (5439893912308217959) -->
-    <skip />
-    <!-- no translation found for cannot_update_app_blocked_summary (7817560122951640605) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_no_internet_summary (236829543597389666) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_no_internet_summary (28024736898646891) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_summary (6208343652461257248) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_unavailable_summary (367099122142054088) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_fail_closed_summary (3798407602770929670) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_unavailable_fail_closed_summary (2871425967967934618) -->
-    <skip />
+    <string name="cannot_install_app_blocked_summary" msgid="5439893912308217959">"&lt;p&gt;इस ऐप्लिकेशन को ब्लॉक कर दिया गया है. आपके डिवाइस और डेटा को सुरक्षित रखने के लिए, सिर्फ़ ऐसे ऐप्लिकेशन इंस्टॉल किए जा सकते हैं जिनके डेवलपर की पुष्टि हो चुकी है.&lt;/p&gt;"</string>
+    <string name="cannot_update_app_blocked_summary" msgid="7817560122951640605">"&lt;p&gt;इस ऐप्लिकेशन को अपडेट नहीं किया गया. आपके डिवाइस और डेटा को सुरक्षित रखने के लिए, सिर्फ़ ऐसे अपडेट इंस्टॉल किए जा सकते हैं जिनके डेवलपर की पुष्टि हो चुकी है.&lt;/p&gt;"</string>
+    <string name="cannot_install_verification_no_internet_summary" msgid="236829543597389666">"&lt;p&gt;यह ऐप्लिकेशन इंस्टॉल नहीं हुआ. जिन डेवलपर की पुष्टि नहीं हुई है उनके ऐप्लिकेशन असुरक्षित हो सकते हैं.&lt;/p&gt; &lt;p&gt;ऐप्लिकेशन डेवलपर की पुष्टि करने के लिए, इंटरनेट कनेक्शन होना ज़रूरी है. अपने इंटरनेट कनेक्शन की जांच करें. इसके बाद, ऐप्लिकेशन को दोबारा इंस्टॉल करने की कोशिश करें. &lt;/p&gt;"</string>
+    <string name="cannot_update_verification_no_internet_summary" msgid="28024736898646891">"&lt;p&gt;इस ऐप्लिकेशन को अपडेट नहीं किया गया. जिन डेवलपर की पुष्टि नहीं हुई है उनके ऐप्लिकेशन के अपडेट असुरक्षित हो सकते हैं.&lt;/p&gt; &lt;p&gt;ऐप्लिकेशन डेवलपर की पुष्टि करने के लिए, इंटरनेट कनेक्शन होना ज़रूरी है. अपने इंटरनेट कनेक्शन की जांच करें. इसके बाद, फिर से ऐप्लिकेशन को अपडेट करने की कोशिश करें. &lt;/p&gt;"</string>
+    <string name="cannot_install_verification_unavailable_summary" msgid="6208343652461257248">"&lt;p&gt;इस ऐप्लिकेशन के डेवलपर की पुष्टि करने में कोई समस्या हुई. जिन डेवलपर की पुष्टि नहीं हुई है उनके ऐप्लिकेशन असुरक्षित हो सकते हैं. इसलिए, ऐप्लिकेशन को इंस्टॉल नहीं किया गया.&lt;/p&gt;"</string>
+    <string name="cannot_update_verification_unavailable_summary" msgid="367099122142054088">"&lt;p&gt;इस ऐप्लिकेशन के डेवलपर की पुष्टि करने में कोई समस्या हुई. जिन डेवलपर की पुष्टि नहीं हुई है उनके ऐप्लिकेशन के अपडेट असुरक्षित हो सकते हैं. इसलिए, ऐप्लिकेशन को अपडेट नहीं किया गया.&lt;/p&gt;"</string>
+    <string name="cannot_install_verification_unavailable_fail_closed_summary" msgid="3798407602770929670">"&lt;p&gt;इस ऐप्लिकेशन को ब्लॉक कर दिया गया है, क्योंकि डेवलपर की पुष्टि करने में कोई समस्या हुई. आपके डिवाइस और डेटा को सुरक्षित रखने के लिए, सिर्फ़ ऐसे ऐप्लिकेशन इंस्टॉल किए जा सकते हैं जिनके डेवलपर की पुष्टि हो चुकी है.&lt;/p&gt;"</string>
+    <string name="cannot_update_verification_unavailable_fail_closed_summary" msgid="2871425967967934618">"&lt;p&gt;इस ऐप्लिकेशन को अपडेट नहीं किया गया, क्योंकि इसके डेवलपर की पुष्टि करने में कोई समस्या हुई. आपके डिवाइस और डेटा को सुरक्षित रखने के लिए, सिर्फ़ ऐसे अपडेट इंस्टॉल किए जा सकते हैं जिनके डेवलपर की पुष्टि हो चुकी है.&lt;/p&gt;"</string>
     <string name="more_details_expanded_install_summary" msgid="3545896392881608712">"अगर पुष्टि किए बिना ऐप्लिकेशन को इंस्टॉल किया जाता है, तो ध्यान रखें कि जिन डेवलपर की पुष्टि नहीं हुई है उनके ऐप्लिकेशन से आपके डिवाइस और डेटा की सुरक्षा को खतरा हो सकता है."</string>
     <string name="more_details_expanded_update_summary" msgid="2239162864839036480">"अगर पुष्टि किए बिना ऐप्लिकेशन को अपडेट किया जाता है, तो ध्यान रखें कि जिन डेवलपर की पुष्टि नहीं हुई है उनके अपडेट से आपके डिवाइस और डेटा की सुरक्षा को खतरा हो सकता है."</string>
     <string name="cannot_install_app_blocked_title" msgid="6372444121824751694">"ऐप्लिकेशन डेवलपर की पुष्टि नहीं हुई है"</string>
