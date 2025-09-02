@@ -87,6 +87,10 @@
     <string name="bluetooth_connecting" msgid="5871702668260192755">"Ühendamine ..."</string>
     <string name="bluetooth_connected" msgid="8065345572198502293">"Ühendatud <xliff:g id="ACTIVE_DEVICE">%1$s</xliff:g>"</string>
     <string name="bluetooth_pairing" msgid="4269046942588193600">"Sidumine ..."</string>
+    <!-- no translation found for bluetooth_pairing_failure (6914444518793157913) -->
+    <skip />
+    <!-- no translation found for bluetooth_connection_failure (384203214661155324) -->
+    <skip />
     <string name="bluetooth_connected_no_headset" msgid="2224101138659967604">"Ühendatud (telefoni pole)<xliff:g id="ACTIVE_DEVICE">%1$s</xliff:g>"</string>
     <string name="bluetooth_connected_no_a2dp" msgid="8566874395813947092">"Ühendatud (meediat pole)<xliff:g id="ACTIVE_DEVICE">%1$s</xliff:g>"</string>
     <string name="bluetooth_connected_no_headset_no_a2dp" msgid="2893204819854215433">"Ühendatud (telefoni ega meediat pole)<xliff:g id="ACTIVE_DEVICE">%1$s</xliff:g>"</string>
@@ -345,7 +349,8 @@
     <string name="wifi_non_persistent_mac_randomization_summary" msgid="2159794543105053930">"Kui see režiim on lubatud, võidakse selle seadme MAC-aadressi muuta iga kord, kui see ühendatakse võrguga, milles on juhuslikustatud MAC-aadressi määramine lubatud."</string>
     <string name="wifi_metered_label" msgid="8737187690304098638">"Mahupõhine"</string>
     <string name="wifi_unmetered_label" msgid="6174142840934095093">"Mittemahupõhine"</string>
-    <string name="select_logd_size_title" msgid="1604578195914595173">"Logija puhvri suurused"</string>
+    <!-- no translation found for select_logd_size_title (4393502933789367691) -->
+    <skip />
     <string name="select_logd_size_dialog_title" msgid="2105401994681013578">"Vali logija suur. logipuhvri kohta"</string>
     <string name="dev_logpersist_clear_warning_title" msgid="8631859265777337991">"Kas kustutada logija püsivalt salvestatud andmed?"</string>
     <string name="dev_logpersist_clear_warning_message" msgid="6447590867594287413">"Kui me ei kasuta jälgimiseks enam püsivat logijat, peame teie seadmes asuvad logijaandmed eemaldama."</string>

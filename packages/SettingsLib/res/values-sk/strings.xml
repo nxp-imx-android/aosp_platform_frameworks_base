@@ -87,6 +87,10 @@
     <string name="bluetooth_connecting" msgid="5871702668260192755">"Prebieha pripájanie…"</string>
     <string name="bluetooth_connected" msgid="8065345572198502293">"Pripojené k zariadeniu <xliff:g id="ACTIVE_DEVICE">%1$s</xliff:g>"</string>
     <string name="bluetooth_pairing" msgid="4269046942588193600">"Páruje sa..."</string>
+    <!-- no translation found for bluetooth_pairing_failure (6914444518793157913) -->
+    <skip />
+    <!-- no translation found for bluetooth_connection_failure (384203214661155324) -->
+    <skip />
     <string name="bluetooth_connected_no_headset" msgid="2224101138659967604">"Pripojené k zariadeniu <xliff:g id="ACTIVE_DEVICE">%1$s</xliff:g> (bez telefónu)"</string>
     <string name="bluetooth_connected_no_a2dp" msgid="8566874395813947092">"Pripojené k zariadeniu <xliff:g id="ACTIVE_DEVICE">%1$s</xliff:g> (bez médií)"</string>
     <string name="bluetooth_connected_no_headset_no_a2dp" msgid="2893204819854215433">"Pripojené k <xliff:g id="ACTIVE_DEVICE">%1$s</xliff:g> (bez telefónu a médií)"</string>
@@ -345,7 +349,8 @@
     <string name="wifi_non_persistent_mac_randomization_summary" msgid="2159794543105053930">"Keď je tento režim aktivovaný, adresa MAC tohto zariadenia sa môže pri každom pripojení k sieti s aktivovanou randomizáciou adries MAC zmeniť."</string>
     <string name="wifi_metered_label" msgid="8737187690304098638">"Merané"</string>
     <string name="wifi_unmetered_label" msgid="6174142840934095093">"Bez merania dát"</string>
-    <string name="select_logd_size_title" msgid="1604578195914595173">"Vyrovnávacia pamäť zapisovača do denníkov"</string>
+    <!-- no translation found for select_logd_size_title (4393502933789367691) -->
+    <skip />
     <string name="select_logd_size_dialog_title" msgid="2105401994681013578">"Veľkosť vyrovnávacej pamäte nástroja denníkov"</string>
     <string name="dev_logpersist_clear_warning_title" msgid="8631859265777337991">"Vymazať trvalé úložisko zapisovača do denníka?"</string>
     <string name="dev_logpersist_clear_warning_message" msgid="6447590867594287413">"Keď prestaneme monitorovať pomocou trvalého zapisovača do denníka, musíme vymazať jeho dáta, ktoré sa nachádzajú vo vašom zariadení."</string>

@@ -87,6 +87,10 @@
     <string name="bluetooth_connecting" msgid="5871702668260192755">"कनेक्ट करत आहे..."</string>
     <string name="bluetooth_connected" msgid="8065345572198502293">"<xliff:g id="ACTIVE_DEVICE">%1$s</xliff:g>कनेक्ट केले"</string>
     <string name="bluetooth_pairing" msgid="4269046942588193600">"पेअर करत आहे…"</string>
+    <!-- no translation found for bluetooth_pairing_failure (6914444518793157913) -->
+    <skip />
+    <!-- no translation found for bluetooth_connection_failure (384203214661155324) -->
+    <skip />
     <string name="bluetooth_connected_no_headset" msgid="2224101138659967604">"कनेक्ट केले (फोन नाही)<xliff:g id="ACTIVE_DEVICE">%1$s</xliff:g>"</string>
     <string name="bluetooth_connected_no_a2dp" msgid="8566874395813947092">"कनेक्ट केले (मीडिया नाही)<xliff:g id="ACTIVE_DEVICE">%1$s</xliff:g>"</string>
     <string name="bluetooth_connected_no_headset_no_a2dp" msgid="2893204819854215433">"कनेक्ट केले (फोन किंवा मीडिया नाही)<xliff:g id="ACTIVE_DEVICE">%1$s</xliff:g>"</string>
@@ -345,7 +349,8 @@
     <string name="wifi_non_persistent_mac_randomization_summary" msgid="2159794543105053930">"हा मोड सुरू केलेला असेल, तेव्हा हे डिव्हाइस MAC रँडमायझेशन सुरू केलेल्या नेटवर्कशी कनेक्ट होताना प्रत्येक वेळी त्याचा MAC अ‍ॅड्रेस बदलू शकतो."</string>
     <string name="wifi_metered_label" msgid="8737187690304098638">"मीटरने मोजलेले"</string>
     <string name="wifi_unmetered_label" msgid="6174142840934095093">"मीटरने न मोजलेले"</string>
-    <string name="select_logd_size_title" msgid="1604578195914595173">"लॉगर बफर आकार"</string>
+    <!-- no translation found for select_logd_size_title (4393502933789367691) -->
+    <skip />
     <string name="select_logd_size_dialog_title" msgid="2105401994681013578">"प्रति लॉग बफर लॉगर आकार निवडा"</string>
     <string name="dev_logpersist_clear_warning_title" msgid="8631859265777337991">"लॉगरवर सतत असणारा स्टोरेज साफ करायचा?"</string>
     <string name="dev_logpersist_clear_warning_message" msgid="6447590867594287413">"सातत्याच्या लॉगरसह आम्ही परीक्षण करीत नसतो तेव्हा, आम्हाला आपल्या डिव्हाइसवर असणारा लॉगर डेटा मिटविणे आवश्यक असते."</string>

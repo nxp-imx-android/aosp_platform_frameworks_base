@@ -87,6 +87,10 @@
     <string name="bluetooth_connecting" msgid="5871702668260192755">"Conectando..."</string>
     <string name="bluetooth_connected" msgid="8065345572198502293">"Conectado a <xliff:g id="ACTIVE_DEVICE">%1$s</xliff:g>"</string>
     <string name="bluetooth_pairing" msgid="4269046942588193600">"Vinculando..."</string>
+    <!-- no translation found for bluetooth_pairing_failure (6914444518793157913) -->
+    <skip />
+    <!-- no translation found for bluetooth_connection_failure (384203214661155324) -->
+    <skip />
     <string name="bluetooth_connected_no_headset" msgid="2224101138659967604">"Conectado a <xliff:g id="ACTIVE_DEVICE">%1$s</xliff:g> (sen teléfono)"</string>
     <string name="bluetooth_connected_no_a2dp" msgid="8566874395813947092">"Conectado a <xliff:g id="ACTIVE_DEVICE">%1$s</xliff:g> (sen audio multimedia)"</string>
     <string name="bluetooth_connected_no_headset_no_a2dp" msgid="2893204819854215433">"Conectado a <xliff:g id="ACTIVE_DEVICE">%1$s</xliff:g> (sen tel./audio multimedia)"</string>
@@ -345,7 +349,8 @@
     <string name="wifi_non_persistent_mac_randomization_summary" msgid="2159794543105053930">"Cando este modo está activado, o enderezo MAC pode cambiar cada vez que este dispositivo se conecte a unha rede que teña activada a orde aleatoria de enderezos MAC"</string>
     <string name="wifi_metered_label" msgid="8737187690304098638">"Rede sen tarifa plana"</string>
     <string name="wifi_unmetered_label" msgid="6174142840934095093">"Rede con tarifa plana"</string>
-    <string name="select_logd_size_title" msgid="1604578195914595173">"Tamaño dos búfers do rexistrador"</string>
+    <!-- no translation found for select_logd_size_title (4393502933789367691) -->
+    <skip />
     <string name="select_logd_size_dialog_title" msgid="2105401994681013578">"Seleccionar tamaño do rexistrador por búfer"</string>
     <string name="dev_logpersist_clear_warning_title" msgid="8631859265777337991">"Queres borrar o almacenamento persistente do rexistrador?"</string>
     <string name="dev_logpersist_clear_warning_message" msgid="6447590867594287413">"Cando xa non se supervisa a actividade co rexistrador de forma persistente, debemos borrar os datos do rexistrador almacenados no dispositivo."</string>
