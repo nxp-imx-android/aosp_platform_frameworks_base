@@ -28,9 +28,13 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -140,6 +144,8 @@ private fun AudioSwitch(
     audioSwitchViewModel: AudioSwitchViewModel,
     selectedRecentTaskViewModel: RecentTaskViewModel?,
 ) {
+    val checked = audioSwitchViewModel.audioSwitchChecked
+
     Row(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -161,11 +167,23 @@ private fun AudioSwitch(
             modifier = Modifier.width(452.dp),
         )
         Switch(
-            checked = audioSwitchViewModel.audioSwitchChecked,
+            checked = checked,
             onCheckedChange = {
                 audioSwitchViewModel.audioSwitchChecked = !audioSwitchViewModel.audioSwitchChecked
             },
             enabled = selectedRecentTaskViewModel != null,
+            thumbContent =
+                if (checked) {
+                    {
+                        Icon(
+                            imageVector = Icons.Filled.Check,
+                            contentDescription = null,
+                            modifier = Modifier.size(SwitchDefaults.IconSize),
+                        )
+                    }
+                } else {
+                    null
+                },
         )
     }
 }
