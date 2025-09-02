@@ -20566,9 +20566,11 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
 
     @Test
     @EnableFlags(FLAG_NOTIFICATION_FORCE_GROUPING)
-    public void clearAll_fromUser_willSendDeleteIntentForCachedSummaries() throws Exception {
+    public void clearAll_fromUser_sendsDeleteIntentForCachedSummaries() throws Exception {
+        PendingIntent deleteIntent = mock(PendingIntent.class);
         NotificationRecord n = generateNotificationRecord(
                 mTestNotificationChannel, 1, "group", true);
+        n.getNotification().deleteIntent = deleteIntent;
         mBinderService.enqueueNotificationWithTag(mPkg, mPkg, "tag",
                 n.getSbn().getId(), n.getSbn().getNotification(), n.getSbn().getUserId());
         waitForIdle();
@@ -20577,14 +20579,16 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
         mService.mNotificationDelegate.onClearAll(mUid, Binder.getCallingPid(), n.getUserId());
         waitForIdle();
 
-        verify(mGroupHelper).onNotificationRemoved(eq(n), any(), eq(true));
+        verify(deleteIntent).send();
     }
 
     @Test
     @EnableFlags(FLAG_NOTIFICATION_FORCE_GROUPING)
-    public void cancel_fromApp_willNotSendDeleteIntentForCachedSummaries() throws Exception {
+    public void cancel_fromApp_doesNotSendDeleteIntentForCachedSummaries() throws Exception {
+        PendingIntent deleteIntent = mock(PendingIntent.class);
         NotificationRecord n = generateNotificationRecord(
                 mTestNotificationChannel, 1, "group", true);
+        n.getNotification().deleteIntent = deleteIntent;
         mBinderService.enqueueNotificationWithTag(mPkg, mPkg, "tag",
                 n.getSbn().getId(), n.getSbn().getNotification(), n.getSbn().getUserId());
         waitForIdle();
@@ -20593,7 +20597,7 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
         mBinderService.cancelAllNotifications(mPkg, mUserId);
         waitForIdle();
 
-        verify(mGroupHelper).onNotificationRemoved(eq(n), any(), eq(false));
+        verify(deleteIntent, never()).send();
     }
 
     @Test
