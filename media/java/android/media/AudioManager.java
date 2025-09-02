@@ -8961,6 +8961,13 @@ public class AudioManager {
      */
     public static boolean hasHapticChannelsImpl(@NonNull Context context, @NonNull Uri uri) {
         MediaExtractor extractor = new MediaExtractor();
+        if (context.getUserId() == UserHandle.USER_CURRENT) {
+            // Use the current userId to create user context to avoid the exception thrown
+            // during getting content provider accessing non-positive specialized user ID
+            // (USER_CURRENT) through context.getUserId().
+            context = context.createContextAsUser(
+                    UserHandle.of(UserHandle.myUserId()), 0);
+        }
         try {
             extractor.setDataSource(context, uri, null);
             for (int i = 0; i < extractor.getTrackCount(); i++) {
