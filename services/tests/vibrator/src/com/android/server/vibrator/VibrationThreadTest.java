@@ -222,7 +222,6 @@ public class VibrationThreadTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_VIBRATION_THREAD_HANDLING_HAL_FAILURE)
     public void vibrate_singleVibratorOneShotFailed_doesNotSetAmplitudeAndReturnsFailure() {
         HalVibratorHelper vibratorHelper = mVibratorHelpers.get(VIBRATOR_ID);
         vibratorHelper.setCapabilities(IVibrator.CAP_AMPLITUDE_CONTROL);
@@ -280,7 +279,6 @@ public class VibrationThreadTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_VIBRATION_THREAD_HANDLING_HAL_FAILURE)
     public void vibrate_singleVibratorWaveformFailed_stopsVibrationAfterFailure() {
         HalVibratorHelper vibratorHelper = mVibratorHelpers.get(VIBRATOR_ID);
         vibratorHelper.setCapabilities(IVibrator.CAP_AMPLITUDE_CONTROL);
@@ -830,10 +828,7 @@ public class VibrationThreadTest {
     }
 
     @Test
-    @EnableFlags({
-            Flags.FLAG_VENDOR_VIBRATION_EFFECTS,
-            Flags.FLAG_VIBRATION_THREAD_HANDLING_HAL_FAILURE,
-    })
+    @EnableFlags(Flags.FLAG_VENDOR_VIBRATION_EFFECTS)
     public void vibrate_singleVibratorVendorEffectFailed_returnsFailure() {
         HalVibratorHelper vibratorHelper = mVibratorHelpers.get(VIBRATOR_ID);
         vibratorHelper.setCapabilities(IVibrator.CAP_PERFORM_VENDOR_EFFECTS);
@@ -912,7 +907,6 @@ public class VibrationThreadTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_VIBRATION_THREAD_HANDLING_HAL_FAILURE)
     public void vibrate_singleVibratorComposedFailed_returnsFailureAndStopsVibration() {
         HalVibratorHelper vibratorHelper = mVibratorHelpers.get(VIBRATOR_ID);
         vibratorHelper.setCapabilities(IVibrator.CAP_COMPOSE_EFFECTS);
@@ -1246,10 +1240,7 @@ public class VibrationThreadTest {
     }
 
     @Test
-    @EnableFlags({
-            Flags.FLAG_NORMALIZED_PWLE_EFFECTS,
-            Flags.FLAG_VIBRATION_THREAD_HANDLING_HAL_FAILURE,
-    })
+    @EnableFlags(Flags.FLAG_NORMALIZED_PWLE_EFFECTS)
     public void vibrate_singleVibratorPwleFailed_returnsFailureAndStopsVibration() {
         HalVibratorHelper vibratorHelper = mVibratorHelpers.get(VIBRATOR_ID);
         vibratorHelper.setCapabilities(IVibrator.CAP_GET_RESONANT_FREQUENCY,
@@ -1671,7 +1662,6 @@ public class VibrationThreadTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_VIBRATION_THREAD_HANDLING_HAL_FAILURE)
     public void vibrate_multipleSyncedOneVibratorFails_returnsFailureAndStopsVibration() {
         int[] vibratorIds = new int[]{1, 2};
         mockVibrators(vibratorIds);
