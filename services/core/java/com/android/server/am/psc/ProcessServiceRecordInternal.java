@@ -18,6 +18,8 @@ package com.android.server.am.psc;
 
 import android.content.Context;
 
+import com.android.server.am.OomAdjuster;
+
 import java.util.ArrayList;
 
 /**
@@ -32,6 +34,7 @@ public abstract class ProcessServiceRecordInternal {
         void onHasClientActivitiesChanged(boolean hasClientActivities);
     }
 
+    protected final OomAdjuster.Constants mOomConstants;
     private final Observer mObserver;
 
     /** Last group set by a connection. */
@@ -47,7 +50,8 @@ public abstract class ProcessServiceRecordInternal {
     /** Do we need to be executing services in the foreground? */
     private boolean mExecServicesFg;
 
-    protected ProcessServiceRecordInternal(Observer observer) {
+    protected ProcessServiceRecordInternal(OomAdjuster.Constants oomConstants, Observer observer) {
+        mOomConstants = oomConstants;
         mObserver = observer;
     }
 

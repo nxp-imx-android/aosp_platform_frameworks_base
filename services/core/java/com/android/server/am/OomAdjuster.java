@@ -319,6 +319,7 @@ public abstract class OomAdjuster {
     final Callback mCallback;
     final ActivityManagerService mService;
     final Injector mInjector;
+    protected final Constants mOomConstants;
     final GlobalState mGlobalState;
     final ProcessList mProcessList;
     final ActivityManagerGlobalLock mProcLock;
@@ -442,6 +443,18 @@ public abstract class OomAdjuster {
         }
     }
 
+    /**
+     * Holds various constant values used by the OomAdjuster, which are duplicated from
+     * {@link ActivityManagerConstants}.
+     */
+    public static final class Constants {
+        /**
+         * The timeout duration (in milliseconds) for a service binding to be considered
+         * "almost perceptible" after leaving the TOP process state.
+         */
+        public volatile long mServiceBindAlmostPerceptibleTimeoutMs;
+    }
+
     // TODO(b/346822474): hook up global state usage.
     interface GlobalState {
         /** Is device's screen on. */
@@ -493,10 +506,11 @@ public abstract class OomAdjuster {
     }
 
     OomAdjuster(ActivityManagerService service, ProcessList processList, ActiveUids activeUids,
-            ServiceThread adjusterThread, GlobalState globalState, Injector injector,
-            Callback callback) {
+            ServiceThread adjusterThread, Constants oomConstants, GlobalState globalState,
+            Injector injector, Callback callback) {
         mCallback = callback;
         mService = service;
+        mOomConstants = oomConstants;
         mGlobalState = globalState;
         mInjector = injector;
         mProcessList = processList;

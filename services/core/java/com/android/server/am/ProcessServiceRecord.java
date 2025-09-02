@@ -62,7 +62,6 @@ final class ProcessServiceRecord extends ProcessServiceRecordInternal {
      */
     private long mLastTopStartedAlmostPerceptibleBindRequestUptimeMs;
 
-
     /**
      * The OR'ed foreground service types that are running on this process.
      * Note, because TYPE_NONE (==0) is also a valid type for pre-U apps, this field doesn't tell
@@ -117,7 +116,7 @@ final class ProcessServiceRecord extends ProcessServiceRecordInternal {
     private final ActivityManagerService mService;
 
     ProcessServiceRecord(ProcessRecord app) {
-        super(app);
+        super(app.mService.mProcessStateController.getOomConstants(), app);
 
         mApp = app;
         mService = app.mService;
@@ -253,7 +252,7 @@ final class ProcessServiceRecord extends ProcessServiceRecordInternal {
         return mHasTopStartedAlmostPerceptibleServices
                 || (mLastTopStartedAlmostPerceptibleBindRequestUptimeMs > 0
                 && SystemClock.uptimeMillis() - mLastTopStartedAlmostPerceptibleBindRequestUptimeMs
-                < mService.mConstants.mServiceBindAlmostPerceptibleTimeoutMs);
+                < mOomConstants.mServiceBindAlmostPerceptibleTimeoutMs);
     }
 
     void updateHasAboveClientLocked() {
