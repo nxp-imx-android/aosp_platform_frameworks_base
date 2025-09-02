@@ -29,6 +29,7 @@ import java.lang.ref.Reference;
 public class NativeAllocationRegistry {
     private final long mFreeFunction;
     private static final Cleaner sCleaner = Cleaner.create();
+    private static final long DEFAULT_SIZE = 98;
 
     public static NativeAllocationRegistry createNonmalloced(
             ClassLoader classLoader, long freeFunction, long size) {
@@ -53,6 +54,11 @@ public class NativeAllocationRegistry {
     public static NativeAllocationRegistry createMalloced(
             Class clazz, long freeFunction, long size) {
         return new NativeAllocationRegistry(clazz.getClassLoader(), freeFunction, size);
+    }
+
+    public static NativeAllocationRegistry createMalloced(
+            Class clazz, long freeFunction) {
+        return new NativeAllocationRegistry(clazz.getClassLoader(), freeFunction, DEFAULT_SIZE);
     }
 
     public NativeAllocationRegistry(ClassLoader classLoader, long freeFunction, long size) {
