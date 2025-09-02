@@ -251,13 +251,16 @@ public class AndroidKeyStoreProvider extends Provider {
         } else if (KeyProperties.KEY_ALGORITHM_RSA.equalsIgnoreCase(jcaKeyAlgorithm)) {
             return new AndroidKeyStoreRSAPublicKey(descriptor, metadata,
                     iSecurityLevel, (RSAPublicKey) publicKey);
-        } else if (ED25519_OID.equalsIgnoreCase(jcaKeyAlgorithm)
-                || EDDSA_ALGORITHM_NAME.equalsIgnoreCase(jcaKeyAlgorithm)) {
-            // This condition should be updated to only accept "EdDSA" as the algorithm name once
+        } else if (ED25519_OID.equalsIgnoreCase(jcaKeyAlgorithm)) {
+            // This branch should be removed once
             // https://github.com/google/conscrypt/commit/5473d34964ce77ab2594ae0cc0ecf74931f28cc3
             // is merged into Android.
             final byte[] publicKeyEncoded = publicKey.getEncoded();
             return new AndroidKeyStoreEdECPublicKey(descriptor, metadata, ED25519_OID,
+                    iSecurityLevel, publicKeyEncoded);
+        } else if (EDDSA_ALGORITHM_NAME.equalsIgnoreCase(jcaKeyAlgorithm)) {
+            final byte[] publicKeyEncoded = publicKey.getEncoded();
+            return new AndroidKeyStoreEdECPublicKey(descriptor, metadata, EDDSA_ALGORITHM_NAME,
                     iSecurityLevel, publicKeyEncoded);
         } else if (X25519_ALIAS.equalsIgnoreCase(jcaKeyAlgorithm)) {
             return new AndroidKeyStoreXDHPublicKey(descriptor, metadata, X25519_ALIAS,
