@@ -2756,6 +2756,12 @@ public class CentralSurfacesImpl implements CoreStartable, CentralSurfaces {
 
     @Override
     public void notifyBiometricAuthModeChanged() {
+        if (Flags.updateKeyguardOnWakeAndUnlockEarlier()) {
+            if (mBiometricUnlockController.isWakeAndUnlock()) {
+                // If we're wake and unlocking we should hide the keyguard ASAP if necessary.
+                updateIsKeyguard();
+            }
+        }
         mDozeServiceHost.updateDozing();
         if (mBiometricUnlockController.getMode()
                 == BiometricUnlockController.MODE_DISMISS_BOUNCER) {
@@ -3152,10 +3158,12 @@ public class CentralSurfacesImpl implements CoreStartable, CentralSurfaces {
                     mDozeServiceHost.updateDozing();
                     updateScrimController();
 
-                    if (mBiometricUnlockController.isWakeAndUnlock()) {
-                        // Usually doze changes are to/from lockscreen/AOD, but if we're wake and
-                        // unlocking we should hide the keyguard ASAP if necessary.
-                        updateIsKeyguard();
+                    if (!Flags.updateKeyguardOnWakeAndUnlockEarlier()) {
+                        if (mBiometricUnlockController.isWakeAndUnlock()) {
+                            // Usually doze changes are to/from lockscreen/AOD, but if we're wake
+                            // and unlocking we should hide the keyguard ASAP if necessary.
+                            updateIsKeyguard();
+                        }
                     }
 
                     updateReportRejectedTouchVisibility();
