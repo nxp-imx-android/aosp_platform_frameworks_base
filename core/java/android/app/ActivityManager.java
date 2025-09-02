@@ -6489,7 +6489,11 @@ public class ActivityManager {
                 @WindowingLayer int layer,
                 @NonNull @CallbackExecutor Executor executor,
                 @NonNull OutcomeReceiver<Void, Exception> callback) {
-            executor.execute(() -> callback.onError(new RuntimeException("Not implemented")));
+            Objects.requireNonNull(executor, "executor cannot be null");
+            Objects.requireNonNull(callback, "callback cannot be null");
+            TaskWindowingLayerRequestHandler.requestWindowingLayer(
+                    layer, executor, callback, mAppTaskImpl
+            );
         }
     }
 
