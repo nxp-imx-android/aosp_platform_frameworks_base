@@ -32,6 +32,7 @@ import android.os.Bundle;
 import android.text.Html;
 import android.util.Log;
 import android.view.View;
+import android.view.accessibility.AccessibilityNodeInfo;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
@@ -277,6 +278,11 @@ public class InstallationFragment extends DialogFragment {
         // Set the app icon and label
         mAppIcon.setImageDrawable(installStage.getAppIcon());
         mAppLabelTextView.setText(installStage.getAppLabel());
+
+        // Sometimes the A11y focus is on the button E.g. ADI. We should align the other cases.
+        // Request the A11y focus on the app label.
+        mAppLabelTextView.post(() -> mAppLabelTextView.performAccessibilityAction(
+                    AccessibilityNodeInfo.ACTION_ACCESSIBILITY_FOCUS, null));
 
         int titleResId = R.string.title_install_failed_not_installed;
         String positiveButtonText = null;
