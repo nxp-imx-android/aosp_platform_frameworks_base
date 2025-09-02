@@ -206,3 +206,10 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+   name: "service_uprobestats"
+   namespace: "responsible_apis"
+   description: "Flag that enables the uprobestats system service"
+   bug: "408041227"
+}
