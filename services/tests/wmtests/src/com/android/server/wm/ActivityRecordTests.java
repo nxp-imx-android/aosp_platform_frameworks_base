@@ -3202,7 +3202,6 @@ public class ActivityRecordTests extends WindowTestsBase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENSURE_STARTING_WINDOW_REMOVE_FROM_TASK)
     public void testStartingWindowInTaskFragment_RemoveAfterTrampolineInvisible() {
         testStartingWindowInTaskFragment_RemoveFrom(false, true);
     }
