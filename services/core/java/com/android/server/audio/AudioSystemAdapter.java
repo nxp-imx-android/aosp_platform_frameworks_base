@@ -29,7 +29,6 @@ import android.media.ISoundDoseCallback;
 import android.media.audiopolicy.AudioMix;
 import android.media.audiopolicy.AudioMixingRule;
 import android.media.audiopolicy.AudioProductStrategy;
-import android.media.audiopolicy.Flags;
 import android.os.IBinder;
 import android.os.RemoteCallbackList;
 import android.os.RemoteException;
@@ -88,6 +87,8 @@ public class AudioSystemAdapter implements AudioSystem.RoutingUpdateCallback,
     private static final Object sAudioProductStrategiesLock = new Object();
     @GuardedBy("sAudioProductStrategiesLock")
     private static List<AudioProductStrategy> sAudioProductStrategies;
+    @GuardedBy("sAudioProductStrategiesLock")
+    private static List<AudioProductStrategy> sAudioProductStrategiesWithoutInternal;
     private int[] mMethodCacheHit;
     /**
      * Map that stores all attributes + forVolume pairs that are registered for
@@ -755,7 +756,13 @@ public class AudioSystemAdapter implements AudioSystem.RoutingUpdateCallback,
      */
     public List<AudioProductStrategy> getAudioProductStrategies(boolean filterInternal) {
         if (filterInternal) {
-            return AudioProductStrategy.filterNonInternalStrategies(getAllProductStrategies());
+            synchronized (sAudioProductStrategiesLock) {
+                if (sAudioProductStrategiesWithoutInternal == null) {
+                    sAudioProductStrategiesWithoutInternal = AudioProductStrategy
+                            .filterNonInternalStrategies(getAllProductStrategies());
+                }
+            }
+            return sAudioProductStrategiesWithoutInternal;
         }
         return getAllProductStrategies();
     }
@@ -775,7 +782,7 @@ public class AudioSystemAdapter implements AudioSystem.RoutingUpdateCallback,
                             + AudioSystem.audioSystemErrorToString(status));
                     return Collections.emptyList();
                 }
-                sAudioProductStrategies = strategies;
+                sAudioProductStrategies = Collections.unmodifiableList(strategies);
             }
         }
 
