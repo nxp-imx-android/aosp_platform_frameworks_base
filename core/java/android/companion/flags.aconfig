@@ -103,3 +103,11 @@ flag {
     description: "Enable medical profile"
     bug: "414859687"
 }
+
+flag {
+    name: "enable_remote_app_access"
+    is_exported: false
+    namespace: "desktop_better_together"
+    description: "Enable the Remote App Access API"
+    bug: "400970610"
+}
