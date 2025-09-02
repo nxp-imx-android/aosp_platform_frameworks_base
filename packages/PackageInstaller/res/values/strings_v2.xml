@@ -160,14 +160,14 @@
     <string name="cannot_install_verification_no_internet_summary">&lt;p>This app was not installed.
         Apps from unverified developers may be unsafe.&lt;/p>
         &lt;p>An internet connection is required to verify the app developer.
-            Check your connection, then try installing the app again.
+            Check your connection, then try installing again.
         &lt;/p>
     </string>
     <!-- Message presented in a dialog box when verification failed due to problems with the network during update. [CHAR LIMIT=none]-->
     <string name="cannot_update_verification_no_internet_summary">&lt;p>This app was not updated.
         Updates from unverified developers may be unsafe.&lt;/p>
         &lt;p>An internet connection is required to verify the app developer.
-            Check your connection, then try updating the app again.
+            Check your connection, then try updating again.
         &lt;/p>
     </string>
 
