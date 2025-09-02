@@ -36,7 +36,7 @@ import com.android.systemui.qs.tiles.DreamTile
 import com.android.systemui.qs.tiles.FlashlightTile
 import com.android.systemui.qs.tiles.FontScalingTile
 import com.android.systemui.qs.tiles.HotspotTile
-import com.android.systemui.qs.tiles.InternetTile
+import com.android.systemui.qs.tiles.InternetTileNewImpl
 import com.android.systemui.qs.tiles.LocationTile
 import com.android.systemui.qs.tiles.MicrophoneToggleTile
 import com.android.systemui.qs.tiles.ModesTile
@@ -64,7 +64,7 @@ import org.mockito.MockitoAnnotations
 
 private val specMap =
     mapOf(
-        "internet" to InternetTile::class.java,
+        "internet" to InternetTileNewImpl::class.java,
         "bt" to BluetoothTile::class.java,
         "dnd" to ModesTile::class.java,
         "inversion" to ColorInversionTile::class.java,
@@ -102,7 +102,7 @@ class QSFactoryImplTest : SysuiTestCase() {
     @Mock private lateinit var customTileFactory: CustomTile.Factory
     @Mock private lateinit var customTile: CustomTile
 
-    @Mock private lateinit var internetTile: InternetTile
+    @Mock private lateinit var internetTile: InternetTileNewImpl
     @Mock private lateinit var bluetoothTile: BluetoothTile
     @Mock private lateinit var modesTile: ModesTile
     @Mock private lateinit var colorInversionTile: ColorInversionTile
