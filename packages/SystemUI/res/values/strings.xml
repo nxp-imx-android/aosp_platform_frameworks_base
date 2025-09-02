@@ -398,6 +398,8 @@
     <string name="screen_share_toolbar_share_button">Share</string>
     <!-- Text for app screen sharing thumbnail when no app is selected. [CHAR LIMIT=35] -->
     <string name="screen_share_no_select_app_thumbnail">Select an app to share</string>
+    <!-- Text for share app audio. [CHAR LIMIT=35] -->
+    <string name="screen_share_app_audio_sharing">Share window audio</string>
     <!-- Content description for the app window screenshot button in the toolbar, when the capture mode is set to "screenshot". [CHAR LIMIT=NONE] -->
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y">Take screenshot of window</string>
     <!-- Content description for the app window screenshot button in the toolbar, when the capture mode is set to "record". [CHAR LIMIT=NONE] -->

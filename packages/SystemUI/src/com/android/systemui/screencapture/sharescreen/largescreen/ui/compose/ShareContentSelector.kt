@@ -25,6 +25,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
@@ -41,6 +42,8 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.android.systemui.res.R
+import com.android.systemui.screencapture.common.ui.compose.LoadingIcon
+import com.android.systemui.screencapture.common.ui.compose.loadIcon
 import com.android.systemui.screencapture.common.ui.viewmodel.RecentTaskViewModel
 import com.android.systemui.screencapture.sharescreen.largescreen.ui.viewmodel.AudioSwitchViewModel
 import com.android.systemui.screencapture.sharescreen.largescreen.ui.viewmodel.ShareContentListViewModel
@@ -142,7 +145,21 @@ private fun AudioSwitch(
         horizontalArrangement = Arrangement.SpaceBetween,
         modifier = Modifier.padding(4.dp, bottom = 12.dp).height(24.dp).fillMaxWidth(),
     ) {
-        Text(text = "Share audio", style = MaterialTheme.typography.labelMedium)
+        LoadingIcon(
+            icon =
+                loadIcon(
+                        viewModel = audioSwitchViewModel,
+                        resId = R.drawable.ic_speaker_on,
+                        contentDescription = null,
+                    )
+                    .value,
+            modifier = Modifier.size(20.dp).padding(2.dp),
+        )
+        Text(
+            text = stringResource(R.string.screen_share_app_audio_sharing),
+            style = MaterialTheme.typography.labelMedium,
+            modifier = Modifier.width(452.dp),
+        )
         Switch(
             checked = audioSwitchViewModel.audioSwitchChecked,
             onCheckedChange = {
