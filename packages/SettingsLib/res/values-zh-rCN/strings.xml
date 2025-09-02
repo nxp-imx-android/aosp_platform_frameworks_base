@@ -87,6 +87,8 @@
     <string name="bluetooth_connecting" msgid="5871702668260192755">"正在连接..."</string>
     <string name="bluetooth_connected" msgid="8065345572198502293">"已连接<xliff:g id="ACTIVE_DEVICE">%1$s</xliff:g>"</string>
     <string name="bluetooth_pairing" msgid="4269046942588193600">"正在配对..."</string>
+    <string name="bluetooth_pairing_failure" msgid="6914444518793157913">"无法配对"</string>
+    <string name="bluetooth_connection_failure" msgid="384203214661155324">"无法连接"</string>
     <string name="bluetooth_connected_no_headset" msgid="2224101138659967604">"已连接（无手机信号）<xliff:g id="ACTIVE_DEVICE">%1$s</xliff:g>"</string>
     <string name="bluetooth_connected_no_a2dp" msgid="8566874395813947092">"已连接（无媒体信号）<xliff:g id="ACTIVE_DEVICE">%1$s</xliff:g>"</string>
     <string name="bluetooth_connected_no_headset_no_a2dp" msgid="2893204819854215433">"已连接（无手机或媒体信号）<xliff:g id="ACTIVE_DEVICE">%1$s</xliff:g>"</string>
@@ -345,7 +347,8 @@
     <string name="wifi_non_persistent_mac_randomization_summary" msgid="2159794543105053930">"启用此模式后，每当此设备连接到已启用随机生成 MAC 地址功能的网络时，其 MAC 地址都可能会更改。"</string>
     <string name="wifi_metered_label" msgid="8737187690304098638">"按流量计费"</string>
     <string name="wifi_unmetered_label" msgid="6174142840934095093">"不按流量计费"</string>
-    <string name="select_logd_size_title" msgid="1604578195914595173">"日志记录器缓冲区大小"</string>
+    <!-- no translation found for select_logd_size_title (4393502933789367691) -->
+    <skip />
     <string name="select_logd_size_dialog_title" msgid="2105401994681013578">"选择每个日志缓冲区的日志记录器大小"</string>
     <string name="dev_logpersist_clear_warning_title" msgid="8631859265777337991">"要清除永久存储的日志记录器数据吗？"</string>
     <string name="dev_logpersist_clear_warning_message" msgid="6447590867594287413">"当我们不再使用永久日志记录器进行监控时，我们需要清除保存在您设备上的日志记录器数据。"</string>

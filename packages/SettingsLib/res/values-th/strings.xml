@@ -87,6 +87,10 @@
     <string name="bluetooth_connecting" msgid="5871702668260192755">"กำลังเชื่อมต่อ…"</string>
     <string name="bluetooth_connected" msgid="8065345572198502293">"เชื่อมต่อแล้ว<xliff:g id="ACTIVE_DEVICE">%1$s</xliff:g>"</string>
     <string name="bluetooth_pairing" msgid="4269046942588193600">"กำลังจับคู่อุปกรณ์..."</string>
+    <!-- no translation found for bluetooth_pairing_failure (6914444518793157913) -->
+    <skip />
+    <!-- no translation found for bluetooth_connection_failure (384203214661155324) -->
+    <skip />
     <string name="bluetooth_connected_no_headset" msgid="2224101138659967604">"เชื่อมต่อแล้ว (ไม่รวมโทรศัพท์)<xliff:g id="ACTIVE_DEVICE">%1$s</xliff:g>"</string>
     <string name="bluetooth_connected_no_a2dp" msgid="8566874395813947092">"เชื่อมต่อแล้ว (ไม่รวมสื่อ)<xliff:g id="ACTIVE_DEVICE">%1$s</xliff:g>"</string>
     <string name="bluetooth_connected_no_headset_no_a2dp" msgid="2893204819854215433">"เชื่อมต่อแล้ว (ไม่รวมโทรศัพท์หรือสื่อ)<xliff:g id="ACTIVE_DEVICE">%1$s</xliff:g>"</string>
@@ -345,7 +349,8 @@
     <string name="wifi_non_persistent_mac_randomization_summary" msgid="2159794543105053930">"เมื่อเปิดใช้โหมดนี้ ที่อยู่ MAC ของอุปกรณ์อาจเปลี่ยนทุกครั้งที่เชื่อมต่อกับเครือข่ายซึ่งเปิดใช้การสุ่ม MAC"</string>
     <string name="wifi_metered_label" msgid="8737187690304098638">"แบบจำกัดปริมาณ"</string>
     <string name="wifi_unmetered_label" msgid="6174142840934095093">"ไม่มีการวัดปริมาณอินเทอร์เน็ต"</string>
-    <string name="select_logd_size_title" msgid="1604578195914595173">"ขนาดบัฟเฟอร์ของตัวบันทึก"</string>
+    <!-- no translation found for select_logd_size_title (4393502933789367691) -->
+    <skip />
     <string name="select_logd_size_dialog_title" msgid="2105401994681013578">"เลือกขนาดตัวบันทึกต่อบัฟเฟอร์บันทึก"</string>
     <string name="dev_logpersist_clear_warning_title" msgid="8631859265777337991">"ล้างพื้นที่เก็บข้อมูลถาวรของตัวบันทึกไหม"</string>
     <string name="dev_logpersist_clear_warning_message" msgid="6447590867594287413">"เมื่อเราเลิกตรวจสอบด้วยตัวบันทึกถาวร เราต้องลบ Resident ของข้อมูลตัวบันทึกบนอุปกรณ์ของคุณ"</string>

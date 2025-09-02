@@ -87,6 +87,10 @@
     <string name="bluetooth_connecting" msgid="5871702668260192755">"Verbindung wird hergestellt..."</string>
     <string name="bluetooth_connected" msgid="8065345572198502293">"Mit <xliff:g id="ACTIVE_DEVICE">%1$s</xliff:g> verbunden"</string>
     <string name="bluetooth_pairing" msgid="4269046942588193600">"Wird gekoppelt…"</string>
+    <!-- no translation found for bluetooth_pairing_failure (6914444518793157913) -->
+    <skip />
+    <!-- no translation found for bluetooth_connection_failure (384203214661155324) -->
+    <skip />
     <string name="bluetooth_connected_no_headset" msgid="2224101138659967604">"Mit <xliff:g id="ACTIVE_DEVICE">%1$s</xliff:g> verbunden (kein Telefon-Audio)"</string>
     <string name="bluetooth_connected_no_a2dp" msgid="8566874395813947092">"Mit <xliff:g id="ACTIVE_DEVICE">%1$s</xliff:g> verbunden (kein Medien-Audio)"</string>
     <string name="bluetooth_connected_no_headset_no_a2dp" msgid="2893204819854215433">"Mit <xliff:g id="ACTIVE_DEVICE">%1$s</xliff:g> verbunden (weder Telefon- noch Medien-Audio)"</string>
@@ -345,7 +349,8 @@
     <string name="wifi_non_persistent_mac_randomization_summary" msgid="2159794543105053930">"Wenn dieser Modus aktiviert ist, kann sich die MAC-Adresse dieses Geräts bei jeder Verbindung mit einem Netzwerk ändern, bei dem die MAC-Adressen zufällig generiert werden."</string>
     <string name="wifi_metered_label" msgid="8737187690304098638">"Kostenpflichtig"</string>
     <string name="wifi_unmetered_label" msgid="6174142840934095093">"Ohne Datenlimit"</string>
-    <string name="select_logd_size_title" msgid="1604578195914595173">"Logger-Puffergrößen"</string>
+    <!-- no translation found for select_logd_size_title (4393502933789367691) -->
+    <skip />
     <string name="select_logd_size_dialog_title" msgid="2105401994681013578">"Größe pro Protokollpuffer wählen"</string>
     <string name="dev_logpersist_clear_warning_title" msgid="8631859265777337991">"Speicher der dauerhaften Protokollierung löschen?"</string>
     <string name="dev_logpersist_clear_warning_message" msgid="6447590867594287413">"Wenn keine Überwachung über eine dauerhafte Protokollierung mehr stattfindet, sind wir dazu verpflichtet, die Protokolldaten auf deinem Gerät zu löschen."</string>

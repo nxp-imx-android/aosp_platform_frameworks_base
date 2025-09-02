@@ -87,6 +87,10 @@
     <string name="bluetooth_connecting" msgid="5871702668260192755">"இணைக்கிறது..."</string>
     <string name="bluetooth_connected" msgid="8065345572198502293">"<xliff:g id="ACTIVE_DEVICE">%1$s</xliff:g> சாதனம் இணைக்கப்பட்டது"</string>
     <string name="bluetooth_pairing" msgid="4269046942588193600">"இணைக்கிறது..."</string>
+    <!-- no translation found for bluetooth_pairing_failure (6914444518793157913) -->
+    <skip />
+    <!-- no translation found for bluetooth_connection_failure (384203214661155324) -->
+    <skip />
     <string name="bluetooth_connected_no_headset" msgid="2224101138659967604">"<xliff:g id="ACTIVE_DEVICE">%1$s</xliff:g> இணைக்கப்பட்டது (மொபைல் இல்லை)"</string>
     <string name="bluetooth_connected_no_a2dp" msgid="8566874395813947092">"<xliff:g id="ACTIVE_DEVICE">%1$s</xliff:g> இணைக்கப்பட்டது (மீடியா இல்லை)"</string>
     <string name="bluetooth_connected_no_headset_no_a2dp" msgid="2893204819854215433">"<xliff:g id="ACTIVE_DEVICE">%1$s</xliff:g> இணைக்கப்பட்டது (மொபைல்/மீடியா இல்லை)"</string>
@@ -345,7 +349,8 @@
     <string name="wifi_non_persistent_mac_randomization_summary" msgid="2159794543105053930">"இந்தப் பயன்முறை இயக்கப்பட்டிருக்கும்போது இந்தச் சாதனத்தின் MAC முகவரி ஒவ்வொரு முறை \'MAC முகவரியை ரேண்டம் ஆக்குதல்\' இயக்கப்பட்டிருக்கும் நெட்வொர்க்குடன் இணைக்கப்படும்போதும் மாறக்கூடும்."</string>
     <string name="wifi_metered_label" msgid="8737187690304098638">"கட்டண நெட்வொர்க்"</string>
     <string name="wifi_unmetered_label" msgid="6174142840934095093">"கட்டணமில்லா நெட்வொர்க்"</string>
-    <string name="select_logd_size_title" msgid="1604578195914595173">"லாகர் பஃபர் அளவுகள்"</string>
+    <!-- no translation found for select_logd_size_title (4393502933789367691) -->
+    <skip />
     <string name="select_logd_size_dialog_title" msgid="2105401994681013578">"லாக் பஃபர் ஒன்றிற்கு லாகர் அளவுகளைத் தேர்வுசெய்க"</string>
     <string name="dev_logpersist_clear_warning_title" msgid="8631859265777337991">"லாகரின் நிலையான சேமிப்பகத்தை அழிக்கவா?"</string>
     <string name="dev_logpersist_clear_warning_message" msgid="6447590867594287413">"இனி நிலையான லாகர் மூலம் நாங்கள் கண்காணிக்க முடியாத நிலை ஏற்படும் போது, உங்கள் சாதனத்தில் உள்ள லாகர் தரவை நாங்கள் அழிக்க வேண்டி இருக்கும்."</string>

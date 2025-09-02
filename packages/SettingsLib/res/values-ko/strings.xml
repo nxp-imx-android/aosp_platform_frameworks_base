@@ -87,6 +87,8 @@
     <string name="bluetooth_connecting" msgid="5871702668260192755">"연결 중…"</string>
     <string name="bluetooth_connected" msgid="8065345572198502293">"연결됨<xliff:g id="ACTIVE_DEVICE">%1$s</xliff:g>"</string>
     <string name="bluetooth_pairing" msgid="4269046942588193600">"페어링 중..."</string>
+    <string name="bluetooth_pairing_failure" msgid="6914444518793157913">"페어링할 수 없음"</string>
+    <string name="bluetooth_connection_failure" msgid="384203214661155324">"연결할 수 없음"</string>
     <string name="bluetooth_connected_no_headset" msgid="2224101138659967604">"연결됨(전화 없음)<xliff:g id="ACTIVE_DEVICE">%1$s</xliff:g>"</string>
     <string name="bluetooth_connected_no_a2dp" msgid="8566874395813947092">"연결됨(미디어 없음)<xliff:g id="ACTIVE_DEVICE">%1$s</xliff:g>"</string>
     <string name="bluetooth_connected_no_headset_no_a2dp" msgid="2893204819854215433">"연결됨(전화 또는 미디어 없음)<xliff:g id="ACTIVE_DEVICE">%1$s</xliff:g>"</string>
@@ -345,7 +347,8 @@
     <string name="wifi_non_persistent_mac_randomization_summary" msgid="2159794543105053930">"이 모드를 사용 설정하면 기기가 MAC 주소 무작위 순서 지정이 설정된 네트워크에 연결될 때마다 기기의 MAC 주소가 변경될 수 있습니다."</string>
     <string name="wifi_metered_label" msgid="8737187690304098638">"종량제 네트워크"</string>
     <string name="wifi_unmetered_label" msgid="6174142840934095093">"무제한 네트워크"</string>
-    <string name="select_logd_size_title" msgid="1604578195914595173">"로거 버퍼 크기"</string>
+    <!-- no translation found for select_logd_size_title (4393502933789367691) -->
+    <skip />
     <string name="select_logd_size_dialog_title" msgid="2105401994681013578">"로그 버퍼당 로거 크기 선택"</string>
     <string name="dev_logpersist_clear_warning_title" msgid="8631859265777337991">"로거 영구 저장소를 삭제하시겠습니까?"</string>
     <string name="dev_logpersist_clear_warning_message" msgid="6447590867594287413">"영구 로거로 더 이상 모니터링하지 않는 경우 기기에 있는 로거 데이터를 삭제해야 합니다."</string>

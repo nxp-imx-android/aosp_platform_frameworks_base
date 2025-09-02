@@ -87,6 +87,10 @@
     <string name="bluetooth_connecting" msgid="5871702668260192755">"Inaunganisha…"</string>
     <string name="bluetooth_connected" msgid="8065345572198502293">"Imeunganishwa<xliff:g id="ACTIVE_DEVICE">%1$s</xliff:g>"</string>
     <string name="bluetooth_pairing" msgid="4269046942588193600">"Inaoanisha..."</string>
+    <!-- no translation found for bluetooth_pairing_failure (6914444518793157913) -->
+    <skip />
+    <!-- no translation found for bluetooth_connection_failure (384203214661155324) -->
+    <skip />
     <string name="bluetooth_connected_no_headset" msgid="2224101138659967604">"Imeunganishwa (hamna simu)<xliff:g id="ACTIVE_DEVICE">%1$s</xliff:g>"</string>
     <string name="bluetooth_connected_no_a2dp" msgid="8566874395813947092">"Imeunganishwa (hamna kifaa cha sauti)<xliff:g id="ACTIVE_DEVICE">%1$s</xliff:g>"</string>
     <string name="bluetooth_connected_no_headset_no_a2dp" msgid="2893204819854215433">"Imeunganishwa (hamna simu au kifaa cha sauti)<xliff:g id="ACTIVE_DEVICE">%1$s</xliff:g>"</string>
@@ -345,7 +349,7 @@
     <string name="wifi_non_persistent_mac_randomization_summary" msgid="2159794543105053930">"Wakati hali hii imewashwa, huenda anwani ya MAC ya kifaa hiki ikabadilika kila wakati kinapounganisha kwenye mtandao ambapo kipengele cha unasibu wa MAC kimewashwa."</string>
     <string name="wifi_metered_label" msgid="8737187690304098638">"Mtandao unapima data"</string>
     <string name="wifi_unmetered_label" msgid="6174142840934095093">"Mtandao usiopima data"</string>
-    <string name="select_logd_size_title" msgid="1604578195914595173">"Ukubwa wa kiweka bafa ya kumbukumbu"</string>
+    <string name="select_logd_size_title" msgid="4393502933789367691">"Ukubwa wa akiba ya kuhifadhi kumbukumbu"</string>
     <string name="select_logd_size_dialog_title" msgid="2105401994681013578">"Chagua ukubwa wa kila Kumbukumbu"</string>
     <string name="dev_logpersist_clear_warning_title" msgid="8631859265777337991">"Ungependa kufuta data iliyo kwenye hifadhi ya kiweka kumbukumbu za mara kwa mara?"</string>
     <string name="dev_logpersist_clear_warning_message" msgid="6447590867594287413">"Tunapoacha kufuatilia kwa kutumia kiweka kumbukumbu za mara kwa mara, tunapaswa kufuta data yote ya kiweka kumbukumbu iliyo kwenye kifaa chako."</string>

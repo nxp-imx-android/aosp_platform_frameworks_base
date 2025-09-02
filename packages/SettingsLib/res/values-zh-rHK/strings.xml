@@ -87,6 +87,10 @@
     <string name="bluetooth_connecting" msgid="5871702668260192755">"正在連線..."</string>
     <string name="bluetooth_connected" msgid="8065345572198502293">"已連接「<xliff:g id="ACTIVE_DEVICE">%1$s</xliff:g>」"</string>
     <string name="bluetooth_pairing" msgid="4269046942588193600">"正在配對..."</string>
+    <!-- no translation found for bluetooth_pairing_failure (6914444518793157913) -->
+    <skip />
+    <!-- no translation found for bluetooth_connection_failure (384203214661155324) -->
+    <skip />
     <string name="bluetooth_connected_no_headset" msgid="2224101138659967604">"已連接「<xliff:g id="ACTIVE_DEVICE">%1$s</xliff:g>」(無手機音訊)"</string>
     <string name="bluetooth_connected_no_a2dp" msgid="8566874395813947092">"已連接「<xliff:g id="ACTIVE_DEVICE">%1$s</xliff:g>」(無媒體音訊)"</string>
     <string name="bluetooth_connected_no_headset_no_a2dp" msgid="2893204819854215433">"已連接「<xliff:g id="ACTIVE_DEVICE">%1$s</xliff:g>」(無手機或媒體音訊)"</string>
@@ -345,7 +349,8 @@
     <string name="wifi_non_persistent_mac_randomization_summary" msgid="2159794543105053930">"啟用此模式後，每次連接至已啟用 MAC 隨機處理的網絡時，此裝置的 MAC 位址都可能會變更。"</string>
     <string name="wifi_metered_label" msgid="8737187690304098638">"按用量收費"</string>
     <string name="wifi_unmetered_label" msgid="6174142840934095093">"不限數據用量收費"</string>
-    <string name="select_logd_size_title" msgid="1604578195914595173">"記錄器緩衝區空間"</string>
+    <!-- no translation found for select_logd_size_title (4393502933789367691) -->
+    <skip />
     <string name="select_logd_size_dialog_title" msgid="2105401994681013578">"選取每個記錄緩衝區的記錄器空間"</string>
     <string name="dev_logpersist_clear_warning_title" msgid="8631859265777337991">"要清除記錄器的持久儲存空間嗎？"</string>
     <string name="dev_logpersist_clear_warning_message" msgid="6447590867594287413">"當我們不再使用持久記錄器進行監察，便需要清除你裝置上的記錄器資料。"</string>

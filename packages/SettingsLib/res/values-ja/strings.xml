@@ -87,6 +87,8 @@
     <string name="bluetooth_connecting" msgid="5871702668260192755">"接続処理中..."</string>
     <string name="bluetooth_connected" msgid="8065345572198502293">"接続済み: <xliff:g id="ACTIVE_DEVICE">%1$s</xliff:g>"</string>
     <string name="bluetooth_pairing" msgid="4269046942588193600">"ペアとして設定中..."</string>
+    <string name="bluetooth_pairing_failure" msgid="6914444518793157913">"ペア設定できません"</string>
+    <string name="bluetooth_connection_failure" msgid="384203214661155324">"接続できません"</string>
     <string name="bluetooth_connected_no_headset" msgid="2224101138659967604">"接続済み（電話なし）: <xliff:g id="ACTIVE_DEVICE">%1$s</xliff:g>"</string>
     <string name="bluetooth_connected_no_a2dp" msgid="8566874395813947092">"接続済み（メディアなし）: <xliff:g id="ACTIVE_DEVICE">%1$s</xliff:g>"</string>
     <string name="bluetooth_connected_no_headset_no_a2dp" msgid="2893204819854215433">"接続済み（電話、メディアなし）: <xliff:g id="ACTIVE_DEVICE">%1$s</xliff:g>"</string>
@@ -345,7 +347,8 @@
     <string name="wifi_non_persistent_mac_randomization_summary" msgid="2159794543105053930">"ON にすると、MAC アドレスのランダム化が有効なネットワークに接続するたびに、このデバイスの MAC アドレスが変わる可能性があります。"</string>
     <string name="wifi_metered_label" msgid="8737187690304098638">"従量制"</string>
     <string name="wifi_unmetered_label" msgid="6174142840934095093">"定額制"</string>
-    <string name="select_logd_size_title" msgid="1604578195914595173">"ログバッファのサイズ"</string>
+    <!-- no translation found for select_logd_size_title (4393502933789367691) -->
+    <skip />
     <string name="select_logd_size_dialog_title" msgid="2105401994681013578">"各ログバッファのログサイズを選択"</string>
     <string name="dev_logpersist_clear_warning_title" msgid="8631859265777337991">"ログの永続ストレージを消去しますか？"</string>
     <string name="dev_logpersist_clear_warning_message" msgid="6447590867594287413">"Google が常駐ロガーで監視していない場合、デバイス上のログデータを消去する必要があります。"</string>
