@@ -140,6 +140,9 @@ class ConnectedDisplayCujSmokeTests {
 
         // Ensure the transient taskbar is disabled.
         tapl.enableTransientTaskbar(false)
+
+        // Ensure all transitions are completed before running a test.
+        wmHelper.StateSyncBuilder().withAppTransitionIdle().waitForAndVerify()
     }
 
     fun cuj1() {
