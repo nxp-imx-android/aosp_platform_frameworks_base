@@ -31,6 +31,7 @@ import androidx.annotation.StringRes
  * - [PreferenceTitleProvider]: provide dynamic title content
  * - [PreferenceSummaryProvider]: provide dynamic summary content (e.g. based on preference value)
  * - [PreferenceIconProvider]: provide dynamic icon content (e.g. based on flag)
+ * - [PreferenceIndexableProvider]: provide if it is indexable dynamically
  * - [PreferenceAvailabilityProvider]: provide preference availability (e.g. based on flag)
  * - [PreferenceLifecycleProvider]: provide the lifecycle callbacks and notify state change
  *
@@ -86,6 +87,18 @@ interface PreferenceMetadata {
     val icon: Int
         @DrawableRes get() = 0
 
+    /**
+     * Returns if preference is indexable for settings search.
+     *
+     * The override should return constant value `true` / `false` only, and implement
+     * [PreferenceIndexableProvider] if the result is determined dynamically.
+     *
+     * Note: If [indexable] of a [PreferenceScreenMetadata] returns `false`, all the preferences on
+     * the screen are not indexable.
+     */
+    val indexable: Boolean
+        get() = true
+
     /** Additional keywords for indexing. */
     val keywords: Int
         @StringRes get() = 0
@@ -112,21 +125,6 @@ interface PreferenceMetadata {
     fun tags(context: Context): Array<String> = arrayOf()
 
     /**
-     * Returns if preference is indexable for settings search.
-     *
-     * Return `false` only when the preference is unavailable for indexing on current device. If it
-     * is available on condition, override [PreferenceAvailabilityProvider].
-     *
-     * Note: If a [PreferenceScreenMetadata.isIndexable] returns `false`, all the preferences on the
-     * screen are not indexable.
-     */
-    fun isIndexable(context: Context): Boolean =
-        when (this) {
-            is PreferenceGroup -> getPreferenceTitle(context)?.isNotEmpty() == true
-            else -> true
-        }
-
-    /**
      * Returns if the preference is available on condition, which indicates its availability could
      * be changed at runtime and should not be cached (e.g. for indexing).
      *
@@ -142,6 +140,10 @@ interface PreferenceMetadata {
      *
      * UI framework normally does not allow user to interact with the preference widget when it is
      * disabled.
+     *
+     * If [PreferenceScreenMetadata.isEnabled] is override and `false` value is returned
+     * potentially, [PreferenceIndexableProvider] should be implemented to indicate that the screen
+     * might not be accessible and thus no indexable.
      */
     fun isEnabled(context: Context): Boolean = true
 
@@ -169,7 +171,12 @@ interface PreferenceMetadata {
 }
 
 /** Metadata of preference group. */
-@AnyThread interface PreferenceGroup : PreferenceMetadata
+@AnyThread
+interface PreferenceGroup : PreferenceMetadata {
+
+    override val indexable
+        get() = title != 0
+}
 
 /** Metadata of preference category. */
 @AnyThread
