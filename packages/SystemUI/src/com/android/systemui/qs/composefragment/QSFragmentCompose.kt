@@ -282,40 +282,34 @@ constructor(
     private fun Content(modifier: Modifier = Modifier) {
         PlatformTheme(isDarkTheme = if (notificationShadeBlur()) isSystemInDarkTheme() else true) {
             ProvideShortcutHelperIndication(interactionsConfig = interactionsConfig()) {
-                // TODO(b/389985793): Make sure that there is no coroutine work or recompositions
-                // happening when alwaysCompose is true but isQsVisibleAndAnyShadeExpanded is false.
-                if (alwaysCompose || viewModel.isQsVisibleAndAnyShadeExpanded) {
-                    Box(
-                        modifier =
-                            modifier
-                                .thenIf(alwaysCompose) {
-                                    Modifier.layout { measurable, constraints ->
-                                        measurable.measure(constraints).run {
-                                            layout(width, height) {
-                                                if (viewModel.isQsVisibleAndAnyShadeExpanded) {
-                                                    place(0, 0)
-                                                }
-                                            }
+                Box(
+                    modifier =
+                        modifier
+                            .layout { measurable, constraints ->
+                                measurable.measure(constraints).run {
+                                    layout(width, height) {
+                                        if (viewModel.isQsVisibleAndAnyShadeExpanded) {
+                                            place(0, 0)
                                         }
                                     }
                                 }
-                                .graphicsLayer { alpha = viewModel.viewAlpha }
-                                .thenIf(!Flags.notificationShadeBlur()) {
-                                    Modifier.offset {
-                                        IntOffset(
-                                            x = 0,
-                                            y = viewModel.viewTranslationY.fastRoundToInt(),
-                                        )
-                                    }
+                            }
+                            .graphicsLayer { alpha = viewModel.viewAlpha }
+                            .thenIf(!Flags.notificationShadeBlur()) {
+                                Modifier.offset {
+                                    IntOffset(
+                                        x = 0,
+                                        y = viewModel.viewTranslationY.fastRoundToInt(),
+                                    )
                                 }
-                                // Disable touches in the whole composable while the mirror is
-                                // showing. While the mirror is showing, an ancestor of the
-                                // ComposeView is made alpha 0, but touches are still being captured
-                                // by the composables.
-                                .thenIf(viewModel.showingMirror) { Modifier.gesturesDisabled() }
-                    ) {
-                        CollapsableQuickSettingsSTL()
-                    }
+                            }
+                            // Disable touches in the whole composable while the mirror is
+                            // showing. While the mirror is showing, an ancestor of the
+                            // ComposeView is made alpha 0, but touches are still being captured
+                            // by the composables.
+                            .thenIf(viewModel.showingMirror) { Modifier.gesturesDisabled() }
+                ) {
+                    CollapsableQuickSettingsSTL()
                 }
             }
         }
@@ -371,17 +365,15 @@ constructor(
                     snapshotFlow { viewModel.expansionState }.map { it.progress },
                 )
             }
-            if (alwaysCompose) {
-                // Normally, the Edit mode will stop if the composable leaves, but if the shade
-                // is closed, because we are always composed, we don't stop edit mode.
-                launch {
-                    snapshotFlow { viewModel.isQsVisibleAndAnyShadeExpanded }
-                        .collect {
-                            if (!it) {
-                                viewModel.containerViewModel.editModeViewModel.stopEditing()
-                            }
+            // Normally, the Edit mode will stop if the composable leaves, but if the shade
+            // is closed, because we are always composed, we don't stop edit mode.
+            launch {
+                snapshotFlow { viewModel.isQsVisibleAndAnyShadeExpanded }
+                    .collect {
+                        if (!it) {
+                            viewModel.containerViewModel.editModeViewModel.stopEditing()
                         }
-                }
+                    }
             }
             launch {
                 snapshotFlow { viewModel.isQsFullyExpanded }
@@ -394,12 +386,12 @@ constructor(
         }
 
         SceneTransitionLayout(state = sceneState, modifier = Modifier.fillMaxSize()) {
-            scene(QuickSettings, alwaysCompose = alwaysCompose) {
+            scene(QuickSettings, alwaysCompose = true) {
                 LaunchedEffect(Unit) { viewModel.onQSOpen() }
                 Element(QuickSettings.rootElementKey, Modifier) { QuickSettingsElement() }
             }
 
-            scene(QuickQuickSettings, alwaysCompose = alwaysCompose) {
+            scene(QuickQuickSettings, alwaysCompose = true) {
                 LaunchedEffect(Unit) { viewModel.onQQSOpen() }
                 // Cannot pass the element modifier in because the top element has a `testTag`
                 // and this would overwrite it.
@@ -754,18 +746,14 @@ constructor(
                         // listening whenever this is composed. When always compose is true, we
                         // listen if we are visible and not fully expanded
                         val isListening: () -> Boolean =
-                            if (alwaysCompose) {
-                                remember(viewModel) {
-                                        derivedStateOf {
-                                            viewModel.isQsVisibleAndAnyShadeExpanded &&
-                                                viewModel.expansionState.progress < 1f &&
-                                                !viewModel.isEditing
-                                        }
+                            remember(viewModel) {
+                                    derivedStateOf {
+                                        viewModel.isQsVisibleAndAnyShadeExpanded &&
+                                            viewModel.expansionState.progress < 1f &&
+                                            !viewModel.isEditing
                                     }
-                                    .let { state -> { state.value } }
-                            } else {
-                                { true }
-                            }
+                                }
+                                .let { state -> { state.value } }
 
                         QuickQuickSettings(
                             viewModel = viewModel.quickQuickSettingsViewModel,
@@ -830,22 +818,16 @@ constructor(
         ) {
             if (viewModel.isQsEnabled) {
                 Element(Elements.QuickSettingsContent, modifier = Modifier.weight(1f)) {
-                    if (alwaysCompose) {
-                        // scrollState never changes
-                        LaunchedEffect(Unit) {
-                            snapshotFlow { viewModel.isQsFullyCollapsed }
-                                .collect { collapsed ->
-                                    if (collapsed) {
-                                        scrollState.scrollTo(0)
-                                    }
+                    // scrollState never changes
+                    LaunchedEffect(Unit) {
+                        snapshotFlow { viewModel.isQsFullyCollapsed }
+                            .collect { collapsed ->
+                                if (collapsed) {
+                                    scrollState.scrollTo(0)
                                 }
-                        }
-                    } else {
-                        DisposableEffect(Unit) {
-                            lifecycleScope.launch { scrollState.scrollTo(0) }
-                            onDispose { lifecycleScope.launch { scrollState.scrollTo(0) } }
-                        }
+                            }
                     }
+
                     Column(
                         modifier =
                             Modifier.fillMaxSize()
@@ -919,21 +901,17 @@ constructor(
                                     // compose is true, we look a the second condition and we'll
                                     // listen if QS is visible AND we are not fully collapsed.
                                     val isListening: () -> Boolean =
-                                        if (alwaysCompose) {
-                                            remember(viewModel) {
-                                                    derivedStateOf {
-                                                        viewModel.isQsVisibleAndAnyShadeExpanded &&
-                                                            viewModel.expansionState.progress >
-                                                                QSFragmentComposeViewModel
-                                                                    .QS_LISTENING_THRESHOLD &&
-                                                            !viewModel.isEditing &&
-                                                            !viewModel.isStackScrollerOverscrolling
-                                                    }
+                                        remember(viewModel) {
+                                                derivedStateOf {
+                                                    viewModel.isQsVisibleAndAnyShadeExpanded &&
+                                                        viewModel.expansionState.progress >
+                                                            QSFragmentComposeViewModel
+                                                                .QS_LISTENING_THRESHOLD &&
+                                                        !viewModel.isEditing &&
+                                                        !viewModel.isStackScrollerOverscrolling
                                                 }
-                                                .let { state -> { state.value } }
-                                        } else {
-                                            { true }
-                                        }
+                                            }
+                                            .let { state -> { state.value } }
 
                                     TileGrid(
                                         viewModel = containerViewModel.tileGridViewModel,
@@ -1061,7 +1039,6 @@ constructor(
                 println("qqsPositionOnScreen", rect)
             }
             println("QQS visible", qqsVisible.value)
-            println("Always composed", alwaysCompose)
             println("bottom QS padding", bottomContentPadding)
             if (::viewModel.isInitialized) {
                 printSection("View Model") { viewModel.dump(this@run, args) }
@@ -1560,9 +1537,6 @@ private fun interactionsConfig() =
         // we are OK using this as our content is clipped and all corner radius are larger than this
         surfaceCornerRadius = 16.dp,
     )
-
-private inline val alwaysCompose
-    get() = Flags.alwaysComposeQsUiFragment()
 
 /**
  * Forces the configuration and themes to be dark theme. This is needed in order to have
