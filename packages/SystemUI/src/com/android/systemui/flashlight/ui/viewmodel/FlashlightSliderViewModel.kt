@@ -68,10 +68,17 @@ constructor(
     }
 
     fun setFlashlightLevel(value: Int) {
+        setFlashlightLevel(value, false)
+    }
+
+    fun setFlashlightLevelTemporary(value: Int) {
+        setFlashlightLevel(value, true)
+    }
+
+    private fun setFlashlightLevel(value: Int, temporary: Boolean) {
         if (!isFlashlightAdjustable) {
             logger.w(
-                "FlashlightSliderViewModel attempted to set level to $value when state was" +
-                    " not adjustable"
+                "FlashlightSliderViewModel attempted to set level to $value when state was not adjustable"
             )
             return
         }
@@ -82,7 +89,8 @@ constructor(
             flashlightInteractor.setEnabled(false)
         } else {
             try {
-                flashlightInteractor.setLevel(value)
+                if (temporary) flashlightInteractor.setTemporaryLevel(value)
+                else flashlightInteractor.setLevel(value)
             } catch (ex: IllegalArgumentException) {
                 logger.w("FlashlightSliderViewModel#setFlashlightLevel: $ex")
             }

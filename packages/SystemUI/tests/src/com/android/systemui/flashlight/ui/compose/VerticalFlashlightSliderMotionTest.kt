@@ -71,6 +71,7 @@ class VerticalFlashlightSliderMotionTest : SysuiTestCase() {
             levelValue = startingValue,
             valueRange = 0..45,
             onValueChange = {},
+            onValueChangeFinished = {},
             isEnabled = true,
             hapticsViewModelFactory = kosmos.sliderHapticsViewModelFactory,
             colors =

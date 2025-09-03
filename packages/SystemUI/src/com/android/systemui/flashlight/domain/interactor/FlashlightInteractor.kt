@@ -31,6 +31,10 @@ class FlashlightInteractor @Inject constructor(private val repository: Flashligh
         repository.setLevel(level)
     }
 
+    fun setTemporaryLevel(level: Int) {
+        repository.setTemporaryLevel(level)
+    }
+
     val state = repository.state
 
     val deviceSupportsFlashlight: Boolean

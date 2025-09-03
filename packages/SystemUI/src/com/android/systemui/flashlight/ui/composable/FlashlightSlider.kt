@@ -39,7 +39,8 @@ fun FlashlightSliderContainer(viewModel: FlashlightSliderViewModel, modifier: Mo
         VerticalFlashlightSlider(
             levelValue = levelValue,
             valueRange = 0..currentState.max,
-            onValueChange = viewModel::setFlashlightLevel,
+            onValueChange = viewModel::setFlashlightLevelTemporary,
+            onValueChangeFinished = viewModel::setFlashlightLevel,
             isEnabled = viewModel.isFlashlightAdjustable,
             hapticsViewModelFactory = viewModel.hapticsViewModelFactory,
             colors =
