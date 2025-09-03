@@ -413,6 +413,7 @@ public class MainContentCaptureSessionTest {
     }
 
     @Test
+    @DisableFlags(Flags.FLAG_REDUCE_BINDER_TRANSACTION_ENABLED)
     @SuppressWarnings("GuardedBy")
     public void notifyContentCaptureEvents_started_ContentCaptureEnabled_ProtectionEnabled_Flush()
             throws RemoteException {
@@ -434,6 +435,33 @@ public class MainContentCaptureSessionTest {
                 .sendEvents(any(), eq(FLUSH_REASON_VIEW_TREE_APPEARING), any());
         verify(mMockContentCaptureDirectManager, times(1))
                 .sendEvents(any(), eq(FLUSH_REASON_VIEW_TREE_APPEARED), any());
+        // 5 view events + 2 view tree events + 1 flush event
+        verify(mMockContentProtectionEventProcessor, times(8)).processEvent(any());
+        assertThat(session.mEvents).isEmpty();
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_REDUCE_BINDER_TRANSACTION_ENABLED)
+    @SuppressWarnings("GuardedBy")
+    public void notifyContentCaptureEvents_flush_reducedBinderTransactionEnabled()
+            throws RemoteException {
+        ContentCaptureOptions options =
+                createOptions(
+                        /* enableContentCaptureReceiver= */ true,
+                        /* enableContentProtectionReceiver= */ true);
+        MainContentCaptureSession session = createSession(options);
+        session.mDirectServiceInterface = mMockContentCaptureDirectManager;
+
+        session.onSessionStarted(0x2, null);
+        // Override the processor for interaction verification.
+        session.mContentProtectionEventProcessor = mMockContentProtectionEventProcessor;
+        notifyContentCaptureEvents(session);
+        mTestableLooper.processAllMessages();
+
+        // Force flush will happen only once when flag enabled.
+        verify(mMockContentCaptureDirectManager, times(1))
+                .sendEvents(any(), anyInt(), any());
+        verifyNoMoreInteractions(mMockContentCaptureDirectManager);
         // 5 view events + 2 view tree events + 1 flush event
         verify(mMockContentProtectionEventProcessor, times(8)).processEvent(any());
         assertThat(session.mEvents).isEmpty();
