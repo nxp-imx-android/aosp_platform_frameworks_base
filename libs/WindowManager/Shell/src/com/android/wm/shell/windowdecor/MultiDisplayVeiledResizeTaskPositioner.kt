@@ -39,6 +39,7 @@ import com.android.wm.shell.desktopmode.DesktopModeEventLogger.Companion.InputMe
 import com.android.wm.shell.desktopmode.DesktopModeEventLogger.Companion.ResizeTrigger
 import com.android.wm.shell.desktopmode.DesktopModeEventLogger.Companion.getInputMethodType
 import com.android.wm.shell.desktopmode.DesktopTasksController
+import com.android.wm.shell.desktopmode.freeformCaptionInsets
 import com.android.wm.shell.shared.annotations.ShellMainThread
 import com.android.wm.shell.shared.desktopmode.DesktopState
 import com.android.wm.shell.transition.Transitions
@@ -316,6 +317,11 @@ class MultiDisplayVeiledResizeTaskPositioner(
                 windowDecoration.updateResizeVeil(repositionTaskBounds)
                 val wct = WindowContainerTransaction()
                 wct.setBounds(windowDecoration.taskInfo.token, repositionTaskBounds)
+                val captionInsets = windowDecoration.taskInfo.freeformCaptionInsets
+                if (captionInsets != 0) {
+                    // Reset app bounds if app bounds were overridden.
+                    wct.setAppBounds(windowDecoration.taskInfo.token, null)
+                }
                 transitions.startTransition(WindowManager.TRANSIT_CHANGE, wct, this)
             } else {
                 // If bounds haven't changed, perform necessary veil reset here as startAnimation
