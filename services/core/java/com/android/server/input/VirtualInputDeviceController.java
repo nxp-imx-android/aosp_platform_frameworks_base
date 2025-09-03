@@ -21,6 +21,7 @@ import static android.text.TextUtils.formatSimple;
 import static com.android.hardware.input.Flags.disableSettingsForVirtualDevices;
 
 import android.Manifest;
+import android.annotation.EnforcePermission;
 import android.annotation.IntDef;
 import android.annotation.NonNull;
 import android.annotation.StringDef;
@@ -28,10 +29,13 @@ import android.content.Context;
 import android.content.pm.PackageManager;
 import android.graphics.PointF;
 import android.hardware.display.DisplayManagerInternal;
+import android.hardware.input.IVirtualGamepad;
 import android.hardware.input.IVirtualInputDevice;
 import android.hardware.input.InputDeviceIdentifier;
 import android.hardware.input.InputManager.InputDeviceListener;
 import android.hardware.input.InputManagerGlobal;
+import android.hardware.input.VirtualGamepad;
+import android.hardware.input.VirtualGamepadMotionEvent;
 import android.hardware.input.VirtualKeyEvent;
 import android.hardware.input.VirtualMouseButtonEvent;
 import android.hardware.input.VirtualMouseRelativeEvent;
@@ -50,6 +54,8 @@ import android.util.ArrayMap;
 import android.util.Slog;
 import android.view.Display;
 import android.view.InputDevice;
+import android.view.KeyEvent;
+import android.view.MotionEvent;
 
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
@@ -76,6 +82,7 @@ class VirtualInputDeviceController {
 
     static final String PHYS_TYPE_DPAD = "Dpad";
     static final String PHYS_TYPE_KEYBOARD = "Keyboard";
+    static final String PHYS_TYPE_GAMEPAD = "Gamepad";
     static final String PHYS_TYPE_MOUSE = "Mouse";
     static final String PHYS_TYPE_TOUCHSCREEN = "Touchscreen";
     static final String PHYS_TYPE_NAVIGATION_TOUCHPAD = "NavigationTouchpad";
@@ -84,6 +91,7 @@ class VirtualInputDeviceController {
     @StringDef(prefix = { "PHYS_TYPE_" }, value = {
             PHYS_TYPE_DPAD,
             PHYS_TYPE_KEYBOARD,
+            PHYS_TYPE_GAMEPAD,
             PHYS_TYPE_MOUSE,
             PHYS_TYPE_TOUCHSCREEN,
             PHYS_TYPE_NAVIGATION_TOUCHPAD,
@@ -149,6 +157,20 @@ class VirtualInputDeviceController {
                     () -> mNativeWrapper.openUinputKeyboard(deviceName, vendorId, productId, phys));
         } catch (DeviceCreationException e) {
             mService.removeKeyboardLayoutAssociation(phys);
+            throw new IllegalArgumentException(e);
+        }
+    }
+
+    IVirtualGamepad createGamepad(@NonNull String deviceName, int vendorId, int productId,
+            @NonNull IBinder deviceToken, int displayId) {
+        final String phys = createPhys(PHYS_TYPE_GAMEPAD);
+        try {
+            final InputDeviceDescriptor device = createDeviceInternal(
+                    InputDeviceDescriptor.TYPE_GAMEPAD, deviceName, vendorId,
+                    productId, deviceToken, displayId, phys,
+                    () -> mNativeWrapper.openUinputGamepad(deviceName, vendorId, productId, phys));
+            return new VirtualGamepadDevice(device);
+        } catch (DeviceCreationException e) {
             throw new IllegalArgumentException(e);
         }
     }
@@ -475,6 +497,8 @@ class VirtualInputDeviceController {
             String phys);
     private static native long nativeOpenUinputKeyboard(String deviceName, int vendorId,
             int productId, String phys);
+    private static native long nativeOpenUinputGamepad(String deviceName, int vendorId,
+            int productId, String phys);
     private static native long nativeOpenUinputMouse(String deviceName, int vendorId, int productId,
             String phys);
     private static native long nativeOpenUinputTouchscreen(String deviceName, int vendorId,
@@ -489,6 +513,10 @@ class VirtualInputDeviceController {
             long eventTimeNanos);
     private static native boolean nativeWriteKeyEvent(long ptr, int androidKeyCode, int action,
             long eventTimeNanos);
+    private static native boolean nativeWriteGamepadKeyEvent(long ptr, int androidKeyCode,
+            int action, long eventTimeNanos);
+    private static native boolean nativeWriteGamepadMotionEvent(long ptr, float x, float y, float z,
+            float rz, float hatX, float hatY, long eventTimeNanos);
     private static native boolean nativeWriteButtonEvent(long ptr, int buttonCode, int action,
             long eventTimeNanos);
     private static native boolean nativeWriteTouchEvent(long ptr, int pointerId, int toolType,
@@ -515,6 +543,11 @@ class VirtualInputDeviceController {
         public long openUinputKeyboard(String deviceName, int vendorId, int productId,
                 String phys) {
             return nativeOpenUinputKeyboard(deviceName, vendorId, productId, phys);
+        }
+
+        public long openUinputGamepad(String deviceName, int vendorId, int productId,
+                String phys) {
+            return nativeOpenUinputGamepad(deviceName, vendorId, productId, phys);
         }
 
         public long openUinputMouse(String deviceName, int vendorId, int productId, String phys) {
@@ -549,6 +582,16 @@ class VirtualInputDeviceController {
         public boolean writeKeyEvent(long ptr, int androidKeyCode, int action,
                 long eventTimeNanos) {
             return nativeWriteKeyEvent(ptr, androidKeyCode, action, eventTimeNanos);
+        }
+
+        public boolean writeGamepadKeyEvent(long ptr, int androidKeyCode, int action,
+                long eventTimeNanos) {
+            return nativeWriteGamepadKeyEvent(ptr, androidKeyCode, action, eventTimeNanos);
+        }
+
+        public boolean writeGamepadMotionEvent(long ptr, VirtualGamepadMotionEvent event) {
+            return nativeWriteGamepadMotionEvent(ptr, event.x, event.y, event.z, event.rz,
+                    event.hatX, event.hatY, event.eventTimeNanos);
         }
 
         public boolean writeButtonEvent(long ptr, int buttonCode, int action,
@@ -601,6 +644,7 @@ class VirtualInputDeviceController {
         static final int TYPE_NAVIGATION_TOUCHPAD = 5;
         static final int TYPE_STYLUS = 6;
         static final int TYPE_ROTARY_ENCODER = 7;
+        static final int TYPE_GAMEPAD = 8;
         @IntDef(prefix = { "TYPE_" }, value = {
                 TYPE_KEYBOARD,
                 TYPE_MOUSE,
@@ -609,6 +653,7 @@ class VirtualInputDeviceController {
                 TYPE_NAVIGATION_TOUCHPAD,
                 TYPE_STYLUS,
                 TYPE_ROTARY_ENCODER,
+                TYPE_GAMEPAD,
         })
         @Retention(RetentionPolicy.SOURCE)
         @interface Type {
@@ -888,7 +933,7 @@ class VirtualInputDeviceController {
      *                                 to restore the state of the system in the event of any
      *                                 unexpected behavior.
      */
-    private IVirtualInputDevice createDeviceInternal(@InputDeviceDescriptor.Type int type,
+    private InputDeviceDescriptor createDeviceInternal(@InputDeviceDescriptor.Type int type,
             String deviceName, int vendorId, int productId, IBinder deviceToken, int displayId,
             String phys, Supplier<Long> deviceOpener) throws DeviceCreationException {
         if (!mThreadVerifier.isValidThread()) {
@@ -982,6 +1027,57 @@ class VirtualInputDeviceController {
                 + " requires one of: " + Arrays.toString(permissions);
         Slog.w(TAG, msg);
         return false;
+    }
+
+    /** A wrapper for an IVirtualInputDevice that exposes it as an IVirtualGamepad. */
+    private final class VirtualGamepadDevice extends IVirtualGamepad.Stub {
+        private final InputDeviceDescriptor mDevice;
+
+        VirtualGamepadDevice(@NonNull InputDeviceDescriptor device) {
+            mDevice = device;
+        }
+
+        @Override
+        @EnforcePermission(Manifest.permission.INJECT_EVENTS)
+        public void close() {
+            close_enforcePermission();
+            mDevice.close();
+        }
+
+        @Override
+        @EnforcePermission(Manifest.permission.INJECT_EVENTS)
+        public boolean sendGamepadKeyEvent(VirtualKeyEvent event) {
+            sendGamepadKeyEvent_enforcePermission();
+            if (!VirtualGamepad.SUPPORTED_KEY_CODES.contains(event.getKeyCode())) {
+                throw new IllegalArgumentException(
+                        "Unsupported key code " + event.getKeyCode() + "("
+                                + KeyEvent.keyCodeToString(event.getKeyCode()) + ")"
+                                + " sent to a VirtualGamepad input device.");
+            }
+            return mNativeWrapper.writeGamepadKeyEvent(mDevice.getNativePointer(),
+                event.getKeyCode(), event.getAction(), event.getEventTimeNanos());
+        }
+
+        @Override
+        @EnforcePermission(Manifest.permission.INJECT_EVENTS)
+        public boolean sendGamepadMotionEvent(VirtualGamepadMotionEvent event) {
+            sendGamepadMotionEvent_enforcePermission();
+            validateAxisValue(event.x, MotionEvent.AXIS_X);
+            validateAxisValue(event.y, MotionEvent.AXIS_Y);
+            validateAxisValue(event.z, MotionEvent.AXIS_Z);
+            validateAxisValue(event.rz, MotionEvent.AXIS_RZ);
+            validateAxisValue(event.hatX, MotionEvent.AXIS_HAT_X);
+            validateAxisValue(event.hatY, MotionEvent.AXIS_HAT_Y);
+            return mNativeWrapper.writeGamepadMotionEvent(mDevice.getNativePointer(), event);
+        }
+
+        private void validateAxisValue(float value, int axis) {
+            if (!Float.isNaN(value) && (value < -1.0f || value > 1.0f)) {
+                throw new IllegalArgumentException("Unsupported value " + value
+                        + " for axis " + MotionEvent.axisToString(axis)
+                        + " sent to virtual gamepad " + mDevice.mName);
+            }
+        }
     }
 
     @VisibleForTesting

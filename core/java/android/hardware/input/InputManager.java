@@ -1023,6 +1023,22 @@ public final class InputManager {
     }
 
     /**
+     * Returns a {@link VirtualGamepad} to the caller.
+     * See {@link android.hardware.input.VirtualGamepadConfig} for additional configurations
+     * available, e.g. display association, vendor id, product id, device name.
+     *
+     * @param config the gamepad configuration
+     * @return VirtualGamepad a virtual gamepad device
+     *
+     * @hide
+     */
+    @RequiresPermission(Manifest.permission.INJECT_EVENTS)
+    @NonNull
+    public VirtualGamepad createVirtualGamepad(@NonNull VirtualGamepadConfig config) {
+        return mGlobal.createVirtualGamepad(config);
+    }
+
+    /**
      * Injects an input event into the event system on behalf of an application.
      * The synchronization mode determines whether the method blocks while waiting for
      * input injection to proceed.
