@@ -103,9 +103,9 @@ public class WindowOnBackInvokedDispatcherTest {
     @Mock
     private OnBackAnimationCallback mCallback2;
     @Mock
-    private ImeOnBackInvokedDispatcher.ImeOnBackInvokedCallback mImeCallback;
+    private ImeBackCallbackProxy.ImeOnBackInvokedCallback mImeCallback;
     @Mock
-    private ImeOnBackInvokedDispatcher.DefaultImeOnBackAnimationCallback mDefaultImeCallback;
+    private ImeBackCallbackProxy.DefaultImeOnBackAnimationCallback mDefaultImeCallback;
     @Mock
     private ImeBackAnimationController mImeBackAnimationController;
     @Mock

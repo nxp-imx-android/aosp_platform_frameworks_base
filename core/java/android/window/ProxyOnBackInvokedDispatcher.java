@@ -51,7 +51,7 @@ public class ProxyOnBackInvokedDispatcher implements OnBackInvokedDispatcher {
     private final List<Pair<OnBackInvokedCallback, Integer>> mCallbacks = new ArrayList<>();
     private final Object mLock = new Object();
     private OnBackInvokedDispatcher mActualDispatcher = null;
-    private ImeOnBackInvokedDispatcher mImeDispatcher;
+    private ImeBackCallbackSender mImeBackCallbackSender;
     private final Checker mChecker;
 
     public ProxyOnBackInvokedDispatcher(@NonNull Context context) {
@@ -118,8 +118,8 @@ public class ProxyOnBackInvokedDispatcher implements OnBackInvokedDispatcher {
             Log.v(TAG, String.format("Proxy transferring %d callbacks to %s", mCallbacks.size(),
                     mActualDispatcher));
         }
-        if (mImeDispatcher != null) {
-            mActualDispatcher.setImeOnBackInvokedDispatcher(mImeDispatcher);
+        if (mImeBackCallbackSender != null) {
+            mActualDispatcher.setImeBackCallbackSender(mImeBackCallbackSender);
         }
         for (Pair<OnBackInvokedCallback, Integer> callbackPair : mCallbacks) {
             int priority = callbackPair.second;
@@ -130,7 +130,7 @@ public class ProxyOnBackInvokedDispatcher implements OnBackInvokedDispatcher {
             }
         }
         mCallbacks.clear();
-        mImeDispatcher = null;
+        mImeBackCallbackSender = null;
     }
 
     private void clearCallbacksOnDispatcher() {
@@ -156,7 +156,7 @@ public class ProxyOnBackInvokedDispatcher implements OnBackInvokedDispatcher {
         }
         synchronized (mLock) {
             mCallbacks.clear();
-            mImeDispatcher = null;
+            mImeBackCallbackSender = null;
         }
     }
 
@@ -185,13 +185,17 @@ public class ProxyOnBackInvokedDispatcher implements OnBackInvokedDispatcher {
         }
     }
 
-    @Override
-    public void setImeOnBackInvokedDispatcher(
-            @NonNull ImeOnBackInvokedDispatcher imeDispatcher) {
+    /**
+     * Sets an {@link ImeBackCallbackSender} to forward {@link OnBackInvokedCallback}s from IME
+     * to the app process to be registered on the app window.
+     *
+     * This should only be called on the IME window.
+     */
+    public void setImeBackCallbackSender(@NonNull ImeBackCallbackSender imeBackCallbackSender) {
         if (mActualDispatcher != null) {
-            mActualDispatcher.setImeOnBackInvokedDispatcher(imeDispatcher);
+            mActualDispatcher.setImeBackCallbackSender(imeBackCallbackSender);
         } else {
-            mImeDispatcher = imeDispatcher;
+            mImeBackCallbackSender = imeBackCallbackSender;
         }
     }
 }

@@ -106,7 +106,7 @@ import android.view.WindowManager;
 import android.view.WindowManager.LayoutParams.SoftInputModeFlags;
 import android.view.autofill.AutofillId;
 import android.view.autofill.AutofillManager;
-import android.window.ImeOnBackInvokedDispatcher;
+import android.window.ImeBackCallbackProxy;
 import android.window.WindowOnBackInvokedDispatcher;
 
 import com.android.internal.annotations.GuardedBy;
@@ -311,8 +311,8 @@ public final class InputMethodManager {
      * Provide this to {@link IInputMethodManagerGlobalInvoker#startInputOrWindowGainedFocus}
      * to receive {@link android.window.OnBackInvokedCallback} registrations from IME.
      */
-    private final ImeOnBackInvokedDispatcher mImeDispatcher =
-            new ImeOnBackInvokedDispatcher(Handler.getMain()) {
+    private final ImeBackCallbackProxy mImeBackCallbackProxy =
+            new ImeBackCallbackProxy(Handler.getMain()) {
         @Override
         public WindowOnBackInvokedDispatcher getReceivingDispatcher() {
             synchronized (mH) {
@@ -943,7 +943,8 @@ public final class InputMethodManager {
                         null,
                         null, null,
                         mCurRootView.mContext.getApplicationInfo().targetSdkVersion,
-                        UserHandle.myUserId(), mImeDispatcher, imeRequestedVisible);
+                        UserHandle.myUserId(), mImeBackCallbackProxy.getResultReceiver(),
+                        imeRequestedVisible);
                 Trace.traceEnd(TRACE_TAG_WINDOW_MANAGER);
             }
         }
@@ -1010,10 +1011,11 @@ public final class InputMethodManager {
                 onImeFocusLost(mCurRootView);
             }
 
-            mImeDispatcher.switchRootView(mCurRootView, rootView);
+            mImeBackCallbackProxy.switchRootView(mCurRootView, rootView);
             mCurRootView = rootView;
             if (wasEmpty && mCurRootView != null) {
-                mImeDispatcher.updateReceivingDispatcher(mCurRootView.getOnBackInvokedDispatcher());
+                mImeBackCallbackProxy
+                        .updateReceivingDispatcher(mCurRootView.getOnBackInvokedDispatcher());
             }
         }
     }
@@ -1251,7 +1253,7 @@ public final class InputMethodManager {
                     final boolean startInput;
                     synchronized (mH) {
                         if (reason == UnbindReason.DISCONNECT_IME) {
-                            mImeDispatcher.clear();
+                            mImeBackCallbackProxy.clear();
                         }
                         if (getBindSequenceLocked() != sequence) {
                             return;
@@ -2231,7 +2233,7 @@ public final class InputMethodManager {
         }
         mReportInputConnectionOpenedRunner = null;
         // Clear the back callbacks held by the ime dispatcher to avoid memory leaks.
-        mImeDispatcher.clear();
+        mImeBackCallbackProxy.clear();
     }
 
     /**
@@ -3641,7 +3643,7 @@ public final class InputMethodManager {
                             servedInputConnection == null ? null
                                     : servedInputConnection.asIRemoteAccessibilityInputConnection(),
                             view.getContext().getApplicationInfo().targetSdkVersion, targetUserId,
-                            mImeDispatcher, imeRequestedVisible);
+                            mImeBackCallbackProxy.getResultReceiver(), imeRequestedVisible);
 
             Trace.traceEnd(TRACE_TAG_WINDOW_MANAGER);
             // Create a runnable for delayed notification to the app that the InputConnection is
@@ -3790,11 +3792,11 @@ public final class InputMethodManager {
     }
 
     /**
-     * Returns the ImeOnBackInvokedDispatcher.
+     * Returns the {@link ImeBackCallbackProxy}.
      * @hide
      */
-    public ImeOnBackInvokedDispatcher getImeOnBackInvokedDispatcher() {
-        return mImeDispatcher;
+    public ImeBackCallbackProxy getImeBackCallbackProxy() {
+        return mImeBackCallbackProxy;
     }
 
     /**
@@ -4996,7 +4998,7 @@ public final class InputMethodManager {
                 + " mCursorSelEnd=" + mCursorSelEnd
                 + " mCursorCandStart=" + mCursorCandStart
                 + " mCursorCandEnd=" + mCursorCandEnd);
-        mImeDispatcher.dump(p, "  ");
+        mImeBackCallbackProxy.dump(p, "  ");
     }
 
     /**

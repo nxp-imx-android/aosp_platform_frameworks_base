@@ -60,7 +60,7 @@ oneway interface IInputMethod {
         EditorInfo editorInfo;
         boolean restarting;
         int navigationBarFlags;
-        ImeOnBackInvokedDispatcher imeDispatcher;
+        ResultReceiver imeBackCallbackReceiver;
     }
 
     void startInput(in StartInputParams params);

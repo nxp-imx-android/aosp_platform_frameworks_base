@@ -23,6 +23,7 @@ import android.os.Binder;
 import android.os.DeadObjectException;
 import android.os.IBinder;
 import android.os.RemoteException;
+import android.os.ResultReceiver;
 import android.util.Slog;
 import android.view.InputChannel;
 import android.view.MotionEvent;
@@ -31,7 +32,6 @@ import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.ImeTracker;
 import android.view.inputmethod.InputBinding;
 import android.view.inputmethod.InputMethodSubtype;
-import android.window.ImeOnBackInvokedDispatcher;
 
 import com.android.internal.inputmethod.IConnectionlessHandwritingCallback;
 import com.android.internal.inputmethod.IInlineSuggestionsRequestCallback;
@@ -156,14 +156,14 @@ final class IInputMethodInvoker {
     void startInput(IBinder startInputToken, IRemoteInputConnection remoteInputConnection,
             EditorInfo editorInfo, boolean restarting,
             @InputMethodNavButtonFlags int navButtonFlags,
-            @NonNull ImeOnBackInvokedDispatcher imeDispatcher) {
+            @NonNull ResultReceiver imeBackCallbackReceiver) {
         final IInputMethod.StartInputParams params = new IInputMethod.StartInputParams();
         params.startInputToken = startInputToken;
         params.remoteInputConnection = remoteInputConnection;
         params.editorInfo = editorInfo;
         params.restarting = restarting;
         params.navigationBarFlags = navButtonFlags;
-        params.imeDispatcher = imeDispatcher;
+        params.imeBackCallbackReceiver = imeBackCallbackReceiver;
         try {
             mTarget.startInput(params);
         } catch (RemoteException e) {

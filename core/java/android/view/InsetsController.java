@@ -1375,7 +1375,7 @@ public class InsetsController implements WindowInsetsController, InsetsAnimation
         if (!fromPredictiveBack && !visible && (types & ime()) != 0
                 && (mRequestedVisibleTypes & ime()) != 0) {
             // Clear IME back callbacks if a IME hide animation is requested
-            mHost.getInputMethodManager().getImeOnBackInvokedDispatcher().preliminaryClear();
+            mHost.getInputMethodManager().getImeBackCallbackProxy().preliminaryClear();
         }
         // Basically, we accept the requested visibilities from the upstream callers...
         setRequestedVisibleTypes(visible ? types : 0, types);
@@ -1834,7 +1834,7 @@ public class InsetsController implements WindowInsetsController, InsetsAnimation
                 // In case the IME back callbacks have been preliminarily cleared before, let's
                 // reregister them. This can happen if an IME hide animation was interrupted and the
                 // IME is requested to be shown again.
-                getHost().getInputMethodManager().getImeOnBackInvokedDispatcher()
+                getHost().getInputMethodManager().getImeBackCallbackProxy()
                         .undoPreliminaryClear();
             }
             ProtoLog.d(IME_INSETS_CONTROLLER, "Setting requestedVisibleTypes to %d (was %d)",

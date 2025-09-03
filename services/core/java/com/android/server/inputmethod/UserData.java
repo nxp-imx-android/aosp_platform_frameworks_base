@@ -19,12 +19,12 @@ package com.android.server.inputmethod;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.UserIdInt;
+import android.os.ResultReceiver;
 import android.util.Pair;
 import android.util.SparseArray;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.ImeTracker;
 import android.view.inputmethod.InputMethodSubtype;
-import android.window.ImeOnBackInvokedDispatcher;
 
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.inputmethod.IRemoteAccessibilityInputConnection;
@@ -99,12 +99,12 @@ final class UserData {
     IRemoteInputConnection mCurInputConnection;
 
     /**
-     * The {@link ImeOnBackInvokedDispatcher} last provided by the current client to
+     * The {@link ResultReceiver} last provided by the current client to
      * receive {@link android.window.OnBackInvokedCallback}s forwarded from IME.
      */
     @GuardedBy("ImfLock.class")
     @Nullable
-    ImeOnBackInvokedDispatcher mCurImeDispatcher;
+    ResultReceiver mCurImeBackCallbackReceiver;
 
     /**
      * The {@link IRemoteAccessibilityInputConnection} last provided by the current client.

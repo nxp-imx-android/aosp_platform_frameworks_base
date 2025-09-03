@@ -12949,7 +12949,7 @@ public final class ViewRootImpl implements ViewParent,
         mCompatOnBackInvokedCallback = () -> {
             injectBackKeyEvents(/* preImeOnly */ false);
         };
-        if (mOnBackInvokedDispatcher.hasImeOnBackInvokedDispatcher()) {
+        if (mOnBackInvokedDispatcher.hasImeBackCallbackSender()) {
             Log.d(TAG, "Skip registering CompatOnBackInvokedCallback on IME dispatcher");
             return;
         }

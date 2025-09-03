@@ -152,7 +152,7 @@ public class ImeBackAnimationController implements OnBackAnimationCallback {
         }
         // Unregister all IME back callbacks so that back events are sent to the next callback
         // even while the hide animation is playing
-        mInsetsController.getHost().getInputMethodManager().getImeOnBackInvokedDispatcher()
+        mInsetsController.getHost().getInputMethodManager().getImeBackCallbackProxy()
                 .preliminaryClear();
     }
 
