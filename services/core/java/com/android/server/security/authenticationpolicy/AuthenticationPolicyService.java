@@ -555,12 +555,8 @@ public class AuthenticationPolicyService extends SystemService {
             // Required for internal service to acquire necessary system permissions
             final long identity = Binder.clearCallingIdentity();
             try {
-                boolean authenticationComplete =
-                        mSecureLockDeviceService.hasUserCompletedTwoFactorAuthentication(user);
-                Slog.d(TAG, "Disabling secure lock device: "
-                        + "user " + user + ", authenticationComplete " + authenticationComplete);
-                return mSecureLockDeviceService.disableSecureLockDevice(user, params,
-                        /* authenticationComplete = */ authenticationComplete);
+                Slog.d(TAG, "Disabling secure lock device for user " + user + ".");
+                return mSecureLockDeviceService.disableSecureLockDevice(user, params);
             } finally {
                 Binder.restoreCallingIdentity(identity);
             }

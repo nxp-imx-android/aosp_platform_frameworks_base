@@ -66,6 +66,7 @@ import androidx.annotation.Nullable;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.app.IVoiceInteractionManagerService;
 import com.android.internal.statusbar.IStatusBarService;
+import com.android.internal.util.FrameworkStatsLog;
 import com.android.internal.widget.LockPatternUtils;
 import com.android.server.IoThread;
 import com.android.server.LocalServices;
@@ -198,6 +199,7 @@ public class SecureLockDeviceService extends SecureLockDeviceServiceInternal {
         }
 
         mStore.storeSecureLockDeviceEnabled(secureLockDeviceClientId);
+        logSecureLockDeviceEnabled();
         notifyAllSecureLockDeviceListenersEnabledStatusUpdated();
 
         if (DEBUG) {
@@ -205,6 +207,41 @@ public class SecureLockDeviceService extends SecureLockDeviceServiceInternal {
         }
         return true;
     }
+
+    /**
+     * Logs metrics when secure lock device is enabled.
+     */
+    private void logSecureLockDeviceEnabled() {
+        Slog.i(TAG, "Secure lock device has been enabled");
+        FrameworkStatsLog.write(FrameworkStatsLog.SECURE_LOCK_DEVICE_STATE_CHANGED,
+                /* enabled = */ true,
+                /* eventType = */
+                FrameworkStatsLog.SECURE_LOCK_DEVICE_STATE_CHANGED__EVENT_TYPE__ENABLED
+        );
+    }
+
+    /**
+     * Logs metrics when secure lock device is disabled.
+     * @param isAuthenticationComplete whether secure lock device is disabled manually or by
+     *                                 successful two-factor authentication
+     */
+    private void logSecureLockDeviceDisabled(boolean isAuthenticationComplete) {
+        Slog.i(TAG, "Secure lock device has been disabled, isAuthenticationComplete "
+                + isAuthenticationComplete);
+        int eventType;
+        if (isAuthenticationComplete) {
+            eventType = FrameworkStatsLog
+                    .SECURE_LOCK_DEVICE_STATE_CHANGED__EVENT_TYPE__DISABLED_TWO_FACTOR_AUTHENTICATION;
+        } else {
+            eventType = FrameworkStatsLog
+                    .SECURE_LOCK_DEVICE_STATE_CHANGED__EVENT_TYPE__DISABLED_MANUALLY;
+        }
+        FrameworkStatsLog.write(FrameworkStatsLog.SECURE_LOCK_DEVICE_STATE_CHANGED,
+                /* enabled */ false,
+                /* eventType = */ eventType
+        );
+    }
+
 
     private void listenForBiometricEnrollmentChanges() {
         if (mFaceManager != null) {
@@ -466,6 +503,7 @@ public class SecureLockDeviceService extends SecureLockDeviceServiceInternal {
         int userId = user.getIdentifier();
         mSecureLockDeviceSettingsManager.enableSecurityFeatures(userId);
         mStore.storeSecureLockDeviceEnabled(userId);
+        logSecureLockDeviceEnabled();
 
         synchronized (mBiometricAuthStateLock) {
             mUserAuthenticatedWithStrongBiometric = null;
@@ -484,9 +522,6 @@ public class SecureLockDeviceService extends SecureLockDeviceServiceInternal {
      * @param user   {@link UserHandle} of caller requesting to disable secure lock device
      * @param params {@link DisableSecureLockDeviceParams} for caller to supply params related
      *               to the secure lock device request
-     * @param authenticationComplete indicates if secure lock device is being disabled as a result
-     *                               of successful two-factor primary and strong biometric
-     *                               authentication
      * @return {@link DisableSecureLockDeviceRequestStatus} int indicating the result of the
      * secure lock device request
      * @hide
@@ -494,8 +529,7 @@ public class SecureLockDeviceService extends SecureLockDeviceServiceInternal {
      */
     @Override
     @DisableSecureLockDeviceRequestStatus
-    public int disableSecureLockDevice(UserHandle user, DisableSecureLockDeviceParams params,
-            boolean authenticationComplete) {
+    public int disableSecureLockDevice(UserHandle user, DisableSecureLockDeviceParams params) {
         if (!isSecureLockDeviceEnabled()) {
             if (DEBUG) {
                 Slog.d(TAG, "Secure lock device is already disabled.");
@@ -505,6 +539,7 @@ public class SecureLockDeviceService extends SecureLockDeviceServiceInternal {
 
         int secureLockDeviceClientId = mStore.retrieveSecureLockDeviceClientId();
         int callingUserId = user.getIdentifier();
+        boolean authenticationComplete = hasUserCompletedTwoFactorAuthentication(user);
 
         // Verify calling user matches the user who enabled secure lock device
         // or is a system/admin user with override privileges
@@ -514,6 +549,9 @@ public class SecureLockDeviceService extends SecureLockDeviceServiceInternal {
                     + "enabled by user " + secureLockDeviceClientId);
             return ERROR_NOT_AUTHORIZED;
         }
+
+        Slog.d(TAG, "Disabling secure lock device for user " + user + ", "
+                + "authenticationComplete = " + authenticationComplete);
 
         if (mSkipSecurityFeaturesForTest) {
             // 1) Clears strong auth flags and 2) unlocks user. authenticationComplete must be true
@@ -529,6 +567,7 @@ public class SecureLockDeviceService extends SecureLockDeviceServiceInternal {
         disableSecurityFeatures(secureLockDeviceClientId);
 
         mStore.storeSecureLockDeviceDisabled();
+        logSecureLockDeviceDisabled(authenticationComplete);
         notifyAllSecureLockDeviceListenersEnabledStatusUpdated();
         Slog.d(TAG, "Secure lock device is disabled");
 
