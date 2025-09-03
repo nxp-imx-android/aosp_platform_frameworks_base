@@ -162,6 +162,7 @@ private fun TaskBarAnd3ButtonAmbientCue(
     }
     val content = LocalContext.current
     val rotation = content.display.rotation
+    if (largeScreen && rotation == ROTATION_270) return
 
     ActionList(
         actions = actions,
@@ -173,7 +174,7 @@ private fun TaskBarAnd3ButtonAmbientCue(
         showEducation = viewModel.showLongPressEducation,
         modifier =
             modifier.graphicsLayer {
-                if (portrait) {
+                if (portrait || largeScreen) {
                     translationX = screenWidthPx - size.width
                     translationY = pillCenter.y - size.height
                 } else {
@@ -187,7 +188,7 @@ private fun TaskBarAnd3ButtonAmbientCue(
                 }
             },
         padding =
-            if (portrait) {
+            if (portrait || largeScreen) {
                 PaddingValues(
                     start = ACTIONS_HORIZONTAL_PADDING.dp,
                     end = ACTIONS_HORIZONTAL_PADDING.dp,
@@ -210,7 +211,7 @@ private fun TaskBarAnd3ButtonAmbientCue(
     ShortPill(
         actions = actions,
         visible = visible,
-        horizontal = portrait,
+        horizontal = portrait || largeScreen,
         expanded = expanded,
         rotation = rotation,
         taskBarMode = largeScreen,
