@@ -17,21 +17,216 @@
 package android.processor.devicepolicy
 
 import com.android.json.stream.JsonWriter
+import com.sun.source.tree.IdentifierTree
+import com.sun.source.tree.MemberSelectTree
+import com.sun.source.tree.NewArrayTree
+import com.sun.source.util.SimpleTreeVisitor
+import com.sun.source.util.Trees
+import javax.annotation.processing.ProcessingEnvironment
+import javax.lang.model.element.AnnotationMirror
+import javax.lang.model.element.AnnotationValue
+import javax.lang.model.element.Element
+import javax.lang.model.element.TypeElement
+import javax.lang.model.type.TypeMirror
+
+/**
+ * Process elements with @EnumPolicyDefinition.
+ *
+ * Since information about enums values is encoded by @IntDef, we need to go trough that annotation
+ * as well. Since this processor is not the direct consumer of @IntDef and we want the names for the
+ * enum entries, not just values, we will have to use the JDK to walk the AST.
+ *
+ * We extract:
+ * <ul>
+ *     <li> The default value. </li>
+ *     <li> The documentation for the enumeration. </li>
+ *     <li> All enumeration entries with value, name and documentation. </li>
+ * </ul>
+ *
+ * We will use the following example to illustrate what we are doing:
+ * {@snippet :
+ *     public static final int ENUM_ENTRY_1 = 0;
+ *     public static final int ENUM_ENTRY_2 = 1;
+ *
+ *     @Retention(RetentionPolicy.SOURCE)
+ *     @IntDef(prefix = { "ENUM_ENTRY_" }, value = {
+ *             ENUM_ENTRY_1,
+ *             ENUM_ENTRY_2,
+ *     })
+ *     public @interface PolicyEnum {}
+ *
+ *     @PolicyDefinition
+ *     @EnumPolicyDefinition(
+ *             defaultValue = ENUM_ENTRY_2,
+ *             intDef = PolicyEnum.class
+ *     )
+ *     public static final PolicyIdentifier<Integer> EXAMPLE_POLICY) = new PolicyIdentifier<>(
+ *             "EXAMPLE_POLICY");
+ * }
+ */
+class EnumProcessor(processingEnv: ProcessingEnvironment) : Processor(processingEnv) {
+    private companion object {
+        const val SIMPLE_TYPE_INTEGER = "java.lang.Integer"
+
+        /**
+         * Find the first value matching a predicate on the key.
+         */
+        fun <K, V> Map<K, V>.firstValue(filter: (K) -> Boolean): V {
+            return entries.first { (key, _) -> filter(key) }.value
+        }
+    }
+
+    /** Represents a built-in Integer */
+    val integerType: TypeMirror =
+        processingEnv.elementUtils.getTypeElement(SIMPLE_TYPE_INTEGER).asType()
+
+    /**
+     * Process an {@link Element} representing a {@link android.app.admin.PolicyIdentifier} into useful data.
+     *
+     * @return null if the element does not have a @EnumPolicyDefinition or on error, {@link EnumPolicyMetadata} otherwise.
+     */
+    fun process(element: Element): EnumPolicyMetadata? {
+        val enumPolicyAnnotation =
+            element.getAnnotation(EnumPolicyDefinition::class.java) ?: return null
+
+        if (!processingEnv.typeUtils.isSameType(policyType(element), integerType)) {
+            printError(
+                element,
+                "@EnumPolicyDefinition can only be applied to policies of type $integerType."
+            )
+        }
+
+        // In the class-level example above, this would be PolicyEnum.
+        val intDefElement = getIntDefElement(element)
+
+        // This is the IntDef annotation class.
+        val intDefClass = processingEnv.elementUtils.getTypeElement("android.annotation.IntDef")
+        // In the class-level example above, this is @IntDef annotation on the PolicyEnum.
+        val annotationMirror =
+            intDefElement.annotationMirrors.firstOrNull { it.annotationType.asElement() == intDefClass }
+
+        if (annotationMirror == null) {
+            printError(
+                element, "@EnumPolicyDefinition.intDef must be the interface marked with @IntDef."
+            )
+
+            return null
+        }
+
+        val enumName = intDefElement.qualifiedName.toString()
+        val enumDoc = processingEnv.elementUtils.getDocComment(intDefElement)
+
+        // In the class-level example above, these would be ENUM_ENTRY_1 and ENUM_ENTRY_2.
+        val entries = getIntDefIdentifiers(annotationMirror, intDefElement)
+
+        return EnumPolicyMetadata(
+            enumPolicyAnnotation.defaultValue, enumName, enumDoc, entries
+        )
+    }
+
+    /**
+     * Given a policy definition element finds the type element representing the IntDef definition
+     * Same as `processingEnv.elementUtils.getTypeElement(enumPolicyMetadata.intDef.qualifiedName)`,
+     * but we have to use type mirrors.
+     */
+    private fun getIntDefElement(element: Element): TypeElement {
+        val am = element.annotationMirrors.first {
+            it.annotationType.toString() == EnumPolicyDefinition::class.java.name
+        }
+        val av = am.elementValues.firstValue { key ->
+            key.simpleName.toString() == "intDef"
+        }
+        val mirror = av.value as TypeMirror
+        return processingEnv.typeUtils.asElement(mirror) as TypeElement
+    }
+
+    /**
+     * For an @IntDef marked element, get the identifiers used to build up that enum.
+     *
+     * In the class-level example above, these would be ENUM_ENTRY_1 and ENUM_ENTRY_2.     *
+     */
+    private fun getIntDefIdentifiers(
+        annotationMirror: AnnotationMirror, intDefElement: TypeElement
+    ): List<EnumEntryMetadata> {
+        val annotationValue: AnnotationValue = annotationMirror.elementValues.firstValue { key ->
+            key.simpleName.contentEquals("value")
+        }
+
+        // Walk the AST as we want the actual identifiers passed to @IntDef.
+        val trees = Trees.instance(processingEnv)
+        val tree = trees.getTree(intDefElement, annotationMirror, annotationValue)
+
+        val identifiers = ArrayList<String>()
+        tree.accept(IdentifierVisitor(), identifiers)
+
+        // In the class-level example above, these would be {ENUM_ENTRY_1,ENUM_ENTRY_2}.
+        @Suppress("UNCHECKED_CAST") val values = annotationValue.value as List<AnnotationValue>
+
+        val documentations = identifiers.map { identifier ->
+            // TODO(b/442973945): Fail gracefully when the element is not part of the parent class.
+            val identifierElement = intDefElement.enclosingElement.enclosedElements.find {
+                it.simpleName.toString() == identifier
+            }
+
+            processingEnv.elementUtils.getDocComment(identifierElement)
+        }
+
+        return identifiers.mapIndexed { i, identifier ->
+            EnumEntryMetadata(identifier, values[i].value as Int, documentations[i])
+        }
+    }
+
+    private class IdentifierVisitor : SimpleTreeVisitor<Void, ArrayList<String>>() {
+        override fun visitNewArray(node: NewArrayTree, identifiers: ArrayList<String>): Void? {
+            for (initializer in node.initializers) {
+                initializer.accept(this, identifiers)
+            }
+
+            return null
+        }
+
+        /**
+         * Called when the identifier used in IntDef is a member of the class.
+         */
+        override fun visitMemberSelect(
+            node: MemberSelectTree, identifiers: ArrayList<String>
+        ): Void? {
+            identifiers.add(node.identifier.toString())
+
+            return null
+        }
+
+        /**
+         * Called when the identifier in IntDef is an arbitrary identifier pointing outside the
+         * current class.
+         *
+         * This is not present in the class-level example above, but was added to be consistent
+         * with the original @IntDef processor logic.
+         */
+        override fun visitIdentifier(node: IdentifierTree, identifiers: ArrayList<String>): Void? {
+            identifiers.add(node.name.toString())
+
+            return null
+        }
+    }
+}
 
 class EnumEntryMetadata(val name: String, val value: Int, val documentation: String) {
     fun dump(writer: JsonWriter) {
-        writer.beginObject()
+        writer.apply {
+            beginObject()
 
-        writer.name("name")
-        writer.value(name)
+            name("name")
+            value(name)
 
-        writer.name("value")
-        writer.value(value.toLong())
+            name("value")
+            value(value.toLong())
 
-        writer.name("documentation")
-        writer.value(documentation)
+            name("documentation")
+            value(documentation)
 
-        writer.endObject()
+            endObject()
+        }
     }
 }
 
@@ -42,20 +237,20 @@ class EnumPolicyMetadata(
     val entries: List<EnumEntryMetadata>
 ) : PolicyMetadata() {
     override fun dump(writer: JsonWriter) {
-        writer.name("default")
-        writer.value(defaultValue.toLong())
+        writer.apply {
+            name("default")
+            value(defaultValue.toLong())
 
-        writer.name("enum")
-        writer.value(enum)
+            name("enum")
+            value(enum)
 
-        writer.name("enumDocumentation")
-        writer.value(enumDocumentation)
+            name("enumDocumentation")
+            value(enumDocumentation)
 
-        writer.name("options")
-        writer.beginArray()
-
-        entries.forEach { it.dump(writer) }
-
-        writer.endArray()
+            name("options")
+            beginArray()
+            entries.forEach { it.dump(writer) }
+            writer.endArray()
+        }
     }
 }
