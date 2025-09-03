@@ -19,6 +19,7 @@ package com.android.wm.shell.desktopmode
 import android.app.ActivityManager.RunningTaskInfo
 import android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM
 import android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN
+import android.app.WindowConfiguration.WINDOWING_MODE_MULTI_WINDOW
 import android.content.Context
 import android.hardware.input.InputManager
 import android.hardware.input.InputManager.KeyGestureEventHandler
@@ -37,6 +38,7 @@ import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_DESKTOP_MODE
 import com.android.wm.shell.shared.annotations.ShellMainThread
 import com.android.wm.shell.shared.desktopmode.DesktopModeTransitionSource
 import com.android.wm.shell.shared.desktopmode.DesktopState
+import com.android.wm.shell.splitscreen.SplitScreenController
 import com.android.wm.shell.transition.FocusTransitionObserver
 import com.android.wm.shell.windowdecor.DesktopModeWindowDecorViewModel
 import java.util.Optional
@@ -53,6 +55,7 @@ class DesktopModeKeyGestureHandler(
     @ShellMainThread private val mainExecutor: ShellExecutor,
     private val displayController: DisplayController,
     private val desktopState: DesktopState,
+    private val splitScreenController: Optional<SplitScreenController>,
 ) : KeyGestureEventHandler {
 
     init {
@@ -340,8 +343,21 @@ class DesktopModeKeyGestureHandler(
                     null
                 }
             }
+            2 -> {
+                val task = DesktopTasksController.getSplitFocusedTask(tasks[0], tasks[1])
+                if (task.windowingMode == WINDOWING_MODE_MULTI_WINDOW) {
+                    logV("getGloballyFocusedTaskToClose: Found split screen task: %d", task.taskId)
+                    task
+                } else {
+                    logW(
+                        "getGloballyFocusedTaskToClose: Ignored focused pair non-split-screen " +
+                            "tasks."
+                    )
+                    null
+                }
+            }
             else -> {
-                logW("getGloballyFocusedTaskToClose: Ignored focused 2+ tasks.")
+                logW("getGloballyFocusedTaskToClose: Ignored focused 3+ tasks.")
                 null
             }
         }

@@ -1259,7 +1259,8 @@ public abstract class WMShellModule {
             FocusTransitionObserver focusTransitionObserver,
             @ShellMainThread ShellExecutor mainExecutor,
             DisplayController displayController,
-            DesktopState desktopState) {
+            DesktopState desktopState,
+            Optional<SplitScreenController> splitScreenController) {
         if (desktopState.canEnterDesktopMode()
                 && (DesktopExperienceFlags.ENABLE_MOVE_TO_NEXT_DISPLAY_SHORTCUT.isTrue()
                 || DesktopModeFlags.ENABLE_TASK_RESIZING_KEYBOARD_SHORTCUTS.isTrue())) {
@@ -1267,7 +1268,7 @@ public abstract class WMShellModule {
                     desktopModeWindowDecorViewModel, desktopTasksController,
                     desktopUserRepositories,
                     inputManager, shellTaskOrganizer, focusTransitionObserver,
-                    mainExecutor, displayController, desktopState));
+                    mainExecutor, displayController, desktopState, splitScreenController));
         }
         return Optional.empty();
     }

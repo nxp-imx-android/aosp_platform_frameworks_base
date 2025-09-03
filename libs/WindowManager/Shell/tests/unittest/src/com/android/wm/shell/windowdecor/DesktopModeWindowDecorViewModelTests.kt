@@ -78,6 +78,8 @@ import com.android.wm.shell.desktopmode.common.ToggleTaskSizeInteraction
 import com.android.wm.shell.recents.RecentsTransitionStateListener
 import com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper
 import com.android.wm.shell.shared.desktopmode.DesktopModeTransitionSource
+import com.android.wm.shell.shared.split.SplitScreenConstants.SPLIT_POSITION_BOTTOM_OR_RIGHT
+import com.android.wm.shell.shared.split.SplitScreenConstants.SPLIT_POSITION_TOP_OR_LEFT
 import com.android.wm.shell.splitscreen.SplitScreenController
 import com.android.wm.shell.util.StubTransaction
 import com.android.wm.shell.windowdecor.DesktopModeWindowDecorViewModel.DefaultWindowDecorationActions
@@ -373,6 +375,30 @@ class DesktopModeWindowDecorViewModelTests : DesktopModeWindowDecorViewModelTest
         val hierarchyOp = wct.hierarchyOps[0]
         assertThat(hierarchyOp.type).isEqualTo(HierarchyOp.HIERARCHY_OP_TYPE_REMOVE_TASK)
         assertThat(hierarchyOp.container).isEqualTo(decor.taskInfo.token.asBinder())
+    }
+
+    @Test
+    fun testCloseTask_splitScreen_movesOtherToFullscreen() {
+        desktopModeWindowDecorViewModel.setFreeformTaskTransitionStarter(
+            mockFreeformTaskTransitionStarter
+        )
+        val decor = createOpenTaskDecoration(windowingMode = WINDOWING_MODE_MULTI_WINDOW)
+        val otherTask = createTask(windowingMode = WINDOWING_MODE_MULTI_WINDOW)
+
+        whenever(mockSplitScreenController.isTaskInSplitScreen(decor.taskInfo.taskId))
+            .thenReturn(true)
+        whenever(mockSplitScreenController.getSplitPosition(decor.taskInfo.taskId))
+            .thenReturn(SPLIT_POSITION_TOP_OR_LEFT)
+        whenever(mockSplitScreenController.getTaskInfo(SPLIT_POSITION_BOTTOM_OR_RIGHT))
+            .thenReturn(otherTask)
+
+        desktopModeWindowDecorViewModel.closeTask(decor.taskInfo)
+
+        verify(mockSplitScreenController)
+            .moveTaskToFullscreen(
+                eq(otherTask.taskId),
+                eq(SplitScreenController.EXIT_REASON_DESKTOP_MODE),
+            )
     }
 
     @Test
