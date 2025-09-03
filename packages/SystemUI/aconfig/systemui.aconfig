@@ -2125,16 +2125,6 @@ flag {
 }
 
 flag {
-    name: "paginated_qs_pager_dots_arrows"
-    namespace: "systemui"
-    description: "Show arrows in the pager dots in paginated QS"
-    bug: "397156072"
-    metadata {
-      purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "blur_settings_toggle"
     namespace: "systemui"
     description: "Add a settings toggle to enable/disable blur."
