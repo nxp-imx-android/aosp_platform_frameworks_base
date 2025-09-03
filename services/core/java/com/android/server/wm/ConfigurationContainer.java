@@ -441,12 +441,19 @@ public abstract class ConfigurationContainer<E extends ConfigurationContainer> {
      * Indicates whether this container chooses not to override any bounds from its parent, either
      * because it doesn't request to override them or the request is dropped during configuration
      * resolution. In this case, it will inherit the bounds of the first ancestor which specifies a
-     * bounds subject to policy constraints.
+     * bounds subject to policy constraints. Or this container is fullscreen windowingMode.
      *
-     * @return {@code true} if this container level uses bounds from parent level. {@code false}
-     *         otherwise.
+     * @return {@code true} if this container level uses bounds from parent level, or is
+     *         fullscreen. {@code false} otherwise.
      */
     public boolean matchParentBounds() {
+        if (!com.android.window.flags.Flags.refactorMatchParentBounds()) {
+            return getResolvedOverrideBounds().isEmpty();
+        }
+
+        final int windowingMode = getWindowingMode();
+        if (windowingMode == WINDOWING_MODE_PINNED) return false;
+        if (windowingMode == WINDOWING_MODE_FULLSCREEN) return true;
         return getResolvedOverrideBounds().isEmpty();
     }
 
