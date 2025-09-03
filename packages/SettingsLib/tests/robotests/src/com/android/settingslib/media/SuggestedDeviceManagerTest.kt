@@ -23,6 +23,10 @@ import android.media.RoutingChangeInfo.ENTRY_POINT_SYSTEM_MEDIA_CONTROLS
 import android.media.SuggestedDeviceInfo
 import android.os.Handler
 import android.os.Looper
+import android.platform.test.annotations.DisableFlags
+import android.platform.test.annotations.EnableFlags
+import android.platform.test.flag.junit.SetFlagsRule
+import com.android.media.flags.Flags
 import com.android.settingslib.media.LocalMediaManager.MediaDeviceState.STATE_CONNECTED
 import com.android.settingslib.media.LocalMediaManager.MediaDeviceState.STATE_CONNECTING
 import com.android.settingslib.media.LocalMediaManager.MediaDeviceState.STATE_CONNECTING_FAILED
@@ -30,6 +34,7 @@ import com.android.settingslib.media.LocalMediaManager.MediaDeviceState.STATE_DI
 import com.google.common.truth.Truth.assertThat
 import java.util.concurrent.TimeUnit
 import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.kotlin.any
@@ -51,8 +56,11 @@ private const val ROUTE_2_NAME = "ROUTE_2_NAME"
 
 @RunWith(RobolectricTestRunner::class)
 class SuggestedDeviceManagerTest {
+  @get:Rule val setFlagsRule = SetFlagsRule()
 
   private var localMediaManager: LocalMediaManager = mock<LocalMediaManager>()
+  private val suggestedDeviceConnectionManager = mock<SuggestedDeviceConnectionManager>()
+  private var connectionFinishedCallback: ConnectionFinishedCallback? = null
   private var listener = mock<SuggestedDeviceManager.Listener>()
   private var listener2 = mock<SuggestedDeviceManager.Listener>()
   private lateinit var mSuggestedDeviceManager: SuggestedDeviceManager
@@ -85,7 +93,11 @@ class SuggestedDeviceManagerTest {
   @Before
   fun setUp() {
     val handler = Handler(Looper.getMainLooper())
-    mSuggestedDeviceManager = SuggestedDeviceManager(localMediaManager, handler)
+    mSuggestedDeviceManager =
+      SuggestedDeviceManager(localMediaManager, handler, suggestedDeviceConnectionManager)
+    if (Flags.useSuggestedDeviceConnectionManager()) {
+      connectionFinishedCallback = captureConnectionFinishedCallback()
+    }
   }
 
   @Test
@@ -342,7 +354,18 @@ class SuggestedDeviceManagerTest {
       .onSuggestedDeviceStateUpdated(SuggestedDeviceState(suggestedDeviceInfo1, STATE_DISCONNECTED))
   }
 
+  @EnableFlags(Flags.FLAG_USE_SUGGESTED_DEVICE_CONNECTION_MANAGER)
   @Test
+  fun onDeviceListUpdate_fromConnectingFailedOverrideToDisconnected_sdcm_noDispatch() {
+    onDeviceListUpdate_fromConnectingFailedOverrideToDisconnected_noDispatch()
+  }
+
+  @DisableFlags(Flags.FLAG_USE_SUGGESTED_DEVICE_CONNECTION_MANAGER)
+  @Test
+  fun onDeviceListUpdate_fromConnectingFailedOverrideToDisconnected_lmm_noDispatch() {
+    onDeviceListUpdate_fromConnectingFailedOverrideToDisconnected_noDispatch()
+  }
+
   fun onDeviceListUpdate_fromConnectingFailedOverrideToDisconnected_noDispatch() {
     val deviceCallback = addListenerAndCaptureCallback(listener)
 
@@ -354,6 +377,7 @@ class SuggestedDeviceManagerTest {
 
     val initialSuggestedDeviceState = SuggestedDeviceState(suggestedDeviceInfo1, STATE_DISCONNECTED)
     deviceCallback.onConnectSuggestedDeviceFinished(initialSuggestedDeviceState, false)
+    connectionFinishedCallback?.invoke(initialSuggestedDeviceState, false)
 
     verify(listener)
       .onSuggestedDeviceStateUpdated(
@@ -367,7 +391,18 @@ class SuggestedDeviceManagerTest {
     verifyNoMoreInteractions(listener)
   }
 
+  @EnableFlags(Flags.FLAG_USE_SUGGESTED_DEVICE_CONNECTION_MANAGER)
   @Test
+  fun onTimeout_fromConnectingFailedOverride_sdcm_dispatchesNullState() {
+    onTimeout_fromConnectingFailedOverride_dispatchesNullState()
+  }
+
+  @DisableFlags(Flags.FLAG_USE_SUGGESTED_DEVICE_CONNECTION_MANAGER)
+  @Test
+  fun onTimeout_fromConnectingFailedOverride_lmm_dispatchesNullState() {
+    onTimeout_fromConnectingFailedOverride_dispatchesNullState()
+  }
+
   fun onTimeout_fromConnectingFailedOverride_dispatchesNullState() {
     val expectedConnectingFailedTimeoutMs = 10_000L
     val deviceCallback = addListenerAndCaptureCallback(listener)
@@ -380,6 +415,7 @@ class SuggestedDeviceManagerTest {
 
     val initialSuggestedDeviceState = SuggestedDeviceState(suggestedDeviceInfo1, STATE_DISCONNECTED)
     deviceCallback.onConnectSuggestedDeviceFinished(initialSuggestedDeviceState, false)
+    connectionFinishedCallback?.invoke(initialSuggestedDeviceState, false)
 
     // dispatches STATE_CONNECTING_FAILED on failed attempt.
     verify(listener)
@@ -409,7 +445,18 @@ class SuggestedDeviceManagerTest {
       .onSuggestedDeviceStateUpdated(SuggestedDeviceState(suggestedDeviceInfo1, STATE_DISCONNECTED))
   }
 
+  @EnableFlags(Flags.FLAG_USE_SUGGESTED_DEVICE_CONNECTION_MANAGER)
   @Test
+  fun onConnectSuggestedDeviceFinished_failure_sdcm_dispatchesConnectingFailedState() {
+    onConnectSuggestedDeviceFinished_failure_dispatchesConnectingFailedState()
+  }
+
+  @DisableFlags(Flags.FLAG_USE_SUGGESTED_DEVICE_CONNECTION_MANAGER)
+  @Test
+  fun onConnectSuggestedDeviceFinished_failure_lmm_dispatchesConnectingFailedState() {
+    onConnectSuggestedDeviceFinished_failure_dispatchesConnectingFailedState()
+  }
+
   fun onConnectSuggestedDeviceFinished_failure_dispatchesConnectingFailedState() {
     val deviceCallback = addListenerAndCaptureCallback(listener)
 
@@ -422,11 +469,23 @@ class SuggestedDeviceManagerTest {
     verify(listener).onSuggestedDeviceStateUpdated(connectingState)
 
     deviceCallback.onConnectSuggestedDeviceFinished(initialSuggestedDeviceState, false)
+    connectionFinishedCallback?.invoke(initialSuggestedDeviceState, false)
     val failedState = initialSuggestedDeviceState.copy(connectionState = STATE_CONNECTING_FAILED)
     verify(listener).onSuggestedDeviceStateUpdated(failedState)
   }
 
+  @EnableFlags(Flags.FLAG_USE_SUGGESTED_DEVICE_CONNECTION_MANAGER)
   @Test
+  fun onConnectionStarted_fromConnectingFailed_sdcm_changesStateToConnecting() {
+    onConnectionStarted_fromConnectingFailed_changesStateToConnecting()
+  }
+
+  @DisableFlags(Flags.FLAG_USE_SUGGESTED_DEVICE_CONNECTION_MANAGER)
+  @Test
+  fun onConnectionStarted_fromConnectingFailed_lmm_changesStateToConnecting() {
+    onConnectionStarted_fromConnectingFailed_changesStateToConnecting()
+  }
+
   fun onConnectionStarted_fromConnectingFailed_changesStateToConnecting() {
     val deviceCallback = addListenerAndCaptureCallback(listener)
 
@@ -437,6 +496,7 @@ class SuggestedDeviceManagerTest {
       initialSuggestedDeviceState,
       false,
     ) // Simulate failure
+    connectionFinishedCallback?.invoke(initialSuggestedDeviceState, false)
     val failedState = initialSuggestedDeviceState.copy(connectionState = STATE_CONNECTING_FAILED)
     verify(listener).onSuggestedDeviceStateUpdated(failedState)
 
@@ -447,7 +507,18 @@ class SuggestedDeviceManagerTest {
       .onSuggestedDeviceStateUpdated(expectedState) // Should be called again with connecting state
   }
 
+  @EnableFlags(Flags.FLAG_USE_SUGGESTED_DEVICE_CONNECTION_MANAGER)
   @Test
+  fun connectSuggestedDevice_stateMatches_sdcm_callsLocalMediaManagerConnect() {
+    connectSuggestedDevice_stateMatches_callsLocalMediaManagerConnect()
+  }
+
+  @DisableFlags(Flags.FLAG_USE_SUGGESTED_DEVICE_CONNECTION_MANAGER)
+  @Test
+  fun connectSuggestedDevice_stateMatches_lmm_callsLocalMediaManagerConnect() {
+    connectSuggestedDevice_stateMatches_callsLocalMediaManagerConnect()
+  }
+
   fun connectSuggestedDevice_stateMatches_callsLocalMediaManagerConnect() {
     val deviceCallback = addListenerAndCaptureCallback(listener)
     deviceCallback.onDeviceSuggestionsUpdated(listOf(suggestedDeviceInfo1))
@@ -455,14 +526,28 @@ class SuggestedDeviceManagerTest {
     val currentSuggestedState = SuggestedDeviceState(suggestedDeviceInfo1, STATE_DISCONNECTED)
     mSuggestedDeviceManager.connectSuggestedDevice(currentSuggestedState, routingChangeInfo)
 
-    verify(localMediaManager).connectSuggestedDevice(currentSuggestedState, routingChangeInfo)
+    if (Flags.useSuggestedDeviceConnectionManager()) {
+      verify(suggestedDeviceConnectionManager)
+        .connectSuggestedDevice(currentSuggestedState, routingChangeInfo)
+    } else {
+      verify(localMediaManager).connectSuggestedDevice(currentSuggestedState, routingChangeInfo)
+    }
     verify(listener)
-      .onSuggestedDeviceStateUpdated(
-        currentSuggestedState.copy(connectionState = STATE_CONNECTING)
-      )
+      .onSuggestedDeviceStateUpdated(currentSuggestedState.copy(connectionState = STATE_CONNECTING))
   }
 
+  @EnableFlags(Flags.FLAG_USE_SUGGESTED_DEVICE_CONNECTION_MANAGER)
   @Test
+  fun connectSuggestedDevice_stateDoesNotMatch_sdcm_doesNotCallLocalMediaManagerConnect() {
+    connectSuggestedDevice_stateDoesNotMatch_doesNotCallLocalMediaManagerConnect()
+  }
+
+  @DisableFlags(Flags.FLAG_USE_SUGGESTED_DEVICE_CONNECTION_MANAGER)
+  @Test
+  fun connectSuggestedDevice_stateDoesNotMatch_lmm_doesNotCallLocalMediaManagerConnect() {
+    connectSuggestedDevice_stateDoesNotMatch_doesNotCallLocalMediaManagerConnect()
+  }
+
   fun connectSuggestedDevice_stateDoesNotMatch_doesNotCallLocalMediaManagerConnect() {
     val deviceCallback = addListenerAndCaptureCallback(listener)
     deviceCallback.onDeviceSuggestionsUpdated(listOf(suggestedDeviceInfo1))
@@ -478,7 +563,11 @@ class SuggestedDeviceManagerTest {
     val differentSuggestedState = SuggestedDeviceState(suggestedDeviceInfo2, STATE_DISCONNECTED)
     mSuggestedDeviceManager.connectSuggestedDevice(differentSuggestedState, routingChangeInfo)
 
-    verify(localMediaManager, never()).connectSuggestedDevice(any(), any())
+    if (Flags.useSuggestedDeviceConnectionManager()) {
+      verify(suggestedDeviceConnectionManager, never()).connectSuggestedDevice(any(), any())
+    } else {
+      verify(localMediaManager, never()).connectSuggestedDevice(any(), any())
+    }
     verifyNoMoreInteractions(listener)
   }
 
@@ -492,6 +581,12 @@ class SuggestedDeviceManagerTest {
     val callbackCaptor = argumentCaptor<LocalMediaManager.DeviceCallback>()
     mSuggestedDeviceManager.addListener(listener)
     verify(localMediaManager).registerCallback(callbackCaptor.capture())
+    return callbackCaptor.firstValue
+  }
+
+  private fun captureConnectionFinishedCallback(): ConnectionFinishedCallback {
+    val callbackCaptor = argumentCaptor<ConnectionFinishedCallback>()
+    verify(suggestedDeviceConnectionManager).setConnectionFinishedCallback(callbackCaptor.capture())
     return callbackCaptor.firstValue
   }
 }
