@@ -862,7 +862,7 @@ class PhoneStatusBarViewControllerTest(flags: FlagsParameterization) : SysuiTest
 
     @Test
     @EnableFlags(StatusBarConnectedDisplays.FLAG_NAME)
-    fun connectedDisplayFlagOn_windowControllerIsSetInView() {
+    fun connectedDisplayFlagOn_windowControllerIsNotSetInView() {
         attachToWindow(view)
 
         controller = createAndInitController(view)
