@@ -21,6 +21,7 @@ import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.flags.parameterizeSceneContainerFlag
 import com.android.systemui.kosmos.Kosmos
+import com.android.systemui.kosmos.runCurrent
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
@@ -106,6 +107,7 @@ class MediaControlChipViewModelTest(flags: FlagsParameterization) : SysuiTestCas
     private fun updateMedia(mediaData: MediaData) {
         if (MediaControlsInComposeFlag.isEnabled) {
             kosmos.mediaRepository.addCurrentUserMediaEntry(mediaData)
+            kosmos.runCurrent()
         } else {
             mediaControlChipInteractor.updateMediaControlChipModelLegacy(mediaData)
         }
