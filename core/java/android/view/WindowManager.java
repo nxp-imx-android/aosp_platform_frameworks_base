@@ -1168,7 +1168,6 @@ public interface WindowManager extends ViewManager {
      * </pre>
      *
      */
-    @FlaggedApi(Flags.FLAG_ENABLE_CAMERA_COMPAT_FOR_DESKTOP_WINDOWING_OPT_OUT_API)
     String PROPERTY_CAMERA_COMPAT_ALLOW_SIMULATE_REQUESTED_ORIENTATION =
             "android.window.PROPERTY_CAMERA_COMPAT_ALLOW_SIMULATE_REQUESTED_ORIENTATION";
 
