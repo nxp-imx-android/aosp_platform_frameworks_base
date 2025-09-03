@@ -143,8 +143,7 @@ class ConnectedDisplayCujSmokeTests {
     }
 
     fun cuj1() {
-        val externalDisplayId = connectedDisplayRule.setupTestDisplay()
-        assertTaskbarVisible(externalDisplayId)
+        val externalDisplayId = setupTestDisplayAndWaitForTransitions()
         disableMouseScaling(externalDisplayId)
 
         // Open settings.
@@ -222,7 +221,7 @@ class ConnectedDisplayCujSmokeTests {
     @Test
     @ExtendedOnly
     fun cuj2e() {
-        val externalDisplayId = connectedDisplayRule.setupTestDisplay()
+        val externalDisplayId = setupTestDisplayAndWaitForTransitions()
 
         assertTaskbarVisible(DEFAULT_DISPLAY)
         assertTaskbarVisible(externalDisplayId)
@@ -233,8 +232,7 @@ class ConnectedDisplayCujSmokeTests {
     @Test
     @ExtendedOnly
     fun cuj3e() {
-        val externalDisplayId = connectedDisplayRule.setupTestDisplay()
-        assertTaskbarVisible(externalDisplayId)
+        val externalDisplayId = setupTestDisplayAndWaitForTransitions()
 
         launchAppFromTaskbar(externalDisplayId, browserApp)
         verifyActivityState(browserApp, WINDOWING_MODE_FREEFORM, externalDisplayId, visible = true)
@@ -249,8 +247,7 @@ class ConnectedDisplayCujSmokeTests {
     @ProjectedOnly
     @RequiresDevice
     fun cuj3p() {
-        val externalDisplayId = connectedDisplayRule.setupTestDisplay()
-        assertTaskbarVisible(externalDisplayId)
+        val externalDisplayId = setupTestDisplayAndWaitForTransitions()
 
         launchAppFromTaskbar(externalDisplayId, browserApp)
         verifyActivityState(browserApp, WINDOWING_MODE_FREEFORM, externalDisplayId, visible = true)
@@ -265,7 +262,7 @@ class ConnectedDisplayCujSmokeTests {
     @ProjectedOnly
     @RequiresDevice
     fun cuj4p() {
-        val externalDisplayId = connectedDisplayRule.setupTestDisplay()
+        val externalDisplayId = setupTestDisplayAndWaitForTransitions()
 
         assertTaskbarInvisible(DEFAULT_DISPLAY)
         assertTaskbarVisible(externalDisplayId)
@@ -291,8 +288,7 @@ class ConnectedDisplayCujSmokeTests {
         verifyActivityState(browserApp, WINDOWING_MODE_FULLSCREEN, DEFAULT_DISPLAY, visible = true)
         verifyTaskCount(browserApp, expectedCount = 1)
 
-        val externalDisplayId = connectedDisplayRule.setupTestDisplay()
-        assertTaskbarVisible(externalDisplayId)
+        val externalDisplayId = setupTestDisplayAndWaitForTransitions()
 
         launchAppFromTaskbar(externalDisplayId, browserApp)
         // TODO(b/418620963) - Check the display id of the app window here.
@@ -309,8 +305,7 @@ class ConnectedDisplayCujSmokeTests {
         verifyActivityState(browserApp, WINDOWING_MODE_FULLSCREEN, DEFAULT_DISPLAY, visible = true)
         verifyTaskCount(browserApp, expectedCount = 1)
 
-        val externalDisplayId = connectedDisplayRule.setupTestDisplay()
-        assertTaskbarVisible(externalDisplayId)
+        val externalDisplayId = setupTestDisplayAndWaitForTransitions()
 
         launchAppFromTaskbar(externalDisplayId, browserApp)
         verifyActivityState(browserApp, WINDOWING_MODE_FREEFORM, externalDisplayId, visible = true)
@@ -318,8 +313,7 @@ class ConnectedDisplayCujSmokeTests {
     }
 
     fun cuj6() {
-        val externalDisplayId = connectedDisplayRule.setupTestDisplay()
-        assertTaskbarVisible(externalDisplayId)
+        val externalDisplayId = setupTestDisplayAndWaitForTransitions()
         context.startActivity(
             clockApp.openAppIntent,
             createActivityOptions(externalDisplayId)
@@ -372,7 +366,7 @@ class ConnectedDisplayCujSmokeTests {
         )
         verifyActivityState(clockApp, WINDOWING_MODE_FULLSCREEN, DEFAULT_DISPLAY, visible = true)
 
-        connectedDisplayRule.setupTestDisplay()
+        setupTestDisplayAndWaitForTransitions()
 
         // Start a freeform app.
         launchAppFromTaskbar(DEFAULT_DISPLAY, browserApp)
@@ -404,8 +398,7 @@ class ConnectedDisplayCujSmokeTests {
         // Clear all tasks
         RecentTasksUtils.clearAllVisibleRecentTasks(instrumentation)
 
-        val externalDisplayId = connectedDisplayRule.setupTestDisplay()
-        assertTaskbarVisible(externalDisplayId)
+        val externalDisplayId = setupTestDisplayAndWaitForTransitions()
 
         // Start an app and make it fullscreen.
         context.startActivity(
@@ -447,7 +440,7 @@ class ConnectedDisplayCujSmokeTests {
     @Test
     @ExtendedOnly
     fun cuj8e() {
-        val externalDisplayId = connectedDisplayRule.setupTestDisplay()
+        val externalDisplayId = setupTestDisplayAndWaitForTransitions()
         disableMouseScaling(externalDisplayId)
         assertTaskbarVisible(DEFAULT_DISPLAY)
 
@@ -486,8 +479,7 @@ class ConnectedDisplayCujSmokeTests {
         browserApp.launchViaIntent()
         verifyActivityState(browserApp, WINDOWING_MODE_FULLSCREEN, DEFAULT_DISPLAY, visible = true)
 
-        val externalDisplayId = connectedDisplayRule.setupTestDisplay()
-        assertTaskbarVisible(externalDisplayId)
+        val externalDisplayId = setupTestDisplayAndWaitForTransitions()
 
         launchAppFromTaskbar(externalDisplayId, browserApp)
         verifyActivityState(browserApp, WINDOWING_MODE_FREEFORM, externalDisplayId, visible = true)
@@ -504,7 +496,7 @@ class ConnectedDisplayCujSmokeTests {
         )
         verifyActivityState(clockApp, WINDOWING_MODE_FULLSCREEN, DEFAULT_DISPLAY, visible = true)
 
-        val externalDisplayId = connectedDisplayRule.setupTestDisplay()
+        val externalDisplayId = setupTestDisplayAndWaitForTransitions()
         launchAppFromTaskbar(externalDisplayId, browserApp)
         verifyActivityState(browserApp, WINDOWING_MODE_FREEFORM, externalDisplayId, visible = true)
 
@@ -726,6 +718,21 @@ class ConnectedDisplayCujSmokeTests {
         options.setLaunchDisplayId(launchDisplayId)
         options.setLaunchWindowingMode(launchWindowingMode)
         return options.toBundle()
+    }
+
+    fun setupTestDisplayAndWaitForTransitions(): Int {
+        val externalDisplayId = connectedDisplayRule.setupTestDisplay()
+        // This test suite assumes that the external display is in extended mode (instead of mirror
+        // mode). So we always expect taskbar is shown on the display.
+        assertTaskbarVisible(externalDisplayId)
+
+        // Connecting an external display may triggers transitions (e.g., display windowing mode
+        // switch).
+        wmHelper.StateSyncBuilder().withAppTransitionIdle(externalDisplayId).waitForAndVerify()
+        wmHelper.StateSyncBuilder().withAppTransitionIdle(DEFAULT_DISPLAY).waitForAndVerify()
+        instrumentation.waitForIdleSync()
+
+        return externalDisplayId
     }
 
     private companion object {
