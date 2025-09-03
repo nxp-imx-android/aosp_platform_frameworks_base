@@ -207,4 +207,7 @@ interface IAccessibilityManager {
 
     @EnforcePermission("MANAGE_ACCESSIBILITY")
     void setTrustedAccessibilityServiceForTesting(in ComponentName trustedAccessibilityService);
+
+    @EnforcePermission("MANAGE_ACCESSIBILITY")
+    oneway void enableMagnificationAndZoomIn(int displayId);
 }

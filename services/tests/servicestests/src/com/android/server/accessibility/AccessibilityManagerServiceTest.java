@@ -53,6 +53,7 @@ import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.after;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doCallRealMethod;
@@ -1698,6 +1699,42 @@ public class AccessibilityManagerServiceTest {
                 mA11yms.getCurrentUserState().getShortcutTargetsLocked(QUICK_SETTINGS)
         ).doesNotContain(
                 AccessibilityShortcutController.DALTONIZER_COMPONENT_NAME.flattenToString());
+    }
+
+    @Test
+    public void enableMagnificationAndZoomIn_magnificationAlreadyActive_doesNothing() {
+        mFakePermissionEnforcer.grant(Manifest.permission.MANAGE_ACCESSIBILITY);
+        when(mMockMagnificationController.isAnyMagnificationActivated(anyInt())).thenReturn(true);
+
+        mA11yms.enableMagnificationAndZoomIn(TEST_DISPLAY);
+
+        verify(mMockMagnificationController, after(1000).never())
+                .zoomInFullScreenMagnification(anyInt());
+    }
+
+    @Test
+    public void enableMagnificationAndZoomIn_inputFilterNotInstalled_doesNothing() {
+        mFakePermissionEnforcer.grant(Manifest.permission.MANAGE_ACCESSIBILITY);
+        when(mMockMagnificationController.isAnyMagnificationActivated(anyInt())).thenReturn(false);
+        mA11yms.onInputFilterInstalled(false);
+
+        mA11yms.enableMagnificationAndZoomIn(TEST_DISPLAY);
+
+        verify(mMockMagnificationController, after(1000).never())
+                .zoomInFullScreenMagnification(anyInt());
+    }
+
+    @Test
+    public void enableMagnificationAndZoomIn_inputFilterInstalled_zoomIn() throws Exception {
+        mFakePermissionEnforcer.grant(Manifest.permission.MANAGE_ACCESSIBILITY);
+        when(mMockMagnificationController.isAnyMagnificationActivated(anyInt())).thenReturn(false);
+        mA11yms.onInputFilterInstalled(true);
+        when(mMockMagnificationConnectionManager.isConnected()).thenReturn(true);
+
+        mA11yms.enableMagnificationAndZoomIn(TEST_DISPLAY);
+
+        verify(mMockMagnificationController, timeout(1000))
+                .zoomInFullScreenMagnification(TEST_DISPLAY);
     }
 
     @Test

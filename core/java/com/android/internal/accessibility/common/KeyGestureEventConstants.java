@@ -47,4 +47,10 @@ public final class KeyGestureEventConstants {
      * @see Settings.Secure#ACCESSIBILITY_GESTURE_TARGETS
      */
     public static final String TARGET_NAME = "TARGET_NAME";
+
+    /**
+     * Used as the name of the extra data when we put the value of the display id on the key gesture
+     * event into an intent.
+     */
+    public static final String DISPLAY_ID = "DISPLAY_ID";
 }

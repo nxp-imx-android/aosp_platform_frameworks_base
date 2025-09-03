@@ -20,6 +20,8 @@ import android.content.Intent
 import android.content.applicationContext
 import android.hardware.input.KeyGestureEvent
 import android.os.fakeExecutorHandler
+import android.view.Display.DEFAULT_DISPLAY
+import android.view.Display.INVALID_DISPLAY
 import android.view.KeyEvent
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
@@ -52,7 +54,7 @@ class KeyGestureDialogInteractorTest : SysuiTestCase() {
     private val testScope = kosmos.testScope
 
     // mocks
-    private val repository = mock(AccessibilityShortcutsRepository::class.java)
+    private val mockRepository = mock(AccessibilityShortcutsRepository::class.java)
 
     private lateinit var underTest: KeyGestureDialogInteractor
 
@@ -61,7 +63,7 @@ class KeyGestureDialogInteractorTest : SysuiTestCase() {
         underTest =
             KeyGestureDialogInteractor(
                 kosmos.applicationContext,
-                repository,
+                mockRepository,
                 broadcastDispatcher,
                 testDispatcher,
                 kosmos.fakeExecutorHandler,
@@ -69,25 +71,110 @@ class KeyGestureDialogInteractorTest : SysuiTestCase() {
     }
 
     @Test
-    fun onPositiveButtonClick_enabledShortcutsForFakeTarget() {
+    fun enableShortcutsForTargets_enabledShortcutsForFakeTarget() {
         val enabledTargetName = "fakeTargetName"
 
-        underTest.onPositiveButtonClick(enabledTargetName)
+        underTest.enableShortcutsForTargets(/* enable= */ true, enabledTargetName)
 
-        verify(repository).enableShortcutsForTargets(eq(enabledTargetName))
+        verify(mockRepository).enableShortcutsForTargets(eq(true), eq(enabledTargetName))
     }
 
     @Test
-    fun keyGestureConfirmDialogRequest_invalidRequestReceived() {
+    fun enableMagnificationAndZoomIn_validDisplayId_delegatesToRepository() {
+        underTest.enableMagnificationAndZoomIn(DEFAULT_DISPLAY)
+
+        verify(mockRepository).enableMagnificationAndZoomIn(eq(DEFAULT_DISPLAY))
+    }
+
+    @Test
+    fun keyGestureConfirmDialogRequest_invalidKeyGestureTypeReceived_flowIsNull() {
         testScope.runTest {
-            val keyGestureType = KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_MAGNIFICATION
-            val metaState = 0
-            val keyCode = 0
-            val testTargetName = "fakeTargetName"
             val keyGestureConfirmInfo by collectLastValue(underTest.keyGestureConfirmDialogRequest)
             runCurrent()
 
-            sendIntentBroadcast(keyGestureType, metaState, keyCode, testTargetName)
+            sendIntentBroadcast(
+                keyGestureType = 0,
+                metaState = KeyEvent.META_META_ON or KeyEvent.META_ALT_ON,
+                keyCode = KeyEvent.KEYCODE_M,
+                targetName = "targetNameForMagnification",
+                displayId = DEFAULT_DISPLAY,
+            )
+            runCurrent()
+
+            assertThat(keyGestureConfirmInfo).isNull()
+        }
+    }
+
+    @Test
+    fun keyGestureConfirmDialogRequest_invalidMetaStateReceived_flowIsNull() {
+        testScope.runTest {
+            val keyGestureConfirmInfo by collectLastValue(underTest.keyGestureConfirmDialogRequest)
+            runCurrent()
+
+            sendIntentBroadcast(
+                keyGestureType = KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_MAGNIFICATION,
+                metaState = 0,
+                keyCode = KeyEvent.KEYCODE_M,
+                targetName = "targetNameForMagnification",
+                displayId = DEFAULT_DISPLAY,
+            )
+            runCurrent()
+
+            assertThat(keyGestureConfirmInfo).isNull()
+        }
+    }
+
+    @Test
+    fun keyGestureConfirmDialogRequest_invalidKeyCodeReceived_flowIsNull() {
+        testScope.runTest {
+            val keyGestureConfirmInfo by collectLastValue(underTest.keyGestureConfirmDialogRequest)
+            runCurrent()
+
+            sendIntentBroadcast(
+                keyGestureType = KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_MAGNIFICATION,
+                metaState = KeyEvent.META_META_ON or KeyEvent.META_ALT_ON,
+                keyCode = 0,
+                targetName = "targetNameForMagnification",
+                displayId = DEFAULT_DISPLAY,
+            )
+            runCurrent()
+
+            assertThat(keyGestureConfirmInfo).isNull()
+        }
+    }
+
+    @Test
+    fun keyGestureConfirmDialogRequest_invalidTargetNameReceived_flowIsNull() {
+        testScope.runTest {
+            val keyGestureConfirmInfo by collectLastValue(underTest.keyGestureConfirmDialogRequest)
+            runCurrent()
+
+            sendIntentBroadcast(
+                keyGestureType = KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_MAGNIFICATION,
+                metaState = KeyEvent.META_META_ON or KeyEvent.META_ALT_ON,
+                keyCode = KeyEvent.KEYCODE_M,
+                targetName = "",
+                displayId = DEFAULT_DISPLAY,
+            )
+            runCurrent()
+
+            assertThat(keyGestureConfirmInfo).isNull()
+        }
+    }
+
+    @Test
+    fun keyGestureConfirmDialogRequest_invalidDisplayIdReceived_flowIsNull() {
+        testScope.runTest {
+            val keyGestureConfirmInfo by collectLastValue(underTest.keyGestureConfirmDialogRequest)
+            runCurrent()
+
+            sendIntentBroadcast(
+                keyGestureType = KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_MAGNIFICATION,
+                metaState = KeyEvent.META_META_ON or KeyEvent.META_ALT_ON,
+                keyCode = KeyEvent.KEYCODE_M,
+                targetName = "targetNameForMagnification",
+                displayId = INVALID_DISPLAY,
+            )
             runCurrent()
 
             assertThat(keyGestureConfirmInfo).isNull()
@@ -104,10 +191,10 @@ class KeyGestureDialogInteractorTest : SysuiTestCase() {
             collectLastValue(underTest.keyGestureConfirmDialogRequest)
             runCurrent()
 
-            sendIntentBroadcast(keyGestureType, metaState, keyCode, testTargetName)
+            sendIntentBroadcast(keyGestureType, metaState, keyCode, testTargetName, DEFAULT_DISPLAY)
             runCurrent()
 
-            verify(repository)
+            verify(mockRepository)
                 .getTitleToContentForKeyGestureDialog(
                     eq(keyGestureType),
                     eq(metaState),
@@ -122,6 +209,7 @@ class KeyGestureDialogInteractorTest : SysuiTestCase() {
         metaState: Int,
         keyCode: Int,
         targetName: String,
+        displayId: Int,
     ) {
         val intent =
             Intent().apply {
@@ -130,6 +218,7 @@ class KeyGestureDialogInteractorTest : SysuiTestCase() {
                 putExtra(KeyGestureEventConstants.META_STATE, metaState)
                 putExtra(KeyGestureEventConstants.KEY_CODE, keyCode)
                 putExtra(KeyGestureEventConstants.TARGET_NAME, targetName)
+                putExtra(KeyGestureEventConstants.DISPLAY_ID, displayId)
             }
 
         broadcastDispatcher.sendIntentToMatchingReceiversOnly(context, intent)

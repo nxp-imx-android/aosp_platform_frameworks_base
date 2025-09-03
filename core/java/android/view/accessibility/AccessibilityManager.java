@@ -2721,4 +2721,26 @@ public final class AccessibilityManager {
             throw re.rethrowFromSystemServer();
         }
     }
+
+    /**
+     * Turns on Magnification and zooms in.
+     *
+     * @param displayId which display enabling Magnification
+     * @hide
+     */
+    @RequiresPermission(Manifest.permission.MANAGE_ACCESSIBILITY)
+    public void enableMagnificationAndZoomIn(int displayId) {
+        final IAccessibilityManager service;
+        synchronized (mLock) {
+            service = getServiceLocked();
+            if (service == null) {
+                return;
+            }
+        }
+        try {
+            service.enableMagnificationAndZoomIn(displayId);
+        } catch (RemoteException re) {
+            throw re.rethrowFromSystemServer();
+        }
+    }
 }
