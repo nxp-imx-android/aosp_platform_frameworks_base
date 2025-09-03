@@ -3872,6 +3872,8 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
         mInsetsPolicy.dump(prefix, pw);
         mDwpcHelper.dump(prefix, pw);
         pw.println();
+        mWmService.mDisplayWindowSettings.dump(this, prefix, pw);
+        pw.println();
     }
 
     @Override
