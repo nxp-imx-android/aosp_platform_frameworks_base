@@ -440,14 +440,6 @@ public class SplitController implements JetpackTaskFragmentOrganizer.TaskFragmen
         return mSplitAttributesCalculator;
     }
 
-    // TODO(b/295993745): remove after we migrate to the bundle approach.
-    @NonNull
-    public ActivityOptions setLaunchingActivityStack(@NonNull ActivityOptions options,
-            @NonNull IBinder token) {
-        options.setLaunchTaskFragmentToken(token);
-        return options;
-    }
-
     @NonNull
     @GuardedBy("mLock")
     @VisibleForTesting
@@ -3130,8 +3122,6 @@ public class SplitController implements JetpackTaskFragmentOrganizer.TaskFragmen
             }
 
             // Early return if the launching taskfragment is already been set.
-            // TODO(b/295993745): Use KEY_LAUNCH_TASK_FRAGMENT_TOKEN after WM Jetpack migrates to
-            // bundle. This is still needed to support #setLaunchingActivityStack.
             if (options.getBinder(KEY_LAUNCH_TASK_FRAGMENT_TOKEN) != null) {
                 return super.onStartActivity(who, intent, options);
             }
