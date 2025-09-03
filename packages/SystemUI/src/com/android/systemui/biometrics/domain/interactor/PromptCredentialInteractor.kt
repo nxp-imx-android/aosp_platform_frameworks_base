@@ -50,6 +50,9 @@ constructor(
     private val biometricPromptRepository: PromptRepository,
     private val credentialInteractor: CredentialInteractor,
 ) {
+    /** If the prompt is for credential only. */
+    val isCredentialOnly: Flow<Boolean> = biometricPromptRepository.modalities.map { it.isEmpty }
+
     /** If the prompt is currently showing. */
     val isShowing: Flow<Boolean> = biometricPromptRepository.isShowing
 

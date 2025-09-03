@@ -274,14 +274,14 @@
 
     <style name="TextAppearance.AuthNonBioCredential.Subtitle">
         <item name="android:fontFamily">@*android:string/config_headlineFontFamily</item>
-        <item name="android:layout_marginTop">20dp</item>
+        <item name="android:layout_marginTop">16dp</item>
         <item name="android:textSize">18sp</item>
         <item name="android:textColor">@androidprv:color/materialColorOnSurface</item>
     </style>
 
     <style name="TextAppearance.AuthNonBioCredential.Description">
         <item name="android:fontFamily">@*android:string/config_headlineFontFamily</item>
-        <item name="android:layout_marginTop">20dp</item>
+        <item name="android:layout_marginTop">16dp</item>
         <item name="android:textSize">18sp</item>
         <item name="android:textColor">@androidprv:color/materialColorOnSurface</item>
     </style>
@@ -309,9 +309,17 @@
         <item name="android:background">@drawable/edit_text_filled</item>
     </style>
 
+    <style name="AuthCredentialPasswordOutlineText">
+        <item name="android:textColor">@androidprv:color/materialColorOnSurfaceVariant</item>
+    </style>
+
+    <style name="Widget.AuthCredential.Password" parent="AuthCredentialPasswordOutlineText">
+        <item name="android:background">@drawable/edit_text_outline</item>
+    </style>
+
     <style name="AuthNonBioCredentialHeaderStyle">
-        <item name="android:paddingStart">48dp</item>
-        <item name="android:paddingEnd">48dp</item>
+        <item name="android:paddingStart">24dp</item>
+        <item name="android:paddingEnd">24dp</item>
         <item name="android:paddingTop">48dp</item>
         <item name="android:paddingBottom">10dp</item>
         <item name="android:layout_gravity">top</item>
@@ -355,7 +363,7 @@
         <item name="android:background">@drawable/auth_credential_fallback_button_background</item>
         <item name="android:textColor">@androidprv:color/materialColorOnSecondaryContainer</item>
         <item name="android:outlineProvider">none</item>
-        <item name="android:layout_marginTop">16dp</item>
+        <item name="android:layout_marginTop">32dp</item>
         <item name="android:paddingTop">10dp</item>
         <item name="android:paddingBottom">10dp</item>
         <item name="android:paddingLeft">16dp</item>
@@ -401,6 +409,14 @@
         <item name="android:fontFamily">@*android:string/config_bodyFontFamilyMedium</item>
         <item name="android:background">@color/transparent</item>
         <item name="android:textColor">@androidprv:color/materialColorPrimary</item>
+    </style>
+
+    <style name="AuthCredentialBackButton">
+        <item name="android:layout_width">@dimen/biometric_auth_back_button_size</item>
+        <item name="android:layout_height">@dimen/biometric_auth_back_button_size</item>
+        <item name="android:background">@drawable/auth_credential_back_button_background</item>
+        <item name="android:tint">@androidprv:color/materialColorOnSurface</item>
+        <item name="android:padding">4dp</item>
     </style>
 
     <style name="DeviceManagementDialogTitle">

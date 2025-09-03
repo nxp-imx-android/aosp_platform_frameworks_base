@@ -119,6 +119,9 @@ constructor(
             }
             .distinctUntilChanged()
 
+    /** If the back button should be shown. */
+    val isBackButtonVisible: Flow<Boolean> = promptCredentialInteractor.isCredentialOnly
+
     /** Input flags for text based credential views */
     val inputFlags: Flow<Int?> =
         promptCredentialInteractor.prompt.map {
