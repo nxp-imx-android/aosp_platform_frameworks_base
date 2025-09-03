@@ -26,10 +26,13 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.unit.Dp
@@ -49,7 +52,6 @@ import com.android.compose.test.transition
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.runTest
-import org.junit.Assert.assertThrows
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -283,17 +285,6 @@ class AnimatedSharedAsStateTest {
             }
 
             after { assertThat(lastValueInTo).isEqualTo(toValues) }
-        }
-    }
-
-    @Test
-    fun readingAnimatedStateValueDuringCompositionThrows() {
-        assertThrows(IllegalStateException::class.java) {
-            rule.testTransition(
-                fromSceneContent = { animateContentIntAsState(0, TestValues.Value1).value },
-                toSceneContent = {},
-                transition = {},
-            ) {}
         }
     }
 
@@ -630,5 +621,46 @@ class AnimatedSharedAsStateTest {
         assertThat(targetValues[SceneD]?.value).isEqualTo(null) // not composed
         assertThat(targetValues[SceneE]?.value).isEqualTo(null) // not composed
         assertThat(targetValues[SceneF]?.value).isEqualTo(null) // not composed
+    }
+
+    @Test
+    // Regression test for b/432799675.
+    fun animatedSharedValueInGraphicsLayer() {
+        val lastGraphicsLayerRotationPerContent = mutableMapOf<ContentKey, Float>()
+
+        @Composable
+        fun ContentScope.SharedFoo(rotation: Float, modifier: Modifier = Modifier) {
+            val contentKey = this.contentKey
+            ElementWithValues(TestElements.Foo, modifier) {
+                val animatedRotation by animateElementFloatAsState(rotation, TestValues.Value1)
+                Box(
+                    Modifier.graphicsLayer {
+                        rotationZ =
+                            animatedRotation.also {
+                                lastGraphicsLayerRotationPerContent[contentKey] = it
+                            }
+                    }
+                )
+            }
+        }
+
+        rule.setContent {
+            val scope = rememberCoroutineScope()
+            val state = remember {
+                MutableSceneTransitionLayoutStateForTests(SceneA).apply {
+                    startTransitionImmediately(
+                        scope,
+                        transition(SceneA, SceneB, progress = { 0.5f }),
+                    )
+                }
+            }
+            SceneTransitionLayout(state) {
+                scene(SceneA) { SharedFoo(rotation = 0f, Modifier.fillMaxSize()) }
+                scene(SceneB) { SharedFoo(rotation = 180f, Modifier.fillMaxSize(0.5f)) }
+            }
+        }
+
+        // SharedFoo is only placed in sceneB, the scene with highest zIndex.
+        assertThat(lastGraphicsLayerRotationPerContent[SceneB]).isWithin(0.1f).of(90f)
     }
 }
