@@ -602,8 +602,14 @@ public class LockPatternUtils {
         String[] history = passwordHistory.split(PASSWORD_HISTORY_DELIMITER);
         // Password History may be too long...
         for (int i = 0; i < Math.min(passwordHistoryLength, history.length); i++) {
-            if (history[i].equals(legacyHash) || history[i].equals(passwordHash)) {
-                return true;
+            if (android.security.Flags.stopRecognizingLegacyPasswordHashes()) {
+                if (history[i].equals(passwordHash)) {
+                    return true;
+                }
+            } else {
+                if (history[i].equals(legacyHash) || history[i].equals(passwordHash)) {
+                    return true;
+                }
             }
         }
         return false;
