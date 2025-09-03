@@ -16,6 +16,9 @@
 
 package com.android.systemui.screencapture.record.smallscreen.ui
 
+import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -38,29 +41,19 @@ import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.SnackbarData
-import androidx.compose.material3.SnackbarDuration
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.SnackbarVisuals
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.booleanResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.media3.common.MimeTypes
 import com.android.compose.PlatformOutlinedButton
 import com.android.compose.theme.PlatformTheme
 import com.android.systemui.lifecycle.rememberViewModel
@@ -78,6 +71,7 @@ class SmallScreenPostRecordingActivity
 constructor(
     private val videoPlayer: VideoPlayer,
     private val viewModelFactory: PostRecordingViewModel.Factory,
+    private val postRecordSnackbarDialogs: PostRecordSnackbarDialogs,
 ) : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -93,19 +87,7 @@ constructor(
                 viewModelFactory.create(intent.data ?: error("Data URI is missing"))
             }
 
-        var shouldShowSavedToast by rememberSaveable { mutableStateOf(true) }
-        val snackbarHostState = remember { SnackbarHostState() }
-
-        LaunchedEffect(shouldShowSavedToast) {
-            if (!shouldShowSavedToast) return@LaunchedEffect
-            shouldShowSavedToast = true
-            snackbarHostState.showSnackbar(
-                SnackbarVisualsWithIcon(
-                    iconRes = R.drawable.ic_sync_saved_locally,
-                    message = getString(R.string.screen_record_video_saved),
-                )
-            )
-        }
+        LaunchedEffect(Unit) { postRecordSnackbarDialogs.showVideoSaved() }
 
         val shouldUseFlatBottomBar =
             booleanResource(R.bool.screen_record_post_recording_flat_bottom_bar)
@@ -142,7 +124,10 @@ constructor(
                         modifier = rowModifier,
                     )
                     PostRecordButton(
-                        onClick = { viewModel.delete() },
+                        onClick = {
+                            postRecordSnackbarDialogs.showVideoDeleted(viewModel.videoUri)
+                            finish()
+                        },
                         drawableLoaderViewModel = viewModel,
                         iconRes = R.drawable.ic_screenshot_delete,
                         labelRes = R.string.screen_record_delete,
@@ -184,63 +169,15 @@ constructor(
                     modifier = Modifier.size(24.dp),
                 )
             }
-            SnackbarHost(
-                hostState = snackbarHostState,
-                modifier = Modifier.align(Alignment.TopCenter),
-            ) { data ->
-                PostRecordSnackbar(viewModel = viewModel, data = data, modifier = Modifier)
-            }
         }
     }
-}
 
-@Composable
-private fun PostRecordSnackbar(
-    viewModel: DrawableLoaderViewModel,
-    data: SnackbarData,
-    modifier: Modifier = Modifier,
-) {
-    val visuals = data.visuals as? SnackbarVisualsWithIcon ?: return
-    Row(
-        horizontalArrangement = Arrangement.spacedBy(10.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        modifier =
-            modifier
-                .background(
-                    color = MaterialTheme.colorScheme.inverseSurface,
-                    shape = RoundedCornerShape(percent = 50),
-                )
-                .padding(start = 12.dp, end = 20.dp)
-                .height(48.dp),
-    ) {
-        Box(
-            contentAlignment = Alignment.Center,
-            modifier =
-                Modifier.background(
-                        color = MaterialTheme.colorScheme.inverseOnSurface,
-                        shape = CircleShape,
-                    )
-                    .size(24.dp),
-        ) {
-            LoadingIcon(
-                icon = loadIcon(viewModel, visuals.iconRes, null).value,
-                tint = MaterialTheme.colorScheme.inverseSurface,
-                modifier = modifier.size(16.dp),
-            )
-        }
-        Text(
-            text = visuals.message,
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.inverseOnSurface,
-        )
-        if (visuals.actionLabel != null) {
-            TextButton(onClick = data::performAction) {
-                Text(
-                    text = visuals.actionLabel,
-                    style = MaterialTheme.typography.labelLarge,
-                    color = MaterialTheme.colorScheme.inverseOnSurface,
-                )
-            }
+    companion object {
+
+        fun getStartingIntent(context: Context, videoUri: Uri): Intent {
+            return Intent(context, SmallScreenPostRecordingActivity::class.java)
+                .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                .setDataAndType(videoUri, MimeTypes.VIDEO_MP4)
         }
     }
 }
@@ -268,11 +205,3 @@ private fun PostRecordButton(
         Text(text = stringResource(labelRes), style = MaterialTheme.typography.labelLarge)
     }
 }
-
-private data class SnackbarVisualsWithIcon(
-    override val message: String,
-    @DrawableRes val iconRes: Int,
-    override val actionLabel: String? = null,
-    override val withDismissAction: Boolean = true,
-    override val duration: SnackbarDuration = SnackbarDuration.Short,
-) : SnackbarVisuals
