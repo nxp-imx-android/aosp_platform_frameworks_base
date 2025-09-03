@@ -37,6 +37,7 @@ import com.android.systemui.statusbar.notification.dagger.SocialHeader
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow
 import com.android.systemui.statusbar.notification.row.ExpandableView
 import com.android.systemui.statusbar.notification.shared.NotificationBundleUi
+import com.android.systemui.statusbar.notification.shared.NotificationSummarizationOnboardingUi
 import com.android.systemui.statusbar.notification.stack.StackScrollAlgorithm.SectionProvider
 import com.android.systemui.statusbar.policy.ConfigurationController
 import com.android.systemui.util.foldToSparseArray
@@ -141,7 +142,7 @@ internal constructor(
     }
 
     override fun beginsSection(view: View, previous: View?): Boolean =
-        view === silentHeaderView ||
+        (view === silentHeaderView ||
             view === mediaControlsView ||
             view === peopleHeaderView ||
             view === alertingHeaderView ||
@@ -151,7 +152,11 @@ internal constructor(
                     view === socialHeaderView ||
                     view === recsHeaderView ||
                     view === promoHeaderView)) ||
-            getBucket(view) != getBucket(previous)
+            getBucket(view) != getBucket(previous)) &&
+            // don't consider the first notification after onboarding to be a new section, so that
+            // the onboarding affordance remains close to the notification
+            !(NotificationSummarizationOnboardingUi.isEnabled &&
+                previous is OnboardingAffordanceView)
 
     private fun getBucket(view: View?): Int? =
         when {
