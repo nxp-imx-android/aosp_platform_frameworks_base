@@ -16,6 +16,7 @@
 
 package com.android.server.permission.access.appfunction
 
+import android.app.appfunctions.AppFunctionManager.ACCESS_FLAG_UPGRADE_GRANTED
 import com.android.server.permission.access.MutateStateScope
 import com.android.server.pm.pkg.PackageState
 
@@ -25,6 +26,33 @@ class AppIdAppFunctionAccessUpgrade(private val policy: AppIdAppFunctionAccessPo
         userId: Int,
         version: Int,
     ) {
-        // Nothing for now
+        // Version 18 is the first package version with app functions enabled. When updating to it,
+        // pregrant all existing agents and targets
+        if (version < 18) {
+            with(policy) {
+                if (!isValidAgent(packageState, userId)) {
+                    return
+                }
+                if (!packageState.isPrivileged) {
+                    // If this package wasn't privileged before version 18, it didn't actually have
+                    // AppFunction access
+                    return
+                }
+                for (target in getTargets(userId)) {
+                    if (oldState.userStates[userId]?.packageVersions[target] == null) {
+                        // This is a new target package, do not grant access to it
+                        continue
+                    }
+                    updateAccessFlags(
+                        packageState.appId,
+                        userId,
+                        newState.externalState.packageStates[target]!!.appId,
+                        userId,
+                        ACCESS_FLAG_UPGRADE_GRANTED,
+                        ACCESS_FLAG_UPGRADE_GRANTED,
+                    )
+                }
+            }
+        }
     }
 }
