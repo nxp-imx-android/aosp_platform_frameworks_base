@@ -2045,7 +2045,6 @@ public class DisplayPolicy {
         static class Info {
             // TODO(b/409608996):
             //  Remove mNonDecorInsets, mConfigInsets -> always empty
-            //  Remove mNonDecorFrame, mConfigFrame -> always the same as display frame
             /**
              * The insets for the areas that could never be removed, i.e. display cutout and
              * navigation bar. Note that its meaning is actually "decor insets". The "non" is just
@@ -2069,23 +2068,16 @@ public class DisplayPolicy {
              */
             final Rect mOverrideNonDecorInsets = new Rect();
 
-            /** The display frame available after excluding {@link #mNonDecorInsets}. */
-            final Rect mNonDecorFrame = new Rect();
-
             /**
-             * The available (stable) screen size that we should report for the configuration.
-             * This must be no larger than {@link #mNonDecorFrame}; it may be smaller than that
-             * to account for more transient decoration like a status bar.
-             */
-            final Rect mConfigFrame = new Rect();
-
-            /**
-             * Override value of mConfigFrame for app compatibility purpose.
+             * Override available (stable) screen size for app compatibility purpose.
+             * This must be no larger than {@link #mOverrideNonDecorFrame}; it may be smaller than
+             * that to account for more transient decoration like a status bar.
              */
             final Rect mOverrideConfigFrame = new Rect();
 
             /**
-             * Override value of mNonDecorFrame for app compatibility purpose.
+             * Override display frame which excludes {@link #mOverrideNonDecorInsets} for app
+             * compatibility purpose.
              */
             final Rect mOverrideNonDecorFrame = new Rect();
 
@@ -2107,8 +2099,6 @@ public class DisplayPolicy {
                         overrideConfigInsets.right, overrideConfigInsets.bottom);
                 mOverrideNonDecorInsets.set(overrideDecorInsets.left, overrideDecorInsets.top,
                         overrideDecorInsets.right, overrideDecorInsets.bottom);
-                mNonDecorFrame.set(displayFrame);
-                mConfigFrame.set(displayFrame);
                 mOverrideConfigFrame.set(displayFrame);
                 mOverrideConfigFrame.inset(mOverrideConfigInsets);
                 mOverrideNonDecorFrame.set(displayFrame);
@@ -2121,8 +2111,6 @@ public class DisplayPolicy {
                 mConfigInsets.set(other.mConfigInsets);
                 mOverrideConfigInsets.set(other.mOverrideConfigInsets);
                 mOverrideNonDecorInsets.set(other.mOverrideNonDecorInsets);
-                mNonDecorFrame.set(other.mNonDecorFrame);
-                mConfigFrame.set(other.mConfigFrame);
                 mOverrideConfigFrame.set(other.mOverrideConfigFrame);
                 mOverrideNonDecorFrame.set(other.mOverrideNonDecorFrame);
                 mNeedUpdate = false;
@@ -2135,9 +2123,7 @@ public class DisplayPolicy {
                         + ", overrideNonDecorInsets=" + mOverrideNonDecorInsets.toShortString(tmpSb)
                         + ", configInsets=" + mConfigInsets.toShortString(tmpSb)
                         + ", overrideConfigInsets=" + mOverrideConfigInsets.toShortString(tmpSb)
-                        + ", nonDecorFrame=" + mNonDecorFrame.toShortString(tmpSb)
                         + ", overrideNonDecorFrame=" + mOverrideNonDecorFrame.toShortString(tmpSb)
-                        + ", configFrame=" + mConfigFrame.toShortString(tmpSb)
                         + ", overrideConfigFrame=" + mOverrideConfigFrame.toShortString(tmpSb)
                         + '}';
             }
@@ -2240,9 +2226,7 @@ public class DisplayPolicy {
         final DecorInsets.Info newInfo = mDecorInsets.mTmpInfo;
         newInfo.update(mDisplayContent, rotation, dw, dh);
         final DecorInsets.Info currentInfo = getDecorInsetsInfo(rotation, dw, dh);
-        final boolean sameConfigFrame = newInfo.mConfigFrame.equals(currentInfo.mConfigFrame);
-        if (sameConfigFrame
-                && newInfo.mOverrideConfigFrame.equals(currentInfo.mOverrideConfigFrame)) {
+        if (newInfo.mOverrideConfigFrame.equals(currentInfo.mOverrideConfigFrame)) {
             return false;
         }
         if (mCachedDecorInsets != null && !mCachedDecorInsets.canPreserve() && mScreenOnFully) {
@@ -2255,7 +2239,7 @@ public class DisplayPolicy {
             // clients receive the new states earlier.
             return true;
         }
-        return !sameConfigFrame;
+        return false;
     }
 
     DecorInsets.Info getDecorInsetsInfo(int rotation, int w, int h) {

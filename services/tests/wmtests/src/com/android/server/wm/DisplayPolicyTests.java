@@ -387,7 +387,7 @@ public class DisplayPolicyTests extends WindowTestsBase {
         final int h = info.logicalHeight;
         displayPolicy.updateDecorInsetsInfo();
         final Rect prevConfigFrame = new Rect(displayPolicy.getDecorInsetsInfo(info.rotation,
-                info.logicalWidth, info.logicalHeight).mConfigFrame);
+                info.logicalWidth, info.logicalHeight).mOverrideConfigFrame);
 
         displayPolicy.updateCachedDecorInsets();
         mDisplayContent.updateBaseDisplayMetrics(w / 2, h / 2,
@@ -402,7 +402,7 @@ public class DisplayPolicyTests extends WindowTestsBase {
         assertTrue(displayPolicy.shouldKeepCurrentDecorInsets());
         // The current insets are restored from cache directly.
         assertEquals(prevConfigFrame, displayPolicy.getDecorInsetsInfo(info.rotation,
-                info.logicalWidth, info.logicalHeight).mConfigFrame);
+                info.logicalWidth, info.logicalHeight).mOverrideConfigFrame);
         // Assume that the InsetsSource in current InsetsState is not updated yet. And it will be
         // replaced by the one in cache.
         InsetsState currentInsetsState = new InsetsState();
@@ -423,13 +423,13 @@ public class DisplayPolicyTests extends WindowTestsBase {
         displayPolicy.physicalDisplayUpdated();
         assertFalse(displayPolicy.shouldKeepCurrentDecorInsets());
         displayPolicy.getDecorInsetsInfo(info.rotation, info.logicalWidth, info.logicalHeight)
-                .mConfigFrame.offset(1, 1);
+                .mOverrideConfigFrame.offset(1, 1);
         // Even if CachedDecorInsets.canPreserve returns false, the cache won't be cleared.
         displayPolicy.updateDecorInsetsInfo();
         // Successful to restore from cache.
         displayPolicy.updateCachedDecorInsets();
         assertEquals(prevConfigFrame, displayPolicy.getDecorInsetsInfo(info.rotation,
-                info.logicalWidth, info.logicalHeight).mConfigFrame);
+                info.logicalWidth, info.logicalHeight).mOverrideConfigFrame);
     }
 
     @Test
