@@ -639,10 +639,8 @@
     <string name="permdesc_uwb_ranging" msgid="2519723069604307055">"Permite que a aplicación determine a posición relativa entre os dispositivos próximos que usen banda ultralarga"</string>
     <string name="permlab_nearby_wifi_devices" msgid="392774237063608500">"interactuar con dispositivos wifi próximos"</string>
     <string name="permdesc_nearby_wifi_devices" msgid="3054307728646332906">"Permítelle á aplicación enviar anuncios e conectarse a dispositivos wifi próximos, e determinar a súa posición relativa"</string>
-    <!-- no translation found for permlab_access_local_network (3420360767259066877) -->
-    <skip />
-    <!-- no translation found for permdesc_access_local_network (6364679803386822638) -->
-    <skip />
+    <string name="permlab_access_local_network" msgid="3420360767259066877">"acceso aos dispositivos da rede local"</string>
+    <string name="permdesc_access_local_network" msgid="6364679803386822638">"Permite que a aplicación acceda aos dispositivos da rede local"</string>
     <string name="permlab_ranging" msgid="2854543350668593390">"fixar a posición relativa entre disp. próximos"</string>
     <string name="permdesc_ranging" msgid="6703905535621521710">"Permite que a aplicación determine a posición relativa entre os dispositivos próximos"</string>
     <string name="permlab_preferredPaymentInfo" msgid="5274423844767445054">"Información do servizo de pagos de NFC preferido"</string>

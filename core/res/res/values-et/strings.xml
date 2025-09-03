@@ -265,7 +265,7 @@
     <string name="shutdown_confirm" product="watch" msgid="2977299851200240146">"Teie kell lülitub välja."</string>
     <string name="shutdown_confirm" product="default" msgid="136816458966692315">"Teie telefon lülitub välja."</string>
     <string name="shutdown_confirm_question" msgid="796151167261608447">"Kas soovite välja lülitada?"</string>
-    <string name="reboot_safemode_title" msgid="5853949122655346734">"Ohutus režiimis taaskäivitamine"</string>
+    <string name="reboot_safemode_title" msgid="5853949122655346734">"Taaskäivitamine turvarežiimis"</string>
     <string name="reboot_safemode_confirm" msgid="1658357874737219624">"Kas soovite taaskäivitada ohutus režiimis? See keelab kõik installitud kolmandate osapoolte rakendused. Need taastatakse pärast uuesti taaskäivitamist."</string>
     <string name="recent_tasks_title" msgid="8183172372995396653">"Hiljutised"</string>
     <string name="no_recent_tasks" msgid="9063946524312275906">"Hiljutisi rakendusi pole."</string>
@@ -639,10 +639,8 @@
     <string name="permdesc_uwb_ranging" msgid="2519723069604307055">"Võimaldab rakendusel määrata lähedalasuvate ülilairibaühendust kasutavate seadmete suhtelise kauguse üksteisest"</string>
     <string name="permlab_nearby_wifi_devices" msgid="392774237063608500">"Läheduses olevate WiFi-seadmetega suhtlemine"</string>
     <string name="permdesc_nearby_wifi_devices" msgid="3054307728646332906">"Lubab rakendusel läheduses olevatele WiFi-seadmetele reklaamida, nendega ühenduse luua ja määrata nende suhteline asend"</string>
-    <!-- no translation found for permlab_access_local_network (3420360767259066877) -->
-    <skip />
-    <!-- no translation found for permdesc_access_local_network (6364679803386822638) -->
-    <skip />
+    <string name="permlab_access_local_network" msgid="3420360767259066877">"kohaliku võrgu seadmetele juurdepääs"</string>
+    <string name="permdesc_access_local_network" msgid="6364679803386822638">"Võimaldab rakendusel kohaliku võrgu seadmetele juurde pääseda."</string>
     <string name="permlab_ranging" msgid="2854543350668593390">"Määrata läheduses olevate seadmete suhtelise kauguse üksteisest."</string>
     <string name="permdesc_ranging" msgid="6703905535621521710">"Võimaldab rakendusel määrata läheduses olevate seadmete suhtelise kauguse üksteisest"</string>
     <string name="permlab_preferredPaymentInfo" msgid="5274423844767445054">"Eelistatud NFC-makseteenuse teave"</string>

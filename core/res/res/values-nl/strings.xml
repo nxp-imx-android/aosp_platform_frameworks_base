@@ -166,7 +166,7 @@
     <string name="cfTemplateForwardedTime" msgid="735042369233323609">"<xliff:g id="BEARER_SERVICE_CODE">{0}</xliff:g>: <xliff:g id="DIALING_NUMBER">{1}</xliff:g> na <xliff:g id="TIME_DELAY">{2}</xliff:g> seconden"</string>
     <string name="cfTemplateRegistered" msgid="5619930473441550596">"<xliff:g id="BEARER_SERVICE_CODE">{0}</xliff:g>: niet doorgeschakeld"</string>
     <string name="cfTemplateRegisteredTime" msgid="5222794399642525045">"<xliff:g id="BEARER_SERVICE_CODE">{0}</xliff:g>: niet doorgeschakeld"</string>
-    <string name="scCellularNetworkSecurityTitle" msgid="7752521808690294384">"Beveiliging van mobiel netwerk"</string>
+    <string name="scCellularNetworkSecurityTitle" msgid="7752521808690294384">"Beveiliging mobiel netwerk"</string>
     <string name="scCellularNetworkSecuritySummary" msgid="7042036754550545005">"Versleuteling, meldingen voor niet-versleutelde netwerken"</string>
     <string name="scIdentifierDisclosureIssueTitle" msgid="2898888825129970328">"Toegang tot apparaat-ID gehad"</string>
     <string name="scIDIssueSummaryNotificationWithCellularID" msgid="8371590113242615316">"Om <xliff:g id="DISCLOSURE_TIME">%1$s</xliff:g> heeft een netwerk in de buurt de unieke ID van je apparaat (<xliff:g id="CELLULAR_IDENTIFIER">%2$s</xliff:g>) geregistreerd toen je je simkaart van <xliff:g id="DISCLOSURE_NETWORK">%3$s</xliff:g> gebruikte"</string>
@@ -639,10 +639,8 @@
     <string name="permdesc_uwb_ranging" msgid="2519723069604307055">"De app toestaan om de relatieve positie tussen ultrabreedbandapparaten in de buurt te bepalen"</string>
     <string name="permlab_nearby_wifi_devices" msgid="392774237063608500">"interactie met wifi-apparaten in de buurt"</string>
     <string name="permdesc_nearby_wifi_devices" msgid="3054307728646332906">"Hiermee kan de app uitzenden, verbindingen maken en de relatieve positie bepalen van wifi-apparaten in de buurt"</string>
-    <!-- no translation found for permlab_access_local_network (3420360767259066877) -->
-    <skip />
-    <!-- no translation found for permdesc_access_local_network (6364679803386822638) -->
-    <skip />
+    <string name="permlab_access_local_network" msgid="3420360767259066877">"toegang tot apparaten in het lokale netwerk"</string>
+    <string name="permdesc_access_local_network" msgid="6364679803386822638">"Hiermee krijgt de app toegang tot apparaten in het lokale netwerk"</string>
     <string name="permlab_ranging" msgid="2854543350668593390">"relatieve positie tussen apparaten in de buurt bepalen"</string>
     <string name="permdesc_ranging" msgid="6703905535621521710">"Sta toe dat de app de relatieve positie tussen apparaten in de buurt bepaalt"</string>
     <string name="permlab_preferredPaymentInfo" msgid="5274423844767445054">"Informatie over voorkeursservice voor NFC-betaling"</string>

@@ -641,10 +641,8 @@
     <string name="permdesc_uwb_ranging" msgid="2519723069604307055">"Zezwól na określanie przez aplikację względnego położenia urządzeń ultraszerokopasmowych w pobliżu"</string>
     <string name="permlab_nearby_wifi_devices" msgid="392774237063608500">"interakcje z urządzeniami Wi-Fi w pobliżu"</string>
     <string name="permdesc_nearby_wifi_devices" msgid="3054307728646332906">"Zezwala aplikacji na przesyłanie informacji o sobie, łączenie się z urządzeniami Wi‑Fi w pobliżu i określanie ich względnego położenia"</string>
-    <!-- no translation found for permlab_access_local_network (3420360767259066877) -->
-    <skip />
-    <!-- no translation found for permdesc_access_local_network (6364679803386822638) -->
-    <skip />
+    <string name="permlab_access_local_network" msgid="3420360767259066877">"dostęp do urządzeń w sieci lokalnej"</string>
+    <string name="permdesc_access_local_network" msgid="6364679803386822638">"Zezwala aplikacji na dostęp do urządzeń w sieci lokalnej"</string>
     <string name="permlab_ranging" msgid="2854543350668593390">"określanie względnego położenia urządzeń w pobliżu"</string>
     <string name="permdesc_ranging" msgid="6703905535621521710">"Zezwól na określanie przez aplikację względnego położenia urządzeń w pobliżu"</string>
     <string name="permlab_preferredPaymentInfo" msgid="5274423844767445054">"Informacje o preferowanych usługach płatniczych NFC"</string>

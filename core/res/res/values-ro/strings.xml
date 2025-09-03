@@ -337,7 +337,7 @@
     <string name="managed_profile_label" msgid="7316778766973512382">"Comută la profilul de serviciu"</string>
     <string name="user_owner_app_label" msgid="1553595155465750298">"Comută la <xliff:g id="APP_NAME">%1$s</xliff:g> personal"</string>
     <string name="managed_profile_app_label" msgid="367401088383965725">"Comută la <xliff:g id="APP_NAME">%1$s</xliff:g> pentru serviciu"</string>
-    <string name="permgrouplab_contacts" msgid="7443702399615347952">"Agendă şi conturi"</string>
+    <string name="permgrouplab_contacts" msgid="7443702399615347952">"Agendă și conturi"</string>
     <string name="permgroupdesc_contacts" msgid="2001771388402758264">"să acceseze agenda și să vadă lista conturilor care pot salva persoane de contact de pe acest dispozitiv"</string>
     <string name="permgrouplab_location" msgid="1858277002233964394">"Locație"</string>
     <string name="permgroupdesc_location" msgid="1995955142118450685">"să acceseze locația acestui dispozitiv"</string>
@@ -640,10 +640,8 @@
     <string name="permdesc_uwb_ranging" msgid="2519723069604307055">"Permite-i aplicației să stabilească poziția relativă dintre dispozitivele Ultra-Wideband din apropiere"</string>
     <string name="permlab_nearby_wifi_devices" msgid="392774237063608500">"să interacționeze cu dispozitive Wi‑Fi din apropiere"</string>
     <string name="permdesc_nearby_wifi_devices" msgid="3054307728646332906">"Permite aplicației să se conecteze la dispozitive Wi-Fi din apropiere, să transmită anunțuri și să stabilească poziția relativă a acestora"</string>
-    <!-- no translation found for permlab_access_local_network (3420360767259066877) -->
-    <skip />
-    <!-- no translation found for permdesc_access_local_network (6364679803386822638) -->
-    <skip />
+    <string name="permlab_access_local_network" msgid="3420360767259066877">"să acceseze dispozitivele din rețeaua locală"</string>
+    <string name="permdesc_access_local_network" msgid="6364679803386822638">"Permite aplicației să acceseze dispozitivele din rețeaua locală"</string>
     <string name="permlab_ranging" msgid="2854543350668593390">"stabilește poziția dispozitivelor din apropiere"</string>
     <string name="permdesc_ranging" msgid="6703905535621521710">"Permite-i aplicației să stabilească poziția relativă dintre dispozitivele din apropiere"</string>
     <string name="permlab_preferredPaymentInfo" msgid="5274423844767445054">"Informații despre serviciul de plăți NFC preferat"</string>

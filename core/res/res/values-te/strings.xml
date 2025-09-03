@@ -639,10 +639,8 @@
     <string name="permdesc_uwb_ranging" msgid="2519723069604307055">"సమీపంలోని అల్ట్రా-వైడ్‌బ్యాండ్ పరికరాల మధ్య సంబంధిత పొజిషన్‌ను నిర్ణయించడానికి యాప్‌ను అనుమతించండి"</string>
     <string name="permlab_nearby_wifi_devices" msgid="392774237063608500">"సమీపంలోని Wi-Fi పరికరాలతో ఇంటరాక్ట్ చేస్తుంది"</string>
     <string name="permdesc_nearby_wifi_devices" msgid="3054307728646332906">"అడ్వర్టయిజ్, కనెక్ట్ చేయడానికి, సమీపంలోని Wi-Fi పరికరాల సంబంధిత పొజిషన్‌ను నిర్ణయించడానికి యాప్‌ను అనుమతిస్తుంది"</string>
-    <!-- no translation found for permlab_access_local_network (3420360767259066877) -->
-    <skip />
-    <!-- no translation found for permdesc_access_local_network (6364679803386822638) -->
-    <skip />
+    <string name="permlab_access_local_network" msgid="3420360767259066877">"లోకల్ నెట్‌వర్క్ డివైజ్‌లను యాక్సెస్ చేయడం"</string>
+    <string name="permdesc_access_local_network" msgid="6364679803386822638">"లోకల్ నెట్‌వర్క్ డివైజ్‌లను యాక్సెస్ చేయడానికి యాప్‌ను అనుమతిస్తుంది"</string>
     <string name="permlab_ranging" msgid="2854543350668593390">"సమీపంలో పరికరాల మధ్య సాపేక్ష స్థానాన్ని నిర్ణయించండి"</string>
     <string name="permdesc_ranging" msgid="6703905535621521710">"సమీపంలోని పరికరాల మధ్య సాపేక్ష స్థానాన్ని నిర్ణయించడానికి యాప్‌ను అనుమతించండి"</string>
     <string name="permlab_preferredPaymentInfo" msgid="5274423844767445054">"ప్రాధాన్యత ఇవ్వబడిన NFC చెల్లింపు సేవల సమాచారం"</string>
