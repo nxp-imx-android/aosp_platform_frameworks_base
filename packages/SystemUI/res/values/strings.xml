@@ -4263,6 +4263,10 @@
          any key  yet. The helper is a component that shows the user which keyboard shortcuts
          they can use. [CHAR LIMIT=NONE] -->
     <string name="shortcut_helper_add_shortcut_dialog_placeholder">Press key</string>
+    <!-- Action key, used in keyboard shortcut helper to combine keys for shortcut. E.g. Action + 1
+         The helper is a component that shows the user which keyboard shortcuts they can use.
+         [CHAR LIMIT=NONE] -->
+    <string name="shortcut_helper_customizer_action_key_text">Action</string>
     <!-- Error message displayed when the user select a key combination that is already in use while
          assigning a new custom key combination to a shortcut in shortcut helper. The helper is a
          component that shows the user which keyboard shortcuts they can use. [CHAR LIMIT=NONE] -->
