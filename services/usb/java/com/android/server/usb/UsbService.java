@@ -533,6 +533,22 @@ public class UsbService extends IUsbManager.Stub {
         }
     }
 
+    /* Checks if accessory FFS is enabled */
+    @Override
+    public boolean isAccessoryFfsEnabled() {
+        Preconditions.checkNotNull(mDeviceManager, "DeviceManager must not be null");
+
+        final long ident = clearCallingIdentity();
+        try {
+            synchronized (mLock) {
+                return mDeviceManager.isAccessoryFfsEnabled();
+            }
+
+        } finally {
+            restoreCallingIdentity(ident);
+        }
+    }
+
     @android.annotation.EnforcePermission(android.Manifest.permission.ACCESS_MTP)
     /* Returns a dup of the control file descriptor for the given function. */
     @Override
