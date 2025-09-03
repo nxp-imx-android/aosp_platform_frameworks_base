@@ -53,7 +53,6 @@ import android.nfc.NdefMessage;
 import android.nfc.NdefRecord;
 import android.nfc.NfcAdapter;
 import android.os.Bundle;
-import android.os.Parcelable;
 import android.os.PersistableBundle;
 import android.util.Log;
 
@@ -215,14 +214,14 @@ final class ProvisioningIntentHelper {
      * Returns the first {@link NdefRecord} found with a recognized MIME-type
      */
     private static NdefRecord getFirstNdefRecord(Intent nfcIntent) {
-        Parcelable[] ndefMessages = nfcIntent.getParcelableArrayExtra(EXTRA_NDEF_MESSAGES);
+        NdefMessage[] ndefMessages = nfcIntent.getParcelableArrayExtra(EXTRA_NDEF_MESSAGES,
+                NdefMessage.class);
         if (ndefMessages == null) {
             Log.i(TAG, "No EXTRA_NDEF_MESSAGES from nfcIntent");
             return null;
         }
 
-        for (Parcelable rawMsg : ndefMessages) {
-            NdefMessage msg = (NdefMessage) rawMsg;
+        for (NdefMessage msg : ndefMessages) {
             for (NdefRecord record : msg.getRecords()) {
                 String mimeType = new String(record.getType(), UTF_8);
 
