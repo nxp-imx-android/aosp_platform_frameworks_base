@@ -25,6 +25,8 @@ import android.graphics.Bitmap
 import com.android.settingslib.bluetooth.CachedBluetoothDevice
 import com.android.settingslib.bluetooth.devicesettings.ActionSwitchPreference
 import com.android.settingslib.bluetooth.devicesettings.ActionSwitchPreferenceState
+import com.android.settingslib.bluetooth.devicesettings.BannerPreference
+import com.android.settingslib.bluetooth.devicesettings.ButtonInfo
 import com.android.settingslib.bluetooth.devicesettings.DeviceInfo
 import com.android.settingslib.bluetooth.devicesettings.DeviceSetting
 import com.android.settingslib.bluetooth.devicesettings.DeviceSettingHelpPreference
@@ -359,6 +361,24 @@ class DeviceSettingRepositoryTest {
         }
     }
 
+    @Test
+    fun getDeviceSetting_bannerPreference_success() {
+        testScope.runTest {
+            setUpConfigService(true, DEVICE_SETTING_CONFIG)
+            setUpProviderService(settingProviderService1, true, listOf(DEVICE_SETTING_BANNER))
+            setUpProviderService(settingProviderService2, true, listOf())
+            var setting: DeviceSettingModel? = null
+
+            underTest
+                .getDeviceSetting(cachedDevice, DEVICE_SETTING_ID_BANNER)
+                .onEach { setting = it }
+                .launchIn(backgroundScope)
+            runCurrent()
+
+            assertDeviceSetting(setting!!, DEVICE_SETTING_BANNER)
+        }
+    }
+
     private fun assertDeviceSetting(actual: DeviceSettingModel, serviceResponse: DeviceSetting) {
         assertThat(actual.id).isEqualTo(serviceResponse.settingId)
         when (actual) {
@@ -393,6 +413,15 @@ class DeviceSettingRepositoryTest {
                     .isInstanceOf(DeviceSettingHelpPreference::class.java)
                 val pref = serviceResponse.preference as DeviceSettingHelpPreference
                 assertThat(actual.intent).isSameInstanceAs(pref.intent)
+            }
+            is DeviceSettingModel.BannerPreference -> {
+                assertThat(serviceResponse.preference)
+                    .isInstanceOf(BannerPreference::class.java)
+                val pref = serviceResponse.preference as BannerPreference
+                assertThat(actual.title).isEqualTo(pref.title)
+                assertThat(actual.message).isEqualTo(pref.message)
+                assertThat(actual.positiveButton?.label).isEqualTo(pref.positiveButtonInfo?.label)
+                assertThat(actual.negativeButton?.label).isEqualTo(pref.negativeButtonInfo?.label)
             }
             else -> {}
         }
@@ -464,6 +493,12 @@ class DeviceSettingRepositoryTest {
             "com.android.fake.settingproviderservice2.Service"
         const val SETTING_PROVIDER_SERVICE_INTENT_ACTION_2 =
             "com.android.fake.settingproviderservice2.BIND"
+        const val SETTING_PROVIDER_SERVICE_PACKAGE_NAME_3 =
+            "com.android.fake.settingproviderservice3"
+        const val SETTING_PROVIDER_SERVICE_CLASS_NAME_3 =
+            "com.android.fake.settingproviderservice3.Service"
+        const val SETTING_PROVIDER_SERVICE_INTENT_ACTION_3 =
+            "com.android.fake.settingproviderservice3.BIND"
         const val BLUETOOTH_DEVICE_METADATA =
             "<DEVICE_SETTINGS_CONFIG_PACKAGE_NAME>" +
                 CONFIG_SERVICE_PACKAGE_NAME +
@@ -476,6 +511,7 @@ class DeviceSettingRepositoryTest {
                 "</DEVICE_SETTINGS_CONFIG_ACTION>"
         val DEVICE_INFO = DeviceInfo.Builder().setBluetoothAddress(BLUETOOTH_ADDRESS).build()
         const val DEVICE_SETTING_ID_HELP = 12345
+        const val DEVICE_SETTING_ID_BANNER = 54321
         val DEVICE_SETTING_APP_PROVIDED_ITEM_1 =
             DeviceSettingItem(
                 DeviceSettingId.DEVICE_SETTING_ID_HEADER,
@@ -520,6 +556,13 @@ class DeviceSettingRepositoryTest {
                 SETTING_PROVIDER_SERVICE_CLASS_NAME_2,
                 SETTING_PROVIDER_SERVICE_INTENT_ACTION_2,
             )
+        val DEVICE_SETTING_BANNER_ITEM =
+            DeviceSettingItem(
+                DEVICE_SETTING_ID_BANNER,
+                SETTING_PROVIDER_SERVICE_PACKAGE_NAME_3,
+                SETTING_PROVIDER_SERVICE_CLASS_NAME_3,
+                SETTING_PROVIDER_SERVICE_INTENT_ACTION_3,
+            )
         val DEVICE_SETTING_1 =
             DeviceSetting.Builder()
                 .setSettingId(DeviceSettingId.DEVICE_SETTING_ID_HEADER)
@@ -558,6 +601,25 @@ class DeviceSettingRepositoryTest {
                 .setSettingId(DEVICE_SETTING_ID_HELP)
                 .setPreference(DeviceSettingHelpPreference.Builder().setIntent(Intent()).build())
                 .build()
+        val DEVICE_SETTING_BANNER =
+            DeviceSetting.Builder()
+                .setSettingId(DEVICE_SETTING_ID_BANNER)
+                .setPreference(
+                    BannerPreference.Builder()
+                        .setTitle("title")
+                        .setMessage("message")
+                        .setPositiveButtonInfo(
+                            ButtonInfo.Builder()
+                                .setLabel("positive")
+                                .build()
+                        )
+                        .setNegativeButtonInfo(
+                            ButtonInfo.Builder()
+                                .setLabel("negative")
+                                .build()
+                        )
+                        .build()
+                ).build()
         val DEVICE_SETTING_CONFIG =
             DeviceSettingsConfig(
                 listOf(
