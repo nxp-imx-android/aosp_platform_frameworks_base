@@ -16,6 +16,7 @@
 
 package com.android.systemui.screencapture.record.smallscreen.ui.viewmodel
 
+import android.media.projection.StopReason
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -52,6 +53,14 @@ constructor(
         screenCaptureRecordParametersViewModelFactory.create()
     val recordDetailsTargetViewModel: RecordDetailsTargetViewModel =
         recordDetailsTargetViewModelFactory.create()
+
+    val isRecording: Boolean by
+        screenRecordingServiceInteractor.status
+            .map { it.isRecording }
+            .hydratedStateOf(
+                traceName = "SmallScreenCaptureRecordViewModel#isRecording",
+                initialValue = screenRecordingServiceInteractor.status.value.isRecording,
+            )
 
     var detailsPopup: RecordDetailsPopupType by mutableStateOf(RecordDetailsPopupType.Settings)
         private set
@@ -107,19 +116,23 @@ constructor(
         screenCaptureUiInteractor.hide(ScreenCaptureType.RECORD)
     }
 
-    fun startRecording() {
-        val shouldShowTaps = recordDetailsParametersViewModel.shouldShowTaps ?: return
-        val audioSource = recordDetailsParametersViewModel.audioSource ?: return
-        // TODO(b/428686600) pass actual parameters
-        screenRecordingServiceInteractor.startRecording(
-            ScreenRecordingParameters(
-                captureTarget = null,
-                displayId = 0,
-                shouldShowTaps = shouldShowTaps,
-                audioSource = audioSource,
+    fun onPrimaryButtonTapped() {
+        if (screenRecordingServiceInteractor.status.value.isRecording) {
+            screenRecordingServiceInteractor.stopRecording(StopReason.STOP_HOST_APP)
+        } else {
+            val shouldShowTaps = recordDetailsParametersViewModel.shouldShowTaps ?: return
+            val audioSource = recordDetailsParametersViewModel.audioSource ?: return
+            // TODO(b/428686600) pass actual parameters
+            screenRecordingServiceInteractor.startRecording(
+                ScreenRecordingParameters(
+                    captureTarget = null,
+                    displayId = 0,
+                    shouldShowTaps = shouldShowTaps,
+                    audioSource = audioSource,
+                )
             )
-        )
-        dismiss()
+            dismiss()
+        }
     }
 
     fun shouldShowSettings(visible: Boolean) {

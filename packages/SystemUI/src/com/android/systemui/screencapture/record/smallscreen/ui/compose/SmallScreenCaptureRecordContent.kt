@@ -44,6 +44,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.FloatingToolbarDefaults
 import androidx.compose.material3.IconButtonDefaults
@@ -66,6 +67,7 @@ import com.android.systemui.screencapture.common.ui.compose.LoadingIcon
 import com.android.systemui.screencapture.common.ui.compose.PrimaryButton
 import com.android.systemui.screencapture.common.ui.compose.ScreenCaptureContent
 import com.android.systemui.screencapture.common.ui.compose.loadIcon
+import com.android.systemui.screencapture.common.ui.viewmodel.DrawableLoaderViewModel
 import com.android.systemui.screencapture.record.smallscreen.ui.viewmodel.RecordDetailsPopupType
 import com.android.systemui.screencapture.record.smallscreen.ui.viewmodel.SmallScreenCaptureRecordViewModel
 import javax.inject.Inject
@@ -135,18 +137,10 @@ constructor(private val viewModelFactory: SmallScreenCaptureRecordViewModel.Fact
                         )
                     }
                     Spacer(Modifier.width(12.dp))
-                    val recordIcon by
-                        loadIcon(
-                            viewModel = viewModel,
-                            resId = R.drawable.ic_screenrecord,
-                            contentDescription = null,
-                        )
-                    PrimaryButton(
-                        onClick = { viewModel.startRecording() },
-                        text = stringResource(R.string.screen_capture_toolbar_record_button),
-                        icon = recordIcon,
-                        contentPadding = PaddingValues(horizontal = 14.dp),
-                        iconPadding = 4.dp,
+                    ToolbarPrimaryButton(
+                        recording = viewModel.isRecording,
+                        onClick = { viewModel.onPrimaryButtonTapped() },
+                        viewModel = viewModel,
                         modifier = Modifier.height(40.dp),
                     )
                 }
@@ -225,6 +219,58 @@ private fun ToggleToolbarButton(
                 }
         ) {
             icon()
+        }
+    }
+}
+
+@Composable
+private fun ToolbarPrimaryButton(
+    recording: Boolean,
+    viewModel: DrawableLoaderViewModel,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    AnimatedContent(targetState = recording) { isRecording ->
+        if (isRecording) {
+            PrimaryButton(
+                onClick = onClick,
+                text = stringResource(R.string.screenrecord_stop_label),
+                icon =
+                    loadIcon(
+                            viewModel = viewModel,
+                            resId = R.drawable.ic_stop,
+                            contentDescription = null,
+                        )
+                        .value,
+                contentPadding = PaddingValues(horizontal = 14.dp),
+                iconPadding = 4.dp,
+                colors =
+                    ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.error,
+                        contentColor = MaterialTheme.colorScheme.onError,
+                    ),
+                modifier = modifier,
+            )
+        } else {
+            PrimaryButton(
+                onClick = onClick,
+                text = stringResource(R.string.screen_capture_toolbar_record_button),
+                icon =
+                    loadIcon(
+                            viewModel = viewModel,
+                            resId = R.drawable.ic_screenrecord,
+                            contentDescription = null,
+                        )
+                        .value,
+                contentPadding = PaddingValues(horizontal = 14.dp),
+                iconPadding = 4.dp,
+                colors =
+                    ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.primary,
+                        contentColor = MaterialTheme.colorScheme.onPrimary,
+                    ),
+                modifier = modifier,
+            )
         }
     }
 }

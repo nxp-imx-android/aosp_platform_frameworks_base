@@ -19,6 +19,9 @@ package com.android.systemui.screencapture.common.ui.compose
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.size
+import androidx.compose.material3.ButtonColors
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -41,11 +44,17 @@ fun PrimaryButton(
     icon: IconModel? = null,
     contentPadding: PaddingValues = ButtonPaddings,
     iconPadding: Dp = 5.dp,
+    colors: ButtonColors =
+        ButtonDefaults.buttonColors(
+            containerColor = MaterialTheme.colorScheme.primary,
+            contentColor = MaterialTheme.colorScheme.onPrimary,
+        ),
 ) {
     PlatformButton(
         onClick = onClick,
         modifier = modifier,
         enabled = enabled,
+        colors = colors,
         contentPadding = contentPadding,
     ) {
         if (icon != null) {
