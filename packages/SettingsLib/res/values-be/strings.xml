@@ -87,6 +87,10 @@
     <string name="bluetooth_connecting" msgid="5871702668260192755">"Падключэнне..."</string>
     <string name="bluetooth_connected" msgid="8065345572198502293">"Падключана прылада <xliff:g id="ACTIVE_DEVICE">%1$s</xliff:g>"</string>
     <string name="bluetooth_pairing" msgid="4269046942588193600">"Спалучэнне..."</string>
+    <!-- no translation found for bluetooth_pairing_failure (6914444518793157913) -->
+    <skip />
+    <!-- no translation found for bluetooth_connection_failure (384203214661155324) -->
+    <skip />
     <string name="bluetooth_connected_no_headset" msgid="2224101138659967604">"Падключана прылада <xliff:g id="ACTIVE_DEVICE">%1$s</xliff:g> (без званкоў)"</string>
     <string name="bluetooth_connected_no_a2dp" msgid="8566874395813947092">"Падключана прылада <xliff:g id="ACTIVE_DEVICE">%1$s</xliff:g> (без аўдыя)"</string>
     <string name="bluetooth_connected_no_headset_no_a2dp" msgid="2893204819854215433">"Падкл. прылада <xliff:g id="ACTIVE_DEVICE">%1$s</xliff:g> (без званкоў і аўдыя)"</string>
@@ -345,7 +349,8 @@
     <string name="wifi_non_persistent_mac_randomization_summary" msgid="2159794543105053930">"Калі ўключаны гэты рэжым, MAC-адрас гэтай прылады можа змяняцца падчас кожнага падключэння да сеткі з актыўнай рандамізацыяй MAC-адрасоў."</string>
     <string name="wifi_metered_label" msgid="8737187690304098638">"Сетка з падлікам трафіка"</string>
     <string name="wifi_unmetered_label" msgid="6174142840934095093">"Сетка без уліку трафіка"</string>
-    <string name="select_logd_size_title" msgid="1604578195914595173">"Памеры буфера журнала"</string>
+    <!-- no translation found for select_logd_size_title (4393502933789367691) -->
+    <skip />
     <string name="select_logd_size_dialog_title" msgid="2105401994681013578">"Выберыце памеры сродку вядзення журнала для буфераў журнала"</string>
     <string name="dev_logpersist_clear_warning_title" msgid="8631859265777337991">"Ачысціць пастаяннае сховішча журнала?"</string>
     <string name="dev_logpersist_clear_warning_message" msgid="6447590867594287413">"Калі перастае выконвацца адсочванне з дапамогай пастаяннага журнала, мы павінны сцерці даныя журнала, якія захоўваюцца на вашай прыладзе."</string>

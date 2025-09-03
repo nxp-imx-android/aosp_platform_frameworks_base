@@ -138,8 +138,16 @@
     <string name="screenrecord_stop_dialog_message" msgid="6262768207331626817">"Тренутно снимате цео екран"</string>
     <string name="screenrecord_stop_dialog_message_specific_app" msgid="5995770227684523244">"Тренутно снимате: <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="screenrecord_stop_dialog_button" msgid="2883812564938194350">"Заустави снимање"</string>
+    <!-- no translation found for screen_record_entire_screen (66944996337928170) -->
+    <skip />
+    <!-- no translation found for screen_record_single_app (7355880948574569290) -->
+    <skip />
+    <!-- no translation found for screen_record_single_app_no_recents (1023249803854209330) -->
+    <skip />
     <string name="screen_record_record_device_audio_label" msgid="5363057443124085198">"Снимај звук са уређаја"</string>
     <string name="screen_record_record_microphone_label" msgid="4685753707185662381">"Снимај помоћу микрофона"</string>
+    <!-- no translation found for screen_record_should_show_camera_label (159628971484931357) -->
+    <skip />
     <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"Прикажи додире"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"Одаберите апликацију за снимање"</string>
     <string name="screen_record_video_saved" msgid="1345283626390232282">"Видео је сачуван"</string>
@@ -685,8 +693,7 @@
     <string name="accessibility_notification_section_header_gentle_clear_all" msgid="6490207897764933919">"Обришите сва нечујна обавештења"</string>
     <string name="accessibility_notification_section_header_open_settings" msgid="6235202417954844004">"Отворите подешавања обавештења"</string>
     <string name="modes_suppressing_shade_text" msgid="6037581130837903239">"{count,plural,offset:1 =0{Нема обавештења}=1{Обавештења је паузирао {mode}}=2{Обавештења су паузирали {mode} и још један режим}one{Обавештења су паузирали {mode} и још # режим}few{Обавештења су паузирали {mode} и још # режима}other{Обавештења су паузирали {mode} и још # режима}}"</string>
-    <!-- no translation found for caught_up_shade_text (8166221989384139659) -->
-    <skip />
+    <string name="caught_up_shade_text" msgid="8166221989384139659">"Све сте прегледали"</string>
     <string name="media_projection_action_text" msgid="3634906766918186440">"Започни"</string>
     <string name="empty_shade_text" msgid="8935967157319717412">"Нема обавештења"</string>
     <string name="no_unseen_notif_text" msgid="395512586119868682">"Нема нових обавештења"</string>
@@ -986,8 +993,7 @@
     <string name="group_system_access_notification_shade" msgid="1619028907006553677">"Прикажи обавештења"</string>
     <string name="group_system_access_quick_settings_panel" msgid="1844771096582064926">"Прикажи брза подешавања"</string>
     <string name="group_system_full_screenshot" msgid="5742204844232667785">"Направи снимак екрана"</string>
-    <!-- no translation found for group_system_partial_screenshot (2114314797127648010) -->
-    <skip />
+    <string name="group_system_partial_screenshot" msgid="2114314797127648010">"Направите делимичан снимак екрана"</string>
     <string name="group_system_access_system_app_shortcuts" msgid="8562482996626694026">"Прикажи пречице"</string>
     <string name="group_system_go_back" msgid="2730322046244918816">"Назад"</string>
     <string name="group_system_access_home_screen" msgid="4130366993484706483">"Иди на почетни екран"</string>

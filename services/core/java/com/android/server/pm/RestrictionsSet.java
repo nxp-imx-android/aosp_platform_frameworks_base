@@ -35,7 +35,6 @@ import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -249,21 +248,6 @@ public class RestrictionsSet {
             }
         }
         throw new XmlPullParserException("restrictions cannot be read as xml is malformed.");
-    }
-
-    /**
-     * Dumps {@link RestrictionsSet}.
-     */
-    public void dumpRestrictions(PrintWriter pw, String prefix) {
-        boolean noneSet = true;
-        for (int i = 0; i < mUserRestrictions.size(); i++) {
-            pw.println(prefix + "User Id: " + mUserRestrictions.keyAt(i));
-            UserRestrictionsUtils.dumpRestrictions(pw, prefix + "  ", mUserRestrictions.valueAt(i));
-            noneSet = false;
-        }
-        if (noneSet) {
-            pw.println(prefix + "none");
-        }
     }
 
     /** @return list of users in this restriction set. */

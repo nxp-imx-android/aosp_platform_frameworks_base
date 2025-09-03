@@ -41,13 +41,13 @@
     <string name="title_uninstall_updates_system_app" msgid="4827243291196043359">"Удалить обновления приложения?"</string>
     <string name="title_uninstall_updates_system_app_all_users" msgid="5720572619103268328">"Удалить обновления приложения для всех пользователей?"</string>
     <string name="title_uninstall_all_users" msgid="2008934480150627653">"Удалить приложение для всех пользователей?"</string>
-    <string name="title_uninstall_other_user" msgid="2271467467800640363">"Удалить приложение пользователя <xliff:g id="USER_NAME">%1$s</xliff:g>?"</string>
+    <string name="title_uninstall_other_user" msgid="2271467467800640363">"Удалить приложение для пользователя <xliff:g id="USER_NAME">%1$s</xliff:g>?"</string>
     <string name="title_uninstall_app_not_found" msgid="501803094061097579">"Приложение не найдено"</string>
     <string name="title_uninstall_user_not_allowed" msgid="1555448944495159635">"Не удалось удалить приложение"</string>
     <string name="title_uninstall_failed" msgid="4522950368147075143">"Приложение не удалено"</string>
     <string name="title_archive" msgid="2876455228073419830">"Отправить приложение в архив?"</string>
     <string name="title_archive_all_users" msgid="5904736601499520543">"Отправить приложение в архив для всех пользователей?"</string>
-    <string name="title_archive_other_user" msgid="6686508642274629645">"Архивировать приложение пользователя <xliff:g id="USER_NAME">%1$s</xliff:g>?"</string>
+    <string name="title_archive_other_user" msgid="6686508642274629645">"Отправить приложение в архив для пользователя <xliff:g id="USER_NAME">%1$s</xliff:g>?"</string>
     <string name="title_restore" msgid="8934911753892124574">"Восстановить приложение?"</string>
     <string name="title_restore_error_user_action_needed" msgid="5696944142011800104">"Требуется действие"</string>
     <string name="title_restore_error_less_storage" msgid="1702198163928260711">"Недостаточно места"</string>
@@ -85,7 +85,7 @@
     <string name="message_uninstall_keep_data" msgid="3955153594868206983">"Сохранить данные приложения"</string>
     <string name="message_archive" msgid="943853731737315850">"Ваши данные в приложении сохранятся."</string>
     <string name="message_archive_all_users" msgid="4664139369764501351">"Все данные в приложении сохранятся."</string>
-    <string name="message_archive_other_user" msgid="6465828676043191175">"Данные в приложении сохранятся."</string>
+    <string name="message_archive_other_user" msgid="6465828676043191175">"Данные приложения сохранятся."</string>
     <string name="message_archive_work_profile" msgid="7601504268820630858">"Это приложение будет отправлено в архив из рабочего профиля. Ваши данные в приложении сохранятся."</string>
     <string name="message_archive_private_space" msgid="4873651645762576624">"Это приложение будет отправлено в архив из частного пространства. Ваши данные в приложении сохранятся."</string>
     <string name="message_restore" msgid="8402726798623569969">"Приложение будет скачано в фоновом режиме из <xliff:g id="INSTALLER_NAME">%1$s</xliff:g>."</string>
@@ -96,22 +96,14 @@
     <string name="message_restore_error_installer_absent" msgid="8492838251989389724">"Чтобы восстановить приложение, установите <xliff:g id="INSTALLER_NAME">%1$s</xliff:g>."</string>
     <string name="message_restore_error_generic" msgid="5903850636679929406">"Не удалось восстановить приложение."</string>
     <string name="message_uninstall_activity" msgid="3263352475743590167">"<xliff:g id="ACTIVITY_NAME">%1$s</xliff:g> – часть приложения \"<xliff:g id="APP_NAME">%2$s</xliff:g>\"."</string>
-    <!-- no translation found for cannot_install_app_blocked_summary (5439893912308217959) -->
-    <skip />
-    <!-- no translation found for cannot_update_app_blocked_summary (7817560122951640605) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_no_internet_summary (236829543597389666) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_no_internet_summary (28024736898646891) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_summary (6208343652461257248) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_unavailable_summary (367099122142054088) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_fail_closed_summary (3798407602770929670) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_unavailable_fail_closed_summary (2871425967967934618) -->
-    <skip />
+    <string name="cannot_install_app_blocked_summary" msgid="5439893912308217959">"&lt;p&gt;Это приложение заблокировано. Чтобы ваши данные и устройство были лучше защищены, разрешено устанавливать приложения только от проверенных разработчиков.&lt;/p&gt;"</string>
+    <string name="cannot_update_app_blocked_summary" msgid="7817560122951640605">"&lt;p&gt;Это приложение не обновлено. Чтобы ваши данные и устройство были лучше защищены, разрешено устанавливать обновления только от проверенных разработчиков.&lt;/p&gt;"</string>
+    <string name="cannot_install_verification_no_internet_summary" msgid="236829543597389666">"&lt;p&gt;Это приложение не установлено. Приложения от непроверенных разработчиков могут быть опасны.&lt;/p&gt; &lt;p&gt;Чтобы проверить разработчика, требуется подключение к интернету. Убедитесь, что оно есть, и снова попробуйте установить приложение. &lt;/p&gt;"</string>
+    <string name="cannot_update_verification_no_internet_summary" msgid="28024736898646891">"&lt;p&gt;Это приложение не обновлено. Обновления от непроверенных разработчиков могут быть опасны.&lt;/p&gt; &lt;p&gt;Чтобы проверить разработчика, требуется подключение к интернету. Убедитесь, что оно есть, и снова попробуйте обновить приложение. &lt;/p&gt;"</string>
+    <string name="cannot_install_verification_unavailable_summary" msgid="6208343652461257248">"&lt;p&gt;При проверке разработчика возникла проблема. Приложение не установлено, поскольку ПО от непроверенных разработчиков может быть опасно.&lt;/p&gt;"</string>
+    <string name="cannot_update_verification_unavailable_summary" msgid="367099122142054088">"&lt;p&gt;При проверке разработчика возникла проблема. Приложение не обновлено, поскольку ПО от непроверенных разработчиков может быть опасно.&lt;/p&gt;"</string>
+    <string name="cannot_install_verification_unavailable_fail_closed_summary" msgid="3798407602770929670">"&lt;p&gt;Это приложение заблокировано, поскольку при проверке разработчика возникла проблема. Чтобы ваши данные и устройство были лучше защищены, разрешено устанавливать приложения только от проверенных разработчиков.&lt;/p&gt;"</string>
+    <string name="cannot_update_verification_unavailable_fail_closed_summary" msgid="2871425967967934618">"&lt;p&gt;Это приложение не обновлено, поскольку при проверке разработчика возникла проблема. Чтобы ваши данные и устройство были лучше защищены, разрешено устанавливать обновления только от проверенных разработчиков.&lt;/p&gt;"</string>
     <string name="more_details_expanded_install_summary" msgid="3545896392881608712">"При установке приложения от непроверенного разработчика помните, что оно может быть опасно для вашего устройства и данных."</string>
     <string name="more_details_expanded_update_summary" msgid="2239162864839036480">"При установке обновления от непроверенного разработчика помните, что оно может быть опасно для вашего устройства и данных."</string>
     <string name="cannot_install_app_blocked_title" msgid="6372444121824751694">"Разработчик приложения не проверен"</string>

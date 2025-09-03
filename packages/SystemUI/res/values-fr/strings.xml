@@ -138,8 +138,16 @@
     <string name="screenrecord_stop_dialog_message" msgid="6262768207331626817">"Vous enregistrez actuellement l\'intégralité de votre écran"</string>
     <string name="screenrecord_stop_dialog_message_specific_app" msgid="5995770227684523244">"Vous enregistrez actuellement <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="screenrecord_stop_dialog_button" msgid="2883812564938194350">"Arrêter l\'enregistrement"</string>
+    <!-- no translation found for screen_record_entire_screen (66944996337928170) -->
+    <skip />
+    <!-- no translation found for screen_record_single_app (7355880948574569290) -->
+    <skip />
+    <!-- no translation found for screen_record_single_app_no_recents (1023249803854209330) -->
+    <skip />
     <string name="screen_record_record_device_audio_label" msgid="5363057443124085198">"Enregistrer l\'audio de l\'appareil"</string>
     <string name="screen_record_record_microphone_label" msgid="4685753707185662381">"Enregistrer le micro"</string>
+    <!-- no translation found for screen_record_should_show_camera_label (159628971484931357) -->
+    <skip />
     <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"Afficher les éléments sélectionnés"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"Choisissez une appli pour l\'enregistrement"</string>
     <string name="screen_record_video_saved" msgid="1345283626390232282">"Vidéo enregistrée"</string>
@@ -685,8 +693,7 @@
     <string name="accessibility_notification_section_header_gentle_clear_all" msgid="6490207897764933919">"Effacer toutes les notifications silencieuses"</string>
     <string name="accessibility_notification_section_header_open_settings" msgid="6235202417954844004">"Ouvrir les paramètres de notification"</string>
     <string name="modes_suppressing_shade_text" msgid="6037581130837903239">"{count,plural,offset:1 =0{Aucune notification}=1{Notifications suspendues par le mode {mode}}=2{Notifications suspendues par le mode {mode} et un autre mode}one{Notifications suspendues par le mode {mode} et # autre mode}many{Notifications suspendues par le mode {mode} et # d\'autres modes}other{Notifications suspendues par le mode {mode} et # autres modes}}"</string>
-    <!-- no translation found for caught_up_shade_text (8166221989384139659) -->
-    <skip />
+    <string name="caught_up_shade_text" msgid="8166221989384139659">"Vous avez consulté toutes les recommandations"</string>
     <string name="media_projection_action_text" msgid="3634906766918186440">"Commencer"</string>
     <string name="empty_shade_text" msgid="8935967157319717412">"Aucune notification"</string>
     <string name="no_unseen_notif_text" msgid="395512586119868682">"Aucune nouvelle notification"</string>
@@ -986,8 +993,7 @@
     <string name="group_system_access_notification_shade" msgid="1619028907006553677">"Afficher les notifications"</string>
     <string name="group_system_access_quick_settings_panel" msgid="1844771096582064926">"Afficher les Réglages rapides"</string>
     <string name="group_system_full_screenshot" msgid="5742204844232667785">"Prendre une capture d\'écran"</string>
-    <!-- no translation found for group_system_partial_screenshot (2114314797127648010) -->
-    <skip />
+    <string name="group_system_partial_screenshot" msgid="2114314797127648010">"Faire une capture d\'écran partielle"</string>
     <string name="group_system_access_system_app_shortcuts" msgid="8562482996626694026">"Afficher les raccourcis"</string>
     <string name="group_system_go_back" msgid="2730322046244918816">"Retour"</string>
     <string name="group_system_access_home_screen" msgid="4130366993484706483">"Accéder à l\'écran d\'accueil"</string>
@@ -1139,14 +1145,10 @@
     <string name="accessibility_key_gesture_magnification_dialog_content" msgid="7575802369763469379">"L\'action "<annotation id="action_key_icon">"icône"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> correspond au raccourci clavier permettant d\'utiliser <xliff:g id="ID_3">^3</xliff:g>. Cela vous permet de faire un zoom avant rapide sur l\'écran pour agrandir le contenu. Appuyez sur l\'icône Action "<annotation id="action_key_icon"></annotation>" + <xliff:g id="ID_4">^1</xliff:g> et sur \"+\" ou \"-\" pour ajuster le zoom."</string>
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"Désactiver le raccourci"</string>
     <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"Laisser activé"</string>
-    <!-- no translation found for accessibility_key_gesture_voice_access_dialog_title (7828090789777023683) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_voice_access_dialog_content (7934170819801013870) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_voice_access_dialog_negative_button_text (3573570279554465078) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_voice_access_dialog_positive_button_text (2306321856544446858) -->
-    <skip />
+    <string name="accessibility_key_gesture_voice_access_dialog_title" msgid="7828090789777023683">"Activer le raccourci clavier <xliff:g id="ID_1">%1$s</xliff:g> ?"</string>
+    <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="7934170819801013870">"Appuyer sur l\'action "<annotation id="action_key_icon">"icône"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> active <xliff:g id="ID_3">^3</xliff:g>, une fonctionnalité d\'accessibilité. Cela vous permet de contrôler votre appareil en mode mains libres."</string>
+    <string name="accessibility_key_gesture_voice_access_dialog_negative_button_text" msgid="3573570279554465078">"Ne pas activer"</string>
+    <string name="accessibility_key_gesture_voice_access_dialog_positive_button_text" msgid="2306321856544446858">"Activer le raccourci"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"Écran de verrouillage"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"Arrêt…"</string>
     <string name="thermal_shutdown_dialog_help_text" msgid="6413474593462902901">"Afficher les étapes d\'entretien"</string>

@@ -18,8 +18,10 @@ package com.android.systemui.screencapture.sharescreen.largescreen.ui.viewmodel
 
 import androidx.compose.runtime.getValue
 import com.android.systemui.lifecycle.HydratedActivatable
+import com.android.systemui.screencapture.common.shared.model.ScreenCaptureType
 import com.android.systemui.screencapture.common.ui.viewmodel.DrawableLoaderViewModel
 import com.android.systemui.screencapture.common.ui.viewmodel.DrawableLoaderViewModelImpl
+import com.android.systemui.screencapture.domain.interactor.ScreenCaptureUiInteractor
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -33,8 +35,10 @@ enum class ScreenShareTarget {
 /** Models UI state for the Screen Share feature. */
 class PreShareToolbarViewModel
 @AssistedInject
-constructor(private val drawableLoaderViewModelImpl: DrawableLoaderViewModelImpl) :
-    HydratedActivatable(), DrawableLoaderViewModel by drawableLoaderViewModelImpl {
+constructor(
+    private val drawableLoaderViewModelImpl: DrawableLoaderViewModelImpl,
+    private val screenCaptureUiInteractor: ScreenCaptureUiInteractor,
+) : HydratedActivatable(), DrawableLoaderViewModel by drawableLoaderViewModelImpl {
     // The private, mutable source of truth for the selected target.
     private val selectedScreenShareTargetSource = MutableStateFlow(ScreenShareTarget.APP_WINDOW)
 
@@ -44,6 +48,14 @@ constructor(private val drawableLoaderViewModelImpl: DrawableLoaderViewModelImpl
     // Called by the UI when a new sharing target is selected by the user.
     fun onTargetSelected(target: ScreenShareTarget) {
         selectedScreenShareTargetSource.value = target
+    }
+
+    fun onCloseClicked() {
+        screenCaptureUiInteractor.hide(ScreenCaptureType.SHARE_SCREEN)
+    }
+
+    fun onShareClicked() {
+        screenCaptureUiInteractor.hide(ScreenCaptureType.SHARE_SCREEN)
     }
 
     @AssistedFactory

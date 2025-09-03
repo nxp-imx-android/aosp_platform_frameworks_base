@@ -138,8 +138,16 @@
     <string name="screenrecord_stop_dialog_message" msgid="6262768207331626817">"В момента записвате целия си екран"</string>
     <string name="screenrecord_stop_dialog_message_specific_app" msgid="5995770227684523244">"В момента записвате <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="screenrecord_stop_dialog_button" msgid="2883812564938194350">"Спиране на записа"</string>
+    <!-- no translation found for screen_record_entire_screen (66944996337928170) -->
+    <skip />
+    <!-- no translation found for screen_record_single_app (7355880948574569290) -->
+    <skip />
+    <!-- no translation found for screen_record_single_app_no_recents (1023249803854209330) -->
+    <skip />
     <string name="screen_record_record_device_audio_label" msgid="5363057443124085198">"Записване на звука от устройството"</string>
     <string name="screen_record_record_microphone_label" msgid="4685753707185662381">"Записване от микрофона"</string>
+    <!-- no translation found for screen_record_should_show_camera_label (159628971484931357) -->
+    <skip />
     <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"Показване на докосванията"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"Избор на приложение за записване"</string>
     <string name="screen_record_video_saved" msgid="1345283626390232282">"Видеокл. бе запазен"</string>
@@ -685,8 +693,7 @@
     <string name="accessibility_notification_section_header_gentle_clear_all" msgid="6490207897764933919">"Изчистване на всички беззвучни известия"</string>
     <string name="accessibility_notification_section_header_open_settings" msgid="6235202417954844004">"Отваряне на настройките за известията"</string>
     <string name="modes_suppressing_shade_text" msgid="6037581130837903239">"{count,plural,offset:1 =0{Няма известия}=1{Известията са поставени на пауза от {mode}}=2{Известията са поставени на пауза от {mode} и един друг режим}other{Известията са поставени на пауза от {mode} и # други режима}}"</string>
-    <!-- no translation found for caught_up_shade_text (8166221989384139659) -->
-    <skip />
+    <string name="caught_up_shade_text" msgid="8166221989384139659">"За момента няма нищо ново"</string>
     <string name="media_projection_action_text" msgid="3634906766918186440">"Стартиране сега"</string>
     <string name="empty_shade_text" msgid="8935967157319717412">"Няма известия"</string>
     <string name="no_unseen_notif_text" msgid="395512586119868682">"Няма нови известия"</string>
@@ -986,8 +993,7 @@
     <string name="group_system_access_notification_shade" msgid="1619028907006553677">"Преглед на известията"</string>
     <string name="group_system_access_quick_settings_panel" msgid="1844771096582064926">"Преглед на бързите настройки"</string>
     <string name="group_system_full_screenshot" msgid="5742204844232667785">"Създаване на екранна снимка"</string>
-    <!-- no translation found for group_system_partial_screenshot (2114314797127648010) -->
-    <skip />
+    <string name="group_system_partial_screenshot" msgid="2114314797127648010">"Създаване на частична екранна снимка"</string>
     <string name="group_system_access_system_app_shortcuts" msgid="8562482996626694026">"Показване на клавишните комбинации"</string>
     <string name="group_system_go_back" msgid="2730322046244918816">"Назад"</string>
     <string name="group_system_access_home_screen" msgid="4130366993484706483">"Отваряне на началния екран"</string>
@@ -1012,8 +1018,7 @@
     <string name="system_desktop_mode_snap_right_window" msgid="2162560187639411929">"Преместване на прозореца надясно"</string>
     <string name="system_desktop_mode_toggle_maximize_window" msgid="4084100093691768239">"Увеличаване на прозореца"</string>
     <string name="system_desktop_mode_minimize_window" msgid="1248714536732927092">"Намаляване на прозореца"</string>
-    <!-- no translation found for system_desktop_mode_close_window (3072490692608682536) -->
-    <skip />
+    <string name="system_desktop_mode_close_window" msgid="3072490692608682536">"Затваряне на текущия прозорец"</string>
     <string name="system_multiple_desktop_mode_switch_between_desks" msgid="6093884593003003708">"Превключване между работни плотове"</string>
     <string name="keyboard_shortcut_group_input" msgid="6888282716546625610">"Въвеждане"</string>
     <string name="input_switch_input_language_next" msgid="3782155659868227855">"Превключване към следващия език"</string>
@@ -1140,14 +1145,10 @@
     <string name="accessibility_key_gesture_magnification_dialog_content" msgid="7575802369763469379"><annotation id="action_key_icon">"Иконата"</annotation>" за действие + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> е клавишната комбинация за използване на <xliff:g id="ID_3">^3</xliff:g>. Това ви дава възможност бързо да приближавате екрана, за да уголемите съдържанието. Натиснете иконата за действие "<annotation id="action_key_icon"></annotation>" + <xliff:g id="ID_4">^1</xliff:g> и „+“ или „-“, за да коригирате промяната на мащаба."</string>
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"Изключване на прекия път"</string>
     <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"Без изключване"</string>
-    <!-- no translation found for accessibility_key_gesture_voice_access_dialog_title (7828090789777023683) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_voice_access_dialog_content (7934170819801013870) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_voice_access_dialog_negative_button_text (3573570279554465078) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_voice_access_dialog_positive_button_text (2306321856544446858) -->
-    <skip />
+    <string name="accessibility_key_gesture_voice_access_dialog_title" msgid="7828090789777023683">"Искате ли да включите клавишната комбинация за <xliff:g id="ID_1">%1$s</xliff:g>?"</string>
+    <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="7934170819801013870">"Натискането на "<annotation id="action_key_icon">"иконата"</annotation>" за действие + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> включва <xliff:g id="ID_3">^3</xliff:g> – функция за достъпност. Това ви дава възможност да контролирате устройството си в режим „свободни ръце“."</string>
+    <string name="accessibility_key_gesture_voice_access_dialog_negative_button_text" msgid="3573570279554465078">"Без включване"</string>
+    <string name="accessibility_key_gesture_voice_access_dialog_positive_button_text" msgid="2306321856544446858">"Включване на прекия път"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"Заключен екран"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"Изключва се…"</string>
     <string name="thermal_shutdown_dialog_help_text" msgid="6413474593462902901">"Вижте стъпките, които да предприемете"</string>

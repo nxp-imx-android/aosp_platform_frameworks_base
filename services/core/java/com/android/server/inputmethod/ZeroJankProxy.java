@@ -51,7 +51,6 @@ import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.view.inputmethod.InputMethodSubtype;
-import android.window.ImeOnBackInvokedDispatcher;
 
 import com.android.internal.inputmethod.DirectBootAwareness;
 import com.android.internal.inputmethod.IBooleanListener;
@@ -177,12 +176,12 @@ final class ZeroJankProxy implements IInputMethodManagerImpl.Callback {
             @Nullable IRemoteInputConnection inputConnection,
             @Nullable IRemoteAccessibilityInputConnection remoteAccessibilityInputConnection,
             int unverifiedTargetSdkVersion, @UserIdInt int userId,
-            @NonNull ImeOnBackInvokedDispatcher imeDispatcher, boolean imeRequestedVisible,
+            @NonNull ResultReceiver imeBackCallbackReceiver, boolean imeRequestedVisible,
             int startInputSeq) {
         offload(() -> mInner.startInputOrWindowGainedFocus(startInputReason, client,
                 windowToken, startInputFlags, softInputMode, windowFlags, editorInfo,
                 inputConnection, remoteAccessibilityInputConnection, unverifiedTargetSdkVersion,
-                userId, imeDispatcher, imeRequestedVisible, startInputSeq));
+                userId, imeBackCallbackReceiver, imeRequestedVisible, startInputSeq));
     }
 
     @Override

@@ -35,6 +35,7 @@ import static android.view.IWindowManager.FIXED_TO_USER_ROTATION_IF_NO_AUTO_ROTA
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.any;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.anyBoolean;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.anyInt;
+import static com.android.dx.mockito.inline.extended.ExtendedMockito.anyString;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.atLeast;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.atMost;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.doReturn;
@@ -248,9 +249,11 @@ public class DisplayRotationTests {
 
         freezeRotation(Surface.ROTATION_180);
 
-        verify(mockDeviceStateAutoRotateSettingController,
-                times(1)).requestAccelerometerRotationSettingChange(eq(false),
-                eq(Surface.ROTATION_180));
+        verify(mockDeviceStateAutoRotateSettingController, times(1))
+                .requestAccelerometerRotationSettingChange(
+                        /* autoRotate= */ eq(false),
+                        /* userRotation= */ eq(Surface.ROTATION_180),
+                        /* caller= */ anyString());
     }
 
     @Test
@@ -264,9 +267,11 @@ public class DisplayRotationTests {
 
         thawRotation();
 
-        verify(mockDeviceStateAutoRotateSettingController,
-                times(1)).requestAccelerometerRotationSettingChange(eq(true),
-                anyInt());
+        verify(mockDeviceStateAutoRotateSettingController, times(1))
+                .requestAccelerometerRotationSettingChange(
+                        /* autoRotate= */ eq(true),
+                        /* userRotation= */ anyInt(),
+                        /* caller= */ anyString());
     }
 
     @Test
@@ -281,9 +286,11 @@ public class DisplayRotationTests {
 
         freezeRotation(DisplayRotation.USE_CURRENT_ROTATION);
 
-        verify(mockDeviceStateAutoRotateSettingController,
-                times(1)).requestAccelerometerRotationSettingChange(eq(false),
-                eq(Surface.ROTATION_90));
+        verify(mockDeviceStateAutoRotateSettingController, times(1))
+                .requestAccelerometerRotationSettingChange(
+                        /* autoRotate= */ eq(false),
+                        /* userRotation= */ eq(Surface.ROTATION_90),
+                        /* caller= */ anyString());
     }
 
     @Test

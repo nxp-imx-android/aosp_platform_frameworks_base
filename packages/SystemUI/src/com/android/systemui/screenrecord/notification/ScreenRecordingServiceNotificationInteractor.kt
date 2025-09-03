@@ -132,11 +132,7 @@ class ScreenRecordingServiceNotificationInteractor(
 
         val viewIntent =
             if (ScreenCaptureRecordFeaturesInteractor.isNewScreenRecordToolbarEnabled) {
-                Intent(context, SmallScreenPostRecordingActivity::class.java)
-                    .setFlags(
-                        Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_GRANT_READ_URI_PERMISSION
-                    )
-                    .setDataAndType(savedRecording.uri, MimeTypes.VIDEO_MP4)
+                SmallScreenPostRecordingActivity.getStartingIntent(context, savedRecording.uri)
             } else {
                 Intent(Intent.ACTION_VIEW)
                     .setFlags(

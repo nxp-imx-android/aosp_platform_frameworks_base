@@ -87,6 +87,8 @@
     <string name="bluetooth_connecting" msgid="5871702668260192755">"കണക്‌റ്റുചെയ്യുന്നു..."</string>
     <string name="bluetooth_connected" msgid="8065345572198502293">"കണക്റ്റ് ചെയ്‌തു<xliff:g id="ACTIVE_DEVICE">%1$s</xliff:g>"</string>
     <string name="bluetooth_pairing" msgid="4269046942588193600">"ജോടിയാക്കുന്നു…"</string>
+    <string name="bluetooth_pairing_failure" msgid="6914444518793157913">"ജോടിയാക്കാനാകില്ല"</string>
+    <string name="bluetooth_connection_failure" msgid="384203214661155324">"കണക്റ്റ് ചെയ്യാനാകുന്നില്ല"</string>
     <string name="bluetooth_connected_no_headset" msgid="2224101138659967604">"കണ‌ക്റ്റ് ചെ‌യ്‌തു (ഫോൺ ഇല്ല)<xliff:g id="ACTIVE_DEVICE">%1$s</xliff:g>"</string>
     <string name="bluetooth_connected_no_a2dp" msgid="8566874395813947092">"കണക്റ്റ് ചെയ്‌തു (മീഡിയ ഇല്ല)<xliff:g id="ACTIVE_DEVICE">%1$s</xliff:g>"</string>
     <string name="bluetooth_connected_no_headset_no_a2dp" msgid="2893204819854215433">"കണ‌ക്റ്റ് ചെയ്‌തു (ഫോണോ മീഡിയയോ ഇല്ല)<xliff:g id="ACTIVE_DEVICE">%1$s</xliff:g>"</string>
@@ -345,7 +347,8 @@
     <string name="wifi_non_persistent_mac_randomization_summary" msgid="2159794543105053930">"ഈ മോഡ് പ്രവർത്തനക്ഷമമാക്കുമ്പോൾ, MAC ക്രമരഹിതമാക്കൽ പ്രവർത്തനക്ഷമമാക്കിയിരിക്കുന്ന നെറ്റ്‌വർക്കിലേക്ക് കണക്റ്റ് ചെയ്യുമ്പോഴെല്ലാം ഈ ഉപകരണത്തിന്റെ MAC വിലാസം മാറിയേക്കാം."</string>
     <string name="wifi_metered_label" msgid="8737187690304098638">"മീറ്റർ ചെയ്തത്"</string>
     <string name="wifi_unmetered_label" msgid="6174142840934095093">"മീറ്റർമാപകമല്ലാത്തത്"</string>
-    <string name="select_logd_size_title" msgid="1604578195914595173">"ലോഗർ ബഫർ വലുപ്പം"</string>
+    <!-- no translation found for select_logd_size_title (4393502933789367691) -->
+    <skip />
     <string name="select_logd_size_dialog_title" msgid="2105401994681013578">"ഓരോ ലോഗ് ബഫറിനും വലുപ്പം തിരഞ്ഞെടുക്കൂ"</string>
     <string name="dev_logpersist_clear_warning_title" msgid="8631859265777337991">"ലോഗർ സ്ഥിര സ്റ്റോറേജ് മായ്ക്കണോ?"</string>
     <string name="dev_logpersist_clear_warning_message" msgid="6447590867594287413">"സ്ഥിര ലോഗർ ഉപയോഗിച്ച് ഞങ്ങൾ തുടർന്നങ്ങോട്ട് നിരീക്ഷിക്കാത്ത സാഹചര്യത്തിൽ, നിങ്ങളുടെ ഉപകരണത്തിൽ നിലവിലുള്ള ലോഗർ വിവരങ്ങൾ ഞങ്ങൾ മായ്ക്കേണ്ടതുണ്ട്."</string>

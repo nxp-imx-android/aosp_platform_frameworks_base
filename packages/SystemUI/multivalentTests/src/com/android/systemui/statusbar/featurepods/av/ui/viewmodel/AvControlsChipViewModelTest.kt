@@ -31,7 +31,6 @@ import com.android.systemui.privacy.PrivacyApplication
 import com.android.systemui.privacy.PrivacyItem
 import com.android.systemui.privacy.PrivacyType
 import com.android.systemui.shade.data.repository.fakePrivacyChipRepository
-import com.android.systemui.statusbar.featurepods.av.domain.interactor.avControlsChipInteractorImpl
 import com.android.systemui.statusbar.featurepods.popups.ui.model.ChipIcon
 import com.android.systemui.statusbar.featurepods.popups.ui.model.PopupChipId
 import com.android.systemui.statusbar.featurepods.popups.ui.model.PopupChipModel
@@ -45,7 +44,7 @@ import org.junit.runner.RunWith
 @RunWith(AndroidJUnit4::class)
 class AvControlsChipViewModelTest() : SysuiTestCase() {
     private val kosmos = testKosmos().useUnconfinedTestDispatcher()
-    private val underTest = kosmos.avControlsChipViewModelFactory.create()
+    private lateinit var underTest: AvControlsChipViewModel
     private val cameraItem =
         PrivacyItem(PrivacyType.TYPE_CAMERA, PrivacyApplication("fakepackage", 0))
     private val microphoneItem =
@@ -53,7 +52,7 @@ class AvControlsChipViewModelTest() : SysuiTestCase() {
 
     @Before
     fun setUp() {
-        kosmos.avControlsChipInteractorImpl.initialize()
+        underTest = kosmos.avControlsChipViewModelFactory.create()
         underTest.activateIn(kosmos.testScope)
     }
 

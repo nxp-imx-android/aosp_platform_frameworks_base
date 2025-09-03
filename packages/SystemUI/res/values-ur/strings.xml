@@ -138,8 +138,16 @@
     <string name="screenrecord_stop_dialog_message" msgid="6262768207331626817">"آپ فی الحال اپنی پوری اسکرین ریکارڈ کر رہے ہیں"</string>
     <string name="screenrecord_stop_dialog_message_specific_app" msgid="5995770227684523244">"آپ فی الحال <xliff:g id="APP_NAME">%1$s</xliff:g> ریکارڈ کر رہے ہیں"</string>
     <string name="screenrecord_stop_dialog_button" msgid="2883812564938194350">"ریکارڈنگ روکیں"</string>
+    <!-- no translation found for screen_record_entire_screen (66944996337928170) -->
+    <skip />
+    <!-- no translation found for screen_record_single_app (7355880948574569290) -->
+    <skip />
+    <!-- no translation found for screen_record_single_app_no_recents (1023249803854209330) -->
+    <skip />
     <string name="screen_record_record_device_audio_label" msgid="5363057443124085198">"آلے سے آڈیو ریکارڈ کریں"</string>
     <string name="screen_record_record_microphone_label" msgid="4685753707185662381">"مائیکروفون کے ذریعے ریکارڈ کریں"</string>
+    <!-- no translation found for screen_record_should_show_camera_label (159628971484931357) -->
+    <skip />
     <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"ٹچز دکھائیں"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"ریکارڈ کرنے کے لیے ایک ایپ منتخب کریں"</string>
     <string name="screen_record_video_saved" msgid="1345283626390232282">"ویڈیو محفوظ ہو گئی"</string>
@@ -685,8 +693,7 @@
     <string name="accessibility_notification_section_header_gentle_clear_all" msgid="6490207897764933919">"سبھی خاموش اطلاعات کو صاف کریں"</string>
     <string name="accessibility_notification_section_header_open_settings" msgid="6235202417954844004">"اطلاعات کی ترتیبات کھولیں"</string>
     <string name="modes_suppressing_shade_text" msgid="6037581130837903239">"{count,plural,offset:1 =0{کوئی اطلاع نہیں ہے}=1{{mode} کی طرف سے اطلاعات کو روک دیا گیا ہے}=2{{mode} اور ایک دوسرے موڈ کے ذریعہ اطلاعات کو روک دیا گیا ہے}other{{mode} اور # دیگر طریقوں کے ذریعے اطلاعات کو روک دیا گیا ہے}}"</string>
-    <!-- no translation found for caught_up_shade_text (8166221989384139659) -->
-    <skip />
+    <string name="caught_up_shade_text" msgid="8166221989384139659">"آپ نے سب کچھ دیکھ لیا ہے"</string>
     <string name="media_projection_action_text" msgid="3634906766918186440">"ابھی شروع کریں"</string>
     <string name="empty_shade_text" msgid="8935967157319717412">"کوئی اطلاعات نہیں ہیں"</string>
     <string name="no_unseen_notif_text" msgid="395512586119868682">"کوئی نئی اطلاعات نہیں"</string>
@@ -986,8 +993,7 @@
     <string name="group_system_access_notification_shade" msgid="1619028907006553677">"اطلاعات دیکھیں"</string>
     <string name="group_system_access_quick_settings_panel" msgid="1844771096582064926">"فوری ترتیبات دیکھیں"</string>
     <string name="group_system_full_screenshot" msgid="5742204844232667785">"اسکرین شاٹ لیں"</string>
-    <!-- no translation found for group_system_partial_screenshot (2114314797127648010) -->
-    <skip />
+    <string name="group_system_partial_screenshot" msgid="2114314797127648010">"جزوی اسکرین شاٹ لیں"</string>
     <string name="group_system_access_system_app_shortcuts" msgid="8562482996626694026">"شارٹ کٹس دکھائيں"</string>
     <string name="group_system_go_back" msgid="2730322046244918816">"واپس جائیں"</string>
     <string name="group_system_access_home_screen" msgid="4130366993484706483">"ہوم اسکرین پر جائیں"</string>
@@ -1139,14 +1145,10 @@
     <string name="accessibility_key_gesture_magnification_dialog_content" msgid="7575802369763469379">"<xliff:g id="ID_3">^3</xliff:g> کا استعمال کرنے کیلئے ایکشن "<annotation id="action_key_icon">"آئیکن"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> کی بورڈ شارٹ کٹ ہے۔ اس سے آپ کو مواد کو بڑا کرنے کیلئے اسکرین پر تیزی سے زوم ان کرنے کی سہولت حاصل ہوتی ہے۔ زوم کو ایڈجسٹ کرنے کیلئے، ایکشن "<annotation id="action_key_icon">"آئیکن"</annotation>" + <xliff:g id="ID_4">^1</xliff:g> اور \"+\" یا \"-\" دبائیں۔"</string>
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"شارٹ کٹ آف کریں"</string>
     <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"آن رکھیں"</string>
-    <!-- no translation found for accessibility_key_gesture_voice_access_dialog_title (7828090789777023683) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_voice_access_dialog_content (7934170819801013870) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_voice_access_dialog_negative_button_text (3573570279554465078) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_voice_access_dialog_positive_button_text (2306321856544446858) -->
-    <skip />
+    <string name="accessibility_key_gesture_voice_access_dialog_title" msgid="7828090789777023683">"‫<xliff:g id="ID_1">%1$s</xliff:g> کی بورڈ شارٹ کٹ آن کریں؟"</string>
+    <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="7934170819801013870">"ایکشن "<annotation id="action_key_icon">"آئیکن"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> کو دبانے سے <xliff:g id="ID_3">^3</xliff:g>، ایک ایکسیسبیلٹی خصوصیت آن ہو جاتی ہے۔ یہ آپ کو اپنے آلے کو ہینڈز فری کنٹرول کرنے دیتی ہے۔"</string>
+    <string name="accessibility_key_gesture_voice_access_dialog_negative_button_text" msgid="3573570279554465078">"آن نہ کریں"</string>
+    <string name="accessibility_key_gesture_voice_access_dialog_positive_button_text" msgid="2306321856544446858">"شارٹ کٹ آن کریں"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"مقفل اسکرین"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"بند ہو رہا ہے…"</string>
     <string name="thermal_shutdown_dialog_help_text" msgid="6413474593462902901">"نگہداشت کے اقدامات ملاحظہ کریں"</string>
@@ -1569,7 +1571,7 @@
     <string name="privacy_dialog_expand_action" msgid="9129262348628331377">"اختیارات کو پھیلا کر دکھائیں"</string>
     <string name="privacy_dialog_collapse_action" msgid="277419962019466347">"سکیڑیں"</string>
     <string name="privacy_dialog_close_app_button" msgid="8006250171305878606">"اس ایپ کو بند کریں"</string>
-    <string name="privacy_dialog_close_app_message" msgid="1316408652526310985">"<xliff:g id="APP_NAME">%1$s</xliff:g> کو بند کر دیا گیا"</string>
+    <string name="privacy_dialog_close_app_message" msgid="1316408652526310985">"‫<xliff:g id="APP_NAME">%1$s</xliff:g> کو بند کر دیا گیا"</string>
     <string name="privacy_dialog_manage_service" msgid="8320590856621823604">"سروس کا نظم کریں"</string>
     <string name="privacy_dialog_manage_permissions" msgid="2543451567190470413">"رسائی کا نظم کریں"</string>
     <string name="privacy_dialog_active_call_usage" msgid="7858746847946397562">"فون کال کے زیر استعمال"</string>

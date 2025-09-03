@@ -58,8 +58,6 @@ import static android.view.inputmethod.Flags.FLAG_CONNECTIONLESS_HANDWRITING;
 import static android.view.inputmethod.Flags.FLAG_VERIFY_KEY_EVENT;
 import static android.view.inputmethod.Flags.ctrlShiftShortcut;
 
-import static com.android.window.flags.Flags.imeBackCallbackLeakPrevention;
-
 import android.annotation.CallSuper;
 import android.annotation.DrawableRes;
 import android.annotation.DurationMillisLong;
@@ -152,7 +150,7 @@ import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.window.CompatOnBackInvokedCallback;
-import android.window.ImeOnBackInvokedDispatcher;
+import android.window.ImeBackCallbackSender;
 import android.window.OnBackInvokedCallback;
 import android.window.OnBackInvokedDispatcher;
 import android.window.WindowMetricsHelper;
@@ -371,7 +369,7 @@ public class InputMethodService extends AbstractInputMethodService {
      * A circular buffer of size MAX_EVENTS_BUFFER in case IME is taking too long to add ink view.
      **/
     private RingBuffer<MotionEvent> mPendingEvents;
-    private ImeOnBackInvokedDispatcher mImeDispatcher;
+    private ImeBackCallbackSender mImeBackCallbackSender;
     private boolean mBackCallbackRegistered = false;
     private final CompatOnBackInvokedCallback mCompatBackCallback = this::compatHandleBack;
     private Runnable mImeSurfaceRemoverRunnable;
@@ -839,14 +837,11 @@ public class InputMethodService extends AbstractInputMethodService {
             // (if any) can be unregistered using the old dispatcher if {@link #doFinishInput()}
             // is called from {@link #startInput(InputConnection, EditorInfo)} or
             // {@link #restartInput(InputConnection, EditorInfo)}.
-            final ImeOnBackInvokedDispatcher oldDispatcher = mImeDispatcher;
-            mImeDispatcher = params.imeDispatcher;
-            if (imeBackCallbackLeakPrevention() && oldDispatcher != null && mImeDispatcher != null
-                    && oldDispatcher != mImeDispatcher) {
-                mImeDispatcher.transferNonSystemCallbacksFrom(oldDispatcher);
-            }
+            mImeBackCallbackSender.setTargetAppPackageName(params.editorInfo.packageName);
+            mImeBackCallbackSender.setResultReceiver(params.imeBackCallbackReceiver);
             if (mWindow != null) {
-                mWindow.getOnBackInvokedDispatcher().setImeOnBackInvokedDispatcher(mImeDispatcher);
+                mWindow.getOnBackInvokedDispatcher().setImeBackCallbackSender(
+                        mImeBackCallbackSender);
                 if (mDecorViewVisible && mShowInputRequested) {
                     // Back callback is typically registered in {@link #showWindow()}, but it's
                     // possible for {@link #doStartInput()} to be called without
@@ -1725,10 +1720,9 @@ public class InputMethodService extends AbstractInputMethodService {
                 Context.LAYOUT_INFLATER_SERVICE);
         Trace.traceBegin(TRACE_TAG_WINDOW_MANAGER, "IMS.initSoftInputWindow");
         mWindow = new SoftInputWindow(this, mTheme, mDispatcherState);
-        if (mImeDispatcher != null) {
-            mWindow.getOnBackInvokedDispatcher()
-                    .setImeOnBackInvokedDispatcher(mImeDispatcher);
-        }
+        mImeBackCallbackSender = new ImeBackCallbackSender();
+        mWindow.getOnBackInvokedDispatcher().setImeBackCallbackSender(mImeBackCallbackSender);
+
         mNavigationBarController.onSoftInputWindowCreated(mWindow);
         {
             final Window window = mWindow.getWindow();
@@ -1871,7 +1865,8 @@ public class InputMethodService extends AbstractInputMethodService {
             // when IME developers are doing something unsupported.
             InputMethodPrivilegedOperationsRegistry.remove(mToken);
         }
-        mImeDispatcher = null;
+        mImeBackCallbackSender.clear();
+        mImeBackCallbackSender = null;
     }
 
     /**

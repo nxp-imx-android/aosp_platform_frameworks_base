@@ -23,8 +23,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.windowsizeclass.WindowHeightSizeClass
-import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -45,7 +43,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.toSize
-import com.android.compose.windowsizeclass.calculateWindowSizeClass
+import androidx.window.core.layout.WindowSizeClass
+import com.android.compose.windowsizeclass.LocalWindowSizeClass
 import com.android.systemui.ambientcue.ui.utils.AmbientCueAnimationState
 import com.android.systemui.ambientcue.ui.viewmodel.ActionViewModel
 import com.android.systemui.ambientcue.ui.viewmodel.AmbientCueViewModel
@@ -141,11 +140,11 @@ private fun TaskBarAnd3ButtonAmbientCue(
     }
     val content = LocalContext.current
     val rotation = content.display.rotation
-    val windowWidthSizeClass = calculateWindowSizeClass().widthSizeClass
-    val windowHeightSizeClass = calculateWindowSizeClass().heightSizeClass
     val largeScreen =
-        (windowWidthSizeClass != WindowWidthSizeClass.Compact &&
-            windowHeightSizeClass != WindowHeightSizeClass.Compact)
+        LocalWindowSizeClass.current.isAtLeastBreakpoint(
+            WindowSizeClass.WIDTH_DP_MEDIUM_LOWER_BOUND,
+            WindowSizeClass.HEIGHT_DP_MEDIUM_LOWER_BOUND,
+        )
 
     ActionList(
         actions = actions,
@@ -242,11 +241,16 @@ private fun NavBarAmbientCue(
     modifier: Modifier = Modifier,
     onAnimationStateChange: (Int, AmbientCueAnimationState) -> Unit,
 ) {
-    val windowWidthSizeClass = calculateWindowSizeClass().widthSizeClass
-
     val navBarWidth =
-        if (windowWidthSizeClass == WindowWidthSizeClass.Compact) NAV_BAR_PILL_WIDTH_DP.dp
-        else NAV_BAR_PILL_LARGE_WIDTH_DP.dp
+        if (
+            LocalWindowSizeClass.current.isWidthAtLeastBreakpoint(
+                WindowSizeClass.WIDTH_DP_MEDIUM_LOWER_BOUND
+            )
+        ) {
+            NAV_BAR_PILL_LARGE_WIDTH_DP.dp
+        } else {
+            NAV_BAR_PILL_WIDTH_DP.dp
+        }
 
     val scope = rememberCoroutineScope()
 

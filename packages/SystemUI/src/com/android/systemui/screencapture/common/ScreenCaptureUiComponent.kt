@@ -16,6 +16,7 @@
 
 package com.android.systemui.screencapture.common
 
+import android.view.Display
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureUiParameters
 import com.android.systemui.screencapture.common.ui.compose.ScreenCaptureContent
 import dagger.BindsInstance
@@ -49,6 +50,9 @@ interface ScreenCaptureUiComponent {
         /** [ScreenCaptureUiParameters] that has been used to start capture flow. */
         @BindsInstance
         fun setParameters(@ScreenCaptureUi parameters: ScreenCaptureUiParameters): Builder
+
+        /** [Display] that hosts the Screen Capture UI. */
+        @BindsInstance fun setDisplay(@ScreenCaptureUi display: Display): Builder
 
         /**
          * Builds this [ScreenCaptureUiComponent]. Actual Subcomponent Builders should override this

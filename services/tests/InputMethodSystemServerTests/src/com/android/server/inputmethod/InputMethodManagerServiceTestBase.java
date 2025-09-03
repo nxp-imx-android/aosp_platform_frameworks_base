@@ -50,12 +50,12 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Process;
 import android.os.RemoteException;
+import android.os.ResultReceiver;
 import android.os.ServiceManager;
 import android.util.ArraySet;
 import android.view.InputChannel;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.ImeTracker;
-import android.window.ImeOnBackInvokedDispatcher;
 
 import androidx.test.platform.app.InstrumentationRegistry;
 
@@ -117,7 +117,7 @@ public class InputMethodManagerServiceTestBase {
     @Mock protected IBinder mWindowToken;
     @Mock protected IRemoteInputConnection mMockFallbackInputConnection;
     @Mock protected IRemoteAccessibilityInputConnection mMockRemoteAccessibilityInputConnection;
-    @Mock protected ImeOnBackInvokedDispatcher mMockImeOnBackInvokedDispatcher;
+    @Mock protected ResultReceiver mMockImeBackCallbackReceiver;
     @Mock protected IInputMethodManager.Stub mMockIInputMethodManager;
     @Mock protected IPlatformCompat.Stub mMockIPlatformCompat;
     @Mock protected IInputMethod mMockInputMethod;

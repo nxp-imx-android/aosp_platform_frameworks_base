@@ -867,7 +867,7 @@ class DeviceUnlockedInteractorTest : SysuiTestCase() {
             // Assert device is now unlocked, deviceUnlockSource updates to face
             assertThat(deviceUnlockStatus?.isUnlocked).isTrue()
             assertThat(deviceUnlockStatus?.deviceUnlockSource)
-                .isEqualTo(DeviceUnlockSource.FaceWithoutBypass)
+                .isEqualTo(DeviceUnlockSource.SecureLockDeviceTwoFactorAuth)
         }
 
     private fun TestScope.unlockDevice() {

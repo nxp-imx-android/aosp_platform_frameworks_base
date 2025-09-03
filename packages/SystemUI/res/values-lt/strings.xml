@@ -138,8 +138,12 @@
     <string name="screenrecord_stop_dialog_message" msgid="6262768207331626817">"Šiuo metu įrašote visą ekraną"</string>
     <string name="screenrecord_stop_dialog_message_specific_app" msgid="5995770227684523244">"Šiuo metu įrašote šią programą: <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="screenrecord_stop_dialog_button" msgid="2883812564938194350">"Sustabdyti įrašymą"</string>
+    <string name="screen_record_entire_screen" msgid="66944996337928170">"Visas ekranas"</string>
+    <string name="screen_record_single_app" msgid="7355880948574569290">"Viena programa"</string>
+    <string name="screen_record_single_app_no_recents" msgid="1023249803854209330">"Viena programa (atidarykite programą, kad pasirinktumėte)"</string>
     <string name="screen_record_record_device_audio_label" msgid="5363057443124085198">"Įrašyti įrenginio garsą"</string>
     <string name="screen_record_record_microphone_label" msgid="4685753707185662381">"Įrašyti mikrofoną"</string>
+    <string name="screen_record_should_show_camera_label" msgid="159628971484931357">"Rodyti asmenukių vaizdo kamerą"</string>
     <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"Rodyti palietimus"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"Norėdami įrašyti pasirinkite programą"</string>
     <string name="screen_record_video_saved" msgid="1345283626390232282">"Vaizdo įrašas išsaugotas"</string>
@@ -685,8 +689,7 @@
     <string name="accessibility_notification_section_header_gentle_clear_all" msgid="6490207897764933919">"Išvalyti visus tylius pranešimus"</string>
     <string name="accessibility_notification_section_header_open_settings" msgid="6235202417954844004">"Atidaryti pranešimų nustatymus"</string>
     <string name="modes_suppressing_shade_text" msgid="6037581130837903239">"{count,plural,offset:1 =0{Nėra pranešimų}=1{Pranešimai pristabdyti naudojant režimą „{mode}“}=2{Pranešimai pristabdyti naudojant režimą „{mode}“ ir dar vieną režimą}one{Pranešimai pristabdyti naudojant režimą „{mode}“ ir dar # režimą}few{Pranešimai pristabdyti naudojant režimą „{mode}“ ir dar # režimus}many{Pranešimai pristabdyti naudojant režimą „{mode}“ ir dar # režimo}other{Pranešimai pristabdyti naudojant režimą „{mode}“ ir dar # režimų}}"</string>
-    <!-- no translation found for caught_up_shade_text (8166221989384139659) -->
-    <skip />
+    <string name="caught_up_shade_text" msgid="8166221989384139659">"Viską perskaitėte"</string>
     <string name="media_projection_action_text" msgid="3634906766918186440">"Pradėti dabar"</string>
     <string name="empty_shade_text" msgid="8935967157319717412">"Nėra įspėjimų"</string>
     <string name="no_unseen_notif_text" msgid="395512586119868682">"Naujų pranešimų nėra"</string>
@@ -986,8 +989,7 @@
     <string name="group_system_access_notification_shade" msgid="1619028907006553677">"Peržiūrėti pranešimus"</string>
     <string name="group_system_access_quick_settings_panel" msgid="1844771096582064926">"Peržiūrėti sparčiuosius nustatymus"</string>
     <string name="group_system_full_screenshot" msgid="5742204844232667785">"Padaryti ekrano kopiją"</string>
-    <!-- no translation found for group_system_partial_screenshot (2114314797127648010) -->
-    <skip />
+    <string name="group_system_partial_screenshot" msgid="2114314797127648010">"Padaryti dalinę ekrano kopiją"</string>
     <string name="group_system_access_system_app_shortcuts" msgid="8562482996626694026">"Rodyti sparčiuosius klavišus"</string>
     <string name="group_system_go_back" msgid="2730322046244918816">"Grįžti"</string>
     <string name="group_system_access_home_screen" msgid="4130366993484706483">"Grįžti į pagrindinį ekraną"</string>

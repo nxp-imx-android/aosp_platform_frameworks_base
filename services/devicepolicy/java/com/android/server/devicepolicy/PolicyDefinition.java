@@ -556,6 +556,8 @@ final class PolicyDefinition<V> {
                 UserManager.DISALLOW_SIM_GLOBALLY,
                 POLICY_FLAG_GLOBAL_ONLY_POLICY);
         USER_RESTRICTION_FLAGS.put(UserManager.DISALLOW_ASSIST_CONTENT, /* flags= */ 0);
+        USER_RESTRICTION_FLAGS.put(UserManager.DISALLOW_CHANGE_NEAR_FIELD_COMMUNICATION_RADIO,
+                POLICY_FLAG_GLOBAL_ONLY_POLICY);
 
         if (com.android.net.thread.platform.flags.Flags.threadUserRestrictionEnabled()) {
             USER_RESTRICTION_FLAGS.put(

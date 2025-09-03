@@ -1374,7 +1374,6 @@ public class ActivityInfo extends ComponentInfo implements Parcelable {
     @Overridable
     @Disabled
     @TestApi
-    @FlaggedApi(Flags.FLAG_ENABLE_CAMERA_COMPAT_FOR_DESKTOP_WINDOWING_OPT_OUT_API)
     public static final long OVERRIDE_CAMERA_COMPAT_DISABLE_SIMULATE_REQUESTED_ORIENTATION =
             398195815L;  // buganizer id
 

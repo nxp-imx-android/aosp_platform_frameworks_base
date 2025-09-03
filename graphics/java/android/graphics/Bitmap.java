@@ -139,19 +139,47 @@ public final class Bitmap implements Parcelable {
     private static final WeakHashMap<Bitmap, Void> sAllBitmaps = new WeakHashMap<>();
 
     /**
-     * @hide
+     * Two NativeAllocationRegistry instances are used to register the native
+     * allocation for each bitmap:
+     *
+     *   1. One with a no-op free function for updating the native allocation
+     *      size of the pixel data only, without actually releasing the native
+     *      object that's associated with the bitmap instance.
+     *
+     *   2. sRegistry is the other static one with a valid freeFunction and a
+     *      default (estimated) size to actually release the native object
+     *      associated with this bitmap.
+     *
+     *  mRecycler is the cleaner runner from #1, and is used in Bitmap#recycle()
+     *  to update the native allocation size associated with the pixel data
+     *  released.
      */
-    private static NativeAllocationRegistry getRegistry(boolean malloc, long size) {
+    private static NativeAllocationRegistry sRegistry = null;
+
+    private Runnable mRecycler;
+
+    private void registerNativeAllocation(boolean malloc) {
         final long free = nativeGetNativeFinalizer();
+        final long noop = nativeGetNativeNoop();
+        final int size = getAllocationByteCount();
+        NativeAllocationRegistry registry;
         if (com.android.libcore.readonly.Flags.nativeMetrics()) {
             Class cls = Bitmap.class;
-            return malloc ? NativeAllocationRegistry.createMalloced(cls, free, size)
-                          : NativeAllocationRegistry.createNonmalloced(cls, free, size);
+            if (sRegistry == null) {
+                sRegistry = NativeAllocationRegistry.createMalloced(cls, free);
+            }
+            registry = malloc ? NativeAllocationRegistry.createMalloced(cls, noop, size)
+                              : NativeAllocationRegistry.createNonmalloced(cls, noop, size);
         } else {
             ClassLoader loader = Bitmap.class.getClassLoader();
-            return malloc ? NativeAllocationRegistry.createMalloced(loader, free, size)
-                          : NativeAllocationRegistry.createNonmalloced(loader, free, size);
+            if (sRegistry == null) {
+                sRegistry = NativeAllocationRegistry.createMalloced(loader, free);
+            }
+            registry = malloc ? NativeAllocationRegistry.createMalloced(loader, noop, size)
+                              : NativeAllocationRegistry.createNonmalloced(loader, noop, size);
         }
+        mRecycler = registry.registerNativeAllocation(this, mNativePtr);
+        sRegistry.registerNativeAllocation(this, mNativePtr);
     }
 
     /**
@@ -187,8 +215,7 @@ public final class Bitmap implements Parcelable {
 
         mNativePtr = nativeBitmap;
         mSourceId = nativeGetSourceId(mNativePtr);
-        final int allocationByteCount = getAllocationByteCount();
-        getRegistry(fromMalloc, allocationByteCount).registerNativeAllocation(this, mNativePtr);
+        registerNativeAllocation(fromMalloc);
 
         synchronized (Bitmap.class) {
           sAllBitmaps.put(this, null);
@@ -405,6 +432,9 @@ public final class Bitmap implements Parcelable {
             mNinePatchChunk = null;
             mRecycled = true;
             mHardwareBuffer = null;
+            if (mRecycler != null) {
+                mRecycler.run();
+            }
         }
     }
 
@@ -2603,6 +2633,7 @@ public final class Bitmap implements Parcelable {
     private static native Bitmap nativeCopyAshmemConfig(long nativeSrcBitmap, int nativeConfig);
     private static native int nativeGetAshmemFD(long nativeBitmap);
     private static native long nativeGetNativeFinalizer();
+    private static native long nativeGetNativeNoop();
     private static native void nativeRecycle(long nativeBitmap);
     @UnsupportedAppUsage
     private static native void nativeReconfigure(long nativeBitmap, int width, int height,

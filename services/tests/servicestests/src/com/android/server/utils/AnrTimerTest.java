@@ -553,7 +553,6 @@ public class AnrTimerTest {
             stepper.stepAndWait(100);
             timer.start(t2, 100);
             stepper.stepAndWait(200);
-            TestResult[] result = helper.results(2);
 
             assertThat(timer.discard(t1)).isTrue();
             assertThat(timer.discard(t1)).isFalse();

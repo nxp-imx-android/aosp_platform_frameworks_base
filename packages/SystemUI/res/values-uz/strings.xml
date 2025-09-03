@@ -138,8 +138,16 @@
     <string name="screenrecord_stop_dialog_message" msgid="6262768207331626817">"Hozir butun ekran yozib olinmoqda"</string>
     <string name="screenrecord_stop_dialog_message_specific_app" msgid="5995770227684523244">"Hozir <xliff:g id="APP_NAME">%1$s</xliff:g> ilovasi yozib olinmoqda"</string>
     <string name="screenrecord_stop_dialog_button" msgid="2883812564938194350">"Yozuvni toʻxtatish"</string>
+    <!-- no translation found for screen_record_entire_screen (66944996337928170) -->
+    <skip />
+    <!-- no translation found for screen_record_single_app (7355880948574569290) -->
+    <skip />
+    <!-- no translation found for screen_record_single_app_no_recents (1023249803854209330) -->
+    <skip />
     <string name="screen_record_record_device_audio_label" msgid="5363057443124085198">"Qurilmadagi audioni yozib olish"</string>
     <string name="screen_record_record_microphone_label" msgid="4685753707185662381">"Mikrofon bilan yozib olish"</string>
+    <!-- no translation found for screen_record_should_show_camera_label (159628971484931357) -->
+    <skip />
     <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"Bosilgan joylarni koʻrsatish"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"Yozib olish uchun ilovani tanlang"</string>
     <string name="screen_record_video_saved" msgid="1345283626390232282">"Video saqlandi"</string>
@@ -685,8 +693,7 @@
     <string name="accessibility_notification_section_header_gentle_clear_all" msgid="6490207897764933919">"Barcha sokin bildirishnomalarni tozalash"</string>
     <string name="accessibility_notification_section_header_open_settings" msgid="6235202417954844004">"Bildirishnoma sozlamalarini ochish"</string>
     <string name="modes_suppressing_shade_text" msgid="6037581130837903239">"{count,plural,offset:1 =0{Bildirishnomalar yoʻq}=1{{mode} rejimi bildirishnomalarni pauza qilgan}=2{{mode} va yana bitta boshqa rejim bildirishnomalarni pauza qilgan}other{{mode} va # ta boshqa rejim bildirishnomalarni pauza qilgan}}"</string>
-    <!-- no translation found for caught_up_shade_text (8166221989384139659) -->
-    <skip />
+    <string name="caught_up_shade_text" msgid="8166221989384139659">"Hammasi joyida"</string>
     <string name="media_projection_action_text" msgid="3634906766918186440">"Boshlash"</string>
     <string name="empty_shade_text" msgid="8935967157319717412">"Bildirishnomalar yo‘q"</string>
     <string name="no_unseen_notif_text" msgid="395512586119868682">"Yangi bildirishoma yoʻq"</string>
@@ -986,8 +993,7 @@
     <string name="group_system_access_notification_shade" msgid="1619028907006553677">"Bildirishnomalarni koʻrish"</string>
     <string name="group_system_access_quick_settings_panel" msgid="1844771096582064926">"Tezkor sozlamalarni koʻrish"</string>
     <string name="group_system_full_screenshot" msgid="5742204844232667785">"Skrinshot olish"</string>
-    <!-- no translation found for group_system_partial_screenshot (2114314797127648010) -->
-    <skip />
+    <string name="group_system_partial_screenshot" msgid="2114314797127648010">"Qisman skrinshot olish"</string>
     <string name="group_system_access_system_app_shortcuts" msgid="8562482996626694026">"Yorliqlarni ochish"</string>
     <string name="group_system_go_back" msgid="2730322046244918816">"Orqaga"</string>
     <string name="group_system_access_home_screen" msgid="4130366993484706483">"Bosh ekranga chiqish"</string>

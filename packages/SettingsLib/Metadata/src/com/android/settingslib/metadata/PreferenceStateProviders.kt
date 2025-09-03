@@ -73,6 +73,27 @@ interface PreferenceIconProvider {
     fun getIcon(context: Context): Int
 }
 
+/** Interface to provide information for settings search. */
+interface PreferenceIndexableProvider {
+
+    /**
+     * Returns if preference is indexable for settings search.
+     *
+     * Return `false` only when the preference is unavailable for indexing on current device.
+     *
+     * Note:
+     * - For [PreferenceScreenMetadata], all the preferences on the screen are not indexable if
+     *   [isIndexable] returns `false`.
+     * - If [PreferenceScreenMetadata.isEnabled] is implemented, it should also implement this
+     *   interface to tell that the screen might be disabled and thus not accessible, in which case
+     *   all the preferences on the screen are not indexable.
+     * - Implement [PreferenceAvailabilityProvider] if it is available on condition but check
+     *   [PreferenceAvailabilityProvider.isAvailable] inside [isIndexable] is optional. Unavailable
+     *   preference is always non indexable no matter what [isIndexable] returns.
+     */
+    fun isIndexable(context: Context): Boolean
+}
+
 /** Interface to provide the state of preference availability. */
 interface PreferenceAvailabilityProvider {
 

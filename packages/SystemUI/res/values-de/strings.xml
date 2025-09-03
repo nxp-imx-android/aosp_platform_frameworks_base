@@ -138,8 +138,16 @@
     <string name="screenrecord_stop_dialog_message" msgid="6262768207331626817">"Du zeichnest momentan deinen gesamten Bildschirm auf"</string>
     <string name="screenrecord_stop_dialog_message_specific_app" msgid="5995770227684523244">"Du zeichnest momentan Inhalte der App <xliff:g id="APP_NAME">%1$s</xliff:g> auf"</string>
     <string name="screenrecord_stop_dialog_button" msgid="2883812564938194350">"Aufzeichnung beenden"</string>
+    <!-- no translation found for screen_record_entire_screen (66944996337928170) -->
+    <skip />
+    <!-- no translation found for screen_record_single_app (7355880948574569290) -->
+    <skip />
+    <!-- no translation found for screen_record_single_app_no_recents (1023249803854209330) -->
+    <skip />
     <string name="screen_record_record_device_audio_label" msgid="5363057443124085198">"Audio des Geräts aufnehmen"</string>
     <string name="screen_record_record_microphone_label" msgid="4685753707185662381">"Ton über Mikrofon aufnehmen"</string>
+    <!-- no translation found for screen_record_should_show_camera_label (159628971484931357) -->
+    <skip />
     <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"Berührungen anzeigen"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"App zum Aufnehmen auswählen"</string>
     <string name="screen_record_video_saved" msgid="1345283626390232282">"Video gespeichert"</string>
@@ -685,8 +693,7 @@
     <string name="accessibility_notification_section_header_gentle_clear_all" msgid="6490207897764933919">"Alle lautlosen Benachrichtigungen löschen"</string>
     <string name="accessibility_notification_section_header_open_settings" msgid="6235202417954844004">"Benachrichtigungseinstellungen öffnen"</string>
     <string name="modes_suppressing_shade_text" msgid="6037581130837903239">"{count,plural,offset:1 =0{Keine Benachrichtigungen}=1{Benachrichtigungen durch {mode} pausiert}=2{Benachrichtigungen durch {mode} und einen weiteren Modus pausiert}other{Benachrichtigungen durch {mode} und # weitere Modi pausiert}}"</string>
-    <!-- no translation found for caught_up_shade_text (8166221989384139659) -->
-    <skip />
+    <string name="caught_up_shade_text" msgid="8166221989384139659">"Du bist auf dem aktuellen Stand"</string>
     <string name="media_projection_action_text" msgid="3634906766918186440">"Jetzt starten"</string>
     <string name="empty_shade_text" msgid="8935967157319717412">"Keine Benachrichtigungen"</string>
     <string name="no_unseen_notif_text" msgid="395512586119868682">"Keine neuen Benachrichtigungen"</string>
@@ -1012,8 +1019,7 @@
     <string name="system_desktop_mode_snap_right_window" msgid="2162560187639411929">"Fenster nach rechts verschieben"</string>
     <string name="system_desktop_mode_toggle_maximize_window" msgid="4084100093691768239">"Fenster maximieren"</string>
     <string name="system_desktop_mode_minimize_window" msgid="1248714536732927092">"Fenster minimieren"</string>
-    <!-- no translation found for system_desktop_mode_close_window (3072490692608682536) -->
-    <skip />
+    <string name="system_desktop_mode_close_window" msgid="3072490692608682536">"Aktuelles Fenster schließen"</string>
     <string name="system_multiple_desktop_mode_switch_between_desks" msgid="6093884593003003708">"Zwischen Desktops wechseln"</string>
     <string name="keyboard_shortcut_group_input" msgid="6888282716546625610">"Eingabe"</string>
     <string name="input_switch_input_language_next" msgid="3782155659868227855">"Zur nächsten Sprache wechseln"</string>
@@ -1140,14 +1146,10 @@
     <string name="accessibility_key_gesture_magnification_dialog_content" msgid="7575802369763469379">"Die Aktion "<annotation id="action_key_icon">"Symbol"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> ist die Tastenkombination zum Verwenden von <xliff:g id="ID_3">^3</xliff:g>. Dadurch kannst du schnell auf dem Display heranzoomen, um Inhalte zu vergrößern. Drücke auf das "<annotation id="action_key_icon">"Symbol"</annotation>" der Aktion + <xliff:g id="ID_4">^1</xliff:g> und auf „+“ oder „-“, um den Zoom anzupassen."</string>
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"Verknüpfung deaktivieren"</string>
     <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"Aktiviert lassen"</string>
-    <!-- no translation found for accessibility_key_gesture_voice_access_dialog_title (7828090789777023683) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_voice_access_dialog_content (7934170819801013870) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_voice_access_dialog_negative_button_text (3573570279554465078) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_voice_access_dialog_positive_button_text (2306321856544446858) -->
-    <skip />
+    <string name="accessibility_key_gesture_voice_access_dialog_title" msgid="7828090789777023683">"Tastenkombination für <xliff:g id="ID_1">%1$s</xliff:g> aktivieren?"</string>
+    <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="7934170819801013870">"Wenn du die Aktionstaste "<annotation id="action_key_icon">"Symbol"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> drückst, wird die Bedienungshilfe <xliff:g id="ID_3">^3</xliff:g> aktiviert. Damit kannst du dein Gerät per Sprachbefehl steuern."</string>
+    <string name="accessibility_key_gesture_voice_access_dialog_negative_button_text" msgid="3573570279554465078">"Nicht aktivieren"</string>
+    <string name="accessibility_key_gesture_voice_access_dialog_positive_button_text" msgid="2306321856544446858">"Tastenkombination aktivieren"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"Sperrbildschirm"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"Wird heruntergefahren…"</string>
     <string name="thermal_shutdown_dialog_help_text" msgid="6413474593462902901">"Schritte zur Abkühlung des Geräts ansehen"</string>

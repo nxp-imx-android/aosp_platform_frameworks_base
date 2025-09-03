@@ -17,7 +17,6 @@
 package com.android.systemui.qs.panels.ui.viewmodel
 
 import androidx.compose.runtime.getValue
-import com.android.systemui.Flags
 import com.android.systemui.classifier.Classifier.QS_SWIPE_SIDE
 import com.android.systemui.classifier.domain.interactor.FalsingInteractor
 import com.android.systemui.development.ui.viewmodel.BuildNumberViewModel
@@ -29,7 +28,6 @@ import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 
 class PaginatedGridViewModel
@@ -50,12 +48,7 @@ constructor(
     val showArrowsInPagerDots by
         hydrator.hydratedStateOf(
             traceName = "showArrowsInPagerDots",
-            source =
-                if (Flags.paginatedQsPagerDotsArrows()) {
-                    pointerDeviceInteractor.isAnyPointerDeviceConnected
-                } else {
-                    flowOf(false)
-                },
+            source = pointerDeviceInteractor.isAnyPointerDeviceConnected,
             initialValue = false,
         )
 

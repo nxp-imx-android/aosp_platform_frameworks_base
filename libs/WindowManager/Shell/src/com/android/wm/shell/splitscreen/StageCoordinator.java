@@ -2632,6 +2632,12 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
             wct.reparent(mSideStage.mRootTaskInfo.token, rootTaskInfo.token, true);
         }
 
+        if (splitDisableChildTaskBounds()) {
+            // Disallow child tasks to override bounds and always inherits from the stage root tasks
+            wct.setDisallowOverrideBoundsForChildren(mMainStage.mRootTaskInfo.token, true);
+            wct.setDisallowOverrideBoundsForChildren(mSideStage.mRootTaskInfo.token, true);
+        }
+
         setRootForceTranslucent(true, wct);
         if (!enableFlexibleSplit()) {
             // TODO: consider support 3 splits
@@ -2640,9 +2646,6 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
             wct.setAdjacentRoots(mMainStage.mRootTaskInfo.token, mSideStage.mRootTaskInfo.token);
             mSplitLayout.getInvisibleBounds(mTempRect1);
             wct.setBounds(mSideStage.mRootTaskInfo.token, mTempRect1);
-        }
-        if (splitDisableChildTaskBounds()) {
-            wct.setDisallowOverrideBoundsForChildren(rootTaskInfo.token, true);
         }
         mSyncQueue.queue(wct);
         if (!enableFlexibleSplit()) {

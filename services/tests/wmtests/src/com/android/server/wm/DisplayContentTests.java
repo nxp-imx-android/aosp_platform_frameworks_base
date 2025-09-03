@@ -88,6 +88,7 @@ import static com.android.server.wm.TransitionSubject.assertThat;
 import static com.android.server.wm.WindowContainer.AnimationFlags.PARENTS;
 import static com.android.server.wm.WindowContainer.POSITION_TOP;
 import static com.android.server.wm.WindowManagerService.UPDATE_FOCUS_NORMAL;
+import static com.android.window.flags.Flags.FLAG_CAMERA_COMPAT_UNIFY_CAMERA_POLICIES;
 import static com.android.window.flags.Flags.FLAG_ENABLE_CAMERA_COMPAT_FOR_DESKTOP_WINDOWING;
 import static com.android.window.flags.Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE;
 import static com.android.window.flags.Flags.FLAG_ENABLE_PERSISTING_DISPLAY_SIZE_FOR_CONNECTED_DISPLAYS;
@@ -990,16 +991,11 @@ public class DisplayContentTests extends WindowTestsBase {
                 "Screen orientation must be defined by the window even on close-to-square display.",
                 overlay.mAttrs.screenOrientation, dc.getOrientation());
 
-        // Assume that a decor window occupies the display height, so the configuration orientation
-        // should be landscape.
-        dc.getDisplayPolicy().getDecorInsetsInfo(ROTATION_0, dc.mBaseDisplayHeight,
-                dc.mBaseDisplayWidth).mConfigFrame.set(0, 0, 1000, 990);
         dc.computeScreenConfiguration(config, ROTATION_0);
         dc.onRequestedOverrideConfigurationChanged(config);
-        assertEquals(Configuration.ORIENTATION_LANDSCAPE, config.orientation);
-        assertEquals(Configuration.ORIENTATION_LANDSCAPE, dc.getNaturalConfigurationOrientation());
+        assertEquals(Configuration.ORIENTATION_PORTRAIT, config.orientation);
         overlay.setOverrideOrientation(SCREEN_ORIENTATION_NOSENSOR);
-        assertEquals(Configuration.ORIENTATION_LANDSCAPE,
+        assertEquals(Configuration.ORIENTATION_PORTRAIT,
                 overlay.getRequestedConfigurationOrientation());
         // Note that getNaturalOrientation is based on logical display size. So it is portrait if
         // the display width equals to height.
@@ -3019,7 +3015,7 @@ public class DisplayContentTests extends WindowTestsBase {
     }
 
     @EnableFlags(FLAG_ENABLE_CAMERA_COMPAT_FOR_DESKTOP_WINDOWING)
-    @DisableFlags(FLAG_ENABLE_DESKTOP_WINDOWING_MODE)
+    @DisableFlags({FLAG_ENABLE_DESKTOP_WINDOWING_MODE, FLAG_CAMERA_COMPAT_UNIFY_CAMERA_POLICIES})
     @Test
     public void desktopWindowingFlagNotEnabled_cameraCompatFreeformPolicyIsNull() {
         assertFalse(createNewDisplay().mAppCompatCameraPolicy.hasSimReqOrientationPolicy());

@@ -87,6 +87,10 @@
     <string name="bluetooth_connecting" msgid="5871702668260192755">"ချိတ်ဆက်နေသည်"</string>
     <string name="bluetooth_connected" msgid="8065345572198502293">"<xliff:g id="ACTIVE_DEVICE">%1$s</xliff:g> ချိတ်ဆက်ပြီးပြီ"</string>
     <string name="bluetooth_pairing" msgid="4269046942588193600">"တွဲချိတ်နေသည်…"</string>
+    <!-- no translation found for bluetooth_pairing_failure (6914444518793157913) -->
+    <skip />
+    <!-- no translation found for bluetooth_connection_failure (384203214661155324) -->
+    <skip />
     <string name="bluetooth_connected_no_headset" msgid="2224101138659967604">"<xliff:g id="ACTIVE_DEVICE">%1$s</xliff:g> ချိတ်ဆက်ပြီးပြီ (ဖုန်းမရှိပါ)"</string>
     <string name="bluetooth_connected_no_a2dp" msgid="8566874395813947092">"<xliff:g id="ACTIVE_DEVICE">%1$s</xliff:g> ချိတ်ဆက်ပြီးပြီ (မီဒီယာ မရှိပါ)"</string>
     <string name="bluetooth_connected_no_headset_no_a2dp" msgid="2893204819854215433">"<xliff:g id="ACTIVE_DEVICE">%1$s</xliff:g> ချိတ်ပြီးပြီ (ဖုန်း (သို့) မီဒီယာ မရှိပါ)"</string>
@@ -345,7 +349,8 @@
     <string name="wifi_non_persistent_mac_randomization_summary" msgid="2159794543105053930">"ဤမုဒ်ကို ဖွင့်ထားသည့်အခါ MAC ကျပန်းပြုလုပ်ထားသည့် ကွန်ရက်သို့ ချိတ်ဆက်လိုက်သည့်အခါတိုင်း ဤစက်၏ MAC လိပ်စာ ပြောင်းသွားနိုင်သည်။"</string>
     <string name="wifi_metered_label" msgid="8737187690304098638">"အခမဲ့ မဟုတ်ပါ"</string>
     <string name="wifi_unmetered_label" msgid="6174142840934095093">"အခမဲ့"</string>
-    <string name="select_logd_size_title" msgid="1604578195914595173">"မှတ်တမ်းကြားခံနယ် အရွယ်အစားများ"</string>
+    <!-- no translation found for select_logd_size_title (4393502933789367691) -->
+    <skip />
     <string name="select_logd_size_dialog_title" msgid="2105401994681013578">"လော့ ဘာဖားတွက် လော့ဂါးဆိုက် ရွေး"</string>
     <string name="dev_logpersist_clear_warning_title" msgid="8631859265777337991">"မှတ်တမ်းထိန်းသိမ်းပေးသည့် သိုလှောင်ခန်းကို ရှင်းလင်းမလား။"</string>
     <string name="dev_logpersist_clear_warning_message" msgid="6447590867594287413">"အမြဲတမ်းမှတ်တမ်းတင်ခြင်းစနစ်ဖြင့် ကျွန်ုပ်တို့ကစောင့်ကြည့်ခြင်းမရှိတော့သည့်အခါ သင့်စက်ပစ္စည်းပေါ်ရှိ ဒေတာမှတ်တမ်းစနစ်ကို ကျွန်ုပ်တို့က ဖျက်ရပါလိမ့်မည်။"</string>

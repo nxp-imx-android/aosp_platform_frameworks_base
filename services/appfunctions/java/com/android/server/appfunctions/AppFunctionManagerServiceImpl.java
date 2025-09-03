@@ -259,6 +259,11 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
         }
     }
 
+    /** Called when a the user is starting. */
+    public void onUserStarting(@NonNull TargetUser user) {
+        mAppFunctionAccessService.onUserStarting(user.getUserIdentifier());
+    }
+
     /** Called when the user is stopping. */
     public void onUserStopping(@NonNull TargetUser user) {
         Objects.requireNonNull(user);

@@ -18,10 +18,12 @@ use activitymanager_structured_aidl::aidl::android::app::IActivityManagerStructu
     SERVICE_DONE_EXECUTING_STOP, SERVICE_DONE_EXECUTING_UNBIND,
 };
 use anyhow::{bail, Context, Result};
+use atrace::AtraceTag;
 use binder::{
     unstable_api::{new_spibinder, AIBinder as SysAIBinder},
     SpIBinder, Strong,
 };
+use libactivity_manager_procstate_aidl::aidl::android::app::ProcessStateEnum::ProcessStateEnum;
 use native_service_bindgen::{
     ANativeService, ANativeServiceCallbacks,
     ANativeServiceTrimMemoryLevel_ANATIVE_SERVICE_TRIM_MEMORY_BACKGROUND,
@@ -52,6 +54,7 @@ pub struct NativeActivityThread {
     start_seq: i64,
     services: BTreeMap<SpIBinder, NativeService>,
     namespace_factory: NamespaceFactory,
+    process_state: i32,
 }
 
 impl NativeActivityThread {
@@ -61,10 +64,12 @@ impl NativeActivityThread {
             start_seq,
             services: BTreeMap::new(),
             namespace_factory: NamespaceFactory::new(format!("native_app_{}", start_seq)),
+            process_state: ProcessStateEnum::UNKNOWN.0,
         }
     }
 
     fn handle_create_service_request(&mut self, req: CreateServiceRequest) -> Result<()> {
+        atrace::trace_method!(AtraceTag::ActivityManager);
         // Create a linker namespace dedicated to the service. A process could host multiple
         // services but their namespaces must be isolated.
         let namespace = self
@@ -112,6 +117,7 @@ impl NativeActivityThread {
     }
 
     fn handle_destroy_service_request(&mut self, req: DestroyServiceRequest) -> Result<()> {
+        atrace::trace_method!(AtraceTag::ActivityManager);
         // Remove the service not to process requests for it anymore.
         let mut service = self.services.remove(&req.service_token).context("service not found")?;
         if let Some(on_destroy) = service.service.callbacks.onDestroy {
@@ -126,6 +132,7 @@ impl NativeActivityThread {
     }
 
     fn handle_bind_service_request(&mut self, req: BindServiceRequest) -> Result<()> {
+        atrace::trace_method!(AtraceTag::ActivityManager);
         let service = self.services.get_mut(&req.service_token).context("service not found")?;
         let intent_token = req.intent_hash;
 
@@ -171,6 +178,7 @@ impl NativeActivityThread {
     }
 
     fn handle_unbind_service_request(&mut self, req: UnbindServiceRequest) -> Result<()> {
+        atrace::trace_method!(AtraceTag::ActivityManager);
         let service = self.services.get_mut(&req.service_token).context("service not found")?;
         let intent_token = req.intent_hash;
 
@@ -194,10 +202,16 @@ impl NativeActivityThread {
     }
 
     fn handle_trim_memory_request(&mut self, level: i32) -> Result<()> {
+        atrace::trace_method!(AtraceTag::ActivityManager);
         if level != ANativeServiceTrimMemoryLevel_ANATIVE_SERVICE_TRIM_MEMORY_BACKGROUND
             && level != ANativeServiceTrimMemoryLevel_ANATIVE_SERVICE_TRIM_MEMORY_UI_HIDDEN
         {
             bail!("Received an unexpected level: {}", level);
+        }
+        if self.process_state <= ProcessStateEnum::IMPORTANT_FOREGROUND.0
+            && level == ANativeServiceTrimMemoryLevel_ANATIVE_SERVICE_TRIM_MEMORY_BACKGROUND
+        {
+            return Ok(());
         }
         for service in self.services.values_mut() {
             if let Some(on_trim_memory) = service.service.callbacks.onTrimMemory {
@@ -210,10 +224,17 @@ impl NativeActivityThread {
     }
 
     fn handle_bind_application_request(&mut self) -> Result<()> {
+        atrace::trace_method!(AtraceTag::ActivityManager);
         // We don't support calling Application.onCreate in native processes.
         self.activity_manager
             .finishAttachApplication(self.start_seq, 0)
             .context("Failed to call finishAttachApplication")
+    }
+
+    fn handle_set_process_state(&mut self, state: i32) -> Result<()> {
+        atrace::trace_method!(AtraceTag::ActivityManager);
+        self.process_state = state;
+        Ok(())
     }
 }
 
@@ -237,6 +258,9 @@ impl HandlerCallback<NativeApplicationThreadRequest> for NativeActivityThread {
             }
             NativeApplicationThreadRequest::BindApplication => {
                 self.handle_bind_application_request()
+            }
+            NativeApplicationThreadRequest::SetProcessState(state) => {
+                self.handle_set_process_state(state)
             }
         }
     }

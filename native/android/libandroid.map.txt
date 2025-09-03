@@ -4,6 +4,23 @@ LIBANDROID {
     AActivityManager_removeUidImportanceListener; # systemapi introduced=31
     AActivityManager_isUidActive; # systemapi introduced=31
     AActivityManager_getUidImportance; # systemapi introduced=31
+    AActivityManager_createProcessObserver; # systemapi introduced=37
+    AActivityManager_destroyProcessObserver; # systemapi introduced=37
+    AActivityManager_ProcessObserver_setOnProcessStarted; # systemapi introduced=37
+    AActivityManager_ProcessObserver_setOnForegroundActivitiesChanged; # systemapi introduced=37
+    AActivityManager_ProcessObserver_setOnForegroundServicesChanged; # systemapi introduced=37
+    AActivityManager_ProcessObserver_setOnProcessDied; # systemapi introduced=37
+    AActivityManager_registerProcessObserver; # systemapi introduced=37
+    AActivityManager_unregisterProcessObserver; # systemapi introduced=37
+    AActivityManager_getRunningAppProcesses; # systemapi introduced=37
+    AActivityManager_RunningAppProcessInfoList_destroy; # systemapi introduced=37
+    AActivityManager_RunningAppProcessInfoList_getSize; # systemapi introduced=37
+    AActivityManager_RunningAppProcessInfoList_get; # systemapi introduced=37
+    ARunningAppProcessInfo_getPid; # systemapi introduced=37
+    ARunningAppProcessInfo_getUid; # systemapi introduced=37
+    ARunningAppProcessInfo_getProcessName; # systemapi introduced=37
+    ARunningAppProcessInfo_getPackageList; # systemapi introduced=37
+    ARunningAppProcessInfo_getImportance; # systemapi introduced=37
     ADynamicInstrumentationManager_TargetProcess_create; # systemapi
     ADynamicInstrumentationManager_TargetProcess_destroy; # systemapi
     ADynamicInstrumentationManager_MethodDescriptor_create; # systemapi

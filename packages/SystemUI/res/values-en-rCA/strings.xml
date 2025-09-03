@@ -138,8 +138,12 @@
     <string name="screenrecord_stop_dialog_message" msgid="6262768207331626817">"You\'re currently recording your entire screen"</string>
     <string name="screenrecord_stop_dialog_message_specific_app" msgid="5995770227684523244">"You\'re currently recording <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="screenrecord_stop_dialog_button" msgid="2883812564938194350">"Stop recording"</string>
+    <string name="screen_record_entire_screen" msgid="66944996337928170">"Entire screen"</string>
+    <string name="screen_record_single_app" msgid="7355880948574569290">"Single app"</string>
+    <string name="screen_record_single_app_no_recents" msgid="1023249803854209330">"Single app (Open an app to choose)"</string>
     <string name="screen_record_record_device_audio_label" msgid="5363057443124085198">"Record device audio"</string>
     <string name="screen_record_record_microphone_label" msgid="4685753707185662381">"Record microphone"</string>
+    <string name="screen_record_should_show_camera_label" msgid="159628971484931357">"Show selfie camera"</string>
     <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"Show touches"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"Choose an app to record"</string>
     <string name="screen_record_video_saved" msgid="1345283626390232282">"Video saved"</string>

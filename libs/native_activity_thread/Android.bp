@@ -65,6 +65,7 @@ rust_library {
     rustlibs: [
         "activitymanager_structured_aidl-rust",
         "libanyhow",
+        "libatrace_rust",
         "libbinder_rs",
         "libdlext_bindgen",
         "liblogger",
@@ -73,5 +74,6 @@ rust_library {
         "liblooper_bindgen",
         "libnative_service_bindgen",
         "native_application_thread_aidl-rust",
+        "libactivity_manager_procstate_aidl-rust",
     ],
 }

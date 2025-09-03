@@ -84,6 +84,7 @@ pub enum NativeApplicationThreadRequest {
     UnbindService(UnbindServiceRequest),
     TrimMemory(i32),
     BindApplication,
+    SetProcessState(i32),
 }
 
 /// NativeApplicationThread is used as a "Binder node" to accept requests for managing the process
@@ -220,6 +221,17 @@ impl INativeApplicationThread for NativeApplicationThread {
     fn bindApplication(&self) -> binder::Result<()> {
         info!("bindApplication thread id={:?}", thread::current().id());
         self.sender.send(NativeApplicationThreadRequest::BindApplication).map_err(|e| {
+            binder::Status::new_exception_str(
+                binder::ExceptionCode::SERVICE_SPECIFIC,
+                Some(format!("Failed to send a task: {:?}", e)),
+            )
+        })?;
+        Ok(())
+    }
+
+    fn setProcessState(&self, state: i32) -> binder::Result<()> {
+        info!("setProcessState thread id={:?}", thread::current().id());
+        self.sender.send(NativeApplicationThreadRequest::SetProcessState(state)).map_err(|e| {
             binder::Status::new_exception_str(
                 binder::ExceptionCode::SERVICE_SPECIFIC,
                 Some(format!("Failed to send a task: {:?}", e)),

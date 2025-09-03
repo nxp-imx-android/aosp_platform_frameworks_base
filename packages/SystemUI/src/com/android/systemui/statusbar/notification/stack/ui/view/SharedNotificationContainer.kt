@@ -82,18 +82,18 @@ class SharedNotificationContainer(context: Context, attrs: AttributeSet?) :
             if (SceneContainerFlag.isEnabled) {
                 when (horizontalPosition) {
                     is EdgeToMiddle -> {
-                        setGuidelinePercent(R.id.nssl_guideline, horizontalPosition.ratio)
+                        setGuidelinePercent(R.id.nssl_guideline, /* ratio= */ 0.5f)
                         constrainMaxWidth(nsslId, horizontalPosition.maxWidth)
                         // Ensure START alignment in case the maxWidth is smaller than half the
                         // parent width.
-                        constraintSet.setHorizontalBias(nsslId, 0f)
+                        constraintSet.setHorizontalBias(nsslId, /* bias= */ 0f)
                     }
                     is MiddleToEdge -> {
-                        setGuidelinePercent(R.id.nssl_guideline, horizontalPosition.ratio)
+                        setGuidelinePercent(R.id.nssl_guideline, /* ratio= */ 0.5f)
                         constrainMaxWidth(nsslId, horizontalPosition.maxWidth)
                         // Ensure END alignment in case the maxWidth is smaller than half the
                         // parent width.
-                        constraintSet.setHorizontalBias(nsslId, 1f)
+                        constraintSet.setHorizontalBias(nsslId, /* bias= */ 1f)
                     }
                     else -> Unit
                 }

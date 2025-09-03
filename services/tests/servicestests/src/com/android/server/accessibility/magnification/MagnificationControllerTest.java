@@ -36,8 +36,8 @@ import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyFloat;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.floatThat;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.floatThat;
 import static org.mockito.ArgumentMatchers.nullable;
 import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.doAnswer;
@@ -2470,6 +2470,24 @@ public class MagnificationControllerTest {
 
         verify(mMagnificationConnectionManager)
                 .onFullscreenMagnificationActivationChanged(TEST_DISPLAY, /* activated= */ true);
+    }
+
+    @Test
+    public void zoomInFullScreenMagnification_setsPersistedScale() throws RemoteException {
+        final float persistedScale = mScreenMagnificationController.getPersistedScale(TEST_DISPLAY);
+
+        // Perform the zoom-in action
+        mMagnificationController.zoomInFullScreenMagnification(TEST_DISPLAY);
+
+        // Verify that the scale is set to the persisted value
+        verify(mScreenMagnificationController)
+                .setScaleAndCenter(
+                        eq(TEST_DISPLAY),
+                        eq(persistedScale),
+                        eq(Float.NaN),
+                        eq(Float.NaN),
+                        /* animate= */ eq(true),
+                        eq(AccessibilityManagerService.MAGNIFICATION_GESTURE_HANDLER_ID));
     }
 
     private void setMagnificationEnabled(int mode) throws RemoteException {

@@ -2355,15 +2355,14 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
         final RoundedCorners roundedCorners = calculateRoundedCornersForRotation(rotation);
         final DisplayShape displayShape = calculateDisplayShapeForRotation(rotation);
 
-        final Rect appFrame = mDisplayPolicy.getDecorInsetsInfo(rotation, dw, dh).mNonDecorFrame;
         mDisplayInfo.rotation = rotation;
         mDisplayInfo.logicalWidth = dw;
         mDisplayInfo.logicalHeight = dh;
         mDisplayInfo.logicalDensityDpi = mBaseDisplayDensity;
         mDisplayInfo.physicalXDpi = mBaseDisplayPhysicalXDpi;
         mDisplayInfo.physicalYDpi = mBaseDisplayPhysicalYDpi;
-        mDisplayInfo.appWidth = appFrame.width();
-        mDisplayInfo.appHeight = appFrame.height();
+        mDisplayInfo.appWidth = dw;
+        mDisplayInfo.appHeight = dh;
         if (isDefaultDisplay) {
             mDisplayInfo.getLogicalMetrics(mRealDisplayMetrics,
                     CompatibilityInfo.DEFAULT_COMPATIBILITY_INFO, null);
@@ -2523,15 +2522,13 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
     /** Compute configuration related to application without changing current display. */
     private void computeScreenAppConfiguration(Configuration outConfig, int dw, int dh,
             int rotation) {
-        final DisplayPolicy.DecorInsets.Info info =
-                mDisplayPolicy.getDecorInsetsInfo(rotation, dw, dh);
         // AppBounds at the root level should mirror the app screen size.
-        outConfig.windowConfiguration.setAppBounds(info.mNonDecorFrame);
+        outConfig.windowConfiguration.setAppBounds(0, 0, dw, dh);
         outConfig.windowConfiguration.setRotation(rotation);
 
         final float density = mDisplayMetrics.density;
-        outConfig.screenWidthDp = (int) (info.mConfigFrame.width() / density + 0.5f);
-        outConfig.screenHeightDp = (int) (info.mConfigFrame.height() / density + 0.5f);
+        outConfig.screenWidthDp = (int) (dw / density + 0.5f);
+        outConfig.screenHeightDp = (int) (dh / density + 0.5f);
         outConfig.compatScreenWidthDp = (int) (outConfig.screenWidthDp / mCompatibleScreenScale);
         outConfig.compatScreenHeightDp = (int) (outConfig.screenHeightDp / mCompatibleScreenScale);
         outConfig.orientation = (outConfig.screenWidthDp <= outConfig.screenHeightDp)
@@ -2660,19 +2657,14 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
             unrotDw = dw;
             unrotDh = dh;
         }
-        int sw = reduceCompatConfigWidthSize(0, Surface.ROTATION_0, tmpDm, unrotDw, unrotDh);
-        sw = reduceCompatConfigWidthSize(sw, Surface.ROTATION_90, tmpDm, unrotDh, unrotDw);
-        sw = reduceCompatConfigWidthSize(sw, Surface.ROTATION_180, tmpDm, unrotDw, unrotDh);
-        sw = reduceCompatConfigWidthSize(sw, Surface.ROTATION_270, tmpDm, unrotDh, unrotDw);
+        int sw = reduceCompatConfigWidthSize(0, tmpDm, unrotDw, unrotDh);
+        sw = reduceCompatConfigWidthSize(sw, tmpDm, unrotDh, unrotDw);
         return sw;
     }
 
-    private int reduceCompatConfigWidthSize(int curSize, int rotation,
-            DisplayMetrics dm, int dw, int dh) {
-        final Rect nonDecorSize =
-                mDisplayPolicy.getDecorInsetsInfo(rotation, dw, dh).mNonDecorFrame;
-        dm.noncompatWidthPixels = nonDecorSize.width();
-        dm.noncompatHeightPixels = nonDecorSize.height();
+    private int reduceCompatConfigWidthSize(int curSize, DisplayMetrics dm, int dw, int dh) {
+        dm.noncompatWidthPixels = dw;
+        dm.noncompatHeightPixels = dh;
         float scale = CompatibilityInfo.computeCompatibleScaling(dm, null);
         int size = (int)(((dm.noncompatWidthPixels / scale) / dm.density) + .5f);
         if (curSize == 0 || size < curSize) {
@@ -2714,10 +2706,14 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
         displayInfo.largestNominalAppHeight = 0;
         adjustDisplaySizeRanges(displayInfo, Surface.ROTATION_0, unrotDw, unrotDh, overrideConfig);
         adjustDisplaySizeRanges(displayInfo, Surface.ROTATION_90, unrotDh, unrotDw, overrideConfig);
-        adjustDisplaySizeRanges(displayInfo, Surface.ROTATION_180, unrotDw, unrotDh,
-                overrideConfig);
-        adjustDisplaySizeRanges(displayInfo, Surface.ROTATION_270, unrotDh, unrotDw,
-                overrideConfig);
+        // Override configuration excludes decor insets, so it needs to compute all rotations.
+        // Otherwise, only computes for portrait and landscape based on display size.
+        if (overrideConfig) {
+            adjustDisplaySizeRanges(displayInfo, Surface.ROTATION_180, unrotDw, unrotDh,
+                    true /* overrideConfig */);
+            adjustDisplaySizeRanges(displayInfo, Surface.ROTATION_270, unrotDh, unrotDw,
+                    true /* overrideConfig */);
+        }
 
         if (outConfig == null) {
             return;
@@ -2733,8 +2729,8 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
         final int w;
         final int h;
         if (!overrideConfig) {
-            w = info.mConfigFrame.width();
-            h = info.mConfigFrame.height();
+            w = dw;
+            h = dh;
         } else {
             w = info.mOverrideConfigFrame.width();
             h = info.mOverrideConfigFrame.height();
@@ -3875,6 +3871,8 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
         mInsetsStateController.dump(prefix, pw);
         mInsetsPolicy.dump(prefix, pw);
         mDwpcHelper.dump(prefix, pw);
+        pw.println();
+        mWmService.mDisplayWindowSettings.dump(this, prefix, pw);
         pw.println();
     }
 
@@ -5245,20 +5243,6 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
     int getNaturalOrientation() {
         return mBaseDisplayWidth <= mBaseDisplayHeight
                 ? ORIENTATION_PORTRAIT : ORIENTATION_LANDSCAPE;
-    }
-
-    /**
-     * Returns the orientation which is used for app's Configuration (excluding decor insets) when
-     * the display rotation is ROTATION_0.
-     */
-    int getNaturalConfigurationOrientation() {
-        final Configuration config = getConfiguration();
-        if (config.windowConfiguration.getDisplayRotation() == ROTATION_0) {
-            return config.orientation;
-        }
-        final Rect frame = mDisplayPolicy.getDecorInsetsInfo(
-                ROTATION_0, mBaseDisplayWidth, mBaseDisplayHeight).mConfigFrame;
-        return frame.width() <= frame.height() ? ORIENTATION_PORTRAIT : ORIENTATION_LANDSCAPE;
     }
 
     void performLayout(boolean initial, boolean updateInputWindows) {

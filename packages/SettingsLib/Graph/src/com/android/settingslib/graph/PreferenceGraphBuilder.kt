@@ -60,6 +60,7 @@ import com.android.settingslib.metadata.ReadWritePermit
 import com.android.settingslib.metadata.SensitivityLevel.Companion.HIGH_SENSITIVITY
 import com.android.settingslib.metadata.SensitivityLevel.Companion.UNKNOWN_SENSITIVITY
 import com.android.settingslib.metadata.getPreferenceIcon
+import com.android.settingslib.metadata.isPreferenceIndexable
 import com.android.settingslib.preference.PreferenceScreenCreator
 import com.android.settingslib.preference.PreferenceScreenFactory
 import com.android.settingslib.preference.PreferenceScreenProvider
@@ -470,7 +471,7 @@ fun PreferenceMetadata.toProto(
         if (metadata.keywords != 0) keywords = metadata.keywords
         val preferenceExtras = metadata.extras(context)
         preferenceExtras?.let { extras = it.toProto() }
-        indexable = metadata.isIndexable(context)
+        indexable = metadata.isPreferenceIndexable(context)
         enabled = metadata.isEnabled(context)
         if (metadata is PreferenceAvailabilityProvider) {
             available = metadata.isAvailable(context)

@@ -18,6 +18,7 @@ package com.android.systemui.ambientcue.ui.compose.modifier
 
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.repeatable
 import androidx.compose.animation.core.tween
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -48,7 +49,6 @@ fun Modifier.animatedActionBorder(
     visible: Boolean = true,
 ): Modifier {
     val rotationAngle = remember { Animatable(Constants.INITIAL_ROTATION_DEGREES) }
-    val fadeProgress = remember { Animatable(0f) } // 0f = full gradient, 1f = full solid
 
     val strokeWidthPx = with(LocalDensity.current) { strokeWidth.toPx() }
     val halfStroke = strokeWidthPx / 2f
@@ -65,25 +65,14 @@ fun Modifier.animatedActionBorder(
             launch {
                 rotationAngle.snapTo(Constants.INITIAL_ROTATION_DEGREES)
                 rotationAngle.animateTo(
-                    targetValue = Constants.INITIAL_ROTATION_DEGREES + 180f,
+                    targetValue = rotationAngle.value + 360f,
                     animationSpec =
-                        tween(
-                            durationMillis = Constants.ROTATION_DURATION_MILLIS,
-                            delayMillis = Constants.FADE_DURATION_MILLIS,
-                            easing = LinearEasing,
-                        ),
-                )
-            }
-
-            launch {
-                fadeProgress.snapTo(0f)
-                fadeProgress.animateTo(
-                    targetValue = 1f,
-                    animationSpec =
-                        tween(
-                            durationMillis = Constants.FADE_DURATION_MILLIS,
-                            delayMillis = Constants.FADE_DELAY_MILLIS,
-                            easing = LinearEasing,
+                        repeatable(
+                            iterations = 2,
+                            tween(
+                                durationMillis = Constants.ROTATION_DURATION_MILLIS,
+                                easing = LinearEasing,
+                            ),
                         ),
                 )
             }
@@ -92,9 +81,6 @@ fun Modifier.animatedActionBorder(
 
     return drawWithContent {
         val currentRotationRad = Math.toRadians(rotationAngle.value.toDouble()).toFloat()
-        val solidOutlineFadeIn = fadeProgress.value
-
-        val gradientOutlineFadeOut = (1f - solidOutlineFadeIn)
         val cornerRadiusPx = with(density) { cornerRadius.toPx() }
         val gradientWidth = size.width / 2f
 
@@ -120,16 +106,13 @@ fun Modifier.animatedActionBorder(
                 tileMode = TileMode.Clamp,
             )
 
-        if (gradientOutlineFadeOut > 0) {
-            drawRoundRect(
-                brush = gradientBrush,
-                topLeft = topLeft,
-                size = Size(size.width - strokeWidthPx, size.height - strokeWidthPx),
-                cornerRadius = CornerRadius(cornerRadiusPx),
-                alpha = gradientOutlineFadeOut,
-                style = strokeStyle,
-            )
-        }
+        drawRoundRect(
+            brush = gradientBrush,
+            topLeft = topLeft,
+            size = Size(size.width - strokeWidthPx, size.height - strokeWidthPx),
+            cornerRadius = CornerRadius(cornerRadiusPx),
+            style = strokeStyle,
+        )
 
         drawContent()
     }
@@ -137,10 +120,8 @@ fun Modifier.animatedActionBorder(
 
 private object Constants {
     const val INITIAL_ROTATION_DEGREES: Float = 45f
-    const val GRADIENT_START_FRACTION = 0.1f
-    const val GRADIENT_MIDDLE_FRACTION = 0.4f
-    const val GRADIENT_END_FRACTION = 0.6f
-    const val ROTATION_DURATION_MILLIS: Int = 1500
-    const val FADE_DURATION_MILLIS: Int = 500
-    const val FADE_DELAY_MILLIS: Int = 1500
+    const val GRADIENT_START_FRACTION = 0.3f
+    const val GRADIENT_MIDDLE_FRACTION = 0.5f
+    const val GRADIENT_END_FRACTION = 0.8f
+    const val ROTATION_DURATION_MILLIS: Int = 3000
 }

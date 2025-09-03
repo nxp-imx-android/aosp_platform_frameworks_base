@@ -16,6 +16,7 @@
 
 package com.android.systemui.ambientcue.ui.compose
 
+import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.animateFloatAsState
@@ -84,6 +85,7 @@ import com.android.systemui.ambientcue.ui.utils.FilterUtils
 import com.android.systemui.ambientcue.ui.viewmodel.ActionType
 import com.android.systemui.ambientcue.ui.viewmodel.ActionViewModel
 import com.android.systemui.res.R
+import kotlinx.coroutines.delay
 
 @Composable
 fun NavBarPill(
@@ -174,6 +176,15 @@ fun NavBarPill(
         onAnimationStateChange = onAnimationStateChange,
     )
 
+    val blurRadius = remember { Animatable(4f) }
+    LaunchedEffect(Unit) {
+        delay(BLUR_DURATION_MILLIS)
+        blurRadius.animateTo(
+            targetValue = 0f,
+            animationSpec = tween(durationMillis = BLUR_FADE_DURATION_MILLIS),
+        )
+    }
+
     val config = LocalConfiguration.current
     val isBoldTextEnabled = config.fontWeightAdjustment > 0
     val fontScale = config.fontScale
@@ -250,11 +261,6 @@ fun NavBarPill(
                         Modifier.clip(RoundedCornerShape(16.dp))
                             .widthIn(min = navBarWidth, max = maxPillWidth)
                             .background(backgroundColor)
-                            .animatedActionBorder(
-                                strokeWidth = 1.dp,
-                                cornerRadius = 16.dp,
-                                visible = visible,
-                            )
                             .then(
                                 if (expanded) Modifier
                                 else
@@ -386,8 +392,13 @@ fun NavBarPill(
                 // Inner glow
                 Box(
                     Modifier.matchParentSize()
-                        .padding(1.dp)
-                        .blur(4.dp, edgeTreatment = BlurredEdgeTreatment.Unbounded)
+                        // Prevent the border from being invisible due to blur.
+                        .animatedActionBorder(
+                            strokeWidth = 1.dp,
+                            cornerRadius = 16.dp,
+                            visible = visible,
+                        )
+                        .blur(blurRadius.value.dp, edgeTreatment = BlurredEdgeTreatment.Unbounded)
                         .animatedActionBorder(
                             strokeWidth = 1.dp,
                             cornerRadius = 16.dp,
@@ -428,3 +439,6 @@ fun NavBarPill(
         }
     }
 }
+
+private const val BLUR_DURATION_MILLIS = 1500L
+private const val BLUR_FADE_DURATION_MILLIS = 500

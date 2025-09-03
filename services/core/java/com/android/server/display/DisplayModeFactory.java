@@ -19,10 +19,12 @@ package com.android.server.display;
 import static com.android.server.display.DisplayDeviceConfig.DEFAULT_LOW_REFRESH_RATE;
 
 import android.annotation.SuppressLint;
+import android.util.SparseArray;
 import android.view.Display;
 import android.view.SurfaceControl;
 
 import com.android.server.display.LocalDisplayAdapter.DisplayModeRecord;
+import com.android.server.display.feature.flags.Flags;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -101,8 +103,8 @@ public class DisplayModeFactory {
                 continue;
             }
             // already added OR should be skipped
-            boolean skipAdding = hasMatichingForArr(modesForArrSyntheticMode, record.mMode)
-                    || hasMatichingForArr(modesToSkipForArrSyntheticMode, record.mMode);
+            boolean skipAdding = hasMatchingForArr(modesForArrSyntheticMode, record.mMode)
+                    || hasMatchingForArr(modesToSkipForArrSyntheticMode, record.mMode);
 
             if (!skipAdding) {
                 modesForArrSyntheticMode.add(record.mMode);
@@ -123,7 +125,64 @@ public class DisplayModeFactory {
         return syntheticModes;
     }
 
-    private static boolean hasMatichingForArr(List<Display.Mode> modes, Display.Mode modeToMatch) {
+    /**
+     * If the aspect ratio of the resolution of the display does not match the physical aspect
+     * ratio of the display, then without this feature enabled, picture would appear stretched to
+     * the user. This is because applications assume that they are rendered on square pixels
+     * (meaning density of pixels in x and y directions are equal). This would result into circles
+     * appearing as ellipses to the user.
+     * 1. To compensate for non-square (anisotropic) pixels, this method will create synthetic modes
+     * with more pixels for applications to render on, as if the pixels were square and occupied
+     * the full display.
+     * 2. SurfaceFlinger will squeeze this taller/wider surface into the available number of
+     * physical pixels in the current display resolution.
+     */
+    @SuppressWarnings("MixedMutabilityReturnType")
+    static List<DisplayModeRecord> createAnisotropyCorrectedModes(List<DisplayModeRecord> records,
+            SparseArray<SurfaceControl.DisplayMode> modeIdToSfMode) {
+        if (!Flags.enableAnisotropyCorrectedModes()) {
+            return Collections.emptyList();
+        }
+        List<DisplayModeRecord> syntheticModes = new ArrayList<>();
+        int modeFlag = Display.Mode.FLAG_SIZE_OVERRIDE | Display.Mode.FLAG_ANISOTROPY_CORRECTION;
+        for (DisplayModeRecord record: records) {
+            Display.Mode mode = record.mMode;
+            SurfaceControl.DisplayMode sfMode = modeIdToSfMode.get(mode.getModeId());
+            if (sfMode == null) {
+                continue;
+            }
+            if (sfMode.xDpi <= 0 || sfMode.yDpi <= 0) {
+                continue;
+            }
+
+            if (sfMode.xDpi > sfMode.yDpi * DisplayDevice.MAX_ANISOTROPY) { // "tall" pixels
+                // scale up height in "logical" pixels
+                int correctedHeight =
+                        (int) (mode.getPhysicalHeight() * sfMode.xDpi / sfMode.yDpi + 0.5);
+                syntheticModes.add(new DisplayModeRecord(
+                        new Display.Mode(NEXT_DISPLAY_MODE_ID.getAndIncrement(),
+                                mode.getModeId(), modeFlag,
+                                mode.getPhysicalWidth(), correctedHeight,
+                                mode.getRefreshRate(), mode.getVsyncRate(),
+                                mode.getAlternativeRefreshRates(), mode.getSupportedHdrTypes()
+                        )));
+            } else if (sfMode.yDpi > sfMode.xDpi * DisplayDevice.MAX_ANISOTROPY) { // "wide" pixels
+                // scale up width in "logical" pixels
+                int correctedWidth =
+                        (int) (mode.getPhysicalWidth() * sfMode.yDpi / sfMode.xDpi + 0.5);
+                syntheticModes.add(new DisplayModeRecord(
+                        new Display.Mode(NEXT_DISPLAY_MODE_ID.getAndIncrement(),
+                                mode.getModeId(), modeFlag,
+                                correctedWidth, mode.getPhysicalHeight(),
+                                mode.getRefreshRate(), mode.getVsyncRate(),
+                                mode.getAlternativeRefreshRates(), mode.getSupportedHdrTypes()
+                        )));
+            }
+        }
+        return syntheticModes;
+    }
+
+    private static boolean hasMatchingForArr(List<Display.Mode> modes, Display.Mode modeToMatch) {
         for (Display.Mode mode : modes) {
             if (matchingForSyntheticArr(modeToMatch, mode)) {
                 return true;

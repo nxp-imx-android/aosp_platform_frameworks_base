@@ -161,16 +161,6 @@ flag {
 }
 
 flag {
-    name: "notifications_hun_accessibility_refactor"
-    namespace: "systemui"
-    description: "Refactors where notification HUN accessibility events happen"
-    bug: "397507681"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "notification_avalanche_throttle_hun"
     namespace: "systemui"
     description: "During notification avalanche, throttle HUNs showing in fast succession."
@@ -469,16 +459,6 @@ flag {
     description: "Have status bar track the location of app handles so that tappable status bar "
         "content doesn't overlap"
     bug: "397506207"
-    metadata {
-      purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
-    name: "status_bar_inflate_carrier_merged"
-    namespace: "systemui"
-    description: "Allow the status bar to inflate the levels of the carrier merged connection"
-    bug: "423686800"
     metadata {
       purpose: PURPOSE_BUGFIX
     }
@@ -2119,16 +2099,6 @@ flag {
     namespace: "systemui"
     description: "Reports Log.wtf statements if animations are running while screen is off."
     bug: "420685896"
-    metadata {
-      purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
-    name: "paginated_qs_pager_dots_arrows"
-    namespace: "systemui"
-    description: "Show arrows in the pager dots in paginated QS"
-    bug: "397156072"
     metadata {
       purpose: PURPOSE_BUGFIX
     }

@@ -540,7 +540,10 @@ public class FullRestoreEngine extends RestoreEngine {
                                             info.mode,
                                             info.mtime,
                                             token,
-                                            mBackupManagerService.getBackupManagerBinder());
+                                            mBackupManagerService.getBackupManagerBinder(),
+                                            /* appVersionCode= */ 0,
+                                            /* transportFlags= */ 0,
+                                            /* contentVersion= */ "");
                                 }
                             }
                         } catch (IOException e) {

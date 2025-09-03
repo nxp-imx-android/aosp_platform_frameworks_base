@@ -22,4 +22,6 @@ package com.android.systemui.statusbar.featurepods.av.shared.model
  * The class currently wraps only the SensorActivityModel, however in future it is intended to
  * contain more elements as we add functionality into the status bar chip.
  */
-data class AvControlsChipModel(val sensorActivityModel: SensorActivityModel)
+data class AvControlsChipModel(
+    val sensorActivityModel: SensorActivityModel = SensorActivityModel.Inactive
+)

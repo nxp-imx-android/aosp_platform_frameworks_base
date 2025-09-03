@@ -1101,11 +1101,8 @@ public class BackupManagerService extends IBackupManager.Stub implements BackupM
 
     @Override
     public String[] getTransportWhitelist() {
-        int userId = binderGetCallingUserId();
-        if (!isUserReadyForBackup(userId)) {
-            return null;
-        }
-        // No permission check, intentionally.
+        // The transport whitelist is a device-scoped property, so we don't check the user's backup
+        // status here.
         String[] whitelistedTransports = new String[mTransportWhitelist.size()];
         int i = 0;
         for (ComponentName component : mTransportWhitelist) {

@@ -130,6 +130,12 @@ public class Bmgr {
             return;
         }
 
+        // The transport whitelist is a device-scoped property, so we skip isBackupActive check.
+        if ("whitelist".equals(op)) {
+            doPrintAllowlist();
+            return;
+        }
+
         if (!isBackupActive(userId)) {
             return;
         }
@@ -196,11 +202,6 @@ public class Bmgr {
 
         if ("cancel".equals(op)) {
             doCancel(userId);
-            return;
-        }
-
-        if ("whitelist".equals(op)) {
-            doPrintAllowlist();
             return;
         }
 

@@ -394,11 +394,23 @@ public class MediaDeviceManagerTest(flags: FlagsParameterization) : SysuiTestCas
         fakeBgExecutor.runAllReady()
         fakeFgExecutor.runAllReady()
 
-        verify(listener, never())
-            .onMediaDeviceAndSuggestionDataChanged(eq(KEY), anyOrNull(), any(), any())
-        val data = captureDeviceData(KEY)
-        assertThat(data.enabled).isTrue()
-        assertThat(data.name).isEqualTo(DEVICE_NAME)
+        val mediaDeviceCaptor = argumentCaptor<MediaDeviceData>()
+        val suggestionCaptor = argumentCaptor<SuggestionData>()
+        verify(listener)
+            .onMediaDeviceAndSuggestionDataChanged(
+                eq(KEY),
+                eq(null),
+                mediaDeviceCaptor.capture(),
+                suggestionCaptor.capture(),
+            )
+        val deviceData = mediaDeviceCaptor.firstValue
+        assertThat(deviceData.enabled).isTrue()
+        assertThat(deviceData.name).isEqualTo(DEVICE_NAME)
+        assertThat(deviceData.icon).isEqualTo(icon)
+        val suggestionData = suggestionCaptor.firstValue
+        assertThat(suggestionData.suggestedMediaDeviceData).isNull()
+        // The onSuggestionSpaceVisible should be set.
+        assertThat(suggestionData.onSuggestionSpaceVisible).isNotNull()
     }
 
     @Test

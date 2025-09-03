@@ -356,8 +356,9 @@ public final class AudioProductStrategy implements Parcelable {
      */
     public static List<AudioProductStrategy> filterNonInternalStrategies(
             List<AudioProductStrategy> strategies) {
-        strategies.removeIf(AudioProductStrategy::isInternalStrategy);
-        return Collections.unmodifiableList(strategies);
+        List<AudioProductStrategy> filteredStrategies = new ArrayList<>(strategies);
+        filteredStrategies.removeIf(AudioProductStrategy::isInternalStrategy);
+        return Collections.unmodifiableList(filteredStrategies);
     }
 
     private static boolean isDefaultMatchScore(int matchScore) {

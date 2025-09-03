@@ -60,6 +60,9 @@ interface IUsbManager
     /* Returns the max packet size of the USB accessory.*/
     int getMaxPacketSize(in UsbAccessory accessory);
 
+    /* Returns true if accessory FFS is enabled. */
+    boolean isAccessoryFfsEnabled();
+
     /* Sets the default package for a USB device
      * (or clears it if the package name is null)
      */

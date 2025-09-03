@@ -16,7 +16,9 @@
 
 package com.android.server.adb;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -68,7 +70,7 @@ public final class AdbWifiNetworkMonitorTest {
     private AdbWifiNetworkMonitor mAdbWifiNetworkMonitor;
 
     @Captor
-    private ArgumentCaptor<ConnectivityManager.NetworkCallback> mNetworkCallbackCaptor;
+    private ArgumentCaptor<NetworkRequest> mNetworkRequestCaptor;
 
     private NetworkCapabilities mNetworkCapabilities;
     private int mAdbWifiEnabledSetting = -1;
@@ -93,12 +95,24 @@ public final class AdbWifiNetworkMonitorTest {
         mAdbWifiNetworkMonitor.register();
 
         verify(mConnectivityManager).registerNetworkCallback(
-                any(NetworkRequest.class), mNetworkCallbackCaptor.capture());
+                mNetworkRequestCaptor.capture(), any(ConnectivityManager.NetworkCallback.class));
+    }
+
+    @Test
+    public void registerNetworkCallback_onlyConsidersWifi() {
+        assertArrayEquals(new int[]{NetworkCapabilities.TRANSPORT_WIFI},
+                mNetworkRequestCaptor.getValue().getTransportTypes());
+    }
+
+    @Test
+    public void registerNetworkCallback_filtersOutHotspotCallbacks() {
+        assertTrue(mNetworkRequestCaptor.getValue().hasCapability(
+                NetworkCapabilities.NET_CAPABILITY_INTERNET));
     }
 
     @Test
     public void onLost_disablesAdbWifi() {
-        mNetworkCallbackCaptor.getValue().onLost(mNetwork);
+        mAdbWifiNetworkMonitor.onLost(mNetwork);
         assertEquals(ADB_WIFI_DISABLED, mAdbWifiEnabledSetting);
     }
 
@@ -110,7 +124,7 @@ public final class AdbWifiNetworkMonitorTest {
                 .build();
 
         // when
-        mNetworkCallbackCaptor.getValue().onCapabilitiesChanged(mNetwork, mNetworkCapabilities);
+        mAdbWifiNetworkMonitor.onCapabilitiesChanged(mNetwork, mNetworkCapabilities);
 
         // then
         assertEquals(ADB_WIFI_DISABLED, mAdbWifiEnabledSetting);
@@ -126,7 +140,7 @@ public final class AdbWifiNetworkMonitorTest {
                 .build();
 
         // when
-        mNetworkCallbackCaptor.getValue().onCapabilitiesChanged(mNetwork, mNetworkCapabilities);
+        mAdbWifiNetworkMonitor.onCapabilitiesChanged(mNetwork, mNetworkCapabilities);
 
         // then
         assertEquals(ADB_WIFI_DISABLED, mAdbWifiEnabledSetting);
@@ -142,7 +156,7 @@ public final class AdbWifiNetworkMonitorTest {
                 .build();
 
         // when
-        mNetworkCallbackCaptor.getValue().onCapabilitiesChanged(mNetwork, mNetworkCapabilities);
+        mAdbWifiNetworkMonitor.onCapabilitiesChanged(mNetwork, mNetworkCapabilities);
 
         // then
         assertEquals(ADB_WIFI_DISABLED, mAdbWifiEnabledSetting);
@@ -161,7 +175,7 @@ public final class AdbWifiNetworkMonitorTest {
                 .build();
 
         // when
-        mNetworkCallbackCaptor.getValue().onCapabilitiesChanged(mNetwork, mNetworkCapabilities);
+        mAdbWifiNetworkMonitor.onCapabilitiesChanged(mNetwork, mNetworkCapabilities);
 
         // then
         assertEquals(ADB_WIFI_DISABLED, mAdbWifiEnabledSetting);
@@ -181,7 +195,7 @@ public final class AdbWifiNetworkMonitorTest {
         when(mIsTrustedNetworkChecker.isTrusted("trusted_bssid")).thenReturn(true);
 
         // when
-        mNetworkCallbackCaptor.getValue().onCapabilitiesChanged(mNetwork, mNetworkCapabilities);
+        mAdbWifiNetworkMonitor.onCapabilitiesChanged(mNetwork, mNetworkCapabilities);
 
         // then
         assertEquals(ADB_WIFI_ENABLED, mAdbWifiEnabledSetting);
@@ -201,7 +215,7 @@ public final class AdbWifiNetworkMonitorTest {
         when(mIsTrustedNetworkChecker.isTrusted("untrusted_bssid")).thenReturn(false);
 
         // when
-        mNetworkCallbackCaptor.getValue().onCapabilitiesChanged(mNetwork, mNetworkCapabilities);
+        mAdbWifiNetworkMonitor.onCapabilitiesChanged(mNetwork, mNetworkCapabilities);
 
         // then
         assertEquals(ADB_WIFI_DISABLED, mAdbWifiEnabledSetting);
@@ -221,10 +235,10 @@ public final class AdbWifiNetworkMonitorTest {
         when(mIsTrustedNetworkChecker.isTrusted("trusted_bssid")).thenReturn(true);
 
         // when
-        mNetworkCallbackCaptor.getValue().onCapabilitiesChanged(mNetwork, mNetworkCapabilities);
+        mAdbWifiNetworkMonitor.onCapabilitiesChanged(mNetwork, mNetworkCapabilities);
 
         // when
-        mNetworkCallbackCaptor.getValue().onCapabilitiesChanged(mNetwork, mNetworkCapabilities);
+        mAdbWifiNetworkMonitor.onCapabilitiesChanged(mNetwork, mNetworkCapabilities);
 
         // then
         verify(mAdbWifiNetworkMonitor, times(1)).setAdbWifiState(anyBoolean(), anyString());
@@ -244,19 +258,19 @@ public final class AdbWifiNetworkMonitorTest {
         when(mIsTrustedNetworkChecker.isTrusted("trusted_bssid")).thenReturn(true);
 
         // when
-        mNetworkCallbackCaptor.getValue().onCapabilitiesChanged(mNetwork, mNetworkCapabilities);
+        mAdbWifiNetworkMonitor.onCapabilitiesChanged(mNetwork, mNetworkCapabilities);
 
         // then
         assertEquals(ADB_WIFI_ENABLED, mAdbWifiEnabledSetting);
 
         // when
-        mNetworkCallbackCaptor.getValue().onLost(mNetwork);
+        mAdbWifiNetworkMonitor.onLost(mNetwork);
 
         // then
         assertEquals(ADB_WIFI_DISABLED, mAdbWifiEnabledSetting);
 
         // when
-        mNetworkCallbackCaptor.getValue().onCapabilitiesChanged(mNetwork, mNetworkCapabilities);
+        mAdbWifiNetworkMonitor.onCapabilitiesChanged(mNetwork, mNetworkCapabilities);
 
         // then
         assertEquals(ADB_WIFI_ENABLED, mAdbWifiEnabledSetting);

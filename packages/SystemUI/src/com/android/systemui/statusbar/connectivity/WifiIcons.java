@@ -85,9 +85,17 @@ public class WifiIcons {
 
     static final int[][] WIFI_SIGNAL_STRENGTH = QS_WIFI_SIGNAL_STRENGTH;
 
-    public static final int QS_WIFI_DISABLED = com.android.internal.R.drawable.ic_wifi_signal_0;
     public static final int QS_WIFI_NO_NETWORK = com.android.internal.R.drawable.ic_wifi_signal_0;
-    public static final int WIFI_NO_NETWORK = QS_WIFI_NO_NETWORK;
+
+    public static final int WIFI_NO_NETWORK = getNoNetworkBasedOnFlag();
+
+    private static int getNoNetworkBasedOnFlag() {
+        if (newStatusBarIcons()) {
+            return R.drawable.ic_wifi_0;
+        } else {
+            return QS_WIFI_NO_NETWORK;
+        }
+    }
 
     static final int WIFI_LEVEL_COUNT = WIFI_SIGNAL_STRENGTH[0].length;
 

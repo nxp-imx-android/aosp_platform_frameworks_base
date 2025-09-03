@@ -482,8 +482,6 @@ public class WindowProcessControllerTests extends WindowTestsBase {
         decorInsetsInfo.mConfigInsets.set(emptyRect);
         decorInsetsInfo.mOverrideConfigInsets.set(new Rect(0, 100, 0, 200));
         decorInsetsInfo.mOverrideNonDecorInsets.set(new Rect(0, 0, 0, 200));
-        decorInsetsInfo.mNonDecorFrame.set(new Rect(0, 0, 1000, 1500));
-        decorInsetsInfo.mConfigFrame.set(new Rect(0, 0, 1000, 1500));
         decorInsetsInfo.mOverrideConfigFrame.set(new Rect(0, 100, 1000, 1300));
         decorInsetsInfo.mOverrideNonDecorFrame.set(new Rect(0, 0, 1000, 1300));
         doReturn(decorInsetsInfo).when(displayPolicy)

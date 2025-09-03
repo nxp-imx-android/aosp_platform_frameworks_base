@@ -31,7 +31,6 @@ import androidx.compose.foundation.layout.union
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.overscroll
-import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.remember
@@ -48,6 +47,7 @@ import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.window.core.layout.WindowSizeClass
 import com.android.compose.animation.scene.ContentScope
 import com.android.compose.animation.scene.ElementKey
 import com.android.compose.animation.scene.LowestZIndexContentPicker
@@ -68,7 +68,7 @@ import kotlin.math.min
 @Composable
 fun ContentScope.OverlayShade(
     panelElement: ElementKey,
-    alignmentOnWideScreens: Alignment,
+    alignmentOnWideScreens: Alignment.Horizontal,
     enableTransparency: Boolean,
     onScrimClicked: () -> Unit,
     modifier: Modifier = Modifier,
@@ -81,13 +81,20 @@ fun ContentScope.OverlayShade(
     val isFullWidth = isFullWidthShade()
     val panelSpec = rememberShadeExpansionMotion(isFullWidth)
     val panelCornerRadiusPx = with(LocalDensity.current) { panelSpec.radius.toPx() }
+    val panelAlignment =
+        when {
+            isFullWidth -> Alignment.TopCenter
+            alignmentOnWideScreens == Alignment.End -> Alignment.TopEnd
+            else -> Alignment.TopStart
+        }
+
     Box(modifier) {
         Scrim(showBackgroundColor = enableTransparency, onClicked = onScrimClicked)
 
         Box(
             modifier =
                 Modifier.fillMaxSize().panelContainerPadding(isFullWidth, alignmentOnWideScreens),
-            contentAlignment = if (isFullWidth) Alignment.TopCenter else alignmentOnWideScreens,
+            contentAlignment = panelAlignment,
         ) {
             val gestureContext = rememberGestureContext()
             Panel(
@@ -176,7 +183,9 @@ private fun Modifier.panelWidth(isFullWidthPanel: Boolean): Modifier {
 @Composable
 @ReadOnlyComposable
 internal fun isFullWidthShade(): Boolean {
-    return LocalWindowSizeClass.current.widthSizeClass == WindowWidthSizeClass.Compact
+    return !LocalWindowSizeClass.current.isWidthAtLeastBreakpoint(
+        WindowSizeClass.WIDTH_DP_MEDIUM_LOWER_BOUND
+    )
 }
 
 @Composable
@@ -189,7 +198,7 @@ private fun getHalfScreenWidth(): Dp {
 @Composable
 private fun Modifier.panelContainerPadding(
     isFullWidthPanel: Boolean,
-    alignment: Alignment,
+    alignment: Alignment.Horizontal,
 ): Modifier {
     if (isFullWidthPanel) {
         return this
@@ -200,8 +209,8 @@ private fun Modifier.panelContainerPadding(
 
     val (startPadding, endPadding) =
         when (alignment) {
-            Alignment.TopStart -> horizontalPaddingDp to halfScreenWidth
-            Alignment.TopEnd -> halfScreenWidth to horizontalPaddingDp
+            Alignment.Start -> horizontalPaddingDp to halfScreenWidth
+            Alignment.End -> halfScreenWidth to horizontalPaddingDp
             else -> horizontalPaddingDp to horizontalPaddingDp
         }
     val paddings = PaddingValues(start = startPadding, end = endPadding)

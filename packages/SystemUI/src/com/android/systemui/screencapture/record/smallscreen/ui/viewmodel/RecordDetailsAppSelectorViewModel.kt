@@ -16,41 +16,29 @@
 
 package com.android.systemui.screencapture.record.smallscreen.ui.viewmodel
 
-import android.content.ComponentName
-import android.graphics.Bitmap
-import androidx.collection.LruCache
+import androidx.compose.runtime.getValue
 import com.android.systemui.lifecycle.HydratedActivatable
+import com.android.systemui.screencapture.common.domain.model.ScreenCaptureRecentTask
+import com.android.systemui.screencapture.common.ui.viewmodel.RecentTaskViewModel
+import com.android.systemui.screencapture.common.ui.viewmodel.RecentTasksViewModel
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 
-private data class AppModel(val app: ComponentName, val icon: Bitmap)
+class RecordDetailsAppSelectorViewModel
+@AssistedInject
+constructor(
+    recentTasksViewModel: RecentTasksViewModel,
+    private val recentTaskViewModelFactory: RecentTaskViewModel.Factory,
+) : HydratedActivatable() {
 
-class RecordDetailsAppSelectorViewModel @AssistedInject constructor() : HydratedActivatable() {
+    val recentTasks: List<ScreenCaptureRecentTask>? by
+        recentTasksViewModel.recentTasks.hydratedStateOf(
+            "RecordDetailsAppSelectorViewModel#recentTasks",
+            null,
+        )
 
-    private val thumbnailsCache: LruCache<ComponentName, Bitmap> = LruCache(3)
-    val apps: List<RecordDetailsAppViewModel> =
-        emptyList<AppModel>().map { appModel ->
-            RecordDetailsAppViewModel(
-                icon = appModel.icon,
-                onSelect = { onAppSelected(appModel.app) },
-                loadThumbnail = {
-                    thumbnailsCache[appModel.app]
-                        ?: loadThumbnail(appModel.app).also { loadedThumbnail ->
-                            thumbnailsCache.put(appModel.app, loadedThumbnail)
-                        }
-                },
-            )
-        }
-
-    private fun onAppSelected(app: ComponentName) {}
-
-    override suspend fun onActivated() {
-        super.onActivated()
-    }
-
-    private suspend fun loadThumbnail(app: ComponentName): Bitmap {
-        TODO("Not implemented yet")
-    }
+    fun createTaskViewModel(task: ScreenCaptureRecentTask): RecentTaskViewModel =
+        recentTaskViewModelFactory.create(task)
 
     @AssistedFactory
     interface Factory {

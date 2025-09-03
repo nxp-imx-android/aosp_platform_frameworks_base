@@ -95,6 +95,8 @@ object UserSwitcherViewBinder {
 
             lifecycleScope.launch {
                 repeatOnLifecycle(Lifecycle.State.STARTED) {
+                    cancelButton.isVisible = true
+
                     launch { viewModel.isOpenMenuButtonVisible.collect { addButton.isVisible = it } }
 
                     launch {

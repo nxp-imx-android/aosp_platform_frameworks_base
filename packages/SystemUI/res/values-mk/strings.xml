@@ -138,8 +138,16 @@
     <string name="screenrecord_stop_dialog_message" msgid="6262768207331626817">"Во моментов го снимате целиот екран"</string>
     <string name="screenrecord_stop_dialog_message_specific_app" msgid="5995770227684523244">"Во моментов ја снимате <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="screenrecord_stop_dialog_button" msgid="2883812564938194350">"Сопри го снимањето"</string>
+    <!-- no translation found for screen_record_entire_screen (66944996337928170) -->
+    <skip />
+    <!-- no translation found for screen_record_single_app (7355880948574569290) -->
+    <skip />
+    <!-- no translation found for screen_record_single_app_no_recents (1023249803854209330) -->
+    <skip />
     <string name="screen_record_record_device_audio_label" msgid="5363057443124085198">"Снимај аудио од уредот"</string>
     <string name="screen_record_record_microphone_label" msgid="4685753707185662381">"Снимај микрофон"</string>
+    <!-- no translation found for screen_record_should_show_camera_label (159628971484931357) -->
+    <skip />
     <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"Прикажувај допири"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"Изберете апликација за снимање"</string>
     <string name="screen_record_video_saved" msgid="1345283626390232282">"Видеото е зачувано"</string>
@@ -685,8 +693,7 @@
     <string name="accessibility_notification_section_header_gentle_clear_all" msgid="6490207897764933919">"Избриши ги сите бесчујни известувања"</string>
     <string name="accessibility_notification_section_header_open_settings" msgid="6235202417954844004">"Отвори ги поставките за известувања"</string>
     <string name="modes_suppressing_shade_text" msgid="6037581130837903239">"{count,plural,offset:1 =0{Нема известувања}=1{Известувањата ги паузираше {mode}}=2{Известувањата ги паузираа {mode} и уште еден режим}one{Известувањата ги паузираа {mode} и уште # режим}other{Известувањата ги паузираа {mode} и уште # режими}}"</string>
-    <!-- no translation found for caught_up_shade_text (8166221989384139659) -->
-    <skip />
+    <string name="caught_up_shade_text" msgid="8166221989384139659">"Нема ништо ново"</string>
     <string name="media_projection_action_text" msgid="3634906766918186440">"Започни сега"</string>
     <string name="empty_shade_text" msgid="8935967157319717412">"Нема известувања"</string>
     <string name="no_unseen_notif_text" msgid="395512586119868682">"Нема нови известувања"</string>
@@ -986,8 +993,7 @@
     <string name="group_system_access_notification_shade" msgid="1619028907006553677">"Прегледајте известувања"</string>
     <string name="group_system_access_quick_settings_panel" msgid="1844771096582064926">"Прикажи ги брзите поставки"</string>
     <string name="group_system_full_screenshot" msgid="5742204844232667785">"Направете слика од екранот"</string>
-    <!-- no translation found for group_system_partial_screenshot (2114314797127648010) -->
-    <skip />
+    <string name="group_system_partial_screenshot" msgid="2114314797127648010">"Снимете делумна слика од екранот"</string>
     <string name="group_system_access_system_app_shortcuts" msgid="8562482996626694026">"Прегледајте ги кратенките"</string>
     <string name="group_system_go_back" msgid="2730322046244918816">"Вратете се назад"</string>
     <string name="group_system_access_home_screen" msgid="4130366993484706483">"Одете на почетниот екран"</string>
@@ -1012,8 +1018,7 @@
     <string name="system_desktop_mode_snap_right_window" msgid="2162560187639411929">"Премести го прозорецот надесно"</string>
     <string name="system_desktop_mode_toggle_maximize_window" msgid="4084100093691768239">"Максимизирај го прозорецот"</string>
     <string name="system_desktop_mode_minimize_window" msgid="1248714536732927092">"Минимизирај го прозорецот"</string>
-    <!-- no translation found for system_desktop_mode_close_window (3072490692608682536) -->
-    <skip />
+    <string name="system_desktop_mode_close_window" msgid="3072490692608682536">"Го затвора тековниот прозорец"</string>
     <string name="system_multiple_desktop_mode_switch_between_desks" msgid="6093884593003003708">"Префрли од еден на друг компјутер"</string>
     <string name="keyboard_shortcut_group_input" msgid="6888282716546625610">"Внесување"</string>
     <string name="input_switch_input_language_next" msgid="3782155659868227855">"Префрлете се на следниот јазик"</string>
@@ -1140,14 +1145,10 @@
     <string name="accessibility_key_gesture_magnification_dialog_content" msgid="7575802369763469379"><annotation id="action_key_icon">"Икона"</annotation>" за дејство + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> е кратенката од тастатура за користење на <xliff:g id="ID_3">^3</xliff:g>. Ова ви овозможува брзо да зумирате на екранот за да го зголемите приказот на содржините. Притиснете ја "<annotation id="action_key_icon">"иконата"</annotation>" за дејство + <xliff:g id="ID_4">^1</xliff:g> и „+“ или „-“ за да го приспособите зумот."</string>
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"Исклучи ја кратенката"</string>
     <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"Не исклучувај"</string>
-    <!-- no translation found for accessibility_key_gesture_voice_access_dialog_title (7828090789777023683) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_voice_access_dialog_content (7934170819801013870) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_voice_access_dialog_negative_button_text (3573570279554465078) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_voice_access_dialog_positive_button_text (2306321856544446858) -->
-    <skip />
+    <string name="accessibility_key_gesture_voice_access_dialog_title" msgid="7828090789777023683">"Да се вклучи <xliff:g id="ID_1">%1$s</xliff:g> кратенката од тастатура?"</string>
+    <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="7934170819801013870">"Ако ја притиснете "<annotation id="action_key_icon">"иконата"</annotation>" за дејство + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> се вклучува <xliff:g id="ID_3">^3</xliff:g>, функција за пристапност. Ова ви овозможува да го контролирате вашиот уред без користење раце."</string>
+    <string name="accessibility_key_gesture_voice_access_dialog_negative_button_text" msgid="3573570279554465078">"Не вклучувај"</string>
+    <string name="accessibility_key_gesture_voice_access_dialog_positive_button_text" msgid="2306321856544446858">"Вклучи ја кратенката"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"Заклучен екран"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"Се исклучува…"</string>
     <string name="thermal_shutdown_dialog_help_text" msgid="6413474593462902901">"Прикажи ги чекорите за грижа за уредот"</string>

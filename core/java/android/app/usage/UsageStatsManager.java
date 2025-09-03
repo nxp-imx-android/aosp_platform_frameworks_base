@@ -587,7 +587,13 @@ public final class UsageStatsManager {
      * @param endTime The exclusive end of the range of events to include in the results. Defined
      *                in terms of "Unix time", see {@link java.lang.System#currentTimeMillis}.
      * @return A {@link UsageEvents}.
+     * @deprecated Use {@link #queryEvents(UsageEventsQuery)} instead because it allows a caller to
+     * filter the results by event types and packages they're interested in.
+     * Future Android versions may no longer support this API due to performance and memory
+     * concerns.
      */
+    @FlaggedApi(Flags.FLAG_DEPRECATE_OLD_QUERY_EVENTS_API)
+    @Deprecated
     @RequiresPermission(android.Manifest.permission.PACKAGE_USAGE_STATS)
     public UsageEvents queryEvents(long beginTime, long endTime) {
         try {

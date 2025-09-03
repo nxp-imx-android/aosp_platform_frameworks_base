@@ -220,12 +220,12 @@ import javax.inject.Named;
 @Module(includes = {
         ActivityManagerModule.class,
         AmbientModule.class,
-        AvControlsChipModule.class,
         AppOpsModule.class,
         AirplaneModeDataLayerModule.class,
         AirplaneModeSharedModule.class,
         AssistModule.class,
         AuthenticationModule.class,
+        AvControlsChipModule.class,
         BiometricsModule.class,
         BiometricsDomainLayerModule.class,
         BouncerInteractorModule.class,

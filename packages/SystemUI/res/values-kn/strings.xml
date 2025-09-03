@@ -138,8 +138,12 @@
     <string name="screenrecord_stop_dialog_message" msgid="6262768207331626817">"ನೀವು ಪ್ರಸ್ತುತ ನಿಮ್ಮ ಸಂಪೂರ್ಣ ಸ್ಕ್ರೀನ್ ಅನ್ನು ರೆಕಾರ್ಡ್ ಮಾಡುತ್ತಿದ್ದೀರಿ"</string>
     <string name="screenrecord_stop_dialog_message_specific_app" msgid="5995770227684523244">"ನೀವು ಪ್ರಸ್ತುತ <xliff:g id="APP_NAME">%1$s</xliff:g> ಅನ್ನು ರೆಕಾರ್ಡ್ ಮಾಡುತ್ತಿದ್ದೀರಿ"</string>
     <string name="screenrecord_stop_dialog_button" msgid="2883812564938194350">"ರೆಕಾರ್ಡಿಂಗ್ ನಿಲ್ಲಿಸಿ"</string>
+    <string name="screen_record_entire_screen" msgid="66944996337928170">"ಸಂಪೂರ್ಣ ಸ್ಕ್ರೀನ್"</string>
+    <string name="screen_record_single_app" msgid="7355880948574569290">"ಒಂದೇ ಆ್ಯಪ್"</string>
+    <string name="screen_record_single_app_no_recents" msgid="1023249803854209330">"ಒಂದೇ ಆ್ಯಪ್ (ಆರಿಸಲು ಆ್ಯಪ್ ತೆರೆಯಿರಿ)"</string>
     <string name="screen_record_record_device_audio_label" msgid="5363057443124085198">"ಸಾಧನದ ಆಡಿಯೋವನ್ನು ರೆಕಾರ್ಡ್ ಮಾಡಿ"</string>
     <string name="screen_record_record_microphone_label" msgid="4685753707185662381">"ಮೈಕ್ರೊಫೋನ್‌ ಮೂಲಕ ರೆಕಾರ್ಡ್ ಮಾಡಿ"</string>
+    <string name="screen_record_should_show_camera_label" msgid="159628971484931357">"ಸೆಲ್ಫೀ ಕ್ಯಾಮರಾ ತೋರಿಸಿ"</string>
     <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"ಸ್ಪರ್ಶಗಳನ್ನು ತೋರಿಸಿ"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"ರೆಕಾರ್ಡ್ ಮಾಡಲು ಆ್ಯಪ್ ಅನ್ನು ಆಯ್ಕೆಮಾಡಿ"</string>
     <string name="screen_record_video_saved" msgid="1345283626390232282">"ವೀಡಿಯೊ ಸೇವ್ ಆಗಿದೆ"</string>
@@ -685,8 +689,7 @@
     <string name="accessibility_notification_section_header_gentle_clear_all" msgid="6490207897764933919">"ಎಲ್ಲಾ ನಿಶ್ಶಬ್ಧ ಅಧಿಸೂಚನೆಗಳನ್ನು ತೆರವುಗೊಳಿಸಿ"</string>
     <string name="accessibility_notification_section_header_open_settings" msgid="6235202417954844004">"ನೋಟಿಫಿಕೇಶನ್‌ಗಳ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ತೆರೆಯಿರಿ"</string>
     <string name="modes_suppressing_shade_text" msgid="6037581130837903239">"{count,plural,offset:1 =0{ಯಾವುದೇ ನೋಟಿಫಿಕೇಶನ್‌ಗಳು ಇಲ್ಲ}=1{ನೋಟಿಫಿಕೇಶನ್‌ಗಳನ್ನು {mode} ವಿರಾಮಗೊಳಿಸಿದೆ}=2{ನೋಟಿಫಿಕೇಶನ್‌ಗಳನ್ನು {mode} ಹಾಗೂ ಇತರ ಒಂದು ಮೋಡ್ ವಿರಾಮಗೊಳಿಸಿವೆ}one{ನೋಟಿಫಿಕೇಶನ್‌ಗಳನ್ನು {mode} ಹಾಗೂ ಇತರ # ಮೋಡ್‌ಗಳು ವಿರಾಮಗೊಳಿಸಿವೆ}other{ನೋಟಿಫಿಕೇಶನ್‌ಗಳನ್ನು {mode} ಹಾಗೂ ಇತರ # ಮೋಡ್‌ಗಳು ವಿರಾಮಗೊಳಿಸಿವೆ}}"</string>
-    <!-- no translation found for caught_up_shade_text (8166221989384139659) -->
-    <skip />
+    <string name="caught_up_shade_text" msgid="8166221989384139659">"ಎಲ್ಲಾ ಮುಗಿದಿದೆ"</string>
     <string name="media_projection_action_text" msgid="3634906766918186440">"ಈಗ ಪ್ರಾರಂಭಿಸಿ"</string>
     <string name="empty_shade_text" msgid="8935967157319717412">"ಯಾವುದೇ ಅಧಿಸೂಚನೆಗಳಿಲ್ಲ"</string>
     <string name="no_unseen_notif_text" msgid="395512586119868682">"ಯಾವುದೇ ಹೊಸ ಅಧಿಸೂಚನೆಗಳಿಲ್ಲ"</string>
@@ -986,8 +989,7 @@
     <string name="group_system_access_notification_shade" msgid="1619028907006553677">"ನೋಟಿಫಿಕೇಶನ್‌ಗಳನ್ನು ವೀಕ್ಷಿಸಿ"</string>
     <string name="group_system_access_quick_settings_panel" msgid="1844771096582064926">"ತ್ವರಿತ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ವೀಕ್ಷಿಸಿ"</string>
     <string name="group_system_full_screenshot" msgid="5742204844232667785">"ಸ್ಕ್ರೀನ್‌ಶಾಟ್ ತೆಗೆದುಕೊಳ್ಳಿ"</string>
-    <!-- no translation found for group_system_partial_screenshot (2114314797127648010) -->
-    <skip />
+    <string name="group_system_partial_screenshot" msgid="2114314797127648010">"ಭಾಗಶಃ ಸ್ಕ್ರೀನ್‌ಶಾಟ್ ಅನ್ನು ತೆಗೆದುಕೊಳ್ಳಿ"</string>
     <string name="group_system_access_system_app_shortcuts" msgid="8562482996626694026">"ಶಾರ್ಟ್‌ಕಟ್‌ಗಳನ್ನು ತೋರಿಸಿ"</string>
     <string name="group_system_go_back" msgid="2730322046244918816">"ಹಿಂತಿರುಗಿ"</string>
     <string name="group_system_access_home_screen" msgid="4130366993484706483">"ಹೋಮ್ ಸ್ಕ್ರೀನ್‌ಗೆ ಹೋಗಿ"</string>

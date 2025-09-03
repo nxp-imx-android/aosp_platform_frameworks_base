@@ -16,6 +16,7 @@
 
 package com.android.systemui.screencapture.record.smallscreen.ui.viewmodel
 
+import android.media.projection.StopReason
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -29,9 +30,11 @@ import com.android.systemui.screencapture.domain.interactor.ScreenCaptureUiInter
 import com.android.systemui.screencapture.record.ui.viewmodel.ScreenCaptureRecordParametersViewModel
 import com.android.systemui.screenrecord.domain.ScreenRecordingParameters
 import com.android.systemui.screenrecord.domain.interactor.ScreenRecordingServiceInteractor
+import com.android.systemui.screenrecord.domain.interactor.Status
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.flow.map
 
 class SmallScreenCaptureRecordViewModel
 @AssistedInject
@@ -51,8 +54,35 @@ constructor(
     val recordDetailsTargetViewModel: RecordDetailsTargetViewModel =
         recordDetailsTargetViewModelFactory.create()
 
+    val isRecording: Boolean by
+        screenRecordingServiceInteractor.status
+            .map { it.isRecording }
+            .hydratedStateOf(
+                traceName = "SmallScreenCaptureRecordViewModel#isRecording",
+                initialValue = screenRecordingServiceInteractor.status.value.isRecording,
+            )
+
     var detailsPopup: RecordDetailsPopupType by mutableStateOf(RecordDetailsPopupType.Settings)
         private set
+
+    var shouldShowDetails: Boolean by
+        mutableStateOf(!screenRecordingServiceInteractor.status.value.isRecording)
+        private set
+
+    val shouldShowSettingsButton: Boolean by
+        screenRecordingServiceInteractor.status
+            .map { status ->
+                if (status.isRecording) {
+                    true
+                } else {
+                    shouldShowDetails = true
+                    false
+                }
+            }
+            .hydratedStateOf(
+                traceName = "SmallScreenCaptureRecordViewModel#shouldShowSettingsButton",
+                initialValue = !screenRecordingServiceInteractor.status.value.isRecording,
+            )
 
     override suspend fun onActivated() {
         coroutineScope {
@@ -86,19 +116,29 @@ constructor(
         screenCaptureUiInteractor.hide(ScreenCaptureType.RECORD)
     }
 
-    fun startRecording() {
-        val shouldShowTaps = recordDetailsParametersViewModel.shouldShowTaps ?: return
-        val audioSource = recordDetailsParametersViewModel.audioSource ?: return
-        // TODO(b/428686600) pass actual parameters
-        screenRecordingServiceInteractor.startRecording(
-            ScreenRecordingParameters(
-                captureTarget = null,
-                displayId = 0,
-                shouldShowTaps = shouldShowTaps,
-                audioSource = audioSource,
+    fun onPrimaryButtonTapped() {
+        if (screenRecordingServiceInteractor.status.value.isRecording) {
+            screenRecordingServiceInteractor.stopRecording(StopReason.STOP_HOST_APP)
+        } else {
+            val shouldShowTaps = recordDetailsParametersViewModel.shouldShowTaps ?: return
+            val audioSource = recordDetailsParametersViewModel.audioSource ?: return
+            // TODO(b/428686600) pass actual parameters
+            screenRecordingServiceInteractor.startRecording(
+                ScreenRecordingParameters(
+                    captureTarget = null,
+                    displayId = 0,
+                    shouldShowTaps = shouldShowTaps,
+                    audioSource = audioSource,
+                )
             )
-        )
-        dismiss()
+            dismiss()
+        }
+    }
+
+    fun shouldShowSettings(visible: Boolean) {
+        if (shouldShowSettingsButton) {
+            shouldShowDetails = visible
+        }
     }
 
     @AssistedFactory
@@ -107,3 +147,6 @@ constructor(
         fun create(): SmallScreenCaptureRecordViewModel
     }
 }
+
+private val Status.isRecording
+    get() = this is Status.Started

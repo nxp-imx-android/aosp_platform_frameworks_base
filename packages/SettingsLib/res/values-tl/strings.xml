@@ -87,6 +87,8 @@
     <string name="bluetooth_connecting" msgid="5871702668260192755">"Kumukonekta…"</string>
     <string name="bluetooth_connected" msgid="8065345572198502293">"Nakakonekta<xliff:g id="ACTIVE_DEVICE">%1$s</xliff:g>"</string>
     <string name="bluetooth_pairing" msgid="4269046942588193600">"Pinapares…"</string>
+    <string name="bluetooth_pairing_failure" msgid="6914444518793157913">"Hindi maipares"</string>
+    <string name="bluetooth_connection_failure" msgid="384203214661155324">"Hindi makakonekta"</string>
     <string name="bluetooth_connected_no_headset" msgid="2224101138659967604">"Nakakonekta (walang telepono)<xliff:g id="ACTIVE_DEVICE">%1$s</xliff:g>"</string>
     <string name="bluetooth_connected_no_a2dp" msgid="8566874395813947092">"Nakakonekta (walang media)<xliff:g id="ACTIVE_DEVICE">%1$s</xliff:g>"</string>
     <string name="bluetooth_connected_no_headset_no_a2dp" msgid="2893204819854215433">"Nakakonekta (walang telepono o media)<xliff:g id="ACTIVE_DEVICE">%1$s</xliff:g>"</string>
@@ -345,7 +347,8 @@
     <string name="wifi_non_persistent_mac_randomization_summary" msgid="2159794543105053930">"Kapag naka-enable ang mode na ito, puwedeng magbago ang MAC address ng device na ito sa tuwing kokonekta ito sa isang network na may naka-enable na pag-randomize ng MAC."</string>
     <string name="wifi_metered_label" msgid="8737187690304098638">"Nakametro"</string>
     <string name="wifi_unmetered_label" msgid="6174142840934095093">"Hindi Nakametro"</string>
-    <string name="select_logd_size_title" msgid="1604578195914595173">"Mga laki ng buffer ng Logger"</string>
+    <!-- no translation found for select_logd_size_title (4393502933789367691) -->
+    <skip />
     <string name="select_logd_size_dialog_title" msgid="2105401994681013578">"Pumili ng mga laki ng Logger bawat log buffer"</string>
     <string name="dev_logpersist_clear_warning_title" msgid="8631859265777337991">"I-clear ang tuluy-tuloy na storage ng logger?"</string>
     <string name="dev_logpersist_clear_warning_message" msgid="6447590867594287413">"Kapag hindi na namin sinusubaybayan ang tuluy-tuloy na logger, kailangan naming burahin ang data ng logger na nanatili sa iyong device."</string>

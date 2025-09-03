@@ -789,6 +789,38 @@ public class PackageWatchdogTest {
     }
 
     /**
+     * Assert that random package failures do not cause explicit health check failure.
+     */
+    @Test
+    public void testExplicitHealthCheck_doesNotMitigateUnrelatedPackageFailure() {
+        // setup test observer with watchdog
+        TestObserver observer = new TestObserver(OBSERVER_NAME_1);
+        observer.setMayObservePackages(true);
+        observer.setPersistent(true);
+        PackageWatchdog watchdog = createWatchdog();
+        watchdog.registerHealthObserver(mTestExecutor, observer);
+
+        // Start an explicit health check for a different package (APP_B)
+        // This is required to ensure that mUptimeAtLastStateSync is > 0
+        watchdog.startExplicitHealthCheck(List.of(APP_B),
+                PackageWatchdog.DEFAULT_OBSERVING_DURATION_MS * 2,
+                        observer);
+        mTestLooper.dispatchAll();
+
+        // Trigger unrelated package failure without breaching DEFAULT_TRIGGER_FAILURE_COUNT
+        // and move time forward, which causes health check duration to expire
+        watchdog.notifyPackageFailure(List.of(new VersionedPackage(APP_A, VERSION_CODE)),
+                PackageWatchdog.FAILURE_REASON_UNKNOWN);
+        moveTimeForwardAndDispatch(PackageWatchdog.DEFAULT_OBSERVING_DURATION_MS + 1);
+
+        // Simulates SHUTDOWN broadcast for Package Watchdog
+        watchdog.writeNow();
+        mTestLooper.dispatchAll();
+
+        assertThat(observer.mMitigatedPackages).doesNotContain(APP_A);
+    }
+
+    /**
      * Tests failure when health check duration is different from package observation duration
      * Failure is also notified only once.
      */

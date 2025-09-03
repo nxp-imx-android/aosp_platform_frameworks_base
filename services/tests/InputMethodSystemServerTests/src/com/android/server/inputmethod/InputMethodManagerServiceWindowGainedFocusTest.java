@@ -39,10 +39,10 @@ import static org.mockito.Mockito.when;
 import android.os.IBinder;
 import android.os.LocaleList;
 import android.os.RemoteException;
+import android.os.ResultReceiver;
 import android.platform.test.flag.junit.DeviceFlagsValueProvider;
 import android.util.Log;
 import android.view.inputmethod.EditorInfo;
-import android.window.ImeOnBackInvokedDispatcher;
 
 import com.android.internal.inputmethod.IInputMethodClient;
 import com.android.internal.inputmethod.IRemoteAccessibilityInputConnection;
@@ -65,7 +65,7 @@ import java.util.List;
 /**
  * Test the behavior of {@link InputMethodManagerService#startInputOrWindowGainedFocus(int,
  * IInputMethodClient, IBinder, int, int, int, EditorInfo, IRemoteInputConnection,
- * IRemoteAccessibilityInputConnection, int, int, ImeOnBackInvokedDispatcher)}.
+ * IRemoteAccessibilityInputConnection, int, int, ResultReceiver, boolean, int)}.
  */
 @RunWith(Parameterized.class)
 public class InputMethodManagerServiceWindowGainedFocusTest
@@ -268,7 +268,7 @@ public class InputMethodManagerServiceWindowGainedFocusTest
                 mMockRemoteAccessibilityInputConnection /* remoteAccessibilityInputConnection */,
                 mTargetSdkVersion /* unverifiedTargetSdkVersion */,
                 mUserId /* userId */,
-                mMockImeOnBackInvokedDispatcher /* imeDispatcher */,
+                mMockImeBackCallbackReceiver /* imeBackCallbackReceiver */,
                 true /* imeRequestedVisible */);
     }
 

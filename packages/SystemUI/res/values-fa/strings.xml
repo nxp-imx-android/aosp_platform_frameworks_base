@@ -138,8 +138,16 @@
     <string name="screenrecord_stop_dialog_message" msgid="6262768207331626817">"اکنون درحال ضبط کل صفحه‌نمایش هستید"</string>
     <string name="screenrecord_stop_dialog_message_specific_app" msgid="5995770227684523244">"اکنون درحال ضبط <xliff:g id="APP_NAME">%1$s</xliff:g> هستید"</string>
     <string name="screenrecord_stop_dialog_button" msgid="2883812564938194350">"توقف ضبط"</string>
+    <!-- no translation found for screen_record_entire_screen (66944996337928170) -->
+    <skip />
+    <!-- no translation found for screen_record_single_app (7355880948574569290) -->
+    <skip />
+    <!-- no translation found for screen_record_single_app_no_recents (1023249803854209330) -->
+    <skip />
     <string name="screen_record_record_device_audio_label" msgid="5363057443124085198">"ضبط صدای دستگاه"</string>
     <string name="screen_record_record_microphone_label" msgid="4685753707185662381">"ضبط میکروفون"</string>
+    <!-- no translation found for screen_record_should_show_camera_label (159628971484931357) -->
+    <skip />
     <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"نمایش نقاط لمس"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"برنامه‌ای را برای ضبط کردن انتخاب کنید"</string>
     <string name="screen_record_video_saved" msgid="1345283626390232282">"ویدیو ذخیره شد"</string>
@@ -685,8 +693,7 @@
     <string name="accessibility_notification_section_header_gentle_clear_all" msgid="6490207897764933919">"پاک کردن همه اعلان‌های بی‌صدا"</string>
     <string name="accessibility_notification_section_header_open_settings" msgid="6235202417954844004">"باز کردن تنظیمات اعلان"</string>
     <string name="modes_suppressing_shade_text" msgid="6037581130837903239">"{count,plural,offset:1 =0{اعلانی ندارید}=1{اعلان‌ها را «{mode}» موقتاً متوقف کرده است}=2{اعلان‌ها را «{mode}» و یک حالت دیگر موقتاً متوقف کرد‌اند}one{اعلان‌ها را «{mode}» و # حالت دیگر موقتاً متوقف کرده‌اند}other{اعلان‌ها را «{mode}» و # حالت دیگر موقتاً متوقف کرده‌اند}}"</string>
-    <!-- no translation found for caught_up_shade_text (8166221989384139659) -->
-    <skip />
+    <string name="caught_up_shade_text" msgid="8166221989384139659">"اعلان جدیدی وجود ندارد"</string>
     <string name="media_projection_action_text" msgid="3634906766918186440">"اکنون شروع کردن"</string>
     <string name="empty_shade_text" msgid="8935967157319717412">"اعلانی موجود نیست"</string>
     <string name="no_unseen_notif_text" msgid="395512586119868682">"اعلان جدیدی وجود ندارد"</string>
@@ -1012,8 +1019,7 @@
     <string name="system_desktop_mode_snap_right_window" msgid="2162560187639411929">"بردن پنجره به راست"</string>
     <string name="system_desktop_mode_toggle_maximize_window" msgid="4084100093691768239">"به‌حداکثر رساندن اندازه پنجره"</string>
     <string name="system_desktop_mode_minimize_window" msgid="1248714536732927092">"به‌حداقل رساندن اندازه پنجره"</string>
-    <!-- no translation found for system_desktop_mode_close_window (3072490692608682536) -->
-    <skip />
+    <string name="system_desktop_mode_close_window" msgid="3072490692608682536">"بستن پنجره فعلی"</string>
     <string name="system_multiple_desktop_mode_switch_between_desks" msgid="6093884593003003708">"جابه‌جایی بین میزهای کار"</string>
     <string name="keyboard_shortcut_group_input" msgid="6888282716546625610">"ورودی"</string>
     <string name="input_switch_input_language_next" msgid="3782155659868227855">"رفتن به زبان بعدی"</string>
@@ -1141,14 +1147,10 @@
 )  -->
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"خاموش کردن میان‌بر"</string>
     <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"روشن بماند"</string>
-    <!-- no translation found for accessibility_key_gesture_voice_access_dialog_title (7828090789777023683) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_voice_access_dialog_content (7934170819801013870) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_voice_access_dialog_negative_button_text (3573570279554465078) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_voice_access_dialog_positive_button_text (2306321856544446858) -->
-    <skip />
+    <string name="accessibility_key_gesture_voice_access_dialog_title" msgid="7828090789777023683">"میانبر <xliff:g id="ID_1">%1$s</xliff:g> صفحه‌کلید روشن می شود؟"</string>
+    <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="7934170819801013870">"عمل فشار دادن"<annotation id="action_key_icon">"نماد"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> یک ویژگی دسترس‌پذیری را<xliff:g id="ID_3">^3</xliff:g> روشن می کند. «» به شما امکان می‌دهد دستگاه تان را به‌صورت دست‌آزاد کنترل کنید."</string>
+    <string name="accessibility_key_gesture_voice_access_dialog_negative_button_text" msgid="3573570279554465078">"روشن نشود"</string>
+    <string name="accessibility_key_gesture_voice_access_dialog_positive_button_text" msgid="2306321856544446858">"میان‌بر را فعال کنید"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"صفحه قفل"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"درحال خاموش شدن…"</string>
     <string name="thermal_shutdown_dialog_help_text" msgid="6413474593462902901">"دیدن اقدامات محافظتی"</string>

@@ -14,24 +14,18 @@
  * limitations under the License.
  */
 
-package com.android.systemui.screencapture.record.smallscreen.ui.viewmodel
+package com.android.wm.shell.functional.keyboardshortcuts
 
-import android.graphics.Bitmap
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
-import com.android.systemui.lifecycle.HydratedActivatable
+import android.platform.test.annotations.Presubmit
+import android.platform.test.annotations.RequiresDesktopDevice
+import android.platform.test.rule.ScreenRecordRule
+import com.android.wm.shell.scenarios.ActionTabSwitchToDesktopApp
+import org.junit.runner.RunWith
+import org.junit.runners.BlockJUnit4ClassRunner
 
-class RecordDetailsAppViewModel(
-    val icon: Bitmap,
-    val onSelect: () -> Unit,
-    private val loadThumbnail: suspend () -> Bitmap,
-) : HydratedActivatable() {
-
-    var thumbnail: Bitmap? by mutableStateOf(null)
-        private set
-
-    override suspend fun onActivated() {
-        thumbnail = loadThumbnail()
-    }
-}
+/* Functional test for [ActionTabSwitchToDesktopApp]. */
+@RequiresDesktopDevice
+@RunWith(BlockJUnit4ClassRunner::class)
+@Presubmit
+@ScreenRecordRule.ScreenRecord
+class ActionTabSwitchToDesktopAppTest : ActionTabSwitchToDesktopApp()

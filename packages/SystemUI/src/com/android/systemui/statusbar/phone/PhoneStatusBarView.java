@@ -37,7 +37,6 @@ import android.window.DesktopExperienceFlags;
 import androidx.annotation.NonNull;
 
 import com.android.internal.policy.SystemBarUtils;
-import com.android.systemui.Dependency;
 import com.android.systemui.Gefingerpoken;
 import com.android.systemui.res.R;
 import com.android.systemui.shade.ShadeExpandsOnStatusBarLongPress;
@@ -54,8 +53,9 @@ import java.util.function.BooleanSupplier;
 
 public class PhoneStatusBarView extends FrameLayout {
     private static final String TAG = "PhoneStatusBarView";
-    private final StatusBarWindowControllerStore mStatusBarWindowControllerStore;
 
+    private StatusBarWindowControllerStore mStatusBarWindowControllerStore;
+    private boolean mShouldUpdateStatusBarHeightWhenControllerSet = false;
     private int mRotationOrientation = -1;
     @Nullable
     private View mCutoutSpace;
@@ -84,7 +84,6 @@ public class PhoneStatusBarView extends FrameLayout {
 
     public PhoneStatusBarView(Context context, AttributeSet attrs) {
         super(context, attrs);
-        mStatusBarWindowControllerStore = Dependency.get(StatusBarWindowControllerStore.class);
     }
 
     void setLongPressGestureDetector(
@@ -281,11 +280,31 @@ public class PhoneStatusBarView extends FrameLayout {
     public boolean onInterceptTouchEvent(MotionEvent event) {
         return mTouchEventHandler.onInterceptTouchEvent(event);
     }
+
     public void updateResources() {
         mCutoutSideNudge = getResources().getDimensionPixelSize(
                 R.dimen.display_cutout_margin_consumption);
 
         updateStatusBarHeight();
+    }
+
+    /**
+     * Sets the store responsible for managing the status bar window controller.
+     *
+     * <p>This setter is used to facilitate dependency injection for the
+     * {@link PhoneStatusBarViewController}, which receives the store via Dagger. This avoids
+     * using the legacy {@link com.android.systemui.Dependency} pattern directly in the constructor.
+     *
+     * @param statusBarWindowControllerStore The {@link StatusBarWindowControllerStore} instance
+     * to set
+     */
+    public void setStatusBarWindowControllerStore(
+            StatusBarWindowControllerStore statusBarWindowControllerStore) {
+        mStatusBarWindowControllerStore = statusBarWindowControllerStore;
+        if (mShouldUpdateStatusBarHeightWhenControllerSet) {
+            mShouldUpdateStatusBarHeightWhenControllerSet = false;
+            updateWindowHeight();
+        }
     }
 
     private void updateStatusBarHeight() {
@@ -303,7 +322,7 @@ public class PhoneStatusBarView extends FrameLayout {
         View systemIconsContainer = findViewById(R.id.system_icons);
         ViewGroup.LayoutParams layoutParams = systemIconsContainer.getLayoutParams();
         int newSystemIconsHeight =
-                getResources().getDimensionPixelSize(R.dimen.status_bar_system_icons_height);
+                getResources().getDimensionPixelSize(R.dimen.status_bar_icon_container_height);
         if (layoutParams.height != newSystemIconsHeight) {
             layoutParams.height = newSystemIconsHeight;
             systemIconsContainer.setLayoutParams(layoutParams);
@@ -373,7 +392,7 @@ public class PhoneStatusBarView extends FrameLayout {
             return;
         }
 
-        Insets insets  = mInsetsFetcher.fetchInsets();
+        Insets insets = mInsetsFetcher.fetchInsets();
         setPadding(
                 insets.left,
                 insets.top,
@@ -386,7 +405,12 @@ public class PhoneStatusBarView extends FrameLayout {
             // Handled directly from StatusBarWindowControllerImpl (for each display)
             return;
         }
-        mStatusBarWindowControllerStore.getDefaultDisplay().refreshStatusBarHeight();
+        if (mStatusBarWindowControllerStore != null) {
+            mStatusBarWindowControllerStore.getDefaultDisplay().refreshStatusBarHeight();
+        } else {
+            Log.e(TAG, "mStatusBarWindowControllerStore unexpectedly null");
+            mShouldUpdateStatusBarHeightWhenControllerSet = true;
+        }
     }
 
     interface HasCornerCutoutFetcher {

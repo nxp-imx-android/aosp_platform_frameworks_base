@@ -173,8 +173,9 @@ public class DeviceStateAutoRotateSettingController {
      * Request to change {@link ACCELEROMETER_ROTATION} persisted setting. If needed, we might also
      * write into {@link USER_ROTATION} with {@param userRotation}.
      */
-    public void requestAccelerometerRotationSettingChange(boolean autoRotate, int userRotation) {
-        postUpdate(new UpdateAccelerometerRotationSetting(autoRotate, userRotation));
+    public void requestAccelerometerRotationSettingChange(boolean autoRotate, int userRotation,
+            String caller) {
+        postUpdate(new UpdateAccelerometerRotationSetting(autoRotate, userRotation, caller));
     }
 
     private void registerDeviceStateAutoRotateSettingObserver() {
@@ -342,10 +343,13 @@ public class DeviceStateAutoRotateSettingController {
             return;
         }
         final int userRotation;
+        final String caller;
+
         if (event instanceof UpdateAccelerometerRotationSetting) {
             // If the event is `UpdateAccelerometerRotationSetting`, it means that the
             // userRotation was provided, so we should set it.
             userRotation = ((UpdateAccelerometerRotationSetting) event).mUserRotation;
+            caller = ((UpdateAccelerometerRotationSetting) event).mCaller;
         } else {
             // If the event is not `UpdateAccelerometerRotationSetting`, it means that the
             // userRotation was not explicitly provided.
@@ -357,12 +361,12 @@ public class DeviceStateAutoRotateSettingController {
                         ? USE_CURRENT_ROTATION
                         : NATURAL_ROTATION;
             }
+            caller = "DSAutoRotateCtrl#" + event.getClass().getSimpleName();
         }
         synchronized (mWm.mRoot.mService.mGlobalLock) {
             mWm.mRoot.getDefaultDisplay().getDisplayRotation().setUserRotationSetting(
                     mAccelerometerSetting ? WindowManagerPolicy.USER_ROTATION_FREE
-                            : WindowManagerPolicy.USER_ROTATION_LOCKED, userRotation,
-                    "DSAutoRotateCtrl");
+                            : WindowManagerPolicy.USER_ROTATION_LOCKED, userRotation, caller);
         }
     }
 
@@ -399,15 +403,19 @@ public class DeviceStateAutoRotateSettingController {
         static final class UpdateAccelerometerRotationSetting extends Event {
             final boolean mAutoRotate;
             final int mUserRotation;
+            final String mCaller;
 
             /**
              * @param autoRotate   The desired auto-rotate state to write into
              *                     ACCELEROMETER_ROTATION.
              * @param userRotation The desired user rotation to write into USER_ROTATION.
+             * @param caller       Identifying the caller for logging/debugging purposes.
              */
-            UpdateAccelerometerRotationSetting(boolean autoRotate, int userRotation) {
+            UpdateAccelerometerRotationSetting(boolean autoRotate, int userRotation,
+                    String caller) {
                 mAutoRotate = autoRotate;
                 mUserRotation = userRotation;
+                mCaller = caller;
             }
         }
 

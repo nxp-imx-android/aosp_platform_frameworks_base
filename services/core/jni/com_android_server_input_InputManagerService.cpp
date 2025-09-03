@@ -380,8 +380,8 @@ public:
     void getReaderConfiguration(InputReaderConfiguration* outConfig) override;
     void notifyInputDevicesChanged(const std::vector<InputDeviceInfo>& inputDevices) override;
     void notifyTouchpadHardwareState(const SelfContainedHardwareState& schs,
-                                     int32_t deviceId) override;
-    void notifyTouchpadGestureInfo(enum GestureType type, int32_t deviceId) override;
+                                     DeviceId deviceId) override;
+    void notifyTouchpadGestureInfo(enum GestureType type, DeviceId deviceId) override;
     void notifyTouchpadThreeFingerTap() override;
     std::shared_ptr<KeyCharacterMap> getKeyboardLayoutOverlay(
             const InputDeviceIdentifier& identifier,
@@ -391,7 +391,7 @@ public:
                                                            ui::Rotation surfaceRotation) override;
 
     TouchAffineTransformation getTouchAffineTransformation(JNIEnv* env, jfloatArray matrixArr);
-    void notifyStylusGestureStarted(int32_t deviceId, nsecs_t eventTime) override;
+    void notifyStylusGestureStarted(DeviceId deviceId, nsecs_t eventTime) override;
     bool isInputMethodConnectionActive() override;
     std::optional<DisplayViewport> getPointerViewportForAssociatedDisplay(
             ui::LogicalDisplayId associatedDisplayId) override;
@@ -408,12 +408,12 @@ public:
     // ANR-related callbacks -- end
     void notifyInputChannelBroken(const sp<IBinder>& token) override;
     void notifyFocusChanged(const sp<IBinder>& oldToken, const sp<IBinder>& newToken) override;
-    void notifySensorEvent(int32_t deviceId, InputDeviceSensorType sensorType,
+    void notifySensorEvent(DeviceId deviceId, InputDeviceSensorType sensorType,
                            InputDeviceSensorAccuracy accuracy, nsecs_t timestamp,
                            const std::vector<float>& values) override;
-    void notifySensorAccuracy(int32_t deviceId, InputDeviceSensorType sensorType,
+    void notifySensorAccuracy(DeviceId deviceId, InputDeviceSensorType sensorType,
                               InputDeviceSensorAccuracy accuracy) override;
-    void notifyVibratorState(int32_t deviceId, bool isOn) override;
+    void notifyVibratorState(DeviceId deviceId, bool isOn) override;
     bool filterInputEvent(const InputEvent& inputEvent, uint32_t policyFlags) override;
     void interceptKeyBeforeQueueing(const KeyEvent& keyEvent, uint32_t& policyFlags) override;
     void interceptMotionBeforeQueueing(ui::LogicalDisplayId displayId, uint32_t source,
@@ -1076,7 +1076,7 @@ static ScopedLocalRef<jobject> createTouchpadHardwareStateObj(
 }
 
 void NativeInputManager::notifyTouchpadHardwareState(const SelfContainedHardwareState& schs,
-                                                     int32_t deviceId) {
+                                                     DeviceId deviceId) {
     ATRACE_CALL();
     JNIEnv* env = jniEnv();
 
@@ -1090,7 +1090,7 @@ void NativeInputManager::notifyTouchpadHardwareState(const SelfContainedHardware
     checkAndClearExceptionFromCallback(env, "notifyTouchpadHardwareState");
 }
 
-void NativeInputManager::notifyTouchpadGestureInfo(enum GestureType type, int32_t deviceId) {
+void NativeInputManager::notifyTouchpadGestureInfo(enum GestureType type, DeviceId deviceId) {
     ATRACE_CALL();
     JNIEnv* env = jniEnv();
 
@@ -1779,7 +1779,7 @@ TouchAffineTransformation NativeInputManager::getTouchAffineTransformation(
     return transform;
 }
 
-void NativeInputManager::notifyStylusGestureStarted(int32_t deviceId, nsecs_t eventTime) {
+void NativeInputManager::notifyStylusGestureStarted(DeviceId deviceId, nsecs_t eventTime) {
     JNIEnv* env = jniEnv();
     env->CallVoidMethod(mServiceObj, gServiceClassInfo.notifyStylusGestureStarted, deviceId,
                         eventTime);

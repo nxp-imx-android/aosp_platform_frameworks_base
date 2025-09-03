@@ -4040,6 +4040,7 @@
     <!-- Flag specifying whether the device will use the "allow_hold_in_ims_call" carrier config
          option.  When false, the device will support holding of IMS calls, regardless of the
          carrier config setting. -->
+    <!-- @deprecated all carriers should support hold so this is obsolete -->
     <bool name="config_device_respects_hold_carrier_config">true</bool>
 
     <!-- Flag specifying whether VT should be available for carrier: independent of

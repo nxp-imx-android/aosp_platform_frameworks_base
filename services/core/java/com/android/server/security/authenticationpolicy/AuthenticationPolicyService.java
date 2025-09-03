@@ -540,7 +540,7 @@ public class AuthenticationPolicyService extends SystemService {
             try {
                 boolean authenticationComplete =
                         mSecureLockDeviceService.hasUserCompletedTwoFactorAuthentication(user);
-                Slog.d("SecureLockDeviceService", "Disabling secure lock device: "
+                Slog.d(TAG, "Disabling secure lock device: "
                         + "user " + user + ", authenticationComplete " + authenticationComplete);
                 return mSecureLockDeviceService.disableSecureLockDevice(user, params,
                         /* authenticationComplete = */ authenticationComplete);

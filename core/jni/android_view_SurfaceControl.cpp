@@ -78,16 +78,17 @@ namespace android {
 
 using gui::FocusRequest;
 
+static const char* const IllegalArgumentException = "java/lang/IllegalArgumentException";
+static const char* const IllegalStateException = "java/lang/IllegalStateException";
+static const char* const OutOfResourcesException = "android/view/Surface$OutOfResourcesException";
+
 static void doThrowNPE(JNIEnv* env) {
     jniThrowNullPointerException(env, NULL);
 }
 
 static void doThrowIAE(JNIEnv* env, const char* msg = nullptr) {
-    jniThrowException(env, "java/lang/IllegalArgumentException", msg);
+    jniThrowException(env, IllegalArgumentException, msg);
 }
-
-static const char* const OutOfResourcesException =
-    "android/view/Surface$OutOfResourcesException";
 
 static struct {
     jclass clazz;
@@ -515,8 +516,7 @@ static jlong nativeCreate(JNIEnv* env, jclass clazz, jobject sessionObj,
     if (parcel && !parcel->objectsCount()) {
         status_t err = metadata.readFromParcel(parcel);
         if (err != NO_ERROR) {
-          jniThrowException(env, "java/lang/IllegalArgumentException",
-                            "Metadata parcel has wrong format");
+            jniThrowException(env, IllegalArgumentException, "Metadata parcel has wrong format");
         }
     }
 
@@ -527,16 +527,20 @@ static jlong nativeCreate(JNIEnv* env, jclass clazz, jobject sessionObj,
 
     status_t err = client->createSurfaceChecked(String8(name.c_str()), w, h, format, &surface,
                                                 flags, parentHandle, std::move(metadata));
-    if (err == NAME_NOT_FOUND) {
-        jniThrowException(env, "java/lang/IllegalArgumentException", NULL);
-        return 0;
-    } else if (err != NO_ERROR) {
-        jniThrowException(env, OutOfResourcesException, statusToString(err).c_str());
-        return 0;
+    switch (err) {
+        case NO_ERROR:
+            surface->incStrong((void*)nativeCreate);
+            return reinterpret_cast<jlong>(surface.get());
+        case NAME_NOT_FOUND:
+            jniThrowException(env, IllegalArgumentException, NULL);
+            return 0;
+        case NO_MEMORY:
+            jniThrowException(env, OutOfResourcesException, NULL);
+            return 0;
+        default:
+            jniThrowException(env, IllegalStateException, statusToString(err).c_str());
+            return 0;
     }
-
-    surface->incStrong((void *)nativeCreate);
-    return reinterpret_cast<jlong>(surface.get());
 }
 
 static void release(SurfaceControl* ctrl) {
@@ -591,8 +595,7 @@ static void nativeSetEarlyWakeupStart(JNIEnv* env, jclass clazz, jlong transacti
     gui::EarlyWakeupInfo earlyWakeupInfo;
     status_t err = earlyWakeupInfo.readFromParcel(infoParcel);
     if (err != NO_ERROR) {
-        jniThrowException(env, "java/lang/IllegalArgumentException",
-                          "EarlyWakeupInfo parcel has wrong format");
+        jniThrowException(env, IllegalArgumentException, "EarlyWakeupInfo parcel has wrong format");
         return;
     }
 
@@ -610,8 +613,7 @@ static void nativeSetEarlyWakeupEnd(JNIEnv* env, jclass clazz, jlong transaction
     gui::EarlyWakeupInfo earlyWakeupInfo;
     status_t err = earlyWakeupInfo.readFromParcel(infoParcel);
     if (err != NO_ERROR) {
-        jniThrowException(env, "java/lang/IllegalArgumentException",
-                          "EarlyWakeupInfo parcel has wrong format");
+        jniThrowException(env, IllegalArgumentException, "EarlyWakeupInfo parcel has wrong format");
         return;
     }
 
@@ -1066,7 +1068,7 @@ static void nativeAddTransactionBarrier(JNIEnv* env, jclass clazz, jlong transac
     gui::TransactionBarrier barrier;
     status_t err = barrier.readFromParcel(barrierParcel);
     if (err != NO_ERROR) {
-        jniThrowException(env, "java/lang/IllegalArgumentException",
+        jniThrowException(env, IllegalArgumentException,
                           "TransactionBarrier parcel has wrong format");
         return;
     }
@@ -1232,7 +1234,7 @@ static void nativeSetBoxShadowSettings(JNIEnv* env, jclass clazz, jlong transact
     gui::BoxShadowSettings settings;
     status_t err = settings.readFromParcel(settingsParcel);
     if (err != NO_ERROR) {
-        jniThrowException(env, "java/lang/IllegalArgumentException",
+        jniThrowException(env, IllegalArgumentException,
                           "BoxShadowSettings parcel has wrong format");
         return;
     }
@@ -1253,8 +1255,7 @@ static void nativeSetBorderSettings(JNIEnv* env, jclass clazz, jlong transaction
     gui::BorderSettings settings;
     status_t err = settings.readFromParcel(settingsParcel);
     if (err != NO_ERROR) {
-        jniThrowException(env, "java/lang/IllegalArgumentException",
-                          "BorderSettings parcel has wrong format");
+        jniThrowException(env, IllegalArgumentException, "BorderSettings parcel has wrong format");
         return;
     }
 

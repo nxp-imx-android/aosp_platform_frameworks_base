@@ -2062,11 +2062,13 @@ public abstract class WMShellModule {
     @Provides
     static ShellCrashHandler provideShellCrashHandler(
             ShellTaskOrganizer shellTaskOrganizer,
+            Transitions transitions,
             HomeIntentProvider homeIntentProvider,
             DesktopState desktopState,
+            Optional<BubbleController> bubbleController,
             ShellInit shellInit) {
-        return new ShellCrashHandler(shellTaskOrganizer, homeIntentProvider, desktopState,
-                shellInit);
+        return new ShellCrashHandler(shellTaskOrganizer, transitions, homeIntentProvider,
+                desktopState, bubbleController, shellInit);
     }
 
     @WMSingleton

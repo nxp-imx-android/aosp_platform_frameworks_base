@@ -144,8 +144,8 @@
     <dimen name="status_bar_bottom_aligned_margin_rotation_180">-1px</dimen>
     <dimen name="status_bar_bottom_aligned_margin_rotation_270">-1px</dimen>
 
-    <!-- Height of the system icons container view in the status bar -->
-    <dimen name="status_bar_system_icons_height">@dimen/status_bar_icon_size_sp</dimen>
+    <!-- Height of the icon container views in the status bar -->
+    <dimen name="status_bar_icon_container_height">@dimen/status_bar_icon_size_sp</dimen>
 
     <!-- New sp height of notification icons in the status bar -->
     <dimen name="status_bar_icon_size_sp">@*android:dimen/status_bar_icon_size_sp</dimen>
@@ -1309,6 +1309,7 @@
 
     <!-- Biometric Auth Credential values -->
     <dimen name="biometric_auth_icon_size">48dp</dimen>
+    <dimen name="biometric_auth_back_button_size">40dp</dimen>
 
     <!-- Biometric Auth pattern view size, better to align keyguard_security_width -->
     <dimen name="biometric_auth_pattern_view_size">348dp</dimen>

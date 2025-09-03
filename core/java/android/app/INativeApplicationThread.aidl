@@ -50,4 +50,7 @@ oneway interface INativeApplicationThread {
 
     @UnsupportedAppUsage
     void bindApplication();
+
+    @UnsupportedAppUsage
+    void setProcessState(int state);
 }

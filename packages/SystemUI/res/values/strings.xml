@@ -352,6 +352,8 @@
     <string name="screen_record_entire_screen">Entire screen</string>
     <!-- Screen recording should record a single app [CHAR LIMIT=35] -->
     <string name="screen_record_single_app">Single app</string>
+    <!-- Screen recording hint shown on a button leading to choosing an app to record [CHAR LIMIT=35] -->
+    <string name="screen_record_single_app_hint">App to record</string>
     <!-- Screen recording should record a single app but there are no apps open [CHAR LIMIT=35] -->
     <string name="screen_record_single_app_no_recents">Single app (Open an app to choose)</string>
     <!-- Screen recording should record device audio setting [CHAR LIMIT=35] -->
@@ -366,6 +368,8 @@
     <string name="screen_record_capture_target_choose_app">Choose an app to record</string>
     <!-- Snackbar shows after the screen recording is saved [CHAR LIMIT=20] -->
     <string name="screen_record_video_saved">Video saved</string>
+    <!-- Snackbar shows after the screen recording is deleted. Undo action label [CHAR LIMIT=20] -->
+    <string name="screen_record_undo">Undo</string>
     <!-- Button to retake a screen recording [CHAR LIMIT=20] -->
     <string name="screen_record_retake">Retake</string>
     <!-- Button to edit a screen recording [CHAR LIMIT=20] -->
@@ -1343,7 +1347,7 @@
     </string>
 
     <!-- Modes: title for when multiple modes are active; number is >= 2 [CHAR LIMIT=20] -->
-    <string name="zen_modes_multiple_on_title"><xliff:g id="number" example="3">%s</xliff:g> Modes</string>
+    <string name="zen_modes_multiple_on_title"><xliff:g id="number" example="3">%d</xliff:g> Modes</string>
 
     <!-- Modes: subtitle for when multiple modes are active. Plural. [CHAR LIMIT=20] -->
     <string name="zen_modes_multiple_on_status">On</string>

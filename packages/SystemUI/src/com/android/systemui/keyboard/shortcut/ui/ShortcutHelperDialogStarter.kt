@@ -18,6 +18,7 @@ package com.android.systemui.keyboard.shortcut.ui
 
 import android.app.Dialog
 import android.content.ActivityNotFoundException
+import android.content.Context
 import android.content.Intent
 import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
 import android.os.UserHandle
@@ -28,9 +29,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.android.systemui.CoreStartable
-import com.android.systemui.dagger.SysUISingleton
-import com.android.systemui.dagger.qualifiers.Application
+import com.android.systemui.dagger.qualifiers.Main
+import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent.DisplayAware
+import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent.LifecycleListener
+import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent.PerDisplaySingleton
 import com.android.systemui.keyboard.shortcut.ui.composable.ShortcutHelper
 import com.android.systemui.keyboard.shortcut.ui.composable.ShortcutHelperBottomSheet
 import com.android.systemui.keyboard.shortcut.ui.composable.getWidth
@@ -41,21 +43,25 @@ import com.android.systemui.res.R
 import com.android.systemui.statusbar.phone.SystemUIDialogFactory
 import com.android.systemui.statusbar.phone.createBottomSheet
 import javax.inject.Inject
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.withContext
 
-@SysUISingleton
+@PerDisplaySingleton
 class ShortcutHelperDialogStarter
 @Inject
 constructor(
-    @Application private val applicationScope: CoroutineScope,
-    private val shortcutHelperViewModel: ShortcutHelperViewModel,
+    @DisplayAware private val displayScope: CoroutineScope,
+    @DisplayAware private val displayContext: Context,
+    @DisplayAware private val shortcutHelperViewModel: ShortcutHelperViewModel,
     private val shortcutCustomizationDialogStarterFactory:
         ShortcutCustomizationDialogStarter.Factory,
     private val dialogFactory: SystemUIDialogFactory,
     private val activityStarter: ActivityStarter,
-) : CoreStartable {
+    @Main private val mainDispatcher: CoroutineDispatcher,
+) : LifecycleListener {
 
     @VisibleForTesting var dialog: Dialog? = null
 
@@ -63,12 +69,14 @@ constructor(
         shortcutHelperViewModel.shouldShow
             .map { shouldShow ->
                 if (shouldShow) {
-                    dialog = createShortcutHelperDialog().also { it.show() }
+                    withContext(mainDispatcher) {
+                        dialog = createShortcutHelperDialog().also { it.show() }
+                    }
                 } else {
                     dialog?.dismiss()
                 }
             }
-            .launchIn(applicationScope)
+            .launchIn(displayScope)
     }
 
     private fun createShortcutHelperDialog(): Dialog {
@@ -96,6 +104,7 @@ constructor(
                 dialog.setTitle(stringResource(R.string.shortcut_helper_title))
             },
             maxWidth = ShortcutHelperBottomSheet.LargeScreenWidthLandscape,
+            context = displayContext,
         )
     }
 

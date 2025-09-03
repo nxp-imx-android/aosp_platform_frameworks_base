@@ -138,8 +138,12 @@
     <string name="screenrecord_stop_dialog_message" msgid="6262768207331626817">"നിങ്ങൾ ഇപ്പോൾ മുഴുവൻ സ്ക്രീനും റെക്കോർഡ് ചെയ്യുകയാണ്"</string>
     <string name="screenrecord_stop_dialog_message_specific_app" msgid="5995770227684523244">"നിങ്ങൾ ഇപ്പോൾ <xliff:g id="APP_NAME">%1$s</xliff:g> റെക്കോർഡ് ചെയ്യുകയാണ്"</string>
     <string name="screenrecord_stop_dialog_button" msgid="2883812564938194350">"റെക്കോർഡിംഗ് നിർത്തുക"</string>
+    <string name="screen_record_entire_screen" msgid="66944996337928170">"മുഴുവൻ സ്‌ക്രീൻ"</string>
+    <string name="screen_record_single_app" msgid="7355880948574569290">"ഒരൊറ്റ ആപ്പ്"</string>
+    <string name="screen_record_single_app_no_recents" msgid="1023249803854209330">"ഒരൊറ്റ ആപ്പ് (തിരഞ്ഞെടുക്കാൻ ഒരു ആപ്പ് തുറക്കുക)"</string>
     <string name="screen_record_record_device_audio_label" msgid="5363057443124085198">"ഉപകരണ ഓഡിയോ റെക്കോർഡ് ചെയ്യുക"</string>
     <string name="screen_record_record_microphone_label" msgid="4685753707185662381">"മൈക്രോഫോൺ റെക്കോർഡ് ചെയ്യുക"</string>
+    <string name="screen_record_should_show_camera_label" msgid="159628971484931357">"സെൽഫി ക്യാമറ കാണിക്കുക"</string>
     <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"ടച്ചുകൾ കാണിക്കുക"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"റെക്കോർഡ് ചെയ്യാൻ ഒരു ആപ്പ് തിരഞ്ഞെടുക്കുക"</string>
     <string name="screen_record_video_saved" msgid="1345283626390232282">"വീഡിയോ സംരക്ഷിച്ചു"</string>
@@ -685,8 +689,7 @@
     <string name="accessibility_notification_section_header_gentle_clear_all" msgid="6490207897764933919">"എല്ലാ നിശബ്‌ദ അറിയിപ്പുകളും മായ്ക്കുക"</string>
     <string name="accessibility_notification_section_header_open_settings" msgid="6235202417954844004">"അറിയിപ്പ് ക്രമീകരണം തുറക്കുക"</string>
     <string name="modes_suppressing_shade_text" msgid="6037581130837903239">"{count,plural,offset:1 =0{അറിയിപ്പുകൾ ഒന്നുമില്ല}=1{{mode}, അറിയിപ്പുകൾ താൽക്കാലികമായി നിർത്തിയിരിക്കുന്നു}=2{{mode} എന്നതും മറ്റൊരു മോഡും, അറിയിപ്പുകൾ താൽക്കാലികമായി നിർത്തിയിരിക്കുന്നു}other{{mode} എന്നതും മറ്റ് # മോഡുകളും, അറിയിപ്പുകൾ താൽക്കാലികമായി നിർത്തിയിരിക്കുന്നു}}"</string>
-    <!-- no translation found for caught_up_shade_text (8166221989384139659) -->
-    <skip />
+    <string name="caught_up_shade_text" msgid="8166221989384139659">"നിങ്ങൾ എല്ലാം പൂർത്തിയാക്കി"</string>
     <string name="media_projection_action_text" msgid="3634906766918186440">"ഇപ്പോൾ ആരംഭിക്കുക"</string>
     <string name="empty_shade_text" msgid="8935967157319717412">"അറിയിപ്പുകൾ ഒന്നുമില്ല"</string>
     <string name="no_unseen_notif_text" msgid="395512586119868682">"പുതിയ അറിയിപ്പുകളൊന്നുമില്ല"</string>
@@ -986,8 +989,7 @@
     <string name="group_system_access_notification_shade" msgid="1619028907006553677">"അറിയിപ്പുകൾ കാണുക"</string>
     <string name="group_system_access_quick_settings_panel" msgid="1844771096582064926">"ദ്രുത ക്രമീകരണം കാണുക"</string>
     <string name="group_system_full_screenshot" msgid="5742204844232667785">"സ്ക്രീൻഷോട്ട് എടുക്കുക"</string>
-    <!-- no translation found for group_system_partial_screenshot (2114314797127648010) -->
-    <skip />
+    <string name="group_system_partial_screenshot" msgid="2114314797127648010">"ഭാഗിക സ്‌ക്രീൻഷോട്ട് എടുക്കുക"</string>
     <string name="group_system_access_system_app_shortcuts" msgid="8562482996626694026">"കുറുക്കുവഴികൾ കാണിക്കുക"</string>
     <string name="group_system_go_back" msgid="2730322046244918816">"മടങ്ങുക"</string>
     <string name="group_system_access_home_screen" msgid="4130366993484706483">"ഹോം സ്ക്രീനിലേക്ക് പോകുക"</string>

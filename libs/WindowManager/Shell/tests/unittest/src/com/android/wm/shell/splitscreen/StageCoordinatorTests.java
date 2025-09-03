@@ -24,6 +24,7 @@ import static android.view.Display.DEFAULT_DISPLAY;
 import static android.window.WindowContainerTransaction.HierarchyOp.HIERARCHY_OP_TYPE_DISALLOW_OVERRIDE_BOUNDS_FOR_CHILDREN;
 
 import static com.android.wm.shell.Flags.FLAG_ENABLE_ENTER_SPLIT_REMOVE_BUBBLE;
+import static com.android.wm.shell.Flags.FLAG_ENABLE_FLEXIBLE_TWO_APP_SPLIT;
 import static com.android.wm.shell.Flags.FLAG_SPLIT_DISABLE_CHILD_TASK_BOUNDS;
 import static com.android.wm.shell.shared.split.SplitScreenConstants.SNAP_TO_2_50_50;
 import static com.android.wm.shell.shared.split.SplitScreenConstants.SPLIT_INDEX_UNDEFINED;
@@ -667,9 +668,12 @@ public class StageCoordinatorTests extends ShellTestCase {
                 .filter(op -> op.getType()
                         == HIERARCHY_OP_TYPE_DISALLOW_OVERRIDE_BOUNDS_FOR_CHILDREN)
                 .toList();
-        assertThat(disableChildBoundsOps).hasSize(1);
+        assertThat(disableChildBoundsOps).hasSize(2);
         HierarchyOp op = disableChildBoundsOps.getFirst();
-        assertThat(op.getContainer()).isEqualTo(rootTaskInfo.token.asBinder());
+        assertThat(op.getContainer()).isEqualTo(mMainStage.mRootTaskInfo.token.asBinder());
+        assertThat(op.getDisallowOverrideBoundsForChildren()).isTrue();
+        op = disableChildBoundsOps.get(1);
+        assertThat(op.getContainer()).isEqualTo(mSideStage.mRootTaskInfo.token.asBinder());
         assertThat(op.getDisallowOverrideBoundsForChildren()).isTrue();
     }
 
@@ -803,6 +807,73 @@ public class StageCoordinatorTests extends ShellTestCase {
         mStageCoordinator.onChildTaskMovedToBubble(mSideStage, /* taskId= */ 8);
         verify(mSplitScreenTransitions, never()).startDismissTransition(any(), any(), anyInt(),
                 anyInt());
+    }
+
+    @Test
+    @EnableFlags(FLAG_ENABLE_FLEXIBLE_TWO_APP_SPLIT)
+    public void startTasks_withFlexibleTwoAppSplit_hidesDividerWhenStagesInactive() {
+        // Setup: Main stage is inactive, which should trigger the condition.
+        when(mMainStage.isActive()).thenReturn(false);
+        when(mSideStage.isActive()).thenReturn(true);
+        doReturn(true).when(mStageCoordinator).isSplitScreenVisible();
+
+        // Action: Start two tasks.
+        mStageCoordinator.startTasks(1 /* taskId1 */, null /* options1 */, 2 /* taskId2 */,
+                null /* options2 */, SPLIT_POSITION_TOP_OR_LEFT, SNAP_TO_2_50_50,
+                null /* remoteTransition */, null /* instanceId */);
+
+        // Verification: The divider should be hidden because a stage is inactive.
+        verify(mStageCoordinator).setDividerVisibility(eq(false), eq(null));
+    }
+
+    @Test
+    @EnableFlags(FLAG_ENABLE_FLEXIBLE_TWO_APP_SPLIT)
+    public void startTasks_withFlexibleTwoAppSplit_hidesDividerWhenNotVisible() {
+        // Setup: Both stages are active, but split screen is not visible.
+        when(mMainStage.isActive()).thenReturn(true);
+        when(mSideStage.isActive()).thenReturn(true);
+        doReturn(false).when(mStageCoordinator).isSplitScreenVisible();
+
+        // Action: Start two tasks.
+        mStageCoordinator.startTasks(1 /* taskId1 */, null /* options1 */, 2 /* taskId2 */,
+                null /* options2 */, SPLIT_POSITION_TOP_OR_LEFT, SNAP_TO_2_50_50,
+                null /* remoteTransition */, null /* instanceId */);
+
+        // Verification: The divider should be hidden because split screen is not visible.
+        verify(mStageCoordinator).setDividerVisibility(eq(false), eq(null));
+    }
+
+    @Test
+    @EnableFlags(FLAG_ENABLE_FLEXIBLE_TWO_APP_SPLIT)
+    public void startTasks_withFlexibleTwoAppSplit_doesNotHideDividerWhenActiveAndVisible() {
+        // Setup: Both stages are active and split screen is visible.
+        when(mMainStage.isActive()).thenReturn(true);
+        when(mSideStage.isActive()).thenReturn(true);
+        doReturn(true).when(mStageCoordinator).isSplitScreenVisible();
+
+        // Action: Start two tasks.
+        mStageCoordinator.startTasks(1 /* taskId1 */, null /* options1 */, 2 /* taskId2 */,
+                null /* options2 */, SPLIT_POSITION_TOP_OR_LEFT, SNAP_TO_2_50_50,
+                null /* remoteTransition */, null /* instanceId */);
+
+        // Verification: The divider should not be hidden.
+        verify(mStageCoordinator, never()).setDividerVisibility(eq(false), any());
+    }
+
+    @Test
+    @DisableFlags(FLAG_ENABLE_FLEXIBLE_TWO_APP_SPLIT)
+    public void startTasks_withoutFlexibleTwoAppSplit_doesNotHideDivider() {
+        // Setup: Flag is disabled, and conditions for hiding are met.
+        when(mMainStage.isActive()).thenReturn(false);
+        doReturn(false).when(mStageCoordinator).isSplitScreenVisible();
+
+        // Action: Start two tasks.
+        mStageCoordinator.startTasks(1 /* taskId1 */, null /* options1 */, 2 /* taskId2 */,
+                null /* options2 */, SPLIT_POSITION_TOP_OR_LEFT, SNAP_TO_2_50_50,
+                null /* remoteTransition */, null /* instanceId */);
+
+        // Verification: The divider should not be hidden because the flag is disabled.
+        verify(mStageCoordinator, never()).setDividerVisibility(eq(false), any());
     }
 
     private Transitions createTestTransitions() {

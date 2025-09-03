@@ -38,7 +38,6 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.overscroll
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -58,6 +57,7 @@ import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.window.core.layout.WindowSizeClass
 import com.android.compose.animation.scene.ContentScope
 import com.android.compose.animation.scene.SceneKey
 import com.android.compose.animation.scene.SceneTransitionLayoutState
@@ -352,14 +352,19 @@ private fun ContentScope.QuickSettingsContent(
                             .align(Alignment.TopCenter)
                             .sysuiResTag("expanded_qs_scroll_view")
                 ) {
-                    when (LocalWindowSizeClass.current.widthSizeClass) {
-                        WindowWidthSizeClass.Compact ->
-                            ExpandedShadeHeader(
-                                viewModel = headerViewModel,
-                                modifier = Modifier.padding(horizontal = 16.dp),
-                            )
-                        else ->
-                            CollapsedShadeHeader(viewModel = headerViewModel, isSplitShade = false)
+                    with(LocalWindowSizeClass.current) {
+                        when {
+                            isWidthAtLeastBreakpoint(WindowSizeClass.WIDTH_DP_MEDIUM_LOWER_BOUND) ->
+                                CollapsedShadeHeader(
+                                    viewModel = headerViewModel,
+                                    isSplitShade = false,
+                                )
+                            else ->
+                                ExpandedShadeHeader(
+                                    viewModel = headerViewModel,
+                                    modifier = Modifier.padding(horizontal = 16.dp),
+                                )
+                        }
                     }
                     Spacer(modifier = Modifier.height(16.dp))
                     QuickSettingsContent(viewModel.qsContainerViewModel, mediaInRow)
@@ -387,6 +392,7 @@ private fun ContentScope.QuickSettingsContent(
                     .padding(horizontal = shadeHorizontalPadding),
         )
 
+        // TODO(b/436646848): remove NotificationScrollingStack from QuickSettings
         // The minimum possible value for the top of the notification stack. In other words: how
         // high is the notification stack allowed to get when the scene is at rest. It may still be
         // translated farther upwards by a transition animation but, at rest, the top edge of its
@@ -406,7 +412,7 @@ private fun ContentScope.QuickSettingsContent(
             stackTopPadding = notificationStackPadding,
             stackBottomPadding = navBarBottomHeight,
             shouldIncludeHeadsUpSpace = false,
-            supportNestedScrolling = true,
+            supportNestedScrolling = false,
             modifier =
                 Modifier.fillMaxWidth()
                     // Match the screen height with the scrim, so it covers the whole screen,

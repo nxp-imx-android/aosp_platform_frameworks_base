@@ -859,6 +859,8 @@ public class ActivityManager {
             PROCESS_CAPABILITY_BFSL,
             PROCESS_CAPABILITY_USER_RESTRICTED_NETWORK,
             PROCESS_CAPABILITY_FOREGROUND_AUDIO_CONTROL,
+            PROCESS_CAPABILITY_CPU_TIME,
+            PROCESS_CAPABILITY_IMPLICIT_CPU_TIME,
     })
     @Retention(RetentionPolicy.SOURCE)
     public @interface ProcessCapability {}

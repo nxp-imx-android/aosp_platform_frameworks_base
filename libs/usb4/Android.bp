@@ -64,4 +64,5 @@ rust_ffi_shared {
         "liblog_rust",
         "libusb4_policies",
     ],
+    compile_multilib: "first",
 }

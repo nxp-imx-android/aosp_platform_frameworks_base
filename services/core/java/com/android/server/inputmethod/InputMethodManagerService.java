@@ -142,7 +142,6 @@ import android.view.inputmethod.InputMethodEditorTraceProto.InputMethodManagerSe
 import android.view.inputmethod.InputMethodInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.view.inputmethod.InputMethodSubtype;
-import android.window.ImeOnBackInvokedDispatcher;
 
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
@@ -1845,7 +1844,8 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
         final SessionState session = userData.mCurClient.mCurSession;
         setEnabledSessionLocked(session, userData);
         session.mMethod.startInput(startInputToken, userData.mCurInputConnection,
-                userData.mCurEditorInfo, restarting, navButtonFlags, userData.mCurImeDispatcher);
+                userData.mCurEditorInfo, restarting, navButtonFlags,
+                userData.mCurImeBackCallbackReceiver);
         if (Flags.optimizeImeInputTargetUpdate()) {
             if (focusedWindow != null) {
                 mWindowManagerInternal.updateImeTargetWindow(focusedWindow);
@@ -1931,7 +1931,7 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
             @NonNull EditorInfo editorInfo, @StartInputFlags int startInputFlags,
             @StartInputReason int startInputReason,
             int unverifiedTargetSdkVersion,
-            @NonNull ImeOnBackInvokedDispatcher imeDispatcher,
+            @NonNull ResultReceiver imeBackCallbackReceiver,
             @NonNull InputMethodBindingController bindingController) {
 
         final int userId = bindingController.getUserId();
@@ -1985,7 +1985,7 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
         userData.mCurClient = cs;
         userData.mCurInputConnection = inputConnection;
         userData.mCurRemoteAccessibilityInputConnection = remoteAccessibilityInputConnection;
-        userData.mCurImeDispatcher = imeDispatcher;
+        userData.mCurImeBackCallbackReceiver = imeBackCallbackReceiver;
         // Override the locale hints if the app is running on a virtual device.
         if (mVdmInternal == null) {
             mVdmInternal = LocalServices.getService(VirtualDeviceManagerInternal.class);
@@ -3471,12 +3471,12 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
             @Nullable IRemoteInputConnection inputConnection,
             @Nullable IRemoteAccessibilityInputConnection remoteAccessibilityInputConnection,
             int unverifiedTargetSdkVersion, @UserIdInt int userId,
-            @NonNull ImeOnBackInvokedDispatcher imeDispatcher, boolean imeRequestedVisible,
+            @NonNull ResultReceiver imeBackCallbackReceiver, boolean imeRequestedVisible,
             int startInputSeq) {
         final var res = startInputOrWindowGainedFocusWithResult(startInputReason, client,
                 windowToken, startInputFlags, softInputMode, windowFlags, editorInfo,
                 inputConnection, remoteAccessibilityInputConnection, unverifiedTargetSdkVersion,
-                userId, imeDispatcher, imeRequestedVisible);
+                userId, imeBackCallbackReceiver, imeRequestedVisible);
         synchronized (ImfLock.class) {
             final ClientState cs = mClientController.getClient(client.asBinder());
             if (cs != null) {
@@ -3504,7 +3504,7 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
             IRemoteInputConnection inputConnection,
             IRemoteAccessibilityInputConnection remoteAccessibilityInputConnection,
             int unverifiedTargetSdkVersion, @UserIdInt int userId,
-            @NonNull ImeOnBackInvokedDispatcher imeDispatcher, boolean imeRequestedVisible) {
+            @NonNull ResultReceiver imeBackCallbackReceiver, boolean imeRequestedVisible) {
         if (UserHandle.getCallingUserId() != userId) {
             mContext.enforceCallingOrSelfPermission(
                     Manifest.permission.INTERACT_ACROSS_USERS_FULL, null);
@@ -3620,8 +3620,8 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
                     result = startInputOrWindowGainedFocusInternalLocked(startInputReason,
                             client, windowToken, startInputFlags, softInputMode, windowFlags,
                             editorInfo, inputConnection, remoteAccessibilityInputConnection,
-                            unverifiedTargetSdkVersion, bindingController, imeDispatcher, cs,
-                            imeRequestedVisible);
+                            unverifiedTargetSdkVersion, bindingController, imeBackCallbackReceiver,
+                            cs, imeRequestedVisible);
                 } finally {
                     Binder.restoreCallingIdentity(ident);
                 }
@@ -3651,7 +3651,7 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
             IRemoteInputConnection inputContext,
             @Nullable IRemoteAccessibilityInputConnection remoteAccessibilityInputConnection,
             int unverifiedTargetSdkVersion, @NonNull InputMethodBindingController bindingController,
-            @NonNull ImeOnBackInvokedDispatcher imeDispatcher, @NonNull ClientState cs,
+            @NonNull ResultReceiver imeBackCallbackReceiver, @NonNull ClientState cs,
             boolean imeRequestedVisible) {
         ProtoLog.v(IMMS_DEBUG, "startInputOrWindowGainedFocusInternalLocked: reason=%s"
                     + " client=%s"
@@ -3662,14 +3662,14 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
                     + " windowFlags=#%s"
                     + " unverifiedTargetSdkVersion=%s"
                     + " bindingController=%s"
-                    + " imeDispatcher=%s"
+                    + " imeBackCallbackReceiver=%s"
                     + " cs=%s"
                     + " imeRequestedVisible=%s",
                 InputMethodDebug.startInputReasonToString(startInputReason), client.asBinder(),
                 inputContext, editorInfo, InputMethodDebug.startInputFlagsToString(startInputFlags),
                 InputMethodDebug.softInputModeToString(softInputMode),
                 Integer.toHexString(windowFlags), unverifiedTargetSdkVersion, bindingController,
-                imeDispatcher, cs, imeRequestedVisible);
+                imeBackCallbackReceiver, cs, imeRequestedVisible);
 
         final int userId = bindingController.getUserId();
         final var userData = getUserData(userId);
@@ -3697,7 +3697,7 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
             if (editorInfo != null) {
                 return startInputUncheckedLocked(cs, inputContext,
                         remoteAccessibilityInputConnection, editorInfo, startInputFlags,
-                        startInputReason, unverifiedTargetSdkVersion, imeDispatcher,
+                        startInputReason, unverifiedTargetSdkVersion, imeBackCallbackReceiver,
                         bindingController);
             }
             return new InputBindResult(
@@ -3733,7 +3733,7 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
                         res = startInputUncheckedLocked(cs, inputContext,
                                 remoteAccessibilityInputConnection, editorInfo, startInputFlags,
                                 startInputReason, unverifiedTargetSdkVersion,
-                                imeDispatcher, bindingController);
+                                imeBackCallbackReceiver, bindingController);
                         didStart = true;
                     }
                     break;
@@ -3760,7 +3760,7 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
                 res = startInputUncheckedLocked(cs, inputContext,
                         remoteAccessibilityInputConnection, editorInfo, startInputFlags,
                         startInputReason, unverifiedTargetSdkVersion,
-                        imeDispatcher, bindingController);
+                        imeBackCallbackReceiver, bindingController);
             } else {
                 res = InputBindResult.NULL_EDITOR_INFO;
             }

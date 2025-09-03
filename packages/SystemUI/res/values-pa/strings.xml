@@ -138,8 +138,16 @@
     <string name="screenrecord_stop_dialog_message" msgid="6262768207331626817">"ਤੁਸੀਂ ਫ਼ਿਲਹਾਲ ਆਪਣੀ ਪੂਰੀ ਸਕ੍ਰੀਨ ਨੂੰ ਰਿਕਾਰਡ ਕਰ ਰਹੇ ਹੋ"</string>
     <string name="screenrecord_stop_dialog_message_specific_app" msgid="5995770227684523244">"ਤੁਸੀਂ ਫ਼ਿਲਹਾਲ <xliff:g id="APP_NAME">%1$s</xliff:g> ਨੂੰ ਰਿਕਾਰਡ ਕਰ ਰਹੇ ਹੋ"</string>
     <string name="screenrecord_stop_dialog_button" msgid="2883812564938194350">"ਰਿਕਾਰਡਿੰਗ ਬੰਦ ਕਰੋ"</string>
+    <!-- no translation found for screen_record_entire_screen (66944996337928170) -->
+    <skip />
+    <!-- no translation found for screen_record_single_app (7355880948574569290) -->
+    <skip />
+    <!-- no translation found for screen_record_single_app_no_recents (1023249803854209330) -->
+    <skip />
     <string name="screen_record_record_device_audio_label" msgid="5363057443124085198">"ਡੀਵਾਈਸ ਆਡੀਓ ਨੂੰ ਰਿਕਾਰਡ ਕਰੋ"</string>
     <string name="screen_record_record_microphone_label" msgid="4685753707185662381">"ਮਾਈਕ੍ਰੋਫ਼ੋਨ ਨਾਲ ਰਿਕਾਰਡ ਕਰੋ"</string>
+    <!-- no translation found for screen_record_should_show_camera_label (159628971484931357) -->
+    <skip />
     <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"ਸਪਰਸ਼ ਦਿਖਾਓ"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"ਰਿਕਾਰਡ ਕਰਨ ਲਈ ਕੋਈ ਐਪ ਚੁਣੋ"</string>
     <string name="screen_record_video_saved" msgid="1345283626390232282">"ਵੀਡੀਓ ਨੂੰ ਰੱਖਿਅਤ ਕੀਤਾ ਗਿਆ"</string>
@@ -685,8 +693,7 @@
     <string name="accessibility_notification_section_header_gentle_clear_all" msgid="6490207897764933919">"ਸਾਰੀਆਂ ਸ਼ਾਂਤ ਸੂਚਨਾਵਾਂ ਕਲੀਅਰ ਕਰੋ"</string>
     <string name="accessibility_notification_section_header_open_settings" msgid="6235202417954844004">"ਸੂਚਨਾ ਸੈਟਿੰਗਾਂ ਖੋਲ੍ਹੋ"</string>
     <string name="modes_suppressing_shade_text" msgid="6037581130837903239">"{count,plural,offset:1 =0{ਕੋਈ ਸੂਚਨਾ ਨਹੀਂ ਹੈ}=1{{mode} ਵੱਲੋਂ ਸੂਚਨਾਵਾਂ ਨੂੰ ਬੰਦ ਕੀਤਾ ਗਿਆ}=2{{mode} ਅਤੇ ਇੱਕ ਹੋਰ ਮੋਡ ਵੱਲੋਂ ਸੂਚਨਾਵਾਂ ਨੂੰ ਬੰਦ ਕੀਤਾ ਗਿਆ}other{{mode} ਅਤੇ # ਹੋਰ ਮੋਡਾਂ ਵੱਲੋਂ ਸੂਚਨਾਵਾਂ ਨੂੰ ਬੰਦ ਕੀਤਾ ਗਿਆ}}"</string>
-    <!-- no translation found for caught_up_shade_text (8166221989384139659) -->
-    <skip />
+    <string name="caught_up_shade_text" msgid="8166221989384139659">"ਤੁਸੀਂ ਸਭ ਦੇਖ ਲਿਆ ਹੈ"</string>
     <string name="media_projection_action_text" msgid="3634906766918186440">"ਹੁਣੇ ਸ਼ੁਰੂ ਕਰੋ"</string>
     <string name="empty_shade_text" msgid="8935967157319717412">"ਕੋਈ ਸੂਚਨਾ ਨਹੀਂ"</string>
     <string name="no_unseen_notif_text" msgid="395512586119868682">"ਕੋਈ ਨਵੀਂ ਸੂਚਨਾ ਨਹੀਂ ਹੈ"</string>
@@ -1012,8 +1019,7 @@
     <string name="system_desktop_mode_snap_right_window" msgid="2162560187639411929">"ਵਿੰਡੋ ਨੂੰ ਸੱਜੇ ਪਾਸੇ ਲਿਜਾਓ"</string>
     <string name="system_desktop_mode_toggle_maximize_window" msgid="4084100093691768239">"ਵਿੰਡੋ ਨੂੰ ਵੱਡਾ ਕਰੋ"</string>
     <string name="system_desktop_mode_minimize_window" msgid="1248714536732927092">"ਵਿੰਡੋ ਨੂੰ ਛੋਟਾ ਕਰੋ"</string>
-    <!-- no translation found for system_desktop_mode_close_window (3072490692608682536) -->
-    <skip />
+    <string name="system_desktop_mode_close_window" msgid="3072490692608682536">"ਮੌਜੂਦਾ ਵਿੰਡੋ ਨੂੰ ਬੰਦ ਕਰੋ"</string>
     <string name="system_multiple_desktop_mode_switch_between_desks" msgid="6093884593003003708">"ਵੱਖ-ਵੱਖ ਡੈਸਕਟਾਪਾਂ ਵਿਚਕਾਰ ਸਵਿੱਚ ਕਰੋ"</string>
     <string name="keyboard_shortcut_group_input" msgid="6888282716546625610">"ਇਨਪੁੱਟ"</string>
     <string name="input_switch_input_language_next" msgid="3782155659868227855">"ਅਗਲੀ ਭਾਸ਼ਾ \'ਤੇ ਸਵਿੱਚ ਕਰੋ"</string>
@@ -1140,14 +1146,10 @@
     <string name="accessibility_key_gesture_magnification_dialog_content" msgid="7575802369763469379">"ਕਾਰਵਾਈ "<annotation id="action_key_icon">"ਪ੍ਰਤੀਕ"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> <xliff:g id="ID_3">^3</xliff:g> ਨੂੰ ਵਰਤਣ ਦਾ ਕੀ-ਬੋਰਡ ਸ਼ਾਰਟਕੱਟ ਹੈ। ਇਹ ਤੁਹਾਨੂੰ ਸਮੱਗਰੀ ਨੂੰ ਵੱਡਾ ਕਰਨ ਲਈ ਸਕ੍ਰੀਨ \'ਤੇ ਤੇਜ਼ੀ ਨਾਲ ਜ਼ੂਮ ਵਧਾਉਣ ਦੀ ਆਗਿਆ ਦਿੰਦਾ ਹੈ। ਜ਼ੂਮ ਨੂੰ ਵਿਵਸਥਿਤ ਕਰਨ ਲਈ ਕਾਰਵਾਈ "<annotation id="action_key_icon">"ਪ੍ਰਤੀਕ"</annotation>" + <xliff:g id="ID_4">^1</xliff:g> ਅਤੇ \"+\" ਜਾਂ \"-\" ਦਬਾਓ।"</string>
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"ਸ਼ਾਰਟਕੱਟ ਬੰਦ ਕਰੋ"</string>
     <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"ਚਾਲੂ ਰੱਖੋ"</string>
-    <!-- no translation found for accessibility_key_gesture_voice_access_dialog_title (7828090789777023683) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_voice_access_dialog_content (7934170819801013870) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_voice_access_dialog_negative_button_text (3573570279554465078) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_voice_access_dialog_positive_button_text (2306321856544446858) -->
-    <skip />
+    <string name="accessibility_key_gesture_voice_access_dialog_title" msgid="7828090789777023683">"ਕੀ <xliff:g id="ID_1">%1$s</xliff:g> ਕੀ-ਬੋਰਡ ਸ਼ਾਰਟਕੱਟ ਨੂੰ ਚਾਲੂ ਕਰਨਾ ਹੈ?"</string>
+    <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="7934170819801013870">"ਕਾਰਵਾਈ "<annotation id="action_key_icon">"ਪ੍ਰਤੀਕ"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> ਦਬਾਉਣ \'ਤੇ <xliff:g id="ID_3">^3</xliff:g> ਪਹੁੰਚਯੋਗਤਾ ਵਿਸ਼ੇਸ਼ਤਾ ਚਾਲੂ ਹੋ ਜਾਂਦੀ ਹੈ। ਇਸ ਨਾਲ ਤੁਸੀਂ ਆਪਣੇ ਡੀਵਾਈਸ ਨੂੰ ਹੱਥ-ਰਹਿਤ ਕੰਟਰੋਲ ਕਰ ਸਕਦੇ ਹੋ।"</string>
+    <string name="accessibility_key_gesture_voice_access_dialog_negative_button_text" msgid="3573570279554465078">"ਚਾਲੂ ਨਾ ਕਰੋ"</string>
+    <string name="accessibility_key_gesture_voice_access_dialog_positive_button_text" msgid="2306321856544446858">"ਸ਼ਾਰਟਕੱਟ ਚਾਲੂ ਕਰੋ"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">" ਲਾਕ  ਸਕ੍ਰੀਨ"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"ਬੰਦ ਹੋ ਰਿਹਾ ਹੈ…"</string>
     <string name="thermal_shutdown_dialog_help_text" msgid="6413474593462902901">"ਦੇਖਭਾਲ ਦੇ ਪੜਾਅ ਦੇਖੋ"</string>

@@ -639,10 +639,8 @@
     <string name="permdesc_uwb_ranging" msgid="2519723069604307055">"സമീപമുള്ള അൾട്രാ-വെെഡ്ബാൻഡ് ഉപകരണങ്ങൾ തമ്മിലുള്ള ആപേക്ഷിക സ്ഥാനം നിർണ്ണയിക്കാൻ ആപ്പിനെ അനുവദിക്കുക"</string>
     <string name="permlab_nearby_wifi_devices" msgid="392774237063608500">"സമീപമുള്ള വൈഫൈ ഉപകരണങ്ങളുമായി ഇടപഴകുക"</string>
     <string name="permdesc_nearby_wifi_devices" msgid="3054307728646332906">"സമീപമുള്ള വൈഫൈ ഉപകരണങ്ങൾ കാണിക്കാനും അവയിലേക്ക് കണക്റ്റ് ചെയ്യാനും അവയുടെ ആപേക്ഷിക സ്ഥാനം നിർണ്ണയിക്കാനും ആപ്പിനെ അനുവദിക്കൂ"</string>
-    <!-- no translation found for permlab_access_local_network (3420360767259066877) -->
-    <skip />
-    <!-- no translation found for permdesc_access_local_network (6364679803386822638) -->
-    <skip />
+    <string name="permlab_access_local_network" msgid="3420360767259066877">"ലോക്കൽ നെറ്റ്‌വർക്ക് ഉപകരണങ്ങൾ ആക്സസ് ചെയ്യുക"</string>
+    <string name="permdesc_access_local_network" msgid="6364679803386822638">"ലോക്കൽ നെറ്റ്‌വർക്ക് ഉപകരണങ്ങൾ ആക്സസ് ചെയ്യാൻ ആപ്പിനെ അനുവദിക്കുന്നു"</string>
     <string name="permlab_ranging" msgid="2854543350668593390">"സമീപമുള്ള ഉപകരണങ്ങൾ തമ്മിലുള്ള ആപേക്ഷിക സ്ഥാനം നിർണ്ണയിക്കൂ"</string>
     <string name="permdesc_ranging" msgid="6703905535621521710">"സമീപമുള്ള ഉപകരണങ്ങൾ തമ്മിലുള്ള ആപേക്ഷിക സ്ഥാനം നിർണ്ണയിക്കാൻ ആപ്പിനെ അനുവദിക്കുക"</string>
     <string name="permlab_preferredPaymentInfo" msgid="5274423844767445054">"തിരഞ്ഞെടുത്ത NFC പേയ്‌മെന്റ് സേവനത്തെ സംബന്ധിച്ച വിവരങ്ങൾ"</string>

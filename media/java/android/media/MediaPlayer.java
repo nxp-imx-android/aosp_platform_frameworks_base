@@ -1596,11 +1596,7 @@ public class MediaPlayer extends PlayerBase
     private void broadcastRoutingChange() {
         AudioManager.resetAudioPortGeneration();
         synchronized (mRoutingChangeListeners) {
-            // Prevent the case where an event is triggered by registering a routing change
-            // listener via the media player.
-            if (mEnableSelfRoutingMonitor) {
-                baseUpdateDeviceIds(getRoutedDevicesInternal());
-            }
+            baseUpdateDeviceIds(getRoutedDevicesInternal());
             for (NativeRoutingEventHandlerDelegate delegate
                     : mRoutingChangeListeners.values()) {
                 delegate.notifyClient();
