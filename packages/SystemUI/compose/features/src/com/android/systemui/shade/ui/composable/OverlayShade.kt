@@ -31,7 +31,6 @@ import androidx.compose.foundation.layout.union
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.overscroll
-import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.remember
@@ -48,6 +47,7 @@ import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.window.core.layout.WindowSizeClass
 import com.android.compose.animation.scene.ContentScope
 import com.android.compose.animation.scene.ElementKey
 import com.android.compose.animation.scene.LowestZIndexContentPicker
@@ -183,7 +183,9 @@ private fun Modifier.panelWidth(isFullWidthPanel: Boolean): Modifier {
 @Composable
 @ReadOnlyComposable
 internal fun isFullWidthShade(): Boolean {
-    return LocalWindowSizeClass.current.widthSizeClass == WindowWidthSizeClass.Compact
+    return !LocalWindowSizeClass.current.isWidthAtLeastBreakpoint(
+        WindowSizeClass.WIDTH_DP_MEDIUM_LOWER_BOUND
+    )
 }
 
 @Composable

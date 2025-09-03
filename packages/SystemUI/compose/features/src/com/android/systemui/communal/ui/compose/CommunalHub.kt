@@ -105,8 +105,6 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
-import androidx.compose.material3.windowsizeclass.WindowHeightSizeClass
-import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
@@ -178,6 +176,7 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.viewinterop.NoOpUpdate
 import androidx.compose.ui.zIndex
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.window.core.layout.WindowSizeClass
 import androidx.window.layout.WindowMetricsCalculator
 import com.android.compose.animation.Easings.Emphasized
 import com.android.compose.animation.scene.ContentScope
@@ -2082,8 +2081,10 @@ private fun gridContentPadding(isEditMode: Boolean, toolbarSize: IntSize?): Padd
 fun isCompactWindow(): Boolean {
     val windowSizeClass = LocalWindowSizeClass.current
     return remember(windowSizeClass) {
-        windowSizeClass.widthSizeClass == WindowWidthSizeClass.Compact ||
-            windowSizeClass.heightSizeClass == WindowHeightSizeClass.Compact
+        !windowSizeClass.isAtLeastBreakpoint(
+            WindowSizeClass.WIDTH_DP_MEDIUM_LOWER_BOUND,
+            WindowSizeClass.HEIGHT_DP_MEDIUM_LOWER_BOUND,
+        )
     }
 }
 
@@ -2092,8 +2093,12 @@ fun isCompactWindow(): Boolean {
 private fun isMediumWindow(): Boolean {
     val windowSizeClass = LocalWindowSizeClass.current
     return remember(windowSizeClass) {
-        windowSizeClass.widthSizeClass == WindowWidthSizeClass.Medium ||
-            windowSizeClass.heightSizeClass == WindowHeightSizeClass.Medium
+        with(windowSizeClass) {
+            (isWidthAtLeastBreakpoint(WindowSizeClass.WIDTH_DP_MEDIUM_LOWER_BOUND) &&
+                !isWidthAtLeastBreakpoint(WindowSizeClass.WIDTH_DP_EXPANDED_LOWER_BOUND)) ||
+                (isHeightAtLeastBreakpoint(WindowSizeClass.HEIGHT_DP_MEDIUM_LOWER_BOUND) &&
+                    !isHeightAtLeastBreakpoint(WindowSizeClass.HEIGHT_DP_EXPANDED_LOWER_BOUND))
+        }
     }
 }
 
