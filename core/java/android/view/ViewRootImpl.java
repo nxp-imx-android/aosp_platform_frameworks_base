@@ -273,6 +273,7 @@ import android.window.ActivityWindowInfo;
 import android.window.BackEvent;
 import android.window.ClientWindowFrames;
 import android.window.CompatOnBackInvokedCallback;
+import android.window.ImeBackCallbackProxy;
 import android.window.InputTransferToken;
 import android.window.OnBackAnimationCallback;
 import android.window.OnBackInvokedCallback;
@@ -7791,7 +7792,12 @@ public final class ViewRootImpl implements ViewParent,
                             return FORWARD;
                         }
                     } else if (mContext != null
-                            && mOnBackInvokedDispatcher.isOnBackInvokedCallbackEnabled()) {
+                            && (mOnBackInvokedDispatcher.isOnBackInvokedCallbackEnabled()
+                            || mOnBackInvokedDispatcher.getTopCallback()
+                            instanceof ImeBackAnimationController
+                            || mOnBackInvokedDispatcher.getTopCallback()
+                            instanceof ImeBackCallbackProxy.ImeOnBackInvokedCallback)
+                    ) {
                         return doOnBackKeyEvent(keyEvent);
                     }
                 }
