@@ -2440,11 +2440,18 @@ public final class Display {
          * logical width and height without changing the mode reported to SurfaceFlinger.
          */
         public static final int FLAG_SIZE_OVERRIDE = 1 << 1;
+        /**
+         * @hide
+         *
+         * A synthetic display mode flag that indicates the mode has corrected anisotropy.
+         */
+        public static final int FLAG_ANISOTROPY_CORRECTION = 1 << 2;
 
         /** @hide */
         @IntDef(flag = true, prefix = {"FLAG_"}, value = {
                 FLAG_ARR_RENDER_RATE,
                 FLAG_SIZE_OVERRIDE,
+                FLAG_ANISOTROPY_CORRECTION
         })
         @Retention(RetentionPolicy.SOURCE)
         public @interface ModeFlags {}
