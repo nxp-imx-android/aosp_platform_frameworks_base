@@ -87,10 +87,8 @@
     <string name="bluetooth_connecting" msgid="5871702668260192755">"Подключение..."</string>
     <string name="bluetooth_connected" msgid="8065345572198502293">"Подключено<xliff:g id="ACTIVE_DEVICE">%1$s</xliff:g>"</string>
     <string name="bluetooth_pairing" msgid="4269046942588193600">"Подключение..."</string>
-    <!-- no translation found for bluetooth_pairing_failure (6914444518793157913) -->
-    <skip />
-    <!-- no translation found for bluetooth_connection_failure (384203214661155324) -->
-    <skip />
+    <string name="bluetooth_pairing_failure" msgid="6914444518793157913">"Ошибка подключения."</string>
+    <string name="bluetooth_connection_failure" msgid="384203214661155324">"Ошибка подключения."</string>
     <string name="bluetooth_connected_no_headset" msgid="2224101138659967604">"Подключено (кроме звонков)<xliff:g id="ACTIVE_DEVICE">%1$s</xliff:g>"</string>
     <string name="bluetooth_connected_no_a2dp" msgid="8566874395813947092">"Подключено (кроме аудио)<xliff:g id="ACTIVE_DEVICE">%1$s</xliff:g>"</string>
     <string name="bluetooth_connected_no_headset_no_a2dp" msgid="2893204819854215433">"Подключено (кроме звонков и аудио)<xliff:g id="ACTIVE_DEVICE">%1$s</xliff:g>"</string>
@@ -349,8 +347,7 @@
     <string name="wifi_non_persistent_mac_randomization_summary" msgid="2159794543105053930">"Если этот режим активирован, MAC-адрес устройства может меняться при каждом подключении к сети, в которой возможно создание случайных MAC-адресов"</string>
     <string name="wifi_metered_label" msgid="8737187690304098638">"Сеть с тарификацией трафика"</string>
     <string name="wifi_unmetered_label" msgid="6174142840934095093">"Сеть без тарификации трафика"</string>
-    <!-- no translation found for select_logd_size_title (4393502933789367691) -->
-    <skip />
+    <string name="select_logd_size_title" msgid="4393502933789367691">"Размер буфера журнала"</string>
     <string name="select_logd_size_dialog_title" msgid="2105401994681013578">"Выберите размер буфера журнала"</string>
     <string name="dev_logpersist_clear_warning_title" msgid="8631859265777337991">"Очистить постоянный диск журнала?"</string>
     <string name="dev_logpersist_clear_warning_message" msgid="6447590867594287413">"Прекратив отслеживание постоянного журнала, мы будем обязаны удалить его данные, сохраненные на устройстве."</string>
