@@ -109,6 +109,7 @@ cc_defaults {
         "libandroid_runtime",
         "libandroidfw",
         "libaudioclient",
+        "libasyncio",
         "libbase",
         "libappfuse",
         "libbinder_ndk",
