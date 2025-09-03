@@ -98,8 +98,10 @@
     <string name="message_uninstall_activity" msgid="3263352475743590167">"<xliff:g id="ACTIVITY_NAME">%1$s</xliff:g> дараах аппын нэг хэсэг юм: <xliff:g id="APP_NAME">%2$s</xliff:g>"</string>
     <string name="cannot_install_app_blocked_summary" msgid="5439893912308217959">"&lt;p&gt;Энэ аппыг блоклосон. Өөрийн төхөөрөмж, өгөгдлийг аюулгүй байлгахад туслахын тулд зөвхөн баталгаажсан хөгжүүлэгчийн аппыг суулгаж болно.&lt;/p&gt;"</string>
     <string name="cannot_update_app_blocked_summary" msgid="7817560122951640605">"&lt;p&gt;Энэ аппыг шинэчлээгүй. Өөрийн төхөөрөмж, өгөгдлийг аюулгүй байлгахад туслахын тулд зөвхөн баталгаажсан хөгжүүлэгчийн шинэчлэлтийг суулгаж болно.&lt;/p&gt;"</string>
-    <string name="cannot_install_verification_no_internet_summary" msgid="236829543597389666">"&lt;p&gt;Энэ аппыг суулгаагүй. Баталгаажаагүй хөгжүүлэгчийн апп аюултай байж болзошгүй.&lt;/p&gt; &lt;p&gt;Апп хөгжүүлэгчийг баталгаажуулахын тулд интернэтэд холбогдох шаардлагатай. Холболтоо шалгаад, дараа нь аппыг дахин суулгаж үзнэ үү. &lt;/p&gt;"</string>
-    <string name="cannot_update_verification_no_internet_summary" msgid="28024736898646891">"&lt;p&gt;Энэ аппыг шинэчлээгүй. Баталгаажаагүй хөгжүүлэгчийн шинэчлэлт аюултай байж болзошгүй.&lt;/p&gt; &lt;p&gt;Апп хөгжүүлэгчийг баталгаажуулахад интернэтэд холбогдох шаардлагатай. Холболтоо шалгаад, дараа нь аппыг дахин шинэчилж үзнэ үү. &lt;/p&gt;"</string>
+    <!-- no translation found for cannot_install_verification_no_internet_summary (8875444318661602648) -->
+    <skip />
+    <!-- no translation found for cannot_update_verification_no_internet_summary (8529572409795745791) -->
+    <skip />
     <string name="cannot_install_verification_unavailable_summary" msgid="6208343652461257248">"&lt;p&gt;Энэ аппын хөгжүүлэгчийг баталгаажуулахад асуудал гарлаа. Баталгаажаагүй хөгжүүлэгчийн апп аюултай байж болзошгүй тул уг аппыг суулгаагүй.&lt;/p&gt;"</string>
     <string name="cannot_update_verification_unavailable_summary" msgid="367099122142054088">"&lt;p&gt;Энэ аппын хөгжүүлэгчийг баталгаажуулахад асуудал гарлаа. Баталгаажаагүй хөгжүүлэгчийн шинэчлэлт аюултай байж болзошгүй тул уг аппыг шинэчлээгүй.&lt;/p&gt;"</string>
     <string name="cannot_install_verification_unavailable_fail_closed_summary" msgid="3798407602770929670">"&lt;p&gt;Хөгжүүлэгчийг баталгаажуулахад асуудал гарсан тул энэ аппыг блоклосон. Өөрийн төхөөрөмж, өгөгдлийг аюулгүй байлгахад туслахын тулд зөвхөн баталгаажсан хөгжүүлэгчийн аппыг суулгаж болно.&lt;/p&gt;"</string>
