@@ -21,6 +21,11 @@ package android.processor.devicepolicy;
  */
 public @interface EnumPolicyDefinition {
     /**
+     * Base data for all policies.
+     */
+    PolicyDefinition base();
+
+    /**
      * Indicates which IntDef represents this enum.
      */
     Class<?> intDef();

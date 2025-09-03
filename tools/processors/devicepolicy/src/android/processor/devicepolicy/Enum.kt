@@ -64,7 +64,7 @@ import javax.lang.model.type.TypeMirror
  *             "EXAMPLE_POLICY");
  * }
  */
-class EnumProcessor(processingEnv: ProcessingEnvironment) : Processor(processingEnv) {
+class EnumProcessor(processingEnv: ProcessingEnvironment) : Processor<EnumPolicyDefinition>(processingEnv) {
     private companion object {
         const val SIMPLE_TYPE_INTEGER = "java.lang.Integer"
 
@@ -85,9 +85,9 @@ class EnumProcessor(processingEnv: ProcessingEnvironment) : Processor(processing
      *
      * @return null if the element does not have a @EnumPolicyDefinition or on error, {@link EnumPolicyMetadata} otherwise.
      */
-    fun process(element: Element): EnumPolicyMetadata? {
-        val enumPolicyAnnotation =
-            element.getAnnotation(EnumPolicyDefinition::class.java) ?: return null
+    override fun processMetadata(element: Element): Pair<PolicyMetadata, PolicyDefinition>? {
+        val enumPolicyAnnotation = element.getAnnotation(EnumPolicyDefinition::class.java)
+            ?: throw IllegalStateException("Processor should only be called on elements with @EnumPolicyMetadata")
 
         if (!processingEnv.typeUtils.isSameType(policyType(element), integerType)) {
             printError(
@@ -119,9 +119,15 @@ class EnumProcessor(processingEnv: ProcessingEnvironment) : Processor(processing
         // In the class-level example above, these would be ENUM_ENTRY_1 and ENUM_ENTRY_2.
         val entries = getIntDefIdentifiers(annotationMirror, intDefElement)
 
-        return EnumPolicyMetadata(
+        val metadata = EnumPolicyMetadata(
             enumPolicyAnnotation.defaultValue, enumName, enumDoc, entries
         )
+
+        return Pair(metadata, enumPolicyAnnotation.base)
+    }
+
+    override fun annotationClass(): Class<EnumPolicyDefinition> {
+        return EnumPolicyDefinition::class.java
     }
 
     /**
