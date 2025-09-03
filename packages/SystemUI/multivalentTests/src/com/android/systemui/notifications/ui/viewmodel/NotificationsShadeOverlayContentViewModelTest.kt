@@ -19,7 +19,6 @@ package com.android.systemui.notifications.ui.viewmodel
 import android.app.StatusBarManager.DISABLE2_QUICK_SETTINGS
 import android.content.res.Configuration
 import android.content.res.mainResources
-import android.content.testableContext
 import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import android.testing.TestableLooper
@@ -34,10 +33,12 @@ import com.android.systemui.authentication.data.repository.FakeAuthenticationRep
 import com.android.systemui.authentication.domain.interactor.AuthenticationResult
 import com.android.systemui.authentication.domain.interactor.authenticationInteractor
 import com.android.systemui.desktop.domain.interactor.DesktopInteractor
+import com.android.systemui.desktop.domain.interactor.desktopInteractor
 import com.android.systemui.flags.EnableSceneContainer
 import com.android.systemui.keyguard.ui.transitions.blurConfig
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.Kosmos.Fixture
+import com.android.systemui.kosmos.applicationCoroutineScope
 import com.android.systemui.kosmos.backgroundScope
 import com.android.systemui.kosmos.collectLastValue
 import com.android.systemui.kosmos.runTest
@@ -67,6 +68,10 @@ import com.android.systemui.shade.ui.viewmodel.shadeHeaderViewModelFactory
 import com.android.systemui.statusbar.core.StatusBarForDesktop
 import com.android.systemui.statusbar.disableflags.data.repository.fakeDisableFlagsRepository
 import com.android.systemui.statusbar.disableflags.domain.interactor.disableFlagsInteractor
+import com.android.systemui.statusbar.notification.stack.data.repository.notificationPlaceholderRepository
+import com.android.systemui.statusbar.notification.stack.data.repository.notificationViewHeightRepository
+import com.android.systemui.statusbar.notification.stack.domain.interactor.NotificationStackAppearanceInteractor
+import com.android.systemui.statusbar.notification.stack.domain.interactor.notificationStackAppearanceInteractor
 import com.android.systemui.statusbar.notification.stack.ui.viewmodel.notificationsPlaceholderViewModelFactory
 import com.android.systemui.statusbar.policy.configurationController
 import com.android.systemui.testKosmos
@@ -99,6 +104,7 @@ class NotificationsShadeOverlayContentViewModelTest : SysuiTestCase() {
     fun showHeader_desktopStatusBarDisabled_true() =
         kosmos.runTest {
             setUseDesktopStatusBar(false)
+
             assertThat(underTest.showHeader).isTrue()
         }
 
@@ -107,6 +113,7 @@ class NotificationsShadeOverlayContentViewModelTest : SysuiTestCase() {
     fun showHeader_desktopStatusBarEnabled_statusBarForDesktopEnabled_false() =
         kosmos.runTest {
             setUseDesktopStatusBar(true)
+
             assertThat(underTest.showHeader).isFalse()
         }
 
@@ -115,30 +122,40 @@ class NotificationsShadeOverlayContentViewModelTest : SysuiTestCase() {
     fun showHeader_desktopStatusBarEnabled_statusBarForDesktopDisabled_true() =
         kosmos.runTest {
             setUseDesktopStatusBar(true)
+
             assertThat(underTest.showHeader).isTrue()
         }
 
     @Test
     @DisableFlags(StatusBarForDesktop.FLAG_NAME)
-    fun alignmentOnWideScreens_statusBarForDesktopDisabled_topStart() =
+    fun alignmentOnWideScreens_statusBarForDesktopDisabled_start() =
         kosmos.runTest {
-            assertThat(createTestInstance().alignmentOnWideScreens).isEqualTo(Alignment.TopStart)
+            setUseDesktopStatusBar(false)
+
+            assertThat(underTest.alignmentOnWideScreens).isEqualTo(Alignment.Start)
         }
 
     @Test
     @EnableFlags(StatusBarForDesktop.FLAG_NAME)
-    fun alignmentOnWideScreens_configDisabled_statusBarForDesktopEnabled_topStart() =
+    fun alignmentOnWideScreens_configDisabled_statusBarForDesktopEnabled_start() =
         kosmos.runTest {
-            overrideConfig(R.bool.config_notificationShadeOnTopEnd, false)
-            assertThat(createTestInstance().alignmentOnWideScreens).isEqualTo(Alignment.TopStart)
+            enableDualShade(wideLayout = true)
+            overrideResource(R.bool.config_notificationShadeOnTopEnd, false)
+
+            val underTest = createTestInstance().apply { activateIn(testScope) }
+            assertThat(underTest.alignmentOnWideScreens).isEqualTo(Alignment.Start)
         }
 
     @Test
     @EnableFlags(StatusBarForDesktop.FLAG_NAME)
-    fun alignmentOnWideScreens_configEnabled_statusBarForDesktopEnabled_topEnd() =
+    fun alignmentOnWideScreens_configEnabled_statusBarForDesktopEnabled_end() =
         kosmos.runTest {
-            overrideConfig(R.bool.config_notificationShadeOnTopEnd, true)
-            assertThat(createTestInstance().alignmentOnWideScreens).isEqualTo(Alignment.TopEnd)
+            enableDualShade(wideLayout = true)
+            overrideResource(R.bool.config_notificationShadeOnTopEnd, true)
+            notificationStackAppearanceInteractor.notificationStackHorizontalAlignment
+
+            val underTest = createTestInstance().apply { activateIn(testScope) }
+            assertThat(underTest.alignmentOnWideScreens).isEqualTo(Alignment.End)
         }
 
     @Test
@@ -306,12 +323,12 @@ class NotificationsShadeOverlayContentViewModelTest : SysuiTestCase() {
             val currentScene by collectLastValue(sceneInteractor.currentScene)
             val currentOverlays by collectLastValue(sceneInteractor.currentOverlays)
 
-            kosmos.enableDualShade()
-            kosmos.shadeInteractor.expandNotificationsShade("test")
+            enableDualShade()
+            shadeInteractor.expandNotificationsShade("test")
             assertThat(currentScene).isEqualTo(Scenes.Lockscreen)
             assertThat(currentOverlays).contains(Overlays.NotificationsShade)
 
-            kosmos.enableSingleShade()
+            enableSingleShade()
             assertThat(currentScene).isEqualTo(Scenes.Shade)
             assertThat(currentOverlays).doesNotContain(Overlays.NotificationsShade)
         }
@@ -370,38 +387,6 @@ class NotificationsShadeOverlayContentViewModelTest : SysuiTestCase() {
         assertThat(currentScene).isEqualTo(Scenes.Lockscreen)
     }
 
-    private fun Kosmos.setUseDesktopStatusBar(enable: Boolean) {
-        overrideConfig(R.bool.config_useDesktopStatusBar, enable)
-        configurationController.onConfigurationChanged(Configuration())
-    }
-
-    private fun Kosmos.overrideConfig(configId: Int, value: Boolean) {
-        testableContext.orCreateTestableResources.addOverride(configId, value)
-    }
-
-    private fun Kosmos.createTestInstance(): NotificationsShadeOverlayContentViewModel {
-        val desktopInteractor =
-            DesktopInteractor(
-                resources = mainResources,
-                scope = backgroundScope,
-                configurationController = configurationController,
-            )
-        return NotificationsShadeOverlayContentViewModel(
-            mainDispatcher = testDispatcher,
-            shadeHeaderViewModelFactory = shadeHeaderViewModelFactory,
-            notificationsPlaceholderViewModelFactory = notificationsPlaceholderViewModelFactory,
-            sceneInteractor = sceneInteractor,
-            shadeInteractor = shadeInteractor,
-            shadeModeInteractor = shadeModeInteractor,
-            disableFlagsInteractor = disableFlagsInteractor,
-            mediaCarouselInteractor = mediaCarouselInteractor,
-            windowRootViewBlurInteractor = windowRootViewBlurInteractor,
-            desktopInteractor = desktopInteractor,
-            blurConfig = blurConfig,
-            mediaViewModelFactory = mediaViewModelFactory,
-        )
-    }
-
     private suspend fun Kosmos.unlockDevice() {
         val currentScene by collectLastValue(sceneInteractor.currentScene)
         powerInteractor.setAwakeForTest()
@@ -424,4 +409,44 @@ class NotificationsShadeOverlayContentViewModelTest : SysuiTestCase() {
 
             assertThat(shadeBounds).isEqualTo(expectedShadeBounds)
         }
+
+    private fun Kosmos.setUseDesktopStatusBar(enable: Boolean) {
+        enableDualShade(wideLayout = true)
+        overrideResource(R.bool.config_useDesktopStatusBar, enable)
+        configurationController.onConfigurationChanged(Configuration())
+    }
+
+    // TODO(441100057): Remove once DesktopInteractor.isNotificationShadeOnTopEnd supports runtime
+    //  config updates.
+    private fun Kosmos.createTestInstance(): NotificationsShadeOverlayContentViewModel {
+        val desktopInteractor =
+            DesktopInteractor(
+                resources = mainResources,
+                scope = backgroundScope,
+                configurationController = configurationController,
+            )
+        return NotificationsShadeOverlayContentViewModel(
+            mainDispatcher = testDispatcher,
+            shadeHeaderViewModelFactory = shadeHeaderViewModelFactory,
+            notificationsPlaceholderViewModelFactory = notificationsPlaceholderViewModelFactory,
+            notificationStackAppearanceInteractor =
+                NotificationStackAppearanceInteractor(
+                    applicationScope = applicationCoroutineScope,
+                    viewHeightRepository = notificationViewHeightRepository,
+                    placeholderRepository = notificationPlaceholderRepository,
+                    sceneInteractor = sceneInteractor,
+                    shadeModeInteractor = shadeModeInteractor,
+                    desktopInteractor = desktopInteractor,
+                ),
+            sceneInteractor = sceneInteractor,
+            shadeInteractor = shadeInteractor,
+            shadeModeInteractor = shadeModeInteractor,
+            disableFlagsInteractor = disableFlagsInteractor,
+            mediaCarouselInteractor = mediaCarouselInteractor,
+            blurConfig = blurConfig,
+            windowRootViewBlurInteractor = windowRootViewBlurInteractor,
+            desktopInteractor = desktopInteractor,
+            mediaViewModelFactory = mediaViewModelFactory,
+        )
+    }
 }

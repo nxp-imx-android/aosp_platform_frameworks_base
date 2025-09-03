@@ -19,8 +19,10 @@ package com.android.systemui.statusbar.notification.stack.ui.viewmodel
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.view.View
 import android.view.WindowInsets.Type.defaultVisible
 import androidx.annotation.VisibleForTesting
+import androidx.compose.ui.Alignment
 import com.android.app.tracing.coroutines.flow.flowName
 import com.android.systemui.Flags
 import com.android.systemui.Flags.glanceableHubV2
@@ -31,7 +33,6 @@ import com.android.systemui.common.ui.domain.interactor.ConfigurationInteractor
 import com.android.systemui.communal.domain.interactor.CommunalSceneInteractor
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
-import com.android.systemui.desktop.domain.interactor.DesktopInteractor
 import com.android.systemui.dump.DumpManager
 import com.android.systemui.keyguard.domain.interactor.KeyguardInteractor
 import com.android.systemui.keyguard.domain.interactor.KeyguardTransitionInteractor
@@ -188,7 +189,6 @@ constructor(
     private val primaryBouncerTransitions: Set<@JvmSuppressWildcards PrimaryBouncerTransition>,
     aodBurnInViewModel: AodBurnInViewModel,
     private val communalSceneInteractor: CommunalSceneInteractor,
-    private val desktopInteractor: DesktopInteractor,
     // Lazy because it's only used in the SceneContainer + Dual Shade configuration.
     headsUpNotificationInteractor: Lazy<HeadsUpNotificationInteractor>,
     private val largeScreenHeaderHelperLazy: Lazy<LargeScreenHeaderHelper>,
@@ -262,10 +262,10 @@ constructor(
     val configurationBasedDimensions: Flow<ConfigurationBasedDimensions> =
         if (SceneContainerFlag.isEnabled) {
                 combine(
-                    shadeModeInteractor.isFullWidthShade,
+                    notificationStackAppearanceInteractor.notificationStackHorizontalAlignment,
                     shadeModeInteractor.shadeMode,
                     configurationInteractor.onAnyConfigurationChange,
-                ) { isFullWidthShade, shadeMode, _ ->
+                ) { horizontalAlignment, shadeMode, _ ->
                     with(context.resources) {
                         val marginHorizontal =
                             getDimensionPixelSize(
@@ -277,43 +277,35 @@ constructor(
                             )
 
                         val (marginStart, marginEnd) =
-                            @Suppress("DEPRECATION") // to handle split shade
-                            when (shadeMode) {
-                                Single -> marginHorizontal to marginHorizontal
-                                Split -> 0 to marginHorizontal
-                                Dual ->
-                                    if (isFullWidthShade) {
-                                        0 to 0
-                                    } else if (desktopInteractor.isNotificationShadeOnTopEnd) {
-                                        0 to marginHorizontal
-                                    } else {
-                                        // all insets types combined, except the IME
-                                        val insets = getInsetsOf(context, defaultVisible()).toRect()
-                                        marginHorizontal.coerceAtLeast(insets.left) to 0
-                                    }
+                            if (shadeMode is Single) {
+                                marginHorizontal to marginHorizontal
+                            } else {
+                                val isRtl =
+                                    configuration.layoutDirection == View.LAYOUT_DIRECTION_RTL
+                                // all insets types combined, except the IME
+                                val insets = getInsetsOf(context, defaultVisible()).toRect()
+                                val (insetStart, insetEnd) =
+                                    with(insets) { if (isRtl) right to left else left to right }
+                                when (horizontalAlignment) {
+                                    Alignment.Start ->
+                                        marginHorizontal.coerceAtLeast(insetStart) to 0
+                                    Alignment.End -> 0 to marginHorizontal.coerceAtLeast(insetEnd)
+                                    else -> 0 to 0
+                                }
+                            }
+
+                        val maxWidth =
+                            if (shadeMode is Dual) {
+                                getDimensionPixelSize(R.dimen.shade_panel_width)
+                            } else {
+                                Int.MAX_VALUE
                             }
 
                         val horizontalPosition =
-                            @Suppress("DEPRECATION") // to handle split shade
-                            when (shadeMode) {
-                                Single -> HorizontalPosition.EdgeToEdge
-                                Split -> HorizontalPosition.MiddleToEdge(ratio = 0.5f)
-                                Dual ->
-                                    if (isFullWidthShade) {
-                                        HorizontalPosition.EdgeToEdge
-                                    } else if (desktopInteractor.isNotificationShadeOnTopEnd) {
-                                        HorizontalPosition.MiddleToEdge(
-                                            ratio = 0.5f,
-                                            maxWidth =
-                                                getDimensionPixelSize(R.dimen.shade_panel_width),
-                                        )
-                                    } else {
-                                        HorizontalPosition.EdgeToMiddle(
-                                            ratio = 0.5f,
-                                            maxWidth =
-                                                getDimensionPixelSize(R.dimen.shade_panel_width),
-                                        )
-                                    }
+                            when (horizontalAlignment) {
+                                Alignment.Start -> HorizontalPosition.EdgeToMiddle(maxWidth)
+                                Alignment.End -> HorizontalPosition.MiddleToEdge(maxWidth)
+                                else -> HorizontalPosition.EdgeToEdge
                             }
 
                         ConfigurationBasedDimensions(
@@ -1006,16 +998,15 @@ constructor(
         data object EdgeToEdge : HorizontalPosition
 
         /**
-         * The container is laid out from the start edge to the given [ratio] of the screen width,
-         * or to [maxWidth], whichever dimension is smaller.
+         * The container is laid out from the start edge to the middle of the screen width, or to
+         * [maxWidth], whichever dimension is smaller.
          */
-        data class EdgeToMiddle(val ratio: Float = 0.5f, val maxWidth: Int) : HorizontalPosition
+        data class EdgeToMiddle(val maxWidth: Int) : HorizontalPosition
 
         /**
-         * The container is laid out from the given [ratio] of the screen width to the end edge, or
-         * to [maxWidth], whichever dimension is smaller.
+         * The container is laid out from the middle of the screen width to the end edge, or to
+         * [maxWidth], whichever dimension is smaller.
          */
-        data class MiddleToEdge(val ratio: Float = 0.5f, val maxWidth: Int = Int.MAX_VALUE) :
-            HorizontalPosition
+        data class MiddleToEdge(val maxWidth: Int = Int.MAX_VALUE) : HorizontalPosition
     }
 }

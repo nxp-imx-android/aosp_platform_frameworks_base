@@ -192,7 +192,7 @@ constructor(
         ) {
             OverlayShade(
                 panelElement = QuickSettingsShade.Elements.Panel,
-                alignmentOnWideScreens = Alignment.TopEnd,
+                alignmentOnWideScreens = Alignment.End,
                 enableTransparency = contentViewModel.isTransparencyEnabled,
                 onScrimClicked = contentViewModel::onScrimClicked,
                 onBackgroundPlaced = { bounds, topCornerRadius, bottomCornerRadius ->
@@ -233,15 +233,17 @@ constructor(
                 },
                 stackScrollView = notificationStackScrollView.get(),
                 viewModel = hunPlaceholderViewModel,
-                modifier = Modifier.onGloballyPositioned { layoutCoordinates ->
-                    val bounds = layoutCoordinates.boundsInWindow().toAndroidRectF()
-                    if (bounds.height() > 0) {
-                        // HUN gesture area must extend from the top of the screen for animations
-                        bounds.top = 0f
-                        bounds.bottom += headsUpInset
-                        notificationStackScrollView.get().updateDrawBounds(bounds)
-                    }
-                }
+                modifier =
+                    Modifier.onGloballyPositioned { layoutCoordinates ->
+                        val bounds = layoutCoordinates.boundsInWindow().toAndroidRectF()
+                        if (bounds.height() > 0) {
+                            // HUN gesture area must extend from the top of the screen for
+                            // animations
+                            bounds.top = 0f
+                            bounds.bottom += headsUpInset
+                            notificationStackScrollView.get().updateDrawBounds(bounds)
+                        }
+                    },
             )
         }
     }

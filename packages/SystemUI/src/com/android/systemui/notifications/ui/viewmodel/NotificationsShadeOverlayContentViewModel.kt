@@ -41,6 +41,7 @@ import com.android.systemui.shade.shared.model.ShadeMode
 import com.android.systemui.shade.ui.viewmodel.ShadeHeaderViewModel
 import com.android.systemui.statusbar.core.StatusBarForDesktop
 import com.android.systemui.statusbar.disableflags.domain.interactor.DisableFlagsInteractor
+import com.android.systemui.statusbar.notification.stack.domain.interactor.NotificationStackAppearanceInteractor
 import com.android.systemui.statusbar.notification.stack.ui.viewmodel.NotificationsPlaceholderViewModel
 import com.android.systemui.utils.coroutines.flow.flatMapLatestConflated
 import com.android.systemui.window.domain.interactor.WindowRootViewBlurInteractor
@@ -68,6 +69,7 @@ constructor(
     @Main private val mainDispatcher: CoroutineDispatcher,
     val shadeHeaderViewModelFactory: ShadeHeaderViewModel.Factory,
     val notificationsPlaceholderViewModelFactory: NotificationsPlaceholderViewModel.Factory,
+    notificationStackAppearanceInteractor: NotificationStackAppearanceInteractor,
     desktopInteractor: DesktopInteractor,
     val sceneInteractor: SceneInteractor,
     private val shadeInteractor: ShadeInteractor,
@@ -131,6 +133,17 @@ constructor(
         )
 
     /**
+     * The horizontal alignment of the notifications shade panel. Ignored on narrow screens, where
+     * the panel is always center-aligned.
+     */
+    val alignmentOnWideScreens: Alignment.Horizontal by
+        hydrator.hydratedStateOf(
+            traceName = "horizontalAlignment",
+            initialValue = Alignment.Start,
+            source = notificationStackAppearanceInteractor.notificationStackHorizontalAlignment,
+        )
+
+    /**
      * Calculates the blur radius to apply to the overlay.
      *
      * @param transitionState The current transition state of the scene (from its `ContentScope`)
@@ -144,9 +157,6 @@ constructor(
             else -> 0f
         }
     }
-
-    val alignmentOnWideScreens =
-        if (desktopInteractor.isNotificationShadeOnTopEnd) Alignment.TopEnd else Alignment.TopStart
 
     val mediaUiBehavior =
         MediaUiBehavior(
