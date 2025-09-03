@@ -126,6 +126,7 @@ test_module_config {
         "com.android.wm.shell.functional.fundamentals.focus.MoveToNextDisplayAndFocusTest",
         "com.android.wm.shell.functional.fundamentals.focus.OpenAndFocusTest",
         "com.android.wm.shell.functional.immersive.EnterImmersiveViaHeaderMenuTest",
+        "com.android.wm.shell.functional.keyboardshortcuts.ActionTabSwitchToDesktopAppTest",
         "com.android.wm.shell.functional.keyboardshortcuts.AltTabSwitchInDesktopModeTest",
         "com.android.wm.shell.functional.keyboardshortcuts.AltTabSwitchOutDesktopModeTest",
         "com.android.wm.shell.functional.keyboardshortcuts.AltTabSwitchToUnminimizeInDesktopModeTest",

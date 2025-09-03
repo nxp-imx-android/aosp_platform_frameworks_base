@@ -175,6 +175,9 @@
       "name": "FunctionalTestsDesktopMode-immersive-EnterImmersiveViaHeaderMenuTest"
     },
     {
+      "name": "FunctionalTestsDesktopMode-keyboardshortcuts-ActionTabSwitchToDesktopAppTest"
+    },
+    {
       "name": "FunctionalTestsDesktopMode-keyboardshortcuts-AltTabSwitchInDesktopModeTest"
     },
     {
