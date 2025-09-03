@@ -25,6 +25,9 @@ import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import static java.util.Collections.emptyList;
+
+import android.bluetooth.BluetoothProfile;
 import android.content.Intent;
 import android.os.Handler;
 import android.provider.Settings;
@@ -59,6 +62,8 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
+
+import java.util.List;
 
 /** Tests for {@link HearingDevicesTile}. */
 @RunWith(AndroidJUnit4.class)
@@ -139,6 +144,29 @@ public class HearingDevicesTileTest extends SysuiTestCase {
         mTestableLooper.processAllMessages();
 
         verify(mHearingDevicesDialogManager).showDialog(expandable, LAUNCH_SOURCE_QS_TILE);
+    }
+
+    @Test
+    public void isAvailable_notSupportHearingProfile_returnFalse() {
+        when(mBluetoothController.getSupportedProfiles()).thenReturn(emptyList());
+
+        assertThat(mTile.isAvailable()).isFalse();
+    }
+
+    @Test
+    public void isAvailable_supportHearingAidProfile_returnTrue() {
+        when(mBluetoothController.getSupportedProfiles()).thenReturn(
+                List.of(BluetoothProfile.HEARING_AID));
+
+        assertThat(mTile.isAvailable()).isTrue();
+    }
+
+    @Test
+    public void isAvailable_supportHapProfile_returnTrue() {
+        when(mBluetoothController.getSupportedProfiles()).thenReturn(
+                List.of(BluetoothProfile.HAP_CLIENT));
+
+        assertThat(mTile.isAvailable()).isTrue();
     }
 
     @Test
