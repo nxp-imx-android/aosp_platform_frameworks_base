@@ -253,25 +253,20 @@ final class AppCompatCameraSimReqOrientationPolicy implements AppCompatCameraSta
                 final int cameraCompatMode = getCameraCompatMode(activityRecord);
                 final int displayRotation = CameraCompatTaskInfo
                         .getDisplayRotationFromCameraCompatMode(cameraCompatMode);
-                // TODO(b/395063101): signal the camera to not apply
-                //  `NATIVE_WINDOW_TRANSFORM_INVERSE_DISPLAY`.
                 cameraCompatibilityInfoBuilder
                         .setDisplayRotationSandbox(displayRotation)
                         .setShouldLetterboxForCameraCompat(displayRotation != ROTATION_UNDEFINED)
                         .setRotateAndCropRotation(getCameraRotationFromSandboxedDisplayRotation(
                                 displayRotation))
                         // TODO(b/365725400): support landscape cameras.
-                        .setShouldOverrideSensorOrientation(false);
+                        .setShouldOverrideSensorOrientation(false)
+                        .setShouldAllowTransformInverseDisplay(false);
                 needsRefresh = true;
             } else if (mCameraStateMonitor.isCameraRunningForActivity(activityRecord)) {
                 // Sandbox only display rotation if needed, for external display.
-                // TODO(b/395063101): signal the camera to not apply
-                //  `NATIVE_WINDOW_TRANSFORM_INVERSE_DISPLAY`. This flag is not compatible with the
-                //  treatment, and with compat apps it could be turned off if rotate-and-crop of the
-                //  camera preview is requested, but as this is not done for responsive apps, camera
-                //  framework has no information to avoid doing this.
                 cameraCompatibilityInfoBuilder.setDisplayRotationSandbox(
-                        mCameraDisplayRotationProvider.getCameraDeviceRotation());
+                        mCameraDisplayRotationProvider.getCameraDeviceRotation())
+                        .setShouldAllowTransformInverseDisplay(false);
                 needsRefresh = true;
             }
         }
