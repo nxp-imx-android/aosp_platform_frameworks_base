@@ -1446,8 +1446,7 @@ public class AdbDebuggingManager {
 
     /** Returns the list of paired devices. */
     public Map<String, PairDevice> getPairedDevices() {
-        AdbKeyStore keystore = new AdbKeyStore(mContext, mTempKeysFile, mUserKeyFile, mTicker);
-        return getPairedDevicesForKeys(keystore.getKeys());
+        return getPairedDevicesForKeys(mHandler.mAdbKeyStore.getKeys());
     }
 
     private Map<String, PairDevice> getPairedDevicesForKeys(Set<String> keys) {
