@@ -169,6 +169,13 @@ test_module_config {
     include_annotations: ["android.platform.test.annotations.Presubmit"],
 }
 
+test_module_config {
+    name: "WmTests_SurfaceControlViewHostTests",
+    base: "WmTests",
+    test_suites: ["device-tests"],
+    include_filters: ["com.android.server.wm.SurfaceControlViewHostTests"],
+}
+
 // Auto generated section, don't update it manually
 
 test_module_config {
