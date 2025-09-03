@@ -319,6 +319,34 @@ public final class ImsCallProfile implements Parcelable {
              "android.telephony.ims.extra.IS_USING_VIDEO_RINGBACK";
 
     /**
+     * Extra key to indicate the media type of a Customized Ringing Signal (CRS) call.
+     * The value should be an integer bitmask of
+     * {@link android.telecom.Call#CRS_MEDIA_TYPE_AUDIO} and
+     * {@link android.telecom.Call#CRS_MEDIA_TYPE_VIDEO}.
+     * <p>
+     * Vendor IMS stack {@link ImsService} sets this
+     * on a call to indicate the type of media (e.g., audio, video) the network-provided
+     * ringing signal contains.
+     */
+    @FlaggedApi(android.telecom.flags.Flags.FLAG_IS_USING_CRS)
+    public static final String EXTRA_CRS_MEDIA_TYPE  =
+             "android.telephony.ims.extra.CRS_MEDIA_TYPE";
+
+    /**
+     * Extra key for the audio mode of a Customized Ringing Signal (CRS) call. The value should be
+     * one of the {@code AudioManager#MODE_*} integer constants, such as
+     * {@link android.media.AudioManager#MODE_RINGTONE} or
+     * {@link android.media.AudioManager#MODE_IN_CALL}.
+     *
+     * <p>Used when {@link #EXTRA_CRS_MEDIA_TYPE} indicates audio is present. The vendor
+     * {@link ImsService} sets this to suggest an audio mode for the network ringtone. If not set,
+     * Telecom will use a default.
+     */
+    @FlaggedApi(android.telecom.flags.Flags.FLAG_IS_USING_CRS)
+    public static final String EXTRA_CRS_AUDIO_MODE =
+            "android.telephony.ims.extra.CRS_AUDIO_MODE";
+
+    /**
      * Boolean extra property indicates that this call is a Unidirectional Video Service
      * Call(UVS). Vendor IMS stack {@link ImsService} sets this on a call
      * to indicate that the modem/network has identified the call as a UVS call.
