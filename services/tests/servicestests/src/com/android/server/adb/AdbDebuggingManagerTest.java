@@ -1175,10 +1175,6 @@ public final class AdbDebuggingManagerTest {
      * indicating whether the key should be allowed to  connect.
      */
     private class AdbDebuggingThreadTest extends AdbDebuggingManager.AdbDebuggingThread {
-        AdbDebuggingThreadTest() {
-            super(thread -> {});
-        }
-
         @Override
         public void sendResponse(String msg) {
             TestResult result = new TestResult(TestResult.RESULT_RESPONSE_RECEIVED, msg);
