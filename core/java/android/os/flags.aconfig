@@ -371,6 +371,13 @@ flag {
 }
 
 flag {
+    name: "parcel_string_cache_enabled"
+    namespace: "system_performance"
+    description: "Enable JNIStringCache in Parcel"
+    bug: "442140362"
+}
+
+flag {
     name: "remove_app_profiler_pss_collection"
     is_exported: true
     namespace: "backstage_power"
