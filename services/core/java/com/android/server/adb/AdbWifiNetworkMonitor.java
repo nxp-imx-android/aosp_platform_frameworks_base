@@ -81,6 +81,10 @@ public class AdbWifiNetworkMonitor extends ConnectivityManager.NetworkCallback
         NetworkRequest request =
                 new NetworkRequest.Builder()
                         .addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
+                        // Filter out callbacks from hotspot networks.
+                        // Currently hotspot NetworkCallbacks aren't received, but that'll change
+                        // in the future. See b/201616245 for more information.
+                        .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
                         .build();
         connectivityManager.registerNetworkCallback(request, this);
         mStarted = true;
