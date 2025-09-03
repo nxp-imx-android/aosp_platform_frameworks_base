@@ -423,8 +423,9 @@ class NotificationListViewModelTest(flags: FlagsParameterization) : SysuiTestCas
         }
 
     @Test
-    fun shouldIncludeFooterView_falseWhenQsExpandedDefault() =
+    fun shouldIncludeFooterView_falseWhenQsExpandedSingleShade() =
         kosmos.runTest {
+            enableSingleShade()
             val shouldInclude by collectFooterViewVisibility()
 
             // WHEN has notifs
@@ -445,6 +446,29 @@ class NotificationListViewModelTest(flags: FlagsParameterization) : SysuiTestCas
     fun shouldIncludeFooterView_trueWhenQsExpandedSplitShade() =
         kosmos.runTest {
             enableSplitShade()
+            runCurrent()
+            val shouldIncludeFooterView by collectFooterViewVisibility()
+            val shouldShowEmptyShadeView by
+                collectLastValue(underTest.shouldShowEmptyShadeView.map { it.value })
+
+            // WHEN has notifs
+            activeNotificationListRepository.setActiveNotifs(count = 2)
+            // AND quick settings are expanded
+            shadeTestUtil.setQsExpansion(1f)
+            // AND shade is open
+            fakeKeyguardRepository.setStatusBarState(StatusBarState.SHADE)
+            shadeTestUtil.setShadeExpansion(1f)
+            runCurrent()
+
+            // THEN footer is visible
+            assertThat(shouldIncludeFooterView?.value).isTrue()
+            assertThat(shouldShowEmptyShadeView).isFalse()
+        }
+
+    @Test
+    fun shouldIncludeFooterView_trueWhenQsExpandedDualShade() =
+        kosmos.runTest {
+            enableDualShade()
             runCurrent()
             val shouldIncludeFooterView by collectFooterViewVisibility()
             val shouldShowEmptyShadeView by

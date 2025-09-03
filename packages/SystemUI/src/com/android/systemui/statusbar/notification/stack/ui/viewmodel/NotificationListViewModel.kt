@@ -269,10 +269,11 @@ constructor(
                     isShowingOnLockscreen,
                     qsFullScreen,
                     isRemoteInputActive ->
+                    val dualShade = shadeMode is ShadeMode.Dual
+                    val singleShade = shadeMode is ShadeMode.Single
                     when {
                         // Hide the footer when there are no notifications, unless it's Dual Shade.
-                        shadeMode != ShadeMode.Dual && !hasNotifications ->
-                            VisibilityChange.DISAPPEAR_WITH_ANIMATION
+                        !dualShade && !hasNotifications -> VisibilityChange.DISAPPEAR_WITH_ANIMATION
                         // Hide the footer until the user setup is complete, to prevent access
                         // to settings (b/193149550).
                         !isUserSetUp -> VisibilityChange.DISAPPEAR_WITH_ANIMATION
@@ -281,9 +282,9 @@ constructor(
                         // Do not animate, as that makes the footer appear briefly when
                         // transitioning between the shade and lockscreen.
                         isShowingOnLockscreen -> VisibilityChange.DISAPPEAR_WITHOUT_ANIMATION
-                        // Do not show the footer if quick settings are fully expanded (except
-                        // for the foldable split shade view). See b/201427195 && b/222699879.
-                        qsFullScreen -> VisibilityChange.DISAPPEAR_WITH_ANIMATION
+                        // Do not show the footer if quick settings are fully expanded (in single
+                        // shade). See b/201427195 && b/222699879.
+                        qsFullScreen && singleShade -> VisibilityChange.DISAPPEAR_WITH_ANIMATION
                         // Hide the footer if remote input is active (i.e. user is replying to a
                         // notification). See b/75984847.
                         isRemoteInputActive -> VisibilityChange.DISAPPEAR_WITH_ANIMATION
