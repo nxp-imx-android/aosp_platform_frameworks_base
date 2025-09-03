@@ -1115,7 +1115,10 @@ public abstract class BackupAgent extends ContextWrapper {
             String domain,
             String path,
             long mode,
-            long mtime)
+            long mtime,
+            long appVersionCode,
+            int transportFlags,
+            String contentVersion)
             throws IOException {
         String basePath = null;
 
@@ -1133,7 +1136,13 @@ public abstract class BackupAgent extends ContextWrapper {
                             + " mode="
                             + mode
                             + " mtime="
-                            + mtime);
+                            + mtime
+                            + " appVersionCode="
+                            + appVersionCode
+                            + " transportFlags="
+                            + transportFlags
+                            + " contentVersion="
+                            + contentVersion);
         }
 
         basePath =
@@ -1158,9 +1167,9 @@ public abstract class BackupAgent extends ContextWrapper {
                                     type,
                                     mode,
                                     mtime,
-                                    /* appVersionCode= */ 0,
-                                    /* transportFlags= */ 0,
-                                    /* contentVersion= */ ""));
+                                    appVersionCode,
+                                    transportFlags,
+                                    contentVersion));
                 } else {
                     onRestoreFile(data, size, outFile, type, mode, mtime);
                 }
@@ -1465,11 +1474,38 @@ public abstract class BackupAgent extends ContextWrapper {
                 long mode,
                 long mtime,
                 int token,
-                IBackupManager callbackBinder)
+                IBackupManager callbackBinder,
+                long appVersionCode,
+                int transportFlags,
+                String contentVersion)
                 throws RemoteException {
             final long ident = Binder.clearCallingIdentity();
             try {
-                BackupAgent.this.onRestoreFile(data, size, type, domain, path, mode, mtime);
+                if (Flags.enableCrossPlatformTransfer()) {
+                    BackupAgent.this.onRestoreFile(
+                            data,
+                            size,
+                            type,
+                            domain,
+                            path,
+                            mode,
+                            mtime,
+                            appVersionCode,
+                            transportFlags,
+                            contentVersion);
+                } else {
+                    BackupAgent.this.onRestoreFile(
+                            data,
+                            size,
+                            type,
+                            domain,
+                            path,
+                            mode,
+                            mtime,
+                            /* appVersionCode= */ 0,
+                            /* transportFlags= */ 0,
+                            /* contentVersion= */ "");
+                }
             } catch (IOException e) {
                 Log.d(
                         TAG,
