@@ -25,13 +25,15 @@ namespace android {
 
 static jobject nativeCreateVirtualDisplay(JNIEnv* env, jclass clazz, jstring nameObj,
                                           jboolean secure, jboolean optimizeForPower,
-                                          jstring uniqueIdStr, jfloat requestedRefreshRate) {
+                                          jstring uniqueIdStr, jint ownerUid,
+                                          jfloat requestedRefreshRate) {
     const ScopedUtfChars name(env, nameObj);
     const ScopedUtfChars uniqueId(env, uniqueIdStr);
     sp<IBinder> token(SurfaceComposerClient::createVirtualDisplay(std::string(name.c_str()),
                                                                   bool(secure),
                                                                   bool(optimizeForPower),
                                                                   std::string(uniqueId.c_str()),
+                                                                  static_cast<int>(ownerUid),
                                                                   requestedRefreshRate));
     return javaObjectForIBinder(env, token);
 }
@@ -183,7 +185,7 @@ static jobject nativeGetPhysicalDisplayToken(JNIEnv* env, jclass clazz, jlong ph
 
 static const JNINativeMethod sDisplayMethods[] = {
         // clang-format off
-    {"nativeCreateVirtualDisplay", "(Ljava/lang/String;ZZLjava/lang/String;F)Landroid/os/IBinder;",
+    {"nativeCreateVirtualDisplay", "(Ljava/lang/String;ZZLjava/lang/String;IF)Landroid/os/IBinder;",
             (void*)nativeCreateVirtualDisplay },
     {"nativeDestroyVirtualDisplay", "(Landroid/os/IBinder;)V",
             (void*)nativeDestroyVirtualDisplay },
