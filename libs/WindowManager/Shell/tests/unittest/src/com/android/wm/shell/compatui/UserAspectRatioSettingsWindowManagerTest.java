@@ -23,6 +23,7 @@ import static android.view.WindowInsets.Type.navigationBars;
 
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.spyOn;
 import static com.android.window.flags.Flags.FLAG_APP_COMPAT_UI_FRAMEWORK;
+import static com.android.window.flags.Flags.FLAG_ENABLE_COMPATUI_SYSUI_LAUNCHER_FIX;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -41,6 +42,7 @@ import android.content.ComponentName;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.graphics.Rect;
+import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.RequiresFlagsDisabled;
 import android.testing.AndroidTestingRunner;
 import android.testing.TestableLooper.RunWithLooper;
@@ -51,6 +53,9 @@ import android.view.InsetsState;
 import android.view.SurfaceControl;
 import android.view.SurfaceControlViewHost;
 import android.view.View;
+import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
+import android.view.WindowManager;
 import android.widget.FrameLayout;
 
 import androidx.test.filters.SmallTest;
@@ -100,6 +105,7 @@ public class UserAspectRatioSettingsWindowManagerTest extends ShellTestCase {
     @Mock private ShellTaskOrganizer.TaskListener mTaskListener;
     @Mock private UserAspectRatioSettingsLayout mLayout;
     @Mock private FrameLayout mLayoutParent;
+    @Mock private ViewTreeObserver mViewTreeObserver;
     @Mock private SurfaceControlViewHost mViewHost;
     @Captor
     private ArgumentCaptor<ShellTaskOrganizer.TaskListener> mUserAspectRatioTaskListenerCaptor;
@@ -139,6 +145,7 @@ public class UserAspectRatioSettingsWindowManagerTest extends ShellTestCase {
                 mUserAspectRatioButtonShownChecker, s -> {});
         spyOn(mWindowManager);
         doReturn(mLayoutParent).when(mWindowManager).inflateLayout();
+        doReturn(mViewTreeObserver).when(mLayoutParent).getViewTreeObserver();
         doReturn(mLayout).when(mLayoutParent).findViewById(R.id.user_aspect_ratio_layout);
         doReturn(mViewHost).when(mWindowManager).createSurfaceViewHost();
         doReturn(false).when(mUserAspectRatioButtonShownChecker).get();
@@ -486,5 +493,60 @@ public class UserAspectRatioSettingsWindowManagerTest extends ShellTestCase {
         taskInfo.realActivity = new ComponentName("com.mypackage.test", "TestActivity");
         taskInfo.baseIntent = new Intent(action).addCategory(category);
         return taskInfo;
+    }
+
+    @Test
+    @EnableFlags(FLAG_ENABLE_COMPATUI_SYSUI_LAUNCHER_FIX)
+    public void testCreateLayout_returnsParentLayout() {
+        mWindowManager.mHasUserAspectRatioSettingsButton = true;
+        final View result = mWindowManager.createLayout();
+
+        Assert.assertEquals(mLayoutParent, result);
+    }
+
+    @Test
+    @RequiresFlagsDisabled(FLAG_ENABLE_COMPATUI_SYSUI_LAUNCHER_FIX)
+    public void testCreateLayout_flagDisabled_returnsButtonLayout() {
+        mWindowManager.mHasUserAspectRatioSettingsButton = true;
+        final View result = mWindowManager.createLayout();
+
+        Assert.assertEquals(mLayout, result);
+    }
+
+    @Test
+    @EnableFlags(FLAG_ENABLE_COMPATUI_SYSUI_LAUNCHER_FIX)
+    public void testUpdateLayoutBounds_flagEnabled_setsFullscreenAndMargins() {
+        mWindowManager.mHasUserAspectRatioSettingsButton = true;
+        mWindowManager.createLayout(true /* canShow */);
+        final Rect taskBounds = mWindowManager.getTaskBounds();
+        final Rect taskStableBounds = mWindowManager.getTaskStableBounds();
+        ViewGroup.LayoutParams lp =
+                new ViewGroup.LayoutParams(taskStableBounds.width(), taskStableBounds.height());
+        doReturn(new ViewGroup.MarginLayoutParams(lp)).when(mLayout).getLayoutParams();
+
+        final WindowManager.LayoutParams result = mWindowManager.getWindowLayoutParams();
+
+        Assert.assertEquals(taskBounds.width(), result.width);
+        Assert.assertEquals(taskBounds.height(), result.height);
+        clearInvocations(mLayout);
+
+        mWindowManager.updateSurfacePosition();
+
+        final ArgumentCaptor<ViewGroup.MarginLayoutParams> captor =
+                ArgumentCaptor.forClass(ViewGroup.MarginLayoutParams.class);
+        verify(mLayout).setLayoutParams(captor.capture());
+        Assert.assertEquals(
+                taskBounds.bottom - taskStableBounds.bottom, captor.getValue().bottomMargin);
+    }
+
+    @Test
+    public void testRelease_animatingToHide_doesNothing() {
+        mWindowManager.mHasUserAspectRatioSettingsButton = true;
+        mWindowManager.createLayout(true /* canShow */);
+        mWindowManager.setIsAnimatingToHide(true);
+
+        mWindowManager.release();
+
+        verify(mViewHost, never()).release();
     }
 }
