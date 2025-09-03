@@ -648,6 +648,14 @@ flag {
 }
 
 flag {
+    name: "granular_health_permissions_phase_two_enabled"
+    namespace: "android_health_services"
+    description: "This flag enables adding heart rate variability, respiratory rate, VO2 max and blood pressure permissions."
+    bug: "433383668"
+    is_fixed_read_only: true
+}
+
+flag{
     name: "content_restriction_role_enabled"
     is_exported: true
     namespace: "content_restriction"
