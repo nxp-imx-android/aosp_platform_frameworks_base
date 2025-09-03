@@ -42,9 +42,6 @@ import com.android.systemui.scene.domain.SceneFrameworkTableLog
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.securelockdevice.domain.interactor.SecureLockDeviceInteractor
 import com.android.systemui.shared.settings.data.repository.SecureSettingsRepository
-import com.android.systemui.util.kotlin.Utils.Companion.sampleFilter
-import com.android.systemui.util.kotlin.Utils.Companion.toTriple
-import com.android.systemui.util.kotlin.sample
 import com.android.systemui.utils.coroutines.flow.flatMapLatestConflated
 import dagger.Lazy
 import javax.inject.Inject
@@ -191,50 +188,39 @@ constructor(
         }
 
     /** Indicates when a device has been unlocked from successful authentication on the bouncer. */
-    private val onUnlockFromBouncer =
-        authenticationInteractor.onAuthenticationResult
-            .filter { it }
-            .sampleFilter(isSecureLockDeviceEnabled) {
-                /**
-                 * When secure lock device is active, the device is not considered unlocked after
-                 * successful bouncer auth. Secure Lock Device requires two-factor authentication:
-                 * primary auth on the bouncer, followed by strong biometric authentication on the
-                 * bouncer, in order to unlock and enter the device.
-                 */
-                !it
-            }
+    private val onUnlockFromBouncer = authenticationInteractor.onAuthenticationResult.filter { it }
 
     private val deviceUnlockSource =
-        merge(
-            combine(
-                    fingerprintAuthInteractor.fingerprintSuccess,
-                    isFullyUnlockedAndReadyToDismissInSecureLockDevice,
-                    ::Pair,
+        /**
+         * When secure lock device is active, the device is not considered unlocked after successful
+         * bouncer auth. Secure Lock Device requires two-factor authentication: primary auth on the
+         * bouncer, followed by strong biometric authentication on the bouncer, in order to unlock
+         * and enter the device.
+         */
+        isSecureLockDeviceEnabled.flatMapLatest { isSecureLockDeviceEnabled ->
+            if (isSecureLockDeviceEnabled) {
+                isFullyUnlockedAndReadyToDismissInSecureLockDevice
+                    .filter { it }
+                    .map { DeviceUnlockSource.SecureLockDeviceTwoFactorAuth }
+            } else {
+                merge(
+                    fingerprintAuthInteractor.fingerprintSuccess.map {
+                        DeviceUnlockSource.Fingerprint
+                    },
+                    faceAuthInteractor.isAuthenticated
+                        .filter { it }
+                        .map {
+                            if (deviceEntryBypassInteractor.isBypassEnabled.value) {
+                                DeviceUnlockSource.FaceWithBypass
+                            } else {
+                                DeviceUnlockSource.FaceWithoutBypass
+                            }
+                        },
+                    trustInteractor.isTrusted.filter { it }.map { DeviceUnlockSource.TrustAgent },
+                    onUnlockFromBouncer.map { DeviceUnlockSource.BouncerInput },
                 )
-                .sample(isSecureLockDeviceEnabled, ::toTriple)
-                .filter { (_, readyToDismissInSecureLockDevice, isSecureLockDeviceEnabled) ->
-                    !isSecureLockDeviceEnabled || readyToDismissInSecureLockDevice
-                }
-                .map { DeviceUnlockSource.Fingerprint },
-            combine(
-                    faceAuthInteractor.isAuthenticated.filter { it },
-                    isFullyUnlockedAndReadyToDismissInSecureLockDevice,
-                    ::Pair,
-                )
-                .sample(isSecureLockDeviceEnabled, ::toTriple)
-                .filter { (_, readyToDismissInSecureLockDevice, isSecureLockDeviceEnabled) ->
-                    !isSecureLockDeviceEnabled || readyToDismissInSecureLockDevice
-                }
-                .map { (_, _, _) ->
-                    if (deviceEntryBypassInteractor.isBypassEnabled.value) {
-                        DeviceUnlockSource.FaceWithBypass
-                    } else {
-                        DeviceUnlockSource.FaceWithoutBypass
-                    }
-                },
-            trustInteractor.isTrusted.filter { it }.map { DeviceUnlockSource.TrustAgent },
-            onUnlockFromBouncer.map { DeviceUnlockSource.BouncerInput },
-        )
+            }
+        }
 
     /**
      * Whether the device is unlocked or not, along with the information about the authentication
