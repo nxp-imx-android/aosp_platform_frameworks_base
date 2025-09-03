@@ -96,7 +96,7 @@ public final class MemcgProcMemoryUtil {
         final MemcgHighWaterMarkMemorySnapshot snapshot = new MemcgHighWaterMarkMemorySnapshot();
         Long memoryPeak = readSingleValueFromMemcgFile(
                 fullMemcgPath,
-                "memory.current.peak",
+                "memory.peak",
                 MEMCG_MEMORY_FORMAT
         );
         if (memoryPeak == null) {
