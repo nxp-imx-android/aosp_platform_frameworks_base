@@ -34,6 +34,7 @@ import static org.junit.Assert.assertNotEquals;
 
 import android.compat.testing.PlatformCompatChangeRule;
 import android.content.pm.ActivityInfo;
+import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
 
@@ -278,6 +279,7 @@ public class AppCompatAspectRatioOverridesTest extends WindowTestsBase {
     }
 
     @Test
+    @DisableFlags(Flags.FLAG_CAMERA_COMPAT_UNIFY_CAMERA_POLICIES)
     public void testGetFixedOrientationLetterboxAspectRatio_splitScreenAspectEnabled() {
         runTestScenario((robot)-> {
             robot.applyOnConf((c) -> {
