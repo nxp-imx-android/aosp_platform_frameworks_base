@@ -16,8 +16,6 @@
 
 package android.security.net.config;
 
-import static android.security.Flags.certificateTransparencyConfiguration;
-
 import static libcore.net.NetworkSecurityPolicy.CERTIFICATE_TRANSPARENCY_REASON_APP_OPT_IN;
 import static libcore.net.NetworkSecurityPolicy.CERTIFICATE_TRANSPARENCY_REASON_DOMAIN_OPT_IN;
 import static libcore.net.NetworkSecurityPolicy.CERTIFICATE_TRANSPARENCY_REASON_SDK_TARGET_DEFAULT_ENABLED;
@@ -177,9 +175,7 @@ public final class ApplicationConfig {
      *     otherwise
      */
     public boolean isCertificateTransparencyVerificationRequired(@NonNull String hostname) {
-        return certificateTransparencyConfiguration()
-                ? getConfigForHostname(hostname).isCertificateTransparencyVerificationRequired()
-                : NetworkSecurityConfig.certificateTransparencyVerificationRequiredDefault();
+        return getConfigForHostname(hostname).isCertificateTransparencyVerificationRequired();
     }
 
     int getCertificateTransparencyVerificationReason(@NonNull String hostname) {
