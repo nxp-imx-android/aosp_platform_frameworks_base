@@ -353,8 +353,7 @@ constructor(
         // already expanded and showing notifications/QS, the animation looks really messy. For now,
         // disable it if the notification panel is expanded.
         if (
-            (!this::centralSurfaces.isInitialized ||
-                panelExpansionInteractorLazy.get().isPanelExpanded) &&
+            (!this::centralSurfaces.isInitialized || statusBarStateControllerImpl.isExpanded) &&
                 // Status bar might be expanded because we have started
                 // playing the animation already
                 !isAnimationPlaying()

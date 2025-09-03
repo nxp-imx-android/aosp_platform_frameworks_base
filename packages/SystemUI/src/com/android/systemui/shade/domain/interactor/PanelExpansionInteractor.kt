@@ -32,7 +32,8 @@ interface PanelExpansionInteractor {
      * Returns whether the shade height is greater than zero or the shade is expecting a synthesized
      * down event.
      */
-    @Deprecated("Use ShadeInteractor.isAnyExpanded instead.") val isPanelExpanded: Boolean
+    @Deprecated("Legitimately deprecated and broken. Use ShadeInteractor.isAnyExpanded instead.")
+    val isPanelExpanded: Boolean
 
     /**
      * This method should not be used anymore, you should probably use [.isShadeFullyOpen] instead.
