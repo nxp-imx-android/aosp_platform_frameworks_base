@@ -478,6 +478,24 @@ public class MagnificationController implements MagnificationConnectionManager.C
                 || getMagnificationConnectionManager().isWindowMagnifierEnabled(displayId);
     }
 
+    /**
+     * Perform the action to activate the fullscreen magnification and zoom in with persisted scale.
+     *
+     * @param displayId The logical display id
+     */
+    public void zoomInFullScreenMagnification(int displayId) {
+        final float scale = mFullScreenMagnificationController.getPersistedScale(displayId);
+        mFullScreenMagnificationController.setScaleAndCenter(
+                displayId,
+                scale,
+                Float.NaN,
+                Float.NaN,
+                /* animate= */ true,
+                AccessibilityManagerService.MAGNIFICATION_GESTURE_HANDLER_ID);
+
+        // TODO: b/440359677 - Rename the method and add zoom in for window magnification.
+    }
+
     private void maybeContinuePan() {
         if (mActivePanDisplay == Display.INVALID_DISPLAY) {
             return;
