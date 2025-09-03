@@ -163,9 +163,24 @@ private fun getResizeZone(
  *
  * @param minSizePx The minimum size of the box in pixels.
  * @param density The density of the screen. Used for the conversions between pixels and Dp.
+ * @param initialRect The initial rectangle of the box.
  */
-class RegionBoxState(private val minSizePx: Float, private val density: Density) {
-    var rect by mutableStateOf<Rect?>(null)
+class RegionBoxState(
+    private val minSizePx: Float,
+    private val density: Density,
+    initialRect: IntRect? = null,
+) {
+    var rect by
+        mutableStateOf<Rect?>(
+            initialRect?.let {
+                Rect(
+                    left = it.left.toFloat(),
+                    top = it.top.toFloat(),
+                    right = it.right.toFloat(),
+                    bottom = it.bottom.toFloat(),
+                )
+            }
+        )
 
     var dragMode by mutableStateOf(DragMode.NONE)
 
@@ -368,6 +383,7 @@ class RegionBoxState(private val minSizePx: Float, private val density: Density)
  */
 @Composable
 fun RegionBox(
+    initialRect: IntRect?,
     buttonText: String,
     buttonIcon: Icon?,
     onRegionSelected: (rect: IntRect) -> Unit,
@@ -381,7 +397,7 @@ fun RegionBox(
     val minSize = 48.dp
     val minSizePx = remember(density) { with(density) { minSize.toPx() } }
 
-    val state = remember { RegionBoxState(minSizePx, density) }
+    val state = remember { RegionBoxState(minSizePx, density, initialRect) }
     val scrimColor = ScreenCaptureColors.scrimColor
     val pointerIcon = rememberPointerIcon(state)
 

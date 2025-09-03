@@ -18,6 +18,7 @@ package com.android.systemui.screencapture.record.largescreen.ui.viewmodel
 
 import android.content.Context
 import android.graphics.Rect
+import android.view.WindowManager
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.lifecycle.HydratedActivatable
@@ -52,6 +53,7 @@ constructor(
     @Assisted private val displayId: Int,
     @Application private val applicationContext: Context,
     @Background private val backgroundScope: CoroutineScope,
+    private val windowManager: WindowManager,
     private val iconProvider: ScreenCaptureIconProvider,
     private val screenshotInteractor: ScreenshotInteractor,
     private val featuresInteractor: LargeScreenCaptureFeaturesInteractor,
@@ -252,7 +254,17 @@ constructor(
         coroutineScope {
             launch { iconProvider.collectIcons() }
             launch { screenCaptureRecordParametersViewModel.activate() }
+            launch { initializeRegionBox() }
         }
+    }
+
+    private fun initializeRegionBox() {
+        if (regionBoxSource.value != null) {
+            return
+        }
+        val bounds = windowManager.currentWindowMetrics.bounds
+        regionBoxSource.value =
+            Rect(bounds).apply { inset(bounds.width() / 4, bounds.height() / 4) }
     }
 
     private fun generateCaptureTypeButtonViewModels(
