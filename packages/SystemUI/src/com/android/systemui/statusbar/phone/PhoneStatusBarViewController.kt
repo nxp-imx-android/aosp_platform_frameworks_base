@@ -46,6 +46,7 @@ import com.android.systemui.statusbar.data.repository.StatusBarConfigurationCont
 import com.android.systemui.statusbar.data.repository.StatusBarContentInsetsProviderStore
 import com.android.systemui.statusbar.policy.Clock
 import com.android.systemui.statusbar.policy.ConfigurationController
+import com.android.systemui.statusbar.window.StatusBarWindowControllerStore
 import com.android.systemui.statusbar.window.StatusBarWindowStateController
 import com.android.systemui.unfold.UNFOLD_STATUS_BAR
 import com.android.systemui.unfold.util.ScopedUnfoldTransitionProgressProvider
@@ -83,6 +84,7 @@ private constructor(
     private val statusBarContentInsetsProviderStore: StatusBarContentInsetsProviderStore,
     private val lazyStatusBarShadeDisplayPolicy: Lazy<StatusBarTouchShadeDisplayPolicy>,
     private val lazyShadeDisplaysRepository: Lazy<ShadeDisplaysRepository>,
+    private val statusBarWindowControllerStore: StatusBarWindowControllerStore,
 ) : ViewController<PhoneStatusBarView>(view) {
 
     private lateinit var battery: BatteryMeterView
@@ -195,6 +197,9 @@ private constructor(
         if (!ShadeWindowGoesAround.isEnabled) {
             // the clock handles the config change itself.
             configurationController.addCallback(configurationListener)
+        }
+        if (!StatusBarConnectedDisplays.isEnabled) {
+            mView.setStatusBarWindowControllerStore(statusBarWindowControllerStore)
         }
     }
 
@@ -437,6 +442,7 @@ private constructor(
         private val statusBarContentInsetsProviderStore: StatusBarContentInsetsProviderStore,
         private val lazyStatusBarShadeDisplayPolicy: Lazy<StatusBarTouchShadeDisplayPolicy>,
         private val lazyShadeDisplaysRepository: Lazy<ShadeDisplaysRepository>,
+        private val statusBarWindowControllerStore: StatusBarWindowControllerStore,
     ) {
         fun create(view: PhoneStatusBarView): PhoneStatusBarViewController {
             return PhoneStatusBarViewController(
@@ -459,6 +465,7 @@ private constructor(
                 statusBarContentInsetsProviderStore,
                 lazyStatusBarShadeDisplayPolicy,
                 lazyShadeDisplaysRepository,
+                statusBarWindowControllerStore,
             )
         }
     }
