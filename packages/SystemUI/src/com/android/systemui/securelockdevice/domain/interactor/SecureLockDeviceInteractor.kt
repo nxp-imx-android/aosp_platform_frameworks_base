@@ -305,7 +305,7 @@ constructor(
     /** Called when biometric authentication is requested for secure lock device. */
     fun onBiometricAuthRequested() {
         logBuffer.log(TAG, LogLevel.DEBUG, "onBiometricAuthRequested")
-        resetBiometricAuthState()
+        resetBiometricAuthState(isBiometricAuthRequested = true)
         _isFullyUnlockedAndReadyToDismiss.value = false
         _isBiometricAuthVisible.value = true
         deviceEntryFaceAuthInteractor.onSecureLockDeviceBiometricAuthRequested()
@@ -324,10 +324,16 @@ constructor(
      * Resets UI state when leaving the biometric auth screen without authenticating, or when the
      * secure lock device UI state is reset upon the gone transition completing.
      */
-    private fun resetBiometricAuthState() {
-        logBuffer.log(TAG, LogLevel.DEBUG, "resetBiometricAuthState")
-        secureLockDeviceRepository.suppressBouncerMessageUpdates.value = true
-        _isBiometricAuthVisible.value = false
+    private fun resetBiometricAuthState(isBiometricAuthRequested: Boolean) {
+        logBuffer.log(
+            TAG,
+            LogLevel.DEBUG,
+            "resetBiometricAuthState(isBiometricAuthRequested $isBiometricAuthRequested)",
+        )
+        secureLockDeviceRepository.suppressBouncerMessageUpdates.value = false
+        if (!isBiometricAuthRequested) {
+            _isBiometricAuthVisible.value = false
+        }
         _showConfirmBiometricAuthButton.value = false
         _showTryAgainButton.value = false
         _showingError.value = false
@@ -360,7 +366,7 @@ constructor(
                 PRIMARY_AUTH_REQUIRED_FOR_SECURE_LOCK_DEVICE,
                 selectedUserInteractor.getSelectedUserId(),
             )
-            resetBiometricAuthState()
+            resetBiometricAuthState(isBiometricAuthRequested = false)
         }
     }
 
@@ -376,7 +382,7 @@ constructor(
                     "biometric authentication"
             )
         )
-        resetBiometricAuthState()
+        resetBiometricAuthState(isBiometricAuthRequested = false)
         _isFullyUnlockedAndReadyToDismiss.value = false
         _strongBiometricAuthenticationComplete.value = false
     }

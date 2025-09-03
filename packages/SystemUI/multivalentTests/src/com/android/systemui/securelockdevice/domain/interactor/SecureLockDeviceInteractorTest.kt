@@ -215,4 +215,104 @@ class SecureLockDeviceInteractorTest : SysuiTestCase() {
             assertThat(shouldListenForBiometricAuth).isFalse()
         }
     }
+
+    @Test
+    fun onBiometricAuthRequested_resetsStateAndShowsBiometricAuthUi() =
+        testScope.runTest {
+            val isBiometricAuthVisible by collectLastValue(underTest.isBiometricAuthVisible)
+            val showConfirmBiometricAuthButton by
+                collectLastValue(underTest.showConfirmBiometricAuthButton)
+            val showTryAgainButton by collectLastValue(underTest.showTryAgainButton)
+            val showingError by collectLastValue(underTest.showingError)
+            val suppressBouncerMessageUpdates by
+                collectLastValue(underTest.suppressBouncerMessageUpdates)
+
+            underTest.onBiometricAuthRequested()
+            runCurrent()
+
+            assertThat(isBiometricAuthVisible).isTrue()
+            assertThat(showConfirmBiometricAuthButton).isFalse()
+            assertThat(showTryAgainButton).isFalse()
+            assertThat(showingError).isFalse()
+            assertThat(suppressBouncerMessageUpdates).isFalse()
+        }
+
+    @Test
+    fun onBiometricAuthUiHiddenWithoutAuthenticationComplete_resetsUIState() =
+        testScope.runTest {
+            val isBiometricAuthVisible by collectLastValue(underTest.isBiometricAuthVisible)
+            val showConfirmBiometricAuthButton by
+                collectLastValue(underTest.showConfirmBiometricAuthButton)
+            val showTryAgainButton by collectLastValue(underTest.showTryAgainButton)
+            val showingError by collectLastValue(underTest.showingError)
+            val suppressBouncerMessageUpdates by
+                collectLastValue(underTest.suppressBouncerMessageUpdates)
+
+            // Sample state, pending face auth confirmation, suppressing bouncer message updates
+            underTest.onBiometricAuthRequested()
+            underTest.onBiometricAuthenticatedStateUpdated(
+                PromptAuthState(
+                    isAuthenticated = true,
+                    authenticatedModality = BiometricModality.Face,
+                    needsUserConfirmation = true,
+                )
+            )
+            underTest.suppressBouncerMessages()
+            runCurrent()
+
+            assertThat(isBiometricAuthVisible).isTrue()
+            assertThat(showConfirmBiometricAuthButton).isTrue()
+            assertThat(showingError).isFalse()
+            assertThat(suppressBouncerMessageUpdates).isTrue()
+
+            // Biometric auth UI is hidden without confirmation (e.g. screen turned off)
+            underTest.onBiometricAuthUiHidden()
+            runCurrent()
+
+            assertThat(isBiometricAuthVisible).isFalse()
+            assertThat(showConfirmBiometricAuthButton).isFalse()
+            assertThat(showTryAgainButton).isFalse()
+            assertThat(showingError).isFalse()
+            assertThat(suppressBouncerMessageUpdates).isFalse()
+        }
+
+    @Test
+    fun onGoneTransitionFinished_resetsUIState() =
+        testScope.runTest {
+            val isBiometricAuthVisible by collectLastValue(underTest.isBiometricAuthVisible)
+            val isFullyUnlockedAndReadyToDismiss by
+                collectLastValue(underTest.isFullyUnlockedAndReadyToDismiss)
+            val showConfirmBiometricAuthButton by
+                collectLastValue(underTest.showConfirmBiometricAuthButton)
+            val showTryAgainButton by collectLastValue(underTest.showTryAgainButton)
+            val showingError by collectLastValue(underTest.showingError)
+            val suppressBouncerMessageUpdates by
+                collectLastValue(underTest.suppressBouncerMessageUpdates)
+
+            // Authentication complete, animations played, ready to dismiss
+            underTest.onBiometricAuthRequested()
+            underTest.onBiometricAuthenticatedStateUpdated(
+                PromptAuthState(
+                    isAuthenticated = true,
+                    authenticatedModality = BiometricModality.Face,
+                    needsUserConfirmation = true,
+                )
+            )
+            underTest.suppressBouncerMessages()
+            underTest.onReadyToDismissBiometricAuth()
+            runCurrent()
+
+            assertThat(isBiometricAuthVisible).isTrue()
+            assertThat(isFullyUnlockedAndReadyToDismiss).isTrue()
+
+            underTest.onGoneTransitionFinished()
+            runCurrent()
+
+            assertThat(isBiometricAuthVisible).isFalse()
+            assertThat(isFullyUnlockedAndReadyToDismiss).isFalse()
+            assertThat(showConfirmBiometricAuthButton).isFalse()
+            assertThat(showTryAgainButton).isFalse()
+            assertThat(showingError).isFalse()
+            assertThat(suppressBouncerMessageUpdates).isFalse()
+        }
 }
