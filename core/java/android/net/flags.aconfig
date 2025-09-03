@@ -12,6 +12,13 @@ flag {
 }
 
 flag {
+    name: "powered_off_finding_message_new_product_name"
+    namespace: "nearby"
+    description: "Controls whether the Powered Off Finding message uses the new product name"
+    bug: "417428201"
+}
+
+flag {
   name: "register_nsd_offload_engine"
   is_exported: true
   namespace: "android_core_networking"
