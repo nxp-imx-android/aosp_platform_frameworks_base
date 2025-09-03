@@ -331,8 +331,10 @@ object BiometricViewBinder {
                             when (state) {
                                 is PositiveButtonState.Confirm -> {
                                     confirmationButton.visibility = View.VISIBLE
+                                    retryButton.visibility = View.GONE
                                 }
                                 is PositiveButtonState.TryAgain -> {
+                                    confirmationButton.visibility = View.GONE
                                     retryButton.visibility = View.VISIBLE
                                 }
                                 is PositiveButtonState.Gone -> {
