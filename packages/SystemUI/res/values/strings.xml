@@ -1343,7 +1343,7 @@
     </string>
 
     <!-- Modes: title for when multiple modes are active; number is >= 2 [CHAR LIMIT=20] -->
-    <string name="zen_modes_multiple_on_title"><xliff:g id="number" example="3">%s</xliff:g> Modes</string>
+    <string name="zen_modes_multiple_on_title"><xliff:g id="number" example="3">%d</xliff:g> Modes</string>
 
     <!-- Modes: subtitle for when multiple modes are active. Plural. [CHAR LIMIT=20] -->
     <string name="zen_modes_multiple_on_status">On</string>
