@@ -1185,6 +1185,9 @@ internal object MediaPlayerData {
             return
         }
 
+        if (enableSuggestedDeviceUi()) {
+            replaceVisiblePlayerKey(oldKey, newKey)
+        }
         mediaData.remove(oldKey)?.let {
             // MediaPlayer should not be visible
             // no need to set isDismissed flag.
@@ -1195,6 +1198,14 @@ internal object MediaPlayerData {
             }
             mediaData.put(newKey, it)
         }
+    }
+
+    /** Changes the key in visibleMediaPlayers while preserving the order */
+    private fun replaceVisiblePlayerKey(oldKey: String, newKey: String) {
+        val newVisibleMediaPlayers =
+            visibleMediaPlayers.mapKeys { (key, _) -> if (key == oldKey) newKey else key }
+        visibleMediaPlayers.clear()
+        visibleMediaPlayers.putAll(newVisibleMediaPlayers)
     }
 
     fun getMediaControlPanel(visibleIndex: Int): MediaControlPanel? {

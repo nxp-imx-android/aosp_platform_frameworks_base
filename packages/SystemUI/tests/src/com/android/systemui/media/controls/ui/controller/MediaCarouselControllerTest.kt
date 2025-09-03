@@ -392,6 +392,75 @@ class MediaCarouselControllerTest : SysuiTestCase() {
         )
     }
 
+    @EnableFlags(Flags.FLAG_ENABLE_SUGGESTED_DEVICE_UI)
+    @Test
+    fun testChangingPlayerKeys_visibleMediaPlayersUpdated() {
+        verify(mediaDataManager).addListener(capture(listener))
+
+        val key1 = "key1"
+        val key2 = "key2"
+        val key3 = "key3"
+        val newKey = "newKey"
+
+        MediaPlayerData.addMediaPlayer(
+            key1,
+            DATA.copy(
+                active = true,
+                isPlaying = true,
+                playbackLocation = MediaData.PLAYBACK_LOCAL,
+                resumption = false,
+                notificationKey = key1,
+            ),
+            panel,
+            clock,
+        )
+
+        MediaPlayerData.addMediaPlayer(
+            key2,
+            DATA.copy(
+                active = true,
+                isPlaying = false,
+                playbackLocation = MediaData.PLAYBACK_LOCAL,
+                resumption = true,
+                notificationKey = key2,
+            ),
+            panel,
+            clock,
+        )
+
+        MediaPlayerData.addMediaPlayer(
+            key3,
+            DATA.copy(
+                active = true,
+                isPlaying = false,
+                playbackLocation = MediaData.PLAYBACK_LOCAL,
+                resumption = true,
+                notificationKey = key1,
+            ),
+            panel,
+            clock,
+        )
+
+        assertEquals(listOf(key1, key2, key3), MediaPlayerData.visiblePlayerKeys().map { it.key })
+
+        // Replacing key2 with newKey.
+        listener.value.onMediaDataLoaded(
+            key = newKey,
+            oldKey = key2,
+            data =
+                DATA.copy(
+                    active = true,
+                    isPlaying = false,
+                    playbackLocation = MediaData.PLAYBACK_LOCAL,
+                    resumption = false,
+                ),
+        )
+        runAllReady()
+
+        // newKey has the same position as key2 used to have.
+        assertEquals(listOf(key1, newKey, key3), MediaPlayerData.visiblePlayerKeys().map { it.key })
+    }
+
     @Test
     fun testSwipeDismiss_logged() {
         mediaCarouselController.mediaCarouselScrollHandler.dismissCallback.invoke()
