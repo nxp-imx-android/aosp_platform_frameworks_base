@@ -2178,6 +2178,16 @@ class Task extends TaskFragment {
     }
 
     @Override
+    public void onRequestedOverrideConfigurationChanged(
+            @NonNull Configuration overrideConfiguration) {
+        if (!overrideConfiguration.windowConfiguration.getBounds().isEmpty()
+                && !isOverrideBoundsAllowed()) {
+            overrideConfiguration.windowConfiguration.setBounds(new Rect());
+        }
+        super.onRequestedOverrideConfigurationChanged(overrideConfiguration);
+    }
+
+    @Override
     public void onConfigurationChanged(Configuration newParentConfig) {
         if (mDisplayContent != null
                 && mDisplayContent.mPinnedTaskController.isFreezingTaskConfig(this)) {
