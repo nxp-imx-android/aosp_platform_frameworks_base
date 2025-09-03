@@ -42,6 +42,7 @@ import com.android.wm.shell.shared.desktopmode.FakeDesktopState
 import com.android.wm.shell.sysui.ShellController
 import com.android.wm.shell.sysui.ShellInit
 import com.android.wm.shell.sysui.UserChangeListener
+import com.android.wm.shell.transition.Transitions
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.cancel
@@ -84,6 +85,8 @@ class DesktopDisplayEventHandlerTest : ShellTestCase() {
     @Mock private lateinit var mockDesktopTasksController: DesktopTasksController
     @Mock private lateinit var mockDesktopDisplayModeController: DesktopDisplayModeController
     @Mock private lateinit var mockDesksTransitionObserver: DesksTransitionObserver
+
+    @Mock private lateinit var transitions: Transitions
     private val desktopRepositoryInitializer = FakeDesktopRepositoryInitializer()
     private val testScope = TestScope()
     private val desktopState = FakeDesktopState()
@@ -114,6 +117,7 @@ class DesktopDisplayEventHandlerTest : ShellTestCase() {
                 mockDesktopDisplayModeController,
                 mockDesksTransitionObserver,
                 desktopState,
+                transitions,
             )
         shellInit.init()
         verify(displayController)

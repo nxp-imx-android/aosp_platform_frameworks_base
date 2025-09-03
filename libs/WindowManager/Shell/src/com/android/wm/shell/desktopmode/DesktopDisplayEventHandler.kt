@@ -17,16 +17,22 @@
 package com.android.wm.shell.desktopmode
 
 import android.content.Context
+import android.content.res.Configuration
+import android.graphics.Rect
+import android.os.IBinder
 import android.os.Trace
 import android.os.UserHandle
 import android.os.UserManager
 import android.util.ArraySet
 import android.view.Display
 import android.view.Display.DEFAULT_DISPLAY
+import android.view.SurfaceControl
+import android.view.WindowManager.TRANSIT_CHANGE
 import android.window.DesktopExperienceFlags
 import android.window.DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_ACTIVATION_IN_DESKTOP_FIRST_DISPLAYS
 import android.window.DesktopModeFlags
 import android.window.DisplayAreaInfo
+import android.window.TransitionInfo
 import com.android.app.tracing.traceSection
 import com.android.internal.annotations.VisibleForTesting
 import com.android.internal.protolog.ProtoLog
@@ -34,6 +40,7 @@ import com.android.wm.shell.RootTaskDisplayAreaOrganizer
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer.RootTaskDisplayAreaListener
 import com.android.wm.shell.common.DisplayController
 import com.android.wm.shell.common.DisplayController.OnDisplaysChangedListener
+import com.android.wm.shell.common.DisplayLayout
 import com.android.wm.shell.desktopmode.DesktopModeEventLogger.Companion.EnterReason
 import com.android.wm.shell.desktopmode.data.DesktopRepository
 import com.android.wm.shell.desktopmode.data.DesktopRepositoryInitializer
@@ -48,6 +55,7 @@ import com.android.wm.shell.shared.desktopmode.DesktopState
 import com.android.wm.shell.sysui.ShellController
 import com.android.wm.shell.sysui.ShellInit
 import com.android.wm.shell.sysui.UserChangeListener
+import com.android.wm.shell.transition.Transitions
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
@@ -66,7 +74,12 @@ class DesktopDisplayEventHandler(
     private val desktopDisplayModeController: DesktopDisplayModeController,
     private val desksTransitionObserver: DesksTransitionObserver,
     private val desktopState: DesktopState,
-) : OnDisplaysChangedListener, OnDeskRemovedListener, PreserveDisplayRequestHandler {
+    private val transitions: Transitions,
+) :
+    OnDisplaysChangedListener,
+    OnDeskRemovedListener,
+    PreserveDisplayRequestHandler,
+    Transitions.TransitionObserver {
 
     private val onDisplayAreaChangeListener = OnDisplayAreaChangeListener { displayId ->
         logV("displayAreaChanged in displayId=%d", displayId)
@@ -79,6 +92,10 @@ class DesktopDisplayEventHandler(
     // displayId to its uniqueId since we will not be able to fetch it after disconnect.
     private val uniqueIdByDisplayId = mutableMapOf<Int, String>()
 
+    private val oldDpiLayoutByDisplayId = mutableMapOf<Int, DisplayLayout>()
+    private val boundsChangedByDisplayId = mutableSetOf<Int>()
+    private val stableBoundsChangedByDisplayId = mutableSetOf<Int>()
+    private val displayConfigById = mutableMapOf<Int, Configuration>()
     // All uniqueDisplayIds that are currently being restored; any further requests
     // to restore them will no-op.
     @VisibleForTesting val displaysMidRestoration = ArraySet<String>()
@@ -106,6 +123,126 @@ class DesktopDisplayEventHandler(
             }
         }
     }
+
+    override fun onDisplayConfigurationChanged(
+        displayId: Int,
+        newConfig: Configuration?,
+        oldLayout: DisplayLayout?,
+    ) {
+        val newDisplayLayout = displayController.getDisplayLayout(displayId)
+        val oldDisplayLayout = oldDpiLayoutByDisplayId[displayId] ?: oldLayout
+        if (oldDisplayLayout == null || newDisplayLayout == null) return
+        newConfig?.let { displayConfigById.put(displayId, it) }
+        if (newDisplayLayout.densityDpi() == oldDisplayLayout.densityDpi()) {
+            return
+        }
+        oldDpiLayoutByDisplayId.put(displayId, oldDisplayLayout)
+        val oldStableBounds = Rect()
+        val newStableBounds = Rect()
+        oldDisplayLayout.getStableBounds(oldStableBounds)
+        newDisplayLayout.getStableBounds(newStableBounds)
+        when {
+            oldStableBounds == newStableBounds -> {}
+            // Width update means resolution is updated, and we should wait for TRANSIT_CHANGE
+            // transition to apply new resolution logic.
+            displayResolutionChanged(oldDisplayLayout, newDisplayLayout) -> {
+                transitions.registerObserver(this)
+                boundsChangedByDisplayId.add(displayId)
+            }
+            taskbarInsetsUpdated(oldStableBounds, newStableBounds) -> {
+                stableBoundsChangedByDisplayId.add(displayId)
+            }
+        }
+        resizeTasksIfPreconditionsSatisfied(displayId, newConfig)
+    }
+
+    override fun onTransitionReady(
+        transition: IBinder,
+        info: TransitionInfo,
+        startTransaction: SurfaceControl.Transaction,
+        finishTransaction: SurfaceControl.Transaction,
+    ) {
+        val displayId = info.changes[0].endDisplayId
+        val config = displayConfigById[displayId]
+        if (info.type == TRANSIT_CHANGE) {
+            resizeTasksIfPreconditionsSatisfied(displayId, config, true)
+        }
+    }
+
+    override fun onStableInsetsChanging(displayId: Int, oldLayout: DisplayLayout?) {
+        val oldStableBounds = Rect()
+        val newStableBounds = Rect()
+        val oldestLayout = oldDpiLayoutByDisplayId[displayId] ?: oldLayout
+        val newLayout = displayController.getDisplayLayout(displayId)
+        val config = displayConfigById[displayId]
+        if (oldestLayout == null || newLayout == null) return
+        oldDpiLayoutByDisplayId.put(displayId, oldestLayout)
+        oldestLayout.getStableBounds(oldStableBounds)
+        newLayout.getStableBounds(newStableBounds)
+        when {
+            oldStableBounds == newStableBounds -> {
+                // No change in stable bounds.
+            }
+            // Width or height updates mean the resolution has changed.
+            displayResolutionChanged(oldestLayout, newLayout) -> {
+                boundsChangedByDisplayId.add(displayId)
+            }
+
+            taskbarInsetsUpdated(oldStableBounds, newStableBounds) -> {
+                stableBoundsChangedByDisplayId.add(displayId)
+            }
+        }
+        resizeTasksIfPreconditionsSatisfied(displayId, config)
+    }
+
+    private fun displayResolutionChanged(
+        oldestLayout: DisplayLayout,
+        newLayout: DisplayLayout,
+    ): Boolean =
+        oldestLayout.width() != newLayout.width() || oldestLayout.height() != newLayout.height()
+
+    private fun taskbarInsetsUpdated(oldStableBounds: Rect, newStableBounds: Rect): Boolean =
+        oldStableBounds.bottom != newStableBounds.bottom
+
+    private fun resizeTasksIfPreconditionsSatisfied(
+        displayId: Int,
+        config: Configuration?,
+        boundsChangeReady: Boolean = false,
+    ) {
+        when {
+            config == null -> {}
+            dpiChangedAndInsetsReadyForDisplay(displayId) -> {
+                desktopTasksController.onDisplayDpiChanging(
+                    displayId,
+                    config,
+                    oldDpiLayoutByDisplayId[displayId],
+                )
+                oldDpiLayoutByDisplayId.remove(displayId)
+                stableBoundsChangedByDisplayId.remove(displayId)
+            }
+            resolutionChangedAndInsetsReadyForDisplay(displayId, boundsChangeReady) -> {
+                desktopTasksController.onDisplayDpiChanging(
+                    displayId,
+                    config,
+                    oldDpiLayoutByDisplayId[displayId],
+                )
+                transitions.unregisterObserver(this)
+                oldDpiLayoutByDisplayId.remove(displayId)
+                boundsChangedByDisplayId.remove(displayId)
+            }
+        }
+    }
+
+    private fun dpiChangedAndInsetsReadyForDisplay(displayId: Int): Boolean =
+        displayId in oldDpiLayoutByDisplayId && displayId in stableBoundsChangedByDisplayId
+
+    private fun resolutionChangedAndInsetsReadyForDisplay(
+        displayId: Int,
+        transitionReady: Boolean,
+    ): Boolean =
+        displayId in oldDpiLayoutByDisplayId &&
+            displayId in boundsChangedByDisplayId &&
+            transitionReady
 
     override fun onDisplayAdded(displayId: Int) =
         traceSection(

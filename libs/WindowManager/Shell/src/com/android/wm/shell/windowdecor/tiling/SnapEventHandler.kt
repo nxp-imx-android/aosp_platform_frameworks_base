@@ -17,6 +17,7 @@
 package com.android.wm.shell.windowdecor.tiling
 
 import android.app.ActivityManager.RunningTaskInfo
+import android.content.res.Configuration
 import android.graphics.Rect
 import com.android.wm.shell.desktopmode.DesktopTasksController.SnapPosition
 
@@ -74,4 +75,15 @@ interface SnapEventHandler {
 
     /** Notifies tiling of an exploded view reorder to prepare the tiling view for the event. */
     fun notifyTilingOfExplodedViewReorder(deskId: Int, topTaskId: Int)
+
+    /** Gets the current divider bounds for a tiling session. */
+    fun getDividerBounds(deskId: Int): Rect
+
+    /** Notifies tiling of a stable bounds change. */
+    fun onDisplayLayoutChange(
+        displayId: Int,
+        config: Configuration?,
+        oldStableBounds: Rect,
+        newToOldDpiRatio: Double,
+    )
 }

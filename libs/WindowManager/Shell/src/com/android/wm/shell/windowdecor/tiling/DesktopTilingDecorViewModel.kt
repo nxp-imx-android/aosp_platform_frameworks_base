@@ -19,6 +19,7 @@ package com.android.wm.shell.windowdecor.tiling
 import android.app.ActivityManager
 import android.app.ActivityManager.RunningTaskInfo
 import android.content.Context
+import android.content.res.Configuration
 import android.graphics.Rect
 import android.util.SparseArray
 import android.window.DisplayAreaInfo
@@ -159,6 +160,23 @@ class DesktopTilingDecorViewModel(
         }
     }
 
+    fun getDividerBounds(deskId: Int): Rect =
+        tilingHandlerByUserAndDeskId[currentUserId]?.get(deskId)?.getDividerBounds() ?: Rect()
+
+    fun onDisplayLayoutChange(
+        displayId: Int,
+        newConfig: Configuration?,
+        oldStableBounds: Rect,
+        newToOldDpiRatio: Double,
+    ) {
+        val handlers = tilingHandlerByUserAndDeskId[currentUserId] ?: return
+        val config = newConfig ?: return
+        for (handler in handlers.valueIterator()) {
+            if (handler.displayId == displayId)
+                handler.onDensityChanged(config, oldStableBounds, newToOldDpiRatio)
+        }
+    }
+
     fun onUserChange(userId: Int) {
         if (userId == currentUserId) return
         try {
@@ -216,13 +234,16 @@ class DesktopTilingDecorViewModel(
 
     fun getRightSnapBoundsIfTiled(displayId: Int): Rect {
         val displayLayout = displayController.getDisplayLayout(displayId)
+        val displayContext = displayController.getDisplayContext(displayId) ?: return Rect()
         val stableBounds = Rect()
         displayLayout?.getStableBounds(stableBounds)
         val snapBounds =
             Rect(
                 stableBounds.left +
                     stableBounds.width() / 2 +
-                    context.resources.getDimensionPixelSize(R.dimen.split_divider_bar_width) / 2,
+                    displayContext.resources.getDimensionPixelSize(
+                        R.dimen.split_divider_bar_width
+                    ) / 2,
                 stableBounds.top,
                 stableBounds.right,
                 stableBounds.bottom,
@@ -235,6 +256,7 @@ class DesktopTilingDecorViewModel(
 
     fun getLeftSnapBoundsIfTiled(displayId: Int): Rect {
         val displayLayout = displayController.getDisplayLayout(displayId)
+        val displayContext = displayController.getDisplayContext(displayId) ?: return Rect()
         val stableBounds = Rect()
         displayLayout?.getStableBounds(stableBounds)
         val snapBounds =
@@ -242,7 +264,9 @@ class DesktopTilingDecorViewModel(
                 stableBounds.left,
                 stableBounds.top,
                 stableBounds.left + stableBounds.width() / 2 -
-                    context.resources.getDimensionPixelSize(R.dimen.split_divider_bar_width) / 2,
+                    displayContext.resources.getDimensionPixelSize(
+                        R.dimen.split_divider_bar_width
+                    ) / 2,
                 stableBounds.bottom,
             )
 
@@ -275,6 +299,10 @@ class DesktopTilingDecorViewModel(
 
     private fun logW(msg: String, vararg arguments: Any?) {
         ProtoLog.w(WM_SHELL_DESKTOP_MODE, "%s: $msg", TAG, *arguments)
+    }
+
+    private fun logE(msg: String, vararg arguments: Any?) {
+        ProtoLog.e(WM_SHELL_DESKTOP_MODE, "%s: $msg", TAG, *arguments)
     }
 
     companion object {
