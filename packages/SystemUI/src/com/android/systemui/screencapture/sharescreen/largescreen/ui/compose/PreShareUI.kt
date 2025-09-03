@@ -44,7 +44,7 @@ fun PreShareUI(
         PreShareToolbar(
             preShareToolbarViewModel = preShareToolbarViewModel,
             expanded = true,
-            onCloseClick = {},
+            onCloseClick = { preShareToolbarViewModel.onCloseClicked() },
             shareButtonEnabled = shareContentListViewModel.selectedRecentTaskViewModel != null,
         )
         ShareContentSelector(

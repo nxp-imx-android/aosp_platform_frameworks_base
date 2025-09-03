@@ -19,10 +19,14 @@ package com.android.systemui.screencapture.sharescreen.largescreen.ui.viewmodel
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
+import com.android.systemui.kosmos.collectLastValue
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.lifecycle.activateIn
+import com.android.systemui.screencapture.common.shared.model.ScreenCaptureType
+import com.android.systemui.screencapture.common.shared.model.ScreenCaptureUiState
+import com.android.systemui.screencapture.data.repository.screenCaptureUiRepository
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
 import org.junit.Before
@@ -33,13 +37,12 @@ import org.junit.runner.RunWith
 @RunWith(AndroidJUnit4::class)
 class PreShareToolbarViewModelTest : SysuiTestCase() {
     private val kosmos = testKosmos().useUnconfinedTestDispatcher()
-    private val testScope = kosmos.testScope
 
     private val viewModel: PreShareToolbarViewModel by lazy { kosmos.preShareToolbarViewModel }
 
     @Before
     fun setUp() {
-        viewModel.activateIn(testScope)
+        viewModel.activateIn(kosmos.testScope)
     }
 
     @Test
@@ -54,5 +57,31 @@ class PreShareToolbarViewModelTest : SysuiTestCase() {
         kosmos.runTest {
             viewModel.onTargetSelected(ScreenShareTarget.TAB)
             assertThat(viewModel.selectedScreenShareTarget).isEqualTo(ScreenShareTarget.TAB)
+        }
+
+    @Test
+    fun onCloseClicked_hidesUi() =
+        kosmos.runTest {
+            val uiState by
+                collectLastValue(
+                    kosmos.screenCaptureUiRepository.uiState(ScreenCaptureType.SHARE_SCREEN)
+                )
+
+            viewModel.onCloseClicked()
+
+            assertThat(uiState).isEqualTo(ScreenCaptureUiState.Invisible)
+        }
+
+    @Test
+    fun onShareClicked_hidesUi() =
+        kosmos.runTest {
+            val uiState by
+                collectLastValue(
+                    kosmos.screenCaptureUiRepository.uiState(ScreenCaptureType.SHARE_SCREEN)
+                )
+
+            viewModel.onShareClicked()
+
+            assertThat(uiState).isEqualTo(ScreenCaptureUiState.Invisible)
         }
 }
