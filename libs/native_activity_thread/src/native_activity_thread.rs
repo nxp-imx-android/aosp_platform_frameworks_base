@@ -22,6 +22,7 @@ use binder::{
     unstable_api::{new_spibinder, AIBinder as SysAIBinder},
     SpIBinder, Strong,
 };
+use libactivity_manager_procstate_aidl::aidl::android::app::ProcessStateEnum::ProcessStateEnum;
 use native_service_bindgen::{
     ANativeService, ANativeServiceCallbacks,
     ANativeServiceTrimMemoryLevel_ANATIVE_SERVICE_TRIM_MEMORY_BACKGROUND,
@@ -52,6 +53,7 @@ pub struct NativeActivityThread {
     start_seq: i64,
     services: BTreeMap<SpIBinder, NativeService>,
     namespace_factory: NamespaceFactory,
+    process_state: i32,
 }
 
 impl NativeActivityThread {
@@ -61,6 +63,7 @@ impl NativeActivityThread {
             start_seq,
             services: BTreeMap::new(),
             namespace_factory: NamespaceFactory::new(format!("native_app_{}", start_seq)),
+            process_state: ProcessStateEnum::UNKNOWN.0,
         }
     }
 
@@ -199,6 +202,11 @@ impl NativeActivityThread {
         {
             bail!("Received an unexpected level: {}", level);
         }
+        if self.process_state <= ProcessStateEnum::IMPORTANT_FOREGROUND.0
+            && level == ANativeServiceTrimMemoryLevel_ANATIVE_SERVICE_TRIM_MEMORY_BACKGROUND
+        {
+            return Ok(());
+        }
         for service in self.services.values_mut() {
             if let Some(on_trim_memory) = service.service.callbacks.onTrimMemory {
                 let native_service = service.service.as_mut();
@@ -214,6 +222,11 @@ impl NativeActivityThread {
         self.activity_manager
             .finishAttachApplication(self.start_seq, 0)
             .context("Failed to call finishAttachApplication")
+    }
+
+    fn handle_set_process_state(&mut self, state: i32) -> Result<()> {
+        self.process_state = state;
+        Ok(())
     }
 }
 
@@ -237,6 +250,9 @@ impl HandlerCallback<NativeApplicationThreadRequest> for NativeActivityThread {
             }
             NativeApplicationThreadRequest::BindApplication => {
                 self.handle_bind_application_request()
+            }
+            NativeApplicationThreadRequest::SetProcessState(state) => {
+                self.handle_set_process_state(state)
             }
         }
     }
