@@ -352,6 +352,8 @@
     <string name="screen_record_entire_screen">Entire screen</string>
     <!-- Screen recording should record a single app [CHAR LIMIT=35] -->
     <string name="screen_record_single_app">Single app</string>
+    <!-- Screen recording hint shown on a button leading to choosing an app to record [CHAR LIMIT=35] -->
+    <string name="screen_record_single_app_hint">App to record</string>
     <!-- Screen recording should record a single app but there are no apps open [CHAR LIMIT=35] -->
     <string name="screen_record_single_app_no_recents">Single app (Open an app to choose)</string>
     <!-- Screen recording should record device audio setting [CHAR LIMIT=35] -->

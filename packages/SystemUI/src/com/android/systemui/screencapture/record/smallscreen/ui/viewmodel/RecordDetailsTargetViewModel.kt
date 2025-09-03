@@ -16,36 +16,77 @@
 
 package com.android.systemui.screencapture.record.smallscreen.ui.viewmodel
 
-import androidx.annotation.StringRes
+import android.view.Display
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import com.android.app.tracing.coroutines.launchTraced
 import com.android.systemui.lifecycle.HydratedActivatable
 import com.android.systemui.res.R
+import com.android.systemui.screencapture.common.ScreenCaptureUi
+import com.android.systemui.screencapture.common.domain.interactor.ScreenCaptureLabelInteractor
 import com.android.systemui.screencapture.common.domain.interactor.ScreenCaptureRecentTaskInteractor
+import com.android.systemui.screencapture.common.domain.model.ScreenCaptureRecentTask
+import com.android.systemui.screencapture.common.shared.model.ScreenCaptureTarget
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.update
 
-enum class RecordDetailsTargetItemViewModel(
-    @StringRes val labelRes: Int,
-    val isSelectable: Boolean,
-) {
+sealed interface RecordDetailsTargetItemViewModel {
 
-    EntireScreen(R.string.screen_record_entire_screen, true),
-    SingleApp(R.string.screen_record_single_app, true),
-    SingleAppNoRecents(R.string.screen_record_single_app_no_recents, false),
+    val labelRes: Int
+    val isSelectable: Boolean
+    val screenCaptureTarget: ScreenCaptureTarget?
+
+    data class EntireScreen(override val screenCaptureTarget: ScreenCaptureTarget) :
+        RecordDetailsTargetItemViewModel {
+
+        constructor(display: Display) : this(ScreenCaptureTarget.Fullscreen(display.displayId))
+
+        override val labelRes: Int = R.string.screen_record_entire_screen
+        override val isSelectable: Boolean = true
+    }
+
+    data class SingleApp(val task: ScreenCaptureRecentTask? = null) :
+        RecordDetailsTargetItemViewModel {
+
+        override val screenCaptureTarget: ScreenCaptureTarget? =
+            task?.taskId?.let(ScreenCaptureTarget::App)
+
+        override val labelRes: Int = R.string.screen_record_single_app
+        override val isSelectable: Boolean = true
+    }
+
+    data object SingleAppNoRecents : RecordDetailsTargetItemViewModel {
+        override val labelRes: Int = R.string.screen_record_single_app_no_recents
+        override val isSelectable: Boolean = false
+        override val screenCaptureTarget: ScreenCaptureTarget? = null
+    }
 }
 
 class RecordDetailsTargetViewModel
 @AssistedInject
-constructor(private val screenCaptureRecentTaskInteractor: ScreenCaptureRecentTaskInteractor) :
-    HydratedActivatable() {
+constructor(
+    @ScreenCaptureUi private val display: Display,
+    private val screenCaptureRecentTaskInteractor: ScreenCaptureRecentTaskInteractor,
+    private val labelInteractor: ScreenCaptureLabelInteractor,
+) : HydratedActivatable() {
 
     private val _selectedIndex = MutableStateFlow(0)
     private val _items: MutableStateFlow<List<RecordDetailsTargetItemViewModel>?> =
         MutableStateFlow(null)
-    val items: List<RecordDetailsTargetItemViewModel>? by _items.hydratedStateOf()
+    private val _currentTarget = MutableStateFlow<RecordDetailsTargetItemViewModel?>(null)
 
+    val currentTarget: RecordDetailsTargetItemViewModel? by
+        _currentTarget.hydratedStateOf(traceName = "RecordDetailsTargetViewModel#currentTarget")
+    val items: List<RecordDetailsTargetItemViewModel>? by
+        _items.hydratedStateOf(traceName = "RecordDetailsTargetViewModel#items")
     val selectedIndex: Int by
         combine(_selectedIndex, _items) { idx, targets ->
                 if (targets.isNullOrEmpty()) {
@@ -53,35 +94,63 @@ constructor(private val screenCaptureRecentTaskInteractor: ScreenCaptureRecentTa
                 } else {
                     val result = idx.coerceIn(targets.indices)
                     if (!targets[result].isSelectable) {
-                        RecordDetailsTargetItemViewModel.entries.indexOf(
-                            RecordDetailsTargetItemViewModel.EntireScreen
-                        )
+                        targets.indexOfFirst { it is RecordDetailsTargetItemViewModel.EntireScreen }
                     } else {
                         result
                     }
                 }
             }
-            .hydratedStateOf(0)
+            .hydratedStateOf("RecordDetailsTargetViewModel#selectedIndex", 0)
+    val shouldShowAppSelector: Boolean by derivedStateOf {
+        items?.getOrNull(selectedIndex) is RecordDetailsTargetItemViewModel.SingleApp
+    }
+    var selectedAppName: Result<CharSequence>? by mutableStateOf(null)
+        private set
 
     override suspend fun onActivated() {
-        screenCaptureRecentTaskInteractor.recentTasks
-            .map { tasks ->
-                buildList {
-                    add(RecordDetailsTargetItemViewModel.EntireScreen)
-                    add(
-                        if (tasks.isNullOrEmpty()) {
-                            RecordDetailsTargetItemViewModel.SingleAppNoRecents
-                        } else {
-                            RecordDetailsTargetItemViewModel.SingleApp
-                        }
-                    )
-                }
+        coroutineScope {
+            launchTraced("RecordDetailsTargetViewModel#_currentTarget") {
+                combine(_items, _selectedIndex) { targets, idx -> targets?.getOrNull(idx) }
+                    .onEach {
+                        val appViewModel = it as? RecordDetailsTargetItemViewModel.SingleApp
+                        selectedAppName =
+                            appViewModel?.task?.let { task -> labelInteractor.loadLabel(task) }
+                    }
+                    .collect(_currentTarget)
             }
-            .collect(_items)
+            launchTraced("RecordDetailsTargetViewModel#_items") {
+                screenCaptureRecentTaskInteractor.recentTasks
+                    .map { tasks ->
+                        buildList {
+                            add(RecordDetailsTargetItemViewModel.EntireScreen(display))
+                            add(
+                                if (tasks.isNullOrEmpty()) {
+                                    RecordDetailsTargetItemViewModel.SingleAppNoRecents
+                                } else {
+                                    RecordDetailsTargetItemViewModel.SingleApp()
+                                }
+                            )
+                        }
+                    }
+                    .collect(_items)
+            }
+        }
     }
 
     fun select(index: Int) {
         _selectedIndex.value = index
+    }
+
+    fun selectTask(task: ScreenCaptureRecentTask) {
+        _items.update { current ->
+            current?.map {
+                if (it is RecordDetailsTargetItemViewModel.SingleApp) {
+                    RecordDetailsTargetItemViewModel.SingleApp(task)
+                } else {
+                    it
+                }
+            }
+        }
     }
 
     @AssistedFactory

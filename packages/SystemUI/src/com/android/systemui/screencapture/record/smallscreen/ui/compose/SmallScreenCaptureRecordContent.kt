@@ -171,6 +171,7 @@ constructor(private val viewModelFactory: SmallScreenCaptureRecordViewModel.Fact
                                         viewModel.recordDetailsParametersViewModel,
                                     targetViewModel = viewModel.recordDetailsTargetViewModel,
                                     drawableLoaderViewModel = viewModel,
+                                    onAppSelectorClicked = { viewModel.showAppSelector() },
                                     modifier = contentModifier,
                                 )
 
@@ -178,6 +179,10 @@ constructor(private val viewModelFactory: SmallScreenCaptureRecordViewModel.Fact
                                 RecordDetailsAppSelector(
                                     viewModel = viewModel.recordDetailsAppSelectorViewModel,
                                     onBackPressed = { viewModel.showSettings() },
+                                    onTaskSelected = {
+                                        viewModel.recordDetailsTargetViewModel.selectTask(it)
+                                        viewModel.showSettings()
+                                    },
                                     modifier = contentModifier,
                                 )
 
