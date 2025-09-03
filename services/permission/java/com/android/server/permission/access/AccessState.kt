@@ -408,6 +408,7 @@ sealed class UserState(
     internal val packageAppOpModesReference: PackageAppOpModesReference,
     internal val appIdAppFunctionAccessFlagsReference: AppIdAppFunctionAccessFlagsReference,
     defaultPermissionGrantFingerprint: String?,
+    appFunctionAccessPregrantFingerprint: String?,
     writeMode: Int,
 ) : WritableState, Immutable<MutableUserState> {
     val packageVersions: IndexedMap<String, Int>
@@ -431,6 +432,8 @@ sealed class UserState(
     var defaultPermissionGrantFingerprint: String? = defaultPermissionGrantFingerprint
         protected set
 
+    var appFunctionAccessPregrantFingerprint: String? = appFunctionAccessPregrantFingerprint
+
     override var writeMode: Int = writeMode
         protected set
 
@@ -446,6 +449,7 @@ private constructor(
     packageAppOpModesReference: PackageAppOpModesReference,
     appIdAppFunctionAccessFlagsReference: AppIdAppFunctionAccessFlagsReference,
     defaultPermissionGrantFingerprint: String?,
+    appFunctionAccessPregrantFingerprint: String?,
     writeMode: Int,
 ) :
     UserState(
@@ -456,6 +460,7 @@ private constructor(
         packageAppOpModesReference,
         appIdAppFunctionAccessFlagsReference,
         defaultPermissionGrantFingerprint,
+        appFunctionAccessPregrantFingerprint,
         writeMode,
     ),
     MutableWritableState {
@@ -467,6 +472,7 @@ private constructor(
             AppIdAppOpModesReference(MutableAppIdAppOpModes()),
             PackageAppOpModesReference(MutablePackageAppOpModes()),
             AppIdAppFunctionAccessFlagsReference(MutableAppIdAppFunctionAccessFlags()),
+            null,
             null,
             WriteMode.NONE,
         )
@@ -481,6 +487,7 @@ private constructor(
         userState.packageAppOpModesReference.toImmutable(),
         userState.appIdAppFunctionAccessFlagsReference.toImmutable(),
         userState.defaultPermissionGrantFingerprint,
+        userState.appFunctionAccessPregrantFingerprint,
         WriteMode.NONE,
     )
 

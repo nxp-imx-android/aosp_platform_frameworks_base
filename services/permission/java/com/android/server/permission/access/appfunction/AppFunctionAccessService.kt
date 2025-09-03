@@ -43,6 +43,7 @@ class AppFunctionAccessService(private val service: AccessCheckingService) :
     private val policy =
         service.getSchemePolicy(UidUri.SCHEME, AppFunctionAccessUri.SCHEME)
             as AppIdAppFunctionAccessPolicy
+    private val pregrants = AppFunctionAccessPregrant(this)
 
     private val context = service.context
     private lateinit var packageManagerLocal: PackageManagerLocal
@@ -244,6 +245,13 @@ class AppFunctionAccessService(private val service: AccessCheckingService) :
         return service.getState {
             with(policy) { filterPackageNames(getTargets(targetUserId), targetUserId) }
         }
+    }
+
+    override fun onUserStarting(userId: Int) {
+        if (!appFunctionAccessServiceEnabled()) {
+            return
+        }
+        service.mutateState { with(pregrants) { applyIfNeeded(userId) } }
     }
 
     private fun enforceCallingOrSelfCrossUserPermission(
