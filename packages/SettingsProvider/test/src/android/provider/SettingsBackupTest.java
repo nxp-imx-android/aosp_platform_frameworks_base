@@ -544,7 +544,6 @@ public class SettingsBackupTest {
                     Settings.Global.REPAIR_MODE_ACTIVE,
                     Settings.Global.RADIO_BUG_WAKELOCK_TIMEOUT_COUNT_THRESHOLD,
                     Settings.Global.RADIO_BUG_SYSTEM_ERROR_COUNT_THRESHOLD,
-                    Settings.Global.ENABLED_SUBSCRIPTION_FOR_SLOT,
                     Settings.Global.POWER_BUTTON_SHORT_PRESS,
                     Settings.Global.POWER_BUTTON_DOUBLE_PRESS,
                     Settings.Global.POWER_BUTTON_TRIPLE_PRESS,
