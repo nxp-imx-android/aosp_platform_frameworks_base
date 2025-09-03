@@ -50,6 +50,13 @@ flag {
 }
 
 flag {
+    name: "reset_auth_flags_and_metrics_in_lock_user"
+    namespace: "security"
+    description: "Make LockSettingsService#lockUser() always handle resetting strong auth flags and removing user password metrics"
+    bug: "319142556"
+}
+
+flag {
     name: "scrypt_parameter_change"
     namespace: "security"
     description: "Use n=9 instead of n=11 for scrypt for lock screen knowledge factors"
