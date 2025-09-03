@@ -77,10 +77,6 @@ final class AppCompatCameraSimReqOrientationPolicy implements AppCompatCameraSta
     @NonNull
     final AppCompatCameraRotationState mCameraDisplayRotationProvider;
 
-    // TODO(b/380840084): Clean up after flag is launched.
-    @Nullable
-    private Task mCameraTask;
-
     /**
      * Value toggled on {@link #start()} to {@code true} and on {@link #dispose()} to {@code false}.
      */
@@ -176,9 +172,6 @@ final class AppCompatCameraSimReqOrientationPolicy implements AppCompatCameraSta
             return;
         }
 
-        if (!Flags.enableCameraCompatTrackTaskAndAppBugfix()) {
-            mCameraTask = cameraActivity.getTask();
-        }
         updateAndDispatchCameraConfiguration(appProcess, task);
     }
 
@@ -203,37 +196,13 @@ final class AppCompatCameraSimReqOrientationPolicy implements AppCompatCameraSta
 
     @Override
     public void onCameraClosed(@Nullable WindowProcessController appProcess, @Nullable Task task) {
-        if (Flags.enableCameraCompatTrackTaskAndAppBugfix()) {
-            // With the refactoring for `enableCameraCompatTrackTaskAndAppBugfix`, `onCameraClosed`
-            // is only received when camera is actually closed, and not on activity refresh or when
-            // switching cameras. Proceed to revert camera compat mode.
-            updateAndDispatchCameraConfiguration(appProcess, task);
-        } else {
-            // Top activity in the same task as the camera activity, or `null` if the task is
-            // closed.
-            final ActivityRecord topActivity = getTopActivityFromCameraTask(mCameraTask);
-            // Only clean up if the camera is not running - this close signal could be from
-            // switching cameras (e.g. back to front camera, and vice versa).
-            if (topActivity == null || !mCameraStateMonitor.isCameraRunningForActivity(
-                    topActivity)) {
-                updateAndDispatchCameraConfiguration(appProcess, task);
-                mCameraTask = null;
-            }
-        }
+        // `onCameraClosed` is only received when camera is actually closed, and not on activity
+        // refresh or when switching cameras. Proceed to revert camera compat mode.
+        updateAndDispatchCameraConfiguration(appProcess, task);
     }
 
     private void updateAndDispatchCameraConfiguration(@Nullable WindowProcessController app,
             @Nullable Task task) {
-        // Without `enableCameraCompatTrackTaskAndAppBugfix` refactoring, `CameraStateMonitor` might
-        // not be able to fetch the correct task.
-        // TODO(b/380840084): Clean up after `enableCameraCompatTrackTaskAndAppBugfix` flag launch.
-        if (!Flags.enableCameraCompatTrackTaskAndAppBugfix()) {
-            if (mCameraTask == null) {
-                return;
-            }
-            task = mCameraTask;
-        }
-
         final ActivityRecord activity = getTopActivityFromCameraTask(task);
         final boolean isCompatActivity = activity != null
                 && isCompatibilityTreatmentEnabledForActivity(activity,

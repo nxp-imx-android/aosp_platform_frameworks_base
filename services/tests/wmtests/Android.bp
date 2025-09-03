@@ -203,7 +203,6 @@ test_module_config {
         "com.android.server.wm.AppCompatCameraPolicyTest",
         "com.android.server.wm.AppCompatCameraRotationStateTests",
         "com.android.server.wm.AppCompatCameraStateSourceTests",
-        "com.android.server.wm.AppCompatCameraStateStrategyForPackageTests",
         "com.android.server.wm.AppCompatCameraStateStrategyForTaskTests",
         "com.android.server.wm.AppCompatConfigurationPersisterTest",
         "com.android.server.wm.AppCompatConfigurationTest",
@@ -539,13 +538,6 @@ test_module_config {
     base: "WmTests",
     test_suites: ["device-tests"],
     include_filters: ["com.android.server.wm.AppCompatCameraStateSourceTests"],
-}
-
-test_module_config {
-    name: "WmTests-wm-AppCompatCameraStateStrategyForPackageTests",
-    base: "WmTests",
-    test_suites: ["device-tests"],
-    include_filters: ["com.android.server.wm.AppCompatCameraStateStrategyForPackageTests"],
 }
 
 test_module_config {
