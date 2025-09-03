@@ -24,12 +24,16 @@ import android.content.pm.ResolveInfo
 import android.content.pm.ServiceInfo
 import android.content.res.mainResources
 import android.hardware.input.KeyGestureEvent
+import android.platform.test.annotations.DisableFlags
+import android.platform.test.annotations.EnableFlags
+import android.platform.test.flag.junit.SetFlagsRule
 import android.text.Annotation
 import android.text.Spanned
 import android.view.KeyEvent
 import android.view.accessibility.AccessibilityManager
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
+import com.android.hardware.input.Flags
 import com.android.internal.accessibility.AccessibilityShortcutController.MAGNIFICATION_CONTROLLER_NAME
 import com.android.internal.accessibility.common.ShortcutConstants
 import com.android.systemui.SysuiTestCase
@@ -40,6 +44,7 @@ import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.ArgumentMatchers.anyInt
@@ -59,6 +64,8 @@ class AccessibilityShortcutsRepositoryImplTest : SysuiTestCase() {
     private val userTracker = kosmos.userTracker
     private val resources = kosmos.mainResources
     private val testScope = kosmos.testScope
+
+    @get:Rule val setFlagsRule = SetFlagsRule()
 
     // mocks
     private val accessibilityManager: AccessibilityManager = mock(AccessibilityManager::class.java)
@@ -94,8 +101,9 @@ class AccessibilityShortcutsRepositoryImplTest : SysuiTestCase() {
         }
     }
 
+    @EnableFlags(Flags.FLAG_ENABLE_MAGNIFY_MAGNIFICATION_KEY_GESTURE_DIALOG)
     @Test
-    fun getTitleToContentForKeyGestureDialog_onMagnificationTypeReceived_getExpectedInfo() {
+    fun getTitleToContentForKeyGestureDialog_onMagnificationTypeReceived_doNotEnableShortcut_getExpectedInfo() {
         testScope.runTest {
             val metaState = KeyEvent.META_META_ON or KeyEvent.META_ALT_ON
 
@@ -115,9 +123,40 @@ class AccessibilityShortcutsRepositoryImplTest : SysuiTestCase() {
             // compare its value here.
             assertThat(contentText?.toString())
                 .isEqualTo(
-                    "Action icon + Alt + M is the keyboard shortcut to use Magnification. This" +
-                            " allows you to quickly zoom in on the screen to make content larger." +
-                            " Press Action icon + Alt and \"+\" or \"-\" to adjust zoom."
+                    "Action icon + Alt + M is the keyboard shortcut to use Magnification, an" +
+                        " accessibility feature. This allows you to quickly zoom in on the screen" +
+                        " to make content larger. Once magnification is on, press Action icon +" +
+                        " Alt and \"+\" or \"-\" to adjust zoom."
+                )
+        }
+    }
+
+    @DisableFlags(Flags.FLAG_ENABLE_MAGNIFY_MAGNIFICATION_KEY_GESTURE_DIALOG)
+    @Test
+    fun getTitleToContentForKeyGestureDialog_onMagnificationTypeReceived_enableShortcut_getExpectedInfo() {
+        testScope.runTest {
+            val metaState = KeyEvent.META_META_ON or KeyEvent.META_ALT_ON
+
+            val titleToContent =
+                underTest.getTitleToContentForKeyGestureDialog(
+                    KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_MAGNIFICATION,
+                    metaState,
+                    KeyEvent.KEYCODE_M,
+                    getTargetNameByType(KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_MAGNIFICATION),
+                )
+
+            assertThat(titleToContent).isNotNull()
+            assertThat(titleToContent?.first).isEqualTo("Turn on Magnification keyboard shortcut?")
+            val contentText = titleToContent?.second
+            assertThat(hasExpectedAnnotation(contentText)).isTrue()
+            // `contentText` here is an instance of SpannableStringBuilder, so we only need to
+            // compare its value here.
+            assertThat(contentText?.toString())
+                .isEqualTo(
+                    "Action icon + Alt + M is the keyboard shortcut to use Magnification, an" +
+                        " accessibility feature. This allows you to quickly zoom in on the screen" +
+                        " to make content larger. Once magnification is on, press Action icon +" +
+                        " Alt and \"+\" or \"-\" to adjust zoom."
                 )
         }
     }
@@ -173,7 +212,7 @@ class AccessibilityShortcutsRepositoryImplTest : SysuiTestCase() {
             assertThat(contentText?.toString())
                 .isEqualTo(
                     "Pressing Action icon + Alt + V turns on Voice Access, an accessibility" +
-                            " feature. This lets you control your device hands-free."
+                        " feature. This lets you control your device hands-free."
                 )
         }
     }
