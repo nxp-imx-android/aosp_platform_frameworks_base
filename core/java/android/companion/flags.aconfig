@@ -111,3 +111,10 @@ flag {
     description: "Enable the Remote App Access API"
     bug: "400970610"
 }
+
+flag {
+    name: "enable_universal_clipboard"
+    namespace: "desktop_better_together"
+    description: "Enable Universal Clipboard feature"
+    bug: "432068758"
+}
