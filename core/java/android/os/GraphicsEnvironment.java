@@ -619,7 +619,7 @@ public class GraphicsEnvironment {
         // Perform a number of checks to decide if we should set up ANGLE
         boolean setupANGLE = false;
 
-        if (android.os.Flags.queryAngleChoiceFlag()) {
+        if (android.os.Flags.useQueryAngleChoice()) {
             // Check settings choice first, as the highest priority
             final String settingsChoice = queryAngleChoice(
                     context,
