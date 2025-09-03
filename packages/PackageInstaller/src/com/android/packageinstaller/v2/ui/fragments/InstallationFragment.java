@@ -619,15 +619,18 @@ public class InstallationFragment extends DialogFragment {
         int positiveBtnTextRes = 0;
         boolean isUpdateOwnerShip = false;
         if (installStage.isAppUpdating()) {
-            if (installStage.getExistingUpdateOwnerLabel() != null
-                    && installStage.getRequestedUpdateOwnerLabel() != null) {
+            final String existingUpdateOwnerLabel =
+                    installStage.getExistingUpdateOwnerLabel(requireContext());
+            final String requestedUpdateOwnerLabel =
+                    installStage.getRequestedUpdateOwnerLabel(requireContext());
+            if (existingUpdateOwnerLabel != null && requestedUpdateOwnerLabel != null) {
                 isUpdateOwnerShip = true;
                 title = getString(R.string.title_update_ownership_change,
-                        installStage.getRequestedUpdateOwnerLabel());
+                        requestedUpdateOwnerLabel);
                 positiveBtnTextRes = R.string.button_update_anyway;
                 mCustomMessageTextView.setVisibility(View.VISIBLE);
                 String updateOwnerString = getString(R.string.message_update_owner_change,
-                        installStage.getExistingUpdateOwnerLabel());
+                        existingUpdateOwnerLabel);
                 mCustomMessageTextView.setText(
                         Html.fromHtml(updateOwnerString, Html.FROM_HTML_MODE_LEGACY));
             } else {

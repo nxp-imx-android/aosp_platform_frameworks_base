@@ -489,6 +489,23 @@ object PackageUtil {
     }
 
     /**
+     * Utility method to get the application label from the package name
+     */
+    @JvmStatic
+    fun getApplicationLabel(context: Context, packageName: String): CharSequence? {
+        return try {
+            val appInfo = packageName.let {
+                context.packageManager.getApplicationInfo(
+                    it, PackageManager.ApplicationInfoFlags.of(0)
+                )
+            }
+            appInfo.let { context.packageManager.getApplicationLabel(it) }
+        } catch (e: PackageManager.NameNotFoundException) {
+            null
+        }
+    }
+
+    /**
      * @return If the device supports the material design in the package installer
      */
     @JvmStatic

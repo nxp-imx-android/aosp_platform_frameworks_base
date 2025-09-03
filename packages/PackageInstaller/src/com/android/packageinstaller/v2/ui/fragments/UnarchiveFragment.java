@@ -266,9 +266,8 @@ public class UnarchiveFragment extends DialogFragment {
         // Set title
         dialog.setTitle(R.string.title_restore);
 
-        mCustomMessageTextView.setText(
-                getString(R.string.message_restore, unarchiveStage.getInstallerTitle()));
-
+        mCustomMessageTextView.setText(getString(R.string.message_restore,
+                unarchiveStage.getInstallerTitle(requireContext())));
 
         // Set the positive button and the listener
         Button positiveButton = UiUtil.getAlertDialogPositiveButton(dialog);
