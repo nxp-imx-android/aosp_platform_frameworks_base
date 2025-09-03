@@ -20,17 +20,57 @@ import android.media.tv.extension.signal.IAudioSignalInfoListener;
 import android.os.Bundle;
 
 /**
+ * Audio signal info extracted from driver module.
+ * Client app should use TvTrackInfo to obatin information from SI/PSI tables.
  * @hide
  */
 interface IAudioSignalInfo {
-    // Get audio signal information.
+    /**
+     * Gets audio signal information for the session.
+     *
+     * @param sessionToken A unique token created by the TIS to identify the session.
+     * @return A Bundle containing the audio signal information from driver module and may have key:
+     * <ul>
+     * <li>KEY_AUDIO_CODEC: The audio codec in use.</li>
+     * <li>KEY_AUDIO_HAS_ATMOS: Boolean indicating if has a Dolby Atmos track.</li>
+     * <li>KEY_AUDIO_FRONT_CH_NUM_MAP: The final combined mapping of front audio channels.</li>
+     * <li>KEY_AUDIO_FRONT_CH_NUM: The number of front audio channels.</li>
+     * <li>KEY_AUDIO_REAR_CH_NUM: The number of rear audio channels.</li>
+     * <li>KEY_AUDIO_IS_LOW_FREQ_EFFECT: Boolean indicating if is Low Frequency Effect.</li>
+     * <li>KEY_AUDIO_SIGNAL_STATUS: The general status of the audio signal.</li>
+     * <li>KEY_AUDIO_SIGNAL_IS_PROGRESSIVE: Boolean indicating if the audio signal is
+     * progressive.</li>
+     * <li>KEY_AUDIO_SIGNAL_UNKNOWN_DATA: Any unknown data associated with the signal.</li>
+     * <li>KEY_AUDIO_FRONT_CH_NUM_RAW: The raw number of front channels before processing.</li>
+     * <li>KEY_AUDIO_REAR_CH_NUM_RAW: The raw number of rear channels before processing.</li>
+     * <li>KEY_AUDIO_IS_LOW_FREQ_EFFECT_RAW: The raw LFE presence flag before processing.</li>
+     * <li>KEY_AUDIO_CH_INFO: Detailed channel information.</li>
+     * </ul>
+     */
     Bundle getAudioSignalInfo(String sessionToken);
-    // Notify TIS whether user selects audio track via mts button on the remote control.
+    /**
+     * Notify TIS whether user selects audio track via mts button on the remote control.
+     *
+     * @param mtsFlag true if the current track was selected via the MTS button, false otherwise.
+     */
     void notifyMtsSelectTrackFlag(boolean mtsFlag);
-    // Get the audio track id selected via mts.
+    /**
+     * Gets the audio track id selected via mts.
+     *
+     * @return The string ID of the MTS-selected audio track.
+     */
     String getMtsSelectedTrackId();
-    // Register a listener to receive the updated audio signal information.
+    /**
+     * Registers a listener to receive notifications when audio signal information is updated.
+     *
+     * @param clientToken A token to identify the client registering the listener.
+     * @param listener    The listener instance to be called with updates.
+     */
     void addAudioSignalInfoListener(String clientToken, in IAudioSignalInfoListener listener);
-    // Remove a listener for audio signal information update notifications.
+    /**
+     * Unregisters a previously added listener for audio signal information updates.
+     *
+     * @param listener The listener instance to remove.
+     */
     void removeAudioSignalInfoListener(in IAudioSignalInfoListener listener);
 }
