@@ -163,16 +163,6 @@ flag {
 }
 
 flag {
-    name: "enable_bubble_task_view_listener"
-    namespace: "multitasking"
-    description: "Use the same taskview listener for bubble bar and floating"
-    bug: "272102927"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "enable_gsf"
     namespace: "multitasking"
     description: "Applies GSF font styles to multitasking."
