@@ -18,6 +18,7 @@ package com.android.server.am;
 
 import static android.app.ActivityManagerInternal.OOM_ADJ_REASON_ACTIVITY;
 import static android.app.ActivityManagerInternal.OOM_ADJ_REASON_UI_VISIBILITY;
+import static android.app.ProcessMemoryState.HOSTING_COMPONENT_TYPE_FOREGROUND_SERVICE;
 
 import static com.android.internal.util.Preconditions.checkArgument;
 import static com.android.server.am.ActivityManagerDebugConfig.TAG_AM;
@@ -1796,5 +1797,15 @@ class ProcessRecord extends ProcessRecordInternal implements WindowProcessListen
     @Override
     public void onHasClientActivitiesChanged(boolean hasClientActivities) {
         mWindowProcessController.setHasClientActivities(hasClientActivities);
+    }
+
+    @Override
+    public void onHasForegroundServicesChanged(boolean hasForegroundServices) {
+        mWindowProcessController.setHasForegroundServices(hasForegroundServices);
+        if (hasForegroundServices) {
+            mProfile.addHostingComponentType(HOSTING_COMPONENT_TYPE_FOREGROUND_SERVICE);
+        } else {
+            mProfile.clearHostingComponentType(HOSTING_COMPONENT_TYPE_FOREGROUND_SERVICE);
+        }
     }
 }
