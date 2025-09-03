@@ -910,6 +910,7 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
         }
         // For now, the only CUJ that can use this is LaunchAdjacent while on non-default displays.
         if (enableNonDefaultDisplaySplit()) {
+            updateSplitLayoutConfig(mRootTDAOrganizer, displayId, mSplitLayout);
             prepareMovingSplitScreenRoot(wct, displayId);
         }
         wct.sendPendingIntent(intent, fillInIntent, options);
