@@ -50,6 +50,7 @@ import static com.android.internal.widget.LockPatternUtils.StrongAuthTracker.STR
 import static com.google.common.truth.Truth.assertThat;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -494,7 +495,7 @@ public class SecureLockDeviceServiceTest {
 
         disableSecureLockDevice(mUser);
 
-        verify(mLockSettingsInternal).disableSecureLockDevice(eq(TEST_USER_ID), eq(false));
+        verify(mLockSettingsInternal).disableSecureLockDevice(eq(TEST_USER_ID), anyBoolean());
     }
 
     @Test

@@ -119,6 +119,10 @@ public class SecureLockDeviceService extends SecureLockDeviceServiceInternal {
     // to disable secure lock. Will be null if no user is currently authenticated.
     private UserHandle mUserAuthenticatedWithStrongBiometric = null;
 
+    // Whether test mode is enabled, meaning components of the feature that interfere with testing
+    // should be disabled (i.e. disabling USB connections, ADB, etc)
+    private boolean mSkipSecurityFeaturesForTest;
+
     SecureLockDeviceService(@NonNull Context context,
             @NonNull SecureLockDeviceSettingsManager settingsManager,
             @Nullable BiometricManager biometricManager,
@@ -511,9 +515,17 @@ public class SecureLockDeviceService extends SecureLockDeviceServiceInternal {
             return ERROR_NOT_AUTHORIZED;
         }
 
-        // Clears strong auth flags
-        mLockSettingsInternal.disableSecureLockDevice(secureLockDeviceClientId,
-                authenticationComplete);
+        if (mSkipSecurityFeaturesForTest) {
+            // 1) Clears strong auth flags and 2) unlocks user. authenticationComplete must be true
+            // for tests in order to prevent relocking CE storage, which interferes with tests
+            mLockSettingsInternal.disableSecureLockDevice(secureLockDeviceClientId,
+                    /* authenticationComplete =*/ true);
+        } else {
+            // 1) Clears strong auth flags and 2) unlocks user if two-factor authentication is
+            // complete, or locks user if two-factor authentication is incomplete
+            mLockSettingsInternal.disableSecureLockDevice(secureLockDeviceClientId,
+                    authenticationComplete);
+        }
         disableSecurityFeatures(secureLockDeviceClientId);
 
         mStore.storeSecureLockDeviceDisabled();
@@ -708,6 +720,7 @@ public class SecureLockDeviceService extends SecureLockDeviceServiceInternal {
         if (DEBUG) {
             Slog.d(TAG, "setSecureLockDeviceTestStatus(isTestMode = " + isTestMode + ")");
         }
+        mSkipSecurityFeaturesForTest = isTestMode;
         mSecureLockDeviceSettingsManager.setSkipSecurityFeaturesForTest(isTestMode);
     }
 
