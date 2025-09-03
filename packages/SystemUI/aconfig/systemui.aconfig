@@ -1340,6 +1340,16 @@ flag {
 }
 
 flag {
+    name:"media_controls_translation_fix"
+    namespace: "systemui"
+    description: "Removes media controls y-translation update"
+    bug: "415755300"
+    metadata {
+      purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "shade_app_launch_animation_skip_in_desktop"
     namespace: "systemui"
     description: "Fixes the animation for notification shade entry points in Desktop Mode"
