@@ -40,7 +40,7 @@ public final class MemcgProcMemoryUtil {
      /**
       * Reads memcg accounting of memory stats of a process.
       *
-      * Returns values of memory.current, memory.swap in bytes or -1 if not available.
+      * Returns values of memory.current, memory.swap in bytes or null if not available.
       */
     public static MemcgMemorySnapshot readMemcgMemorySnapshot(int pid) {
         String cgroupPath = getCgroupPathForPid(pid);
@@ -48,6 +48,22 @@ public final class MemcgProcMemoryUtil {
             return null;
         }
         return readMemcgMemorySnapshot(cgroupPath);
+    }
+
+    /**
+      *
+      * Reads memcg accounting of memory hwm stats of a process.
+      *
+      * Returns values of memory.current.peak, memory.swap.peak in bytes or null if not available.
+     */
+    public static MemcgHighWaterMarkMemorySnapshot readHighWaterMarkMemorySnapshot(
+            int pid
+    ) {
+        String cgroupPath = getCgroupPathForPid(pid);
+        if (cgroupPath == null) {
+            return null;
+        }
+        return readMemcgHighWaterMarkMemorySnapshot(cgroupPath);
     }
 
     /**
@@ -71,6 +87,34 @@ public final class MemcgProcMemoryUtil {
             Log.d(TAG, "Failed to read cgroup file for pid " + pid, e);
         }
         return null;
+    }
+
+    private static MemcgHighWaterMarkMemorySnapshot
+            readMemcgHighWaterMarkMemorySnapshot(String cgroupPath) {
+        Path fullMemcgPath = Paths.get(CGROUP_ROOT, cgroupPath);
+
+        final MemcgHighWaterMarkMemorySnapshot snapshot = new MemcgHighWaterMarkMemorySnapshot();
+        Long memoryPeak = readSingleValueFromMemcgFile(
+                fullMemcgPath,
+                "memory.current.peak",
+                MEMCG_MEMORY_FORMAT
+        );
+        if (memoryPeak == null) {
+            return null;
+        }
+
+        Long swapMemoryPeak = readSingleValueFromMemcgFile(
+                fullMemcgPath,
+                "memory.swap.peak",
+                MEMCG_MEMORY_FORMAT
+        );
+        if (swapMemoryPeak == null) {
+            return null;
+        }
+
+        snapshot.memcgMemoryPeakInBytes = memoryPeak;
+        snapshot.memcgSwapMemoryPeakInBytes = swapMemoryPeak;
+        return snapshot;
     }
 
     private static MemcgMemorySnapshot readMemcgMemorySnapshot(String cgroupPath) {
@@ -109,6 +153,28 @@ public final class MemcgProcMemoryUtil {
             return null;
         }
         return snapshot;
+    }
+
+    private static Long readSingleValueFromMemcgFile(
+            Path fullMemcgPath, String fileKey, int[] fileFormat) {
+        long[] memoryValue = new long[1];
+        String memoryNodePath = fullMemcgPath.resolve(fileKey).toString();
+        if (Process.readProcFile(
+                memoryNodePath,
+                fileFormat,
+                null,
+                memoryValue,
+                null
+        )) {
+            return memoryValue[0];
+        } else {
+            return null;
+        }
+    }
+
+    public static final class MemcgHighWaterMarkMemorySnapshot {
+        public long memcgMemoryPeakInBytes;
+        public long memcgSwapMemoryPeakInBytes;
     }
 
     public static final class MemcgMemorySnapshot {
