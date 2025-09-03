@@ -138,16 +138,12 @@
     <string name="screenrecord_stop_dialog_message" msgid="6262768207331626817">"Vous enregistrez actuellement l\'intégralité de votre écran"</string>
     <string name="screenrecord_stop_dialog_message_specific_app" msgid="5995770227684523244">"Vous enregistrez actuellement <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="screenrecord_stop_dialog_button" msgid="2883812564938194350">"Arrêter l\'enregistrement"</string>
-    <!-- no translation found for screen_record_entire_screen (66944996337928170) -->
-    <skip />
-    <!-- no translation found for screen_record_single_app (7355880948574569290) -->
-    <skip />
-    <!-- no translation found for screen_record_single_app_no_recents (1023249803854209330) -->
-    <skip />
+    <string name="screen_record_entire_screen" msgid="66944996337928170">"Tout l\'écran"</string>
+    <string name="screen_record_single_app" msgid="7355880948574569290">"Une seule appli"</string>
+    <string name="screen_record_single_app_no_recents" msgid="1023249803854209330">"Une seule appli (ouvrez une appli)"</string>
     <string name="screen_record_record_device_audio_label" msgid="5363057443124085198">"Enregistrer l\'audio de l\'appareil"</string>
     <string name="screen_record_record_microphone_label" msgid="4685753707185662381">"Enregistrer le micro"</string>
-    <!-- no translation found for screen_record_should_show_camera_label (159628971484931357) -->
-    <skip />
+    <string name="screen_record_should_show_camera_label" msgid="159628971484931357">"Afficher l\'appareil photo pour selfies"</string>
     <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"Afficher les éléments sélectionnés"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"Choisissez une appli pour l\'enregistrement"</string>
     <string name="screen_record_video_saved" msgid="1345283626390232282">"Vidéo enregistrée"</string>
@@ -165,6 +161,10 @@
     <string name="screen_capture_toolbar_screenshot_button" msgid="5676585348709494125">"Capture d\'écran"</string>
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"Enregistrer"</string>
     <string name="screen_share_toolbar_share_button" msgid="9182050596136815833">"Partager"</string>
+    <!-- no translation found for screen_share_no_select_app_thumbnail (1630012401570567430) -->
+    <skip />
+    <!-- no translation found for screen_share_app_audio_sharing (7201172218924898712) -->
+    <skip />
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"Faire une capture d\'écran de la fenêtre"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"Enregistrer la fenêtre"</string>
     <string name="screen_capture_toolbar_region_button_screenshot_a11y" msgid="2102262602357521192">"Faire une capture d\'écran de la zone sélectionnée"</string>
@@ -545,7 +545,7 @@
     <string name="zen_mode_set_up" msgid="8231201163894922821">"Non défini"</string>
     <string name="zen_mode_no_manual_invocation" msgid="1769975741344633672">"Gérer dans les paramètres"</string>
     <string name="zen_mode_active_modes" msgid="1625850411578488856">"{count,plural, =0{Aucun mode actif}=1{{mode} est actif}one{# mode est actif}many{# de modes sont actifs}other{# modes sont actifs}}"</string>
-    <string name="zen_modes_multiple_on_title" msgid="4918235362988982304">"<xliff:g id="NUMBER">%s</xliff:g> modes"</string>
+    <string name="zen_modes_multiple_on_title" msgid="4918235362988982304">"<xliff:g id="NUMBER">%d</xliff:g> modes"</string>
     <string name="zen_modes_multiple_on_status" msgid="8120633422509269588">"Activés"</string>
     <string name="zen_priority_introduction" msgid="3159291973383796646">"Vous ne serez pas dérangé par des sons ou des vibrations, hormis ceux des alarmes, des rappels, des événements et des appelants de votre choix. Vous entendrez encore les sons que vous choisirez de jouer, notamment la musique, les vidéos et les jeux."</string>
     <string name="zen_alarms_introduction" msgid="3987266042682300470">"Vous ne serez pas dérangé par des sons ou des vibrations, hormis ceux des alarmes. Vous entendrez encore les sons que vous choisirez de jouer, comme la musique, les vidéos et les jeux."</string>

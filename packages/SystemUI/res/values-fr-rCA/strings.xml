@@ -138,16 +138,12 @@
     <string name="screenrecord_stop_dialog_message" msgid="6262768207331626817">"Vous êtes en train d\'enregistrer l\'intégralité de votre écran"</string>
     <string name="screenrecord_stop_dialog_message_specific_app" msgid="5995770227684523244">"Vous êtes en train d\'enregistrer <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="screenrecord_stop_dialog_button" msgid="2883812564938194350">"Arrêter l\'enregistrement"</string>
-    <!-- no translation found for screen_record_entire_screen (66944996337928170) -->
-    <skip />
-    <!-- no translation found for screen_record_single_app (7355880948574569290) -->
-    <skip />
-    <!-- no translation found for screen_record_single_app_no_recents (1023249803854209330) -->
-    <skip />
+    <string name="screen_record_entire_screen" msgid="66944996337928170">"Écran entier"</string>
+    <string name="screen_record_single_app" msgid="7355880948574569290">"Appli unique"</string>
+    <string name="screen_record_single_app_no_recents" msgid="1023249803854209330">"Appli unique (ouvrez une appli)"</string>
     <string name="screen_record_record_device_audio_label" msgid="5363057443124085198">"Enregistrer le son de l\'appareil"</string>
     <string name="screen_record_record_microphone_label" msgid="4685753707185662381">"Enregistrer le microphone"</string>
-    <!-- no translation found for screen_record_should_show_camera_label (159628971484931357) -->
-    <skip />
+    <string name="screen_record_should_show_camera_label" msgid="159628971484931357">"Afficher l\'appareil photo avant"</string>
     <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"Afficher les éléments sélectionnés"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"Choisissez une appli à enregistrer"</string>
     <string name="screen_record_video_saved" msgid="1345283626390232282">"Vidéo enregistrée"</string>
@@ -165,6 +161,10 @@
     <string name="screen_capture_toolbar_screenshot_button" msgid="5676585348709494125">"Capture d\'écran"</string>
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"Enregistrer"</string>
     <string name="screen_share_toolbar_share_button" msgid="9182050596136815833">"Partager"</string>
+    <!-- no translation found for screen_share_no_select_app_thumbnail (1630012401570567430) -->
+    <skip />
+    <!-- no translation found for screen_share_app_audio_sharing (7201172218924898712) -->
+    <skip />
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"Prendre une capture d\'écran de la fenêtre"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"Enregistrer la fenêtre"</string>
     <string name="screen_capture_toolbar_region_button_screenshot_a11y" msgid="2102262602357521192">"Prendre une capture d\'écran de la zone sélectionnée"</string>
@@ -545,7 +545,7 @@
     <string name="zen_mode_set_up" msgid="8231201163894922821">"Non défini"</string>
     <string name="zen_mode_no_manual_invocation" msgid="1769975741344633672">"Gérer dans les paramètres"</string>
     <string name="zen_mode_active_modes" msgid="1625850411578488856">"{count,plural, =0{Aucun mode actif}=1{Le mode {mode} est actif}one{# mode est actif}many{# de modes sont actifs}other{# modes sont actifs}}"</string>
-    <string name="zen_modes_multiple_on_title" msgid="4918235362988982304">"<xliff:g id="NUMBER">%s</xliff:g> modes"</string>
+    <string name="zen_modes_multiple_on_title" msgid="4918235362988982304">"<xliff:g id="NUMBER">%d</xliff:g> modes"</string>
     <string name="zen_modes_multiple_on_status" msgid="8120633422509269588">"Activés"</string>
     <string name="zen_priority_introduction" msgid="3159291973383796646">"Vous ne serez pas dérangé par les sons et les vibrations, sauf pour les alarmes, les rappels, les événements et les appelants que vous sélectionnez. Vous entendrez tout ce que vous choisissez d\'écouter, y compris la musique, les vidéos et les jeux."</string>
     <string name="zen_alarms_introduction" msgid="3987266042682300470">"Vous ne serez pas dérangé par les sons et les vibrations, sauf pour les alarmes. Vous entendrez tout ce que vous choisissez d\'écouter, y compris la musique, les vidéos et les jeux."</string>
@@ -993,8 +993,7 @@
     <string name="group_system_access_notification_shade" msgid="1619028907006553677">"Afficher les notifications"</string>
     <string name="group_system_access_quick_settings_panel" msgid="1844771096582064926">"Afficher les Paramètres rapides"</string>
     <string name="group_system_full_screenshot" msgid="5742204844232667785">"Prendre une capture d\'écran"</string>
-    <!-- no translation found for group_system_partial_screenshot (2114314797127648010) -->
-    <skip />
+    <string name="group_system_partial_screenshot" msgid="2114314797127648010">"Effectuer une capture d\'écran partielle"</string>
     <string name="group_system_access_system_app_shortcuts" msgid="8562482996626694026">"Afficher les raccourcis"</string>
     <string name="group_system_go_back" msgid="2730322046244918816">"Retour"</string>
     <string name="group_system_access_home_screen" msgid="4130366993484706483">"Accéder à l’écran d’accueil"</string>
@@ -1257,7 +1256,7 @@
     <string name="magnification_exit_edit_mode_click_label" msgid="1664818325144887117">"Désactiver le mode de modification"</string>
     <string name="magnification_drag_corner_to_resize" msgid="1249766311052418130">"Faire glisser le coin pour redimensionner"</string>
     <string name="accessibility_allow_diagonal_scrolling" msgid="3258050349191496398">"Autoriser défilement diagonal"</string>
-    <string name="accessibility_magnify_typing" msgid="4450037184548427852">"Suivi de la saisie"</string>
+    <string name="accessibility_magnify_typing" msgid="4450037184548427852">"Suivre la saisie"</string>
     <string name="accessibility_magnify_keyboard" msgid="3083531635742744841">"Agrandir le clavier"</string>
     <string name="accessibility_resize" msgid="5733759136600611551">"Redimensionner"</string>
     <string name="accessibility_change_magnification_type" msgid="666000085077432421">"Changer le type d\'agrandissement"</string>

@@ -138,16 +138,12 @@
     <string name="screenrecord_stop_dialog_message" msgid="6262768207331626817">"Estás gravando toda a pantalla"</string>
     <string name="screenrecord_stop_dialog_message_specific_app" msgid="5995770227684523244">"Estás gravando <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="screenrecord_stop_dialog_button" msgid="2883812564938194350">"Deter gravación"</string>
-    <!-- no translation found for screen_record_entire_screen (66944996337928170) -->
-    <skip />
-    <!-- no translation found for screen_record_single_app (7355880948574569290) -->
-    <skip />
-    <!-- no translation found for screen_record_single_app_no_recents (1023249803854209330) -->
-    <skip />
+    <string name="screen_record_entire_screen" msgid="66944996337928170">"Toda a pantalla"</string>
+    <string name="screen_record_single_app" msgid="7355880948574569290">"Unha soa aplicación"</string>
+    <string name="screen_record_single_app_no_recents" msgid="1023249803854209330">"Unha soa aplicación (escóllea)"</string>
     <string name="screen_record_record_device_audio_label" msgid="5363057443124085198">"Gravar audio do dispositivo"</string>
     <string name="screen_record_record_microphone_label" msgid="4685753707185662381">"Gravar son do micrófono"</string>
-    <!-- no translation found for screen_record_should_show_camera_label (159628971484931357) -->
-    <skip />
+    <string name="screen_record_should_show_camera_label" msgid="159628971484931357">"Mostrar cámara para autofotos"</string>
     <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"Mostrar toques"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"Escoller unha aplicación para gravar"</string>
     <string name="screen_record_video_saved" msgid="1345283626390232282">"Gardouse o vídeo"</string>
@@ -165,6 +161,10 @@
     <string name="screen_capture_toolbar_screenshot_button" msgid="5676585348709494125">"Captura de pantalla"</string>
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"Gravación"</string>
     <string name="screen_share_toolbar_share_button" msgid="9182050596136815833">"Compartir"</string>
+    <!-- no translation found for screen_share_no_select_app_thumbnail (1630012401570567430) -->
+    <skip />
+    <!-- no translation found for screen_share_app_audio_sharing (7201172218924898712) -->
+    <skip />
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"Facer unha captura de pantalla da ventá"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"Ventá de gravación"</string>
     <string name="screen_capture_toolbar_region_button_screenshot_a11y" msgid="2102262602357521192">"Facer unha captura da área seleccionada da pantalla"</string>
@@ -545,7 +545,7 @@
     <string name="zen_mode_set_up" msgid="8231201163894922821">"Sen configurar"</string>
     <string name="zen_mode_no_manual_invocation" msgid="1769975741344633672">"Xestionar na configuración"</string>
     <string name="zen_mode_active_modes" msgid="1625850411578488856">"{count,plural, =0{Non hai ningún modo activo}=1{{mode} está activo}other{Hai # modos activos}}"</string>
-    <string name="zen_modes_multiple_on_title" msgid="4918235362988982304">"<xliff:g id="NUMBER">%s</xliff:g> modos"</string>
+    <string name="zen_modes_multiple_on_title" msgid="4918235362988982304">"<xliff:g id="NUMBER">%d</xliff:g> modos"</string>
     <string name="zen_modes_multiple_on_status" msgid="8120633422509269588">"Activados"</string>
     <string name="zen_priority_introduction" msgid="3159291973383796646">"Non te molestará ningún son nin vibración, agás os procedentes de alarmas, recordatorios, eventos e os emisores de chamada especificados. Seguirás escoitando todo aquilo que decidas reproducir, mesmo a música, os vídeos e os xogos."</string>
     <string name="zen_alarms_introduction" msgid="3987266042682300470">"Non te molestará ningún son nin vibración, agás os procedentes de alarmas. Seguirás escoitando todo aquilo que decidas reproducir, mesmo a música, os vídeos e os xogos."</string>
@@ -693,8 +693,7 @@
     <string name="accessibility_notification_section_header_gentle_clear_all" msgid="6490207897764933919">"Borrar todas as notificacións silenciadas"</string>
     <string name="accessibility_notification_section_header_open_settings" msgid="6235202417954844004">"Abrir a configuración de notificacións"</string>
     <string name="modes_suppressing_shade_text" msgid="6037581130837903239">"{count,plural,offset:1 =0{Non hai ningunha notificación}=1{Notificacións postas en pausa polo modo {mode}}=2{Notificacións postas en pausa polo modo {mode} e un máis}other{Notificacións postas en pausa polo modo {mode} e # máis}}"</string>
-    <!-- no translation found for caught_up_shade_text (8166221989384139659) -->
-    <skip />
+    <string name="caught_up_shade_text" msgid="8166221989384139659">"Xa estás ao día"</string>
     <string name="media_projection_action_text" msgid="3634906766918186440">"Iniciar agora"</string>
     <string name="empty_shade_text" msgid="8935967157319717412">"Non hai notificacións"</string>
     <string name="no_unseen_notif_text" msgid="395512586119868682">"Non hai notificacións novas"</string>
