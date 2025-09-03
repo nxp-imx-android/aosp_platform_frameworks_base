@@ -110,5 +110,9 @@ interface SystemUIDisplaySubcomponent {
          * removed, and the component will be destroyed.
          */
         fun stop() {}
+
+        companion object {
+            val NOP: LifecycleListener = object : LifecycleListener {}
+        }
     }
 }
