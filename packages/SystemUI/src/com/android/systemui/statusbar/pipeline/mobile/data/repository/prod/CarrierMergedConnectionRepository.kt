@@ -23,7 +23,6 @@ import android.util.Log
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.log.table.TableLogBuffer
-import com.android.systemui.statusbar.pipeline.StatusBarInflateCarrierMerged
 import com.android.systemui.statusbar.pipeline.mobile.data.model.DataConnectionState
 import com.android.systemui.statusbar.pipeline.mobile.data.model.NetworkNameModel
 import com.android.systemui.statusbar.pipeline.mobile.data.model.ResolvedNetworkType
@@ -129,19 +128,10 @@ class CarrierMergedConnectionRepository(
             }
             .stateIn(scope, SharingStarted.WhileSubscribed(), DEFAULT_NUM_LEVELS)
 
-    override val inflateSignalStrength =
-        if (StatusBarInflateCarrierMerged.isEnabled) {
-            systemUiCarrierConfig.shouldInflateSignalStrength
-        } else {
-            MutableStateFlow(false).asStateFlow()
-        }
+    override val inflateSignalStrength = systemUiCarrierConfig.shouldInflateSignalStrength
 
     override val numberOfLevels =
-        if (StatusBarInflateCarrierMerged.isEnabled) {
             createNumberOfLevelsFlow(scope, inflateSignalStrength, defaultNumberOfLevels)
-        } else {
-            defaultNumberOfLevels
-        }
 
     override val primaryLevel =
         network

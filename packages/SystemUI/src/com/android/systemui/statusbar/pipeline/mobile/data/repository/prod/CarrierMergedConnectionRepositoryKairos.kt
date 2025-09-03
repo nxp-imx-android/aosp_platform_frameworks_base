@@ -30,7 +30,6 @@ import com.android.systemui.kairos.stateOf
 import com.android.systemui.kairos.util.nameTag
 import com.android.systemui.kairosBuilder
 import com.android.systemui.log.table.TableLogBuffer
-import com.android.systemui.statusbar.pipeline.StatusBarInflateCarrierMerged
 import com.android.systemui.statusbar.pipeline.mobile.data.model.DataConnectionState
 import com.android.systemui.statusbar.pipeline.mobile.data.model.NetworkNameModel
 import com.android.systemui.statusbar.pipeline.mobile.data.model.ResolvedNetworkType
@@ -132,23 +131,14 @@ class CarrierMergedConnectionRepositoryKairos(
             }
         }
 
-    override val inflateSignalStrength: State<Boolean> =
-        if (StatusBarInflateCarrierMerged.isEnabled) {
-            buildState {
-                systemUiCarrierConfig.shouldInflateSignalStrength.toState(
-                    nameTag("CarrierMergedConnectionRepositoryKairos.inflateSignalStrength")
-                )
-            }
-        } else {
-            stateOf(false)
-        }
+    override val inflateSignalStrength: State<Boolean> = buildState {
+        systemUiCarrierConfig.shouldInflateSignalStrength.toState(
+            nameTag("CarrierMergedConnectionRepositoryKairos.inflateSignalStrength")
+        )
+    }
 
     override val numberOfLevels: State<Int> =
-        if (StatusBarInflateCarrierMerged.isEnabled) {
-            createNumberOfLevelsState(inflateSignalStrength, defaultNumberOfLevels)
-        } else {
-            defaultNumberOfLevels
-        }
+        createNumberOfLevelsState(inflateSignalStrength, defaultNumberOfLevels)
 
     override val primaryLevel: State<Int> =
         network.map { it?.level ?: SIGNAL_STRENGTH_NONE_OR_UNKNOWN }
