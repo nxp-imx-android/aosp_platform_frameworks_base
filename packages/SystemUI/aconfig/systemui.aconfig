@@ -716,6 +716,16 @@ flag {
 }
 
 flag {
+    name: "restore_show_taps_setting"
+    namespace: "systemui"
+    description: "Restore show taps setting even if screen recording session is interrupted"
+    bug: "431753924"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "clipboard_overlay_multiuser"
     namespace: "systemui"
     description: "Fix clipboard overlay for secondary users"

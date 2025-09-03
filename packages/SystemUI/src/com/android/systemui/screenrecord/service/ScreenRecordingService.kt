@@ -29,12 +29,14 @@ import android.provider.Settings
 import android.util.Log
 import android.widget.Toast
 import androidx.annotation.StringRes
+import com.android.systemui.Flags
 import com.android.systemui.mediaprojection.MediaProjectionCaptureTarget
 import com.android.systemui.res.R
 import com.android.systemui.screenrecord.RecordingServiceStrings
 import com.android.systemui.screenrecord.ScreenMediaRecorder
 import com.android.systemui.screenrecord.ScreenMediaRecorder.SavedRecording
 import com.android.systemui.screenrecord.ScreenRecordingAudioSource
+import com.android.systemui.screenrecord.domain.ScreenRecordingPreferenceUtil
 import com.android.systemui.screenrecord.notification.NotificationInteractor
 import com.android.systemui.screenrecord.notification.ScreenRecordingServiceNotificationInteractor
 import java.util.UUID
@@ -95,6 +97,7 @@ protected constructor(
         }
 
     private lateinit var notificationInteractor: NotificationInteractor
+    private lateinit var preferenceUtil: ScreenRecordingPreferenceUtil
 
     private var recordingContext: RecordingContext? = null
     private var callback: IScreenRecordingServiceCallback? = null
@@ -102,6 +105,7 @@ protected constructor(
     override fun onCreate() {
         super.onCreate()
         notificationInteractor = createNotificationInteractor()
+        preferenceUtil = ScreenRecordingPreferenceUtil(this)
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -123,14 +127,22 @@ protected constructor(
     private fun RecordingContext.startRecording() {
         try {
             Log.d(tag, "Starting screen recording user=$userId $this")
-            setShouldShowTouches(shouldShowTaps)
+            if (Flags.restoreShowTapsSetting()) {
+                preferenceUtil.updateShowTaps(shouldShowTaps)
+            } else {
+                setShouldShowTouches(shouldShowTaps)
+            }
             recorder.start()
             notificationInteractor.notifyRecording(
                 notificationId = notificationId,
                 audioSource = audioSource,
             )
         } catch (e: Exception) {
-            setShouldShowTouches(originalShouldShowTouches)
+            if (Flags.restoreShowTapsSetting()) {
+                preferenceUtil.restoreShowTapsSetting()
+            } else {
+                setShouldShowTouches(originalShouldShowTouches)
+            }
             Log.d(tag, "Error starting screen recording", e)
             notificationInteractor.notifyErrorStarting(notificationId)
             showToast(R.string.screenrecord_start_error)
@@ -164,7 +176,11 @@ protected constructor(
         try {
             Log.d(tag, "Stopping screen recording reason=$reason")
             recordingContext = null
-            setShouldShowTouches(originalShouldShowTouches)
+            if (Flags.restoreShowTapsSetting()) {
+                preferenceUtil.restoreShowTapsSetting()
+            } else {
+                setShouldShowTouches(originalShouldShowTouches)
+            }
             recorder.end(reason)
             coroutineScope.launch { saveRecording() }
         } catch (e: Exception) {
