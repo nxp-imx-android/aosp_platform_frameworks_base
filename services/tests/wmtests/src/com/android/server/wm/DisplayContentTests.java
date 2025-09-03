@@ -88,6 +88,7 @@ import static com.android.server.wm.TransitionSubject.assertThat;
 import static com.android.server.wm.WindowContainer.AnimationFlags.PARENTS;
 import static com.android.server.wm.WindowContainer.POSITION_TOP;
 import static com.android.server.wm.WindowManagerService.UPDATE_FOCUS_NORMAL;
+import static com.android.window.flags.Flags.FLAG_CAMERA_COMPAT_UNIFY_CAMERA_POLICIES;
 import static com.android.window.flags.Flags.FLAG_ENABLE_CAMERA_COMPAT_FOR_DESKTOP_WINDOWING;
 import static com.android.window.flags.Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE;
 import static com.android.window.flags.Flags.FLAG_ENABLE_PERSISTING_DISPLAY_SIZE_FOR_CONNECTED_DISPLAYS;
@@ -3019,7 +3020,7 @@ public class DisplayContentTests extends WindowTestsBase {
     }
 
     @EnableFlags(FLAG_ENABLE_CAMERA_COMPAT_FOR_DESKTOP_WINDOWING)
-    @DisableFlags(FLAG_ENABLE_DESKTOP_WINDOWING_MODE)
+    @DisableFlags({FLAG_ENABLE_DESKTOP_WINDOWING_MODE, FLAG_CAMERA_COMPAT_UNIFY_CAMERA_POLICIES})
     @Test
     public void desktopWindowingFlagNotEnabled_cameraCompatFreeformPolicyIsNull() {
         assertFalse(createNewDisplay().mAppCompatCameraPolicy.hasSimReqOrientationPolicy());
