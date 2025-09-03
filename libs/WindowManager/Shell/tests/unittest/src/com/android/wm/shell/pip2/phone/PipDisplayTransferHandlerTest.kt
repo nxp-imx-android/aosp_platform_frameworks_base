@@ -41,6 +41,7 @@ import org.mockito.kotlin.whenever
 import org.mockito.kotlin.verify
 import android.content.res.Configuration
 import android.content.res.Resources
+import android.graphics.Point
 import android.graphics.PointF
 import android.graphics.Rect
 import android.os.Bundle
@@ -63,6 +64,7 @@ import com.android.wm.shell.common.DisplayLayout
 import com.android.wm.shell.common.MultiDisplayDragMoveBoundsCalculator
 import com.android.wm.shell.common.MultiDisplayTestUtil.TestDisplay
 import com.android.wm.shell.common.pip.PipBoundsAlgorithm
+import com.android.wm.shell.common.pip.PipSnapAlgorithm
 import com.android.wm.shell.pip2.animation.PipResizeAnimator
 import com.android.wm.shell.pip2.phone.PipTransitionState.EXITED_PIP
 import com.android.wm.shell.pip2.phone.PipTransitionState.EXITING_PIP
@@ -86,6 +88,7 @@ class PipDisplayTransferHandlerTest : ShellTestCase() {
     private val mockRootTaskDisplayAreaOrganizer = mock<RootTaskDisplayAreaOrganizer>()
     private val mockPipBoundsState = mock<PipBoundsState>()
     private val mockPipBoundsAlgorithm = mock<PipBoundsAlgorithm>()
+    private val mockPipSnapAlgorithm = mock<PipSnapAlgorithm>()
     private val mockTaskInfo = mock<ActivityManager.RunningTaskInfo>()
     private val mockDisplayController = mock<DisplayController>()
     private val mockTransaction = mock<SurfaceControl.Transaction>()
@@ -133,6 +136,10 @@ class PipDisplayTransferHandlerTest : ShellTestCase() {
         whenever(mockTransaction.show(any())).thenReturn(mockTransaction)
         whenever(mockFactory.transaction).thenReturn(mockTransaction)
         whenever(mockPipBoundsState.bounds).thenReturn(mockBounds)
+        whenever(mockPipBoundsAlgorithm.snapAlgorithm).thenReturn(mockPipSnapAlgorithm)
+        whenever(mockPipSnapAlgorithm.getSnapFraction(any(), any(), any())).thenReturn(0.5f)
+        whenever(mockPipBoundsState.minSize).thenReturn(MIN_SIZE)
+        whenever(mockPipBoundsState.maxSize).thenReturn(MAX_SIZE)
         whenever(
             mockSurfaceTransactionHelper.setPipTransformations(
                 any(),
@@ -165,6 +172,11 @@ class PipDisplayTransferHandlerTest : ShellTestCase() {
             whenever(mockDisplayController.getDisplayLayout(id)).thenReturn(displayLayout)
             whenever(mockDisplayController.isDisplayInTopology(id)).thenReturn(true)
         }
+        whenever(mockPipDisplayLayoutState.displayLayout).thenReturn(
+            displayLayouts.get(
+                ORIGIN_DISPLAY_ID
+            )
+        )
 
         pipDisplayTransferHandler =
             PipDisplayTransferHandler(
@@ -181,13 +193,16 @@ class PipDisplayTransferHandlerTest : ShellTestCase() {
     }
 
     @Test
-    fun scheduleMovePipToDisplay_setsTransitionState() {
+    fun scheduleMovePipToDisplay_setsDisplayAndTransitionStates() {
         pipDisplayTransferHandler.scheduleMovePipToDisplay(
             ORIGIN_DISPLAY_ID,
             TARGET_DISPLAY_ID,
             DESTINATION_BOUNDS
         )
 
+        verify(mockPipDisplayLayoutState).displayId = eq(TARGET_DISPLAY_ID)
+        verify(mockPipDisplayLayoutState).displayLayout =
+            eq(displayLayouts.get(TARGET_DISPLAY_ID))!!
         verify(mockPipBoundsAlgorithm).snapToMovementBoundsEdge(
             eq(DESTINATION_BOUNDS),
             eq(displayLayouts.get(TARGET_DISPLAY_ID))
@@ -480,5 +495,7 @@ class PipDisplayTransferHandlerTest : ShellTestCase() {
         val START_DRAG_COORDINATES = PointF(100f, 100f)
         val PIP_BOUNDS = Rect(0, 0, 700, 700)
         val DESTINATION_BOUNDS = Rect(100, 100, 800, 800)
+        val MIN_SIZE = Point(100, 200)
+        val MAX_SIZE = Point(300, 400)
     }
 }
