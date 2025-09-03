@@ -19,6 +19,7 @@ package com.android.server.wm.flicker.helpers
 import android.app.Instrumentation
 import android.tools.device.apphelpers.StandardAppHelper
 import android.tools.helpers.SYSTEMUI_PACKAGE
+import android.tools.helpers.retryIfStaleObject
 import android.tools.traces.component.ComponentNameMatcher
 import android.tools.traces.parsers.WindowManagerStateHelper
 import android.tools.traces.parsers.toFlickerComponent
@@ -145,11 +146,11 @@ constructor(
         findObject(By.res(SCREEN_SHARE_OPTIONS_PATTERN)).also { it.click() }
 
         val singleAppString = getSysUiResourceString(SINGLE_APP_STRING_RES_NAME)
-        findObject(By.text(singleAppString)).also { it.click() }
+        retryIfStaleObject { findObject(By.text(singleAppString)).also { it.click() } }
     }
 
     private fun startScreenSharing() {
-        findObject(By.res(ACCEPT_RESOURCE_ID)).also { it.click() }
+        retryIfStaleObject { findObject(By.res(ACCEPT_RESOURCE_ID)).also { it.click() } }
     }
 
     private fun findObject(selector: BySelector): UiObject2 =
