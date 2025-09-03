@@ -196,6 +196,14 @@ class InsetsSourceProvider {
     }
 
     /**
+     * @param target the current control target.
+     * @return whether the {@link InsetsSourceControl} should be initially visible.
+     */
+    protected boolean isInitiallyVisible(@NonNull InsetsControlTarget target) {
+        return mClientVisible;
+    }
+
+    /**
      * Updates the window that currently backs this source.
      *
      * @param win           The window that links to this source.
@@ -504,22 +512,11 @@ class InsetsSourceProvider {
             // will be changed earlier than expected, which can cause flicker.
             return;
         }
-        boolean initiallyVisible = mClientVisible;
         final Point surfacePosition = getWindowFrameSurfacePosition(mWin);
         mPosition.set(surfacePosition);
         mAdapter = new ControlAdapter(surfacePosition);
+        final boolean initiallyVisible = isInitiallyVisible(target);
         if (mSource.getType() == WindowInsets.Type.ime()) {
-            if (mClientVisible && mServerVisible) {
-                WindowContainer imeParentWindow = mDisplayContent.getImeParentWindow();
-                // If the IME is attached to an app window, only consider it initially visible
-                // if the parent is visible and wasn't part of a transition.
-                initiallyVisible =
-                        imeParentWindow != null && !imeParentWindow.inTransition()
-                                && imeParentWindow.isVisible()
-                                && imeParentWindow.isVisibleRequested();
-            } else {
-                initiallyVisible = false;
-            }
             setClientVisible(target.isRequestedVisible(WindowInsets.Type.ime()));
         }
         final Transaction t = mWin.getSyncTransaction();
