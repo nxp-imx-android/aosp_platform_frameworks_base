@@ -866,7 +866,6 @@ test_module_config {
     include_filters: [
         "android.os.MessageHeapTest",
         "android.os.MessageStackTest",
-        "android.os.MessageQueueTest",
         "android.os.WaitStateTest",
     ],
 }
