@@ -29,9 +29,11 @@ import com.android.systemui.screencapture.domain.interactor.ScreenCaptureUiInter
 import com.android.systemui.screencapture.record.ui.viewmodel.ScreenCaptureRecordParametersViewModel
 import com.android.systemui.screenrecord.domain.ScreenRecordingParameters
 import com.android.systemui.screenrecord.domain.interactor.ScreenRecordingServiceInteractor
+import com.android.systemui.screenrecord.domain.interactor.Status
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.flow.map
 
 class SmallScreenCaptureRecordViewModel
 @AssistedInject
@@ -53,6 +55,25 @@ constructor(
 
     var detailsPopup: RecordDetailsPopupType by mutableStateOf(RecordDetailsPopupType.Settings)
         private set
+
+    var shouldShowDetails: Boolean by
+        mutableStateOf(!screenRecordingServiceInteractor.status.value.isRecording)
+        private set
+
+    val shouldShowSettingsButton: Boolean by
+        screenRecordingServiceInteractor.status
+            .map { status ->
+                if (status.isRecording) {
+                    true
+                } else {
+                    shouldShowDetails = true
+                    false
+                }
+            }
+            .hydratedStateOf(
+                traceName = "SmallScreenCaptureRecordViewModel#shouldShowSettingsButton",
+                initialValue = !screenRecordingServiceInteractor.status.value.isRecording,
+            )
 
     override suspend fun onActivated() {
         coroutineScope {
@@ -101,9 +122,18 @@ constructor(
         dismiss()
     }
 
+    fun shouldShowSettings(visible: Boolean) {
+        if (shouldShowSettingsButton) {
+            shouldShowDetails = visible
+        }
+    }
+
     @AssistedFactory
     @ScreenCaptureUiScope
     interface Factory {
         fun create(): SmallScreenCaptureRecordViewModel
     }
 }
+
+private val Status.isRecording
+    get() = this is Status.Started
