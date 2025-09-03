@@ -254,6 +254,17 @@ fun ContentScope.SnoozeableHeadsUpNotificationSpace(
         viewModel = viewModel,
         modifier =
             modifier
+                .absoluteOffset {
+                    IntOffset(
+                        x = 0,
+                        y =
+                            calculateHeadsUpPlaceholderYOffset(
+                                scrollOffset.roundToInt(),
+                                minScrollOffset.roundToInt(),
+                                stackScrollView.topHeadsUpHeight,
+                            ),
+                    )
+                }
                 .onGloballyPositioned {
                     if (updateDrawBounds) {
                         stackScrollView.updateDrawBounds(
@@ -265,17 +276,6 @@ fun ContentScope.SnoozeableHeadsUpNotificationSpace(
                             }
                         )
                     }
-                }
-                .absoluteOffset {
-                    IntOffset(
-                        x = 0,
-                        y =
-                            calculateHeadsUpPlaceholderYOffset(
-                                scrollOffset.roundToInt(),
-                                minScrollOffset.roundToInt(),
-                                stackScrollView.topHeadsUpHeight,
-                            ),
-                    )
                 }
                 .thenIf(isSnoozable) { Modifier.nestedScroll(snoozeScrollConnection) }
                 .scrollable(orientation = Orientation.Vertical, state = scrollableState),
