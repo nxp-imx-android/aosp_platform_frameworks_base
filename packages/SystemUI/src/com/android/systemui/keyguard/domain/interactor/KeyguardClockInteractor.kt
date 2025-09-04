@@ -79,6 +79,8 @@ constructor(
      */
     val selectedClockSize: StateFlow<ClockSizeSetting> = keyguardClockRepository.selectedClockSize
 
+    val forcedClockSize: Flow<ClockSize?> = keyguardClockRepository.forcedClockSize
+
     val currentClockId: Flow<ClockId> = keyguardClockRepository.currentClockId
 
     val currentClockFontAxesWidth: Float?
@@ -90,7 +92,7 @@ constructor(
 
     var clock: ClockController? by keyguardClockRepository.clockEventController::clock
 
-    private val isAodPromotedNotificationPresent: Flow<Boolean> =
+    val isAodPromotedNotificationPresent: Flow<Boolean> =
         if (PromotedNotificationUi.isEnabled) {
             aodPromotedNotificationInteractor.isPresent
         } else {

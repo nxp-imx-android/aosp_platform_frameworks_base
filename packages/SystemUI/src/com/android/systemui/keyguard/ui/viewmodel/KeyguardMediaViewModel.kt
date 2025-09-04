@@ -24,10 +24,8 @@ import com.android.systemui.media.controls.domain.pipeline.interactor.MediaCarou
 import com.android.systemui.media.remedia.ui.compose.MediaUiBehavior
 import com.android.systemui.media.remedia.ui.viewmodel.MediaCarouselVisibility
 import com.android.systemui.media.remedia.ui.viewmodel.MediaViewModel
-import com.android.systemui.utils.coroutines.flow.flatMapLatestConflated
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
-import kotlinx.coroutines.flow.flowOf
 
 class KeyguardMediaViewModel
 @AssistedInject
@@ -39,24 +37,15 @@ constructor(
 
     private val hydrator = Hydrator("KeyguardMediaViewModel.hydrator")
 
-    /**
-     * Whether media carousel is visible on lockscreen. Media may be presented on lockscreen but
-     * still hidden on certain surfaces like AOD
-     */
-    val isMediaVisible: Boolean by
+    /** Whether the media notification is active */
+    val isMediaActive: Boolean by
         hydrator.hydratedStateOf(
-            traceName = "isMediaVisible",
-            source =
-                keyguardInteractor.isDozing.flatMapLatestConflated { isDozing ->
-                    if (isDozing) {
-                        flowOf(false)
-                    } else {
-                        mediaCarouselInteractor.hasActiveMedia
-                    }
-                },
-            initialValue =
-                !keyguardInteractor.isDozing.value && mediaCarouselInteractor.hasActiveMedia.value,
+            traceName = "isMediaActive",
+            source = mediaCarouselInteractor.hasActiveMedia,
         )
+
+    val isDozing: Boolean by
+        hydrator.hydratedStateOf(traceName = "isDozing", source = keyguardInteractor.isDozing)
 
     fun onSwipeToDismiss() = mediaCarouselInteractor.onSwipeToDismiss()
 
