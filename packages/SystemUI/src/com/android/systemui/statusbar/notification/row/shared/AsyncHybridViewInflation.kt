@@ -18,7 +18,6 @@ package com.android.systemui.statusbar.notification.row.shared
 
 import com.android.systemui.Flags
 import com.android.systemui.flags.FlagToken
-import com.android.systemui.flags.RefactorFlagUtils
 
 /** Helper for reading or using the async hybrid view inflation flag state. */
 @Suppress("NOTHING_TO_INLINE")
@@ -33,11 +32,4 @@ object AsyncHybridViewInflation {
     @JvmStatic
     inline val isEnabled
         get() = Flags.notificationAsyncHybridViewInflation()
-
-    /**
-     * Called to ensure code is only run when the flag is disabled. This will throw an exception if
-     * the flag is enabled to ensure that the refactor author catches issues in testing.
-     */
-    @JvmStatic
-    inline fun assertInLegacyMode() = RefactorFlagUtils.assertInLegacyMode(isEnabled, FLAG_NAME)
 }

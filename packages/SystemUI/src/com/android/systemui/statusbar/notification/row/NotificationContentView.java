@@ -28,7 +28,6 @@ import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.RemoteException;
-import android.os.Trace;
 import android.service.notification.StatusBarNotification;
 import android.util.ArrayMap;
 import android.util.AttributeSet;
@@ -905,16 +904,11 @@ public class NotificationContentView extends FrameLayout implements Notification
             return mContractedChild != null
                     ? getViewHeight(VISIBLE_TYPE_CONTRACTED) : mMinContractedHeight;
         } else {
-            if (AsyncHybridViewInflation.isEnabled()) {
-                if (mSingleLineView != null) {
-                    return getViewHeight(VISIBLE_TYPE_SINGLELINE);
-                } else {
-                    //TODO(b/217799515): investigate the impact of min-height value
-                    return mMinSingleLineHeight;
-                }
+            if (mSingleLineView != null) {
+                return getViewHeight(VISIBLE_TYPE_SINGLELINE);
             } else {
-                AsyncHybridViewInflation.assertInLegacyMode();
-                return mSingleLineView.getHeight();
+                //TODO(b/217799515): investigate the impact of min-height value
+                return mMinSingleLineHeight;
             }
         }
     }
@@ -1378,7 +1372,6 @@ public class NotificationContentView extends FrameLayout implements Notification
         if (mHeadsUpChild != null) {
             mHeadsUpWrapper.setIsChildInGroup(mIsChildInGroup);
         }
-        updateAllSingleLineViews();
     }
 
     public void onNotificationUpdated(NotificationEntry entry) {
@@ -1394,7 +1387,6 @@ public class NotificationContentView extends FrameLayout implements Notification
         mBeforeN = NotificationBundleUi.isEnabled()
                 ? mContainingNotification.getEntryAdapter().getTargetSdk() < Build.VERSION_CODES.N
                 : entry.targetSdk < Build.VERSION_CODES.N;
-        updateAllSingleLineViews();
 
         if (mContractedChild != null) {
             mContractedWrapper.onContentUpdated(mContainingNotification);
@@ -1413,41 +1405,6 @@ public class NotificationContentView extends FrameLayout implements Notification
         mPreviousHeadsUpRemoteInputIntent = null;
         applySystemActions(mExpandedChild, entry);
         applySystemActions(mHeadsUpChild, entry);
-    }
-
-    private void updateAllSingleLineViews() {
-        updateSingleLineView();
-    }
-
-    private void updateSingleLineView() {
-        try {
-            Trace.beginSection("NotifContentView#updateSingleLineView");
-            if (mSbn == null) {
-                return;
-            }
-            if (AsyncHybridViewInflation.isEnabled()) {
-                return;
-            }
-            AsyncHybridViewInflation.assertInLegacyMode();
-            if (mIsChildInGroup) {
-                boolean isNewView = mSingleLineView == null;
-                mSingleLineView = mHybridGroupManager.bindFromNotification(
-                        /* reusableView = */ mSingleLineView,
-                        /* contentView = */ mContractedChild,
-                        /* notification = */ mSbn,
-                        /* parent = */ this
-                );
-                if (isNewView && mSingleLineView != null) {
-                    updateViewVisibility(mVisibleType, VISIBLE_TYPE_SINGLELINE,
-                            mSingleLineView, mSingleLineView);
-                }
-            } else if (mSingleLineView != null) {
-                removeView(mSingleLineView);
-                mSingleLineView = null;
-            }
-        } finally {
-            Trace.endSection();
-        }
     }
 
     /**
@@ -2061,7 +2018,6 @@ public class NotificationContentView extends FrameLayout implements Notification
         if (mIsChildInGroup && mSingleLineView != null) {
             removeView(mSingleLineView);
             mSingleLineView = null;
-            updateAllSingleLineViews();
         }
     }
 
