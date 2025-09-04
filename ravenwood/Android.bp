@@ -613,7 +613,7 @@ android_ravenwood_libgroup {
         // Libraries has to be loaded in the following order
         "libravenwood_initializer",
         "libravenwood_runtime",
-        "libandroid_runtime",
+        "libandroid_runtime_ravenwood",
     ],
 }
 
