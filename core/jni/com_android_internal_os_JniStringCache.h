@@ -98,8 +98,13 @@ private:
 #endif
     };
 
-    // Ensure the struct can fit in lock-free atomic operations width.
+    // On most target architectures, CacheEntry can be stored in a lock-free atomic. We use the
+    // assertion below to ensure that the struct remains this way.
+    // Supported RISC-V ISAs (RVA32 and RISC-V64) don't offer atomics that are wide enough. The code
+    // won't be as efficient, but will still be correct, so we relax the assertion for RISC-V.
+#if !defined(__riscv)
     static_assert(std::atomic<CacheEntry>::is_always_lock_free);
+#endif
 
     // Ensure no padding is added to the struct.
     // Uninitialized padding may cause spurious CAS failures.
