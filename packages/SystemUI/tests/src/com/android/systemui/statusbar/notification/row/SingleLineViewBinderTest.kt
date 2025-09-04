@@ -29,7 +29,6 @@ import com.android.systemui.statusbar.notification.row.NotificationRowContentBin
 import com.android.systemui.statusbar.notification.row.NotificationRowContentBinder.FLAG_CONTENT_VIEW_SINGLE_LINE
 import com.android.systemui.statusbar.notification.row.SingleLineViewInflater.inflatePrivateSingleLineView
 import com.android.systemui.statusbar.notification.row.SingleLineViewInflater.inflatePublicSingleLineView
-import com.android.systemui.statusbar.notification.row.shared.AsyncHybridViewInflation
 import com.android.systemui.statusbar.notification.row.ui.viewbinder.SingleLineViewBinder
 import com.android.systemui.testKosmos
 import kotlin.test.assertEquals
@@ -58,7 +57,6 @@ class SingleLineViewBinderTest : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(AsyncHybridViewInflation.FLAG_NAME)
     fun bindNonConversationSingleLineView() {
         // GIVEN: a row with bigText style notification
         val style = Notification.BigTextStyle().bigText(CONTENT_TEXT)
@@ -104,7 +102,6 @@ class SingleLineViewBinderTest : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(AsyncHybridViewInflation.FLAG_NAME)
     fun bindGroupConversationSingleLineView() {
         // GIVEN a row with a group conversation notification
         val user =
@@ -170,7 +167,6 @@ class SingleLineViewBinderTest : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(AsyncHybridViewInflation.FLAG_NAME)
     fun bindConversationSingleLineView_nonConversationViewModel() {
         // GIVEN: a ConversationSingleLineView, and a nonConversationViewModel
         val style = Notification.BigTextStyle().bigText(CONTENT_TEXT)
@@ -218,7 +214,6 @@ class SingleLineViewBinderTest : SysuiTestCase() {
 
     @Test
     @EnableFlags(
-        AsyncHybridViewInflation.FLAG_NAME,
         android.app.Flags.FLAG_NM_SUMMARIZATION_UI,
         android.app.Flags.FLAG_NM_SUMMARIZATION,
     )
