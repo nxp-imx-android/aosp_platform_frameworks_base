@@ -33,7 +33,6 @@ import android.widget.TextView;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.systemui.res.R;
 import com.android.systemui.statusbar.notification.NotificationFadeAware;
-import com.android.systemui.statusbar.notification.row.shared.AsyncHybridViewInflation;
 import com.android.systemui.statusbar.notification.row.ui.viewmodel.ConversationAvatar;
 import com.android.systemui.statusbar.notification.row.ui.viewmodel.FacePile;
 import com.android.systemui.statusbar.notification.row.ui.viewmodel.SingleIcon;
@@ -75,16 +74,8 @@ public class HybridConversationNotificationView extends HybridNotificationView {
     protected void onFinishInflate() {
         super.onFinishInflate();
         mConversationIconView = requireViewById(com.android.internal.R.id.conversation_icon);
-        if (AsyncHybridViewInflation.isEnabled()) {
-            mConversationFacePileStub =
-                    requireViewById(com.android.internal.R.id.conversation_face_pile);
-        } else {
-            // TODO(b/217799515): This usage is vague because mConversationFacePile represents both
-            //  View and ViewStub at different stages of View inflation, should be removed when
-            //  AsyncHybridViewInflation flag is removed
-            mConversationFacePile =
-                    requireViewById(com.android.internal.R.id.conversation_face_pile);
-        }
+        mConversationFacePileStub =
+                requireViewById(com.android.internal.R.id.conversation_face_pile);
         mConversationSenderName = requireViewById(R.id.conversation_notification_sender);
         applyTextColor(mConversationSenderName, mSecondaryTextColor);
         if (Flags.notificationsRedesignTemplates()) {

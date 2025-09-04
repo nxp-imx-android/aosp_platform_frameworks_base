@@ -26,10 +26,5 @@ object AsyncHybridViewInflation {
 
     /** A token used for dependency declaration */
     val token: FlagToken
-        get() = FlagToken(FLAG_NAME, isEnabled)
-
-    /** Is async hybrid (single-line) view inflation enabled */
-    @JvmStatic
-    inline val isEnabled
-        get() = Flags.notificationAsyncHybridViewInflation()
+        get() = FlagToken(FLAG_NAME, true)
 }

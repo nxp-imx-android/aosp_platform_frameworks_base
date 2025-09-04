@@ -60,7 +60,6 @@ import com.android.systemui.statusbar.notification.collection.NotificationEntry;
 import com.android.systemui.statusbar.notification.collection.RemoteInputEntryAdapter;
 import com.android.systemui.statusbar.notification.collection.render.GroupMembershipManager;
 import com.android.systemui.statusbar.notification.people.PeopleNotificationIdentifier;
-import com.android.systemui.statusbar.notification.row.shared.AsyncHybridViewInflation;
 import com.android.systemui.statusbar.notification.row.wrapper.NotificationCompactHeadsUpTemplateViewWrapper;
 import com.android.systemui.statusbar.notification.row.wrapper.NotificationCustomViewWrapper;
 import com.android.systemui.statusbar.notification.row.wrapper.NotificationHeaderViewWrapper;
@@ -255,14 +254,12 @@ public class NotificationContentView extends FrameLayout implements Notification
     public void reinflate() {
         mMinContractedHeight = getResources().getDimensionPixelSize(
                 R.dimen.min_notification_layout_height);
-        if (AsyncHybridViewInflation.isEnabled()) {
-            //TODO (b/217799515): single-line view height is the greater of two heights: text view
-            // height and icon height (when there's an icon). icon height is fixed to be
-            // conversation_single_line_face_pile_size (24dp), the text view's height is 16sp,
-            // its pixel height changes with the system's font scaling factor.
-            mMinSingleLineHeight = getResources().getDimensionPixelSize(
-                    R.dimen.conversation_single_line_face_pile_size);
-        }
+        //TODO (b/217799515): single-line view height is the greater of two heights: text view
+        // height and icon height (when there's an icon). icon height is fixed to be
+        // conversation_single_line_face_pile_size (24dp), the text view's height is 16sp,
+        // its pixel height changes with the system's font scaling factor.
+        mMinSingleLineHeight = getResources().getDimensionPixelSize(
+                R.dimen.conversation_single_line_face_pile_size);
     }
 
     public void setHeights(int smallHeight, int headsUpMaxHeight, int maxHeight) {
