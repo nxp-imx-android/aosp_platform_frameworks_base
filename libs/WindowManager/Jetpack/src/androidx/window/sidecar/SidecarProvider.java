@@ -16,7 +16,6 @@
 
 package androidx.window.sidecar;
 
-import static androidx.window.sidecar.flags.Flags.mergeExtensionsSidecar;
 
 import android.content.Context;
 import android.hardware.devicestate.DeviceStateManager;
@@ -50,15 +49,11 @@ public class SidecarProvider {
     }
 
     private static SidecarInterface getSidecarInterface(Context context) {
-        if (mergeExtensionsSidecar()) {
-            WindowLayoutComponent windowLayoutComponent = WindowExtensionsProvider
-                    .getWindowExtensions()
-                    .getWindowLayoutComponent();
-            DeviceStateManager deviceStateManager = getDeviceStateManager(context);
-            return new SidecarExtensionsImpl(windowLayoutComponent, deviceStateManager);
-        } else {
-            return new SidecarImpl(context.getApplicationContext());
-        }
+        WindowLayoutComponent windowLayoutComponent = WindowExtensionsProvider
+                .getWindowExtensions()
+                .getWindowLayoutComponent();
+        DeviceStateManager deviceStateManager = getDeviceStateManager(context);
+        return new SidecarExtensionsImpl(windowLayoutComponent, deviceStateManager);
     }
 
     @NonNull
