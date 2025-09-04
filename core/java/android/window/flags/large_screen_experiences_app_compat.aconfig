@@ -49,6 +49,13 @@ flag {
 }
 
 flag {
+    name: "camera_compat_landscape_camera_support"
+    namespace: "large_screen_experiences_app_compat"
+    description: "Whether to support landscape cameras in camera compat."
+    bug: "432651608"
+}
+
+flag {
     name: "camera_compat_unify_camera_policies"
     namespace: "large_screen_experiences_app_compat"
     description: "Whether to use simulate-requested-orientation camera compat treatment instead of a force-rotate one."
