@@ -173,7 +173,8 @@ public final class NetworkRegistrationInfo implements Parcelable {
     @Retention(RetentionPolicy.SOURCE)
     @IntDef(prefix = "SERVICE_TYPE_",
             value = {SERVICE_TYPE_UNKNOWN, SERVICE_TYPE_VOICE, SERVICE_TYPE_DATA, SERVICE_TYPE_SMS,
-                    SERVICE_TYPE_VIDEO, SERVICE_TYPE_EMERGENCY, SERVICE_TYPE_MMS})
+                    SERVICE_TYPE_VIDEO, SERVICE_TYPE_EMERGENCY, SERVICE_TYPE_MMS,
+                    SERVICE_TYPE_EMERGENCY_SMS})
     public @interface ServiceType {}
 
     /**
@@ -211,11 +212,17 @@ public final class NetworkRegistrationInfo implements Parcelable {
      */
     public static final int SERVICE_TYPE_MMS = 6;
 
+    /**
+     * Emergency SMS service
+     */
+    @FlaggedApi(Flags.FLAG_SATELLITE_26Q2_APIS)
+    public static final int SERVICE_TYPE_EMERGENCY_SMS = 7;
+
     /** @hide  */
     public static final int FIRST_SERVICE_TYPE = SERVICE_TYPE_VOICE;
 
     /** @hide  */
-    public static final int LAST_SERVICE_TYPE = SERVICE_TYPE_MMS;
+    public static final int LAST_SERVICE_TYPE = SERVICE_TYPE_EMERGENCY_SMS;
 
     @Domain
     private final int mDomain;

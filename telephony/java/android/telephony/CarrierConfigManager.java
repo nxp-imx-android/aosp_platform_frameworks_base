@@ -9872,6 +9872,7 @@ public class CarrierConfigManager {
      * <li>4 = {@link android.telephony.NetworkRegistrationInfo#SERVICE_TYPE_VIDEO}</li>
      * <li>5 = {@link android.telephony.NetworkRegistrationInfo#SERVICE_TYPE_EMERGENCY}</li>
      * <li>6 = {@link android.telephony.NetworkRegistrationInfo#SERVICE_TYPE_MMS}</li>
+     * <li>7 = {@link android.telephony.NetworkRegistrationInfo#SERVICE_TYPE_EMERGENCY_SMS}</li>
      * </ul>
      * <p>
      * An example config for two PLMNs "123411" and "123412":
@@ -9893,6 +9894,28 @@ public class CarrierConfigManager {
      */
     public static final String KEY_CARRIER_SUPPORTED_SATELLITE_SERVICES_PER_PROVIDER_BUNDLE =
             "carrier_supported_satellite_services_per_provider_bundle";
+
+    /**
+     * A string array containing the list of supported emergency satellite PLMNs. The satellite
+     * services supported by these PLMNs are defined by
+     * {@link #KEY_CARRIER_SUPPORTED_SATELLITE_SERVICES_PER_PROVIDER_BUNDLE}.
+     * <p>
+     * This config is empty by default.
+     */
+    @FlaggedApi(Flags.FLAG_SATELLITE_26Q2_APIS)
+    public static final String KEY_SATELLITE_SUPPORTED_EMERGENCY_PLMN_STRING_ARRAY =
+            "satellite_supported_emergency_plmn_string_array";
+
+    /**
+     * A string array containing the list of supported disaster satellite PLMNs. The satellite
+     * services supported by these PLMNs are defined by
+     * {@link #KEY_CARRIER_SUPPORTED_SATELLITE_SERVICES_PER_PROVIDER_BUNDLE}.
+     * <p>
+     * This config is empty by default.
+     */
+    @FlaggedApi(Flags.FLAG_SATELLITE_26Q2_APIS)
+    public static final String KEY_SATELLITE_SUPPORTED_DISASTER_PLMN_STRING_ARRAY =
+            "satellite_supported_disaster_plmn_string_array";
 
     /**
      * A PersistableBundle that contains a list of key-value pairs, where keys are satellite
@@ -11680,6 +11703,12 @@ public class CarrierConfigManager {
         sDefaults.putPersistableBundle(
                 KEY_CARRIER_SUPPORTED_SATELLITE_SERVICES_PER_PROVIDER_BUNDLE,
                 PersistableBundle.EMPTY);
+        sDefaults.putStringArray(
+                KEY_SATELLITE_SUPPORTED_EMERGENCY_PLMN_STRING_ARRAY,
+                new String[0]);
+        sDefaults.putStringArray(
+                KEY_SATELLITE_SUPPORTED_DISASTER_PLMN_STRING_ARRAY,
+                new String[0]);
         sDefaults.putPersistableBundle(KEY_SATELLITE_CONFIGS_PER_PLMN_BUNDLE,
                 PersistableBundle.EMPTY);
         sDefaults.putPersistableBundle(
