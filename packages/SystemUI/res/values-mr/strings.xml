@@ -138,16 +138,12 @@
     <string name="screenrecord_stop_dialog_message" msgid="6262768207331626817">"तुम्ही सध्या तुमची संपूर्ण स्क्रीन रेकॉर्ड करत आहात"</string>
     <string name="screenrecord_stop_dialog_message_specific_app" msgid="5995770227684523244">"तुम्ही सध्या <xliff:g id="APP_NAME">%1$s</xliff:g> रेकॉर्ड करत आहात"</string>
     <string name="screenrecord_stop_dialog_button" msgid="2883812564938194350">"रेकॉर्ड करणे थांबवा"</string>
-    <!-- no translation found for screen_record_entire_screen (66944996337928170) -->
-    <skip />
-    <!-- no translation found for screen_record_single_app (7355880948574569290) -->
-    <skip />
-    <!-- no translation found for screen_record_single_app_no_recents (1023249803854209330) -->
-    <skip />
+    <string name="screen_record_entire_screen" msgid="66944996337928170">"संपूर्ण स्क्रीन"</string>
+    <string name="screen_record_single_app" msgid="7355880948574569290">"सिंगल अ‍ॅप"</string>
+    <string name="screen_record_single_app_no_recents" msgid="1023249803854209330">"सिंगल अ‍ॅप (जे अ‍ॅप निवडायचे आहे ते उघडा)"</string>
     <string name="screen_record_record_device_audio_label" msgid="5363057443124085198">"डिव्हाइसचा ऑडिओ रेकॉर्ड करा"</string>
     <string name="screen_record_record_microphone_label" msgid="4685753707185662381">"मायक्रोफोन वापरून रेकॉर्ड करा"</string>
-    <!-- no translation found for screen_record_should_show_camera_label (159628971484931357) -->
-    <skip />
+    <string name="screen_record_should_show_camera_label" msgid="159628971484931357">"सेल्फी कॅमेरा दाखवा"</string>
     <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"स्पर्श दाखवा"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"रेकॉर्ड करण्यासाठी अ‍ॅप निवडा"</string>
     <string name="screen_record_video_saved" msgid="1345283626390232282">"व्हिडिओ सेव्ह केला आहे"</string>
@@ -165,6 +161,10 @@
     <string name="screen_capture_toolbar_screenshot_button" msgid="5676585348709494125">"स्क्रीनशॉट"</string>
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"रेकॉर्ड करा"</string>
     <string name="screen_share_toolbar_share_button" msgid="9182050596136815833">"शेअर करा"</string>
+    <!-- no translation found for screen_share_no_select_app_thumbnail (1630012401570567430) -->
+    <skip />
+    <!-- no translation found for screen_share_app_audio_sharing (7201172218924898712) -->
+    <skip />
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"विंडोचा स्क्रीनशॉट घ्या"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"विंडो रेकॉर्ड करा"</string>
     <string name="screen_capture_toolbar_region_button_screenshot_a11y" msgid="2102262602357521192">"निवडलेल्या भागाचा स्क्रीनशॉट घ्या"</string>
@@ -245,7 +245,7 @@
     <string name="biometric_dialog_fallback_button" msgid="7808939083554391449">"दुसऱ्या प्रकारे पडताळणी करा"</string>
     <string name="biometric_dialog_manage_identity_check" msgid="6283423571297422689">"ओळख तपासणी व्यवस्थापित करा"</string>
     <string name="biometric_dialog_identity_check_footer_link_text" msgid="5445804502968287214">"ओळख तपासणीबद्दल अधिक जाणून घ्या"</string>
-    <string name="biometric_dialog_identity_check_footer" msgid="4176895548458429932">"ओळखीची पडताळणी सुरू आहे आणि फक्त तुमच्या फिंगरप्रिंटने किंवा चेहऱ्याने तुमची पडताळणी करू शकता. %1$s"</string>
+    <string name="biometric_dialog_identity_check_footer" msgid="4176895548458429932">"ओळख तपासणी सुरू आहे आणि फक्त तुमच्या फिंगरप्रिंटने किंवा चेहऱ्याने तुमची पडताळणी करू शकता. %1$s"</string>
     <string name="biometric_dialog_identity_check_watch_ranging" msgid="2994378079915744485">"जोखमीचे मूल्यांकन करत आहे…"</string>
     <string name="biometric_dialog_unavailable" msgid="8242160331783709764">"उपलब्ध नाही"</string>
     <string name="biometric_dialog_use_pin" msgid="8385294115283000709">"पिन वापरा"</string>
@@ -545,7 +545,7 @@
     <string name="zen_mode_set_up" msgid="8231201163894922821">"सेट केलेला नाही"</string>
     <string name="zen_mode_no_manual_invocation" msgid="1769975741344633672">"सेटिंग्जमध्ये व्यवस्थापित करा"</string>
     <string name="zen_mode_active_modes" msgid="1625850411578488856">"{count,plural, =0{कोणतेही अ‍ॅक्टिव्ह मोड नाहीत}=1{{mode} अ‍ॅक्टिव्ह आहे}other{# मोड अ‍ॅक्टिव्ह आहेत}}"</string>
-    <string name="zen_modes_multiple_on_title" msgid="4918235362988982304">"<xliff:g id="NUMBER">%s</xliff:g> मोड"</string>
+    <string name="zen_modes_multiple_on_title" msgid="4918235362988982304">"<xliff:g id="NUMBER">%d</xliff:g> मोड"</string>
     <string name="zen_modes_multiple_on_status" msgid="8120633422509269588">"सुरू आहेत"</string>
     <string name="zen_priority_introduction" msgid="3159291973383796646">"अलार्म, रिमाइंडर, इव्‍हेंट आणि तुम्ही निश्चित केलेल्या कॉलर व्यतिरिक्त तुम्हाला कोणत्याही आवाज आणि कंपनांचा व्यत्त्यय आणला जाणार नाही. तरीही तुम्ही प्ले करायचे ठरवलेले कोणतेही संगीत, व्हिडिओ आणि गेमचे आवाज ऐकू शकतात."</string>
     <string name="zen_alarms_introduction" msgid="3987266042682300470">"अलार्म व्यतिरिक्त तुम्हाला कोणत्याही आवाज आणि कंपनांचा व्यत्त्यय आणला जाणार नाही. तरीही तुम्ही प्ले करायचे ठरवलेले कोणतेही संगीत, व्हिडिओ आणि गेमचे आवाज ऐकू शकतात."</string>
@@ -993,8 +993,7 @@
     <string name="group_system_access_notification_shade" msgid="1619028907006553677">"नोटिफिकेशन पहा"</string>
     <string name="group_system_access_quick_settings_panel" msgid="1844771096582064926">"क्विक सेटिंग्ज पहा"</string>
     <string name="group_system_full_screenshot" msgid="5742204844232667785">"स्क्रीनशॉट घ्या"</string>
-    <!-- no translation found for group_system_partial_screenshot (2114314797127648010) -->
-    <skip />
+    <string name="group_system_partial_screenshot" msgid="2114314797127648010">"आंशिक स्क्रीनशॉट घेणे"</string>
     <string name="group_system_access_system_app_shortcuts" msgid="8562482996626694026">"शॉर्टकट दाखवा"</string>
     <string name="group_system_go_back" msgid="2730322046244918816">"मागे जा"</string>
     <string name="group_system_access_home_screen" msgid="4130366993484706483">"होम स्क्रीनवर जा"</string>

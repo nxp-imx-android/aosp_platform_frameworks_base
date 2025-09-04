@@ -161,6 +161,10 @@
     <string name="screen_capture_toolbar_screenshot_button" msgid="5676585348709494125">"Screenshot"</string>
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"I-record"</string>
     <string name="screen_share_toolbar_share_button" msgid="9182050596136815833">"I-share"</string>
+    <!-- no translation found for screen_share_no_select_app_thumbnail (1630012401570567430) -->
+    <skip />
+    <!-- no translation found for screen_share_app_audio_sharing (7201172218924898712) -->
+    <skip />
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"Kunan ng screenshot ang window"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"I-record ang window"</string>
     <string name="screen_capture_toolbar_region_button_screenshot_a11y" msgid="2102262602357521192">"Kunan ng screenshot ang napiling bahagi"</string>
@@ -541,7 +545,7 @@
     <string name="zen_mode_set_up" msgid="8231201163894922821">"Hindi nakatakda"</string>
     <string name="zen_mode_no_manual_invocation" msgid="1769975741344633672">"Pamahalaan sa mga setting"</string>
     <string name="zen_mode_active_modes" msgid="1625850411578488856">"{count,plural, =0{Walang aktibong mode}=1{Aktibo ang {mode}}one{# mode ang aktibo}other{# na mode ang aktibo}}"</string>
-    <string name="zen_modes_multiple_on_title" msgid="4918235362988982304">"<xliff:g id="NUMBER">%s</xliff:g> (na) Mode"</string>
+    <string name="zen_modes_multiple_on_title" msgid="4918235362988982304">"<xliff:g id="NUMBER">%d</xliff:g> (na) Mode"</string>
     <string name="zen_modes_multiple_on_status" msgid="8120633422509269588">"Naka-on"</string>
     <string name="zen_priority_introduction" msgid="3159291973383796646">"Hindi ka maiistorbo ng mga tunog at pag-vibrate, maliban mula sa mga alarm, paalala, event, at tumatawag na tutukuyin mo. Maririnig mo pa rin ang kahit na anong piliin mong i-play kabilang ang mga musika, video, at laro."</string>
     <string name="zen_alarms_introduction" msgid="3987266042682300470">"Hindi ka maiistorbo ng mga tunog at pag-vibrate, maliban sa mga alarm. Maririnig mo pa rin ang anumang pipiliin mong i-play kabilang ang mga musika, video, at laro."</string>
@@ -989,8 +993,7 @@
     <string name="group_system_access_notification_shade" msgid="1619028907006553677">"Tumingin ng mga notification"</string>
     <string name="group_system_access_quick_settings_panel" msgid="1844771096582064926">"Tingnan ang mga mabilisang setting"</string>
     <string name="group_system_full_screenshot" msgid="5742204844232667785">"Kumuha ng screenshot"</string>
-    <!-- no translation found for group_system_partial_screenshot (2114314797127648010) -->
-    <skip />
+    <string name="group_system_partial_screenshot" msgid="2114314797127648010">"Kumuha ng screenshot ng isang bahagi ng screen"</string>
     <string name="group_system_access_system_app_shortcuts" msgid="8562482996626694026">"Ipakita ang mga shortcut"</string>
     <string name="group_system_go_back" msgid="2730322046244918816">"Bumalik"</string>
     <string name="group_system_access_home_screen" msgid="4130366993484706483">"Pumunta sa home screen"</string>

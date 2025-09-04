@@ -138,16 +138,12 @@
     <string name="screenrecord_stop_dialog_message" msgid="6262768207331626817">"Jy neem tans jou hele skerm op"</string>
     <string name="screenrecord_stop_dialog_message_specific_app" msgid="5995770227684523244">"Jy neem tans <xliff:g id="APP_NAME">%1$s</xliff:g> op"</string>
     <string name="screenrecord_stop_dialog_button" msgid="2883812564938194350">"Stop opname"</string>
-    <!-- no translation found for screen_record_entire_screen (66944996337928170) -->
-    <skip />
-    <!-- no translation found for screen_record_single_app (7355880948574569290) -->
-    <skip />
-    <!-- no translation found for screen_record_single_app_no_recents (1023249803854209330) -->
-    <skip />
+    <string name="screen_record_entire_screen" msgid="66944996337928170">"Hele skerm"</string>
+    <string name="screen_record_single_app" msgid="7355880948574569290">"Enkele app"</string>
+    <string name="screen_record_single_app_no_recents" msgid="1023249803854209330">"Enkele app (maak app oop en kies)"</string>
     <string name="screen_record_record_device_audio_label" msgid="5363057443124085198">"Neem toesteloudio op"</string>
     <string name="screen_record_record_microphone_label" msgid="4685753707185662381">"Neem mikrofoon op"</string>
-    <!-- no translation found for screen_record_should_show_camera_label (159628971484931357) -->
-    <skip />
+    <string name="screen_record_should_show_camera_label" msgid="159628971484931357">"Wys selfiekamera"</string>
     <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"Wys aanrakings"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"Kies ’n app om op te neem"</string>
     <string name="screen_record_video_saved" msgid="1345283626390232282">"Video is gestoor"</string>
@@ -165,6 +161,10 @@
     <string name="screen_capture_toolbar_screenshot_button" msgid="5676585348709494125">"Skermskoot"</string>
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"Neem op"</string>
     <string name="screen_share_toolbar_share_button" msgid="9182050596136815833">"Deel"</string>
+    <!-- no translation found for screen_share_no_select_app_thumbnail (1630012401570567430) -->
+    <skip />
+    <!-- no translation found for screen_share_app_audio_sharing (7201172218924898712) -->
+    <skip />
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"Neem skermskoot van venster"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"Neem venster op"</string>
     <string name="screen_capture_toolbar_region_button_screenshot_a11y" msgid="2102262602357521192">"Neem ’n skermskoot van die geselekteerde area"</string>
@@ -545,7 +545,7 @@
     <string name="zen_mode_set_up" msgid="8231201163894922821">"Nie gestel nie"</string>
     <string name="zen_mode_no_manual_invocation" msgid="1769975741344633672">"Bestuur in instellings"</string>
     <string name="zen_mode_active_modes" msgid="1625850411578488856">"{count,plural, =0{Geen aktiewe modusse nie}=1{{mode} is aktief}other{# modusse is aktief}}"</string>
-    <string name="zen_modes_multiple_on_title" msgid="4918235362988982304">"<xliff:g id="NUMBER">%s</xliff:g> modusse"</string>
+    <string name="zen_modes_multiple_on_title" msgid="4918235362988982304">"<xliff:g id="NUMBER">%d</xliff:g> modusse"</string>
     <string name="zen_modes_multiple_on_status" msgid="8120633422509269588">"Aan"</string>
     <string name="zen_priority_introduction" msgid="3159291973383796646">"Jy sal nie deur geluide en vibrasies gepla word nie, behalwe deur wekkers, herinneringe, geleenthede en bellers wat jy spesifiseer. Jy sal steeds enigiets hoor wat jy kies om te speel, insluitend musiek, video\'s en speletjies."</string>
     <string name="zen_alarms_introduction" msgid="3987266042682300470">"Jy sal nie deur geluide en vibrasies gepla word nie, behalwe deur wekkers. Jy sal steeds enigiets hoor wat jy kies om te speel, insluitend musiek, video\'s en speletjies."</string>
@@ -993,8 +993,7 @@
     <string name="group_system_access_notification_shade" msgid="1619028907006553677">"Bekyk kennisgewings"</string>
     <string name="group_system_access_quick_settings_panel" msgid="1844771096582064926">"Bekyk kitsinstellings"</string>
     <string name="group_system_full_screenshot" msgid="5742204844232667785">"Neem skermskoot"</string>
-    <!-- no translation found for group_system_partial_screenshot (2114314797127648010) -->
-    <skip />
+    <string name="group_system_partial_screenshot" msgid="2114314797127648010">"Neem gedeeltelike skermskoot"</string>
     <string name="group_system_access_system_app_shortcuts" msgid="8562482996626694026">"Wys kortpaaie"</string>
     <string name="group_system_go_back" msgid="2730322046244918816">"Gaan terug"</string>
     <string name="group_system_access_home_screen" msgid="4130366993484706483">"Gaan na tuisskerm"</string>

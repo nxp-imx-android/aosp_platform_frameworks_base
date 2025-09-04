@@ -138,16 +138,12 @@
     <string name="screenrecord_stop_dialog_message" msgid="6262768207331626817">"বৰ্তমান আপুনি আপোনাৰ গোটেই স্ক্ৰীনখন ৰেকৰ্ড কৰি আছে"</string>
     <string name="screenrecord_stop_dialog_message_specific_app" msgid="5995770227684523244">"বৰ্তমান আপুনি <xliff:g id="APP_NAME">%1$s</xliff:g> ৰেকৰ্ড কৰি আছে"</string>
     <string name="screenrecord_stop_dialog_button" msgid="2883812564938194350">"ৰেকৰ্ডিং বন্ধ কৰক"</string>
-    <!-- no translation found for screen_record_entire_screen (66944996337928170) -->
-    <skip />
-    <!-- no translation found for screen_record_single_app (7355880948574569290) -->
-    <skip />
-    <!-- no translation found for screen_record_single_app_no_recents (1023249803854209330) -->
-    <skip />
+    <string name="screen_record_entire_screen" msgid="66944996337928170">"সম্পূৰ্ণ স্ক্ৰীন"</string>
+    <string name="screen_record_single_app" msgid="7355880948574569290">"এটা এপ্"</string>
+    <string name="screen_record_single_app_no_recents" msgid="1023249803854209330">"এটা এপ্ (বাছনি কৰিবলৈ এটা এপ্ খোলক)"</string>
     <string name="screen_record_record_device_audio_label" msgid="5363057443124085198">"ডিভাইচৰ অডিঅ’ ৰেকৰ্ড কৰক"</string>
     <string name="screen_record_record_microphone_label" msgid="4685753707185662381">"মাইক্ৰ’ফ’ন ৰেকৰ্ড কৰক"</string>
-    <!-- no translation found for screen_record_should_show_camera_label (159628971484931357) -->
-    <skip />
+    <string name="screen_record_should_show_camera_label" msgid="159628971484931357">"ছেল্ফী কেমেৰা দেখুৱাওক"</string>
     <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"স্পৰ্শ দেখুৱাওক"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"ৰেকৰ্ড কৰিবলৈ এটা এপ্‌ বাছনি কৰক"</string>
     <string name="screen_record_video_saved" msgid="1345283626390232282">"ভিডিঅ’ ছেভ কৰা হ’ল"</string>
@@ -165,6 +161,10 @@
     <string name="screen_capture_toolbar_screenshot_button" msgid="5676585348709494125">"স্ক্ৰীনশ্বট"</string>
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"ৰেকৰ্ড কৰক"</string>
     <string name="screen_share_toolbar_share_button" msgid="9182050596136815833">"শ্বেয়াৰ কৰক"</string>
+    <!-- no translation found for screen_share_no_select_app_thumbnail (1630012401570567430) -->
+    <skip />
+    <!-- no translation found for screen_share_app_audio_sharing (7201172218924898712) -->
+    <skip />
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"ৱিণ্ড’খনৰ স্ক্ৰীনশ্বট লওক"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"ৱিণ্ড’ ৰেকৰ্ড কৰক"</string>
     <string name="screen_capture_toolbar_region_button_screenshot_a11y" msgid="2102262602357521192">"বাছনি কৰা এলেকাৰ স্ক্ৰীনশ্বট লওক"</string>
@@ -545,7 +545,7 @@
     <string name="zen_mode_set_up" msgid="8231201163894922821">"ছেট কৰা হোৱা নাই"</string>
     <string name="zen_mode_no_manual_invocation" msgid="1769975741344633672">"ছেটিঙত পৰিচালনা কৰক"</string>
     <string name="zen_mode_active_modes" msgid="1625850411578488856">"{count,plural, =0{কোনো সক্ৰিয় ম’ড নাই}=1{{mode} সক্ৰিয় আছে}one{# টা ম’ড সক্ৰিয় আছে}other{# টা ম’ড সক্ৰিয় আছে}}"</string>
-    <string name="zen_modes_multiple_on_title" msgid="4918235362988982304">"<xliff:g id="NUMBER">%s</xliff:g> টা ম’ড"</string>
+    <string name="zen_modes_multiple_on_title" msgid="4918235362988982304">"<xliff:g id="NUMBER">%d</xliff:g> টা ম’ড"</string>
     <string name="zen_modes_multiple_on_status" msgid="8120633422509269588">"অন আছে"</string>
     <string name="zen_priority_introduction" msgid="3159291973383796646">"আপুনি নিৰ্দিষ্ট কৰা এলাৰ্ম, ৰিমাইণ্ডাৰ, ইভেন্ট আৰু কল কৰোঁতাৰ বাহিৰে আন কোনো শব্দৰ পৰা আপুনি অসুবিধা নাপাব। কিন্তু, সংগীত, ভিডিঅ\' আৰু খেলসমূহকে ধৰি আপুনি প্লে কৰিব খোজা যিকোনো বস্তু তথাপি শুনিব পাৰিব।"</string>
     <string name="zen_alarms_introduction" msgid="3987266042682300470">"আপুনি নিৰ্দিষ্ট কৰা এলাৰ্মৰ বাহিৰে আন কোনো ধ্বনি আৰু কম্পনৰ পৰা আপুনি অসুবিধা নাপাব। কিন্তু, সংগীত, ভিডিঅ\' আৰু খেলসমূহকে ধৰি আপুনি প্লে কৰিব খোজা যিকোনো বস্তু তথাপি শুনিব পাৰিব।"</string>

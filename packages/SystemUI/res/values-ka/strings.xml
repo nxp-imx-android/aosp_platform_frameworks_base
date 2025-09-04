@@ -161,6 +161,10 @@
     <string name="screen_capture_toolbar_screenshot_button" msgid="5676585348709494125">"ეკრანის ანაბეჭდი"</string>
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"ჩაწერა"</string>
     <string name="screen_share_toolbar_share_button" msgid="9182050596136815833">"გაზიარება"</string>
+    <!-- no translation found for screen_share_no_select_app_thumbnail (1630012401570567430) -->
+    <skip />
+    <!-- no translation found for screen_share_app_audio_sharing (7201172218924898712) -->
+    <skip />
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"ფანჯრის ეკრანის ანაბეჭდის გადაღება"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"ფანჯრის ჩაწერა"</string>
     <string name="screen_capture_toolbar_region_button_screenshot_a11y" msgid="2102262602357521192">"ეკრანის მონიშნული მონაკვეთის ანაბეჭდის გადაღება"</string>
@@ -541,7 +545,7 @@
     <string name="zen_mode_set_up" msgid="8231201163894922821">"არ არის დაყენებული"</string>
     <string name="zen_mode_no_manual_invocation" msgid="1769975741344633672">"პარამეტრებში მართვა"</string>
     <string name="zen_mode_active_modes" msgid="1625850411578488856">"{count,plural, =0{აქტიური რეჟიმები არ მოიძებნა}=1{{mode} აქტიურია}other{აქტიურია # რეჟიმი}}"</string>
-    <string name="zen_modes_multiple_on_title" msgid="4918235362988982304">"<xliff:g id="NUMBER">%s</xliff:g> რეჟიმი"</string>
+    <string name="zen_modes_multiple_on_title" msgid="4918235362988982304">"<xliff:g id="NUMBER">%d</xliff:g> რეჟიმი"</string>
     <string name="zen_modes_multiple_on_status" msgid="8120633422509269588">"ჩართული"</string>
     <string name="zen_priority_introduction" msgid="3159291973383796646">"თქვენ მიერ მითითებული მაღვიძარების, შეხსენებების, მოვლენებისა და ზარების გარდა, არავითარი ხმა და ვიბრაცია არ შეგაწუხებთ. თქვენ მაინც შეძლებთ სასურველი კონტენტის, მაგალითად, მუსიკის, ვიდეოებისა და თამაშების აუდიოს მოსმენა."</string>
     <string name="zen_alarms_introduction" msgid="3987266042682300470">"მაღვიძარების გარდა, არავითარი ხმა და ვიბრაცია არ შეგაწუხებთ. თქვენ მაინც შეძლებთ სასურველი კონტენტის, მაგალითად, მუსიკის, ვიდეოებისა და თამაშების აუდიოს მოსმენა."</string>

@@ -140,7 +140,7 @@
     <string name="screenrecord_stop_dialog_button" msgid="2883812564938194350">"റെക്കോർഡിംഗ് നിർത്തുക"</string>
     <string name="screen_record_entire_screen" msgid="66944996337928170">"മുഴുവൻ സ്‌ക്രീൻ"</string>
     <string name="screen_record_single_app" msgid="7355880948574569290">"ഒരൊറ്റ ആപ്പ്"</string>
-    <string name="screen_record_single_app_no_recents" msgid="1023249803854209330">"ഒരൊറ്റ ആപ്പ് (തിരഞ്ഞെടുക്കാൻ ഒരു ആപ്പ് തുറക്കുക)"</string>
+    <string name="screen_record_single_app_no_recents" msgid="1023249803854209330">"ഒരു ആപ്പ് (തിരഞ്ഞെടുക്കാൻ തുറക്കുക)"</string>
     <string name="screen_record_record_device_audio_label" msgid="5363057443124085198">"ഉപകരണ ഓഡിയോ റെക്കോർഡ് ചെയ്യുക"</string>
     <string name="screen_record_record_microphone_label" msgid="4685753707185662381">"മൈക്രോഫോൺ റെക്കോർഡ് ചെയ്യുക"</string>
     <string name="screen_record_should_show_camera_label" msgid="159628971484931357">"സെൽഫി ക്യാമറ കാണിക്കുക"</string>
@@ -161,6 +161,10 @@
     <string name="screen_capture_toolbar_screenshot_button" msgid="5676585348709494125">"സ്ക്രീൻഷോട്ട്"</string>
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"റെക്കോർഡ് ചെയ്യുക"</string>
     <string name="screen_share_toolbar_share_button" msgid="9182050596136815833">"പങ്കിടുക"</string>
+    <!-- no translation found for screen_share_no_select_app_thumbnail (1630012401570567430) -->
+    <skip />
+    <!-- no translation found for screen_share_app_audio_sharing (7201172218924898712) -->
+    <skip />
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"വിൻഡോയുടെ സ്ക്രീൻഷോട്ട് എടുക്കുക"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"വിൻഡോ റെക്കോർഡ് ചെയ്യുക"</string>
     <string name="screen_capture_toolbar_region_button_screenshot_a11y" msgid="2102262602357521192">"തിരഞ്ഞെടുത്ത ഭാഗത്തിന്റെ സ്ക്രീൻഷോട്ട് എടുക്കുക"</string>
@@ -541,7 +545,7 @@
     <string name="zen_mode_set_up" msgid="8231201163894922821">"സജ്ജീകരിച്ചിട്ടില്ല"</string>
     <string name="zen_mode_no_manual_invocation" msgid="1769975741344633672">"ക്രമീകരണത്തിൽ മാനേജ് ചെയ്യുക"</string>
     <string name="zen_mode_active_modes" msgid="1625850411578488856">"{count,plural, =0{സജീവ മോഡുകൾ ഒന്നുമില്ല}=1{{mode} സജീവമാണ്}other{# മോഡുകൾ സജീവമാണ്}}"</string>
-    <string name="zen_modes_multiple_on_title" msgid="4918235362988982304">"<xliff:g id="NUMBER">%s</xliff:g> മോഡുകൾ"</string>
+    <string name="zen_modes_multiple_on_title" msgid="4918235362988982304">"<xliff:g id="NUMBER">%d</xliff:g> മോഡുകൾ"</string>
     <string name="zen_modes_multiple_on_status" msgid="8120633422509269588">"ഓണാണ്"</string>
     <string name="zen_priority_introduction" msgid="3159291973383796646">"നിങ്ങൾ സജ്ജീകരിച്ച അലാറങ്ങൾ, റിമൈൻഡറുകൾ, ഇവന്റുകൾ, കോളർമാർ എന്നിവയിൽ നിന്നുള്ള ശബ്‌ദങ്ങളും വൈബ്രേഷനുകളുമൊഴികെ മറ്റൊന്നും നിങ്ങളെ ശല്യപ്പെടുത്തുകയില്ല. സംഗീതം, വീഡിയോകൾ, ഗെയിമുകൾ എന്നിവയുൾപ്പെടെ പ്ലേ ചെയ്യുന്നതെന്തും നിങ്ങൾക്ക് ‌തുടർന്നും കേൾക്കാൻ കഴിയും."</string>
     <string name="zen_alarms_introduction" msgid="3987266042682300470">"അലാറങ്ങളിൽ നിന്നുള്ള ശബ്‌ദങ്ങളും വൈബ്രേഷനുകളുമൊഴികെ മറ്റൊന്നും നിങ്ങളെ ശല്യപ്പെടുത്തുകയില്ല. സംഗീതം, വീഡിയോകൾ, ഗെയിമുകൾ എന്നിവയുൾപ്പെടെ പ്ലേ ചെയ്യുന്നതെന്തും നിങ്ങൾക്ക് ‌തുടർന്നും കേൾക്കാൻ കഴിയും."</string>

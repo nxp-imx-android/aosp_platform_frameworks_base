@@ -138,16 +138,12 @@
     <string name="screenrecord_stop_dialog_message" msgid="6262768207331626817">"คุณกำลังบันทึกทั้งหน้าจอ"</string>
     <string name="screenrecord_stop_dialog_message_specific_app" msgid="5995770227684523244">"คุณกำลังบันทึก <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="screenrecord_stop_dialog_button" msgid="2883812564938194350">"หยุดบันทึก"</string>
-    <!-- no translation found for screen_record_entire_screen (66944996337928170) -->
-    <skip />
-    <!-- no translation found for screen_record_single_app (7355880948574569290) -->
-    <skip />
-    <!-- no translation found for screen_record_single_app_no_recents (1023249803854209330) -->
-    <skip />
+    <string name="screen_record_entire_screen" msgid="66944996337928170">"ทั้งหน้าจอ"</string>
+    <string name="screen_record_single_app" msgid="7355880948574569290">"แอปเดียว"</string>
+    <string name="screen_record_single_app_no_recents" msgid="1023249803854209330">"แอปเดียว (เปิดแอปเพื่อเลือก)"</string>
     <string name="screen_record_record_device_audio_label" msgid="5363057443124085198">"บันทึกเสียงจากอุปกรณ์"</string>
     <string name="screen_record_record_microphone_label" msgid="4685753707185662381">"บันทึกเสียงจากไมโครโฟน"</string>
-    <!-- no translation found for screen_record_should_show_camera_label (159628971484931357) -->
-    <skip />
+    <string name="screen_record_should_show_camera_label" msgid="159628971484931357">"แสดงกล้องเซลฟี"</string>
     <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"แสดงการแตะ"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"เลือกแอปเพื่อบันทึก"</string>
     <string name="screen_record_video_saved" msgid="1345283626390232282">"บันทึกวิดีโอแล้ว"</string>
@@ -165,6 +161,10 @@
     <string name="screen_capture_toolbar_screenshot_button" msgid="5676585348709494125">"ภาพหน้าจอ"</string>
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"บันทึก"</string>
     <string name="screen_share_toolbar_share_button" msgid="9182050596136815833">"แชร์"</string>
+    <!-- no translation found for screen_share_no_select_app_thumbnail (1630012401570567430) -->
+    <skip />
+    <!-- no translation found for screen_share_app_audio_sharing (7201172218924898712) -->
+    <skip />
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"ถ่ายภาพหน้าจอของหน้าต่าง"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"บันทึกหน้าต่าง"</string>
     <string name="screen_capture_toolbar_region_button_screenshot_a11y" msgid="2102262602357521192">"ถ่ายภาพหน้าจอของพื้นที่ที่เลือก"</string>
@@ -545,7 +545,7 @@
     <string name="zen_mode_set_up" msgid="8231201163894922821">"ไม่ได้ตั้งค่า"</string>
     <string name="zen_mode_no_manual_invocation" msgid="1769975741344633672">"จัดการในการตั้งค่า"</string>
     <string name="zen_mode_active_modes" msgid="1625850411578488856">"{count,plural, =0{ไม่มีโหมดที่ใช้งานอยู่}=1{{mode} ทำงานอยู่}other{ใช้งานอยู่ # โหมด}}"</string>
-    <string name="zen_modes_multiple_on_title" msgid="4918235362988982304">"<xliff:g id="NUMBER">%s</xliff:g> โหมด"</string>
+    <string name="zen_modes_multiple_on_title" msgid="4918235362988982304">"<xliff:g id="NUMBER">%d</xliff:g> โหมด"</string>
     <string name="zen_modes_multiple_on_status" msgid="8120633422509269588">"เปิด"</string>
     <string name="zen_priority_introduction" msgid="3159291973383796646">"คุณจะไม่ถูกรบกวนจากเสียงและการสั่น ยกเว้นเสียงนาฬิกาปลุก การช่วยเตือน กิจกรรม และผู้โทรที่ระบุไว้ คุณจะยังคงได้ยินสิ่งที่คุณเลือกเล่น เช่น เพลง วิดีโอ และเกม"</string>
     <string name="zen_alarms_introduction" msgid="3987266042682300470">"คุณจะไม่ถูกรบกวนจากเสียงและการสั่น ยกเว้นเสียงนาฬิกาปลุก คุณจะยังคงได้ยินสิ่งที่คุณเลือกเล่น เช่น เพลง วิดีโอ และเกม"</string>

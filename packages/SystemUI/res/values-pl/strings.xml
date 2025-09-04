@@ -138,16 +138,12 @@
     <string name="screenrecord_stop_dialog_message" msgid="6262768207331626817">"Obecnie nagrywasz cały widok ekranu"</string>
     <string name="screenrecord_stop_dialog_message_specific_app" msgid="5995770227684523244">"Obecnie nagrywasz widok aplikacji <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="screenrecord_stop_dialog_button" msgid="2883812564938194350">"Zatrzymaj nagrywanie"</string>
-    <!-- no translation found for screen_record_entire_screen (66944996337928170) -->
-    <skip />
-    <!-- no translation found for screen_record_single_app (7355880948574569290) -->
-    <skip />
-    <!-- no translation found for screen_record_single_app_no_recents (1023249803854209330) -->
-    <skip />
+    <string name="screen_record_entire_screen" msgid="66944996337928170">"Cały ekran"</string>
+    <string name="screen_record_single_app" msgid="7355880948574569290">"Jedna aplikacja"</string>
+    <string name="screen_record_single_app_no_recents" msgid="1023249803854209330">"1 aplikacja (otwórz, aby wybrać)"</string>
     <string name="screen_record_record_device_audio_label" msgid="5363057443124085198">"Nagrywaj dźwięk z urządzenia"</string>
     <string name="screen_record_record_microphone_label" msgid="4685753707185662381">"Nagrywaj z mikrofonu"</string>
-    <!-- no translation found for screen_record_should_show_camera_label (159628971484931357) -->
-    <skip />
+    <string name="screen_record_should_show_camera_label" msgid="159628971484931357">"Pokazuj aparat do selfie"</string>
     <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"Pokazuj dotknięcia"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"Wybierz aplikację do nagrywania"</string>
     <string name="screen_record_video_saved" msgid="1345283626390232282">"Zapisano film"</string>
@@ -165,6 +161,10 @@
     <string name="screen_capture_toolbar_screenshot_button" msgid="5676585348709494125">"Zrzut ekranu"</string>
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"Nagrywaj"</string>
     <string name="screen_share_toolbar_share_button" msgid="9182050596136815833">"Udostępnij"</string>
+    <!-- no translation found for screen_share_no_select_app_thumbnail (1630012401570567430) -->
+    <skip />
+    <!-- no translation found for screen_share_app_audio_sharing (7201172218924898712) -->
+    <skip />
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"Zrób zrzut okna"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"Nagrywaj okno"</string>
     <string name="screen_capture_toolbar_region_button_screenshot_a11y" msgid="2102262602357521192">"Zrób zrzut wybranego obszaru"</string>
@@ -545,7 +545,7 @@
     <string name="zen_mode_set_up" msgid="8231201163894922821">"Nie ustawiono"</string>
     <string name="zen_mode_no_manual_invocation" msgid="1769975741344633672">"Zarządzaj w ustawieniach"</string>
     <string name="zen_mode_active_modes" msgid="1625850411578488856">"{count,plural, =0{Brak aktywnych trybów}=1{Tryb {mode} jest aktywny}few{# tryby są aktywne}many{# trybów jest aktywnych}other{# trybu jest aktywne}}"</string>
-    <string name="zen_modes_multiple_on_title" msgid="4918235362988982304">"Tryby: <xliff:g id="NUMBER">%s</xliff:g>"</string>
+    <string name="zen_modes_multiple_on_title" msgid="4918235362988982304">"Tryby: <xliff:g id="NUMBER">%d</xliff:g>"</string>
     <string name="zen_modes_multiple_on_status" msgid="8120633422509269588">"Włączone"</string>
     <string name="zen_priority_introduction" msgid="3159291973383796646">"Nie będą Cię niepokoić żadne dźwięki ani wibracje z wyjątkiem alarmów, przypomnień, wydarzeń i połączeń od wybranych osób. Będziesz słyszeć wszystkie odtwarzane treści, takie jak muzyka, filmy czy gry."</string>
     <string name="zen_alarms_introduction" msgid="3987266042682300470">"Nie będą Cię niepokoić żadne dźwięki ani wibracje z wyjątkiem alarmów. Będziesz słyszeć wszystkie odtwarzane treści, takie jak muzyka, filmy czy gry."</string>
@@ -993,8 +993,7 @@
     <string name="group_system_access_notification_shade" msgid="1619028907006553677">"Wyświetl powiadomienia"</string>
     <string name="group_system_access_quick_settings_panel" msgid="1844771096582064926">"Wyświetl szybkie ustawienia"</string>
     <string name="group_system_full_screenshot" msgid="5742204844232667785">"Zapisz zrzut ekranu"</string>
-    <!-- no translation found for group_system_partial_screenshot (2114314797127648010) -->
-    <skip />
+    <string name="group_system_partial_screenshot" msgid="2114314797127648010">"Zrób zrzut części ekranu"</string>
     <string name="group_system_access_system_app_shortcuts" msgid="8562482996626694026">"Pokaż skróty"</string>
     <string name="group_system_go_back" msgid="2730322046244918816">"Przejdź wstecz"</string>
     <string name="group_system_access_home_screen" msgid="4130366993484706483">"Wyświetl ekran główny"</string>

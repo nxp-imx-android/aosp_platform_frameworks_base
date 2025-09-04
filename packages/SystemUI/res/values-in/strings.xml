@@ -138,16 +138,12 @@
     <string name="screenrecord_stop_dialog_message" msgid="6262768207331626817">"Anda sedang merekam seluruh layar"</string>
     <string name="screenrecord_stop_dialog_message_specific_app" msgid="5995770227684523244">"Anda sedang merekam <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="screenrecord_stop_dialog_button" msgid="2883812564938194350">"Berhenti merekam"</string>
-    <!-- no translation found for screen_record_entire_screen (66944996337928170) -->
-    <skip />
-    <!-- no translation found for screen_record_single_app (7355880948574569290) -->
-    <skip />
-    <!-- no translation found for screen_record_single_app_no_recents (1023249803854209330) -->
-    <skip />
+    <string name="screen_record_entire_screen" msgid="66944996337928170">"Seluruh layar"</string>
+    <string name="screen_record_single_app" msgid="7355880948574569290">"Satu aplikasi"</string>
+    <string name="screen_record_single_app_no_recents" msgid="1023249803854209330">"Satu aplikasi (Buka aplikasi untuk memilih)"</string>
     <string name="screen_record_record_device_audio_label" msgid="5363057443124085198">"Rekam audio perangkat"</string>
     <string name="screen_record_record_microphone_label" msgid="4685753707185662381">"Rekam mikrofon"</string>
-    <!-- no translation found for screen_record_should_show_camera_label (159628971484931357) -->
-    <skip />
+    <string name="screen_record_should_show_camera_label" msgid="159628971484931357">"Tampilkan kamera selfie"</string>
     <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"Tampilkan sentuhan"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"Pilih aplikasi yang akan direkam"</string>
     <string name="screen_record_video_saved" msgid="1345283626390232282">"Video disimpan"</string>
@@ -165,6 +161,10 @@
     <string name="screen_capture_toolbar_screenshot_button" msgid="5676585348709494125">"Screenshot"</string>
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"Rekam"</string>
     <string name="screen_share_toolbar_share_button" msgid="9182050596136815833">"Bagikan"</string>
+    <!-- no translation found for screen_share_no_select_app_thumbnail (1630012401570567430) -->
+    <skip />
+    <!-- no translation found for screen_share_app_audio_sharing (7201172218924898712) -->
+    <skip />
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"Ambil screenshot jendela"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"Rekam jendela"</string>
     <string name="screen_capture_toolbar_region_button_screenshot_a11y" msgid="2102262602357521192">"Ambil screenshot area yang dipilih"</string>
@@ -545,7 +545,7 @@
     <string name="zen_mode_set_up" msgid="8231201163894922821">"Tidak disetel"</string>
     <string name="zen_mode_no_manual_invocation" msgid="1769975741344633672">"Kelola di setelan"</string>
     <string name="zen_mode_active_modes" msgid="1625850411578488856">"{count,plural, =0{Tidak ada mode yang aktif}=1{{mode} aktif}other{# mode aktif}}"</string>
-    <string name="zen_modes_multiple_on_title" msgid="4918235362988982304">"<xliff:g id="NUMBER">%s</xliff:g> Mode"</string>
+    <string name="zen_modes_multiple_on_title" msgid="4918235362988982304">"<xliff:g id="NUMBER">%d</xliff:g> Mode"</string>
     <string name="zen_modes_multiple_on_status" msgid="8120633422509269588">"Aktif"</string>
     <string name="zen_priority_introduction" msgid="3159291973383796646">"Anda tidak akan terganggu oleh suara dan getaran, kecuali dari alarm, pengingat, acara, dan penelepon yang Anda tentukan. Anda akan tetap mendengar apa pun yang telah dipilih untuk diputar, termasuk musik, video, dan game."</string>
     <string name="zen_alarms_introduction" msgid="3987266042682300470">"Anda tidak akan terganggu oleh suara dan getaran, kecuali dari alarm. Anda akan tetap mendengar apa pun yang telah dipilih untuk diputar, termasuk musik, video, dan game."</string>
