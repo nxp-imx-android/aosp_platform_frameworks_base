@@ -277,9 +277,7 @@ class PluginInstance<T : Plugin>(
         get() = pluginFactory.getVersionInfo(plugin)
 
     /** Factory used to construct [PluginInstance]s. */
-    open class Factory
-    @JvmOverloads
-    constructor(
+    open class Factory(
         private val versionChecker: VersionChecker,
         @Named(PLUGIN_CLASSLOADER) private val baseClassLoader: ClassLoader,
         @Named(PLUGIN_PRIVILEGED) private val privilegedPlugins: List<String>,
@@ -440,7 +438,8 @@ class PluginInstance<T : Plugin>(
         private const val FAIL_MESSAGE = "ErrorMessage"
         private const val FAIL_MAX_STACK = 20
         private const val FAIL_TIMEOUT_MILLIS = (24 * 60 * 60 * 1000).toLong()
-        private val DEFAULT_LOGBUFFER = LogcatOnlyMessageBuffer(LogLevel.WARNING)
+
+        val DEFAULT_LOGBUFFER = LogcatOnlyMessageBuffer(LogLevel.WARNING)
         private val FILTERED_PACKAGES =
             listOf(
                 "androidx.compose",
