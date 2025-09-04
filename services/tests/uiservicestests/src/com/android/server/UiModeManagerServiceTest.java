@@ -1773,6 +1773,33 @@ public class UiModeManagerServiceTest extends UiServiceTestCase {
                 .isEqualTo(FORCE_INVERT_PACKAGE_ALWAYS_DISABLE);
     }
 
+    @Test
+    @EnableFlags({ android.view.accessibility.Flags.FLAG_FORCE_INVERT_COLOR,
+            android.app.Flags.FLAG_FIX_CONTRAST_AND_FORCE_INVERT_STATE_FOR_MULTI_USER })
+    public void nightModeFalse_batterySaverOn_forceInvertTypeDark() throws RemoteException {
+        int testUserId = 9;
+        switchUser(testUserId);
+        Settings.Secure.putIntForUser(
+                mContentResolver,
+                Settings.Secure.ACCESSIBILITY_FORCE_INVERT_COLOR_ENABLED,
+                /* value= */ 1,
+                /* userId = */ testUserId);
+        mService.setNightMode(MODE_NIGHT_NO);
+        when(mTwilightState.isNight()).thenReturn(false);
+        mService.setNightMode(MODE_NIGHT_AUTO);
+
+        // night NO
+        assertFalse(isNightModeActivated());
+
+        mPowerSaveConsumer.accept(
+                new PowerSaveState.Builder().setBatterySaverEnabled(true).build());
+
+        // night YES
+        assertTrue(isNightModeActivated());
+        assertThat(mUiManagerService.getForceInvertStateInternal(testUserId))
+                .isEqualTo(FORCE_INVERT_TYPE_DARK);
+    }
+
     private void switchUser(int userId) {
         SystemService.TargetUser user = mock(SystemService.TargetUser.class);
         doReturn(userId).when(user).getUserIdentifier();
