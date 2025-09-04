@@ -1747,8 +1747,7 @@ public final class CameraManager {
             // degrees (-90) for back camera, and 90 for front camera.
             // Use `displayRotation` param, sent by WindowManager, as the display rotation in the
             // app process might be sandboxed.
-            if (displayRotation == ROTATION_90 && com.android.window.flags.Flags
-                    .enableCameraCompatCheckDeviceRotationBugfix()) {
+            if (displayRotation == ROTATION_90) {
                 // The actual rotate and crop will be decided later, taking camera facing into
                 // account: back camera: 270 degrees, front camera: 90 degrees.
                 rotateAndCrop = Surface.ROTATION_270;
