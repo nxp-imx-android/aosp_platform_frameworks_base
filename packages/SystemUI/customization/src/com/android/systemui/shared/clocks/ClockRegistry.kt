@@ -138,16 +138,16 @@ open class ClockRegistry(
                     return true
                 }
 
-                val knownClocks = KNOWN_PLUGINS.get(manager.getPackage())
+                val knownClocks = KNOWN_PLUGINS.get(manager.packageName)
                 if (knownClocks == null) {
                     logger.w({ "Loading unrecognized clock package: $str1" }) {
-                        str1 = manager.getPackage()
+                        str1 = manager.packageName
                     }
                     return true
                 }
 
                 logger.i({ "Skipping initial load of known clock package: $str1" }) {
-                    str1 = manager.getPackage()
+                    str1 = manager.packageName
                 }
 
                 var isCurrentClock = false

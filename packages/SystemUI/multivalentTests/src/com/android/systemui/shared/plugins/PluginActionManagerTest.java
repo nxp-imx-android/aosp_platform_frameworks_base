@@ -78,9 +78,8 @@ public class PluginActionManagerTest extends SysuiTestCase {
     NotificationManager mNotificationManager;
     private PluginInstance<TestPlugin> mPluginInstance;
     private PluginInstance.Factory mPluginInstanceFactory = new PluginInstance.Factory(
-            this.getClass().getClassLoader(),
-            new PluginInstance.InstanceFactory<>(), new PluginInstance.VersionCheckerImpl(),
-            Collections.emptyList(), false) {
+            new VersionCheckerImpl(), this.getClass().getClassLoader(), Collections.emptyList(),
+            new BuildInfo(BuildVariant.User, false)) {
         @Override
         public <T extends Plugin> PluginInstance<T> create(Context context, ApplicationInfo appInfo,
                 ComponentName componentName, Class<T> pluginClass, PluginListener<T> listener) {
@@ -101,7 +100,8 @@ public class PluginActionManagerTest extends SysuiTestCase {
         mMockPlugin = mock(TestPlugin.class);
         mPluginInstance = mock(PluginInstance.class);
         when(mPluginInstance.getComponentName()).thenReturn(mTestPluginComponentName);
-        when(mPluginInstance.getPackage()).thenReturn(mTestPluginComponentName.getPackageName());
+        when(mPluginInstance.getPackageName())
+                .thenReturn(mTestPluginComponentName.getPackageName());
         mActionManagerFactory = new PluginActionManager.Factory(getContext(), mMockPm,
                 mFakeExecutor, mFakeExecutor, mNotificationManager, mMockEnabler,
                 new ArrayList<>(), mPluginInstanceFactory);

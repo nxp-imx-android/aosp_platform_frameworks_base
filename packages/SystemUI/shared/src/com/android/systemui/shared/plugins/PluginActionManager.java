@@ -144,7 +144,7 @@ public class PluginActionManager<T extends Plugin> {
         boolean disableAny = false;
         ArrayList<PluginInstance<T>> plugins = new ArrayList<>(mPluginInstances);
         for (PluginInstance<T> info : plugins) {
-            if (className.startsWith(info.getPackage())) {
+            if (className.startsWith(info.getPackageName())) {
                 disableAny |= disable(info, PluginEnabler.DISABLED_FROM_EXPLICIT_CRASH);
             }
         }
@@ -236,7 +236,7 @@ public class PluginActionManager<T extends Plugin> {
     private void removePkg(String pkg) {
         for (int i = mPluginInstances.size() - 1; i >= 0; i--) {
             final PluginInstance<T> pluginInstance = mPluginInstances.get(i);
-            if (pluginInstance.getPackage().equals(pkg)) {
+            if (pluginInstance.getPackageName().equals(pkg)) {
                 mMainExecutor.execute(() -> onPluginDisconnected(pluginInstance));
                 mPluginInstances.remove(i);
             }
