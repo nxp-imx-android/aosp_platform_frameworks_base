@@ -159,7 +159,7 @@ public class ComputerControlSessionTest {
                 .isEqualTo(mDefaultParams.getName());
         assertThat(mVirtualDeviceParamsArgumentCaptor.getValue()
                 .getDevicePolicy(POLICY_TYPE_RECENTS))
-                .isEqualTo(DEVICE_POLICY_CUSTOM);
+                .isEqualTo(DEVICE_POLICY_DEFAULT);
 
         verify(mVirtualDevice).createVirtualDisplay(
                 mVirtualDisplayConfigArgumentCaptor.capture(), any());
@@ -303,7 +303,6 @@ public class ComputerControlSessionTest {
     public void closeSession_closesVirtualDevice() throws Exception {
         createComputerControlSession(mDefaultParams);
         mSession.close();
-        verify(mVirtualDevice).setDevicePolicy(POLICY_TYPE_RECENTS, DEVICE_POLICY_DEFAULT);
         verify(mVirtualDevice).close();
         verify(mOnClosedListener).onClosed(mSession.asBinder());
     }
