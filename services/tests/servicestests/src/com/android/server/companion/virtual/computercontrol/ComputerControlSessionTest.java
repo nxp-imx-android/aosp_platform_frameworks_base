@@ -68,7 +68,6 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Presubmit
@@ -85,11 +84,8 @@ public class ComputerControlSessionTest {
     private static final int DISPLAY_DPI = 480;
     private static final String TARGET_PACKAGE_1 = "com.android.foo";
     private static final String TARGET_PACKAGE_2 = "com.android.bar";
-    private static final String TARGET_PACKAGE_3 = "com.android.foobar";
     private static final List<String> TARGET_PACKAGE_NAMES =
             List.of(TARGET_PACKAGE_1, TARGET_PACKAGE_2);
-    private static final List<String> PACKAGES_WITHOUT_LAUNCHER_ACTIVITY = List.of(
-            TARGET_PACKAGE_3);
     private static final String UNDECLARED_TARGET_PACKAGE = "com.android.baz";
 
     @Mock
@@ -136,8 +132,6 @@ public class ComputerControlSessionTest {
 
         when(mInjector.getPermissionControllerPackageName())
                 .thenReturn(PERMISSION_CONTROLLER_PACKAGE);
-        when(mInjector.getAllApplicationsWithoutLauncherActivity())
-                .thenReturn(PACKAGES_WITHOUT_LAUNCHER_ACTIVITY);
         when(mVirtualDeviceFactory.createVirtualDevice(any(), any(), any(), any()))
                 .thenReturn(mVirtualDevice);
         when(mVirtualDevice.createVirtualDisplay(any(), any())).thenReturn(VIRTUAL_DISPLAY_ID);
@@ -204,8 +198,7 @@ public class ComputerControlSessionTest {
     }
 
     @Test
-    @DisableFlags(value = {Flags.FLAG_COMPUTER_CONTROL_ACTIVITY_POLICY_RELAXED,
-            Flags.FLAG_COMPUTER_CONTROL_ACTIVITY_POLICY_STRICT})
+    @DisableFlags(Flags.FLAG_COMPUTER_CONTROL_ACTIVITY_POLICY_STRICT)
     public void createSession_noActivityPolicy() throws Exception {
         createComputerControlSession(mDefaultParams);
         verify(mVirtualDevice, never()).setDevicePolicy(eq(POLICY_TYPE_ACTIVITY), anyInt());
@@ -216,79 +209,7 @@ public class ComputerControlSessionTest {
 
     @Test
     @EnableFlags(Flags.FLAG_COMPUTER_CONTROL_ACTIVITY_POLICY_STRICT)
-    @DisableFlags(Flags.FLAG_COMPUTER_CONTROL_ACTIVITY_POLICY_RELAXED)
     public void createSession_strictActivityPolicy() throws Exception {
-        createComputerControlSession(mDefaultParams);
-
-        verify(mVirtualDevice).setDevicePolicy(POLICY_TYPE_ACTIVITY, DEVICE_POLICY_CUSTOM);
-
-        for (String expected : TARGET_PACKAGE_NAMES) {
-            verify(mVirtualDevice).addActivityPolicyExemption(
-                    argThat(new MatchesActivityPolicyExcemption(expected)));
-        }
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_COMPUTER_CONTROL_ACTIVITY_POLICY_STRICT)
-    @DisableFlags(Flags.FLAG_COMPUTER_CONTROL_ACTIVITY_POLICY_RELAXED)
-    public void createSession_strictActivityPolicy_removesPermissionController() throws Exception {
-        List<String> targetPackageNames = List.of(TARGET_PACKAGE_1, PERMISSION_CONTROLLER_PACKAGE);
-        createComputerControlSession(new ComputerControlSessionParams.Builder()
-                .setTargetPackageNames(targetPackageNames)
-                .setName(ComputerControlSessionTest.class.getSimpleName())
-                .build());
-
-        verify(mVirtualDevice).setDevicePolicy(POLICY_TYPE_ACTIVITY, DEVICE_POLICY_CUSTOM);
-
-        verify(mVirtualDevice).addActivityPolicyExemption(
-                argThat(new MatchesActivityPolicyExcemption(TARGET_PACKAGE_1)));
-        verify(mVirtualDevice, never()).addActivityPolicyExemption(
-                argThat(new MatchesActivityPolicyExcemption(PERMISSION_CONTROLLER_PACKAGE)));
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_COMPUTER_CONTROL_ACTIVITY_POLICY_RELAXED)
-    @DisableFlags(Flags.FLAG_COMPUTER_CONTROL_ACTIVITY_POLICY_STRICT)
-    public void createSession_relaxedActivityPolicy() throws Exception {
-        createComputerControlSession(mDefaultParams);
-
-        verify(mVirtualDevice).setDevicePolicy(POLICY_TYPE_ACTIVITY, DEVICE_POLICY_CUSTOM);
-
-        List<String> targetPackageNames = new ArrayList<>(mDefaultParams.getTargetPackageNames());
-        targetPackageNames.addAll(PACKAGES_WITHOUT_LAUNCHER_ACTIVITY);
-
-        for (String expected : targetPackageNames) {
-            verify(mVirtualDevice).addActivityPolicyExemption(
-                    argThat(new MatchesActivityPolicyExcemption(expected)));
-        }
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_COMPUTER_CONTROL_ACTIVITY_POLICY_RELAXED)
-    @DisableFlags(Flags.FLAG_COMPUTER_CONTROL_ACTIVITY_POLICY_STRICT)
-    public void createSession_relaxedActivityPolicy_removesPermissionController() throws Exception {
-        createComputerControlSession(new ComputerControlSessionParams.Builder()
-                .setName(ComputerControlSessionTest.class.getSimpleName())
-                .setTargetPackageNames(List.of(TARGET_PACKAGE_1, PERMISSION_CONTROLLER_PACKAGE))
-                .build());
-
-        verify(mVirtualDevice).setDevicePolicy(POLICY_TYPE_ACTIVITY, DEVICE_POLICY_CUSTOM);
-
-        List<String> targetPackageNames = new ArrayList<>();
-        targetPackageNames.add(TARGET_PACKAGE_1);
-        targetPackageNames.addAll(PACKAGES_WITHOUT_LAUNCHER_ACTIVITY);
-        for (String expected : targetPackageNames) {
-            verify(mVirtualDevice).addActivityPolicyExemption(
-                    argThat(new MatchesActivityPolicyExcemption(expected)));
-        }
-        verify(mVirtualDevice, never()).addActivityPolicyExemption(
-                argThat(new MatchesActivityPolicyExcemption(PERMISSION_CONTROLLER_PACKAGE)));
-    }
-
-    @Test
-    @EnableFlags(value = {Flags.FLAG_COMPUTER_CONTROL_ACTIVITY_POLICY_RELAXED,
-            Flags.FLAG_COMPUTER_CONTROL_ACTIVITY_POLICY_STRICT})
-    public void createSession_bothActivityPolicies() throws Exception {
         createComputerControlSession(mDefaultParams);
 
         verify(mVirtualDevice).setDevicePolicy(POLICY_TYPE_ACTIVITY, DEVICE_POLICY_CUSTOM);

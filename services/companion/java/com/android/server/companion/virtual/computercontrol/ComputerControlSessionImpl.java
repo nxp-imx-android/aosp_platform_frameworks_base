@@ -37,7 +37,6 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentSender;
-import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.hardware.display.DisplayManager;
 import android.hardware.display.DisplayManagerGlobal;
@@ -208,28 +207,28 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
         }
     }
 
+    /**
+     * This assumes that {@link ComputerControlSessionParams#getTargetPackageNames()} never contains
+     * any packageNames that the session owner should never be able to launch. This is validated in
+     * {@link ComputerControlSessionProcessor} prior to creating the session.
+     */
     private void applyActivityPolicy() throws RemoteException {
-        String permissionControllerPackage = mInjector.getPermissionControllerPackageName();
-
         List<String> exemptedPackageNames = new ArrayList<>();
         if (Flags.computerControlActivityPolicyStrict()) {
             mVirtualDevice.setDevicePolicy(POLICY_TYPE_ACTIVITY, DEVICE_POLICY_CUSTOM);
 
             exemptedPackageNames.addAll(mParams.getTargetPackageNames());
-            exemptedPackageNames.remove(permissionControllerPackage);
-        } else if (Flags.computerControlActivityPolicyRelaxed()) {
-            mVirtualDevice.setDevicePolicy(POLICY_TYPE_ACTIVITY, DEVICE_POLICY_CUSTOM);
-
-            exemptedPackageNames.addAll(mParams.getTargetPackageNames());
-            exemptedPackageNames.addAll(mInjector.getAllApplicationsWithoutLauncherActivity());
-            exemptedPackageNames.remove(permissionControllerPackage);
         } else {
+            // TODO(b/439774796): Remove once v0 API is removed and the flag is rolled out.
+            // This legacy policy allows all apps other than PermissionController to be automated.
+            String permissionControllerPackage = mInjector.getPermissionControllerPackageName();
             exemptedPackageNames.add(permissionControllerPackage);
         }
-        for (String allowedPackageName : exemptedPackageNames) {
+        for (int i = 0; i < exemptedPackageNames.size(); i++) {
+            String exemptedPackageName = exemptedPackageNames.get(i);
             mVirtualDevice.addActivityPolicyExemption(
                     new ActivityPolicyExemption.Builder()
-                            .setPackageName(allowedPackageName)
+                            .setPackageName(exemptedPackageName)
                             .build());
         }
     }
@@ -401,20 +400,6 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
 
         public String getPermissionControllerPackageName() {
             return mPackageManager.getPermissionControllerPackageName();
-        }
-
-        public List<String> getAllApplicationsWithoutLauncherActivity() {
-            List<String> result = new ArrayList<>();
-            List<ApplicationInfo> installedApplications =
-                    mPackageManager.getInstalledApplications(0);
-            for (int i = 0; i < installedApplications.size(); i++) {
-                ApplicationInfo applicationInfo = installedApplications.get(i);
-                if (mPackageManager.getLaunchIntentForPackage(applicationInfo.packageName)
-                        == null) {
-                    result.add(applicationInfo.packageName);
-                }
-            }
-            return result;
         }
 
         public void launchApplicationOnDisplayAsUser(String packageName, int displayId,
