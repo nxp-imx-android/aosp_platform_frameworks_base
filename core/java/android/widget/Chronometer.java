@@ -16,6 +16,9 @@
 
 package android.widget;
 
+import static android.text.format.DateUtils.MINUTE_IN_MILLIS;
+import static android.text.format.DateUtils.SECOND_IN_MILLIS;
+
 import static java.util.Objects.requireNonNull;
 
 import android.annotation.ElapsedRealtimeLong;
@@ -69,6 +72,13 @@ import java.util.function.LongSupplier;
 @RemoteView
 public class Chronometer extends TextView {
     private static final String TAG = "Chronometer";
+
+    /**
+     * In adaptive format, when displaying an elapsed/remaining duration greater than or equal to
+     * this number of minutes, seconds will not be shown (which also means the chronometer will tick
+     * on the minute instead of on the second).
+     */
+    private static final int ADAPTIVE_MINUTES_WITHOUT_SECONDS = 3;
 
     /**
      * A callback that notifies when the chronometer has incremented on its own.
@@ -433,7 +443,7 @@ public class Chronometer extends TextView {
             }
         } else if (minutes.getNumber().intValue() != 0) {
             partsList.add(minutes);
-            if (minutes.getNumber().intValue() < 3) {
+            if (minutes.getNumber().intValue() < ADAPTIVE_MINUTES_WITHOUT_SECONDS) {
               partsList.add(seconds);
             }
         }
@@ -467,7 +477,7 @@ public class Chronometer extends TextView {
             if (running) {
                 updateText(mElapsedRealtimeClock.getAsLong());
                 dispatchChronometerTick();
-                postTickOnNextSecond();
+                postTickOnNextChange();
             } else {
                 removeCallbacks(mTickRunnable);
             }
@@ -481,22 +491,32 @@ public class Chronometer extends TextView {
             if (mRunning) {
                 updateText(mElapsedRealtimeClock.getAsLong());
                 dispatchChronometerTick();
-                postTickOnNextSecond();
+                postTickOnNextChange();
             }
         }
     };
 
-    private void postTickOnNextSecond() {
+    private void postTickOnNextChange() {
         long nowMillis = mNow;
+
+        // In adaptive format, ticks are every 1 minute instead of 1 second, if the time elapsed
+        // or remaining is >= 3 minutes. Thus for time > 3 minutes the tick will be "on the minute"
+        // and for lower than that it's "on the second".
+        long periodInMillis = mUseAdaptiveFormat
+                && Math.abs(nowMillis - mBase) > ADAPTIVE_MINUTES_WITHOUT_SECONDS * MINUTE_IN_MILLIS
+                        ? MINUTE_IN_MILLIS
+                        : SECOND_IN_MILLIS;
+
         long delayMillis;
         if (mCountDown) {
-            delayMillis = (mBase - nowMillis) % 1000;
+            delayMillis = (mBase - nowMillis) % periodInMillis;
             if (delayMillis <= 0) {
-                delayMillis += 1000;
+                delayMillis += periodInMillis;
             }
         } else {
-            delayMillis = 1000 - (Math.abs(nowMillis - mBase) % 1000);
+            delayMillis = periodInMillis - (Math.abs(nowMillis - mBase) % periodInMillis);
         }
+
         // Aim for 3 milliseconds into the next second so we don't update exactly on the second
         delayMillis += 3;
         postDelayed(mTickRunnable, delayMillis);
@@ -511,7 +531,7 @@ public class Chronometer extends TextView {
     private static final int MIN_IN_SEC = 60;
     private static final int HOUR_IN_SEC = MIN_IN_SEC*60;
     private static String formatDuration(long ms) {
-        int duration = (int) (ms / DateUtils.SECOND_IN_MILLIS);
+        int duration = (int) (ms / SECOND_IN_MILLIS);
         if (duration < 0) {
             duration = -duration;
         }

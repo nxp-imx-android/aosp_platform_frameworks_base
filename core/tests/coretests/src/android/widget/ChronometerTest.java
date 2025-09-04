@@ -17,9 +17,16 @@
 package android.widget;
 
 
+import static android.text.format.DateUtils.MINUTE_IN_MILLIS;
+import static android.text.format.DateUtils.SECOND_IN_MILLIS;
+
 import static com.google.common.truth.Truth.assertThat;
 
 import static org.junit.Assert.assertArrayEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
 
 import static java.time.temporal.ChronoUnit.MINUTES;
 import static java.time.temporal.ChronoUnit.SECONDS;
@@ -41,6 +48,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 
 /**
@@ -305,6 +313,89 @@ public class ChronometerTest extends ActivityInstrumentationTestCase2<Chronomete
 
         chronometer.setPausedDuration(Duration.ofMinutes(1));
         assertThat(chronometer.getText().toString()).isEqualTo("1m 0s");
+    }
+
+    @UiThreadTest
+    public void testScheduledTicks() {
+        long base = SystemClock.elapsedRealtime();
+
+        // Non-adaptive: Always on the next second, regardless of stopwatch or countdown.
+        verifyNextTickScheduledIn(/* adaptive= */ false, /* countdown= */ false, base,
+                /* now= */ base + 200,
+                /* expectedDelay= */ 800);
+        verifyNextTickScheduledIn(/* adaptive= */ false, /* countdown= */ false, base,
+                /* now= */ base + 5 * SECOND_IN_MILLIS,
+                /* expectedDelay= */ 1000);
+        verifyNextTickScheduledIn(/* adaptive= */ false, /* countdown= */ false, base,
+                /* now= */ base + 30 * SECOND_IN_MILLIS + 300,
+                /* expectedDelay= */ 700);
+        verifyNextTickScheduledIn(/* adaptive= */ false, /* countdown= */ false, base,
+                /* now= */ base + 45 * MINUTE_IN_MILLIS + 900,
+                /* expectedDelay= */ 100);
+        verifyNextTickScheduledIn(/* adaptive= */ false, /* countdown= */ true, base,
+                /* now= */ base - 200,
+                /* expectedDelay= */ 200);
+        verifyNextTickScheduledIn(/* adaptive= */ false, /* countdown= */ true, base,
+                /* now= */ base - 10 * SECOND_IN_MILLIS,
+                /* expectedDelay= */ 1000);
+        verifyNextTickScheduledIn(/* adaptive= */ false, /* countdown= */ true, base,
+                /* now= */ base + 200, // overrun countdown
+                /* expectedDelay= */ 800);
+        verifyNextTickScheduledIn(/* adaptive= */ false, /* countdown= */ true, base,
+                /* now= */ base + 4 * SECOND_IN_MILLIS + 300, // overrun countdown
+                /* expectedDelay= */ 700);
+
+        // Adaptive stopwatch, 2:20 elapsed (< 3 minutes) -> on the second.
+        verifyNextTickScheduledIn(/* adaptive= */ true, /* countdown= */ false, base,
+                /* now= */ base + 2 * MINUTE_IN_MILLIS + 20 * SECOND_IN_MILLIS + 100,
+                /* expectedDelay= */ 900);
+
+        // Adaptive stopwatch, more than than 3 minutes elapsed -> on the next minute.
+        verifyNextTickScheduledIn(/* adaptive= */ true, /* countdown= */ false, base,
+                /* now= */ base + 5 * MINUTE_IN_MILLIS + 10 * SECOND_IN_MILLIS + 300,
+                /* expectedDelay= */ 49 * SECOND_IN_MILLIS + 700);
+
+        // Adaptive timer, more than than 3 minutes remaining -> on the next minute.
+        verifyNextTickScheduledIn(/* adaptive= */ true, /* countdown= */ true, base,
+                /* now= */ base - 4 * MINUTE_IN_MILLIS - 10 * SECOND_IN_MILLIS - 300,
+                /* expectedDelay= */ 10 * SECOND_IN_MILLIS + 300);
+
+        // Adaptive timer, slightly more than than 3 minutes remaining -> on the next minute.
+        verifyNextTickScheduledIn(/* adaptive= */ true, /* countdown= */ true, base,
+                /* now= */ base - 3 * MINUTE_IN_MILLIS - 2 * SECOND_IN_MILLIS - 100,
+                /* expectedDelay= */ 2 * SECOND_IN_MILLIS + 100);
+
+        // Adaptive timer, barely a few ms more than than 3 minutes remaining -> on the next minute.
+        verifyNextTickScheduledIn(/* adaptive= */ true, /* countdown= */ true, base,
+                /* now= */ base - 3 * MINUTE_IN_MILLIS - 1,
+                /* expectedDelay= */ 1);
+
+        // Adaptive timer, less than than 3 minutes remaining -> on the next second.
+        verifyNextTickScheduledIn(/* adaptive= */ true, /* countdown= */ true, base,
+                /* now= */ base - 2 * MINUTE_IN_MILLIS - 8 * SECOND_IN_MILLIS - 400,
+                /* expectedDelay= */ 400);
+    }
+
+    private void verifyNextTickScheduledIn(boolean adaptive, boolean countdown, long base, long now,
+            long expectedDelay) {
+        AtomicLong elapsedRealtime = new AtomicLong(0);
+
+        // Need to spy() because it's not possible to replace the looper used by postDelayed() :(
+        Chronometer chronometer = spy(
+                new Chronometer(mActivity, () -> elapsedRealtime.get(),
+                        () -> Instant.ofEpochMilli(0), null, 0, 0));
+        mActivity.setContentView(chronometer);
+
+        elapsedRealtime.set(now);
+        chronometer.setCountDown(countdown);
+        chronometer.setBase(base);
+        chronometer.setUseAdaptiveFormat(adaptive);
+
+        chronometer.start();
+
+        // Chronometer adds a small delay to prevent transitions *exactly* on the time, but for
+        // testing it's better to hide this.
+        verify(chronometer).postDelayed(any(), eq(expectedDelay + 3));
     }
 
     private void testChronometerTicks(
