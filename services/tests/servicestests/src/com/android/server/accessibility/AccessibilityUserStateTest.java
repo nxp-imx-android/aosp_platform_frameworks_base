@@ -108,7 +108,7 @@ public class AccessibilityUserStateTest {
 
     private static final int USER_ID = 42;
 
-    private static final int TEST_DISPLAY = Display.DEFAULT_DISPLAY;
+    private static final int TEST_DISPLAY = Display.DEFAULT_DISPLAY + 1;
 
     // Mock package-private class AccessibilityServiceConnection
     @Rule public final DexmakerShareClassLoaderRule mDexmakerShareClassLoaderRule =
@@ -418,6 +418,27 @@ public class AccessibilityUserStateTest {
                 ACCESSIBILITY_MAGNIFICATION_MODE_WINDOW);
 
         assertEquals(ACCESSIBILITY_MAGNIFICATION_MODE_WINDOW,
+                mUserState.getMagnificationModeLocked(TEST_DISPLAY));
+    }
+
+    @Test
+    public void getMagnificationModeLocked_setOnDefaultDisplay_returnExpectedMagnificationMode() {
+        mUserState.setMagnificationModeLocked(
+                Display.DEFAULT_DISPLAY, ACCESSIBILITY_MAGNIFICATION_MODE_WINDOW);
+
+        // If there is no cached magnification mode on TEST_DISPLAY, then it will retrieve the
+        // cached mode on default display.
+        assertEquals(
+                ACCESSIBILITY_MAGNIFICATION_MODE_WINDOW,
+                mUserState.getMagnificationModeLocked(TEST_DISPLAY));
+    }
+
+    @Test
+    public void getMagnificationModeLocked_returnFullScreenMagnificationModeByDefault() {
+        // If there is no cached magnification mode on TEST_DISPLAY and on default display, then it
+        // will return full screen mode.
+        assertEquals(
+                ACCESSIBILITY_MAGNIFICATION_MODE_FULLSCREEN,
                 mUserState.getMagnificationModeLocked(TEST_DISPLAY));
     }
 
