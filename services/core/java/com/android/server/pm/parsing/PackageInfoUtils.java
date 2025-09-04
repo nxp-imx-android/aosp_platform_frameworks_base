@@ -1056,6 +1056,7 @@ public class PackageInfoUtils {
                 | flag(pkg.hasRequestForegroundServiceExemption(), ApplicationInfo.PRIVATE_FLAG_EXT_REQUEST_FOREGROUND_SERVICE_EXEMPTION)
                 | flag(pkg.isAttributionsUserVisible(), ApplicationInfo.PRIVATE_FLAG_EXT_ATTRIBUTIONS_ARE_USER_VISIBLE)
                 | flag(pkg.isOnBackInvokedCallbackEnabled(), ApplicationInfo.PRIVATE_FLAG_EXT_ENABLE_ON_BACK_INVOKED_CALLBACK)
+                | flag(pkg.shouldRunInPccSandbox(), ApplicationInfo.PRIVATE_FLAG_EXT_RUN_IN_PCC_SANDBOX)
                 | flag(isAllowlistedForHiddenApis, ApplicationInfo.PRIVATE_FLAG_EXT_ALLOWLISTED_FOR_HIDDEN_APIS);
         return appInfoPrivateFlagsExt(pkgWithoutStateFlags, pkgSetting);
         // @formatter:on

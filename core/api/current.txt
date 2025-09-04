@@ -1455,6 +1455,7 @@ package android {
     field @Deprecated public static final int rowEdgeFlags = 16843329; // 0x1010241
     field public static final int rowHeight = 16843058; // 0x1010132
     field public static final int rowOrderPreserved = 16843638; // 0x1010376
+    field @FlaggedApi("android.app.privatecompute.flags.enable_pcc_framework_support") public static final int runInPccSandbox;
     field public static final int saveEnabled = 16842983; // 0x10100e7
     field public static final int scaleGravity = 16843262; // 0x10101fe
     field public static final int scaleHeight = 16843261; // 0x10101fd
@@ -9728,6 +9729,21 @@ package android.app.people {
 
 }
 
+package android.app.privatecompute {
+
+  @FlaggedApi("android.app.privatecompute.flags.enable_pcc_framework_support") public final class PccEntity implements android.os.Parcelable {
+    method public int describeContents();
+    method @NonNull public String getPackageName();
+    method public void writeToParcel(@NonNull android.os.Parcel, int);
+    field @NonNull public static final android.os.Parcelable.Creator<android.app.privatecompute.PccEntity> CREATOR;
+  }
+
+  @FlaggedApi("android.app.privatecompute.flags.enable_pcc_framework_support") public final class PccSandboxManager {
+    method @NonNull public java.util.List<android.app.privatecompute.PccEntity> getPccEntities();
+  }
+
+}
+
 package android.app.slice {
 
   @Deprecated public final class Slice implements android.os.Parcelable {
@@ -11336,6 +11352,7 @@ package android.content {
     field public static final String NOTIFICATION_SERVICE = "notification";
     field public static final String NSD_SERVICE = "servicediscovery";
     field public static final String OVERLAY_SERVICE = "overlay";
+    field @FlaggedApi("android.app.privatecompute.flags.enable_pcc_framework_support") public static final String PCC_SANDBOX_SERVICE = "pcc_sandbox";
     field public static final String PEOPLE_SERVICE = "people";
     field public static final String PERFORMANCE_HINT_SERVICE = "performance_hint";
     field public static final String PERSISTENT_DATA_BLOCK_SERVICE = "persistent_data_block";

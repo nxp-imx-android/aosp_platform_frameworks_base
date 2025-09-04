@@ -2507,6 +2507,10 @@ public class ParsingPackageUtils {
                 .setOnBackInvokedCallbackEnabled(bool(
                         targetSdk > Build.VERSION_CODES.VANILLA_ICE_CREAM,
                         R.styleable.AndroidManifestApplication_enableOnBackInvokedCallback, sa))
+                .setRunInPccSandbox(
+                        android.app.privatecompute.flags.Flags.enablePccFrameworkSupport()
+                        && bool(false,
+                        R.styleable.AndroidManifestApplication_runInPccSandbox, sa))
                 // Ints Default 0
                 .setUiOptions(anInt(R.styleable.AndroidManifestApplication_uiOptions, sa))
                 // Ints
