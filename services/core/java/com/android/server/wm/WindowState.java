@@ -5956,6 +5956,17 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
         return syncGroup.mSyncMethod;
     }
 
+    void useBlastForNextSync() {
+        if (mSyncMethodOverride == BLASTSyncEngine.METHOD_BLAST) return;
+        mSyncMethodOverride = BLASTSyncEngine.METHOD_BLAST;
+        final BLASTSyncEngine.SyncGroup syncGroup = getSyncGroup();
+        // If not in sync, then the seqId will be incremented in prepareSync (when added)
+        if (syncGroup == null || syncGroup.mSyncMethod == BLASTSyncEngine.METHOD_BLAST) {
+            return;
+        }
+        mBufferSeqId = mSyncSeqId + 1;
+    }
+
     boolean shouldSyncWithBuffers() {
         if (!mDrawHandlers.isEmpty()) return true;
         return getSyncMethod() == BLASTSyncEngine.METHOD_BLAST;

@@ -89,6 +89,10 @@ public class WindowStateResizeItem extends WindowStateTransactionItem {
         Trace.traceEnd(Trace.TRACE_TAG_WINDOW_MANAGER);
     }
 
+    public boolean getSyncWithBuffersForTest() {
+        return mSyncWithBuffers;
+    }
+
     // Parcelable implementation
 
     /** Writes to Parcel. */

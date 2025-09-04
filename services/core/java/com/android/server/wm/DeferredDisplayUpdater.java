@@ -227,7 +227,7 @@ class DeferredDisplayUpdater {
                         && mDisplayContent.mAtmService.mKeyguardController.isKeyguardOrAodShowing(
                         mDisplayContent.mDisplayId)) {
                     Slog.i(TAG, notificationShade + " uses blast for display switch");
-                    notificationShade.mSyncMethodOverride = BLASTSyncEngine.METHOD_BLAST;
+                    notificationShade.useBlastForNextSync();
                 }
             }
 
