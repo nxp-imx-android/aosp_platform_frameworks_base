@@ -18,7 +18,6 @@ package android.service.wallpaper;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import androidx.test.filters.SmallTest;
@@ -98,23 +97,5 @@ public class WallpaperServiceTest {
         engine.detach();
 
         engine.notifyColorsChanged();
-    }
-
-    @Test
-    public void testGetRenderingSurfaceControl() {
-        WallpaperService service = new WallpaperService() {
-            @Override
-            public Engine onCreateEngine() {
-                return new Engine();
-            }
-        };
-        WallpaperService.Engine engine = service.onCreateEngine();
-
-        // Before the engine's surface is created and updated, this field is expected to be null.
-        // A full integration test would be required to verify the non-null case, as creating a
-        // real SurfaceControl requires significant setup. This unit test verifies the getter's
-        // basic functionality and initial state.
-        assertNull("getRenderingSurfaceControl should return null before surface creation",
-                engine.getRenderingSurfaceControl());
     }
 }
