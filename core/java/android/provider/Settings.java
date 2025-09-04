@@ -19792,30 +19792,6 @@ public final class Settings {
         public static final String NOTIFICATION_FEEDBACK_ENABLED = "notification_feedback_enabled";
 
         /**
-         * Settings key for the ratio of notification dismissals to notification views - one of the
-         * criteria for showing the notification blocking helper.
-         *
-         * <p>The value is a float ranging from 0.0 to 1.0 (the closer to 0.0, the more intrusive
-         * the blocking helper will be).
-         *
-         * @hide
-         */
-        @Readable
-        public static final String BLOCKING_HELPER_DISMISS_TO_VIEW_RATIO_LIMIT =
-                "blocking_helper_dismiss_to_view_ratio";
-
-        /**
-         * Settings key for the longest streak of dismissals  - one of the criteria for showing the
-         * notification blocking helper.
-         *
-         * <p>The value is an integer greater than 0.
-         *
-         * @hide
-         */
-        @Readable
-        public static final String BLOCKING_HELPER_STREAK_LIMIT = "blocking_helper_streak_limit";
-
-        /**
          * Configuration flags for SQLite Compatibility WAL. Encoded as a key-value list, separated
          * by commas. E.g.: compatibility_wal_supported=true, wal_syncmode=OFF
          *
