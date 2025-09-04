@@ -46,6 +46,9 @@ import java.util.Map;
  * @see Plugin
  */
 public class PluginManagerImpl extends BroadcastReceiver implements PluginManager {
+    public static final String PLUGIN_THREAD = "plugin_thread";
+    public static final String PLUGIN_PRIVILEGED = "plugin_privileged";
+    public static final String PLUGIN_CLASSLOADER = "plugin_classloader";
 
     private static final String TAG = PluginManagerImpl.class.getSimpleName();
     static final String DISABLE_PLUGIN = "com.android.systemui.action.DISABLE_PLUGIN";
