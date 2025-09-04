@@ -17,7 +17,6 @@
 package com.android.server.biometrics.sensors.face.aidl;
 
 import static android.hardware.face.FaceSensorConfigurations.getIFace;
-import static android.hardware.face.FaceSensorConfigurations.remapFqName;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
@@ -90,6 +89,7 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Function;
 
 /**
  * Provider for a single instance of the {@link IFace} HAL.
@@ -118,10 +118,6 @@ public class FaceProvider implements IBinder.DeathRecipient, ServiceProvider {
     private final LockoutResetDispatcher mLockoutResetDispatcher;
     @NonNull
     private final UsageStats mUsageStats;
-    @NonNull
-    private final ActivityTaskManager mActivityTaskManager;
-    @NonNull
-    private final BiometricTaskStackListener mTaskStackListener;
     // for requests that do not use biometric prompt
     @NonNull
     private final AtomicLong mRequestCounter = new AtomicLong(0);
@@ -131,6 +127,8 @@ public class FaceProvider implements IBinder.DeathRecipient, ServiceProvider {
     private final AuthSessionCoordinator mAuthSessionCoordinator;
     @NonNull
     private final BiometricHandlerProvider mBiometricHandlerProvider;
+    @NonNull
+    private final Function<String, IFace> mGetIFace;
     @Nullable
     private AuthenticationStatsCollector mAuthenticationStatsCollector;
     @Nullable
@@ -179,7 +177,8 @@ public class FaceProvider implements IBinder.DeathRecipient, ServiceProvider {
             boolean resetLockoutRequiresChallenge) {
         this(context, biometricStateCallback, authenticationStateListeners, props, halInstanceName,
                 lockoutResetDispatcher, biometricContext, null /* daemon */,
-                BiometricHandlerProvider.getInstance(), resetLockoutRequiresChallenge,
+                BiometricHandlerProvider.getInstance(), (fqname) -> getIFace(fqname),
+                resetLockoutRequiresChallenge,
                 false /* testHalEnabled */);
     }
 
@@ -192,6 +191,7 @@ public class FaceProvider implements IBinder.DeathRecipient, ServiceProvider {
             @NonNull BiometricContext biometricContext,
             @Nullable IFace daemon,
             @NonNull BiometricHandlerProvider biometricHandlerProvider,
+            @NonNull Function<String, IFace> getIFace,
             boolean resetLockoutRequiresChallenge,
             boolean testHalEnabled) {
         mContext = context;
@@ -202,11 +202,10 @@ public class FaceProvider implements IBinder.DeathRecipient, ServiceProvider {
         mHandler = biometricHandlerProvider.getFaceHandler();
         mUsageStats = new UsageStats(context);
         mLockoutResetDispatcher = lockoutResetDispatcher;
-        mActivityTaskManager = ActivityTaskManager.getInstance();
-        mTaskStackListener = new BiometricTaskStackListener();
         mBiometricContext = biometricContext;
         mAuthSessionCoordinator = mBiometricContext.getAuthSessionCoordinator();
         mDaemon = daemon;
+        mGetIFace = getIFace;
         mTestHalEnabled = testHalEnabled;
         mBiometricHandlerProvider = biometricHandlerProvider;
 
@@ -292,14 +291,6 @@ public class FaceProvider implements IBinder.DeathRecipient, ServiceProvider {
         return TAG + "/" + mHalInstanceName;
     }
 
-    boolean hasHalInstance() {
-        if (mTestHalEnabled) {
-            return true;
-        }
-        return ServiceManager.checkService(
-                remapFqName(IFace.DESCRIPTOR + "/" + mHalInstanceName)) != null;
-    }
-
     @Nullable
     @VisibleForTesting
     synchronized IFace getHalInstance() {
@@ -335,7 +326,7 @@ public class FaceProvider implements IBinder.DeathRecipient, ServiceProvider {
 
         Slog.d(getTag(), "Daemon was null, reconnecting");
 
-        mDaemon = getIFace(IFace.DESCRIPTOR + "/" + mHalInstanceNameCurrent);
+        mDaemon = mGetIFace.apply(IFace.DESCRIPTOR + "/" + mHalInstanceNameCurrent);
         if (mDaemon == null) {
             Slog.e(getTag(), "Unable to get daemon");
             return null;
@@ -349,7 +340,11 @@ public class FaceProvider implements IBinder.DeathRecipient, ServiceProvider {
 
         for (int i = 0; i < mFaceSensors.size(); i++) {
             final int sensorId = mFaceSensors.keyAt(i);
-            scheduleLoadAuthenticatorIds(sensorId);
+            if (Flags.internalCleanupForAllProfiles()) {
+                processFaceForProfiles(sensorId);
+            } else {
+                scheduleLoadAuthenticatorIds(sensorId);
+            }
             scheduleInternalCleanup(sensorId, ActivityManager.getCurrentUser(),
                     null /* callback */);
         }
@@ -387,6 +382,15 @@ public class FaceProvider implements IBinder.DeathRecipient, ServiceProvider {
 
     private void scheduleLoadAuthenticatorIds(int sensorId) {
         for (UserInfo user : UserManager.get(mContext).getAliveUsers()) {
+            scheduleLoadAuthenticatorIdsForUser(sensorId, user.id);
+        }
+    }
+
+    private void processFaceForProfiles(int sensorId) {
+        for (UserInfo user : UserManager.get(mContext).getAliveUsers()) {
+            if (user.id != ActivityManager.getCurrentUser()) {
+                scheduleInternalCleanup(sensorId, user.id, null /* callback */);
+            }
             scheduleLoadAuthenticatorIdsForUser(sensorId, user.id);
         }
     }
@@ -895,13 +899,6 @@ public class FaceProvider implements IBinder.DeathRecipient, ServiceProvider {
      */
     public void sendFaceReEnrollNotification() {
         mAuthenticationStatsCollector.sendFaceReEnrollNotification();
-    }
-
-    /**
-     * Sends a fingerprint enroll notification.
-     */
-    public void sendFingerprintReEnrollNotification() {
-        mAuthenticationStatsCollector.sendFingerprintReEnrollNotification();
     }
 
     /**
