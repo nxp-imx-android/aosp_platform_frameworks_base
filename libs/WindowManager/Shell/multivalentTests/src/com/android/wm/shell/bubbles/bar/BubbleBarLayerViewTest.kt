@@ -180,7 +180,8 @@ class BubbleBarLayerViewTest {
         // Flush so that proxy gets set
         mainExecutor.flushAll()
 
-        bubbleBarLayerView = BubbleBarLayerView(context, bubbleController, bubbleData, bubbleLogger)
+        bubbleBarLayerView = BubbleBarLayerView(context, bubbleController, bubbleData, bubbleLogger,
+            mainExecutor)
 
         expandedViewManager = FakeBubbleExpandedViewManager(bubbleBar = true, expanded = true)
     }

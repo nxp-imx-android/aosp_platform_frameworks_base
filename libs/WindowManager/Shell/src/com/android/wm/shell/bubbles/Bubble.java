@@ -719,6 +719,12 @@ public class Bubble implements BubbleViewProvider {
                 && getPreparingTransition().isConvertingBubbleToBar();
     }
 
+    /** Whether this bubble is currently switching to expanded from another bubble using jumpcut. */
+    public boolean isJumpcutBubbleSwitching() {
+        return getPreparingTransition() != null
+                && getPreparingTransition().isJumpcutBubbleSwitching();
+    }
+
     /**
      * Sets whether this bubble is considered text changed. This method is purely for
      * testing.
