@@ -43,6 +43,8 @@ class PolicyProcessorTest {
         const val OTHER_CLASS_JAVA = "$RESOURCE_ROOT/OtherClass.java"
         const val POLICY_IDENTIFIER_INVALID_TYPE_JAVA = "$RESOURCE_ROOT/invalidtype/PolicyIdentifier.java"
         const val POLICY_IDENTIFIER_DIRECT_DEFINITION_JAVA = "$RESOURCE_ROOT/directPolicyDefinition/PolicyIdentifier.java"
+        const val POLICY_IDENTIFIER_MISSING_DOCUMENTATION_JAVA = "$RESOURCE_ROOT/missingDocumentation/PolicyIdentifier.java"
+
 
         /**
          * Comes from the actual IntDef.java in the source, located in a different folder.
@@ -110,6 +112,15 @@ class PolicyProcessorTest {
         assertThat(compilation).hadErrorContaining("@PolicyDefinition should not be applied to any element")
     }
 
+    @Test
+    fun test_missingDocumentation_failsToCompile() {
+        val compilation: Compilation = mCompiler.compile(
+            JavaFileObjects.forResource(POLICY_IDENTIFIER_MISSING_DOCUMENTATION_JAVA)
+        )
+        assertThat(compilation).failed()
+        assertThat(compilation).hadErrorContaining("Missing JavaDoc")
+    }
+
     /**
      * Errors should only come from our processor.
      */
@@ -127,5 +138,6 @@ class PolicyProcessorTest {
         checkCompileSucceeds(OTHER_CLASS_JAVA, POLICY_IDENTIFIER_JAVA, INT_DEF_JAVA)
         checkCompileSucceeds(POLICY_IDENTIFIER_INVALID_TYPE_JAVA)
         checkCompileSucceeds(POLICY_IDENTIFIER_DIRECT_DEFINITION_JAVA)
+        checkCompileSucceeds(POLICY_IDENTIFIER_MISSING_DOCUMENTATION_JAVA)
     }
 }

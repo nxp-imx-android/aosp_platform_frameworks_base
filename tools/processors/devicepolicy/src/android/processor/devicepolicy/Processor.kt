@@ -151,8 +151,12 @@ abstract class Processor<T : Annotation>(protected val processingEnv: Processing
         val enclosingType = element.enclosingElement.asType()
 
         val name = "$enclosingType.$element"
-        val documentation = processingEnv.elementUtils.getDocComment(element)
         val type = policyType(element).toString()
+        val documentation = processingEnv.elementUtils.getDocComment(element) ?: ""
+
+        if (documentation.trim().isEmpty()) {
+            printError(element, "Missing JavaDoc")
+        }
 
         return Policy(name, type, documentation, metadata)
     }

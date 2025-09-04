@@ -114,7 +114,11 @@ class EnumProcessor(processingEnv: ProcessingEnvironment) : Processor<EnumPolicy
         }
 
         val enumName = intDefElement.qualifiedName.toString()
-        val enumDoc = processingEnv.elementUtils.getDocComment(intDefElement)
+        val enumDoc = processingEnv.elementUtils.getDocComment(intDefElement) ?: ""
+
+        if (enumDoc.trim().isEmpty()) {
+            printError(intDefElement, "Missing JavaDoc for IntDef used by $element")
+        }
 
         // In the class-level example above, these would be ENUM_ENTRY_1 and ENUM_ENTRY_2.
         val entries = getIntDefIdentifiers(annotationMirror, intDefElement)
@@ -168,13 +172,13 @@ class EnumProcessor(processingEnv: ProcessingEnvironment) : Processor<EnumPolicy
         // In the class-level example above, these would be {ENUM_ENTRY_1,ENUM_ENTRY_2}.
         @Suppress("UNCHECKED_CAST") val values = annotationValue.value as List<AnnotationValue>
 
-        val documentations = identifiers.map { identifier ->
-            // TODO(b/442973945): Fail gracefully when the element is not part of the parent class.
-            val identifierElement = intDefElement.enclosingElement.enclosedElements.find {
+        val documentations: List<String?> = identifiers.map { identifier ->
+            // TODO(b/442973945): Support identifiers outside of same class.
+            intDefElement.enclosingElement.enclosedElements.firstOrNull {
                 it.simpleName.toString() == identifier
+            } ?.let {
+                processingEnv.elementUtils.getDocComment(it)
             }
-
-            processingEnv.elementUtils.getDocComment(identifierElement)
         }
 
         return identifiers.mapIndexed { i, identifier ->
@@ -217,7 +221,7 @@ class EnumProcessor(processingEnv: ProcessingEnvironment) : Processor<EnumPolicy
     }
 }
 
-class EnumEntryMetadata(val name: String, val value: Int, val documentation: String) {
+class EnumEntryMetadata(val name: String, val value: Int, val documentation: String?) {
     fun dump(writer: JsonWriter) {
         writer.apply {
             beginObject()
@@ -228,8 +232,10 @@ class EnumEntryMetadata(val name: String, val value: Int, val documentation: Str
             name("value")
             value(value.toLong())
 
-            name("documentation")
-            value(documentation)
+            if (documentation != null) {
+                name("documentation")
+                value(documentation)
+            }
 
             endObject()
         }
