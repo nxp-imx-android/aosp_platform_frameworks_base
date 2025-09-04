@@ -138,4 +138,13 @@ to pre-existing users, but cannot uninstall pre-existing system packages from pr
         <install-in user-type="android.os.usertype.profile.PRIVATE" />
     </install-in-user-type>
 
+   <!-- b/441173306 This is temporary fix to unblock the post submit failures
+      @TODO vladokom@ to Remove this once the package is preinstalled in the
+      correct XML to MK mapped configs
+   -->
+    <!--  Virtual Device Manager  -->
+    <install-in-user-type package="com.android.virtualdevicemanager">
+        <install-in user-type="FULL" />
+    </install-in-user-type>
+
 </config>
