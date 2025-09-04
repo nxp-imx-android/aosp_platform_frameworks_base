@@ -34,9 +34,9 @@ import com.android.systemui.res.R
 import com.android.systemui.screencapture.common.ui.compose.PrimaryButton
 import com.android.systemui.screencapture.common.ui.compose.ScreenCaptureColors
 import com.android.systemui.screencapture.common.ui.compose.loadIcon
+import com.android.systemui.screencapture.record.largescreen.shared.model.ScreenCaptureRegion
+import com.android.systemui.screencapture.record.largescreen.shared.model.ScreenCaptureType
 import com.android.systemui.screencapture.record.largescreen.ui.viewmodel.PreCaptureViewModel
-import com.android.systemui.screencapture.record.largescreen.ui.viewmodel.ScreenCaptureRegion
-import com.android.systemui.screencapture.record.largescreen.ui.viewmodel.ScreenCaptureType
 
 /** Main component for the pre-capture UI. */
 @Composable
@@ -59,7 +59,7 @@ fun PreCaptureUI(viewModel: PreCaptureViewModel) {
         val iconResourceId =
             when (viewModel.captureType) {
                 ScreenCaptureType.SCREENSHOT -> R.drawable.ic_screen_capture_camera
-                ScreenCaptureType.SCREEN_RECORD -> R.drawable.ic_screenrecord
+                ScreenCaptureType.RECORDING -> R.drawable.ic_screenrecord
             }
 
         when (viewModel.captureRegion) {
@@ -85,7 +85,7 @@ fun PreCaptureUI(viewModel: PreCaptureViewModel) {
                                 when (viewModel.captureType) {
                                     ScreenCaptureType.SCREENSHOT ->
                                         R.string.screen_capture_fullscreen_screenshot_button
-                                    ScreenCaptureType.SCREEN_RECORD ->
+                                    ScreenCaptureType.RECORDING ->
                                         R.string.screen_capture_fullscreen_record_button
                                 }
                             ),
@@ -110,7 +110,7 @@ fun PreCaptureUI(viewModel: PreCaptureViewModel) {
                                 when (viewModel.captureType) {
                                     ScreenCaptureType.SCREENSHOT ->
                                         R.string.screen_capture_region_selection_button
-                                    ScreenCaptureType.SCREEN_RECORD ->
+                                    ScreenCaptureType.RECORDING ->
                                         R.string.screen_capture_record_region_selection_button
                                 }
                         ),

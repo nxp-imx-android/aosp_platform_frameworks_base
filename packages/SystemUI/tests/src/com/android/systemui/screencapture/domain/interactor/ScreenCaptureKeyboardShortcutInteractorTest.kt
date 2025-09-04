@@ -25,6 +25,8 @@ import com.android.systemui.kosmos.collectLastValue
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureType
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureUiState
+import com.android.systemui.screencapture.record.largescreen.shared.model.ScreenCaptureRegion
+import com.android.systemui.screencapture.record.largescreen.shared.model.ScreenCaptureType as LargeScreenCaptureType
 import com.android.systemui.testKosmosNew
 import com.google.common.truth.Truth.assertThat
 import org.junit.Test
@@ -32,6 +34,7 @@ import org.junit.runner.RunWith
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
+@EnableFlags(Flags.FLAG_LARGE_SCREEN_SCREENCAPTURE)
 class ScreenCaptureKeyboardShortcutInteractorTest : SysuiTestCase() {
     private val kosmos = testKosmosNew()
 
@@ -40,15 +43,30 @@ class ScreenCaptureKeyboardShortcutInteractorTest : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_LARGE_SCREEN_SCREENCAPTURE)
     fun attemptPartialRegionScreenshot_showsScreenCaptureUi() =
         kosmos.runTest {
             val uiState by
-                collectLastValue(kosmos.screenCaptureUiInteractor.uiState(ScreenCaptureType.RECORD))
+                collectLastValue(screenCaptureUiInteractor.uiState(ScreenCaptureType.RECORD))
             assertThat(uiState).isInstanceOf(ScreenCaptureUiState.Invisible::class.java)
 
             underTest.attemptPartialRegionScreenshot()
 
             assertThat(uiState).isInstanceOf(ScreenCaptureUiState.Visible::class.java)
+        }
+
+    @Test
+    fun attemptPartialRegionScreenshot_setsLargeScreenCaptureParameters() =
+        kosmos.runTest {
+            underTest.attemptPartialRegionScreenshot()
+            val uiState by
+                collectLastValue(screenCaptureUiInteractor.uiState(ScreenCaptureType.RECORD))
+
+            val largeScreenParams =
+                (uiState as ScreenCaptureUiState.Visible).parameters.largeScreenParameters
+            assertThat(largeScreenParams).isNotNull()
+            assertThat(largeScreenParams?.defaultCaptureType)
+                .isEqualTo(LargeScreenCaptureType.SCREENSHOT)
+            assertThat(largeScreenParams?.defaultCaptureRegion)
+                .isEqualTo(ScreenCaptureRegion.PARTIAL)
         }
 }
