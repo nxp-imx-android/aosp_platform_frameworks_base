@@ -4,6 +4,31 @@
       "name": "android.app.admin.PolicyIdentifier<T>.TEST_POLICY_1",
       "type": "java.lang.Boolean",
       "documentation": " Test policy 1\n"
+    },
+    {
+      "name": "android.app.admin.PolicyIdentifier<T>.TEST_POLICY_2",
+      "type": "java.lang.Integer",
+      "documentation": " Test policy 2\n",
+      "default": 1,
+      "enum": "android.app.admin.PolicyIdentifier.TestPolicy2Enum",
+      "enumDocumentation": " Enum for {@link TEST_POLICY_2}\n\n @hide\n",
+      "options": [
+        {
+          "name": "ENUM_ENTRY_1",
+          "value": 0,
+          "documentation": " First entry\n"
+        },
+        {
+          "name": "ENUM_ENTRY_2",
+          "value": 1,
+          "documentation": " Second entry\n"
+        },
+        {
+          "name": "ENUM_ENTRY_3",
+          "value": 2,
+          "documentation": " Third entry\n"
+        }
+      ]
     }
   ]
 }
