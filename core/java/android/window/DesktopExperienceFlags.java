@@ -88,6 +88,8 @@ public enum DesktopExperienceFlags {
     ENABLE_BLOCK_NON_DESKTOP_DISPLAY_WINDOW_DRAG_BUGFIX(
             Flags::enableBlockNonDesktopDisplayWindowDragBugfix, false,
             Flags.FLAG_ENABLE_BLOCK_NON_DESKTOP_DISPLAY_WINDOW_DRAG_BUGFIX),
+    ENABLE_BOUNDS_RESTORING_ON_TILING_EXIT(Flags::enableBoundsRestoringOnTilingExit, false,
+            Flags.FLAG_ENABLE_BOUNDS_RESTORING_ON_TILING_EXIT),
     ENABLE_BUG_FIXES_FOR_SECONDARY_DISPLAY(Flags::enableBugFixesForSecondaryDisplay, true,
             Flags.FLAG_ENABLE_BUG_FIXES_FOR_SECONDARY_DISPLAY),
     ENABLE_CAMERA_COMPAT_EXTERNAL_DISPLAY_ROTATION_BUGFIX(
