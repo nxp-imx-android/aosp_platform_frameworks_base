@@ -15,6 +15,7 @@
  */
 package com.android.server.adb;
 
+import android.annotation.NonNull;
 import android.content.Context;
 import android.provider.Settings;
 
@@ -111,8 +112,9 @@ class AdbKeyStore {
         mAuthEntries = mAuthStore.load();
     }
 
-    synchronized void addTrustedNetwork(String bssid) {
-        mAuthEntries.trustedNetworks().add(new AdbAuthorizationStore.WifiNetwork(bssid, ""));
+    synchronized void addTrustedNetwork(@NonNull String bssid, @NonNull String ssid) {
+        // TODO: AdbKeyStore should have deduplication logic for networks similar to keys.
+        mAuthEntries.trustedNetworks().add(new AdbAuthorizationStore.WifiNetwork(bssid, ssid));
         persistKeyStore();
     }
 
