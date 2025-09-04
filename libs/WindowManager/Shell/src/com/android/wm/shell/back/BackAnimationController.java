@@ -31,6 +31,7 @@ import static android.window.TransitionInfo.FLAG_SHOW_WALLPAPER;
 
 import static com.android.internal.jank.InteractionJankMonitor.CUJ_PREDICTIVE_BACK_HOME;
 import static com.android.window.flags.Flags.predictiveBackDelayWmTransition;
+import static com.android.window.flags.Flags.predictiveBackStopKeycodeBackForwarding;
 import static com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_BACK_PREVIEW;
 
 import android.animation.ValueAnimator;
@@ -1136,11 +1137,12 @@ public class BackAnimationController implements RemoteCallable<BackAnimationCont
         if (mApps.length >= 1) {
             BackMotionEvent startEvent = mCurrentTracker.createStartEvent();
             dispatchOnBackStarted(mActiveCallback, startEvent);
-            if (startEvent.getSwipeEdge() == EDGE_NONE) {
-                // TODO(b/373544911): onBackStarted is dispatched here so that
-                //  WindowOnBackInvokedDispatcher knows about the back navigation and intercepts
-                //  touch events while it's active. It would be cleaner and safer to disable
-                //  multitouch altogether (same as in gesture-nav).
+            if (predictiveBackStopKeycodeBackForwarding()
+                    || startEvent.getSwipeEdge() == EDGE_NONE) {
+                // onBackStarted is dispatched here so that WindowOnBackInvokedDispatcher knows
+                // about the back navigation and can intercept touch events while it's active. This
+                // is used for 3-button-nav predictive back cases. This is also needed, so that any
+                // observer callbacks can be invoked
                 dispatchOnBackStarted(mBackNavigationInfo.getOnBackInvokedCallback(), startEvent);
             }
         }
