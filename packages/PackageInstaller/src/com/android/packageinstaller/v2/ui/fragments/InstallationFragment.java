@@ -30,6 +30,7 @@ import android.content.pm.ResolveInfo;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.text.Html;
+import android.text.method.LinkMovementMethod;
 import android.util.Log;
 import android.view.View;
 import android.view.accessibility.AccessibilityNodeInfo;
@@ -203,6 +204,9 @@ public class InstallationFragment extends DialogFragment {
                 getResources().getDimensionPixelOffset(R.dimen.alert_dialog_inner_padding);
         mCustomViewPanel.setPadding(paddingHorizontal, paddingTop,
                 paddingHorizontal, paddingBottom);
+
+        // Reset the movement method to avoid unexpected issue
+        mCustomMessageTextView.setMovementMethod(null);
 
         switch (installStage.getStageCode()) {
             case InstallStage.STAGE_ABORTED -> {
@@ -713,6 +717,7 @@ public class InstallationFragment extends DialogFragment {
         dialog.setTitle(titleResId);
         mCustomMessageTextView.setText(
                 Html.fromHtml(getString(msgResId), Html.FROM_HTML_MODE_LEGACY));
+        mCustomMessageTextView.setMovementMethod(LinkMovementMethod.getInstance());
 
         // Set negative button
         Button negativeButton = UiUtil.getAlertDialogNegativeButton(dialog);
@@ -763,6 +768,7 @@ public class InstallationFragment extends DialogFragment {
         dialog.setTitle(titleResId);
         mCustomMessageTextView.setText(
                 Html.fromHtml(getString(msgResId), Html.FROM_HTML_MODE_LEGACY));
+        mCustomMessageTextView.setMovementMethod(LinkMovementMethod.getInstance());
 
         // Set negative button
         Button negativeButton = UiUtil.getAlertDialogNegativeButton(dialog);
