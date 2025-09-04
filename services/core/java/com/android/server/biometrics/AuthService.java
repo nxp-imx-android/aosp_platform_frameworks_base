@@ -438,12 +438,20 @@ public class AuthService extends SystemService {
         }
 
         @Override
-        public List<BiometricEnrollmentStatusInternal> getEnrollmentStatusList(String opPackageName)
-                throws RemoteException {
+        public List<BiometricEnrollmentStatusInternal> getEnrollmentStatusList(int userId,
+                String opPackageName) throws RemoteException {
             checkBiometricAdvancedPermission();
+
+            // Only allow internal clients to call getEnrollmentStatusList with a different
+            // userId.
+            final int callingUserId = UserHandle.getCallingUserId();
+
+            if (userId != callingUserId) {
+                checkInternalPermission();
+            }
+
             final long identity = Binder.clearCallingIdentity();
             try {
-                final int userId = UserHandle.myUserId();
                 final List<BiometricEnrollmentStatusInternal> enrollmentStatusList =
                         new ArrayList<>();
                 final IFingerprintService fingerprintService = mInjector.getFingerprintService();

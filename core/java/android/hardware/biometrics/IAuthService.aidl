@@ -72,7 +72,7 @@ interface IAuthService {
     boolean hasEnrolledBiometrics(int userId, String opPackageName);
 
     // Return the current biometrics enrollment status.
-    List<BiometricEnrollmentStatusInternal> getEnrollmentStatusList(String opPackageName);
+    List<BiometricEnrollmentStatusInternal> getEnrollmentStatusList(int userId, String opPackageName);
 
     // Register callback for when keyguard biometric eligibility changes.
     void registerEnabledOnKeyguardCallback(IBiometricEnabledOnKeyguardCallback callback);
