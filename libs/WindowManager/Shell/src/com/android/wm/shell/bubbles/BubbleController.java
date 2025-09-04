@@ -773,6 +773,9 @@ public class BubbleController implements ConfigurationChangeListener,
      * Hides the current input method, wherever it may be focused, via InputMethodManagerInternal.
      */
     void hideCurrentInputMethod(@Nullable Runnable onImeHidden) {
+        final boolean isDeviceLocked = isDeviceLocked();
+        ProtoLog.d(WM_SHELL_BUBBLES, "hideCurrentInputMethod, runnable=%s, deviceLocked=%b",
+                onImeHidden, isDeviceLocked);
         mOnImeHidden = onImeHidden;
         mBubblePositioner.setImeVisible(false /* visible */, 0 /* height */);
         int displayId = mWindowManager.getDefaultDisplay().getDisplayId();
@@ -780,7 +783,7 @@ public class BubbleController implements ConfigurationChangeListener,
         // the IME state is frozen and it will lead to internal IME state going out of sync. This
         // will make the IME visible when the device is unlocked. Instead we use
         // DisplayImeController directly to make sure the state is correct when the device unlocks.
-        if (isDeviceLocked()) {
+        if (isDeviceLocked) {
             mDisplayImeController.hideImeForBubblesWhenLocked(displayId);
             return;
         }
@@ -796,6 +799,7 @@ public class BubbleController implements ConfigurationChangeListener,
      * {@link #hideCurrentInputMethod(Runnable)}
      */
     void clearImeHiddenRunnable() {
+        ProtoLog.d(WM_SHELL_BUBBLES, "clearImeHiddenRunnable, runnable=%s", mOnImeHidden);
         mOnImeHidden = null;
     }
 
@@ -3189,6 +3193,9 @@ public class BubbleController implements ConfigurationChangeListener,
             if (getDisplayId() != mContext.getDisplayId()) {
                 return;
             }
+            ProtoLog.d(WM_SHELL_BUBBLES,
+                    "onImeVisibilityChanged visible=%b runnable=%s stackView=%s",
+                    imeVisible, mOnImeHidden, mStackView);
             // the imeHeight here is actually the ime inset; it only includes the part of the ime
             // that overlaps with the Bubbles window. adjust it to include the bottom screen inset,
             // so we have the total height of the ime.
