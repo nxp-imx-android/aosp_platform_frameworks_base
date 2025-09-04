@@ -17,13 +17,11 @@
 package com.android.systemui.plugins;
 
 import static com.android.systemui.shared.plugins.PluginManagerImpl.PLUGIN_CLASSLOADER;
-import static com.android.systemui.shared.plugins.PluginManagerImpl.PLUGIN_PRIVILEGED;
 import static com.android.systemui.shared.plugins.PluginManagerImpl.PLUGIN_THREAD;
 
 import android.app.NotificationManager;
 import android.content.Context;
 import android.content.pm.PackageManager;
-import android.os.Build;
 
 import com.android.systemui.dagger.PluginModule;
 import com.android.systemui.dagger.qualifiers.Main;
@@ -35,7 +33,6 @@ import com.android.systemui.shared.plugins.PluginManagerImpl;
 import com.android.systemui.shared.plugins.PluginPrefs;
 import com.android.systemui.shared.plugins.VersionChecker;
 import com.android.systemui.shared.plugins.VersionCheckerImpl;
-import com.android.systemui.shared.system.UncaughtExceptionPreHandlerManager;
 import com.android.systemui.util.concurrency.GlobalConcurrencyModule;
 import com.android.systemui.util.concurrency.ThreadFactory;
 
@@ -44,7 +41,6 @@ import dagger.Module;
 import dagger.Provides;
 
 import java.util.Arrays;
-import java.util.List;
 import java.util.concurrent.Executor;
 
 import javax.inject.Named;
@@ -64,6 +60,9 @@ public abstract class PluginsModule {
     @Binds
     abstract VersionChecker bindVersionCheckerImpl(VersionCheckerImpl impl);
 
+    @Binds
+    abstract PluginManager providesPluginManager(PluginManagerImpl impl);
+
     @Provides
     @Named(PLUGIN_CLASSLOADER)
     static ClassLoader provideClassLoader() {
@@ -76,11 +75,11 @@ public abstract class PluginsModule {
             PackageManager packageManager, @Main Executor mainExecutor,
             @Named(PLUGIN_THREAD) Executor pluginExecutor,
             NotificationManager notificationManager, PluginEnabler pluginEnabler,
-            @Named(PLUGIN_PRIVILEGED) List<String> privilegedPlugins,
+            PluginManager.Config pluginConfig,
             PluginInstance.Factory pluginInstanceFactory) {
         return new PluginActionManager.Factory(
                 context, packageManager, mainExecutor, pluginExecutor,
-                notificationManager, pluginEnabler, privilegedPlugins, pluginInstanceFactory);
+                notificationManager, pluginEnabler, pluginConfig, pluginInstanceFactory);
     }
 
     @Provides
@@ -91,27 +90,13 @@ public abstract class PluginsModule {
     }
 
     @Provides
-    @Singleton
-    static PluginManager providesPluginManager(
-            Context context,
-            PluginActionManager.Factory instanceManagerFactory,
-            UncaughtExceptionPreHandlerManager preHandlerManager,
-            PluginEnabler pluginEnabler,
-            PluginPrefs pluginPrefs,
-            @Named(PLUGIN_PRIVILEGED) List<String> privilegedPlugins) {
-        return new PluginManagerImpl(context, instanceManagerFactory, Build.IS_DEBUGGABLE,
-                preHandlerManager, pluginEnabler, pluginPrefs,
-                privilegedPlugins);
-    }
-
-    @Provides
     static PluginPrefs providesPluginPrefs(Context context) {
         return new PluginPrefs(context);
     }
 
     @Provides
-    @Named(PLUGIN_PRIVILEGED)
-    static List<String> providesPrivilegedPlugins(Context context) {
-        return Arrays.asList(context.getResources().getStringArray(R.array.config_pluginAllowlist));
+    static PluginManager.Config providesPluginConfig(Context context) {
+        String[] plugins = context.getResources().getStringArray(R.array.config_pluginAllowlist);
+        return new PluginManager.Config(Arrays.asList(plugins));
     }
 }
