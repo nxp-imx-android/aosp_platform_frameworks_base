@@ -332,3 +332,13 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "enable_bubble_event_history_logs"
+    namespace: "multitasking"
+    description: "Enable bubble event history logs"
+    bug: "436320481"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
