@@ -18,7 +18,9 @@ package android.media;
 
 import static android.media.Utils.parseVibrationEffect;
 
+import android.annotation.FlaggedApi;
 import android.annotation.Nullable;
+import android.annotation.SystemApi;
 import android.compat.annotation.UnsupportedAppUsage;
 import android.content.ContentProvider;
 import android.content.ContentResolver;
@@ -256,10 +258,12 @@ public class Ringtone {
 
     /**
      * Same as AudioManager.hasHapticChannels except it assumes an already created ringtone.
-     * If the ringtone has not been created, it will load based on URI provided at {@link #setUri}
+     * If the ringtone has not been created, it will load based on URI provided
      * and if not URI has been set, it will assume no haptic channels are present.
      * @hide
      */
+    @FlaggedApi(com.android.server.telecom.flags.Flags.FLAG_RESOLVE_HIDDEN_DEPENDENCIES_TWO)
+    @SystemApi
     public boolean hasHapticChannels() {
         // FIXME: support remote player, or internalize haptic channels support and remove entirely.
         try {
