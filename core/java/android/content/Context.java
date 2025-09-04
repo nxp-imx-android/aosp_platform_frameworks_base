@@ -6756,17 +6756,6 @@ public abstract class Context {
     public static final String APP_FUNCTION_SERVICE = "app_function";
 
     /**
-     * Use with {@link #getSystemService(String)} to retrieve a
-     * {@link android.app.privatecompute.PccSandboxManager} for interacting with
-     * PCC sandboxed components.
-     *
-     * @see #getSystemService(String)
-     * @see android.app.privatecompute.PccSandboxManager
-     */
-    @FlaggedApi(android.app.privatecompute.flags.Flags.FLAG_ENABLE_PCC_FRAMEWORK_SUPPORT)
-    public static final String PCC_SANDBOX_SERVICE = "pcc_sandbox";
-
-    /**
      * Use with {@link #getSystemService(String)} to retrieve an
      * {@link android.content.integrity.AppIntegrityManager}.
      * @hide
