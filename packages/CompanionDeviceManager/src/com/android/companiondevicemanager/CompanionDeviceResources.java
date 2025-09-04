@@ -19,6 +19,7 @@ package com.android.companiondevicemanager;
 import static android.companion.AssociationRequest.DEVICE_PROFILE_APP_STREAMING;
 import static android.companion.AssociationRequest.DEVICE_PROFILE_AUTOMOTIVE_PROJECTION;
 import static android.companion.AssociationRequest.DEVICE_PROFILE_COMPUTER;
+import static android.companion.AssociationRequest.DEVICE_PROFILE_FITNESS_TRACKER;
 import static android.companion.AssociationRequest.DEVICE_PROFILE_GLASSES;
 import static android.companion.AssociationRequest.DEVICE_PROFILE_NEARBY_DEVICE_STREAMING;
 import static android.companion.AssociationRequest.DEVICE_PROFILE_VIRTUAL_DEVICE;
@@ -129,6 +130,7 @@ final class CompanionDeviceResources {
         map.put(DEVICE_PROFILE_NEARBY_DEVICE_STREAMING, R.string.title_nearby_device_streaming);
         map.put(DEVICE_PROFILE_VIRTUAL_DEVICE, R.string.title_virtual_device);
         map.put(DEVICE_PROFILE_WATCH, R.string.confirmation_title);
+        map.put(DEVICE_PROFILE_FITNESS_TRACKER, R.string.confirmation_title);
         map.put(DEVICE_PROFILE_GLASSES, R.string.confirmation_title_glasses);
         map.put(null, R.string.confirmation_title);
 
@@ -139,6 +141,7 @@ final class CompanionDeviceResources {
     static {
         final Map<String, Integer> map = new ArrayMap<>();
         map.put(DEVICE_PROFILE_WATCH, R.string.summary_watch);
+        map.put(DEVICE_PROFILE_FITNESS_TRACKER, R.string.summary_watch);
         map.put(DEVICE_PROFILE_GLASSES, R.string.summary_glasses);
         if (android.companion.virtualdevice.flags.Flags.itemizedVdmPermissions()) {
             map.put(DEVICE_PROFILE_APP_STREAMING, R.string.summary_app_streaming);
@@ -170,6 +173,7 @@ final class CompanionDeviceResources {
     static {
         final Map<String, Integer> map = new ArrayMap<>();
         map.put(DEVICE_PROFILE_WATCH, R.string.profile_name_watch);
+        map.put(DEVICE_PROFILE_FITNESS_TRACKER, R.string.profile_name_fitness_tracker);
         map.put(DEVICE_PROFILE_GLASSES, R.string.profile_name_glasses);
         map.put(DEVICE_PROFILE_VIRTUAL_DEVICE, R.string.profile_name_generic);
         map.put(null, R.string.profile_name_generic);
@@ -181,6 +185,7 @@ final class CompanionDeviceResources {
     static {
         final Map<String, Integer> map = new ArrayMap<>();
         map.put(DEVICE_PROFILE_WATCH, R.drawable.ic_watch);
+        map.put(DEVICE_PROFILE_FITNESS_TRACKER, R.drawable.ic_fitness_tracker);
         map.put(DEVICE_PROFILE_GLASSES, R.drawable.ic_glasses);
         map.put(DEVICE_PROFILE_VIRTUAL_DEVICE, R.drawable.ic_device_other);
         map.put(null, R.drawable.ic_device_other);
@@ -192,6 +197,7 @@ final class CompanionDeviceResources {
     static {
         final Set<String> set = new ArraySet<>();
         set.add(DEVICE_PROFILE_WATCH);
+        set.add(DEVICE_PROFILE_FITNESS_TRACKER);
         set.add(DEVICE_PROFILE_GLASSES);
         set.add(DEVICE_PROFILE_VIRTUAL_DEVICE);
         set.add(null);

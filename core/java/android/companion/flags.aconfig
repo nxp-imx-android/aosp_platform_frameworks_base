@@ -105,6 +105,14 @@ flag {
 }
 
 flag {
+    name: "band_device_profile"
+    is_exported: true
+    namespace: "companion"
+    description: "Introduce a new device profile for band categories"
+    bug: "420665366"
+}
+
+flag {
     name: "enable_remote_app_access"
     is_exported: false
     namespace: "desktop_better_together"
