@@ -16,13 +16,19 @@
 
 package com.android.systemui.screencapture.record.smallscreen.ui.viewmodel
 
+import android.app.ActivityOptions
+import android.app.ActivityOptions.LaunchCookie
+import android.app.ActivityOptions.MODE_BACKGROUND_ACTIVITY_START_ALLOW_ALWAYS
+import android.app.IActivityTaskManager
 import android.media.projection.StopReason
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import com.android.app.tracing.coroutines.launchTraced
 import com.android.systemui.lifecycle.HydratedActivatable
+import com.android.systemui.mediaprojection.MediaProjectionCaptureTarget
 import com.android.systemui.screencapture.common.ScreenCaptureUiScope
+import com.android.systemui.screencapture.common.shared.model.ScreenCaptureTarget
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureType
 import com.android.systemui.screencapture.common.ui.viewmodel.DrawableLoaderViewModel
 import com.android.systemui.screencapture.common.ui.viewmodel.DrawableLoaderViewModelImpl
@@ -45,6 +51,7 @@ constructor(
     recordDetailsTargetViewModelFactory: RecordDetailsTargetViewModel.Factory,
     private val drawableLoaderViewModelImpl: DrawableLoaderViewModelImpl,
     private val screenCaptureUiInteractor: ScreenCaptureUiInteractor,
+    private val activityTaskManager: IActivityTaskManager,
 ) : HydratedActivatable(), DrawableLoaderViewModel by drawableLoaderViewModelImpl {
 
     val recordDetailsAppSelectorViewModel: RecordDetailsAppSelectorViewModel =
@@ -120,18 +127,50 @@ constructor(
         if (screenRecordingServiceInteractor.status.value.isRecording) {
             screenRecordingServiceInteractor.stopRecording(StopReason.STOP_HOST_APP)
         } else {
-            val shouldShowTaps = recordDetailsParametersViewModel.shouldShowTaps ?: return
-            val audioSource = recordDetailsParametersViewModel.audioSource ?: return
-            // TODO(b/428686600) pass actual parameters
-            screenRecordingServiceInteractor.startRecording(
-                ScreenRecordingParameters(
-                    captureTarget = null,
-                    displayId = 0,
-                    shouldShowTaps = shouldShowTaps,
-                    audioSource = audioSource,
-                )
-            )
+            startRecording()
             dismiss()
+        }
+    }
+
+    private fun startRecording() {
+        val shouldShowTaps = recordDetailsParametersViewModel.shouldShowTaps ?: return
+        val audioSource = recordDetailsParametersViewModel.audioSource ?: return
+        when (val target = recordDetailsTargetViewModel.currentTarget?.screenCaptureTarget) {
+            is ScreenCaptureTarget.Fullscreen ->
+                screenRecordingServiceInteractor.startRecording(
+                    ScreenRecordingParameters(
+                        captureTarget = null,
+                        displayId = target.displayId,
+                        shouldShowTaps = shouldShowTaps,
+                        audioSource = audioSource,
+                    )
+                )
+            is ScreenCaptureTarget.App -> {
+                val cookie = LaunchCookie("screen_record")
+                activityTaskManager.startActivityFromRecents(
+                    target.taskId,
+                    ActivityOptions.makeBasic()
+                        .apply {
+                            pendingIntentBackgroundActivityStartMode =
+                                MODE_BACKGROUND_ACTIVITY_START_ALLOW_ALWAYS
+                            setLaunchCookie(cookie)
+                        }
+                        .toBundle(),
+                )
+                screenRecordingServiceInteractor.startRecording(
+                    ScreenRecordingParameters(
+                        captureTarget =
+                            MediaProjectionCaptureTarget(
+                                launchCookie = cookie,
+                                taskId = target.taskId,
+                            ),
+                        displayId = target.displayId,
+                        shouldShowTaps = shouldShowTaps,
+                        audioSource = audioSource,
+                    )
+                )
+            }
+            else -> error("Unsupported target=$target")
         }
     }
 
