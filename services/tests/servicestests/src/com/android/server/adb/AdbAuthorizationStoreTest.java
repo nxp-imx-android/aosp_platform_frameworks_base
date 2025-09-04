@@ -17,6 +17,7 @@ package com.android.server.adb;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import android.util.Xml;
@@ -78,9 +79,9 @@ public class AdbAuthorizationStoreTest {
         keys.put("key1", 12345L);
         keys.put("key2", 67890L);
 
-        List<String> trustedNetworks = new ArrayList<>();
-        trustedNetworks.add("bssid1");
-        trustedNetworks.add("bssid2");
+        List<AdbAuthorizationStore.WifiNetwork> trustedNetworks = new ArrayList<>();
+        trustedNetworks.add(new AdbAuthorizationStore.WifiNetwork("bssid1", "ssid1"));
+        trustedNetworks.add(new AdbAuthorizationStore.WifiNetwork("bssid2", ""));
 
         AdbAuthorizationStore.Entries entries = new AdbAuthorizationStore.Entries(keys,
                 trustedNetworks);
@@ -165,5 +166,40 @@ public class AdbAuthorizationStoreTest {
         assertTrue(entries.keys().containsKey("key2"));
         assertEquals(54321L, (long) entries.keys().get("key2"));
         assertTrue(entries.trustedNetworks().isEmpty());
+    }
+
+    @Test
+    public void testLoadSaveLoad_fileCreatedBeforeSSIDTag() throws Exception {
+        try (FileOutputStream fos = new FileOutputStream(mKeyStoreFile)) {
+            TypedXmlSerializer serializer = Xml.resolveSerializer(fos);
+            serializer.startDocument(null, true);
+            serializer.startTag(null, "keyStore");
+            serializer.attributeInt(null, "version", 1);
+
+            serializer.startTag(null, "wifiAP");
+            serializer.attribute(null, "bssid", "bssid1");
+            serializer.endTag(null, "wifiAP");
+
+            serializer.endTag(null, "keyStore");
+            serializer.endDocument();
+        }
+
+        AdbAuthorizationStore.Entries entries = mStore.load();
+        assertEquals(1, entries.trustedNetworks().size());
+        assertEquals("bssid1", entries.trustedNetworks().getFirst().bssid());
+        assertNull(entries.trustedNetworks().getFirst().ssid());
+        assertTrue(entries.keys().isEmpty());
+
+
+        entries.trustedNetworks().add(new AdbAuthorizationStore.WifiNetwork("bssid2", "ssid2"));
+        mStore.save(entries);
+
+        entries = mStore.load();
+        assertEquals(2, entries.trustedNetworks().size());
+        assertEquals("bssid1", entries.trustedNetworks().get(0).bssid());
+        assertNull(entries.trustedNetworks().get(0).ssid());
+        assertEquals("bssid2", entries.trustedNetworks().get(1).bssid());
+        assertEquals("ssid2", entries.trustedNetworks().get(1).ssid());
+        assertTrue(entries.keys().isEmpty());
     }
 }

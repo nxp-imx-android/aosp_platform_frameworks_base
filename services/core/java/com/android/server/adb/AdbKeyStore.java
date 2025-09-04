@@ -112,7 +112,7 @@ class AdbKeyStore {
     }
 
     synchronized void addTrustedNetwork(String bssid) {
-        mAuthEntries.trustedNetworks().add(bssid);
+        mAuthEntries.trustedNetworks().add(new AdbAuthorizationStore.WifiNetwork(bssid, ""));
         persistKeyStore();
     }
 
@@ -318,6 +318,7 @@ class AdbKeyStore {
      * 'Always allow'.
      */
     synchronized boolean isTrustedNetwork(String bssid) {
-        return mAuthEntries.trustedNetworks().contains(bssid);
+        return mAuthEntries.trustedNetworks().stream().anyMatch(
+                network -> network.bssid().equals(bssid));
     }
 }
