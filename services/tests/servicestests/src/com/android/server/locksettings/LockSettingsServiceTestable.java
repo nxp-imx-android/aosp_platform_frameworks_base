@@ -209,7 +209,7 @@ public class LockSettingsServiceTestable extends LockSettingsService {
     }
 
     @Override
-    protected LockscreenCredential getDecryptedPasswordForTiedProfile(int userId)
+    protected LockscreenCredential getDecryptedPasswordForUnifiedProfile(int userId)
             throws FileNotFoundException, KeyPermanentlyInvalidatedException {
         byte[] storedData = mStorage.readChildProfileLock(userId);
         if (storedData == null) {

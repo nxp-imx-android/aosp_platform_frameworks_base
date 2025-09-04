@@ -210,6 +210,10 @@ import javax.crypto.NoSuchPaddingException;
  *   <li>Protect each user's data using their SP.  For example, use the SP to encrypt/decrypt the
  *   user's credential-encrypted (CE) key for file-based encryption (FBE).</li>
  *
+ *   <li>Manage the tying and untying of profile credentials. Tied profiles are unlocked with their
+ *   parent. Tied profile credentials can be either NONE or PASSWORD. Tied profile passwords are
+ *   also called "unified profile passwords". Untied profile credentials can be any credential.</li>
+ *
  *   <li>Generate, protect, and use unified profile passwords.</li>
  *
  *   <li>Support unlocking the SP by alternative means: resume-on-reboot (reboot escrow) for easier
@@ -1569,12 +1573,12 @@ public class LockSettingsService extends ILockSettings.Stub {
     }
 
     @VisibleForTesting /** Note: this method is overridden in unit tests */
-    protected LockscreenCredential getDecryptedPasswordForTiedProfile(int userId)
+    protected LockscreenCredential getDecryptedPasswordForUnifiedProfile(int userId)
             throws KeyStoreException, UnrecoverableKeyException,
             NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException,
             InvalidAlgorithmParameterException, IllegalBlockSizeException, BadPaddingException,
             CertificateException, IOException {
-        Slogf.d(TAG, "Decrypting password for tied profile %d", userId);
+        Slogf.d(TAG, "Decrypting password for unified profile %d", userId);
         byte[] storedData = mStorage.readChildProfileLock(userId);
         if (storedData == null) {
             throw new FileNotFoundException("Child profile lock file not found");
@@ -1591,7 +1595,8 @@ public class LockSettingsService extends ILockSettings.Stub {
     }
 
     private void unlockChildProfile(int profileHandle) {
-        try (LockscreenCredential credential = getDecryptedPasswordForTiedProfile(profileHandle)) {
+        try (LockscreenCredential credential =
+                     getDecryptedPasswordForUnifiedProfile(profileHandle)) {
             doVerifyCredential(
                     credential, profileHandle, /* progressCallback= */ null, /* flags= */ 0);
         } catch (UnrecoverableKeyException | InvalidKeyException | KeyStoreException
@@ -1649,7 +1654,7 @@ public class LockSettingsService extends ILockSettings.Stub {
         }
 
         if (isCredentialShareableWithParent(userId)) {
-            if (!hasUnifiedChallenge(userId)) {
+            if (!hasUnifiedProfilePassword(userId)) {
                 mBiometricDeferredQueue.processPendingLockoutResets();
             }
             return;
@@ -1659,13 +1664,13 @@ public class LockSettingsService extends ILockSettings.Stub {
             if (profile.id == userId) continue;
             if (!isCredentialShareableWithParent(profile.id)) continue;
 
-            if (hasUnifiedChallenge(profile.id)) {
+            if (hasUnifiedProfilePassword(profile.id)) {
                 if (mUserManager.isUserRunning(profile.id)) {
                     // Unlock profile with unified lock
                     unlockChildProfile(profile.id);
                 } else {
                     try (LockscreenCredential credential =
-                            getDecryptedPasswordForTiedProfile(profile.id)) {
+                            getDecryptedPasswordForUnifiedProfile(profile.id)) {
                         // Profile not ready for unlock yet, but decrypt the unified challenge now
                         // so it goes into the cache
                     } catch (GeneralSecurityException | IOException e) {
@@ -1688,12 +1693,17 @@ public class LockSettingsService extends ILockSettings.Stub {
         mBiometricDeferredQueue.processPendingLockoutResets();
     }
 
-    private boolean hasUnifiedChallenge(int userId) {
+    /**
+     * Determine if the given user is a profile with a unified password tied to the parent user's
+     * password. This will return false in the "tied none" credential case.
+     */
+    private boolean hasUnifiedProfilePassword(int userId) {
         return !getSeparateProfileChallengeEnabledInternal(userId)
                 && mStorage.hasChildProfileLock(userId);
     }
 
-    private Map<Integer, LockscreenCredential> getDecryptedPasswordsForAllTiedProfiles(int userId) {
+    private Map<Integer, LockscreenCredential> getDecryptedPasswordsForAllUnifiedProfiles(
+            int userId) {
         if (isCredentialShareableWithParent(userId)) {
             return null;
         }
@@ -1710,13 +1720,13 @@ public class LockSettingsService extends ILockSettings.Stub {
                 continue;
             }
             try {
-                result.put(profileUserId, getDecryptedPasswordForTiedProfile(profileUserId));
+                result.put(profileUserId, getDecryptedPasswordForUnifiedProfile(profileUserId));
             } catch (KeyStoreException | UnrecoverableKeyException | NoSuchAlgorithmException
                     | NoSuchPaddingException | InvalidKeyException
                     | InvalidAlgorithmParameterException | IllegalBlockSizeException
                     | BadPaddingException | CertificateException | IOException e) {
-                Slog.e(TAG, "getDecryptedPasswordsForAllTiedProfiles failed for user " +
-                        profileUserId, e);
+                Slog.e(TAG, "getDecryptedPasswordsForAllUnifiedProfiles failed for user "
+                        + profileUserId, e);
             }
         }
         return result;
@@ -1726,16 +1736,16 @@ public class LockSettingsService extends ILockSettings.Stub {
      * Synchronize all profile's challenge of the given user if it's unified: tie or clear them
      * depending on the parent user's secure state.
      *
-     * When clearing tied challenges, a pre-computed password table for profiles are required, since
-     * changing password for profiles requires existing password, and existing passwords can only be
-     * computed before the parent user's password is cleared.
+     * When clearing unified challenges, a pre-computed password table for profiles are required,
+     * since changing password for unified profiles requires the existing password, and existing
+     * passwords can only be computed before the parent user's password is cleared.
      *
      * Strictly this is a recursive function, since setLockCredentialInternal ends up calling this
      * method again on profiles. However the recursion is guaranteed to terminate as this method
      * terminates when the user is a profile that shares lock credentials with parent.
      * (e.g. managed and clone profile).
      */
-    private void synchronizeUnifiedChallengeForProfiles(int userId,
+    private void synchronizeTiedChallengeForProfiles(int userId,
             Map<Integer, LockscreenCredential> profilePasswordMap) {
         if (isCredentialShareableWithParent(userId)) {
             return;
@@ -1772,7 +1782,11 @@ public class LockSettingsService extends ILockSettings.Stub {
         }
     }
 
-    private boolean isProfileWithUnifiedLock(int userId) {
+    /**
+     * Determines whether the given user is a profile with a tied none credential or a unified
+     * password.
+     */
+    private boolean isProfileWithTiedLock(int userId) {
         return isCredentialShareableWithParent(userId)
                 && !getSeparateProfileChallengeEnabledInternal(userId);
     }
@@ -1792,10 +1806,10 @@ public class LockSettingsService extends ILockSettings.Stub {
             return;
         }
 
-        // A profile with a unified lock screen stores a randomly generated credential, so skip it.
-        // Its parent will send credentials for the profile, as it stores the unified lock
-        // credential.
-        if (isProfileWithUnifiedLock(userId)) {
+        // A profile with a unified password stores a randomly generated credential, so skip it.
+        // Its parent will send credentials for the profile, as it stores the unified password.
+        // In the tied none case, there is no need for sending credentials.
+        if (isProfileWithTiedLock(userId)) {
             return;
         }
 
@@ -1833,7 +1847,7 @@ public class LockSettingsService extends ILockSettings.Stub {
         for (UserInfo profile : mUserManager.getProfiles(userId)) {
             if (profile.id == userId
                     || (profile.profileGroupId == userId
-                            && isProfileWithUnifiedLock(profile.id))) {
+                            && isProfileWithTiedLock(profile.id))) {
                 profiles.add(profile.id);
             }
         }
@@ -1875,7 +1889,7 @@ public class LockSettingsService extends ILockSettings.Stub {
             // accept only the parent user credential on its public API interfaces, swap it
             // with the profile's random credential at that API boundary (i.e. here) and make
             // sure LSS internally does not special case profile with unififed challenge: b/80170828
-            if (!savedCredential.isNone() && isProfileWithUnifiedLock(userId)) {
+            if (!savedCredential.isNone() && isProfileWithTiedLock(userId)) {
                 // Verify the parent credential again, to make sure we have a fresh enough
                 // auth token such that getDecryptedPasswordForTiedProfile() inside
                 // setLockCredentialInternal() can function correctly.
@@ -1947,11 +1961,11 @@ public class LockSettingsService extends ILockSettings.Stub {
         LockscreenCredential profilePassword = null;
         try {
             synchronized (mSpManager) {
-                if (savedCredential.isNone() && isProfileWithUnifiedLock(userId)) {
-                    // get credential from keystore when profile has unified lock
+                if (savedCredential.isNone() && isProfileWithTiedLock(userId)) {
+                    // get credential from keystore when profile has unified password
                     try {
                         // TODO: remove as part of b/80170828
-                        profilePassword = getDecryptedPasswordForTiedProfile(userId);
+                        profilePassword = getDecryptedPasswordForUnifiedProfile(userId);
                         savedCredential = profilePassword;
                     } catch (FileNotFoundException e) {
                         Slog.i(TAG, "Child profile key not found");
@@ -2273,12 +2287,10 @@ public class LockSettingsService extends ILockSettings.Stub {
         List<LockscreenCredential> profileUserDecryptedPasswords = new ArrayList<>();
         final List<UserInfo> profiles = mUserManager.getProfiles(userId);
         for (UserInfo pi : profiles) {
-            // Unlock profile which shares credential with parent with unified lock
-            if (isCredentialShareableWithParent(pi.id)
-                    && !getSeparateProfileChallengeEnabledInternal(pi.id)
-                    && mStorage.hasChildProfileLock(pi.id)) {
+            // Unlock profile which shares credential with parent with unified password
+            if (isCredentialShareableWithParent(pi.id) && hasUnifiedProfilePassword(pi.id)) {
                 try {
-                    profileUserDecryptedPasswords.add(getDecryptedPasswordForTiedProfile(pi.id));
+                    profileUserDecryptedPasswords.add(getDecryptedPasswordForUnifiedProfile(pi.id));
                     profileUserIds.add(pi.id);
                 } catch (UnrecoverableKeyException | InvalidKeyException | KeyStoreException
                         | NoSuchAlgorithmException | NoSuchPaddingException
@@ -2519,9 +2531,9 @@ public class LockSettingsService extends ILockSettings.Stub {
             LockscreenCredential credential, int userId, @LockPatternUtils.VerifyFlag int flags) {
         Slogf.i(TAG, "Verifying tied profile challenge for user %d", userId);
 
-        if (!isProfileWithUnifiedLock(userId)) {
+        if (!isProfileWithTiedLock(userId)) {
             throw new IllegalArgumentException(
-                    "User id must be managed/clone profile with unified lock");
+                    "User id must be managed/clone profile with tied lock");
         }
         final int parentProfileId = mUserManager.getProfileParent(userId).id;
         // Unlock parent by using parent's challenge
@@ -2535,7 +2547,7 @@ public class LockSettingsService extends ILockSettings.Stub {
             return parentResponse;
         }
 
-        try (LockscreenCredential profilePassword = getDecryptedPasswordForTiedProfile(userId)) {
+        try (LockscreenCredential profilePassword = getDecryptedPasswordForUnifiedProfile(userId)) {
             // Unlock profile with unified lock
             return doVerifyCredential(profilePassword, userId, /* progressCallback= */ null, flags);
         } catch (UnrecoverableKeyException | InvalidKeyException | KeyStoreException
@@ -3138,7 +3150,7 @@ public class LockSettingsService extends ILockSettings.Stub {
             if (getSeparateProfileChallengeEnabledInternal(userId)) {
                 setDeviceUnlockedForUser(userId);
             } else {
-                // Here only clear StrongAuthFlags for a profile that has a unified challenge.
+                // Here only clear StrongAuthFlags for a profile that has a tied challenge.
                 // StrongAuth for a profile with a separate challenge is handled differently and
                 // is cleared after the user successfully confirms the separate challenge to enter
                 // the profile. StrongAuth for the full user (e.g. userId 0) is also handled
@@ -3176,7 +3188,7 @@ public class LockSettingsService extends ILockSettings.Stub {
                 credential, sp, userId);
         final Map<Integer, LockscreenCredential> profilePasswords;
         if (!credential.isNone()) {
-            // not needed by synchronizeUnifiedChallengeForProfiles()
+            // not needed by synchronizeTiedChallengeForProfiles()
             profilePasswords = null;
 
             if (!mSpManager.hasSidForUser(userId)) {
@@ -3184,9 +3196,9 @@ public class LockSettingsService extends ILockSettings.Stub {
                 mSpManager.verifyChallenge(getGateKeeperService(), sp, 0L, userId);
             }
         } else {
-            // Cache all profile password if they use unified challenge. This will later be used to
-            // clear the profile's password in synchronizeUnifiedChallengeForProfiles().
-            profilePasswords = getDecryptedPasswordsForAllTiedProfiles(userId);
+            // Cache any unified profile passwords. These will later be used to clear passwords in
+            // synchronizeTiedChallengeForProfiles().
+            profilePasswords = getDecryptedPasswordsForAllUnifiedProfiles(userId);
 
             mSpManager.clearSidForUser(userId);
             gateKeeperClearSecureUserId(userId);
@@ -3197,7 +3209,7 @@ public class LockSettingsService extends ILockSettings.Stub {
         }
         setCurrentLskfBasedProtectorId(newProtectorId, userId);
         LockPatternUtils.invalidateCredentialTypeCache();
-        synchronizeUnifiedChallengeForProfiles(userId, profilePasswords);
+        synchronizeTiedChallengeForProfiles(userId, profilePasswords);
 
         setUserPasswordMetrics(credential, userId);
         mUnifiedProfilePasswordCache.removePassword(userId);
@@ -3305,16 +3317,16 @@ public class LockSettingsService extends ILockSettings.Stub {
     /**
      * Returns a fixed pseudorandom byte string derived from the user's synthetic password. This is
      * used to salt the password history hash to protect the hash against offline bruteforcing,
-     * since rederiving this value requires a successful authentication. If user is a profile with
-     * unified challenge, currentCredential is ignored.
+     * since rederiving this value requires a successful authentication. If user is a profile with a
+     * tied credential, currentCredential is ignored.
      */
     private byte[] getHashFactorInternal(LockscreenCredential currentCredential, int userId) {
         LockscreenCredential profilePassword = null;
         try {
             Slogf.d(TAG, "Getting password history hash factor for user %d", userId);
-            if (isProfileWithUnifiedLock(userId)) {
+            if (isProfileWithTiedLock(userId)) {
                 try {
-                    profilePassword = getDecryptedPasswordForTiedProfile(userId);
+                    profilePassword = getDecryptedPasswordForUnifiedProfile(userId);
                     currentCredential = profilePassword;
                 } catch (Exception e) {
                     Slog.e(TAG, "Failed to get unified profile password", e);
@@ -3861,7 +3873,7 @@ public class LockSettingsService extends ILockSettings.Stub {
         public PasswordMetrics getUserPasswordMetrics(int userHandle) {
             final long identity = Binder.clearCallingIdentity();
             try {
-                if (isProfileWithUnifiedLock(userHandle)) {
+                if (isProfileWithTiedLock(userHandle)) {
                     // A managed/clone profile with unified challenge is supposed to be protected by
                     // the parent lockscreen, so asking for its password metrics is not really
                     // useful, as this method would just return the metrics of the random profile
