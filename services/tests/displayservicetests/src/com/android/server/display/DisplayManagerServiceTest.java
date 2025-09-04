@@ -16,6 +16,7 @@
 
 package com.android.server.display;
 
+import static android.Manifest.permission.ACCESS_FINE_LOCATION;
 import static android.Manifest.permission.ADD_ALWAYS_UNLOCKED_DISPLAY;
 import static android.Manifest.permission.ADD_TRUSTED_DISPLAY;
 import static android.Manifest.permission.CAPTURE_VIDEO_OUTPUT;
@@ -126,8 +127,10 @@ import android.hardware.display.HdrConversionMode;
 import android.hardware.display.IDisplayManagerCallback;
 import android.hardware.display.IVirtualDisplayCallback;
 import android.hardware.display.VirtualDisplayConfig;
+import android.hardware.display.WifiDisplay;
 import android.media.projection.IMediaProjection;
 import android.media.projection.IMediaProjectionManager;
+import android.net.wifi.p2p.WifiP2pManager;
 import android.os.Binder;
 import android.os.Build;
 import android.os.Handler;
@@ -232,6 +235,7 @@ import java.util.stream.LongStream;
 @RunWith(JUnitParamsRunner.class)
 public class DisplayManagerServiceTest {
     private static final int MSG_REGISTER_DEFAULT_DISPLAY_ADAPTERS = 1;
+    private static final int MSG_REGISTER_ADDITIONAL_DISPLAY_ADAPTERS = 2;
     private static final long SHORT_DEFAULT_DISPLAY_TIMEOUT_MILLIS = 10;
 
     private static final float FLOAT_TOLERANCE = 0.01f;
@@ -446,6 +450,7 @@ public class DisplayManagerServiceTest {
     @Mock WindowManagerPolicy mMockedWindowManagerPolicy;
 
     @Mock IBatteryStats mMockedBatteryStats;
+    @Mock WifiP2pManager mMockedWifiP2pManager;
 
     @Rule
     public final ExtendedMockitoRule mExtendedMockitoRule =
@@ -4275,6 +4280,66 @@ public class DisplayManagerServiceTest {
     }
 
     @Test
+    public void getWifiDisplayStatus_withoutFineLocationPermission_shouldReturnFakeAddress() {
+        doNothing().when(mContext).sendBroadcastAsUser(any(), any(), isNull(), any());
+        doReturn(mMockedWifiP2pManager).when(mContext).getSystemService(Context.WIFI_P2P_SERVICE);
+        doReturn(true).when(mResources).getBoolean(R.bool.config_enableWifiDisplay);
+        DisplayManagerService displayManager =
+                new DisplayManagerService(mContext, mBasicInjector);
+        DisplayManagerService.BinderService displayManagerBinderService =
+                displayManager.new BinderService();
+        registerDefaultDisplays(displayManager);
+        displayManager.systemReady(/* safeMode= */ false);
+        registerAdditionalDisplays(displayManager);
+
+        var wifiDisplayListener = displayManager.getWifiDisplayListener();
+
+        WifiDisplay[] availableDisplays = new WifiDisplay[1];
+        availableDisplays[0] = new WifiDisplay(
+                /* deviceAddress = */ "11:22:33:44:55:66",
+                /* deviceName= */ "deviceName",
+                /* deviceAlias= */ "deviceAlias",
+                /* available= */ true,
+                /* canConnect= */ true,
+                /* remembered= */ false);
+        wifiDisplayListener.onScanResults(availableDisplays);
+
+        assertThat(displayManagerBinderService.getWifiDisplayStatus().getDisplays()[0]
+                       .getDeviceAddress()).isEqualTo("00:00:00:00:00:00");
+    }
+
+    @Test
+    public void getWifiDisplayStatus_withFineLocationPermission_shouldReturnRealAddress() {
+        doNothing().when(mContext).sendBroadcastAsUser(any(), any(), isNull(), any());
+        doReturn(mMockedWifiP2pManager).when(mContext).getSystemService(Context.WIFI_P2P_SERVICE);
+        doReturn(true).when(mResources).getBoolean(R.bool.config_enableWifiDisplay);
+        when(mContext.checkCallingPermission(ACCESS_FINE_LOCATION)).thenReturn(
+                PackageManager.PERMISSION_GRANTED);
+        DisplayManagerService displayManager =
+                new DisplayManagerService(mContext, mBasicInjector);
+        DisplayManagerService.BinderService displayManagerBinderService =
+                displayManager.new BinderService();
+        registerDefaultDisplays(displayManager);
+        displayManager.systemReady(/* safeMode= */ false);
+        registerAdditionalDisplays(displayManager);
+
+        var wifiDisplayListener = displayManager.getWifiDisplayListener();
+
+        WifiDisplay[] availableDisplays = new WifiDisplay[1];
+        availableDisplays[0] = new WifiDisplay(
+                /* deviceAddress = */ "11:22:33:44:55:66",
+                /* deviceName= */ "deviceName",
+                /* deviceAlias= */ "deviceAlias",
+                /* available= */ true,
+                /* canConnect= */ true,
+                /* remembered= */ false);
+        wifiDisplayListener.onScanResults(availableDisplays);
+
+        assertThat(displayManagerBinderService.getWifiDisplayStatus().getDisplays()[0]
+                       .getDeviceAddress()).isEqualTo("11:22:33:44:55:66");
+    }
+
+    @Test
     public void setUserDisabledHdrTypes_withoutPermission_shouldThrowException() {
         DisplayManagerService displayManager =
                 new DisplayManagerService(mContext, mBasicInjector);
@@ -5043,6 +5108,14 @@ public class DisplayManagerServiceTest {
         // Would prefer to call displayManager.onStart() directly here but it performs binderService
         // registration which triggers security exceptions when running from a test.
         handler.sendEmptyMessage(MSG_REGISTER_DEFAULT_DISPLAY_ADAPTERS);
+        flushHandlers();
+    }
+
+    private void registerAdditionalDisplays(DisplayManagerService displayManager) {
+        Handler handler = displayManager.getDisplayHandler();
+        // Would prefer to call displayManager.onStart() directly here but it performs binderService
+        // registration which triggers security exceptions when running from a test.
+        handler.sendEmptyMessage(MSG_REGISTER_ADDITIONAL_DISPLAY_ADAPTERS);
         flushHandlers();
     }
 
