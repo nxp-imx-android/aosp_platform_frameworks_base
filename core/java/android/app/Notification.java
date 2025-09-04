@@ -316,6 +316,15 @@ public class Notification implements Parcelable
     public static final String EXTRA_REMOTE_INPUT_DRAFT = "android.remoteInputDraft";
 
     /**
+     * A boolean indicating that the notification card should show the small icon instead of the
+     * launcher app icon.
+     * @hide
+     */
+    @SystemApi
+    @RequiresPermission(android.Manifest.permission.PACKAGE_VERIFICATION_AGENT)
+    public static final String EXTRA_PREFER_SMALL_ICON = "android.app.preferSmallIcon";
+
+    /**
      * The call to WearableExtender#setBackground(Bitmap) will have no effect and the passed
      * Bitmap will not be retained in memory.
      */
