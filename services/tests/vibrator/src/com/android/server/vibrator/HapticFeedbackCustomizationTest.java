@@ -25,12 +25,11 @@ import static android.os.VibrationEffect.EFFECT_HEAVY_CLICK;
 import static android.os.VibrationEffect.EFFECT_TICK;
 import static android.os.vibrator.Flags.FLAG_HAPTIC_FEEDBACK_INPUT_SOURCE_CUSTOMIZATION_ENABLED;
 import static android.os.vibrator.Flags.FLAG_HAPTIC_FEEDBACK_WITH_CUSTOM_USAGE;
-import static android.os.vibrator.Flags.FLAG_LOAD_HAPTIC_FEEDBACK_VIBRATION_CUSTOMIZATION_FROM_RESOURCES;
 
 import static com.android.internal.R.xml.haptic_feedback_customization;
-import static com.android.internal.R.xml.haptic_feedback_customization_usage_gesture_input;
 import static com.android.internal.R.xml.haptic_feedback_customization_source_rotary_encoder;
 import static com.android.internal.R.xml.haptic_feedback_customization_source_touchscreen;
+import static com.android.internal.R.xml.haptic_feedback_customization_usage_gesture_input;
 
 import static com.google.common.truth.Truth.assertThat;
 
@@ -592,7 +591,6 @@ public class HapticFeedbackCustomizationTest {
 
     private void setupCustomizationResource(String xml, int xmlResId) throws Exception {
         mSetFlagsRule.enableFlags(FLAG_HAPTIC_FEEDBACK_INPUT_SOURCE_CUSTOMIZATION_ENABLED);
-        mSetFlagsRule.enableFlags(FLAG_LOAD_HAPTIC_FEEDBACK_VIBRATION_CUSTOMIZATION_FROM_RESOURCES);
         mSetFlagsRule.enableFlags(FLAG_HAPTIC_FEEDBACK_WITH_CUSTOM_USAGE);
         doReturn(FakeXmlResourceParser.fromXml(xml)).when(mResourcesMock).getXml(xmlResId);
     }
