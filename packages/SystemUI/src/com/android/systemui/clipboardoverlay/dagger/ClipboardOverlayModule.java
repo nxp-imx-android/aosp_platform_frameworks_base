@@ -60,6 +60,9 @@ public interface ClipboardOverlayModule {
             UserTracker userTracker, FocusedDisplayRepository focusedDisplayRepository) {
         Display display = displayManager.getDisplay(
                 focusedDisplayRepository.getFocusedDisplayId().getValue());
+        if (display == null) {
+            display = displayManager.getDisplay(Display.DEFAULT_DISPLAY);
+        }
         if (clipboardOverlayMultiuser()) {
             return userTracker.getUserContext().createWindowContext(display, TYPE_SCREENSHOT, null);
         } else {
