@@ -876,9 +876,9 @@ public class VoiceInteractionManagerService extends SystemService {
                 Slog.w(TAG, "no available voice interaction services found for user " + user);
                 return null;
             }
-            // Find first system package.  We never want to allow third party services to
-            // be automatically selected, because those require approval of the user.
-            VoiceInteractionServiceInfo foundInfo = null;
+            final String defaultAssistant = getDefaultAssistant();
+            // Assign to the first available system voice interactor that is part of either
+            // the default assistant or the passed package
             for (int i = 0; i < numAvailable; i++) {
                 ServiceInfo cur = available.get(i).serviceInfo;
                 if ((cur.applicationInfo.flags & ApplicationInfo.FLAG_SYSTEM) == 0) {
@@ -890,19 +890,22 @@ public class VoiceInteractionManagerService extends SystemService {
                     Slog.w(TAG,
                             "Bad interaction service " + cur.packageName + "/"
                                     + cur.name + ": " + info.getParseError());
-                } else if (foundInfo == null) {
-                    foundInfo = info;
-                } else {
-                    Slog.w(TAG, "More than one voice interaction service, "
-                            + "picking first "
-                            + new ComponentName(
-                            foundInfo.getServiceInfo().packageName,
-                            foundInfo.getServiceInfo().name)
-                            + " over "
-                            + new ComponentName(cur.packageName, cur.name));
+                } else if (!info.getSupportsAssist()) {
+                    // skip if it doesn't support assistant
+                    Slog.i(TAG, "Interaction service "
+                            + cur.packageName + "/" + cur.name + " doesn't support assistant");
+                } else if (cur.packageName.equals(defaultAssistant)
+                            || cur.packageName.equals(packageName)) {
+                    return info;
                 }
             }
-            return foundInfo;
+            return null;
+        }
+
+        @Nullable
+        public String getDefaultAssistant() {
+            String assistant = mContext.getString(R.string.config_defaultAssistant);
+            return TextUtils.isEmpty(assistant) ? null : assistant;
         }
 
         ComponentName getCurInteractor(int userHandle) {
