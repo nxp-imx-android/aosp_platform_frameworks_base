@@ -91,6 +91,11 @@ class DeviceProvisioningRepositoryImplTest : SysuiTestCase() {
     fun getProvisionedTimestamp_provisionedEarlierWithoutTracking_isUnknown() =
         testScope.runTest {
             whenever(deviceProvisionedController.isDeviceProvisioned).thenReturn(true)
+            mContext
+                .getSharedPreferences(mContext.packageName, Context.MODE_PRIVATE)
+                .edit()
+                .clear()
+                .apply()
             underTest.start()
 
             val timestamp = underTest.getProvisionedTimestamp()
