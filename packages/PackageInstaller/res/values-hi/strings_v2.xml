@@ -98,8 +98,10 @@
     <string name="message_uninstall_activity" msgid="3263352475743590167">"<xliff:g id="ACTIVITY_NAME">%1$s</xliff:g>, इस ऐप्लिकेशन का एक हिस्सा है: <xliff:g id="APP_NAME">%2$s</xliff:g>"</string>
     <string name="cannot_install_app_blocked_summary" msgid="5439893912308217959">"&lt;p&gt;इस ऐप्लिकेशन को ब्लॉक कर दिया गया है. आपके डिवाइस और डेटा को सुरक्षित रखने के लिए, सिर्फ़ ऐसे ऐप्लिकेशन इंस्टॉल किए जा सकते हैं जिनके डेवलपर की पुष्टि हो चुकी है.&lt;/p&gt;"</string>
     <string name="cannot_update_app_blocked_summary" msgid="7817560122951640605">"&lt;p&gt;इस ऐप्लिकेशन को अपडेट नहीं किया गया. आपके डिवाइस और डेटा को सुरक्षित रखने के लिए, सिर्फ़ ऐसे अपडेट इंस्टॉल किए जा सकते हैं जिनके डेवलपर की पुष्टि हो चुकी है.&lt;/p&gt;"</string>
-    <string name="cannot_install_verification_no_internet_summary" msgid="236829543597389666">"&lt;p&gt;यह ऐप्लिकेशन इंस्टॉल नहीं हुआ. जिन डेवलपर की पुष्टि नहीं हुई है उनके ऐप्लिकेशन असुरक्षित हो सकते हैं.&lt;/p&gt; &lt;p&gt;ऐप्लिकेशन डेवलपर की पुष्टि करने के लिए, इंटरनेट कनेक्शन होना ज़रूरी है. अपने इंटरनेट कनेक्शन की जांच करें. इसके बाद, ऐप्लिकेशन को दोबारा इंस्टॉल करने की कोशिश करें. &lt;/p&gt;"</string>
-    <string name="cannot_update_verification_no_internet_summary" msgid="28024736898646891">"&lt;p&gt;इस ऐप्लिकेशन को अपडेट नहीं किया गया. जिन डेवलपर की पुष्टि नहीं हुई है उनके ऐप्लिकेशन के अपडेट असुरक्षित हो सकते हैं.&lt;/p&gt; &lt;p&gt;ऐप्लिकेशन डेवलपर की पुष्टि करने के लिए, इंटरनेट कनेक्शन होना ज़रूरी है. अपने इंटरनेट कनेक्शन की जांच करें. इसके बाद, फिर से ऐप्लिकेशन को अपडेट करने की कोशिश करें. &lt;/p&gt;"</string>
+    <!-- no translation found for cannot_install_verification_no_internet_summary (8875444318661602648) -->
+    <skip />
+    <!-- no translation found for cannot_update_verification_no_internet_summary (8529572409795745791) -->
+    <skip />
     <string name="cannot_install_verification_unavailable_summary" msgid="6208343652461257248">"&lt;p&gt;इस ऐप्लिकेशन के डेवलपर की पुष्टि करने में कोई समस्या हुई. जिन डेवलपर की पुष्टि नहीं हुई है उनके ऐप्लिकेशन असुरक्षित हो सकते हैं. इसलिए, ऐप्लिकेशन को इंस्टॉल नहीं किया गया.&lt;/p&gt;"</string>
     <string name="cannot_update_verification_unavailable_summary" msgid="367099122142054088">"&lt;p&gt;इस ऐप्लिकेशन के डेवलपर की पुष्टि करने में कोई समस्या हुई. जिन डेवलपर की पुष्टि नहीं हुई है उनके ऐप्लिकेशन के अपडेट असुरक्षित हो सकते हैं. इसलिए, ऐप्लिकेशन को अपडेट नहीं किया गया.&lt;/p&gt;"</string>
     <string name="cannot_install_verification_unavailable_fail_closed_summary" msgid="3798407602770929670">"&lt;p&gt;इस ऐप्लिकेशन को ब्लॉक कर दिया गया है, क्योंकि डेवलपर की पुष्टि करने में कोई समस्या हुई. आपके डिवाइस और डेटा को सुरक्षित रखने के लिए, सिर्फ़ ऐसे ऐप्लिकेशन इंस्टॉल किए जा सकते हैं जिनके डेवलपर की पुष्टि हो चुकी है.&lt;/p&gt;"</string>
@@ -114,7 +116,7 @@
     <string name="button_install" msgid="7434013176505680162">"इंस्टॉल करें"</string>
     <string name="button_update" msgid="3046719350226327526">"अपडेट करें"</string>
     <string name="button_update_anyway" msgid="6674207037708730779">"फिर भी अपडेट करें"</string>
-    <string name="button_done" msgid="3408025390982260629">"हो गया"</string>
+    <string name="button_done" msgid="3408025390982260629">"ठीक है"</string>
     <string name="button_open" msgid="6892684987374117955">"खोलें"</string>
     <string name="button_cancel" msgid="6690491435205617214">"रद्द करें"</string>
     <string name="button_continue" msgid="107501685249826244">"जारी रखें"</string>

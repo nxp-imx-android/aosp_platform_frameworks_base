@@ -98,8 +98,8 @@
     <string name="message_uninstall_activity" msgid="3263352475743590167">"「<xliff:g id="ACTIVITY_NAME">%1$s</xliff:g>」屬於以下應用程式：<xliff:g id="APP_NAME">%2$s</xliff:g>"</string>
     <string name="cannot_install_app_blocked_summary" msgid="5439893912308217959">"&lt;p&gt;此應用程式已被封鎖。為保障裝置和資料安全，你只可安裝已驗證開發人員所提供的應用程式。"</string>
     <string name="cannot_update_app_blocked_summary" msgid="7817560122951640605">"&lt;p&gt;此應用程式尚未更新。為保障裝置和資料安全，你只可安裝已驗證開發人員所提供的更新。&lt;/p&gt;"</string>
-    <string name="cannot_install_verification_no_internet_summary" msgid="236829543597389666">"&lt;p&gt;此應用程式尚未安裝。未經驗證開發人員所提供的應用程式未必安全。&lt;/p&gt; &lt;p&gt;驗證應用程式開發人員需要互聯網連線。請檢查連線，然後嘗試重新安裝應用程式。&lt;/p&gt;"</string>
-    <string name="cannot_update_verification_no_internet_summary" msgid="28024736898646891">"&lt;p&gt;此應用程式尚未更新。未經驗證開發人員所提供的更新未必安全。&lt;/p&gt; &lt;p&gt;驗證應用程式開發人員需要互聯網連線。請檢查連線，然後嘗試重新更新應用程式。&lt;/p&gt;"</string>
+    <string name="cannot_install_verification_no_internet_summary" msgid="8875444318661602648">"&lt;p&gt;此應用程式尚未安裝。未經驗證開發人員所提供的應用程式未必安全。&lt;/p&gt; &lt;p&gt;驗證應用程式開發人員需要互聯網連線。請檢查連線，然後嘗試重新安裝。&lt;/p&gt;"</string>
+    <string name="cannot_update_verification_no_internet_summary" msgid="8529572409795745791">"&lt;p&gt;此應用程式尚未更新。未經驗證開發人員所提供的更新未必安全。&lt;/p&gt; &lt;p&gt;驗證應用程式開發人員需要互聯網連線。請檢查連線，然後嘗試重新更新。&lt;/p&gt;"</string>
     <string name="cannot_install_verification_unavailable_summary" msgid="6208343652461257248">"&lt;p&gt;驗證此應用程式的開發人員時發生問題。未經驗證開發人員所提供的應用程式未必安全，因此該應用程式尚未安裝。"</string>
     <string name="cannot_update_verification_unavailable_summary" msgid="367099122142054088">"&lt;p&gt;驗證此應用程式的開發人員時發生問題。未經驗證開發人員所提供的更新未必安全，因此該應用程式尚未更新。&lt;/p&gt;"</string>
     <string name="cannot_install_verification_unavailable_fail_closed_summary" msgid="3798407602770929670">"&lt;p&gt;此應用程式在驗證開發人員時發生問題，因此已遭封鎖。為保障裝置和資料安全，你只可安裝已驗證開發人員所提供的應用程式。"</string>

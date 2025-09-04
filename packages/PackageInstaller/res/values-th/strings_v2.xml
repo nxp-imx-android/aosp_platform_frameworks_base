@@ -98,8 +98,10 @@
     <string name="message_uninstall_activity" msgid="3263352475743590167">"<xliff:g id="ACTIVITY_NAME">%1$s</xliff:g> เป็นส่วนหนึ่งของแอป <xliff:g id="APP_NAME">%2$s</xliff:g>"</string>
     <string name="cannot_install_app_blocked_summary" msgid="5439893912308217959">"&lt;p&gt;แอปนี้ถูกบล็อก ระบบจะติดตั้งได้เฉพาะแอปจากนักพัฒนาที่ได้รับการตรวจสอบแล้วเท่านั้น เพื่อช่วยรักษาความปลอดภัยให้อุปกรณ์และข้อมูลของคุณ&lt;/p&gt;"</string>
     <string name="cannot_update_app_blocked_summary" msgid="7817560122951640605">"&lt;p&gt;แอปนี้ไม่ได้รับการอัปเดต ระบบจะติดตั้งได้เฉพาะการอัปเดตจากนักพัฒนาแอปที่ได้รับการตรวจสอบแล้วเท่านั้น เพื่อช่วยรักษาความปลอดภัยให้อุปกรณ์และข้อมูลของคุณ&lt;/p&gt;"</string>
-    <string name="cannot_install_verification_no_internet_summary" msgid="236829543597389666">"&lt;p&gt;ไม่ได้ติดตั้งแอปนี้ แอปจากนักพัฒนาที่ไม่ได้รับการตรวจสอบอาจไม่ปลอดภัย&lt;/p&gt; &lt;p&gt;ต้องมีการเชื่อมต่ออินเทอร์เน็ตเพื่อตรวจสอบนักพัฒนาแอป ตรวจสอบการเชื่อมต่อแล้วลองติดตั้งแอปอีกครั้ง &lt;/p&gt;"</string>
-    <string name="cannot_update_verification_no_internet_summary" msgid="28024736898646891">"&lt;p&gt;แอปนี้ไม่ได้รับการอัปเดต การอัปเดตจากนักพัฒนาแอปที่ไม่ได้รับการตรวจสอบอาจไม่ปลอดภัย&lt;/p&gt; &lt;p&gt;ต้องมีการเชื่อมต่ออินเทอร์เน็ตเพื่อตรวจสอบนักพัฒนาแอป ตรวจสอบการเชื่อมต่อแล้วลองอัปเดตแอปอีกครั้ง &lt;/p&gt;"</string>
+    <!-- no translation found for cannot_install_verification_no_internet_summary (8875444318661602648) -->
+    <skip />
+    <!-- no translation found for cannot_update_verification_no_internet_summary (8529572409795745791) -->
+    <skip />
     <string name="cannot_install_verification_unavailable_summary" msgid="6208343652461257248">"&lt;p&gt;เกิดปัญหาในการตรวจสอบนักพัฒนาแอปนี้ แอปจากนักพัฒนาที่ไม่ได้รับการตรวจสอบอาจไม่ปลอดภัย ระบบจึงไม่ได้ติดตั้งแอป&lt;/p&gt;"</string>
     <string name="cannot_update_verification_unavailable_summary" msgid="367099122142054088">"&lt;p&gt;เกิดปัญหาในการตรวจสอบนักพัฒนาแอปนี้ การอัปเดตจากนักพัฒนาแอปที่ไม่ได้รับการตรวจสอบอาจไม่ปลอดภัย ระบบจึงไม่ได้อัปเดตแอป&lt;/p&gt;"</string>
     <string name="cannot_install_verification_unavailable_fail_closed_summary" msgid="3798407602770929670">"&lt;p&gt;แอปนี้ถูกบล็อกเนื่องจากเกิดปัญหาในการตรวจสอบนักพัฒนาแอป ระบบจะติดตั้งได้เฉพาะแอปจากนักพัฒนาที่ได้รับการตรวจสอบแล้วเท่านั้น เพื่อช่วยรักษาความปลอดภัยให้อุปกรณ์และข้อมูลของคุณ&lt;/p&gt;"</string>
