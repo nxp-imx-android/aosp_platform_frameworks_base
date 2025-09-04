@@ -620,7 +620,6 @@ public class NotificationContentView extends FrameLayout implements Notification
      * @param child single-line content view to set
      */
     public void setSingleLineView(@Nullable HybridNotificationView child) {
-        if (AsyncHybridViewInflation.isUnexpectedlyInLegacyMode()) return;
         if (mSingleLineView != null) {
             mOnContentViewInactiveListeners.remove(mSingleLineView);
             mSingleLineView.animate().cancel();

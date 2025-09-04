@@ -22,7 +22,6 @@ import android.app.Flags;
 import android.content.Context;
 import android.content.res.ColorStateList;
 import android.graphics.Typeface;
-import android.graphics.drawable.Icon;
 import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.view.View;
@@ -202,7 +201,6 @@ public class HybridConversationNotificationView extends HybridNotificationView {
      *                           either an instance of SingleIcon or FacePile
      */
     public void setAvatar(@NonNull ConversationAvatar conversationAvatar) {
-        if (AsyncHybridViewInflation.isUnexpectedlyInLegacyMode()) return;
         if (conversationAvatar instanceof SingleIcon) {
             SingleIcon avatar = (SingleIcon) conversationAvatar;
             if (mConversationFacePile != null) mConversationFacePile.setVisibility(GONE);
@@ -255,7 +253,6 @@ public class HybridConversationNotificationView extends HybridNotificationView {
             CharSequence conversationSenderName,
             @Nullable CharSequence summarization
     ) {
-        if (AsyncHybridViewInflation.isUnexpectedlyInLegacyMode()) return;
         if (!TextUtils.isEmpty(summarization)) {
             mConversationSenderName.setVisibility(GONE);
             contentText = summarization;

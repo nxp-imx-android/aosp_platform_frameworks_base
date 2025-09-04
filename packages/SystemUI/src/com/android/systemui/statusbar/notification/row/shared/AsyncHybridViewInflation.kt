@@ -35,15 +35,6 @@ object AsyncHybridViewInflation {
         get() = Flags.notificationAsyncHybridViewInflation()
 
     /**
-     * Called to ensure code is only run when the flag is enabled. This protects users from the
-     * unintended behaviors caused by accidentally running new logic, while also crashing on an eng
-     * build to ensure that the refactor author catches issues in testing.
-     */
-    @JvmStatic
-    inline fun isUnexpectedlyInLegacyMode() =
-        RefactorFlagUtils.isUnexpectedlyInLegacyMode(isEnabled, FLAG_NAME)
-
-    /**
      * Called to ensure code is only run when the flag is disabled. This will throw an exception if
      * the flag is enabled to ensure that the refactor author catches issues in testing.
      */
