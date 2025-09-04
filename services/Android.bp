@@ -156,6 +156,7 @@ filegroup {
         ":services.wallpapereffectsgeneration-sources",
         ":services.wifi-sources",
         ":framework-pm-common-shared-srcs",
+        ":framework-minus-apex-aconfig-srcjars",
     ],
     visibility: ["//visibility:private"],
 }
