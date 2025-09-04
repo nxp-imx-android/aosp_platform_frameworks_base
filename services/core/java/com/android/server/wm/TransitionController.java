@@ -786,7 +786,7 @@ class TransitionController {
                 && (endWidth != startWidth || endHeight != startHeight)) {
             displayContent.forAllWindows(w -> {
                 if (w.mToken.mRoundedCornerOverlay && w.mHasSurface) {
-                    w.mSyncMethodOverride = BLASTSyncEngine.METHOD_BLAST;
+                    w.useBlastForNextSync();
                 }
             }, true /* traverseTopToBottom */);
         }

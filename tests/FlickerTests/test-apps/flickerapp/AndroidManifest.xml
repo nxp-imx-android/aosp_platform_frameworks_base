@@ -412,7 +412,7 @@
         <activity
             android:name=".TrampolineStartActivity"
             android:exported="true"
-            android:label=".TrampolineStartActivity">
+            android:label="TrampolineStartActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER"/>
@@ -421,7 +421,7 @@
         <activity
             android:name=".TrampolineFinishActivity"
             android:exported="true"
-            android:label=".TrampolineFinishActivity" />
+            android:label="TrampolineFinishActivity" />
         <activity
             android:name=".ScrollToFinishActivity"
             android:exported="true"

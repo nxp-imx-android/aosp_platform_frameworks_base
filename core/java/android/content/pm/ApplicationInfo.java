@@ -858,6 +858,13 @@ public class ApplicationInfo extends PackageItemInfo implements Parcelable {
      */
     public static final int PRIVATE_FLAG_EXT_NOT_LAUNCHED = 1 << 6;
 
+    /**
+     * Whether the app should run in the Private Compute Core sandbox
+     * @hide
+     * @see android.R.styleable.AndroidManifestApplication_runInPccSandbox
+     */
+    public static final int PRIVATE_FLAG_EXT_RUN_IN_PCC_SANDBOX = 1 << 7;
+
     /** @hide */
     @IntDef(flag = true, prefix = { "PRIVATE_FLAG_EXT_" }, value = {
             PRIVATE_FLAG_EXT_PROFILEABLE,
@@ -867,6 +874,7 @@ public class ApplicationInfo extends PackageItemInfo implements Parcelable {
             PRIVATE_FLAG_EXT_ALLOWLISTED_FOR_HIDDEN_APIS,
             PRIVATE_FLAG_EXT_CPU_OVERRIDE,
             PRIVATE_FLAG_EXT_NOT_LAUNCHED,
+            PRIVATE_FLAG_EXT_RUN_IN_PCC_SANDBOX,
     })
     @Retention(RetentionPolicy.SOURCE)
     public @interface ApplicationInfoPrivateFlagsExt {}
@@ -2806,6 +2814,15 @@ public class ApplicationInfo extends PackageItemInfo implements Parcelable {
      */
     public boolean isNotLaunched() {
         return (privateFlagsExt & ApplicationInfo.PRIVATE_FLAG_EXT_NOT_LAUNCHED) != 0;
+    }
+
+    /**
+     * Returns whether the app should run in the Private Compute Core sandbox.
+     * @hide
+     * @see android.R.styleable#AndroidManifestApplication_runInPccSandbox
+     */
+    public boolean shouldRunInPccSandbox() {
+        return (privateFlagsExt & ApplicationInfo.PRIVATE_FLAG_EXT_RUN_IN_PCC_SANDBOX) != 0;
     }
 
     /**

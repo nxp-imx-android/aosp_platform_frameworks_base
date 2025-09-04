@@ -32,6 +32,7 @@ import static android.app.Flags.FLAG_UI_RICH_ONGOING;
 import static android.app.Notification.EXTRA_ALLOW_DURING_SETUP;
 import static android.app.Notification.EXTRA_PICTURE;
 import static android.app.Notification.EXTRA_PICTURE_ICON;
+import static android.app.Notification.EXTRA_PREFER_SMALL_ICON;
 import static android.app.Notification.EXTRA_TEXT;
 import static android.app.Notification.FLAG_AUTO_CANCEL;
 import static android.app.Notification.FLAG_BUBBLE;
@@ -6903,7 +6904,7 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    public void testNoNotificationDuringSetupPermission() throws Exception {
+    public void testHasNotificationDuringSetupPermission() throws Exception {
         mContext.getTestablePermissions().setPermission(
                 android.Manifest.permission.NOTIFICATION_DURING_SETUP, PERMISSION_GRANTED);
         Bundle extras = new Bundle();
@@ -6914,7 +6915,7 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
                 .addExtras(extras)
                 .setSmallIcon(android.R.drawable.sym_def_app_icon);
         StatusBarNotification sbn = new StatusBarNotification(mPkg, mPkg, 1,
-                "testNoNotificationDuringSetupPermission", mUid, 0,
+                "testHasNotificationDuringSetupPermission", mUid, 0,
                 nb.build(), UserHandle.getUserHandleForUid(mUid), null, 0);
         NotificationRecord nr = new NotificationRecord(mContext, sbn, mTestNotificationChannel);
 
@@ -6926,6 +6927,32 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
                 mPkg, nr.getSbn().getTag(), nr.getSbn().getId(), nr.getSbn().getUserId());
 
         assertTrue(posted.getNotification().extras.containsKey(EXTRA_ALLOW_DURING_SETUP));
+    }
+
+    @Test
+    public void testNoPreferSmallIconPermission() throws Exception {
+        mContext.getTestablePermissions().setPermission(
+                Manifest.permission.PACKAGE_VERIFICATION_AGENT, PERMISSION_DENIED);
+        Bundle extras = new Bundle();
+        extras.putBoolean(EXTRA_PREFER_SMALL_ICON, true);
+        Notification.Builder nb = new Notification.Builder(mContext,
+                mTestNotificationChannel.getId())
+                .setContentTitle("foo")
+                .addExtras(extras)
+                .setSmallIcon(android.R.drawable.sym_def_app_icon);
+        StatusBarNotification sbn = new StatusBarNotification(mPkg, mPkg, 1,
+                "testNoPreferSmallIconPermission", mUid, 0,
+                nb.build(), UserHandle.getUserHandleForUid(mUid), null, 0);
+        NotificationRecord nr = new NotificationRecord(mContext, sbn, mTestNotificationChannel);
+
+        mBinderService.enqueueNotificationWithTag(mPkg, mPkg, sbn.getTag(),
+                nr.getSbn().getId(), nr.getSbn().getNotification(), nr.getSbn().getUserId());
+        waitForIdle();
+
+        NotificationRecord posted = mService.findNotificationLocked(
+                mPkg, nr.getSbn().getTag(), nr.getSbn().getId(), nr.getSbn().getUserId());
+
+        assertFalse(posted.getNotification().extras.containsKey(EXTRA_PREFER_SMALL_ICON));
     }
 
     @Test

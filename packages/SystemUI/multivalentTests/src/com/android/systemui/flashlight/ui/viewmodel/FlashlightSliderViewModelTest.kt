@@ -190,7 +190,7 @@ class FlashlightSliderViewModelTest : SysuiTestCase() {
             runCurrent()
 
             assertThat(underTest.currentFlashlightLevel!!.enabled).isEqualTo(false)
-            assertThat(underTest.currentFlashlightLevel!!.level).isEqualTo(DEFAULT_LEVEL)
+            assertThat(underTest.currentFlashlightLevel!!.level).isEqualTo(2)
 
             // can set level at max
             flashlightInteractor.setLevel(MAX_LEVEL)
@@ -198,6 +198,43 @@ class FlashlightSliderViewModelTest : SysuiTestCase() {
 
             assertThat(underTest.currentFlashlightLevel!!.enabled).isEqualTo(true)
             assertThat(underTest.currentFlashlightLevel!!.level).isEqualTo(MAX_LEVEL)
+        }
+
+    @Test
+    fun updateInteractor_temporaryUpdatesAreForgottenAndPermanentOnesRemembered() =
+        kosmos.runTest {
+            flashlightInteractor.setEnabled(true)
+            runCurrent()
+
+            assertThat(underTest.currentFlashlightLevel!!.enabled).isEqualTo(true)
+            assertThat(underTest.currentFlashlightLevel!!.level).isEqualTo(DEFAULT_LEVEL)
+            assertThat(underTest.currentFlashlightLevel!!.max).isEqualTo(MAX_LEVEL)
+
+            underTest.setFlashlightLevel(1)
+            runCurrent()
+
+            assertThat(underTest.currentFlashlightLevel!!.enabled).isEqualTo(true)
+            assertThat(underTest.currentFlashlightLevel!!.level).isEqualTo(1)
+
+            underTest.setFlashlightLevelTemporary(2)
+            runCurrent()
+
+            assertThat(underTest.currentFlashlightLevel!!.enabled).isEqualTo(true)
+            assertThat(underTest.currentFlashlightLevel!!.level).isEqualTo(2)
+
+            // instead it can disable the flashlight
+            flashlightInteractor.setEnabled(false)
+            runCurrent()
+
+            assertThat(underTest.currentFlashlightLevel!!.enabled).isEqualTo(false)
+            assertThat(underTest.currentFlashlightLevel!!.level).isEqualTo(1)
+
+            // can set level at max
+            flashlightInteractor.setEnabled(true)
+            runCurrent()
+
+            assertThat(underTest.currentFlashlightLevel!!.enabled).isEqualTo(true)
+            assertThat(underTest.currentFlashlightLevel!!.level).isEqualTo(1)
         }
 
     @Test

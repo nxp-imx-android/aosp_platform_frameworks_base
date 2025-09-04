@@ -16,8 +16,6 @@
 
 package com.android.server.appfunctions;
 
-import static com.android.server.appfunctions.AppFunctionExecutors.SCHEDULED_EXECUTOR_SERVICE;
-
 import android.annotation.NonNull;
 import android.app.UriGrantsManager;
 import android.app.appfunctions.AppFunctionAccessServiceInterface;
@@ -25,7 +23,6 @@ import android.app.appfunctions.AppFunctionManagerConfiguration;
 import android.content.Context;
 import android.content.pm.PackageManagerInternal;
 import android.os.Environment;
-import android.os.UserHandle;
 
 import com.android.internal.os.BackgroundThread;
 import com.android.server.LocalServices;
@@ -33,8 +30,6 @@ import com.android.server.SystemService;
 import com.android.server.uri.UriGrantsManagerInternal;
 
 import java.io.File;
-import java.util.Objects;
-import java.util.function.Function;
 
 /** Service that manages app functions. */
 public class AppFunctionManagerService extends SystemService {
@@ -58,20 +53,7 @@ public class AppFunctionManagerService extends SystemService {
                                                 Environment.getDataSystemDirectory(),
                                                 APP_FUNCTIONS_DIR),
                                         AGENT_ALLOWLIST_FILE_NAME)),
-                        new MultiUserAppFunctionAccessHistory(
-                                new ServiceConfigImpl(),
-                                SCHEDULED_EXECUTOR_SERVICE,
-                                /* userAccessHistoryFactory */ new Function<>() {
-                                    @Override
-                                    @NonNull
-                                    public AppFunctionAccessHistory apply(
-                                            @NonNull UserHandle userHandle) {
-                                        Objects.requireNonNull(userHandle);
-                                        return new AppFunctionSQLiteAccessHistory(
-                                                context.createContextAsUser(
-                                                        userHandle, /* flags= */ 0));
-                                    }
-                                }),
+                        MultiUserAppFunctionAccessHistory.getInstance(context),
                         BackgroundThread.getExecutor());
     }
 

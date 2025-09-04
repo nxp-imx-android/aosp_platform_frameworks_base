@@ -27,7 +27,7 @@ sealed interface ScreenCaptureTarget {
     data class Region(val displayId: Int, val rect: Rect) : ScreenCaptureTarget
 
     /** A full app. */
-    data class App(val taskId: Int) : ScreenCaptureTarget
+    data class App(val displayId: Int, val taskId: Int) : ScreenCaptureTarget
 
     /** Content within an app. */
     data class AppContent(val contentId: Int) : ScreenCaptureTarget

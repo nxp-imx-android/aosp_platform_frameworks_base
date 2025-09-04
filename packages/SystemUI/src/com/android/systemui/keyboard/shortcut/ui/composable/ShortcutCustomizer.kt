@@ -466,7 +466,7 @@ private fun ActionKeyContainer(defaultModifierKey: ShortcutKey.Icon.ResIdIcon) {
 @Composable
 private fun ActionKeyText() {
     Text(
-        text = "Action",
+        text = stringResource(R.string.shortcut_helper_customizer_action_key_text),
         style = MaterialTheme.typography.titleMedium,
         fontSize = 16.sp,
         lineHeight = 24.sp,

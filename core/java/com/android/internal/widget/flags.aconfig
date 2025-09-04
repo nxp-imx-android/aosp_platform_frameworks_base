@@ -24,3 +24,10 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "notification_transparent_badge_ring"
+    namespace: "systemui"
+    description: "Makes the ring around for the notification badge transparent"
+    bug: "409346132"
+}

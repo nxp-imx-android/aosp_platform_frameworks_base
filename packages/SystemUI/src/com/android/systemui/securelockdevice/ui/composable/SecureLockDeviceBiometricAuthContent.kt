@@ -72,7 +72,7 @@ import com.android.systemui.bouncer.shared.model.SecureLockDeviceBouncerActionBu
 import com.android.systemui.deviceentry.ui.binder.UdfpsAccessibilityOverlayBinder
 import com.android.systemui.deviceentry.ui.view.UdfpsAccessibilityOverlay
 import com.android.systemui.deviceentry.ui.viewmodel.AlternateBouncerUdfpsAccessibilityOverlayViewModel
-import com.android.systemui.lifecycle.rememberActivated
+import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.res.R
 import com.android.systemui.securelockdevice.ui.viewmodel.SecureLockDeviceBiometricAuthContentViewModel
 import com.android.systemui.util.ui.compose.LottieColorUtils
@@ -88,7 +88,7 @@ fun SecureLockDeviceContent(
     modifier: Modifier = Modifier,
 ) {
     val secureLockDeviceViewModel =
-        rememberActivated(traceName = "SecureLockDeviceBiometricAuthContentViewModel") {
+        rememberViewModel(traceName = "SecureLockDeviceBiometricAuthContentViewModel") {
             secureLockDeviceViewModelFactory.create()
         }
 

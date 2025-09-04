@@ -40,6 +40,7 @@ import android.window.SystemPerformanceHinter;
 import com.android.internal.logging.UiEventLogger;
 import com.android.internal.policy.DesktopModeCompatPolicy;
 import com.android.launcher3.icons.IconProvider;
+import com.android.systemui.animation.ActivityTransitionAnimator;
 import com.android.window.flags.Flags;
 import com.android.wm.shell.ProtoLogController;
 import com.android.wm.shell.R;
@@ -298,6 +299,14 @@ public abstract class WMShellBaseModule {
 
     @WMSingleton
     @Provides
+    static ActivityTransitionAnimator provideActivityTransitionAnimator(
+            @ShellMainThread ShellExecutor mainExecutor,
+            ShellTransitions shellTransitions) {
+        return new ActivityTransitionAnimator(mainExecutor, shellTransitions);
+    }
+
+    @WMSingleton
+    @Provides
     static Optional<CompatUIHandler> provideCompatUIController(
             Context context,
             ShellInit shellInit,
@@ -318,7 +327,9 @@ public abstract class WMShellBaseModule {
             @NonNull CompatUIComponentIdGenerator componentIdGenerator,
             @NonNull CompatUIComponentFactory compatUIComponentFactory,
             CompatUIStatusManager compatUIStatusManager,
-            DesktopState desktopState) {
+            DesktopState desktopState,
+            Lazy<ActivityTransitionAnimator> activityTransitionAnimator,
+            Lazy<StartingWindowController> startingWindowController) {
         if (!context.getResources().getBoolean(R.bool.config_enableCompatUIController)) {
             return Optional.empty();
         }
@@ -344,7 +355,9 @@ public abstract class WMShellBaseModule {
                         accessibilityManager.get(),
                         compatUIStatusManager,
                         desktopUserRepositories,
-                        desktopState));
+                        desktopState,
+                        activityTransitionAnimator,
+                        startingWindowController));
     }
 
     @WMSingleton

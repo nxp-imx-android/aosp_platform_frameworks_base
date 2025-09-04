@@ -397,8 +397,14 @@ public final class ComputerControlSession implements AutoCloseable {
                 return this;
             }
 
-           /**
-             * Set all application package names that may be automated during this session.
+            /**
+             * Set the package names of all applications that may be automated during this session.
+             *
+             * <p>All package names specified in the list must meet the following requirements:
+             * <ol>
+             *     <li>The package name has a valid launcher Intent.</li>
+             *     <li>The package name is not the device permission controller.</li>
+             * </ol>
              */
             @NonNull
             public Builder setTargetPackageNames(@NonNull List<String> targetPackageNames) {

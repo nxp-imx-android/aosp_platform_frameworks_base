@@ -16,6 +16,7 @@
 
 package com.android.systemui.screencapture.record.domain.interactor
 
+import android.view.Display
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
@@ -52,7 +53,7 @@ class ScreenCaptureRecordParametersModelInteractorTest : SysuiTestCase() {
     @Test
     fun testChangingTarget() =
         kosmos.runTest {
-            val newTarget = ScreenCaptureTarget.App(taskId = 1)
+            val newTarget = ScreenCaptureTarget.App(displayId = Display.DEFAULT_DISPLAY, taskId = 1)
             val target by collectLastValue(underTest.parameters.map { it.target })
             assertThat(target).isNotEqualTo(newTarget)
 

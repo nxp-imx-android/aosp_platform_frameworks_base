@@ -193,10 +193,13 @@ public class AppOpHistoryHelper {
                 }
             }
             if (includeDiscreteEvents) {
-                result.addDiscreteAccess(event.opCode(), event.uid(), event.packageName(),
-                        event.attributionTag(), event.uidState(), event.opFlags(),
-                        discretizeTimestamp(event.accessTimeMillis()),
-                        discretizeDuration(event.durationMillis()), proxy);
+                // Discrete accesses doesn't include rejected events.
+                if (event.totalAccessCount() > 0) {
+                    result.addDiscreteAccess(event.opCode(), event.uid(), event.packageName(),
+                            event.attributionTag(), event.uidState(), event.opFlags(),
+                            discretizeTimestamp(event.accessTimeMillis()),
+                            discretizeDuration(event.durationMillis()), proxy);
+                }
             }
             if ((historyFlags & HISTORY_FLAG_AGGREGATE) != 0) {
                 addAppOpAccessEventToHistoricalOps(result, event);

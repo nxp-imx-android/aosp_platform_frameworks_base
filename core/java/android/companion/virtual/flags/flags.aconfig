@@ -266,13 +266,3 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
-
-flag {
-    name: "computer_control_activity_policy_relaxed"
-    namespace: "virtual_devices"
-    description: "Implements a relaxed Activity policy for ComputerControl VirtualDevices"
-    bug: "437849470"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}

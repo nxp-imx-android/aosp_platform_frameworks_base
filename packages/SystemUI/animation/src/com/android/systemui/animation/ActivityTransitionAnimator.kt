@@ -63,7 +63,11 @@ import com.android.internal.annotations.VisibleForTesting
 import com.android.internal.policy.ScreenDecorationsUtils
 import com.android.systemui.Flags.animationLibraryShellMigration
 import com.android.systemui.Flags.moveTransitionAnimationLayer
+import com.android.systemui.animation.ActivityTransitionAnimator.Companion.LONG_TRANSITION_TIMEOUT
+import com.android.systemui.animation.ActivityTransitionAnimator.Companion.TRANSITION_TIMEOUT
 import com.android.systemui.animation.TransitionAnimator.Companion.toTransitionState
+import com.android.systemui.animation.TransitionAnimator.Controller
+import com.android.window.flags.Flags.enableCompatuiSysuiLauncherFix;
 import com.android.wm.shell.shared.IShellTransitions
 import com.android.wm.shell.shared.ShellTransitions
 import com.android.wm.shell.shared.TransitionUtil
@@ -511,18 +515,27 @@ constructor(
     }
 
     private fun Controller.callOnIntentStartedOnMainThread(willAnimate: Boolean) {
+        if (enableCompatuiSysuiLauncherFix()) {
+            mainExecutor.execute { onIntentStarted(this, willAnimate) }
+            return
+        }
+
         if (Looper.myLooper() != Looper.getMainLooper()) {
             mainExecutor.execute { callOnIntentStartedOnMainThread(willAnimate) }
         } else {
-            if (DEBUG_TRANSITION_ANIMATION) {
-                Log.d(
-                    TAG,
-                    "Calling controller.onIntentStarted(willAnimate=$willAnimate) " +
-                        "[controller=$this]",
-                )
-            }
-            this.onIntentStarted(willAnimate)
+            onIntentStarted(this, willAnimate)
         }
+    }
+
+    private fun onIntentStarted(controller: Controller, willAnimate: Boolean) {
+        if (DEBUG_TRANSITION_ANIMATION) {
+            Log.d(
+                TAG,
+                "Calling controller.onIntentStarted(willAnimate=$willAnimate) " +
+                        "[controller=$controller]",
+            )
+        }
+        controller.onIntentStarted(willAnimate)
     }
 
     /**

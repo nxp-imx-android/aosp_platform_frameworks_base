@@ -38,17 +38,18 @@ import java.util.function.Consumer;
  */
 public abstract class VirtualDeviceManagerInternal {
 
-    /** Interface to listen to the changes on the list of app UIDs running on any virtual device. */
+    /** Interface to listen to the changes on the list of app UIDs running on virtual devices. */
     public interface AppsOnVirtualDeviceListener {
-        /** Notifies that running apps on any virtual device has changed */
-        void onAppsOnAnyVirtualDeviceChanged(Set<Integer> allRunningUids);
+        /** Notifies that running apps on the virtual device with the given id has changed */
+        void onAppsRunningOnVirtualDeviceChanged(
+                int deviceId, @NonNull ArraySet<Integer> runningUids);
     }
 
-    /** Register a listener for changes of running app UIDs on any virtual device. */
+    /** Register a listener for changes of running app UIDs on virtual devices. */
     public abstract void registerAppsOnVirtualDeviceListener(
             @NonNull AppsOnVirtualDeviceListener listener);
 
-    /** Unregister a listener for changes of running app UIDs on any virtual device. */
+    /** Unregister a listener for changes of running app UIDs on virtual devices. */
     public abstract void unregisterAppsOnVirtualDeviceListener(
             @NonNull AppsOnVirtualDeviceListener listener);
 
@@ -61,21 +62,9 @@ public abstract class VirtualDeviceManagerInternal {
             @NonNull Consumer<String> persistentDeviceIdRemovedListener);
 
     /**
-     * Notifies that the set of apps running on virtual devices has changed.
-     * This method only notifies the listeners when the union of running UIDs on all virtual devices
-     * has changed.
-     */
-    public abstract void onAppsOnVirtualDeviceChanged();
-
-    /**
      * Notifies that an authentication prompt is about to be shown for an app with the given uid.
      */
     public abstract void onAuthenticationPrompt(int uid);
-
-    /**
-     * Notifies the given persistent device IDs have been removed.
-     */
-    public abstract void onPersistentDeviceIdsRemoved(Set<String> removedPersistentDeviceIds);
 
     /**
      * Gets the owner uid for a deviceId.

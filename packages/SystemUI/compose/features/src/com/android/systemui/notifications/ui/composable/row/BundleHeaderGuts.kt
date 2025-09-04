@@ -48,6 +48,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.toggleableState
+import androidx.compose.ui.state.ToggleableState
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
@@ -121,7 +123,11 @@ private fun ContentRow(viewModel: BundleHeaderGutsViewModel, modifier: Modifier 
                 .padding(horizontal = 16.dp, vertical = 12.dp)
                 .minimumInteractiveComponentSize()
                 .clickable { viewModel.switchState = !viewModel.switchState }
-                .semantics(mergeDescendants = true) { role = Role.Button },
+                .semantics(mergeDescendants = true) {
+                    role = Role.Switch
+                    toggleableState =
+                        if (viewModel.switchState) ToggleableState.On else ToggleableState.Off
+                },
     ) {
         Column(Modifier.weight(1f)) {
             Text(

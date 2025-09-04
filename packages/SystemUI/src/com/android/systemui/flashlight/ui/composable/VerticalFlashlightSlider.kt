@@ -102,6 +102,7 @@ import platform.test.motion.compose.values.motionTestValues
 fun VerticalFlashlightSlider(
     valueRange: IntRange,
     onValueChange: (Int) -> Unit,
+    onValueChangeFinished: (Int) -> Unit,
     isEnabled: Boolean,
     levelValue: Int,
     hapticsViewModelFactory: SliderHapticsViewModel.Factory,
@@ -162,6 +163,7 @@ fun VerticalFlashlightSlider(
             onValueChangeFinished = {
                 if (isEnabled) {
                     hapticsViewModel.onValueChangeEnded()
+                    onValueChangeFinished(value)
                 }
             },
             interactionSource = interactionSource,

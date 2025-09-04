@@ -183,8 +183,7 @@ public class ProxyManager {
         synchronized (mLock) {
             mProxyA11yServiceConnections.put(displayId, connection);
             if (mAppsOnVirtualDeviceListener == null) {
-                mAppsOnVirtualDeviceListener = allRunningUids ->
-                        notifyProxyOfRunningAppsChange(allRunningUids);
+                mAppsOnVirtualDeviceListener = this::notifyProxyOfRunningAppsChange;
                 final VirtualDeviceManagerInternal localVdm = getLocalVdm();
                 if (localVdm != null) {
                     localVdm.registerAppsOnVirtualDeviceListener(mAppsOnVirtualDeviceListener);
@@ -870,34 +869,23 @@ public class ProxyManager {
     }
 
     @VisibleForTesting
-    void notifyProxyOfRunningAppsChange(Set<Integer> allRunningUids) {
+    void notifyProxyOfRunningAppsChange(int deviceId, @NonNull ArraySet<Integer> runningUids) {
         if (DEBUG) {
-            Slog.v(LOG_TAG, "notifyProxyOfRunningAppsChange: " + allRunningUids);
+            Slog.v(LOG_TAG, "notifyProxyOfRunningAppsChange: deviceId=" + deviceId
+                    + " runningUids=" + runningUids);
         }
+        boolean changed = false;
         synchronized (mLock) {
-            if (mProxyA11yServiceConnections.size() == 0) {
-                return;
-            }
-            final VirtualDeviceManagerInternal localVdm = getLocalVdm();
-            if  (localVdm == null) {
-                return;
-            }
-            final ArraySet<Integer> deviceIdsToUpdate = new ArraySet<>();
             for (int i = 0; i < mProxyA11yServiceConnections.size(); i++) {
-                final ProxyAccessibilityServiceConnection proxy =
-                        mProxyA11yServiceConnections.valueAt(i);
-                if (proxy != null) {
-                    final int proxyDeviceId = proxy.getDeviceId();
-                    for (Integer uid : allRunningUids) {
-                        if (localVdm.getDeviceIdsForUid(uid).contains(proxyDeviceId)) {
-                            deviceIdsToUpdate.add(proxyDeviceId);
-                        }
-                    }
+                ProxyAccessibilityServiceConnection proxy = mProxyA11yServiceConnections.valueAt(i);
+                if (proxy != null && deviceId == proxy.getDeviceId()) {
+                    changed = true;
+                    break;
                 }
             }
-            for (Integer proxyDeviceId : deviceIdsToUpdate) {
-                onProxyChanged(proxyDeviceId, true);
-            }
+        }
+        if (changed) {
+            onProxyChanged(deviceId, true);
         }
     }
 

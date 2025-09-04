@@ -20,7 +20,9 @@ import static android.app.ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREG
 import static android.companion.AssociationRequest.DEVICE_PROFILE_AUTOMOTIVE_PROJECTION;
 
 import static com.android.internal.util.CollectionUtils.any;
+import static com.android.internal.util.CollectionUtils.filter;
 import static com.android.server.companion.utils.RolesUtils.NLS_PROFILES;
+import static com.android.server.companion.utils.RolesUtils.isRoleInUseByAssociations;
 import static com.android.server.companion.utils.RolesUtils.removeRoleHolderForAssociation;
 
 import static java.util.concurrent.TimeUnit.DAYS;
@@ -133,9 +135,12 @@ public class DisassociationProcessor {
         final String packageName = association.getPackageName();
         final String deviceProfile = association.getDeviceProfile();
 
-        final boolean isRoleInUseByOtherAssociations = deviceProfile != null
-                && any(mAssociationStore.getActiveAssociationsByPackage(userId, packageName),
-                    it -> deviceProfile.equals(it.getDeviceProfile()) && id != it.getId());
+        final List<AssociationInfo> otherActiveAssociations = filter(
+                mAssociationStore.getActiveAssociationsByPackage(userId, packageName),
+                it -> id != it.getId()
+        );
+        final boolean isRoleInUseByOtherAssociations =
+                isRoleInUseByAssociations(otherActiveAssociations, deviceProfile);
 
         final int packageProcessImportance = getPackageProcessImportance(userId, packageName);
         if (packageProcessImportance <= IMPORTANCE_FOREGROUND && deviceProfile != null

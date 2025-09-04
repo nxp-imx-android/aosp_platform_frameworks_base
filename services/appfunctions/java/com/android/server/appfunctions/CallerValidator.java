@@ -19,6 +19,7 @@ package com.android.server.appfunctions;
 import android.Manifest;
 import android.annotation.IntDef;
 import android.annotation.NonNull;
+import android.annotation.Nullable;
 import android.os.UserHandle;
 
 import com.android.internal.annotations.VisibleForTesting;
@@ -81,6 +82,34 @@ public interface CallerValidator {
             @NonNull String callerPackageName,
             @NonNull String targetPackageName,
             @NonNull String functionId);
+
+    /**
+     * Validates that the caller has permission to interact with {@code targetUserId}.
+     *
+     * <p>The caller must either be the same user as target user. Or it would require to have {@link
+     * Manifest.permission#INTERACT_ACROSS_USERS_FULL} permission.
+     *
+     * @param targetUserId The target user id.
+     * @param callingUid The calling uid.
+     * @param callingPid The calling pid.
+     * @throws SecurityException if caller cannot interact with the target user.
+     */
+    void verifyUserInteraction(int targetUserId, int callingUid, int callingPid);
+
+    /**
+     * Validates that the caller has permission to interact with {@code targetUserId}.
+     *
+     * <p>The caller must either be the same user as target user. Or it would require to have {@link
+     * Manifest.permission#INTERACT_ACROSS_USERS_FULL} permission.
+     *
+     * @param targetUserId The target user id.
+     * @param callingUid The calling uid.
+     * @param callingPid The calling pid.
+     * @param callingPackageName The calling package name.
+     * @throws SecurityException if caller cannot interact with the target user.
+     */
+    void verifyUserInteraction(
+            int targetUserId, int callingUid, int callingPid, @Nullable String callingPackageName);
 
     @IntDef(
             prefix = {"CAN_EXECUTE_APP_FUNCTIONS_"},

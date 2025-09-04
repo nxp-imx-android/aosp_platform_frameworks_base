@@ -19,6 +19,7 @@ package com.android.server.companion.utils;
 import static android.companion.AssociationRequest.DEVICE_PROFILE_APP_STREAMING;
 import static android.companion.AssociationRequest.DEVICE_PROFILE_AUTOMOTIVE_PROJECTION;
 import static android.companion.AssociationRequest.DEVICE_PROFILE_COMPUTER;
+import static android.companion.AssociationRequest.DEVICE_PROFILE_FITNESS_TRACKER;
 import static android.companion.AssociationRequest.DEVICE_PROFILE_GLASSES;
 import static android.companion.AssociationRequest.DEVICE_PROFILE_NEARBY_DEVICE_STREAMING;
 import static android.companion.AssociationRequest.DEVICE_PROFILE_VIRTUAL_DEVICE;
@@ -37,6 +38,7 @@ import static com.android.internal.util.FrameworkStatsLog.CDM_ASSOCIATION_ACTION
 import static com.android.internal.util.FrameworkStatsLog.CDM_ASSOCIATION_ACTION__DEVICE_PROFILE__DEVICE_PROFILE_APP_STREAMING;
 import static com.android.internal.util.FrameworkStatsLog.CDM_ASSOCIATION_ACTION__DEVICE_PROFILE__DEVICE_PROFILE_AUTO_PROJECTION;
 import static com.android.internal.util.FrameworkStatsLog.CDM_ASSOCIATION_ACTION__DEVICE_PROFILE__DEVICE_PROFILE_COMPUTER;
+import static com.android.internal.util.FrameworkStatsLog.CDM_ASSOCIATION_ACTION__DEVICE_PROFILE__DEVICE_PROFILE_FITNESS_TRACKER;
 import static com.android.internal.util.FrameworkStatsLog.CDM_ASSOCIATION_ACTION__DEVICE_PROFILE__DEVICE_PROFILE_GLASSES;
 import static com.android.internal.util.FrameworkStatsLog.CDM_ASSOCIATION_ACTION__DEVICE_PROFILE__DEVICE_PROFILE_NEARBY_DEVICE_STREAMING;
 import static com.android.internal.util.FrameworkStatsLog.CDM_ASSOCIATION_ACTION__DEVICE_PROFILE__DEVICE_PROFILE_NULL;
@@ -54,6 +56,7 @@ import static com.android.internal.util.FrameworkStatsLog.DEVICE_PRESENCE_CHANGE
 import static com.android.internal.util.FrameworkStatsLog.DEVICE_PRESENCE_CHANGED__DEVICE_PROFILE__DEVICE_PROFILE_APP_STREAMING;
 import static com.android.internal.util.FrameworkStatsLog.DEVICE_PRESENCE_CHANGED__DEVICE_PROFILE__DEVICE_PROFILE_AUTO_PROJECTION;
 import static com.android.internal.util.FrameworkStatsLog.DEVICE_PRESENCE_CHANGED__DEVICE_PROFILE__DEVICE_PROFILE_COMPUTER;
+import static com.android.internal.util.FrameworkStatsLog.DEVICE_PRESENCE_CHANGED__DEVICE_PROFILE__DEVICE_PROFILE_FITNESS_TRACKER;
 import static com.android.internal.util.FrameworkStatsLog.DEVICE_PRESENCE_CHANGED__DEVICE_PROFILE__DEVICE_PROFILE_GLASSES;
 import static com.android.internal.util.FrameworkStatsLog.DEVICE_PRESENCE_CHANGED__DEVICE_PROFILE__DEVICE_PROFILE_NULL;
 import static com.android.internal.util.FrameworkStatsLog.DEVICE_PRESENCE_CHANGED__DEVICE_PROFILE__DEVICE_PROFILE_UNKNOWN;
@@ -65,6 +68,7 @@ import static com.android.internal.util.FrameworkStatsLog.write;
 import static com.android.server.companion.utils.PackageUtils.PACKAGE_NOT_FOUND;
 import static com.android.server.companion.utils.PackageUtils.getUidFromPackageName;
 
+import static java.util.Map.entry;
 
 import android.companion.AssociationInfo;
 import android.content.Context;
@@ -100,31 +104,45 @@ public final class MetricUtils {
             DEVICE_PROFILE_VIRTUAL_DEVICE,
             CDM_ASSOCIATION_ACTION__DEVICE_PROFILE__DEVICE_PROFILE_VIRTUAL_DEVICE,
             DEVICE_PROFILE_WEARABLE_SENSING,
-            CDM_ASSOCIATION_ACTION__DEVICE_PROFILE__DEVICE_PROFILE_WEARABLE_SENSING
+            CDM_ASSOCIATION_ACTION__DEVICE_PROFILE__DEVICE_PROFILE_WEARABLE_SENSING,
+            DEVICE_PROFILE_FITNESS_TRACKER,
+            CDM_ASSOCIATION_ACTION__DEVICE_PROFILE__DEVICE_PROFILE_FITNESS_TRACKER
     );
 
-    private static final Map<String, Integer> DEVICE_PRESENCE_CHANGED_DEVICE_PROFILE = Map.of(
-            DEVICE_PROFILE_NULL,
-            DEVICE_PRESENCE_CHANGED__DEVICE_PROFILE__DEVICE_PROFILE_NULL,
-            UUID,
-            DEVICE_PRESENCE_CHANGED__DEVICE_PROFILE__DEVICE_PROFILE_UUID,
-            DEVICE_PROFILE_WATCH,
-            DEVICE_PRESENCE_CHANGED__DEVICE_PROFILE__DEVICE_PROFILE_WATCH,
-            DEVICE_PROFILE_APP_STREAMING,
-            DEVICE_PRESENCE_CHANGED__DEVICE_PROFILE__DEVICE_PROFILE_APP_STREAMING,
-            DEVICE_PROFILE_AUTOMOTIVE_PROJECTION,
-            DEVICE_PRESENCE_CHANGED__DEVICE_PROFILE__DEVICE_PROFILE_AUTO_PROJECTION,
-            DEVICE_PROFILE_COMPUTER,
-            DEVICE_PRESENCE_CHANGED__DEVICE_PROFILE__DEVICE_PROFILE_COMPUTER,
-            DEVICE_PROFILE_GLASSES,
-            DEVICE_PRESENCE_CHANGED__DEVICE_PROFILE__DEVICE_PROFILE_GLASSES,
-            DEVICE_PROFILE_NEARBY_DEVICE_STREAMING,
-            DEVICE_PRESENCE_CHANGED__DEVICE_PROFILE__DEVICE_PROFILE_APP_STREAMING,
-            DEVICE_PROFILE_VIRTUAL_DEVICE,
-            DEVICE_PRESENCE_CHANGED__DEVICE_PROFILE__DEVICE_PROFILE_VIRTUAL_DEVICE,
-            DEVICE_PROFILE_WEARABLE_SENSING,
-            DEVICE_PRESENCE_CHANGED__DEVICE_PROFILE__DEVICE_PROFILE_WEARABLE_SENSING
-        );
+    private static final Map<String, Integer> DEVICE_PRESENCE_CHANGED_DEVICE_PROFILE = Map.ofEntries(
+            entry(
+                    DEVICE_PROFILE_NULL,
+                    DEVICE_PRESENCE_CHANGED__DEVICE_PROFILE__DEVICE_PROFILE_NULL),
+            entry(
+                    UUID,
+                    DEVICE_PRESENCE_CHANGED__DEVICE_PROFILE__DEVICE_PROFILE_UUID),
+            entry(
+                    DEVICE_PROFILE_WATCH,
+                    DEVICE_PRESENCE_CHANGED__DEVICE_PROFILE__DEVICE_PROFILE_WATCH),
+            entry(
+                    DEVICE_PROFILE_APP_STREAMING,
+                    DEVICE_PRESENCE_CHANGED__DEVICE_PROFILE__DEVICE_PROFILE_APP_STREAMING),
+            entry(
+                    DEVICE_PROFILE_AUTOMOTIVE_PROJECTION,
+                    DEVICE_PRESENCE_CHANGED__DEVICE_PROFILE__DEVICE_PROFILE_AUTO_PROJECTION),
+            entry(
+                    DEVICE_PROFILE_COMPUTER,
+                    DEVICE_PRESENCE_CHANGED__DEVICE_PROFILE__DEVICE_PROFILE_COMPUTER),
+            entry(
+                    DEVICE_PROFILE_GLASSES,
+                    DEVICE_PRESENCE_CHANGED__DEVICE_PROFILE__DEVICE_PROFILE_GLASSES),
+            entry(
+                    DEVICE_PROFILE_NEARBY_DEVICE_STREAMING,
+                    DEVICE_PRESENCE_CHANGED__DEVICE_PROFILE__DEVICE_PROFILE_APP_STREAMING),
+            entry(
+                    DEVICE_PROFILE_VIRTUAL_DEVICE,
+                    DEVICE_PRESENCE_CHANGED__DEVICE_PROFILE__DEVICE_PROFILE_VIRTUAL_DEVICE),
+            entry(
+                    DEVICE_PROFILE_WEARABLE_SENSING,
+                    DEVICE_PRESENCE_CHANGED__DEVICE_PROFILE__DEVICE_PROFILE_WEARABLE_SENSING),
+            entry(
+                    DEVICE_PROFILE_FITNESS_TRACKER,
+                    DEVICE_PRESENCE_CHANGED__DEVICE_PROFILE__DEVICE_PROFILE_FITNESS_TRACKER));
 
     private static final Map<Integer, Integer> DEVICE_PRESENCE_CHANGED_EVENT = Map.of(
             EVENT_BLE_APPEARED,

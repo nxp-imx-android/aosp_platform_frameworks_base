@@ -24,6 +24,7 @@ import static com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_BUBBLES_
 
 import static java.lang.Math.max;
 
+import android.annotation.CallbackExecutor;
 import android.annotation.Nullable;
 import android.app.ActivityManager;
 import android.content.Context;
@@ -35,9 +36,11 @@ import android.os.Bundle;
 import android.util.AttributeSet;
 import android.util.FloatProperty;
 import android.view.LayoutInflater;
+import android.view.SurfaceControl;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewOutlineProvider;
+import android.view.ViewRootImpl;
 import android.view.accessibility.AccessibilityNodeInfo;
 import android.widget.FrameLayout;
 import android.widget.Toast;
@@ -60,6 +63,7 @@ import com.android.wm.shell.shared.bubbles.BubbleBarLocation;
 import com.android.wm.shell.taskview.TaskView;
 
 import java.io.PrintWriter;
+import java.util.concurrent.Executor;
 import java.util.function.Supplier;
 
 import javax.inject.Inject;
@@ -602,6 +606,28 @@ public class BubbleBarExpandedView extends FrameLayout implements BubbleTaskView
     @Nullable
     BubbleTaskView getBubbleTaskView() {
         return mBubbleTaskView;
+    }
+
+    /**
+     * Adds a {@link SurfaceControl.TransactionCommittedListener} to be invoked when the TaskView's
+     * next draw.
+     * This is needed in case there is any following surface change that needs to wait until the
+     * TaskView property applied.
+     *
+     * NOTE: Do NOT use this if you already have a transaction.
+     */
+    void executeOnTaskViewDraw(@NonNull @CallbackExecutor Executor executor,
+            @NonNull SurfaceControl.TransactionCommittedListener listener) {
+        if (mBubbleTaskView == null) {
+            throw new IllegalStateException("BubbleTaskView is null");
+        }
+        final ViewRootImpl viewRoot = mBubbleTaskView.getTaskView().getViewRootImpl();
+        if (viewRoot == null) {
+            throw new IllegalStateException("ViewRootImpl of Bubble TaskView is null");
+        }
+        final SurfaceControl.Transaction transaction = new SurfaceControl.Transaction();
+        transaction.addTransactionCommittedListener(executor, listener);
+        viewRoot.applyTransactionOnDraw(transaction);
     }
 
     /**

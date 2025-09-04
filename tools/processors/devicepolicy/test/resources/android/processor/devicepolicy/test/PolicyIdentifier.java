@@ -16,8 +16,13 @@
 
 package android.app.admin;
 
+import android.annotation.IntDef;
 import android.processor.devicepolicy.BooleanPolicyDefinition;
+import android.processor.devicepolicy.EnumPolicyDefinition;
 import android.processor.devicepolicy.PolicyDefinition;
+
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 
 public final class PolicyIdentifier<T> {
     // We don't actually do anything with this.
@@ -33,4 +38,45 @@ public final class PolicyIdentifier<T> {
     @BooleanPolicyDefinition
     public static final PolicyIdentifier<Boolean> TEST_POLICY_1 = new PolicyIdentifier<>(
             TEST_POLICY_1_KEY);
+
+    private static final String TEST_POLICY_2_KEY = "test_policy_1_key";
+
+    /**
+     * First entry
+     */
+    public static final int ENUM_ENTRY_1 = 0;
+
+    /**
+     * Second entry
+     */
+    public static final int ENUM_ENTRY_2 = 1;
+
+    /**
+     * Third entry
+     */
+    public static final int ENUM_ENTRY_3 = 2;
+
+    /**
+     * Enum for {@link TEST_POLICY_2}
+     *
+     * @hide
+     */
+    @Retention(RetentionPolicy.SOURCE)
+    @IntDef(prefix = { "AUTO_TIME_ZONE_" }, value = {
+            ENUM_ENTRY_1,
+            ENUM_ENTRY_2,
+            ENUM_ENTRY_3
+    })
+    public @interface TestPolicy2Enum {}
+
+    /**
+     * Test policy 2
+     */
+    @PolicyDefinition
+    @EnumPolicyDefinition(
+            defaultValue = ENUM_ENTRY_2,
+            intDef = TestPolicy2Enum.class
+    )
+    public static final PolicyIdentifier<Integer> TEST_POLICY_2 = new PolicyIdentifier<>(
+            TEST_POLICY_2_KEY);
 }

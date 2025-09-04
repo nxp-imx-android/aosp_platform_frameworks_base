@@ -37,8 +37,8 @@ import static android.content.pm.PackageManager.FEATURE_WATCH;
 import static com.android.server.companion.utils.PackageUtils.enforceUsesCompanionDeviceFeature;
 import static com.android.server.companion.utils.PermissionsUtils.PERM_SET_TO_PERMS;
 import static com.android.server.companion.utils.PermissionsUtils.enforcePermissionForCreatingAssociation;
-import static com.android.server.companion.utils.RolesUtils.PROFILE_PERMISSION_SETS;
 import static com.android.server.companion.utils.RolesUtils.addRoleHolderForAssociation;
+import static com.android.server.companion.utils.RolesUtils.getPermsForProfile;
 import static com.android.server.companion.utils.RolesUtils.isRoleHolder;
 import static com.android.server.companion.utils.RolesUtils.isRolelessProfile;
 import static com.android.server.companion.utils.Utils.generateRandom128BitKey;
@@ -556,28 +556,20 @@ public class AssociationRequestsProcessor {
         return PackageUtils.isPackageAllowlisted(mContext, mPackageManagerInternal, packageName);
     }
 
-    private List<Integer> getPermsForProfile(String profile) {
-        if (profile == null || !PROFILE_PERMISSION_SETS.containsKey(profile)) {
-            return null;
-        }
-        return PROFILE_PERMISSION_SETS.get(profile);
-    }
-
     /**
      * Get app requested permissions for the profile.
      */
     private ArrayList<Integer> getRequestedPermsForProfile(int userId, String packageName,
                                                            String profile) {
-        if (profile == null || !PROFILE_PERMISSION_SETS.containsKey(profile)) {
+        ArrayList<Integer> requestedPermsForProfile = new ArrayList<>(getPermsForProfile(profile));
+        if (requestedPermsForProfile.isEmpty()) {
             return null;
         }
-        ArrayList<Integer> requestedPermsForProfile = new ArrayList<>(
-                PROFILE_PERMISSION_SETS.get(profile));
         PackageInfo packageInfo = PackageUtils.getPackageInfo(mContext, userId, packageName);
         if (packageInfo != null) {
             List<String> requestedPermissions = Arrays.asList(packageInfo.requestedPermissions);
             // Loop thru profile perm sets and check if the app requested one of the perms per set.
-            for (Integer permSet : PROFILE_PERMISSION_SETS.get(profile)) {
+            for (Integer permSet : getPermsForProfile(profile)) {
                 if (!PERM_SET_TO_PERMS.containsKey(permSet)) {
                     continue;
                 }

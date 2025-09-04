@@ -2381,6 +2381,13 @@
              {@link android.content.pm.PackageManager#changeLauncherIconConfig}
              @FlaggedApi(android.content.pm.Flags.FLAG_CHANGE_LAUNCHER_BADGING) -->
         <attr name="alternateLauncherLabels" format="reference" />
+
+        <!-- Specifies whether this app should run in the Private Compute Core sandbox.
+             If true, the app will be subject to system restrictions, limiting access to some
+             system resources and restricting communication with non-PCC apps.
+             @FlaggedApi(android.app.privatecompute.flags.Flags.FLAG_ENABLE_PCC_FRAMEWORK_SUPPORT)
+        -->
+        <attr name="runInPccSandbox" format="boolean"/>
     </declare-styleable>
 
     <!-- An attribution is a logical part of an app and is identified by a tag.

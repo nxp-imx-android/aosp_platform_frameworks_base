@@ -90,6 +90,8 @@ import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.when;
 
 import android.app.AppOpsManager;
+import android.app.servertransaction.ClientTransaction;
+import android.app.servertransaction.WindowStateResizeItem;
 import android.content.ContentResolver;
 import android.content.res.CompatibilityInfo;
 import android.content.res.Configuration;
@@ -1142,6 +1144,39 @@ public class WindowStateTests extends WindowTestsBase {
             assertTrue(win.isSyncFinished(syncGroup));
             assertEquals(WindowContainer.SYNC_STATE_READY, win.mSyncState);
         }
+    }
+
+    @Test
+    public void testSyncMethodBlastOverride() {
+        assumeTrue(mWm.mAlwaysSeqId);
+        final WindowState win = newWindowBuilder("window", TYPE_APPLICATION).build();
+        win.mSession.onWindowAdded(win);
+        makeWindowVisible(win);
+        makeLastConfigReportedToClient(win, true /* visible */);
+        win.mLayoutSeq = win.getDisplayContent().mLayoutSeq;
+        win.reportResized();
+        win.updateResizingWindowIfNeeded();
+        assertThat(mWm.mResizingWindows).doesNotContain(win);
+
+        // Hack so that lifecyclemanager holds onto pending for us to inspect
+        mWm.mWindowPlacerLocked.deferLayout();
+
+        // Start a non-BLAST sync (pretend like the config changed)
+        final BLASTSyncEngine.SyncGroup syncGroup = mock(BLASTSyncEngine.SyncGroup.class);
+        win.mSyncGroup = syncGroup;
+        win.prepareSync();
+        assertEquals(SYNC_STATE_WAITING_FOR_DRAW, win.mSyncState);
+        win.setLastConfigReportedToClientForTest(false);
+        win.updateResizingWindowIfNeeded();
+        assertThat(mWm.mResizingWindows).contains(win);
+        // Override this window to BLAST (seamless rotation does this)
+        win.useBlastForNextSync();
+        win.reportResized();
+
+        final ClientTransaction ct = mAtm.getLifecycleManager().mPendingTransactions.get(
+                win.getProcess().getThread().asBinder());
+        WindowStateResizeItem ri = (WindowStateResizeItem) ct.getTransactionItems().getLast();
+        assertTrue(ri.getSyncWithBuffersForTest());
     }
 
     @Test

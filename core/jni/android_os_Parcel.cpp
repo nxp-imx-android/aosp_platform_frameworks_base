@@ -43,6 +43,11 @@
 #include "android_util_Binder.h"
 #include "core_jni_helpers.h"
 
+#if defined(__ANDROID__)
+#include <android_os.h>
+#include "com_android_internal_os_JniStringCache.h"
+#endif
+
 //#undef ALOGV
 //#define ALOGV(...) fprintf(stderr, __VA_ARGS__)
 
@@ -54,6 +59,7 @@
 #endif
 
 namespace android {
+
 
 static struct parcel_offsets_t
 {
@@ -479,32 +485,40 @@ static jdouble android_os_Parcel_readDouble(CRITICAL_JNI_PARAMS_COMMA jlong nati
     return 0;
 }
 
-static jstring android_os_Parcel_readString8(JNIEnv* env, jclass clazz, jlong nativePtr)
-{
+static jstring android_os_Parcel_readString8(JNIEnv* env, jclass clazz, jlong nativePtr) {
     Parcel* parcel = reinterpret_cast<Parcel*>(nativePtr);
     if (parcel != NULL) {
         size_t len;
         const char* str = parcel->readString8Inplace(&len);
         if (str) {
+#if defined(__ANDROID__)
+            if (android::os::parcel_string_cache_enabled()) {
+                return JniStringCache::getInstance().NewStringUTF(env, str, len);
+            }
+#endif
             return env->NewStringUTF(str);
         }
-        return NULL;
+ return NULL;
     }
-    return NULL;
+ return NULL;
 }
 
-static jstring android_os_Parcel_readString16(JNIEnv* env, jclass clazz, jlong nativePtr)
-{
+static jstring android_os_Parcel_readString16(JNIEnv* env, jclass clazz, jlong nativePtr) {
     Parcel* parcel = reinterpret_cast<Parcel*>(nativePtr);
     if (parcel != NULL) {
         size_t len;
         const char16_t* str = parcel->readString16Inplace(&len);
         if (str) {
+#if defined(__ANDROID__)
+            if (android::os::parcel_string_cache_enabled()) {
+                return JniStringCache::getInstance().NewString(env, str, len);
+            }
+#endif
             return env->NewString(reinterpret_cast<const jchar*>(str), len);
         }
-        return NULL;
+ return NULL;
     }
-    return NULL;
+ return NULL;
 }
 
 static jobject android_os_Parcel_readStrongBinder(JNIEnv* env, jclass clazz, jlong nativePtr)

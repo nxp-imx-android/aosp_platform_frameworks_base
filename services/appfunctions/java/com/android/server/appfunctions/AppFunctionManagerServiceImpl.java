@@ -119,8 +119,8 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
     private static final String NAMESPACE_MACHINE_LEARNING = "machine_learning";
     private static final String SHELL_PKG = "com.android.shell";
 
-    private static final Uri ADDITIONAL_AGENTS_URI = Settings.Secure.getUriFor(
-            Settings.Secure.APP_FUNCTION_ADDITIONAL_AGENT_ALLOWLIST);
+    private static final Uri ADDITIONAL_AGENTS_URI =
+            Settings.Secure.getUriFor(Settings.Secure.APP_FUNCTION_ADDITIONAL_AGENT_ALLOWLIST);
 
     private final RemoteServiceCaller<IAppFunctionService> mRemoteServiceCaller;
     private final CallerValidator mCallerValidator;
@@ -148,15 +148,17 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
     private final Object mAgentAllowlistLock = new Object();
 
     // Any agents hardcoded by the system
-    private static final List<SignedPackage> sSystemAllowlist = List.of(
-            new SignedPackage(SHELL_PKG, null)
-    );
+    private static final List<SignedPackage> sSystemAllowlist =
+            List.of(new SignedPackage(SHELL_PKG, null));
+
     // The main agent allowlist, set by the updatable DeviceConfig System
     @GuardedBy("mAgentAllowlistLock")
     private List<SignedPackage> mUpdatableAgentAllowlist = Collections.emptyList();
+
     // A secondary agent allowlist, set by ADB command using a secure setting
     @GuardedBy("mAgentAllowlistLock")
     private List<SignedPackage> mSecureSettingAgentAllowlist = Collections.emptyList();
+
     // The merged allowlist.
     @GuardedBy("mAgentAllowlistLock")
     private ArraySet<SignedPackage> mAgentAllowlist = new ArraySet<>(sSystemAllowlist);
@@ -171,8 +173,8 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
                     if (!ADDITIONAL_AGENTS_URI.equals(uri)) {
                         return;
                     }
-                    updateAgentAllowlist(/* readFromDeviceConfig= */ false,
-                            /* readFromSecureSetting= */ true);
+                    updateAgentAllowlist(
+                            /* readFromDeviceConfig= */ false, /* readFromSecureSetting= */ true);
                 }
             };
 
@@ -326,15 +328,15 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
     public void onBootPhase(int phase) {
         if (!Flags.appFunctionAccessServiceEnabled()) return;
         if (phase == SystemService.PHASE_SYSTEM_SERVICES_READY) {
-            mBackgroundExecutor.execute(() ->
-                    updateAgentAllowlist(/* readFromDeviceConfig */ true,
-                            /* readFromSecureSetting= */ true));
+            mBackgroundExecutor.execute(
+                    () ->
+                            updateAgentAllowlist(
+                                    /* readFromDeviceConfig */ true,
+                                    /* readFromSecureSetting= */ true));
             DeviceConfig.addOnPropertiesChangedListener(
-                    NAMESPACE_MACHINE_LEARNING,
-                    mBackgroundExecutor,
-                    mDeviceConfigListener);
-            mContext.getContentResolver().registerContentObserver(ADDITIONAL_AGENTS_URI, false,
-                    mAdbAgentObserver);
+                    NAMESPACE_MACHINE_LEARNING, mBackgroundExecutor, mDeviceConfigListener);
+            mContext.getContentResolver()
+                    .registerContentObserver(ADDITIONAL_AGENTS_URI, false, mAdbAgentObserver);
         }
     }
 
@@ -692,6 +694,24 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
         }
     }
 
+    @Override
+    @EnforcePermission(Manifest.permission.MANAGE_APP_FUNCTION_ACCESS)
+    public void clearAccessHistory(int userId) {
+        clearAccessHistory_enforcePermission();
+        enforceClearAccessHistoryUserPermission(userId);
+        try {
+            mMultiUserAppFunctionAccessHistory.asUser(userId).deleteAll();
+        } catch (IllegalStateException e) {
+            Slog.w(TAG, "Unable to clear access history", e);
+        }
+    }
+
+    private void enforceClearAccessHistoryUserPermission(int userId) {
+        final int callingUid = Binder.getCallingUid();
+        final int callingPid = Binder.getCallingPid();
+        mCallerValidator.verifyUserInteraction(userId, callingUid, callingPid);
+    }
+
     private void updateAgentAllowlist(boolean readFromDeviceConfig, boolean readFromSecureSetting) {
         synchronized (mAgentAllowlistLock) {
             List<SignedPackage> newDeviceConfigAgents;
@@ -778,9 +798,11 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
 
     @NonNull
     private List<SignedPackage> readAdbAgentAllowlist() {
-        String agents = Settings.Secure.getStringForUser(mContext.getContentResolver(),
-                Settings.Secure.APP_FUNCTION_ADDITIONAL_AGENT_ALLOWLIST,
-                Process.myUserHandle().getIdentifier());
+        String agents =
+                Settings.Secure.getStringForUser(
+                        mContext.getContentResolver(),
+                        Settings.Secure.APP_FUNCTION_ADDITIONAL_AGENT_ALLOWLIST,
+                        Process.myUserHandle().getIdentifier());
         if (agents == null) {
             return Collections.emptyList();
         }
@@ -791,6 +813,7 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
             return Collections.emptyList();
         }
     }
+
     private boolean accessCheckFlagsEnabled() {
         return android.permission.flags.Flags.appFunctionAccessApiEnabled()
                 && android.permission.flags.Flags.appFunctionAccessServiceEnabled();
@@ -1130,7 +1153,7 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
                             long executionStartTimeMillis) {
                         mLoggerWrapper.logAppFunctionSuccess(
                                 requestInternal, result, callingUid, executionStartTimeMillis);
-                        recordAppFunctionAccess(requestInternal, executionStartTimeMillis);
+                        recordAppFunctionAccess(requestInternal);
                     }
 
                     @Override
@@ -1141,21 +1164,21 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
                                 error.getErrorCode(),
                                 callingUid,
                                 executionStartTimeMillis);
-                        recordAppFunctionAccess(requestInternal, executionStartTimeMillis);
+                        recordAppFunctionAccess(requestInternal);
                     }
                 });
     }
 
-    private void recordAppFunctionAccess(
-            @NonNull ExecuteAppFunctionAidlRequest aidlRequest, long executionStartTimeMillis) {
+    private void recordAppFunctionAccess(@NonNull ExecuteAppFunctionAidlRequest aidlRequest) {
         if (!accessCheckFlagsEnabled()) return;
-        final long duration = SystemClock.elapsedRealtime() - executionStartTimeMillis;
+        final long duration = SystemClock.elapsedRealtime() - aidlRequest.getRequestTime();
+        final long accessTime = aidlRequest.getRequestWallTime();
         mBackgroundExecutor.execute(
                 () -> {
                     try {
                         mMultiUserAppFunctionAccessHistory
-                                .asUser(aidlRequest.getUserHandle())
-                                .insertAppFunctionAccessHistory(aidlRequest, duration);
+                                .asUser(aidlRequest.getUserHandle().getIdentifier())
+                                .insertAppFunctionAccessHistory(aidlRequest, accessTime, duration);
                     } catch (IllegalStateException e) {
                         Slog.e(
                                 TAG,

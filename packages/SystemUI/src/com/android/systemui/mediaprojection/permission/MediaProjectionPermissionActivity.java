@@ -350,12 +350,11 @@ public class MediaProjectionPermissionActivity extends Activity {
     }
 
     private void setUpDialog(AlertDialog dialog) {
-        SystemUIDialog.registerDismissListener(dialog);
+        SystemUIDialog.registerDismissListener(dialog, this::onDialogDismissedOrCancelled);
         SystemUIDialog.applyFlags(dialog, /* showWhenLocked= */ false);
         SystemUIDialog.setDialogSize(dialog);
 
         dialog.setOnCancelListener(this::onDialogDismissedOrCancelled);
-        dialog.setOnDismissListener(this::onDialogDismissedOrCancelled);
         dialog.create();
         dialog.getButton(DialogInterface.BUTTON_POSITIVE).setFilterTouchesWhenObscured(true);
 
@@ -479,6 +478,10 @@ public class MediaProjectionPermissionActivity extends Activity {
     }
 
     private void onDialogDismissedOrCancelled(DialogInterface dialogInterface) {
+        onDialogDismissedOrCancelled();
+    }
+
+    private void onDialogDismissedOrCancelled() {
         if (!isFinishing()) {
             finish();
         }

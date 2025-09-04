@@ -105,7 +105,7 @@ public class PermissionUsageHelper implements AppOpsManager.OnOpActiveChangedLis
     private static final long DEFAULT_RUNNING_TIME_MS = 5000L;
     private static final long ADDITIONAL_RUNNING_TIME_LOCATION_ONLY_MS =
             10_000L - DEFAULT_RUNNING_TIME_MS;
-    // LINT.ThenChange(/packages/SystemUI/src/com/android/systemui/privacy/PrivacyItemController.kt)
+    // LINT.ThenChange(/packages/SystemUI/src/com/android/systemui/privacy/PrivacyItemController.kt, /packages/SystemUI/src/com/android/systemui/appops/AppOpsControllerImpl.java)
     private static final long DEFAULT_RECENT_TIME_MS = 15000L;
 
     private static boolean shouldShowIndicators() {

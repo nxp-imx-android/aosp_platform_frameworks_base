@@ -154,8 +154,7 @@ public class LockSettingsServiceTests extends BaseLockSettingsServiceTests {
 
         final LockscreenCredential firstUnifiedPassword = newPassword("pwd-1");
         final LockscreenCredential secondUnifiedPassword = newPassword("pwd-2");
-        setCredential(PRIMARY_USER_ID, firstUnifiedPassword);
-        mService.setSeparateProfileChallengeEnabled(MANAGED_PROFILE_USER_ID, false, null);
+        setUpUnifiedPassword(firstUnifiedPassword);
         final long primarySid = mGateKeeperService.getSecureUserId(PRIMARY_USER_ID);
         final long profileSid = mGateKeeperService.getSecureUserId(MANAGED_PROFILE_USER_ID);
         final long turnedOffProfileSid =
@@ -362,8 +361,7 @@ public class LockSettingsServiceTests extends BaseLockSettingsServiceTests {
                     throws Exception {
         final LockscreenCredential oldCredential = newPassword("oldPassword");
         final LockscreenCredential newCredential = newPassword("newPassword");
-        setCredential(PRIMARY_USER_ID, oldCredential);
-        mService.setSeparateProfileChallengeEnabled(MANAGED_PROFILE_USER_ID, false, null);
+        setUpUnifiedPassword(oldCredential);
         setCredential(PRIMARY_USER_ID, newCredential, oldCredential);
 
         verify(mRecoverableKeyStoreManager).lockScreenSecretChanged(newCredential, PRIMARY_USER_ID);
@@ -377,8 +375,7 @@ public class LockSettingsServiceTests extends BaseLockSettingsServiceTests {
             throws Exception {
         final LockscreenCredential oldCredential = newPassword("oldPassword");
         final LockscreenCredential newCredential = newPassword("newPassword");
-        setCredential(PRIMARY_USER_ID, oldCredential);
-        mService.setSeparateProfileChallengeEnabled(MANAGED_PROFILE_USER_ID, false, null);
+        setUpUnifiedPassword(oldCredential);
         reset(mStrongAuth);
 
         setCredential(PRIMARY_USER_ID, newCredential, oldCredential);
@@ -390,8 +387,7 @@ public class LockSettingsServiceTests extends BaseLockSettingsServiceTests {
     public void setLockCredential_primaryWithUnifiedProfile_clearsStrongAuthForBoth()
             throws Exception {
         final LockscreenCredential credential = newPassword("oldPassword");
-        setCredential(PRIMARY_USER_ID, credential);
-        mService.setSeparateProfileChallengeEnabled(MANAGED_PROFILE_USER_ID, false, null);
+        setUpUnifiedPassword(credential);
         clearCredential(PRIMARY_USER_ID, credential);
         reset(mStrongAuth);
 
@@ -406,8 +402,7 @@ public class LockSettingsServiceTests extends BaseLockSettingsServiceTests {
             throws Exception {
         final LockscreenCredential oldCredential = newPassword("oldPassword");
         final LockscreenCredential newCredential = newPassword("newPassword");
-        setCredential(PRIMARY_USER_ID, oldCredential);
-        mService.setSeparateProfileChallengeEnabled(MANAGED_PROFILE_USER_ID, false, null);
+        setUpUnifiedPassword(oldCredential);
         reset(mStrongAuth);
 
         setCredential(PRIMARY_USER_ID, newCredential, oldCredential);
@@ -420,8 +415,7 @@ public class LockSettingsServiceTests extends BaseLockSettingsServiceTests {
             testSetLockCredential_forPrimaryUserWithUnifiedChallengeProfile_removesBothCredentials()
                     throws Exception {
         LockscreenCredential noneCredential = nonePassword();
-        setCredential(PRIMARY_USER_ID, newPassword("oldPassword"));
-        mService.setSeparateProfileChallengeEnabled(MANAGED_PROFILE_USER_ID, false, null);
+        setUpUnifiedPassword(newPassword("oldPassword"));
         clearCredential(PRIMARY_USER_ID, newPassword("oldPassword"));
 
         verify(mRecoverableKeyStoreManager)
@@ -432,8 +426,7 @@ public class LockSettingsServiceTests extends BaseLockSettingsServiceTests {
 
     @Test
     public void testClearLockCredential_removesBiometrics() throws RemoteException {
-        setCredential(PRIMARY_USER_ID, newPattern("123654"));
-        mService.setSeparateProfileChallengeEnabled(MANAGED_PROFILE_USER_ID, false, null);
+        setUpUnifiedPassword(newPattern("123654"));
         clearCredential(PRIMARY_USER_ID, newPattern("123654"));
 
         // Verify fingerprint is removed
@@ -456,8 +449,7 @@ public class LockSettingsServiceTests extends BaseLockSettingsServiceTests {
     @Test
     public void clearLockCredential_primaryWithUnifiedProfile_leavesStrongAuthForBoth()
             throws Exception {
-        setCredential(PRIMARY_USER_ID, newPassword("password"));
-        mService.setSeparateProfileChallengeEnabled(MANAGED_PROFILE_USER_ID, false, null);
+        setUpUnifiedPassword(newPassword("password"));
         reset(mStrongAuth);
 
         clearCredential(PRIMARY_USER_ID, newPassword("password"));
@@ -470,8 +462,7 @@ public class LockSettingsServiceTests extends BaseLockSettingsServiceTests {
             throws Exception {
         final LockscreenCredential parentPassword = newPassword("parentPassword");
         final LockscreenCredential profilePassword = newPassword("profilePassword");
-        setCredential(PRIMARY_USER_ID, parentPassword);
-        mService.setSeparateProfileChallengeEnabled(MANAGED_PROFILE_USER_ID, false, null);
+        setUpUnifiedPassword(parentPassword);
         setCredential(MANAGED_PROFILE_USER_ID, profilePassword);
         verify(mRecoverableKeyStoreManager)
                 .lockScreenSecretChanged(profilePassword, MANAGED_PROFILE_USER_ID);
@@ -525,8 +516,7 @@ public class LockSettingsServiceTests extends BaseLockSettingsServiceTests {
     public void verifyCredential_forPrimaryUserWithUnifiedChallengeProfile_sendsCredentialsForBoth()
                     throws Exception {
         final LockscreenCredential pattern = newPattern("12345");
-        setCredential(PRIMARY_USER_ID, pattern);
-        mService.setSeparateProfileChallengeEnabled(MANAGED_PROFILE_USER_ID, false, null);
+        setUpUnifiedPassword(pattern);
         reset(mRecoverableKeyStoreManager);
 
         mService.verifyCredential(pattern, PRIMARY_USER_ID, 0 /* flags */);
@@ -986,6 +976,11 @@ public class LockSettingsServiceTests extends BaseLockSettingsServiceTests {
             badCredential = LockscreenCredential.createPin("0");
         }
         assertTrue(mService.verifyCredential(badCredential, userId, 0 /* flags */).isOtherError());
+    }
+
+    private void setUpUnifiedPassword(LockscreenCredential unifiedPassword) throws RemoteException {
+        setCredential(PRIMARY_USER_ID, unifiedPassword);
+        mService.setSeparateProfileChallengeEnabled(MANAGED_PROFILE_USER_ID, false, null);
     }
 
     private void setAndVerifyCredential(int userId, LockscreenCredential newCredential)

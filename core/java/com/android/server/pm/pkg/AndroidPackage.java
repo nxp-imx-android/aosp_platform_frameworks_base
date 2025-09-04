@@ -1554,4 +1554,15 @@ public interface AndroidPackage {
      * @hide
      */
     int getIntentMatchingFlags();
+
+    /**
+     * Returns true if this application should run in the Private Compute Core sandbox.
+     *
+     * @see ApplicationInfo#PRIVATE_FLAG_EXT_RUN_IN_PCC_SANDBOX
+     * @see R.styleable#AndroidManifestApplication_runInPccSandbox
+     *
+     * @hide
+     */
+    boolean shouldRunInPccSandbox();
+
 }

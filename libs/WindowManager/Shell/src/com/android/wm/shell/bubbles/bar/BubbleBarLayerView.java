@@ -16,10 +16,10 @@
 
 package com.android.wm.shell.bubbles.bar;
 
+import static com.android.wm.shell.bubbles.Bubbles.DISMISS_USER_GESTURE;
 import static com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_BUBBLES_NOISY;
 import static com.android.wm.shell.shared.animation.Interpolators.ALPHA_IN;
 import static com.android.wm.shell.shared.animation.Interpolators.ALPHA_OUT;
-import static com.android.wm.shell.bubbles.Bubbles.DISMISS_USER_GESTURE;
 import static com.android.wm.shell.shared.bubbles.BubbleConstants.BUBBLE_EXPANDED_SCRIM_ALPHA;
 
 import android.annotation.Nullable;
@@ -54,6 +54,7 @@ import com.android.wm.shell.bubbles.BubbleViewProvider;
 import com.android.wm.shell.bubbles.DismissViewUtils;
 import com.android.wm.shell.bubbles.bar.BubbleBarExpandedViewDragController.DragListener;
 import com.android.wm.shell.bubbles.util.ReferenceCounter;
+import com.android.wm.shell.common.ShellExecutor;
 import com.android.wm.shell.shared.bubbles.BubbleBarLocation;
 import com.android.wm.shell.shared.bubbles.DeviceConfig;
 import com.android.wm.shell.shared.bubbles.DismissView;
@@ -117,14 +118,14 @@ public class BubbleBarLayerView extends FrameLayout
             new ReferenceCounter();
 
     public BubbleBarLayerView(Context context, BubbleController controller, BubbleData bubbleData,
-            BubbleLogger bubbleLogger) {
+            BubbleLogger bubbleLogger, ShellExecutor mainExecutor) {
         super(context);
         mBubbleController = controller;
         mBubbleData = bubbleData;
         mPositioner = mBubbleController.getPositioner();
         mBubbleLogger = bubbleLogger;
 
-        mAnimationHelper = new BubbleBarAnimationHelper(context, mPositioner);
+        mAnimationHelper = new BubbleBarAnimationHelper(context, mPositioner, mainExecutor);
         mEducationViewController = new BubbleEducationViewController(context, (boolean visible) -> {
             if (mExpandedView == null) return;
             mExpandedView.setObscured(visible);
@@ -457,7 +458,7 @@ public class BubbleBarLayerView extends FrameLayout
     public void animateExpand(BubbleViewProvider previousBubble,
             @Nullable Runnable animFinish) {
         if (!mIsExpanded || mExpandedBubble == null) {
-            throw new IllegalStateException("Can't animateExpand without expnaded state");
+            throw new IllegalStateException("Can't animateExpand without expanded state");
         }
         final BubbleViewProvider expandedBubble = mExpandedBubble;
         mAnimatingBubbleTracker.increment(previousBubble, expandedBubble);
@@ -480,7 +481,10 @@ public class BubbleBarLayerView extends FrameLayout
         };
 
         if (previousBubble != null) {
-            mAnimationHelper.animateSwitch(previousBubble, expandedBubble, endRunnable);
+            final boolean shouldApplyAsJumpcut = (expandedBubble instanceof Bubble bubble)
+                    && bubble.isJumpcutBubbleSwitching();
+            mAnimationHelper.animateSwitch(previousBubble, expandedBubble, shouldApplyAsJumpcut,
+                    endRunnable);
         } else {
             mAnimationHelper.animateExpansion(expandedBubble, endRunnable);
         }

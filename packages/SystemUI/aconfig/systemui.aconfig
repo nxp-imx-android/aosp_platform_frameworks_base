@@ -716,6 +716,16 @@ flag {
 }
 
 flag {
+    name: "restore_show_taps_setting"
+    namespace: "systemui"
+    description: "Restore show taps setting even if screen recording session is interrupted"
+    bug: "431753924"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "clipboard_overlay_multiuser"
     namespace: "systemui"
     description: "Fix clipboard overlay for secondary users"
@@ -1320,6 +1330,16 @@ flag {
 }
 
 flag {
+    name:"media_controls_translation_fix"
+    namespace: "systemui"
+    description: "Removes media controls y-translation update"
+    bug: "415755300"
+    metadata {
+      purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "shade_app_launch_animation_skip_in_desktop"
     namespace: "systemui"
     description: "Fixes the animation for notification shade entry points in Desktop Mode"
@@ -1794,16 +1814,6 @@ flag {
     description: "Read-only flag for lockscreen font"
     bug: "393610165"
     is_fixed_read_only: true
-}
-
-flag {
-    name: "always_compose_qs_ui_fragment"
-    namespace: "systemui"
-    description: "Have QQS and QS scenes in the Compose fragment always composed, not just when it should be visible."
-    bug: "389985793"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
 }
 
 flag {

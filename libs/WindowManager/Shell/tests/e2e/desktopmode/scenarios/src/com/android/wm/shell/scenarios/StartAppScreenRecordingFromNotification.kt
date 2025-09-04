@@ -32,6 +32,7 @@ import androidx.test.uiautomator.Until
 import com.android.launcher3.tapl.LauncherInstrumentation
 import com.android.server.wm.flicker.helpers.DesktopModeAppHelper
 import com.android.server.wm.flicker.helpers.SimpleAppHelper
+import com.android.systemui.Flags.qsUiRefactorComposeFragment
 import java.util.regex.Pattern
 import org.junit.After
 import org.junit.Before
@@ -77,9 +78,7 @@ abstract class StartAppScreenRecordingFromNotification(val rotation: Rotation = 
         testApp.exit(wmHelper)
     }
 
-    fun startSingleAppMediaProjection(
-        wmHelper: WindowManagerStateHelper,
-    ) {
+    fun startSingleAppMediaProjection(wmHelper: WindowManagerStateHelper) {
         openScreenRecorder()
         chooseSingleAppOption()
         startScreenSharing()
@@ -90,13 +89,16 @@ abstract class StartAppScreenRecordingFromNotification(val rotation: Rotation = 
     }
 
     protected fun openScreenRecorder() {
-        // Swipe down to show the notification shade
-        Root.get().openNotificationShadeViaSwipeFromTop()
+        val quickSettings = Root.get().openQuickSettings()
 
         // Launch the screen recorder by clicking the QuickSettings tile
-        val screenRecordQS = findObject(By.text("Screen record"))
-        screenRecordQS.click()
-        instrumentation.uiAutomation.syncInputTransactions()
+        if (qsUiRefactorComposeFragment()) {
+            val screenRecordTile = quickSettings.findComposeTile("Screen record")
+            screenRecordTile.click()
+        } else {
+            val screenRecordTile = quickSettings.findTile("Screen record")
+            screenRecordTile.clickWithoutAssertions()
+        }
 
         // Wait for the app selection to launch
         Root.get().mediaProjectionPermissionDialog

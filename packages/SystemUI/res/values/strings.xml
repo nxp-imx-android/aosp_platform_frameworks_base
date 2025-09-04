@@ -2945,23 +2945,24 @@
     <!-- Positive button text for the dialog. [CHAR LIMIT=NONE] -->
     <string name="accessibility_key_gesture_dialog_positive_button_text">Turn on</string>
 
-    <!-- Text for the Magnification dialog title. [CHAR LIMIT=NONE] -->
+    <!-- Text for the dialog title when keyboard shortcut has not yet been enabled. [CHAR LIMIT=NONE] -->
+    <string name="accessibility_key_gesture_shortcut_not_yet_enabled_dialog_title">Turn on <xliff:g name="feature_name" example="Voice Access">%1$s</xliff:g> keyboard shortcut?</string>
+    <!-- Negative button text for dialog when the keyboard shortcut has not yet enabled. [CHAR LIMIT=NONE] -->
+    <string name="accessibility_key_gesture_shortcut_not_yet_enabled_negative_button_text">Don\'t turn on</string>
+    <!-- Positive button text for dialog when the keyboard shortcut has not yet enabled. [CHAR LIMIT=NONE] -->
+    <string name="accessibility_key_gesture_shortcut_not_yet_enabled_positive_button_text">Turn on shortcut</string>
+
+    <!-- Text for the Magnification dialog title when the keyboard shortcut is enabled and Magnification has been toggled on. [CHAR LIMIT=NONE] -->
     <string name="accessibility_key_gesture_magnification_dialog_title"><xliff:g name="feature_name" example="Magnification">%1$s</xliff:g> keyboard shortcut turned on</string>
     <!-- Text for showing inside the Magnification dialog. [CHAR LIMIT=NONE] -->
-    <string name="accessibility_key_gesture_magnification_dialog_content">Action <annotation id="action_key_icon">icon</annotation> + <xliff:g name="secondary_key" example="Alt">^1</xliff:g> + <xliff:g name="key_code" example="M">^2</xliff:g> is the keyboard shortcut to use <xliff:g name="feature_name" example="Magnification">^3</xliff:g>. This allows you to quickly zoom in on the screen to make content larger. Press Action <annotation id="action_key_icon">icon</annotation> + <xliff:g name="secondary_key" example="Alt">^1</xliff:g> and \"+\" or \"-\" to adjust zoom.</string>
-    <!-- Negative button text for the Magnification dialog. [CHAR LIMIT=NONE] -->
+    <string name="accessibility_key_gesture_magnification_dialog_content">Action <annotation id="action_key_icon">icon</annotation> + <xliff:g name="secondary_key" example="Alt">^1</xliff:g> + <xliff:g name="key_code" example="M">^2</xliff:g> is the keyboard shortcut to use <xliff:g name="feature_name" example="Magnification">^3</xliff:g>, an accessibility feature. This allows you to quickly zoom in on the screen to make content larger. Once magnification is on, press Action <annotation id="action_key_icon">icon</annotation> + <xliff:g name="secondary_key" example="Alt">^1</xliff:g> and \"+\" or \"-\" to adjust zoom.</string>
+    <!-- Negative button text for the Magnification dialog when the keyboard shortcut is enabled. [CHAR LIMIT=NONE] -->
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text">Turn off shortcut</string>
-    <!-- Positive button text for the Magnification dialog. [CHAR LIMIT=NONE] -->
+    <!-- Positive button text for the Magnification dialog when the keyboard shortcut is enabled. [CHAR LIMIT=NONE] -->
     <string name="accessibility_key_gesture_magnification_dialog_positive_button_text">Keep on</string>
 
-    <!-- Text for the Voice Access dialog title. [CHAR LIMIT=NONE] -->
-    <string name="accessibility_key_gesture_voice_access_dialog_title">Turn on <xliff:g name="feature_name" example="Voice Access">%1$s</xliff:g> keyboard shortcut?</string>
     <!-- Text for showing inside the Voice Access dialog. [CHAR LIMIT=NONE] -->
     <string name="accessibility_key_gesture_voice_access_dialog_content">Pressing Action <annotation id="action_key_icon">icon</annotation> + <xliff:g name="secondary_key" example="Alt">^1</xliff:g> + <xliff:g name="key_code" example="M">^2</xliff:g> turns on <xliff:g name="feature_name" example="Voice Access">^3</xliff:g>, an accessibility feature. This lets you control your device hands-free.</string>
-    <!-- Negative button text for the Voice Access dialog. [CHAR LIMIT=NONE] -->
-    <string name="accessibility_key_gesture_voice_access_dialog_negative_button_text">Don\'t turn on</string>
-    <!-- Positive button text for the Voice Access dialog. [CHAR LIMIT=NONE] -->
-    <string name="accessibility_key_gesture_voice_access_dialog_positive_button_text">Turn on shortcut</string>
 
     <!-- Plugin control section of the tuner. Non-translatable since it should
          not appear on production builds ever. -->
@@ -4271,6 +4272,10 @@
          any key  yet. The helper is a component that shows the user which keyboard shortcuts
          they can use. [CHAR LIMIT=NONE] -->
     <string name="shortcut_helper_add_shortcut_dialog_placeholder">Press key</string>
+    <!-- Action key, used in keyboard shortcut helper to combine keys for shortcut. E.g. Action + 1
+         The helper is a component that shows the user which keyboard shortcuts they can use.
+         [CHAR LIMIT=NONE] -->
+    <string name="shortcut_helper_customizer_action_key_text">Action</string>
     <!-- Error message displayed when the user select a key combination that is already in use while
          assigning a new custom key combination to a shortcut in shortcut helper. The helper is a
          component that shows the user which keyboard shortcuts they can use. [CHAR LIMIT=NONE] -->

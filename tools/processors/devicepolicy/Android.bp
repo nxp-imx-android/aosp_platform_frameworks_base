@@ -51,9 +51,10 @@ java_test_host {
 filegroup {
     name: "DevicePolicyAnnotationProcessorTestSource",
     srcs: [
+        // We need the java sources for compiler tests.
+        ":framework-metalava-annotations",
         "test/resources/**/*.java",
         "test/resources/**/*.json",
     ],
-    path: "test/resources/",
     visibility: ["//visibility:private"],
 }

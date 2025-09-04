@@ -26,17 +26,15 @@ import android.platform.test.annotations.EnableFlags
 import android.testing.AndroidTestingRunner
 import android.testing.TestableLooper
 import android.view.View
-import android.view.ViewStub
 import android.view.animation.LinearInterpolator
+import android.widget.ImageButton
 import androidx.test.filters.SmallTest
 import com.android.internal.policy.SystemBarUtils
 import com.android.window.flags.Flags
 import com.android.wm.shell.R
 import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.desktopmode.DesktopModeUiEventLogger
-import com.android.wm.shell.windowdecor.HandleImageButton
 import com.android.wm.shell.windowdecor.WindowManagerWrapper
-import com.android.wm.shell.windowdecor.common.DrawingHandle
 import com.android.wm.shell.windowdecor.viewholder.AppHandleAnimator.Companion.APP_HANDLE_ALPHA_FADE_IN_ANIMATION_DURATION_MS
 import com.android.wm.shell.windowdecor.viewholder.AppHandleAnimator.Companion.APP_HANDLE_ALPHA_FADE_OUT_ANIMATION_DURATION_MS
 import com.android.wm.shell.windowdecor.viewholder.AppHandleAnimator.Companion.APP_HANDLE_FADE_ANIMATION_INTERPOLATOR
@@ -72,10 +70,7 @@ class AppHandleViewHolderTest : ShellTestCase() {
     }
 
     private val mockView = mock<View>()
-    private val mockVieStub = mock<ViewStub>()
-    private val mockVieStub2 = mock<ViewStub>()
-    private val mockImageButton = mock<HandleImageButton>()
-    private val mockDrawingHandle = mock<DrawingHandle>()
+    private val mockImageButton = mock<ImageButton>()
     private val mockOnTouchListener = mock<View.OnTouchListener>()
     private val mockOnClickListener = mock<View.OnClickListener>()
     private val mockWindowManagerWrapper = mock<WindowManagerWrapper>()
@@ -87,10 +82,8 @@ class AppHandleViewHolderTest : ShellTestCase() {
     fun setup() {
         whenever(mockView.context).thenReturn(mContext)
         whenever(mockView.requireViewById<View>(R.id.desktop_mode_caption)).thenReturn(mockView)
-        whenever(mockView.findViewById<ViewStub>(R.id.captionStub)).thenReturn(mockVieStub)
-        whenever(mockView.findViewById<ViewStub>(R.id.caption2Stub)).thenReturn(mockVieStub2)
-        whenever(mockVieStub.inflate()).thenReturn(mockImageButton)
-        whenever(mockVieStub2.inflate()).thenReturn(mockDrawingHandle)
+        whenever(mockView.requireViewById<ImageButton>(R.id.caption_handle))
+            .thenReturn(mockImageButton)
         ValueAnimator.setDurationScale(0f)
     }
 

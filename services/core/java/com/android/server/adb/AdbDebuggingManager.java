@@ -72,7 +72,6 @@ import com.android.internal.messages.nano.SystemMessageProto.SystemMessage;
 import com.android.internal.util.FrameworkStatsLog;
 import com.android.internal.util.dump.DualDumpOutputStream;
 import com.android.server.FgThread;
-import com.android.server.adb.AdbDebuggingManager.AdbDebuggingThread.OnConnectionCallback;
 
 import java.io.File;
 import java.io.IOException;
@@ -220,11 +219,6 @@ public class AdbDebuggingManager {
 
     @VisibleForTesting
     static class AdbDebuggingThread extends Thread {
-        interface OnConnectionCallback {
-            void onConnected(AdbDebuggingThread thread);
-        }
-
-        private final OnConnectionCallback mOnConnectionCallback;
         private LocalSocket mSocket;
         private OutputStream mOutputStream;
         private InputStream mInputStream;
@@ -233,9 +227,8 @@ public class AdbDebuggingManager {
         private boolean mConnected = false;
 
         @VisibleForTesting
-        AdbDebuggingThread(OnConnectionCallback onConnectionCallback) {
+        AdbDebuggingThread() {
             super(TAG);
-            mOnConnectionCallback = onConnectionCallback;
         }
 
         @VisibleForTesting
@@ -252,7 +245,6 @@ public class AdbDebuggingManager {
                         mConnected = false;
                         openSocketLocked();
                         mConnected = true;
-                        mOnConnectionCallback.onConnected(this);
                     }
 
                     listenToSocket();
@@ -604,7 +596,7 @@ public class AdbDebuggingManager {
         AdbDebuggingHandler(Looper looper, AdbDebuggingThread thread) {
             super(looper);
             if (thread == null) {
-                thread = new AdbDebuggingThread(new StartAdbWifiConnectionCallback());
+                thread = new AdbDebuggingThread();
                 thread.setHandler(this);
             }
             mThread = thread;
@@ -967,6 +959,9 @@ public class AdbDebuggingManager {
                     if (mAdbWifiEnabled) {
                         // In scenarios where adbd is restarted, the tls port may change.
                         startTLSPortPoller();
+                        if (wifiLifeCycleOverAdbdauthSupported()) {
+                            mThread.sendResponse(MSG_START_ADB_WIFI);
+                        }
                     }
                 }
                 case MSG_ADBD_SOCKET_DISCONNECTED -> {
@@ -1566,14 +1561,5 @@ public class AdbDebuggingManager {
     @VisibleForTesting
     interface Ticker {
         long currentTimeMillis();
-    }
-
-    private class StartAdbWifiConnectionCallback implements OnConnectionCallback {
-        @Override
-        public void onConnected(AdbDebuggingThread thread) {
-            if (isAdbWifiEnabled() && wifiLifeCycleOverAdbdauthSupported()) {
-                thread.sendResponse(MSG_START_ADB_WIFI);
-            }
-        }
     }
 }

@@ -360,8 +360,15 @@ public class ActivityTaskSupervisor implements RecentTasks.Callbacks {
     /**
      * Flag indicating whether we're currently waiting for the previous top activity to handle the
      * loss of the state and report back before making new activity top resumed.
+     * TODO b/417956804 - Remove it along with the flag removal
      */
     private boolean mTopResumedActivityWaitingForPrev;
+
+    /**
+     * The previous top activity that we're currently waiting for. Allowing it to handle the
+     * loss of the state and report back before making new activity top resumed.
+     */
+    private ActivityRecord mWaitingTopResumedLostActivity;
 
     /** Whether a process state update of top resumed activity is deferred. */
     private boolean mHasPendingTopResumedProcessState;
@@ -2471,23 +2478,45 @@ public class ActivityTaskSupervisor implements RecentTasks.Callbacks {
             return;
         }
 
-        // mTopResumedActivityWaitingForPrev == true at this point would mean that an activity
-        // before the prevTopActivity one hasn't reported back yet. So server never sent the top
-        // resumed state change message to prevTopActivity.
-        if (!mTopResumedActivityWaitingForPrev && readyToResume()
-                && mLastReportedTopResumedActivity.scheduleTopResumedActivityChanged(
-                        false /* onTop */)) {
-            scheduleTopResumedStateLossTimeout(mLastReportedTopResumedActivity);
-            mTopResumedActivityWaitingForPrev = true;
-            mLastReportedTopResumedActivity = null;
+        if (com.android.window.flags.Flags.fixRapidTopResumedSwitch()) {
+            // mWaitingTopResumedLostActivity != null at this point would mean that an activity
+            // before the prevTopActivity one hasn't reported back yet. So server never sent the top
+            // resumed state change message to prevTopActivity.
+            if (mWaitingTopResumedLostActivity == null && readyToResume()
+                    && mLastReportedTopResumedActivity.scheduleTopResumedActivityChanged(
+                    false /* onTop */)) {
+                scheduleTopResumedStateLossTimeout(mLastReportedTopResumedActivity);
+                mWaitingTopResumedLostActivity = mLastReportedTopResumedActivity;
+                mLastReportedTopResumedActivity = null;
+            }
+        } else {
+            // mTopResumedActivityWaitingForPrev == true at this point would mean that an activity
+            // before the prevTopActivity one hasn't reported back yet. So server never sent the top
+            // resumed state change message to prevTopActivity.
+            if (!mTopResumedActivityWaitingForPrev && readyToResume()
+                    && mLastReportedTopResumedActivity.scheduleTopResumedActivityChanged(
+                    false /* onTop */)) {
+                scheduleTopResumedStateLossTimeout(mLastReportedTopResumedActivity);
+                mTopResumedActivityWaitingForPrev = true;
+                mLastReportedTopResumedActivity = null;
+            }
         }
     }
 
     /** Schedule top resumed state change if previous top activity already reported back. */
     private void scheduleTopResumedActivityStateIfNeeded() {
-        if (mTopResumedActivity != null && !mTopResumedActivityWaitingForPrev && readyToResume()) {
-            mTopResumedActivity.scheduleTopResumedActivityChanged(true /* onTop */);
-            mLastReportedTopResumedActivity = mTopResumedActivity;
+        if (com.android.window.flags.Flags.fixRapidTopResumedSwitch()) {
+            if (mTopResumedActivity != null && mWaitingTopResumedLostActivity == null
+                    && readyToResume()) {
+                mTopResumedActivity.scheduleTopResumedActivityChanged(true /* onTop */);
+                mLastReportedTopResumedActivity = mTopResumedActivity;
+            }
+        } else {
+            if (mTopResumedActivity != null && !mTopResumedActivityWaitingForPrev
+                    && readyToResume()) {
+                mTopResumedActivity.scheduleTopResumedActivityChanged(true /* onTop */);
+                mLastReportedTopResumedActivity = mTopResumedActivity;
+            }
         }
     }
 
@@ -2506,16 +2535,32 @@ public class ActivityTaskSupervisor implements RecentTasks.Callbacks {
      * Handle a loss of top resumed state by an activity - update internal state and inform next top
      * activity if needed.
      */
-    void handleTopResumedStateReleased(boolean timeout) {
+    void handleTopResumedStateReleasedIfNeeded(ActivityRecord r, boolean timeout) {
+        if (com.android.window.flags.Flags.fixRapidTopResumedSwitch()) {
+            if (mWaitingTopResumedLostActivity == null || mWaitingTopResumedLostActivity != r) {
+                return;
+            }
+
+            if (r.isState(PAUSING)) {
+                // Do not handle the top-resumed-state-lost if the activity is currently pausing to
+                // prevent rapid top-resumed activity switch.
+                return;
+            }
+        }
+
         ProtoLog.v(WM_DEBUG_STATES, "Top resumed state released %s",
                     (timeout ? "(due to timeout)" : "(transition complete)"));
 
         mHandler.removeMessages(TOP_RESUMED_STATE_LOSS_TIMEOUT_MSG);
-        if (!mTopResumedActivityWaitingForPrev) {
-            // Top resumed activity state loss already handled.
-            return;
+        if (com.android.window.flags.Flags.fixRapidTopResumedSwitch()) {
+            mWaitingTopResumedLostActivity = null;
+        } else {
+            if (!mTopResumedActivityWaitingForPrev) {
+                // Top resumed activity state loss already handled.
+                return;
+            }
+            mTopResumedActivityWaitingForPrev = false;
         }
-        mTopResumedActivityWaitingForPrev = false;
         scheduleTopResumedActivityStateIfNeeded();
     }
 
@@ -2874,7 +2919,7 @@ public class ActivityTaskSupervisor implements RecentTasks.Callbacks {
                 case TOP_RESUMED_STATE_LOSS_TIMEOUT_MSG: {
                     final ActivityRecord r = (ActivityRecord) msg.obj;
                     Slog.w(TAG, "Activity top resumed state loss timeout for " + r);
-                    handleTopResumedStateReleased(true /* timeout */);
+                    handleTopResumedStateReleasedIfNeeded(r, true /* timeout */);
                 } break;
                 default:
                     return false;

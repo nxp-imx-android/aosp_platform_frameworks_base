@@ -57,7 +57,7 @@ sealed interface RecordDetailsTargetItemViewModel {
         RecordDetailsTargetItemViewModel {
 
         override val screenCaptureTarget: ScreenCaptureTarget? =
-            task?.taskId?.let(ScreenCaptureTarget::App)
+            task?.run { ScreenCaptureTarget.App(displayId = displayId, taskId = taskId) }
 
         override val labelRes: Int = R.string.screen_record_single_app
         override val isSelectable: Boolean = true

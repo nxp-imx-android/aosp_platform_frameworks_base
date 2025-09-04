@@ -48,8 +48,6 @@ import android.net.Uri;
 import android.os.Binder;
 import android.os.RemoteException;
 import android.os.UserHandle;
-import android.platform.test.annotations.DisableFlags;
-import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
 import android.platform.test.flag.junit.SetFlagsRule;
 import android.util.ArraySet;
@@ -96,9 +94,6 @@ public class GenericWindowPolicyControllerTest {
 
     @Mock
     private GenericWindowPolicyController.ActivityListener mActivityListener;
-    @Mock
-    private GenericWindowPolicyController.RunningAppsChangedListener mRunningAppsChangedListener;
-
     @Before
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
@@ -540,14 +535,12 @@ public class GenericWindowPolicyControllerTest {
     }
 
     @Test
-    public void registerRunningAppsChangedListener_onRunningAppsChanged_listenersNotified() {
+    public void onRunningAppsChanged_listenerNotified() {
         ArraySet<Integer> uids = new ArraySet<>(Arrays.asList(TEST_UID));
         GenericWindowPolicyController gwpc = createGwpc();
-        gwpc.registerRunningAppsChangedListener(mRunningAppsChangedListener);
         gwpc.onRunningAppsChanged(uids);
 
-        assertThat(gwpc.getRunningAppsChangedListenersSizeForTesting()).isEqualTo(1);
-        verify(mRunningAppsChangedListener, timeout(TIMEOUT_MILLIS)).onRunningAppsChanged(uids);
+        verify(mActivityListener, timeout(TIMEOUT_MILLIS)).onRunningAppsChanged(DISPLAY_ID, uids);
     }
 
     @Test
@@ -556,32 +549,7 @@ public class GenericWindowPolicyControllerTest {
         GenericWindowPolicyController gwpc = createGwpc();
         gwpc.onRunningAppsChanged(uids);
 
-        assertThat(gwpc.getRunningAppsChangedListenersSizeForTesting()).isEqualTo(0);
         verify(mActivityListener, timeout(TIMEOUT_MILLIS)).onDisplayEmpty(DISPLAY_ID);
-    }
-
-    @Test
-    public void noRunningAppsChangedListener_onRunningAppsChanged_doesNotThrowException() {
-        ArraySet<Integer> uids = new ArraySet<>(Arrays.asList(TEST_UID));
-        GenericWindowPolicyController gwpc = createGwpc();
-        gwpc.onRunningAppsChanged(uids);
-
-        assertThat(gwpc.getRunningAppsChangedListenersSizeForTesting()).isEqualTo(0);
-        verify(mRunningAppsChangedListener, after(TIMEOUT_MILLIS).never())
-                .onRunningAppsChanged(uids);
-    }
-
-    @Test
-    public void registerUnregisterRunningAppsChangedListener_onRunningAppsChanged_doesNotThrowException() {
-        ArraySet<Integer> uids = new ArraySet<>(Arrays.asList(TEST_UID));
-        GenericWindowPolicyController gwpc = createGwpc();
-        gwpc.registerRunningAppsChangedListener(mRunningAppsChangedListener);
-        gwpc.unregisterRunningAppsChangedListener(mRunningAppsChangedListener);
-        gwpc.onRunningAppsChanged(uids);
-
-        assertThat(gwpc.getRunningAppsChangedListenersSizeForTesting()).isEqualTo(0);
-        verify(mRunningAppsChangedListener, after(TIMEOUT_MILLIS).never())
-                .onRunningAppsChanged(uids);
     }
 
     @Test

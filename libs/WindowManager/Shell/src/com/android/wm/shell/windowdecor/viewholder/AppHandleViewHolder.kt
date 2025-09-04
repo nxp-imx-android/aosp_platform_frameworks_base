@@ -19,6 +19,7 @@ import android.animation.ValueAnimator
 import android.annotation.ColorInt
 import android.app.ActivityManager.RunningTaskInfo
 import android.content.Context
+import android.content.res.ColorStateList
 import android.graphics.Point
 import android.hardware.input.InputManager
 import android.os.Bundle
@@ -30,12 +31,12 @@ import android.view.SurfaceControl
 import android.view.View
 import android.view.View.OnClickListener
 import android.view.ViewDebug
-import android.view.ViewStub
 import android.view.WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS
 import android.view.WindowManager
 import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityNodeInfo
 import android.view.accessibility.AccessibilityNodeInfo.AccessibilityAction
+import android.widget.ImageButton
 import android.window.DesktopExperienceFlags
 import android.window.DesktopModeFlags
 import androidx.core.view.ViewCompat
@@ -52,7 +53,6 @@ import com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper
 import com.android.wm.shell.windowdecor.WindowDecorLinearLayout
 import com.android.wm.shell.windowdecor.WindowManagerWrapper
 import com.android.wm.shell.windowdecor.additionalviewcontainer.AdditionalSystemViewContainer
-import com.android.wm.shell.windowdecor.common.ColoredAppHandle
 import com.android.wm.shell.windowdecor.common.DecorThemeUtil
 import com.android.wm.shell.windowdecor.common.Theme
 import com.android.wm.shell.windowdecor.extension.identityHashCode
@@ -90,16 +90,10 @@ class AppHandleViewHolder(
                 error("App Handle root view should not be null")
             }
     private val captionView: View = rootView.requireViewById(R.id.desktop_mode_caption)
-    val captionHandle: View =
-        if (DesktopExperienceFlags.ENABLE_DRAWING_APP_HANDLE.isTrue) {
-            rootView.findViewById<ViewStub>(R.id.caption2Stub).inflate()
-        } else {
-            rootView.findViewById<ViewStub>(R.id.captionStub).inflate()
-        }
+    val captionHandle: ImageButton = rootView.requireViewById(R.id.caption_handle)
     private val inputManager = context.getSystemService(InputManager::class.java)
     private val decorThemeUtil = DecorThemeUtil(context)
-    private val animator: AppHandleAnimator =
-        AppHandleAnimator(rootView, captionHandle as ColoredAppHandle)
+    private val animator: AppHandleAnimator = AppHandleAnimator(rootView, captionHandle)
     private var statusBarInputLayerExists = false
 
     // An invisible View that takes up the same coordinates as captionHandle but is layered
@@ -160,7 +154,7 @@ class AppHandleViewHolder(
         if (DesktopExperienceFlags.ENABLE_REENABLE_APP_HANDLE_COLOR_ANIMATIONS.isTrue) {
             animator.animateColorChange(getCaptionHandleBarColor(taskInfo))
         } else {
-            (captionHandle as ColoredAppHandle).tint(getCaptionHandleBarColor(taskInfo))
+            captionHandle.imageTintList = ColorStateList.valueOf(getCaptionHandleBarColor(taskInfo))
         }
         this.taskInfo = taskInfo
         if (

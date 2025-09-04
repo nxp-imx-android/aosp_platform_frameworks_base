@@ -103,10 +103,10 @@ public class AppFunctionManagerServiceShellCommand extends ShellCommand {
                         + "Defaults to the current user.");
         pw.println(
                 "    --timeout-duration <SECONDS> (optional): The timeout for the function "
-                        + "execution in seconds. Defaults to " + DEFAULT_EXECUTE_TIMEOUT_SECONDS
+                        + "execution in seconds. Defaults to "
+                        + DEFAULT_EXECUTE_TIMEOUT_SECONDS
                         + " seconds.");
-        pw.println(
-                "    --brief-yaml (optional): Prints a concise yaml output.");
+        pw.println("    --brief-yaml (optional): Prints a concise yaml output.");
         pw.println();
         pw.println(
                 "  set-enabled --package <PACKAGE_NAME> --function <FUNCTION_ID> "
@@ -158,8 +158,7 @@ public class AppFunctionManagerServiceShellCommand extends ShellCommand {
             pw.println();
 
             // list-valid-agents
-            pw.println(
-                    "  list-valid-agents [--user <USER_ID>]");
+            pw.println("  list-valid-agents [--user <USER_ID>]");
             pw.println("    Lists all valid agents.");
             pw.println(
                     "    --user <USER_ID> (optional): The user ID to list valid agents for. "
@@ -167,21 +166,19 @@ public class AppFunctionManagerServiceShellCommand extends ShellCommand {
             pw.println();
 
             // list-valid-targets
-            pw.println(
-                    "  list-valid-targets [--user <USER_ID>]");
+            pw.println("  list-valid-targets [--user <USER_ID>]");
             pw.println("    Lists all valid targets.");
             pw.println(
                     "    --user <USER_ID> (optional): The user ID to list valid targets for. "
                             + "Defaults to the current user.");
             pw.println();
             pw.println();
+            pw.println("  set-additional-allowlisted-agents <PACKAGE_NAME_1> <PACKAGE_NAME_2> ...");
             pw.println(
-                    "  set-additional-allowlisted-agents <PACKAGE_NAME_1> <PACKAGE_NAME_2> ...");
-            pw.println("    Sets the agents that are allowlisted, in addition to the device"
-                    + " allowlist. Value is a space-separated list of package names. Will override"
-                    + " any agents set by previous calls to this command.");
-            pw.println(
-                    "  clear-additional-allowlisted-agents");
+                    "    Sets the agents that are allowlisted, in addition to the device allowlist."
+                        + " Value is a space-separated list of package names. Will override any"
+                        + " agents set by previous calls to this command.");
+            pw.println("  clear-additional-allowlisted-agents");
             pw.println("    Clears any agents set by set-additional-allowlisted-agents");
         }
     }
@@ -273,7 +270,7 @@ public class AppFunctionManagerServiceShellCommand extends ShellCommand {
                 }
                 jsonObject.put(entry.getKey(), searchResults);
             }
-            pw.println(jsonObject.toString(/* indentSpaces =*/ 2));
+            pw.println(jsonObject.toString(/* indentSpaces= */ 2));
         } finally {
             Binder.restoreCallingIdentity(token);
         }
@@ -403,8 +400,12 @@ public class AppFunctionManagerServiceShellCommand extends ShellCommand {
                     try {
                         timeoutDurationSeconds = Long.parseLong(getNextArgRequired());
                     } catch (NumberFormatException e) {
-                        pw.println("Invalid timeout duration: " + getNextArg()
-                                + ". Using default of " + DEFAULT_EXECUTE_TIMEOUT_SECONDS + "s.");
+                        pw.println(
+                                "Invalid timeout duration: "
+                                        + getNextArg()
+                                        + ". Using default of "
+                                        + DEFAULT_EXECUTE_TIMEOUT_SECONDS
+                                        + "s.");
                     }
                     break;
                 case "--brief-yaml":
@@ -438,7 +439,8 @@ public class AppFunctionManagerServiceShellCommand extends ShellCommand {
                                 .build(),
                         UserHandle.of(userId),
                         getCallingPackage(),
-                        SystemClock.elapsedRealtime());
+                        SystemClock.elapsedRealtime(),
+                        System.currentTimeMillis());
 
         CountDownLatch countDownLatch = new CountDownLatch(1);
         final AtomicInteger resultCode = new AtomicInteger(0);
@@ -455,15 +457,14 @@ public class AppFunctionManagerServiceShellCommand extends ShellCommand {
                                 String functionReturnYaml =
                                         convertGenericDocumentToYaml(
                                                 response.getResultDocument(),
-                                            /*keepEmptyValues=*/ false,
-                                            /*keepNullValues=*/ false,
-                                            /*keepGenericDocumentProperties=*/ false
-                                        );
+                                                /* keepEmptyValues= */ false,
+                                                /* keepNullValues= */ false,
+                                                /* keepGenericDocumentProperties= */ false);
                                 pw.println(functionReturnYaml);
                             } else {
                                 JSONObject functionReturnJson =
                                         convertGenericDocumentToJson(response.getResultDocument());
-                                pw.println(functionReturnJson.toString(/*indentSpace=*/ 2));
+                                pw.println(functionReturnJson.toString(/* indentSpace= */ 2));
                             }
                         } catch (JSONException e) {
                             pw.println("Failed to convert the function response to JSON.");
@@ -517,13 +518,13 @@ public class AppFunctionManagerServiceShellCommand extends ShellCommand {
             Settings.Secure.putString(
                     mContext.getContentResolver(),
                     Settings.Secure.APP_FUNCTION_ADDITIONAL_AGENT_ALLOWLIST,
-                    SignedPackageParser.serializePackagesOnly(agents)
-            );
+                    SignedPackageParser.serializePackagesOnly(agents));
         } finally {
             Binder.restoreCallingIdentity(token);
         }
         return 0;
     }
+
     private int runGrantAppFunctionAccess() throws Exception {
         final PrintWriter pw = getOutPrintWriter();
         String agentPackage = null;
@@ -561,8 +562,14 @@ public class AppFunctionManagerServiceShellCommand extends ShellCommand {
             return -1;
         }
 
-        boolean result = mService.updateAccessFlags(agentPackage, agentUserId,
-                targetPackage, targetUserId, ACCESS_FLAG_MASK_OTHER, ACCESS_FLAG_OTHER_GRANTED);
+        boolean result =
+                mService.updateAccessFlags(
+                        agentPackage,
+                        agentUserId,
+                        targetPackage,
+                        targetUserId,
+                        ACCESS_FLAG_MASK_OTHER,
+                        ACCESS_FLAG_OTHER_GRANTED);
         if (!result) {
             pw.println("Error: Failed to grant the app function access.");
             return -1;
@@ -607,8 +614,14 @@ public class AppFunctionManagerServiceShellCommand extends ShellCommand {
             pw.println("Error: --target-package must be specified.");
             return -1;
         }
-        boolean result = mService.updateAccessFlags(agentPackage, agentUserId,
-                targetPackage, targetUserId, ACCESS_FLAG_MASK_OTHER, ACCESS_FLAG_OTHER_DENIED);
+        boolean result =
+                mService.updateAccessFlags(
+                        agentPackage,
+                        agentUserId,
+                        targetPackage,
+                        targetUserId,
+                        ACCESS_FLAG_MASK_OTHER,
+                        ACCESS_FLAG_OTHER_DENIED);
         if (!result) {
             pw.println("Error: Failed to revoke the app function access.");
             return -1;

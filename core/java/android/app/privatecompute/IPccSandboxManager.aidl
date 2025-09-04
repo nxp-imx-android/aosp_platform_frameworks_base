@@ -14,20 +14,20 @@
  * limitations under the License.
  */
 
-package com.android.wm.shell.windowdecor.common
+package android.app.privatecompute;
 
-import android.annotation.ColorInt
-import android.view.View
+import android.app.privatecompute.PccEntity;
 
-/** Allows interaction with different implementations of app handles' color. */
-interface ColoredAppHandle {
-
-    /** Given a color, "tint" the handle to that color (redraws it with that color). */
-    fun tint(@ColorInt color: Int)
-
-    /** Get the current tint color if any. */
-    fun getColor(): Int?
-
-    /** Returns this interface object back as a View. */
-    fun asView(): View
+/**
+ * Binder interface for the PccSandboxManagerService.
+ *
+ * @hide
+ */
+interface IPccSandboxManager {
+    /**
+     * Returns a list of entities that are configured to run in the PCC sandbox and are
+     * visible to the calling application.
+     */
+    @RequiresNoPermission
+    List<PccEntity> getPccEntities();
 }

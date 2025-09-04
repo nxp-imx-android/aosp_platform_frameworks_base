@@ -16,7 +16,9 @@
 
 package com.android.systemui.screenrecord
 
+import com.android.systemui.CoreStartable
 import com.android.systemui.Flags
+import com.android.systemui.NoOpCoreStartable
 import com.android.systemui.broadcast.BroadcastDispatcher
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Main
@@ -50,6 +52,7 @@ import dagger.Binds
 import dagger.Lazy
 import dagger.Module
 import dagger.Provides
+import dagger.multibindings.ClassKey
 import dagger.multibindings.IntoMap
 import dagger.multibindings.StringKey
 import java.util.concurrent.Executor
@@ -74,6 +77,19 @@ interface ScreenRecordModule {
 
     companion object {
         private const val SCREEN_RECORD_TILE_SPEC = "screenrecord"
+
+        @Provides
+        @IntoMap
+        @ClassKey(ScreenRecordingCoreStartable::class)
+        fun bindScreenRecordingCoreStartable(
+            implLazy: Lazy<ScreenRecordingCoreStartable>
+        ): CoreStartable {
+            if (Flags.restoreShowTapsSetting()) {
+                return implLazy.get()
+            } else {
+                return NoOpCoreStartable()
+            }
+        }
 
         @Provides
         @SysUISingleton
