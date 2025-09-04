@@ -24,6 +24,9 @@ import static android.companion.virtual.VirtualDeviceParams.POLICY_TYPE_RECENTS;
 import static com.android.server.companion.virtual.computercontrol.ComputerControlSessionImpl.KEY_EVENT_DELAY_MS;
 import static com.android.server.companion.virtual.computercontrol.ComputerControlSessionImpl.SWIPE_STEPS;
 import static com.android.server.companion.virtual.computercontrol.ComputerControlSessionImpl.TOUCH_EVENT_DELAY_MS;
+import static com.android.server.companion.virtual.computercontrol.ComputerControlSessionImpl.PRODUCT_ID_DPAD;
+import static com.android.server.companion.virtual.computercontrol.ComputerControlSessionImpl.PRODUCT_ID_KEYBOARD;
+import static com.android.server.companion.virtual.computercontrol.ComputerControlSessionImpl.PRODUCT_ID_TOUCHSCREEN;
 
 import static com.google.common.truth.Truth.assertThat;
 
@@ -194,6 +197,7 @@ public class ComputerControlSessionTest {
         VirtualDpadConfig virtualDpadConfig = mVirtualDpadConfigArgumentCaptor.getValue();
         assertThat(virtualDpadConfig.getAssociatedDisplayId()).isEqualTo(VIRTUAL_DISPLAY_ID);
         assertThat(virtualDpadConfig.getInputDeviceName()).contains(mDefaultParams.getName());
+        assertThat(virtualDpadConfig.getProductId()).isEqualTo(PRODUCT_ID_DPAD);
 
         verify(mVirtualDevice).createVirtualKeyboard(
                 mVirtualKeyboardConfigArgumentCaptor.capture(), any());
@@ -201,6 +205,7 @@ public class ComputerControlSessionTest {
                 mVirtualKeyboardConfigArgumentCaptor.getValue();
         assertThat(virtualKeyboardConfig.getAssociatedDisplayId()).isEqualTo(VIRTUAL_DISPLAY_ID);
         assertThat(virtualKeyboardConfig.getInputDeviceName()).contains(mDefaultParams.getName());
+        assertThat(virtualKeyboardConfig.getProductId()).isEqualTo(PRODUCT_ID_KEYBOARD);
 
         verify(mVirtualDevice).createVirtualTouchscreen(
                 mVirtualTouchscreenConfigArgumentCaptor.capture(), any());
@@ -211,6 +216,7 @@ public class ComputerControlSessionTest {
         assertThat(virtualTouchscreenConfig.getHeight()).isEqualTo(DISPLAY_HEIGHT);
         assertThat(virtualTouchscreenConfig.getInputDeviceName()).contains(
                 mDefaultParams.getName());
+        assertThat(virtualTouchscreenConfig.getProductId()).isEqualTo(PRODUCT_ID_TOUCHSCREEN);
     }
 
     @Test
