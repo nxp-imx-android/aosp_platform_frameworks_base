@@ -35,6 +35,7 @@ import com.android.systemui.securelockdevice.domain.interactor.secureLockDeviceI
 import com.android.systemui.testKosmos
 import com.google.android.msdl.data.model.MSDLToken
 import com.google.common.truth.Truth.assertThat
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
@@ -50,21 +51,32 @@ class SecureLockDeviceBiometricAuthContentViewModelTest : SysuiTestCase() {
     private val kosmos = testKosmos().useUnconfinedTestDispatcher()
     private val testScope = kosmos.testScope
     private lateinit var secureLockDeviceInteractor: SecureLockDeviceInteractor
-    private lateinit var underTest: SecureLockDeviceBiometricAuthContentViewModel
 
     @Before
     fun setUp() {
         kosmos.fakeSecureLockDeviceRepository.onSecureLockDeviceEnabled()
         kosmos.fakeSecureLockDeviceRepository.onSuccessfulPrimaryAuth()
         secureLockDeviceInteractor = kosmos.secureLockDeviceInteractor
-
-        underTest = kosmos.secureLockDeviceBiometricAuthContentViewModel
-        underTest.activateIn(testScope)
     }
+
+    @Test
+    fun onBiometricAuthRequested_showsAuthenticating_() =
+        testScope.runTest {
+            val underTest = kosmos.secureLockDeviceBiometricAuthContentViewModel
+            underTest.activateIn(this)
+            val isAuthenticating by collectLastValue(underTest.isAuthenticating)
+
+            secureLockDeviceInteractor.onBiometricAuthRequested()
+            runCurrent()
+
+            assertThat(isAuthenticating).isTrue()
+        }
 
     @Test
     fun updatesStateAndPlaysHaptics_onFaceFailureOrError() =
         testScope.runTest {
+            val underTest = kosmos.secureLockDeviceBiometricAuthContentViewModel
+            underTest.activateIn(this)
             val isAuthenticating by collectValues(underTest.isAuthenticating)
             val isAuthenticated by collectLastValue(underTest.isAuthenticated)
             val showingError by collectValues(underTest.showingError)
@@ -90,6 +102,8 @@ class SecureLockDeviceBiometricAuthContentViewModelTest : SysuiTestCase() {
     @Test
     fun updatesStateOnRetryAfterFaceFailureOrError() =
         testScope.runTest {
+            val underTest = kosmos.secureLockDeviceBiometricAuthContentViewModel
+            underTest.activateIn(this)
             val isAuthenticating by collectLastValue(underTest.isAuthenticating)
             val isAuthenticated by collectLastValue(underTest.isAuthenticated)
             val showingError by collectLastValue(underTest.showingError)
@@ -115,6 +129,8 @@ class SecureLockDeviceBiometricAuthContentViewModelTest : SysuiTestCase() {
     @Test
     fun updatesStateAndSkipsHaptics_onFaceHelp() =
         testScope.runTest {
+            val underTest = kosmos.secureLockDeviceBiometricAuthContentViewModel
+            underTest.activateIn(this)
             val isAuthenticating by collectLastValue(underTest.isAuthenticating)
             val isAuthenticated by collectLastValue(underTest.isAuthenticated)
             val showingError by collectLastValue(underTest.showingError)
@@ -133,6 +149,8 @@ class SecureLockDeviceBiometricAuthContentViewModelTest : SysuiTestCase() {
     @Test
     fun updatesState_onFaceSuccess_andPlaysHapticsOnConfirm() =
         testScope.runTest {
+            val underTest = kosmos.secureLockDeviceBiometricAuthContentViewModel
+            underTest.activateIn(this)
             val isAuthenticating by collectLastValue(underTest.isAuthenticating)
             val isAuthenticated by collectLastValue(underTest.isAuthenticated)
             val showingError by collectLastValue(underTest.showingError)
@@ -161,6 +179,8 @@ class SecureLockDeviceBiometricAuthContentViewModelTest : SysuiTestCase() {
     @Test
     fun updatesStateAndPlaysHaptics_onFingerprintFailureOrError() =
         testScope.runTest {
+            val underTest = kosmos.secureLockDeviceBiometricAuthContentViewModel
+            underTest.activateIn(this)
             val isAuthenticating by collectValues(underTest.isAuthenticating)
             val isAuthenticated by collectLastValue(underTest.isAuthenticated)
             val showingError by collectValues(underTest.showingError)
@@ -186,6 +206,8 @@ class SecureLockDeviceBiometricAuthContentViewModelTest : SysuiTestCase() {
     @Test
     fun updatesStateAndSkipsHaptics_onFingerprintHelp() =
         testScope.runTest {
+            val underTest = kosmos.secureLockDeviceBiometricAuthContentViewModel
+            underTest.activateIn(this)
             val isAuthenticating by collectLastValue(underTest.isAuthenticating)
             val isAuthenticated by collectLastValue(underTest.isAuthenticated)
             val showingError by collectLastValue(underTest.showingError)
@@ -204,6 +226,8 @@ class SecureLockDeviceBiometricAuthContentViewModelTest : SysuiTestCase() {
     @Test
     fun updatesStateAndPlaysHaptics_onFingerprintSuccess() =
         testScope.runTest {
+            val underTest = kosmos.secureLockDeviceBiometricAuthContentViewModel
+            underTest.activateIn(this)
             val isAuthenticating by collectLastValue(underTest.isAuthenticating)
             val isAuthenticated by collectLastValue(underTest.isAuthenticated)
             val showingError by collectLastValue(underTest.showingError)
@@ -218,5 +242,55 @@ class SecureLockDeviceBiometricAuthContentViewModelTest : SysuiTestCase() {
             assertThat(isAuthenticated?.isAuthenticated).isTrue()
             assertThat(isAuthenticated?.isAuthenticatedAndConfirmed).isTrue()
             assertThat(kosmos.fakeMSDLPlayer.latestTokenPlayed).isEqualTo(MSDLToken.UNLOCK)
+        }
+
+    @Test
+    fun onSuccessfulAuthentication_notifiesInteractorAndHides_uponAnimationFinished() =
+        testScope.runTest {
+            val underTest = kosmos.secureLockDeviceBiometricAuthContentViewModel
+            underTest.activateIn(this)
+            val isReadyToDismiss by
+                collectLastValue(secureLockDeviceInteractor.isFullyUnlockedAndReadyToDismiss)
+
+            underTest.startAppearAnimation()
+            runCurrent()
+
+            assertThat(underTest.isVisible).isTrue()
+            assertThat(isReadyToDismiss).isFalse()
+
+            underTest.showAuthenticated(BiometricModality.Fingerprint)
+            runCurrent()
+
+            assertThat(underTest.isAuthenticationComplete).isTrue()
+            assertThat(isReadyToDismiss).isFalse()
+
+            underTest.onIconAnimationFinished()
+            runCurrent()
+
+            assertThat(isReadyToDismiss).isTrue()
+            assertThat(underTest.isVisible).isFalse()
+        }
+
+    @Test
+    fun onDeactivated_hidesComposable_notifiesInteractor() =
+        testScope.runTest {
+            val underTest = kosmos.secureLockDeviceBiometricAuthContentViewModel
+            val job = Job()
+            underTest.activateIn(this, job)
+            runCurrent()
+
+            secureLockDeviceInteractor.onBiometricAuthRequested()
+            underTest.startAppearAnimation()
+            runCurrent()
+
+            assertThat(underTest.isVisible).isTrue()
+            assertThat(secureLockDeviceInteractor.isBiometricAuthVisible.value).isTrue()
+
+            job.cancel()
+            runCurrent()
+
+            // THEN the viewmodel is no longer visible and the interactor is notified
+            assertThat(underTest.isVisible).isFalse()
+            assertThat(secureLockDeviceInteractor.isBiometricAuthVisible.value).isFalse()
         }
 }
