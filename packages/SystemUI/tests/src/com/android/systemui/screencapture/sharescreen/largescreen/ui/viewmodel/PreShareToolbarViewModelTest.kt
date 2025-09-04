@@ -22,12 +22,12 @@ import com.android.systemui.SysuiTestCase
 import com.android.systemui.kosmos.collectLastValue
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.testScope
-import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.lifecycle.activateIn
+import com.android.systemui.screencapture.common.shared.model.ScreenCaptureTarget
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureType
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureUiState
 import com.android.systemui.screencapture.data.repository.screenCaptureUiRepository
-import com.android.systemui.testKosmos
+import com.android.systemui.testKosmosNew
 import com.google.common.truth.Truth.assertThat
 import org.junit.Before
 import org.junit.Test
@@ -36,7 +36,7 @@ import org.junit.runner.RunWith
 @SmallTest
 @RunWith(AndroidJUnit4::class)
 class PreShareToolbarViewModelTest : SysuiTestCase() {
-    private val kosmos = testKosmos().useUnconfinedTestDispatcher()
+    private val kosmos = testKosmosNew()
 
     private val viewModel: PreShareToolbarViewModel by lazy { kosmos.preShareToolbarViewModel }
 
@@ -49,14 +49,8 @@ class PreShareToolbarViewModelTest : SysuiTestCase() {
     fun initialState() =
         kosmos.runTest {
             // Assert that the initial values are as expected upon creation and activation.
-            assertThat(viewModel.selectedScreenShareTarget).isEqualTo(ScreenShareTarget.APP_WINDOW)
-        }
-
-    @Test
-    fun onTargetSelected_updateScreenShareTarget() =
-        kosmos.runTest {
-            viewModel.onTargetSelected(ScreenShareTarget.TAB)
-            assertThat(viewModel.selectedScreenShareTarget).isEqualTo(ScreenShareTarget.TAB)
+            assertThat(viewModel.selectedScreenCaptureTarget)
+                .isEqualTo(ScreenCaptureTarget.AppContent(contentId = 0))
         }
 
     @Test

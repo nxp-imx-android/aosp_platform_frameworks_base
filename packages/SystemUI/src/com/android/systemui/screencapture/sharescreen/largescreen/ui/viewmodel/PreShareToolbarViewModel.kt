@@ -17,20 +17,16 @@
 package com.android.systemui.screencapture.sharescreen.largescreen.ui.viewmodel
 
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import com.android.systemui.lifecycle.HydratedActivatable
+import com.android.systemui.screencapture.common.shared.model.ScreenCaptureTarget
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureType
 import com.android.systemui.screencapture.common.ui.viewmodel.DrawableLoaderViewModel
 import com.android.systemui.screencapture.common.ui.viewmodel.DrawableLoaderViewModelImpl
 import com.android.systemui.screencapture.domain.interactor.ScreenCaptureUiInteractor
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
-import kotlinx.coroutines.flow.MutableStateFlow
-
-// TODO(b/423708493): Add FULLSCREEN Sharing target.
-enum class ScreenShareTarget {
-    APP_WINDOW,
-    TAB,
-}
 
 /** Models UI state for the Screen Share feature. */
 class PreShareToolbarViewModel
@@ -39,16 +35,8 @@ constructor(
     private val drawableLoaderViewModelImpl: DrawableLoaderViewModelImpl,
     private val screenCaptureUiInteractor: ScreenCaptureUiInteractor,
 ) : HydratedActivatable(), DrawableLoaderViewModel by drawableLoaderViewModelImpl {
-    // The private, mutable source of truth for the selected target.
-    private val selectedScreenShareTargetSource = MutableStateFlow(ScreenShareTarget.APP_WINDOW)
-
-    val selectedScreenShareTarget by
-        selectedScreenShareTargetSource.hydratedStateOf(traceName = "selectedScreenShareTarget")
-
-    // Called by the UI when a new sharing target is selected by the user.
-    fun onTargetSelected(target: ScreenShareTarget) {
-        selectedScreenShareTargetSource.value = target
-    }
+    var selectedScreenCaptureTarget: ScreenCaptureTarget by
+        mutableStateOf(ScreenCaptureTarget.AppContent(contentId = 0))
 
     fun onCloseClicked() {
         screenCaptureUiInteractor.hide(ScreenCaptureType.SHARE_SCREEN)
