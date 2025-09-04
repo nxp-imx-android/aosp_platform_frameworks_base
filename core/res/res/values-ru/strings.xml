@@ -641,10 +641,8 @@
     <string name="permdesc_uwb_ranging" msgid="2519723069604307055">"Приложение сможет определять относительное позиционирование устройств с технологией сверхширокополосной связи поблизости"</string>
     <string name="permlab_nearby_wifi_devices" msgid="392774237063608500">"Взаимодействие с устройствами Wi‑Fi поблизости"</string>
     <string name="permdesc_nearby_wifi_devices" msgid="3054307728646332906">"Приложение сможет передавать данные на устройства Wi‑Fi рядом, подключаться к ним и определять их примерное местоположение."</string>
-    <!-- no translation found for permlab_access_local_network (3420360767259066877) -->
-    <skip />
-    <!-- no translation found for permdesc_access_local_network (6364679803386822638) -->
-    <skip />
+    <string name="permlab_access_local_network" msgid="3420360767259066877">"доступ к устройствам в локальной сети"</string>
+    <string name="permdesc_access_local_network" msgid="6364679803386822638">"Приложение получит доступ к устройствам в локальной сети."</string>
     <string name="permlab_ranging" msgid="2854543350668593390">"относительное местоположение устройств поблизости"</string>
     <string name="permdesc_ranging" msgid="6703905535621521710">"Приложение сможет определять относительное местоположение устройств поблизости."</string>
     <string name="permlab_preferredPaymentInfo" msgid="5274423844767445054">"Сведения о предпочтительном платежном сервисе NFC"</string>

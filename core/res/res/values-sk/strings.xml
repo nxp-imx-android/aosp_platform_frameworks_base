@@ -641,10 +641,8 @@
     <string name="permdesc_uwb_ranging" msgid="2519723069604307055">"Povoľte aplikácii určovať relatívnu polohu medzi zariadeniami s ultraširokopásmovým pripojením v okolí"</string>
     <string name="permlab_nearby_wifi_devices" msgid="392774237063608500">"interakcia so zariadeniami Wi-Fi v okolí"</string>
     <string name="permdesc_nearby_wifi_devices" msgid="3054307728646332906">"Umožňuje aplikácii oznamovať a rozpoznávať relatívnu polohu zariadení Wi‑Fi v okolí a pripájať sa k nim"</string>
-    <!-- no translation found for permlab_access_local_network (3420360767259066877) -->
-    <skip />
-    <!-- no translation found for permdesc_access_local_network (6364679803386822638) -->
-    <skip />
+    <string name="permlab_access_local_network" msgid="3420360767259066877">"prístup k zariadeniam v miestnej sieti"</string>
+    <string name="permdesc_access_local_network" msgid="6364679803386822638">"Umožňuje aplikácii prístup k zariadeniam v miestnej sieti"</string>
     <string name="permlab_ranging" msgid="2854543350668593390">"určovať relatívnu polohu medzi zariadeniami v okolí"</string>
     <string name="permdesc_ranging" msgid="6703905535621521710">"Povoľte aplikácii určovať relatívnu polohu medzi zariadeniami v okolí"</string>
     <string name="permlab_preferredPaymentInfo" msgid="5274423844767445054">"Preferované informácie platenej služby NFC"</string>

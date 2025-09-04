@@ -639,10 +639,8 @@
     <string name="permdesc_uwb_ranging" msgid="2519723069604307055">"អនុញ្ញាតឱ្យ​កម្មវិធី​កំណត់ចម្ងាយ​ពាក់ព័ន្ធ​រវាងឧបករណ៍ Ultra-Wideband ដែលនៅជិត"</string>
     <string name="permlab_nearby_wifi_devices" msgid="392774237063608500">"ធ្វើអន្តរកម្ម​ជាមួយឧបករណ៍ Wi‑Fi ដែលនៅជិត"</string>
     <string name="permdesc_nearby_wifi_devices" msgid="3054307728646332906">"អនុញ្ញាតឱ្យ​កម្មវិធី​ផ្សាយពាណិជ្ជកម្ម ភ្ជាប់ និងកំណត់ទីតាំង​ពាក់ព័ន្ធរបស់​ឧបករណ៍ Wi‑Fi ដែលនៅជិត"</string>
-    <!-- no translation found for permlab_access_local_network (3420360767259066877) -->
-    <skip />
-    <!-- no translation found for permdesc_access_local_network (6364679803386822638) -->
-    <skip />
+    <string name="permlab_access_local_network" msgid="3420360767259066877">"ចូលប្រើឧបករណ៍បណ្ដាញមូលដ្ឋាន"</string>
+    <string name="permdesc_access_local_network" msgid="6364679803386822638">"អនុញ្ញាតឱ្យកម្មវិធីចូលប្រើឧបករណ៍បណ្ដាញមូលដ្ឋាន"</string>
     <string name="permlab_ranging" msgid="2854543350668593390">"កំណត់ទីតាំងធៀបរវាងឧបករណ៍នៅជិត"</string>
     <string name="permdesc_ranging" msgid="6703905535621521710">"អនុញ្ញាតឱ្យកម្មវិធីកំណត់ទីតាំងធៀបរវាងឧបករណ៍នៅជិត"</string>
     <string name="permlab_preferredPaymentInfo" msgid="5274423844767445054">"ព័ត៌មានអំពី​សេវាបង់ប្រាក់តាម NFC ជាអាទិភាព"</string>

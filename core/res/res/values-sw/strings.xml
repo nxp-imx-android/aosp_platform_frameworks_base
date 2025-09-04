@@ -639,10 +639,8 @@
     <string name="permdesc_uwb_ranging" msgid="2519723069604307055">"Ruhusu programu ibainishe nafasi kati ya vifaa vyenye Bendi Pana Zaidi vilivyo karibu"</string>
     <string name="permlab_nearby_wifi_devices" msgid="392774237063608500">"tumia vifaa vya Wi‑Fi vilivyo karibu"</string>
     <string name="permdesc_nearby_wifi_devices" msgid="3054307728646332906">"Huruhusu programu kutangaza, kuunganisha na kubaini mahali palipokadiriwa vilipo vifaa vya Wi-Fi vilivyo karibu"</string>
-    <!-- no translation found for permlab_access_local_network (3420360767259066877) -->
-    <skip />
-    <!-- no translation found for permdesc_access_local_network (6364679803386822638) -->
-    <skip />
+    <string name="permlab_access_local_network" msgid="3420360767259066877">"kufikia vifaa vya mtandao wa karibu"</string>
+    <string name="permdesc_access_local_network" msgid="6364679803386822638">"Huruhusu programu ifikie vifaa vya mtandao wa karibu"</string>
     <string name="permlab_ranging" msgid="2854543350668593390">"kubainisha nafasi kati ya vifaa vilivyo karibu"</string>
     <string name="permdesc_ranging" msgid="6703905535621521710">"Ruhusu programu ibainishe nafasi kati ya vifaa vilivyo karibu"</string>
     <string name="permlab_preferredPaymentInfo" msgid="5274423844767445054">"Maelezo ya Huduma Inayopendelewa ya Malipo ya NFC"</string>

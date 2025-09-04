@@ -639,10 +639,8 @@
     <string name="permdesc_uwb_ranging" msgid="2519723069604307055">"අවට ඇති අල්ට්‍රා-වයිඩ්බෑන්ඩ් උපාංග අතර සාපේක්ෂ පිහිටීම නිර්ණය කිරීමට යෙදුමට ඉඩ දීම"</string>
     <string name="permlab_nearby_wifi_devices" msgid="392774237063608500">"අවට Wi‑Fi උපාංග සමග අන්තර්ක්‍රියා කරන්න"</string>
     <string name="permdesc_nearby_wifi_devices" msgid="3054307728646332906">"වෙළඳ දැන්වීම් පළ කිරීමට, සම්බන්ධ වීමට සහ අවට ඇති Wi-Fi උපාංගවල සාපේක්ෂ පිහිටීම නිර්ණය කිරීමට යෙදුමට ඉඩ දෙයි"</string>
-    <!-- no translation found for permlab_access_local_network (3420360767259066877) -->
-    <skip />
-    <!-- no translation found for permdesc_access_local_network (6364679803386822638) -->
-    <skip />
+    <string name="permlab_access_local_network" msgid="3420360767259066877">"දේශීය ජාල උපාංග වෙත ප්‍රවේශ වීම"</string>
+    <string name="permdesc_access_local_network" msgid="6364679803386822638">"යෙදුමට දේශීය ජාල උපාංග වෙත ප්‍රවේශ වීමට ඉඩ දෙයි"</string>
     <string name="permlab_ranging" msgid="2854543350668593390">"අවට උපාංග අතර සාපේක්ෂ පිහිටීම තීරණය කරන්න"</string>
     <string name="permdesc_ranging" msgid="6703905535621521710">"අවට උපාංග අතර සාපේක්ෂ පිහිටීම තීරණය කිරීමට යෙදුමට ඉඩ දෙන්න"</string>
     <string name="permlab_preferredPaymentInfo" msgid="5274423844767445054">"කැමති NFC ගෙවීම් සේවා තොරතුරු"</string>

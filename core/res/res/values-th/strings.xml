@@ -639,10 +639,8 @@
     <string name="permdesc_uwb_ranging" msgid="2519723069604307055">"อนุญาตให้แอประบุตำแหน่งสัมพันธ์ระหว่างอุปกรณ์ที่ใช้แถบความถี่กว้างยิ่งยวดซึ่งอยู่ใกล้เคียง"</string>
     <string name="permlab_nearby_wifi_devices" msgid="392774237063608500">"โต้ตอบกับอุปกรณ์ Wi-Fi ที่อยู่ใกล้เคียง"</string>
     <string name="permdesc_nearby_wifi_devices" msgid="3054307728646332906">"อนุญาตให้แอปแสดงข้อมูล เชื่อมต่อ และระบุตำแหน่งซึ่งสัมพันธ์กับอุปกรณ์ Wi-Fi ที่อยู่ใกล้เคียง"</string>
-    <!-- no translation found for permlab_access_local_network (3420360767259066877) -->
-    <skip />
-    <!-- no translation found for permdesc_access_local_network (6364679803386822638) -->
-    <skip />
+    <string name="permlab_access_local_network" msgid="3420360767259066877">"เข้าถึงอุปกรณ์ในเครือข่ายในพื้นที่"</string>
+    <string name="permdesc_access_local_network" msgid="6364679803386822638">"อนุญาตให้แอปเข้าถึงอุปกรณ์ในเครือข่ายในพื้นที่"</string>
     <string name="permlab_ranging" msgid="2854543350668593390">"ระบุตำแหน่งสัมพันธ์ระหว่างอุปกรณ์ที่อยู่ใกล้เคียง"</string>
     <string name="permdesc_ranging" msgid="6703905535621521710">"อนุญาตให้แอประบุตำแหน่งสัมพันธ์ระหว่างอุปกรณ์ที่อยู่ใกล้เคียง"</string>
     <string name="permlab_preferredPaymentInfo" msgid="5274423844767445054">"ข้อมูลบริการชำระเงิน NFC ที่ต้องการ"</string>
