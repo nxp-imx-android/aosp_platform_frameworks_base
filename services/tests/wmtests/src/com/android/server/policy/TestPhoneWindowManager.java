@@ -84,6 +84,7 @@ import android.os.Looper;
 import android.os.PowerManager;
 import android.os.PowerManagerInternal;
 import android.os.RemoteException;
+import android.os.SystemProperties;
 import android.os.UserHandle;
 import android.os.Vibrator;
 import android.os.VibratorInfo;
@@ -279,6 +280,7 @@ class TestPhoneWindowManager {
                 .mockStatic(LocalServices.class, spyStubOnly)
                 .mockStatic(KeyCharacterMap.class)
                 .mockStatic(GestureLauncherService.class)
+                .mockStatic(SystemProperties.class)
                 .strictness(Strictness.LENIENT)
                 .startMocking();
 
@@ -634,8 +636,12 @@ class TestPhoneWindowManager {
         verify(mInputManager, never()).injectInputEvent(any(), anyInt());
     }
 
-    void overrideEnableBugReportTrigger(boolean enable) {
-        mPhoneWindowManager.mEnableBugReportKeyboardShortcut = enable;
+    void overrideBugHandler(boolean bugHandlerExist) throws RemoteException {
+        doReturn(bugHandlerExist).when(mActivityManagerService).launchBugReportHandlerApp();
+    }
+
+    void overrideDebuggable(boolean debuggable) {
+        doReturn(debuggable ? "1" : "0").when(() -> SystemProperties.get(eq("ro.debuggable")));
     }
 
     void overrideStartActivity() {
@@ -847,14 +853,14 @@ class TestPhoneWindowManager {
                 eq(displayId), eq(mImeTargetWindowToken));
     }
 
-    void assertTakeBugreport(boolean wasCalled) throws RemoteException {
+    void assertOpenBugHandler() throws RemoteException {
         mTestLooper.dispatchAll();
-        if (wasCalled) {
-            verify(mActivityManagerService).launchBugReportHandlerApp();
-        } else {
-            verify(mActivityManagerService, never()).launchBugReportHandlerApp();
-        }
+        verify(mActivityManagerService).launchBugReportHandlerApp();
+    }
 
+    void assertTakeBugReport() throws RemoteException {
+        mTestLooper.dispatchAll();
+        verify(mActivityManagerService).requestInteractiveBugReport();
     }
 
     void assertBugReportTakenForTv() {
