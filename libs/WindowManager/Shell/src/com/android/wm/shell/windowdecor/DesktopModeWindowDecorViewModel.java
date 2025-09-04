@@ -1082,6 +1082,7 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
     public boolean updateAppToWebEducationRequestTimestamp(int taskId,
             long latestOpenInBrowserEducationTimestamp) {
         final WindowDecorationWrapper decor = mWindowDecorByTaskId.get(taskId);
+        if (decor == null) return false;
         return decor.updateAppToWebEducationRequestTimestamp(latestOpenInBrowserEducationTimestamp);
     }
 
@@ -1094,6 +1095,7 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
     public Object isBrowserSessionAvailable(RunningTaskInfo taskInfo,
             @NonNull Continuation<? super Boolean> completion) {
         final WindowDecorationWrapper decor = mWindowDecorByTaskId.get(taskInfo.taskId);
+        if (decor == null) return false;
         return decor.isBrowserSessionAvailable();
     }
 
@@ -1105,6 +1107,7 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
     @Override
     public boolean isCapturedLinkAvailable(int taskId) {
         final WindowDecorationWrapper decor = mWindowDecorByTaskId.get(taskId);
+        if (decor == null) return false;
         return decor.isCapturedLinkAvailable();
     }
 
