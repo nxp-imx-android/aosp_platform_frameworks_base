@@ -47,6 +47,7 @@ test_module_config {
         "com.android.wm.shell.flicker.appcompat.AppDialogStaysInsideDesktopAppFlickerTest",
         "com.android.wm.shell.flicker.appcompat.ResizeActivityEmbeddedAppToMinimumWindowFlickerTest",
         "com.android.wm.shell.flicker.appcompat.ShowAppDialogInDesktopModeFlickerTest",
+        "com.android.wm.shell.flicker.appcompat.ShowQuickShareDialogFromQuickSettingsFlickerTest",
         "com.android.wm.shell.flicker.appcompat.SystemDialogStaysInsideDesktopAppFlickerTest",
         "com.android.wm.shell.flicker.exit.ExitDesktopToFullScreenWithAppHeaderMenuFlickerTest",
         "com.android.wm.shell.flicker.exit.ExitDesktopToFullScreenWithDragToTopDragZoneFlickerTest",
@@ -128,6 +129,13 @@ test_module_config {
     base: "WMShellFlickerTestsDesktopMode",
     test_suites: ["device-tests"],
     include_filters: ["com.android.wm.shell.flicker.appcompat.ShowAppDialogInDesktopModeFlickerTest"],
+}
+
+test_module_config {
+    name: "WMShellFlickerTestsDesktopMode-appcompat-ShowQuickShareDialogFromQuickSettingsFlickerTest",
+    base: "WMShellFlickerTestsDesktopMode",
+    test_suites: ["device-tests"],
+    include_filters: ["com.android.wm.shell.flicker.appcompat.ShowQuickShareDialogFromQuickSettingsFlickerTest"],
 }
 
 test_module_config {

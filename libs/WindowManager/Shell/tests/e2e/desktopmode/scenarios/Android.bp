@@ -95,6 +95,7 @@ test_module_config {
         "com.android.wm.shell.functional.appcompat.DialogStaysInsideDesktopAppTest",
         "com.android.wm.shell.functional.appcompat.ResizeActivityEmbeddedAppToMinimumWindowTest",
         "com.android.wm.shell.functional.appcompat.ShowAppDialogInDesktopModeTest",
+        "com.android.wm.shell.functional.appcompat.ShowQuickShareDialogFromQuickSettingsTest",
         "com.android.wm.shell.functional.exit.ExitDesktopToFullScreenWithAppHeaderMenuTest",
         "com.android.wm.shell.functional.exit.ExitDesktopToSplitScreenWithAppHeaderMenuTest",
         "com.android.wm.shell.functional.exit.ExitDesktopWithDragToTopDragZoneTest",
@@ -324,6 +325,13 @@ test_module_config {
     base: "FunctionalTestsDesktopMode",
     test_suites: ["device-tests"],
     include_filters: ["com.android.wm.shell.functional.appcompat.ShowAppDialogInDesktopModeTest"],
+}
+
+test_module_config {
+    name: "FunctionalTestsDesktopMode-appcompat-ShowQuickShareDialogFromQuickSettingsTest",
+    base: "FunctionalTestsDesktopMode",
+    test_suites: ["device-tests"],
+    include_filters: ["com.android.wm.shell.functional.appcompat.ShowQuickShareDialogFromQuickSettingsTest"],
 }
 
 test_module_config {
