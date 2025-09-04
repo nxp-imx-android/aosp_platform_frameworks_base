@@ -347,8 +347,7 @@
     <string name="wifi_non_persistent_mac_randomization_summary" msgid="2159794543105053930">"როდესაც ეს რეჟიმი ჩართულია, ამ მოწყობილობის MAC მისამართი შეიძლება შეიცვალოს ისეთ ქსელთან ყოველ დაკავშირებაზე, რომელსაც ჩართული აქვს MAC მისამართის რანდომიზაცია."</string>
     <string name="wifi_metered_label" msgid="8737187690304098638">"ლიმიტირებული"</string>
     <string name="wifi_unmetered_label" msgid="6174142840934095093">"არალიმიტირებული"</string>
-    <!-- no translation found for select_logd_size_title (4393502933789367691) -->
-    <skip />
+    <string name="select_logd_size_title" msgid="4393502933789367691">"ჟურნალის ბუფერის ზომა"</string>
     <string name="select_logd_size_dialog_title" msgid="2105401994681013578">"აირჩიეთ ჟურნ. ზომა / ჟურნ. ბუფერზე"</string>
     <string name="dev_logpersist_clear_warning_title" msgid="8631859265777337991">"გსურთ მუდმივი ჟურნალირების მეხსიერების გასუფთავება?"</string>
     <string name="dev_logpersist_clear_warning_message" msgid="6447590867594287413">"მუდმივი ჟურნალირების მეშვეობით მონიტორინგის შეწყვეტის შემდეგ, იძულებული ვიქნებით, თქვენს მოწყობილობაზე არსებული ჟურნალების მონაცემები წავშალოთ."</string>
