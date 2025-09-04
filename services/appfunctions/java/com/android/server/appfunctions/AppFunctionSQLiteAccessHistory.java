@@ -136,13 +136,13 @@ public final class AppFunctionSQLiteAccessHistory extends SQLiteOpenHelper
 
     @Override
     public long insertAppFunctionAccessHistory(
-            @NonNull ExecuteAppFunctionAidlRequest aidlRequest, long duration) {
+            @NonNull ExecuteAppFunctionAidlRequest aidlRequest, long accessTime, long duration) {
         Objects.requireNonNull(aidlRequest);
 
         try {
             final SQLiteDatabase db = getWritableDatabase();
             final ContentValues values =
-                    prepareAppFunctionAccessContentValue(aidlRequest, duration);
+                    prepareAppFunctionAccessContentValue(aidlRequest, accessTime, duration);
 
             return db.insert(AccessHistoryTable.DB_TABLE, /* nullColumnHack= */ null, values);
         } catch (Exception e) {
@@ -153,7 +153,7 @@ public final class AppFunctionSQLiteAccessHistory extends SQLiteOpenHelper
 
     @NonNull
     private ContentValues prepareAppFunctionAccessContentValue(
-            @NonNull ExecuteAppFunctionAidlRequest aidlRequest, long duration) {
+            @NonNull ExecuteAppFunctionAidlRequest aidlRequest, long accessTime, long duration) {
         Objects.requireNonNull(aidlRequest);
 
         final ContentValues values = new ContentValues();
@@ -164,7 +164,7 @@ public final class AppFunctionSQLiteAccessHistory extends SQLiteOpenHelper
         final String targetPackage =
                 Objects.requireNonNull(aidlRequest.getClientRequest().getTargetPackageName());
         values.put(AccessHistory.COLUMN_TARGET_PACKAGE_NAME, targetPackage);
-        values.put(AccessHistory.COLUMN_ACCESS_TIME, aidlRequest.getRequestTime());
+        values.put(AccessHistory.COLUMN_ACCESS_TIME, accessTime);
         values.put(AccessHistory.COLUMN_DURATION, duration);
 
         final AppFunctionAttribution attribution = aidlRequest.getClientRequest().getAttribution();

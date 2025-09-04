@@ -19,6 +19,7 @@ package com.android.server.appfunctions;
 import android.Manifest;
 import android.annotation.BinderThread;
 import android.annotation.NonNull;
+import android.annotation.Nullable;
 import android.annotation.RequiresPermission;
 import android.app.admin.DevicePolicyManager;
 import android.app.admin.DevicePolicyManager.AppFunctionsPolicy;
@@ -80,8 +81,11 @@ class CallerValidatorImpl implements CallerValidator {
             if (Flags.appFunctionAccessServiceEnabled()) {
                 enforceNoCrossUserOrSecondaryProfileInteraction(targetUserHandle, callingUid);
             } else {
-                enforceConditionalCrossUserInteraction(
-                        claimedCallingPackage, targetUserHandle, callingPid, callingUid);
+                verifyUserInteraction(
+                        targetUserHandle.getIdentifier(),
+                        callingUid,
+                        callingPid,
+                        claimedCallingPackage);
             }
         } finally {
             Binder.restoreCallingIdentity(callingIdentityToken);
@@ -177,23 +181,15 @@ class CallerValidatorImpl implements CallerValidator {
                 && isAppFunctionPolicyAllowed(callingUserPolicy, isSameUser);
     }
 
-    /**
-     * Enforces that cross user interaction is only allowed when the caller has
-     * INTERACT_ACROSS_USERS_FULL permission.
-     *
-     * @param callingPackageName The package name of the caller.
-     * @param targetUserHandle The user which the caller is requesting to execute as.
-     * @param callingPid The actual pid of the caller as determined by Binder.
-     * @param callingUid The actual uid of the caller as determined by Binder.
-     * @throws IllegalArgumentException if the target user is a special user.
-     * @throws SecurityException if caller trying to interact across user without {@link
-     *     Manifest.permission#INTERACT_ACROSS_USERS_FULL}
-     */
-    private void enforceConditionalCrossUserInteraction(
-            @NonNull String callingPackageName,
-            @NonNull UserHandle targetUserHandle,
-            int callingPid,
-            int callingUid) {
+    @Override
+    public void verifyUserInteraction(int targetUserId, int callingUid, int callingPid) {
+        verifyUserInteraction(targetUserId, callingUid, callingPid, /* callingPackageName= */ null);
+    }
+
+    @Override
+    public void verifyUserInteraction(
+            int targetUserId, int callingUid, int callingPid, @Nullable String callingPackageName) {
+        UserHandle targetUserHandle = UserHandle.of(targetUserId);
         UserHandle callingUserHandle = UserHandle.getUserHandleForUid(callingUid);
         if (callingUserHandle.equals(targetUserHandle)) {
             return;
@@ -208,6 +204,7 @@ class CallerValidatorImpl implements CallerValidator {
         if (mContext.checkPermission(
                         Manifest.permission.INTERACT_ACROSS_USERS_FULL, callingPid, callingUid)
                 == PackageManager.PERMISSION_GRANTED) {
+            if (callingPackageName == null) return;
             try {
                 mContext.createPackageContextAsUser(
                         callingPackageName, /* flags= */ 0, targetUserHandle);

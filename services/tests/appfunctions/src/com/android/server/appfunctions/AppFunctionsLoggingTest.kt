@@ -112,6 +112,7 @@ class AppFunctionsLoggingTest {
                 UserHandle.CURRENT,
                 TEST_CALLING_PKG,
                 TEST_INITIAL_REQUEST_TIME_MILLIS,
+                System.currentTimeMillis(),
             )
         val safeCallback =
             mServiceImpl.initializeSafeExecuteAppFunctionCallback(
@@ -159,6 +160,7 @@ class AppFunctionsLoggingTest {
                 UserHandle.CURRENT,
                 TEST_CALLING_PKG,
                 TEST_INITIAL_REQUEST_TIME_MILLIS,
+                System.currentTimeMillis(),
             )
         val safeCallback =
             mServiceImpl.initializeSafeExecuteAppFunctionCallback(
@@ -207,6 +209,7 @@ class AppFunctionsLoggingTest {
                 UserHandle.CURRENT,
                 TEST_CALLING_PKG,
                 TEST_INITIAL_REQUEST_TIME_MILLIS,
+                System.currentTimeMillis(),
             )
         val safeCallback =
             mServiceImpl.initializeSafeExecuteAppFunctionCallback(
@@ -261,6 +264,7 @@ class AppFunctionsLoggingTest {
                 UserHandle.CURRENT,
                 TEST_CALLING_PKG,
                 TEST_INITIAL_REQUEST_TIME_MILLIS,
+                System.currentTimeMillis(),
             )
         val safeCallback =
             mServiceImpl.initializeSafeExecuteAppFunctionCallback(
@@ -316,6 +320,7 @@ class AppFunctionsLoggingTest {
                 UserHandle.CURRENT,
                 TEST_CALLING_PKG,
                 TEST_INITIAL_REQUEST_TIME_MILLIS,
+                System.currentTimeMillis(),
             )
         val safeCallback =
             mServiceImpl.initializeSafeExecuteAppFunctionCallback(

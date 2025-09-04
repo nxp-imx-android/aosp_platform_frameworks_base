@@ -39,7 +39,7 @@ public interface AppFunctionAccessHistory extends AutoCloseable {
      */
     @WorkerThread
     long insertAppFunctionAccessHistory(
-            @NonNull ExecuteAppFunctionAidlRequest aidlRequest, long duration);
+            @NonNull ExecuteAppFunctionAidlRequest aidlRequest, long accessTime, long duration);
 
     /**
      * Deletes expired AppFunction access histories.

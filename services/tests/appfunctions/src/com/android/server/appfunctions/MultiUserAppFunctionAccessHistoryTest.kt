@@ -17,7 +17,6 @@
 package com.android.server.appfunctions
 
 import android.content.pm.UserInfo
-import android.os.UserHandle
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.android.server.SystemService.TargetUser
 import com.google.common.truth.Truth.assertThat
@@ -60,7 +59,7 @@ class MultiUserAppFunctionAccessHistoryTest {
         val targetUser = TargetUser(UserInfo(10, "testUser", 0))
 
         multiUserAccessHistory.onUserUnlocked(targetUser)
-        val userAccessHistory = multiUserAccessHistory.asUser(UserHandle.of(10))
+        val userAccessHistory = multiUserAccessHistory.asUser(10)
 
         assertThat(userAccessHistory).isNotNull()
         assertThat(userAccessHistory).isEqualTo(accessHistoryMap[10])
@@ -68,9 +67,7 @@ class MultiUserAppFunctionAccessHistoryTest {
 
     @Test
     fun switchUser_beforeUserUnlocked_fail() {
-        assertFailsWith<IllegalStateException> {
-            multiUserAccessHistory.asUser(UserHandle.of(10))
-        }
+        assertFailsWith<IllegalStateException> { multiUserAccessHistory.asUser(10) }
     }
 
     @Test
@@ -79,9 +76,7 @@ class MultiUserAppFunctionAccessHistoryTest {
         multiUserAccessHistory.onUserUnlocked(targetUser)
         multiUserAccessHistory.onUserStopping(targetUser)
 
-        assertFailsWith<IllegalStateException> {
-            multiUserAccessHistory.asUser(UserHandle.of(10))
-        }
+        assertFailsWith<IllegalStateException> { multiUserAccessHistory.asUser(10) }
     }
 
     @Test
@@ -101,7 +96,7 @@ class MultiUserAppFunctionAccessHistoryTest {
         )
 
         assertThat(scheduledExecutorService.futures).hasSize(1)
-        val userAccessHistory = multiUserAccessHistory.asUser(UserHandle.of(10))
+        val userAccessHistory = multiUserAccessHistory.asUser(10)
         verify(userAccessHistory, times(4))
             .deleteExpiredAppFunctionAccessHistories(
                 eq(serviceConfig.appFunctionAccessHistoryRetentionMillis)
@@ -113,7 +108,7 @@ class MultiUserAppFunctionAccessHistoryTest {
         val targetUser = TargetUser(UserInfo(10, "testUser", 0))
 
         multiUserAccessHistory.onUserUnlocked(targetUser)
-        val userAccessHistory = multiUserAccessHistory.asUser(UserHandle.of(10))
+        val userAccessHistory = multiUserAccessHistory.asUser(10)
         scheduledExecutorService.fastForwardTime(1)
         multiUserAccessHistory.onUserStopping(targetUser)
         scheduledExecutorService.fastForwardTime(

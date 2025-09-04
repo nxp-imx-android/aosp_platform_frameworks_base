@@ -94,4 +94,7 @@ interface IAppFunctionManager {
 
     @EnforcePermission("MANAGE_APP_FUNCTION_ACCESS")
     boolean isAgentAllowlistEnabled();
+
+    @EnforcePermission("MANAGE_APP_FUNCTION_ACCESS")
+    void clearAccessHistory(int userId);
 }
