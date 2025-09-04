@@ -17,6 +17,7 @@
 package com.android.server.am.psc;
 
 import android.content.Context;
+import android.os.SystemClock;
 
 import com.android.server.am.OomAdjuster;
 
@@ -34,7 +35,7 @@ public abstract class ProcessServiceRecordInternal {
         void onHasClientActivitiesChanged(boolean hasClientActivities);
     }
 
-    protected final OomAdjuster.Constants mOomConstants;
+    private final OomAdjuster.Constants mOomConstants;
     private final Observer mObserver;
 
     /** Last group set by a connection. */
@@ -49,6 +50,18 @@ public abstract class ProcessServiceRecordInternal {
     private boolean mHasClientActivities;
     /** Do we need to be executing services in the foreground? */
     private boolean mExecServicesFg;
+
+    /**
+     * Running any services that are almost perceptible (started with
+     * {@link Context#BIND_ALMOST_PERCEPTIBLE} while the app was on TOP)?
+     */
+    private boolean mHasTopStartedAlmostPerceptibleServices;
+    /**
+     * The latest value of
+     * {@link ServiceRecordInternal#getLastTopAlmostPerceptibleBindRequestUptimeMs()} among the
+     * currently running services.
+     */
+    private long mLastTopStartedAlmostPerceptibleBindRequestUptimeMs;
 
     protected ProcessServiceRecordInternal(OomAdjuster.Constants oomConstants, Observer observer) {
         mOomConstants = oomConstants;
@@ -107,6 +120,56 @@ public abstract class ProcessServiceRecordInternal {
 
     public void setExecServicesFg(boolean execServicesFg) {
         mExecServicesFg = execServicesFg;
+    }
+
+    public boolean getHasTopStartedAlmostPerceptibleServices() {
+        return mHasTopStartedAlmostPerceptibleServices;
+    }
+
+    public void setHasTopStartedAlmostPerceptibleServices(boolean value) {
+        mHasTopStartedAlmostPerceptibleServices = value;
+    }
+
+    public long getLastTopStartedAlmostPerceptibleBindRequestUptimeMs() {
+        return mLastTopStartedAlmostPerceptibleBindRequestUptimeMs;
+    }
+
+    public void setLastTopStartedAlmostPerceptibleBindRequestUptimeMs(long value) {
+        mLastTopStartedAlmostPerceptibleBindRequestUptimeMs = value;
+    }
+
+    /**
+     * Recalculates and updates the {@link #mHasTopStartedAlmostPerceptibleServices} flag
+     * and {@link #mLastTopStartedAlmostPerceptibleBindRequestUptimeMs} based on the
+     * currently running services in this process.
+     *
+     * It iterates through all running services to determine if any are considered
+     * "almost perceptible" and updates the latest bind request uptime.
+     */
+    public void updateHasTopStartedAlmostPerceptibleServices() {
+        mHasTopStartedAlmostPerceptibleServices = false;
+        mLastTopStartedAlmostPerceptibleBindRequestUptimeMs = 0;
+        for (int s = numberOfRunningServices() - 1; s >= 0; --s) {
+            final ServiceRecordInternal sr = getRunningServiceAt(s);
+            mLastTopStartedAlmostPerceptibleBindRequestUptimeMs = Math.max(
+                    mLastTopStartedAlmostPerceptibleBindRequestUptimeMs,
+                    sr.getLastTopAlmostPerceptibleBindRequestUptimeMs());
+            if (!mHasTopStartedAlmostPerceptibleServices && isAlmostPerceptible(sr)) {
+                mHasTopStartedAlmostPerceptibleServices = true;
+            }
+        }
+    }
+
+    /**
+     * Checks if this process currently has or recently had a service that was started as
+     * "almost perceptible" (via {@link Context#BIND_ALMOST_PERCEPTIBLE}) while the app was in
+     * the TOP state.
+     */
+    public boolean hasTopStartedAlmostPerceptibleServices() {
+        return mHasTopStartedAlmostPerceptibleServices
+                || (mLastTopStartedAlmostPerceptibleBindRequestUptimeMs > 0
+                && SystemClock.uptimeMillis() - mLastTopStartedAlmostPerceptibleBindRequestUptimeMs
+                < mOomConstants.mServiceBindAlmostPerceptibleTimeoutMs);
     }
 
     /** Returns the number of services currently running in this process. */

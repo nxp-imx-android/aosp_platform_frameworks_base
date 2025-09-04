@@ -30,7 +30,6 @@ import android.util.ArraySet;
 
 import com.android.internal.annotations.GuardedBy;
 import com.android.server.am.psc.ProcessServiceRecordInternal;
-import com.android.server.am.psc.ServiceRecordInternal;
 import com.android.server.wm.WindowProcessController;
 
 import java.io.PrintWriter;
@@ -49,18 +48,6 @@ final class ProcessServiceRecord extends ProcessServiceRecordInternal {
      * Last reported state of whether it's running any services that are foreground.
      */
     private boolean mRepHasForegroundServices;
-
-    /**
-     * Running any services that are almost perceptible (started with
-     * {@link Context#BIND_ALMOST_PERCEPTIBLE} while the app was on TOP)?
-     */
-    private boolean mHasTopStartedAlmostPerceptibleServices;
-
-    /**
-     * The latest value of {@link ServiceRecord#getLastTopAlmostPerceptibleBindRequestUptimeMs()}
-     * among the currently running services.
-     */
-    private long mLastTopStartedAlmostPerceptibleBindRequestUptimeMs;
 
     /**
      * The OR'ed foreground service types that are running on this process.
@@ -234,27 +221,6 @@ final class ProcessServiceRecord extends ProcessServiceRecordInternal {
         return count;
     }
 
-    void updateHasTopStartedAlmostPerceptibleServices() {
-        mHasTopStartedAlmostPerceptibleServices = false;
-        mLastTopStartedAlmostPerceptibleBindRequestUptimeMs = 0;
-        for (int s = mServices.size() - 1; s >= 0; --s) {
-            final ServiceRecordInternal sr = mServices.valueAt(s);
-            mLastTopStartedAlmostPerceptibleBindRequestUptimeMs = Math.max(
-                    mLastTopStartedAlmostPerceptibleBindRequestUptimeMs,
-                    sr.getLastTopAlmostPerceptibleBindRequestUptimeMs());
-            if (!mHasTopStartedAlmostPerceptibleServices && isAlmostPerceptible(sr)) {
-                mHasTopStartedAlmostPerceptibleServices = true;
-            }
-        }
-    }
-
-    boolean hasTopStartedAlmostPerceptibleServices() {
-        return mHasTopStartedAlmostPerceptibleServices
-                || (mLastTopStartedAlmostPerceptibleBindRequestUptimeMs > 0
-                && SystemClock.uptimeMillis() - mLastTopStartedAlmostPerceptibleBindRequestUptimeMs
-                < mOomConstants.mServiceBindAlmostPerceptibleTimeoutMs);
-    }
-
     void updateHasAboveClientLocked() {
         setHasAboveClient(false);
         for (int i = mConnections.size() - 1; i >= 0; i--) {
@@ -285,11 +251,11 @@ final class ProcessServiceRecord extends ProcessServiceRecordInternal {
             updateHostingComonentTypeForBindingsLocked();
         }
         if (record.getLastTopAlmostPerceptibleBindRequestUptimeMs() > 0) {
-            mLastTopStartedAlmostPerceptibleBindRequestUptimeMs = Math.max(
-                    mLastTopStartedAlmostPerceptibleBindRequestUptimeMs,
-                    record.getLastTopAlmostPerceptibleBindRequestUptimeMs());
-            if (!mHasTopStartedAlmostPerceptibleServices) {
-                mHasTopStartedAlmostPerceptibleServices = isAlmostPerceptible(record);
+            setLastTopStartedAlmostPerceptibleBindRequestUptimeMs(Math.max(
+                    getLastTopStartedAlmostPerceptibleBindRequestUptimeMs(),
+                    record.getLastTopAlmostPerceptibleBindRequestUptimeMs()));
+            if (!getHasTopStartedAlmostPerceptibleServices()) {
+                setHasTopStartedAlmostPerceptibleServices(isAlmostPerceptible(record));
             }
         }
         return added;
@@ -571,12 +537,12 @@ final class ProcessServiceRecord extends ProcessServiceRecordInternal {
             pw.print(prefix); pw.print("mHasForegroundServices="); pw.print(mHasForegroundServices);
             pw.print(" forcingToImportant="); pw.println(mApp.getForcingToImportant());
         }
-        if (mHasTopStartedAlmostPerceptibleServices
-                || mLastTopStartedAlmostPerceptibleBindRequestUptimeMs > 0) {
+        if (getHasTopStartedAlmostPerceptibleServices()
+                || getLastTopStartedAlmostPerceptibleBindRequestUptimeMs() > 0) {
             pw.print(prefix); pw.print("mHasTopStartedAlmostPerceptibleServices=");
-            pw.print(mHasTopStartedAlmostPerceptibleServices);
+            pw.print(getHasTopStartedAlmostPerceptibleServices());
             pw.print(" mLastTopStartedAlmostPerceptibleBindRequestUptimeMs=");
-            pw.println(mLastTopStartedAlmostPerceptibleBindRequestUptimeMs);
+            pw.println(getLastTopStartedAlmostPerceptibleBindRequestUptimeMs());
         }
         if (hasClientActivities() || isHasAboveClient() || isTreatLikeActivity()) {
             pw.print(prefix); pw.print("hasClientActivities="); pw.print(hasClientActivities());
