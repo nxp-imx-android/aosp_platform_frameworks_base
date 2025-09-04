@@ -44,7 +44,6 @@ import android.view.Display;
 import android.window.DisplayWindowPolicyController;
 
 import com.android.internal.annotations.GuardedBy;
-import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.app.BlockedAppStreamingActivity;
 import com.android.modules.expresslog.Counter;
 
@@ -56,20 +55,12 @@ import java.util.function.Supplier;
 /**
  * A controller to control the policies of the windows that can be displayed on the virtual display.
  */
-public class GenericWindowPolicyController extends DisplayWindowPolicyController {
+class GenericWindowPolicyController extends DisplayWindowPolicyController {
 
     private static final String TAG = "GenericWindowPolicyController";
 
     private static final ComponentName BLOCKED_APP_STREAMING_COMPONENT =
             new ComponentName("android", BlockedAppStreamingActivity.class.getName());
-
-    /** Interface to listen running applications change on virtual display. */
-    public interface RunningAppsChangedListener {
-        /**
-         * Notifies the running applications change.
-         */
-        void onRunningAppsChanged(ArraySet<Integer> runningUids);
-    }
 
     /** Interface to react to activity changes on the virtual display. */
     public interface ActivityListener {
@@ -93,6 +84,9 @@ public class GenericWindowPolicyController extends DisplayWindowPolicyController
 
         /** Returns true when an intent should be intercepted */
         boolean shouldInterceptIntent(@NonNull Intent intent);
+
+        /** Called when the set of running apps on this display changes. */
+        void onRunningAppsChanged(int displayId, @NonNull ArraySet<Integer> runningUids);
     }
 
     /**
@@ -135,10 +129,6 @@ public class GenericWindowPolicyController extends DisplayWindowPolicyController
     private final ArraySet<Integer> mRunningUids = new ArraySet<>();
     @NonNull private final ActivityListener mActivityListener;
     private final Handler mHandler = new Handler(Looper.getMainLooper());
-    @NonNull
-    @GuardedBy("mGenericWindowPolicyControllerLock")
-    private final ArraySet<RunningAppsChangedListener> mRunningAppsChangedListeners =
-            new ArraySet<>();
     @NonNull private final Set<String> mDisplayCategories;
 
     @GuardedBy("mGenericWindowPolicyControllerLock")
@@ -279,20 +269,6 @@ public class GenericWindowPolicyController extends DisplayWindowPolicyController
         }
     }
 
-    /** Register a listener for running applications changes. */
-    public void registerRunningAppsChangedListener(@NonNull RunningAppsChangedListener listener) {
-        synchronized (mGenericWindowPolicyControllerLock) {
-            mRunningAppsChangedListeners.add(listener);
-        }
-    }
-
-    /** Unregister a listener for running applications changes. */
-    public void unregisterRunningAppsChangedListener(@NonNull RunningAppsChangedListener listener) {
-        synchronized (mGenericWindowPolicyControllerLock) {
-            mRunningAppsChangedListeners.remove(listener);
-        }
-    }
-
     @Override
     public boolean canActivityBeLaunched(@NonNull ActivityInfo activityInfo,
             @Nullable Intent intent, @WindowConfiguration.WindowingMode int windowingMode,
@@ -421,18 +397,12 @@ public class GenericWindowPolicyController extends DisplayWindowPolicyController
             mRunningUids.clear();
             mRunningUids.addAll(runningUids);
             int displayId = waitAndGetDisplayId();
-            if (mRunningUids.isEmpty() && displayId != INVALID_DISPLAY) {
-                // Post callback on the main thread so it doesn't block activity launching
-                mHandler.post(() -> mActivityListener.onDisplayEmpty(displayId));
+            if (displayId == INVALID_DISPLAY) {
+                return;
             }
-            if (!mRunningAppsChangedListeners.isEmpty()) {
-                final ArraySet<RunningAppsChangedListener> listeners =
-                        new ArraySet<>(mRunningAppsChangedListeners);
-                mHandler.post(() -> {
-                    for (RunningAppsChangedListener listener : listeners) {
-                        listener.onRunningAppsChanged(runningUids);
-                    }
-                });
+            mHandler.post(() -> mActivityListener.onRunningAppsChanged(displayId, runningUids));
+            if (mRunningUids.isEmpty()) {
+                mHandler.post(() -> mActivityListener.onDisplayEmpty(displayId));
             }
         }
     }
@@ -495,12 +465,5 @@ public class GenericWindowPolicyController extends DisplayWindowPolicyController
         // Either allowed and the exemptions do not contain the component,
         // or disallowed and the exemptions contain the component.
         return allowedByDefault != exemptions.contains(component);
-    }
-
-    @VisibleForTesting
-    int getRunningAppsChangedListenersSizeForTesting() {
-        synchronized (mGenericWindowPolicyControllerLock) {
-            return mRunningAppsChangedListeners.size();
-        }
     }
 }
