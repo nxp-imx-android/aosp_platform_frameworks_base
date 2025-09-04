@@ -9580,6 +9580,17 @@ public final class ViewRootImpl implements ViewParent,
     }
 
     private @Nullable AutofillManager getAutofillManager() {
+        if (android.service.autofill.Flags.useFocusedViewToGetAfmInViewRoot()) {
+            View focusedView = getFocusedViewOrNull();
+            if (focusedView == null) {
+                return getAutofillManagerFromFirstChild();
+            }
+            return focusedView.getContext().getSystemService(AutofillManager.class);
+        }
+        return getAutofillManagerFromFirstChild();
+    }
+
+    private @Nullable AutofillManager getAutofillManagerFromFirstChild() {
         if (mView instanceof ViewGroup) {
             ViewGroup decorView = (ViewGroup) mView;
             if (decorView.getChildCount() > 0) {
