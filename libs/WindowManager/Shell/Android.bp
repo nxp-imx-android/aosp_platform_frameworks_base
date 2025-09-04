@@ -159,6 +159,7 @@ android_library {
         "androidx.recyclerview_recyclerview",
         "com_android_launcher3_flags_lib",
         "com_android_wm_shell_flags_lib",
+        "PlatformAnimationLib",
         "dagger2",
         "jsr330",
         "kotlinx-coroutines-android",

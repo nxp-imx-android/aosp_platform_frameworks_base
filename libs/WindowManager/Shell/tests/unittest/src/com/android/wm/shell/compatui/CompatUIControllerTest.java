@@ -47,6 +47,7 @@ import android.view.accessibility.AccessibilityManager;
 import androidx.annotation.NonNull;
 import androidx.test.filters.SmallTest;
 
+import com.android.systemui.animation.ActivityTransitionAnimator;
 import com.android.window.flags.Flags;
 import com.android.wm.shell.ShellTaskOrganizer;
 import com.android.wm.shell.ShellTestCase;
@@ -63,6 +64,7 @@ import com.android.wm.shell.compatui.impl.CompatUIRequests;
 import com.android.wm.shell.desktopmode.DesktopUserRepositories;
 import com.android.wm.shell.desktopmode.data.DesktopRepository;
 import com.android.wm.shell.shared.desktopmode.FakeDesktopState;
+import com.android.wm.shell.startingsurface.StartingWindowController;
 import com.android.wm.shell.sysui.ShellController;
 import com.android.wm.shell.sysui.ShellInit;
 import com.android.wm.shell.transition.Transitions;
@@ -140,6 +142,15 @@ public class CompatUIControllerTest extends ShellTestCase {
     @NonNull
     private FakeDesktopState mDesktopState;
 
+    @Mock
+    private Lazy<ActivityTransitionAnimator> mActivityTransitionAnimatorLazy;
+    @Mock
+    private ActivityTransitionAnimator mActivityTransitionAnimator;
+
+    @Mock
+    private Lazy<StartingWindowController> mStartingWindowControllerLazy;
+    @Mock
+    private StartingWindowController mStartingWindowController;
 
     @Before
     public void setUp() {
@@ -163,6 +174,8 @@ public class CompatUIControllerTest extends ShellTestCase {
         doReturn(TASK_ID).when(mMockRestartDialogLayout).getTaskId();
         doReturn(true).when(mMockRestartDialogLayout).createLayout(anyBoolean());
         doReturn(true).when(mMockRestartDialogLayout).updateCompatInfo(any(), any(), anyBoolean());
+        doReturn(mActivityTransitionAnimator).when(mActivityTransitionAnimatorLazy).get();
+        doReturn(mStartingWindowController).when(mStartingWindowControllerLazy).get();
 
         mCompatUIStatusManager = new CompatUIStatusManager();
         mShellInit = spy(new ShellInit(mMockExecutor));
@@ -171,7 +184,7 @@ public class CompatUIControllerTest extends ShellTestCase {
                 mMockSyncQueue, mMockExecutor, mMockTransitionsLazy, mDockStateReader,
                 mCompatUIConfiguration, mCompatUIShellCommandHandler, mAccessibilityManager,
                 mCompatUIStatusManager, Optional.of(mDesktopUserRepositories),
-                mDesktopState) {
+                mDesktopState, mActivityTransitionAnimatorLazy, mStartingWindowControllerLazy) {
             @Override
             CompatUIWindowManager createCompatUiWindowManager(Context context, TaskInfo taskInfo,
                     ShellTaskOrganizer.TaskListener taskListener) {

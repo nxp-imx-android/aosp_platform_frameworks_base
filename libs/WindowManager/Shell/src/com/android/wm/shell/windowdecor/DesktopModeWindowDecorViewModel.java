@@ -2105,7 +2105,7 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
 
         @Override
         public void onChangeAspectRatio(@NonNull ActivityManager.RunningTaskInfo taskInfo) {
-            CompatUIController.launchUserAspectRatioSettings(mContext, taskInfo);
+            CompatUIController.launchUserAspectRatioSettingsNoAnimation(mContext, taskInfo);
         }
 
         @Override

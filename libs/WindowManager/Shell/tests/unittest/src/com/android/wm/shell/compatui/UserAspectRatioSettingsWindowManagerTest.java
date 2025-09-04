@@ -28,6 +28,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
@@ -50,9 +51,12 @@ import android.view.InsetsState;
 import android.view.SurfaceControl;
 import android.view.SurfaceControlViewHost;
 import android.view.View;
+import android.widget.FrameLayout;
 
 import androidx.test.filters.SmallTest;
 
+import com.android.internal.util.function.TriConsumer;
+import com.android.wm.shell.R;
 import com.android.wm.shell.ShellTaskOrganizer;
 import com.android.wm.shell.ShellTestCase;
 import com.android.wm.shell.TestShellExecutor;
@@ -72,7 +76,6 @@ import org.mockito.MockitoAnnotations;
 
 import java.util.HashSet;
 import java.util.Set;
-import java.util.function.BiConsumer;
 import java.util.function.Supplier;
 
 /**
@@ -92,10 +95,11 @@ public class UserAspectRatioSettingsWindowManagerTest extends ShellTestCase {
     @Mock
     private Supplier<Boolean> mUserAspectRatioButtonShownChecker;
     @Mock
-    private BiConsumer<TaskInfo, ShellTaskOrganizer.TaskListener>
+    private TriConsumer<TaskInfo, ShellTaskOrganizer.TaskListener, View>
             mOnUserAspectRatioSettingsButtonClicked;
     @Mock private ShellTaskOrganizer.TaskListener mTaskListener;
     @Mock private UserAspectRatioSettingsLayout mLayout;
+    @Mock private FrameLayout mLayoutParent;
     @Mock private SurfaceControlViewHost mViewHost;
     @Captor
     private ArgumentCaptor<ShellTaskOrganizer.TaskListener> mUserAspectRatioTaskListenerCaptor;
@@ -134,7 +138,8 @@ public class UserAspectRatioSettingsWindowManagerTest extends ShellTestCase {
                 mOnUserAspectRatioSettingsButtonClicked, mExecutor, flags -> 0,
                 mUserAspectRatioButtonShownChecker, s -> {});
         spyOn(mWindowManager);
-        doReturn(mLayout).when(mWindowManager).inflateLayout();
+        doReturn(mLayoutParent).when(mWindowManager).inflateLayout();
+        doReturn(mLayout).when(mLayoutParent).findViewById(R.id.user_aspect_ratio_layout);
         doReturn(mViewHost).when(mWindowManager).createSurfaceViewHost();
         doReturn(false).when(mUserAspectRatioButtonShownChecker).get();
     }
@@ -392,7 +397,6 @@ public class UserAspectRatioSettingsWindowManagerTest extends ShellTestCase {
     @RequiresFlagsDisabled(FLAG_APP_COMPAT_UI_FRAMEWORK)
     public void testLayoutHasUserAspectRatioSettingsButton() {
         clearInvocations(mWindowManager);
-        spyOn(mWindowManager);
         TaskInfo taskInfo = createTaskInfo(/* eligibleForUserAspectRatioButton= */
                 true, /* topActivityBoundsLetterboxed */ true, ACTION_MAIN, CATEGORY_LAUNCHER);
 
@@ -404,7 +408,6 @@ public class UserAspectRatioSettingsWindowManagerTest extends ShellTestCase {
         assertTrue(mWindowManager.mHasUserAspectRatioSettingsButton);
 
         // User aspect ratio settings button has been shown and is still visible.
-        spyOn(mWindowManager);
         doReturn(true).when(mWindowManager).isShowingButton();
         doReturn(true).when(mUserAspectRatioButtonShownChecker).get();
 
@@ -438,7 +441,8 @@ public class UserAspectRatioSettingsWindowManagerTest extends ShellTestCase {
 
         verify(mOnUserAspectRatioSettingsButtonClicked).accept(
                 mUserAspectRationTaskInfoCaptor.capture(),
-                mUserAspectRatioTaskListenerCaptor.capture());
+                mUserAspectRatioTaskListenerCaptor.capture(),
+                isNull());
         final Pair<TaskInfo, ShellTaskOrganizer.TaskListener> result =
                 new Pair<>(mUserAspectRationTaskInfoCaptor.getValue(),
                         mUserAspectRatioTaskListenerCaptor.getValue());
