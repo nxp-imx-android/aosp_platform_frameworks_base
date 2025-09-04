@@ -17,7 +17,7 @@
 package com.android.server.display;
 
 import static android.hardware.devicestate.DeviceState.PROPERTY_EMULATED_ONLY;
-import static android.hardware.devicestate.DeviceState.PROPERTY_LAPTOP_HARDWARE_CONFIGURATION_LID_CLOSED;
+import static android.hardware.devicestate.DeviceState.PROPERTY_LAPTOP_HARDWARE_CONFIGURATION_DOCKED;
 import static android.hardware.devicestate.DeviceState.PROPERTY_POWER_CONFIGURATION_TRIGGER_SLEEP;
 import static android.hardware.devicestate.DeviceState.PROPERTY_POWER_CONFIGURATION_TRIGGER_WAKE;
 import static android.hardware.devicestate.DeviceStateManager.INVALID_DEVICE_STATE;
@@ -538,7 +538,7 @@ class LogicalDisplayMapper implements DisplayDeviceRepository.Listener {
         }
 
         if (Flags.changeDefaultDisplayLidClosed() && state.hasProperty(
-                PROPERTY_LAPTOP_HARDWARE_CONFIGURATION_LID_CLOSED)) {
+                PROPERTY_LAPTOP_HARDWARE_CONFIGURATION_DOCKED)) {
             createLayoutWithDefaultSecondaryDisplayLocked(state.getIdentifier());
         }
 
@@ -1487,7 +1487,7 @@ class LogicalDisplayMapper implements DisplayDeviceRepository.Listener {
     private boolean findNewDefaultSecondaryDisplayIfNeededLocked(
             DisplayDevice removedDisplayDevice) {
         if (!Flags.changeDefaultDisplayLidClosed() || !mDeviceState.hasProperty(
-                PROPERTY_LAPTOP_HARDWARE_CONFIGURATION_LID_CLOSED)) {
+                PROPERTY_LAPTOP_HARDWARE_CONFIGURATION_DOCKED)) {
             return false;
         }
 
