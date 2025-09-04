@@ -17,10 +17,10 @@
 package com.android.systemui.statusbar.notification.stack.ui.viewmodel
 
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.compose.animation.scene.ContentKey
 import com.android.compose.animation.scene.ObservableTransitionState
-import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.dump.DumpManager
 import com.android.systemui.flags.FeatureFlagsClassic
 import com.android.systemui.flags.Flags
@@ -46,7 +46,6 @@ import com.android.systemui.wallpapers.domain.interactor.WallpaperFocalAreaInter
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import java.util.function.Consumer
-import kotlin.coroutines.CoroutineContext
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.filter
@@ -61,13 +60,12 @@ class NotificationsPlaceholderViewModel
 constructor(
     private val interactor: NotificationStackAppearanceInteractor,
     private val sceneInteractor: SceneInteractor,
-    private val shadeInteractor: ShadeInteractor,
+    shadeInteractor: ShadeInteractor,
     shadeModeInteractor: ShadeModeInteractor,
     private val headsUpNotificationInteractor: HeadsUpNotificationInteractor,
     remoteInputInteractor: RemoteInputInteractor,
     featureFlags: FeatureFlagsClassic,
     dumpManager: DumpManager,
-    @Main private val mainContext: CoroutineContext,
     private val wallpaperFocalAreaInteractor: WallpaperFocalAreaInteractor,
 ) :
     ExclusiveActivatable(),
@@ -92,6 +90,13 @@ constructor(
             traceName = "quickSettingsShadeContentKey",
             initialValue = getQuickSettingsShadeContentKey(shadeModeInteractor.shadeMode.value),
             source = shadeModeInteractor.shadeMode.map { getQuickSettingsShadeContentKey(it) },
+        )
+
+    /** @see NotificationStackAppearanceInteractor.notificationStackHorizontalAlignment */
+    val horizontalAlignment: Alignment.Horizontal by
+        hydrator.hydratedStateOf(
+            traceName = "horizontalAlignment",
+            source = interactor.notificationStackHorizontalAlignment,
         )
 
     /**
