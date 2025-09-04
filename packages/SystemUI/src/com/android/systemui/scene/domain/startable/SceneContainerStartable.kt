@@ -834,12 +834,13 @@ constructor(
     private fun hydrateWindowController() {
         applicationScope.launch {
             sceneInteractor.transitionState
-                .mapNotNull { transitionState ->
-                    (transitionState as? ObservableTransitionState.Idle)?.currentScene
-                }
+                .filterIsInstance<ObservableTransitionState.Idle>()
+                .map { it.currentScene to it.currentOverlays }
                 .distinctUntilChanged()
-                .collect { sceneKey ->
-                    windowController.setNotificationShadeFocusable(sceneKey != Scenes.Gone)
+                .collect { (currentScene, currentOverlays) ->
+                    windowController.setNotificationShadeFocusable(
+                        currentScene != Scenes.Gone || currentOverlays.isNotEmpty()
+                    )
                 }
         }
 
