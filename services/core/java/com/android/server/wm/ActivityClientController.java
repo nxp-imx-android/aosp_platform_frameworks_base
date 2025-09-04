@@ -220,10 +220,18 @@ class ActivityClientController extends IActivityClientController.Stub {
     }
 
     @Override
-    public void activityTopResumedStateLost() {
+    public void activityTopResumedStateLost(IBinder token) {
         final long origId = Binder.clearCallingIdentity();
         synchronized (mGlobalLock) {
-            mTaskSupervisor.handleTopResumedStateReleased(false /* timeout */);
+            if (com.android.window.flags.Flags.fixRapidTopResumedSwitch()) {
+                final ActivityRecord r = ActivityRecord.forTokenLocked(token);
+                if (r != null) {
+                    mTaskSupervisor.handleTopResumedStateReleasedIfNeeded(r, false /* timeout */);
+                }
+            } else {
+                mTaskSupervisor.handleTopResumedStateReleasedIfNeeded(null, false /* timeout */);
+            }
+
         }
         Binder.restoreCallingIdentity(origId);
     }
