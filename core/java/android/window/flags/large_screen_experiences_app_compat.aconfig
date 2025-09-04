@@ -12,14 +12,6 @@ flag {
 }
 
 flag {
-  name: "movable_cutout_configuration"
-  namespace: "large_screen_experiences_app_compat"
-  description: "Make it possible to move cutout across edges through device config"
-  bug: "302387383"
-  is_fixed_read_only: true
-}
-
-flag {
   name: "density_390_api"
   is_exported: true
   namespace: "large_screen_experiences_app_compat"
