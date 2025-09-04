@@ -5410,8 +5410,7 @@ final class ActivityRecord extends WindowToken {
                     && mDisplayContent.mInputMethodWindow != null
                     && mDisplayContent.mInputMethodWindow.isVisible();
             finishOrAbortReplacingWindow();
-            if (Flags.ensureStartingWindowRemoveFromTask() && !firstWindowDrawn && task != null
-                    && task.mSharedStartingData != null) {
+            if (!firstWindowDrawn && task != null && task.mSharedStartingData != null) {
                 final ActivityRecord r = getSharedStartingWindowOwnerIfTaskDrawn();
                 if (r != null) {
                     r.removeStartingWindow();
@@ -6533,19 +6532,9 @@ final class ActivityRecord extends WindowToken {
         if (associatedTask == null) {
             removeStartingWindow();
         } else {
-            if (Flags.ensureStartingWindowRemoveFromTask()) {
-                final ActivityRecord r = getSharedStartingWindowOwnerIfTaskDrawn();
-                if (r != null) {
-                    r.removeStartingWindow();
-                }
-            } else if (associatedTask.getActivity(
-                    r -> r.isVisibleRequested() && !r.firstWindowDrawn) == null) {
-                // The last drawn activity may not be the one that owns the starting window.
-                final ActivityRecord r = associatedTask.getActivity(
-                        ar -> ar.mStartingData != null);
-                if (r != null) {
-                    r.removeStartingWindow();
-                }
+            final ActivityRecord r = getSharedStartingWindowOwnerIfTaskDrawn();
+            if (r != null) {
+                r.removeStartingWindow();
             }
         }
         updateReportedVisibilityLocked();
