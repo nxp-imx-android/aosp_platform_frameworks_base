@@ -185,6 +185,41 @@ public class PresentationControllerTests extends WindowTestsBase {
         assertAddPresentationWindowFails(uid, presentationDisplay.mDisplayId);
     }
 
+    @EnableFlags({FLAG_ENABLE_PRESENTATION_FOR_CONNECTED_DISPLAYS,
+            FLAG_ENABLE_PRESENTATION_DISALLOWED_ON_UNFOCUSED_HOST_TASK})
+    @Test
+    public void testPresentationCanLaunchWithUnfocusedHostTaskOnDifferentDisplay() {
+        // This test verifies that a presentation can be launched on a display when its host task
+        // is visible but not focused on a different display.
+        int uid = Binder.getCallingUid();
+
+        // Create a host task on the default display.
+        final Task hostTask = createTask(mDefaultDisplay);
+        hostTask.effectiveUid = uid;
+        final ActivityRecord hostActivity = createActivityRecord(hostTask);
+        assertTrue(hostActivity.isVisible());
+
+        // Create another task on the default display to make the host task unfocused.
+        final Task taskFromAnotherApp = createTask(mDefaultDisplay.getDefaultTaskDisplayArea(),
+                WINDOWING_MODE_FREEFORM, ACTIVITY_TYPE_STANDARD);
+        taskFromAnotherApp.effectiveUid = uid + 1;
+        final ActivityRecord activityFromAnotherApp = createActivityRecord(taskFromAnotherApp);
+        assertTrue(hostActivity.isVisible());
+        assertTrue(activityFromAnotherApp.isVisible());
+        assertFalse(hostActivity.isFocusedActivityOnDisplay());
+        assertTrue(activityFromAnotherApp.isFocusedActivityOnDisplay());
+
+        // Create a separate display for the presentation.
+        final DisplayContent presentationDisplay = createPresentationDisplay();
+
+        // Adding a presentation window on the other display must succeed, even with an unfocused
+        // host task.
+        final WindowState window = addPresentationWindow(uid, presentationDisplay.getDisplayId());
+        final Transition addTransition = window.mTransitionController.getCollectingTransition();
+        completeTransition(addTransition, /*abortSync=*/ true);
+        assertTrue(window.isVisible());
+    }
+
     @EnableFlags(FLAG_ENABLE_PRESENTATION_FOR_CONNECTED_DISPLAYS)
     @Test
     public void testPresentationCannotLaunchOnAllDisplays() {
