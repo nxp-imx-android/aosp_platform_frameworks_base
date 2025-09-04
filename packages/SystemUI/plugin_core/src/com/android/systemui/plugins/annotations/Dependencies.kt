@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 The Android Open Source Project
+ * Copyright (C) 2025 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
  * except in compliance with the License. You may obtain a copy of the License at
@@ -11,17 +11,7 @@
  * KIND, either express or implied. See the License for the specific language governing
  * permissions and limitations under the License.
  */
+package com.android.systemui.plugins.annotations
 
-package com.android.systemui.plugins.annotations;
-
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-
-/**
- * Used for repeated @DependsOn internally, not for plugin
- * use.
- */
-@Retention(RetentionPolicy.RUNTIME)
-public @interface Dependencies {
-    DependsOn[] value();
-}
+/** Used for repeated @DependsOn internally, not for plugin use. */
+@Retention(AnnotationRetention.RUNTIME) annotation class Dependencies(vararg val value: DependsOn)

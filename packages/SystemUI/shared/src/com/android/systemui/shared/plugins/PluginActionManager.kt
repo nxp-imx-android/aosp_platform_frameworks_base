@@ -27,6 +27,8 @@ import android.content.res.Resources
 import android.view.LayoutInflater
 import androidx.core.net.toUri
 import com.android.internal.messages.nano.SystemMessageProto
+import com.android.systemui.dagger.qualifiers.Application
+import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.log.core.LogLevel
 import com.android.systemui.log.core.Logger
 import com.android.systemui.plugins.Plugin
@@ -36,6 +38,9 @@ import com.android.systemui.shared.plugins.PluginEnabler.DisableReason
 import com.android.systemui.shared.plugins.PluginManagerImpl.Companion.DEFAULT_LOGBUFFER
 import com.android.systemui.shared.plugins.VersionInfo.InvalidVersionException
 import java.util.concurrent.Executor
+import javax.inject.Inject
+import javax.inject.Named
+import javax.inject.Singleton
 
 /**
  * Coordinates all the available plugins for a given action.
@@ -59,6 +64,7 @@ private constructor(
     private val pluginEnabler: PluginEnabler,
     private val config: PluginManager.Config,
     private val pluginInstanceFactory: PluginInstance.Factory,
+    private val pluginPrefs: PluginPrefs,
 ) {
     private val pluginInstances = mutableListOf<PluginInstance<T>>()
     private val logger = Logger(listener.logBuffer ?: DEFAULT_LOGBUFFER, "$TAG[$action]")
@@ -130,7 +136,7 @@ private constructor(
         return true
     }
 
-    fun <C> dependsOn(p: Plugin, cls: Class<C>?): Boolean {
+    fun <C> dependsOn(p: Plugin, cls: Class<C>): Boolean {
         val instances = ArrayList(pluginInstances)
         for (instance in instances) {
             if (instance.containsPluginClass(p.javaClass)) {
@@ -144,7 +150,7 @@ private constructor(
 
     private fun onPluginConnected(pluginInstance: PluginInstance<T>) {
         logger.d("onPluginConnected")
-        PluginPrefs.setHasPlugins(hostContext)
+        pluginPrefs.hasPlugins = true
         pluginInstance.onCreate()
     }
 
@@ -305,10 +311,9 @@ private constructor(
     }
 
     /** Construct a [PluginActionManager] */
-    class Factory
-    @JvmOverloads
-    constructor(
-        private val context: Context,
+    @Singleton
+    class Factory(
+        private val hostContext: Context,
         private val packageManager: PackageManager,
         private val mainExecutor: Executor,
         private val bgExecutor: Executor,
@@ -316,8 +321,33 @@ private constructor(
         private val pluginEnabler: PluginEnabler,
         private val config: PluginManager.Config,
         private val pluginInstanceFactory: PluginInstance.Factory,
+        private val pluginPrefs: PluginPrefs,
         private val buildInfo: BuildInfo = BuildInfo.CURRENT,
     ) {
+        @Inject
+        constructor(
+            @Application hostContext: Context,
+            packageManager: PackageManager,
+            @Main mainExecutor: Executor,
+            @Named(PluginManagerImpl.PLUGIN_THREAD) pluginExecutor: Executor,
+            notificationManager: NotificationManager,
+            pluginEnabler: PluginEnabler,
+            pluginConfig: PluginManager.Config,
+            pluginInstanceFactory: PluginInstance.Factory,
+            pluginPrefs: PluginPrefs,
+        ) : this(
+            hostContext,
+            packageManager,
+            mainExecutor,
+            pluginExecutor,
+            notificationManager,
+            pluginEnabler,
+            pluginConfig,
+            pluginInstanceFactory,
+            pluginPrefs,
+            BuildInfo.CURRENT,
+        )
+
         fun <T : Plugin> create(
             action: String,
             listener: PluginListener<T>,
@@ -325,7 +355,7 @@ private constructor(
             allowMultiple: Boolean,
         ): PluginActionManager<T> {
             return PluginActionManager(
-                context,
+                hostContext,
                 packageManager,
                 action,
                 listener,
@@ -338,6 +368,7 @@ private constructor(
                 pluginEnabler,
                 config,
                 pluginInstanceFactory,
+                pluginPrefs,
             )
         }
     }

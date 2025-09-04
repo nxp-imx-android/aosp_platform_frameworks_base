@@ -38,9 +38,9 @@ class VersionCheckerImpl @Inject constructor() : VersionChecker {
         pluginClass: Class<T>,
         plugin: Plugin?,
     ): Boolean {
-        val pluginVersion = VersionInfo().addClass(pluginClass)
-        val instanceVersion = VersionInfo().addClass(instanceClass)
-        if (instanceVersion.hasVersionInfo()) {
+        val pluginVersion = VersionInfo(pluginClass)
+        val instanceVersion = VersionInfo(instanceClass)
+        if (instanceVersion.hasVersionInfo) {
             pluginVersion.checkVersion(instanceVersion)
         } else if (plugin != null) {
             val fallbackVersion = plugin.version
@@ -53,7 +53,7 @@ class VersionCheckerImpl @Inject constructor() : VersionChecker {
 
     /** Returns the version info for the class */
     override fun <T : Plugin> getVersionInfo(instanceClass: Class<T>): VersionInfo? {
-        val instanceVersion = VersionInfo().addClass(instanceClass)
-        return if (instanceVersion.hasVersionInfo()) instanceVersion else null
+        val instanceVersion = VersionInfo(instanceClass)
+        return if (instanceVersion.hasVersionInfo) instanceVersion else null
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 The Android Open Source Project
+ * Copyright (C) 2025 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
  * except in compliance with the License. You may obtain a copy of the License at
@@ -11,21 +11,11 @@
  * KIND, either express or implied. See the License for the specific language governing
  * permissions and limitations under the License.
  */
+package com.android.systemui.plugins.annotations
 
-package com.android.systemui.plugins;
-
-import com.android.systemui.plugins.annotations.ProvidesInterface;
-
-@ProvidesInterface(version = PluginDependency.VERSION)
-public class PluginDependency {
-    public static final int VERSION = 1;
-    static DependencyProvider sProvider;
-
-    public static <T> T get(Plugin p, Class<T> cls) {
-        return sProvider.get(p, cls);
-    }
-
-    static abstract class DependencyProvider {
-        abstract <T> T get(Plugin p, Class<T> cls);
-    }
-}
+/**
+ * Should be added to all interfaces in plugin lib to specify their current version and optionally
+ * their action to implement the plugin.
+ */
+@Retention(AnnotationRetention.RUNTIME)
+annotation class ProvidesInterface(val version: Int, val action: String = "")
