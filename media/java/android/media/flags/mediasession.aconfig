@@ -45,3 +45,11 @@ flag {
                "to add and remove listener for change in their controllers."
   bug: "422078108"
 }
+
+flag {
+  name: "expose_bitmap_size_limit_api"
+  namespace: "media_solutions"
+  description: "API to expose bitmap size limit used in MediaSession"
+  bug: "442621818"
+  is_exported: true
+}
