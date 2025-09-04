@@ -44,8 +44,10 @@ test_module_config {
     base: "WMShellFlickerTestsDesktopMode",
     test_suites: ["device-tests"],
     exclude_filters: [
+        "com.android.wm.shell.flicker.appcompat.AppDialogStaysInsideDesktopAppFlickerTest",
         "com.android.wm.shell.flicker.appcompat.ResizeActivityEmbeddedAppToMinimumWindowFlickerTest",
         "com.android.wm.shell.flicker.appcompat.ShowAppDialogInDesktopModeFlickerTest",
+        "com.android.wm.shell.flicker.appcompat.SystemDialogStaysInsideDesktopAppFlickerTest",
         "com.android.wm.shell.flicker.exit.ExitDesktopToFullScreenWithAppHeaderMenuFlickerTest",
         "com.android.wm.shell.flicker.exit.ExitDesktopToFullScreenWithDragToTopDragZoneFlickerTest",
         "com.android.wm.shell.flicker.exit.ExitDesktopToSplitScreenWithAppHeaderMenuFlickerTest",
@@ -108,6 +110,13 @@ test_module_config {
 }
 
 test_module_config {
+    name: "WMShellFlickerTestsDesktopMode-appcompat-AppDialogStaysInsideDesktopAppFlickerTest",
+    base: "WMShellFlickerTestsDesktopMode",
+    test_suites: ["device-tests"],
+    include_filters: ["com.android.wm.shell.flicker.appcompat.AppDialogStaysInsideDesktopAppFlickerTest"],
+}
+
+test_module_config {
     name: "WMShellFlickerTestsDesktopMode-appcompat-ResizeActivityEmbeddedAppToMinimumWindowFlickerTest",
     base: "WMShellFlickerTestsDesktopMode",
     test_suites: ["device-tests"],
@@ -119,6 +128,13 @@ test_module_config {
     base: "WMShellFlickerTestsDesktopMode",
     test_suites: ["device-tests"],
     include_filters: ["com.android.wm.shell.flicker.appcompat.ShowAppDialogInDesktopModeFlickerTest"],
+}
+
+test_module_config {
+    name: "WMShellFlickerTestsDesktopMode-appcompat-SystemDialogStaysInsideDesktopAppFlickerTest",
+    base: "WMShellFlickerTestsDesktopMode",
+    test_suites: ["device-tests"],
+    include_filters: ["com.android.wm.shell.flicker.appcompat.SystemDialogStaysInsideDesktopAppFlickerTest"],
 }
 
 test_module_config {
