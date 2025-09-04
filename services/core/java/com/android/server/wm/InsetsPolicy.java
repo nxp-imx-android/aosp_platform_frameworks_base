@@ -443,11 +443,12 @@ class InsetsPolicy {
                 || (windowingMode == WINDOWING_MODE_MULTI_WINDOW && target.isAlwaysOnTop())) {
             // Keep frames, caption, and IME.
             int types = WindowInsets.Type.captionBar();
-            if (windowingMode != WINDOWING_MODE_PINNED) {
-                if ((mDisplayContent != null && target == mDisplayContent.getImeInputTarget()
-                        && (WindowInsets.Type.ime() & target.getRequestedVisibleTypes()) != 0)) {
-                    types |= WindowInsets.Type.ime();
-                }
+            if (windowingMode != WINDOWING_MODE_PINNED
+                    && mDisplayContent.getImeInputTarget() instanceof WindowState imeTarget
+                    && (target == imeTarget
+                    || (target.getTask() != null && target.getTask() == imeTarget.getTask()))
+                    && imeTarget.isRequestedVisible(WindowInsets.Type.ime())) {
+                types |= WindowInsets.Type.ime();
             }
             final InsetsState newState = new InsetsState();
             newState.set(state, types);
