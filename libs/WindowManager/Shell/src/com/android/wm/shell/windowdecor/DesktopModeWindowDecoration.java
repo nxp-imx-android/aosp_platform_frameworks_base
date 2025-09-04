@@ -222,11 +222,8 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
     private final DesktopModeUiEventLogger mDesktopModeUiEventLogger;
     private boolean mIsRecentsTransitionRunning = false;
     private boolean mIsDragging = false;
-
     /** The last calculated valid drag area of the task. */
     private Rect mLastValidDragArea = null;
-    private final boolean mEnableDrawingAppHandle =
-            DesktopExperienceFlags.ENABLE_DRAWING_APP_HANDLE.isTrue();
 
     private final Function0<Unit> mCloseMaximizeMenuFunction = () -> {
         closeMaximizeMenu();
@@ -1874,9 +1871,7 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
     void checkTouchEvent(MotionEvent ev) {
         if (mResult.mRootView == null || DesktopModeFlags.ENABLE_HANDLE_INPUT_FIX.isTrue()) return;
         final View caption = mResult.mRootView.findViewById(R.id.desktop_mode_caption);
-        final View handle = mEnableDrawingAppHandle
-                ? caption.findViewById(R.id.caption_handle2)
-                : caption.findViewById(R.id.caption_handle);
+        final View handle = caption.findViewById(R.id.caption_handle);
         final boolean inHandle = !isHandleMenuActive()
                 && checkTouchEventInFocusedCaptionHandle(ev);
         final int action = ev.getActionMasked();
@@ -1902,9 +1897,7 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
      */
     void updateHoverAndPressStatus(MotionEvent ev) {
         if (mResult.mRootView == null || DesktopModeFlags.ENABLE_HANDLE_INPUT_FIX.isTrue()) return;
-        final View handle = mEnableDrawingAppHandle
-                ? mResult.mRootView.findViewById(R.id.caption_handle2)
-                : mResult.mRootView.findViewById(R.id.caption_handle);
+        final View handle = mResult.mRootView.findViewById(R.id.caption_handle);
         final boolean inHandle = !isHandleMenuActive()
                 && checkTouchEventInFocusedCaptionHandle(ev);
         final int action = ev.getActionMasked();
@@ -1924,9 +1917,7 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
      */
     void handleDragInterrupted() {
         if (mResult.mRootView == null) return;
-        final View handle = mEnableDrawingAppHandle
-                ? mResult.mRootView.findViewById(R.id.caption_handle2)
-                : mResult.mRootView.findViewById(R.id.caption_handle);
+        final View handle = mResult.mRootView.findViewById(R.id.caption_handle);
         handle.setHovered(false);
         handle.setPressed(false);
     }

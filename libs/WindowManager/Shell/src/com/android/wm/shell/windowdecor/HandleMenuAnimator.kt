@@ -41,7 +41,6 @@ import androidx.core.view.isVisible
 import com.android.app.animation.Interpolators.EMPHASIZED
 import com.android.wm.shell.R
 import com.android.wm.shell.shared.animation.Interpolators
-import com.android.wm.shell.windowdecor.common.DrawingHandle
 import kotlin.math.max
 
 /** Animates the Handle Menu opening. */
@@ -98,16 +97,20 @@ class HandleMenuAnimator(
     private val openInAppOrBrowserPill: ViewGroup =
         handleMenu.requireViewById(R.id.open_in_app_or_browser_pill)
 
+    private val windowDecorHeight: Float =
+        context.resources
+            .getDimensionPixelSize(R.dimen.desktop_mode_fullscreen_decor_caption_height)
+            .toFloat()
     private val handleHeight: Float =
         context.resources.getDimensionPixelSize(R.dimen.app_handle_height).toFloat()
+    private val handleWidth: Float =
+        context.resources.getDimensionPixelSize(R.dimen.app_handle_width).toFloat()
     private val handleMenuWidth: Float =
         context.resources.getDimensionPixelSize(R.dimen.desktop_mode_handle_menu_width).toFloat()
     private val appInfoPillHeight: Float =
         context.resources
             .getDimensionPixelSize(R.dimen.desktop_mode_handle_menu_app_info_pill_height)
             .toFloat()
-    private val menuColor: Int =
-        handleMenu.context.getColor(com.android.internal.R.color.materialColorSurfaceBright)
     private val marginMenuTop =
         context.resources.getDimensionPixelSize(R.dimen.desktop_mode_handle_menu_margin_top)
     private val marginMenuLeftRightPadding =
@@ -256,13 +259,13 @@ class HandleMenuAnimator(
                     duration = HANDLE_MENU_OPEN_CLOSE_DURATION
                     interpolator = EMPHASIZED
                 }
-        val widthDiff: Int = (handleMenuWidth - handleView.width).toInt()
-        val targetWidth: Float = handleView.width + widthDiff * WIDTH_SWAP_FRACTION
-        val targetHeight: Float = targetWidth * appInfoPillHeight / handleMenuWidth
+        val widthDiff: Int = (handleMenuWidth - handleWidth).toInt()
+        val targetWidth: Float = handleWidth + widthDiff * WIDTH_SWAP_FRACTION
+        val swapScale: Float = targetWidth / handleMenuWidth
+        val targetHeight: Float = targetWidth / handleMenuWidth * appInfoPillHeight
 
         // Calculating deltas
-        val swapScale: Float = targetWidth / handleMenuWidth
-        val handleWidthDelta: Float = targetWidth - handleView.width
+        val handleWidthDelta: Float = targetWidth - handleWidth
         val handleHeightDelta = targetHeight - handleHeight
 
         showMenuAnimation.addUpdateListener { animator ->
@@ -270,15 +273,17 @@ class HandleMenuAnimator(
             val showHandle: Boolean = (progress <= WIDTH_SWAP_FRACTION)
             handleView.isVisible = showHandle
             handleMenu.isVisible = !showHandle
-            val handleViewView = handleView as DrawingHandle
             if (showHandle) {
                 val handleAnimationProgress: Float = progress / WIDTH_SWAP_FRACTION
-                handleViewView.animateHandleForMenu(
-                    handleAnimationProgress,
-                    handleWidthDelta,
-                    handleHeightDelta,
-                    menuColor,
-                )
+                val heightIncrement = handleHeightDelta * handleAnimationProgress
+                val widthIncrement = handleWidthDelta * handleAnimationProgress
+                val scaleYGrowth: Float = (heightIncrement + handleHeight) / handleHeight
+                val scaleXGrowth: Float = (widthIncrement + handleWidth) / handleWidth
+                handleView.pivotY = windowDecorHeight / 2
+                handleView.pivotX = handleWidth / 2
+                handleView.scaleX = scaleXGrowth
+                handleView.scaleY = scaleYGrowth
+                handleView.translationY = heightIncrement / 2 * handleAnimationProgress
             } else {
                 val menuAnimationProgress: Float =
                     (progress - WIDTH_SWAP_FRACTION) / (1 - WIDTH_SWAP_FRACTION)
