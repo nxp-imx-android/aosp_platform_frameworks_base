@@ -30,6 +30,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -44,11 +45,11 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.input.pointer.PointerEvent
 import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.PointerInputChange
+import androidx.compose.ui.input.pointer.PointerType
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.SubcomposeLayout
@@ -57,6 +58,7 @@ import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Constraints
+import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
@@ -64,6 +66,7 @@ import androidx.compose.ui.unit.dp
 import com.android.systemui.common.shared.model.Icon
 import com.android.systemui.screencapture.common.ui.compose.PrimaryButton
 import com.android.systemui.screencapture.common.ui.compose.ScreenCaptureColors
+import kotlin.math.floor
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.roundToInt
@@ -117,22 +120,16 @@ private fun isRectInScreen(rect: Rect, screenWidth: Float, screenHeight: Float):
  * @param tapTargetSizePx The size of an individual tap target in pixels.
  * @return The `ResizeZone` that is tapped or hovered, or `null` if none.
  */
-private fun getTappedOrHoveredZone(
+private fun getResizeZone(
     boxWidth: Float,
     boxHeight: Float,
     pointerOffset: Offset,
     tapTargetSizePx: Float,
 ): ResizeZone? {
-    val tapTargetHalfPx = tapTargetSizePx / 2
+    val tapTargetHalfPx = floor(tapTargetSizePx / 2)
 
     // Check if the press is within the overall zone of the box.
-    val boxZone =
-        Rect(
-            left = -tapTargetHalfPx,
-            top = -tapTargetHalfPx,
-            right = boxWidth + tapTargetHalfPx,
-            bottom = boxHeight + tapTargetHalfPx,
-        )
+    val boxZone = Rect(0f, 0f, boxWidth, boxHeight).inflate(tapTargetHalfPx)
     if (!boxZone.contains(pointerOffset)) {
         return null
     }
@@ -165,16 +162,16 @@ private fun getTappedOrHoveredZone(
  * A class that encapsulates the state and logic for the RegionBox composable.
  *
  * @param minSizePx The minimum size of the box in pixels.
- * @param touchAreaPx The size of the touch area for resizing in pixels.
+ * @param density The density of the screen. Used for the conversions between pixels and Dp.
  */
-class RegionBoxState(private val minSizePx: Float, private val touchAreaPx: Float) {
+class RegionBoxState(private val minSizePx: Float, private val density: Density) {
     var rect by mutableStateOf<Rect?>(null)
 
     var dragMode by mutableStateOf(DragMode.NONE)
 
     /**
-     * Tracks which edge or corner of the selection box the user has clicked on to start a
-     * drag-to-resize action (i.e., dragMode == DragMode.RESIZING).
+     * Tracks which edge or corner of the selection box the user is currently dragging to resize the
+     * box.
      */
     var resizeZone by mutableStateOf<ResizeZone?>(null)
 
@@ -193,46 +190,25 @@ class RegionBoxState(private val minSizePx: Float, private val touchAreaPx: Floa
     /** True if the user is currently hovering over the capture button. */
     var isHoveringButton by mutableStateOf(false)
 
-    // The offset of the initial press when the user starts a drag gesture.
+    /**
+     * The offset of the initial press when the user starts a drag gesture. The offset is relative
+     * to the overall screen bounds.
+     */
     var newBoxStartOffset by mutableStateOf(Offset.Zero)
 
     // Must remember the screen size for the drag logic. Initial values are set to 0.
-    var screenWidth by mutableStateOf(0f)
-    var screenHeight by mutableStateOf(0f)
+    var screenWidth by mutableFloatStateOf(0f)
+    var screenHeight by mutableFloatStateOf(0f)
 
-    fun startDrag(startOffset: Offset) {
-        val currentRect = rect
-
-        if (currentRect == null) {
-            // If the box is not yet created, it is a drawing drag.
-            dragMode = DragMode.DRAWING
-            newBoxStartOffset = startOffset
-        } else {
-            val tappedZone =
-                getTappedOrHoveredZone(
-                    boxWidth = currentRect.width,
-                    boxHeight = currentRect.height,
-                    pointerOffset = startOffset - currentRect.topLeft,
-                    tapTargetSizePx = touchAreaPx,
-                )
-            when {
-                tappedZone != null -> {
-                    // If the drag was initiated within the current rectangle's drag-to-resize touch
-                    // zone, it is a resizing drag.
-                    dragMode = DragMode.RESIZING
-                    resizeZone = tappedZone
-                }
-                currentRect.contains(startOffset) -> {
-                    // If the drag was initiated inside the rectangle and not within the touch
-                    // zones, it is a moving drag.
-                    dragMode = DragMode.MOVING
-                }
-                else -> {
-                    // The touch was initiated outside of the rectangle and its touch zone.
-                    dragMode = DragMode.DRAWING
-                    newBoxStartOffset = startOffset
-                }
-            }
+    /**
+     * Determines which drag mode is being initiated based on the given pointer type and position.
+     */
+    fun startDrag(pointerType: PointerType, pointerPosition: Offset) {
+        val (newDragMode, newResizeZone) = getDragModeForPointer(pointerType, pointerPosition)
+        dragMode = newDragMode
+        resizeZone = newResizeZone
+        if (newDragMode == DragMode.DRAWING) {
+            newBoxStartOffset = pointerPosition
         }
     }
 
@@ -312,37 +288,67 @@ class RegionBoxState(private val minSizePx: Float, private val touchAreaPx: Floa
     }
 
     /**
-     * A low-level pointer input handler that is used to update the hover state of the different
-     * parts of the UI.
+     * Determines which part of the region box is being hovered based on the given `pointerType` and
+     * the `pointerPosition` relative to the box bounds and tap targets.
      */
-    fun updateHoverState(event: PointerEvent) {
-        val change = event.changes.first()
-        val pointerPosition = change.position
-        val isPressed = change.pressed
+    fun updateHoverState(pointerType: PointerType, pointerPosition: Offset) {
+        // If there is no box, then there is nothing to hover.
+        val currentRect = rect ?: return
 
-        // Don't update hover state if a button is pressed to prevent flicker
-        // during drags.
-        if (isPressed) {
-            return
+        hoveredZone = getResizeZone(pointerType, pointerPosition)
+        isHoveringBox = currentRect.contains(pointerPosition)
+        captureButtonBounds?.let { buttonBounds ->
+            val globalButtonBounds = buttonBounds.translate(currentRect.topLeft)
+            isHoveringButton = globalButtonBounds.contains(pointerPosition)
         }
+    }
 
-        if (event.type == PointerEventType.Move) {
-            rect?.let { currentRect ->
-                hoveredZone =
-                    getTappedOrHoveredZone(
-                        boxWidth = currentRect.width,
-                        boxHeight = currentRect.height,
-                        pointerOffset = pointerPosition - currentRect.topLeft,
-                        tapTargetSizePx = touchAreaPx,
-                    )
+    private fun getDragModeForPointer(
+        pointerType: PointerType,
+        pointerPosition: Offset,
+    ): Pair<DragMode, ResizeZone?> {
+        // If the box is not yet created, it is a drawing drag.
+        val currentRect = rect ?: return Pair(DragMode.DRAWING, null)
 
-                isHoveringBox = currentRect.contains(pointerPosition)
+        val currentResizeZone = getResizeZone(pointerType, pointerPosition)
+        return when {
+            // If the drag is initiated within the box's resize zones, it is a resizing drag.
+            currentResizeZone != null -> Pair(DragMode.RESIZING, currentResizeZone)
+            // If the drag was initiated outside the touch zones but inside the box, it is a moving
+            // drag.
+            currentRect.contains(pointerPosition) -> Pair(DragMode.MOVING, null)
+            // The drag is initiated outside the box and resize zones so it is a drawing drag.
+            else -> Pair(DragMode.DRAWING, null)
+        }
+    }
 
-                captureButtonBounds?.let { buttonBounds ->
-                    val globalButtonBounds = buttonBounds.translate(currentRect.topLeft)
-                    isHoveringButton = globalButtonBounds.contains(pointerPosition)
-                }
-            }
+    private fun getResizeZone(pointerType: PointerType, pointerPosition: Offset): ResizeZone? {
+        val currentRect = rect ?: return null
+
+        val pointerOffset = pointerPosition - currentRect.topLeft
+        val tapTargetSizePx = getTapTargetSize(pointerType)
+
+        return getResizeZone(
+            boxWidth = currentRect.width,
+            boxHeight = currentRect.height,
+            pointerOffset = pointerOffset,
+            tapTargetSizePx = tapTargetSizePx,
+        )
+    }
+
+    private fun getTapTargetSize(pointerType: PointerType): Float {
+        return with(density) { if (isPreciseTool(pointerType)) 36.dp.toPx() else 48.dp.toPx() }
+    }
+
+    private fun isPreciseTool(pointerType: PointerType): Boolean {
+        return when (pointerType) {
+            // Mouse, stylus, and touchpad are more accurate tools
+            PointerType.Mouse,
+            PointerType.Stylus -> true
+            // Touchscreen and other types are not
+            PointerType.Touch,
+            PointerType.Unknown -> false
+            else -> false
         }
     }
 }
@@ -375,11 +381,7 @@ fun RegionBox(
     val minSize = 48.dp
     val minSizePx = remember(density) { with(density) { minSize.toPx() } }
 
-    // The touch area for detecting an edge or corner resize drag.
-    val touchArea = 48.dp
-    val touchAreaPx = remember(density) { with(density) { touchArea.toPx() } }
-
-    val state = remember { RegionBoxState(minSizePx, touchAreaPx) }
+    val state = remember { RegionBoxState(minSizePx, density) }
     val scrimColor = ScreenCaptureColors.scrimColor
     val pointerIcon = rememberPointerIcon(state)
 
@@ -397,16 +399,32 @@ fun RegionBox(
                 .pointerInput(Unit) {
                     awaitPointerEventScope {
                         while (true) {
-                            state.updateHoverState(awaitPointerEvent(PointerEventPass.Main))
+                            val pointerEvent = awaitPointerEvent(PointerEventPass.Main)
+                            // Do not update hover state if the pointer was not moved.
+                            if (pointerEvent.type != PointerEventType.Move) {
+                                continue
+                            }
+
+                            val pointerChange = pointerEvent.changes.first()
+                            // Don't update hover state if the pointer is pressed to prevent flicker
+                            // during drags.
+                            if (pointerChange.pressed) {
+                                continue
+                            }
+
+                            state.updateHoverState(pointerChange.type, pointerChange.position)
                         }
                     }
                 }
                 .pointerInput(Unit) {
                     detectDragGestures(
-                        onDragStart = { startOffset: Offset -> state.startDrag(startOffset) },
-                        onDrag = { change: PointerInputChange, dragAmount: Offset ->
-                            change.consume()
-                            state.drag(change.position, dragAmount)
+                        orientationLock = null,
+                        onDragStart = { pointerChange: PointerInputChange, _, _ ->
+                            state.startDrag(pointerChange.type, pointerChange.position)
+                        },
+                        onDrag = { pointerChange: PointerInputChange, dragAmount: Offset ->
+                            pointerChange.consume()
+                            state.drag(pointerChange.position, dragAmount)
                         },
                         onDragEnd = {
                             state.dragEnd()
