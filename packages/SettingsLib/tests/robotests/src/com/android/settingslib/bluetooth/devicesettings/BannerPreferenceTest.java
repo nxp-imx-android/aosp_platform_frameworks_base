@@ -141,7 +141,7 @@ public final class BannerPreferenceTest {
     }
 
     @Test
-    public void parcelOperation() {
+    public void parcelOperation_withAllFields() {
         BannerPreference preference =
                 new BannerPreference.Builder()
                         .setTitle("title")
@@ -157,8 +157,78 @@ public final class BannerPreferenceTest {
         assertThat(fromParcel.getTitle()).isEqualTo(preference.getTitle());
         assertThat(fromParcel.getMessage()).isEqualTo(preference.getMessage());
         assertThat(fromParcel.getIcon()).isEqualTo(preference.getIcon());
-        assertThat(preference.getPositiveButtonInfo()).isEqualTo(POSITIVE_BUTTON);
-        assertThat(preference.getNegativeButtonInfo()).isEqualTo(NEGATIVE_BUTTON);
+        // ButtonInfo does not implement equals(), so we compare its properties.
+        assertThat(fromParcel.getPositiveButtonInfo().getLabel())
+                .isEqualTo(preference.getPositiveButtonInfo().getLabel());
+        assertThat(fromParcel.getNegativeButtonInfo().getLabel())
+                .isEqualTo(preference.getNegativeButtonInfo().getLabel());
+        assertThat(fromParcel.getExtras().getString("key1"))
+                .isEqualTo(preference.getExtras().getString("key1"));
+    }
+
+    @Test
+    public void parcelOperation_withNullButtons() {
+        BannerPreference preference =
+                new BannerPreference.Builder()
+                        .setTitle("title")
+                        .setMessage("message")
+                        .setIcon(ICON)
+                        .setExtras(buildBundle("key1", "value1"))
+                        .build();
+
+        BannerPreference fromParcel = writeAndRead(preference);
+
+        assertThat(fromParcel.getTitle()).isEqualTo(preference.getTitle());
+        assertThat(fromParcel.getMessage()).isEqualTo(preference.getMessage());
+        assertThat(fromParcel.getIcon()).isEqualTo(preference.getIcon());
+        assertThat(fromParcel.getPositiveButtonInfo()).isNull();
+        assertThat(fromParcel.getNegativeButtonInfo()).isNull();
+        assertThat(fromParcel.getExtras().getString("key1"))
+                .isEqualTo(preference.getExtras().getString("key1"));
+    }
+
+    @Test
+    public void parcelOperation_withOnlyPositiveButton() {
+        BannerPreference preference =
+                new BannerPreference.Builder()
+                        .setTitle("title")
+                        .setMessage("message")
+                        .setIcon(ICON)
+                        .setPositiveButtonInfo(POSITIVE_BUTTON)
+                        .setExtras(buildBundle("key1", "value1"))
+                        .build();
+
+        BannerPreference fromParcel = writeAndRead(preference);
+
+        assertThat(fromParcel.getTitle()).isEqualTo(preference.getTitle());
+        assertThat(fromParcel.getMessage()).isEqualTo(preference.getMessage());
+        assertThat(fromParcel.getIcon()).isEqualTo(preference.getIcon());
+        assertThat(fromParcel.getPositiveButtonInfo().getLabel())
+                .isEqualTo(preference.getPositiveButtonInfo().getLabel());
+        assertThat(fromParcel.getNegativeButtonInfo()).isNull();
+        assertThat(fromParcel.getExtras().getString("key1"))
+                .isEqualTo(preference.getExtras().getString("key1"));
+    }
+
+    @Test
+    public void parcelOperation_withOnlyNegativeButton() {
+        BannerPreference preference =
+                new BannerPreference.Builder()
+                        .setTitle("title")
+                        .setMessage("message")
+                        .setIcon(ICON)
+                        .setNegativeButtonInfo(NEGATIVE_BUTTON)
+                        .setExtras(buildBundle("key1", "value1"))
+                        .build();
+
+        BannerPreference fromParcel = writeAndRead(preference);
+
+        assertThat(fromParcel.getTitle()).isEqualTo(preference.getTitle());
+        assertThat(fromParcel.getMessage()).isEqualTo(preference.getMessage());
+        assertThat(fromParcel.getIcon()).isEqualTo(preference.getIcon());
+        assertThat(fromParcel.getPositiveButtonInfo()).isNull();
+        assertThat(fromParcel.getNegativeButtonInfo().getLabel())
+                .isEqualTo(preference.getNegativeButtonInfo().getLabel());
         assertThat(fromParcel.getExtras().getString("key1"))
                 .isEqualTo(preference.getExtras().getString("key1"));
     }
