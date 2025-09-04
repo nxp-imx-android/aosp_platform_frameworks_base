@@ -819,6 +819,9 @@ public class PipTransition extends PipTransitionController implements
             mPipBoundsState.setLastPipComponentName(null /* lastPipComponentName */);
         }
 
+        final Rect startBounds = pipChange.getStartAbsBounds();
+        startTransaction.setWindowCrop(pipChange.getLeash(),
+                startBounds.width(), startBounds.height());
         finishTransaction.setAlpha(pipChange.getLeash(), 0f);
         if (mPendingRemoveWithFadeout) {
             PipAlphaAnimator animator = new PipAlphaAnimator(mContext, mPipSurfaceTransactionHelper,
