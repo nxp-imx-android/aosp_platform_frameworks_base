@@ -22,6 +22,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.State
+import androidx.compose.runtime.annotation.FrequentlyChangingValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.snapshotFlow
@@ -56,6 +57,8 @@ import kotlin.math.roundToInt
  */
 @Stable
 interface AnimatedState<T> : State<T> {
+    @get:FrequentlyChangingValue override val value: T
+
     /**
      * Return a [State] that can be read during composition.
      *
@@ -337,7 +340,14 @@ internal fun <T> animateSharedValueAsState(
     }
 
     return remember(layoutImpl, content, element, canOverflow) {
-        AnimatedStateImpl<T, Any>(layoutImpl, content, element, key, canOverflow)
+        AnimatedStateImpl<T, Any>(
+            layoutImpl,
+            content,
+            element,
+            key,
+            canOverflow,
+            fallbackValue = value,
+        )
     }
 }
 
@@ -358,13 +368,20 @@ private fun maybePruneMaps(
     }
 }
 
+private fun <T, Delta> sharedValueOrNull(
+    layoutImpl: SceneTransitionLayoutImpl,
+    key: ValueKey,
+    element: ElementKey?,
+): SharedValue<T, Delta>? {
+    return layoutImpl.sharedValues[key]?.get(element)?.let { it as SharedValue<T, Delta> }
+}
+
 private fun <T, Delta> sharedValue(
     layoutImpl: SceneTransitionLayoutImpl,
     key: ValueKey,
     element: ElementKey?,
 ): SharedValue<T, Delta> {
-    return layoutImpl.sharedValues[key]?.get(element)?.let { it as SharedValue<T, Delta> }
-        ?: error(valueReadTooEarlyMessage(key))
+    return sharedValueOrNull(layoutImpl, key, element) ?: error(valueReadTooEarlyMessage(key))
 }
 
 private fun valueReadTooEarlyMessage(key: ValueKey) =
@@ -401,12 +418,14 @@ private class AnimatedStateImpl<T, Delta>(
     private val element: ElementKey?,
     private val key: ValueKey,
     private val canOverflow: Boolean,
+    private val fallbackValue: T, // needed because of b/432799675.
 ) : AnimatedState<T> {
     override val value: T
         get() = value()
 
     private fun value(): T {
-        val sharedValue = sharedValue<T, Delta>(layoutImpl, key, element)
+        val sharedValue =
+            sharedValueOrNull<T, Delta>(layoutImpl, key, element) ?: return fallbackValue
         val transition = transition(sharedValue)
         val value: T =
             valueOrNull(sharedValue, transition)
@@ -414,7 +433,7 @@ private class AnimatedStateImpl<T, Delta>(
                 // scene value, but we have to because code of removed nodes can still run if they
                 // are placed with a graphics layer.
                 ?: sharedValue[content]
-                ?: error(valueReadTooEarlyMessage(key))
+                ?: return fallbackValue
         val interruptedValue = computeInterruptedValue(sharedValue, transition, value)
         sharedValue.lastValue = interruptedValue
         return interruptedValue
