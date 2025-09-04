@@ -1074,12 +1074,15 @@ public class ActivityManagerService extends IActivityManager.Stub
         }
 
         @Override
-        public void onActivityLaunched(long id, ComponentName name, int temperature, int userId) {
+        public void onActivityLaunched(long id, ComponentName name, int temperature, int userId,
+                    String processName) {
             mAppProfiler.onActivityLaunched();
             synchronized (ActivityManagerService.this) {
                 ProcessRecord record = null;
                 try {
-                    record = getProcessRecordLocked(name.getPackageName(), mContext
+                    String processRecordName = Flags.appStartInfoProcessNameFix()
+                            ? processName : name.getPackageName();
+                    record = getProcessRecordLocked(processRecordName, mContext
                             .getPackageManager().getPackageUidAsUser(name.getPackageName(), 0,
                             userId));
                 } catch (NameNotFoundException nnfe) {
