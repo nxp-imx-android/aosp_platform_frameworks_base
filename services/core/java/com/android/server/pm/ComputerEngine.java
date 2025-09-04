@@ -38,7 +38,6 @@ import static android.content.pm.PackageManager.MATCH_DIRECT_BOOT_UNAWARE;
 import static android.content.pm.PackageManager.MATCH_DISABLED_COMPONENTS;
 import static android.content.pm.PackageManager.MATCH_FACTORY_ONLY;
 import static android.content.pm.PackageManager.MATCH_KNOWN_PACKAGES;
-import static android.content.pm.PackageManager.MATCH_PCC_ONLY;
 import static android.content.pm.PackageManager.MATCH_UNINSTALLED_PACKAGES;
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 import static android.content.pm.PackageManager.TYPE_ACTIVITY;
@@ -1018,13 +1017,9 @@ public class ComputerEngine implements Computer {
                             + ": " + p);
         }
         final boolean matchApex = (flags & MATCH_APEX) != 0;
-        final boolean matchPccOnly = (flags & MATCH_PCC_ONLY) != 0;
         if (p != null) {
             PackageStateInternal ps = mSettings.getPackage(packageName);
             if (ps == null) return null;
-            if (matchPccOnly && !p.shouldRunInPccSandbox()) {
-                return null;
-            }
             if (!matchApex && p.isApex()) {
                 return null;
             }
@@ -1615,14 +1610,10 @@ public class ComputerEngine implements Computer {
 
         final boolean matchFactoryOnly = (flags & MATCH_FACTORY_ONLY) != 0;
         final boolean matchApex = (flags & MATCH_APEX) != 0;
-        final boolean matchPccOnly = (flags & MATCH_PCC_ONLY) != 0;
         if (matchFactoryOnly) {
             // Instant app filtering for APEX modules is ignored
             final PackageStateInternal ps = mSettings.getDisabledSystemPkg(packageName);
             if (ps != null) {
-                if (matchPccOnly && ps.getPkg() != null && !ps.getPkg().shouldRunInPccSandbox()) {
-                    return null;
-                }
                 if (!matchApex && ps.getPkg() != null && ps.getPkg().isApex()) {
                     return null;
                 }
@@ -1646,9 +1637,6 @@ public class ComputerEngine implements Computer {
         }
         if (p != null) {
             final PackageStateInternal ps = getPackageStateInternal(p.getPackageName());
-            if (matchPccOnly && !p.shouldRunInPccSandbox()) {
-                return null;
-            }
             if (!matchApex && p.isApex()) {
                 return null;
             }
@@ -1724,7 +1712,6 @@ public class ComputerEngine implements Computer {
         // writer
         final boolean listUninstalled = (flags & MATCH_KNOWN_PACKAGES) != 0;
         final boolean listApex = (flags & MATCH_APEX) != 0;
-        final boolean listPccOnly = (flags & MATCH_PCC_ONLY) != 0;
         final boolean listFactory = (flags & MATCH_FACTORY_ONLY) != 0;
         // Only list archived apps, not fully uninstalled ones. Other entries are unaffected.
         final boolean listArchivedOnly = !listUninstalled && (flags & MATCH_ARCHIVED_PACKAGES) != 0;
@@ -1742,9 +1729,6 @@ public class ComputerEngine implements Computer {
                     if (psDisabled != null) {
                         ps = psDisabled;
                     }
-                }
-                if (listPccOnly && ps.getPkg() != null && !ps.getPkg().shouldRunInPccSandbox()) {
-                    continue;
                 }
                 if (!listApex && ps.getPkg() != null && ps.getPkg().isApex()) {
                     continue;
@@ -1778,9 +1762,6 @@ public class ComputerEngine implements Computer {
                     if (psDisabled != null) {
                         ps = psDisabled;
                     }
-                }
-                if (listPccOnly && !p.shouldRunInPccSandbox()) {
-                    continue;
                 }
                 if (!listApex && p.isApex()) {
                     continue;
@@ -4633,7 +4614,6 @@ public class ComputerEngine implements Computer {
         flags = updateFlagsForApplication(flags, userId);
         final boolean listUninstalled = (flags & MATCH_KNOWN_PACKAGES) != 0;
         final boolean listApex = (flags & MATCH_APEX) != 0;
-        final boolean listPccOnly = (flags & MATCH_PCC_ONLY) != 0;
         final boolean listArchivedOnly = !listUninstalled && (flags & MATCH_ARCHIVED_PACKAGES) != 0;
 
         if (!forceAllowCrossUser) {
@@ -4657,9 +4637,6 @@ public class ComputerEngine implements Computer {
                     effectiveFlags |= PackageManager.MATCH_ANY_USER;
                 }
                 if (ps.getPkg() != null) {
-                    if (listPccOnly && !ps.getPkg().shouldRunInPccSandbox()) {
-                        continue;
-                    }
                     if (!listApex && ps.getPkg().isApex()) {
                         continue;
                     }
@@ -4694,9 +4671,6 @@ public class ComputerEngine implements Computer {
             for (PackageStateInternal packageState : packageStates.values()) {
                 final AndroidPackage pkg = packageState.getPkg();
                 if (pkg == null) {
-                    continue;
-                }
-                if (listPccOnly && !pkg.shouldRunInPccSandbox()) {
                     continue;
                 }
                 if (!listApex && pkg.isApex()) {

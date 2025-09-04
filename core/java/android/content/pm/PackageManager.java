@@ -929,7 +929,6 @@ public abstract class PackageManager {
             MATCH_DIRECT_BOOT_AWARE,
             MATCH_DIRECT_BOOT_UNAWARE,
             GET_ATTRIBUTIONS_LONG,
-            MATCH_PCC_ONLY,
     })
     @Retention(RetentionPolicy.SOURCE)
     public @interface PackageInfoFlagsBits {}
@@ -950,7 +949,6 @@ public abstract class PackageManager {
             MATCH_HIDDEN_UNTIL_INSTALLED_COMPONENTS,
             MATCH_APEX,
             MATCH_ARCHIVED_PACKAGES,
-            MATCH_PCC_ONLY,
     })
     @Retention(RetentionPolicy.SOURCE)
     public @interface ApplicationInfoFlagsBits {}
@@ -1406,15 +1404,6 @@ public abstract class PackageManager {
     @FlaggedApi(android.content.pm.Flags.FLAG_FIX_DUPLICATED_FLAGS)
     @SystemApi
     public static final long MATCH_CLONE_PROFILE_LONG = 1L << 34;
-
-    /**
-     * Internal {@link PackageInfo} flag: include only PCC components that are currently
-     * installed.
-     * @see android.app.privatecompute.PccEntity
-     * @hide
-     */
-    @FlaggedApi(android.app.privatecompute.flags.Flags.FLAG_ENABLE_PCC_FRAMEWORK_SUPPORT)
-    public static final long MATCH_PCC_ONLY = 1L << 35;
 
     //-------------------------------------------------------------------------
     // End of GET_ and MATCH_ flags
