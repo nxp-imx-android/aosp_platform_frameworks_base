@@ -15,6 +15,7 @@
 package api
 
 import (
+	"fmt"
 	"slices"
 
 	"github.com/google/blueprint/proptools"
@@ -446,14 +447,28 @@ func createMergedTxts(
 	baseTxtModulePrefix string,
 	stubsTypeSuffix string,
 	doDist bool,
+	checkedIn bool,
 ) {
+
+	if checkedIn && doDist {
+		ctx.ModuleErrorf("Checked in api txt files cannot be disted.")
+	}
+
+	checkedInPrefix := ""
+	if checkedIn {
+		checkedInPrefix = "checked-in-"
+	}
+
 	var textFiles []MergedTxtDefinition
 
-	tagSuffix := []string{".api.txt}", ".removed-api.txt}"}
+	tagSuffix := []string{
+		fmt.Sprintf(".%sapi.txt}", checkedInPrefix),
+		fmt.Sprintf(".%sremoved-api.txt}", checkedInPrefix),
+	}
 	distFilename := []string{"android.txt", "android-removed.txt"}
 	for i, f := range []string{"current.txt", "removed.txt"} {
 		textFiles = append(textFiles, MergedTxtDefinition{
-			TxtFilename:  f,
+			TxtFilename:  checkedInPrefix + f,
 			DistFilename: distFilename[i],
 			BaseTxt:      ":" + baseTxtModulePrefix + f,
 			Modules:      bootclasspath,
@@ -461,7 +476,7 @@ func createMergedTxts(
 			Scope:        "public",
 		})
 		textFiles = append(textFiles, MergedTxtDefinition{
-			TxtFilename:  f,
+			TxtFilename:  checkedInPrefix + f,
 			DistFilename: distFilename[i],
 			BaseTxt:      ":" + baseTxtModulePrefix + "system-" + f,
 			Modules:      bootclasspath,
@@ -469,7 +484,7 @@ func createMergedTxts(
 			Scope:        "system",
 		})
 		textFiles = append(textFiles, MergedTxtDefinition{
-			TxtFilename:  f,
+			TxtFilename:  checkedInPrefix + f,
 			DistFilename: distFilename[i],
 			BaseTxt:      ":" + baseTxtModulePrefix + "module-lib-" + f,
 			Modules:      bootclasspath,
@@ -477,7 +492,7 @@ func createMergedTxts(
 			Scope:        "module-lib",
 		})
 		textFiles = append(textFiles, MergedTxtDefinition{
-			TxtFilename:  f,
+			TxtFilename:  checkedInPrefix + f,
 			DistFilename: distFilename[i],
 			BaseTxt:      ":" + baseTxtModulePrefix + "system-server-" + f,
 			Modules:      system_server_classpath,
@@ -496,8 +511,9 @@ func (a *CombinedApis) createInternalModules(ctx android.LoadHookContext) {
 	if ctx.Config().VendorConfig("ANDROID").Bool("include_nonpublic_framework_api") {
 		bootclasspath.AppendSimpleValue(a.properties.Conditional_bootclasspath)
 	}
-	createMergedTxts(ctx, bootclasspath, system_server_classpath, "non-updatable-", "-", false)
-	createMergedTxts(ctx, bootclasspath, system_server_classpath, "non-updatable-exportable-", "-exportable-", true)
+	createMergedTxts(ctx, bootclasspath, system_server_classpath, "non-updatable-", "-", false, false)
+	createMergedTxts(ctx, bootclasspath, system_server_classpath, "non-updatable-", "-", false, true)
+	createMergedTxts(ctx, bootclasspath, system_server_classpath, "non-updatable-exportable-", "-exportable-", true, false)
 
 	createMergedPublicStubs(ctx, bootclasspath)
 	createMergedSystemStubs(ctx, bootclasspath)
