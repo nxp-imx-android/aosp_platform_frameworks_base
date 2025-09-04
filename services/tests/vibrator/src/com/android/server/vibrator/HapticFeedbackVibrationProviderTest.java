@@ -18,13 +18,13 @@ package com.android.server.vibrator;
 
 import static android.os.VibrationAttributes.FLAG_BYPASS_INTERRUPTION_POLICY;
 import static android.os.VibrationAttributes.FLAG_BYPASS_USER_VIBRATION_INTENSITY_OFF;
+import static android.os.VibrationAttributes.USAGE_ACCESSIBILITY;
 import static android.os.VibrationAttributes.USAGE_GESTURE_INPUT;
 import static android.os.VibrationAttributes.USAGE_HARDWARE_FEEDBACK;
-import static android.os.VibrationAttributes.USAGE_PHYSICAL_EMULATION;
-import static android.os.VibrationAttributes.USAGE_ACCESSIBILITY;
-import static android.os.VibrationAttributes.USAGE_UNKNOWN;
 import static android.os.VibrationAttributes.USAGE_IME_FEEDBACK;
+import static android.os.VibrationAttributes.USAGE_PHYSICAL_EMULATION;
 import static android.os.VibrationAttributes.USAGE_TOUCH;
+import static android.os.VibrationAttributes.USAGE_UNKNOWN;
 import static android.os.VibrationEffect.Composition.PRIMITIVE_CLICK;
 import static android.os.VibrationEffect.Composition.PRIMITIVE_QUICK_RISE;
 import static android.os.VibrationEffect.Composition.PRIMITIVE_THUD;
@@ -32,12 +32,10 @@ import static android.os.VibrationEffect.Composition.PRIMITIVE_TICK;
 import static android.os.VibrationEffect.EFFECT_CLICK;
 import static android.os.VibrationEffect.EFFECT_TEXTURE_TICK;
 import static android.os.VibrationEffect.EFFECT_TICK;
-import static android.os.vibrator.Flags.FLAG_HAPTIC_FEEDBACK_INPUT_SOURCE_CUSTOMIZATION_ENABLED;
 import static android.view.HapticFeedbackConstants.BIOMETRIC_CONFIRM;
-import static android.view.HapticFeedbackConstants.CONFIRM;
-import static android.view.HapticFeedbackConstants.TOGGLE_OFF;
 import static android.view.HapticFeedbackConstants.BIOMETRIC_REJECT;
 import static android.view.HapticFeedbackConstants.CLOCK_TICK;
+import static android.view.HapticFeedbackConstants.CONFIRM;
 import static android.view.HapticFeedbackConstants.CONTEXT_CLICK;
 import static android.view.HapticFeedbackConstants.DRAG_START;
 import static android.view.HapticFeedbackConstants.KEYBOARD_RELEASE;
@@ -48,6 +46,7 @@ import static android.view.HapticFeedbackConstants.SCROLL_ITEM_FOCUS;
 import static android.view.HapticFeedbackConstants.SCROLL_LIMIT;
 import static android.view.HapticFeedbackConstants.SCROLL_TICK;
 import static android.view.HapticFeedbackConstants.TEXT_HANDLE_MOVE;
+import static android.view.HapticFeedbackConstants.TOGGLE_OFF;
 
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.Truth.assertWithMessage;
@@ -71,7 +70,6 @@ import androidx.test.InstrumentationRegistry;
 
 import com.android.internal.R;
 
-import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -109,11 +107,6 @@ public class HapticFeedbackVibrationProviderTest {
     private VibratorInfo mVibratorInfo = VibratorInfo.EMPTY_VIBRATOR_INFO;
 
     @Mock private Resources mResourcesMock;
-
-    @Before
-    public void setUp() {
-        mSetFlagsRule.disableFlags(FLAG_HAPTIC_FEEDBACK_INPUT_SOURCE_CUSTOMIZATION_ENABLED);
-    }
 
     @Test
     public void testNonExistentCustomization_useDefault() {
@@ -474,7 +467,6 @@ public class HapticFeedbackVibrationProviderTest {
 
     @Test
     public void testVibrationAttribute_scrollFeedback_rotaryInputSource_useHardwareFeedback() {
-        mSetFlagsRule.enableFlags(FLAG_HAPTIC_FEEDBACK_INPUT_SOURCE_CUSTOMIZATION_ENABLED);
         HapticFeedbackVibrationProvider provider = createProviderWithoutCustomizations();
 
         for (int effectId : SCROLL_FEEDBACK_CONSTANTS) {
@@ -488,7 +480,6 @@ public class HapticFeedbackVibrationProviderTest {
 
     @Test
     public void testVibrationAttribute_scrollFeedback_touchInputSource_useTouchUsage() {
-        mSetFlagsRule.enableFlags(FLAG_HAPTIC_FEEDBACK_INPUT_SOURCE_CUSTOMIZATION_ENABLED);
         HapticFeedbackVibrationProvider provider = createProviderWithoutCustomizations();
 
         for (int effectId : SCROLL_FEEDBACK_CONSTANTS) {

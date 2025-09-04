@@ -1705,10 +1705,7 @@ public class VibratorManagerServiceTest {
     }
 
     @Test
-    @EnableFlags({
-            android.view.flags.Flags.FLAG_SCROLL_FEEDBACK_API,
-            Flags.FLAG_HAPTIC_FEEDBACK_INPUT_SOURCE_CUSTOMIZATION_ENABLED,
-    })
+    @EnableFlags(android.view.flags.Flags.FLAG_SCROLL_FEEDBACK_API)
     public void performHapticFeedbackForInputDevice_doesNotRequireVibrateOrBypassPermissions()
             throws Exception {
         // Deny permissions that would have been required for regular vibrations, and check that
@@ -1881,10 +1878,7 @@ public class VibratorManagerServiceTest {
     }
 
     @Test
-    @EnableFlags({
-            android.view.flags.Flags.FLAG_SCROLL_FEEDBACK_API,
-            Flags.FLAG_HAPTIC_FEEDBACK_INPUT_SOURCE_CUSTOMIZATION_ENABLED,
-    })
+    @EnableFlags(android.view.flags.Flags.FLAG_SCROLL_FEEDBACK_API)
     public void performHapticFeedbackForInputDevice_restrictedConstantsWithoutPermission_doesNotVibrate()
             throws Exception {
         // Deny permission to vibrate with restricted constants
@@ -1946,8 +1940,7 @@ public class VibratorManagerServiceTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_HAPTIC_FEEDBACK_INPUT_SOURCE_CUSTOMIZATION_ENABLED)
-    public void performHapticFeedbackForInputDevice_restrictedConstantsWithPermission_playsVibration()
+    public void performHapticFeedbackForInputDevice_internalConstantsWithPermission_playsVibration()
             throws Exception {
         // Grant permission to vibrate with restricted constants
         grantPermission(android.Manifest.permission.VIBRATE_SYSTEM_CONSTANTS);
@@ -1977,10 +1970,7 @@ public class VibratorManagerServiceTest {
     }
 
     @Test
-    @EnableFlags({
-            android.view.flags.Flags.FLAG_SCROLL_FEEDBACK_API,
-            Flags.FLAG_HAPTIC_FEEDBACK_INPUT_SOURCE_CUSTOMIZATION_ENABLED,
-    })
+    @EnableFlags(android.view.flags.Flags.FLAG_SCROLL_FEEDBACK_API)
     public void performHapticFeedback_doesNotVibrateWhenVibratorInfoNotReady() throws Exception {
         denyPermission(android.Manifest.permission.VIBRATE);
         mHapticFeedbackVibrationMap.put(
@@ -2013,10 +2003,7 @@ public class VibratorManagerServiceTest {
     }
 
     @Test
-    @EnableFlags({
-            android.view.flags.Flags.FLAG_SCROLL_FEEDBACK_API,
-            Flags.FLAG_HAPTIC_FEEDBACK_INPUT_SOURCE_CUSTOMIZATION_ENABLED,
-    })
+    @EnableFlags(android.view.flags.Flags.FLAG_SCROLL_FEEDBACK_API)
     public void performHapticFeedback_doesNotVibrateForInvalidConstant() throws Exception {
         denyPermission(android.Manifest.permission.VIBRATE);
         mHalHelper.setVibratorIds(new int[]{1});
