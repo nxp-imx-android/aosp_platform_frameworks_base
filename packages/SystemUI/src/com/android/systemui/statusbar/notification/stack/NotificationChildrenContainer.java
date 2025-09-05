@@ -25,9 +25,11 @@ import android.content.res.Resources;
 import android.graphics.Canvas;
 import android.graphics.Path;
 import android.graphics.Path.Direction;
+import android.graphics.RectF;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Trace;
 import android.service.notification.StatusBarNotification;
+import android.util.ArrayMap;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -159,6 +161,7 @@ public class NotificationChildrenContainer extends ViewGroup
     private int mMinSingleLineHeight;
 
     private NotificationChildrenContainerLogger mLogger;
+    private ArrayMap<String, RectF> mExpandedClipRect = new ArrayMap<>();
 
     public NotificationChildrenContainer(Context context) {
         this(context, null);
@@ -860,6 +863,7 @@ public class NotificationChildrenContainer extends ViewGroup
         boolean childrenExpandedAndNotAnimating = mChildrenExpanded
                 && !mContainingNotification.isGroupExpansionChanging();
         int launchTransitionCompensation = 0;
+        mExpandedClipRect.clear();
         for (int i = 0; i < childCount; i++) {
             ExpandableNotificationRow child = mAttachedChildren.get(i);
             if (NotificationBundleUi.isEnabled()) {
@@ -920,6 +924,13 @@ public class NotificationChildrenContainer extends ViewGroup
             childState.location = parentState.location;
             childState.inShelf = parentState.inShelf;
             yPosition += intrinsicHeight;
+
+            // If this is a group summary and a child of a bundle, then the clip path needs to
+            // be expanded otherwise the summary children will be clipped when translated
+            if (childNeedsExpandedClipPath(child)) {
+                RectF expandClipRect = getExpandedClipRect(child);
+                mExpandedClipRect.put(child.getKey(), expandClipRect);
+            }
         }
         if (mOverflowNumber != null) {
             ExpandableNotificationRow overflowView = mAttachedChildren.get(Math.min(
@@ -1146,6 +1157,23 @@ public class NotificationChildrenContainer extends ViewGroup
         }
     }
 
+    @VisibleForTesting
+    protected boolean childNeedsExpandedClipPath(ExpandableNotificationRow child) {
+        return isBundle() && mChildrenExpanded && child.isSummaryWithChildren();
+    }
+
+    @VisibleForTesting
+    protected RectF getExpandedClipRect(ExpandableNotificationRow summaryRow) {
+        RectF expandedRect;
+        float maxAbsChildTranslation = getWidth() / 2.0f;
+        expandedRect = new RectF();
+        expandedRect.left = -maxAbsChildTranslation;
+        expandedRect.top = 0;
+        expandedRect.bottom = mContainingNotification.getActualHeight();
+        expandedRect.right = summaryRow.getWidth() + maxAbsChildTranslation;
+        return expandedRect;
+    }
+
     @Override
     protected boolean drawChild(@NonNull Canvas canvas, View child, long drawingTime) {
         boolean isCanvasChanged = false;
@@ -1153,8 +1181,10 @@ public class NotificationChildrenContainer extends ViewGroup
         Path clipPath = mChildClipPath;
         if (clipPath != null) {
             final float translation;
+            RectF expandClipRect = null;
             if (child instanceof ExpandableNotificationRow notificationRow) {
                 translation = notificationRow.getTranslation();
+                expandClipRect = mExpandedClipRect.get(notificationRow.getKey());
             } else {
                 translation = child.getTranslationX();
             }
@@ -1166,6 +1196,13 @@ public class NotificationChildrenContainer extends ViewGroup
                 canvas.clipPath(clipPath);
                 clipPath.offset(-translation, 0f);
             } else {
+                if (expandClipRect != null) {
+                    // Expand clip path with a rect that has the same height as the parent
+                    // but is wider by width/2 so that grand-child translations are not clipped
+                    // Only applies to bundle headers
+                    clipPath = new Path(clipPath);
+                    clipPath.addRect(expandClipRect, Direction.CW);
+                }
                 canvas.clipPath(clipPath);
             }
         }

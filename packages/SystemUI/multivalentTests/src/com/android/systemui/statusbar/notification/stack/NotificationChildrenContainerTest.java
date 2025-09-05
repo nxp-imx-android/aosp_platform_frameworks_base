@@ -148,6 +148,32 @@ public class NotificationChildrenContainerTest extends SysuiTestCase {
                 NotificationChildrenContainer.NUMBER_OF_CHILDREN_BUNDLE_EXPANDED);
     }
 
+    @Test
+    @EnableFlags(NotificationBundleUi.FLAG_NAME)
+    public void testExpandedClipRect_bundle_expandedChildren_requiresExtraClipping() {
+        ComposeView headerView = new ComposeView(mContext);
+        mBundle.setBundleHeaderView(headerView);
+
+        NotificationChildrenContainer childrenContainer = mBundle.getChildrenContainer();
+        childrenContainer.setBundleHeaderViewModel(mock(BundleHeaderViewModel.class));
+        childrenContainer.getContainingNotification().expandNotification();
+        childrenContainer.setChildrenExpanded(true);
+        Assert.assertNotNull(childrenContainer.getExpandedClipRect(mGroup));
+        Assert.assertTrue(childrenContainer.childNeedsExpandedClipPath(mGroup));
+    }
+
+    @Test
+    @EnableFlags(NotificationBundleUi.FLAG_NAME)
+    public void testExpandedClipRect_bundle_notExpandedChildren_doesNotRequireExtraClipping() {
+        ComposeView headerView = new ComposeView(mContext);
+        mBundle.setBundleHeaderView(headerView);
+
+        NotificationChildrenContainer childrenContainer = mBundle.getChildrenContainer();
+        childrenContainer.setBundleHeaderViewModel(mock(BundleHeaderViewModel.class));
+        childrenContainer.getContainingNotification().expandNotification();
+        childrenContainer.setChildrenExpanded(false);
+        Assert.assertFalse(childrenContainer.childNeedsExpandedClipPath(mGroup));
+    }
 
     @Test
     public void testShowingAsLowPriority_lowPriority() {
