@@ -50,6 +50,18 @@ flag {
 }
 
 flag {
+    name: "defer_resume_focus_in_non_focused_window"
+    namespace: "lse_desktop_experience"
+    description: "Gates the logic that prevents the system from restoring focus to a view /n"
+                 "within a background window when a user exits touch mode, for instance, /n"
+                 "by pressing an arrow key on a physical keyboard."
+    bug: "438781414"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "dimming_wallpaper_for_maximized_and_tiled"
     namespace: "lse_desktop_experience"
     description: "Dim the wallpaper to make maximized and tiled window looks immersive."
