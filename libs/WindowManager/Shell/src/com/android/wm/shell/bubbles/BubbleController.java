@@ -1166,6 +1166,10 @@ public class BubbleController implements ConfigurationChangeListener,
                     return windowInsets;
                 });
             } else {
+                if (mStackView.isExpanded()) {
+                    ProtoLog.w(WM_SHELL_BUBBLES,
+                            "addToWindowManager - BubbleStackView is already expanded!");
+                }
                 mWindowManager.addView(mStackView, mWmLayoutParams);
                 mStackView.setOnApplyWindowInsetsListener((view, windowInsets) -> {
                     if (!windowInsets.equals(mWindowInsets) && mStackView != null) {
@@ -1228,6 +1232,10 @@ public class BubbleController implements ConfigurationChangeListener,
             }
             mOnImeHidden = null;
             if (mStackView != null) {
+                if (mStackView.isExpanded()) {
+                    ProtoLog.w(WM_SHELL_BUBBLES, "removeFromWindowManager - BubbleStackView is "
+                            + "expanded while being removed!");
+                }
                 mWindowManager.removeView(mStackView);
                 mBubbleData.getOverflow().cleanUpExpandedState();
             }
@@ -3098,6 +3106,7 @@ public class BubbleController implements ConfigurationChangeListener,
         pw.print(prefix); pw.println("  stackViewSet= " + (mStackView != null));
         pw.print(prefix); pw.println("  layerViewSet= " + (mLayerView != null));
         pw.print(prefix); pw.println("  mBarToFloatingTransition= " + mBarToFloatingTransition);
+        pw.print(prefix); pw.println("  mOnImeHidden= " + mOnImeHidden);
         pw.println();
 
         mBubbleData.dump(pw);
