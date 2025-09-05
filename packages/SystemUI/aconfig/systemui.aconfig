@@ -1174,15 +1174,7 @@ flag {
   }
 }
 
-flag {
-  name: "dream_transition_fixes"
-  namespace: "systemui"
-  description: "Flags some minor transition fixes for opening the dream"
-  bug: "409720192"
-  metadata {
-    purpose: PURPOSE_BUGFIX
-  }
-}
+
 
 flag {
   name: "dream_bouncer_transition_fix"
