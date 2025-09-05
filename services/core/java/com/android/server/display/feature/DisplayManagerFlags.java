@@ -227,11 +227,6 @@ public class DisplayManagerFlags {
             Flags::hdrBrightnessSetting
     );
 
-    private final FlagState mDispatchDisplayModeWithVsyncOffsets = new FlagState(
-            Flags.FLAG_ENABLE_ON_MODE_CHANGED_VSYNC_PHASE_OFFSET,
-            Flags::enableOnModeChangedVsyncPhaseOffset
-    );
-
     private final FlagState mEnableDefaultDisplayInTopologySwitch = new FlagState(
             Flags.FLAG_ENABLE_DEFAULT_DISPLAY_IN_TOPOLOGY_SWITCH,
             DesktopExperienceFlags.ENABLE_DEFAULT_DISPLAY_IN_TOPOLOGY_SWITCH::isTrue
@@ -497,10 +492,6 @@ public class DisplayManagerFlags {
         return mHdrBrightnessSetting.isEnabled();
     }
 
-    public boolean isDispatchDisplayModeWithVsyncOffsetsEnabled() {
-        return mDispatchDisplayModeWithVsyncOffsets.isEnabled();
-    }
-
     public boolean isDefaultDisplayInTopologySwitchEnabled() {
         return mEnableDefaultDisplayInTopologySwitch.isEnabled();
     }
@@ -589,7 +580,6 @@ public class DisplayManagerFlags {
         pw.println(" " + mSetBrightnessByUnit);
         pw.println(" " + mDelayImplicitRrRegistrationUntilRrAccessed);
         pw.println(" " + mHdrBrightnessSetting);
-        pw.println(" " + mDispatchDisplayModeWithVsyncOffsets);
         pw.println(" " + mEnableDefaultDisplayInTopologySwitch);
         pw.println(" " + mModeSwitchWithoutSaving);
         pw.println(" " + mEnsureColorFadeWhenTurningOn);
