@@ -29,6 +29,11 @@
           "documentation": " Third entry\n"
         }
       ]
+    },
+    {
+      "name": "android.app.admin.PolicyIdentifier<T>.TEST_POLICY_3",
+      "type": "java.lang.Integer",
+      "documentation": " Test policy 3\n"
     }
   ]
 }

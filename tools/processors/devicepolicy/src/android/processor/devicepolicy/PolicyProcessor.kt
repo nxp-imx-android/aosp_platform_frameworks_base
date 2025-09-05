@@ -50,6 +50,7 @@ class PolicyProcessor : AbstractProcessor() {
     override fun getSupportedAnnotationTypes() = LinkedHashSet<String>().apply {
         add(BooleanPolicyDefinition::class.java.name)
         add(EnumPolicyDefinition::class.java.name)
+        add(IntegerPolicyDefinition::class.java.name)
 
         // Only processed to report errors.
         add(PolicyDefinition::class.java.name)
@@ -62,7 +63,8 @@ class PolicyProcessor : AbstractProcessor() {
 
         val policies = listOf(
             runProcessor(roundEnvironment, BooleanProcessor(processingEnv)),
-            runProcessor(roundEnvironment, EnumProcessor(processingEnv))
+            runProcessor(roundEnvironment, EnumProcessor(processingEnv)),
+            runProcessor(roundEnvironment, IntegerProcessor(processingEnv)),
         ).flatten()
 
         try {
