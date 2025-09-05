@@ -86,7 +86,7 @@ class NotificationShadeDepthControllerTest : SysuiTestCase() {
     @Mock private lateinit var wallpaperController: WallpaperController
     @Mock private lateinit var wallpaperInteractor: WallpaperInteractor
     @Mock private lateinit var notificationShadeWindowController: NotificationShadeWindowController
-    private lateinit var windowRootViewBlurInteractor : WindowRootViewBlurInteractor
+    private lateinit var windowRootViewBlurInteractor: WindowRootViewBlurInteractor
     @Mock private lateinit var shadeModeInteractor: ShadeModeInteractor
     @Mock private lateinit var dumpManager: DumpManager
     @Mock private lateinit var appZoomOutOptional: Optional<AppZoomOut>
@@ -433,7 +433,7 @@ class NotificationShadeDepthControllerTest : SysuiTestCase() {
     @DisableFlags(Flags.FLAG_BOUNCER_UI_REVAMP, Flags.FLAG_GLANCEABLE_HUB_BLURRED_BACKGROUND)
     fun ignoreShadeBlurUntilHidden_schedulesFrame() {
         notificationShadeDepthController.blursDisabledForAppLaunch = true
-        verify(blurUtils).prepareBlur(any(), anyInt())
+        verify(blurUtils).prepareBlur(anyInt())
         verify(choreographer)
             .postFrameCallback(eq(notificationShadeDepthController.updateBlurCallback))
     }
@@ -505,20 +505,18 @@ class NotificationShadeDepthControllerTest : SysuiTestCase() {
 
         notificationShadeDepthController.updateBlurCallback.doFrame(0)
         verify(notificationShadeWindowController).setBackgroundBlurRadius(eq(0))
-        verify(blurUtils).prepareBlur(any(), eq(0))
-        verify(blurUtils).applyBlur(
-            eq(viewRootImpl),
-            eq(0),
-            eq(false),
-            eq(notificationShadeDepthController.zoomOutAsScale(0f))
-        )
+        verify(blurUtils).prepareBlur(eq(0))
+        verify(blurUtils)
+            .applyBlur(
+                eq(viewRootImpl),
+                eq(0),
+                eq(false),
+                eq(notificationShadeDepthController.zoomOutAsScale(0f)),
+            )
     }
 
     @Test
-    @EnableFlags(
-        Flags.FLAG_BOUNCER_UI_REVAMP,
-        Flags.FLAG_SPATIAL_MODEL_APP_PUSHBACK,
-    )
+    @EnableFlags(Flags.FLAG_BOUNCER_UI_REVAMP, Flags.FLAG_SPATIAL_MODEL_APP_PUSHBACK)
     fun brightnessMirror_hidesShadeBlur_withWindowBlurFlagAndAppPushback() {
         // Brightness mirror is fully visible
         `when`(brightnessSpring.ratio).thenReturn(1f)
@@ -530,10 +528,8 @@ class NotificationShadeDepthControllerTest : SysuiTestCase() {
 
         notificationShadeDepthController.updateBlurCallback.doFrame(0)
         verify(notificationShadeWindowController).setBackgroundBlurRadius(eq(0))
-        verify(windowRootViewBlurInteractor).requestBlurForShade(
-            eq(0),
-            eq(notificationShadeDepthController.zoomOutAsScale(0f))
-        )
+        verify(windowRootViewBlurInteractor)
+            .requestBlurForShade(eq(0), eq(notificationShadeDepthController.zoomOutAsScale(0f)))
     }
 
     @Test
