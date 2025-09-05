@@ -692,7 +692,7 @@ internal class ElementNode(
 }
 
 /** The [TransitionState] that we should consider for [element]. */
-private fun elementState(
+internal fun elementState(
     layoutImpl: SceneTransitionLayoutImpl,
     element: Element,
     transitionStates: List<List<TransitionState>>,
@@ -1127,7 +1127,7 @@ private fun isElementOpaque(
  * [isElementOpaque] is checked during placement and we don't want to read the transition progress
  * in that phase.
  */
-private fun elementAlpha(
+internal fun elementAlpha(
     layoutImpl: SceneTransitionLayoutImpl,
     element: Element,
     transition: TransitionState.Transition?,
