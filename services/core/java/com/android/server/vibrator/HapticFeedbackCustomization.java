@@ -25,7 +25,6 @@ import android.content.res.XmlResourceParser;
 import android.os.VibrationAttributes;
 import android.os.VibrationEffect;
 import android.os.VibratorInfo;
-import android.os.vibrator.Flags;
 import android.os.vibrator.persistence.ParsedVibration;
 import android.os.vibrator.persistence.VibrationXmlParser;
 import android.text.TextUtils;
@@ -275,9 +274,6 @@ final class HapticFeedbackCustomization {
 
     @Nullable
     private static TypedXmlPullParser readCustomizationResources(Resources res, int xmlResId) {
-        if (!Flags.loadHapticFeedbackVibrationCustomizationFromResources()) {
-            return null;
-        }
         final XmlResourceParser resParser;
         try {
             resParser = res.getXml(xmlResId);
