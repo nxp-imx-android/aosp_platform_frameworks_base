@@ -1444,22 +1444,28 @@ class ActivityClientController extends IActivityClientController.Stub {
             if (DesktopExperienceFlags.ENABLE_DESKTOP_WINDOWING_ENTERPRISE_BUGFIX.isTrue()
                     && mService.getTransitionController().isShellTransitionsEnabled()) {
                 final Task task = r.getTask();
-                final Transition transition = new Transition(TRANSIT_START_LOCK_TASK_MODE,
+
+                if (!mService.canEnterLockTaskMode(task) || !mService.isTopMostTask(task)) {
+                    Slog.w(TAG, "startLockTaskMode: Can't lock due to auth, task: " + task);
+                    throw new IllegalArgumentException(
+                            "startLockTaskMode: Can't lock due to auth, task: " + task);
+                }
+                ActionChain chain = mService.mChainTracker.startTransit("startLockTaskModeByToken");
+                Transition newTransition = chain.isCollecting() ? null : new Transition(
+                        TRANSIT_START_LOCK_TASK_MODE,
                         0 /* flags */,
                         mService.getTransitionController(), mService.mWindowManager.mSyncEngine);
-                mService.getTransitionController().startCollectOrQueue(transition,
-                        (deferred) -> {
-                            final ActionChain chain = mService.mChainTracker.start(
-                                    "startLockTaskModeByToken",
-                                    transition);
-                            mService.getTransitionController().requestStartTransition(transition,
-                                    task,
-                                    null /* remoteTransition */, null /* displayChange */);
-                            chain.collect(task);
-                            mService.startLockTaskMode(task, false /* isSystemCaller */);
-                            transition.setReady(task, true);
-                            mService.mChainTracker.end();
-                        });
+                if (newTransition != null) {
+                    mService.getTransitionController().requestStartTransition(newTransition,
+                            task,
+                            null /* remoteTransition */, null /* displayChange */);
+                }
+                chain.collect(task);
+                mService.startLockTaskMode(task, false /* isSystemCaller */);
+                if (newTransition != null) {
+                    newTransition.setReady(task, true);
+                }
+                mService.mChainTracker.end();
             } else {
                 mService.startLockTaskMode(r.getTask(), false /* isSystemCaller */);
             }
