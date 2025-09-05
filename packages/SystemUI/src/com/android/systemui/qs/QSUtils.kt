@@ -1,9 +1,11 @@
 package com.android.systemui.qs
 
 import android.content.Context
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
 import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.android.compose.theme.PlatformTheme
 import com.android.internal.policy.SystemBarUtils
 import com.android.systemui.compose.modifiers.sysUiResTagContainer
@@ -36,12 +38,8 @@ object QSUtils {
         qsVisibilityLifecycleOwner: LifecycleOwner,
     ) {
         view.setContent {
-            PlatformTheme {
-                FooterActions(
-                    viewModel,
-                    qsVisibilityLifecycleOwner,
-                    Modifier.sysUiResTagContainer(),
-                )
+            CompositionLocalProvider(LocalLifecycleOwner provides qsVisibilityLifecycleOwner) {
+                PlatformTheme { FooterActions(viewModel, Modifier.sysUiResTagContainer()) }
             }
         }
     }
