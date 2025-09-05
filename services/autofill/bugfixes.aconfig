@@ -143,3 +143,13 @@ flag {
       purpose: PURPOSE_BUGFIX
    }
 }
+
+flag {
+  name: "get_view_coordinates_in_ui_thread"
+  namespace: "autofill"
+  description: "Avoid native crash due to threading issue"
+  bug: "442258201"
+  metadata {
+    purpose: PURPOSE_BUGFIX
+  }
+}
