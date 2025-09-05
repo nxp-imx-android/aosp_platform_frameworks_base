@@ -778,7 +778,7 @@ public class BroadcastQueueTest extends BaseBroadcastQueueTest {
             verify(mAms, times(2)).enqueueOomAdjTargetLocked(eq(receiverApp));
 
             // Confirm that app was thawed
-            verify(mAms.mOomAdjuster, atLeastOnce()).unfreezeTemporarily(
+            verify(mAms, atLeastOnce()).unfreezeTemporarily(
                     eq(receiverApp), eq(OOM_ADJ_REASON_START_RECEIVER));
 
             // Confirm that we added package to process
@@ -1221,7 +1221,7 @@ public class BroadcastQueueTest extends BaseBroadcastQueueTest {
                 mActiveProcesses.remove(app);
             }
             return null;
-        }).when(mAms.mOomAdjuster).unfreezeTemporarily(eq(receiverBlueApp), anyInt());
+        }).when(mAms).unfreezeTemporarily(eq(receiverBlueApp), anyInt());
         doAnswer(invocation -> {
             final ProcessRecord app = invocation.getArgument(0);
             if (app == receiverBlueApp) {
@@ -1378,8 +1378,7 @@ public class BroadcastQueueTest extends BaseBroadcastQueueTest {
                 anyInt(), any());
 
         // Finally, verify that we thawed the final receiver
-        verify(mAms.mOomAdjuster).unfreezeTemporarily(eq(callerApp),
-                eq(OOM_ADJ_REASON_FINISH_RECEIVER));
+        verify(mAms).unfreezeTemporarily(eq(callerApp), eq(OOM_ADJ_REASON_FINISH_RECEIVER));
     }
 
     /**
