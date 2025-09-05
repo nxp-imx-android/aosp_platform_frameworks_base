@@ -32,7 +32,6 @@ import android.os.Handler
 import android.os.IBinder
 import android.os.Process
 import android.os.SystemClock
-import android.os.SystemProperties
 import android.os.test.TestLooper
 import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
@@ -163,7 +162,6 @@ class KeyGestureControllerTests {
     val extendedMockitoRule =
         ExtendedMockitoRule.Builder(this)
             .mockStatic(FrameworkStatsLog::class.java)
-            .mockStatic(SystemProperties::class.java)
             .mockStatic(KeyCharacterMap::class.java)
             .mockStatic(DeviceConfig::class.java)
             .mockStatic(LocalServices::class.java)
@@ -234,7 +232,6 @@ class KeyGestureControllerTests {
     }
 
     private fun setupBehaviors() {
-        Mockito.`when`(SystemProperties.get("ro.debuggable")).thenReturn("1")
         testableResources.addOverride(R.bool.config_enableScreenshotChord, true)
         ExtendedMockito.`when`(
                 DeviceConfig.getLong(
