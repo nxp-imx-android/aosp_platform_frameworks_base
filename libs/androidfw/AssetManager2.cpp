@@ -492,8 +492,8 @@ void AssetManager2::SetOverlayConstraints(int32_t display_id, int32_t device_id)
   }
 }
 
-std::set<AssetManager2::ApkAssetsPtr> AssetManager2::GetNonSystemOverlays() const {
-  std::set<ApkAssetsPtr> non_system_overlays;
+AssetManager2::AssetsSet AssetManager2::GetNonSystemOverlays() const {
+  AssetManager2::AssetsSet non_system_overlays;
   for (const PackageGroup& package_group : package_groups_) {
     bool found_system_package = false;
     for (const ConfiguredPackage& package : package_group.packages_) {
@@ -518,6 +518,24 @@ std::set<AssetManager2::ApkAssetsPtr> AssetManager2::GetNonSystemOverlays() cons
   return non_system_overlays;
 }
 
+bool AssetManager2::IsSystemPackage(const ConfiguredPackage& package, ApkAssetsCookie cookie,
+                                    const AssetsSet& non_system_overlays) const {
+  if (package.loaded_package_->IsSystem()) {
+    return true;
+  }
+  // Also check for the overlays that target only system resources.
+  if (package.loaded_package_->IsOverlay()) {
+    if (non_system_overlays.empty()) {
+      return true;  // No non-system overlays: all overlay packages are system-only.
+    }
+    const auto& apk_assets = GetApkAssets(cookie);
+    if (apk_assets && !non_system_overlays.contains(apk_assets)) {
+      return true;
+    }
+  }
+  return false;
+}
+
 base::expected<std::set<ResTable_config>, IOError> AssetManager2::GetResourceConfigurations(
     bool exclude_system, bool exclude_mipmap) const {
   ATRACE_NAME("AssetManager::GetResourceConfigurations");
@@ -530,20 +548,10 @@ base::expected<std::set<ResTable_config>, IOError> AssetManager2::GetResourceCon
   for (const PackageGroup& package_group : package_groups_) {
     for (size_t i = 0; i < package_group.packages_.size(); i++) {
       const ConfiguredPackage& package = package_group.packages_[i];
-      if (exclude_system) {
-        if (package.loaded_package_->IsSystem()) {
-          continue;
-        }
-        if (!non_system_overlays.empty()) {
-          // Exclude overlays that target only system resources.
-          const auto& apk_assets = GetApkAssets(package_group.cookies_[i]);
-          if (apk_assets && apk_assets->IsOverlay() &&
-              non_system_overlays.find(apk_assets) == non_system_overlays.end()) {
-            continue;
-          }
-        }
+      if (exclude_system &&
+          IsSystemPackage(package, package_group.cookies_[i], non_system_overlays)) {
+        continue;
       }
-
       auto result = package.loaded_package_->CollectConfigurations(exclude_mipmap, &configurations);
       if (UNLIKELY(!result.has_value())) {
         return base::unexpected(result.error());
@@ -565,19 +573,10 @@ LoadedPackage::Locales AssetManager2::GetResourceLocales(
   for (const PackageGroup& package_group : package_groups_) {
     for (size_t i = 0; i < package_group.packages_.size(); i++) {
       const ConfiguredPackage& package = package_group.packages_[i];
-      if (exclude_system) {
-        if (package.loaded_package_->IsSystem()) {
-          continue;
-        }
-        if (!non_system_overlays.empty()) {
-          // Exclude overlays that target only system resources.
-          const auto& apk_assets = GetApkAssets(package_group.cookies_[i]);
-          if (apk_assets && apk_assets->IsOverlay() && !non_system_overlays.contains(apk_assets)) {
-            continue;
-          }
-        }
+      if (exclude_system &&
+          IsSystemPackage(package, package_group.cookies_[i], non_system_overlays)) {
+        continue;
       }
-
       package.loaded_package_->CollectLocales(merge_equivalent_languages, &locales);
     }
   }
