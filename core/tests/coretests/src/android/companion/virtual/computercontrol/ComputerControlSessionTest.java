@@ -102,6 +102,12 @@ public class ComputerControlSessionTest {
     }
 
     @Test
+    public void insertText_insertsText() throws RemoteException {
+        mSession.insertText("text", true, true);
+        verify(mMockSession).insertText(eq("text"), eq(true), eq(true));
+    }
+
+    @Test
     public void sendTouchEvent_sendsEvent() throws RemoteException {
         VirtualTouchEvent touchEvent = new VirtualTouchEvent.Builder()
                 .setPointerId(0)

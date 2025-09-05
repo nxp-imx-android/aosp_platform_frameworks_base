@@ -32,6 +32,7 @@ import android.view.accessibility.AccessibilityDisplayProxy;
 import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityManager;
 import android.view.accessibility.AccessibilityWindowInfo;
+import android.view.inputmethod.InputConnection;
 
 import androidx.annotation.GuardedBy;
 import androidx.annotation.NonNull;
@@ -183,6 +184,23 @@ public final class ComputerControlSession implements AutoCloseable {
                                                   .build();
         mSession.sendKeyEvent(virtualKeyEvent);
 
+        mAccessibilityProxy.resetStabilityState();
+    }
+
+    /**
+     * Inserts provided text into the currently active text field on the display associated with
+     * the {@link ComputerControlSession}.
+     *
+     * <p> This method expects a text field to be in focus with an active {@link InputConnection}.
+     * It inserts text at the current cursor position in the text field and moves the cursor to
+     * the end of inserted text. </p>
+     *
+     * @param text to be inserted
+     * @param replaceExisting whether the current text in the text field needs to be overwritten
+     * @param commit whether the text should be submitted after insertion
+     */
+    public void insertText(@NonNull String text, boolean replaceExisting, boolean commit) {
+        mSession.insertText(text, replaceExisting, commit);
         mAccessibilityProxy.resetStabilityState();
     }
 

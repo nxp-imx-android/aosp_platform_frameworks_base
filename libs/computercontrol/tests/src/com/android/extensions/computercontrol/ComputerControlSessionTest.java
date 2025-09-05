@@ -208,4 +208,13 @@ public class ComputerControlSessionTest {
 
         verify(mStabilityHintCallback, timeout(TIMEOUT_MS)).onStabilityHint(false);
     }
+
+    @Test
+    public void insertText_insertsText() throws Exception {
+        mSession.insertText("test", true, true);
+
+        verify(mIComputerControlSession).insertText(eq("test"), eq(true), eq(true));
+
+        verify(mStabilityHintCallback, timeout(TIMEOUT_MS)).onStabilityHint(false);
+    }
 }
