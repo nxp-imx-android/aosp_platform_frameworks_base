@@ -65,6 +65,7 @@ import com.android.internal.inputmethod.IInputMethod;
 import com.android.internal.inputmethod.IInputMethodClient;
 import com.android.internal.inputmethod.IInputMethodSession;
 import com.android.internal.inputmethod.IRemoteAccessibilityInputConnection;
+import com.android.internal.inputmethod.IRemoteComputerControlInputConnection;
 import com.android.internal.inputmethod.IRemoteInputConnection;
 import com.android.internal.inputmethod.InputBindResult;
 import com.android.internal.protolog.IProtoLogConfigurationService;
@@ -72,6 +73,7 @@ import com.android.internal.view.IInputMethodManager;
 import com.android.server.LocalServices;
 import com.android.server.ServiceThread;
 import com.android.server.SystemService;
+import com.android.server.companion.virtual.VirtualDeviceManagerInternal;
 import com.android.server.input.InputManagerInternal;
 import com.android.server.pm.UserManagerInternal;
 import com.android.server.wm.WindowManagerInternal;
@@ -88,6 +90,7 @@ public class InputMethodManagerServiceTestBase {
     protected static final String TEST_SELECTED_IME_ID = "test.ime";
     protected static final String TEST_EDITOR_PKG_NAME = "test.editor";
     protected static final String TEST_FOCUSED_WINDOW_NAME = "test.editor/activity";
+    protected static final int CLIENT_DISPLAY_ID = 123;
     protected static final WindowManagerInternal.ImeTargetInfo TEST_IME_TARGET_INFO =
             new WindowManagerInternal.ImeTargetInfo(
                     TEST_FOCUSED_WINDOW_NAME,
@@ -118,12 +121,15 @@ public class InputMethodManagerServiceTestBase {
     @Mock protected IRemoteInputConnection mMockFallbackInputConnection;
     @Mock protected IRemoteAccessibilityInputConnection mMockRemoteAccessibilityInputConnection;
     @Mock protected ResultReceiver mMockImeBackCallbackReceiver;
+    @Mock
+    protected IRemoteComputerControlInputConnection mRemoteComputerControlInputConnection;
     @Mock protected IInputMethodManager.Stub mMockIInputMethodManager;
     @Mock protected IPlatformCompat.Stub mMockIPlatformCompat;
     @Mock protected IInputMethod mMockInputMethod;
     @Mock protected IBinder mMockInputMethodBinder;
     @Mock protected IInputManager mMockIInputManager;
     @Mock protected IProtoLogConfigurationService.Stub mMockProtoLogConfigurationService;
+    @Mock protected VirtualDeviceManagerInternal mMockVirtualDeviceManagerInternal;
 
     protected Context mContext;
     protected MockitoSession mMockingSession;
@@ -180,6 +186,7 @@ public class InputMethodManagerServiceTestBase {
         addLocalServiceMock(PackageManagerInternal.class, mMockPackageManagerInternal);
         addLocalServiceMock(InputManagerInternal.class, mMockInputManagerInternal);
         addLocalServiceMock(UserManagerInternal.class, mMockUserManagerInternal);
+        addLocalServiceMock(VirtualDeviceManagerInternal.class, mMockVirtualDeviceManagerInternal);
 
         doReturn(mMockIInputMethodManager)
                 .when(() -> ServiceManager.getServiceOrThrow(Context.INPUT_METHOD_SERVICE));
@@ -300,7 +307,7 @@ public class InputMethodManagerServiceTestBase {
 
         // Call InputMethodManagerService#addClient() as a preparation to start interacting with it.
         mInputMethodManagerService.addClient(mMockInputMethodClient, mMockFallbackInputConnection,
-                0 /* selfReportedDisplayId */);
+                CLIENT_DISPLAY_ID /* selfReportedDisplayId */);
         createSessionForClient(mMockInputMethodClient);
     }
 

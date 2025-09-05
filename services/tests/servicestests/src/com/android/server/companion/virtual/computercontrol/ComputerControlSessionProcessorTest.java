@@ -27,6 +27,8 @@ import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.testng.Assert.assertFalse;
+import static org.testng.Assert.assertTrue;
 
 import android.app.Activity;
 import android.app.AppOpsManager;
@@ -286,6 +288,22 @@ public class ComputerControlSessionProcessorTest {
             mProcessor.processNewSessionRequest(AttributionSource.myAttributionSource(),
                     params, mComputerControlSessionCallback);
         });
+    }
+
+    @Test
+    public void isComputerControlDisplay_returnsTrueForDisplaysWithActiveSession()
+            throws Exception {
+        when(mVirtualDevice.createVirtualDisplay(any(), any())).thenReturn(123);
+        mProcessor.processNewSessionRequest(AttributionSource.myAttributionSource(),
+                mParams, mComputerControlSessionCallback);
+        verify(mComputerControlSessionCallback,
+                timeout(CALLBACK_TIMEOUT_MS).times(1))
+                .onSessionCreated(anyInt(), any(), mSessionArgumentCaptor.capture());
+
+        assertTrue(mProcessor.isComputerControlDisplay(123));
+
+        mSessionArgumentCaptor.getValue().close();
+        assertFalse(mProcessor.isComputerControlDisplay(123));
     }
 
     private ComputerControlSessionParams generateUniqueParams(int index) {

@@ -883,6 +883,11 @@ public class VirtualDeviceManagerService extends SystemService {
         }
 
         @Override
+        public boolean isComputerControlDisplay(int displayId) {
+            return mComputerControlSessionProcessor.isComputerControlDisplay(displayId);
+        }
+
+        @Override
         public long getDimDurationMillisForDeviceId(int deviceId) {
             VirtualDeviceImpl virtualDevice = getVirtualDeviceForId(deviceId);
             return virtualDevice == null ? -1 : virtualDevice.getDimDurationMillis();

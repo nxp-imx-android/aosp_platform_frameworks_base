@@ -28,9 +28,12 @@ import android.view.inputmethod.InputMethodSubtype;
 
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.inputmethod.IRemoteAccessibilityInputConnection;
+import com.android.internal.inputmethod.IRemoteComputerControlInputConnection;
 import com.android.internal.inputmethod.IRemoteInputConnection;
 import com.android.internal.inputmethod.InputMethodSubtypeHandle;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
@@ -97,6 +100,14 @@ final class UserData {
     @GuardedBy("ImfLock.class")
     @Nullable
     IRemoteInputConnection mCurInputConnection;
+
+    /**
+     * The map of {@link IRemoteComputerControlInputConnection}, provided by an active client on a
+     * computer control display.
+     */
+    @NonNull
+    Map<Integer, IRemoteComputerControlInputConnection> mComputerControlInputConnectionMap =
+            new HashMap<>();
 
     /**
      * The {@link ResultReceiver} last provided by the current client to
