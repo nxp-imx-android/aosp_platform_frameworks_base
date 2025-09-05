@@ -20,6 +20,7 @@ import android.annotation.SuppressLint
 import android.graphics.Rect
 import android.os.Handler
 import android.os.Looper
+import android.util.Log
 import android.util.TypedValue
 import android.view.View
 import androidx.annotation.DrawableRes
@@ -203,7 +204,7 @@ open class SettingsPreferenceGroupAdapter(preferenceGroup: PreferenceGroup) :
             val hasIconSpace = iconFrame != null && iconFrame.visibility != View.GONE
             drawableStateLayout.extraDrawableState =
                 stateSetOf(mItemPositionStates[position], hasIconSpace)
-        } else {
+        } else { // Handle the background of the preferences that are group divider
             val backgroundRes = getRoundCornerDrawableRes(position, isSelected = false)
             val (paddingStart, paddingEnd) = getStartEndPadding(position)
             v.setPaddingRelative(paddingStart, v.paddingTop, paddingEnd, v.paddingBottom)
@@ -214,6 +215,10 @@ open class SettingsPreferenceGroupAdapter(preferenceGroup: PreferenceGroup) :
 
     private fun getStartEndPadding(position: Int): Pair<Int, Int> {
         val item = getItem(position)
+        if (position >= mItemPositionStates.size) {
+            Log.e(TAG, "IndexOutOfBounds: ${item?.title} in $position")
+            return 0 to 0
+        }
         val positionState = mItemPositionStates[position]
         return when {
             // This item handles edge to edge itself
@@ -283,6 +288,7 @@ open class SettingsPreferenceGroupAdapter(preferenceGroup: PreferenceGroup) :
                 || preference is SpacePreference
 
     companion object {
+        private val TAG = "SettingsPrefGroupAdapter"
         private val STATE_SET_NONE = intArrayOf()
         private val STATE_SET_SINGLE = intArrayOf(android.R.attr.state_single)
         private val STATE_SET_FIRST = intArrayOf(android.R.attr.state_first)
