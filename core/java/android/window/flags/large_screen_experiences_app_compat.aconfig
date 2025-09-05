@@ -121,6 +121,16 @@ flag {
 }
 
 flag {
+  name: "app_compat_refactoring_use_activity_leash_for_letterboxing"
+  namespace: "large_screen_experiences_app_compat"
+  description: "Whether the Activity leash should be used as reference for letterbox surfaces."
+  bug: "443245627"
+  metadata {
+    purpose: PURPOSE_BUGFIX
+  }
+}
+
+flag {
   name: "app_compat_refactoring_rounded_corners_animation"
   namespace: "large_screen_experiences_app_compat"
   description: "Whether the rounded corners for letterboxing in shell are animated"
