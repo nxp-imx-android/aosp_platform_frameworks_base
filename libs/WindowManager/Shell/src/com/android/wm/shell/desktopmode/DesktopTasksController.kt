@@ -37,6 +37,7 @@ import android.app.WindowConfiguration.WindowingMode
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.content.res.Configuration
 import android.graphics.Point
 import android.graphics.PointF
 import android.graphics.Rect
@@ -861,7 +862,6 @@ class DesktopTasksController(
                     deskIds,
                     disconnectedDisplayId,
                     destinationDisplayId,
-                    destDisplayLayout,
                     userId,
                 )
             }
@@ -974,7 +974,6 @@ class DesktopTasksController(
         deskIds: List<Int>,
         disconnectedDisplayId: Int,
         destinationDisplayId: Int,
-        destDisplayLayout: DisplayLayout?,
         userId: Int,
     ) {
         logD("handleProjectedModeDisconnect: moving tasks to non-desktop display")
@@ -1036,7 +1035,6 @@ class DesktopTasksController(
         val activeDeskId = repository.getPreservedActiveDesk(uniqueDisplayId)
         val wct = WindowContainerTransaction()
         var runOnTransitStartList = mutableListOf<RunOnTransitStart>()
-        val destDisplayLayout = displayController.getDisplayLayout(displayId) ?: return
         val tilingReconnectHandler =
             TilingDisplayReconnectEventHandler(repository, snapEventHandler, transitions, displayId)
         val excludedTasks =
@@ -1072,7 +1070,6 @@ class DesktopTasksController(
                     if (!excludedTasks.contains(taskId)) {
                         addRestoreTaskToDeskChanges(
                                 wct = wct,
-                                destinationDisplayLayout = destDisplayLayout,
                                 deskId = newDeskId,
                                 taskId = taskId,
                                 userId = userId,
@@ -1109,7 +1106,6 @@ class DesktopTasksController(
 
     private fun addRestoreTaskToDeskChanges(
         wct: WindowContainerTransaction,
-        destinationDisplayLayout: DisplayLayout,
         deskId: Int,
         taskId: Int,
         userId: Int,

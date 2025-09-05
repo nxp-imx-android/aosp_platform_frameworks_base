@@ -26,6 +26,7 @@ import android.app.WindowConfiguration.ACTIVITY_TYPE_UNDEFINED
 import android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM
 import android.app.WindowConfiguration.WINDOWING_MODE_UNDEFINED
 import android.app.WindowConfiguration.windowingModeToString
+import android.content.res.Configuration
 import android.os.Trace
 import android.util.SparseArray
 import android.view.SurfaceControl
@@ -213,6 +214,8 @@ class RootTaskDesksOrganizer(
         // to prevent this when the changes merge.
         wct.setWindowingMode(root.token, WINDOWING_MODE_FREEFORM)
         wct.setWindowingMode(minimizationRoot.token, WINDOWING_MODE_FREEFORM)
+        wct.setDensityDpi(root.token, Configuration.DENSITY_DPI_UNDEFINED)
+        wct.setDensityDpi(minimizationRoot.token, Configuration.DENSITY_DPI_UNDEFINED)
     }
 
     override fun activateDesk(wct: WindowContainerTransaction, deskId: Int, skipReorder: Boolean) {
