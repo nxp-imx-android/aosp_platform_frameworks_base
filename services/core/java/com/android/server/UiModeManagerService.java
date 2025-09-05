@@ -1648,7 +1648,7 @@ final class UiModeManagerService extends SystemService {
             return FORCE_INVERT_TYPE_OFF;
         }
 
-        if (!mComputedNightMode) {
+        if (!mComputedNightMode && !isPowerSaveNightModeOverrideNeeded()) {
             return FORCE_INVERT_TYPE_OFF;
         }
 
@@ -2120,7 +2120,7 @@ final class UiModeManagerService extends SystemService {
         updateForceInvertStates();
 
         // Override night mode in power save mode if not in car mode
-        if (mPowerSave && !mCarModeEnabled && !mCar) {
+        if (isPowerSaveNightModeOverrideNeeded()) {
             uiMode &= ~Configuration.UI_MODE_NIGHT_NO;
             uiMode |= Configuration.UI_MODE_NIGHT_YES;
         } else {
@@ -2140,6 +2140,13 @@ final class UiModeManagerService extends SystemService {
         if (!mHoldingConfiguration && (!mWaitForDeviceInactive || mPowerSave)) {
             mConfiguration.uiMode = uiMode;
         }
+    }
+
+    /**
+     * Override night mode in power save mode if not in car mode
+     */
+    private boolean isPowerSaveNightModeOverrideNeeded() {
+        return mPowerSave && !mCarModeEnabled && !mCar;
     }
 
     @UiModeManager.NightMode
