@@ -157,14 +157,14 @@ public class ComputerControlSessionProcessorTest {
         try {
             for (int i = 0; i < MAXIMUM_CONCURRENT_SESSIONS; ++i) {
                 mProcessor.processNewSessionRequest(AttributionSource.myAttributionSource(),
-                        mParams, mComputerControlSessionCallback);
+                        generateUniqueParams(i), mComputerControlSessionCallback);
             }
             verify(mComputerControlSessionCallback,
                     timeout(CALLBACK_TIMEOUT_MS).times(MAXIMUM_CONCURRENT_SESSIONS))
                     .onSessionCreated(anyInt(), any(), mSessionArgumentCaptor.capture());
 
             mProcessor.processNewSessionRequest(AttributionSource.myAttributionSource(),
-                    mParams, mComputerControlSessionCallback);
+                    generateUniqueParams(-1), mComputerControlSessionCallback);
             verify(mComputerControlSessionCallback, timeout(CALLBACK_TIMEOUT_MS))
                     .onSessionCreationFailed(ComputerControlSession.ERROR_SESSION_LIMIT_REACHED);
 
@@ -175,7 +175,7 @@ public class ComputerControlSessionProcessorTest {
             verify(mComputerControlSessionCallback, times(1)).onSessionClosed();
 
             mProcessor.processNewSessionRequest(AttributionSource.myAttributionSource(),
-                    mParams, mComputerControlSessionCallback);
+                    generateUniqueParams(-1), mComputerControlSessionCallback);
             verify(mComputerControlSessionCallback,
                     timeout(CALLBACK_TIMEOUT_MS).times(MAXIMUM_CONCURRENT_SESSIONS + 1))
                     .onSessionCreated(anyInt(), any(), mSessionArgumentCaptor.capture());
@@ -222,6 +222,17 @@ public class ComputerControlSessionProcessorTest {
         resultReceiver.send(Activity.RESULT_CANCELED, null);
         verify(mComputerControlSessionCallback, timeout(CALLBACK_TIMEOUT_MS))
                 .onSessionCreationFailed(ComputerControlSession.ERROR_PERMISSION_DENIED);
+    }
+
+    @Test
+    public void validateParams_sessionNameMustBeUnique() throws Exception {
+        mProcessor.processNewSessionRequest(AttributionSource.myAttributionSource(),
+                mParams, mComputerControlSessionCallback);
+        verify(mComputerControlSessionCallback, timeout(CALLBACK_TIMEOUT_MS))
+                .onSessionCreated(anyInt(), any(), any());
+        assertThrows(IllegalArgumentException.class,
+                () -> mProcessor.processNewSessionRequest(AttributionSource.myAttributionSource(),
+                mParams, mComputerControlSessionCallback));
     }
 
     @EnableFlags(Flags.FLAG_COMPUTER_CONTROL_ACTIVITY_POLICY_STRICT)
@@ -275,5 +286,16 @@ public class ComputerControlSessionProcessorTest {
             mProcessor.processNewSessionRequest(AttributionSource.myAttributionSource(),
                     params, mComputerControlSessionCallback);
         });
+    }
+
+    private ComputerControlSessionParams generateUniqueParams(int index) {
+        return new ComputerControlSessionParams.Builder()
+                .setName(mParams.getName() + index)
+                .setDisplayDpi(mParams.getDisplayDpi())
+                .setDisplayHeightPx(mParams.getDisplayHeightPx())
+                .setDisplayWidthPx(mParams.getDisplayWidthPx())
+                .setDisplaySurface(mParams.getDisplaySurface())
+                .setDisplayAlwaysUnlocked(mParams.isDisplayAlwaysUnlocked())
+                .build();
     }
 }

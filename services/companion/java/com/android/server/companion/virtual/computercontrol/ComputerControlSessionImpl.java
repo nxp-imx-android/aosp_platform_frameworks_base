@@ -96,6 +96,7 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
 
     private final IBinder mAppToken;
     private final ComputerControlSessionParams mParams;
+    private final String mOwnerPackageName;
     private final OnClosedListener mOnClosedListener;
     private final IVirtualDevice mVirtualDevice;
     private final int mVirtualDisplayId;
@@ -120,6 +121,7 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
             OnClosedListener onClosedListener, Injector injector) {
         mAppToken = appToken;
         mParams = params;
+        mOwnerPackageName = attributionSource.getPackageName();
         mOnClosedListener = onClosedListener;
         mInjector = injector;
 
@@ -184,7 +186,10 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
             mVirtualDevice.setDisplayImePolicy(
                     mVirtualDisplayId, WindowManager.DISPLAY_IME_POLICY_HIDE);
 
-            final String dpadName = mParams.getName() + "-dpad";
+            final String inputDeviceNamePrefix =
+                    attributionSource.getPackageName() + ":" + mParams.getName();
+
+            final String dpadName = inputDeviceNamePrefix + "-dpad";
             final VirtualDpadConfig virtualDpadConfig =
                     new VirtualDpadConfig.Builder()
                             .setAssociatedDisplayId(mVirtualDisplayId)
@@ -193,7 +198,7 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
             mVirtualDpad = mVirtualDevice.createVirtualDpad(
                     virtualDpadConfig, new Binder(dpadName));
 
-            final String keyboardName = mParams.getName()  + "-keyboard";
+            final String keyboardName = inputDeviceNamePrefix + "-keyboard";
             final VirtualKeyboardConfig virtualKeyboardConfig =
                     new VirtualKeyboardConfig.Builder()
                             .setAssociatedDisplayId(mVirtualDisplayId)
@@ -202,7 +207,7 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
             mVirtualKeyboard = mVirtualDevice.createVirtualKeyboard(
                     virtualKeyboardConfig, new Binder(keyboardName));
 
-            final String touchscreenName = mParams.getName() + "-touchscreen";
+            final String touchscreenName = inputDeviceNamePrefix + "-touchscreen";
             final VirtualTouchscreenConfig virtualTouchscreenConfig =
                     new VirtualTouchscreenConfig.Builder(mDisplayWidth, mDisplayHeight)
                             .setAssociatedDisplayId(mVirtualDisplayId)
@@ -250,6 +255,14 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
 
     IVirtualDisplayCallback getVirtualDisplayToken() {
         return mVirtualDisplayToken;
+    }
+
+    String getName() {
+        return mParams.getName();
+    }
+
+    String getOwnerPackageName() {
+        return mOwnerPackageName;
     }
 
     public void launchApplication(@NonNull String packageName) {
@@ -360,7 +373,7 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
     public void close() throws RemoteException {
         mVirtualDevice.close();
         mAppToken.unlinkToDeath(this, 0);
-        mOnClosedListener.onClosed(asBinder());
+        mOnClosedListener.onClosed(this);
     }
 
     @Override
@@ -458,7 +471,7 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
 
     /** Interface for listening for closing of sessions. */
     interface OnClosedListener {
-        void onClosed(IBinder token);
+        void onClosed(ComputerControlSessionImpl session);
     }
 
     @VisibleForTesting

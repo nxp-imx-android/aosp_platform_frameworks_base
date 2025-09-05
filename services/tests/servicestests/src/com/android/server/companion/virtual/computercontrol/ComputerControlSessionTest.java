@@ -231,7 +231,7 @@ public class ComputerControlSessionTest {
         createComputerControlSession(mDefaultParams);
         mSession.close();
         verify(mVirtualDevice).close();
-        verify(mOnClosedListener).onClosed(mSession.asBinder());
+        verify(mOnClosedListener).onClosed(mSession);
     }
 
     @Test
