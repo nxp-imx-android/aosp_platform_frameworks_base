@@ -135,6 +135,7 @@ import static com.android.text.flags.Flags.disableHandwritingInitiatorForIme;
 import static com.android.window.flags.Flags.alwaysSeqIdLayout;
 import static com.android.window.flags.Flags.alwaysSeqIdLayoutWear;
 import static com.android.window.flags.Flags.enableWindowContextResourcesUpdateOnConfigChange;
+import static com.android.window.flags.Flags.predictiveBackStopKeycodeBackForwarding;
 import static com.android.window.flags.Flags.reduceChangedExclusionRectsMsgs;
 import static com.android.window.flags.Flags.setScPropertiesInClient;
 
@@ -275,7 +276,6 @@ import android.window.ClientWindowFrames;
 import android.window.CompatOnBackInvokedCallback;
 import android.window.ImeBackCallbackProxy;
 import android.window.InputTransferToken;
-import android.window.OnBackAnimationCallback;
 import android.window.OnBackInvokedCallback;
 import android.window.OnBackInvokedDispatcher;
 import android.window.ScreenCaptureInternal;
@@ -7816,10 +7816,7 @@ public final class ViewRootImpl implements ViewParent,
             if (dispatcher.isBackGestureInProgress()) {
                 return FINISH_NOT_HANDLED;
             }
-            if (topCallback instanceof OnBackAnimationCallback
-                    && !(topCallback instanceof ImeBackAnimationController)) {
-                final OnBackAnimationCallback animationCallback =
-                        (OnBackAnimationCallback) topCallback;
+            if (topCallback != null) {
                 switch (keyEvent.getAction()) {
                     case KeyEvent.ACTION_DOWN:
                         // ACTION_DOWN is emitted twice: once when the user presses the button,
@@ -7828,35 +7825,37 @@ public final class ViewRootImpl implements ViewParent,
                         // - 0 means the button was pressed.
                         // - 1 means the button continues to be pressed (long press).
                         if (keyEvent.getRepeatCount() == 0) {
-                            animationCallback.onBackStarted(
-                                    new BackEvent(0, 0, 0f, BackEvent.EDGE_NONE));
+                            dispatcher.onBackStarted(topCallback,
+                                    new BackEvent(0, 0, 0f, BackEvent.EDGE_NONE), /* observerOnly */
+                                    topCallback instanceof ImeBackAnimationController);
                         }
                         break;
                     case KeyEvent.ACTION_UP:
                         if (keyEvent.isCanceled()) {
-                            animationCallback.onBackCancelled();
+                            dispatcher.onBackCancelled(topCallback);
                         } else {
-                            dispatcher.tryInvokeSystemNavigationObserverCallbacks();
-                            topCallback.onBackInvoked();
+                            dispatcher.onBackInvoked(topCallback);
+                            if (predictiveBackStopKeycodeBackForwarding()) {
+                                return FINISH_HANDLED;
+                            }
                         }
                         break;
                 }
-            } else if (topCallback != null) {
-                if (keyEvent.getAction() == KeyEvent.ACTION_UP) {
-                    if (!keyEvent.isCanceled()) {
-                        dispatcher.tryInvokeSystemNavigationObserverCallbacks();
-                        topCallback.onBackInvoked();
-                    } else {
-                        Log.d(mTag, "Skip onBackInvoked(), reason: keyEvent.isCanceled=true");
-                    }
+            } else {
+                if (predictiveBackStopKeycodeBackForwarding()) {
+                    return FORWARD;
                 }
             }
-            // Do not cancel the keyEvent if no callback can handle the back event.
-            if (topCallback != null && keyEvent.getAction() == KeyEvent.ACTION_UP) {
-                // forward a cancelled event so that following stages cancel their back logic
-                keyEvent.cancel();
+            if (predictiveBackStopKeycodeBackForwarding()) {
+                return FINISH_NOT_HANDLED;
+            } else {
+                // Do not cancel the keyEvent if no callback can handle the back event.
+                if (topCallback != null && keyEvent.getAction() == KeyEvent.ACTION_UP) {
+                    // forward a cancelled event so that following stages cancel their back logic
+                    keyEvent.cancel();
+                }
+                return FORWARD;
             }
-            return FORWARD;
         }
 
         @Override
