@@ -5690,21 +5690,21 @@ class DesktopTasksController(
                     validDragArea,
                 )
 
-                if (
-                    destinationBounds == dragStartBounds && destinationBounds != currentDragBounds
-                ) {
+                if (destinationBounds == dragStartBounds) {
                     // There's no actual difference between the start and end bounds, so while a
                     // WCT change isn't needed, the dragged surface still needs to be snapped back
                     // to its original location. This is as long as it moved some in the first
                     // place, if it didn't and |currentDragBounds| is already at destination then
                     // there's no need to animate.
-                    releaseVisualIndicator()
-                    returnToDragStartAnimator.start(
-                        taskInfo.taskId,
-                        taskSurface,
-                        startBounds = currentDragBounds,
-                        endBounds = dragStartBounds,
-                    )
+                    if (currentDragBounds != dragStartBounds) {
+                        releaseVisualIndicator()
+                        returnToDragStartAnimator.start(
+                            taskInfo.taskId,
+                            taskSurface,
+                            startBounds = currentDragBounds,
+                            endBounds = dragStartBounds,
+                        )
+                    }
                     return true
                 }
 

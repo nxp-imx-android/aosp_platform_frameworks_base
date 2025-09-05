@@ -9300,7 +9300,45 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
-    fun onDesktopDragEnd_noIndicator_noBoundsMovement_noReturnToStartAnimation() {
+    fun onDesktopDragEnd_noIndicator_noBoundsMovement_outOfValidArea_startsReturnToStartAnimation_noWct() {
+        val task = setUpFreeformTask(bounds = STABLE_BOUNDS)
+        val spyController = spy(controller)
+        val mockSurface = mock(SurfaceControl::class.java)
+        whenever(spyController.getVisualIndicator()).thenReturn(desktopModeVisualIndicator)
+        whenever(desktopModeVisualIndicator.updateIndicatorType(any(), anyOrNull()))
+            .thenReturn(DesktopModeVisualIndicator.IndicatorType.NO_INDICATOR)
+        whenever(motionEvent.displayId).thenReturn(DEFAULT_DISPLAY)
+
+        val startBounds = Rect(0, 50, 500, 550)
+        // Drag slightly outside of valid drag area
+        val currentDragBounds = Rect(-10, 50, 490, 550)
+
+        spyController.onDragPositioningEnd(
+            taskInfo = task,
+            taskSurface = mockSurface,
+            displayId = DEFAULT_DISPLAY,
+            inputCoordinate = PointF(250f, 300f),
+            currentDragBounds = currentDragBounds,
+            validDragArea = Rect(0, 50, 2000, 2000),
+            dragStartBounds = startBounds,
+            motionEvent = motionEvent,
+        )
+
+        // Verify animation to return to start is triggered.
+        verify(mReturnToDragStartAnimator)
+            .start(
+                eq(task.taskId),
+                eq(mockSurface),
+                eq(currentDragBounds),
+                eq(startBounds),
+                anyOrNull(),
+            )
+        // Verify no WCT is started.
+        verify(transitions, never()).startTransition(any(), any(), any())
+    }
+
+    @Test
+    fun onDesktopDragEnd_noIndicator_noBoundsMovement_noReturnToStartAnimation_noWct() {
         val task = setUpFreeformTask(bounds = STABLE_BOUNDS)
         val spyController = spy(controller)
         val mockSurface = mock(SurfaceControl::class.java)
@@ -9341,6 +9379,8 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         // return because the current bounds are also the same as start/end.
         verify(mReturnToDragStartAnimator, never())
             .start(eq(task.taskId), eq(mockSurface), any(), any(), anyOrNull())
+        // Verify no WCT is started.
+        verify(transitions, never()).startTransition(any(), any(), any())
     }
 
     @Test
