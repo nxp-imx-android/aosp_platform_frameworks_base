@@ -1090,18 +1090,29 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
             if (TaskInfoKt.isTransparentCaptionBarAppearance(taskInfo)) {
                 // The app is requesting to customize the caption bar, which means input on
                 // customizable/exclusion regions must go to the app instead of to the system.
-                // This may be accomplished with spy windows or custom touchable regions:
+                // Custom touchable regions OR spy windows are usually sufficient to satisfy this
+                // requirement for the general case, but some edge cases make it so we actually
+                // need both:
+                // 1) Spy window by itself does not let a11y services "see" through the window and
+                // focus the custom content. The touchable region carveout helps here.
+                // 2) When the app has a modal window on top of the window that reports exclusion
+                // regions, the modal window actually blocks the exclusion region from being
+                // reported to SystemUI, which prevents the window decoration from correctly
+                // setting the touchable region (of the caption) and thus touching the custom
+                // region has the input consumed by the caption and makes it impossible for the
+                // modal to be closed in this region, see b/414521306.
                 if (DesktopModeFlags.ENABLE_ACCESSIBLE_CUSTOM_HEADERS.isTrue()) {
                     // Set the touchable region of the caption to only the areas where input should
                     // be handled by the system (i.e. non custom-excluded areas). The region will
                     // be calculated based on occluding caption elements and exclusion areas
                     // reported by the app.
                     relayoutParams.mLimitTouchRegionToSystemAreas = true;
-                } else {
-                    // Allow input to fall through to the windows below so that the app can respond
-                    // to input events on their custom content.
-                    relayoutParams.mInputFeatures |= WindowManager.LayoutParams.INPUT_FEATURE_SPY;
                 }
+                // Also allow input to fall through to the windows below so that the app can
+                // respond to input events on their custom content, but more precisely to allow
+                // the first motion event over a modal window to fall through and dismiss the modal,
+                // even when the caption touchable region is not being limited.
+                relayoutParams.mInputFeatures |= WindowManager.LayoutParams.INPUT_FEATURE_SPY;
             } else {
                 if (ENABLE_CAPTION_COMPAT_INSET_FORCE_CONSUMPTION.isTrue()) {
                     if (shouldExcludeCaptionFromAppBounds) {
