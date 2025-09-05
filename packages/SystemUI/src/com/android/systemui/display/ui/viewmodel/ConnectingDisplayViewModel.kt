@@ -188,18 +188,28 @@ constructor(
 
         val isInExtendedMode = desktopState.isDesktopModeSupportedOnDisplay(DEFAULT_DISPLAY)
 
-        if (isInKioskMode) {
-            dismissDialog()
-            pendingDisplay.showNewDialog(concurrentDisplaysInProgress, isInKioskMode)
-        } else if (isInExtendedMode) {
-            pendingDisplay.enableForDesktop()
-            showExtendedDisplayConnectionToast()
-        } else {
-            when (pendingDisplay.connectionType) {
-                DESKTOP -> pendingDisplay.enableForDesktop()
-                MIRROR -> pendingDisplay.enableForMirroring()
-                NOT_SPECIFIED ->
-                    pendingDisplay.showNewDialog(concurrentDisplaysInProgress, isInKioskMode)
+        when {
+            isInKioskMode && isInExtendedMode -> {
+                pendingDisplay.enableForMirroring()
+            }
+            isInKioskMode -> {
+                dismissDialog()
+                pendingDisplay.showNewDialog(concurrentDisplaysInProgress, isInKioskMode = true)
+            }
+            isInExtendedMode -> {
+                pendingDisplay.enableForDesktop()
+                showExtendedDisplayConnectionToast()
+            }
+            else -> {
+                when (pendingDisplay.connectionType) {
+                    DESKTOP -> pendingDisplay.enableForDesktop()
+                    MIRROR -> pendingDisplay.enableForMirroring()
+                    NOT_SPECIFIED ->
+                        pendingDisplay.showNewDialog(
+                            concurrentDisplaysInProgress,
+                            isInKioskMode = false,
+                        )
+                }
             }
         }
     }
