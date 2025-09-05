@@ -112,13 +112,6 @@ flag {
 }
 
 flag {
-    name: "notification_async_hybrid_view_inflation"
-    namespace: "systemui"
-    description: "Inflates hybrid (single-line) notification views from the background thread."
-    bug: "217799515"
-}
-
-flag {
     name: "notification_color_update_logger"
     namespace: "systemui"
     description: "Enabled debug logging and dumping of notification color updates."

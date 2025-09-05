@@ -72,7 +72,6 @@ import com.android.systemui.statusbar.notification.row.NotificationRowContentBin
 import com.android.systemui.statusbar.notification.row.NotificationRowContentBinder.InflationCallback
 import com.android.systemui.statusbar.notification.row.NotificationRowContentBinder.InflationFlag
 import com.android.systemui.statusbar.notification.row.shared.AsyncGroupHeaderViewInflation
-import com.android.systemui.statusbar.notification.row.shared.AsyncHybridViewInflation
 import com.android.systemui.statusbar.notification.row.shared.HeadsUpStatusBarModel
 import com.android.systemui.statusbar.notification.row.shared.NewRemoteViews
 import com.android.systemui.statusbar.notification.row.shared.NotificationContentModel
@@ -197,18 +196,16 @@ constructor(
             smartRepliesInflater,
             logger,
         )
-        if (AsyncHybridViewInflation.isEnabled) {
-            result.inflatedSingleLineView =
-                result.contentModel.singleLineViewModel?.let { viewModel ->
-                    SingleLineViewInflater.inflatePrivateSingleLineView(
-                        viewModel.isConversation(),
-                        reInflateFlags,
-                        entry,
-                        systemUIContext,
-                        logger,
-                    )
-                }
-        }
+        result.inflatedSingleLineView =
+            result.contentModel.singleLineViewModel?.let { viewModel ->
+                SingleLineViewInflater.inflatePrivateSingleLineView(
+                    viewModel.isConversation(),
+                    reInflateFlags,
+                    entry,
+                    systemUIContext,
+                    logger,
+                )
+            }
         result.inflatedPublicSingleLineView =
             result.contentModel.publicSingleLineViewModel?.let { viewModel ->
                 SingleLineViewInflater.inflatePublicSingleLineView(
@@ -294,10 +291,8 @@ constructor(
                     remoteViewCache.removeCachedView(entry, FLAG_CONTENT_VIEW_PUBLIC)
                 }
             FLAG_CONTENT_VIEW_SINGLE_LINE -> {
-                if (AsyncHybridViewInflation.isEnabled) {
-                    row.privateLayout.performWhenContentInactive(VISIBLE_TYPE_SINGLELINE) {
-                        row.privateLayout.setSingleLineView(null)
-                    }
+                row.privateLayout.performWhenContentInactive(VISIBLE_TYPE_SINGLELINE) {
+                    row.privateLayout.setSingleLineView(null)
                 }
             }
             FLAG_CONTENT_VIEW_PUBLIC_SINGLE_LINE -> {
@@ -332,10 +327,7 @@ constructor(
         if (contentViews and FLAG_CONTENT_VIEW_PUBLIC != 0) {
             row.publicLayout.removeContentInactiveRunnable(VISIBLE_TYPE_CONTRACTED)
         }
-        if (
-            AsyncHybridViewInflation.isEnabled &&
-                contentViews and FLAG_CONTENT_VIEW_SINGLE_LINE != 0
-        ) {
+        if (contentViews and FLAG_CONTENT_VIEW_SINGLE_LINE != 0) {
             row.privateLayout.removeContentInactiveRunnable(VISIBLE_TYPE_SINGLELINE)
         }
         if (contentViews and FLAG_CONTENT_VIEW_PUBLIC_SINGLE_LINE != 0) {
@@ -454,19 +446,17 @@ constructor(
                 smartRepliesInflater,
                 logger,
             )
-            if (AsyncHybridViewInflation.isEnabled) {
-                logger.logAsyncTaskProgress(entry.logKey, "inflating single line view")
-                inflationProgress.inflatedSingleLineView =
-                    inflationProgress.contentModel.singleLineViewModel?.let {
-                        SingleLineViewInflater.inflatePrivateSingleLineView(
-                            it.isConversation(),
-                            reInflateFlags,
-                            entry,
-                            context,
-                            logger,
-                        )
-                    }
-            }
+            logger.logAsyncTaskProgress(entry.logKey, "inflating single line view")
+            inflationProgress.inflatedSingleLineView =
+                inflationProgress.contentModel.singleLineViewModel?.let {
+                    SingleLineViewInflater.inflatePrivateSingleLineView(
+                        it.isConversation(),
+                        reInflateFlags,
+                        entry,
+                        context,
+                        logger,
+                    )
+                }
 
             logger.logAsyncTaskProgress(entry.logKey, "inflating public single line view")
             inflationProgress.inflatedPublicSingleLineView =
@@ -728,10 +718,7 @@ constructor(
                 )
 
             val singleLineViewModel =
-                if (
-                    AsyncHybridViewInflation.isEnabled &&
-                        reInflateFlags and FLAG_CONTENT_VIEW_SINGLE_LINE != 0
-                ) {
+                if (reInflateFlags and FLAG_CONTENT_VIEW_SINGLE_LINE != 0) {
                     logger.logAsyncTaskProgress(entry.logKey, "inflating single line view model")
                     SingleLineViewInflater.inflateSingleLineViewModel(
                         notification = entry.sbn.notification,
@@ -1560,10 +1547,7 @@ constructor(
                 isMinimized,
             )
 
-            if (
-                AsyncHybridViewInflation.isEnabled &&
-                    reInflateFlags and FLAG_CONTENT_VIEW_SINGLE_LINE != 0
-            ) {
+            if (reInflateFlags and FLAG_CONTENT_VIEW_SINGLE_LINE != 0) {
                 val singleLineView = result.inflatedSingleLineView
                 val viewModel = result.contentModel.singleLineViewModel
                 if (singleLineView != null && viewModel != null) {
