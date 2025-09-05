@@ -4627,7 +4627,8 @@ class Task extends TaskFragment {
     }
 
     /**
-     * Returns whether this task is forcibly excluded from the Recents list.
+     * Returns whether this task or any of its parent task is forcibly excluded from the Recents
+     * list.
      *
      * <p>This flag is used by {@link RecentTasks#isVisibleRecentTask} to determine
      * if the task should be presented to the user through SystemUI. If this method
@@ -4637,7 +4638,18 @@ class Task extends TaskFragment {
      * @return {@code true} if the task is excluded, {@code false} otherwise.
      */
     boolean isForceExcludedFromRecents() {
-        return mForceExcludedFromRecents;
+        if (mForceExcludedFromRecents) {
+            return true;
+        }
+
+        WindowContainer parent = getParent();
+        while (parent != null && parent.asTask() != null) {
+            if (parent.asTask().isForceExcludedFromRecents()) {
+                return true;
+            }
+            parent = parent.getParent();
+        }
+        return false;
     }
 
     /**
@@ -4668,9 +4680,12 @@ class Task extends TaskFragment {
             return true;
         }
         // Check if PIP is disabled on any parent Task.
-        final WindowContainer parent = getParent();
-        if (parent != null && parent.asTask() != null) {
-            return parent.asTask().isDisablePip();
+        WindowContainer parent = getParent();
+        while (parent != null && parent.asTask() != null) {
+            if (parent.asTask().isDisablePip()) {
+                return true;
+            }
+            parent = parent.getParent();
         }
         return false;
     }

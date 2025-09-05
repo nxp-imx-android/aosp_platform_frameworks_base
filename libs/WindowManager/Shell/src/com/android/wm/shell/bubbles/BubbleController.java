@@ -652,6 +652,11 @@ public class BubbleController implements ConfigurationChangeListener,
                             wct.reorder(taskInfo.token, false /* onTop */);
                             wct.setInterceptBackPressedOnTaskRoot(taskInfo.token,
                                     true /* interceptBackPressed */);
+                            wct.setTaskForceExcludedFromRecents(taskInfo.token,
+                                    true /* forceExcluded */);
+                            wct.setDisablePip(taskInfo.token, true /* disablePip */);
+                            wct.setDisableLaunchAdjacent(taskInfo.token,
+                                    true /* disableLaunchAdjacent */);
                             mTaskOrganizer.applyTransaction(wct);
                         }
                     });

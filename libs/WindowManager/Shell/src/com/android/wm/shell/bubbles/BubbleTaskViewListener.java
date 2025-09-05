@@ -228,8 +228,11 @@ public class BubbleTaskViewListener implements TaskView.Listener {
 
         final TaskViewTaskController tvc = mTaskView.getController();
         final boolean isAppBubble = mBubble != null && (mBubble.isApp() || mBubble.isShortcut());
+        Rect launchBounds = new Rect();
+        mTaskView.getBoundsOnScreen(launchBounds);
         final WindowContainerTransaction wct = getEnterBubbleTransaction(
-                tvc.getTaskToken(), mExpandedViewManager.getAppBubbleRootTaskToken(), isAppBubble);
+                tvc.getTaskToken(), mExpandedViewManager.getAppBubbleRootTaskToken(), launchBounds,
+                isAppBubble);
         tvc.getTaskOrganizer().applyTransaction(wct);
 
         // With the task org, the taskAppeared callback will only happen once the task has
