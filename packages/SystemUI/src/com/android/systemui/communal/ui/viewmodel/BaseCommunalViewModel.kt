@@ -16,7 +16,6 @@
 
 package com.android.systemui.communal.ui.viewmodel
 
-import android.appwidget.AppWidgetProviderInfo
 import android.content.ComponentName
 import android.os.UserHandle
 import com.android.compose.animation.scene.ObservableTransitionState
@@ -228,9 +227,6 @@ abstract class BaseCommunalViewModel(
 
     /** Called as the user requests to switch to the next player in UMO. */
     open fun onShowNextMedia() {}
-
-    /** Called as the UI determines that a new widget has been added to the grid. */
-    open fun onNewWidgetAdded(provider: AppWidgetProviderInfo) {}
 
     /** Called when the grid scroll position has been updated. */
     open fun onScrollPositionUpdated(firstVisibleItemIndex: Int, firstVisibleItemScroll: Int) {
