@@ -18,8 +18,11 @@ package com.android.systemui.screencapture.common
 
 import javax.inject.Qualifier
 
-/** Used to qualify an item as the one used by Screen Capture. */
+/** Used to qualify an item as the one used by Screen Capture UI. */
 @Qualifier
 @MustBeDocumented
 @Retention(AnnotationRetention.RUNTIME)
 annotation class ScreenCaptureUi
+
+/** Used to qualify an item as the one used by Screen Capture. */
+@Qualifier @MustBeDocumented @Retention(AnnotationRetention.RUNTIME) annotation class ScreenCapture

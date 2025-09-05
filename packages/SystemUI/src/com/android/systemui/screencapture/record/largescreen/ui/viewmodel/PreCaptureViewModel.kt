@@ -22,7 +22,7 @@ import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.lifecycle.HydratedActivatable
 import com.android.systemui.res.R
-import com.android.systemui.screencapture.common.ScreenCaptureUi
+import com.android.systemui.screencapture.common.ScreenCapture
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureUiParameters
 import com.android.systemui.screencapture.common.ui.viewmodel.DrawableLoaderViewModel
 import com.android.systemui.screencapture.common.ui.viewmodel.DrawableLoaderViewModelImpl
@@ -57,7 +57,7 @@ constructor(
     private val drawableLoaderViewModelImpl: DrawableLoaderViewModelImpl,
     private val screenCaptureUiInteractor: ScreenCaptureUiInteractor,
     private val screenRecordingServiceInteractor: ScreenRecordingServiceInteractor,
-    @ScreenCaptureUi private val screenCaptureUiParams: ScreenCaptureUiParameters,
+    @ScreenCapture private val screenCaptureUiParams: ScreenCaptureUiParameters,
 ) : HydratedActivatable(), DrawableLoaderViewModel by drawableLoaderViewModelImpl {
     private val isShowingUiFlow = MutableStateFlow(true)
     private val captureTypeSource =
