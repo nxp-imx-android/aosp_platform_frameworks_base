@@ -766,6 +766,8 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         wct.assertReorderAt(index = 1, task1)
         wct.assertReorderAt(index = 2, task2)
         wct.assertReorderAt(index = 3, task1)
+        verify(snapEventHandler, times(1))
+            .notifyTilingOfExplodedViewReorder(any(), eq(task1.taskId))
     }
 
     @Test

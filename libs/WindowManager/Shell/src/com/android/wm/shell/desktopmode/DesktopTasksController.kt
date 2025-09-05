@@ -5177,7 +5177,6 @@ class DesktopTasksController(
                     userId = userId,
                     enterReason = enterReason,
                 )
-
             // Put task with [taskIdToReorderToFront] to front.
             when (newTaskInFront) {
                 is RunningTaskInfo -> {
@@ -5200,6 +5199,12 @@ class DesktopTasksController(
                 }
             }
 
+            // Exploded view is where tasks are exploded within a desktop on entering recents,
+            // so if the user selects a tiled task to be in front, tiling should handle this
+            // to bring all tiled tasks to front.
+            if (taskIdToReorderToFront != INVALID_TASK_ID && taskIdToReorderToFront != null) {
+                snapEventHandler.notifyTilingOfExplodedViewReorder(deskId, taskIdToReorderToFront)
+            }
             val transitionType = transitionType(remoteTransition)
             val handler =
                 remoteTransition?.let {
@@ -5209,7 +5214,6 @@ class DesktopTasksController(
             val transition = transitions.startTransition(transitionType, wct, handler)
             handler?.setTransition(transition)
             runOnTransitStart?.invoke(transition)
-
             // Replaced by |IDesktopTaskListener#onActiveDeskChanged|.
             if (!desktopState.enableMultipleDesktops) {
                 desktopModeEnterExitTransitionListener?.onEnterDesktopModeTransitionStarted(

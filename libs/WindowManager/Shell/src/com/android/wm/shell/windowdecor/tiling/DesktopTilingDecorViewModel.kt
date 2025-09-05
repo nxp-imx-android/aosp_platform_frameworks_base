@@ -266,6 +266,10 @@ class DesktopTilingDecorViewModel(
         tilingHandlerByUserAndDeskId[currentUserId]?.remove(deskId)
     }
 
+    fun onExplodedViewReorder(deskId: Int, topTaskId: Int) {
+        tilingHandlerByUserAndDeskId[currentUserId]?.get(deskId)?.onExplodedViewReorder(topTaskId)
+    }
+
     fun getCurrentActiveDeskForDisplay(displayId: Int): Int? =
         desktopUserRepositories.current.getActiveDeskId(displayId)
 
