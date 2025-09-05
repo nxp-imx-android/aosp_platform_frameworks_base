@@ -6469,7 +6469,7 @@ public final class DisplayManagerService extends SystemService {
                         .setDeviceStateLocked(deviceState);
             }
         }
-    };
+    }
 
     private static class BrightnessPair {
         public float brightness;

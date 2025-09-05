@@ -32,6 +32,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.util.EnumSet;
+
 @RunWith(AndroidJUnit4.class)
 @SmallTest
 public class DisplayInfoTest {
@@ -316,6 +318,68 @@ public class DisplayInfoTest {
                 | DisplayInfo.DisplayInfoGroup.STATE.getMask()
                 | DisplayInfo.DisplayInfoGroup.DIMENSIONS_AND_SHAPES.getMask()
         );
+    }
+
+    @Test
+    public void getBasicChangedGroups_otherIsNull_returns_some_groups() {
+        DisplayInfo base = new DisplayInfo();
+        int changedGroups = base.getBasicChangedGroups(null,
+                EnumSet.of(DisplayInfo.DisplayInfoGroup.BASIC_PROPERTIES,
+                        DisplayInfo.DisplayInfoGroup.ORIENTATION_AND_ROTATION));
+        assertThat(changedGroups).isEqualTo(
+                DisplayInfo.DisplayInfoGroup.BASIC_PROPERTIES.getMask()
+                        | DisplayInfo.DisplayInfoGroup.ORIENTATION_AND_ROTATION.getMask()
+        );
+    }
+
+    @Test
+    public void getBasicChangedGroups_withGroupsToCompare_singleGroupChanged_Matches() {
+        DisplayInfo base = new DisplayInfo();
+        DisplayInfo other = new DisplayInfo(base);
+        other.logicalWidth = 1440; // Belongs to DIMENSIONS_AND_SHAPES
+
+        EnumSet<DisplayInfo.DisplayInfoGroup> groupsToCompare =
+                EnumSet.of(DisplayInfo.DisplayInfoGroup.DIMENSIONS_AND_SHAPES);
+
+        int changedGroups = base.getBasicChangedGroups(other, groupsToCompare);
+
+        assertThat(changedGroups)
+                .isEqualTo(DisplayInfo.DisplayInfoGroup.DIMENSIONS_AND_SHAPES.getMask());
+    }
+
+    @Test
+    public void getBasicChangedGroups_withGroupsToCompare_singleGroupChanged_DoesNotMatch() {
+        DisplayInfo base = new DisplayInfo();
+        DisplayInfo other = new DisplayInfo(base);
+        other.logicalWidth = 1440; // Belongs to DIMENSIONS_AND_SHAPES
+
+        // Compare a different group that has not changed.
+        EnumSet<DisplayInfo.DisplayInfoGroup> groupsToCompare =
+                EnumSet.of(DisplayInfo.DisplayInfoGroup.BASIC_PROPERTIES);
+
+        int changedGroups = base.getBasicChangedGroups(other, groupsToCompare);
+
+        assertThat(changedGroups).isEqualTo(0);
+    }
+
+    @Test
+    public void getBasicChangedGroups_withGroupsToCompare_multipleGroupsChanged() {
+        DisplayInfo base = new DisplayInfo();
+        DisplayInfo other = new DisplayInfo(base);
+        other.flags = Display.FLAG_PRIVATE; // BASIC_PROPERTIES
+        other.rotation = Surface.ROTATION_180; // ORIENTATION_AND_ROTATION
+        other.state = Display.STATE_VR; // STATE
+
+        // Only compare two of the three changed groups.
+        EnumSet<DisplayInfo.DisplayInfoGroup> groupsToCompare =
+                EnumSet.of(DisplayInfo.DisplayInfoGroup.BASIC_PROPERTIES,
+                        DisplayInfo.DisplayInfoGroup.STATE);
+
+        int changedGroups = base.getBasicChangedGroups(other, groupsToCompare);
+
+        assertThat(changedGroups).isEqualTo(
+                DisplayInfo.DisplayInfoGroup.BASIC_PROPERTIES.getMask()
+                        | DisplayInfo.DisplayInfoGroup.STATE.getMask());
     }
 
     private void setSupportedModes(DisplayInfo info, Display.Mode[] modes, int modeId) {
