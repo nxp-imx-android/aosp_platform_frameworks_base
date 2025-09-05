@@ -60,3 +60,10 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "enable_vis_assist_structure_ui_hint"
+    namespace: "sysui_integrations"
+    description: "This flags a feature for enabling or disabling AssistStructure fetching through setUiHints"
+    bug: "420404310"
+}

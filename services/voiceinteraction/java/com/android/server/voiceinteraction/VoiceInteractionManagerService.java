@@ -2341,6 +2341,10 @@ public class VoiceInteractionManagerService extends SystemService {
             synchronized (this) {
                 enforceIsCurrentVoiceInteractionService();
 
+                final boolean enableAssistStructure = hints.getBoolean("enable_assist_structure");
+                if (mImpl != null) {
+                    mImpl.setEnableAssistStructure(enableAssistStructure);
+                }
                 final int size = mVoiceInteractionSessionListeners.beginBroadcast();
                 for (int i = 0; i < size; ++i) {
                     final IVoiceInteractionSessionListener listener =
