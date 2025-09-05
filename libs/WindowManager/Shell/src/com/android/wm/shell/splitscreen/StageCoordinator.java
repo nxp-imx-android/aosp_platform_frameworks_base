@@ -38,7 +38,6 @@ import static android.window.WindowContainerTransaction.HierarchyOp.HIERARCHY_OP
 import static com.android.window.flags.Flags.enableFullScreenWindowOnRemovingSplitScreenStageBugfix;
 import static com.android.window.flags.Flags.enableMultiDisplaySplit;
 import static com.android.window.flags.Flags.enableNonDefaultDisplaySplit;
-import static com.android.wm.shell.Flags.enableEnterSplitRemoveBubble;
 import static com.android.wm.shell.Flags.enableFlexibleSplit;
 import static com.android.wm.shell.Flags.enableFlexibleTwoAppSplit;
 import static com.android.wm.shell.Flags.splitDisableChildTaskBounds;
@@ -2237,16 +2236,14 @@ public class StageCoordinator extends StageCoordinatorAbstract {
         // TODO (b/336477473): Disallow enter PiP when launching a task in split by default;
         //                     this might have to be changed as more split-to-pip cujs are defined.
         options.setDisallowEnterPictureInPictureWhileLaunching(true);
-        if (enableEnterSplitRemoveBubble()) {
-            mBubbleController.ifPresent(bc -> {
-                if (bc.hasBubbles()) {
-                    // Bubbles are present. Set an empty rect for the launch bounds in case we
-                    // are launching an existing bubble task to split. Bubbles sets bounds on the
-                    // task level and we need to clear them before a task can enter split screen.
-                    options.setLaunchBounds(new Rect());
-                }
-            });
-        }
+        mBubbleController.ifPresent(bc -> {
+            if (bc.hasBubbles()) {
+                // Bubbles are present. Set an empty rect for the launch bounds in case we
+                // are launching an existing bubble task to split. Bubbles sets bounds on the
+                // task level and we need to clear them before a task can enter split screen.
+                options.setLaunchBounds(new Rect());
+            }
+        });
 
         opts.putAll(options.toBundle());
     }
