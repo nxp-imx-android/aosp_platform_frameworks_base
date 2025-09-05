@@ -198,7 +198,8 @@ public class CompanionDeviceManagerService extends SystemService {
                 packageManagerInternal, mAssociationStore,
                 mSystemDataTransferRequestStore, mTransportManager);
 
-        mDataSyncProcessor = new DataSyncProcessor(mAssociationStore, mLocalMetadataStore);
+        mDataSyncProcessor = new DataSyncProcessor(mAssociationStore, mLocalMetadataStore,
+                mTransportManager);
 
         // TODO(b/279663946): move context sync to a dedicated system service
         mCrossDeviceSyncController = new CrossDeviceSyncController(getContext(), mTransportManager);
@@ -399,6 +400,14 @@ public class CompanionDeviceManagerService extends SystemService {
             removeOnTransportsChangedListener_enforcePermission();
 
             mTransportManager.removeListener(listener);
+        }
+
+        @Override
+        @EnforcePermission(USE_COMPANION_TRANSPORTS)
+        public List<AssociationInfo> getAllAssociationsWithTransports() {
+            getAllAssociationsWithTransports_enforcePermission();
+
+            return mTransportManager.getAssociationsWithTransport();
         }
 
         @Override
@@ -798,7 +807,7 @@ public class CompanionDeviceManagerService extends SystemService {
             return new CompanionDeviceShellCommand(CompanionDeviceManagerService.this,
                     mAssociationStore, mDevicePresenceProcessor, mTransportManager,
                     mSystemDataTransferProcessor, mAssociationRequestsProcessor,
-                    mBackupRestoreProcessor, mDisassociationProcessor)
+                    mBackupRestoreProcessor, mDisassociationProcessor, mDataSyncProcessor)
                     .exec(this, in.getFileDescriptor(), out.getFileDescriptor(),
                             err.getFileDescriptor(), args);
         }

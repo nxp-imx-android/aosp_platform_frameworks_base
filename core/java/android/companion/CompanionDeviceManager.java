@@ -313,6 +313,14 @@ public final class CompanionDeviceManager {
      */
     public static final int MESSAGE_REQUEST_PERMISSION_RESTORE = 0x63826983; // ?RES
     /**
+     * Message header assigned to local metadata update broadcast message.
+     * CDM will automatically broadcast the metadata update to paired devices. This symbol serves
+     * as a reference to prevent message type conflicts and should not be used by external services.
+     *
+     * @hide
+     */
+    public static final int MESSAGE_REQUEST_METADATA_UPDATE = 0x63776885; // ?MDU
+    /**
      * Message header assigned to the one-way message sent from the wearable device.
      *
      * @hide
@@ -1137,6 +1145,26 @@ public final class CompanionDeviceManager {
                     iterator.remove();
                 }
             }
+        }
+    }
+
+    /**
+     * Returns the list of all associations with transports that are currently attached.
+     *
+     * @return the list of associations
+     * @hide
+     */
+    @RequiresPermission(android.Manifest.permission.USE_COMPANION_TRANSPORTS)
+    public List<AssociationInfo> getAllAssociationsWithTransports() {
+        if (mService == null) {
+            Log.w(TAG, "CompanionDeviceManager service is not available.");
+            return Collections.emptyList();
+        }
+
+        try {
+            return mService.getAllAssociationsWithTransports();
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
         }
     }
 

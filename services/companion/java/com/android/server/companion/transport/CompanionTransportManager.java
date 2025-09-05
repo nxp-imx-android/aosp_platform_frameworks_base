@@ -193,16 +193,20 @@ public class CompanionTransportManager {
     /**
      * Send a message to remote devices through the transports
      */
-    public void sendMessage(int message, byte[] data, int[] associationIds) {
+    public SparseArray<Future<byte[]>> sendMessage(int message, byte[] data, int[] associationIds) {
         Slog.d(TAG, "Sending message 0x" + Integer.toHexString(message)
                 + " data length " + data.length);
+        SparseArray<Future<byte[]>> futures = new SparseArray<>();
         synchronized (mTransports) {
             for (int i = 0; i < associationIds.length; i++) {
-                if (mTransports.contains(associationIds[i])) {
-                    mTransports.get(associationIds[i]).sendMessage(message, data);
+                int associationId = associationIds[i];
+                if (mTransports.contains(associationId)) {
+                    futures.put(associationId,
+                            mTransports.get(associationId).sendMessage(message, data));
                 }
             }
         }
+        return futures;
     }
 
     /**
@@ -249,7 +253,11 @@ public class CompanionTransportManager {
         Slog.i(TAG, "Transport detached.");
     }
 
-    private List<AssociationInfo> getAssociationsWithTransport() {
+    /**
+     * Returns a list of associations that has a transport attached.
+     * @return a list of associations
+     */
+    public List<AssociationInfo> getAssociationsWithTransport() {
         List<AssociationInfo> associations = new ArrayList<>();
         synchronized (mTransports) {
             for (int i = 0; i < mTransports.size(); i++) {
