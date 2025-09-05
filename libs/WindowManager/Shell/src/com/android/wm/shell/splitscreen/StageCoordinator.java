@@ -150,7 +150,6 @@ import com.android.wm.shell.RootTaskDisplayAreaOrganizer;
 import com.android.wm.shell.ShellTaskOrganizer;
 import com.android.wm.shell.bubbles.BubbleController;
 import com.android.wm.shell.common.ComponentUtils;
-import com.android.wm.shell.common.DisplayChangeController;
 import com.android.wm.shell.common.DisplayController;
 import com.android.wm.shell.common.DisplayImeController;
 import com.android.wm.shell.common.DisplayInsetsController;
@@ -208,11 +207,7 @@ import java.util.function.Predicate;
  * visible
  * - Both stages are put under a single-top root task.
  */
-public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
-        DisplayController.OnDisplaysChangedListener,
-        DisplayChangeController.OnDisplayChangingListener, Transitions.TransitionHandler,
-        ShellTaskOrganizer.TaskListener, StageTaskListener.StageListenerCallbacks,
-        SplitMultiDisplayProvider {
+public class StageCoordinator extends StageCoordinatorAbstract {
 
     private static final String TAG = StageCoordinator.class.getSimpleName();
 
@@ -278,8 +273,7 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
     private boolean mSkipEvictingMainStageChildren;
     private boolean mIsExiting;
     private boolean mIsRootTranslucent;
-    @VisibleForTesting
-    @StageType int mLastActiveStage;
+    private @StageType int mLastActiveStage;
     private boolean mBreakOnNextWake;
     /** Used to get the Settings value for "Continue using apps on fold". */
     private FoldLockSettingsObserver mFoldLockSettingsObserver;
@@ -295,8 +289,7 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
     // because we will be posting and removing it from the handler.
     private final Runnable mReEnableLaunchAdjacentOnRoot = () -> setLaunchAdjacentDisabled(false);
 
-    @VisibleForTesting
-    SplitMultiDisplayHelper mSplitMultiDisplayHelper;
+    private SplitMultiDisplayHelper mSplitMultiDisplayHelper;
     private final SplitTransitionModifier mSplitTransitionModifier;
 
 
@@ -4730,7 +4723,7 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
                 isLeftRightSplit());
     }
 
-    private void handleUnsupportedSplitStart() {
+    void handleUnsupportedSplitStart() {
         mSplitUnsupportedToast.show();
         notifySplitAnimationStatus(false /*animationRunning*/);
     }
@@ -4741,6 +4734,21 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
         }
         mSplitInvocationListenerExecutor.execute(() ->
                 mSplitInvocationListener.onSplitAnimationInvoked(animationRunning));
+    }
+
+    @Override
+    SplitMultiDisplayHelper getSplitMultiDisplayHelper() {
+        return mSplitMultiDisplayHelper;
+    }
+
+    @Override
+    void setSplitMultiDisplayHelper(SplitMultiDisplayHelper splitMultiDisplayHelper) {
+        mSplitMultiDisplayHelper = splitMultiDisplayHelper;
+    }
+
+    @Override
+    int getLastActiveStage() {
+        return mLastActiveStage;
     }
 
     /**

@@ -440,7 +440,7 @@ public class StageCoordinatorTests extends ShellTestCase {
 
         mStageCoordinator.onFoldedStateChanged(true);
 
-        assertEquals(mStageCoordinator.mLastActiveStage, STAGE_TYPE_MAIN);
+        assertEquals(mStageCoordinator.getLastActiveStage(), STAGE_TYPE_MAIN);
 
         mStageCoordinator.onStartedWakingUp();
 
@@ -681,7 +681,7 @@ public class StageCoordinatorTests extends ShellTestCase {
     @EnableFlags(com.android.window.flags.Flags.FLAG_ENABLE_MULTI_DISPLAY_SPLIT)
     public void moveSplitScreenRoot_whenFlagEnabled_doesNothing() {
         SplitMultiDisplayHelper mockHelper = mock(SplitMultiDisplayHelper.class);
-        mStageCoordinator.mSplitMultiDisplayHelper = mockHelper;
+        mStageCoordinator.setSplitMultiDisplayHelper(mockHelper);
 
         mStageCoordinator.prepareMovingSplitScreenRoot(mWct, DEFAULT_DISPLAY + 1);
 
@@ -694,7 +694,7 @@ public class StageCoordinatorTests extends ShellTestCase {
     @DisableFlags(com.android.window.flags.Flags.FLAG_ENABLE_MULTI_DISPLAY_SPLIT)
     public void moveSplitScreenRoot_whenRootNotFound_throwsException() {
         SplitMultiDisplayHelper mockHelper = mock(SplitMultiDisplayHelper.class);
-        mStageCoordinator.mSplitMultiDisplayHelper = mockHelper;
+        mStageCoordinator.setSplitMultiDisplayHelper(mockHelper);
         when(mockHelper.getCachedOrSystemDisplayIds()).thenReturn(
                 new ArrayList<>(List.of(DEFAULT_DISPLAY)));
         when(mockHelper.getDisplayRootTaskInfo(anyInt())).thenReturn(null);
@@ -706,7 +706,7 @@ public class StageCoordinatorTests extends ShellTestCase {
     @DisableFlags(com.android.window.flags.Flags.FLAG_ENABLE_MULTI_DISPLAY_SPLIT)
     public void moveSplitScreenRoot_whenTargetIsSameDisplay_doesNothing() {
         SplitMultiDisplayHelper mockHelper = mock(SplitMultiDisplayHelper.class);
-        mStageCoordinator.mSplitMultiDisplayHelper = mockHelper;
+        mStageCoordinator.setSplitMultiDisplayHelper(mockHelper);
         final int targetDisplayId = DEFAULT_DISPLAY;
         ActivityManager.RunningTaskInfo currentRootTaskInfo = new TestRunningTaskInfoBuilder()
                 .setDisplayId(targetDisplayId)
@@ -725,7 +725,7 @@ public class StageCoordinatorTests extends ShellTestCase {
     @DisableFlags(com.android.window.flags.Flags.FLAG_ENABLE_MULTI_DISPLAY_SPLIT)
     public void moveSplitScreenRoot_whenTargetIsDifferentDisplay_reparentsRoot() {
         SplitMultiDisplayHelper mockHelper = mock(SplitMultiDisplayHelper.class);
-        mStageCoordinator.mSplitMultiDisplayHelper = mockHelper;
+        mStageCoordinator.setSplitMultiDisplayHelper(mockHelper);
         final int currentDisplayId = DEFAULT_DISPLAY;
         final int targetDisplayId = DEFAULT_DISPLAY + 1;
 
@@ -756,7 +756,7 @@ public class StageCoordinatorTests extends ShellTestCase {
     @DisableFlags(com.android.window.flags.Flags.FLAG_ENABLE_MULTI_DISPLAY_SPLIT)
     public void moveSplitScreenRoot_whenTargetDisplayAreaNotFound_doesNothing() {
         SplitMultiDisplayHelper mockHelper = mock(SplitMultiDisplayHelper.class);
-        mStageCoordinator.mSplitMultiDisplayHelper = mockHelper;
+        mStageCoordinator.setSplitMultiDisplayHelper(mockHelper);
 
         final int currentDisplayId = DEFAULT_DISPLAY;
         final int targetDisplayId = DEFAULT_DISPLAY + 1;
