@@ -44452,6 +44452,8 @@ package android.telephony {
     field public static final String KEY_IS_IMS_CONFERENCE_SIZE_ENFORCED_BOOL = "is_ims_conference_size_enforced_bool";
     field public static final String KEY_IS_OPPORTUNISTIC_SUBSCRIPTION_BOOL = "is_opportunistic_subscription_bool";
     field @FlaggedApi("com.android.internal.telephony.flags.log_calls_answered_elsewhere") public static final String KEY_LOG_CALLS_ANSWERED_ELSEWHERE_BOOL = "log_calls_answered_elsewhere_bool";
+    field @FlaggedApi("com.android.internal.telephony.flags.support_low_battery_alert") public static final String KEY_LOW_BATTERY_ALERT_INTERVAL_INT = "low_battery_alert_interval_int";
+    field @FlaggedApi("com.android.internal.telephony.flags.support_low_battery_alert") public static final String KEY_LOW_BATTERY_ALERT_THRESHOLD_INT = "low_battery_alert_threshold_int";
     field public static final String KEY_LTE_ENABLED_BOOL = "lte_enabled_bool";
     field public static final String KEY_LTE_RSRQ_THRESHOLDS_INT_ARRAY = "lte_rsrq_thresholds_int_array";
     field public static final String KEY_LTE_RSSNR_THRESHOLDS_INT_ARRAY = "lte_rssnr_thresholds_int_array";
@@ -44631,6 +44633,7 @@ package android.telephony {
     field public static final String KEY_WFC_EMERGENCY_ADDRESS_CARRIER_APP_STRING = "wfc_emergency_address_carrier_app_string";
     field public static final String KEY_WORLD_MODE_ENABLED_BOOL = "world_mode_enabled_bool";
     field public static final String KEY_WORLD_PHONE_BOOL = "world_phone_bool";
+    field @FlaggedApi("com.android.internal.telephony.flags.support_low_battery_alert") public static final int LOW_BATTERY_ALERT_DISABLED = -1; // 0xffffffff
     field public static final String REMOVE_GROUP_UUID_STRING = "00000000-0000-0000-0000-000000000000";
     field @FlaggedApi("com.android.internal.telephony.flags.satellite_system_apis") public static final int SATELLITE_DATA_SUPPORT_ALL = 2; // 0x2
     field @FlaggedApi("com.android.internal.telephony.flags.satellite_system_apis") public static final int SATELLITE_DATA_SUPPORT_BANDWIDTH_CONSTRAINED = 1; // 0x1

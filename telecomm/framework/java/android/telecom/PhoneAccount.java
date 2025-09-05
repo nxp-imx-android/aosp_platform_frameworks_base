@@ -215,6 +215,32 @@ public final class PhoneAccount implements Parcelable {
             "android.telecom.extra.ADD_SELF_MANAGED_CALLS_TO_INCALLSERVICE";
 
     /**
+     * {@link PhoneAccount} extras key (see {@link #getExtras()}) which determines the battery level
+     * threshold at which a low battery alert should be played.
+     * If this extra is not set, low battery alerting will not be enabled for calls on this
+     * {@link PhoneAccount}
+     *
+     * @hide
+     */
+    @SystemApi
+    @FlaggedApi(Flags.FLAG_SUPPORT_LOW_BATTERY_ALERT)
+    public static final String EXTRA_LOW_BATTERY_ALERT_LEVEL_THRESHOLD =
+            "android.telecom.extra.LOW_BATTERY_ALERT_LEVEL_THRESHOLD";
+
+    /**
+     * {@link PhoneAccount} extras key (see {@link #getExtras()}) which determines the interval in
+     * seconds at which a low battery alert should be played during a voice call.
+     * If this extra is not set, low battery alerting will not be enabled for calls on this
+     * {@link PhoneAccount}
+     *
+     * @hide
+     */
+    @SystemApi
+    @FlaggedApi(Flags.FLAG_SUPPORT_LOW_BATTERY_ALERT)
+    public static final String EXTRA_LOW_BATTERY_ALERT_INTERVAL_SECONDS =
+            "android.telecom.extra.LOW_BATTERY_ALERT_INTERVAL_SECONDS";
+
+    /**
      * Flag indicating that this {@code PhoneAccount} can act as a connection manager for
      * other connections. The {@link ConnectionService} associated with this {@code PhoneAccount}
      * will be allowed to manage phone calls including using its own proprietary phone-call
