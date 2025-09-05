@@ -24,8 +24,6 @@ import android.platform.test.flag.junit.DeviceFlagsValueProvider
 import android.platform.test.flag.junit.FlagsParameterization
 import androidx.test.filters.SmallTest
 import com.android.settingslib.graph.SignalDrawable
-import com.android.systemui.Flags as AconfigFlags
-import com.android.systemui.Flags.FLAG_QS_SPLIT_INTERNET_TILE
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.common.shared.model.ContentDescription
 import com.android.systemui.common.shared.model.Icon
@@ -38,6 +36,7 @@ import com.android.systemui.kosmos.runCurrent
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.log.table.logcatTableLogBuffer
+import com.android.systemui.qs.flags.QsSplitInternetTile
 import com.android.systemui.qs.pipeline.shared.pipelineFlagsRepository
 import com.android.systemui.qs.tiles.impl.cell.domain.model.MobileDataTileIcon
 import com.android.systemui.qs.tiles.impl.cell.domain.model.MobileDataTileModel
@@ -185,20 +184,20 @@ class MobileDataTileDataInteractorTest(flags: FlagsParameterization) : SysuiTest
         }
 
     @Test
-    @RequiresFlagsEnabled(FLAG_QS_SPLIT_INTERNET_TILE)
+    @RequiresFlagsEnabled(QsSplitInternetTile.FLAG_NAME)
     fun availability_flagEnabled_isTrue() =
         kosmos.runTest {
-            assertThat(AconfigFlags.qsSplitInternetTile()).isTrue()
+            assertThat(QsSplitInternetTile.isEnabled).isTrue()
 
             val availability by collectLastValue(underTest.availability(USER))
             assertThat(availability).isTrue()
         }
 
     @Test
-    @RequiresFlagsDisabled(FLAG_QS_SPLIT_INTERNET_TILE)
+    @RequiresFlagsDisabled(QsSplitInternetTile.FLAG_NAME)
     fun availability_flagDisabled_isFalse() =
         kosmos.runTest {
-            assertThat(AconfigFlags.qsSplitInternetTile()).isFalse()
+            assertThat(QsSplitInternetTile.isEnabled).isFalse()
             val availability by collectLastValue(underTest.availability(USER))
             assertThat(availability).isFalse()
         }
