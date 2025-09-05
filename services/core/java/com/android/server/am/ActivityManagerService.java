@@ -15628,6 +15628,9 @@ public class ActivityManagerService extends IActivityManager.Stub
                 mLocalPowerManager.updateUidProcState(uid, procState);
             }
         }
+        if (mAppLockLocalService != null) {
+            mAppLockLocalService.handleUidChangeLocked(uidRec, uid, enqueuedChange, procState);
+        }
     }
 
     @GuardedBy(anyOf = {"this", "mProcLock"})

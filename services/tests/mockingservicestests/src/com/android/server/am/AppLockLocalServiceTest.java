@@ -40,12 +40,15 @@ import android.content.pm.IPackageManager;
 import android.content.pm.PackageManagerInternal;
 import android.os.Handler;
 import android.os.Looper;
+import android.os.Message;
 import android.os.Process;
 import android.os.RemoteException;
+import android.os.UserHandle;
 import android.permission.IPermissionManager;
 import android.platform.test.annotations.Presubmit;
 import android.util.SparseArray;
 
+import androidx.annotation.Nullable;
 import androidx.test.filters.SmallTest;
 import androidx.test.runner.AndroidJUnit4;
 
@@ -65,7 +68,9 @@ import org.mockito.MockitoAnnotations;
 import org.mockito.MockitoSession;
 import org.mockito.quality.Strictness;
 
+import java.util.ArrayDeque;
 import java.util.List;
+import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -98,7 +103,9 @@ public class AppLockLocalServiceTest {
     public final ApplicationExitInfoTest.ServiceThreadRule mServiceThreadRule =
             new ApplicationExitInfoTest.ServiceThreadRule();
     private final Context mContext = getInstrumentation().getTargetContext();
+    private final TestPackageLockedStateListener mListener = new TestPackageLockedStateListener();
     private AppLockLocalService mAppLockLocalService;
+    private TestHandler mTestHandler;
     private ActivityManagerService mAms;
     private MockitoSession mMockingSession;
     private AutoCloseable mCloseable;
@@ -125,8 +132,8 @@ public class AppLockLocalServiceTest {
 
     @Before
     public void setUp() throws Exception {
-        mMockingSession = mockitoSession().initMocks(this).mockStatic(AppGlobals.class).strictness(
-                Strictness.LENIENT).startMocking();
+        mMockingSession = mockitoSession().initMocks(this).mockStatic(AppGlobals.class).mockStatic(
+                UserHandle.class).strictness(Strictness.LENIENT).startMocking();
         mCloseable = MockitoAnnotations.openMocks(this);
 
         // Add Local Services
@@ -137,19 +144,27 @@ public class AppLockLocalServiceTest {
         when(AppGlobals.getPermissionManager()).thenReturn(mPermissionManager);
         when(AppGlobals.getPackageManager()).thenReturn(mPackageManager);
         when(mPackageManager.getPackagesForUid(eq(Process.myUid()))).thenReturn(new String[]{""});
+        when(UserHandle.getUserId(eq(TEST_UID))).thenReturn(TEST_USER_ID);
 
         // Set up ActivityManagerService
-        TestInjector injector = new TestInjector(mContext);
+        TestActivityManagerServiceInjector amsInjector = new TestActivityManagerServiceInjector(
+                mContext);
+        mTestHandler = new TestHandler(mServiceThreadRule.getThread().getLooper());
         when(mUserController.isUserOrItsParentRunning(anyInt())).thenReturn(true);
-        mAms = new ActivityManagerService(injector, mServiceThreadRule.getThread(),
+        mAms = new ActivityManagerService(amsInjector, mServiceThreadRule.getThread(),
                 mUserController);
         mAms.mActivityTaskManager = new ActivityTaskManagerService(mContext);
         mAms.mAtmInternal = mActivityTaskManagerInternal;
         mAms.mPackageManagerInt = mPackageManagerInternal;
+        when(mPackageManagerInternal.getPackageUid(eq(TEST_PACKAGE), anyLong(),
+                eq(TEST_USER_ID))).thenReturn(TEST_UID);
+        when(mPackageManagerInternal.getSystemUiServiceComponent()).thenReturn(TEST_COMPONENT);
 
         // Set up AppLockLocalService
-        mAppLockLocalService = new AppLockLocalService(mAms);
+        TestInjector injector = new TestInjector();
+        mAppLockLocalService = new AppLockLocalService(mAms, injector);
         LocalServices.addService(AppLockInternal.class, mAppLockLocalService);
+        mAppLockLocalService.registerPackageLockedStateListener(mListener);
 
         when(mActivityAssistInfo.getUserId()).thenReturn(TEST_USER_ID);
         when(mActivityAssistInfo.getComponentName()).thenReturn(TEST_COMPONENT);
@@ -326,16 +341,158 @@ public class AppLockLocalServiceTest {
                 eq(TEST_USER_ID))).thenReturn(true);
 
         when(mActivityTaskManagerInternal.getTopVisibleActivities()).thenReturn(List.of());
-        when(mPackageManagerInternal.getPackageUid(eq(TEST_PACKAGE), anyLong(),
-                eq(TEST_USER_ID))).thenReturn(TEST_UID);
-        when(mPackageManagerInternal.getSystemUiServiceComponent()).thenReturn(TEST_COMPONENT);
 
         setupProcessAndUidRecord(PROCESS_STATE_TOP);
 
         assertThat(mAppLockLocalService.isPackageLocked(TEST_PACKAGE, TEST_USER_ID)).isFalse();
     }
 
-    private void setupProcessAndUidRecord(int processState) {
+    @Test
+    public void isPackageLocked_lockJobQueued_false() throws Exception {
+        when(mPackageManager.isPackageAppLockEnabled(eq(TEST_PACKAGE),
+                eq(TEST_USER_ID))).thenReturn(true);
+
+        when(mActivityTaskManagerInternal.getTopVisibleActivities()).thenReturn(List.of());
+        setupProcessAndUidRecord(PROCESS_STATE_IMPORTANT_BACKGROUND);
+
+        mAppLockLocalService.handleLockedStateLocked(TEST_PACKAGE, TEST_USER_ID);
+
+        assertThat(mAppLockLocalService.isPackageLocked(TEST_PACKAGE, TEST_USER_ID)).isFalse();
+    }
+
+    @Test
+    public void setAppLockEnabledPackageSuccessfullyAuthenticated_listenersNotified()
+            throws Exception {
+        when(mPackageManager.isPackageAppLockEnabled(eq(TEST_PACKAGE),
+                eq(TEST_USER_ID))).thenReturn(true);
+
+        mAppLockLocalService.setAppLockEnabledPackageSuccessfullyAuthenticated(TEST_PACKAGE,
+                TEST_USER_ID);
+        mTestHandler.executeRunnables();
+
+        assertThat(mListener.mLocked).isFalse();
+        assertThat(mListener.mPackageName).isEqualTo(TEST_PACKAGE);
+        assertThat(mListener.mUserId).isEqualTo(TEST_USER_ID);
+        assertThat(mAppLockLocalService.packageHasQueuedAppLockedJob(TEST_USER_ID,
+                TEST_PACKAGE)).isFalse();
+    }
+
+    @Test
+    public void handleUidChangeLocked_enqueuedChangedNotProcessRelevant_noUpdate()
+            throws Exception {
+        when(mPackageManager.isPackageAppLockEnabled(eq(TEST_PACKAGE),
+                eq(TEST_USER_ID))).thenReturn(true);
+
+        when(mActivityTaskManagerInternal.getTopVisibleActivities()).thenReturn(List.of());
+        UidRecord record = setupProcessAndUidRecord(PROCESS_STATE_TOP);
+
+        mAppLockLocalService.handleUidChangeLocked(record, TEST_UID, 0, 0);
+
+        assertThat(mListener.hasDefaultValues()).isTrue();
+        assertThat(mAppLockLocalService.packageHasQueuedAppLockedJob(TEST_USER_ID,
+                TEST_PACKAGE)).isFalse();
+    }
+
+    @Test
+    public void handleUidChangeLocked_noPackagesWithAppLockEnabled_noUpdate() throws Exception {
+        when(mPackageManager.isPackageAppLockEnabled(eq(TEST_PACKAGE),
+                eq(TEST_USER_ID))).thenReturn(false);
+
+        when(mActivityTaskManagerInternal.getTopVisibleActivities()).thenReturn(List.of());
+
+        UidRecord record = setupProcessAndUidRecord(PROCESS_STATE_TOP);
+
+        mAppLockLocalService.handleUidChangeLocked(record, TEST_UID, UidRecord.CHANGE_PROCSTATE,
+                PROCESS_STATE_IMPORTANT_BACKGROUND);
+
+        assertThat(mListener.hasDefaultValues()).isTrue();
+        assertThat(mAppLockLocalService.packageHasQueuedAppLockedJob(TEST_USER_ID,
+                TEST_PACKAGE)).isFalse();
+    }
+
+    @Test
+    public void handleUidChangeLocked_packageNewlyLocked_lockJobQueued() throws Exception {
+        when(mPackageManager.isPackageAppLockEnabled(eq(TEST_PACKAGE),
+                eq(TEST_USER_ID))).thenReturn(true);
+        mAppLockLocalService.handleUnlockedStateLocked(TEST_PACKAGE, TEST_USER_ID);
+        CountDownLatch latch = new CountDownLatch(1);
+        latch.await(500, TimeUnit.MILLISECONDS);
+        UidRecord record = setupProcessAndUidRecord(PROCESS_STATE_IMPORTANT_BACKGROUND);
+        when(mActivityTaskManagerInternal.getTopVisibleActivities()).thenReturn(List.of());
+
+        mAppLockLocalService.handleUidChangeLocked(record, TEST_UID, UidRecord.CHANGE_PROCSTATE,
+                PROCESS_STATE_IMPORTANT_BACKGROUND);
+
+        assertThat(mListener.hasDefaultValues()).isTrue(); // Hasn't been sent yet
+        assertThat(mAppLockLocalService.packageHasQueuedAppLockedJob(TEST_USER_ID,
+                TEST_PACKAGE)).isTrue();
+    }
+
+    @Test
+    public void handleUidChangeLocked_packageGoesToBackThenFrontInGracePeriod_lockedJobCanceled()
+            throws Exception {
+        when(mPackageManager.isPackageAppLockEnabled(eq(TEST_PACKAGE),
+                eq(TEST_USER_ID))).thenReturn(true);
+        mAppLockLocalService.handleUnlockedStateLocked(TEST_PACKAGE, TEST_USER_ID);
+        CountDownLatch latch = new CountDownLatch(1);
+        latch.await(500, TimeUnit.MILLISECONDS);
+        UidRecord record = setupProcessAndUidRecord(PROCESS_STATE_IMPORTANT_BACKGROUND);
+        when(mActivityTaskManagerInternal.getTopVisibleActivities()).thenReturn(List.of());
+
+        mAppLockLocalService.handleUidChangeLocked(record, TEST_UID, UidRecord.CHANGE_PROCSTATE,
+                PROCESS_STATE_IMPORTANT_BACKGROUND);
+        latch.await(500, TimeUnit.MILLISECONDS);
+        UidRecord record2 = setupProcessAndUidRecord(PROCESS_STATE_IMPORTANT_BACKGROUND);
+
+        assertThat(mListener.hasDefaultValues()).isTrue(); // Never got sent to listener
+        mAppLockLocalService.handleUidChangeLocked(record2, TEST_UID, UidRecord.CHANGE_PROCSTATE,
+                PROCESS_STATE_TOP);
+    }
+
+    @Test
+    public void handleUidChangeLocked_packageNewlyUnlocked_listenerReceivedUnlockedUpdate()
+            throws Exception {
+        mAppLockLocalService.setAppLockEnabledPackageSuccessfullyAuthenticated(TEST_PACKAGE,
+                TEST_USER_ID);
+        when(mPackageManager.isPackageAppLockEnabled(eq(TEST_PACKAGE),
+                eq(TEST_USER_ID))).thenReturn(true);
+        UidRecord record = setupProcessAndUidRecord(PROCESS_STATE_IMPORTANT_BACKGROUND);
+
+        mAppLockLocalService.handleUidChangeLocked(record, TEST_UID, UidRecord.CHANGE_PROCSTATE,
+                PROCESS_STATE_TOP);
+        mTestHandler.executeRunnables();
+
+        assertThat(mListener.mLocked).isFalse();
+        assertThat(mListener.mPackageName).isEqualTo(TEST_PACKAGE);
+        assertThat(mListener.mUserId).isEqualTo(TEST_USER_ID);
+        assertThat(mAppLockLocalService.packageHasQueuedAppLockedJob(TEST_USER_ID,
+                TEST_PACKAGE)).isFalse();
+    }
+
+    @Test
+    public void handleUidChangeLocked_packageMovesToBackground_listenerReceivedLockedUpdateDelayed()
+            throws Exception {
+        when(mPackageManager.isPackageAppLockEnabled(eq(TEST_PACKAGE),
+                eq(TEST_USER_ID))).thenReturn(true);
+        mAppLockLocalService.handleUnlockedStateLocked(TEST_PACKAGE, TEST_USER_ID);
+        CountDownLatch latch = new CountDownLatch(1);
+        latch.await(500, TimeUnit.MILLISECONDS);
+        UidRecord record = setupProcessAndUidRecord(PROCESS_STATE_IMPORTANT_BACKGROUND);
+        when(mActivityTaskManagerInternal.getTopVisibleActivities()).thenReturn(List.of());
+
+        mAppLockLocalService.handleUidChangeLocked(record, TEST_UID, UidRecord.CHANGE_PROCSTATE,
+                PROCESS_STATE_IMPORTANT_BACKGROUND);
+        latch.await(5500, TimeUnit.MILLISECONDS);
+        mTestHandler.executeRunnables();
+
+        assertThat(mListener.mLocked).isTrue();
+        assertThat(mListener.mPackageName).isEqualTo(TEST_PACKAGE);
+        assertThat(mListener.mUserId).isEqualTo(TEST_USER_ID);
+        assertThat(mAppLockLocalService.packageHasQueuedAppLockedJob(TEST_USER_ID,
+                TEST_PACKAGE)).isFalse();
+    }
+
+    private UidRecord setupProcessAndUidRecord(int processState) {
         ApplicationInfo info = new ApplicationInfo();
         info.packageName = TEST_PACKAGE;
         info.processName = TEST_PACKAGE;
@@ -347,10 +504,60 @@ public class AppLockLocalServiceTest {
         record.addProcess(appRec);
         mAms.mProcessList.addProcessNameLocked(appRec);
         mAms.mProcessList.mActiveUids.put(TEST_UID, record);
+
+        return record;
     }
 
-    private class TestInjector extends ActivityManagerService.Injector {
-        TestInjector(Context context) {
+    private static class TestHandler extends Handler {
+        private final Queue<Runnable> mQueue = new ArrayDeque<>();
+
+        TestHandler(Looper looper) {
+            super(looper);
+        }
+
+        @Override
+        public boolean sendMessageAtTime(Message msg, long uptimeMillis) {
+            mQueue.add(msg.getCallback());
+            return true;
+        }
+
+        void executeRunnables() throws Exception {
+            CountDownLatch latch = new CountDownLatch(1);
+            while (!mQueue.isEmpty()) {
+                mQueue.poll().run();
+            }
+            latch.await(500, TimeUnit.MILLISECONDS);
+        }
+    }
+
+    private static class TestPackageLockedStateListener implements
+            AppLockInternal.PackageLockedStateListener {
+        @Nullable
+        Boolean mLocked = null;
+        String mPackageName = "";
+        int mUserId = -1;
+
+        @Override
+        public void onPackageLockedStateChanged(String packageName, int userId, boolean locked) {
+            this.mPackageName = packageName;
+            this.mUserId = userId;
+            this.mLocked = locked;
+        }
+
+        boolean hasDefaultValues() {
+            return (mLocked == null) && mPackageName.isEmpty() && mUserId == -1;
+        }
+    }
+
+    private class TestInjector implements AppLockLocalService.Injector {
+        @Override
+        public Handler getHandler() {
+            return mTestHandler;
+        }
+    }
+
+    private class TestActivityManagerServiceInjector extends ActivityManagerService.Injector {
+        TestActivityManagerServiceInjector(Context context) {
             super(context);
         }
 
@@ -361,7 +568,7 @@ public class AppLockLocalServiceTest {
 
         @Override
         public Handler getUiHandler(ActivityManagerService service) {
-            return new Handler(Looper.getMainLooper());
+            return mTestHandler;
         }
     }
 }
