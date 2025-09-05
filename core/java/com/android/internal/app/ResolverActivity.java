@@ -159,6 +159,7 @@ public class ResolverActivity extends Activity implements
     private Button mOnceButton;
     protected View mProfileView;
     private int mLastSelected = AbsListView.INVALID_POSITION;
+    @Nullable private View mLastSelectedItemView;
     private boolean mResolvingHome = false;
     private String mProfileSwitchMessage;
     private int mLayoutId;
@@ -2199,6 +2200,7 @@ public class ResolverActivity extends Activity implements
             return;
         }
         mLastSelected = ListView.INVALID_POSITION;
+        mLastSelectedItemView = null;
         ListView inactiveListView = (ListView) mMultiProfilePagerAdapter.getInactiveAdapterView();
         if (inactiveListView.getCheckedItemCount() > 0) {
             inactiveListView.setItemChecked(inactiveListView.getCheckedItemPosition(), false);
@@ -2582,6 +2584,12 @@ public class ResolverActivity extends Activity implements
                     mOnceButton.requestFocus();
                 }
                 mLastSelected = checkedPos;
+                if (mLastSelectedItemView != null) {
+                    mLastSelectedItemView.setStateDescription(null);
+                }
+                mLastSelectedItemView = view;
+                mLastSelectedItemView.setStateDescription(
+                        getString(com.android.internal.R.string.selected));
             } else {
                 startSelected(position, false, true);
             }
