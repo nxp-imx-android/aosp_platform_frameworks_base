@@ -42,7 +42,7 @@ class PolicyProcessorTest {
 
         const val OTHER_CLASS_JAVA = "$RESOURCE_ROOT/OtherClass.java"
         const val POLICY_IDENTIFIER_INVALID_TYPE_JAVA = "$RESOURCE_ROOT/invalidtype/PolicyIdentifier.java"
-        const val POLICY_IDENTIFIER_MISSING_METADATA_JAVA = "$RESOURCE_ROOT/missingmetadata/PolicyIdentifier.java"
+        const val POLICY_IDENTIFIER_DIRECT_DEFINITION_JAVA = "$RESOURCE_ROOT/directPolicyDefinition/PolicyIdentifier.java"
 
         /**
          * Comes from the actual IntDef.java in the source, located in a different folder.
@@ -102,12 +102,12 @@ class PolicyProcessorTest {
     }
 
     @Test
-    fun test_missingMetadata_failsToCompile() {
+    fun test_directPolicyDefinition_failsToCompile() {
         val compilation: Compilation = mCompiler.compile(
-            JavaFileObjects.forResource(POLICY_IDENTIFIER_MISSING_METADATA_JAVA)
+            JavaFileObjects.forResource(POLICY_IDENTIFIER_DIRECT_DEFINITION_JAVA)
         )
         assertThat(compilation).failed()
-        assertThat(compilation).hadErrorContaining("@PolicyDefinition has no type specific definition")
+        assertThat(compilation).hadErrorContaining("@PolicyDefinition should not be applied to any element")
     }
 
     /**
@@ -126,6 +126,6 @@ class PolicyProcessorTest {
 
         checkCompileSucceeds(OTHER_CLASS_JAVA, POLICY_IDENTIFIER_JAVA, INT_DEF_JAVA)
         checkCompileSucceeds(POLICY_IDENTIFIER_INVALID_TYPE_JAVA)
-        checkCompileSucceeds(POLICY_IDENTIFIER_MISSING_METADATA_JAVA)
+        checkCompileSucceeds(POLICY_IDENTIFIER_DIRECT_DEFINITION_JAVA)
     }
 }

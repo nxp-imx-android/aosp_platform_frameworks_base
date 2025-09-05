@@ -92,8 +92,9 @@ public final class PolicyIdentifier<T> {
      */
     @FlaggedApi(FLAG_POLICY_STREAMLINING)
     @NonNull
-    @PolicyDefinition
-    @BooleanPolicyDefinition
+    @BooleanPolicyDefinition(
+            base = @PolicyDefinition
+    )
     public static final PolicyIdentifier<Boolean> SCREEN_CAPTURE_DISABLED = new PolicyIdentifier<>(
             SCREEN_CAPTURE_DISABLED_KEY);
 }

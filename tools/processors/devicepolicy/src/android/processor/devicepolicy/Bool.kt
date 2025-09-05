@@ -27,7 +27,7 @@ import javax.lang.model.type.TypeMirror
  * Since this annotation holds no data and we don't export any type-specific information, this only
  * contains type-specific checks.
  */
-class BooleanProcessor(processingEnv: ProcessingEnvironment) : Processor(processingEnv) {
+class BooleanProcessor(processingEnv: ProcessingEnvironment) : Processor<BooleanPolicyDefinition>(processingEnv) {
     private companion object {
         const val SIMPLE_TYPE_BOOLEAN = "java.lang.Boolean"
     }
@@ -41,8 +41,9 @@ class BooleanProcessor(processingEnv: ProcessingEnvironment) : Processor(process
      *
      * @return null if the element does not have a @BooleanPolicyDefinition or on error, {@link BooleanPolicyMetadata} otherwise.
      */
-    fun process(element: Element): BooleanPolicyMetadata? {
-        element.getAnnotation(BooleanPolicyDefinition::class.java) ?: return null
+    override fun processMetadata(element: Element): Pair<PolicyMetadata, PolicyDefinition>? {
+        val booleanDefinition = element.getAnnotation(BooleanPolicyDefinition::class.java)
+            ?: throw IllegalStateException("Processor should only be called on elements with @BooleanPolicyMetadata")
 
         if (!processingEnv.typeUtils.isSameType(policyType(element), booleanType)) {
             printError(
@@ -51,7 +52,11 @@ class BooleanProcessor(processingEnv: ProcessingEnvironment) : Processor(process
             )
         }
 
-        return BooleanPolicyMetadata()
+        return Pair(BooleanPolicyMetadata(), booleanDefinition.base)
+    }
+
+    override fun annotationClass(): Class<BooleanPolicyDefinition> {
+        return BooleanPolicyDefinition::class.java
     }
 }
 
