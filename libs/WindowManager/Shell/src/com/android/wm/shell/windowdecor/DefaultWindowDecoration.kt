@@ -429,13 +429,12 @@ constructor(
         var insetSourceFlags = 0
         var shouldSetAppBounds = false
         if (isAppHeader) {
-            if (
-                taskInfo.isTransparentCaptionBarAppearance &&
-                    !DesktopModeFlags.ENABLE_ACCESSIBLE_CUSTOM_HEADERS.isTrue
-            ) {
-                // Allow input to fall through to the windows below so that the app can respond
-                // to input events on their custom content.
-                inputFeatures = inputFeatures or WindowManager.LayoutParams.INPUT_FEATURE_SPY
+            if (taskInfo.isTransparentCaptionBarAppearance) {
+                if (!DesktopModeFlags.ENABLE_ACCESSIBLE_CUSTOM_HEADERS.isTrue) {
+                    // Allow input to fall through to the windows below so that the app can respond
+                    // to input events on their custom content.
+                    inputFeatures = inputFeatures or WindowManager.LayoutParams.INPUT_FEATURE_SPY
+                }
             } else if (DesktopModeFlags.ENABLE_CAPTION_COMPAT_INSET_FORCE_CONSUMPTION.isTrue) {
                 if (shouldExcludeCaptionFromAppBounds) {
                     shouldSetAppBounds = true
