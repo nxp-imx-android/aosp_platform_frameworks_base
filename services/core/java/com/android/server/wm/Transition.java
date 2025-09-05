@@ -133,6 +133,7 @@ import com.android.internal.protolog.WmProtoLogGroups;
 import com.android.internal.util.function.pooled.PooledLambda;
 import com.android.server.inputmethod.InputMethodManagerInternal;
 import com.android.server.statusbar.StatusBarManagerInternal;
+import com.android.window.flags.Flags;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -3213,6 +3214,16 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
                                 topRunningActivity.checkEnterPictureInPictureAppOpsState());
                     }
                     setEndFixedRotationIfNeeded(change, task, topRunningActivity);
+                    // The Activity leash is added to the Change in case the Transition is
+                    // about a Task with a letterboxed top activity.
+                    if (Flags.appCompatRefactoring()
+                            && Flags.appCompatRefactoringUseActivityLeashForLetterboxing()) {
+                        final AppCompatLetterboxPolicy letterboxPolicy =
+                                topRunningActivity.mAppCompatController.getLetterboxPolicy();
+                        if (letterboxPolicy.isRunning()) {
+                            change.setTopCompatActivityLeash(topRunningActivity.mSurfaceControl);
+                        }
+                    }
                 }
             } else if ((info.mFlags & ChangeInfo.FLAG_SEAMLESS_ROTATION) != 0) {
                 change.setRotationAnimation(ROTATION_ANIMATION_SEAMLESS);

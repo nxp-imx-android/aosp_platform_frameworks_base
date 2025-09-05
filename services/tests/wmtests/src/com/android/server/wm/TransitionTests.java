@@ -35,6 +35,7 @@ import static android.view.WindowManager.TRANSIT_CLOSE;
 import static android.view.WindowManager.TRANSIT_FLAG_DISPLAY_LEVEL_TRANSITION;
 import static android.view.WindowManager.TRANSIT_OPEN;
 import static android.view.WindowManager.TRANSIT_TO_BACK;
+import static android.view.WindowManager.TRANSIT_TO_FRONT;
 import static android.window.TransitionInfo.FLAG_CROSS_PROFILE_OWNER_THUMBNAIL;
 import static android.window.TransitionInfo.FLAG_FILLS_TASK;
 import static android.window.TransitionInfo.FLAG_IN_TASK_WITH_EMBEDDED_ACTIVITY;
@@ -85,6 +86,8 @@ import android.graphics.Color;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.os.IBinder;
+import android.platform.test.annotations.DisableFlags;
+import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
 import android.util.ArrayMap;
 import android.util.ArraySet;
@@ -213,6 +216,7 @@ public class TransitionTests extends WindowTestsBase {
     }
 
     @Test
+    @DisableFlags(Flags.FLAG_APP_COMPAT_REFACTORING_USE_ACTIVITY_LEASH_FOR_LETTERBOXING)
     public void testCreateInfo_Activity() {
         final Task theTask = createTask(mDisplayContent);
         final ActivityRecord closing = createActivityRecord(theTask);
@@ -262,6 +266,41 @@ public class TransitionTests extends WindowTestsBase {
         assertEquals(closing.mActivityComponent, closingChange.getActivityComponent());
         assertEquals(closingActivityTransitionInfo, closingChange.getActivityTransitionInfo());
         assertNull(closingChange.getActivityTransitionInfo().getAppCompatTransitionInfo());
+        assertNull(openingChange.getTopCompatActivityLeash());
+    }
+
+    @Test
+    @EnableFlags({Flags.FLAG_APP_COMPAT_REFACTORING,
+            Flags.FLAG_APP_COMPAT_REFACTORING_USE_ACTIVITY_LEASH_FOR_LETTERBOXING})
+    public void testCreateInfo_ActivityWithLeash() {
+        final Task theTask = createTask(mDisplayContent);
+        final ActivityRecord opening = createActivityRecord(theTask);
+        opening.getRequestedOverrideConfiguration().windowConfiguration.setBounds(
+                new Rect(10, 10, 200, 300));
+        opening.onRequestedOverrideConfigurationChanged(
+                opening.getRequestedOverrideConfiguration());
+        final WindowState appWindow = newWindowBuilder("appWindow",
+                TYPE_BASE_APPLICATION).setWindowToken(opening).build();
+        opening.mAppCompatController.getLetterboxPolicy().start(appWindow);
+        final ArrayMap<WindowContainer, Transition.ChangeInfo> changes = new ArrayMap<>();
+        // Start states.
+        changes.put(theTask,
+                new Transition.ChangeInfo(theTask, false /* vis */, false /* exChg */));
+        fillChangeMap(changes, theTask);
+        // End states.
+        theTask.setVisibleRequested(true);
+        final ArraySet<WindowContainer> participants =
+                new ArraySet<>(new WindowContainer[]{theTask});
+        final ArrayList<Transition.ChangeInfo> targets =
+                Transition.calculateTargets(participants, changes);
+
+        final TransitionInfo info =
+                Transition.calculateTransitionInfo(TRANSIT_OPEN, 0 /* flags */, targets, mMockT);
+
+        final List<TransitionInfo.Change> transitionChanges = info.getChanges();
+        final TransitionInfo.Change openingChange = transitionChanges.get(0);
+        assertEquals(TRANSIT_TO_FRONT, openingChange.getMode());
+        assertNotNull(openingChange.getTopCompatActivityLeash());
     }
 
     @Test
