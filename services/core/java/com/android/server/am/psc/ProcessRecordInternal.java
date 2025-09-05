@@ -247,6 +247,12 @@ public abstract class ProcessRecordInternal {
      */
     public abstract int getApplicationUid();
 
+    /** Returns the package name of the application this process belongs to. */
+    public abstract String getPackageName();
+
+    /** Returns whether this process is for an instant app. */
+    public abstract boolean isInstantApp();
+
     /** Returns the {@link UidRecordInternal} associated with this process. */
     public abstract UidRecordInternal getUidRecord();
 

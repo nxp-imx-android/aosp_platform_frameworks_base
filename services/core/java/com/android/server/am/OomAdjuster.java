@@ -1287,7 +1287,7 @@ public abstract class OomAdjuster {
     @GuardedBy({"mService", "mProcLock"})
     protected void updateAppUidRecIfNecessaryLSP(final ProcessRecord app) {
         if (!app.isKilledByAm() && app.isProcessRunning()) {
-            if (app.isolated && app.mServices.numberOfRunningServices() <= 0
+            if (app.isolated && app.getServices().numberOfRunningServices() <= 0
                     && app.getIsolatedEntryPoint() == null) {
                 // No op.
             } else {
@@ -1298,18 +1298,17 @@ public abstract class OomAdjuster {
     }
 
     @GuardedBy({"mService", "mProcLock"})
-    private void updateAppUidRecLSP(ProcessRecord app) {
+    private void updateAppUidRecLSP(ProcessRecordInternal app) {
         final UidRecordInternal uidRec = app.getUidRecord();
         if (uidRec != null) {
-            final ProcessRecordInternal state = app;
-            uidRec.setEphemeral(app.info.isInstantApp());
-            if (uidRec.getCurProcState() > state.getCurProcState()) {
-                uidRec.setCurProcState(state.getCurProcState());
+            uidRec.setEphemeral(app.isInstantApp());
+            if (uidRec.getCurProcState() > app.getCurProcState()) {
+                uidRec.setCurProcState(app.getCurProcState());
             }
-            if (app.mServices.hasForegroundServices()) {
+            if (app.getServices().hasForegroundServices()) {
                 uidRec.setHasForegroundServices(true);
             }
-            uidRec.setCurCapability(uidRec.getCurCapability() | state.getCurCapability());
+            uidRec.setCurCapability(uidRec.getCurCapability() | app.getCurCapability());
         }
     }
 
@@ -2303,7 +2302,7 @@ public abstract class OomAdjuster {
                 mService.mHandler.post(() -> {
                     synchronized (mService) {
                         mService.mServices.stopAllForegroundServicesLocked(
-                                app.uid, app.info.packageName);
+                                app.uid, app.getPackageName());
                     }
                 });
             }
