@@ -66,6 +66,8 @@ public enum DesktopExperienceFlags {
             Flags.FLAG_CLOSE_TASK_KEYBOARD_SHORTCUT),
     CONNECTED_DISPLAYS_CURSOR(com.android.input.flags.Flags::connectedDisplaysCursor, true,
             com.android.input.flags.Flags.FLAG_CONNECTED_DISPLAYS_CURSOR),
+    DEFER_RESUME_FOCUS_IN_NON_FOCUSED_WINDOW(Flags::deferResumeFocusInNonFocusedWindow, false,
+            Flags.FLAG_DEFER_RESUME_FOCUS_IN_NON_FOCUSED_WINDOW),
     DISPLAY_TOPOLOGY(com.android.server.display.feature.flags.Flags::displayTopology, true,
             com.android.server.display.feature.flags.Flags.FLAG_DISPLAY_TOPOLOGY),
     ENABLE_ACTIVITY_EMBEDDING_SUPPORT_FOR_CONNECTED_DISPLAYS(
