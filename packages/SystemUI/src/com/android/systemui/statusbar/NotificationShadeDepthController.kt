@@ -101,8 +101,10 @@ constructor(
         private const val INTERACTION_BLUR_FRACTION = 0.8f
         private const val ANIMATION_BLUR_FRACTION = 1f - INTERACTION_BLUR_FRACTION
         private const val TRANSITION_THRESHOLD = 0.98f
-        private const val PUSHBACK_SCALE_FOR_LAUNCHER = 0.05f;
-        private const val PUSHBACK_SCALE_FOR_APP = 0.025f;
+        private const val PUSHBACK_SCALE_FOR_LAUNCHER = 0.05f
+
+        private const val PUSHBACK_SCALE_FOR_APP = 0.025f
+
         private const val TAG = "DepthController"
     }
 
@@ -294,7 +296,8 @@ constructor(
                 // When the shade is in another display, we don't want to zoom out the background.
                 // Only the default display is supported right now.
                 !isShadeOnDefaultDisplay -> 0f
-                shadeRadius != wakeAndUnlockBlurRadius -> blurRadiusToZoomOut(blurRadius = shadeRadius)
+                shadeRadius != wakeAndUnlockBlurRadius ->
+                    blurRadiusToZoomOut(blurRadius = shadeRadius)
                 else -> 0f
             }
         // Make blur be 0 if it is necessary to stop blur effect.
@@ -344,7 +347,7 @@ constructor(
             val opaque = shouldBlurBeOpaque
             val blurScale = zoomOutAsScale(zoomOutFromShadeRadius)
             TrackTracer.instantForGroup("shade", "shade_blur_radius", blur)
-            blurUtils.applyBlur(root.viewRootImpl, blur, opaque, blurScale);
+            blurUtils.applyBlur(root.viewRootImpl, blur, opaque, blurScale)
             onBlurApplied(blur, zoomOutFromShadeRadius)
         }
 
@@ -419,9 +422,11 @@ constructor(
         object : StatusBarStateController.StateListener {
             override fun onStateChanged(newState: Int) {
                 if (Flags.noShadeBlurOnDreamStart()) {
-                    if (existingStatusBarState == StatusBarState.KEYGUARD
-                        && newState == StatusBarState.SHADE
-                        && keyguardInteractor.isDreaming.value) {
+                    if (
+                        existingStatusBarState == StatusBarState.KEYGUARD &&
+                            newState == StatusBarState.SHADE &&
+                            keyguardInteractor.isDreaming.value
+                    ) {
                         return
                     }
                 }
@@ -670,10 +675,11 @@ constructor(
 
         if (Flags.bouncerUiRevamp() || Flags.glanceableHubBlurredBackground()) {
             if (windowRootViewBlurInteractor.isBlurCurrentlySupported.value) {
-                updateScheduled = windowRootViewBlurInteractor.requestBlurForShade(
-                    blur,
-                    zoomOutAsScale(zoomOutFromShadeRadius),
-                )
+                updateScheduled =
+                    windowRootViewBlurInteractor.requestBlurForShade(
+                        blur,
+                        zoomOutAsScale(zoomOutFromShadeRadius),
+                    )
                 return
             }
             // When blur is not supported, zoom out still needs to happen when scheduleUpdate
@@ -688,7 +694,7 @@ constructor(
             return
         }
         updateScheduled = true
-        blurUtils.prepareBlur(root.viewRootImpl, blur)
+        blurUtils.prepareBlur(blur)
         choreographer.postFrameCallback(updateBlurCallback)
     }
 
@@ -710,7 +716,7 @@ constructor(
             it.println("shouldApplyShadeBlur: ${shouldApplyShadeBlur()}")
             it.println("shadeAnimation: ${shadeAnimation.radius}")
             it.println("brightnessMirrorRadius: ${brightnessMirrorSpring.radius}")
-            it.println("wakeAndUnlockBlurRadius: ${wakeAndUnlockBlurRadius}")
+            it.println("wakeAndUnlockBlurRadius: $wakeAndUnlockBlurRadius")
             it.println("blursDisabledForAppLaunch: $blursDisabledForAppLaunch")
             it.println("appLaunchTransitionIsInProgress: $appLaunchTransitionIsInProgress")
             it.println("qsPanelExpansion: $qsPanelExpansion")
