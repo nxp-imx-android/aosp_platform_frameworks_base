@@ -430,11 +430,25 @@ constructor(
         var shouldSetAppBounds = false
         if (isAppHeader) {
             if (taskInfo.isTransparentCaptionBarAppearance) {
-                if (!DesktopModeFlags.ENABLE_ACCESSIBLE_CUSTOM_HEADERS.isTrue) {
-                    // Allow input to fall through to the windows below so that the app can respond
-                    // to input events on their custom content.
-                    inputFeatures = inputFeatures or WindowManager.LayoutParams.INPUT_FEATURE_SPY
-                }
+                // The app is requesting to customize the caption bar, which means input on
+                // customizable/exclusion regions must go to the app instead of to the system.
+                // Custom touchable regions OR spy windows are usually sufficient to satisfy this
+                // requirement for the general case, but some edge cases make it so we actually
+                // need both:
+                // 1) Spy window by itself does not let a11y services "see" through the window and
+                // focus the custom content. The touchable region carveout helps here. Note that
+                // this is set by |CaptionController#calculateLimitedTouchableRegion|.
+                // 2) When the app has a modal window on top of the window that reports exclusion
+                // regions, the modal window actually blocks the exclusion region from being
+                // reported to SystemUI, which prevents the window decoration from correctly
+                // setting the touchable region (of the caption) and thus touching the
+                // custom region has the input consumed by the caption and makes it impossible for
+                // the modal to be closed in this region, see b/414521306.
+                // So by setting the spy feature the input can fall through to the windows below,
+                // but more precisely it allows the first motion event over a modal window to fall
+                // through and dismiss the modal, even when the caption touchable region is not
+                // being limited.
+                inputFeatures = inputFeatures or WindowManager.LayoutParams.INPUT_FEATURE_SPY
             } else if (DesktopModeFlags.ENABLE_CAPTION_COMPAT_INSET_FORCE_CONSUMPTION.isTrue) {
                 if (shouldExcludeCaptionFromAppBounds) {
                     shouldSetAppBounds = true
@@ -855,7 +869,7 @@ constructor(
 
     /** Checks if touch event occurred in caption's customizable region. */
     fun checkTouchEventInCustomizableRegion(e: MotionEvent): Boolean =
-        (captionController as? AppHandleController)?.checkTouchEventInCustomizableRegion(e) ?: false
+        captionController?.checkTouchEventInCustomizableRegion(e) ?: false
 
     /** Adds inset for caption if one exists. */
     fun addCaptionInset(wct: WindowContainerTransaction) {
