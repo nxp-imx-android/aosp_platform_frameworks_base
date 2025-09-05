@@ -38,6 +38,7 @@ import static org.testng.Assert.assertThrows;
 import android.companion.virtual.ActivityPolicyExemption;
 import android.companion.virtual.IVirtualDevice;
 import android.companion.virtual.VirtualDeviceParams;
+import android.companion.virtual.computercontrol.ComputerControlSession;
 import android.companion.virtual.computercontrol.ComputerControlSessionParams;
 import android.companion.virtualdevice.flags.Flags;
 import android.content.AttributionSource;
@@ -102,6 +103,8 @@ public class ComputerControlSessionTest {
     @Mock
     private IVirtualDevice mVirtualDevice;
     @Mock
+    private IVirtualInputDevice mVirtualDpad;
+    @Mock
     private IVirtualInputDevice mVirtualKeyboard;
     @Mock
     private IVirtualInputDevice mVirtualTouchscreen;
@@ -142,6 +145,7 @@ public class ComputerControlSessionTest {
         when(mVirtualDevice.createVirtualDisplay(any(), any())).thenReturn(VIRTUAL_DISPLAY_ID);
         when(mVirtualDevice.createVirtualTouchscreen(any(), any())).thenReturn(mVirtualTouchscreen);
         when(mVirtualDevice.createVirtualKeyboard(any(), any())).thenReturn(mVirtualKeyboard);
+        when(mVirtualDevice.createVirtualDpad(any(), any())).thenReturn(mVirtualDpad);
     }
 
     @After
@@ -344,6 +348,18 @@ public class ComputerControlSessionTest {
         verify(mVirtualKeyboard, timeout(10 * KEY_EVENT_DELAY_MS)).sendKeyEvent(
                 argThat(new MatchesVirtualKeyEvent(KeyEvent.KEYCODE_ENTER,
                         VirtualKeyEvent.ACTION_UP)));
+    }
+
+    @Test
+    public void performActionBack_injectsBackKey()
+            throws RemoteException {
+        createComputerControlSession(mDefaultParams);
+
+        mSession.performAction(ComputerControlSession.ACTION_GO_BACK);
+        verify(mVirtualDpad).sendKeyEvent(argThat(
+                new MatchesVirtualKeyEvent(KeyEvent.KEYCODE_BACK, VirtualKeyEvent.ACTION_DOWN)));
+        verify(mVirtualDpad).sendKeyEvent(argThat(
+                new MatchesVirtualKeyEvent(KeyEvent.KEYCODE_BACK, VirtualKeyEvent.ACTION_UP)));
     }
 
     private void createComputerControlSession(ComputerControlSessionParams params) {

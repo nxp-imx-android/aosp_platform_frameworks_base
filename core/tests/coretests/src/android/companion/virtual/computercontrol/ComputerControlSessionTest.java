@@ -102,6 +102,12 @@ public class ComputerControlSessionTest {
     }
 
     @Test
+    public void performAction_performsAction() throws RemoteException {
+        mSession.performAction(ComputerControlSession.ACTION_GO_BACK);
+        verify(mMockSession).performAction(eq(ComputerControlSession.ACTION_GO_BACK));
+    }
+
+    @Test
     public void insertText_insertsText() throws RemoteException {
         mSession.insertText("text", true, true);
         verify(mMockSession).insertText(eq("text"), eq(true), eq(true));

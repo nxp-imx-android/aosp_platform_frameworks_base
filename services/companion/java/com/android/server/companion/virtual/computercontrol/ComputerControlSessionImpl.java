@@ -29,6 +29,7 @@ import android.companion.virtual.ActivityPolicyExemption;
 import android.companion.virtual.IVirtualDevice;
 import android.companion.virtual.IVirtualDeviceActivityListener;
 import android.companion.virtual.VirtualDeviceParams;
+import android.companion.virtual.computercontrol.ComputerControlSession;
 import android.companion.virtual.computercontrol.ComputerControlSessionParams;
 import android.companion.virtual.computercontrol.IComputerControlSession;
 import android.companion.virtual.computercontrol.IInteractiveMirrorDisplay;
@@ -295,6 +296,20 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
     }
 
     @Override
+    public void performAction(@ComputerControlSession.Action int actionCode)
+            throws RemoteException {
+        cancelOngoingKeyGestures();
+        if (actionCode == ComputerControlSession.ACTION_GO_BACK) {
+            mVirtualDpad.sendKeyEvent(
+                    createKeyEvent(KeyEvent.KEYCODE_BACK, VirtualKeyEvent.ACTION_DOWN));
+            mVirtualDpad.sendKeyEvent(
+                    createKeyEvent(KeyEvent.KEYCODE_BACK, VirtualKeyEvent.ACTION_UP));
+        } else {
+            Slog.e(TAG, "Invalid action code for performAction: " + actionCode);
+        }
+    }
+
+    @Override
     @Nullable
     public IInteractiveMirrorDisplay createInteractiveMirrorDisplay(
             int width, int height, @NonNull Surface surface) throws RemoteException {
@@ -318,10 +333,7 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
     @SuppressLint("WrongConstant")
     @Override
     public void insertText(@NonNull String text, boolean replaceExisting, boolean commit) {
-        if (mInsertTextFuture != null) {
-            mInsertTextFuture.cancel(false);
-            mInsertTextFuture = null;
-        }
+        cancelOngoingKeyGestures();
         if (android.companion.virtualdevice.flags.Flags.computerControlTyping()) {
             // TODO(b/422134565): Implement Input connection based typing
         } else {
@@ -433,6 +445,13 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
         mInsertTextFuture = mScheduler.schedule(
                 () -> performKeyStep(keysToSend, nextStep), KEY_EVENT_DELAY_MS,
                 TimeUnit.MILLISECONDS);
+    }
+
+    private void cancelOngoingKeyGestures() {
+        if (mInsertTextFuture != null) {
+            mInsertTextFuture.cancel(false);
+            mInsertTextFuture = null;
+        }
     }
 
     private static class ComputerControlActivityListener
