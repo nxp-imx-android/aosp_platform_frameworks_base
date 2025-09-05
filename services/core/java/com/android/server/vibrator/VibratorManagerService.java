@@ -2925,10 +2925,6 @@ public class VibratorManagerService extends IVibratorManagerService.Stub {
                     Trace.traceBegin(TRACE_TAG_VIBRATOR, "onCommand: combined");
                     return runStereo();
                 }
-                if ("sequential".equals(cmd)) {
-                    Trace.traceBegin(TRACE_TAG_VIBRATOR, "onCommand: sequential");
-                    return runSequential();
-                }
                 if ("xml".equals(cmd)) {
                     Trace.traceBegin(TRACE_TAG_VIBRATOR, "onCommand: xml");
                     return runXml();
@@ -3068,18 +3064,6 @@ public class VibratorManagerService extends IVibratorManagerService.Stub {
             while ("-v".equals(getNextOption())) {
                 int vibratorId = parseInt(getNextArgRequired(), "Expected vibrator id after -v");
                 combination.addVibrator(vibratorId, nextEffect());
-            }
-            runVibrate(commonOptions, combination.combine());
-            return 0;
-        }
-
-        private int runSequential() {
-            CommonOptions commonOptions = new CommonOptions();
-            CombinedVibration.SequentialCombination combination =
-                    CombinedVibration.startSequential();
-            while ("-v".equals(getNextOption())) {
-                int vibratorId = parseInt(getNextArgRequired(), "Expected vibrator id after -v");
-                combination.addNext(vibratorId, nextEffect());
             }
             runVibrate(commonOptions, combination.combine());
             return 0;
@@ -3497,8 +3481,6 @@ public class VibratorManagerService extends IVibratorManagerService.Stub {
                 pw.println("    Vibrates effect on all vibrators in sync.");
                 pw.println("  combined [options] (-v <vibrator-id> <effect>...)...");
                 pw.println("    Vibrates different effects on each vibrator in sync.");
-                pw.println("  sequential [options] (-v <vibrator-id> <effect>...)...");
-                pw.println("    Vibrates different effects on each vibrator in sequence.");
                 pw.println("  xml [options] <xml>");
                 pw.println("    Vibrates using combined vibration described in given XML string");
                 pw.println("    on all vibrators in sync. The XML could be:");

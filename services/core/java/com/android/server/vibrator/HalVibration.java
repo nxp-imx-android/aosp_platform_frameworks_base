@@ -195,6 +195,7 @@ final class HalVibration extends Vibration {
             for (int i = 0; i < effects.size(); i++) {
                 fillFallbacksForEffect(effects.valueAt(i), fallbackProvider);
             }
+        // TODO(b/421857859): remove this once flag remove_sequential_combination is removed
         } else if (effect instanceof CombinedVibration.Sequential) {
             List<CombinedVibration> effects =
                     ((CombinedVibration.Sequential) effect).getEffects();

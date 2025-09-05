@@ -302,25 +302,11 @@ abstract class Vibration {
 
         private void dumpEffect(
                 ProtoOutputStream proto, long fieldId, CombinedVibration effect) {
-            dumpEffect(proto, fieldId,
-                    (CombinedVibration.Sequential) CombinedVibration.startSequential()
-                            .addNext(effect)
-                            .combine());
-        }
-
-        private void dumpEffect(
-                ProtoOutputStream proto, long fieldId, CombinedVibration.Sequential effect) {
             final long token = proto.start(fieldId);
-            for (int i = 0; i < effect.getEffects().size(); i++) {
-                CombinedVibration nestedEffect = effect.getEffects().get(i);
-                if (nestedEffect instanceof CombinedVibration.Mono) {
-                    dumpEffect(proto, CombinedVibrationEffectProto.EFFECTS,
-                            (CombinedVibration.Mono) nestedEffect);
-                } else if (nestedEffect instanceof CombinedVibration.Stereo) {
-                    dumpEffect(proto, CombinedVibrationEffectProto.EFFECTS,
-                            (CombinedVibration.Stereo) nestedEffect);
-                }
-                proto.write(CombinedVibrationEffectProto.DELAYS, effect.getDelays().get(i));
+            if (effect instanceof CombinedVibration.Mono mono) {
+                dumpEffect(proto, CombinedVibrationEffectProto.EFFECTS, mono);
+            } else if (effect instanceof CombinedVibration.Stereo stereo) {
+                dumpEffect(proto, CombinedVibrationEffectProto.EFFECTS, stereo);
             }
             proto.end(token);
         }
