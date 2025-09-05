@@ -179,7 +179,7 @@ public class PluginManagerTest extends SysuiTestCase {
         mPluginManager.onReceive(mContext, intent);
         verify(nm).cancel(eq(testComponent.getClassName()), eq(SystemMessage.NOTE_PLUGIN));
         verify(mMockPluginEnabler).setDisabled(testComponent,
-                PluginEnabler.DISABLED_INVALID_VERSION);
+                PluginEnabler.DisableReason.DISABLED_INVALID_VERSION);
     }
 
     private void captureExceptionHandler() {

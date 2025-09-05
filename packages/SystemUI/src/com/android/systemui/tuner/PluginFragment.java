@@ -41,6 +41,7 @@ import com.android.systemui.plugins.PluginManager;
 import com.android.systemui.res.R;
 import com.android.systemui.shared.plugins.PluginActionManager;
 import com.android.systemui.shared.plugins.PluginEnabler;
+import com.android.systemui.shared.plugins.PluginEnabler.DisableReason;
 import com.android.systemui.shared.plugins.PluginPrefs;
 
 import java.util.List;
@@ -74,7 +75,7 @@ public class PluginFragment extends PreferenceFragment {
 
     @Override
     public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
-        mPluginEnabler = new PluginEnablerImpl(getContext());
+        mPluginEnabler = new PluginEnablerImpl(getContext(), getContext().getPackageManager());
         loadPrefs();
     }
 
@@ -187,7 +188,7 @@ public class PluginFragment extends PreferenceFragment {
                     if (isEnabled) {
                         mPluginEnabler.setEnabled(componentName);
                     } else {
-                        mPluginEnabler.setDisabled(componentName, PluginEnabler.DISABLED_MANUALLY);
+                        mPluginEnabler.setDisabled(componentName, DisableReason.DISABLED_MANUALLY);
                     }
                     shouldSendBroadcast = true;
                 }
