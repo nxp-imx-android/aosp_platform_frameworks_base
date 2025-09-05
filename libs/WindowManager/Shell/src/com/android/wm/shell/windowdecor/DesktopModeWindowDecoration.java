@@ -19,6 +19,9 @@ package com.android.wm.shell.windowdecor;
 import static android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM;
 import static android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN;
 import static android.app.WindowConfiguration.windowingModeToString;
+import static android.content.pm.ActivityInfo.CONFIG_FONT_SCALE;
+import static android.content.pm.ActivityInfo.CONFIG_LOCALE;
+import static android.content.pm.ActivityInfo.CONFIG_UI_MODE;
 import static android.view.InsetsSource.FLAG_FORCE_CONSUMING;
 import static android.view.InsetsSource.FLAG_FORCE_CONSUMING_OPAQUE_CAPTION_BAR;
 import static android.view.MotionEvent.ACTION_CANCEL;
@@ -500,9 +503,7 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
                     mResult.mCaptionY + mResult.mCaptionTopPadding);
         }
 
-        if (isOpenByDefaultDialogActive()) {
-            mOpenByDefaultDialog.relayout(taskInfo);
-        }
+        final Configuration oldConfig = mWindowDecorConfig;
 
         final boolean inFullImmersive = mDesktopUserRepositories.getProfile(taskInfo.userId)
                 .isTaskInFullImmersiveState(taskInfo.taskId);
@@ -518,6 +519,26 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
                 mDesktopConfig, inSyncWithTransition,
                 mLockTaskChangeListener.isTaskLocked(),
                 /* occludingElementsCalculator = */ () -> getOccludingElements());
+
+        final Configuration newConfig = mRelayoutParams.mWindowDecorConfig;
+
+        boolean configChanged = false;
+        if (oldConfig != null && newConfig != null) {
+            final int diff = newConfig.diff(oldConfig);
+            configChanged = (diff & (CONFIG_UI_MODE | CONFIG_LOCALE | CONFIG_FONT_SCALE)) != 0;
+        }
+
+        if (isOpenByDefaultDialogActive()) {
+            if (configChanged) {
+                // Dismiss the old dialog and create a new one.
+                // createOpenByDefaultDialog() will use the new mDecorWindowContext.
+                mOpenByDefaultDialog.dismiss();
+                createOpenByDefaultDialog();
+            } else {
+                // No config change, just update layout bounds.
+                mOpenByDefaultDialog.relayout(taskInfo);
+            }
+        }
 
         final WindowDecorLinearLayout oldRootView = mResult.mRootView;
         final SurfaceControl oldDecorationSurface = mDecorationContainerSurface;

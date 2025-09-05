@@ -211,6 +211,11 @@ internal class OpenByDefaultDialog(
     }
 
     /**
+     * Dismiss dialog and set it to null, so it that it will be re-created on the next opening.
+     */
+    fun dismiss() = closeMenu()
+
+    /**
      * Handles showing, positioning and tearing down the dialog surface
      */
     private inner class DialogWindowManager(config: Configuration) :
