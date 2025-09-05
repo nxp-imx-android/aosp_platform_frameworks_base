@@ -159,7 +159,6 @@ import static com.android.server.wm.WindowManagerInternal.WindowFocusChangeListe
 import static com.android.systemui.shared.Flags.enableLppAssistInvocationEffect;
 import static com.android.window.flags.Flags.enableDeviceStateAutoRotateSettingRefactor;
 import static com.android.window.flags.Flags.multiCrop;
-import static com.android.window.flags.Flags.screenBrightnessDimOnEmulator;
 import static com.android.window.flags.Flags.setScPropertiesInClient;
 
 import android.Manifest;
@@ -4400,7 +4399,7 @@ public class WindowManagerService extends IWindowManager.Stub
 
     @VisibleForTesting
     boolean enableScreenBrightnessEmulatorDisplayOverlay() {
-        return screenBrightnessDimOnEmulator() && Build.IS_EMULATOR
+        return Build.IS_EMULATOR
                 && mContext.getResources().getBoolean(
                 R.bool.config_windowEnableScreenBrightnessEmulatorDisplayOverlay);
     }
