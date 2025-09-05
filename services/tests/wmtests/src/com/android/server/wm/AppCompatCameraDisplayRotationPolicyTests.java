@@ -40,6 +40,7 @@ import static com.android.dx.mockito.inline.extended.ExtendedMockito.doReturn;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.spyOn;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.verify;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.when;
+import static com.android.internal.hidden_from_bootclasspath.com.android.window.flags.Flags.FLAG_ENABLE_CAMERA_COMPAT_SANDBOX_DISPLAY_ROTATION_ON_EXTERNAL_DISPLAYS_BUGFIX;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -264,7 +265,8 @@ public final class AppCompatCameraDisplayRotationPolicyTests extends WindowTests
     }
 
     @Test
-    @DisableFlags(Flags.FLAG_CAMERA_COMPAT_UNIFY_CAMERA_POLICIES)
+    @DisableFlags({Flags.FLAG_CAMERA_COMPAT_UNIFY_CAMERA_POLICIES,
+            FLAG_ENABLE_CAMERA_COMPAT_SANDBOX_DISPLAY_ROTATION_ON_EXTERNAL_DISPLAYS_BUGFIX})
     public void testDisplayTypeExternal_noForceRotationOrRefresh() {
         runTestScenario((robot) -> {
             robot.configureActivityAndDisplay(SCREEN_ORIENTATION_PORTRAIT,
@@ -452,6 +454,7 @@ public final class AppCompatCameraDisplayRotationPolicyTests extends WindowTests
     public void testOnActivityConfigurationChanging_splitScreenAspectRatioAllowed_refresh() {
         runTestScenario((robot) -> {
             robot.configureActivity(SCREEN_ORIENTATION_PORTRAIT);
+            robot.conf().enableCameraCompatSplitScreenAspectRatio(true);
 
             robot.onCameraOpened(CAMERA_ID_1, TEST_PACKAGE_1);
             robot.callOnActivityConfigurationChanging(/*isDisplayRotationChanging=*/ true);
