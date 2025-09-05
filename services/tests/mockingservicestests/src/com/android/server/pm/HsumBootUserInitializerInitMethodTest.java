@@ -35,6 +35,7 @@ import static com.android.server.pm.HsumBootUserInitializerInitMethodTest.Initia
 import static com.android.server.pm.HsumBootUserInitializerInitMethodTest.InitialUsers.SYSTEM_AND_REGULAR;
 import static com.android.server.pm.HsumBootUserInitializerInitMethodTest.InitialUsers.SYSTEM_ONLY;
 
+import static org.junit.Assume.assumeFalse;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
@@ -129,6 +130,7 @@ public final class HsumBootUserInitializerInitMethodTest {
 
     private final boolean mShouldAlwaysHaveMainUser;
     private final boolean mShouldCreateInitialUser;
+    private final boolean mIsManagedDevice;
     private final InitialUsers mInitialUsers;
     private final ExpectedResult mExpectedResult;
 
@@ -138,51 +140,84 @@ public final class HsumBootUserInitializerInitMethodTest {
     // CHECKSTYLE:OFF Generated code
 
     /** Useless javadoc to make checkstyle happy... */
-    @Parameters(name = "{index}: hasMain={0},createInitial={1},initial={2},result={3}")
+    @Parameters(name = "{index}: needMain={0},createInitial={1},managed={2},initial={3},result={4}")
     public static Collection<Object[]> junitParametersPassedToConstructor() {
         return Arrays.asList(new Object[][] {
 
-    // shouldAlwaysHaveMainUser=false, shouldCreateInitialUser=false
-    { false, false, SYSTEM_ONLY, NO_USER_CREATED }, // index 0
-    { false, false, SYSTEM_AND_MAIN, MAIN_USER_DEMOTED },
-    { false, false, SYSTEM_AND_ADMINS, NO_USER_CREATED },
-    { false, false, SYSTEM_AND_ADMINS_FIRST_ADMIN_UNPROMOTABLE, NO_USER_CREATED },
-    { false, false, SYSTEM_AND_REGULAR, NO_USER_CREATED },
-    // shouldAlwaysHaveMainUser=false, shouldCreateInitialUser=true
-    { false, true, SYSTEM_ONLY, ADMIN_USER_CREATED}, // index 5
-    { false, true, SYSTEM_AND_MAIN, MAIN_USER_DEMOTED },
-    { false, true, SYSTEM_AND_ADMINS, NO_USER_CREATED },
-    { false, true, SYSTEM_AND_ADMINS_FIRST_ADMIN_UNPROMOTABLE, NO_USER_CREATED },
-    { false, true, SYSTEM_AND_REGULAR, ADMIN_USER_CREATED },
-    // shouldAlwaysHaveMainUser=true, shouldCreateInitialUser=false
-    { true, false, SYSTEM_ONLY, MAIN_USER_CREATED }, // index 10
-    { true, false, SYSTEM_AND_MAIN, NO_USER_CREATED },
-    { true, false, SYSTEM_AND_ADMINS, FIRST_ADMIN_USER_PROMOTED_TO_MAIN },
-    { true, false, SYSTEM_AND_ADMINS_FIRST_ADMIN_UNPROMOTABLE, SECOND_ADMIN_USER_PROMOTED_TO_MAIN },
-    { true, false, SYSTEM_AND_REGULAR, MAIN_USER_CREATED },
-    // shouldAlwaysHaveMainUser=true, shouldCreateInitialUser=true
-    { true, true, SYSTEM_ONLY, MAIN_USER_CREATED }, // index 15
-    { true, true, SYSTEM_AND_MAIN, NO_USER_CREATED },
-    { true, true, SYSTEM_AND_ADMINS, FIRST_ADMIN_USER_PROMOTED_TO_MAIN },
-    { true, true, SYSTEM_AND_ADMINS_FIRST_ADMIN_UNPROMOTABLE, SECOND_ADMIN_USER_PROMOTED_TO_MAIN },
-    { true, true, SYSTEM_AND_REGULAR, MAIN_USER_CREATED }
+    // Baseline: managed=false
 
-        // NOTE: if you add more arguments to the constructor, create a new block below by
-        // copying the "baseline" values above and changing the proper argument
-        });
-    }
+    // shouldAlwaysHaveMainUser=false, shouldCreateInitialUser=false
+    { false, false, false, SYSTEM_ONLY, NO_USER_CREATED }, // index 0
+    { false, false, false, SYSTEM_AND_MAIN, MAIN_USER_DEMOTED },
+    { false, false, false, SYSTEM_AND_ADMINS, NO_USER_CREATED },
+    { false, false, false, SYSTEM_AND_ADMINS_FIRST_ADMIN_UNPROMOTABLE, NO_USER_CREATED },
+    { false, false, false, SYSTEM_AND_REGULAR, NO_USER_CREATED },
+    // shouldAlwaysHaveMainUser=false, shouldCreateInitialUser=true
+    { false, true, false, SYSTEM_ONLY, ADMIN_USER_CREATED}, // index 5
+    { false, true, false, SYSTEM_AND_MAIN, MAIN_USER_DEMOTED },
+    { false, true, false, SYSTEM_AND_ADMINS, NO_USER_CREATED },
+    { false, true, false, SYSTEM_AND_ADMINS_FIRST_ADMIN_UNPROMOTABLE, NO_USER_CREATED },
+    { false, true, false, SYSTEM_AND_REGULAR, ADMIN_USER_CREATED },
+    // shouldAlwaysHaveMainUser=true, shouldCreateInitialUser=false
+    { true, false, false, SYSTEM_ONLY, MAIN_USER_CREATED }, // index 10
+    { true, false, false, SYSTEM_AND_MAIN, NO_USER_CREATED },
+    { true, false, false, SYSTEM_AND_ADMINS, FIRST_ADMIN_USER_PROMOTED_TO_MAIN },
+    { true, false, false, SYSTEM_AND_ADMINS_FIRST_ADMIN_UNPROMOTABLE, SECOND_ADMIN_USER_PROMOTED_TO_MAIN },
+    { true, false, false, SYSTEM_AND_REGULAR, MAIN_USER_CREATED },
+    // shouldAlwaysHaveMainUser=true, shouldCreateInitialUser=true
+    { true, true, false, SYSTEM_ONLY, MAIN_USER_CREATED }, // index 15
+    { true, true, false, SYSTEM_AND_MAIN, NO_USER_CREATED },
+    { true, true, false, SYSTEM_AND_ADMINS, FIRST_ADMIN_USER_PROMOTED_TO_MAIN },
+    { true, true, false, SYSTEM_AND_ADMINS_FIRST_ADMIN_UNPROMOTABLE, SECOND_ADMIN_USER_PROMOTED_TO_MAIN },
+    { true, true, false, SYSTEM_AND_REGULAR, MAIN_USER_CREATED },
+
+    // NOTE: if you add more arguments to the constructor, create a new block below by
+    // copying the "baseline" values above and changing the proper argument
+
+    // managed=true - all results should be NO_USER_CREATED
+
+    // shouldAlwaysHaveMainUser=false, shouldCreateInitialUser=false
+    { false, false, true, SYSTEM_ONLY, NO_USER_CREATED }, // index 20
+    { false, false, true, SYSTEM_AND_MAIN, NO_USER_CREATED },
+    { false, false, true, SYSTEM_AND_ADMINS, NO_USER_CREATED },
+    { false, false, true, SYSTEM_AND_ADMINS_FIRST_ADMIN_UNPROMOTABLE, NO_USER_CREATED },
+    { false, false, true, SYSTEM_AND_REGULAR, NO_USER_CREATED },
+    // shouldAlwaysHaveMainUser=false, shouldCreateInitialUser=true
+    { false, true, true, SYSTEM_ONLY, NO_USER_CREATED}, // index 25
+    { false, true, true, SYSTEM_AND_MAIN, NO_USER_CREATED },
+    { false, true, true, SYSTEM_AND_ADMINS, NO_USER_CREATED },
+    { false, true, true, SYSTEM_AND_ADMINS_FIRST_ADMIN_UNPROMOTABLE, NO_USER_CREATED },
+    { false, true, true, SYSTEM_AND_REGULAR, NO_USER_CREATED },
+    // shouldAlwaysHaveMainUser=true, shouldCreateInitialUser=false
+    { true, false, true, SYSTEM_ONLY, NO_USER_CREATED }, // index 30
+    { true, false, true, SYSTEM_AND_MAIN, NO_USER_CREATED },
+    { true, false, true, SYSTEM_AND_ADMINS, NO_USER_CREATED },
+    { true, false, true, SYSTEM_AND_ADMINS_FIRST_ADMIN_UNPROMOTABLE, NO_USER_CREATED },
+    { true, false, true, SYSTEM_AND_REGULAR, NO_USER_CREATED },
+    // shouldAlwaysHaveMainUser=true, shouldCreateInitialUser=true
+    { true, true, true, SYSTEM_ONLY, NO_USER_CREATED }, // index 35
+    { true, true, true, SYSTEM_AND_MAIN, NO_USER_CREATED },
+    { true, true, true, SYSTEM_AND_ADMINS, NO_USER_CREATED },
+    { true, true, true, SYSTEM_AND_ADMINS_FIRST_ADMIN_UNPROMOTABLE, NO_USER_CREATED },
+    { true, true, true, SYSTEM_AND_REGULAR, NO_USER_CREATED }
+
+    });}
     // CHECKSTYLE:ON Generated code
 
     public HsumBootUserInitializerInitMethodTest(boolean shouldAlwaysHaveMainUser,
-            boolean shouldCreateInitialUser, InitialUsers initialUsers,
+            boolean shouldCreateInitialUser, boolean isManagedDevice, InitialUsers initialUsers,
             ExpectedResult expectedResult) {
         mShouldAlwaysHaveMainUser = shouldAlwaysHaveMainUser;
         mShouldCreateInitialUser = shouldCreateInitialUser;
+        mIsManagedDevice = isManagedDevice;
         mInitialUsers = initialUsers;
         mExpectedResult = expectedResult;
-        Log.i(TAG, "Constructor: shouldAlwaysHaveMainUser=" + shouldAlwaysHaveMainUser
-                + ", shouldCreateInitialUser=" + shouldCreateInitialUser
-                + ", initialUsers=" + initialUsers + ",expectedResult=" + expectedResult);
+        Log.i(TAG, "Constructor: "
+                + "mShouldAlwaysHaveMainUser=" + mShouldAlwaysHaveMainUser
+                + ", mShouldCreateInitialUser=" + mShouldCreateInitialUser
+                + ", mIsManagedDevice=" + mIsManagedDevice
+                + ", mInitialUsers=" + mInitialUsers
+                + ", mExpectedResult=" + mExpectedResult);
     }
 
     @Before
@@ -246,8 +281,7 @@ public final class HsumBootUserInitializerInitMethodTest {
     @Test
     @EnableFlags(FLAG_CREATE_INITIAL_USER)
     public void testFlagEnabled() {
-        var initializer = createHsumBootUserInitializer(mShouldAlwaysHaveMainUser,
-                mShouldCreateInitialUser);
+        var initializer = createHsumBootUserInitializer();
 
         initializer.init(mTracer);
 
@@ -292,8 +326,8 @@ public final class HsumBootUserInitializerInitMethodTest {
     @Test
     @DisableFlags(FLAG_CREATE_INITIAL_USER)
     public void testFlagDisabled() {
-        var initializer =
-                createHsumBootUserInitializer(mShouldAlwaysHaveMainUser, mShouldCreateInitialUser);
+        assumeFalse("legacyInit() doesn't check for managed device", mIsManagedDevice);
+        var initializer = createHsumBootUserInitializer();
 
         initializer.init(mTracer);
 
@@ -311,11 +345,12 @@ public final class HsumBootUserInitializerInitMethodTest {
         expectMainUserNotDemoted();
     }
 
-    private HsumBootUserInitializer createHsumBootUserInitializer(
-            boolean shouldAlwaysHaveMainUser, boolean shouldCreateInitialUser) {
+    // TODO(b/409650316): need to be created on demand because behavior depend on value of flag
+    // FLAG_CREATE_INITIAL_USER; should be set on @BeforeMethod once flag is ramped up
+    private HsumBootUserInitializer createHsumBootUserInitializer() {
         mTracer = new TimingsTraceAndSlog(TAG);
         return new HsumBootUserInitializer(mMockUms, mMockAms, mMockPms, mMockContentResolver,
-                shouldAlwaysHaveMainUser, shouldCreateInitialUser);
+                mShouldAlwaysHaveMainUser, mShouldCreateInitialUser, mIsManagedDevice);
     }
 
     private void expectMainUserCreated() {
