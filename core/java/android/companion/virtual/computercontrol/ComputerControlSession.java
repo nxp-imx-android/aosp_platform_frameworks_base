@@ -37,6 +37,7 @@ import android.os.RemoteException;
 import android.view.Display;
 import android.view.DisplayInfo;
 import android.view.Surface;
+import android.view.inputmethod.InputConnection;
 
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
@@ -217,6 +218,26 @@ public final class ComputerControlSession implements AutoCloseable {
     public void sendKeyEvent(@NonNull VirtualKeyEvent event) {
         try {
             mSession.sendKeyEvent(Objects.requireNonNull(event));
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    /**
+     * Inserts provided text into the currently active text field on the display associated with
+     * the {@link ComputerControlSession}.
+     *
+     * <p> This method expects a text field to be in focus with an active {@link InputConnection}.
+     * It inserts text at the current cursor position in the text field and moves the cursor to
+     * the end of inserted text. </p>
+     *
+     * @param text to be inserted
+     * @param replaceExisting whether the current text in the text field needs to be overwritten
+     * @param commit whether the text should be submitted after insertion
+     */
+    public void insertText(@NonNull String text, boolean replaceExisting, boolean commit) {
+        try {
+            mSession.insertText(text, replaceExisting, commit);
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }

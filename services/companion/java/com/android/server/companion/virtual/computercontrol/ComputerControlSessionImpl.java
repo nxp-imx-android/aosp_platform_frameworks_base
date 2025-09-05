@@ -22,6 +22,7 @@ import static android.companion.virtual.VirtualDeviceParams.POLICY_TYPE_ACTIVITY
 import android.annotation.IntRange;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.annotation.SuppressLint;
 import android.annotation.UserIdInt;
 import android.app.ActivityOptions;
 import android.companion.virtual.ActivityPolicyExemption;
@@ -53,8 +54,11 @@ import android.os.Binder;
 import android.os.IBinder;
 import android.os.RemoteException;
 import android.os.UserHandle;
+import android.util.Slog;
 import android.view.Display;
 import android.view.DisplayInfo;
+import android.view.KeyCharacterMap;
+import android.view.KeyEvent;
 import android.view.Surface;
 import android.view.WindowManager;
 
@@ -78,12 +82,17 @@ import java.util.concurrent.atomic.AtomicInteger;
 final class ComputerControlSessionImpl extends IComputerControlSession.Stub
         implements IBinder.DeathRecipient {
 
+    private static final String TAG = "ComputerControlSession";
+
     // Throttle swipe events to avoid misinterpreting them as a fling. Each swipe will
     // consist of a DOWN event, 10 MOVE events spread over 500ms, and an UP event.
     @VisibleForTesting
     static final int SWIPE_STEPS = 10;
     @VisibleForTesting
     static final long SWIPE_EVENT_DELAY_MS = 50L;
+
+    @VisibleForTesting
+    static final long KEY_EVENT_DELAY_MS = 10L;
 
     private final IBinder mAppToken;
     private final ComputerControlSessionParams mParams;
@@ -103,6 +112,7 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
     private int mDisplayWidth;
     private int mDisplayHeight;
     private ScheduledFuture<?> mSwipeFuture;
+    private ScheduledFuture<?> mInsertTextFuture;
 
     ComputerControlSessionImpl(IBinder appToken, ComputerControlSessionParams params,
             AttributionSource attributionSource,
@@ -305,6 +315,47 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
         return new InteractiveMirrorDisplayImpl(virtualDisplayConfig, mVirtualDevice);
     }
 
+    @SuppressLint("WrongConstant")
+    @Override
+    public void insertText(@NonNull String text, boolean replaceExisting, boolean commit) {
+        if (mInsertTextFuture != null) {
+            mInsertTextFuture.cancel(false);
+            mInsertTextFuture = null;
+        }
+        if (android.companion.virtualdevice.flags.Flags.computerControlTyping()) {
+            // TODO(b/422134565): Implement Input connection based typing
+        } else {
+            KeyCharacterMap kcm = KeyCharacterMap.load(KeyCharacterMap.VIRTUAL_KEYBOARD);
+            KeyEvent[] events = kcm.getEvents(text.toCharArray());
+
+            if (events == null) {
+                Slog.e(TAG, "Couldn't generate key events from the provided text");
+                return;
+            }
+            List<VirtualKeyEvent> keysToSend = new ArrayList<>();
+            if (replaceExisting) {
+                keysToSend.add(
+                        createKeyEvent(KeyEvent.KEYCODE_CTRL_LEFT, VirtualKeyEvent.ACTION_DOWN));
+                keysToSend.add(createKeyEvent(KeyEvent.KEYCODE_A, VirtualKeyEvent.ACTION_DOWN));
+                keysToSend.add(createKeyEvent(KeyEvent.KEYCODE_A, VirtualKeyEvent.ACTION_UP));
+                keysToSend.add(
+                        createKeyEvent(KeyEvent.KEYCODE_CTRL_LEFT, VirtualKeyEvent.ACTION_UP));
+                keysToSend.add(createKeyEvent(KeyEvent.KEYCODE_DEL, VirtualKeyEvent.ACTION_DOWN));
+                keysToSend.add(createKeyEvent(KeyEvent.KEYCODE_DEL, VirtualKeyEvent.ACTION_UP));
+            }
+
+            for (KeyEvent event : events) {
+                keysToSend.add(createKeyEvent(event.getKeyCode(), event.getAction()));
+            }
+
+            if (commit) {
+                keysToSend.add(createKeyEvent(KeyEvent.KEYCODE_ENTER, VirtualKeyEvent.ACTION_DOWN));
+                keysToSend.add(createKeyEvent(KeyEvent.KEYCODE_ENTER, VirtualKeyEvent.ACTION_UP));
+            }
+            performKeyStep(keysToSend, 0);
+        }
+    }
+
     @Override
     public void close() throws RemoteException {
         mVirtualDevice.close();
@@ -333,6 +384,13 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
                 .build();
     }
 
+    VirtualKeyEvent createKeyEvent(int keyCode, @VirtualKeyEvent.Action int action) {
+        return new VirtualKeyEvent.Builder()
+                .setAction(action)
+                .setKeyCode(keyCode)
+                .build();
+    }
+
     private void performSwipeStep(int fromX, int fromY, int toX, int toY, int step) {
         final double fraction = ((double) step) / SWIPE_STEPS;
         // This makes the movement distance smaller towards the end.
@@ -358,6 +416,23 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
         mSwipeFuture = mScheduler.schedule(
                 () -> performSwipeStep(fromX, fromY, toX, toY, nextStep),
                 SWIPE_EVENT_DELAY_MS, TimeUnit.MILLISECONDS);
+    }
+
+    private void performKeyStep(List<VirtualKeyEvent> keysToSend, int currStep) {
+        final int nextStep = currStep + 1;
+        try {
+            mVirtualKeyboard.sendKeyEvent(keysToSend.get(currStep));
+            if (nextStep >= keysToSend.size()) {
+                mInsertTextFuture = null;
+                return;
+            }
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+
+        mInsertTextFuture = mScheduler.schedule(
+                () -> performKeyStep(keysToSend, nextStep), KEY_EVENT_DELAY_MS,
+                TimeUnit.MILLISECONDS);
     }
 
     private static class ComputerControlActivityListener

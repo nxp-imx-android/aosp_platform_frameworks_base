@@ -266,3 +266,13 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "computer_control_typing"
+    namespace: "virtual_devices"
+    description: "Support input connection based CC text manipulation APIs"
+    bug: "422134565"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
