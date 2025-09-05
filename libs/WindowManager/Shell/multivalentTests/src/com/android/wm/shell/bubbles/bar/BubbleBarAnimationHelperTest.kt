@@ -191,6 +191,27 @@ class BubbleBarAnimationHelperTest {
     }
 
     @Test
+    fun animateSwitch_quickSwitch_newlySelectedIsVisible() {
+        val bubbleA = createBubble(key = "A").initialize(container)
+        val bubbleB = createBubble(key = "B").initialize(container)
+
+        activityScenario.onActivity {
+            // Start an animation from A to B
+            animationHelper.animateSwitch(
+                    bubbleA, bubbleB, /* shouldApplyAsJumpcut= */ false, /* endRunnable= */ null)
+            // This simulates Bubble B has finished animating out
+            bubbleB.bubbleBarExpandedView!!.visibility = View.INVISIBLE
+            // Let it run for a bit, but not finish
+            animatorTestRule.advanceTimeBy(100)
+        }
+        getInstrumentation().waitForIdleSync()
+
+        // Assert that even though we manually set it to INVISIBLE, the animation start
+        // callback has corrected it to VISIBLE.
+        assertThat(bubbleB.bubbleBarExpandedView?.visibility).isEqualTo(View.VISIBLE)
+    }
+
+    @Test
     fun animateSwitch_bubbleToBubble_handleColorTransferred() {
         val fromBubble = createBubble(key = "from").initialize(container)
         val uiMode =
