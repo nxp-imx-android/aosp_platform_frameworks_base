@@ -251,7 +251,7 @@ public class SecureChannel {
         }
     }
 
-    private void receiveSecureMessage() throws IOException, CryptoException {
+    private void receiveSecureMessage() throws IOException {
         // Check if channel is secured. Trigger error callback. Let user handle it.
         if (!isSecured()) {
             Slog.d(TAG, "Received a message without a secure connection. "
@@ -263,7 +263,7 @@ public class SecureChannel {
         try {
             byte[] receivedMessage = readMessage(MessageType.SECURE_MESSAGE);
             mCallback.onSecureMessageReceived(receivedMessage);
-        } catch (SecureChannelException e) {
+        } catch (SecureChannelException | CryptoException e) {
             Slog.w(TAG, "Ignoring received message.", e);
         }
     }
