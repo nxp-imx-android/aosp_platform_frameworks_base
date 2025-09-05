@@ -553,11 +553,13 @@ public class LocationManagerService extends ILocationManager.Stub implements
             setLocationFudgerCache(new LocationFudgerCache(mPopulationDensityProvider));
         }
 
-        // bind to hardware activity recognition
-        HardwareActivityRecognitionProxy hardwareActivityRecognitionProxy =
-                HardwareActivityRecognitionProxy.createAndRegister(mContext);
-        if (hardwareActivityRecognitionProxy == null) {
-            Log.e(TAG, "unable to bind ActivityRecognitionProxy");
+        if (!Flags.disableHardwareAr()) {
+            // bind to hardware activity recognition
+            HardwareActivityRecognitionProxy hardwareActivityRecognitionProxy =
+                    HardwareActivityRecognitionProxy.createAndRegister(mContext);
+            if (hardwareActivityRecognitionProxy == null) {
+                Log.e(TAG, "unable to bind ActivityRecognitionProxy");
+            }
         }
 
         // bind to gnss geofence proxy

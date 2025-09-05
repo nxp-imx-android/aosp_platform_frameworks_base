@@ -175,3 +175,10 @@ flag {
     description: "Support TOA in GnssSatelliteAlmanac"
     bug: "409934786"
 }
+
+flag {
+    name: "disable_hardware_ar"
+    namespace: "location"
+    description: "Disables the legacy hardware AR code path which has been deprecated for a long time"
+    bug: "441145460"
+}
