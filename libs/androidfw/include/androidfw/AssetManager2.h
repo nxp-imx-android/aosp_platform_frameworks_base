@@ -409,7 +409,12 @@ class AssetManager2 {
       std::vector<ConfiguredOverlay> overlays_;
 
       // A library reference table that contains build-package ID to runtime-package ID mappings.
-      std::shared_ptr<DynamicRefTable> dynamic_ref_table = std::make_shared<DynamicRefTable>();
+      std::shared_ptr<DynamicRefTable> dynamic_ref_table;
+
+      explicit PackageGroup(std::shared_ptr<DynamicRefTable> ref_table = {})
+          : dynamic_ref_table(ref_table ? std::move(ref_table)
+                                        : std::make_shared<DynamicRefTable>()) {
+      }
   };
 
   // Finds the best entry for `resid` from the set of ApkAssets. The entry can be a simple
