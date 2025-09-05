@@ -602,6 +602,13 @@
       ]
     },
     {
+      "name": "FunctionalTestsDesktopMode-taskbar-LaunchNewInstanceFromTaskbarMenuTest",
+      "keywords": [
+        "device",
+        "desktop"
+      ]
+    },
+    {
       "name": "FunctionalTestsDesktopMode-tiling-TilingTest",
       "keywords": [
         "device",
