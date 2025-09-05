@@ -41,7 +41,7 @@ import com.android.internal.accessibility.util.TtsPrompt
 import com.android.internal.annotations.VisibleForTesting
 import com.android.systemui.CoreStartable
 import com.android.systemui.accessibility.keygesture.domain.KeyGestureDialogInteractor
-import com.android.systemui.accessibility.keygesture.domain.model.KeyGestureConfirmInfo
+import com.android.systemui.accessibility.keygesture.shared.model.KeyGestureConfirmInfo
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dialog.ui.composable.AlertDialogContent
@@ -97,7 +97,7 @@ constructor(
             R.string.accessibility_key_gesture_dialog_positive_button_text
 
         override fun onPositiveButtonClick(info: KeyGestureConfirmInfo) {
-            interactor.onPositiveButtonClick(info.targetName)
+            interactor.enableShortcutsForTargets(enable = true, info.targetName)
         }
     }
 
@@ -146,10 +146,45 @@ constructor(
             R.string.accessibility_key_gesture_shortcut_not_yet_enabled_positive_button_text
     }
 
+    /**
+     * Delegate for the magnification shortcut which turns on the magnification shortcuts and zoom
+     * in automatically
+     */
+    private class MagnifyMagnificationDialogDelegate(interactor: KeyGestureDialogInteractor) :
+        BaseDialogDelegate(interactor) {
+        override val negativeButtonTextId: Int =
+            R.string.accessibility_key_gesture_magnification_dialog_negative_button_text
+        override val positiveButtonTextId: Int =
+            R.string.accessibility_key_gesture_magnification_dialog_positive_button_text
+        private var magnificationShortcutConfirmed = false
+
+        override fun onDialogCreated(info: KeyGestureConfirmInfo) {
+            interactor.enableShortcutsForTargets(enable = true, info.targetName)
+            magnificationShortcutConfirmed = false
+            interactor.enableMagnificationAndZoomIn(info.displayId)
+        }
+
+        override fun onPositiveButtonClick(info: KeyGestureConfirmInfo) {
+            magnificationShortcutConfirmed = true
+        }
+
+        override fun onDialogDismissed(info: KeyGestureConfirmInfo) {
+            if (!magnificationShortcutConfirmed) {
+                // We need to remove the shortcut target if the user clicks the negative
+                // button or clicks outside of the dialog.
+                interactor.enableShortcutsForTargets(enable = false, info.targetName)
+            }
+        }
+    }
+
     private fun getDialogDelegate(keyGestureType: Int): DialogBehaviorDelegate {
         return when (keyGestureType) {
             KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_MAGNIFICATION ->
-                MagnificationDialogDelegate(interactor)
+                if (Flags.enableMagnifyMagnificationKeyGestureDialog()) {
+                    MagnifyMagnificationDialogDelegate(interactor)
+                } else {
+                    MagnificationDialogDelegate(interactor)
+                }
             KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_SCREEN_READER ->
                 ScreenReaderDialogDelegate(interactor)
             KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_VOICE_ACCESS ->
@@ -176,7 +211,10 @@ constructor(
     }
 
     private fun createDialog(keyGestureConfirmInfo: KeyGestureConfirmInfo?) {
-        // Ignore other type of first-time keyboard shortcuts while the dialog is showing.
+        // Ignore other type of first-time keyboard shortcuts while there is an existing dialog.
+        // `currentDialog` will be reset when the dialog dismissal listener is called, which will be
+        // executed asynchronously. Thus, to avoid race condition, we should check the nullable of
+        // this value to determine if the current dialog is fully finished.
         if (currentDialog != null) {
             return
         }

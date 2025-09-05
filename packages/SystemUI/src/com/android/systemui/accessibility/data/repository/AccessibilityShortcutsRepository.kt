@@ -49,7 +49,9 @@ interface AccessibilityShortcutsRepository {
 
     fun getActionKeyIconResId(): Int
 
-    fun enableShortcutsForTargets(targetName: String)
+    fun enableShortcutsForTargets(enable: Boolean, targetName: String)
+
+    fun enableMagnificationAndZoomIn(displayId: Int)
 }
 
 @SysUISingleton
@@ -128,13 +130,18 @@ constructor(
     }
 
     @SuppressLint("MissingPermission") // android.permission.MANAGE_ACCESSIBILITY
-    override fun enableShortcutsForTargets(targetName: String) {
+    override fun enableShortcutsForTargets(enable: Boolean, targetName: String) {
         accessibilityManager.enableShortcutsForTargets(
-            /* enable= */ true,
+            /* enable= */ enable,
             ShortcutConstants.UserShortcutType.KEY_GESTURE,
             setOf(targetName),
             userTracker.userId,
         )
+    }
+
+    @SuppressLint("MissingPermission") // android.permission.MANAGE_ACCESSIBILITY
+    override fun enableMagnificationAndZoomIn(displayId: Int) {
+        accessibilityManager.enableMagnificationAndZoomIn(displayId)
     }
 
     private suspend fun getFeatureName(keyGestureType: Int, targetName: String): CharSequence? {
