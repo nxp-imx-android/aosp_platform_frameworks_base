@@ -89,6 +89,7 @@ java_library {
 
     srcs: [
         "src/com/android/wm/shell/shared/bubbles/BubbleAnythingFlagHelper.java",
+        "src/com/android/wm/shell/shared/bubbles/logging/EntryPoint.kt",
     ],
     static_libs: [
         "com_android_wm_shell_flags_lib",
