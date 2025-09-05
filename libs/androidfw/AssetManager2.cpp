@@ -174,7 +174,7 @@ void AssetManager2::BuildDynamicRefTable(ApkAssetsList apk_assets) {
   int next_package_id = 0x02;
   for (const ApkAssets* apk_assets : sorted_apk_assets) {
     std::shared_ptr<OverlayDynamicRefTable> overlay_ref_table;
-    if (auto loaded_idmap = apk_assets->GetLoadedIdmap(); loaded_idmap != nullptr) {
+    if (auto loaded_idmap = apk_assets->GetLoadedIdmap()) {
       // The target package must precede the overlay package in the apk assets paths in order
       // to take effect.
       auto iter = target_assets_package_ids.find(loaded_idmap->TargetApkPath());
@@ -217,14 +217,7 @@ void AssetManager2::BuildDynamicRefTable(ApkAssetsList apk_assets) {
       if (idx == 0xff) {
         // Add the mapping for package ID to index if not present.
         package_ids_[package_id] = idx = static_cast<uint8_t>(package_groups_.size());
-        PackageGroup& new_group = package_groups_.emplace_back();
-
-        if (overlay_ref_table != nullptr) {
-          // If this package is from an overlay, use a dynamic reference table that can rewrite
-          // overlay resource ids to their corresponding target resource ids.
-          new_group.dynamic_ref_table = std::move(overlay_ref_table);
-        }
-
+        PackageGroup& new_group = package_groups_.emplace_back(std::move(overlay_ref_table));
         DynamicRefTable* ref_table = new_group.dynamic_ref_table.get();
         ref_table->mAssignedPackageId = package_id;
         ref_table->mAppAsLib = package->IsDynamic() && package->GetPackageId() == 0x7f;
@@ -309,6 +302,15 @@ void AssetManager2::DumpToLog() const {
     LOG(INFO) << base::StringPrintf("PG (%02x): ",
                                     package_group.dynamic_ref_table->mAssignedPackageId)
               << list;
+
+    list.clear();
+    for (const auto& overlay : package_group.overlays_) {
+      base::StringAppendF(&list, "   [%d](%s) -> %s\n", overlay.cookie,
+                          overlay.enabled ? "enabled" : "disabled",
+                          GetApkAssets(overlay.cookie)->GetDebugName().c_str());
+    }
+    LOG(INFO) << base::StringPrintf("  overlays (%d):\n%s", int(package_group.overlays_.size()),
+                                    list.c_str());
 
     for (size_t i = 0; i < 256; i++) {
       if (package_group.dynamic_ref_table->mLookupTable[i] != 0) {
@@ -503,13 +505,13 @@ AssetManager2::AssetsSet AssetManager2::GetNonSystemOverlays() const {
       }
     }
 
-    if (!found_system_package) {
+    if (!found_system_package && !package_group.overlays_.empty()) {
       auto op = StartOperation();
       // Return all overlays, including the disabled ones as this is used for static info
       // collection only.
       for (const ConfiguredOverlay& overlay : package_group.overlays_) {
         if (const auto& asset = GetApkAssets(overlay.cookie)) {
-          non_system_overlays.insert(std::move(asset));
+          non_system_overlays.insert(asset);
         }
       }
     }
@@ -1656,7 +1658,7 @@ const AssetManager2::ApkAssetsPtr& AssetManager2::GetApkAssets(ApkAssetsCookie c
   DCHECK(number_of_running_scoped_operations_ > 0) << "Must have an operation running";
 
   if (cookie < 0 || cookie >= apk_assets_.size()) {
-    static const ApkAssetsPtr empty{};
+    static constinit const ApkAssetsPtr empty{};
     return empty;
   }
   auto& [wptr, res] = apk_assets_[cookie];
