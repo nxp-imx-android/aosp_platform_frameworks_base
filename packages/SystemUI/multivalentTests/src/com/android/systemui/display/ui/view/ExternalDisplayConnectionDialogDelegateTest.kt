@@ -26,6 +26,7 @@ import android.view.View
 import android.view.Window
 import android.view.WindowInsets
 import android.view.WindowInsetsAnimation
+import android.widget.CheckBox
 import android.widget.CompoundButton
 import androidx.core.view.marginBottom
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -85,6 +86,7 @@ class ExternalDisplayConnectionDialogDelegateTest : SysuiTestCase() {
             ExternalDisplayConnectionDialogDelegate(
                 context = context,
                 showConcurrentDisplayInfo = false,
+                isInKioskMode = false,
                 rememberChoiceCheckBoxListener = rememberChoiceCallback,
                 onStartDesktopClickListener = onStartDesktopCallback,
                 onStartMirroringClickListener = onStartMirroringCallback,
@@ -144,6 +146,44 @@ class ExternalDisplayConnectionDialogDelegateTest : SysuiTestCase() {
 
         verify(onCancelCallback, never()).onClick(any())
         verify(onStartDesktopCallback).onClick(any())
+    }
+
+    @Test
+    fun startDesktopButton_inKioskMode_isNotVisible() {
+        val kioskModeDialogDelegate =
+            ExternalDisplayConnectionDialogDelegate(
+                context = context,
+                showConcurrentDisplayInfo = false,
+                isInKioskMode = true,
+                rememberChoiceCheckBoxListener = rememberChoiceCallback,
+                onStartDesktopClickListener = onStartDesktopCallback,
+                onStartMirroringClickListener = onStartMirroringCallback,
+                onCancelClickListener = onCancelCallback,
+                insetsProvider = { Insets.of(Rect()) },
+            )
+        kioskModeDialogDelegate.onCreate(dialog, null)
+
+        val desktopModeButton = dialog.requireViewById<View>(R.id.start_desktop_mode)
+        assertThat(desktopModeButton.visibility).isEqualTo(View.GONE)
+    }
+
+    @Test
+    fun saveChoiceCheckbox_inKioskMode_isNotVisible() {
+        val kioskModeDialogDelegate =
+            ExternalDisplayConnectionDialogDelegate(
+                context = context,
+                showConcurrentDisplayInfo = false,
+                isInKioskMode = true,
+                rememberChoiceCheckBoxListener = rememberChoiceCallback,
+                onStartDesktopClickListener = onStartDesktopCallback,
+                onStartMirroringClickListener = onStartMirroringCallback,
+                onCancelClickListener = onCancelCallback,
+                insetsProvider = { Insets.of(Rect()) },
+            )
+        kioskModeDialogDelegate.onCreate(dialog, null)
+
+        val saveChoiceCheckbox = dialog.requireViewById<CheckBox>(R.id.save_connection_preference)
+        assertThat(saveChoiceCheckbox.visibility).isEqualTo(View.GONE)
     }
 
     @Test
