@@ -1249,4 +1249,13 @@ public abstract class WindowManagerInternal {
      * @throws RuntimeException if the payload cannot be written to the settings file.
      */
     public abstract void restoreDisplayWindowSettings(int userId, byte[] payload);
+
+    /**
+     * Creates a mirror of the given display's root SurfaceControl.
+     *
+     * @param displayId The display which should be mirrored.
+     * @return The mirror surface, or null if the display was not found.
+     */
+    @Nullable
+    public abstract SurfaceControl createMirrorForDisplayContent(int displayId);
 }

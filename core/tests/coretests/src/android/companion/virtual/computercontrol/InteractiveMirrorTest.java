@@ -16,11 +16,12 @@
 
 package android.companion.virtual.computercontrol;
 
-import static org.mockito.ArgumentMatchers.eq;
+import static com.google.common.truth.Truth.assertThat;
+
 import static org.mockito.Mockito.verify;
 
-import android.hardware.input.VirtualTouchEvent;
 import android.os.RemoteException;
+import android.view.SurfaceControl;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 
@@ -32,22 +33,22 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 @RunWith(AndroidJUnit4.class)
-public class InteractiveMirrorDisplayTest {
-
-    private static final int WIDTH = 1920;
-    private static final int HEIGHT = 1080;
+public class InteractiveMirrorTest {
 
     @Mock
-    private IInteractiveMirrorDisplay mMockDisplay;
+    private IInteractiveMirror mMockRemoteMirror;
 
-    private InteractiveMirrorDisplay mDisplay;
+    private InteractiveMirror mMirror;
 
     private AutoCloseable mMockitoSession;
+
+    private SurfaceControl mMirrorSurface;
 
     @Before
     public void setUp() {
         mMockitoSession = MockitoAnnotations.openMocks(this);
-        mDisplay = new InteractiveMirrorDisplay(mMockDisplay);
+        mMirrorSurface = new SurfaceControl();
+        mMirror = new InteractiveMirror(mMockRemoteMirror, mMirrorSurface);
     }
 
     @After
@@ -56,27 +57,25 @@ public class InteractiveMirrorDisplayTest {
     }
 
     @Test
-    public void resize_resizesDisplay() throws RemoteException {
-        mDisplay.resize(WIDTH, HEIGHT);
-        verify(mMockDisplay).resize(WIDTH, HEIGHT);
+    public void setInteractiveToTrue_setsInteractive() throws RemoteException {
+        mMirror.setInteractive(true);
+        verify(mMockRemoteMirror).setInteractive(true);
     }
 
     @Test
-    public void sendTouchEvent_sendsEvent() throws RemoteException {
-        VirtualTouchEvent touchEvent = new VirtualTouchEvent.Builder()
-                .setPointerId(0)
-                .setToolType(VirtualTouchEvent.TOOL_TYPE_FINGER)
-                .setAction(VirtualTouchEvent.ACTION_DOWN)
-                .setX(0)
-                .setY(0)
-                .build();
-        mDisplay.sendTouchEvent(touchEvent);
-        verify(mMockDisplay).sendTouchEvent(eq(touchEvent));
+    public void setInteractiveToFalse_setsInteractive() throws RemoteException {
+        mMirror.setInteractive(false);
+        verify(mMockRemoteMirror).setInteractive(false);
+    }
+
+    @Test
+    public void getMirrorSurface_returnsMirrorSurface() throws RemoteException {
+        assertThat(mMirror.getMirrorSurface()).isEqualTo(mMirrorSurface);
     }
 
     @Test
     public void close_closesDisplay() throws RemoteException {
-        mDisplay.close();
-        verify(mMockDisplay).close();
+        mMirror.close();
+        verify(mMockRemoteMirror).close();
     }
 }

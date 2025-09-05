@@ -33,7 +33,8 @@ import android.companion.virtual.VirtualDeviceParams;
 import android.companion.virtual.computercontrol.ComputerControlSession;
 import android.companion.virtual.computercontrol.ComputerControlSessionParams;
 import android.companion.virtual.computercontrol.IComputerControlSession;
-import android.companion.virtual.computercontrol.IInteractiveMirrorDisplay;
+import android.companion.virtual.computercontrol.IInteractiveMirror;
+import android.companion.virtual.computercontrol.InteractiveMirror;
 import android.companion.virtualdevice.flags.Flags;
 import android.content.AttributionSource;
 import android.content.ComponentName;
@@ -62,7 +63,7 @@ import android.view.Display;
 import android.view.DisplayInfo;
 import android.view.KeyCharacterMap;
 import android.view.KeyEvent;
-import android.view.Surface;
+import android.view.SurfaceControl;
 import android.view.ViewConfiguration;
 import android.view.WindowManager;
 
@@ -83,7 +84,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * A computer control session that encapsulates a {@link IVirtualDevice}. The device is created and
@@ -145,7 +145,6 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
     private final IVirtualInputDevice mVirtualTouchscreen;
     private final IVirtualInputDevice mVirtualDpad;
     private final IVirtualInputDevice mVirtualKeyboard;
-    private final AtomicInteger mMirrorDisplayCounter = new AtomicInteger(0);
     private final ScheduledExecutorService mScheduler =
             Executors.newSingleThreadScheduledExecutor();
     private final Set<UserHandle> mAllowedUsers;
@@ -382,23 +381,17 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
 
     @Override
     @Nullable
-    public IInteractiveMirrorDisplay createInteractiveMirrorDisplay(
-            int width, int height, @NonNull Surface surface) throws RemoteException {
-        Objects.requireNonNull(surface);
-        DisplayInfo displayInfo = mInjector.getDisplayInfo(mVirtualDisplayId);
-        if (displayInfo == null) {
-            // The display we're trying to mirror is gone; likely the session is already closed.
+    public IInteractiveMirror createInteractiveMirror(SurfaceControl outMirrorSurface)
+            throws RemoteException {
+        final var mirrorSurface = mInjector.createMirrorForDisplayContent(mVirtualDisplayId);
+        if (mirrorSurface == null) {
             return null;
         }
-        String name =
-                mParams.getName() + "-display-mirror-" + mMirrorDisplayCounter.getAndIncrement();
-        VirtualDisplayConfig virtualDisplayConfig =
-                new VirtualDisplayConfig.Builder(name, width, height, displayInfo.logicalDensityDpi)
-                        .setSurface(surface)
-                        .setDisplayIdToMirror(mVirtualDisplayId)
-                        .setFlags(DisplayManager.VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR)
-                        .build();
-        return new InteractiveMirrorDisplayImpl(virtualDisplayConfig, mVirtualDevice);
+        outMirrorSurface.copyFrom(mirrorSurface,
+                "ComputerControlSessionImpl#createInteractiveMirrorDisplay");
+        final var mirror = new InteractiveMirrorImpl(mirrorSurface, mInjector::createTransaction);
+        mirror.setInteractive(InteractiveMirror.DEFAULT_INTERACTIVE);
+        return mirror;
     }
 
     @SuppressLint("WrongConstant")
@@ -715,6 +708,15 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
 
         public long getMaxSessionDurationMillis() {
             return GLOBAL_SESSION_TIMEOUT_DURATION_MS;
+        }
+
+        @Nullable
+        public SurfaceControl createMirrorForDisplayContent(int displayId) {
+            return mWindowManagerInternal.createMirrorForDisplayContent(displayId);
+        }
+
+        public SurfaceControl.Transaction createTransaction() {
+            return new SurfaceControl.Transaction();
         }
     }
 }

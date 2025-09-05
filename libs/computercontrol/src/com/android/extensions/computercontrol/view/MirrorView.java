@@ -16,49 +16,64 @@
 
 package com.android.extensions.computercontrol.view;
 
+import android.annotation.MainThread;
+import android.companion.virtual.computercontrol.InteractiveMirror;
 import android.content.Context;
-import android.graphics.SurfaceTexture;
 import android.os.HandlerThread;
 import android.util.AttributeSet;
-import android.view.InputDevice;
-import android.view.MotionEvent;
-import android.view.Surface;
-import android.view.TextureView;
+import android.util.Size;
+import android.view.SurfaceControl;
+import android.view.SurfaceHolder;
+import android.view.SurfaceView;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewRootImpl;
 import android.widget.FrameLayout;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.android.extensions.computercontrol.ComputerControlSession;
-import com.android.extensions.computercontrol.InteractiveMirror;
+
+import java.util.Objects;
 
 /**
  * A view which allows interactive mirroring of a given {@link ComputerControlSession}.
  */
+@MainThread
 public class MirrorView extends FrameLayout {
-    private MirrorHelper mMirrorHelper;
-    private OnTouchListener mOnTouchListener = null;
+
+    private final HandlerThread mHandlerThread = new HandlerThread("mirrorHelper");
+
+    private final MirrorSurface mMirrorSurface = new MirrorSurface(mContext);
+
+    @Nullable
+    private ComputerControlSession mComputerControlSession = null;
+    private boolean mIsInteractive = false;
+
+    // This member can only be read or written to from the auxiliary handler thread,
+    // since its creation and interactions involve binder calls.
+    @Nullable
+    private InteractiveMirror mInteractiveMirror = null;
 
     public MirrorView(Context context) {
         super(context);
-        init(context);
+        init();
     }
 
     public MirrorView(Context context, AttributeSet attrs) {
         super(context, attrs);
-        init(context);
+        init();
     }
 
     public MirrorView(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
-        init(context);
+        init();
     }
 
     public MirrorView(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
         super(context, attrs, defStyleAttr, defStyleRes);
-        init(context);
+        init();
     }
 
     /**
@@ -66,150 +81,215 @@ public class MirrorView extends FrameLayout {
      * be shown.
      */
     public void setComputerControlSession(@Nullable ComputerControlSession computerControlSession) {
-        mMirrorHelper.setComputerControlSession(computerControlSession);
+        if (mComputerControlSession == computerControlSession) {
+            return;
+        }
+        mComputerControlSession = computerControlSession;
+        final boolean isInteractive = mIsInteractive;
+
+        mHandlerThread.getThreadExecutor().execute(() -> {
+            if (mInteractiveMirror != null) {
+                mInteractiveMirror.close();
+            }
+            final var interactiveMirror = computerControlSession != null
+                    ? computerControlSession.createInteractiveMirror() : null;
+            mInteractiveMirror = interactiveMirror;
+
+            final SurfaceControl mirrorSurface;
+            final Size size;
+            if (computerControlSession != null && interactiveMirror != null) {
+                mirrorSurface = interactiveMirror.getMirrorSurface();
+                size = computerControlSession.getDisplaySize();
+                if (isInteractive != InteractiveMirror.DEFAULT_INTERACTIVE) {
+                    interactiveMirror.setInteractive(mIsInteractive);
+                }
+            } else {
+                mirrorSurface = null;
+                size = null;
+            }
+
+            post(() -> {
+                mMirrorSurface.setMirrorSurfaceControl(mirrorSurface, size);
+                mMirrorSurface.setVisibility(mirrorSurface == null ? View.GONE : View.VISIBLE);
+            });
+        });
     }
 
     /**
      * Sets whether user input can control the session being mirrored. By default, this is set to
      * {@code false}.
-     * <p>
-     * Note that when this is set to {@code true}, {@link #onTouchEvent(MotionEvent)} would not get
-     * called, and the return value of
-     * {@link android.view.View.OnTouchListener#onTouch(View, MotionEvent)} of any
-     * {@link android.view.View.OnTouchListener} would be ignored. However, any
-     * {@link android.view.View.OnTouchListener} set through
-     * {@link #setOnTouchListener(OnTouchListener)} would still be invoked.
      */
     public void setInteractive(boolean interactive) {
-        mMirrorHelper.setInteractive(interactive);
-    }
-
-    @Override
-    public void setOnTouchListener(OnTouchListener listener) {
-        // Don't call super.setOnTouchListener as that would overwrite our own listener. Instead,
-        // store this so it can be invoked from our own listener.
-        mOnTouchListener = listener;
-    }
-
-    private void init(@NonNull Context context) {
-        TextureView textureView = new TextureView(context);
-        addView(textureView,
-                new ViewGroup.LayoutParams(
-                        ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
-        mMirrorHelper = new MirrorHelper();
-        textureView.setSurfaceTextureListener(mMirrorHelper);
-
-        super.setOnTouchListener((v, event) -> {
-            boolean handled = mOnTouchListener != null && mOnTouchListener.onTouch(v, event);
-            handled |= mMirrorHelper.handleTouch(event);
-            return handled;
+        if (interactive == mIsInteractive) {
+            return;
+        }
+        mIsInteractive = interactive;
+        mHandlerThread.getThreadExecutor().execute(() -> {
+            if (mInteractiveMirror != null) {
+                mInteractiveMirror.setInteractive(interactive);
+            }
         });
     }
 
-    private static final class MirrorHelper implements TextureView.SurfaceTextureListener {
-        private final HandlerThread mHandlerThread;
+    private void init() {
+        mHandlerThread.start();
+        mMirrorSurface.setVisibility(View.GONE);
+        addView(mMirrorSurface, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT));
+    }
 
-        // The following members are always written on the main thread, and always read from the
-        // single thread of the executor.
-        private volatile ComputerControlSession mComputerControlSession = null;
-        private volatile Surface mSurface = null;
-        private volatile int mWidth = 0;
-        private volatile int mHeight = 0;
+    @MainThread
+    private static final class MirrorSurface extends SurfaceView {
 
-        // This is always read and written from the single thread of the executor.
-        private volatile InteractiveMirror mInteractiveMirror = null;
+        @Nullable
+        private SurfaceControl mRequestedMirrorSurface = null;
+        @Nullable
+        private Size mDisplaySize = null;
+        @Nullable
+        private SurfaceControl mCurrentMirrorSurface = null;
+        @Nullable
+        private Transformation mCurrentTransformation = null;
 
-        private boolean mInteractive = false;
+        private final SurfaceHolder.Callback mCallback = new SurfaceHolder.Callback() {
 
-        MirrorHelper() {
-            mHandlerThread = new HandlerThread("mirrorHelper");
-            mHandlerThread.start();
+            @Override
+            public void surfaceCreated(@NonNull SurfaceHolder holder) {
+            }
+
+            @Override
+            public void surfaceChanged(@NonNull SurfaceHolder holder, int format, int width,
+                    int height) {
+                // Force the mirror surface to be updated.
+                mCurrentMirrorSurface = null;
+            }
+
+            @Override
+            public void surfaceDestroyed(@NonNull SurfaceHolder holder) {
+            }
+        };
+
+        MirrorSurface(Context context) {
+            super(context);
+            setCompositionOrder(0);
+            getHolder().addCallback(mCallback);
         }
 
         @Override
-        public void onSurfaceTextureAvailable(@NonNull SurfaceTexture surfaceTexture, int width,
-                int height) {
-            mSurface = new Surface(surfaceTexture);
-            mWidth = width;
-            mHeight = height;
-            createOrResizeMirrorIfPossible();
+        protected void updateSurface() {
+            super.updateSurface();
+            updateMirrorSurface();
         }
 
-        @Override
-        public void onSurfaceTextureSizeChanged(@NonNull SurfaceTexture surfaceTexture, int width,
-                int height) {
-            mWidth = width;
-            mHeight = height;
-            createOrResizeMirrorIfPossible();
+        void setMirrorSurfaceControl(@Nullable SurfaceControl mirrorSurfaceControl,
+                @Nullable Size displaySize) {
+            mRequestedMirrorSurface = mirrorSurfaceControl;
+            mDisplaySize = displaySize;
+            invalidate();
         }
 
-        @Override
-        public boolean onSurfaceTextureDestroyed(@NonNull SurfaceTexture surfaceTexture) {
-            mSurface.release();
-            mSurface = null;
-            destroyMirror();
-            return true;
-        }
-
-        @Override
-        public void onSurfaceTextureUpdated(@NonNull SurfaceTexture surfaceTexture) {}
-
-        void setComputerControlSession(@Nullable ComputerControlSession computerControlSession) {
-            if (mComputerControlSession != null) {
-                destroyMirror();
+        private void updateMirrorSurface() {
+            if (getSurfaceControl() == null) {
+                return;
             }
-            mComputerControlSession = computerControlSession;
-            createOrResizeMirrorIfPossible();
-        }
 
-        void setInteractive(boolean interactive) {
-            mInteractive = interactive;
-        }
+            final Transformation requestedTransformation = computeTransformation();
 
-        boolean handleTouch(@NonNull MotionEvent event) {
-            if (!mInteractive) {
-                return false;
+            final boolean mirrorChanged = mCurrentMirrorSurface != mRequestedMirrorSurface;
+            final boolean transformationChanged =
+                    !Objects.equals(mCurrentTransformation, requestedTransformation);
+            if (!mirrorChanged && !transformationChanged) {
+                return;
             }
-            if (!event.getDevice().supportsSource(InputDevice.SOURCE_TOUCHSCREEN)) {
-                return false;
-            }
-            if (mInteractiveMirror == null) {
-                return false;
-            }
-            MotionEvent copy = event.copy();
-            mHandlerThread.getThreadExecutor().execute(() -> {
-                mInteractiveMirror.sendTouchEvent(copy);
-                copy.recycle();
-            });
-            return true;
-        }
 
-        private void createOrResizeMirrorIfPossible() {
-            mHandlerThread.getThreadExecutor().execute(() -> {
-                if (mComputerControlSession == null || mSurface == null) {
-                    return;
+            try (var transaction = new SurfaceControl.Transaction()) {
+                if (mirrorChanged) {
+                    if (mCurrentMirrorSurface != null) {
+                        transaction.reparent(mCurrentMirrorSurface, null);
+                        transaction.remove(mCurrentMirrorSurface);
+                        mCurrentMirrorSurface.release();
+                    }
+                    if (mRequestedMirrorSurface != null) {
+                        transaction.reparent(mRequestedMirrorSurface, getSurfaceControl());
+                    }
+                    mCurrentMirrorSurface = mRequestedMirrorSurface;
                 }
 
-                if (mInteractiveMirror != null) {
-                    // This indicates that a mirror is already there, and only needs to be resized.
-                    mInteractiveMirror.resize(mWidth, mHeight);
-                    return;
+                if (requestedTransformation != null && mCurrentMirrorSurface != null) {
+                    transaction.setScale(mCurrentMirrorSurface, requestedTransformation.scale,
+                            requestedTransformation.scale);
+                    transaction.setPosition(mCurrentMirrorSurface,
+                            requestedTransformation.translateX, requestedTransformation.translateY);
+                    mCurrentTransformation = requestedTransformation;
+                } else {
+                    mCurrentTransformation = null;
                 }
 
-                // Start mirroring.
-                mInteractiveMirror =
-                        mComputerControlSession.createInteractiveMirror(mWidth, mHeight, mSurface);
-            });
+                applyTransactionOnVriDraw(transaction);
+            }
         }
 
-        private void destroyMirror() {
-            mHandlerThread.getThreadExecutor().execute(() -> {
-                if (mInteractiveMirror != null) {
-                    // Stop mirroring.
-                    mInteractiveMirror.close();
-                    mInteractiveMirror = null;
-                }
-            });
+        private Transformation computeTransformation() {
+            if (mDisplaySize == null) {
+                return null;
+            }
+            return computeCenterFitTransformation(mDisplaySize.getWidth(), mDisplaySize.getHeight(),
+                    getWidth(), getHeight());
         }
+
+        private void applyTransactionOnVriDraw(SurfaceControl.Transaction t) {
+            final ViewRootImpl viewRoot = getViewRootImpl();
+            if (viewRoot != null) {
+                viewRoot.applyTransactionOnDraw(t);
+            } else {
+                t.apply();
+            }
+        }
+    }
+
+    /**
+     * The transformation to be applied to the mirror contents.
+     */
+    private record Transformation(float scale, float translateX, float translateY) {
+    }
+
+    /**
+     * Returns the transformation that should be applied to the mirror contents to center-fit the
+     * input content into the output space.
+     *
+     * @param inputWidth   The width of the content to be transformed.
+     * @param inputHeight  The height of the content to be transformed.
+     * @param outputWidth  The width of the space the content should fit into.
+     * @param outputHeight The height of the space the content should fit into.
+     * @return a {@link Transformation} object, or null if the transformation is invalid.
+     */
+    @Nullable
+    private static Transformation computeCenterFitTransformation(int inputWidth, int inputHeight,
+            int outputWidth, int outputHeight) {
+        if (outputWidth == 0 || outputHeight == 0 || inputWidth == 0 || inputHeight == 0) {
+            return null;
+        }
+
+        final float outputAspectRatio = (float) outputWidth / outputHeight;
+        final float inputAspectRatio = (float) inputWidth / inputHeight;
+
+        final float scale;
+        final float tx;
+        final float ty;
+
+        if (outputAspectRatio > inputAspectRatio) {
+            // The output is wider than the input, so there will be letterboxing.
+            // The content should be scaled to fit the height of the output.
+            scale = (float) outputHeight / inputHeight;
+            tx = (outputWidth - inputWidth * scale) / 2.0f;
+            ty = 0;
+        } else {
+            // The output is taller than or has the same aspect ratio as the input, so there will
+            // be pillarboxing. The content should be scaled to fit the width of the output.
+            scale = (float) outputWidth / inputWidth;
+            tx = 0;
+            ty = (outputHeight - inputHeight * scale) / 2.0f;
+        }
+
+        return new Transformation(scale, tx, ty);
     }
 }

@@ -16,8 +16,8 @@
 
 package android.companion.virtual.computercontrol;
 
-import android.companion.virtual.computercontrol.IInteractiveMirrorDisplay;
-import android.view.Surface;
+import android.companion.virtual.computercontrol.IInteractiveMirror;
+import android.view.SurfaceControl;
 
 /**
  * Interface for computer control session management.
@@ -41,6 +41,9 @@ interface IComputerControlSession {
     /** Injects a long press event into the trusted virtual display. */
     void longPress(int x, int y);
 
+    /** Creates an interactive mirror of the session's virtual display. */
+    IInteractiveMirror createInteractiveMirror(out SurfaceControl mirrorSurface);
+
     /**
      * Inserts text into the current active input connection. If there is no active input
      * connection, this method is no-op.
@@ -54,10 +57,6 @@ interface IComputerControlSession {
 
     /** Performs computer control action on the computer control display. */
     void performAction(int actionCode);
-
-    /** Creates an interactive virtual display, mirroring the trusted one. */
-    IInteractiveMirrorDisplay createInteractiveMirrorDisplay(
-            int width, int height, in Surface surface);
 
     /** Closes this session. */
     void close();

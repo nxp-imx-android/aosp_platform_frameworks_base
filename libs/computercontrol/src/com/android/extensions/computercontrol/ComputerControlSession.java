@@ -20,13 +20,13 @@ import android.annotation.CallbackExecutor;
 import android.annotation.IntRange;
 import android.app.Activity;
 import android.companion.virtual.computercontrol.ComputerControlSession.Action;
-import android.companion.virtual.computercontrol.InteractiveMirrorDisplay;
+import android.companion.virtual.computercontrol.InteractiveMirror;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.media.Image;
-import android.view.Surface;
+import android.util.Size;
 import android.view.accessibility.AccessibilityWindowInfo;
 import android.view.inputmethod.InputConnection;
 
@@ -165,14 +165,16 @@ public final class ComputerControlSession implements AutoCloseable {
     /**
      * Returns an {@link InteractiveMirror} which mirrors this {@link ComputerControlSession}.
      */
-    public InteractiveMirror createInteractiveMirror(
-            int width, int height, @NonNull Surface surface) {
-        InteractiveMirrorDisplay interactiveMirrorDisplay =
-                mSession.createInteractiveMirrorDisplay(width, height, surface);
-        if (interactiveMirrorDisplay == null) {
-            return null;
-        }
-        return new InteractiveMirror(interactiveMirrorDisplay);
+    public InteractiveMirror createInteractiveMirror() {
+        return mSession.createInteractiveMirror();
+    }
+
+    /**
+     * Get the size of the session's display.
+     */
+    @NonNull
+    public Size getDisplaySize() {
+        return mSession.getDisplaySize();
     }
 
     /**

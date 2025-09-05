@@ -336,4 +336,9 @@ public class StubTransaction extends SurfaceControl.Transaction {
                 boolean canOccludePresentation) {
         return this;
     }
+
+    @Override
+    public SurfaceControl.Transaction setDropInputMode(SurfaceControl sc, int mode) {
+        return this;
+    }
 }

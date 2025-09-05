@@ -35,6 +35,7 @@ import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -46,9 +47,11 @@ import android.companion.virtual.IVirtualDevice;
 import android.companion.virtual.VirtualDeviceParams;
 import android.companion.virtual.computercontrol.ComputerControlSession;
 import android.companion.virtual.computercontrol.ComputerControlSessionParams;
+import android.companion.virtual.computercontrol.IInteractiveMirror;
 import android.companion.virtualdevice.flags.Flags;
 import android.content.AttributionSource;
 import android.content.Intent;
+import android.gui.DropInputMode;
 import android.hardware.display.DisplayManager;
 import android.hardware.display.VirtualDisplayConfig;
 import android.hardware.input.IVirtualInputDevice;
@@ -67,11 +70,13 @@ import android.platform.test.annotations.Presubmit;
 import android.platform.test.flag.junit.SetFlagsRule;
 import android.view.DisplayInfo;
 import android.view.KeyEvent;
+import android.view.SurfaceControl;
 import android.view.WindowManager;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 
 import com.android.internal.inputmethod.IRemoteComputerControlInputConnection;
+import com.android.server.testutils.StubTransaction;
 
 import org.junit.After;
 import org.junit.Before;
@@ -138,6 +143,7 @@ public class ComputerControlSessionTest {
     @Captor
     private ArgumentCaptor<VirtualKeyboardConfig> mVirtualKeyboardConfigArgumentCaptor;
 
+    private SurfaceControl.Transaction mTransaction;
     private AutoCloseable mMockitoSession;
     private final IBinder mAppToken = new Binder();
     private final ComputerControlSessionParams mDefaultParams =
@@ -150,6 +156,7 @@ public class ComputerControlSessionTest {
     @Before
     public void setUp() throws Exception {
         mMockitoSession = MockitoAnnotations.openMocks(this);
+        mTransaction = spy(new StubTransaction());
 
         when(mInjector.getMainDisplayIdForUser(anyInt())).thenReturn(MAIN_DISPLAY_ID);
 
@@ -171,6 +178,7 @@ public class ComputerControlSessionTest {
         when(mInjector.getLongPressTimeoutMillis()).thenReturn(
                 LONG_PRESS_STEP_COUNT * TOUCH_EVENT_DELAY_MS);
         when(mInjector.getMaxSessionDurationMillis()).thenReturn(10000L);
+        when(mInjector.createTransaction()).thenReturn(mTransaction);
     }
 
     @After
@@ -489,6 +497,33 @@ public class ComputerControlSessionTest {
         createComputerControlSession(mDefaultParams);
 
         verify(mOnClosedListener, timeout(2 * 100L)).onClosed(mSession);
+    }
+
+    @Test
+    public void createInteractiveMirror_successfullyReturnsMirrorWithInputDisabled()
+            throws Exception {
+        createComputerControlSession(mDefaultParams);
+        final var mirrorSurface = new SurfaceControl();
+        when(mInjector.createMirrorForDisplayContent(VIRTUAL_DISPLAY_ID)).thenReturn(mirrorSurface);
+
+        final var returnedMirrorSurface = new SurfaceControl();
+        IInteractiveMirror mirror = mSession.createInteractiveMirror(returnedMirrorSurface);
+
+        verify(mInjector).createMirrorForDisplayContent(VIRTUAL_DISPLAY_ID);
+        assertThat(mirror).isNotNull();
+        verify(mTransaction).setDropInputMode(eq(mirrorSurface), eq(DropInputMode.ALL));
+    }
+
+    @Test
+    public void createInteractiveMirror_whenMirroringFails_returnsNull() throws Exception {
+        createComputerControlSession(mDefaultParams);
+        when(mInjector.createMirrorForDisplayContent(VIRTUAL_DISPLAY_ID)).thenReturn(null);
+
+        final var returnedMirrorSurface = new SurfaceControl();
+        IInteractiveMirror mirror = mSession.createInteractiveMirror(returnedMirrorSurface);
+
+        verify(mInjector).createMirrorForDisplayContent(VIRTUAL_DISPLAY_ID);
+        assertThat(mirror).isNull();
     }
 
     private void createComputerControlSession(ComputerControlSessionParams params) {
