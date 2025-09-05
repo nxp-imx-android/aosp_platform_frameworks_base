@@ -4469,15 +4469,13 @@ public abstract class PackageManager {
 
     /**
      * Feature for {@link #getSystemAvailableFeatures} and
-     * {@link #hasSystemFeature}: This is a full stack Android device with or without a display
-     * on glasses. Glasses here are defined to be the device worn on the body, perhaps on
-     * the head. The user is very close and usually wears the device when interacting with the
-     * device. The device likely requires a companion phone to access features of apps. User input
-     * can be a variety of touchpad on the glasses, audio and the companion phone.
+     * {@link #hasSystemFeature}: An XR peripheral is defined as a full stack Android device with
+     * or without a display, with or without inputs, and no user-installable apps. XR peripherals
+     * are worn on the user's body and likely require a companion device for user interactions.
      */
     @FlaggedApi(com.android.microxr.Flags.FLAG_XR_GLASSES_FEATURE)
     @SdkConstant(SdkConstantType.FEATURE)
-    public static final String FEATURE_GLASSES = "android.hardware.type.glasses";
+    public static final String FEATURE_XR_PERIPHERAL = "android.hardware.type.xr_peripheral";
 
     /**
      * Feature for {@link #getSystemAvailableFeatures} and {@link #hasSystemFeature}:

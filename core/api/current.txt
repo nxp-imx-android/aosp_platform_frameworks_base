@@ -13758,7 +13758,6 @@ package android.content.pm {
     field public static final String FEATURE_FINGERPRINT = "android.hardware.fingerprint";
     field public static final String FEATURE_FREEFORM_WINDOW_MANAGEMENT = "android.software.freeform_window_management";
     field public static final String FEATURE_GAMEPAD = "android.hardware.gamepad";
-    field @FlaggedApi("com.android.microxr.xr_glasses_feature") public static final String FEATURE_GLASSES = "android.hardware.type.glasses";
     field public static final String FEATURE_HARDWARE_KEYSTORE = "android.hardware.hardware_keystore";
     field public static final String FEATURE_HIFI_SENSORS = "android.hardware.sensor.hifi_sensors";
     field public static final String FEATURE_HOME_SCREEN = "android.software.home_screen";
@@ -13869,6 +13868,7 @@ package android.content.pm {
     field @FlaggedApi("android.xr.xr_manifest_entries") public static final String FEATURE_XR_INPUT_CONTROLLER = "android.hardware.xr.input.controller";
     field @FlaggedApi("android.xr.xr_manifest_entries") public static final String FEATURE_XR_INPUT_EYE_TRACKING = "android.hardware.xr.input.eye_tracking";
     field @FlaggedApi("android.xr.xr_manifest_entries") public static final String FEATURE_XR_INPUT_HAND_TRACKING = "android.hardware.xr.input.hand_tracking";
+    field @FlaggedApi("com.android.microxr.xr_glasses_feature") public static final String FEATURE_XR_PERIPHERAL = "android.hardware.type.xr_peripheral";
     field public static final int FLAG_PERMISSION_WHITELIST_INSTALLER = 2; // 0x2
     field public static final int FLAG_PERMISSION_WHITELIST_SYSTEM = 1; // 0x1
     field public static final int FLAG_PERMISSION_WHITELIST_UPGRADE = 4; // 0x4
