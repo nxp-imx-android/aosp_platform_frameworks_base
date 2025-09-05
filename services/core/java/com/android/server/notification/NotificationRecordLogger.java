@@ -25,7 +25,6 @@ import static android.service.notification.NotificationListenerService.REASON_CL
 import static android.service.notification.NotificationListenerService.REASON_CLICK;
 import static android.service.notification.NotificationListenerService.REASON_LOCKDOWN;
 
-import static com.android.server.notification.Flags.logVisuallyChangedUpdates;
 
 import android.annotation.DurationMillisLong;
 import android.annotation.NonNull;
@@ -464,10 +463,9 @@ interface NotificationRecordLogger {
                 return true;
             }
 
-            if (logVisuallyChangedUpdates() && r.isTextChanged()) {
+            if (r.isTextChanged()) {
                 return true;
             }
-
             return !(Objects.equals(r.getSbn().getChannelIdLogTag(),
                         old.getSbn().getChannelIdLogTag())
                     && Objects.equals(r.getSbn().getGroupLogTag(), old.getSbn().getGroupLogTag())
