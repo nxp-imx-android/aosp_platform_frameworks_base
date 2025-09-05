@@ -22,7 +22,6 @@ import android.annotation.FlaggedApi;
 import android.annotation.IntDef;
 import android.annotation.NonNull;
 import android.annotation.TestApi;
-import android.processor.devicepolicy.BooleanPolicyDefinition;
 import android.processor.devicepolicy.EnumPolicyDefinition;
 import android.processor.devicepolicy.PolicyDefinition;
 
@@ -80,32 +79,6 @@ public final class PolicyIdentifier<T> {
     public String toString() {
         return mId;
     }
-
-    /* Compatible with the existing definition */
-    private static final String SCREEN_CAPTURE_DISABLED_KEY =
-            DevicePolicyIdentifiers.SCREEN_CAPTURE_DISABLED_POLICY;
-
-    /**
-     * Policy that controls whether the screen capture is disabled. Disabling
-     * screen capture also prevents the content from being shown on display devices that do not have
-     * a secure video output. See {@link android.view.Display#FLAG_SECURE} for more details about
-     * secure surfaces and secure displays.
-     * Throws SecurityException if the caller is not permitted to control screen capture policy.
-     * If the scope is set to {@link DevicePolicyManager.POLICY_SCOPE_PARENT_USER} and the caller
-     * is not a profile owner of an organization-owned managed profile, a security exception will
-     * be thrown.
-     *
-     * @deprecated Use {@link SCREEN_CAPTURE} instead.
-     */
-    @FlaggedApi(FLAG_POLICY_STREAMLINING)
-    @Deprecated
-    @NonNull
-    @BooleanPolicyDefinition(
-            base = @PolicyDefinition
-    )
-    // TODO(b/440992241): Remove this definition after we confirm it's not used yet.
-    public static final PolicyIdentifier<Boolean> SCREEN_CAPTURE_DISABLED = new PolicyIdentifier<>(
-            SCREEN_CAPTURE_DISABLED_KEY);
 
     /**
      * Block screen capture. See {@link android.view.Display#FLAG_SECURE} for more details on how

@@ -8834,7 +8834,6 @@ package android.app.admin {
     field @FlaggedApi("android.app.admin.flags.policy_streamlining") @NonNull public static final android.app.admin.PolicyIdentifier<java.lang.Integer> SCREEN_CAPTURE;
     field @FlaggedApi("android.app.admin.flags.policy_streamlining") public static final int SCREEN_CAPTURE_ALLOWED = 2; // 0x2
     field @FlaggedApi("android.app.admin.flags.policy_streamlining") public static final int SCREEN_CAPTURE_BLOCKED = 1; // 0x1
-    field @Deprecated @FlaggedApi("android.app.admin.flags.policy_streamlining") @NonNull public static final android.app.admin.PolicyIdentifier<java.lang.Boolean> SCREEN_CAPTURE_DISABLED;
   }
 
   public abstract class PolicyUpdateReceiver extends android.content.BroadcastReceiver {
