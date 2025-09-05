@@ -2946,11 +2946,12 @@ public class ActivityRecordTests extends WindowTestsBase {
     @Test
     public void testCreateRemoveLegacySplashScreenWindow() {
         registerTestStartingWindowOrganizer();
-        DeviceConfig.Properties properties = DeviceConfig.getProperties(
-                DeviceConfig.NAMESPACE_WINDOW_MANAGER);
+        final String exceptionListKey = "splash_screen_exception_list";
+        final String oldExceptionList = DeviceConfig.getProperty(
+                DeviceConfig.NAMESPACE_WINDOW_MANAGER, exceptionListKey);
+        DeviceConfig.setProperty(DeviceConfig.NAMESPACE_WINDOW_MANAGER, exceptionListKey,
+                DEFAULT_COMPONENT_PACKAGE_NAME, false);
         try {
-            DeviceConfig.setProperty(DeviceConfig.NAMESPACE_WINDOW_MANAGER,
-                    "splash_screen_exception_list", DEFAULT_COMPONENT_PACKAGE_NAME, false);
             testLegacySplashScreen(Build.VERSION_CODES.R, TYPE_PARAMETER_LEGACY_SPLASH_SCREEN);
             testLegacySplashScreen(Build.VERSION_CODES.S, TYPE_PARAMETER_LEGACY_SPLASH_SCREEN);
             testLegacySplashScreen(Build.VERSION_CODES.TIRAMISU,
@@ -2962,11 +2963,8 @@ public class ActivityRecordTests extends WindowTestsBase {
             // Above V
             testLegacySplashScreen(Build.VERSION_CODES.UPSIDE_DOWN_CAKE + 2, 0);
         } finally {
-            try {
-                DeviceConfig.setProperties(properties);
-            } catch (DeviceConfig.BadConfigException e) {
-                Assert.fail(e.getMessage());
-            }
+            DeviceConfig.setProperty(DeviceConfig.NAMESPACE_WINDOW_MANAGER, exceptionListKey,
+                    oldExceptionList, false);
         }
     }
 
