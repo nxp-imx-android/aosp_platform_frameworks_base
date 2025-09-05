@@ -61,6 +61,7 @@ import android.view.DisplayInfo;
 import android.view.KeyCharacterMap;
 import android.view.KeyEvent;
 import android.view.Surface;
+import android.view.ViewConfiguration;
 import android.view.WindowManager;
 
 import com.android.internal.annotations.VisibleForTesting;
@@ -89,9 +90,13 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
     // consist of a DOWN event, 10 MOVE events spread over 500ms, and an UP event.
     @VisibleForTesting
     static final int SWIPE_STEPS = 10;
+    // Delay between consecutive touch events sent during a swipe or a long press gesture.
     @VisibleForTesting
-    static final long SWIPE_EVENT_DELAY_MS = 50L;
-
+    static final long TOUCH_EVENT_DELAY_MS = 50L;
+    // Multiplier for the long press timeout to ensure it's registered as a long press,
+    // as some applications might have slightly different thresholds.
+    @VisibleForTesting
+    static final float LONG_PRESS_TIMEOUT_MULTIPLIER = 1.5f;
     @VisibleForTesting
     static final long KEY_EVENT_DELAY_MS = 10L;
 
@@ -265,6 +270,7 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
 
     @Override
     public void tap(@IntRange(from = 0) int x, @IntRange(from = 0) int y) throws RemoteException {
+        cancelOngoingTouchGestures();
         mVirtualTouchscreen.sendTouchEvent(createTouchEvent(x, y, VirtualTouchEvent.ACTION_DOWN));
         mVirtualTouchscreen.sendTouchEvent(createTouchEvent(x, y, VirtualTouchEvent.ACTION_UP));
     }
@@ -273,12 +279,22 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
     public void swipe(
             @IntRange(from = 0) int fromX, @IntRange(from = 0) int fromY,
             @IntRange(from = 0) int toX, @IntRange(from = 0) int  toY) throws RemoteException {
-        if (mSwipeFuture != null) {
-            mSwipeFuture.cancel(false);
-        }
+        cancelOngoingTouchGestures();
         mVirtualTouchscreen.sendTouchEvent(
                 createTouchEvent(fromX, fromY, VirtualTouchEvent.ACTION_DOWN));
-        performSwipeStep(fromX, fromY, toX, toY, /* step= */ 0);
+        performSwipeStep(fromX, fromY, toX, toY, /* step= */ 0, SWIPE_STEPS);
+    }
+
+    @Override
+    public void longPress(@IntRange(from = 0) int x, @IntRange(from = 0) int y)
+            throws RemoteException {
+        cancelOngoingTouchGestures();
+        mVirtualTouchscreen.sendTouchEvent(
+                createTouchEvent(x, y, VirtualTouchEvent.ACTION_DOWN));
+        int longPressStepCount =
+                (int) Math.ceil(
+                        (double) mInjector.getLongPressTimeoutMillis() / TOUCH_EVENT_DELAY_MS);
+        performSwipeStep(x, y, x, y, /* step= */ 0, longPressStepCount);
     }
 
     @Override
@@ -298,7 +314,6 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
     @Override
     public void performAction(@ComputerControlSession.Action int actionCode)
             throws RemoteException {
-        cancelOngoingKeyGestures();
         if (actionCode == ComputerControlSession.ACTION_GO_BACK) {
             mVirtualDpad.sendKeyEvent(
                     createKeyEvent(KeyEvent.KEYCODE_BACK, VirtualKeyEvent.ACTION_DOWN));
@@ -390,7 +405,10 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
                 .setY(y)
                 .setAction(action)
                 .setPointerId(4)
-                .setToolType(VirtualTouchEvent.TOOL_TYPE_FINGER)
+                .setToolType(
+                        action == VirtualTouchEvent.ACTION_CANCEL
+                                ? VirtualTouchEvent.TOOL_TYPE_PALM
+                                : VirtualTouchEvent.TOOL_TYPE_FINGER)
                 .setPressure(255)
                 .setMajorAxisSize(1)
                 .build();
@@ -403,8 +421,8 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
                 .build();
     }
 
-    private void performSwipeStep(int fromX, int fromY, int toX, int toY, int step) {
-        final double fraction = ((double) step) / SWIPE_STEPS;
+    private void performSwipeStep(int fromX, int fromY, int toX, int toY, int step, int stepCount) {
+        final double fraction = ((double) step) / stepCount;
         // This makes the movement distance smaller towards the end.
         final double easedFraction = Math.sin(fraction * Math.PI / 2);
         final int currentX = (int) (fromX + (toX - fromX) * easedFraction);
@@ -415,7 +433,7 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
             mVirtualTouchscreen.sendTouchEvent(
                     createTouchEvent(currentX, currentY, VirtualTouchEvent.ACTION_MOVE));
 
-            if (nextStep > SWIPE_STEPS) {
+            if (nextStep > stepCount) {
                 mVirtualTouchscreen.sendTouchEvent(
                         createTouchEvent(toX, toY, VirtualTouchEvent.ACTION_UP));
                 mSwipeFuture = null;
@@ -426,8 +444,8 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
         }
 
         mSwipeFuture = mScheduler.schedule(
-                () -> performSwipeStep(fromX, fromY, toX, toY, nextStep),
-                SWIPE_EVENT_DELAY_MS, TimeUnit.MILLISECONDS);
+                () -> performSwipeStep(fromX, fromY, toX, toY, nextStep, stepCount),
+                TOUCH_EVENT_DELAY_MS, TimeUnit.MILLISECONDS);
     }
 
     private void performKeyStep(List<VirtualKeyEvent> keysToSend, int currStep) {
@@ -451,6 +469,13 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
         if (mInsertTextFuture != null) {
             mInsertTextFuture.cancel(false);
             mInsertTextFuture = null;
+        }
+    }
+
+    private void cancelOngoingTouchGestures() throws RemoteException {
+        if (mSwipeFuture != null && mSwipeFuture.cancel(false)) {
+            mVirtualTouchscreen.sendTouchEvent(
+                    createTouchEvent(0, 0, VirtualTouchEvent.ACTION_CANCEL));
         }
     }
 
@@ -519,6 +544,10 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
 
         public void disableAnimationsForDisplay(int displayId) {
             mWindowManagerInternal.setAnimationsDisabledForDisplay(displayId, /* disabled= */ true);
+        }
+
+        public long getLongPressTimeoutMillis() {
+            return (long) (ViewConfiguration.getLongPressTimeout() * LONG_PRESS_TIMEOUT_MULTIPLIER);
         }
     }
 }

@@ -151,6 +151,14 @@ public final class ComputerControlSession implements AutoCloseable {
     }
 
     /**
+     * Sends a long press event to the computer control session for the given coordinates.
+     */
+    public void longPress(@IntRange(from = 0) int x, @IntRange(from = 0) int y) {
+        mSession.longPress(x, y);
+        mAccessibilityProxy.resetStabilityState();
+    }
+
+    /**
      * Injects a {@link TouchEvent} into the computer control session.
      */
     public void sendTouchEvent(TouchEvent touchEvent) {

@@ -172,4 +172,16 @@ public class ComputerControlSessionTest {
         assertThrows(IllegalArgumentException.class, () -> mSession.swipe(1, 2, -3, 4));
         assertThrows(IllegalArgumentException.class, () -> mSession.swipe(1, 2, 3, -4));
     }
+
+    @Test
+    public void longPress_longPresses() throws RemoteException {
+        mSession.longPress(1, 2);
+        verify(mMockSession).longPress(eq(1), eq(2));
+    }
+
+    @Test
+    public void longPressNotInRange_throws() {
+        assertThrows(IllegalArgumentException.class, () -> mSession.longPress(-1, 2));
+        assertThrows(IllegalArgumentException.class, () -> mSession.longPress(1, -2));
+    }
 }
