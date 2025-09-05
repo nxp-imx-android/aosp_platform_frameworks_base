@@ -92,6 +92,9 @@ interface ICompanionDeviceManager {
     void removeOnTransportsChangedListener(IOnTransportsChangedListener listener);
 
     @EnforcePermission("USE_COMPANION_TRANSPORTS")
+    List<AssociationInfo> getAllAssociationsWithTransports();
+
+    @EnforcePermission("USE_COMPANION_TRANSPORTS")
     void sendMessage(int messageType, in byte[] data, in int[] associationIds);
 
     @EnforcePermission("USE_COMPANION_TRANSPORTS")
