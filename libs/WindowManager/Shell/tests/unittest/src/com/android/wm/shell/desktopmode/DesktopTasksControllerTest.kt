@@ -8864,9 +8864,12 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         val task = setUpFreeformTask()
         val spyController = spy(controller)
         val mockSurface = mock(SurfaceControl::class.java)
+        val captionInsets = 20
         val mockDisplayLayout = mock(DisplayLayout::class.java)
         whenever(displayController.getDisplayLayout(task.displayId)).thenReturn(mockDisplayLayout)
         whenever(mockDisplayLayout.stableInsets()).thenReturn(Rect(0, 100, 2000, 2000))
+        task.configuration.windowConfiguration.appBounds =
+            Rect(task.configuration.windowConfiguration.bounds).apply { this.top += captionInsets }
         spyController.onDragPositioningMove(
             task,
             mockSurface,
@@ -8891,12 +8894,14 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
                 motionEvent,
             )
         val rectAfterEnd = Rect(100, 50, 500, 1150)
+        val appBoundsAfterEnd = Rect(rectAfterEnd).apply { this.top += captionInsets }
         verify(transitions)
             .startTransition(
                 eq(TRANSIT_CHANGE),
                 Mockito.argThat { wct ->
                     return@argThat wct.changes.any { (token, change) ->
                         change.configuration.windowConfiguration.bounds == rectAfterEnd
+                        change.configuration.windowConfiguration.appBounds == appBoundsAfterEnd
                     }
                 },
                 eq(windowDragTransitionHandler),
@@ -8911,8 +8916,11 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         val spyController = spy(controller)
         val mockSurface = mock(SurfaceControl::class.java)
         val mockDisplayLayout = mock(DisplayLayout::class.java)
+        val captionInsets = 20
         whenever(displayController.getDisplayLayout(task.displayId)).thenReturn(mockDisplayLayout)
         whenever(mockDisplayLayout.stableInsets()).thenReturn(Rect(0, 100, 2000, 2000))
+        task.configuration.windowConfiguration.appBounds =
+            Rect(task.configuration.windowConfiguration.bounds).apply { this.top += captionInsets }
         spyController.onDragPositioningMove(
             task,
             mockSurface,
@@ -8923,6 +8931,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         )
 
         val currentDragBounds = Rect(100, 200, 500, 1000)
+        val appBounds = Rect(currentDragBounds).apply { this.top += captionInsets }
         whenever(spyController.getVisualIndicator()).thenReturn(desktopModeVisualIndicator)
         whenever(desktopModeVisualIndicator.updateIndicatorType(any(), anyOrNull()))
             .thenReturn(DesktopModeVisualIndicator.IndicatorType.NO_INDICATOR)
@@ -8945,6 +8954,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
                 Mockito.argThat { wct ->
                     return@argThat wct.changes.any { (token, change) ->
                         change.configuration.windowConfiguration.bounds == currentDragBounds
+                        change.configuration.windowConfiguration.appBounds == appBounds
                     }
                 },
                 eq(windowDragTransitionHandler),

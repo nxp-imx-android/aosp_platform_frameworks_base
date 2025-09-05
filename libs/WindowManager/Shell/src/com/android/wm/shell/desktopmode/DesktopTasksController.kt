@@ -2452,6 +2452,7 @@ class DesktopTasksController(
         bounds: Rect? = null,
         transitionHandler: TransitionHandler? = null,
         enterReason: EnterReason,
+        captionInsets: Int = 0,
     ) {
         logV("moveToDisplay: taskId=%d displayId=%d", task.taskId, displayId)
         if (task.displayId == displayId) {
@@ -2518,6 +2519,28 @@ class DesktopTasksController(
                 }
                 if (bounds != null) {
                     wct.setBounds(task.token, bounds)
+
+                    val prevCaptionInsets = task.freeformCaptionInsets
+                    if (prevCaptionInsets != 0) {
+                        val appBounds =
+                            Rect(bounds).apply {
+                                if (captionInsets != 0) {
+                                    this.top += captionInsets
+                                } else {
+                                    val captionInsetsDp =
+                                        displayController
+                                            .getDisplayLayout(task.getDisplayId())
+                                            ?.pxToDp(prevCaptionInsets)
+                                            ?.toInt() ?: 0
+                                    val newDisplayLayout =
+                                        displayController.getDisplayLayout(displayId)
+                                    val insets =
+                                        newDisplayLayout?.dpToPx(captionInsetsDp)?.toInt() ?: 0
+                                    this.top += insets
+                                }
+                            }
+                        wct.setAppBounds(task.token, appBounds)
+                    }
                 } else if (DesktopExperienceFlags.ENABLE_MOVE_TO_NEXT_DISPLAY_SHORTCUT.isTrue) {
                     applyFreeformDisplayChange(wct, task, displayId, destinationDeskId)
                 }
@@ -5718,12 +5741,9 @@ class DesktopTasksController(
                     DesktopExperienceFlags.ENABLE_CONNECTED_DISPLAYS_WINDOW_DRAG.isTrue() &&
                         newDisplayId != taskInfo.getDisplayId() &&
                         displayAreaInfo != null
+                val prevCaptionInsets = taskInfo.freeformCaptionInsets
 
                 if (isCrossDisplayDrag) {
-                    val prevCaptionInsets =
-                        taskInfo.configuration.windowConfiguration.appBounds?.let {
-                            it.top - taskInfo.configuration.windowConfiguration.bounds.top
-                        } ?: 0
                     val captionInsetsDp =
                         displayController
                             .getDisplayLayout(taskInfo.getDisplayId())
@@ -5752,12 +5772,18 @@ class DesktopTasksController(
                         constrainedBounds,
                         windowDragTransitionHandler,
                         enterReason = EnterReason.APP_HANDLE_DRAG,
+                        captionInsets = captionInsets,
                     )
                 } else {
                     // Update task bounds so that the task position will match the position of its
                     // leash
                     val wct = WindowContainerTransaction()
                     wct.setBounds(taskInfo.token, destinationBounds)
+                    if (prevCaptionInsets != 0) {
+                        val appBounds =
+                            Rect(destinationBounds).apply { this.top += prevCaptionInsets }
+                        wct.setAppBounds(taskInfo.token, appBounds)
+                    }
                     transitions.startTransition(TRANSIT_CHANGE, wct, windowDragTransitionHandler)
                 }
                 releaseVisualIndicator()
