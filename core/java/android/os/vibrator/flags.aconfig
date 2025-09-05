@@ -159,3 +159,13 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    namespace: "haptics"
+    name: "composition_pwle_apis"
+    description: "Enabled public APIs to support composition of PWLE effects and primitives"
+    bug: "442507169"
+    metadata {
+        purpose: PURPOSE_FEATURE
+    }
+}
