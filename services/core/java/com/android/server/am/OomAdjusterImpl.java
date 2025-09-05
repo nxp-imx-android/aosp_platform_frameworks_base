@@ -1260,12 +1260,7 @@ public class OomAdjusterImpl extends OomAdjuster {
             // It's placed in a sched group based on the nature of the
             // broadcast as reflected by which queue it's active in.
             adj = FOREGROUND_APP_ADJ;
-            if (Flags.pushBroadcastStateToOomadjuster()) {
-                schedGroup = app.getReceivers().getBroadcastReceiverSchedGroup();
-            } else {
-                /// Priority was stored in mTmpSchedGroup by {@link #isReceivingBroadcast)
-                schedGroup = mTmpSchedGroup[0];
-            }
+            schedGroup = app.getReceivers().getBroadcastReceiverSchedGroup();
             app.setAdjType("broadcast");
             procState = ActivityManager.PROCESS_STATE_RECEIVER;
             if (reportDebugMsgs) {

@@ -1715,11 +1715,7 @@ public abstract class OomAdjuster {
     }
 
     protected boolean isReceivingBroadcast(ProcessRecordInternal app) {
-        if (Flags.pushBroadcastStateToOomadjuster()) {
-            return app.getReceivers().isReceivingBroadcast();
-        } else {
-            return app.getCachedIsReceivingBroadcast(mTmpSchedGroup);
-        }
+        return app.getReceivers().isReceivingBroadcast();
     }
 
     protected int getTopProcessState() {
