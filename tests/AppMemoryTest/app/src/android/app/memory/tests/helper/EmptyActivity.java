@@ -23,8 +23,6 @@ import android.os.Debug;
 import android.os.SystemClock;
 import android.util.Log;
 
-import dalvik.system.VMDebug;
-
 import org.apache.harmony.dalvik.ddmc.DdmVmInternal;
 
 import java.io.File;
@@ -45,7 +43,6 @@ public class EmptyActivity extends Activity {
     // Configure for a heap dump
 
     private static void configureForHeap() {
-        VMDebug.setAllocTrackerStackDepth(64);
         DdmVmInternal.setRecentAllocationsTrackingEnabled(true);
     }
 
@@ -96,7 +93,7 @@ public class EmptyActivity extends Activity {
             }
         }
 
-        final String allocated = VMDebug.getRuntimeStat("art.gc.bytes-allocated");
+        final long  allocated = android.os.Debug.getGlobalAllocSize();
 
         try {
             Debug.dumpHprofData(dumpPath + ".hprof");
@@ -114,7 +111,7 @@ public class EmptyActivity extends Activity {
             // report generators to sequence statistics files from multiple runs on the same
             // build.
             out.format("memory.testhelper.runtime %d\n", System.currentTimeMillis() / 1000);
-            out.format("art.gc.bytes-allocated %s\n", allocated);
+            out.format("art.gc.bytes-allocated %d\n", allocated);
             out.format("extra-size.length %d\n", (mExtraBytes != null) ? mExtraBytes.length : 0);
             out.format("sentinel.string %s\n", mSentinelString);
         } catch (FileNotFoundException e) {
