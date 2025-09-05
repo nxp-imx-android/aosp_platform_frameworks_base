@@ -25,14 +25,13 @@ import androidx.test.filters.RequiresDevice
 import com.android.wm.shell.Flags
 import com.android.wm.shell.Utils.testSetupRule
 import com.android.wm.shell.flicker.bubbles.testcase.ExpandBubbleTestCases
+import com.android.wm.shell.flicker.bubbles.utils.AssumptionRule
 import com.android.wm.shell.flicker.bubbles.utils.BubbleFlickerTestHelper.collapseBubbleAppViaTouchOutside
 import com.android.wm.shell.flicker.bubbles.utils.BubbleFlickerTestHelper.expandBubbleAppViaBubbleBar
 import com.android.wm.shell.flicker.bubbles.utils.BubbleFlickerTestHelper.launchBubbleViaBubbleMenu
 import com.android.wm.shell.flicker.bubbles.utils.RecordTraceWithTransitionRule
 import com.android.wm.shell.flicker.bubbles.utils.RunOncePerParameterRule
 import com.google.common.truth.Truth.assertWithMessage
-import org.junit.Assume.assumeTrue
-import org.junit.Before
 import org.junit.FixMethodOrder
 import org.junit.Rule
 import org.junit.Test
@@ -93,6 +92,12 @@ class BubbleBarMovesTest(navBar: NavBar) : BubbleFlickerTestBase(), ExpandBubble
     }
 
     @get:Rule(order = 1)
+    val assumptionRule = AssumptionRule(
+        condition = { tapl.isTablet },
+        message = "The bubble bar is only available on large screen devices",
+    )
+
+    @get:Rule(order = 2)
     val setUpRule = RunOncePerParameterRule(
         wrappedRule = testSetupRule(navBar).around(recordTraceWithTransitionRule),
         params = arrayOf(navBar),
@@ -100,12 +105,6 @@ class BubbleBarMovesTest(navBar: NavBar) : BubbleFlickerTestBase(), ExpandBubble
 
     override val traceDataReader
         get() = recordTraceWithTransitionRule.reader
-
-    @Before
-    override fun setUp() {
-        assumeTrue("The bubble bar is only available on large screen devices", tapl.isTablet)
-        super.setUp()
-    }
 
     /**
      * Verifies that the bubble bar is moved to the other side.

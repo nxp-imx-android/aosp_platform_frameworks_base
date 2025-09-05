@@ -27,13 +27,12 @@ import com.android.wm.shell.Flags
 import com.android.wm.shell.Utils.testSetupRule
 import com.android.wm.shell.flicker.bubbles.testcase.BubbleAlwaysVisibleTestCases
 import com.android.wm.shell.flicker.bubbles.testcase.BubbleAppBecomesNotExpandedTestCases
+import com.android.wm.shell.flicker.bubbles.utils.AssumptionRule
 import com.android.wm.shell.flicker.bubbles.utils.BubbleFlickerTestHelper.collapseBubbleAppViaTouchOutside
 import com.android.wm.shell.flicker.bubbles.utils.BubbleFlickerTestHelper.dismissBubbleAppViaBubbleBarItem
 import com.android.wm.shell.flicker.bubbles.utils.BubbleFlickerTestHelper.launchBubbleViaBubbleMenu
 import com.android.wm.shell.flicker.bubbles.utils.RecordTraceWithTransitionRule
 import com.android.wm.shell.flicker.bubbles.utils.RunOncePerParameterRule
-import org.junit.Assume.assumeTrue
-import org.junit.Before
 import org.junit.FixMethodOrder
 import org.junit.Rule
 import org.junit.Test
@@ -95,6 +94,12 @@ class DismissExpandedBubbleViaBubbleBarTest(navBar: NavBar) : BubbleFlickerTestB
     }
 
     @get:Rule(order = 1)
+    val assumptionRule = AssumptionRule(
+        condition = { tapl.isTablet },
+        message = "The bubble bar is only available on large screen devices",
+    )
+
+    @get:Rule(order = 2)
     val setUpRule = RunOncePerParameterRule(
         wrappedRule = testSetupRule(navBar).around(recordTraceWithTransitionRule),
         params = arrayOf(navBar),
@@ -104,12 +109,6 @@ class DismissExpandedBubbleViaBubbleBarTest(navBar: NavBar) : BubbleFlickerTestB
         get() = recordTraceWithTransitionRule.reader
 
     override val previousApp: IComponentNameMatcher = Companion.previousApp
-
-    @Before
-    override fun setUp() {
-        assumeTrue("The bubble bar is only available on large screen devices", tapl.isTablet)
-        super.setUp()
-    }
 
     @Test
     override fun previousAppWindowReplacesTestAppAsTopWindow() {

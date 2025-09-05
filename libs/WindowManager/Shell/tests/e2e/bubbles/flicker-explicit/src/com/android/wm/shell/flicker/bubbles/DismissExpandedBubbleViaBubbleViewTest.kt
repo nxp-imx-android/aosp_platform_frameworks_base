@@ -24,12 +24,11 @@ import androidx.test.filters.RequiresDevice
 import com.android.wm.shell.Flags
 import com.android.wm.shell.Utils.testSetupRule
 import com.android.wm.shell.flicker.bubbles.testcase.DismissSingleExpandedBubbleTestCases
+import com.android.wm.shell.flicker.bubbles.utils.AssumptionRule
 import com.android.wm.shell.flicker.bubbles.utils.BubbleFlickerTestHelper.dismissBubbleAppViaFloatingBubbleView
 import com.android.wm.shell.flicker.bubbles.utils.BubbleFlickerTestHelper.launchBubbleViaBubbleMenu
 import com.android.wm.shell.flicker.bubbles.utils.RecordTraceWithTransitionRule
 import com.android.wm.shell.flicker.bubbles.utils.RunOncePerParameterRule
-import org.junit.Assume.assumeFalse
-import org.junit.Before
 import org.junit.FixMethodOrder
 import org.junit.Rule
 import org.junit.Test
@@ -79,6 +78,12 @@ class DismissExpandedBubbleViaBubbleViewTest(navBar: NavBar) : BubbleFlickerTest
     }
 
     @get:Rule(order = 1)
+    val assumptionRule = AssumptionRule(
+        condition = { !tapl.isTablet },
+        message = "This test is for compact phones",
+    )
+
+    @get:Rule(order = 2)
     val setUpRule = RunOncePerParameterRule(
         wrappedRule = testSetupRule(navBar).around(recordTraceWithTransitionRule),
         params = arrayOf(navBar),
@@ -86,12 +91,6 @@ class DismissExpandedBubbleViaBubbleViewTest(navBar: NavBar) : BubbleFlickerTest
 
     override val traceDataReader
         get() = recordTraceWithTransitionRule.reader
-
-    @Before
-    override fun setUp() {
-        assumeFalse(tapl.isTablet)
-        super.setUp()
-    }
 
     @FlakyTest(bugId = 396020056)
     @Test

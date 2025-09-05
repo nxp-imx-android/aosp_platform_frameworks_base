@@ -24,13 +24,12 @@ import androidx.test.filters.RequiresDevice
 import com.android.wm.shell.Flags
 import com.android.wm.shell.Utils.testSetupRule
 import com.android.wm.shell.flicker.bubbles.testcase.BubbleAlwaysVisibleTestCases
+import com.android.wm.shell.flicker.bubbles.utils.AssumptionRule
 import com.android.wm.shell.flicker.bubbles.utils.BubbleFlickerTestHelper.collapseBubbleAppViaBackKey
 import com.android.wm.shell.flicker.bubbles.utils.BubbleFlickerTestHelper.launchBubbleViaBubbleMenu
 import com.android.wm.shell.flicker.bubbles.utils.RecordTraceWithTransitionRule
 import com.android.wm.shell.flicker.bubbles.utils.RunOncePerParameterRule
 import com.google.common.truth.Truth.assertWithMessage
-import org.junit.Assume.assumeFalse
-import org.junit.Before
 import org.junit.FixMethodOrder
 import org.junit.Rule
 import org.junit.Test
@@ -94,6 +93,12 @@ class BubbleIconMoveTest(navBar: NavBar) : BubbleFlickerTestBase(), BubbleAlways
     }
 
     @get:Rule(order = 1)
+    val assumptionRule = AssumptionRule(
+        condition = { !tapl.isTablet },
+        message = "The floating bubble is only available on compact phones",
+    )
+
+    @get:Rule(order = 2)
     val setUpRule = RunOncePerParameterRule(
         wrappedRule = testSetupRule(navBar).around(recordTraceWithTransitionRule),
         params = arrayOf(navBar),
@@ -101,12 +106,6 @@ class BubbleIconMoveTest(navBar: NavBar) : BubbleFlickerTestBase(), BubbleAlways
 
     override val traceDataReader
         get() = recordTraceWithTransitionRule.reader
-
-    @Before
-    override fun setUp() {
-        assumeFalse("The floating bubble is only available on compact phones", tapl.isTablet)
-        super.setUp()
-    }
 
     /**
      * Verifies that the bubble's position on screen has changed after being dragged.

@@ -25,12 +25,11 @@ import com.android.server.wm.flicker.helpers.NonResizeableAppHelper
 import com.android.wm.shell.Flags
 import com.android.wm.shell.Utils.testSetupRule
 import com.android.wm.shell.flicker.bubbles.testcase.BubbleAlwaysVisibleTestCases
+import com.android.wm.shell.flicker.bubbles.utils.AssumptionRule
 import com.android.wm.shell.flicker.bubbles.utils.BubbleFlickerTestHelper.collapseBubbleAppViaTouchOutside
 import com.android.wm.shell.flicker.bubbles.utils.BubbleFlickerTestHelper.launchBubbleViaBubbleMenu
 import com.android.wm.shell.flicker.bubbles.utils.RecordTraceWithTransitionRule
 import com.android.wm.shell.flicker.bubbles.utils.RunOncePerParameterRule
-import org.junit.Assume.assumeTrue
-import org.junit.Before
 import org.junit.FixMethodOrder
 import org.junit.Rule
 import org.junit.runners.MethodSorters
@@ -106,17 +105,18 @@ class BubbleBarVisibilityTest : BubbleFlickerTestBase(), BubbleAlwaysVisibleTest
     }
 
     @get:Rule(order = 1)
+    val assumptionRule = AssumptionRule(
+        // Bubble and task bar are only enabled on large screen devices.
+        // Only transient task bar can show/hide.
+        condition = { tapl.isTablet && tapl.isTransientTaskbar },
+        message = "This test is for large screen devices with transient taskbar",
+    )
+
+    @get:Rule(order = 2)
     val setUpRule = RunOncePerParameterRule(
         wrappedRule = testSetupRule(navBar).around(recordTraceWithTransitionRule),
     )
 
     override val traceDataReader
         get() = recordTraceWithTransitionRule.reader
-
-    @Before
-    override fun setUp() {
-        assumeTrue("Bubble and task bar are only enabled on large screen devices", tapl.isTablet)
-        assumeTrue("Only transient task bar can show/hide", tapl.isTransientTaskbar)
-        super.setUp()
-    }
 }
