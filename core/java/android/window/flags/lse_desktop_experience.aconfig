@@ -182,16 +182,6 @@ flag {
 }
 
 flag {
-    name: "enable_camera_compat_check_device_rotation_bugfix"
-    namespace: "lse_desktop_experience"
-    description: "Whether to use display rotation to specify rotate-and-crop rotation."
-    bug: "395047103"
-    metadata {
-      purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "enable_camera_compat_compatibility_info_rotate_and_crop_bugfix"
     namespace: "lse_desktop_experience"
     description: "Whether to use CompatibilityInfo to send signal from WM to Camera FW to use rotate-and-crop"
