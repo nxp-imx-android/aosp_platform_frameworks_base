@@ -123,11 +123,8 @@ import android.app.ActivityManager;
 import android.app.ActivityManagerInternal.OomAdjReason;
 import android.app.ApplicationExitInfo;
 import android.app.usage.UsageEvents;
-import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.ServiceInfo;
 import android.net.NetworkPolicyManager;
@@ -548,26 +545,11 @@ public abstract class OomAdjuster {
                 group, app));
     }
 
-    void initSettings() {
-        if (mService.mConstants.KEEP_WARMING_SERVICES.size() > 0) {
-            final IntentFilter filter = new IntentFilter(Intent.ACTION_USER_SWITCHED);
-            mService.mContext.registerReceiverForAllUsers(new BroadcastReceiver() {
-                @Override
-                public void onReceive(Context context, Intent intent) {
-                    synchronized (mService) {
-                        handleUserSwitchedLocked();
-                    }
-                }
-            }, filter, null, mService.mHandler);
-        }
-    }
-
     /**
      * Update the keep-warming service flags upon user switches
      */
-    @VisibleForTesting
     @GuardedBy("mService")
-    void handleUserSwitchedLocked() {
+    public void prewarmServicesIfNecessary() {
         mProcessList.forEachLruProcessesLOSP(false,
                 this::updateKeepWarmIfNecessaryForProcessLocked);
     }

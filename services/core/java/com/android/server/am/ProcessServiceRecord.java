@@ -30,6 +30,7 @@ import android.util.ArraySet;
 
 import com.android.internal.annotations.GuardedBy;
 import com.android.server.am.psc.ProcessServiceRecordInternal;
+import com.android.server.am.psc.ServiceRecordInternal;
 import com.android.server.wm.WindowProcessController;
 
 import java.io.PrintWriter;
@@ -61,8 +62,8 @@ final class ProcessServiceRecord extends ProcessServiceRecordInternal {
     private boolean mHasTopStartedAlmostPerceptibleServices;
 
     /**
-     * The latest value of {@link ServiceRecord#lastTopAlmostPerceptibleBindRequestUptimeMs} among
-     * the currently running services.
+     * The latest value of {@link ServiceRecord#getLastTopAlmostPerceptibleBindRequestUptimeMs()}
+     * among the currently running services.
      */
     private long mLastTopStartedAlmostPerceptibleBindRequestUptimeMs;
 
@@ -250,33 +251,14 @@ final class ProcessServiceRecord extends ProcessServiceRecordInternal {
         mHasTopStartedAlmostPerceptibleServices = false;
         mLastTopStartedAlmostPerceptibleBindRequestUptimeMs = 0;
         for (int s = mServices.size() - 1; s >= 0; --s) {
-            final ServiceRecord sr = mServices.valueAt(s);
+            final ServiceRecordInternal sr = mServices.valueAt(s);
             mLastTopStartedAlmostPerceptibleBindRequestUptimeMs = Math.max(
                     mLastTopStartedAlmostPerceptibleBindRequestUptimeMs,
-                    sr.lastTopAlmostPerceptibleBindRequestUptimeMs);
+                    sr.getLastTopAlmostPerceptibleBindRequestUptimeMs());
             if (!mHasTopStartedAlmostPerceptibleServices && isAlmostPerceptible(sr)) {
                 mHasTopStartedAlmostPerceptibleServices = true;
             }
         }
-    }
-
-    private boolean isAlmostPerceptible(ServiceRecord record) {
-        if (record.lastTopAlmostPerceptibleBindRequestUptimeMs <= 0) {
-            return false;
-        }
-        final ArrayMap<IBinder, ArrayList<ConnectionRecord>> serviceConnections =
-                record.getConnections();
-        for (int m = serviceConnections.size() - 1; m >= 0; --m) {
-            final ArrayList<ConnectionRecord> clist = serviceConnections.valueAt(m);
-
-            for (int c = clist.size() - 1; c >= 0; --c) {
-                final ConnectionRecord cr = clist.get(c);
-                if (cr.hasFlag(Context.BIND_ALMOST_PERCEPTIBLE)) {
-                    return true;
-                }
-            }
-        }
-        return false;
     }
 
     boolean hasTopStartedAlmostPerceptibleServices() {
@@ -315,10 +297,10 @@ final class ProcessServiceRecord extends ProcessServiceRecordInternal {
             mApp.getWindowProcessController().onServiceStarted(record.serviceInfo);
             updateHostingComonentTypeForBindingsLocked();
         }
-        if (record.lastTopAlmostPerceptibleBindRequestUptimeMs > 0) {
+        if (record.getLastTopAlmostPerceptibleBindRequestUptimeMs() > 0) {
             mLastTopStartedAlmostPerceptibleBindRequestUptimeMs = Math.max(
                     mLastTopStartedAlmostPerceptibleBindRequestUptimeMs,
-                    record.lastTopAlmostPerceptibleBindRequestUptimeMs);
+                    record.getLastTopAlmostPerceptibleBindRequestUptimeMs());
             if (!mHasTopStartedAlmostPerceptibleServices) {
                 mHasTopStartedAlmostPerceptibleServices = isAlmostPerceptible(record);
             }
@@ -334,7 +316,7 @@ final class ProcessServiceRecord extends ProcessServiceRecordInternal {
      */
     boolean stopService(ServiceRecord record) {
         final boolean removed = mServices.remove(record);
-        if (record.lastTopAlmostPerceptibleBindRequestUptimeMs > 0) {
+        if (record.getLastTopAlmostPerceptibleBindRequestUptimeMs() > 0) {
             updateHasTopStartedAlmostPerceptibleServices();
         }
         if (removed) {

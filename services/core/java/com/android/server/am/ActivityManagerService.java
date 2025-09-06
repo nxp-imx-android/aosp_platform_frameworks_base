@@ -19517,6 +19517,25 @@ public class ActivityManagerService extends IActivityManager.Stub
     }
 
     /**
+     * Sets up a broadcast receiver to handle user switch events, which triggers prewarming of
+     * services.
+     */
+    void setupServicePrewarmingOnUserSwitch() {
+        if (!mConstants.KEEP_WARMING_SERVICES.isEmpty()) {
+            final IntentFilter filter = new IntentFilter(Intent.ACTION_USER_SWITCHED);
+            final BroadcastReceiver receiver = new BroadcastReceiver() {
+                @Override
+                public void onReceive(Context context, Intent intent) {
+                    synchronized (ActivityManagerService.this) {
+                        mOomAdjuster.prewarmServicesIfNecessary();
+                    }
+                }
+            };
+            mContext.registerReceiverForAllUsers(receiver, filter, null, mHandler);
+        }
+    }
+
+    /**
      * Resets the state of the {@link com.android.server.am.AppErrors} instance.
      * This is intended for testing within the CTS only and is protected by
      * android.permission.RESET_APP_ERRORS.
