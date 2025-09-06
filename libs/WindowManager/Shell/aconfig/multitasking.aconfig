@@ -324,6 +324,16 @@ flag {
 }
 
 flag {
+    name: "fix_bubble_stack_view_expanded_when_added"
+    namespace: "multitasking"
+    description: "Set BubbleStackView as collapsed if it's expanded when trying to be added"
+    bug: "417447385"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "enable_bubble_event_history_logs"
     namespace: "multitasking"
     description: "Enable bubble event history logs"
