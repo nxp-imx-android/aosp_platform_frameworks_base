@@ -38,6 +38,7 @@ object BubbleUtils {
     private fun getBubbleTransaction(
         token: WindowContainerToken,
         rootToken: WindowContainerToken?,
+        bounds: Rect,
         toBubble: Boolean,
         isAppBubble: Boolean,
         reparentToTda: Boolean,
@@ -47,6 +48,7 @@ object BubbleUtils {
         if (BubbleAnythingFlagHelper.enableRootTaskForBubble() && isAppBubble) {
             if (toBubble && rootToken != null) {
                 wct.reparent(token, rootToken, true /* onTop */)
+                wct.setBounds(rootToken, bounds)
                 wct.setAlwaysOnTop(rootToken, true /* alwaysOnTop */)
             } else {
                 wct.reparent(token, null, true /* onTop */)
@@ -65,6 +67,8 @@ object BubbleUtils {
                     WindowConfiguration.WINDOWING_MODE_UNDEFINED,
             )
             wct.setInterceptBackPressedOnTaskRoot(token, toBubble)
+            wct.setTaskForceExcludedFromRecents(token, toBubble /* forceExcluded */)
+            wct.setDisablePip(token, toBubble /* disablePip */)
             if (!isAppBubble || !BubbleAnythingFlagHelper.enableRootTaskForBubble()) {
                 wct.setAlwaysOnTop(token, toBubble /* alwaysOnTop */)
             }
@@ -74,12 +78,11 @@ object BubbleUtils {
                 // Always reset everything when exit bubble.
                 wct.setLaunchNextToBubble(token, toBubble /* launchNextToBubble */)
             }
+            if (BubbleAnythingFlagHelper.enableCreateAnyBubble()) {
+                wct.setDisableLaunchAdjacent(token, toBubble /* disableLaunchAdjacent */)
+            }
         }
-        // TODO: b/407669465 - review if those could also be set on the bubble root task.
-        wct.setTaskForceExcludedFromRecents(token, toBubble /* forceExcluded */)
-        wct.setDisablePip(token, toBubble /* disablePip */)
         if (BubbleAnythingFlagHelper.enableCreateAnyBubble()) {
-            wct.setDisableLaunchAdjacent(token, toBubble /* disableLaunchAdjacent */)
             if (!toBubble) {
                 // Clear bounds if moving out of Bubble.
                 wct.setBounds(token, Rect())
@@ -108,12 +111,14 @@ object BubbleUtils {
     fun getEnterBubbleTransaction(
         token: WindowContainerToken,
         rootToken: WindowContainerToken?,
+        bounds: Rect,
         isAppBubble: Boolean,
         reparentToTda: Boolean = false,
     ): WindowContainerTransaction {
         return getBubbleTransaction(
             token,
             rootToken,
+            bounds,
             toBubble = true,
             isAppBubble,
             reparentToTda,
@@ -133,6 +138,7 @@ object BubbleUtils {
         return getBubbleTransaction(
             token,
             rootToken = null,
+            bounds = Rect(),
             toBubble = false,
             // Everything will be reset, so doesn't matter for exit.
             isAppBubble = true,

@@ -161,6 +161,10 @@
     <string name="screen_capture_toolbar_screenshot_button" msgid="5676585348709494125">"屏幕截图"</string>
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"录制"</string>
     <string name="screen_share_toolbar_share_button" msgid="9182050596136815833">"共享"</string>
+    <!-- no translation found for screen_share_no_select_app_thumbnail (1630012401570567430) -->
+    <skip />
+    <!-- no translation found for screen_share_app_audio_sharing (7201172218924898712) -->
+    <skip />
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"窗口截图"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"录制窗口"</string>
     <string name="screen_capture_toolbar_region_button_screenshot_a11y" msgid="2102262602357521192">"所选区域局部截图"</string>
@@ -541,7 +545,7 @@
     <string name="zen_mode_set_up" msgid="8231201163894922821">"未设置"</string>
     <string name="zen_mode_no_manual_invocation" msgid="1769975741344633672">"在设置中管理"</string>
     <string name="zen_mode_active_modes" msgid="1625850411578488856">"{count,plural, =0{未启用任何模式}=1{已启用“{mode}”模式}other{已启用 # 个模式}}"</string>
-    <string name="zen_modes_multiple_on_title" msgid="4918235362988982304">"<xliff:g id="NUMBER">%s</xliff:g> 种模式"</string>
+    <string name="zen_modes_multiple_on_title" msgid="4918235362988982304">"<xliff:g id="NUMBER">%d</xliff:g> 种模式"</string>
     <string name="zen_modes_multiple_on_status" msgid="8120633422509269588">"已开启"</string>
     <string name="zen_priority_introduction" msgid="3159291973383796646">"您将不会受到声音和振动的打扰（闹钟、提醒、活动和所指定来电者的相关提示音除外）。您依然可以听到您选择播放的任何内容（包括音乐、视频和游戏）的相关音效。"</string>
     <string name="zen_alarms_introduction" msgid="3987266042682300470">"您将不会受到声音和振动的打扰（闹钟提示音除外）。您依然可以听到您选择播放的任何内容（包括音乐、视频和游戏）的相关音效。"</string>

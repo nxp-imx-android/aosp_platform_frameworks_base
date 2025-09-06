@@ -138,16 +138,12 @@
     <string name="screenrecord_stop_dialog_message" msgid="6262768207331626817">"Njengamanje urekhoda sonke isikrini sakho"</string>
     <string name="screenrecord_stop_dialog_message_specific_app" msgid="5995770227684523244">"Njengamanje urekhoda i-<xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="screenrecord_stop_dialog_button" msgid="2883812564938194350">"Misa ukurekhoda"</string>
-    <!-- no translation found for screen_record_entire_screen (66944996337928170) -->
-    <skip />
-    <!-- no translation found for screen_record_single_app (7355880948574569290) -->
-    <skip />
-    <!-- no translation found for screen_record_single_app_no_recents (1023249803854209330) -->
-    <skip />
+    <string name="screen_record_entire_screen" msgid="66944996337928170">"Sonke isikrini"</string>
+    <string name="screen_record_single_app" msgid="7355880948574569290">"I-app eyodwa"</string>
+    <string name="screen_record_single_app_no_recents" msgid="1023249803854209330">"I-app eyodwa (khetha i-app ukuvula)"</string>
     <string name="screen_record_record_device_audio_label" msgid="5363057443124085198">"Rekhoda umsindo wedivayisi"</string>
     <string name="screen_record_record_microphone_label" msgid="4685753707185662381">"Rekhoda imakrofoni"</string>
-    <!-- no translation found for screen_record_should_show_camera_label (159628971484931357) -->
-    <skip />
+    <string name="screen_record_should_show_camera_label" msgid="159628971484931357">"Bonisa ikhamera yeselfi"</string>
     <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"Khombisa okuthintiwe"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"Khetha i-app ezorekhoda"</string>
     <string name="screen_record_video_saved" msgid="1345283626390232282">"Ividiyo ilondoloziwe"</string>
@@ -165,6 +161,10 @@
     <string name="screen_capture_toolbar_screenshot_button" msgid="5676585348709494125">"Isithombe-skrini"</string>
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"Rekhoda"</string>
     <string name="screen_share_toolbar_share_button" msgid="9182050596136815833">"Yabelana"</string>
+    <!-- no translation found for screen_share_no_select_app_thumbnail (1630012401570567430) -->
+    <skip />
+    <!-- no translation found for screen_share_app_audio_sharing (7201172218924898712) -->
+    <skip />
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"Thatha isithombe-skrini sewindi"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"Iwindi lerekhodi"</string>
     <string name="screen_capture_toolbar_region_button_screenshot_a11y" msgid="2102262602357521192">"Thatha isithombe-sikrini sezindawo ezikhethiwe"</string>
@@ -545,7 +545,7 @@
     <string name="zen_mode_set_up" msgid="8231201163894922821">"Akusethiwe"</string>
     <string name="zen_mode_no_manual_invocation" msgid="1769975741344633672">"Phatha kumasethingi"</string>
     <string name="zen_mode_active_modes" msgid="1625850411578488856">"{count,plural, =0{Awekho amamodi asebenzayo}=1{I-{mode} iyasebenza}one{Amamodi angu-# ayasebenza}other{Amamodi angu-# ayasebenza}}"</string>
-    <string name="zen_modes_multiple_on_title" msgid="4918235362988982304">"Amamodi angu-<xliff:g id="NUMBER">%s</xliff:g>"</string>
+    <string name="zen_modes_multiple_on_title" msgid="4918235362988982304">"Amamodi angu-<xliff:g id="NUMBER">%d</xliff:g>"</string>
     <string name="zen_modes_multiple_on_status" msgid="8120633422509269588">"Kuvuliwe"</string>
     <string name="zen_priority_introduction" msgid="3159291973383796646">"Ngeke uphazanyiswe imisindo nokudlidliza, ngaphandle kusukela kuma-alamu, izikhumbuzi, imicimbi, nabafonayo obacacisayo. Usazozwa noma yini okhetha ukuyidlala okufaka umculo, amavidiyo, namageyimu."</string>
     <string name="zen_alarms_introduction" msgid="3987266042682300470">"Ngeke uze uphazanyiswe imisindo nokudlidliza, ngaphandle kusukela kuma-alamu. Usazozwa noma yini okhetha ukuyidlala okufaka umculo, amavidiyo, namageyimu."</string>
@@ -993,8 +993,7 @@
     <string name="group_system_access_notification_shade" msgid="1619028907006553677">"Buka izaziso"</string>
     <string name="group_system_access_quick_settings_panel" msgid="1844771096582064926">"Buka amasethingi asheshayo"</string>
     <string name="group_system_full_screenshot" msgid="5742204844232667785">"Thatha isithombe-skrini"</string>
-    <!-- no translation found for group_system_partial_screenshot (2114314797127648010) -->
-    <skip />
+    <string name="group_system_partial_screenshot" msgid="2114314797127648010">"Thatha isithombe-skrini esincane"</string>
     <string name="group_system_access_system_app_shortcuts" msgid="8562482996626694026">"Bonisa izinqamuleli"</string>
     <string name="group_system_go_back" msgid="2730322046244918816">"Buyela emuva"</string>
     <string name="group_system_access_home_screen" msgid="4130366993484706483">"Iya kusikrini sasekhaya"</string>

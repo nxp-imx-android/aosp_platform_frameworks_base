@@ -26,6 +26,8 @@ import static android.app.WindowConfiguration.WINDOWING_MODE_PINNED;
 import static android.app.WindowConfiguration.inMultiWindowMode;
 import static android.os.Process.myUid;
 
+import static com.android.window.flags.Flags.predictiveBackStopKeycodeBackForwarding;
+
 import static java.lang.Character.MIN_VALUE;
 
 import android.Manifest;
@@ -166,6 +168,8 @@ import android.view.translation.UiTranslationSpec;
 import android.widget.AdapterView;
 import android.widget.Toast;
 import android.widget.Toolbar;
+import android.window.BackEvent;
+import android.window.ObserverOnBackAnimationCallback;
 import android.window.OnBackInvokedCallback;
 import android.window.OnBackInvokedDispatcher;
 import android.window.SplashScreen;
@@ -822,6 +826,7 @@ public class Activity extends ContextThemeWrapper
     private static final int LOG_AM_ON_TOP_RESUMED_GAINED_CALLED = 30064;
     private static final int LOG_AM_ON_TOP_RESUMED_LOST_CALLED = 30065;
     private OnBackInvokedCallback mDefaultBackCallback;
+    private ObserverOnBackAnimationCallback mObserverBackCallback;
 
     /**
      * After {@link Build.VERSION_CODES#TIRAMISU},
@@ -1923,6 +1928,27 @@ public class Activity extends ContextThemeWrapper
             mDefaultBackCallback = this::onBackInvoked;
             getOnBackInvokedDispatcher().registerSystemOnBackInvokedCallback(mDefaultBackCallback);
         }
+        if (predictiveBackStopKeycodeBackForwarding()) {
+            mObserverBackCallback = new ObserverOnBackAnimationCallback() {
+                    @Override
+                    public void onBackStarted(@NonNull BackEvent backEvent) {
+                        onUserInteraction();
+                    }
+
+                    @Override
+                    public void onBackInvoked() {
+                        onUserInteraction();
+                    }
+
+                    @Override
+                    public void onBackCancelled() {}
+                };
+            // Register a ObserverOnBackAnimationCallback with PRIORITY_SYSTEM_NAVIGATION_OBSERVER
+            // to get notified on every back navigation so that onUserInteraction can be called.
+            getOnBackInvokedDispatcher().registerOnBackInvokedCallback(
+                    OnBackInvokedDispatcher.PRIORITY_SYSTEM_NAVIGATION_OBSERVER,
+                    mObserverBackCallback);
+        }
     }
 
     /**
@@ -3009,6 +3035,10 @@ public class Activity extends ContextThemeWrapper
         if (mDefaultBackCallback != null) {
             getOnBackInvokedDispatcher().unregisterOnBackInvokedCallback(mDefaultBackCallback);
             mDefaultBackCallback = null;
+        }
+        if (mObserverBackCallback != null) {
+            getOnBackInvokedDispatcher().unregisterOnBackInvokedCallback(mObserverBackCallback);
+            mObserverBackCallback = null;
         }
 
         if (mCallbacksController != null) {

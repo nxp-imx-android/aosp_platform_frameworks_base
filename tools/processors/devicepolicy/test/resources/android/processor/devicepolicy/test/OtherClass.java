@@ -29,8 +29,9 @@ public final class OtherClass {
     /**
      * Test policy 1
      */
-    @PolicyDefinition
-    @BooleanPolicyDefinition
+    @BooleanPolicyDefinition(
+            base = @PolicyDefinition
+    )
     public static final PolicyIdentifier<Boolean> TEST_POLICY_1 = new PolicyIdentifier<>(
             TEST_POLICY_1_KEY);
 }

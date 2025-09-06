@@ -8793,6 +8793,14 @@ final class ActivityRecord extends WindowToken {
         if (mAtmService.mSuppressResizeConfigChanges && preserveWindow) {
             return;
         }
+
+        // Notify that the activity is already relaunching, therefore there's no need to refresh
+        // the activity if it was requested. Activity refresher will track activity lifecycle
+        // if needed.
+        if (Flags.enableCameraCompatSandboxDisplayRotationOnExternalDisplaysBugfix()) {
+            AppCompatCameraPolicy.onActivityRelaunching(this);
+        }
+
         if (!preserveWindow) {
             // If the activity is the IME input target, ensure storing the last IME shown state
             // before relaunching it for restoring the IME visibility once its new window focused.

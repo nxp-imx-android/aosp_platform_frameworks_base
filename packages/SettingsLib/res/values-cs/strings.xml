@@ -87,10 +87,8 @@
     <string name="bluetooth_connecting" msgid="5871702668260192755">"Připojování..."</string>
     <string name="bluetooth_connected" msgid="8065345572198502293">"Připojeno k zařízení <xliff:g id="ACTIVE_DEVICE">%1$s</xliff:g>"</string>
     <string name="bluetooth_pairing" msgid="4269046942588193600">"Párování..."</string>
-    <!-- no translation found for bluetooth_pairing_failure (6914444518793157913) -->
-    <skip />
-    <!-- no translation found for bluetooth_connection_failure (384203214661155324) -->
-    <skip />
+    <string name="bluetooth_pairing_failure" msgid="6914444518793157913">"Nelze spárovat"</string>
+    <string name="bluetooth_connection_failure" msgid="384203214661155324">"Nelze se připojit"</string>
     <string name="bluetooth_connected_no_headset" msgid="2224101138659967604">"Připojeno k zařízení <xliff:g id="ACTIVE_DEVICE">%1$s</xliff:g> (bez telefonu)"</string>
     <string name="bluetooth_connected_no_a2dp" msgid="8566874395813947092">"Připojeno k zařízení <xliff:g id="ACTIVE_DEVICE">%1$s</xliff:g> (bez médií)"</string>
     <string name="bluetooth_connected_no_headset_no_a2dp" msgid="2893204819854215433">"Připojeno k zařízení <xliff:g id="ACTIVE_DEVICE">%1$s</xliff:g> (bez telefonu a médií)"</string>

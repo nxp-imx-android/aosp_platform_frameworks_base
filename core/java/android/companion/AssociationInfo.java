@@ -47,10 +47,12 @@ public final class AssociationInfo implements Parcelable {
      * A String indicates the selfManaged device is not connected.
      */
     private static final String LAST_TIME_CONNECTED_NONE = "None";
+
     /**
      * Key for the reception timestamp of the metadata.
+     * @hide
      */
-    static final String METADATA_TIMESTAMP = "_timestamp_";
+    public static final String METADATA_TIMESTAMP = "_timestamp_";
 
     /**
      * A unique ID of this Association record.

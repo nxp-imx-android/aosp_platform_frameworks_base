@@ -531,18 +531,12 @@ final class LocalDisplayAdapter extends DisplayAdapter {
                     : mDefaultModeId;
         }
 
-        private long getAppVsyncOffsetNanos(long defaultValue) {
-            if (getFeatureFlags().isDispatchDisplayModeWithVsyncOffsetsEnabled()) {
-                return mAppVsyncOffsetNanos;
-            }
-            return defaultValue;
+        private long getAppVsyncOffsetNanos() {
+            return mAppVsyncOffsetNanos;
         }
 
-        private long getPresentationDeadlineNanos(long defaultValue) {
-            if (getFeatureFlags().isDispatchDisplayModeWithVsyncOffsetsEnabled()) {
-                return mPresentationDeadlineNanos;
-            }
-            return defaultValue;
+        private long getPresentationDeadlineNanos() {
+            return mPresentationDeadlineNanos;
         }
 
         private int getLogicalDensity() {
@@ -753,11 +747,8 @@ final class LocalDisplayAdapter extends DisplayAdapter {
                 mInfo.hasArrSupport = mHasArrSupport;
                 mInfo.frameRateCategoryRate = mFrameRateCategoryRate;
                 mInfo.supportedRefreshRates = mSupportedRefreshRates;
-                mInfo.appVsyncOffsetNanos =
-                        getAppVsyncOffsetNanos(mActiveSfDisplayMode.appVsyncOffsetNanos);
-                mInfo.presentationDeadlineNanos =
-                        getPresentationDeadlineNanos(
-                                mActiveSfDisplayMode.presentationDeadlineNanos);
+                mInfo.appVsyncOffsetNanos = getAppVsyncOffsetNanos();
+                mInfo.presentationDeadlineNanos = getPresentationDeadlineNanos();
                 mInfo.state = mState;
                 mInfo.committedState = mCommittedState;
                 mInfo.uniqueId = getUniqueId();

@@ -33,7 +33,6 @@ import android.content.Context;
 import android.hardware.input.InputGestureData;
 import android.hardware.input.InputManager;
 import android.hardware.input.KeyGestureEvent;
-import android.os.SystemProperties;
 import android.util.IndentingPrintWriter;
 import android.util.SparseArray;
 import android.view.KeyEvent;
@@ -195,15 +194,13 @@ final class InputGestureManager {
                         /* allowCaptureByFocusedWindow = */true
                 )
         ));
-        if ("1".equals(SystemProperties.get("ro.debuggable"))) {
-            systemShortcuts.add(
-                    createKeyGesture(
-                            KeyEvent.KEYCODE_DEL,
-                            KeyEvent.META_META_ON | KeyEvent.META_CTRL_ON,
-                            KeyGestureEvent.KEY_GESTURE_TYPE_TRIGGER_BUG_REPORT,
-                            /* allowCaptureByFocusedWindow = */true
-                    ));
-        }
+        systemShortcuts.add(
+                createKeyGesture(
+                        KeyEvent.KEYCODE_DEL,
+                        KeyEvent.META_META_ON | KeyEvent.META_CTRL_ON,
+                        KeyGestureEvent.KEY_GESTURE_TYPE_TRIGGER_BUG_REPORT,
+                        /* allowCaptureByFocusedWindow = */true
+                ));
         if (DesktopExperienceFlags.ENABLE_MOVE_TO_NEXT_DISPLAY_SHORTCUT.isTrue()) {
             systemShortcuts.add(
                     createKeyGesture(

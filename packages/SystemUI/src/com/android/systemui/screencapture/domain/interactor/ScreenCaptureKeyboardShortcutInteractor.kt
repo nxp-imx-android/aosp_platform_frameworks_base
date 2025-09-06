@@ -17,9 +17,12 @@
 package com.android.systemui.screencapture.domain.interactor
 
 import com.android.systemui.dagger.SysUISingleton
+import com.android.systemui.screencapture.common.shared.model.LargeScreenCaptureUiParameters
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureType
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureUiParameters
 import com.android.systemui.screencapture.record.domain.interactor.ScreenCaptureRecordFeaturesInteractor
+import com.android.systemui.screencapture.record.largescreen.shared.model.ScreenCaptureRegion
+import com.android.systemui.screencapture.record.largescreen.shared.model.ScreenCaptureType as LargeScreenCaptureType
 import javax.inject.Inject
 
 /** Handles the resulting actions of screen capture related keyboard shortcuts. */
@@ -33,7 +36,14 @@ constructor(private val screenCaptureUiInteractor: ScreenCaptureUiInteractor) {
         // default to taking a fullscreen screenshot.
         if (ScreenCaptureRecordFeaturesInteractor.isLargeScreenScreencaptureEnabled) {
             screenCaptureUiInteractor.show(
-                ScreenCaptureUiParameters(screenCaptureType = ScreenCaptureType.RECORD)
+                ScreenCaptureUiParameters(
+                    screenCaptureType = ScreenCaptureType.RECORD,
+                    largeScreenParameters =
+                        LargeScreenCaptureUiParameters(
+                            defaultCaptureType = LargeScreenCaptureType.SCREENSHOT,
+                            defaultCaptureRegion = ScreenCaptureRegion.PARTIAL,
+                        ),
+                )
             )
         }
     }

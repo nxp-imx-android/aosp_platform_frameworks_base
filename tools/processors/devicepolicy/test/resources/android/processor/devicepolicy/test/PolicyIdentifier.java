@@ -34,8 +34,9 @@ public final class PolicyIdentifier<T> {
     /**
      * Test policy 1
      */
-    @PolicyDefinition
-    @BooleanPolicyDefinition
+    @BooleanPolicyDefinition(
+            base = @PolicyDefinition
+    )
     public static final PolicyIdentifier<Boolean> TEST_POLICY_1 = new PolicyIdentifier<>(
             TEST_POLICY_1_KEY);
 
@@ -62,7 +63,7 @@ public final class PolicyIdentifier<T> {
      * @hide
      */
     @Retention(RetentionPolicy.SOURCE)
-    @IntDef(prefix = { "AUTO_TIME_ZONE_" }, value = {
+    @IntDef(prefix = { "ENUM_ENTRY_" }, value = {
             ENUM_ENTRY_1,
             ENUM_ENTRY_2,
             ENUM_ENTRY_3
@@ -72,8 +73,8 @@ public final class PolicyIdentifier<T> {
     /**
      * Test policy 2
      */
-    @PolicyDefinition
     @EnumPolicyDefinition(
+            base = @PolicyDefinition,
             defaultValue = ENUM_ENTRY_2,
             intDef = TestPolicy2Enum.class
     )

@@ -482,3 +482,13 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "predictive_back_stop_keycode_back_forwarding"
+    namespace: "windowing_frontend"
+    description: "No longer forward KEYCODE_BACK events when app has enableOnBackInvokedCallback=true"
+    bug: "436871339"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}

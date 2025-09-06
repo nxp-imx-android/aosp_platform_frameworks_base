@@ -858,53 +858,7 @@ public class LocalDisplayAdapterTest {
     }
 
     @Test
-    public void testAfterOnModeChanged_presentationOffsetsAreNotUpdatedWithFlagOff()
-            throws Exception {
-        doReturn(false).when(mFlags).isDispatchDisplayModeWithVsyncOffsetsEnabled();
-        long appVsyncOffsetNanosMode1 = 100;
-        long presentationDeadlineNanosMode1 = 200;
-        long appVsyncOffsetNanosMode2 = 101;
-        long presentationDeadlineNanosMode2 = 201;
-        SurfaceControl.DisplayMode displayMode1 = createFakeDisplayMode(0, 1920, 1080, 60f,
-                appVsyncOffsetNanosMode1, presentationDeadlineNanosMode1);
-        SurfaceControl.DisplayMode displayMode2 = createFakeDisplayMode(1, 1920, 1080, 120f,
-                appVsyncOffsetNanosMode2, presentationDeadlineNanosMode2);
-        SurfaceControl.DisplayMode[] modes =
-                new SurfaceControl.DisplayMode[]{displayMode1, displayMode2};
-        FakeDisplay display = new FakeDisplay(PORT_A, modes, 0, displayMode1.peakRefreshRate);
-        setUpDisplay(display);
-        updateAvailableDisplays();
-        mAdapter.registerLocked();
-        waitForHandlerToComplete(mHandler, HANDLER_WAIT_MS);
-        assertThat(mListener.addedDisplays.size()).isEqualTo(1);
-        assertThat(mListener.changedDisplays).isEmpty();
-
-        DisplayDeviceInfo displayDeviceInfo = mListener.addedDisplays.get(
-                0).getDisplayDeviceInfoLocked();
-        assertEquals(appVsyncOffsetNanosMode1, displayDeviceInfo.appVsyncOffsetNanos);
-        assertEquals(presentationDeadlineNanosMode1, displayDeviceInfo.presentationDeadlineNanos);
-
-        long newAppVsyncOffsetNanos = 400;
-        long newPresentationDeadlineNanos = 500;
-
-        mInjector.getTransmitter().sendOnModeChanged(display,
-                1, (long) displayMode2.peakRefreshRate, newAppVsyncOffsetNanos,
-                newPresentationDeadlineNanos);
-        waitForHandlerToComplete(mHandler, HANDLER_WAIT_MS);
-        assertTrue(mListener.traversalRequested);
-
-        DisplayDevice displayDevice = mListener.changedDisplays.get(0);
-        displayDevice.applyPendingDisplayDeviceInfoChangesLocked();
-        displayDeviceInfo = mListener.addedDisplays.get(0).getDisplayDeviceInfoLocked();
-        // Returns the values captured through mode.
-        assertEquals(appVsyncOffsetNanosMode2, displayDeviceInfo.appVsyncOffsetNanos);
-        assertEquals(presentationDeadlineNanosMode2, displayDeviceInfo.presentationDeadlineNanos);
-        assertThat(mListener.changedDisplays.size()).isEqualTo(1);
-    }
-
-    @Test
     public void testAfterOnModeChanged_presentationOffsetsAreUpdatedWithFlagOn() throws Exception {
-        doReturn(true).when(mFlags).isDispatchDisplayModeWithVsyncOffsetsEnabled();
         long appVsyncOffsetNanosMode1 = 100;
         long presentationDeadlineNanosMode1 = 200;
         long appVsyncOffsetNanosMode2 = 101;
@@ -949,7 +903,6 @@ public class LocalDisplayAdapterTest {
     @Test
     @EnableFlags(com.android.graphics.surfaceflinger.flags.Flags.FLAG_SUPPORTED_REFRESH_RATE_UPDATE)
     public void testOnModeAndFrameRateOverridesChanged() throws Exception {
-        doReturn(true).when(mFlags).isDispatchDisplayModeWithVsyncOffsetsEnabled();
         doReturn(true).when(mFlags).isSingleAppEventForModeAndFrameRateOverrideEnabled();
         long appVsyncOffsetNanosMode1 = 100;
         long presentationDeadlineNanosMode1 = 200;

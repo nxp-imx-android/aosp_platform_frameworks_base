@@ -90,6 +90,10 @@ class AssetManager2Test : public ::testing::Test {
     overlayable_assets_ = ApkAssets::Load("overlayable/overlayable.apk");
     ASSERT_THAT(overlayable_assets_, NotNull());
 
+    overlayable_system_assets_ =
+        ApkAssets::Load("overlayable/overlayable.apk", nullptr, PROPERTY_SYSTEM);
+    ASSERT_THAT(overlayable_system_assets_, NotNull());
+
     flagged_assets_ = ApkAssets::Load("flagged/flagged.apk");
     ASSERT_THAT(app_assets_, NotNull());
 
@@ -110,6 +114,7 @@ class AssetManager2Test : public ::testing::Test {
   AssetManager2::ApkAssetsPtr app_assets_;
   AssetManager2::ApkAssetsPtr overlay_assets_;
   AssetManager2::ApkAssetsPtr overlayable_assets_;
+  AssetManager2::ApkAssetsPtr overlayable_system_assets_;
   AssetManager2::ApkAssetsPtr flagged_assets_;
 };
 
@@ -641,6 +646,19 @@ TEST_F(AssetManager2Test, GetResourceLocales) {
   EXPECT_EQ(2u, locales.size());
   EXPECT_GT(locales.count("de"), 0u);
   EXPECT_GT(locales.count("fr"), 0u);
+}
+
+TEST_F(AssetManager2Test, GetResourceLocalesSystemOverlay) {
+  AssetManager2 assetmanager;
+  // overlay_assets_ doesn't have the system flag set, testing the non-system overlay for system
+  // assets case.
+  assetmanager.SetApkAssets({overlayable_system_assets_, basic_de_fr_assets_, overlay_assets_});
+
+  auto locales = assetmanager.GetResourceLocales(true /*exclude_system*/);
+  // We expect only the de and fr locales from basic_de_fr assets.
+  EXPECT_EQ(2u, locales.size());
+  EXPECT_TRUE(locales.contains("de"));
+  EXPECT_TRUE(locales.contains("fr"));
 }
 
 TEST_F(AssetManager2Test, GetResourceId) {

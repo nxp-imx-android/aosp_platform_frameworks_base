@@ -21,6 +21,8 @@ import static android.companion.virtual.VirtualDeviceParams.DEVICE_POLICY_DEFAUL
 import static android.companion.virtual.VirtualDeviceParams.POLICY_TYPE_ACTIVITY;
 import static android.companion.virtual.VirtualDeviceParams.POLICY_TYPE_RECENTS;
 
+import static com.android.server.companion.virtual.computercontrol.ComputerControlSessionImpl.KEY_EVENT_DELAY_MS;
+
 import static com.google.common.truth.Truth.assertThat;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -43,16 +45,19 @@ import android.hardware.display.DisplayManager;
 import android.hardware.display.VirtualDisplayConfig;
 import android.hardware.input.IVirtualInputDevice;
 import android.hardware.input.VirtualDpadConfig;
+import android.hardware.input.VirtualKeyEvent;
 import android.hardware.input.VirtualKeyboardConfig;
 import android.hardware.input.VirtualTouchEvent;
 import android.hardware.input.VirtualTouchscreenConfig;
 import android.os.Binder;
 import android.os.IBinder;
+import android.os.RemoteException;
 import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
 import android.platform.test.flag.junit.SetFlagsRule;
 import android.view.DisplayInfo;
+import android.view.KeyEvent;
 import android.view.WindowManager;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
@@ -97,11 +102,11 @@ public class ComputerControlSessionTest {
     @Mock
     private IVirtualDevice mVirtualDevice;
     @Mock
+    private IVirtualInputDevice mVirtualKeyboard;
+    @Mock
     private IVirtualInputDevice mVirtualTouchscreen;
     @Captor
     private ArgumentCaptor<VirtualDeviceParams> mVirtualDeviceParamsArgumentCaptor;
-    @Captor
-    private ArgumentCaptor<ActivityPolicyExemption> mActivityPolicyExemptionArgumentCaptor;
     @Captor
     private ArgumentCaptor<VirtualDisplayConfig> mVirtualDisplayConfigArgumentCaptor;
     @Captor
@@ -136,6 +141,7 @@ public class ComputerControlSessionTest {
                 .thenReturn(mVirtualDevice);
         when(mVirtualDevice.createVirtualDisplay(any(), any())).thenReturn(VIRTUAL_DISPLAY_ID);
         when(mVirtualDevice.createVirtualTouchscreen(any(), any())).thenReturn(mVirtualTouchscreen);
+        when(mVirtualDevice.createVirtualKeyboard(any(), any())).thenReturn(mVirtualKeyboard);
     }
 
     @After
@@ -225,7 +231,7 @@ public class ComputerControlSessionTest {
         createComputerControlSession(mDefaultParams);
         mSession.close();
         verify(mVirtualDevice).close();
-        verify(mOnClosedListener).onClosed(mSession.asBinder());
+        verify(mOnClosedListener).onClosed(mSession);
     }
 
     @Test
@@ -285,6 +291,61 @@ public class ComputerControlSessionTest {
                 new MatchesTouchEvent(180, 400, VirtualTouchEvent.ACTION_UP)));
     }
 
+    @Test
+    @DisableFlags(Flags.FLAG_COMPUTER_CONTROL_TYPING)
+    public void insertText_sendsCharacterKeysToVirtualKeyboard() throws RemoteException {
+        createComputerControlSession(mDefaultParams);
+
+        mSession.insertText("t", false /* replaceExisting */, false /* commit */);
+        verify(mVirtualKeyboard, timeout(10 * KEY_EVENT_DELAY_MS)).sendKeyEvent(
+                argThat(new MatchesVirtualKeyEvent(KeyEvent.KEYCODE_T,
+                        VirtualKeyEvent.ACTION_DOWN)));
+        verify(mVirtualKeyboard, timeout(10 * KEY_EVENT_DELAY_MS)).sendKeyEvent(
+                argThat(new MatchesVirtualKeyEvent(KeyEvent.KEYCODE_T,
+                        VirtualKeyEvent.ACTION_UP)));
+    }
+
+    @Test
+    @DisableFlags(Flags.FLAG_COMPUTER_CONTROL_TYPING)
+    public void insertTextWithReplaceExisting_sendsDeleteTextSequenceToVirtualKeyboard()
+            throws RemoteException {
+        createComputerControlSession(mDefaultParams);
+
+        mSession.insertText("text", true /* replaceExisting */, false /* commit */);
+        verify(mVirtualKeyboard, timeout(10 * KEY_EVENT_DELAY_MS)).sendKeyEvent(
+                argThat(new MatchesVirtualKeyEvent(KeyEvent.KEYCODE_CTRL_LEFT,
+                        VirtualKeyEvent.ACTION_DOWN)));
+        verify(mVirtualKeyboard, timeout(10 * KEY_EVENT_DELAY_MS)).sendKeyEvent(
+                argThat(new MatchesVirtualKeyEvent(KeyEvent.KEYCODE_A,
+                        VirtualKeyEvent.ACTION_DOWN)));
+        verify(mVirtualKeyboard, timeout(10 * KEY_EVENT_DELAY_MS)).sendKeyEvent(
+                argThat(new MatchesVirtualKeyEvent(KeyEvent.KEYCODE_A,
+                        VirtualKeyEvent.ACTION_UP)));
+        verify(mVirtualKeyboard, timeout(10 * KEY_EVENT_DELAY_MS)).sendKeyEvent(
+                argThat(new MatchesVirtualKeyEvent(KeyEvent.KEYCODE_CTRL_LEFT,
+                        VirtualKeyEvent.ACTION_UP)));
+        verify(mVirtualKeyboard, timeout(10 * KEY_EVENT_DELAY_MS)).sendKeyEvent(
+                argThat(new MatchesVirtualKeyEvent(KeyEvent.KEYCODE_DEL,
+                        VirtualKeyEvent.ACTION_DOWN)));
+        verify(mVirtualKeyboard, timeout(10 * KEY_EVENT_DELAY_MS)).sendKeyEvent(
+                argThat(new MatchesVirtualKeyEvent(KeyEvent.KEYCODE_DEL,
+                        VirtualKeyEvent.ACTION_UP)));
+    }
+
+    @Test
+    @DisableFlags(Flags.FLAG_COMPUTER_CONTROL_TYPING)
+    public void insertTextWithCommit_sendsEnterKeyToVirtualKeyboard() throws RemoteException {
+        createComputerControlSession(mDefaultParams);
+
+        mSession.insertText("", false /* replaceExisting */, true /* commit */);
+        verify(mVirtualKeyboard, timeout(10 * KEY_EVENT_DELAY_MS)).sendKeyEvent(
+                argThat(new MatchesVirtualKeyEvent(KeyEvent.KEYCODE_ENTER,
+                        VirtualKeyEvent.ACTION_DOWN)));
+        verify(mVirtualKeyboard, timeout(10 * KEY_EVENT_DELAY_MS)).sendKeyEvent(
+                argThat(new MatchesVirtualKeyEvent(KeyEvent.KEYCODE_ENTER,
+                        VirtualKeyEvent.ACTION_UP)));
+    }
+
     private void createComputerControlSession(ComputerControlSessionParams params) {
         mSession = new ComputerControlSessionImpl(mAppToken, params,
                 AttributionSource.myAttributionSource(), mVirtualDeviceFactory, mOnClosedListener,
@@ -337,6 +398,22 @@ public class ComputerControlSessionTest {
                 return true;
             }
             return mX == event.getX() && mY == event.getY();
+        }
+    }
+
+    private static class MatchesVirtualKeyEvent implements ArgumentMatcher<VirtualKeyEvent> {
+
+        private final int mKeyCode;
+        private final int mAction;
+
+        MatchesVirtualKeyEvent(int keyCode, int action) {
+            mKeyCode = keyCode;
+            mAction = action;
+        }
+
+        @Override
+        public boolean matches(VirtualKeyEvent event) {
+            return event.getKeyCode() == mKeyCode && event.getAction() == mAction;
         }
     }
 }

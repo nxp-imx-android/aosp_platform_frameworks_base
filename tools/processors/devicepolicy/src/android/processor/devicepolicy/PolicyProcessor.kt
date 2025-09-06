@@ -19,9 +19,9 @@ package android.processor.devicepolicy
 import com.android.json.stream.JsonWriter
 import javax.annotation.processing.AbstractProcessor
 import javax.annotation.processing.FilerException
-import javax.annotation.processing.ProcessingEnvironment
 import javax.annotation.processing.RoundEnvironment
 import javax.lang.model.SourceVersion
+import javax.lang.model.element.Element
 import javax.lang.model.element.TypeElement
 import javax.tools.Diagnostic
 import javax.tools.StandardLocation
@@ -44,28 +44,26 @@ import javax.tools.StandardLocation
  * Data is exported to `policies.json`.
  */
 class PolicyProcessor : AbstractProcessor() {
-    private lateinit var processor: PolicyAnnotationProcessor
-
     override fun getSupportedSourceVersion(): SourceVersion = SourceVersion.latest()
 
     // Define what the annotation we care about are for compiler optimization
     override fun getSupportedAnnotationTypes() = LinkedHashSet<String>().apply {
+        add(BooleanPolicyDefinition::class.java.name)
+        add(EnumPolicyDefinition::class.java.name)
+
+        // Only processed to report errors.
         add(PolicyDefinition::class.java.name)
-    }
-
-    override fun init(processingEnv: ProcessingEnvironment) {
-        super.init(processingEnv)
-
-        processor = PolicyAnnotationProcessor(processingEnv)
     }
 
     override fun process(
         annotations: MutableSet<out TypeElement>, roundEnvironment: RoundEnvironment
     ): Boolean {
-        val policies =
-            roundEnvironment.getElementsAnnotatedWith(PolicyDefinition::class.java).mapNotNull {
-                processor.process(it)
-            }
+        reportUnexpectedAnnotations(roundEnvironment)
+
+        val policies = listOf(
+            runProcessor(roundEnvironment, BooleanProcessor(processingEnv)),
+            runProcessor(roundEnvironment, EnumProcessor(processingEnv))
+        ).flatten()
 
         try {
             writePolicies(roundEnvironment, policies)
@@ -79,6 +77,20 @@ class PolicyProcessor : AbstractProcessor() {
         }
 
         return false
+    }
+
+    private fun reportUnexpectedAnnotations(roundEnvironment: RoundEnvironment) {
+        roundEnvironment.getElementsAnnotatedWith(PolicyDefinition::class.java).mapNotNull {
+            printError(it, "@PolicyDefinition should not be applied to any element")
+        }
+    }
+
+    private fun <T : Annotation> runProcessor(
+        roundEnvironment: RoundEnvironment, processor: Processor<T>
+    ): List<Policy> {
+        return roundEnvironment.getElementsAnnotatedWith(processor.annotationClass()).mapNotNull {
+            processor.process(it)
+        }
     }
 
     fun writePolicies(roundEnvironment: RoundEnvironment, policies: List<Policy>) {
@@ -98,6 +110,14 @@ class PolicyProcessor : AbstractProcessor() {
             processingEnv.filer.createResource(
                 StandardLocation.SOURCE_OUTPUT, "android.processor.devicepolicy", "policies.json"
             ).openWriter()
+        )
+    }
+
+    private fun printError(element: Element, message: String) {
+        processingEnv.messager.printMessage(
+            Diagnostic.Kind.ERROR,
+            message,
+            element,
         )
     }
 }

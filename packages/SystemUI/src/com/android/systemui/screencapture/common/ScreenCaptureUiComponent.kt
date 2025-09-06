@@ -17,17 +17,17 @@
 package com.android.systemui.screencapture.common
 
 import android.view.Display
-import com.android.systemui.screencapture.common.shared.model.ScreenCaptureUiParameters
+import android.view.Window
 import com.android.systemui.screencapture.common.ui.compose.ScreenCaptureContent
 import dagger.BindsInstance
 import dagger.Subcomponent
 import kotlinx.coroutines.CoroutineScope
 
 /**
- * Dagger Subcomponent interface for Screen Capture.
+ * Dagger Subcomponent interface for Screen Capture UI.
  *
  * Actual Subcomponents should extend this interface and be listed as a subcomponent in
- * [ScreenCaptureModule].
+ * [ScreenCaptureUiModule].
  */
 @ScreenCaptureUiScope
 @Subcomponent(modules = [CommonModule::class, FallbackModule::class])
@@ -47,12 +47,11 @@ interface ScreenCaptureUiComponent {
         /** The [CoroutineScope] to use coroutines limited to Screen Capture sessions. */
         @BindsInstance fun setScope(@ScreenCaptureUi scope: CoroutineScope): Builder
 
-        /** [ScreenCaptureUiParameters] that has been used to start capture flow. */
-        @BindsInstance
-        fun setParameters(@ScreenCaptureUi parameters: ScreenCaptureUiParameters): Builder
-
         /** [Display] that hosts the Screen Capture UI. */
         @BindsInstance fun setDisplay(@ScreenCaptureUi display: Display): Builder
+
+        /** [Window] that hosts the Screen Capture UI. */
+        @BindsInstance fun setWindow(@ScreenCaptureUi window: Window?): Builder
 
         /**
          * Builds this [ScreenCaptureUiComponent]. Actual Subcomponent Builders should override this

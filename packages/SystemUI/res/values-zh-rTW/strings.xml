@@ -138,16 +138,12 @@
     <string name="screenrecord_stop_dialog_message" msgid="6262768207331626817">"目前正在錄製整個螢幕的畫面"</string>
     <string name="screenrecord_stop_dialog_message_specific_app" msgid="5995770227684523244">"目前正在錄製「<xliff:g id="APP_NAME">%1$s</xliff:g>」的畫面"</string>
     <string name="screenrecord_stop_dialog_button" msgid="2883812564938194350">"停止錄製"</string>
-    <!-- no translation found for screen_record_entire_screen (66944996337928170) -->
-    <skip />
-    <!-- no translation found for screen_record_single_app (7355880948574569290) -->
-    <skip />
-    <!-- no translation found for screen_record_single_app_no_recents (1023249803854209330) -->
-    <skip />
+    <string name="screen_record_entire_screen" msgid="66944996337928170">"整個畫面"</string>
+    <string name="screen_record_single_app" msgid="7355880948574569290">"單一應用程式"</string>
+    <string name="screen_record_single_app_no_recents" msgid="1023249803854209330">"單一應用程式 (開啟應用程式即可選擇)"</string>
     <string name="screen_record_record_device_audio_label" msgid="5363057443124085198">"錄製裝置音訊"</string>
     <string name="screen_record_record_microphone_label" msgid="4685753707185662381">"錄製麥克風音訊"</string>
-    <!-- no translation found for screen_record_should_show_camera_label (159628971484931357) -->
-    <skip />
+    <string name="screen_record_should_show_camera_label" msgid="159628971484931357">"顯示自拍鏡頭"</string>
     <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"顯示觸控操作過程"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"選擇要錄製的應用程式"</string>
     <string name="screen_record_video_saved" msgid="1345283626390232282">"影片已儲存"</string>
@@ -165,6 +161,10 @@
     <string name="screen_capture_toolbar_screenshot_button" msgid="5676585348709494125">"螢幕截圖"</string>
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"錄影"</string>
     <string name="screen_share_toolbar_share_button" msgid="9182050596136815833">"共用"</string>
+    <!-- no translation found for screen_share_no_select_app_thumbnail (1630012401570567430) -->
+    <skip />
+    <!-- no translation found for screen_share_app_audio_sharing (7201172218924898712) -->
+    <skip />
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"擷取視窗螢幕截圖"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"錄製視窗"</string>
     <string name="screen_capture_toolbar_region_button_screenshot_a11y" msgid="2102262602357521192">"擷取所選區域的螢幕截圖"</string>
@@ -545,7 +545,7 @@
     <string name="zen_mode_set_up" msgid="8231201163894922821">"未設定"</string>
     <string name="zen_mode_no_manual_invocation" msgid="1769975741344633672">"在「設定」中管理"</string>
     <string name="zen_mode_active_modes" msgid="1625850411578488856">"{count,plural, =0{未啟用任何模式}=1{已啟用 {mode} 個模式}other{已啟用 # 個模式}}"</string>
-    <string name="zen_modes_multiple_on_title" msgid="4918235362988982304">"<xliff:g id="NUMBER">%s</xliff:g>個模式"</string>
+    <string name="zen_modes_multiple_on_title" msgid="4918235362988982304">"<xliff:g id="NUMBER">%d</xliff:g>個模式"</string>
     <string name="zen_modes_multiple_on_status" msgid="8120633422509269588">"開啟"</string>
     <string name="zen_priority_introduction" msgid="3159291973383796646">"裝置不會發出音效或震動造成干擾，但是會保留與鬧鐘、提醒、活動和指定來電者有關的設定。如果你選擇播放音樂、影片和遊戲等內容，還是可以聽見相關音訊。"</string>
     <string name="zen_alarms_introduction" msgid="3987266042682300470">"裝置不會發出音效或震動造成干擾，但是會保留鬧鐘響鈴。如果你選擇播放音樂、影片和遊戲等內容，還是可以聽見相關音訊。"</string>
@@ -993,8 +993,7 @@
     <string name="group_system_access_notification_shade" msgid="1619028907006553677">"查看通知"</string>
     <string name="group_system_access_quick_settings_panel" msgid="1844771096582064926">"查看快速設定"</string>
     <string name="group_system_full_screenshot" msgid="5742204844232667785">"拍攝螢幕截圖"</string>
-    <!-- no translation found for group_system_partial_screenshot (2114314797127648010) -->
-    <skip />
+    <string name="group_system_partial_screenshot" msgid="2114314797127648010">"擷取部分螢幕畫面"</string>
     <string name="group_system_access_system_app_shortcuts" msgid="8562482996626694026">"顯示快速鍵"</string>
     <string name="group_system_go_back" msgid="2730322046244918816">"返回"</string>
     <string name="group_system_access_home_screen" msgid="4130366993484706483">"前往主畫面"</string>

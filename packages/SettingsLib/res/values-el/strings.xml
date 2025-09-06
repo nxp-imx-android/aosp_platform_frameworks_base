@@ -87,10 +87,8 @@
     <string name="bluetooth_connecting" msgid="5871702668260192755">"Σύνδεση..."</string>
     <string name="bluetooth_connected" msgid="8065345572198502293">"Σε σύνδεση<xliff:g id="ACTIVE_DEVICE">%1$s</xliff:g>"</string>
     <string name="bluetooth_pairing" msgid="4269046942588193600">"Σύζευξη..."</string>
-    <!-- no translation found for bluetooth_pairing_failure (6914444518793157913) -->
-    <skip />
-    <!-- no translation found for bluetooth_connection_failure (384203214661155324) -->
-    <skip />
+    <string name="bluetooth_pairing_failure" msgid="6914444518793157913">"Δεν είναι δυνατή η σύζευξη"</string>
+    <string name="bluetooth_connection_failure" msgid="384203214661155324">"Δεν είναι δυνατή η σύνδεση"</string>
     <string name="bluetooth_connected_no_headset" msgid="2224101138659967604">"Σε σύνδεση (χωρίς τηλέφωνο)<xliff:g id="ACTIVE_DEVICE">%1$s</xliff:g>"</string>
     <string name="bluetooth_connected_no_a2dp" msgid="8566874395813947092">"Σε σύνδεση (χωρίς μέσα)<xliff:g id="ACTIVE_DEVICE">%1$s</xliff:g>"</string>
     <string name="bluetooth_connected_no_headset_no_a2dp" msgid="2893204819854215433">"Σε σύνδεση (χωρίς τηλέφωνο ή μέσα)<xliff:g id="ACTIVE_DEVICE">%1$s</xliff:g>"</string>

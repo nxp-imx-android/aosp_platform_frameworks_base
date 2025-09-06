@@ -180,7 +180,6 @@ constructor(
 
     override suspend fun startTransition(info: TransitionInfo): UUID? {
         currentTransitionInfo = info
-        Log.d(TAG, "(Internal) Setting current transition info: $info")
 
         // There is no fairness guarantee with 'withContext', which means that transitions could
         // be processed out of order. Use a Mutex to guarantee ordering. [updateTransition]

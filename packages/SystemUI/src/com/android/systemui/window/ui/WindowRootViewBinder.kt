@@ -96,7 +96,12 @@ object WindowRootViewBinder {
                             )
                         }
 
-                        combine(viewModel.blurRadius, viewModel.blurScale, viewModel.isSurfaceOpaque, ::Triple)
+                        combine(
+                                viewModel.blurRadius,
+                                viewModel.blurScale,
+                                viewModel.isSurfaceOpaque,
+                                ::Triple,
+                            )
                             .filter { it.first >= 0 }
                             .collect { (blurRadius, blurScale, isOpaque) ->
                                 val newBlurRadius = blurRadius.toInt()
@@ -105,8 +110,10 @@ object WindowRootViewBinder {
                                 if (wasUpdateScheduledForThisFrame) {
                                     // Update this value so that the frame callback picks up this
                                     // value when it runs
-                                    if (lastScheduledBlurRadius != newBlurRadius ||
-                                            lastScheduledBlurScale != newBlurScale) {
+                                    if (
+                                        lastScheduledBlurRadius != newBlurRadius ||
+                                            lastScheduledBlurScale != newBlurScale
+                                    ) {
                                         Log.w(TAG, "Multiple blur values emitted in the same frame")
                                     }
                                     lastScheduledBlurRadius = newBlurRadius
@@ -122,10 +129,7 @@ object WindowRootViewBinder {
                                 lastScheduledBlurRadius = newBlurRadius
                                 lastScheduleSurfaceOpaqueness = isOpaque
                                 wasUpdateScheduledForThisFrame = true
-                                blurUtils.prepareBlur(
-                                    view.rootView?.viewRootImpl,
-                                    lastScheduledBlurRadius,
-                                )
+                                blurUtils.prepareBlur(lastScheduledBlurRadius)
                                 choreographer.postFrameCallback(newFrameCallback)
                             }
                     }

@@ -617,7 +617,7 @@ flag {
 flag {
     name: "watch_face_role_enabled"
     is_exported: true
-    namespace: "wear_services"
+    namespace: "wear_watchfaces"
     description: "This flag enables watchface roles support and API"
     bug: "399850691"
     is_fixed_read_only: true

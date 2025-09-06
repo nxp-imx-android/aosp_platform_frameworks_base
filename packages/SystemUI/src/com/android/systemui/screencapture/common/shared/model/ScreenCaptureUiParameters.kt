@@ -19,12 +19,22 @@ package com.android.systemui.screencapture.common.shared.model
 import android.os.IBinder
 import android.os.ResultReceiver
 import android.os.UserHandle
+import com.android.systemui.screencapture.record.largescreen.shared.model.ScreenCaptureRegion as LargeScreenCaptureRegion
+import com.android.systemui.screencapture.record.largescreen.shared.model.ScreenCaptureType as LargeScreenCaptureType
 
-data class ScreenCaptureUiParameters(
+data class LargeScreenCaptureUiParameters(
+    val defaultCaptureType: LargeScreenCaptureType? = null,
+    val defaultCaptureRegion: LargeScreenCaptureRegion? = null,
+)
+
+data class ScreenCaptureUiParameters
+@JvmOverloads
+constructor(
     val screenCaptureType: ScreenCaptureType,
     val isUserConsentRequired: Boolean = false,
     val resultReceiver: ResultReceiver? = null,
     val mediaProjection: IBinder? = null,
     val hostAppUserHandle: UserHandle = UserHandle.CURRENT,
     val hostAppUid: Int = 0,
+    val largeScreenParameters: LargeScreenCaptureUiParameters? = null,
 )

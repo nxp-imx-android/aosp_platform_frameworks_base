@@ -174,7 +174,7 @@ void AssetManager2::BuildDynamicRefTable(ApkAssetsList apk_assets) {
   int next_package_id = 0x02;
   for (const ApkAssets* apk_assets : sorted_apk_assets) {
     std::shared_ptr<OverlayDynamicRefTable> overlay_ref_table;
-    if (auto loaded_idmap = apk_assets->GetLoadedIdmap(); loaded_idmap != nullptr) {
+    if (auto loaded_idmap = apk_assets->GetLoadedIdmap()) {
       // The target package must precede the overlay package in the apk assets paths in order
       // to take effect.
       auto iter = target_assets_package_ids.find(loaded_idmap->TargetApkPath());
@@ -217,14 +217,7 @@ void AssetManager2::BuildDynamicRefTable(ApkAssetsList apk_assets) {
       if (idx == 0xff) {
         // Add the mapping for package ID to index if not present.
         package_ids_[package_id] = idx = static_cast<uint8_t>(package_groups_.size());
-        PackageGroup& new_group = package_groups_.emplace_back();
-
-        if (overlay_ref_table != nullptr) {
-          // If this package is from an overlay, use a dynamic reference table that can rewrite
-          // overlay resource ids to their corresponding target resource ids.
-          new_group.dynamic_ref_table = std::move(overlay_ref_table);
-        }
-
+        PackageGroup& new_group = package_groups_.emplace_back(std::move(overlay_ref_table));
         DynamicRefTable* ref_table = new_group.dynamic_ref_table.get();
         ref_table->mAssignedPackageId = package_id;
         ref_table->mAppAsLib = package->IsDynamic() && package->GetPackageId() == 0x7f;
@@ -309,6 +302,15 @@ void AssetManager2::DumpToLog() const {
     LOG(INFO) << base::StringPrintf("PG (%02x): ",
                                     package_group.dynamic_ref_table->mAssignedPackageId)
               << list;
+
+    list.clear();
+    for (const auto& overlay : package_group.overlays_) {
+      base::StringAppendF(&list, "   [%d](%s) -> %s\n", overlay.cookie,
+                          overlay.enabled ? "enabled" : "disabled",
+                          GetApkAssets(overlay.cookie)->GetDebugName().c_str());
+    }
+    LOG(INFO) << base::StringPrintf("  overlays (%d):\n%s", int(package_group.overlays_.size()),
+                                    list.c_str());
 
     for (size_t i = 0; i < 256; i++) {
       if (package_group.dynamic_ref_table->mLookupTable[i] != 0) {
@@ -492,8 +494,8 @@ void AssetManager2::SetOverlayConstraints(int32_t display_id, int32_t device_id)
   }
 }
 
-std::set<AssetManager2::ApkAssetsPtr> AssetManager2::GetNonSystemOverlays() const {
-  std::set<ApkAssetsPtr> non_system_overlays;
+AssetManager2::AssetsSet AssetManager2::GetNonSystemOverlays() const {
+  AssetManager2::AssetsSet non_system_overlays;
   for (const PackageGroup& package_group : package_groups_) {
     bool found_system_package = false;
     for (const ConfiguredPackage& package : package_group.packages_) {
@@ -503,19 +505,37 @@ std::set<AssetManager2::ApkAssetsPtr> AssetManager2::GetNonSystemOverlays() cons
       }
     }
 
-    if (!found_system_package) {
+    if (!found_system_package && !package_group.overlays_.empty()) {
       auto op = StartOperation();
       // Return all overlays, including the disabled ones as this is used for static info
       // collection only.
       for (const ConfiguredOverlay& overlay : package_group.overlays_) {
         if (const auto& asset = GetApkAssets(overlay.cookie)) {
-          non_system_overlays.insert(std::move(asset));
+          non_system_overlays.insert(asset);
         }
       }
     }
   }
 
   return non_system_overlays;
+}
+
+bool AssetManager2::IsSystemPackage(const ConfiguredPackage& package, ApkAssetsCookie cookie,
+                                    const AssetsSet& non_system_overlays) const {
+  if (package.loaded_package_->IsSystem()) {
+    return true;
+  }
+  // Also check for the overlays that target only system resources.
+  if (package.loaded_package_->IsOverlay()) {
+    if (non_system_overlays.empty()) {
+      return true;  // No non-system overlays: all overlay packages are system-only.
+    }
+    const auto& apk_assets = GetApkAssets(cookie);
+    if (apk_assets && !non_system_overlays.contains(apk_assets)) {
+      return true;
+    }
+  }
+  return false;
 }
 
 base::expected<std::set<ResTable_config>, IOError> AssetManager2::GetResourceConfigurations(
@@ -530,20 +550,10 @@ base::expected<std::set<ResTable_config>, IOError> AssetManager2::GetResourceCon
   for (const PackageGroup& package_group : package_groups_) {
     for (size_t i = 0; i < package_group.packages_.size(); i++) {
       const ConfiguredPackage& package = package_group.packages_[i];
-      if (exclude_system) {
-        if (package.loaded_package_->IsSystem()) {
-          continue;
-        }
-        if (!non_system_overlays.empty()) {
-          // Exclude overlays that target only system resources.
-          const auto& apk_assets = GetApkAssets(package_group.cookies_[i]);
-          if (apk_assets && apk_assets->IsOverlay() &&
-              non_system_overlays.find(apk_assets) == non_system_overlays.end()) {
-            continue;
-          }
-        }
+      if (exclude_system &&
+          IsSystemPackage(package, package_group.cookies_[i], non_system_overlays)) {
+        continue;
       }
-
       auto result = package.loaded_package_->CollectConfigurations(exclude_mipmap, &configurations);
       if (UNLIKELY(!result.has_value())) {
         return base::unexpected(result.error());
@@ -565,19 +575,10 @@ LoadedPackage::Locales AssetManager2::GetResourceLocales(
   for (const PackageGroup& package_group : package_groups_) {
     for (size_t i = 0; i < package_group.packages_.size(); i++) {
       const ConfiguredPackage& package = package_group.packages_[i];
-      if (exclude_system) {
-        if (package.loaded_package_->IsSystem()) {
-          continue;
-        }
-        if (!non_system_overlays.empty()) {
-          // Exclude overlays that target only system resources.
-          const auto& apk_assets = GetApkAssets(package_group.cookies_[i]);
-          if (apk_assets && apk_assets->IsOverlay() && !non_system_overlays.contains(apk_assets)) {
-            continue;
-          }
-        }
+      if (exclude_system &&
+          IsSystemPackage(package, package_group.cookies_[i], non_system_overlays)) {
+        continue;
       }
-
       package.loaded_package_->CollectLocales(merge_equivalent_languages, &locales);
     }
   }
@@ -1657,7 +1658,7 @@ const AssetManager2::ApkAssetsPtr& AssetManager2::GetApkAssets(ApkAssetsCookie c
   DCHECK(number_of_running_scoped_operations_ > 0) << "Must have an operation running";
 
   if (cookie < 0 || cookie >= apk_assets_.size()) {
-    static const ApkAssetsPtr empty{};
+    static constinit const ApkAssetsPtr empty{};
     return empty;
   }
   auto& [wptr, res] = apk_assets_[cookie];

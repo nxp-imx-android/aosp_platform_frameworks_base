@@ -28,7 +28,8 @@ import java.util.Locale
  */
 class BubbleEventHistoryLogger : DebugLogger {
 
-    private val recentEvents: MutableList<BubbleEvent> = mutableListOf()
+    @VisibleForTesting
+    val recentEvents: MutableList<BubbleEvent> = mutableListOf()
 
     override fun d(message: String, vararg parameters: Any, eventData: String?) {
         logEvent("d: ${TextUtils.formatSimple(message, *parameters)}", eventData)

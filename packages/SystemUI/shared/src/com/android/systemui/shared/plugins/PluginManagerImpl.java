@@ -34,6 +34,7 @@ import com.android.internal.messages.nano.SystemMessageProto.SystemMessage;
 import com.android.systemui.plugins.Plugin;
 import com.android.systemui.plugins.PluginListener;
 import com.android.systemui.plugins.PluginManager;
+import com.android.systemui.shared.plugins.PluginEnabler.DisableReason;
 import com.android.systemui.shared.system.UncaughtExceptionPreHandlerManager;
 
 import java.io.FileDescriptor;
@@ -46,6 +47,9 @@ import java.util.Map;
  * @see Plugin
  */
 public class PluginManagerImpl extends BroadcastReceiver implements PluginManager {
+    public static final String PLUGIN_THREAD = "plugin_thread";
+    public static final String PLUGIN_PRIVILEGED = "plugin_privileged";
+    public static final String PLUGIN_CLASSLOADER = "plugin_classloader";
 
     private static final String TAG = PluginManagerImpl.class.getSimpleName();
     static final String DISABLE_PLUGIN = "com.android.systemui.action.DISABLE_PLUGIN";
@@ -168,7 +172,7 @@ public class PluginManagerImpl extends BroadcastReceiver implements PluginManage
                 // Don't disable privileged plugins as they are a part of the OS.
                 return;
             }
-            mPluginEnabler.setDisabled(component, PluginEnabler.DISABLED_INVALID_VERSION);
+            mPluginEnabler.setDisabled(component, DisableReason.DISABLED_INVALID_VERSION);
             mContext.getSystemService(NotificationManager.class).cancel(component.getClassName(),
                     SystemMessage.NOTE_PLUGIN);
         } else {
@@ -184,11 +188,10 @@ public class PluginManagerImpl extends BroadcastReceiver implements PluginManage
             }
             if (Intent.ACTION_PACKAGE_REPLACED.equals(intent.getAction())
                     && componentName != null) {
-                @PluginEnabler.DisableReason int disableReason =
-                        mPluginEnabler.getDisableReason(componentName);
-                if (disableReason == PluginEnabler.DISABLED_FROM_EXPLICIT_CRASH
-                        || disableReason == PluginEnabler.DISABLED_FROM_SYSTEM_CRASH
-                        || disableReason == PluginEnabler.DISABLED_INVALID_VERSION) {
+                DisableReason disableReason = mPluginEnabler.getDisableReason(componentName);
+                if (disableReason == DisableReason.DISABLED_FROM_EXPLICIT_CRASH
+                        || disableReason == DisableReason.DISABLED_FROM_SYSTEM_CRASH
+                        || disableReason == DisableReason.DISABLED_INVALID_VERSION) {
                     Log.i(TAG, "Re-enabling previously disabled plugin that has been "
                             + "updated: " + componentName.flattenToShortString());
                     mPluginEnabler.setEnabled(componentName);

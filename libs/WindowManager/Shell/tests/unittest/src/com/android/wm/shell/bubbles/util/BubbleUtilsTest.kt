@@ -16,6 +16,7 @@
 
 package com.android.wm.shell.bubbles.util
 
+import android.graphics.Rect
 import android.os.Binder
 import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
@@ -52,6 +53,7 @@ class BubbleUtilsTest : ShellTestCase() {
     private val rootTaskToken = mock<WindowContainerToken> {
         on { asBinder() } doReturn binder
     }
+    private val bounds = Rect(0, 0, 100, 100)
     private val captionInsetsOwner = Binder()
 
     @EnableFlags(FLAG_ENABLE_CREATE_ANY_BUBBLE)
@@ -59,7 +61,7 @@ class BubbleUtilsTest : ShellTestCase() {
     @Test
     fun testGetEnterBubbleTransaction(@TestParameter isAppBubble: Boolean) {
         val wctWithLaunchNextToBubble =
-            getEnterBubbleTransaction(token, null /* rootToken */, isAppBubble)
+            getEnterBubbleTransaction(token, null /* rootToken */, bounds, isAppBubble)
 
         verifyEnterBubbleTransaction(wctWithLaunchNextToBubble, token.asBinder(), isAppBubble)
     }
@@ -72,6 +74,7 @@ class BubbleUtilsTest : ShellTestCase() {
             getEnterBubbleTransaction(
                 token,
                 rootToken = null,
+                bounds,
                 isAppBubble,
                 reparentToTda = true
             )
@@ -88,7 +91,7 @@ class BubbleUtilsTest : ShellTestCase() {
     @Test
     fun testRootBubbleGetEnterBubbleTransaction() {
         val isAppBubble = true
-        val wct = getEnterBubbleTransaction(token, rootTaskToken, isAppBubble)
+        val wct = getEnterBubbleTransaction(token, rootTaskToken, bounds, isAppBubble)
 
         verifyEnterBubbleTransaction(
             wct,

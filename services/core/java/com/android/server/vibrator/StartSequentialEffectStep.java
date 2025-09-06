@@ -49,6 +49,7 @@ import java.util.List;
  * the grouped HAL calls here, as well as to clarify the role of dispatching VibratorSteps between
  * this class and the HAL.
  */
+// TODO(b/421857859): remove this class once flag remove_sequential_combination is removed
 final class StartSequentialEffectStep extends Step {
     public final CombinedVibration.Sequential sequentialEffect;
     public final int currentIndex;

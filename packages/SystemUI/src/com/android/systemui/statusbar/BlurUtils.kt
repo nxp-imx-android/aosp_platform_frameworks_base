@@ -121,22 +121,11 @@ constructor(
      * This method should be called before [applyBlur] so that, if needed, we can set the
      * early-wakeup flag in SurfaceFlinger.
      */
-    fun prepareBlur(viewRootImpl: ViewRootImpl?, radius: Int) {
-        if (
-            viewRootImpl == null ||
-                !viewRootImpl.surfaceControl.isValid ||
-                !shouldBlur(radius) ||
-                earlyWakeupEnabled
-        ) {
-            return
-        }
-        updateTransactionApplier(viewRootImpl)
-        val builder =
-            SyncRtSurfaceTransactionApplier.SurfaceParams.Builder(viewRootImpl.surfaceControl)
-        earlyWakeupInfo.trace = PREPARE_BLUR_TRACE_NAME
+    fun prepareBlur(radius: Int) {
+        if (!shouldBlur(radius) || earlyWakeupEnabled) return
+
         if (lastAppliedBlur == 0 && radius != 0) {
-            earlyWakeupStart(builder, "eEarlyWakeup (prepareBlur)")
-            transactionApplier.scheduleApply(builder.build())
+            immediateEarlyWakeupStart(PREPARE_BLUR_TRACE_NAME)
         }
     }
 
@@ -155,7 +144,6 @@ constructor(
         updateTransactionApplier(viewRootImpl)
         val builder =
             SyncRtSurfaceTransactionApplier.SurfaceParams.Builder(viewRootImpl.surfaceControl)
-        earlyWakeupInfo.trace = APPLY_BLUR_TRACE_NAME
         if (shouldBlur(radius)) {
             builder.withBackgroundBlurRadius(radius)
             if (shouldScaleWithTransaction()) {
@@ -166,7 +154,7 @@ constructor(
                 viewRootImpl.notifyRendererForGpuLoadUp("applyBlur")
 
                 if (!earlyWakeupEnabled) {
-                    earlyWakeupStart(builder, "eEarlyWakeup (applyBlur)")
+                    earlyWakeupStartNextFrame(builder, APPLY_BLUR_TRACE_NAME)
                 }
             }
             if (
@@ -175,7 +163,7 @@ constructor(
                     radius == 0 &&
                     !persistentEarlyWakeupRequired
             ) {
-                earlyWakeupEnd(builder, "applyBlur")
+                earlyWakeupEndNextFrame(builder, APPLY_BLUR_TRACE_NAME)
             }
             lastAppliedBlur = radius
         }
@@ -194,40 +182,49 @@ constructor(
     }
 
     @SuppressLint("MissingPermission")
-    private fun earlyWakeupStart(
-        builder: SyncRtSurfaceTransactionApplier.SurfaceParams.Builder?,
-        traceMethodName: String,
-    ) {
-        v("earlyWakeupStart from $traceMethodName")
-        Trace.asyncTraceForTrackBegin(TRACE_TAG_APP, TRACK_NAME, traceMethodName, 0)
-        if (builder != null) {
-            builder.withEarlyWakeupStart(earlyWakeupInfo)
-        } else {
-            Log.w(
-                TAG,
-                "surfaceControl is not valid, using immediate transaction to set early wakeup",
-            )
-            createTransaction().use { it.setEarlyWakeupStart(earlyWakeupInfo).apply() }
-        }
+    private fun immediateEarlyWakeupStart(traceName: String) {
+        earlyWakeupInfo.trace = traceName
+        Trace.asyncTraceForTrackBegin(TRACE_TAG_APP, TRACK_NAME, "immediateEarlyWakeupStart", 0)
+        Trace.instantForTrack(TRACE_TAG_APP, TRACK_NAME, "immediateEarlyWakeupStart")
+        // Using a sync transaction to switch surfaceflinger work duration immediately before the
+        // first frame of non-zero blur is applied. Relying on SyncRtSurfaceTransactionApplier might
+        // make this switch happen on the first non-zero blur frame.
+        createTransaction().setEarlyWakeupStart(earlyWakeupInfo).apply()
         earlyWakeupEnabled = true
     }
 
     @SuppressLint("MissingPermission")
-    private fun earlyWakeupEnd(
-        builder: SyncRtSurfaceTransactionApplier.SurfaceParams.Builder?,
-        loggingContext: String,
-    ) {
-        v("earlyWakeupEnd from $loggingContext")
-        if (builder != null) {
-            builder.withEarlyWakeupEnd(earlyWakeupInfo)
-        } else {
-            Log.w(
-                TAG,
-                "surfaceControl is not valid, using immediate transaction to reset early wakeup",
-            )
-            createTransaction().use { it.setEarlyWakeupEnd(earlyWakeupInfo).apply() }
-        }
+    private fun immediateEarlyWakeupEnd(traceName: String) {
+        earlyWakeupInfo.trace = traceName
         Trace.asyncTraceForTrackEnd(TRACE_TAG_APP, TRACK_NAME, 0)
+        Trace.instantForTrack(TRACE_TAG_APP, TRACK_NAME, "immediateEarlyWakeupEnd")
+        createTransaction().setEarlyWakeupEnd(earlyWakeupInfo).apply()
+        earlyWakeupEnabled = false
+    }
+
+    @SuppressLint("MissingPermission")
+    private fun earlyWakeupStartNextFrame(
+        builder: SyncRtSurfaceTransactionApplier.SurfaceParams.Builder,
+        traceName: String,
+    ) {
+        v("earlyWakeupStart from $traceName")
+        earlyWakeupInfo.trace = traceName
+        Trace.asyncTraceForTrackBegin(TRACE_TAG_APP, TRACK_NAME, "earlyWakeupStartNextFrame", 0)
+        Trace.instantForTrack(TRACE_TAG_APP, TRACK_NAME, "earlyWakeupStartNextFrame")
+        builder.withEarlyWakeupStart(earlyWakeupInfo)
+        earlyWakeupEnabled = true
+    }
+
+    @SuppressLint("MissingPermission")
+    private fun earlyWakeupEndNextFrame(
+        builder: SyncRtSurfaceTransactionApplier.SurfaceParams.Builder,
+        traceName: String,
+    ) {
+        v("earlyWakeupEnd from $traceName")
+        earlyWakeupInfo.trace = traceName
+        Trace.asyncTraceForTrackEnd(TRACE_TAG_APP, TRACK_NAME, 0)
+        Trace.instantForTrack(TRACE_TAG_APP, TRACK_NAME, "earlyWakeupEndNextFrame")
+        builder.withEarlyWakeupEnd(earlyWakeupInfo)
         earlyWakeupEnabled = false
     }
 
@@ -281,17 +278,14 @@ constructor(
         persistentEarlyWakeupRequired = persistentWakeup
         if (viewRootImpl == null || !supportsBlursOnWindows()) return
 
-        val builder =
-            if (viewRootImpl.surfaceControl?.isValid == true) {
-                updateTransactionApplier(viewRootImpl)
-                SyncRtSurfaceTransactionApplier.SurfaceParams.Builder(viewRootImpl.surfaceControl)
-            } else {
-                null
-            }
-        earlyWakeupInfo.trace = SET_PERSISTENT_EARLY_WAKEUP_TRACE_NAME
         if (persistentEarlyWakeupRequired) {
             if (earlyWakeupEnabled) return
-            earlyWakeupStart(builder, "setEarlyWakeup")
+            Trace.instantForTrack(
+                TRACE_TAG_APP,
+                TRACK_NAME,
+                "setPersistentEarlyWakeup earlyWakeupStart",
+            )
+            immediateEarlyWakeupStart(SET_PERSISTENT_EARLY_WAKEUP_TRACE_NAME)
         } else {
             if (!earlyWakeupEnabled) return
             if (lastAppliedBlur > 0) {
@@ -302,9 +296,13 @@ constructor(
                         " was still active",
                 )
             }
-            earlyWakeupEnd(builder, "resetEarlyWakeup")
+            Trace.instantForTrack(
+                TRACE_TAG_APP,
+                TRACK_NAME,
+                "setPersistentEarlyWakeup earlyWakeupEnd",
+            )
+            immediateEarlyWakeupEnd(SET_PERSISTENT_EARLY_WAKEUP_TRACE_NAME)
         }
-        builder?.let { transactionApplier.scheduleApply(it.build()) }
     }
 
     companion object {

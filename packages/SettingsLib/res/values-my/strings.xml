@@ -87,10 +87,8 @@
     <string name="bluetooth_connecting" msgid="5871702668260192755">"ချိတ်ဆက်နေသည်"</string>
     <string name="bluetooth_connected" msgid="8065345572198502293">"<xliff:g id="ACTIVE_DEVICE">%1$s</xliff:g> ချိတ်ဆက်ပြီးပြီ"</string>
     <string name="bluetooth_pairing" msgid="4269046942588193600">"တွဲချိတ်နေသည်…"</string>
-    <!-- no translation found for bluetooth_pairing_failure (6914444518793157913) -->
-    <skip />
-    <!-- no translation found for bluetooth_connection_failure (384203214661155324) -->
-    <skip />
+    <string name="bluetooth_pairing_failure" msgid="6914444518793157913">"တွဲချိတ်၍ မရပါ"</string>
+    <string name="bluetooth_connection_failure" msgid="384203214661155324">"ချိတ်ဆက်၍ မရပါ"</string>
     <string name="bluetooth_connected_no_headset" msgid="2224101138659967604">"<xliff:g id="ACTIVE_DEVICE">%1$s</xliff:g> ချိတ်ဆက်ပြီးပြီ (ဖုန်းမရှိပါ)"</string>
     <string name="bluetooth_connected_no_a2dp" msgid="8566874395813947092">"<xliff:g id="ACTIVE_DEVICE">%1$s</xliff:g> ချိတ်ဆက်ပြီးပြီ (မီဒီယာ မရှိပါ)"</string>
     <string name="bluetooth_connected_no_headset_no_a2dp" msgid="2893204819854215433">"<xliff:g id="ACTIVE_DEVICE">%1$s</xliff:g> ချိတ်ပြီးပြီ (ဖုန်း (သို့) မီဒီယာ မရှိပါ)"</string>

@@ -23,6 +23,7 @@ import android.view.KeyEvent
 import android.view.View
 import android.view.View.OnKeyListener
 import android.view.Window
+import android.view.WindowManager
 import android.window.OnBackInvokedCallback
 import android.window.WindowOnBackInvokedDispatcher
 import androidx.compose.animation.AnimatedVisibility
@@ -90,6 +91,18 @@ constructor(
 
     private var composeRoot: ComposeView? = null
 
+    init {
+        with(window) {
+            addFlags(
+                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
+                    WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL or
+                    WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH or
+                    WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED
+            )
+            addPrivateFlags(WindowManager.LayoutParams.PRIVATE_FLAG_TRUSTED_OVERLAY)
+        }
+    }
+
     override fun onAttach() {
         require(composeRoot == null) { "The ui is already attached" }
 
@@ -142,9 +155,9 @@ constructor(
                             val component =
                                 remember(parameters, coroutineScope) {
                                     builder
-                                        .setParameters(parameters)
                                         .setScope(coroutineScope)
                                         .setDisplay(display)
+                                        .setWindow(window)
                                         .build()
                                 }
                             Box(modifier = Modifier.windowInsetsPadding(WindowInsets.safeDrawing)) {

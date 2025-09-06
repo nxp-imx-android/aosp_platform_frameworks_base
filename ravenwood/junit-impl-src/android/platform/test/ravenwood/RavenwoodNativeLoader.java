@@ -16,6 +16,9 @@
 
 package android.platform.test.ravenwood;
 
+import static com.android.ravenwood.common.RavenwoodInternalUtils.getRavenwoodRuntimePath;
+
+import com.android.ravenwood.RavenwoodRuntimeNative;
 import com.android.ravenwood.common.RavenwoodInternalUtils;
 
 import java.util.Arrays;
@@ -164,6 +167,13 @@ public final class RavenwoodNativeLoader {
         ensurePropertyNotSet(ICU_DATA_PATH);
         ensurePropertyNotSet(KEYBOARD_PATHS);
         ensurePropertyNotSet(GRAPHICS_NATIVE_CLASSES);
+
+        // Set ICU data file
+        String icuData = getRavenwoodRuntimePath()
+                + "ravenwood-data/"
+                + RavenwoodRuntimeNative.getIcuDataName()
+                + ".dat";
+        setProperty(ICU_DATA_PATH, icuData);
 
         // Build the property values
         final var joiner = Collectors.joining(",");

@@ -28,7 +28,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Password
@@ -90,6 +92,7 @@ fun BiometricPromptFallbackView(promptViewModel: PromptViewModel, callback: Spag
     val icShowFooter by fallbackViewModel.icShowFooter.collectAsStateWithLifecycle(false)
 
     val context = LocalContext.current
+    val scrollState = rememberScrollState()
 
     PlatformTheme {
         Column(modifier = Modifier.padding(horizontal = 24.dp, vertical = 12.dp)) {
@@ -127,7 +130,7 @@ fun BiometricPromptFallbackView(promptViewModel: PromptViewModel, callback: Spag
             }
             Spacer(modifier = Modifier.height(16.dp))
             Column(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth().verticalScroll(scrollState).weight(1f),
                 verticalArrangement = Arrangement.spacedBy(2.dp),
             ) {
                 val options = mutableListOf<@Composable (Int, Int) -> Unit>()

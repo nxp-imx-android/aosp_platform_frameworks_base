@@ -1325,6 +1325,26 @@ public class VpnTest extends VpnTestBase {
     }
 
     @Test
+    public void testDeleteVpnProfileDueToAppRemoval() throws Exception {
+        final Vpn vpn = createVpn(AppOpsManager.OPSTR_ACTIVATE_PLATFORM_VPN);
+
+        when(mVpnProfileStore.get(vpn.getProfileNameForPackage(TEST_VPN_PKG)))
+                .thenReturn(mVpnProfile.encode());
+
+        vpn.startVpnProfile(TEST_VPN_PKG);
+        verifyPlatformVpnIsActivated(TEST_VPN_PKG);
+
+        // This mock is to make sure verifyCallingUidOrSystemUidAndPackage() would pass, the test
+        // will fail since the unit test UID is not the SYSTEM_UID.
+        when(mPackageManager.getPackageUidAsUser(any(), anyInt())).thenReturn(Process.myUid());
+        vpn.deleteVpnProfileDueToAppRemoval(
+                TEST_VPN_PKG, UserHandle.getUid(PRIMARY_USER.id, Process.myUid()));
+
+        verify(mVpnProfileStore)
+                .remove(eq(vpn.getProfileNameForPackage(TEST_VPN_PKG)));
+        verifyPlatformVpnIsDeactivated(TEST_VPN_PKG);
+    }
+    @Test
     public void testDeleteVpnProfileRestrictedUser() throws Exception {
         final Vpn vpn =
                 createVpn(

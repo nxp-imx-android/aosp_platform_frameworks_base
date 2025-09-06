@@ -28,7 +28,6 @@ import android.view.MotionEvent
 import android.view.SurfaceControl
 import android.view.View
 import android.view.WindowManager
-import android.window.DesktopModeFlags
 import android.window.WindowContainerTransaction
 import com.android.app.tracing.traceSection
 import com.android.internal.protolog.ProtoLog
@@ -280,11 +279,8 @@ abstract class CaptionController<T>(
         decorWindowContext: Context,
         localCaptionBounds: Rect,
     ): Region? {
-        // If app is not requesting custom caption, touchable region is not limited so return null
-        if (
-            !taskInfo.isTransparentCaptionBarAppearance ||
-                !DesktopModeFlags.ENABLE_ACCESSIBLE_CUSTOM_HEADERS.isTrue
-        ) {
+        if (!taskInfo.isTransparentCaptionBarAppearance) {
+            // App is not requesting custom caption, touchable region is not limited so return null.
             return null
         }
 

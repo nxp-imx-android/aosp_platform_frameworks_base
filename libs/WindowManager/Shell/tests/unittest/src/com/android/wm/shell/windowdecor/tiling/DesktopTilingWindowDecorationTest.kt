@@ -54,6 +54,7 @@ import com.android.wm.shell.shared.desktopmode.FakeDesktopState
 import com.android.wm.shell.sysui.ShellController
 import com.android.wm.shell.transition.FocusTransitionObserver
 import com.android.wm.shell.transition.Transitions
+import com.android.wm.shell.transition.Transitions.TRANSIT_END_RECENTS_TRANSITION
 import com.android.wm.shell.transition.Transitions.TRANSIT_START_RECENTS_TRANSITION
 import com.android.wm.shell.windowdecor.DragResizeWindowGeometry
 import com.android.wm.shell.windowdecor.WindowDecorationWrapper
@@ -711,6 +712,57 @@ class DesktopTilingWindowDecorationTest : ShellTestCase() {
         verify(desktopTilingDividerWindowManager, times(1)).showDividerBar(equals(false))
     }
 
+    @Test
+    @UiThreadTest
+    fun transitToFront_onExplodedViewTransitionReady() {
+        val task1 = createVisibleTask()
+        val task2 = createVisibleTask()
+        val stableBounds = STABLE_BOUNDS_MOCK
+        whenever(displayController.getDisplayLayout(any())).thenReturn(displayLayout)
+        whenever(displayController.getDisplayContext(any())).thenReturn(mContext)
+        whenever(displayLayout.getStableBounds(any())).thenAnswer { i ->
+            (i.arguments.first() as Rect).set(stableBounds)
+        }
+        whenever(context.resources).thenReturn(resources)
+        whenever(resources.getDimensionPixelSize(any())).thenReturn(split_divider_width)
+        whenever(userRepositories.current.isVisibleTask(eq(task1.taskId))).thenReturn(true)
+        whenever(userRepositories.current.isVisibleTask(eq(task2.taskId))).thenReturn(true)
+        whenever(windowDecoration.taskSurface).thenReturn(mock())
+
+        tilingDecoration.onAppTiled(
+            task1,
+            windowDecoration,
+            DesktopTasksController.SnapPosition.RIGHT,
+            BOUNDS,
+            destinationBoundsOverride = null,
+        )
+        tilingDecoration.onAppTiled(
+            task2,
+            windowDecoration,
+            DesktopTasksController.SnapPosition.LEFT,
+            BOUNDS,
+            destinationBoundsOverride = null,
+        )
+
+        verify(toggleResizeDesktopTaskTransitionHandler, times(2))
+            .startTransition(capture(wctCaptor), any(), capture(callbackCaptor))
+        (callbackCaptor.value).invoke()
+
+        val changeInfo = createTransitRecentsEnds()
+        task1.isFocused = true
+        tilingDecoration.explodedViewTopTaskId = task1.taskId
+        tilingDecoration.isTilingManagerInitialised = true
+        tilingDecoration.onTransitionReady(
+            transition = mock(),
+            info = changeInfo,
+            startTransaction = mock(),
+            finishTransaction = mock(),
+        )
+
+        verify(transitions, times(1)).startTransition(eq(TRANSIT_TO_FRONT), any(), eq(null))
+        assertThat(tilingDecoration.explodedViewTopTaskId).isNull()
+    }
+
     fun themeChange_notifiesTilingManager() {
         tilingDecoration.desktopTilingDividerWindowManager = desktopTilingDividerWindowManager
         tilingDecoration.onThemeChanged()
@@ -995,6 +1047,9 @@ class DesktopTilingWindowDecorationTest : ShellTestCase() {
                 }
             )
         }
+
+    private fun createTransitRecentsEnds() =
+        TransitionInfo(TRANSIT_END_RECENTS_TRANSITION, /* flags= */ 0)
 
     companion object {
         private val NON_STABLE_BOUNDS_MOCK = Rect(50, 55, 100, 100)

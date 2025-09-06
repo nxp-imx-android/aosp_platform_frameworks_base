@@ -87,10 +87,8 @@
     <string name="bluetooth_connecting" msgid="5871702668260192755">"Се поврзува..."</string>
     <string name="bluetooth_connected" msgid="8065345572198502293">"Поврзано<xliff:g id="ACTIVE_DEVICE">%1$s</xliff:g>"</string>
     <string name="bluetooth_pairing" msgid="4269046942588193600">"Се спарува..."</string>
-    <!-- no translation found for bluetooth_pairing_failure (6914444518793157913) -->
-    <skip />
-    <!-- no translation found for bluetooth_connection_failure (384203214661155324) -->
-    <skip />
+    <string name="bluetooth_pairing_failure" msgid="6914444518793157913">"Не може да се спари"</string>
+    <string name="bluetooth_connection_failure" msgid="384203214661155324">"Не може да се поврзе"</string>
     <string name="bluetooth_connected_no_headset" msgid="2224101138659967604">"Поврзан со <xliff:g id="ACTIVE_DEVICE">%1$s</xliff:g> (без телефон)"</string>
     <string name="bluetooth_connected_no_a2dp" msgid="8566874395813947092">"Поврзан со <xliff:g id="ACTIVE_DEVICE">%1$s</xliff:g> (без аудиовизуелни содржини)"</string>
     <string name="bluetooth_connected_no_headset_no_a2dp" msgid="2893204819854215433">"Поврзан со <xliff:g id="ACTIVE_DEVICE">%1$s</xliff:g> (без телефон и аудиовизуел.)"</string>

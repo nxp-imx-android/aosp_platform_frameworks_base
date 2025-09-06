@@ -95,7 +95,9 @@ final class AppCompatCameraSimReqOrientationPolicy implements AppCompatCameraSta
 
     void start() {
         mCameraStateNotifier.addCameraStatePolicy(this);
-        mActivityRefresher.addEvaluator(this);
+        if (!Flags.enableCameraCompatSandboxDisplayRotationOnExternalDisplaysBugfix()) {
+            mActivityRefresher.addEvaluator(this);
+        }
         mCameraDisplayRotationProvider.start();
         mIsRunning = true;
     }
@@ -103,7 +105,9 @@ final class AppCompatCameraSimReqOrientationPolicy implements AppCompatCameraSta
     /** Releases camera callback listener. */
     void dispose() {
         mCameraStateNotifier.removeCameraStatePolicy(this);
-        mActivityRefresher.removeEvaluator(this);
+        if (!Flags.enableCameraCompatSandboxDisplayRotationOnExternalDisplaysBugfix()) {
+            mActivityRefresher.removeEvaluator(this);
+        }
         mCameraDisplayRotationProvider.dispose();
         mIsRunning = false;
     }
@@ -204,32 +208,37 @@ final class AppCompatCameraSimReqOrientationPolicy implements AppCompatCameraSta
     private void updateAndDispatchCameraConfiguration(@Nullable WindowProcessController app,
             @Nullable Task task) {
         final ActivityRecord activity = getTopActivityFromCameraTask(task);
-        final boolean isCompatActivity = activity != null
-                && isCompatibilityTreatmentEnabledForActivity(activity,
-                /*checkOrientation=*/ false);
-        // Only apps that need letterboxing (compatibility apps) need to recalculate configuration.
-        if (isCompatActivity) {
+        if (activity != null) {
             activity.recomputeConfiguration();
         }
-        if (task != null && isCompatActivity) {
+        if (task != null) {
             task.dispatchTaskInfoChangedIfNeeded(/* force= */ true);
         }
         if (app != null) {
-            updateCompatibilityInfo(app, activity);
+            final boolean refreshNeeded = updateCompatibilityInfo(app, activity);
+            if (activity != null
+                    && Flags.enableCameraCompatSandboxDisplayRotationOnExternalDisplaysBugfix()
+                    && refreshNeeded) {
+                mActivityRefresher.requestRefresh(activity);
+            }
         }
         if (activity != null) {
             // Refresh the activity, to get the app to reconfigure the camera setup.
             activity.ensureActivityConfiguration(/* ignoreVisibility= */ true);
+            if (Flags.enableCameraCompatSandboxDisplayRotationOnExternalDisplaysBugfix()) {
+                mActivityRefresher.refreshActivityIfEnabled(activity);
+            }
         }
     }
 
-    private void updateCompatibilityInfo(@NonNull WindowProcessController app,
+    private boolean updateCompatibilityInfo(@NonNull WindowProcessController app,
             @Nullable ActivityRecord activityRecord) {
         if (app.getThread() == null || app.mInfo == null) {
             Slog.w(TAG, "Insufficient app information. Cannot revert display rotation sandboxing.");
-            return;
+            return false;
         }
 
+        boolean needsRefresh = false;
         // CompatibilityInfo fields are static, so even if task or activity has been closed, this
         // state should be updated in case the app process is still alive.
         final CompatibilityInfo compatibilityInfo = mAtmService
@@ -253,6 +262,7 @@ final class AppCompatCameraSimReqOrientationPolicy implements AppCompatCameraSta
                                 displayRotation))
                         // TODO(b/365725400): support landscape cameras.
                         .setShouldOverrideSensorOrientation(false);
+                needsRefresh = true;
             } else if (mCameraStateMonitor.isCameraRunningForActivity(activityRecord)) {
                 // Sandbox only display rotation if needed, for external display.
                 // TODO(b/395063101): signal the camera to not apply
@@ -262,6 +272,7 @@ final class AppCompatCameraSimReqOrientationPolicy implements AppCompatCameraSta
                 //  framework has no information to avoid doing this.
                 cameraCompatibilityInfoBuilder.setDisplayRotationSandbox(
                         mCameraDisplayRotationProvider.getCameraDeviceRotation());
+                needsRefresh = true;
             }
         }
 
@@ -273,7 +284,10 @@ final class AppCompatCameraSimReqOrientationPolicy implements AppCompatCameraSta
         } catch (RemoteException e) {
             ProtoLog.w(WmProtoLogGroups.WM_DEBUG_STATES,
                     "Unable to update CompatibilityInfo for app %s", app);
+            return false;
         }
+
+        return needsRefresh;
     }
 
     /**
@@ -514,6 +528,8 @@ final class AppCompatCameraSimReqOrientationPolicy implements AppCompatCameraSta
                 || !mCameraStateMonitor.isCameraWithIdRunningForActivity(topActivity, cameraId)) {
             return false;
         }
-        return topActivity.mAppCompatController.getCameraOverrides().isRefreshRequested();
+        return Flags.enableCameraCompatSandboxDisplayRotationOnExternalDisplaysBugfix()
+                ? mActivityRefresher.isActivityRefreshing(topActivity)
+                : topActivity.mAppCompatController.getCameraOverrides().isRefreshRequested();
     }
 }

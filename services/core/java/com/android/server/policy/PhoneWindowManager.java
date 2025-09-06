@@ -492,9 +492,6 @@ public class PhoneWindowManager implements WindowManagerPolicy {
     // Assigned on main thread, accessed on UI thread
     volatile VrManagerInternal mVrManagerInternal;
 
-    /** If true, can use a keyboard shortcut to trigger a bugreport. */
-    boolean mEnableBugReportKeyboardShortcut = false;
-
     private TalkbackShortcutController mTalkbackShortcutController;
 
     private WindowWakeUpPolicy mWindowWakeUpPolicy;
@@ -2360,7 +2357,6 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                 "PhoneWindowManager.mBroadcastWakeLock");
         mPowerKeyWakeLock = mPowerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK,
                 "PhoneWindowManager.mPowerKeyWakeLock");
-        mEnableBugReportKeyboardShortcut = "1".equals(SystemProperties.get("ro.debuggable"));
         mLidKeyboardAccessibility = mContext.getResources().getInteger(
                 com.android.internal.R.integer.config_lidKeyboardAccessibility);
         mLidNavigationAccessibility = mContext.getResources().getInteger(
@@ -3551,11 +3547,17 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                 }
                 break;
             case KeyGestureEvent.KEY_GESTURE_TYPE_TRIGGER_BUG_REPORT:
-                if (complete && mEnableBugReportKeyboardShortcut) {
+                if (complete) {
                     try {
-                        if (!mActivityManagerService.launchBugReportHandlerApp()) {
+                        if (mActivityManagerService.launchBugReportHandlerApp()) {
+                            return;
+                        }
+                        // Take bug report only for debuggable builds as a fallback when there is
+                        // no bug handler or feedback app on the system image.
+                        if ("1".equals(SystemProperties.get("ro.debuggable"))) {
                             mActivityManagerService.requestInteractiveBugReport();
                         }
+                        return;
                     } catch (RemoteException e) {
                         Slog.d(TAG, "Error taking bugreport", e);
                     }

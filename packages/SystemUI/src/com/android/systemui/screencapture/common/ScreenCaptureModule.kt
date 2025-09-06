@@ -18,58 +18,20 @@ package com.android.systemui.screencapture.common
 
 import android.app.Activity
 import com.android.systemui.CoreStartable
-import com.android.systemui.screencapture.ScreenCaptureUiStartable
-import com.android.systemui.screencapture.cast.ScreenCaptureCastUiComponent
-import com.android.systemui.screencapture.common.shared.model.ScreenCaptureType
-import com.android.systemui.screencapture.record.ScreenCaptureRecordUiComponent
+import com.android.systemui.screencapture.ScreenCaptureStartable
 import com.android.systemui.screencapture.record.smallscreen.ui.SmallScreenPostRecordingActivity
-import com.android.systemui.screencapture.sharescreen.ScreenCaptureShareScreenUiComponent
 import dagger.Binds
 import dagger.Module
 import dagger.multibindings.ClassKey
 import dagger.multibindings.IntoMap
 
-/**
- * Top level Dagger Module for Screen Capture.
- *
- * Injects Screen Capture Subcomponents into the System UI dagger graph via
- * [SystemUIModule][com.android.systemui.dagger.SystemUIModule].
- */
-@Module(
-    subcomponents =
-        [
-            ScreenCaptureCastUiComponent::class,
-            ScreenCaptureUiComponent::class,
-            ScreenCaptureRecordUiComponent::class,
-            ScreenCaptureShareScreenUiComponent::class,
-        ]
-)
+@Module(subcomponents = [ScreenCaptureComponent::class])
 interface ScreenCaptureModule {
-    @Binds
-    @IntoMap
-    @ScreenCaptureTypeKey(ScreenCaptureType.CAST)
-    fun bindCastComponentBuilder(
-        impl: ScreenCaptureCastUiComponent.Builder
-    ): ScreenCaptureUiComponent.Builder
 
     @Binds
     @IntoMap
-    @ScreenCaptureTypeKey(ScreenCaptureType.RECORD)
-    fun bindRecordComponentBuilder(
-        impl: ScreenCaptureRecordUiComponent.Builder
-    ): ScreenCaptureUiComponent.Builder
-
-    @Binds
-    @IntoMap
-    @ScreenCaptureTypeKey(ScreenCaptureType.SHARE_SCREEN)
-    fun bindShareScreenComponentBuilder(
-        impl: ScreenCaptureShareScreenUiComponent.Builder
-    ): ScreenCaptureUiComponent.Builder
-
-    @Binds
-    @IntoMap
-    @ClassKey(ScreenCaptureUiStartable::class)
-    fun bindScreenCaptureUiStartable(impl: ScreenCaptureUiStartable): CoreStartable
+    @ClassKey(ScreenCaptureStartable::class)
+    fun bindScreenCaptureUiStartable(impl: ScreenCaptureStartable): CoreStartable
 
     @Binds
     @IntoMap

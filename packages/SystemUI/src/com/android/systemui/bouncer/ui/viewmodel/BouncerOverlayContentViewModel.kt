@@ -84,6 +84,9 @@ constructor(
     private val _selectedUserImage = MutableStateFlow<Bitmap?>(null)
     val selectedUserImage: StateFlow<Bitmap?> = _selectedUserImage.asStateFlow()
 
+    private val _selectedUserName = MutableStateFlow<Text?>(null)
+    val selectedUserName: StateFlow<Text?> = _selectedUserName.asStateFlow()
+
     val message: BouncerMessageViewModel by lazy { bouncerMessageViewModelFactory.create() }
 
     private val _userSwitcherDropdown =
@@ -210,6 +213,10 @@ constructor(
                         it.image.toBitmap(iconSize, iconSize)
                     }
                     .collect { _selectedUserImage.value = it }
+            }
+
+            launch {
+                userSwitcher.selectedUser.map { it.name }.collect { _selectedUserName.value = it }
             }
 
             launch {

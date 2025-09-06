@@ -87,10 +87,8 @@
     <string name="bluetooth_connecting" msgid="5871702668260192755">"A ligar..."</string>
     <string name="bluetooth_connected" msgid="8065345572198502293">"Ligado<xliff:g id="ACTIVE_DEVICE">%1$s</xliff:g>"</string>
     <string name="bluetooth_pairing" msgid="4269046942588193600">"A sincronizar..."</string>
-    <!-- no translation found for bluetooth_pairing_failure (6914444518793157913) -->
-    <skip />
-    <!-- no translation found for bluetooth_connection_failure (384203214661155324) -->
-    <skip />
+    <string name="bluetooth_pairing_failure" msgid="6914444518793157913">"Não é possível sincronizar"</string>
+    <string name="bluetooth_connection_failure" msgid="384203214661155324">"Não é possível estabelecer ligação"</string>
     <string name="bluetooth_connected_no_headset" msgid="2224101138659967604">"Ligado (sem telemóvel)<xliff:g id="ACTIVE_DEVICE">%1$s</xliff:g>"</string>
     <string name="bluetooth_connected_no_a2dp" msgid="8566874395813947092">"Ligado (sem multimédia)<xliff:g id="ACTIVE_DEVICE">%1$s</xliff:g>"</string>
     <string name="bluetooth_connected_no_headset_no_a2dp" msgid="2893204819854215433">"Ligado (sem telemóvel nem multimédia)<xliff:g id="ACTIVE_DEVICE">%1$s</xliff:g>"</string>
@@ -349,8 +347,7 @@
     <string name="wifi_non_persistent_mac_randomization_summary" msgid="2159794543105053930">"Quando este modo estiver ativado, o endereço MAC deste dispositivo pode mudar sempre que o mesmo estabelece ligação a uma rede que tenha a seleção aleatória do MAC ativada."</string>
     <string name="wifi_metered_label" msgid="8737187690304098638">"Acesso limitado"</string>
     <string name="wifi_unmetered_label" msgid="6174142840934095093">"Acesso ilimitado"</string>
-    <!-- no translation found for select_logd_size_title (4393502933789367691) -->
-    <skip />
+    <string name="select_logd_size_title" msgid="4393502933789367691">"Tamanho da memória intermédia do registo"</string>
     <string name="select_logd_size_dialog_title" msgid="2105401994681013578">"Selec. tam. reg. p/ mem. int. reg."</string>
     <string name="dev_logpersist_clear_warning_title" msgid="8631859265777337991">"Quer limpar o armazenamento persistente do registo?"</string>
     <string name="dev_logpersist_clear_warning_message" msgid="6447590867594287413">"Quando deixamos de monitorizar com o registo persistente, é necessário apagar os dados de registo que se encontram no seu dispositivo."</string>

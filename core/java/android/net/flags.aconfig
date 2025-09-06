@@ -77,3 +77,14 @@ flag {
   description: "Flag for adding CREATE_APP_SPECIFIC_NETWORK permission"
   bug: "435313135"
 }
+
+flag {
+  name: "delete_vpn_profile_when_app_uninstalled"
+  namespace: "android_core_networking"
+  is_exported: false
+  description: "Flag for deleting VPN profile when the provisioning app is uninstalled"
+  bug: "440083803"
+  metadata {
+    purpose: PURPOSE_BUGFIX
+  }
+}

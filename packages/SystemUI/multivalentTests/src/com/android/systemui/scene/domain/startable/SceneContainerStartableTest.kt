@@ -1769,6 +1769,55 @@ class SceneContainerStartableTest : SysuiTestCase() {
         }
 
     @Test
+    fun hydrateWindowController_setNotificationShadeFocusable_dual_shade() =
+        kosmos.runTest {
+            enableDualShade()
+            runCurrent()
+            val currentDesiredSceneKey by collectLastValue(sceneInteractor.currentScene)
+            val transitionStateFlow = prepareState(
+                isDeviceUnlocked = true,
+                initialSceneKey = Scenes.Gone,
+            )
+            assertThat(currentDesiredSceneKey).isEqualTo(Scenes.Gone)
+            verify(notificationShadeWindowController, never())
+                .setNotificationShadeFocusable(anyBoolean())
+
+            underTest.start()
+            runCurrent()
+
+            // By default, the notification shade window should not be focusable.
+            verify(notificationShadeWindowController, times(1)).setNotificationShadeFocusable(false)
+            verify(notificationShadeWindowController, times(0)).setNotificationShadeFocusable(true)
+
+            sceneInteractor.showOverlay(Overlays.QuickSettingsShade, loggingReason="")
+            transitionStateFlow.value =
+                ObservableTransitionState.Idle(
+                    Scenes.Gone,
+                    setOf(Overlays.QuickSettingsShade)
+                )
+
+            // When showing the Quick Settings shade with the `Gone` scene, the notification shade
+            // window should be focusable.
+            runCurrent()
+            verify(notificationShadeWindowController, times(1)).setNotificationShadeFocusable(false)
+            verify(notificationShadeWindowController, times(1)).setNotificationShadeFocusable(true)
+
+            sceneInteractor.showOverlay(Overlays.NotificationsShade, loggingReason="")
+            sceneInteractor.hideOverlay(Overlays.QuickSettingsShade, loggingReason="")
+            transitionStateFlow.value =
+                ObservableTransitionState.Idle(
+                    Scenes.Gone,
+                    setOf(Overlays.NotificationsShade)
+                )
+
+            // When showing the notification shade with the `Gone` scene, the notification shade
+            // window should be focusable.
+            runCurrent()
+            verify(notificationShadeWindowController, times(1)).setNotificationShadeFocusable(false)
+            verify(notificationShadeWindowController, times(2)).setNotificationShadeFocusable(true)
+        }
+
+    @Test
     fun hydrateWindowController_setKeyguardShowing() =
         kosmos.runTest {
             enableSingleShade()

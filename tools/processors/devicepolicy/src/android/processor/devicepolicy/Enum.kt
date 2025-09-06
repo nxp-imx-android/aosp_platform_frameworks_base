@@ -64,7 +64,7 @@ import javax.lang.model.type.TypeMirror
  *             "EXAMPLE_POLICY");
  * }
  */
-class EnumProcessor(processingEnv: ProcessingEnvironment) : Processor(processingEnv) {
+class EnumProcessor(processingEnv: ProcessingEnvironment) : Processor<EnumPolicyDefinition>(processingEnv) {
     private companion object {
         const val SIMPLE_TYPE_INTEGER = "java.lang.Integer"
 
@@ -85,9 +85,9 @@ class EnumProcessor(processingEnv: ProcessingEnvironment) : Processor(processing
      *
      * @return null if the element does not have a @EnumPolicyDefinition or on error, {@link EnumPolicyMetadata} otherwise.
      */
-    fun process(element: Element): EnumPolicyMetadata? {
-        val enumPolicyAnnotation =
-            element.getAnnotation(EnumPolicyDefinition::class.java) ?: return null
+    override fun processMetadata(element: Element): Pair<PolicyMetadata, PolicyDefinition>? {
+        val enumPolicyAnnotation = element.getAnnotation(EnumPolicyDefinition::class.java)
+            ?: throw IllegalStateException("Processor should only be called on elements with @EnumPolicyMetadata")
 
         if (!processingEnv.typeUtils.isSameType(policyType(element), integerType)) {
             printError(
@@ -114,14 +114,24 @@ class EnumProcessor(processingEnv: ProcessingEnvironment) : Processor(processing
         }
 
         val enumName = intDefElement.qualifiedName.toString()
-        val enumDoc = processingEnv.elementUtils.getDocComment(intDefElement)
+        val enumDoc = processingEnv.elementUtils.getDocComment(intDefElement) ?: ""
+
+        if (enumDoc.trim().isEmpty()) {
+            printError(intDefElement, "Missing JavaDoc for IntDef used by $element")
+        }
 
         // In the class-level example above, these would be ENUM_ENTRY_1 and ENUM_ENTRY_2.
         val entries = getIntDefIdentifiers(annotationMirror, intDefElement)
 
-        return EnumPolicyMetadata(
+        val metadata = EnumPolicyMetadata(
             enumPolicyAnnotation.defaultValue, enumName, enumDoc, entries
         )
+
+        return Pair(metadata, enumPolicyAnnotation.base)
+    }
+
+    override fun annotationClass(): Class<EnumPolicyDefinition> {
+        return EnumPolicyDefinition::class.java
     }
 
     /**
@@ -162,13 +172,13 @@ class EnumProcessor(processingEnv: ProcessingEnvironment) : Processor(processing
         // In the class-level example above, these would be {ENUM_ENTRY_1,ENUM_ENTRY_2}.
         @Suppress("UNCHECKED_CAST") val values = annotationValue.value as List<AnnotationValue>
 
-        val documentations = identifiers.map { identifier ->
-            // TODO(b/442973945): Fail gracefully when the element is not part of the parent class.
-            val identifierElement = intDefElement.enclosingElement.enclosedElements.find {
+        val documentations: List<String?> = identifiers.map { identifier ->
+            // TODO(b/442973945): Support identifiers outside of same class.
+            intDefElement.enclosingElement.enclosedElements.firstOrNull {
                 it.simpleName.toString() == identifier
+            } ?.let {
+                processingEnv.elementUtils.getDocComment(it)
             }
-
-            processingEnv.elementUtils.getDocComment(identifierElement)
         }
 
         return identifiers.mapIndexed { i, identifier ->
@@ -211,7 +221,7 @@ class EnumProcessor(processingEnv: ProcessingEnvironment) : Processor(processing
     }
 }
 
-class EnumEntryMetadata(val name: String, val value: Int, val documentation: String) {
+class EnumEntryMetadata(val name: String, val value: Int, val documentation: String?) {
     fun dump(writer: JsonWriter) {
         writer.apply {
             beginObject()
@@ -222,8 +232,10 @@ class EnumEntryMetadata(val name: String, val value: Int, val documentation: Str
             name("value")
             value(value.toLong())
 
-            name("documentation")
-            value(documentation)
+            if (documentation != null) {
+                name("documentation")
+                value(documentation)
+            }
 
             endObject()
         }

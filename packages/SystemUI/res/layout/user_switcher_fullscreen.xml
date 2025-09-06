@@ -21,6 +21,7 @@
     android:id="@+id/user_switcher_root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:visibility="invisible"
     android:orientation="vertical">
 
   <ScrollView
@@ -72,7 +73,6 @@
         android:paddingHorizontal="@dimen/user_switcher_fullscreen_button_padding"
         android:textSize="@dimen/user_switcher_fullscreen_button_text_size"
         android:textColor="?androidprv:attr/colorAccentPrimary"
-        android:visibility="gone"
         android:text="@string/cancel" />
 
     <TextView
@@ -87,7 +87,6 @@
         android:paddingHorizontal="@dimen/user_switcher_fullscreen_button_padding"
         android:textSize="@dimen/user_switcher_fullscreen_button_text_size"
         android:textColor="?androidprv:attr/colorAccentPrimary"
-        android:visibility="gone"
         android:text="@string/cancel" />
 
     <Space

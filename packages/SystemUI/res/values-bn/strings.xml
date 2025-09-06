@@ -138,16 +138,12 @@
     <string name="screenrecord_stop_dialog_message" msgid="6262768207331626817">"আপনি বর্তমানে সম্পূর্ণ স্ক্রিন রেকর্ড করছেন"</string>
     <string name="screenrecord_stop_dialog_message_specific_app" msgid="5995770227684523244">"আপনি বর্তমানে <xliff:g id="APP_NAME">%1$s</xliff:g> রেকর্ড করছেন"</string>
     <string name="screenrecord_stop_dialog_button" msgid="2883812564938194350">"রেকর্ড করা বন্ধ করুন"</string>
-    <!-- no translation found for screen_record_entire_screen (66944996337928170) -->
-    <skip />
-    <!-- no translation found for screen_record_single_app (7355880948574569290) -->
-    <skip />
-    <!-- no translation found for screen_record_single_app_no_recents (1023249803854209330) -->
-    <skip />
+    <string name="screen_record_entire_screen" msgid="66944996337928170">"সম্পূর্ণ স্ক্রিন"</string>
+    <string name="screen_record_single_app" msgid="7355880948574569290">"একটি অ্যাপ"</string>
+    <string name="screen_record_single_app_no_recents" msgid="1023249803854209330">"একটি অ্যাপ (বেছে নিতে অ্যাপ খুলুন)"</string>
     <string name="screen_record_record_device_audio_label" msgid="5363057443124085198">"ডিভাইসের অডিও রেকর্ড করুন"</string>
     <string name="screen_record_record_microphone_label" msgid="4685753707185662381">"মাইক্রোফোন দিয়ে রেকর্ড করুন"</string>
-    <!-- no translation found for screen_record_should_show_camera_label (159628971484931357) -->
-    <skip />
+    <string name="screen_record_should_show_camera_label" msgid="159628971484931357">"সেলফি ক্যামেরা দেখুন"</string>
     <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"স্পর্শ করা সংক্রান্ত সেটিং দেখুন"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"রেকর্ড করার জন্য অ্যাপ বেছে নিন"</string>
     <string name="screen_record_video_saved" msgid="1345283626390232282">"ভিডিও সেভ করা হয়েছে"</string>
@@ -165,6 +161,10 @@
     <string name="screen_capture_toolbar_screenshot_button" msgid="5676585348709494125">"স্ক্রিনশট"</string>
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"রেকর্ড করুন"</string>
     <string name="screen_share_toolbar_share_button" msgid="9182050596136815833">"শেয়ার করুন"</string>
+    <!-- no translation found for screen_share_no_select_app_thumbnail (1630012401570567430) -->
+    <skip />
+    <!-- no translation found for screen_share_app_audio_sharing (7201172218924898712) -->
+    <skip />
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"উইন্ডোর স্ক্রিনশট নিন"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"উইন্ডো রেকর্ড করুন"</string>
     <string name="screen_capture_toolbar_region_button_screenshot_a11y" msgid="2102262602357521192">"বেছে নেওয়া অংশের স্ক্রিনশট নিন"</string>
@@ -545,7 +545,7 @@
     <string name="zen_mode_set_up" msgid="8231201163894922821">"সেট করা নেই"</string>
     <string name="zen_mode_no_manual_invocation" msgid="1769975741344633672">"সেটিংসে গিয়ে ম্যানেজ করুন"</string>
     <string name="zen_mode_active_modes" msgid="1625850411578488856">"{count,plural, =0{কোনও মোড চালু নেই}=1{{mode} চালু আছে}one{#টি মোড চালু আছে}other{#টি মোড চালু আছে}}"</string>
-    <string name="zen_modes_multiple_on_title" msgid="4918235362988982304">"<xliff:g id="NUMBER">%s</xliff:g>টি মোড"</string>
+    <string name="zen_modes_multiple_on_title" msgid="4918235362988982304">"<xliff:g id="NUMBER">%d</xliff:g>টি মোড"</string>
     <string name="zen_modes_multiple_on_status" msgid="8120633422509269588">"চালু আছে"</string>
     <string name="zen_priority_introduction" msgid="3159291973383796646">"অ্যালার্ম, রিমাইন্ডার, ইভেন্ট, এবং আপনার নির্দিষ্ট করে দেওয়া ব্যক্তিদের কল ছাড়া অন্য কোনও আওয়াজ বা ভাইব্রেশন হবে না। তবে সঙ্গীত, ভিডিও, এবং গেম সহ আপনি যা কিছু চালাবেন তার আওয়াজ শুনতে পাবেন।"</string>
     <string name="zen_alarms_introduction" msgid="3987266042682300470">"অ্যালার্ম ছাড়া অন্য কোনও আওয়াজ বা ভাইব্রেশন হবে না। তবে সঙ্গীত, ভিডিও, এবং গেম সহ আপনি যা কিছু চালাবেন তার আওয়াজ শুনতে পাবেন।"</string>
@@ -993,8 +993,7 @@
     <string name="group_system_access_notification_shade" msgid="1619028907006553677">"বিজ্ঞপ্তি দেখুন"</string>
     <string name="group_system_access_quick_settings_panel" msgid="1844771096582064926">"দ্রুত সেটিংস দেখুন"</string>
     <string name="group_system_full_screenshot" msgid="5742204844232667785">"স্ক্রিনশট নিন"</string>
-    <!-- no translation found for group_system_partial_screenshot (2114314797127648010) -->
-    <skip />
+    <string name="group_system_partial_screenshot" msgid="2114314797127648010">"আংশিক স্ক্রিনশট নিন"</string>
     <string name="group_system_access_system_app_shortcuts" msgid="8562482996626694026">"শর্টকাট দেখুন"</string>
     <string name="group_system_go_back" msgid="2730322046244918816">"ফিরে যান"</string>
     <string name="group_system_access_home_screen" msgid="4130366993484706483">"হোম স্ক্রিনে যান"</string>

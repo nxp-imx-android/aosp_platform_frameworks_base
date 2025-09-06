@@ -138,16 +138,12 @@
     <string name="screenrecord_stop_dialog_message" msgid="6262768207331626817">"يتم حاليًا تسجيل محتوى الشاشة بأكمله"</string>
     <string name="screenrecord_stop_dialog_message_specific_app" msgid="5995770227684523244">"يتم حاليًا تسجيل محتوى \"<xliff:g id="APP_NAME">%1$s</xliff:g>\""</string>
     <string name="screenrecord_stop_dialog_button" msgid="2883812564938194350">"إيقاف التسجيل"</string>
-    <!-- no translation found for screen_record_entire_screen (66944996337928170) -->
-    <skip />
-    <!-- no translation found for screen_record_single_app (7355880948574569290) -->
-    <skip />
-    <!-- no translation found for screen_record_single_app_no_recents (1023249803854209330) -->
-    <skip />
+    <string name="screen_record_entire_screen" msgid="66944996337928170">"الشاشة بالكامل"</string>
+    <string name="screen_record_single_app" msgid="7355880948574569290">"تطبيق واحد"</string>
+    <string name="screen_record_single_app_no_recents" msgid="1023249803854209330">"تطبيق واحد (يُرجى فتح أي تطبيق لاختياره)"</string>
     <string name="screen_record_record_device_audio_label" msgid="5363057443124085198">"تسجيل صوت الجهاز"</string>
     <string name="screen_record_record_microphone_label" msgid="4685753707185662381">"التسجيل من الميكروفون"</string>
-    <!-- no translation found for screen_record_should_show_camera_label (159628971484931357) -->
-    <skip />
+    <string name="screen_record_should_show_camera_label" msgid="159628971484931357">"عرض كاميرا السيلفي"</string>
     <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"عرض أماكن اللمس"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"يُرجى اختيار تطبيق لتسجيل محتوى شاشته"</string>
     <string name="screen_record_video_saved" msgid="1345283626390232282">"تم حفظ الفيديو"</string>
@@ -165,6 +161,10 @@
     <string name="screen_capture_toolbar_screenshot_button" msgid="5676585348709494125">"لقطة شاشة"</string>
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"تسجيل"</string>
     <string name="screen_share_toolbar_share_button" msgid="9182050596136815833">"مشاركة"</string>
+    <!-- no translation found for screen_share_no_select_app_thumbnail (1630012401570567430) -->
+    <skip />
+    <!-- no translation found for screen_share_app_audio_sharing (7201172218924898712) -->
+    <skip />
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"أخْذ لقطة شاشة للنافذة"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"تسجيل النافذة"</string>
     <string name="screen_capture_toolbar_region_button_screenshot_a11y" msgid="2102262602357521192">"أخْذ لقطة شاشة للمنطقة المحدّدة"</string>
@@ -545,7 +545,7 @@
     <string name="zen_mode_set_up" msgid="8231201163894922821">"لم يتم ضبط الوضع"</string>
     <string name="zen_mode_no_manual_invocation" msgid="1769975741344633672">"الإدارة في الإعدادات"</string>
     <string name="zen_mode_active_modes" msgid="1625850411578488856">"{count,plural, =0{ما مِن أوضاع مفعَّلة}=1{‫\"{mode}\" مفعَّل}two{وضعان مفعَّلان}few{‫# أوضاع مفعَّلة}many{‫# وضعًا مفعَّلاً}other{‫# وضع مفعَّل}}"</string>
-    <string name="zen_modes_multiple_on_title" msgid="4918235362988982304">"عدد الأوضاع: <xliff:g id="NUMBER">%s</xliff:g>"</string>
+    <string name="zen_modes_multiple_on_title" msgid="4918235362988982304">"عدد الأوضاع: <xliff:g id="NUMBER">%d</xliff:g>"</string>
     <string name="zen_modes_multiple_on_status" msgid="8120633422509269588">"مفعّلة"</string>
     <string name="zen_priority_introduction" msgid="3159291973383796646">"لن يتم إزعاجك بالأصوات والاهتزاز، باستثناء المُنبِّهات والتذكيرات والأحداث والمتصلين الذين تحددهم. وسيظل بإمكانك سماع أي عناصر أخرى تختار تشغيلها، بما في ذلك الموسيقى والفيديوهات والألعاب."</string>
     <string name="zen_alarms_introduction" msgid="3987266042682300470">"لن يتم إزعاجك بالأصوات والاهتزاز، باستثناء المُنبِّهات. وسيظل بإمكانك سماع أي عناصر أخرى تختار تشغيلها، بما في ذلك الموسيقى والفيديوهات والألعاب."</string>
@@ -1571,7 +1571,7 @@
     <string name="privacy_dialog_expand_action" msgid="9129262348628331377">"توسيع الخيارات وعرضها"</string>
     <string name="privacy_dialog_collapse_action" msgid="277419962019466347">"تصغير"</string>
     <string name="privacy_dialog_close_app_button" msgid="8006250171305878606">"إغلاق هذا التطبيق"</string>
-    <string name="privacy_dialog_close_app_message" msgid="1316408652526310985">"تم إغلاق <xliff:g id="APP_NAME">%1$s</xliff:g>."</string>
+    <string name="privacy_dialog_close_app_message" msgid="1316408652526310985">"تم إغلاق \"<xliff:g id="APP_NAME">%1$s</xliff:g>\""</string>
     <string name="privacy_dialog_manage_service" msgid="8320590856621823604">"إدارة الخدمة"</string>
     <string name="privacy_dialog_manage_permissions" msgid="2543451567190470413">"إدارة أذونات الوصول"</string>
     <string name="privacy_dialog_active_call_usage" msgid="7858746847946397562">"قيد الاستخدام في المكالمة الهاتفية"</string>

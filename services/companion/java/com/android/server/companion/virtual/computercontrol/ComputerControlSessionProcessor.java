@@ -54,6 +54,8 @@ import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.server.ServiceThread;
 
+import java.util.Objects;
+
 /**
  * Handles creation and lifecycle of {@link ComputerControlSession}s.
  *
@@ -76,7 +78,7 @@ public class ComputerControlSessionProcessor {
     private final PendingIntentFactory mPendingIntentFactory;
 
     /** The binders of all currently active sessions. */
-    private final ArraySet<IBinder> mSessions = new ArraySet<>();
+    private final ArraySet<ComputerControlSessionImpl> mSessions = new ArraySet<>();
 
     private final Object mHandlerThreadLock = new Object();
     @GuardedBy("mHandlerThreadLock")
@@ -111,7 +113,7 @@ public class ComputerControlSessionProcessor {
             @NonNull AttributionSource attributionSource,
             @NonNull ComputerControlSessionParams params,
             @NonNull IComputerControlSessionCallback callback) {
-        validateParams(params);
+        validateParams(attributionSource, params);
         startHandlerThreadIfNeeded();
 
         final boolean canCreateWithoutConsent;
@@ -150,7 +152,19 @@ public class ComputerControlSessionProcessor {
         }
     }
 
-    private void validateParams(ComputerControlSessionParams params) {
+    private void validateParams(AttributionSource attributionSource,
+            ComputerControlSessionParams params) {
+        synchronized (mSessions) {
+            for (int i = 0; i < mSessions.size(); i++) {
+                ComputerControlSessionImpl session = mSessions.valueAt(i);
+                if (Objects.equals(attributionSource.getPackageName(),
+                        session.getOwnerPackageName())
+                        && Objects.equals(params.getName(), session.getName())) {
+                    throw new IllegalArgumentException("Session name must be unique");
+                }
+            }
+        }
+
         if (!Flags.computerControlActivityPolicyStrict()) {
             return;
         }
@@ -207,7 +221,7 @@ public class ComputerControlSessionProcessor {
                     callback.asBinder(), params, attributionSource, mVirtualDeviceFactory,
                     new OnSessionClosedListener(params.getName(), callback),
                     new ComputerControlSessionImpl.Injector(mContext));
-            mSessions.add(session.asBinder());
+            mSessions.add(session);
         }
 
         // If the client provided a surface, disable the screenshot API.
@@ -321,9 +335,9 @@ public class ComputerControlSessionProcessor {
         }
 
         @Override
-        public void onClosed(IBinder token) {
+        public void onClosed(ComputerControlSessionImpl session) {
             synchronized (mSessions) {
-                if (!mSessions.remove(token)) {
+                if (!mSessions.remove(session)) {
                     // The session was already removed, which can happen if close() is called
                     // multiple times.
                     return;

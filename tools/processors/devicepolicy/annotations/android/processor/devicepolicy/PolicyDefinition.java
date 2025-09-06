@@ -16,24 +16,20 @@
 
 package android.processor.devicepolicy;
 
-import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
 
 /**
  * Define a policy.
  * <p>
- * Can only be applied to fields inside {@link android.app.admin.PolicyIdentifier}.
+ * Can only be applied to fields inside {@link android.app.admin.PolicyIdentifier} by nesting it in
+ * a type specific annotation such as {@link EnumPolicyDefinition}.
  * The field must be static final and have a type of {@link android.app.admin.PolicyIdentifier}.
- * In addition to this annotation, a type specific one must be present such as
- * {@link BooleanPolicyDefinition}.
  * </p>
  *
  *  The name of the policy is taken from the field name.
  *  The type is the parameter passed to {@link android.app.admin.PolicyIdentifier}.
  */
 @Retention(RetentionPolicy.SOURCE)
-@Target({ElementType.FIELD})
 public @interface PolicyDefinition {
 }

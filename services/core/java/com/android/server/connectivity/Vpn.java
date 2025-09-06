@@ -602,6 +602,16 @@ public class Vpn {
             }
         }
 
+        /** Verify the binder calling UID is the one passed in arguments or the SYSTEM_UID */
+        public void verifyCallingUidOrSystemUidAndPackage(
+                Context context, String packageName, int userId) {
+            final int callingUid = Binder.getCallingUid();
+            if (getAppUid(context, packageName, userId) != callingUid
+                    && callingUid != Process.SYSTEM_UID) {
+                throw new SecurityException(packageName + " does not belong to uid " + callingUid);
+            }
+        }
+
         /**
          * @see VpnConnectivityMetrics.
          *
@@ -1308,8 +1318,12 @@ public class Vpn {
         // We can't just check that packageName matches mPackage, because if the app was uninstalled
         // and reinstalled it will no longer be prepared. Similarly if there is a shared UID, the
         // calling package may not be the same as the prepared package. Check both UID and package.
-        return getAppUid(mContext, packageName, mUserId) == mOwnerUID
-                && mPackage.equals(packageName);
+        return isCurrentPreparedPackage(packageName, getAppUid(mContext, packageName, mUserId));
+    }
+
+    @GuardedBy("this")
+    private boolean isCurrentPreparedPackage(String packageName, int uid) {
+        return uid == mOwnerUID && mPackage.equals(packageName);
     }
 
     /** Prepare the VPN for the given package. Does not perform permission checks. */
@@ -4091,6 +4105,10 @@ public class Vpn {
         mDeps.verifyCallingUidAndPackage(mContext, packageName, mUserId);
     }
 
+    private void verifyCallingUidOrSystemUidAndPackage(String packageName) {
+        mDeps.verifyCallingUidOrSystemUidAndPackage(mContext, packageName, mUserId);
+    }
+
     @VisibleForTesting
     String getProfileNameForPackage(String packageName) {
         return Credentials.PLATFORM_VPN + mUserId + "_" + packageName;
@@ -4159,6 +4177,10 @@ public class Vpn {
         return isCurrentPreparedPackage(packageName) && isIkev2VpnRunner();
     }
 
+    private boolean isCurrentIkev2VpnLocked(@NonNull String packageName, int uid) {
+        return isCurrentPreparedPackage(packageName, uid) && isIkev2VpnRunner();
+    }
+
     /**
      * Deletes an app-provisioned VPN profile.
      *
@@ -4182,6 +4204,32 @@ public class Vpn {
                 } else {
                     prepareInternal(VpnConfig.LEGACY_VPN);
                 }
+            }
+
+            getVpnProfileStore().remove(getProfileNameForPackage(packageName));
+        } finally {
+            Binder.restoreCallingIdentity(token);
+        }
+    }
+
+    /**
+     * Deletes an app-provisioned VPN profile because the provisioning app has been uninstalled.
+     *
+     * @param packageName the package name of the app provisioning this profile
+     * @param uid the uid of the app provisioning this profile
+     */
+    public synchronized void deleteVpnProfileDueToAppRemoval(
+            @NonNull String packageName, int uid) {
+        requireNonNull(packageName, "No package name provided");
+
+        verifyCallingUidOrSystemUidAndPackage(packageName);
+        enforceNotRestrictedUser();
+
+        final long token = Binder.clearCallingIdentity();
+        try {
+            // If this profile is providing the current VPN, turn it off.
+            if (isCurrentIkev2VpnLocked(packageName, uid)) {
+                prepareInternal(VpnConfig.LEGACY_VPN);
             }
 
             getVpnProfileStore().remove(getProfileNameForPackage(packageName));

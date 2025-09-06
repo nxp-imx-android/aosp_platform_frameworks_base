@@ -87,7 +87,7 @@ public class LocalMetadataStore {
     @NonNull
     PersistableBundle getMetadataForUser(@UserIdInt int userId) {
         synchronized (mLock) {
-            return readMetadataFromCache(userId);
+            return readMetadataFromCache(userId).deepCopy();
         }
     }
 

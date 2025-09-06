@@ -106,6 +106,19 @@ class AppCompatCameraPolicy {
     }
 
     /**
+     * Notifies {@link ActivityRefresher} that the activity is already relaunching.
+     *
+     * <p>This is to avoid unnecessary refresh (i.e. cycling activity though stop/pause -> resume),
+     * if refresh is pending for camera compat.
+     */
+    static void onActivityRelaunching(@NonNull ActivityRecord activity) {
+        final AppCompatCameraPolicy cameraPolicy = getAppCompatCameraPolicy(activity);
+        if (cameraPolicy != null && cameraPolicy.mActivityRefresher != null) {
+            cameraPolicy.mActivityRefresher.onActivityRelaunching(activity);
+        }
+    }
+
+    /**
      * Notifies that animation in {@link ScreenRotationAnimation} has finished.
      *
      * <p>This class uses this signal as a trigger for notifying the user about forced rotation

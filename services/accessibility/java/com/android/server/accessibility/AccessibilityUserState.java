@@ -24,6 +24,7 @@ import static android.accessibilityservice.AccessibilityService.SHOW_MODE_IGNORE
 import static android.accessibilityservice.AccessibilityService.SHOW_MODE_MASK;
 import static android.provider.Settings.Secure.ACCESSIBILITY_MAGNIFICATION_MODE_FULLSCREEN;
 import static android.provider.Settings.Secure.ACCESSIBILITY_MAGNIFICATION_MODE_NONE;
+import static android.view.Display.DEFAULT_DISPLAY;
 
 import static com.android.internal.accessibility.AccessibilityShortcutController.MAGNIFICATION_CONTROLLER_NAME;
 import static com.android.internal.accessibility.common.ShortcutConstants.UserShortcutType;
@@ -746,7 +747,12 @@ public class AccessibilityUserState {
     public int getMagnificationModeLocked(int displayId) {
         int mode = mMagnificationModes.get(displayId, ACCESSIBILITY_MAGNIFICATION_MODE_NONE);
         if (mode == ACCESSIBILITY_MAGNIFICATION_MODE_NONE) {
-            mode = ACCESSIBILITY_MAGNIFICATION_MODE_FULLSCREEN;
+            // If displayId doesn't have a mode, then get mode for DEFAULT_DISPLAY, OR if
+            // DEFAULT_DISPLAY also has no mode, fall back directly to
+            // ACCESSIBILITY_MAGNIFICATION_MODE_FULLSCREEN.
+            mode =
+                    mMagnificationModes.get(
+                            DEFAULT_DISPLAY, ACCESSIBILITY_MAGNIFICATION_MODE_FULLSCREEN);
             setMagnificationModeLocked(displayId, mode);
         }
         return mode;

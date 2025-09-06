@@ -37,6 +37,7 @@ import android.app.WindowConfiguration.WindowingMode
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.content.res.Configuration
 import android.graphics.Point
 import android.graphics.PointF
 import android.graphics.Rect
@@ -861,7 +862,6 @@ class DesktopTasksController(
                     deskIds,
                     disconnectedDisplayId,
                     destinationDisplayId,
-                    destDisplayLayout,
                     userId,
                 )
             }
@@ -974,7 +974,6 @@ class DesktopTasksController(
         deskIds: List<Int>,
         disconnectedDisplayId: Int,
         destinationDisplayId: Int,
-        destDisplayLayout: DisplayLayout?,
         userId: Int,
     ) {
         logD("handleProjectedModeDisconnect: moving tasks to non-desktop display")
@@ -1036,7 +1035,6 @@ class DesktopTasksController(
         val activeDeskId = repository.getPreservedActiveDesk(uniqueDisplayId)
         val wct = WindowContainerTransaction()
         var runOnTransitStartList = mutableListOf<RunOnTransitStart>()
-        val destDisplayLayout = displayController.getDisplayLayout(displayId) ?: return
         val tilingReconnectHandler =
             TilingDisplayReconnectEventHandler(repository, snapEventHandler, transitions, displayId)
         val excludedTasks =
@@ -1072,7 +1070,6 @@ class DesktopTasksController(
                     if (!excludedTasks.contains(taskId)) {
                         addRestoreTaskToDeskChanges(
                                 wct = wct,
-                                destinationDisplayLayout = destDisplayLayout,
                                 deskId = newDeskId,
                                 taskId = taskId,
                                 userId = userId,
@@ -1109,7 +1106,6 @@ class DesktopTasksController(
 
     private fun addRestoreTaskToDeskChanges(
         wct: WindowContainerTransaction,
-        destinationDisplayLayout: DisplayLayout,
         deskId: Int,
         taskId: Int,
         userId: Int,
@@ -2452,6 +2448,7 @@ class DesktopTasksController(
         bounds: Rect? = null,
         transitionHandler: TransitionHandler? = null,
         enterReason: EnterReason,
+        captionInsets: Int = 0,
     ) {
         logV("moveToDisplay: taskId=%d displayId=%d", task.taskId, displayId)
         if (task.displayId == displayId) {
@@ -2518,6 +2515,28 @@ class DesktopTasksController(
                 }
                 if (bounds != null) {
                     wct.setBounds(task.token, bounds)
+
+                    val prevCaptionInsets = task.freeformCaptionInsets
+                    if (prevCaptionInsets != 0) {
+                        val appBounds =
+                            Rect(bounds).apply {
+                                if (captionInsets != 0) {
+                                    this.top += captionInsets
+                                } else {
+                                    val captionInsetsDp =
+                                        displayController
+                                            .getDisplayLayout(task.getDisplayId())
+                                            ?.pxToDp(prevCaptionInsets)
+                                            ?.toInt() ?: 0
+                                    val newDisplayLayout =
+                                        displayController.getDisplayLayout(displayId)
+                                    val insets =
+                                        newDisplayLayout?.dpToPx(captionInsetsDp)?.toInt() ?: 0
+                                    this.top += insets
+                                }
+                            }
+                        wct.setAppBounds(task.token, appBounds)
+                    }
                 } else if (DesktopExperienceFlags.ENABLE_MOVE_TO_NEXT_DISPLAY_SHORTCUT.isTrue) {
                     applyFreeformDisplayChange(wct, task, displayId, destinationDeskId)
                 }
@@ -5177,7 +5196,6 @@ class DesktopTasksController(
                     userId = userId,
                     enterReason = enterReason,
                 )
-
             // Put task with [taskIdToReorderToFront] to front.
             when (newTaskInFront) {
                 is RunningTaskInfo -> {
@@ -5200,6 +5218,12 @@ class DesktopTasksController(
                 }
             }
 
+            // Exploded view is where tasks are exploded within a desktop on entering recents,
+            // so if the user selects a tiled task to be in front, tiling should handle this
+            // to bring all tiled tasks to front.
+            if (taskIdToReorderToFront != INVALID_TASK_ID && taskIdToReorderToFront != null) {
+                snapEventHandler.notifyTilingOfExplodedViewReorder(deskId, taskIdToReorderToFront)
+            }
             val transitionType = transitionType(remoteTransition)
             val handler =
                 remoteTransition?.let {
@@ -5209,7 +5233,6 @@ class DesktopTasksController(
             val transition = transitions.startTransition(transitionType, wct, handler)
             handler?.setTransition(transition)
             runOnTransitStart?.invoke(transition)
-
             // Replaced by |IDesktopTaskListener#onActiveDeskChanged|.
             if (!desktopState.enableMultipleDesktops) {
                 desktopModeEnterExitTransitionListener?.onEnterDesktopModeTransitionStarted(
@@ -5714,12 +5737,9 @@ class DesktopTasksController(
                     DesktopExperienceFlags.ENABLE_CONNECTED_DISPLAYS_WINDOW_DRAG.isTrue() &&
                         newDisplayId != taskInfo.getDisplayId() &&
                         displayAreaInfo != null
+                val prevCaptionInsets = taskInfo.freeformCaptionInsets
 
                 if (isCrossDisplayDrag) {
-                    val prevCaptionInsets =
-                        taskInfo.configuration.windowConfiguration.appBounds?.let {
-                            it.top - taskInfo.configuration.windowConfiguration.bounds.top
-                        } ?: 0
                     val captionInsetsDp =
                         displayController
                             .getDisplayLayout(taskInfo.getDisplayId())
@@ -5748,12 +5768,18 @@ class DesktopTasksController(
                         constrainedBounds,
                         windowDragTransitionHandler,
                         enterReason = EnterReason.APP_HANDLE_DRAG,
+                        captionInsets = captionInsets,
                     )
                 } else {
                     // Update task bounds so that the task position will match the position of its
                     // leash
                     val wct = WindowContainerTransaction()
                     wct.setBounds(taskInfo.token, destinationBounds)
+                    if (prevCaptionInsets != 0) {
+                        val appBounds =
+                            Rect(destinationBounds).apply { this.top += prevCaptionInsets }
+                        wct.setAppBounds(taskInfo.token, appBounds)
+                    }
                     transitions.startTransition(TRANSIT_CHANGE, wct, windowDragTransitionHandler)
                 }
                 releaseVisualIndicator()

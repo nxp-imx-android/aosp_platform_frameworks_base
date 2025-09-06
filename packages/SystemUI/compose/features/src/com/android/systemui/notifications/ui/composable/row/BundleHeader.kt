@@ -43,12 +43,14 @@ import androidx.compose.ui.graphics.CompositingStrategy
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.Layout
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.constrainHeight
@@ -197,9 +199,17 @@ private fun ContentScope.BundleHeaderContent(
                     // Has to be a shared element because we may have a semi-transparent background
                     .element(NotificationRowPrimitives.Elements.NotificationIconBackground),
         )
+
+        // Set FontWeight.ExtraBold if bold text adjustment is enabled
+        // because titleMediumEmphasized is already bold
+        val config = LocalConfiguration.current
+        val isBoldTextEnabled = config.fontWeightAdjustment > 0
         Text(
             text = stringResource(viewModel.titleText),
-            style = MaterialTheme.typography.titleMediumEmphasized,
+            style =
+                MaterialTheme.typography.titleMediumEmphasized.copy(
+                    fontWeight = if (isBoldTextEnabled) FontWeight.ExtraBold else FontWeight.Bold
+                ),
             color = MaterialTheme.colorScheme.primary,
             overflow = TextOverflow.Ellipsis,
             maxLines = 1,

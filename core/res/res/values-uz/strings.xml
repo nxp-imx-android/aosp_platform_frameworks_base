@@ -639,10 +639,8 @@
     <string name="permdesc_uwb_ranging" msgid="2519723069604307055">"Ilovaga yaqin atrofdagi ultra keng polosali qurilmalarining nisbiy joylashishini aniqlashga ruxsat beradi"</string>
     <string name="permlab_nearby_wifi_devices" msgid="392774237063608500">"Yaqin-atrofdagi Wi-Fi qurilmalar bilan ishlash"</string>
     <string name="permdesc_nearby_wifi_devices" msgid="3054307728646332906">"Ilovaga yaqin-atrofdagi Wi-Fi qurilmalarga reklama yuborish, ulanish va ularning taxminiy joylashuvini aniqlash imkonini beradi."</string>
-    <!-- no translation found for permlab_access_local_network (3420360767259066877) -->
-    <skip />
-    <!-- no translation found for permdesc_access_local_network (6364679803386822638) -->
-    <skip />
+    <string name="permlab_access_local_network" msgid="3420360767259066877">"lokal tarmoq qurilmalariga kirish"</string>
+    <string name="permdesc_access_local_network" msgid="6364679803386822638">"Ilovaga lokal tarmoq qurilmalariga kirish uchun ruxsat beradi"</string>
     <string name="permlab_ranging" msgid="2854543350668593390">"atrofdagi qurilmalarning nisbiy joylashuvini aniqlash"</string>
     <string name="permdesc_ranging" msgid="6703905535621521710">"Ilova atrofdagi qurilmalarning nisbiy joylashuvini aniqlashi mumkin"</string>
     <string name="permlab_preferredPaymentInfo" msgid="5274423844767445054">"Asosiy NFC toʻlov xizmati haqidagi axborot"</string>

@@ -114,9 +114,6 @@ public class DesktopModeTouchEventListener
      * Whether to pilfer the next motion event to send cancellations to the windows below.
      * Useful when the caption window is spy and the gesture should be handled by the system
      * instead of by the app for their custom header content.
-     * Should not have any effect when
-     * {@link DesktopModeFlags#ENABLE_ACCESSIBLE_CUSTOM_HEADERS}, because a spy window is not
-     * used then.
      */
     private boolean mIsCustomHeaderGesture;
     private boolean mIsResizeGesture;
@@ -334,8 +331,7 @@ public class DesktopModeTouchEventListener
                     viewName, mIsCustomHeaderGesture, mIsResizeGesture);
             return false;
         }
-        if (mInputManager != null
-                && !DesktopModeFlags.ENABLE_ACCESSIBLE_CUSTOM_HEADERS.isTrue()) {
+        if (mInputManager != null) {
             ViewRootImpl viewRootImpl = v.getViewRootImpl();
             if (viewRootImpl != null) {
                 // Pilfer so that windows below receive cancellations for this gesture.

@@ -19618,14 +19618,6 @@ public final class Settings {
         public static final String ENABLED_SUBSCRIPTION_FOR_SLOT = "enabled_subscription_for_slot";
 
         /**
-         * Whether corresponding logical modem is enabled for a physical slot.
-         * The value 1 - enable, 0 - disable
-         * @hide
-         */
-        @Readable
-        public static final String MODEM_STACK_ENABLED_FOR_SLOT = "modem_stack_enabled_for_slot";
-
-        /**
          * Whether to enable new contacts aggregator or not.
          * The value 1 - enable, 0 - disable
          * @hide
@@ -19790,30 +19782,6 @@ public final class Settings {
          * @hide
          */
         public static final String NOTIFICATION_FEEDBACK_ENABLED = "notification_feedback_enabled";
-
-        /**
-         * Settings key for the ratio of notification dismissals to notification views - one of the
-         * criteria for showing the notification blocking helper.
-         *
-         * <p>The value is a float ranging from 0.0 to 1.0 (the closer to 0.0, the more intrusive
-         * the blocking helper will be).
-         *
-         * @hide
-         */
-        @Readable
-        public static final String BLOCKING_HELPER_DISMISS_TO_VIEW_RATIO_LIMIT =
-                "blocking_helper_dismiss_to_view_ratio";
-
-        /**
-         * Settings key for the longest streak of dismissals  - one of the criteria for showing the
-         * notification blocking helper.
-         *
-         * <p>The value is an integer greater than 0.
-         *
-         * @hide
-         */
-        @Readable
-        public static final String BLOCKING_HELPER_STREAK_LIMIT = "blocking_helper_streak_limit";
 
         /**
          * Configuration flags for SQLite Compatibility WAL. Encoded as a key-value list, separated

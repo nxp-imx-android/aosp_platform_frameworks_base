@@ -75,7 +75,12 @@ constructor(
 
         rememberChoiceCheckbox =
             dialog.requireViewById<CheckBox>(R.id.save_connection_preference).apply {
-                setOnCheckedChangeListener(rememberChoiceCheckBoxListener)
+                if (isInKioskMode) {
+                    visibility = View.GONE
+                } else {
+                    visibility = View.VISIBLE
+                    setOnCheckedChangeListener(rememberChoiceCheckBoxListener)
+                }
             }
 
         desktopButton =
@@ -111,11 +116,7 @@ constructor(
 
         bottomSheet = dialog.requireViewById(R.id.cd_bottom_sheet)
 
-        dialog.setOnDismissListener {
-            if (!optionSelected) {
-                onCancelClickListener.onClick(null)
-            }
-        }
+        dialog.setOnDismissListener { if (!optionSelected) onCancelClickListener.onClick(null) }
         setupInsets()
     }
 

@@ -33,6 +33,8 @@ import static android.app.ActivityManager.INSTR_FLAG_DISABLE_TEST_API_CHECKS;
 import static android.app.ActivityManager.INSTR_FLAG_NO_RESTART;
 import static android.app.ActivityManager.INTENT_SENDER_ACTIVITY;
 import static android.app.ActivityManager.PROCESS_CAPABILITY_ALL;
+import static android.app.ActivityManager.PROCESS_CAPABILITY_CPU_TIME;
+import static android.app.ActivityManager.PROCESS_CAPABILITY_IMPLICIT_CPU_TIME;
 import static android.app.ActivityManager.PROCESS_STATE_BOUND_TOP;
 import static android.app.ActivityManager.PROCESS_STATE_IMPORTANT_FOREGROUND;
 import static android.app.ActivityManager.PROCESS_STATE_NONEXISTENT;
@@ -165,10 +167,13 @@ import static com.android.server.am.ActivityManagerDebugConfig.POSTFIX_SERVICE;
 import static com.android.server.am.ActivityManagerDebugConfig.POSTFIX_UID_OBSERVERS;
 import static com.android.server.am.ActivityManagerDebugConfig.TAG_AM;
 import static com.android.server.am.ActivityManagerDebugConfig.TAG_WITH_CLASS_NAME;
+import static com.android.server.am.CachedAppOptimizer.getUnfreezeReasonCodeFromOomAdjReason;
 import static com.android.server.am.LogcatFetcher.LOGCAT_TIMEOUT_SEC;
 import static com.android.server.am.LogcatFetcher.RESERVED_BYTES_PER_LOGCAT_LINE;
 import static com.android.server.am.MemoryStatUtil.hasMemcg;
+import static com.android.server.am.ProcessList.CACHED_APP_MIN_ADJ;
 import static com.android.server.am.ProcessList.ProcStartHandler;
+import static com.android.server.am.ProcessList.UNKNOWN_ADJ;
 import static com.android.server.flags.Flags.disableSystemCompaction;
 import static com.android.server.net.NetworkPolicyManagerInternal.updateBlockedReasonsWithProcState;
 import static com.android.server.pm.PackageManagerService.PLATFORM_PACKAGE_NAME;
@@ -456,6 +461,7 @@ import com.android.server.ThreadPriorityBooster;
 import com.android.server.UiThread;
 import com.android.server.Watchdog;
 import com.android.server.am.LowMemDetector.MemFactor;
+import com.android.server.am.psc.ProcessRecordInternal;
 import com.android.server.appop.AppOpsService;
 import com.android.server.compat.PlatformCompat;
 import com.android.server.contentcapture.ContentCaptureManagerInternal;
@@ -641,6 +647,11 @@ public class ActivityManagerService extends IActivityManager.Stub
     OomAdjuster mOomAdjuster;
     @GuardedBy("this")
     ProcessStateController mProcessStateController;
+    /**
+     * Temporary list that are currently being processed for temporary unfreezing.
+     * @see #unfreezeTemporarily(ProcessRecord, int)
+     */
+    private final ArrayList<ProcessRecordInternal> mTmpProcessesToUnfreeze = new ArrayList<>();
 
     static final String EXTRA_TITLE = "android.intent.extra.TITLE";
     static final String EXTRA_DESCRIPTION = "android.intent.extra.DESCRIPTION";
@@ -2425,7 +2436,8 @@ public class ActivityManagerService extends IActivityManager.Stub
         mPhantomProcessList = new PhantomProcessList(this);
 
         mCachedAppOptimizer = new CachedAppOptimizer(this);
-        mProcessStateController = new ProcessStateController.Builder(this, mProcessList, activeUids)
+        mProcessStateController = new ProcessStateController
+                .Builder(this, mProcessList, activeUids, new OomAdjusterCallback())
                 .setHandlerThread(handlerThread)
                 .build();
         mOomAdjuster = mProcessStateController.getOomAdjuster();
@@ -2494,7 +2506,8 @@ public class ActivityManagerService extends IActivityManager.Stub
         mPhantomProcessList = new PhantomProcessList(this);
         final Looper activityTaskLooper = DisplayThread.get().getLooper();
         mCachedAppOptimizer = new CachedAppOptimizer(this);
-        mProcessStateController = new ProcessStateController.Builder(this, mProcessList, activeUids)
+        mProcessStateController = new ProcessStateController
+                .Builder(this, mProcessList, activeUids, new OomAdjusterCallback())
                 .setLockObject(this)
                 .setTopProcessChangeCallback(this::updateTopAppListeners)
                 .setProcessLruUpdater(mProcessList)
@@ -7529,6 +7542,7 @@ public class ActivityManagerService extends IActivityManager.Stub
                 reportCurWakefulnessUsageEvent();
                 mActivityTaskManager.onScreenAwakeChanged(isAwake);
                 mProcessStateController.setWakefulness(wakefulness);
+                mCachedAppOptimizer.onWakefulnessChanged(wakefulness);
 
                 updateOomAdjLocked(OOM_ADJ_REASON_UI_VISIBILITY);
             }
@@ -19336,6 +19350,128 @@ public class ActivityManagerService extends IActivityManager.Stub
         }
     }
 
+    /**
+     * The default implementation of {@link OomAdjuster.Callback}.
+     *
+     * <p>This class acts as a proxy for {@link ActivityManagerService}, providing
+     * {@link OomAdjuster} with access to functionalities that are external to the psc package.
+     * As the boundary between the `psc` and `am` packages, it consolidates all type casting from
+     * the `psc` internal record classes to their concrete counterparts. This type cast is safe
+     * because there is only one production implementation.
+     */
+    @VisibleForTesting
+    final class OomAdjusterCallback implements OomAdjuster.Callback {
+        @Override
+        @GuardedBy({"ActivityManagerService.this", "ActivityManagerService.this.mProcLock"})
+        public void onOomAdjustChanged(int oldAdj, int newAdj, ProcessRecordInternal app) {
+            mCachedAppOptimizer.onOomAdjustChanged(oldAdj, newAdj, (ProcessRecord) app);
+        }
+
+        public void onProcessFreezabilityChanged(ProcessRecordInternal app, boolean freezePolicy,
+                @OomAdjReason int oomAdjReason, boolean immediate, int oldOomAdj,
+                boolean shouldNotFreezeChanged) {
+            if (!mCachedAppOptimizer.useFreezer()) {
+                return;
+            }
+
+            // TODO: b/441879937 - Pass useFreezer() information to OomAdjuster and move the trace
+            // logging back to OomAdjuster.
+            if (Flags.traceUpdateAppFreezeStateLsp()) {
+                final boolean oomAdjChanged = (app.getCurAdj() >= mConstants.FREEZER_CUTOFF_ADJ
+                        ^ oldOomAdj >= mConstants.FREEZER_CUTOFF_ADJ) || oldOomAdj == UNKNOWN_ADJ;
+                final boolean hasCpuCapability =
+                        (PROCESS_CAPABILITY_CPU_TIME & app.getCurCapability())
+                                == PROCESS_CAPABILITY_CPU_TIME;
+                final boolean usedToHaveCpuCapability =
+                        (PROCESS_CAPABILITY_CPU_TIME & app.getSetCapability())
+                                == PROCESS_CAPABILITY_CPU_TIME;
+                final boolean cpuCapabilityChanged = hasCpuCapability != usedToHaveCpuCapability;
+                final boolean hasImplicitCpuCapability =
+                        (PROCESS_CAPABILITY_IMPLICIT_CPU_TIME & app.getCurCapability())
+                                == PROCESS_CAPABILITY_IMPLICIT_CPU_TIME;
+                final boolean usedToHaveImplicitCpuCapability =
+                        (PROCESS_CAPABILITY_IMPLICIT_CPU_TIME & app.getSetCapability())
+                                == PROCESS_CAPABILITY_IMPLICIT_CPU_TIME;
+                final boolean implicitCpuCapabilityChanged =
+                        hasImplicitCpuCapability != usedToHaveImplicitCpuCapability;
+                final int cpuTimeReasons = app.getCurCpuTimeReasons();
+                final int implicitCpuTimeReasons = app.getCurImplicitCpuTimeReasons();
+                if ((oomAdjChanged || shouldNotFreezeChanged || cpuCapabilityChanged
+                        || implicitCpuCapabilityChanged)
+                        && Trace.isTagEnabled(Trace.TRACE_TAG_ACTIVITY_MANAGER)) {
+                    Trace.instantForTrack(Trace.TRACE_TAG_ACTIVITY_MANAGER,
+                            "FreezeLite",
+                            (app.isFrozen() ? "F" : "-")
+                                    + (app.isPendingFreeze() ? "P" : "-")
+                                    + (/* Keeping for app.isFreezeExempt() */ "-")
+                                    + (app.shouldNotFreeze() ? "N" : "-")
+                                    + (hasCpuCapability ? "T" : "-")
+                                    + (hasImplicitCpuCapability ? "X" : "-")
+                                    + (immediate ? "I" : "-")
+                                    + (freezePolicy ? "Z" : "-")
+                                    + (Flags.cpuTimeCapabilityBasedFreezePolicy() ? "t" : "-")
+                                    + (Flags.prototypeAggressiveFreezing() ? "a" : "-")
+                                    + "/" + app.getPid()
+                                    + "/" + app.getCurAdj()
+                                    + "/" + oldOomAdj
+                                    + "/" + app.shouldNotFreezeReason()
+                                    + "/" + cpuTimeReasons
+                                    + "/" + implicitCpuTimeReasons);
+                    Trace.instantForTrack(Trace.TRACE_TAG_ACTIVITY_MANAGER,
+                            CachedAppOptimizer.ATRACE_FREEZER_TRACK,
+                            "updateAppFreezeStateLSP " + app.processName
+                                    + " pid: " + app.getPid()
+                                    + " isFreezeExempt: " + false
+                                    + " isFrozen: " + app.isFrozen()
+                                    + " shouldNotFreeze: " + app.shouldNotFreeze()
+                                    + " shouldNotFreezeReason: " + app.shouldNotFreezeReason()
+                                    + " curAdj: " + app.getCurAdj()
+                                    + " oldOomAdj: " + oldOomAdj
+                                    + " immediate: " + immediate
+                                    + " cpuCapability: " + hasCpuCapability
+                                    + " implicitCpuCapability: " + hasImplicitCpuCapability
+                                    + " cpuTimeReasons: 0x" + Integer.toHexString(cpuTimeReasons)
+                                    + " implicitCpuTimeReasons: 0x"
+                                    + Integer.toHexString(implicitCpuTimeReasons));
+                }
+            }
+
+            if (freezePolicy) {
+                if (Flags.cpuTimeCapabilityBasedFreezePolicy()
+                        && app.getCurAdj() < CACHED_APP_MIN_ADJ) {
+                    Slog.wtfStack(TAG, "Non-cached process may get frozen soon: "
+                            + " name: " + app.processName
+                            + " curAdj: " + app.getCurAdj()
+                            + " oldOomAdj: " + oldOomAdj
+                            + " curRawAdj: " + app.getCurRawAdj()
+                            + " maxAdj: " + app.getMaxAdj()
+                            + " adjType: " + app.getAdjType()
+                            + " adjTarget: " + app.getAdjTarget()
+                            + " adjSource: " + app.getAdjSource()
+                            + " adjSourcePrcState: " + app.getAdjSourceProcState()
+                            + " serviceB: " + app.isServiceB()
+                            + " curProcState: " + app.getCurProcState()
+                            + " curRawProcState: " + app.getCurRawProcState()
+                            + " curSchedGroup: " + app.getCurrentSchedulingGroup());
+                }
+                // This process should be frozen.
+                if (immediate && !app.isFrozen()) {
+                    // And it will be frozen immediately.
+                    mCachedAppOptimizer.freezeAppAsyncAtEarliestLSP((ProcessRecord) app);
+                } else if (!app.isFrozen() && !app.isPendingFreeze()) {
+                    mCachedAppOptimizer.freezeAppAsyncLSP((ProcessRecord) app);
+                }
+            } else {
+                // This process should not be frozen.
+                if (app.isFrozen() || app.isPendingFreeze()) {
+                    mCachedAppOptimizer.unfreezeAppLSP((ProcessRecord) app,
+                            CachedAppOptimizer.getUnfreezeReasonCodeFromOomAdjReason(oomAdjReason));
+                }
+            }
+        }
+    }
+
+
     CachedAppOptimizer getCachedAppOptimizer() {
         return mCachedAppOptimizer;
     }
@@ -19348,6 +19484,36 @@ public class ActivityManagerService extends IActivityManager.Stub
     @Override
     public boolean isAppFreezerEnabled() {
         return mCachedAppOptimizer.useFreezer();
+    }
+
+    /**
+     * Temporarily unfreezes the given application process and any other processes it is associated
+     * with (i.e., reachable processes). This operation is only performed if the freezer is enabled
+     * and the application is currently in a frozen or pending-freeze state.
+     *
+     * @param app The application process to unfreeze.
+     * @param reason The {@link OomAdjReason} explaining why the process is being unfrozen.
+     */
+    @GuardedBy("this")
+    void unfreezeTemporarily(ProcessRecord app, @OomAdjReason int reason) {
+        if (!mCachedAppOptimizer.useFreezer()) {
+            return;
+        }
+        synchronized (mProcLock) {
+            if (!app.isFrozen() && !app.isPendingFreeze()) {
+                return;
+            }
+        }
+
+        final int unfrozenReason = getUnfreezeReasonCodeFromOomAdjReason(reason);
+        final ArrayList<ProcessRecordInternal> processesToUnfreeze = mTmpProcessesToUnfreeze;
+        processesToUnfreeze.clear();
+        mOomAdjuster.populateAllReachableProcessesLocked(app, processesToUnfreeze);
+        for (int i = 0; i < processesToUnfreeze.size(); i++) {
+            final ProcessRecord process = (ProcessRecord) processesToUnfreeze.get(i);
+            mCachedAppOptimizer.unfreezeTemporarily(process, unfrozenReason);
+        }
+        processesToUnfreeze.clear();
     }
 
     /**

@@ -347,8 +347,7 @@
     <string name="wifi_non_persistent_mac_randomization_summary" msgid="2159794543105053930">"ON にすると、MAC アドレスのランダム化が有効なネットワークに接続するたびに、このデバイスの MAC アドレスが変わる可能性があります。"</string>
     <string name="wifi_metered_label" msgid="8737187690304098638">"従量制"</string>
     <string name="wifi_unmetered_label" msgid="6174142840934095093">"定額制"</string>
-    <!-- no translation found for select_logd_size_title (4393502933789367691) -->
-    <skip />
+    <string name="select_logd_size_title" msgid="4393502933789367691">"ロガーのバッファサイズ"</string>
     <string name="select_logd_size_dialog_title" msgid="2105401994681013578">"各ログバッファのログサイズを選択"</string>
     <string name="dev_logpersist_clear_warning_title" msgid="8631859265777337991">"ログの永続ストレージを消去しますか？"</string>
     <string name="dev_logpersist_clear_warning_message" msgid="6447590867594287413">"Google が常駐ロガーで監視していない場合、デバイス上のログデータを消去する必要があります。"</string>
@@ -668,7 +667,7 @@
     <string name="user_grant_admin_message" msgid="1673791931033486709">"管理者には、他のユーザーにはない特別な権限が与えられます。管理者は、すべてのユーザーの管理、このデバイスの更新やリセット、設定の変更、インストール済みのすべてのアプリの確認、他のユーザーに対する管理者権限の許可や取り消しを行えます。"</string>
     <string name="user_grant_admin_button" msgid="5441486731331725756">"管理者にする"</string>
     <string name="user_setup_dialog_title" msgid="8037342066381939995">"ユーザーを今すぐセットアップ"</string>
-    <string name="user_setup_dialog_message" msgid="269931619868102841">"ユーザーがデバイスを使って各自のスペースをセットアップできるようにします"</string>
+    <string name="user_setup_dialog_message" msgid="269931619868102841">"ユーザーがデバイス上で独自のスペースをセットアップできるようにします"</string>
     <string name="user_setup_profile_dialog_message" msgid="4788197052296962620">"プロファイルを今すぐセットアップしますか？"</string>
     <string name="user_setup_button_setup_now" msgid="1708269547187760639">"今すぐセットアップ"</string>
     <string name="user_setup_button_setup_later" msgid="8712980133555493516">"後で行う"</string>

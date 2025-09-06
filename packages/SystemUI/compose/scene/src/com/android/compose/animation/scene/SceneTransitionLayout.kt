@@ -312,6 +312,15 @@ interface BaseContentScope : ElementStateScope {
     fun Modifier.disableSwipesWhenScrolling(
         bounds: NestedScrollableBound = NestedScrollableBound.Any
     ): Modifier
+
+    /**
+     * Return the alpha of [this] element in this content, given the current transition state and
+     * transition transformations (e.g. fade).
+     *
+     * Important: This should *not* be read during composition and should instead be read during
+     * layout, drawing or in a LaunchedEffect.
+     */
+    fun ElementKey.currentAlpha(): Float?
 }
 
 @Stable

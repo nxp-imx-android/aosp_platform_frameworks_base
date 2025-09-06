@@ -138,16 +138,12 @@
     <string name="screenrecord_stop_dialog_message" msgid="6262768207331626817">"Neste momento, está a gravar todo o seu ecrã"</string>
     <string name="screenrecord_stop_dialog_message_specific_app" msgid="5995770227684523244">"Neste momento, está a gravar a app <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="screenrecord_stop_dialog_button" msgid="2883812564938194350">"Parar gravação"</string>
-    <!-- no translation found for screen_record_entire_screen (66944996337928170) -->
-    <skip />
-    <!-- no translation found for screen_record_single_app (7355880948574569290) -->
-    <skip />
-    <!-- no translation found for screen_record_single_app_no_recents (1023249803854209330) -->
-    <skip />
+    <string name="screen_record_entire_screen" msgid="66944996337928170">"Ecrã inteiro"</string>
+    <string name="screen_record_single_app" msgid="7355880948574569290">"Uma app"</string>
+    <string name="screen_record_single_app_no_recents" msgid="1023249803854209330">"Uma app (abra uma para escolher)"</string>
     <string name="screen_record_record_device_audio_label" msgid="5363057443124085198">"Gravar áudio do dispositivo"</string>
     <string name="screen_record_record_microphone_label" msgid="4685753707185662381">"Gravar microfone"</string>
-    <!-- no translation found for screen_record_should_show_camera_label (159628971484931357) -->
-    <skip />
+    <string name="screen_record_should_show_camera_label" msgid="159628971484931357">"Mostrar câmara para selfies"</string>
     <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"Apresentar toques"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"Escolha uma app para gravar"</string>
     <string name="screen_record_video_saved" msgid="1345283626390232282">"Vídeo guardado"</string>
@@ -165,6 +161,10 @@
     <string name="screen_capture_toolbar_screenshot_button" msgid="5676585348709494125">"Captura de ecrã"</string>
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"Gravar"</string>
     <string name="screen_share_toolbar_share_button" msgid="9182050596136815833">"Partilhar"</string>
+    <!-- no translation found for screen_share_no_select_app_thumbnail (1630012401570567430) -->
+    <skip />
+    <!-- no translation found for screen_share_app_audio_sharing (7201172218924898712) -->
+    <skip />
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"Fazer captura de ecrã da janela"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"Gravar janela"</string>
     <string name="screen_capture_toolbar_region_button_screenshot_a11y" msgid="2102262602357521192">"Fazer captura de ecrã da área selecionada"</string>
@@ -545,7 +545,7 @@
     <string name="zen_mode_set_up" msgid="8231201163894922821">"Não definido"</string>
     <string name="zen_mode_no_manual_invocation" msgid="1769975741344633672">"Gerir nas definições"</string>
     <string name="zen_mode_active_modes" msgid="1625850411578488856">"{count,plural, =0{Nenhum modo ativo}=1{{mode} ativo}many{# modos ativos}other{# modos ativos}}"</string>
-    <string name="zen_modes_multiple_on_title" msgid="4918235362988982304">"<xliff:g id="NUMBER">%s</xliff:g> modos"</string>
+    <string name="zen_modes_multiple_on_title" msgid="4918235362988982304">"<xliff:g id="NUMBER">%d</xliff:g> modos"</string>
     <string name="zen_modes_multiple_on_status" msgid="8120633422509269588">"Ativados"</string>
     <string name="zen_priority_introduction" msgid="3159291973383796646">"Não é incomodado por sons e vibrações, exceto de alarmes, lembretes, eventos e autores de chamadas que especificar. Continua a ouvir tudo o que optar por reproduzir, incluindo música, vídeos e jogos."</string>
     <string name="zen_alarms_introduction" msgid="3987266042682300470">"Não é incomodado por sons e vibrações, exceto de alarmes. Continua a ouvir tudo o que optar por reproduzir, incluindo música, vídeos e jogos."</string>

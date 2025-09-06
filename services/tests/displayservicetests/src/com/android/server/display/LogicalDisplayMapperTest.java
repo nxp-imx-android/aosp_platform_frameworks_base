@@ -140,7 +140,7 @@ public class LogicalDisplayMapperTest {
     private static final DeviceState DEVICE_STATE_EMULATED = createDeviceState(3, "Three",
             Set.of(DeviceState.PROPERTY_EMULATED_ONLY), Collections.emptySet());
     private static final DeviceState DEVICE_STATE_DOCKED = createDeviceState(4, "Docked",
-            Set.of(DeviceState.PROPERTY_LAPTOP_HARDWARE_CONFIGURATION_LID_CLOSED),
+            Set.of(DeviceState.PROPERTY_LAPTOP_HARDWARE_CONFIGURATION_DOCKED),
             Collections.emptySet());
     private static final int FLAG_GO_TO_SLEEP_ON_FOLD = 0;
     private static final int FLAG_GO_TO_SLEEP_FLAG_SOFT_SLEEP = 2;

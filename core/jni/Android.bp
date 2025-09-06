@@ -16,8 +16,8 @@ license {
 }
 
 soong_config_module_type {
-    name: "cc_library_shared_for_libandroid_runtime",
-    module_type: "cc_library_shared",
+    name: "cc_defaults_for_libandroid_runtime",
+    module_type: "cc_defaults",
     config_namespace: "ANDROID",
     bool_variables: [
         "release_binder_death_recipient_weak_from_jni",
@@ -27,8 +27,8 @@ soong_config_module_type {
     ],
 }
 
-cc_library_shared_for_libandroid_runtime {
-    name: "libandroid_runtime",
+cc_defaults_for_libandroid_runtime {
+    name: "libandroid_runtime_defaults",
     host_supported: true,
     cflags: [
         "-Wno-cast-function-type-mismatch",
@@ -451,21 +451,15 @@ cc_library_shared_for_libandroid_runtime {
             ],
             static_libs: [
                 "libandroidfw",
-                "libbase",
                 "libbinary_parse",
-                "libcutils",
                 "libdng_sdk",
                 "libft2",
                 "libharfbuzz_ng",
                 "libhostgraphics",
                 "libhwui",
-                "libicui18n",
-                "libicuuc",
-                "libicuuc_stubdata",
                 "libimage_type_recognition",
                 "libinput",
                 "libjpeg",
-                "liblog",
                 "libminikin",
                 "libnativehelper_jvm",
                 "libpiex",
@@ -473,7 +467,6 @@ cc_library_shared_for_libandroid_runtime {
                 "libsqlite",
                 "libtiff_directory",
                 "libui-types",
-                "libutils",
                 "libwebp-decode",
                 "libwebp-encode",
                 "libperfetto_c",
@@ -490,7 +483,6 @@ cc_library_shared_for_libandroid_runtime {
                 "libnativehelper_jvm",
                 "libui-types",
             ],
-            stl: "libc++_static",
         },
         host_linux: {
             srcs: [
@@ -514,6 +506,27 @@ cc_library_shared_for_libandroid_runtime {
                 "libhidlbase", // libhwbinder is in here
                 "libaconfig_storage_read_api_cc",
             ],
+        },
+    },
+}
+
+cc_library_shared {
+    name: "libandroid_runtime",
+    defaults: ["libandroid_runtime_defaults"],
+    target: {
+        host: {
+            static_libs: [
+                "libbase",
+                "libcutils",
+                "liblog",
+                "libutils",
+                "libicui18n",
+                "libicuuc",
+                "libicuuc_stubdata",
+            ],
+            stl: "libc++_static",
+        },
+        host_linux: {
             version_script: "platform/linux/libandroid_runtime_export.txt",
         },
         darwin: {
@@ -535,6 +548,21 @@ cc_library_shared_for_libandroid_runtime {
             },
         },
     },
+}
+
+cc_library_host_shared {
+    name: "libandroid_runtime_ravenwood",
+    defaults: ["libandroid_runtime_defaults"],
+    stem: "libandroid_runtime",
+    installable: false,
+    visibility: ["//frameworks/base/ravenwood"],
+    shared_libs: [
+        "libbase",
+        "libcutils",
+        "liblog",
+        "libutils",
+        "libicu",
+    ],
 }
 
 cc_library_shared {
