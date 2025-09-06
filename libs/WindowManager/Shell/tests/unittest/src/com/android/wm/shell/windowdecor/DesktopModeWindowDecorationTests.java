@@ -36,7 +36,6 @@ import static com.google.common.truth.Truth.assertThat;
 
 import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertTrue;
-import static junit.framework.Assert.fail;
 
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.argThat;
@@ -1941,7 +1940,28 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
         try {
             decor.setAnimatingTaskResizeOrReposition(true /* animatingTaskResizeOrReposition */);
         } catch (NullPointerException e) {
-            fail("Attempted to access view holder after window decor is closed");
+            throw new AssertionError(
+                    "Attempted to access view holder after window decor is closed", e);
+        }
+    }
+
+    @Test
+    public void onMaximizeButtonHoverExit_returnsWhenViewHolderIsNull() {
+        // Create a freeform task so the decoration has an AppHeaderViewHolder
+        final ActivityManager.RunningTaskInfo taskInfo = createTaskInfo(true /* visible */);
+        taskInfo.configuration.windowConfiguration.setWindowingMode(WINDOWING_MODE_FREEFORM);
+        final DesktopModeWindowDecoration decor =
+                spy(createWindowDecoration(taskInfo, true /* relayout */));
+
+        // Close the decor to close the view holder and set it to null
+        decor.close();
+
+        // Verify that calling onMaximizeButtonHoverExit does not cause a crash
+        try {
+            decor.onMaximizeButtonHoverExit();
+        } catch (NullPointerException e) {
+            throw new AssertionError(
+                    "Attempted to access view holder after window decor is closed", e);
         }
     }
 

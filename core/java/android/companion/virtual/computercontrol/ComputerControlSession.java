@@ -96,6 +96,20 @@ public final class ComputerControlSession implements AutoCloseable {
     public @interface SessionCreationError {
     }
 
+    /**
+     * Computer control action that performs back navigation.
+     */
+    public static final int ACTION_GO_BACK = 1;
+
+    /** @hide */
+    @Retention(RetentionPolicy.SOURCE)
+    @IntDef(prefix = "ACTION_", value = {
+            ACTION_GO_BACK,
+    })
+    @Target({ElementType.TYPE_PARAMETER, ElementType.TYPE_USE})
+    public @interface Action {
+    }
+
     @NonNull
     private final IComputerControlSession mSession;
     private final Object mLock = new Object();
@@ -103,6 +117,14 @@ public final class ComputerControlSession implements AutoCloseable {
     @Nullable
     private ImageReader mImageReader;
 
+    /** Perform provided action on the trusted virtual display. */
+    public void performAction(@Action int actionCode) {
+        try {
+            mSession.performAction(actionCode);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
 
     /** @hide */
     public ComputerControlSession(int displayId, @NonNull IVirtualDisplayCallback displayToken,
@@ -214,7 +236,13 @@ public final class ComputerControlSession implements AutoCloseable {
         }
     }
 
-    /** Injects a key event into the trusted virtual display. */
+    /**
+     * Injects a key event into the trusted virtual display.
+     *
+     * @deprecated use {@link #insertText(String, boolean, boolean)} for injecting text into the
+     * text field and use {@link #performAction(int)} to perform actions like "back navigation".
+     */
+    @Deprecated
     public void sendKeyEvent(@NonNull VirtualKeyEvent event) {
         try {
             mSession.sendKeyEvent(Objects.requireNonNull(event));

@@ -623,6 +623,8 @@ public class AppCompatCameraSimReqOrientationPolicyTests extends WindowTestsBase
             robot.assertCompatibilityInfoSentWithDisplayRotation(ROTATION_0);
             robot.assertCompatibilityInfoSentWithSensorOverride(false);
             robot.assertCompatibilityInfoSentWithLetterbox(true);
+            // Default is true, and should be disabled (false) for camera compat.
+            robot.assertCompatibilityInfoSentWithInverseTransformAllowed(false);
             // Rotate and crop value should offset the difference between the sandboxed display
             // rotation and the real display (camera) rotation: (0 - 270) % 360 = 90.
             robot.assertCompatibilityInfoSentWithRotateAndCrop(ROTATION_90);
@@ -650,6 +652,8 @@ public class AppCompatCameraSimReqOrientationPolicyTests extends WindowTestsBase
 
             // Display rotation should be the same as the camera rotation (see comment above).
             robot.assertCompatibilityInfoSentWithDisplayRotation(ROTATION_270);
+            // Default is true, and should be disabled (false) for camera compat.
+            robot.assertCompatibilityInfoSentWithInverseTransformAllowed(false);
             // The other parts of the treatment are not activated.
             robot.assertCompatibilityInfoSentWithSensorOverride(false);
             robot.assertCompatibilityInfoSentWithLetterbox(false);
@@ -944,6 +948,13 @@ public class AppCompatCameraSimReqOrientationPolicyTests extends WindowTestsBase
             assertTrue(compatInfo.isOverrideCameraCompatibilityInfoRequired());
             assertEquals(overrideSensorOrientation,
                     compatInfo.cameraCompatibilityInfo.shouldOverrideSensorOrientation());
+        }
+
+        void assertCompatibilityInfoSentWithInverseTransformAllowed(boolean allowed) {
+            final CompatibilityInfo compatInfo = gerCompatibilityInfo();
+            assertTrue(compatInfo.isOverrideCameraCompatibilityInfoRequired());
+            assertEquals(allowed,
+                    compatInfo.cameraCompatibilityInfo.shouldAllowTransformInverseDisplay());
         }
 
         private CompatibilityInfo gerCompatibilityInfo() {

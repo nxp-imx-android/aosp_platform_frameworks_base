@@ -541,18 +541,6 @@ KotlinKeyword: android.app.Notification#when:
 
 MissingNullability: android.app.AppDetailsActivity#onCreate(android.os.Bundle) parameter #0:
     Missing nullability on parameter `savedInstanceState` in method `onCreate`
-MissingNullability: android.content.res.CameraCompatibilityInfo#CREATOR:
-    Missing nullability on field `CREATOR` in class `class android.content.res.CameraCompatibilityInfo`
-MissingNullability: android.content.res.CameraCompatibilityInfo.Builder#build():
-    Missing nullability on method `build` return
-MissingNullability: android.content.res.CameraCompatibilityInfo.Builder#setDisplayRotationSandbox(int):
-    Missing nullability on method `setDisplayRotationSandbox` return
-MissingNullability: android.content.res.CameraCompatibilityInfo.Builder#setRotateAndCropRotation(int):
-    Missing nullability on method `setRotateAndCropRotation` return
-MissingNullability: android.content.res.CameraCompatibilityInfo.Builder#setShouldLetterboxForCameraCompat(boolean):
-    Missing nullability on method `setShouldLetterboxForCameraCompat` return
-MissingNullability: android.content.res.CameraCompatibilityInfo.Builder#setShouldOverrideSensorOrientation(boolean):
-    Missing nullability on method `setShouldOverrideSensorOrientation` return
 MissingNullability: android.hardware.camera2.CameraManager#getRotationOverride(android.content.Context, android.content.pm.PackageManager, String):
     Missing nullability on method `getRotationOverride` return
 MissingNullability: android.view.contentcapture.ViewNode.ViewStructureImpl#setHintIdEntry(String) parameter #0:
@@ -2131,6 +2119,8 @@ UnflaggedApi: android.content.res.CameraCompatibilityInfo#getRotateAndCropRotati
     New API must be flagged with @FlaggedApi: method android.content.res.CameraCompatibilityInfo.getRotateAndCropRotation()
 UnflaggedApi: android.content.res.CameraCompatibilityInfo#isCameraCompatModeActive(android.content.res.CameraCompatibilityInfo):
     New API must be flagged with @FlaggedApi: method android.content.res.CameraCompatibilityInfo.isCameraCompatModeActive(android.content.res.CameraCompatibilityInfo)
+UnflaggedApi: android.content.res.CameraCompatibilityInfo#shouldAllowTransformInverseDisplay():
+    New API must be flagged with @FlaggedApi: method android.content.res.CameraCompatibilityInfo.shouldAllowTransformInverseDisplay()
 UnflaggedApi: android.content.res.CameraCompatibilityInfo#shouldLetterboxForCameraCompat():
     New API must be flagged with @FlaggedApi: method android.content.res.CameraCompatibilityInfo.shouldLetterboxForCameraCompat()
 UnflaggedApi: android.content.res.CameraCompatibilityInfo#shouldOverrideSensorOrientation():
@@ -2147,6 +2137,8 @@ UnflaggedApi: android.content.res.CameraCompatibilityInfo.Builder#setDisplayRota
     New API must be flagged with @FlaggedApi: method android.content.res.CameraCompatibilityInfo.Builder.setDisplayRotationSandbox(int)
 UnflaggedApi: android.content.res.CameraCompatibilityInfo.Builder#setRotateAndCropRotation(int):
     New API must be flagged with @FlaggedApi: method android.content.res.CameraCompatibilityInfo.Builder.setRotateAndCropRotation(int)
+UnflaggedApi: android.content.res.CameraCompatibilityInfo.Builder#setShouldAllowTransformInverseDisplay(boolean):
+    New API must be flagged with @FlaggedApi: method android.content.res.CameraCompatibilityInfo.Builder.setShouldAllowTransformInverseDisplay(boolean)
 UnflaggedApi: android.content.res.CameraCompatibilityInfo.Builder#setShouldLetterboxForCameraCompat(boolean):
     New API must be flagged with @FlaggedApi: method android.content.res.CameraCompatibilityInfo.Builder.setShouldLetterboxForCameraCompat(boolean)
 UnflaggedApi: android.content.res.CameraCompatibilityInfo.Builder#setShouldOverrideSensorOrientation(boolean):

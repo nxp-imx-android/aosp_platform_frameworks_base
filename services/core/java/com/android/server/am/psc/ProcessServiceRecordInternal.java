@@ -16,6 +16,10 @@
 
 package com.android.server.am.psc;
 
+import android.content.Context;
+
+import java.util.ArrayList;
+
 /**
  * Base class for internal process service record state information.
  * This class provides common fields and methods for managing service-related properties
@@ -99,4 +103,20 @@ public abstract class ProcessServiceRecordInternal {
 
     /** Checks if this process has any foreground services (even timed-out short-FGS) */
     public abstract boolean hasForegroundServices();
+
+    protected static boolean isAlmostPerceptible(ServiceRecordInternal record) {
+        if (record.getLastTopAlmostPerceptibleBindRequestUptimeMs() <= 0) {
+            return false;
+        }
+        for (int i = record.getConnectionsSize() - 1; i >= 0; --i) {
+            final ArrayList<? extends ConnectionRecordInternal> clist = record.getConnectionAt(i);
+            for (int j = clist.size() - 1; j >= 0; --j) {
+                final ConnectionRecordInternal cr = clist.get(j);
+                if (cr.hasFlag(Context.BIND_ALMOST_PERCEPTIBLE)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
 }

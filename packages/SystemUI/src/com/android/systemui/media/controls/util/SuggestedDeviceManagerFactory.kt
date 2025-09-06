@@ -18,12 +18,15 @@ package com.android.systemui.media.controls.util
 
 import android.os.Handler
 import com.android.settingslib.media.LocalMediaManager
+import com.android.settingslib.media.SuggestedDeviceConnectionManager
 import com.android.settingslib.media.SuggestedDeviceManager
 import com.android.systemui.dagger.qualifiers.Main
 import javax.inject.Inject
 
 class SuggestedDeviceManagerFactory @Inject constructor(@Main private val handler: Handler) {
     fun create(localMediaManager: LocalMediaManager): SuggestedDeviceManager {
-        return SuggestedDeviceManager(localMediaManager, handler)
+        val suggestedDeviceConnectionManager =
+            SuggestedDeviceConnectionManager(localMediaManager, handler)
+        return SuggestedDeviceManager(localMediaManager, handler, suggestedDeviceConnectionManager)
     }
 }

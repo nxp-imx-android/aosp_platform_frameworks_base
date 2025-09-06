@@ -322,3 +322,30 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "fix_bubble_stack_view_expanded_when_added"
+    namespace: "multitasking"
+    description: "Set BubbleStackView as collapsed if it's expanded when trying to be added"
+    bug: "417447385"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
+    name: "enable_bubble_event_history_logs"
+    namespace: "multitasking"
+    description: "Enable bubble event history logs"
+    bug: "436320481"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
+     name: "enable_2x1_split"
+     namespace: "multitasking"
+     description: "Enables the 2x1 split implementation"
+     bug: "439992109"
+}

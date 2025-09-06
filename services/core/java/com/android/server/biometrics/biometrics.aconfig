@@ -51,3 +51,14 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+
+flag {
+  name: "internal_cleanup_for_all_profiles"
+  namespace: "biometrics_framework"
+  description: "Feature flag for scheduling internal cleanup for all profiles"
+  bug: "441557507"
+  metadata {
+    purpose: PURPOSE_BUGFIX
+  }
+}

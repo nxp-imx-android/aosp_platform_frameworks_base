@@ -1329,19 +1329,21 @@ package android.content.res {
     method public int getDisplayRotationSandbox();
     method public int getRotateAndCropRotation();
     method public static boolean isCameraCompatModeActive(@NonNull android.content.res.CameraCompatibilityInfo);
+    method public boolean shouldAllowTransformInverseDisplay();
     method public boolean shouldLetterboxForCameraCompat();
     method public boolean shouldOverrideSensorOrientation();
     method public void writeToParcel(@NonNull android.os.Parcel, int);
-    field public static final android.os.Parcelable.Creator<android.content.res.CameraCompatibilityInfo> CREATOR;
+    field @NonNull public static final android.os.Parcelable.Creator<android.content.res.CameraCompatibilityInfo> CREATOR;
   }
 
   public static final class CameraCompatibilityInfo.Builder {
     ctor public CameraCompatibilityInfo.Builder();
-    method public android.content.res.CameraCompatibilityInfo build();
-    method public android.content.res.CameraCompatibilityInfo.Builder setDisplayRotationSandbox(int);
-    method public android.content.res.CameraCompatibilityInfo.Builder setRotateAndCropRotation(int);
-    method public android.content.res.CameraCompatibilityInfo.Builder setShouldLetterboxForCameraCompat(boolean);
-    method public android.content.res.CameraCompatibilityInfo.Builder setShouldOverrideSensorOrientation(boolean);
+    method @NonNull public android.content.res.CameraCompatibilityInfo build();
+    method @NonNull public android.content.res.CameraCompatibilityInfo.Builder setDisplayRotationSandbox(int);
+    method @NonNull public android.content.res.CameraCompatibilityInfo.Builder setRotateAndCropRotation(int);
+    method @NonNull public android.content.res.CameraCompatibilityInfo.Builder setShouldAllowTransformInverseDisplay(boolean);
+    method @NonNull public android.content.res.CameraCompatibilityInfo.Builder setShouldLetterboxForCameraCompat(boolean);
+    method @NonNull public android.content.res.CameraCompatibilityInfo.Builder setShouldOverrideSensorOrientation(boolean);
   }
 
   public final class Configuration implements java.lang.Comparable<android.content.res.Configuration> android.os.Parcelable {

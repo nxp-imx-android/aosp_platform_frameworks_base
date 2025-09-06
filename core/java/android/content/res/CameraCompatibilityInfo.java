@@ -51,12 +51,14 @@ public final class CameraCompatibilityInfo implements Parcelable {
     private final boolean mShouldOverrideSensorOrientation;
     private final boolean mShouldLetterboxForCameraCompat;
     private final int mDisplayRotationSandbox;
+    private final boolean mShouldAllowTransformInverseDisplay;
 
     private CameraCompatibilityInfo(Builder builder) {
         mRotateAndCropRotation = builder.mRotateAndCropRotation;
         mShouldOverrideSensorOrientation = builder.mShouldOverrideSensorOrientation;
         mShouldLetterboxForCameraCompat = builder.mShouldLetterboxForCameraCompat;
         mDisplayRotationSandbox = builder.mDisplayRotationSandbox;
+        mShouldAllowTransformInverseDisplay = builder.mShouldAllowTransformInverseDisplay;
     }
 
     private CameraCompatibilityInfo(Parcel in) {
@@ -64,6 +66,7 @@ public final class CameraCompatibilityInfo implements Parcelable {
         mShouldOverrideSensorOrientation = in.readByte() != 0;
         mShouldLetterboxForCameraCompat = in.readByte() != 0;
         mDisplayRotationSandbox = in.readInt();
+        mShouldAllowTransformInverseDisplay = in.readByte() != 0;
     }
 
     /**
@@ -93,12 +96,25 @@ public final class CameraCompatibilityInfo implements Parcelable {
         return mDisplayRotationSandbox;
     }
 
+    /**
+     * Whether rotating the camera buffers to counter the display rotation is allowed.
+     *
+     * <p> This value is often set to false when display rotation is sandboxed for compatibility.
+     * Since this rotation is not real for the display, native transform can rotate the buffers
+     * incorrectly. Additionally, for camera compat, display sandboxing and rotate-and-crop are
+     * often applied together so the apps do not have to apply any display-based transformations.
+     */
+    public boolean shouldAllowTransformInverseDisplay() {
+        return mShouldAllowTransformInverseDisplay;
+    }
+
     /** Builder for {@link CameraCompatibilityInfo} */
     public static final class Builder {
         private int mRotateAndCropRotation = ROTATION_UNDEFINED;
         private boolean mShouldOverrideSensorOrientation = false;
         private boolean mShouldLetterboxForCameraCompat = false;
         private int mDisplayRotationSandbox = ROTATION_UNDEFINED;
+        private boolean mShouldAllowTransformInverseDisplay = true;
 
         public Builder() {}
 
@@ -107,12 +123,14 @@ public final class CameraCompatibilityInfo implements Parcelable {
          * `android.view.Surface.Rotation` enum. If none, the value is
          * `android.app.WindowConfiguration.ROTATION_UNDEFINED`.
          */
+        @NonNull
         public Builder setRotateAndCropRotation(int rotateAndCropRotation) {
             mRotateAndCropRotation = rotateAndCropRotation;
             return this;
         }
 
         /** Sets whether camera sensor orientation should be sandboxed (usually to portrait). */
+        @NonNull
         public Builder setShouldOverrideSensorOrientation(boolean shouldOverrideSensorOrientation) {
             mShouldOverrideSensorOrientation = shouldOverrideSensorOrientation;
             return this;
@@ -122,6 +140,7 @@ public final class CameraCompatibilityInfo implements Parcelable {
          * Sets whether camera activity should be letterboxed, i.e. whether app bounds should be
          * changed.
          */
+        @NonNull
         public Builder setShouldLetterboxForCameraCompat(boolean shouldLetterboxForCameraCompat) {
             mShouldLetterboxForCameraCompat = shouldLetterboxForCameraCompat;
             return this;
@@ -132,17 +151,36 @@ public final class CameraCompatibilityInfo implements Parcelable {
          *  should not be applied, the value should be
          *  `android.app.WindowConfiguration.ROTATION_UNDEFINED`.
          */
+        @NonNull
         public Builder setDisplayRotationSandbox(int displayRotationSandbox) {
             mDisplayRotationSandbox = displayRotationSandbox;
             return this;
         }
 
+        /**
+         * Whether rotating the camera buffers to counter the display rotation is allowed.
+         *
+         * <p> This value is often set to {@code false} when display rotation is sandboxed for
+         * compatibility. Since this rotation is not real for the display, native transform can
+         * rotate the buffers incorrectly. Additionally, for camera compat, display sandboxing and
+         * rotate-and-crop are often applied together so the apps do not have to apply any
+         * display-based transformations.
+         */
+        @NonNull
+        public Builder setShouldAllowTransformInverseDisplay(boolean
+                shouldAllowTransformInverseDisplay) {
+            mShouldAllowTransformInverseDisplay = shouldAllowTransformInverseDisplay;
+            return this;
+        }
+
         /** Builds a {@link CameraCompatibilityInfo} object. */
+        @NonNull
         public CameraCompatibilityInfo build() {
             return new CameraCompatibilityInfo(this);
         }
     }
 
+    @NonNull
     public static final Creator<CameraCompatibilityInfo> CREATOR =
             new Creator<CameraCompatibilityInfo>() {
                 @Override
@@ -167,13 +205,14 @@ public final class CameraCompatibilityInfo implements Parcelable {
         dest.writeBoolean(mShouldOverrideSensorOrientation);
         dest.writeBoolean(mShouldLetterboxForCameraCompat);
         dest.writeInt(mDisplayRotationSandbox);
+        dest.writeBoolean(mShouldAllowTransformInverseDisplay);
     }
 
     @Override
     public int hashCode() {
         return Objects.hash(mRotateAndCropRotation,
                 mShouldOverrideSensorOrientation, mShouldLetterboxForCameraCompat,
-                mDisplayRotationSandbox);
+                mDisplayRotationSandbox, mShouldAllowTransformInverseDisplay);
     }
 
     @Override
@@ -187,7 +226,8 @@ public final class CameraCompatibilityInfo implements Parcelable {
         return mRotateAndCropRotation == that.mRotateAndCropRotation
                 && mShouldOverrideSensorOrientation == that.mShouldOverrideSensorOrientation
                 && mShouldLetterboxForCameraCompat == that.mShouldLetterboxForCameraCompat
-                && mDisplayRotationSandbox == that.mDisplayRotationSandbox;
+                && mDisplayRotationSandbox == that.mDisplayRotationSandbox
+                && mShouldAllowTransformInverseDisplay == that.mShouldAllowTransformInverseDisplay;
     }
 
     /** Whether any camera compat mode changes are requested via this object. */
@@ -196,7 +236,8 @@ public final class CameraCompatibilityInfo implements Parcelable {
         return cameraCompatMode.mRotateAndCropRotation != ROTATION_UNDEFINED
                 || cameraCompatMode.mShouldOverrideSensorOrientation
                 || cameraCompatMode.mShouldLetterboxForCameraCompat
-                || cameraCompatMode.mDisplayRotationSandbox != ROTATION_UNDEFINED;
+                || cameraCompatMode.mDisplayRotationSandbox != ROTATION_UNDEFINED
+                || !cameraCompatMode.mShouldAllowTransformInverseDisplay;
     }
 
     /** Changes the WindowConfiguration display rotation for the given configuration. */
@@ -213,6 +254,7 @@ public final class CameraCompatibilityInfo implements Parcelable {
                 + ", mShouldOverrideSensorOrientation=" + mShouldOverrideSensorOrientation
                 + ", mShouldLetterboxForCameraCompat=" + mShouldLetterboxForCameraCompat
                 + ", mDisplayRotationSandbox=" + mDisplayRotationSandbox
+                + ", mShouldAllowTransformInverseDisplay=" + mShouldAllowTransformInverseDisplay
                 + '}';
     }
 }

@@ -163,6 +163,16 @@ flag {
 }
 
 flag {
+    name: "use_suggested_device_connection_manager"
+    namespace: "media_better_together"
+    description: "Use a separate class to manage the Suggested Device connection in Media Controls."
+    bug: "442856281"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "enable_prevention_of_keep_alive_route_providers"
     namespace: "media_solutions"
     description: "Enables mechanisms to prevent route providers from keeping malicious apps alive."

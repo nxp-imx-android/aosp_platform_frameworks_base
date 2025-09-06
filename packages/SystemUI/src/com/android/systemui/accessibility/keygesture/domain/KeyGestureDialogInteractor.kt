@@ -21,12 +21,13 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.os.Handler
 import android.os.UserHandle
+import android.view.Display.INVALID_DISPLAY
 import androidx.annotation.VisibleForTesting
 import com.android.internal.accessibility.common.KeyGestureEventConstants
 import com.android.internal.accessibility.util.FrameworkObjectProvider
 import com.android.internal.accessibility.util.TtsPrompt
 import com.android.systemui.accessibility.data.repository.AccessibilityShortcutsRepository
-import com.android.systemui.accessibility.keygesture.domain.model.KeyGestureConfirmInfo
+import com.android.systemui.accessibility.keygesture.shared.model.KeyGestureConfirmInfo
 import com.android.systemui.broadcast.BroadcastDispatcher
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
@@ -61,8 +62,14 @@ constructor(
             }
             .map { intent -> processDialogRequest(intent) }
 
-    fun onPositiveButtonClick(targetName: String) {
-        repository.enableShortcutsForTargets(targetName)
+    fun enableShortcutsForTargets(enable: Boolean, targetName: String) {
+        repository.enableShortcutsForTargets(enable, targetName)
+    }
+
+    fun enableMagnificationAndZoomIn(displayId: Int) {
+        if (displayId != INVALID_DISPLAY) {
+            repository.enableMagnificationAndZoomIn(displayId)
+        }
     }
 
     fun performTtsPromptForText(text: CharSequence): TtsPrompt {
@@ -75,8 +82,9 @@ constructor(
             val targetName = intent.getStringExtra(KeyGestureEventConstants.TARGET_NAME)
             val metaState = intent.getIntExtra(KeyGestureEventConstants.META_STATE, 0)
             val keyCode = intent.getIntExtra(KeyGestureEventConstants.KEY_CODE, 0)
+            val displayId = intent.getIntExtra(KeyGestureEventConstants.DISPLAY_ID, INVALID_DISPLAY)
 
-            if (isInvalidDialogRequest(keyGestureType, metaState, keyCode, targetName)) {
+            if (isInvalidDialogRequest(keyGestureType, metaState, keyCode, targetName, displayId)) {
                 null
             } else {
                 val titleToContent =
@@ -95,6 +103,7 @@ constructor(
                         titleToContent.second,
                         targetName,
                         repository.getActionKeyIconResId(),
+                        displayId,
                     )
                 }
             }
@@ -106,8 +115,13 @@ constructor(
         metaState: Int,
         keyCode: Int,
         targetName: String?,
+        displayId: Int,
     ): Boolean {
-        return targetName.isNullOrEmpty() || keyGestureType == 0 || metaState == 0 || keyCode == 0
+        return targetName.isNullOrEmpty() ||
+            keyGestureType == 0 ||
+            metaState == 0 ||
+            keyCode == 0 ||
+            displayId == INVALID_DISPLAY
     }
 
     companion object {

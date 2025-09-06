@@ -42,5 +42,7 @@ class FakeAccessibilityShortcutsRepository : AccessibilityShortcutsRepository {
         return 0
     }
 
-    override fun enableShortcutsForTargets(targetName: String) {}
+    override fun enableShortcutsForTargets(enable: Boolean, targetName: String) {}
+
+    override fun enableMagnificationAndZoomIn(displayId: Int) {}
 }

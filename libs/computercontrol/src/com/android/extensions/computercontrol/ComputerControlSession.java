@@ -19,6 +19,7 @@ package com.android.extensions.computercontrol;
 import android.accessibilityservice.AccessibilityServiceInfo;
 import android.annotation.IntRange;
 import android.app.ActivityOptions;
+import android.companion.virtual.computercontrol.ComputerControlSession.Action;
 import android.companion.virtual.computercontrol.InteractiveMirrorDisplay;
 import android.content.Context;
 import android.content.Intent;
@@ -175,7 +176,11 @@ public final class ComputerControlSession implements AutoCloseable {
 
     /**
      * Injects a {@link KeyEvent} into the computer control session.
+     *
+     * @deprecated use {@link #insertText(String, boolean, boolean)} for injecting text into the
+     * text field and use {@link #performAction(int)} to perform actions like "back navigation".
      */
+    @Deprecated
     public void sendKeyEvent(KeyEvent keyEvent) {
         VirtualKeyEvent virtualKeyEvent = new VirtualKeyEvent.Builder()
                                                   .setKeyCode(keyEvent.getKeyCode())
@@ -201,6 +206,14 @@ public final class ComputerControlSession implements AutoCloseable {
      */
     public void insertText(@NonNull String text, boolean replaceExisting, boolean commit) {
         mSession.insertText(text, replaceExisting, commit);
+        mAccessibilityProxy.resetStabilityState();
+    }
+
+    /**
+     * Perform provided action on the display associated with the {@link ComputerControlSession}.
+     */
+    public void performAction(@Action int actionCode) {
+        mSession.performAction(actionCode);
         mAccessibilityProxy.resetStabilityState();
     }
 

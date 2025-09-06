@@ -349,22 +349,22 @@ public class AudioService extends IAudioService.Stub
     private final MusicFxHelper mMusicFxHelper;
 
     /** Debug audio mode */
-    protected static final boolean DEBUG_MODE = false;
+    protected static final boolean DEBUG_MODE = Log.isLoggable(TAG + ".Mode", Log.DEBUG);
 
     /** Debug audio policy feature */
-    protected static final boolean DEBUG_AP = false;
+    protected static final boolean DEBUG_AP = Log.isLoggable(TAG + ".AP", Log.DEBUG);
 
     /** Debug volumes */
-    protected static final boolean DEBUG_VOL = false;
+    protected static final boolean DEBUG_VOL = Log.isLoggable(TAG + ".VOL", Log.DEBUG);
 
     /** debug calls to devices APIs */
-    protected static final boolean DEBUG_DEVICES = false;
+    protected static final boolean DEBUG_DEVICES = Log.isLoggable(TAG + ".Devices", Log.DEBUG);
 
     /** Debug communication route */
-    protected static final boolean DEBUG_COMM_RTE = false;
+    protected static final boolean DEBUG_COMM_RTE = Log.isLoggable(TAG + ".Comm", Log.DEBUG);
 
     /** Debug log sound fx (touchsounds...) in dumpsys */
-    protected static final boolean DEBUG_LOG_SOUND_FX = false;
+    protected static final boolean DEBUG_LOG_SOUND_FX = Log.isLoggable(TAG + ".SoundFx", Log.DEBUG);
 
     /** How long to delay before persisting a change in volume/ringer mode. */
     private static final int PERSIST_DELAY = 500;

@@ -3716,7 +3716,7 @@ public class MockingOomAdjusterTests {
         assertThatProcess(app2).notHasImplicitCpuTimeCapability();
 
         doReturn(userOther).when(mService.mUserController).getCurrentUserId();
-        mService.mOomAdjuster.handleUserSwitchedLocked();
+        mService.mOomAdjuster.prewarmServicesIfNecessary();
 
         updateOomAdj();
         assertProcStates(app, PROCESS_STATE_SERVICE, cachedAdj1,
@@ -4584,6 +4584,9 @@ public class MockingOomAdjusterTests {
         doCallRealMethod().when(record).setForegroundServiceType(any(int.class));
         doCallRealMethod().when(record).getHostProcess();
         doCallRealMethod().when(record).getIsolationHostProcess();
+        doCallRealMethod().when(record).getLastTopAlmostPerceptibleBindRequestUptimeMs();
+        doCallRealMethod().when(record).setLastTopAlmostPerceptibleBindRequestUptimeMs(
+                any(long.class));
 
         setFieldValue(ServiceRecord.class, record, "connections",
                 new ArrayMap<IBinder, ArrayList<ConnectionRecord>>());
