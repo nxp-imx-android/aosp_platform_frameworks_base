@@ -17,8 +17,6 @@
 package com.android.server.biometrics.sensors.fingerprint.aidl;
 
 import static android.hardware.fingerprint.FingerprintManager.SENSOR_ID_ANY;
-import static android.hardware.fingerprint.FingerprintSensorConfigurations.getIFingerprint;
-import static android.hardware.fingerprint.FingerprintSensorConfigurations.remapFqName;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
@@ -43,6 +41,7 @@ import android.hardware.fingerprint.Fingerprint;
 import android.hardware.fingerprint.FingerprintAuthenticateOptions;
 import android.hardware.fingerprint.FingerprintEnrollOptions;
 import android.hardware.fingerprint.FingerprintManager;
+import android.hardware.fingerprint.FingerprintSensorConfigurations;
 import android.hardware.fingerprint.FingerprintSensorPropertiesInternal;
 import android.hardware.fingerprint.IFingerprintServiceReceiver;
 import android.hardware.fingerprint.IUdfpsOverlayController;
@@ -96,6 +95,7 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Function;
 
 /**
  * Provider for a single instance of the {@link IFingerprint} HAL.
@@ -123,13 +123,12 @@ public class FingerprintProvider implements IBinder.DeathRecipient, ServiceProvi
     @NonNull
     private final LockoutResetDispatcher mLockoutResetDispatcher;
     @NonNull
-    private final ActivityTaskManager mActivityTaskManager;
-    @NonNull
     private final BiometricTaskStackListener mTaskStackListener;
     // for requests that do not use biometric prompt
     @NonNull private final AtomicLong mRequestCounter = new AtomicLong(0);
     @NonNull private final BiometricContext mBiometricContext;
     @NonNull private final BiometricHandlerProvider mBiometricHandlerProvider;
+    @NonNull private final Function<String, IFingerprint> mGetIFingerprint;
     @Nullable private IFingerprint mDaemon;
     @Nullable private IUdfpsOverlayController mUdfpsOverlayController;
     private final AuthSessionCoordinator mAuthSessionCoordinator;
@@ -177,6 +176,7 @@ public class FingerprintProvider implements IBinder.DeathRecipient, ServiceProvi
         this(context, biometricStateCallback, authenticationStateListeners, props, halInstanceName,
                 lockoutResetDispatcher, gestureAvailabilityDispatcher, biometricContext,
                 null /* daemon */, BiometricHandlerProvider.getInstance(),
+                FingerprintSensorConfigurations::getIFingerprint,
                 resetLockoutRequiresHardwareAuthToken, false /* testHalEnabled */);
     }
 
@@ -189,6 +189,7 @@ public class FingerprintProvider implements IBinder.DeathRecipient, ServiceProvi
             @NonNull BiometricContext biometricContext,
             @Nullable IFingerprint daemon,
             @NonNull BiometricHandlerProvider biometricHandlerProvider,
+            @NonNull Function<String, IFingerprint> getIFingerprint,
             boolean resetLockoutRequiresHardwareAuthToken,
             boolean testHalEnabled) {
         mContext = context;
@@ -198,11 +199,11 @@ public class FingerprintProvider implements IBinder.DeathRecipient, ServiceProvi
         mFingerprintSensors = new SensorList<>(ActivityManager.getService());
         mHandler = biometricHandlerProvider.getFingerprintHandler();
         mLockoutResetDispatcher = lockoutResetDispatcher;
-        mActivityTaskManager = ActivityTaskManager.getInstance();
         mTaskStackListener = new BiometricTaskStackListener();
         mBiometricContext = biometricContext;
         mAuthSessionCoordinator = mBiometricContext.getAuthSessionCoordinator();
         mDaemon = daemon;
+        mGetIFingerprint = getIFingerprint;
         mTestHalEnabled = testHalEnabled;
         mBiometricHandlerProvider = biometricHandlerProvider;
 
@@ -289,15 +290,6 @@ public class FingerprintProvider implements IBinder.DeathRecipient, ServiceProvi
         return TAG + "/" + mHalInstanceName;
     }
 
-    boolean hasHalInstance() {
-        if (mTestHalEnabled) {
-            return true;
-        }
-        return (ServiceManager.checkService(
-                remapFqName(IFingerprint.DESCRIPTOR + "/" + mHalInstanceName))
-                != null);
-    }
-
     @Nullable
     @VisibleForTesting
     synchronized IFingerprint getHalInstance() {
@@ -333,7 +325,7 @@ public class FingerprintProvider implements IBinder.DeathRecipient, ServiceProvi
 
         Slog.d(getTag(), "Daemon was null, reconnecting");
 
-        mDaemon = getIFingerprint(IFingerprint.DESCRIPTOR + "/" + mHalInstanceNameCurrent);
+        mDaemon = mGetIFingerprint.apply(IFingerprint.DESCRIPTOR + "/" + mHalInstanceNameCurrent);
         if (mDaemon == null) {
             Slog.e(getTag(), "Unable to get daemon");
             return null;
@@ -347,7 +339,11 @@ public class FingerprintProvider implements IBinder.DeathRecipient, ServiceProvi
 
         for (int i = 0; i < mFingerprintSensors.size(); i++) {
             final int sensorId = mFingerprintSensors.keyAt(i);
-            scheduleLoadAuthenticatorIds(sensorId);
+            if (Flags.internalCleanupForAllProfiles()) {
+                processFingerprintForProfiles(sensorId);
+            } else {
+                scheduleLoadAuthenticatorIds(sensorId);
+            }
             scheduleInternalCleanup(sensorId, ActivityManager.getCurrentUser(),
                     null /* callback */);
         }
@@ -414,6 +410,15 @@ public class FingerprintProvider implements IBinder.DeathRecipient, ServiceProvi
 
     private void scheduleLoadAuthenticatorIds(int sensorId) {
         for (UserInfo user : UserManager.get(mContext).getAliveUsers()) {
+            scheduleLoadAuthenticatorIdsForUser(sensorId, user.id);
+        }
+    }
+
+    private void processFingerprintForProfiles(int sensorId) {
+        for (UserInfo user : UserManager.get(mContext).getAliveUsers()) {
+            if (user.id != ActivityManager.getCurrentUser()) {
+                scheduleInternalCleanup(sensorId, user.id, null /* callback */);
+            }
             scheduleLoadAuthenticatorIdsForUser(sensorId, user.id);
         }
     }
