@@ -520,8 +520,7 @@ public class StageCoordinator extends StageCoordinatorAbstract {
         mDisplayController.addDisplayWindowListener(this);
         mDisplayController.addDisplayChangingController(this);
         transitions.addHandler(this);
-        mSplitUnsupportedToast = Toast.makeText(mContext,
-                R.string.dock_non_resizeble_failed_to_dock_text, Toast.LENGTH_SHORT);
+        mSplitUnsupportedToast = createSplitUnsupportedToast();
         mFoldLockSettingsObserver = new FoldLockSettingsObserver(mainHandler, context);
         mFoldLockSettingsObserver.register();
         mStatusBarHider = new SplitStatusBarHider(taskOrganizer, splitState,
@@ -577,8 +576,7 @@ public class StageCoordinator extends StageCoordinatorAbstract {
 
         mDisplayController.addDisplayWindowListener(this);
         transitions.addHandler(this);
-        mSplitUnsupportedToast = Toast.makeText(mContext,
-                R.string.dock_non_resizeble_failed_to_dock_text, Toast.LENGTH_SHORT);
+        mSplitUnsupportedToast = createSplitUnsupportedToast();
         mFoldLockSettingsObserver =
                 new FoldLockSettingsObserver(context.getMainThreadHandler(), context);
         mFoldLockSettingsObserver.register();
@@ -589,6 +587,18 @@ public class StageCoordinator extends StageCoordinatorAbstract {
         mStatusBarHider = new SplitStatusBarHider(taskOrganizer, splitState,
                 rootDisplayAreaOrganizer);
         mSplitTransitionModifier = new SplitTransitionModifier();
+    }
+
+    private Toast createSplitUnsupportedToast() {
+        Toast splitUnsupportedToast = null;
+        try {
+            splitUnsupportedToast = Toast.makeText(mContext,
+                    R.string.dock_non_resizeble_failed_to_dock_text, Toast.LENGTH_SHORT);
+        } catch (Exception e) {
+            ProtoLog.e(WM_SHELL_SPLIT_SCREEN,
+                    "Failed to create split unsupported toast %s", e.getMessage());
+        }
+        return splitUnsupportedToast;
     }
 
     public void setMixedHandler(DefaultMixedHandler mixedHandler) {
@@ -4724,7 +4734,11 @@ public class StageCoordinator extends StageCoordinatorAbstract {
     }
 
     void handleUnsupportedSplitStart() {
-        mSplitUnsupportedToast.show();
+        if (mSplitUnsupportedToast != null) {
+            mSplitUnsupportedToast.show();
+        } else {
+            ProtoLog.w(WM_SHELL_SPLIT_SCREEN, "The split unsupported toast is null");
+        }
         notifySplitAnimationStatus(false /*animationRunning*/);
     }
 
