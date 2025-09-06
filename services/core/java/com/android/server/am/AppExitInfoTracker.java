@@ -1051,6 +1051,7 @@ public final class AppExitInfoTracker {
             info.setRss(app.mProfile.getLastRss());
             info.setTimestamp(timestamp);
             info.setHasForegroundServices(app.mServices.hasReportedForegroundServices());
+            info.setHasShownUi(app.getHasShownUi());
         }
 
         return info;
