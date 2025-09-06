@@ -18336,6 +18336,9 @@ public class ActivityManagerService extends IActivityManager.Stub
                 }
                 thread = record.getThread();
             }
+            if (thread == null) {
+                throw new IllegalStateException("app ActivityThread is null");
+            }
             try {
                 thread.getExecutableMethodFileOffsets(methodDescriptor, callback);
             } catch (RemoteException e) {
