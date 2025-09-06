@@ -7616,10 +7616,10 @@ final class ActivityRecord extends WindowToken {
                     requestedOverrideConfig.densityDpi = lastReportedMergedConfig.densityDpi;
                 }
             } else {
-                // Update the configs if we're exiting PiP mode.
-                requestedOverrideConfig.colorMode = newParentConfiguration.colorMode;
-                requestedOverrideConfig.touchscreen = newParentConfiguration.touchscreen;
-                requestedOverrideConfig.densityDpi = newParentConfiguration.densityDpi;
+                // Reset the configs if we're exiting PiP mode.
+                requestedOverrideConfig.colorMode = Configuration.COLOR_MODE_UNDEFINED;
+                requestedOverrideConfig.touchscreen = Configuration.TOUCHSCREEN_UNDEFINED;
+                requestedOverrideConfig.densityDpi = Configuration.DENSITY_DPI_UNDEFINED;
             }
         }
 

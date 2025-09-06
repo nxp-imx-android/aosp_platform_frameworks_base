@@ -3586,9 +3586,9 @@ public class ActivityRecordTests extends WindowTestsBase {
         newConfig.colorMode = COLOR_MODE_WIDE_COLOR_GAMUT_YES;
         activity.resolveOverrideConfiguration(newConfig);
 
-        assertEquals(activity.getRequestedOverrideConfiguration().touchscreen, config.touchscreen);
-        assertEquals(activity.getRequestedOverrideConfiguration().densityDpi, config.densityDpi);
-        assertEquals(activity.getRequestedOverrideConfiguration().colorMode, config.colorMode);
+        assertEquals(config.touchscreen, activity.getRequestedOverrideConfiguration().touchscreen);
+        assertEquals(config.densityDpi, activity.getRequestedOverrideConfiguration().densityDpi);
+        assertEquals(config.colorMode, activity.getRequestedOverrideConfiguration().colorMode);
     }
 
     @Test
@@ -3610,10 +3610,12 @@ public class ActivityRecordTests extends WindowTestsBase {
         newConfig.colorMode = COLOR_MODE_WIDE_COLOR_GAMUT_YES;
         activity.resolveOverrideConfiguration(newConfig);
 
-        assertNotEquals(activity.getRequestedOverrideConfiguration().touchscreen,
-                config.touchscreen);
-        assertNotEquals(activity.getRequestedOverrideConfiguration().densityDpi, config.densityDpi);
-        assertNotEquals(activity.getRequestedOverrideConfiguration().colorMode, config.colorMode);
+        assertEquals(Configuration.TOUCHSCREEN_UNDEFINED,
+                activity.getRequestedOverrideConfiguration().touchscreen);
+        assertEquals(Configuration.DENSITY_DPI_UNDEFINED,
+                activity.getRequestedOverrideConfiguration().densityDpi);
+        assertEquals(Configuration.COLOR_MODE_UNDEFINED,
+                activity.getRequestedOverrideConfiguration().colorMode);
     }
 
     @Test
@@ -3632,10 +3634,12 @@ public class ActivityRecordTests extends WindowTestsBase {
         newConfig.colorMode = COLOR_MODE_WIDE_COLOR_GAMUT_YES;
         activity.resolveOverrideConfiguration(newConfig);
 
-        assertNotEquals(activity.getRequestedOverrideConfiguration().touchscreen,
-                config.touchscreen);
-        assertNotEquals(activity.getRequestedOverrideConfiguration().densityDpi, config.densityDpi);
-        assertNotEquals(activity.getRequestedOverrideConfiguration().colorMode, config.colorMode);
+        assertEquals(Configuration.TOUCHSCREEN_UNDEFINED,
+                activity.getRequestedOverrideConfiguration().touchscreen);
+        assertEquals(Configuration.DENSITY_DPI_UNDEFINED,
+                activity.getRequestedOverrideConfiguration().densityDpi);
+        assertEquals(Configuration.COLOR_MODE_UNDEFINED,
+                activity.getRequestedOverrideConfiguration().colorMode);
     }
 
     @Test
@@ -3656,10 +3660,12 @@ public class ActivityRecordTests extends WindowTestsBase {
         newConfig.colorMode = COLOR_MODE_WIDE_COLOR_GAMUT_YES;
         activity.resolveOverrideConfiguration(newConfig);
 
-        assertEquals(activity.getRequestedOverrideConfiguration().touchscreen,
-                newConfig.touchscreen);
-        assertEquals(activity.getRequestedOverrideConfiguration().densityDpi, newConfig.densityDpi);
-        assertEquals(activity.getRequestedOverrideConfiguration().colorMode, newConfig.colorMode);
+        assertEquals(Configuration.TOUCHSCREEN_UNDEFINED,
+                activity.getRequestedOverrideConfiguration().touchscreen);
+        assertEquals(Configuration.DENSITY_DPI_UNDEFINED,
+                activity.getRequestedOverrideConfiguration().densityDpi);
+        assertEquals(Configuration.COLOR_MODE_UNDEFINED,
+                activity.getRequestedOverrideConfiguration().colorMode);
     }
 
     private ActivityRecord setupDisplayAndActivityForCameraCompat(boolean isCameraRunning,
