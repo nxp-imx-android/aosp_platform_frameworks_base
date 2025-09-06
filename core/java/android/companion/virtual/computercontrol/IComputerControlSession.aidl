@@ -60,6 +60,9 @@ interface IComputerControlSession {
      */
     void insertText(in String text, boolean replaceExisting, boolean commit);
 
+    /** Performs computer control action on the computer control display. */
+    void performAction(int actionCode);
+
     /** Closes this session. */
     void close();
 }
