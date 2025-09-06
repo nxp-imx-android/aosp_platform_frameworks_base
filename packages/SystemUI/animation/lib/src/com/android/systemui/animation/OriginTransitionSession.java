@@ -117,6 +117,7 @@ public class OriginTransitionSession {
                         filters.add(entry.getValue());
                         logD("mapping exit transition[" + index + "]: "
                                 + entry.getKey() + " and filter: " + entry.getValue());
+                        index++;
                     }
                     remoteTransition =
                             mOriginTransition =
