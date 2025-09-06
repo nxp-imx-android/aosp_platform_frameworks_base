@@ -27,13 +27,13 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.android.systemui.common.shared.model.ContentDescription
 import com.android.systemui.res.R
+import com.android.systemui.screencapture.common.shared.model.ScreenCaptureTarget
 import com.android.systemui.screencapture.common.ui.compose.PrimaryButton
 import com.android.systemui.screencapture.common.ui.compose.RadioButtonGroup
 import com.android.systemui.screencapture.common.ui.compose.RadioButtonGroupItem
 import com.android.systemui.screencapture.common.ui.compose.Toolbar
 import com.android.systemui.screencapture.common.ui.compose.loadIcon
 import com.android.systemui.screencapture.sharescreen.largescreen.ui.viewmodel.PreShareToolbarViewModel
-import com.android.systemui.screencapture.sharescreen.largescreen.ui.viewmodel.ScreenShareTarget
 
 @Composable
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
@@ -61,16 +61,20 @@ fun PreShareToolbar(
             RadioButtonGroupItem(
                 icon = tabIcon,
                 isSelected =
-                    preShareToolbarViewModel.selectedScreenShareTarget == ScreenShareTarget.TAB,
-                onClick = { preShareToolbarViewModel.onTargetSelected(ScreenShareTarget.TAB) },
+                    preShareToolbarViewModel.selectedScreenCaptureTarget
+                        is ScreenCaptureTarget.AppContent,
+                onClick = {
+                    preShareToolbarViewModel.selectedScreenCaptureTarget =
+                        (ScreenCaptureTarget.AppContent(contentId = 0))
+                },
             ),
             RadioButtonGroupItem(
                 icon = windowIcon,
                 isSelected =
-                    preShareToolbarViewModel.selectedScreenShareTarget ==
-                        ScreenShareTarget.APP_WINDOW,
+                    preShareToolbarViewModel.selectedScreenCaptureTarget is ScreenCaptureTarget.App,
                 onClick = {
-                    preShareToolbarViewModel.onTargetSelected(ScreenShareTarget.APP_WINDOW)
+                    preShareToolbarViewModel.selectedScreenCaptureTarget =
+                        (ScreenCaptureTarget.App(displayId = 0, taskId = 0))
                 },
             ),
         )
