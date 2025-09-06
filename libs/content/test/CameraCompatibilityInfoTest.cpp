@@ -20,12 +20,23 @@
 
 using android::content::res::CameraCompatibilityInfo;
 
+TEST(CameraCompatibilityInfoTest, DefaultsTest) {
+    CameraCompatibilityInfo compatInfo;
+
+    EXPECT_EQ(compatInfo.getRotateAndCropRotation().value(), android::ui::ROTATION_0);
+    EXPECT_FALSE(compatInfo.shouldOverrideSensorOrientation());
+    EXPECT_FALSE(compatInfo.shouldLetterboxForCameraCompat());
+    EXPECT_EQ(compatInfo.getDisplayRotationSandbox().value(), android::ui::ROTATION_0);
+    EXPECT_TRUE(compatInfo.shouldAllowTransformInverseDisplay());
+}
+
 TEST(CameraCompatibilityInfoTest, ParcelTest) {
     CameraCompatibilityInfo compatInfo;
     compatInfo.setRotateAndCropRotation(android::ui::ROTATION_90);
     compatInfo.setShouldOverrideSensorOrientation(true);
     compatInfo.setShouldLetterboxForCameraCompat(true);
     compatInfo.setDisplayRotationSandbox(android::ui::ROTATION_270);
+    compatInfo.setShouldAllowTransformInverseDisplay(false);
 
     android::Parcel parcel;
     compatInfo.writeToParcel(&parcel);
@@ -42,6 +53,8 @@ TEST(CameraCompatibilityInfoTest, ParcelTest) {
               compatInfo2.shouldLetterboxForCameraCompat());
     EXPECT_EQ(compatInfo.getDisplayRotationSandbox().value(),
               compatInfo2.getDisplayRotationSandbox().value());
+    EXPECT_EQ(compatInfo.shouldAllowTransformInverseDisplay(),
+              compatInfo2.shouldAllowTransformInverseDisplay());
 }
 
 TEST(CameraCompatibilityInfoTest, ShouldRotateAndCropTest) {

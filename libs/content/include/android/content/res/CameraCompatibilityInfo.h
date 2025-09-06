@@ -35,6 +35,7 @@ private:
     bool mShouldOverrideSensorOrientation = false;
     bool mShouldLetterboxForCameraCompat = false;
     std::optional<ui::Rotation> mDisplayRotationSandbox = std::nullopt;
+    bool mShouldAllowTransformInverseDisplay = true;
 
 public:
     virtual status_t writeToParcel(Parcel* parcel) const;
@@ -57,6 +58,10 @@ public:
     std::optional<ui::Rotation> getDisplayRotationSandbox() const;
 
     void setDisplayRotationSandbox(std::optional<ui::Rotation> displayRotationSandbox);
+
+    bool shouldAllowTransformInverseDisplay() const;
+
+    void setShouldAllowTransformInverseDisplay(bool shouldAllowTransformInverseDisplay);
 };
 
 } // namespace res

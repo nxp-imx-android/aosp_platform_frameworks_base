@@ -34,6 +34,8 @@ namespace res {
         parcel->writeBool(mShouldOverrideSensorOrientation);
         parcel->writeBool(mShouldLetterboxForCameraCompat);
         parcel->writeInt32(mDisplayRotationSandbox.transform(ui::toRotationInt).value_or(-1));
+        parcel->writeBool(mShouldAllowTransformInverseDisplay);
+
         return OK;
     }
 
@@ -56,6 +58,7 @@ namespace res {
         } else {
             mDisplayRotationSandbox = ui::toRotation(tmpInt);
         }
+        parcel->readBool(&mShouldAllowTransformInverseDisplay);
         return OK;
     }
 
@@ -98,6 +101,15 @@ namespace res {
     void CameraCompatibilityInfo::setDisplayRotationSandbox(std::optional<Rotation>
             displayRotationSandbox) {
         mDisplayRotationSandbox = displayRotationSandbox;
+    }
+
+    bool CameraCompatibilityInfo::shouldAllowTransformInverseDisplay() const {
+        return mShouldAllowTransformInverseDisplay;
+    }
+
+    void CameraCompatibilityInfo::setShouldAllowTransformInverseDisplay(bool
+            shouldAllowTransformInverseDisplay) {
+        mShouldAllowTransformInverseDisplay = shouldAllowTransformInverseDisplay;
     }
 
 } // namespace res
