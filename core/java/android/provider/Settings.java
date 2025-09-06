@@ -19611,13 +19611,6 @@ public final class Settings {
         public static final String MULTI_SIM_SMS_PROMPT = "multi_sim_sms_prompt";
 
         /**
-         * Which subscription is enabled for a physical slot.
-         * @hide
-         */
-        @Readable
-        public static final String ENABLED_SUBSCRIPTION_FOR_SLOT = "enabled_subscription_for_slot";
-
-        /**
          * Whether to enable new contacts aggregator or not.
          * The value 1 - enable, 0 - disable
          * @hide
