@@ -77,8 +77,6 @@ import com.android.wm.shell.windowdecor.extension.isLightCaptionBarAppearance
 import com.android.wm.shell.windowdecor.extension.isTransparentCaptionBarAppearance
 import com.android.wm.shell.windowdecor.extension.throttleFirstClicks
 import com.android.wm.shell.windowdecor.viewholder.util.AppHeaderDimensions
-import com.android.wm.shell.windowdecor.viewholder.util.DefaultAppHeaderDimensions
-import com.android.wm.shell.windowdecor.viewholder.util.LargeAppHeaderDimensions
 
 /**
  * A desktop mode window decoration used when the window is floating (i.e. freeform). It hosts finer
@@ -94,6 +92,7 @@ class AppHeaderViewHolder(
     onCaptionGenericMotionListener: View.OnGenericMotionListener,
     onMaximizeHoverAnimationFinishedListener: () -> Unit,
     private val desktopModeUiEventLogger: DesktopModeUiEventLogger,
+    private val dimensions: AppHeaderDimensions,
 ) : WindowDecorationViewHolder<AppHeaderViewHolder.HeaderData>() {
 
     data class HeaderData(
@@ -108,12 +107,6 @@ class AppHeaderViewHolder(
     private val decorThemeUtil = DecorThemeUtil(context)
     private val lightColors = dynamicLightColorScheme(context)
     private val darkColors = dynamicDarkColorScheme(context)
-    private val dimensions: AppHeaderDimensions =
-        if (DesktopExperienceFlags.ENABLE_TALL_APP_HEADERS.isTrue) {
-            LargeAppHeaderDimensions(context.resources)
-        } else {
-            DefaultAppHeaderDimensions(context.resources)
-        }
 
     override val rootView =
         appHeaderView
@@ -992,7 +985,8 @@ class AppHeaderViewHolder(
         private const val CLICK_DELAY: Long = 500
     }
 
-    class Factory {
+    /** Factory for creating [AppHeaderViewHolder] instances. */
+    interface Factory {
         fun create(
             rootView: View?,
             context: Context,
@@ -1003,6 +997,23 @@ class AppHeaderViewHolder(
             onCaptionGenericMotionListener: View.OnGenericMotionListener,
             onMaximizeHoverAnimationFinishedListener: () -> Unit,
             desktopModeUiEventLogger: DesktopModeUiEventLogger,
+            dimensions: AppHeaderDimensions,
+        ): AppHeaderViewHolder
+    }
+
+    /** The default factory for creating [AppHeaderViewHolder] instances. */
+    class DefaultFactory : Factory {
+        override fun create(
+            rootView: View?,
+            context: Context,
+            windowDecorationActions: WindowDecorationActions,
+            onCaptionTouchListener: View.OnTouchListener,
+            onCaptionButtonClickListener: View.OnClickListener,
+            onLongClickListener: OnLongClickListener,
+            onCaptionGenericMotionListener: View.OnGenericMotionListener,
+            onMaximizeHoverAnimationFinishedListener: () -> Unit,
+            desktopModeUiEventLogger: DesktopModeUiEventLogger,
+            dimensions: AppHeaderDimensions,
         ): AppHeaderViewHolder =
             AppHeaderViewHolder(
                 rootView,
@@ -1014,6 +1025,7 @@ class AppHeaderViewHolder(
                 onCaptionGenericMotionListener,
                 onMaximizeHoverAnimationFinishedListener,
                 desktopModeUiEventLogger,
+                dimensions,
             )
     }
 }

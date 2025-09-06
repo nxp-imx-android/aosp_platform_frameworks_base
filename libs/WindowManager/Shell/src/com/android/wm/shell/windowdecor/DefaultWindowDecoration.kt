@@ -85,6 +85,7 @@ import com.android.wm.shell.windowdecor.common.viewhost.WindowDecorViewHostSuppl
 import com.android.wm.shell.windowdecor.extension.getDimensionPixelSize
 import com.android.wm.shell.windowdecor.extension.isDragResizable
 import com.android.wm.shell.windowdecor.extension.isTransparentCaptionBarAppearance
+import com.android.wm.shell.windowdecor.viewholder.AppHeaderViewHolder
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.MainCoroutineDispatcher
 
@@ -136,6 +137,8 @@ constructor(
     },
     surfaceControlSupplier: () -> SurfaceControl = { SurfaceControl() },
     private val lockTaskChangeListener: LockTaskChangeListener,
+    private val appHeaderViewHolderFactory: AppHeaderViewHolder.Factory =
+        AppHeaderViewHolder.DefaultFactory(),
 ) :
     WindowDecoration2<WindowDecorLinearLayout>(
         taskInfo,
@@ -914,38 +917,40 @@ constructor(
         when (captionType) {
             CaptionController.CaptionType.APP_HEADER -> {
                 AppHeaderController(
-                    taskInfo,
-                    windowDecorViewHostSupplier,
-                    context,
-                    userContext,
-                    displayController,
-                    taskResourceLoader,
-                    splitScreenController,
-                    desktopUserRepositories,
-                    transitions,
-                    taskSurface,
-                    checkNotNull(decorationContainerSurface) {
-                        "Expected non-null decoration container surface"
-                    },
-                    handler,
-                    mainExecutor,
-                    mainDispatcher,
-                    mainScope,
-                    bgExecutor,
-                    syncQueue,
-                    rootTaskDisplayAreaOrganizer,
-                    windowManagerWrapper,
-                    multiInstanceHelper,
-                    windowDecorCaptionRepository,
-                    desktopModeUiEventLogger,
-                    desktopState,
-                    windowDecorationActions,
-                    decorWindowContext,
-                    onTouchListener,
-                    onClickListener,
-                    onLongClickListener,
-                    onGenericMotionListener,
-                    appToWebRepository,
+                    taskInfo = taskInfo,
+                    windowDecorViewHostSupplier = windowDecorViewHostSupplier,
+                    context = context,
+                    userContext = userContext,
+                    displayController = displayController,
+                    taskResourceLoader = taskResourceLoader,
+                    splitScreenController = splitScreenController,
+                    desktopUserRepositories = desktopUserRepositories,
+                    transitions = transitions,
+                    taskSurface = taskSurface,
+                    decorationSurface =
+                        checkNotNull(decorationContainerSurface) {
+                            "Expected non-null decoration container surface"
+                        },
+                    mainHandler = handler,
+                    mainExecutor = mainExecutor,
+                    mainDispatcher = mainDispatcher,
+                    mainScope = mainScope,
+                    bgExecutor = bgExecutor,
+                    syncQueue = syncQueue,
+                    rootTaskDisplayAreaOrganizer = rootTaskDisplayAreaOrganizer,
+                    windowManagerWrapper = windowManagerWrapper,
+                    multiInstanceHelper = multiInstanceHelper,
+                    windowDecorCaptionRepository = windowDecorCaptionRepository,
+                    desktopModeUiEventLogger = desktopModeUiEventLogger,
+                    desktopState = desktopState,
+                    windowDecorationActions = windowDecorationActions,
+                    decorWindowContext = decorWindowContext,
+                    onCaptionTouchListener = onTouchListener,
+                    onCaptionButtonClickListener = onClickListener,
+                    onLongClickListener = onLongClickListener,
+                    onCaptionGenericMotionListener = onGenericMotionListener,
+                    appToWebRepository = appToWebRepository,
+                    appHeaderViewHolderFactory = appHeaderViewHolderFactory,
                 )
             }
 

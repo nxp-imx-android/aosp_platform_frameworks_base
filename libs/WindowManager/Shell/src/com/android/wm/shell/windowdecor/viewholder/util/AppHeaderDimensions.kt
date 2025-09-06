@@ -20,6 +20,8 @@ import com.android.wm.shell.windowdecor.common.DrawableInsets
 
 /** Provides the dimensions to use for drawing the app header. */
 interface AppHeaderDimensions {
+    /** The height of the app header. */
+    val height: Int
     /** The corner radius to apply to the app chip, maximize and close button's background. */
     val buttonCornerRadius: Int
     /** The max width of the app name. */

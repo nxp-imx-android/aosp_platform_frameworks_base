@@ -146,6 +146,7 @@ import com.android.wm.shell.transition.FocusTransitionObserver;
 import com.android.wm.shell.transition.Transitions;
 import com.android.wm.shell.windowdecor.common.AppHandleAndHeaderVisibilityHelper;
 import com.android.wm.shell.windowdecor.common.ExclusionRegionListener;
+import com.android.wm.shell.windowdecor.common.InputPilfererImpl;
 import com.android.wm.shell.windowdecor.common.WindowDecorTaskResourceLoader;
 import com.android.wm.shell.windowdecor.common.WindowDecorationGestureExclusionTracker;
 import com.android.wm.shell.windowdecor.common.viewhost.WindowDecorViewHost;
@@ -358,7 +359,7 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                 new WindowDecorationWrapper.Factory(),
                 new InputMonitorFactory(),
                 SurfaceControl.Transaction::new,
-                new AppHeaderViewHolder.Factory(),
+                new AppHeaderViewHolder.DefaultFactory(),
                 new AppHandleViewHolder.Factory(),
                 rootTaskDisplayAreaOrganizer,
                 new SparseArray<>(),
@@ -1782,7 +1783,8 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                 new DesktopModeTouchEventListener(mContext, taskInfo, taskPositioner,
                         mWindowDecorationFinder, mDesktopTasksController, mTaskOperations,
                         mDesktopModeUiEventLogger, mWindowDecorationActions,
-                        mDesktopUserRepositories, mGestureExclusionTracker, mInputManager,
+                        mDesktopUserRepositories, mGestureExclusionTracker,
+                        new InputPilfererImpl(mInputManager), mInputManager,
                         mFocusTransitionObserver, mShellDesktopState,
                         mMultiDisplayDragMoveIndicatorController, mTransactionFactory,
                         mCaptionTouchStatusListener, mAppHandleMotionEventHandler);

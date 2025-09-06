@@ -43,7 +43,6 @@ import android.view.PointerIcon;
 import android.view.SurfaceControl;
 import android.view.View;
 import android.view.ViewConfiguration;
-import android.view.ViewRootImpl;
 import android.window.DesktopExperienceFlags;
 import android.window.DesktopModeFlags;
 import android.window.WindowContainerToken;
@@ -64,6 +63,7 @@ import com.android.wm.shell.desktopmode.data.DesktopRepository;
 import com.android.wm.shell.transition.FocusTransitionObserver;
 import com.android.wm.shell.windowdecor.DesktopModeWindowDecorViewModel.AppHandleMotionEventHandler;
 import com.android.wm.shell.windowdecor.DesktopModeWindowDecorViewModel.CaptionTouchStatusListener;
+import com.android.wm.shell.windowdecor.common.InputPilferer;
 import com.android.wm.shell.windowdecor.common.WindowDecorationGestureExclusionTracker;
 import com.android.wm.shell.windowdecor.extension.TaskInfoKt;
 import com.android.wm.shell.windowdecor.viewholder.AppHeaderViewHolder;
@@ -93,6 +93,7 @@ public class DesktopModeTouchEventListener
     private final @NonNull WindowDecorationActions mWindowDecorationActions;
     private final @NonNull DesktopUserRepositories mDesktopUserRepositories;
     private final @NonNull WindowDecorationGestureExclusionTracker mGestureExclusionTracker;
+    private final @NonNull InputPilferer mInputPilferer;
     private final @Nullable InputManager mInputManager;
     private final @NonNull FocusTransitionObserver mFocusTransitionObserver;
     private final @NonNull ShellDesktopState mShellDesktopState;
@@ -135,6 +136,7 @@ public class DesktopModeTouchEventListener
             @NonNull WindowDecorationActions windowDecorationActions,
             @NonNull DesktopUserRepositories desktopUserRepositories,
             @NonNull WindowDecorationGestureExclusionTracker gestureExclusionTracker,
+            @NonNull InputPilferer inputPilferer,
             @Nullable InputManager inputManager,
             @NonNull FocusTransitionObserver focusTransitionObserver,
             @NonNull ShellDesktopState shellDesktopState,
@@ -152,6 +154,7 @@ public class DesktopModeTouchEventListener
         mWindowDecorationActions = windowDecorationActions;
         mDesktopUserRepositories = desktopUserRepositories;
         mGestureExclusionTracker = gestureExclusionTracker;
+        mInputPilferer = inputPilferer;
         mInputManager = inputManager;
         mFocusTransitionObserver = focusTransitionObserver;
         mShellDesktopState = shellDesktopState;
@@ -301,12 +304,13 @@ public class DesktopModeTouchEventListener
             //  gestures like simple clicks.
             moveTaskToFront(taskInfo);
 
+            final int rawX = (int) e.getRawX();
+            final int rawY = (int) e.getRawY();
             final boolean downInCustomizableCaptionRegion =
                     decoration.checkTouchEventInCustomizableRegion(e);
             final Region exclusionRegion = mGestureExclusionTracker
                     .getExclusionRegion(e.getDisplayId());
-            final boolean downInExclusionRegion =
-                    exclusionRegion.contains((int) e.getRawX(), (int) e.getRawY());
+            final boolean downInExclusionRegion = exclusionRegion.contains(rawX, rawY);
             final boolean isTransparentCaption =
                     TaskInfoKt.isTransparentCaptionBarAppearance(taskInfo);
             // MotionEvent's coordinates are relative to view, we want location in window
@@ -323,6 +327,13 @@ public class DesktopModeTouchEventListener
             // regions.
             mIsCustomHeaderGesture = downInCustomizableCaptionRegion
                     && downInExclusionRegion && isTransparentCaption;
+
+            debugLogD(
+                    "onTouch(%s) handling DOWN(%d, %d) - mIsCustomHeaderGesture=%b, "
+                            + "downInCustomizableCaptionRegion=%b, downInExclusionRegion=%b, "
+                            + "isTransparentCaption=%b",
+                    viewName, rawX, rawY, mIsCustomHeaderGesture, downInCustomizableCaptionRegion,
+                    downInExclusionRegion, isTransparentCaption);
         }
         if (mIsCustomHeaderGesture || mIsResizeGesture) {
             // The event will be handled by the custom window below or pilfered by resize
@@ -333,7 +344,7 @@ public class DesktopModeTouchEventListener
         }
         if (isDown) {
             // Pilfer once (on down) so that windows below receive cancellations for this gesture.
-            pilferPointers(v);
+            mInputPilferer.pilferPointers(v);
         }
         if (isUpOrCancel) {
             // Gesture is finished, reset state.
@@ -345,12 +356,6 @@ public class DesktopModeTouchEventListener
         } else {
             return mHeaderDragDetector.onMotionEvent(v, e);
         }
-    }
-
-    private void pilferPointers(@NonNull View v) {
-        final ViewRootImpl viewRootImpl = v.getViewRootImpl();
-        if (mInputManager == null || viewRootImpl == null) return;
-        mInputManager.pilferPointers(viewRootImpl.getInputToken());
     }
 
     @Override
