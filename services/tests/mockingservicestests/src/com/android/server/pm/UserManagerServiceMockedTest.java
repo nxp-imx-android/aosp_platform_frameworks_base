@@ -2059,7 +2059,7 @@ public final class UserManagerServiceMockedTest {
         var dyingUser = addDyingUser(new UserInfo(USER_ID4, A_USER_HAS_NO_NAME, FLAG_FULL));
         var deviceOwnerUser = addUser(
                 new UserInfo(USER_ID5, A_USER_HAS_NO_NAME, FLAG_FULL | FLAG_ADMIN));
-        mockGetDeviceOwnerUserId(deviceOwnerUser.id);
+        mUmi.setDeviceOwnerUserId(deviceOwnerUser.id);
 
         // Failure cases first
         expectGetUserRemovability("system user", USER_SYSTEM, REMOVE_RESULT_ERROR_SYSTEM_USER);
@@ -2184,12 +2184,6 @@ public final class UserManagerServiceMockedTest {
 
         when(mActivityManagerInternal.getCurrentAndTargetUserIds())
                 .thenReturn(new Pair<>(currentUserId, targetUserId));
-    }
-
-    private void mockGetDeviceOwnerUserId(@UserIdInt int deviceOwnerUserId) {
-        Log.d(TAG, "mockGetDeviceOwnerUserId(): " + deviceOwnerUserId);
-        mockGetLocalService(DevicePolicyManagerInternal.class, mDevicePolicyManagerInternal);
-        when(mDevicePolicyManagerInternal.getDeviceOwnerUserId()).thenReturn(deviceOwnerUserId);
     }
 
     private <T> void mockGetLocalService(Class<T> serviceClass, T service) {

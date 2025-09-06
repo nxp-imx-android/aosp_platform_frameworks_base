@@ -595,6 +595,17 @@ public class UserManagerService extends IUserManager.Stub {
     @GuardedBy("mUsersLock")
     private int[] mUserIdsIncludingPreCreated;
 
+    /**
+     * Caches the id of the {@link android.app.admin.DevicePolicyManager#getDeviceOwner() device
+     * owner} (or {@code UserHandle.USER_NULL} when there isn't one).
+     *
+     * <p>It must be cached because the device owner cannot be removed, and calling
+     * {@link #mDevicePolicyManagerInternal} to retrieve it when removing a user would break the
+     * lock guard order.
+     */
+    @GuardedBy("mUsersLock")
+    private @CanBeNULL @UserIdInt int mDeviceOwnerUserId = UserHandle.USER_NULL;
+
     @GuardedBy("mPackagesLock")
     private int mNextSerialNumber;
     private int mUserVersion = 0;
@@ -1417,14 +1428,6 @@ public class UserManagerService extends IUserManager.Stub {
             }
         }
         return UserHandle.USER_NULL;
-    }
-
-    private @UserIdInt int getDeviceOwnerUserId() {
-        DevicePolicyManagerInternal dpmi = getDevicePolicyManagerInternal();
-        if (dpmi == null) {
-            return UserHandle.USER_NULL;
-        }
-        return dpmi.getDeviceOwnerUserId();
     }
 
     @Override
@@ -7225,7 +7228,7 @@ public class UserManagerService extends IUserManager.Stub {
         if (mRemovingUserIds.get(userId)) {
             return UserManager.REMOVE_RESULT_ALREADY_BEING_REMOVED;
         }
-        if (userId == getDeviceOwnerUserId()) {
+        if (userId == mDeviceOwnerUserId) {
             return UserManager.REMOVE_RESULT_DEVICE_OWNER;
         }
         if (isNonRemovableLastAdminUserLU(userData.info)) {
@@ -8139,12 +8142,7 @@ public class UserManagerService extends IUserManager.Stub {
         }
 
         final int currentUserId = getCurrentUserId();
-        pw.print("Current user: ");
-        if (currentUserId != UserHandle.USER_NULL) {
-            pw.println(currentUserId);
-        } else {
-            pw.println("N/A");
-        }
+        printNullableUser(pw, "Current user", currentUserId);
 
         pw.println();
         synchronized (mPackagesLock) {
@@ -8251,7 +8249,8 @@ public class UserManagerService extends IUserManager.Stub {
             pw.println("  System user allocations: " + mUser0Allocations.get());
         }
         synchronized (mUsersLock) {
-            pw.println("  Boot user: " + mBootUser);
+            printNullableUser(pw, "Boot user", mBootUser);
+            printNullableUser(pw, "Device owner user", mDeviceOwnerUserId);
         }
         // TODO(b/413464199): This confusing line is, regrettably, currently required by Tradefed.
         pw.println("Can add private profile: "+ canAddPrivateProfile(currentUserId));
@@ -8291,6 +8290,16 @@ public class UserManagerService extends IUserManager.Stub {
         // NOTE: pw's not available after this point as it's auto-closed by ipw, so new dump
         // statements should use ipw below
 
+    }
+
+    private static void printNullableUser(PrintWriter pw, String what,
+            @CanBeNULL @UserIdInt int userId) {
+        pw.print(what); pw.print(": ");
+        if (userId == UserHandle.USER_NULL) {
+            pw.println("N/A");
+        } else {
+            pw.println(userId);
+        }
     }
 
     private void dumpUser(PrintWriter pw, @CanBeCURRENT @UserIdInt int userId, StringBuilder sb,
@@ -8966,6 +8975,14 @@ public class UserManagerService extends IUserManager.Stub {
         @Override
         public void logLaunchedHsuActivity(ComponentName activity) {
             mDeprecationReporter.logLaunchedHsuActivity(activity);
+        }
+
+        @Override
+        public void setDeviceOwnerUserId(int userId) {
+            Slogf.i(LOG_TAG, "Setting device owner user as %d", userId);
+            synchronized (mUsersLock) {
+                mDeviceOwnerUserId = userId;
+            }
         }
 
     } // class LocalService
