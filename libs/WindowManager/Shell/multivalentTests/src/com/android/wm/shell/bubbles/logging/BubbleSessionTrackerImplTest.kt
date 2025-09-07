@@ -170,6 +170,43 @@ class BubbleSessionTrackerImplTest {
         assertThat(uiEventLoggerFake.logs).isEmpty()
     }
 
+    @Test
+    fun startSession_whenSessionActive_startsNewSession() {
+        // Start a session.
+        bubbleSessionTracker.log(
+            SessionEvent.Started(forBubbleBar = true, selectedBubblePackage = "app.package1")
+        )
+
+        // Without ending the first session, start another one.
+        // This should log an error but still proceed to start a new session, overwriting the old one.
+        bubbleSessionTracker.log(
+            SessionEvent.Started(forBubbleBar = true, selectedBubblePackage = "app.package2")
+        )
+
+        // Now, end the session.
+        bubbleSessionTracker.log(SessionEvent.Ended(forBubbleBar = true))
+
+        // Verify the logs.
+        assertThat(uiEventLoggerFake.numLogs()).isEqualTo(3)
+
+        // The first log should be the start of the first session.
+        val firstSessionStart = uiEventLoggerFake.logs[0]
+        assertThat(firstSessionStart.eventId).isEqualTo(BUBBLE_BAR_SESSION_STARTED.id)
+        assertThat(firstSessionStart.packageName).isEqualTo("app.package1")
+
+        // The second log should be the start of the second session.
+        val secondSessionStart = uiEventLoggerFake.logs[1]
+        assertThat(secondSessionStart.eventId).isEqualTo(BUBBLE_BAR_SESSION_STARTED.id)
+        assertThat(secondSessionStart.packageName).isEqualTo("app.package2")
+        assertThat(firstSessionStart.instanceId).isNotEqualTo(secondSessionStart.instanceId)
+
+        // The third log should be the end of the *second* session.
+        val sessionEnd = uiEventLoggerFake.logs[2]
+        assertThat(sessionEnd.eventId).isEqualTo(BUBBLE_BAR_SESSION_ENDED.id)
+        assertThat(sessionEnd.packageName).isEqualTo("app.package2")
+        assertThat(sessionEnd.instanceId).isEqualTo(secondSessionStart.instanceId)
+    }
+
     class FakeInstanceIdSequence : InstanceIdSequence(/* instanceIdMax= */ 10) {
 
         var id = -1
