@@ -1096,7 +1096,6 @@ final class LogicalDisplay {
      * Swap the underlying {@link DisplayDevice} with the specified LogicalDisplay.
      *
      * @param targetDisplay The display with which to swap display-devices.
-     * @return {@code true} if the displays were swapped, {@code false} otherwise.
      */
     public void swapDisplaysLocked(@NonNull LogicalDisplay targetDisplay) {
         final DisplayDevice oldTargetDevice =
