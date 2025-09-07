@@ -1010,6 +1010,35 @@ public class StageCoordinatorTests extends ShellTestCase {
         assertThat(getLaunchWindowingMode(options)).isEqualTo(WINDOWING_MODE_FULLSCREEN);
     }
 
+    @Test
+    @EnableFlags(com.android.window.flags.Flags.FLAG_ENABLE_NON_DEFAULT_DISPLAY_SPLIT)
+    public void startIntent_onNonDefaultDisplay_updatesSplitLayoutConfiguration() {
+        // Setup: Define a non-default display and its configuration.
+        final int nonDefaultDisplayId = DEFAULT_DISPLAY + 1;
+        final WindowContainerToken displayAreaToken = new MockToken().token();
+        final DisplayAreaInfo displayAreaInfo = new DisplayAreaInfo(displayAreaToken,
+                nonDefaultDisplayId, 0);
+        displayAreaInfo.configuration.setTo(mContext.getResources().getConfiguration());
+        displayAreaInfo.configuration.densityDpi = 320; // Set a distinct value to verify.
+
+        // Mock the RootTaskDisplayAreaOrganizer to return the display area info.
+        when(mRootTDAOrganizer.getDisplayAreaInfo(nonDefaultDisplayId)).thenReturn(displayAreaInfo);
+
+        // Mock necessary objects for startIntent.
+        PendingIntent pendingIntent = mock(PendingIntent.class);
+        Intent intent = mock(Intent.class);
+        when(pendingIntent.getIntent()).thenReturn(intent);
+
+        // Action: Call startIntent for the non-default display.
+        mStageCoordinator.startIntent(pendingIntent, null /* fillInIntent */,
+                SPLIT_POSITION_TOP_OR_LEFT, null /* options */, null /* hideTaskToken */,
+                null /* transaction */, SPLIT_INDEX_UNDEFINED, nonDefaultDisplayId);
+
+        // Verification: Check that the split layout's configuration was updated.
+        verify(mSplitLayout).updateConfiguration(eq(displayAreaInfo.configuration),
+                eq(nonDefaultDisplayId));
+    }
+
     private Transitions createTestTransitions() {
         ShellInit shellInit = new ShellInit(mMainExecutor);
         final Transitions t = new Transitions(mContext, shellInit, mock(ShellController.class),
