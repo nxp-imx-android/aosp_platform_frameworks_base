@@ -19438,8 +19438,9 @@ public class ActivityManagerService extends IActivityManager.Stub
 
             if (freezePolicy) {
                 if (Flags.cpuTimeCapabilityBasedFreezePolicy()
+                        && !com.android.server.notification.Flags.allowFreezingIdleNls()
                         && app.getCurAdj() < CACHED_APP_MIN_ADJ) {
-                    Slog.wtfStack(TAG, "Non-cached process may get frozen soon: "
+                    Slog.wtfStack(TAG, "Unexpected non-cached process may get frozen soon: "
                             + " name: " + app.processName
                             + " curAdj: " + app.getCurAdj()
                             + " oldOomAdj: " + oldOomAdj
