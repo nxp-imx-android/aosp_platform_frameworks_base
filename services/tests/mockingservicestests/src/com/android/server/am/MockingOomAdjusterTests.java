@@ -5125,8 +5125,8 @@ public class MockingOomAdjusterTests {
         }
 
         @Override
-        void batchSetOomAdj(ArrayList<ProcessRecord> procsToOomAdj) {
-            for (ProcessRecord proc : procsToOomAdj) {
+        void batchSetOomAdj(ArrayList<ProcessRecordInternal> procsToOomAdj) {
+            for (ProcessRecordInternal proc : procsToOomAdj) {
                 final int pid = proc.getPid();
                 if (pid <= 0) continue;
                 mLastSetOomAdj.put(pid, proc.getCurAdj());

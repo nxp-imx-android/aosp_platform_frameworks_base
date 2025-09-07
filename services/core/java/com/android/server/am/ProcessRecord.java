@@ -1622,7 +1622,8 @@ class ProcessRecord extends ProcessRecordInternal implements WindowProcessListen
         }
     }
 
-    String[] getPackageList() {
+    @Override
+    public String[] getPackageList() {
         return mPkgList.getPackageList();
     }
 
