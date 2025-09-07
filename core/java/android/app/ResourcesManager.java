@@ -1774,6 +1774,10 @@ public class ResourcesManager {
                 Slog.w(TAG, "Found a null ResourcesImpl, skipped.");
                 continue;
             }
+            if (!impl.getAssets().isUpToDate()) {
+                Slog.w(TAG, "Assets are not up to date, skipped.");
+                continue;
+            }
 
             final var newKey = createNewResourceKeyIfNeeded(key, libAssets.getResourcesKey());
             if (newKey != null) {
