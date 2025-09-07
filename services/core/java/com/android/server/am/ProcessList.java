@@ -1610,7 +1610,7 @@ public final class ProcessList implements ProcessStateController.ProcessLruUpdat
      *
      * @hide
      */
-    public static void batchSetOomAdj(ArrayList<ProcessRecord> apps) {
+    public static void batchSetOomAdj(ArrayList<ProcessRecordInternal> apps) {
         final int totalApps = apps.size();
         if (totalApps == 0) {
             return;

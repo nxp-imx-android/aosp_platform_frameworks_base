@@ -47,6 +47,7 @@ import com.android.internal.display.BrightnessSynchronizer;
 import com.android.server.display.feature.flags.Flags;
 
 import java.util.Arrays;
+import java.util.EnumSet;
 import java.util.Objects;
 
 /**
@@ -959,6 +960,23 @@ public final class DisplayInfo implements Parcelable {
     }
 
     /**
+     * Same as {@link #getBasicChangedGroups(DisplayInfo)} except here we only compare
+     * the specified groups i.e. if changes happen to other groups they will not be identified.
+     */
+    public int getBasicChangedGroups(@Nullable DisplayInfo other,
+            EnumSet<DisplayInfoGroup> groupsToCompare) {
+        int changedGroups = 0;
+
+        for (DisplayInfoGroup group : groupsToCompare) {
+            if (hasDisplayInfoGroupChanged(group, other)) {
+                changedGroups |= group.getMask();
+            }
+        }
+
+        return changedGroups;
+    }
+
+    /**
      * Compares this {@link DisplayInfo} with another for "basic" changes
      * (i.e. when a {@link android.hardware.display.DisplayManager.EVENT_TYPE_DISPLAY_CHANGED}
      * has been emitted) and returns a set of {@link DisplayInfoGroup}s that have changed.
@@ -970,15 +988,7 @@ public final class DisplayInfo implements Parcelable {
      * changed. If none have changed, the bitmask will be 0.
      */
     public int getBasicChangedGroups(@Nullable DisplayInfo other) {
-        int changedGroups = 0;
-
-        for (DisplayInfoGroup group : DisplayInfoGroup.values()) {
-            if (hasDisplayInfoGroupChanged(group, other)) {
-                changedGroups |= group.getMask();
-            }
-        }
-
-        return changedGroups;
+        return getBasicChangedGroups(other, EnumSet.allOf(DisplayInfoGroup.class));
     }
 
     /**

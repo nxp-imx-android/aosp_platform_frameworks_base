@@ -4283,8 +4283,7 @@ public final class MediaCodecInfo {
                             maxBlocks, maxBlocksPerSecond,
                             blockSize, blockSize,
                             1 /* widthAlignment */, 1 /* heightAlignment */);
-                } else if (GetFlag(() -> android.media.codec.Flags.apvSupport())
-                            && mime.equalsIgnoreCase(MediaFormat.MIMETYPE_VIDEO_APV)) {
+                } else if (mime.equalsIgnoreCase(MediaFormat.MIMETYPE_VIDEO_APV)) {
                     maxBlocksPerSecond = 11880;
                     maxBps = 7000000;
 

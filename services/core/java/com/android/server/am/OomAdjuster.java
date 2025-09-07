@@ -337,7 +337,7 @@ public abstract class OomAdjuster {
      * OOM scores.
      */
     @GuardedBy("mService")
-    protected final ArrayList<ProcessRecord> mProcsToOomAdj = new ArrayList<ProcessRecord>();
+    protected final ArrayList<ProcessRecordInternal> mProcsToOomAdj = new ArrayList<>();
 
     /**
      * Flag to mark if there is an ongoing oomAdjUpdate: potentially the oomAdjUpdate
@@ -426,7 +426,7 @@ public abstract class OomAdjuster {
             return SystemClock.elapsedRealtime();
         }
 
-        void batchSetOomAdj(ArrayList<ProcessRecord> procsToOomAdj) {
+        void batchSetOomAdj(ArrayList<ProcessRecordInternal> procsToOomAdj) {
             ProcessList.batchSetOomAdj(procsToOomAdj);
         }
 
@@ -2389,47 +2389,46 @@ public abstract class OomAdjuster {
     }
 
     @GuardedBy({"mService", "mProcLock"})
-    private void maybeUpdateUsageStatsLSP(ProcessRecord app, long nowElapsed) {
-        final ProcessRecordInternal state = app;
+    private void maybeUpdateUsageStatsLSP(ProcessRecordInternal app, long nowElapsed) {
         if (DEBUG_USAGE_STATS) {
             Slog.d(TAG, "Checking proc [" + Arrays.toString(app.getPackageList())
-                    + "] state changes: old = " + state.getSetProcState() + ", new = "
-                    + state.getCurProcState());
+                    + "] state changes: old = " + app.getSetProcState() + ", new = "
+                    + app.getCurProcState());
         }
         if (mService.mUsageStatsService == null) {
             return;
         }
-        final boolean fgsInteractionChangeEnabled = state.getCachedCompatChange(
+        final boolean fgsInteractionChangeEnabled = app.getCachedCompatChange(
                 CACHED_COMPAT_CHANGE_USE_SHORT_FGS_USAGE_INTERACTION_TIME);
         boolean isInteraction;
         // To avoid some abuse patterns, we are going to be careful about what we consider
         // to be an app interaction.  Being the top activity doesn't count while the display
         // is sleeping, nor do short foreground services.
-        if (ActivityManager.isProcStateConsideredInteraction(state.getCurProcState())) {
+        if (ActivityManager.isProcStateConsideredInteraction(app.getCurProcState())) {
             isInteraction = true;
-            state.setFgInteractionTime(0);
-        } else if (state.getCurProcState() <= PROCESS_STATE_FOREGROUND_SERVICE) {
-            if (state.getFgInteractionTime() == 0) {
-                state.setFgInteractionTime(nowElapsed);
+            app.setFgInteractionTime(0);
+        } else if (app.getCurProcState() <= PROCESS_STATE_FOREGROUND_SERVICE) {
+            if (app.getFgInteractionTime() == 0) {
+                app.setFgInteractionTime(nowElapsed);
                 isInteraction = false;
             } else {
                 final long interactionTime = fgsInteractionChangeEnabled
                         ? mConstants.SERVICE_USAGE_INTERACTION_TIME_POST_S
                         : mConstants.SERVICE_USAGE_INTERACTION_TIME_PRE_S;
-                isInteraction = nowElapsed > state.getFgInteractionTime() + interactionTime;
+                isInteraction = nowElapsed > app.getFgInteractionTime() + interactionTime;
             }
         } else {
             isInteraction =
-                    state.getCurProcState() <= PROCESS_STATE_IMPORTANT_FOREGROUND;
-            state.setFgInteractionTime(0);
+                    app.getCurProcState() <= PROCESS_STATE_IMPORTANT_FOREGROUND;
+            app.setFgInteractionTime(0);
         }
         final long interactionThreshold = fgsInteractionChangeEnabled
                 ? mConstants.USAGE_STATS_INTERACTION_INTERVAL_POST_S
                 : mConstants.USAGE_STATS_INTERACTION_INTERVAL_PRE_S;
         if (isInteraction
-                && (!state.getHasReportedInteraction()
-                    || (nowElapsed - state.getInteractionEventTime()) > interactionThreshold)) {
-            state.setInteractionEventTime(nowElapsed);
+                && (!app.getHasReportedInteraction()
+                    || (nowElapsed - app.getInteractionEventTime()) > interactionThreshold)) {
+            app.setInteractionEventTime(nowElapsed);
             String[] packages = app.getPackageList();
             if (packages != null) {
                 for (int i = 0; i < packages.length; i++) {
@@ -2438,9 +2437,9 @@ public abstract class OomAdjuster {
                 }
             }
         }
-        state.setHasReportedInteraction(isInteraction);
+        app.setHasReportedInteraction(isInteraction);
         if (!isInteraction) {
-            state.setInteractionEventTime(0);
+            app.setInteractionEventTime(0);
         }
     }
 
