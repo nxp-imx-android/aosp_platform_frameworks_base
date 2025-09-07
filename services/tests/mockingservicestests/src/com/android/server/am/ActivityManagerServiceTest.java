@@ -115,6 +115,8 @@ import android.os.Process;
 import android.os.RemoteException;
 import android.os.SystemClock;
 import android.os.UserHandle;
+import android.os.instrumentation.IOffsetCallback;
+import android.os.instrumentation.MethodDescriptor;
 import android.permission.IPermissionManager;
 import android.platform.test.annotations.Presubmit;
 import android.platform.test.annotations.RequiresFlagsEnabled;
@@ -159,6 +161,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
@@ -1461,6 +1464,35 @@ public class ActivityManagerServiceTest {
         // default intent redirect protection won't block an intent nested in a top level ClipData.
         assertThat(intent.getExtendedFlags()
                 & Intent.EXTENDED_FLAG_MISSING_CREATOR_OR_INVALID_TOKEN).isEqualTo(0);
+    }
+
+    @Test
+    public void getExecutableMethodFileOffsets_nullThread_throwsIllegalStateException() {
+        final String processName = "test.process";
+        final int pid = 1234;
+        final int uid = 5678;
+        final ProcessRecord mockProcessRecord = mock(ProcessRecord.class);
+        final MethodDescriptor mockMethodDescriptor = mock(MethodDescriptor.class);
+        final IOffsetCallback mockCallback = mock(IOffsetCallback.class);
+
+        // Spy on the real ProcessList instance to mock its behavior.
+        spyOn(mAms.mProcessList);
+
+        // Stub getProcessRecordLocked to return our mock record.
+        doReturn(mockProcessRecord).when(mAms.mProcessList).getProcessRecordLocked(processName,
+                uid);
+        // Stub getPid to match the request.
+        when(mockProcessRecord.getPid()).thenReturn(pid);
+        // Stub getThread to return null, simulating a process that's not fully attached.
+        when(mockProcessRecord.getThread()).thenReturn(null);
+
+        // Execute the method and assert that it throws the expected exception.
+        IllegalStateException thrown = assertThrows(IllegalStateException.class, () ->
+                mAms.mInternal.getExecutableMethodFileOffsets(
+                        processName, pid, uid, mockMethodDescriptor, mockCallback));
+
+        // Verify the exception message.
+        assertThat(thrown.getMessage()).isEqualTo("app ActivityThread is null");
     }
 
     private void verifyWaitingForNetworkStateUpdate(long curProcStateSeq,
