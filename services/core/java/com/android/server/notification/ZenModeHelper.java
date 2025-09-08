@@ -106,6 +106,7 @@ import android.service.notification.ZenPolicy;
 import android.text.TextUtils;
 import android.util.AndroidRuntimeException;
 import android.util.ArrayMap;
+import android.util.ArraySet;
 import android.util.IntArray;
 import android.util.Log;
 import android.util.Slog;
@@ -119,6 +120,7 @@ import com.android.internal.R;
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.config.sysui.SystemUiSystemPropertiesFlags;
 import com.android.internal.logging.MetricsLogger;
+import com.android.internal.util.ArrayUtils;
 import com.android.internal.util.FrameworkStatsLog;
 import com.android.modules.utils.TypedXmlPullParser;
 import com.android.modules.utils.TypedXmlSerializer;
@@ -212,6 +214,8 @@ public class ZenModeHelper {
     @VisibleForTesting protected boolean mIsSystemServicesReady;
 
     private String[] mPriorityOnlyDndExemptPackages;
+    private String[] mListenerHintsExemptPackages;
+    private String[] mPriorityAndHintsExemptPackages;
 
     public ZenModeHelper(Context context, Looper looper, Clock clock,
             ConditionProviders conditionProviders,
@@ -354,6 +358,17 @@ public class ZenModeHelper {
 
     void setPriorityOnlyDndExemptPackages(String[] packages) {
         mPriorityOnlyDndExemptPackages = packages;
+    }
+
+    void setExemptPackages(String[] priorityOnlyDndExemptPackages,
+            String[] listenerHintsExemptPackages) {
+        mPriorityOnlyDndExemptPackages = priorityOnlyDndExemptPackages;
+        mListenerHintsExemptPackages = listenerHintsExemptPackages;
+
+        if (priorityOnlyDndExemptPackages != null && listenerHintsExemptPackages != null) {
+            mPriorityAndHintsExemptPackages = ArrayUtils.filter(priorityOnlyDndExemptPackages,
+                String[]::new, (pkg) -> ArrayUtils.contains(listenerHintsExemptPackages, pkg));
+        }
     }
 
     private void loadConfigForUser(int user, String reason) {
@@ -2339,19 +2354,75 @@ public class ZenModeHelper {
                     unmutedUsages.add(usage);
                 }
             }
-            // MODE_IGNORED for muted usages
-            mAppOps.setAudioRestriction(code, mutedUsages.toArray(),
-                    AppOpsManager.MODE_IGNORED,
-                    zenPriorityOnly ? mPriorityOnlyDndExemptPackages : null);
 
-            // MODE_ALLOWED for unmuted usages
-            mAppOps.setAudioRestriction(code, unmutedUsages.toArray(),
-                    AppOpsManager.MODE_ALLOWED,
-                    zenPriorityOnly ? mPriorityOnlyDndExemptPackages : null);
+            if (android.service.notification.Flags.listenerHintExemptPackages()) {
+                for (int usage: mutedUsages.toArray()) {
+                    // MODE_IGNORED for muted usages
+                    mAppOps.setAudioRestriction(code, new int[]{usage},
+                            AppOpsManager.MODE_IGNORED, getExemptPackages(usage));
+                }
 
+                // MODE_ALLOWED for unmuted usages
+                mAppOps.setAudioRestriction(code, unmutedUsages.toArray(),
+                        AppOpsManager.MODE_ALLOWED, null);
+            } else {
+                // MODE_IGNORED for muted usages
+                mAppOps.setAudioRestriction(code, mutedUsages.toArray(),
+                        AppOpsManager.MODE_IGNORED,
+                        zenPriorityOnly ? mPriorityOnlyDndExemptPackages : null);
+
+                // MODE_ALLOWED for unmuted usages
+                mAppOps.setAudioRestriction(code, unmutedUsages.toArray(),
+                        AppOpsManager.MODE_ALLOWED,
+                        zenPriorityOnly ? mPriorityOnlyDndExemptPackages : null);
+            }
         } finally {
             Binder.restoreCallingIdentity(ident);
         }
+    }
+
+    @VisibleForTesting
+    protected String[] getExemptPackages(int mutedUsage) {
+        ArraySet<String> exemptedPkg = new ArraySet<>();
+        // Check if there are any exempted packages for this usage
+        switch (AudioAttributes.getSuppressibleUsage(mutedUsage)) {
+            case AudioAttributes.SUPPRESSIBLE_NOTIFICATION:
+                if ((mSuppressedEffects & SUPPRESSED_EFFECT_NOTIFICATIONS) != 0
+                        && (mZenMode == Global.ZEN_MODE_IMPORTANT_INTERRUPTIONS)) {
+                    if (mPriorityAndHintsExemptPackages != null) {
+                        exemptedPkg.addAll(ArrayUtils.toList(mPriorityAndHintsExemptPackages));
+                    }
+                } else  if ((mSuppressedEffects & SUPPRESSED_EFFECT_NOTIFICATIONS) != 0) {
+                    exemptedPkg.addAll(ArrayUtils.toList(mListenerHintsExemptPackages));
+                } else if (mZenMode == Global.ZEN_MODE_IMPORTANT_INTERRUPTIONS) {
+                    exemptedPkg.addAll(ArrayUtils.toList(mPriorityOnlyDndExemptPackages));
+                }
+                break;
+
+            case AudioAttributes.SUPPRESSIBLE_CALL:
+                if ((mSuppressedEffects & SUPPRESSED_EFFECT_CALLS) != 0
+                        && (mZenMode == Global.ZEN_MODE_IMPORTANT_INTERRUPTIONS)) {
+                    if (mPriorityAndHintsExemptPackages != null) {
+                        exemptedPkg.addAll(ArrayUtils.toList(mPriorityAndHintsExemptPackages));
+                    }
+                } else if ((mSuppressedEffects & SUPPRESSED_EFFECT_CALLS) != 0) {
+                    exemptedPkg.addAll(ArrayUtils.toList(mListenerHintsExemptPackages));
+                } else if (mZenMode == Global.ZEN_MODE_IMPORTANT_INTERRUPTIONS) {
+                    exemptedPkg.addAll(ArrayUtils.toList(mPriorityOnlyDndExemptPackages));
+                }
+                break;
+
+            case AudioAttributes.SUPPRESSIBLE_ALARM:
+            case AudioAttributes.SUPPRESSIBLE_MEDIA:
+            case AudioAttributes.SUPPRESSIBLE_SYSTEM:
+            case AudioAttributes.SUPPRESSIBLE_NEVER:
+                if (mZenMode == Global.ZEN_MODE_IMPORTANT_INTERRUPTIONS) {
+                    exemptedPkg.addAll(ArrayUtils.toList(mPriorityOnlyDndExemptPackages));
+                }
+                break;
+        }
+
+        return exemptedPkg.isEmpty() ? null : exemptedPkg.toArray(new String[0]);
     }
 
     @VisibleForTesting
