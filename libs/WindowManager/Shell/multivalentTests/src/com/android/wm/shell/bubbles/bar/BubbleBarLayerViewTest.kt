@@ -527,8 +527,10 @@ class BubbleBarLayerViewTest {
 
         // Without waiting for animation completion, we collapse then immediately expand.
         getInstrumentation().runOnMainSync { bubbleBarLayerView.collapse() }
-        getInstrumentation().runOnMainSync { bubbleBarLayerView.showExpandedView(bubble) }
-        assertThat(bubbleBarLayerView.isAnimatingBubbleTracked(bubble)).isTrue()
+        getInstrumentation().runOnMainSync {
+            bubbleBarLayerView.showExpandedView(bubble)
+            assertThat(bubbleBarLayerView.isAnimatingBubbleTracked(bubble)).isTrue()
+        }
 
         // waitForExpandedViewAnimation() also covers the collapse animation.
         waitForExpandedViewAnimation()
