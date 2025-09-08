@@ -1192,8 +1192,6 @@ public class ResolverActivityTest {
 
     @Test
     public void testTriggerFromPrivateProfile_withoutWorkProfile() throws RemoteException {
-        mSetFlagsRule.enableFlags(android.os.Flags.FLAG_ALLOW_PRIVATE_PROFILE,
-                android.multiuser.Flags.FLAG_ENABLE_PRIVATE_SPACE_FEATURES);
         markPrivateProfileUserAvailable();
         Intent sendIntent = createSendImageIntent();
         List<ResolvedComponentInfo> privateResolvedComponentInfos =
@@ -1213,8 +1211,6 @@ public class ResolverActivityTest {
 
     @Test
     public void testTriggerFromPrivateProfile_withWorkProfilePresent(){
-        mSetFlagsRule.enableFlags(android.os.Flags.FLAG_ALLOW_PRIVATE_PROFILE,
-                android.multiuser.Flags.FLAG_ENABLE_PRIVATE_SPACE_FEATURES);
         ResolverActivity.ENABLE_TABBED_VIEW = false;
         markPrivateProfileUserAvailable();
         markWorkProfileUserAvailable();
@@ -1235,9 +1231,8 @@ public class ResolverActivityTest {
 
     @Test
     public void testPrivateProfile_triggerFromPrimaryUser_withWorkProfilePresent(){
-        mSetFlagsRule.enableFlags(android.os.Flags.FLAG_ALLOW_PRIVATE_PROFILE,
-                android.multiuser.Flags.FLAG_ALLOW_RESOLVER_SHEET_FOR_PRIVATE_SPACE,
-                android.multiuser.Flags.FLAG_ENABLE_PRIVATE_SPACE_FEATURES);
+        mSetFlagsRule.enableFlags(
+            android.multiuser.Flags.FLAG_ALLOW_RESOLVER_SHEET_FOR_PRIVATE_SPACE);
         markPrivateProfileUserAvailable();
         markWorkProfileUserAvailable();
         Intent sendIntent = createSendImageIntent();
@@ -1259,9 +1254,8 @@ public class ResolverActivityTest {
 
     @Test
     public void testPrivateProfile_triggerFromWorkProfile(){
-        mSetFlagsRule.enableFlags(android.os.Flags.FLAG_ALLOW_PRIVATE_PROFILE,
-                android.multiuser.Flags.FLAG_ALLOW_RESOLVER_SHEET_FOR_PRIVATE_SPACE,
-                android.multiuser.Flags.FLAG_ENABLE_PRIVATE_SPACE_FEATURES);
+        mSetFlagsRule.enableFlags(
+                android.multiuser.Flags.FLAG_ALLOW_RESOLVER_SHEET_FOR_PRIVATE_SPACE);
         markPrivateProfileUserAvailable();
         markWorkProfileUserAvailable();
         Intent sendIntent = createSendImageIntent();
@@ -1285,9 +1279,8 @@ public class ResolverActivityTest {
 
     @Test
     public void testTriggerFromMainProfile_inSingleUserMode_withWorkProfilePresent() {
-        mSetFlagsRule.enableFlags(android.os.Flags.FLAG_ALLOW_PRIVATE_PROFILE,
-                android.multiuser.Flags.FLAG_ALLOW_RESOLVER_SHEET_FOR_PRIVATE_SPACE,
-                android.multiuser.Flags.FLAG_ENABLE_PRIVATE_SPACE_FEATURES);
+        mSetFlagsRule.enableFlags(
+                android.multiuser.Flags.FLAG_ALLOW_RESOLVER_SHEET_FOR_PRIVATE_SPACE);
         markWorkProfileUserAvailable();
         setTabOwnerUserHandleForLaunch(PERSONAL_USER_HANDLE);
         Intent sendIntent = createSendImageIntent();
@@ -1309,9 +1302,8 @@ public class ResolverActivityTest {
 
     @Test
     public void testTriggerFromWorkProfile_inSingleUserMode() {
-        mSetFlagsRule.enableFlags(android.os.Flags.FLAG_ALLOW_PRIVATE_PROFILE,
-                android.multiuser.Flags.FLAG_ALLOW_RESOLVER_SHEET_FOR_PRIVATE_SPACE,
-                android.multiuser.Flags.FLAG_ENABLE_PRIVATE_SPACE_FEATURES);
+        mSetFlagsRule.enableFlags(
+                android.multiuser.Flags.FLAG_ALLOW_RESOLVER_SHEET_FOR_PRIVATE_SPACE);
         markWorkProfileUserAvailable();
         setTabOwnerUserHandleForLaunch(sOverrides.workProfileUserHandle);
         Intent sendIntent = createSendImageIntent();
