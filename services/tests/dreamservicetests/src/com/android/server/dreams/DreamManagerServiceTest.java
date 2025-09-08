@@ -21,6 +21,7 @@ import static android.os.BatteryManager.EXTRA_CHARGING_STATUS;
 import static android.service.dreams.Flags.FLAG_ALLOW_DREAM_WITH_CHARGE_LIMIT;
 import static android.service.dreams.Flags.FLAG_DISALLOW_DREAM_ON_AUTO_PROJECTION;
 import static android.service.dreams.Flags.FLAG_DREAMS_V2;
+import static android.service.dreams.Flags.FLAG_WAKE_ON_STOPPING_DOZE;
 
 import static androidx.test.platform.app.InstrumentationRegistry.getInstrumentation;
 
@@ -29,8 +30,13 @@ import static com.android.server.dreams.DreamManagerService.CHARGE_LIMIT_PERCENT
 
 import static com.google.common.truth.Truth.assertThat;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
@@ -41,9 +47,16 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.Intent;
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageManager;
+import android.content.pm.ServiceInfo;
+import android.hardware.display.AmbientDisplayConfiguration;
 import android.hardware.health.BatteryChargingState;
 import android.os.BatteryManager;
 import android.os.BatteryManagerInternal;
+import android.os.Binder;
+import android.os.Handler;
+import android.os.PowerManager;
 import android.os.PowerManagerInternal;
 import android.os.UserHandle;
 import android.os.UserManager;
@@ -59,6 +72,7 @@ import com.android.internal.util.test.LocalServiceKeeperRule;
 import com.android.server.SystemService;
 import com.android.server.input.InputManagerInternal;
 import com.android.server.testutils.TestHandler;
+import com.android.server.wm.ActivityTaskManagerInternal;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -80,18 +94,31 @@ public class DreamManagerServiceTest {
     private ContextWrapper mContextSpy;
 
     @Mock
+    private DreamController mDreamControllerMock;
+
+    @Mock
     private ActivityManagerInternal mActivityManagerInternalMock;
+    @Mock
+    private ActivityTaskManagerInternal mActivityTaskManagerInternalMock;
     @Mock
     private BatteryManagerInternal mBatteryManagerInternal;
 
     @Mock
     private InputManagerInternal mInputManagerInternal;
     @Mock
+    private PackageManager mPackageManagerMock;
+    @Mock
     private PowerManagerInternal mPowerManagerInternalMock;
+    @Mock
+    private PowerManager mPowerManagerMock;
     @Mock
     private UiModeManager mUiModeManagerMock;
     @Mock
     private UserManager mUserManagerMock;
+    @Mock
+    private PowerManager.WakeLock mWakeLockMock;
+    @Mock
+    private AmbientDisplayConfiguration mDozeConfigMock;
 
     @Rule
     public LocalServiceKeeperRule mLocalServiceKeeperRule = new LocalServiceKeeperRule();
@@ -113,6 +140,8 @@ public class DreamManagerServiceTest {
 
         mLocalServiceKeeperRule.overrideLocalService(ActivityManagerInternal.class,
                 mActivityManagerInternalMock);
+        mLocalServiceKeeperRule.overrideLocalService(ActivityTaskManagerInternal.class,
+                mActivityTaskManagerInternalMock);
         mLocalServiceKeeperRule.overrideLocalService(BatteryManagerInternal.class,
                 mBatteryManagerInternal);
         mLocalServiceKeeperRule.overrideLocalService(InputManagerInternal.class,
@@ -127,12 +156,56 @@ public class DreamManagerServiceTest {
         Settings.Secure.putInt(mContextSpy.getContentResolver(),
                 Settings.Secure.SCREENSAVER_RESTRICT_TO_WIRELESS_CHARGING, 0);
 
+        when(mPowerManagerMock.newWakeLock(anyInt(), any())).thenReturn(mWakeLockMock);
+
+        doReturn(mContextSpy).when(mContextSpy).createContextAsUser(any(), anyInt());
+        when(mContextSpy.getPackageManager()).thenReturn(mPackageManagerMock);
+        when(mContextSpy.getSystemService(PowerManager.class)).thenReturn(mPowerManagerMock);
         when(mContextSpy.getSystemService(UserManager.class)).thenReturn(mUserManagerMock);
-        when(mContextSpy.getSystemService(Context.UI_MODE_SERVICE)).thenReturn(mUiModeManagerMock);
+        when(mContextSpy.getSystemService(UiModeManager.class)).thenReturn(mUiModeManagerMock);
+
+        when(mDozeConfigMock.ambientDisplayComponent())
+                .thenReturn("test.doze.component/.TestDozeService");
     }
 
     private DreamManagerService createService() {
-        return new DreamManagerService(mContextSpy, mTestHandler);
+        return new DreamManagerService(
+                new TestInjector(mContextSpy, mTestHandler, mDreamControllerMock, mDozeConfigMock));
+    }
+
+    /**
+     * Starts dreaming and returns the dream token.
+     */
+    private Binder startDream(DreamManagerService service) {
+        service.startDreamInternal(/*doze=*/ true, "testing");
+
+        ArgumentCaptor<Runnable> runnableCaptor = ArgumentCaptor.forClass(Runnable.class);
+        verify(mWakeLockMock).wrap(runnableCaptor.capture());
+        runnableCaptor.getValue().run();
+
+        ArgumentCaptor<Binder> dreamTokenCaptor = ArgumentCaptor.forClass(Binder.class);
+        verify(mDreamControllerMock)
+                .startDream(
+                        dreamTokenCaptor.capture(),
+                        any(),
+                        anyBoolean(),
+                        anyBoolean(),
+                        anyInt(),
+                        any(),
+                        any(),
+                        any());
+        return dreamTokenCaptor.getValue();
+    }
+
+    /**
+     * Trigger battery change event so charging state is read.
+     */
+    private void sendBatteryChangeEvent() {
+        ArgumentCaptor<BroadcastReceiver> receiverCaptor = ArgumentCaptor.forClass(
+                BroadcastReceiver.class);
+        verify(mContextSpy).registerReceiver(receiverCaptor.capture(),
+                argThat((arg) -> arg.hasAction(Intent.ACTION_BATTERY_CHANGED)));
+        receiverCaptor.getValue().onReceive(mContextSpy, new Intent());
     }
 
     @Test
@@ -176,11 +249,7 @@ public class DreamManagerServiceTest {
         service.onBootPhase(SystemService.PHASE_THIRD_PARTY_APPS_CAN_START);
 
         // Battery changed event is received.
-        ArgumentCaptor<BroadcastReceiver> receiverCaptor = ArgumentCaptor.forClass(
-                BroadcastReceiver.class);
-        verify(mContextSpy).registerReceiver(receiverCaptor.capture(),
-                argThat((arg) -> arg.hasAction(Intent.ACTION_BATTERY_CHANGED)));
-        receiverCaptor.getValue().onReceive(mContext, new Intent());
+        sendBatteryChangeEvent();
 
         // Can start dreaming is true.
         assertThat(service.canStartDreamingInternal(/*isScreenOn=*/ true)).isTrue();
@@ -207,14 +276,50 @@ public class DreamManagerServiceTest {
         service.onBootPhase(SystemService.PHASE_THIRD_PARTY_APPS_CAN_START);
 
         // Battery changed event is received.
-        ArgumentCaptor<BroadcastReceiver> receiverCaptor = ArgumentCaptor.forClass(
-                BroadcastReceiver.class);
-        verify(mContextSpy).registerReceiver(receiverCaptor.capture(),
-                argThat((arg) -> arg.hasAction(Intent.ACTION_BATTERY_CHANGED)));
-        receiverCaptor.getValue().onReceive(mContext, new Intent());
+        sendBatteryChangeEvent();
 
         // Can start dreaming is true.
         assertThat(service.canStartDreamingInternal(/*isScreenOn=*/ true)).isFalse();
+    }
+
+    @EnableFlags(FLAG_WAKE_ON_STOPPING_DOZE)
+    @Test
+    public void testStopDream_sendsWakeIfDozing() throws PackageManager.NameNotFoundException {
+        // Enable dreaming while charging only.
+        Settings.Secure.putIntForUser(mContextSpy.getContentResolver(),
+                Settings.Secure.SCREENSAVER_ENABLED, 1, UserHandle.USER_CURRENT);
+        Settings.Secure.putIntForUser(mContextSpy.getContentResolver(),
+                Settings.Secure.SCREENSAVER_ACTIVATE_ON_SLEEP, 1, UserHandle.USER_CURRENT);
+
+        // Set up preconditions.
+        ServiceInfo dozeServiceInfo = new ServiceInfo();
+        dozeServiceInfo.applicationInfo = new ApplicationInfo();
+        when(mUserManagerMock.isUserUnlocked()).thenReturn(true);
+        when(mDozeConfigMock.enabled(anyInt())).thenReturn(true);
+        when(mPackageManagerMock.getServiceInfo(any(), anyInt())).thenReturn(dozeServiceInfo);
+
+        // Device is charging.
+        when(mBatteryManagerInternal.isPowered(anyInt())).thenReturn(true);
+
+        // Initialize service so settings are read.
+        final DreamManagerService service = createService();
+        service.onBootPhase(SystemService.PHASE_THIRD_PARTY_APPS_CAN_START);
+
+        // Battery changed event is received.
+        sendBatteryChangeEvent();
+
+        // Start dream.
+        final Binder dreamToken = startDream(service);
+
+        // Start dozing.
+        service.startDozingInternal(dreamToken, 0, 0, 0f, false);
+
+        // Stop dreaming.
+        service.stopDreamInternal(true, "testing");
+
+        // wakeUp is sent.
+        verify(mPowerManagerMock)
+                .wakeUp(anyLong(), eq(PowerManager.WAKE_REASON_DOZE_STOPPED), any());
     }
 
     @Test
@@ -277,11 +382,7 @@ public class DreamManagerServiceTest {
         service.onBootPhase(SystemService.PHASE_THIRD_PARTY_APPS_CAN_START);
 
         // Battery changed event is received.
-        ArgumentCaptor<BroadcastReceiver> receiverCaptor = ArgumentCaptor.forClass(
-                BroadcastReceiver.class);
-        verify(mContextSpy).registerReceiver(receiverCaptor.capture(),
-                argThat((arg) -> arg.hasAction(Intent.ACTION_BATTERY_CHANGED)));
-        receiverCaptor.getValue().onReceive(mContext, new Intent());
+        sendBatteryChangeEvent();
 
         // Dream condition is active.
         assertThat(service.dreamConditionActiveInternal()).isTrue();
@@ -360,5 +461,40 @@ public class DreamManagerServiceTest {
 
         // Dream condition is active.
         assertThat(service.dreamConditionActiveInternal()).isTrue();
+    }
+
+    private static final class TestInjector implements DreamManagerService.Injector {
+        private final Context mContext;
+        private final Handler mHandler;
+        private final DreamController mDreamController;
+        private final AmbientDisplayConfiguration mDozeConfig;
+
+        TestInjector(Context context, Handler handler, DreamController dreamController,
+                AmbientDisplayConfiguration dozeConfig) {
+            mContext = context;
+            mHandler = handler;
+            mDreamController = dreamController;
+            mDozeConfig = dozeConfig;
+        }
+
+        @Override
+        public Context getContext() {
+            return mContext;
+        }
+
+        @Override
+        public Handler getHandler() {
+            return mHandler;
+        }
+
+        @Override
+        public AmbientDisplayConfiguration getDozeConfig() {
+            return mDozeConfig;
+        }
+
+        @Override
+        public DreamController getDreamController(DreamController.Listener controllerListener) {
+            return mDreamController;
+        }
     }
 }
