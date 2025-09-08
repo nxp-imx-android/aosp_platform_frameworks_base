@@ -42,7 +42,11 @@ class MenuPreference @JvmOverloads constructor(
 
     init {
         layoutResource =
-            com.android.settingslib.widget.theme.R.layout.settingslib_expressive_preference
+            if (SettingsThemeHelper.isExpressiveTheme(context)) {
+                com.android.settingslib.widget.theme.R.layout.settingslib_expressive_preference
+            } else {
+                com.android.settingslib.widget.theme.R.layout.settingslib_preference
+            }
         widgetLayoutResource = R.layout.settingslib_expressive_button_menu
         if (attrs != null) {
             context.withStyledAttributes(attrs, R.styleable.MenuPreference) {
