@@ -272,3 +272,13 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "app_start_info_process_name_fix"
+    namespace: "system_performance"
+    description: "Use process name to lookup ProcessRecord."
+    bug: "443136429"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}

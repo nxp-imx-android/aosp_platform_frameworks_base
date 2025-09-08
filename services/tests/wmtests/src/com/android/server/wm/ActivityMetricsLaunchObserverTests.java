@@ -35,6 +35,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.never;
@@ -124,7 +125,7 @@ public class ActivityMetricsLaunchObserverTests extends WindowTestsBase {
     private void verifyOnActivityLaunched(ActivityRecord activity) {
         final ArgumentCaptor<Long> idCaptor = ArgumentCaptor.forClass(Long.class);
         verifyAsync(mLaunchObserver).onActivityLaunched(idCaptor.capture(),
-                eq(activity.mActivityComponent), anyInt(), anyInt());
+                eq(activity.mActivityComponent), anyInt(), anyInt(), anyString());
         final long id = idCaptor.getValue();
         setExpectedStartedId(id, activity);
         mLastLaunchedIds.put(activity.mActivityComponent, id);

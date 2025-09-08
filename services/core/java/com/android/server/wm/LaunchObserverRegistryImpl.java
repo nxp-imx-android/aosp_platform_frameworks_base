@@ -84,10 +84,11 @@ class LaunchObserverRegistryImpl extends ActivityMetricsLaunchObserver implement
     }
 
     @Override
-    public void onActivityLaunched(long id, ComponentName name, int temperature, int userId) {
+    public void onActivityLaunched(long id, ComponentName name, int temperature, int userId,
+            String processName) {
         mHandler.sendMessage(PooledLambda.obtainMessage(
                 LaunchObserverRegistryImpl::handleOnActivityLaunched,
-                this, id, name, temperature, userId));
+                this, id, name, temperature, userId, processName));
     }
 
     @Override
@@ -138,10 +139,10 @@ class LaunchObserverRegistryImpl extends ActivityMetricsLaunchObserver implement
     }
 
     private void handleOnActivityLaunched(long id, ComponentName name,
-            @Temperature int temperature, int userId) {
+            @Temperature int temperature, int userId, String processName) {
         // Traverse start-to-end to meet the registerLaunchObserver multi-cast order guarantee.
         for (int i = 0; i < mList.size(); i++) {
-            mList.get(i).onActivityLaunched(id, name, temperature, userId);
+            mList.get(i).onActivityLaunched(id, name, temperature, userId, processName);
         }
     }
 
