@@ -25,10 +25,11 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.res.dimensionResource
 import androidx.window.core.layout.WindowSizeClass
 import com.android.compose.animation.Easings
 import com.android.compose.animation.scene.ContentScope
@@ -42,7 +43,6 @@ import com.android.systemui.log.core.Logger
 import com.android.systemui.log.dagger.KeyguardBlueprintLog
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElement
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementKeys
-import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementKeys.Clock
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementKeys.MediaCarousel
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementKeys.Notifications
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementKeys.Region
@@ -52,11 +52,11 @@ import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenSc
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenScope
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenScope.Companion.LockscreenElement
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenScope.Companion.NestedScenes
+import com.android.systemui.res.R
 import com.android.systemui.shade.ShadeDisplayAware
 import com.android.systemui.shade.shared.model.ShadeMode
 import com.android.systemui.statusbar.notification.promoted.PromotedNotificationUi
 import javax.inject.Inject
-import kotlin.collections.List
 
 /** Provides a combined element for all lockscreen ui above the lock icon */
 class LockscreenUpperRegionElementProvider
@@ -114,7 +114,16 @@ constructor(
         ) {
             Column(modifier = modifier) {
                 LockscreenElement(Region.Clock.Small)
-                LockscreenElement(MediaCarousel)
+                LockscreenElement(
+                    MediaCarousel,
+                    modifier =
+                        Modifier.padding(
+                            bottom =
+                                dimensionResource(
+                                    R.dimen.notification_section_divider_height_lockscreen
+                                )
+                        ),
+                )
                 Notifications(viewModel)
             }
         }
@@ -204,7 +213,16 @@ constructor(
                         if (viewModel.clockSize == ClockSize.SMALL) {
                             LockscreenElement(Region.Clock.Small)
                         }
-                        LockscreenElement(MediaCarousel)
+                        LockscreenElement(
+                            MediaCarousel,
+                            modifier =
+                                Modifier.padding(
+                                    bottom =
+                                        dimensionResource(
+                                            R.dimen.notification_section_divider_height_lockscreen
+                                        )
+                                ),
+                        )
                         Notifications(viewModel)
                     }
                 },
