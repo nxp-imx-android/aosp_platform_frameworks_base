@@ -39,7 +39,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -283,7 +282,7 @@ private fun ContentScope.QuickSettingsContainer(
 
     val focusRequester = remember { FocusRequester() }
 
-    LaunchedEffect(focusRequester) {
+    LaunchedEffectWithLifecycle(focusRequester) {
         // Request focus on the `QuickSettingsContainer` without user interaction so that the user
         // can press the tab key once to enter the Quick Settings area. Without this line, the user
         // has to tab through unrelated views of the higher view hierarchy level.
