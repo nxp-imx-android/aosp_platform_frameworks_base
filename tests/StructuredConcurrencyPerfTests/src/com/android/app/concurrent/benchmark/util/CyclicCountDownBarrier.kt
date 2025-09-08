@@ -20,24 +20,26 @@ import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeoutException
 import org.junit.Assert.fail
 
+private const val TAG = "CyclicCountDownBarrier"
+
 /**
  * Awaits on the given [barrier] when [CyclicCountDownBarrier.countDown] is called [count] times,
  * then resets.
  *
  * This class is NOT thread safe. It should only be called from one background thread.
  */
-abstract class CyclicCountDownBarrier(private val count: Int) {
-    interface Builder {
-        val runOnEachIteration: Boolean
-
-        fun build(barrier: CyclicBarrier): CyclicCountDownBarrier
+class CyclicCountDownBarrier(private val barrier: CyclicBarrier, private val count: Int) {
+    class Builder(val count: Int) {
+        fun build(barrier: CyclicBarrier): CyclicCountDownBarrier {
+            return CyclicCountDownBarrier(barrier, count)
+        }
     }
 
     private var assignedThread: Thread? = null
 
-    abstract val barrier: CyclicBarrier
-
     private var currentCount = count
+
+    private var numAwaits = 0
 
     /**
      * IMPORTANT: This should only be called from ONE thread.
@@ -46,6 +48,7 @@ abstract class CyclicCountDownBarrier(private val count: Int) {
      * should call await on the associated [CyclicBarrier] manually.
      */
     fun countDown() {
+        dbg { "barrier#countDown $currentCount -> ${currentCount - 1}" }
         val curThread = Thread.currentThread()
         if (assignedThread == null) {
             assignedThread = curThread
@@ -60,14 +63,17 @@ abstract class CyclicCountDownBarrier(private val count: Int) {
         currentCount--
         if (currentCount == 0) {
             try {
+                dbg { "barrier#await" }
                 barrier.await(BARRIER_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS)
+                numAwaits++
             } catch (e: TimeoutException) {
-                fail("Timeout on bg thread while awaiting next iteration")
+                fail(
+                    "Timeout on Thread #${curThread.threadId()} while awaiting next iteration. " +
+                        "Barrier was used $numAwaits times on this thread prior to this."
+                )
                 throw e
             }
             currentCount = count
         }
     }
-
-    abstract fun runOnce(n: Int)
 }
