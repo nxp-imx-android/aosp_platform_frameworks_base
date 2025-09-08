@@ -2370,9 +2370,6 @@ public class WindowProcessController extends ConfigurationContainer<Configuratio
     }
 
     void addListener(@NonNull WindowProcessController.Listener listener) {
-        if (!com.android.window.flags.Flags.disposeTaskFragmentSynchronously()) {
-            return;
-        }
         if (mListeners == null) {
             mListeners = new ArrayList<>();
         }
