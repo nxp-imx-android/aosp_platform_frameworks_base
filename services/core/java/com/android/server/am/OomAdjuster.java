@@ -144,6 +144,7 @@ import com.android.server.am.psc.ConnectionRecordInternal;
 import com.android.server.am.psc.ContentProviderConnectionInternal;
 import com.android.server.am.psc.PlatformCompatCache;
 import com.android.server.am.psc.PlatformCompatCache.CachedCompatChangeId;
+import com.android.server.am.psc.ProcessListInternal;
 import com.android.server.am.psc.ProcessProviderRecordInternal;
 import com.android.server.am.psc.ProcessRecordInternal;
 import com.android.server.am.psc.ProcessServiceRecordInternal;
@@ -2193,7 +2194,7 @@ public abstract class OomAdjuster {
         }
         if (state.getHasRepForegroundActivities() != state.getHasForegroundActivities()) {
             state.setRepForegroundActivities(state.getHasForegroundActivities());
-            changes |= ActivityManagerService.ProcessChangeItem.CHANGE_ACTIVITIES;
+            changes |= ProcessListInternal.ProcessChangeItem.CHANGE_ACTIVITIES;
         }
 
         updateAppFreezeStateLSP(state, oomAdjReason, false, oldOomAdj);

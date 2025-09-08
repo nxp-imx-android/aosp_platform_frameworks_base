@@ -26,6 +26,25 @@ import java.util.List;
 
 /** The base class providing common process list operations primarily used by the OomAdjuster. */
 public abstract class ProcessListInternal {
+    /** The struct used to store about changes in a process's state. */
+    public static final class ProcessChangeItem {
+        /** Flag for {@link #changes}: the process's foreground activity state has changed. */
+        public static final int CHANGE_ACTIVITIES = 1 << 0;
+        /** Flag for {@link #changes}: the process's foreground service types have changed. */
+        public static final int CHANGE_FOREGROUND_SERVICES = 1 << 1;
+
+        /** A bitmask of change flags. */
+        public int changes;
+        /** The UID of the process that has changed. */
+        public int uid;
+        /** The PID of the process that has changed. */
+        public int pid;
+        /** Whether the process has any foreground activities. */
+        public boolean foregroundActivities;
+        /** A bitmask of foreground service types. See ServiceInfo.FOREGROUND_SERVICE_TYPE_*. */
+        public int foregroundServiceTypes;
+    }
+
     /** The ActivityManagerService object, which can only be used as a lock object. */
     private Object mServiceLock;
     /** The ActivityManagerGlobalLock object, which can only be used as a lock object. */

@@ -146,7 +146,6 @@ import com.android.server.ServiceThread;
 import com.android.server.StorageManagerInternal;
 import com.android.server.SystemConfig;
 import com.android.server.Watchdog;
-import com.android.server.am.ActivityManagerService.ProcessChangeItem;
 import com.android.server.am.psc.PlatformCompatCache;
 import com.android.server.am.psc.ProcessListInternal;
 import com.android.server.am.psc.ProcessRecordInternal;
@@ -5132,7 +5131,7 @@ public final class ProcessList extends ProcessListInternal
     @GuardedBy({"mService", "mProcessChangeLock"})
     private ProcessChangeItem enqueueProcessChangeItemLocked(int pid, int uid) {
         int i = mPendingProcessChanges.size() - 1;
-        ActivityManagerService.ProcessChangeItem item = null;
+        ProcessChangeItem item = null;
         while (i >= 0) {
             item = mPendingProcessChanges.get(i);
             if (item.pid == pid) {
@@ -5153,7 +5152,7 @@ public final class ProcessList extends ProcessListInternal
                     Slog.i(TAG_PROCESS_OBSERVERS, "Retrieving available item: " + item);
                 }
             } else {
-                item = new ActivityManagerService.ProcessChangeItem();
+                item = new ProcessChangeItem();
                 if (DEBUG_PROCESS_OBSERVERS) {
                     Slog.i(TAG_PROCESS_OBSERVERS, "Allocating new item: " + item);
                 }
