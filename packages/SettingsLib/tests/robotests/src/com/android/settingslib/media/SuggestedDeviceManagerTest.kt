@@ -38,6 +38,7 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.kotlin.any
+import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.clearInvocations
 import org.mockito.kotlin.doReturn
@@ -245,6 +246,67 @@ class SuggestedDeviceManagerTest {
   }
 
   @Test
+  fun onDeviceSuggestionsUpdated_hasStateOverrideAndNewSuggestionDifferent_keepsOverriddenState() {
+    onDeviceSuggestionsUpdated_hasStateOverride_keepsOverriddenState(
+      initialSuggestedDeviceInfo = suggestedDeviceInfo1,
+      updatedSuggestedDeviceInfo = suggestedDeviceInfo2,
+    )
+  }
+
+  @Test
+  fun onDeviceSuggestionsUpdated_hasStateOverrideAndNewSuggestionNull_keepsOverriddenState() {
+    onDeviceSuggestionsUpdated_hasStateOverride_keepsOverriddenState(
+      initialSuggestedDeviceInfo = suggestedDeviceInfo1,
+      updatedSuggestedDeviceInfo = null,
+    )
+  }
+
+  fun onDeviceSuggestionsUpdated_hasStateOverride_keepsOverriddenState(
+    initialSuggestedDeviceInfo: SuggestedDeviceInfo,
+    updatedSuggestedDeviceInfo: SuggestedDeviceInfo?,
+  ) {
+    val deviceCallback = addListenerAndCaptureCallback(listener)
+    deviceCallback.onDeviceListUpdate(listOf(mediaDevice1, mediaDevice2))
+
+    // Initial suggested device is set.
+    deviceCallback.onDeviceSuggestionsUpdated(listOf(initialSuggestedDeviceInfo))
+    val initialSuggestedDeviceState =
+      SuggestedDeviceState(initialSuggestedDeviceInfo, mediaDevice1.state)
+    verify(listener).onSuggestedDeviceStateUpdated(initialSuggestedDeviceState)
+
+    // Emulate starting connection and subsequently setting the override.
+    mSuggestedDeviceManager.connectSuggestedDevice(initialSuggestedDeviceState, routingChangeInfo)
+    val connectingSuggestedState =
+      initialSuggestedDeviceState.copy(connectionState = STATE_CONNECTING)
+    verify(listener).onSuggestedDeviceStateUpdated(connectingSuggestedState)
+    clearInvocations(listener)
+
+    // A different suggested device is set.
+    deviceCallback.onDeviceSuggestionsUpdated(listOf(updatedSuggestedDeviceInfo))
+
+    // The overridden state hasn't changed
+    verify(listener, never()).onSuggestedDeviceStateUpdated(anyOrNull())
+    assertThat(mSuggestedDeviceManager.getSuggestedDevice()).isEqualTo(connectingSuggestedState)
+
+    // Emulate connection failure and subsequently setting the override.
+    deviceCallback.onConnectSuggestedDeviceFinished(
+      initialSuggestedDeviceState,
+      false,
+    )
+    connectionFinishedCallback?.invoke(initialSuggestedDeviceState, false)
+    val failedSuggestedState = initialSuggestedDeviceState.copy(connectionState = STATE_CONNECTING_FAILED)
+    verify(listener).onSuggestedDeviceStateUpdated(failedSuggestedState)
+    clearInvocations(listener)
+
+    // A different suggested device is set.
+    deviceCallback.onDeviceSuggestionsUpdated(listOf(updatedSuggestedDeviceInfo))
+
+    // The overridden state hasn't changed
+    verify(listener, never()).onSuggestedDeviceStateUpdated(anyOrNull())
+    assertThat(mSuggestedDeviceManager.getSuggestedDevice()).isEqualTo(failedSuggestedState)
+  }
+
+  @Test
   fun onDeviceSuggestionsUpdated_suggestionCleared_dispatchesNull() {
     val deviceCallback = addListenerAndCaptureCallback(listener)
     deviceCallback.onDeviceListUpdate(listOf(mediaDevice1, mediaDevice2))
@@ -326,7 +388,6 @@ class SuggestedDeviceManagerTest {
 
   @Test
   fun onTimeout_fromConnectingOverride_dispatchesDisconnectedState() {
-    val expectedConnectingTimeoutMs = 20_000L
     val deviceCallback = addListenerAndCaptureCallback(listener)
 
     deviceCallback.onDeviceListUpdate(listOf(mediaDevice1))
@@ -344,7 +405,7 @@ class SuggestedDeviceManagerTest {
 
     clearInvocations(listener)
     // Check the state one second before the timeout is reached.
-    ShadowLooper.idleMainLooper(expectedConnectingTimeoutMs - 1_000, TimeUnit.MILLISECONDS)
+    ShadowLooper.idleMainLooper(CONNECTING_TIMEOUT_MS - 1_000, TimeUnit.MILLISECONDS)
     verify(listener, never()).onSuggestedDeviceStateUpdated(any())
 
     clearInvocations(listener)
@@ -404,7 +465,6 @@ class SuggestedDeviceManagerTest {
   }
 
   fun onTimeout_fromConnectingFailedOverride_dispatchesNullState() {
-    val expectedConnectingFailedTimeoutMs = 10_000L
     val deviceCallback = addListenerAndCaptureCallback(listener)
 
     deviceCallback.onDeviceListUpdate(listOf(mediaDevice1))
@@ -425,7 +485,7 @@ class SuggestedDeviceManagerTest {
 
     clearInvocations(listener)
     // One second before the timeout is reached - no events are dispatched.
-    ShadowLooper.idleMainLooper(expectedConnectingFailedTimeoutMs - 1_000, TimeUnit.MILLISECONDS)
+    ShadowLooper.idleMainLooper(CONNECTING_FAILED_TIMEOUT_MS - 1_000, TimeUnit.MILLISECONDS)
     verify(listener, never()).onSuggestedDeviceStateUpdated(any())
 
     clearInvocations(listener)
