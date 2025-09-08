@@ -42446,6 +42446,7 @@ package android.service.chooser {
     method public void addStateListener(@NonNull java.util.concurrent.Executor, @NonNull android.service.chooser.ChooserSession.StateListener);
     method public void endSession();
     method @Nullable public android.graphics.Rect getBounds();
+    method @FlaggedApi("android.service.chooser.interactive_chooser_default_bounds") @Nullable public android.graphics.Rect getDefaultLaunchBounds();
     method public int getState();
     method @NonNull public android.service.chooser.ChooserSessionToken getToken();
     method public void removeStateListener(@NonNull android.service.chooser.ChooserSession.StateListener);
