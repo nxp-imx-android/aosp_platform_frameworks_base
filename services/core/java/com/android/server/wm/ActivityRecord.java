@@ -3066,9 +3066,9 @@ final class ActivityRecord extends WindowToken {
 
         if (changed && task != null) {
             if (!occludesParent) {
-                getRootTask().convertActivityToTranslucent(this);
+                task.convertActivityToTranslucent(this);
             } else {
-                getRootTask().convertActivityFromTranslucent(this);
+                task.convertActivityFromTranslucent(this);
             }
         }
         // Always ensure visibility if this activity doesn't occlude parent, so the
