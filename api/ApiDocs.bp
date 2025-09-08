@@ -318,6 +318,13 @@ droiddoc {
         "-title \"Android SDK\"",
     ],
     static_doc_index_redirect: "docs/docs-preview-index.html",
+    // The directory to publish the generated documentation under out/target/common/docs.
+    publish_dir: "offline-sdk",
+}
+
+phony_rule {
+    name: "docs",
+    phony_deps: ["offline-sdk-docs"],
 }
 
 droiddoc {
