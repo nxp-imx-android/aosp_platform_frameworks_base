@@ -118,6 +118,8 @@
     <string name="bluetooth_hearing_aid_right_active" msgid="2244728507170385397">"अ‍ॅक्टिव्ह आहे (फक्त उजवे)"</string>
     <string name="bluetooth_hearing_aid_left_and_right_active" msgid="4294571497939983181">"अ‍ॅक्टिव्ह आहे (डावे आणि उजवे)"</string>
     <string name="bluetooth_hearing_device_ambient_error" msgid="6035857289108813878">"जवळपासचे आवाज अपडेट करता आले नाहीत"</string>
+    <!-- no translation found for bluetooth_hearing_aids_presets_error (4523942574698610976) -->
+    <skip />
     <string name="bluetooth_active_media_only_battery_level" msgid="7772517511061834073">"अ‍ॅक्टिव्ह आहे (फक्त मीडिया). <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE">%1$s</xliff:g> बॅटरी."</string>
     <string name="bluetooth_active_media_only_battery_level_untethered" msgid="7444753133664620926">"ॲक्टिव्ह आहे (फक्त मीडिया). डावीकडे: <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE_0">%1$s</xliff:g> बॅटरी, उजवीकडे: <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE_1">%2$s</xliff:g> बॅटरी."</string>
     <string name="bluetooth_guest_battery_level" msgid="2820003593899467676">"अतिथी डिव्हाइस. <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE">%1$s</xliff:g> बॅटरी."</string>
@@ -347,8 +349,7 @@
     <string name="wifi_non_persistent_mac_randomization_summary" msgid="2159794543105053930">"हा मोड सुरू केलेला असेल, तेव्हा हे डिव्हाइस MAC रँडमायझेशन सुरू केलेल्या नेटवर्कशी कनेक्ट होताना प्रत्येक वेळी त्याचा MAC अ‍ॅड्रेस बदलू शकतो."</string>
     <string name="wifi_metered_label" msgid="8737187690304098638">"मीटरने मोजलेले"</string>
     <string name="wifi_unmetered_label" msgid="6174142840934095093">"मीटरने न मोजलेले"</string>
-    <!-- no translation found for select_logd_size_title (4393502933789367691) -->
-    <skip />
+    <string name="select_logd_size_title" msgid="4393502933789367691">"लॉगर बफरचा आकार"</string>
     <string name="select_logd_size_dialog_title" msgid="2105401994681013578">"प्रति लॉग बफर लॉगर आकार निवडा"</string>
     <string name="dev_logpersist_clear_warning_title" msgid="8631859265777337991">"लॉगरवर सतत असणारा स्टोरेज साफ करायचा?"</string>
     <string name="dev_logpersist_clear_warning_message" msgid="6447590867594287413">"सातत्याच्या लॉगरसह आम्ही परीक्षण करीत नसतो तेव्हा, आम्हाला आपल्या डिव्हाइसवर असणारा लॉगर डेटा मिटविणे आवश्यक असते."</string>

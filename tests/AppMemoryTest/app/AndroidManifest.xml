@@ -22,8 +22,11 @@
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
 
-    <application android:debuggable="true"
-               >
+    <!-- debuggable="true" is required to be able to generate a heap profile. -->
+    <!-- testOnly="true" is required to be able to access "@hide" APIs such as VMDebug. -->
+    <application
+        android:debuggable="true"
+        android:testOnly="true">
         <activity android:name=".EmptyActivity"
                   android:label="_EmptyActivity"
                   android:enabled="true"

@@ -2257,7 +2257,7 @@
     <string name="notification_guts_recs_summary">Newsletters, recommended media, and more</string>
 
     <!-- Notification summaries onboarding affordance turn on button [CHAR LIMIT=40]-->
-    <string name="notification_onboarding_summaries_turn_on">Turn on</string>
+    <string name="notification_onboarding_summaries_turn_on">Turn on in Settings</string>
 
     <!--  Notification summaries onboarding affordance message [CHAR LIMIT=NONE]-->
     <string name="notification_onboarding_summaries_message">Your longer conversations can now be summarized to give you quick recaps</string>

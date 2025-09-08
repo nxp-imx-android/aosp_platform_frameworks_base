@@ -161,6 +161,13 @@
       ]
     },
     {
+      "name": "FunctionalTestsDesktopMode-appcompat-DialogStaysInsideDesktopAppTest",
+      "keywords": [
+        "device",
+        "desktop"
+      ]
+    },
+    {
       "name": "FunctionalTestsDesktopMode-appcompat-ResizeActivityEmbeddedAppToMinimumWindowTest",
        "keywords": [
          "device",

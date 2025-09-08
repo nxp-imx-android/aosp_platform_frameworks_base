@@ -53,5 +53,5 @@ flag {
     name: "protolog_auto_clear_incremental_state"
     namespace: "windowing_tools"
     description: "Clear incremental state when protolog is enabled"
-    bug: "441704171`"
+    bug: "441704171"
 }

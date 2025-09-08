@@ -410,7 +410,7 @@ fun ActionList(
                             val chipsTotalHeightPx =
                                 childHeights.sum().toFloat() +
                                     columnSpacingPx * (childHeights.size - 1)
-                            if (portrait) {
+                            if (portrait || taskBarMode) {
                                 translationY = (1f - translation) * appxColumnY
                                 translationX = 0f
                             } else {
@@ -431,7 +431,7 @@ fun ActionList(
                             scaleX = scale
                             scaleY = scale
                             transformOrigin =
-                                if (portrait) {
+                                if (portrait || taskBarMode) {
                                     TransformOrigin(0.5f, 1f)
                                 } else {
                                     if (rotation == ROTATION_90) {

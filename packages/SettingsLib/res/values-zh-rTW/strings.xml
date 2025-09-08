@@ -118,6 +118,8 @@
     <string name="bluetooth_hearing_aid_right_active" msgid="2244728507170385397">"使用中 (僅右側)"</string>
     <string name="bluetooth_hearing_aid_left_and_right_active" msgid="4294571497939983181">"使用中 (左右兩側)"</string>
     <string name="bluetooth_hearing_device_ambient_error" msgid="6035857289108813878">"無法更新環境狀態"</string>
+    <!-- no translation found for bluetooth_hearing_aids_presets_error (4523942574698610976) -->
+    <skip />
     <string name="bluetooth_active_media_only_battery_level" msgid="7772517511061834073">"已啟用 (僅限媒體)。電量：<xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE">%1$s</xliff:g>。"</string>
     <string name="bluetooth_active_media_only_battery_level_untethered" msgid="7444753133664620926">"已啟用 (僅限媒體)。左側電量：<xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE_0">%1$s</xliff:g>，右側電量：<xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE_1">%2$s</xliff:g>。"</string>
     <string name="bluetooth_guest_battery_level" msgid="2820003593899467676">"訪客裝置。電量：<xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE">%1$s</xliff:g>。"</string>
@@ -347,8 +349,7 @@
     <string name="wifi_non_persistent_mac_randomization_summary" msgid="2159794543105053930">"這個模式啟用後，每當這部裝置連線到已啟用隨機 MAC 位址的網路時，裝置的 MAC 位址可能都會改變。"</string>
     <string name="wifi_metered_label" msgid="8737187690304098638">"計量付費"</string>
     <string name="wifi_unmetered_label" msgid="6174142840934095093">"非計量付費"</string>
-    <!-- no translation found for select_logd_size_title (4393502933789367691) -->
-    <skip />
+    <string name="select_logd_size_title" msgid="4393502933789367691">"記錄器緩衝區空間"</string>
     <string name="select_logd_size_dialog_title" msgid="2105401994681013578">"選取每個記錄緩衝區的記錄器空間"</string>
     <string name="dev_logpersist_clear_warning_title" msgid="8631859265777337991">"要清除永久儲存的記錄器資料嗎？"</string>
     <string name="dev_logpersist_clear_warning_message" msgid="6447590867594287413">"如果你選擇不再透過永久記錄器進行監控，系統就必須清除裝置中的記錄器資料。"</string>

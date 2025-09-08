@@ -140,6 +140,8 @@
     <string name="screenrecord_stop_dialog_button" msgid="2883812564938194350">"Stöðva upptöku"</string>
     <string name="screen_record_entire_screen" msgid="66944996337928170">"Allur skjárinn"</string>
     <string name="screen_record_single_app" msgid="7355880948574569290">"Eitt forrit"</string>
+    <!-- no translation found for screen_record_single_app_hint (8404332826093639170) -->
+    <skip />
     <string name="screen_record_single_app_no_recents" msgid="1023249803854209330">"Eitt forrit (opnaðu forrit til að velja það)"</string>
     <string name="screen_record_record_device_audio_label" msgid="5363057443124085198">"Taka upp hljóð tækis"</string>
     <string name="screen_record_record_microphone_label" msgid="4685753707185662381">"Upptaka hljóðnema"</string>
@@ -147,6 +149,8 @@
     <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"Sýna snertingar"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"Veldu forrit fyrir upptökuna"</string>
     <string name="screen_record_video_saved" msgid="1345283626390232282">"Vídeó vistað"</string>
+    <!-- no translation found for screen_record_undo (7942716736019800870) -->
+    <skip />
     <string name="screen_record_retake" msgid="3846643688365398450">"Taka aftur"</string>
     <string name="screen_record_edit" msgid="8733014191240769309">"Breyta"</string>
     <string name="screen_record_delete" msgid="1023421937978254537">"Eyða"</string>
@@ -161,10 +165,8 @@
     <string name="screen_capture_toolbar_screenshot_button" msgid="5676585348709494125">"Skjámynd"</string>
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"Taka upp"</string>
     <string name="screen_share_toolbar_share_button" msgid="9182050596136815833">"Deila"</string>
-    <!-- no translation found for screen_share_no_select_app_thumbnail (1630012401570567430) -->
-    <skip />
-    <!-- no translation found for screen_share_app_audio_sharing (7201172218924898712) -->
-    <skip />
+    <string name="screen_share_no_select_app_thumbnail" msgid="1630012401570567430">"Veldu forrit til að deila"</string>
+    <string name="screen_share_app_audio_sharing" msgid="7201172218924898712">"Deila hljóði glugga"</string>
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"Taka skjámynd af glugga"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"Upptökugluggi"</string>
     <string name="screen_capture_toolbar_region_button_screenshot_a11y" msgid="2102262602357521192">"Taka skjámynd af völdu svæði"</string>
@@ -1141,14 +1143,18 @@
     <string name="accessibility_key_gesture_dialog_content" msgid="4519838108423437794">"Aðgerð "<annotation id="action_key_icon">"tákn"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> er lyklaborðsflýtileiðin fyrir <xliff:g id="ID_3">^3</xliff:g>. <xliff:g id="ID_4">^4</xliff:g>"</string>
     <string name="accessibility_key_gesture_dialog_talkback_intro" msgid="1617808784388544741">"<xliff:g id="ID_1">%1$s</xliff:g> er skjálesari sem gerir þér kleift að hlusta á atriði lesin upphátt. Þetta getur gagnast fólki sem á erfitt með að sjá á skjáinn."</string>
     <string name="accessibility_key_gesture_dialog_positive_button_text" msgid="3670746017523589293">"Kveikja"</string>
+    <!-- no translation found for accessibility_key_gesture_shortcut_not_yet_enabled_dialog_title (5331043821287212071) -->
+    <skip />
+    <!-- no translation found for accessibility_key_gesture_shortcut_not_yet_enabled_negative_button_text (6711239406914231612) -->
+    <skip />
+    <!-- no translation found for accessibility_key_gesture_shortcut_not_yet_enabled_positive_button_text (7748487028569821131) -->
+    <skip />
     <string name="accessibility_key_gesture_magnification_dialog_title" msgid="5770691510738701250">"Kveikt á lyklaborðsflýtileiðinni <xliff:g id="ID_1">%1$s</xliff:g>"</string>
-    <string name="accessibility_key_gesture_magnification_dialog_content" msgid="7575802369763469379">"Aðgerð "<annotation id="action_key_icon">"tákn"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> er lyklaborðsflýtileiðin fyrir <xliff:g id="ID_3">^3</xliff:g>. Þetta gerir þér kleift að auka aðdráttinn á skjánum hratt til að stækka efnið á honum. Ýttu á aðgerð "<annotation id="action_key_icon">"tákn"</annotation>" + <xliff:g id="ID_4">^1</xliff:g> og „+“ eða „-“ til að stilla aðdrátt"</string>
+    <!-- no translation found for accessibility_key_gesture_magnification_dialog_content (582920726242272572) -->
+    <skip />
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"Slökkva á flýtileið"</string>
     <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"Hafa kveikt"</string>
-    <string name="accessibility_key_gesture_voice_access_dialog_title" msgid="7828090789777023683">"Kveikja á <xliff:g id="ID_1">%1$s</xliff:g> flýtilykli?"</string>
     <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="7934170819801013870">"Ef ýtt er á "<annotation id="action_key_icon">"Aðgerðartáknið"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> kviknar á <xliff:g id="ID_3">^3</xliff:g>, sem er aðgengiseiginleiki. Það gerir þér kleift að stjórna tækinu þínu handfrjálst."</string>
-    <string name="accessibility_key_gesture_voice_access_dialog_negative_button_text" msgid="3573570279554465078">"Ekki kveikja"</string>
-    <string name="accessibility_key_gesture_voice_access_dialog_positive_button_text" msgid="2306321856544446858">"Kveikja á flýtileið"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"Lásskjár"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"Slekkur…"</string>
     <string name="thermal_shutdown_dialog_help_text" msgid="6413474593462902901">"Sjá varúðarskref"</string>
@@ -1618,6 +1624,8 @@
     <string name="shortcut_helper_customize_dialog_reset_button_label" msgid="7645535254306312685">"Já, endurstilla"</string>
     <string name="shortcut_helper_customize_dialog_cancel_button_label" msgid="5595546460431741178">"Hætta við"</string>
     <string name="shortcut_helper_add_shortcut_dialog_placeholder" msgid="9154297849458741995">"Ýttu á lykil"</string>
+    <!-- no translation found for shortcut_helper_customizer_action_key_text (3979063901857046887) -->
+    <skip />
     <string name="shortcut_customizer_key_combination_in_use_error_message" msgid="3325858369539848162">"Lyklasamsetningin er þegar í notkun. Prófaðu aðra samsetningu."</string>
     <string name="shortcut_customizer_generic_error_message" msgid="3128454624049722741">"Ekki er hægt að stilla flýtileið."</string>
     <string name="shortcut_helper_plus_symbol" msgid="4534843157353732011">"+"</string>

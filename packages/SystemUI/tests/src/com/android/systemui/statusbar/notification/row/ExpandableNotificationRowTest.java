@@ -84,7 +84,6 @@ import com.android.systemui.statusbar.notification.promoted.PromotedNotification
 import com.android.systemui.statusbar.notification.row.ExpandableView.OnHeightChangedListener;
 import com.android.systemui.statusbar.notification.row.wrapper.NotificationViewWrapper;
 import com.android.systemui.statusbar.notification.shared.NotificationBundleUi;
-import com.android.systemui.statusbar.notification.shared.NotificationContentAlphaOptimization;
 import com.android.systemui.statusbar.notification.stack.NotificationChildrenContainer;
 import com.android.systemui.statusbar.phone.KeyguardBypassController;
 
@@ -505,7 +504,6 @@ public class ExpandableNotificationRowTest extends SysuiTestCase {
     }
 
     @Test
-    @EnableFlags(NotificationContentAlphaOptimization.FLAG_NAME)
     public void setHideSensitive_shouldNotDisturbAnimation() throws Exception {
         //Given: A row that is during alpha animation
         ExpandableNotificationRow row = mKosmos.createRow();
@@ -527,7 +525,6 @@ public class ExpandableNotificationRowTest extends SysuiTestCase {
     }
 
     @Test
-    @EnableFlags(NotificationContentAlphaOptimization.FLAG_NAME)
     public void setHideSensitive_changeContent_shouldResetAlpha() throws Exception {
 
         // Given: A sensitive row that has public version but is not hiding sensitive,

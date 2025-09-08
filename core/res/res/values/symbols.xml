@@ -1438,7 +1438,6 @@
   <java-symbol type="drawable" name="ic_lock_open" />
   <java-symbol type="drawable" name="ic_lock_bugreport" />
   <java-symbol type="drawable" name="ic_lock_bugreport_round" />
-  <java-symbol type="drawable" name="ic_lock_lockdown" />
   <java-symbol type="drawable" name="ic_lock_lockdown_round" />
   <java-symbol type="drawable" name="ic_lock_power_off" />
   <java-symbol type="drawable" name="ic_lock_power_off_round" />
@@ -4455,7 +4454,6 @@
   <java-symbol type="attr" name="opticalInsetRight" />
   <java-symbol type="attr" name="opticalInsetBottom" />
 
-  <java-symbol type="drawable" name="ic_lock_lockdown" />
   <java-symbol type="drawable" name="ic_arrow_forward" />
   <java-symbol type="drawable" name="ic_permission" />
 

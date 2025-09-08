@@ -409,6 +409,35 @@ public class ResourcesManagerTest {
 
     @Test
     @SmallTest
+    public void testUpdateActivityResourcesOverrideWindowConfiguration() {
+        final Binder activity = new Binder();
+        final Resources activityResources = mResourcesManager.createBaseTokenResources(
+                activity, null, null, null, null, null, Display.DEFAULT_DISPLAY,
+                null, CompatibilityInfo.DEFAULT_COMPATIBILITY_INFO, null, null);
+        final Configuration overrideConfig = new Configuration();
+        overrideConfig.windowConfiguration.getBounds().set(0, 0, 500, 1000);
+        // Simulate the usage of Activity#createConfigurationContext.
+        final Resources overrideConfigResources = mResourcesManager.getResources(
+                activity, null, null, null, null, null, Display.DEFAULT_DISPLAY,
+                overrideConfig, CompatibilityInfo.DEFAULT_COMPATIBILITY_INFO, null, null);
+        // This is a key step to make the non-window configuration fields have the same value
+        // (which were assigned from ResourcesManager#applyDisplayMetricsToConfiguration). And the
+        // following update shouldn't create the ResourcesKey that finds the same ResourcesImpl.
+        final Configuration newActivityOverrideConfig =
+                new Configuration(overrideConfigResources.getConfiguration());
+        newActivityOverrideConfig.windowConfiguration.getBounds().set(100, 200, 600, 1200);
+        mResourcesManager.updateResourcesForActivity(activity, newActivityOverrideConfig,
+                Display.DEFAULT_DISPLAY);
+
+        // Verifies that the update applies the configuration to the correct ResourcesImpl.
+        assertEquals(overrideConfig.windowConfiguration.getBounds(),
+                overrideConfigResources.getConfiguration().windowConfiguration.getBounds());
+        assertEquals(newActivityOverrideConfig.windowConfiguration.getBounds(),
+                activityResources.getConfiguration().windowConfiguration.getBounds());
+    }
+
+    @Test
+    @SmallTest
     @RequiresFlagsEnabled(Flags.FLAG_IGNORE_NON_PUBLIC_CONFIG_DIFF_FOR_RESOURCES_KEY)
     public void testNonPublicDiffOverrideConfigShareImpl() {
         final Configuration overrideConfig1 = new Configuration();

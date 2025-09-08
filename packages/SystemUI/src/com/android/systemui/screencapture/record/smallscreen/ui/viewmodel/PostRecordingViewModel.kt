@@ -22,8 +22,11 @@ import android.net.Uri
 import com.android.systemui.lifecycle.HydratedActivatable
 import com.android.systemui.plugins.ActivityStarter
 import com.android.systemui.res.R
+import com.android.systemui.screencapture.common.shared.model.ScreenCaptureType
+import com.android.systemui.screencapture.common.shared.model.ScreenCaptureUiParameters
 import com.android.systemui.screencapture.common.ui.viewmodel.DrawableLoaderViewModel
 import com.android.systemui.screencapture.common.ui.viewmodel.DrawableLoaderViewModelImpl
+import com.android.systemui.screencapture.domain.interactor.ScreenCaptureUiInteractor
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
@@ -37,10 +40,13 @@ constructor(
     private val context: Context,
     private val activityStarter: ActivityStarter,
     private val drawableLoaderViewModelImpl: DrawableLoaderViewModelImpl,
+    private val screenCaptureUiInteractor: ScreenCaptureUiInteractor,
 ) : HydratedActivatable(), DrawableLoaderViewModel by drawableLoaderViewModelImpl {
 
     fun retake() {
-        // TODO(b/430553811) Implement
+        screenCaptureUiInteractor.show(
+            ScreenCaptureUiParameters(screenCaptureType = ScreenCaptureType.RECORD)
+        )
     }
 
     fun edit() {

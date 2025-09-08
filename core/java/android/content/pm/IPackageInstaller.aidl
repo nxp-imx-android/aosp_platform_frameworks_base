@@ -110,4 +110,5 @@ interface IPackageInstaller {
     DeveloperVerificationUserConfirmationInfo getDeveloperVerificationUserConfirmationInfo(int sessionId);
 
     void addDeveloperVerificationExperiment(String packageName, int verificationPolicy, in int[] results);
+    void clearDeveloperVerificationExperiment(String packagename);
 }

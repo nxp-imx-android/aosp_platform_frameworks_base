@@ -227,6 +227,23 @@ public final class ComputerControlSession implements AutoCloseable {
         }
     }
 
+    /**
+     * Sends a long press event to the computer control session for the given coordinates.
+     *
+     * <p>The coordinates are in relative display space, e.g. (0.5, 0.5) is the center of the
+     * display.</p>
+     */
+    public void longPress(@IntRange(from = 0) int x, @IntRange(from = 0) int y) {
+        if (x < 0 || y < 0) {
+            throw new IllegalArgumentException("Long press coordinates must be non-negative");
+        }
+        try {
+            mSession.longPress(x, y);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
     /** Returns the ID of the single trusted virtual display for this session. */
     public int getVirtualDisplayId() {
         try {

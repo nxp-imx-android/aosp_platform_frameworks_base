@@ -2142,6 +2142,11 @@ public class PackageInstallerService extends IPackageInstaller.Stub implements
         mDeveloperVerifierController.addExperiment(packageName, verificationPolicy, resultsList);
     }
 
+    @Override
+    public void clearDeveloperVerificationExperiment(String packageName) {
+        mDeveloperVerifierController.clearExperiment(packageName);
+    }
+
     void onUserAdded(int userId) {
         synchronized (mDeveloperVerificationPolicyPerUser) {
             mDeveloperVerificationPolicyPerUser.put(userId, DEFAULT_VERIFICATION_POLICY);

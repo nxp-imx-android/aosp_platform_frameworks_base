@@ -77,13 +77,14 @@ class BubbleEventHistoryLogger : DebugLogger {
             if (!event.eventData.isNullOrBlank()) {
                 eventData = " | ${event.eventData}"
             }
-            pw.println("$prefix  $eventFormattedTime ${event.title} $eventData)")
+            pw.println("$prefix  $eventFormattedTime ${event.title}$eventData")
         }
     }
 
     companion object {
         const val DATE_FORMAT = "MM-dd HH:mm:ss.SSS"
         const val MAX_EVENTS: Int = 25
+        @VisibleForTesting
         val DATE_FORMATTER = SimpleDateFormat(DATE_FORMAT, Locale.US)
     }
 }

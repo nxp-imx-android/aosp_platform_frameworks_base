@@ -6312,6 +6312,38 @@ public class ActivityManager {
      * See {@link android.app.ActivityManager#getAppTasks()}
      */
     public static class AppTask {
+
+        /**
+         * The windowing layer is not specified. The system will use a
+         * {@link #WINDOWING_LAYER_NORMAL_APP} layer.
+         * @hide
+         */
+        public static final int WINDOWING_LAYER_UNDEFINED = 0;
+        /**
+         * The windowing layer for normal application windows.
+         * @hide
+         */
+        public static final int WINDOWING_LAYER_NORMAL_APP = 1;
+        /**
+         * The windowing layer for pinned windows, these windows are typically displayed above
+         * normal application windows.
+         * @hide
+         */
+        public static final int WINDOWING_LAYER_PINNED = 2;
+
+        /**
+         * Defines the windowing layer for a task, which can affect its Z-ordering.
+         * @hide
+         */
+        @IntDef(prefix = { "WINDOWING_LAYER_" }, value = {
+                WINDOWING_LAYER_UNDEFINED,
+                WINDOWING_LAYER_NORMAL_APP,
+                WINDOWING_LAYER_PINNED,
+        })
+        @Retention(RetentionPolicy.SOURCE)
+        public @interface WindowingLayer {
+        }
+
         private IAppTask mAppTaskImpl;
 
         /** @hide */
@@ -6457,6 +6489,30 @@ public class ActivityManager {
             } catch (RemoteException e) {
                 throw e.rethrowFromSystemServer();
             }
+        }
+
+        /**
+         * Requests the windowing layer for this task. This can be used to affect the Z-ordering
+         * of the activity's window relative to other windows.
+         *
+         * <p>
+         * The task will be moved to the requested layer if possible.
+         *
+         * @param layer the {@link WindowingLayer} to move task to.
+         * @param executor an Executor used to invoke the callback
+         * @param callback a callback to receive the result of the request
+         * @hide
+         */
+        // TODO(b/442807136): Complete javadoc, add all requirements and detals needed
+        public void requestWindowingLayer(
+                @WindowingLayer int layer,
+                @NonNull @CallbackExecutor Executor executor,
+                @NonNull OutcomeReceiver<Void, Exception> callback) {
+            Objects.requireNonNull(executor, "executor cannot be null");
+            Objects.requireNonNull(callback, "callback cannot be null");
+            TaskWindowingLayerRequestHandler.requestWindowingLayer(
+                    layer, executor, callback, mAppTaskImpl
+            );
         }
     }
 

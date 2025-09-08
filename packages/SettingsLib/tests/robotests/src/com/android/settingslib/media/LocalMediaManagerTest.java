@@ -44,7 +44,6 @@ import android.media.MediaRoute2Info;
 import android.media.RoutingChangeInfo;
 import android.media.RoutingSessionInfo;
 import android.media.SuggestedDeviceInfo;
-import android.os.Handler;
 
 import com.android.settingslib.bluetooth.A2dpProfile;
 import com.android.settingslib.bluetooth.CachedBluetoothDevice;
@@ -72,6 +71,7 @@ import org.robolectric.shadows.ShadowLooper;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 @RunWith(RobolectricTestRunner.class)
 @Config(shadows = {ShadowBluetoothAdapter.class})
@@ -105,7 +105,6 @@ public class LocalMediaManagerTest {
     private MediaRoute2Info mRouteInfo2;
     @Mock
     private AudioManager mAudioManager;
-    @Mock private Handler mConnectSuggestedDeviceHandler;
     @Mock private SuggestedDeviceInfo mSuggestedDeviceInfo;
 
     private Context mContext;
@@ -159,7 +158,6 @@ public class LocalMediaManagerTest {
                 new LocalMediaManager(
                         mContext, mLocalBluetoothManager, mInfoMediaManager, TEST_PACKAGE_NAME);
         mLocalMediaManager.mAudioManager = mAudioManager;
-        mLocalMediaManager.mConnectSuggestedDeviceHandler = mConnectSuggestedDeviceHandler;
         mLocalMediaManager.registerCallback(mCallback);
         clearInvocations(mCallback);
     }
@@ -695,7 +693,12 @@ public class LocalMediaManagerTest {
 
         verify(mInfoMediaManager).connectToDevice(mInfoMediaDevice1, routingChangeInfo);
 
-        ShadowLooper.runUiThreadTasksIncludingDelayedTasks();
+        long scanAndConnectTimeoutSeconds = 30;
+        ShadowLooper.idleMainLooper(scanAndConnectTimeoutSeconds - 5, TimeUnit.SECONDS);
+
+        verify(mCallback, never()).onConnectSuggestedDeviceFinished(mSuggestedDeviceState, false);
+
+        ShadowLooper.idleMainLooper(6, TimeUnit.SECONDS);
 
         verify(mCallback).onConnectSuggestedDeviceFinished(mSuggestedDeviceState, false);
     }

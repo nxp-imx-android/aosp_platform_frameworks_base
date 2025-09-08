@@ -118,6 +118,8 @@
     <string name="bluetooth_hearing_aid_right_active" msgid="2244728507170385397">"செயலில் உள்ளது (வலதுபுறம் மட்டும்)"</string>
     <string name="bluetooth_hearing_aid_left_and_right_active" msgid="4294571497939983181">"செயலில் உள்ளது (இடது மற்றும் வலதுபுறம்)"</string>
     <string name="bluetooth_hearing_device_ambient_error" msgid="6035857289108813878">"சுற்றுப்புறங்களைப் புதுப்பிக்க முடியவில்லை"</string>
+    <!-- no translation found for bluetooth_hearing_aids_presets_error (4523942574698610976) -->
+    <skip />
     <string name="bluetooth_active_media_only_battery_level" msgid="7772517511061834073">"செயலிலுள்ளது (மீடியா மட்டும்). <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE">%1$s</xliff:g> பேட்டரி."</string>
     <string name="bluetooth_active_media_only_battery_level_untethered" msgid="7444753133664620926">"செயலிலுள்ளது (மீடியா மட்டும்). இடது பேட்டரி: <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE_0">%1$s</xliff:g>, வலது பேட்டரி: <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE_1">%2$s</xliff:g>."</string>
     <string name="bluetooth_guest_battery_level" msgid="2820003593899467676">"விருந்தினர் சாதனம். <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE">%1$s</xliff:g> பேட்டரி."</string>
@@ -347,8 +349,7 @@
     <string name="wifi_non_persistent_mac_randomization_summary" msgid="2159794543105053930">"இந்தப் பயன்முறை இயக்கப்பட்டிருக்கும்போது இந்தச் சாதனத்தின் MAC முகவரி ஒவ்வொரு முறை \'MAC முகவரியை ரேண்டம் ஆக்குதல்\' இயக்கப்பட்டிருக்கும் நெட்வொர்க்குடன் இணைக்கப்படும்போதும் மாறக்கூடும்."</string>
     <string name="wifi_metered_label" msgid="8737187690304098638">"கட்டண நெட்வொர்க்"</string>
     <string name="wifi_unmetered_label" msgid="6174142840934095093">"கட்டணமில்லா நெட்வொர்க்"</string>
-    <!-- no translation found for select_logd_size_title (4393502933789367691) -->
-    <skip />
+    <string name="select_logd_size_title" msgid="4393502933789367691">"Logger இடையக அளவு"</string>
     <string name="select_logd_size_dialog_title" msgid="2105401994681013578">"லாக் பஃபர் ஒன்றிற்கு லாகர் அளவுகளைத் தேர்வுசெய்க"</string>
     <string name="dev_logpersist_clear_warning_title" msgid="8631859265777337991">"லாகரின் நிலையான சேமிப்பகத்தை அழிக்கவா?"</string>
     <string name="dev_logpersist_clear_warning_message" msgid="6447590867594287413">"இனி நிலையான லாகர் மூலம் நாங்கள் கண்காணிக்க முடியாத நிலை ஏற்படும் போது, உங்கள் சாதனத்தில் உள்ள லாகர் தரவை நாங்கள் அழிக்க வேண்டி இருக்கும்."</string>

@@ -61,7 +61,8 @@ public class DeveloperVerifierExperimentProvider {
             mExperiments.put(packageName,
                     new ExperimentConfiguration(verificationPolicy, validStatuses));
         }
-        final String token = "addExperiment:" + packageName;
+        final String token = getExperimentToken(packageName);
+        // Remove any previously set cleaning task for this package
         mHandler.removeCallbacksAndEqualMessages(token);
         // Automatically remove the experiment after timeout
         mHandler.postDelayed(() -> {
@@ -71,6 +72,20 @@ public class DeveloperVerifierExperimentProvider {
         }, token, EXPERIMENT_TIMEOUT_MILLIS);
     }
 
+    /**
+     * Remove the experiment for a package.
+     */
+    public void clearExperiment(String packageName) {
+        synchronized (mExperiments) {
+            mExperiments.remove(packageName);
+        }
+        // Remove any previously set cleaning task for this package
+        mHandler.removeCallbacksAndEqualMessages(getExperimentToken(packageName));
+    }
+
+    private String getExperimentToken(String packageName) {
+        return "addExperiment:" + packageName;
+    }
     /**
      * Check if the provider has an experiment for the given package.
      */

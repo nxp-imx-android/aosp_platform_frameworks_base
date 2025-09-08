@@ -126,7 +126,6 @@ import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow
 import com.android.systemui.statusbar.notification.row.ExpandableView;
 import com.android.systemui.statusbar.notification.row.StackScrollerDecorView;
 import com.android.systemui.statusbar.notification.shared.NotificationBundleUi;
-import com.android.systemui.statusbar.notification.shared.NotificationContentAlphaOptimization;
 import com.android.systemui.statusbar.notification.shared.NotificationHeadsUpCycling;
 import com.android.systemui.statusbar.notification.shared.NotificationMinimalism;
 import com.android.systemui.statusbar.notification.shared.NotificationThrottleHun;
@@ -4872,9 +4871,7 @@ public class NotificationStackScrollLayout
                 if (SceneContainerFlag.isEnabled()) {
                     setHeadsUpAnimatingAway(false);
                 }
-                if (NotificationContentAlphaOptimization.isEnabled()) {
-                    resetChildAlpha();
-                }
+                resetChildAlpha();
             } else {
                 mGroupExpansionManager.collapseGroups();
                 mExpandHelper.cancelImmediately();

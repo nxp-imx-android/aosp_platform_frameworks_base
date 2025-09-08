@@ -56,7 +56,6 @@ import com.android.systemui.plugins.statusbar.NotificationMenuRowPlugin;
 import com.android.systemui.plugins.statusbar.NotificationSwipeActionHelper.SnoozeOption;
 import com.android.systemui.statusbar.NotificationShelf;
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow;
-import com.android.systemui.statusbar.notification.shared.NotificationContentAlphaOptimization;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -718,7 +717,6 @@ public class NotificationSwipeHelperTest extends SysuiTestCase {
     }
 
     @Test
-    @EnableFlags(NotificationContentAlphaOptimization.FLAG_NAME)
     public void testForceResetSwipeStateDoesNothingIfTranslationIsZeroAndAlphaIsOne() {
         doReturn(FAKE_ROW_WIDTH).when(mNotificationRow).getMeasuredWidth();
         doReturn(0f).when(mNotificationRow).getTranslationX();
@@ -732,7 +730,6 @@ public class NotificationSwipeHelperTest extends SysuiTestCase {
     }
 
     @Test
-    @EnableFlags(NotificationContentAlphaOptimization.FLAG_NAME)
     public void testForceResetSwipeStateResetsAlphaIfTranslationIsZeroAndAlphaNotOne() {
         doReturn(FAKE_ROW_WIDTH).when(mNotificationRow).getMeasuredWidth();
         doReturn(0f).when(mNotificationRow).getTranslationX();

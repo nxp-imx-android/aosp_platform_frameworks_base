@@ -171,13 +171,23 @@ public class TaskSnapshotConvertUtil {
                 final Image.Plane plane = planes[0];
                 final int rowPadding = plane.getRowStride() - plane.getPixelStride()
                         * image.getWidth();
+                final int widthPadding = rowPadding / plane.getPixelStride();
                 final Bitmap swBitmap = Bitmap.createBitmap(
-                        image.getWidth() + rowPadding / plane.getPixelStride() /* width */,
+                        image.getWidth() + widthPadding /* width */,
                         image.getHeight() /* height */,
                         pixelFormat == PixelFormat.RGB_565
                                 ? Bitmap.Config.RGB_565 : Bitmap.Config.ARGB_8888);
                 swBitmap.copyPixelsFromBuffer(plane.getBuffer());
-                return swBitmap;
+                if (widthPadding == 0) {
+                    return swBitmap;
+                }
+                // Crop the full memory width of the image data (rowStride), which often includes
+                // extra padding bytes on the side for memory alignment.
+                final Bitmap finalBitmap = Bitmap.createBitmap(swBitmap, 0 /* x */, 0 /* y */,
+                        width, // Crop to the required width of the image.
+                        height);
+                swBitmap.recycle();
+                return finalBitmap;
             }
         }
     }

@@ -28,6 +28,8 @@
     <string name="chooser_title" msgid="2235819929238267637">"Válassza ki a beállítani kívánt <xliff:g id="PROFILE_NAME">%1$s</xliff:g> nevét."</string>
     <string name="single_device_title" msgid="4199861437545438606">"Keresés – <xliff:g id="PROFILE_NAME">%1$s</xliff:g>"</string>
     <string name="summary_watch" msgid="8134580124808507407">"Ez az alkalmazás képes lesz szinkronizálni információkat (például a hívó fél nevét), és hozzáférhet majd ezekhez az engedélyekhez a <xliff:g id="DEVICE_TYPE">%1$s</xliff:g>"</string>
+    <!-- no translation found for profile_name_fitness_tracker (3107192493390199691) -->
+    <skip />
     <string name="confirmation_title_glasses" msgid="8288346850537727333">"Engedélyezi, hogy a(z) &lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; kezelje a következő eszközt: &lt;strong&gt;<xliff:g id="DEVICE_NAME">%2$s</xliff:g>&lt;/strong&gt;?"</string>
     <string name="profile_name_glasses" msgid="3506504967216601277">"eszköz"</string>
     <string name="summary_glasses" msgid="5469208629679579157">"Az alkalmazás hozzáférhet majd ezekhez az engedélyekhez a következőn: <xliff:g id="DEVICE_TYPE">%1$s</xliff:g>"</string>

@@ -89,11 +89,6 @@ public final class HsumBootUserInitializerInitMethodTest {
     @UserIdInt
     private static final int REGULAR_USER_ID = 16;
 
-    private static final int DESKTOP_BOOT_STRATEGY =
-            UserManagerService.BOOT_STRATEGY_TO_HSU_FOR_PROVISIONED_DEVICE;
-    private static final int MOBILE_BOOT_STRATEGY =
-            UserManagerService.BOOT_STRATEGY_DO_NOT_OVERRIDE;
-
     // Pre-defined users. NOTE: only setting basic flags and not setting UserType.
     private final UserInfo mHeadlessSystemUser =
             createUser(USER_SYSTEM, FLAG_SYSTEM | FLAG_ADMIN);
@@ -131,143 +126,55 @@ public final class HsumBootUserInitializerInitMethodTest {
 
     private final boolean mShouldAlwaysHaveMainUser;
     private final boolean mShouldCreateInitialUser;
-    private final int mBootStrategy;
     private final InitialUsers mInitialUsers;
     private final ExpectedResult mExpectedResult;
 
+    // NOTE: do NOT auto-format lines below, otherwise it'd be harder to read; if repo upload fails,
+    // try 'repo upload --no-verify --ignore-hooks' instead (after fixing other reported issues)
+
+    // CHECKSTYLE:OFF Generated code
+
     /** Useless javadoc to make checkstyle happy... */
-    @Parameters(
-            name = "{index}: hasMain={0},createInitial={1},initial={2},bootStrategy={3},result={4}")
+    @Parameters(name = "{index}: hasMain={0},createInitial={1},initial={2},result={3}")
     public static Collection<Object[]> junitParametersPassedToConstructor() {
-        return Arrays.asList(
-                new Object[][] {
-                    // shouldAlwaysHaveMainUser false, shouldCreateInitialUser false,
-                    // bootStrategy MOBILE_BOOT_STRATEGY
-                    {false, false, SYSTEM_ONLY, MOBILE_BOOT_STRATEGY, NO_USER_CREATED},
-                    {false, false, SYSTEM_AND_MAIN, MOBILE_BOOT_STRATEGY, MAIN_USER_DEMOTED},
-                    {false, false, SYSTEM_AND_ADMINS, MOBILE_BOOT_STRATEGY, NO_USER_CREATED},
-                    {
-                        false,
-                        false,
-                        SYSTEM_AND_ADMINS_FIRST_ADMIN_UNPROMOTABLE,
-                        MOBILE_BOOT_STRATEGY,
-                        NO_USER_CREATED
-                    },
-                    {false, false, SYSTEM_AND_REGULAR, MOBILE_BOOT_STRATEGY, NO_USER_CREATED},
-                    // shouldAlwaysHaveMainUser false, shouldCreateInitialUser true,
-                    // bootStrategy MOBILE_BOOT_STRATEGY
-                    // true
-                    {false, true, SYSTEM_ONLY, MOBILE_BOOT_STRATEGY, ADMIN_USER_CREATED},
-                    {false, true, SYSTEM_AND_MAIN, MOBILE_BOOT_STRATEGY, MAIN_USER_DEMOTED},
-                    {false, true, SYSTEM_AND_ADMINS, MOBILE_BOOT_STRATEGY, NO_USER_CREATED},
-                    {
-                        false,
-                        true,
-                        SYSTEM_AND_ADMINS_FIRST_ADMIN_UNPROMOTABLE,
-                        MOBILE_BOOT_STRATEGY,
-                        NO_USER_CREATED
-                    },
-                    {false, true, SYSTEM_AND_REGULAR, MOBILE_BOOT_STRATEGY, NO_USER_CREATED},
-                    // shouldAlwaysHaveMainUser true, shouldCreateInitialUser false,
-                    // bootStrategy MOBILE_BOOT_STRATEGY
-                    {true, false, SYSTEM_ONLY, MOBILE_BOOT_STRATEGY, MAIN_USER_CREATED},
-                    {true, false, SYSTEM_AND_MAIN, MOBILE_BOOT_STRATEGY, NO_USER_CREATED},
-                    {
-                        true,
-                        false,
-                        SYSTEM_AND_ADMINS,
-                        MOBILE_BOOT_STRATEGY,
-                        FIRST_ADMIN_USER_PROMOTED_TO_MAIN
-                    },
-                    {
-                        true,
-                        false,
-                        SYSTEM_AND_ADMINS_FIRST_ADMIN_UNPROMOTABLE,
-                        MOBILE_BOOT_STRATEGY,
-                        SECOND_ADMIN_USER_PROMOTED_TO_MAIN
-                    },
-                    {true, false, SYSTEM_AND_REGULAR, MOBILE_BOOT_STRATEGY, MAIN_USER_CREATED},
-                    // shouldAlwaysHaveMainUser true, shouldCreateInitialUser true,
-                    // bootStrategy MOBILE_BOOT_STRATEGY
-                    {true, true, SYSTEM_ONLY, MOBILE_BOOT_STRATEGY, MAIN_USER_CREATED},
-                    {true, true, SYSTEM_AND_MAIN, MOBILE_BOOT_STRATEGY, NO_USER_CREATED},
-                    {
-                        true,
-                        true,
-                        SYSTEM_AND_ADMINS_FIRST_ADMIN_UNPROMOTABLE,
-                        MOBILE_BOOT_STRATEGY,
-                        SECOND_ADMIN_USER_PROMOTED_TO_MAIN
-                    },
-                    {true, true, SYSTEM_AND_REGULAR, MOBILE_BOOT_STRATEGY, MAIN_USER_CREATED},
-                    // bootStrategy DESKTOP_BOOT_STRATEGY
-                    {true, true, SYSTEM_AND_MAIN, DESKTOP_BOOT_STRATEGY, NO_USER_CREATED},
-                    {true, false, SYSTEM_AND_MAIN, DESKTOP_BOOT_STRATEGY, NO_USER_CREATED},
-                    {false, true, SYSTEM_AND_MAIN, DESKTOP_BOOT_STRATEGY, MAIN_USER_DEMOTED},
-                    {false, false, SYSTEM_AND_MAIN, DESKTOP_BOOT_STRATEGY, MAIN_USER_DEMOTED},
-                    {true, true, SYSTEM_ONLY, DESKTOP_BOOT_STRATEGY, MAIN_USER_CREATED},
-                    {
-                        true,
-                        true,
-                        SYSTEM_AND_ADMINS,
-                        DESKTOP_BOOT_STRATEGY,
-                        FIRST_ADMIN_USER_PROMOTED_TO_MAIN
-                    },
-{
-                        true,
-                        true,
-                        SYSTEM_AND_ADMINS_FIRST_ADMIN_UNPROMOTABLE,
-                        DESKTOP_BOOT_STRATEGY,
-                        SECOND_ADMIN_USER_PROMOTED_TO_MAIN
-                    },
-                    {true, true, SYSTEM_AND_REGULAR, DESKTOP_BOOT_STRATEGY, MAIN_USER_CREATED},
-                    // hasMain=true, createInitial=false
-                    {true, false, SYSTEM_ONLY, DESKTOP_BOOT_STRATEGY, MAIN_USER_CREATED},
-                    {
-                        true,
-                        false,
-                        SYSTEM_AND_ADMINS,
-                        DESKTOP_BOOT_STRATEGY,
-                        FIRST_ADMIN_USER_PROMOTED_TO_MAIN
-                    },
-                    {
-                        true,
-                        false,
-                        SYSTEM_AND_ADMINS_FIRST_ADMIN_UNPROMOTABLE,
-                        DESKTOP_BOOT_STRATEGY,
-                        SECOND_ADMIN_USER_PROMOTED_TO_MAIN
-                    },
-                    {true, false, SYSTEM_AND_REGULAR, DESKTOP_BOOT_STRATEGY, MAIN_USER_CREATED},
-                    // hasMain=false, createInitial=true
-                    {false, true, SYSTEM_ONLY, DESKTOP_BOOT_STRATEGY, ADMIN_USER_CREATED},
-                    {false, true, SYSTEM_AND_ADMINS, DESKTOP_BOOT_STRATEGY, NO_USER_CREATED},
-                    {
-                        false,
-                        true,
-                        SYSTEM_AND_ADMINS_FIRST_ADMIN_UNPROMOTABLE,
-                        DESKTOP_BOOT_STRATEGY,
-                        NO_USER_CREATED
-                    },
-                    {false, true, SYSTEM_AND_REGULAR, DESKTOP_BOOT_STRATEGY, NO_USER_CREATED},
-                    // hasMain=false, createInitial=false
-                    {false, false, SYSTEM_ONLY, DESKTOP_BOOT_STRATEGY, NO_USER_CREATED},
-                    {false, false, SYSTEM_AND_ADMINS, DESKTOP_BOOT_STRATEGY, NO_USER_CREATED},
-                    {
-                        false,
-                        false,
-                        SYSTEM_AND_ADMINS_FIRST_ADMIN_UNPROMOTABLE,
-                        DESKTOP_BOOT_STRATEGY,
-                        NO_USER_CREATED
-                    },
-                    {false, false, SYSTEM_AND_REGULAR, DESKTOP_BOOT_STRATEGY, NO_USER_CREATED}
-                });
+        return Arrays.asList(new Object[][] {
+
+    // shouldAlwaysHaveMainUser=false, shouldCreateInitialUser=false
+    { false, false, SYSTEM_ONLY, NO_USER_CREATED }, // index 0
+    { false, false, SYSTEM_AND_MAIN, MAIN_USER_DEMOTED },
+    { false, false, SYSTEM_AND_ADMINS, NO_USER_CREATED },
+    { false, false, SYSTEM_AND_ADMINS_FIRST_ADMIN_UNPROMOTABLE, NO_USER_CREATED },
+    { false, false, SYSTEM_AND_REGULAR, NO_USER_CREATED },
+    // shouldAlwaysHaveMainUser=false, shouldCreateInitialUser=true
+    { false, true, SYSTEM_ONLY, ADMIN_USER_CREATED}, // index 5
+    { false, true, SYSTEM_AND_MAIN, MAIN_USER_DEMOTED },
+    { false, true, SYSTEM_AND_ADMINS, NO_USER_CREATED },
+    { false, true, SYSTEM_AND_ADMINS_FIRST_ADMIN_UNPROMOTABLE, NO_USER_CREATED },
+    { false, true, SYSTEM_AND_REGULAR, NO_USER_CREATED },
+    // shouldAlwaysHaveMainUser=true, shouldCreateInitialUser=false
+    { true, false, SYSTEM_ONLY, MAIN_USER_CREATED }, // index 10
+    { true, false, SYSTEM_AND_MAIN, NO_USER_CREATED },
+    { true, false, SYSTEM_AND_ADMINS, FIRST_ADMIN_USER_PROMOTED_TO_MAIN },
+    { true, false, SYSTEM_AND_ADMINS_FIRST_ADMIN_UNPROMOTABLE, SECOND_ADMIN_USER_PROMOTED_TO_MAIN },
+    { true, false, SYSTEM_AND_REGULAR, MAIN_USER_CREATED },
+    // shouldAlwaysHaveMainUser=true, shouldCreateInitialUser=true
+    { true, true, SYSTEM_ONLY, MAIN_USER_CREATED }, // index 15
+    { true, true, SYSTEM_AND_MAIN, NO_USER_CREATED },
+    { true, true, SYSTEM_AND_ADMINS, FIRST_ADMIN_USER_PROMOTED_TO_MAIN },
+    { true, true, SYSTEM_AND_ADMINS_FIRST_ADMIN_UNPROMOTABLE, SECOND_ADMIN_USER_PROMOTED_TO_MAIN },
+    { true, true, SYSTEM_AND_REGULAR, MAIN_USER_CREATED }
+
+        // NOTE: if you add more arguments to the constructor, create a new block below by
+        // copying the "baseline" values above and changing the proper argument
+        });
     }
+    // CHECKSTYLE:ON Generated code
 
     public HsumBootUserInitializerInitMethodTest(boolean shouldAlwaysHaveMainUser,
-            boolean shouldCreateInitialUser, InitialUsers initialUsers, int bootStrategy,
+            boolean shouldCreateInitialUser, InitialUsers initialUsers,
             ExpectedResult expectedResult) {
         mShouldAlwaysHaveMainUser = shouldAlwaysHaveMainUser;
         mShouldCreateInitialUser = shouldCreateInitialUser;
-        mBootStrategy = bootStrategy;
         mInitialUsers = initialUsers;
         mExpectedResult = expectedResult;
         Log.i(TAG, "Constructor: shouldAlwaysHaveMainUser=" + shouldAlwaysHaveMainUser
@@ -337,7 +244,7 @@ public final class HsumBootUserInitializerInitMethodTest {
     @EnableFlags(FLAG_CREATE_INITIAL_USER)
     public void testFlagEnabled() {
         var initializer = createHsumBootUserInitializer(mShouldAlwaysHaveMainUser,
-                mShouldCreateInitialUser, mBootStrategy);
+                mShouldCreateInitialUser);
 
         initializer.init(mTracer);
 
@@ -383,8 +290,7 @@ public final class HsumBootUserInitializerInitMethodTest {
     @DisableFlags(FLAG_CREATE_INITIAL_USER)
     public void testFlagDisabled() {
         var initializer =
-                createHsumBootUserInitializer(
-                        mShouldAlwaysHaveMainUser, mShouldCreateInitialUser, mBootStrategy);
+                createHsumBootUserInitializer(mShouldAlwaysHaveMainUser, mShouldCreateInitialUser);
 
         initializer.init(mTracer);
 
@@ -403,10 +309,10 @@ public final class HsumBootUserInitializerInitMethodTest {
     }
 
     private HsumBootUserInitializer createHsumBootUserInitializer(
-            boolean shouldAlwaysHaveMainUser, boolean shouldCreateInitialUser, int bootStrategy) {
+            boolean shouldAlwaysHaveMainUser, boolean shouldCreateInitialUser) {
         mTracer = new TimingsTraceAndSlog(TAG);
         return new HsumBootUserInitializer(mMockUms, mMockAms, mMockPms, mMockContentResolver,
-                shouldAlwaysHaveMainUser, shouldCreateInitialUser, bootStrategy);
+                shouldAlwaysHaveMainUser, shouldCreateInitialUser);
     }
 
     private void expectMainUserCreated() {

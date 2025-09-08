@@ -107,7 +107,7 @@ val Kosmos.fakeDisplayInstanceLifecycleManager by
 
 val Kosmos.fakePerDisplayInstanceRepository by
     Kosmos.Fixture {
-        { lifecycleManager: DisplayInstanceLifecycleManager? ->
+        { lifecycleManager: DisplayInstanceLifecycleManager?, createInstanceEagerly: Boolean ->
             PerDisplayInstanceRepositoryImpl(
                 debugName = "fakePerDisplayInstanceRepository",
                 instanceProvider = fakePerDisplayInstanceProviderWithSetupAndTeardown,
@@ -115,6 +115,7 @@ val Kosmos.fakePerDisplayInstanceRepository by
                 testScope.backgroundScope,
                 displayRepository,
                 perDisplayDumpHelper,
+                createInstanceEagerly = createInstanceEagerly,
             )
         }
     }
@@ -134,9 +135,10 @@ val Kosmos.fakePerDisplaySysUIStateInstanceRepository by
     }
 
 fun Kosmos.createPerDisplayInstanceRepository(
-    overrideLifecycleManager: DisplayInstanceLifecycleManager? = null
+    overrideLifecycleManager: DisplayInstanceLifecycleManager? = null,
+    createInstanceEagerly: Boolean = false,
 ): PerDisplayInstanceRepositoryImpl<TestPerDisplayInstance> {
-    return fakePerDisplayInstanceRepository(overrideLifecycleManager)
+    return fakePerDisplayInstanceRepository(overrideLifecycleManager, createInstanceEagerly)
 }
 
 fun Kosmos.createPerDisplayInstanceSysUIStateRepository(

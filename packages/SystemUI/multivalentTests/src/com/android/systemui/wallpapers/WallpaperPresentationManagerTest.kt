@@ -104,7 +104,7 @@ class WallpaperPresentationManagerTest : SysuiTestCase() {
             fakeWallpaperPresentationInteractor._presentationFactoryFlow.emit(PROVISIONING)
             fakeWallpaperPresentationInteractor._presentationFactoryFlow.emit(NONE)
 
-            verify(provisioningPresentation).hide()
+            verify(provisioningPresentation).dismiss()
             verifyNoInteractions(keyguardPresentationFactory)
         }
 
@@ -116,7 +116,7 @@ class WallpaperPresentationManagerTest : SysuiTestCase() {
             fakeWallpaperPresentationInteractor._presentationFactoryFlow.emit(PROVISIONING)
             fakeWallpaperPresentationInteractor._presentationFactoryFlow.emit(KEYGUARD)
 
-            verify(provisioningPresentation).hide()
+            verify(provisioningPresentation).dismiss()
             verify(keyguardPresentationFactory).create(eq(testDisplay))
             verify(keyguardPresentation).show()
             verifyNoMoreInteractions(keyguardPresentation)
@@ -143,7 +143,7 @@ class WallpaperPresentationManagerTest : SysuiTestCase() {
             fakeWallpaperPresentationInteractor._presentationFactoryFlow.emit(KEYGUARD)
             fakeWallpaperPresentationInteractor._presentationFactoryFlow.emit(NONE)
 
-            verify(keyguardPresentation).hide()
+            verify(keyguardPresentation).dismiss()
             verifyNoInteractions(provisioningPresentationFactory)
         }
 
@@ -155,7 +155,7 @@ class WallpaperPresentationManagerTest : SysuiTestCase() {
             fakeWallpaperPresentationInteractor._presentationFactoryFlow.emit(KEYGUARD)
             fakeWallpaperPresentationInteractor._presentationFactoryFlow.emit(PROVISIONING)
 
-            verify(keyguardPresentation).hide()
+            verify(keyguardPresentation).dismiss()
             verify(provisioningPresentation).show()
             verifyNoMoreInteractions(provisioningPresentation)
         }
@@ -168,7 +168,7 @@ class WallpaperPresentationManagerTest : SysuiTestCase() {
 
             wallpaperPresentationManager.stop()
 
-            verify(provisioningPresentation).hide()
+            verify(provisioningPresentation).dismiss()
         }
 
     @Test
@@ -179,6 +179,6 @@ class WallpaperPresentationManagerTest : SysuiTestCase() {
 
             wallpaperPresentationManager.stop()
 
-            verify(keyguardPresentation).hide()
+            verify(keyguardPresentation).dismiss()
         }
 }

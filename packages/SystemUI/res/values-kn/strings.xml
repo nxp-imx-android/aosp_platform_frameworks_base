@@ -140,6 +140,8 @@
     <string name="screenrecord_stop_dialog_button" msgid="2883812564938194350">"ರೆಕಾರ್ಡಿಂಗ್ ನಿಲ್ಲಿಸಿ"</string>
     <string name="screen_record_entire_screen" msgid="66944996337928170">"ಸಂಪೂರ್ಣ ಸ್ಕ್ರೀನ್"</string>
     <string name="screen_record_single_app" msgid="7355880948574569290">"ಒಂದೇ ಆ್ಯಪ್"</string>
+    <!-- no translation found for screen_record_single_app_hint (8404332826093639170) -->
+    <skip />
     <string name="screen_record_single_app_no_recents" msgid="1023249803854209330">"ಒಂದೇ ಆ್ಯಪ್ (ಆರಿಸಲು ಆ್ಯಪ್ ತೆರೆಯಿರಿ)"</string>
     <string name="screen_record_record_device_audio_label" msgid="5363057443124085198">"ಸಾಧನದ ಆಡಿಯೋವನ್ನು ರೆಕಾರ್ಡ್ ಮಾಡಿ"</string>
     <string name="screen_record_record_microphone_label" msgid="4685753707185662381">"ಮೈಕ್ರೊಫೋನ್‌ ಮೂಲಕ ರೆಕಾರ್ಡ್ ಮಾಡಿ"</string>
@@ -147,6 +149,8 @@
     <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"ಸ್ಪರ್ಶಗಳನ್ನು ತೋರಿಸಿ"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"ರೆಕಾರ್ಡ್ ಮಾಡಲು ಆ್ಯಪ್ ಅನ್ನು ಆಯ್ಕೆಮಾಡಿ"</string>
     <string name="screen_record_video_saved" msgid="1345283626390232282">"ವೀಡಿಯೊ ಸೇವ್ ಆಗಿದೆ"</string>
+    <!-- no translation found for screen_record_undo (7942716736019800870) -->
+    <skip />
     <string name="screen_record_retake" msgid="3846643688365398450">"ಮತ್ತೆ ಸೆರೆಹಿಡಿಯಿರಿ"</string>
     <string name="screen_record_edit" msgid="8733014191240769309">"ಎಡಿಟ್ ಮಾಡಿ"</string>
     <string name="screen_record_delete" msgid="1023421937978254537">"ಅಳಿಸಿ"</string>
@@ -161,10 +165,8 @@
     <string name="screen_capture_toolbar_screenshot_button" msgid="5676585348709494125">"ಸ್ಕ್ರೀನ್‌ಶಾಟ್"</string>
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"ರೆಕಾರ್ಡ್ ಮಾಡಿ"</string>
     <string name="screen_share_toolbar_share_button" msgid="9182050596136815833">"ಹಂಚಿಕೊಳ್ಳಿ"</string>
-    <!-- no translation found for screen_share_no_select_app_thumbnail (1630012401570567430) -->
-    <skip />
-    <!-- no translation found for screen_share_app_audio_sharing (7201172218924898712) -->
-    <skip />
+    <string name="screen_share_no_select_app_thumbnail" msgid="1630012401570567430">"ಹಂಚಿಕೊಳ್ಳಲು ಆ್ಯಪ್ ಅನ್ನು ಆಯ್ಕೆಮಾಡಿ"</string>
+    <string name="screen_share_app_audio_sharing" msgid="7201172218924898712">"ವಿಂಡೋ ಆಡಿಯೊವನ್ನು ಹಂಚಿಕೊಳ್ಳಿ"</string>
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"ವಿಂಡೋದ ಸ್ಕ್ರೀನ್‌ಶಾಟ್ ತೆಗೆದುಕೊಳ್ಳಿ"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"ವಿಂಡೋ ರೆಕಾರ್ಡ್ ಮಾಡಿ"</string>
     <string name="screen_capture_toolbar_region_button_screenshot_a11y" msgid="2102262602357521192">"ಆಯ್ಕೆಮಾಡಿದ ಪ್ರದೇಶದ ಸ್ಕ್ರೀನ್‌ಶಾಟ್ ತೆಗೆದುಕೊಳ್ಳಿ"</string>
@@ -1141,14 +1143,18 @@
     <string name="accessibility_key_gesture_dialog_content" msgid="4519838108423437794">"ಆಕ್ಷನ್ "<annotation id="action_key_icon">"ಐಕಾನ್"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> ಎಂಬುದು <xliff:g id="ID_3">^3</xliff:g> ಬಳಸಲು ಕೀಬೋರ್ಡ್ ಶಾರ್ಟ್‌ಕಟ್ ಆಗಿದೆ. <xliff:g id="ID_4">^4</xliff:g>"</string>
     <string name="accessibility_key_gesture_dialog_talkback_intro" msgid="1617808784388544741">"<xliff:g id="ID_1">%1$s</xliff:g> ಎಂಬುದು ಸ್ಕ್ರೀನ್ ರೀಡರ್ ಆಗಿದ್ದು ಅದು ಸ್ಕ್ರೀನ್ ಮೇಲಿರುವುದನ್ನು ಗಟ್ಟಿಯಾಗಿ ಓದಲು ನಿಮಗೆ ಅನುವು ಮಾಡಿಕೊಡುತ್ತದೆ. ಸ್ಕ್ರೀನ್ ಅನ್ನು ನೋಡಲು ಕಷ್ಟಪಡುವ ಜನರಿಗೆ ಇದು ಸಹಾಯಕವಾಗಬಹುದು."</string>
     <string name="accessibility_key_gesture_dialog_positive_button_text" msgid="3670746017523589293">"ಆನ್ ಮಾಡಿ"</string>
+    <!-- no translation found for accessibility_key_gesture_shortcut_not_yet_enabled_dialog_title (5331043821287212071) -->
+    <skip />
+    <!-- no translation found for accessibility_key_gesture_shortcut_not_yet_enabled_negative_button_text (6711239406914231612) -->
+    <skip />
+    <!-- no translation found for accessibility_key_gesture_shortcut_not_yet_enabled_positive_button_text (7748487028569821131) -->
+    <skip />
     <string name="accessibility_key_gesture_magnification_dialog_title" msgid="5770691510738701250">"<xliff:g id="ID_1">%1$s</xliff:g> ಕೀಬೋರ್ಡ್ ಶಾರ್ಟ್‌ಕಟ್ ಅನ್ನು ಆನ್ ಮಾಡಲಾಗಿದೆ"</string>
-    <string name="accessibility_key_gesture_magnification_dialog_content" msgid="7575802369763469379">"<xliff:g id="ID_3">^3</xliff:g> ಅನ್ನು ಬಳಸಲು ಆ್ಯಕ್ಷನ್ "<annotation id="action_key_icon">"ಐಕಾನ್"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> ಕೀಬೋರ್ಡ್ ಶಾರ್ಟ್‌ಕಟ್ ಆಗಿದೆ. ಕಂಟೆಂಟ್ ಅನ್ನು ದೊಡ್ಡದಾಗಿಸಲು ಸ್ಕ್ರೀನ್ ಮೇಲೆ ತ್ವರಿತವಾಗಿ ಝೂಮ್ ಇನ್ ಮಾಡಲು ಇದು ನಿಮಗೆ ಅವಕಾಶ ನೀಡುತ್ತದೆ. ಝೂಮ್ ಅನ್ನು ಅಡ್ಜಸ್ಟ್ ಮಾಡಲು ಆ್ಯಕ್ಷನ್ "<annotation id="action_key_icon">"ಐಕಾನ್"</annotation>" + <xliff:g id="ID_4">^1</xliff:g> ಮತ್ತು \"+\" ಅಥವಾ \"-\" ಒತ್ತಿರಿ."</string>
+    <!-- no translation found for accessibility_key_gesture_magnification_dialog_content (582920726242272572) -->
+    <skip />
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"ಶಾರ್ಟ್‌ಕಟ್ ಅನ್ನು ಆಫ್ ಮಾಡಿ"</string>
     <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"ಆನ್‌ನಲ್ಲಿ ಇರಿಸಿ"</string>
-    <string name="accessibility_key_gesture_voice_access_dialog_title" msgid="7828090789777023683">"<xliff:g id="ID_1">%1$s</xliff:g> ಕೀಬೋರ್ಡ್ ಶಾರ್ಟ್‌ಕಟ್ ಅನ್ನು ಆನ್ ಮಾಡಬೇಕೇ?"</string>
     <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="7934170819801013870">"ಆ್ಯಕ್ಷನ್ "<annotation id="action_key_icon">"ಐಕಾನ್"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> ಒತ್ತಿದರೆ <xliff:g id="ID_3">^3</xliff:g> ಆನ್ ಆಗುತ್ತದೆ, ಇದು ಆ್ಯಕ್ಸೆಸಿಬಿಲಿಟಿ ಫೀಚರ್ ಆಗಿದೆ. ಇದು ನಿಮ್ಮ ಸಾಧನವನ್ನು ಹ್ಯಾಂಡ್ಸ್-ಫ್ರೀ ಆಗಿ ನಿಯಂತ್ರಿಸಲು ನಿಮಗೆ ಅವಕಾಶ ನೀಡುತ್ತದೆ."</string>
-    <string name="accessibility_key_gesture_voice_access_dialog_negative_button_text" msgid="3573570279554465078">"ಆನ್ ಮಾಡಬೇಡಿ"</string>
-    <string name="accessibility_key_gesture_voice_access_dialog_positive_button_text" msgid="2306321856544446858">"ಶಾರ್ಟ್‌ಕಟ್ ಅನ್ನು ಆನ್ ಮಾಡಿ"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"ಲಾಕ್ ಸ್ಕ್ರೀನ್"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"ಶಟ್ ಡೌನ್‌ ಮಾಡಲಾಗುತ್ತಿದೆ…"</string>
     <string name="thermal_shutdown_dialog_help_text" msgid="6413474593462902901">"ಕಾಳಜಿಯ ಹಂತಗಳನ್ನು ವೀಕ್ಷಿಸಿ"</string>
@@ -1618,6 +1624,8 @@
     <string name="shortcut_helper_customize_dialog_reset_button_label" msgid="7645535254306312685">"ಹೌದು, ರೀಸೆಟ್ ಮಾಡಿ"</string>
     <string name="shortcut_helper_customize_dialog_cancel_button_label" msgid="5595546460431741178">"ರದ್ದುಮಾಡಿ"</string>
     <string name="shortcut_helper_add_shortcut_dialog_placeholder" msgid="9154297849458741995">"ಕೀ ಅನ್ನು ಒತ್ತಿರಿ"</string>
+    <!-- no translation found for shortcut_helper_customizer_action_key_text (3979063901857046887) -->
+    <skip />
     <string name="shortcut_customizer_key_combination_in_use_error_message" msgid="3325858369539848162">"ಕೀ ಸಂಯೋಜನೆಯು ಈಗಾಗಲೇ ಬಳಕೆಯಲ್ಲಿದೆ. ಮತ್ತೊಂದು ಸಂಯೋಜನೆಯನ್ನು ನೋಡಿ."</string>
     <string name="shortcut_customizer_generic_error_message" msgid="3128454624049722741">"ಶಾರ್ಟ್‌ಕಟ್‌ ಅನ್ನು ಸೆಟ್‌ ಮಾಡಲು ಸಾಧ್ಯವಿಲ್ಲ."</string>
     <string name="shortcut_helper_plus_symbol" msgid="4534843157353732011">"+"</string>

@@ -134,16 +134,6 @@ flag {
 }
 
 flag {
-    name: "notification_content_alpha_optimization"
-    namespace: "systemui"
-    description: "Only reset alpha values of needed content views"
-    bug: "292024656"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
    name: "notification_transparent_header_fix"
    namespace: "systemui"
    description: "fix the transparent group header issue for async header inflation."
@@ -500,17 +490,6 @@ flag {
     description: "Build time flag for 2025 icon refresh"
     bug: "391605373"
     is_fixed_read_only: true
-}
-
-flag {
-    name: "global_actions_icon_refresh_2025"
-    namespace: "systemui"
-    description: "Build time flag for 2025 power menu icon refresh"
-    bug: "427755140"
-    is_fixed_read_only: true
-    metadata {
-      purpose: PURPOSE_BUGFIX
-    }
 }
 
 flag {

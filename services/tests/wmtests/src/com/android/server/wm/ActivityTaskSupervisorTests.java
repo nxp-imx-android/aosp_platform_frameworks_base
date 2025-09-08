@@ -654,6 +654,25 @@ public class ActivityTaskSupervisorTests extends WindowTestsBase {
         assertThat(mSupervisor.mOpaqueContainerHelper.isOpaque(nonLeafTask)).isFalse();
     }
 
+    @Test
+    public void testOpaque_leafTaskUpdated() {
+        final Task rootTask = new TaskBuilder(mSupervisor).setCreatedByOrganizer(true).build();
+        final TaskFragment opaqueTask = createChildTaskFragment(rootTask,
+                WINDOWING_MODE_FREEFORM, /* opaque */ true, /* filling */ true);
+        final Task childTask = new TaskBuilder(mSupervisor).setParentTask(rootTask).build();
+        final ActivityRecord directChildActivity = new ActivityBuilder(mAtm).setTask(childTask)
+                .build();
+
+        directChildActivity.setOccludesParent(false);
+
+        assertThat(mSupervisor.mOpaqueContainerHelper.isOpaque(childTask)).isFalse();
+        assertThat(mSupervisor.mOpaqueContainerHelper.isOpaque(opaqueTask)).isTrue();
+
+        directChildActivity.setOccludesParent(true);
+
+        assertThat(mSupervisor.mOpaqueContainerHelper.isOpaque(childTask)).isTrue();
+    }
+
     @NonNull
     private TaskFragment createChildTaskFragment(@NonNull Task parent,
             @WindowConfiguration.WindowingMode int windowingMode,

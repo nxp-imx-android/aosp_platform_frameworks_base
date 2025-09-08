@@ -164,4 +164,5 @@ interface IAppOpsService {
             @nullable String attributionTag, int virtualDeviceId);
     ParceledListSlice<AppOpsManager.PackageOps> getPackagesForOpsForDevice(in int[] ops, String persistentDeviceId);
     oneway void noteOperationsInBatch(in Map batchedNoteOps);
+    List<String> getPackagesWithNonDefaultUidMode(int op, int mode, int userId);
 }

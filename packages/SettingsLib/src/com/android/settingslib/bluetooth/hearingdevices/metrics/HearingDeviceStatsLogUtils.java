@@ -177,15 +177,13 @@ public final class HearingDeviceStatsLogUtils {
 
         if (profileState == BluetoothProfile.STATE_CONNECTED) {
             // Saves connected timestamp as the source for judging whether to display the survey
-            if (profile instanceof LeAudioProfile) {
-                if (isHearingDevice(cachedDevice)) {
-                    addCurrentTimeToHistory(context, HistoryType.TYPE_LE_HEARING_CONNECTED);
-                } else {
-                    addCurrentTimeToHistory(context, HistoryType.TYPE_LE_HEARABLE_CONNECTED);
-                }
-            } else if (isHearingProfile(profile)) {
+            if (profile instanceof LeAudioProfile && !isHearingDevice(cachedDevice)) {
+                addCurrentTimeToHistory(context, HistoryType.TYPE_LE_HEARABLE_CONNECTED);
+            } else if (profile instanceof HapClientProfile) {
+                addCurrentTimeToHistory(context, HistoryType.TYPE_LE_HEARING_CONNECTED);
+            } else if (profile instanceof HearingAidProfile) {
                 addCurrentTimeToHistory(context, HistoryType.TYPE_HEARING_DEVICES_CONNECTED);
-            } else if (isHearableProfile(profile)) {
+            } else if (profile instanceof A2dpProfile || profile instanceof HeadsetProfile) {
                 addCurrentTimeToHistory(context, HistoryType.TYPE_HEARABLE_DEVICES_CONNECTED);
             }
         }
@@ -270,9 +268,9 @@ public final class HearingDeviceStatsLogUtils {
         }
         if (history.peekLast() != null && isSameDay(timestamp, history.peekLast())) {
             if (DEBUG) {
-                Log.w(TAG, "Skip record of history type=" + type + ", it's same day record");
+                Log.w(TAG, "Remove the earlier same day record of history type=" + type);
             }
-            return;
+            history.remove(history.peekLast());
         }
         history.add(timestamp);
         SharedPreferences.Editor editor = getSharedPreferences(context).edit();

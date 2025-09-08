@@ -2334,7 +2334,13 @@
 
     <!-- @SystemApi @hide Allows applications to register network factory or agent -->
     <permission android:name="android.permission.NETWORK_FACTORY"
+                android:featureFlag="!android.permission.flags.bluetooth_permission_use_module_protection_level"
                 android:protectionLevel="signature|role" />
+
+    <!-- @SystemApi @hide Allows applications to register network factory or agent -->
+    <permission android:name="android.permission.NETWORK_FACTORY"
+                android:featureFlag="android.permission.flags.bluetooth_permission_use_module_protection_level"
+                android:protectionLevel="signature|role|module" />
 
     <!-- @SystemApi @hide Allows applications to register a NetworkAgent for its own use.
          <p>Such networks are not available to other applications on the device unless they have
@@ -2584,14 +2590,30 @@
          @hide
     -->
     <permission android:name="android.permission.BLUETOOTH_MAP"
+        android:featureFlag="!android.permission.flags.bluetooth_permission_use_module_protection_level"
         android:protectionLevel="signature|role" />
+    <!-- @SystemApi Control access to email providers exclusively for Bluetooth
+         @hide
+    -->
+    <permission android:name="android.permission.BLUETOOTH_MAP"
+        android:featureFlag="android.permission.flags.bluetooth_permission_use_module_protection_level"
+        android:protectionLevel="signature|role|module" />
+
 
     <!-- Allows bluetooth stack to access files
          This should only be granted to the Bluetooth apk.
          @hide @SystemApi(client=android.annotation.SystemApi.Client.MODULE_LIBRARIES)
     -->
     <permission android:name="android.permission.BLUETOOTH_STACK"
+        android:featureFlag="!android.permission.flags.bluetooth_permission_use_module_protection_level"
         android:protectionLevel="signature|role" />
+    <!-- Allows bluetooth stack to access files
+         This should only be granted to the Bluetooth apk.
+         @hide @SystemApi(client=android.annotation.SystemApi.Client.MODULE_LIBRARIES)
+    -->
+    <permission android:name="android.permission.BLUETOOTH_STACK"
+        android:featureFlag="android.permission.flags.bluetooth_permission_use_module_protection_level"
+        android:protectionLevel="signature|role|module" />
 
     <!-- Allows uhid write access for creating virtual input devices
          @hide
@@ -2955,7 +2977,13 @@
     <!-- Allows access to configure network interfaces, configure/use IPSec, etc.
          @hide -->
     <permission android:name="android.permission.NET_ADMIN"
+        android:featureFlag="!android.permission.flags.bluetooth_permission_use_module_protection_level"
         android:protectionLevel="signature|role" />
+    <!-- Allows access to configure network interfaces, configure/use IPSec, etc.
+         @hide -->
+    <permission android:name="android.permission.NET_ADMIN"
+        android:featureFlag="android.permission.flags.bluetooth_permission_use_module_protection_level"
+        android:protectionLevel="signature|role|module" />
 
     <!-- Allows registration for remote audio playback. @hide -->
     <permission android:name="android.permission.REMOTE_AUDIO_PLAYBACK"
@@ -3085,7 +3113,13 @@
     <!-- Allows listen permission to always reported system signal strength.
          @hide Used internally. -->
     <permission android:name="android.permission.LISTEN_ALWAYS_REPORTED_SIGNAL_STRENGTH"
+        android:featureFlag="!android.permission.flags.bluetooth_permission_use_module_protection_level"
         android:protectionLevel="signature|role" />
+    <!-- Allows listen permission to always reported system signal strength.
+         @hide Used internally. -->
+    <permission android:name="android.permission.LISTEN_ALWAYS_REPORTED_SIGNAL_STRENGTH"
+        android:featureFlag="android.permission.flags.bluetooth_permission_use_module_protection_level"
+        android:protectionLevel="signature|role|module" />
 
     <!-- @SystemApi Protects the ability to register any PhoneAccount with
          PhoneAccount#CAPABILITY_SIM_SUBSCRIPTION. This capability indicates that the PhoneAccount
@@ -5607,7 +5641,14 @@
          Not for use by third party apps.
          @hide -->
     <permission android:name="android.permission.MANAGE_APP_OPS_MODES"
+        android:featureFlag="!android.permission.flags.bluetooth_permission_use_module_protection_level"
         android:protectionLevel="signature|installer|verifier|role" />
+    <!-- @TestApi Allows an application to update the user app op modes.
+         Not for use by third party apps.
+         @hide -->
+    <permission android:name="android.permission.MANAGE_APP_OPS_MODES"
+        android:featureFlag="android.permission.flags.bluetooth_permission_use_module_protection_level"
+        android:protectionLevel="signature|installer|verifier|role|module" />
 
     <!-- @SystemApi Allows an application to open windows that are for use by parts
          of the system user interface.
@@ -6945,7 +6986,13 @@
     <!-- @TestApi Allows an application to query audio related state.
          @hide -->
     <permission android:name="android.permission.QUERY_AUDIO_STATE"
+                android:featureFlag="!android.permission.flags.bluetooth_permission_use_module_protection_level"
                 android:protectionLevel="signature|role" />
+    <!-- @TestApi Allows an application to query audio related state.
+         @hide -->
+    <permission android:name="android.permission.QUERY_AUDIO_STATE"
+                android:featureFlag="android.permission.flags.bluetooth_permission_use_module_protection_level"
+                android:protectionLevel="signature|role|module" />
 
     <!-- Allows an application to modify what effects are applied to all audio
          (matching certain criteria) from any application.
@@ -7025,7 +7072,15 @@
         @hide
     -->
    <permission android:name="android.permission.DEVICE_POWER"
+        android:featureFlag="!android.permission.flags.bluetooth_permission_use_module_protection_level"
         android:protectionLevel="signature|role" />
+   <!-- @SystemApi Allows low-level access to power management.
+        <p>Not for use by third-party applications.
+        @hide
+    -->
+   <permission android:name="android.permission.DEVICE_POWER"
+        android:featureFlag="android.permission.flags.bluetooth_permission_use_module_protection_level"
+        android:protectionLevel="signature|role|module" />
 
     <!-- Allows toggling battery saver on the system.
          Superseded by DEVICE_POWER permission. @hide @SystemApi
@@ -7057,7 +7112,12 @@
 
    <!-- @hide Allows low-level access to tun tap driver -->
     <permission android:name="android.permission.NET_TUNNELING"
+        android:featureFlag="!android.permission.flags.bluetooth_permission_use_module_protection_level"
         android:protectionLevel="signature|role" />
+   <!-- @hide Allows low-level access to tun tap driver -->
+    <permission android:name="android.permission.NET_TUNNELING"
+        android:featureFlag="android.permission.flags.bluetooth_permission_use_module_protection_level"
+        android:protectionLevel="signature|role|module" />
 
     <!-- Run as a manufacturer test application, running as the root user.
          Only available when the device is running in manufacturer test mode.

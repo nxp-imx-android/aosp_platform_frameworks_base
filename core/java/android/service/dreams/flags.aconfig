@@ -102,6 +102,16 @@ flag {
 }
 
 flag {
+    name: "nap_when_dream_enabled"
+    namespace: "systemui"
+    description: "Allows napping only when dream settings is enabled"
+    bug: "436573884"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "allow_dream_with_charge_limit"
     namespace: "systemui"
     description: "Allows dreaming even when a charge limit is active"

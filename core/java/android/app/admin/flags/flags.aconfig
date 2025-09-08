@@ -528,3 +528,13 @@ flag {
   description: "Enable any user (not just the Main User) to be a DeviceOwner"
   bug: "435271558"
 }
+
+flag {
+  name: "fix_hsum_bugreport_share_crash"
+  namespace: "enterprise"
+  description: "[HSUM][Framework Bug][DO] TestDPC crashes when sharing a bugreport requested from TestDPC"
+  bug: "341879351"
+  metadata {
+    purpose: PURPOSE_BUGFIX
+  }
+}

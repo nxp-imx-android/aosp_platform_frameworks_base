@@ -37,6 +37,9 @@ interface IComputerControlSession {
     /* Injects a swipe event into the trusted virtual display. */
     void swipe(int fromX, int fromY, int toX, int toY);
 
+    /** Injects a long press event into the trusted virtual display. */
+    void longPress(int x, int y);
+
     /** Returns the ID of the single trusted virtual display for this session. */
     int getVirtualDisplayId();
 

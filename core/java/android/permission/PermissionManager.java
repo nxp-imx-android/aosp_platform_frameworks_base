@@ -2009,8 +2009,8 @@ public final class PermissionManager {
      */
     public static int resolveDeviceIdForPermissionCheck(@NonNull Context context, int deviceId,
             @Nullable String permission) {
-        if (deviceId == Context.DEVICE_ID_DEFAULT || !DEVICE_AWARE_PERMISSIONS.contains(
-                permission)) {
+        if (deviceId == Context.DEVICE_ID_DEFAULT || permission == null
+                || !DEVICE_AWARE_PERMISSIONS.contains(permission)) {
             return Context.DEVICE_ID_DEFAULT;
         }
 

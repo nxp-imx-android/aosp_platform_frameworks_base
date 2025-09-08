@@ -1585,6 +1585,29 @@
         <item name="android:drawableTint">@color/audio_sharing_btn_text_color</item>
     </style>
 
+    <!-- Hearing Device Dialog -->
+    <style name="TextAppearance.HearingDeviceDialog.Title" parent="TextAppearance.Dialog.Title">
+        <item name="android:textColor">@androidprv:color/materialColorSecondary</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:textDirection">locale</item>
+        <item name="android:fontFamily">@*android:string/config_headlineFontFamilyMedium</item>
+    </style>
+
+    <style name="HearingDeviceDialog" />
+    <style name="HearingDeviceDialog.Title">
+        <item name="android:paddingStart">@dimen/hearing_devices_small_title_padding_horizontal</item>
+        <item name="android:gravity">start|center_vertical</item>
+    </style>
+    <style name="HearingDeviceDialog.Spinner">
+        <item name="android:focusable">true</item>
+        <item name="android:clickable">true</item>
+        <item name="android:longClickable">false</item>
+        <item name="android:background">@drawable/hearing_devices_spinner_background</item>
+        <item name="android:popupBackground">@drawable/hearing_devices_spinner_popup_background</item>
+        <item name="android:dropDownWidth">match_parent</item>
+        <item name="android:dropDownVerticalOffset">0.5dp</item>
+    </style>
+
     <!-- Dream Overlay Complication UI styles -->
     <style name="clock_subtitle">
         <item name="android:textSize">@dimen/dream_overlay_complication_clock_subtitle_text_size

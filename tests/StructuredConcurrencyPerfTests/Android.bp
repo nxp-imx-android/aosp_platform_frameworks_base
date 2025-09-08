@@ -21,19 +21,16 @@ java_defaults {
     name: "structured_concurrency_perf_tests_defaults",
     defaults: [
         "platform_app_defaults",
-        "SystemUI_optimized_defaults",
     ],
     srcs: [
         "src/**/*.kt",
     ],
-    optimize: {
-        proguard_flags_files: ["proguard.flags"],
-    },
     static_libs: [
         "collector-device-lib",
         "tracinglib-platform",
         "kotlinx_coroutines_android",
         "kairos",
+        "com.android.systemui.util.kotlin",
         "androidx.benchmark_benchmark-common",
         "androidx.benchmark_benchmark-junit4",
         "androidx.benchmark_benchmark-macro",
@@ -53,7 +50,11 @@ android_test {
     name: "StructuredConcurrencyPerfTests",
     defaults: [
         "structured_concurrency_perf_tests_defaults",
+        "SystemUI_optimized_defaults",
     ],
+    optimize: {
+        proguard_flags_files: ["proguard.flags"],
+    },
     test_config: "configs/structured-concurrency-perf.xml",
     test_options: {
         extra_test_configs: [

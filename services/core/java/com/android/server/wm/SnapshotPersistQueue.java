@@ -17,6 +17,7 @@
 package com.android.server.wm;
 
 import static android.graphics.Bitmap.CompressFormat.JPEG;
+import static android.graphics.Bitmap.CompressFormat.PNG;
 import static android.os.Trace.TRACE_TAG_WINDOW_MANAGER;
 
 import static com.android.server.wm.WindowManagerDebugConfig.TAG_WITH_CLASS_NAME;
@@ -509,7 +510,8 @@ class SnapshotPersistQueue {
 
             final File lowResFile = mPersistInfoProvider.getLowResolutionBitmapFile(mId, mUserId);
             try (FileOutputStream lowResFos = new FileOutputStream(lowResFile)) {
-                lowResBitmap.compress(JPEG, COMPRESS_QUALITY, lowResFos);
+                lowResBitmap.compress(Flags.respectRequestedTaskSnapshotResolution() ? PNG : JPEG,
+                        COMPRESS_QUALITY, lowResFos);
             } catch (IOException e) {
                 Slog.e(TAG, "Unable to open " + lowResFile + " for persisting.", e);
                 return false;
