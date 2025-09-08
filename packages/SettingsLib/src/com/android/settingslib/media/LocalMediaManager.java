@@ -899,7 +899,7 @@ public class LocalMediaManager implements BluetoothCallback {
     }
 
     private class ConnectingSuggestedDeviceState {
-        private static final int SCAN_DURATION_MS = 10000;
+        private static final int SCAN_AND_CONNECTION_DURATION_MS = 30000;
 
         @NonNull final SuggestedDeviceState mSuggestedDeviceState;
         @NonNull final DeviceCallback mDeviceCallback;
@@ -988,7 +988,7 @@ public class LocalMediaManager implements BluetoothCallback {
             registerCallback(mDeviceCallback);
             startScan();
             mConnectSuggestedDeviceHandler.postDelayed(
-                    mConnectionAttemptFinishedRunnable, SCAN_DURATION_MS);
+                    mConnectionAttemptFinishedRunnable, SCAN_AND_CONNECTION_DURATION_MS);
         }
     }
 }
