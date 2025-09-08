@@ -180,7 +180,7 @@ public class ProcessedPerfettoProtoLogImpl extends PerfettoProtoLogImpl {
         }
 
         try {
-            if (mViewerConfigReader.messageHashIsAvailableInFile(message.getMessageHash())) {
+            if (!mViewerConfigReader.messageHashIsAvailableInFile(message.getMessageHash())) {
                 return "Failed to decode message for logcat logging. "
                         + "Message hash (" + message.getMessageHash() + ") is not available in "
                         + "viewerConfig file (" +  mViewerConfigFilePath + "). This might be due "
