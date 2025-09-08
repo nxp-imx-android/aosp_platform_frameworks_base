@@ -54,6 +54,7 @@ import android.widget.TextView;
 
 import androidx.annotation.VisibleForTesting;
 import androidx.appcompat.content.res.AppCompatResources;
+import androidx.constraintlayout.helper.widget.Flow;
 import androidx.core.graphics.drawable.IconCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -100,7 +101,7 @@ public abstract class MediaOutputBaseDialog extends SystemUIDialog
     private LinearLayout mMediaMetadataSectionLayout;
     private Button mDoneButton;
     private ViewGroup mDialogFooter;
-    private View mFooterSpacer;
+    private Flow mButtonsFlow;
     private Button mStopButton;
     private WallpaperColors mWallpaperColors;
     private boolean mDismissing;
@@ -162,7 +163,7 @@ public abstract class MediaOutputBaseDialog extends SystemUIDialog
         mAudioSharingButton = mDialogView.requireViewById(R.id.audio_sharing);
         mDevicesRecyclerView = mDialogView.requireViewById(R.id.list_result);
         mDialogFooter = mDialogView.requireViewById(R.id.dialog_footer);
-        mFooterSpacer = mDialogView.requireViewById(R.id.footer_spacer);
+        mButtonsFlow = mDialogView.requireViewById(R.id.flow_buttons);
         mMediaMetadataSectionLayout = mDialogView.requireViewById(R.id.media_metadata_section);
         mDeviceListLayout = mDialogView.requireViewById(R.id.device_list);
         mDoneButton = mDialogView.requireViewById(R.id.done);
@@ -192,13 +193,7 @@ public abstract class MediaOutputBaseDialog extends SystemUIDialog
             // Set non-transparent footer background to change it color on scroll.
             mDialogFooter.setBackground(AppCompatResources.getDrawable(mContext,
                     R.drawable.media_output_dialog_footer_background));
-            // Right-align the footer buttons.
-            LinearLayout.LayoutParams layoutParams =
-                    (LinearLayout.LayoutParams) mFooterSpacer.getLayoutParams();
-            layoutParams.width = (int) mContext.getResources().getDimension(
-                    R.dimen.media_output_dialog_button_gap);
-            mFooterSpacer.setLayoutParams(layoutParams);
-            layoutParams.weight = 0;
+
             // Update font family to Google Sans Flex.
             Typeface buttonTypeface = Typeface.create(GSF_LABEL_LARGE, Typeface.NORMAL);
             mDoneButton.setTypeface(buttonTypeface);
@@ -342,6 +337,26 @@ public abstract class MediaOutputBaseDialog extends SystemUIDialog
         mStopButton.setEnabled(true);
         mStopButton.setText(getStopButtonText());
         mStopButton.setOnClickListener(v -> onStopButtonClick());
+
+        if (!enableOutputSwitcherRedesign()) {
+            if (getStopButtonVisibility() == View.VISIBLE) {
+                // If both buttons are visible, spread them to both the ends.
+                mButtonsFlow.setHorizontalStyle(Flow.CHAIN_SPREAD_INSIDE);
+                mButtonsFlow.setHorizontalBias(0.5f);
+            } else {
+                // If only one button is visible, align it to the end.
+                mButtonsFlow.setHorizontalStyle(Flow.CHAIN_PACKED);
+                mButtonsFlow.setHorizontalBias(1.0f);
+            }
+        } else {
+            // If redesign is enabled, buttons stay towards the end.
+            mButtonsFlow.setHorizontalStyle(Flow.CHAIN_PACKED);
+            mButtonsFlow.setHorizontalBias(1.0f);
+            mButtonsFlow.setHorizontalGap(
+                    (int)
+                            mContext.getResources()
+                                    .getDimension(R.dimen.media_output_dialog_button_gap));
+        }
 
         if (!mAdapter.isDragging()) {
             int currentActivePosition = mAdapter.getCurrentActivePosition();
