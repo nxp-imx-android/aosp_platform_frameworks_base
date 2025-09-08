@@ -12558,7 +12558,7 @@ public class NotificationManagerService extends SystemService {
 
         private static final String ATT_TYPES = "types";
         private static final String TAG_DENIED = android.app.Flags.nmSummarizationOnboardingUi()
-                ? "denied_adjustment_keys-temp"  // TODO: b/433554352 - restore tag for launch
+                ? "denied_adjustment_keys"
                 : "user_denied_adjustments";
         private static final String TAG_DENIED_KEY = "adjustment";
         private static final String ATT_DENIED_KEY = "key";
@@ -12567,8 +12567,7 @@ public class NotificationManagerService extends SystemService {
         private static final String ATT_NAS_UNSUPPORTED = "unsupported_adjustments";
         private static final String ATT_USER_ID = "user";
         // for classification only, but named a bit more generally in case this ever gets expanded
-        // TODO: b/433554352 - restore tag for launch
-        private static final String TAG_SET_BY_USERS = "adjustment_pref_set_by_users-temp";
+        private static final String TAG_SET_BY_USERS = "adjustment_pref_set_by_users";
         private static final String ATT_USER_LIST = "users";
 
         private final Object mLock = new Object();
@@ -12800,9 +12799,7 @@ public class NotificationManagerService extends SystemService {
             Set<String> denied = new HashSet<>();
             if (android.app.Flags.nmSummarizationOnboardingUi()) {
                 if (!mDeniedAdjustments.containsKey(userId)) {
-                    // TODO: b/433554352 - restore denying summarization by default for launch
-                    // mDeniedAdjustments.put(userId, new ArraySet<>(List.of(KEY_SUMMARIZATION)));
-                    mDeniedAdjustments.put(userId, new ArraySet<>());
+                    mDeniedAdjustments.put(userId, new ArraySet<>(List.of(KEY_SUMMARIZATION)));
                 }
                 denied.addAll(mDeniedAdjustments.get(userId));
             } else {
