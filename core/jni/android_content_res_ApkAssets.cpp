@@ -236,8 +236,8 @@ static void GetFlagValues(JNIEnv* env, FlagMap& flag_map) {
               "array");
     }
     size_t i = 0;
-    for (const auto& [_, flag_info] : flag_map) {
-        jstring jstr = env->NewStringUTF(flag_info.name.c_str());
+    for (const auto& [flag_name, _] : flag_map) {
+        jstring jstr = env->NewStringUTF(flag_name.c_str());
         env->SetObjectArrayElement(flag_names, i++, jstr);
         env->DeleteLocalRef(jstr);
     }
@@ -249,10 +249,9 @@ static void GetFlagValues(JNIEnv* env, FlagMap& flag_map) {
         ALOGE("ApkAssets: Getting flag values failed due to jni error");
     } else {
         i = 0;
-        for (auto& [_, flag_info] : flag_map) {
-            flag_info.status = flag_values[i++] != JNI_FALSE
-                    ? LoadedArscFeatureFlagStatus::Enabled
-                    : LoadedArscFeatureFlagStatus::Disabled;
+        for (auto& [_, flag_value] : flag_map) {
+            flag_value = flag_values[i++] != JNI_FALSE ? LoadedArscFlagStatus::Enabled
+                                                       : LoadedArscFlagStatus::Disabled;
         }
     }
 
