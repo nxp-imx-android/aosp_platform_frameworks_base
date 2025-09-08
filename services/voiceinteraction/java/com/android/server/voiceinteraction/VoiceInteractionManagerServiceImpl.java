@@ -124,6 +124,7 @@ class VoiceInteractionManagerServiceImpl implements VoiceInteractionSessionConne
     final IWindowManager mIWindowManager;
     final ComponentName mHotwordDetectionComponentName;
     final ComponentName mVisualQueryDetectionComponentName;
+    boolean mEnableAssistStructure = true;
     boolean mBound = false;
     IVoiceInteractionService mService;
     volatile HotwordDetectionConnection mHotwordDetectionConnection;
@@ -292,7 +293,7 @@ class VoiceInteractionManagerServiceImpl implements VoiceInteractionSessionConne
         if (mActiveSession == null) {
             mActiveSession = new VoiceInteractionSessionConnection(mServiceStub,
                     mSessionComponentName, mUser, mContext, this,
-                    mInfo.getServiceInfo().applicationInfo.uid, mHandler);
+                    mInfo.getServiceInfo().applicationInfo.uid, mHandler, mEnableAssistStructure);
         }
         if (!mActiveSession.mBound) {
             try {
@@ -982,6 +983,13 @@ class VoiceInteractionManagerServiceImpl implements VoiceInteractionSessionConne
             return;
         }
         mHotwordDetectionConnection.setDebugHotwordLoggingLocked(logging);
+    }
+
+    void setEnableAssistStructure(boolean enableAssistStructure) {
+        mEnableAssistStructure = enableAssistStructure;
+        if (mActiveSession != null) {
+            mActiveSession.setEnableAssistStructure(enableAssistStructure);
+        }
     }
 
     void resetHotwordDetectionConnectionLocked() {
