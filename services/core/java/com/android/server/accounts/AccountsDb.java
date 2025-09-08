@@ -200,6 +200,13 @@ class AccountsDb implements AutoCloseable {
             super(context, ceDatabaseName, null, CE_DATABASE_VERSION);
         }
 
+        @Override
+        public void onConfigure(SQLiteDatabase db) {
+            if (Flags.sqliteSyncNormal()) {
+                db.execSQL("PRAGMA synchronous = NORMAL");
+            }
+        }
+
         /**
          * This call needs to be made while the mCacheLock is held.
          * @param db The database.
@@ -512,6 +519,13 @@ class AccountsDb implements AutoCloseable {
         private DeDatabaseHelper(Context context, int userId, String deDatabaseName) {
             super(context, deDatabaseName, null, DE_DATABASE_VERSION);
             mUserId = userId;
+        }
+
+        @Override
+        public void onConfigure(SQLiteDatabase db) {
+            if (Flags.sqliteSyncNormal()) {
+                db.execSQL("PRAGMA synchronous = NORMAL");
+            }
         }
 
         /**
