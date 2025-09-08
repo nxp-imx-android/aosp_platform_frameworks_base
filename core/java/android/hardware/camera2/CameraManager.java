@@ -1708,7 +1708,7 @@ public final class CameraManager {
 
     private static CameraCompatibilityInfo getLandscapeToPortraitOverride(boolean shouldOverride) {
         return new CameraCompatibilityInfo.Builder()
-                .setRotateAndCropRotation(shouldOverride ? ROTATION_90 : ROTATION_0)
+                .setRotateAndCropRotation(shouldOverride ? ROTATION_90 : ROTATION_UNDEFINED)
                 .setShouldOverrideSensorOrientation(shouldOverride)
                 .build();
     }
