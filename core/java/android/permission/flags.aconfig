@@ -11,6 +11,13 @@ flag {
 }
 
 flag {
+  name: "bluetooth_permission_use_module_protection_level"
+  namespace: "bluetooth"
+  description: "Flag for change to all the Bluetooth ROLE permissions to be provided by the module instead"
+  bug: "395709071"
+}
+
+flag {
     name: "voice_activation_permission_apis"
     is_exported: true
     namespace: "permissions"
