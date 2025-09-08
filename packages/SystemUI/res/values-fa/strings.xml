@@ -140,6 +140,8 @@
     <string name="screenrecord_stop_dialog_button" msgid="2883812564938194350">"توقف ضبط"</string>
     <string name="screen_record_entire_screen" msgid="66944996337928170">"کل صفحه"</string>
     <string name="screen_record_single_app" msgid="7355880948574569290">"برنامه واحد"</string>
+    <!-- no translation found for screen_record_single_app_hint (8404332826093639170) -->
+    <skip />
     <string name="screen_record_single_app_no_recents" msgid="1023249803854209330">"برنامه واحد (برای انتخاب کردن، برنامه ای را باز کنید)"</string>
     <string name="screen_record_record_device_audio_label" msgid="5363057443124085198">"ضبط صدای دستگاه"</string>
     <string name="screen_record_record_microphone_label" msgid="4685753707185662381">"ضبط میکروفون"</string>
@@ -147,6 +149,8 @@
     <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"نمایش نقاط لمس"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"برنامه‌ای را برای ضبط کردن انتخاب کنید"</string>
     <string name="screen_record_video_saved" msgid="1345283626390232282">"ویدیو ذخیره شد"</string>
+    <!-- no translation found for screen_record_undo (7942716736019800870) -->
+    <skip />
     <string name="screen_record_retake" msgid="3846643688365398450">"ضبط مجدد"</string>
     <string name="screen_record_edit" msgid="8733014191240769309">"ویرایش"</string>
     <string name="screen_record_delete" msgid="1023421937978254537">"حذف کردن"</string>
@@ -1141,15 +1145,18 @@
     <string name="accessibility_key_gesture_dialog_content" msgid="4519838108423437794">"‏کنش "<annotation id="action_key_icon">"icon"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> میان‌بر صفحه‌کلید برای استفاده از <xliff:g id="ID_3">^3</xliff:g> است. <xliff:g id="ID_4">^4</xliff:g>"</string>
     <string name="accessibility_key_gesture_dialog_talkback_intro" msgid="1617808784388544741">"‫<xliff:g id="ID_1">%1$s</xliff:g> صفحه‌خوانی است که به شما امکان می‌دهد موارد روی صفحه را با صدای بلند بشنوید. این ویژگی برای افرادی که دیدن صفحه‌نمایش برایشان دشوار است می‌تواند مفید باشد."</string>
     <string name="accessibility_key_gesture_dialog_positive_button_text" msgid="3670746017523589293">"روشن کردن"</string>
+    <!-- no translation found for accessibility_key_gesture_shortcut_not_yet_enabled_dialog_title (5331043821287212071) -->
+    <skip />
+    <!-- no translation found for accessibility_key_gesture_shortcut_not_yet_enabled_negative_button_text (6711239406914231612) -->
+    <skip />
+    <!-- no translation found for accessibility_key_gesture_shortcut_not_yet_enabled_positive_button_text (7748487028569821131) -->
+    <skip />
     <string name="accessibility_key_gesture_magnification_dialog_title" msgid="5770691510738701250">"<xliff:g id="ID_1">%1$s</xliff:g> میان‌بر صفحه‌کلید فعال شد"</string>
-    <!-- syntax error in translation for accessibility_key_gesture_magnification_dialog_content (7575802369763469379) org.xmlpull.v1.XmlPullParserException: expected: /string read: annotation (position:END_TAG </annotation>@1:128 in     <string name="accessibility_key_gesture_magnification_dialog_content" msgid="7575802369763469379">"نماد عملیات"</annotation>" <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> + "<annotation id="action_key_icon">" میان‌بر صفحه‌کلید برای استفاده از <xliff:g id="ID_3">^3</xliff:g> است. به شما امکان می‌دهد صفحه‌نمایش را به‌سرعت زوم‌پیش کنید تا محتوا درشت‌تر نمایش داده شود. روی نماد"<annotation id="action_key_icon">"عمل "</annotation>" فشار دهید <xliff:g id="ID_4">^1</xliff:g>و یا از کلیدهای \"+\" یا \"-\" برای تنظیم بزرگ‌نمایی استفاده کنید."</string>
-)  -->
+    <!-- no translation found for accessibility_key_gesture_magnification_dialog_content (582920726242272572) -->
+    <skip />
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"خاموش کردن میان‌بر"</string>
     <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"روشن بماند"</string>
-    <string name="accessibility_key_gesture_voice_access_dialog_title" msgid="7828090789777023683">"میانبر <xliff:g id="ID_1">%1$s</xliff:g> صفحه‌کلید روشن می شود؟"</string>
     <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="7934170819801013870">"عمل فشار دادن"<annotation id="action_key_icon">"نماد"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> یک ویژگی دسترس‌پذیری را<xliff:g id="ID_3">^3</xliff:g> روشن می کند. «» به شما امکان می‌دهد دستگاه تان را به‌صورت دست‌آزاد کنترل کنید."</string>
-    <string name="accessibility_key_gesture_voice_access_dialog_negative_button_text" msgid="3573570279554465078">"روشن نشود"</string>
-    <string name="accessibility_key_gesture_voice_access_dialog_positive_button_text" msgid="2306321856544446858">"میان‌بر را فعال کنید"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"صفحه قفل"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"درحال خاموش شدن…"</string>
     <string name="thermal_shutdown_dialog_help_text" msgid="6413474593462902901">"دیدن اقدامات محافظتی"</string>
@@ -1619,6 +1626,8 @@
     <string name="shortcut_helper_customize_dialog_reset_button_label" msgid="7645535254306312685">"بله، بازنشانی شود"</string>
     <string name="shortcut_helper_customize_dialog_cancel_button_label" msgid="5595546460431741178">"لغو"</string>
     <string name="shortcut_helper_add_shortcut_dialog_placeholder" msgid="9154297849458741995">"کلید را فشار دهید"</string>
+    <!-- no translation found for shortcut_helper_customizer_action_key_text (3979063901857046887) -->
+    <skip />
     <string name="shortcut_customizer_key_combination_in_use_error_message" msgid="3325858369539848162">"ترکیب کلید ازقبل درحال استفاده است. ترکیب دیگری را امتحان کنید."</string>
     <string name="shortcut_customizer_generic_error_message" msgid="3128454624049722741">"میان‌بر تنظیم نشد."</string>
     <string name="shortcut_helper_plus_symbol" msgid="4534843157353732011">"+"</string>
