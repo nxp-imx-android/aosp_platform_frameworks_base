@@ -28,6 +28,7 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -355,6 +356,8 @@ class RegionBoxState(private val minSizePx: Float, private val touchAreaPx: Floa
  *   user finishes a drag gesture. This rectangle is used for taking a screenshot. The rectangle is
  *   of type [android.graphics.Rect] because the screenshot API requires int values.
  * @param onCaptureClick A callback function that is invoked when the capture button is clicked.
+ * @param onInteractionStateChanged A callback function that is invoked when the user starts or
+ *   stops interacting with the region box.
  * @param modifier The modifier to be applied to the composable.
  */
 @Composable
@@ -363,6 +366,7 @@ fun RegionBox(
     buttonIcon: Icon?,
     onRegionSelected: (rect: IntRect) -> Unit,
     onCaptureClick: () -> Unit,
+    onInteractionStateChanged: (isInteracting: Boolean) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val density = LocalDensity.current
@@ -378,6 +382,8 @@ fun RegionBox(
     val state = remember { RegionBoxState(minSizePx, touchAreaPx) }
     val scrimColor = ScreenCaptureColors.scrimColor
     val pointerIcon = rememberPointerIcon(state)
+
+    LaunchedEffect(state.dragMode) { onInteractionStateChanged(state.dragMode != DragMode.NONE) }
 
     Box(
         modifier =
