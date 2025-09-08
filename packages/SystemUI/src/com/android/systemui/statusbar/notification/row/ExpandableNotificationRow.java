@@ -136,7 +136,6 @@ import com.android.systemui.statusbar.notification.row.wrapper.NotificationCompa
 import com.android.systemui.statusbar.notification.row.wrapper.NotificationViewWrapper;
 import com.android.systemui.statusbar.notification.shared.NotificationAddXOnHoverToDismiss;
 import com.android.systemui.statusbar.notification.shared.NotificationBundleUi;
-import com.android.systemui.statusbar.notification.shared.NotificationContentAlphaOptimization;
 import com.android.systemui.statusbar.notification.shared.TransparentHeaderFix;
 import com.android.systemui.statusbar.notification.stack.AmbientState;
 import com.android.systemui.statusbar.notification.stack.AnimationProperties;
@@ -3656,8 +3655,7 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
             // we need to reset content alpha!
             final NotificationContentView showingLayout = getShowingLayout();
             final boolean showingLayoutNeedsAlphaReset = showingLayout.getAlpha() == 0;
-            if (!NotificationContentAlphaOptimization.isEnabled()
-                    || mShowingPublic != oldShowingPublic || showingLayoutNeedsAlphaReset) {
+            if (mShowingPublic != oldShowingPublic || showingLayoutNeedsAlphaReset) {
                 // Don't reset the alpha or cancel the animation if the showing layout doesn't
                 // change
                 mPublicLayout.animate().cancel();
