@@ -1,15 +1,9 @@
 # People who can approve changes for submission
-chiujason@google.com
-cipson@google.com
+file:platform/packages/apps/Settings:/OWNERS
 dsandler@android.com
-dswliu@google.com
-edgarwang@google.com
 evanlaird@google.com
 jaycwang@google.com
-jiannan@google.com
 juliacr@google.com
-millchen@google.com
-smaftei@google.com
 ykhung@google.com
 
 # Exempt resource files (because they are in a flat directory and too hard to manage via OWNERS)
