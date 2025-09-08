@@ -7465,6 +7465,34 @@ public class AppOpsService extends IAppOpsService.Stub {
                 "Requested persistentId for invalid virtualDeviceId: " + virtualDeviceId);
     }
 
+    // Get all packages that have the given op explicitly set to the given mode
+    @Override
+    @NonNull public List<String> getPackagesWithNonDefaultUidMode(int op, int mode, int userId) {
+        mContext.enforceCallingOrSelfPermission(Manifest.permission.QUERY_ALL_PACKAGES, null);
+        if (userId != UserHandle.getUserId(Binder.getCallingUid())) {
+            mContext.enforceCallingOrSelfPermission(Manifest.permission.INTERACT_ACROSS_USERS,
+                    null);
+        }
+        if (AppOpsManager.opToDefaultMode(op) == mode) {
+            throw new IllegalArgumentException("Mode " + mode + " is the default mode for op "
+                    + AppOpsManager.getOpStrs()[op] + ".");
+        }
+        List<Integer> uids = mAppOpsCheckingService.getUidsWithOpMode(op, mode, userId);
+        List<String> packages = new ArrayList<>();
+        synchronized (this) {
+            int numUids = uids.size();
+            for (int i = 0; i < numUids; i++) {
+                int uid = uids.get(i);
+                UidState uidState = mUidStates.get(uid);
+                if (uidState == null) {
+                    continue;
+                }
+                packages.addAll(uidState.pkgOps.keySet());
+            }
+        }
+        return packages;
+    }
+
     @GuardedBy("this")
     private int evaluateForegroundMode(int uid, int op, int rawUidMode) {
         return getUidStateTracker().evalMode(uid, op, rawUidMode);

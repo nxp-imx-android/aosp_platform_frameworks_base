@@ -170,6 +170,11 @@ class AppOpService(private val service: AccessCheckingService) : AppOpsCheckingS
         return opNameMapToOpSparseArray(getPackageModes(packageName, userId))
     }
 
+    override fun getUidsWithOpMode(op: Int, mode: Int, userId: Int): List<Int> {
+        val opName = AppOpsManager.opToPublicName(op)
+        return service.getState { with(appIdPolicy) { getUidsWithOpMode(opName, mode, userId) } }
+    }
+
     override fun getUidMode(uid: Int, deviceId: String, op: Int): Int {
         val appId = UserHandle.getAppId(uid)
         val userId = UserHandle.getUserId(uid)
