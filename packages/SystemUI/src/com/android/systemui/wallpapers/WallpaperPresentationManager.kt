@@ -68,14 +68,13 @@ constructor(
                 }
                 .distinctUntilChanged()
                 .collect { presentationType ->
-                    presentationFactories[presentationType]?.let {
-                        showPresentation(it)
-                    } ?: run {
-                        debugLog(enabled = DEBUG, tag = TAG) {
-                            "Hiding presentation for type: $presentationType"
+                    presentationFactories[presentationType]?.let { showPresentation(it) }
+                        ?: run {
+                            debugLog(enabled = DEBUG, tag = TAG) {
+                                "Hiding presentation for type: $presentationType"
+                            }
+                            hidePresentation()
                         }
-                        hidePresentation()
-                    }
                 }
         }
     }
@@ -102,7 +101,7 @@ constructor(
             debugLog(enabled = DEBUG, tag = TAG) {
                 "Hide presentation $it for display ${display.displayId}"
             }
-            it.hide()
+            it.dismiss()
         }
         presentation = null
     }

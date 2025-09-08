@@ -84,6 +84,7 @@ object DisplayComponentRepository {
         return repositoryFactory.create(
             debugName = "DisplayComponentInstanceProvider",
             instanceProvider,
+            createInstanceEagerly = true,
         )
     }
 }
