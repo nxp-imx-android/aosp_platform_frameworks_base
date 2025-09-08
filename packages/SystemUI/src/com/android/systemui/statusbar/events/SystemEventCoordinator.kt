@@ -18,6 +18,7 @@ package com.android.systemui.statusbar.events
 
 import android.annotation.IntRange
 import android.content.Context
+import android.location.flags.Flags.locationIndicatorsEnabled
 import android.provider.DeviceConfig
 import android.provider.DeviceConfig.NAMESPACE_PRIVACY
 import com.android.internal.annotations.VisibleForTesting
@@ -143,6 +144,9 @@ constructor(
             var currentPrivacyItems = listOf<PrivacyItem>()
             var previousPrivacyItems = listOf<PrivacyItem>()
             var timeLastEmpty = systemClock.elapsedRealtime()
+            // Tracks the last time a location privacy indicator was shown for an app. Used to
+            // debounce the animation.
+            private val appLastLocationUseTime = mutableMapOf<String, Long>()
 
             override fun onPrivacyItemsChanged(privacyItems: List<PrivacyItem>) {
                 if (uniqueItemsMatch(privacyItems, currentPrivacyItems)) {
@@ -160,12 +164,43 @@ constructor(
                 if (currentPrivacyItems.isEmpty()) {
                     notifyPrivacyItemsEmpty()
                 } else {
+                    val nonExemptItems = filterOutExemptItems(currentPrivacyItems)
+
                     val showAnimation =
-                        isChipAnimationEnabled() &&
-                            !isExemptFromChipAnimation(currentPrivacyItems) &&
-                            (!uniqueItemsMatch(currentPrivacyItems, previousPrivacyItems) ||
-                                systemClock.elapsedRealtime() - timeLastEmpty >= DEBOUNCE_TIME)
+                        if (nonExemptItems.isEmpty()) {
+                            false
+                        } else {
+                            // At this point, we have items to show. Decide whether to animate.
+                            val hasOnlyLocationItems =
+                                nonExemptItems.all { it.privacyType == PrivacyType.TYPE_LOCATION }
+                            val hasNonLocationItems = !hasOnlyLocationItems
+
+                            val generalDebouncePassed =
+                                !uniqueItemsMatch(currentPrivacyItems, previousPrivacyItems) ||
+                                    systemClock.elapsedRealtime() - timeLastEmpty >= DEBOUNCE_TIME
+
+                            val shouldAnimateCameraMic =
+                                hasNonLocationItems && generalDebouncePassed
+                            // For location-only, we show an animation if the flag is enabled. The
+                            // 10-minute debounce is handled in filterOutExemptItems.
+                            val shouldAnimateLocation =
+                                hasOnlyLocationItems && locationIndicatorsEnabled()
+
+                            isChipAnimationEnabled() &&
+                                (shouldAnimateCameraMic || shouldAnimateLocation)
+                        }
                     notifyPrivacyItemsChanged(showAnimation)
+
+                    // Update the last location usage time for all current location items.
+                    val now = systemClock.elapsedRealtime()
+                    currentPrivacyItems.forEach {
+                        if (
+                            it.privacyType == PrivacyType.TYPE_LOCATION &&
+                                locationIndicatorsEnabled()
+                        ) {
+                            appLastLocationUseTime[it.application.packageName] = now
+                        }
+                    }
                 }
             }
 
@@ -175,53 +210,79 @@ constructor(
                     two.map { it.application.uid to it.privacyType.permGroupName }.toSet()
             }
 
-            // Returns true if the privacy items are exempt from the chip animation.
-            private fun isExemptFromChipAnimation(items: List<PrivacyItem>): Boolean {
-                if (!Flags.statusBarPrivacyChipAnimationExemption()) {
-                    return containsOnlyLocation(items)
+            private fun filterOutExemptItems(items: List<PrivacyItem>): List<PrivacyItem> {
+                val now = systemClock.elapsedRealtime()
+
+                val cameraMicExemption = Flags.statusBarPrivacyChipAnimationExemption()
+                val locationFlagEnabled = locationIndicatorsEnabled()
+
+                if (!cameraMicExemption && !locationFlagEnabled) {
+                    return items
                 }
 
-                // Camera and microphone requests by the default camera app are exempt from the
-                // chip animation. Filter those out.
-                val nonExemptItems =
-                    items.filterNot {
-                        val shouldFilter = isCameraOrMicrophoneRequest(it) &&
-                            it.application.packageName == defaultCameraPackageName
-                        if (shouldFilter) {
+                // First, filter out camera/mic exemptions if the flag is enabled
+                val afterCameraMicFilter =
+                    if (cameraMicExemption) {
+                        items.filterNot { item ->
+                            val isCameraMicExempt =
+                                isCameraOrMicrophoneRequest(item) &&
+                                    item.application.packageName == defaultCameraPackageName
+                            if (isCameraMicExempt) {
+                                logBuffer.log(
+                                    TAG,
+                                    LogLevel.DEBUG,
+                                    {
+                                        str1 = item.application.packageName
+                                        str2 = item.privacyType.permGroupName
+                                    },
+                                    {
+                                        "Privacy item from default camera ($str1) is exempt " +
+                                            "from chip animation. Permission group=$str2"
+                                    },
+                                )
+                            }
+                            isCameraMicExempt
+                        }
+                    } else {
+                        items
+                    }
+
+                // Now, if the location flag is enabled and only location items remain,
+                // apply the location-specific debounce
+                val locationOnly =
+                    afterCameraMicFilter.all { it.privacyType == PrivacyType.TYPE_LOCATION }
+                if (locationFlagEnabled && locationOnly) {
+                    return afterCameraMicFilter.filterNot { item ->
+                        val lastAnimationTime = appLastLocationUseTime[item.application.packageName]
+                        if (
+                            lastAnimationTime != null &&
+                                now - lastAnimationTime < DEBOUNCE_TIME_LOCATION
+                        ) {
                             logBuffer.log(
                                 TAG,
                                 LogLevel.DEBUG,
                                 {
-                                    str1 = it.application.packageName
-                                    str2 = it.privacyType.permGroupName
+                                    str1 = item.application.packageName
+                                    str2 = item.privacyType.permGroupName
                                 },
                                 {
-                                    "Privacy item from default camera ($str1) is exempt from " +
-                                    "chip animation. Permission group=$str2"
+                                    "Privacy item ($str1) is exempt " +
+                                        "from chip animation due to debounce. Permission group=$str2"
                                 },
                             )
+                            return@filterNot true
                         }
-
-                        shouldFilter
+                        false
                     }
+                }
 
-                // If the remaining items are only location, the chip animation is also exempt
-                return containsOnlyLocation(nonExemptItems)
-            }
-
-            // Return true if the only privacy item is location
-            private fun containsOnlyLocation(items: List<PrivacyItem>): Boolean {
-                return items
-                    .filterNot {
-                        it.privacyType.permGroupName == android.Manifest.permission_group.LOCATION
-                    }
-                    .isEmpty()
+                return afterCameraMicFilter
             }
 
             private fun isCameraOrMicrophoneRequest(item: PrivacyItem): Boolean {
                 return item.privacyType.let {
                     it == PrivacyType.TYPE_CAMERA || it == PrivacyType.TYPE_MICROPHONE
-                 }
+                }
             }
 
             private fun isChipAnimationEnabled(): Boolean {
@@ -235,10 +296,10 @@ constructor(
             }
         }
 
-        @VisibleForTesting
-        fun getPrivacyStateListener() = privacyStateListener
+    @VisibleForTesting fun getPrivacyStateListener() = privacyStateListener
 }
 
 private const val DEBOUNCE_TIME = 3000L
+@VisibleForTesting const val DEBOUNCE_TIME_LOCATION = 600_000L // 10 minutes.
 private const val CHIP_ANIMATION_ENABLED = "privacy_chip_animation_enabled"
 private const val TAG = "SystemEventCoordinator"
