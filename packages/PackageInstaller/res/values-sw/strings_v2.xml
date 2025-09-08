@@ -53,7 +53,7 @@
     <string name="title_restore_error_less_storage" msgid="1702198163928260711">"Nafasi ya hifadhi haitoshi"</string>
     <string name="title_restore_error_offline" msgid="4611160277876184886">"Uko nje ya mtandao"</string>
     <string name="title_restore_error_installer_disabled" msgid="6955341343521073762">"<xliff:g id="INSTALLER_NAME">%1$s</xliff:g> imezimwa"</string>
-    <string name="title_restore_error_installer_absent" msgid="4650702260526161948">"<xliff:g id="INSTALLER_NAME">%1$s</xliff:g> haijawekwa"</string>
+    <string name="title_restore_error_installer_absent" msgid="4650702260526161948">"<xliff:g id="INSTALLER_NAME">%1$s</xliff:g> halijawekwa"</string>
     <string name="title_restore_error_generic" msgid="3675732737839176301">"Hitilafu fulani imetokea"</string>
     <string name="message_update_owner_change" product="tablet" msgid="721928859405955082">"Programu hii kwa kawaida hupokea masasisho kutoka &lt;b&gt;<xliff:g id="EXISTING_UPDATE_OWNER">%1$s</xliff:g>&lt;/b&gt;. Kwa kusasisha ukitumia chanzo tofauti, unaweza kupokea masasisho ya baadaye kutoka chanzo chochote kwenye kishikwambi chako. Utendaji wa programu unaweza kubadilika."</string>
     <string name="message_update_owner_change" product="tv" msgid="7398850682198100493">"Programu hii kwa kawaida hupokea masasisho kutoka &lt;b&gt;<xliff:g id="EXISTING_UPDATE_OWNER">%1$s</xliff:g>&lt;/b&gt;. Kwa kusasisha ukitumia chanzo tofauti, unaweza kupokea masasisho ya baadaye kutoka chanzo chochote kwenye TV yako. Utendaji wa programu unaweza kubadilika."</string>
@@ -89,21 +89,29 @@
     <string name="message_archive_work_profile" msgid="7601504268820630858">"Programu hii itahifadhiwa kwenye kumbukumbu kutoka kwenye wasifu wako wa kazini. Data yako ya programu itahifadhiwa."</string>
     <string name="message_archive_private_space" msgid="4873651645762576624">"Programu hii itahifadhiwa kwenye kumbukumbu kutoka kwenye sehemu yako ya faragha. Data yako ya programu itahifadhiwa."</string>
     <string name="message_restore" msgid="8402726798623569969">"Programu hii itapakuliwa chinichini kutoka <xliff:g id="INSTALLER_NAME">%1$s</xliff:g>"</string>
-    <string name="message_restore_error_user_action_needed" msgid="2206904734076205208">"<xliff:g id="INSTALLER_NAME">%1$s</xliff:g> inahitaji maelezo zaidi ili uweze kurejesha programu hii"</string>
+    <string name="message_restore_error_user_action_needed" msgid="2206904734076205208">"<xliff:g id="INSTALLER_NAME">%1$s</xliff:g> linahitaji maelezo zaidi ili uweze kurejesha programu hii"</string>
     <string name="message_restore_error_less_storage" msgid="4945507738776981462">"Ili urejeshe programu hii, futa baadhi ya faili ili upate nafasi ya &lt;b&gt;<xliff:g id="BYTES">%1$s</xliff:g>&lt;/b&gt; kisha ujaribu tena"</string>
     <string name="message_restore_error_offline" msgid="4212551781323276126">"Ili urejeshe programu hii, angalia muunganisho wako wa intaneti kisha ujaribu tena"</string>
     <string name="message_restore_error_installer_disabled" msgid="1089791898782445342">"Ili urejeshe programu hii, washa <xliff:g id="INSTALLERNAME">%1$s</xliff:g> kwenye Mipangilio"</string>
     <string name="message_restore_error_installer_absent" msgid="8492838251989389724">"Ili urejeshe programu hii, utahitaji kuweka <xliff:g id="INSTALLER_NAME">%1$s</xliff:g> kwenye kifaa"</string>
     <string name="message_restore_error_generic" msgid="5903850636679929406">"Hitilafu fulani imetokea wakati wa kujaribu kurejesha programu hii"</string>
     <string name="message_uninstall_activity" msgid="3263352475743590167">"<xliff:g id="ACTIVITY_NAME">%1$s</xliff:g> ni sehemu ya programu ifuatayo: <xliff:g id="APP_NAME">%2$s</xliff:g>"</string>
-    <string name="cannot_install_app_blocked_summary" msgid="5439893912308217959">"&lt;p&gt;Programu hii imezuiwa. Ili kusaidia kulinda data na kifaa chako, programu kutoka kwa wasanidi programu waliothibitishwa ndizo pekee zinaweza kuwekwa kwenye kifaa.&lt;/p&gt;"</string>
-    <string name="cannot_update_app_blocked_summary" msgid="7817560122951640605">"&lt;p&gt;&lt;p&gt;Programu hii haijasasishwa. Ili kusaidia kulinda data na kifaa chako, masasisho kutoka kwa wasanidi programu waliothibitishwa ndiyo pekee yanaweza kuwekwa kwenye kifaa.&lt;/p&gt;"</string>
-    <string name="cannot_install_verification_no_internet_summary" msgid="8875444318661602648">"&lt;p&gt;Programu hii haijawekwa kwenye kifaa. Huenda programu kutoka kwa wasanidi programu ambao hawajathibitishwa zisiwe salama.&lt;/p&gt; &lt;p&gt;Muunganisho wa intaneti unahitajika ili kuthibitisha msanidi programu. Angalia muunganisho wako kisha ujaribu tena kuiweka kwenye kifaa. &lt;/p&gt;"</string>
-    <string name="cannot_update_verification_no_internet_summary" msgid="8529572409795745791">"&lt;p&gt;Programu hii haijasasishwa. Huenda masasisho kutoka kwa wasanidi programu ambao hawajathibitishwa yasiwe salama.&lt;/p&gt; &lt;p&gt;Muunganisho wa intaneti unahitajika ili kuthibitisha msanidi programu. Angalia muunganisho wako kisha ujaribu tena kuisasisha. &lt;/p&gt;"</string>
-    <string name="cannot_install_verification_unavailable_summary" msgid="6208343652461257248">"&lt;p&gt;Hitilafu imetokea wakati wa kuthibitisha msanidi wa programu hii. Huenda programu kutoka kwa wasanidi programu ambao hawajathibitishwa zisiwe salama, kwa hivyo programu haikuwekwa kwenye kifaa.&lt;/p&gt;"</string>
-    <string name="cannot_update_verification_unavailable_summary" msgid="367099122142054088">"&lt;p&gt;Hitilafu imetokea wakati wa kuthibitisha msanidi wa programu hii. Huenda masasisho kutoka kwa wasanidi programu ambao hawajathibitishwa yasiwe salama, kwa hivyo programu haikusasishwa.&lt;/p&gt;"</string>
-    <string name="cannot_install_verification_unavailable_fail_closed_summary" msgid="3798407602770929670">"&lt;p&gt;Programu hii imezuiwa kwa sababu hitilafu imetokea wakati wa kuthibitisha msanidi programu. Ili kusaidia kulinda data na kifaa chako, programu kutoka kwa wasanidi programu waliothibitishwa ndizo pekee zinaweza kuwekwa kwenye kifaa.&lt;/p&gt;"</string>
-    <string name="cannot_update_verification_unavailable_fail_closed_summary" msgid="2871425967967934618">"&lt;p&gt;Programu hii haijasasishwa kwa sababu hitilafu imetokea wakati wa kuthibitisha msanidi programu. Ili kusaidia kulinda data na kifaa chako, masasisho kutoka kwa wasanidi programu waliothibitishwa ndiyo pekee yanaweza kuwekwa kwenye kifaa.&lt;/p&gt;"</string>
+    <!-- no translation found for cannot_install_app_blocked_summary (2082063650842897085) -->
+    <skip />
+    <!-- no translation found for cannot_update_app_blocked_summary (7607734844900187499) -->
+    <skip />
+    <!-- no translation found for cannot_install_verification_no_internet_summary (7298957699553589600) -->
+    <skip />
+    <!-- no translation found for cannot_update_verification_no_internet_summary (8094414928318316598) -->
+    <skip />
+    <!-- no translation found for cannot_install_verification_unavailable_summary (3830073638843524892) -->
+    <skip />
+    <!-- no translation found for cannot_update_verification_unavailable_summary (342184955548504019) -->
+    <skip />
+    <!-- no translation found for cannot_install_verification_unavailable_fail_closed_summary (3552780111383069051) -->
+    <skip />
+    <!-- no translation found for cannot_update_verification_unavailable_fail_closed_summary (353457015429601377) -->
+    <skip />
     <string name="more_details_expanded_install_summary" msgid="3545896392881608712">"Ukiweka bila kuthibitisha, kumbuka kuwa programu kutoka kwa wasanidi programu ambao hawajathibitishwa zinaweza kuhatarisha kifaa na data yako."</string>
     <string name="more_details_expanded_update_summary" msgid="2239162864839036480">"Ukisasisha bila kuthibitisha, kumbuka kuwa masasisho kutoka kwa wasanidi programu ambao hawajathibitishwa yanaweza kuhatarisha kifaa na data yako."</string>
     <string name="cannot_install_app_blocked_title" msgid="6372444121824751694">"Msanidi programu hajathibitishwa"</string>

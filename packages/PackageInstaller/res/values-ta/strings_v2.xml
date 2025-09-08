@@ -96,16 +96,22 @@
     <string name="message_restore_error_installer_absent" msgid="8492838251989389724">"இந்த ஆப்ஸை மீட்டெடுக்க <xliff:g id="INSTALLER_NAME">%1$s</xliff:g> ஐ நிறுவ வேண்டும்"</string>
     <string name="message_restore_error_generic" msgid="5903850636679929406">"இந்த ஆப்ஸை மீட்டெடுக்க முயலும்போது சிக்கல் ஏற்பட்டது"</string>
     <string name="message_uninstall_activity" msgid="3263352475743590167">"<xliff:g id="ACTIVITY_NAME">%1$s</xliff:g> பின்வரும் ஆப்ஸின் பகுதியாகும்: <xliff:g id="APP_NAME">%2$s</xliff:g>"</string>
-    <string name="cannot_install_app_blocked_summary" msgid="5439893912308217959">"&lt;p&gt;இந்த ஆப்ஸ் தடுக்கப்பட்டது. உங்கள் சாதனத்தையும் தரவையும் பாதுகாப்பாக வைத்திருக்க உதவ, சரிபார்க்கப்பட்ட டெவெலப்பர்கள் வழங்கும் ஆப்ஸை மட்டுமே நிறுவ முடியும்.&lt;/p&gt;"</string>
-    <string name="cannot_update_app_blocked_summary" msgid="7817560122951640605">"&lt;p&gt;இந்த ஆப்ஸ் புதுப்பிக்கப்படவில்லை. உங்கள் சாதனத்தையும் தரவையும் பாதுகாப்பாக வைத்திருக்க உதவ, சரிபார்க்கப்பட்ட டெவெலப்பர்கள் வழங்கும் புதுப்பிப்புகளை மட்டுமே நிறுவ முடியும்.&lt;/p&gt;"</string>
-    <!-- no translation found for cannot_install_verification_no_internet_summary (8875444318661602648) -->
+    <!-- no translation found for cannot_install_app_blocked_summary (2082063650842897085) -->
     <skip />
-    <!-- no translation found for cannot_update_verification_no_internet_summary (8529572409795745791) -->
+    <!-- no translation found for cannot_update_app_blocked_summary (7607734844900187499) -->
     <skip />
-    <string name="cannot_install_verification_unavailable_summary" msgid="6208343652461257248">"&lt;p&gt;இந்த ஆப்ஸின் டெவெலப்பரைச் சரிபார்ப்பதில் சிக்கல் ஏற்பட்டது. சரிபார்க்கப்படாத டெவெலப்பர்கள் வழங்கும் ஆப்ஸ் பாதுகாப்பற்றதாக இருக்கக்கூடும் என்பதால் ஆப்ஸ் நிறுவப்படவில்லை.&lt;/p&gt;"</string>
-    <string name="cannot_update_verification_unavailable_summary" msgid="367099122142054088">"&lt;p&gt;இந்த ஆப்ஸின் டெவெலப்பரைச் சரிபார்ப்பதில் சிக்கல் ஏற்பட்டது. சரிபார்க்கப்படாத டெவெலப்பர்கள் வழங்கும் புதுப்பிப்புகள் பாதுகாப்பற்றவையாக இருக்கக்கூடும் என்பதால் ஆப்ஸ் புதுப்பிக்கப்படவில்லை.&lt;/p&gt;"</string>
-    <string name="cannot_install_verification_unavailable_fail_closed_summary" msgid="3798407602770929670">"&lt;p&gt;டெவெலப்பரைச் சரிபார்ப்பதில் சிக்கல் ஏற்பட்டதால் இந்த ஆப்ஸ் தடுக்கப்பட்டது. உங்கள் சாதனத்தையும் தரவையும் பாதுகாப்பாக வைத்திருக்க உதவ, சரிபார்க்கப்பட்ட டெவெலப்பர்கள் வழங்கும் ஆப்ஸை மட்டுமே நிறுவ முடியும்.&lt;/p&gt;"</string>
-    <string name="cannot_update_verification_unavailable_fail_closed_summary" msgid="2871425967967934618">"&lt;p&gt;டெவெலப்பரைச் சரிபார்ப்பதில் சிக்கல் ஏற்பட்டதால் இந்த ஆப்ஸ் புதுப்பிக்கப்படவில்லை. உங்கள் சாதனத்தையும் தரவையும் பாதுகாப்பாக வைத்திருக்க உதவ, சரிபார்க்கப்பட்ட டெவெலப்பர்கள் வழங்கும் புதுப்பிப்புகளை மட்டுமே நிறுவ முடியும்.&lt;/p&gt;"</string>
+    <!-- no translation found for cannot_install_verification_no_internet_summary (7298957699553589600) -->
+    <skip />
+    <!-- no translation found for cannot_update_verification_no_internet_summary (8094414928318316598) -->
+    <skip />
+    <!-- no translation found for cannot_install_verification_unavailable_summary (3830073638843524892) -->
+    <skip />
+    <!-- no translation found for cannot_update_verification_unavailable_summary (342184955548504019) -->
+    <skip />
+    <!-- no translation found for cannot_install_verification_unavailable_fail_closed_summary (3552780111383069051) -->
+    <skip />
+    <!-- no translation found for cannot_update_verification_unavailable_fail_closed_summary (353457015429601377) -->
+    <skip />
     <string name="more_details_expanded_install_summary" msgid="3545896392881608712">"சரிபார்க்காமல் நிறுவினால், சரிபார்க்கப்படாத டெவெலப்பர்கள் வழங்கும் ஆப்ஸ் உங்கள் சாதனத்திற்கும் தரவிற்கும் ஆபத்தை ஏற்படுத்தக்கூடும் என்பதை நினைவில்கொள்ளுங்கள்."</string>
     <string name="more_details_expanded_update_summary" msgid="2239162864839036480">"சரிபார்க்காமல் புதுப்பித்தால், சரிபார்க்கப்படாத டெவெலப்பர்கள் வழங்கும் புதுப்பிப்புகள் உங்கள் சாதனத்திற்கும் தரவிற்கும் ஆபத்தை ஏற்படுத்தக்கூடும் என்பதை நினைவில்கொள்ளுங்கள்."</string>
     <string name="cannot_install_app_blocked_title" msgid="6372444121824751694">"ஆப்ஸ் டெவெலப்பர் சரிபார்க்கப்படவில்லை"</string>

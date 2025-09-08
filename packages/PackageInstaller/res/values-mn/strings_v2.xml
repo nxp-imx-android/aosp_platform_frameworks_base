@@ -96,16 +96,22 @@
     <string name="message_restore_error_installer_absent" msgid="8492838251989389724">"Та энэ аппыг сэргээхийн тулд <xliff:g id="INSTALLER_NAME">%1$s</xliff:g>-г суулгах шаардлагатай"</string>
     <string name="message_restore_error_generic" msgid="5903850636679929406">"Энэ аппыг сэргээхээр оролдоход асуудал гарлаа"</string>
     <string name="message_uninstall_activity" msgid="3263352475743590167">"<xliff:g id="ACTIVITY_NAME">%1$s</xliff:g> дараах аппын нэг хэсэг юм: <xliff:g id="APP_NAME">%2$s</xliff:g>"</string>
-    <string name="cannot_install_app_blocked_summary" msgid="5439893912308217959">"&lt;p&gt;Энэ аппыг блоклосон. Өөрийн төхөөрөмж, өгөгдлийг аюулгүй байлгахад туслахын тулд зөвхөн баталгаажсан хөгжүүлэгчийн аппыг суулгаж болно.&lt;/p&gt;"</string>
-    <string name="cannot_update_app_blocked_summary" msgid="7817560122951640605">"&lt;p&gt;Энэ аппыг шинэчлээгүй. Өөрийн төхөөрөмж, өгөгдлийг аюулгүй байлгахад туслахын тулд зөвхөн баталгаажсан хөгжүүлэгчийн шинэчлэлтийг суулгаж болно.&lt;/p&gt;"</string>
-    <!-- no translation found for cannot_install_verification_no_internet_summary (8875444318661602648) -->
+    <!-- no translation found for cannot_install_app_blocked_summary (2082063650842897085) -->
     <skip />
-    <!-- no translation found for cannot_update_verification_no_internet_summary (8529572409795745791) -->
+    <!-- no translation found for cannot_update_app_blocked_summary (7607734844900187499) -->
     <skip />
-    <string name="cannot_install_verification_unavailable_summary" msgid="6208343652461257248">"&lt;p&gt;Энэ аппын хөгжүүлэгчийг баталгаажуулахад асуудал гарлаа. Баталгаажаагүй хөгжүүлэгчийн апп аюултай байж болзошгүй тул уг аппыг суулгаагүй.&lt;/p&gt;"</string>
-    <string name="cannot_update_verification_unavailable_summary" msgid="367099122142054088">"&lt;p&gt;Энэ аппын хөгжүүлэгчийг баталгаажуулахад асуудал гарлаа. Баталгаажаагүй хөгжүүлэгчийн шинэчлэлт аюултай байж болзошгүй тул уг аппыг шинэчлээгүй.&lt;/p&gt;"</string>
-    <string name="cannot_install_verification_unavailable_fail_closed_summary" msgid="3798407602770929670">"&lt;p&gt;Хөгжүүлэгчийг баталгаажуулахад асуудал гарсан тул энэ аппыг блоклосон. Өөрийн төхөөрөмж, өгөгдлийг аюулгүй байлгахад туслахын тулд зөвхөн баталгаажсан хөгжүүлэгчийн аппыг суулгаж болно.&lt;/p&gt;"</string>
-    <string name="cannot_update_verification_unavailable_fail_closed_summary" msgid="2871425967967934618">"&lt;p&gt;Хөгжүүлэгчийг баталгаажуулахад асуудал гарсан тул энэ аппыг шинэчлээгүй. Өөрийн төхөөрөмж, өгөгдлийг аюулгүй байлгахад туслахын тулд зөвхөн баталгаажсан хөгжүүлэгчийн шинэчлэлтийг суулгаж болно.&lt;/p&gt;"</string>
+    <!-- no translation found for cannot_install_verification_no_internet_summary (7298957699553589600) -->
+    <skip />
+    <!-- no translation found for cannot_update_verification_no_internet_summary (8094414928318316598) -->
+    <skip />
+    <!-- no translation found for cannot_install_verification_unavailable_summary (3830073638843524892) -->
+    <skip />
+    <!-- no translation found for cannot_update_verification_unavailable_summary (342184955548504019) -->
+    <skip />
+    <!-- no translation found for cannot_install_verification_unavailable_fail_closed_summary (3552780111383069051) -->
+    <skip />
+    <!-- no translation found for cannot_update_verification_unavailable_fail_closed_summary (353457015429601377) -->
+    <skip />
     <string name="more_details_expanded_install_summary" msgid="3545896392881608712">"Хэрэв та баталгаажуулахгүй суулгавал баталгаажаагүй хөгжүүлэгчийн апп таны төхөөрөмж, өгөгдлийг эрсдэлд оруулж болохыг анхаарна уу."</string>
     <string name="more_details_expanded_update_summary" msgid="2239162864839036480">"Хэрэв та баталгаажуулахгүйгээр шинэчилбэл баталгаажаагүй хөгжүүлэгчийн шинэчлэлт таны төхөөрөмж, өгөгдлийг эрсдэлд оруулж болохыг анхаарна уу."</string>
     <string name="cannot_install_app_blocked_title" msgid="6372444121824751694">"Апп хөгжүүлэгч баталгаажаагүй"</string>
