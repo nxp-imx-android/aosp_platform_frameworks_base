@@ -227,17 +227,34 @@ public class HearingDeviceStatsLogUtilsTest {
         HearingDeviceStatsLogUtils.updateHistoryIfNeeded(mContext, mCachedBluetoothDevice,
                 hapClientProfile, BluetoothProfile.STATE_CONNECTED);
 
-        assertHistorySize(TYPE_HEARING_DEVICES_CONNECTED, 1);
+        assertHistorySize(TYPE_LE_HEARING_CONNECTED, 1);
     }
 
     @Test
-    public void updateHistoryIfNeeded_leAudioHearingDevice_leAudioConnected_historyCorrect() {
+    public void updateHistoryIfNeeded_leAudioHearingDevice_onlyLeAudioConnected_notBelongAnyYet() {
         prepareLeAudioHearingDevice();
 
         LeAudioProfile leAudioProfile = mock(LeAudioProfile.class);
         HearingDeviceStatsLogUtils.updateHistoryIfNeeded(mContext, mCachedBluetoothDevice,
                 leAudioProfile, BluetoothProfile.STATE_CONNECTED);
 
+        assertHistorySize(TYPE_HEARING_DEVICES_CONNECTED, 0);
+        assertHistorySize(TYPE_LE_HEARING_CONNECTED, 0);
+
+    }
+
+    @Test
+    public void updateHistoryIfNeeded_leAudioHearingDevice_hapAndLeAudioConnected_historyCorrect() {
+        prepareLeAudioHearingDevice();
+
+        HapClientProfile hapClientProfile = mock(HapClientProfile.class);
+        LeAudioProfile leAudioProfile = mock(LeAudioProfile.class);
+        HearingDeviceStatsLogUtils.updateHistoryIfNeeded(mContext, mCachedBluetoothDevice,
+                leAudioProfile, BluetoothProfile.STATE_CONNECTED);
+        HearingDeviceStatsLogUtils.updateHistoryIfNeeded(mContext, mCachedBluetoothDevice,
+                hapClientProfile, BluetoothProfile.STATE_CONNECTED);
+
+        assertHistorySize(TYPE_HEARING_DEVICES_CONNECTED, 0);
         assertHistorySize(TYPE_LE_HEARING_CONNECTED, 1);
     }
 
