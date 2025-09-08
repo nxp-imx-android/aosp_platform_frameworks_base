@@ -3975,9 +3975,13 @@ public final class NotificationPanelViewController implements
         @Override
         public boolean onTouchEvent(MotionEvent event) {
             if (!mUseExternalTouch) {
-                mShadeLog.d("onTouch: external touch handling disabled");
-                // Consume touches below notifications on keyguard to allow for expansion
-                return mStatusBarStateController.getState() == StatusBarState.KEYGUARD;
+                if (isLockedShadeHomeGestureEvent(event)) {
+                    mShadeLog.d("onTouch: down motion event in home gesture area");
+                } else {
+                    mShadeLog.d("onTouch: external touch handling disabled");
+                    // Consume touches below notifications on keyguard to allow for expansion
+                    return mStatusBarStateController.getState() == StatusBarState.KEYGUARD;
+                }
             }
 
             if (mAlternateBouncerInteractor.isVisibleState()) {
@@ -4073,6 +4077,11 @@ public final class NotificationPanelViewController implements
 
             handled |= handleTouch(event);
             return !mDozing || handled;
+        }
+
+        private boolean isLockedShadeHomeGestureEvent(MotionEvent event) {
+            return mBarState == SHADE_LOCKED && event.getActionMasked() == MotionEvent.ACTION_DOWN
+                    && isInGestureNavHomeHandleArea(event.getY());
         }
 
         private boolean handleTouch(MotionEvent event) {
