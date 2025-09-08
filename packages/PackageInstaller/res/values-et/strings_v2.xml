@@ -53,7 +53,7 @@
     <string name="title_restore_error_less_storage" msgid="1702198163928260711">"Pole piisavalt salvestusruumi"</string>
     <string name="title_restore_error_offline" msgid="4611160277876184886">"Võrguühendus puudub"</string>
     <string name="title_restore_error_installer_disabled" msgid="6955341343521073762">"<xliff:g id="INSTALLER_NAME">%1$s</xliff:g> on keelatud"</string>
-    <string name="title_restore_error_installer_absent" msgid="4650702260526161948">"Rakendust <xliff:g id="INSTALLER_NAME">%1$s</xliff:g> ei installitud"</string>
+    <string name="title_restore_error_installer_absent" msgid="4650702260526161948">"Rakendust <xliff:g id="INSTALLER_NAME">%1$s</xliff:g> pole installitud"</string>
     <string name="title_restore_error_generic" msgid="3675732737839176301">"Midagi läks valesti"</string>
     <string name="message_update_owner_change" product="tablet" msgid="721928859405955082">"See rakendus saab tavaliselt värskendusi allikast &lt;b&gt;<xliff:g id="EXISTING_UPDATE_OWNER">%1$s</xliff:g>&lt;/b&gt;. Muust allikast värskendamisel võite edaspidi saada tahvelarvutis värskendusi mis tahes allikast. Rakenduse funktsioonid võivad muutuda."</string>
     <string name="message_update_owner_change" product="tv" msgid="7398850682198100493">"See rakendus saab tavaliselt värskendusi allikast &lt;b&gt;<xliff:g id="EXISTING_UPDATE_OWNER">%1$s</xliff:g>&lt;/b&gt;. Muust allikast värskendamisel võite edaspidi saada teleris värskendusi mis tahes allikast. Rakenduse funktsioonid võivad muutuda."</string>
@@ -93,17 +93,25 @@
     <string name="message_restore_error_less_storage" msgid="4945507738776981462">"Selle rakenduse taastamiseks vabastage &lt;b&gt;<xliff:g id="BYTES">%1$s</xliff:g>&lt;/b&gt; ja proovige uuesti."</string>
     <string name="message_restore_error_offline" msgid="4212551781323276126">"Selle rakenduse taastamiseks kontrollige oma internetiühendust ja proovige uuesti."</string>
     <string name="message_restore_error_installer_disabled" msgid="1089791898782445342">"Selle rakenduse taastamiseks lubage seadetes <xliff:g id="INSTALLERNAME">%1$s</xliff:g>."</string>
-    <string name="message_restore_error_installer_absent" msgid="8492838251989389724">"Selle rakenduse taastamiseks peate installima teenuse <xliff:g id="INSTALLER_NAME">%1$s</xliff:g>."</string>
+    <string name="message_restore_error_installer_absent" msgid="8492838251989389724">"Selle rakenduse taastamiseks peate installima rakenduse <xliff:g id="INSTALLER_NAME">%1$s</xliff:g>."</string>
     <string name="message_restore_error_generic" msgid="5903850636679929406">"Selle rakenduse taastamisel ilmnes probleem."</string>
     <string name="message_uninstall_activity" msgid="3263352475743590167">"<xliff:g id="ACTIVITY_NAME">%1$s</xliff:g> on osa järgmisest rakendusest: <xliff:g id="APP_NAME">%2$s</xliff:g>."</string>
-    <string name="cannot_install_app_blocked_summary" msgid="5439893912308217959">"&lt;p&gt;See rakendus blokeeriti. Teie seadme ja andmete kaitsmiseks võite installida vaid kinnitatud arendajate rakendusi.&lt;/p&gt;"</string>
-    <string name="cannot_update_app_blocked_summary" msgid="7817560122951640605">"&lt;p&gt;Seda rakendust ei värskendatud. Teie seadme ja andmete kaitsmiseks võite installida vaid kinnitatud arendajate värskendusi.&lt;/p&gt;"</string>
-    <string name="cannot_install_verification_no_internet_summary" msgid="8875444318661602648">"&lt;p&gt;Seda rakendust ei installitud. Kinnitamata arendajate rakendused ei pruugi olla turvalised.&lt;/p&gt; &lt;p&gt;Rakenduse arendaja kinnitamiseks on vaja internetiühendust. Kontrollige ühendust ja proovige uuesti installida. &lt;/p&gt;"</string>
-    <string name="cannot_update_verification_no_internet_summary" msgid="8529572409795745791">"&lt;p&gt;Seda rakendust ei värskendatud. Kinnitamata arendajate värskendused ei pruugi olla turvalised.&lt;/p&gt; &lt;p&gt;Rakenduse arendaja kinnitamiseks on vaja internetiühendust. Kontrollige ühendust ja proovige uuesti värskendada. &lt;/p&gt;"</string>
-    <string name="cannot_install_verification_unavailable_summary" msgid="6208343652461257248">"&lt;p&gt;Rakenduse arendaja kinnitamisel ilmnes probleem. Kinnitamata arendajate rakendused ei pruugi olla turvalised, seega rakendust ei installitud.&lt;/p&gt;"</string>
-    <string name="cannot_update_verification_unavailable_summary" msgid="367099122142054088">"&lt;p&gt;Rakenduse arendaja kinnitamisel ilmnes probleem. Kinnitamata arendajate värskendused ei pruugi olla turvalised, seega rakendust ei värskendatud.&lt;/p&gt;"</string>
-    <string name="cannot_install_verification_unavailable_fail_closed_summary" msgid="3798407602770929670">"&lt;p&gt;Rakendus blokeeriti, kuna arendaja kinnitamisel ilmnes probleem. Teie seadme ja andmete kaitsmiseks võite installida vaid kinnitatud arendajate rakendusi.&lt;/p&gt;"</string>
-    <string name="cannot_update_verification_unavailable_fail_closed_summary" msgid="2871425967967934618">"&lt;p&gt;Rakendust ei värskendatud, kuna arendaja kinnitamisel ilmnes probleem. Teie seadme ja andmete kaitsmiseks võite installida vaid kinnitatud arendajate värskendusi.&lt;/p&gt;"</string>
+    <!-- no translation found for cannot_install_app_blocked_summary (2082063650842897085) -->
+    <skip />
+    <!-- no translation found for cannot_update_app_blocked_summary (7607734844900187499) -->
+    <skip />
+    <!-- no translation found for cannot_install_verification_no_internet_summary (7298957699553589600) -->
+    <skip />
+    <!-- no translation found for cannot_update_verification_no_internet_summary (8094414928318316598) -->
+    <skip />
+    <!-- no translation found for cannot_install_verification_unavailable_summary (3830073638843524892) -->
+    <skip />
+    <!-- no translation found for cannot_update_verification_unavailable_summary (342184955548504019) -->
+    <skip />
+    <!-- no translation found for cannot_install_verification_unavailable_fail_closed_summary (3552780111383069051) -->
+    <skip />
+    <!-- no translation found for cannot_update_verification_unavailable_fail_closed_summary (353457015429601377) -->
+    <skip />
     <string name="more_details_expanded_install_summary" msgid="3545896392881608712">"Kui installite ilma kinnitamata, pidage meeles, et kinnitamata arendajate rakendused võivad teie seadme või andmed ohtu seada."</string>
     <string name="more_details_expanded_update_summary" msgid="2239162864839036480">"Kui värskendata ilma kinnitamata, pidage meeles, et kinnitamata arendajate värskendused võivad teie seadme või andmed ohtu seada."</string>
     <string name="cannot_install_app_blocked_title" msgid="6372444121824751694">"Rakenduse arendaja pole kinnitatud"</string>
