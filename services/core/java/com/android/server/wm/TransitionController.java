@@ -910,8 +910,8 @@ class TransitionController {
 
             final TransitionRequestInfo request = new TransitionRequestInfo(transition.mType,
                     startTaskInfo, pipChange, remoteTransition, displayChange,
-                    transition.getRequestedLocation(), userChange, transition.getFlags(),
-                    transition.getSyncId());
+                    transition.getRequestedLocation(), userChange, null /* windowingLayerChange */,
+                    transition.getFlags(), transition.getSyncId());
 
             transition.mLogger.mRequestTimeNs = SystemClock.elapsedRealtimeNanos();
             transition.mLogger.mRequest = request;
