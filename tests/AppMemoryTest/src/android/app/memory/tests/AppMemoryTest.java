@@ -64,6 +64,9 @@ public class AppMemoryTest {
         try (var result = new ParcelFileDescriptor.AutoCloseInputStream(pfd)) {
             byte[] response = new byte[100];
             int len = result.read(response);
+            if (len <= 0) {
+                return "";
+            }
             return new String(response, 0, len);
         } catch (IOException e) {
             // Ignore the exception.
@@ -88,6 +91,7 @@ public class AppMemoryTest {
 
     @Before
     public void setUp() {
+        runShellCommandWithResult("setprop debug.allocTracker.stackDepth 64");
         final String apk = mRootPath + HELPER_APK;
         File apkFile = new File(apk);
         assertTrue("apk not found", apkFile.exists());
@@ -99,6 +103,7 @@ public class AppMemoryTest {
 
     @After
     public void tearDown() {
+        runShellCommandWithResult("setprop debug.allocTracker.stackDepth 16");
         uninstallHelper();
     }
 
