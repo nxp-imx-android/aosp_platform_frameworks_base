@@ -1321,7 +1321,7 @@ class KeyGestureControllerTests {
                 /* downTime= */ 0,
                 /* eventTime= */ 0,
                 KeyEvent.ACTION_DOWN,
-                KeyEvent.KEYCODE_SPACE,
+                KeyEvent.KEYCODE_MACRO_1, // Random valid keycode
                 /* repeat= */ 0,
                 KeyEvent.META_META_ON,
             )

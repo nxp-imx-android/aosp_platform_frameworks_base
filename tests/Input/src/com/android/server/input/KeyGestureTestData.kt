@@ -377,10 +377,10 @@ object KeyGestureTestData {
     val CAPTURABLE_SYSTEM_GESTURES =
         arrayOf(
             KeyGestureData(
-                "META + A -> Launch Assistant",
-                intArrayOf(KeyEvent.KEYCODE_META_LEFT, KeyEvent.KEYCODE_A),
+                "META + Space -> Launch Assistant",
+                intArrayOf(KeyEvent.KEYCODE_META_LEFT, KeyEvent.KEYCODE_SPACE),
                 KeyGestureEvent.KEY_GESTURE_TYPE_LAUNCH_ASSISTANT,
-                intArrayOf(KeyEvent.KEYCODE_A),
+                intArrayOf(KeyEvent.KEYCODE_SPACE),
                 KeyEvent.META_META_ON,
                 intArrayOf(KeyGestureEvent.ACTION_GESTURE_COMPLETE),
             ),
