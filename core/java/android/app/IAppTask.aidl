@@ -33,4 +33,5 @@ interface IAppTask {
     int startActivity(IBinder whoThread, String callingPackage, String callingFeatureId,
             in Intent intent, String resolvedType, in Bundle options);
     void setExcludeFromRecents(boolean exclude);
+    void requestWindowingLayer(in int layer, in IRemoteCallback outcomeCallback);
 }

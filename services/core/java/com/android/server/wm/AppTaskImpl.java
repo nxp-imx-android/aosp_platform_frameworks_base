@@ -44,6 +44,7 @@ import android.app.ActivityManager;
 import android.app.IAppTask;
 import android.app.IApplicationThread;
 import android.app.TaskMoveRequestHandler;
+import android.app.TaskWindowingLayerRequestHandler;
 import android.content.Intent;
 import android.graphics.Rect;
 import android.os.Binder;
@@ -55,6 +56,8 @@ import android.os.Process;
 import android.os.RemoteException;
 import android.os.UserHandle;
 import android.util.Slog;
+
+import java.util.Objects;
 
 /**
  * An implementation of IAppTask, that allows an app to manage its own tasks via
@@ -378,6 +381,23 @@ class AppTaskImpl extends IAppTask.Stub {
             } finally {
                 Binder.restoreCallingIdentity(origId);
             }
+        }
+    }
+
+    @Override
+    public void requestWindowingLayer(int layer, IRemoteCallback callback) {
+        checkCallerOrSystemOrRoot();
+        Objects.requireNonNull(callback, "The callback provided is null.");
+
+        final Bundle result = new Bundle();
+        // TODO(b/443206707): implement requesting a transition
+        // currently, just return failed due to bad state
+        result.putInt(TaskWindowingLayerRequestHandler.REMOTE_CALLBACK_RESULT_KEY,
+                TaskWindowingLayerRequestHandler.RESULT_FAILED_BAD_STATE);
+        try {
+            callback.sendResult(result);
+        } catch (RemoteException e) {
+            // Client thrown an exception back to the server, ignoring it.
         }
     }
 }
