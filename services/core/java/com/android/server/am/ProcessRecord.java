@@ -1623,8 +1623,8 @@ class ProcessRecord extends ProcessRecordInternal implements WindowProcessListen
     }
 
     @Override
-    public String[] getPackageList() {
-        return mPkgList.getPackageList();
+    public String[] getProcessPackageNames() {
+        return mPkgList.getPackageNames();
     }
 
     List<VersionedPackage> getPackageListWithVersionCode() {

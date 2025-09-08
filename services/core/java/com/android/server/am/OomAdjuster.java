@@ -2391,7 +2391,7 @@ public abstract class OomAdjuster {
     @GuardedBy({"mService", "mProcLock"})
     private void maybeUpdateUsageStatsLSP(ProcessRecordInternal app, long nowElapsed) {
         if (DEBUG_USAGE_STATS) {
-            Slog.d(TAG, "Checking proc [" + Arrays.toString(app.getPackageList())
+            Slog.d(TAG, "Checking proc [" + Arrays.toString(app.getProcessPackageNames())
                     + "] state changes: old = " + app.getSetProcState() + ", new = "
                     + app.getCurProcState());
         }
@@ -2429,7 +2429,7 @@ public abstract class OomAdjuster {
                 && (!app.getHasReportedInteraction()
                     || (nowElapsed - app.getInteractionEventTime()) > interactionThreshold)) {
             app.setInteractionEventTime(nowElapsed);
-            String[] packages = app.getPackageList();
+            final String[] packages = app.getProcessPackageNames();
             if (packages != null) {
                 for (int i = 0; i < packages.length; i++) {
                     mService.mUsageStatsService.reportEvent(packages[i], app.userId,

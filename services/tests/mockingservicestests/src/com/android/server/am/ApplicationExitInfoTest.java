@@ -813,8 +813,8 @@ public class ApplicationExitInfoTest {
         final int traceEnd = 8192;
         createRandomFile(traceFile, traceSize);
         assertEquals(traceSize, traceFile.length());
-        mAppExitInfoTracker.handleLogAnrTrace(app.getPid(), app.uid, app.getPackageList(),
-                traceFile, traceStart, traceEnd);
+        mAppExitInfoTracker.handleLogAnrTrace(app.getPid(), app.uid,
+                app.getProcessPackageNames(), traceFile, traceStart, traceEnd);
 
         noteAppKill(app, ApplicationExitInfo.REASON_OTHER,
                 ApplicationExitInfo.SUBREASON_TOO_MANY_EMPTY, app1Description2, now9);

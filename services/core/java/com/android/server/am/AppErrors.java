@@ -546,7 +546,7 @@ class AppErrors {
         }
 
         if (exceptionTypeId == CrashedByAdbException.TYPE_ID) {
-            String[] packages = proc.getPackageList();
+            final String[] packages = proc.getProcessPackageNames();
             for (int i = 0; i < packages.length; i++) {
                 if (mService.mPackageManagerInt.isPackageStateProtected(packages[i], proc.userId)) {
                     Slog.w(TAG, "crashApplication: Can not crash protected package " + packages[i]);

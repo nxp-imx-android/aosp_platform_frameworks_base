@@ -281,7 +281,7 @@ public abstract class ProcessRecordInternal {
     public abstract void notifyTopProcChanged();
 
     /** Returns an array of package names associated with this process. */
-    public abstract String[] getPackageList();
+    public abstract String[] getProcessPackageNames();
 
     // Enable this to trace all OomAdjuster state transitions
     private static final boolean TRACE_OOM_ADJ = false;
