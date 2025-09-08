@@ -2,12 +2,15 @@ package com.android.systemui.qs.pipeline.data.repository
 
 import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
+import android.platform.test.annotations.RequiresFlagsDisabled
+import android.platform.test.annotations.RequiresFlagsEnabled
 import android.platform.test.flag.junit.FlagsParameterization
 import android.provider.Settings
 import androidx.test.filters.SmallTest
 import com.android.systemui.Flags
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.coroutines.collectLastValue
+import com.android.systemui.qs.flags.QsSplitInternetTile
 import com.android.systemui.qs.pipeline.data.model.RestoreData
 import com.android.systemui.qs.pipeline.shared.TileSpec
 import com.android.systemui.qs.pipeline.shared.TilesUpgradePath
@@ -467,6 +470,44 @@ class UserTileSpecRepositoryTest(flags: FlagsParameterization) : SysuiTestCase()
             val expected = "a,b,c,d,f"
             assertThat(tilesRead)
                 .isEqualTo(TilesUpgradePath.RestoreFromBackup(expected.toTilesSet()))
+        }
+
+    @Test
+    @RequiresFlagsEnabled(QsSplitInternetTile.FLAG_NAME)
+    fun flagEnabled_readFromSettings_internetTileBecomesWifi() =
+        testScope.runTest {
+            val storedInSettings = "a,b,internet,c"
+            storeTiles(storedInSettings)
+
+            val tiles by collectLastValue(underTest.tiles())
+
+            assertThat(tiles!!)
+                .containsExactly(
+                    TileSpec.create("a"),
+                    TileSpec.create("b"),
+                    TileSpec.create("wifi"),
+                    TileSpec.create("c"),
+                )
+                .inOrder()
+        }
+
+    @Test
+    @RequiresFlagsDisabled(QsSplitInternetTile.FLAG_NAME)
+    fun flagDisabled_readFromSettings_wifiTileBecomesInternet() =
+        testScope.runTest {
+            val storedInSettings = "a,b,wifi,c"
+            storeTiles(storedInSettings)
+
+            val tiles by collectLastValue(underTest.tiles())
+
+            assertThat(tiles!!)
+                .containsExactly(
+                    TileSpec.create("a"),
+                    TileSpec.create("b"),
+                    TileSpec.create("internet"),
+                    TileSpec.create("c"),
+                )
+                .inOrder()
         }
 
     private fun getDefaultTileSpecs(isHeadlessSystemUser: Boolean): List<TileSpec> {

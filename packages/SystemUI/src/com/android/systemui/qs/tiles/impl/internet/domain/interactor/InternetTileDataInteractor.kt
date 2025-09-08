@@ -24,6 +24,7 @@ import com.android.systemui.common.shared.model.ContentDescription
 import com.android.systemui.common.shared.model.ContentDescription.Companion.loadContentDescription
 import com.android.systemui.common.shared.model.Text
 import com.android.systemui.dagger.qualifiers.Application
+import com.android.systemui.qs.flags.QsSplitInternetTile
 import com.android.systemui.qs.tiles.base.domain.interactor.QSTileDataInteractor
 import com.android.systemui.qs.tiles.base.domain.model.DataUpdateTrigger
 import com.android.systemui.qs.tiles.impl.internet.domain.model.InternetTileModel
@@ -256,7 +257,8 @@ constructor(
             }
         }
 
-    override fun availability(user: UserHandle): Flow<Boolean> = flowOf(true)
+    override fun availability(user: UserHandle): Flow<Boolean> =
+        flowOf(!QsSplitInternetTile.isEnabled)
 
     private companion object {
         val NOT_CONNECTED_NETWORKS_UNAVAILABLE =

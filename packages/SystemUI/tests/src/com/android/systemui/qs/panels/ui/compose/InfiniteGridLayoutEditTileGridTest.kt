@@ -34,6 +34,7 @@ import androidx.compose.ui.test.performTouchInput
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.compose.theme.PlatformTheme
+import com.android.systemui.Flags.qsSplitInternetTile
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.compose.modifiers.resIdToTestTag
 import com.android.systemui.flags.DisableSceneContainer
@@ -127,7 +128,7 @@ class InfiniteGridLayoutEditTileGridTest : SysuiTestCase() {
             val stateOnFirstMove =
                 listOf(
                     "bt",
-                    "internet",
+                    internetTileSpec,
                     "flashlight",
                     "dnd",
                     "alarm",
@@ -140,7 +141,7 @@ class InfiniteGridLayoutEditTileGridTest : SysuiTestCase() {
             val stateOnSecondMove =
                 listOf(
                     "bt",
-                    "internet",
+                    internetTileSpec,
                     "alarm",
                     "flashlight",
                     "dnd",
@@ -153,7 +154,9 @@ class InfiniteGridLayoutEditTileGridTest : SysuiTestCase() {
 
             // Perform first move
             // Double tap internet
-            composeRule.onNodeWithContentDescription("internet").performTouchInput { doubleClick() }
+            composeRule.onNodeWithContentDescription(internetTileSpec).performTouchInput {
+                doubleClick()
+            }
             // Tap on bt to position internet in its spot
             composeRule.onNodeWithContentDescription("bt").performClick()
             composeRule.waitForIdle()
@@ -236,13 +239,13 @@ class InfiniteGridLayoutEditTileGridTest : SysuiTestCase() {
             composeRule.waitForIdle()
 
             // Perform first removal.
-            composeRule.onNodeWithContentDescription("internet").performTouchInput {
+            composeRule.onNodeWithContentDescription(internetTileSpec).performTouchInput {
                 click(position = topRight)
             }
             composeRule.waitForIdle()
 
             // Assert the removal happened
-            assertThat(latest!!.find { it.tile.tileSpec == "internet" }).isNull()
+            assertThat(latest!!.find { it.tile.tileSpec == internetTileSpec }).isNull()
 
             // Perform second removal
             composeRule.onNodeWithContentDescription("bt").performTouchInput {
@@ -261,7 +264,7 @@ class InfiniteGridLayoutEditTileGridTest : SysuiTestCase() {
             // Perform second undo
             composeRule.onNodeWithContentDescription("Undo").performClick()
             // Assert that internet is current
-            assertThat(latest!!.find { it.tile.tileSpec == "internet" }).isNotNull()
+            assertThat(latest!!.find { it.tile.tileSpec == internetTileSpec }).isNotNull()
         }
 
     @Test
@@ -272,7 +275,7 @@ class InfiniteGridLayoutEditTileGridTest : SysuiTestCase() {
 
             // Resize tileA to large
             composeRule
-                .onNodeWithContentDescription("internet")
+                .onNodeWithContentDescription(internetTileSpec)
                 .performClick() // Select
                 .performTouchInput { // Tap on resizing handle
                     click(centerRight)
@@ -300,7 +303,7 @@ class InfiniteGridLayoutEditTileGridTest : SysuiTestCase() {
 
             // Perform second undo
             composeRule.onNodeWithContentDescription("Undo").performClick()
-            assertLargeTiles(setOf("internet", "bt", "dnd", "cast"))
+            assertLargeTiles(setOf(internetTileSpec, "bt", "dnd", "cast"))
         }
 
     @Test
@@ -337,9 +340,10 @@ class InfiniteGridLayoutEditTileGridTest : SysuiTestCase() {
 
         private val AVAILABLE_TILES_GRID_TEST_TAG = resIdToTestTag("AvailableTilesGrid")
         private const val OPTIONS_DROP_DOWN_TEST_TAG = "OptionsDropdown"
+        private val internetTileSpec = if (qsSplitInternetTile()) "wifi" else "internet"
         private val TestEditTiles =
             listOf(
-                TileSpec.create("internet"),
+                TileSpec.create(internetTileSpec),
                 TileSpec.create("bt"),
                 TileSpec.create("flashlight"),
                 TileSpec.create("dnd"),

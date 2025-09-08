@@ -9,6 +9,7 @@ import com.android.systemui.common.coroutine.ConflatedCallbackFlow
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.qs.pipeline.data.model.RestoreData
+import com.android.systemui.qs.pipeline.shared.InternetTileMigration.migrateInternetTile
 import com.android.systemui.qs.pipeline.shared.TileSpec
 import com.android.systemui.qs.pipeline.shared.TilesUpgradePath
 import com.android.systemui.qs.pipeline.shared.logging.QSPipelineLogger
@@ -69,7 +70,7 @@ constructor(
     suspend fun tiles(): Flow<List<TileSpec>> {
         if (!::_tiles.isInitialized) {
             withContext(backgroundDispatcher) {
-              isHeadlessSystemUser = hsuQsChanges() && hsum.isHeadlessSystemUser(userId)
+                isHeadlessSystemUser = hsuQsChanges() && hsum.isHeadlessSystemUser(userId)
             }
             _tiles =
                 changeEvents
@@ -184,6 +185,13 @@ constructor(
                 secureSettings.getStringForUser(SETTING, userId) ?: ""
             }
             .toTilesList()
+            .run {
+                migrateInternetTile().also { migrated ->
+                    if (migrated != this) {
+                        logger.logInternetTileMigrationOnTileLoad(userId)
+                    }
+                }
+            }
     }
 
     suspend fun reconcileRestore(restoreData: RestoreData, currentAutoAdded: Set<TileSpec>) {
