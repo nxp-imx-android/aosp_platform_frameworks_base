@@ -118,8 +118,9 @@ val sceneTransitionsV2 = transitions {
         translate(Communal.Elements.Grid, Edge.End)
         if (Flags.gestureBetweenHubAndLockscreenMotion()) {
             distance = UserActionDistance { fromContent, _, _ ->
-                val fromContentSize = checkNotNull(fromContent.targetSize())
-                fromContentSize.width * 0.5f
+                // fromContent size can be null if it hasn't been compose yet, in which case we
+                // fall back to 0.
+                fromContent.targetSize()?.width?.times(0.5f) ?: 0f
             }
             timestampRange(startMillis = 167, endMillis = 334) { fade(Communal.Elements.StatusBar) }
         } else {
