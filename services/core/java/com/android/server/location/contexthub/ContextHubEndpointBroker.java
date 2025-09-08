@@ -648,12 +648,6 @@ public class ContextHubEndpointBroker extends IContextHubEndpoint.Stub
      * @param hubInterface The new interface to the Context Hub HAL.
      */
     /* package */ void onHalRestart(@NonNull IEndpointCommunication hubInterface) {
-        synchronized (mOpenSessionLock) {
-            for (int i = mSessionMap.size() - 1; i >= 0; i--) {
-                int id = mSessionMap.keyAt(i);
-                onCloseEndpointSession(id, Reason.HUB_RESET);
-            }
-        }
         synchronized (mRegistrationLock) {
             if (mIsRegistered) {
                 mIsRegistered = false;
@@ -663,6 +657,12 @@ public class ContextHubEndpointBroker extends IContextHubEndpoint.Stub
                 } catch (RemoteException e) {
                     Log.e(TAG, "RemoteException while calling HAL registerEndpoint", e);
                 }
+            }
+        }
+        synchronized (mOpenSessionLock) {
+            for (int i = mSessionMap.size() - 1; i >= 0; i--) {
+                int id = mSessionMap.keyAt(i);
+                onCloseEndpointSession(id, Reason.HUB_RESET);
             }
         }
     }
