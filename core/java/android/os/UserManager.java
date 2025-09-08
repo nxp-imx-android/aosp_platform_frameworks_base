@@ -184,8 +184,9 @@ public class UserManager {
 
     /**
      * User type representing a clone profile. Clone profile is a user profile type used to run
-     * second instance of an otherwise single user App (eg, messengers). Currently only the
-     * {@link android.content.pm.UserInfo#isMain()} user can have a clone profile.
+     * a second instance of an otherwise single user App (eg, messengers). Currently only the main
+     * user (which is the first full user set up on the device, usually the system user)
+     * can have a clone profile.
      */
     @FlaggedApi(android.os.Flags.FLAG_ALLOW_PRIVATE_PROFILE)
     public static final String USER_TYPE_PROFILE_CLONE = "android.os.usertype.profile.CLONE";
