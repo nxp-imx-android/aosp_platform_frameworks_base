@@ -3047,7 +3047,7 @@ final class DisplayPowerController implements AutomaticBrightnessController.Call
                     event.getHbmMode() == BrightnessInfo.HIGH_BRIGHTNESS_MODE_HDR,
                     (modifier & BrightnessReason.MODIFIER_LOW_POWER) > 0,
                     brightnessState.getBrightnessMaxReason(),
-                    // TODO: (flc) add brightnessMinReason here too.
+                    // TODO: b/443712653 add brightnessMinReason here too.
                     (modifier & BrightnessReason.MODIFIER_DIMMED) > 0,
                     event.isRbcEnabled(),
                     (flags & BrightnessEvent.FLAG_INVALID_LUX) > 0,
