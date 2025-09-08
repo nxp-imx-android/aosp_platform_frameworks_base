@@ -87,10 +87,8 @@
     <string name="bluetooth_connecting" msgid="5871702668260192755">"Iyaxhuma..."</string>
     <string name="bluetooth_connected" msgid="8065345572198502293">"Ixhunyiwe<xliff:g id="ACTIVE_DEVICE">%1$s</xliff:g>"</string>
     <string name="bluetooth_pairing" msgid="4269046942588193600">"Iyabhangqa..."</string>
-    <!-- no translation found for bluetooth_pairing_failure (6914444518793157913) -->
-    <skip />
-    <!-- no translation found for bluetooth_connection_failure (384203214661155324) -->
-    <skip />
+    <string name="bluetooth_pairing_failure" msgid="6914444518793157913">"Ayikwazi ukubhanqa"</string>
+    <string name="bluetooth_connection_failure" msgid="384203214661155324">"Ayikwazi ukuxhuma"</string>
     <string name="bluetooth_connected_no_headset" msgid="2224101138659967604">"Ixhunyiwe (ayikho ifoni)<xliff:g id="ACTIVE_DEVICE">%1$s</xliff:g>"</string>
     <string name="bluetooth_connected_no_a2dp" msgid="8566874395813947092">"Ixhunyiwe (ayikho imidiya)<xliff:g id="ACTIVE_DEVICE">%1$s</xliff:g>"</string>
     <string name="bluetooth_connected_no_headset_no_a2dp" msgid="2893204819854215433">"Ixhunyiwe (ayikho ifoni noma imidiya)<xliff:g id="ACTIVE_DEVICE">%1$s</xliff:g>"</string>
@@ -120,6 +118,8 @@
     <string name="bluetooth_hearing_aid_right_active" msgid="2244728507170385397">"Iyasebenza (ngakwesokudla kuphela)"</string>
     <string name="bluetooth_hearing_aid_left_and_right_active" msgid="4294571497939983181">"Iyasebenza (ngakwesokunxele nakwesokudla)"</string>
     <string name="bluetooth_hearing_device_ambient_error" msgid="6035857289108813878">"Ayikwazanga ukubuyekeza izindawo ezizungezile"</string>
+    <!-- no translation found for bluetooth_hearing_aids_presets_error (4523942574698610976) -->
+    <skip />
     <string name="bluetooth_active_media_only_battery_level" msgid="7772517511061834073">"Iyasebenza (imidiya kuphela). <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE">%1$s</xliff:g> ibhethri."</string>
     <string name="bluetooth_active_media_only_battery_level_untethered" msgid="7444753133664620926">"Iyasebenza (imidiya kuphela). L: <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE_0">%1$s</xliff:g>, R: <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE_1">%2$s</xliff:g> ibhethri."</string>
     <string name="bluetooth_guest_battery_level" msgid="2820003593899467676">"Idivayisi yesivakashi. Ibhethri engu-<xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE">%1$s</xliff:g>."</string>
@@ -349,8 +349,7 @@
     <string name="wifi_non_persistent_mac_randomization_summary" msgid="2159794543105053930">"Uma le modi inikwe amandla, ikheli le-MAC lale divayisi lingashintsha njalo uma ixhuma kunethiwekhi ene-MAC engahleliwe enikwe amandla."</string>
     <string name="wifi_metered_label" msgid="8737187690304098638">"Kulinganisiwe"</string>
     <string name="wifi_unmetered_label" msgid="6174142840934095093">"Akulinganiselwa"</string>
-    <!-- no translation found for select_logd_size_title (4393502933789367691) -->
-    <skip />
+    <string name="select_logd_size_title" msgid="4393502933789367691">"Usayizi webhafa yokungena"</string>
     <string name="select_logd_size_dialog_title" msgid="2105401994681013578">"Khetha amasayizi weloga ngebhafa ngayinye yelogu"</string>
     <string name="dev_logpersist_clear_warning_title" msgid="8631859265777337991">"Sula isitoreji seloga eqhubekayo?"</string>
     <string name="dev_logpersist_clear_warning_message" msgid="6447590867594287413">"Uma singasaqaphi  ngeloga eqhubekayo, kuzomele sisule idatha yeloga ehleli kudivayisi yakho."</string>

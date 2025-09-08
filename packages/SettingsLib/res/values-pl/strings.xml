@@ -118,6 +118,8 @@
     <string name="bluetooth_hearing_aid_right_active" msgid="2244728507170385397">"Aktywne (tylko prawa strona)"</string>
     <string name="bluetooth_hearing_aid_left_and_right_active" msgid="4294571497939983181">"Aktywne (lewa i prawa strona)"</string>
     <string name="bluetooth_hearing_device_ambient_error" msgid="6035857289108813878">"Nie udało się zaktualizować otoczenia"</string>
+    <!-- no translation found for bluetooth_hearing_aids_presets_error (4523942574698610976) -->
+    <skip />
     <string name="bluetooth_active_media_only_battery_level" msgid="7772517511061834073">"Aktywne (tylko multimedia). <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE">%1$s</xliff:g> naładowania baterii."</string>
     <string name="bluetooth_active_media_only_battery_level_untethered" msgid="7444753133664620926">"Aktywne (tylko multimedia), lewa: <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE_0">%1$s</xliff:g>, prawa: <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE_1">%2$s</xliff:g> naładowania baterii."</string>
     <string name="bluetooth_guest_battery_level" msgid="2820003593899467676">"Urządzenie gościa. <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE">%1$s</xliff:g> baterii."</string>
@@ -347,8 +349,7 @@
     <string name="wifi_non_persistent_mac_randomization_summary" msgid="2159794543105053930">"Kiedy ten tryb jest włączony, to adres MAC tego urządzenia może zmieniać się za każdym razem, kiedy urządzenie połączy się z siecią, która ma włączoną opcję randomizacji MAC"</string>
     <string name="wifi_metered_label" msgid="8737187690304098638">"Użycie danych jest mierzone"</string>
     <string name="wifi_unmetered_label" msgid="6174142840934095093">"Użycie danych nie jest mierzone"</string>
-    <!-- no translation found for select_logd_size_title (4393502933789367691) -->
-    <skip />
+    <string name="select_logd_size_title" msgid="4393502933789367691">"Rozmiar bufora rejestratora danych"</string>
     <string name="select_logd_size_dialog_title" msgid="2105401994681013578">"Wybierz rozmiary Rejestratora na bufor dziennika"</string>
     <string name="dev_logpersist_clear_warning_title" msgid="8631859265777337991">"Wyczyścić pamięć trwałych dzienników?"</string>
     <string name="dev_logpersist_clear_warning_message" msgid="6447590867594287413">"Po zakończeniu monitorowania przy użyciu trwale zapisywanych dzienników musimy usunąć ich dane zapisane na urządzeniu."</string>

@@ -118,6 +118,8 @@
     <string name="bluetooth_hearing_aid_right_active" msgid="2244728507170385397">"চালু আছে (শুধু ডানদিক)"</string>
     <string name="bluetooth_hearing_aid_left_and_right_active" msgid="4294571497939983181">"চালু আছে (বাঁদিক ও ডানদিক)"</string>
     <string name="bluetooth_hearing_device_ambient_error" msgid="6035857289108813878">"সারাউন্ডিং আপডেট করা যায়নি"</string>
+    <!-- no translation found for bluetooth_hearing_aids_presets_error (4523942574698610976) -->
+    <skip />
     <string name="bluetooth_active_media_only_battery_level" msgid="7772517511061834073">"চালু আছে (শুধুমাত্র মিডিয়া)। <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE">%1$s</xliff:g> ব্যাটারি।"</string>
     <string name="bluetooth_active_media_only_battery_level_untethered" msgid="7444753133664620926">"চালু আছে (শুধুমাত্র মিডিয়া), বাঁদিক: <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE_0">%1$s</xliff:g>, ডানদিক: <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE_1">%2$s</xliff:g> ব্যাটারি।"</string>
     <string name="bluetooth_guest_battery_level" msgid="2820003593899467676">"অতিথি ডিভাইস। <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE">%1$s</xliff:g> ব্যাটারি।"</string>
@@ -347,8 +349,7 @@
     <string name="wifi_non_persistent_mac_randomization_summary" msgid="2159794543105053930">"এই মোডটি চালু থাকলে, MAC অ্যাড্রেসের র‍্যান্ডমাইজেশনের সুবিধা চালু আছে এমন কোনও নেটওয়ার্কে প্রত্যেকবার কানেক্ট করার সময় ডিভাইসের MAC অ্যাড্রেস পরিবর্তিত হতে পারে।"</string>
     <string name="wifi_metered_label" msgid="8737187690304098638">"মিটার্ড"</string>
     <string name="wifi_unmetered_label" msgid="6174142840934095093">"পরিমাপ করা নয়"</string>
-    <!-- no translation found for select_logd_size_title (4393502933789367691) -->
-    <skip />
+    <string name="select_logd_size_title" msgid="4393502933789367691">"লগার বাফারের সাইজ"</string>
     <string name="select_logd_size_dialog_title" msgid="2105401994681013578">"লগ বাফার প্রতি অপেক্ষাকৃত বড় আকারগুলির বেছে নিন"</string>
     <string name="dev_logpersist_clear_warning_title" msgid="8631859265777337991">"লগারের স্টোরেজ সাফ করবেন?"</string>
     <string name="dev_logpersist_clear_warning_message" msgid="6447590867594287413">"যেহেতু আমারা সর্বদা লগার চালু রেখে আর নিরিক্ষণ করছি না, তাই আমাদের আপনার ডিভাইসে থাকা লগার ডেটা মুছে ফেলতে হবে৷"</string>

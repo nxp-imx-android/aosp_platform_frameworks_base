@@ -87,10 +87,8 @@
     <string name="bluetooth_connecting" msgid="5871702668260192755">"Đang kết nối…"</string>
     <string name="bluetooth_connected" msgid="8065345572198502293">"Đã kết nối <xliff:g id="ACTIVE_DEVICE">%1$s</xliff:g>"</string>
     <string name="bluetooth_pairing" msgid="4269046942588193600">"Đang ghép nối…"</string>
-    <!-- no translation found for bluetooth_pairing_failure (6914444518793157913) -->
-    <skip />
-    <!-- no translation found for bluetooth_connection_failure (384203214661155324) -->
-    <skip />
+    <string name="bluetooth_pairing_failure" msgid="6914444518793157913">"Không ghép nối được"</string>
+    <string name="bluetooth_connection_failure" msgid="384203214661155324">"Không kết nối được"</string>
     <string name="bluetooth_connected_no_headset" msgid="2224101138659967604">"Đã kết nối (không có điện thoại) <xliff:g id="ACTIVE_DEVICE">%1$s</xliff:g>"</string>
     <string name="bluetooth_connected_no_a2dp" msgid="8566874395813947092">"Đã kết nối (không có phương tiện) <xliff:g id="ACTIVE_DEVICE">%1$s</xliff:g>"</string>
     <string name="bluetooth_connected_no_headset_no_a2dp" msgid="2893204819854215433">"Đã kết nối (không có điện thoại hoặc phương tiện) <xliff:g id="ACTIVE_DEVICE">%1$s</xliff:g>"</string>
@@ -120,6 +118,8 @@
     <string name="bluetooth_hearing_aid_right_active" msgid="2244728507170385397">"Đang hoạt động (chỉ tai phải)"</string>
     <string name="bluetooth_hearing_aid_left_and_right_active" msgid="4294571497939983181">"Đang hoạt động (trái và phải)"</string>
     <string name="bluetooth_hearing_device_ambient_error" msgid="6035857289108813878">"Không cập nhật được âm lượng xung quanh"</string>
+    <!-- no translation found for bluetooth_hearing_aids_presets_error (4523942574698610976) -->
+    <skip />
     <string name="bluetooth_active_media_only_battery_level" msgid="7772517511061834073">"Đang hoạt động (chỉ phát nội dung đa phương tiện). Còn <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE">%1$s</xliff:g> pin."</string>
     <string name="bluetooth_active_media_only_battery_level_untethered" msgid="7444753133664620926">"Đang hoạt động (chỉ phát nội dung đa phương tiện). Bên trái: Còn <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE_0">%1$s</xliff:g> pin. Bên phải: Còn <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE_1">%2$s</xliff:g> pin."</string>
     <string name="bluetooth_guest_battery_level" msgid="2820003593899467676">"Thiết bị khách. Còn <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE">%1$s</xliff:g> pin."</string>
@@ -349,8 +349,7 @@
     <string name="wifi_non_persistent_mac_randomization_summary" msgid="2159794543105053930">"Khi bật chế độ này, địa chỉ MAC của thiết bị này có thể thay đổi mỗi lần thiết bị kết nối với mạng đã bật chế độ tạo địa chỉ MAC ngẫu nhiên."</string>
     <string name="wifi_metered_label" msgid="8737187690304098638">"Đo lượng dữ liệu"</string>
     <string name="wifi_unmetered_label" msgid="6174142840934095093">"Không đo lượng dữ liệu"</string>
-    <!-- no translation found for select_logd_size_title (4393502933789367691) -->
-    <skip />
+    <string name="select_logd_size_title" msgid="4393502933789367691">"Dung lượng bộ nhớ đệm của trình ghi nhật ký"</string>
     <string name="select_logd_size_dialog_title" msgid="2105401994681013578">"Chọn kích thước Trình ghi nhật ký trên mỗi bộ đệm nhật ký"</string>
     <string name="dev_logpersist_clear_warning_title" msgid="8631859265777337991">"Xóa bộ nhớ ổn định trong trình ghi nhật ký?"</string>
     <string name="dev_logpersist_clear_warning_message" msgid="6447590867594287413">"Khi chúng tôi không còn theo dõi bằng trình ghi nhật ký ổn định nữa, chúng tôi sẽ được yêu cầu xóa dữ liệu trong trình ghi nhật ký nằm trên thiết bị của bạn."</string>
