@@ -1717,7 +1717,8 @@ public final class CameraManager {
         final CameraCompatibilityInfo compatInfo = CompatibilityInfo.getCameraCompatibilityInfo();
         return (compatInfo.getRotateAndCropRotation() != ROTATION_UNDEFINED
                 && compatInfo.getRotateAndCropRotation() != ROTATION_0)
-                || compatInfo.shouldOverrideSensorOrientation();
+                || compatInfo.shouldOverrideSensorOrientation()
+                || !compatInfo.shouldAllowTransformInverseDisplay();
     }
 
     // TODO(b/430274604): remove once refactoring is launched.
