@@ -16,7 +16,7 @@
 -->
 
 <resources>
-    <style name="SettingslibPopupMenuStyle" parent="Widget.AppCompat.PopupMenu">
+    <style name="SettingslibPopupMenuStyle" parent="Theme.AppCompat.DayNight">
         <item name="android:popupBackground">@drawable/settingslib_expressive_spinner_dropdown_background</item>
         <item name="android:textAppearance">@style/TextAppearance.SettingsLib.LabelLarge</item>
         <item name="android:dropDownListViewStyle">@style/SettingslibMenuItemStyle</item>
