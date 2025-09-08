@@ -86,6 +86,9 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
 
     private static final String TAG = "ComputerControlSession";
 
+    // Input device names are limited to 80 bytes, so keep the prefix at most 75 long.
+    private static final int MAX_INPUT_DEVICE_NAME_PREFIX_LENGTH = 75;
+
     // Throttle swipe events to avoid misinterpreting them as a fling. Each swipe will
     // consist of a DOWN event, 10 MOVE events spread over 500ms, and an UP event.
     @VisibleForTesting
@@ -193,7 +196,7 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
                     mVirtualDisplayId, WindowManager.DISPLAY_IME_POLICY_HIDE);
 
             final String inputDeviceNamePrefix =
-                    attributionSource.getPackageName() + ":" + mParams.getName();
+                    createInputDeviceNamePrefix(attributionSource.getPackageName());
 
             final String dpadName = inputDeviceNamePrefix + "-dpad";
             final VirtualDpadConfig virtualDpadConfig =
@@ -204,7 +207,7 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
             mVirtualDpad = mVirtualDevice.createVirtualDpad(
                     virtualDpadConfig, new Binder(dpadName));
 
-            final String keyboardName = inputDeviceNamePrefix + "-keyboard";
+            final String keyboardName = inputDeviceNamePrefix + "-kbrd";
             final VirtualKeyboardConfig virtualKeyboardConfig =
                     new VirtualKeyboardConfig.Builder()
                             .setAssociatedDisplayId(mVirtualDisplayId)
@@ -213,7 +216,7 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
             mVirtualKeyboard = mVirtualDevice.createVirtualKeyboard(
                     virtualKeyboardConfig, new Binder(keyboardName));
 
-            final String touchscreenName = inputDeviceNamePrefix + "-touchscreen";
+            final String touchscreenName = inputDeviceNamePrefix + "-tscr";
             final VirtualTouchscreenConfig virtualTouchscreenConfig =
                     new VirtualTouchscreenConfig.Builder(mDisplayWidth, mDisplayHeight)
                             .setAssociatedDisplayId(mVirtualDisplayId)
@@ -490,6 +493,13 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
             mVirtualTouchscreen.sendTouchEvent(
                     createTouchEvent(0, 0, VirtualTouchEvent.ACTION_CANCEL));
         }
+    }
+
+    private String createInputDeviceNamePrefix(String packageName) {
+        final String prefix = packageName + ":" + mParams.getName();
+        return (prefix.length() > MAX_INPUT_DEVICE_NAME_PREFIX_LENGTH)
+                ? prefix.substring(prefix.length() - MAX_INPUT_DEVICE_NAME_PREFIX_LENGTH)
+                : prefix;
     }
 
     private static class ComputerControlActivityListener
