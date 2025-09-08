@@ -17,6 +17,7 @@
 package com.android.wm.shell.windowdecor
 
 import android.annotation.IdRes
+import android.app.ActivityManager
 import android.app.ActivityManager.RunningTaskInfo
 import android.content.Context
 import android.graphics.Bitmap
@@ -27,6 +28,7 @@ import android.os.Handler
 import android.view.Display
 import android.view.SurfaceControl
 import android.view.View
+import android.view.WindowInsetsController.APPEARANCE_TRANSPARENT_CAPTION_BAR_BACKGROUND
 import android.view.WindowManager
 import com.android.internal.jank.InteractionJankMonitor
 import com.android.wm.shell.ShellTaskOrganizer
@@ -61,6 +63,30 @@ object WindowDecorationTestHelper {
     /** Creates a task that should be decorated with an app header. */
     fun createAppHeaderTask(bounds: Rect = Rect(200, 200, 800, 600)): RunningTaskInfo {
         return createFreeformTask(bounds = bounds).apply { isVisible = true }
+    }
+
+    /** Creates a task that should be decorated with an opaque (not customizable) app header. */
+    fun createOpaqueAppHeaderTask(bounds: Rect = Rect(200, 200, 800, 600)): RunningTaskInfo {
+        return createAppHeaderTask(bounds = bounds).apply {
+            taskDescription =
+                (taskDescription ?: ActivityManager.TaskDescription()).apply {
+                    topOpaqueSystemBarsAppearance =
+                        topOpaqueSystemBarsAppearance and
+                            APPEARANCE_TRANSPARENT_CAPTION_BAR_BACKGROUND.inv()
+                }
+        }
+    }
+
+    /** Creates a task that should be decorated with an app header and is being customized. */
+    fun createCustomAppHeaderTask(bounds: Rect = Rect(200, 200, 800, 600)): RunningTaskInfo {
+        return createAppHeaderTask(bounds = bounds).apply {
+            taskDescription =
+                (taskDescription ?: ActivityManager.TaskDescription()).apply {
+                    topOpaqueSystemBarsAppearance =
+                        topOpaqueSystemBarsAppearance or
+                            APPEARANCE_TRANSPARENT_CAPTION_BAR_BACKGROUND
+                }
+        }
     }
 
     /** Creates a window decoration. */
