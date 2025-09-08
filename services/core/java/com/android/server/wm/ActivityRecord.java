@@ -4800,23 +4800,15 @@ final class ActivityRecord extends WindowToken {
     }
 
     void setShowWhenLocked(boolean showWhenLocked) {
-        final boolean changed = (mShowWhenLocked != showWhenLocked);
-        mShowWhenLocked = showWhenLocked;
-
-        if (!Flags.fixShowWhenLockedSyncTimeout()) {
-            mAtmService.mRootWindowContainer.ensureActivitiesVisible();
-        } else if (changed) {
+        if (mShowWhenLocked != showWhenLocked) {
+            mShowWhenLocked = showWhenLocked;
             mDisplayContent.notifyKeyguardFlagsChanged();
         }
     }
 
     void setInheritShowWhenLocked(boolean inheritShowWhenLocked) {
-        final boolean changed = (mInheritShowWhenLocked != inheritShowWhenLocked);
-        mInheritShowWhenLocked = inheritShowWhenLocked;
-
-        if (!Flags.fixShowWhenLockedSyncTimeout()) {
-            mAtmService.mRootWindowContainer.ensureActivitiesVisible();
-        } else if (changed) {
+        if (mInheritShowWhenLocked != inheritShowWhenLocked) {
+            mInheritShowWhenLocked = inheritShowWhenLocked;
             mDisplayContent.notifyKeyguardFlagsChanged();
         }
     }
