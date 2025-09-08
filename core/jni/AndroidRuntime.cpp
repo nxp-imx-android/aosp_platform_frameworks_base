@@ -35,6 +35,7 @@
 #include <dlfcn.h>
 #include <nativehelper/JNIHelp.h>
 #include <nativehelper/JniInvocation.h>
+#include "com_android_internal_os_JniStringCache.h"
 #include <server_configurable_flags/get_flags.h>
 #include <signal.h>
 #include <stdio.h>
@@ -108,6 +109,10 @@ extern int register_android_media_PublicFormatUtils(JNIEnv *env);
 extern int register_android_media_ToneGenerator(JNIEnv *env);
 extern int register_android_media_audio_common_AidlConversion(JNIEnv* env);
 extern int register_android_media_midi(JNIEnv *env);
+
+extern "C" JNIEXPORT void JNICALL JNI_OnUnload(JavaVM* vm, void* reserved) {
+    JniStringCache::Unload(vm);
+}
 
 namespace android {
 
