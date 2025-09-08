@@ -130,6 +130,7 @@ import kotlin.math.roundToInt
 import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
+import androidx.compose.material3.Text
 
 object Notifications {
     object Elements {
@@ -179,7 +180,15 @@ fun ContentScope.HeadsUpNotificationSpace(
                         stackScrollView.setHeadsUpBottom(boundsInWindow.bottom)
                     }
                 }
-    )
+    ) {
+        if (viewModel.isVisualDebuggingEnabled) {
+            Text(
+                text = "HeadsUpNotificationPlaceholder",
+                color = DEBUG_HUN_COLOR.copy(alpha = 0.7f),
+                modifier = Modifier.align(Alignment.TopCenter)
+            )
+        }
+    }
 }
 
 /**
@@ -767,6 +776,13 @@ fun ContentScope.NotificationScrollingStack(
                                 imeTop.floatValue = screenHeight - coordinates.size.height
                             }
                 )
+                if (viewModel.isVisualDebuggingEnabled) {
+                    Text(
+                        text = "NotificationScrollingStack",
+                        color = DEBUG_BOX_COLOR.copy(alpha = 0.7f),
+                        modifier = Modifier.align(Alignment.CenterHorizontally)
+                    )
+                }
             }
         }
         if (shouldIncludeHeadsUpSpace) {
@@ -848,7 +864,15 @@ private fun ContentScope.NotificationPlaceholder(
                         stackScrollView.setStackTop(positionInWindow.y)
                     }
                 }
-    )
+    ) {
+        if (viewModel.isVisualDebuggingEnabled) {
+            Text(
+                text = "NotificationStackPlaceholder",
+                color = DEBUG_STACK_COLOR.copy(alpha = 0.7f),
+                modifier = Modifier.align(Alignment.TopCenter)
+            )
+        }
+    }
 }
 
 private suspend fun scrollNotificationStack(
