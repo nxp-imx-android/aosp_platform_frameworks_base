@@ -37,6 +37,7 @@ import com.android.wm.shell.shared.bubbles.DragZoneFactory.BubbleBarPropertiesPr
 import com.android.wm.shell.shared.bubbles.DragZoneFactory.SplitScreenModeChecker.SplitScreenMode
 import com.android.wm.shell.shared.bubbles.DraggedObject.LauncherIcon
 import com.android.wm.shell.shared.bubbles.DropTargetManager
+import com.android.wm.shell.shared.bubbles.logging.EntryPoint
 
 /** Handles scenarios when launcher icon is being dragged to the bubble bar drop zones. */
 class DragToBubbleController(
@@ -105,7 +106,11 @@ class DragToBubbleController(
     fun onItemDropped(shortcutInfo: ShortcutInfo) {
         val dropLocation = lastDragZone?.getBubbleBarLocation() ?: return
         isDropHandled = true
-        bubbleController.expandStackAndSelectBubble(shortcutInfo, dropLocation)
+        bubbleController.expandStackAndSelectBubble(
+            shortcutInfo,
+            EntryPoint.TASKBAR_ICON_DRAG,
+            dropLocation,
+        )
     }
 
     /**
@@ -115,7 +120,12 @@ class DragToBubbleController(
     fun onItemDropped(pendingIntent: PendingIntent, userHandle: UserHandle) {
         val dropLocation = lastDragZone?.getBubbleBarLocation() ?: return
         isDropHandled = true
-        bubbleController.expandStackAndSelectBubble(pendingIntent, userHandle, dropLocation)
+        bubbleController.expandStackAndSelectBubble(
+            pendingIntent,
+            userHandle,
+            EntryPoint.TASKBAR_ICON_DRAG,
+            dropLocation,
+        )
     }
 
     /** Called when the drag is ended. */
