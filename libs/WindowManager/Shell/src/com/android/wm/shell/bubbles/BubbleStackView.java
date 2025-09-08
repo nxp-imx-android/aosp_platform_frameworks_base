@@ -1396,6 +1396,13 @@ public class BubbleStackView extends FrameLayout
             snapshot.release();
             bev.setSurfaceZOrderedOnTop(false);
             bev.setAnimating(false);
+            if (Flags.fixBubblesAddSameBubbleBeingRemoved()
+                    && !bev.getContentVisibility()) {
+                ProtoLog.w(WM_SHELL_BUBBLES, "BubbleStackView#animateConvert %s "
+                                + "content wasn't visible so setting it visible",
+                        bev.getBubbleKey());
+                bev.setContentVisibility(true);
+            }
             if (animFinishWrapper != null) {
                 animFinishWrapper.run();
             }
@@ -2862,12 +2869,6 @@ public class BubbleStackView extends FrameLayout
                         mScaleOutSpringConfig)
                 .addUpdateListener((target, values) ->
                         mExpandedViewContainer.setAnimationMatrix(mExpandedViewContainerMatrix))
-                .withEndActions(() -> {
-                    if (Flags.fixBubblesAddSameBubbleBeingRemoved()
-                            && mExpandedViewTemporarilyHidden) {
-                        mExpandedViewContainer.removeView(mExpandedBubble.getExpandedView());
-                    }
-                })
                 .start();
 
         // Animate alpha from 1f to 0f.
@@ -2883,12 +2884,6 @@ public class BubbleStackView extends FrameLayout
         }
 
         mExpandedViewTemporarilyHidden = false;
-        if (Flags.fixBubblesAddSameBubbleBeingRemoved()
-                && mExpandedBubble != null
-                && mExpandedBubble.getExpandedView() != null
-                && mExpandedBubble.getExpandedView().getParent() == null) {
-            mExpandedViewContainer.addView(mExpandedBubble.getExpandedView());
-        }
 
         PhysicsAnimator.getInstance(mExpandedViewContainerMatrix)
                 .spring(AnimatableScaleMatrix.SCALE_X,
@@ -3085,6 +3080,13 @@ public class BubbleStackView extends FrameLayout
                         BubbleExpandedView expView = getExpandedView();
                         if (expView != null) {
                             expView.setSurfaceZOrderedOnTop(false);
+                            if (Flags.fixBubblesAddSameBubbleBeingRemoved()
+                                    && !expView.getContentVisibility()) {
+                                ProtoLog.w(WM_SHELL_BUBBLES, "BubbleStackView#expandBubble %s "
+                                        + "content wasn't visible so setting it visible",
+                                        expView.getBubbleKey());
+                                expView.setContentVisibility(true);
+                            }
                         }
                     })
                     .withEndOrCancelActions(() -> {
@@ -3270,6 +3272,13 @@ public class BubbleStackView extends FrameLayout
             if (expandedView != null) {
                 expandedView.setSurfaceZOrderedOnTop(false);
                 expandedView.setAnimating(false);
+                if (Flags.fixBubblesAddSameBubbleBeingRemoved()
+                        && !expandedView.getContentVisibility()) {
+                    ProtoLog.w(WM_SHELL_BUBBLES, "BubbleStackView#animateSwitchBubbles"
+                                    + "%s content wasn't visible so setting it visible",
+                            expandedView.getBubbleKey());
+                    expandedView.setContentVisibility(true);
+                }
             }
         };
         final Runnable endOrCancelRunnable = () -> {
