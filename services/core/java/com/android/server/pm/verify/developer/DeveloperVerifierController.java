@@ -696,6 +696,13 @@ public class DeveloperVerifierController {
     }
 
     /**
+     * Clear the experiment associated with a package name if it exists.
+     */
+    public void clearExperiment(String packageName) {
+        mExperimentProvider.clearExperiment(packageName);
+    }
+
+    /**
      * Check if there is an experiment for the given package.
      */
     public boolean hasExperiments(String packageName) {
