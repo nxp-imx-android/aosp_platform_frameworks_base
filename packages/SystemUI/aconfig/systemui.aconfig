@@ -503,17 +503,6 @@ flag {
 }
 
 flag {
-    name: "global_actions_icon_refresh_2025"
-    namespace: "systemui"
-    description: "Build time flag for 2025 power menu icon refresh"
-    bug: "427755140"
-    is_fixed_read_only: true
-    metadata {
-      purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "promote_notifications_automatically"
     namespace: "systemui"
     description: "Flag to automatically turn certain notifications into promoted notifications so "
