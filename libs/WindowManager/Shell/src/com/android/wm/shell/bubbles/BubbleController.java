@@ -3126,6 +3126,11 @@ public class BubbleController implements ConfigurationChangeListener,
         mBubbleTransitions.mTaskViewTransitions.dump(pw);
 
         mBubblePositioner.dump(pw);
+
+        if (Flags.enableBubbleEventHistoryLogs()) {
+            BubbleLog.dump(pw, prefix);
+            pw.println();
+        }
     }
 
     /**

@@ -95,7 +95,8 @@ object BubbleLog {
         }
     }
 
-    fun dump(prefix: String = "", pw: PrintWriter) {
-        bubbleEventHistoryLogger.dump(prefix, pw)
+    @JvmStatic
+    fun dump(pw: PrintWriter, prefix: String = "") {
+        bubbleEventHistoryLogger.dump(pw, prefix)
     }
 }

@@ -19,6 +19,7 @@ package com.android.wm.shell.shared.bubbles.logging
 import android.icu.text.SimpleDateFormat
 import android.text.TextUtils
 import androidx.annotation.VisibleForTesting
+import com.android.wm.shell.Flags
 import java.io.PrintWriter
 import java.util.Locale
 
@@ -58,6 +59,7 @@ class BubbleEventHistoryLogger : DebugLogger {
         eventData: String? = null,
         timestamp: Long = System.currentTimeMillis(),
     ) {
+        if (!Flags.enableBubbleEventHistoryLogs()) return
         if (recentEvents.size >= MAX_EVENTS) {
             recentEvents.removeAt(0)
         }
@@ -68,7 +70,8 @@ class BubbleEventHistoryLogger : DebugLogger {
      * Dumps the collected events history to the provided [PrintWriter], adding the [prefix] at the
      * beginning of each line.
      */
-    fun dump(prefix: String = "", pw: PrintWriter) {
+    fun dump(pw: PrintWriter, prefix: String = "") {
+        if (!Flags.enableBubbleEventHistoryLogs()) return
         val recentEventsCopy = synchronized(this) { ArrayList(recentEvents) }
         pw.println("${prefix}Bubbles events history:")
         recentEventsCopy.reversed().forEach { event ->

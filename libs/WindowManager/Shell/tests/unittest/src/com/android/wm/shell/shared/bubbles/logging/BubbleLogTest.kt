@@ -15,20 +15,27 @@
  */
 package com.android.wm.shell.shared.bubbles.logging
 
+import android.platform.test.annotations.EnableFlags
+import android.platform.test.flag.junit.SetFlagsRule
 import android.text.TextUtils
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
+import com.android.wm.shell.Flags
 import com.google.common.truth.Truth.assertThat
 import java.io.PrintWriter
 import java.io.StringWriter
 import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 
 /** Unit tests for [BubbleLog]. */
 @SmallTest
 @RunWith(AndroidJUnit4::class)
+@EnableFlags(Flags.FLAG_ENABLE_BUBBLE_EVENT_HISTORY_LOGS)
 class BubbleLogTest {
+
+    @get:Rule val flagsRule = SetFlagsRule()
 
     @Before
     fun setup() {
