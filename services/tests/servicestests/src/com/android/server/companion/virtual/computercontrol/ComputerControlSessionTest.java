@@ -22,6 +22,8 @@ import static android.companion.virtual.VirtualDeviceParams.POLICY_TYPE_ACTIVITY
 import static android.companion.virtual.VirtualDeviceParams.POLICY_TYPE_RECENTS;
 
 import static com.android.server.companion.virtual.computercontrol.ComputerControlSessionImpl.KEY_EVENT_DELAY_MS;
+import static com.android.server.companion.virtual.computercontrol.ComputerControlSessionImpl.SWIPE_STEPS;
+import static com.android.server.companion.virtual.computercontrol.ComputerControlSessionImpl.TOUCH_EVENT_DELAY_MS;
 
 import static com.google.common.truth.Truth.assertThat;
 
@@ -31,6 +33,7 @@ import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.timeout;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.testng.Assert.assertThrows;
@@ -88,6 +91,7 @@ public class ComputerControlSessionTest {
     private static final int DISPLAY_WIDTH = 600;
     private static final int DISPLAY_HEIGHT = 1000;
     private static final int DISPLAY_DPI = 480;
+    private static final int LONG_PRESS_STEP_COUNT = 5;
     private static final String TARGET_PACKAGE_1 = "com.android.foo";
     private static final String TARGET_PACKAGE_2 = "com.android.bar";
     private static final List<String> TARGET_PACKAGE_NAMES =
@@ -146,6 +150,8 @@ public class ComputerControlSessionTest {
         when(mVirtualDevice.createVirtualTouchscreen(any(), any())).thenReturn(mVirtualTouchscreen);
         when(mVirtualDevice.createVirtualKeyboard(any(), any())).thenReturn(mVirtualKeyboard);
         when(mVirtualDevice.createVirtualDpad(any(), any())).thenReturn(mVirtualDpad);
+        when(mInjector.getLongPressTimeoutMillis()).thenReturn(
+                LONG_PRESS_STEP_COUNT * TOUCH_EVENT_DELAY_MS);
     }
 
     @After
@@ -284,15 +290,53 @@ public class ComputerControlSessionTest {
         verify(mVirtualTouchscreen).sendTouchEvent(argThat(
                 new MatchesTouchEvent(60, 200, VirtualTouchEvent.ACTION_MOVE)));
         verify(mVirtualTouchscreen,
-                timeout(ComputerControlSessionImpl.SWIPE_EVENT_DELAY_MS
-                        * (ComputerControlSessionImpl.SWIPE_STEPS))
-                        .times(ComputerControlSessionImpl.SWIPE_STEPS))
+                timeout(TOUCH_EVENT_DELAY_MS * (SWIPE_STEPS + 1)).times(SWIPE_STEPS))
                 .sendTouchEvent(argThat(new MatchesTouchEvent(VirtualTouchEvent.ACTION_MOVE)));
-        verify(mVirtualTouchscreen, timeout(ComputerControlSessionImpl.SWIPE_EVENT_DELAY_MS))
+        verify(mVirtualTouchscreen, timeout(TOUCH_EVENT_DELAY_MS))
                 .sendTouchEvent(argThat(
                         new MatchesTouchEvent(180, 400, VirtualTouchEvent.ACTION_MOVE)));
         verify(mVirtualTouchscreen).sendTouchEvent(argThat(
                 new MatchesTouchEvent(180, 400, VirtualTouchEvent.ACTION_UP)));
+    }
+
+    @Test
+    public void longPress_sendsTouchscreenEvents() throws Exception {
+        when(mInjector.getLongPressTimeoutMillis()).thenReturn(
+                LONG_PRESS_STEP_COUNT * TOUCH_EVENT_DELAY_MS);
+        createComputerControlSession(mDefaultParams);
+
+        mSession.longPress(100, 200);
+        verify(mVirtualTouchscreen).sendTouchEvent(argThat(
+                new MatchesTouchEvent(100, 200, VirtualTouchEvent.ACTION_DOWN)));
+        verify(mVirtualTouchscreen, timeout(TOUCH_EVENT_DELAY_MS * (LONG_PRESS_STEP_COUNT + 1))
+                .times(LONG_PRESS_STEP_COUNT + 1))
+                .sendTouchEvent(
+                        argThat(new MatchesTouchEvent(100, 200, VirtualTouchEvent.ACTION_MOVE)));
+        verify(mVirtualTouchscreen).sendTouchEvent(argThat(
+                new MatchesTouchEvent(100, 200, VirtualTouchEvent.ACTION_UP)));
+    }
+
+    @Test
+    public void newTouchGesture_cancelsOngoingGesture() throws Exception {
+        createComputerControlSession(mDefaultParams);
+
+        mSession.swipe(100, 200, 300, 400);
+
+        mSession.swipe(400, 300, 200, 100);
+        verify(mVirtualTouchscreen, times(1)).sendTouchEvent(
+                argThat(new MatchesTouchEvent(VirtualTouchEvent.ACTION_CANCEL)));
+
+        mSession.longPress(100, 200);
+        verify(mVirtualTouchscreen, times(2)).sendTouchEvent(
+                argThat(new MatchesTouchEvent(VirtualTouchEvent.ACTION_CANCEL)));
+
+        mSession.longPress(300, 400);
+        verify(mVirtualTouchscreen, times(3)).sendTouchEvent(
+                argThat(new MatchesTouchEvent(VirtualTouchEvent.ACTION_CANCEL)));
+
+        mSession.tap(500, 600);
+        verify(mVirtualTouchscreen, times(4)).sendTouchEvent(
+                argThat(new MatchesTouchEvent(VirtualTouchEvent.ACTION_CANCEL)));
     }
 
     @Test
@@ -388,17 +432,19 @@ public class ComputerControlSessionTest {
         private final int mX;
         private final int mY;
         private final int mAction;
+        private final int mToolType;
 
         MatchesTouchEvent(int action) {
-            mX = -1;
-            mY = -1;
-            mAction = action;
+            this(-1, -1, action);
         }
 
         MatchesTouchEvent(int x, int y, int action) {
             mX = x;
             mY = y;
             mAction = action;
+            mToolType =
+                    mAction == VirtualTouchEvent.ACTION_CANCEL ? VirtualTouchEvent.TOOL_TYPE_PALM
+                            : VirtualTouchEvent.TOOL_TYPE_FINGER;
         }
 
         @Override
@@ -406,8 +452,8 @@ public class ComputerControlSessionTest {
             if (event.getMajorAxisSize() != 1
                     || event.getPointerId() != 4
                     || event.getPressure() != 255
-                    || event.getToolType() != VirtualTouchEvent.TOOL_TYPE_FINGER
-                    || event.getAction() != mAction) {
+                    || event.getAction() != mAction
+                    || event.getToolType() != mToolType) {
                 return false;
             }
             if (mX == -1 || mY == -1) {

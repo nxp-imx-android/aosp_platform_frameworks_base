@@ -149,6 +149,12 @@ public class ComputerControlSessionTest {
     }
 
     @Test
+    public void longPress_longPresses() throws Exception {
+        mSession.longPress(1, 2);
+        verify(mIComputerControlSession).longPress(eq(1), eq(2));
+    }
+
+    @Test
     public void sendKeyEvent_sendsKeyEvent() throws Exception {
         KeyEvent event = new KeyEvent.Builder()
                                  .setKeyCode(android.view.KeyEvent.KEYCODE_A)
