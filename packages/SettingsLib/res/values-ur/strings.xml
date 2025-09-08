@@ -87,10 +87,8 @@
     <string name="bluetooth_connecting" msgid="5871702668260192755">"مربوط ہو رہا ہے…"</string>
     <string name="bluetooth_connected" msgid="8065345572198502293">"<xliff:g id="ACTIVE_DEVICE">%1$s</xliff:g> سے منسلک ہو گیا"</string>
     <string name="bluetooth_pairing" msgid="4269046942588193600">"جوڑا بنایا جا رہا ہے…"</string>
-    <!-- no translation found for bluetooth_pairing_failure (6914444518793157913) -->
-    <skip />
-    <!-- no translation found for bluetooth_connection_failure (384203214661155324) -->
-    <skip />
+    <string name="bluetooth_pairing_failure" msgid="6914444518793157913">"جوڑا نہیں بنایا جا سکتا"</string>
+    <string name="bluetooth_connection_failure" msgid="384203214661155324">"منسلک نہیں ہو سکتا"</string>
     <string name="bluetooth_connected_no_headset" msgid="2224101138659967604">"منسلک ہے (فون کے علاوہ)<xliff:g id="ACTIVE_DEVICE">%1$s</xliff:g>"</string>
     <string name="bluetooth_connected_no_a2dp" msgid="8566874395813947092">"منسلک ہے (میڈیا کے علاوہ)<xliff:g id="ACTIVE_DEVICE">%1$s</xliff:g>"</string>
     <string name="bluetooth_connected_no_headset_no_a2dp" msgid="2893204819854215433">"منسلک ہے (فون یا میڈیا کے علاوہ)<xliff:g id="ACTIVE_DEVICE">%1$s</xliff:g>"</string>
@@ -120,6 +118,8 @@
     <string name="bluetooth_hearing_aid_right_active" msgid="2244728507170385397">"فعال ہے (صرف دایاں)"</string>
     <string name="bluetooth_hearing_aid_left_and_right_active" msgid="4294571497939983181">"فعال ہے (بایاں اور دایاں)"</string>
     <string name="bluetooth_hearing_device_ambient_error" msgid="6035857289108813878">"اطراف کو اپ ڈیٹ نہیں کیا جا سکا"</string>
+    <!-- no translation found for bluetooth_hearing_aids_presets_error (4523942574698610976) -->
+    <skip />
     <string name="bluetooth_active_media_only_battery_level" msgid="7772517511061834073">"فعال (صرف میڈیا)۔ <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE">%1$s</xliff:g> بیٹری۔"</string>
     <string name="bluetooth_active_media_only_battery_level_untethered" msgid="7444753133664620926">"‏فعال (صرف میڈیا)۔ L: <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE_0">%1$s</xliff:g>، ‏R: <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE_1">%2$s</xliff:g> بیٹری۔"</string>
     <string name="bluetooth_guest_battery_level" msgid="2820003593899467676">"مہمان آلہ۔ ‫<xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE">%1$s</xliff:g> بیٹری۔"</string>
@@ -349,8 +349,7 @@
     <string name="wifi_non_persistent_mac_randomization_summary" msgid="2159794543105053930">"‏اس وضع کے فعال ہونے پر اس آلے کا MAC پتہ ہر بار تبدیل ہو سکتا ہے جب بھی یہ کسی ایسے نیٹ ورک سے منسلک ہوتا ہے جس میں MAC رینڈمائزیشن فعال ہو۔"</string>
     <string name="wifi_metered_label" msgid="8737187690304098638">"میٹرڈ"</string>
     <string name="wifi_unmetered_label" msgid="6174142840934095093">"غیر میٹر شدہ"</string>
-    <!-- no translation found for select_logd_size_title (4393502933789367691) -->
-    <skip />
+    <string name="select_logd_size_title" msgid="4393502933789367691">"لاگر بفر سائز"</string>
     <string name="select_logd_size_dialog_title" msgid="2105401994681013578">"فی لاگ بفر لاگر کے سائز منتخب کریں"</string>
     <string name="dev_logpersist_clear_warning_title" msgid="8631859265777337991">"لاگر مستقل اسٹوریج صاف کریں؟"</string>
     <string name="dev_logpersist_clear_warning_message" msgid="6447590867594287413">"جب ہم مستقل لاگر کے ساتھ نگرانی نہیں کر رہے ہوتے تو ہمیں آپ کے آلہ پر موجود لاگر ڈیٹا کو مٹانا ہوتا ہے۔"</string>

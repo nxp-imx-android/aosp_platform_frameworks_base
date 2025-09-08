@@ -118,6 +118,8 @@
     <string name="bluetooth_hearing_aid_right_active" msgid="2244728507170385397">"Activo (só o dereito)"</string>
     <string name="bluetooth_hearing_aid_left_and_right_active" msgid="4294571497939983181">"Activos (o esquerdo e o dereito)"</string>
     <string name="bluetooth_hearing_device_ambient_error" msgid="6035857289108813878">"Non se puido actualizar o ambiente"</string>
+    <!-- no translation found for bluetooth_hearing_aids_presets_error (4523942574698610976) -->
+    <skip />
     <string name="bluetooth_active_media_only_battery_level" msgid="7772517511061834073">"Activo (só contido multimedia). <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE">%1$s</xliff:g> de batería."</string>
     <string name="bluetooth_active_media_only_battery_level_untethered" msgid="7444753133664620926">"Activo (só contido multimedia). Esquerdo: <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE_0">%1$s</xliff:g> de batería. Dereito: <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE_1">%2$s</xliff:g> de batería."</string>
     <string name="bluetooth_guest_battery_level" msgid="2820003593899467676">"Dispositivo convidado. <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE">%1$s</xliff:g> de batería."</string>
@@ -347,8 +349,7 @@
     <string name="wifi_non_persistent_mac_randomization_summary" msgid="2159794543105053930">"Cando este modo está activado, o enderezo MAC pode cambiar cada vez que este dispositivo se conecte a unha rede que teña activada a orde aleatoria de enderezos MAC"</string>
     <string name="wifi_metered_label" msgid="8737187690304098638">"Rede sen tarifa plana"</string>
     <string name="wifi_unmetered_label" msgid="6174142840934095093">"Rede con tarifa plana"</string>
-    <!-- no translation found for select_logd_size_title (4393502933789367691) -->
-    <skip />
+    <string name="select_logd_size_title" msgid="4393502933789367691">"Tamaño do búfer do rexistrador"</string>
     <string name="select_logd_size_dialog_title" msgid="2105401994681013578">"Seleccionar tamaño do rexistrador por búfer"</string>
     <string name="dev_logpersist_clear_warning_title" msgid="8631859265777337991">"Queres borrar o almacenamento persistente do rexistrador?"</string>
     <string name="dev_logpersist_clear_warning_message" msgid="6447590867594287413">"Cando xa non se supervisa a actividade co rexistrador de forma persistente, debemos borrar os datos do rexistrador almacenados no dispositivo."</string>

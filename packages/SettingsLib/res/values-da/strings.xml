@@ -118,6 +118,8 @@
     <string name="bluetooth_hearing_aid_right_active" msgid="2244728507170385397">"Aktiveret (kun højre)"</string>
     <string name="bluetooth_hearing_aid_left_and_right_active" msgid="4294571497939983181">"Aktiveret (venstre og højre)"</string>
     <string name="bluetooth_hearing_device_ambient_error" msgid="6035857289108813878">"Omgivelserne kunne ikke opdateres"</string>
+    <!-- no translation found for bluetooth_hearing_aids_presets_error (4523942574698610976) -->
+    <skip />
     <string name="bluetooth_active_media_only_battery_level" msgid="7772517511061834073">"Aktiveret (kun for medier). <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE">%1$s</xliff:g> batteri."</string>
     <string name="bluetooth_active_media_only_battery_level_untethered" msgid="7444753133664620926">"Aktiveret (kun for medier), V: <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE_0">%1$s</xliff:g>, H: <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE_1">%2$s</xliff:g> batteri."</string>
     <string name="bluetooth_guest_battery_level" msgid="2820003593899467676">"Gæsteenhed. <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE">%1$s</xliff:g> batteri."</string>
@@ -347,8 +349,7 @@
     <string name="wifi_non_persistent_mac_randomization_summary" msgid="2159794543105053930">"Når denne tilstand er aktiveret, skifter enhedens MAC-adresse muligvis, hver gang den opretter forbindelse til et netværk, hvor MAC-randomisering er aktiveret."</string>
     <string name="wifi_metered_label" msgid="8737187690304098638">"Forbrugsafregnet"</string>
     <string name="wifi_unmetered_label" msgid="6174142840934095093">"Ikke forbrugsafregnet"</string>
-    <!-- no translation found for select_logd_size_title (4393502933789367691) -->
-    <skip />
+    <string name="select_logd_size_title" msgid="4393502933789367691">"Logger-bufferstørrelse"</string>
     <string name="select_logd_size_dialog_title" msgid="2105401994681013578">"Vælg Logger-størrelser pr. logbuffer"</string>
     <string name="dev_logpersist_clear_warning_title" msgid="8631859265777337991">"Vil du rydde det permanente lager for logger?"</string>
     <string name="dev_logpersist_clear_warning_message" msgid="6447590867594287413">"Når vi ikke længere overvåger via den permanente logger, er vi nødt til at slette de logdata, der er gemt på din enhed."</string>
