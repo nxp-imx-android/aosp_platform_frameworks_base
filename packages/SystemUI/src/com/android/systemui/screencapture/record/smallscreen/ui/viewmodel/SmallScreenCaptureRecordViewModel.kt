@@ -128,8 +128,8 @@ constructor(
             screenRecordingServiceInteractor.stopRecording(StopReason.STOP_HOST_APP)
         } else {
             startRecording()
-            dismiss()
         }
+        dismiss()
     }
 
     private fun startRecording() {
