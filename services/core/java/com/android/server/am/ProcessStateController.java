@@ -113,6 +113,18 @@ public class ProcessStateController {
         mOomConstants.mServiceBindAlmostPerceptibleTimeoutMs = value;
     }
 
+    public void setCurMaxCachedProcesses(int value) {
+        mOomConstants.mCurMaxCachedProcesses = value;
+    }
+
+    public void setCurMaxEmptyProcesses(int value) {
+        mOomConstants.mCurMaxEmptyProcesses = value;
+    }
+
+    public void setCurTrimEmptyProcesses(int value) {
+        mOomConstants.mCurTrimEmptyProcesses = value;
+    }
+
     /**
      * Start a batch session for specifically service state changes. ProcessStateController updates
      * will not be triggered until until the returned SyncBatchSession is closed.

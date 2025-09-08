@@ -455,6 +455,12 @@ public abstract class OomAdjuster {
          * "almost perceptible" after leaving the TOP process state.
          */
         public volatile long mServiceBindAlmostPerceptibleTimeoutMs;
+        /** The maximum number of cached processes to keep before killing them. */
+        public volatile int mCurMaxCachedProcesses;
+        /** The maximum number of empty app processes to keep. */
+        public volatile int mCurMaxEmptyProcesses;
+        /** The number of empty processes to maintain before starting to trim old ones. */
+        public volatile int mCurTrimEmptyProcesses;
     }
 
     // TODO(b/346822474): hook up global state usage.
@@ -531,7 +537,7 @@ public abstract class OomAdjuster {
             return true;
         });
         mTmpUidRecords = new ActiveUids(null);
-        mTmpQueue = new ArrayDeque<>(mConstants.CUR_MAX_CACHED_PROCESSES << 1);
+        mTmpQueue = new ArrayDeque<>(mOomConstants.mCurMaxCachedProcesses << 1);
         mNumSlots = ((CACHED_APP_MAX_ADJ - CACHED_APP_MIN_ADJ + 1) >> 1)
                 / CACHED_APP_IMPORTANCE_LEVELS;
     }
@@ -942,9 +948,8 @@ public abstract class OomAdjuster {
         int curEmptyAdj = CACHED_APP_MIN_ADJ + CACHED_APP_IMPORTANCE_LEVELS;
         int nextEmptyAdj = curEmptyAdj + (CACHED_APP_IMPORTANCE_LEVELS * 2);
 
-        final int emptyProcessLimit = mConstants.CUR_MAX_EMPTY_PROCESSES;
-        final int cachedProcessLimit = mConstants.CUR_MAX_CACHED_PROCESSES
-                                        - emptyProcessLimit;
+        final int emptyProcessLimit = mOomConstants.mCurMaxEmptyProcesses;
+        final int cachedProcessLimit = mOomConstants.mCurMaxCachedProcesses - emptyProcessLimit;
         // Let's determine how many processes we have running vs.
         // how many slots we have for background processes; we may want
         // to put multiple processes in a slot of there are enough of
@@ -1095,9 +1100,9 @@ public abstract class OomAdjuster {
             }
         }
         final int emptyProcessLimit = doKillExcessiveProcesses
-                ? mConstants.CUR_MAX_EMPTY_PROCESSES : Integer.MAX_VALUE;
+                ? mOomConstants.mCurMaxEmptyProcesses : Integer.MAX_VALUE;
         final int cachedProcessLimit = doKillExcessiveProcesses
-                ? (mConstants.CUR_MAX_CACHED_PROCESSES - emptyProcessLimit) : Integer.MAX_VALUE;
+                ? (mOomConstants.mCurMaxCachedProcesses - emptyProcessLimit) : Integer.MAX_VALUE;
         int lastCachedGroup = 0;
         int lastCachedGroupUid = 0;
         int numCached = 0;
@@ -1161,7 +1166,7 @@ public abstract class OomAdjuster {
                         }
                         break;
                     case PROCESS_STATE_CACHED_EMPTY:
-                        if (numEmpty > mConstants.CUR_TRIM_EMPTY_PROCESSES
+                        if (numEmpty > mOomConstants.mCurTrimEmptyProcesses
                                 && app.getLastActivityTime() < oldTime) {
                             app.killLocked("empty for " + ((now
                                     - app.getLastActivityTime()) / 1000) + "s",
