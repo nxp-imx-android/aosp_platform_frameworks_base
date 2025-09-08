@@ -20,10 +20,12 @@
 #include <android_runtime/AndroidRuntime.h>
 
 #include <atomic>
+#include <mutex>
 
 namespace android {
 
 namespace {
+
 template <typename TChar>
 uint32_t computeHash(const TChar* s, size_t len) {
     uint32_t h = 0;
@@ -65,11 +67,14 @@ bool StringsAreEqual(JNIEnv* env, jstring jstr, const char* chars, size_t len) {
     return result;
 }
 
+JniStringCache* gInstance = nullptr;
+std::once_flag gInstanceFlag;
+
 } // namespace
 
 JniStringCache& JniStringCache::getInstance() {
-    static JniStringCache instance;
-    return instance;
+    std::call_once(gInstanceFlag, []() { gInstance = new JniStringCache(); });
+    return *gInstance;
 }
 
 JniStringCache::JniStringCache() : mHits(0), mMisses(0), mEvictions(0), mSkips(0) {}
@@ -261,12 +266,14 @@ size_t JniStringCache::skips() const {
 }
 
 void JniStringCache::clear() {
-    JNIEnv* env = AndroidRuntime::getJNIEnv();
+    clear(AndroidRuntime::getJNIEnv());
+}
+
+void JniStringCache::clear(JNIEnv* env) {
     if (env == nullptr) {
         DCHECK(false) << "JNIEnv is null, can't clear cache";
         return;
     }
-
     auto clear_cache = [&](std::atomic<CacheEntry>* cache) {
         for (size_t i = 0; i < kCacheSize; ++i) {
             std::atomic<CacheEntry>& slot = cache[i];
@@ -304,6 +311,20 @@ void JniStringCache::clear() {
 
     clear_cache(mCache);
     clear_cache(mUtf8Cache);
+}
+
+void JniStringCache::Unload(JavaVM* vm) {
+    if (gInstance == nullptr) {
+        return;
+    }
+
+    JNIEnv* env = nullptr;
+    if (vm->GetEnv(reinterpret_cast<void**>(&env), JNI_VERSION_1_6) == JNI_OK) {
+        gInstance->clear(env);
+    }
+
+    delete gInstance;
+    gInstance = nullptr;
 }
 
 static jlong com_android_internal_os_JniStringCache_nativeHits() {
