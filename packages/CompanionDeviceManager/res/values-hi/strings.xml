@@ -28,6 +28,8 @@
     <string name="chooser_title" msgid="2235819929238267637">"सेट अप करने के लिए कोई <xliff:g id="PROFILE_NAME">%1$s</xliff:g> चुनें"</string>
     <string name="single_device_title" msgid="4199861437545438606">"<xliff:g id="PROFILE_NAME">%1$s</xliff:g> को ढूंढा जा रहा है"</string>
     <string name="summary_watch" msgid="8134580124808507407">"यह ऐप्लिकेशन, कॉल करने वाले व्यक्ति के नाम जैसी जानकारी सिंक करने के साथ-साथ, आपके <xliff:g id="DEVICE_TYPE">%1$s</xliff:g> पर इन अनुमतियों को ऐक्सेस कर पाएगा"</string>
+    <!-- no translation found for profile_name_fitness_tracker (3107192493390199691) -->
+    <skip />
     <string name="confirmation_title_glasses" msgid="8288346850537727333">"क्या &lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; को &lt;strong&gt;<xliff:g id="DEVICE_NAME">%2$s</xliff:g>&lt;/strong&gt; मैनेज करने की अनुमति देनी है?"</string>
     <string name="profile_name_glasses" msgid="3506504967216601277">"डिवाइस"</string>
     <string name="summary_glasses" msgid="5469208629679579157">"यह ऐप्लिकेशन, आपके <xliff:g id="DEVICE_TYPE">%1$s</xliff:g> पर इन अनुमतियों को ऐक्सेस कर पाएगा"</string>

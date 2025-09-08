@@ -28,6 +28,8 @@
     <string name="chooser_title" msgid="2235819929238267637">"Scegli un <xliff:g id="PROFILE_NAME">%1$s</xliff:g> da configurare"</string>
     <string name="single_device_title" msgid="4199861437545438606">"Ricerca di un <xliff:g id="PROFILE_NAME">%1$s</xliff:g>"</string>
     <string name="summary_watch" msgid="8134580124808507407">"Questa app potrà sincronizzare informazioni, ad esempio il nome di un chiamante, e accedere alle seguenti autorizzazioni sul <xliff:g id="DEVICE_TYPE">%1$s</xliff:g>"</string>
+    <!-- no translation found for profile_name_fitness_tracker (3107192493390199691) -->
+    <skip />
     <string name="confirmation_title_glasses" msgid="8288346850537727333">"Vuoi consentire all\'app &lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; di gestire &lt;strong&gt;<xliff:g id="DEVICE_NAME">%2$s</xliff:g>&lt;/strong&gt;?"</string>
     <string name="profile_name_glasses" msgid="3506504967216601277">"dispositivo"</string>
     <string name="summary_glasses" msgid="5469208629679579157">"Questa app potrà accedere alle seguenti autorizzazioni <xliff:g id="DEVICE_TYPE">%1$s</xliff:g>:"</string>

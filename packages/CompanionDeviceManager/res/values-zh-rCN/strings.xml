@@ -28,6 +28,8 @@
     <string name="chooser_title" msgid="2235819929238267637">"选择要设置的<xliff:g id="PROFILE_NAME">%1$s</xliff:g>"</string>
     <string name="single_device_title" msgid="4199861437545438606">"寻找<xliff:g id="PROFILE_NAME">%1$s</xliff:g>"</string>
     <string name="summary_watch" msgid="8134580124808507407">"该应用将能同步信息（例如来电者的姓名），并能获得您<xliff:g id="DEVICE_TYPE">%1$s</xliff:g>上的以下权限"</string>
+    <!-- no translation found for profile_name_fitness_tracker (3107192493390199691) -->
+    <skip />
     <string name="confirmation_title_glasses" msgid="8288346850537727333">"允许&lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt;管理&lt;strong&gt;<xliff:g id="DEVICE_NAME">%2$s</xliff:g>&lt;/strong&gt;？"</string>
     <string name="profile_name_glasses" msgid="3506504967216601277">"设备"</string>
     <string name="summary_glasses" msgid="5469208629679579157">"该应用将能获得您<xliff:g id="DEVICE_TYPE">%1$s</xliff:g>上的以下权限"</string>
