@@ -707,8 +707,8 @@ open class NotificationShelfTest(flags: FlagsParameterization) : SysuiTestCase()
 
     @Test
     @EnableSceneContainer
-    fun updateState_withViewInShelf_showShelf() {
-        // GIVEN a view is scrolled into the shelf
+    fun updateState_withViewInShelf_notPulsing_showShelf() {
+        // GIVEN a view is scrolled into the shelf, no pulsing currently
         val stackTop = 200f
         val stackHeight = 800f
         whenever(ambientState.stackTop).thenReturn(stackTop)
@@ -719,6 +719,7 @@ open class NotificationShelfTest(flags: FlagsParameterization) : SysuiTestCase()
 
         whenever(ambientState.isShadeExpanded).thenReturn(true)
         whenever(ambientState.lastVisibleBackgroundChild).thenReturn(viewInShelf)
+        whenever(ambientState.isPulsing).thenReturn(false)
         whenever(viewInShelf.viewState).thenReturn(ExpandableViewState())
         whenever(viewInShelf.shelfIcon).thenReturn(mock(StatusBarIconView::class.java))
         whenever(viewInShelf.translationY).thenReturn(shelfTop)
@@ -739,6 +740,41 @@ open class NotificationShelfTest(flags: FlagsParameterization) : SysuiTestCase()
         assertEquals(false, shelfState.hidden)
         assertEquals(shelf.height, shelfState.height)
         assertEquals(shelfTop, shelfState.yTranslation)
+    }
+
+    @Test
+    @EnableSceneContainer
+    fun updateState_withViewInShelfAndPulsing_hideShelf() {
+        // GIVEN a view is scrolled into the shelf, and a notification is pulsing
+        val stackTop = 200f
+        val stackHeight = 800f
+        whenever(ambientState.stackTop).thenReturn(stackTop)
+        whenever(ambientState.interpolatedStackHeight).thenReturn(stackHeight)
+        val shelfTop = stackTop + stackHeight - shelf.height
+        val stackScrollAlgorithmState = StackScrollAlgorithmState()
+        val viewInShelf = mock(ExpandableView::class.java)
+
+        whenever(ambientState.isShadeExpanded).thenReturn(true)
+        whenever(ambientState.lastVisibleBackgroundChild).thenReturn(viewInShelf)
+        whenever(ambientState.isPulsing).thenReturn(true)
+        whenever(viewInShelf.viewState).thenReturn(ExpandableViewState())
+        whenever(viewInShelf.shelfIcon).thenReturn(mock(StatusBarIconView::class.java))
+        whenever(viewInShelf.translationY).thenReturn(shelfTop)
+        whenever(viewInShelf.actualHeight).thenReturn(10)
+        whenever(viewInShelf.isInShelf).thenReturn(true)
+        whenever(viewInShelf.minHeight).thenReturn(10)
+        whenever(viewInShelf.shelfTransformationTarget).thenReturn(null) // use translationY
+        whenever(viewInShelf.isInShelf).thenReturn(true)
+
+        stackScrollAlgorithmState.visibleChildren.add(viewInShelf)
+        stackScrollAlgorithmState.firstViewInShelf = viewInShelf
+
+        // WHEN Shelf's ViewState is updated
+        shelf.updateState(stackScrollAlgorithmState, ambientState)
+
+        // THEN the shelf is hidden
+        val shelfState = shelf.viewState as NotificationShelf.ShelfState
+        assertEquals(true, shelfState.hidden)
     }
 
     @Test

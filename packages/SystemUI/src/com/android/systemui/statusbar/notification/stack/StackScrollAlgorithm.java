@@ -518,6 +518,8 @@ public class StackScrollAlgorithm {
             }
 
             if (ambientState.getShelf() != null) {
+                // TODO(b/443808383): the shelfStart calculated here does not equal to the value
+                //  calculated in updateChildState() when a notification is pulsing
                 final float shelfStart = ambientState.getStackEndHeight()
                         - ambientState.getShelf().getIntrinsicHeight()
                         - mPaddingBetweenElements;
