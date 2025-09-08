@@ -19,6 +19,7 @@ package com.android.systemui.statusbar.notification.collection.render
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
+import com.android.systemui.flags.DisableSceneContainer
 import com.android.systemui.log.logcatLogBuffer
 import com.android.systemui.statusbar.notification.NotificationSectionsFeatureManager
 import com.android.systemui.statusbar.notification.OnboardingAffordanceManager
@@ -38,7 +39,6 @@ import com.android.systemui.statusbar.notification.stack.BUCKET_SILENT
 import com.android.systemui.statusbar.notification.stack.PriorityBucket
 import com.android.systemui.util.mockito.any
 import com.android.systemui.util.mockito.mock
-import org.junit.Assert
 import org.junit.Assert.assertThrows
 import org.junit.Before
 import org.junit.Test
@@ -121,7 +121,12 @@ class NodeSpecBuilderTest : SysuiTestCase() {
         whenever(sectionHeaderVisibilityProvider.sectionHeadersVisible).thenReturn(true)
         assertThrows(RuntimeException::class.java) {
             checkOutput(
-                listOf(notif(0, section0), notif(1, section1), notif(2, section3), notif(3, section1)),
+                listOf(
+                    notif(0, section0),
+                    notif(1, section1),
+                    notif(2, section3),
+                    notif(3, section1),
+                ),
                 tree(),
             )
         }
@@ -145,6 +150,7 @@ class NodeSpecBuilderTest : SysuiTestCase() {
     }
 
     @Test
+    @DisableSceneContainer
     fun testSimpleMappingWithMedia() {
         whenever(sectionHeaderVisibilityProvider.sectionHeadersVisible).thenReturn(true)
         // WHEN media controls are enabled
