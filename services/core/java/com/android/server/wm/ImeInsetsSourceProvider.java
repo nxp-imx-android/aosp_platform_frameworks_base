@@ -443,8 +443,15 @@ final class ImeInsetsSourceProvider extends InsetsSourceProvider {
                         imeVisible ? SoftInputShowHideReason.SHOW_INPUT_TARGET_CHANGED
                                 : SoftInputShowHideReason.HIDE_INPUT_TARGET_CHANGED,
                         false /* fromUser */);
-                reportImeInputTargetStateToControlTarget(imeInputTarget, imeControlTarget,
-                        statsToken);
+                boolean controlTargetRequestedVisible = imeControlTarget != null
+                        && imeControlTarget.isRequestedVisible(WindowInsets.Type.ime());
+                if (imeVisible == controlTargetRequestedVisible && imeControlTarget != null) {
+                    // Notifying request visibility is no-op, but we need to invoke the listener.
+                    invokeOnImeRequestedChangedListener(imeControlTarget, statsToken);
+                } else {
+                    reportImeInputTargetStateToControlTarget(imeInputTarget, imeControlTarget,
+                            statsToken);
+                }
             }
         }
     }
