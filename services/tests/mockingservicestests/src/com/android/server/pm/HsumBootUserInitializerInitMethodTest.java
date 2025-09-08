@@ -129,37 +129,46 @@ public final class HsumBootUserInitializerInitMethodTest {
     private final InitialUsers mInitialUsers;
     private final ExpectedResult mExpectedResult;
 
+    // NOTE: do NOT auto-format lines below, otherwise it'd be harder to read; if repo upload fails,
+    // try 'repo upload --no-verify --ignore-hooks' instead (after fixing other reported issues)
+
+    // CHECKSTYLE:OFF Generated code
+
     /** Useless javadoc to make checkstyle happy... */
     @Parameters(name = "{index}: hasMain={0},createInitial={1},initial={2},result={3}")
     public static Collection<Object[]> junitParametersPassedToConstructor() {
         return Arrays.asList(new Object[][] {
-                // shouldAlwaysHaveMainUser false, shouldCreateInitialUser false
-                { false, false, SYSTEM_ONLY, NO_USER_CREATED },
-                { false, false, SYSTEM_AND_MAIN, MAIN_USER_DEMOTED },
-                { false, false, SYSTEM_AND_ADMINS, NO_USER_CREATED },
-                { false, false, SYSTEM_AND_ADMINS_FIRST_ADMIN_UNPROMOTABLE, NO_USER_CREATED },
-                { false, false, SYSTEM_AND_REGULAR, NO_USER_CREATED },
-                // shouldAlwaysHaveMainUser false, shouldCreateInitialUser true
-                { false, true, SYSTEM_ONLY, ADMIN_USER_CREATED},
-                { false, true, SYSTEM_AND_MAIN, MAIN_USER_DEMOTED },
-                { false, true, SYSTEM_AND_ADMINS, NO_USER_CREATED },
-                { false, true, SYSTEM_AND_ADMINS_FIRST_ADMIN_UNPROMOTABLE, NO_USER_CREATED },
-                { false, true, SYSTEM_AND_REGULAR, NO_USER_CREATED },
-                // shouldAlwaysHaveMainUser true, shouldCreateInitialUser false
-                { true, false, SYSTEM_ONLY, MAIN_USER_CREATED },
-                { true, false, SYSTEM_AND_MAIN, NO_USER_CREATED },
-                { true, false, SYSTEM_AND_ADMINS, FIRST_ADMIN_USER_PROMOTED_TO_MAIN },
-                { true, false, SYSTEM_AND_ADMINS_FIRST_ADMIN_UNPROMOTABLE,
-                    SECOND_ADMIN_USER_PROMOTED_TO_MAIN },
-                { true, false, SYSTEM_AND_REGULAR, MAIN_USER_CREATED },
-                // shouldAlwaysHaveMainUser true, shouldCreateInitialUser true
-                { true, true, SYSTEM_ONLY, MAIN_USER_CREATED },
-                { true, true, SYSTEM_AND_MAIN, NO_USER_CREATED },
-                { true, true, SYSTEM_AND_ADMINS_FIRST_ADMIN_UNPROMOTABLE,
-                    SECOND_ADMIN_USER_PROMOTED_TO_MAIN },
-                { true, true, SYSTEM_AND_REGULAR, MAIN_USER_CREATED }
+
+    // shouldAlwaysHaveMainUser=false, shouldCreateInitialUser=false
+    { false, false, SYSTEM_ONLY, NO_USER_CREATED }, // index 0
+    { false, false, SYSTEM_AND_MAIN, MAIN_USER_DEMOTED },
+    { false, false, SYSTEM_AND_ADMINS, NO_USER_CREATED },
+    { false, false, SYSTEM_AND_ADMINS_FIRST_ADMIN_UNPROMOTABLE, NO_USER_CREATED },
+    { false, false, SYSTEM_AND_REGULAR, NO_USER_CREATED },
+    // shouldAlwaysHaveMainUser=false, shouldCreateInitialUser=true
+    { false, true, SYSTEM_ONLY, ADMIN_USER_CREATED}, // index 5
+    { false, true, SYSTEM_AND_MAIN, MAIN_USER_DEMOTED },
+    { false, true, SYSTEM_AND_ADMINS, NO_USER_CREATED },
+    { false, true, SYSTEM_AND_ADMINS_FIRST_ADMIN_UNPROMOTABLE, NO_USER_CREATED },
+    { false, true, SYSTEM_AND_REGULAR, NO_USER_CREATED },
+    // shouldAlwaysHaveMainUser=true, shouldCreateInitialUser=false
+    { true, false, SYSTEM_ONLY, MAIN_USER_CREATED }, // index 10
+    { true, false, SYSTEM_AND_MAIN, NO_USER_CREATED },
+    { true, false, SYSTEM_AND_ADMINS, FIRST_ADMIN_USER_PROMOTED_TO_MAIN },
+    { true, false, SYSTEM_AND_ADMINS_FIRST_ADMIN_UNPROMOTABLE, SECOND_ADMIN_USER_PROMOTED_TO_MAIN },
+    { true, false, SYSTEM_AND_REGULAR, MAIN_USER_CREATED },
+    // shouldAlwaysHaveMainUser=true, shouldCreateInitialUser=true
+    { true, true, SYSTEM_ONLY, MAIN_USER_CREATED }, // index 15
+    { true, true, SYSTEM_AND_MAIN, NO_USER_CREATED },
+    { true, true, SYSTEM_AND_ADMINS, FIRST_ADMIN_USER_PROMOTED_TO_MAIN },
+    { true, true, SYSTEM_AND_ADMINS_FIRST_ADMIN_UNPROMOTABLE, SECOND_ADMIN_USER_PROMOTED_TO_MAIN },
+    { true, true, SYSTEM_AND_REGULAR, MAIN_USER_CREATED }
+
+        // NOTE: if you add more arguments to the constructor, create a new block below by
+        // copying the "baseline" values above and changing the proper argument
         });
     }
+    // CHECKSTYLE:ON Generated code
 
     public HsumBootUserInitializerInitMethodTest(boolean shouldAlwaysHaveMainUser,
             boolean shouldCreateInitialUser, InitialUsers initialUsers,
