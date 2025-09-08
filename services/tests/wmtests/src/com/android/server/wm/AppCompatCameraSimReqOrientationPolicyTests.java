@@ -99,7 +99,7 @@ import java.util.function.Consumer;
 /**
  * Tests for {@link AppCompatCameraSimReqOrientationPolicy}.
  *
- * Build/Install/Run:
+ * <p>Build/Install/Run:
  *  atest WmTests:AppCompatCameraSimReqOrientationPolicyTests
  */
 @SmallTest
@@ -646,6 +646,7 @@ public class AppCompatCameraSimReqOrientationPolicyTests extends WindowTestsBase
         runTestScenario((robot) -> {
             robot.configureActivityAndDisplay(SCREEN_ORIENTATION_PORTRAIT, ORIENTATION_LANDSCAPE,
                     WINDOWING_MODE_FREEFORM);
+            robot.conf().enableCameraCompatLandscapeToPortraitTreatment(true);
             robot.activity().rotateDisplayForTopActivity(ROTATION_0);
 
             robot.onCameraOpened(CAMERA_ID_1, TEST_PACKAGE_1);
@@ -906,11 +907,6 @@ public class AppCompatCameraSimReqOrientationPolicyTests extends WindowTestsBase
                     times(refreshRequested ? 1 : 0)).setActivityRefreshState(REQUESTED);
         }
 
-        private void assertActivityRefreshRequestedDeprecated(boolean refreshRequested) {
-            verify(activity().top().mAppCompatController.getCameraOverrides(),
-                    times(refreshRequested ? 1 : 0)).setIsRefreshRequested(true);
-        }
-
         private void assertActivityRefreshed(boolean refreshed) {
             final RefreshCallbackItem refreshCallbackItem =
                     new RefreshCallbackItem(activity().top().token, ON_STOP);
@@ -921,19 +917,6 @@ public class AppCompatCameraSimReqOrientationPolicyTests extends WindowTestsBase
                     times(refreshed ? 1 : 0))
                     .scheduleTransactionItems(activity().top().app.getThread(),
                             refreshCallbackItem, resumeActivityItem);
-        }
-
-        private void callOnActivityConfigurationChanging() {
-            callOnActivityConfigurationChanging(/* letterboxNew= */ true,
-                    /* lastLetterbox= */false);
-        }
-
-        private void callOnActivityConfigurationChanging(boolean letterboxNew,
-                boolean lastLetterbox) {
-            activity().displayContent().mAppCompatCameraPolicy.mActivityRefresher
-                    .onActivityConfigurationChanging(activity().top(),
-                            /* newConfig */ createConfiguration(letterboxNew),
-                            /* lastReportedConfig */ createConfiguration(lastLetterbox));
         }
 
         private void refreshActivityIfEnabled() {

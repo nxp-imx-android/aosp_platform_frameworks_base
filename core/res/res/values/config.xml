@@ -6535,7 +6535,7 @@
         - Option 0 - Left.
         - Option 1 - Center.
         - Option 2 - Right.
-    If given value is outside of this range, the option 0 (left) is assummed. -->
+    If given value is outside of this range, the option 0 (left) is assumed. -->
     <integer name="config_letterboxDefaultPositionForBookModeReachability">0</integer>
 
     <!-- Default vertical position of the letterboxed app window when reachability is
@@ -6596,21 +6596,30 @@
     <bool name="config_isCompatFakeFocusEnabled">false</bool>
 
     <!-- Whether camera compat treatment is enabled for issues caused by orientation mismatch
-        between camera buffers and an app window. This includes force rotation of fixed
-        orientation activities connected to the camera in fullscreen and showing a tooltip in
-        split screen. -->
+         between camera buffers and an app window. This includes force rotation of fixed
+         orientation activities connected to the camera in fullscreen and showing a tooltip in
+         split screen. -->
     <bool name="config_isWindowManagerCameraCompatTreatmentEnabled">false</bool>
 
     <!-- Whether should use split screen aspect ratio for the activity when camera compat treatment
-        is enabled and activity is connected to the camera in fullscreen. -->
+         is enabled and activity is connected to the camera in fullscreen. -->
     <bool name="config_isWindowManagerCameraCompatSplitScreenAspectRatioEnabled">false</bool>
 
     <!-- Whether camera compat treatment which simulates app's requested orientation is enabled. The
-        purpose of the treatment is to mitigate issues caused by orientation mismatch between camera
-        buffer and an app window. This includes letterboxing fixed orientation activities connected
-        to the camera, cropping the camera buffer (rotate-and-crop) and sandboxing display rotation
-        to match what the apps most likely expect in their requested orientation. -->
+         purpose of the treatment is to mitigate issues caused by orientation mismatch between
+         camera buffer and an app window. This includes letterboxing fixed orientation activities
+         connected to the camera, cropping the camera buffer (rotate-and-crop) and sandboxing
+         display rotation to match what the apps most likely expect in their requested
+         orientation. -->
     <bool name="config_isCameraCompatSimulateRequestedOrientationTreatmentEnabled">true</bool>
+
+    <!-- Whether camera compat treatment which simulates app's requested orientation is enabled for
+         landscape cameras. The purpose of the treatment is to mitigate issues caused by apps
+         hardcoding portrait camera sensor. The treatment includes letterboxing fixed orientation
+         activities connected to the camera, cropping the camera buffer (rotate-and-crop) and sensor
+         orientation to portrait, and sandboxing display rotation to match what the apps most likely
+         expect in their requested orientation. -->
+    <bool name="config_isCameraCompatSimReqOrientationLandscapeTreatmentEnabled">false</bool>
 
     <!-- Docking is a uiMode configuration change and will cause activities to relaunch if it's not
          handled. If true, the configuration change will be sent but activities will not be
