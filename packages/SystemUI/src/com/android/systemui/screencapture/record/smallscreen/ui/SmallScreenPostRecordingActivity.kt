@@ -110,7 +110,10 @@ constructor(
                 ) {
                     val rowModifier = Modifier.weight(1f).fillMaxHeight()
                     PostRecordButton(
-                        onClick = { viewModel.retake() },
+                        onClick = {
+                            viewModel.retake()
+                            finish()
+                        },
                         drawableLoaderViewModel = viewModel,
                         iconRes = R.drawable.ic_arrow_back,
                         labelRes = R.string.screen_record_retake,
