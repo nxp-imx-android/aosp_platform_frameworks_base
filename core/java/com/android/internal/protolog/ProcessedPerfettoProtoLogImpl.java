@@ -180,16 +180,20 @@ public class ProcessedPerfettoProtoLogImpl extends PerfettoProtoLogImpl {
         }
 
         try {
-            if (!mViewerConfigReader.messageHashIsAvailableInFile(message.getMessageHash())) {
+            ProtoLogViewerConfigReader.MessageData messageData =
+                    mViewerConfigReader.getMessageDataForHashFromFile(message.getMessageHash());
+            if (messageData == null) {
                 return "Failed to decode message for logcat logging. "
                         + "Message hash (" + message.getMessageHash() + ") is not available in "
                         + "viewerConfig file (" +  mViewerConfigFilePath + "). This might be due "
                         + "to the viewer config file and the executing code being out of sync.";
             } else {
                 return "Failed to decode message for logcat. "
-                        + "Message hash (" + message.getMessageHash() + ") was available in the "
-                        + "viewerConfig file (" +  mViewerConfigFilePath + ") but wasn't loaded "
-                        + "into memory from file before decoding! This is likely a bug.";
+                        + "Message hash (" + message.getMessageHash()
+                        + ") was available in the viewerConfig file (" + mViewerConfigFilePath
+                        + ") but wasn't loaded into memory from file before decoding! "
+                        + "This is likely a bug. Message: '" + messageData.message
+                        + "', group: '" + messageData.group + "'.";
             }
         } catch (IOException e) {
             return "Failed to get string message to log but could not identify the root cause due "
