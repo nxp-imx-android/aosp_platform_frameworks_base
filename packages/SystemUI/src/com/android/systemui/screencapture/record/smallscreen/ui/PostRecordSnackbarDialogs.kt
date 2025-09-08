@@ -65,7 +65,7 @@ constructor(
             visuals =
                 SnackbarVisualsWithIcon(
                     iconRes = R.drawable.ic_screenshot_delete,
-                    message = context.getString(R.string.screen_record_video_saved),
+                    message = context.getString(R.string.screen_record_video_deleted),
                     actionLabel = context.getString(R.string.screen_record_undo),
                 ),
             onActionPerformed = {
