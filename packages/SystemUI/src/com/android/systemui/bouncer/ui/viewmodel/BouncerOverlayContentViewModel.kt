@@ -147,7 +147,8 @@ constructor(
      * Whether to show a "back" button on bouncer. This is enabled for large screen interaction as
      * these typically don't rely on touch gestures to go back.
      */
-    val showBackButton = bouncerInteractor.isImproveLargeScreenInteractionEnabled
+    val showBackButton =
+        Flags.backButtonOnBouncer() && bouncerInteractor.isImproveLargeScreenInteractionEnabled
 
     private val _isInputPreferredOnLeftSide = MutableStateFlow(false)
     val isInputPreferredOnLeftSide = _isInputPreferredOnLeftSide.asStateFlow()
