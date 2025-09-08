@@ -140,6 +140,8 @@
     <string name="screenrecord_stop_dialog_button" msgid="2883812564938194350">"إيقاف التسجيل"</string>
     <string name="screen_record_entire_screen" msgid="66944996337928170">"الشاشة بالكامل"</string>
     <string name="screen_record_single_app" msgid="7355880948574569290">"تطبيق واحد"</string>
+    <!-- no translation found for screen_record_single_app_hint (8404332826093639170) -->
+    <skip />
     <string name="screen_record_single_app_no_recents" msgid="1023249803854209330">"تطبيق واحد (يُرجى فتح أي تطبيق لاختياره)"</string>
     <string name="screen_record_record_device_audio_label" msgid="5363057443124085198">"تسجيل صوت الجهاز"</string>
     <string name="screen_record_record_microphone_label" msgid="4685753707185662381">"التسجيل من الميكروفون"</string>
@@ -147,6 +149,8 @@
     <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"عرض أماكن اللمس"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"يُرجى اختيار تطبيق لتسجيل محتوى شاشته"</string>
     <string name="screen_record_video_saved" msgid="1345283626390232282">"تم حفظ الفيديو"</string>
+    <!-- no translation found for screen_record_undo (7942716736019800870) -->
+    <skip />
     <string name="screen_record_retake" msgid="3846643688365398450">"إعادة تسجيل الشاشة"</string>
     <string name="screen_record_edit" msgid="8733014191240769309">"تعديل"</string>
     <string name="screen_record_delete" msgid="1023421937978254537">"حذف"</string>
@@ -1141,14 +1145,18 @@
     <string name="accessibility_key_gesture_dialog_content" msgid="4519838108423437794">"‏الإجراء "<annotation id="action_key_icon">"icon"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> هو اختصار لوحة المفاتيح لاستخدام \"<xliff:g id="ID_3">^3</xliff:g>\". ‫<xliff:g id="ID_4">^4</xliff:g>"</string>
     <string name="accessibility_key_gesture_dialog_talkback_intro" msgid="1617808784388544741">"‫<xliff:g id="ID_1">%1$s</xliff:g> هو قارئ شاشة يقرأ العناصر المعروضة عليها بصوتٍ عالٍ، ما يجعله مفيدًا للأشخاص الذين يجدون صعوبة في النظر إلى الشاشة."</string>
     <string name="accessibility_key_gesture_dialog_positive_button_text" msgid="3670746017523589293">"تفعيل"</string>
+    <!-- no translation found for accessibility_key_gesture_shortcut_not_yet_enabled_dialog_title (5331043821287212071) -->
+    <skip />
+    <!-- no translation found for accessibility_key_gesture_shortcut_not_yet_enabled_negative_button_text (6711239406914231612) -->
+    <skip />
+    <!-- no translation found for accessibility_key_gesture_shortcut_not_yet_enabled_positive_button_text (7748487028569821131) -->
+    <skip />
     <string name="accessibility_key_gesture_magnification_dialog_title" msgid="5770691510738701250">"تم تفعيل اختصار لوحة المفاتيح \"<xliff:g id="ID_1">%1$s</xliff:g>\""</string>
-    <string name="accessibility_key_gesture_magnification_dialog_content" msgid="7575802369763469379">"‏الإجراء "<annotation id="action_key_icon">"icon"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> هو اختصار لوحة المفاتيح لاستخدام \"<xliff:g id="ID_3">^3</xliff:g>\". يتيح لك هذا الإجراء تكبير الشاشة بسرعة لعرض المحتوى بحجم أكبر. لضبط التكبير أو التصغير، يُرجى الضغط على الإجراء "<annotation id="action_key_icon">"icon"</annotation>" و<xliff:g id="ID_4">^1</xliff:g> والرمز \"+\" أو \"-\"."</string>
+    <!-- no translation found for accessibility_key_gesture_magnification_dialog_content (582920726242272572) -->
+    <skip />
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"إيقاف الاختصار"</string>
     <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"عدم الإيقاف"</string>
-    <string name="accessibility_key_gesture_voice_access_dialog_title" msgid="7828090789777023683">"هل المطلوب تفعيل اختصار لوحة المفاتيح \"<xliff:g id="ID_1">%1$s</xliff:g>\"؟"</string>
     <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="7934170819801013870">"‏يؤدي الضغط على الإجراء "<annotation id="action_key_icon">"icon"</annotation>" + <xliff:g id="ID_1">^1</xliff:g>‏ + <xliff:g id="ID_2">^2</xliff:g> إلى تفعيل \"<xliff:g id="ID_3">^3</xliff:g>\"، وهي إحدى ميزات تسهيل الاستخدام التي تتيح لك التحكّم في جهازك بدون لمسه."</string>
-    <string name="accessibility_key_gesture_voice_access_dialog_negative_button_text" msgid="3573570279554465078">"عدم التفعيل"</string>
-    <string name="accessibility_key_gesture_voice_access_dialog_positive_button_text" msgid="2306321856544446858">"تفعيل الاختصار"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"شاشة القفل"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"جارٍ إيقاف التشغيل…"</string>
     <string name="thermal_shutdown_dialog_help_text" msgid="6413474593462902901">"الاطّلاع على خطوات العناية"</string>
@@ -1618,6 +1626,8 @@
     <string name="shortcut_helper_customize_dialog_reset_button_label" msgid="7645535254306312685">"نعم، أريد إعادة الضبط"</string>
     <string name="shortcut_helper_customize_dialog_cancel_button_label" msgid="5595546460431741178">"إلغاء"</string>
     <string name="shortcut_helper_add_shortcut_dialog_placeholder" msgid="9154297849458741995">"اضغط على مفتاح"</string>
+    <!-- no translation found for shortcut_helper_customizer_action_key_text (3979063901857046887) -->
+    <skip />
     <string name="shortcut_customizer_key_combination_in_use_error_message" msgid="3325858369539848162">"يتم حاليًا استخدام مجموعة المفاتيح هذه. يُرجى تجربة مجموعة أخرى من المفاتيح."</string>
     <string name="shortcut_customizer_generic_error_message" msgid="3128454624049722741">"تعذَّر ضبط الاختصار."</string>
     <string name="shortcut_helper_plus_symbol" msgid="4534843157353732011">"+"</string>

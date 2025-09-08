@@ -140,6 +140,8 @@
     <string name="screenrecord_stop_dialog_button" msgid="2883812564938194350">"रेकॉर्ड करणे थांबवा"</string>
     <string name="screen_record_entire_screen" msgid="66944996337928170">"संपूर्ण स्क्रीन"</string>
     <string name="screen_record_single_app" msgid="7355880948574569290">"सिंगल अ‍ॅप"</string>
+    <!-- no translation found for screen_record_single_app_hint (8404332826093639170) -->
+    <skip />
     <string name="screen_record_single_app_no_recents" msgid="1023249803854209330">"सिंगल अ‍ॅप (जे अ‍ॅप निवडायचे आहे ते उघडा)"</string>
     <string name="screen_record_record_device_audio_label" msgid="5363057443124085198">"डिव्हाइसचा ऑडिओ रेकॉर्ड करा"</string>
     <string name="screen_record_record_microphone_label" msgid="4685753707185662381">"मायक्रोफोन वापरून रेकॉर्ड करा"</string>
@@ -147,6 +149,8 @@
     <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"स्पर्श दाखवा"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"रेकॉर्ड करण्यासाठी अ‍ॅप निवडा"</string>
     <string name="screen_record_video_saved" msgid="1345283626390232282">"व्हिडिओ सेव्ह केला आहे"</string>
+    <!-- no translation found for screen_record_undo (7942716736019800870) -->
+    <skip />
     <string name="screen_record_retake" msgid="3846643688365398450">"पुन्हा घ्या"</string>
     <string name="screen_record_edit" msgid="8733014191240769309">"संपादित करा"</string>
     <string name="screen_record_delete" msgid="1023421937978254537">"हटवा"</string>
@@ -1141,14 +1145,18 @@
     <string name="accessibility_key_gesture_dialog_content" msgid="4519838108423437794">"कृती "<annotation id="action_key_icon">"आयकन"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> हा <xliff:g id="ID_3">^3</xliff:g> वापरण्यासाठीचा कीबोर्ड शॉर्टकट आहे. <xliff:g id="ID_4">^4</xliff:g>"</string>
     <string name="accessibility_key_gesture_dialog_talkback_intro" msgid="1617808784388544741">"<xliff:g id="ID_1">%1$s</xliff:g> हा स्क्रीन रीडर आहे, ज्यामुळे तुम्हाला मोठ्याने बोललेले आयटम ऐकू येतात. स्क्रीनकडे पाहण्यात समस्या असलेल्या लोकांसाठी ते उपयुक्त असू शकते."</string>
     <string name="accessibility_key_gesture_dialog_positive_button_text" msgid="3670746017523589293">"सुरू करा"</string>
+    <!-- no translation found for accessibility_key_gesture_shortcut_not_yet_enabled_dialog_title (5331043821287212071) -->
+    <skip />
+    <!-- no translation found for accessibility_key_gesture_shortcut_not_yet_enabled_negative_button_text (6711239406914231612) -->
+    <skip />
+    <!-- no translation found for accessibility_key_gesture_shortcut_not_yet_enabled_positive_button_text (7748487028569821131) -->
+    <skip />
     <string name="accessibility_key_gesture_magnification_dialog_title" msgid="5770691510738701250">"<xliff:g id="ID_1">%1$s</xliff:g> कीबोर्ड शॉर्टकट सुरू केला आहे"</string>
-    <string name="accessibility_key_gesture_magnification_dialog_content" msgid="7575802369763469379">"कृती "<annotation id="action_key_icon">"आयकन"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> हा <xliff:g id="ID_3">^3</xliff:g> वापरण्यासाठीचा कीबोर्ड शॉर्टकट आहे. यामुळे आशय मोठा करण्यासाठी तुम्हाला स्क्रीनवर झटपट झूम इन करता येते. झूम अ‍ॅडजस्ट करण्यासाठी कृती "<annotation id="action_key_icon">"आयकन"</annotation>" + <xliff:g id="ID_4">^1</xliff:g> आणि \"+\" किंवा \"-\" प्रेस करा."</string>
+    <!-- no translation found for accessibility_key_gesture_magnification_dialog_content (582920726242272572) -->
+    <skip />
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"शॉर्टकट बंद करा"</string>
     <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"सुरू ठेवा"</string>
-    <string name="accessibility_key_gesture_voice_access_dialog_title" msgid="7828090789777023683">"<xliff:g id="ID_1">%1$s</xliff:g> कीबोर्ड शॉर्टकट सुरू करायचा आहे का?"</string>
     <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="7934170819801013870">"Action "<annotation id="action_key_icon">"icon"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> प्रेस केल्याने, <xliff:g id="ID_3">^3</xliff:g> हे अ‍ॅक्सेसिबिलिटी वैशिष्ट्ये सुरू होते. यामुळे तुम्हाला तुमचे डिव्हाइस हँड्स-फ्री नियंत्रित करता येते."</string>
-    <string name="accessibility_key_gesture_voice_access_dialog_negative_button_text" msgid="3573570279554465078">"सुरू करू नका"</string>
-    <string name="accessibility_key_gesture_voice_access_dialog_positive_button_text" msgid="2306321856544446858">"शॉर्टकट सुरू करा"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"लॉक स्‍क्रीन"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"बंद होत आहे…"</string>
     <string name="thermal_shutdown_dialog_help_text" msgid="6413474593462902901">"काय काळजी घ्यावी ते पहा"</string>
@@ -1618,6 +1626,8 @@
     <string name="shortcut_helper_customize_dialog_reset_button_label" msgid="7645535254306312685">"होय, रीसेट करा"</string>
     <string name="shortcut_helper_customize_dialog_cancel_button_label" msgid="5595546460431741178">"रद्द करा"</string>
     <string name="shortcut_helper_add_shortcut_dialog_placeholder" msgid="9154297849458741995">"की प्रेस करा"</string>
+    <!-- no translation found for shortcut_helper_customizer_action_key_text (3979063901857046887) -->
+    <skip />
     <string name="shortcut_customizer_key_combination_in_use_error_message" msgid="3325858369539848162">"की कॉम्बिनेशन आधीपासून वापरले जात आहे. दुसरे कॉम्बिनेशन वापरून पहा."</string>
     <string name="shortcut_customizer_generic_error_message" msgid="3128454624049722741">"शॉर्टकट सेट करू शकत नाही."</string>
     <string name="shortcut_helper_plus_symbol" msgid="4534843157353732011">"+"</string>
