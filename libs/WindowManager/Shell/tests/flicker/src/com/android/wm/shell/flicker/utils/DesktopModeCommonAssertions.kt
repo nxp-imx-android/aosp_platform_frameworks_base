@@ -218,3 +218,25 @@ fun FlickerTest.tilingDividerBecomesInvisibleThenVisible() {
             .isVisible(TILING_SPLIT_DIVIDER)
     }
 }
+
+fun FlickerTest.layerExactlyCoversAnotherAtEnd(
+    coveredLayer: IComponentMatcher,
+    coveringLayer: IComponentMatcher
+) {
+    assertLayersEnd {
+        val coveredLayerBounds = visibleRegion(coveredLayer).region.bounds
+        visibleRegion(coveringLayer).coversExactly(coveredLayerBounds)
+    }
+}
+
+fun FlickerTest.layerContainsAnotherAtEnd(
+    outerLayer: IComponentMatcher,
+    innerLayer: IComponentMatcher
+) {
+    assertWmEnd {
+        val outerBounds = visibleRegion(outerLayer).region.bounds
+        val innerBounds = visibleRegion(innerLayer).region.bounds
+
+        outerBounds.contains(innerBounds)
+    }
+}
