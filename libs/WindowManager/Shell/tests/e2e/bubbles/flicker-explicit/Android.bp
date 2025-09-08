@@ -67,6 +67,7 @@ test_module_config {
         "com.android.wm.shell.flicker.bubbles.EnterBubbleFromHomeScreenTrampolineTest",
         "com.android.wm.shell.flicker.bubbles.EnterBubbleViaBubbleMenuTest",
         "com.android.wm.shell.flicker.bubbles.EnterBubbleViaDragToBubbleBarTest",
+        "com.android.wm.shell.flicker.bubbles.EnterBubbleViaDragToBubbleBarTrampolineTest",
         "com.android.wm.shell.flicker.bubbles.EnterBubbleViaOverflowMenuTest",
         "com.android.wm.shell.flicker.bubbles.EnterBubbleWithImeViaBubbleMenuTest",
         "com.android.wm.shell.flicker.bubbles.ExpandBubbleViaBubbleStackTest",
@@ -177,6 +178,13 @@ test_module_config {
     base: "WMShellExplicitFlickerTestsBubbles",
     test_suites: ["device-tests"],
     include_filters: ["com.android.wm.shell.flicker.bubbles.EnterBubbleViaDragToBubbleBarTest"],
+}
+
+test_module_config {
+    name: "WMShellExplicitFlickerTestsBubbles-EnterBubbleViaDragToBubbleBarTrampolineTest",
+    base: "WMShellExplicitFlickerTestsBubbles",
+    test_suites: ["device-tests"],
+    include_filters: ["com.android.wm.shell.flicker.bubbles.EnterBubbleViaDragToBubbleBarTrampolineTest"],
 }
 
 test_module_config {
