@@ -161,7 +161,7 @@ class PluginInstance<T : Plugin>(
                     return
                 }
 
-        if (!checkVersion()) {
+        if (!checkVersion(plugin)) {
             logger.d("onCreate: version check failed")
             return
         }
@@ -210,7 +210,7 @@ class PluginInstance<T : Plugin>(
             return
         }
 
-        if (!checkVersion()) {
+        if (!checkVersion(plugin)) {
             logger.e("loadPlugin: version check failed")
             return
         }
@@ -228,9 +228,8 @@ class PluginInstance<T : Plugin>(
 
     /** Checks the plugin version, and permanently destroys the plugin instance on a failure */
     @Synchronized
-    private fun checkVersion(): Boolean {
+    private fun checkVersion(plugin: T): Boolean {
         if (hasError) return false
-        val (plugin, _) = pluginData ?: return true
         if (pluginFactory.checkVersion(plugin)) return true
 
         logger.wtf({ "Version check failed for '$str1'" }) { str1 = debugName }

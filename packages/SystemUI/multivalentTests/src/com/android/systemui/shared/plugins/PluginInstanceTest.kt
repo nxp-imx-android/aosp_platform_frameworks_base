@@ -133,16 +133,20 @@ class PluginInstanceTest : SysuiTestCase() {
 
         mVersionCheckResult = false
         assertFalse(mPluginInstance.hasError)
-        mPluginInstanceFactory.create(
-            mContext,
-            mAppInfo,
-            wrongVersionTestPluginComponentName,
-            TestPlugin::class.java,
-            mPluginListener,
-        )
-        assertRunnableLogsWtf { mPluginInstance.onCreate() }
-        assertTrue(mPluginInstance.hasError)
-        assertNull(mPluginInstance.plugin)
+
+        mPluginInstanceFactory
+            .create(
+                mContext,
+                mAppInfo,
+                wrongVersionTestPluginComponentName,
+                TestPlugin::class.java,
+                mPluginListener,
+            )
+            ?.let { errorInstance ->
+                assertRunnableLogsWtf { errorInstance.onCreate() }
+                assertTrue(errorInstance.hasError)
+                assertNull(errorInstance.plugin)
+            } ?: fail("returned null plugin instance")
     }
 
     @Test
