@@ -18,17 +18,18 @@ package com.android.wm.shell.shared.bubbles.logging
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
+import com.android.wm.shell.shared.bubbles.logging.BubbleEventHistoryLogger.Companion.DATE_FORMAT
 import com.android.wm.shell.shared.bubbles.logging.BubbleEventHistoryLogger.Companion.DATE_FORMATTER
 import com.android.wm.shell.shared.bubbles.logging.BubbleEventHistoryLogger.Companion.MAX_EVENTS
 import com.google.common.truth.Truth.assertThat
 import java.io.PrintWriter
 import java.io.StringWriter
-import kotlin.text.split
-import org.junit.Test
-import org.junit.runner.RunWith
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
+import kotlin.text.split
+import org.junit.Test
+import org.junit.runner.RunWith
 
 /** Unit tests for [BubbleEventHistoryLogger]. */
 @SmallTest
@@ -45,7 +46,21 @@ class BubbleEventHistoryLoggerTest {
     }
 
     @Test
-    fun dump_RespectsMAX_EVENTS() {
+    fun dump_printsHeaderWithEvents() {
+        val timestamp = System.currentTimeMillis()
+        val formattedTimeStamp = DATE_FORMATTER.format(timestamp)
+        logger.logEvent("e: test", "eventData", timestamp)
+        logger.logEvent("d: hey", timestamp = timestamp)
+        val expectedOutput = """
+            Bubbles events history:
+              $formattedTimeStamp d: hey
+              $formattedTimeStamp e: test | eventData
+            """.trimIndent() + "\n"
+        assertThat(getDumpOutput()).isEqualTo(expectedOutput)
+    }
+
+    @Test
+    fun dump_respectsMAX_EVENTS() {
         repeat(MAX_EVENTS + 10) { logger.d(message = "title") }
         val linesCount = getTrimmedLogLines().size
 
@@ -53,7 +68,7 @@ class BubbleEventHistoryLoggerTest {
     }
 
     @Test
-    fun dump_PrintsEventsInReverseChronologicalOrderStartingFromTheMostRecentEvent() {
+    fun dump_printsEventsInReverseChronologicalOrderStartingFromTheMostRecentEvent() {
         val repetitions = MAX_EVENTS * 2
         repeat(repetitions) { repetition ->
             logger.logEvent(title = "", timestamp = repetition.toLong())
@@ -77,11 +92,11 @@ class BubbleEventHistoryLoggerTest {
 
         val logLines = getTrimmedLogLines()
 
-        assertThat(checkLogFormat(logLines[4], 'd', "test true", "eventData")).isTrue()
-        assertThat(checkLogFormat(logLines[3], 'v', "test 0", "eventData")).isTrue()
-        assertThat(checkLogFormat(logLines[2], 'i', "test stringArgument", "eventData")).isTrue()
-        assertThat(checkLogFormat(logLines[1], 'w', "test")).isTrue()
-        assertThat(checkLogFormat(logLines[0], 'e', "test", "eventData")).isTrue()
+        assertLogFormat(logLines[4], "d: test true | eventData")
+        assertLogFormat(logLines[3], "v: test 0 | eventData")
+        assertLogFormat(logLines[2], "i: test stringArgument | eventData")
+        assertLogFormat(logLines[1], "w: test")
+        assertLogFormat(logLines[0], "e: test | eventData")
     }
 
     @Test
@@ -113,17 +128,10 @@ class BubbleEventHistoryLoggerTest {
         assertThat(logLinesCount).isEqualTo(MAX_EVENTS)
     }
 
-    private fun checkLogFormat(
-        logEntry: String,
-        logLevel: Char,
-        title: String,
-        eventData: String? = null,
-    ): Boolean {
-        val matchesEventData = eventData.isNullOrBlank() || logEntry.contains("| $eventData")
-        return logEntry.matches(logPattern) &&
-            logEntry.contains(logLevel) &&
-            logEntry.contains(title) &&
-            matchesEventData
+    private fun assertLogFormat(logEntry: String, expectedLogWithoutDate: String) {
+        assertThat(logEntry.matches(logPattern)).isTrue()
+        val trimmedDateTime = logEntry.substring(DATE_FORMAT.length + 1)
+        assertThat(trimmedDateTime).isEqualTo(expectedLogWithoutDate)
     }
 
     private fun getTrimmedLogLines(): List<String> {
