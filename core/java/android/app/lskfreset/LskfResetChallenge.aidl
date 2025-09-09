@@ -14,15 +14,15 @@
  * limitations under the License.
  */
 
-package android.app.userrecovery;
+package android.app.lskfreset;
 
 /**
- * A challenge issued by the UserRecoveryManagerService to a recovery agent.
- * The agent must provide a valid RecoveryAgentResponse to this challenge,
+ * A challenge issued by the LskfResetManagerService to a recovery agent.
+ * The agent must provide a valid LskfResetAgentResponse to this challenge,
  * likely in the requestValidation() call.
  * @hide
  */
-parcelable RecoveryChallenge {
+parcelable LskfResetChallenge {
     /** Version of this challenge structure. */
     int version = 1;
 

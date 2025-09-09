@@ -4,17 +4,17 @@ package {
 }
 
 filegroup {
-    name: "services.userrecovery-sources",
+    name: "services.lskfreset-sources",
     srcs: ["java/**/*.java"],
     path: "java",
     visibility: ["//frameworks/base/services"],
 }
 
 java_library_static {
-    name: "services.userrecovery",
+    name: "services.lskfreset",
     defaults: ["platform_service_defaults"],
     srcs: [
-        ":services.userrecovery-sources",
+        ":services.lskfreset-sources",
         "java/**/*.logtags",
     ],
     libs: ["services.core"],

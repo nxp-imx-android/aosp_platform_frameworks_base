@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-package android.app.userrecovery;
+package android.app.lskfreset;
 
 /**
  * Represents an active recovery session.
  * @hide
  */
-parcelable RecoverySessionToken {
+parcelable LskfResetSessionToken {
     /** Unique ID for this recovery session. */
     String sessionId;
     /** User ID the session is for. */

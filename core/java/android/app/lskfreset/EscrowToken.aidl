@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package android.app.userrecovery;
+package android.app.lskfreset;
 
 /**
  * Contains the escrow token data and metadata for a user's recovery factor.

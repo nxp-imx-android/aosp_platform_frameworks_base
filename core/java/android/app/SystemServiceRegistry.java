@@ -17,7 +17,7 @@
 package android.app;
 
 import static android.app.appfunctions.flags.Flags.enableAppFunctionManager;
-import static android.app.userrecovery.flags.Flags.enableUserRecoveryManager;
+import static android.app.lskfreset.flags.Flags.enableLskfResetManager;
 import static android.hardware.serial.flags.Flags.enableWiredSerialApi;
 import static android.provider.flags.Flags.newStoragePublicApi;
 import static android.server.Flags.removeGameManagerServiceFromWear;
@@ -45,6 +45,8 @@ import android.app.contentsuggestions.IContentSuggestionsManager;
 import android.app.contextualsearch.ContextualSearchManager;
 import android.app.ecm.EnhancedConfirmationFrameworkInitializer;
 import android.app.job.JobSchedulerFrameworkInitializer;
+import android.app.lskfreset.ILskfResetManager;
+import android.app.lskfreset.LskfResetManager;
 import android.app.ondeviceintelligence.OnDeviceIntelligenceFrameworkInitializer;
 import android.app.people.PeopleManager;
 import android.app.prediction.AppPredictionManager;
@@ -65,8 +67,6 @@ import android.app.usage.IStorageStatsManager;
 import android.app.usage.IUsageStatsManager;
 import android.app.usage.StorageStatsManager;
 import android.app.usage.UsageStatsManager;
-import android.app.userrecovery.IUserRecoveryManager;
-import android.app.userrecovery.UserRecoveryManager;
 import android.app.wallpapereffectsgeneration.IWallpaperEffectsGenerationManager;
 import android.app.wallpapereffectsgeneration.WallpaperEffectsGenerationManager;
 import android.app.wearable.IWearableSensingManager;
@@ -1020,17 +1020,17 @@ public final class SystemServiceRegistry {
                     });
         }
 
-      if (enableUserRecoveryManager()) {
-            registerService(Context.USER_RECOVERY_SERVICE, UserRecoveryManager.class,
+      if (enableLskfResetManager()) {
+            registerService(Context.LSKF_RESET_SERVICE, LskfResetManager.class,
                     new CachedServiceFetcher<>() {
                         @Override
-                        public UserRecoveryManager createService(ContextImpl ctx)
+                        public LskfResetManager createService(ContextImpl ctx)
                                 throws ServiceNotFoundException {
-                                    IUserRecoveryManager service;
-                            service = IUserRecoveryManager.Stub.asInterface(
+                                    ILskfResetManager service;
+                            service = ILskfResetManager.Stub.asInterface(
                                     ServiceManager.getServiceOrThrow(
-                                        Context.USER_RECOVERY_SERVICE));
-                            return new UserRecoveryManager(service, ctx.getOuterContext());
+                                        Context.LSKF_RESET_SERVICE));
+                            return new LskfResetManager(service, ctx.getOuterContext());
                         }
                     });
         }

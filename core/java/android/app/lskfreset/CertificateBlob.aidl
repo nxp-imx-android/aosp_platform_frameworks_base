@@ -14,13 +14,12 @@
  * limitations under the License.
  */
 
-package android.app.userrecovery;
+ package android.app.lskfreset;
 
 /**
- * Response from a recovery agent to a challenge.
+ * Parcelable to hold a single certificate represented as a byte array.
  * @hide
  */
-parcelable RecoveryAgentResponse {
-    /** The agent's response to the server/service challenge. */
-    byte[] responseData;
+parcelable CertificateBlob {
+    byte[] blob;
 }

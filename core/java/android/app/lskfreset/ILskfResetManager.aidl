@@ -14,12 +14,18 @@
  * limitations under the License.
  */
 
- package android.app.userrecovery;
+package android.app.lskfreset;
+
+import android.app.lskfreset.ILskfResetSession;
 
 /**
- * Parcelable to hold a single certificate represented as a byte array.
- * @hide
- */
-parcelable CertificateBlob {
-    byte[] blob;
+* Main interface for managing LSKF reset operations.
+* @hide
+*/
+interface ILskfResetManager {
+    /**
+     * Initiates a new LSKF reset session for the given user to add LSKF reset data.
+     * Returns an ILskfResetSession instance to manage this specific session.
+     */
+    ILskfResetSession createLskfResetSession(int userId) = 0;
 }

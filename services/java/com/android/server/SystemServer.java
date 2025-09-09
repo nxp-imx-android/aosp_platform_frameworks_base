@@ -16,7 +16,7 @@
 
 package com.android.server;
 
-import static android.app.userrecovery.flags.Flags.enableUserRecoveryManager;
+import static android.app.lskfreset.flags.Flags.enableLskfResetManager;
 import static android.media.tv.flags.Flags.mediaQualityFw;
 import static android.net.NetworkStack.PERMISSION_MAINLINE_NETWORK_STACK;
 import static android.os.IServiceManager.DUMP_FLAG_PRIORITY_CRITICAL;
@@ -194,6 +194,7 @@ import com.android.server.location.altitude.AltitudeService;
 import com.android.server.locksettings.LockSettingsInternal;
 import com.android.server.locksettings.LockSettingsService;
 import com.android.server.logcat.LogcatManagerService;
+import com.android.server.lskfreset.LskfResetManagerService;
 import com.android.server.media.MediaResourceMonitorService;
 import com.android.server.media.MediaRouterService;
 import com.android.server.media.MediaSessionService;
@@ -303,7 +304,6 @@ import com.android.server.uri.UriGrantsManagerService;
 import com.android.server.usage.StorageStatsService;
 import com.android.server.usage.UsageStatsService;
 import com.android.server.usb.UsbService;
-import com.android.server.userrecovery.UserRecoveryManagerService;
 import com.android.server.utils.TimingsTraceAndSlog;
 import com.android.server.vcn.VcnLocation;
 import com.android.server.vibrator.VibratorManagerService;
@@ -1821,9 +1821,9 @@ public final class SystemServer implements Dumpable {
                 t.traceEnd();
             }
 
-            if (enableUserRecoveryManager()) {
-                t.traceBegin("StartUserRecoveryManager");
-                mSystemServiceManager.startService(UserRecoveryManagerService.class);
+            if (enableLskfResetManager()) {
+                t.traceBegin("StartLskfResetManager");
+                mSystemServiceManager.startService(LskfResetManagerService.class);
                 t.traceEnd();
             }
 
