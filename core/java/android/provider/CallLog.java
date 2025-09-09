@@ -688,6 +688,18 @@ public class CallLog {
          */
         public static final String CACHED_NAME = "name";
         /**
+         * The preferred name associated with the phone number, if it exists.
+         *
+         * <p>This value is typically filled in with the caller name presentation (CNAP) name to be
+         * used as the preferred name that should be displayed in the call log. This is notified
+         * from the network and propagated into
+         * {@link com.android.server.telecom.Call#getCallerDisplayName()}. However, this field can
+         * be extended to account for other use cases as well.
+         * <P>Type: TEXT</P>
+         */
+        @FlaggedApi(Flags.FLAG_SUPPORT_DISPLAY_NAME_CALL_LOG)
+        public static final String PREFERRED_DISPLAY_NAME = "preferred_display_name";
+        /**
          * The cached number type (Home, Work, etc) associated with the phone number, if it exists.
          *
          * <p>This value is typically filled in by the dialer app for the caching purpose,
