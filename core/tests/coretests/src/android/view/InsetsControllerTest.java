@@ -535,6 +535,49 @@ public class InsetsControllerTest {
     }
 
     @Test
+    public void testControlWindowInsetsAnimation_ime_createsStatsToken() {
+        // Arrange
+        prepareControls();
+        clearInvocations(mTestHost);
+
+        // Act: Control the IME insets, which should trigger ImeTracker.
+        InstrumentationRegistry.getInstrumentation().runOnMainSync(() -> {
+            WindowInsetsAnimationControlListener listener =
+                    mock(WindowInsetsAnimationControlListener.class);
+            mController.controlWindowInsetsAnimation(ime(), 0, new LinearInterpolator(),
+                    null /* cancellationSignal */, listener);
+        });
+
+        // Assert: Verify that the host is updated with a non-null stats token.
+        ArgumentCaptor<ImeTracker.Token> tokenCaptor =
+                ArgumentCaptor.forClass(ImeTracker.Token.class);
+        verify(mTestHost).updateRequestedVisibleTypes(anyInt(), tokenCaptor.capture());
+        assertNotNull("A statsToken should be created for IME animations", tokenCaptor.getValue());
+    }
+
+    @Test
+    public void testControlWindowInsetsAnimation_nonIme_noStatsToken() {
+        // Arrange
+        prepareControls();
+        clearInvocations(mTestHost);
+
+        // Act: Control non-IME insets, which should not trigger ImeTracker.
+        InstrumentationRegistry.getInstrumentation().runOnMainSync(() -> {
+            WindowInsetsAnimationControlListener listener =
+                    mock(WindowInsetsAnimationControlListener.class);
+            mController.controlWindowInsetsAnimation(statusBars(), 0, new LinearInterpolator(),
+                    null /* cancellationSignal */, listener);
+        });
+
+        // Assert: Verify that the host is updated with a null stats token.
+        ArgumentCaptor<ImeTracker.Token> tokenCaptor =
+                ArgumentCaptor.forClass(ImeTracker.Token.class);
+        verify(mTestHost).updateRequestedVisibleTypes(anyInt(), tokenCaptor.capture());
+        assertNull("No statsToken should be created for non-IME animations",
+                tokenCaptor.getValue());
+    }
+
+    @Test
     public void testControlImeNotReady() {
         // With the flag on, the IME control should not contain a leash, otherwise the custom
         // animation will start immediately.
