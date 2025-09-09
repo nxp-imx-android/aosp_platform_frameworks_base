@@ -418,7 +418,10 @@ fun DefaultEditTileGrid(
     }
 
     Scaffold(
-        modifier = modifier.consumeWindowInsets(WindowInsets.displayCutout),
+        modifier =
+            modifier
+                .consumeWindowInsets(WindowInsets.displayCutout)
+                .sysuiResTag(EDIT_MODE_ROOT_TEST_TAG),
         containerColor = Color.Transparent,
         topBar = {
             EditModeTopBar(onStopEditing = onStopEditing, modifier = Modifier.statusBarsPadding()) {
@@ -1147,7 +1150,11 @@ private fun LazyGridItemScope.TileGridCell(
         tileState = tileState,
         resizingState = resizingState,
         modifier =
-            modifier.height(TileHeight).fillMaxWidth().animateItem(placementSpec = placementSpec),
+            modifier
+                .height(TileHeight)
+                .fillMaxWidth()
+                .animateItem(placementSpec = placementSpec)
+                .tileTestTag(cell.isIcon),
         onClick = {
             if (tileState == TileState.Removable) {
                 removeTile()
@@ -1304,7 +1311,8 @@ private fun AvailableTileGridCell(
                         // meaningful when on screen), and it will be skipped when not visible.
                         this.role = Role.Button
                     }
-                },
+                }
+                .sysuiResTag(AVAILABLE_TILE_TEST_TAG),
     ) {
         Box(Modifier.fillMaxWidth().height(TileHeight)) {
             val draggableModifier =
@@ -1523,6 +1531,8 @@ private object EditModeTileDefaults {
         )
 }
 
+private const val EDIT_MODE_ROOT_TEST_TAG = "EditModeRoot"
 private const val CURRENT_TILES_GRID_TEST_TAG = "CurrentTilesGrid"
 private const val AVAILABLE_TILES_GRID_TEST_TAG = "AvailableTilesGrid"
 private const val OPTIONS_DROP_DOWN_TEST_TAG = "OptionsDropdown"
+private const val AVAILABLE_TILE_TEST_TAG = "AvailableTileTestTag"
