@@ -9841,7 +9841,7 @@ public final class ViewRootImpl implements ViewParent,
         if (renderer != null && renderer.rendererOwnsSurfaceControlOpacity()) {
             opaque = renderer.setSurfaceControlOpaque(opaque);
         } else {
-            mTransaction.setOpaque(mSurfaceControl, opaque).apply();
+            applyTransactionOnDraw(mTransaction.setOpaque(mSurfaceControl, opaque));
         }
 
         mIsSurfaceOpaque = opaque;
