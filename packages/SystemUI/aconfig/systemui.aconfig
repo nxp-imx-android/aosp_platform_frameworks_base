@@ -758,23 +758,6 @@ flag {
 }
 
 flag {
-    name: "screenshot_action_dismiss_system_windows"
-    namespace: "systemui"
-    description: "Dismiss existing system windows when starting action from screenshot UI"
-    bug: "309933761"
-}
-
-flag {
-    name: "fix_screenshot_action_dismiss_system_windows"
-    namespace: "systemui"
-    description: "Dismiss existing system windows when starting action from screenshot UI"
-    bug: "309933761"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "screenshot_scroll_crop_view_crash_fix"
     namespace: "systemui"
     description: "Mitigate crash on invalid computed range in CropView"
