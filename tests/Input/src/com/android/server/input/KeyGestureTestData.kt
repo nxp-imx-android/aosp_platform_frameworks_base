@@ -25,10 +25,7 @@ import android.view.KeyEvent
 /** Test data for Key gestures tests in {@link KeyGestureControllerTests} */
 object KeyGestureTestData {
 
-    // All Key gestures that should always happen regardless of whether focused window captures the
-    // keys should go in this list.
-    // (i.e. Shortcuts and keys handled in INTERCEPT_SHORTCUTS_BEFORE_KEY_CAPTURE stage)
-    val NON_CAPTURABLE_SYSTEM_GESTURES =
+    val MULTI_KEY_SYSTEM_GESTURES =
         arrayOf(
             KeyGestureData(
                 "VOLUME_DOWN + POWER -> Screenshot Chord",
@@ -89,6 +86,13 @@ object KeyGestureTestData {
                     KeyGestureEvent.ACTION_GESTURE_COMPLETE,
                 ),
             ),
+        )
+
+    // All Key gestures that should always happen regardless of whether focused window captures the
+    // keys should go in this list.
+    // (i.e. Shortcuts and keys handled in INTERCEPT_SHORTCUTS_BEFORE_KEY_CAPTURE stage)
+    val NON_CAPTURABLE_SYSTEM_GESTURES =
+        arrayOf(
             KeyGestureData(
                 "META + H -> Go Home",
                 intArrayOf(KeyEvent.KEYCODE_META_LEFT, KeyEvent.KEYCODE_H),

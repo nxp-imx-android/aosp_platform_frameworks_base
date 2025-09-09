@@ -373,6 +373,18 @@ class KeyGestureControllerTests {
         testKeyGestureProduced(test, PASS_THROUGH_APP)
     }
 
+    @Keep
+    private fun multiKeyGestureArguments(): Array<KeyGestureData> {
+        return KeyGestureTestData.MULTI_KEY_SYSTEM_GESTURES
+    }
+
+    @Test
+    @Parameters(method = "multiKeyGestureArguments")
+    fun testMultiKeyGestures(test: KeyGestureData) {
+        setupKeyGestureController()
+        testKeyGestureProduced(test, BLOCKING_APP)
+    }
+
     @Test
     @EnableFlags(com.android.window.flags.Flags.FLAG_TOGGLE_FULLSCREEN_STATE_VIA_FULLSCREEN_KEY)
     fun testCustomKeyGesturesNotAllowedForSystemGestures() {
@@ -604,7 +616,7 @@ class KeyGestureControllerTests {
         val listener = KeyGestureEventListener { event -> events.add(KeyGestureEvent(event)) }
 
         keyGestureController.registerKeyGestureEventListener(listener, 0)
-        sendKeys(intArrayOf(KeyEvent.KEYCODE_CAPS_LOCK))
+        sendKeys(intArrayOf(KeyEvent.KEYCODE_CAPS_LOCK), assertKeysFullyConsumed = false)
         testLooper.dispatchAll()
         assertEquals("Listener should get callbacks on key gesture event completed", 1, events.size)
         assertEquals(
@@ -961,7 +973,11 @@ class KeyGestureControllerTests {
     fun testAccessibilityTvShortcutChordPressed() {
         setupKeyGestureController()
 
-        sendKeys(intArrayOf(KeyEvent.KEYCODE_BACK, KeyEvent.KEYCODE_DPAD_DOWN), timeDelayMs = 10000)
+        sendKeys(
+            intArrayOf(KeyEvent.KEYCODE_BACK, KeyEvent.KEYCODE_DPAD_DOWN),
+            timeDelayMs = 10000,
+            assertKeysFullyConsumed = false,
+        )
         Mockito.verify(accessibilityShortcutController, times(1)).performAccessibilityShortcut()
     }
 
@@ -980,7 +996,11 @@ class KeyGestureControllerTests {
     fun testAccessibilityTvShortcutChordPressedForLessThanTimeout() {
         setupKeyGestureController()
 
-        sendKeys(intArrayOf(KeyEvent.KEYCODE_BACK, KeyEvent.KEYCODE_DPAD_DOWN), timeDelayMs = 0)
+        sendKeys(
+            intArrayOf(KeyEvent.KEYCODE_BACK, KeyEvent.KEYCODE_DPAD_DOWN),
+            timeDelayMs = 0,
+            assertKeysFullyConsumed = false,
+        )
         Mockito.verify(accessibilityShortcutController, never()).performAccessibilityShortcut()
     }
 
@@ -1363,6 +1383,7 @@ class KeyGestureControllerTests {
         sendKeys(
             intArrayOf(KeyEvent.KEYCODE_ESCAPE),
             timeDelayMs = 2 * LONG_PRESS_DELAY_FOR_ESCAPE_MILLIS,
+            appDelegate = BLOCKING_APP,
         )
         keyGestureController.unregisterKeyGestureHandler(handler, TEST_PID)
         assertEquals(2, events.size)
@@ -1383,6 +1404,7 @@ class KeyGestureControllerTests {
         sendKeys(
             intArrayOf(KeyEvent.KEYCODE_ESCAPE),
             timeDelayMs = 2 * LONG_PRESS_DELAY_FOR_ESCAPE_MILLIS,
+            appDelegate = BLOCKING_APP,
         )
         keyGestureController.unregisterKeyGestureHandler(handler, TEST_PID)
         assertEquals(0, events.size)
@@ -1402,6 +1424,7 @@ class KeyGestureControllerTests {
         sendKeys(
             intArrayOf(KeyEvent.KEYCODE_ESCAPE),
             timeDelayMs = LONG_PRESS_DELAY_FOR_ESCAPE_MILLIS / 2,
+            appDelegate = BLOCKING_APP,
         )
         keyGestureController.unregisterKeyGestureHandler(handler, TEST_PID)
         assertEquals(2, events.size)
@@ -1512,6 +1535,7 @@ class KeyGestureControllerTests {
         appDelegate: AppDelegate = PASS_THROUGH_APP,
         timeDelayMs: Long = 0,
         displayId: Int = DEFAULT_DISPLAY,
+        assertKeysFullyConsumed: Boolean = true,
     ) {
         var metaState = 0
         val now = SystemClock.uptimeMillis()
@@ -1531,7 +1555,10 @@ class KeyGestureControllerTests {
                     displayId,
                     /* characters= */ "",
                 )
-            interceptKey(downEvent, appDelegate)
+            val consumed = interceptKey(downEvent, appDelegate)
+            if (assertKeysFullyConsumed) {
+                assertTrue("Key $downEvent should be consumed", consumed)
+            }
             metaState = metaState or MODIFIER.getOrDefault(key, 0)
 
             downEvent.recycle()
@@ -1559,7 +1586,10 @@ class KeyGestureControllerTests {
                     displayId,
                     /* characters= */ "",
                 )
-            interceptKey(upEvent, appDelegate)
+            val consumed = interceptKey(upEvent, appDelegate)
+            if (assertKeysFullyConsumed) {
+                assertTrue("Key $upEvent should be consumed", consumed)
+            }
             metaState = metaState and MODIFIER.getOrDefault(key, 0).inv()
 
             upEvent.recycle()
@@ -1567,14 +1597,23 @@ class KeyGestureControllerTests {
         }
     }
 
-    private fun interceptKey(event: KeyEvent, appDelegate: AppDelegate) {
+    private fun interceptKey(event: KeyEvent, appDelegate: AppDelegate): Boolean {
         keyGestureController.interceptKeyBeforeQueueing(event, FLAG_INTERACTIVE)
         testLooper.dispatchAll()
 
-        val consumed = keyGestureController.interceptKeyBeforeDispatching(null, event, 0) == -1L
-        if (!consumed && !appDelegate.consumeKey(event)) {
-            keyGestureController.interceptUnhandledKey(event, null)
+        if (keyGestureController.interceptKeyBeforeDispatching(null, event, 0) != 0L) {
+            return true
         }
+        if (appDelegate.consumeKey(event)) {
+            return true
+        }
+        if (keyGestureController.interceptUnhandledKey(event, null)) {
+            return true
+        }
+        if (KeyEvent.isModifierKey(event.keyCode)) {
+            return true
+        }
+        return false
     }
 
     fun overrideSendActionKeyEventsToFocusedWindow(
