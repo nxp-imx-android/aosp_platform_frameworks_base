@@ -75,7 +75,6 @@ import android.os.Bundle;
 import android.os.RemoteException;
 import android.os.SystemClock;
 import android.os.UserManager;
-import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
 import android.platform.test.flag.junit.SetFlagsRule;
 import android.util.ArraySet;
@@ -87,7 +86,6 @@ import android.window.TaskSnapshot;
 import androidx.test.filters.MediumTest;
 
 import com.android.server.wm.RecentTasks.Callbacks;
-import com.android.window.flags.Flags;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -440,7 +438,6 @@ public class RecentTasksTest extends WindowTestsBase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_FIX_TASK_COMPATIBLE_MODES)
     public void testAddTaskCompatibleWindowingMode_withMultiWindowAndFullscreen_expectRemove() {
         verifyCompatibleWindowingModeWithFullscreen(WINDOWING_MODE_MULTI_WINDOW);
     }
