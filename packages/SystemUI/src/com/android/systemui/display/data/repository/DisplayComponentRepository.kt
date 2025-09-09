@@ -25,6 +25,7 @@ import com.android.app.tracing.ListenersTracing.forEachTraced
 import com.android.app.tracing.traceSection
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent
+import com.android.systemui.display.flags.DisplayComponentRepositoryFlag.isEagerInitializationEnabled
 import dagger.Module
 import dagger.Provides
 import javax.inject.Inject
@@ -84,7 +85,7 @@ object DisplayComponentRepository {
         return repositoryFactory.create(
             debugName = "DisplayComponentInstanceProvider",
             instanceProvider,
-            createInstanceEagerly = true,
+            createInstanceEagerly = isEagerInitializationEnabled(),
         )
     }
 }
