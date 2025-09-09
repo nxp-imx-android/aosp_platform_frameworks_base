@@ -2542,6 +2542,14 @@ public class BubbleStackView extends FrameLayout
         }
     }
 
+    /**
+     * Fail-safe to set the expanded state to false.
+     * See b/417447385.
+     */
+    void overrideCollapsed() {
+        mIsExpanded = false;
+    }
+
     /** Snaps the stack to its expanded state without animation. */
     void snapToExpanded() {
         setExpanded(/* shouldExpand= */ true, /* animateExpansion= */ false);
