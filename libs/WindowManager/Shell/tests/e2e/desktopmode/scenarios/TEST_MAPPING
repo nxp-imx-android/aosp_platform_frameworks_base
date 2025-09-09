@@ -539,6 +539,13 @@
       ]
     },
     {
+      "name": "FunctionalTestsDesktopMode-multiinstance-ManageOpenInstancesTest",
+      "keywords": [
+        "device",
+        "desktop"
+      ]
+    },
+    {
       "name": "FunctionalTestsDesktopMode-resizing-ResizeAppCornerMultiWindowAndPipTest",
       "keywords": [
         "device",
