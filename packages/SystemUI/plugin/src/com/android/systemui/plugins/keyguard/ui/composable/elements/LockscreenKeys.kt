@@ -24,8 +24,23 @@ import com.android.compose.animation.scene.SceneKey
 /** Keys for lockscreen scenes that our movable elements may appear in */
 object LockscreenSceneKeys {
     val Lockscreen = SceneKey("lockscreen") // Non-nested top-level scene
-    val CenteredClockScene = SceneKey("WideLayout-CenteredClock")
-    val TwoColumnScene = SceneKey("WideLayout-TwoColumns")
+
+    /** Subscenes used by the UpperRegion layouts */
+    object UpperRegion {
+        object NarrowLayout {
+            val LargeClock = SceneKey("UpperRegion-NarrowLayout-LargeClock")
+            val SmallClock = SceneKey("UpperRegion-NarrowLayout-SmallClock")
+        }
+
+        object WideLayout {
+            val CenteredClock = SceneKey("UpperRegion-WideLayout-CenteredClock")
+
+            object TwoColumn {
+                val LargeClock = SceneKey("UpperRegion-WideLayout-TwoColumns-LargeClock")
+                val SmallClock = SceneKey("UpperRegion-WideLayout-TwoColumns-SmallClock")
+            }
+        }
+    }
 }
 
 /**
@@ -41,11 +56,17 @@ object LockscreenElementKeys {
      * copies of the wrapped view cannot be created at the same time.
      */
     val ContentPicker =
-        with(LockscreenSceneKeys) {
-            DefaultElementContentPicker(
-                contents = setOf(Lockscreen, CenteredClockScene, TwoColumnScene)
-            )
-        }
+        DefaultElementContentPicker(
+            contents =
+                setOf(
+                    LockscreenSceneKeys.Lockscreen,
+                    LockscreenSceneKeys.UpperRegion.NarrowLayout.LargeClock,
+                    LockscreenSceneKeys.UpperRegion.NarrowLayout.SmallClock,
+                    LockscreenSceneKeys.UpperRegion.WideLayout.CenteredClock,
+                    LockscreenSceneKeys.UpperRegion.WideLayout.TwoColumn.LargeClock,
+                    LockscreenSceneKeys.UpperRegion.WideLayout.TwoColumn.SmallClock,
+                )
+        )
 
     /** Root element of the entire lockcsreen */
     val Root = ElementKey("LockscreenRoot")

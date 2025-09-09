@@ -16,13 +16,13 @@
 
 package com.android.systemui.keyguard.ui.viewmodel
 
-import com.android.systemui.deviceentry.domain.interactor.deviceEntryBypassInteractor
 import com.android.systemui.keyguard.domain.interactor.keyguardClockInteractor
-import com.android.systemui.keyguard.domain.interactor.keyguardTransitionInteractor
+import com.android.systemui.keyguard.domain.interactor.keyguardInteractor
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.Kosmos.Fixture
 import com.android.systemui.shade.domain.interactor.shadeModeInteractor
 import com.android.systemui.statusbar.notification.domain.interactor.activeNotificationsInteractor
+import com.android.systemui.statusbar.notification.stack.domain.interactor.headsUpNotificationInteractor
 import com.android.systemui.unfold.domain.interactor.unfoldTransitionInteractor
 
 val Kosmos.lockscreenUpperRegionViewModelFactory by Fixture {
@@ -31,9 +31,9 @@ val Kosmos.lockscreenUpperRegionViewModelFactory by Fixture {
             return LockscreenUpperRegionViewModel(
                 clockInteractor = keyguardClockInteractor,
                 shadeModeInteractor = shadeModeInteractor,
+                keyguardInteractor = keyguardInteractor,
                 unfoldTransitionInteractor = unfoldTransitionInteractor,
-                deviceEntryBypassInteractor = deviceEntryBypassInteractor,
-                keyguardTransitionInteractor = keyguardTransitionInteractor,
+                headsUpNotificationInteractor = headsUpNotificationInteractor,
                 keyguardMediaViewModelFactory = keyguardMediaViewModelFactory,
                 activeNotificationsInteractor = activeNotificationsInteractor,
             )

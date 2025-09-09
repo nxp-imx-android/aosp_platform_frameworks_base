@@ -89,7 +89,7 @@ class LockscreenUpperRegionViewModelTest(flags: FlagsParameterization) : SysuiTe
     fun isNotificationsVisible_hasNotifications_true() =
         kosmos.runTest {
             setupState(hasNotifications = true)
-            assertThat(underTest.isNotificationsVisible).isTrue()
+            assertThat(underTest.isNotificationStackActive).isTrue()
         }
 
     @Test
@@ -97,10 +97,11 @@ class LockscreenUpperRegionViewModelTest(flags: FlagsParameterization) : SysuiTe
     fun isNotificationsVisible_hasNoNotifications_false() =
         kosmos.runTest {
             setupState(hasNotifications = false)
-            assertThat(underTest.isNotificationsVisible).isFalse()
+            assertThat(underTest.isNotificationStackActive).isFalse()
         }
 
     @Test
+    @EnableSceneContainer
     fun unfoldTranslations() =
         kosmos.runTest {
             val maxTranslation = prepareConfiguration()
