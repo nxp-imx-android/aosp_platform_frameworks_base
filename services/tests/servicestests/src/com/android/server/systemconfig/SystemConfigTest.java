@@ -25,10 +25,13 @@ import android.content.pm.Signature;
 import android.content.pm.SignedPackage;
 import android.os.Build;
 import android.permission.PermissionManager.SplitPermissionInfo;
+import android.platform.test.annotations.DisableFlags;
+import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
 import android.platform.test.annotations.RequiresFlagsEnabled;
 import android.platform.test.flag.junit.CheckFlagsRule;
 import android.platform.test.flag.junit.DeviceFlagsValueProvider;
+import android.platform.test.flag.junit.SetFlagsRule;
 import android.util.ArrayMap;
 import android.util.ArraySet;
 import android.util.Log;
@@ -42,6 +45,7 @@ import com.android.internal.pm.pkg.parsing.ParsingPackageUtils;
 import com.android.server.SystemConfig;
 
 import org.junit.Before;
+import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -85,6 +89,10 @@ public class SystemConfigTest {
 
     private SystemConfig mSysConfig;
     private File mFooJar;
+    @ClassRule
+    public static final SetFlagsRule.ClassRule mSetFlagsClassRule = new SetFlagsRule.ClassRule();
+
+    @Rule public final SetFlagsRule mSetFlagsRule = mSetFlagsClassRule.createSetFlagsRule();
 
     @Rule public TemporaryFolder mTemporaryFolder = new TemporaryFolder();
 
@@ -828,6 +836,64 @@ public class SystemConfigTest {
 
         assertThat(blocklist).contains("com.sony.product1.app");
         assertThat(blocklist).doesNotContain("com.sony.product2.app");
+    }
+
+    /**
+     * Tests that readPermissions works correctly for the tag: {@code strict-signature-required}.
+     * when the verified dexopt aconfig flag is enabled.
+     */
+    @Test
+    @EnableFlags(android.content.pm.Flags.FLAG_VERIFIED_DEXOPT)
+    public void readPermissions_StrictSignatureRequired_successful() throws IOException {
+        final String contents =
+                "<config>\n"
+                        + "    <require-strict-signature package=\"com.foo\""
+                        + " verified-compilation-enabled=\"\"/>"
+                        + "    <require-strict-signature package=\"com.bar\" />"
+                        + "    <require-strict-signature package=\"com.baz\""
+                        + " verified-compilation-enabled=\"true\"/>"
+                        + "</config>";
+        final File folder = createTempSubfolder("folder");
+        createTempFile(folder, "signaturechecking.xml", contents);
+
+        readPermissions(folder, /* Grant all permission flags */ ~0);
+        Set<String> expectedPackagesWithStrictSignatureCheck = Set.of("com.foo", "com.bar",
+         "com.baz");
+        Set<String> expectedPackagesWithSecureCompilation = Set.of("com.foo", "com.baz");
+        assertThat(mSysConfig.getPreinstallPackagesWithStrictSignatureCheck())
+                .isEqualTo(expectedPackagesWithStrictSignatureCheck);
+        assertThat(mSysConfig.getPreinstallPackagesWithVerifiedCompilation())
+                .isEqualTo(expectedPackagesWithSecureCompilation);
+    }
+
+    /**
+     * Tests that when the verified dexopt aconfig flag is disabled then no packages will be
+     * marked as supporting verified compilation.
+     */
+    @Test
+    @DisableFlags(android.content.pm.Flags.FLAG_VERIFIED_DEXOPT)
+    public void readPermissions_StrictSignatureRequired_flagDisabled() throws IOException {
+        final String contents =
+                "<config>\n"
+                        + "    <require-strict-signature package=\"com.foo\""
+                        + " verified-compilation-enabled=\"\"/>"
+                        + "    <require-strict-signature package=\"com.bar\" />"
+                        + "    <require-strict-signature package=\"com.baz\""
+                        + " verified-compilation-enabled=\"true\"/>"
+                        + "</config>";
+        final File folder = createTempSubfolder("folder");
+        createTempFile(folder, "signaturechecking.xml", contents);
+
+        readPermissions(folder, /* Grant all permission flags */ ~0);
+        Set<String> expectedPackagesWithStrictSignatureCheck = Set.of("com.foo", "com.bar",
+         "com.baz");
+        // When FLAG_VERIFIED_DEXOPT is disabled, no packages should be added to the verified dexopt
+        // list, regardless of the 'verified-compilation-enabled' attribute.
+        Set<String> expectedPackagesWithSecureCompilation = Set.of();
+        assertThat(mSysConfig.getPreinstallPackagesWithStrictSignatureCheck())
+                .isEqualTo(expectedPackagesWithStrictSignatureCheck);
+        assertThat(mSysConfig.getPreinstallPackagesWithVerifiedCompilation())
+                .isEqualTo(expectedPackagesWithSecureCompilation);
     }
 
     private void parseSharedLibraries(String contents) throws IOException {

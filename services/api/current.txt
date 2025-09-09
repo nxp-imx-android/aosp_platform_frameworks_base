@@ -197,6 +197,7 @@ package com.android.server.pm.pkg {
     method public boolean isPrivileged();
     method public boolean isSystem();
     method public boolean isUpdatedSystemApp();
+    method @FlaggedApi("android.content.pm.verified_dexopt") public boolean shouldVerifyCompilationArtifacts();
   }
 
   public interface PackageUserState {

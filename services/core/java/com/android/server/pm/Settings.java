@@ -5254,6 +5254,12 @@ public final class Settings implements Watchable, Snappable, ResilientAtomicFile
             pw.print("]");
         }
         pw.println();
+        if(android.content.pm.Flags.verifiedDexopt()){
+            if (pkg != null ) {
+                pw.print(prefix); pw.print("  shouldVerifyCompilationArtifacts=");
+                pw.println(ps.shouldVerifyCompilationArtifacts());
+            }
+        }
         if (pkg != null) {
             pw.print(prefix); pw.print("  versionName="); pw.println(pkg.getVersionName());
             pw.print(prefix); pw.print("  hiddenApiEnforcementPolicy="); pw.println(
