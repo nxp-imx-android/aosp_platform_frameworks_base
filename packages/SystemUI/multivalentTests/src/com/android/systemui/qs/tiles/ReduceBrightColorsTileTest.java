@@ -33,6 +33,7 @@ import android.platform.test.annotations.RequiresFlagsEnabled;
 import android.platform.test.flag.junit.CheckFlagsRule;
 import android.platform.test.flag.junit.DeviceFlagsValueProvider;
 import android.platform.test.flag.junit.FlagsParameterization;
+import android.provider.Settings;
 import android.service.quicksettings.Tile;
 import android.testing.TestableLooper;
 
@@ -56,6 +57,8 @@ import com.android.systemui.qs.logging.QSLogger;
 import com.android.systemui.qs.tileimpl.QSTileImpl;
 import com.android.systemui.res.R.drawable;
 import com.android.systemui.settings.UserTracker;
+import com.android.systemui.util.settings.FakeSettings;
+import com.android.systemui.util.settings.SecureSettings;
 
 import org.junit.After;
 import org.junit.Before;
@@ -102,6 +105,7 @@ public class ReduceBrightColorsTileTest extends SysuiTestCase {
     @Mock
     private ExtraDimDialogManager mExtraDimDialogManager;
 
+    private SecureSettings mSecureSettings;
     private TestableLooper mTestableLooper;
     private ReduceBrightColorsTile mTile;
 
@@ -112,6 +116,7 @@ public class ReduceBrightColorsTileTest extends SysuiTestCase {
 
     @Before
     public void setUp() throws Exception {
+        mSecureSettings = new FakeSettings();
         MockitoAnnotations.initMocks(this);
 
         mTestableLooper = TestableLooper.get(this);
@@ -130,7 +135,8 @@ public class ReduceBrightColorsTileTest extends SysuiTestCase {
                 mStatusBarStateController,
                 mActivityStarter,
                 mQSLogger,
-                mExtraDimDialogManager
+                mExtraDimDialogManager,
+                mSecureSettings
         );
 
         mTile.initialize();
@@ -145,7 +151,8 @@ public class ReduceBrightColorsTileTest extends SysuiTestCase {
 
     @Test
     public void testNotActive() {
-        when(mReduceBrightColorsController.isReduceBrightColorsActivated()).thenReturn(false);
+        mSecureSettings.putIntForUser(Settings.Secure.REDUCE_BRIGHT_COLORS_ACTIVATED,
+                /* value= */ 0, mTile.getCurrentTileUser());
         mTile.refreshState();
         mTestableLooper.processAllMessages();
 
@@ -156,7 +163,8 @@ public class ReduceBrightColorsTileTest extends SysuiTestCase {
 
     @Test
     public void testActive() {
-        when(mReduceBrightColorsController.isReduceBrightColorsActivated()).thenReturn(true);
+        mSecureSettings.putIntForUser(Settings.Secure.REDUCE_BRIGHT_COLORS_ACTIVATED,
+                /* value= */ 1, mTile.getCurrentTileUser());
         mTile.refreshState();
         mTestableLooper.processAllMessages();
 
@@ -168,7 +176,8 @@ public class ReduceBrightColorsTileTest extends SysuiTestCase {
     @Test
     @RequiresFlagsDisabled(Flags.FLAG_EVEN_DIMMER)
     public void testActive_clicked_featureIsActivated() {
-        when(mReduceBrightColorsController.isReduceBrightColorsActivated()).thenReturn(false);
+        mSecureSettings.putIntForUser(Settings.Secure.REDUCE_BRIGHT_COLORS_ACTIVATED,
+                /* value= */ 1, mTile.getCurrentTileUser());
         mTile.refreshState();
         mTestableLooper.processAllMessages();
         // Validity check
@@ -183,7 +192,8 @@ public class ReduceBrightColorsTileTest extends SysuiTestCase {
     @Test
     @RequiresFlagsEnabled(Flags.FLAG_EVEN_DIMMER)
     public void testDialogueShownOnClick() {
-        when(mReduceBrightColorsController.isReduceBrightColorsActivated()).thenReturn(true);
+        mSecureSettings.putIntForUser(Settings.Secure.REDUCE_BRIGHT_COLORS_ACTIVATED,
+                /* value= */ 1, mTile.getCurrentTileUser());
         when(mReduceBrightColorsController.isInUpgradeMode(mContext.getResources()))
                 .thenReturn(true);
         mTile = new ReduceBrightColorsTile(
@@ -198,7 +208,8 @@ public class ReduceBrightColorsTileTest extends SysuiTestCase {
                 mStatusBarStateController,
                 mActivityStarter,
                 mQSLogger,
-                mExtraDimDialogManager
+                mExtraDimDialogManager,
+                mSecureSettings
         );
 
         mTile.initialize();
@@ -219,7 +230,8 @@ public class ReduceBrightColorsTileTest extends SysuiTestCase {
     @Test
     @RequiresFlagsEnabled(Flags.FLAG_EVEN_DIMMER)
     public void testDialogueShownOnLongClick() {
-        when(mReduceBrightColorsController.isReduceBrightColorsActivated()).thenReturn(true);
+        mSecureSettings.putIntForUser(Settings.Secure.REDUCE_BRIGHT_COLORS_ACTIVATED,
+                /* value= */ 1, mTile.getCurrentTileUser());
         when(mReduceBrightColorsController.isInUpgradeMode(mContext.getResources()))
                 .thenReturn(true);
         mTile = new ReduceBrightColorsTile(
@@ -234,7 +246,8 @@ public class ReduceBrightColorsTileTest extends SysuiTestCase {
                 mStatusBarStateController,
                 mActivityStarter,
                 mQSLogger,
-                mExtraDimDialogManager
+                mExtraDimDialogManager,
+                mSecureSettings
         );
 
         mTile.initialize();
@@ -254,7 +267,8 @@ public class ReduceBrightColorsTileTest extends SysuiTestCase {
 
     @Test
     public void testIcon_whenTileEnabled_isOnState() {
-        when(mReduceBrightColorsController.isReduceBrightColorsActivated()).thenReturn(true);
+        mSecureSettings.putIntForUser(Settings.Secure.REDUCE_BRIGHT_COLORS_ACTIVATED,
+                /* value= */ 1, mTile.getCurrentTileUser());
         mTile.refreshState();
         QSTile.BooleanState state = new QSTile.BooleanState();
 
@@ -265,7 +279,8 @@ public class ReduceBrightColorsTileTest extends SysuiTestCase {
 
     @Test
     public void testIcon_whenTileDisabled_isOffState() {
-        when(mReduceBrightColorsController.isReduceBrightColorsActivated()).thenReturn(false);
+        mSecureSettings.putIntForUser(Settings.Secure.REDUCE_BRIGHT_COLORS_ACTIVATED,
+                /* value= */ 0, mTile.getCurrentTileUser());
         mTile.refreshState();
         QSTile.BooleanState state = new QSTile.BooleanState();
 
