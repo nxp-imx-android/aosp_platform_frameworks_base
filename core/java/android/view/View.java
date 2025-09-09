@@ -31928,7 +31928,8 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
         // To avoid negatively impacting View performance, the latency and displacement metrics
         // are omitted.
         FrameworkStatsLog.write(FrameworkStatsLog.TOUCH_GESTURE_CLASSIFIED, getClass().getName(),
-                classification);
+                classification, (int) 0 /* latency_millis */, (float) 0 /* displacement_px */,
+                (float) 0 /* velocity_px_millis */);
     }
 
     /**
