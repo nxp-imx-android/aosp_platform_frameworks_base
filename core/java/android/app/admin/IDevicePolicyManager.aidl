@@ -36,6 +36,7 @@ import android.app.admin.IAuditLogEventsCallback;
 import android.app.admin.ManagedProfileProvisioningParams;
 import android.app.admin.FullyManagedDeviceProvisioningParams;
 import android.app.admin.ManagedSubscriptionsPolicy;
+import android.app.admin.MultiUserDeviceProvisioningParamsTransport;
 import android.app.admin.WifiSsidPolicy;
 import android.content.ComponentName;
 import android.content.Intent;
@@ -171,6 +172,8 @@ interface IDevicePolicyManager {
     void getRemoveWarning(in ComponentName policyReceiver, in RemoteCallback result, int userHandle);
     void removeActiveAdmin(in ComponentName policyReceiver, int userHandle);
     void forceRemoveActiveAdmin(in ComponentName policyReceiver, int userHandle);
+    @JavaPassthrough(annotation="@android.annotation.RequiresPermission(android.Manifest.permission.MANAGE_PROFILE_AND_DEVICE_OWNERS)")
+    void clearMultiUserDeviceManagement(in ComponentName admin);
     boolean hasGrantedPolicy(in ComponentName policyReceiver, int usesPolicy, int userHandle);
 
     void reportPasswordChanged(in PasswordMetrics metrics, int userId);
@@ -188,6 +191,7 @@ interface IDevicePolicyManager {
     String getDeviceOwnerName();
     void clearDeviceOwner(String packageName);
     int getDeviceOwnerUserId();
+    boolean isDeviceManaged();
 
     boolean setProfileOwner(in ComponentName who, int userHandle);
     ComponentName getProfileOwnerAsUser(int userHandle);
@@ -580,6 +584,8 @@ interface IDevicePolicyManager {
     UserHandle createManagedProfile(in ManagedProfileProvisioningParams provisioningParams, in String callerPackage);
     void finalizeCreateManagedProfile(in ManagedProfileProvisioningParams provisioningParams, in UserHandle managedProfileUser);
     void provisionFullyManagedDevice(in FullyManagedDeviceProvisioningParams provisioningParams, in String callerPackage);
+    @JavaPassthrough(annotation="@android.annotation.RequiresPermission(android.Manifest.permission.MANAGE_PROFILE_AND_DEVICE_OWNERS)")
+    void provisionMultiUserDevice(in MultiUserDeviceProvisioningParamsTransport provisioningParamsTransport, in String callerPackage);
 
     void finalizeWorkProfileProvisioning(in UserHandle managedProfileUser, in Account migratedAccount);
 

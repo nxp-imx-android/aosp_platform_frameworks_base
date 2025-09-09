@@ -1410,6 +1410,7 @@ package android.app.admin {
     method @RequiresPermission("android.permission.NOTIFY_PENDING_SYSTEM_UPDATE") public void notifyPendingSystemUpdate(long, boolean);
     method @RequiresPermission(android.Manifest.permission.INTERACT_ACROSS_USERS_FULL) public boolean packageHasActiveAdmins(String);
     method @RequiresPermission(anyOf={android.Manifest.permission.MANAGE_PROFILE_AND_DEVICE_OWNERS, android.Manifest.permission.PROVISION_DEMO_DEVICE}) public void provisionFullyManagedDevice(@NonNull android.app.admin.FullyManagedDeviceProvisioningParams) throws android.app.admin.ProvisioningException;
+    method @FlaggedApi("android.app.admin.flags.multi_user_management_device_provisioning") @RequiresPermission(android.Manifest.permission.MANAGE_PROFILE_AND_DEVICE_OWNERS) public void provisionMultiUserDevice(@NonNull android.app.admin.MultiUserDeviceProvisioningParams) throws android.app.admin.ProvisioningException;
     method @FlaggedApi("android.app.admin.flags.remove_managed_profile_enabled") @RequiresPermission(android.Manifest.permission.MANAGE_PROFILE_AND_DEVICE_OWNERS) public boolean removeManagedProfile();
     method @RequiresPermission(android.Manifest.permission.TRIGGER_LOST_MODE) public void sendLostModeLocationUpdate(@NonNull java.util.concurrent.Executor, @NonNull java.util.function.Consumer<java.lang.Boolean>);
     method @Deprecated @RequiresPermission(android.Manifest.permission.MANAGE_DEVICE_ADMINS) public boolean setActiveProfileOwner(@NonNull android.content.ComponentName, String) throws java.lang.IllegalArgumentException;
@@ -1432,6 +1433,7 @@ package android.app.admin {
     field public static final String ACTION_PROVISION_FINALIZATION = "android.app.action.PROVISION_FINALIZATION";
     field public static final String ACTION_PROVISION_FINANCED_DEVICE = "android.app.action.PROVISION_FINANCED_DEVICE";
     field public static final String ACTION_PROVISION_MANAGED_DEVICE_FROM_TRUSTED_SOURCE = "android.app.action.PROVISION_MANAGED_DEVICE_FROM_TRUSTED_SOURCE";
+    field @FlaggedApi("android.app.admin.flags.multi_user_management_device_provisioning") public static final String ACTION_PROVISION_MULTI_USER_DEVICE = "android.app.admin.action.PROVISION_MULTI_USER_DEVICE";
     field @RequiresPermission(android.Manifest.permission.MANAGE_FACTORY_RESET_PROTECTION) public static final String ACTION_RESET_PROTECTION_POLICY_CHANGED = "android.app.action.RESET_PROTECTION_POLICY_CHANGED";
     field @RequiresPermission(android.Manifest.permission.LAUNCH_DEVICE_MANAGER_SETUP) public static final String ACTION_ROLE_HOLDER_PROVISION_FINALIZATION = "android.app.action.ROLE_HOLDER_PROVISION_FINALIZATION";
     field @RequiresPermission(android.Manifest.permission.LAUNCH_DEVICE_MANAGER_SETUP) public static final String ACTION_ROLE_HOLDER_PROVISION_MANAGED_DEVICE_FROM_TRUSTED_SOURCE = "android.app.action.ROLE_HOLDER_PROVISION_MANAGED_DEVICE_FROM_TRUSTED_SOURCE";
@@ -1497,6 +1499,7 @@ package android.app.admin {
     field public static final int STATUS_HAS_PAIRED = 8; // 0x8
     field public static final int STATUS_HEADLESS_ONLY_SYSTEM_USER = 17; // 0x11
     field public static final int STATUS_HEADLESS_SYSTEM_USER_MODE_NOT_SUPPORTED = 16; // 0x10
+    field @FlaggedApi("android.app.admin.flags.multi_user_management_device_provisioning") public static final int STATUS_HEADLESS_SYSTEM_USER_MODE_REQUIRED = 19; // 0x13
     field public static final int STATUS_MANAGED_USERS_NOT_SUPPORTED = 9; // 0x9
     field public static final int STATUS_NONSYSTEM_USER_EXISTS = 5; // 0x5
     field public static final int STATUS_NOT_SYSTEM_USER = 7; // 0x7
@@ -1630,6 +1633,23 @@ package android.app.admin {
     method @NonNull public android.app.admin.ManagedProfileProvisioningParams.Builder setLeaveAllSystemAppsEnabled(boolean);
     method @NonNull public android.app.admin.ManagedProfileProvisioningParams.Builder setOrganizationOwnedProvisioning(boolean);
     method @NonNull public android.app.admin.ManagedProfileProvisioningParams.Builder setProfileName(@Nullable String);
+  }
+
+  @FlaggedApi("android.app.admin.flags.multi_user_management_device_provisioning") public final class MultiUserDeviceProvisioningParams {
+    method @NonNull public android.content.ComponentName getDeviceAdminComponentName();
+    method public long getLocalTime();
+    method @Nullable public java.util.Locale getLocale();
+    method @Nullable public String getTimeZone();
+    method public boolean isLeaveAllSystemAppsEnabled();
+  }
+
+  @FlaggedApi("android.app.admin.flags.multi_user_management_device_provisioning") public static final class MultiUserDeviceProvisioningParams.Builder {
+    ctor public MultiUserDeviceProvisioningParams.Builder(@NonNull android.content.ComponentName);
+    method @NonNull public android.app.admin.MultiUserDeviceProvisioningParams build();
+    method @NonNull public android.app.admin.MultiUserDeviceProvisioningParams.Builder setLeaveAllSystemAppsEnabled(boolean);
+    method @NonNull public android.app.admin.MultiUserDeviceProvisioningParams.Builder setLocalTime(long);
+    method @NonNull public android.app.admin.MultiUserDeviceProvisioningParams.Builder setLocale(@Nullable java.util.Locale);
+    method @NonNull public android.app.admin.MultiUserDeviceProvisioningParams.Builder setTimeZone(@Nullable String);
   }
 
   public final class NoArgsPolicyKey extends android.app.admin.PolicyKey {

@@ -58,6 +58,7 @@ class OwnersData {
 
     private static final String TAG_ROOT = "root";
     private static final String TAG_DEVICE_OWNER = "device-owner";
+    private static final String TAG_DEVICE_MANAGED = "device-managed";
     private static final String TAG_SYSTEM_UPDATE_POLICY = "system-update-policy";
     private static final String TAG_FREEZE_PERIOD_RECORD = "freeze-record";
     private static final String TAG_PENDING_OTA_INFO = "pending-ota-info";
@@ -109,6 +110,9 @@ class OwnersData {
     // Internal state for the device owner package.
     OwnerInfo mDeviceOwner;
     int mDeviceOwnerUserId = UserHandle.USER_NULL;
+
+    // Whether the device is managed. This can be true even if the device owner is null.
+    boolean mDeviceManaged = false;
 
     // Device owner type for a managed device.
     final ArrayMap<String, Integer> mDeviceOwnerTypes = new ArrayMap<>();
@@ -191,6 +195,13 @@ class OwnersData {
             mDeviceOwner.dump(pw);
             pw.println("User ID: " + mDeviceOwnerUserId);
             pw.decreaseIndent();
+            needBlank = true;
+        }
+        if (Flags.multiUserManagementDeviceProvisioning()) {
+            if (needBlank) {
+                pw.println();
+            }
+            pw.println("Is Device Managed: " + mDeviceManaged);
             needBlank = true;
         }
         if (mSystemUpdatePolicy != null) {
@@ -393,6 +404,13 @@ class OwnersData {
 
             }
 
+            if (Flags.multiUserManagementDeviceProvisioning()) {
+                if (mDeviceManaged) {
+                    out.startTag(null, TAG_DEVICE_MANAGED);
+                    out.endTag(null, TAG_DEVICE_MANAGED);
+                }
+            }
+
             if (!mDeviceOwnerTypes.isEmpty()) {
                 for (ArrayMap.Entry<String, Integer> entry : mDeviceOwnerTypes.entrySet()) {
                     out.startTag(null, TAG_DEVICE_OWNER_TYPE);
@@ -473,6 +491,9 @@ class OwnersData {
                 case TAG_DEVICE_OWNER:
                     mDeviceOwner = OwnerInfo.readFromXml(parser);
                     mDeviceOwnerUserId = UserHandle.USER_SYSTEM; // Set default
+                    break;
+                case TAG_DEVICE_MANAGED:
+                    mDeviceManaged = true;
                     break;
                 case TAG_DEVICE_OWNER_CONTEXT: {
                     mDeviceOwnerUserId =
