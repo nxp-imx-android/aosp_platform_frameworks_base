@@ -253,6 +253,16 @@ flag {
 }
 
 flag {
+    name: "enforce_strict_file_mode_check"
+    namespace: "backstage_power"
+    description: "Throw an IllegalArgumentException if the file mode passed to ParcelFileDescriptor#parseMode is unknown."
+    bug: "414387646"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "get_private_space_settings"
     namespace: "profile_experiences"
     description: "Guards a new Private Profile API in LauncherApps"
