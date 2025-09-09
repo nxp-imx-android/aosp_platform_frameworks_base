@@ -505,11 +505,15 @@ class ConnectedDisplayCujSmokeTests {
         launchAppFromTaskbar(externalDisplayId, browserApp)
         verifyActivityState(browserApp, WINDOWING_MODE_FREEFORM, externalDisplayId, visible = true)
 
-        // Verify connecting a display doesn't crash.
+        // Verify disconnecting a display doesn't crash.
         connectedDisplayRule.setupTestDisplays(0)
+        // Disconnecting the external display may triggers transitions (e.g., display windowing mode
+        // switch).
+        wmHelper.StateSyncBuilder().withAppTransitionIdle(DEFAULT_DISPLAY).waitForAndVerify()
+        instrumentation.waitForIdleSync()
 
-        // Verify disconnecting the display doesn't crash.
-        connectedDisplayRule.setupTestDisplay()
+        // Verify connecting the display doesn't crash.
+        setupTestDisplayAndWaitForTransitions()
     }
 
     // Extended: Device state should be recoverable when connecting and disconnecting an
