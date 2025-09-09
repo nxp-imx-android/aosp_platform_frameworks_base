@@ -20,16 +20,9 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
-import androidx.compose.material3.IconButtonDefaults
-import androidx.compose.material3.IconToggleButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
-import com.android.systemui.common.ui.compose.Icon
-import com.android.systemui.res.R
 import com.android.systemui.screencapture.common.ui.compose.RadioButtonGroup
 import com.android.systemui.screencapture.common.ui.compose.RadioButtonGroupItem
 import com.android.systemui.screencapture.common.ui.compose.Toolbar
@@ -64,22 +57,10 @@ fun PreCaptureToolbar(
             )
         }
 
-    val settingsButtonContentDescription =
-        stringResource(R.string.screen_capture_toolbar_settings_button_a11y)
     Toolbar(expanded = expanded, onCloseClick = onCloseClick, modifier = modifier) {
         Row {
             if (viewModel.screenRecordingSupported) {
-                IconToggleButton(
-                    checked = false,
-                    onCheckedChange = {},
-                    shape = IconButtonDefaults.smallSquareShape,
-                    modifier =
-                        Modifier.semantics {
-                            this.contentDescription = settingsButtonContentDescription
-                        },
-                ) {
-                    viewModel.icons?.let { Icon(icon = it.moreOptions) }
-                }
+                CaptureSettingsMenu(viewModel)
             }
 
             Spacer(Modifier.size(8.dp))

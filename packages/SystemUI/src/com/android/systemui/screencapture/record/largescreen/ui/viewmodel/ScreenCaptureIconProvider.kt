@@ -22,7 +22,7 @@ import android.content.Context
 import com.android.systemui.common.shared.model.Icon
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.UiBackground
-import com.android.systemui.res.R
+import com.android.systemui.res.R as SystemRes
 import javax.inject.Inject
 import kotlin.coroutines.CoroutineContext
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -38,6 +38,10 @@ data class ScreenCaptureIcons(
     val region: Icon,
     val appWindow: Icon,
     val moreOptions: Icon,
+    val showClicks: Icon,
+    val deviceAudio: Icon,
+    val microphone: Icon,
+    val frontCamera: Icon,
 )
 
 class ScreenCaptureIconProvider
@@ -56,14 +60,18 @@ constructor(
         flow {
                 emit(
                     ScreenCaptureIcons(
-                        screenshotToolbar = loadIcon(R.drawable.ic_screen_capture_camera),
+                        screenshotToolbar = loadIcon(SystemRes.drawable.ic_screen_capture_camera),
                         screenshotToolbarUnselected =
-                            loadIcon(R.drawable.ic_screen_capture_camera_outline),
-                        screenRecord = loadIcon(R.drawable.ic_screenrecord),
-                        fullscreen = loadIcon(R.drawable.ic_screen_capture_fullscreen),
-                        region = loadIcon(R.drawable.ic_screen_capture_region),
-                        appWindow = loadIcon(R.drawable.ic_screen_capture_window),
-                        moreOptions = loadIcon(R.drawable.ic_settings),
+                            loadIcon(SystemRes.drawable.ic_screen_capture_camera_outline),
+                        screenRecord = loadIcon(SystemRes.drawable.ic_screenrecord),
+                        fullscreen = loadIcon(SystemRes.drawable.ic_screen_capture_fullscreen),
+                        region = loadIcon(SystemRes.drawable.ic_screen_capture_region),
+                        appWindow = loadIcon(SystemRes.drawable.ic_screen_capture_window),
+                        moreOptions = loadIcon(SystemRes.drawable.ic_settings),
+                        showClicks = loadIcon(SystemRes.drawable.ic_web_traffic),
+                        deviceAudio = loadIcon(SystemRes.drawable.ic_speaker_rounded),
+                        microphone = loadIcon(SystemRes.drawable.ic_mic_expressive),
+                        frontCamera = loadIcon(SystemRes.drawable.ic_person_filled),
                     )
                 )
             }

@@ -421,6 +421,15 @@
     <!-- Content description for the settings button in the toolbar. [CHAR LIMIT=NONE] -->
     <string name="screen_capture_toolbar_settings_button_a11y">Screen capture settings</string>
 
+    <!-- Screen capture setting to show clicks and keys when recording [CHAR LIMIT=35] -->
+    <string name="screen_capture_show_clicks_and_keys">Show clicks and keys</string>
+    <!-- Screen capture setting to capture device audio when recording [CHAR LIMIT=35] -->
+    <string name="screen_capture_device_audio">Device audio</string>
+    <!-- Screen capture setting to capture microphone audio when recording [CHAR LIMIT=35] -->
+    <string name="screen_capture_microphone_audio">Microphone</string>
+    <!-- Screen capture setting to include the front camera when recording [CHAR LIMIT=35] -->
+    <string name="screen_capture_front_camera">Front camera</string>
+
     <!-- Text shown beneath partial screenshot region displaying the dimensions (width and height) of the area to be captured. [CHAR LIMIT=NONE] [SCREENSHOT=screen/7ytguTQdu3cEn4f] -->
     <string name="screen_capture_region_dimensions"><xliff:g example="210" id="width">%1$d</xliff:g> x <xliff:g example="129" id="height">%2$d</xliff:g></string>
 
