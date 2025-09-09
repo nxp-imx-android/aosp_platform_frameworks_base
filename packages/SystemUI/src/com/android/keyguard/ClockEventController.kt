@@ -247,7 +247,8 @@ constructor(
     private var largeClockOnSecondaryDisplay = false
 
     val dozeAmount = MutableStateFlow(0f)
-    val onClockBoundsChanged = MutableStateFlow<VRectF>(VRectF.ZERO)
+    val smallClockBounds = MutableStateFlow<VRectF>(VRectF.ZERO)
+    val largeClockBounds = MutableStateFlow<VRectF>(VRectF.ZERO)
     val smallClockMaxSize = MutableStateFlow<VPointF>(VPointF.ZERO)
     val largeClockMaxSize = MutableStateFlow<VPointF>(VPointF.ZERO)
 
@@ -316,8 +317,8 @@ constructor(
         object : ClockEventListener {
             override fun onChangeComplete() {}
 
-            override fun onBoundsChanged(currentBounds: VRectF) {
-                onClockBoundsChanged.value = currentBounds
+            override fun onBoundsChanged(currentBounds: VRectF, isLargeClock: Boolean) {
+                (if (isLargeClock) largeClockBounds else smallClockBounds).value = currentBounds
             }
 
             override fun onMaxSizeChanged(maxSize: VPointF, isLargeClock: Boolean) {
