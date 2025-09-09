@@ -21,7 +21,6 @@ import static android.app.CameraCompatTaskInfo.CAMERA_COMPAT_LANDSCAPE_DEVICE_IN
 import static android.app.CameraCompatTaskInfo.CAMERA_COMPAT_NONE;
 import static android.app.CameraCompatTaskInfo.CAMERA_COMPAT_PORTRAIT_DEVICE_IN_LANDSCAPE;
 import static android.app.CameraCompatTaskInfo.CAMERA_COMPAT_PORTRAIT_DEVICE_IN_PORTRAIT;
-import static android.app.CameraCompatTaskInfo.CAMERA_COMPAT_UNSPECIFIED;
 import static android.app.WindowConfiguration.ROTATION_UNDEFINED;
 import static android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN;
 import static android.app.WindowConfiguration.WINDOW_CONFIG_APP_BOUNDS;
@@ -32,6 +31,10 @@ import static android.content.res.Configuration.ORIENTATION_LANDSCAPE;
 import static android.content.res.Configuration.ORIENTATION_PORTRAIT;
 import static android.content.res.Configuration.ORIENTATION_UNDEFINED;
 import static android.view.Display.TYPE_EXTERNAL;
+import static android.view.Surface.ROTATION_0;
+import static android.view.Surface.ROTATION_180;
+import static android.view.Surface.ROTATION_270;
+import static android.view.Surface.ROTATION_90;
 
 import static com.android.server.wm.AppCompatConfiguration.MIN_FIXED_ORIENTATION_LETTERBOX_ASPECT_RATIO;
 import static com.android.server.wm.WindowManagerDebugConfig.TAG_WITH_CLASS_NAME;
@@ -238,40 +241,11 @@ final class AppCompatCameraSimReqOrientationPolicy implements AppCompatCameraSta
             return false;
         }
 
-        boolean needsRefresh = false;
         // CompatibilityInfo fields are static, so even if task or activity has been closed, this
         // state should be updated in case the app process is still alive.
         final CompatibilityInfo compatibilityInfo = mAtmService
                 .compatibilityInfoForPackageLocked(app.mInfo);
-        final CameraCompatibilityInfo.Builder cameraCompatibilityInfoBuilder =
-                new CameraCompatibilityInfo.Builder();
-        if (activityRecord != null) {
-            if (isCompatibilityTreatmentEnabledForActivity(activityRecord,
-                    /* checkOrientation= */ true)) {
-                // Full compatibility treatment will be applied: sandbox display rotation,
-                // rotate-and-crop the camera feed, and letterbox the app.
-                final int cameraCompatMode = getCameraCompatMode(activityRecord);
-                final int displayRotation = CameraCompatTaskInfo
-                        .getDisplayRotationFromCameraCompatMode(cameraCompatMode);
-                cameraCompatibilityInfoBuilder
-                        .setDisplayRotationSandbox(displayRotation)
-                        .setShouldLetterboxForCameraCompat(displayRotation != ROTATION_UNDEFINED)
-                        .setRotateAndCropRotation(getCameraRotationFromSandboxedDisplayRotation(
-                                displayRotation))
-                        // TODO(b/365725400): support landscape cameras.
-                        .setShouldOverrideSensorOrientation(false)
-                        .setShouldAllowTransformInverseDisplay(false);
-                needsRefresh = true;
-            } else if (mCameraStateMonitor.isCameraRunningForActivity(activityRecord)) {
-                // Sandbox only display rotation if needed, for external display.
-                cameraCompatibilityInfoBuilder.setDisplayRotationSandbox(
-                        mCameraDisplayRotationProvider.getCameraDeviceRotation())
-                        .setShouldAllowTransformInverseDisplay(false);
-                needsRefresh = true;
-            }
-        }
-
-        compatibilityInfo.cameraCompatibilityInfo = cameraCompatibilityInfoBuilder.build();
+        compatibilityInfo.cameraCompatibilityInfo = getCameraCompatibilityInfo(activityRecord);
         try {
             // TODO(b/380840084): Consider using a ClientTransaction for this update.
             app.getThread().updatePackageCompatibilityInfo(app.mInfo.packageName,
@@ -282,7 +256,55 @@ final class AppCompatCameraSimReqOrientationPolicy implements AppCompatCameraSta
             return false;
         }
 
-        return needsRefresh;
+        return CameraCompatibilityInfo.isCameraCompatModeActive(compatibilityInfo
+                .cameraCompatibilityInfo);
+    }
+
+    @NonNull
+    private CameraCompatibilityInfo getCameraCompatibilityInfo(@Nullable ActivityRecord
+            activityRecord) {
+        final CameraCompatibilityInfo.Builder cameraCompatibilityInfoBuilder =
+                new CameraCompatibilityInfo.Builder();
+        if (activityRecord != null) {
+            if (isCompatibilityTreatmentEnabledForActivity(activityRecord,
+                    /* checkOrientation= */ true)) {
+                // Full compatibility treatment will be applied: sandbox display rotation,
+                // rotate-and-crop the camera feed, and letterbox the app.
+                final int displayRotation = getDesiredDisplaySandboxForCompat(activityRecord);
+                cameraCompatibilityInfoBuilder
+                        .setDisplayRotationSandbox(displayRotation)
+                        .setShouldLetterboxForCameraCompat(displayRotation != ROTATION_UNDEFINED)
+                        .setRotateAndCropRotation(getCameraRotationFromSandboxedDisplayRotation(
+                                displayRotation))
+                        // TODO(b/365725400): support landscape cameras.
+                        .setShouldOverrideSensorOrientation(false)
+                        .setShouldAllowTransformInverseDisplay(false);
+            } else if (mCameraStateMonitor.isCameraRunningForActivity(activityRecord)) {
+                // Sandbox only display rotation if needed, for external display.
+                cameraCompatibilityInfoBuilder.setDisplayRotationSandbox(
+                                mCameraDisplayRotationProvider.getCameraDeviceRotation())
+                        .setShouldAllowTransformInverseDisplay(false);
+            }
+        }
+
+        return cameraCompatibilityInfoBuilder.build();
+    }
+
+    /**
+     * {@link Surface.Rotation} that the app likely expects given its requested orientation.
+     */
+    @Surface.Rotation
+    private int getDesiredDisplaySandboxForCompat(@NonNull ActivityRecord activity) {
+        final int appOrientation = activity.getRequestedConfigurationOrientation();
+        if (appOrientation == ORIENTATION_PORTRAIT) {
+            return ROTATION_0;
+        } else if (appOrientation == ORIENTATION_LANDSCAPE) {
+            // TODO(b/390183440): differentiate between LANDSCAPE and REVERSE_LANDSCAPE
+            //  requested orientation for landscape apps.
+            return ROTATION_90;
+        }
+
+        return ROTATION_UNDEFINED;
     }
 
     /**
@@ -313,16 +335,16 @@ final class AppCompatCameraSimReqOrientationPolicy implements AppCompatCameraSta
 
     private static int getRotationToDegrees(@Surface.Rotation int rotation) {
         switch (rotation) {
-            case Surface.ROTATION_0 -> {
+            case ROTATION_0 -> {
                 return 0;
             }
-            case Surface.ROTATION_90 -> {
+            case ROTATION_90 -> {
                 return 90;
             }
-            case Surface.ROTATION_180 -> {
+            case ROTATION_180 -> {
                 return 180;
             }
-            case Surface.ROTATION_270 -> {
+            case ROTATION_270 -> {
                 return 270;
             }
             default -> {
@@ -335,16 +357,16 @@ final class AppCompatCameraSimReqOrientationPolicy implements AppCompatCameraSta
     private static int getRotationDegreesToEnum(int rotationDegrees) {
         switch (rotationDegrees) {
             case 0 -> {
-                return Surface.ROTATION_0;
+                return ROTATION_0;
             }
             case 90 -> {
-                return Surface.ROTATION_90;
+                return ROTATION_90;
             }
             case 180 -> {
-                return Surface.ROTATION_180;
+                return ROTATION_180;
             }
             case 270 -> {
-                return Surface.ROTATION_270;
+                return ROTATION_270;
             }
             default -> {
                 return ROTATION_UNDEFINED;
@@ -387,14 +409,9 @@ final class AppCompatCameraSimReqOrientationPolicy implements AppCompatCameraSta
         // Camera compat should direct aspect ratio when in camera compat mode, unless an app has a
         // different camera compat aspect ratio set: this allows per-app camera compat override
         // aspect ratio to be smaller than the default.
-        return isInCameraCompatMode(activity)
+        return getCameraCompatibilityInfo(activity).shouldLetterboxForCameraCompat()
                 && !activity.mAppCompatController.getCameraOverrides()
                         .isOverrideMinAspectRatioForCameraEnabled();
-    }
-
-    boolean isInCameraCompatMode(@NonNull ActivityRecord activity) {
-        return getCameraCompatMode(activity) != CAMERA_COMPAT_UNSPECIFIED
-                && getCameraCompatMode(activity) != CAMERA_COMPAT_NONE;
     }
 
     float getCameraCompatAspectRatio(@NonNull ActivityRecord activityRecord) {
