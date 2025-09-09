@@ -1606,13 +1606,14 @@ class DesktopTasksController(
         wct: WindowContainerTransaction,
         displayId: Int,
         taskInfo: RunningTaskInfo,
-    ): ((IBinder) -> Unit) {
+    ): ((IBinder) -> Unit)? {
         val taskId = taskInfo.taskId
         val userId = taskInfo.userId
         val repository = userRepositories.getProfile(userId)
         val deskId = repository.getDeskIdForTask(taskInfo.taskId)
         if (deskId == null && DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
-            error("Did not find desk for task: $taskId")
+            logW("onDesktopWindowClose: desk not found for task: $taskId")
+            return null
         }
         snapEventHandler.removeTaskIfTiled(displayId, taskId)
         val shouldExitDesktop =
