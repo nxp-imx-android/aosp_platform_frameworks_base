@@ -149,9 +149,7 @@ class DesktopModeKeyGestureHandler(
                     val displayId = taskInfo.displayId
                     val displayLayout = displayController.getDisplayLayout(displayId)
                     if (displayLayout == null) {
-                        logW(
-                            "Display %d is not found, task displayId might be stale", displayId
-                        )
+                        logW("Display %d is not found, task displayId might be stale", displayId)
                         return
                     }
                     mainExecutor.execute {
@@ -179,18 +177,7 @@ class DesktopModeKeyGestureHandler(
             }
             KeyGestureEvent.KEY_GESTURE_TYPE_QUIT_FOCUSED_DESKTOP_TASK -> {
                 logV("Key gesture KEY_GESTURE_TYPE_QUIT_FOCUSED_DESKTOP_TASK is handled")
-                val focusedTask = getGloballyFocusedDesktopTask()
-                if (focusedTask == null) {
-                    logV(
-                        "Globally focused desktop task is not found to close. focusedDisplay=%d",
-                        focusTransitionObserver.globallyFocusedDisplayId,
-                    )
-                    return
-                }
-                logV("Found focused desktop task %d to close", focusedTask.taskId)
-                mainExecutor.execute {
-                    desktopModeWindowDecorViewModel.get().closeTask(focusedTask)
-                }
+                quitFocusedDesktopTask()
             }
             KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_FULLSCREEN -> {
                 logV("Key gesture TOGGLE_FULLSCREEN is handled")
@@ -205,6 +192,21 @@ class DesktopModeKeyGestureHandler(
                 }
             }
         }
+    }
+
+    /** Quits the focussed task in desktop mode */
+    public fun quitFocusedDesktopTask(): Boolean {
+        val focusedTask = getGloballyFocusedDesktopTask()
+        if (focusedTask == null) {
+            logV(
+                "Globally focused desktop task is not found to close. focusedDisplayId=%d",
+                focusTransitionObserver.globallyFocusedDisplayId,
+            )
+            return false
+        }
+        logV("Found focused desktop task %d to close", focusedTask.taskId)
+        mainExecutor.execute { desktopModeWindowDecorViewModel.get().closeTask(focusedTask) }
+        return true
     }
 
     //  TODO: b/364154795 - wait for the completion of moveToNextDisplay transition, otherwise it
