@@ -353,6 +353,8 @@ class PackageManagerShellCommand extends ShellCommand {
                     return runSupportsMultipleUsers();
                 case "get-max-users":
                     return runGetMaxUsers();
+                case "get-remaining-user-count":
+                    return runGetRemainingCreatableUserCount();
                 case "get-max-running-users":
                     return runGetMaxRunningUsers();
                 case "set-home-activity":
@@ -3390,15 +3392,74 @@ class PackageManagerShellCommand extends ShellCommand {
     }
 
     public int runSupportsMultipleUsers() {
-        getOutPrintWriter().println("Is multiuser supported: "
+        getOutPrintWriter().println("Are multiple switchable users supported: "
                 + UserManager.supportsMultipleUsers());
         return 0;
     }
 
-    public int runGetMaxUsers() {
-        getOutPrintWriter().println("Maximum supported users: "
-                + UserManager.getMaxSupportedUsers());
-        return 0;
+    /** Implementation of get-max-users */
+    public int runGetMaxUsers() throws RemoteException {
+        String userType = null;
+        String opt;
+        while ((opt = getNextOption()) != null) {
+            if ("--user-type".equals(opt)) {
+                if (!android.multiuser.Flags.consistentMaxUsers()) {
+                    getErrPrintWriter().println("Error: consistent_max_users flag is not enabled");
+                    return 1;
+                }
+                if (userType != null) {
+                    getErrPrintWriter().println("Error: more than one user type was specified");
+                    return 1;
+                }
+                userType = getNextArgRequired();
+            } else {
+                getErrPrintWriter().println("Error: unknown option " + opt);
+                return 1;
+            }
+        }
+        IUserManager um = IUserManager.Stub.asInterface(
+                ServiceManager.getService(Context.USER_SERVICE));
+        if (userType == null) {
+            getOutPrintWriter().println("Maximum supported switchable users: "
+                    + UserManager.getMaxSwitchableUsers());
+            return 0;
+        } else {
+            getOutPrintWriter().println("Maximum supported users of type " + userType + ": "
+                    + um.getCurrentAllowedNumberOfUsers(userType));
+            return 0;
+        }
+    }
+
+    /** Implementation of get-remaining-user-count */
+    public int runGetRemainingCreatableUserCount() throws RemoteException {
+        if (!android.multiuser.Flags.consistentMaxUsers()) {
+            getErrPrintWriter().println("Error: consistent_max_users flag is not enabled");
+            return 1;
+        }
+        String userType = null;
+        String opt;
+        while ((opt = getNextOption()) != null) {
+            if ("--user-type".equals(opt)) {
+                if (userType != null) {
+                    getErrPrintWriter().println("Error: more than one user type was specified");
+                    return 1;
+                }
+                userType = getNextArgRequired();
+            } else {
+                getErrPrintWriter().println("Error: unknown option " + opt);
+                return 1;
+            }
+        }
+        IUserManager um = IUserManager.Stub.asInterface(
+                ServiceManager.getService(Context.USER_SERVICE));
+        if (userType != null) {
+            getOutPrintWriter().println("Remaining creatable users of type " + userType + ": "
+                    + um.getRemainingCreatableUserCount(userType));
+            return 0;
+        } else {
+            getErrPrintWriter().println("No user type was specified");
+            return 1;
+        }
     }
 
     public int runGetMaxRunningUsers() {
@@ -5115,7 +5176,17 @@ class PackageManagerShellCommand extends ShellCommand {
         pw.println("      --all: display all restrictions for the given user");
         pw.println("          This option is used without restriction key");
         pw.println("");
-        pw.println("  get-max-users");
+        if (android.multiuser.Flags.consistentMaxUsers()) {
+            pw.println("  get-max-users [--user-type USER_TYPE]");
+            pw.println("    Returns the current maximum allowed number of users of type USER_TYPE.");
+            pw.println("    If USER_TYPE is not specified, will instead return the number of");
+            pw.println("    supported regular switchable users (excluding guest and demo users).");
+            pw.println("");
+            pw.println("  get-remaining-user-count --user-type USER_TYPE");
+            pw.println("    Returns the number of users of the given USER_TYPE that can be created.");
+        } else {
+            pw.println("  get-max-users");
+        }
         pw.println("");
         pw.println("  get-max-running-users");
         pw.println("");
