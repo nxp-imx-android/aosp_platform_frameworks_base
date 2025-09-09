@@ -547,7 +547,9 @@ public class InternetDialogDelegateLegacy implements
             Log.d(TAG, "setMobileDataLayout, isCarrierNetworkActive = "
                     + internetContent.mIsCarrierNetworkActive);
         }
-
+        if (mMobileTitleText.getText().isEmpty()) {
+            mMobileNetworkLayout.setVisibility(View.GONE);
+        }
         if (!internetContent.mHasActiveSubIdOnDds && (!internetContent.mIsWifiEnabled
                 || !internetContent.mIsCarrierNetworkActive)) {
             mMobileNetworkLayout.setVisibility(View.GONE);
@@ -556,10 +558,11 @@ public class InternetDialogDelegateLegacy implements
             }
         } else {
             mMobileNetworkLayout.setVisibility(View.VISIBLE);
-            if (internetContent.mCurrentSatelliteState != SATELLITE_NOT_STARTED) {
+            if (internetContent.mCurrentSatelliteState > SATELLITE_NOT_STARTED) {
                 mMobileTitleText.setText(R.string.satellite_network_title_text);
                 mMobileDataToggle.setVisibility(View.INVISIBLE);
                 mMobileToggleDivider.setVisibility(View.INVISIBLE);
+                mMobileSummaryText.setText("");
                 if (internetContent.mCurrentSatelliteState
                         == InternetDetailsContentController.SATELLITE_CONNECTED) {
                     mMobileSummaryText.setText(R.string.mobile_data_connection_active);

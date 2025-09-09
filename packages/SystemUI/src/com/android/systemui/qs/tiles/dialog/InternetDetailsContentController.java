@@ -249,6 +249,9 @@ public class InternetDetailsContentController implements AccessPointController.A
                                 SATELLITE_CONNECTED;
                         default -> SATELLITE_STARTED;
                     };
+                    if (mCallback != null) {
+                        mCallback.onSatelliteModemStateChanged(state);
+                    }
                 }
             };
 
