@@ -55,7 +55,6 @@ import android.os.RemoteException;
 import android.os.UserHandle;
 import android.os.test.TestLooper;
 import android.platform.test.annotations.Presubmit;
-import android.platform.test.annotations.RequiresFlagsEnabled;
 import android.platform.test.flag.junit.CheckFlagsRule;
 import android.platform.test.flag.junit.DeviceFlagsValueProvider;
 import android.testing.AndroidTestingRunner;
@@ -67,7 +66,6 @@ import androidx.annotation.Nullable;
 import androidx.test.InstrumentationRegistry;
 import androidx.test.filters.SmallTest;
 
-import com.android.server.biometrics.Flags;
 import com.android.server.biometrics.log.BiometricContext;
 import com.android.server.biometrics.log.BiometricLogger;
 import com.android.server.biometrics.nano.BiometricSchedulerProto;
@@ -804,7 +802,6 @@ public class BiometricSchedulerTest {
     }
 
     @Test
-    @RequiresFlagsEnabled(Flags.FLAG_BIOMETRIC_SCHEDULER_FIX)
     public void testBiometricQueueHung_watchdogTriggered_noUserSwitch() {
         final int currentUserId = mCurrentUserId;
         final int newUserId = 10;
