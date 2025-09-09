@@ -1814,7 +1814,8 @@ class ActivityMetricsLogger {
         // Beginning a launch is timing sensitive and so should be observed as soon as possible.
         mLaunchObserver.onActivityLaunched(info.mLaunchingState.mStartUptimeNs,
                 info.mLastLaunchedActivity.mActivityComponent, temperature,
-                info.mLastLaunchedActivity.mUserId, info.mLastLaunchedActivity.processName);
+                info.mLastLaunchedActivity.processName,
+                info.mLastLaunchedActivity.getUid());
 
         Trace.traceEnd(Trace.TRACE_TAG_ACTIVITY_MANAGER);
     }
