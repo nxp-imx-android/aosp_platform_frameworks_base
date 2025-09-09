@@ -45,6 +45,7 @@ import android.webkit.WebViewZygote;
 import com.android.sdksandbox.flags.Flags;
 
 import dalvik.annotation.optimization.CriticalNative;
+import dalvik.annotation.optimization.FastNative;
 import dalvik.system.VMDebug;
 import dalvik.system.VMRuntime;
 
@@ -1127,6 +1128,7 @@ public class Process {
         }
     }
 
+    @FastNative
     private static native void setThreadPriorityNative(int tid,
             @IntRange(from = -20, to = THREAD_PRIORITY_LOWEST) int priority)
             throws IllegalArgumentException, SecurityException;
@@ -1141,9 +1143,11 @@ public class Process {
      * @hide
      */
     @RavenwoodRedirect
+    @FastNative
     public static final native void setCanSelfBackground(boolean backgroundOk);
 
     @RavenwoodRedirect
+    @CriticalNative
     private static native boolean getCanSelfBackground();
 
     /**
@@ -1339,6 +1343,7 @@ public class Process {
      */
     @RavenwoodRedirect
     @IntRange(from = -20, to = THREAD_PRIORITY_LOWEST)
+    @FastNative
     public static final native int getThreadPriority(int tid)
             throws IllegalArgumentException;
 
