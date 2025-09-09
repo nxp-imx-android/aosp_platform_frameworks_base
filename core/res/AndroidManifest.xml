@@ -3503,6 +3503,17 @@
     <permission android:name="android.permission.CONFIGURE_INTERACT_ACROSS_PROFILES"
         android:protectionLevel="signature|role" />
 
+    <!-- Required to be able to interact with other applications via IP packets on the loopback
+        interface.
+        @FlaggedApi(android.permission.flags.Flags.FLAG_USE_LOOPBACK_INTERFACE_PERMISSION_ENABLED)
+        <p>Protection level: normal -->
+    <permission
+        android:name="android.permission.USE_LOOPBACK_INTERFACE"
+        android:description="@string/permdesc_use_loopback_interface"
+        android:label="@string/permlab_use_loopback_interface"
+        android:protectionLevel="normal"
+        android:featureFlag="android.permission.flags.use_loopback_interface_permission_enabled" />
+
     <!-- @SystemApi @hide Allows an application to call APIs that allow it to query and manage
          users on the device. This permission is not available to
          third party applications. -->
