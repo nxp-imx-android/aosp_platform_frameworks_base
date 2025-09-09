@@ -98,6 +98,14 @@ public class BubbleData {
         BubbleBarLocation mBubbleBarLocation;
         // Pair with Bubble and @DismissReason Integer
         final List<Pair<Bubble, Integer>> removedBubbles = new ArrayList<>();
+        /**
+         * The closing Bubble of a jumpcut Bubble switch transition animation.
+         *
+         * This is different from {@link #removedBubbles} that the applying of this change will not
+         * cleanup the TaskView, but will only notify the listener about the removal.
+         */
+        @Nullable
+        Bubble jumpcutBubbleSwitchClosingBubble;
 
         // A read-only view of the bubbles list, changes there will be reflected here.
         final List<Bubble> bubbles;
@@ -114,6 +122,7 @@ public class BubbleData {
                     || addedBubble != null
                     || updatedBubble != null
                     || !removedBubbles.isEmpty()
+                    || jumpcutBubbleSwitchClosingBubble != null
                     || addedOverflowBubble != null
                     || removedOverflowBubble != null
                     || orderChanged
@@ -127,6 +136,10 @@ public class BubbleData {
 
         void bubbleRemoved(Bubble bubbleToRemove, @DismissReason int reason) {
             removedBubbles.add(new Pair<>(bubbleToRemove, reason));
+        }
+
+        void setJumpcutBubbleSwitchClosingBubble(Bubble closingBubble) {
+            jumpcutBubbleSwitchClosingBubble = closingBubble;
         }
 
         /**
@@ -167,6 +180,11 @@ public class BubbleData {
                             new RemovedBubble(pair.first.getKey(), pair.second));
                 }
             }
+            if (jumpcutBubbleSwitchClosingBubble != null) {
+                bubbleBarUpdate.removedBubbles.add(new RemovedBubble(
+                        jumpcutBubbleSwitchClosingBubble.getKey(),
+                        Bubbles.DISMISS_JUMPCUT_BUBBLE_SWITCH));
+            }
             if (orderChanged) {
                 // Include the new order
                 for (int i = 0; i < bubbles.size(); i++) {
@@ -176,6 +194,8 @@ public class BubbleData {
             bubbleBarUpdate.showOverflowChanged = showOverflowChanged;
             bubbleBarUpdate.showOverflow = !overflowBubbles.isEmpty();
             bubbleBarUpdate.bubbleBarLocation = mBubbleBarLocation;
+            bubbleBarUpdate.suppressAnimation = addedBubble != null
+                    && addedBubble.isJumpcutBubbleSwitching();
             return bubbleBarUpdate;
         }
 
@@ -611,6 +631,20 @@ public class BubbleData {
         }
         mStateChange.mBubbleBarLocation = bubbleBarLocation;
         dispatchPendingChanges();
+    }
+
+    /**
+     * Notifies about the jumpcut Bubble switching, which contains
+     *  - All info in the opening Bubble has completed loading.
+     *  - The BubbleBar Icon of the closing Bubble can be removed.
+     */
+    void jumpcutBubbleSwitch(Bubble openingBubble, Bubble closingBubble) {
+        // Notify launcher about the closing Bubble, but don't actually remove its TaskView yet
+        // because we still need it to be visible until the opening Bubble is fully visible.
+        // The cleanup will be done onTaskVanished.
+        mStateChange.setJumpcutBubbleSwitchClosingBubble(closingBubble);
+        notificationEntryUpdated(openingBubble, /* suppressFlyout= */ true,
+                /* showInShade= */ false);
     }
 
     /** Dismisses the bubble with the matching key, if it exists. */
