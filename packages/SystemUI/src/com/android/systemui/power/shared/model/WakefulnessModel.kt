@@ -3,6 +3,7 @@ package com.android.systemui.power.shared.model
 import com.android.systemui.keyguard.KeyguardService
 import com.android.systemui.log.table.Diffable
 import com.android.systemui.log.table.TableRowLogger
+import com.android.systemui.Flags
 
 /**
  * Models whether the device is awake or asleep, along with information about why we're in that
@@ -41,6 +42,13 @@ data class WakefulnessModel(
     fun isAwake() =
         internalWakefulnessState == WakefulnessState.AWAKE ||
             internalWakefulnessState == WakefulnessState.STARTING_TO_WAKE
+
+    fun isAwakeForAnimations() =
+        if (Flags.wakefulnessForAnimations()) {
+            internalWakefulnessState == WakefulnessState.AWAKE
+        } else {
+            isAwake()
+        }
 
     fun isAsleep() = !isAwake()
 

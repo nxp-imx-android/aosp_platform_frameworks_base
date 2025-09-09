@@ -2208,3 +2208,13 @@ flag {
     description: "Enable the animated icon in cue bar"
     bug: "443197064"
 }
+
+flag {
+    name: "wakefulness_for_animations"
+    namespace: "systemui"
+    description: "Changes the signal used for animation wakefulness on keyguard"
+    bug: "445366741"
+    metadata {
+         purpose: PURPOSE_BUGFIX
+    }
+}
