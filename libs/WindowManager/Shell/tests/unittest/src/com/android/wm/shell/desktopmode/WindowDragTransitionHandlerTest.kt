@@ -117,4 +117,12 @@ class WindowDragTransitionHandlerTest : ShellTestCase() {
         verify(mockMultiDisplayDragMoveIndicatorController)
             .onDragEnd(eq(10), eq(mockFinishTransaction))
     }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_WINDOW_DROP_SMOOTH_TRANSITION)
+    fun onTransitionConsumed_disposesIndicators() {
+        handler.onTransitionConsumed(mockTransition, false, mockFinishTransaction)
+        verify(mockMultiDisplayDragMoveIndicatorController)
+            .disposeAllIndicators(mockFinishTransaction)
+    }
 }

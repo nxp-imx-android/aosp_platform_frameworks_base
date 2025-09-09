@@ -136,4 +136,16 @@ class MultiDisplayDragMoveIndicatorController(
                 }
             }
     }
+
+    /**
+     * Disposes all of the indicator surfaces with the [transaction].
+     */
+    fun disposeAllIndicators(transaction: SurfaceControl.Transaction) {
+        dragIndicators.values.forEach { innerIndicatorMap ->
+            innerIndicatorMap.values.forEach { indicator ->
+                indicator.dispose(transaction)
+            }
+        }
+        dragIndicators.clear()
+    }
 }
