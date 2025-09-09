@@ -26,7 +26,6 @@ import androidx.annotation.VisibleForTesting
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
@@ -246,7 +245,7 @@ fun StatusBarRoot(
         return
     }
 
-    Box(modifier.fillMaxSize()) {
+    Box { // TODO(b/433578931): Remove this Box once the full solution for b/433578931 is settled.
         AndroidView(
             factory = { context ->
                 val inflater = LayoutInflater.from(context)
