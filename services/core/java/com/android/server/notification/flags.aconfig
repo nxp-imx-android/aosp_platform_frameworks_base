@@ -194,15 +194,7 @@ flag {
   }
 }
 
-flag {
-  name: "log_visually_changed_updates"
-  namespace: "systemui"
-  description: "Logs a notification update if it is visually changed"
-  bug: "420989666"
-  metadata {
-    purpose: PURPOSE_BUGFIX
-  }
-}
+
 
 flag {
   name: "random_conversation_ids"
