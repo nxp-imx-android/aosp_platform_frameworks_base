@@ -38,6 +38,7 @@ import android.view.View.OnLongClickListener
 import android.view.View.OnTouchListener
 import android.view.ViewConfiguration
 import android.view.WindowManager
+import android.view.WindowManager.LayoutParams.INPUT_FEATURE_SPY
 import android.view.WindowManager.TRANSIT_CHANGE
 import android.view.WindowManagerGlobal
 import android.window.DesktopExperienceFlags
@@ -469,6 +470,12 @@ constructor(
             }
             inputFeatures =
                 inputFeatures or WindowManager.LayoutParams.INPUT_FEATURE_DISPLAY_TOPOLOGY_AWARE
+        } else if (
+            isAppHandle && DesktopExperienceFlags.ENABLE_REMOVE_STATUS_BAR_INPUT_LAYER.isTrue
+        ) {
+            // Add input feature spy flag if caption is an app handle so that input is not stolen
+            // when motion event exits caption view.
+            inputFeatures = inputFeatures or INPUT_FEATURE_SPY
         }
 
         // The configuration used to layout the window decoration. A copy is made instead of using

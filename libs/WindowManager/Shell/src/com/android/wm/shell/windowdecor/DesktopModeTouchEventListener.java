@@ -331,13 +331,8 @@ public class DesktopModeTouchEventListener
                     viewName, mIsCustomHeaderGesture, mIsResizeGesture);
             return false;
         }
-        if (mInputManager != null) {
-            ViewRootImpl viewRootImpl = v.getViewRootImpl();
-            if (viewRootImpl != null) {
-                // Pilfer so that windows below receive cancellations for this gesture.
-                mInputManager.pilferPointers(viewRootImpl.getInputToken());
-            }
-        }
+        // Pilfer so that windows below receive cancellations for this gesture.
+        pilferPointers(v);
         if (isUpOrCancel) {
             // Gesture is finished, reset state.
             mIsCustomHeaderGesture = false;
@@ -348,6 +343,12 @@ public class DesktopModeTouchEventListener
         } else {
             return mHeaderDragDetector.onMotionEvent(v, e);
         }
+    }
+
+    private void pilferPointers(@NonNull View v) {
+        final ViewRootImpl viewRootImpl = v.getViewRootImpl();
+        if (mInputManager == null || viewRootImpl == null) return;
+        mInputManager.pilferPointers(viewRootImpl.getInputToken());
     }
 
     @Override
