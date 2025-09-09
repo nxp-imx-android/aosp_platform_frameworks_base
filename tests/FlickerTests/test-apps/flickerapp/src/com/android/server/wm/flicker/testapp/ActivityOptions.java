@@ -52,6 +52,10 @@ public class ActivityOptions {
             /** Intent action used to toggle activity orientation. */
             public static final String ACTION_TOGGLE_ORIENTATION =
                     FLICKER_APP_PACKAGE + ".ImeActivity.TOGGLE_ORIENTATION";
+
+            /** Intent action used to start an adjacent activity to start split screen. */
+            public static final String ACTION_START_ADJACENT_ACTIVITY =
+                    FLICKER_APP_PACKAGE + ".ImeActivity.START_ADJACENT_ACTIVITY";
         }
 
         public static class AutoFocusActivity {
