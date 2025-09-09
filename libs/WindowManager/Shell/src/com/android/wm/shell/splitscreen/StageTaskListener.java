@@ -295,7 +295,6 @@ public class StageTaskListener implements ShellTaskOrganizer.TaskListener {
         ProtoLog.d(WM_SHELL_SPLIT_SCREEN, "onTaskInfoChanged: taskId=%d taskAct=%s "
                         + "stageId=%s displayId=%d",
                 taskInfo.taskId, taskInfo.baseActivity, stageTypeToString(mId), taskInfo.displayId);
-        mWindowDecorViewModel.ifPresent(viewModel -> viewModel.onTaskInfoChanged(taskInfo));
         if (mRootTaskInfo.taskId == taskInfo.taskId) {
             mRootTaskInfo = taskInfo;
         } else if (taskInfo.parentTaskId == mRootTaskInfo.taskId) {
@@ -318,6 +317,8 @@ public class StageTaskListener implements ShellTaskOrganizer.TaskListener {
             throw new IllegalArgumentException(this + "\n Unknown task: " + taskInfo
                     + "\n mRootTaskInfo: " + mRootTaskInfo);
         }
+        // Only send onTaskInfoChanged signal after the split state is updated
+        mWindowDecorViewModel.ifPresent(viewModel -> viewModel.onTaskInfoChanged(taskInfo));
     }
 
     @Override
