@@ -4736,6 +4736,9 @@ final class ActivityRecord extends WindowToken {
             if (!myBounds.equals(nextBounds)) {
                 // Mark as no animation, so these changes won't merge into playing transition.
                 if (mTransitionController.inPlayingTransition(this)) {
+                    // This handles the case where the top activity becomes invisible, so the next
+                    // activity may not have been collected yet.
+                    mTransitionController.collect(next);
                     mTransitionController.setNoAnimation(next);
                     mTransitionController.setNoAnimation(this);
                 }
