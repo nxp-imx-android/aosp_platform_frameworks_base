@@ -3178,6 +3178,9 @@ public class BubbleStackView extends FrameLayout
             return;
         }
 
+        final boolean isJumpcutBubbleSwitching = (mExpandedBubble instanceof Bubble bubble)
+                && bubble.isJumpcutBubbleSwitching();
+
         // The surface contains a screenshot of the animating out bubble, so we just need to animate
         // it out (and then release the GraphicBuffer).
         PhysicsAnimator.getInstance(mAnimatingOutSurfaceContainer).cancel();
@@ -3187,10 +3190,14 @@ public class BubbleStackView extends FrameLayout
 
         if (mExpandedBubble != null) {
             BubbleLog.d("BubbleStackView.animateSwitchBubbles() switchingTo b=%s",
-                    mExpandedBubble.getKey());
+                    mExpandedBubble.getKey() + " isJumpcut=" + isJumpcutBubbleSwitching);
         }
 
-        if (mPositioner.showBubblesVertically()) {
+        if (isJumpcutBubbleSwitching) {
+            // Immediately invoke the ending frame to act as a jumpcut.
+            mAnimatingOutSurfaceAlphaAnimator.end();
+            mExpandedViewAlphaAnimator.end();
+        } else if (mPositioner.showBubblesVertically()) {
             float translationX = mStackAnimationController.isStackOnLeftSide()
                     ? mAnimatingOutSurfaceContainer.getTranslationX() + mBubbleSize * 2
                     : mAnimatingOutSurfaceContainer.getTranslationX();
@@ -3213,6 +3220,37 @@ public class BubbleStackView extends FrameLayout
                 getState());
         mExpandedViewContainer.setAlpha(1f);
         mExpandedViewContainer.setVisibility(View.VISIBLE);
+
+        final Runnable endRunnable = () -> {
+            mExpandedViewTemporarilyHidden = false;
+            mIsBubbleSwitchAnimating = false;
+            mExpandedViewContainer.setAnimationMatrix(null);
+
+            // When a bubble is being dragged, the expanded view is temporarily hidden.
+            // If the motion ends with dismissing the bubble, with multiple bubbles in
+            // the stack, we'll end up here to switch to the new bubble. However, the
+            // expanded view animation might not actually set the z ordering for the
+            // expanded view correctly, because the view may still be temporarily
+            // hidden. So set it again here.
+            final BubbleExpandedView expandedView = getExpandedView();
+            if (expandedView != null) {
+                expandedView.setSurfaceZOrderedOnTop(false);
+                expandedView.setAnimating(false);
+            }
+        };
+        final Runnable endOrCancelRunnable = () -> {
+            if (mAfterTransitionRunnable != null) {
+                mAfterTransitionRunnable.run();
+                mAfterTransitionRunnable = null;
+            }
+        };
+
+        if (isJumpcutBubbleSwitching) {
+            // No need to animate for jumpcut. Immediately invoke the end runnable.
+            endRunnable.run();
+            endOrCancelRunnable.run();
+            return;
+        }
 
         if (mPositioner.showBubblesVertically()) {
             float pivotX;
@@ -3253,29 +3291,8 @@ public class BubbleStackView extends FrameLayout
                     .addUpdateListener((target, values) -> {
                         mExpandedViewContainer.setAnimationMatrix(mExpandedViewContainerMatrix);
                     })
-                    .withEndActions(() -> {
-                        mExpandedViewTemporarilyHidden = false;
-                        mIsBubbleSwitchAnimating = false;
-                        mExpandedViewContainer.setAnimationMatrix(null);
-
-                        // When a bubble is being dragged, the expanded view is temporarily hidden.
-                        // If the motion ends with dismissing the bubble, with multiple bubbles in
-                        // the stack, we'll end up here to switch to the new bubble. However, the
-                        // expanded view animation might not actually set the z ordering for the
-                        // expanded view correctly, because the view may still be temporarily
-                        // hidden. So set it again here.
-                        BubbleExpandedView expandedView = getExpandedView();
-                        if (expandedView != null) {
-                            expandedView.setSurfaceZOrderedOnTop(false);
-                            expandedView.setAnimating(false);
-                        }
-                    })
-                    .withEndOrCancelActions(() -> {
-                        if (mAfterTransitionRunnable != null) {
-                            mAfterTransitionRunnable.run();
-                            mAfterTransitionRunnable = null;
-                        }
-                    })
+                    .withEndActions(endRunnable::run)
+                    .withEndOrCancelActions(endOrCancelRunnable::run)
                     .start();
         }, 25);
     }
