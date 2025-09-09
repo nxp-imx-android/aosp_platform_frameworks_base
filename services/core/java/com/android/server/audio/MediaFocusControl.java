@@ -407,10 +407,25 @@ public class MediaFocusControl implements PlayerFocusEnforcer {
             }
         }
 
+        // Also handle focus restoration for apps in the multi-focus list.
         if (mMultiAudioFocusEnabled && !mMultiAudioFocusList.isEmpty()) {
-            for (FocusRequester multifr : mMultiAudioFocusList) {
-                if (isLockedFocusOwner(multifr)) {
-                    multifr.handleFocusGain(AudioManager.AUDIOFOCUS_GAIN);
+            if (audioFocusDesktop()) {
+                final boolean canReassignAudioFocus = canReassignAudioFocus();
+                for (FocusRequester multifr : mMultiAudioFocusList) {
+                    // Check if the requester needs its focus restored. This is true if:
+                    //  - focus can be reassigned (e.g. no call) AND it had a transient loss,
+                    //  - OR it's a locked focus owner.
+                    if ((canReassignAudioFocus
+                            && multifr.toAudioFocusInfo().isLossReceivedTransient())
+                            || isLockedFocusOwner(multifr)) {
+                        multifr.handleFocusGain(AudioManager.AUDIOFOCUS_GAIN);
+                    }
+                }
+            } else {
+                for (FocusRequester multifr : mMultiAudioFocusList) {
+                    if (isLockedFocusOwner(multifr)) {
+                        multifr.handleFocusGain(AudioManager.AUDIOFOCUS_GAIN);
+                    }
                 }
             }
         }

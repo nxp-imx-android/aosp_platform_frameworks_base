@@ -93,17 +93,6 @@ flag {
 }
 
 flag {
-    name: "remove_activity_starter_dream_callback"
-    namespace: "windowing_frontend"
-    description: "Avoid a race with DreamManagerService callbacks for isDreaming by checking Activity state directly"
-    bug: "366452352"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-    is_fixed_read_only: true
-}
-
-flag {
   name: "do_not_force_wallpaper_for_freeform_task"
   namespace: "windowing_frontend"
   description: "Remove legacy condition to reduce overhead"
@@ -375,15 +364,7 @@ flag {
     bug: "410930250"
 }
 
-flag {
-    name: "screen_brightness_dim_on_emulator"
-    namespace: "wear_systems"
-    description: "Apply screen brightness to emulator display overlay"
-    bug: "418830217"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
+
 
 flag {
     name: "multiple_system_navigation_observer_callbacks"

@@ -33,7 +33,6 @@ import android.view.SurfaceSession
 import android.view.WindowManager
 import android.view.WindowlessWindowManager
 import androidx.annotation.WorkerThread
-import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.app.tracing.traceSection
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.dagger.qualifiers.Main
@@ -52,13 +51,12 @@ import java.util.concurrent.Executor
 import java.util.function.Consumer
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.asCoroutineDispatcher
+import com.android.app.tracing.coroutines.launchTraced as launch
 
 interface FullscreenLightRevealAnimation {
     fun init()
 
     fun onScreenTurningOn(onOverlayReady: Runnable)
-
-    fun onScreenTurnedOff() {}
 }
 
 class FullscreenLightRevealAnimationController

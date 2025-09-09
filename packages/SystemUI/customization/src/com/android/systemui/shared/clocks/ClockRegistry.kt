@@ -314,7 +314,7 @@ open class ClockRegistry(
         val onComplete = endChangeTrace?.also { endChangeTrace = null } ?: return
         clock.eventListeners.attach(
             object : ClockEventListener {
-                override fun onBoundsChanged(current: VRectF) {}
+                override fun onBoundsChanged(currentBounds: VRectF, isLargeClock: Boolean) {}
 
                 override fun onMaxSizeChanged(maxSize: VPointF, isLargeClock: Boolean) {}
 

@@ -38,6 +38,8 @@ public final class CompanionResources {
     public static final int PERMISSION_CREATE_VIRTUAL_DEVICE = 12;
     public static final int PERMISSION_ADD_MIRROR_DISPLAY = 13;
     public static final int PERMISSION_ADD_TRUSTED_DISPLAY = 14;
+    public static final int PERMISSION_SCHEDULE_EXACT_ALARM = 15;
+    public static final int PERMISSION_BYPASS_DND = 16;
 
     // Constants used by AssociationRequestProcessor and CompanionAssociationActivity
     public static final String EXTRA_APPLICATION_CALLBACK = "application_callback";

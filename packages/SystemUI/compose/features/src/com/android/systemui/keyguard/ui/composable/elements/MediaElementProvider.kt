@@ -64,7 +64,7 @@ constructor(
             val viewModel =
                 rememberViewModel("MediaCarouselElement") { mediaViewModelFactory.create() }
 
-            AnimatedVisibility(viewModel.isMediaVisible) {
+            AnimatedVisibility(viewModel.isMediaActive && !viewModel.isDozing) {
                 Element(
                     key = Media.Elements.mediaCarousel,
                     modifier = Modifier.fillMaxWidth().padding(horizontal = horizontalPadding),

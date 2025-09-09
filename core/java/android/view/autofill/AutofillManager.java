@@ -965,6 +965,10 @@ public final class AutofillManager {
      * @hide
      */
     public AutofillManager(Context context, IAutoFillManager service) {
+        if (sVerbose) {
+            Log.v(TAG,
+                    "Constructing AutofillManager instance: " + this + " with context: " + context);
+        }
         mContext = Objects.requireNonNull(context, "context cannot be null");
         mService = service;
         mOptions = context.getAutofillOptions();
@@ -2628,7 +2632,8 @@ public final class AutofillManager {
     /** @hide */
     public void onAuthenticationResult(int authenticationId, Intent data, View focusView) {
         if (sVerbose) {
-            Log.v(TAG, "onAuthenticationResult(): authId= " + authenticationId + ", data=" + data);
+            Log.v(TAG, "onAuthenticationResult(): authId= " + authenticationId + ", data="
+                    + data + ", autofill manager instance=" + this + ", context=" + mContext);
         }
         if (!hasAutofillFeature()) {
             if (sVerbose) {
@@ -2745,7 +2750,9 @@ public final class AutofillManager {
                     + ", compatMode=" + isCompatibilityModeEnabledLocked()
                     + ", augmentedOnly=" + mForAugmentedAutofillOnly
                     + ", enabledAugmentedOnly=" + mEnabledForAugmentedAutofillOnly
-                    + ", enteredIds=" + mEnteredIds);
+                    + ", enteredIds=" + mEnteredIds
+                    + ", autofill manager instance=" + this
+                    + ", context=" + mContext);
         }
         // We need to reset the augmented-only state when a manual request is made, as it's possible
         // that the service returned null for the first request and now the user is manually

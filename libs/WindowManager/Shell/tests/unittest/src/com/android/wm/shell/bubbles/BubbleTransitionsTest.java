@@ -1091,7 +1091,7 @@ public class BubbleTransitionsTest extends ShellTestCase {
         verify(startT).apply();
 
         // Bubble data gets updated
-        verify(mBubbleData).notificationEntryUpdated(eq(mBubble), anyBoolean(), anyBoolean());
+        verify(mBubbleData).jumpcutBubbleSwitch(mBubble, closingBubble);
 
         // Simulate surfaceCreated and continueExpand so the animation can start
         bt.continueExpand();

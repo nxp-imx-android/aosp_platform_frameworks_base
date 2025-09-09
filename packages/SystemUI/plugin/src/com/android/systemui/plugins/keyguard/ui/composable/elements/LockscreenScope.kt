@@ -17,7 +17,6 @@ package com.android.systemui.plugins.keyguard.ui.composable.elements
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import com.android.compose.animation.scene.BaseContentScope
@@ -34,7 +33,6 @@ import com.android.compose.animation.scene.SceneTransitionsBuilder
 import com.android.compose.animation.scene.rememberMutableSceneTransitionLayoutState
 import com.android.compose.animation.scene.transitions as buildTransitions
 import com.android.compose.lifecycle.LaunchedEffectWithLifecycle
-import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenScope.NestedSceneScope
 
 @Immutable
 /** Combined context for lockscreen elements. Contains relevant rendering parameters. */

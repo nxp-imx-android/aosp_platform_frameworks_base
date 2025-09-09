@@ -2218,3 +2218,13 @@ flag {
         purpose: PURPOSE_BUGFIX
    }
 }
+
+flag {
+    name: "check_desktop_mode_for_spacial_model_app_pushback"
+    namespace: "systemui"
+    description: "Checks desktop mode for disabling spacial model as opposed to just checking if the screen is large"
+    bug: "409529581"
+   metadata {
+        purpose: PURPOSE_BUGFIX
+   }
+}

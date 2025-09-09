@@ -24,17 +24,19 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.dimensionResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.android.compose.animation.scene.ElementContentScope
-import com.android.compose.modifiers.padding
 import com.android.systemui.customization.clocks.R as clocksR
 import com.android.systemui.keyguard.ui.viewmodel.KeyguardClockViewModel
+import com.android.systemui.plugins.keyguard.VRectF
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElement
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementKeys
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementKeys.Clock
@@ -67,6 +69,9 @@ constructor(
             val shouldDateWeatherBeBelowSmallClock: Boolean by
                 keyguardClockViewModel.shouldDateWeatherBeBelowSmallClock
                     .collectAsStateWithLifecycle()
+            val clockBounds: VRectF by
+                keyguardClockViewModel.clockEventController.smallClockBounds
+                    .collectAsStateWithLifecycle()
 
             // Horizontal Padding is handled internally within the SmartspaceCards element. This
             // makes the application here to other elements in the hierarchy slightly awkward.
@@ -79,7 +84,13 @@ constructor(
                         Modifier.padding(horizontal = xPadding)
                             .padding(top = dimensionResource(R.dimen.keyguard_clock_top_margin)),
                 ) {
-                    LockscreenElement(Clock.Small)
+                    with(LocalDensity.current) {
+                        LockscreenElement(
+                            Clock.Small,
+                            Modifier.widthIn(min = clockBounds.width.toDp())
+                                .heightIn(min = clockBounds.height.toDp()),
+                        )
+                    }
 
                     if (!shouldDateWeatherBeBelowSmallClock) {
                         LockscreenElement(
@@ -112,6 +123,9 @@ constructor(
         override fun LockscreenScope<ElementContentScope>.LockscreenElement() {
             val shouldDateWeatherBeBelowLargeClock: Boolean by
                 keyguardClockViewModel.shouldDateWeatherBeBelowLargeClock
+                    .collectAsStateWithLifecycle()
+            val clockBounds: VRectF by
+                keyguardClockViewModel.clockEventController.largeClockBounds
                     .collectAsStateWithLifecycle()
 
             // Horizontal Padding is handled internally within the SmartspaceCards element. This
@@ -157,7 +171,13 @@ constructor(
                         ),
                     modifier = Modifier.padding(horizontal = xPadding).fillMaxWidth().weight(1f),
                 ) {
-                    LockscreenElement(Clock.Large)
+                    with(LocalDensity.current) {
+                        LockscreenElement(
+                            Clock.Large,
+                            Modifier.widthIn(min = clockBounds.width.toDp())
+                                .heightIn(min = clockBounds.height.toDp()),
+                        )
+                    }
                     if (shouldDateWeatherBeBelowLargeClock) {
                         LockscreenElement(Smartspace.DWA.LargeClock.Below)
                     }

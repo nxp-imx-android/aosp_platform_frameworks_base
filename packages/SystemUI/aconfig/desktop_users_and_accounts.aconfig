@@ -4,6 +4,13 @@ container: "system"
 # NOTE: Keep alphabetized to help limit merge conflicts from multiple simultaneous editors.
 
 flag {
+    name: "back_button_on_bouncer"
+    namespace: "desktop_users_and_accounts"
+    description: "Add a 'back' button to bouncer"
+    bug: "432062209"
+}
+
+flag {
     name: "disable_double_click_swap_on_bouncer"
     namespace: "desktop_users_and_accounts"
     description: "Disable swapping bouncer sides with double click in two-column layout"

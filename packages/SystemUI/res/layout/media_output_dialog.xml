@@ -120,7 +120,7 @@
             app:layout_constraintHeight_max="@dimen/media_output_dialog_list_max_height"/>
     </androidx.constraintlayout.widget.ConstraintLayout>
 
-    <LinearLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/dialog_footer"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -139,17 +139,24 @@
             android:text="@string/media_output_dialog_button_stop_casting"
             android:visibility="gone"/>
 
-        <Space
-            android:id="@+id/footer_spacer"
-            android:layout_weight="1"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"/>
-
         <Button
             android:id="@+id/done"
             style="@style/Widget.Dialog.Button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/inline_done_button"/>
-    </LinearLayout>
+
+        <androidx.constraintlayout.helper.widget.Flow
+            android:id="@+id/flow_buttons"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            android:orientation="horizontal"
+            app:flow_wrapMode="chain"
+            app:constraint_referenced_ids="stop,done"
+            app:flow_horizontalStyle="spread_inside"
+            app:flow_verticalAlign="center" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
 </LinearLayout>

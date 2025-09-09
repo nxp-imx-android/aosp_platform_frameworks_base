@@ -3599,14 +3599,6 @@ public final class PowerManager {
             = "android.os.action.POWER_SAVE_WHITELIST_CHANGED";
 
     /**
-     * @hide Intent that is broadcast when the set of temporarily allowlisted apps has changed.
-     * This broadcast is only sent to registered receivers.
-     */
-    @SdkConstant(SdkConstant.SdkConstantType.BROADCAST_INTENT_ACTION)
-    public static final String ACTION_POWER_SAVE_TEMP_WHITELIST_CHANGED
-            = "android.os.action.POWER_SAVE_TEMP_WHITELIST_CHANGED";
-
-    /**
      * Intent that is broadcast when Low Power Standby is enabled or disabled.
      * This broadcast is only sent to registered receivers and receivers holding
      * {@code android.permission.MANAGE_LOW_POWER_STANDBY}.

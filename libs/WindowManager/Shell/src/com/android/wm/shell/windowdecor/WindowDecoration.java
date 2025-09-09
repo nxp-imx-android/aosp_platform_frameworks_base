@@ -163,7 +163,7 @@ public abstract class WindowDecoration<T extends View & TaskFocusStateConsumer>
     SurfaceControl mDecorationContainerSurface;
 
     private WindowDecorViewHost mViewHost;
-    private Configuration mWindowDecorConfig;
+    protected Configuration mWindowDecorConfig;
     TaskDragResizer mTaskDragResizer;
     boolean mIsCaptionVisible;
 

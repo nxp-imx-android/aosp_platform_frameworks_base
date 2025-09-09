@@ -4755,7 +4755,7 @@ class PackageManagerShellCommand extends ShellCommand {
         final PrintWriter pw = getOutPrintWriter();
         try {
             final IPackageInstaller installer = mInterface.getPackageInstaller();
-            final String packageName = getNextArgRequired();
+            final String packageName = getNextArg();
             installer.clearDeveloperVerificationExperiment(packageName);
         } catch (Exception e) {
             pw.println("Failure [" + e.getMessage() + "]");
@@ -5225,9 +5225,11 @@ class PackageManagerShellCommand extends ShellCommand {
         pw.println("        6 [disconnect]: Verification service disconnected.");
         pw.println("        7 [infeasible]: Verification service was unavailable.");
         pw.println("");
-        pw.println("  clear-developer-verification-result PACKAGE");
+        pw.println("  clear-developer-verification-result [PACKAGE]");
         pw.println("    Clear any previously set developer verification enforcement policy and");
-        pw.println("    result for the given app using set-developer-verification-result");
+        pw.println("    result for the given app using set-developer-verification-result.");
+        pw.println("    If the package name is not specified, clear all previously set");
+        pw.println("    developer verification enforcement policy and results of future sessions");
         pw.println("");
         pw.println("");
         printArtServiceHelp();

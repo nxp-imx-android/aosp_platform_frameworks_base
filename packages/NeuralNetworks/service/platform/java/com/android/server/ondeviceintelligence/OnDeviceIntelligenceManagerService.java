@@ -140,6 +140,9 @@ public class OnDeviceIntelligenceManagerService extends SystemService {
     private final Executor callbackExecutor = Executors.newCachedThreadPool();
     private final Executor broadcastExecutor = Executors.newCachedThreadPool();
     private final Executor mConfigExecutor = Executors.newCachedThreadPool();
+    /** Executor to run lifecycle event broadcasts sequentially. */
+    private final Executor mLifecycleExecutor = Executors.newSingleThreadExecutor(
+            r -> new Thread(r, "odi-lifecycle-broadcast"));
 
 
     private final Context mContext;
@@ -167,25 +170,28 @@ public class OnDeviceIntelligenceManagerService extends SystemService {
 
     private final RemoteCallbackList<ILifecycleListener> mLifecycleListeners =
             new RemoteCallbackList.Builder<ILifecycleListener>(
-                    RemoteCallbackList.FROZEN_CALLEE_POLICY_ENQUEUE_ALL
-            )
+                    RemoteCallbackList.FROZEN_CALLEE_POLICY_ENQUEUE_ALL)
                     .setExecutor(callbackExecutor).build();
     private final ILifecycleListener mSystemLifecycleListener = new ILifecycleListener.Stub() {
         @Override
         public void onLifecycleEvent(int event, Feature feature) {
-            // TODO - b/427938935: Verify ordering if multiple broadcasts
-            // are invoked simultaneously.
-            mLifecycleListeners.broadcast(listener -> {
-                try {
-                    Slog.d(TAG, "Invoking onLifecycleEvent from system-server.");
-                    listener.onLifecycleEvent(event, feature);
-                } catch (RemoteException e) {
-                    Slog.d(TAG, "RemoteException when invoking onLifecycleEvent",
-                            e);
-                }
+            // Broadcasts are sent on a dedicated single-threaded executor to ensure ordering.
+            // This ensures that if onLifecycleEvent is called for multiple events, they are
+            // broadcast to clients in the same order.
+            // TODO - b/427938935: Add coverage for this logic.
+            mLifecycleExecutor.execute(() -> {
+                mLifecycleListeners.broadcast(listener -> {
+                    try {
+                        Slog.d(TAG, "Invoking onLifecycleEvent from system-server.");
+                        listener.onLifecycleEvent(event, feature);
+                    } catch (RemoteException e) {
+                        Slog.d(TAG, "RemoteException when invoking onLifecycleEvent", e);
+                    }
+                });
             });
         }
     };
+
     /**
      * Handler used to reset the temporary service names.
      */

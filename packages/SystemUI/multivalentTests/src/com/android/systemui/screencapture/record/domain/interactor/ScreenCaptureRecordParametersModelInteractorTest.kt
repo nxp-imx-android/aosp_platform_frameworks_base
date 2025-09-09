@@ -73,4 +73,17 @@ class ScreenCaptureRecordParametersModelInteractorTest : SysuiTestCase() {
 
             assertThat(shouldShowTaps).isEqualTo(newShouldShowTaps)
         }
+
+    @Test
+    fun testChangingShouldShowFrontCamera() =
+        kosmos.runTest {
+            val newShouldShowFrontCamera = true
+            val shouldShowFrontCamera by
+                collectLastValue(underTest.parameters.map { it.shouldShowFrontCamera })
+            assertThat(shouldShowFrontCamera).isNotEqualTo(newShouldShowFrontCamera)
+
+            underTest.setShouldShowFrontCamera(newShouldShowFrontCamera)
+
+            assertThat(shouldShowFrontCamera).isEqualTo(newShouldShowFrontCamera)
+        }
 }

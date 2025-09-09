@@ -618,6 +618,36 @@ public class AudioManagerRouteControllerTest {
 
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_OUTPUT_SWITCHER_PERSONAL_AUDIO_SHARING)
+    public void getRoutes_nonBLEDeviceSelectedAndOutputNotBroadcast_returnsCorrectStates() {
+        setUpControllerAndLEAudioMocks();
+        when(mMockBluetoothDeviceRoutesManager.isLEAudioBroadcastSupported()).thenReturn(true);
+        // Select the built-in speaker, but have a BLE device available.
+        addAvailableAudioDeviceInfo(
+                /* newSelectedDevice= */ FAKE_AUDIO_DEVICE_INFO_BUILTIN_SPEAKER,
+                /* newAvailableDevices...= */ FAKE_AUDIO_DEVICE_LE_HEADSET_1);
+
+        List<MediaRoute2Info> selectableRoutes = mControllerUnderTest.getSelectableRoutes();
+        List<String> selectedRoutesNames =
+                mControllerUnderTest.getSelectedRoutes().stream()
+                        .map(it -> it.getName().toString())
+                        .toList();
+        List<MediaRoute2Info> deselectableRoutes = mControllerUnderTest.getDeselectableRoutes();
+
+        // When a non-BLE device is selected, no other devices should be selectable for broadcast.
+        assertThat(selectableRoutes).isEmpty();
+        // The selected route should be the built-in speaker.
+        assertThat(selectedRoutesNames)
+                .containsExactly(
+                        FAKE_AUDIO_DEVICE_INFO_BUILTIN_SPEAKER.getProductName().toString());
+        // Deselectable routes should be empty since we are not in a broadcast session.
+        assertThat(deselectableRoutes).isEmpty();
+        // Session release type should be unsupported.
+        assertThat(mControllerUnderTest.getSessionReleaseType())
+                .isEqualTo(RoutingSessionInfo.RELEASE_UNSUPPORTED);
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_OUTPUT_SWITCHER_PERSONAL_AUDIO_SHARING)
     public void getRoutes_singleDeviceSelectedAndOutputIsBroadcast_returnsCorrectStates() {
         setUpControllerAndLEAudioMocks();
         when(mMockBluetoothDeviceRoutesManager.isLEAudioBroadcastSupported()).thenReturn(true);

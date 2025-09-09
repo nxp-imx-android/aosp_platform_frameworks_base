@@ -107,17 +107,6 @@ flag {
 
 flag {
     namespace: "windowing_sdk"
-    name: "fix_task_compatible_modes"
-    description: "Make most of the windowing modes compatible"
-    bug: "427336494"
-    is_fixed_read_only: true
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
-    namespace: "windowing_sdk"
     name: "task_fragment_companion_activity"
     description: "Track the activity to be finished with tf in core"
     bug: "433459536"

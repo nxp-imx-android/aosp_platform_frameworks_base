@@ -19,6 +19,7 @@ package android.companion;
 import static android.Manifest.permission.REQUEST_COMPANION_PROFILE_APP_STREAMING;
 import static android.Manifest.permission.REQUEST_COMPANION_PROFILE_AUTOMOTIVE_PROJECTION;
 import static android.Manifest.permission.REQUEST_COMPANION_PROFILE_COMPUTER;
+import static android.Manifest.permission.REQUEST_COMPANION_PROFILE_MEDICAL;
 import static android.Manifest.permission.REQUEST_COMPANION_PROFILE_WATCH;
 import static android.companion.AssociationInfo.METADATA_TIMESTAMP;
 import static android.graphics.drawable.Icon.TYPE_URI;
@@ -591,6 +592,7 @@ public final class CompanionDeviceManager {
     @RequiresPermission(anyOf = {
             REQUEST_COMPANION_PROFILE_WATCH,
             REQUEST_COMPANION_PROFILE_COMPUTER,
+            REQUEST_COMPANION_PROFILE_MEDICAL,
             REQUEST_COMPANION_PROFILE_APP_STREAMING,
             REQUEST_COMPANION_PROFILE_AUTOMOTIVE_PROJECTION
             }, conditional = true)

@@ -21,11 +21,13 @@ import static android.companion.AssociationRequest.DEVICE_PROFILE_APP_STREAMING;
 import static android.companion.AssociationRequest.DEVICE_PROFILE_COMPUTER;
 import static android.companion.AssociationRequest.DEVICE_PROFILE_FITNESS_TRACKER;
 import static android.companion.AssociationRequest.DEVICE_PROFILE_GLASSES;
+import static android.companion.AssociationRequest.DEVICE_PROFILE_MEDICAL;
 import static android.companion.AssociationRequest.DEVICE_PROFILE_NEARBY_DEVICE_STREAMING;
 import static android.companion.AssociationRequest.DEVICE_PROFILE_VIRTUAL_DEVICE;
 import static android.companion.AssociationRequest.DEVICE_PROFILE_WATCH;
 import static android.companion.CompanionResources.PERMISSION_ADD_MIRROR_DISPLAY;
 import static android.companion.CompanionResources.PERMISSION_ADD_TRUSTED_DISPLAY;
+import static android.companion.CompanionResources.PERMISSION_BYPASS_DND;
 import static android.companion.CompanionResources.PERMISSION_CALENDAR;
 import static android.companion.CompanionResources.PERMISSION_CALL_LOGS;
 import static android.companion.CompanionResources.PERMISSION_CHANGE_MEDIA_OUTPUT;
@@ -36,6 +38,7 @@ import static android.companion.CompanionResources.PERMISSION_NEARBY_DEVICES;
 import static android.companion.CompanionResources.PERMISSION_NOTIFICATIONS;
 import static android.companion.CompanionResources.PERMISSION_PHONE;
 import static android.companion.CompanionResources.PERMISSION_POST_NOTIFICATIONS;
+import static android.companion.CompanionResources.PERMISSION_SCHEDULE_EXACT_ALARM;
 import static android.companion.CompanionResources.PERMISSION_SMS;
 import static android.companion.CompanionResources.PERMISSION_STORAGE;
 
@@ -78,6 +81,11 @@ public final class RolesUtils {
             DEVICE_PROFILE_GLASSES, List.of(
                     PERMISSION_NOTIFICATIONS, PERMISSION_PHONE, PERMISSION_SMS, PERMISSION_CONTACTS,
                     PERMISSION_MICROPHONE, PERMISSION_NEARBY_DEVICES),
+
+            DEVICE_PROFILE_MEDICAL, List.of(
+                    PERMISSION_POST_NOTIFICATIONS, PERMISSION_NEARBY_DEVICES,
+                    PERMISSION_SCHEDULE_EXACT_ALARM, PERMISSION_BYPASS_DND
+            ),
 
             DEVICE_PROFILE_APP_STREAMING,
             android.companion.virtualdevice.flags.Flags.itemizedVdmPermissions()

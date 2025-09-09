@@ -24838,12 +24838,13 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
         CallerIdentity caller = getCallerIdentity(callerPackageName);
 
         Binder.withCleanCallingIdentity(() -> {
-            if (id.equals(PolicyIdentifier.SCREEN_CAPTURE_DISABLED.getId())) {
-                if (value.getTag() != PolicyValueTransport.Tag.booleanField) {
-                    throw new IllegalArgumentException(
-                            "SCREEN_CAPTURE_DISABLED requires a Boolean value");
+            if (id.equals(PolicyIdentifier.SCREEN_CAPTURE.getId())) {
+                if (value.getTag() != PolicyValueTransport.Tag.integerField) {
+                    throw new IllegalArgumentException("SCREEN_CAPTURE requires an Integer value");
                 }
-                setScreenCaptureDisabled(caller, scope, value.getBooleanField());
+                boolean isDisabled =
+                        value.getIntegerField() == PolicyIdentifier.SCREEN_CAPTURE_BLOCKED;
+                setScreenCaptureDisabled(caller, scope, isDisabled);
             } else {
                 throw new IllegalArgumentException("Unhandled policy " + id);
             }

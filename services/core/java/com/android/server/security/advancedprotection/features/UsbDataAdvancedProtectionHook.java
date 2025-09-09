@@ -407,9 +407,9 @@ public class UsbDataAdvancedProtectionHook extends AdvancedProtectionHook {
                         FrameworkStatsLog.write(
                                 FrameworkStatsLog
                                         .ADVANCED_PROTECTION_USB_STATE_CHANGE_ERROR_REPORTED,
-                                //populating with default values as StatsLog cannot skip fields
+                                // populating with default values as StatsLog cannot skip fields
                                 false,
-                                 -1,
+                                -1,
                                 getAtomUsbErrorType(usbEvent));
                     }
 
@@ -476,12 +476,6 @@ public class UsbDataAdvancedProtectionHook extends AdvancedProtectionHook {
                             if (mDataRequiredForHighPowerCharge) {
                                 createAndSendNotificationIfDeviceIsLocked(
                                         portStatus, NOTIFICATION_CHARGE);
-                            } else {
-                                mAdvancedProtectionService.logDialogShown(
-                                        AdvancedProtectionProtoEnums.FEATURE_ID_DISALLOW_USB,
-                                        AdvancedProtectionProtoEnums
-                                                .DIALOGUE_TYPE_BLOCKED_INTERACTION_SILENT,
-                                        false);
                             }
                         } else {
                             if (portStatus.isPdCompliant() && !mDataRequiredForHighPowerCharge) {
@@ -526,18 +520,20 @@ public class UsbDataAdvancedProtectionHook extends AdvancedProtectionHook {
 
     private void createAndSendNotificationIfDeviceIsLocked(
             UsbPortStatus portStatus, @NotificationType int notificationType) {
-        if ((notificationType == NOTIFICATION_CHARGE
+        if ((notificationType == NOTIFICATION_CHARGE_DATA
                         && mSilenceDataNotification
                         && mSilencePowerNotification)
                 || (notificationType == NOTIFICATION_CHARGE && mSilencePowerNotification)
                 || (notificationType == NOTIFICATION_DATA && mSilenceDataNotification)) {
-            return;
-        } else if (!mKeyguardManager.isKeyguardLocked()
-                || !usbPortIsConnectedWithDataDisabled(portStatus)) {
+            // Log interactions that were suppressed due to silence flags
             mAdvancedProtectionService.logDialogShown(
                     AdvancedProtectionProtoEnums.FEATURE_ID_DISALLOW_USB,
                     AdvancedProtectionProtoEnums.DIALOGUE_TYPE_BLOCKED_INTERACTION_SILENT,
                     false);
+            return;
+            // Last moment check to see if conditions are still met to show notification
+        } else if (!mKeyguardManager.isKeyguardLocked()
+                || !usbPortIsConnectedWithDataDisabled(portStatus)) {
             return;
         }
 
@@ -830,12 +826,10 @@ public class UsbDataAdvancedProtectionHook extends AdvancedProtectionHook {
         @Override
         public void onReceive(Context context, Intent intent) {
             if (ACTION_SILENCE_NOTIFICATION.equals(intent.getAction())) {
-                if (intent.getBooleanExtra(EXTRA_SILENCE_DATA_NOTIFICATION, false)) {
-                    mSilenceDataNotification = true;
-                }
-                if (intent.getBooleanExtra(EXTRA_SILENCE_POWER_NOTIFICATION, false)) {
-                    mSilencePowerNotification = true;
-                }
+                mSilenceDataNotification |=
+                        intent.getBooleanExtra(EXTRA_SILENCE_DATA_NOTIFICATION, false);
+                mSilencePowerNotification |=
+                        intent.getBooleanExtra(EXTRA_SILENCE_POWER_NOTIFICATION, false);
                 sendNotification(
                         mContext.getString(R.string.usb_apm_usb_notification_silenced_title),
                         mContext.getString(R.string.usb_apm_usb_notification_silenced_text),

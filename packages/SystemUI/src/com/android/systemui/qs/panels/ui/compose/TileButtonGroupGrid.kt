@@ -97,8 +97,6 @@ private fun <T> ContentScope.ButtonGroupRow(
         @Composable
         ContentScope.(tile: SizedTile<T>, interactionSource: MutableInteractionSource) -> Unit,
 ) {
-    val halfPadding = horizontalPadding / 2
-
     // Avoid setting the horizontal padding with the ButtonGroup to ensure that weight distribution
     // works properly for all rows.
     ButtonGroup(
@@ -108,8 +106,6 @@ private fun <T> ContentScope.ButtonGroupRow(
     ) {
         for ((indexInRow, sizedTile) in row.withIndex()) {
             val column = row.subList(0, indexInRow).fastSumBy { it.width }
-            val onLastColumn = column == columns - sizedTile.width
-            val isFirst = indexInRow == 0
             customItem(
                 buttonGroupContent = {
                     key(keys(sizedTile.tile)) {
@@ -188,7 +184,7 @@ private fun Modifier.rowPadding(
         val startPadding = startCol * horizontalPadding.roundToPx() / columns
         val endPadding = (columns - endCol) * horizontalPaddingPx / columns
 
-        val width = constraints.maxWidth - startPadding - endPadding
+        val width = (constraints.maxWidth - startPadding - endPadding).coerceAtLeast(0)
         val placeable = measurable.measure(constraints.copy(minWidth = width, maxWidth = width))
         layout(constraints.maxWidth, placeable.height) { placeable.place(startPadding, 0) }
     }

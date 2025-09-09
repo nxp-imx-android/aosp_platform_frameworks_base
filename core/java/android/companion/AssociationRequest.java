@@ -114,6 +114,20 @@ public final class AssociationRequest implements Parcelable {
     public static final String DEVICE_PROFILE_GLASSES = "android.app.role.COMPANION_DEVICE_GLASSES";
 
     /**
+     * Device profile: A medical device, e.g. blood sugar level monitor, heart rate monitor, etc.
+     *
+     * If specified, the current request may have a modified UI to highlight that the device being
+     * set up is a medical device, and some extra permissions may be granted to the app
+     * as a result.
+     *
+     * Using it requires declaring uses-permission
+     * {@link android.Manifest.permission#REQUEST_COMPANION_PROFILE_MEDICAL} in the manifest.
+     */
+    @FlaggedApi(Flags.FLAG_ENABLE_MEDICAL_PROFILE)
+    @RequiresPermission(Manifest.permission.REQUEST_COMPANION_PROFILE_MEDICAL)
+    public static final String DEVICE_PROFILE_MEDICAL = "android.app.role.COMPANION_DEVICE_MEDICAL";
+
+    /**
      * Device profile: a wearable device capable of sensing its surroundings.
      * <p>
      * This device profile is not tied to any android role, and is used to identify the device

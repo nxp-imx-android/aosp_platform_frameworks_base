@@ -528,9 +528,10 @@ public class DesktopModeLaunchParamsModifierTests extends
                 AppCompatUtils.computeAspectRatio(mResult.mAppBounds), /* delta */ 0.05);
     }
 
+    @Test
     @EnableFlags({Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE,
             Flags.FLAG_INHERIT_TASK_BOUNDS_FOR_TRAMPOLINE_TASK_LAUNCHES})
-    public void testSourceTaskBoundsFromExistingInstanceIfClosing() {
+    public void testInheritSourceTaskBoundsFromExistingInstanceIfClosing() {
         setupDesktopModeLaunchParamsModifier();
 
         final String packageName = "com.same.package";
@@ -556,6 +557,37 @@ public class DesktopModeLaunchParamsModifierTests extends
                 new CalculateRequestBuilder().setTask(launchingTask)
                         .setActivity(launchingTask.getRootActivity())
                         .setSource(sourceTask.getTopMostActivity()).calculate());
+        assertEquals(sourceTask.getBounds(), mResult.mBounds);
+    }
+
+    @Test
+    @EnableFlags({Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE,
+            Flags.FLAG_INHERIT_TASK_BOUNDS_FOR_TRAMPOLINE_TASK_LAUNCHES})
+    public void testInheritSourceTaskBoundsFromExistingInstanceIfNoLongerVisible() {
+        setupDesktopModeLaunchParamsModifier();
+
+        final String packageName = "com.same.package";
+        // Setup existing task.
+        final Task sourceTask = spy(new TaskBuilder(mSupervisor).setCreateActivity(true)
+                .setWindowingMode(WINDOWING_MODE_FREEFORM).setPackage(packageName).build());
+        sourceTask.setBounds(
+                /* left */ 0,
+                /* top */ 0,
+                /* right */ 500,
+                /* bottom */ 500);
+        // Set source task activity as invisible.
+        final ActivityRecord sourceTaskActivity = spy(sourceTask.getTopMostActivity());
+        sourceTask.topRunningActivity().launchMode = LAUNCH_SINGLE_INSTANCE;
+        doReturn(false).when(sourceTaskActivity).isVisible();
+        // Set up new instance of already existing task.
+        final Task launchingTask = new TaskBuilder(mSupervisor).setPackage(packageName)
+                .setCreateActivity(true).build();
+
+        // New instance should inherit task bounds of old instance.
+        assertEquals(RESULT_DONE,
+                new CalculateRequestBuilder().setTask(launchingTask)
+                        .setActivity(launchingTask.getRootActivity())
+                        .setSource(sourceTaskActivity).calculate());
         assertEquals(sourceTask.getBounds(), mResult.mBounds);
     }
 

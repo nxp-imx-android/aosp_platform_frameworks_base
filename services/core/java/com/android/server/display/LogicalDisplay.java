@@ -21,6 +21,8 @@ import static android.view.Display.Mode.INVALID_MODE_ID;
 import static com.android.server.display.DisplayDeviceInfo.TOUCH_NONE;
 import static com.android.server.display.layout.Layout.Display.POSITION_REAR;
 import static com.android.server.wm.utils.DisplayInfoOverrides.WM_OVERRIDE_FIELDS;
+import static com.android.server.wm.utils.DisplayInfoOverrides.WM_OVERRIDE_GROUPS;
+import static com.android.server.wm.utils.DisplayInfoOverrides.WM_OVERRIDE_GROUPS_ENUMSET;
 import static com.android.server.wm.utils.DisplayInfoOverrides.copyDisplayInfoFields;
 
 import android.annotation.NonNull;
@@ -294,12 +296,31 @@ final class LogicalDisplay {
      */
     public DisplayInfo getDisplayInfoLocked() {
         if (mInfo.get() == null) {
-            DisplayInfo info = new DisplayInfo();
-            copyDisplayInfoFields(info, mBaseDisplayInfo, mOverrideDisplayInfo,
-                    WM_OVERRIDE_FIELDS);
-            mInfo.set(info);
+            // We do not want to update displayInfoGroupsChanged
+            // as no change has triggered this call
+            mInfo.set(computeCurrentDisplayInfoLocked());
         }
         return mInfo.get();
+    }
+
+    /**
+     * Computes the current display information based on the base and override info.
+     *
+     * Warning: this does not update the cache.
+     */
+    private DisplayInfo computeCurrentDisplayInfoLocked() {
+        DisplayInfo info = new DisplayInfo();
+        copyDisplayInfoFields(info, mBaseDisplayInfo, mOverrideDisplayInfo,
+                WM_OVERRIDE_FIELDS);
+        return info;
+    }
+
+    public int getDisplayInfoGroupsChangedLocked() {
+        return mInfo.getDisplayInfoGroupsChanged();
+    }
+
+    public DisplayInfo.DisplayInfoChangeSource getDisplayInfoChangeSource() {
+        return mInfo.getDisplayInfoChangeSource();
     }
 
     /**
@@ -341,16 +362,20 @@ final class LogicalDisplay {
         if (info != null) {
             if (mOverrideDisplayInfo == null) {
                 mOverrideDisplayInfo = new DisplayInfo(info);
-                mInfo.set(null);
+                mInfo.set(WM_OVERRIDE_GROUPS, DisplayInfo.DisplayInfoChangeSource.WINDOW_MANAGER);
                 return true;
-            } else if (!mOverrideDisplayInfo.equals(info)) {
+            }
+
+            int groupsChanged = info.getBasicChangedGroups(mOverrideDisplayInfo,
+                    WM_OVERRIDE_GROUPS_ENUMSET);
+            if (groupsChanged != 0) {
                 mOverrideDisplayInfo.copyFrom(info);
-                mInfo.set(null);
+                mInfo.set(groupsChanged, DisplayInfo.DisplayInfoChangeSource.WINDOW_MANAGER);
                 return true;
             }
         } else if (mOverrideDisplayInfo != null) {
             mOverrideDisplayInfo = null;
-            mInfo.set(null);
+            mInfo.set(WM_OVERRIDE_GROUPS, DisplayInfo.DisplayInfoChangeSource.WINDOW_MANAGER);
             return true;
         }
         return false;
@@ -440,6 +465,8 @@ final class LogicalDisplay {
         DisplayDeviceInfo deviceInfo = mPrimaryDisplayDevice.getDisplayDeviceInfoLocked();
         DisplayDeviceConfig config = mPrimaryDisplayDevice.getDisplayDeviceConfig();
         if (!Objects.equals(mPrimaryDisplayDeviceInfo, deviceInfo) || mDirty) {
+            DisplayInfo oldDisplayInfo = getDisplayInfoLocked();
+
             mBaseDisplayInfo.layerStack = mLayerStack;
             mBaseDisplayInfo.flags = 0;
             // Displays default to moving content to the primary display when removed
@@ -605,7 +632,8 @@ final class LogicalDisplay {
             mBaseDisplayInfo.canHostTasks = mCanHostTasks;
 
             mPrimaryDisplayDeviceInfo = deviceInfo;
-            mInfo.set(null);
+            mInfo.set(oldDisplayInfo, computeCurrentDisplayInfoLocked(),
+                    DisplayInfo.DisplayInfoChangeSource.DISPLAY_MANAGER);
             mDirty = false;
         }
     }
@@ -992,7 +1020,8 @@ final class LogicalDisplay {
         if (mUserDisabledHdrTypes != userDisabledHdrTypes) {
             mUserDisabledHdrTypes = userDisabledHdrTypes;
             mBaseDisplayInfo.userDisabledHdrTypes = userDisabledHdrTypes;
-            mInfo.set(null);
+            mInfo.set(DisplayInfo.DisplayInfoGroup.COLOR_AND_BRIGHTNESS.getMask(),
+                    DisplayInfo.DisplayInfoChangeSource.OTHER);
         }
     }
 
@@ -1013,7 +1042,8 @@ final class LogicalDisplay {
         boolean handleLogicalDisplayChangedLocked = false;
         if (isTargetDisplayType && mBaseDisplayInfo.isForceSdr != isForceSdr) {
             mBaseDisplayInfo.isForceSdr = isForceSdr;
-            mInfo.set(null);
+            mInfo.set(DisplayInfo.DisplayInfoGroup.COLOR_AND_BRIGHTNESS.getMask(),
+                    DisplayInfo.DisplayInfoChangeSource.OTHER);
             handleLogicalDisplayChangedLocked = true;
         }
         return handleLogicalDisplayChangedLocked;
@@ -1039,7 +1069,8 @@ final class LogicalDisplay {
         Slog.i(TAG, "Set canHostTasks for display " + displayId + ": " + canHostTasks);
         mCanHostTasks = canHostTasks;
         mBaseDisplayInfo.canHostTasks = canHostTasks;
-        mInfo.set(null);
+        mInfo.set(DisplayInfo.DisplayInfoGroup.BASIC_PROPERTIES.getMask(),
+                DisplayInfo.DisplayInfoChangeSource.OTHER);
         return true;
     }
 
@@ -1110,13 +1141,15 @@ final class LogicalDisplay {
      * @return The previously set display device.
      */
     public DisplayDevice setPrimaryDisplayDeviceLocked(@Nullable DisplayDevice device) {
+        DisplayInfo oldDisplayInfo = getDisplayInfoLocked();
         final DisplayDevice old = mPrimaryDisplayDevice;
         mPrimaryDisplayDevice = device;
 
         // Reset all our display info data
         mPrimaryDisplayDeviceInfo = null;
         mBaseDisplayInfo.copyFrom(EMPTY_DISPLAY_INFO);
-        mInfo.set(null);
+        mInfo.set(oldDisplayInfo, computeCurrentDisplayInfoLocked(),
+                DisplayInfo.DisplayInfoChangeSource.DISPLAY_SWAP);
 
         // Since mCanHostTasks depends on mPrimaryDisplayDevice, we should refresh mCanHostTasks
         // when mPrimaryDisplayDevice changes.

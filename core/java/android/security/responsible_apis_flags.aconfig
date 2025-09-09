@@ -213,3 +213,13 @@ flag {
    description: "Flag that enables the uprobestats system service"
    bug: "408041227"
 }
+
+flag {
+    name: "check_application_thread_called_by_system"
+    namespace: "responsible_apis"
+    description: "Allow only the system to call methods on ApplicationThread."
+    bug: "317346668"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}

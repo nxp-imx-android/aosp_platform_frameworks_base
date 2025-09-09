@@ -31,6 +31,7 @@ import com.android.systemui.screencapture.record.largescreen.domain.interactor.L
 import com.android.systemui.screencapture.record.largescreen.domain.interactor.ScreenshotInteractor
 import com.android.systemui.screencapture.record.largescreen.shared.model.ScreenCaptureRegion
 import com.android.systemui.screencapture.record.largescreen.shared.model.ScreenCaptureType
+import com.android.systemui.screencapture.record.ui.viewmodel.ScreenCaptureRecordParametersViewModel
 import com.android.systemui.screenrecord.ScreenRecordingAudioSource
 import com.android.systemui.screenrecord.domain.ScreenRecordingParameters
 import com.android.systemui.screenrecord.domain.interactor.ScreenRecordingServiceInteractor
@@ -58,6 +59,7 @@ constructor(
     private val screenCaptureUiInteractor: ScreenCaptureUiInteractor,
     private val screenRecordingServiceInteractor: ScreenRecordingServiceInteractor,
     @ScreenCapture private val screenCaptureUiParams: ScreenCaptureUiParameters,
+    screenCaptureRecordParametersViewModelFactory: ScreenCaptureRecordParametersViewModel.Factory,
 ) : HydratedActivatable(), DrawableLoaderViewModel by drawableLoaderViewModelImpl {
     private val isShowingUiFlow = MutableStateFlow(true)
     private val captureTypeSource =
@@ -73,6 +75,10 @@ constructor(
     private val regionBoxSource = MutableStateFlow<Rect?>(null)
     private val toolbarBoundsSource = MutableStateFlow(Rect())
     private val toolbarOpacitySource = MutableStateFlow(1f)
+
+    // TODO(b/423697394) Init default value to be user's previously selected option
+    val screenCaptureRecordParametersViewModel =
+        screenCaptureRecordParametersViewModelFactory.create()
 
     val icons: ScreenCaptureIcons? by iconProvider.icons.hydratedStateOf()
 
@@ -243,7 +249,10 @@ constructor(
     }
 
     override suspend fun onActivated() {
-        coroutineScope { launch { iconProvider.collectIcons() } }
+        coroutineScope {
+            launch { iconProvider.collectIcons() }
+            launch { screenCaptureRecordParametersViewModel.activate() }
+        }
     }
 
     private fun generateCaptureTypeButtonViewModels(

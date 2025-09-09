@@ -928,8 +928,20 @@ public final class DisplayInfo implements Parcelable {
     }
 
     /**
+     * The source of a change in the display info object.
+     */
+    public enum DisplayInfoChangeSource {
+        DISPLAY_SWAP,
+        DISPLAY_MANAGER,
+        WINDOW_MANAGER,
+        OTHER
+    }
+
+    /**
      * Groups of related fields within a {@link DisplayInfo} object.
      * Used to categorize changes between two instances.
+     * Any changes to which fields belong to which groups need to update:
+     * {@link com.android.server.wm.utils.DisplayInfoOverrides#WM_OVERRIDE_GROUPS}.
      */
     public enum DisplayInfoGroup {
         /** Basic properties like IDs, flags, type, and ownership. */

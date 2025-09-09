@@ -41,6 +41,9 @@ public:
     // Global instance to use in order to maximize cache hits.
     static JniStringCache& getInstance();
 
+    // Clears all global references held by the cache.
+    static void Unload(JavaVM* vm);
+
     JniStringCache();
     ~JniStringCache();
 
@@ -67,6 +70,7 @@ public:
     // Under concurrent usage, some entries may not be cleared.
     // Use this for instance to trim memory usage if needed.
     void clear();
+    void clear(JNIEnv* env);
 
 private:
     struct CacheEntry {

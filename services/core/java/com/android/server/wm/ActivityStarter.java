@@ -1942,17 +1942,6 @@ class ActivityStarter {
         computeLaunchingTaskFlags();
         mIntent.setFlags(mLaunchFlags);
 
-        boolean dreamStopping = false;
-        if (!com.android.window.flags.Flags.removeActivityStarterDreamCallback()) {
-            for (ActivityRecord stoppingActivity : mSupervisor.mStoppingActivities) {
-                if (stoppingActivity.getActivityType()
-                        == WindowConfiguration.ACTIVITY_TYPE_DREAM) {
-                    dreamStopping = true;
-                    break;
-                }
-            }
-        }
-
         // Get top task at beginning because the order may be changed when reusing existing task.
         final Task prevTopRootTask = mPreferredTaskDisplayArea.getFocusedRootTask();
         final Task prevTopTask = prevTopRootTask != null ? prevTopRootTask.getTopLeafTask() : null;
@@ -2080,17 +2069,11 @@ class ActivityStarter {
                 mTargetRootTask.getRootTask().moveToFront("reuseOrNewTask", targetTask);
 
                 final boolean launchBehindDream;
-                if (com.android.window.flags.Flags.removeActivityStarterDreamCallback()) {
-                    final TaskDisplayArea tda = mTargetRootTask.getTaskDisplayArea();
-                    final Task top = (tda != null ? tda.getTopRootTask() : null);
-                    launchBehindDream = (top != null && top != mTargetRootTask)
-                            && top.getActivityType() == WindowConfiguration.ACTIVITY_TYPE_DREAM
-                            && top.getTopNonFinishingActivity() != null;
-                } else {
-                    launchBehindDream = !mTargetRootTask.isTopRootTaskInDisplayArea()
-                            && mService.isDreaming()
-                            && !dreamStopping;
-                }
+                final TaskDisplayArea tda = mTargetRootTask.getTaskDisplayArea();
+                final Task top = (tda != null ? tda.getTopRootTask() : null);
+                launchBehindDream = (top != null && top != mTargetRootTask)
+                        && top.getActivityType() == WindowConfiguration.ACTIVITY_TYPE_DREAM
+                        && top.getTopNonFinishingActivity() != null;
 
                 if (launchBehindDream) {
                     // Launching underneath dream activity (fullscreen, always-on-top). Run the
