@@ -1442,7 +1442,12 @@ public final class MessageQueue {
     boolean isBlockedOnSyncBarrier() {
         ActivityThread.throwIfNotInstrumenting();
         if (sUseDeliQueue) {
-            throw new UnsupportedOperationException("Not implemented");
+            // Call nextMessage to process any pending barriers
+            nextMessage(true, false);
+            Message asyncMsg = mStack.peek(true);
+
+            return mSyncBarrier != null &&
+                    (asyncMsg == null || asyncMsg.when <= mSyncBarrier.when);
         } else {
             Message msg = mMessages;
             return msg != null && msg.target == null;
