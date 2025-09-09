@@ -82,8 +82,6 @@ public class DeveloperVerifierControllerTest {
     private static final int TEST_ID = 100;
     private static final int TEST_ID2 = 200;
     private static final String TEST_PACKAGE_NAME = "com.foo";
-    private static final ComponentName TEST_VERIFIER_COMPONENT_NAME =
-            new ComponentName("com.verifier", "com.verifier.Service");
     private static final Uri TEST_PACKAGE_URI = Uri.parse("test://test");
     private static final SigningInfo TEST_SIGNING_INFO = new SigningInfo();
     private static final SharedLibraryInfo TEST_SHARED_LIBRARY_INFO1 =
@@ -143,6 +141,7 @@ public class DeveloperVerifierControllerTest {
     public void setUp() {
         MockitoAnnotations.initMocks(this);
         mPackageName = this.getClass().getPackageName();
+        assertThat(mPackageName).isNotNull();
         // Mock that the UID of this test becomes the UID of the verifier
         when(mSnapshot.getPackageUidInternal(anyString(), anyLong(), anyInt(), anyInt()))
                 .thenReturn(InstrumentationRegistry.getInstrumentation().getContext()
@@ -168,6 +167,7 @@ public class DeveloperVerifierControllerTest {
         mTestExtensionParams.putString(TEST_KEY, TEST_VALUE);
         mDeveloperVerifierController = new DeveloperVerifierController(
                 mContext, mHandler, new ComponentName(mPackageName, "testClass"), mInjector);
+        assertThat(mDeveloperVerifierController.getVerifierPackageName()).isNotNull();
     }
 
     private static void setUpMockRemoteServiceForUser(
@@ -247,7 +247,6 @@ public class DeveloperVerifierControllerTest {
         // 2 invocations, one for onBinderDied and one for onDisconnected.
         verify(mInjector, times(2)).removeCallbacks(eq(mHandler), any(Runnable.class));
         // Test that nothing crashes if the service connection is lost
-        assertThat(mDeveloperVerifierController.getVerifierPackageName()).isNotNull();
         mDeveloperVerifierController.notifyPackageNameAvailable(TEST_PACKAGE_NAME, mUserId);
         mDeveloperVerifierController.notifyVerificationCancelled(TEST_PACKAGE_NAME, mUserId);
         mDeveloperVerifierController.notifyVerificationTimeout(TEST_ID, mUserId);
