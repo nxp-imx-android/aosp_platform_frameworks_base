@@ -892,7 +892,8 @@ public class UserManager {
      * {@link android.Manifest.permission#MANAGE_DEVICE_POLICY_DEBUGGING_FEATURES}
      * can set this restriction using the DevicePolicyManager APIs mentioned below.
      *
-     * <p>The default value is <code>false</code>.
+     * <p>Default is <code>true</code> for newly created work profile on or after the
+     * 2025-04 security patch level. Otherwise, the default is <code>false</code>.
      *
      * <p>Key for user restrictions.
      * <p>Type: Boolean
