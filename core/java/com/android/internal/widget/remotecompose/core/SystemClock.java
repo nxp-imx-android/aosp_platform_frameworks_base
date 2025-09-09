@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 package com.android.internal.widget.remotecompose.core;
-
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneId;
