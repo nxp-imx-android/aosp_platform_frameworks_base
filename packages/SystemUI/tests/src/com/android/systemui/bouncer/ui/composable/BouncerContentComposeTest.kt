@@ -18,6 +18,7 @@ package com.android.systemui.bouncer.ui.composable
 
 import android.app.AlertDialog
 import android.content.testableContext
+import android.platform.test.annotations.EnableFlags
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.test.assertIsDisplayed
@@ -70,6 +71,7 @@ class BouncerContentComposeTest : SysuiTestCase() {
     }
 
     @Test
+    @EnableFlags(com.android.systemui.Flags.FLAG_BACK_BUTTON_ON_BOUNCER)
     fun backButton_shownOnLargeScreens() {
         kosmos.testableContext.orCreateTestableResources.addOverride(
             R.bool.config_improveLargeScreenInteractionOnLockscreen,
@@ -83,6 +85,7 @@ class BouncerContentComposeTest : SysuiTestCase() {
     }
 
     @Test
+    @EnableFlags(com.android.systemui.Flags.FLAG_BACK_BUTTON_ON_BOUNCER)
     fun backButton_hiddenOnSmallScreens() {
         kosmos.testableContext.orCreateTestableResources.addOverride(
             R.bool.config_improveLargeScreenInteractionOnLockscreen,
