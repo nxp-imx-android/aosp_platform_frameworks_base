@@ -86,8 +86,8 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
 
     private static final String TAG = "ComputerControlSession";
 
-    // Input device names are limited to 80 bytes, so keep the prefix at most 75 long.
-    private static final int MAX_INPUT_DEVICE_NAME_PREFIX_LENGTH = 75;
+    // Input device names are limited to 80 bytes, so keep the prefix shorter than that.
+    private static final int MAX_INPUT_DEVICE_NAME_PREFIX_LENGTH = 70;
 
     // Throttle swipe events to avoid misinterpreting them as a fling. Each swipe will
     // consist of a DOWN event, 10 MOVE events spread over 500ms, and an UP event.
