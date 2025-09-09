@@ -404,7 +404,7 @@ public class UserManagerService extends IUserManager.Stub {
     private final Object mAppRestrictionsLock = NamedLock.create("mAppRestrictionsLock");
 
     private final Handler mHandler;
-    private final MultiuserDeprecationReporter mDeprecationReporter;
+    private final MultiuserNonComplianceLogger mNonComplianceLogger;
 
     private final ThreadPoolExecutor mInternalExecutor;
 
@@ -1119,7 +1119,7 @@ public class UserManagerService extends IUserManager.Stub {
         mPackagesLock = packagesLock;
         mUsers = users != null ? users : new SparseArray<>();
         mHandler = new MainHandler();
-        mDeprecationReporter = new MultiuserDeprecationReporter(mHandler);
+        mNonComplianceLogger = new MultiuserNonComplianceLogger(mHandler);
         mInternalExecutor = new ThreadPoolExecutor(/* corePoolSize */ 0, /* maximumPoolSize */ 1,
                 /* keepAliveTime */ 24, TimeUnit.HOURS, new LinkedBlockingQueue<>());
         mUserVisibilityMediator = new UserVisibilityMediator(mHandler);
@@ -1377,7 +1377,7 @@ public class UserManagerService extends IUserManager.Stub {
     @Override
     public @CanBeNULL @UserIdInt int getMainUserId() {
         checkQueryOrCreateUsersPermission("get main user id");
-        mDeprecationReporter.logGetMainUserCall();
+        mNonComplianceLogger.logGetMainUserCall();
         return getMainUserIdUnchecked();
     }
 
@@ -1402,7 +1402,7 @@ public class UserManagerService extends IUserManager.Stub {
 
     @Override
     public boolean isMainUser(int userId) {
-        mDeprecationReporter.logIsMainUserCall();
+        mNonComplianceLogger.logIsMainUserCall();
         UserInfo user = getUserInfo(userId);
         return user != null && user.isMainUnlogged();
     }
@@ -8127,12 +8127,11 @@ public class UserManagerService extends IUserManager.Stub {
                 case "--visibility-mediator":
                     mUserVisibilityMediator.dump(pw, args);
                     return;
-                // TODO(b/414326600): use a different arg for HSU SysUI actions
-                case "--deprecated-calls":
+                case "--non-compliance":
                     if (args.length > 1 && args[1].equals("reset")) {
-                        mDeprecationReporter.reset(pw);
+                        mNonComplianceLogger.reset(pw);
                     } else {
-                        mDeprecationReporter.dump(pw);
+                        mNonComplianceLogger.dump(pw);
                     }
                     return;
             }
@@ -8275,7 +8274,7 @@ public class UserManagerService extends IUserManager.Stub {
         }
 
         pw.println();
-        mDeprecationReporter.dump(pw);
+        mNonComplianceLogger.dump(pw);
 
         // NOTE: add new stuff here, as pw is closed after the try-with-resources block below
 
@@ -8965,7 +8964,7 @@ public class UserManagerService extends IUserManager.Stub {
 
         @Override
         public void logLaunchedHsuActivity(ComponentName activity) {
-            mDeprecationReporter.logLaunchedHsuActivity(activity);
+            mNonComplianceLogger.logLaunchedHsuActivity(activity);
         }
 
     } // class LocalService

@@ -31,14 +31,14 @@ import com.android.server.LocalServices;
 
 import java.io.PrintWriter;
 
-// TODO(b/414326600): rename (and add unit tests) once the final design is ready (notice that it's
-// also used to log UI actions on HSU
 /**
- * Class used to report deprecated calls.
+ * Class used to report events that indicate the potential existence of non-multiuser-compliant
+ * features, such as the API calls to check for "main user" (deprecated) and the activities and
+ * notifications on headless system user.
  */
-final class MultiuserDeprecationReporter {
+final class MultiuserNonComplianceLogger {
 
-    private static final String PROP_ENABLE_IT = "fw.user.log_deprecation";
+    private static final String PROP_ENABLE_IT = "fw.user.log_non_compliance";
     private static final int PROP_ENABLED = 1;
     private static final int PROP_DEFAULT = -1;
 
@@ -62,7 +62,7 @@ final class MultiuserDeprecationReporter {
     @Nullable
     private PackageManagerInternal mPmInternal;
 
-    MultiuserDeprecationReporter(Handler handler) {
+    MultiuserNonComplianceLogger(Handler handler) {
         mHandler = handler;
         if (Build.isDebuggable()
                 || SystemProperties.getInt(PROP_ENABLE_IT, PROP_DEFAULT) == PROP_ENABLED) {
