@@ -784,6 +784,7 @@ public class StageCoordinatorTests extends ShellTestCase {
         when(mMainStage.isActive()).thenReturn(true);
         when(mMainStage.getChildCount()).thenReturn(1);
         when(mSideStage.getChildCount()).thenReturn(0);
+        when(mStageCoordinator.isSplitScreenVisible()).thenReturn(true);
         mStageCoordinator.onChildTaskMovedToBubble(mSideStage, /* taskId= */ 8);
         verify(mSplitScreenTransitions).startDismissTransition(any(), any(), eq(STAGE_TYPE_MAIN),
                 eq(SplitScreenController.EXIT_REASON_CHILD_TASK_ENTER_BUBBLE));
@@ -794,6 +795,7 @@ public class StageCoordinatorTests extends ShellTestCase {
         when(mMainStage.isActive()).thenReturn(true);
         when(mMainStage.getChildCount()).thenReturn(0);
         when(mSideStage.getChildCount()).thenReturn(0);
+        when(mStageCoordinator.isSplitScreenVisible()).thenReturn(true);
         mStageCoordinator.onChildTaskMovedToBubble(mSideStage, /* taskId= */ 8);
         verify(mSplitScreenTransitions).startDismissTransition(any(), any(),
                 eq(STAGE_TYPE_UNDEFINED),
@@ -807,6 +809,20 @@ public class StageCoordinatorTests extends ShellTestCase {
         mStageCoordinator.onChildTaskMovedToBubble(mSideStage, /* taskId= */ 8);
         verify(mSplitScreenTransitions, never()).startDismissTransition(any(), any(), anyInt(),
                 anyInt());
+    }
+
+    @Test
+    public void testOnChildTaskMovedToBubble_splitNotVisible_dismissesSplitWithUndefinedTopStage() {
+        when(mMainStage.isActive()).thenReturn(true);
+        when(mMainStage.getChildCount()).thenReturn(1);
+        when(mSideStage.getChildCount()).thenReturn(0);
+        when(mStageCoordinator.isSplitScreenVisible()).thenReturn(false);
+
+        mStageCoordinator.onChildTaskMovedToBubble(mSideStage, /* taskId= */ 8);
+
+        verify(mSplitScreenTransitions).startDismissTransition(any(), any(),
+                eq(STAGE_TYPE_UNDEFINED),
+                eq(SplitScreenController.EXIT_REASON_CHILD_TASK_ENTER_BUBBLE));
     }
 
     @Test
@@ -874,6 +890,42 @@ public class StageCoordinatorTests extends ShellTestCase {
 
         // Verification: The divider should not be hidden because the flag is disabled.
         verify(mStageCoordinator, never()).setDividerVisibility(eq(false), any());
+    }
+
+    @Test
+    public void testAddExitForBubblesIfNeeded_splitVisible_hasStageToTop() {
+        when(mStageCoordinator.isSplitActive()).thenReturn(true);
+        when(mStageCoordinator.isSplitScreenVisible()).thenReturn(true);
+        doReturn(STAGE_TYPE_MAIN).when(mStageCoordinator).getStageOfTask(anyInt());
+
+        android.window.TransitionRequestInfo request =
+                mock(android.window.TransitionRequestInfo.class);
+        ActivityManager.RunningTaskInfo taskInfo = new TestRunningTaskInfoBuilder().build();
+        when(request.getTriggerTask()).thenReturn(taskInfo);
+
+        WindowContainerTransaction wct = new WindowContainerTransaction();
+        mStageCoordinator.addExitForBubblesIfNeeded(request, wct);
+
+        verify(mStageCoordinator).prepareExitSplitScreen(eq(STAGE_TYPE_SIDE),
+                eq(wct), anyInt());
+    }
+
+    @Test
+    public void testAddExitForBubblesIfNeeded_splitNotVisible_noStageToTop() {
+        when(mStageCoordinator.isSplitActive()).thenReturn(true);
+        when(mStageCoordinator.isSplitScreenVisible()).thenReturn(false);
+        doReturn(STAGE_TYPE_MAIN).when(mStageCoordinator).getStageOfTask(anyInt());
+
+        android.window.TransitionRequestInfo request =
+                mock(android.window.TransitionRequestInfo.class);
+        ActivityManager.RunningTaskInfo taskInfo = new TestRunningTaskInfoBuilder().build();
+        when(request.getTriggerTask()).thenReturn(taskInfo);
+
+        WindowContainerTransaction wct = new WindowContainerTransaction();
+        mStageCoordinator.addExitForBubblesIfNeeded(request, wct);
+
+        verify(mStageCoordinator).prepareExitSplitScreen(eq(STAGE_TYPE_UNDEFINED),
+                eq(wct), anyInt());
     }
 
     private Transitions createTestTransitions() {
