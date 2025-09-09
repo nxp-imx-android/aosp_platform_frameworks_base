@@ -22,7 +22,6 @@ import static android.app.CameraCompatTaskInfo.CAMERA_COMPAT_NONE;
 import static android.app.CameraCompatTaskInfo.CAMERA_COMPAT_PORTRAIT_DEVICE_IN_LANDSCAPE;
 import static android.app.CameraCompatTaskInfo.CAMERA_COMPAT_PORTRAIT_DEVICE_IN_PORTRAIT;
 import static android.app.CameraCompatTaskInfo.CameraCompatMode;
-import static android.app.WallpaperManager.ORIENTATION_LANDSCAPE;
 import static android.app.WindowConfiguration.ROTATION_UNDEFINED;
 import static android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM;
 import static android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN;
@@ -34,6 +33,7 @@ import static android.content.pm.ActivityInfo.SCREEN_ORIENTATION_FULL_USER;
 import static android.content.pm.ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE;
 import static android.content.pm.ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
 import static android.content.pm.ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED;
+import static android.content.res.Configuration.ORIENTATION_LANDSCAPE;
 import static android.content.res.Configuration.ORIENTATION_PORTRAIT;
 import static android.view.Display.TYPE_EXTERNAL;
 import static android.view.Display.TYPE_INTERNAL;
@@ -46,6 +46,7 @@ import static com.android.dx.mockito.inline.extended.ExtendedMockito.doReturn;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.spyOn;
 import static com.android.server.wm.AppCompatCameraOverrides.REQUESTED;
 import static com.android.server.wm.AppCompatConfiguration.MIN_FIXED_ORIENTATION_LETTERBOX_ASPECT_RATIO;
+import static com.android.window.flags.Flags.FLAG_CAMERA_COMPAT_LANDSCAPE_CAMERA_SUPPORT;
 import static com.android.window.flags.Flags.FLAG_CAMERA_COMPAT_UNIFY_CAMERA_POLICIES;
 import static com.android.window.flags.Flags.FLAG_ENABLE_CAMERA_COMPAT_COMPATIBILITY_INFO_ROTATE_AND_CROP_BUGFIX;
 import static com.android.window.flags.Flags.FLAG_ENABLE_CAMERA_COMPAT_EXTERNAL_DISPLAY_ROTATION_BUGFIX;
@@ -634,6 +635,31 @@ public class AppCompatCameraSimReqOrientationPolicyTests extends WindowTestsBase
             // Rotate and crop value should offset the difference between the sandboxed display
             // rotation and the real display (camera) rotation: (0 - 270) % 360 = 90.
             robot.assertCompatibilityInfoSentWithRotateAndCrop(ROTATION_90);
+        });
+    }
+
+    @Test
+    @EnableFlags({FLAG_ENABLE_CAMERA_COMPAT_FOR_DESKTOP_WINDOWING,
+            FLAG_CAMERA_COMPAT_LANDSCAPE_CAMERA_SUPPORT})
+    @EnableCompatChanges({OVERRIDE_CAMERA_COMPAT_ENABLE_FREEFORM_WINDOWING_TREATMENT})
+    public void testOnCameraOpened_landscapeDisplay_sandboxedToPortrait() {
+        runTestScenario((robot) -> {
+            robot.configureActivityAndDisplay(SCREEN_ORIENTATION_PORTRAIT, ORIENTATION_LANDSCAPE,
+                    WINDOWING_MODE_FREEFORM);
+            robot.activity().rotateDisplayForTopActivity(ROTATION_0);
+
+            robot.onCameraOpened(CAMERA_ID_1, TEST_PACKAGE_1);
+
+            // Display rotation for fixed-orientation portrait apps should always be 0.
+            robot.assertCompatibilityInfoSentWithDisplayRotation(ROTATION_0);
+            // Sensor orientation should change from landscape to portrait.
+            robot.assertCompatibilityInfoSentWithSensorOverride(true);
+            robot.assertCompatibilityInfoSentWithLetterbox(true);
+            // Default is true, and should be disabled (false) for camera compat.
+            robot.assertCompatibilityInfoSentWithInverseTransformAllowed(false);
+            // Rotate and crop value should offset by the change in sensor orientation:
+            // (0 - 90) % 360 = 270.
+            robot.assertCompatibilityInfoSentWithRotateAndCrop(ROTATION_270);
         });
     }
 

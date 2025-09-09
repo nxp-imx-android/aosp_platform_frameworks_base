@@ -100,6 +100,10 @@ class AppCompatCameraRotationState {
     boolean isCameraDeviceNaturalOrientationPortrait() {
         // Per CDD (7.5.5 C-1-1), camera sensor orientation and display natural orientation have to
         // be the same (portrait or landscape).
+        // TODO(b/444213250): this is not always correct, for example for some landscape foldables,
+        //  natural orientation of some displays and camera sensors may differ. Instead, query the
+        //  camera sensors for their natural orientation. Also make sure no camera sensor sandboxing
+        //  affects that.
         return getDisplayContentTiedToCamera().getNaturalOrientation() == ORIENTATION_PORTRAIT;
     }
 
