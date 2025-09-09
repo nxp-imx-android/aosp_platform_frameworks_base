@@ -53,7 +53,7 @@ constructor(
     private val deviceStateManager: DeviceStateManager,
     private val threadFactory: ThreadFactory,
     private val fullscreenLightRevealAnimationControllerFactory:
-    FullscreenLightRevealAnimationController.Factory
+        FullscreenLightRevealAnimationController.Factory
 ) : FullscreenLightRevealAnimation {
 
     private val transitionListener = TransitionListener()
@@ -62,8 +62,6 @@ constructor(
     private var overlayAddReason: AddOverlayReason = UNFOLD
     private lateinit var controller: FullscreenLightRevealAnimationController
     private lateinit var bgExecutor: Executor
-
-    private var lastTransitionProgress = ANIMATION_PROGRESS_UNFOLDED
 
     override fun init() {
         // This method will be called only on devices where this animation is enabled,
@@ -113,10 +111,6 @@ constructor(
         }
     }
 
-    override fun onScreenTurnedOff() {
-        controller.ensureOverlayRemoved()
-    }
-
     private fun calculateRevealAmount(animationProgress: Float? = null): Float {
         val overlayAddReason = overlayAddReason
 
@@ -152,22 +146,10 @@ constructor(
             // affect much the usage of the device
             controller.isTouchBlocked =
                 overlayAddReason == FOLD || progress < UNFOLD_BLOCK_TOUCHES_UNTIL_PROGRESS
-
-            lastTransitionProgress = progress
         }
 
         override fun onTransitionFinished() = executeInBackground {
-            // It is guaranteed to receive a 0.0f event when the transition is finished
-            // because of folding
-            val finishedBecauseFolded = lastTransitionProgress == ANIMATION_PROGRESS_FOLDED
-
-            // Remove the overlay here only if the transition is finished in 'unfolded' state.
-            // The folded case removal will be handled by onScreenTurnedOff callback.
-            // This is needed to avoid too early removal of the overlay, as we might receive
-            // onTransitionFinished before the screen is turned off
-            if (!finishedBecauseFolded) {
-                controller.ensureOverlayRemoved()
-            }
+            controller.ensureOverlayRemoved()
         }
 
         override fun onTransitionStarted() {
@@ -198,6 +180,7 @@ constructor(
             context,
             Consumer { isFolded ->
                 if (isFolded) {
+                    controller.ensureOverlayRemoved()
                     isUnfoldHandled = false
                 }
                 this.isFolded = isFolded
@@ -213,7 +196,5 @@ constructor(
         const val TAG = "UnfoldLightRevealOverlayAnimation"
         const val OVERLAY_TITLE = "unfold-animation-overlay"
         const val UNFOLD_BLOCK_TOUCHES_UNTIL_PROGRESS = 0.8f
-        const val ANIMATION_PROGRESS_UNFOLDED = 1.0f
-        const val ANIMATION_PROGRESS_FOLDED = 0.0f
     }
 }
