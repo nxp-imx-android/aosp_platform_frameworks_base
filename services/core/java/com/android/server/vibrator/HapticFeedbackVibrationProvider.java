@@ -16,8 +16,6 @@
 
 package com.android.server.vibrator;
 
-import static android.os.vibrator.Flags.hapticFeedbackInputSourceCustomizationEnabled;
-
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.content.res.Resources;
@@ -169,26 +167,22 @@ public final class HapticFeedbackVibrationProvider {
     }
 
     /**
-     * Similar to {@link #getVibrationAttributes(int, int, int)} but also handles
-     * input source customization.
+     * Similar to {@link #getVibrationAttributes} but also handles input source customization.
      *
-     * @param inputSource the {@link InputDevice.Source} that customizes the
-     *                    {@link VibrationAttributes}.
+     * @param inputSource one of {@code InputDevice.SOURCE_*} to customize the attributes.
      */
     public VibrationAttributes getVibrationAttributesForInputDevice(int effectId,
             int inputSource,
             @HapticFeedbackConstants.Flags int flags,
             @HapticFeedbackConstants.PrivateFlags int privFlags) {
-        if (hapticFeedbackInputSourceCustomizationEnabled()) {
-            switch (effectId) {
-                case HapticFeedbackConstants.SCROLL_TICK,
-                        HapticFeedbackConstants.SCROLL_ITEM_FOCUS,
-                        HapticFeedbackConstants.SCROLL_LIMIT -> {
-                    VibrationAttributes attrs = inputSource == InputDevice.SOURCE_ROTARY_ENCODER
-                            ? HARDWARE_FEEDBACK_VIBRATION_ATTRIBUTES
-                            : TOUCH_VIBRATION_ATTRIBUTES;
-                    return getVibrationAttributesWithFlags(attrs, effectId, flags);
-                }
+        switch (effectId) {
+            case HapticFeedbackConstants.SCROLL_TICK,
+                    HapticFeedbackConstants.SCROLL_ITEM_FOCUS,
+                    HapticFeedbackConstants.SCROLL_LIMIT -> {
+                VibrationAttributes attrs = inputSource == InputDevice.SOURCE_ROTARY_ENCODER
+                        ? HARDWARE_FEEDBACK_VIBRATION_ATTRIBUTES
+                        : TOUCH_VIBRATION_ATTRIBUTES;
+                return getVibrationAttributesWithFlags(attrs, effectId, flags);
             }
         }
         return getVibrationAttributes(

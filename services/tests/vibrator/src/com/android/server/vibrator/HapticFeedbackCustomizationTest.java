@@ -23,7 +23,6 @@ import static android.os.VibrationEffect.Composition.PRIMITIVE_TICK;
 import static android.os.VibrationEffect.EFFECT_CLICK;
 import static android.os.VibrationEffect.EFFECT_HEAVY_CLICK;
 import static android.os.VibrationEffect.EFFECT_TICK;
-import static android.os.vibrator.Flags.FLAG_HAPTIC_FEEDBACK_INPUT_SOURCE_CUSTOMIZATION_ENABLED;
 import static android.os.vibrator.Flags.FLAG_HAPTIC_FEEDBACK_WITH_CUSTOM_USAGE;
 
 import static com.android.internal.R.xml.haptic_feedback_customization;
@@ -590,7 +589,6 @@ public class HapticFeedbackCustomizationTest {
     }
 
     private void setupCustomizationResource(String xml, int xmlResId) throws Exception {
-        mSetFlagsRule.enableFlags(FLAG_HAPTIC_FEEDBACK_INPUT_SOURCE_CUSTOMIZATION_ENABLED);
         mSetFlagsRule.enableFlags(FLAG_HAPTIC_FEEDBACK_WITH_CUSTOM_USAGE);
         doReturn(FakeXmlResourceParser.fromXml(xml)).when(mResourcesMock).getXml(xmlResId);
     }

@@ -136,17 +136,12 @@ final class HapticFeedbackCustomization {
         mHapticCustomizations = hapticCustomizations;
 
         // Load customizations specified by input sources.
-        if (android.os.vibrator.Flags.hapticFeedbackInputSourceCustomizationEnabled()) {
-            mHapticCustomizationsForSourceRotary =
-                    loadCustomizedFeedbackVibrationFromRes(res, vibratorInfo,
-                            R.xml.haptic_feedback_customization_source_rotary_encoder);
-            mHapticCustomizationsForSourceTouchScreen =
-                    loadCustomizedFeedbackVibrationFromRes(res, vibratorInfo,
-                            R.xml.haptic_feedback_customization_source_touchscreen);
-        } else {
-            mHapticCustomizationsForSourceRotary = new SparseArray<>();
-            mHapticCustomizationsForSourceTouchScreen = new SparseArray<>();
-        }
+        mHapticCustomizationsForSourceRotary =
+                loadCustomizedFeedbackVibrationFromRes(res, vibratorInfo,
+                        R.xml.haptic_feedback_customization_source_rotary_encoder);
+        mHapticCustomizationsForSourceTouchScreen =
+                loadCustomizedFeedbackVibrationFromRes(res, vibratorInfo,
+                        R.xml.haptic_feedback_customization_source_touchscreen);
 
         // Load customizations specified for usages.
         if (android.os.vibrator.Flags.hapticFeedbackWithCustomUsage()) {
