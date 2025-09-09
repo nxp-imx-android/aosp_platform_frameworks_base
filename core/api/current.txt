@@ -52997,6 +52997,8 @@ package android.view {
   }
 
   @FlaggedApi("com.android.input.flags.input_device_view_behavior_api") public static final class InputDevice.ViewBehavior {
+    method @FlaggedApi("com.android.input.flags.input_device_primary_directional_motion_axis_api") public int getPrimaryDirectionalMotionAxis();
+    method @FlaggedApi("com.android.input.flags.input_device_primary_directional_motion_axis_api") public boolean hasPrimaryDirectionalMotionAxis();
     method @FlaggedApi("com.android.input.flags.input_device_view_behavior_api") public boolean shouldSmoothScroll(int, int);
   }
 
