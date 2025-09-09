@@ -120,6 +120,7 @@ public class UsbDataAdvancedProtectionHookTest {
             "com.android.server.security.advancedprotection.features.silence";
     private static final long TEST_TIMEOUT_MS = 2000;
     private static final int PD_COMPLIANT_ROLE_COMBINATIONS = 433;
+    private static final int PD_NON_COMPLIANT_ROLE_COMBINATIONS = 0;
 
     @Rule
     public final ExtendedMockitoRule mExtendedMockitoRule =
@@ -517,6 +518,13 @@ public class UsbDataAdvancedProtectionHookTest {
             usbPortChanged_lockedAndPowerBrickConnectedAndPdCompliant_dataRequiredForHighPowerCharge_sendsChargeNotification()
                     throws RemoteException {
         setupAndEnableFeature(false, true, true); // Data required for high power charge
+        String expectedTitle = "Charge Title";
+        String expectedText = "Charge Text";
+        when(mContext.getString(R.string.usb_apm_usb_plugged_in_when_locked_notification_title))
+                .thenReturn(expectedTitle);
+        when(mContext.getString(
+                        R.string.usb_apm_usb_plugged_in_when_locked_charge_notification_text))
+                .thenReturn(expectedText);
         when(mKeyguardManager.isKeyguardLocked()).thenReturn(true);
         UsbPortStatus mockUsbPortStatus =
                 new UsbPortStatus(
@@ -552,6 +560,9 @@ public class UsbDataAdvancedProtectionHookTest {
                         eq(AdvancedProtectionProtoEnums.DIALOGUE_TYPE_BLOCKED_INTERACTION),
                         eq(false));
         checkNotificationIntents(mNotificationCaptor.getValue());
+        Notification notification = mNotificationCaptor.getValue();
+        assertEquals(expectedTitle, notification.extras.getString(Notification.EXTRA_TITLE));
+        assertEquals(expectedText, notification.extras.getString(Notification.EXTRA_BIG_TEXT));
     }
 
     private void checkNotificationIntents(Notification notification) {
@@ -562,6 +573,10 @@ public class UsbDataAdvancedProtectionHookTest {
     @EnableFlags(Flags.FLAG_AAPM_FEATURE_USB_DATA_PROTECTION)
     public void usbPortChanged_lockedAndPdCompliant_sendsDataNotification() throws RemoteException {
         setupAndEnableFeature(false, false, true); // Data NOT required for high power charge
+        when(mContext.getString(R.string.usb_apm_usb_plugged_in_when_locked_notification_title))
+                .thenReturn("Data Title");
+        when(mContext.getString(R.string.usb_apm_usb_plugged_in_when_locked_data_notification_text))
+                .thenReturn("Data Text");
         when(mKeyguardManager.isKeyguardLocked()).thenReturn(true);
         UsbPortStatus mockUsbPortStatus =
                 new UsbPortStatus(
@@ -593,6 +608,9 @@ public class UsbDataAdvancedProtectionHookTest {
 
         assertNotNull(mNotificationCaptor.getValue());
         checkNotificationIntents(mNotificationCaptor.getValue());
+        Notification notification = mNotificationCaptor.getValue();
+        assertEquals("Data Title", notification.extras.getString(Notification.EXTRA_TITLE));
+        assertEquals("Data Text", notification.extras.getString(Notification.EXTRA_BIG_TEXT));
     }
 
     @Test
@@ -600,6 +618,13 @@ public class UsbDataAdvancedProtectionHookTest {
     public void usbPortChanged_notPowerBrickConnectedOrPdCompliant_sendsChargeDataNotification()
             throws RemoteException {
         setupAndEnableFeature(false, false, true);
+        String expectedTitle = "Charge Data Title";
+        String expectedText = "Charge Data Text";
+        when(mContext.getString(R.string.usb_apm_usb_plugged_in_when_locked_notification_title))
+                .thenReturn(expectedTitle);
+        when(mContext.getString(
+                        R.string.usb_apm_usb_plugged_in_when_locked_charge_data_notification_text))
+                .thenReturn(expectedText);
         when(mKeyguardManager.isKeyguardLocked()).thenReturn(true);
         UsbPortStatus mockUsbPortStatus =
                 new UsbPortStatus(
@@ -638,6 +663,10 @@ public class UsbDataAdvancedProtectionHookTest {
                         any(UserHandle.class));
 
         checkNotificationIntents(mNotificationCaptor.getValue());
+        Notification notification = mNotificationCaptor.getValue();
+        assertEquals(expectedTitle, notification.extras.getString(Notification.EXTRA_TITLE));
+        assertEquals(
+                expectedText, notification.extras.getString(Notification.EXTRA_BIG_TEXT));
     }
 
     @Test
@@ -701,24 +730,29 @@ public class UsbDataAdvancedProtectionHookTest {
         mUsbDataHook.onAdvancedProtectionChanged(false);
 
         verify(mUsbManagerInternal, times(3)).enableUsbDataSignal(eq(true), eq(1));
-        verify(() -> FrameworkStatsLog
-                .write(
-                        FrameworkStatsLog.ADVANCED_PROTECTION_USB_STATE_CHANGE_ERROR_REPORTED,
-                        true,
-                        2,
-                        AdvancedProtectionProtoEnums.USB_ERROR_TYPE_CHANGE_DATA_STATUS_FAILED));
+        verify(
+                () ->
+                        FrameworkStatsLog.write(
+                                FrameworkStatsLog
+                                        .ADVANCED_PROTECTION_USB_STATE_CHANGE_ERROR_REPORTED,
+                                true,
+                                2,
+                                AdvancedProtectionProtoEnums
+                                        .USB_ERROR_TYPE_CHANGE_DATA_STATUS_FAILED));
     }
 
     @Test
     @EnableFlags(Flags.FLAG_AAPM_FEATURE_USB_DATA_PROTECTION)
     public void notification_replugRequired_showsCorrectText() throws RemoteException {
         setupAndEnableFeature(true, true, true); // Replug required
+        String expectedTitle = "Replug Title";
+        String expectedText = "Replug Text";
         when(mContext.getString(
                         R.string.usb_apm_usb_plugged_in_when_locked_replug_notification_title))
-                .thenReturn("Replug Title");
+                .thenReturn(expectedTitle);
         when(mContext.getString(
                         R.string.usb_apm_usb_plugged_in_when_locked_replug_notification_text))
-                .thenReturn("Replug Text");
+                .thenReturn(expectedText);
 
         when(mKeyguardManager.isKeyguardLocked()).thenReturn(true);
         UsbPortStatus mockUsbPortStatus =
@@ -747,20 +781,25 @@ public class UsbDataAdvancedProtectionHookTest {
                         mNotificationCaptor.capture(),
                         any(UserHandle.class));
         Notification notification = mNotificationCaptor.getValue();
-        assertEquals("Replug Title", notification.extras.getString(Notification.EXTRA_TITLE));
+        assertEquals(expectedTitle, notification.extras.getString(Notification.EXTRA_TITLE));
+        assertEquals(
+                expectedText, notification.extras.getString(Notification.EXTRA_BIG_TEXT));
     }
 
     @Test
     @EnableFlags(Flags.FLAG_AAPM_FEATURE_USB_DATA_PROTECTION)
     public void notificationSilenceReceiver_silencesNotifications() throws RemoteException {
         setupAndEnableFeature(false, false, true);
-
+        String expectedTitle = "Silenced Title";
+        when(mContext.getString(R.string.usb_apm_usb_notification_silenced_title))
+                .thenReturn(expectedTitle);
+        BroadcastReceiver mainReceiver = getAndCaptureReceiver();
         // Get the second registered receiver, which is the NotificationSilenceReceiver
-        BroadcastReceiver silenceReceiver =
-                getAndCaptureSilenceReceiver(); // mBroadcastReceiverCaptor.getAllValues().get(1);
+        BroadcastReceiver silenceReceiver = getAndCaptureSilenceReceiver();
 
         Intent silenceIntent = new Intent(ACTION_SILENCE_NOTIFICATION);
         silenceIntent.putExtra("silence_power_notification", true);
+        silenceIntent.putExtra("silence_data_notification", true);
 
         silenceReceiver.onReceive(mContext, silenceIntent);
 
@@ -771,31 +810,42 @@ public class UsbDataAdvancedProtectionHookTest {
                         anyInt(),
                         mNotificationCaptor.capture(),
                         any(UserHandle.class));
+        Notification notification = mNotificationCaptor.getValue();
+        assertEquals(expectedTitle, notification.extras.getString(Notification.EXTRA_TITLE));
+
         // Check that a subsequent power notification would be suppressed
         // Simulate a power brick connection event again
         when(mKeyguardManager.isKeyguardLocked()).thenReturn(true);
-        UsbPortStatus mockUsbPortStatus =
+        UsbPortStatus usbPortStatus =
                 new UsbPortStatus(
                         1,
                         POWER_ROLE_SINK,
                         DATA_ROLE_HOST,
-                        PD_COMPLIANT_ROLE_COMBINATIONS,
+                        PD_NON_COMPLIANT_ROLE_COMBINATIONS,
                         0,
                         0,
                         DATA_STATUS_DISABLED_FORCE,
                         false,
-                        POWER_BRICK_STATUS_CONNECTED);
-        mApmRequestedUsbDataStatusBoolean.set(true);
-        BroadcastReceiver mainReceiver = getAndCaptureReceiver();
-        Intent powerIntent = new Intent(UsbManager.ACTION_USB_PORT_CHANGED);
-        powerIntent.putExtra(UsbManager.EXTRA_PORT_STATUS, mockUsbPortStatus);
-        mainReceiver.onReceive(mContext, powerIntent);
+                        POWER_BRICK_STATUS_DISCONNECTED);
+        Intent powerDataIntent = new Intent(UsbManager.ACTION_USB_PORT_CHANGED);
+        powerDataIntent.putExtra(UsbManager.EXTRA_PORT_STATUS, usbPortStatus);
+        mainReceiver.onReceive(mContext, powerDataIntent);
+        verify(mDelayedNotificationHandler).postDelayed(mRunnableCaptor.capture(), anyLong());
+        mRunnableCaptor.getValue().run();
 
-        // We expect only one notification (the "silenced" one). If another was sent, this would
+        // We expect only one notification (the "notification is silenced" one). If another was
+        // sent, this would
         // fail.
         verify(mNotificationManager, times(1))
                 .notifyAsUser(
                         anyString(), anyInt(), any(Notification.class), any(UserHandle.class));
+
+        // Verify the silent notification was logged
+        verify(mAdvancedProtectionService)
+                .logDialogShown(
+                        AdvancedProtectionProtoEnums.FEATURE_ID_DISALLOW_USB,
+                        AdvancedProtectionProtoEnums.DIALOGUE_TYPE_BLOCKED_INTERACTION_SILENT,
+                        false);
     }
 
     @Test
@@ -835,7 +885,7 @@ public class UsbDataAdvancedProtectionHookTest {
 
     /** Helper to capture the main broadcast receiver. */
     public BroadcastReceiver getAndCaptureReceiver() {
-        verify(mContext, atLeastOnce())
+        verify(mContext, times(1))
                 .registerReceiverAsUser(
                         mBroadcastReceiverCaptor.capture(),
                         any(UserHandle.class),
@@ -847,15 +897,15 @@ public class UsbDataAdvancedProtectionHookTest {
 
     /** Helper to capture the silence broadcast receiver. */
     public BroadcastReceiver getAndCaptureSilenceReceiver() {
-        verify(mContext, atLeastOnce())
+        verify(mContext, times(1))
                 .registerReceiverAsUser(
                         mBroadcastReceiverCaptor.capture(),
                         any(UserHandle.class),
                         any(IntentFilter.class),
                         isNull(),
                         isNull(),
-                        anyInt());
-        return mBroadcastReceiverCaptor.getAllValues().get(0);
+                        eq(Context.RECEIVER_NOT_EXPORTED));
+        return mBroadcastReceiverCaptor.getAllValues().get(1);
     }
 
     @Test
