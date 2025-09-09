@@ -19,27 +19,37 @@
 
 #include "com_android_internal_os_Zygote.h"
 
-#include <algorithm>
-#include <array>
-#include <atomic>
-#include <functional>
-#include <iterator>
-#include <list>
-#include <optional>
-#include <sstream>
-#include <string>
-#include <string_view>
-#include <unordered_set>
-
+#include <android-base/file.h>
+#include <android-base/logging.h>
+#include <android-base/properties.h>
+#include <android-base/stringprintf.h>
+#include <android-base/unique_fd.h>
 #include <android/fdsan.h>
 #include <arpa/inet.h>
+#include <async_safe/log.h>
+#include <bionic/malloc.h>
+#include <bionic/mte.h>
+#include <cutils/fs.h>
+#include <cutils/multiuser.h>
+#include <cutils/sockets.h>
 #include <dirent.h>
 #include <fcntl.h>
 #include <grp.h>
 #include <inttypes.h>
+#include <link.h>
 #include <malloc.h>
 #include <mntent.h>
+#include <nativehelper/JNIHelp.h>
+#include <nativehelper/ScopedLocalRef.h>
+#include <nativehelper/ScopedPrimitiveArray.h>
+#include <nativehelper/ScopedUtfChars.h>
+#include <private/android_filesystem_config.h>
+#include <processgroup/processgroup.h>
+#include <processgroup/sched_policy.h>
+#include <seccomp_policy.h>
+#include <selinux/android.h>
 #include <signal.h>
+#include <stats_socket.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/capability.h>
@@ -56,35 +66,24 @@
 #include <sys/un.h>
 #include <sys/wait.h>
 #include <unistd.h>
-
-#include <async_safe/log.h>
-#include <android-base/file.h>
-#include <android-base/logging.h>
-#include <android-base/properties.h>
-#include <android-base/stringprintf.h>
-#include <android-base/unique_fd.h>
-#include <bionic/malloc.h>
-#include <bionic/mte.h>
-#include <cutils/fs.h>
-#include <cutils/multiuser.h>
-#include <cutils/sockets.h>
-#include <private/android_filesystem_config.h>
-#include <processgroup/processgroup.h>
-#include <processgroup/sched_policy.h>
-#include <seccomp_policy.h>
-#include <selinux/android.h>
-#include <stats_socket.h>
 #include <utils/String8.h>
 #include <utils/Trace.h>
 
-#include <nativehelper/JNIHelp.h>
-#include <nativehelper/ScopedLocalRef.h>
-#include <nativehelper/ScopedPrimitiveArray.h>
-#include <nativehelper/ScopedUtfChars.h>
+#include <algorithm>
+#include <array>
+#include <atomic>
+#include <functional>
+#include <iterator>
+#include <list>
+#include <optional>
+#include <sstream>
+#include <string>
+#include <string_view>
+#include <unordered_set>
+
 #include "core_jni_helpers.h"
 #include "fd_utils.h"
 #include "filesystem_utils.h"
-
 #include "nativebridge/native_bridge.h"
 
 #if defined(__BIONIC__)
@@ -352,12 +351,29 @@ enum RuntimeFlags : uint32_t {
     PROFILEABLE = 1 << 24,
     DEBUG_ENABLE_PTRACE = 1 << 25,
     ENABLE_PAGE_SIZE_APP_COMPAT = 1 << 26,
+    ENABLE_EXECUTE_ONLY_MEMORY = 1 << 27,
 };
 
 enum UnsolicitedZygoteMessageTypes : uint32_t {
     UNSOLICITED_ZYGOTE_MESSAGE_TYPE_RESERVED = 0,
     UNSOLICITED_ZYGOTE_MESSAGE_TYPE_SIGCHLD = 1,
 };
+
+#ifdef BUILD_EXECUTE_ONLY_MEMORY
+static int disable_execute_only(struct dl_phdr_info* info, size_t size, void* data) {
+    // Search for any execute-only segments and mark them read+execute.
+    // This operation only affects RWX flags because of the implementation
+    // of mprotect, so other architectural flags (like PROT_BTI) will not be cleared.
+    for (int i = 0; i < info->dlpi_phnum; i++) {
+        if ((info->dlpi_phdr[i].p_type == PT_LOAD) && (info->dlpi_phdr[i].p_flags == PF_X)) {
+            mprotect(reinterpret_cast<void*>(info->dlpi_addr + info->dlpi_phdr[i].p_vaddr),
+                     info->dlpi_phdr[i].p_memsz, PROT_READ | PROT_EXEC);
+        }
+    }
+    // Return non-zero to exit dl_iterate_phdr.
+    return 0;
+}
+#endif
 
 struct UnsolicitedZygoteMessageSigChld {
     struct {
@@ -2101,6 +2117,17 @@ static void SpecializeCommon(JNIEnv* env, uid_t uid, gid_t gid, jintArray gids, 
     // Now that we've used the flag, clear it so that we don't pass unknown flags to the ART
     // runtime.
     runtime_flags &= ~RuntimeFlags::NATIVE_HEAP_ZERO_INIT_ENABLED;
+
+    // If the app does not support execute-only memory, then iterate through
+    // the shared objects and mark them readable.
+#ifdef BUILD_EXECUTE_ONLY_MEMORY
+    if (!(runtime_flags & RuntimeFlags::ENABLE_EXECUTE_ONLY_MEMORY)) {
+        dl_iterate_phdr(disable_execute_only, nullptr);
+    }
+#endif
+    // Now that we've used the flag, clear it so that we don't pass unknown flags to the ART
+    // runtime.
+    runtime_flags &= ~RuntimeFlags::ENABLE_EXECUTE_ONLY_MEMORY;
 
     const char* nice_name_ptr = nice_name.has_value() ? nice_name.value().c_str() : nullptr;
     android_mallopt_gwp_asan_options_t gwp_asan_options;
