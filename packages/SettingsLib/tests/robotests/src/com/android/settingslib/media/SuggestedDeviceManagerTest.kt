@@ -498,9 +498,14 @@ class SuggestedDeviceManagerTest {
     deviceCallback.onDeviceListUpdate(listOf(mediaDevice1))
     verify(listener, never()).onSuggestedDeviceStateUpdated(any())
 
-    // A new suggestion list makes the suggestedDeviceState restore.
+    // A new suggestion list doesn't cause the suggestedDeviceState to be restored.
     clearInvocations(listener)
     deviceCallback.onDeviceSuggestionsUpdated(listOf(suggestedDeviceInfo1))
+    verify(listener, never()).onSuggestedDeviceStateUpdated(any())
+
+    // Requesting a new suggestion causes the suggestedDeviceState to be restored.
+    clearInvocations(listener)
+    mSuggestedDeviceManager.requestDeviceSuggestion()
     verify(listener)
       .onSuggestedDeviceStateUpdated(SuggestedDeviceState(suggestedDeviceInfo1, STATE_DISCONNECTED))
   }

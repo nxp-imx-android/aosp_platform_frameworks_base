@@ -64,6 +64,7 @@ class SuggestedDeviceManager(
   // [topSuggestion]. This is necessary to prevent hiding or changing the title of the suggested
   // device chip during connection attempts or when displaying error messages.
   @GuardedBy("lock") private var suggestedStateOverride: SuggestedDeviceState? = null
+  @GuardedBy("lock") private var hideSuggestedDeviceState: Boolean = false
 
   init {
     if (useSuggestedDeviceConnectionManager()) {
@@ -79,7 +80,7 @@ class SuggestedDeviceManager(
       if (suggestedStateOverride?.connectionState == STATE_CONNECTING_FAILED) {
         // After the connection error, hide the suggestion chip until the new suggestion is
         // requested.
-        topSuggestion = null
+        hideSuggestedDeviceState = true
       }
       suggestedStateOverride = null
       updateSuggestedDeviceStateLocked(topSuggestion, mediaDevices)
@@ -149,6 +150,20 @@ class SuggestedDeviceManager(
 
   fun requestDeviceSuggestion() {
     localMediaManager.requestDeviceSuggestion()
+    stopHidingSuggestedDeviceState()
+  }
+
+  private fun stopHidingSuggestedDeviceState() {
+    var stateChanged = false
+    synchronized(lock) {
+      if (hideSuggestedDeviceState) {
+        hideSuggestedDeviceState = false
+        stateChanged = updateSuggestedDeviceStateLocked(topSuggestion, mediaDevices)
+      }
+    }
+    if (stateChanged) {
+      dispatchOnSuggestedDeviceUpdated()
+    }
   }
 
   fun getSuggestedDevice(): SuggestedDeviceState? {
@@ -224,6 +239,10 @@ class SuggestedDeviceManager(
     newTopSuggestion: SuggestedDeviceInfo?,
     newMediaDevices: List<MediaDevice>,
   ): SuggestedDeviceState? {
+    if (hideSuggestedDeviceState) {
+      return null
+    }
+
     if (newTopSuggestion == null) {
       return suggestedStateOverride ?: null
     }
