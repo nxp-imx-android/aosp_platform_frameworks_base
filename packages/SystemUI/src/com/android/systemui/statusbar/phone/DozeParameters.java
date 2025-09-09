@@ -285,10 +285,11 @@ public class DozeParameters implements
 
     /**
      * Checks if always on is available and enabled for the current user.
+     * If minmode is active, always on is enabled to control the screen off animation.
      * @return {@code true} if enabled and available.
      */
     public boolean getAlwaysOn() {
-        return mDozeAlwaysOn && !mBatteryController.isAodPowerSave() && !isMinModeActive();
+        return (mDozeAlwaysOn && !mBatteryController.isAodPowerSave()) || isMinModeActive();
     }
 
     /**
@@ -362,8 +363,12 @@ public class DozeParameters implements
         return mScreenOffAnimationController.shouldShowLightRevealScrim();
     }
 
+    /**
+     * Whether we should animate the transition to or from Dozing.
+     * This is true if either the screen off animation controller or minmode is active.
+     */
     public boolean shouldAnimateDozingChange() {
-        return mScreenOffAnimationController.shouldAnimateDozingChange() && !isMinModeActive();
+        return mScreenOffAnimationController.shouldAnimateDozingChange() || isMinModeActive();
     }
 
     /**

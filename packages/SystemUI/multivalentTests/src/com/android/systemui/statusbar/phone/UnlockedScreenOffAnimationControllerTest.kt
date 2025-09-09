@@ -26,6 +26,7 @@ import androidx.test.filters.SmallTest
 import com.android.internal.jank.InteractionJankMonitor
 import com.android.server.display.feature.flags.Flags as displayManagerFlags
 import com.android.server.power.feature.flags.Flags as powerManagerFlags
+import com.android.systemui.DejankUtils
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.display.domain.interactor.DisplayStateInteractor
 import com.android.systemui.keyguard.KeyguardViewMediator
@@ -33,6 +34,8 @@ import com.android.systemui.keyguard.WakefulnessLifecycle
 import com.android.systemui.shade.ShadeViewController
 import com.android.systemui.shade.domain.interactor.PanelExpansionInteractor
 import com.android.systemui.shade.domain.interactor.ShadeLockscreenInteractor
+import com.android.systemui.statusbar.LiftReveal
+import com.android.systemui.statusbar.LightRevealEffect
 import com.android.systemui.statusbar.LightRevealScrim
 import com.android.systemui.statusbar.NotificationShadeWindowController
 import com.android.systemui.statusbar.StatusBarStateControllerImpl
@@ -70,6 +73,7 @@ class UnlockedScreenOffAnimationControllerTest : SysuiTestCase() {
     @Mock private lateinit var notifShadeWindowController: NotificationShadeWindowController
     @Mock private lateinit var lightRevealScrim: LightRevealScrim
     @Mock private lateinit var wakefulnessLifecycle: WakefulnessLifecycle
+    @Mock private lateinit var revealEffect: LightRevealEffect
     @Mock private lateinit var statusBarStateController: StatusBarStateControllerImpl
     @Mock private lateinit var interactionJankMonitor: InteractionJankMonitor
     @Mock private lateinit var powerManager: PowerManager
@@ -81,6 +85,7 @@ class UnlockedScreenOffAnimationControllerTest : SysuiTestCase() {
     @Before
     fun setUp() {
         MockitoAnnotations.initMocks(this)
+        `when`(lightRevealScrim.revealEffect).thenReturn(revealEffect)
         controller =
             UnlockedScreenOffAnimationController(
                 context,
@@ -208,5 +213,37 @@ class UnlockedScreenOffAnimationControllerTest : SysuiTestCase() {
         assertFalse(controller.shouldPlayUnlockedScreenOffAnimation())
         controller.startAnimation()
         assertFalse(controller.isAnimationPlaying())
+    }
+
+    @Test
+    fun testMinMode_noAodUi() {
+        `when`(dozeParameters.canControlUnlockedScreenOff()).thenReturn(true)
+        `when`(dozeParameters.isMinModeActive()).thenReturn(true)
+        `when`(displayStateInteractor.isDefaultDisplayOff).thenReturn(MutableStateFlow(false))
+
+        controller.startAnimation()
+
+        assertFalse(controller.shouldAnimateInKeyguard())
+
+        val callbackCaptor = ArgumentCaptor.forClass(Runnable::class.java)
+        verify(handler).postDelayed(callbackCaptor.capture(), anyLong())
+        callbackCaptor.value.run()
+
+        verify(shadeLockscreenInteractor, never()).showAodUi()
+    }
+
+    @Test
+    fun testMinMode_usesLiftReveal() {
+        DejankUtils.setImmediate(true)
+        `when`(dozeParameters.canControlUnlockedScreenOff()).thenReturn(true)
+        `when`(dozeParameters.isMinModeActive()).thenReturn(true)
+        `when`(displayStateInteractor.isDefaultDisplayOff).thenReturn(MutableStateFlow(false))
+
+        controller.startAnimation()
+
+        verify(lightRevealScrim).revealEffect = LiftReveal
+
+        // Clean up
+        DejankUtils.setImmediate(false)
     }
 }
