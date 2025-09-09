@@ -311,7 +311,11 @@ fun Expandable(
                     .then(clickModifier(controller, onClick, onClickLabel, interactionSource))
                     .animatedBackground(color, shape = shape)
                     .border(controller)
-                    .onGloballyPositioned { controller.boundsInComposeViewRoot = it.boundsInRoot() }
+                    .onGloballyPositioned {
+                        if (it.isAttached) {
+                            controller.boundsInComposeViewRoot = it.boundsInRoot()
+                        }
+                    }
             ) {
                 wrappedContent(controller.expandable)
             }
