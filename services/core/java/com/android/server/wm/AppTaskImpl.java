@@ -56,6 +56,7 @@ import android.os.Process;
 import android.os.RemoteException;
 import android.os.UserHandle;
 import android.util.Slog;
+import android.window.TransitionRequestInfo.WindowingLayerChange;
 
 import java.util.Objects;
 
@@ -224,7 +225,7 @@ class AppTaskImpl extends IAppTask.Stub {
                 transition.setRequestedLocation(displayId, bounds);
                 transition.addTransactionPresentedListener(() ->
                         reportTaskMoveRequestResult(
-                            result, task.getDisplayId(), task.getBounds(), callback));
+                                result, task.getDisplayId(), task.getBounds(), callback));
                 controller.startCollectOrQueue(transition,
                         (deferred) -> {
                             if (deferred) {
@@ -256,10 +257,10 @@ class AppTaskImpl extends IAppTask.Stub {
     /**
      * Reports execution result of a {@link #moveTaskTo} request using the callback provided.
      *
-     * @param result The result code.
+     * @param result    The result code.
      * @param displayId The final display ID of the moved task after request execution.
-     * @param bounds The final bounds on host display of the moved task after request execution.
-     * @param callback The callback to notify about request result.
+     * @param bounds    The final bounds on host display of the moved task after request execution.
+     * @param callback  The callback to notify about request result.
      */
     private void reportTaskMoveRequestResult(
             int result, int displayId, Rect bounds, IRemoteCallback callback) {
@@ -313,7 +314,7 @@ class AppTaskImpl extends IAppTask.Stub {
         final int taskMovableState = task.getSelfMovable();
         final boolean isTaskMovable = (taskMovableState == SELF_MOVABLE_ALLOWED
                 || (taskMovableState == SELF_MOVABLE_DEFAULT
-                    && task.getWindowingMode() == WINDOWING_MODE_FREEFORM));
+                && task.getWindowingMode() == WINDOWING_MODE_FREEFORM));
         if (!isTaskMovable) {
             return RESULT_FAILED_IMMOVABLE_TASK;
         }
@@ -389,13 +390,46 @@ class AppTaskImpl extends IAppTask.Stub {
         checkCallerOrSystemOrRoot();
         Objects.requireNonNull(callback, "The callback provided is null.");
 
-        final Bundle result = new Bundle();
-        // TODO(b/443206707): implement requesting a transition
-        // currently, just return failed due to bad state
-        result.putInt(TaskWindowingLayerRequestHandler.REMOTE_CALLBACK_RESULT_KEY,
-                TaskWindowingLayerRequestHandler.RESULT_FAILED_BAD_STATE);
+        if (!com.android.window.flags.Flags.enableInteractivePictureInPicture()) {
+            Slog.d(TAG, "Requesting windowing layer not enabled.");
+            sendWindowingLayerResult(TaskWindowingLayerRequestHandler.RESULT_FAILED_BAD_STATE,
+                    callback);
+            return;
+        }
+        final long origId = Binder.clearCallingIdentity();
+        // TODO(b/443884204): verify permissions
         try {
-            callback.sendResult(result);
+            synchronized (mService.mGlobalLock) {
+                final Task task = mService.mRootWindowContainer.anyTaskForId(mTaskId);
+                if (task == null) {
+                    Slog.w(TAG, "Did not find any task to request windowing layer.");
+                    sendWindowingLayerResult(
+                            TaskWindowingLayerRequestHandler.RESULT_FAILED_BAD_STATE, callback);
+                    return;
+                }
+                final TransitionController controller = mService.getTransitionController();
+                final Transition transition = new Transition(TRANSIT_CHANGE, 0, controller,
+                        mService.mWindowManager.mSyncEngine);
+
+                // todo(b/444174844): optimize for 1 transition
+                controller.startCollectOrQueue(transition,
+                        (deferred) -> {
+                            // todo(b/443884204): if(deferred): rerun validations (permissions)
+                            controller.requestStartWindowingLayerTransition(transition, task,
+                                    new WindowingLayerChange(layer, callback));
+                            transition.setReady(task, true);
+                        });
+            }
+        } finally {
+            Binder.restoreCallingIdentity(origId);
+        }
+    }
+
+    private void sendWindowingLayerResult(int result, IRemoteCallback callback) {
+        final Bundle bundle = new Bundle();
+        bundle.putInt(TaskWindowingLayerRequestHandler.REMOTE_CALLBACK_RESULT_KEY, result);
+        try {
+            callback.sendResult(bundle);
         } catch (RemoteException e) {
             // Client thrown an exception back to the server, ignoring it.
         }

@@ -16,7 +16,13 @@
 
 package com.android.wm.shell.pinnedlayer.phone
 
+import android.app.TaskWindowingLayerRequestHandler.REMOTE_CALLBACK_RESULT_KEY
+import android.app.TaskWindowingLayerRequestHandler.RESULT_FAILED_BAD_STATE
+import android.os.Bundle
 import android.os.IBinder
+import android.os.IRemoteCallback
+import android.os.RemoteException
+import android.util.Slog
 import android.view.SurfaceControl
 import android.window.TransitionInfo
 import android.window.TransitionRequestInfo
@@ -32,6 +38,10 @@ import com.android.wm.shell.transition.Transitions
 class PinnedLayerController(shellInit: ShellInit, private val transitions: Transitions) :
     Transitions.TransitionHandler {
 
+    companion object {
+        private const val TAG = "PinnedLayerController"
+    }
+
     init {
         shellInit.addInitCallback(this::onInit, this)
     }
@@ -45,6 +55,15 @@ class PinnedLayerController(shellInit: ShellInit, private val transitions: Trans
         transition: IBinder,
         request: TransitionRequestInfo,
     ): WindowContainerTransaction? {
+
+        if (request.windowingLayerChange != null) {
+            // not implemented yet, just resolve the callback
+            sendWindowingLayerResult(
+                RESULT_FAILED_BAD_STATE,
+                request.windowingLayerChange!!.remoteCallback
+            )
+        }
+
         return null
     }
 
@@ -66,4 +85,14 @@ class PinnedLayerController(shellInit: ShellInit, private val transitions: Trans
      * @return true - when the task is pinned, false otherwise.
      */
     fun isPinned(taskId: Int): Boolean = false
+
+    private fun sendWindowingLayerResult(result: Int, callback: IRemoteCallback) {
+        val bundle = Bundle()
+        bundle.putInt(REMOTE_CALLBACK_RESULT_KEY, result)
+        try {
+            callback.sendResult(bundle)
+        } catch (e: RemoteException) {
+            Slog.w(TAG, "Failed to invoke callback", e)
+        }
+    }
 }
