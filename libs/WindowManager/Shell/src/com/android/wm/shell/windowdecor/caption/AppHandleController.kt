@@ -19,6 +19,9 @@ package com.android.wm.shell.windowdecor.caption
 import android.app.ActivityManager.RunningTaskInfo
 import android.content.Context
 import android.content.Intent
+import android.content.pm.ActivityInfo.CONFIG_FONT_SCALE
+import android.content.pm.ActivityInfo.CONFIG_LOCALE
+import android.content.pm.ActivityInfo.CONFIG_UI_MODE
 import android.graphics.Point
 import android.graphics.PointF
 import android.graphics.Rect
@@ -176,6 +179,14 @@ class AppHandleController(
             traceTag = Trace.TRACE_TAG_WINDOW_MANAGER,
             name = "AppHandleController#relayout",
         ) {
+            // Check for relevant configuration changes
+            val oldConfig = this.taskInfo.configuration
+            val newConfig = params.runningTaskInfo.configuration
+            val diff = newConfig.diff(oldConfig)
+            // Check for UI mode (dark/light), locale, or font scale changes
+            val configChanged =
+                (diff and (CONFIG_UI_MODE or CONFIG_LOCALE or CONFIG_FONT_SCALE)) != 0
+
             val captionLayout =
                 super.relayout(
                     params,
@@ -193,7 +204,16 @@ class AppHandleController(
                 captionLayout.captionX,
                 captionLayout.captionY,
             )
-            openByDefaultDialog?.relayout(taskInfo)
+
+            if (configChanged && isOpenByDefaultDialogActive) {
+                // Config changed, so destroy the old dialog and create a new one.
+                // The new one will inflate with the correct resources.
+                openByDefaultDialog?.dismiss() // Triggers onDialogDismissed, setting it to null
+                createOpenByDefaultDialog()
+            } else {
+                // No config change, just relayout the existing dialog for size/position changes.
+                openByDefaultDialog?.relayout(taskInfo)
+            }
 
             updateViewHolder(captionLayout)
 
