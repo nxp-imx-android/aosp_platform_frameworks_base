@@ -224,16 +224,6 @@ flag {
 }
 
 flag {
-    name: "fix_bubbles_to_recents"
-    namespace: "multitasking"
-    description: "Fixes a bug with entering recents via 3 button when bubbles are open"
-    bug: "418760100"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "bug_rotation_button_cover_bubble"
     namespace: "multitasking"
     description: "Fixes a bug where clicking the rotation button would open the bubble."

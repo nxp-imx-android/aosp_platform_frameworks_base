@@ -81,7 +81,6 @@ import androidx.annotation.NonNull;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.os.IResultReceiver;
 import com.android.internal.protolog.ProtoLog;
-import com.android.wm.shell.Flags;
 import com.android.wm.shell.ShellTaskOrganizer;
 import com.android.wm.shell.bubbles.BubbleController;
 import com.android.wm.shell.common.DisplayController;
@@ -1128,7 +1127,7 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
             for (int i = 0; i < info.getChanges().size(); ++i) {
                 final TransitionInfo.Change change = info.getChanges().get(i);
                 final ActivityManager.RunningTaskInfo taskInfo = change.getTaskInfo();
-                if (Flags.fixBubblesToRecents() && taskInfo != null && mBubbleController.isPresent()
+                if (taskInfo != null && mBubbleController.isPresent()
                         && mBubbleController.get().hasStableBubbleForTask(taskInfo.taskId)) {
                     ProtoLog.v(ShellProtoLogGroup.WM_SHELL_RECENTS_TRANSITION,
                             "[%d]   Canceling due to bubble task", mInstanceId);
