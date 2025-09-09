@@ -24844,6 +24844,13 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
                             "SCREEN_CAPTURE_DISABLED requires a Boolean value");
                 }
                 setScreenCaptureDisabled(caller, scope, value.getBooleanField());
+            } else if (id.equals(PolicyIdentifier.SCREEN_CAPTURE.getId())) {
+                if (value.getTag() != PolicyValueTransport.Tag.integerField) {
+                    throw new IllegalArgumentException("SCREEN_CAPTURE requires an Integer value");
+                }
+                boolean isDisabled =
+                        value.getIntegerField() == PolicyIdentifier.SCREEN_CAPTURE_BLOCKED;
+                setScreenCaptureDisabled(caller, scope, isDisabled);
             } else {
                 throw new IllegalArgumentException("Unhandled policy " + id);
             }

@@ -18630,4 +18630,19 @@ public class DevicePolicyManager {
         // TODO(b/434920631): Remove this method and use {@link #setPolicy} in tests directly.
         setPolicy(new PolicyIdentifier<Boolean>(key), scope, Boolean.valueOf(value));
     }
+
+    /**
+     * Template free version of setPolicy for integers.
+     *
+     * @hide
+     */
+    @TestApi
+    @SuppressWarnings("UnflaggedApi") // @TestApi without associated feature.
+    public void setIntegerPolicy(
+            @NonNull String key,
+            @PolicyScope int scope,
+            int value) {
+        // TODO(b/434920631): Remove this method and use {@link #setPolicy} in tests directly.
+        setPolicy(new PolicyIdentifier<Integer>(key), scope, Integer.valueOf(value));
+    }
 }
