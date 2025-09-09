@@ -147,6 +147,8 @@ class MainThreadCoroutineScopeDetectorTest : SystemUILintDetectorTest() {
                     .indented(),
             )
             .issues(MainThreadCoroutineScopeDetector.ISSUE)
+            // TODO: b/443947014 - Remove allowDuplicates() once the bug is fixed.
+            .allowDuplicates()
             .run()
             .expect(
                 expectedText =
@@ -179,6 +181,8 @@ class MainThreadCoroutineScopeDetectorTest : SystemUILintDetectorTest() {
                     .indented(),
             )
             .issues(MainThreadCoroutineScopeDetector.ISSUE)
+            // TODO: b/443947014 - Remove allowDuplicates() once the bug is fixed.
+            .allowDuplicates()
             .run()
             .expect(
                 expectedText =
