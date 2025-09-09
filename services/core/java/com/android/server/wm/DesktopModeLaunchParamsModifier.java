@@ -510,7 +510,7 @@ class DesktopModeLaunchParamsModifier implements LaunchParamsModifier {
     }
 
     /**
-     * Whether the launching task should inherit the task bounds of the given activity..
+     * Whether the launching task should inherit the task bounds of the given activity.
      */
     private boolean shouldInheritExistingTaskBounds(
             @NonNull ActivityRecord activityToCheck,
@@ -519,8 +519,12 @@ class DesktopModeLaunchParamsModifier implements LaunchParamsModifier {
         return (Objects.equals(activityToCheck.packageName, launchingActivity.packageName)
                 && (activityToCheck.mUserId == launchingTask.mUserId)
                 && activityToCheck.getTask().mTaskId != launchingTask.mTaskId
-                && isLaunchingNewSingleTask(launchingActivity.launchMode)
-                && isClosingExitingInstance(launchingTask.getBaseIntent().getFlags()));
+                // Safe to inherit activity bounds if activity is no longer visible or will be
+                // closing as in either case there is not worry of content overlapping and being
+                // obscured.
+                && (!activityToCheck.isVisible()
+                    || (isLaunchingNewSingleTask(launchingActivity.launchMode)
+                        && isClosingExitingInstance(launchingTask.getBaseIntent().getFlags()))));
     }
 
     /**
