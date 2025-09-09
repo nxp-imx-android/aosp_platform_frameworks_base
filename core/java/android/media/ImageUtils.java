@@ -64,6 +64,7 @@ class ImageUtils {
             case PixelFormat.RGBA_8888:
             case PixelFormat.RGBX_8888:
             case PixelFormat.RGB_888:
+            case PixelFormat.RGBA_1010102:
             case ImageFormat.JPEG:
             case ImageFormat.YUY2:
             case ImageFormat.Y8:
