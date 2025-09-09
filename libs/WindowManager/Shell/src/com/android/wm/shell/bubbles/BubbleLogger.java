@@ -95,6 +95,9 @@ public class BubbleLogger {
         @UiEvent(doc = "New bubble created from a launcher icon menu.")
         BUBBLE_CREATED_FROM_LAUNCHER_ICON_MENU(2437),
 
+        @UiEvent(doc = "New bubble created from a hotseat icon menu.")
+        BUBBLE_CREATED_FROM_HOTSEAT_ICON_MENU(2456),
+
         // endregion
 
         // region bubble bar events
@@ -221,6 +224,9 @@ public class BubbleLogger {
 
         @UiEvent(doc = "New bubble created from a taskbar icon menu.")
         BUBBLE_BAR_CREATED_FROM_TASKBAR_ICON_MENU(2444),
+
+        @UiEvent(doc = "New bubble created from a hotseat icon menu.")
+        BUBBLE_BAR_CREATED_FROM_HOTSEAT_ICON_MENU(2457),
 
         // endregion
         ;
