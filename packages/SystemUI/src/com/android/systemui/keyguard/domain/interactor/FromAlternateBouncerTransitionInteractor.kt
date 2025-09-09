@@ -35,7 +35,6 @@ import com.android.systemui.keyguard.shared.model.KeyguardState
 import com.android.systemui.power.domain.interactor.PowerInteractor
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.scene.shared.model.Scenes
-import com.android.systemui.util.kotlin.Utils.Companion.sample as sampleCombine
 import com.android.wm.shell.shared.animation.Interpolators
 import javax.inject.Inject
 import kotlin.time.Duration.Companion.milliseconds
@@ -115,20 +114,18 @@ constructor(
                 // This should eventually be removed in favor of
                 // [KeyguardTransitionInteractor#startDismissKeyguardTransition]
                 .onEach { delay(150L) }
-                .sampleCombine(
-                    keyguardInteractor.primaryBouncerShowing,
-                    powerInteractor.isAwake,
-                    keyguardInteractor.isAodAvailable,
-                    communalSceneInteractor.isIdleOnCommunal,
-                    keyguardInteractor.isDreaming,
-                    keyguardInteractor.isKeyguardOccluded,
-                )
-                .filterRelevantKeyguardStateAnd {
-                    (isAlternateBouncerShowing, isPrimaryBouncerShowing, _, _, _, _) ->
-                    !isAlternateBouncerShowing && !isPrimaryBouncerShowing
-                }
-                .collect { (_, _, isAwake, isAodAvailable, isIdleOnCommunal, isDreaming, isOccluded)
-                    ->
+                .filterRelevantKeyguardState()
+                .collect { isAlternateBouncerShowing ->
+                    if (isAlternateBouncerShowing || keyguardInteractor.primaryBouncerShowing.value) {
+                        return@collect
+                    }
+
+                    val isDreaming = keyguardInteractor.isAbleToDream.value
+                    val isOccluded = keyguardInteractor.isKeyguardOccluded.value
+                    val isIdleOnCommunal = communalSceneInteractor.isIdleOnCommunal.value
+                    val isAodAvailable = keyguardInteractor.isAodAvailable.value
+                    val isAwake = powerInteractor.detailedWakefulness.value.isAwake()
+
                     // When unlocking over glanceable hub to enter edit mode, transitioning directly
                     // to GONE prevents the lockscreen flash. Let listenForAlternateBouncerToGone
                     // handle it.

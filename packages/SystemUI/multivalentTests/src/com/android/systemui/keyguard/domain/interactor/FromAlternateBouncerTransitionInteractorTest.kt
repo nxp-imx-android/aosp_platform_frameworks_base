@@ -294,6 +294,9 @@ class FromAlternateBouncerTransitionInteractorTest(flags: FlagsParameterization)
     @Test
     fun transitionToDreaming() =
         kosmos.runTest {
+            // Advance past initial dreaming/doze delay
+            testScope.advanceTimeBy(550)
+
             fakePowerRepository.updateWakefulness(
                 WakefulnessState.AWAKE,
                 WakeSleepReason.POWER_BUTTON,
@@ -302,7 +305,7 @@ class FromAlternateBouncerTransitionInteractorTest(flags: FlagsParameterization)
             )
             fakeKeyguardRepository.setKeyguardOccluded(false)
             fakeKeyguardBouncerRepository.setAlternateVisible(true)
-            runCurrent()
+            testScope.advanceTimeBy(200) // advance past delay
 
             transitionRepository.sendTransitionSteps(
                 from = KeyguardState.LOCKSCREEN,
