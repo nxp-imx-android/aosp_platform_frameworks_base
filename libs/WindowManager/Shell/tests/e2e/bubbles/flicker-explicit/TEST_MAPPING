@@ -61,6 +61,10 @@
       "keywords": ["device"]
     },
     {
+      "name": "WMShellExplicitFlickerTestsBubbles-EnterBubbleViaDragToBubbleBarTrampolineTest",
+      "keywords": ["device"]
+    },
+    {
       "name": "WMShellExplicitFlickerTestsBubbles-EnterBubbleViaOverflowMenuTest",
       "keywords": ["device"]
     },

@@ -19,12 +19,10 @@ package com.android.wm.shell.flicker.bubbles
 import android.platform.test.annotations.Presubmit
 import android.platform.test.annotations.RequiresFlagsEnabled
 import android.tools.NavBar
-import android.tools.traces.component.ComponentNameMatcher.Companion.LAUNCHER
-import android.tools.traces.component.ComponentNameMatcher.Companion.TASK_BAR
 import androidx.test.filters.RequiresDevice
 import com.android.wm.shell.Flags
 import com.android.wm.shell.Utils
-import com.android.wm.shell.flicker.bubbles.testcase.EnterBubbleTestCases
+import com.android.wm.shell.flicker.bubbles.testcase.EnterBubbleViaDragToBubbleBarTestCases
 import com.android.wm.shell.flicker.bubbles.utils.ApplyPerParameterRule
 import com.android.wm.shell.flicker.bubbles.utils.BubbleFlickerTestHelper.launchBubbleViaDragToBubbleBar
 import com.android.wm.shell.flicker.bubbles.utils.RecordTraceWithTransitionRule
@@ -33,7 +31,6 @@ import org.junit.Assume.assumeTrue
 import org.junit.Before
 import org.junit.FixMethodOrder
 import org.junit.Rule
-import org.junit.Test
 import org.junit.rules.TestRule
 import org.junit.runner.RunWith
 import org.junit.runners.MethodSorters
@@ -55,7 +52,7 @@ import org.junit.runners.Parameterized
  * ```
  * Verified tests:
  * - [BubbleFlickerTestBase]
- * - [EnterBubbleTestCases]
+ * - [EnterBubbleViaDragToBubbleBarTestCases]
  */
 @RequiresFlagsEnabled(Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE, Flags.FLAG_ENABLE_BUBBLE_BAR)
 @RequiresDevice
@@ -63,7 +60,7 @@ import org.junit.runners.Parameterized
 @Presubmit
 @RunWith(Parameterized::class)
 class EnterBubbleViaDragToBubbleBarTest(navBar: NavBar) : BubbleFlickerTestBase(),
-    EnterBubbleTestCases {
+    EnterBubbleViaDragToBubbleBarTestCases {
 
     companion object {
         private val recordTraceWithTransitionRule = RecordTraceWithTransitionRule(
@@ -93,18 +90,5 @@ class EnterBubbleViaDragToBubbleBarTest(navBar: NavBar) : BubbleFlickerTestBase(
         // Bubble and task bar are not available on phone.
         assumeTrue(tapl.isTablet)
         super.setUp()
-    }
-
-    @Test
-    override fun focusChanges() {
-        eventLogSubject.focusChanges(
-            LAUNCHER.toWindowName(),
-            // Tap on the task bar.
-            TASK_BAR.toWindowName(),
-            // Drag an icon from task bar to the bubble bar location.
-            LAUNCHER.toWindowName(),
-            // The bubble app launches.
-            testApp.toWindowName()
-        )
     }
 }
