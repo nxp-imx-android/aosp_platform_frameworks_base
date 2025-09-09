@@ -313,7 +313,7 @@ public class IOriginTransitionsImpl extends IOriginTransitions.Stub {
                             }
                             mShellTransitions.registerRemote(filter, t);
                         } else {
-                            Log.w(TAG, "Failed to update default filter for transition info");
+                            Log.w(TAG, "Failed to update default filter:" + filter);
                         }
                         TransitionFilter takeoverFilter =
                                 createReturnTransitionFilter(/* forTakeover= */ true);
@@ -325,7 +325,7 @@ public class IOriginTransitionsImpl extends IOriginTransitions.Stub {
                             mShellTransitions.registerRemoteForTakeover(
                                     takeoverFilter, t);
                         } else {
-                            Log.w(TAG, "Failed to update takeover filter for transition info");
+                            Log.w(TAG, "Failed to update takeover filter: " + takeoverFilter);
                         }
                     } else {
                         // take the provided filters and update them with the required info
@@ -340,7 +340,7 @@ public class IOriginTransitionsImpl extends IOriginTransitions.Stub {
                                 mShellTransitions.registerRemote(updatedFilter, t);
                             }
                         } else {
-                            Log.w(TAG, "Failed to update provided filter for transition info");
+                            Log.w(TAG, "Failed to update provided filter: " + f);
                         }
                     }
                 }
