@@ -331,8 +331,10 @@ public class DesktopModeTouchEventListener
                     viewName, mIsCustomHeaderGesture, mIsResizeGesture);
             return false;
         }
-        // Pilfer so that windows below receive cancellations for this gesture.
-        pilferPointers(v);
+        if (isDown) {
+            // Pilfer once (on down) so that windows below receive cancellations for this gesture.
+            pilferPointers(v);
+        }
         if (isUpOrCancel) {
             // Gesture is finished, reset state.
             mIsCustomHeaderGesture = false;
