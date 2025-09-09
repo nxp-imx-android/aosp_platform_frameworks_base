@@ -17,6 +17,7 @@
 
 package com.android.internal.systemui.lint
 
+import com.android.tools.lint.checks.infrastructure.TestMode
 import com.android.tools.lint.detector.api.Detector
 import com.android.tools.lint.detector.api.Issue
 import org.junit.Test
@@ -88,6 +89,8 @@ src/com/example/MyClass.kt:4: Error: Importing kotlinx.coroutines.runBlocking is
                 RUN_BLOCKING_TRACED_DEFINITION,
             )
             .issues(RunBlockingDetector.ISSUE)
+            // TODO: b/443947014 - Remove skipTestModes() once the bug is fixed.
+            .skipTestModes(TestMode.IMPORT_ALIAS)
             .run()
             .expect(
                 """
