@@ -62,8 +62,11 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.hideFromAccessibility
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.text
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpSize
@@ -133,6 +136,7 @@ fun VerticalFlashlightSlider(
                 SeekableSliderTrackerConfig(),
             )
         }
+    val flashlightStrength = stringResource(R.string.flashlight_dialog_title)
 
     Column(
         modifier = modifier.fillMaxWidth().wrapContentHeight(),
@@ -147,6 +151,9 @@ fun VerticalFlashlightSlider(
                     // slider length rather than 140. Instead of 120 we go with 140 so that we don't
                     // need extra code to rotate the layout.
                     .size(TRACK_LENGTH)
+                    .semantics(mergeDescendants = true) {
+                        this.text = AnnotatedString(flashlightStrength)
+                    }
                     .sliderPercentage { toPercent(animatedValue, valueRange) }
                     .sysuiResTag("slider"),
             enabled = isEnabled,
