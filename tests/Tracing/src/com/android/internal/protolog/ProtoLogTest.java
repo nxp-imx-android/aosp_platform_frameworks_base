@@ -56,6 +56,21 @@ public class ProtoLogTest {
     }
 
     @Test
+    public void log_whenUninitialized_doesNotThrow() {
+        // This test verifies that calling any ProtoLog logging method before the
+        // system is initialized does not cause a crash. The change this test covers
+        // replaced an IllegalStateException with a Log.wtf() call.
+
+        // The test passes if no exception is thrown for any of the log levels.
+        ProtoLog.d(TEST_GROUP_1, "Debug log call before init");
+        ProtoLog.v(TEST_GROUP_1, "Verbose log call before init");
+        ProtoLog.i(TEST_GROUP_1, "Info log call before init");
+        ProtoLog.w(TEST_GROUP_1, "Warning log call before init");
+        ProtoLog.e(TEST_GROUP_1, "Error log call before init");
+        ProtoLog.wtf(TEST_GROUP_1, "WTF log call before init");
+    }
+
+    @Test
     public void canRunProtoLogInitMultipleTimes() {
         ProtoLog.init(TEST_GROUP_1);
         ProtoLog.init(TEST_GROUP_1);
