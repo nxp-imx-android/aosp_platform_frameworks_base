@@ -4646,6 +4646,15 @@
     <permission android:name="android.permission.REQUEST_COMPANION_PROFILE_GLASSES"
         android:protectionLevel="normal" />
 
+    <!-- Allows application to request to associate with a
+         {@link android.companion.AssociationRequest#DEVICE_PROFILE_MEDICAL} device via
+         {@link android.companion.CompanionDeviceManager}.
+         @FlaggedApi(android.companion.Flags.FLAG_ENABLE_MEDICAL_PROFILE)
+    -->
+    <permission android:name="android.permission.REQUEST_COMPANION_PROFILE_MEDICAL"
+        android:protectionLevel="normal"
+        android:featureFlag="android.companion.enable_medical_profile" />
+
     <!-- Allows application to request to be associated with a virtual device capable of streaming
          Android applications
          ({@link android.companion.AssociationRequest#DEVICE_PROFILE_APP_STREAMING})

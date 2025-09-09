@@ -70,6 +70,11 @@
     <!-- Description of the privileges the application will get if associated with the companion device of GLASSES profile [CHAR LIMIT=NONE] -->
     <string name="summary_glasses">This app will be allowed to access these permissions on your <xliff:g id="device_type" example="phone">%1$s</xliff:g></string>
 
+    <!-- ================= DEVICE_PROFILE_MEDICAL ================= -->
+
+    <!-- The name of the "medical" device type [CHAR LIMIT=30] -->
+    <string name="profile_name_medical">medical device</string>
+
     <!-- ================= DEVICE_PROFILE_APP_STREAMING ================= -->
 
     <!-- Confirmation for associating an application with a companion device of APP_STREAMING profile (type) [CHAR LIMIT=NONE] -->
@@ -207,6 +212,12 @@
     <!-- Trusted display permission will be granted of corresponding profile [CHAR LIMIT=30] -->
     <string name="permission_add_trusted_display">Stream apps</string>
 
+    <!-- Schedule exact alarm permission to be granted of corresponding profile [CHAR LIMIT=30] -->
+    <string name="permission_schedule_exact_alarm">Set alarms and reminders</string>
+
+    <!-- Bypass DND to be granted of corresponding profile [CHAR LIMIT=30] -->
+    <string name="permission_bypass_dnd">Bypass Do Not Disturb settings</string>
+
     <!-- Description of phone permission of corresponding profile [CHAR LIMIT=NONE] -->
     <string name="permission_phone_summary">Make and manage phone calls</string>
 
@@ -251,6 +262,12 @@
 
     <!-- Description of change media output permission to be granted to the corresponding profile [CHAR LIMIT=NONE] -->
     <string name="permission_media_routing_control_summary">Access a list of available devices and control which one streams or casts audio or video from other apps</string>
+
+    <!-- Description of schedule exact alarm permission to be granted to the corresponding profile [CHAR LIMIT=NONE] -->
+    <string name="permission_schedule_exact_alarm_summary"></string>
+
+    <!-- Description of bypass DND permission to be granted to the corresponding profile [CHAR LIMIT=NONE] -->
+    <string name="permission_bypass_dnd_summary"></string>
 
     <!-- The type of the device for phone [CHAR LIMIT=30] -->
     <string name="device_type" product="default">phone</string>
