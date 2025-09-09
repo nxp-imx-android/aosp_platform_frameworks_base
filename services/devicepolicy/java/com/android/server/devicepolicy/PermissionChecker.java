@@ -124,8 +124,7 @@ import java.util.List;
  * Each instance of this class is tightly tied to a single caller, so a new instance of this class
  * is needed to check the permissions of a new caller.
  */
-// DoNotPush maybe `CallerPermissionChecker` or `PermissionEnforcer`? `PermissionHelper`?
-class PermissionChecker {
+public class PermissionChecker implements IPermissionChecker {
     private final Context mContext;
     private final Delegate mDelegate;
 
@@ -691,6 +690,7 @@ class PermissionChecker {
      * @param caller     The identity of the calling application.
      * @throws SecurityException if the caller has not been granted the given permission.
      */
+    @Override
     public void enforce(@NonNull String permission, @NonNull CallerIdentity caller)
             throws SecurityException {
         if (!hasPermission(permission, caller)) {
