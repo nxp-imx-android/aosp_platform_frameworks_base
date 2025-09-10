@@ -16,33 +16,65 @@
 
 package com.android.systemui.accessibility.data.repository
 
+import android.content.Context
 import android.hardware.input.KeyGestureEvent
+import android.os.Handler
+import com.android.internal.accessibility.util.FrameworkObjectProvider
+import com.android.internal.accessibility.util.TtsPrompt
+import com.android.systemui.dagger.qualifiers.Application
+import com.android.systemui.dagger.qualifiers.Main
 
-class FakeAccessibilityShortcutsRepository : AccessibilityShortcutsRepository {
+class FakeAccessibilityShortcutsRepository(
+    @param:Application private val context: Context,
+    @param:Main private val handler: Handler,
+) : AccessibilityShortcutsRepository {
+    private val featureNameTestMap =
+        mapOf(
+            KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_MAGNIFICATION to "Magnification",
+            KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_SCREEN_READER to "Screen Reader",
+            KeyGestureEvent.KEY_GESTURE_TYPE_ACTIVATE_SELECT_TO_SPEAK to "Select to Speak",
+            KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_VOICE_ACCESS to "Voice Access",
+        )
+
+    var areShortcutsEnabled: Boolean = false
+    var isMagnificationAndZoomInEnabled: Boolean = false
+    var ttsPrompt: TtsPrompt? = null
+    var ttsText: CharSequence = ""
+
     override suspend fun getTitleToContentForKeyGestureDialog(
         keyGestureType: Int,
         metaState: Int,
         keyCode: Int,
         targetName: String,
-    ): Pair<String, CharSequence>? {
-        return when (keyGestureType) {
+    ): Pair<String, CharSequence>? =
+        when (keyGestureType) {
             KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_MAGNIFICATION,
             KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_VOICE_ACCESS,
             KeyGestureEvent.KEY_GESTURE_TYPE_ACTIVATE_SELECT_TO_SPEAK,
             KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_SCREEN_READER -> {
+                val featureNameForTest = featureNameTestMap[keyGestureType] ?: ""
                 // return a fake data
-                Pair("fakeTitle", "fakeContentText")
+                "$featureNameForTest fakeTitle" to "$featureNameForTest fakeContentText"
             }
 
             else -> null
         }
-    }
 
     override fun getActionKeyIconResId(): Int {
         return 0
     }
 
-    override fun enableShortcutsForTargets(enable: Boolean, targetName: String) {}
+    override fun enableShortcutsForTargets(enable: Boolean, targetName: String) {
+        areShortcutsEnabled = enable
+    }
 
-    override fun enableMagnificationAndZoomIn(displayId: Int) {}
+    override fun enableMagnificationAndZoomIn(displayId: Int) {
+        isMagnificationAndZoomInEnabled = true
+    }
+
+    override fun createTtsPromptForText(text: CharSequence): TtsPrompt {
+        ttsText = text
+        ttsPrompt = TtsPrompt(context, handler, FrameworkObjectProvider(), text)
+        return ttsPrompt as TtsPrompt
+    }
 }

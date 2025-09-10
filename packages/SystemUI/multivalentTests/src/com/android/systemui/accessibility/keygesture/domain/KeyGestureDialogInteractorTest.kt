@@ -17,9 +17,7 @@
 package com.android.systemui.accessibility.keygesture.domain
 
 import android.content.Intent
-import android.content.applicationContext
 import android.hardware.input.KeyGestureEvent
-import android.os.fakeExecutorHandler
 import android.view.Display.DEFAULT_DISPLAY
 import android.view.Display.INVALID_DISPLAY
 import android.view.KeyEvent
@@ -60,14 +58,7 @@ class KeyGestureDialogInteractorTest : SysuiTestCase() {
 
     @Before
     fun setUp() {
-        underTest =
-            KeyGestureDialogInteractor(
-                kosmos.applicationContext,
-                mockRepository,
-                broadcastDispatcher,
-                testDispatcher,
-                kosmos.fakeExecutorHandler,
-            )
+        underTest = KeyGestureDialogInteractor(mockRepository, broadcastDispatcher, testDispatcher)
     }
 
     @Test

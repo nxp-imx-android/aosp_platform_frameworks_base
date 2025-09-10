@@ -16,141 +16,86 @@
 
 package com.android.systemui.accessibility.keygesture.ui
 
+import android.content.Intent
 import android.hardware.input.KeyGestureEvent
 import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import android.view.Display.DEFAULT_DISPLAY
+import android.view.Display.INVALID_DISPLAY
+import android.view.KeyEvent
 import androidx.test.annotation.UiThreadTest
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.hardware.input.Flags
-import com.android.internal.accessibility.util.TtsPrompt
+import com.android.internal.accessibility.common.KeyGestureEventConstants
 import com.android.systemui.SysuiTestCase
+import com.android.systemui.accessibility.data.repository.accessibilityShortcutsRepository
 import com.android.systemui.accessibility.keygesture.domain.KeyGestureDialogInteractor
-import com.android.systemui.accessibility.keygesture.shared.model.KeyGestureConfirmInfo
-import com.android.systemui.kosmos.applicationCoroutineScope
-import com.android.systemui.kosmos.testScope
+import com.android.systemui.accessibility.keygesture.domain.keyGestureDialogInteractor
+import com.android.systemui.broadcast.broadcastDispatcher
+import com.android.systemui.kosmos.Kosmos
+import com.android.systemui.kosmos.backgroundScope
+import com.android.systemui.kosmos.runTest
 import com.android.systemui.statusbar.phone.systemUIDialogFactory
-import com.android.systemui.testKosmos
+import com.android.systemui.testKosmosNew
 import com.google.common.truth.Truth.assertThat
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.test.runCurrent
-import kotlinx.coroutines.test.runTest
-import org.junit.After
 import org.junit.Before
-import org.junit.Ignore
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.mockito.kotlin.any
-import org.mockito.kotlin.eq
-import org.mockito.kotlin.mock
-import org.mockito.kotlin.verify
-import org.mockito.kotlin.whenever
 
 @SmallTest
-@OptIn(ExperimentalCoroutinesApi::class)
 @RunWith(AndroidJUnit4::class)
 @UiThreadTest
 @EnableFlags(Flags.FLAG_ENABLE_TALKBACK_AND_MAGNIFIER_KEY_GESTURES)
 class KeyGestureDialogStartableTest : SysuiTestCase() {
-    private val kosmos = testKosmos()
-    private val testScope = kosmos.testScope
+    private val kosmos = testKosmosNew()
+    private val broadcastDispatcher = kosmos.broadcastDispatcher
+    private val interactor = kosmos.keyGestureDialogInteractor
 
-    // Mocks
-    private val mockInteractor = mock<KeyGestureDialogInteractor>()
-    private val mockTtsPrompt = mock<TtsPrompt>()
-
-    private val confirmInfoFlow = MutableStateFlow<KeyGestureConfirmInfo?>(null)
-    private lateinit var underTest: KeyGestureDialogStartable
+    private val Kosmos.underTest by
+        Kosmos.Fixture {
+            KeyGestureDialogStartable(
+                interactor,
+                kosmos.systemUIDialogFactory,
+                kosmos.backgroundScope,
+            )
+        }
 
     @Before
     fun setUp() {
-        whenever(mockInteractor.keyGestureConfirmDialogRequest).thenReturn(confirmInfoFlow)
-        whenever(mockInteractor.performTtsPromptForText(any())).thenReturn(mockTtsPrompt)
-
-        underTest =
-            KeyGestureDialogStartable(
-                mockInteractor,
-                kosmos.systemUIDialogFactory,
-                kosmos.applicationCoroutineScope,
-            )
-    }
-
-    @After
-    fun tearDown() {
-        // If we show the dialog, we must dismiss the dialog at the end of the test on the main
-        // thread.
-        if (::underTest.isInitialized) {
-            underTest.currentDialog?.dismiss()
-        }
+        onTeardown { with(kosmos) { underTest.currentDialog?.dismiss() } }
     }
 
     @Test
     fun start_doesNotShowDialogByDefault() =
-        testScope.runTest {
+        kosmos.runTest {
             underTest.start()
-            runCurrent()
 
             assertThat(underTest.currentDialog).isNull()
         }
 
     @Test
-    @Ignore("b/425722546 - we have one in review CL ag/35510953 for fixing the crash")
     @DisableFlags(Flags.FLAG_ENABLE_MAGNIFY_MAGNIFICATION_KEY_GESTURE_DIALOG)
     fun start_onMagnificationInfoFlowCollected_showDialog() =
-        testScope.runTest {
+        kosmos.runTest {
             underTest.start()
-            runCurrent()
 
-            val magnificationInfo =
-                KeyGestureConfirmInfo(
-                    keyGestureType = KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_MAGNIFICATION,
-                    title = "Magnification",
-                    contentText = "Enable magnification?",
-                    targetName = "targetNameForMagnification",
-                    actionKeyIconResId = 0,
-                    displayId = DEFAULT_DISPLAY,
-                )
-            confirmInfoFlow.value = magnificationInfo
-            runCurrent()
+            sendIntentBroadcastForMagnification()
 
             assertThat(underTest.currentDialog!!.isShowing).isTrue()
         }
 
     @Test
-    @Ignore("b/425722546 - we have one in review CL ag/35510953 for fixing the crash")
     @DisableFlags(Flags.FLAG_ENABLE_MAGNIFY_MAGNIFICATION_KEY_GESTURE_DIALOG)
     fun start_onMagnificationInfoFlowCollected_dialogShowing_ignoreAdditionalFlows() =
-        testScope.runTest {
+        kosmos.runTest {
             underTest.start()
-            runCurrent()
             // Assume that we already have a magnification dialog showing up.
-            val magnificationInfo =
-                KeyGestureConfirmInfo(
-                    keyGestureType = KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_MAGNIFICATION,
-                    title = "Magnification",
-                    contentText = "Enable magnification?",
-                    targetName = "targetNameForMagnification",
-                    actionKeyIconResId = 0,
-                    displayId = DEFAULT_DISPLAY,
-                )
-            confirmInfoFlow.value = magnificationInfo
-            runCurrent()
+            sendIntentBroadcastForMagnification()
             assertThat(underTest.currentDialog!!.isShowing).isTrue()
 
             // Then, we collect a flow for Screen reader.
-            val screenReaderInfo =
-                KeyGestureConfirmInfo(
-                    keyGestureType = KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_SCREEN_READER,
-                    title = "Screen Reader",
-                    contentText = "Enable screen reader?",
-                    targetName = "targetNameForScreenReader",
-                    actionKeyIconResId = 0,
-                    displayId = DEFAULT_DISPLAY,
-                )
-            confirmInfoFlow.value = screenReaderInfo
-            runCurrent()
+            sendIntentBroadcastForScreenReader()
 
             // Still show the Magnification dialog.
             assertThat(underTest.currentDialog!!.isShowing).isTrue()
@@ -159,40 +104,156 @@ class KeyGestureDialogStartableTest : SysuiTestCase() {
         }
 
     @Test
-    fun start_onNullFlowCollected_noDialog() =
-        testScope.runTest {
+    fun start_invalidKeyGestureType_onNullFlowCollected_noDialog() =
+        kosmos.runTest {
             underTest.start()
-            runCurrent()
 
-            confirmInfoFlow.value = null
-            runCurrent()
+            sendIntentBroadcast(
+                keyGestureType = 0,
+                metaState = KeyEvent.META_META_ON or KeyEvent.META_ALT_ON,
+                keyCode = KeyEvent.KEYCODE_M,
+                targetName = "targetNameForMagnification",
+                displayId = DEFAULT_DISPLAY,
+            )
 
             assertThat(underTest.currentDialog).isNull()
         }
 
     @Test
-    @Ignore("b/425722546 - failed because of dismiss listener")
+    fun start_invalidMetaState_onNullFlowCollected_noDialog() =
+        kosmos.runTest {
+            underTest.start()
+
+            sendIntentBroadcast(
+                keyGestureType = KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_MAGNIFICATION,
+                metaState = 0,
+                keyCode = KeyEvent.KEYCODE_M,
+                targetName = "targetNameForMagnification",
+                displayId = DEFAULT_DISPLAY,
+            )
+
+            assertThat(underTest.currentDialog).isNull()
+        }
+
+    @Test
+    fun start_invalidKeyCode_onNullFlowCollected_noDialog() =
+        kosmos.runTest {
+            underTest.start()
+
+            sendIntentBroadcast(
+                keyGestureType = KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_MAGNIFICATION,
+                metaState = KeyEvent.META_META_ON or KeyEvent.META_ALT_ON,
+                keyCode = 0,
+                targetName = "targetNameForMagnification",
+                displayId = DEFAULT_DISPLAY,
+            )
+
+            assertThat(underTest.currentDialog).isNull()
+        }
+
+    @Test
+    fun start_invalidTargetName_onNullFlowCollected_noDialog() =
+        kosmos.runTest {
+            underTest.start()
+
+            sendIntentBroadcast(
+                keyGestureType = KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_MAGNIFICATION,
+                metaState = KeyEvent.META_META_ON or KeyEvent.META_ALT_ON,
+                keyCode = KeyEvent.KEYCODE_M,
+                targetName = "",
+                displayId = DEFAULT_DISPLAY,
+            )
+
+            assertThat(underTest.currentDialog).isNull()
+        }
+
+    @Test
+    fun start_invalidDisplayId_onNullFlowCollected_noDialog() =
+        kosmos.runTest {
+            underTest.start()
+
+            sendIntentBroadcast(
+                keyGestureType = KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_MAGNIFICATION,
+                metaState = KeyEvent.META_META_ON or KeyEvent.META_ALT_ON,
+                keyCode = KeyEvent.KEYCODE_M,
+                targetName = "targetNameForMagnification",
+                displayId = INVALID_DISPLAY,
+            )
+
+            assertThat(underTest.currentDialog).isNull()
+        }
+
+    @Test
     @EnableFlags(Flags.FLAG_ENABLE_MAGNIFY_MAGNIFICATION_KEY_GESTURE_DIALOG)
     fun start_onMagnificationDialog_enablesShortcutAndZoomsIn() =
-        testScope.runTest {
+        kosmos.runTest {
+            val shortcutsRepository = kosmos.accessibilityShortcutsRepository
             underTest.start()
-            runCurrent()
+            assertThat(shortcutsRepository.areShortcutsEnabled).isFalse()
+            assertThat(shortcutsRepository.isMagnificationAndZoomInEnabled).isFalse()
 
-            val magnificationInfo =
-                KeyGestureConfirmInfo(
-                    keyGestureType = KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_MAGNIFICATION,
-                    title = "Magnification",
-                    contentText = "Enable magnification?",
-                    targetName = "targetNameForMagnification",
-                    actionKeyIconResId = 0,
-                    displayId = DEFAULT_DISPLAY,
-                )
-            confirmInfoFlow.value = magnificationInfo
-            runCurrent()
+            sendIntentBroadcastForMagnification()
 
             assertThat(underTest.currentDialog!!.isShowing).isTrue()
-            verify(mockInteractor)
-                .enableShortcutsForTargets(eq(true), eq(magnificationInfo.targetName))
-            verify(mockInteractor).enableMagnificationAndZoomIn(eq(magnificationInfo.displayId))
+            assertThat(shortcutsRepository.areShortcutsEnabled).isTrue()
+            assertThat(shortcutsRepository.isMagnificationAndZoomInEnabled).isTrue()
         }
+
+    @Test
+    fun start_screenReaderDialog_performsTtsPrompt() =
+        kosmos.runTest {
+            val shortcutsRepository = kosmos.accessibilityShortcutsRepository
+            underTest.start()
+
+            sendIntentBroadcastForScreenReader()
+
+            assertThat(underTest.currentDialog!!.isShowing).isTrue()
+            // Screen Reader dialog will create a `TtsPrompt`, so it shouldn't be null.
+            assertThat(shortcutsRepository.ttsPrompt).isNotNull()
+            // Verify the text used to create the `TtsPrompt` instance above is about Screen Reader
+            // dialog.
+            // TODO: b/432568819 - Update the expected string here after we get the new tts text
+            // from UXW to create the `TtsPrompt` for Screen Reader dialog in production code.
+            assertThat(shortcutsRepository.ttsText).isEqualTo("Screen Reader fakeContentText")
+        }
+
+    private fun sendIntentBroadcast(
+        keyGestureType: Int,
+        metaState: Int,
+        keyCode: Int,
+        targetName: String,
+        displayId: Int,
+    ) {
+        val intent =
+            Intent().apply {
+                action = KeyGestureDialogInteractor.ACTION
+                putExtra(KeyGestureEventConstants.KEY_GESTURE_TYPE, keyGestureType)
+                putExtra(KeyGestureEventConstants.META_STATE, metaState)
+                putExtra(KeyGestureEventConstants.KEY_CODE, keyCode)
+                putExtra(KeyGestureEventConstants.TARGET_NAME, targetName)
+                putExtra(KeyGestureEventConstants.DISPLAY_ID, displayId)
+            }
+
+        broadcastDispatcher.sendIntentToMatchingReceiversOnly(context, intent)
+    }
+
+    private fun sendIntentBroadcastForMagnification() {
+        sendIntentBroadcast(
+            KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_MAGNIFICATION,
+            KeyEvent.META_META_ON or KeyEvent.META_ALT_ON,
+            KeyEvent.KEYCODE_M,
+            "targetNameForMagnification",
+            DEFAULT_DISPLAY,
+        )
+    }
+
+    private fun sendIntentBroadcastForScreenReader() {
+        sendIntentBroadcast(
+            KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_SCREEN_READER,
+            KeyEvent.META_META_ON or KeyEvent.META_ALT_ON,
+            KeyEvent.KEYCODE_T,
+            "targetNameForScreenReader",
+            DEFAULT_DISPLAY,
+        )
+    }
 }
