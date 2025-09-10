@@ -290,10 +290,11 @@ public abstract class WMShellBaseModule {
     static DesktopModeCompatPolicy provideDesktopModeCompatPolicy(
             Context context,
             ShellInit shellInit,
+            ShellController shellController,
             @ShellMainThread Handler mainHandler) {
         final DesktopModeCompatPolicy policy = new DesktopModeCompatPolicy(context);
         policy.setDefaultHomePackageSupplier(new DefaultHomePackageSupplier(
-                context, shellInit, mainHandler));
+                context, shellInit, shellController, mainHandler));
         return policy;
     }
 

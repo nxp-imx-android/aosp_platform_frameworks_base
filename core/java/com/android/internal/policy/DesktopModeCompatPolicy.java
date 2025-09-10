@@ -25,15 +25,16 @@ import android.app.TaskInfo;
 import android.app.WindowConfiguration;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
 import android.window.DesktopExperienceFlags;
 import android.window.DesktopModeFlags;
 
 import com.android.internal.R;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -76,17 +77,14 @@ public class DesktopModeCompatPolicy {
     }
 
     @Nullable
-    private String getDefaultHomePackage() {
-        if (mDefaultHomePackageSupplier != null && mDefaultHomePackageSupplier.get() != null) {
+    public String getDefaultHomePackage(int userId) {
+        if (mDefaultHomePackageSupplier != null) {
             return mDefaultHomePackageSupplier.get();
         }
-
-        final ComponentName homeActivities = getPackageManager().getHomeActivities(
-                new ArrayList<>());
-        if (homeActivities != null) {
-            return homeActivities.getPackageName();
-        }
-        return null;
+        final ResolveInfo homeActivityInfo = getPackageManager().resolveActivityAsUser(
+                new Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME), 0, userId);
+        if (homeActivityInfo == null) return null;
+        return homeActivityInfo.activityInfo.packageName;
     }
 
     /**
@@ -137,7 +135,7 @@ public class DesktopModeCompatPolicy {
             return true;
         }
         // If activity belongs to default home package, safe to force out of desktop.
-        if (isPartOfDefaultHomePackageOrNoHomeAvailable(packageName)) {
+        if (isPartOfDefaultHomePackageOrNoHomeAvailable(packageName, userId)) {
             return true;
         }
         // If all activities in task stack are transparent AND package has the relevant
@@ -148,7 +146,7 @@ public class DesktopModeCompatPolicy {
                 || hasPlatformSignature(info));
     }
 
-    /** @see #shouldDisableDesktopEntryPoints(String, int, boolean, boolean, int) */
+    /** @see #shouldDisableDesktopEntryPoints(String, int, boolean, boolean, int, int) */
     public boolean shouldDisableDesktopEntryPoints(@NonNull TaskInfo task) {
         final String packageName = task.baseActivity != null ? task.baseActivity.getPackageName() :
                 null;
@@ -157,7 +155,8 @@ public class DesktopModeCompatPolicy {
                 task.numActivities,
                 task.isTopActivityNoDisplay,
                 task.isActivityStackTransparent,
-                task.topActivityType
+                task.topActivityType,
+                task.userId
         );
     }
 
@@ -170,8 +169,13 @@ public class DesktopModeCompatPolicy {
             int numActivities,
             boolean isTopActivityNoDisplay,
             boolean isActivityStackTransparent,
-            @WindowConfiguration.ActivityType int topActivityType
+            @WindowConfiguration.ActivityType int topActivityType,
+            int userId
     ) {
+        if (packageName == null) {
+            return true;
+        }
+
         // Activity will not be displayed, no need to show desktop entry point.
         if (isTopActivityNoDisplay) {
             return true;
@@ -186,7 +190,7 @@ public class DesktopModeCompatPolicy {
             return true;
         }
         // If activity belongs to default home package, safe to force out of desktop.
-        if (isPartOfDefaultHomePackageOrNoHomeAvailable(packageName)) {
+        if (isPartOfDefaultHomePackageOrNoHomeAvailable(packageName, userId)) {
             return true;
         }
         // TODO: b/434943016 - Replace with permission.
@@ -229,7 +233,7 @@ public class DesktopModeCompatPolicy {
         return Objects.equals(packageName, mSystemUiPackage);
     }
 
-    private boolean isPackageExemptViaConfig(@Nullable String packageName) {
+    private boolean isPackageExemptViaConfig(@NonNull String packageName) {
         return mConfigExemptPackages.contains(packageName);
     }
 
@@ -287,9 +291,9 @@ public class DesktopModeCompatPolicy {
      * Returns true if the tasks base activity is part of the default home package, or there is
      * currently no default home package available.
      */
-    private boolean isPartOfDefaultHomePackageOrNoHomeAvailable(@Nullable String packageName) {
-        final String defaultHomePackage = getDefaultHomePackage();
-        return defaultHomePackage == null || (packageName != null
-                && packageName.equals(defaultHomePackage));
+    private boolean isPartOfDefaultHomePackageOrNoHomeAvailable(@NonNull String packageName,
+            int userId) {
+        final String defaultHomePackage = getDefaultHomePackage(userId);
+        return defaultHomePackage == null || packageName.equals(defaultHomePackage);
     }
 }

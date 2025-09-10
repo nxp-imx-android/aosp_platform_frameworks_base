@@ -29,6 +29,7 @@ import android.view.WindowManager.TRANSIT_CHANGE
 import android.view.WindowManager.TRANSIT_CLOSE
 import android.view.WindowManager.TRANSIT_OPEN
 import androidx.test.filters.SmallTest
+import com.android.dx.mockito.inline.extended.ExtendedMockito.doReturn
 import com.android.internal.policy.DesktopModeCompatPolicy
 import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.common.ShellExecutor
@@ -86,9 +87,10 @@ class SystemModalsTransitionHandlerTest : ShellTestCase() {
         whenever(desktopUserRepositories.current).thenReturn(desktopRepository)
         whenever(desktopRepository.isAnyDeskActive(anyInt())).thenReturn(true)
         whenever(spyContext.packageManager).thenReturn(packageManager)
-        whenever(componentName.packageName).thenReturn(HOME_LAUNCHER_PACKAGE_NAME)
-        whenever(packageManager.getHomeActivities(ArrayList())).thenReturn(componentName)
-        desktopModeCompatPolicy = DesktopModeCompatPolicy(spyContext)
+        desktopModeCompatPolicy = spy(DesktopModeCompatPolicy(spyContext))
+        doReturn(HOME_LAUNCHER_PACKAGE_NAME)
+            .whenever(desktopModeCompatPolicy)
+            .getDefaultHomePackage(any())
         transitionHandler = createTransitionHandler()
         allowOverlayPermissionForAllUsers(arrayOf(SYSTEM_ALERT_WINDOW))
     }

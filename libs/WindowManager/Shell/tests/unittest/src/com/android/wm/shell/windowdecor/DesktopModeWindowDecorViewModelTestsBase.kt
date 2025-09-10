@@ -39,6 +39,7 @@ import android.view.MotionEvent
 import android.view.SurfaceControl
 import android.view.WindowInsets.Type.statusBars
 import android.window.DesktopExperienceFlags
+import com.android.dx.mockito.inline.extended.ExtendedMockito.doReturn
 import com.android.dx.mockito.inline.extended.StaticMockitoSession
 import com.android.internal.jank.InteractionJankMonitor
 import com.android.internal.policy.DesktopModeCompatPolicy
@@ -204,6 +205,7 @@ open class DesktopModeWindowDecorViewModelTestsBase : ShellTestCase() {
 
     fun setUpCommon() {
         spyContext = spy(mContext)
+        spyContext.setMockPackageManager(packageManager)
         doNothing().`when`(spyContext).startActivity(any())
         doNothing().`when`(mockWindowDecoration).a11yAnnounceNewFocusedWindow()
         shellInit = ShellInit(testShellExecutor)
@@ -217,7 +219,7 @@ open class DesktopModeWindowDecorViewModelTestsBase : ShellTestCase() {
         whenever(mockDesktopUserRepositories.getProfile(anyInt())).thenReturn(mockDesktopRepository)
         whenever(mockUserProfileContexts[anyInt()]).thenReturn(spyContext)
         whenever(mockUserProfileContexts.getOrCreate(anyInt())).thenReturn(spyContext)
-        desktopModeCompatPolicy = DesktopModeCompatPolicy(spyContext)
+        desktopModeCompatPolicy = spy(DesktopModeCompatPolicy(spyContext))
         appHandleAndHeaderVisibilityHelper =
             AppHandleAndHeaderVisibilityHelper(
                 displayController = mockDisplayController,
@@ -333,8 +335,9 @@ open class DesktopModeWindowDecorViewModelTestsBase : ShellTestCase() {
         whenever(displayLayout.getStableBounds(any())).thenAnswer { i ->
             (i.arguments.first() as Rect).set(STABLE_BOUNDS)
         }
-        spyContext.setMockPackageManager(packageManager)
-        whenever(packageManager.getHomeActivities(ArrayList())).thenReturn(homeComponentName)
+        doReturn(HOME_LAUNCHER_PACKAGE_NAME)
+            .whenever(desktopModeCompatPolicy)
+            .getDefaultHomePackage(any())
         whenever(mockDesktopTasksController.getNextFocusedTask(any())).thenReturn(testTaskId)
         whenever(windowDecorByTaskIdSpy.get(testTaskId)).thenReturn(mockWindowDecoration)
     }
@@ -367,6 +370,7 @@ open class DesktopModeWindowDecorViewModelTestsBase : ShellTestCase() {
                         statusBars()
                     }
                 userId = context.userId
+                baseActivity = ComponentName(/* pkg= */ "", /* cls= */ "")
             }
     }
 
