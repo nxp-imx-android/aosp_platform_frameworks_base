@@ -40,6 +40,7 @@ import static com.android.server.companion.utils.PermissionsUtils.enforceCallerC
 import static com.android.server.companion.utils.PermissionsUtils.enforceCallerCanManageAssociationsForPackage;
 import static com.android.server.companion.utils.PermissionsUtils.enforceCallerIsSystemOr;
 import static com.android.server.companion.utils.PermissionsUtils.enforceCallerIsSystemOrCanInteractWithUserId;
+import static com.android.server.companion.utils.PermissionsUtils.enforceMessagePermissions;
 
 import static java.util.Objects.requireNonNull;
 
@@ -424,27 +425,27 @@ public class CompanionDeviceManagerService extends SystemService {
         }
 
         @Override
-        @EnforcePermission(USE_COMPANION_TRANSPORTS)
+        @PermissionManuallyEnforced
         public void sendMessage(int messageType, byte[] data, int[] associationIds) {
-            sendMessage_enforcePermission();
+            enforceMessagePermissions(getContext(), messageType);
 
             mTransportManager.sendMessage(messageType, data, associationIds);
         }
 
         @Override
-        @EnforcePermission(USE_COMPANION_TRANSPORTS)
+        @PermissionManuallyEnforced
         public void addOnMessageReceivedListener(int messageType,
                 IOnMessageReceivedListener listener) {
-            addOnMessageReceivedListener_enforcePermission();
+            enforceMessagePermissions(getContext(), messageType);
 
             mTransportManager.addListener(messageType, listener);
         }
 
         @Override
-        @EnforcePermission(USE_COMPANION_TRANSPORTS)
+        @PermissionManuallyEnforced
         public void removeOnMessageReceivedListener(int messageType,
                 IOnMessageReceivedListener listener) {
-            removeOnMessageReceivedListener_enforcePermission();
+            enforceMessagePermissions(getContext(), messageType);
 
             mTransportManager.removeListener(messageType, listener);
         }

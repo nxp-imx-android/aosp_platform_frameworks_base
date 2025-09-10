@@ -99,13 +99,13 @@ interface ICompanionDeviceManager {
     @EnforcePermission("USE_COMPANION_TRANSPORTS")
     List<AssociationInfo> getAllAssociationsWithTransports();
 
-    @EnforcePermission("USE_COMPANION_TRANSPORTS")
+    @PermissionManuallyEnforced
     void sendMessage(int messageType, in byte[] data, in int[] associationIds);
 
-    @EnforcePermission("USE_COMPANION_TRANSPORTS")
+    @PermissionManuallyEnforced
     void addOnMessageReceivedListener(int messageType, IOnMessageReceivedListener listener);
 
-    @EnforcePermission("USE_COMPANION_TRANSPORTS")
+    @PermissionManuallyEnforced
     void removeOnMessageReceivedListener(int messageType, IOnMessageReceivedListener listener);
 
     @EnforcePermission("USE_COMPANION_TRANSPORTS")

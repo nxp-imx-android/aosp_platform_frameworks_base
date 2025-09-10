@@ -24,6 +24,7 @@ import android.annotation.UserIdInt;
 import android.companion.AssociationInfo;
 import android.companion.IOnMessageReceivedListener;
 import android.companion.IOnTransportsChangedListener;
+import android.os.Binder;
 import android.os.PersistableBundle;
 import android.util.Slog;
 import android.util.SparseArray;
@@ -68,14 +69,15 @@ public class DataSyncProcessor {
                 new IOnMessageReceivedListener.Stub() {
                     @Override
                     public void onMessageReceived(int associationId, byte[] data) {
-                        onReceiveMetadataUpdate(associationId, data);
+                        Binder.withCleanCallingIdentity(() -> onReceiveMetadataUpdate(associationId,
+                                data));
                     }
                 });
         mTransportManager.addListener(
                 new IOnTransportsChangedListener.Stub() {
                     @Override
                     public void onTransportsChanged(List<AssociationInfo> associations) {
-                        broadcastMetadata(associations);
+                        Binder.withCleanCallingIdentity(() -> broadcastMetadata(associations));
                     }
                 });
     }
