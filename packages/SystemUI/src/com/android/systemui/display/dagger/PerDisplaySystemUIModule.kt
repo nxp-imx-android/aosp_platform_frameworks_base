@@ -33,6 +33,7 @@ import com.android.systemui.display.data.repository.DisplayStateRepository
 import com.android.systemui.display.data.repository.DisplayStateRepositoryImpl
 import com.android.systemui.display.domain.interactor.DisplayStateInteractor
 import com.android.systemui.display.domain.interactor.DisplayStateInteractorImpl
+import com.android.systemui.display.shared.DisplayNotFoundException
 import com.android.systemui.plugins.DarkIconDispatcher
 import com.android.systemui.statusbar.dagger.PerDisplayStatusBarModule
 import com.android.systemui.statusbar.phone.DarkIconDispatcherImpl
@@ -111,7 +112,7 @@ interface PerDisplaySystemUIModule {
             displayRepository: DisplayRepository,
         ): Display {
             return displayRepository.getDisplay(displayId)
-                ?: error("Couldn't get the display with id=$displayId")
+                ?: throw DisplayNotFoundException("Couldn't get the display with id=$displayId")
         }
 
         @Provides
