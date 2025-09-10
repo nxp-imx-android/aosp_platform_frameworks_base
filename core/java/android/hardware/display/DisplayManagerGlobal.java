@@ -1076,14 +1076,12 @@ public final class DisplayManagerGlobal {
 
     /**
      * Temporarily sets the brightness of the display.
-     * <p>
-     * Requires the {@link android.Manifest.permission#CONTROL_DISPLAY_BRIGHTNESS} permission.
-     * </p>
      *
      * @param brightness The brightness value from 0.0f to 1.0f.
      *
      * @hide Requires signature permission.
      */
+    @RequiresPermission(Manifest.permission.CONTROL_DISPLAY_BRIGHTNESS)
     public void setTemporaryBrightness(int displayId, float brightness) {
         try {
             mDm.setTemporaryBrightness(displayId, brightness);
@@ -1092,6 +1090,24 @@ public final class DisplayManagerGlobal {
         }
     }
 
+    /**
+     * Sets the brightness mode of the display.
+     *
+     * @param displayId      the id of the display.
+     * @param brightnessMode The brightness mode:
+     *          - {@link android.provider.Settings.System#SCREEN_BRIGHTNESS_MODE_AUTOMATIC}
+     *          - {@link android.provider.Settings.System#SCREEN_BRIGHTNESS_MODE_MANUAL}
+     * @return whether the mode successfully changed.
+     * @hide
+     */
+    @RequiresPermission(Manifest.permission.CONFIGURE_DISPLAY_BRIGHTNESS)
+    public boolean setTemporaryBrightnessMode(int displayId, int brightnessMode) {
+        try {
+            return mDm.setTemporaryBrightnessMode(displayId, brightnessMode);
+        } catch (RemoteException ex) {
+            throw ex.rethrowFromSystemServer();
+        }
+    }
 
     /**
      * Sets the brightness of the display.

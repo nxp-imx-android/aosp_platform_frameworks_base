@@ -105,6 +105,8 @@ import com.android.server.display.whitebalance.DisplayWhiteBalanceSettings;
 import com.android.server.policy.WindowManagerPolicy;
 
 import java.io.PrintWriter;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Controls the power state of the display.
@@ -2515,6 +2517,57 @@ final class DisplayPowerController implements AutomaticBrightnessController.Call
             // In manual mode, all brightness changes should be saved immediately.
             mDisplayBrightnessController.saveBrightnessIfNeeded();
         }
+    }
+
+    /**
+     * API MADE FOR TESTING ONLY. Relies on busy waiting to avoid unnecessary code complexity.
+     * Temporarily override brightness mode synchronously waiting for the mode change.
+     * @param screenBrightnessModeSetting
+     *      - {@link Settings.System#SCREEN_BRIGHTNESS_MODE_AUTOMATIC}
+     *      - {@link Settings.System#SCREEN_BRIGHTNESS_MODE_MANUAL}
+     * @return true if mode successfully changed.
+     */
+    boolean overrideBrightnessMode(int screenBrightnessModeSetting) {
+        var latch = new CountDownLatch(1);
+        long timeoutMillis = 3500L;
+        long deadline = SystemClock.uptimeMillis() + timeoutMillis;
+        mHandler.post(() -> {
+            var wasAutomatic = mAutomaticBrightnessStrategy.shouldUseAutoBrightness();
+            var isAutomatic = screenBrightnessModeSetting
+                    == Settings.System.SCREEN_BRIGHTNESS_MODE_AUTOMATIC;
+            if (isAutomatic != wasAutomatic) {
+                mAutomaticBrightnessStrategy.setUseAutoBrightness(isAutomatic);
+                updatePowerState();
+            }
+
+            // If switching to automatic, need to wait for the valid ambient lux.
+            if (isAutomatic && !wasAutomatic) {
+                validateAmbientLux(latch, deadline);
+            } else {
+                latch.countDown();
+            }
+        });
+
+        try {
+            return latch.await(timeoutMillis, TimeUnit.MILLISECONDS);
+        } catch (InterruptedException e) {
+            Slog.e(TAG, "overrideBrightnessMode latch.await interrupted", e);
+            return false;
+        }
+    }
+
+    private void validateAmbientLux(CountDownLatch latch, long deadline) {
+        if (mAutomaticBrightnessController == null
+                || mAutomaticBrightnessController.hasValidAmbientLux()) {
+            latch.countDown();
+            return;
+        }
+
+        if (SystemClock.uptimeMillis() >= deadline) {
+            return;
+        }
+
+        mHandler.postDelayed(() -> validateAmbientLux(latch, deadline), 100L);
     }
 
     public float getScreenBrightnessSetting() {

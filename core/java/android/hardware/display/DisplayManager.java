@@ -1609,6 +1609,23 @@ public final class DisplayManager {
         mGlobal.setTemporaryBrightness(displayId, brightness);
     }
 
+    /**
+     * Temporarily sets the brightness mode and waits until it is applied.
+     * <p>
+     *
+     * @param displayId      the id of the display
+     * @param brightnessMode The brightness mode:
+     *          - {@link android.provider.Settings.System#SCREEN_BRIGHTNESS_MODE_AUTOMATIC}
+     *          - {@link android.provider.Settings.System#SCREEN_BRIGHTNESS_MODE_MANUAL}
+     * @return whether the mode successfully changed.
+     * @hide
+     */
+    @TestApi
+    @SuppressLint("UnflaggedApi") // @TestApi without associated feature.
+    @RequiresPermission(Manifest.permission.CONFIGURE_DISPLAY_BRIGHTNESS)
+    public boolean setTemporaryBrightnessMode(int displayId, int brightnessMode) {
+        return mGlobal.setTemporaryBrightnessMode(displayId, brightnessMode);
+    }
 
     /**
      * Sets the brightness of the specified display.

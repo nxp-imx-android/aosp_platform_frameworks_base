@@ -4267,6 +4267,19 @@ public final class DisplayManagerService extends SystemService {
         }
     }
 
+    private boolean setTemporaryBrightnessModeInternal(int displayId, int brightnessMode) {
+        if (brightnessMode != Settings.System.SCREEN_BRIGHTNESS_MODE_AUTOMATIC
+                && brightnessMode != Settings.System.SCREEN_BRIGHTNESS_MODE_MANUAL) {
+            Slog.w(TAG, "Attempted to set invalid brightness mode: " + brightnessMode);
+            return false;
+        }
+        DisplayPowerController dpc;
+        synchronized (mSyncRoot) {
+            dpc = mDisplayPowerControllers.get(displayId);
+        }
+        return dpc != null && dpc.overrideBrightnessMode(brightnessMode);
+    }
+
     private void setBrightnessInternal(int displayId, float brightness) {
         if (Float.isNaN(brightness)) {
             Slog.w(TAG, "Attempted to set invalid brightness: " + brightness);
@@ -5405,6 +5418,13 @@ public final class DisplayManagerService extends SystemService {
             } finally {
                 Binder.restoreCallingIdentity(token);
             }
+        }
+
+        @EnforcePermission(android.Manifest.permission.CONFIGURE_DISPLAY_BRIGHTNESS)
+        @Override // Binder call
+        public boolean setTemporaryBrightnessMode(int displayId, int brightnessMode) {
+            setTemporaryBrightnessMode_enforcePermission();
+            return setTemporaryBrightnessModeInternal(displayId, brightnessMode);
         }
 
         @EnforcePermission(CONTROL_DISPLAY_BRIGHTNESS)
