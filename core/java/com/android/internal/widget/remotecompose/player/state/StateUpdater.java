@@ -16,7 +16,6 @@
 package com.android.internal.widget.remotecompose.player.state;
 
 
-
 import android.annotation.NonNull;
 import android.graphics.Bitmap;
 
@@ -73,7 +72,6 @@ public interface StateUpdater {
      * @param name the original name of the parameter.
      * @return the user domain string for the given parameter name.
      */
-
     static String getUserDomainString(@NonNull String name) {
         return RemoteDomains.USER + ":" + name;
     }

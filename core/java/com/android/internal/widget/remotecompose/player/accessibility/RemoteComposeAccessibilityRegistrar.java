@@ -16,7 +16,6 @@
 package com.android.internal.widget.remotecompose.player.accessibility;
 
 
-
 import android.view.View;
 
 import com.android.internal.widget.remotecompose.core.CoreDocument;
@@ -28,7 +27,6 @@ import com.android.internal.widget.remotecompose.core.CoreDocument;
  * compose player view. It allows for setting and clearing the delegate, which is used to handle
  * accessibility events and provide accessibility information for the remote compose content.
  */
-
 public interface RemoteComposeAccessibilityRegistrar {
 
     /**

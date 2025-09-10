@@ -76,7 +76,7 @@ public class TextLayout extends LayoutManager implements VariableSupport, Access
 
     private final Size mCachedSize = new Size(0f, 0f);
 
-    @Nullable private String mCachedString = "";
+    @Nullable private String mCachedString;
     @Nullable private String mNewString;
 
     Platform.ComputedTextLayout mComputedTextLayout;
@@ -105,7 +105,6 @@ public class TextLayout extends LayoutManager implements VariableSupport, Access
             if (mFontFamilyId != -1) {
                 String fontFamily = context.getText(mFontFamilyId);
                 if (fontFamily != null) {
-                    mType = 0; // default
                     if (fontFamily.equalsIgnoreCase("default")) {
                         mType = 0;
                     } else if (fontFamily.equalsIgnoreCase("sans-serif")) {
@@ -116,8 +115,9 @@ public class TextLayout extends LayoutManager implements VariableSupport, Access
                         mType = 3;
                     }
                 }
-            } else {
-                mType = 0;
+            }
+            if (mType == -1) {
+                mType = 0; // default
             }
         }
 

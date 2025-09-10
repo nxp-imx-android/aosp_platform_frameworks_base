@@ -16,7 +16,6 @@
 package com.android.internal.widget.remotecompose.player.platform;
 
 
-
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.graphics.Bitmap;
@@ -47,7 +46,6 @@ import java.util.HashMap;
  *
  * <p>This is used to play the RemoteCompose operations on Android.
  */
-
 public class AndroidRemoteContext extends RemoteContext {
     private static final boolean CHECK_DATA_SIZE = true;
 
