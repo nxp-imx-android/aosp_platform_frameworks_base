@@ -4958,7 +4958,7 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
                 new WindowAnimationSpec(anim, position, false /* canSkipFirstFrame */,
                         0 /* windowCornerRadius */),
                 mWmService.mSurfaceAnimationRunner);
-        final Transaction t = mActivityRecord != null
+        final Transaction t = mActivityRecord != null && mActivityRecord.isVisibleRequested()
                 ? getSyncTransaction() : getPendingTransaction();
         startAnimation(t, adapter);
         commitPendingTransaction();
