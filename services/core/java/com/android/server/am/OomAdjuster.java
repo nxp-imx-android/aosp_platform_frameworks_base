@@ -412,7 +412,7 @@ public abstract class OomAdjuster {
 
         /** Notifies the client component when a process's process state is updated. */
         void onProcStateUpdated(ProcessRecordInternal app, long now,
-                boolean forceUpdatePssTime);
+                boolean forceUpdatePssTime, boolean doingAll);
 
         /** Notifies when the process group for an application process has been updated. */
         void onProcessGroupUpdated(ProcessRecordInternal app, int group);
@@ -2194,7 +2194,7 @@ public abstract class OomAdjuster {
                         + (state.getNextPssTime() - now) + ": " + state);
             }
         }
-        mCallback.onProcStateUpdated(state, now, forceUpdatePssTime);
+        mCallback.onProcStateUpdated(state, now, forceUpdatePssTime, doingAll);
 
         int oldProcState = state.getSetProcState();
         if (state.getSetProcState() != state.getCurProcState()) {
@@ -2220,13 +2220,6 @@ public abstract class OomAdjuster {
             maybeUpdateLastTopTime(state, now);
 
             state.setSetProcState(state.getCurProcState());
-            if (!doingAll) {
-                synchronized (mService.mProcessStats.mLock) {
-                    // TODO: b/441408003 - Decouple the AMS usage out of OomAdjuster.
-                    mService.setProcessTrackerStateLOSP((ProcessRecord) state,
-                            mService.mProcessStats.getMemFactorLocked());
-                }
-            }
         } else if (state.getHasReportedInteraction()) {
             final boolean fgsInteractionChangeEnabled = state.getCachedCompatChange(
                     CACHED_COMPAT_CHANGE_USE_SHORT_FGS_USAGE_INTERACTION_TIME);
