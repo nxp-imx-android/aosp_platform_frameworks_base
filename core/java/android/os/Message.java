@@ -153,8 +153,11 @@ public final class Message implements Parcelable {
      * The CAS loop shouldn't fail due to FLAG_IN_USE or FLAG_ASYNCHRONOUS being set because those
      * are only changed when a message is initially created and enqueued. However, we loop anyways
      * in case additional flags that can be modified are added in the future.
+     *
+     * @hide
      */
-    boolean markRemoved() {
+    @VisibleForTesting
+    public boolean markRemoved() {
         int localFlags;
         do {
             localFlags = this.flags;
