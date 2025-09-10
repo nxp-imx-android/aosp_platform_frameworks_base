@@ -20,13 +20,20 @@ import android.os.Handler
 import com.android.settingslib.media.LocalMediaManager
 import com.android.settingslib.media.SuggestedDeviceConnectionManager
 import com.android.settingslib.media.SuggestedDeviceManager
+import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Main
 import javax.inject.Inject
+import kotlinx.coroutines.CoroutineScope
 
-class SuggestedDeviceManagerFactory @Inject constructor(@Main private val handler: Handler) {
+class SuggestedDeviceManagerFactory
+@Inject
+constructor(
+    @Main private val handler: Handler,
+    @Application private val applicationScope: CoroutineScope,
+) {
     fun create(localMediaManager: LocalMediaManager): SuggestedDeviceManager {
         val suggestedDeviceConnectionManager =
-            SuggestedDeviceConnectionManager(localMediaManager, handler)
+            SuggestedDeviceConnectionManager(localMediaManager, applicationScope)
         return SuggestedDeviceManager(localMediaManager, handler, suggestedDeviceConnectionManager)
     }
 }

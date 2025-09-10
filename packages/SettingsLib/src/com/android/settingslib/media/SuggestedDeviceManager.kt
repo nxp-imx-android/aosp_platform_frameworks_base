@@ -66,15 +66,6 @@ class SuggestedDeviceManager(
   @GuardedBy("lock") private var suggestedStateOverride: SuggestedDeviceState? = null
   @GuardedBy("lock") private var hideSuggestedDeviceState: Boolean = false
 
-  init {
-    if (useSuggestedDeviceConnectionManager()) {
-      suggestedDeviceConnectionManager.setConnectionFinishedCallback { suggestedDeviceState, success
-        ->
-        onSuggestedDeviceConnectionFinished(suggestedDeviceState, success)
-      }
-    }
-  }
-
   private val onSuggestedStateOverrideExpiredRunnable = Runnable {
     synchronized(lock) {
       if (suggestedStateOverride?.connectionState == STATE_CONNECTING_FAILED) {
@@ -148,6 +139,10 @@ class SuggestedDeviceManager(
     }
   }
 
+  fun cancelAllRequests() {
+    if (useSuggestedDeviceConnectionManager()) suggestedDeviceConnectionManager.cancel()
+  }
+
   fun requestDeviceSuggestion() {
     localMediaManager.requestDeviceSuggestion()
     stopHidingSuggestedDeviceState()
@@ -182,16 +177,26 @@ class SuggestedDeviceManager(
       Log.w(TAG, "Suggestion got changed, aborting connection.")
       return
     }
-    overrideSuggestedStateWithExpiration(
-      connectionState = STATE_CONNECTING,
-      timeoutMs = CONNECTING_TIMEOUT_MS,
-    )
     if (useSuggestedDeviceConnectionManager()) {
-      suggestedDeviceConnectionManager.connectSuggestedDevice(
-        newSuggestedDeviceState,
-        routingChangeInfo,
-      )
+      try {
+        suggestedDeviceConnectionManager.connect(
+          newSuggestedDeviceState,
+          routingChangeInfo,
+        ) { suggestedDeviceState, success ->
+          onSuggestedDeviceConnectionFinished(suggestedDeviceState, success)
+        }
+        overrideSuggestedStateWithExpiration(
+          connectionState = STATE_CONNECTING,
+          timeoutMs = CONNECTING_TIMEOUT_MS,
+        )
+      } catch (e: IllegalStateException) {
+        Log.e(TAG, "Connection already in progress", e)
+      }
     } else {
+      overrideSuggestedStateWithExpiration(
+        connectionState = STATE_CONNECTING,
+        timeoutMs = CONNECTING_TIMEOUT_MS,
+      )
       localMediaManager.connectSuggestedDevice(newSuggestedDeviceState, routingChangeInfo)
     }
   }
