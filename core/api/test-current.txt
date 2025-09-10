@@ -2985,7 +2985,7 @@ package android.os.vibrator {
 
 package android.os.vibrator.persistence {
 
-  @FlaggedApi("android.os.vibrator.vibration_xml_apis") public final class ParsedVibration {
+  public final class ParsedVibration {
     ctor public ParsedVibration(@NonNull java.util.List<android.os.VibrationEffect>);
   }
 
