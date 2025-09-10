@@ -1548,6 +1548,19 @@
          False means the pattern should not be visible by default. -->
     <bool name="config_lockPatternVisibleDefault">true</bool>
 
+    <!-- If true, then enable the failed authentication lock feature (aka adaptive auth) which
+         locks the device after repeated authentication failures. Setting this to false weakens user
+         protection and is not recommended for production devices. -->
+    <bool name="config_enableFailedAuthLock">true</bool>
+
+    <!-- The maximum number of failed authentication attempts allowed before the device is locked,
+         if failed authentication lock is enabled -->
+    <integer name="config_maxAllowedFailedAuthAttempts">5</integer>
+
+    <!-- Whether to show a user-facing toggle for failed authentication lock if the feature is
+         enabled. -->
+    <bool name="config_enableFailedAuthLockToggle">true</bool>
+
     <!-- Control the behavior when the user long presses the home button.
             0 - Nothing
             1 - Launch all apps intent

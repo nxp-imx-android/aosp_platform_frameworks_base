@@ -24,13 +24,14 @@ import static android.security.authenticationpolicy.AuthenticationPolicyManager.
 
 import static com.android.internal.widget.LockPatternUtils.StrongAuthTracker.PRIMARY_AUTH_REQUIRED_FOR_SECURE_LOCK_DEVICE;
 import static com.android.internal.widget.LockPatternUtils.StrongAuthTracker.SOME_AUTH_REQUIRED_AFTER_ADAPTIVE_AUTH_REQUEST;
-import static com.android.server.security.authenticationpolicy.AuthenticationPolicyService.MAX_ALLOWED_FAILED_AUTH_ATTEMPTS;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assume.assumeTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
@@ -40,6 +41,7 @@ import android.annotation.SuppressLint;
 import android.app.KeyguardManager;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.content.res.Resources;
 import android.hardware.biometrics.AuthenticationStateListener;
 import android.hardware.biometrics.BiometricManager;
 import android.hardware.biometrics.BiometricRequestConstants;
@@ -91,9 +93,11 @@ public class AuthenticationPolicyServiceTest {
 
     private static final int PRIMARY_USER_ID = 0;
     private static final int MANAGED_PROFILE_USER_ID = 12;
+    private static final int MAX_ALLOWED_FAILED_AUTH_ATTEMPTS = 5;
     private static final int DEFAULT_COUNT_FAILED_AUTH_ATTEMPTS = 0;
 
     private Context mContext;
+    private Resources mResources;
     private AuthenticationPolicyService mAuthenticationPolicyService;
 
     @Mock
@@ -122,6 +126,16 @@ public class AuthenticationPolicyServiceTest {
     @Before
     public void setUp() {
         mContext = spy(ApplicationProvider.getApplicationContext());
+        mResources = spy(mContext.getResources());
+
+        when(mContext.getResources()).thenReturn(mResources);
+        when(mResources.getBoolean(
+                com.android.internal.R.bool.config_enableFailedAuthLock)).thenReturn(true);
+        when(mResources.getInteger(
+                com.android.internal.R.integer.config_maxAllowedFailedAuthAttempts))
+                .thenReturn(MAX_ALLOWED_FAILED_AUTH_ATTEMPTS);
+        when(mResources.getBoolean(
+                com.android.internal.R.bool.config_enableFailedAuthLockToggle)).thenReturn(true);
 
         assumeTrue("Adaptive auth is disabled on device",
                 !mContext.getPackageManager().hasSystemFeature(PackageManager.FEATURE_AUTOMOTIVE));
@@ -175,6 +189,100 @@ public class AuthenticationPolicyServiceTest {
             LocalServices.removeServiceForTest(SecureLockDeviceServiceInternal.class);
         }
         toggleAdaptiveAuthSettingsOverride(PRIMARY_USER_ID, false /* disable */);
+    }
+
+    @Test
+    @EnableFlags({android.security.Flags.FLAG_FAILED_AUTH_LOCK_TOGGLE})
+    public void testConfig_failedAuthLock_whenDisabled() throws RemoteException {
+        // The feature is disabled in config. In this case, the toggle config value (true or false)
+        // doesn't matter
+        clearSettingsAndInitService(false /* featureEnabled */, true /* toggleEnabled */);
+
+        // Verify that the setting was not written
+        assertThrows(Settings.SettingNotFoundException.class, () -> {
+            Settings.Secure.getIntForUser(mContext.getContentResolver(),
+                    Settings.Secure.DISABLE_ADAPTIVE_AUTH_LIMIT_LOCK, PRIMARY_USER_ID);
+        });
+
+        // Five failed biometric auth attempts
+        for (int i = 0; i < MAX_ALLOWED_FAILED_AUTH_ATTEMPTS; i++) {
+            mAuthenticationStateListenerCaptor.getValue().onAuthenticationFailed(
+                    authFailedInfo(PRIMARY_USER_ID));
+        }
+        waitForAuthCompletion();
+
+        // Verify that there are no reported failed auth attempts and that the device is never
+        // locked, because the failed auth lock feature is completely disabled in config
+        verifyNotLockDevice(DEFAULT_COUNT_FAILED_AUTH_ATTEMPTS /* expectedCntFailedAttempts */,
+                PRIMARY_USER_ID);
+    }
+
+    @Test
+    @EnableFlags({android.security.Flags.FLAG_FAILED_AUTH_LOCK_TOGGLE})
+    @DisableFlags({android.security.Flags.FLAG_DISABLE_ADAPTIVE_AUTH_COUNTER_LOCK})
+    public void testConfig_failedAuthLockToggle_whenDisabled() throws RemoteException {
+        // The feature is enabled, but the toggle is disabled in config
+        clearSettingsAndInitService(true /* featureEnabled */, false /* toggleEnabled */);
+
+        // Verify that the setting was not written because the toggle is disabled
+        assertThrows(Settings.SettingNotFoundException.class, () -> {
+            Settings.Secure.getIntForUser(mContext.getContentResolver(),
+                    Settings.Secure.DISABLE_ADAPTIVE_AUTH_LIMIT_LOCK, PRIMARY_USER_ID);
+        });
+
+        // Five failed biometric auth attempts
+        for (int i = 0; i < MAX_ALLOWED_FAILED_AUTH_ATTEMPTS; i++) {
+            mAuthenticationStateListenerCaptor.getValue().onAuthenticationFailed(
+                    authFailedInfo(PRIMARY_USER_ID));
+        }
+        waitForAuthCompletion();
+
+        // Verify that the device is locked, because the toggle is disabled in config, and thus the
+        // feature can't be disabled by users in settings on non-debuggable builds
+        verifyAdaptiveAuthLocksDevice(PRIMARY_USER_ID);
+    }
+
+    @Test
+    @EnableFlags({android.security.Flags.FLAG_FAILED_AUTH_LOCK_TOGGLE})
+    @DisableFlags({android.security.Flags.FLAG_DISABLE_ADAPTIVE_AUTH_COUNTER_LOCK})
+    public void testConfig_failedAuthLockToggle_whenEnabled() throws RemoteException {
+        // The feature and the toggle are enabled in config
+        clearSettingsAndInitService(true /* featureEnabled */, true /* toggleEnabled */);
+
+        // Verify that the setting was written with the default value (0 means the feature is
+        // enabled)
+        assertEquals(0, Settings.Secure.getIntForUser(mContext.getContentResolver(),
+                Settings.Secure.DISABLE_ADAPTIVE_AUTH_LIMIT_LOCK, -1, PRIMARY_USER_ID));
+
+        // Five failed biometric auth attempts
+        for (int i = 0; i < MAX_ALLOWED_FAILED_AUTH_ATTEMPTS; i++) {
+            mAuthenticationStateListenerCaptor.getValue().onAuthenticationFailed(
+                    authFailedInfo(PRIMARY_USER_ID));
+        }
+        waitForAuthCompletion();
+
+        // Verify that the device is locked
+        verifyAdaptiveAuthLocksDevice(PRIMARY_USER_ID);
+    }
+
+    private void clearSettingsAndInitService(boolean featureEnabled, boolean toggleEnabled) {
+        // Ensure that the setting does not exist beforehand to test the initialization logic
+        Settings.Secure.putStringForUser(mContext.getContentResolver(),
+                Settings.Secure.DISABLE_ADAPTIVE_AUTH_LIMIT_LOCK, null, PRIMARY_USER_ID);
+
+        // Change the feature and the toggle configs
+        when(mResources.getBoolean(com.android.internal.R.bool.config_enableFailedAuthLock))
+                .thenReturn(featureEnabled);
+        when(mResources.getBoolean(com.android.internal.R.bool.config_enableFailedAuthLockToggle))
+                .thenReturn(toggleEnabled);
+
+        // Re-initialize the service to trigger setting initialization
+        mAuthenticationPolicyService = new AuthenticationPolicyService(mContext, mLockPatternUtils);
+        mAuthenticationPolicyService.init();
+
+        // Re-capture the listener from the new service instance
+        verify(mBiometricManager, atLeastOnce()).registerAuthenticationStateListener(
+                mAuthenticationStateListenerCaptor.capture());
     }
 
     @Test
