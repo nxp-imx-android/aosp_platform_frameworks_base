@@ -208,15 +208,15 @@ constructor(
                     faceAllowedOnBouncer,
                     isSecureLockDeviceEnabled) ->
                 val isFaceAuthStrong = faceAuthInteractor.isFaceAuthStrong()
-                val defaultPrimaryMessage =
+                val defaultMessage =
                     BouncerMessageStrings.defaultMessage(
-                            securityMode = authMethod,
-                            fpAuthIsAllowed = fingerprintAllowedOnBouncer,
-                            faceAuthIsAllowed = faceAllowedOnBouncer,
-                            secureLockDeviceEnabled = isSecureLockDeviceEnabled,
-                        )
-                        .primaryMessage
-                        .toResString()
+                        securityMode = authMethod,
+                        fpAuthIsAllowed = fingerprintAllowedOnBouncer,
+                        faceAuthIsAllowed = faceAllowedOnBouncer,
+                        secureLockDeviceEnabled = isSecureLockDeviceEnabled,
+                    )
+                val defaultPrimaryMessage = defaultMessage.primaryMessage.toResString()
+
                 message.value =
                     when (faceMessage) {
                         is FaceTimeoutMessage ->
@@ -295,15 +295,14 @@ constructor(
                     fingerprintAllowedOnBouncer,
                     faceAllowedOnBouncer,
                     isSecureLockDeviceEnabled) ->
-                val defaultPrimaryMessage =
+                val defaultMessage =
                     BouncerMessageStrings.defaultMessage(
-                            authMethod,
-                            fingerprintAllowedOnBouncer,
-                            faceAllowedOnBouncer,
-                            isSecureLockDeviceEnabled,
-                        )
-                        .primaryMessage
-                        .toResString()
+                        securityMode = authMethod,
+                        fpAuthIsAllowed = fingerprintAllowedOnBouncer,
+                        faceAuthIsAllowed = faceAllowedOnBouncer,
+                        secureLockDeviceEnabled = isSecureLockDeviceEnabled,
+                    )
+                val defaultPrimaryMessage = defaultMessage.primaryMessage.toResString()
                 message.value =
                     when (fingerprintMessage) {
                         is FingerprintLockoutMessage ->
@@ -424,9 +423,8 @@ constructor(
     }
 
     private fun BouncerMessagePair.toMessage(): MessageViewModel {
-        val primaryMsg = if (this.primaryMessage == 0) "" else this.primaryMessage.toResString()
-        val secondaryMsg =
-            if (this.secondaryMessage == 0) "" else this.secondaryMessage.toResString()
+        val primaryMsg = this.primaryMessage.toResString()
+        val secondaryMsg = this.secondaryMessage.toResString()
         return MessageViewModel(primaryMsg, secondaryText = secondaryMsg, isUpdateAnimated = true)
     }
 
@@ -473,7 +471,7 @@ constructor(
     private fun Int.toPluralString(formatterArgs: Map<String, Any>): String =
         PluralsMessageFormatter.format(applicationContext.resources, formatterArgs, this)
 
-    private fun Int.toResString(): String = applicationContext.getString(this)
+    private fun Int.toResString(): String = if (this == 0) "" else applicationContext.getString(this)
 
     @AssistedFactory
     interface Factory {
