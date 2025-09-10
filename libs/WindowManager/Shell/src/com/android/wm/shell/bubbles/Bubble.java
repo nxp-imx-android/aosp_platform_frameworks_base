@@ -18,7 +18,6 @@ package com.android.wm.shell.bubbles;
 import static android.app.ActivityTaskManager.INVALID_TASK_ID;
 
 import static com.android.internal.annotations.VisibleForTesting.Visibility.PRIVATE;
-import static com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_BUBBLES;
 import static com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_BUBBLES_NOISY;
 
 import android.annotation.DimenRes;
@@ -61,6 +60,7 @@ import com.android.wm.shell.shared.annotations.ShellBackgroundThread;
 import com.android.wm.shell.shared.annotations.ShellMainThread;
 import com.android.wm.shell.shared.bubbles.BubbleInfo;
 import com.android.wm.shell.shared.bubbles.ParcelableFlyoutMessage;
+import com.android.wm.shell.shared.bubbles.logging.BubbleLog;
 import com.android.wm.shell.taskview.TaskView;
 
 import java.io.PrintWriter;
@@ -682,7 +682,7 @@ public class Bubble implements BubbleViewProvider {
      * {@code cleanupTaskView} to avoid recreating it in the new mode.
      */
     public void cleanupViews(boolean cleanupTaskView) {
-        ProtoLog.d(WM_SHELL_BUBBLES, "Bubble#cleanupViews=%s cleanupTaskView=%b", getKey(),
+        BubbleLog.d("Bubble.cleanupViews() key=%s cleanupTaskView=%b", getKey(),
                 cleanupTaskView);
         cleanupExpandedView(cleanupTaskView);
         mIconView = null;
@@ -756,7 +756,7 @@ public class Bubble implements BubbleViewProvider {
             BubbleIconFactory iconFactory,
             BubbleAppInfoProvider appInfoProvider,
             boolean skipInflation) {
-        ProtoLog.v(WM_SHELL_BUBBLES, "Inflate bubble key=%s", getKey());
+        BubbleLog.v("Bubble.inflate() key=%s", getKey());
         if (mInflationTask != null && !mInflationTask.isFinished()) {
             mInflationTask.cancel();
         }
@@ -795,7 +795,7 @@ public class Bubble implements BubbleViewProvider {
         if (!isInflated()) {
             mIconView = info.imageView;
             mExpandedView = info.expandedView;
-            ProtoLog.d(WM_SHELL_BUBBLES, "Bubble#setViewInfo %s setting expanded view to %s",
+            BubbleLog.d("Bubble.setViewInfo() key=%s setting expanded view info to %s",
                     mKey, info.bubbleBarExpandedView);
             mBubbleBarExpandedView = info.bubbleBarExpandedView;
         }
