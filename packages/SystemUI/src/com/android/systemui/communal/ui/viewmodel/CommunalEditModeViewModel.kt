@@ -199,6 +199,13 @@ constructor(
         uiEventLogger.log(CommunalUiEvent.COMMUNAL_HUB_REORDER_WIDGET_CANCEL)
     }
 
+    override fun onScrollPositionUpdated(firstVisibleItemIndex: Int, firstVisibleItemScroll: Int) {
+        super.onScrollPositionUpdated(firstVisibleItemIndex, firstVisibleItemScroll)
+        if (!_reorderingWidgets.value && firstVisibleItemScroll != savedFirstScrollOffset) {
+            setSelectedKey(null)
+        }
+    }
+
     val isIdleOnCommunal: StateFlow<Boolean> = communalInteractor.isIdleOnCommunal
 
     /** Launch the widget picker activity using the given startActivity method. */

@@ -362,6 +362,20 @@ class CommunalEditModeViewModelTest : SysuiTestCase() {
         }
 
     @Test
+    fun scrollPosition_clearsSelectedItem() =
+        kosmos.runTest {
+            val index = 2
+            val offset = 30
+            val testKey = "testKey"
+            underTest.setSelectedKey(testKey)
+            assertThat(underTest.selectedKey.value).isNotNull()
+            underTest.onScrollPositionUpdated(index, communalInteractor.firstVisibleItemOffset)
+            assertThat(underTest.selectedKey.value).isEqualTo(testKey)
+            underTest.onScrollPositionUpdated(index, offset)
+            assertThat(underTest.selectedKey.value).isNull()
+        }
+
+    @Test
     fun onResizeWidget_logsMetrics() =
         kosmos.runTest {
             val appWidgetId = 123
