@@ -3814,6 +3814,14 @@ public class BubbleStackView extends FrameLayout
     }
 
     private void updateExpandedBubble() {
+        if (Flags.fixBubblesImeFocusFlicker()) {
+            updateExpandedBubbleRemoveAfterAdd();
+        } else {
+            updateExpandedBubbleRemoveBeforeAdd();
+        }
+    }
+
+    private void updateExpandedBubbleRemoveBeforeAdd() {
         mExpandedViewContainer.removeAllViews();
         BubbleExpandedView bev = getExpandedView();
         if (mIsExpanded && bev != null) {
@@ -3832,6 +3840,37 @@ public class BubbleStackView extends FrameLayout
                     post(this::animateSwitchBubbles);
                 });
             }
+        }
+    }
+
+    private void updateExpandedBubbleRemoveAfterAdd() {
+        BubbleExpandedView bev = getExpandedView();
+        if (!mIsExpanded || bev == null) {
+            mExpandedViewContainer.removeAllViews();
+            return;
+        }
+        if (bev.getParent() == mExpandedViewContainer) {
+            return;
+        }
+        bev.setContentVisibility(false);
+        bev.setAnimating(!mIsExpansionAnimating);
+        mExpandedViewContainerMatrix.setScaleX(0f);
+        mExpandedViewContainerMatrix.setScaleY(0f);
+        mExpandedViewContainerMatrix.setTranslate(0f, 0f);
+        mExpandedViewContainer.setVisibility(View.INVISIBLE);
+        mExpandedViewContainer.setAlpha(0f);
+        mExpandedViewContainer.addView(bev);
+        if (mIsExpansionAnimating) {
+            mExpandedViewContainer.removeViews(0, mExpandedViewContainer.getChildCount() - 1);
+        } else {
+            mIsBubbleSwitchAnimating = true;
+            mSurfaceSynchronizer.syncSurfaceAndRun(() -> {
+                // Remove other bubbles from the container after the new bubble is ready, so
+                // that the focus won't fall into the non-bubbled activity behind.
+                mExpandedViewContainer.removeViews(
+                        0, mExpandedViewContainer.getChildCount() - 1);
+                post(this::animateSwitchBubbles);
+            });
         }
     }
 
