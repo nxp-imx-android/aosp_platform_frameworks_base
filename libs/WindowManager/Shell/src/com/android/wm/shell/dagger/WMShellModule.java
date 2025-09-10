@@ -1729,7 +1729,8 @@ public abstract class WMShellModule {
             Optional<DesktopDisplayModeController> desktopDisplayModeController,
             DesktopRepositoryInitializer desktopRepositoryInitializer,
             Optional<DesksTransitionObserver> desksTransitionObserver,
-            DesktopState desktopState
+            DesktopState desktopState,
+            Transitions transitions
     ) {
         if (!desktopState.canEnterDesktopMode()) {
             return Optional.empty();
@@ -1747,7 +1748,8 @@ public abstract class WMShellModule {
                         desktopTasksController.get(),
                         desktopDisplayModeController.get(),
                         desksTransitionObserver.get(),
-                        desktopState));
+                        desktopState,
+                        transitions));
     }
 
     @WMSingleton

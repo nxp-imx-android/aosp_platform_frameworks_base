@@ -20,7 +20,6 @@ import android.app.ActivityManager.RunningTaskInfo
 import android.app.WindowConfiguration.WINDOWING_MODE_PINNED
 import android.content.Context
 import android.content.pm.ActivityInfo.CONFIG_ASSETS_PATHS
-import android.content.pm.ActivityInfo.CONFIG_DENSITY
 import android.content.pm.ActivityInfo.CONFIG_UI_MODE
 import android.content.res.Configuration
 import android.content.res.Resources
@@ -78,6 +77,7 @@ import com.android.wm.shell.windowdecor.WindowDecorationWrapper
 import com.android.wm.shell.windowdecor.common.WindowDecorTaskResourceLoader
 import com.android.wm.shell.windowdecor.extension.isFullscreen
 import java.util.function.Supplier
+import kotlin.math.roundToInt
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.MainCoroutineDispatcher
 
@@ -115,6 +115,36 @@ class DesktopTilingWindowDecoration(
     companion object {
         private val TAG: String = DesktopTilingWindowDecoration::class.java.simpleName
         private const val TILING_DIVIDER_TAG = "Tiling Divider"
+
+        @JvmStatic
+        fun getDividerBoundsForZombieSession(
+            leftTaskBounds: Rect?,
+            rightTaskBounds: Rect?,
+            newStableBounds: Rect,
+            oldStableBounds: Rect,
+            newToOldDpiRatio: Double,
+            newContext: Context,
+        ): Rect? {
+            val dividerWidth =
+                newContext.resources?.getDimensionPixelSize(R.dimen.split_divider_bar_width)
+                    ?: return null
+            val oldDividerWidth = (dividerWidth / newToOldDpiRatio).roundToInt()
+            val dividerRightBound = rightTaskBounds?.left
+            val dividerLeftBound = leftTaskBounds?.right
+            val oldDividerCenter =
+                when {
+                    dividerRightBound != null -> dividerRightBound - oldDividerWidth / 2
+                    dividerLeftBound != null -> dividerLeftBound + oldDividerWidth / 2
+                    else -> return null
+                }
+            val newDividerCenter =
+                oldDividerCenter * newStableBounds.width() / oldStableBounds.width()
+            val newDividerBounds = Rect(newStableBounds)
+
+            newDividerBounds.left = (newDividerCenter - dividerWidth / 2)
+            newDividerBounds.right = newDividerBounds.left + dividerWidth
+            return newDividerBounds
+        }
     }
 
     var leftTaskResizingHelper: AppResizingHelper? = null
@@ -130,6 +160,7 @@ class DesktopTilingWindowDecoration(
     private var isTilingFocused = false
     private var hiddenByOverviewAnimation = false
     private lateinit var configuration: Configuration
+    private var dividerWidth: Int = 0
 
     fun onAppTiled(
         taskInfo: RunningTaskInfo,
@@ -512,6 +543,12 @@ class DesktopTilingWindowDecoration(
                             rightTaskBroughtToFront ||
                                 taskInfo.taskId == rightTaskResizingHelper?.taskInfo?.taskId
                     }
+                    taskInfo.displayId != displayId ->
+                        removeTaskIfTiled(
+                            taskInfo.taskId,
+                            taskVanished = false,
+                            shouldDelayUpdate = false,
+                        )
                 }
             }
         }
@@ -785,11 +822,14 @@ class DesktopTilingWindowDecoration(
         desktopTilingDividerWindowManager?.onThemeChange()
     }
 
-    fun onDensityChanged() {
-        val config =
-            checkNotNull(configuration) { "Expected non null tiling config for desk: $deskId" }
+    fun onDensityChanged(
+        newConfig: Configuration,
+        oldStableBounds: Rect,
+        newToOldDpiRatio: Double,
+    ) {
+        updateTiledAppsBounds(oldStableBounds, newToOldDpiRatio)
         desktopTilingDividerWindowManager?.release()
-        desktopTilingDividerWindowManager = initTilingManagerForDisplay(displayId, config)
+        desktopTilingDividerWindowManager = initTilingManagerForDisplay(displayId, newConfig)
     }
 
     override fun onDisplayConfigurationChanged(displayId: Int, config: Configuration?) {
@@ -798,10 +838,8 @@ class DesktopTilingWindowDecoration(
 
         val diff = newConfig.diff(configuration)
         val themeChanged = (diff and CONFIG_ASSETS_PATHS) != 0 || (diff and CONFIG_UI_MODE) != 0
-        val densityChanged = (diff and CONFIG_DENSITY) != 0
 
         checkForUiModeChange(newConfig)
-        if (densityChanged) onDensityChanged()
         if (themeChanged) onThemeChanged()
         configuration = config
     }
@@ -909,6 +947,8 @@ class DesktopTilingWindowDecoration(
     private fun getSnapBounds(position: SnapPosition): Rect {
         val displayLayout = displayController.getDisplayLayout(displayId) ?: return Rect()
         val displayContext = displayController.getDisplayContext(displayId) ?: return Rect()
+        dividerWidth =
+            displayContext.resources.getDimensionPixelSize(R.dimen.split_divider_bar_width)
         val stableBounds = Rect()
         displayLayout.getStableBounds(stableBounds)
         val leftTiledTask = leftTaskResizingHelper
@@ -918,15 +958,9 @@ class DesktopTilingWindowDecoration(
             SnapPosition.LEFT -> {
                 val rightBound =
                     if (rightTiledTask == null) {
-                        stableBounds.left + destinationWidth -
-                            displayContext.resources.getDimensionPixelSize(
-                                R.dimen.split_divider_bar_width
-                            ) / 2
+                        stableBounds.left + destinationWidth - dividerWidth / 2
                     } else {
-                        rightTiledTask.bounds.left -
-                            displayContext.resources.getDimensionPixelSize(
-                                R.dimen.split_divider_bar_width
-                            )
+                        rightTiledTask.bounds.left - dividerWidth
                     }
                 Rect(stableBounds.left, stableBounds.top, rightBound, stableBounds.bottom)
             }
@@ -934,15 +968,9 @@ class DesktopTilingWindowDecoration(
             SnapPosition.RIGHT -> {
                 val leftBound =
                     if (leftTiledTask == null) {
-                        stableBounds.right - destinationWidth +
-                            displayContext.resources.getDimensionPixelSize(
-                                R.dimen.split_divider_bar_width
-                            ) / 2
+                        stableBounds.right - destinationWidth + dividerWidth / 2
                     } else {
-                        leftTiledTask.bounds.right +
-                            displayContext.resources.getDimensionPixelSize(
-                                R.dimen.split_divider_bar_width
-                            )
+                        leftTiledTask.bounds.right + dividerWidth
                     }
                 Rect(leftBound, stableBounds.top, stableBounds.right, stableBounds.bottom)
             }
@@ -958,6 +986,35 @@ class DesktopTilingWindowDecoration(
 
         // Bounds should never be null here, so assertion is necessary otherwise it's illegal state.
         return Rect(leftDividerBounds, stableBounds.top, rightDividerBounds, stableBounds.bottom)
+    }
+
+    fun getDividerBounds(): Rect {
+        val leftBounds = getSnapBounds(SnapPosition.LEFT)
+        val rightBounds = getSnapBounds(SnapPosition.RIGHT)
+        val stableBounds = Rect()
+        return Rect(leftBounds.right, stableBounds.top, rightBounds.left, stableBounds.bottom)
+    }
+
+    private fun updateTiledAppsBounds(oldStableBounds: Rect, newToOldDpiRatio: Double) {
+        val newLayout = displayController.getDisplayLayout(displayId) ?: return
+        val newContext = displayController.getDisplayContext(displayId) ?: return
+        val dividerRightBound = rightTaskResizingHelper?.bounds
+        val dividerLeftBound = leftTaskResizingHelper?.bounds
+        val newStableBounds = Rect()
+        newLayout.getStableBounds(newStableBounds)
+        val newDividerBounds =
+            getDividerBoundsForZombieSession(
+                dividerLeftBound,
+                dividerRightBound,
+                newStableBounds,
+                oldStableBounds,
+                newToOldDpiRatio,
+                newContext,
+            ) ?: return
+        rightTaskResizingHelper?.bounds?.set(newStableBounds)
+        leftTaskResizingHelper?.bounds?.set(newStableBounds)
+        leftTaskResizingHelper?.bounds?.right = newDividerBounds.left
+        rightTaskResizingHelper?.bounds?.left = newDividerBounds.right
     }
 
     private fun tearDownTiling() {

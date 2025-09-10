@@ -196,6 +196,46 @@ class DesktopTilingWindowDecorationTest : ShellTestCase() {
     }
 
     @Test
+    @UiThreadTest
+    fun dividerWidthCorrect_afterDpiChange() {
+        val task1 = createVisibleTask()
+        val task2 = createVisibleTask()
+        val stableBounds = STABLE_BOUNDS_MOCK
+        whenever(displayController.getDisplayLayout(any())).thenReturn(displayLayout)
+        whenever(displayController.getDisplayContext(any())).thenReturn(context)
+        whenever(displayLayout.getStableBounds(any())).thenAnswer { i ->
+            (i.arguments.first() as Rect).set(stableBounds)
+        }
+        whenever(context.resources).thenReturn(resources)
+        whenever(resources.getDimensionPixelSize(any())).thenReturn(split_divider_width)
+        whenever(userRepositories.current.isVisibleTask(eq(task1.taskId))).thenReturn(true)
+        whenever(userRepositories.current.isVisibleTask(eq(task2.taskId))).thenReturn(true)
+        whenever(windowDecoration.taskSurface).thenReturn(mock())
+        task1.isFocused = true
+
+        tilingDecoration.onAppTiled(
+            task1,
+            windowDecoration,
+            DesktopTasksController.SnapPosition.LEFT,
+            BOUNDS,
+            destinationBoundsOverride = null,
+        )
+
+        tilingDecoration.onAppTiled(
+            task2,
+            windowDecoration,
+            DesktopTasksController.SnapPosition.RIGHT,
+            BOUNDS,
+            destinationBoundsOverride = null,
+        )
+        whenever(resources.getDimensionPixelSize(any())).thenReturn(3 * split_divider_width)
+        assertThrows(NullPointerException::class.java) {
+            tilingDecoration.onDensityChanged(configuration, STABLE_BOUNDS_MOCK, 1.0)
+        }
+        assertThat(tilingDecoration.getDividerBounds().width()).isEqualTo(3 * split_divider_width)
+    }
+
+    @Test
     fun taskTiled_toCorrectBounds_rightTile() {
         // Setup
         val task1 = createVisibleTask()
@@ -807,7 +847,9 @@ class DesktopTilingWindowDecorationTest : ShellTestCase() {
 
         tilingDecoration.leftTaskResizingHelper = tiledTaskHelper
         tilingDecoration.desktopTilingDividerWindowManager = desktopTilingDividerWindowManager
-        assertThrows(NullPointerException::class.java) { tilingDecoration.onDensityChanged() }
+        assertThrows(NullPointerException::class.java) {
+            tilingDecoration.onDensityChanged(configuration, STABLE_BOUNDS_MOCK, 1.0)
+        }
     }
 
     @Test

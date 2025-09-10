@@ -11401,6 +11401,9 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         whenever(secondDisplayLayout.height()).thenReturn(1600)
         whenever(secondDisplayLayout.width()).thenReturn(2560)
         whenever(secondDisplayLayout.densityDpi()).thenReturn(240)
+        whenever(secondDisplayLayout.getStableBounds(any())).thenAnswer { i ->
+            (i.arguments.first() as Rect).set(Rect(0, 0, 2560, 1600))
+        }
         taskRepository.addDesk(SECOND_DISPLAY, DISCONNECTED_DESK_ID)
         taskRepository.setActiveDesk(displayId = SECOND_DISPLAY, deskId = DISCONNECTED_DESK_ID)
         val secondDisplayTask =
