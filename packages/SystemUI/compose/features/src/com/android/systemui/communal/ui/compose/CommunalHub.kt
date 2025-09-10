@@ -684,8 +684,6 @@ private fun ObserveNewWidgetAddedEffect(
             return@LaunchedEffect
         }
 
-        viewModel.onNewWidgetAdded(widgets[indexOfFirstNewWidget].providerInfo)
-
         // Scroll if the new widget is not visible
         val lastVisibleItemIndex = gridState.layoutInfo.visibleItemsInfo.lastOrNull()?.index
         if (lastVisibleItemIndex != null && indexOfFirstNewWidget > lastVisibleItemIndex) {

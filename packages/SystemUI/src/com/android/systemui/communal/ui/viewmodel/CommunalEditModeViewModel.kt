@@ -25,7 +25,6 @@ import android.content.pm.PackageManager
 import android.content.res.Resources
 import android.os.UserHandle
 import android.util.Log
-import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityManager
 import com.android.internal.logging.UiEventLogger
 import com.android.systemui.Flags
@@ -198,25 +197,6 @@ constructor(
     override fun onReorderWidgetCancel() {
         _reorderingWidgets.value = false
         uiEventLogger.log(CommunalUiEvent.COMMUNAL_HUB_REORDER_WIDGET_CANCEL)
-    }
-
-    override fun onNewWidgetAdded(provider: AppWidgetProviderInfo) {
-        if (!accessibilityManager.isEnabled) {
-            return
-        }
-
-        // Send an accessibility announcement for the newly added widget
-        val widgetLabel = provider.loadLabel(packageManager)
-        val announcementText =
-            context.getString(
-                R.string.accessibility_announcement_communal_widget_added,
-                widgetLabel,
-            )
-        accessibilityManager.sendAccessibilityEvent(
-            AccessibilityEvent(AccessibilityEvent.TYPE_ANNOUNCEMENT).apply {
-                contentDescription = announcementText
-            }
-        )
     }
 
     val isIdleOnCommunal: StateFlow<Boolean> = communalInteractor.isIdleOnCommunal
