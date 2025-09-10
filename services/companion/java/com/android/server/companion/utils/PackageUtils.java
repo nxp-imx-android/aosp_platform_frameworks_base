@@ -121,8 +121,14 @@ public final class PackageUtils {
      */
     public static boolean isPackageAllowlisted(Context context,
             PackageManagerInternal packageManagerInternal, @NonNull String packageName) {
-        return isPackageAllowlisted(context, packageManagerInternal, packageName,
+        boolean isAllowListed = isPackageAllowlisted(context, packageManagerInternal, packageName,
                 config_companionDevicePackages, config_companionDeviceCerts);
+        if (!isAllowListed) {
+            Slog.i(TAG, "Package: " + packageName
+                    + " is not allowlisted to bypass association dialog");
+        }
+
+        return isAllowListed;
     }
 
     /**
@@ -130,8 +136,14 @@ public final class PackageUtils {
      */
     public static boolean isPermSyncAutoEnabled(Context context,
             PackageManagerInternal packageManagerInternal, String packageName) {
-        return isPackageAllowlisted(context, packageManagerInternal, packageName,
+        boolean isAllowListed = isPackageAllowlisted(context, packageManagerInternal, packageName,
                 config_companionPermSyncEnabledPackages, config_companionPermSyncEnabledCerts);
+        if (!isAllowListed) {
+            Slog.i(TAG, "Package: " + packageName
+                    + " is not allowlisted to bypass perm sync dialog");
+        }
+
+        return isAllowListed;
     }
 
     private static boolean isPackageAllowlisted(Context context,
