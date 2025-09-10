@@ -50,6 +50,7 @@ import com.android.systemui.dump.DumpManager;
 import com.android.systemui.flags.FeatureFlagsClassic;
 import com.android.systemui.flags.Flags;
 import com.android.systemui.keyguard.KeyguardUnlockAnimationController;
+import com.android.systemui.keyguard.domain.interactor.DozeTouchInteractor;
 import com.android.systemui.keyguard.domain.interactor.KeyguardTransitionInteractor;
 import com.android.systemui.keyguard.shared.model.Edge;
 import com.android.systemui.keyguard.shared.model.TransitionState;
@@ -84,12 +85,15 @@ import com.android.systemui.statusbar.phone.PhoneStatusBarViewController;
 import com.android.systemui.statusbar.window.StatusBarWindowStateController;
 import com.android.systemui.unfold.SysUIUnfoldComponent;
 import com.android.systemui.unfold.UnfoldTransitionProgressProvider;
+import com.android.systemui.util.kotlin.JavaAdapter;
 import com.android.systemui.util.time.SystemClock;
 import com.android.systemui.window.ui.WindowRootViewBinder;
 import com.android.systemui.window.ui.viewmodel.WindowRootViewModel;
 
 import kotlinx.coroutines.CoroutineDispatcher;
 import kotlinx.coroutines.flow.Flow;
+import kotlinx.coroutines.flow.StateFlow;
+import kotlinx.coroutines.flow.StateFlowKt;
 
 import java.io.PrintWriter;
 import java.util.Optional;
@@ -171,6 +175,7 @@ public class NotificationShadeWindowViewController implements Dumpable {
      * True if drag down helper intercepted and we're in the dragging process.
      */
     private boolean mUseDragDownHelperForTouch = false;
+    private StateFlow<Boolean> mAodInterceptingTouches = StateFlowKt.MutableStateFlow(false);
 
     private boolean mIsTrackingBarGesture = false;
     private boolean mIsOcclusionTransitionRunning = false;
@@ -224,7 +229,9 @@ public class NotificationShadeWindowViewController implements Dumpable {
             @ShadeDisplayAware Provider<ConfigurationForwarder> configurationForwarder,
             BrightnessMirrorShowingInteractor brightnessMirrorShowingInteractor,
             @Main CoroutineDispatcher mainDispatcher,
-            ShadeStatusBarComponentsInteractor shadeStatusBarComponentsInteractor) {
+            ShadeStatusBarComponentsInteractor shadeStatusBarComponentsInteractor,
+            DozeTouchInteractor dozeTouchInteractor,
+            JavaAdapter javaAdapter) {
         mLockscreenShadeTransitionController = transitionController;
         mFalsingCollector = falsingCollector;
         mStatusBarStateController = statusBarStateController;
@@ -297,6 +304,12 @@ public class NotificationShadeWindowViewController implements Dumpable {
             mView.setConfigurationForwarder(configurationForwarder.get());
         }
         bindWindowRootView(blurUtils, windowRootViewModelFactory, choreographer);
+        if (com.android.systemui.Flags.allowDozeTouchesForLockIcon()) {
+            mAodInterceptingTouches = javaAdapter.stateInApp(
+                    dozeTouchInteractor.getShouldInterceptTouches(),
+                    false);
+        }
+
         dumpManager.registerDumpable(this);
     }
 
@@ -554,16 +567,35 @@ public class NotificationShadeWindowViewController implements Dumpable {
                 // a higher refresh rate and to delay visual changes (ie: display blink) when
                 // changing the display state. We'll call this specific state the
                 // "aodDefermentState". In this state we:
-                //     - don't want touches to get sent to underlying views, except the lock icon
+                //     - don't want touches to get sent to underlying views, except the lockIcon
                 //     - handle the tap to wake gesture via the PulsingGestureListener
-                if (mStatusBarStateController.isDozing()
-                        && !mDozeServiceHost.isPulsing()
-                        && !mDockManager.isDocked()
-                ) {
-                    if (ev.getAction() == MotionEvent.ACTION_DOWN) {
-                        mShadeLogger.d("NSWVC: capture all touch events in always-on");
+                if (com.android.systemui.Flags.allowDozeTouchesForLockIcon()) {
+                    if (mAodInterceptingTouches.getValue()) {
+                        if (ev.getAction() == MotionEvent.ACTION_DOWN) {
+                            mShadeLogger.d("NSWVC: capture all touch events in always-on"
+                                    + " excluding aodDeferment with interactive lock icon");
+
+                        }
+                        return true;
+                    } else if (mStatusBarStateController.isDozing()
+                            && !mDozeServiceHost.isPulsing()
+                            && !mDockManager.isDocked()
+                            && ev.getAction() == MotionEvent.ACTION_DOWN
+                    ) {
+                        mShadeLogger.d("NSWVC: skip capturing this touch event in"
+                                + " always-on; mAodInterceptingTouches=false");
                     }
-                    return true;
+                } else {
+                    if (mStatusBarStateController.isDozing()
+                            && !mDozeServiceHost.isPulsing()
+                            && !mDockManager.isDocked()
+                    ) {
+                        if (ev.getAction() == MotionEvent.ACTION_DOWN) {
+                            mShadeLogger.d("NSWVC: capture all touch events in always-on");
+
+                        }
+                        return true;
+                    }
                 }
 
                 boolean bouncerShowing = mPrimaryBouncerInteractor.isBouncerShowing()

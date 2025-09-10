@@ -1978,6 +1978,16 @@ flag {
 }
 
 flag {
+   name: "allow_doze_touches_for_lock_icon"
+   namespace: "systemui"
+   description: "Allow touches for device entry lock icon during aod deferment."
+   bug: "433400058"
+   metadata {
+        purpose: PURPOSE_BUGFIX
+   }
+}
+
+flag {
    name: "qs_compose_fragment_early_expansion"
    namespace: "systemui"
    description: "Start expansion from QQS into QS early when touching the shade."

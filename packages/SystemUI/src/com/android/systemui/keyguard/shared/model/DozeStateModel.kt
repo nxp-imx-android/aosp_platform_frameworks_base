@@ -15,6 +15,24 @@
  */
 package com.android.systemui.keyguard.shared.model
 
+import com.android.systemui.keyguard.shared.model.DozeStateModel.Companion.isDozeOff
+import com.android.systemui.keyguard.shared.model.DozeStateModel.DOZE
+import com.android.systemui.keyguard.shared.model.DozeStateModel.DOZE_AOD
+import com.android.systemui.keyguard.shared.model.DozeStateModel.DOZE_AOD_DOCKED
+import com.android.systemui.keyguard.shared.model.DozeStateModel.DOZE_AOD_MINMODE
+import com.android.systemui.keyguard.shared.model.DozeStateModel.DOZE_AOD_PAUSED
+import com.android.systemui.keyguard.shared.model.DozeStateModel.DOZE_AOD_PAUSING
+import com.android.systemui.keyguard.shared.model.DozeStateModel.DOZE_PULSE_DONE
+import com.android.systemui.keyguard.shared.model.DozeStateModel.DOZE_PULSING
+import com.android.systemui.keyguard.shared.model.DozeStateModel.DOZE_PULSING_AUTH_UI
+import com.android.systemui.keyguard.shared.model.DozeStateModel.DOZE_PULSING_BRIGHT
+import com.android.systemui.keyguard.shared.model.DozeStateModel.DOZE_PULSING_WITHOUT_UI
+import com.android.systemui.keyguard.shared.model.DozeStateModel.DOZE_REQUEST_PULSE
+import com.android.systemui.keyguard.shared.model.DozeStateModel.DOZE_SUSPEND_TRIGGERS
+import com.android.systemui.keyguard.shared.model.DozeStateModel.FINISH
+import com.android.systemui.keyguard.shared.model.DozeStateModel.INITIALIZED
+import com.android.systemui.keyguard.shared.model.DozeStateModel.UNINITIALIZED
+
 /** Model device doze states. */
 enum class DozeStateModel {
     /** Default state. Transition to INITIALIZED to get Doze going. */
@@ -57,4 +75,33 @@ enum class DozeStateModel {
             return model == UNINITIALIZED || model == FINISH
         }
     }
+}
+
+fun DozeStateModel.isPulsing(): Boolean {
+    return when (this) {
+        UNINITIALIZED,
+        INITIALIZED,
+        DOZE,
+        DOZE_SUSPEND_TRIGGERS,
+        DOZE_PULSE_DONE,
+        FINISH,
+        DOZE_AOD_PAUSED,
+        DOZE_AOD_PAUSING,
+        DOZE_AOD_DOCKED,
+        DOZE_AOD_MINMODE,
+        DOZE_AOD,
+        DOZE_REQUEST_PULSE -> false
+        DOZE_PULSING,
+        DOZE_PULSING_WITHOUT_UI,
+        DOZE_PULSING_AUTH_UI,
+        DOZE_PULSING_BRIGHT -> true
+    }
+}
+
+fun DozeStateModel.isDocked(): Boolean {
+    return this == DOZE_AOD_DOCKED
+}
+
+fun DozeStateModel.isDozing(): Boolean {
+    return !isDozeOff(this)
 }
