@@ -17,6 +17,7 @@
 package com.android.wm.shell.taskview;
 
 import static android.view.WindowManager.TRANSIT_CHANGE;
+import static android.view.WindowManager.TRANSIT_CLOSE;
 import static android.view.WindowManager.TRANSIT_OPEN;
 import static android.view.WindowManager.TRANSIT_TO_BACK;
 import static android.view.WindowManager.TRANSIT_TO_FRONT;
@@ -470,6 +471,68 @@ public class TaskViewTransitionsTest extends ShellTestCase {
         assertThat(mTaskViewTransitions.findPending(mTaskViewTaskController,
                 TRANSIT_TO_FRONT)).isNotNull();
         assertThat(mTaskViewTransitions.hasPending()).isTrue();
+    }
+
+    @Test
+    public void transitionWithNoChanges_shouldNotBeHandled() {
+        IBinder transition = new Binder();
+        TransitionInfo transitionInfo = new TransitionInfo(TRANSIT_CLOSE, /* flags= */ 0);
+        boolean handled = mTaskViewTransitions.startAnimation(transition, transitionInfo,
+                new SurfaceControl.Transaction(),
+                new SurfaceControl.Transaction(),
+                mock(Transitions.TransitionFinishCallback.class));
+
+        assertThat(handled).isFalse();
+    }
+
+    @Test
+    public void transitionWithNoChanges_tvtManaged_shouldStartNextTransition() {
+        // enqueue an empty transition managed by TaskViewTransitions
+        IBinder transition = new Binder();
+        TransitionInfo transitionInfo = new TransitionInfo(TRANSIT_CLOSE, /* flags= */ 0);
+        mTaskViewTransitions.enqueueRunningExternal(mTaskViewTaskController, transition);
+        assertThat(mTaskViewTransitions.hasPending()).isTrue();
+
+        // enqueue a normal transition
+        mTaskViewTransitions.setTaskViewVisible(mTaskViewTaskController, true);
+        TaskViewTransitions.PendingTransition pendingTransition =
+                mTaskViewTransitions.findPending(mTaskViewTaskController, TRANSIT_TO_FRONT);
+        assertThat(pendingTransition).isNotNull();
+        assertThat(pendingTransition.mClaimed).isNull();
+
+        IBinder pendingTransitionToken = new Binder();
+        when(mTransitions.startTransition(pendingTransition.mType, pendingTransition.mWct,
+                mTaskViewTransitions)).thenReturn(pendingTransitionToken);
+
+        // dispatch the empty transition
+        mTaskViewTransitions.startAnimation(transition, transitionInfo,
+                new SurfaceControl.Transaction(),
+                new SurfaceControl.Transaction(),
+                mock(Transitions.TransitionFinishCallback.class));
+
+        // check that the next transition was dispatched
+        assertThat(pendingTransition.mClaimed).isNotNull();
+    }
+
+    @Test
+    public void transitionWithNoChanges_nonTvtManaged_shouldNotStartNextTransition() {
+        // enqueue a normal transition
+        mTaskViewTransitions.setTaskViewVisible(mTaskViewTaskController, true);
+        TaskViewTransitions.PendingTransition pendingTransition =
+                mTaskViewTransitions.findPending(mTaskViewTaskController, TRANSIT_TO_FRONT);
+        assertThat(pendingTransition).isNotNull();
+        assertThat(pendingTransition.mClaimed).isNull();
+
+        // dispatch an empty transition which is not managed by TaskViewTransitions
+        IBinder transition = new Binder();
+        TransitionInfo transitionInfo = new TransitionInfo(TRANSIT_CLOSE, /* flags= */ 0);
+        mTaskViewTransitions.startAnimation(transition, transitionInfo,
+                new SurfaceControl.Transaction(),
+                new SurfaceControl.Transaction(),
+                mock(Transitions.TransitionFinishCallback.class));
+
+        // check that the next transition was not dispatched
+        assertThat(pendingTransition.mClaimed).isNull();
     }
 
     private ActivityManager.RunningTaskInfo createMockTaskInfo(int taskId,
