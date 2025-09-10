@@ -479,21 +479,36 @@ public class MagnificationController implements MagnificationConnectionManager.C
     }
 
     /**
-     * Perform the action to activate the fullscreen magnification and zoom in with persisted scale.
+     * Perform the action to activate magnification and zoom in. Currently we only have zoom-in for
+     * fullscreen mode with persisted scale, and the window mode support is todo.
      *
      * @param displayId The logical display id
+     * @param magnificationMode The magnification mode on the specified display for the current user
      */
-    public void zoomInFullScreenMagnification(int displayId) {
-        final float scale = mFullScreenMagnificationController.getPersistedScale(displayId);
-        mFullScreenMagnificationController.setScaleAndCenter(
-                displayId,
-                scale,
-                Float.NaN,
-                Float.NaN,
-                /* animate= */ true,
-                AccessibilityManagerService.MAGNIFICATION_GESTURE_HANDLER_ID);
+    public void zoomInMagnification(int displayId, int magnificationMode) {
+        synchronized (mLock) {
+            // If the user already activate Magnification for any mode, we don't
+            // need to turn on Magnification and zoom in, which will change the
+            // user's current magnification settings.
+            if (isAnyMagnificationActivated(displayId)) {
+                return;
+            }
 
-        // TODO: b/440359677 - Rename the method and add zoom in for window magnification.
+            if (magnificationMode == Settings.Secure.ACCESSIBILITY_MAGNIFICATION_MODE_FULLSCREEN) {
+                // TODO: b/432526188 - Verify that the confirmation dialog is
+                // follow keyboard focus after this setting enabled by default.
+                final float scale = mFullScreenMagnificationController.getPersistedScale(displayId);
+                mFullScreenMagnificationController.setScaleAndCenter(
+                        displayId,
+                        scale,
+                        Float.NaN,
+                        Float.NaN,
+                        /* animate= */ true,
+                        AccessibilityManagerService.MAGNIFICATION_GESTURE_HANDLER_ID);
+            }
+
+            // TODO: b/440359677 - Rename the method and add zoom in for window magnification.
+        }
     }
 
     private void maybeContinuePan() {

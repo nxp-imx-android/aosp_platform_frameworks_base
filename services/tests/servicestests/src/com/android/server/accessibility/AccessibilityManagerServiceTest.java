@@ -1709,7 +1709,7 @@ public class AccessibilityManagerServiceTest {
         mA11yms.enableMagnificationAndZoomIn(TEST_DISPLAY);
 
         verify(mMockMagnificationController, after(1000).never())
-                .zoomInFullScreenMagnification(anyInt());
+                .zoomInMagnification(anyInt(), anyInt());
     }
 
     @Test
@@ -1721,20 +1721,23 @@ public class AccessibilityManagerServiceTest {
         mA11yms.enableMagnificationAndZoomIn(TEST_DISPLAY);
 
         verify(mMockMagnificationController, after(1000).never())
-                .zoomInFullScreenMagnification(anyInt());
+                .zoomInMagnification(anyInt(), anyInt());
     }
 
     @Test
     public void enableMagnificationAndZoomIn_inputFilterInstalled_zoomIn() throws Exception {
         mFakePermissionEnforcer.grant(Manifest.permission.MANAGE_ACCESSIBILITY);
-        when(mMockMagnificationController.isAnyMagnificationActivated(anyInt())).thenReturn(false);
+        final AccessibilityUserState userState =
+                mA11yms.mUserStates.get(mA11yms.getCurrentUserIdLocked());
+        userState.setMagnificationModeLocked(
+                TEST_DISPLAY, ACCESSIBILITY_MAGNIFICATION_MODE_FULLSCREEN);
         mA11yms.onInputFilterInstalled(true);
         when(mMockMagnificationConnectionManager.isConnected()).thenReturn(true);
 
         mA11yms.enableMagnificationAndZoomIn(TEST_DISPLAY);
 
         verify(mMockMagnificationController, timeout(1000))
-                .zoomInFullScreenMagnification(TEST_DISPLAY);
+                .zoomInMagnification(TEST_DISPLAY, ACCESSIBILITY_MAGNIFICATION_MODE_FULLSCREEN);
     }
 
     @Test
