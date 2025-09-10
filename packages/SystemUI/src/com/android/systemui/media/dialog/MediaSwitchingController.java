@@ -172,7 +172,11 @@ public class MediaSwitchingController
     private boolean mInAudioSharing = false;
     @Nullable private Job mAudioShareJob = null;
 
-    protected Optional<MediaDevice> mCurrentInputDevice;
+    private Optional<MediaDevice> mCurrentInputDevice;
+
+    public Optional<MediaDevice> getCurrentInputDevice() {
+        return mCurrentInputDevice;
+    }
 
     @VisibleForTesting
     final InputRouteManager.InputDeviceCallback mInputDeviceCallback =
@@ -249,7 +253,12 @@ public class MediaSwitchingController
                 String packageName, UserHandle userHandle, MediaSession.Token token);
     }
 
-    protected void start(@NonNull Callback cb) {
+    /**
+     * Initializes the variables and starts this controller.
+     * @param cb the callback associated with this controller.
+     */
+    @VisibleForTesting(otherwise = VisibleForTesting.PROTECTED)
+    public void start(@NonNull Callback cb) {
         mStartTime = mClock.elapsedRealtime();
         synchronized (mMediaDevicesLock) {
             mCachedMediaDevices.clear();
