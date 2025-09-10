@@ -1928,8 +1928,6 @@ class RecentTasks {
         if (!mHiddenTasks.isEmpty()) {
             pw.println("mHiddenTasks=" + mHiddenTasks);
         }
-        pw.println("mRecentsUpdatesSuppressed="
-                + mTaskNotificationController.areRecentsUpdatesSuppressed());
         if (mTasks.isEmpty()) {
             return;
         }

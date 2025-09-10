@@ -650,7 +650,6 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
         mService.mTaskSupervisor.beginDeferResume();
         boolean deferResume = true;
         mService.mTaskSupervisor.setDeferRootVisibilityUpdate(true /* deferUpdate */);
-        mService.getTaskChangeNotificationController().setSuppressRecentsUpdates(true);
         boolean deferTransitionReady = false;
         Transition transition = chain.getTransition();
         if (transition != null && !t.isEmpty() && !chain.isFinishing()) {
@@ -815,7 +814,6 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
                 mService.mTaskSupervisor.endDeferResume();
             }
             mService.continueWindowLayout();
-            mService.getTaskChangeNotificationController().setSuppressRecentsUpdates(false);
         }
         return effects;
     }

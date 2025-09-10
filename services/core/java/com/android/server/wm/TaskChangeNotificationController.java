@@ -16,7 +16,6 @@
 
 package com.android.server.wm;
 
-import android.annotation.IntDef;
 import android.app.ActivityManager;
 import android.app.ActivityManager.RunningTaskInfo;
 import android.app.ITaskStackListener;
@@ -199,11 +198,6 @@ class TaskChangeNotificationController {
         l.onLockTaskModeChanged(m.arg1);
     };
 
-    // Whether notifications related to recent tasks are currently suppressed
-    private boolean mSuppressRecentsUpdates;
-    // Whether any notifications were called while suppressed, to be notified once not suppressed
-    private boolean mRecentsUpdatedWhileSuppressed;
-
     @FunctionalInterface
     public interface TaskStackConsumer {
         void accept(ITaskStackListener t, Message m) throws RemoteException;
@@ -358,29 +352,6 @@ class TaskChangeNotificationController {
                 }
             }
         }
-    }
-
-    /**
-     * Sets whether to suppress recents task list updates.
-     */
-    void setSuppressRecentsUpdates(boolean suppress) {
-        if (mSuppressRecentsUpdates == suppress) {
-            throw new IllegalStateException("Recents updates already suppressed");
-        }
-        mSuppressRecentsUpdates = suppress;
-        if (!suppress) {
-            // Notify now if the task list was updated while suppressed
-            if (mRecentsUpdatedWhileSuppressed) {
-                notifyTaskListUpdated();
-            }
-        }
-    }
-
-    /**
-     * Returns whether recents task list updates are suppressed.
-     */
-    boolean areRecentsUpdatesSuppressed() {
-        return mSuppressRecentsUpdates;
     }
 
     /** Notifies all listeners when the task stack has changed. */
@@ -565,17 +536,6 @@ class TaskChangeNotificationController {
      * Called when any additions or deletions to the recent tasks list have been made.
      */
     void notifyTaskListUpdated() {
-        if (areRecentsUpdatesSuppressed()) {
-            // Defer until updates are no longer suppressed
-            mRecentsUpdatedWhileSuppressed = true;
-            return;
-        }
-        queueTaskListUpdated();
-        mRecentsUpdatedWhileSuppressed = false;
-    }
-
-    /** Queues a task-list-updated notification. */
-    void queueTaskListUpdated() {
         final Message msg = mHandler.obtainMessage(NOTIFY_TASK_LIST_UPDATED_LISTENERS_MSG);
         forAllLocalListeners(mNotifyTaskListUpdated, msg);
         msg.sendToTarget();
