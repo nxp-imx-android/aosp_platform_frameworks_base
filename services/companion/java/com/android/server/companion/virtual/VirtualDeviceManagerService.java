@@ -238,8 +238,11 @@ public class VirtualDeviceManagerService extends SystemService {
         CompanionDeviceManager cdm = getContext().getSystemService(CompanionDeviceManager.class);
         if (cdm != null) {
             onCdmAssociationsChanged(cdm.getAllAssociations(UserHandle.USER_ALL));
+            // The associations received in the callback can provide a stale state so always get
+            // the accurate list of associations from the single source of truth
             cdm.addOnAssociationsChangedListener(getContext().getMainExecutor(),
-                    this::onCdmAssociationsChanged, UserHandle.USER_ALL);
+                    associations -> onCdmAssociationsChanged(
+                            cdm.getAllAssociations(UserHandle.USER_ALL)), UserHandle.USER_ALL);
         } else {
             Slog.e(TAG, "Failed to find CompanionDeviceManager. No CDM association info "
                     + " will be available.");
@@ -393,6 +396,8 @@ public class VirtualDeviceManagerService extends SystemService {
         }
 
         for (VirtualDeviceImpl virtualDevice : virtualDevicesToRemove) {
+            Slog.d(TAG, "onCdmAssociationsChanged, removing virtual device with deviceId: "
+                    + virtualDevice.getDeviceId());
             virtualDevice.close();
         }
 
