@@ -87,11 +87,13 @@ class ChangeTestInputBuilder : TestInputBuilder<Change> {
     var endRelOffset: Point? = null
     var flags: Int = FLAG_NONE
     @TransitionMode var mode: Int = TRANSIT_NONE
+
     data class InputParams(
         var token: WindowContainerToken = mock<WindowContainerToken>(),
         var leash: SurfaceControl = mock<SurfaceControl>(),
         var taskInfo: RunningTaskInfo? = null,
-        var activityTransitionInfo: ActivityTransitionInfo? = null
+        var activityTransitionInfo: ActivityTransitionInfo? = null,
+        var topCompatActivityLeash: SurfaceControl? = null
     )
 
     fun token(
@@ -107,6 +109,15 @@ class ChangeTestInputBuilder : TestInputBuilder<Change> {
         val binderObj = SurfaceControlTestInputBuilder()
         return binderObj.builder().apply {
             inputParams.leash = this
+        }
+    }
+
+    fun topCompatActivityLeash(
+        builder: SurfaceControlTestInputBuilder.() -> SurfaceControl
+    ): SurfaceControl {
+        val binderObj = SurfaceControlTestInputBuilder()
+        return binderObj.builder().apply {
+            inputParams.topCompatActivityLeash = this
         }
     }
 
@@ -146,6 +157,7 @@ class ChangeTestInputBuilder : TestInputBuilder<Change> {
             }
             activityTransitionInfo = inputParams.activityTransitionInfo
             flags = this@ChangeTestInputBuilder.flags
+            topCompatActivityLeash = inputParams.topCompatActivityLeash
         }
     }
 }
