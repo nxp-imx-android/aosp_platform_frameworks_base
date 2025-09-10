@@ -47,8 +47,6 @@ import android.window.TaskSnapshot;
 import com.android.server.LocalServices;
 import com.android.server.pm.UserManagerInternal;
 import com.android.server.wm.BaseAppSnapshotPersister.PersistInfoProvider;
-import com.android.window.flags.Flags;
-
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -149,11 +147,7 @@ class TaskSnapshotPersisterTestBase extends WindowTestsBase {
     File[] convertFilePath(@NonNull String... fileNames) {
         final File[] files = new File[fileNames.length];
         final String path;
-        if (Flags.scrambleSnapshotFileName()) {
-            path = mPersister.mPersistInfoProvider.getDirectory(mTestUserId).getPath();
-        } else {
-            path = FILES_DIR.getPath() + "/snapshots/";
-        }
+        path = mPersister.mPersistInfoProvider.getDirectory(mTestUserId).getPath();
         for (int i = 0; i < fileNames.length; i++) {
             files[i] = new File(path, fileNames[i]);
         }
