@@ -59,6 +59,7 @@ import com.android.systemui.scene.domain.interactor.sceneInteractor
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.settings.UserContextProvider
 import com.android.systemui.shade.shadeControllerSceneImpl
+import com.android.systemui.shared.system.activityManagerWrapper
 import com.android.systemui.statusbar.NotificationPresenter
 import com.android.systemui.statusbar.notification.AssistantFeedbackController
 import com.android.systemui.statusbar.notification.NotificationActivityStarter
@@ -203,6 +204,7 @@ class NotificationGutsManagerWithScenesTest : SysuiTestCase() {
                 metricsLogger,
                 headsUpManager,
                 activityStarter,
+                kosmos.activityManagerWrapper,
             )
         gutsManager.setUpWithPresenter(
             presenter,

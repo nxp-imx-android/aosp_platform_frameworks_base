@@ -63,6 +63,7 @@ import com.android.systemui.scene.domain.interactor.WindowRootViewVisibilityInte
 import com.android.systemui.settings.UserContextProvider;
 import com.android.systemui.shade.ShadeController;
 import com.android.systemui.shade.ShadeDisplayAware;
+import com.android.systemui.shared.system.ActivityManagerWrapper;
 import com.android.systemui.statusbar.NotificationLockscreenUserManager;
 import com.android.systemui.statusbar.NotificationPresenter;
 import com.android.systemui.statusbar.StatusBarState;
@@ -147,6 +148,7 @@ public class NotificationGutsManager implements NotifGutsViewManager, CoreStarta
     private NotifGutsViewListener mGutsListener;
     private final HeadsUpManager mHeadsUpManager;
     private final ActivityStarter mActivityStarter;
+    private final ActivityManagerWrapper mActivityManagerWrapper;
 
     @Inject
     public NotificationGutsManager(
@@ -178,7 +180,8 @@ public class NotificationGutsManager implements NotifGutsViewManager, CoreStarta
             DeviceProvisionedController deviceProvisionedController,
             MetricsLogger metricsLogger,
             HeadsUpManager headsUpManager,
-            ActivityStarter activityStarter) {
+            ActivityStarter activityStarter,
+            ActivityManagerWrapper activityManagerWrapper) {
         mContext = context;
         mMainHandler = mainHandler;
         mBgHandler = bgHandler;
@@ -208,6 +211,7 @@ public class NotificationGutsManager implements NotifGutsViewManager, CoreStarta
         mMetricsLogger = metricsLogger;
         mHeadsUpManager = headsUpManager;
         mActivityStarter = activityStarter;
+        mActivityManagerWrapper = activityManagerWrapper;
     }
 
     public void setUpWithPresenter(NotificationPresenter presenter,
@@ -791,6 +795,12 @@ public class NotificationGutsManager implements NotifGutsViewManager, CoreStarta
 
         if (view.getWindowToken() == null) {
             Log.e(TAG, "Trying to show notification guts, but not attached to window");
+            return false;
+        }
+
+        if (mActivityManagerWrapper.isLockTaskKioskModeActive()) {
+            // If the device is locked in kiosk mode, the user should not be able to access
+            // notification guts to change any settings.
             return false;
         }
 
