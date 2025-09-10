@@ -291,6 +291,14 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
         return mVirtualDisplayId;
     }
 
+    int getDeviceId() {
+        try {
+            return mVirtualDevice.getDeviceId();
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
     IVirtualDisplayCallback getVirtualDisplayToken() {
         return mVirtualDisplayToken;
     }

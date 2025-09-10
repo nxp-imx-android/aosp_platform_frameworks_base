@@ -190,6 +190,21 @@ public class ComputerControlSessionProcessor {
         }
     }
 
+    /**
+     * Returns whether the virtual device with the given ID represents a computer control session.
+     */
+    public boolean isComputerControlSession(int deviceId) {
+        synchronized (mSessions) {
+            for (int i = 0; i < mSessions.size(); i++) {
+                ComputerControlSessionImpl session = mSessions.valueAt(i);
+                if (session.getDeviceId() == deviceId) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     private void startHandlerThreadIfNeeded() {
         synchronized (mHandlerThreadLock) {
             if (mHandlerThread != null) {

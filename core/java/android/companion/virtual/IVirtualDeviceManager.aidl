@@ -23,6 +23,7 @@ import android.companion.virtual.IVirtualDeviceSoundEffectListener;
 import android.companion.virtual.VirtualDevice;
 import android.companion.virtual.VirtualDeviceParams;
 import android.companion.virtual.computercontrol.ComputerControlSessionParams;
+import android.companion.virtual.computercontrol.IAutomatedPackageListener;
 import android.companion.virtual.computercontrol.IComputerControlSessionCallback;
 import android.content.AttributionSource;
 
@@ -79,6 +80,16 @@ interface IVirtualDeviceManager {
      * Unregisters a previously registered virtual device listener.
      */
     void unregisterVirtualDeviceListener(in IVirtualDeviceListener listener);
+
+    /**
+     * Registers a listener to receive notifications for automated packages.
+     */
+    void registerAutomatedPackageListener(in IAutomatedPackageListener listener);
+
+    /**
+     * Unregisters a previously registered listener.
+     */
+    void unregisterAutomatedPackageListener(in IAutomatedPackageListener listener);
 
     /**
      * Returns the ID of the device which owns the display with the given ID.

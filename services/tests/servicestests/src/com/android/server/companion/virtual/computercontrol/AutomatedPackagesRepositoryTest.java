@@ -1,0 +1,248 @@
+/*
+ * Copyright (C) 2025 The Android Open Source Project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package com.android.server.companion.virtual.computercontrol;
+
+import static com.google.common.truth.Truth.assertThat;
+
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import android.companion.virtual.computercontrol.IAutomatedPackageListener;
+import android.content.pm.PackageManager;
+import android.os.Binder;
+import android.os.Handler;
+import android.os.HandlerThread;
+import android.os.IBinder;
+import android.os.Looper;
+import android.os.TestLooperManager;
+import android.os.UserHandle;
+import android.platform.test.annotations.Presubmit;
+import android.util.ArraySet;
+
+import androidx.test.ext.junit.runners.AndroidJUnit4;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+
+import java.util.List;
+
+@Presubmit
+@RunWith(AndroidJUnit4.class)
+public class AutomatedPackagesRepositoryTest {
+
+    private static final int UID_USER1_PACKAGE1 = 100001;
+    private static final int UID_USER1_PACKAGE2 = 100002;
+    private static final int UID_USER2_PACKAGE1 = 200001;
+    private static final int UID_USER2_PACKAGE2 = 200002;
+
+    private static final String PACKAGE1 = "com.foo";
+    private static final String PACKAGE2 = "com.bar";
+
+    private static final UserHandle USER1 = UserHandle.of(1);
+    private static final UserHandle USER2 = UserHandle.of(2);
+
+    private static final int DEVICE_ID1 = 7;
+    private static final int DEVICE_ID2 = 8;
+    private static final String DEVICE_OWNER = "com.device.owner";
+
+    @Mock
+    private PackageManager mPackageManager;
+
+    @Mock
+    private IAutomatedPackageListener mListener;
+
+    @Captor
+    private ArgumentCaptor<List<String>> mPackageNamesCaptor;
+
+    private AutomatedPackagesRepository mRepo;
+
+    private final HandlerThread mTestHandlerThread = new HandlerThread("TestHandlerThread");
+    private TestLooperManager mTestLooperManager;
+
+    private AutoCloseable mMockitoSession;
+
+    @Before
+    public void setUp() {
+        mMockitoSession = MockitoAnnotations.openMocks(this);
+
+        IBinder binder = new Binder();
+        when(mListener.asBinder()).thenReturn(binder);
+
+        when(mPackageManager.getPackagesForUid(UID_USER1_PACKAGE1))
+                .thenReturn(new String[] { PACKAGE1 });
+        when(mPackageManager.getPackagesForUid(UID_USER2_PACKAGE1))
+                .thenReturn(new String[] { PACKAGE1 });
+        when(mPackageManager.getPackagesForUid(UID_USER1_PACKAGE2))
+                .thenReturn(new String[] { PACKAGE2 });
+        when(mPackageManager.getPackagesForUid(UID_USER2_PACKAGE2))
+                .thenReturn(new String[] { PACKAGE2 });
+
+        mTestHandlerThread.start();
+        Looper looper = mTestHandlerThread.getLooper();
+        mTestLooperManager = new TestLooperManager(looper);
+        mRepo = new AutomatedPackagesRepository(mPackageManager, new Handler(looper));
+        mRepo.registerAutomatedPackageListener(mListener);
+    }
+
+    @After
+    public void tearDown() throws Exception {
+        mMockitoSession.close();
+        mTestHandlerThread.quit();
+        mTestLooperManager.release();
+    }
+
+
+    @Test
+    public void update_singleDevice_singleUser_notifiesListeners() throws Exception {
+        // Add a single package.
+        mRepo.update(DEVICE_ID1, DEVICE_OWNER, new ArraySet<>(List.of(UID_USER1_PACKAGE1)));
+        assertListenerReceived(List.of(PACKAGE1), USER1);
+        assertThat(mTestLooperManager.poll()).isNull();
+
+        // Add a second package.
+        mRepo.update(DEVICE_ID1, DEVICE_OWNER,
+                new ArraySet<>(List.of(UID_USER1_PACKAGE1, UID_USER1_PACKAGE2)));
+        assertListenerReceived(List.of(PACKAGE1, PACKAGE2), USER1);
+        assertThat(mTestLooperManager.poll()).isNull();
+
+        // Remove the first package.
+        mRepo.update(DEVICE_ID1, DEVICE_OWNER, new ArraySet<>(List.of(UID_USER1_PACKAGE2)));
+        assertListenerReceived(List.of(PACKAGE2), USER1);
+        assertThat(mTestLooperManager.poll()).isNull();
+
+        // Remove all packages.
+        mRepo.update(DEVICE_ID1, DEVICE_OWNER, new ArraySet<>());
+        assertListenerReceived(List.of(), USER1);
+        assertThat(mTestLooperManager.poll()).isNull();
+    }
+
+    @Test
+    public void update_singleDevice_multiUser_notifiesListeners() throws Exception {
+        // Add one package for two different users.
+        mRepo.update(DEVICE_ID1, DEVICE_OWNER,
+                new ArraySet<>(List.of(UID_USER1_PACKAGE1, UID_USER2_PACKAGE1)));
+        assertListenerReceived(List.of(PACKAGE1), USER1);
+        assertListenerReceived(List.of(PACKAGE1), USER2);
+        assertThat(mTestLooperManager.poll()).isNull();
+
+        // Change the package for user 2. Only user 2 should be notified.
+        mRepo.update(DEVICE_ID1, DEVICE_OWNER,
+                new ArraySet<>(List.of(UID_USER1_PACKAGE1, UID_USER2_PACKAGE2)));
+        assertListenerReceived(List.of(PACKAGE2), USER2);
+        assertThat(mTestLooperManager.poll()).isNull();
+
+        // Add a package for user 2. Only user 2 should be notified.
+        mRepo.update(DEVICE_ID1, DEVICE_OWNER,
+                new ArraySet<>(List.of(
+                        UID_USER1_PACKAGE1, UID_USER2_PACKAGE1, UID_USER2_PACKAGE2)));
+        assertListenerReceived(List.of(PACKAGE1, PACKAGE2), USER2);
+        assertThat(mTestLooperManager.poll()).isNull();
+
+        // Remove all packages for user 1, and one package for user 2. Both should be notified.
+        mRepo.update(DEVICE_ID1, DEVICE_OWNER, new ArraySet<>(List.of(UID_USER2_PACKAGE2)));
+        assertListenerReceived(List.of(), USER1);
+        assertListenerReceived(List.of(PACKAGE2), USER2);
+        assertThat(mTestLooperManager.poll()).isNull();
+
+        // Remove all remaining packages.
+        mRepo.update(DEVICE_ID1, DEVICE_OWNER, new ArraySet<>());
+        assertListenerReceived(List.of(), USER2);
+        assertThat(mTestLooperManager.poll()).isNull();
+    }
+
+    @Test
+    public void update_multiDevice_singleUser_notifiesListeners() throws Exception {
+        // Device 1 adds a package for user 1.
+        mRepo.update(DEVICE_ID1, DEVICE_OWNER, new ArraySet<>(List.of(UID_USER1_PACKAGE1)));
+        assertListenerReceived(List.of(PACKAGE1), USER1);
+        assertThat(mTestLooperManager.poll()).isNull();
+
+        // Device 2 adds another package for user 1. The total should be an aggregation.
+        mRepo.update(DEVICE_ID2, DEVICE_OWNER, new ArraySet<>(List.of(UID_USER1_PACKAGE2)));
+        assertListenerReceived(List.of(PACKAGE1, PACKAGE2), USER1);
+        assertThat(mTestLooperManager.poll()).isNull();
+
+        // Device 1 updates its list, but the total aggregated list for the user doesn't change.
+        // No notification should be sent.
+        mRepo.update(DEVICE_ID1, DEVICE_OWNER,
+                new ArraySet<>(List.of(UID_USER1_PACKAGE1, UID_USER1_PACKAGE2)));
+        assertThat(mTestLooperManager.poll()).isNull();
+
+        // Device 2 removes its packages, but the total aggregated list still doesn't change.
+        // No notification should be sent.
+        mRepo.update(DEVICE_ID2, DEVICE_OWNER, new ArraySet<>());
+        assertThat(mTestLooperManager.poll()).isNull();
+
+        // Device 1 removes its packages. Now the user has no packages.
+        mRepo.update(DEVICE_ID1, DEVICE_OWNER, new ArraySet<>());
+        assertListenerReceived(List.of(), USER1);
+        assertThat(mTestLooperManager.poll()).isNull();
+    }
+
+    @Test
+    public void update_multiDevice_multiUser_notifiesListeners() throws Exception {
+        // Device 1 adds a package for user 1.
+        mRepo.update(DEVICE_ID1, DEVICE_OWNER, new ArraySet<>(List.of(UID_USER1_PACKAGE1)));
+        assertListenerReceived(List.of(PACKAGE1), USER1);
+        assertThat(mTestLooperManager.poll()).isNull();
+
+        // Device 2 adds a package for user 2.
+        // The repository should now report packages for both users under the same device owner.
+        mRepo.update(DEVICE_ID2, DEVICE_OWNER, new ArraySet<>(List.of(UID_USER2_PACKAGE2)));
+        assertListenerReceived(List.of(PACKAGE2), USER2);
+        assertThat(mTestLooperManager.poll()).isNull();
+
+        // Device 1 adds a package for user 2.
+        // The packages for user 2 should be aggregated from both devices.
+        mRepo.update(DEVICE_ID1, DEVICE_OWNER,
+                new ArraySet<>(List.of(UID_USER1_PACKAGE1, UID_USER2_PACKAGE1)));
+        assertListenerReceived(List.of(PACKAGE1, PACKAGE2), USER2);
+        assertThat(mTestLooperManager.poll()).isNull();
+
+        // Device 2 is removed.
+        // The packages for user 2 should now only reflect what's on device 1.
+        mRepo.update(DEVICE_ID2, DEVICE_OWNER, new ArraySet<>());
+        assertListenerReceived(List.of(PACKAGE1), USER2);
+        assertThat(mTestLooperManager.poll()).isNull();
+
+        // Device 1 is removed.
+        // All packages for both users should be gone.
+        mRepo.update(DEVICE_ID1, DEVICE_OWNER, new ArraySet<>());
+        assertListenerReceived(List.of(), USER1);
+        assertListenerReceived(List.of(), USER2);
+        assertThat(mTestLooperManager.poll()).isNull();
+    }
+
+    private void assertListenerReceived(List<String> packages, UserHandle user) throws Exception {
+        var msg = mTestLooperManager.poll();
+        assertThat(msg).isNotNull();
+        mTestLooperManager.execute(msg);
+        mTestLooperManager.recycle(msg);
+        verify(mListener).onAutomatedPackagesChanged(
+                eq(DEVICE_OWNER), mPackageNamesCaptor.capture(), eq(user));
+        assertThat(mPackageNamesCaptor.getValue()).containsExactlyElementsIn(packages);
+        reset(mListener);
+    }
+}

@@ -403,7 +403,7 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub implements IBinder.Dea
                 mAllRunningUids = newAllUids;
             }
 
-            mService.onRunningAppsChanged(mDeviceId, newAllUids);
+            mService.onRunningAppsChanged(mDeviceId, mOwnerPackageName, newAllUids);
             if (mVirtualAudioController != null) {
                 mVirtualAudioController.onRunningAppsChanged(newAllUids);
             }
