@@ -324,7 +324,9 @@ public class BundleUtil {
             public void onSuccess(TokenInfo tokenInfo) throws RemoteException {
                 try {
                     responseCallback.onSuccess(tokenInfo);
-                    inferenceInfoStore.addInferenceInfoFromBundle(tokenInfo.getInfoParams());
+                    if (tokenInfo.getInfoParams() != null) {
+                        inferenceInfoStore.addInferenceInfoFromBundle(tokenInfo.getInfoParams());
+                    }
                 } finally {
                     future.complete(null);
                 }
@@ -404,8 +406,22 @@ public class BundleUtil {
         }
     }
 
+    private static void tryCloseParcelableArray(Parcelable[] parcelables) {
+        for (Parcelable p : parcelables) {
+            try {
+                if (p instanceof ParcelFileDescriptor pfd) {
+                    pfd.close();
+                } else if (p instanceof Bitmap bitmap) {
+                    bitmap.recycle();
+                }
+            } catch (Exception e) {
+                Log.e(TAG, "Error closing a resource in a Parcelable array", e);
+            }
+        }
+    }
+
     public static void tryCloseResource(Bundle bundle) {
-        if (bundle == null || bundle.isEmpty() || !bundle.hasFileDescriptors()) {
+        if (bundle == null || bundle.isEmpty()) {
             return;
         }
 
@@ -414,13 +430,19 @@ public class BundleUtil {
 
             try {
                 // TODO(b/329898589) : This can be cleaned up after the flag passing is fixed.
-                if (obj instanceof ParcelFileDescriptor) {
-                    ((ParcelFileDescriptor) obj).close();
-                } else if (obj instanceof CursorWindow) {
-                    ((CursorWindow) obj).close();
-                } else if (obj instanceof SharedMemory) {
+                if (obj instanceof ParcelFileDescriptor pfd) {
+                    pfd.close();
+                } else if (obj instanceof CursorWindow cursorWindow) {
+                    cursorWindow.close();
+                } else if (obj instanceof SharedMemory sharedMemory) {
                     // TODO(b/331796886) : Shared memory should honour parcelable flags.
-                    ((SharedMemory) obj).close();
+                    sharedMemory.close();
+                } else if (obj instanceof Bitmap bitmap) {
+                    bitmap.recycle();
+                } else if (obj instanceof Parcelable[] parcelables) {
+                    tryCloseParcelableArray(parcelables);
+                } else if (obj instanceof Bundle nestedBundle) {
+                    tryCloseResource(nestedBundle);
                 }
             } catch (Exception e) {
                 Log.e(TAG, "Error closing resource with key: " + key, e);
