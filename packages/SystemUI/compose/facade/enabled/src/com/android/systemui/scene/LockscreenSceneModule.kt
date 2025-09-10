@@ -31,7 +31,6 @@ import com.android.systemui.keyguard.ui.viewmodel.LockscreenBehindScrimViewModel
 import com.android.systemui.keyguard.ui.viewmodel.LockscreenContentViewModel
 import com.android.systemui.keyguard.ui.viewmodel.LockscreenFrontScrimViewModel
 import com.android.systemui.scene.ui.composable.Scene
-import com.android.systemui.statusbar.notification.stack.ui.viewmodel.NotificationLockscreenScrimViewModel
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
@@ -62,7 +61,6 @@ interface LockscreenSceneModule {
         @Provides
         fun providesLockscreenContent(
             viewModelFactory: LockscreenContentViewModel.Factory,
-            notificationScrimViewModelFactory: NotificationLockscreenScrimViewModel.Factory,
             lockscreenFrontScrimViewModelFactory: LockscreenFrontScrimViewModel.Factory,
             lockscreenBehindScrimViewModelFactory: LockscreenBehindScrimViewModel.Factory,
             blueprints: Set<@JvmSuppressWildcards ComposableLockscreenSceneBlueprint>,
@@ -71,7 +69,6 @@ interface LockscreenSceneModule {
         ): LockscreenContent {
             return LockscreenContent(
                 viewModelFactory,
-                notificationScrimViewModelFactory,
                 lockscreenFrontScrimViewModelFactory,
                 lockscreenBehindScrimViewModelFactory,
                 blueprints,

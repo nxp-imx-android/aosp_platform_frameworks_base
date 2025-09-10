@@ -18,6 +18,7 @@ package com.android.systemui.keyguard.ui.viewmodel
 
 import androidx.compose.runtime.getValue
 import com.android.app.tracing.coroutines.launchTraced as launch
+import com.android.compose.animation.scene.content.state.TransitionState
 import com.android.systemui.deviceentry.domain.interactor.DeviceEntryBypassInteractor
 import com.android.systemui.deviceentry.domain.interactor.DeviceEntryUdfpsInteractor
 import com.android.systemui.keyguard.domain.interactor.KeyguardBlueprintInteractor
@@ -25,7 +26,11 @@ import com.android.systemui.keyguard.shared.transition.KeyguardTransitionAnimati
 import com.android.systemui.keyguard.shared.transition.KeyguardTransitionAnimationCallbackDelegator
 import com.android.systemui.lifecycle.ExclusiveActivatable
 import com.android.systemui.lifecycle.Hydrator
+import com.android.systemui.scene.shared.model.Overlays
+import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.shade.domain.interactor.ShadeModeInteractor
+import com.android.systemui.shade.shared.model.ShadeMode
+import com.android.systemui.statusbar.notification.stack.domain.interactor.NotificationStackAppearanceInteractor
 import com.android.systemui.wallpapers.domain.interactor.WallpaperFocalAreaInteractor
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
@@ -46,6 +51,7 @@ constructor(
     private val keyguardTransitionAnimationCallbackDelegator:
         KeyguardTransitionAnimationCallbackDelegator,
     private val wallpaperFocalAreaInteractor: WallpaperFocalAreaInteractor,
+    private val notificationStackAppearanceInteractor: NotificationStackAppearanceInteractor,
     private val lockscreenAlphaViewModelFactory: LockscreenAlphaViewModel.Factory,
     @Assisted private val keyguardTransitionAnimationCallback: KeyguardTransitionAnimationCallback,
     @Assisted private val viewStateAccessor: ViewStateAccessor,
@@ -59,6 +65,10 @@ constructor(
             traceName = "isFullWidthShade",
             source = shadeModeInteractor.isFullWidthShade,
         )
+
+    /** @see ShadeModeInteractor.shadeMode */
+    val shadeMode: ShadeMode by
+        hydrator.hydratedStateOf(traceName = "shadeMode", source = shadeModeInteractor.shadeMode)
 
     /** @see DeviceEntryBypassInteractor.isBypassEnabled */
     val isBypassEnabled: Boolean by
@@ -120,6 +130,19 @@ constructor(
 
     fun setSmartspaceCardBottom(bottom: Float) {
         wallpaperFocalAreaInteractor.setSmartspaceCardBottom(bottom)
+    }
+
+    /** Sets the alpha to apply to the NSSL for fade-in on lockscreen */
+    fun setContentAlphaForLockscreenFadeIn(alpha: Float) {
+        notificationStackAppearanceInteractor.setAlphaForLockscreenFadeIn(alpha)
+    }
+
+    /** Should a content reveal animation run for the given transition */
+    fun shouldContentFadeIn(currentTransition: TransitionState.Transition): Boolean {
+        return shadeMode != ShadeMode.Dual &&
+            currentTransition.isInitiatedByUserInput &&
+            (currentTransition.isTransitioning(from = Scenes.Shade, to = Scenes.Lockscreen) ||
+                currentTransition.isTransitioning(from = Overlays.Bouncer, to = Scenes.Lockscreen))
     }
 
     @AssistedFactory
