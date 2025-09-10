@@ -34,6 +34,7 @@ import com.android.wm.shell.bubbles.BubbleController
 import com.android.wm.shell.shared.bubbles.BubbleBarLocation
 import com.android.wm.shell.shared.bubbles.DragZoneFactory
 import com.android.wm.shell.shared.bubbles.DropTargetView
+import com.android.wm.shell.shared.bubbles.logging.EntryPoint
 import com.google.common.truth.Truth.assertThat
 import org.junit.Before
 import org.junit.Rule
@@ -41,6 +42,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.kotlin.any
 import org.mockito.kotlin.doReturn
+import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
 import org.mockito.kotlin.stub
@@ -136,7 +138,12 @@ class DragToBubbleControllerTest {
         }
 
         verify(bubbleController)
-            .expandStackAndSelectBubble(pendingIntent, userHandle, BubbleBarLocation.LEFT)
+            .expandStackAndSelectBubble(
+                pendingIntent,
+                userHandle,
+                EntryPoint.TASKBAR_ICON_DRAG,
+                BubbleBarLocation.LEFT,
+            )
         assertThat(dragToBubbleController.isDropHandled).isTrue()
     }
 
@@ -153,7 +160,12 @@ class DragToBubbleControllerTest {
             dragToBubbleController.onItemDropped(shortcutInfo)
         }
 
-        verify(bubbleController).expandStackAndSelectBubble(shortcutInfo, BubbleBarLocation.LEFT)
+        verify(bubbleController)
+            .expandStackAndSelectBubble(
+                shortcutInfo,
+                EntryPoint.TASKBAR_ICON_DRAG,
+                BubbleBarLocation.LEFT,
+            )
         assertThat(dragToBubbleController.isDropHandled).isTrue()
     }
 
@@ -181,9 +193,14 @@ class DragToBubbleControllerTest {
         runOnMainSync { dragToBubbleController.onItemDropped(shortcutInfo) }
 
         assertThat(dropTargetContainer.childCount).isEqualTo(0)
-        verify(bubbleController, never()).expandStackAndSelectBubble(any<ShortcutInfo>(), any())
         verify(bubbleController, never())
-            .expandStackAndSelectBubble(any<PendingIntent>(), any(), any())
+            .expandStackAndSelectBubble(
+                any<ShortcutInfo>(),
+                eq(EntryPoint.TASKBAR_ICON_DRAG),
+                any(),
+            )
+        verify(bubbleController, never())
+            .expandStackAndSelectBubble(any<PendingIntent>(), any(), any(), any())
     }
 
     @Test

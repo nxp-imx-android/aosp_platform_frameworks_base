@@ -140,6 +140,7 @@ import com.android.wm.shell.shared.bubbles.BubbleDropTargetBoundsProvider;
 import com.android.wm.shell.shared.bubbles.ContextUtils;
 import com.android.wm.shell.shared.bubbles.DeviceConfig;
 import com.android.wm.shell.shared.bubbles.logging.BubbleLog;
+import com.android.wm.shell.shared.bubbles.logging.EntryPoint;
 import com.android.wm.shell.splitscreen.SplitScreenController;
 import com.android.wm.shell.sysui.ConfigurationChangeListener;
 import com.android.wm.shell.sysui.ShellCommandHandler;
@@ -1718,9 +1719,10 @@ public class BubbleController implements ConfigurationChangeListener,
      *
      * @param info the shortcut info for the bubble.
      * @param bubbleBarLocation optional location in case bubble bar should be repositioned.
+     * @param entryPoint optional entry point indicating how the bubble was created.
      */
     public void expandStackAndSelectBubble(ShortcutInfo info,
-            @Nullable BubbleBarLocation bubbleBarLocation) {
+            @Nullable EntryPoint entryPoint, @Nullable BubbleBarLocation bubbleBarLocation) {
         if (!BubbleAnythingFlagHelper.enableCreateAnyBubble()) return;
         Bubble b = mBubbleData.getOrCreateBubble(info); // Removes from overflow
         ProtoLog.v(WM_SHELL_BUBBLES, "expandStackAndSelectBubble - shortcut=%s", info);
@@ -1735,9 +1737,13 @@ public class BubbleController implements ConfigurationChangeListener,
      * Expands and selects a bubble created or found for this app.
      *
      * @param intent the intent for the bubble.
+     * @param user the user requesting the bubble.
+     * @param bubbleBarLocation optional bubble bar location. if present the bubble bar will be at
+     *                          the specified location.
+     * @param entryPoint optional entry point indicating how the bubble was created.
      */
     public void expandStackAndSelectBubble(Intent intent, UserHandle user,
-            @Nullable BubbleBarLocation bubbleBarLocation) {
+            @Nullable EntryPoint entryPoint, @Nullable BubbleBarLocation bubbleBarLocation) {
         if (!BubbleAnythingFlagHelper.enableCreateAnyBubble()) return;
         Bubble b = mBubbleData.getOrCreateBubble(intent, user); // Removes from overflow
         ProtoLog.v(WM_SHELL_BUBBLES, "expandStackAndSelectBubble - intent=%s", intent);
@@ -1755,7 +1761,7 @@ public class BubbleController implements ConfigurationChangeListener,
      * @param bubbleBarLocation optional location in case bubble bar should be repositioned.
      */
     public void expandStackAndSelectBubble(PendingIntent pendingIntent, UserHandle user,
-            @Nullable BubbleBarLocation bubbleBarLocation) {
+            @Nullable EntryPoint entryPoint, @Nullable BubbleBarLocation bubbleBarLocation) {
         if (!BubbleAnythingFlagHelper.enableCreateAnyBubble()) return;
         Bubble b = mBubbleData.getOrCreateBubble(pendingIntent, user); // Removes from overflow
         ProtoLog.v(WM_SHELL_BUBBLES, "expandStackAndSelectBubble - pendingIntent=%s",
@@ -3299,24 +3305,28 @@ public class BubbleController implements ConfigurationChangeListener,
         }
 
         @Override
-        public void showShortcutBubble(ShortcutInfo info, @Nullable BubbleBarLocation location) {
+        public void showShortcutBubble(ShortcutInfo info, EntryPoint entryPoint,
+                @Nullable BubbleBarLocation location) {
             ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "IBubbles.showShortcutBubble: info=%s loc=%s",
                     info, location);
             executeRemoteCallWithTaskPermission(
                     mController,
                     "showShortcutBubble",
-                    (controller) -> controller.expandStackAndSelectBubble(info, location));
+                    controller ->
+                            controller.expandStackAndSelectBubble(info, entryPoint, location));
         }
 
         @Override
         public void showAppBubble(Intent intent, UserHandle user,
-                @Nullable BubbleBarLocation location) {
+                EntryPoint entryPoint, @Nullable BubbleBarLocation location) {
             ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "IBubbles.showAppBubble: intent=%s user=%s loc=%s",
                     intent, user, location);
             executeRemoteCallWithTaskPermission(
                     mController,
                     "showAppBubble",
-                    (controller) -> controller.expandStackAndSelectBubble(intent, user, location));
+                    controller ->
+                            controller.expandStackAndSelectBubble(
+                                    intent, user, entryPoint, location));
         }
 
         @Override
@@ -3609,9 +3619,8 @@ public class BubbleController implements ConfigurationChangeListener,
         @Override
         public void expandStackAndSelectBubble(ShortcutInfo info) {
             mMainExecutor.execute(() ->
-                    BubbleController.this
-                            .expandStackAndSelectBubble(info, /* bubbleBarLocation = */ null)
-            );
+                    BubbleController.this.expandStackAndSelectBubble(
+                            info, /* entryPoint= */ null, /* bubbleBarLocation = */ null));
         }
 
         @Override
