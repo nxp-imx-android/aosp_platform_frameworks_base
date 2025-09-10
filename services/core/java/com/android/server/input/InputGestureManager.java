@@ -104,7 +104,7 @@ final class InputGestureManager {
         // Initialize all system shortcuts
         List<InputGestureData> systemShortcuts = new ArrayList<>(List.of(
                 createKeyGesture(
-                        KeyEvent.KEYCODE_A,
+                        KeyEvent.KEYCODE_SPACE,
                         KeyEvent.META_META_ON,
                         KeyGestureEvent.KEY_GESTURE_TYPE_LAUNCH_ASSISTANT,
                         /* allowCaptureByFocusedWindow = */true

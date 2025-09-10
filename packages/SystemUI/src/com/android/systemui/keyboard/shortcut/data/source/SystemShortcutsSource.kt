@@ -19,7 +19,6 @@ package com.android.systemui.keyboard.shortcut.data.source
 import android.content.res.Resources
 import android.hardware.input.InputManager
 import android.hardware.input.KeyGlyphMap
-import android.view.KeyEvent.KEYCODE_A
 import android.view.KeyEvent.KEYCODE_BACK
 import android.view.KeyEvent.KEYCODE_DPAD_LEFT
 import android.view.KeyEvent.KEYCODE_ESCAPE
@@ -32,6 +31,7 @@ import android.view.KeyEvent.KEYCODE_Q
 import android.view.KeyEvent.KEYCODE_RECENT_APPS
 import android.view.KeyEvent.KEYCODE_S
 import android.view.KeyEvent.KEYCODE_SLASH
+import android.view.KeyEvent.KEYCODE_SPACE
 import android.view.KeyEvent.KEYCODE_TAB
 import android.view.KeyEvent.META_ALT_ON
 import android.view.KeyEvent.META_CTRL_ON
@@ -230,9 +230,9 @@ constructor(@Main private val resources: Resources, private val inputManager: In
                 command(META_META_ON, KEYCODE_I)
             },
             // Access Assistant:
-            //  - Meta + A
+            //  - Meta + Space
             shortcutInfo(resources.getString(R.string.group_system_access_google_assistant)) {
-                command(META_META_ON, KEYCODE_A)
+                command(META_META_ON, KEYCODE_SPACE)
             },
         )
 }
