@@ -295,10 +295,10 @@ constructor(
     suspend fun showAuthenticated(modality: BiometricModality) = coroutineScope {
         _isAuthenticating.value = false
         val needsUserConfirmation = needsExplicitConfirmation(modality)
-        secureLockDeviceInteractor.suppressBouncerMessages()
         _isAuthenticated.value = PromptAuthState(true, modality, needsUserConfirmation)
 
         if (!needsUserConfirmation) {
+            secureLockDeviceInteractor.suppressBouncerMessages()
             bouncerHapticPlayer.playAuthenticationFeedback(/* authenticationSucceeded= */ true)
         }
 
