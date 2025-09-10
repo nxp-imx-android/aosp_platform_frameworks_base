@@ -526,10 +526,6 @@ class DesktopTasksController(
         }
     }
 
-    /** Returns child task from two focused tasks in split screen mode. */
-    private fun getSplitFocusedTask(task1: RunningTaskInfo, task2: RunningTaskInfo) =
-        if (task1.taskId == task2.parentTaskId) task2 else task1
-
     /** Moves a desktop task into fullscreen mode. */
     private fun moveDesktopTaskToFullscreen(
         task: RunningTaskInfo,
@@ -6608,6 +6604,10 @@ class DesktopTasksController(
                 DesktopTaskToFrontReason.TASKBAR_MANAGE_WINDOW ->
                     UnminimizeReason.TASKBAR_MANAGE_WINDOW
             }
+
+        /** Returns child task from two focused tasks in split screen mode. */
+        fun getSplitFocusedTask(task1: RunningTaskInfo, task2: RunningTaskInfo) =
+            if (task1.taskId == task2.parentTaskId) task2 else task1
 
         @JvmField
         /**

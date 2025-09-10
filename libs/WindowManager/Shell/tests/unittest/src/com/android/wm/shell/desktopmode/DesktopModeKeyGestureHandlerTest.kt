@@ -52,11 +52,13 @@ import com.android.wm.shell.desktopmode.DesktopModeEventLogger.Companion.EnterRe
 import com.android.wm.shell.desktopmode.DesktopModeEventLogger.Companion.MinimizeReason
 import com.android.wm.shell.desktopmode.DesktopTestHelpers.createFreeformTask
 import com.android.wm.shell.desktopmode.DesktopTestHelpers.createFullscreenTask
+import com.android.wm.shell.desktopmode.DesktopTestHelpers.createSplitScreenTask
 import com.android.wm.shell.desktopmode.common.ToggleTaskSizeInteraction
 import com.android.wm.shell.desktopmode.data.DesktopRepository
 import com.android.wm.shell.shared.desktopmode.DesktopModeTransitionSource
 import com.android.wm.shell.shared.desktopmode.FakeDesktopConfig
 import com.android.wm.shell.shared.desktopmode.FakeDesktopState
+import com.android.wm.shell.splitscreen.SplitScreenController
 import com.android.wm.shell.sysui.ShellController
 import com.android.wm.shell.sysui.ShellInit
 import com.android.wm.shell.transition.FocusTransitionObserver
@@ -104,6 +106,7 @@ class DesktopModeKeyGestureHandlerTest : ShellTestCase() {
     private val desktopTasksController = mock<DesktopTasksController>()
     private val desktopState = FakeDesktopState()
     private val shellController = mock<ShellController>()
+    private val splitScreenController = mock<SplitScreenController>()
 
     private lateinit var desktopModeKeyGestureHandler: DesktopModeKeyGestureHandler
     private lateinit var keyGestureEventHandler: KeyGestureEventHandler
@@ -174,6 +177,7 @@ class DesktopModeKeyGestureHandlerTest : ShellTestCase() {
                 testExecutor,
                 displayController,
                 desktopState,
+                Optional.of(splitScreenController),
             )
     }
 
@@ -414,6 +418,34 @@ class DesktopModeKeyGestureHandlerTest : ShellTestCase() {
     }
 
     @Test
+    @EnableFlags(FLAG_CLOSE_FULLSCREEN_AND_SPLITSCREEN_KEYBOARD_SHORTCUT)
+    fun keyGestureQuitFocusedDesktopTask_shouldQuitSplitScreenTask() {
+        // Setup a focused split screen task
+        val task = setUpSplitScreenTask()
+        val splitRoot = setUpFullscreenTask()
+        task.parentTaskId = splitRoot.taskId
+        whenever(focusTransitionObserver.globallyFocusedDisplayId).thenReturn(task.displayId)
+        whenever(
+                desktopTasksController.getFocusedNonDesktopTasks(task.displayId, repository.userId)
+            )
+            .thenReturn(listOf(splitRoot, task))
+        whenever(splitScreenController.isTaskInSplitScreen(task.taskId)).thenReturn(true)
+
+        // Create and handle the key gesture event
+        val event =
+            KeyGestureEvent.Builder()
+                .setKeyGestureType(KeyGestureEvent.KEY_GESTURE_TYPE_QUIT_FOCUSED_DESKTOP_TASK)
+                .setKeycodes(intArrayOf(KeyEvent.KEYCODE_Q))
+                .setModifierState(KeyEvent.META_META_ON)
+                .build()
+        keyGestureEventHandler.handleKeyGestureEvent(event, null)
+        testExecutor.flushAll()
+
+        // Verify closeTask is called
+        verify(desktopModeWindowDecorViewModel).closeTask(task)
+    }
+
+    @Test
     fun keyGestureSwitchToPreviousDesk_activatesDesk() {
         val displayId = 2
         whenever(focusTransitionObserver.globallyFocusedDisplayId).thenReturn(displayId)
@@ -487,6 +519,13 @@ class DesktopModeKeyGestureHandlerTest : ShellTestCase() {
         val task = createFullscreenTask(displayId)
         val activityInfo = ActivityInfo()
         task.topActivityInfo = activityInfo
+        whenever(shellTaskOrganizer.getRunningTaskInfo(task.taskId)).thenReturn(task)
+        runningTasks.add(task)
+        return task
+    }
+
+    private fun setUpSplitScreenTask(): RunningTaskInfo {
+        val task = createSplitScreenTask()
         whenever(shellTaskOrganizer.getRunningTaskInfo(task.taskId)).thenReturn(task)
         runningTasks.add(task)
         return task
