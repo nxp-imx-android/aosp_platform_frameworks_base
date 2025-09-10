@@ -987,10 +987,6 @@ static bool shouldParcelAsMutable(SkBitmap& bitmap, AParcel* parcel) {
         return false;
     }
 
-    if (!com::android::graphics::hwui::flags::bitmap_parcel_ashmem_as_immutable()) {
-        return true;
-    }
-
     // If we're going to copy the bitmap to ashmem and write that to the parcel,
     // then parcel as immutable, since we won't be mutating the bitmap after
     // writing it to the parcel.
