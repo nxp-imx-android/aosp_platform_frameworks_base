@@ -89,6 +89,7 @@ import com.android.internal.util.ScreenshotHelper;
 import com.android.internal.util.ScreenshotRequest;
 import com.android.server.LocalServices;
 import com.android.server.UiThread;
+import com.android.server.input.data.InputDataStore;
 import com.android.server.pm.UserManagerInternal;
 import com.android.server.wm.WindowManagerInternal;
 
@@ -1467,7 +1468,8 @@ final class KeyGestureController {
                 mInputGestureManager.getCustomInputGestures(userId, null);
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         synchronized (mInputDataStore) {
-            mInputDataStore.writeInputGestureXml(byteArrayOutputStream, true, inputGestureDataList);
+            mInputDataStore.writeData(byteArrayOutputStream, true, inputGestureDataList,
+                    InputGestureData.class);
         }
         return byteArrayOutputStream.toByteArray();
     }
@@ -1477,7 +1479,8 @@ final class KeyGestureController {
         final ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(payload);
         List<InputGestureData> inputGestureDataList;
         synchronized (mInputDataStore) {
-            inputGestureDataList = mInputDataStore.readInputGesturesXml(byteArrayInputStream, true);
+            inputGestureDataList = mInputDataStore.readData(byteArrayInputStream, true,
+                    InputGestureData.class);
         }
         for (final InputGestureData inputGestureData : inputGestureDataList) {
             mInputGestureManager.addCustomInputGesture(userId, inputGestureData);
@@ -1601,15 +1604,15 @@ final class KeyGestureController {
             final List<InputGestureData> inputGestureDataList =
                     mInputGestureManager.getCustomInputGestures(userId,
                             null);
-            mInputDataStore.saveInputGestures(userId, inputGestureDataList);
+            mInputDataStore.saveData(userId, inputGestureDataList, InputGestureData.class);
         }
     }
 
     private void loadInputGestures(int userId) {
         synchronized (mInputDataStore) {
             mInputGestureManager.removeAllCustomInputGestures(userId, null);
-            final List<InputGestureData> inputGestureDataList = mInputDataStore.loadInputGestures(
-                    userId);
+            final List<InputGestureData> inputGestureDataList = mInputDataStore.loadData(
+                    userId, InputGestureData.class);
             for (final InputGestureData inputGestureData : inputGestureDataList) {
                 mInputGestureManager.addCustomInputGesture(userId, inputGestureData);
             }
