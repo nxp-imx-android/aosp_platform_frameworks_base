@@ -26,6 +26,7 @@ import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.testng.Assert.assertThrows;
 
 import android.app.Activity;
 import android.companion.virtual.computercontrol.IComputerControlSession;
@@ -59,6 +60,8 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import java.util.concurrent.Executors;
+
 @RequiresFlagsEnabled(android.companion.virtualdevice.flags.Flags.FLAG_COMPUTER_CONTROL_ACCESS)
 @RunWith(AndroidJUnit4.class)
 public class ComputerControlSessionTest {
@@ -74,6 +77,7 @@ public class ComputerControlSessionTest {
     @Mock IComputerControlSession mIComputerControlSession;
     private ComputerControlSession mSession;
     private int mVirtualDisplayId;
+    @Mock ComputerControlSession.StabilityListener mStabilityListener;
     @Mock ComputerControlSession.StabilityHintCallback mStabilityHintCallback;
     @Mock IAccessibilityManager mIAccessibilityManager;
 
@@ -233,5 +237,29 @@ public class ComputerControlSessionTest {
         verify(mIComputerControlSession).performAction(eq(ACTION_GO_BACK));
 
         verify(mStabilityHintCallback, timeout(TIMEOUT_MS)).onStabilityHint(false);
+    }
+
+    @Test
+    public void setStabilityListener_withNullListener_throwsException() {
+        assertThrows(NullPointerException.class, () -> mSession.setStabilityListener(
+                Executors.newSingleThreadExecutor(), null));
+    }
+
+    @Test
+    public void setStabilityListener_withNullExecutor_throwsException() {
+        assertThrows(NullPointerException.class,
+                () -> mSession.setStabilityListener(null, mStabilityListener));
+    }
+
+    @Test
+    public void setStabilityListener_setsStabilityListener() throws Exception {
+        mSession.setStabilityListener(Executors.newSingleThreadExecutor(), mStabilityListener);
+        verify(mIComputerControlSession).setStabilityListener(any());
+    }
+
+    @Test
+    public void clearStabilityListener_clearsStabilityListener() throws Exception {
+        mSession.clearStabilityListener();
+        verify(mIComputerControlSession).setStabilityListener(eq(null));
     }
 }
