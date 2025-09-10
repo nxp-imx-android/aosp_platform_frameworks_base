@@ -62,6 +62,9 @@ android_test {
             "configs/structured-concurrency-base.xml",
         ],
     },
+    srcs: [
+        "src-perf/**/*.kt",
+    ],
 }
 
 android_test {
@@ -78,8 +81,5 @@ android_test {
     },
     srcs: [
         "src-debug/**/*.kt",
-    ],
-    exclude_srcs: [
-        "src/com/android/app/concurrent/benchmark/util/Constants.kt",
     ],
 }
