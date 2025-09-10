@@ -47,7 +47,6 @@ class ScreenshotShelfView(context: Context, attrs: AttributeSet? = null) :
     private val tmpRect = Rect()
     private lateinit var actionsContainerBackground: View
     private lateinit var actionsContainer: View
-    private lateinit var dismissButton: View
 
     // Prepare an internal `GestureDetector` to determine when we can initiate a touch-interception
     // session (with the client's provided `onTouchInterceptListener`). We delegate out to their
@@ -108,7 +107,6 @@ class ScreenshotShelfView(context: Context, attrs: AttributeSet? = null) :
         screenshotStatic = requireViewById(R.id.screenshot_static)
         actionsContainerBackground = requireViewById(R.id.actions_container_background)
         actionsContainer = requireViewById(R.id.actions_container)
-        dismissButton = requireViewById(R.id.screenshot_dismiss_button)
 
         // Configure to extend the timeout during ongoing gestures (i.e. scrolls) that are already
         // being handled by our child views.
@@ -234,7 +232,6 @@ class ScreenshotShelfView(context: Context, attrs: AttributeSet? = null) :
         val padding = FloatingWindowUtil.dpToPx(displayMetrics, -1 * TOUCH_PADDING_DP).toInt()
         swipeRegion.addInsetView(screenshotPreview, padding)
         swipeRegion.addInsetView(actionsContainerBackground, padding)
-        swipeRegion.addInsetView(dismissButton, padding)
         findViewById<View>(R.id.screenshot_message_container)?.let {
             swipeRegion.addInsetView(it, padding)
         }
