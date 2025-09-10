@@ -3202,7 +3202,7 @@ public class DevicePolicyManagerTest extends DpmTestBase {
         mContext.callerPermissions.add(permission.MANAGE_PROFILE_AND_DEVICE_OWNERS);
         mContext.callerPermissions.add(permission.MANAGE_USERS);
         assertExpectException(IllegalStateException.class,
-                /* messageRegex= */ "change provisioning state unless a .* owner is set",
+                /* messageRegex= */ "change provisioning state unless a .* is managed",
                 () -> dpm.setUserProvisioningState(DevicePolicyManager.STATE_USER_SETUP_FINALIZED,
                         CALLER_USER_HANDLE));
         assertThat(dpm.getUserProvisioningState())

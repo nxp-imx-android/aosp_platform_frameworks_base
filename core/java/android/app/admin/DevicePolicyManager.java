@@ -56,12 +56,13 @@ import static android.Manifest.permission.SET_TIME;
 import static android.Manifest.permission.SET_TIME_ZONE;
 import static android.annotation.RestrictedForEnvironment.ENVIRONMENT_SDK_RUNTIME;
 import static android.app.admin.DeviceAdminInfo.HEADLESS_DEVICE_OWNER_MODE_UNSUPPORTED;
-import static android.app.admin.flags.Flags.FLAG_DEVICE_THEFT_API_ENABLED;
-import static android.app.admin.flags.Flags.FLAG_REMOVE_MANAGED_PROFILE_ENABLED;
 import static android.app.admin.flags.Flags.FLAG_CROSS_PROFILE_WIDGET_PROVIDER_BULK_APIS;
+import static android.app.admin.flags.Flags.FLAG_DEVICE_THEFT_API_ENABLED;
+import static android.app.admin.flags.Flags.FLAG_MULTI_USER_MANAGEMENT_DEVICE_PROVISIONING;
+import static android.app.admin.flags.Flags.FLAG_POLICY_STREAMLINING;
+import static android.app.admin.flags.Flags.FLAG_REMOVE_MANAGED_PROFILE_ENABLED;
 import static android.app.admin.flags.Flags.FLAG_SECONDARY_LOCKSCREEN_API_ENABLED;
 import static android.app.admin.flags.Flags.FLAG_SPLIT_CREATE_MANAGED_PROFILE_ENABLED;
-import static android.app.admin.flags.Flags.FLAG_POLICY_STREAMLINING;
 import static android.app.admin.flags.Flags.onboardingBugreportV2Enabled;
 import static android.app.admin.flags.Flags.onboardingConsentlessBugreports;
 import static android.content.Intent.LOCAL_FLAG_FROM_SYSTEM;
@@ -560,6 +561,30 @@ public class DevicePolicyManager {
     @SdkConstant(SdkConstantType.ACTIVITY_INTENT_ACTION)
     public static final String ACTION_PROVISION_MANAGED_DEVICE
         = "android.app.action.PROVISION_MANAGED_DEVICE";
+
+
+    // TODO(b/390162247): Rename this since it's no longer an intent action. It
+    // can be moved out of the ACTION_PROVISION_* constant group and potentially
+    // migrated to an enum with other modes. Also, consider renaming the
+    // checkProvisioningPrecondition parameter to managementMode.
+    /**
+     * Constant to indicate multi-user device provisioning.
+     *
+     * <p> When multi-user device provisioning has completed, an intent of the type
+     * {@link DeviceAdminReceiver#ACTION_PROFILE_PROVISIONING_COMPLETE} is
+     * broadcast. The extra {@link #EXTRA_PROVISIONING_ACTION} will be set to
+     * {@link #ACTION_PROVISION_MULTI_USER_DEVICE}.
+     *
+     * <p> This can also be passed to {@link #checkProvisioningPrecondition} to check if the
+     * multi-user device provisioning is allowed.
+     *
+     * @hide
+     */
+    @SystemApi
+    @FlaggedApi(Flags.FLAG_MULTI_USER_MANAGEMENT_DEVICE_PROVISIONING)
+    @SdkConstant(SdkConstantType.ACTIVITY_INTENT_ACTION)
+    public static final String ACTION_PROVISION_MULTI_USER_DEVICE =
+            "android.app.admin.action.PROVISION_MULTI_USER_DEVICE";
 
     /**
      * Activity action: launch when user provisioning completed, i.e.
@@ -2985,6 +3010,18 @@ public class DevicePolicyManager {
 
 
     /**
+     * Result code for {@link #checkProvisioningPreCondition}.
+     *
+     * <p>Returned for {@link #ACTION_PROVISION_MULTI_USER_DEVICE} when the device is not
+     * running in headless system user mode.
+     *
+     * @hide
+     */
+    @SystemApi
+    @FlaggedApi(Flags.FLAG_MULTI_USER_MANAGEMENT_DEVICE_PROVISIONING)
+    public static final int STATUS_HEADLESS_SYSTEM_USER_MODE_REQUIRED = 19;
+
+    /**
      * Result codes for {@link #checkProvisioningPrecondition} indicating all the provisioning pre
      * conditions.
      *
@@ -2999,7 +3036,8 @@ public class DevicePolicyManager {
             STATUS_SPLIT_SYSTEM_USER_DEVICE_SYSTEM_USER,
             STATUS_PROVISIONING_NOT_ALLOWED_FOR_NON_DEVELOPER_USERS,
             STATUS_HEADLESS_SYSTEM_USER_MODE_NOT_SUPPORTED, STATUS_HEADLESS_ONLY_SYSTEM_USER,
-            STATUS_HEADLESS_SINGLE_USER_MODE_ONLY_SUPPORTED_ON_FIRST_FULL_USER
+            STATUS_HEADLESS_SINGLE_USER_MODE_ONLY_SUPPORTED_ON_FIRST_FULL_USER,
+            STATUS_HEADLESS_SYSTEM_USER_MODE_REQUIRED
     })
     public @interface ProvisioningPrecondition {}
 
@@ -9986,6 +10024,16 @@ public class DevicePolicyManager {
     @SystemApi
     @SuppressLint("RequiresPermission")
     public boolean isDeviceManaged() {
+        // TODO(b/390162247): Add API level check to avoid breaking existing apps targeting old API.
+        if (android.app.admin.flags.Flags.multiUserManagementDeviceProvisioning()
+                && mService != null) {
+            try {
+                // TODO(b/390162247): Consider adding a cache just like we do for hasDeviceOwner.
+                return mService.isDeviceManaged();
+            } catch (RemoteException re) {
+                throw re.rethrowFromSystemServer();
+            }
+        }
         return mHasDeviceOwnerCache.query(null);
     }
 
@@ -15553,6 +15601,30 @@ public class DevicePolicyManager {
     }
 
     /**
+     * Clears the multi-user device management state for testing purposes. Can only remove
+     * management set up by test packages. Does not send a broadcast about the removal.
+     *
+     * @param adminReceiver The administration compononent to remove.
+     * @throws SecurityException if the caller is not shell / root or the admin package
+     *         isn't a test application see {@link ApplicationInfo#FLAG_TEST_APP}.
+     * @hide
+     */
+    @TestApi
+    @FlaggedApi(Flags.FLAG_MULTI_USER_MANAGEMENT_DEVICE_PROVISIONING)
+    @RequiresPermission(android.Manifest.permission.MANAGE_PROFILE_AND_DEVICE_OWNERS)
+    // TODO(b/390162247): Remove adminReceiver param once we decide where to store
+    // provisioning-related data instead of ActiveAdmin.
+    public void clearMultiUserDeviceManagement(@NonNull ComponentName adminReceiver) {
+        try {
+            if (mService != null) {
+                mService.clearMultiUserDeviceManagement(adminReceiver);
+            }
+        } catch (RemoteException re) {
+            throw re.rethrowFromSystemServer();
+        }
+    }
+
+    /**
      * Returns whether the device has been provisioned.
      *
      * <p>Not for use by third-party applications.
@@ -17726,6 +17798,37 @@ public class DevicePolicyManager {
         if (mService != null) {
             try {
                 mService.provisionFullyManagedDevice(provisioningParams, mContext.getPackageName());
+            } catch (ServiceSpecificException e) {
+                throw new ProvisioningException(e, e.errorCode, getErrorMessage(e));
+            } catch (RemoteException re) {
+                throw re.rethrowFromSystemServer();
+            }
+        }
+    }
+
+    /**
+     * Provisions a device intended for use by multiple users for management.
+     *
+     * <p>The method {@link #checkProvisioningPrecondition} must be returning {@link #STATUS_OK}
+     * before calling this method. If it doesn't, a {@link ProvisioningException} will be thrown.
+     *
+     * @param provisioningParams Params required to provision a multi-user device, see
+     * {@link MultiUserDeviceProvisioningParams}.
+     *
+     * @throws ProvisioningException if an error occurred during provisioning.
+     *
+     * @hide
+     */
+    @SystemApi
+    @FlaggedApi(FLAG_MULTI_USER_MANAGEMENT_DEVICE_PROVISIONING)
+    @RequiresPermission(android.Manifest.permission.MANAGE_PROFILE_AND_DEVICE_OWNERS)
+    public void provisionMultiUserDevice(
+            @NonNull MultiUserDeviceProvisioningParams provisioningParams)
+            throws ProvisioningException {
+        if (mService != null) {
+            try {
+                mService.provisionMultiUserDevice(
+                        provisioningParams.getTransportParams(), mContext.getPackageName());
             } catch (ServiceSpecificException e) {
                 throw new ProvisioningException(e, e.errorCode, getErrorMessage(e));
             } catch (RemoteException re) {

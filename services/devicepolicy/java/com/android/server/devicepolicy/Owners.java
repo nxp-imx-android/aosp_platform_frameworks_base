@@ -408,6 +408,18 @@ class Owners {
         }
     }
 
+    boolean isDeviceManaged() {
+        synchronized (mData) {
+            return mData.mDeviceManaged;
+        }
+    }
+
+    void setDeviceManaged(boolean deviceManaged) {
+        synchronized (mData) {
+            mData.mDeviceManaged = deviceManaged;
+        }
+    }
+
     boolean isDeviceOwnerUserId(int userId) {
         synchronized (mData) {
             return mData.mDeviceOwner != null && mData.mDeviceOwnerUserId == userId;
