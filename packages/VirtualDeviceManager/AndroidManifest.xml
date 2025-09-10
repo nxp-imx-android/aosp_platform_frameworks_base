@@ -24,6 +24,14 @@
             </intent-filter>
         </activity>
 
+        <activity
+            android:name=".NotifyComputerControlBlockedActivity"
+            android:theme="@style/Theme.NotifyComputerControlBlockedActivity.FilterTouches"
+            android:excludeFromRecents="true"
+            android:exported="true"
+            android:launchMode="singleTop">
+        </activity>
+
     </application>
 
 </manifest>

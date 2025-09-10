@@ -93,4 +93,44 @@
     </style>
 
     <!-- END REQUEST COMPUTER CONTROL ACCESS DIALOG -->
+
+    <!-- START NOTIFY COMPUTER CONTROL BLOCKED ACTIVITY DIALOG -->
+
+    <style name="NotifyComputerControlBlockedActivityScrollView">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:paddingHorizontal">24dp</item>
+        <item name="android:paddingTop">24dp</item>
+        <item name="android:paddingBottom">16dp</item>
+        <item name="android:background">@color/settingslib_materialColorSurfaceContainerHigh</item>
+    </style>
+
+    <style name="NotifyComputerControlBlockedActivityContent">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:orientation">vertical</item>
+        <item name="android:gravity">center_horizontal</item>
+    </style>
+
+    <style name="NotifyComputerControlBlockedActivityTitle">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginTop">24dp</item>
+        <item name="android:layout_marginBottom">16dp</item>
+        <item name="android:gravity">center_horizontal</item>
+        <item name="android:textAppearance">@style/TextAppearance.SettingsLib.HeadlineSmall</item>
+    </style>
+
+    <style name="NotifyComputerControlBlockedActivityOkButton">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginTop">28dp</item>
+        <item name="android:minHeight">@dimen/settingslib_expressive_space_medium3</item>
+        <item name="android:background">@drawable/settingslib_expressive_button_background_filled</item>
+        <item name="android:textAppearance">@style/TextAppearance.SettingsLib.LabelLarge</item>
+        <item name="android:textColor">@color/settingslib_materialColorOnPrimary</item>
+    </style>
+
+    <!-- END NOTIFY COMPUTER CONTROL BLOCKED ACTIVITY DIALOG -->
+
 </resources>

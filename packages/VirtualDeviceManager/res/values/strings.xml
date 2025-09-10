@@ -20,6 +20,8 @@
     <!-- Title of the VirtualDeviceManager application. [CHAR LIMIT=50] -->
     <string name="app_label">Virtual Device Manager</string>
 
+    <!-- START REQUEST COMPUTER CONTROL ACCESS DIALOG -->
+
     <!-- Label for the title of request computer control access dialog [CHAR LIMIT=70] -->
     <string name="request_computer_control_access_dialog_title">Allow &lt;strong&gt;<xliff:g id="agent_app_name" example="Example Agent App">%1$s</xliff:g>&lt;/strong&gt; to fully automate your apps?</string>
 
@@ -34,5 +36,20 @@
 
     <!-- Label for the always allow button for request computer control access dialog. [CHAR LIMIT=40] -->
     <string name="request_computer_control_access_dialog_button_always_allow">Always allow</string>
+
+    <!-- END REQUEST COMPUTER CONTROL ACCESS DIALOG -->
+
+    <!-- START NOTIFY COMPUTER CONTROL BLOCKED ACTIVITY DIALOG -->
+
+    <!-- Label for the title of notify computer control blocked activity [CHAR LIMIT=NONE] -->
+    <string name="notify_computer_control_blocked_activity_title">This app is requesting to open another app, which is restricted during automation</string>
+
+    <!-- Label for the title of notify computer control blocked permission dialog [CHAR LIMIT=NONE] -->
+    <string name="notify_computer_control_blocked_permission_dialog_title">This app is requesting a permission, which is restricted during automation</string>
+
+    <!-- Label for the OK button for notify computer control blocked activity dialog. [CHAR LIMIT=40] -->
+    <string name="notify_computer_control_blocked_activity_button_ok">OK</string>
+
+    <!-- END NOTIFY COMPUTER CONTROL BLOCKED ACTIVITY DIALOG -->
 
 </resources>
