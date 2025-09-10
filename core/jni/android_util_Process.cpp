@@ -551,7 +551,7 @@ static void android_os_Process_setCanSelfBackground(JNIEnv* env, jobject clazz, 
 #endif
 }
 
-static jboolean android_os_Process_getCanSelfBackground(JNIEnv* env, jclass clazz) {
+static jboolean android_os_Process_getCanSelfBackground(CRITICAL_JNI_PARAMS) {
 #if GUARD_THREAD_PRIORITY
     void* bgOk = pthread_getspecific(gBgKey);
     if (bgOk == ((void*)0xbaad)) {
@@ -1408,11 +1408,15 @@ void android_os_Process_freezeCgroupUID(JNIEnv* env, jobject clazz, jint uid, jb
 static const JNINativeMethod methods[] = {
         {"getUidForName", "(Ljava/lang/String;)I", (void*)android_os_Process_getUidForName},
         {"getGidForName", "(Ljava/lang/String;)I", (void*)android_os_Process_getGidForName},
-        {"setThreadPriorityNative", "(II)V", (void*)android_os_Process_setThreadPriorityNative},
         {"setThreadScheduler", "(III)V", (void*)android_os_Process_setThreadScheduler},
-        {"setCanSelfBackground", "(Z)V", (void*)android_os_Process_setCanSelfBackground},
-        {"getCanSelfBackground", "()Z", (void*)android_os_Process_getCanSelfBackground},
+        // @FastNative
+        {"setThreadPriorityNative", "(II)V", (void*)android_os_Process_setThreadPriorityNative},
+        // @FastNative
         {"getThreadPriority", "(I)I", (void*)android_os_Process_getThreadPriority},
+        // @FastNative
+        {"setCanSelfBackground", "(Z)V", (void*)android_os_Process_setCanSelfBackground},
+        // @CriticalNative
+        {"getCanSelfBackground", "()Z", (void*)android_os_Process_getCanSelfBackground},
         {"getThreadScheduler", "(I)I", (void*)android_os_Process_getThreadScheduler},
         {"setThreadGroup", "(II)V", (void*)android_os_Process_setThreadGroup},
         {"setThreadGroupAndCpuset", "(II)V", (void*)android_os_Process_setThreadGroupAndCpuset},
