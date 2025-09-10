@@ -329,6 +329,57 @@ class WallpaperFocalAreaInteractorTest : SysuiTestCase() {
         }
 
     @Test
+    @DisableSceneContainer
+    fun shouldCollectFocalArea_whenTransitioningToLockscreen_sceneContainerDisabled() =
+        testScope.runTest {
+            val shouldCollectFocalArea by collectLastValue(underTest.shouldCollectFocalArea)
+            // Initially true due to onStart
+            assertThat(shouldCollectFocalArea).isTrue()
+
+            // Transition away from lockscreen, should stop collecting
+            kosmos.fakeKeyguardTransitionRepository.sendTransitionSteps(
+                listOf(
+                    TransitionStep(
+                        from = LOCKSCREEN,
+                        to = GONE,
+                        transitionState = TransitionState.STARTED
+                    )
+                ),
+                testScope,
+            )
+            runCurrent()
+            assertThat(shouldCollectFocalArea).isFalse()
+
+            // Transition back to lockscreen starts, should start collecting
+            kosmos.fakeKeyguardTransitionRepository.sendTransitionSteps(
+                listOf(
+                    TransitionStep(
+                        from = GONE,
+                        to = LOCKSCREEN,
+                        transitionState = TransitionState.STARTED
+                    )
+                ),
+                testScope,
+            )
+            runCurrent()
+            assertThat(shouldCollectFocalArea).isTrue()
+
+            // Transition to lockscreen finishes, should continue collecting (tests the merge)
+            kosmos.fakeKeyguardTransitionRepository.sendTransitionSteps(
+                listOf(
+                    TransitionStep(
+                        from = GONE,
+                        to = LOCKSCREEN,
+                        transitionState = TransitionState.FINISHED
+                    )
+                ),
+                testScope,
+            )
+            runCurrent()
+            assertThat(shouldCollectFocalArea).isTrue()
+        }
+
+    @Test
     @EnableSceneContainer
     fun shouldNotCollectFocalArea_isIdleInLockscreenWithDualShadeOverlays() =
         testScope.runTest {
