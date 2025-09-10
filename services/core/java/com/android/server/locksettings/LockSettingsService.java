@@ -2496,7 +2496,7 @@ public class LockSettingsService extends ILockSettings.Stub {
                         .build();
             }
             sendCredentialsOnUnlockIfRequired(credential, userId);
-        } else if (response.hasTimeout() && response.getTimeout() > 0) {
+        } else if (response.hasTimeout() && response.getTimeoutAsDuration().isPositive()) {
             requireStrongAuth(STRONG_AUTH_REQUIRED_AFTER_LOCKOUT, userId);
         }
         notifyLockSettingsStateListeners(response.isMatched(), userId);

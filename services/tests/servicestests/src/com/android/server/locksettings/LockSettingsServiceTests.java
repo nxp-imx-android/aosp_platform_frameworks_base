@@ -675,7 +675,7 @@ public class LockSettingsServiceTests extends BaseLockSettingsServiceTests {
             assertFalse(response.isMatched());
             assertTrue(response.isCredCertainlyIncorrect());
             assertEquals(i != 0, response.isCredAlreadyTried());
-            assertEquals(0, response.getTimeout());
+            assertTrue(response.getTimeoutAsDuration().isZero());
         }
         // The software and hardware counters should now be 1, for 1 unique guess.
         assertEquals(1, mSpManager.readFailureCounter(lskfId));
