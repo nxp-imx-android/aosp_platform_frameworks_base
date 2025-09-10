@@ -31,13 +31,11 @@ import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.util.fastMap
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.android.compose.animation.scene.ContentScope
-import com.android.systemui.common.ui.icons.Reset
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.grid.ui.compose.VerticalSpannedGrid
 import com.android.systemui.haptics.msdl.qs.TileHapticsViewModelFactoryProvider
 import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.qs.flags.QSMaterialExpressiveTiles
-import com.android.systemui.qs.flags.QsEditModeTabs
 import com.android.systemui.qs.panels.shared.model.SizedTileImpl
 import com.android.systemui.qs.panels.ui.compose.ButtonGroupGrid
 import com.android.systemui.qs.panels.ui.compose.EditTileListState
@@ -47,7 +45,6 @@ import com.android.systemui.qs.panels.ui.compose.bounceableInfo
 import com.android.systemui.qs.panels.ui.viewmodel.BounceableTileViewModel
 import com.android.systemui.qs.panels.ui.viewmodel.DetailsViewModel
 import com.android.systemui.qs.panels.ui.viewmodel.EditTileViewModel
-import com.android.systemui.qs.panels.ui.viewmodel.EditTopBarActionViewModel
 import com.android.systemui.qs.panels.ui.viewmodel.IconTilesViewModel
 import com.android.systemui.qs.panels.ui.viewmodel.InfiniteGridViewModel
 import com.android.systemui.qs.panels.ui.viewmodel.TextFeedbackContentViewModel
@@ -205,18 +202,6 @@ constructor(
             }
         val actions =
             remember(topBarActionsViewModel) { topBarActionsViewModel.actions.toMutableStateList() }
-        if (QsEditModeTabs.isEnabled) {
-            val resetClick by rememberUpdatedState(dialogDelegate::showDialog)
-            val resetAction = remember {
-                EditTopBarActionViewModel(
-                    Reset,
-                    com.android.internal.R.string.reset,
-                    { resetClick() },
-                )
-            }
-
-            LaunchedEffect(actions) { actions.add(resetAction) }
-        }
         val columns = columnsViewModel.columns
         val largeTilesSpan = columnsViewModel.largeSpan
         val largeTiles by viewModel.iconTilesViewModel.largeTilesState
