@@ -69,16 +69,6 @@ flag {
 }
 
 flag {
-    name: "update_window_magnifier_bottom_boundary_with_mouse"
-    namespace: "accessibility"
-    description:  "Update the window magnification behavior with bottom gesture insets with mouse."
-    bug: "419389153"
-    metadata {
-      purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "window_magnification_move_with_mouse_on_edge"
     namespace: "accessibility"
     description: "Allows window magnification to be moved by mouse further on the edge of the screen."
