@@ -42,6 +42,7 @@ import com.android.systemui.statusbar.featurepods.av.ui.compose.AvControlsChipPo
 import com.android.systemui.statusbar.featurepods.media.ui.compose.MediaControlPopup
 import com.android.systemui.statusbar.featurepods.popups.ui.model.PopupChipId
 import com.android.systemui.statusbar.featurepods.popups.ui.model.PopupChipModel
+import com.android.systemui.statusbar.featurepods.sharescreen.ui.compose.ShareScreenPrivacyIndicatorPopup
 
 /**
  * Displays a popup in the status bar area. The offset is calculated to draw the popup below the
@@ -92,6 +93,9 @@ fun StatusBarPopup(
 
                 is PopupChipId.AvControlsIndicator -> {
                     AvControlsChipPopup()
+                }
+                is PopupChipId.ShareScreenPrivacyIndicator -> {
+                    ShareScreenPrivacyIndicatorPopup()
                 }
             }
             // Future popup types will be handled here.

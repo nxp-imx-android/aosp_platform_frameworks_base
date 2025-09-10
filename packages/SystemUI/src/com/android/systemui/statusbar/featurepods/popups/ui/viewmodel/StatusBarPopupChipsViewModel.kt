@@ -26,6 +26,7 @@ import com.android.systemui.statusbar.featurepods.media.ui.viewmodel.MediaContro
 import com.android.systemui.statusbar.featurepods.popups.StatusBarPopupChips
 import com.android.systemui.statusbar.featurepods.popups.ui.model.PopupChipId
 import com.android.systemui.statusbar.featurepods.popups.ui.model.PopupChipModel
+import com.android.systemui.statusbar.featurepods.sharescreen.ui.viewmodel.ShareScreenPrivacyIndicatorViewModel
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.awaitCancellation
@@ -41,23 +42,29 @@ class StatusBarPopupChipsViewModel
 constructor(
     mediaControlChipFactory: MediaControlChipViewModel.Factory,
     avControlsChipFactory: AvControlsChipViewModel.Factory,
+    shareScreenPrivacyIndicatorFactory: ShareScreenPrivacyIndicatorViewModel.Factory,
 ) : ExclusiveActivatable() {
 
     private val mediaControlChip by lazy { mediaControlChipFactory.create() }
     private val avControlsChip by lazy { avControlsChipFactory.create() }
+    private val shareScreenPrivacyIndicator by lazy { shareScreenPrivacyIndicatorFactory.create() }
 
     /** The ID of the current chip that is showing its popup, or `null` if no chip is shown. */
     private var currentShownPopupChipId by mutableStateOf<PopupChipId?>(null)
 
     private val incomingPopupChipBundle: PopupChipBundle by derivedStateOf {
-        PopupChipBundle(media = mediaControlChip.chip, privacy = avControlsChip.chip)
+        PopupChipBundle(
+            media = mediaControlChip.chip,
+            privacy = avControlsChip.chip,
+            shareScreen = shareScreenPrivacyIndicator.chip,
+        )
     }
 
     val shownPopupChips: List<PopupChipModel.Shown> by derivedStateOf {
         if (StatusBarPopupChips.isEnabled) {
             val bundle = incomingPopupChipBundle
 
-            listOfNotNull(bundle.media, bundle.privacy)
+            listOfNotNull(bundle.media, bundle.privacy, bundle.shareScreen)
                 .filterIsInstance<PopupChipModel.Shown>()
                 .map { chip ->
                     chip.copy(
@@ -75,6 +82,7 @@ constructor(
         coroutineScope {
             launch { avControlsChip.activate() }
             launch { mediaControlChip.activate() }
+            launch { shareScreenPrivacyIndicator.activate() }
         }
         awaitCancellation()
     }
@@ -83,6 +91,8 @@ constructor(
         val media: PopupChipModel = PopupChipModel.Hidden(chipId = PopupChipId.MediaControl),
         val privacy: PopupChipModel =
             PopupChipModel.Hidden(chipId = PopupChipId.AvControlsIndicator),
+        val shareScreen: PopupChipModel =
+            PopupChipModel.Hidden(chipId = PopupChipId.ShareScreenPrivacyIndicator),
     )
 
     @AssistedFactory
