@@ -887,7 +887,6 @@ public final class ViewRootImpl implements ViewParent,
     private int mRelayoutSeq;
     private final Rect mWinFrameInScreen = new Rect();
     private final InsetsState mTempInsets = new InsetsState();
-    private final InsetsSourceControl.Array mTempControls = new InsetsSourceControl.Array();
     private final WindowConfiguration mTempWinConfig = new WindowConfiguration();
     private float mInvCompatScale = 1f;
     final ViewTreeObserver.InternalInsetsInfo mLastGivenInsets
@@ -1192,7 +1191,7 @@ public final class ViewRootImpl implements ViewParent,
      * integer back over relayout.
      */
     private final WindowRelayoutResult mRelayoutResult = new WindowRelayoutResult(
-            mTmpFrames, mPendingMergedConfiguration, mTempInsets, mTempControls);
+            mTmpFrames, mPendingMergedConfiguration, mTempInsets, new InsetsSourceControl.Array());
 
     private static volatile boolean sAnrReported = false;
     static BLASTBufferQueue.TransactionHangCallback sTransactionHangCallback =
@@ -1625,6 +1624,9 @@ public final class ViewRootImpl implements ViewParent,
                     mWindowAttributes.privateFlags |= PRIVATE_FLAG_SYSTEM_APPLICATION_OVERLAY;
                 }
 
+                final WindowRelayoutResult addResult = new WindowRelayoutResult(
+                        new ClientWindowFrames(), new MergedConfiguration(), mTempInsets,
+                        new InsetsSourceControl.Array());
                 try {
                     mOrigWindowType = mWindowAttributes.type;
                     mAttachInfo.mRecomputeGlobalAttributes = true;
@@ -1634,9 +1636,6 @@ public final class ViewRootImpl implements ViewParent,
                             mInsetsController.isBehaviorControlled());
                     controlInsetsForCompatibility(mWindowAttributes);
 
-                    final WindowRelayoutResult addResult = new WindowRelayoutResult(
-                            new ClientWindowFrames(), new MergedConfiguration(), mTempInsets,
-                            mTempControls);
                     res = mWindowSession.addToDisplayAsUser(mWindow, mWindowAttributes,
                             getHostVisibility(), mDisplay.getDisplayId(), userId,
                             mInsetsController.getRequestedVisibleTypes(), inputChannel, addResult);
@@ -1664,7 +1663,7 @@ public final class ViewRootImpl implements ViewParent,
                     }
                 }
 
-                handleInsetsControlChanged(mTempInsets, mTempControls);
+                handleInsetsControlChanged(mTempInsets, addResult.activeControls);
                 final InsetsState state = mInsetsController.getState();
                 final Rect displayCutoutSafe = mTempRect;
                 state.getDisplayCutoutSafe(displayCutoutSafe);
@@ -9735,7 +9734,7 @@ public final class ViewRootImpl implements ViewParent,
             }
             mInvCompatScale = 1f / mTmpFrames.compatScale;
             CompatibilityInfo.applyOverrideIfNeeded(mPendingMergedConfiguration, getDisplayId());
-            handleInsetsControlChanged(mTempInsets, mTempControls);
+            handleInsetsControlChanged(mTempInsets, mRelayoutResult.activeControls);
         }
 
         final int transformHint = SurfaceControl.rotationToBufferTransform(
