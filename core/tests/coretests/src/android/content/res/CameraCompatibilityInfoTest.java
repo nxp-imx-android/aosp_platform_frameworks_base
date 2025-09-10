@@ -48,6 +48,7 @@ public class CameraCompatibilityInfoTest {
         assertFalse(info.shouldOverrideSensorOrientation());
         assertFalse(info.shouldLetterboxForCameraCompat());
         assertEquals(ROTATION_UNDEFINED, info.getDisplayRotationSandbox());
+        assertTrue(info.shouldAllowTransformInverseDisplay());
     }
 
     @Test
@@ -57,12 +58,14 @@ public class CameraCompatibilityInfoTest {
                 .setShouldOverrideSensorOrientation(true)
                 .setShouldLetterboxForCameraCompat(true)
                 .setDisplayRotationSandbox(ROTATION_270)
+                .setShouldAllowTransformInverseDisplay(false)
                 .build();
 
         assertEquals(ROTATION_90, info.getRotateAndCropRotation());
         assertTrue(info.shouldOverrideSensorOrientation());
         assertTrue(info.shouldLetterboxForCameraCompat());
         assertEquals(ROTATION_270, info.getDisplayRotationSandbox());
+        assertFalse(info.shouldAllowTransformInverseDisplay());
     }
 
     @Test
@@ -92,6 +95,7 @@ public class CameraCompatibilityInfoTest {
                 .setShouldOverrideSensorOrientation(true)
                 .setShouldLetterboxForCameraCompat(true)
                 .setDisplayRotationSandbox(ROTATION_90)
+                .setShouldAllowTransformInverseDisplay(false)
                 .build();
 
         final Parcel parcel = Parcel.obtain();

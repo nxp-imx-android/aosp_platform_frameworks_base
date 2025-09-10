@@ -31,6 +31,8 @@ static struct {
     jfieldID mShouldLetterboxForCameraCompat;
     // CameraCompatibilityInfo.mDisplayRotationSandbox
     jfieldID mDisplayRotationSandbox;
+    // CameraCompatibilityInfo.mShouldAllowTransformInverseDisplay
+    jfieldID mShouldAllowTransformInverseDisplay;
 } gCameraCompatibilityInfoClassInfo;
 
 using content::res::CameraCompatibilityInfo;
@@ -50,7 +52,8 @@ jobject android_content_res_CameraCompatibilityInfo_fromNative(JNIEnv *env,
                           tmpIntRotateAndCropRotation,
                           cci.shouldOverrideSensorOrientation(),
                           cci.shouldLetterboxForCameraCompat(),
-                          tmpIntDisplayRotationSandbox);
+                          tmpIntDisplayRotationSandbox,
+                          cci.shouldAllowTransformInverseDisplay());
 }
 
  status_t android_content_res_CameraCompatibilityInfo_toNative(JNIEnv *env,
@@ -83,6 +86,8 @@ jobject android_content_res_CameraCompatibilityInfo_fromNative(JNIEnv *env,
     } else {
         compatInfo->setDisplayRotationSandbox(ui::toRotation(tmpIntRotation));
     }
+    compatInfo->setShouldAllowTransformInverseDisplay(env->GetBooleanField(cciObject,
+                gCameraCompatibilityInfoClassInfo.mShouldAllowTransformInverseDisplay));
     return OK;
 }
 
@@ -97,6 +102,8 @@ int register_android_content_res_CameraCompatibilityInfo(JNIEnv* env) {
             "mShouldLetterboxForCameraCompat", "Z");
     gCameraCompatibilityInfoClassInfo.mDisplayRotationSandbox = GetFieldIDOrDie(env, clazz,
             "mDisplayRotationSandbox", "I");
+    gCameraCompatibilityInfoClassInfo.mShouldAllowTransformInverseDisplay = GetFieldIDOrDie(env,
+            clazz, "mShouldAllowTransformInverseDisplay", "Z");
     gCameraCompatibilityInfoClassInfo.clazz = MakeGlobalRefOrDie(env, clazz);
     gCameraCompatibilityInfoClassInfo.ctor = env->GetMethodID(
             gCameraCompatibilityInfoClassInfo.clazz, "<init>", "()V");
