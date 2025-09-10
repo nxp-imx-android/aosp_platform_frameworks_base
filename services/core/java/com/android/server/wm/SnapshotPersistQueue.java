@@ -481,7 +481,8 @@ class SnapshotPersistQueue {
             }
             final File file = mPersistInfoProvider.getHighResolutionBitmapFile(mId, mUserId);
             try (FileOutputStream fos = new FileOutputStream(file)) {
-                swBitmap.compress(JPEG, COMPRESS_QUALITY, fos);
+                swBitmap.compress(Flags.respectRequestedTaskSnapshotResolution() ? PNG : JPEG,
+                        COMPRESS_QUALITY, fos);
             } catch (IOException e) {
                 Slog.e(TAG, "Unable to open " + file + " for persisting.", e);
                 return false;
@@ -510,8 +511,7 @@ class SnapshotPersistQueue {
 
             final File lowResFile = mPersistInfoProvider.getLowResolutionBitmapFile(mId, mUserId);
             try (FileOutputStream lowResFos = new FileOutputStream(lowResFile)) {
-                lowResBitmap.compress(Flags.respectRequestedTaskSnapshotResolution() ? PNG : JPEG,
-                        COMPRESS_QUALITY, lowResFos);
+                lowResBitmap.compress(JPEG, COMPRESS_QUALITY, lowResFos);
             } catch (IOException e) {
                 Slog.e(TAG, "Unable to open " + lowResFile + " for persisting.", e);
                 return false;
