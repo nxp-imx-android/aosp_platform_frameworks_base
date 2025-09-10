@@ -25,6 +25,7 @@ import android.view.WindowMetrics
 import android.view.windowManager
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
+import com.android.internal.logging.uiEventLoggerFake
 import com.android.internal.util.ScreenshotRequest
 import com.android.internal.util.mockScreenshotHelper
 import com.android.systemui.Flags
@@ -36,6 +37,7 @@ import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.lifecycle.activateIn
 import com.android.systemui.res.R
+import com.android.systemui.screencapture.ScreenCaptureEvent
 import com.android.systemui.screencapture.common.shared.model.LargeScreenCaptureUiParameters
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureUiState
 import com.android.systemui.screencapture.common.shared.model.largeScreenCaptureUiParameters
@@ -402,7 +404,7 @@ class PreCaptureViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    fun closeUi_dismissesWindow() =
+    fun closeFromToolbar_dismissesWindow() =
         kosmos.runTest {
             setupViewModel()
 
@@ -414,9 +416,23 @@ class PreCaptureViewModelTest : SysuiTestCase() {
                     )
                 )
 
-            viewModel.closeUi()
+            viewModel.closeFromToolbar()
 
             assertThat(uiState).isEqualTo(ScreenCaptureUiState.Invisible)
+        }
+
+    @Test
+    fun closeFromToolbar_logsEvent() =
+        kosmos.runTest {
+            setupViewModel()
+
+            viewModel.closeFromToolbar()
+
+            assertThat(uiEventLoggerFake.numLogs()).isEqualTo(1)
+            assertThat(uiEventLoggerFake.eventId(0))
+                .isEqualTo(
+                    ScreenCaptureEvent.SCREEN_CAPTURE_LARGE_SCREEN_CLOSE_UI_WITHOUT_CAPTURE.id
+                )
         }
 
     @Test
