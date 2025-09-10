@@ -103,6 +103,19 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
     @VisibleForTesting
     static final long KEY_EVENT_DELAY_MS = 10L;
 
+    // Vendor and Product IDs for Computer Control virtual input devices.
+    // These values are likely unique within the VIRTUAL bus type, but they are not
+    // guaranteed to be globally unique forever.
+    // TODO: b/443001754 - Remove setVendorId and setProductId in all input devices below,
+    //   in favor of reporting dedicated Computer Control metrics.
+    private static final int VENDOR_ID = 0x0000;
+    @VisibleForTesting
+    static final int PRODUCT_ID_DPAD = 0xCC01;
+    @VisibleForTesting
+    static final int PRODUCT_ID_KEYBOARD = 0xCC02;
+    @VisibleForTesting
+    static final int PRODUCT_ID_TOUCHSCREEN = 0xCC03;
+
     private final IBinder mAppToken;
     private final ComputerControlSessionParams mParams;
     private final String mOwnerPackageName;
@@ -203,6 +216,8 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
                     new VirtualDpadConfig.Builder()
                             .setAssociatedDisplayId(mVirtualDisplayId)
                             .setInputDeviceName(dpadName)
+                            .setVendorId(VENDOR_ID)
+                            .setProductId(PRODUCT_ID_DPAD)
                             .build();
             mVirtualDpad = mVirtualDevice.createVirtualDpad(
                     virtualDpadConfig, new Binder(dpadName));
@@ -212,6 +227,8 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
                     new VirtualKeyboardConfig.Builder()
                             .setAssociatedDisplayId(mVirtualDisplayId)
                             .setInputDeviceName(keyboardName)
+                            .setVendorId(VENDOR_ID)
+                            .setProductId(PRODUCT_ID_KEYBOARD)
                             .build();
             mVirtualKeyboard = mVirtualDevice.createVirtualKeyboard(
                     virtualKeyboardConfig, new Binder(keyboardName));
@@ -221,6 +238,8 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
                     new VirtualTouchscreenConfig.Builder(mDisplayWidth, mDisplayHeight)
                             .setAssociatedDisplayId(mVirtualDisplayId)
                             .setInputDeviceName(touchscreenName)
+                            .setVendorId(VENDOR_ID)
+                            .setProductId(PRODUCT_ID_TOUCHSCREEN)
                             .build();
             mVirtualTouchscreen = mVirtualDevice.createVirtualTouchscreen(
                     virtualTouchscreenConfig, new Binder(touchscreenName));
