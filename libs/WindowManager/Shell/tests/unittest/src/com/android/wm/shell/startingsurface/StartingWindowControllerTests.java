@@ -19,12 +19,16 @@ package com.android.wm.shell.startingsurface;
 import static android.view.WindowManager.TRANSIT_OPEN;
 import static android.window.TransitionInfo.FLAG_IS_BEHIND_STARTING_WINDOW;
 
+import static com.android.wm.shell.startingsurface.StartingWindowController.RemoveStartingObserver.UncertainTracker;
+import static com.android.wm.shell.startingsurface.StartingWindowController.UNCERTAIN_TRANSITION_TIMEOUT_MS;
+
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isA;
+import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
@@ -62,6 +66,7 @@ import com.android.wm.shell.transition.Transitions;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
@@ -100,7 +105,7 @@ public class StartingWindowControllerTests extends ShellTestCase {
         mShellInit = spy(new ShellInit(mSplashScreenExecutor));
         mShellController = spy(new ShellController(mContext, mShellInit, mShellCommandHandler,
                 mDisplayInsetsController, mUserManager, mSplashScreenExecutor));
-        mMainExecutor = new TestShellExecutor();
+        mMainExecutor = spy(new TestShellExecutor());
         mController = new StartingWindowController(mContext, mShellInit, mShellController,
                 mTaskOrganizer, mSplashScreenExecutor, mTypeAlgorithm, mIconProvider,
                 mTransactionPool, mMainExecutor, mTransitions);
@@ -170,19 +175,32 @@ public class StartingWindowControllerTests extends ShellTestCase {
         observer.onTransitionReady(token, info, st, st);
         notifyTransactionCommitted(st);
         observer.onTransitionReady(secondToken, secondInfo, st, st);
+        final ArgumentCaptor<UncertainTracker> trackerCaptor =
+                ArgumentCaptor.forClass(UncertainTracker.class);
+        verify(mMainExecutor).executeDelayed(trackerCaptor.capture(),
+                eq(UNCERTAIN_TRANSITION_TIMEOUT_MS));
+        UncertainTracker tracker = trackerCaptor.getValue();
+        mMainExecutor.removeCallbacks(tracker);
         notifyTransactionCommitted(st);
+        verify(mMainExecutor, times(2)).removeCallbacks(eq(tracker));
         assertTrue(observer.hasPendingRemoval());
         observer.requestRemoval(taskId, removalInfo);
         assertFalse(observer.hasPendingRemoval());
 
         st.clear();
+        clearInvocations(mMainExecutor);
         observer.onAddingWindow(taskId, token, appToken);
         observer.onTransitionReady(token, info, st, st);
         notifyTransactionCommitted(st);
         observer.onTransitionReady(secondToken, secondInfo, st, st);
+        verify(mMainExecutor).executeDelayed(trackerCaptor.capture(),
+                eq(UNCERTAIN_TRANSITION_TIMEOUT_MS));
         observer.requestRemoval(taskId, removalInfo);
         assertTrue(observer.hasPendingRemoval());
+        tracker = trackerCaptor.getValue();
+        mMainExecutor.removeCallbacks(tracker);
         notifyTransactionCommitted(st);
+        verify(mMainExecutor, times(2)).removeCallbacks(eq(tracker));
         assertFalse(observer.hasPendingRemoval());
     }
 
