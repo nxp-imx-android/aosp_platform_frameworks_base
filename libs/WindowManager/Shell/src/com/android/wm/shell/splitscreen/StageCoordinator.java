@@ -2376,18 +2376,21 @@ public class StageCoordinator extends StageCoordinatorAbstract {
             return;
         }
         int stageToTop = STAGE_TYPE_UNDEFINED;
-        if (enableFlexibleSplit()) {
-            for (StageTaskListener activeStage : mStageOrderOperator.getActiveStages()) {
-                // See if any other stage still has children
-                if (activeStage.getChildCount() > 0) {
-                    stageToTop = activeStage.getId();
-                    break;
+        if (isSplitScreenVisible()) {
+            if (enableFlexibleSplit()) {
+                for (StageTaskListener activeStage : mStageOrderOperator.getActiveStages()) {
+                    // See if any other stage still has children
+                    if (activeStage.getChildCount() > 0) {
+                        stageToTop = activeStage.getId();
+                        break;
+                    }
                 }
-            }
-        } else {
-            final StageTaskListener remainingStage = stage == mMainStage ? mSideStage : mMainStage;
-            if (remainingStage.getChildCount() > 0) {
-                stageToTop = remainingStage.getId();
+            } else {
+                final StageTaskListener remainingStage =
+                        stage == mMainStage ? mSideStage : mMainStage;
+                if (remainingStage.getChildCount() > 0) {
+                    stageToTop = remainingStage.getId();
+                }
             }
         }
         ProtoLog.d(WM_SHELL_SPLIT_SCREEN,
@@ -3572,10 +3575,13 @@ public class StageCoordinator extends StageCoordinatorAbstract {
                 recentTasks -> recentTasks.removeSplitPair(triggerTask.taskId));
         logExit(EXIT_REASON_CHILD_TASK_ENTER_BUBBLE);
 
-        int stage = getStageOfTask(triggerTask.taskId);
-        int topStage = (stage == STAGE_TYPE_MAIN)
-                ? STAGE_TYPE_SIDE
-                : STAGE_TYPE_MAIN;
+        int topStage = STAGE_TYPE_UNDEFINED;
+        if (isSplitScreenVisible()) {
+            int stage = getStageOfTask(triggerTask.taskId);
+            topStage = (stage == STAGE_TYPE_MAIN)
+                    ? STAGE_TYPE_SIDE
+                    : STAGE_TYPE_MAIN;
+        }
         prepareExitSplitScreen(topStage, outWCT, EXIT_REASON_UNKNOWN);
     }
 
