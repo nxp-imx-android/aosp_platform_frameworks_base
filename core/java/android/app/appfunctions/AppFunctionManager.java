@@ -107,7 +107,6 @@ import java.util.concurrent.Executor;
 @SystemService(Context.APP_FUNCTION_SERVICE)
 public final class AppFunctionManager {
 
-    // TODO(b/427993624): Expose Uri once ContentProvider is added
     /**
      * The contract between the AppFunction access history provider and applications with read
      * permission. Contains definitions for the supported URIs and columns.
@@ -843,10 +842,11 @@ public final class AppFunctionManager {
      */
     @FlaggedApi(FLAG_APP_FUNCTION_ACCESS_UI_ENABLED)
     public @NonNull Intent createRequestAccessIntent(@NonNull String targetPackageName) {
-        Intent intent = new Intent(ACTION_REQUEST_APP_FUNCTION_ACCESS);
-        intent.putExtra(Intent.EXTRA_PACKAGE_NAME, targetPackageName);
-        intent.setPackage(mContext.getPackageManager().getPermissionControllerPackageName());
-        return intent;
+        try {
+            return mService.createRequestAccessIntent(targetPackageName);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
     }
 
     /**
@@ -884,40 +884,6 @@ public final class AppFunctionManager {
                 packages.add(new SignedPackage(packageParcels.get(i)));
             }
             return packages;
-        } catch (RemoteException e) {
-            throw e.rethrowFromSystemServer();
-        }
-    }
-
-    // TODO(b/413093397): Remove once list is ready for permanent enable.
-    /**
-     * Gets whether or not the agent allowlist is enabled.
-     *
-     * @hide
-     */
-    @TestApi
-    @RequiresPermission(MANAGE_APP_FUNCTION_ACCESS)
-    @FlaggedApi(Flags.FLAG_APP_FUNCTION_ACCESS_API_ENABLED)
-    public boolean isAgentAllowlistEnabled() {
-        try {
-            return mService.isAgentAllowlistEnabled();
-        } catch (RemoteException e) {
-            throw e.rethrowFromSystemServer();
-        }
-    }
-
-    /**
-     * Gets whether or not the agent allowlist is enabled TODO b/413093397: Remove once list is
-     * ready for permanent enable
-     *
-     * @hide
-     */
-    @TestApi
-    @RequiresPermission(MANAGE_APP_FUNCTION_ACCESS)
-    @FlaggedApi(Flags.FLAG_APP_FUNCTION_ACCESS_API_ENABLED)
-    public void setAgentAllowlistEnabled(boolean enabled) {
-        try {
-            mService.setAgentAllowlistEnabled(enabled);
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }
