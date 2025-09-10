@@ -220,6 +220,44 @@ class AccessibilityShortcutsRepositoryImplTest : SysuiTestCase() {
     }
 
     @Test
+    fun getTitleToContentForKeyGestureDialog_onScreenReaderTypeReceived_getExpectedInfo() {
+        testScope.runTest {
+            val metaState = KeyEvent.META_META_ON or KeyEvent.META_ALT_ON
+            val type = KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_SCREEN_READER
+
+            val a11yServiceInfo = spy(getMockAccessibilityServiceInfo("TalkBack"))
+            whenever(
+                    accessibilityManager.getInstalledServiceInfoWithComponentName(
+                        ComponentName.unflattenFromString(getTargetNameByType(type))
+                    )
+                )
+                .thenReturn(a11yServiceInfo)
+
+            val titleToContent =
+                underTest.getTitleToContentForKeyGestureDialog(
+                    type,
+                    metaState,
+                    KeyEvent.KEYCODE_T,
+                    getTargetNameByType(type),
+                )
+
+            assertThat(titleToContent).isNotNull()
+            assertThat(titleToContent?.first).isEqualTo("Turn on TalkBack keyboard shortcut?")
+            val contentText = titleToContent?.second
+            assertThat(hasExpectedAnnotation(contentText)).isTrue()
+            // The intro should be the string below instead of the intro from
+            // AccessibilityServiceInfo.
+            assertThat(contentText?.toString())
+                .isEqualTo(
+                    "Action icon + Alt + T is the keyboard shortcut to use TalkBack. TalkBack is a" +
+                        " screen reader that allows you to hear items spoken aloud. It can be" +
+                        " helpful for people who have difficulty seeing the screen. This may" +
+                        " change how your device works."
+                )
+        }
+    }
+
+    @Test
     fun enableShortcutsForTargets_targetNameForMagnification_enabled() {
         val targetName = getTargetNameByType(KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_MAGNIFICATION)
 

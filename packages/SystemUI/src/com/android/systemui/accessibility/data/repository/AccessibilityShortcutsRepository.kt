@@ -96,6 +96,7 @@ constructor(
 
         when (keyGestureType) {
             KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_MAGNIFICATION,
+            KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_SCREEN_READER,
             KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_VOICE_ACCESS -> {
                 val featureName = getFeatureName(keyGestureType, targetName) ?: return null
                 val title = getDialogTitle(keyGestureType, featureName) ?: return null
@@ -114,7 +115,7 @@ constructor(
                     getFeatureNameToIntro(keyGestureType, targetName) ?: return null
                 val title =
                     resources.getString(
-                        R.string.accessibility_key_gesture_dialog_title,
+                        R.string.accessibility_key_gesture_shortcut_not_yet_enabled_dialog_title,
                         featureNameToIntro.first,
                     )
                 val content =
@@ -161,6 +162,7 @@ constructor(
                 resources.getString(
                     com.android.settingslib.R.string.accessibility_screen_magnification_title
                 )
+            KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_SCREEN_READER,
             KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_VOICE_ACCESS -> {
                 val componentName = ComponentName.unflattenFromString(targetName)
                 withContext(backgroundDispatcher) {
@@ -190,6 +192,7 @@ constructor(
                     )
                 }
             }
+            KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_SCREEN_READER,
             KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_VOICE_ACCESS -> {
                 resources.getString(
                     R.string.accessibility_key_gesture_shortcut_not_yet_enabled_dialog_title,
@@ -210,6 +213,8 @@ constructor(
             when (keyGestureType) {
                 KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_MAGNIFICATION ->
                     R.string.accessibility_key_gesture_magnification_dialog_content
+                KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_SCREEN_READER ->
+                    R.string.accessibility_key_gesture_screen_reader_dialog_content
                 KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_VOICE_ACCESS ->
                     R.string.accessibility_key_gesture_voice_access_dialog_content
                 else -> null
@@ -231,8 +236,7 @@ constructor(
         targetName: String,
     ): Pair<CharSequence, CharSequence>? {
         return when (keyGestureType) {
-            KeyGestureEvent.KEY_GESTURE_TYPE_ACTIVATE_SELECT_TO_SPEAK,
-            KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_SCREEN_READER -> {
+            KeyGestureEvent.KEY_GESTURE_TYPE_ACTIVATE_SELECT_TO_SPEAK -> {
                 val accessibilityServiceInfo =
                     withContext(backgroundDispatcher) {
                         accessibilityManager.getInstalledServiceInfoWithComponentName(
@@ -245,12 +249,7 @@ constructor(
                         accessibilityServiceInfo.resolveInfo.loadLabel(packageManager)
                     )
 
-                val intro =
-                    getFeatureIntro(
-                        keyGestureType,
-                        featureName,
-                        accessibilityServiceInfo.loadIntro(packageManager),
-                    )
+                val intro = accessibilityServiceInfo.loadIntro(packageManager) ?: ""
 
                 Pair(featureName, intro)
             }
@@ -262,25 +261,5 @@ constructor(
     private fun formatFeatureName(label: CharSequence): CharSequence {
         val locale = context.resources.configuration.getLocales().get(0)
         return BidiFormatter.getInstance(locale).unicodeWrap(label)
-    }
-
-    /**
-     * @param defaultIntro The intro we get from AccessibilityServiceInfo
-     * @return A customize introduction
-     */
-    private fun getFeatureIntro(
-        keyGestureType: Int,
-        featureName: CharSequence,
-        defaultIntro: CharSequence?,
-    ): CharSequence {
-        return when (keyGestureType) {
-            KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_SCREEN_READER ->
-                resources.getString(
-                    R.string.accessibility_key_gesture_dialog_talkback_intro,
-                    featureName,
-                )
-
-            else -> defaultIntro ?: ""
-        }
     }
 }

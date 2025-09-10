@@ -796,6 +796,12 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
                     return;
                 }
 
+                // Skip warning check if target is preinstalled screen reader.
+                if (gestureType == KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_SCREEN_READER
+                        && isAccessibilityServicePreinstalled(accessibilityServiceInfo)) {
+                    break;
+                }
+
                 // Skip enabling if a warning dialog is required for the feature.
                 // TODO(b/377752960): Explore better options to instead show the warning dialog
                 //  in this scenario.
@@ -5392,22 +5398,23 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
         return true;
     }
 
+    private boolean isAccessibilityServicePreinstalled(AccessibilityServiceInfo info) {
+        return info.getResolveInfo().serviceInfo.applicationInfo.isSystemApp();
+    }
+
     private boolean isAccessibilityServicePreinstalledAndTrusted(AccessibilityServiceInfo info) {
         final ComponentName componentName = info.getComponentName();
         if (componentName.equals(mTrustedAccessibilityServiceForTesting)) {
             return true;
         }
-        final boolean isPreinstalled =
-                info.getResolveInfo().serviceInfo.applicationInfo.isSystemApp();
+        final boolean isPreinstalled = isAccessibilityServicePreinstalled(info);
         if (isPreinstalled) {
             final String[] trustedAccessibilityServices =
                     mContext.getResources().getStringArray(
                             R.array.config_trustedAccessibilityServices);
-            if (Arrays.stream(trustedAccessibilityServices)
+            return Arrays.stream(trustedAccessibilityServices)
                     .map(ComponentName::unflattenFromString)
-                    .anyMatch(componentName::equals)) {
-                return true;
-            }
+                    .anyMatch(componentName::equals);
         }
         return false;
     }
