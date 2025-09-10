@@ -143,6 +143,7 @@ class PluginInstanceTest : SysuiTestCase() {
                 mPluginListener,
             )
             ?.let { errorInstance ->
+                mPluginInstance = errorInstance
                 assertRunnableLogsWtf { errorInstance.onCreate() }
                 assertTrue(errorInstance.hasError)
                 assertNull(errorInstance.plugin)
