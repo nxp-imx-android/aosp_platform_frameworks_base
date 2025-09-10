@@ -2087,12 +2087,15 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
         repo.addRightTiledTaskToDesk(SECOND_DISPLAY, 12, 7)
         repo.addLeftTiledTaskToDesk(SECOND_DISPLAY, 13, 7)
         repo.preserveDisplay(SECOND_DISPLAY, UNIQUE_DISPLAY_ID)
+        val preservedDisplay = repo.removePreservedDisplay(UNIQUE_DISPLAY_ID)
 
-        assertThat(repo.getPreservedTaskBounds(UNIQUE_DISPLAY_ID))
-            .isEqualTo(mapOf(12 to TEST_TASK_BOUNDS, 13 to secondTaskBounds))
-        assertThat(repo.getPreservedDeskIds(UNIQUE_DISPLAY_ID)).containsExactly(7)
-        assertThat(repo.getPreservedTilingData(UNIQUE_DISPLAY_ID, 7))
-            .isEqualTo(DesktopRepository.PreservedTiledAppData(13, 12))
+        if (preservedDisplay != null) {
+            assertThat(repo.getPreservedTaskBounds(preservedDisplay))
+                .isEqualTo(mapOf(12 to TEST_TASK_BOUNDS, 13 to secondTaskBounds))
+            assertThat(repo.getPreservedDeskIds(preservedDisplay)).containsExactly(7)
+            assertThat(repo.getPreservedTilingData(preservedDisplay, 7))
+                .isEqualTo(DesktopRepository.PreservedTiledAppData(13, 12))
+        } else fail("Expected to find preserved display.")
     }
 
     @Test
@@ -2118,9 +2121,9 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
         repo.addDesk(SECOND_DISPLAY, deskId = SECOND_DISPLAY)
 
         repo.preserveDisplay(SECOND_DISPLAY, UNIQUE_DISPLAY_ID)
+        val preservedDisplay = repo.removePreservedDisplay(UNIQUE_DISPLAY_ID)
 
-        assertThat(repo.getPreservedTaskBounds(UNIQUE_DISPLAY_ID)).isEmpty()
-        assertThat(repo.getPreservedDeskIds(UNIQUE_DISPLAY_ID)).isEmpty()
+        assertThat(preservedDisplay).isNull()
     }
 
     @Test

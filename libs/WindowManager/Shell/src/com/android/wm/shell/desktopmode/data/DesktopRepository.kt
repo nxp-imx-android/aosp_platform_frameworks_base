@@ -162,20 +162,13 @@ class DesktopRepository(
     }
 
     /** Removes the specified preserved display. */
-    fun removePreservedDisplay(uniqueDisplayId: String) {
+    fun removePreservedDisplay(uniqueDisplayId: String) =
         preservedDisplaysByUniqueId.remove(uniqueDisplayId)
-    }
-
-    /** Whether or not the given uniqueDisplayId matches a display that is being preserved. */
-    fun hasPreservedDisplayForUniqueDisplayId(uniqueDisplayId: String): Boolean =
-        preservedDisplaysByUniqueId.containsKey(uniqueDisplayId)
 
     /** Returns all active tasks on the preserved display separated by desk. */
-    fun getPreservedTasksByDeskIdInZOrder(uniqueDisplayId: String): Map<Int, List<Int>> {
-        val preservedDesks =
-            preservedDisplaysByUniqueId[uniqueDisplayId]?.orderedDesks ?: emptySet()
+    fun getPreservedTasksByDeskIdInZOrder(preservedDisplay: DesktopDisplay): Map<Int, List<Int>> {
         val tasksByDeskId = mutableMapOf<Int, List<Int>>()
-        for (desk in preservedDesks) {
+        for (desk in preservedDisplay.orderedDesks) {
             tasksByDeskId[desk.deskId] = desk.freeformTasksInZOrder
         }
         return tasksByDeskId
@@ -184,28 +177,21 @@ class DesktopRepository(
     /**
      * Returns all preserved tasks for the preserved display regardless of what desk they appear in.
      */
-    fun getPreservedTasks(uniqueDisplayId: String): List<Int> {
-        val preservedDesks =
-            preservedDisplaysByUniqueId[uniqueDisplayId]?.orderedDesks ?: emptySet()
+    fun getPreservedTasks(preservedDisplay: DesktopDisplay): List<Int> {
         val preservedTasks = mutableListOf<Int>()
-        for (desk in preservedDesks) {
+        for (desk in preservedDisplay.orderedDesks) {
             desk.freeformTasksInZOrder.forEach { taskId -> preservedTasks.add(taskId) }
         }
         return preservedTasks
     }
 
-    /** Returns the active desk on the preserved display for the specified unique display id. */
-    fun getPreservedActiveDesk(uniqueDisplayId: String): Int? =
-        preservedDisplaysByUniqueId[uniqueDisplayId]?.activeDeskId
-
     /** Returns a preserved desk data post a display reconnect event. */
     fun getPreservedTilingData(
-        uniqueDisplayId: String,
+        preservedDisplay: DesktopDisplay,
         preservedDeskId: Int?,
     ): PreservedTiledAppData? =
-        preservedDisplaysByUniqueId[uniqueDisplayId]
-            ?.orderedDesks
-            ?.firstOrNull { desk -> desk.deskId == preservedDeskId }
+        preservedDisplay.orderedDesks
+            .firstOrNull { desk -> desk.deskId == preservedDeskId }
             ?.let { PreservedTiledAppData(it.leftTiledTaskId, it.rightTiledTaskId) }
             ?.takeIf { it.leftTiledTask != null || it.rightTiledTask != null }
 
@@ -219,19 +205,17 @@ class DesktopRepository(
         } ?: false
 
     /** Returns the bounds of all tasks in all desks of the preserved display. */
-    fun getPreservedTaskBounds(uniqueDisplayId: String): Map<Int, Rect> {
+    fun getPreservedTaskBounds(preservedDisplay: DesktopDisplay): Map<Int, Rect> {
         val combinedBoundsMap = mutableMapOf<Int, Rect>()
-        val orderedDesks =
-            preservedDisplaysByUniqueId[uniqueDisplayId]?.orderedDesks ?: return emptyMap()
-        for (desk in orderedDesks) {
+        for (desk in preservedDisplay.orderedDesks) {
             combinedBoundsMap.putAll(desk.boundsByTaskId)
         }
         return combinedBoundsMap
     }
 
     @VisibleForTesting
-    fun getPreservedDeskIds(uniqueDisplayId: String): List<Int> =
-        preservedDisplaysByUniqueId[uniqueDisplayId]?.orderedDesks?.map { it.deskId } ?: emptyList()
+    fun getPreservedDeskIds(preservedDisplay: DesktopDisplay): List<Int> =
+        preservedDisplay.orderedDesks.map { it.deskId }
 
     /** Returns a list of all [Desk]s in the repository. */
     private fun desksSequence(): Sequence<Desk> = desktopData.desksSequence()
