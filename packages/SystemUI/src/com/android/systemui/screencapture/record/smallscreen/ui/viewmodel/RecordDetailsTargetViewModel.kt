@@ -29,6 +29,8 @@ import com.android.systemui.screencapture.common.domain.interactor.ScreenCapture
 import com.android.systemui.screencapture.common.domain.interactor.ScreenCaptureRecentTaskInteractor
 import com.android.systemui.screencapture.common.domain.model.ScreenCaptureRecentTask
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureTarget
+import com.android.systemui.screenrecord.domain.interactor.ScreenRecordingServiceInteractor
+import com.android.systemui.screenrecord.domain.interactor.Status
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.coroutineScope
@@ -74,6 +76,7 @@ class RecordDetailsTargetViewModel
 @AssistedInject
 constructor(
     @ScreenCaptureUi private val display: Display,
+    private val screenRecordingServiceInteractor: ScreenRecordingServiceInteractor,
     private val screenCaptureRecentTaskInteractor: ScreenCaptureRecentTaskInteractor,
     private val labelInteractor: ScreenCaptureLabelInteractor,
 ) : HydratedActivatable() {
@@ -83,6 +86,13 @@ constructor(
         MutableStateFlow(null)
     private val _currentTarget = MutableStateFlow<RecordDetailsTargetItemViewModel?>(null)
 
+    val canChangeTarget: Boolean by
+        screenRecordingServiceInteractor.status
+            .map { it.canChangeTarget() }
+            .hydratedStateOf(
+                traceName = "RecordDetailsTargetViewModel#canChangeTarget",
+                initialValue = screenRecordingServiceInteractor.status.value.canChangeTarget(),
+            )
     val currentTarget: RecordDetailsTargetItemViewModel? by
         _currentTarget.hydratedStateOf(traceName = "RecordDetailsTargetViewModel#currentTarget")
     val items: List<RecordDetailsTargetItemViewModel>? by
@@ -158,3 +168,5 @@ constructor(
         fun create(): RecordDetailsTargetViewModel
     }
 }
+
+private fun Status.canChangeTarget(): Boolean = this is Status.Stopped || this is Status.Initial
