@@ -113,7 +113,7 @@ public class TaskFragmentOrganizerController extends ITaskFragmentOrganizerContr
      * A class to manage {@link ITaskFragmentOrganizer} and its organized
      * {@link TaskFragment TaskFragments}.
      */
-    private class TaskFragmentOrganizerState implements IBinder.DeathRecipient {
+    private class TaskFragmentOrganizerState {
         @NonNull
         private final ArrayList<TaskFragment> mOrganizedTaskFragments = new ArrayList<>();
         private final int mOrganizerUid;
@@ -200,13 +200,6 @@ public class TaskFragmentOrganizerController extends ITaskFragmentOrganizerContr
             registerProcessDiedHandler(pid);
         }
 
-        @Override
-        public void binderDied() {
-            synchronized (mGlobalLock) {
-                handleAppDied();
-            }
-        }
-
         private void handleAppDied() {
             // TODO(b/419688177): remove the debug log
             ProtoLog.d(WmProtoLogGroups.WM_DEBUG_WINDOW_TRANSITIONS_MIN,
@@ -231,17 +224,9 @@ public class TaskFragmentOrganizerController extends ITaskFragmentOrganizerContr
         }
 
         private void registerProcessDiedHandler(int pid) {
-            if (com.android.window.flags.Flags.disposeTaskFragmentSynchronously()) {
-                final WindowProcessController wpc = mAtmService.mProcessMap.getProcess(pid);
-                if (wpc != null) {
-                    wpc.addListener(mProcessListener);
-                }
-            } else {
-                try {
-                    mOrganizer.asBinder().linkToDeath(this, 0 /*flags*/);
-                } catch (RemoteException e) {
-                    Slog.e(TAG, "TaskFragmentOrganizer failed to register death recipient");
-                }
+            final WindowProcessController wpc = mAtmService.mProcessMap.getProcess(pid);
+            if (wpc != null) {
+                wpc.addListener(mProcessListener);
             }
         }
 
@@ -332,14 +317,10 @@ public class TaskFragmentOrganizerController extends ITaskFragmentOrganizerContr
                 // Cleanup any in-flight transactions to unblock the transition.
                 mInFlightTransactions.valueAt(i).meetAlternate("disposed(" + reason + ")");
             }
-            if (com.android.window.flags.Flags.disposeTaskFragmentSynchronously()) {
-                final WindowProcessController wpc = mAtmService.mProcessMap.getProcess(
-                        mOrganizerPid);
-                if (wpc != null) {
-                    wpc.removeListener(mProcessListener);
-                }
-            } else {
-                mOrganizer.asBinder().unlinkToDeath(this, 0 /* flags */);
+            final WindowProcessController wpc = mAtmService.mProcessMap.getProcess(
+                    mOrganizerPid);
+            if (wpc != null) {
+                wpc.removeListener(mProcessListener);
             }
         }
 
