@@ -60,6 +60,7 @@ import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.util.function.pooled.PooledLambda;
 import com.android.server.LocalServices;
+import com.android.server.accessibility.AccessibilityLogUtil;
 import com.android.server.accessibility.AccessibilityManagerService;
 import com.android.server.accessibility.Flags;
 import com.android.server.wm.WindowManagerInternal;
@@ -95,8 +96,8 @@ public class MagnificationController implements MagnificationConnectionManager.C
         FullScreenMagnificationController.MagnificationInfoChangedCallback,
         WindowManagerInternal.AccessibilityControllerInternal.UiChangesForAccessibilityCallbacks {
 
-    private static final boolean DEBUG = false;
     private static final String TAG = "MagnificationController";
+    private static final boolean DEBUG = AccessibilityLogUtil.isDebugEnabled(TAG);
 
     private final AccessibilityManagerService mAms;
     private final PointF mTempPoint = new PointF();

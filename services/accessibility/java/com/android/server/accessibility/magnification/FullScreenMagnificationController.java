@@ -61,6 +61,7 @@ import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.util.function.pooled.PooledLambda;
 import com.android.server.LocalServices;
+import com.android.server.accessibility.AccessibilityLogUtil;
 import com.android.server.accessibility.AccessibilityManagerService;
 import com.android.server.accessibility.AccessibilityTraceManager;
 import com.android.server.accessibility.Flags;
@@ -85,8 +86,8 @@ import java.util.function.Supplier;
  */
 public class FullScreenMagnificationController implements
         WindowManagerInternal.AccessibilityControllerInternal.UiChangesForAccessibilityCallbacks {
-    private static final boolean DEBUG = false;
     private static final String LOG_TAG = "FullScreenMagnificationController";
+    private static final boolean DEBUG = AccessibilityLogUtil.isDebugEnabled(LOG_TAG);
 
     private static final boolean DEBUG_SET_MAGNIFICATION_SPEC = false;
 

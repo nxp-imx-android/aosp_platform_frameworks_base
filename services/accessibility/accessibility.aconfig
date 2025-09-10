@@ -2,6 +2,15 @@ package: "com.android.server.accessibility"
 container: "system"
 
 # NOTE: Keep alphabetized to help limit merge conflicts from multiple simultaneous editors.
+flag {
+    name: "accessibility_debug_log_base_on_prop"
+    namespace: "accessibility"
+    description: "Enable/Disable debug log by setting property. Support per file LOG_TAG or all files by using TAG AccessibilityLogUtil"
+    bug: "438268325"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
 
 flag {
     name: "cleanup_a11y_overlays"
