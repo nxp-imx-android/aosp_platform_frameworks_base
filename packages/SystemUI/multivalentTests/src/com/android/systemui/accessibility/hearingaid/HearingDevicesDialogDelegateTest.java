@@ -477,6 +477,11 @@ public class HearingDevicesDialogDelegateTest extends SysuiTestCase {
 
     @After
     public void reset() {
+        // Clears all pending messages and callbacks from the main thread's Handler to prevent
+        // unintended side effects or crashes in subsequent tests.
+        mContext.getMainThreadHandler().removeCallbacksAndMessages(null);
+        mTestableLooper.processAllMessages();
+
         if (mDialogDelegate != null) {
             mDialogDelegate = null;
         }
