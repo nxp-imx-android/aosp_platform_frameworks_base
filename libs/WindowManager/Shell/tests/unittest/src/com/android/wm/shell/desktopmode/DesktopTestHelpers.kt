@@ -52,7 +52,12 @@ object DesktopTestHelpers {
             .setLastActiveTime(100)
             .setUserId(userId)
             .apply { taskId?.let { setTaskId(it) } }
-            .apply { bounds?.let { setBounds(it) } }
+            .apply {
+                bounds?.let { b ->
+                    setBounds(b)
+                    setPositionInParent(b.left, b.top)
+                }
+            }
             .build()
 
     fun createPinnedTask(displayId: Int = DEFAULT_DISPLAY, bounds: Rect? = null): RunningTaskInfo =
