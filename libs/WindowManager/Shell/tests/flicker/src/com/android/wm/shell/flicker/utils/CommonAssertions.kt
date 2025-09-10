@@ -25,6 +25,7 @@ import android.tools.flicker.subject.layers.LayerTraceEntrySubject
 import android.tools.flicker.subject.layers.LayersTraceSubject
 import android.tools.helpers.WindowUtils
 import android.tools.traces.component.IComponentMatcher
+import android.tools.traces.component.ComponentNameMatcher.Companion.DESKTOP_HANDLE
 
 fun FlickerTest.appPairsDividerIsVisibleAtEnd() {
     assertLayersEnd { this.isVisible(APP_PAIR_SPLIT_DIVIDER_COMPONENT) }
@@ -399,6 +400,18 @@ fun FlickerTest.appWindowIsNotContainAtStart(component: IComponentMatcher) {
 
 fun FlickerTest.appWindowKeepVisible(component: IComponentMatcher) {
     assertWm { this.isAppWindowVisible(component) }
+}
+
+/**
+ * Asserts that a layer has no associated desktop handle.
+ *
+ * This check is performed on the layers trace, ensuring no layer corresponding to a
+ * desktop handle is present at the end of the scenario.
+ */
+fun FlickerTest.layerHasNoDesktopHandleAtEnd() {
+    assertLayersEnd {
+        this.notContains(DESKTOP_HANDLE)
+    }
 }
 
 fun FlickerTest.dockedStackDividerIsVisibleAtEnd() {
