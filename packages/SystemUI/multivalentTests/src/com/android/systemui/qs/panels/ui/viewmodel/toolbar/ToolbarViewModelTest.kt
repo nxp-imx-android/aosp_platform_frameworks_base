@@ -16,8 +16,13 @@
 
 package com.android.systemui.qs.panels.ui.viewmodel.toolbar
 
+import android.content.pm.UserInfo
+import android.os.UserHandle
+import android.platform.test.annotations.DisableFlags
+import android.platform.test.annotations.EnableFlags
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
+import com.android.systemui.Flags.FLAG_HSU_QS_CHANGES
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.common.shared.model.Icon
 import com.android.systemui.kosmos.Kosmos
@@ -31,6 +36,10 @@ import com.android.systemui.qs.footer.domain.model.SecurityButtonConfig
 import com.android.systemui.qs.footerActionsInteractor
 import com.android.systemui.res.R
 import com.android.systemui.testKosmos
+import com.android.systemui.user.data.model.SelectedUserModel
+import com.android.systemui.user.data.model.SelectionStatus
+import com.android.systemui.user.data.repository.fakeUserRepository
+import com.android.systemui.user.domain.interactor.fakeHeadlessSystemUserMode
 import com.google.common.truth.Truth.assertThat
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
@@ -152,8 +161,54 @@ class ToolbarViewModelTest : SysuiTestCase() {
             }
         }
 
+    @Test
+    @DisableFlags(FLAG_HSU_QS_CHANGES)
+    fun settingsButton_isNotNullWithFlagDisabled() =
+        with(kosmos) {
+            runTest {
+                selectSystemUser()
+
+                assertThat(underTest.settingsButtonViewModel).isNotNull()
+            }
+        }
+
+    @Test
+    @EnableFlags(FLAG_HSU_QS_CHANGES)
+    fun settingsButton_hideForHeadlessSystemUser() =
+        with(kosmos) {
+            runTest {
+                fakeHeadlessSystemUserMode.setIsHeadlessSystemUser(true)
+
+                selectSystemUser()
+
+                assertThat(underTest.settingsButtonViewModel).isNull()
+            }
+        }
+
+    @Test
+    @EnableFlags(FLAG_HSU_QS_CHANGES)
+    fun settingsButton_showWhenNotHeadlessSystemUser() =
+        with(kosmos) {
+            runTest {
+                fakeHeadlessSystemUserMode.setIsHeadlessSystemUser(false)
+
+                selectSystemUser()
+
+                assertThat(underTest.settingsButtonViewModel).isNotNull()
+            }
+        }
+
     private fun Kosmos.setSecurityConfig(config: SecurityButtonConfig?) {
         footerActionsInteractor.fake.setSecurityConfig(config)
+        runCurrent()
+    }
+
+    private fun Kosmos.selectSystemUser() {
+        kosmos.fakeUserRepository.selectedUser.value =
+            SelectedUserModel(
+                userInfo = UserInfo(UserHandle.USER_SYSTEM, "system_user", 0),
+                selectionStatus = SelectionStatus.SELECTION_COMPLETE,
+            )
         runCurrent()
     }
 

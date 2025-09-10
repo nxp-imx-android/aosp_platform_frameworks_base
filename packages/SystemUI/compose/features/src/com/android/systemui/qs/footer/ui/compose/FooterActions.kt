@@ -156,6 +156,7 @@ fun FooterActions(viewModel: FooterActionsViewModel, modifier: Modifier = Modifi
         mutableStateOf<FooterActionsForegroundServicesButtonViewModel?>(null)
     }
     var userSwitcher by remember { mutableStateOf<FooterActionsButtonViewModel?>(null) }
+    var settings by remember { mutableStateOf<FooterActionsButtonViewModel?>(null) }
 
     var textFeedback by remember {
         mutableStateOf<TextFeedbackViewModel>(TextFeedbackViewModel.NoFeedback)
@@ -174,12 +175,14 @@ fun FooterActions(viewModel: FooterActionsViewModel, modifier: Modifier = Modifi
         viewModel.foregroundServices,
         viewModel.userSwitcher,
         viewModel.textFeedback,
+        viewModel.settings,
         minActiveState = Lifecycle.State.RESUMED,
     ) {
         launch { viewModel.security.collect { security = it } }
         launch { viewModel.foregroundServices.collect { foregroundServices = it } }
         launch { viewModel.userSwitcher.collect { userSwitcher = it } }
         launch { viewModel.textFeedback.collect { textFeedback = it } }
+        launch { viewModel.settings.collect { settings = it } }
     }
 
     val backgroundColor =
@@ -253,7 +256,7 @@ fun FooterActions(viewModel: FooterActionsViewModel, modifier: Modifier = Modifi
                 Modifier.sysuiResTag("multi_user_switch"),
             )
             IconButton(
-                { viewModel.settings },
+                { settings },
                 useModifierBasedExpandable,
                 Modifier.sysuiResTag("settings_button_container"),
             )
