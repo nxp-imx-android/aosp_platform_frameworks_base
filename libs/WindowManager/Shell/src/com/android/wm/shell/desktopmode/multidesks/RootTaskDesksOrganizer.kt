@@ -240,7 +240,17 @@ class RootTaskDesksOrganizer(
             "RootTaskDesksOrganizer#deactivateDesk: $deskId",
         )
         logV("deactivateDesk %d", deskId)
-        val root = checkNotNull(deskRootsByDeskId[deskId]) { "Root not found for desk: $deskId" }
+        val root = deskRootsByDeskId[deskId]
+        if (root == null) {
+            // This is possible because a deactivation might be requested soon after a removal as
+            // part of the same two-part recents transition (so not the same WCT), so if the
+            // removal (all the way through onTaskVanish) is faster than the second part of the
+            // transition, the desk root will have been removed already. See b/427563407.
+            // No-op in this case, since the desk is already gone anyway it doesn't matter whether
+            // it is deactivated.
+            logW("Attempted to deactivate non-existent desk=%d", deskId)
+            return
+        }
         if (!skipReorder) wct.reorder(root.taskInfo.token, /* onTop= */ false)
         updateLaunchRoot(wct, deskId, enabled = false)
         updateTaskMoveAllowed(wct, deskId, allowed = false)
