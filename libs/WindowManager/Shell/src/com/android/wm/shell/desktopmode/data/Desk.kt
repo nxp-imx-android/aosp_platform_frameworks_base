@@ -53,6 +53,8 @@ data class Desk(
     var rightTiledTaskId: Int? = null,
     // The display's unique id that will remain the same across reboots.
     var uniqueDisplayId: String? = null,
+    // A desk that will only exist briefly; remove it once it is preserved. Used for persistence.
+    var transientDesk: Boolean = false,
 ) {
     // TODO: b/417907552 - Add these variables to persistent repository.
     // Bounds of tasks in this desk mapped to their respective task ids. Used for reconnect.
