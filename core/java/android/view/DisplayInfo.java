@@ -969,6 +969,20 @@ public final class DisplayInfo implements Parcelable {
         public int getMask() {
             return mMask;
         }
+
+        /** Convert bitmask to a string of group names. */
+        public static String displayInfoGroupsToString(int changedGroups) {
+            StringBuilder sb = new StringBuilder();
+            for (DisplayInfo.DisplayInfoGroup group : DisplayInfo.DisplayInfoGroup.values()) {
+                if ((changedGroups & group.getMask()) != 0) {
+                    if (sb.length() > 0) {
+                        sb.append(", ");
+                    }
+                    sb.append(group);
+                }
+            }
+            return sb.length() == 0 ? "NONE" : sb.toString();
+        }
     }
 
     /**

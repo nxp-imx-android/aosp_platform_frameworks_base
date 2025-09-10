@@ -16,12 +16,16 @@
 
 package com.android.server.display;
 
+import static android.view.DisplayInfo.DisplayInfoGroup.displayInfoGroupsToString;
+
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.hardware.display.DisplayManagerGlobal;
 import android.view.DisplayInfo;
 
 import androidx.annotation.IntRange;
+
+import java.io.PrintWriter;
 
 /**
  * A proxy class for {@link DisplayInfo} objects.
@@ -113,5 +117,12 @@ public class DisplayInfoProxy {
     /** Gets the source of the last update. */
     public DisplayInfo.DisplayInfoChangeSource getDisplayInfoChangeSource() {
         return mDisplayInfoChangeSource;
+    }
+
+    /** Dump the state of this object for debugging purposes. */
+    public void dumpLocked(PrintWriter pw) {
+        pw.println("mDisplayInfoGroupsChanged="
+                + displayInfoGroupsToString(mDisplayInfoGroupsChanged));
+        pw.println("mDisplayInfoChangeSource=" + mDisplayInfoChangeSource);
     }
 }
