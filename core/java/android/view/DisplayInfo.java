@@ -476,6 +476,7 @@ public final class DisplayInfo implements Parcelable {
                     && appVsyncOffsetNanos == other.appVsyncOffsetNanos
                     && presentationDeadlineNanos == other.presentationDeadlineNanos
                     && (modeId == other.modeId)
+                    && Arrays.equals(supportedRefreshRates, other.supportedRefreshRates)
                     && (committedState == other.committedState);
         }
         return isEqualWithOnlyBasicChanges;
@@ -1077,7 +1078,6 @@ public final class DisplayInfo implements Parcelable {
         return !isDisplayModeSizeEqual(other)
                 || hasArrSupport != other.hasArrSupport
                 || !Objects.equals(frameRateCategoryRate, other.frameRateCategoryRate)
-                || !Arrays.equals(supportedRefreshRates, other.supportedRefreshRates)
                 || !Objects.equals(layoutLimitedRefreshRate, other.layoutLimitedRefreshRate)
                 || !thermalRefreshRateThrottling.contentEquals(other.thermalRefreshRateThrottling)
                 || userPreferredModeId != other.userPreferredModeId

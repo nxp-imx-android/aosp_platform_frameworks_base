@@ -1528,6 +1528,21 @@ public class LogicalDisplayMapperTest {
         assertEquals(LOGICAL_DISPLAY_EVENT_REFRESH_RATE_CHANGED,
                 mLogicalDisplayMapper.updateAndGetMaskForDisplayPropertyChanges(newDisplayInfo));
 
+        newDisplayInfo = new DisplayInfo();
+        newDisplayInfo.appVsyncOffsetNanos = 123;
+        assertEquals(LOGICAL_DISPLAY_EVENT_REFRESH_RATE_CHANGED,
+                mLogicalDisplayMapper.updateAndGetMaskForDisplayPropertyChanges(newDisplayInfo));
+
+        newDisplayInfo = new DisplayInfo();
+        newDisplayInfo.presentationDeadlineNanos = 456;
+        assertEquals(LOGICAL_DISPLAY_EVENT_REFRESH_RATE_CHANGED,
+                mLogicalDisplayMapper.updateAndGetMaskForDisplayPropertyChanges(newDisplayInfo));
+
+        newDisplayInfo = new DisplayInfo();
+        newDisplayInfo.supportedRefreshRates = new float[60];
+        assertEquals(LOGICAL_DISPLAY_EVENT_REFRESH_RATE_CHANGED,
+                mLogicalDisplayMapper.updateAndGetMaskForDisplayPropertyChanges(newDisplayInfo));
+
         // Change the display state
         when(mFlagsMock.isDisplayListenerPerformanceImprovementsEnabled()).thenReturn(true);
         newDisplayInfo = new DisplayInfo();
