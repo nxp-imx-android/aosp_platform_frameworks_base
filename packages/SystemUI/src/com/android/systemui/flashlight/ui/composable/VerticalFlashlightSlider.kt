@@ -29,11 +29,8 @@ import androidx.compose.foundation.interaction.collectIsDraggedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -51,16 +48,19 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.BlurredEdgeTreatment
 import androidx.compose.ui.draw.blur
+import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.ClipOp
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Outline
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.graphics.drawscope.clipRect
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.hideFromAccessibility
@@ -82,6 +82,7 @@ import com.android.systemui.flashlight.ui.composable.Specs.BLUR_Y
 import com.android.systemui.flashlight.ui.composable.Specs.EdgeTreatment
 import com.android.systemui.flashlight.ui.composable.Specs.MAX_TRACK_HEIGHT
 import com.android.systemui.flashlight.ui.composable.Specs.MIN_TRACK_HEIGHT
+import com.android.systemui.flashlight.ui.composable.Specs.THUMB_CENTER_TO_GAP_OUTSIDE
 import com.android.systemui.flashlight.ui.composable.Specs.THUMB_MAX_HEIGHT
 import com.android.systemui.flashlight.ui.composable.Specs.THUMB_MIN_HEIGHT
 import com.android.systemui.flashlight.ui.composable.Specs.THUMB_WIDTH
@@ -177,26 +178,34 @@ fun VerticalFlashlightSlider(
             colors = colors,
             thumb = {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Spacer(
-                        modifier = Modifier.width(THUMB_WIDTH / 2).fillMaxHeight()
-                        // TODO(440617960): this should match dialog bg
-                    )
                     SliderDefaults.Thumb(
                         interactionSource = interactionSource,
                         colors = colors,
                         thumbSize =
                             DpSize(THUMB_WIDTH, thumbHeight(value / floatValueRange.endInclusive)),
                     )
-                    Spacer(
-                        Modifier.width(THUMB_WIDTH / 2).fillMaxHeight()
-                        // TODO(440617960): this should match dialog bg
-                    )
                 }
             },
             track = { sliderState ->
                 TrapezoidTrack(
                     modifier =
-                        Modifier
+                        Modifier.drawWithContent {
+                                // Cut a gap around the thumb. The is pre-rotation and horizontal,
+                                // hence we use the left-right gap metrics instead of top-bottom.
+                                clipRect(
+                                    left =
+                                        size.width * (sliderState.coercedValueAsFraction) -
+                                            THUMB_CENTER_TO_GAP_OUTSIDE.toPx(),
+                                    top = 0f,
+                                    bottom = size.height,
+                                    right =
+                                        size.width * (sliderState.coercedValueAsFraction) +
+                                            THUMB_CENTER_TO_GAP_OUTSIDE.toPx(),
+                                    clipOp = ClipOp.Difference,
+                                ) {
+                                    this@drawWithContent.drawContent()
+                                }
+                            }
                             // TODO(440620729): gradient blur from top to bottom. or no bottom blur.
                             .blur(
                                 BLUR_X,
@@ -343,6 +352,8 @@ private object Specs {
     val THUMB_MIN_HEIGHT = 48.dp
     val THUMB_MAX_HEIGHT = 120.dp
     val THUMB_WIDTH = 4.dp
+    val THUMB_GAP = 2.dp
+    val THUMB_CENTER_TO_GAP_OUTSIDE = THUMB_WIDTH / 2 + THUMB_GAP
     val BLUR_X = 20.dp // max 60
     val BLUR_Y = 5.dp // max 30
     val EdgeTreatment = BlurredEdgeTreatment(BeamShape())
