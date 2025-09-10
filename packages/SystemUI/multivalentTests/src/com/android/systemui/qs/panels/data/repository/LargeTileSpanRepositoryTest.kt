@@ -39,7 +39,7 @@ class LargeTileSpanRepositoryTest : SysuiTestCase() {
     private val Kosmos.underTest by Kosmos.Fixture { largeTileSpanRepository }
 
     @Test
-    fun useExtraLargeTiles_tracksConfig() =
+    fun useExtraLargeTiles_tracksFontScale() =
         kosmos.runTest {
             val latest by collectLastValue(underTest.useExtraLargeTiles)
 
@@ -61,6 +61,29 @@ class LargeTileSpanRepositoryTest : SysuiTestCase() {
             assertThat(latest).isTrue()
 
             configuration.fontScale = 2f
+            fakeConfigurationRepository.onConfigurationChange()
+            assertThat(latest).isTrue()
+        }
+
+    @Test
+    fun useExtraLargeTiles_tracksScreenDensity() =
+        kosmos.runTest {
+            val latest by collectLastValue(underTest.useExtraLargeTiles)
+
+            val configuration = Configuration().apply { this.densityDpi = 400 }
+            context.orCreateTestableResources.overrideConfiguration(configuration)
+            fakeConfigurationRepository.onConfigurationChange()
+            assertThat(latest).isFalse()
+
+            configuration.densityDpi = 470
+            fakeConfigurationRepository.onConfigurationChange()
+            assertThat(latest).isFalse()
+
+            configuration.densityDpi = 480
+            fakeConfigurationRepository.onConfigurationChange()
+            assertThat(latest).isTrue()
+
+            configuration.densityDpi = 600
             fakeConfigurationRepository.onConfigurationChange()
             assertThat(latest).isTrue()
         }
