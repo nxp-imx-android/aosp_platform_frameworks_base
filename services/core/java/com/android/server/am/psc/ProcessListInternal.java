@@ -54,9 +54,23 @@ public abstract class ProcessListInternal {
     @CompositeRWLock({"mServiceLock", "mProcLock"})
     private int mLruSeq = 0;
 
+    /**
+     * The maximum pss size in kb that we consider a process acceptable to restore from its cached
+     * state for running in the background when RAM is low.
+     */
+    private long mCachedRestoreThresholdKb;
+
     protected void init(Object serviceLock, Object procLock) {
         mServiceLock = serviceLock;
         mProcLock = procLock;
+    }
+
+    protected void setCachedRestoreThresholdKb(long value) {
+        mCachedRestoreThresholdKb = value;
+    }
+
+    public long getCachedRestoreThresholdKb() {
+        return mCachedRestoreThresholdKb;
     }
 
     /** Returns a reference to the Least Recently Used (LRU) process list. */
