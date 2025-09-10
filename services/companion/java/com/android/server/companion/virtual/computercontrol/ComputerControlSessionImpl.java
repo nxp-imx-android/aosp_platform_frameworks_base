@@ -67,7 +67,11 @@ import android.view.WindowManager;
 
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
+import com.android.internal.inputmethod.IRemoteComputerControlInputConnection;
+import com.android.internal.inputmethod.InputConnectionCommandHeader;
 import com.android.server.LocalServices;
+import com.android.server.inputmethod.InputMethodManagerInternal;
+import com.android.server.pm.UserManagerInternal;
 import com.android.server.wm.WindowManagerInternal;
 
 import java.util.ArrayList;
@@ -396,7 +400,35 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
     public void insertText(@NonNull String text, boolean replaceExisting, boolean commit) {
         cancelOngoingKeyGestures();
         if (android.companion.virtualdevice.flags.Flags.computerControlTyping()) {
-            // TODO(b/422134565): Implement Input connection based typing
+            IRemoteComputerControlInputConnection ic = mInjector.getInputConnection(
+                    mVirtualDisplayId);
+            if (ic == null) {
+                Slog.e(TAG, "Unable to insert text: No input connection found!");
+                return;
+            }
+            // TODO(b/422134565): Implement client invoker logic to pass the correct session id when
+            //  "client text view" invalidates input while view remains focused.
+            //  Currently, if we set text using A11y nodes or the application sets text into the
+            //  text field outside of input connection (while text view is focused), CC session will
+            //  no longer be able to insert text until the text view restarts the input connection.
+            try {
+                if (replaceExisting) {
+                    ic.replaceText(new InputConnectionCommandHeader(0), 0 /* start */,
+                            Integer.MAX_VALUE /* end */, text, 1 /* newCursorPosition */);
+                } else {
+                    ic.commitText(new InputConnectionCommandHeader(0), text,
+                            1 /* newCursorPosition */);
+                }
+                // TODO(b/422134565): Use right editor action to commit text instead key enter
+                if (commit) {
+                    ic.sendKeyEvent(new InputConnectionCommandHeader(0),
+                            new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_ENTER));
+                    ic.sendKeyEvent(new InputConnectionCommandHeader(0),
+                            new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_ENTER));
+                }
+            } catch (RemoteException e) {
+                Slog.e(TAG, "Unable to insert text through InputConnection", e);
+            }
         } else {
             KeyCharacterMap kcm = KeyCharacterMap.load(KeyCharacterMap.VIRTUAL_KEYBOARD);
             KeyEvent[] events = kcm.getEvents(text.toCharArray());
@@ -611,7 +643,7 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
 
     /** Interface for listening for closing of sessions. */
     interface OnClosedListener {
-        void onClosed(ComputerControlSessionImpl session);
+        void onClosed(@NonNull ComputerControlSessionImpl session);
     }
 
     @VisibleForTesting
@@ -619,11 +651,16 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
         private final Context mContext;
         private final PackageManager mPackageManager;
         private final WindowManagerInternal mWindowManagerInternal;
+        private final InputMethodManagerInternal mInputMethodManagerInternal;
+        private final UserManagerInternal mUserManagerInternal;
 
         Injector(Context context) {
             mContext = context;
             mPackageManager = mContext.getPackageManager();
             mWindowManagerInternal = LocalServices.getService(WindowManagerInternal.class);
+            mInputMethodManagerInternal = LocalServices.getService(
+                    InputMethodManagerInternal.class);
+            mUserManagerInternal = LocalServices.getService(UserManagerInternal.class);
         }
 
         public String getPermissionControllerPackageName() {
@@ -657,6 +694,14 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
 
         public long getLongPressTimeoutMillis() {
             return (long) (ViewConfiguration.getLongPressTimeout() * LONG_PRESS_TIMEOUT_MULTIPLIER);
+        }
+
+        public IRemoteComputerControlInputConnection getInputConnection(int displayId) {
+            // getUserAssignedToDisplay returns the main userId, if we want to support cross
+            // profile CC interactions and typing on CC display, we need to find the right user
+            // profile here for the CC input connection
+            return mInputMethodManagerInternal.getComputerControlInputConnection(
+                    mUserManagerInternal.getUserAssignedToDisplay(displayId), displayId);
         }
     }
 }

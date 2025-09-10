@@ -266,6 +266,7 @@ public class InputMethodManagerServiceWindowGainedFocusTest
                 mEditorInfo /* editorInfo */,
                 mMockFallbackInputConnection /* fallbackInputConnection */,
                 mMockRemoteAccessibilityInputConnection /* remoteAccessibilityInputConnection */,
+                mRemoteComputerControlInputConnection /* remoteComputerControlInputConnection */,
                 mTargetSdkVersion /* unverifiedTargetSdkVersion */,
                 mUserId /* userId */,
                 mMockImeBackCallbackReceiver /* imeBackCallbackReceiver */,

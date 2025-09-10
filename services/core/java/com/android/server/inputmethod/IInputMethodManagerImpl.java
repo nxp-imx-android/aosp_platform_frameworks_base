@@ -42,6 +42,7 @@ import com.android.internal.inputmethod.IConnectionlessHandwritingCallback;
 import com.android.internal.inputmethod.IImeTracker;
 import com.android.internal.inputmethod.IInputMethodClient;
 import com.android.internal.inputmethod.IRemoteAccessibilityInputConnection;
+import com.android.internal.inputmethod.IRemoteComputerControlInputConnection;
 import com.android.internal.inputmethod.IRemoteInputConnection;
 import com.android.internal.inputmethod.InputMethodInfoSafeList;
 import com.android.internal.inputmethod.StartInputFlags;
@@ -118,6 +119,7 @@ final class IInputMethodManagerImpl extends IInputMethodManager.Stub {
                 @WindowManager.LayoutParams.Flags int windowFlags, @Nullable EditorInfo editorInfo,
                 @Nullable IRemoteInputConnection inputConnection,
                 @Nullable IRemoteAccessibilityInputConnection remoteAccessibilityInputConnection,
+                @Nullable IRemoteComputerControlInputConnection computerControlInputConnection,
                 int unverifiedTargetSdkVersion, @UserIdInt int userId,
                 @NonNull ResultReceiver imeBackCallbackReceiver, boolean imeRequestedVisible,
                 int startInputSeq);
@@ -277,14 +279,15 @@ final class IInputMethodManagerImpl extends IInputMethodManager.Stub {
             @WindowManager.LayoutParams.Flags int windowFlags, @Nullable EditorInfo editorInfo,
             IRemoteInputConnection inputConnection,
             IRemoteAccessibilityInputConnection remoteAccessibilityInputConnection,
+            IRemoteComputerControlInputConnection remoteComputerControlInputConnection,
             int unverifiedTargetSdkVersion, @UserIdInt int userId,
             @NonNull ResultReceiver imeBackCallbackReceiver, boolean imeRequestedVisible,
             int startInputSeq) {
         mCallback.startInputOrWindowGainedFocus(
                 startInputReason, client, windowToken, startInputFlags, softInputMode,
                 windowFlags, editorInfo, inputConnection, remoteAccessibilityInputConnection,
-                unverifiedTargetSdkVersion, userId, imeBackCallbackReceiver, imeRequestedVisible,
-                startInputSeq);
+                remoteComputerControlInputConnection, unverifiedTargetSdkVersion, userId,
+                imeBackCallbackReceiver, imeRequestedVisible, startInputSeq);
     }
 
     @Override

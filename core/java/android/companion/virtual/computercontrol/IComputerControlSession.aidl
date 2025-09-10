@@ -55,7 +55,8 @@ interface IComputerControlSession {
             int width, int height, in Surface surface);
 
     /**
-     * Inserts text into the current active input connection (if available).
+     * Inserts text into the current active input connection. If there is no active input
+     * connection, this method is no-op.
      *
      * @param text to be inserted
      * @param replaceExisting whether the existing text in the input field should be replaced. If

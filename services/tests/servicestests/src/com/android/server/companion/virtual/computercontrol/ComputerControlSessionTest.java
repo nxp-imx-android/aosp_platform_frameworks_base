@@ -70,6 +70,8 @@ import android.view.WindowManager;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 
+import com.android.internal.inputmethod.IRemoteComputerControlInputConnection;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -113,6 +115,8 @@ public class ComputerControlSessionTest {
     private IComputerControlStabilityListener mStabilityListener;
     @Mock
     private IVirtualDevice mVirtualDevice;
+    @Mock
+    private IRemoteComputerControlInputConnection mRemoteComputerControlInputConnection;
     @Mock
     private IVirtualInputDevice mVirtualDpad;
     @Mock
@@ -405,6 +409,44 @@ public class ComputerControlSessionTest {
     }
 
     @Test
+    @EnableFlags(Flags.FLAG_COMPUTER_CONTROL_TYPING)
+    public void insertText_callsCommitTextOnAvailableInputConnection() throws RemoteException {
+        createComputerControlSession(mDefaultParams);
+        when(mInjector.getInputConnection(VIRTUAL_DISPLAY_ID)).thenReturn(
+                mRemoteComputerControlInputConnection);
+        mSession.insertText("text", false /* replaceExisting */, false /* commit */);
+        verify(mRemoteComputerControlInputConnection).commitText(any(), eq("text"), eq(1));
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_COMPUTER_CONTROL_TYPING)
+    public void insertTextWithReplaceExisting_callsReplaceTextOnAvailableInputConnection()
+            throws RemoteException {
+        createComputerControlSession(mDefaultParams);
+        when(mInjector.getInputConnection(VIRTUAL_DISPLAY_ID)).thenReturn(
+                mRemoteComputerControlInputConnection);
+        mSession.insertText("text", true /* replaceExisting */, false /* commit */);
+        verify(mRemoteComputerControlInputConnection).replaceText(any(), eq(0),
+                eq(Integer.MAX_VALUE), eq("text"), eq(1));
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_COMPUTER_CONTROL_TYPING)
+    public void insertTextWithCommit_sendEnterKeyOnAvailableInputConnection()
+            throws RemoteException {
+        createComputerControlSession(mDefaultParams);
+        when(mInjector.getInputConnection(VIRTUAL_DISPLAY_ID)).thenReturn(
+                mRemoteComputerControlInputConnection);
+
+        mSession.insertText("text", false /* replaceExisting */, true /* commit */);
+        verify(mRemoteComputerControlInputConnection).commitText(any(), eq("text"), eq(1));
+        verify(mRemoteComputerControlInputConnection).sendKeyEvent(any(),
+                argThat(new MatchesKeyEvent(KeyEvent.KEYCODE_ENTER, KeyEvent.ACTION_DOWN)));
+        verify(mRemoteComputerControlInputConnection).sendKeyEvent(any(),
+                argThat(new MatchesKeyEvent(KeyEvent.KEYCODE_ENTER, KeyEvent.ACTION_UP)));
+    }
+
+    @Test
     public void performActionBack_injectsBackKey()
             throws RemoteException {
         createComputerControlSession(mDefaultParams);
@@ -555,6 +597,23 @@ public class ComputerControlSessionTest {
         @Override
         public boolean matches(VirtualKeyEvent event) {
             return event.getKeyCode() == mKeyCode && event.getAction() == mAction;
+        }
+    }
+
+    private static class MatchesKeyEvent implements ArgumentMatcher<KeyEvent> {
+
+        private final int mKeyCode;
+
+        private final int mAction;
+
+        MatchesKeyEvent(int keyCode, int action) {
+            mKeyCode = keyCode;
+            mAction = action;
+        }
+
+        @Override
+        public boolean matches(KeyEvent event) {
+            return mKeyCode == event.getKeyCode() && mAction == event.getAction();
         }
     }
 }
