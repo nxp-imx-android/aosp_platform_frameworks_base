@@ -2541,7 +2541,7 @@ public class ActivityTaskSupervisor implements RecentTasks.Callbacks {
                 return;
             }
 
-            if (r.isState(PAUSING)) {
+            if (!timeout && r.isState(PAUSING)) {
                 // Do not handle the top-resumed-state-lost if the activity is currently pausing to
                 // prevent rapid top-resumed activity switch.
                 return;
