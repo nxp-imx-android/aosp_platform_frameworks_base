@@ -250,10 +250,6 @@ public class InternetAdapter extends RecyclerView.Adapter<InternetAdapter.Intern
                             }, () -> {
                                 wifiConnect(wifiEntry, view);
                                 return null;
-                            }, intent -> {
-                                mInternetDetailsContentController
-                                        .startActivityForDialogDismissDialogFirst(intent, view);
-                                return null;
                             });
                 }
                 return;
