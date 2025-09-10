@@ -22,8 +22,6 @@ import static android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN;
 import static android.app.WindowConfiguration.WINDOWING_MODE_UNDEFINED;
 import static android.view.Display.DEFAULT_DISPLAY;
 import static android.window.WindowContainerTransaction.HierarchyOp.HIERARCHY_OP_TYPE_DISALLOW_OVERRIDE_BOUNDS_FOR_CHILDREN;
-
-import static com.android.wm.shell.Flags.FLAG_ENABLE_ENTER_SPLIT_REMOVE_BUBBLE;
 import static com.android.wm.shell.Flags.FLAG_ENABLE_FLEXIBLE_TWO_APP_SPLIT;
 import static com.android.wm.shell.Flags.FLAG_SPLIT_DISABLE_CHILD_TASK_BOUNDS;
 import static com.android.wm.shell.shared.split.SplitScreenConstants.SNAP_TO_2_50_50;
@@ -626,7 +624,6 @@ public class StageCoordinatorTests extends ShellTestCase {
     }
 
     @Test
-    @EnableFlags(FLAG_ENABLE_ENTER_SPLIT_REMOVE_BUBBLE)
     public void updateActivityOptions_withBubbles_setsLaunchBounds() {
         when(mBubbleController.hasBubbles()).thenReturn(true);
         Bundle bundle = new Bundle();
@@ -638,7 +635,6 @@ public class StageCoordinatorTests extends ShellTestCase {
     }
 
     @Test
-    @EnableFlags(FLAG_ENABLE_ENTER_SPLIT_REMOVE_BUBBLE)
     public void updateActivityOptions_noBubbles_doesNotSetLaunchBounds() {
         when(mBubbleController.hasBubbles()).thenReturn(false);
         Bundle bundle = new Bundle();
