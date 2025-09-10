@@ -662,7 +662,8 @@ public class MediaSwitchingController
     }
 
     private boolean enableInputRouting() {
-        return Flags.enableAudioInputDeviceRoutingAndVolumeControl();
+        return Flags.enableAudioInputDeviceRoutingAndVolumeControl()
+                && mContext.getResources().getBoolean(R.bool.config_enableInputRouting);
     }
 
     private void buildInputMediaItems(List<MediaDevice> devices) {

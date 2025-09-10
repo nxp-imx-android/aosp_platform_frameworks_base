@@ -53,6 +53,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.Icon;
 import android.media.AudioDeviceAttributes;
@@ -235,6 +236,10 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
         MockitoAnnotations.initMocks(this);
         mContext.setMockPackageManager(mPackageManager);
         mSpyContext = spy(mContext);
+        Resources spyResources = spy(mContext.getResources());
+        when(mSpyContext.getResources()).thenReturn(spyResources);
+        when(spyResources.getBoolean(
+                R.bool.config_enableInputRouting)).thenReturn(true);
         final UserHandle userHandle = mock(UserHandle.class);
         when(mUserTracker.getUserHandle()).thenReturn(userHandle);
         when(mSessionMediaController.getPackageName()).thenReturn(mPackageName);
