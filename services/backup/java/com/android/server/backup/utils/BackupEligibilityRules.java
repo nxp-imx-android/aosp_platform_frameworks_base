@@ -28,7 +28,7 @@ import static com.android.server.pm.PackageManagerService.PLATFORM_PACKAGE_NAME;
 import android.annotation.Nullable;
 import android.app.backup.BackupAnnotations.BackupDestination;
 import android.app.backup.BackupTransport;
-import android.app.backup.FullBackup;
+import android.app.backup.FullBackup.BackupScheme.PlatformSpecificParams;
 import android.app.compat.CompatChanges;
 import android.compat.annotation.ChangeId;
 import android.compat.annotation.EnabledSince;
@@ -98,9 +98,6 @@ public class BackupEligibilityRules {
     @BackupDestination private final int mBackupDestination;
     private final boolean mSkipRestoreForLaunchedApps;
 
-    private Map<String, List<FullBackup.BackupScheme.PlatformSpecificParams>>
-            mPlatformSpecificParams;
-
     /**
      * When this change is enabled, {@code adb backup} is automatically turned on for apps running
      * as debuggable ({@code android:debuggable} set to {@code true}) and unavailable to any other
@@ -157,7 +154,6 @@ public class BackupEligibilityRules {
         mBackupDestination = backupDestination;
         mUserManagerInternal = LocalServices.getService(UserManagerInternal.class);
         mSkipRestoreForLaunchedApps = skipRestoreForLaunchedApps;
-        mPlatformSpecificParams = Collections.emptyMap();
     }
 
     /**
@@ -363,23 +359,38 @@ public class BackupEligibilityRules {
      */
     public boolean appSupportsCrossPlatformTransfer(
             ApplicationInfo applicationInfo, String platform) {
+        return !getPlatformSpecificParams(applicationInfo, platform).isEmpty();
+    }
+
+    /** Get the platform specific parameters for the given package, if it configured any. */
+    public List<PlatformSpecificParams> getPlatformSpecificParams(
+            ApplicationInfo applicationInfo, String platform) {
+        Map<String, List<PlatformSpecificParams>> platformSpecificParams =
+                loadCrossPlatformConfig(applicationInfo);
+        return platformSpecificParams.getOrDefault(platform, Collections.emptyList());
+    }
+
+    private Map<String, List<PlatformSpecificParams>> loadCrossPlatformConfig(
+            ApplicationInfo applicationInfo) {
         try {
-            mPlatformSpecificParams =
+            Map<String, List<PlatformSpecificParams>> platformSpecificParams =
                     PlatformConfigParser.parsePlatformSpecificConfig(
                             mPackageManager, applicationInfo);
+            Slog.d(
+                    TAG,
+                    "Loaded cross-platform configuration for "
+                            + applicationInfo.packageName
+                            + " and found "
+                            + platformSpecificParams.size()
+                            + " configured platforms.");
+            return platformSpecificParams;
         } catch (IOException e) {
             Slog.e(
                     TAG,
                     "Unable to parse cross-platform configuration from data-extraction-rules",
                     e);
-            return false;
+            return Collections.emptyMap();
         }
-        Slog.d(
-                TAG,
-                "Found cross-platform configuration for "
-                        + mPlatformSpecificParams.size()
-                        + " platforms.");
-        return !mPlatformSpecificParams.getOrDefault(platform, Collections.emptyList()).isEmpty();
     }
 
     /**

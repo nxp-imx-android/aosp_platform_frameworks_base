@@ -20,10 +20,13 @@ import static com.android.server.backup.BackupManagerService.DEBUG;
 import static com.android.server.backup.BackupManagerService.TAG;
 import static com.android.server.backup.UserBackupManagerService.BACKUP_MANIFEST_FILENAME;
 import static com.android.server.backup.UserBackupManagerService.BACKUP_METADATA_FILENAME;
+import static com.android.server.backup.UserBackupManagerService.CROSS_PLATFORM_MANIFEST_FILENAME;
 import static com.android.server.backup.UserBackupManagerService.SHARED_BACKUP_AGENT_PACKAGE;
+import static com.android.server.backup.crossplatform.PlatformConfigParser.PLATFORM_IOS;
 import static com.android.server.backup.internal.BackupHandler.MSG_RESTORE_OPERATION_TIMEOUT;
 
 import android.annotation.NonNull;
+import android.annotation.Nullable;
 import android.app.ApplicationThreadConstants;
 import android.app.IBackupAgent;
 import android.app.backup.BackupAgent;
@@ -31,10 +34,12 @@ import android.app.backup.BackupAnnotations;
 import android.app.backup.BackupAnnotations.BackupDestination;
 import android.app.backup.BackupManagerMonitor;
 import android.app.backup.FullBackup;
+import android.app.backup.FullBackup.BackupScheme.PlatformSpecificParams;
 import android.app.backup.IBackupManagerMonitor;
 import android.app.backup.IFullBackupRestoreObserver;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.pm.PackageManagerInternal;
 import android.content.pm.Signature;
@@ -56,6 +61,7 @@ import com.android.server.backup.KeyValueAdbRestoreEngine;
 import com.android.server.backup.OperationStorage;
 import com.android.server.backup.OperationStorage.OpType;
 import com.android.server.backup.UserBackupManagerService;
+import com.android.server.backup.crossplatform.CrossPlatformManifest;
 import com.android.server.backup.fullbackup.FullBackupObbConnection;
 import com.android.server.backup.utils.BackupEligibilityRules;
 import com.android.server.backup.utils.BackupManagerMonitorEventSender;
@@ -129,7 +135,10 @@ public class FullRestoreEngine extends RestoreEngine {
 
     // Widget blob to be restored out-of-band
     private byte[] mWidgetData = null;
+
+    private int mTransportFlags = 0;
     private long mAppVersion;
+    private String mContentVersion = "";
 
     final int mEphemeralOpToken;
 
@@ -182,7 +191,9 @@ public class FullRestoreEngine extends RestoreEngine {
     }
 
     @VisibleForTesting
-    FullRestoreEngine() {
+    FullRestoreEngine(UserBackupManagerService backupManagerService) {
+        mBackupManagerService = backupManagerService;
+
         mIsAdbRestore = false;
         mAllowApks = false;
         mEphemeralOpToken = 0;
@@ -190,7 +201,6 @@ public class FullRestoreEngine extends RestoreEngine {
         mBackupEligibilityRules = null;
         mAgentTimeoutParameters = null;
         mBuffer = null;
-        mBackupManagerService = null;
         mOperationStorage = null;
         mMonitor = null;
         mMonitorTask = null;
@@ -290,6 +300,37 @@ public class FullRestoreEngine extends RestoreEngine {
                     mManifestSignatures.put(info.packageName, signatures);
                     mPackagePolicies.put(pkg, restorePolicy);
                     mPackageInstallers.put(pkg, info.installerPackageName);
+                    // We've read only the manifest content itself at this point,
+                    // so consume the footer before looping around to the next
+                    // input file
+                    tarBackupReader.skipTarPadding(info.size);
+                    mObserver = FullBackupRestoreObserverUtils.sendOnRestorePackage(mObserver, pkg);
+                } else if (Flags.enableCrossPlatformTransfer()
+                        && info.path.equals(CROSS_PLATFORM_MANIFEST_FILENAME)) {
+                    // We start by reading the manifest content so we consume the data before doing
+                    // any further checks.
+                    CrossPlatformManifest manifest =
+                            tarBackupReader.readCrossPlatformManifest(info);
+                    if (mBackupEligibilityRules.getBackupDestination()
+                            != BackupDestination.CROSS_PLATFORM_TRANSFER) {
+                        mPackagePolicies.put(pkg, RestorePolicy.IGNORE);
+                    } else {
+                        PlatformSpecificParams params =
+                                findValidPlatformSpecificParams(
+                                        info.packageName, manifest, mBackupEligibilityRules);
+                        if (params == null) {
+                            Slog.w(
+                                    TAG,
+                                    "No source declared platform-specific params found that match"
+                                            + " the target app");
+                            mPackagePolicies.put(pkg, RestorePolicy.IGNORE);
+                        } else {
+                            mPackagePolicies.put(pkg, RestorePolicy.ACCEPT);
+                            mTransportFlags |= BackupAgent.FLAG_CROSS_PLATFORM_DATA_TRANSFER_IOS;
+                            mContentVersion = params.getContentVersion();
+                        }
+                    }
+
                     // We've read only the manifest content itself at this point,
                     // so consume the footer before looping around to the next
                     // input file
@@ -541,9 +582,9 @@ public class FullRestoreEngine extends RestoreEngine {
                                             info.mtime,
                                             token,
                                             mBackupManagerService.getBackupManagerBinder(),
-                                            /* appVersionCode= */ 0,
-                                            /* transportFlags= */ 0,
-                                            /* contentVersion= */ "");
+                                            mAppVersion,
+                                            mTransportFlags,
+                                            mContentVersion);
                                 }
                             }
                         } catch (IOException e) {
@@ -878,5 +919,42 @@ public class FullRestoreEngine extends RestoreEngine {
                                 ? ApplicationThreadConstants.BACKUP_MODE_RESTORE
                                 : ApplicationThreadConstants.BACKUP_MODE_RESTORE_FULL,
                         mBackupEligibilityRules.getBackupDestination());
+    }
+
+    @VisibleForTesting(visibility = VisibleForTesting.Visibility.PRIVATE)
+    PlatformSpecificParams findValidPlatformSpecificParams(
+            String pkg,
+            @Nullable CrossPlatformManifest manifest,
+            BackupEligibilityRules backupEligibilityRules) {
+        if (manifest == null) {
+            Slog.d(TAG, "No cross-platform manifest found.");
+            return null;
+        }
+
+        ApplicationInfo targetApp;
+        try {
+            targetApp = mBackupManagerService
+                    .getPackageManager()
+                    .getApplicationInfoAsUser(
+                            pkg,
+                            PackageManager.GET_SIGNING_CERTIFICATES,
+                            mUserId);
+        } catch (NameNotFoundException e) {
+            Slog.d(TAG, "Unable to fetch cross-platform configuration for target app", e);
+            return null;
+        }
+
+        // Both source and target may specify multiple platform specific params. For us to continue
+        // restoring, there should be at least one combination that matches.
+        for (PlatformSpecificParams sourceParams : manifest.getPlatformSpecificParams()) {
+            for (PlatformSpecificParams targetParams :
+                    backupEligibilityRules.getPlatformSpecificParams(targetApp, PLATFORM_IOS)) {
+                if (TextUtils.equals(sourceParams.getBundleId(), targetParams.getBundleId())
+                        && TextUtils.equals(sourceParams.getTeamId(), targetParams.getTeamId())) {
+                    return sourceParams;
+                }
+            }
+        }
+        return null;
     }
 }
