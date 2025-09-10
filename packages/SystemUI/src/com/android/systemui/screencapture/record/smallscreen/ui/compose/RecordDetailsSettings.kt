@@ -42,6 +42,7 @@ import com.android.systemui.res.R
 import com.android.systemui.screencapture.common.ui.compose.LoadingIcon
 import com.android.systemui.screencapture.common.ui.compose.loadIcon
 import com.android.systemui.screencapture.common.ui.viewmodel.DrawableLoaderViewModel
+import com.android.systemui.screencapture.record.smallscreen.ui.viewmodel.RecordDetailsTargetItemViewModel
 import com.android.systemui.screencapture.record.smallscreen.ui.viewmodel.RecordDetailsTargetViewModel
 import com.android.systemui.screencapture.record.ui.viewmodel.ScreenCaptureRecordParametersViewModel
 
@@ -115,18 +116,22 @@ fun RecordDetailsSettings(
                 onCheckedChange = { parametersViewModel.setShouldShowFrontCamera(it) },
                 modifier = Modifier,
             )
-            RichSwitch(
-                icon =
-                    loadIcon(
-                        viewModel = drawableLoaderViewModel,
-                        resId = R.drawable.ic_touch_expressive,
-                        contentDescription = null,
-                    ),
-                label = stringResource(R.string.screen_record_should_show_touches_label),
-                checked = parametersViewModel.shouldShowTaps == true,
-                onCheckedChange = { parametersViewModel.setShouldShowTaps(it) },
-                modifier = Modifier,
-            )
+            AnimatedVisibility(
+                targetViewModel.currentTarget is RecordDetailsTargetItemViewModel.EntireScreen
+            ) {
+                RichSwitch(
+                    icon =
+                        loadIcon(
+                            viewModel = drawableLoaderViewModel,
+                            resId = R.drawable.ic_touch_expressive,
+                            contentDescription = null,
+                        ),
+                    label = stringResource(R.string.screen_record_should_show_touches_label),
+                    checked = parametersViewModel.shouldShowTaps == true,
+                    onCheckedChange = { parametersViewModel.setShouldShowTaps(it) },
+                    modifier = Modifier,
+                )
+            }
         }
     }
 }
