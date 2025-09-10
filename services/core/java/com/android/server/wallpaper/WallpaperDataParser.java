@@ -397,7 +397,7 @@ public class WallpaperDataParser {
         wallpaper.mWallpaperDimAmount = getAttributeFloat(parser, "dimAmount", 0f);
         BindSource bindSource;
         try {
-            bindSource = Enum.valueOf(BindSource.class,
+            bindSource = BindSource.valueOf(
                     getAttributeString(parser, "bindSource", BindSource.UNKNOWN.name()));
         } catch (IllegalArgumentException | NullPointerException e) {
             bindSource = BindSource.UNKNOWN;
