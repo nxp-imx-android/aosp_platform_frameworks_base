@@ -52,6 +52,7 @@ class DesktopInOrderTransitionObserverTest : ShellTestCase() {
     private val desktopImeHandler = mock<DesktopImeHandler>()
     private val desktopBackNavTransitionObserver = mock<DesktopBackNavTransitionObserver>()
     private val desktopModeLoggerTransitionObserver = mock<DesktopModeLoggerTransitionObserver>()
+    private val displayFocusResolver = mock<DisplayFocusResolver>()
     private lateinit var transitionObserver: DesktopInOrderTransitionObserver
 
     @Before
@@ -64,6 +65,7 @@ class DesktopInOrderTransitionObserverTest : ShellTestCase() {
                 Optional.of(desktopImeHandler),
                 Optional.of(desktopBackNavTransitionObserver),
                 desktopModeLoggerTransitionObserver,
+                Optional.of(displayFocusResolver),
             )
     }
 
@@ -187,5 +189,21 @@ class DesktopInOrderTransitionObserverTest : ShellTestCase() {
         inorder
             .verify(desktopModeLoggerTransitionObserver)
             .onTransitionFinished(transition, aborted)
+    }
+
+    @Test
+    @EnableFlags(
+        Flags.FLAG_ENABLE_FULLY_IMMERSIVE_IN_DESKTOP,
+        Flags.FLAG_ENABLE_INORDER_TRANSITION_CALLBACKS_FOR_DESKTOP,
+    )
+    fun onTransitionReady_forwardsToDisplayFocusResolver() {
+        val transition = Mockito.mock(IBinder::class.java)
+        val info = TransitionInfoBuilder(TRANSIT_CHANGE, 0).build()
+        val startT = mock<SurfaceControl.Transaction>()
+        val finishT = mock<SurfaceControl.Transaction>()
+
+        transitionObserver.onTransitionReady(transition, info, startT, finishT)
+
+        verify(displayFocusResolver).onTransitionReady(info)
     }
 }
