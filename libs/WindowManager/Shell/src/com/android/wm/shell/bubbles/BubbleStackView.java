@@ -362,6 +362,7 @@ public class BubbleStackView extends FrameLayout
         pw.print("  stack visibility :       "); pw.println(getVisibility());
         pw.print("  temporarilyInvisible:    "); pw.println(mTemporarilyInvisible);
         pw.print("  expandedViewTemporarilyHidden: "); pw.println(mExpandedViewTemporarilyHidden);
+        pw.print("  imeVisible:              "); pw.println(mIsImeVisible);
         mStackAnimationController.dump(pw);
         mExpandedAnimationController.dump(pw);
         mExpandedViewAnimationController.dump(pw);
@@ -2601,6 +2602,7 @@ public class BubbleStackView extends FrameLayout
         // order to avoid flickers
         // TODO: b/424812643 - clean up the onImeHidden runnable
         Runnable onImeHidden = () -> {
+            ProtoLog.d(WM_SHELL_BUBBLES, "running on ime hidden");
             if (!isAttachedToWindow()) {
                 Log.w(TAG, "onImeHidden runnable running but we're not attached.");
             }
