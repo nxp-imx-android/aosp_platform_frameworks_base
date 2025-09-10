@@ -4207,6 +4207,10 @@
   <java-symbol type="bool" name="config_lockPinEnhancedPrivacyDefault" />
   <java-symbol type="bool" name="config_lockPatternVisibleDefault" />
 
+  <java-symbol type="bool" name="config_enableFailedAuthLock" />
+  <java-symbol type="integer" name="config_maxAllowedFailedAuthAttempts" />
+  <java-symbol type="bool" name="config_enableFailedAuthLockToggle" />
+
   <!-- ETWS primary messages -->
   <java-symbol type="string" name="etws_primary_default_message_earthquake" />
   <java-symbol type="string" name="etws_primary_default_message_tsunami" />
