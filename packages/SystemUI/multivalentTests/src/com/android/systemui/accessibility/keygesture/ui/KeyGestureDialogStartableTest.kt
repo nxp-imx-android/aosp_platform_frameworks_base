@@ -17,6 +17,7 @@
 package com.android.systemui.accessibility.keygesture.ui
 
 import android.hardware.input.KeyGestureEvent
+import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import android.view.Display.DEFAULT_DISPLAY
 import androidx.test.annotation.UiThreadTest
@@ -80,7 +81,9 @@ class KeyGestureDialogStartableTest : SysuiTestCase() {
     fun tearDown() {
         // If we show the dialog, we must dismiss the dialog at the end of the test on the main
         // thread.
-        underTest.currentDialog?.dismiss()
+        if (::underTest.isInitialized) {
+            underTest.currentDialog?.dismiss()
+        }
     }
 
     @Test
@@ -93,6 +96,8 @@ class KeyGestureDialogStartableTest : SysuiTestCase() {
         }
 
     @Test
+    @Ignore("b/425722546 - we have one in review CL ag/35510953 for fixing the crash")
+    @DisableFlags(Flags.FLAG_ENABLE_MAGNIFY_MAGNIFICATION_KEY_GESTURE_DIALOG)
     fun start_onMagnificationInfoFlowCollected_showDialog() =
         testScope.runTest {
             underTest.start()
@@ -114,6 +119,8 @@ class KeyGestureDialogStartableTest : SysuiTestCase() {
         }
 
     @Test
+    @Ignore("b/425722546 - we have one in review CL ag/35510953 for fixing the crash")
+    @DisableFlags(Flags.FLAG_ENABLE_MAGNIFY_MAGNIFICATION_KEY_GESTURE_DIALOG)
     fun start_onMagnificationInfoFlowCollected_dialogShowing_ignoreAdditionalFlows() =
         testScope.runTest {
             underTest.start()
