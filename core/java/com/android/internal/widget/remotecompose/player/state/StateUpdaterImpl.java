@@ -16,14 +16,12 @@
 package com.android.internal.widget.remotecompose.player.state;
 
 
-
 import android.annotation.NonNull;
 import android.graphics.Bitmap;
 
 import com.android.internal.widget.remotecompose.core.RemoteContext;
 
 /** Default implementation of {@link StateUpdater}. */
-
 public class StateUpdaterImpl implements StateUpdater {
 
     private final RemoteContext mRemoteContext;

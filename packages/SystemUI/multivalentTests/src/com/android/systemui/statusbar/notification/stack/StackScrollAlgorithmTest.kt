@@ -9,6 +9,7 @@ import android.view.View
 import android.widget.FrameLayout
 import androidx.test.filters.SmallTest
 import com.android.keyguard.BouncerPanelExpansionCalculator.aboutToShowBouncerProgress
+import com.android.systemui.Flags
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.animation.ShadeInterpolation.getContentAlpha
 import com.android.systemui.dump.DumpManager
@@ -117,7 +118,8 @@ class StackScrollAlgorithmTest(flags: FlagsParameterization) : SysuiTestCase() {
         @JvmStatic
         @Parameters(name = "{0}")
         fun getParams(): List<FlagsParameterization> {
-            return FlagsParameterization.allCombinationsOf().andSceneContainer()
+            return FlagsParameterization.allCombinationsOf(Flags.FLAG_NOTIFICATION_FIX_HUN_SHADOWS)
+                .andSceneContainer()
         }
     }
 
@@ -1447,6 +1449,7 @@ class StackScrollAlgorithmTest(flags: FlagsParameterization) : SysuiTestCase() {
         // Given: shade is opened, yTranslation of HUN is 0,
         // the height of HUN equals to the height of QQS Panel,
         // and HUN fully overlaps with QQS Panel
+        ambientState.isShadeExpanded = true
         ambientState.stackTranslation =
             px(R.dimen.qqs_layout_margin_top) + px(R.dimen.qqs_layout_padding_bottom)
         val childHunView =
@@ -1474,6 +1477,7 @@ class StackScrollAlgorithmTest(flags: FlagsParameterization) : SysuiTestCase() {
         // Given: shade is opened, yTranslation of HUN is greater than 0,
         // the height of HUN is equal to the height of QQS Panel,
         // and HUN partially overlaps with QQS Panel
+        ambientState.isShadeExpanded = true
         ambientState.stackTranslation =
             px(R.dimen.qqs_layout_margin_top) + px(R.dimen.qqs_layout_padding_bottom)
         val childHunView =
@@ -1504,6 +1508,7 @@ class StackScrollAlgorithmTest(flags: FlagsParameterization) : SysuiTestCase() {
         // Given: shade is opened, yTranslation of HUN is equal to QQS Panel's height,
         // the height of HUN is equal to the height of QQS Panel,
         // and HUN doesn't overlap with QQS Panel
+        ambientState.isShadeExpanded = true
         ambientState.stackTranslation =
             px(R.dimen.qqs_layout_margin_top) + px(R.dimen.qqs_layout_padding_bottom)
         // Mock the height of shade
@@ -1534,6 +1539,7 @@ class StackScrollAlgorithmTest(flags: FlagsParameterization) : SysuiTestCase() {
     fun shadeClosed_hunShouldHaveFullShadow() {
         // Given: shade is closed, ambientState.stackTranslation == -ambientState.topPadding,
         // the height of HUN is equal to the height of QQS Panel,
+        ambientState.isShadeExpanded = false
         ambientState.stackTranslation = (-ambientState.topPadding).toFloat()
         // Mock the height of shade
         ambientState.setLayoutMinHeight(1000)

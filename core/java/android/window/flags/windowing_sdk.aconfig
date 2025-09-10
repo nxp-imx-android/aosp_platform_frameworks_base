@@ -157,17 +157,6 @@ flag {
 
 flag {
     namespace: "windowing_sdk"
-    name: "dispose_task_fragment_synchronously"
-    description: "Handle TaskFragment disposal synchronously when handling app died."
-    bug: "429336735"
-    is_fixed_read_only: true
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
-    namespace: "windowing_sdk"
     name: "refactor_match_parent_bounds"
     description: "Consolidate fillsParentBounds with matchParentBounds."
     bug: "409417223"

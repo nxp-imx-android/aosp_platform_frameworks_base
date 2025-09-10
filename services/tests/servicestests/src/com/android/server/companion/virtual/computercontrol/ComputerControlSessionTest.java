@@ -24,6 +24,9 @@ import static android.companion.virtual.VirtualDeviceParams.POLICY_TYPE_RECENTS;
 import static com.android.server.companion.virtual.computercontrol.ComputerControlSessionImpl.KEY_EVENT_DELAY_MS;
 import static com.android.server.companion.virtual.computercontrol.ComputerControlSessionImpl.SWIPE_STEPS;
 import static com.android.server.companion.virtual.computercontrol.ComputerControlSessionImpl.TOUCH_EVENT_DELAY_MS;
+import static com.android.server.companion.virtual.computercontrol.ComputerControlSessionImpl.PRODUCT_ID_DPAD;
+import static com.android.server.companion.virtual.computercontrol.ComputerControlSessionImpl.PRODUCT_ID_KEYBOARD;
+import static com.android.server.companion.virtual.computercontrol.ComputerControlSessionImpl.PRODUCT_ID_TOUCHSCREEN;
 
 import static com.google.common.truth.Truth.assertThat;
 
@@ -43,6 +46,7 @@ import android.companion.virtual.IVirtualDevice;
 import android.companion.virtual.VirtualDeviceParams;
 import android.companion.virtual.computercontrol.ComputerControlSession;
 import android.companion.virtual.computercontrol.ComputerControlSessionParams;
+import android.companion.virtual.computercontrol.IComputerControlStabilityListener;
 import android.companion.virtualdevice.flags.Flags;
 import android.content.AttributionSource;
 import android.hardware.display.DisplayManager;
@@ -65,6 +69,8 @@ import android.view.KeyEvent;
 import android.view.WindowManager;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+
+import com.android.internal.inputmethod.IRemoteComputerControlInputConnection;
 
 import org.junit.After;
 import org.junit.Before;
@@ -94,6 +100,7 @@ public class ComputerControlSessionTest {
     private static final int LONG_PRESS_STEP_COUNT = 5;
     private static final String TARGET_PACKAGE_1 = "com.android.foo";
     private static final String TARGET_PACKAGE_2 = "com.android.bar";
+    private static final long STABILITY_TIMEOUT_MS = 5000L;
     private static final List<String> TARGET_PACKAGE_NAMES =
             List.of(TARGET_PACKAGE_1, TARGET_PACKAGE_2);
     private static final String UNDECLARED_TARGET_PACKAGE = "com.android.baz";
@@ -105,7 +112,11 @@ public class ComputerControlSessionTest {
     @Mock
     private ComputerControlSessionImpl.OnClosedListener mOnClosedListener;
     @Mock
+    private IComputerControlStabilityListener mStabilityListener;
+    @Mock
     private IVirtualDevice mVirtualDevice;
+    @Mock
+    private IRemoteComputerControlInputConnection mRemoteComputerControlInputConnection;
     @Mock
     private IVirtualInputDevice mVirtualDpad;
     @Mock
@@ -194,6 +205,7 @@ public class ComputerControlSessionTest {
         VirtualDpadConfig virtualDpadConfig = mVirtualDpadConfigArgumentCaptor.getValue();
         assertThat(virtualDpadConfig.getAssociatedDisplayId()).isEqualTo(VIRTUAL_DISPLAY_ID);
         assertThat(virtualDpadConfig.getInputDeviceName()).contains(mDefaultParams.getName());
+        assertThat(virtualDpadConfig.getProductId()).isEqualTo(PRODUCT_ID_DPAD);
 
         verify(mVirtualDevice).createVirtualKeyboard(
                 mVirtualKeyboardConfigArgumentCaptor.capture(), any());
@@ -201,6 +213,7 @@ public class ComputerControlSessionTest {
                 mVirtualKeyboardConfigArgumentCaptor.getValue();
         assertThat(virtualKeyboardConfig.getAssociatedDisplayId()).isEqualTo(VIRTUAL_DISPLAY_ID);
         assertThat(virtualKeyboardConfig.getInputDeviceName()).contains(mDefaultParams.getName());
+        assertThat(virtualKeyboardConfig.getProductId()).isEqualTo(PRODUCT_ID_KEYBOARD);
 
         verify(mVirtualDevice).createVirtualTouchscreen(
                 mVirtualTouchscreenConfigArgumentCaptor.capture(), any());
@@ -211,6 +224,7 @@ public class ComputerControlSessionTest {
         assertThat(virtualTouchscreenConfig.getHeight()).isEqualTo(DISPLAY_HEIGHT);
         assertThat(virtualTouchscreenConfig.getInputDeviceName()).contains(
                 mDefaultParams.getName());
+        assertThat(virtualTouchscreenConfig.getProductId()).isEqualTo(PRODUCT_ID_TOUCHSCREEN);
     }
 
     @Test
@@ -395,6 +409,44 @@ public class ComputerControlSessionTest {
     }
 
     @Test
+    @EnableFlags(Flags.FLAG_COMPUTER_CONTROL_TYPING)
+    public void insertText_callsCommitTextOnAvailableInputConnection() throws RemoteException {
+        createComputerControlSession(mDefaultParams);
+        when(mInjector.getInputConnection(VIRTUAL_DISPLAY_ID)).thenReturn(
+                mRemoteComputerControlInputConnection);
+        mSession.insertText("text", false /* replaceExisting */, false /* commit */);
+        verify(mRemoteComputerControlInputConnection).commitText(any(), eq("text"), eq(1));
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_COMPUTER_CONTROL_TYPING)
+    public void insertTextWithReplaceExisting_callsReplaceTextOnAvailableInputConnection()
+            throws RemoteException {
+        createComputerControlSession(mDefaultParams);
+        when(mInjector.getInputConnection(VIRTUAL_DISPLAY_ID)).thenReturn(
+                mRemoteComputerControlInputConnection);
+        mSession.insertText("text", true /* replaceExisting */, false /* commit */);
+        verify(mRemoteComputerControlInputConnection).replaceText(any(), eq(0),
+                eq(Integer.MAX_VALUE), eq("text"), eq(1));
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_COMPUTER_CONTROL_TYPING)
+    public void insertTextWithCommit_sendEnterKeyOnAvailableInputConnection()
+            throws RemoteException {
+        createComputerControlSession(mDefaultParams);
+        when(mInjector.getInputConnection(VIRTUAL_DISPLAY_ID)).thenReturn(
+                mRemoteComputerControlInputConnection);
+
+        mSession.insertText("text", false /* replaceExisting */, true /* commit */);
+        verify(mRemoteComputerControlInputConnection).commitText(any(), eq("text"), eq(1));
+        verify(mRemoteComputerControlInputConnection).sendKeyEvent(any(),
+                argThat(new MatchesKeyEvent(KeyEvent.KEYCODE_ENTER, KeyEvent.ACTION_DOWN)));
+        verify(mRemoteComputerControlInputConnection).sendKeyEvent(any(),
+                argThat(new MatchesKeyEvent(KeyEvent.KEYCODE_ENTER, KeyEvent.ACTION_UP)));
+    }
+
+    @Test
     public void performActionBack_injectsBackKey()
             throws RemoteException {
         createComputerControlSession(mDefaultParams);
@@ -404,6 +456,75 @@ public class ComputerControlSessionTest {
                 new MatchesVirtualKeyEvent(KeyEvent.KEYCODE_BACK, VirtualKeyEvent.ACTION_DOWN)));
         verify(mVirtualDpad).sendKeyEvent(argThat(
                 new MatchesVirtualKeyEvent(KeyEvent.KEYCODE_BACK, VirtualKeyEvent.ACTION_UP)));
+    }
+
+    @Test
+    public void tap_notifiesStabilityListener() throws Exception {
+        createComputerControlSession(mDefaultParams);
+        mSession.setStabilityListener(mStabilityListener);
+
+        mSession.tap(60, 200);
+
+        verify(mStabilityListener, timeout(STABILITY_TIMEOUT_MS)).onSessionStable();
+    }
+
+    @Test
+    public void longPress_notifiesStabilityListener() throws Exception {
+        createComputerControlSession(mDefaultParams);
+        mSession.setStabilityListener(mStabilityListener);
+
+        mSession.longPress(100, 200);
+
+        verify(mStabilityListener, timeout(STABILITY_TIMEOUT_MS)).onSessionStable();
+    }
+
+    @Test
+    public void performAction_notifiesStabilityListener() throws Exception {
+        createComputerControlSession(mDefaultParams);
+        mSession.setStabilityListener(mStabilityListener);
+
+        mSession.performAction(ComputerControlSession.ACTION_GO_BACK);
+
+        verify(mStabilityListener, timeout(STABILITY_TIMEOUT_MS)).onSessionStable();
+    }
+
+    @Test
+    public void insertText_notifiesStabilityListener() throws Exception {
+        createComputerControlSession(mDefaultParams);
+        mSession.setStabilityListener(mStabilityListener);
+
+        mSession.insertText("hello", false /* replaceExisting */, true /* commit */);
+
+        verify(mStabilityListener, timeout(STABILITY_TIMEOUT_MS)).onSessionStable();
+    }
+
+    @Test
+    public void swipe_notifiesStabilityListener() throws Exception {
+        createComputerControlSession(mDefaultParams);
+        mSession.setStabilityListener(mStabilityListener);
+
+        mSession.swipe(60, 200, 180, 400);
+
+        verify(mStabilityListener, timeout(STABILITY_TIMEOUT_MS)).onSessionStable();
+    }
+
+    @Test
+    public void launchApplication_notifiesStabilityListener() throws Exception {
+        createComputerControlSession(mDefaultParams);
+        mSession.setStabilityListener(mStabilityListener);
+
+        mSession.launchApplication(TARGET_PACKAGE_1);
+
+        verify(mStabilityListener, timeout(STABILITY_TIMEOUT_MS)).onSessionStable();
+    }
+
+    @Test
+    public void setStabilityListener_withStabilityListenerAlreadySet_throwsException() {
+        createComputerControlSession(mDefaultParams);
+        mSession.setStabilityListener(mStabilityListener);
+
+        assertThrows(IllegalStateException.class,
+                () -> mSession.setStabilityListener(mStabilityListener));
     }
 
     private void createComputerControlSession(ComputerControlSessionParams params) {
@@ -476,6 +597,23 @@ public class ComputerControlSessionTest {
         @Override
         public boolean matches(VirtualKeyEvent event) {
             return event.getKeyCode() == mKeyCode && event.getAction() == mAction;
+        }
+    }
+
+    private static class MatchesKeyEvent implements ArgumentMatcher<KeyEvent> {
+
+        private final int mKeyCode;
+
+        private final int mAction;
+
+        MatchesKeyEvent(int keyCode, int action) {
+            mKeyCode = keyCode;
+            mAction = action;
+        }
+
+        @Override
+        public boolean matches(KeyEvent event) {
+            return mKeyCode == event.getKeyCode() && mAction == event.getAction();
         }
     }
 }

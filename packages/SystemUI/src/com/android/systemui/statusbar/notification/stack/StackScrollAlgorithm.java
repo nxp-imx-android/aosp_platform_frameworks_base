@@ -16,6 +16,8 @@
 
 package com.android.systemui.statusbar.notification.stack;
 
+import static com.android.systemui.Flags.notificationFixHunShadows;
+
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.content.Context;
@@ -1305,7 +1307,7 @@ public class StackScrollAlgorithm {
                 if (childrenOnTop != 0.0f) {
                     // To elevate the later HUN over previous HUN when multiple HUNs exist
                     childrenOnTop++;
-                } else {
+                } else if (ambientState.isShadeExpanded() || !notificationFixHunShadows()) {
                     // Handles HUN shadow when Shade is opened, and AmbientState.mScrollY > 0
                     // Calculate the HUN's z-value based on its overlapping fraction with QQS Panel.
                     // When scrolling down shade to make HUN back to in-position in Notif Panel,
@@ -1317,6 +1319,9 @@ public class StackScrollAlgorithm {
                             1.0f,
                             overlap / childViewState.height
                     );
+                } else {
+                    // Increment by one to add the full shadow when the shade is closed.
+                    childrenOnTop++;
                 }
                 childViewState.setZTranslation(baseZ
                         + childrenOnTop * mPinnedZTranslationExtra);

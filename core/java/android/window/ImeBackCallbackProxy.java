@@ -40,7 +40,7 @@ import java.util.ArrayList;
 /**
  * A handler (on the app process side) for IME back callbacks.
  *
- * See {@link ImeOnBackInvokedDispatcher} for the counterpart of this class on the IME process side.
+ * See {@link ImeBackCallbackSender} for the counterpart of this class on the IME process side.
  *
  * This class lives in the app process and handles back callback registrations from the IME process.
  * Whenever it receives a callback registration through its ResultReceiver, it registers the
@@ -51,7 +51,7 @@ import java.util.ArrayList;
  * sent to the IME process. The IME process then uses the provided ResultReceiver to send callback
  * registrations and unregistrations to the app process.
  *
- * @see ImeOnBackInvokedDispatcher
+ * @see ImeBackCallbackSender
  * @hide
  */
 public class ImeBackCallbackProxy {

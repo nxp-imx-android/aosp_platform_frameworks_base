@@ -29,6 +29,7 @@ import android.hardware.display.DisplayManager
 import android.hardware.display.DisplayTopology
 import android.hardware.input.InputManager
 import android.os.Bundle
+import android.platform.helpers.SysuiRestarter
 import android.platform.test.annotations.Postsubmit
 import android.platform.test.annotations.RequiresFlagsEnabled
 import android.platform.test.flag.junit.DeviceFlagsValueProvider
@@ -66,6 +67,7 @@ import org.junit.After
 import org.junit.Assert.assertTrue
 import org.junit.Assume
 import org.junit.Before
+import org.junit.BeforeClass
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -88,12 +90,8 @@ import java.time.Duration
 @Postsubmit
 class ConnectedDisplayCujSmokeTests {
 
-    private val instrumentation: Instrumentation = InstrumentationRegistry.getInstrumentation()
     private val context = instrumentation.targetContext
     private val tapl = LauncherInstrumentation()
-    private val wmHelper =
-        WindowManagerStateHelper(instrumentation, retryIntervalMs = FLICKER_LIB_RETRY_INTERVAL_MS)
-    private val device = UiDevice.getInstance(instrumentation)
     private val browserApp = BrowserAppHelper(instrumentation)
     private val clockApp = ClockAppHelper(instrumentation)
     private val desktopState = DesktopState.fromContext(context)
@@ -507,11 +505,15 @@ class ConnectedDisplayCujSmokeTests {
         launchAppFromTaskbar(externalDisplayId, browserApp)
         verifyActivityState(browserApp, WINDOWING_MODE_FREEFORM, externalDisplayId, visible = true)
 
-        // Verify connecting a display doesn't crash.
+        // Verify disconnecting a display doesn't crash.
         connectedDisplayRule.setupTestDisplays(0)
+        // Disconnecting the external display may triggers transitions (e.g., display windowing mode
+        // switch).
+        wmHelper.StateSyncBuilder().withAppTransitionIdle(DEFAULT_DISPLAY).waitForAndVerify()
+        instrumentation.waitForIdleSync()
 
-        // Verify disconnecting the display doesn't crash.
-        connectedDisplayRule.setupTestDisplay()
+        // Verify connecting the display doesn't crash.
+        setupTestDisplayAndWaitForTransitions()
     }
 
     // Extended: Device state should be recoverable when connecting and disconnecting an
@@ -774,5 +776,25 @@ class ConnectedDisplayCujSmokeTests {
         // Following timeouts are adjusted for each platform by [platformAdjust()].
         val FLICKER_LIB_RETRY_INTERVAL_MS = Duration.ofMillis(500).platformAdjust().toMillis()
         val UIAUTOMATOR_TIMEOUT = Duration.ofSeconds(10).platformAdjust()
+
+        val instrumentation: Instrumentation = InstrumentationRegistry.getInstrumentation()
+        val wmHelper =
+            WindowManagerStateHelper(
+                instrumentation,
+                retryIntervalMs = FLICKER_LIB_RETRY_INTERVAL_MS
+            )
+        val device = UiDevice.getInstance(instrumentation)
+
+        @JvmStatic
+        @BeforeClass
+        fun setupClass() {
+            // Restart SystemUI to ensure it's in a clean state.
+            SysuiRestarter.restartSystemUI(true)
+
+            // Ensure launcher is visible.
+            instrumentation.waitForIdleSync()
+            By.pkg(device.launcherPackageName).depth(0).assertVisible(timeout = UIAUTOMATOR_TIMEOUT)
+            wmHelper.StateSyncBuilder().withAppTransitionIdle().waitForAndVerify()
+        }
     }
 }

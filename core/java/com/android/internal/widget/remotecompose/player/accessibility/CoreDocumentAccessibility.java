@@ -16,7 +16,6 @@
 package com.android.internal.widget.remotecompose.player.accessibility;
 
 
-
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.graphics.PointF;
@@ -49,7 +48,6 @@ import java.util.stream.Stream;
  * list of modifiers that must be tagged with {@link AccessibilitySemantics} either incidentally
  * (see {@link ClickModifierOperation}) or explicitly (see {@link CoreSemantics}).
  */
-
 public class CoreDocumentAccessibility implements RemoteComposeDocumentAccessibility {
     private final CoreDocument mDocument;
     private final RemoteContextActions mRemoteContextActions;

@@ -2143,6 +2143,20 @@ public final class MediaQualityUtils {
         } else if (type == ParameterDefaultValue.longDefault) {
             bundle.putObject(ParameterCapability.CAPABILITY_MIN, range.numRange.getLongMinMax()[0]);
             bundle.putObject(ParameterCapability.CAPABILITY_MAX, range.numRange.getLongMinMax()[1]);
+        } else if (type == ParameterDefaultValue.stringDefault) {
+            byte[] stringParameterValuesByte = Objects.requireNonNull(
+                    range.vendorDefinedValues.getParcelable(DefaultExtension.class)).bytes;
+            Parcel paramCapRangeParcel = Parcel.obtain();
+            paramCapRangeParcel.unmarshall(
+                    stringParameterValuesByte, 0, stringParameterValuesByte.length
+            );
+            paramCapRangeParcel.setDataPosition(0);
+            int paramValuesSize = paramCapRangeParcel.readInt();
+            paramCapRangeParcel.setDataPosition(0);
+            String[] stringParamValues = new String[paramValuesSize];
+            paramCapRangeParcel.readStringArray(stringParamValues);
+            bundle.putObject(ParameterCapability.CAPABILITY_ENUM, stringParamValues);
+            paramCapRangeParcel.recycle();
         }
         return bundle;
     }
@@ -2154,20 +2168,23 @@ public final class MediaQualityUtils {
      * @param paramRangeBundle bundle that will contains vendor param defined values.
      */
     public static void convertToVendorCaps(VendorParamCapability vpcHal, Bundle paramRangeBundle) {
-        byte[] vendorParamCapRangeByteArray = Objects.requireNonNull(
-                vpcHal.range.vendorDefinedValues.getParcelable(
-                        DefaultExtension.class)).bytes;
-        Parcel vendorParamCapRangeParcel = Parcel.obtain();
-        vendorParamCapRangeParcel.unmarshall(
-                vendorParamCapRangeByteArray, 0, vendorParamCapRangeByteArray.length);
-        vendorParamCapRangeParcel.setDataPosition(0);
-        int vendorDefinedValuesSize = vendorParamCapRangeParcel.readInt();
-        vendorParamCapRangeParcel.setDataPosition(0);
-        String[] vendorDefinedValues = new String[vendorDefinedValuesSize];
-        vendorParamCapRangeParcel.readStringArray(vendorDefinedValues);
-        //TODO: Handle int, long and double array
-        paramRangeBundle.putStringArray(ParameterCapability.CAPABILITY_ENUM, vendorDefinedValues);
-        vendorParamCapRangeParcel.recycle();
+        if (vpcHal != null && vpcHal.range != null) {
+            byte[] vendorParamCapRangeByteArray = Objects.requireNonNull(
+                    vpcHal.range.vendorDefinedValues.getParcelable(
+                            DefaultExtension.class)).bytes;
+            Parcel vendorParamCapRangeParcel = Parcel.obtain();
+            vendorParamCapRangeParcel.unmarshall(
+                    vendorParamCapRangeByteArray, 0, vendorParamCapRangeByteArray.length);
+            vendorParamCapRangeParcel.setDataPosition(0);
+            int vendorDefinedValuesSize = vendorParamCapRangeParcel.readInt();
+            vendorParamCapRangeParcel.setDataPosition(0);
+            String[] vendorDefinedValues = new String[vendorDefinedValuesSize];
+            vendorParamCapRangeParcel.readStringArray(vendorDefinedValues);
+            //TODO: Handle int, long and double array
+            paramRangeBundle.putStringArray(ParameterCapability.CAPABILITY_ENUM,
+                    vendorDefinedValues);
+            vendorParamCapRangeParcel.recycle();
+        }
     }
 
     private static String getTempId(BiMap<Long, String> map, Cursor cursor) {

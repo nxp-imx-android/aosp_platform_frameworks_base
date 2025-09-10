@@ -31,11 +31,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.android.compose.modifiers.thenIf
+import com.android.systemui.Flags
 import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent.DisplayAware
 import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent.LifecycleListener
 import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent.PerDisplaySingleton
-import com.android.systemui.Flags
 import com.android.systemui.keyboard.shortcut.ui.composable.ShortcutHelper
 import com.android.systemui.keyboard.shortcut.ui.composable.ShortcutHelperBottomSheet
 import com.android.systemui.keyboard.shortcut.ui.composable.getWidth
@@ -90,15 +90,15 @@ constructor(
                     shortcutHelperViewModel.shortcutsUiState.collectAsStateWithLifecycle()
                 val shortcutCustomizationDialogStarter =
                     rememberActivated(traceName = "shortcutCustomizationDialogStarter") {
-                        shortcutCustomizationDialogStarterFactory.create()
+                        shortcutCustomizationDialogStarterFactory.create(displayContext)
                     }
                 ShortcutHelper(
                     modifier =
-                        Modifier
-                            .width(getWidth())
-                            .thenIf(hasExpandedWindowHeight()
-                                    && Flags.shortcutHelperMultiDisplaySupport()
-                            ) { Modifier.fillMaxHeight(0.72f) },
+                        Modifier.width(getWidth()).thenIf(
+                            hasExpandedWindowHeight() && Flags.shortcutHelperMultiDisplaySupport()
+                        ) {
+                            Modifier.fillMaxHeight(0.72f)
+                        },
                     shortcutsUiState = shortcutsUiState,
                     onKeyboardSettingsClicked = { onKeyboardSettingsClicked(dialog) },
                     onSearchQueryChanged = { shortcutHelperViewModel.onSearchQueryChanged(it) },

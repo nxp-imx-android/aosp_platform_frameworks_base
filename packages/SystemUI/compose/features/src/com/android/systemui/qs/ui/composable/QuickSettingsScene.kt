@@ -375,7 +375,6 @@ private fun ContentScope.QuickSettingsContent(
                 viewModel = footerActionsViewModel,
                 isCustomizing = false,
                 customizingAnimationDuration = 0,
-                lifecycleOwner = lifecycleOwner,
                 modifier =
                     Modifier.align(Alignment.CenterHorizontally)
                         .sysuiResTag("qs_footer_actions")

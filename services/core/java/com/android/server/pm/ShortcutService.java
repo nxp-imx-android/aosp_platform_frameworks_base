@@ -4052,7 +4052,8 @@ public class ShortcutService extends IShortcutService.Stub {
 
     // Due to b/38267327, ActivityInfo.enabled may not reflect the current state of the component
     // and we need to check the enabled state via PackageManager.getComponentEnabledSetting.
-    private boolean isEnabled(@Nullable ActivityInfo ai, int userId) {
+    @VisibleForTesting
+    boolean isEnabled(@Nullable ActivityInfo ai, int userId) {
         if (ai == null) {
             return false;
         }
@@ -4062,6 +4063,9 @@ public class ShortcutService extends IShortcutService.Stub {
         try {
             enabledFlag = mIPackageManager.getComponentEnabledSetting(
                     ai.getComponentName(), userId);
+        } catch (IllegalArgumentException e) {
+            Slog.w(TAG, "Failed to get component enabled setting of " + ai.getComponentName(), e);
+            return false;
         } catch (RemoteException e) {
             // Shouldn't happen.
             Slog.wtf(TAG, "RemoteException", e);

@@ -126,8 +126,6 @@ class DesktopDisplayEventHandler(
             // `displayId`.
             desktopDisplayModeController.updateDefaultDisplayWindowingMode()
             if (DesktopExperienceFlags.ENABLE_DISPLAY_RECONNECT_INTERACTION.isTrue) {
-                // TODO - b/365873835: Restore a display if a uniqueId match is found in
-                //  the desktop repository.
                 displayController.getDisplay(displayId)?.uniqueId?.let { uniqueId ->
                     uniqueIdByDisplayId[displayId] = uniqueId
                 }
@@ -209,13 +207,17 @@ class DesktopDisplayEventHandler(
             return false
         }
         if (uniqueDisplayId in displaysMidRestoration) {
-            logV("handlePotentialReconnect: uniqueDisplay=$uniqueDisplayId " +
-                "mid-restoration; aborting.")
+            logV(
+                "handlePotentialReconnect: uniqueDisplay=$uniqueDisplayId " +
+                    "mid-restoration; aborting."
+            )
             return false
         }
         if (!currentUserRepository.hasPreservedDisplayForUniqueDisplayId(uniqueDisplayId)) {
-            logV("handlePotentialReconnect: No preserved display found for " +
-                "uniqueDisplayId=$uniqueDisplayId; aborting.")
+            logV(
+                "handlePotentialReconnect: No preserved display found for " +
+                    "uniqueDisplayId=$uniqueDisplayId; aborting."
+            )
         }
         val preservedTasks =
             currentUserRepository.getPreservedTasks(uniqueDisplayId).toMutableList()

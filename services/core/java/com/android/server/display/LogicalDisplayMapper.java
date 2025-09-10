@@ -537,9 +537,14 @@ class LogicalDisplayMapper implements DisplayDeviceRepository.Listener {
             return;
         }
 
-        if (Flags.changeDefaultDisplayLidClosed() && state.hasProperty(
-                PROPERTY_LAPTOP_HARDWARE_CONFIGURATION_DOCKED)) {
-            createLayoutWithDefaultSecondaryDisplayLocked(state.getIdentifier());
+        if (Flags.changeDefaultDisplayLidClosed()) {
+            if (mDeviceState.hasProperty(PROPERTY_LAPTOP_HARDWARE_CONFIGURATION_DOCKED)
+                    && !state.hasProperty(PROPERTY_LAPTOP_HARDWARE_CONFIGURATION_DOCKED)) {
+                prepareForTransitionOutOfDockedStateLocked();
+            } else if (!mDeviceState.hasProperty(PROPERTY_LAPTOP_HARDWARE_CONFIGURATION_DOCKED)
+                    && state.hasProperty(PROPERTY_LAPTOP_HARDWARE_CONFIGURATION_DOCKED)) {
+                createLayoutWithDefaultSecondaryDisplayLocked(state.getIdentifier());
+            }
         }
 
         // As part of a state transition, we may need to turn off some displays temporarily so that
@@ -1441,6 +1446,24 @@ class LogicalDisplayMapper implements DisplayDeviceRepository.Listener {
         updateLogicalDisplaysLocked();
     }
 
+    /**
+     * If transitioning out of the docked state, enable all the displays that were disabled by this
+     * state. Also, remove its layout so that a fresh one is created the next time, because the
+     * default secondary display might be disconnected in the meantime.
+     */
+    private void prepareForTransitionOutOfDockedStateLocked() {
+        for (int i = 0; i < mCurrentLayout.size(); i++) {
+            Layout.Display layoutDisplay = mCurrentLayout.getAt(i);
+            DisplayDevice device = mDisplayDeviceRepo.getByAddressLocked(
+                    layoutDisplay.getAddress());
+            if (device == null) {
+                continue;
+            }
+            getDisplayLocked(device).setEnabledLocked(true);
+        }
+        mDeviceStateToLayoutMap.remove(mDeviceState.getIdentifier());
+    }
+
     private void createLayoutWithDefaultSecondaryDisplayLocked(int identifier) {
         for (int i = 0; i < mLogicalDisplays.size(); i++) {
             LogicalDisplay display = mLogicalDisplays.valueAt(i);
@@ -1480,7 +1503,7 @@ class LogicalDisplayMapper implements DisplayDeviceRepository.Listener {
 
     /**
      * Find a new default secondary display if the current one is being removed. If none can be
-     * found, remove the closed-lid state layout so that the default layout is applied instead.
+     * found, remove the docked state layout so that the default layout is applied instead.
      * @param removedDisplayDevice The display device being removed
      * @return True if the current layout has been modified and needs to be re-applied.
      */

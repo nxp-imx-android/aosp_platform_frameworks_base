@@ -26,7 +26,6 @@ import android.util.SparseBooleanArray;
 import android.window.TaskSnapshot;
 
 import com.android.internal.annotations.VisibleForTesting;
-import com.android.window.flags.Flags;
 
 import java.io.File;
 import java.util.UUID;
@@ -128,11 +127,9 @@ class BaseAppSnapshotPersister {
 
         @NonNull
         File getDirectory(int userId) {
-            if (Flags.scrambleSnapshotFileName()) {
-                final File directory = getOrInitScrambleDirectory(userId);
-                if (directory != null) {
-                    return directory;
-                }
+            final File directory = getOrInitScrambleDirectory(userId);
+            if (directory != null) {
+                return directory;
             }
             return getBaseDirectory(userId);
         }

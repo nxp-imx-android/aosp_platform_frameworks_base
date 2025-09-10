@@ -17,7 +17,9 @@
 package com.android.systemui.qs.footer.ui.viewmodel
 
 import android.app.supervision.flags.Flags
+import android.content.pm.UserInfo
 import android.graphics.drawable.Drawable
+import android.os.UserHandle
 import android.os.UserManager
 import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
@@ -29,6 +31,7 @@ import androidx.test.filters.SmallTest
 import com.android.internal.logging.testing.UiEventLoggerFake
 import com.android.settingslib.Utils
 import com.android.settingslib.drawable.UserIconDrawable
+import com.android.systemui.Flags as SysUiFlags
 import com.android.systemui.InstanceIdSequenceFake
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.broadcast.BroadcastDispatcher
@@ -54,6 +57,9 @@ import com.android.systemui.statusbar.policy.FakeSecurityController
 import com.android.systemui.statusbar.policy.FakeUserInfoController
 import com.android.systemui.statusbar.policy.FakeUserInfoController.FakeInfo
 import com.android.systemui.statusbar.policy.MockUserSwitcherControllerWrapper
+import com.android.systemui.user.data.repository.FakeUserRepository
+import com.android.systemui.user.domain.interactor.HeadlessSystemUserModeFake
+import com.android.systemui.user.domain.interactor.SelectedUserInteractor
 import com.android.systemui.util.mockito.mock
 import com.android.systemui.util.mockito.nullable
 import com.android.systemui.util.settings.FakeGlobalSettings
@@ -61,6 +67,7 @@ import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.advanceUntilIdle
@@ -80,6 +87,8 @@ import org.mockito.kotlin.eq
 class FooterActionsViewModelTest : SysuiTestCase() {
     private val testDispatcher = StandardTestDispatcher()
     private val testScope = TestScope(testDispatcher)
+    private val userRepository = FakeUserRepository()
+    private val selectedUserInteractor = SelectedUserInteractor(userRepository)
     private lateinit var utils: FooterActionsTestUtils
 
     private val themedContext = ContextThemeWrapper(context, R.style.Theme_SystemUI_QuickSettings)
@@ -87,6 +96,7 @@ class FooterActionsViewModelTest : SysuiTestCase() {
     @Before
     fun setUp() {
         utils = FooterActionsTestUtils(context, TestableLooper.get(this), testScope.testScheduler)
+        userRepository.setUserInfos(USER_INFOS)
     }
 
     private fun runTest(block: suspend TestScope.() -> Unit) {
@@ -94,20 +104,64 @@ class FooterActionsViewModelTest : SysuiTestCase() {
     }
 
     @Test
+    @DisableFlags(SysUiFlags.FLAG_HSU_QS_CHANGES)
     fun settingsButton() = runTest {
-        val underTest = utils.footerActionsViewModel(showPowerButton = false)
-        val settings = underTest.settings
+        val underTest =
+            utils.footerActionsViewModel(
+                showPowerButton = false,
+                selectedUserInteractor = selectedUserInteractor,
+            )
+        runBlocking { userRepository.setSelectedUserInfo(USER) }
 
-        assertThat(settings.icon)
+        val settings by collectLastValue(underTest.settings)
+
+        assertThat(settings).isNotNull()
+        assertThat(settings?.icon)
             .isEqualTo(
                 Icon.Resource(
                     R.drawable.ic_qs_footer_settings,
                     ContentDescription.Resource(R.string.accessibility_quick_settings_settings),
                 )
             )
-        assertThat(settings.backgroundColorFallback).isEqualTo(R.attr.shadeInactive)
-        assertThat(settings.iconTintFallback)
+        assertThat(settings?.backgroundColorFallback).isEqualTo(R.attr.shadeInactive)
+        assertThat(settings?.iconTintFallback)
             .isEqualTo(Utils.getColorAttrDefaultColor(themedContext, R.attr.onShadeInactiveVariant))
+    }
+
+    @Test
+    @EnableFlags(SysUiFlags.FLAG_HSU_QS_CHANGES)
+    fun settingsButton_hideForHeadlessSystemUser() = runTest {
+        val fakeHsum = HeadlessSystemUserModeFake()
+        fakeHsum.setIsHeadlessSystemUser(true)
+        val underTest =
+            utils.footerActionsViewModel(
+                showPowerButton = false,
+                hsum = fakeHsum,
+                selectedUserInteractor = selectedUserInteractor,
+            )
+        runBlocking { userRepository.setSelectedUserInfo(USER) }
+
+        val settings by collectLastValue(underTest.settings)
+
+        assertThat(settings).isNull()
+    }
+
+    @Test
+    @EnableFlags(SysUiFlags.FLAG_HSU_QS_CHANGES)
+    fun settingsButton_showWhenNotHeadlessSystemUser() = runTest {
+        val fakeHsum = HeadlessSystemUserModeFake()
+        fakeHsum.setIsHeadlessSystemUser(false)
+        val underTest =
+            utils.footerActionsViewModel(
+                showPowerButton = false,
+                hsum = fakeHsum,
+                selectedUserInteractor = selectedUserInteractor,
+            )
+        runBlocking { userRepository.setSelectedUserInfo(USER) }
+
+        val settings by collectLastValue(underTest.settings)
+
+        assertThat(settings).isNotNull()
     }
 
     @Test
@@ -542,6 +596,9 @@ class FooterActionsViewModelTest : SysuiTestCase() {
 
     companion object {
         val AIRPLANE_MODE_TILE_SPEC = TileSpec.create(ConnectivityModule.AIRPLANE_MODE_TILE_SPEC)
+
+        private val USER = UserInfo(UserHandle.USER_SYSTEM, "system_user", 0)
+        private val USER_INFOS = listOf(USER)
 
         private fun createAndPopulateQsTileConfigProvider(): QSTileConfigProvider {
             val logger =

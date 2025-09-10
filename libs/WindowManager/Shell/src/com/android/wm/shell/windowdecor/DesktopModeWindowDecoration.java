@@ -1206,13 +1206,21 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
             }
             relayoutParams.mInputFeatures |=
                         WindowManager.LayoutParams.INPUT_FEATURE_DISPLAY_TOPOLOGY_AWARE;
-        } else if (isAppHandle && !DesktopModeFlags.ENABLE_HANDLE_INPUT_FIX.isTrue()) {
-            // The focused decor (fullscreen/split) does not need to handle input because input in
-            // the App Handle is handled by the InputMonitor in DesktopModeWindowDecorViewModel.
-            // Note: This does not apply with the above flag enabled as the status bar input layer
-            // will forward events to the handle directly.
-            relayoutParams.mInputFeatures
-                    |= WindowManager.LayoutParams.INPUT_FEATURE_NO_INPUT_CHANNEL;
+        } else if (isAppHandle) {
+            if (!DesktopModeFlags.ENABLE_HANDLE_INPUT_FIX.isTrue()) {
+                // The focused decor (fullscreen/split) does not need to handle input because input
+                // in the App Handle is handled by the InputMonitor in
+                // DesktopModeWindowDecorViewModel.
+                // Note: This does not apply with the above flag enabled as the status bar input
+                // layer will forward events to the handle directly.
+                relayoutParams.mInputFeatures
+                        |= WindowManager.LayoutParams.INPUT_FEATURE_NO_INPUT_CHANNEL;
+            }
+            if (DesktopExperienceFlags.ENABLE_REMOVE_STATUS_BAR_INPUT_LAYER.isTrue()) {
+                // Add input feature spy flag if caption is an app handle so that input is not
+                // stolen when motion event exits caption view.
+                relayoutParams.mInputFeatures |= WindowManager.LayoutParams.INPUT_FEATURE_SPY;
+            }
         }
         if (isAppHeader
                 && desktopConfig.useWindowShadow(/* isFocusedWindow= */ hasGlobalFocus)) {

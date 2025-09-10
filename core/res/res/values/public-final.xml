@@ -2955,11 +2955,11 @@
     <public type="string" name="config_feedbackIntentExtraKey" id="0x0104001f" />
     <!-- @hide @SystemApi -->
     <public type="string" name="config_feedbackIntentNameKey" id="0x01040020" />
-    <!-- @hide @SystemApi @TestApi -->
+    <!-- @hide @SystemApi -->
     <public type="string" name="config_defaultAssistant" id="0x01040021" />
     <!-- @hide @SystemApi -->
     <public type="string" name="config_defaultBrowser" id="0x01040022" />
-    <!-- @hide @SystemApi @TestApi -->
+    <!-- @hide @SystemApi -->
     <public type="string" name="config_defaultDialer" id="0x01040023" />
     <!-- @hide @SystemApi -->
     <public type="string" name="config_defaultSms" id="0x01040024" />
@@ -3009,7 +3009,7 @@
     <public type="string" name="config_defaultCallRedirection" id="0x01040025" />
     <!-- @hide @SystemApi -->
     <public type="string" name="config_defaultCallScreening" id="0x01040026" />
-    <!-- @hide @SystemApi @TestApi -->
+    <!-- @hide @SystemApi -->
     <public type="string" name="config_systemGallery" id="0x01040027" />
 
     <public type="id" name="accessibilityActionPressAndHold" id="0x0102004a" />
@@ -3160,9 +3160,9 @@
     <public type="dimen" name="system_app_widget_background_radius" id="0x01050008" />
     <public type="dimen" name="system_app_widget_inner_radius" id="0x01050009" />
 
-    <!-- @hide @SystemApi @TestApi -->
+    <!-- @hide @SystemApi -->
     <public type="string" name="config_systemAutomotiveCluster" id="0x01040028" />
-    <!-- @hide @SystemApi @TestApi -->
+    <!-- @hide @SystemApi -->
     <public type="string" name="config_systemAutomotiveProjection" id="0x01040029" />
     <!-- @hide @SystemApi -->
     <public type="string" name="config_systemShell" id="0x0104002a" />
@@ -3345,7 +3345,7 @@
     <public name="config_devicePolicyManagement" />
     <!-- @hide @SystemApi -->
     <public name="config_systemAppProtectionService" />
-    <!-- @hide @SystemApi @TestApi -->
+    <!-- @hide @SystemApi -->
     <public name="config_systemAutomotiveCalendarSyncManager" />
     <!-- @hide @SystemApi -->
     <public name="config_defaultAutomotiveNavigation" />
@@ -3363,7 +3363,7 @@
   <public type="string" name="config_devicePolicyManagement" id="0x0104003d" />
     <!-- @hide @SystemApi -->
   <public type="string" name="config_systemAppProtectionService" id="0x0104003e" />
-    <!-- @hide @SystemApi @TestApi -->
+    <!-- @hide @SystemApi -->
   <public type="string" name="config_systemAutomotiveCalendarSyncManager" id="0x0104003f" />
     <!-- @hide @SystemApi -->
   <public type="string" name="config_defaultAutomotiveNavigation" id="0x01040040" />

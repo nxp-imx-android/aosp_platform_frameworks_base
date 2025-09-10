@@ -66,4 +66,23 @@ class WindowDragTransitionHandler(
         finishCallback.onTransitionFinished(null)
         return true
     }
+
+    override fun onTransitionConsumed(
+        transition: IBinder,
+        aborted: Boolean,
+        finishTransaction: SurfaceControl.Transaction?,
+    ) {
+        // Cleans up drag indicators when a transition is consumed or aborted.
+        // TODO: b/444066236 - Track pending transitions to clear indicators for the correct task.
+        // The taskId is not available in this callback, so we must dispose of all indicators
+        // across all displays. This has a known side effect: in the rare edge case that a user is
+        // dragging multiple windows simultaneously and one drag transition aborts, the indicators
+        // for all dragged windows will be removed. This is an acceptable trade-off due to the low
+        // probability of this scenario.
+        if (DesktopExperienceFlags.ENABLE_WINDOW_DROP_SMOOTH_TRANSITION.isTrue) {
+            finishTransaction?.let {
+                multiDisplayDragMoveIndicatorController.disposeAllIndicators(finishTransaction)
+            }
+        }
+    }
 }

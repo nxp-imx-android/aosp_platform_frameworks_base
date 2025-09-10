@@ -216,4 +216,9 @@ public abstract class VirtualDeviceManagerInternal {
      */
     @Nullable
     public abstract VirtualDevice getVirtualDevice(int deviceId);
+
+    /**
+     * Returns if the provided displayId is used for computer control session.
+     */
+    public abstract boolean isComputerControlDisplay(int displayId);
 }

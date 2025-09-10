@@ -294,7 +294,8 @@ public class NotificationInfo extends LinearLayout implements NotificationGuts.G
         }
 
         View turnOffButton = findViewById(R.id.turn_off_notifications);
-        turnOffButton.setOnClickListener(getTurnOffNotificationsClickListener());
+        turnOffButton.setOnClickListener(
+                getTurnOffNotificationsClickListener(mSingleNotificationChannel));
         turnOffButton.setVisibility(turnOffButton.hasOnClickListeners() && !mIsNonblockable
                 ? VISIBLE : GONE);
 
@@ -512,13 +513,13 @@ public class NotificationInfo extends LinearLayout implements NotificationGuts.G
         return null;
     }
 
-    private OnClickListener getTurnOffNotificationsClickListener() {
+    OnClickListener getTurnOffNotificationsClickListener(NotificationChannel channel) {
         return ((View view) -> {
             if (!mPresentingChannelEditorDialog && mChannelEditorDialogController != null) {
                 mPresentingChannelEditorDialog = true;
 
                 mChannelEditorDialogController.prepareDialogForApp(mAppName, mPackageName, mAppUid,
-                        mSingleNotificationChannel, mPkgIcon, mOnSettingsClickListener);
+                        channel, mPkgIcon, mOnSettingsClickListener);
                 mChannelEditorDialogController.setOnFinishListener(() -> {
                     mPresentingChannelEditorDialog = false;
                     mGutsContainer.closeControls(this, false);

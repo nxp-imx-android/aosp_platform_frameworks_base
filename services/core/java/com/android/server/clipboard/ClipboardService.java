@@ -468,6 +468,12 @@ public class ClipboardService extends SystemService {
             return clipboardDeviceId;
         }
 
+        // The app is running on the default device, even if it requests access to some virtual
+        // device clipboard, fallback to the default clipboard.
+        if (virtualDeviceIds.isEmpty()) {
+            return DEVICE_ID_DEFAULT;
+        }
+
         // Fallback to the device where the app is running, unless it uses the default clipboard.
         int fallbackDeviceId = virtualDeviceIds.valueAt(0);
         return deviceUsesDefaultClipboard(fallbackDeviceId) ? DEVICE_ID_DEFAULT : fallbackDeviceId;

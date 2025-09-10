@@ -440,31 +440,6 @@ public class ClipboardOverlayController implements ClipboardListener.ClipboardOv
         finish(event, null);
     }
 
-    private void animateOut() {
-        if (mExitAnimator != null && mExitAnimator.isRunning()) {
-            return;
-        }
-        mExitAnimator = mView.getExitAnimation();
-        mExitAnimator.addListener(new AnimatorListenerAdapter() {
-            private boolean mCancelled;
-
-            @Override
-            public void onAnimationCancel(Animator animation) {
-                super.onAnimationCancel(animation);
-                mCancelled = true;
-            }
-
-            @Override
-            public void onAnimationEnd(Animator animation) {
-                super.onAnimationEnd(animation);
-                if (!mCancelled) {
-                    hideImmediate();
-                }
-            }
-        });
-        mExitAnimator.start();
-    }
-
     private void finish(ClipboardOverlayEvent event, @Nullable Intent intent) {
         if (mExitAnimator != null && mExitAnimator.isRunning()) {
             return;

@@ -1138,6 +1138,7 @@ final class KeyGestureController {
                                 KeyGestureEvent.KEY_GESTURE_TYPE_LANGUAGE_SWITCH,
                                 KeyGestureEvent.ACTION_GESTURE_COMPLETE, displayId,
                                 focusedToken, /* flags = */0, /* appLaunchData = */null);
+                        return true;
                     }
                 }
                 break;
@@ -1152,6 +1153,7 @@ final class KeyGestureController {
                             KeyGestureEvent.KEY_GESTURE_TYPE_ACCESSIBILITY_SHORTCUT,
                             KeyGestureEvent.ACTION_GESTURE_COMPLETE, displayId,
                             focusedToken, /* flags = */0, /* appLaunchData = */null);
+                    return true;
                 }
                 break;
             case KeyEvent.KEYCODE_SYSRQ:
@@ -1160,6 +1162,7 @@ final class KeyGestureController {
                             KeyGestureEvent.KEY_GESTURE_TYPE_TAKE_SCREENSHOT,
                             KeyGestureEvent.ACTION_GESTURE_COMPLETE, displayId,
                             focusedToken, /* flags = */0, /* appLaunchData = */null);
+                    return true;
                 }
                 break;
             case KeyEvent.KEYCODE_ESCAPE:
@@ -1168,6 +1171,7 @@ final class KeyGestureController {
                             KeyGestureEvent.KEY_GESTURE_TYPE_CLOSE_ALL_DIALOGS,
                             KeyGestureEvent.ACTION_GESTURE_COMPLETE, displayId,
                             focusedToken, /* flags = */0, /* appLaunchData = */null);
+                    return true;
                 }
                 break;
         }

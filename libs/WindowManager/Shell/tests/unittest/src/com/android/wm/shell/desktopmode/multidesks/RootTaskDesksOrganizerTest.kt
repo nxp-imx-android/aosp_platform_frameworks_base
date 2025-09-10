@@ -753,6 +753,22 @@ class RootTaskDesksOrganizerTest : ShellTestCase() {
     }
 
     @Test
+    fun testDeactivateDesk_deskWasRemoved_skipsInsteadOfThrowing() = runTest {
+        val desk = createDeskSuspending(userId = PRIMARY_USER_ID)
+        organizer.removeDesk(
+            wct = WindowContainerTransaction(),
+            deskId = desk.deskRoot.deskId,
+            userId = PRIMARY_USER_ID,
+        )
+        organizer.onTaskVanished(desk.deskRoot.taskInfo)
+
+        val wct = WindowContainerTransaction()
+        organizer.deactivateDesk(wct, desk.deskRoot.deskId)
+
+        assertThat(wct.isEmpty).isTrue()
+    }
+
+    @Test
     fun isDeskChange_forDeskId() = runTest {
         val desk = createDeskSuspending()
 

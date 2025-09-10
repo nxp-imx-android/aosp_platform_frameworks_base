@@ -74,6 +74,8 @@ import java.time.Duration;
 @Presubmit
 @RunWith(AndroidJUnit4.class)
 public class LockSettingsServiceTests extends BaseLockSettingsServiceTests {
+    private static final Duration TEN_YEARS = Duration.ofDays(10 * 365);
+
     @Rule public final SetFlagsRule mSetFlagsRule = new SetFlagsRule();
     @Rule
     public final CheckFlagsRule mCheckFlagsRule = DeviceFlagsValueProvider.createCheckFlagsRule();
@@ -840,18 +842,11 @@ public class LockSettingsServiceTests extends BaseLockSettingsServiceTests {
     public void test20UniqueGuessesAllowed() throws Exception {
         final int userId = PRIMARY_USER_ID;
         final LockscreenCredential credential = newPassword("password");
-        final Duration tenYears = Duration.ofDays(10 * 365);
-        Duration now = Duration.ZERO;
         VerifyCredentialResponse response;
 
-        mInjector.setTimeSinceBoot(now);
+        mInjector.setTimeSinceBoot(Duration.ZERO);
         setCredential(userId, credential);
-        for (int i = 0; i < 19; i++) {
-            response = mService.verifyCredential(newPassword("wrong" + i), userId, /* flags= */ 0);
-            assertFalse(response.isMatched());
-            now = now.plus(tenYears); // Advance 10 years to get past rate-limiting
-            mInjector.setTimeSinceBoot(now);
-        }
+        guessWrongCredential(userId, 19, TEN_YEARS);
         response = mService.verifyCredential(credential, userId, /* flags= */ 0);
         assertTrue(response.isMatched());
     }
@@ -861,18 +856,11 @@ public class LockSettingsServiceTests extends BaseLockSettingsServiceTests {
     public void testMoreThan20UniqueGuessesNotAllowed() throws Exception {
         final int userId = PRIMARY_USER_ID;
         final LockscreenCredential credential = newPassword("password");
-        final Duration tenYears = Duration.ofDays(10 * 365);
-        Duration now = Duration.ZERO;
         VerifyCredentialResponse response;
 
-        mInjector.setTimeSinceBoot(now);
+        mInjector.setTimeSinceBoot(Duration.ZERO);
         setCredential(userId, credential);
-        for (int i = 0; i < 20; i++) {
-            response = mService.verifyCredential(newPassword("wrong" + i), userId, /* flags= */ 0);
-            assertFalse(response.isMatched());
-            now = now.plus(tenYears); // Advance 10 years to get past rate-limiting
-            mInjector.setTimeSinceBoot(now);
-        }
+        guessWrongCredential(userId, 20, TEN_YEARS);
         response = mService.verifyCredential(credential, userId, /* flags= */ 0);
         assertFalse(response.isMatched());
     }
@@ -886,10 +874,7 @@ public class LockSettingsServiceTests extends BaseLockSettingsServiceTests {
         VerifyCredentialResponse response;
 
         setCredential(userId, credential);
-        for (int i = 0; i < 20; i++) {
-            response = mService.verifyCredential(newPassword("wrong" + i), userId, /* flags= */ 0);
-            assertFalse(response.isMatched());
-        }
+        guessWrongCredential(userId, /* times= */ 20);
         response = mService.verifyCredential(credential, userId, /* flags= */ 0);
         assertTrue(response.isMatched());
     }
@@ -909,6 +894,19 @@ public class LockSettingsServiceTests extends BaseLockSettingsServiceTests {
         testTimeoutClamping(Duration.ofMillis(Integer.MAX_VALUE), Integer.MAX_VALUE);
         testTimeoutClamping(Duration.ofMillis((long) Integer.MAX_VALUE + 1), Integer.MAX_VALUE);
         testTimeoutClamping(Duration.ofMillis(Long.MAX_VALUE), Integer.MAX_VALUE);
+    }
+
+    private void guessWrongCredential(int userId, int times) {
+        guessWrongCredential(userId, times, Duration.ZERO);
+    }
+
+    private void guessWrongCredential(int userId, int times, Duration timeBetweenGuesses) {
+        for (int i = 0; i < times; i++) {
+            VerifyCredentialResponse response =
+                    mService.verifyCredential(newPassword("wrong" + i), userId, /* flags= */ 0);
+            assertFalse(response.isMatched());
+            mInjector.setTimeSinceBoot(mInjector.getTimeSinceBoot().plus(timeBetweenGuesses));
+        }
     }
 
     private void testTimeoutClamping(Duration originalTimeout, int expectedClampedTimeout) {

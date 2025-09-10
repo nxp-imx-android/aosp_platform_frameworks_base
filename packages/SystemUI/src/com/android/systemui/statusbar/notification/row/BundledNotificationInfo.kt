@@ -35,6 +35,13 @@ class BundledNotificationInfo(context: Context?, attrs: AttributeSet?) :
     NotificationInfo(context, attrs) {
 
     override fun bindInlineControls() {
+        val originalChannel =
+            mINotificationManager.getNotificationChannel(
+                mContext.packageName,
+                mSbn.normalizedUserId,
+                mSbn.packageName,
+                mSbn.notification.channelId,
+            )
         val enabled =
             mINotificationManager.isAdjustmentSupportedForPackage(
                 mSbn.normalizedUserId,
@@ -78,6 +85,10 @@ class BundledNotificationInfo(context: Context?, attrs: AttributeSet?) :
 
         findViewById<TextView>(R.id.feature_summary)
             .setText(resources.getString(R.string.notification_guts_bundle_summary, mAppName))
+
+        val turnOffButton = findViewById<View>(R.id.turn_off_notifications)
+        turnOffButton.setOnClickListener(getTurnOffNotificationsClickListener(originalChannel))
+        turnOffButton.visibility = if (turnOffButton.hasOnClickListeners()) VISIBLE else GONE
 
         val dismissButton = findViewById<View>(R.id.inline_dismiss)
         dismissButton.setOnClickListener(mOnCloseClickListener)

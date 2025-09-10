@@ -983,7 +983,7 @@ public class VirtualDeviceManagerServiceTest {
         ArraySet<Integer> uids = new ArraySet<>(Arrays.asList(UID_1, UID_2));
         mLocalService.registerAppsOnVirtualDeviceListener(mAppsOnVirtualDeviceListener);
 
-        mVdms.onRunningAppsChanged(mDeviceImpl.getDeviceId(), uids);
+        mVdms.onRunningAppsChanged(mDeviceImpl.getDeviceId(), VIRTUAL_DEVICE_OWNER_PACKAGE, uids);
         TestableLooper.get(this).processAllMessages();
 
         verify(mAppsOnVirtualDeviceListener).onAppsRunningOnVirtualDeviceChanged(

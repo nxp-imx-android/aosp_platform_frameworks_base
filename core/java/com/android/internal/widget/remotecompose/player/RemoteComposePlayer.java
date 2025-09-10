@@ -43,6 +43,7 @@ import com.android.internal.widget.remotecompose.player.accessibility.platform.R
 import com.android.internal.widget.remotecompose.player.platform.AndroidRemoteContext;
 import com.android.internal.widget.remotecompose.player.platform.HapticSupport;
 import com.android.internal.widget.remotecompose.player.platform.RemoteComposeView;
+import com.android.internal.widget.remotecompose.player.platform.RemotePreparedDocument;
 import com.android.internal.widget.remotecompose.player.platform.SensorSupport;
 import com.android.internal.widget.remotecompose.player.platform.ThemeSupport;
 import com.android.internal.widget.remotecompose.player.player.platform.SettingsRetriever;
@@ -64,11 +65,8 @@ public class RemoteComposePlayer extends FrameLayout implements RemoteContextAct
     private static final int MAX_SUPPORTED_MINOR_VERSION = MINOR_VERSION;
 
     // Theme constants
-
     public static final int THEME_UNSPECIFIED = Theme.UNSPECIFIED;
-
     public static final int THEME_LIGHT = Theme.LIGHT;
-
     public static final int THEME_DARK = Theme.DARK;
 
     private RemoteComposeView mInner;
@@ -587,7 +585,7 @@ public class RemoteComposePlayer extends FrameLayout implements RemoteContextAct
     /**
      * This returns a list of images that have names in the Document.
      *
-     * @return
+     * @return the name of named images in the document
      */
     public String[] getNamedImages() {
         return mInner.getNamedVariables(NamedVariable.IMAGE_TYPE);
@@ -637,5 +635,62 @@ public class RemoteComposePlayer extends FrameLayout implements RemoteContextAct
      */
     public void setShaderControl(CoreDocument.ShaderControl ctl) {
         mShaderControl = ctl;
+    }
+
+    /** This is a prepared document. */
+    public interface PreparedDocument {
+        /**
+         * Get the original document
+         *
+         * @return the original document
+         */
+        @NonNull
+        RemoteComposeDocument getOriginalDoc();
+    }
+
+    /**
+     * determine whether it is worth it to prepare the document or not.
+     *
+     * @param doc the document to prepare
+     * @return true if the document needs to be prepared
+     */
+    public boolean shouldPrepare(@NonNull RemoteComposeDocument doc) {
+        int size_small_enough_to_inline = 1_000;
+        return doc.getDocument().getDocInfo().getSizeOfImages() > size_small_enough_to_inline;
+    }
+
+    private boolean isCompatible(@NonNull RemoteComposeDocument doc) {
+        if (doc.canBeDisplayed(MAX_SUPPORTED_MAJOR_VERSION, MAX_SUPPORTED_MINOR_VERSION, 0L)) {
+            return true;
+        } else {
+            Log.e("RemoteComposePlayer", "Unsupported document ");
+        }
+        return false;
+    }
+
+    /**
+     * Prepare the document.
+     *
+     * @param doc the document to prepare
+     * @return the prepared document
+     */
+    public @Nullable PreparedDocument prepareDocument(@NonNull RemoteComposeDocument doc) {
+        if (isCompatible(doc)) {
+            return new RemotePreparedDocument(doc);
+        }
+        return null;
+    }
+
+    /**
+     * Set the document that was prepared.
+     *
+     * @param doc the document to prepare
+     */
+    public void setPreparedDocument(@NonNull PreparedDocument doc) {
+        if (doc instanceof RemotePreparedDocument) {
+            RemotePreparedDocument remoteDoc = (RemotePreparedDocument) doc;
+            mInner.setResolvedData(remoteDoc.getResolvedData());
+        }
+        setDocument(doc.getOriginalDoc());
     }
 }

@@ -304,7 +304,9 @@ public abstract class RemoteViewsService extends Service {
             FilterComparison fc = new FilterComparison(intent);
             RemoteViewsFactoryAdapter factory = sFactoriesCache.get(fc);
             if (factory == null) {
-                factory = new RemoteViewsFactoryAdapter(onGetViewFactory(intent));
+                RemoteViewsFactory rvFactory = onGetViewFactory(intent);
+                rvFactory.onCreate();
+                factory = new RemoteViewsFactoryAdapter(rvFactory);
                 sFactoriesCache.put(fc, factory);
             }
             return factory;

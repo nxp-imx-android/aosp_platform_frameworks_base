@@ -17,6 +17,7 @@
 package com.android.server.appfunctions;
 
 import static android.app.appfunctions.AppFunctionManager.ACCESS_REQUEST_STATE_UNREQUESTABLE;
+import static android.app.appfunctions.AppFunctionManager.ACTION_REQUEST_APP_FUNCTION_ACCESS;
 import static android.app.appfunctions.AppFunctionRuntimeMetadata.APP_FUNCTION_RUNTIME_METADATA_DB;
 import static android.app.appfunctions.AppFunctionRuntimeMetadata.APP_FUNCTION_RUNTIME_NAMESPACE;
 
@@ -162,9 +163,6 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
     // The merged allowlist.
     @GuardedBy("mAgentAllowlistLock")
     private ArraySet<SignedPackage> mAgentAllowlist = new ArraySet<>(sSystemAllowlist);
-
-    @GuardedBy("mAgentAllowlistLock")
-    private boolean mAgentAllowlistEnabled = false;
 
     private final ContentObserver mAdbAgentObserver =
             new ContentObserver(FgThread.getHandler()) {
@@ -665,37 +663,6 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
 
     @Override
     @EnforcePermission(Manifest.permission.MANAGE_APP_FUNCTION_ACCESS)
-    public void setAgentAllowlistEnabled(boolean enabled) {
-        setAgentAllowlistEnabled_enforcePermission();
-        if (!accessCheckFlagsEnabled()) {
-            return;
-        }
-
-        synchronized (mAgentAllowlistLock) {
-            if (enabled == mAgentAllowlistEnabled) {
-                return;
-            }
-
-            mAgentAllowlistEnabled = enabled;
-            if (enabled) {
-                mAppFunctionAccessService.setAgentAllowlist(mAgentAllowlist);
-            } else {
-                mAppFunctionAccessService.setAgentAllowlist(null);
-            }
-        }
-    }
-
-    @Override
-    @EnforcePermission(Manifest.permission.MANAGE_APP_FUNCTION_ACCESS)
-    public boolean isAgentAllowlistEnabled() {
-        isAgentAllowlistEnabled_enforcePermission();
-        synchronized (mAgentAllowlistLock) {
-            return mAgentAllowlistEnabled;
-        }
-    }
-
-    @Override
-    @EnforcePermission(Manifest.permission.MANAGE_APP_FUNCTION_ACCESS)
     public void clearAccessHistory(int userId) {
         clearAccessHistory_enforcePermission();
         enforceClearAccessHistoryUserPermission(userId);
@@ -746,9 +713,7 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
             mUpdatableAgentAllowlist = newDeviceConfigAgents;
             mSecureSettingAgentAllowlist = newAdbAgents;
             mAgentAllowlist = newAgents;
-            if (mAgentAllowlistEnabled) {
-                mAppFunctionAccessService.setAgentAllowlist(mAgentAllowlist);
-            }
+            mAppFunctionAccessService.setAgentAllowlist(mAgentAllowlist);
         }
     }
 
@@ -757,8 +722,8 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
     private List<SignedPackage> readDeviceConfigAgentAllowlist() {
         final String allowlistString =
                 DeviceConfig.getString(
-                        NAMESPACE_MACHINE_LEARNING, ALLOWLISTED_APP_FUNCTIONS_AGENTS, null);
-        if (allowlistString != null) {
+                        NAMESPACE_MACHINE_LEARNING, ALLOWLISTED_APP_FUNCTIONS_AGENTS, "");
+        if (!TextUtils.isEmpty(allowlistString)) {
             try {
                 List<SignedPackage> parsedAllowlist =
                         SignedPackageParser.parseList(allowlistString);
@@ -812,6 +777,18 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
             Slog.e(TAG, "Cannot parse agent list string: " + agents, e);
             return Collections.emptyList();
         }
+    }
+
+    @Override
+    @NonNull
+    public Intent createRequestAccessIntent(@NonNull String targetPackageName) {
+        Objects.requireNonNull(targetPackageName);
+        final String permissionOwner =
+                mDeviceSettingHelper.getPermissionOwnerPackage(targetPackageName);
+        Intent intent = new Intent(ACTION_REQUEST_APP_FUNCTION_ACCESS);
+        intent.putExtra(Intent.EXTRA_PACKAGE_NAME, permissionOwner);
+        intent.setPackage(mContext.getPackageManager().getPermissionControllerPackageName());
+        return intent;
     }
 
     private boolean accessCheckFlagsEnabled() {

@@ -403,7 +403,7 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub implements IBinder.Dea
                 mAllRunningUids = newAllUids;
             }
 
-            mService.onRunningAppsChanged(mDeviceId, newAllUids);
+            mService.onRunningAppsChanged(mDeviceId, mOwnerPackageName, newAllUids);
             if (mVirtualAudioController != null) {
                 mVirtualAudioController.onRunningAppsChanged(newAllUids);
             }
@@ -529,6 +529,7 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub implements IBinder.Dea
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }
+        Slog.d(TAG, "Creating virtual device with deviceId: " + deviceId);
         mVirtualDeviceLog.logCreated(deviceId, mOwnerUid);
 
         mPublicVirtualDeviceObject = new VirtualDevice(
@@ -849,6 +850,7 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub implements IBinder.Dea
             return;
         }
 
+        Slog.d(TAG, "Closing virtual device with deviceId: " + mDeviceId);
         mVirtualDeviceLog.logClosed(mDeviceId, mOwnerUid);
 
         final long ident = Binder.clearCallingIdentity();
@@ -902,6 +904,7 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub implements IBinder.Dea
 
     @Override
     public void binderDied() {
+        Slog.d(TAG, "Binder died, closing virtual device with deviceId: " + mDeviceId);
         close();
     }
 

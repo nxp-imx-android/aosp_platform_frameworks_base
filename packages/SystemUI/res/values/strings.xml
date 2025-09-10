@@ -378,6 +378,10 @@
     <string name="screen_record_edit">Edit</string>
     <!-- Button to delete a screen recording [CHAR LIMIT=20] -->
     <string name="screen_record_delete">Delete</string>
+    <!-- Recording deletion confirmation dialog title [CHAR LIMIT=50] -->
+    <string name="screen_record_delete_dialog_title">Delete this recording?</string>
+    <!-- Recording deletion confirmation dialog content [CHAR LIMIT=50] -->
+    <string name="screen_record_delete_dialog_content">Deleting this recording will permanently delete the video file from your device.</string>
     <!-- Button to play record preview video [CHAR LIMIT=20] -->
     <string name="screen_record_play">Play</string>
     <!-- Button to pause record preview video [CHAR LIMIT=20] -->

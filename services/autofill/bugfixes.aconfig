@@ -133,13 +133,3 @@ flag {
     purpose: PURPOSE_BUGFIX
   }
 }
-
-flag {
-  name: "add_null_check_for_augmented_inline_request"
-  namespace: "autofill"
-  description: "Add null check for augmented inline request"
-  bug: "427159531"
-  metadata {
-    purpose: PURPOSE_BUGFIX
-  }
-}

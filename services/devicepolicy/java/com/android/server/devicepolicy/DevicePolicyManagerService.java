@@ -83,6 +83,7 @@ import static android.app.admin.DevicePolicyManager.ACTION_MANAGED_PROFILE_PROVI
 import static android.app.admin.DevicePolicyManager.ACTION_PROVISION_MANAGED_DEVICE;
 import static android.app.admin.DevicePolicyManager.ACTION_PROVISION_MANAGED_PROFILE;
 import static android.app.admin.DevicePolicyManager.ACTION_PROVISION_MANAGED_USER;
+import static android.app.admin.DevicePolicyManager.ACTION_PROVISION_MULTI_USER_DEVICE;
 import static android.app.admin.DevicePolicyManager.ACTION_SYSTEM_UPDATE_POLICY_CHANGED;
 import static android.app.admin.DevicePolicyManager.APP_FUNCTIONS_NOT_CONTROLLED_BY_POLICY;
 import static android.app.admin.DevicePolicyManager.CONTENT_PROTECTION_DISABLED;
@@ -163,8 +164,9 @@ import static android.app.admin.DevicePolicyManager.STATUS_DEVICE_ADMIN_NOT_SUPP
 import static android.app.admin.DevicePolicyManager.STATUS_HAS_DEVICE_OWNER;
 import static android.app.admin.DevicePolicyManager.STATUS_HAS_PAIRED;
 import static android.app.admin.DevicePolicyManager.STATUS_HEADLESS_ONLY_SYSTEM_USER;
-import static android.app.admin.DevicePolicyManager.STATUS_HEADLESS_SYSTEM_USER_MODE_NOT_SUPPORTED;
 import static android.app.admin.DevicePolicyManager.STATUS_HEADLESS_SINGLE_USER_MODE_ONLY_SUPPORTED_ON_FIRST_FULL_USER;
+import static android.app.admin.DevicePolicyManager.STATUS_HEADLESS_SYSTEM_USER_MODE_NOT_SUPPORTED;
+import static android.app.admin.DevicePolicyManager.STATUS_HEADLESS_SYSTEM_USER_MODE_REQUIRED;
 import static android.app.admin.DevicePolicyManager.STATUS_MANAGED_USERS_NOT_SUPPORTED;
 import static android.app.admin.DevicePolicyManager.STATUS_NONSYSTEM_USER_EXISTS;
 import static android.app.admin.DevicePolicyManager.STATUS_NOT_SYSTEM_USER;
@@ -323,6 +325,8 @@ import android.app.admin.LockTaskPolicy;
 import android.app.admin.LongPolicyValue;
 import android.app.admin.ManagedProfileProvisioningParams;
 import android.app.admin.ManagedSubscriptionsPolicy;
+import android.app.admin.MultiUserDeviceProvisioningParams;
+import android.app.admin.MultiUserDeviceProvisioningParamsTransport;
 import android.app.admin.NetworkEvent;
 import android.app.admin.PackagePolicy;
 import android.app.admin.PackageSetPolicyValue;
@@ -4398,6 +4402,38 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
         }
     }
 
+    private void forceRemoveActiveAdminUnchecked(ComponentName adminReceiver, int userHandle) {
+        boolean isOrgOwnedProfile = false;
+        synchronized (getLockObject()) {
+            if (!isAdminTestOnlyLocked(adminReceiver, userHandle)) {
+                throw new SecurityException("Attempt to remove non-test admin "
+                        + adminReceiver + " " + userHandle);
+            }
+
+            // If admin is a device or profile owner tidy that up first.
+            if (isDeviceOwner(adminReceiver, userHandle)) {
+                clearDeviceOwnerLocked(getDeviceOwnerAdminLocked(), userHandle);
+            }
+            if (isProfileOwner(adminReceiver, userHandle)) {
+                isOrgOwnedProfile = isProfileOwnerOfOrganizationOwnedDevice(userHandle);
+                final ActiveAdmin admin = getActiveAdminUncheckedLocked(adminReceiver,
+                        userHandle, /* parent */ false);
+                clearProfileOwnerLocked(admin, userHandle);
+            }
+        }
+        // Remove the admin skipping sending the broadcast.
+        removeAdminArtifacts(adminReceiver, userHandle);
+
+        // In case of PO on org owned device, clean device-wide policies and restrictions.
+        if (isOrgOwnedProfile) {
+            final UserHandle parentUser = UserHandle.of(getProfileParentId(userHandle));
+            clearOrgOwnedProfileOwnerUserRestrictions(parentUser);
+            clearOrgOwnedProfileOwnerDeviceWidePolicies(parentUser.getIdentifier());
+        }
+
+        Slogf.i(LOG_TAG, "Admin " + adminReceiver + " removed from user " + userHandle);
+    }
+
     @Override
     public void forceRemoveActiveAdmin(ComponentName adminReceiver, int userHandle) {
         if (!mHasFeature) {
@@ -4409,35 +4445,7 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
                 "Caller must be shell or hold MANAGE_PROFILE_AND_DEVICE_OWNERS to call "
                         + "forceRemoveActiveAdmin");
         mInjector.binderWithCleanCallingIdentity(() -> {
-            boolean isOrgOwnedProfile = false;
-            synchronized (getLockObject()) {
-                if (!isAdminTestOnlyLocked(adminReceiver, userHandle)) {
-                    throw new SecurityException("Attempt to remove non-test admin "
-                            + adminReceiver + " " + userHandle);
-                }
-
-                // If admin is a device or profile owner tidy that up first.
-                if (isDeviceOwner(adminReceiver, userHandle)) {
-                    clearDeviceOwnerLocked(getDeviceOwnerAdminLocked(), userHandle);
-                }
-                if (isProfileOwner(adminReceiver, userHandle)) {
-                    isOrgOwnedProfile = isProfileOwnerOfOrganizationOwnedDevice(userHandle);
-                    final ActiveAdmin admin = getActiveAdminUncheckedLocked(adminReceiver,
-                            userHandle, /* parent */ false);
-                    clearProfileOwnerLocked(admin, userHandle);
-                }
-            }
-            // Remove the admin skipping sending the broadcast.
-            removeAdminArtifacts(adminReceiver, userHandle);
-
-            // In case of PO on org owned device, clean device-wide policies and restrictions.
-            if (isOrgOwnedProfile) {
-                final UserHandle parentUser = UserHandle.of(getProfileParentId(userHandle));
-                clearOrgOwnedProfileOwnerUserRestrictions(parentUser);
-                clearOrgOwnedProfileOwnerDeviceWidePolicies(parentUser.getIdentifier());
-            }
-
-            Slogf.i(LOG_TAG, "Admin " + adminReceiver + " removed from user " + userHandle);
+            forceRemoveActiveAdminUnchecked(adminReceiver, userHandle);
         });
     }
 
@@ -10079,6 +10087,31 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
         return isDeviceOwner(admin.info.getComponent(), admin.getUserHandle().getIdentifier());
     }
 
+    @Override
+    public boolean isDeviceManaged() {
+        final CallerIdentity caller = getCallerIdentity();
+        Preconditions.checkCallAuthorization(
+                isDefaultDeviceOwner(caller)
+                || canManageUsers(caller)
+                || isFinancedDeviceOwner(caller)
+                || hasCallingOrSelfPermission(MANAGE_PROFILE_AND_DEVICE_OWNERS));
+        return mOwners.isDeviceManaged() || mOwners.hasDeviceOwner();
+    }
+
+    @Override
+    public void clearMultiUserDeviceManagement(ComponentName adminReceiver) {
+        Objects.requireNonNull(adminReceiver, "ComponentName is null");
+        Preconditions.checkCallAuthorization(isAdb(getCallerIdentity())
+                        || hasCallingOrSelfPermission(MANAGE_PROFILE_AND_DEVICE_OWNERS),
+                "Caller must be shell or hold MANAGE_PROFILE_AND_DEVICE_OWNERS to call "
+                        + "clearMultiUserDeviceManagement");
+        synchronized (getLockObject()) {
+            mOwners.setDeviceManaged(false);
+            mOwners.writeDeviceOwner();
+            forceRemoveActiveAdminUnchecked(adminReceiver, UserHandle.USER_SYSTEM);
+        }
+    }
+
     /**
      * Check if the user is a Device Owner
      *
@@ -10757,24 +10790,24 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
         final CallerIdentity caller = getCallerIdentity();
         final long id = mInjector.binderClearCallingIdentity();
         try {
-            int deviceOwnerUserId = mOwners.getDeviceOwnerUserId();
-            // NOTE: multiple if statements are nested below so it can log more info on error
-            if (userId != deviceOwnerUserId) {
-                boolean hasProfileOwner = mOwners.hasProfileOwner(userId);
-                if (!hasProfileOwner) {
-                    int managedUserId = getManagedUserId(userId);
-                    if (managedUserId < 0 && newState != STATE_USER_UNMANAGED) {
-                        // No managed device, user or profile, so setting provisioning state makes
-                        // no sense.
-                        String error = "Not allowed to change provisioning state unless a "
-                                + "device or profile owner is set.";
-                        Slogf.w(LOG_TAG, "setUserProvisioningState(newState=%d, userId=%d) failed: "
-                                + "deviceOwnerId=%d, hasProfileOwner=%b, managedUserId=%d, err=%s",
-                                newState, userId, deviceOwnerUserId, hasProfileOwner,
-                                managedUserId, error);
-                        throw new IllegalStateException(error);
-                    }
-                }
+            boolean isDeviceOwner = userId == mOwners.getDeviceOwnerUserId();
+            boolean isMultiUserDevice = Flags.multiUserManagementDeviceProvisioning()
+                    && mInjector.userManagerIsHeadlessSystemUserMode()
+                    && mOwners.isDeviceManaged()
+                    && !isDeviceOwner;
+            boolean isProfileOwner = mOwners.hasProfileOwner(userId);
+            boolean hasManagedProfile = getManagedUserId(userId) >= 0;
+            if (!isDeviceOwner && !isMultiUserDevice && !isProfileOwner && !hasManagedProfile
+                    && newState != STATE_USER_UNMANAGED) {
+                // No managed device, user or profile, so setting provisioning state makes no sense.
+                String error = "Not allowed to change provisioning state unless a device, user or "
+                        + "profile is managed.";
+                Slogf.w(LOG_TAG, "setUserProvisioningState(newState=%d, userId=%d) failed: "
+                        + "isDeviceOwner=%b, isMultiUserDevice=%b, isProfileOwner=%b, "
+                        + "hasManagedProfile=%b, err=%s",
+                        newState, userId, isDeviceOwner, isMultiUserDevice, isProfileOwner,
+                        hasManagedProfile, error);
+                throw new IllegalStateException(error);
             }
 
             synchronized (getLockObject()) {
@@ -11387,6 +11420,8 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
                         + "paired.";
             case STATUS_HEADLESS_SYSTEM_USER_MODE_NOT_SUPPORTED:
                 return "Cannot provision an unsupported DPC into DO on a headless device";
+            case STATUS_HEADLESS_SYSTEM_USER_MODE_REQUIRED:
+                return "Provisioning a multi-user device requires a headless user mode.";
             case STATUS_HEADLESS_ONLY_SYSTEM_USER:
                 return "Cannot provision DPC on single user mode on headless device when only the "
                         + "system user exists in the device";
@@ -17546,6 +17581,10 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
 
     private int checkProvisioningPreconditionSkipPermission(
             String action, String packageName, @Nullable ComponentName componentName, int userId) {
+        if (Flags.multiUserManagementDeviceProvisioning()
+                && action == DevicePolicyManager.ACTION_PROVISION_MULTI_USER_DEVICE) {
+            return checkMultiUserDeviceProvisioningPreCondition(userId);
+        }
         if (!mHasFeature && !shouldEnableForRetailDemoPackage(packageName)) {
             logMissingFeatureAction("Cannot check provisioning for action " + action);
             return STATUS_DEVICE_ADMIN_NOT_SUPPORTED;
@@ -17781,6 +17820,27 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
                     deviceOwnerUserId, callingUserId, /* isAdb= */ false,
                     /* hasIncompatibleAccountsOrNonAdb=*/ true);
         }
+    }
+
+    private int checkMultiUserDeviceProvisioningPreCondition(@UserIdInt int callingUserId) {
+        synchronized (getLockObject()) {
+            if (!isProvisioningAllowed()) {
+                return STATUS_PROVISIONING_NOT_ALLOWED_FOR_NON_DEVELOPER_USERS;
+            }
+            if (callingUserId != UserHandle.USER_SYSTEM) {
+                return STATUS_NOT_SYSTEM_USER;
+            }
+            if (!mInjector.userManagerIsHeadlessSystemUserMode()) {
+                return STATUS_HEADLESS_SYSTEM_USER_MODE_REQUIRED;
+            }
+            // There must be no users that have completed setup.
+            for (int i = 0; i < mUserData.size(); i++) {
+                if (mInjector.hasUserSetupCompleted(getUserData(i))) {
+                    return STATUS_USER_SETUP_COMPLETED;
+                }
+            }
+        }
+        return STATUS_OK;
     }
 
     private int checkManagedProfileProvisioningPreCondition(String packageName,
@@ -22572,6 +22632,7 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
      *
      * <p>This method is meant to be overridden by OEMs.
      */
+    @SuppressWarnings("UnusedVariable")
     private void onProvisionFullyManagedDeviceStarted(
             FullyManagedDeviceProvisioningParams provisioningParams) {}
 
@@ -22584,8 +22645,92 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
      *
      * <p>This method is meant to be overridden by OEMs.
      */
+    @SuppressWarnings("UnusedVariable")
     private void onProvisionFullyManagedDeviceCompleted(
             FullyManagedDeviceProvisioningParams provisioningParams) {}
+
+    @Override
+    public void provisionMultiUserDevice(
+            @NonNull MultiUserDeviceProvisioningParamsTransport provisioningParamsTransport,
+            @NonNull String callerPackage) {
+        Objects.requireNonNull(provisioningParamsTransport, "provisioningParams is null.");
+        Objects.requireNonNull(callerPackage, "callerPackage is null.");
+
+        MultiUserDeviceProvisioningParams provisioningParams =
+                new MultiUserDeviceProvisioningParams(provisioningParamsTransport);
+
+        // TODO(b/390162247): Remove this requirement once we decide where to
+        // store provisioning-related data instead of ActiveAdmin.
+        ComponentName deviceAdmin = provisioningParams.getDeviceAdminComponentName();
+        Objects.requireNonNull(deviceAdmin, "admin is null.");
+
+        final CallerIdentity caller = getCallerIdentity(callerPackage);
+        Preconditions.checkCallAuthorization(
+                hasCallingOrSelfPermission(MANAGE_PROFILE_AND_DEVICE_OWNERS));
+
+        provisioningParams.logParams(callerPackage);
+
+        final long identity = Binder.clearCallingIdentity();
+        try {
+            int result = checkProvisioningPreconditionSkipPermission(
+                    ACTION_PROVISION_MULTI_USER_DEVICE, deviceAdmin, caller.getUserId());
+            if (result != STATUS_OK) {
+                Slogf.d(LOG_TAG, "provisionMultiUserDevice(" + deviceAdmin.getPackageName()
+                        + ") pre-conditions failed: " + computeProvisioningErrorString(
+                                result, caller.getUserId()));
+                throw new ServiceSpecificException(
+                        ERROR_PRE_CONDITION_FAILED,
+                        "Provisioning preconditions failed with result: " + result);
+            }
+
+            onProvisionMultiUserDeviceStarted(provisioningParams);
+
+            // These properties are global so will apply on all users
+            setTimeAndTimezone(provisioningParams.getTimeZone(), provisioningParams.getLocalTime());
+            setLocale(provisioningParams.getLocale());
+
+            // TODO(b/390162247): Create removeNonRequiredAppsForMultiUserDevice with its own
+            // allowlist/blocklist.
+            if (!removeNonRequiredAppsForManagedDevice(
+                    UserHandle.USER_SYSTEM, provisioningParams.isLeaveAllSystemAppsEnabled(),
+                    deviceAdmin)) {
+                throw new ServiceSpecificException(
+                        ERROR_REMOVE_NON_REQUIRED_APPS_FAILED,
+                        "PackageManager failed to remove non required apps.");
+            }
+
+            // TODO(b/390162247): Remove this once we decide where to store
+            // provisioning-related data instead of ActiveAdmin.
+            enableAndSetActiveAdmin(UserHandle.USER_SYSTEM, UserHandle.USER_SYSTEM, deviceAdmin);
+
+            mOwners.setDeviceManaged(true);
+            mOwners.writeDeviceOwner();
+
+            onProvisionMultiUserDeviceCompleted(provisioningParams);
+            // TODO(b/390162247): This is only used by ManagedProvisioning app
+            // to create system app snapshot. Instead, this should be done in
+            // framework and we should not send this broadcast.
+            sendProvisioningCompletedBroadcast(
+                    UserHandle.USER_SYSTEM,
+                    ACTION_PROVISION_MULTI_USER_DEVICE,
+                    provisioningParams.isLeaveAllSystemAppsEnabled());
+        } catch (Exception e) {
+            DevicePolicyEventLogger.createEvent(DevicePolicyEnums.PLATFORM_PROVISIONING_ERROR)
+                    .setStrings(callerPackage)
+                    .write();
+            throw e;
+        } finally {
+            Binder.restoreCallingIdentity(identity);
+        }
+    }
+
+    @SuppressWarnings("UnusedVariable")
+    private void onProvisionMultiUserDeviceStarted(
+            MultiUserDeviceProvisioningParams provisioningParams) {}
+
+    @SuppressWarnings("UnusedVariable")
+    private void onProvisionMultiUserDeviceCompleted(
+            MultiUserDeviceProvisioningParams provisioningParams) {}
 
     private void setTimeAndTimezone(String timeZone, long localTime) {
         try {

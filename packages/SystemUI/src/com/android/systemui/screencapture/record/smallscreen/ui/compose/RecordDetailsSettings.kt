@@ -62,15 +62,17 @@ fun RecordDetailsSettings(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier.padding(vertical = 12.dp).fillMaxWidth(),
         ) {
-            CaptureTargetSelector(
-                items = targetViewModel.items,
-                selectedItemIndex = targetViewModel.selectedIndex,
-                onItemSelected = { targetViewModel.select(it) },
-                itemToString = { stringResource(it.labelRes) },
-                isItemEnabled = { it.isSelectable },
-                viewModel = drawableLoaderViewModel,
-                modifier = Modifier.padding(vertical = 12.dp),
-            )
+            AnimatedVisibility(visible = targetViewModel.canChangeTarget) {
+                CaptureTargetSelector(
+                    items = targetViewModel.items,
+                    selectedItemIndex = targetViewModel.selectedIndex,
+                    onItemSelected = { targetViewModel.select(it) },
+                    itemToString = { stringResource(it.labelRes) },
+                    isItemEnabled = { it.isSelectable },
+                    viewModel = drawableLoaderViewModel,
+                    modifier = Modifier.padding(vertical = 12.dp),
+                )
+            }
             AnimatedVisibility(visible = targetViewModel.shouldShowAppSelector) {
                 AppSelectorButton(
                     appLabel = targetViewModel.selectedAppName?.getOrNull()?.toString(),

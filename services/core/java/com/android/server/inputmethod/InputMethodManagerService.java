@@ -159,6 +159,7 @@ import com.android.internal.inputmethod.IInputMethodPrivilegedOperations;
 import com.android.internal.inputmethod.IInputMethodSession;
 import com.android.internal.inputmethod.IInputMethodSessionCallback;
 import com.android.internal.inputmethod.IRemoteAccessibilityInputConnection;
+import com.android.internal.inputmethod.IRemoteComputerControlInputConnection;
 import com.android.internal.inputmethod.IRemoteInputConnection;
 import com.android.internal.inputmethod.ImeTracing;
 import com.android.internal.inputmethod.InlineSuggestionsRequestCallback;
@@ -1485,7 +1486,6 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
         synchronized (ImfLock.class) {
             selectedImeId = bindingController.getSelectedMethodId();
         }
-
         return settings.getMethodMap().get(selectedImeId);
     }
 
@@ -1751,6 +1751,7 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
                 userData.mImeBindingState = ImeBindingState.newEmptyState();
             }
         }
+        userData.mComputerControlInputConnectionMap.remove(client.mSelfReportedDisplayId);
     }
 
     @VisibleForTesting
@@ -1926,7 +1927,7 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
     @GuardedBy("ImfLock.class")
     @NonNull
     private InputBindResult startInputUncheckedLocked(@NonNull ClientState cs,
-            IRemoteInputConnection inputConnection,
+            @Nullable IRemoteInputConnection inputConnection,
             @Nullable IRemoteAccessibilityInputConnection remoteAccessibilityInputConnection,
             @NonNull EditorInfo editorInfo, @StartInputFlags int startInputFlags,
             @StartInputReason int startInputReason,
@@ -3470,13 +3471,15 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
             @WindowManager.LayoutParams.Flags int windowFlags, @Nullable EditorInfo editorInfo,
             @Nullable IRemoteInputConnection inputConnection,
             @Nullable IRemoteAccessibilityInputConnection remoteAccessibilityInputConnection,
+            @Nullable IRemoteComputerControlInputConnection remoteComputerControlInputConnection,
             int unverifiedTargetSdkVersion, @UserIdInt int userId,
             @NonNull ResultReceiver imeBackCallbackReceiver, boolean imeRequestedVisible,
             int startInputSeq) {
         final var res = startInputOrWindowGainedFocusWithResult(startInputReason, client,
                 windowToken, startInputFlags, softInputMode, windowFlags, editorInfo,
-                inputConnection, remoteAccessibilityInputConnection, unverifiedTargetSdkVersion,
-                userId, imeBackCallbackReceiver, imeRequestedVisible);
+                inputConnection, remoteAccessibilityInputConnection,
+                remoteComputerControlInputConnection, unverifiedTargetSdkVersion, userId,
+                imeBackCallbackReceiver, imeRequestedVisible);
         synchronized (ImfLock.class) {
             final ClientState cs = mClientController.getClient(client.asBinder());
             if (cs != null) {
@@ -3501,8 +3504,9 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
             @StartInputReason int startInputReason, IInputMethodClient client, IBinder windowToken,
             @StartInputFlags int startInputFlags, @SoftInputModeFlags int softInputMode,
             @WindowManager.LayoutParams.Flags int windowFlags, @Nullable EditorInfo editorInfo,
-            IRemoteInputConnection inputConnection,
-            IRemoteAccessibilityInputConnection remoteAccessibilityInputConnection,
+            @Nullable IRemoteInputConnection inputConnection,
+            @Nullable IRemoteAccessibilityInputConnection remoteAccessibilityInputConnection,
+            @Nullable IRemoteComputerControlInputConnection remoteComputerControlInputConnection,
             int unverifiedTargetSdkVersion, @UserIdInt int userId,
             @NonNull ResultReceiver imeBackCallbackReceiver, boolean imeRequestedVisible) {
         if (UserHandle.getCallingUserId() != userId) {
@@ -3549,6 +3553,21 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
                 final ClientState cs = mClientController.getClient(client.asBinder());
                 if (cs == null) {
                     throw new IllegalArgumentException("Unknown client " + client.asBinder());
+                }
+                // Keep track on computer control input connection that was last provided by the
+                // client on a particular display.
+                if (android.companion.virtualdevice.flags.Flags.computerControlTyping()) {
+                    if (mVdmInternal == null) {
+                        mVdmInternal = LocalServices.getService(VirtualDeviceManagerInternal.class);
+                    }
+                    if (remoteComputerControlInputConnection != null && mVdmInternal != null
+                            && mVdmInternal.isComputerControlDisplay(cs.mSelfReportedDisplayId)) {
+                        userData.mComputerControlInputConnectionMap.put(cs.mSelfReportedDisplayId,
+                                remoteComputerControlInputConnection);
+                    } else {
+                        userData.mComputerControlInputConnectionMap.remove(
+                                cs.mSelfReportedDisplayId);
+                    }
                 }
                 final long ident = Binder.clearCallingIdentity();
                 try {
@@ -3648,7 +3667,7 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
             @NonNull IBinder windowToken, @StartInputFlags int startInputFlags,
             @SoftInputModeFlags int softInputMode,
             @WindowManager.LayoutParams.Flags int windowFlags, EditorInfo editorInfo,
-            IRemoteInputConnection inputContext,
+            @Nullable IRemoteInputConnection inputContext,
             @Nullable IRemoteAccessibilityInputConnection remoteAccessibilityInputConnection,
             int unverifiedTargetSdkVersion, @NonNull InputMethodBindingController bindingController,
             @NonNull ResultReceiver imeBackCallbackReceiver, @NonNull ClientState cs,
@@ -5611,6 +5630,19 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
                 switchKeyboardLayoutLocked(direction, getUserData(userId));
             }
         }
+
+        @Nullable
+        @Override
+        public IRemoteComputerControlInputConnection getComputerControlInputConnection(
+                @UserIdInt int userId, int displayId) {
+            if (!android.companion.virtualdevice.flags.Flags.computerControlTyping()) {
+                return null;
+            }
+            synchronized (ImfLock.class) {
+                final UserData userData = getUserData(userId);
+                return userData.mComputerControlInputConnectionMap.get(displayId);
+            }
+        }
     }
 
     @BinderThread
@@ -5922,6 +5954,8 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
             p.println("      switchingController:");
             u.mSwitchingController.dump(p, "        ");
             p.println("      mLastEnabledInputMethodsStr=" + u.mLastEnabledInputMethodsStr);
+            p.println("      active computer control input connections on display ids:"
+                    + u.mComputerControlInputConnectionMap.keySet());
         };
         synchronized (ImfLock.class) {
             mUserDataRepository.forAllUserData(userDataDump);

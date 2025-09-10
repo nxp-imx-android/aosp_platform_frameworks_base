@@ -16,7 +16,6 @@
 
 package com.android.systemui.communal.view.viewmodel
 
-import android.appwidget.AppWidgetProviderInfo
 import android.content.ActivityNotFoundException
 import android.content.ComponentName
 import android.content.pm.PackageManager
@@ -24,7 +23,6 @@ import android.content.pm.UserInfo
 import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import android.provider.Settings
-import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.accessibilityManager
 import android.widget.RemoteViews
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -75,12 +73,8 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.Mockito
-import org.mockito.Mockito.never
 import org.mockito.Mockito.verify
-import org.mockito.kotlin.any
-import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.mock
-import org.mockito.kotlin.whenever
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @SmallTest
@@ -368,36 +362,17 @@ class CommunalEditModeViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    fun onNewWidgetAdded_accessibilityDisabled_doNothing() =
+    fun scrollPosition_clearsSelectedItem() =
         kosmos.runTest {
-            whenever(accessibilityManager.isEnabled).thenReturn(false)
-
-            val provider =
-                mock<AppWidgetProviderInfo> {
-                    on { loadLabel(packageManager) }.thenReturn("Test Clock")
-                }
-            underTest.onNewWidgetAdded(provider)
-
-            verify(accessibilityManager, never()).sendAccessibilityEvent(any())
-        }
-
-    @Test
-    fun onNewWidgetAdded_accessibilityEnabled_sendAccessibilityAnnouncement() =
-        kosmos.runTest {
-            whenever(accessibilityManager.isEnabled).thenReturn(true)
-
-            val provider =
-                mock<AppWidgetProviderInfo> {
-                    on { loadLabel(packageManager) }.thenReturn("Test Clock")
-                }
-            underTest.onNewWidgetAdded(provider)
-
-            val captor = argumentCaptor<AccessibilityEvent>()
-            verify(accessibilityManager).sendAccessibilityEvent(captor.capture())
-
-            val event = captor.firstValue
-            assertThat(event.eventType).isEqualTo(AccessibilityEvent.TYPE_ANNOUNCEMENT)
-            assertThat(event.contentDescription).isEqualTo("Test Clock widget added to lock screen")
+            val index = 2
+            val offset = 30
+            val testKey = "testKey"
+            underTest.setSelectedKey(testKey)
+            assertThat(underTest.selectedKey.value).isNotNull()
+            underTest.onScrollPositionUpdated(index, communalInteractor.firstVisibleItemOffset)
+            assertThat(underTest.selectedKey.value).isEqualTo(testKey)
+            underTest.onScrollPositionUpdated(index, offset)
+            assertThat(underTest.selectedKey.value).isNull()
         }
 
     @Test

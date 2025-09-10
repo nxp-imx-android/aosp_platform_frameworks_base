@@ -17,6 +17,7 @@
 package com.android.wm.shell.common;
 
 import static android.app.WindowConfiguration.ROTATION_UNDEFINED;
+import static android.view.Display.INVALID_DISPLAY;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
@@ -123,6 +124,19 @@ public class DisplayController {
     public String getDisplayUniqueId(int displayId) {
         final DisplayRecord r = mDisplays.get(displayId);
         return r != null ? r.mUniqueId : null;
+    }
+
+    /**
+     * Gets the displayId associated with the provided uniqueId, if it is associated with one.
+     * Because this calls an IPC, we should only use this in time sensitive cases where we suspect
+     * DisplayManager has more up to date information than mDisplays (i.e., during reboot). For
+     * other cases, use getAllDisplaysByUniqueId below.
+     */
+    public int getDisplayIdByUniqueIdBlocking(String uniqueId) {
+        for (Display display : mDisplayManager.getDisplays()) {
+            if (uniqueId.equals(display.getUniqueId())) return display.getDisplayId();
+        }
+        return INVALID_DISPLAY;
     }
 
     /**

@@ -36,6 +36,7 @@ import android.hardware.tv.mediaquality.IPictureProfileChangedListener;
 import android.hardware.tv.mediaquality.ISoundProfileAdjustmentListener;
 import android.hardware.tv.mediaquality.ISoundProfileChangedListener;
 import android.hardware.tv.mediaquality.ParamCapability;
+import android.hardware.tv.mediaquality.ParameterDefaultValue;
 import android.hardware.tv.mediaquality.PictureParameter;
 import android.hardware.tv.mediaquality.PictureParameters;
 import android.hardware.tv.mediaquality.SoundParameter;
@@ -1487,6 +1488,7 @@ public class MediaQualityService extends SystemService {
                         boolean isSupported = pcHal.isSupported;
                         int type = pcHal.defaultValue == null ? 0 : pcHal.defaultValue.getTag() + 1;
                         Bundle bundle = MediaQualityUtils.convertToCaps(type, pcHal.range);
+                        putParamCapDefaultValueIntoBundle(bundle, pcHal.defaultValue);
 
                         pcList.add(new ParameterCapability(name, isSupported, type, bundle));
                     }
@@ -1507,6 +1509,7 @@ public class MediaQualityService extends SystemService {
                                 == null ? 0 : vpcHal.defaultValue.getTag() + 1;
                         Bundle paramRangeBundle = MediaQualityUtils.convertToCaps(
                                 type, vpcHal.range);
+                        putParamCapDefaultValueIntoBundle(paramRangeBundle, vpcHal.defaultValue);
                         MediaQualityUtils.convertToVendorCaps(vpcHal, paramRangeBundle);
                         pcList.add(new ParameterCapability(
                                 name, isSupported, type, paramRangeBundle));
@@ -2105,6 +2108,7 @@ public class MediaQualityService extends SystemService {
                 boolean isSupported = cap.isSupported;
                 int type = cap.defaultValue == null ? 0 : cap.defaultValue.getTag() + 1;
                 Bundle bundle = MediaQualityUtils.convertToCaps(type, cap.range);
+                putParamCapDefaultValueIntoBundle(bundle, cap.defaultValue);
 
                 paramCaps.add(new ParameterCapability(name, isSupported, type, bundle));
             }
@@ -2323,9 +2327,10 @@ public class MediaQualityService extends SystemService {
             for (ParamCapability cap: caps) {
                 String name = MediaQualityUtils.getParameterName(cap.name);
                 boolean isSupported = cap.isSupported;
-                //Reason for +1: please see getListParameterCapability()
+                //Reason for +1: please see getParameterCapabilityList()
                 int type = cap.defaultValue == null ? 0 : cap.defaultValue.getTag() + 1;
                 Bundle bundle = MediaQualityUtils.convertToCaps(type, cap.range);
+                putParamCapDefaultValueIntoBundle(bundle, cap.defaultValue);
 
                 paramCaps.add(new ParameterCapability(name, isSupported, type, bundle));
             }
@@ -2340,11 +2345,12 @@ public class MediaQualityService extends SystemService {
             for (VendorParamCapability vpcHal: caps) {
                 String name = MediaQualityUtils.getVendorParameterName(vpcHal);
                 boolean isSupported = vpcHal.isSupported;
-                //Reason for +1: please see getListParameterCapability()
+                //Reason for +1: please see getParameterCapabilityList()
                 int type = vpcHal.defaultValue
                         == null ? 0 : vpcHal.defaultValue.getTag() + 1;
                 Bundle paramRangeBundle = MediaQualityUtils.convertToCaps(
                         type, vpcHal.range);
+                putParamCapDefaultValueIntoBundle(paramRangeBundle, vpcHal.defaultValue);
                 MediaQualityUtils.convertToVendorCaps(vpcHal, paramRangeBundle);
                 vendorParamCaps.add(new ParameterCapability(
                         name, isSupported, type, paramRangeBundle));
@@ -2938,6 +2944,35 @@ public class MediaQualityService extends SystemService {
                 Slog.d(TAG, "putCurrentPictureProfile: key: "
                         + mCurrentPictureHandleToOriginal.getKey(value) + " value: " + value);
             }
+        }
+    }
+
+    private void putParamCapDefaultValueIntoBundle(
+            Bundle bundle, ParameterDefaultValue defaultValue) {
+        if (defaultValue == null) {
+            return;
+        }
+
+        switch (defaultValue.getTag()) {
+            case ParameterDefaultValue.intDefault:
+                bundle.putInt(
+                        ParameterCapability.CAPABILITY_DEFAULT, defaultValue.getIntDefault());
+                break;
+            case ParameterDefaultValue.longDefault:
+                bundle.putLong(
+                        ParameterCapability.CAPABILITY_DEFAULT, defaultValue.getLongDefault());
+                break;
+            case ParameterDefaultValue.doubleDefault:
+                bundle.putDouble(
+                        ParameterCapability.CAPABILITY_DEFAULT, defaultValue.getDoubleDefault());
+                break;
+            case ParameterDefaultValue.stringDefault:
+                bundle.putString(
+                        ParameterCapability.CAPABILITY_DEFAULT, defaultValue.getStringDefault());
+                break;
+            default:
+                Log.d(TAG, "putParamCapDefaultValueIntoBundle: "
+                        + "default value type is not supported for tag " + defaultValue.getTag());
         }
     }
 }

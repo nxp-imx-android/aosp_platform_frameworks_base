@@ -16,6 +16,7 @@
 
 package android.os;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -193,6 +194,35 @@ public final class MessageHeapTest {
         } catch (IllegalArgumentException e) {
 
         }
+        assertTrue(verify(heap));
+    }
+
+    /**
+     * Verifies that adding a message with a smaller 'when' value than the current minimum
+     * correctly places it at the front of the heap. This directly tests the 'siftUp' operation
+     * that is invoked within the add() method.
+     */
+    @Test
+    public void add_siftsUpSmallerElementToFront() {
+        MessageHeap heap = new MessageHeap();
+
+        // Add a few messages to populate the heap.
+        insertMessage(heap, 100);
+        insertMessage(heap, 200);
+        insertMessage(heap, 150);
+
+        // At this point, the message with 'when' = 100 should be at the top.
+        assertEquals(100, heap.peek().when);
+
+        // Add a new message with the smallest 'when' value.
+        // This should trigger a 'siftUp' operation to move it to the root.
+        insertMessage(heap, 50);
+
+        // Verify that the new smallest message is now at the top.
+        assertEquals(50, heap.peek().when);
+        assertEquals(4, heap.size());
+
+        // Verify the entire heap is still valid and ordered correctly.
         assertTrue(verify(heap));
     }
 }

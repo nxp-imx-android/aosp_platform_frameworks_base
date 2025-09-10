@@ -33,6 +33,8 @@ message Desktop {
 message DesktopRepositoryState {
   // Stores a mapping between a repository and the desktops in it. The key is the desktop id.
   map<int32, Desktop> desktop = 1;
+  // Stores a mapping of the active desk id associated with each display.
+  map<string, int32> active_desk_by_unique_display_id = 2;
 }
 
 message DesktopPersistentRepositories {

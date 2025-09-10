@@ -33,16 +33,6 @@ flag {
 }
 
 flag {
-  name: "biometric_scheduler_fix"
-  namespace: "biometrics_framework"
-  description: "This flag fixes a bug where watchdog is ineffective when user switching is required."
-  bug: "420939050"
-  metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
   name: "biometric_prompt_external_display"
   namespace: "biometrics_framework"
   description: "This flag returns error code when biometric prompt is requested on external display."

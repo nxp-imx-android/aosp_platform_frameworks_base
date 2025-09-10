@@ -20,6 +20,7 @@ import android.content.Context
 import android.util.ArraySet
 import android.util.Log
 import android.view.Display.DEFAULT_DISPLAY
+import android.window.DesktopExperienceFlags
 import androidx.datastore.core.CorruptionException
 import androidx.datastore.core.DataStore
 import androidx.datastore.core.DataStoreFactory
@@ -108,7 +109,7 @@ class DesktopPersistentRepository(private val dataStore: DataStore<DesktopPersis
             null
         }
 
-    suspend fun addOrUpdateRepository(userId: Int, desks: List<Desk>) {
+    suspend fun addOrUpdateRepository(userId: Int, desks: List<Desk>, activeDeskId: Int?) {
         try {
             dataStore.updateData { persistentRepositories: DesktopPersistentRepositories ->
                 val currentRepository =
@@ -137,9 +138,27 @@ class DesktopPersistentRepository(private val dataStore: DataStore<DesktopPersis
                                 .build()
 
                         currentUserRepoBuilder.putDesktop(desk.deskId, updatedDesktop)
+                        desk.uniqueDisplayId?.let {
+                            if (
+                                DesktopExperienceFlags.ENABLE_EXTERNAL_DISPLAY_PERSISTENCE_BUGFIX
+                                    .isTrue && desk.deskId == activeDeskId
+                            ) {
+                                currentUserRepoBuilder.putActiveDeskByUniqueDisplayId(
+                                    it,
+                                    desk.deskId,
+                                )
+                            }
+                        }
                     }
                 }
-
+                if (
+                    DesktopExperienceFlags.ENABLE_EXTERNAL_DISPLAY_PERSISTENCE_BUGFIX.isTrue &&
+                        activeDeskId == null
+                ) {
+                    desks.first().uniqueDisplayId.let {
+                        currentUserRepoBuilder.removeActiveDeskByUniqueDisplayId(it)
+                    }
+                }
                 persistentRepositories
                     .toBuilder()
                     .putDesktopRepoByUser(userId, currentUserRepoBuilder.build())

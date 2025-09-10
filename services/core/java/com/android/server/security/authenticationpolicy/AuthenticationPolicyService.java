@@ -92,9 +92,6 @@ public class AuthenticationPolicyService extends SystemService {
     private static final String TAG = "AuthenticationPolicyService";
     private static final boolean DEBUG = Build.IS_DEBUGGABLE;
 
-    @VisibleForTesting
-    static final int MAX_ALLOWED_FAILED_AUTH_ATTEMPTS = 5;
-    private static final boolean DEFAULT_DISABLE_ADAPTIVE_AUTH_LIMIT_LOCK = false;
     private static final int MSG_REPORT_PRIMARY_AUTH_ATTEMPT = 1;
     private static final int MSG_REPORT_BIOMETRIC_AUTH_SUCCESS = 2;
     private static final int MSG_REPORT_BIOMETRIC_AUTH_FAILURE = 3;
@@ -110,6 +107,9 @@ public class AuthenticationPolicyService extends SystemService {
     private final KeyguardManager mKeyguardManager;
     private final WindowManagerInternal mWindowManager;
     private final UserManagerInternal mUserManager;
+    private final boolean mEnableFailedAuthLock;
+    private final int mMaxAllowedFailedAuthAttempts;
+    private final boolean mEnableFailedAuthLockToggle;
     private SecureLockDeviceServiceInternal mSecureLockDeviceService;
     private WatchRangingServiceInternal mWatchRangingService;
     @VisibleForTesting
@@ -140,6 +140,12 @@ public class AuthenticationPolicyService extends SystemService {
             mWatchRangingService = Objects.requireNonNull(LocalServices.getService(
                     WatchRangingServiceInternal.class));
         }
+        mEnableFailedAuthLock = context.getResources().getBoolean(
+                com.android.internal.R.bool.config_enableFailedAuthLock);
+        mMaxAllowedFailedAuthAttempts = context.getResources().getInteger(
+                com.android.internal.R.integer.config_maxAllowedFailedAuthAttempts);
+        mEnableFailedAuthLockToggle = context.getResources().getBoolean(
+                com.android.internal.R.bool.config_enableFailedAuthLockToggle);
     }
 
     @Override
@@ -157,7 +163,7 @@ public class AuthenticationPolicyService extends SystemService {
 
     @Override
     public void onUserSwitching(@Nullable TargetUser from, @NonNull TargetUser to) {
-        if (failedAuthLockToggle()) {
+        if (failedAuthLockToggle() && mEnableFailedAuthLock && mEnableFailedAuthLockToggle) {
             mayInitiateFailedAuthLockSettings(to.getUserIdentifier());
         }
     }
@@ -167,7 +173,7 @@ public class AuthenticationPolicyService extends SystemService {
         mLockSettings.registerLockSettingsStateListener(mLockSettingsStateListener);
         mBiometricManager.registerAuthenticationStateListener(mAuthenticationStateListener);
 
-        if (failedAuthLockToggle()) {
+        if (failedAuthLockToggle() && mEnableFailedAuthLock && mEnableFailedAuthLockToggle) {
             final int mainUserId = mUserManager.getMainUserId();
             if (mainUserId != UserHandle.USER_NULL) {
                 mayInitiateFailedAuthLockSettings(mainUserId);
@@ -195,7 +201,7 @@ public class AuthenticationPolicyService extends SystemService {
             Settings.Secure.putIntForUser(
                     getContext().getContentResolver(),
                     Settings.Secure.DISABLE_ADAPTIVE_AUTH_LIMIT_LOCK,
-                    DEFAULT_DISABLE_ADAPTIVE_AUTH_LIMIT_LOCK ? 1 : 0,
+                    mEnableFailedAuthLock ? 0 : 1,
                     parentUserId);
         }
     }
@@ -338,6 +344,13 @@ public class AuthenticationPolicyService extends SystemService {
     }
 
     private void reportAuthAttempt(int authType, boolean success, int userId) {
+        // Do not report auth attempts and do not proceed to lock the device if the failed auth lock
+        // feature (aka adaptive auth) is completely disabled by the device manufacturer
+        if (failedAuthLockToggle() && !mEnableFailedAuthLock) {
+            Slog.v(TAG, "Failed auth lock is disabled by the device manufacturer");
+            return;
+        }
+
         // Disable adaptive auth for automotive devices by default
         if (getContext().getPackageManager().hasSystemFeature(PackageManager.FEATURE_AUTOMOTIVE)) {
             return;
@@ -372,14 +385,17 @@ public class AuthenticationPolicyService extends SystemService {
             return;
         }
 
-        if (numFailedAttempts < MAX_ALLOWED_FAILED_AUTH_ATTEMPTS) {
+        if (numFailedAttempts < mMaxAllowedFailedAuthAttempts) {
             Slog.d(TAG, "Not locking the device because the number of failed attempts is below"
                     + " the threshold.");
             return;
         }
 
-        //TODO(b/421051706): Remove the condition Build.IS_DEBUGGABLE after flags are ramped up
-        if (failedAuthLockToggle() || (disableAdaptiveAuthCounterLock() && Build.IS_DEBUGGABLE)) {
+        // If a user toggle is enabled by the device manufacturer on 25Q4+ builds, or if it's
+        // debuggable 25Q3+ builds, then failed auth lock can be enabled or disabled by
+        // users in settings
+        if ((failedAuthLockToggle() && mEnableFailedAuthLockToggle)
+                || (disableAdaptiveAuthCounterLock() && Build.IS_DEBUGGABLE)) {
             // If userId is a profile, use its parent's settings to determine whether failed auth
             // lock is enabled or disabled for the profile, irrespective of the profile's own
             // settings. If userId is a main user (i.e. parentUserId equals to userId), use its own
@@ -388,7 +404,8 @@ public class AuthenticationPolicyService extends SystemService {
             final boolean disabled = Settings.Secure.getIntForUser(
                     getContext().getContentResolver(),
                     Settings.Secure.DISABLE_ADAPTIVE_AUTH_LIMIT_LOCK,
-                    DEFAULT_DISABLE_ADAPTIVE_AUTH_LIMIT_LOCK ? 1 : 0, parentUserId) != 0;
+                    mEnableFailedAuthLock ? 0 : 1,
+                    parentUserId) != 0;
             if (disabled) {
                 Slog.i(TAG, "userId=" + userId + ", parentUserId=" + parentUserId
                         + ", failed auth lock is disabled by user in settings");

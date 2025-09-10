@@ -15,10 +15,10 @@
  */
 package com.android.internal.widget.remotecompose.player.platform;
 
-
 import static com.android.internal.widget.remotecompose.core.RemoteClock.nanoTime;
 
 import android.annotation.NonNull;
+import android.annotation.Nullable;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -44,6 +44,7 @@ import com.android.internal.widget.remotecompose.core.operations.Utils;
 import com.android.internal.widget.remotecompose.player.RemoteComposeDocument;
 
 import java.time.Clock;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -52,7 +53,6 @@ import java.util.Set;
  * <p>Its role is to paint a document as an AndroidView as well as handling user interactions
  * (touch/click).
  */
-
 public class RemoteComposeView extends FrameLayout implements View.OnAttachStateChangeListener {
 
     static final boolean USE_VIEW_AREA_CLICK = true; // Use views to represent click areas
@@ -70,6 +70,7 @@ public class RemoteComposeView extends FrameLayout implements View.OnAttachState
     boolean mHasClickAreas = false;
     Point mActionDownPoint = new Point(0, 0);
     AndroidRemoteContext mARContext;
+    Map<Integer, Object> mResolvedData = null;
 
     float mDensity = Float.NaN;
     long mStart;
@@ -106,7 +107,7 @@ public class RemoteComposeView extends FrameLayout implements View.OnAttachState
      * Constructor for RemoteComposeView.
      *
      * @param context The Context the view is running in.
-     * @param attrs The attributes of the XML tag that is inflating the view.
+     * @param attrs   The attributes of the XML tag that is inflating the view.
      */
     public RemoteComposeView(Context context, AttributeSet attrs) {
         super(context);
@@ -117,10 +118,10 @@ public class RemoteComposeView extends FrameLayout implements View.OnAttachState
     /**
      * Constructor for RemoteComposeView.
      *
-     * @param context The Context the view is running in.
-     * @param attrs The attributes of the XML tag that is inflating the view.
+     * @param context      The Context the view is running in.
+     * @param attrs        The attributes of the XML tag that is inflating the view.
      * @param defStyleAttr An attribute in the current theme that contains a reference to a style
-     *     resource that supplies default values for the view.
+     *                     resource that supplies default values for the view.
      */
     public RemoteComposeView(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
@@ -132,11 +133,11 @@ public class RemoteComposeView extends FrameLayout implements View.OnAttachState
     /**
      * Constructor for RemoteComposeView.
      *
-     * @param context The Context the view is running in.
-     * @param attrs The attributes of the XML tag that is inflating the view.
+     * @param context      The Context the view is running in.
+     * @param attrs        The attributes of the XML tag that is inflating the view.
      * @param defStyleAttr An attribute in the current theme that contains a reference to a style
-     *     resource that supplies default values for the view.
-     * @param clock The {@link Clock} to use for timing.
+     *                     resource that supplies default values for the view.
+     * @param clock        The {@link Clock} to use for timing.
      */
     public RemoteComposeView(Context context, AttributeSet attrs, int defStyleAttr, Clock clock) {
         super(context, attrs, defStyleAttr);
@@ -158,7 +159,9 @@ public class RemoteComposeView extends FrameLayout implements View.OnAttachState
         mARContext = new AndroidRemoteContext(clock);
     }
 
-    /** Sets the debug mode for the view. */
+    /**
+     * Sets the debug mode for the view.
+     */
     public void setDebug(int value) {
         if (mDebug != value) {
             mDebug = value;
@@ -191,7 +194,7 @@ public class RemoteComposeView extends FrameLayout implements View.OnAttachState
 
         mDocument = value;
         mMaxFrameRate = DEFAULT_FRAME_RATE;
-        mDocument.initializeContext(mARContext);
+        mDocument.initializeContext(mARContext, mResolvedData);
         mDisable = false;
         if (mDocument.getDocument().bitmapMemory() > MAX_BITMAP_MEMORY) {
             mDisable = true;
@@ -308,7 +311,7 @@ public class RemoteComposeView extends FrameLayout implements View.OnAttachState
     /**
      * set the color associated with this name.
      *
-     * @param colorName Name of color typically "android.xxx"
+     * @param colorName  Name of color typically "android.xxx"
      * @param colorValue "the argb value"
      */
     public void setColor(String colorName, int colorValue) {
@@ -318,7 +321,7 @@ public class RemoteComposeView extends FrameLayout implements View.OnAttachState
     /**
      * set the value of a long associated with this name.
      *
-     * @param name Name of color typically "android.xxx"
+     * @param name  Name of color typically "android.xxx"
      * @param value the long value
      */
     public void setLong(String name, long value) {
@@ -337,7 +340,7 @@ public class RemoteComposeView extends FrameLayout implements View.OnAttachState
     /**
      * Set a local named string
      *
-     * @param name name of the string
+     * @param name    name of the string
      * @param content value of the string
      */
     public void setLocalString(String name, String content) {
@@ -362,7 +365,7 @@ public class RemoteComposeView extends FrameLayout implements View.OnAttachState
     /**
      * Set a local named int
      *
-     * @param name name of the int
+     * @param name    name of the int
      * @param content value of the int
      */
     public void setLocalInt(String name, int content) {
@@ -412,7 +415,7 @@ public class RemoteComposeView extends FrameLayout implements View.OnAttachState
     /**
      * Set a local named float
      *
-     * @param name name of the float
+     * @param name    name of the float
      * @param content value of the float
      */
     public void setLocalFloat(String name, Float content) {
@@ -437,7 +440,7 @@ public class RemoteComposeView extends FrameLayout implements View.OnAttachState
     /**
      * Set a local named bitmap
      *
-     * @param name name of the bitmap
+     * @param name    name of the bitmap
      * @param content value of the bitmap
      */
     public void setLocalBitmap(String name, Bitmap content) {
@@ -527,12 +530,14 @@ public class RemoteComposeView extends FrameLayout implements View.OnAttachState
         mDocument.getDocument().applyUpdate(document.getDocument());
     }
 
-    /** Interface to receive click events on components. */
+    /**
+     * Interface to receive click events on components.
+     */
     public interface ClickCallbacks {
         /**
          * Called to notify the document that something has been clicked on.
          *
-         * @param id The id for component clicked on.
+         * @param id       The id for component clicked on.
          * @param metadata Optional metadata for the event.
          */
         void click(int id, String metadata);
@@ -841,5 +846,14 @@ public class RemoteComposeView extends FrameLayout implements View.OnAttachState
 
     private float getDefaultTextSize() {
         return new TextView(getContext()).getTextSize();
+    }
+
+    /**
+     * Set the resolved data for the document
+     *
+     * @param resolvedData the resolved data
+     */
+    public void setResolvedData(@Nullable Map<Integer, Object> resolvedData) {
+        mResolvedData = resolvedData;
     }
 }

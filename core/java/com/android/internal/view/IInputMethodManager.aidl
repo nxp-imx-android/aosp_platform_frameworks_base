@@ -22,13 +22,13 @@ import android.view.inputmethod.ImeTracker;
 import android.view.inputmethod.InputMethodInfo;
 import android.view.inputmethod.InputMethodSubtype;
 import android.view.inputmethod.EditorInfo;
-import android.window.ImeOnBackInvokedDispatcher;
 
 import com.android.internal.inputmethod.IBooleanListener;
 import com.android.internal.inputmethod.IConnectionlessHandwritingCallback;
 import com.android.internal.inputmethod.IImeTracker;
 import com.android.internal.inputmethod.IInputMethodClient;
 import com.android.internal.inputmethod.IRemoteAccessibilityInputConnection;
+import com.android.internal.inputmethod.IRemoteComputerControlInputConnection;
 import com.android.internal.inputmethod.IRemoteInputConnection;
 import com.android.internal.inputmethod.InputBindResult;
 import com.android.internal.inputmethod.InputMethodInfoSafeList;
@@ -96,6 +96,7 @@ interface IInputMethodManager {
             /* @android.view.WindowManager.LayoutParams.Flags */ int windowFlags,
             in @nullable EditorInfo editorInfo, in @nullable IRemoteInputConnection inputConnection,
             in @nullable IRemoteAccessibilityInputConnection remoteAccessibilityInputConnection,
+            in @nullable IRemoteComputerControlInputConnection remoteComputerControlInputConnection,
             int unverifiedTargetSdkVersion, int userId,
             in ResultReceiver imeBackCallbackReceiver, boolean imeRequestedVisible,
             int startInputSeq);

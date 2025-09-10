@@ -39,11 +39,10 @@ import com.android.wm.shell.windowdecor.TaskFocusStateConsumer
 import com.android.wm.shell.windowdecor.WindowDecoration2.RelayoutParams
 import com.android.wm.shell.windowdecor.WindowDecoration2.SurfaceControlViewHostFactory
 import com.android.wm.shell.windowdecor.WindowDecorationInsets
+import com.android.wm.shell.windowdecor.common.CaptionRegionHelper
 import com.android.wm.shell.windowdecor.common.viewhost.WindowDecorViewHost
 import com.android.wm.shell.windowdecor.common.viewhost.WindowDecorViewHostSupplier
 import com.android.wm.shell.windowdecor.extension.identityHashCode
-import com.android.wm.shell.windowdecor.extension.isRtl
-import com.android.wm.shell.windowdecor.extension.isTransparentCaptionBarAppearance
 import com.android.wm.shell.windowdecor.viewholder.WindowDecorationViewHolder
 
 /**
@@ -139,26 +138,28 @@ abstract class CaptionController<T>(
             val captionX = (taskBounds.width() - captionWidth) / 2
             val captionY = 0
             val elements = occludingElements
-
-            updateCaptionContainerSurface(
-                parentContainer,
-                startT,
-                captionWidth,
-                captionHeight,
-                captionX,
-            )
+            val localCaptionBounds =
+                Rect(captionX, captionY, captionX + captionWidth, captionY + captionHeight)
             val customizableCaptionRegion =
-                updateCaptionInsets(
-                    params = params,
+                CaptionRegionHelper.calculateCustomizableRegion(
+                    context = decorWindowContext,
+                    taskInfo = taskInfo,
                     elements = elements,
-                    decorWindowContext = decorWindowContext,
-                    wct = wct,
-                    captionHeight = captionHeight,
-                    taskBounds = taskBounds,
+                    localCaptionBounds = localCaptionBounds,
                 )
+            val touchableRegion =
+                CaptionRegionHelper.calculateLimitedTouchableRegion(
+                    context = decorWindowContext,
+                    taskInfo = taskInfo,
+                    displayExclusionRegion = params.displayExclusionRegion,
+                    elements = elements,
+                    localCaptionBounds = localCaptionBounds,
+                )
+
             logD(
                 "relayout with taskBounds=%s captionSize=%dx%d captionTopPadding=%d " +
-                    "captionX=%d captionY=%d elements=%s customCaptionRegion=%s",
+                    "captionX=%d captionY=%d elements=%s customizableCaptionRegion=%s " +
+                    "touchableRegion=%s",
                 taskBounds,
                 captionHeight,
                 captionWidth,
@@ -167,6 +168,24 @@ abstract class CaptionController<T>(
                 captionY,
                 elements,
                 customizableCaptionRegion.toReadableString(),
+                touchableRegion,
+            )
+
+            updateCaptionContainerSurface(
+                parentContainer,
+                startT,
+                captionWidth,
+                captionHeight,
+                captionX,
+            )
+            updateCaptionInsets(
+                params = params,
+                elements = elements,
+                decorWindowContext = decorWindowContext,
+                wct = wct,
+                captionHeight = captionHeight,
+                taskBounds = taskBounds,
+                localCaptionBounds = localCaptionBounds,
             )
 
             traceSection(
@@ -175,15 +194,6 @@ abstract class CaptionController<T>(
             ) {
                 viewHolder.setTopPadding(captionTopPadding)
                 viewHolder.setTaskFocusState(params.hasGlobalFocus)
-                val localCaptionBounds =
-                    Rect(captionX, captionY, captionX + captionWidth, captionY + captionHeight)
-                val touchableRegion =
-                    calculateLimitedTouchableRegion(
-                        params,
-                        elements,
-                        decorWindowContext,
-                        localCaptionBounds,
-                    )
                 updateViewHierarchy(
                     params,
                     viewHost,
@@ -265,76 +275,6 @@ abstract class CaptionController<T>(
             }
         }
 
-    /**
-     * Calculates the touchable region of the caption to only the areas where input should be
-     * handled by the system (i.e. non custom-excluded areas). The region will be calculated based
-     * on occluding caption elements and exclusion areas reported by the app.
-     *
-     * If app is not requesting to customize caption bar, returns [null] signifying that the
-     * touchable region is not limited.
-     */
-    private fun calculateLimitedTouchableRegion(
-        params: RelayoutParams,
-        elements: List<OccludingElement>,
-        decorWindowContext: Context,
-        localCaptionBounds: Rect,
-    ): Region? {
-        if (!taskInfo.isTransparentCaptionBarAppearance) {
-            // App is not requesting custom caption, touchable region is not limited so return null.
-            return null
-        }
-
-        val taskPositionInParent = taskInfo.positionInParent
-        val captionBoundsInDisplay =
-            Rect(localCaptionBounds).apply {
-                offsetTo(taskPositionInParent.x, taskPositionInParent.y)
-            }
-
-        val boundingRects =
-            calculateBoundingRectsRegion(elements, decorWindowContext, captionBoundsInDisplay)
-
-        val customizedRegion =
-            Region.obtain().apply {
-                set(captionBoundsInDisplay)
-                op(boundingRects, Region.Op.DIFFERENCE)
-                op(params.displayExclusionRegion, Region.Op.INTERSECT)
-            }
-
-        val touchableRegion =
-            Region.obtain().apply {
-                set(captionBoundsInDisplay)
-                op(customizedRegion, Region.Op.DIFFERENCE)
-                // Return resulting region back to window coordinates.
-                translate(-taskPositionInParent.x, -taskPositionInParent.y)
-            }
-
-        boundingRects.recycle()
-        customizedRegion.recycle()
-        return touchableRegion
-    }
-
-    private fun calculateBoundingRectsRegion(
-        elements: List<OccludingElement>,
-        decorWindowContext: Context,
-        captionBoundsInDisplay: Rect,
-    ): Region {
-        val region = Region.obtain()
-        if (elements.isEmpty()) {
-            // The entire caption is a bounding rect.
-            region.set(captionBoundsInDisplay)
-            return region
-        }
-        elements.forEach { element ->
-            val boundingRect =
-                calculateBoundingRectLocal(element, captionBoundsInDisplay, decorWindowContext)
-            // Bounding rect is initially calculated relative to the caption, so offset it to make
-            // it relative to the display.
-            boundingRect.offset(captionBoundsInDisplay.left, captionBoundsInDisplay.top)
-            region.union(boundingRect)
-        }
-        return region
-    }
-
     private fun updateCaptionContainerSurface(
         parentContainer: SurfaceControl,
         startT: SurfaceControl.Transaction,
@@ -382,11 +322,11 @@ abstract class CaptionController<T>(
         wct: WindowContainerTransaction,
         captionHeight: Int,
         taskBounds: Rect,
-    ): Region {
+        localCaptionBounds: Rect,
+    ) {
         if (!isCaptionVisible || !params.isInsetSource) {
             captionInsets?.remove(wct)
             captionInsets = null
-            return Region.obtain()
         }
         // Caption inset is the full width of the task with the |captionHeight| and
         // positioned at the top of the task bounds, also in absolute coordinates.
@@ -396,25 +336,13 @@ abstract class CaptionController<T>(
 
         // Caption bounding rectangles: these are optional, and are used to present finer
         // insets than traditional |Insets| to apps about where their content is occluded.
-        // These are also in absolute coordinates.
-        val customizableCaptionRegion = Region.obtain()
-        val boundingRects = mutableListOf<Rect>()
-        if (elements.isNotEmpty()) {
-            // The customizable region can at most be equal to the caption bar.
-            if (params.hasInputFeatureSpy()) {
-                customizableCaptionRegion.set(captionInsetsRect)
-            }
-            for (element in elements) {
-                val boundingRect =
-                    calculateBoundingRectLocal(element, captionInsetsRect, decorWindowContext)
-                boundingRects.add(boundingRect)
-                // Subtract the regions used by the caption elements, the rest is
-                // customizable.
-                if (params.hasInputFeatureSpy()) {
-                    customizableCaptionRegion.op(boundingRect, Region.Op.DIFFERENCE)
-                }
-            }
-        }
+        // These are in coordinates relative to the caption frame.
+        val boundingRects =
+            CaptionRegionHelper.calculateBoundingRectsInsets(
+                context = decorWindowContext,
+                captionFrame = localCaptionBounds,
+                elements = elements,
+            )
 
         val newInsets =
             WindowDecorationInsets(
@@ -431,42 +359,6 @@ abstract class CaptionController<T>(
             // Add or update this caption as an insets source.
             captionInsets = newInsets
             newInsets.update(wct)
-        }
-
-        return customizableCaptionRegion
-    }
-
-    private fun calculateBoundingRectLocal(
-        element: OccludingElement,
-        captionRect: Rect,
-        decorWindowContext: Context,
-    ): Rect {
-        val isRtl = decorWindowContext.isRtl
-        return when (element.alignment) {
-            OccludingElement.Alignment.START -> {
-                if (isRtl) {
-                    Rect(
-                        captionRect.width() - element.width,
-                        0,
-                        captionRect.width(),
-                        captionRect.height(),
-                    )
-                } else {
-                    Rect(0, 0, element.width, captionRect.height())
-                }
-            }
-            OccludingElement.Alignment.END -> {
-                if (isRtl) {
-                    Rect(0, 0, element.width, captionRect.height())
-                } else {
-                    Rect(
-                        captionRect.width() - element.width,
-                        0,
-                        captionRect.width(),
-                        captionRect.height(),
-                    )
-                }
-            }
         }
     }
 
@@ -551,6 +443,8 @@ abstract class CaptionController<T>(
         // The caption y position relative to its parent task
         val captionY: Int,
         val captionTopPadding: Int,
+        // The region within the caption that is allowed to be customized by the app, in display
+        // coordinates.
         val customizableCaptionRegion: Region,
     )
 

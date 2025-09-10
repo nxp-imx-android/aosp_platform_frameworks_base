@@ -538,3 +538,11 @@ flag {
     purpose: PURPOSE_BUGFIX
   }
 }
+
+flag {
+  name: "multi_user_management_device_provisioning"
+  is_exported: true
+  namespace: "enterprise"
+  description: "Enable the multi user management device provisioning APIs."
+  bug: "390162247"
+}

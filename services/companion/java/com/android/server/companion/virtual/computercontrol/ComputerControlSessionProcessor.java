@@ -190,6 +190,21 @@ public class ComputerControlSessionProcessor {
         }
     }
 
+    /**
+     * Returns whether the virtual device with the given ID represents a computer control session.
+     */
+    public boolean isComputerControlSession(int deviceId) {
+        synchronized (mSessions) {
+            for (int i = 0; i < mSessions.size(); i++) {
+                ComputerControlSessionImpl session = mSessions.valueAt(i);
+                if (session.getDeviceId() == deviceId) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     private void startHandlerThreadIfNeeded() {
         synchronized (mHandlerThreadLock) {
             if (mHandlerThread != null) {
@@ -255,8 +270,8 @@ public class ComputerControlSessionProcessor {
     }
 
     /** Notifies the client that session creation failed. */
-    private void dispatchSessionCreationFailed(IComputerControlSessionCallback callback,
-            ComputerControlSessionParams params, int reason) {
+    private void dispatchSessionCreationFailed(@NonNull IComputerControlSessionCallback callback,
+            @NonNull ComputerControlSessionParams params, int reason) {
         try {
             callback.onSessionCreationFailed(reason);
         } catch (RemoteException e) {
@@ -325,7 +340,9 @@ public class ComputerControlSessionProcessor {
      * <p>Removes the session from the set of active sessions and notifies the client.
      */
     private class OnSessionClosedListener implements ComputerControlSessionImpl.OnClosedListener {
+        @NonNull
         private final String mSessionName;
+        @NonNull
         private final IComputerControlSessionCallback mAppCallback;
 
         OnSessionClosedListener(@NonNull String sessionName,
@@ -335,7 +352,7 @@ public class ComputerControlSessionProcessor {
         }
 
         @Override
-        public void onClosed(ComputerControlSessionImpl session) {
+        public void onClosed(@NonNull ComputerControlSessionImpl session) {
             synchronized (mSessions) {
                 if (!mSessions.remove(session)) {
                     // The session was already removed, which can happen if close() is called
@@ -349,6 +366,21 @@ public class ComputerControlSessionProcessor {
                 Slog.w(TAG, "Failed to notify ComputerControlSession " + mSessionName
                         + " about session closure");
             }
+        }
+    }
+
+    /**
+     * Returns {@code true}, if any of the ongoing computer control sessions are running on the
+     * provided virtual display id, {@code false} otherwise.
+     */
+    public boolean isComputerControlDisplay(int displayId) {
+        synchronized (mSessions) {
+            for (int i = 0; i < mSessions.size(); i++) {
+                if (mSessions.valueAt(i).getVirtualDisplayId() == displayId) {
+                    return true;
+                }
+            }
+            return false;
         }
     }
 

@@ -766,13 +766,25 @@ public class TaskViewTransitions implements Transitions.TransitionHandler, TaskV
                                   @NonNull SurfaceControl.Transaction startTransaction,
                                   @NonNull SurfaceControl.Transaction finishTransaction,
                                   @NonNull Transitions.TransitionFinishCallback finishCallback) {
+        if (transitionInfo == null || transitionInfo.getChanges().isEmpty()) {
+            PendingTransition pending = findPending(transition);
+            if (pending != null) {
+                ProtoLog.e(WM_SHELL_BUBBLES, "Transitions.startAnimation(): found a transition with"
+                                + "no changes that is managed by TaskViewTransitions. taskView=%d "
+                                + "type=%s transition=%s", pending.mTaskView.hashCode(),
+                        transitTypeToString(pending.mType), transition);
+                mPending.remove(pending);
+                startNextTransition();
+            }
+            return false;
+        }
+
         if (!Flags.taskViewTransitionsRefactor() && !enableHandlersDebuggingMode()) {
             return startAnimationLegacy(transition, transitionInfo, startTransaction,
                     finishTransaction, finishCallback);
         }
         final boolean inDataCollectionModeOnly =
                 enableHandlersDebuggingMode() && transitionInfo == null;
-        final boolean inAnimationMode = !inDataCollectionModeOnly;
         final TransitionInfo info = inDataCollectionModeOnly ? dispatchState.mInfo : transitionInfo;
 
         final PendingTransition pending = findPending(transition);

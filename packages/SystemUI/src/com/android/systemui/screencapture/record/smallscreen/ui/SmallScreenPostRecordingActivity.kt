@@ -48,14 +48,18 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.booleanResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.media3.common.MimeTypes
+import com.android.compose.PlatformButton
 import com.android.compose.PlatformOutlinedButton
+import com.android.compose.PlatformTextButton
 import com.android.compose.theme.PlatformTheme
+import com.android.systemui.dialog.ui.composable.AlertDialogContent
 import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.res.R
 import com.android.systemui.screencapture.common.ui.compose.LoadingIcon
@@ -64,7 +68,12 @@ import com.android.systemui.screencapture.common.ui.compose.loadIcon
 import com.android.systemui.screencapture.common.ui.viewmodel.DrawableLoaderViewModel
 import com.android.systemui.screencapture.record.smallscreen.player.ui.compose.VideoPlayer
 import com.android.systemui.screencapture.record.smallscreen.ui.viewmodel.PostRecordingViewModel
+import com.android.systemui.statusbar.phone.SystemUIDialogFactory
+import com.android.systemui.statusbar.phone.create
 import javax.inject.Inject
+import kotlin.coroutines.resume
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.suspendCancellableCoroutine
 
 class SmallScreenPostRecordingActivity
 @Inject
@@ -72,6 +81,7 @@ constructor(
     private val videoPlayer: VideoPlayer,
     private val viewModelFactory: PostRecordingViewModel.Factory,
     private val postRecordSnackbarDialogs: PostRecordSnackbarDialogs,
+    private val systemUIDialogFactory: SystemUIDialogFactory,
 ) : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -82,6 +92,7 @@ constructor(
 
     @Composable
     private fun Content() {
+        val coroutineScope = rememberCoroutineScope()
         val viewModel =
             rememberViewModel("SmallScreenPostRecordingActivity#viewModel") {
                 viewModelFactory.create(intent.data ?: error("Data URI is missing"))
@@ -128,8 +139,12 @@ constructor(
                     )
                     PostRecordButton(
                         onClick = {
-                            postRecordSnackbarDialogs.showVideoDeleted(viewModel.videoUri)
-                            finish()
+                            coroutineScope.launch {
+                                if (confirmDeletion(viewModel)) {
+                                    postRecordSnackbarDialogs.showVideoDeleted(viewModel.videoUri)
+                                    finish()
+                                }
+                            }
                         },
                         drawableLoaderViewModel = viewModel,
                         iconRes = R.drawable.ic_screenshot_delete,
@@ -174,6 +189,53 @@ constructor(
             }
         }
     }
+
+    private suspend fun confirmDeletion(viewModel: DrawableLoaderViewModel) =
+        suspendCancellableCoroutine { continuation ->
+            val dialog =
+                systemUIDialogFactory.create(context = this) { dialog ->
+                    LaunchedEffect(dialog) {
+                        dialog.setOnDismissListener {
+                            if (continuation.isActive) continuation.resume(false)
+                        }
+                    }
+                    AlertDialogContent(
+                        title = {
+                            Text(stringResource(R.string.screen_record_delete_dialog_title))
+                        },
+                        content = {
+                            Text(stringResource(R.string.screen_record_delete_dialog_content))
+                        },
+                        icon = {
+                            LoadingIcon(
+                                loadIcon(
+                                        viewModel = viewModel,
+                                        resId = R.drawable.ic_screenshot_delete,
+                                        contentDescription = null,
+                                    )
+                                    .value
+                            )
+                        },
+                        positiveButton = {
+                            PlatformButton(
+                                onClick = {
+                                    continuation.resume(true)
+                                    dialog.dismiss()
+                                }
+                            ) {
+                                Text(stringResource(id = R.string.screen_record_delete))
+                            }
+                        },
+                        negativeButton = {
+                            PlatformTextButton(onClick = { dialog.dismiss() }) {
+                                Text(stringResource(id = R.string.cancel))
+                            }
+                        },
+                    )
+                }
+            dialog.show()
+            continuation.invokeOnCancellation { dialog.dismiss() }
+        }
 
     companion object {
 

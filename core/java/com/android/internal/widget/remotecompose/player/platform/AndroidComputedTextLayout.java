@@ -16,7 +16,6 @@
 package com.android.internal.widget.remotecompose.player.platform;
 
 
-
 import android.text.StaticLayout;
 
 import com.android.internal.widget.remotecompose.core.Platform;

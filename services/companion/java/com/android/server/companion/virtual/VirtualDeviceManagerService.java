@@ -30,6 +30,7 @@ import android.annotation.RequiresPermission;
 import android.annotation.SuppressLint;
 import android.app.ActivityOptions;
 import android.app.compat.CompatChanges;
+import android.app.role.RoleManager;
 import android.companion.AssociationInfo;
 import android.companion.AssociationRequest;
 import android.companion.CompanionDeviceManager;
@@ -42,6 +43,7 @@ import android.companion.virtual.VirtualDevice;
 import android.companion.virtual.VirtualDeviceManager;
 import android.companion.virtual.VirtualDeviceParams;
 import android.companion.virtual.computercontrol.ComputerControlSessionParams;
+import android.companion.virtual.computercontrol.IAutomatedPackageListener;
 import android.companion.virtual.computercontrol.IComputerControlSessionCallback;
 import android.companion.virtual.sensor.VirtualSensor;
 import android.companion.virtualdevice.flags.Flags;
@@ -82,6 +84,7 @@ import com.android.modules.expresslog.Counter;
 import com.android.server.LocalServices;
 import com.android.server.SystemService;
 import com.android.server.companion.virtual.VirtualDeviceImpl.PendingTrampoline;
+import com.android.server.companion.virtual.computercontrol.AutomatedPackagesRepository;
 import com.android.server.companion.virtual.computercontrol.ComputerControlSessionProcessor;
 import com.android.server.wm.ActivityInterceptorCallback;
 import com.android.server.wm.ActivityTaskManagerInternal;
@@ -141,6 +144,7 @@ public class VirtualDeviceManagerService extends SystemService {
     private final Handler mHandler = new Handler(Looper.getMainLooper());
     private final PendingTrampolineMap mPendingTrampolines = new PendingTrampolineMap(mHandler);
     private final ComputerControlSessionProcessor mComputerControlSessionProcessor;
+    private final AutomatedPackagesRepository mAutomatedPackagesRepository;
 
     private static AtomicInteger sNextUniqueIndex = new AtomicInteger(
             Context.DEVICE_ID_DEFAULT + 1);
@@ -191,6 +195,8 @@ public class VirtualDeviceManagerService extends SystemService {
         mLocalService = new LocalService();
         mComputerControlSessionProcessor =
                 new ComputerControlSessionProcessor(context, mImpl::createLocalVirtualDevice);
+        mAutomatedPackagesRepository =
+                new AutomatedPackagesRepository(context.getPackageManager(), mHandler);
     }
 
     private final ActivityInterceptorCallback mActivityInterceptorCallback =
@@ -232,8 +238,11 @@ public class VirtualDeviceManagerService extends SystemService {
         CompanionDeviceManager cdm = getContext().getSystemService(CompanionDeviceManager.class);
         if (cdm != null) {
             onCdmAssociationsChanged(cdm.getAllAssociations(UserHandle.USER_ALL));
+            // The associations received in the callback can provide a stale state so always get
+            // the accurate list of associations from the single source of truth
             cdm.addOnAssociationsChangedListener(getContext().getMainExecutor(),
-                    this::onCdmAssociationsChanged, UserHandle.USER_ALL);
+                    associations -> onCdmAssociationsChanged(
+                            cdm.getAllAssociations(UserHandle.USER_ALL)), UserHandle.USER_ALL);
         } else {
             Slog.e(TAG, "Failed to find CompanionDeviceManager. No CDM association info "
                     + " will be available.");
@@ -293,7 +302,8 @@ public class VirtualDeviceManagerService extends SystemService {
     }
 
     @VisibleForTesting
-    void onRunningAppsChanged(int deviceId, @NonNull ArraySet<Integer> runningUids) {
+    void onRunningAppsChanged(int deviceId, @NonNull String deviceOwnerPackageName,
+            @NonNull ArraySet<Integer> runningUids) {
         final List<VirtualDeviceManagerInternal.AppsOnVirtualDeviceListener> listeners;
         synchronized (mVirtualDeviceManagerLock) {
             listeners = List.copyOf(mAppsOnVirtualDeviceListeners);
@@ -303,6 +313,10 @@ public class VirtualDeviceManagerService extends SystemService {
                 listeners.get(i).onAppsRunningOnVirtualDeviceChanged(deviceId, runningUids);
             }
         });
+
+        if (mComputerControlSessionProcessor.isComputerControlSession(deviceId)) {
+            mAutomatedPackagesRepository.update(deviceId, deviceOwnerPackageName, runningUids);
+        }
     }
 
     @VisibleForTesting
@@ -341,13 +355,15 @@ public class VirtualDeviceManagerService extends SystemService {
             mVirtualDevices.remove(deviceId);
         }
 
-        mVirtualDeviceListeners.broadcast(listener -> {
-            try {
-                listener.onVirtualDeviceClosed(deviceId);
-            } catch (RemoteException e) {
-                Slog.i(TAG, "Failed to invoke onVirtualDeviceClosed listener: "
-                        + e.getMessage());
-            }
+        mHandler.post(() -> {
+            mVirtualDeviceListeners.broadcast(listener -> {
+                try {
+                    listener.onVirtualDeviceClosed(deviceId);
+                } catch (RemoteException e) {
+                    Slog.i(TAG, "Failed to invoke onVirtualDeviceClosed listener: "
+                            + e.getMessage());
+                }
+            });
         });
 
         return true;
@@ -380,6 +396,8 @@ public class VirtualDeviceManagerService extends SystemService {
         }
 
         for (VirtualDeviceImpl virtualDevice : virtualDevicesToRemove) {
+            Slog.d(TAG, "onCdmAssociationsChanged, removing virtual device with deviceId: "
+                    + virtualDevice.getDeviceId());
             virtualDevice.close();
         }
 
@@ -402,6 +420,22 @@ public class VirtualDeviceManagerService extends SystemService {
         synchronized (mVirtualDeviceManagerLock) {
             return mVirtualDevices.get(deviceId);
         }
+    }
+
+    // TODO(b/442624418): Replace this explicit role holder check with a new role permission.
+    private void checkCallerHoldsHomeRole() {
+        final RoleManager roleManager = getContext().getSystemService(RoleManager.class);
+        final List<String> homePackages = roleManager.getRoleHolders(RoleManager.ROLE_HOME);
+        final String[] callerPackages =
+                getContext().getPackageManager().getPackagesForUid(Binder.getCallingUid());
+        for (int i = 0; i < callerPackages.length; i++) {
+            for (int j = 0; j < homePackages.size(); j++) {
+                if (callerPackages[i].equals(homePackages.get(j))) {
+                    return;
+                }
+            }
+        }
+        throw new SecurityException("Caller does not hold the HOME role.");
     }
 
     class VirtualDeviceManagerImpl extends IVirtualDeviceManager.Stub {
@@ -524,13 +558,15 @@ public class VirtualDeviceManagerService extends SystemService {
                 virtualDevice.applyViewConfigurationParams(params.getViewConfigurationParams());
             }
 
-            mVirtualDeviceListeners.broadcast(listener -> {
-                try {
-                    listener.onVirtualDeviceCreated(deviceId);
-                } catch (RemoteException e) {
-                    Slog.i(TAG, "Failed to invoke onVirtualDeviceCreated listener: "
-                            + e.getMessage());
-                }
+            mHandler.post(() -> {
+                mVirtualDeviceListeners.broadcast(listener -> {
+                    try {
+                        listener.onVirtualDeviceCreated(deviceId);
+                    } catch (RemoteException e) {
+                        Slog.i(TAG, "Failed to invoke onVirtualDeviceCreated listener: "
+                                + e.getMessage());
+                    }
+                });
             });
             Counter.logIncrementWithUid(
                     "virtual_devices.value_virtual_devices_created_with_uid_count",
@@ -563,6 +599,18 @@ public class VirtualDeviceManagerService extends SystemService {
         @Override // Binder call
         public void unregisterVirtualDeviceListener(IVirtualDeviceListener listener) {
             mVirtualDeviceListeners.unregister(listener);
+        }
+
+        @Override // Binder call
+        public void registerAutomatedPackageListener(IAutomatedPackageListener listener) {
+            checkCallerHoldsHomeRole();
+            mAutomatedPackagesRepository.registerAutomatedPackageListener(listener);
+        }
+
+        @Override // Binder call
+        public void unregisterAutomatedPackageListener(IAutomatedPackageListener listener) {
+            checkCallerHoldsHomeRole();
+            mAutomatedPackagesRepository.unregisterAutomatedPackageListener(listener);
         }
 
         @Override // Binder call
@@ -880,6 +928,11 @@ public class VirtualDeviceManagerService extends SystemService {
         @Override
         public VirtualDevice getVirtualDevice(int deviceId) {
             return mImpl.getVirtualDevice(deviceId);
+        }
+
+        @Override
+        public boolean isComputerControlDisplay(int displayId) {
+            return mComputerControlSessionProcessor.isComputerControlDisplay(displayId);
         }
 
         @Override

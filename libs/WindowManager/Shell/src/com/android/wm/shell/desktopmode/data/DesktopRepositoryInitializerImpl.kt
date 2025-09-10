@@ -17,8 +17,8 @@
 package com.android.wm.shell.desktopmode.data
 
 import android.content.Context
-import android.view.Display
 import android.view.Display.DEFAULT_DISPLAY
+import android.view.Display.INVALID_DISPLAY
 import android.window.DesktopExperienceFlags
 import android.window.DesktopModeFlags
 import com.android.internal.protolog.ProtoLog
@@ -60,10 +60,12 @@ class DesktopRepositoryInitializerImpl(
     override val isInitialized: StateFlow<Boolean> = _isInitialized
 
     override fun initialize(userRepositories: DesktopUserRepositories) {
-        // TODO: b/401107440 - Remove second check once restoring to external displays is supported
+        val desktopSupportedOnDefaultDisplay =
+            desktopState.isDesktopModeSupportedOnDisplay(DEFAULT_DISPLAY)
         if (
             !DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_PERSISTENCE.isTrue ||
-                !desktopState.isDesktopModeSupportedOnDisplay(Display.DEFAULT_DISPLAY)
+                (!desktopSupportedOnDefaultDisplay &&
+                    !DesktopExperienceFlags.ENABLE_EXTERNAL_DISPLAY_PERSISTENCE_BUGFIX.isTrue)
         ) {
             _isInitialized.value = true
             return
@@ -86,10 +88,44 @@ class DesktopRepositoryInitializerImpl(
                     )
                     for (persistentDesktop in desksToRestore) {
                         val maxTasks = getTaskLimit(persistentDesktop)
-                        val uniqueDisplayId = persistentDesktop.uniqueDisplayId
-                        val newDisplayId =
-                            uniqueIdToDisplayIdMap?.get(uniqueDisplayId) ?: DEFAULT_DISPLAY
+                        var uniqueDisplayId = persistentDesktop.uniqueDisplayId
+                        // TODO: b/441767264 - Consider waiting for DisplayController to receive all
+                        //  displayAdded signals before initializing here. This way we don't
+                        //  rely on an IPC if the display is not yet available.
+                        val displayIdIfNotFound =
+                            if (
+                                DesktopExperienceFlags.ENABLE_EXTERNAL_DISPLAY_PERSISTENCE_BUGFIX
+                                    .isTrue
+                            ) {
+                                displayController.getDisplayIdByUniqueIdBlocking(uniqueDisplayId)
+                            } else {
+                                DEFAULT_DISPLAY
+                            }
+                        var newDisplayId =
+                            uniqueIdToDisplayIdMap?.get(uniqueDisplayId) ?: displayIdIfNotFound
                         val deskId = persistentDesktop.desktopId
+                        var transientDesk = false
+                        var preserveDesk = false
+                        if (!desktopSupportedOnDefaultDisplay && newDisplayId == DEFAULT_DISPLAY) {
+                            // If a desk is somehow going to the default display on an
+                            // unsupported device, skip it.
+                            logV("desk=%d is going to the default display, skipping", deskId)
+                            continue
+                        }
+                        if (newDisplayId == INVALID_DISPLAY) {
+                            val result =
+                                handleInvalidDisplay(
+                                    deskId,
+                                    uniqueDisplayId,
+                                    uniqueIdToDisplayIdMap,
+                                    desktopSupportedOnDefaultDisplay,
+                                )
+                            newDisplayId = result.newDisplayId
+                            uniqueDisplayId = result.newUniqueDisplayId
+                            preserveDesk = result.preserveDesk
+                            transientDesk = result.transientDesk
+                        }
+
                         val newDeskId =
                             deskRecreationFactory.recreateDesk(
                                 userId = userId,
@@ -128,6 +164,7 @@ class DesktopRepositoryInitializerImpl(
                             displayId = newDisplayId,
                             deskId = newDeskId,
                             uniqueDisplayId = uniqueDisplayId,
+                            transientDesk = transientDesk,
                         )
                         var visibleTasksCount = 0
                         persistentDesktop.zOrderedTasksList
@@ -183,6 +220,17 @@ class DesktopRepositoryInitializerImpl(
                                     )
                                 }
                             }
+                        val activeDeskId =
+                            desktopRepositoryState
+                                .getActiveDeskByUniqueDisplayId()[persistentDesktop.uniqueDisplayId]
+                        if (newDisplayId != DEFAULT_DISPLAY && activeDeskId == deskId) {
+                            // TODO: b/443876652 - Investigate solution for devices that don't
+                            //  disable external display on boot.
+                            repository.setActiveDesk(newDisplayId, newDeskId)
+                        }
+                        if (preserveDesk) {
+                            repository.preserveDesk(newDeskId, persistentDesktop.uniqueDisplayId)
+                        }
                     }
                 }
             } finally {
@@ -211,6 +259,48 @@ class DesktopRepositoryInitializerImpl(
             .toSet()
     }
 
+    /**
+     * Handles the case where the initial display ID is invalid. Redirects the desk to
+     * DEFAULT_DISPLAY, marking it to be preserved and marking as transient if desktops are not
+     * supported on the default display.
+     *
+     * @param deskId The ID of the desk being processed.
+     * @param currentUniqueDisplayId The current unique display ID.
+     * @return A [DisplayRedirectResult] containing the updated display ID, unique display ID, and
+     *   whether the display should be preserved or transient.
+     */
+    private fun handleInvalidDisplay(
+        deskId: Int,
+        currentUniqueDisplayId: String?,
+        uniqueIdToDisplayIdMap: Map<String, Int>?,
+        desktopSupportedOnDefaultDisplay: Boolean,
+    ): DisplayRedirectResult {
+        logV(
+            "desk=%d: displayId for uniqueDisplayId=%s not found, redirecting to default display",
+            deskId,
+            currentUniqueDisplayId,
+        )
+        val newDisplayId = DEFAULT_DISPLAY
+        val newUniqueDisplayId =
+            uniqueIdToDisplayIdMap?.entries?.firstOrNull { it.value == DEFAULT_DISPLAY }?.key
+        val transientDesk = !desktopSupportedOnDefaultDisplay
+        // If a desk is being redirected to the default display but desks
+        // aren't supported there, mark it as transient; we will still create
+        // it to mimic the desk as faithfully as possible, but it will
+        // only be used for preservation for a future restore. It will be
+        // deleted after and is not to inform any listeners of any actions.
+        if (transientDesk) {
+            logV("Desk=%d will be restored as a transient desk.", deskId)
+        }
+
+        return DisplayRedirectResult(
+            newDisplayId = newDisplayId,
+            newUniqueDisplayId = newUniqueDisplayId,
+            preserveDesk = true,
+            transientDesk = transientDesk,
+        )
+    }
+
     private fun getTaskLimit(persistedDesk: Desktop): Int =
         desktopConfig.maxTaskLimit.takeIf { it > 0 } ?: persistedDesk.zOrderedTasksCount
 
@@ -221,6 +311,22 @@ class DesktopRepositoryInitializerImpl(
     private fun logW(msg: String, vararg arguments: Any?) {
         ProtoLog.w(WM_SHELL_DESKTOP_MODE, "%s: $msg", TAG, *arguments)
     }
+
+    /**
+     * Data class to hold the results of the display redirection logic.
+     *
+     * @param newDisplayId The new display ID.
+     * @param newUniqueDisplayId The new unique display ID.
+     * @param preserveDesk Whether the desk should be preserved.
+     * @param transientDesk Whether the desk should be created only for preservation purposes, then
+     *   deleted.
+     */
+    private data class DisplayRedirectResult(
+        val newDisplayId: Int,
+        val newUniqueDisplayId: String?,
+        val preserveDesk: Boolean,
+        val transientDesk: Boolean,
+    )
 
     /** A default implementation of [DeskRecreationFactory] that reuses the desk id. */
     private class DefaultDeskRecreationFactory : DeskRecreationFactory {

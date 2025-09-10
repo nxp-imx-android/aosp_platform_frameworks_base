@@ -63,14 +63,12 @@ class ScreenshotAnimationController(
         listOf<View>(
             view.requireViewById(R.id.screenshot_preview_border),
             view.requireViewById(R.id.screenshot_badge),
-            view.requireViewById(R.id.screenshot_dismiss_button),
         )
     private val fadeUI =
         listOf<View>(
             view.requireViewById(R.id.screenshot_preview_border),
             view.requireViewById(R.id.actions_container_background),
             view.requireViewById(R.id.screenshot_badge),
-            view.requireViewById(R.id.screenshot_dismiss_button),
             view.requireViewById(R.id.screenshot_message_container),
         )
 

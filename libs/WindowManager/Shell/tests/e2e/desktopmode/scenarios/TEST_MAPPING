@@ -182,6 +182,13 @@
       ]
     },
     {
+      "name": "FunctionalTestsDesktopMode-appcompat-ShowQuickShareDialogFromQuickSettingsTest",
+      "keywords": [
+        "device",
+        "desktop"
+      ]
+    },
+    {
       "name": "FunctionalTestsDesktopMode-exit-ExitDesktopToFullScreenWithAppHeaderMenuTest",
       "keywords": [
         "device",

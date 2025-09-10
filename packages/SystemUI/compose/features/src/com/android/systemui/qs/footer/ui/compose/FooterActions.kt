@@ -80,11 +80,10 @@ import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 import androidx.core.graphics.drawable.toBitmap
 import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.repeatOnLifecycle
 import com.android.compose.animation.Expandable
 import com.android.compose.animation.scene.ContentScope
+import com.android.compose.lifecycle.LaunchedEffectWithLifecycle
 import com.android.compose.modifiers.animatedBackground
 import com.android.compose.theme.LocalAndroidColorScheme
 import com.android.compose.theme.colorAttr
@@ -117,7 +116,6 @@ fun ContentScope.FooterActionsWithAnimatedVisibility(
     viewModel: FooterActionsViewModel,
     isCustomizing: Boolean,
     customizingAnimationDuration: Int,
-    lifecycleOwner: LifecycleOwner,
     modifier: Modifier = Modifier,
 ) {
     AnimatedVisibility(
@@ -138,7 +136,7 @@ fun ContentScope.FooterActionsWithAnimatedVisibility(
             // This view has its own horizontal padding
             // TODO(b/321716470) This should use a lifecycle tied to the scene.
             Element(QuickSettings.Elements.FooterActions, Modifier) {
-                FooterActions(viewModel = viewModel, qsVisibilityLifecycleOwner = lifecycleOwner)
+                FooterActions(viewModel = viewModel)
             }
         }
     }
@@ -146,11 +144,7 @@ fun ContentScope.FooterActionsWithAnimatedVisibility(
 
 /** The Quick Settings footer actions row. */
 @Composable
-fun FooterActions(
-    viewModel: FooterActionsViewModel,
-    qsVisibilityLifecycleOwner: LifecycleOwner,
-    modifier: Modifier = Modifier,
-) {
+fun FooterActions(viewModel: FooterActionsViewModel, modifier: Modifier = Modifier) {
     val context = LocalContext.current
 
     // Collect alphas as soon as we are composed, even when not visible.
@@ -162,32 +156,33 @@ fun FooterActions(
         mutableStateOf<FooterActionsForegroundServicesButtonViewModel?>(null)
     }
     var userSwitcher by remember { mutableStateOf<FooterActionsButtonViewModel?>(null) }
+    var settings by remember { mutableStateOf<FooterActionsButtonViewModel?>(null) }
 
     var textFeedback by remember {
         mutableStateOf<TextFeedbackViewModel>(TextFeedbackViewModel.NoFeedback)
     }
 
-    LaunchedEffect(
-        context,
-        qsVisibilityLifecycleOwner,
-        viewModel,
-        viewModel.security,
-        viewModel.foregroundServices,
-        viewModel.userSwitcher,
-        viewModel.textFeedback,
-    ) {
+    LaunchedEffect(context, viewModel) {
         launch {
             // Listen for dialog requests as soon as we are composed, even when not visible.
             viewModel.observeDeviceMonitoringDialogRequests(context)
         }
+    }
 
-        // Listen for model changes only when QS are visible.
-        qsVisibilityLifecycleOwner.repeatOnLifecycle(Lifecycle.State.RESUMED) {
-            launch { viewModel.security.collect { security = it } }
-            launch { viewModel.foregroundServices.collect { foregroundServices = it } }
-            launch { viewModel.userSwitcher.collect { userSwitcher = it } }
-            launch { viewModel.textFeedback.collect { textFeedback = it } }
-        }
+    // Listen for model changes only when QS are visible.
+    LaunchedEffectWithLifecycle(
+        viewModel.security,
+        viewModel.foregroundServices,
+        viewModel.userSwitcher,
+        viewModel.textFeedback,
+        viewModel.settings,
+        minActiveState = Lifecycle.State.RESUMED,
+    ) {
+        launch { viewModel.security.collect { security = it } }
+        launch { viewModel.foregroundServices.collect { foregroundServices = it } }
+        launch { viewModel.userSwitcher.collect { userSwitcher = it } }
+        launch { viewModel.textFeedback.collect { textFeedback = it } }
+        launch { viewModel.settings.collect { settings = it } }
     }
 
     val backgroundColor =
@@ -261,7 +256,7 @@ fun FooterActions(
                 Modifier.sysuiResTag("multi_user_switch"),
             )
             IconButton(
-                { viewModel.settings },
+                { settings },
                 useModifierBasedExpandable,
                 Modifier.sysuiResTag("settings_button_container"),
             )

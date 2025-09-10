@@ -388,6 +388,21 @@ public final class Telephony {
 
     /**
      * Contains all text-based SMS messages.
+     * <p>
+     * Access to SMS Messages containing an SMS retriever hash (Base64 encoded SHA256 hash of an
+     * app's signing certificate, truncated to 11 characters) is delayed by 3 hours after reception.
+     * However, certain apps are exempt from this delay, and can access these SMS messages
+     * immediately upon receipt, if they hold the READ_SMS permission. These exempted apps are:
+     * <ol>
+     *     <li>The default SMS app</li>
+     *     <li>The default Assistant app</li>
+     *     <li>The default Dialer app</li>
+     *     <li>Carrier apps</li>
+     *     <li>Connected device companion apps</li>
+     *     <li>System apps</li>
+     *     <li>Known signer apps</li>
+     *     <li>The SYSTEM_UI_INTELLIGENCE role holding app</li>
+     * </ol>
      */
     public static final class Sms implements BaseColumns, TextBasedSmsColumns {
 
@@ -1098,6 +1113,11 @@ public final class Telephony {
              *
              * <p>If a BroadcastReceiver encounters an error while processing
              * this intent it should set the result code appropriately.</p>
+             *
+             * <p>If the SMS message contains an SMS retriever hash, the intent will only be
+             * delivered to the app corresponding to the SMS retriever hash, and the list of apps
+             * listed {@link Sms here}.
+             * </p>
              *
              * <p>Requires {@link android.Manifest.permission#RECEIVE_SMS} to receive.</p>
              */

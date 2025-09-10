@@ -194,6 +194,16 @@ flag {
 }
 
 flag {
+    name: "notification_fix_hun_shadows"
+    namespace: "systemui"
+    description: "Fix HUN shadows when the shade is collapsed."
+    bug: "440572084"
+    metadata {
+       purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "scene_container"
     namespace: "systemui"
     description: "Enables the scene container framework go/flexiglass."
@@ -748,23 +758,6 @@ flag {
 }
 
 flag {
-    name: "screenshot_action_dismiss_system_windows"
-    namespace: "systemui"
-    description: "Dismiss existing system windows when starting action from screenshot UI"
-    bug: "309933761"
-}
-
-flag {
-    name: "fix_screenshot_action_dismiss_system_windows"
-    namespace: "systemui"
-    description: "Dismiss existing system windows when starting action from screenshot UI"
-    bug: "309933761"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "screenshot_scroll_crop_view_crash_fix"
     namespace: "systemui"
     description: "Mitigate crash on invalid computed range in CropView"
@@ -968,13 +961,6 @@ flag {
     metadata {
       purpose: PURPOSE_BUGFIX
     }
-}
-
-flag {
-    name: "qs_edit_mode_tabs"
-    namespace: "systemui"
-    description: "Splits the Quick Settings edit mode in tabs. This feature is for the compose version of Quick Settings."
-    bug: "416236871"
 }
 
 flag {
@@ -2227,4 +2213,14 @@ flag {
    metadata {
         purpose: PURPOSE_BUGFIX
    }
+}
+
+flag {
+    name: "sysui_intrinsic_lock_dispatcher"
+    namespace: "systemui"
+    description: "Custom dispatcher for background tasks, which uses intrinsic locks instead of ReentrantLock"
+    bug: "419472502"
+    metadata {
+         purpose: PURPOSE_BUGFIX
+    }
 }

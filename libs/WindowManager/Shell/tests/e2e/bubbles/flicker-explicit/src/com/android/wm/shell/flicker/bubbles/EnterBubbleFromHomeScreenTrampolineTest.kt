@@ -36,7 +36,9 @@ import org.junit.runners.MethodSorters
  * clicking bubble menu from the home screen.
  *
  * To run this test:
- *     `atest WMShellExplicitFlickerTestsBubbles:EnterBubbleFromHomeScreenTrampolineTest`
+ * ```
+ *     atest WMShellExplicitFlickerTestsBubbles:EnterBubbleFromHomeScreenTrampolineTest
+ * ```
  *
  * Actions:
  * ```
@@ -45,7 +47,7 @@ import org.junit.runners.MethodSorters
  * ```
  *
  * Verified tests:
- * - [BubbleFlickerTestBase]
+ * - [BubbleFlickerTrampolineTestBase]
  * - [EnterBubbleTestCases]
  */
 @RequiresFlagsEnabled(Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE)
@@ -59,19 +61,13 @@ open class EnterBubbleFromHomeScreenTrampolineTest :
         private val recordTraceWithTransitionRule =
             RecordTraceWithTransitionRule(
                 transition = {
-                    launchBubbleViaBubbleMenu(
-                        trampolineStartingApp,
-                        tapl,
-                        wmHelper,
-                        FROM_HOME_SCREEN,
-                    )
+                    launchBubbleViaBubbleMenu(trampolineApp, tapl, wmHelper, FROM_HOME_SCREEN)
                 },
                 tearDownAfterTransition = {
-                    trampolineFinishApp.exit(wmHelper)
+                    runningApp.exit(wmHelper)
                     // Clean up the app icon that might have been added to the home screen during
                     // the test transition.
-                    val testAppIcon =
-                        tapl.workspace.getWorkspaceAppIcon(trampolineStartingApp.appName)
+                    val testAppIcon = tapl.workspace.getWorkspaceAppIcon(trampolineApp.appName)
                     tapl.workspace.deleteAppIcon(testAppIcon)
                 },
             )

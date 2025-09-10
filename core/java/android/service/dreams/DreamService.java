@@ -17,6 +17,7 @@
 package android.service.dreams;
 
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
+import static android.service.dreams.Flags.allowDreamAttachFailure;
 import static android.service.dreams.Flags.dreamHandlesBeingObscured;
 import static android.service.dreams.Flags.dreamHandlesConfirmKeys;
 import static android.service.dreams.Flags.startAndStopDozingInBackground;
@@ -45,6 +46,7 @@ import android.content.res.TypedArray;
 import android.graphics.drawable.Drawable;
 import android.os.Binder;
 import android.os.Build;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.IRemoteCallback;
@@ -249,6 +251,13 @@ public class DreamService extends Service implements Window.Callback {
      */
     static final String EXTRA_DREAM_OVERLAY_COMPONENT =
             "android.service.dream.DreamService.dream_overlay_component";
+
+    /**
+     * The name of the extra that indicates an error during attach.
+     * @hide
+     */
+    public static final String BUNDLE_KEY_ATTACH_ERROR =
+            "android.service.dream.DreamService.attach_error";
 
     private final IDreamManager mDreamManager;
     private final Handler mHandler;
@@ -1571,6 +1580,15 @@ public class DreamService extends Service implements Window.Callback {
         if (mDreamToken != null) {
             Slog.e(mTag, "attach() called when dream with token=" + mDreamToken
                     + " already attached");
+            if (allowDreamAttachFailure()) {
+                try {
+                    final Bundle result = new Bundle();
+                    result.putBoolean(BUNDLE_KEY_ATTACH_ERROR, true);
+                    started.sendResult(result);
+                } catch (RemoteException e) {
+                    // The dream controller is dead, so there is nothing to do.
+                }
+            }
             return;
         }
         if (mFinished || mWaking) {

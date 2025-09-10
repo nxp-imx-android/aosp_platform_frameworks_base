@@ -526,10 +526,6 @@ class DesktopTasksController(
         }
     }
 
-    /** Returns child task from two focused tasks in split screen mode. */
-    private fun getSplitFocusedTask(task1: RunningTaskInfo, task2: RunningTaskInfo) =
-        if (task1.taskId == task2.parentTaskId) task2 else task1
-
     /** Moves a desktop task into fullscreen mode. */
     private fun moveDesktopTaskToFullscreen(
         task: RunningTaskInfo,
@@ -797,7 +793,6 @@ class DesktopTasksController(
         val wct = WindowContainerTransaction()
         addOnDisplayDisconnectChanges(wct, disconnectedDisplayId, destinationDisplayId)
             .invoke(transition)
-
         try {
             userRepositories.current.getExpandedTasksOrdered(disconnectedDisplayId).forEach {
                 logD("addOnDisplayDisconnect: taking a snapshot of=$it before disconnect")
@@ -878,15 +873,21 @@ class DesktopTasksController(
         occluded: Boolean,
         animatingDismiss: Boolean,
     ) {
+        logD(
+            "onKeyguardVisibilityChanged visible=%b, occluded=%b, animatingDismiss=%b",
+            visible,
+            occluded,
+            animatingDismiss,
+        )
         if (visible) return
         val displaysByUniqueId = displayController.allDisplaysByUniqueId ?: return
         for (displayIdByUniqueId in displaysByUniqueId) {
             val taskRepository = userRepositories.current
             if (taskRepository.hasPreservedDisplayForUniqueDisplayId(displayIdByUniqueId.key)) {
                 restoreDisplay(
-                    displayIdByUniqueId.value,
-                    displayIdByUniqueId.key,
-                    taskRepository.userId,
+                    displayId = displayIdByUniqueId.value,
+                    uniqueDisplayId = displayIdByUniqueId.key,
+                    userId = taskRepository.userId,
                 )
             }
         }
@@ -6603,6 +6604,10 @@ class DesktopTasksController(
                 DesktopTaskToFrontReason.TASKBAR_MANAGE_WINDOW ->
                     UnminimizeReason.TASKBAR_MANAGE_WINDOW
             }
+
+        /** Returns child task from two focused tasks in split screen mode. */
+        fun getSplitFocusedTask(task1: RunningTaskInfo, task2: RunningTaskInfo) =
+            if (task1.taskId == task2.parentTaskId) task2 else task1
 
         @JvmField
         /**

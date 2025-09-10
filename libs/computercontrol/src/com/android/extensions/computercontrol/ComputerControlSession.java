@@ -17,6 +17,7 @@
 package com.android.extensions.computercontrol;
 
 import android.accessibilityservice.AccessibilityServiceInfo;
+import android.annotation.CallbackExecutor;
 import android.annotation.IntRange;
 import android.app.ActivityOptions;
 import android.companion.virtual.computercontrol.ComputerControlSession.Action;
@@ -46,6 +47,7 @@ import com.android.extensions.computercontrol.input.TouchEvent;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -248,14 +250,40 @@ public final class ComputerControlSession implements AutoCloseable {
         return new InteractiveMirror(interactiveMirrorDisplay);
     }
 
-    /** Add a callback to be notified when the computer control session is potentially stable. */
+    /**
+     * Add a callback to be notified when the computer control session is potentially stable.
+     * @deprecated use {@link #setStabilityListener(StabilityListener, Executor)}
+     */
     public void addStabilityHintCallback(long timeoutMs, @NonNull StabilityHintCallback callback) {
         mAccessibilityProxy.registerStabilityHintCallback(timeoutMs, callback);
     }
 
-    /** Remove a stability hint callback that was previously added. */
+    /**
+     * Remove a stability hint callback that was previously added.
+     * @deprecated use {@link #clearStabilityListener()}
+     */
     public void removeStabilityHintCallback(@NonNull StabilityHintCallback callback) {
         mAccessibilityProxy.removeStabilityHintCallback(callback);
+    }
+
+    /**
+     * Sets a {@link StabilityListener} to be notified when the computer control session is
+     * potentially stable.
+     *
+     * @throws IllegalStateException if a listener was previously set.
+     */
+    public void setStabilityListener(@NonNull @CallbackExecutor Executor executor,
+            @NonNull StabilityListener listener) {
+        Objects.requireNonNull(listener);
+        mSession.setStabilityListener(executor, listener::onSessionStable);
+    }
+
+    /**
+     * Clears any {@link StabilityListener} that was previously set using
+     * {@link #setStabilityListener(Executor, StabilityListener)}.
+     */
+    public void clearStabilityListener() {
+        mSession.clearStabilityListener();
     }
 
     /**
@@ -550,6 +578,20 @@ public final class ComputerControlSession implements AutoCloseable {
 
         /** Called when the session has been closed. */
         void onSessionClosed();
+    }
+
+    /**
+     * Listener to be notified of signals indicating that the computer control session is
+     * potentially stable.
+     *
+     * <p>These signals indicate that the session's display content is currently stable, such as the
+     * app under automation being idle and no UI animations being under progress. These are useful
+     * for tasks that should only run on a static UI, such as taking screenshots to determine the
+     * next step.
+     */
+    public interface StabilityListener {
+        /** Called when the computer control session is considered stable. */
+        void onSessionStable();
     }
 
     @VisibleForTesting

@@ -16,8 +16,6 @@
 package com.android.internal.widget.remotecompose.player.action;
 
 
-
-
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 
@@ -25,7 +23,6 @@ import com.android.internal.widget.remotecompose.core.CoreDocument;
 import com.android.internal.widget.remotecompose.player.state.StateUpdater;
 
 /** An implementation of {@link CoreDocument.ActionCallback} that uses a {@link StateUpdater}. */
-
 public abstract class StateUpdaterActionCallback implements CoreDocument.ActionCallback {
 
     private final @NonNull StateUpdater mStateUpdater;

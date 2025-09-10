@@ -17,6 +17,7 @@
 package com.android.systemui.keyboard.shortcut
 
 import android.app.role.mockRoleManager
+import android.content.Context
 import android.content.applicationContext
 import android.content.res.mainResources
 import android.hardware.input.fakeInputManager
@@ -252,10 +253,11 @@ val Kosmos.shortcutHelperViewModel by
 val Kosmos.shortcutCustomizationDialogStarterFactory by
     Kosmos.Fixture {
         object : ShortcutCustomizationDialogStarter.Factory {
-            override fun create(): ShortcutCustomizationDialogStarter {
+            override fun create(displayContext: Context): ShortcutCustomizationDialogStarter {
                 return ShortcutCustomizationDialogStarter(
                     shortcutCustomizationViewModelFactory,
                     systemUIDialogFactory,
+                    displayContext,
                     mainResources,
                 )
             }

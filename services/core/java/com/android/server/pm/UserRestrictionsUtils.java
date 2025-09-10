@@ -20,6 +20,7 @@ import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.app.ActivityManager;
 import android.app.AppGlobals;
+import android.app.admin.DevicePolicyManagerInternal;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
@@ -683,9 +684,7 @@ public class UserRestrictionsUtils {
                     break;
                 case UserManager.DISALLOW_DEBUGGING_FEATURES:
                     if (newValue) {
-                        // Only disable adb if changing for system user, since it is global
-                        // TODO: should this be admin user?
-                        if (userId == UserHandle.USER_SYSTEM) {
+                        if (userId == UserHandle.USER_SYSTEM || isDeviceOwner(userId)) {
                             android.provider.Settings.Global.putStringForUser(cr,
                                     android.provider.Settings.Global.ADB_ENABLED, "0",
                                     userId);
@@ -967,5 +966,11 @@ public class UserRestrictionsUtils {
                 String userRestriction, boolean newValue) {
         return (newValue || UserManager.get(context).hasUserRestriction(userRestriction,
                 UserHandle.of(userId))) ? 0 : 1;
+    }
+
+    private static boolean isDeviceOwner(int userId) {
+        DevicePolicyManagerInternal dpm = LocalServices.getService(
+                DevicePolicyManagerInternal.class);
+        return dpm.getDeviceOwnerUserId() == userId;
     }
 }
