@@ -8383,7 +8383,7 @@
 
     <!-- @SystemApi Allows an app to grant a profile owner access to device identifiers.
          <p>Not for use by third-party applications.
-         @deprecated
+         @deprecated Replaced by MARK_DEVICE_ORGANIZATION_OWNED
          @hide -->
     <permission android:name="android.permission.GRANT_PROFILE_OWNER_DEVICE_IDS_ACCESS"
         android:protectionLevel="signature" />
