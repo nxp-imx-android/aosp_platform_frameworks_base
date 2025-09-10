@@ -106,6 +106,7 @@ import com.android.wm.shell.shared.bubbles.ContextUtils;
 import com.android.wm.shell.shared.bubbles.DeviceConfig;
 import com.android.wm.shell.shared.bubbles.DismissView;
 import com.android.wm.shell.shared.bubbles.RelativeTouchListener;
+import com.android.wm.shell.shared.bubbles.logging.BubbleLog;
 import com.android.wm.shell.shared.magnetictarget.MagnetizedObject;
 
 import java.io.PrintWriter;
@@ -1207,7 +1208,9 @@ public class BubbleStackView extends FrameLayout
                 if (expandedView != null) {
                     // We need to be Z ordered on top in order for alpha animations to work.
                     expandedView.setSurfaceZOrderedOnTop(true);
-                    ProtoLog.d(WM_SHELL_BUBBLES, "expandedViewAlphaAnimation - start=%s",
+                    BubbleLog.d(
+                            "BubbleStackView.onAnimationStart() expandedViewAlphaAnimation - "
+                                    + "bubble=%s",
                             expandedView.getBubbleKey());
                     expandedView.setAnimating(true);
                     mExpandedViewContainer.setVisibility(VISIBLE);
@@ -1224,7 +1227,9 @@ public class BubbleStackView extends FrameLayout
                         // = 0f remains in effect.
                         && !mExpandedViewTemporarilyHidden) {
                     expandedView.setSurfaceZOrderedOnTop(false);
-                    ProtoLog.d(WM_SHELL_BUBBLES, "expandedViewAlphaAnimation - end=%s",
+                    BubbleLog.d(
+                            "BubbleStackView.onAnimationEnd() expandedViewAlphaAnimation - "
+                                    + "bubble=%s",
                             expandedView.getBubbleKey());
                     expandedView.setAnimating(false);
                 }
@@ -1632,11 +1637,13 @@ public class BubbleStackView extends FrameLayout
         final boolean seen = getPrefBoolean(ManageEducationView.PREF_MANAGED_EDUCATION);
         final boolean shouldShow = (!seen || BubbleDebugConfig.forceShowUserEducation(mContext))
                 && getExpandedView() != null;
-        ProtoLog.d(WM_SHELL_BUBBLES, "Show manage edu=%b", shouldShow);
         if (shouldShow && BubbleDebugConfig.neverShowUserEducation(mContext)) {
             Log.w(TAG, "Want to show manage edu, but it is forced hidden");
+            BubbleLog.d("BubbleStackView.shouldShowManageEdu() Want to show manage edu, but it is "
+                    + "forced hidden");
             return false;
         }
+        BubbleLog.d("BubbleStackView.shouldShowManageEdu() shouldShow=%b", shouldShow);
         return shouldShow;
     }
 
@@ -1678,7 +1685,7 @@ public class BubbleStackView extends FrameLayout
         }
         final boolean seen = getPrefBoolean(StackEducationView.PREF_STACK_EDUCATION);
         final boolean shouldShow = !seen || BubbleDebugConfig.forceShowUserEducation(mContext);
-        ProtoLog.d(WM_SHELL_BUBBLES, "Show stack edu=%b", shouldShow);
+        BubbleLog.d("BubbleStackView.shouldShowStackEdu() Show stack edu=%b", shouldShow);
         if (shouldShow && BubbleDebugConfig.neverShowUserEducation(mContext)) {
             Log.w(TAG, "Want to show stack edu, but it is forced hidden");
             return false;
@@ -2500,7 +2507,7 @@ public class BubbleStackView extends FrameLayout
         final String newlySelectedKey = mExpandedBubble != null
                 ? mExpandedBubble.getKey()
                 : "null";
-        ProtoLog.d(WM_SHELL_BUBBLES, "showNewlySelectedBubble b=%s, previouslySelected=%s,"
+        BubbleLog.d("BubbleStackView.showNewlySelectedBubble() b=%s, previouslySelected=%s,"
                         + " mIsExpanded=%b", newlySelectedKey, previouslySelectedKey, mIsExpanded);
         if (mIsExpanded) {
             Runnable onImeHidden = () -> {
@@ -2880,7 +2887,7 @@ public class BubbleStackView extends FrameLayout
     }
 
     private void expand(boolean animate) {
-        ProtoLog.d(WM_SHELL_BUBBLES, "animateExpansion, expandedBubble=%s",
+        BubbleLog.d("BubbleStackView.expand() animate=%b, expandedBubble=%s",
                 mExpandedBubble != null ? mExpandedBubble.getKey() : "null");
         cancelDelayedExpandCollapseSwitchAnimations();
 
@@ -2996,7 +3003,7 @@ public class BubbleStackView extends FrameLayout
             expandedView.setContentAlpha(0f);
             expandedView.setBackgroundAlpha(0f);
 
-            ProtoLog.d(WM_SHELL_BUBBLES, "animateBubbleExpansion, setAnimating true for bubble=%s",
+            BubbleLog.d("BubbleStackView.expand() setAnimating true for bubble=%s",
                     expandedView.getBubbleKey());
             // We'll be starting the alpha animation after a slight delay, so set this flag early
             // here.
@@ -3089,7 +3096,7 @@ public class BubbleStackView extends FrameLayout
 
     private void animateCollapse() {
         cancelDelayedExpandCollapseSwitchAnimations();
-        ProtoLog.d(WM_SHELL_BUBBLES, "animateCollapse");
+        BubbleLog.d("BubbleStackView.animateCollapse()");
         if (isManageEduVisible()) {
             mManageEduView.hide();
         }
@@ -3169,7 +3176,7 @@ public class BubbleStackView extends FrameLayout
         mExpandedViewAlphaAnimator.start();
 
         if (mExpandedBubble != null) {
-            ProtoLog.d(WM_SHELL_BUBBLES, "animateSwitchBubbles, switchingTo b=%s",
+            BubbleLog.d("BubbleStackView.animateSwitchBubbles() switchingTo b=%s",
                     mExpandedBubble.getKey());
         }
 
@@ -3541,7 +3548,7 @@ public class BubbleStackView extends FrameLayout
         if (!shouldShowFlyout(bubble)) {
             return;
         }
-        ProtoLog.d(WM_SHELL_BUBBLES, "animateFlyout=%s", bubble.getKey());
+        BubbleLog.d("BubbleStackView.animateFlyoutForBubble() %s", bubble.getKey());
         mFlyoutDragDeltaX = 0f;
         clearFlyoutOnHide();
         mAfterFlyoutHidden = () -> {
@@ -3691,7 +3698,7 @@ public class BubbleStackView extends FrameLayout
     @VisibleForTesting
     public void showManageMenu(boolean show) {
         if ((mManageMenu.getVisibility() == VISIBLE) == show) return;
-        ProtoLog.d(WM_SHELL_BUBBLES, "showManageMenu=%b for bubble=%s",
+        BubbleLog.d("BubbleStackView.showManageMenu() show=%b for bubble=%s",
                 show, (mExpandedBubble != null ? mExpandedBubble.getKey() : "null"));
 
         mShowingManage = show;
