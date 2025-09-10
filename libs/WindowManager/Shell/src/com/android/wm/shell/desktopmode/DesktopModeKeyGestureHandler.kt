@@ -177,7 +177,27 @@ class DesktopModeKeyGestureHandler(
             }
             KeyGestureEvent.KEY_GESTURE_TYPE_QUIT_FOCUSED_DESKTOP_TASK -> {
                 logV("Key gesture KEY_GESTURE_TYPE_QUIT_FOCUSED_DESKTOP_TASK is handled")
-                quitFocusedDesktopTask()
+                val focusedTask =
+                    if (
+                        DesktopExperienceFlags.CLOSE_FULLSCREEN_AND_SPLITSCREEN_KEYBOARD_SHORTCUT
+                            .isTrue
+                    ) {
+                        getGloballyFocusedTaskToClose()
+                    } else {
+                        getGloballyFocusedDesktopTask().also { task ->
+                            if (task != null) {
+                                logV("Found focused desktop task %d to close", task.taskId)
+                            } else {
+                                logV(
+                                    "Globally focused desktop task is not found to close. focusedDisplay=%d",
+                                    focusTransitionObserver.globallyFocusedDisplayId,
+                                )
+                            }
+                        }
+                    } ?: return
+                mainExecutor.execute {
+                    desktopModeWindowDecorViewModel.get().closeTask(focusedTask)
+                }
             }
             KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_FULLSCREEN -> {
                 logV("Key gesture TOGGLE_FULLSCREEN is handled")
@@ -283,6 +303,48 @@ class DesktopModeKeyGestureHandler(
             focusTransitionObserver.globallyFocusedDisplayId,
         )
         return null
+    }
+
+    private fun getGloballyFocusedTaskToClose(): RunningTaskInfo? {
+        getGloballyFocusedDesktopTask()?.let { desktopTask ->
+            logV("getGloballyFocusedTaskToClose: Found desktop task: %d", desktopTask.taskId)
+            return@getGloballyFocusedTaskToClose desktopTask
+        }
+        val tasks =
+            desktopTasksController
+                .get()
+                .getFocusedNonDesktopTasks(
+                    displayId = focusTransitionObserver.globallyFocusedDisplayId,
+                    userId = desktopUserRepositories.current.userId,
+                )
+        return when (tasks.size) {
+            0 -> {
+                logW(
+                    "getGloballyFocusedTaskToClose: Task not found to close: " +
+                        "globallyFocusedTaskId=%d globallyFocusedDisplayId=%d",
+                    focusTransitionObserver.globallyFocusedTaskId,
+                    focusTransitionObserver.globallyFocusedDisplayId,
+                )
+                null
+            }
+            1 -> {
+                val task = tasks.single()
+                if (task.windowingMode == WINDOWING_MODE_FULLSCREEN) {
+                    logV("getGloballyFocusedTaskToClose: Found fullscreen task: %d", task.taskId)
+                    task
+                } else {
+                    logW(
+                        "getGloballyFocusedTaskToClose: Ignored focused single non-fullscreen " +
+                            "task."
+                    )
+                    null
+                }
+            }
+            else -> {
+                logW("getGloballyFocusedTaskToClose: Ignored focused 2+ tasks.")
+                null
+            }
+        }
     }
 
     private fun logV(msg: String, vararg arguments: Any?) {
