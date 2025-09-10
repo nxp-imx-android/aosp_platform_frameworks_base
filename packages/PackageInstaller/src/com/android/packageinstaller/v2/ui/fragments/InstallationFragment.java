@@ -107,6 +107,7 @@ public class InstallationFragment extends DialogFragment {
         mIndeterminateProgressBar = dialogView.requireViewById(R.id.indeterminate_progress_bar);
         mProgressBar = dialogView.requireViewById(R.id.progress_bar);
         mCustomMessageTextView = dialogView.requireViewById(R.id.custom_message);
+        mCustomMessageTextView.setTextDirection(View.TEXT_DIRECTION_LOCALE);
         mMoreDetailsClickableLayout = dialogView.requireViewById(
                 R.id.more_details_clickable_layout);
         mMoreDetailsExpandedLayout = dialogView.requireViewById(
