@@ -772,7 +772,6 @@ public class TaskViewTransitions implements Transitions.TransitionHandler, TaskV
         }
         final boolean inDataCollectionModeOnly =
                 enableHandlersDebuggingMode() && transitionInfo == null;
-        final boolean inAnimationMode = !inDataCollectionModeOnly;
         final TransitionInfo info = inDataCollectionModeOnly ? dispatchState.mInfo : transitionInfo;
 
         final PendingTransition pending = findPending(transition);
