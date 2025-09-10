@@ -9448,6 +9448,19 @@
         android:protectionLevel="signature|privileged"
         android:featureFlag="android.media.tv.flags.enable_tv_watchdog_emmc_protection" />
 
+    <!-- @FlaggedApi(android.media.audio.Flags.FLAG_GUARD_STREAM_VOLUME_APIS)
+    Purpose guarded permission to query volume-related APIs.
+    {@see android.media.AudioManager}
+    <p>Protection level: normal
+    -->
+    <permission android:name="android.permission.QUERY_AUDIO_VOLUME"
+            android:protectionLevel="normal"
+            android:featureFlag="android.media.audio.guard_stream_volume_apis"
+            android:requiresPurpose="true"
+            android:requiresPurposeTargetSdkVersion="37">
+            <valid-purpose android:name="notForIdentification" />
+    </permission>
+
     <!-- Attribution for Geofencing service. -->
     <attribution android:tag="GeofencingService" android:label="@string/geofencing_service"/>
     <!-- Attribution for Country Detector. -->
