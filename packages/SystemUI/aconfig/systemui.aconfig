@@ -2238,3 +2238,13 @@ flag {
         purpose: PURPOSE_BUGFIX
    }
 }
+
+flag {
+    name: "sysui_intrinsic_lock_dispatcher"
+    namespace: "systemui"
+    description: "Custom dispatcher for background tasks, which uses intrinsic locks instead of ReentrantLock"
+    bug: "419472502"
+    metadata {
+         purpose: PURPOSE_BUGFIX
+    }
+}
