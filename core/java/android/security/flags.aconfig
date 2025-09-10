@@ -67,6 +67,13 @@ flag {
 }
 
 flag {
+    name: "stop_recognizing_legacy_password_hashes"
+    namespace: "security"
+    description: "Make LockSettingsService stop recognizing legacy password hashes"
+    bug: "442877927"
+}
+
+flag {
     name: "frp_enforcement"
     is_exported: true
     namespace: "hardware_backed_security"
