@@ -18,6 +18,7 @@ package com.android.server.companion.virtual.computercontrol;
 
 import static android.companion.virtual.VirtualDeviceParams.DEVICE_POLICY_CUSTOM;
 import static android.companion.virtual.VirtualDeviceParams.POLICY_TYPE_ACTIVITY;
+import static android.companion.virtual.VirtualDeviceParams.POLICY_TYPE_BLOCKED_ACTIVITY;
 
 import android.annotation.IntRange;
 import android.annotation.NonNull;
@@ -92,6 +93,12 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
 
     private static final String TAG = "ComputerControlSession";
 
+    private static final String CUSTOM_BLOCKED_APP_PACKAGE = "com.android.virtualdevicemanager";
+
+    private static final ComponentName CUSTOM_BLOCKED_APP_ACTIVITY = new ComponentName(
+            CUSTOM_BLOCKED_APP_PACKAGE,
+            CUSTOM_BLOCKED_APP_PACKAGE + ".NotifyComputerControlBlockedActivity");
+
     // Input device names are limited to 80 bytes, so keep the prefix shorter than that.
     private static final int MAX_INPUT_DEVICE_NAME_PREFIX_LENGTH = 70;
 
@@ -159,6 +166,7 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
 
         final VirtualDeviceParams virtualDeviceParams = new VirtualDeviceParams.Builder()
                 .setName(mParams.getName())
+                .setDevicePolicy(POLICY_TYPE_BLOCKED_ACTIVITY, DEVICE_POLICY_CUSTOM)
                 .build();
 
         int displayFlags = DisplayManager.VIRTUAL_DISPLAY_FLAG_TRUSTED
@@ -271,6 +279,7 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
             mVirtualDevice.setDevicePolicy(POLICY_TYPE_ACTIVITY, DEVICE_POLICY_CUSTOM);
 
             exemptedPackageNames.addAll(mParams.getTargetPackageNames());
+            exemptedPackageNames.add(CUSTOM_BLOCKED_APP_PACKAGE);
         } else {
             // TODO(b/439774796): Remove once v0 API is removed and the flag is rolled out.
             // This legacy policy allows all apps other than PermissionController to be automated.
@@ -628,8 +637,7 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
         }
     }
 
-    private static class ComputerControlActivityListener
-            extends IVirtualDeviceActivityListener.Stub {
+    private class ComputerControlActivityListener extends IVirtualDeviceActivityListener.Stub {
         @Override
         public void onTopActivityChanged(int displayId, ComponentName topActivity,
                 @UserIdInt int userId) {}
@@ -639,7 +647,17 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
 
         @Override
         public void onActivityLaunchBlocked(int displayId, ComponentName componentName,
-                UserHandle user, IntentSender intentSender) {}
+                UserHandle user, IntentSender intentSender) {
+            Slog.d(TAG, "Blocked activity launch for " + componentName + " on session "
+                    + mParams.getName());
+            if (Objects.equals(CUSTOM_BLOCKED_APP_ACTIVITY, componentName)) {
+                return;
+            }
+            Intent intent = new Intent()
+                    .setComponent(CUSTOM_BLOCKED_APP_ACTIVITY)
+                    .putExtra(Intent.EXTRA_COMPONENT_NAME, componentName);
+            mInjector.startCustomBlockedActivityOnDisplay(intent, displayId);
+        }
 
         @Override
         public void onSecureWindowShown(int displayId, ComponentName componentName,
@@ -684,6 +702,14 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
             }
             mContext.startActivityAsUser(intent,
                     ActivityOptions.makeBasic().setLaunchDisplayId(displayId).toBundle(), user);
+        }
+
+        public void startCustomBlockedActivityOnDisplay(Intent intent, int displayId) {
+            mContext.startActivityAsUser(
+                    intent.addFlags(
+                            Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK),
+                    ActivityOptions.makeBasic().setLaunchDisplayId(displayId).toBundle(),
+                    UserHandle.SYSTEM);
         }
 
         public DisplayInfo getDisplayInfo(int displayId) {
