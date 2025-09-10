@@ -987,6 +987,12 @@ public class TextView extends View implements ViewTreeObserver.OnPreDrawListener
     @Nullable
     private UserHandle mTextOperationUser;
 
+    /**
+     * @see #setEnforceImePolicyUser(UserHandle)
+     */
+    @Nullable
+    private UserHandle mEnforceImePolicyUser;
+
     private volatile Locale mCurrentSpellCheckerLocaleCache;
 
     // It is possible to have a selection even when mEditor is null (programmatically set, like when
@@ -10127,6 +10133,7 @@ public class TextView extends View implements ViewTreeObserver.OnPreDrawListener
             }
             outAttrs.hintText = mHint;
             outAttrs.targetInputMethodUser = mTextOperationUser;
+            outAttrs.targetDevicePolicyUser = mEnforceImePolicyUser;
             if (mText instanceof Editable) {
                 InputConnection ic = new EditableInputConnection(this);
                 outAttrs.initialSelStart = getSelectionStart();
@@ -13757,11 +13764,31 @@ public class TextView extends View implements ViewTreeObserver.OnPreDrawListener
             }
         }
         mTextOperationUser = user;
+        mEnforceImePolicyUser = null;
         // Invalidate some resources
         mCurrentSpellCheckerLocaleCache = null;
         if (mEditor != null) {
             mEditor.onTextOperationUserChanged();
         }
+    }
+
+    /**
+     * Enforce {@link UserHandle}'s DevicePolicy for allowlist of IMEs that can interact
+     * with this {@link TextView}.
+     *
+     * <p>Most of applications should not worry about this. Some privileged apps like lockscreen,
+     * settings may need to set this so that the system can limit only allowed IMEs to interact
+     * with {@link TextView}.</p>
+     *
+     * @param user {@link UserHandle} whose DevicePolicy is used for allowlist of IMEs for this
+     *        {@link TextView}. {@code null} to reset {@link #mEnforceImePolicyUser}.
+     * @hide
+     */
+    @RequiresPermission(INTERACT_ACROSS_USERS_FULL)
+    @FlaggedApi(android.view.inputmethod.Flags.FLAG_ENFORCE_DEVICE_POLICY_IME)
+    @TestApi
+    public final void setEnforceImePolicyUser(@Nullable UserHandle user) {
+        mEnforceImePolicyUser = user;
     }
 
     @Override

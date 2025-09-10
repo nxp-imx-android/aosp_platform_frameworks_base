@@ -295,6 +295,13 @@ public abstract class DevicePolicyManagerInternal {
     public abstract void resetOp(int op, String packageName, @UserIdInt int userId);
 
     /**
+     * Returns the input method packages permitted by Device policy, {@code null} means
+     * all input methods are allowed.
+     */
+    @Nullable
+    public abstract Set<String> getPermittedInputMethodPackages(@UserIdInt int userId);
+
+    /**
      * Checks if the calling process has been granted permission to apply a device policy on a
      * specific user.
      *
