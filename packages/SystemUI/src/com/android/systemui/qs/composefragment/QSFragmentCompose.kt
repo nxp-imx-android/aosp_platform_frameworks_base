@@ -963,10 +963,7 @@ constructor(
                         Elements.FooterActions,
                         Modifier.sysuiResTag(ResIdTags.qsFooterActions),
                     ) {
-                        FooterActions(
-                            viewModel = viewModel.footerActionsViewModel,
-                            qsVisibilityLifecycleOwner = this@QSFragmentCompose,
-                        )
+                        FooterActions(viewModel = viewModel.footerActionsViewModel)
                     }
                 }
             }
