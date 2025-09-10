@@ -306,3 +306,13 @@ flag {
     }
 }
 
+flag {
+    name: "bug_dont_remove_task_bubble"
+    namespace: "multitasking"
+    description: "Fixes a bug where tasks are being destroyed when a bubble is overflowed."
+    bug: "427302529"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+

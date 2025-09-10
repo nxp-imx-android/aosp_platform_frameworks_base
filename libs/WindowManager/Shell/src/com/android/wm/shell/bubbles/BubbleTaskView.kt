@@ -20,6 +20,8 @@ import android.app.ActivityManager.RunningTaskInfo
 import android.app.ActivityTaskManager.INVALID_TASK_ID
 import android.content.ComponentName
 import androidx.annotation.VisibleForTesting
+import com.android.wm.shell.Flags
+import com.android.wm.shell.bubbles.util.BubbleUtils.getExitBubbleTransaction
 import com.android.wm.shell.bubbles.util.BubbleUtils.isBubbleToFullscreen
 import com.android.wm.shell.bubbles.util.BubbleUtils.isBubbleToSplit
 import com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper
@@ -125,7 +127,13 @@ class BubbleTaskView @JvmOverloads constructor(
                 val bubble = bubbleController.getBubble(t)
                 if ((bubble != null && bubble.isChat)
                     || bubbleController.shouldBeAppBubble(t)) {
-                    taskView.removeTask()
+                    if (Flags.bugDontRemoveTaskBubble()) {
+                        taskView.unregisterTask()
+                        taskView.release()
+                        processExitBubbleTransaction(taskView)
+                    } else {
+                        taskView.removeTask()
+                    }
                 } else {
                     // Just unregister the task if the task is no longer a bubble, e.g. relaunched
                     // into split-screen, or desktop.
@@ -134,8 +142,24 @@ class BubbleTaskView @JvmOverloads constructor(
             }
         } else if (task.isBubbleToFullscreen() || task.isBubbleToSplit(splitScreenController)) {
             taskView.unregisterTask()
+        } else if (Flags.bugDontRemoveTaskBubble()) {
+            taskView.unregisterTask()
+            taskView.release()
+            processExitBubbleTransaction(taskView)
         } else {
             taskView.removeTask()
+        }
+    }
+
+    private fun processExitBubbleTransaction(taskView: TaskView) {
+        val taskViewController = taskView.controller
+        val taskInfo: RunningTaskInfo = taskViewController.taskInfo ?: return
+        if (taskInfo.isRunning) {
+            val wct = getExitBubbleTransaction(
+                taskInfo.token,
+                taskView.captionInsetsOwner
+            )
+            taskViewController.taskOrganizer.applyTransaction(wct)
         }
     }
 }
