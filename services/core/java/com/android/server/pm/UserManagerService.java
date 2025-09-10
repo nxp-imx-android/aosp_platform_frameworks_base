@@ -9366,20 +9366,11 @@ public class UserManagerService extends IUserManager.Stub {
         if (!userInfo.isAdmin() || !userInfo.isFull()) {
             return false;
         }
-        final int userSize = mUsers.size();
-        for (int i = 0; i < userSize; i++) {
-            final UserInfo otherUserInfo = mUsers.valueAt(i).info;
-            if (otherUserInfo.partial || mRemovingUserIds.get(otherUserInfo.id)
-                    || otherUserInfo.preCreated) {
-                continue;
-            }
-            if (userInfo.id != otherUserInfo.id && otherUserInfo.isAdmin()
-                    && otherUserInfo.isFull()) {
-                return false;
-            }
-        }
-
-        return true;
+        var filter = UserFilter.builder()
+                .setRequiredFlags(UserInfo.FLAG_FULL | UserInfo.FLAG_ADMIN)
+                .excludeUserId(userInfo.id)
+                .build();
+        return getNumberOfUsers(filter) == 0;
     }
 
     /** Must be public otherwise can't be mocked. */
