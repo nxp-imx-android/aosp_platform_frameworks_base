@@ -3,48 +3,23 @@ package android {
 
   public static final class Manifest.permission {
     field public static final String ACCESSIBILITY_MOTION_EVENT_OBSERVING = "android.permission.ACCESSIBILITY_MOTION_EVENT_OBSERVING";
-    field public static final String ACCESS_NOTIFICATIONS = "android.permission.ACCESS_NOTIFICATIONS";
-    field public static final String ACTIVITY_EMBEDDING = "android.permission.ACTIVITY_EMBEDDING";
-    field public static final String ADJUST_RUNTIME_PERMISSIONS_POLICY = "android.permission.ADJUST_RUNTIME_PERMISSIONS_POLICY";
-    field public static final String APPROVE_INCIDENT_REPORTS = "android.permission.APPROVE_INCIDENT_REPORTS";
-    field public static final String BACKGROUND_CAMERA = "android.permission.BACKGROUND_CAMERA";
-    field public static final String BIND_CELL_BROADCAST_SERVICE = "android.permission.BIND_CELL_BROADCAST_SERVICE";
-    field public static final String BRIGHTNESS_SLIDER_USAGE = "android.permission.BRIGHTNESS_SLIDER_USAGE";
-    field public static final String BROADCAST_CLOSE_SYSTEM_DIALOGS = "android.permission.BROADCAST_CLOSE_SYSTEM_DIALOGS";
-    field public static final String CHANGE_APP_IDLE_STATE = "android.permission.CHANGE_APP_IDLE_STATE";
-    field public static final String CLEAR_APP_USER_DATA = "android.permission.CLEAR_APP_USER_DATA";
     field public static final String CLEAR_FREEZE_PERIOD = "android.permission.CLEAR_FREEZE_PERIOD";
-    field public static final String CONFIGURE_DISPLAY_BRIGHTNESS = "android.permission.CONFIGURE_DISPLAY_BRIGHTNESS";
-    field public static final String CONTROL_DEVICE_LIGHTS = "android.permission.CONTROL_DEVICE_LIGHTS";
     field public static final String CONTROL_DEVICE_STATE = "android.permission.CONTROL_DEVICE_STATE";
     field public static final String DELETE_STAGED_HEALTH_CONNECT_REMOTE_DATA = "android.permission.DELETE_STAGED_HEALTH_CONNECT_REMOTE_DATA";
     field public static final String FORCE_DEVICE_POLICY_MANAGER_LOGS = "android.permission.FORCE_DEVICE_POLICY_MANAGER_LOGS";
-    field public static final String FORCE_STOP_PACKAGES = "android.permission.FORCE_STOP_PACKAGES";
-    field public static final String GRANT_RUNTIME_PERMISSIONS = "android.permission.GRANT_RUNTIME_PERMISSIONS";
     field public static final String INSTALL_TEST_ONLY_PACKAGE = "android.permission.INSTALL_TEST_ONLY_PACKAGE";
     field public static final String KEEP_UNINSTALLED_PACKAGES = "android.permission.KEEP_UNINSTALLED_PACKAGES";
     field public static final String MAKE_UID_VISIBLE = "android.permission.MAKE_UID_VISIBLE";
-    field @Deprecated public static final String MANAGE_ACTIVITY_STACKS = "android.permission.MANAGE_ACTIVITY_STACKS";
-    field public static final String MANAGE_ACTIVITY_TASKS = "android.permission.MANAGE_ACTIVITY_TASKS";
     field public static final String MANAGE_APP_OPS_MODES = "android.permission.MANAGE_APP_OPS_MODES";
     field public static final String MANAGE_CRATES = "android.permission.MANAGE_CRATES";
-    field public static final String MANAGE_NOTIFICATION_LISTENERS = "android.permission.MANAGE_NOTIFICATION_LISTENERS";
-    field public static final String MANAGE_ROLLBACKS = "android.permission.MANAGE_ROLLBACKS";
     field public static final String MANAGE_TOAST_RATE_LIMITING = "android.permission.MANAGE_TOAST_RATE_LIMITING";
     field public static final String MODIFY_HDR_CONVERSION_MODE = "android.permission.MODIFY_HDR_CONVERSION_MODE";
     field public static final String MODIFY_REFRESH_RATE_SWITCHING_TYPE = "android.permission.MODIFY_REFRESH_RATE_SWITCHING_TYPE";
     field public static final String MODIFY_USER_PREFERRED_DISPLAY_MODE = "android.permission.MODIFY_USER_PREFERRED_DISPLAY_MODE";
-    field public static final String NETWORK_SETTINGS = "android.permission.NETWORK_SETTINGS";
-    field public static final String NETWORK_STACK = "android.permission.NETWORK_STACK";
     field public static final String OVERRIDE_DISPLAY_MODE_REQUESTS = "android.permission.OVERRIDE_DISPLAY_MODE_REQUESTS";
     field public static final String QUERY_AUDIO_STATE = "android.permission.QUERY_AUDIO_STATE";
-    field public static final String READ_CELL_BROADCASTS = "android.permission.READ_CELL_BROADCASTS";
-    field public static final String READ_PRIVILEGED_PHONE_STATE = "android.permission.READ_PRIVILEGED_PHONE_STATE";
-    field public static final String READ_WRITE_SYNC_DISABLED_MODE_CONFIG = "android.permission.READ_WRITE_SYNC_DISABLED_MODE_CONFIG";
-    field public static final String RECORD_BACKGROUND_AUDIO = "android.permission.RECORD_BACKGROUND_AUDIO";
     field @FlaggedApi("android.permission.flags.sensitive_notification_app_protection") public static final String RECORD_SENSITIVE_CONTENT = "android.permission.RECORD_SENSITIVE_CONTENT";
     field public static final String REMAP_MODIFIER_KEYS = "android.permission.REMAP_MODIFIER_KEYS";
-    field public static final String REMOVE_TASKS = "android.permission.REMOVE_TASKS";
     field public static final String REQUEST_UNIQUE_ID_ATTESTATION = "android.permission.REQUEST_UNIQUE_ID_ATTESTATION";
     field public static final String RESERVED_FOR_TESTING_SIGNATURE = "android.permission.RESERVED_FOR_TESTING_SIGNATURE";
     field public static final String RESET_APP_ERRORS = "android.permission.RESET_APP_ERRORS";
@@ -53,19 +28,9 @@ package android {
     field public static final String SET_GAME_SERVICE = "android.permission.SET_GAME_SERVICE";
     field public static final String SET_KEYBOARD_LAYOUT = "android.permission.SET_KEYBOARD_LAYOUT";
     field public static final String START_ACTIVITIES_FROM_SDK_SANDBOX = "android.permission.START_ACTIVITIES_FROM_SDK_SANDBOX";
-    field public static final String SUSPEND_APPS = "android.permission.SUSPEND_APPS";
     field public static final String TEST_BIOMETRIC = "android.permission.TEST_BIOMETRIC";
     field public static final String TEST_INPUT_METHOD = "android.permission.TEST_INPUT_METHOD";
     field public static final String TEST_MANAGE_ROLLBACKS = "android.permission.TEST_MANAGE_ROLLBACKS";
-    field public static final String UPGRADE_RUNTIME_PERMISSIONS = "android.permission.UPGRADE_RUNTIME_PERMISSIONS";
-    field public static final String WRITE_ALLOWLISTED_DEVICE_CONFIG = "android.permission.WRITE_ALLOWLISTED_DEVICE_CONFIG";
-    field public static final String WRITE_DEVICE_CONFIG = "android.permission.WRITE_DEVICE_CONFIG";
-    field @Deprecated public static final String WRITE_MEDIA_STORAGE = "android.permission.WRITE_MEDIA_STORAGE";
-    field public static final String WRITE_OBB = "android.permission.WRITE_OBB";
-  }
-
-  public static final class Manifest.permission_group {
-    field public static final String UNDEFINED = "android.permission-group.UNDEFINED";
   }
 
   public static final class R.attr {
@@ -77,15 +42,6 @@ package android {
     field public static final int config_perDisplayFocusEnabled = 17891332; // 0x1110004
     field public static final int config_preventImeStartupUnlessTextEditor = 17891335; // 0x1110007
     field public static final int config_remoteInsetsControllerControlsSystemBars = 17891334; // 0x1110006
-  }
-
-  public static final class R.string {
-    field public static final int config_defaultAssistant = 17039393; // 0x1040021
-    field public static final int config_defaultDialer = 17039395; // 0x1040023
-    field public static final int config_systemAutomotiveCalendarSyncManager = 17039423; // 0x104003f
-    field public static final int config_systemAutomotiveCluster = 17039400; // 0x1040028
-    field public static final int config_systemAutomotiveProjection = 17039401; // 0x1040029
-    field public static final int config_systemGallery = 17039399; // 0x1040027
   }
 
 }
