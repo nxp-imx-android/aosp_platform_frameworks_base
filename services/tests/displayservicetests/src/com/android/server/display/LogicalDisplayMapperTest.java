@@ -1302,6 +1302,60 @@ public class LogicalDisplayMapperTest {
     }
 
     @Test
+    @EnableFlags(Flags.FLAG_CHANGE_DEFAULT_DISPLAY_LID_CLOSED)
+    public void testDisplayDeviceAddAndRemove_GoBackToDockedState() {
+        initLogicalDisplayMapper();
+        when(mIsDisplayAllowedInTopologyMock.test(any(DisplayInfo.class))).thenReturn(true);
+        DisplayDevice device1 = createDisplayDevice(TYPE_INTERNAL, 600, 800,
+                FLAG_ALLOWED_TO_BE_DEFAULT_DISPLAY);
+        DisplayDevice device2 = createDisplayDevice(TYPE_EXTERNAL, 600, 800,
+                FLAG_ALLOWED_TO_BE_DEFAULT_DISPLAY);
+        Layout layout = new Layout();
+        createDefaultDisplay(layout, device1);
+        when(mDeviceStateToLayoutMapSpy.get(DEVICE_STATE_OPEN.getIdentifier())).thenReturn(layout);
+
+        LogicalDisplay display1 = add(device1);
+        display1.setCanHostTasksLocked(true);
+        assertEquals(info(display1).address, info(device1).address);
+        assertEquals(DEFAULT_DISPLAY, id(display1));
+
+        LogicalDisplay display2 = add(device2);
+        display2.setCanHostTasksLocked(true);
+        assertEquals(info(display2).address, info(device2).address);
+        // We can only have one default display
+        assertEquals(DEFAULT_DISPLAY, id(display1));
+
+        mLogicalDisplayMapper.onBootCompleted();
+        mLogicalDisplayMapper.setDeviceStateLocked(DEVICE_STATE_DOCKED);
+        advanceTime(1000);
+        assertEquals(device2, display1.getPrimaryDisplayDeviceLocked());
+        assertFalse(mLogicalDisplayMapper.getDisplayLocked(device1).isEnabledLocked());
+        assertTrue(mLogicalDisplayMapper.getDisplayLocked(device2).isEnabledLocked());
+
+        // Device 1 becomes the default display again
+        mLogicalDisplayMapper.setDeviceStateLocked(DEVICE_STATE_OPEN);
+        advanceTime(1000);
+        assertEquals(device1, display1.getPrimaryDisplayDeviceLocked());
+        // Both displays should be enabled
+        assertTrue(mLogicalDisplayMapper.getDisplayLocked(device1).isEnabledLocked());
+        assertTrue(mLogicalDisplayMapper.getDisplayLocked(device2).isEnabledLocked());
+
+        // remove
+        mDisplayDeviceRepo.onDisplayDeviceEvent(device2, DISPLAY_DEVICE_EVENT_REMOVED);
+        advanceTime(1000);
+        assertNull(mLogicalDisplayMapper.getDisplayLocked(device2));
+
+        // Go back to the docked state
+        mLogicalDisplayMapper.setDeviceStateLocked(DEVICE_STATE_DOCKED);
+        advanceTime(1000);
+
+        // Display 1 is still the default logical display
+        assertEquals(DEFAULT_DISPLAY, id(display1));
+        assertEquals(device1, display1.getPrimaryDisplayDeviceLocked());
+        assertTrue(mLogicalDisplayMapper.getDisplayLocked(device1).isEnabledLocked());
+    }
+
+    @Test
     public void testEnabledAndDisabledDisplays() {
         initLogicalDisplayMapper();
         DisplayAddress displayAddressOne = createTestDisplayAddress();
