@@ -4698,6 +4698,7 @@ package android.content.pm {
 
   public class PermissionInfo extends android.content.pm.PackageItemInfo implements android.os.Parcelable {
     field public static final int FLAG_REMOVED = 2; // 0x2
+    field @FlaggedApi("android.permission.flags.ppd_manifest_enabled") public static final int NO_TARGET_SDK_VERSION = 2147483647; // 0x7fffffff
     field public static final int PROTECTION_FLAG_APP_PREDICTOR = 2097152; // 0x200000
     field public static final int PROTECTION_FLAG_COMPANION = 8388608; // 0x800000
     field public static final int PROTECTION_FLAG_CONFIGURATOR = 524288; // 0x80000
@@ -4715,6 +4716,7 @@ package android.content.pm {
     field @Nullable public final String backgroundPermission;
     field @NonNull public java.util.Set<java.lang.String> knownCerts;
     field @StringRes public int requestRes;
+    field @FlaggedApi("android.permission.flags.ppd_manifest_enabled") public int requiresGeneralPurposeTargetSdkVersion;
   }
 
   public class ResolveInfo implements android.os.Parcelable {

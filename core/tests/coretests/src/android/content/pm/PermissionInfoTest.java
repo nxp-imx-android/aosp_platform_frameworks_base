@@ -43,6 +43,7 @@ public final class PermissionInfoTest {
             "9369370ffcfdc1e92dae777252c05c483b8cbb55fa9d5fd9f6317f623ae6d8c6";
     private static final String PURPOSE_1 = "purpose1";
     private static final String PURPOSE_2 = "purpose2";
+    private static final int TEST_TARGET_SDK_VERSION = 37;
 
     @Test
     public void createFromParcel_returnsKnownCerts() {
@@ -119,5 +120,32 @@ public final class PermissionInfoTest {
         assertEquals(PURPOSE_2, unparceledPermissionInfo.validPurposes.get(PURPOSE_2).getName());
         assertEquals(
                 10, unparceledPermissionInfo.validPurposes.get(PURPOSE_2).getMaxTargetSdkVersion());
+    }
+
+    @Test
+    public void createFromParcel_withDefaultPurposeTargetSdkVersions_returnsNoTargetSdkVersion() {
+        PermissionInfo permissionInfo = new PermissionInfo();
+        Parcel parcel = Parcel.obtain();
+        permissionInfo.writeToParcel(parcel, 0);
+
+        parcel.setDataPosition(0);
+        PermissionInfo unparceledPermissionInfo = PermissionInfo.CREATOR.createFromParcel(parcel);
+
+        assertEquals(PermissionInfo.NO_TARGET_SDK_VERSION,
+                unparceledPermissionInfo.requiresGeneralPurposeTargetSdkVersion);
+    }
+
+    @Test
+    public void createFromParcel_returnsPurposeRelatedFields() {
+        PermissionInfo permissionInfo = new PermissionInfo();
+        permissionInfo.requiresGeneralPurposeTargetSdkVersion = TEST_TARGET_SDK_VERSION;
+        Parcel parcel = Parcel.obtain();
+        permissionInfo.writeToParcel(parcel, 0);
+
+        parcel.setDataPosition(0);
+        PermissionInfo unparceledPermissionInfo = PermissionInfo.CREATOR.createFromParcel(parcel);
+
+        assertEquals(TEST_TARGET_SDK_VERSION,
+                unparceledPermissionInfo.requiresGeneralPurposeTargetSdkVersion);
     }
 }
