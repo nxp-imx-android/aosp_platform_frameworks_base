@@ -341,13 +341,15 @@ public class VirtualDeviceManagerService extends SystemService {
             mVirtualDevices.remove(deviceId);
         }
 
-        mVirtualDeviceListeners.broadcast(listener -> {
-            try {
-                listener.onVirtualDeviceClosed(deviceId);
-            } catch (RemoteException e) {
-                Slog.i(TAG, "Failed to invoke onVirtualDeviceClosed listener: "
-                        + e.getMessage());
-            }
+        mHandler.post(() -> {
+            mVirtualDeviceListeners.broadcast(listener -> {
+                try {
+                    listener.onVirtualDeviceClosed(deviceId);
+                } catch (RemoteException e) {
+                    Slog.i(TAG, "Failed to invoke onVirtualDeviceClosed listener: "
+                            + e.getMessage());
+                }
+            });
         });
 
         return true;
@@ -524,13 +526,15 @@ public class VirtualDeviceManagerService extends SystemService {
                 virtualDevice.applyViewConfigurationParams(params.getViewConfigurationParams());
             }
 
-            mVirtualDeviceListeners.broadcast(listener -> {
-                try {
-                    listener.onVirtualDeviceCreated(deviceId);
-                } catch (RemoteException e) {
-                    Slog.i(TAG, "Failed to invoke onVirtualDeviceCreated listener: "
-                            + e.getMessage());
-                }
+            mHandler.post(() -> {
+                mVirtualDeviceListeners.broadcast(listener -> {
+                    try {
+                        listener.onVirtualDeviceCreated(deviceId);
+                    } catch (RemoteException e) {
+                        Slog.i(TAG, "Failed to invoke onVirtualDeviceCreated listener: "
+                                + e.getMessage());
+                    }
+                });
             });
             Counter.logIncrementWithUid(
                     "virtual_devices.value_virtual_devices_created_with_uid_count",
