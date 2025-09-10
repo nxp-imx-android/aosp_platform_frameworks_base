@@ -979,13 +979,16 @@ public class BtHelper {
             Log.w(TAG, "onSetBtScoActiveDevice() failed to remove previous device "
                     + getAnonymizedAddress(previousActiveDevice));
         }
+        // mBluetoothHeadsetDevice must correspond to previous device until now and new device from
+        // now on for SCO activation/deactivation requests made by
+        // AudioDeviceBroker.onUpdateCommunicationRouteClient() to succeed.
+        mBluetoothHeadsetDevice = btDevice;
         if (!handleBtScoActiveDeviceChange(btDevice, true, false /*deviceSwitch*/)) {
             Log.e(TAG, "onSetBtScoActiveDevice() failed to add new device "
                     + getAnonymizedAddress(btDevice));
             // set mBluetoothHeadsetDevice to null when failing to add new device
-            btDevice = null;
+            mBluetoothHeadsetDevice = null;
         }
-        mBluetoothHeadsetDevice = btDevice;
         if (mBluetoothHeadsetDevice == null) {
             resetBluetoothSco();
         }
