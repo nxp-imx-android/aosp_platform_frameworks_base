@@ -228,7 +228,8 @@ public final class MessageStack {
         while (current != null) {
             Message nextFree = current.nextFree;
             current.nextFree = null;
-            removeMessage(current, /* removeFromHeap= */ true);
+            maybeRemoveFromHeap(current);
+            removeFromStack(current);
             current = nextFree;
         }
     }
@@ -248,7 +249,7 @@ public final class MessageStack {
             if (!m.markRemoved()) {
                 return null;
             }
-            removeMessage(m, /* removeFromHeap= */ false);
+            removeFromStack(m);
         }
         return m;
     }
@@ -264,24 +265,22 @@ public final class MessageStack {
         }
     }
 
-    /**
-     * Remove a message from the stack.
-     *
-     * removeFromHeap indicates if the message should be removed from the heap (if this message is
-     * being drained from the freelist) or not (if this message was retrieved using
-     * MessageHeap.pop()).
-     */
-    private void removeMessage(Message m, boolean removeFromHeap) {
-        // An out of range heapIndex means that we've already removed this message from the heap
-        // during the MessageHeap.peek() loop in peek().
-        if (removeFromHeap && m.heapIndex >= 0) {
+    private void maybeRemoveFromHeap(Message m) {
+        // An out of range heapIndex means that we've already removed this message from the heap, or
+        // it was never added to the heap in the first place.
+        if (m.heapIndex >= 0) {
             if (m.isAsynchronous()) {
                 mAsyncHeap.removeMessage(m);
             } else {
                 mSyncHeap.removeMessage(m);
             }
         }
+    }
 
+    /**
+     * Remove a message from the stack.
+     */
+    private void removeFromStack(Message m) {
         // mLooperProcessed must be updated to the next message that hasn't been removed.
         if (m == mLooperProcessed) {
             do {
@@ -328,21 +327,16 @@ public final class MessageStack {
      * removed messages.
      */
     public @Nullable Message peek(boolean async) {
+        MessageHeap heap = async ? mAsyncHeap : mSyncHeap;
         while (true) {
-            final Message m = async ? mAsyncHeap.peek() : mSyncHeap.peek();
+            final Message m = heap.peek();
             if (m == null) {
                 return null;
             }
             if (!m.isRemoved()) {
                 return m;
             }
-            if (m.heapIndex >= 0) {
-                if (async) {
-                    mAsyncHeap.removeMessage(m);
-                } else {
-                    mSyncHeap.removeMessage(m);
-                }
-            }
+            heap.removeMessage(m);
         }
     }
 
@@ -352,7 +346,8 @@ public final class MessageStack {
      * This is suitable to use with the output of peek().
      */
     public void remove(Message m) {
-        removeMessage(m, /* removeFromHeap= */ true);
+        maybeRemoveFromHeap(m);
+        removeFromStack(m);
     }
 
     Message peekLastMessageForTest() {

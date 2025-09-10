@@ -91,11 +91,12 @@ public final class MessageHeap {
     }
 
     private void swap(int x, int y) {
-        Message tmp = mHeap[x];
-        mHeap[x] = mHeap[y];
-        mHeap[y] = tmp;
-        mHeap[x].heapIndex = x;
-        mHeap[y].heapIndex = y;
+        Message newX = mHeap[y];
+        Message newY = mHeap[x];
+        mHeap[x] = newX;
+        mHeap[y] = newY;
+        newX.heapIndex = x;
+        newY.heapIndex = y;
     }
 
     private void siftDown(int i) {
@@ -205,6 +206,7 @@ public final class MessageHeap {
             mHeap[0] = mHeap[mNumElements];
             mHeap[0].heapIndex = 0;
             mHeap[mNumElements] = null;
+            ret.heapIndex = -1;
 
             siftDown(0);
 
@@ -222,11 +224,12 @@ public final class MessageHeap {
         if (i >= mNumElements || mNumElements == 0 || i < 0) {
             throw new IllegalArgumentException("Index " + i + " out of bounds: "
                     + mNumElements);
-        } else if (i == (mNumElements - 1)) {
+        }
+        mNumElements--;
+        mHeap[i].heapIndex = -1;
+        if (i == mNumElements) {
             mHeap[i] = null;
-            mNumElements--;
         } else {
-            mNumElements--;
             mHeap[i] = mHeap[mNumElements];
             mHeap[i].heapIndex = i;
             mHeap[mNumElements] = null;
@@ -234,17 +237,17 @@ public final class MessageHeap {
                 siftDown(i);
             }
         }
-        /* Don't shink here, let the caller do this once it has removed all matching items. */
+        /* Don't shrink here, let the caller do this once it has removed all matching items. */
     }
 
     public void removeMessage(@NonNull Message m) throws IllegalArgumentException {
-        // We set this index to be out of range so that we don't attempt to remove this message from
-        // the heap a second time (e.g. when it's processed on the MessageStack freelist).
         remove(m.heapIndex);
-        m.heapIndex = -1;
     }
 
     public void removeAll() {
+        for (int i = 0; i < mNumElements; i++) {
+            mHeap[i].heapIndex = -1;
+        }
         mHeap = new Message[INITIAL_SIZE];
         mNumElements = 0;
     }
