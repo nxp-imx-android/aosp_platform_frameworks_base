@@ -26,6 +26,7 @@ import static com.android.server.am.ActivityManagerDebugConfig.LOG_WRITER_INFO;
 import static com.android.server.am.BroadcastProcessQueue.reasonToString;
 import static com.android.server.am.BroadcastRecord.deliveryStateToString;
 import static com.android.server.am.BroadcastRecord.isReceiverEquals;
+import static com.android.server.am.psc.Constants.SCHED_GROUP_UNDEFINED;
 
 import static com.google.common.truth.Truth.assertThat;
 
@@ -254,7 +255,7 @@ public class BroadcastQueueTest extends BaseBroadcastQueueTest {
         // Verify that all processes have finished handling broadcasts
         for (ProcessRecord app : mActiveProcesses) {
             assertFalse(app.toShortString(), app.mReceivers.isReceivingBroadcast());
-            assertEquals(app.toShortString(), ProcessList.SCHED_GROUP_UNDEFINED,
+            assertEquals(app.toShortString(), SCHED_GROUP_UNDEFINED,
                     mQueue.getPreferredSchedulingGroupLocked(app));
         }
         mNewProcessBehaviors.clear();
@@ -369,7 +370,7 @@ public class BroadcastQueueTest extends BaseBroadcastQueueTest {
             mScheduledBroadcasts.add(makeScheduledBroadcast(r, intent));
             if (!wedge) {
                 assertTrue(r.mReceivers.isReceivingBroadcast());
-                assertNotEquals(ProcessList.SCHED_GROUP_UNDEFINED,
+                assertNotEquals(SCHED_GROUP_UNDEFINED,
                         mQueue.getPreferredSchedulingGroupLocked(r));
                 mHandlerThread.getThreadHandler().post(() -> {
                     synchronized (mAms) {
@@ -392,7 +393,7 @@ public class BroadcastQueueTest extends BaseBroadcastQueueTest {
             mScheduledBroadcasts.add(makeScheduledBroadcast(r, intent));
             if (!wedge && ordered) {
                 assertTrue(r.mReceivers.isReceivingBroadcast());
-                assertNotEquals(ProcessList.SCHED_GROUP_UNDEFINED,
+                assertNotEquals(SCHED_GROUP_UNDEFINED,
                         mQueue.getPreferredSchedulingGroupLocked(r));
                 mHandlerThread.getThreadHandler().post(() -> {
                     synchronized (mAms) {

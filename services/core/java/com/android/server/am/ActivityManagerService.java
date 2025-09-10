@@ -171,9 +171,28 @@ import static com.android.server.am.CachedAppOptimizer.getUnfreezeReasonCodeFrom
 import static com.android.server.am.LogcatFetcher.LOGCAT_TIMEOUT_SEC;
 import static com.android.server.am.LogcatFetcher.RESERVED_BYTES_PER_LOGCAT_LINE;
 import static com.android.server.am.MemoryStatUtil.hasMemcg;
-import static com.android.server.am.ProcessList.CACHED_APP_MIN_ADJ;
 import static com.android.server.am.ProcessList.ProcStartHandler;
-import static com.android.server.am.ProcessList.UNKNOWN_ADJ;
+import static com.android.server.am.psc.Constants.BACKUP_APP_ADJ;
+import static com.android.server.am.psc.Constants.CACHED_APP_MAX_ADJ;
+import static com.android.server.am.psc.Constants.CACHED_APP_MIN_ADJ;
+import static com.android.server.am.psc.Constants.FOREGROUND_APP_ADJ;
+import static com.android.server.am.psc.Constants.HEAVY_WEIGHT_APP_ADJ;
+import static com.android.server.am.psc.Constants.HOME_APP_ADJ;
+import static com.android.server.am.psc.Constants.INVALID_ADJ;
+import static com.android.server.am.psc.Constants.NATIVE_ADJ;
+import static com.android.server.am.psc.Constants.PERCEPTIBLE_APP_ADJ;
+import static com.android.server.am.psc.Constants.PERCEPTIBLE_LOW_APP_ADJ;
+import static com.android.server.am.psc.Constants.PERCEPTIBLE_MEDIUM_APP_ADJ;
+import static com.android.server.am.psc.Constants.PERSISTENT_PROC_ADJ;
+import static com.android.server.am.psc.Constants.PERSISTENT_SERVICE_ADJ;
+import static com.android.server.am.psc.Constants.PREVIOUS_APP_ADJ;
+import static com.android.server.am.psc.Constants.SCHED_GROUP_TOP_APP;
+import static com.android.server.am.psc.Constants.SCHED_GROUP_UNDEFINED;
+import static com.android.server.am.psc.Constants.SERVICE_ADJ;
+import static com.android.server.am.psc.Constants.SERVICE_B_ADJ;
+import static com.android.server.am.psc.Constants.SYSTEM_ADJ;
+import static com.android.server.am.psc.Constants.UNKNOWN_ADJ;
+import static com.android.server.am.psc.Constants.VISIBLE_APP_ADJ;
 import static com.android.server.flags.Flags.disableSystemCompaction;
 import static com.android.server.net.NetworkPolicyManagerInternal.updateBlockedReasonsWithProcState;
 import static com.android.server.pm.PackageManagerService.PLATFORM_PACKAGE_NAME;
@@ -1970,7 +1989,7 @@ public class ActivityManagerService extends IActivityManager.Stub
                         new HostingRecord(HostingRecord.HOSTING_TYPE_SYSTEM));
                 app.setPersistent(true);
                 app.setPid(MY_PID);
-                mProcessStateController.setMaxAdj(app, ProcessList.SYSTEM_ADJ);
+                mProcessStateController.setMaxAdj(app, SYSTEM_ADJ);
                 app.makeActive(new ApplicationThreadDeferred(mSystemThread.getApplicationThread()),
                         mProcessStats);
                 app.mProfile.addHostingComponentType(HOSTING_COMPONENT_TYPE_SYSTEM);
@@ -3727,7 +3746,7 @@ public class ActivityManagerService extends IActivityManager.Stub
                 synchronized (this) {
                     synchronized (mProcLock) {
                         mProcessList.killPackageProcessesLSP(packageName, appId, targetUserId,
-                                ProcessList.SERVICE_ADJ, ApplicationExitInfo.REASON_USER_REQUESTED,
+                                SERVICE_ADJ, ApplicationExitInfo.REASON_USER_REQUESTED,
                                 ApplicationExitInfo.SUBREASON_KILL_BACKGROUND, "kill background");
                     }
                 }
@@ -3756,7 +3775,7 @@ public class ActivityManagerService extends IActivityManager.Stub
                 mAppProfiler.setAllowLowerMemLevelLocked(true);
                 synchronized (mProcLock) {
                     mProcessList.killPackageProcessesLSP(null /* packageName */, -1 /* appId */,
-                            UserHandle.USER_ALL, ProcessList.CACHED_APP_MIN_ADJ,
+                            UserHandle.USER_ALL, CACHED_APP_MIN_ADJ,
                             ApplicationExitInfo.REASON_USER_REQUESTED,
                             ApplicationExitInfo.SUBREASON_KILL_BACKGROUND,
                             "kill all background");
@@ -4311,7 +4330,7 @@ public class ActivityManagerService extends IActivityManager.Stub
                 mAtmInternal.onForceStopPackage(packageName, true, false, userId);
 
                 mProcessList.killPackageProcessesLSP(packageName, appId, userId,
-                        ProcessList.INVALID_ADJ, true, false, true,
+                        INVALID_ADJ, true, false, true,
                         false, true /* setRemoved */, false,
                         ApplicationExitInfo.REASON_USER_REQUESTED,
                         ApplicationExitInfo.SUBREASON_STOP_APP,
@@ -4339,8 +4358,7 @@ public class ActivityManagerService extends IActivityManager.Stub
     @GuardedBy("this")
     final boolean forceStopUserPackagesLocked(int userId, String reasonString,
             boolean evenImportantServices) {
-        int minOomAdj = evenImportantServices ? ProcessList.INVALID_ADJ
-                : ProcessList.FOREGROUND_APP_ADJ;
+        int minOomAdj = evenImportantServices ? INVALID_ADJ : FOREGROUND_APP_ADJ;
         return forceStopPackageInternalLocked(null, -1, false, false,
                 true, false, false, false, userId, reasonString,
                 ApplicationExitInfo.REASON_USER_STOPPED, minOomAdj);
@@ -4364,7 +4382,7 @@ public class ActivityManagerService extends IActivityManager.Stub
             @CanBeALL @UserIdInt int userId, String reasonString, int reason) {
         return forceStopPackageInternalLocked(packageName, appId, callerWillRestart, purgeCache,
                 doit, evenPersistent, uninstalling, packageStateStopped, userId, reasonString,
-                reason, ProcessList.INVALID_ADJ);
+                reason, INVALID_ADJ);
     }
 
     @GuardedBy("this")
@@ -6110,7 +6128,7 @@ public class ActivityManagerService extends IActivityManager.Stub
                         states[i] = PROCESS_STATE_TOP;
                         if (scores != null) {
                             // The uid in mPendingStartActivityUids gets a better score.
-                            scores[i] = ProcessList.FOREGROUND_APP_ADJ - 1;
+                            scores[i] = FOREGROUND_APP_ADJ - 1;
                         }
                         if (pendingTopTime > newestTime) {
                             newestTimeIndex = i;
@@ -6125,7 +6143,7 @@ public class ActivityManagerService extends IActivityManager.Stub
                 } else {
                     states[i] = PROCESS_STATE_NONEXISTENT;
                     if (scores != null) {
-                        scores[i] = ProcessList.INVALID_ADJ;
+                        scores[i] = INVALID_ADJ;
                     }
                 }
             }
@@ -6133,7 +6151,7 @@ public class ActivityManagerService extends IActivityManager.Stub
             // score.
             if (newestTimeIndex != -1) {
                 if (scores != null) {
-                    scores[newestTimeIndex] = ProcessList.FOREGROUND_APP_ADJ - 2;
+                    scores[newestTimeIndex] = FOREGROUND_APP_ADJ - 2;
                 }
             }
         }
@@ -7427,7 +7445,7 @@ public class ActivityManagerService extends IActivityManager.Stub
 
         if ((info.flags & PERSISTENT_MASK) == PERSISTENT_MASK) {
             app.setPersistent(true);
-            mProcessStateController.setMaxAdj(app, ProcessList.PERSISTENT_PROC_ADJ);
+            mProcessStateController.setMaxAdj(app, PERSISTENT_PROC_ADJ);
         }
         if (app.getThread() == null && mPersistentStartingProcesses.indexOf(app) < 0) {
             mPersistentStartingProcesses.add(app);
@@ -8424,7 +8442,7 @@ public class ActivityManagerService extends IActivityManager.Stub
                     Slog.d("UI_FIFO", "Set RenderThread tid " + tid + " for pid " + pid);
                 }
                 // promote to FIFO now
-                if (proc.getCurrentSchedulingGroup() == ProcessList.SCHED_GROUP_TOP_APP) {
+                if (proc.getCurrentSchedulingGroup() == SCHED_GROUP_TOP_APP) {
                     if (DEBUG_OOM_ADJ) Slog.d("UI_FIFO", "Promoting " + tid + "out of band");
                     if (proc.useFifoUiScheduling()) {
                         setThreadScheduler(proc.getRenderThreadTid(),
@@ -8687,15 +8705,14 @@ public class ActivityManagerService extends IActivityManager.Stub
 
             // If the worst oom_adj is somewhere in the cached proc LRU range,
             // then constrain it so we will kill all cached procs.
-            if (worstType < ProcessList.CACHED_APP_MAX_ADJ
-                    && worstType > ProcessList.CACHED_APP_MIN_ADJ) {
-                worstType = ProcessList.CACHED_APP_MIN_ADJ;
+            if (worstType < CACHED_APP_MAX_ADJ && worstType > CACHED_APP_MIN_ADJ) {
+                worstType = CACHED_APP_MIN_ADJ;
             }
 
             // If this is not a secure call, don't let it kill processes that
             // are important.
-            if (!secure && worstType < ProcessList.SERVICE_ADJ) {
-                worstType = ProcessList.SERVICE_ADJ;
+            if (!secure && worstType < SERVICE_ADJ) {
+                worstType = SERVICE_ADJ;
             }
 
             Slog.w(TAG, "Killing processes " + reason + " at adjustment " + worstType);
@@ -8733,7 +8750,7 @@ public class ActivityManagerService extends IActivityManager.Stub
             try {
                 synchronized (mProcLock) {
                     mProcessList.killPackageProcessesLSP(null /* packageName */, appId, userId,
-                            ProcessList.PERSISTENT_PROC_ADJ, false /* callerWillRestart */,
+                            PERSISTENT_PROC_ADJ, false /* callerWillRestart */,
                             true /* callerWillRestart */, true /* doit */,
                             true /* evenPersistent */, false /* setRemoved */,
                             false /* uninstalling */,
@@ -8761,7 +8778,7 @@ public class ActivityManagerService extends IActivityManager.Stub
             try {
                 synchronized (mProcLock) {
                     mProcessList.killPackageProcessesLSP(null /* packageName */, appId, userId,
-                            ProcessList.PERSISTENT_PROC_ADJ, false /* callerWillRestart */,
+                            PERSISTENT_PROC_ADJ, false /* callerWillRestart */,
                             true /* callerWillRestart */, true /* doit */,
                             true /* evenPersistent */, false /* setRemoved */,
                             false /* uninstalling */,
@@ -8781,7 +8798,7 @@ public class ActivityManagerService extends IActivityManager.Stub
             throw new SecurityException("killProcessesBelowForeground() only available to system");
         }
 
-        return killProcessesBelowAdj(ProcessList.FOREGROUND_APP_ADJ, reason);
+        return killProcessesBelowAdj(FOREGROUND_APP_ADJ, reason);
     }
 
     private boolean killProcessesBelowAdj(int belowAdj, String reason) {
@@ -11679,25 +11696,24 @@ public class ActivityManagerService extends IActivityManager.Stub
 
     boolean dumpLmkLocked(PrintWriter pw) {
         pw.println("ACTIVITY MANAGER LMK KILLS (dumpsys activity lmk)");
-        Integer cnt = ProcessList.getLmkdKillCount(ProcessList.UNKNOWN_ADJ,
-                ProcessList.UNKNOWN_ADJ);
+        Integer cnt = ProcessList.getLmkdKillCount(UNKNOWN_ADJ, UNKNOWN_ADJ);
         if (cnt == null) {
             return false;
         }
         pw.println("  Total number of kills: " + cnt);
 
-        return reportLmkKillAtOrBelow(pw, ProcessList.CACHED_APP_MAX_ADJ) &&
-                reportLmkKillAtOrBelow(pw, ProcessList.CACHED_APP_MIN_ADJ) &&
-                reportLmkKillAtOrBelow(pw, ProcessList.SERVICE_B_ADJ) &&
-                reportLmkKillAtOrBelow(pw, ProcessList.PREVIOUS_APP_ADJ) &&
-                reportLmkKillAtOrBelow(pw, ProcessList.HOME_APP_ADJ) &&
-                reportLmkKillAtOrBelow(pw, ProcessList.SERVICE_ADJ) &&
-                reportLmkKillAtOrBelow(pw, ProcessList.HEAVY_WEIGHT_APP_ADJ) &&
-                reportLmkKillAtOrBelow(pw, ProcessList.BACKUP_APP_ADJ) &&
-                reportLmkKillAtOrBelow(pw, ProcessList.PERCEPTIBLE_LOW_APP_ADJ) &&
-                reportLmkKillAtOrBelow(pw, ProcessList.PERCEPTIBLE_APP_ADJ) &&
-                reportLmkKillAtOrBelow(pw, ProcessList.VISIBLE_APP_ADJ) &&
-                reportLmkKillAtOrBelow(pw, ProcessList.FOREGROUND_APP_ADJ);
+        return reportLmkKillAtOrBelow(pw, CACHED_APP_MAX_ADJ)
+                && reportLmkKillAtOrBelow(pw, CACHED_APP_MIN_ADJ)
+                && reportLmkKillAtOrBelow(pw, SERVICE_B_ADJ)
+                && reportLmkKillAtOrBelow(pw, PREVIOUS_APP_ADJ)
+                && reportLmkKillAtOrBelow(pw, HOME_APP_ADJ)
+                && reportLmkKillAtOrBelow(pw, SERVICE_ADJ)
+                && reportLmkKillAtOrBelow(pw, HEAVY_WEIGHT_APP_ADJ)
+                && reportLmkKillAtOrBelow(pw, BACKUP_APP_ADJ)
+                && reportLmkKillAtOrBelow(pw, PERCEPTIBLE_LOW_APP_ADJ)
+                && reportLmkKillAtOrBelow(pw, PERCEPTIBLE_APP_ADJ)
+                && reportLmkKillAtOrBelow(pw, VISIBLE_APP_ADJ)
+                && reportLmkKillAtOrBelow(pw, FOREGROUND_APP_ADJ);
     }
 
     public static class ItemMatcher {
@@ -12127,15 +12143,15 @@ public class ActivityManagerService extends IActivityManager.Stub
     }
 
     static final int[] DUMP_MEM_OOM_ADJ = new int[] {
-            ProcessList.NATIVE_ADJ,
-            ProcessList.SYSTEM_ADJ, ProcessList.PERSISTENT_PROC_ADJ,
-            ProcessList.PERSISTENT_SERVICE_ADJ, ProcessList.FOREGROUND_APP_ADJ,
-            ProcessList.VISIBLE_APP_ADJ,
-            ProcessList.PERCEPTIBLE_APP_ADJ,
-            ProcessList.PERCEPTIBLE_MEDIUM_APP_ADJ, ProcessList.PERCEPTIBLE_LOW_APP_ADJ,
-            ProcessList.BACKUP_APP_ADJ, ProcessList.HEAVY_WEIGHT_APP_ADJ,
-            ProcessList.SERVICE_ADJ, ProcessList.HOME_APP_ADJ,
-            ProcessList.PREVIOUS_APP_ADJ, ProcessList.SERVICE_B_ADJ, ProcessList.CACHED_APP_MIN_ADJ
+            NATIVE_ADJ,
+            SYSTEM_ADJ, PERSISTENT_PROC_ADJ,
+            PERSISTENT_SERVICE_ADJ, FOREGROUND_APP_ADJ,
+            VISIBLE_APP_ADJ,
+            PERCEPTIBLE_APP_ADJ,
+            PERCEPTIBLE_MEDIUM_APP_ADJ, PERCEPTIBLE_LOW_APP_ADJ,
+            BACKUP_APP_ADJ, HEAVY_WEIGHT_APP_ADJ,
+            SERVICE_ADJ, HOME_APP_ADJ,
+            PREVIOUS_APP_ADJ, SERVICE_B_ADJ, CACHED_APP_MIN_ADJ
     };
     static final String[] DUMP_MEM_OOM_LABEL = new String[] {
             "Native",
@@ -12587,7 +12603,7 @@ public class ActivityManagerService extends IActivityManager.Stub
                         memUsageStats.otherRss -= mem;
                     }
 
-                    if (oomAdj >= ProcessList.CACHED_APP_MIN_ADJ) {
+                    if (oomAdj >= CACHED_APP_MIN_ADJ) {
                         memUsageStats.cachedPss += myTotalPss;
                         memUsageStats.cachedSwapPss += myTotalSwapPss;
                     }
@@ -12944,7 +12960,7 @@ public class ActivityManagerService extends IActivityManager.Stub
                     pw.print(ActivityManager.staticGetLargeMemoryClass());
                     pw.print("), oom ");
                     pw.print(stringifySize(
-                                mProcessList.getMemLevel(ProcessList.CACHED_APP_MAX_ADJ), 1024));
+                                mProcessList.getMemLevel(CACHED_APP_MAX_ADJ), 1024));
                     pw.print(", restore limit ");
                     pw.print(stringifyKBSize(mProcessList.getCachedRestoreThresholdKb()));
                     if (ActivityManager.isLowRamDeviceStatic()) {
@@ -12963,7 +12979,7 @@ public class ActivityManagerService extends IActivityManager.Stub
                     pw.print(',');
                     pw.print(ActivityManager.staticGetLargeMemoryClass());
                     pw.print(',');
-                    pw.print(mProcessList.getMemLevel(ProcessList.CACHED_APP_MAX_ADJ)/1024);
+                    pw.print(mProcessList.getMemLevel(CACHED_APP_MAX_ADJ) / 1024);
                     if (ActivityManager.isLowRamDeviceStatic()) {
                         pw.print(",low-ram");
                     }
@@ -13210,7 +13226,7 @@ public class ActivityManagerService extends IActivityManager.Stub
                     memUsageStats.otherRss -= mem;
                 }
 
-                if (oomAdj >= ProcessList.CACHED_APP_MIN_ADJ) {
+                if (oomAdj >= CACHED_APP_MIN_ADJ) {
                     memUsageStats.cachedPss += myTotalPss;
                     memUsageStats.cachedSwapPss += myTotalSwapPss;
                 }
@@ -13452,7 +13468,7 @@ public class ActivityManagerService extends IActivityManager.Stub
                 proto.write(MemInfoDumpProto.TUNING_MB, ActivityManager.staticGetMemoryClass());
                 proto.write(MemInfoDumpProto.TUNING_LARGE_MB, ActivityManager.staticGetLargeMemoryClass());
                 proto.write(MemInfoDumpProto.OOM_KB,
-                        mProcessList.getMemLevel(ProcessList.CACHED_APP_MAX_ADJ) / 1024);
+                        mProcessList.getMemLevel(CACHED_APP_MAX_ADJ) / 1024);
                 proto.write(MemInfoDumpProto.RESTORE_LIMIT_KB,
                         mProcessList.getCachedRestoreThresholdKb());
 
@@ -15118,7 +15134,7 @@ public class ActivityManagerService extends IActivityManager.Stub
     boolean isReceivingBroadcastLocked(ProcessRecord app, int[] outSchedGroup) {
         final int res = mBroadcastQueue.getPreferredSchedulingGroupLocked(app);
         outSchedGroup[0] = res;
-        return res != ProcessList.SCHED_GROUP_UNDEFINED;
+        return res != SCHED_GROUP_UNDEFINED;
     }
 
     Association startAssociationLocked(int sourceUid, String sourceProcess, int sourceState,
@@ -15418,7 +15434,7 @@ public class ActivityManagerService extends IActivityManager.Stub
         final int procState = uidRec != null
                 ? uidRec.getSetProcState() : PROCESS_STATE_NONEXISTENT;
         final int procAdj = uidRec != null
-                ? uidRec.getMinProcAdj() : ProcessList.INVALID_ADJ;
+                ? uidRec.getMinProcAdj() : INVALID_ADJ;
         final long procStateSeq = uidRec != null ? uidRec.curProcStateSeq : 0;
         final int capability = uidRec != null ? uidRec.getSetCapability() : 0;
         final boolean ephemeral = uidRec != null ? uidRec.isEphemeral() : isEphemeralLocked(uid);
@@ -15833,7 +15849,7 @@ public class ActivityManagerService extends IActivityManager.Stub
         mAllowSpecifiedFifoScheduling = allowSpecifiedFifo;
         for (int i = mSpecifiedFifoProcesses.size() - 1; i >= 0; i--) {
             final ProcessRecord proc = mSpecifiedFifoProcesses.get(i);
-            if (proc.getSetSchedGroup() != ProcessList.SCHED_GROUP_TOP_APP) {
+            if (proc.getSetSchedGroup() != SCHED_GROUP_TOP_APP) {
                 continue;
             }
             setFifoPriority(proc, allowSpecifiedFifo /* enable */);
@@ -18847,7 +18863,7 @@ public class ActivityManagerService extends IActivityManager.Stub
                         mProcessList.killPackageProcessesLSP(packageName,
                                 UserHandle.getAppId(pkgUid),
                                 targetUserId,
-                                ProcessList.FOREGROUND_APP_ADJ,
+                                FOREGROUND_APP_ADJ,
                                 ApplicationExitInfo.REASON_DEPENDENCY_DIED,
                                 ApplicationExitInfo.SUBREASON_UNKNOWN,
                                 "dep: " + packageName);

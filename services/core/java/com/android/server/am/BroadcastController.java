@@ -49,6 +49,7 @@ import static com.android.server.am.ActivityManagerService.UPDATE_TIME_ZONE;
 import static com.android.server.am.ActivityManagerService.checkComponentPermission;
 import static com.android.server.am.BroadcastRecord.debugLog;
 import static com.android.server.am.BroadcastRecord.intentToString;
+import static com.android.server.am.psc.Constants.INVALID_ADJ;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
@@ -1259,7 +1260,7 @@ class BroadcastController {
                                         synchronized (mService.mProcLock) {
                                             mService.mProcessList.killPackageProcessesLSP(ssp,
                                                     UserHandle.getAppId(extraUid),
-                                                    userId, ProcessList.INVALID_ADJ,
+                                                    userId, INVALID_ADJ,
                                                     reason,
                                                     subReason,
                                                     "change " + ssp);

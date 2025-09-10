@@ -31,6 +31,7 @@ import android.util.proto.ProtoOutputStream;
 import com.android.internal.annotations.GuardedBy;
 import com.android.server.DropBoxManagerInternal;
 import com.android.server.LocalServices;
+import com.android.server.am.psc.Constants;
 
 import java.io.FileDescriptor;
 import java.io.FileOutputStream;
@@ -92,8 +93,8 @@ public abstract class BroadcastQueue {
      * Return the preferred scheduling group for the given process, typically
      * influenced by a broadcast being actively dispatched.
      *
-     * @return scheduling group such as {@link ProcessList#SCHED_GROUP_DEFAULT},
-     *         otherwise {@link ProcessList#SCHED_GROUP_UNDEFINED} if this queue
+     * @return scheduling group such as {@link Constants#SCHED_GROUP_DEFAULT},
+     *         otherwise {@link Constants#SCHED_GROUP_UNDEFINED} if this queue
      *         has no opinion.
      */
     @GuardedBy("mService")

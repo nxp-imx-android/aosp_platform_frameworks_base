@@ -49,6 +49,9 @@ import static android.content.ComponentCallbacks2.TRIM_MEMORY_BACKGROUND;
 import static com.android.server.am.ActivityManagerDebugConfig.DEBUG_COMPACTION;
 import static com.android.server.am.ActivityManagerDebugConfig.DEBUG_FREEZER;
 import static com.android.server.am.ActivityManagerDebugConfig.TAG_AM;
+import static com.android.server.am.psc.Constants.CACHED_APP_MAX_ADJ;
+import static com.android.server.am.psc.Constants.CACHED_APP_MIN_ADJ;
+import static com.android.server.am.psc.Constants.PERCEPTIBLE_APP_ADJ;
 
 import android.annotation.IntDef;
 import android.annotation.UptimeMillisLong;
@@ -282,10 +285,8 @@ public class CachedAppOptimizer {
     @VisibleForTesting static final long DEFAULT_COMPACT_THROTTLE_4 = 10_000;
     @VisibleForTesting static final long DEFAULT_COMPACT_THROTTLE_5 = 10 * 60 * 1000;
     @VisibleForTesting static final long DEFAULT_COMPACT_THROTTLE_6 = 10 * 60 * 1000;
-    @VisibleForTesting static final long DEFAULT_COMPACT_THROTTLE_MIN_OOM_ADJ =
-            ProcessList.CACHED_APP_MIN_ADJ;
-    @VisibleForTesting static final long DEFAULT_COMPACT_THROTTLE_MAX_OOM_ADJ =
-            ProcessList.CACHED_APP_MAX_ADJ;
+    @VisibleForTesting static final long DEFAULT_COMPACT_THROTTLE_MIN_OOM_ADJ = CACHED_APP_MIN_ADJ;
+    @VisibleForTesting static final long DEFAULT_COMPACT_THROTTLE_MAX_OOM_ADJ = CACHED_APP_MAX_ADJ;
     // The sampling rate to push app compaction events into statsd for upload.
     @VisibleForTesting static final float DEFAULT_STATSD_SAMPLE_RATE = 0.1f;
     @VisibleForTesting static final long DEFAULT_COMPACT_FULL_RSS_THROTTLE_KB = 12_000L;
@@ -1065,7 +1066,7 @@ public class CachedAppOptimizer {
             KEY_COMPACT_THROTTLE_MIN_OOM_ADJ, DEFAULT_COMPACT_THROTTLE_MIN_OOM_ADJ);
 
         // Should only compact cached processes.
-        if (mCompactThrottleMinOomAdj < ProcessList.CACHED_APP_MIN_ADJ) {
+        if (mCompactThrottleMinOomAdj < CACHED_APP_MIN_ADJ) {
             mCompactThrottleMinOomAdj = DEFAULT_COMPACT_THROTTLE_MIN_OOM_ADJ;
         }
     }
@@ -1076,7 +1077,7 @@ public class CachedAppOptimizer {
             KEY_COMPACT_THROTTLE_MAX_OOM_ADJ, DEFAULT_COMPACT_THROTTLE_MAX_OOM_ADJ);
 
         // Should only compact cached processes.
-        if (mCompactThrottleMaxOomAdj > ProcessList.CACHED_APP_MAX_ADJ) {
+        if (mCompactThrottleMaxOomAdj > CACHED_APP_MAX_ADJ) {
             mCompactThrottleMaxOomAdj = DEFAULT_COMPACT_THROTTLE_MAX_OOM_ADJ;
         }
     }
@@ -1235,7 +1236,7 @@ public class CachedAppOptimizer {
             return;
         }
 
-        if (app.getSetAdj() >= ProcessList.CACHED_APP_MIN_ADJ) {
+        if (app.getSetAdj() >= CACHED_APP_MIN_ADJ) {
             final IApplicationThread thread = app.getThread();
             if (thread != null) {
                 try {
@@ -1512,7 +1513,7 @@ public class CachedAppOptimizer {
         if (useCompaction()) {
             // Cancel any currently executing compactions
             // if the process moved out of cached state
-            if (newAdj < oldAdj && newAdj < ProcessList.CACHED_APP_MIN_ADJ) {
+            if (newAdj < oldAdj && newAdj < CACHED_APP_MIN_ADJ) {
                 cancelCompactionForProcess(app, CancelCompactReason.OOM_IMPROVEMENT);
             }
         }
@@ -1601,7 +1602,7 @@ public class CachedAppOptimizer {
 
             // don't compact if the process has returned to perceptible
             // and this is only a cached/home/prev compaction
-            if (proc.getSetAdj() <= ProcessList.PERCEPTIBLE_APP_ADJ) {
+            if (proc.getSetAdj() <= PERCEPTIBLE_APP_ADJ) {
                 if (DEBUG_COMPACTION) {
                     Slog.d(TAG_AM,
                             "Skipping compaction as process " + name + " is "

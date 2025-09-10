@@ -23,11 +23,11 @@ import static android.app.ActivityManager.PROCESS_STATE_NONEXISTENT;
 import static com.android.server.am.OomAdjuster.CPU_TIME_REASON_NONE;
 import static com.android.server.am.OomAdjuster.IMPLICIT_CPU_TIME_REASON_NONE;
 import static com.android.server.am.OomAdjusterImpl.ProcessRecordNode.NUM_NODE_TYPE;
-import static com.android.server.am.ProcessList.CACHED_APP_MIN_ADJ;
-import static com.android.server.am.ProcessList.INVALID_ADJ;
-import static com.android.server.am.ProcessList.SCHED_GROUP_BACKGROUND;
-import static com.android.server.am.ProcessList.SERVICE_B_ADJ;
-import static com.android.server.am.ProcessList.UNKNOWN_ADJ;
+import static com.android.server.am.psc.Constants.CACHED_APP_MIN_ADJ;
+import static com.android.server.am.psc.Constants.INVALID_ADJ;
+import static com.android.server.am.psc.Constants.SCHED_GROUP_BACKGROUND;
+import static com.android.server.am.psc.Constants.SERVICE_B_ADJ;
+import static com.android.server.am.psc.Constants.UNKNOWN_ADJ;
 import static com.android.server.wm.WindowProcessController.ACTIVITY_STATE_FLAG_IS_VISIBLE;
 import static com.android.server.wm.WindowProcessController.ACTIVITY_STATE_FLAG_MASK_MIN_TASK_LAYER;
 
@@ -584,7 +584,7 @@ public abstract class ProcessRecordInternal {
      * Is this process currently showing a non-activity UI that the user
      * is interacting with? E.g. The status bar when it is expanded, but
      * not when it is minimized. When true the
-     * process will be set to use the ProcessList#SCHED_GROUP_TOP_APP
+     * process will be set to use the {@link Constants#SCHED_GROUP_TOP_APP}
      * scheduling group to boost performance.
      */
     @GuardedBy("mServiceLock")
@@ -595,7 +595,7 @@ public abstract class ProcessRecordInternal {
      * overlays on-top of activity UIs on screen. E.g. display a window
      * of type android.view.WindowManager.LayoutParams#TYPE_APPLICATION_OVERLAY
      * When true the process will oom adj score will be set to
-     * ProcessList#PERCEPTIBLE_APP_ADJ at minimum to reduce the chance
+     * {@link Constants#PERCEPTIBLE_APP_ADJ} at minimum to reduce the chance
      * of the process getting killed.
      */
     @GuardedBy("mServiceLock")
@@ -604,9 +604,9 @@ public abstract class ProcessRecordInternal {
     /**
      * Is the process currently running a remote animation? When true
      * the process will be set to use the
-     * ProcessList#SCHED_GROUP_TOP_APP scheduling group to boost
+     * {@link Constants#SCHED_GROUP_TOP_APP} scheduling group to boost
      * performance, as well as oom adj score will be set to
-     * ProcessList#VISIBLE_APP_ADJ at minimum to reduce the chance
+     * {@link Constants#VISIBLE_APP_ADJ} at minimum to reduce the chance
      * of the process getting killed.
      */
     @GuardedBy("mServiceLock")

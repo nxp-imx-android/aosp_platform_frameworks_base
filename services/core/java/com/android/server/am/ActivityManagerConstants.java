@@ -30,6 +30,8 @@ import static com.android.server.am.ActivityManagerDebugConfig.DEBUG_POWER_QUICK
 import static com.android.server.am.BroadcastConstants.DEFER_BOOT_COMPLETED_BROADCAST_BACKGROUND_RESTRICTED_ONLY;
 import static com.android.server.am.BroadcastConstants.DEFER_BOOT_COMPLETED_BROADCAST_TARGET_T_ONLY;
 import static com.android.server.am.BroadcastConstants.getDeviceConfigBoolean;
+import static com.android.server.am.psc.Constants.CACHED_APP_MIN_ADJ;
+import static com.android.server.am.psc.Constants.HOME_APP_ADJ;
 
 import android.annotation.NonNull;
 import android.app.ActivityManagerInternal;
@@ -268,8 +270,7 @@ final class ActivityManagerConstants extends ContentObserver {
 
     /** The default value to {@link #KEY_FREEZER_CUTOFF_ADJ} */
     private static final int DEFAULT_FREEZER_CUTOFF_ADJ =
-            Flags.prototypeAggressiveFreezing() ? ProcessList.HOME_APP_ADJ
-                    : ProcessList.CACHED_APP_MIN_ADJ;
+            Flags.prototypeAggressiveFreezing() ? HOME_APP_ADJ : CACHED_APP_MIN_ADJ;
 
     /**
      * Same as {@link TEMPORARY_ALLOW_LIST_TYPE_FOREGROUND_SERVICE_NOT_ALLOWED}

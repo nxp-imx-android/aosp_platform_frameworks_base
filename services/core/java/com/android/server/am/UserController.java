@@ -45,6 +45,7 @@ import static com.android.server.am.UserState.STATE_BOOTING;
 import static com.android.server.am.UserState.STATE_RUNNING_LOCKED;
 import static com.android.server.am.UserState.STATE_RUNNING_UNLOCKED;
 import static com.android.server.am.UserState.STATE_RUNNING_UNLOCKING;
+import static com.android.server.am.psc.Constants.CACHED_APP_MIN_ADJ;
 import static com.android.server.pm.UserJourneyLogger.ERROR_CODE_ABORTED;
 import static com.android.server.pm.UserJourneyLogger.ERROR_CODE_INVALID_SESSION_ID;
 import static com.android.server.pm.UserJourneyLogger.EVENT_STATE_BEGIN;
@@ -4806,7 +4807,7 @@ class UserController implements Handler.Callback {
          * Returns -1 if the value is unavailable.
          */
         int getLmkdKillCount() {
-            final Integer lmk = ProcessList.getLmkdKillCount(0, ProcessList.CACHED_APP_MIN_ADJ - 1);
+            final Integer lmk = ProcessList.getLmkdKillCount(0, CACHED_APP_MIN_ADJ - 1);
             return lmk != null && lmk >= 0 ? lmk : -1;
         }
 
