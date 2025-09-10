@@ -19,10 +19,14 @@ package com.android.server.locksettings;
 import static android.Manifest.permission.CONFIGURE_FACTORY_RESET_PROTECTION;
 import static android.security.Flags.FLAG_SECURE_LOCK_DEVICE;
 
+import static androidx.test.ext.truth.os.ParcelableSubject.assertThat;
+
 import static com.android.internal.widget.LockPatternUtils.CREDENTIAL_TYPE_NONE;
 import static com.android.internal.widget.LockPatternUtils.CREDENTIAL_TYPE_PASSWORD;
 import static com.android.internal.widget.LockPatternUtils.CREDENTIAL_TYPE_PATTERN;
 import static com.android.internal.widget.LockPatternUtils.CREDENTIAL_TYPE_PIN;
+
+import static com.google.common.truth.Truth.assertThat;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -67,6 +71,9 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.time.Duration;
+import java.util.Arrays;
+import java.util.List;
+import java.util.function.Supplier;
 
 /** atest FrameworksServicesTests:LockSettingsServiceTests */
 @SmallTest
@@ -74,6 +81,8 @@ import java.time.Duration;
 @RunWith(AndroidJUnit4.class)
 public class LockSettingsServiceTests extends BaseLockSettingsServiceTests {
     private static final Duration TEN_YEARS = Duration.ofDays(10 * 365);
+    private static final Duration MAX_LENGTH_DURATION =
+            Duration.ofSeconds(Long.MAX_VALUE, 999999999L);
 
     @Rule public final SetFlagsRule mSetFlagsRule = new SetFlagsRule();
     @Rule
@@ -917,6 +926,86 @@ public class LockSettingsServiceTests extends BaseLockSettingsServiceTests {
         guessWrongCredential(userId, /* times= */ 20);
         response = mService.verifyCredential(credential, userId, /* flags= */ 0);
         assertTrue(response.isMatched());
+    }
+
+    @Test
+    public void testVerifyCredentialResponseEqualsAndHashCode() {
+        testEqualsAndHashCode(() -> new VerifyCredentialResponse.Builder().build());
+        testEqualsAndHashCode(
+                () ->
+                        new VerifyCredentialResponse.Builder()
+                                .setGatekeeperHAT(new byte[] {0, 1, 2, 3})
+                                .setGatekeeperPasswordHandle(1L)
+                                .build());
+        Arrays.asList(Duration.ZERO, TEN_YEARS, MAX_LENGTH_DURATION).forEach(timeout -> {
+            testEqualsAndHashCode(() -> VerifyCredentialResponse.credIncorrect(timeout));
+            testEqualsAndHashCode(() -> VerifyCredentialResponse.fromTimeout(timeout));
+        });
+        testEqualsAndHashCode(VerifyCredentialResponse::credAlreadyTried);
+        testEqualsAndHashCode(VerifyCredentialResponse::credTooShort);
+        testEqualsAndHashCode(VerifyCredentialResponse::fromError);
+    }
+
+    private void testEqualsAndHashCode(Supplier<VerifyCredentialResponse> responseFactory) {
+        VerifyCredentialResponse first = responseFactory.get();
+        VerifyCredentialResponse second = responseFactory.get();
+        assertThat(first).isEqualTo(second);
+        assertThat(first.hashCode()).isEqualTo(second.hashCode());
+    }
+
+    @Test
+    public void testVerifyCredentialResponseNotEqual() {
+        VerifyCredentialResponse okResponse = new VerifyCredentialResponse.Builder().build();
+        VerifyCredentialResponse okResponseWithHat = new VerifyCredentialResponse.Builder()
+                .setGatekeeperPasswordHandle(1234L)
+                .setGatekeeperHAT(new byte[] { 1 })
+                .build();
+        VerifyCredentialResponse incorrectResponse = VerifyCredentialResponse.credIncorrect();
+        VerifyCredentialResponse incorrectResponseWithTimeout =
+                VerifyCredentialResponse.credIncorrect(Duration.ofMillis(1000));
+        VerifyCredentialResponse incorrectResponseWithTimeout2 =
+                VerifyCredentialResponse.credIncorrect(Duration.ofMillis(2000));
+        VerifyCredentialResponse timeoutResponse =
+                VerifyCredentialResponse.fromTimeout(Duration.ofMillis(1000));
+        VerifyCredentialResponse timeoutResponse2 =
+                VerifyCredentialResponse.fromTimeout(Duration.ofMillis(2000));
+        VerifyCredentialResponse tooShortResponse =
+                VerifyCredentialResponse.credTooShort();
+        VerifyCredentialResponse alreadyTriedResponse = VerifyCredentialResponse.credAlreadyTried();
+        VerifyCredentialResponse errorResponse = VerifyCredentialResponse.fromError();
+
+        List<VerifyCredentialResponse> responses = Arrays.asList(okResponse, okResponseWithHat,
+                incorrectResponse, incorrectResponseWithTimeout, incorrectResponseWithTimeout2,
+                timeoutResponse, timeoutResponse2, tooShortResponse, alreadyTriedResponse,
+                errorResponse);
+
+        // All responses are distinct and should not be equal.
+        for (int i = 0; i < responses.size() - 1; i++) {
+            for (int j = i + 1; j < responses.size(); j++) {
+                assertThat(responses.get(i)).isNotEqualTo(responses.get(j));
+            }
+        }
+    }
+
+    @Test
+    public void testVerifyCredentialResponseRecreatesEqual() {
+        testRecreatesEqual(new VerifyCredentialResponse.Builder().build());
+        testRecreatesEqual(
+                new VerifyCredentialResponse.Builder()
+                        .setGatekeeperHAT(new byte[] {0, 1, 2, 3})
+                        .setGatekeeperPasswordHandle(1L)
+                        .build());
+        Arrays.asList(Duration.ZERO, TEN_YEARS, MAX_LENGTH_DURATION).forEach(timeout -> {
+            testRecreatesEqual(VerifyCredentialResponse.credIncorrect(timeout));
+            testRecreatesEqual(VerifyCredentialResponse.fromTimeout(timeout));
+        });
+        testRecreatesEqual(VerifyCredentialResponse.credAlreadyTried());
+        testRecreatesEqual(VerifyCredentialResponse.credTooShort());
+        testRecreatesEqual(VerifyCredentialResponse.fromError());
+    }
+
+    private void testRecreatesEqual(VerifyCredentialResponse response) {
+        assertThat(response).recreatesEqual(VerifyCredentialResponse.CREATOR);
     }
 
     @Test

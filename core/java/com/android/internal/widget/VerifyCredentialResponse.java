@@ -28,6 +28,8 @@ import com.android.internal.util.Preconditions;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.time.Duration;
+import java.util.Arrays;
+import java.util.Objects;
 
 /**
  * Response object for a ILockSettings credential verification request.
@@ -325,9 +327,33 @@ public final class VerifyCredentialResponse implements Parcelable {
 
     @Override
     public String toString() {
-        return "Response: " + mResponseCode
-                + ", GK HAT: " + (mGatekeeperHAT != null)
-                + ", GK PW: " + (mGatekeeperPasswordHandle != 0L);
+        return "Response: "
+                + mResponseCode
+                + ", Timeout: "
+                + mTimeout
+                + ", GK HAT: "
+                + (mGatekeeperHAT != null)
+                + ", GK PW: "
+                + (mGatekeeperPasswordHandle != 0L);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        VerifyCredentialResponse that = (VerifyCredentialResponse) o;
+        return mResponseCode == that.mResponseCode
+                && Objects.equals(mTimeout, that.mTimeout)
+                && mGatekeeperPasswordHandle == that.mGatekeeperPasswordHandle
+                && Objects.deepEquals(mGatekeeperHAT, that.mGatekeeperHAT);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(
+                mResponseCode,
+                mTimeout,
+                Arrays.hashCode(mGatekeeperHAT),
+                mGatekeeperPasswordHandle);
     }
 
     public static VerifyCredentialResponse fromGateKeeperResponse(
