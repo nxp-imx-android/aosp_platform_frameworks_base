@@ -885,9 +885,10 @@ public class LocalDisplayAdapterTest {
         long newAppVsyncOffsetNanos = 400;
         long newPresentationDeadlineNanos = 500;
 
-        mInjector.getTransmitter().sendOnModeChanged(display,
+        mInjector.getTransmitter().sendOnModeAndFrameRateOverridesChanged(display,
                 1, (long) displayMode2.peakRefreshRate, newAppVsyncOffsetNanos,
-                newPresentationDeadlineNanos);
+                newPresentationDeadlineNanos, new FrameRateOverride[0],
+                /*supportedRefreshRates*/ new float[0]);
         waitForHandlerToComplete(mHandler, HANDLER_WAIT_MS);
         assertTrue(mListener.traversalRequested);
 
@@ -1931,15 +1932,6 @@ public class LocalDisplayAdapterTest {
                 throws InterruptedException {
             mHandler.post(() -> mListener.onHotplug(/* timestampNanos = */ 0,
                     display.address.getPhysicalDisplayId(), connected));
-            waitForHandlerToComplete(mHandler, HANDLER_WAIT_MS);
-        }
-
-        public void sendOnModeChanged(FakeDisplay display, int modeId,
-                long renderPeriod, long appVsyncOffsetNanos, long presentationDeadlineNanos)
-                throws InterruptedException {
-            mHandler.post(() -> mListener.onModeChanged(/* timestampNanos = */ 0,
-                    display.address.getPhysicalDisplayId(), modeId, renderPeriod,
-                    appVsyncOffsetNanos, presentationDeadlineNanos, /*supportedRefreshRate*/ null));
             waitForHandlerToComplete(mHandler, HANDLER_WAIT_MS);
         }
 
