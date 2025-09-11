@@ -33,8 +33,9 @@ public class EnumPolicyInformation extends PolicyInformation<Integer> {
             @NonNull PolicyIdentifier<Integer> key,
             @NonNull Set<Integer> values,
             @NonNull Set<Integer> acceptedScopes,
-            @NonNull String requiredPermission) {
-        super(key, acceptedScopes, requiredPermission);
+            @NonNull String requiredPermission,
+            @NonNull String requiredCrossUserPermission) {
+        super(key, acceptedScopes, requiredPermission, requiredCrossUserPermission);
         mValues = Set.copyOf(values);
     }
 

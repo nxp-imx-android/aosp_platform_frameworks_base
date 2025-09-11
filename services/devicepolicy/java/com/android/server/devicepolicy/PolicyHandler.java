@@ -202,15 +202,22 @@ public class PolicyHandler<T> {
      * Performs permission checks, based on the information in the {@link PolicyDefinition}
      * information provided on the {@link PolicyIdentifier}.
      *
+     * <p>If the policy is applied on global or parent scope this additionally checks if the caller
+     * has the proper 'manage across users' permission.
+     *
      * <p>Can be overridden to provide custom permission checks instead.
      *
      * @throws SecurityException when the caller does not have the required permissions.
      */
     protected void checkPermissions(CallerIdentity caller, @PolicyScope int scope) {
-        getDelegate()
-                .getPermissionChecker()
-                .enforce(getPolicyInformation().getRequiredPermission(), caller);
-        // TODO(444415053): Model and check cross user permissions when scope is not user.
+        var permissionChecker = getDelegate().getPermissionChecker();
+
+        permissionChecker.enforce(getPolicyInformation().getRequiredPermission(), caller);
+
+        if (scope != POLICY_SCOPE_USER) {
+            permissionChecker.enforce(
+                    getPolicyInformation().getRequiredCrossUserPermission(), caller);
+        }
     }
 
     /**
