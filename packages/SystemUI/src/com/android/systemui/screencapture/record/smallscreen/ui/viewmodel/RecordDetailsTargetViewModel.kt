@@ -55,17 +55,17 @@ sealed interface RecordDetailsTargetItemViewModel {
         override val isSelectable: Boolean = true
     }
 
-    data class SingleApp(val task: ScreenCaptureRecentTask? = null) :
-        RecordDetailsTargetItemViewModel {
+    data class SingleApp(val task: ScreenCaptureRecentTask) : RecordDetailsTargetItemViewModel {
 
-        override val screenCaptureTarget: ScreenCaptureTarget? =
-            task?.run { ScreenCaptureTarget.App(displayId = displayId, taskId = taskId) }
+        override val screenCaptureTarget: ScreenCaptureTarget =
+            ScreenCaptureTarget.App(displayId = task.displayId, taskId = task.taskId)
 
         override val labelRes: Int = R.string.screen_record_single_app
         override val isSelectable: Boolean = true
     }
 
     data object SingleAppNoRecents : RecordDetailsTargetItemViewModel {
+
         override val labelRes: Int = R.string.screen_record_single_app_no_recents
         override val isSelectable: Boolean = false
         override val screenCaptureTarget: ScreenCaptureTarget? = null
@@ -137,7 +137,7 @@ constructor(
                                 if (tasks.isNullOrEmpty()) {
                                     RecordDetailsTargetItemViewModel.SingleAppNoRecents
                                 } else {
-                                    RecordDetailsTargetItemViewModel.SingleApp()
+                                    RecordDetailsTargetItemViewModel.SingleApp(tasks.first())
                                 }
                             )
                         }
