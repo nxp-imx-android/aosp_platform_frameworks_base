@@ -1015,8 +1015,6 @@ public class MediaControlPanelTest : SysuiTestCase() {
         whenever(mockAvd1.mutate()).thenReturn(mockAvd1)
         whenever(mockAvd2.mutate()).thenReturn(mockAvd2)
 
-        val icon = context.getDrawable(R.drawable.ic_media_play)
-        val bg = context.getDrawable(R.drawable.ic_media_play_container)
         val semanticActions0 =
             MediaButton(playOrPause = MediaAction(mockAvd0, Runnable {}, "play", null))
         val semanticActions1 =

@@ -466,14 +466,8 @@ constructor(
 
     private fun inflateSettingsButton() {
         val settings =
-            if (Flags.mediaControlsUiUpdate()) {
-                LayoutInflater.from(context)
-                    .inflate(R.layout.media_carousel_settings_button, mediaFrame, false)
-                    as ViewGroup
-            } else {
-                LayoutInflater.from(context)
-                    .inflate(R.layout.media_carousel_settings_button_legacy, mediaFrame, false)
-            }
+            LayoutInflater.from(context)
+                .inflate(R.layout.media_carousel_settings_button, mediaFrame, false) as ViewGroup
         if (this::settingsButton.isInitialized) {
             mediaFrame.removeView(settingsButton)
         }
