@@ -46,11 +46,13 @@ class AppToWebEducationFilter(
 
         return if (isAppToWebEducationRequested(taskInfo)) {
             !isEducationViewLimitReached(windowingEducationProto) &&
+                taskInfo.isFocused &&
                 !isOtherEducationShowing() &&
                 !isBrowserApp(taskInfo) &&
                 isBrowserSessionAvailable(taskInfo)
         } else {
             !isEducationViewLimitReached(windowingEducationProto) &&
+                taskInfo.isFocused &&
                 !isOtherEducationShowing() &&
                 hasSufficientTimeSinceSetup() &&
                 !isFeatureUsedBefore(windowingEducationProto) &&
