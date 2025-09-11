@@ -234,6 +234,8 @@ static struct {
 static struct {
     jclass clazz;
     jmethodID ctor;
+    jfieldID displayToken;
+    jfieldID applyToken;
     jfieldID defaultMode;
     jfieldID allowGroupSwitching;
     jfieldID primaryRanges;
@@ -1704,11 +1706,8 @@ static jobject nativeGetDynamicDisplayInfo(JNIEnv* env, jclass clazz, jlong disp
     return object;
 }
 
-static jboolean nativeSetDesiredDisplayModeSpecs(JNIEnv* env, jclass clazz, jobject tokenObj,
-                                                 jobject DesiredDisplayModeSpecs) {
-    sp<IBinder> token(ibinderForJavaObject(env, tokenObj));
-    if (token == nullptr) return JNI_FALSE;
-
+static jboolean nativeSetDesiredDisplayModeSpecs(JNIEnv* env, jclass clazz,
+                                                 jobjectArray jDesiredDisplayModeSpecs) {
     const auto makeRanges = [env](jobject obj) {
         const auto makeRange = [env](jobject obj) {
             gui::DisplayModeSpecs::RefreshRateRanges::RefreshRateRange range;
@@ -1735,31 +1734,50 @@ static jboolean nativeSetDesiredDisplayModeSpecs(JNIEnv* env, jclass clazz, jobj
         return idleScreenRefreshRateConfig;
     };
 
-    gui::DisplayModeSpecs specs;
-    specs.defaultMode = env->GetIntField(DesiredDisplayModeSpecs,
-                                         gDesiredDisplayModeSpecsClassInfo.defaultMode);
-    specs.allowGroupSwitching =
-            env->GetBooleanField(DesiredDisplayModeSpecs,
-                                 gDesiredDisplayModeSpecsClassInfo.allowGroupSwitching);
+    const jsize specsLength = env->GetArrayLength(jDesiredDisplayModeSpecs);
 
-    specs.primaryRanges =
-            makeRanges(env->GetObjectField(DesiredDisplayModeSpecs,
-                                           gDesiredDisplayModeSpecsClassInfo.primaryRanges));
-    specs.appRequestRanges =
-            makeRanges(env->GetObjectField(DesiredDisplayModeSpecs,
-                                           gDesiredDisplayModeSpecsClassInfo.appRequestRanges));
+    std::vector<gui::DisplayModeSpecs> displayModeSpecs;
+    displayModeSpecs.reserve(specsLength);
 
-    specs.idleScreenRefreshRateConfig = makeIdleScreenRefreshRateConfig(
-            env->GetObjectField(DesiredDisplayModeSpecs,
-                                gDesiredDisplayModeSpecsClassInfo.idleScreenRefreshRateConfig));
+    for (jsize i = 0; i < specsLength; i++) {
+        const jobject jSpecs = env->GetObjectArrayElement(jDesiredDisplayModeSpecs, i);
 
-    size_t result = SurfaceComposerClient::setDesiredDisplayModeSpecs(token, specs);
+        jobject displayTokenObj =
+                env->GetObjectField(jSpecs, gDesiredDisplayModeSpecsClassInfo.displayToken);
+        sp<IBinder> displayToken = ibinderForJavaObject(env, displayTokenObj);
+        if (displayToken == nullptr) return JNI_FALSE;
+
+        gui::DisplayModeSpecs specs;
+        specs.displayToken = std::move(displayToken);
+
+        jobject applyTokenObj =
+                env->GetObjectField(jSpecs, gDesiredDisplayModeSpecsClassInfo.applyToken);
+        specs.applyToken = ibinderForJavaObject(env, applyTokenObj);
+
+        specs.defaultMode = env->GetIntField(jSpecs, gDesiredDisplayModeSpecsClassInfo.defaultMode);
+        specs.allowGroupSwitching =
+                env->GetBooleanField(jSpecs, gDesiredDisplayModeSpecsClassInfo.allowGroupSwitching);
+
+        specs.primaryRanges = makeRanges(
+                env->GetObjectField(jSpecs, gDesiredDisplayModeSpecsClassInfo.primaryRanges));
+        specs.appRequestRanges = makeRanges(
+                env->GetObjectField(jSpecs, gDesiredDisplayModeSpecsClassInfo.appRequestRanges));
+
+        specs.idleScreenRefreshRateConfig = makeIdleScreenRefreshRateConfig(
+                env->GetObjectField(jSpecs,
+                                    gDesiredDisplayModeSpecsClassInfo.idleScreenRefreshRateConfig));
+
+        displayModeSpecs.push_back(std::move(specs));
+    }
+
+    size_t result = SurfaceComposerClient::setDesiredDisplayModeSpecs(displayModeSpecs);
     return result == NO_ERROR ? JNI_TRUE : JNI_FALSE;
 }
 
-static jobject nativeGetDesiredDisplayModeSpecs(JNIEnv* env, jclass clazz, jobject tokenObj) {
-    sp<IBinder> token(ibinderForJavaObject(env, tokenObj));
-    if (token == nullptr) return nullptr;
+static jobject nativeGetDesiredDisplayModeSpecs(JNIEnv* env, jclass clazz,
+                                                jobject displayTokenObj) {
+    sp<IBinder> displayToken = ibinderForJavaObject(env, displayTokenObj);
+    if (displayToken == nullptr) return nullptr;
 
     const auto rangesToJava = [env](const gui::DisplayModeSpecs::RefreshRateRanges& ranges) {
         const auto rangeToJava =
@@ -1784,12 +1802,13 @@ static jobject nativeGetDesiredDisplayModeSpecs(JNIEnv* env, jclass clazz, jobje
     };
 
     gui::DisplayModeSpecs specs;
-    if (SurfaceComposerClient::getDesiredDisplayModeSpecs(token, &specs) != NO_ERROR) {
+    if (SurfaceComposerClient::getDesiredDisplayModeSpecs(displayToken, &specs) != NO_ERROR) {
         return nullptr;
     }
 
     return env->NewObject(gDesiredDisplayModeSpecsClassInfo.clazz,
-                          gDesiredDisplayModeSpecsClassInfo.ctor, specs.defaultMode,
+                          gDesiredDisplayModeSpecsClassInfo.ctor, displayTokenObj,
+                          javaObjectForIBinder(env, specs.applyToken), specs.defaultMode,
                           specs.allowGroupSwitching, rangesToJava(specs.primaryRanges),
                           rangesToJava(specs.appRequestRanges),
                           idleScreenRefreshRateConfigToJava(specs.idleScreenRefreshRateConfig));
@@ -2757,7 +2776,7 @@ static const JNINativeMethod sSurfaceControlMethods[] = {
             "(J)Landroid/view/SurfaceControl$DynamicDisplayInfo;",
             (void*)nativeGetDynamicDisplayInfo },
     {"nativeSetDesiredDisplayModeSpecs",
-            "(Landroid/os/IBinder;Landroid/view/SurfaceControl$DesiredDisplayModeSpecs;)Z",
+            "([Landroid/view/SurfaceControl$DesiredDisplayModeSpecs;)Z",
             (void*)nativeSetDesiredDisplayModeSpecs },
     {"nativeGetDesiredDisplayModeSpecs",
             "(Landroid/os/IBinder;)Landroid/view/SurfaceControl$DesiredDisplayModeSpecs;",
@@ -3113,9 +3132,16 @@ int register_android_view_SurfaceControl(JNIEnv* env)
     gDesiredDisplayModeSpecsClassInfo.clazz = MakeGlobalRefOrDie(env, DesiredDisplayModeSpecsClazz);
     gDesiredDisplayModeSpecsClassInfo.ctor =
             GetMethodIDOrDie(env, gDesiredDisplayModeSpecsClassInfo.clazz, "<init>",
-                             "(IZLandroid/view/SurfaceControl$RefreshRateRanges;Landroid/view/"
+                             "(Landroid/os/IBinder;Landroid/os/IBinder;IZ"
+                             "Landroid/view/SurfaceControl$RefreshRateRanges;Landroid/view/"
                              "SurfaceControl$RefreshRateRanges;Landroid/view/"
                              "SurfaceControl$IdleScreenRefreshRateConfig;)V");
+    gDesiredDisplayModeSpecsClassInfo.displayToken =
+            GetFieldIDOrDie(env, DesiredDisplayModeSpecsClazz, "displayToken",
+                            "Landroid/os/IBinder;");
+    gDesiredDisplayModeSpecsClassInfo.applyToken =
+            GetFieldIDOrDie(env, DesiredDisplayModeSpecsClazz, "applyToken",
+                            "Landroid/os/IBinder;");
     gDesiredDisplayModeSpecsClassInfo.defaultMode =
             GetFieldIDOrDie(env, DesiredDisplayModeSpecsClazz, "defaultMode", "I");
     gDesiredDisplayModeSpecsClassInfo.allowGroupSwitching =
