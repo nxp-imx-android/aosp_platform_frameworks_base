@@ -54,7 +54,7 @@ public class AuthenticationStatsCollector {
     private static final int AUTHENTICATION_UPLOAD_INTERVAL = 50;
     // The maximum number of eligible biometric enrollment notification can be sent.
     @VisibleForTesting
-    static final int MAXIMUM_ENROLLMENT_NOTIFICATIONS = Flags.frrDialogImprovement() ? 3 : 1;
+    static final int MAXIMUM_ENROLLMENT_NOTIFICATIONS = 3;
     @VisibleForTesting
     static final Duration FRR_MINIMAL_DURATION = Duration.ofDays(7);
 
@@ -153,20 +153,14 @@ public class AuthenticationStatsCollector {
         if (isSingleModalityDevice()) {
             return;
         }
-        if (Flags.frrDialogImprovement()) {
-            // Don't collect data for users who have fingerprint enrolled when the current modality
-            // is not fingerprint. Because the customized FRR notification is for fingerprint only,
-            // and we don't want to send the default notification for face when the user has
-            // fingerprint enrolled.
-            if (mModality != BiometricsProtoEnums.MODALITY_FINGERPRINT
-                    && hasEnrolledFingerprint(userId)) {
-                return;
-            }
-        } else {
-            // Don't collect data for user has both biometrics enrolled
-            if (hasEnrolledFace(userId) && hasEnrolledFingerprint(userId)) {
-                return;
-            }
+
+        // Don't collect data for users who have fingerprint enrolled when the current modality
+        // is not fingerprint. Because the customized FRR notification is for fingerprint only,
+        // and we don't want to send the default notification for face when the user has
+        // fingerprint enrolled.
+        if (mModality != BiometricsProtoEnums.MODALITY_FINGERPRINT
+                && hasEnrolledFingerprint(userId)) {
+            return;
         }
 
         updateAuthenticationStatsMapIfNeeded(userId);
@@ -203,19 +197,12 @@ public class AuthenticationStatsCollector {
             return;
         }
 
-        boolean showFrr;
-        if (Flags.frrDialogImprovement()) {
-            long lastFrrOrEnrollTime = Math.max(authenticationStats.getLastEnrollmentTime(),
-                    authenticationStats.getLastFrrNotificationTime());
-            showFrr = authenticationStats.getEnrollmentNotifications()
-                            < MAXIMUM_ENROLLMENT_NOTIFICATIONS
-                    && authenticationStats.getFrr() >= mThreshold
-                    && isFrrMinimalDurationPassed(lastFrrOrEnrollTime);
-        } else {
-            showFrr = authenticationStats.getEnrollmentNotifications()
-                            < MAXIMUM_ENROLLMENT_NOTIFICATIONS
-                    && authenticationStats.getFrr() >= mThreshold;
-        }
+        long lastFrrOrEnrollTime = Math.max(authenticationStats.getLastEnrollmentTime(),
+                authenticationStats.getLastFrrNotificationTime());
+        boolean showFrr = authenticationStats.getEnrollmentNotifications()
+                        < MAXIMUM_ENROLLMENT_NOTIFICATIONS
+                && authenticationStats.getFrr() >= mThreshold
+                && isFrrMinimalDurationPassed(lastFrrOrEnrollTime);
 
         // Don't send notification if FRR below the threshold.
         if (!showFrr) {
@@ -225,8 +212,7 @@ public class AuthenticationStatsCollector {
 
         authenticationStats.resetData();
 
-        if (Flags.frrDialogImprovement()
-                && mModality == BiometricsProtoEnums.MODALITY_FINGERPRINT) {
+        if (mModality == BiometricsProtoEnums.MODALITY_FINGERPRINT) {
             boolean sent = mBiometricNotification.sendCustomizeFpFrrNotification(mContext);
             if (sent) {
                 authenticationStats.updateLastFrrNotificationTime(mClock.millis());
