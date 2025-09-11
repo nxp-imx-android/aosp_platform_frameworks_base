@@ -100,6 +100,22 @@ public class NotificationChildrenContainerTest extends SysuiTestCase {
     }
 
     @Test
+    @EnableFlags(NotificationBundleUi.FLAG_NAME)
+    public void testGetMaxAllowedVisibleChildren_bundle_userLocked() {
+        ComposeView headerView = new ComposeView(mContext);
+        mBundle.setBundleHeaderView(headerView);
+
+        NotificationChildrenContainer childrenContainer = mBundle.getChildrenContainer();
+        childrenContainer.setBundleHeaderViewModel(mock(BundleHeaderViewModel.class));
+        mBundle.setUserLocked(true);
+
+        Assert.assertEquals(
+                "During swipe open, bundle should show the expanded number of children",
+                NotificationChildrenContainer.NUMBER_OF_CHILDREN_BUNDLE_EXPANDED,
+                childrenContainer.getMaxAllowedVisibleChildren());
+    }
+
+    @Test
     public void testGetMaxAllowedVisibleChildren_likeCollapsed() {
         Assert.assertEquals(mChildrenContainer.getMaxAllowedVisibleChildren(true),
                 NotificationChildrenContainer.NUMBER_OF_CHILDREN_WHEN_COLLAPSED);
