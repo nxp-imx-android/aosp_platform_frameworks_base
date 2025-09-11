@@ -50,7 +50,6 @@ import com.android.systemui.communal.ui.view.layout.sections.CommunalAppWidgetSe
 import com.android.systemui.communal.ui.viewmodel.CommunalEditModeViewModel
 import com.android.systemui.communal.util.WidgetPickerIntentUtils.getWidgetExtraFromIntent
 import com.android.systemui.keyguard.domain.interactor.KeyguardInteractor
-import com.android.systemui.keyguard.shared.model.KeyguardState
 import com.android.systemui.log.LogBuffer
 import com.android.systemui.log.core.Logger
 import com.android.systemui.log.dagger.CommunalLog
@@ -256,7 +255,6 @@ constructor(
                     scene = CommunalScenes.Blank,
                     loggingReason = "edit mode opening",
                     transitionKey = CommunalTransitionKeys.ToEditMode,
-                    keyguardState = KeyguardState.GONE,
                 )
 
                 // Wait for scene change to BLANK.
