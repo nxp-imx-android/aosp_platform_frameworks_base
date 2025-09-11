@@ -34,7 +34,6 @@ import androidx.preference.PreferenceScreen;
 import androidx.preference.PreferenceViewHolder;
 import androidx.preference.SwitchPreference;
 
-import com.android.internal.util.ArrayUtils;
 import com.android.systemui.Dependency;
 import com.android.systemui.plugins.PluginEnablerImpl;
 import com.android.systemui.plugins.PluginManager;
@@ -107,7 +106,7 @@ public class PluginFragment extends PreferenceFragment {
                 PackageManager.MATCH_DISABLED_COMPONENTS | PackageManager.GET_SERVICES);
         apps.forEach(app -> {
             if (!plugins.containsKey(app.packageName)) return;
-            if (ArrayUtils.contains(manager.getPrivilegedPlugins(), app.packageName)) {
+            if (manager.getConfig().isPackagePrivileged(app.packageName)) {
                 // Don't manage privileged plugins, they are part of the OS.
                 return;
             }

@@ -22,21 +22,19 @@ import android.content.SharedPreferences
 import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
 import android.text.TextUtils
-import android.util.Log
 import androidx.core.content.edit
-import com.android.systemui.log.LogcatOnlyMessageBuffer
-import com.android.systemui.log.core.LogLevel
 import com.android.systemui.log.core.Logger
 import com.android.systemui.plugins.Plugin
 import com.android.systemui.plugins.PluginFragment
 import com.android.systemui.plugins.PluginLifecycleManager
 import com.android.systemui.plugins.PluginListener
+import com.android.systemui.plugins.PluginManager
 import com.android.systemui.plugins.PluginProtector.protectIfAble
 import com.android.systemui.plugins.PluginWrapper
 import com.android.systemui.plugins.ProtectedPluginListener
 import com.android.systemui.shared.plugins.PluginActionManager.PluginContextWrapper
-import com.android.systemui.shared.plugins.PluginManagerImpl.PLUGIN_CLASSLOADER
-import com.android.systemui.shared.plugins.PluginManagerImpl.PLUGIN_PRIVILEGED
+import com.android.systemui.shared.plugins.PluginManagerImpl.Companion.DEFAULT_LOGBUFFER
+import com.android.systemui.shared.plugins.PluginManagerImpl.Companion.PLUGIN_CLASSLOADER
 import dalvik.system.PathClassLoader
 import java.io.File
 import javax.inject.Inject
@@ -279,16 +277,18 @@ class PluginInstance<T : Plugin>(
     open class Factory(
         private val versionChecker: VersionChecker,
         @Named(PLUGIN_CLASSLOADER) private val baseClassLoader: ClassLoader,
-        @Named(PLUGIN_PRIVILEGED) private val privilegedPlugins: List<String>,
+        private val config: PluginManager.Config,
         private val buildInfo: BuildInfo,
         private val instanceFactory: (Class<*>) -> Any = { it.newInstance() },
     ) {
+        private val logger = Logger(DEFAULT_LOGBUFFER, TAG)
+
         @Inject
         constructor(
             versionChecker: VersionChecker,
             @Named(PLUGIN_CLASSLOADER) baseClassLoader: ClassLoader,
-            @Named(PLUGIN_PRIVILEGED) privilegedPlugins: List<String>,
-        ) : this(versionChecker, baseClassLoader, privilegedPlugins, BuildInfo.CURRENT)
+            config: PluginManager.Config,
+        ) : this(versionChecker, baseClassLoader, config, BuildInfo.CURRENT)
 
         /** Construct a new PluginInstance. */
         open fun <T : Plugin> create(
@@ -298,12 +298,11 @@ class PluginInstance<T : Plugin>(
             pluginClass: Class<T>,
             listener: PluginListener<T>,
         ): PluginInstance<T>? {
-            if (!buildInfo.isDebuggable && !isPluginPackagePrivileged(pluginAppInfo.packageName)) {
-                Log.w(
-                    TAG,
-                    "Cannot get class loader for non-privileged plugin. " +
-                        "Src: ${pluginAppInfo.sourceDir}, pkg: ${pluginAppInfo.packageName}",
-                )
+            if (!buildInfo.isDebuggable && !config.isPackagePrivileged(pluginAppInfo.packageName)) {
+                logger.w({ "Cannot build non-privileged plugin. Src: $str1, pkg: $str2" }) {
+                    str1 = pluginAppInfo.sourceDir
+                    str2 = pluginAppInfo.packageName
+                }
                 return null
             }
 
@@ -322,20 +321,6 @@ class PluginInstance<T : Plugin>(
                 ),
                 buildInfo,
             )
-        }
-
-        private fun isPluginPackagePrivileged(packageName: String): Boolean {
-            for (componentNameOrPackage in privilegedPlugins) {
-                val componentName = ComponentName.unflattenFromString(componentNameOrPackage)
-                if (componentName != null) {
-                    if (componentName.packageName == packageName) {
-                        return true
-                    }
-                } else if (componentNameOrPackage == packageName) {
-                    return true
-                }
-            }
-            return false
         }
     }
 
@@ -368,16 +353,18 @@ class PluginInstance<T : Plugin>(
         private val pluginClass: Class<T>,
         private val baseClassLoader: ClassLoader,
     ) {
+        private val logger = Logger(DEFAULT_LOGBUFFER, TAG)
+
         /** Creates the related plugin object from the factory */
         fun createPlugin(listener: ProtectedPluginListener?): T? {
             try {
                 val loader = createClassLoader()
                 val cls = Class.forName(componentName.className, true, loader) as Class<T>
                 val result = instanceFactory(cls)
-                Log.v(TAG, "Created plugin: $result")
+                logger.v({ "Created plugin: $str1" }) { str1 = "$result" }
                 return protectIfAble(result, listener)
             } catch (ex: ReflectiveOperationException) {
-                Log.wtf(TAG, "Failed to load plugin", ex)
+                logger.wtf("Failed to load plugin", ex)
             }
             return null
         }
@@ -391,7 +378,7 @@ class PluginInstance<T : Plugin>(
                     loader,
                 )
             } catch (ex: PackageManager.NameNotFoundException) {
-                Log.e(TAG, "Failed to create plugin context", ex)
+                logger.e("Failed to create plugin context", ex)
             }
             return null
         }
@@ -438,7 +425,6 @@ class PluginInstance<T : Plugin>(
         private const val FAIL_MAX_STACK = 20
         private const val FAIL_TIMEOUT_MILLIS = (24 * 60 * 60 * 1000).toLong()
 
-        val DEFAULT_LOGBUFFER = LogcatOnlyMessageBuffer(LogLevel.WARNING)
         private val FILTERED_PACKAGES =
             listOf(
                 "androidx.compose",

@@ -33,7 +33,7 @@ import com.android.systemui.plugins.Plugin
 import com.android.systemui.plugins.PluginListener
 import com.android.systemui.plugins.PluginManager
 import com.android.systemui.shared.plugins.PluginEnabler.DisableReason
-import com.android.systemui.shared.plugins.PluginInstance.Companion.DEFAULT_LOGBUFFER
+import com.android.systemui.shared.plugins.PluginManagerImpl.Companion.DEFAULT_LOGBUFFER
 import com.android.systemui.shared.plugins.VersionInfo.InvalidVersionException
 import java.util.concurrent.Executor
 
@@ -54,10 +54,10 @@ private constructor(
     private val allowMultiple: Boolean,
     private val mainExecutor: Executor,
     private val bgExecutor: Executor,
-    private val isDebuggable: Boolean,
+    private val buildInfo: BuildInfo,
     private val notificationManager: NotificationManager,
     private val pluginEnabler: PluginEnabler,
-    private val privilegedPlugins: List<String>,
+    private val config: PluginManager.Config,
     private val pluginInstanceFactory: PluginInstance.Factory,
 ) {
     private val pluginInstances = mutableListOf<PluginInstance<T>>()
@@ -97,7 +97,7 @@ private constructor(
         val plugins = ArrayList(pluginInstances)
         for (info in plugins) {
             if (className.startsWith(info.packageName)) {
-                disableAny = disableAny or disable(info, DisableReason.DISABLED_FROM_EXPLICIT_CRASH)
+                disableAny = disableAny || disable(info, DisableReason.DISABLED_FROM_EXPLICIT_CRASH)
             }
         }
         return disableAny
@@ -109,39 +109,22 @@ private constructor(
         var disabledAny = false
         for (i in plugins.indices) {
             disabledAny =
-                disabledAny or disable(plugins[i], DisableReason.DISABLED_FROM_SYSTEM_CRASH)
+                disabledAny || disable(plugins[i], DisableReason.DISABLED_FROM_SYSTEM_CRASH)
         }
         return disabledAny
     }
 
-    fun isPluginPrivileged(pluginName: ComponentName): Boolean {
-        for (componentNameOrPackage in privilegedPlugins) {
-            val componentName = ComponentName.unflattenFromString(componentNameOrPackage)
-            if (componentName == null) {
-                if (componentNameOrPackage == pluginName.packageName) {
-                    return true
-                }
-            } else {
-                if (componentName == pluginName) {
-                    return true
-                }
-            }
-        }
-        return false
-    }
-
+    /** Misbehaving plugins get disabled and won't come back until uninstall/reinstall. */
     private fun disable(pluginInstance: PluginInstance<T>, reason: DisableReason): Boolean {
-        // Live by the sword, die by the sword.
-        // Misbehaving plugins get disabled and won't come back until uninstall/reinstall.
-
         val pluginComponent = pluginInstance.componentName
-        // If a plugin is detected in the stack of a crash then this will be called for that
-        // plugin, if the plugin causing a crash cannot be identified, they are all disabled
-        // assuming one of them must be bad.
-        if (isPluginPrivileged(pluginComponent)) {
-            // Don't disable privileged plugins as they are a part of the OS.
+
+        if (config.isPrivileged(pluginComponent)) {
+            logger.i({ "Ignoring request to disable privileged plugin: $str1" }) {
+                str1 = pluginComponent.flattenToShortString()
+            }
             return false
         }
+
         logger.w({ "Disabling plugin: $str1" }) { str1 = pluginComponent.flattenToShortString() }
         pluginEnabler.setDisabled(pluginComponent, reason)
         return true
@@ -236,7 +219,7 @@ private constructor(
 
     private fun loadPluginComponent(component: ComponentName): PluginInstance<T>? {
         // Do not load non-privileged plugins in production builds.
-        if (!isDebuggable && !isPluginPrivileged(component)) {
+        if (!buildInfo.isDebuggable && !config.isPrivileged(component)) {
             logger.e({ "Plugin cannot be loaded in production: $str1" }) { str1 = "$component" }
             return null
         }
@@ -322,22 +305,24 @@ private constructor(
     }
 
     /** Construct a [PluginActionManager] */
-    class Factory(
+    class Factory
+    @JvmOverloads
+    constructor(
         private val context: Context,
         private val packageManager: PackageManager,
         private val mainExecutor: Executor,
         private val bgExecutor: Executor,
         private val notificationManager: NotificationManager,
         private val pluginEnabler: PluginEnabler,
-        private val privilegedPlugins: List<String>,
+        private val config: PluginManager.Config,
         private val pluginInstanceFactory: PluginInstance.Factory,
+        private val buildInfo: BuildInfo = BuildInfo.CURRENT,
     ) {
         fun <T : Plugin> create(
             action: String,
             listener: PluginListener<T>,
             pluginClass: Class<T>,
             allowMultiple: Boolean,
-            isDebuggable: Boolean,
         ): PluginActionManager<T> {
             return PluginActionManager(
                 context,
@@ -348,10 +333,10 @@ private constructor(
                 allowMultiple,
                 mainExecutor,
                 bgExecutor,
-                isDebuggable,
+                buildInfo,
                 notificationManager,
                 pluginEnabler,
-                privilegedPlugins,
+                config,
                 pluginInstanceFactory,
             )
         }
