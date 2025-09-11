@@ -38,7 +38,8 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-import com.android.internal.annotations.VisibleForTesting;
+import androidx.annotation.VisibleForTesting;
+
 import com.android.internal.util.ContrastColorUtil;
 import com.android.internal.widget.NotificationActionListLayout;
 import com.android.systemui.Dependency;
@@ -452,6 +453,11 @@ public class NotificationTemplateViewWrapper extends NotificationHeaderViewWrapp
                 sUiOffloadThread = Dependency.get(UiOffloadThread.class);
             }
             return sUiOffloadThread;
+        }
+
+        @VisibleForTesting(otherwise = VisibleForTesting.NONE)
+        static void resetUiOffloadThread() {
+            sUiOffloadThread = null;
         }
 
         private final View mView;
