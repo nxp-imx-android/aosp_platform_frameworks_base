@@ -290,6 +290,7 @@ constructor(
                     }
                     localMediaManager.unregisterCallback(this)
                     suggestedDeviceManager.removeListener(this)
+                    suggestedDeviceManager.cancelAllRequests()
                     muteAwaitConnectionManager.stopListening()
                     configurationController.removeCallback(configListener)
                 }
