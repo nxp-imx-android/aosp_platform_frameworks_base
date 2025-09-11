@@ -431,18 +431,10 @@ public class VoiceInteractionManagerService extends SystemService {
 
         VoiceInteractionManagerServiceStub() {
             mEnableService = shouldEnableService(mContext);
-
-            // If this flag is enabled, initialize in SystemServerInitThreadPool. This is intended
-            // to avoid blocking system_server start on loading resources.
-            if (android.server.Flags.voiceinteractionmanagerserviceGetResourcesInInitThread()) {
-                mRoleObserver = null;
-                mRoleObserverFuture = SystemServerInitThreadPool.submit(() -> {
-                    return new RoleObserver(mContext.getMainExecutor());
-                }, "RoleObserver");
-            } else {
-                mRoleObserver = new RoleObserver(mContext.getMainExecutor());
-                mRoleObserverFuture = null;
-            }
+            mRoleObserver = null;
+            mRoleObserverFuture = SystemServerInitThreadPool.submit(() -> {
+                return new RoleObserver(mContext.getMainExecutor());
+            }, "RoleObserver");
         }
 
         void handleUserStop(String packageName, int userHandle) {

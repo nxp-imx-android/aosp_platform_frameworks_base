@@ -2014,12 +2014,13 @@ public final class SystemServer implements Dumpable {
             dpms = mSystemServiceManager.startService(DevicePolicyManagerService.Lifecycle.class);
             t.traceEnd();
 
-            // If this flag is disabled, this service is started later.
-            if (android.server.Flags.voiceinteractionmanagerserviceGetResourcesInInitThread()) {
-                t.traceBegin("StartVoiceRecognitionManager");
-                mSystemServiceManager.startService(VoiceInteractionManagerService.class);
-                t.traceEnd();
-            }
+            // We need to always start this service, regardless of whether the
+            // FEATURE_VOICE_RECOGNIZERS feature is set, because it needs to take care
+            // of initializing various settings.  It will internally modify its behavior
+            // based on that feature.
+            t.traceBegin("StartVoiceRecognitionManager");
+            mSystemServiceManager.startService(VoiceInteractionManagerService.class);
+            t.traceEnd();
 
             t.traceBegin("StartStatusBarManagerService");
             try {
@@ -2542,18 +2543,6 @@ public final class SystemServer implements Dumpable {
                     || context.getResources().getBoolean(R.bool.config_enableAppWidgetService)) {
                 t.traceBegin("StartAppWidgetService");
                 mSystemServiceManager.startService(AppWidgetService.class);
-                t.traceEnd();
-            }
-
-            // We need to always start this service, regardless of whether the
-            // FEATURE_VOICE_RECOGNIZERS feature is set, because it needs to take care
-            // of initializing various settings.  It will internally modify its behavior
-            // based on that feature.
-            //
-            // If this flag is enabled, this service will have begun initializing earlier.
-            if (!android.server.Flags.voiceinteractionmanagerserviceGetResourcesInInitThread()) {
-                t.traceBegin("StartVoiceRecognitionManager");
-                mSystemServiceManager.startService(VoiceInteractionManagerService.class);
                 t.traceEnd();
             }
 
