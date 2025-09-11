@@ -1059,6 +1059,18 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
     }
 
     @Override
+    public void onDisplayLayoutChange(int displayId, Configuration config,
+            @NonNull Rect oldStableBounds, double newToOldDpiRatio) {
+        mDesktopTilingDecorViewModel.onDisplayLayoutChange(displayId, config, oldStableBounds,
+                newToOldDpiRatio);
+    }
+
+    @Override
+    public @NonNull Rect getDividerBounds(int deskId) {
+        return mDesktopTilingDecorViewModel.getDividerBounds(deskId);
+    }
+
+    @Override
     public void onDeskActivated(int deskId, int displayId) {
         if (mDesktopTilingDecorViewModel.tilingDeskActive(deskId)) {
             return;
@@ -1265,7 +1277,7 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                         decoration.getTaskInfo().displayId, decoration.getTaskInfo());
         final IBinder transition = mTaskOperations.closeTask(
                 decoration.getTaskInfo().token, wct);
-        if (transition != null) {
+        if (transition != null && runOnTransitionStart != null) {
             runOnTransitionStart.invoke(transition);
         }
     }

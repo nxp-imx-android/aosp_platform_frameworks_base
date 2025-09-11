@@ -185,6 +185,14 @@ public final class MessageStack {
         return false;
     }
 
+    private MessageHeap getHeap(boolean async) {
+        return async ? mAsyncHeap : mSyncHeap;
+    }
+
+    private MessageHeap getHeap(Message m) {
+        return getHeap(m.isAsynchronous());
+    }
+
     /**
      * Adds not-yet-processed messages into the MessageHeap and creates backlinks.
      */
@@ -209,11 +217,7 @@ public final class MessageStack {
             // insert these Messages in a different order than submitted to the stack.
             // TODO: Removed messages shouldn't be added to the heap, and possibly not into the
             // stack either.
-            if (current.isAsynchronous()) {
-                mAsyncHeap.add(current);
-            } else {
-                mSyncHeap.add(current);
-            }
+            getHeap(current).add(current);
             current = current.next;
         }
 
@@ -241,7 +245,7 @@ public final class MessageStack {
      * polled message was removed.
      */
     public Message pop(boolean async) {
-        final Message m = async ? mAsyncHeap.poll() : mSyncHeap.poll();
+        final Message m = getHeap(async).poll();
         if (m != null) {
             // We CAS this so that a remover doesn't attempt to add it to the freelist. If this CAS
             // fails, it has already been removed, and links will be cleared in a drainFreelist()
@@ -269,11 +273,7 @@ public final class MessageStack {
         // An out of range heapIndex means that we've already removed this message from the heap, or
         // it was never added to the heap in the first place.
         if (m.heapIndex >= 0) {
-            if (m.isAsynchronous()) {
-                mAsyncHeap.removeMessage(m);
-            } else {
-                mSyncHeap.removeMessage(m);
-            }
+            getHeap(m).removeMessage(m);
         }
     }
 
@@ -281,11 +281,9 @@ public final class MessageStack {
      * Remove a message from the stack.
      */
     private void removeFromStack(Message m) {
-        // mLooperProcessed must be updated to the next message that hasn't been removed.
+        // mLooperProcessed must be updated to the next message.
         if (m == mLooperProcessed) {
-            do {
-                mLooperProcessed = mLooperProcessed.next;
-            } while (mLooperProcessed != null && mLooperProcessed.isRemoved());
+            mLooperProcessed = mLooperProcessed.next;
         }
 
         // If prev is null, m was the top at the time the previous heapSweep was called.
@@ -327,7 +325,7 @@ public final class MessageStack {
      * removed messages.
      */
     public @Nullable Message peek(boolean async) {
-        MessageHeap heap = async ? mAsyncHeap : mSyncHeap;
+        MessageHeap heap = getHeap(async);
         while (true) {
             final Message m = heap.peek();
             if (m == null) {

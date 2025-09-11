@@ -469,3 +469,10 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+     name: "user_filter_refactoring"
+     namespace: "multiuser"
+     description: "Refactored some getUsers() methods to use a UserFilter object"
+     bug: "419086491"
+}

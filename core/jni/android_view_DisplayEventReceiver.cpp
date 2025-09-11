@@ -40,10 +40,8 @@ static struct {
     jmethodID dispatchVsync;
     jmethodID dispatchHotplug;
     jmethodID dispatchHotplugConnectionError;
-    jmethodID dispatchModeChanged;
     jmethodID dispatchModeChangedWithFrameRateOverrides;
     jmethodID dispatchModeRejected;
-    jmethodID dispatchFrameRateOverrides;
     jmethodID dispatchHdcpLevelsChanged;
 
     struct {
@@ -129,12 +127,7 @@ private:
             nsecs_t appVsyncOffset, nsecs_t presentationDeadline,
             std::vector<FrameRateOverride> overrides,
             std::vector<SupportedRefreshRate> supportedRefreshRates) override;
-    void dispatchModeChanged(nsecs_t timestamp, PhysicalDisplayId displayId, int32_t modeId,
-                             nsecs_t renderPeriod, nsecs_t appVsyncOffset,
-                             nsecs_t presentationDeadline) override;
     void dispatchModeRejected(PhysicalDisplayId displayId, int32_t modeId) override;
-    void dispatchFrameRateOverrides(nsecs_t timestamp, PhysicalDisplayId displayId,
-                                    std::vector<FrameRateOverride> overrides) override;
     void dispatchNullEvent(nsecs_t timestamp, PhysicalDisplayId displayId) override {}
     void dispatchHdcpLevelsChanged(PhysicalDisplayId displayId, int connectedLevel,
                                    int maxLevel) override;
@@ -294,24 +287,6 @@ void NativeDisplayEventReceiver::dispatchHotplugConnectionError(nsecs_t timestam
     mMessageQueue->raiseAndClearException(env, "dispatchHotplugConnectionError");
 }
 
-void NativeDisplayEventReceiver::dispatchModeChanged(nsecs_t timestamp, PhysicalDisplayId displayId,
-                                                     int32_t modeId, nsecs_t renderPeriod,
-                                                     nsecs_t appVsyncOffset,
-                                                     nsecs_t presentationDeadline) {
-    JNIEnv* env = AndroidRuntime::getJNIEnv();
-
-    ScopedLocalRef<jobject> receiverObj(env, GetReferent(env, mReceiverWeakGlobal));
-    if (receiverObj.get()) {
-        ALOGV("receiver %p ~ Invoking mode changed handler.", this);
-        env->CallVoidMethod(receiverObj.get(), gDisplayEventReceiverClassInfo.dispatchModeChanged,
-                            timestamp, displayId.value, modeId, renderPeriod, appVsyncOffset,
-                            presentationDeadline);
-        ALOGV("receiver %p ~ Returned from mode changed handler.", this);
-    }
-
-    mMessageQueue->raiseAndClearException(env, "dispatchModeChanged");
-}
-
 void NativeDisplayEventReceiver::dispatchModeChangedWithFrameRateOverrides(
         nsecs_t timestamp, PhysicalDisplayId displayId, int32_t modeId, nsecs_t renderPeriod,
         nsecs_t appVsyncOffset, nsecs_t presentationDeadline,
@@ -346,23 +321,6 @@ void NativeDisplayEventReceiver::dispatchModeRejected(PhysicalDisplayId displayI
     }
 
     mMessageQueue->raiseAndClearException(env, "dispatchModeRejected");
-}
-
-void NativeDisplayEventReceiver::dispatchFrameRateOverrides(
-        nsecs_t timestamp, PhysicalDisplayId displayId, std::vector<FrameRateOverride> overrides) {
-    JNIEnv* env = AndroidRuntime::getJNIEnv();
-
-    ScopedLocalRef<jobject> receiverObj(env, GetReferent(env, mReceiverWeakGlobal));
-    if (receiverObj.get()) {
-        ALOGV("receiver %p ~ Invoking FrameRateOverride handler.", this);
-        auto frameRateOverrideArray = getFrameRateOverrides(overrides, env);
-        env->CallVoidMethod(receiverObj.get(),
-                            gDisplayEventReceiverClassInfo.dispatchFrameRateOverrides, timestamp,
-                            displayId.value, frameRateOverrideArray);
-        ALOGV("receiver %p ~ Returned from FrameRateOverride handler.", this);
-    }
-
-    mMessageQueue->raiseAndClearException(env, "dispatchFrameRateOverrides");
 }
 
 void NativeDisplayEventReceiver::dispatchHdcpLevelsChanged(PhysicalDisplayId displayId,
@@ -465,9 +423,6 @@ int register_android_view_DisplayEventReceiver(JNIEnv* env) {
     gDisplayEventReceiverClassInfo.dispatchHotplugConnectionError =
             GetMethodIDOrDie(env, gDisplayEventReceiverClassInfo.clazz,
                              "dispatchHotplugConnectionError", "(JI)V");
-    gDisplayEventReceiverClassInfo.dispatchModeChanged =
-            GetMethodIDOrDie(env, gDisplayEventReceiverClassInfo.clazz, "dispatchModeChanged",
-                             "(JJIJJJ)V");
     gDisplayEventReceiverClassInfo.dispatchModeChangedWithFrameRateOverrides =
             GetMethodIDOrDie(env, gDisplayEventReceiverClassInfo.clazz,
                              "dispatchModeChangedWithFrameRateOverrides",
@@ -475,10 +430,6 @@ int register_android_view_DisplayEventReceiver(JNIEnv* env) {
     gDisplayEventReceiverClassInfo.dispatchModeRejected =
             GetMethodIDOrDie(env, gDisplayEventReceiverClassInfo.clazz, "dispatchModeRejected",
                              "(JI)V");
-    gDisplayEventReceiverClassInfo.dispatchFrameRateOverrides =
-            GetMethodIDOrDie(env, gDisplayEventReceiverClassInfo.clazz,
-                             "dispatchFrameRateOverrides",
-                             "(JJ[Landroid/view/DisplayEventReceiver$FrameRateOverride;)V");
     gDisplayEventReceiverClassInfo.dispatchHdcpLevelsChanged =
             GetMethodIDOrDie(env, gDisplayEventReceiverClassInfo.clazz, "dispatchHdcpLevelsChanged",
                              "(JII)V");

@@ -12830,13 +12830,13 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
         Preconditions.checkCallAuthorization(canManageUsers(caller) || canQueryAdminPolicy(caller));
         final long callingIdentity = Binder.clearCallingIdentity();
         try {
-            return getPermittedInputMethodsUnchecked(userId);
+            return getPermittedInputMethodPackagesUnchecked(userId);
         } finally {
             Binder.restoreCallingIdentity(callingIdentity);
         }
     }
 
-    private @Nullable List<String> getPermittedInputMethodsUnchecked(@UserIdInt int userId) {
+    private @Nullable List<String> getPermittedInputMethodPackagesUnchecked(@UserIdInt int userId) {
         Set<String> policy = mDevicePolicyEngine.getResolvedPolicy(
                 PolicyDefinition.PERMITTED_INPUT_METHODS, userId);
         List<String> result = policy == null ? null : new ArrayList<>(policy);
@@ -12850,6 +12850,9 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
                     ServiceInfo serviceInfo = ime.getServiceInfo();
                     ApplicationInfo applicationInfo = serviceInfo.applicationInfo;
                     if ((applicationInfo.flags & ApplicationInfo.FLAG_SYSTEM) != 0) {
+                        Slog.d(LOG_TAG,
+                                "getPermittedInputMethodPackagesUnchecked: add: "
+                                        + ime.getPackageName());
                         result.add(serviceInfo.packageName);
                     }
                 }
@@ -16524,6 +16527,13 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
         public void removeLocalPoliciesForSystemEntities(
                 @UserIdInt int userId, @NonNull List<String> systemEntities) {
             mDevicePolicyEngine.removeLocalPoliciesForSystemEntities(userId, systemEntities);
+        }
+
+        @Override
+        @Nullable
+        public Set<String> getPermittedInputMethodPackages(@UserIdInt int userId) {
+            return mDevicePolicyEngine.getResolvedPolicy(
+                    PolicyDefinition.PERMITTED_INPUT_METHODS, userId);
         }
 
         private List<EnforcingUser> getEnforcingUsers(Set<EnforcingAdmin> admins) {

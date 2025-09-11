@@ -4673,6 +4673,19 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
+    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
+    fun onDesktopWindowClose_notInDesk_returnsNullOnTransitStart() {
+        val task = setUpFreeformTask(deskId = DEFAULT_DESK_ID)
+        val wct = WindowContainerTransaction()
+        taskRepository.removeDesk(DEFAULT_DESK_ID)
+
+        val runOnTransitStart =
+            controller.onDesktopWindowClose(wct, displayId = DEFAULT_DISPLAY, task)
+
+        assertThat(runOnTransitStart).isNull()
+    }
+
+    @Test
     fun tilingBroken_onTaskMinimised() {
         val task = setUpFreeformTask()
         val transition = Binder()
@@ -4770,7 +4783,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         val transition = Binder()
         val runOnTransitStart =
             controller.onDesktopWindowClose(wct, displayId = DEFAULT_DISPLAY, task)
-        runOnTransitStart(transition)
+        runOnTransitStart?.invoke(transition)
 
         verify(desksTransitionsObserver)
             .addPendingTransition(
@@ -4798,7 +4811,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         val transition = Binder()
         val runOnTransitStart =
             controller.onDesktopWindowClose(wct, displayId = DEFAULT_DISPLAY, task)
-        runOnTransitStart(transition)
+        runOnTransitStart?.invoke(transition)
 
         verify(desksTransitionsObserver)
             .addPendingTransition(
@@ -11401,6 +11414,9 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         whenever(secondDisplayLayout.height()).thenReturn(1600)
         whenever(secondDisplayLayout.width()).thenReturn(2560)
         whenever(secondDisplayLayout.densityDpi()).thenReturn(240)
+        whenever(secondDisplayLayout.getStableBounds(any())).thenAnswer { i ->
+            (i.arguments.first() as Rect).set(Rect(0, 0, 2560, 1600))
+        }
         taskRepository.addDesk(SECOND_DISPLAY, DISCONNECTED_DESK_ID)
         taskRepository.setActiveDesk(displayId = SECOND_DISPLAY, deskId = DISCONNECTED_DESK_ID)
         val secondDisplayTask =
@@ -11846,17 +11862,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         taskRepository.addDesk(displayId = DEFAULT_DISPLAY, deskId = inactiveDesk)
         val launchingTask = setUpFreeformTask(displayId = DEFAULT_DISPLAY, deskId = inactiveDesk)
         val transition = Binder()
-        whenever(
-                desktopMixedTransitionHandler.startLaunchTransition(
-                    eq(TRANSIT_OPEN),
-                    any(),
-                    eq(launchingTask.taskId),
-                    anyOrNull(),
-                    anyOrNull(),
-                    anyOrNull(),
-                    anyOrNull(),
-                )
-            )
+        whenever(desktopMixedTransitionHandler.startSwitchDeskTransition(eq(TRANSIT_OPEN), any()))
             .thenReturn(transition)
 
         val wct = WindowContainerTransaction()
@@ -12833,7 +12839,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         const val MAX_TASK_LIMIT = 6
         private const val TASKBAR_FRAME_HEIGHT = 200
         private const val FLOAT_TOLERANCE = 0.005f
-        private const val DEFAULT_DESK_ID = 100
+        private const val DEFAULT_DESK_ID = 0
         // For testing disconnecting a display containing a desk.
         private const val DISCONNECTED_DESK_ID = 200
         private val TASK_BOUNDS = Rect(100, 100, 300, 300)

@@ -30,7 +30,10 @@ import android.app.admin.PasswordMetrics;
 import android.content.pm.PackageManager;
 import android.os.IBinder;
 import android.os.RemoteException;
+import android.platform.test.annotations.DisableFlags;
+import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
+import android.platform.test.flag.junit.SetFlagsRule;
 
 import androidx.test.filters.SmallTest;
 import androidx.test.runner.AndroidJUnit4;
@@ -40,6 +43,7 @@ import com.android.internal.widget.IWeakEscrowTokenRemovedListener;
 import com.android.internal.widget.LockscreenCredential;
 
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -48,6 +52,8 @@ import org.junit.runner.RunWith;
 @Presubmit
 @RunWith(AndroidJUnit4.class)
 public class WeakEscrowTokenTests extends BaseLockSettingsServiceTests{
+
+    @Rule public final SetFlagsRule mSetFlagsRule = new SetFlagsRule();
 
     @Before
     public void setUp() {
@@ -148,8 +154,7 @@ public class WeakEscrowTokenTests extends BaseLockSettingsServiceTests{
         verify(mockRemoveListener, never()).onWeakEscrowTokenRemoved(handle1, PRIMARY_USER_ID);
     }
 
-    @Test
-    public void testUnlockUserWithToken_weakEscrowToken() throws Exception {
+    private void testUnlockUserWithToken_weakEscrowToken_helper() throws Exception {
         mockAutoHardware();
         IWeakEscrowTokenActivatedListener mockActivateListener =
                 mock(IWeakEscrowTokenActivatedListener.Stub.class);
@@ -165,12 +170,28 @@ public class WeakEscrowTokenTests extends BaseLockSettingsServiceTests{
         assertTrue(mService.isWeakEscrowTokenActive(handle, PRIMARY_USER_ID));
         assertTrue(mService.isWeakEscrowTokenValid(handle, token, PRIMARY_USER_ID));
 
-        mService.onUserStopped(PRIMARY_USER_ID);
+        if (android.security.Flags.resetAuthFlagsAndMetricsInLockUser()) {
+            mLocalService.lockUser(PRIMARY_USER_ID);
+        } else {
+            mService.onUserStopped(PRIMARY_USER_ID);
+        }
         assertNull(mLocalService.getUserPasswordMetrics(PRIMARY_USER_ID));
 
         assertTrue(mLocalService.unlockUserWithToken(handle, token, PRIMARY_USER_ID));
         assertEquals(PasswordMetrics.computeForCredential(password),
                 mLocalService.getUserPasswordMetrics(PRIMARY_USER_ID));
+    }
+
+    @Test
+    @DisableFlags(android.security.Flags.FLAG_RESET_AUTH_FLAGS_AND_METRICS_IN_LOCK_USER)
+    public void testUnlockUserWithToken_weakEscrowToken_orig() throws Exception {
+        testUnlockUserWithToken_weakEscrowToken_helper();
+    }
+
+    @Test
+    @EnableFlags(android.security.Flags.FLAG_RESET_AUTH_FLAGS_AND_METRICS_IN_LOCK_USER)
+    public void testUnlockUserWithToken_weakEscrowToken() throws Exception {
+        testUnlockUserWithToken_weakEscrowToken_helper();
     }
 
     private void mockAutoHardware() {

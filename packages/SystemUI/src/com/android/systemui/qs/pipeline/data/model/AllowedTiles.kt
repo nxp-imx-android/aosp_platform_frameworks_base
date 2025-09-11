@@ -32,7 +32,7 @@ sealed interface AllowedTiles {
     }
 
     /** Implementation of [AllowedTiles] that allows only specific tiles. */
-    class SpecificTiles(private val tiles: List<TileSpec>) : AllowedTiles {
+    class SpecificTiles(val tiles: List<TileSpec>) : AllowedTiles {
         override fun isTileAllowed(spec: TileSpec): Boolean {
             return spec in tiles
         }

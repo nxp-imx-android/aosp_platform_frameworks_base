@@ -1737,6 +1737,15 @@ final class InstallPackageHelper {
                 if (libraryInfo != null) {
                     signatureCheckPs = mPm.mSettings.getPackageLPr(libraryInfo.getPackageName());
                 }
+            } else {
+                // To prevent a new package from being installed if its package name is
+                // already in use by an existing static library on the system.
+                WatchedLongSparseArray<SharedLibraryInfo> libraryInfos =
+                        mSharedLibraries.getStaticLibraryInfos(parsedPackage.getPackageName());
+                if (libraryInfos != null && libraryInfos.size() > 0) {
+                    throw new PrepareFailure(INSTALL_FAILED_DUPLICATE_PACKAGE,
+                            "The package name is same as an existing shared libs");
+                }
             }
 
             if (signatureCheckPs != null) {

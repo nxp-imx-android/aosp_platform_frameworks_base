@@ -14,6 +14,7 @@
     See the License for the specific language governing permissions and
     limitations under the License.
 -->
+
 <inset xmlns:android="http://schemas.android.com/apk/res/android"
     android:drawable="@drawable/settingslib_switch_bar_bg_on"
     android:insetLeft="11dp"

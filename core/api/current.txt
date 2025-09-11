@@ -10254,6 +10254,29 @@ package android.appwidget {
 
 package android.companion {
 
+  @FlaggedApi("android.companion.enable_data_sync") public final class ActionRequest implements android.os.Parcelable {
+    method public int describeContents();
+    method public int getAction();
+    method public int getOperation();
+    method public void writeToParcel(@NonNull android.os.Parcel, int);
+    field @NonNull public static final android.os.Parcelable.Creator<android.companion.ActionRequest> CREATOR;
+    field public static final int OP_ACTIVATE = 0; // 0x0
+    field public static final int OP_DEACTIVATE = 1; // 0x1
+    field public static final int REQUEST_NEARBY_ADVERTISING = 1; // 0x1
+    field public static final int REQUEST_NEARBY_SCANNING = 0; // 0x0
+    field public static final int REQUEST_TRANSPORT = 2; // 0x2
+  }
+
+  @FlaggedApi("android.companion.enable_data_sync") public final class ActionResult implements android.os.Parcelable {
+    method public int describeContents();
+    method @NonNull public android.companion.ActionRequest getActionRequest();
+    method public int getResultCode();
+    method public void writeToParcel(@NonNull android.os.Parcel, int);
+    field @NonNull public static final android.os.Parcelable.Creator<android.companion.ActionResult> CREATOR;
+    field public static final int RESULT_FAILED = 1; // 0x1
+    field public static final int RESULT_SUCCESS = 0; // 0x0
+  }
+
   public final class AssociatedDevice implements android.os.Parcelable {
     method public int describeContents();
     method @Nullable public android.bluetooth.le.ScanResult getBleDevice();
@@ -10391,6 +10414,7 @@ package android.companion {
     ctor public CompanionDeviceService();
     method @RequiresPermission(android.Manifest.permission.DELIVER_COMPANION_MESSAGES) public final void attachSystemDataTransport(int, @NonNull java.io.InputStream, @NonNull java.io.OutputStream) throws android.companion.DeviceNotAssociatedException;
     method @RequiresPermission(android.Manifest.permission.DELIVER_COMPANION_MESSAGES) public final void detachSystemDataTransport(int) throws android.companion.DeviceNotAssociatedException;
+    method @FlaggedApi("android.companion.enable_data_sync") @MainThread public void onActionRequested(@NonNull android.companion.AssociationInfo, @NonNull android.companion.ActionRequest);
     method @Nullable public final android.os.IBinder onBind(@NonNull android.content.Intent);
     method @Deprecated @MainThread public void onDeviceAppeared(@NonNull String);
     method @Deprecated @MainThread public void onDeviceAppeared(@NonNull android.companion.AssociationInfo);
@@ -10439,6 +10463,8 @@ package android.companion {
     field public static final int EVENT_BT_DISCONNECTED = 3; // 0x3
     field public static final int EVENT_SELF_MANAGED_APPEARED = 4; // 0x4
     field public static final int EVENT_SELF_MANAGED_DISAPPEARED = 5; // 0x5
+    field @FlaggedApi("android.companion.enable_data_sync") public static final int EVENT_SELF_MANAGED_NEARBY = 7; // 0x7
+    field @FlaggedApi("android.companion.enable_data_sync") public static final int EVENT_SELF_MANAGED_NOT_NEARBY = 8; // 0x8
     field public static final int NO_ASSOCIATION = -1; // 0xffffffff
   }
 

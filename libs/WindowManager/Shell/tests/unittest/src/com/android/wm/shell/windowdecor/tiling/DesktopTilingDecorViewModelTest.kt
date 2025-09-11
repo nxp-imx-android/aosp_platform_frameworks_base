@@ -389,6 +389,7 @@ class DesktopTilingDecorViewModelTest : ShellTestCase() {
 
     @Test
     fun getTiledAppBounds_NoTilingTransitionHandlerObject() {
+        whenever(displayControllerMock.getDisplayContext(any())).thenReturn(contextMock)
         // Right bound of the left app here represents default 8 / 2 - 2 ( {Right bound} / 2 -
         // {divider pixel size})
         assertThat(desktopTilingDecorViewModel.getLeftSnapBoundsIfTiled(1))
@@ -403,6 +404,7 @@ class DesktopTilingDecorViewModelTest : ShellTestCase() {
     @Test
     fun getTiledAppBounds_NoActiveDesk() {
         whenever(desktopRepository.getActiveDeskId(any())).thenReturn(null)
+        whenever(displayControllerMock.getDisplayContext(any())).thenReturn(contextMock)
         assertThat(desktopTilingDecorViewModel.getLeftSnapBoundsIfTiled(2))
             .isEqualTo(Rect(6, 7, 2, 9))
         assertThat(desktopTilingDecorViewModel.getRightSnapBoundsIfTiled(2))

@@ -83,6 +83,8 @@ import static android.companion.CompanionResources.PERMISSION_STORAGE;
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 import static android.os.Binder.getCallingPid;
 import static android.os.Binder.getCallingUid;
+import static android.os.Process.ROOT_UID;
+import static android.os.Process.SHELL_UID;
 import static android.os.Process.SYSTEM_UID;
 import static android.os.UserHandle.getCallingUserId;
 
@@ -318,6 +320,16 @@ public final class PermissionsUtils {
             throw new SecurityException("Caller (uid=" + getCallingUid() + ") does not have "
                     + "permissions to request observing device presence base on the device id");
         }
+    }
+
+    /**
+     * Require the caller to be Shell or Root.
+     */
+    public static void enforceCallerShellOrRoot() {
+        final int callingUid = Binder.getCallingUid();
+        if (callingUid == SHELL_UID || callingUid == ROOT_UID) return;
+
+        throw new SecurityException("Caller is neither Shell nor Root");
     }
 
     private static boolean checkPackage(@UserIdInt int uid, @NonNull String packageName) {

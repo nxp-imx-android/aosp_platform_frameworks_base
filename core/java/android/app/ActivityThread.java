@@ -8079,8 +8079,7 @@ public final class ActivityThread extends ClientTransactionHandler
 
             // Propagate Content Capture options
             app.setContentCaptureOptions(data.contentCaptureOptions);
-            if (android.view.contentcapture.flags.Flags.warmUpBackgroundThreadForContentCapture()
-                    && data.contentCaptureOptions != null) {
+            if (data.contentCaptureOptions != null) {
                 if (data.contentCaptureOptions.enableReceiver
                         && !data.contentCaptureOptions.lite) {
                     // Warm up the background thread when:

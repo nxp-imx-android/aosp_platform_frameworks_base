@@ -16,8 +16,12 @@
 
 package com.android.wm.shell.shared.bubbles.logging
 
+import android.os.Parcelable
+import kotlinx.parcelize.Parcelize
+
 /** Entry points for creating Bubbles. */
-enum class EntryPoint {
+@Parcelize
+enum class EntryPoint : Parcelable {
     TASKBAR_ICON_MENU,
     LAUNCHER_ICON_MENU,
     ALL_APPS_ICON_MENU,

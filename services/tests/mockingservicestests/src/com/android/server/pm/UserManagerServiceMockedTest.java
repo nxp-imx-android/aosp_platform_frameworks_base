@@ -31,6 +31,7 @@ import static android.multiuser.Flags.FLAG_ENABLE_PRIVATE_SPACE_FEATURES;
 import static android.multiuser.Flags.FLAG_HSU_NOT_ADMIN;
 import static android.multiuser.Flags.FLAG_LOGOUT_USER_API;
 import static android.multiuser.Flags.FLAG_UNICORN_MODE_REFACTORING_FOR_HSUM_READ_ONLY;
+import static android.multiuser.Flags.FLAG_USER_FILTER_REFACTORING;
 import static android.os.Flags.FLAG_ALLOW_PRIVATE_PROFILE;
 import static android.os.UserHandle.USER_NULL;
 import static android.os.UserHandle.USER_SYSTEM;
@@ -137,7 +138,9 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -1390,6 +1393,7 @@ public final class UserManagerServiceMockedTest {
     }
 
     @Test
+    @DisableFlags(FLAG_USER_FILTER_REFACTORING)
     public void testGetUsersWithUnresolvedNames() {
         var headlessSystemUser = addUser(new UserInfo(USER_SYSTEM, A_USER_HAS_NO_NAME, FLAG_ADMIN));
         var adminUser = addUser(new UserInfo(USER_ID, A_USER_HAS_NO_NAME, FLAG_FULL | FLAG_ADMIN));
@@ -1423,6 +1427,14 @@ public final class UserManagerServiceMockedTest {
     }
 
     @Test
+    @EnableFlags(FLAG_USER_FILTER_REFACTORING)
+    public void testGetUsersWithUnresolvedNames_refactored() {
+        // Should behave exactly the same ways as without the flag
+        testGetUsersWithUnresolvedNames();
+    }
+
+    @Test
+    @DisableFlags(FLAG_USER_FILTER_REFACTORING)
     public void testGetUsersInternal_nonHsum() {
         var fullSystemUser =
                 addUser(new UserInfo(USER_SYSTEM, A_USER_HAS_NO_NAME, FLAG_FULL | FLAG_ADMIN));
@@ -1430,9 +1442,24 @@ public final class UserManagerServiceMockedTest {
     }
 
     @Test
+    @EnableFlags(FLAG_USER_FILTER_REFACTORING)
+    public void testGetUsersInternal_nonHsum_refactored() {
+        // Should behave exactly the same ways as without the flag
+        testGetUsersInternal_nonHsum();
+    }
+
+    @Test
+    @DisableFlags(FLAG_USER_FILTER_REFACTORING)
     public void testGetUsersInternal_hsum() {
         var headlessSystemUser = addUser(new UserInfo(USER_SYSTEM, A_USER_HAS_NO_NAME, FLAG_ADMIN));
         testGetUsersInternal(headlessSystemUser);
+    }
+
+    @Test
+    @EnableFlags(FLAG_USER_FILTER_REFACTORING)
+    public void testGetUsersInternal_hsum_refactored() {
+        // Should behave exactly the same ways as without the flag
+        testGetUsersInternal_hsum();
     }
 
     private void testGetUsersInternal(UserInfo systemUser) {
@@ -2073,6 +2100,121 @@ public final class UserManagerServiceMockedTest {
         // will be tested on their one methods below (as it depends on the flag value)
         expectGetUserRemovability("admin 1", adminUser1.id, REMOVE_RESULT_USER_IS_REMOVABLE);
         expectGetUserRemovability("admin 2", adminUser2.id, REMOVE_RESULT_USER_IS_REMOVABLE);
+    }
+
+    // Note: ideally each method should be tested separately, but not only they're related (and use
+    // the same users and filters) but the test is using expect (so it can detect multiple failures)
+    @Test
+    public void testGetUsersWithFilterAndGetNumberOfUsers() {
+        var headlessSystemUser = addUser(new UserInfo(USER_SYSTEM, /* name= */ null, FLAG_ADMIN));
+        var adminUser = addUser(new UserInfo(/* id= */ 4, /* name= */ null,
+                FLAG_FULL | FLAG_ADMIN));
+        var nonAdminUser = addUser(new UserInfo(/* id= */ 8, /* name= */ null, FLAG_FULL));
+        var partialUser = addUser(new UserInfo(/* id= */ 15, /* name= */ null, FLAG_FULL));
+        partialUser.partial = true;
+        var preCreatedUser = addUser(new UserInfo(/* id= */ 16, /* name= */ null, FLAG_FULL));
+        preCreatedUser.preCreated = true;
+        var dyingUser = addDyingUser(new UserInfo(/* id= */ 23, /* name= */ null, FLAG_FULL));
+        var namedUser = addUser(new UserInfo(/* id= */ 42, "Bond, James Bond", FLAG_FULL));
+
+        Function<UserInfo, UserInfo> converter = user -> user.name == null ? user
+                : new UserInfo(user.id, user.name.toUpperCase(Locale.ENGLISH), user.flags);
+        // NOTE: cannot check for a convertedUser on containsExactly() because UserInfo doesn't
+        // implement equals, hence some checks below need to explicitly check for that user's name
+        List<UserInfo> convertedUsers;
+        UserInfo convertedUser;
+
+        var defaultFilter = UserFilter.builder().build();
+        // getNumberOfUsers(filter)
+        expect.withMessage("getNumberOfUsers() for default filter (filter=%s)", defaultFilter)
+                .that(mUms.getNumberOfUsers(defaultFilter))
+                .isEqualTo(4);
+        // getUsers(filter)
+        expect.withMessage("getUsers() for default filter (filter=%s)", defaultFilter)
+                .that(mUms.getUsers(defaultFilter))
+                .containsExactly(headlessSystemUser, adminUser, nonAdminUser, namedUser);
+        // getUsers(filter, converter)
+        convertedUsers = mUms.getUsers(defaultFilter, converter);
+        expect.withMessage("getUsersWithConverter() for default filter (filter=%s)", defaultFilter)
+                .that(convertedUsers).hasSize(4);
+        expect.withMessage("getUsersWithConverter() for default filter (filter=%s)", defaultFilter)
+                .that(convertedUsers)
+                .containsAtLeast(headlessSystemUser, adminUser, nonAdminUser);
+        convertedUser = getExistingUser(convertedUsers, 42);
+        if (convertedUser != null) {
+            expect.withMessage("name on converted user").that(convertedUser.name)
+                    .isEqualTo("BOND, JAMES BOND");
+        }
+
+
+        var allUsers = UserFilter.builder()
+                .withDyingUsers()
+                .withPartialUsers()
+                .build();
+        // getNumberOfUsers(filter)
+        expect.withMessage("getNumberOfUsers() for all users (filter=%s)", allUsers)
+                .that(mUms.getNumberOfUsers(allUsers))
+                .isEqualTo(6);
+        // getUsers(filter)
+        expect.withMessage("getUsers() for all users (filter=%s)", allUsers)
+                .that(mUms.getUsers(allUsers))
+                .containsExactly(headlessSystemUser, adminUser, nonAdminUser, partialUser,
+                        dyingUser, namedUser);
+        // getUsers(filter, converter)
+        convertedUsers = mUms.getUsers(allUsers, converter);
+        expect.withMessage("getUsers(converter) for all users (filter=%s)", allUsers)
+                .that(convertedUsers).hasSize(6);
+        expect.withMessage("getUsers(converter) for all users (filter=%s)", allUsers)
+                .that(convertedUsers)
+                .containsAtLeast(headlessSystemUser, adminUser, nonAdminUser, partialUser,
+                        dyingUser);
+        convertedUser = getExistingUser(convertedUsers, 42);
+        if (convertedUser != null) {
+            expect.withMessage("name on converted user").that(convertedUser.name)
+                    .isEqualTo("BOND, JAMES BOND");
+        }
+
+        var adminsOnly = UserFilter.builder()
+                .setRequiredFlags(FLAG_ADMIN)
+                .build();
+        // getNumberOfUsers(filter)
+        expect.withMessage("getNumberOfUsers() for admins only (filter=%s)", adminsOnly)
+                .that(mUms.getNumberOfUsers(adminsOnly))
+                .isEqualTo(2);
+        // getUsers(filter)
+        expect.withMessage("getUsers() for admins only (filter=%s)", adminsOnly)
+                .that(mUms.getUsers(adminsOnly))
+                .containsExactly(headlessSystemUser, adminUser);
+        // getUsers(filter, converter)
+        expect.withMessage("getUsers(converter) for admins only (filter=%s)", adminsOnly)
+                .that(mUms.getUsers(adminsOnly, converter))
+                .containsExactly(headlessSystemUser, adminUser);
+
+
+        var fullAdminsOnly = UserFilter.builder()
+                .setRequiredFlags(FLAG_FULL | FLAG_ADMIN)
+                .build();
+        // getNumberOfUsers(filter)
+        expect.withMessage("getNumberOfUsers() for full admins only (filter=%s)", fullAdminsOnly)
+                .that(mUms.getNumberOfUsers(fullAdminsOnly))
+                .isEqualTo(1);
+        // getUsers(filter)
+        expect.withMessage("getUsers() for full admins only (filter=%s)", fullAdminsOnly)
+                .that(mUms.getUsers(fullAdminsOnly))
+                .containsExactly(adminUser);
+        // getUsers(filter, converter)
+        expect.withMessage("getUsers(converter) for full admins only (filter=%s)", fullAdminsOnly)
+                .that(mUms.getUsers(fullAdminsOnly, converter))
+                .containsExactly(adminUser);
+    }
+
+    // Combined both to be consistent with testGetUsersWithFilterAndGetNumberOfUsers()
+    @Test
+    public void testGetUsersWithFilterAndGetNumberOfUsers_null() {
+        assertThrows(NullPointerException.class, () -> mUms.getNumberOfUsers(null));
+        assertThrows(NullPointerException.class, () -> mUms.getUsers((UserFilter) null));
+        assertThrows(NullPointerException.class,
+                () -> mUms.getUsers(UserFilter.builder().build(), null));
     }
 
     /**

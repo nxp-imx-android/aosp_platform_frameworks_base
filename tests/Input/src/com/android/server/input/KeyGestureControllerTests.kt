@@ -297,10 +297,12 @@ class KeyGestureControllerTests {
                 },
             )
         Mockito.`when`(inputManager.registerKeyGestureEventHandler(any(), any())).thenAnswer {
-            val args = it.arguments
-            if (args[0] != null) {
-                val gestures = args[0] as List<Int>
-                val handler = args[1] as InputManager.KeyGestureEventHandler
+            val gestures = it.getArgument<List<Int>>(0)
+            if (gestures != null) {
+                val handler = it.getArgument<InputManager.KeyGestureEventHandler>(1)
+                requireNotNull(handler) {
+                    "Handler argument cannot be null when gestures are provided"
+                }
                 keyGestureController.registerKeyGestureHandler(
                     gestures.toIntArray(),
                     KeyGestureHandler { event, token ->

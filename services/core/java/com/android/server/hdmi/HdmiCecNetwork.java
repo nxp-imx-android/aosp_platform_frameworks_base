@@ -617,7 +617,8 @@ public class HdmiCecNetwork {
         if (originalOpcode == Constants.MESSAGE_SET_AUDIO_VOLUME_LEVEL) {
 
             @DeviceFeatures.FeatureSupportStatus int featureSupport =
-                    reason == Constants.ABORT_UNRECOGNIZED_OPCODE
+                    (reason == Constants.ABORT_UNRECOGNIZED_OPCODE
+                            || reason == Constants.ABORT_INVALID_OPERAND)
                             ? DeviceFeatures.FEATURE_NOT_SUPPORTED
                             : DeviceFeatures.FEATURE_SUPPORT_UNKNOWN;
 

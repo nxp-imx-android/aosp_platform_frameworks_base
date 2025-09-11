@@ -21,6 +21,7 @@ import android.platform.systemui_tapl.controller.QuickSettingsController
 import android.platform.systemui_tapl.ui.Root
 import android.tools.Rotation
 import android.tools.helpers.SYSTEMUI_PACKAGE
+import android.tools.helpers.retryIfStaleObject
 import android.tools.traces.component.ComponentNameMatcher
 import android.tools.traces.parsers.WindowManagerStateHelper
 import androidx.test.platform.app.InstrumentationRegistry
@@ -108,7 +109,7 @@ abstract class StartAppScreenRecordingFromNotification(val rotation: Rotation = 
         findObject(By.res(SCREEN_SHARE_OPTIONS_PATTERN)).also { it.click() }
 
         val singleAppString = getSysUiResourceString(SINGLE_APP_STRING_RES_NAME)
-        findObject(By.text(singleAppString)).also { it.click() }
+        retryIfStaleObject { findObject(By.text(singleAppString)).also { it.click() } }
     }
 
     private fun startScreenSharing() {

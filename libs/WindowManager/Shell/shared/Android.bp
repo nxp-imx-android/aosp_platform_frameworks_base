@@ -59,7 +59,9 @@ android_library {
         "com_android_wm_shell_flags_lib",
         "com.android.window.flags.window-aconfig-java",
         "jsr330",
+        "kotlin-parcelize-runtime",
     ],
+    kotlin_plugins: ["kotlin-parcelize-compiler-plugin"],
     kotlincflags: ["-Xjvm-default=all"],
     use_resource_processor: true,
 }
@@ -94,5 +96,7 @@ java_library {
     static_libs: [
         "com_android_wm_shell_flags_lib",
         "com.android.window.flags.window-aconfig-java",
+        "kotlin-parcelize-runtime",
     ],
+    kotlin_plugins: ["kotlin-parcelize-compiler-plugin"],
 }

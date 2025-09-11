@@ -17,13 +17,13 @@ import android.content.ComponentName
 
 /** Enables and disables plugins. */
 interface PluginEnabler {
-    enum class DisableReason(val value: Int) {
-        ENABLED(0),
-        DISABLED_MANUALLY(1),
-        DISABLED_INVALID_VERSION(2),
-        DISABLED_FROM_EXPLICIT_CRASH(3),
-        DISABLED_FROM_SYSTEM_CRASH(4),
-        DISABLED_UNKNOWN(100);
+    enum class DisableReason(val value: Int, val autoEnable: Boolean) {
+        ENABLED(0, autoEnable = true),
+        DISABLED_MANUALLY(1, autoEnable = false),
+        DISABLED_INVALID_VERSION(2, autoEnable = true),
+        DISABLED_FROM_EXPLICIT_CRASH(3, autoEnable = true),
+        DISABLED_FROM_SYSTEM_CRASH(4, autoEnable = true),
+        DISABLED_UNKNOWN(100, autoEnable = false);
 
         companion object {
             private val valueMap by lazy { entries.associateBy { it.value } }

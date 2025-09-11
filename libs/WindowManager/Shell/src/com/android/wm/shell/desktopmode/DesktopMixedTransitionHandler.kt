@@ -37,6 +37,8 @@ import com.android.internal.protolog.ProtoLog
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer
 import com.android.wm.shell.desktopmode.DesktopModeTransitionTypes.TRANSIT_DESKTOP_MODE_TASK_LIMIT_MINIMIZE
 import com.android.wm.shell.desktopmode.compatui.SystemModalsTransitionHandler
+import com.android.wm.shell.desktopmode.multidesks.DeskSwitchTransitionHandler
+import com.android.wm.shell.desktopmode.multidesks.DesksTransitionObserver
 import com.android.wm.shell.freeform.FreeformTaskTransitionHandler
 import com.android.wm.shell.freeform.FreeformTaskTransitionStarter
 import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_DESKTOP_MODE
@@ -63,6 +65,8 @@ class DesktopMixedTransitionHandler(
     @ShellMainThread private val handler: Handler,
     shellInit: ShellInit,
     private val rootTaskDisplayAreaOrganizer: RootTaskDisplayAreaOrganizer,
+    private val desksTransitionObserver: DesksTransitionObserver,
+    private val deskSwitchTransitionHandler: DeskSwitchTransitionHandler,
 ) : MixedTransitionHandler, FreeformTaskTransitionStarter {
 
     init {
@@ -175,6 +179,17 @@ class DesktopMixedTransitionHandler(
         }
     }
 
+    /** Starts a desk switch transition to be animated by this handler. */
+    fun startSwitchDeskTransition(
+        @WindowManager.TransitionType transitionType: Int,
+        wct: WindowContainerTransaction,
+    ): IBinder {
+        return transitions.startTransition(transitionType, wct, /* handler= */ this).also {
+            transition ->
+            pendingMixedTransitions.add(PendingMixedTransition.SwitchDesk(transition = transition))
+        }
+    }
+
     /** Notifies this handler that there is a pending transition for it to handle. */
     fun addPendingMixedTransition(pendingMixedTransition: PendingMixedTransition) {
         pendingMixedTransitions.add(pendingMixedTransition)
@@ -199,7 +214,13 @@ class DesktopMixedTransitionHandler(
     ): Boolean {
         val pending =
             pendingMixedTransitions.find { pending -> pending.transition == transition }
-                ?: return false.also { logV("No pending desktop transition") }
+                ?: return handleNonPendingTransition(
+                    transition,
+                    info,
+                    startTransaction,
+                    finishTransaction,
+                    finishCallback,
+                )
         pendingMixedTransitions.remove(pending)
         logV("Animating pending mixed transition: %s", pending)
         return when (pending) {
@@ -229,7 +250,37 @@ class DesktopMixedTransitionHandler(
                     finishTransaction,
                     finishCallback,
                 )
+            is PendingMixedTransition.SwitchDesk ->
+                animateSwitchDeskTransitionIfNeeded(
+                    transition,
+                    info,
+                    startTransaction,
+                    finishTransaction,
+                    finishCallback,
+                )
         }
+    }
+
+    private fun handleNonPendingTransition(
+        transition: IBinder,
+        info: TransitionInfo,
+        startTransaction: SurfaceControl.Transaction,
+        finishTransaction: SurfaceControl.Transaction,
+        finishCallback: TransitionFinishCallback,
+    ): Boolean {
+        // This might be a core based transition that might cause a desk switch.
+        return animateSwitchDeskTransitionIfNeeded(
+                transition,
+                info,
+                startTransaction,
+                finishTransaction,
+                finishCallback,
+            )
+            .also { animated ->
+                if (!animated) {
+                    logV("No pending desktop transition")
+                }
+            }
     }
 
     private fun animateCloseTransition(
@@ -423,6 +474,38 @@ class DesktopMixedTransitionHandler(
         )
     }
 
+    private fun animateSwitchDeskTransitionIfNeeded(
+        transition: IBinder,
+        info: TransitionInfo,
+        startTransaction: SurfaceControl.Transaction,
+        finishTransaction: SurfaceControl.Transaction,
+        finishCallback: TransitionFinishCallback,
+    ): Boolean {
+        desksTransitionObserver.findDeskToDeskTransition(transition)?.let { deskToDesk ->
+            with(deskToDesk) {
+                logV(
+                    "Animating mixed desk switch transition from desk=%s to desk%s",
+                    fromDeskId,
+                    toDeskId,
+                )
+                deskSwitchTransitionHandler.addPendingTransition(
+                    transition,
+                    userId,
+                    displayId,
+                    fromDeskId,
+                    toDeskId,
+                )
+            }
+        } ?: return false
+        return deskSwitchTransitionHandler.startAnimation(
+            transition,
+            info,
+            startTransaction,
+            finishTransaction,
+            finishCallback,
+        )
+    }
+
     override fun onTransitionConsumed(
         transition: IBinder,
         aborted: Boolean,
@@ -580,6 +663,8 @@ class DesktopMixedTransitionHandler(
             val minimizingTask: Int,
             val isLastTask: Boolean,
         ) : PendingMixedTransition()
+
+        data class SwitchDesk(override val transition: IBinder) : PendingMixedTransition()
     }
 
     private fun logV(msg: String, vararg arguments: Any?) {

@@ -153,6 +153,20 @@ flag {
 }
 
 flag {
+    name: "aapm_feature_usb_data_protection_delay_disable_auto_only"
+    namespace: "preload_safety"
+    description: "Limiting the delay disable for USB upon unplug only to auto connections"
+    bug: "444044714"
+}
+
+flag {
+    name: "aapm_feature_usb_data_protection_disable_data_for_charger_upon_lock"
+    namespace: "preload_safety"
+    description: "Disable USB data upon lock if existing connection is power brick"
+    bug: "444044714"
+}
+
+flag {
     name: "implicit_uri_grants_restricted_for_sendmultiple_imagecapture_actions"
     namespace: "permissions"
     description: "Flag for restricting implicit URI grants on SendMultiple and ImageCapture intents"

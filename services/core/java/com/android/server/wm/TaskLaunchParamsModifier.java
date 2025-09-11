@@ -423,7 +423,7 @@ class TaskLaunchParamsModifier implements LaunchParamsModifier {
     private boolean canInheritWindowingModeFromSource(@NonNull DisplayContent display,
             TaskDisplayArea suggestedDisplayArea, @Nullable ActivityRecord source,
             @Nullable Task targetTask) {
-        if (source == null) {
+        if (source == null || source.getTask() == null) {
             return false;
         }
 

@@ -59,7 +59,6 @@ import static com.android.server.locksettings.UnifiedProfilePasswordCrypto.remov
 import android.Manifest;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
-import android.annotation.RequiresPermission;
 import android.annotation.UserIdInt;
 import android.app.ActivityManager;
 import android.app.IActivityManager;
@@ -311,9 +310,10 @@ public class LockSettingsService extends ILockSettings.Stub {
     private ArrayList<Pair<Long, Integer>> mProtectorsToDestroyOnBootCompleted = new ArrayList<>();
 
     // Current password metrics for all secured users on the device. Updated when user unlocks the
-    // device or changes password. Removed if user is stopped with its CE key evicted.
+    // device or changes password. Removed when user is locked.
     @GuardedBy("this")
     private final SparseArray<PasswordMetrics> mUserPasswordMetrics = new SparseArray<>();
+
     @VisibleForTesting
     protected boolean mHasSecureLockScreen;
 
@@ -864,12 +864,14 @@ public class LockSettingsService extends ILockSettings.Stub {
     }
 
     @VisibleForTesting
-    @RequiresPermission(anyOf = {
-            android.Manifest.permission.MANAGE_USERS,
-            android.Manifest.permission.QUERY_USERS,
-            android.Manifest.permission.INTERACT_ACROSS_USERS}, conditional = true)
     void onUserStopped(int userId) {
         hideEncryptionNotification(new UserHandle(userId));
+
+        if (android.security.Flags.resetAuthFlagsAndMetricsInLockUser()) {
+            // Don't perform any locking actions (e.g. locking CE storage) here, since the user is
+            // not necessarily being locked. These actions happen in lockUser() instead.
+            return;
+        }
 
         // Normally, CE storage is locked when a user is stopped, and restarting the user requires
         // strong auth.  Therefore, reset the user's strong auth flags.  The exception is users that
@@ -3508,6 +3510,13 @@ public class LockSettingsService extends ILockSettings.Stub {
         return true;
     }
 
+    /*
+     * Try to lock, evict, and/or zeroize all user secrets that were unlocked by primary
+     * authentication, such that they will become available only via primary authentication again.
+     *
+     * Ideally, the result would be identical to the boot-time state. In reality, that state is not
+     * truly reached, and we just do the best we can.
+     */
     private void lockUser(@UserIdInt int userId) {
         // Lock the user's credential-encrypted storage.
         try {
@@ -3522,16 +3531,28 @@ public class LockSettingsService extends ILockSettings.Stub {
             lockKeystore(userId);
         }
 
-        // Reset user's strong auth flags
-        mHandler.post(() -> {
-            UserProperties userProperties = getUserProperties(userId);
-            if (userProperties != null && userProperties
-                    .getAllowStoppingUserWithDelayedLocking()) {
-                int strongAuthRequired = LockPatternUtils.StrongAuthTracker
-                        .getDefaultFlags(mContext);
-                requireStrongAuth(strongAuthRequired, userId);
+        if (android.security.Flags.resetAuthFlagsAndMetricsInLockUser()) {
+            // Reset the user's strong auth flags.
+            int strongAuthFlags = LockPatternUtils.StrongAuthTracker.getDefaultFlags(mContext);
+            requireStrongAuth(strongAuthFlags, userId);
+
+            // Remove the user's password metrics.
+            synchronized (this) {
+                mUserPasswordMetrics.remove(userId);
             }
-        });
+        } else {
+            // Reset the user's strong auth flags, if it wasn't already done by onUserStopped().
+            mHandler.post(
+                    () -> {
+                        UserProperties userProperties = getUserProperties(userId);
+                        if (userProperties != null
+                                && userProperties.getAllowStoppingUserWithDelayedLocking()) {
+                            int strongAuthRequired =
+                                    LockPatternUtils.StrongAuthTracker.getDefaultFlags(mContext);
+                            requireStrongAuth(strongAuthRequired, userId);
+                        }
+                    });
+        }
     }
 
     @Override

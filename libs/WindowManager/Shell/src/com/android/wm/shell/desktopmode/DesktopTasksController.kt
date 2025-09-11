@@ -137,6 +137,7 @@ import com.android.wm.shell.desktopmode.data.DesktopRepository.DeskChangeListene
 import com.android.wm.shell.desktopmode.data.DesktopRepository.VisibleTasksListener
 import com.android.wm.shell.desktopmode.data.DesktopRepositoryInitializer
 import com.android.wm.shell.desktopmode.data.DesktopRepositoryInitializer.DeskRecreationFactory
+import com.android.wm.shell.desktopmode.data.persistence.DesktopTaskTilingState
 import com.android.wm.shell.desktopmode.desktopfirst.DesktopFirstListenerManager
 import com.android.wm.shell.desktopmode.desktopfirst.isDisplayDesktopFirst
 import com.android.wm.shell.desktopmode.desktopwallpaperactivity.DesktopWallpaperActivityTokenProvider
@@ -187,6 +188,7 @@ import com.android.wm.shell.windowdecor.OnTaskResizeAnimationListener
 import com.android.wm.shell.windowdecor.extension.isFullscreen
 import com.android.wm.shell.windowdecor.extension.isMultiWindow
 import com.android.wm.shell.windowdecor.extension.requestingImmersive
+import com.android.wm.shell.windowdecor.tiling.DesktopTilingWindowDecoration.Companion.getDividerBoundsForZombieSession
 import com.android.wm.shell.windowdecor.tiling.SnapEventHandler
 import com.android.wm.shell.windowdecor.tiling.TilingDisplayReconnectEventHandler
 import java.io.PrintWriter
@@ -942,7 +944,55 @@ class DesktopTasksController(
                 val taskIds = desktopRepository.getActiveTaskIdsInDesk(deskId)
                 for (taskId in taskIds) {
                     val task = shellTaskOrganizer.getRunningTaskInfo(taskId) ?: continue
-                    applyFreeformDisplayChange(wct, task, destinationDisplayId, deskId)
+                    val taskTilingState =
+                        when (taskId) {
+                            desktopRepository.getLeftTiledTask(deskId) ->
+                                DesktopTaskTilingState.LEFT
+                            desktopRepository.getRightTiledTask(deskId) ->
+                                DesktopTaskTilingState.RIGHT
+                            else -> DesktopTaskTilingState.NONE
+                        }
+                    val newStableBounds = Rect()
+                    val oldStableBounds = Rect()
+                    val sourceLayout = displayController.getDisplayLayout(task.displayId) ?: return
+                    val destLayout = destDisplayLayout ?: return
+                    destLayout.getStableBounds(newStableBounds)
+                    sourceLayout.getStableBounds(oldStableBounds)
+                    val newDisplayContext =
+                        displayController.getDisplayContext(destinationDisplayId) ?: return
+                    val newToOldDpiRatio =
+                        destLayout.densityDpi().toDouble() / sourceLayout.densityDpi().toDouble()
+                    val dividerBounds: Rect? =
+                        when (taskTilingState) {
+                            DesktopTaskTilingState.LEFT ->
+                                getDividerBoundsForZombieSession(
+                                    task.configuration.windowConfiguration.bounds,
+                                    null,
+                                    newStableBounds,
+                                    oldStableBounds,
+                                    newToOldDpiRatio,
+                                    newDisplayContext,
+                                )
+                            DesktopTaskTilingState.RIGHT ->
+                                getDividerBoundsForZombieSession(
+                                    null,
+                                    task.configuration.windowConfiguration.bounds,
+                                    newStableBounds,
+                                    oldStableBounds,
+                                    newToOldDpiRatio,
+                                    newDisplayContext,
+                                )
+                            else -> null
+                        }
+                    applyFreeformDisplayChange(
+                        wct,
+                        task,
+                        destDisplayLayout,
+                        displayController.getDisplayLayout(task.displayId),
+                        taskTilingState,
+                        deskId,
+                        dividerBounds,
+                    )
                 }
                 runOnTransitStartList.add { transition ->
                     desksTransitionObserver.addPendingTransition(
@@ -966,6 +1016,58 @@ class DesktopTasksController(
                     ?.let { runOnTransitStartList.add(it) }
             }
         }
+    }
+
+    fun onDisplayDpiChanging(
+        displayId: Int,
+        newConfig: Configuration,
+        oldDisplayLayout: DisplayLayout?,
+    ) {
+        if (!DesktopExperienceFlags.ENABLE_DISPLAY_DISCONNECT_INTERACTION.isTrue) return
+        val newDisplayLayout = displayController.getDisplayLayout(displayId) ?: return
+        if (oldDisplayLayout == null) return
+        val oldStableBounds = Rect()
+        oldDisplayLayout.getStableBounds(oldStableBounds)
+        val newToOldDpiRatio =
+            newDisplayLayout.densityDpi().toDouble() / oldDisplayLayout.densityDpi()
+        snapEventHandler.onDisplayLayoutChange(
+            displayId,
+            newConfig,
+            oldStableBounds,
+            newToOldDpiRatio,
+        )
+        val stableBounds = Rect()
+        newDisplayLayout?.getStableBounds(stableBounds)
+
+        val wct = WindowContainerTransaction()
+        val userId = userRepositories.current.userId
+        userRepositories.forAllRepositories { userRepo ->
+            if (userId == userRepo.userId) {
+                val deskIds = userRepo.getDeskIds(displayId).toList()
+                for (deskId in deskIds) {
+                    val deskTasks = userRepo.getActiveTaskIdsInDesk(deskId)
+                    if (deskTasks.isEmpty()) continue
+                    for (taskId in deskTasks) {
+                        val task = shellTaskOrganizer.getRunningTaskInfo(taskId) ?: continue
+                        val taskTilingState =
+                            when (taskId) {
+                                userRepo.getLeftTiledTask(deskId) -> DesktopTaskTilingState.LEFT
+                                userRepo.getRightTiledTask(deskId) -> DesktopTaskTilingState.RIGHT
+                                else -> DesktopTaskTilingState.NONE
+                            }
+                        applyFreeformDisplayChange(
+                            wct,
+                            task,
+                            newDisplayLayout,
+                            oldDisplayLayout,
+                            taskTilingState,
+                            deskId,
+                        )
+                    }
+                }
+            }
+        }
+        transitions.startTransition(TRANSIT_CHANGE, wct, null)
     }
 
     private fun handleProjectedModeDisconnect(
@@ -1602,13 +1704,14 @@ class DesktopTasksController(
         wct: WindowContainerTransaction,
         displayId: Int,
         taskInfo: RunningTaskInfo,
-    ): ((IBinder) -> Unit) {
+    ): ((IBinder) -> Unit)? {
         val taskId = taskInfo.taskId
         val userId = taskInfo.userId
         val repository = userRepositories.getProfile(userId)
         val deskId = repository.getDeskIdForTask(taskInfo.taskId)
         if (deskId == null && DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
-            error("Did not find desk for task: $taskId")
+            logW("onDesktopWindowClose: desk not found for task: $taskId")
+            return null
         }
         snapEventHandler.removeTaskIfTiled(displayId, taskId)
         val shouldExitDesktop =
@@ -2262,7 +2365,13 @@ class DesktopTasksController(
                 )
             }
         val t =
-            if (remoteTransition == null) {
+            // If a desk is active and we are activating a new desk, start switch desk transition.
+            if (repository.isAnyDeskActive(displayId) && shouldActivateDesk) {
+                desktopMixedTransitionHandler.startSwitchDeskTransition(
+                    transitionType = transitionType,
+                    wct = launchTransaction,
+                )
+            } else if (remoteTransition == null) {
                 logV("startLaunchTransition -- no remoteTransition -- wct = $launchTransaction")
                 desktopMixedTransitionHandler.startLaunchTransition(
                     transitionType = transitionType,
@@ -2539,7 +2648,16 @@ class DesktopTasksController(
                         wct.setAppBounds(task.token, appBounds)
                     }
                 } else if (DesktopExperienceFlags.ENABLE_MOVE_TO_NEXT_DISPLAY_SHORTCUT.isTrue) {
-                    applyFreeformDisplayChange(wct, task, displayId, destinationDeskId)
+                    applyFreeformDisplayChange(
+                        wct,
+                        task,
+                        displayController.getDisplayLayout(displayId),
+                        displayController.getDisplayLayout(task.displayId),
+                        // Tiling state will be broken if it exists when a task is moved to next
+                        // display.
+                        DesktopTaskTilingState.NONE,
+                        destinationDeskId,
+                    )
                 }
             }
 
@@ -4576,20 +4694,24 @@ class DesktopTasksController(
     }
 
     /**
-     * Apply changes to move a freeform task from one display to another, which includes handling
-     * density changes between displays.
+     * Apply changes to move a freeform task on display or it's setting changing, which includes
+     * handling density changes between displays or on the same display.
      */
     private fun applyFreeformDisplayChange(
         wct: WindowContainerTransaction,
         taskInfo: RunningTaskInfo,
-        destDisplayId: Int,
-        destDeskId: Int,
+        destLayout: DisplayLayout?,
+        sourceLayout: DisplayLayout?,
+        taskTilingState: DesktopTaskTilingState,
+        deskId: Int,
+        updatedDividerBounds: Rect? = null,
     ) {
-        val sourceLayout = displayController.getDisplayLayout(taskInfo.displayId) ?: return
-        val destLayout = displayController.getDisplayLayout(destDisplayId) ?: return
+        if (sourceLayout == null || destLayout == null) return
         val bounds = taskInfo.configuration.windowConfiguration.bounds
-        val scaledWidth = bounds.width() * destLayout.densityDpi() / sourceLayout.densityDpi()
-        val scaledHeight = bounds.height() * destLayout.densityDpi() / sourceLayout.densityDpi()
+        val newToOldDpiRatio =
+            destLayout.densityDpi().toDouble() / sourceLayout.densityDpi().toDouble()
+        val scaledWidth = bounds.width() * newToOldDpiRatio
+        val scaledHeight = bounds.height() * newToOldDpiRatio
         val sourceWidthMargin = sourceLayout.width() - bounds.width()
         val sourceHeightMargin = sourceLayout.height() - bounds.height()
         val destWidthMargin = destLayout.width() - scaledWidth
@@ -4606,12 +4728,39 @@ class DesktopTasksController(
             } else {
                 destHeightMargin / 2
             }
+        val sourceStableBounds = Rect()
+        val destStableBounds = Rect()
+        sourceLayout.getStableBounds(sourceStableBounds)
+        destLayout.getStableBounds(destStableBounds)
         val boundsWithinDisplay =
-            if (destWidthMargin >= 0 && destHeightMargin >= 0) {
-                Rect(0, 0, scaledWidth, scaledHeight).apply {
+            if (taskTilingState == DesktopTaskTilingState.LEFT) {
+                val dividerBounds =
+                    updatedDividerBounds ?: snapEventHandler.getDividerBounds(deskId)
+                Rect(
+                    destStableBounds.left,
+                    destStableBounds.top,
+                    dividerBounds.left,
+                    destStableBounds.bottom,
+                )
+            } else if (taskTilingState == DesktopTaskTilingState.RIGHT) {
+                val dividerBounds =
+                    updatedDividerBounds ?: snapEventHandler.getDividerBounds(deskId)
+                Rect(
+                    dividerBounds.right,
+                    destStableBounds.top,
+                    destStableBounds.right,
+                    destStableBounds.bottom,
+                )
+            } else if (
+                destWidthMargin >= 0 &&
+                    destHeightMargin >= 0 &&
+                    (bounds.width() < sourceStableBounds.width() ||
+                        bounds.height() < sourceStableBounds.height())
+            ) {
+                Rect(0, 0, scaledWidth.toInt(), scaledHeight.toInt()).apply {
                     offsetTo(
-                        scaledLeft.coerceIn(0, destWidthMargin),
-                        scaledTop.coerceIn(0, destHeightMargin),
+                        scaledLeft.coerceIn(0.0, destWidthMargin).toInt(),
+                        scaledTop.coerceIn(0.0, destHeightMargin).toInt(),
                     )
                 }
             } else {

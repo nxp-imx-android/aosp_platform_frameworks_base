@@ -38,7 +38,6 @@ import static android.window.WindowContainerTransaction.HierarchyOp.HIERARCHY_OP
 import static com.android.window.flags.Flags.enableFullScreenWindowOnRemovingSplitScreenStageBugfix;
 import static com.android.window.flags.Flags.enableMultiDisplaySplit;
 import static com.android.window.flags.Flags.enableNonDefaultDisplaySplit;
-import static com.android.wm.shell.Flags.enableEnterSplitRemoveBubble;
 import static com.android.wm.shell.Flags.enableFlexibleSplit;
 import static com.android.wm.shell.Flags.enableFlexibleTwoAppSplit;
 import static com.android.wm.shell.Flags.splitDisableChildTaskBounds;
@@ -2237,16 +2236,14 @@ public class StageCoordinator extends StageCoordinatorAbstract {
         // TODO (b/336477473): Disallow enter PiP when launching a task in split by default;
         //                     this might have to be changed as more split-to-pip cujs are defined.
         options.setDisallowEnterPictureInPictureWhileLaunching(true);
-        if (enableEnterSplitRemoveBubble()) {
-            mBubbleController.ifPresent(bc -> {
-                if (bc.hasBubbles()) {
-                    // Bubbles are present. Set an empty rect for the launch bounds in case we
-                    // are launching an existing bubble task to split. Bubbles sets bounds on the
-                    // task level and we need to clear them before a task can enter split screen.
-                    options.setLaunchBounds(new Rect());
-                }
-            });
-        }
+        mBubbleController.ifPresent(bc -> {
+            if (bc.hasBubbles()) {
+                // Bubbles are present. Set an empty rect for the launch bounds in case we
+                // are launching an existing bubble task to split. Bubbles sets bounds on the
+                // task level and we need to clear them before a task can enter split screen.
+                options.setLaunchBounds(new Rect());
+            }
+        });
 
         opts.putAll(options.toBundle());
     }
@@ -2379,18 +2376,21 @@ public class StageCoordinator extends StageCoordinatorAbstract {
             return;
         }
         int stageToTop = STAGE_TYPE_UNDEFINED;
-        if (enableFlexibleSplit()) {
-            for (StageTaskListener activeStage : mStageOrderOperator.getActiveStages()) {
-                // See if any other stage still has children
-                if (activeStage.getChildCount() > 0) {
-                    stageToTop = activeStage.getId();
-                    break;
+        if (isSplitScreenVisible()) {
+            if (enableFlexibleSplit()) {
+                for (StageTaskListener activeStage : mStageOrderOperator.getActiveStages()) {
+                    // See if any other stage still has children
+                    if (activeStage.getChildCount() > 0) {
+                        stageToTop = activeStage.getId();
+                        break;
+                    }
                 }
-            }
-        } else {
-            final StageTaskListener remainingStage = stage == mMainStage ? mSideStage : mMainStage;
-            if (remainingStage.getChildCount() > 0) {
-                stageToTop = remainingStage.getId();
+            } else {
+                final StageTaskListener remainingStage =
+                        stage == mMainStage ? mSideStage : mMainStage;
+                if (remainingStage.getChildCount() > 0) {
+                    stageToTop = remainingStage.getId();
+                }
             }
         }
         ProtoLog.d(WM_SHELL_SPLIT_SCREEN,
@@ -3575,10 +3575,13 @@ public class StageCoordinator extends StageCoordinatorAbstract {
                 recentTasks -> recentTasks.removeSplitPair(triggerTask.taskId));
         logExit(EXIT_REASON_CHILD_TASK_ENTER_BUBBLE);
 
-        int stage = getStageOfTask(triggerTask.taskId);
-        int topStage = (stage == STAGE_TYPE_MAIN)
-                ? STAGE_TYPE_SIDE
-                : STAGE_TYPE_MAIN;
+        int topStage = STAGE_TYPE_UNDEFINED;
+        if (isSplitScreenVisible()) {
+            int stage = getStageOfTask(triggerTask.taskId);
+            topStage = (stage == STAGE_TYPE_MAIN)
+                    ? STAGE_TYPE_SIDE
+                    : STAGE_TYPE_MAIN;
+        }
         prepareExitSplitScreen(topStage, outWCT, EXIT_REASON_UNKNOWN);
     }
 

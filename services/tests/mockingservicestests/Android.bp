@@ -48,6 +48,7 @@ android_test {
         "androidx.test.ext.truth",
         "flag-junit",
         "frameworks-base-testutils",
+        "guava-android-testlib", // for EqualsTester
         "hamcrest-library",
         "kotlin-test",
         "mockingservicestests-utils-mockito",

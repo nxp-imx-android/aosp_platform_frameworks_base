@@ -22,7 +22,7 @@ import static android.view.KeyEvent.KEYCODE_UNKNOWN;
 import static android.view.WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS;
 
 import static com.android.hardware.input.Flags.enableCustomizableInputGestures;
-import static com.android.hardware.input.Flags.fixKeyboardInterceptorPolicyCall;
+
 import static com.android.hardware.input.Flags.keyEventActivityDetection;
 import static com.android.hardware.input.Flags.touchpadVisualizer;
 import static com.android.server.policy.WindowManagerPolicy.ACTION_PASS_TO_USER;
@@ -3934,14 +3934,7 @@ public class InputManagerService extends IInputManager.Stub
 
         @Override
         public long interceptKeyCombinationBeforeAccessibility(@NonNull KeyEvent event) {
-            if (fixKeyboardInterceptorPolicyCall()) {
                 return mKeyGestureController.interceptKeyCombinationBeforeAccessibility(event);
-            } else {
-                return mWindowManagerCallbacks.interceptKeyBeforeDispatching(
-                        /* focusedToken= */null, event)
-                        ? KeyGestureController.KEY_INTERCEPT_RESULT_CONSUMED
-                        : KeyGestureController.KEY_INTERCEPT_RESULT_NOT_CONSUMED;
-            }
         }
 
         @NonNull
@@ -4219,6 +4212,11 @@ public class InputManagerService extends IInputManager.Stub
         if (filter != null) {
             mNative.setAccessibilityPointerMotionFilterEnabled(true);
         }
+    }
+
+    @Nullable
+    String getPhysicalLocationPath(int deviceId) {
+        return mNative.getPhysicalLocationPath(deviceId);
     }
 
     interface KeyboardBacklightControllerInterface {

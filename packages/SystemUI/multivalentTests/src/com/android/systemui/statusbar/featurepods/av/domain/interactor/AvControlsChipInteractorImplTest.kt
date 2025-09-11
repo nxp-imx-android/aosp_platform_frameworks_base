@@ -41,10 +41,6 @@ class AvControlsChipInteractorImplTest() : AvControlsChipInteractorTestBase() {
 
     @Test
     @EnableFlags(FLAG_EXPANDED_PRIVACY_INDICATORS_ON_LARGE_SCREEN)
-    fun enabled() = kosmos.runTest { assertThat(underTest.isEnabled.value).isEqualTo(true) }
-
-    @Test
-    @EnableFlags(FLAG_EXPANDED_PRIVACY_INDICATORS_ON_LARGE_SCREEN)
     fun defaultModelIsInactive() =
         kosmos.runTest { assertThat(lastModel()).isEqualTo(inactiveModel()) }
 

@@ -18,6 +18,7 @@ package com.android.systemui.media.controls.util
 
 import android.os.fakeHandler
 import com.android.systemui.kosmos.Kosmos
+import com.android.systemui.kosmos.applicationCoroutineScope
 
 val Kosmos.suggestedDeviceManagerFactory by
-    Kosmos.Fixture { SuggestedDeviceManagerFactory(fakeHandler) }
+    Kosmos.Fixture { SuggestedDeviceManagerFactory(fakeHandler, applicationCoroutineScope) }

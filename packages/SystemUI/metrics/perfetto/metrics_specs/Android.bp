@@ -25,6 +25,7 @@ filegroup {
         "android_sf_critical_work_main_thread.textproto",
         "android_dmabuf_per_process_metric.textproto",
         "android_sf_critical_work_region_sampling.textproto",
+        "android_gralloc_buffers_per_process_metric.textproto",
     ],
 }
 
@@ -46,6 +47,11 @@ prebuilt_etc {
 prebuilt_etc {
     name: "android_sf_critical_work_region_sampling.textproto",
     src: "android_sf_critical_work_region_sampling.textproto",
+}
+
+prebuilt_etc {
+    name: "android_gralloc_buffers_per_process_metric.textproto",
+    src: "android_gralloc_buffers_per_process_metric.textproto",
 }
 
 python_library_host {

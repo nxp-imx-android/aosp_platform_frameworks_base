@@ -770,7 +770,7 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
 
     static final int BLAST_TIMEOUT_DURATION = 5000; /* milliseconds */
 
-    class DrawHandler {
+    static class DrawHandler {
         final Consumer<SurfaceControl.Transaction> mConsumer;
         final int mSeqId;
 
@@ -779,7 +779,7 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
             mConsumer = consumer;
         }
     }
-    private final List<DrawHandler> mDrawHandlers = new ArrayList<>();
+    private final ArrayList<DrawHandler> mDrawHandlers = new ArrayList<>();
 
     /**
      * Indicates whether inset animations are currently running within the Window.
@@ -3290,11 +3290,13 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
     boolean destroySurface(boolean cleanupOnResume, boolean appStopped) {
         boolean destroyedSomething = false;
 
-        // Copying to a different list as multiple children can be removed.
-        final ArrayList<WindowState> childWindows = new ArrayList<>(mChildren);
-        for (int i = childWindows.size() - 1; i >= 0; --i) {
-            final WindowState c = childWindows.get(i);
-            destroyedSomething |= c.destroySurface(cleanupOnResume, appStopped);
+        if (!mChildren.isEmpty()) {
+            // Copying to a different list as multiple children can be removed.
+            final ArrayList<WindowState> childWindows = new ArrayList<>(mChildren);
+            for (int i = childWindows.size() - 1; i >= 0; --i) {
+                final WindowState c = childWindows.get(i);
+                destroyedSomething |= c.destroySurface(cleanupOnResume, appStopped);
+            }
         }
 
         if (!(appStopped || mWindowRemovalAllowed || cleanupOnResume)) {
@@ -4956,7 +4958,7 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
                 new WindowAnimationSpec(anim, position, false /* canSkipFirstFrame */,
                         0 /* windowCornerRadius */),
                 mWmService.mSurfaceAnimationRunner);
-        final Transaction t = mActivityRecord != null
+        final Transaction t = mActivityRecord != null && mActivityRecord.isVisibleRequested()
                 ? getSyncTransaction() : getPendingTransaction();
         startAnimation(t, adapter);
         commitPendingTransaction();
@@ -6024,41 +6026,38 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
 
     /**
      * Drain the draw handlers, called from finishDrawing()
-     * See {@link WindowState#mPendingDrawHandlers}
      */
-    boolean executeDrawHandlers(SurfaceControl.Transaction t, int seqId) {
-        boolean hadHandlers = false;
+    private boolean executeDrawHandlers(@Nullable SurfaceControl.Transaction t, int seqId) {
+        final int numDrawHandlers = mDrawHandlers.size();
+        if (numDrawHandlers == 0) {
+            return false;
+        }
+
         boolean applyHere = false;
         if (t == null) {
             t = mTmpTransaction;
             applyHere = true;
         }
 
-        final List<DrawHandler> handlersToRemove = new ArrayList<>();
-        // Iterate forwards to ensure we process in the same order
-        // we added.
-        for (int i = 0; i < mDrawHandlers.size(); i++) {
+        final ArrayList<DrawHandler> consumedHandlers = new ArrayList<>();
+        // Iterate in the order the handlers were added.
+        for (int i = 0; i < numDrawHandlers; i++) {
             final DrawHandler h = mDrawHandlers.get(i);
             if (h.mSeqId <= seqId) {
                 h.mConsumer.accept(t);
-                handlersToRemove.add(h);
-                hadHandlers = true;
+                consumedHandlers.add(h);
             }
         }
-        for (int i = 0; i < handlersToRemove.size(); i++) {
-            final DrawHandler h = handlersToRemove.get(i);
-            mDrawHandlers.remove(h);
+        if (consumedHandlers.isEmpty()) {
+            return false;
         }
 
-        if (hadHandlers) {
-            mWmService.mH.removeMessages(WINDOW_STATE_BLAST_SYNC_TIMEOUT, this);
-        }
-
+        mDrawHandlers.removeAll(consumedHandlers);
+        mWmService.mH.removeMessages(WINDOW_STATE_BLAST_SYNC_TIMEOUT, this);
         if (applyHere) {
             t.apply();
         }
-
-        return hadHandlers;
+        return true;
     }
 
     /**

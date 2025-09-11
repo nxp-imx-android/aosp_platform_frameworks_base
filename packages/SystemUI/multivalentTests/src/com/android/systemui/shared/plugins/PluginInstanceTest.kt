@@ -30,6 +30,7 @@ import com.android.systemui.log.core.MessageBuffer
 import com.android.systemui.plugins.Plugin
 import com.android.systemui.plugins.PluginLifecycleManager
 import com.android.systemui.plugins.PluginListener
+import com.android.systemui.plugins.PluginManager
 import com.android.systemui.plugins.PluginWrapper
 import com.android.systemui.plugins.TestPlugin
 import com.android.systemui.plugins.annotations.Requires
@@ -96,7 +97,7 @@ class PluginInstanceTest : SysuiTestCase() {
             PluginInstance.Factory(
                 mVersionChecker,
                 javaClass.classLoader!!,
-                listOf(PRIVILEGED_PACKAGE),
+                PluginManager.Config(listOf(PRIVILEGED_PACKAGE)),
                 BuildInfo(BuildVariant.User, isDebuggable = false),
             ) { _ ->
                 val plugin = TestPluginImpl(mCounter)

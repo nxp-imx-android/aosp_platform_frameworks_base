@@ -31,6 +31,7 @@ import com.android.systemui.SysuiTestCase
 import com.android.systemui.SysuiTestableContext
 import com.android.systemui.plugins.Plugin
 import com.android.systemui.plugins.PluginListener
+import com.android.systemui.plugins.PluginManager
 import com.android.systemui.plugins.annotations.Requires
 import com.android.systemui.shared.plugins.PluginEnabler.DisableReason
 import com.android.systemui.util.concurrency.FakeExecutor
@@ -72,7 +73,7 @@ class PluginActionManagerTest : SysuiTestCase() {
             PluginInstance.Factory(
                 VersionCheckerImpl(),
                 this::class.java.classLoader!!,
-                emptyList(),
+                PluginManager.Config(),
                 BuildInfo(BuildVariant.User, isDebuggable = false),
             ) {
             override fun <T : Plugin> create(
@@ -103,7 +104,7 @@ class PluginActionManagerTest : SysuiTestCase() {
                 mFakeExecutor,
                 mNotificationManager,
                 mMockEnabler,
-                ArrayList(),
+                PluginManager.Config(),
                 mPluginInstanceFactory,
             )
 
@@ -113,7 +114,6 @@ class PluginActionManagerTest : SysuiTestCase() {
                 mMockListener,
                 TestPlugin::class.java,
                 allowMultiple = true,
-                isDebuggable = true,
             )
         whenever(mMockPlugin.version).thenReturn(1)
     }
@@ -175,7 +175,6 @@ class PluginActionManagerTest : SysuiTestCase() {
                 mMockListener,
                 TestPlugin::class.java,
                 allowMultiple = true,
-                isDebuggable = false,
             )
         setupFakePmQuery()
 
@@ -199,17 +198,11 @@ class PluginActionManagerTest : SysuiTestCase() {
                 mFakeExecutor,
                 mNotificationManager,
                 mMockEnabler,
-                listOf(PRIVILEGED_PACKAGE),
+                PluginManager.Config(listOf(PRIVILEGED_PACKAGE)),
                 mPluginInstanceFactory,
             )
         mPluginActionManager =
-            factory.create(
-                "myAction",
-                mMockListener,
-                TestPlugin::class.java,
-                allowMultiple = true,
-                isDebuggable = false,
-            )
+            factory.create("myAction", mMockListener, TestPlugin::class.java, allowMultiple = true)
         setupFakePmQuery()
 
         mPluginActionManager.loadAll()
@@ -259,17 +252,11 @@ class PluginActionManagerTest : SysuiTestCase() {
                 mFakeExecutor,
                 mNotificationManager,
                 mMockEnabler,
-                listOf(PRIVILEGED_PACKAGE),
+                PluginManager.Config(listOf(PRIVILEGED_PACKAGE)),
                 mPluginInstanceFactory,
             )
         mPluginActionManager =
-            factory.create(
-                "myAction",
-                mMockListener,
-                TestPlugin::class.java,
-                allowMultiple = true,
-                isDebuggable = false,
-            )
+            factory.create("myAction", mMockListener, TestPlugin::class.java, allowMultiple = true)
 
         createPlugin() // Get into valid created state.
 

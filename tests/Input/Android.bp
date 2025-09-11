@@ -19,6 +19,9 @@ android_test {
         "src/**/*.java",
         "src/**/*.kt",
     ],
+    kotlincflags: [
+        "-Werror",
+    ],
     asset_dirs: ["assets"],
     platform_apis: true,
     certificate: "platform",

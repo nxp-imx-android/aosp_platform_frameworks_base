@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 The Android Open Source Project
+ * Copyright (C) 2025 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,12 +16,18 @@
 package com.android.settingslib.media
 
 import android.media.RoutingChangeInfo
-import android.os.Handler
 import android.util.Log
-import androidx.annotation.MainThread
 import androidx.annotation.OpenForTesting
-import com.android.internal.annotations.GuardedBy
 import com.android.settingslib.media.LocalMediaManager.MediaDeviceState
+import java.util.concurrent.atomic.AtomicBoolean
+import kotlin.coroutines.resume
+import kotlin.time.Duration.Companion.seconds
+import kotlinx.coroutines.CancellableContinuation
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.coroutines.withTimeoutOrNull
 
 typealias ConnectionFinishedCallback = (SuggestedDeviceState, Boolean) -> Unit
 
@@ -31,145 +37,144 @@ typealias ConnectionFinishedCallback = (SuggestedDeviceState, Boolean) -> Unit
  */
 @OpenForTesting
 open class SuggestedDeviceConnectionManager(
-    val localMediaManager: LocalMediaManager,
-    var connectSuggestedDeviceHandler: Handler,
+    private val localMediaManager: LocalMediaManager,
+    private val coroutineScope: CoroutineScope,
 ) {
-    /** Callback for notifying that connection to suggested device is finished. */
-    private var connectionFinishedCallback: ConnectionFinishedCallback? = null
-    private val lock = Any()
-
-    @GuardedBy("lock") var connectingSuggestedDeviceState: ConnectingSuggestedDeviceState? = null
+    private val isConnectInProgress = AtomicBoolean(false)
+    private var activeJob: Job? = null
 
     /**
      * Connects to a suggested device. If the device is not already scanned, a scan will be started
      * to attempt to discover the device.
      *
-     * @param suggestion the suggested device to connect to.
-     * @param routingChangeInfo the invocation details of the connect device request.
+     * @param suggestedDeviceState the suggested device to connect to.
+     * @param routingChangeInfo the invocation details of the connect device request. See [ ]
+     * @param callback the callback to be invoked when the connection attempt is complete.
      */
     @OpenForTesting
-    open fun connectSuggestedDevice(
-        suggestion: SuggestedDeviceState,
+    @Throws(IllegalStateException::class)
+    open fun connect(
+        suggestedDeviceState: SuggestedDeviceState,
         routingChangeInfo: RoutingChangeInfo,
+        callback: ConnectionFinishedCallback,
     ) {
-        synchronized(lock) {
-            if (connectingSuggestedDeviceState != null) {
-                Log.w(TAG, "Connection already in progress.")
-                return
-            }
-            for (device in localMediaManager.mediaDevices) {
-                if (suggestion.suggestedDeviceInfo.routeId == device.id) {
-                    Log.i(TAG, "Device is available, connecting. deviceId = ${device.id}")
-                    localMediaManager.connectDevice(device, routingChangeInfo)
-                    return
+        if (isConnectInProgress.compareAndSet(false, true)) {
+            activeJob =
+                coroutineScope.launch {
+                    try {
+                        val result = awaitConnect(suggestedDeviceState, routingChangeInfo)
+                        callback(suggestedDeviceState, result)
+                    } finally {
+                        isConnectInProgress.set(false)
+                    }
                 }
-            }
-            connectingSuggestedDeviceState =
-                ConnectingSuggestedDeviceState(suggestion, routingChangeInfo.entryPoint).apply {
-                    tryConnect()
-                }
+        } else {
+            throw IllegalStateException("Connection already in progress")
         }
     }
 
     @OpenForTesting
-    open fun setConnectionFinishedCallback(callback: ConnectionFinishedCallback?) {
-        connectionFinishedCallback = callback
+    open fun cancel() {
+        activeJob?.cancel()
     }
 
-    inner class ConnectingSuggestedDeviceState(
-        val suggestedDeviceState: SuggestedDeviceState,
-        @RoutingChangeInfo.EntryPoint entryPoint: Int,
-    ) {
-        var isConnectionAttemptActive: Boolean = false
-        var didAttemptCompleteSuccessfully: Boolean = false
+    private suspend fun awaitConnect(
+        suggestedDeviceState: SuggestedDeviceState,
+        routingChangeInfo: RoutingChangeInfo,
+    ): Boolean {
+        val suggestedRouteId = suggestedDeviceState.suggestedDeviceInfo.routeId
+        val deviceFromCache = getDeviceByRouteId(localMediaManager.mediaDevices, suggestedRouteId)
+        val deviceToConnect =
+            deviceFromCache?.also { Log.i(TAG, "Device from cache found.") }
+                ?: run {
+                    Log.i(TAG, "Scanning for device.")
+                    awaitScanForDevice(suggestedRouteId)
+                }
+        if (deviceToConnect == null) {
+            Log.w(TAG, "Failed to find a device to connect to. routeId = $suggestedRouteId")
+            return false
+        }
+        Log.i(TAG, "Connecting to device. id = ${deviceToConnect.id}")
+        return awaitConnectToDevice(deviceToConnect, routingChangeInfo)
+    }
 
-        private val mDeviceCallback =
-            object : LocalMediaManager.DeviceCallback {
-                override fun onDeviceListUpdate(mediaDevices: List<MediaDevice>) {
-                    synchronized(lock) {
-                        for (mediaDevice in mediaDevices) {
-                            if (isSuggestedDevice(mediaDevice)) {
+    private suspend fun awaitScanForDevice(suggestedRouteId: String): MediaDevice? {
+        var callback: LocalMediaManager.DeviceCallback? = null
+        try {
+            return withTimeoutOrNull(SCAN_TIMEOUT) {
+                suspendCancellableCoroutine { continuation ->
+                    callback = object : LocalMediaManager.DeviceCallback {
+                        override fun onDeviceListUpdate(newDevices: List<MediaDevice>?) {
+                            val device = getDeviceByRouteId(newDevices, suggestedRouteId)
+                            if (device != null) {
                                 Log.i(
                                     TAG,
-                                    "Scan found matched device, connecting. deviceId = ${mediaDevice.id}",
+                                    "Scan found matched device. routeId = $suggestedRouteId",
                                 )
-                                localMediaManager.connectDevice(
-                                    mediaDevice,
-                                    RoutingChangeInfo(entryPoint, /* isSuggested= */ true),
-                                )
-                                isConnectionAttemptActive = true
-                                break
+                                continuation.resume(device)
                             }
                         }
                     }
+                    localMediaManager.registerCallback(callback)
+                    localMediaManager.startScan()
                 }
-
-                override fun onSelectedDeviceStateChanged(
-                    device: MediaDevice,
-                    @MediaDeviceState state: Int,
-                ) {
-                    if (isSuggestedDevice(device) && (state == MediaDeviceState.STATE_CONNECTED)) {
-                        if (
-                            !connectSuggestedDeviceHandler.hasCallbacks(
-                                mConnectionAttemptFinishedRunnable
-                            )
-                        ) {
-                            return
-                        }
-                        didAttemptCompleteSuccessfully = true
-                        // Remove the postDelayed runnable previously set and post a new one
-                        // to be executed right away.
-                        connectSuggestedDeviceHandler.removeCallbacks(
-                            mConnectionAttemptFinishedRunnable
-                        )
-                        connectSuggestedDeviceHandler.post(mConnectionAttemptFinishedRunnable)
-                    }
-                }
-
-                fun isSuggestedDevice(device: MediaDevice): Boolean {
-                    return connectingSuggestedDeviceState != null &&
-                        (connectingSuggestedDeviceState!!
-                            .suggestedDeviceState
-                            .suggestedDeviceInfo
-                            .routeId == device.id)
-                }
+            } ?: run {
+                Log.w(TAG, "Scan timed out. routeId = $suggestedRouteId")
+                null
             }
-
-        val mConnectionAttemptFinishedRunnable: Runnable = Runnable {
-            synchronized(lock) {
-                connectingSuggestedDeviceState = null
-                isConnectionAttemptActive = false
-            }
-            localMediaManager.unregisterCallback(mDeviceCallback)
+        } finally {
+            localMediaManager.unregisterCallback(callback)
             localMediaManager.stopScan()
-            Log.i(TAG, "Scan stopped. success = $didAttemptCompleteSuccessfully")
-            dispatchOnConnectionFinished(suggestedDeviceState, didAttemptCompleteSuccessfully)
         }
+    }
 
-        @MainThread
-        private fun dispatchOnConnectionFinished(state: SuggestedDeviceState, success: Boolean) {
-            connectionFinishedCallback?.invoke(state, success)
-        }
+    private suspend fun awaitConnectToDevice(
+        deviceToConnect: MediaDevice,
+        routingChangeInfo: RoutingChangeInfo,
+    ): Boolean {
+        var callback: LocalMediaManager.DeviceCallback? = null
+        val deviceId = deviceToConnect.id
+        try {
+            return withTimeoutOrNull(CONNECTION_TIMEOUT) {
+                suspendCancellableCoroutine { continuation: CancellableContinuation<Boolean> ->
+                    callback = object : LocalMediaManager.DeviceCallback {
+                        override fun onDeviceListUpdate(newDevices: List<MediaDevice>?) =
+                            checkConnectionStatus()
 
-        fun tryConnect() {
-            // Attempt connection only if there isn't one already in progress.
-            if (isConnectionAttemptActive) {
-                return
+                        override fun onSelectedDeviceStateChanged(
+                            device: MediaDevice,
+                            @MediaDeviceState state: Int,
+                        ) = checkConnectionStatus()
+
+                        private fun checkConnectionStatus() {
+                            if (localMediaManager.currentConnectedDevice?.id == deviceId) {
+                                Log.i(TAG, "Successfully connected to device. id = $deviceId")
+                                continuation.resume(true)
+                            }
+                        }
+                    }
+                    localMediaManager.registerCallback(callback)
+                    localMediaManager.connectDevice(deviceToConnect, routingChangeInfo)
+                }
+            } ?: run {
+                Log.w(TAG, "Connection timed out. id = $deviceId")
+                false
             }
-            Log.i(TAG, "Scanning for devices.")
-            // Reset mDidAttemptCompleteSuccessfully at the start of each connection attempt.
-            didAttemptCompleteSuccessfully = false
-            localMediaManager.registerCallback(mDeviceCallback)
-            localMediaManager.startScan()
-            connectSuggestedDeviceHandler.postDelayed(
-                mConnectionAttemptFinishedRunnable,
-                SCAN_DURATION_MS,
-            )
+        } finally {
+            localMediaManager.unregisterCallback(callback)
         }
+    }
+
+    private fun getDeviceByRouteId(
+        mediaDevices: List<MediaDevice>?,
+        routeId: String,
+    ): MediaDevice? {
+        return mediaDevices?.find { it.routeInfo?.id == routeId }
     }
 
     companion object {
         private const val TAG = "SuggestedDeviceConnectionManager"
-        private const val SCAN_DURATION_MS = 10000L
+        private val SCAN_TIMEOUT = 10.seconds
+        private val CONNECTION_TIMEOUT = 20.seconds
     }
 }

@@ -57,12 +57,17 @@ import android.app.ecm.EnhancedConfirmationManager;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothManager;
+import android.companion.ActionRequest;
+import android.companion.ActionResult;
 import android.companion.AssociationInfo;
 import android.companion.AssociationRequest;
 import android.companion.DeviceId;
+import android.companion.DevicePresenceEvent;
 import android.companion.IAssociationRequestCallback;
 import android.companion.ICompanionDeviceManager;
+import android.companion.IOnActionResultListener;
 import android.companion.IOnAssociationsChangedListener;
+import android.companion.IOnDevicePresenceEventListener;
 import android.companion.IOnMessageReceivedListener;
 import android.companion.IOnTransportEventListener;
 import android.companion.IOnTransportsChangedListener;
@@ -94,6 +99,7 @@ import com.android.internal.util.DumpUtils;
 import com.android.server.FgThread;
 import com.android.server.LocalServices;
 import com.android.server.SystemService;
+import com.android.server.companion.actionrequest.ActionRequestProcessor;
 import com.android.server.companion.association.AssociationDiskStore;
 import com.android.server.companion.association.AssociationRequestsProcessor;
 import com.android.server.companion.association.AssociationStore;
@@ -142,7 +148,7 @@ public class CompanionDeviceManagerService extends SystemService {
     private final CrossDeviceSyncController mCrossDeviceSyncController;
     private final LocalMetadataStore mLocalMetadataStore;
     private final DataSyncProcessor mDataSyncProcessor;
-
+    private final ActionRequestProcessor mActionRequestProcessor;
     private final Object mPackageLock = new Object();
 
     public CompanionDeviceManagerService(Context context) {
@@ -188,6 +194,9 @@ public class CompanionDeviceManagerService extends SystemService {
                 powerManagerInternal, mCompanionExemptionProcessor);
 
         mTransportManager = new CompanionTransportManager(context, mAssociationStore);
+
+        mActionRequestProcessor = new ActionRequestProcessor(mAssociationStore,
+                mDevicePresenceProcessor, mCompanionAppBinder, mTransportManager);
 
         mDisassociationProcessor = new DisassociationProcessor(context, activityManager,
                 mAssociationStore, packageManagerInternal, mDevicePresenceProcessor,
@@ -700,6 +709,14 @@ public class CompanionDeviceManagerService extends SystemService {
         }
 
         @Override
+        @EnforcePermission(USE_COMPANION_TRANSPORTS)
+        public void requestAction(@NonNull ActionRequest request,
+                @NonNull String serviceName, int[] associationIds) {
+            requestAction_enforcePermission();
+
+            mActionRequestProcessor.requestAction(request, serviceName, associationIds);
+        }
+        @Override
         public boolean isCompanionApplicationBound(String packageName, int userId) {
             return mCompanionAppBinder.isCompanionApplicationBound(userId, packageName);
         }
@@ -794,12 +811,69 @@ public class CompanionDeviceManagerService extends SystemService {
         }
 
         @Override
+        @EnforcePermission(REQUEST_COMPANION_SELF_MANAGED)
+        public void notifyDevicePresence(int associationId, @NonNull DevicePresenceEvent event) {
+            notifyDevicePresence_enforcePermission();
+
+            mDevicePresenceProcessor.processSelfManagedDevicePresenceEvent(associationId, event);
+        }
+
+        @Override
+        @EnforcePermission(REQUEST_COMPANION_SELF_MANAGED)
+        public void notifyActionResult(int associationId, @NonNull ActionResult result) {
+            notifyActionResult_enforcePermission();
+
+            mActionRequestProcessor.processActionResult(associationId, result);
+        }
+
+        @Override
         public void applyRestoredPayload(byte[] payload, int userId) {
             enforceCallerIsSystem();
 
             mBackupRestoreProcessor.applyRestoredPayload(payload, userId);
         }
 
+        @Override
+        @EnforcePermission(USE_COMPANION_TRANSPORTS)
+        public void setOnDevicePresenceEventListener(int[] associationIds, String serviceName,
+                IOnDevicePresenceEventListener listener, int userId) {
+            setOnDevicePresenceEventListener_enforcePermission();
+            enforceCallerIsSystemOrCanInteractWithUserId(getContext(), userId);
+
+            mDevicePresenceProcessor.setOnDevicePresenceEventListener(
+                    associationIds, serviceName, listener);
+        }
+
+        @Override
+        @EnforcePermission(USE_COMPANION_TRANSPORTS)
+        public void removeOnDevicePresenceEventListener(@NonNull String serviceName,
+                int userId) {
+            removeOnDevicePresenceEventListener_enforcePermission();
+            enforceCallerIsSystemOrCanInteractWithUserId(getContext(), userId);
+
+            mDevicePresenceProcessor.removeOnDevicePresenceEventListener(serviceName);
+        }
+
+        @Override
+        @EnforcePermission(USE_COMPANION_TRANSPORTS)
+        public void setOnActionResultListener(int[] associationIds, String serviceName,
+                IOnActionResultListener listener, int userId) {
+            setOnActionResultListener_enforcePermission();
+            enforceCallerIsSystemOrCanInteractWithUserId(getContext(), userId);
+
+            mActionRequestProcessor.setOnActionResultListener(
+                    associationIds, serviceName, listener);
+        }
+
+        @Override
+        @EnforcePermission(USE_COMPANION_TRANSPORTS)
+        public void removeOnActionResultListener(@NonNull String serviceName,
+                int userId) {
+            removeOnActionResultListener_enforcePermission();
+            enforceCallerIsSystemOrCanInteractWithUserId(getContext(), userId);
+
+            mActionRequestProcessor.removeOnActionResultListener(serviceName);
+        }
         @Override
         public int handleShellCommand(@NonNull ParcelFileDescriptor in,
                 @NonNull ParcelFileDescriptor out, @NonNull ParcelFileDescriptor err,

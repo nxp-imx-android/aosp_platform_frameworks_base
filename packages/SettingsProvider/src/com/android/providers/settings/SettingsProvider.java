@@ -2112,7 +2112,7 @@ public class SettingsProvider extends ContentProvider {
 
         File cacheFile = getCacheFile(name, callingUserId);
         if (cacheFile != null) {
-            if (!isValidMediaUri(name, value)) {
+            if (!isValidMediaUri(name, value, callingUserId)) {
                 return false;
             }
         }
@@ -2174,7 +2174,7 @@ public class SettingsProvider extends ContentProvider {
         return true;
     }
 
-    private boolean isValidMediaUri(String name, String uri) {
+    private boolean isValidMediaUri(String name, String uri, int callingUserId) {
         if (uri != null) {
             Uri audioUri = Uri.parse(uri);
             if (Settings.AUTHORITY.equals(
@@ -2206,6 +2206,16 @@ public class SettingsProvider extends ContentProvider {
                     Binder.restoreCallingIdentity(identity);
                 }
             } else {
+                // Check if the URI has a userId and if it matches the callingUserId
+                final int uriUserId = ContentProvider.getUserIdFromUri(
+                        audioUri, /* defaultUserId= */ callingUserId);
+                if (callingUserId != uriUserId) {
+                    Slog.e(LOG_TAG,
+                            "mutateSystemSetting for setting: " + name + " URI: " + audioUri
+                                    + " ignored: URI userId (" + uriUserId
+                                    + ") does not match calling userId (" + callingUserId + ")");
+                    return false;
+                }
                 mimeType = getContext().getContentResolver().getType(audioUri);
             }
             if (DEBUG) {

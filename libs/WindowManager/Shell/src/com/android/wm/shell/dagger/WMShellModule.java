@@ -1673,7 +1673,9 @@ public abstract class WMShellModule {
             @ShellMainThread Handler handler,
             ShellInit shellInit,
             RootTaskDisplayAreaOrganizer rootTaskDisplayAreaOrganizer,
-            DesktopState desktopState
+            DesktopState desktopState,
+            Optional<DesksTransitionObserver> desksTransitionObserver,
+            DeskSwitchTransitionHandler deskSwitchTransitionHandler
     ) {
         if (!desktopState.canEnterDesktopMode()
                 && !desktopState.overridesShowAppHandle()) {
@@ -1693,7 +1695,9 @@ public abstract class WMShellModule {
                         interactionJankMonitor,
                         handler,
                         shellInit,
-                        rootTaskDisplayAreaOrganizer));
+                        rootTaskDisplayAreaOrganizer,
+                        desksTransitionObserver.get(),
+                        deskSwitchTransitionHandler));
     }
 
     @WMSingleton
@@ -1729,7 +1733,8 @@ public abstract class WMShellModule {
             Optional<DesktopDisplayModeController> desktopDisplayModeController,
             DesktopRepositoryInitializer desktopRepositoryInitializer,
             Optional<DesksTransitionObserver> desksTransitionObserver,
-            DesktopState desktopState
+            DesktopState desktopState,
+            Transitions transitions
     ) {
         if (!desktopState.canEnterDesktopMode()) {
             return Optional.empty();
@@ -1747,7 +1752,8 @@ public abstract class WMShellModule {
                         desktopTasksController.get(),
                         desktopDisplayModeController.get(),
                         desksTransitionObserver.get(),
-                        desktopState));
+                        desktopState,
+                        transitions));
     }
 
     @WMSingleton
