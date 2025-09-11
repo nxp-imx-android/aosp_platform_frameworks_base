@@ -522,6 +522,8 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
 
     NotificationChannel mMinChannel = new NotificationChannel("min", "min", IMPORTANCE_MIN);
 
+    NotificationChannel mNewsChannel = new NotificationChannel(NEWS_ID, "News", IMPORTANCE_LOW);
+
     private static final int NOTIFICATION_LOCATION_UNKNOWN = 0;
 
     private static final String VALID_CONVO_SHORTCUT_ID = "shortcut";
@@ -15553,38 +15555,48 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
         assertFalse(n.hasColorizedPermission());
     }
 
-    @Test
-    @EnableFlags({FLAG_API_RICH_ONGOING, FLAG_API_RICH_ONGOING_PERMISSION})
-    public void testPromotion_permissionDenied() throws Exception {
+    private void testPromotion(int postPromotedNotificationsPermissionState,
+            NotificationChannel channel, boolean expectPromoted) {
         when(mPermissionManager.checkPermissionForDataDelivery(
-                eq(Manifest.permission.POST_PROMOTED_NOTIFICATIONS), any(), any()))
-                .thenReturn(PermissionManager.PERMISSION_SOFT_DENIED);
+                        eq(Manifest.permission.POST_PROMOTED_NOTIFICATIONS), any(), any()))
+                .thenReturn(postPromotedNotificationsPermissionState);
 
-        Notification n = createPromotableNotification();
-        NotificationChannel channel = new NotificationChannel(
-                "ChannelId", "TestChannel", NotificationManager.IMPORTANCE_HIGH);
+        Notification n = createPromotableNotification(channel);
 
         mService.fixNotificationWithChannel(n, channel, mUid, mPkg);
 
-        final int promotedOngoing = n.flags & FLAG_PROMOTED_ONGOING;
-        assertEquals(0, promotedOngoing);
+        final boolean isPromoted = (n.flags & FLAG_PROMOTED_ONGOING) != 0;
+        assertEquals(expectPromoted, isPromoted);
     }
 
     @Test
-    @EnableFlags({FLAG_API_RICH_ONGOING, FLAG_API_RICH_ONGOING_PERMISSION})
+    @EnableFlags({FLAG_API_RICH_ONGOING, FLAG_UI_RICH_ONGOING})
     public void testPromotion_permissionAllowed() throws Exception {
-        when(mPermissionManager.checkPermissionForDataDelivery(
-                eq(Manifest.permission.POST_PROMOTED_NOTIFICATIONS), any(), any()))
-                .thenReturn(PermissionManager.PERMISSION_GRANTED);
+        testPromotion(PermissionManager.PERMISSION_GRANTED, mTestNotificationChannel, true);
+    }
 
-        Notification n = createPromotableNotification();
-        NotificationChannel channel = new NotificationChannel(
-                "ChannelId", "TestChannel", NotificationManager.IMPORTANCE_HIGH);
+    @Test
+    @EnableFlags({FLAG_API_RICH_ONGOING, FLAG_UI_RICH_ONGOING})
+    public void testPromotion_permissionDenied() throws Exception {
+        testPromotion(PermissionManager.PERMISSION_SOFT_DENIED, mTestNotificationChannel, false);
+    }
 
-        mService.fixNotificationWithChannel(n, channel, mUid, mPkg);
+    @Test
+    @EnableFlags({FLAG_API_RICH_ONGOING, FLAG_UI_RICH_ONGOING})
+    public void testPromotion_bundledNotification() throws Exception {
+        testPromotion(PermissionManager.PERMISSION_GRANTED, mNewsChannel, false);
+    }
 
-        final int promotedOngoing = n.flags & FLAG_PROMOTED_ONGOING;
-        assertNotEquals(0, promotedOngoing);
+    @Test
+    @EnableFlags({FLAG_API_RICH_ONGOING, FLAG_UI_RICH_ONGOING})
+    public void testPromotion_silentChannel() throws Exception {
+        testPromotion(PermissionManager.PERMISSION_GRANTED, mSilentChannel, true);
+    }
+
+    @Test
+    @EnableFlags({FLAG_API_RICH_ONGOING, FLAG_UI_RICH_ONGOING})
+    public void testPromotion_minimizedChannel() throws Exception {
+        testPromotion(PermissionManager.PERMISSION_GRANTED, mMinChannel, false);
     }
 
     @Test
@@ -19080,7 +19092,7 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     @EnableFlags({FLAG_API_RICH_ONGOING})
     public void testPostPromotableNotification_unimportantNotification() throws Exception {
         mBinderService.setCanBePromoted(mPkg, mUid, true, true);
-        Notification n = createPromotableNotification(/* addFlagManually= */ false, mMinChannel);
+        Notification n = createPromotableNotification(mMinChannel);
 
         StatusBarNotification sbn = new StatusBarNotification(mPkg, mPkg, 9, null, mUid, 0,
                 n, UserHandle.getUserHandleForUid(mUid), null, 0);
@@ -19102,8 +19114,12 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
         return createPromotableNotification(/* addFlagManually= */ false, mTestNotificationChannel);
     }
 
-  private Notification createPromotableNotification(boolean addFlagManually) {
+    private Notification createPromotableNotification(boolean addFlagManually) {
         return createPromotableNotification(addFlagManually, mTestNotificationChannel);
+    }
+
+    private Notification createPromotableNotification(NotificationChannel channel) {
+        return createPromotableNotification(/* addFlagManually= */ false, channel);
     }
 
     private Notification createPromotableNotification(
