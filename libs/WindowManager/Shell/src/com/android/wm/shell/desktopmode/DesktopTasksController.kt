@@ -1902,6 +1902,12 @@ class DesktopTasksController(
         transitionSource: DesktopModeTransitionSource,
         remoteTransition: RemoteTransition? = null,
     ) {
+        logV(
+            "moveToFullscreen taskId=%d transitionSource=%s remoteTransition=%s",
+            taskId,
+            transitionSource,
+            remoteTransition,
+        )
         val taskInfo: TaskInfo? =
             shellTaskOrganizer.getRunningTaskInfo(taskId)
                 ?: if (enableAltTabKqsFlatenning.isTrue) {
@@ -1959,7 +1965,6 @@ class DesktopTasksController(
         transitionSource: DesktopModeTransitionSource,
         remoteTransition: RemoteTransition? = null,
     ) {
-        logV("moveToFullscreenWithAnimation taskId=%d", task.taskId)
         val displayId =
             when {
                 task.displayId != INVALID_DISPLAY -> task.displayId
@@ -1967,6 +1972,13 @@ class DesktopTasksController(
                     focusTransitionObserver.globallyFocusedDisplayId
                 else -> DEFAULT_DISPLAY
             }
+        logV(
+            "moveToFullscreenWithAnimation taskId=%d displayId=%d source=%s remoteTransition=%s",
+            task.taskId,
+            displayId,
+            transitionSource,
+            remoteTransition,
+        )
         val wct = WindowContainerTransaction()
 
         // When a task is background, update wct to start task.
@@ -1975,6 +1987,10 @@ class DesktopTasksController(
                 shellTaskOrganizer.getRunningTaskInfo(task.taskId) == null &&
                 task is RecentTaskInfo
         ) {
+            logV(
+                "moveToFullscreenWithAnimation taskId=%d is in background, adding start WCT",
+                task.taskId,
+            )
             wct.startTask(
                 task.taskId,
                 // TODO(b/400817258): Use ActivityOptions Utils when available.
@@ -3138,6 +3154,7 @@ class DesktopTasksController(
         displayId: Int,
         userId: Int,
     ) {
+        logV("addLaunchHomePendingIntent displayId=%d userId=%d", displayId, userId)
         homeIntentProvider.addLaunchHomePendingIntent(wct, displayId, userId)
     }
 
@@ -3296,6 +3313,20 @@ class DesktopTasksController(
         skipUpdatingExitDesktopListener: Boolean = false,
         exitReason: ExitReason,
     ): RunOnTransitStart? {
+        logV(
+            "performDesktopExitCleanUp deskId=%d displayId=%d userId=%d willExitDesktop=%b " +
+                "removingLastTaskId=%d shouldEndUpAtHome=%b skipWallpaperAndHomeOrdering=%b " +
+                "skipUpdatingExitDesktopListener=%b exitReason=%s",
+            deskId,
+            displayId,
+            userId,
+            willExitDesktop,
+            removingLastTaskId,
+            shouldEndUpAtHome,
+            skipWallpaperAndHomeOrdering,
+            skipUpdatingExitDesktopListener,
+            exitReason,
+        )
         if (!willExitDesktop) return null
         if (
             !skipUpdatingExitDesktopListener &&
@@ -4675,6 +4706,15 @@ class DesktopTasksController(
         willExitDesktop: Boolean,
         displayId: Int = taskInfo.displayId,
     ): RunOnTransitStart? {
+        val sourceDisplayId = taskInfo.displayId
+        logV(
+            "addMoveToFullscreenChanges taskId=%d sourceDisplayId=%d destDisplayId=%d " +
+                "willExitDesktop=%b",
+            taskInfo.taskId,
+            sourceDisplayId,
+            displayId,
+            willExitDesktop,
+        )
         val tdaInfo = rootTaskDisplayAreaOrganizer.getDisplayAreaInfo(displayId)!!
         val tdaWindowingMode = tdaInfo.configuration.windowConfiguration.windowingMode
         val targetWindowingMode =
@@ -4725,7 +4765,7 @@ class DesktopTasksController(
                             .isTrue
                     ) {
                         // Use the source display ID for clean up when the bug fix flag is enabled.
-                        taskInfo.displayId
+                        sourceDisplayId
                     } else {
                         // Before the bug fix, display move is not considered.
                         displayId
