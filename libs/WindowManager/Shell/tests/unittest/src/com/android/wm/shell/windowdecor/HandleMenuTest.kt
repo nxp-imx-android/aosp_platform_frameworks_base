@@ -25,10 +25,12 @@ import android.graphics.Color
 import android.graphics.Point
 import android.graphics.Rect
 import android.graphics.drawable.BitmapDrawable
+import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import android.testing.AndroidTestingRunner
 import android.testing.TestableLooper
 import android.view.Display
+import android.view.Display.DEFAULT_DISPLAY
 import android.view.LayoutInflater
 import android.view.SurfaceControl
 import android.view.SurfaceControlViewHost
@@ -240,7 +242,59 @@ class HandleMenuTest : ShellTestCase() {
         assertThat(drawable.bitmap).isEqualTo(mockAppIcon)
     }
 
-    private suspend fun createTaskInfo(windowingMode: Int, splitPosition: Int? = null) {
+    @Test
+    @DisableFlags(FLAG_ENABLE_NON_DEFAULT_DISPLAY_SPLIT_BUGFIX)
+    fun splitButton_onDefaultDisplay_flagOff_isVisible() = runTest {
+        createTaskInfo(windowingMode = WINDOWING_MODE_FULLSCREEN, displayId = DEFAULT_DISPLAY)
+        val handleMenu = createAndShowHandleMenu()
+
+        val handleMenuView =
+            checkNotNull(handleMenu.handleMenuView) { "Expected non-null handle menu view" }
+        val splitButton = handleMenuView.rootView.findViewById<View>(R.id.split_screen_button)
+        assertThat(splitButton.visibility).isEqualTo(View.VISIBLE)
+    }
+
+    @Test
+    @DisableFlags(FLAG_ENABLE_NON_DEFAULT_DISPLAY_SPLIT_BUGFIX)
+    fun splitButton_onExternalDisplay_flagOff_isGone() = runTest {
+        createTaskInfo(windowingMode = WINDOWING_MODE_FULLSCREEN, displayId = EXTERNAL_DISPLAY_ID)
+        val handleMenu = createAndShowHandleMenu()
+
+        val handleMenuView =
+            checkNotNull(handleMenu.handleMenuView) { "Expected non-null handle menu view" }
+        val splitButton = handleMenuView.rootView.findViewById<View>(R.id.split_screen_button)
+        assertThat(splitButton.visibility).isEqualTo(View.GONE)
+    }
+
+    @Test
+    @EnableFlags(FLAG_ENABLE_NON_DEFAULT_DISPLAY_SPLIT_BUGFIX)
+    fun splitButton_onExternalDisplay_flagOn_isVisible() = runTest {
+        createTaskInfo(windowingMode = WINDOWING_MODE_FULLSCREEN, displayId = EXTERNAL_DISPLAY_ID)
+        val handleMenu = createAndShowHandleMenu()
+
+        val handleMenuView =
+            checkNotNull(handleMenu.handleMenuView) { "Expected non-null handle menu view" }
+        val splitButton = handleMenuView.rootView.findViewById<View>(R.id.split_screen_button)
+        assertThat(splitButton.visibility).isEqualTo(View.VISIBLE)
+    }
+
+    @Test
+    @EnableFlags(FLAG_ENABLE_NON_DEFAULT_DISPLAY_SPLIT_BUGFIX)
+    fun splitButton_onDefaultDisplay_flagOn_isVisible() = runTest {
+        createTaskInfo(windowingMode = WINDOWING_MODE_FULLSCREEN, displayId = DEFAULT_DISPLAY)
+        val handleMenu = createAndShowHandleMenu()
+
+        val handleMenuView =
+            checkNotNull(handleMenu.handleMenuView) { "Expected non-null handle menu view" }
+        val splitButton = handleMenuView.rootView.findViewById<View>(R.id.split_screen_button)
+        assertThat(splitButton.visibility).isEqualTo(View.VISIBLE)
+    }
+
+    private suspend fun createTaskInfo(
+        windowingMode: Int,
+        splitPosition: Int? = null,
+        displayId: Int = DEFAULT_DISPLAY
+    ) {
         val taskDescriptionBuilder =
             ActivityManager.TaskDescription.Builder().setBackgroundColor(Color.YELLOW)
         val bounds =
@@ -259,7 +313,7 @@ class HandleMenuTest : ShellTestCase() {
             }
         mockDesktopWindowDecoration.mTaskInfo =
             TestRunningTaskInfoBuilder()
-                .setDisplayId(Display.DEFAULT_DISPLAY)
+                .setDisplayId(displayId)
                 .setTaskDescriptionBuilder(taskDescriptionBuilder)
                 .setWindowingMode(windowingMode)
                 .setBounds(bounds)
@@ -382,5 +436,8 @@ class HandleMenuTest : ShellTestCase() {
         private const val MENU_PILL_SPACING_MARGIN = 4
         private const val HANDLE_WIDTH = 80
         private const val APP_NAME = "Test App"
+        private const val EXTERNAL_DISPLAY_ID = 1
+        private const val FLAG_ENABLE_NON_DEFAULT_DISPLAY_SPLIT_BUGFIX =
+            "com.android.window.flags.enable_non_default_display_split_bugfix"
     }
 }
