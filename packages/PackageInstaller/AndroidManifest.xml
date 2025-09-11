@@ -46,7 +46,8 @@
         </receiver>
 
         <activity android:name=".v2.ui.InstallLaunch"
-            android:exported="false"/>
+            android:excludeFromRecents="true"
+            android:exported="false" />
 
         <activity android:name=".InstallStart"
                 android:exported="true"
@@ -179,6 +180,7 @@
         </activity>
 
         <activity android:name=".v2.ui.UnarchiveLaunch"
+            android:excludeFromRecents="true"
             android:exported="false"/>
     </application>
 
