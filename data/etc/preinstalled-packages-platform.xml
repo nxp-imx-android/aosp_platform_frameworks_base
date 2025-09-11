@@ -147,4 +147,9 @@ to pre-existing users, but cannot uninstall pre-existing system packages from pr
         <install-in user-type="FULL" />
     </install-in-user-type>
 
+    <!-- Cross device data sync app (CrossDeviceSync)  -->
+    <install-in-user-type package="com.android.crossdevicesync">
+        <install-in user-type="SYSTEM" />
+    </install-in-user-type>
+
 </config>
