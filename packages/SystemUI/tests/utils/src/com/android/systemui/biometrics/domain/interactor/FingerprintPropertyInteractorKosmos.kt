@@ -31,6 +31,5 @@ val Kosmos.fingerprintPropertyInteractor by Fixture {
         repository = fingerprintPropertyRepository,
         configurationInteractor = configurationInteractor,
         displayStateInteractor = displayStateInteractor,
-        udfpsOverlayInteractor = udfpsOverlayInteractor,
     )
 }
