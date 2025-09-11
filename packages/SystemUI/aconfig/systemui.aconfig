@@ -219,13 +219,6 @@ flag {
 }
 
 flag {
-    name: "unfold_animation_background_progress"
-    namespace: "systemui"
-    description: "Moves unfold animation progress calculation to a background thread"
-    bug: "277879146"
-}
-
-flag {
     name: "enable_background_keyguard_ondrawn_callback"
     namespace: "systemui"
     description: "Calls the onDrawn keyguard in the background, without being blocked by main"

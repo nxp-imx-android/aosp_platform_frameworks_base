@@ -21,12 +21,11 @@ import android.hardware.devicestate.DeviceStateManager
 import android.os.SystemProperties
 import com.android.internal.foldables.FoldLockSettingAvailabilityProvider
 import com.android.systemui.CoreStartable
-import com.android.systemui.Flags
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.keyguard.LifecycleScreenStatusProvider
 import com.android.systemui.unfold.config.UnfoldTransitionConfig
-import com.android.systemui.unfold.dagger.UnfoldBgProgressFlag
+import com.android.systemui.unfold.dagger.UnfoldBg
 import com.android.systemui.unfold.dagger.UnfoldMain
 import com.android.systemui.unfold.data.repository.FoldStateRepository
 import com.android.systemui.unfold.data.repository.FoldStateRepositoryImpl
@@ -66,11 +65,6 @@ import javax.inject.Singleton
 class UnfoldTransitionModule {
 
     @Provides @UnfoldTransitionATracePrefix fun tracingTagPrefix() = "systemui"
-
-    @Provides
-    @UnfoldBgProgressFlag
-    @Singleton
-    fun unfoldBgProgressFlag() = Flags.unfoldAnimationBackgroundProgress()
 
     /** A globally available FoldStateListener that allows one to query the fold state. */
     @Provides
