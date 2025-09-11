@@ -11799,7 +11799,7 @@ public class Notification implements Parcelable
             final TemplateBindResult result = new TemplateBindResult();
             final RemoteViews contentView = getStandardView(
                     mBuilder.getCollapsedMetricLayoutResource(), p, result);
-            return bindMetricStyleMetrics(contentView, /* isExpandedView = */false);
+            return bindMetricStyleMetrics(contentView, p, /* isExpandedView = */ false);
         }
 
         /** @hide */
@@ -11812,7 +11812,7 @@ public class Notification implements Parcelable
             final TemplateBindResult result = new TemplateBindResult();
             final RemoteViews contentView = getStandardView(
                     mBuilder.getCollapsedMetricLayoutResource(), p, result);
-            return bindMetricStyleMetrics(contentView, /* isExpandedView = */false);
+            return bindMetricStyleMetrics(contentView, p, /* isExpandedView = */ false);
         }
 
         /** @hide */
@@ -11825,11 +11825,11 @@ public class Notification implements Parcelable
             final TemplateBindResult result = new TemplateBindResult();
             final RemoteViews contentView = getStandardView(
                     mBuilder.getExpandedMetricLayoutResource(), p, result);
-            return bindMetricStyleMetrics(contentView, /* isExpandedView = */true);
+            return bindMetricStyleMetrics(contentView, p, /* isExpandedView = */ true);
         }
 
         private RemoteViews bindMetricStyleMetrics(
-                RemoteViews contentView, boolean isExpandedView) {
+                RemoteViews contentView, StandardTemplateParams p, boolean isExpandedView) {
             for (int i = 0; i < MAX_METRICS; i++) {
                 final MetricView metricView = MetricView.VIEWS.get(i);
                 if (i < mMetrics.size()) {
@@ -11856,10 +11856,12 @@ public class Notification implements Parcelable
                                 metric.getLabel());
                     }
 
+                    mBuilder.setTextViewColorSecondary(contentView, metricView.labelId(), p);
                     contentView.setTextViewText(metricView.labelId(), metricLabel);
                     if (Flags.metricStyleUnitInLabel()) {
                         contentView.setViewVisibility(metricView.unitId(), View.GONE);
                     } else if (isExpandedView) {
+                        mBuilder.setTextViewColorSecondary(contentView, metricView.unitId(), p);
                         contentView.setViewVisibility(metricView.unitId(),
                                 TextUtils.isEmpty(valueString.subtext())
                                         ? View.GONE
@@ -11870,6 +11872,9 @@ public class Notification implements Parcelable
                     if (metricValue instanceof Metric.TimeDifference timeDifference) {
                         contentView.setViewVisibility(metricView.textValueId(), View.GONE);
                         contentView.setViewVisibility(metricView.chronometerId(), View.VISIBLE);
+                        mBuilder.setTextViewColorSecondary(contentView, metricView.chronometerId(),
+                                p);
+
                         contentView.setChronometerCountDown(
                                 metricView.chronometerId(), timeDifference.isTimer());
                         contentView.setBoolean(metricView.chronometerId(),
@@ -11895,6 +11900,8 @@ public class Notification implements Parcelable
                     } else {
                         contentView.setViewVisibility(metricView.chronometerId(), View.GONE);
                         contentView.setViewVisibility(metricView.textValueId(), View.VISIBLE);
+                        mBuilder.setTextViewColorSecondary(contentView, metricView.textValueId(),
+                                p);
                         contentView.setTextViewText(metricView.textValueId(), valueString.text());
                     }
                 } else {
