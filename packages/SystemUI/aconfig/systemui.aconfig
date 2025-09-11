@@ -1813,13 +1813,6 @@ flag {
 }
 
 flag {
-    name: "tv_global_actions_focus"
-    namespace: "systemui"
-    description: "Enables global actions focus on TV."
-    bug: "402759931"
-}
-
-flag {
     name: "stuck_hearing_devices_qs_tile_fix"
     namespace: "systemui"
     description: "Prevent the Hearing Device Dialog's exit animation to avoid the appearance of it being stuck during activity launch."
