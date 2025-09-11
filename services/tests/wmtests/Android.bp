@@ -359,7 +359,6 @@ test_module_config {
         "com.android.server.wm.WindowProcessControllerTests",
         "com.android.server.wm.WindowStateTests",
         "com.android.server.wm.WindowTokenTests",
-        "com.android.server.wm.WindowTracingLegacyTest",
         "com.android.server.wm.WindowTracingPerfettoTest",
         "com.android.server.wm.ZOrderingTests",
         "com.android.server.wm.testing.AssertTest",
@@ -1485,13 +1484,6 @@ test_module_config {
     base: "WmTests",
     test_suites: ["device-tests"],
     include_filters: ["com.android.server.wm.WindowTokenTests"],
-}
-
-test_module_config {
-    name: "WmTests-wm-WindowTracingLegacyTest",
-    base: "WmTests",
-    test_suites: ["device-tests"],
-    include_filters: ["com.android.server.wm.WindowTracingLegacyTest"],
 }
 
 test_module_config {
