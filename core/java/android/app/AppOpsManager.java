@@ -1748,9 +1748,12 @@ public class AppOpsManager {
      */
     public static final int OP_READ_OTP_SMS = AppOpEnums.APP_OP_READ_OTP_SMS;
 
+    /** @hide Access local network devices. */
+    public static final int OP_ACCESS_LOCAL_NETWORK = AppOpEnums.APP_OP_ACCESS_LOCAL_NETWORK;
+
     /** @hide */
     @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.R, trackingBug = 170729553)
-    public static final int _NUM_OP = 169;
+    public static final int _NUM_OP = 170;
 
     /**
      * All app ops represented as strings.
@@ -1923,6 +1926,7 @@ public class AppOpsManager {
             OPSTR_READ_CELL_INFO,
             OPSTR_COMPUTER_CONTROL,
             OPSTR_READ_OTP_SMS,
+            OPSTR_ACCESS_LOCAL_NETWORK,
     })
     public @interface AppOpString {}
 
@@ -2738,6 +2742,9 @@ public class AppOpsManager {
     /** @hide Read OTP SMS messages */
     public static final String OPSTR_READ_OTP_SMS = "android:read_otp_sms";
 
+    /** @hide */
+    public static final String OPSTR_ACCESS_LOCAL_NETWORK = "android:access_local_network";
+
     /** {@link #sAppOpsToNote} not initialized yet for this op */
     private static final byte SHOULD_COLLECT_NOTE_OP_NOT_INITIALIZED = 0;
     /** Should not collect noting of this app-op in {@link #sAppOpsToNote} */
@@ -2810,6 +2817,7 @@ public class AppOpsManager {
             OP_UWB_RANGING,
             OP_NEARBY_WIFI_DEVICES,
             Flags.rangingPermissionEnabled() ? OP_RANGING : OP_NONE,
+            Flags.accessLocalNetworkPermissionEnabled() ? OP_ACCESS_LOCAL_NETWORK : OP_NONE,
             // Notifications
             OP_POST_NOTIFICATION,
             // Health
@@ -3420,6 +3428,11 @@ public class AppOpsManager {
                 .build(),
         new AppOpInfo.Builder(OP_READ_OTP_SMS, OPSTR_READ_OTP_SMS, "READ_OTP_SMS")
                 .build(),
+        new AppOpInfo.Builder(OP_ACCESS_LOCAL_NETWORK, OPSTR_ACCESS_LOCAL_NETWORK,
+                "ACCESS_LOCAL_NETWORK")
+                .setPermission(Flags.accessLocalNetworkPermissionEnabled()
+                        ? Manifest.permission.ACCESS_LOCAL_NETWORK : null)
+                .setDefaultMode(AppOpsManager.MODE_ALLOWED).build(),
     };
 
     // The number of longs needed to form a full bitmask of app ops
