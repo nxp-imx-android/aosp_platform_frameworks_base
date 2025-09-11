@@ -23,7 +23,11 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.snapping.SnapPosition
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -37,14 +41,15 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
@@ -91,9 +96,10 @@ fun RecordDetailsAppSelector(
         val pagerState = rememberPagerState { tasks?.size ?: 1 }
         HorizontalPager(
             state = pagerState,
-            contentPadding = PaddingValues(horizontal = 68.dp),
             pageSpacing = 22.dp,
-            modifier = Modifier,
+            snapPosition = SnapPosition.Center,
+            contentPadding = PaddingValues(horizontal = 68.dp),
+            modifier = Modifier.fillMaxWidth(),
         ) { index ->
             val task = tasks?.getOrNull(index)
             val taskViewModel =
@@ -105,6 +111,7 @@ fun RecordDetailsAppSelector(
             AppPreview(
                 viewModel = taskViewModel,
                 onClick = { if (task != null) onTaskSelected(task) },
+                modifier = Modifier.fillMaxWidth(),
             )
         }
     }
@@ -132,14 +139,25 @@ private fun AppPreview(
             )
         }
 
-        Card(
-            onClick = onClick,
-            shape = RoundedCornerShape(20.dp),
-            colors =
-                CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceContainer
-                ),
-            modifier = Modifier.aspectRatio(viewModel?.thumbnail?.getOrNull().aspectRatio),
+        val shape = RoundedCornerShape(20.dp)
+        val shadowColor =
+            if (isSystemInDarkTheme()) {
+                Color.White
+            } else {
+                Color.Black
+            }
+        Box(
+            modifier =
+                Modifier.shadow(
+                        elevation = 4.dp,
+                        shape = shape,
+                        spotColor = shadowColor,
+                        ambientColor = shadowColor,
+                    )
+                    .clip(shape)
+                    .clickable(onClick = onClick)
+                    .background(MaterialTheme.colorScheme.surfaceContainer)
+                    .aspectRatio(viewModel?.thumbnail?.getOrNull().aspectRatio)
         ) {
             AnimatedContent(
                 targetState = viewModel?.thumbnail?.getOrNull(),
