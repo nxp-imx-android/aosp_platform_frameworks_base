@@ -23,24 +23,32 @@ import androidx.compose.animation.graphics.res.animatedVectorResource
 import androidx.compose.animation.graphics.res.rememberAnimatedVectorPainter
 import androidx.compose.animation.graphics.vector.AnimatedImageVector
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.Orientation
+import androidx.compose.foundation.hoverable
+import androidx.compose.foundation.interaction.DragInteraction
+import androidx.compose.foundation.interaction.Interaction
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.PressInteraction
 import androidx.compose.foundation.interaction.collectIsDraggedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderColors
-import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.SliderState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -73,6 +81,7 @@ import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import com.android.compose.modifiers.height
+import com.android.compose.modifiers.size
 import com.android.compose.modifiers.sliderPercentage
 import com.android.compose.modifiers.width
 import com.android.systemui.compose.modifiers.sysuiResTag
@@ -176,13 +185,16 @@ fun VerticalFlashlightSlider(
             },
             interactionSource = interactionSource,
             colors = colors,
-            thumb = {
+            thumb = { sliderState ->
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    SliderDefaults.Thumb(
+                    Thumb(
                         interactionSource = interactionSource,
                         colors = colors,
                         thumbSize =
-                            DpSize(THUMB_WIDTH, thumbHeight(value / floatValueRange.endInclusive)),
+                            DpSize(
+                                THUMB_WIDTH,
+                                thumbHeight(sliderState.value / sliderState.valueRange.endInclusive),
+                            ),
                     )
                 }
             },
@@ -214,7 +226,7 @@ fun VerticalFlashlightSlider(
                                 EdgeTreatment,
                             )
                             .motionTestValues {
-                                trackEndAlpha(toPercent(sliderState.value, valueRange)) exportAs
+                                trackEndAlpha(sliderState.coercedValueAsFraction) exportAs
                                     VerticalFlashlightSliderMotionTestKeys.TrackEndAlpha
                             },
                     brush =
@@ -224,7 +236,7 @@ fun VerticalFlashlightSlider(
                             1.0f to
                                 // lower end alpha from 1 to 0.12 as slider progresses.
                                 colors.activeTrackColor.copy(
-                                    alpha = trackEndAlpha(toPercent(sliderState.value, valueRange))
+                                    alpha = trackEndAlpha(sliderState.coercedValueAsFraction)
                                 ),
                         ),
                     sliderState = sliderState,
@@ -299,6 +311,46 @@ private fun AnimatedVectorFlashlightDrawable(
         painter = rememberAnimatedVectorPainter(image, atEnd),
         contentDescription = null,
         tint = color,
+    )
+}
+
+@Composable
+fun Thumb(
+    interactionSource: MutableInteractionSource,
+    colors: SliderColors,
+    thumbSize: DpSize,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+) {
+    val interactions = remember { mutableStateListOf<Interaction>() }
+    LaunchedEffect(interactionSource) {
+        interactionSource.interactions.collect { interaction ->
+            when (interaction) {
+                is PressInteraction.Press -> interactions.add(interaction)
+                is PressInteraction.Release -> interactions.remove(interaction.press)
+                is PressInteraction.Cancel -> interactions.remove(interaction.press)
+                is DragInteraction.Start -> interactions.add(interaction)
+                is DragInteraction.Stop -> interactions.remove(interaction.start)
+                is DragInteraction.Cancel -> interactions.remove(interaction.start)
+            }
+        }
+    }
+
+    val size =
+        if (interactions.isNotEmpty()) {
+            thumbSize.copy(width = thumbSize.width / 2)
+        } else {
+            thumbSize
+        }
+    Spacer(
+        modifier
+            .width { size.width.roundToPx() }
+            .height { size.height.roundToPx() }
+            .hoverable(interactionSource = interactionSource)
+            .background(
+                if (enabled) colors.thumbColor else colors.disabledThumbColor,
+                RoundedCornerShape(100),
+            )
     )
 }
 
