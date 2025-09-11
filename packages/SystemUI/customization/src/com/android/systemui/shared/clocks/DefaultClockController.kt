@@ -45,7 +45,6 @@ import com.android.systemui.plugins.keyguard.ui.clocks.ClockSettings
 import com.android.systemui.plugins.keyguard.ui.clocks.ClockViewIds
 import com.android.systemui.plugins.keyguard.ui.clocks.ThemeConfig
 import com.android.systemui.plugins.keyguard.ui.clocks.TimeFormatKind
-import com.android.systemui.shared.Flags.ambientAod
 import java.io.PrintWriter
 import java.util.Locale
 
@@ -178,11 +177,7 @@ class DefaultClockController(
         open fun recomputePadding(targetRegion: Rect?) {}
 
         private fun getAodColor(): Int {
-            return if (ambientAod()) {
-                ctx.resources.getColor(android.R.color.system_accent1_100)
-            } else {
-                DOZE_COLOR
-            }
+            return ctx.resources.getColor(android.R.color.system_accent1_100)
         }
     }
 

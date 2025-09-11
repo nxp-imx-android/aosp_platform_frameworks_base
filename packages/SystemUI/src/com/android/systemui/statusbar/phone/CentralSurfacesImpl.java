@@ -33,7 +33,6 @@ import static com.android.systemui.Dependency.TIME_TICK_HANDLER_NAME;
 import static com.android.systemui.Flags.keyboardShortcutHelperRewrite;
 import static com.android.systemui.charging.WirelessChargingAnimation.UNKNOWN_BATTERY_LEVEL;
 import static com.android.systemui.flags.Flags.SHORTCUT_LIST_SEARCH_LAYOUT;
-import static com.android.systemui.shared.Flags.ambientAod;
 import static com.android.systemui.statusbar.StatusBarState.SHADE;
 
 import android.annotation.Nullable;
@@ -114,7 +113,6 @@ import com.android.systemui.accessibility.floatingmenu.AccessibilityFloatingMenu
 import com.android.systemui.animation.ActivityTransitionAnimator;
 import com.android.systemui.assist.AssistManager;
 import com.android.systemui.back.domain.interactor.BackActionInteractor;
-import com.android.systemui.biometrics.AuthRippleController;
 import com.android.systemui.bouncer.domain.interactor.AlternateBouncerInteractor;
 import com.android.systemui.broadcast.BroadcastDispatcher;
 import com.android.systemui.camera.CameraIntents;
@@ -181,13 +179,11 @@ import com.android.systemui.shade.shared.flag.ShadeWindowGoesAround;
 import com.android.systemui.shared.recents.utilities.Utilities;
 import com.android.systemui.shared.statusbar.phone.BarTransitions;
 import com.android.systemui.statusbar.AutoHideUiElement;
-import com.android.systemui.statusbar.CircleReveal;
 import com.android.systemui.statusbar.CommandQueue;
 import com.android.systemui.statusbar.GestureRecorder;
 import com.android.systemui.statusbar.KeyboardShortcutListSearch;
 import com.android.systemui.statusbar.KeyboardShortcuts;
 import com.android.systemui.statusbar.KeyguardIndicationController;
-import com.android.systemui.statusbar.LiftReveal;
 import com.android.systemui.statusbar.LightRevealScrim;
 import com.android.systemui.statusbar.LockscreenShadeTransitionController;
 import com.android.systemui.statusbar.NotificationLockscreenUserManager;
@@ -384,7 +380,6 @@ public class CentralSurfacesImpl implements CoreStartable, CentralSurfaces {
 
     private PhoneStatusBarViewController mPhoneStatusBarViewController;
     private PhoneStatusBarTransitions mStatusBarTransitions;
-    private final AuthRippleController mAuthRippleController;
     @WindowVisibleState private int mStatusBarWindowState = WINDOW_STATE_SHOWING;
     private final NotificationShadeWindowController mNotificationShadeWindowController;
     private final TopUiController mTopUiController;
@@ -671,7 +666,6 @@ public class CentralSurfacesImpl implements CoreStartable, CentralSurfaces {
             DozeParameters dozeParameters,
             Lazy<ScrimController> scrimController,
             Lazy<BiometricUnlockController> biometricUnlockControllerLazy,
-            AuthRippleController authRippleController,
             DozeServiceHost dozeServiceHost,
             BackActionInteractor backActionInteractor,
             PowerManager powerManager,
@@ -783,7 +777,6 @@ public class CentralSurfacesImpl implements CoreStartable, CentralSurfaces {
         mScrimController = SceneContainerFlag.isEnabled() ? null : scrimController.get();
         mDozeScrimController = dozeScrimController;
         mBiometricUnlockControllerLazy = biometricUnlockControllerLazy;
-        mAuthRippleController = authRippleController;
         mNotificationShadeDepthControllerLazy = notificationShadeDepthControllerLazy;
         mVolumeComponent = volumeComponent;
         mCommandQueue = commandQueue;
@@ -981,29 +974,6 @@ public class CentralSurfacesImpl implements CoreStartable, CentralSurfaces {
             @Override
             public void onUnlockedChanged() {
                 logStateToEventlog();
-            }
-
-            @Override
-            public void onKeyguardGoingAwayChanged() {
-                if (ambientAod()) {
-                    // This code path is not used if the KeyguardTransitionRepository is managing
-                    // the lightreveal scrim.
-                    return;
-                }
-
-                // The light reveal scrim should always be fully revealed by the time the keyguard
-                // is done going away. Double check that this is true.
-                if (!mKeyguardStateController.isKeyguardGoingAway()) {
-                    if (mLightRevealScrim.getRevealAmount() != 1f) {
-                        Log.e(TAG, "Keyguard is done going away, but someone left the light reveal "
-                                + "scrim at reveal amount: " + mLightRevealScrim.getRevealAmount());
-                    }
-
-                    // If the auth ripple is still playing, let it finish.
-                    if (!mAuthRippleController.isAnimatingLightRevealScrim()) {
-                        mLightRevealScrim.setRevealAmount(1f);
-                    }
-                }
             }
         });
         startKeyguard();
@@ -1844,13 +1814,6 @@ public class CentralSurfacesImpl implements CoreStartable, CentralSurfaces {
             mScrimController.dump(pw, args);
         }
 
-        if (mLightRevealScrim != null) {
-            pw.println(
-                    "mLightRevealScrim.getRevealEffect(): " + mLightRevealScrim.getRevealEffect());
-            pw.println(
-                    "mLightRevealScrim.getRevealAmount(): " + mLightRevealScrim.getRevealAmount());
-        }
-
         if (mStatusBarKeyguardViewManager != null) {
             mStatusBarKeyguardViewManager.dump(pw);
         }
@@ -2442,42 +2405,6 @@ public class CentralSurfacesImpl implements CoreStartable, CentralSurfaces {
         }
     }
 
-    /**
-     * Updates the light reveal effect to reflect the reason we're waking or sleeping (for example,
-     * from the power button).
-     * @param wakingUp Whether we're updating because we're waking up (true) or going to sleep
-     *                 (false).
-     */
-    private void updateRevealEffect(boolean wakingUp) {
-        if (mLightRevealScrim == null) {
-            return;
-        }
-
-        if (ambientAod()) {
-            return;
-        }
-
-        final boolean wakingUpFromPowerButton = wakingUp
-                && !(mLightRevealScrim.getRevealEffect() instanceof CircleReveal)
-                && mWakefulnessLifecycle.getLastWakeReason()
-                == PowerManager.WAKE_REASON_POWER_BUTTON;
-        final boolean sleepingFromPowerButton = !wakingUp
-                && mWakefulnessLifecycle.getLastSleepReason()
-                == PowerManager.GO_TO_SLEEP_REASON_POWER_BUTTON;
-
-        if (wakingUpFromPowerButton || sleepingFromPowerButton) {
-            mLightRevealScrim.setRevealEffect(mPowerButtonReveal);
-            mLightRevealScrim.setRevealAmount(1f - mStatusBarStateController.getDozeAmount());
-        } else if (!wakingUp || !(mLightRevealScrim.getRevealEffect() instanceof CircleReveal)) {
-            // If we're going to sleep, but it's not from the power button, use the default reveal.
-            // If we're waking up, only use the default reveal if the biometric controller didn't
-            // already set it to the circular reveal because we're waking up from a fingerprint/face
-            // auth.
-            mLightRevealScrim.setRevealEffect(LiftReveal.INSTANCE);
-            mLightRevealScrim.setRevealAmount(1f - mStatusBarStateController.getDozeAmount());
-        }
-    }
-
     // TODO: Figure out way to remove these.
     @Override
     public NavigationBarView getNavigationBarView() {
@@ -2573,7 +2500,6 @@ public class CentralSurfacesImpl implements CoreStartable, CentralSurfaces {
             //  cancel stale runnables that could put the device in the wrong state
             cancelAfterLaunchTransitionRunnables();
 
-            updateRevealEffect(false /* wakingUp */);
             updateNotificationPanelTouchState();
             maybeEscalateHeadsUp();
             dismissVolumeDialog();
@@ -2620,10 +2546,6 @@ public class CentralSurfacesImpl implements CoreStartable, CentralSurfaces {
         private void startLockscreenTransitionFromAod() {
             // stopDozing() starts the LOCKSCREEN_TRANSITION_FROM_AOD animation.
             mDozeServiceHost.stopDozing();
-            // This is intentionally below the stopDozing call above, since it avoids that we're
-            // unnecessarily animating the wakeUp transition. Animations should only be enabled
-            // once we fully woke up.
-            updateRevealEffect(true /* wakingUp */);
             updateNotificationPanelTouchState();
             mShadeTouchableRegionManager.updateTouchableRegion();
 
@@ -3122,17 +3044,6 @@ public class CentralSurfacesImpl implements CoreStartable, CentralSurfaces {
                     checkBarModes();
                     updateScrimController();
                     Trace.endSection();
-                }
-
-                @Override
-                public void onDozeAmountChanged(float linear, float eased) {
-                    if (!ambientAod()
-                            && !(mLightRevealScrim.getRevealEffect() instanceof CircleReveal)) {
-                        // If wakeAndUnlocking, this is handled in AuthRippleInteractor
-                        if (!mBiometricUnlockController.isWakeAndUnlock()) {
-                            mLightRevealScrim.setRevealAmount(1f - linear);
-                        }
-                    }
                 }
 
                 @Override

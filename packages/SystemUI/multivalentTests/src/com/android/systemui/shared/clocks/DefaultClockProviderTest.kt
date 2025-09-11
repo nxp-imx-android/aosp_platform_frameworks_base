@@ -20,8 +20,6 @@ import android.content.Context
 import android.content.res.Resources
 import android.graphics.Color
 import android.graphics.drawable.Drawable
-import android.platform.test.annotations.DisableFlags
-import android.platform.test.annotations.EnableFlags
 import android.util.TypedValue
 import android.view.LayoutInflater
 import android.widget.FrameLayout
@@ -33,8 +31,6 @@ import com.android.systemui.plugins.keyguard.ui.clocks.ClockId
 import com.android.systemui.plugins.keyguard.ui.clocks.ClockSettings
 import com.android.systemui.plugins.keyguard.ui.clocks.ThemeConfig
 import com.android.systemui.plugins.keyguard.ui.clocks.TimeFormatKind
-import com.android.systemui.shared.Flags
-import com.android.systemui.shared.clocks.DefaultClockController.Companion.DOZE_COLOR
 import com.android.systemui.util.mockito.any
 import com.android.systemui.util.mockito.eq
 import java.util.Locale
@@ -110,26 +106,6 @@ class DefaultClockProviderTest : SysuiTestCase() {
     }
 
     @Test
-    @DisableFlags(Flags.FLAG_AMBIENT_AOD)
-    fun defaultClock_initialize_flagOff() {
-        val clock = provider.createClock(context, DEFAULT_CLOCK_ID)
-        verify(mockSmallClockView).setColors(DOZE_COLOR, Color.MAGENTA)
-        verify(mockLargeClockView).setColors(DOZE_COLOR, Color.MAGENTA)
-
-        clock.initialize(true, 0f, 0f)
-
-        // This is the default darkTheme color
-        val expectedColor = context.resources.getColor(android.R.color.system_accent1_100)
-        verify(mockSmallClockView).setColors(DOZE_COLOR, expectedColor)
-        verify(mockLargeClockView).setColors(DOZE_COLOR, expectedColor)
-        verify(mockSmallClockView).onTimeZoneChanged(notNull())
-        verify(mockLargeClockView).onTimeZoneChanged(notNull())
-        verify(mockSmallClockView).refreshTime()
-        verify(mockLargeClockView).refreshTime()
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_AMBIENT_AOD)
     fun defaultClock_initialize() {
         val expectedAodColor = context.resources.getColor(android.R.color.system_accent1_100)
         val clock = provider.createClock(context, DEFAULT_CLOCK_ID)
@@ -183,24 +159,6 @@ class DefaultClockProviderTest : SysuiTestCase() {
     }
 
     @Test
-    @DisableFlags(Flags.FLAG_AMBIENT_AOD)
-    fun defaultClock_events_onThemeChanged_noSeed_flagOff() {
-        // This is the default darkTheme color
-        val expectedColor = context.resources.getColor(android.R.color.system_accent1_100)
-        val clock = provider.createClock(context, DEFAULT_CLOCK_ID)
-
-        verify(mockSmallClockView).setColors(DOZE_COLOR, Color.MAGENTA)
-        verify(mockLargeClockView).setColors(DOZE_COLOR, Color.MAGENTA)
-
-        clock.smallClock.events.onThemeChanged(ThemeConfig(true, null))
-        clock.largeClock.events.onThemeChanged(ThemeConfig(true, null))
-
-        verify(mockSmallClockView).setColors(DOZE_COLOR, expectedColor)
-        verify(mockLargeClockView).setColors(DOZE_COLOR, expectedColor)
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_AMBIENT_AOD)
     fun defaultClock_events_onThemeChanged_noSeedn() {
         val expectedColor = Color.TRANSPARENT
         val clock = provider.createClock(context, DEFAULT_CLOCK_ID)
@@ -218,24 +176,6 @@ class DefaultClockProviderTest : SysuiTestCase() {
     }
 
     @Test
-    @DisableFlags(Flags.FLAG_AMBIENT_AOD)
-    fun defaultClock_events_onThemeChanged_newSeed_flagOff() {
-        val initSeedColor = 10
-        val newSeedColor = 20
-        val clock = provider.createClock(context, ClockSettings(DEFAULT_CLOCK_ID, initSeedColor))
-
-        verify(mockSmallClockView).setColors(DOZE_COLOR, initSeedColor)
-        verify(mockLargeClockView).setColors(DOZE_COLOR, initSeedColor)
-
-        clock.smallClock.events.onThemeChanged(ThemeConfig(true, newSeedColor))
-        clock.largeClock.events.onThemeChanged(ThemeConfig(true, newSeedColor))
-
-        verify(mockSmallClockView).setColors(DOZE_COLOR, newSeedColor)
-        verify(mockLargeClockView).setColors(DOZE_COLOR, newSeedColor)
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_AMBIENT_AOD)
     fun defaultClock_events_onThemeChanged_newSeed() {
         val initSeedColor = 10
         val newSeedColor = 20
