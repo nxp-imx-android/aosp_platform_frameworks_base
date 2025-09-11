@@ -40,14 +40,3 @@ flag {
     description: "Feature flag for collecting app data size by file type API"
     bug: "294088945"
 }
-
-flag {
-    name: "get_app_art_managed_bytes"
-    namespace: "system_performance"
-    description: "Bug fixing flag for optional collection of app ART managed file stats"
-    bug: "395548922"
-    metadata {
-      purpose: PURPOSE_BUGFIX
-    }
-}
-
