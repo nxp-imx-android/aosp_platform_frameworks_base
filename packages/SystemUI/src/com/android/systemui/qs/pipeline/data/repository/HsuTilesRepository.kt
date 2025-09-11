@@ -29,7 +29,7 @@ import javax.inject.Inject
 class HsuTilesRepository @Inject constructor(@ShadeDisplayAware private val resources: Resources) {
 
     /** Set of allowed tiles for the headless system user. */
-    private val allowedTiles: AllowedTiles
+    val allowedTiles: AllowedTiles
 
     init {
         var allowList = resources.getStringArray(R.array.hsu_allow_list_qs_tiles)
