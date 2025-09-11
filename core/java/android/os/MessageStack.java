@@ -215,9 +215,9 @@ public final class MessageStack {
             }
             // MessageHeap will maintain its own ordering of Messages, so it doesn't matter that we
             // insert these Messages in a different order than submitted to the stack.
-            // TODO: Removed messages shouldn't be added to the heap, and possibly not into the
-            // stack either.
-            getHeap(current).add(current);
+            if (!current.isRemoved()) {
+                getHeap(current).add(current);
+            }
             current = current.next;
         }
 

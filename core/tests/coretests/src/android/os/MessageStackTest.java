@@ -51,6 +51,19 @@ public final class MessageStackTest {
     }
 
     /**
+     * Check that the stack doesn't sweep already-removed messages.
+     */
+    @Test
+    public void testPushRemovedMessage() {
+        MessageStack stack = new MessageStack();
+        Message m = new Message();
+        m.markRemoved();
+        stack.pushMessage(m);
+        stack.heapSweep();
+        assertEquals(0, stack.combinedHeapSizesForTest());
+    }
+
+    /**
      * Verify quitting state
      */
     @Test
