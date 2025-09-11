@@ -1080,6 +1080,7 @@ public class InsetsController implements WindowInsetsController, InsetsAnimation
         if (consumedControlCount != mTmpControlArray.size()) {
             for (int i = mTmpControlArray.size() - 1; i >= 0; i--) {
                 final InsetsSourceControl control = mTmpControlArray.valueAt(i);
+                controllableTypes |= control.getType();
                 getSourceConsumer(control.getId(), control.getType())
                         .setControl(control, showTypes, hideTypes, cancelTypes, transientTypes);
             }
