@@ -228,7 +228,7 @@ class SharedLibrariesImplTest {
             staticLibrary = STATIC_LIB_NAME, staticLibraryVersion = 10L)
         val parsedPackage = pair.second as ParsedPackage
         val scanRequest = ScanRequest(parsedPackage, null, null, null, null,
-            null, null, null, 0, 0, false, null, null)
+            null, null, null, 0, 0, false, null, null, false)
         val scanResult = ScanResult(scanRequest, null, false, 0, null, null, null)
         var installRequest = InstallRequest(parsedPackage, 0, 0, UserHandle(0), scanResult, null)
 
@@ -334,7 +334,7 @@ class SharedLibrariesImplTest {
             .createBasicSettingBuilder(pair.first.parentFile, parsedPackage.hideAsFinal())
             .setPkgFlags(ApplicationInfo.FLAG_SYSTEM).build()
         val scanRequest = ScanRequest(parsedPackage, null, null, null, null,
-            null, null, null, 0, 0, false, null, null)
+            null, null, null, 0, 0, false, null, null, false)
         val scanResult = ScanResult(scanRequest, packageSetting, false, 0, null, null,
             listOf(testInfo))
         var installRequest = InstallRequest(parsedPackage, 0, 0, UserHandle(0), scanResult, null)

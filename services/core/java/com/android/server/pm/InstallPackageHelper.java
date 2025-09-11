@@ -4231,9 +4231,9 @@ final class InstallPackageHelper {
         final SharedUserSetting sharedUserSetting;
         SharedUserSetting oldSharedUserSetting = null;
 
+        final boolean isSystemApp = AndroidPackageLegacyUtils.isSystem(parsedPackage);
         synchronized (mPm.mLock) {
             platformPackage = mPm.getPlatformPackage();
-            var isSystemApp = AndroidPackageLegacyUtils.isSystem(parsedPackage);
             final String renamedPkgName = mPm.mSettings.getRenamedPackageLPr(
                     AndroidPackageUtils.getRealPackageOrNull(parsedPackage, isSystemApp));
             realPkgName = ScanPackageUtils.getRealPackageName(parsedPackage, renamedPkgName,
@@ -4278,14 +4278,21 @@ final class InstallPackageHelper {
 
         final boolean isPlatformPackage = platformPackage != null
                 && platformPackage.getPackageName().equals(parsedPackage.getPackageName());
-
+        final  String initiatingPackage = installedPkgSetting != null
+                ? installedPkgSetting.getInstallSource().mInitiatingPackageName : null;
+        // Run 16 KB alignment checks on 4 KB device if evaluated as true for new installations.
+        // To prevent deadlock, move the call of SettingsProvider out of mLock block
+        final boolean enableAlignmentChecks = ScanPackageUtils.enableAlignmentChecks(
+                parsedPackage, mPm.mInjector.getContext(), initiatingPackage,
+                isSystemApp, isPlatformPackage, scanFlags);
         return new ScanRequest(parsedPackage, oldSharedUserSetting,
                 installedPkgSetting == null ? null : installedPkgSetting.getPkg() /* oldPkg */,
                 installedPkgSetting /* packageSetting */,
                 sharedUserSetting,
                 disabledPkgSetting /* disabledPackageSetting */,
                 originalPkgSetting  /* originalPkgSetting */,
-                realPkgName, parseFlags, scanFlags, isPlatformPackage, user, cpuAbiOverride);
+                realPkgName, parseFlags, scanFlags, isPlatformPackage, user, cpuAbiOverride,
+                enableAlignmentChecks);
     }
 
     private ScanResult scanPackageNew(@NonNull ParsedPackage parsedPackage,
@@ -4318,7 +4325,7 @@ final class InstallPackageHelper {
                     initialScanRequest.mSharedUserSetting, disabledPkgSetting,
                     initialScanRequest.mOriginalPkgSetting, initialScanRequest.mRealPkgName,
                     parseFlags, scanFlags, initialScanRequest.mIsPlatformPackage, user,
-                    cpuAbiOverride);
+                    cpuAbiOverride, initialScanRequest.mEnableAlignmentChecks);
             return ScanPackageUtils.scanPackageOnly(request, mPm.mInjector, mPm.mFactoryTest,
                     currentTime);
         }
@@ -4345,6 +4352,7 @@ final class InstallPackageHelper {
             final boolean isSystemPkgUpdated;
             final PackageSetting disabledPkgSetting;
             final boolean isUpgrade;
+
             synchronized (mPm.mLock) {
                 isUpgrade = mPm.isDeviceUpgrading();
                 if (scanSystemPartition && !pkgAlreadyExists
@@ -4372,7 +4380,8 @@ final class InstallPackageHelper {
                             initialScanRequest.mSharedUserSetting,
                             null /* disabledPkgSetting */, null /* originalPkgSetting */,
                             null, parseFlags, scanFlags,
-                            initialScanRequest.mIsPlatformPackage, user, null);
+                            initialScanRequest.mIsPlatformPackage, user, null,
+                            initialScanRequest.mEnableAlignmentChecks);
                     ScanPackageUtils.applyPolicy(parsedPackage, scanFlags,
                             mPm.getPlatformPackage(), true);
                     final ScanResult scanResult =
