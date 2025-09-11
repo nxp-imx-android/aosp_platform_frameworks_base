@@ -35,6 +35,33 @@
 
 namespace android {
 
+/**
+ * A generic RAII (Resource Acquisition Is Initialization) class that executes
+ * a lambda or other callable function when it goes out of scope. This is useful
+ * for ensuring cleanup code is run.
+ */
+class ScopeGuard {
+public:
+    // Takes a function to be executed on destruction.
+    template <typename F>
+    explicit ScopeGuard(F&& func) : mExitFunction(std::forward<F>(func)) {}
+
+    // The destructor invokes the stored function.
+    ~ScopeGuard() {
+        if (mExitFunction) {
+            mExitFunction();
+        }
+    }
+
+    ScopeGuard(const ScopeGuard&) = delete;
+    ScopeGuard& operator=(const ScopeGuard&) = delete;
+    ScopeGuard(ScopeGuard&&) = delete;
+    ScopeGuard& operator=(ScopeGuard&&) = delete;
+
+private:
+    std::function<void()> mExitFunction;
+};
+
 using gui::CaptureArgs;
 using gui::CaptureMode;
 using gui::IScreenCaptureListener;
@@ -88,13 +115,13 @@ class ScreenCaptureListenerWrapper : public gui::BnScreenCaptureListener {
 public:
     explicit ScreenCaptureListenerWrapper(JNIEnv* env, jobject jobject) {
         env->GetJavaVM(&mVm);
-        mConsumerWeak = env->NewWeakGlobalRef(jobject);
+        mConsumerObject = env->NewGlobalRef(jobject);
     }
 
     ~ScreenCaptureListenerWrapper() {
-        if (mConsumerWeak) {
-            getenv()->DeleteWeakGlobalRef(mConsumerWeak);
-            mConsumerWeak = nullptr;
+        if (mConsumerObject) {
+            getenv()->DeleteGlobalRef(mConsumerObject);
+            mConsumerObject = nullptr;
         }
     }
 
@@ -102,14 +129,19 @@ public:
             const gui::ScreenCaptureResults& captureResults) override {
         JNIEnv* env = getenv();
 
-        ScopedLocalRef<jobject> consumer{env, env->NewLocalRef(mConsumerWeak)};
-        if (consumer == nullptr) {
+        if (mConsumerObject == nullptr) {
             ALOGE("ScreenCaptureListenerWrapper consumer not alive.");
             return binder::Status::ok();
         }
 
+        ScopeGuard deleteGlobalRef([env, this]() {
+            if (mConsumerObject) {
+                env->DeleteGlobalRef(mConsumerObject);
+                mConsumerObject = nullptr;
+            }
+        });
         if (!captureResults.fenceResult.ok() || captureResults.buffer == nullptr) {
-            env->CallVoidMethod(consumer.get(), gConsumerClassInfo.accept, nullptr,
+            env->CallVoidMethod(mConsumerObject, gConsumerClassInfo.accept, nullptr,
                                 fenceStatus(captureResults.fenceResult));
             checkAndClearException(env, "accept");
             return binder::Status::ok();
@@ -134,7 +166,7 @@ public:
                                             captureResults.capturedHdrLayers, jGainmap.get(),
                                             captureResults.hdrSdrRatio));
         checkAndClearException(env, "builder");
-        env->CallVoidMethod(consumer.get(), gConsumerClassInfo.accept,
+        env->CallVoidMethod(mConsumerObject, gConsumerClassInfo.accept,
                             screenshotHardwareBuffer.get(),
                             fenceStatus(captureResults.fenceResult));
         checkAndClearException(env, "accept");
@@ -142,16 +174,17 @@ public:
     }
 
     void onError(JNIEnv* env, int errorCode) {
-        ScopedLocalRef<jobject> consumer{env, env->NewLocalRef(mConsumerWeak)};
-        if (consumer == nullptr) {
+        if (mConsumerObject == nullptr) {
             ALOGE("ScreenCaptureListenerWrapper::onError - consumer not alive");
             return;
         }
-        env->CallVoidMethod(consumer.get(), gConsumerClassInfo.accept, nullptr, errorCode);
+        env->CallVoidMethod(mConsumerObject, gConsumerClassInfo.accept, nullptr, errorCode);
+        env->DeleteGlobalRef(mConsumerObject);
+        mConsumerObject = nullptr;
     }
 
 private:
-    jweak mConsumerWeak;
+    jobject mConsumerObject;
     JavaVM* mVm;
 
     JNIEnv* getenv() {
