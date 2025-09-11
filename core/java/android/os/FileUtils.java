@@ -547,72 +547,72 @@ public final class FileUtils {
         long t;
 
         FileDescriptor[] pipes = Os.pipe();
+        try {
+            while (countToRead > 0 || countInPipe > 0) {
+                if (countToRead > 0) {
+                    t = Os.splice(in, null, pipes[1], null, Math.min(countToRead, COPY_CHECKPOINT_BYTES),
+                                SPLICE_F_MOVE | SPLICE_F_MORE);
+                    if (t < 0) {
+                        // splice error
+                        Slog.e(TAG, "splice error, fdIn --> pipe, copy size:" + count +
+                            ", copied:" + progress +
+                            ", read:" + (count - countToRead) +
+                            ", in pipe:" + countInPipe);
+                        break;
+                    } else if (t == 0) {
+                        // end of input, input count larger than real size
+                        Slog.w(TAG, "Reached the end of the input file. The size to be copied exceeds the actual size, copy size:" + count +
+                            ", copied:" + progress +
+                            ", read:" + (count - countToRead) +
+                            ", in pipe:" + countInPipe);
+                        countToRead = 0;
+                    } else {
+                        countInPipe += t;
+                        countToRead -= t;
+                    }
+                }
 
-        while (countToRead > 0 || countInPipe > 0) {
-            if (countToRead > 0) {
-                t = Os.splice(in, null, pipes[1], null, Math.min(countToRead, COPY_CHECKPOINT_BYTES),
-                              SPLICE_F_MOVE | SPLICE_F_MORE);
-                if (t < 0) {
-                    // splice error
-                    Slog.e(TAG, "splice error, fdIn --> pipe, copy size:" + count +
-                           ", copied:" + progress +
-                           ", read:" + (count - countToRead) +
-                           ", in pipe:" + countInPipe);
-                    break;
-                } else if (t == 0) {
-                    // end of input, input count larger than real size
-                    Slog.w(TAG, "Reached the end of the input file. The size to be copied exceeds the actual size, copy size:" + count +
-                           ", copied:" + progress +
-                           ", read:" + (count - countToRead) +
-                           ", in pipe:" + countInPipe);
-                    countToRead = 0;
-                } else {
-                    countInPipe += t;
-                    countToRead -= t;
+                if (countInPipe > 0) {
+                    t = Os.splice(pipes[0], null, out, null, Math.min(countInPipe, COPY_CHECKPOINT_BYTES),
+                                SPLICE_F_MOVE | SPLICE_F_MORE);
+                    // The data is already in the pipeline, so the return value will not be zero.
+                    // If it is 0, it means an error has occurred. So here use t<=0.
+                    if (t <= 0) {
+                        Slog.e(TAG, "splice error, pipe --> fdOut, copy size:" + count +
+                            ", copied:" + progress +
+                            ", read:" + (count - countToRead) +
+                            ", in pipe: " + countInPipe);
+                        throw new ErrnoException("splice, pipe --> fdOut", EIO);
+                    } else {
+                        progress += t;
+                        checkpoint += t;
+                        countInPipe -= t;
+                    }
+                }
+
+                if (checkpoint >= COPY_CHECKPOINT_BYTES) {
+                    if (signal != null) {
+                        signal.throwIfCanceled();
+                    }
+                    if (executor != null && listener != null) {
+                        final long progressSnapshot = progress;
+                        executor.execute(() -> {
+                            listener.onProgress(progressSnapshot);
+                        });
+                    }
+                    checkpoint = 0;
                 }
             }
-
-            if (countInPipe > 0) {
-                t = Os.splice(pipes[0], null, out, null, Math.min(countInPipe, COPY_CHECKPOINT_BYTES),
-                              SPLICE_F_MOVE | SPLICE_F_MORE);
-                // The data is already in the pipeline, so the return value will not be zero.
-                // If it is 0, it means an error has occurred. So here use t<=0.
-                if (t <= 0) {
-                    Slog.e(TAG, "splice error, pipe --> fdOut, copy size:" + count +
-                           ", copied:" + progress +
-                           ", read:" + (count - countToRead) +
-                           ", in pipe: " + countInPipe);
-                    Os.close(pipes[0]);
-                    Os.close(pipes[1]);
-                    throw new ErrnoException("splice, pipe --> fdOut", EIO);
-                } else {
-                    progress += t;
-                    checkpoint += t;
-                    countInPipe -= t;
-                }
+            if (executor != null && listener != null) {
+                final long progressSnapshot = progress;
+                executor.execute(() -> {
+                    listener.onProgress(progressSnapshot);
+                });
             }
-
-            if (checkpoint >= COPY_CHECKPOINT_BYTES) {
-                if (signal != null) {
-                    signal.throwIfCanceled();
-                }
-                if (executor != null && listener != null) {
-                    final long progressSnapshot = progress;
-                    executor.execute(() -> {
-                        listener.onProgress(progressSnapshot);
-                    });
-                }
-                checkpoint = 0;
-            }
+        } finally {
+            Os.close(pipes[0]);
+            Os.close(pipes[1]);
         }
-        if (executor != null && listener != null) {
-            final long progressSnapshot = progress;
-            executor.execute(() -> {
-                listener.onProgress(progressSnapshot);
-            });
-        }
-        Os.close(pipes[0]);
-        Os.close(pipes[1]);
         return progress;
     }
 
