@@ -16,6 +16,7 @@
 
 package android.telecom;
 
+import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.SdkConstant;
@@ -31,6 +32,8 @@ import android.os.RemoteException;
 import com.android.internal.os.SomeArgs;
 import com.android.internal.telecom.ICallRedirectionAdapter;
 import com.android.internal.telecom.ICallRedirectionService;
+
+import com.android.server.telecom.flags.Flags;
 
 /**
  * This service can be implemented to interact between Telecom and its implementor
@@ -87,6 +90,46 @@ public abstract class CallRedirectionService extends Service {
     public abstract void onPlaceCall(@NonNull Uri handle,
                                      @NonNull PhoneAccountHandle initialPhoneAccount,
                                      boolean allowInteractiveResponse);
+    /**
+     * Telecom calls this method once upon binding to a {@link CallRedirectionService} to inform
+     * it of a new outgoing call which is being placed. Telecom does not request to redirect
+     * emergency calls and does not request to redirect calls with gateway information.
+     *
+     * <p>Telecom will cancel the call if Telecom does not receive a response in 5 seconds from
+     * the implemented {@link CallRedirectionService} set by users.
+     *
+     * <p>The implemented {@link CallRedirectionService} can call {@link #placeCallUnmodified()},
+     * {@link #redirectCall(Uri, PhoneAccountHandle, boolean)}, and {@link #cancelCall()} only
+     * from here. Calls to these methods are assumed by the Telecom framework to be the response
+     * for the phone call for which {@link #onPlaceCall(Uri, PhoneAccountHandle, boolean)} was
+     * invoked by Telecom. The Telecom framework will only invoke
+     * {@link #onPlaceCall(Uri, Uri, PhoneAccountHandle, boolean)} once each time it binds to a
+     * {@link CallRedirectionService}.
+     *
+     * <p> This method is same as {@link #onPlaceCall(Uri, PhoneAccountHandle, boolean)} above,
+     * but includes the original dial string.
+     *
+     * @param handle the phone number dialed by the user, represented in E.164 format
+     * @param originalHandle the phone number dialed by the user in the original format it was
+     * dialed (i.e. not E.164 format).  This is helpful for numbers in some regions where
+     * formatting to E.164 can cause the loss of suffix digits that the service needs to know
+     * about.
+     * @param initialPhoneAccount the {@link PhoneAccountHandle} on which the call will be placed.
+     * @param allowInteractiveResponse a boolean to tell if the implemented
+     *                                 {@link CallRedirectionService} should allow interactive
+     *                                 responses with users. Will be {@code false} if, for example
+     *                                 the device is in car mode and the user would not be able to
+     *                                 interact with their device.
+     */
+
+    @FlaggedApi(Flags.FLAG_SEND_ORIGINAL_NUMBER_ON_PLACE_CALL)
+    public void onPlaceCall(@NonNull Uri handle, @NonNull Uri originalHandle,
+                            @NonNull PhoneAccountHandle initialPhoneAccount,
+                            boolean allowInteractiveResponse) {
+
+        onPlaceCall(handle, initialPhoneAccount, allowInteractiveResponse);
+
+    }
 
     /**
      * Telecom calls this method when times out waiting for the {@link CallRedirectionService} to
@@ -190,8 +233,8 @@ public abstract class CallRedirectionService extends Service {
                     SomeArgs args = (SomeArgs) msg.obj;
                     try {
                         mCallRedirectionAdapter = (ICallRedirectionAdapter) args.arg1;
-                        onPlaceCall((Uri) args.arg2, (PhoneAccountHandle) args.arg3,
-                                (boolean) args.arg4);
+                        onPlaceCall((Uri) args.arg2, (Uri) args.arg3,
+                        (PhoneAccountHandle) args.arg4, (boolean) args.arg5);
                     } finally {
                         args.recycle();
                     }
@@ -216,13 +259,15 @@ public abstract class CallRedirectionService extends Service {
          */
         @Override
         public void placeCall(@NonNull ICallRedirectionAdapter adapter, @NonNull Uri handle,
+                              @NonNull Uri originalHandle,
                               @NonNull PhoneAccountHandle initialPhoneAccount,
                               boolean allowInteractiveResponse) {
             SomeArgs args = SomeArgs.obtain();
             args.arg1 = adapter;
             args.arg2 = handle;
-            args.arg3 = initialPhoneAccount;
-            args.arg4 = allowInteractiveResponse;
+            args.arg3 = originalHandle;
+            args.arg4 = initialPhoneAccount;
+            args.arg5 = allowInteractiveResponse;
             mHandler.obtainMessage(MSG_PLACE_CALL, args).sendToTarget();
         }
 
