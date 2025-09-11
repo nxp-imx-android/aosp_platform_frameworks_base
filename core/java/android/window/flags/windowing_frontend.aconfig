@@ -481,3 +481,10 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "scvh_set_focusable"
+    namespace: "windowing_frontend"
+    description: "Adds a focusable flag to SurfaceControlViewHost"
+    bug: "425415517"
+}

@@ -16,6 +16,7 @@
 
 package android.view;
 
+import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.TestApi;
@@ -483,10 +484,21 @@ public class SurfaceControlViewHost {
      * @param height The height to layout the View within, in pixels.
      */
     public void setView(@NonNull View view, int width, int height) {
-        final WindowManager.LayoutParams lp =
-                new WindowManager.LayoutParams(width, height,
-                        WindowManager.LayoutParams.TYPE_APPLICATION, 0, PixelFormat.TRANSPARENT);
-        setView(view, lp);
+        setView(view, new LayoutParams(width, height, true /* focusable */));
+    }
+
+    /**
+     * Sets the root view of the {@link SurfaceControlViewHost}. This view will render in to the
+     * SurfaceControl, and receive input based on the SurfaceControl's positioning on screen. It
+     * will be laid out as if it were in a window of the passed in width and height.
+     *
+     * @param view The {@link View} to add
+     * @param attrs The {@link LayoutParams} parameters for the {@link View}.
+     */
+    @FlaggedApi(Flags.FLAG_SCVH_SET_FOCUSABLE)
+    public void setView(@NonNull View view, @NonNull LayoutParams attrs) {
+        Objects.requireNonNull(attrs);
+        setView(view, attrs.toWindowManagerLayoutParams());
     }
 
     /**
@@ -495,6 +507,7 @@ public class SurfaceControlViewHost {
     @TestApi
     public void setView(@NonNull View view, @NonNull WindowManager.LayoutParams attrs) {
         Objects.requireNonNull(view);
+        Objects.requireNonNull(attrs);
         attrs.flags |= WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED;
         addWindowToken(attrs);
         view.setLayoutParams(attrs);
@@ -551,10 +564,24 @@ public class SurfaceControlViewHost {
      * @param height Height in pixels
      */
     public void relayout(int width, int height) {
-        final WindowManager.LayoutParams lp =
-                new WindowManager.LayoutParams(width, height,
-                        WindowManager.LayoutParams.TYPE_APPLICATION, 0, PixelFormat.TRANSPARENT);
-        relayout(lp);
+        relayout(new LayoutParams(width, height, true /* focusable */));
+    }
+
+    /**
+     * Modifies the {@link LayoutParams} of the root view.
+     */
+    @FlaggedApi(Flags.FLAG_SCVH_SET_FOCUSABLE)
+    public void relayout(@NonNull LayoutParams attrs) {
+        Objects.requireNonNull(attrs);
+        relayout(attrs.toWindowManagerLayoutParams());
+    }
+
+    /**
+     * Returns the {@link LayoutParams} of the root view.
+     */
+    @FlaggedApi(Flags.FLAG_SCVH_SET_FOCUSABLE)
+    public @NonNull LayoutParams getLayoutParams() {
+        return LayoutParams.from(mViewRoot.mWindowAttributes);
     }
 
     /**
@@ -636,5 +663,92 @@ public class SurfaceControlViewHost {
             return false;
         }
         return mWm.requestInputFocus(mViewRoot, focused);
+    }
+
+    /**
+     * Specifies the layout parameters for a {@link View} hosted by a {@link
+     * SurfaceControlViewHost}. This is a subset of {@link WindowManager.LayoutParams} that are
+     * applicable for {@link View}s hosted by {@code SurfaceControlViewHost}.
+     */
+    @FlaggedApi(Flags.FLAG_SCVH_SET_FOCUSABLE)
+    public static class LayoutParams {
+        private final boolean mFocusable;
+        private final int mWidth;
+        private final int mHeight;
+
+        /**
+         * Creates a new set of layout parameters. If {@code focusable} is set to false,
+         * this {@link View} won't ever get key input focus, so the user can not send key or other
+         * button events to it. Those will instead go to the current focused window.
+         * If set to true, {@link View} is focusable.
+         *
+         * @param width The width, in pixels, of the bounds for the {@link View}.
+         * @param height The height, in pixels, of the bounds for the {@link View}.
+         * @param focusable Whether the {@link View} can receive key input focus.
+         */
+        @FlaggedApi(Flags.FLAG_SCVH_SET_FOCUSABLE)
+        public LayoutParams(int width, int height, boolean focusable) {
+            mWidth = width;
+            mHeight = height;
+            mFocusable = focusable;
+        }
+
+        /**
+         * Returns {@code true} if this {@link View} can receive key input focus.
+         */
+        @FlaggedApi(Flags.FLAG_SCVH_SET_FOCUSABLE)
+        public boolean isFocusable() {
+            return mFocusable;
+        }
+
+        /**
+         * Returns the width, in pixels, of the bounds for the {@link View}.
+         */
+        @FlaggedApi(Flags.FLAG_SCVH_SET_FOCUSABLE)
+        public int getWidth() {
+            return mWidth;
+        }
+
+        /**
+         * Returns the height, in pixels, of the bounds for the {@link View}.
+         */
+        @FlaggedApi(Flags.FLAG_SCVH_SET_FOCUSABLE)
+        public int getHeight() {
+            return mHeight;
+        }
+
+        /**
+         * Converts these layout params to {@link WindowManager.LayoutParams} adding some defaults
+         * set for SCVH.
+         *
+         * @hide
+         */
+        WindowManager.LayoutParams toWindowManagerLayoutParams() {
+            final WindowManager.LayoutParams wmLayoutParams =
+                    new WindowManager.LayoutParams(
+                            mWidth,
+                            mHeight,
+                            WindowManager.LayoutParams.TYPE_APPLICATION,
+                            0,
+                            PixelFormat.TRANSPARENT);
+            wmLayoutParams.flags |= WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED;
+            if (!mFocusable) {
+                wmLayoutParams.flags |= WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE;
+            }
+            return wmLayoutParams;
+        }
+
+        /**
+         * Creates a {@link LayoutParams} from {@link WindowManager.LayoutParams}.
+         *
+         * @hide
+         */
+        static LayoutParams from(WindowManager.LayoutParams wmLayoutParams) {
+            final boolean focusable =
+                    (wmLayoutParams.flags & WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE) == 0;
+            final LayoutParams layoutParams =
+                    new LayoutParams(wmLayoutParams.width, wmLayoutParams.height, focusable);
+            return layoutParams;
+        }
     }
 }
