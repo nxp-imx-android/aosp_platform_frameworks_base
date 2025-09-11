@@ -345,19 +345,19 @@ class BubbleTaskViewListenerTest {
     }
 
     @Test
-    fun onInitialized_preparingTransition() {
+    fun onInitialized_hasCurrentTransition_callsSurfaceCreated() {
         val b = createAppBubble()
         bubbleTaskViewListener.setBubble(b)
         taskView = Mockito.spy(taskView)
-        val preparingTransition = mock<BubbleTransitions.BubbleTransition>()
-        b.preparingTransition = preparingTransition
+        val currentTransition = mock<BubbleTransitions.BubbleTransition>()
+        b.currentTransition = currentTransition
 
         getInstrumentation().runOnMainSync {
             bubbleTaskViewListener.onInitialized()
         }
         getInstrumentation().waitForIdleSync()
 
-        verify(preparingTransition).surfaceCreated()
+        verify(currentTransition).surfaceCreated()
     }
 
     @Test

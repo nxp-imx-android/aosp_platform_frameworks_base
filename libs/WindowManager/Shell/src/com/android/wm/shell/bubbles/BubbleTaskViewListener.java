@@ -124,8 +124,8 @@ public class BubbleTaskViewListener implements TaskView.Listener {
         // TODO - currently based on type, really it's what the "launch item" is.
         mParentView.post(() -> {
             ProtoLog.d(WM_SHELL_BUBBLES,
-                    "onInitialized: calling startActivity, bubble=%s hasPreparingTransition=%b",
-                    getBubbleKey(), mBubble.getPreparingTransition() != null);
+                    "onInitialized: calling startActivity, bubble=%s hasCurrentTransition=%b",
+                    getBubbleKey(), mBubble.getCurrentTransition() != null);
             try {
                 final WindowContainerToken rootToken =
                         mExpandedViewManager.getAppBubbleRootTaskToken();
@@ -137,8 +137,8 @@ public class BubbleTaskViewListener implements TaskView.Listener {
                 final boolean isShortcutBubble = (mBubble.hasMetadataShortcutId()
                         || (mBubble.isShortcut()
                         && BubbleAnythingFlagHelper.enableCreateAnyBubble()));
-                if (mBubble.getPreparingTransition() != null) {
-                    mBubble.getPreparingTransition().surfaceCreated();
+                if (mBubble.getCurrentTransition() != null) {
+                    mBubble.getCurrentTransition().surfaceCreated();
                 } else if (mBubble.isApp() || mBubble.isNote()) {
                     Context context =
                             mContext.createContextAsUser(
@@ -204,8 +204,8 @@ public class BubbleTaskViewListener implements TaskView.Listener {
     @Override
     public void onSurfaceAlreadyCreated() {
         ProtoLog.d(WM_SHELL_BUBBLES, "onSurfaceCreated: bubble=%s", getBubbleKey());
-        if (mBubble.getPreparingTransition() != null) {
-            mBubble.getPreparingTransition().surfaceCreated();
+        if (mBubble.getCurrentTransition() != null) {
+            mBubble.getCurrentTransition().surfaceCreated();
         }
     }
 

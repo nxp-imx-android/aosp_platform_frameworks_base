@@ -884,7 +884,7 @@ class BubbleStackViewTest {
         bubbleStackView = spy(bubbleStackView)
         val bubble = createAndInflateChatBubble(key = "bubble")
         val bubbleTransition = mock<BubbleTransitions.BubbleTransition>()
-        bubble.preparingTransition = bubbleTransition
+        bubble.currentTransition = bubbleTransition
 
         InstrumentationRegistry.getInstrumentation().runOnMainSync {
             bubbleStackView.addBubble(bubble)
@@ -900,7 +900,7 @@ class BubbleStackViewTest {
         bubbleStackView = spy(bubbleStackView)
         val bubble = createAndInflateChatBubble(key = "bubble")
         val bubbleTransition = mock<BubbleTransitions.BubbleTransition>()
-        bubble.preparingTransition = bubbleTransition
+        bubble.currentTransition = bubbleTransition
 
         InstrumentationRegistry.getInstrumentation().runOnMainSync {
             bubbleStackView.addBubble(bubble)

@@ -264,7 +264,7 @@ public class BubbleTransitionsTest extends ShellTestCase {
         // Check that home task is launched as part of the transition
         verify(mHomeIntentProvider).addLaunchHomePendingIntent(any(), anyInt(), anyInt());
         verify(mTransitions).startTransition(anyInt(), any(), eq(ctb));
-        verify(mBubble).setPreparingTransition(eq(bt));
+        verify(mBubble).setCurrentTransition(eq(bt));
         // Ensure we are communicating with the taskviewtransitions queue
         assertThat(mTaskViewTransitions.hasPending()).isTrue();
 
@@ -287,21 +287,22 @@ public class BubbleTransitionsTest extends ShellTestCase {
         verify(mBubbleData).notificationEntryUpdated(eq(mBubble), anyBoolean(), anyBoolean());
 
         clearInvocations(mBubble);
-        verify(mBubble, never()).setPreparingTransition(any());
+        verify(mBubble, never()).setCurrentTransition(any());
 
         ctb.surfaceCreated();
-        // Check that preparing transition is not reset before continueExpand is called
-        verify(mBubble, never()).setPreparingTransition(any());
+        // Check that preparing transition is not reset before animation callback is called
+        verify(mBubble, never()).setCurrentTransition(any());
         ArgumentCaptor<Runnable> animCb = ArgumentCaptor.forClass(Runnable.class);
         verify(mLayerView).animateConvert(any(), any(), anyFloat(), any(), any(), animCb.capture());
 
-        // continueExpand is now called, check that preparing transition is cleared
-        ctb.continueExpand();
-        verify(mBubble).setPreparingTransition(isNull());
-
+        // Trigger animation callback to finish
         assertThat(finishCalled[0]).isFalse();
+        verify(mBubble, never()).setCurrentTransition(isNull());
+
         animCb.getValue().run();
+
         assertThat(finishCalled[0]).isTrue();
+        verify(mBubble).setCurrentTransition(isNull());
     }
 
     @Test
@@ -390,7 +391,7 @@ public class BubbleTransitionsTest extends ShellTestCase {
                 mBubble, taskInfo);
         final BubbleTransitions.ConvertFromBubble cfb = (BubbleTransitions.ConvertFromBubble) bt;
         verify(mTransitions).startTransition(anyInt(), any(), eq(cfb));
-        verify(mBubble).setPreparingTransition(eq(bt));
+        verify(mBubble).setCurrentTransition(eq(bt));
         assertThat(mTaskViewTransitions.hasPending()).isTrue();
 
         final TransitionInfo info = new TransitionInfo(TRANSIT_CHANGE, 0);
@@ -504,7 +505,7 @@ public class BubbleTransitionsTest extends ShellTestCase {
                 mBubble, taskInfo);
         final BubbleTransitions.ConvertFromBubble cfb = (BubbleTransitions.ConvertFromBubble) bt;
         verify(mTransitions).startTransition(anyInt(), any(), eq(cfb));
-        verify(mBubble).setPreparingTransition(eq(bt));
+        verify(mBubble).setCurrentTransition(eq(bt));
         assertThat(mTaskViewTransitions.hasPending()).isTrue();
 
         final TransitionInfo info = new TransitionInfo(TRANSIT_CHANGE, 0);
@@ -553,7 +554,7 @@ public class BubbleTransitionsTest extends ShellTestCase {
                 mBubbleTransitions.new FloatingToBarConversion(mBubble, transactionProvider,
                         mBubblePositioner);
 
-        verify(mBubble).setPreparingTransition(bt);
+        verify(mBubble).setCurrentTransition(bt);
         verify(mTransitions, never()).startTransition(anyInt(), any(), eq(bt));
 
         final IBinder transition = mock(IBinder.class);
@@ -594,7 +595,7 @@ public class BubbleTransitionsTest extends ShellTestCase {
         assertThat(state.mVisible).isTrue();
         assertThat(state.mBounds).isEqualTo(new Rect(0, 0, 50, 100));
 
-        verify(mBubble).setPreparingTransition(null);
+        verify(mBubble).setCurrentTransition(null);
         assertThat(mTaskViewTransitions.hasPending()).isFalse();
     }
 
@@ -624,7 +625,7 @@ public class BubbleTransitionsTest extends ShellTestCase {
                 mBubbleTransitions.new FloatingToBarConversion(mBubble, transactionProvider,
                         mBubblePositioner);
 
-        verify(mBubble).setPreparingTransition(bt);
+        verify(mBubble).setCurrentTransition(bt);
         verify(mTransitions, never()).startTransition(anyInt(), any(), eq(bt));
 
         final IBinder transition = mock(IBinder.class);
@@ -658,7 +659,7 @@ public class BubbleTransitionsTest extends ShellTestCase {
         assertThat(state.mVisible).isTrue();
         assertThat(state.mBounds).isEqualTo(new Rect(0, 0, 50, 100));
 
-        verify(mBubble).setPreparingTransition(null);
+        verify(mBubble).setCurrentTransition(null);
         assertThat(mTaskViewTransitions.hasPending()).isFalse();
     }
 
@@ -773,7 +774,7 @@ public class BubbleTransitionsTest extends ShellTestCase {
 
         bt.onInflated(mBubble);
 
-        verify(mBubble).setPreparingTransition(bt);
+        verify(mBubble).setCurrentTransition(bt);
 
         // Check that an external transition was enqueued, and a launch cookie was set.
         assertThat(mTaskViewTransitions.hasPending()).isTrue();
@@ -811,15 +812,11 @@ public class BubbleTransitionsTest extends ShellTestCase {
         verify(mBubbleData).notificationEntryUpdated(eq(mBubble), anyBoolean(), anyBoolean(),
                 eq(BubbleBarLocation.RIGHT));
 
-        // Verify preparingTransition is not cleared yet
-        verify(mBubble, never()).setPreparingTransition(null);
+        // Verify currentTransition is not cleared yet
+        verify(mBubble, never()).setCurrentTransition(null);
 
-        // Simulate surfaceCreated and continueExpand so the animation can start
+        // Simulate surfaceCreated so the animation can start
         bt.surfaceCreated();
-        bt.continueExpand();
-
-        // Verify preparingTransition is cleared now
-        verify(mBubble).setPreparingTransition(null);
 
         // Verify animateConvert is called due to TRANSIT_CHANGE and snapshot exists
         ArgumentCaptor<Runnable> animCb = ArgumentCaptor.forClass(Runnable.class);
@@ -835,8 +832,12 @@ public class BubbleTransitionsTest extends ShellTestCase {
 
         // Trigger animation callback to finish
         assertThat(finishCalled[0]).isFalse();
+        verify(mBubble, never()).setCurrentTransition(isNull());
+
         animCb.getValue().run();
+
         assertThat(finishCalled[0]).isTrue();
+        verify(mBubble).setCurrentTransition(null);
 
         // Verify that the playing transition and pending cookie are removed
         assertThat(mBubbleTransitions.mEnterTransitions).doesNotContainKey(transitionToken);
@@ -859,7 +860,7 @@ public class BubbleTransitionsTest extends ShellTestCase {
 
         bt.onInflated(mBubble);
 
-        verify(mBubble).setPreparingTransition(bt);
+        verify(mBubble).setCurrentTransition(bt);
 
         // Check that an external transition was enqueued, and a launch cookie was set.
         assertThat(mTaskViewTransitions.hasPending()).isTrue();
@@ -897,11 +898,11 @@ public class BubbleTransitionsTest extends ShellTestCase {
         verify(mBubbleData).notificationEntryUpdated(eq(mBubble), anyBoolean(), anyBoolean(),
                 eq(BubbleBarLocation.RIGHT));
 
-        // Simulate surfaceCreated so the animation can start but don't call continueExpand
+        // Simulate surfaceCreated so the animation can start
         bt.surfaceCreated();
 
-        // Verify preparingTransition is not cleared yet
-        verify(mBubble, never()).setPreparingTransition(null);
+        // Verify currentTransition is not cleared yet
+        verify(mBubble, never()).setCurrentTransition(null);
 
         // Verify animateConvert is called due to TRANSIT_CHANGE and snapshot exists
         ArgumentCaptor<Runnable> animCb = ArgumentCaptor.forClass(Runnable.class);
@@ -925,7 +926,7 @@ public class BubbleTransitionsTest extends ShellTestCase {
         assertThat(mBubbleTransitions.mPendingEnterTransitions).doesNotContainKey(
                 bt.mLaunchCookie.binder);
         // Verify we cleared the preparing transition after the animation finished
-        verify(mBubble).setPreparingTransition(null);
+        verify(mBubble).setCurrentTransition(null);
     }
 
     @Test
@@ -1000,7 +1001,7 @@ public class BubbleTransitionsTest extends ShellTestCase {
                                 mStackView, mLayerView, mIconFactory, false /* inflateSync */,
                                 transition, transitionHandler -> {});
 
-        verify(mBubble).setPreparingTransition(bt);
+        verify(mBubble).setCurrentTransition(bt);
 
         // Prepare for startAnimation call
         final SurfaceControl taskLeash = new SurfaceControl.Builder().setName("taskLeash").build();
@@ -1018,7 +1019,7 @@ public class BubbleTransitionsTest extends ShellTestCase {
         // Start playing the transition
         bt.startAnimation(transition, info, startT, finishT, finishCb);
 
-        verify(mBubble, never()).setPreparingTransition(null);
+        verify(mBubble, never()).setCurrentTransition(null);
 
         // Simulate inflating the bubble
         bt.onInflated(mBubble);
@@ -1027,9 +1028,17 @@ public class BubbleTransitionsTest extends ShellTestCase {
 
         // Simulate surfaceCreated so the animation can start
         bt.surfaceCreated();
-        bt.continueExpand();
 
-        verify(mBubble).setPreparingTransition(null);
+        // Verify animateExpand is called
+        ArgumentCaptor<Runnable> animCb = ArgumentCaptor.forClass(Runnable.class);
+        verify(mLayerView).animateExpand(any(), animCb.capture());
+
+        // Trigger animation callback to finish
+        verify(mBubble, never()).setCurrentTransition(isNull());
+
+        animCb.getValue().run();
+
+        verify(mBubble).setCurrentTransition(null);
         assertThat(mTaskViewTransitions.hasPending()).isFalse();
     }
 
@@ -1078,7 +1087,7 @@ public class BubbleTransitionsTest extends ShellTestCase {
                                 mStackView, mLayerView, mIconFactory, false /* inflateSync */,
                                 transitionToken, onInflatedCallback);
 
-        verify(mBubble).setPreparingTransition(bt);
+        verify(mBubble).setCurrentTransition(bt);
 
         bt.onInflated(mBubble);
 
@@ -1095,8 +1104,7 @@ public class BubbleTransitionsTest extends ShellTestCase {
         // Bubble data gets updated
         verify(mBubbleData).jumpcutBubbleSwitch(mBubble, closingBubble);
 
-        // Simulate surfaceCreated and continueExpand so the animation can start
-        bt.continueExpand();
+        // Simulate surfaceCreated so the animation can start
         bt.surfaceCreated();
 
         // Verify animateExpand is called
@@ -1105,12 +1113,14 @@ public class BubbleTransitionsTest extends ShellTestCase {
 
         // Trigger animation callback to finish
         clearInvocations(mBubble);
+        verify(mBubble, never()).setCurrentTransition(isNull());
         verify(finishCb, never()).onTransitionFinished(any());
+
         animCb.getValue().run();
-        verify(finishCb).onTransitionFinished(any());
 
         // Verify cleanup
-        verify(mBubble).setPreparingTransition(null);
+        verify(finishCb).onTransitionFinished(any());
+        verify(mBubble).setCurrentTransition(null);
     }
 
     /**
@@ -1142,7 +1152,7 @@ public class BubbleTransitionsTest extends ShellTestCase {
                                 mStackView, mLayerView, mIconFactory, false /* inflateSync */,
                                 transition, transitionHandler -> {});
 
-        verify(mBubble).setPreparingTransition(bt);
+        verify(mBubble).setCurrentTransition(bt);
 
         // Prepare for startAnimation call
         final SurfaceControl taskLeash = new SurfaceControl.Builder().setName("taskLeash").build();
@@ -1159,10 +1169,9 @@ public class BubbleTransitionsTest extends ShellTestCase {
 
         // Start playing the new bubble transition
         bt.startAnimation(transition, info, startT, finishT, finishCb);
-        verify(mBubble, never()).setPreparingTransition(null);
+        verify(mBubble, never()).setCurrentTransition(null);
         bt.onInflated(mBubble);
         bt.surfaceCreated();
-        bt.continueExpand();
 
         // The pending queue should still have the transition from the existing bubble
         assertThat(mTaskViewTransitions.hasPending()).isTrue();
@@ -1292,7 +1301,7 @@ public class BubbleTransitionsTest extends ShellTestCase {
                                 mStackView, mLayerView, mIconFactory, false /* inflateSync */,
                                 transitionToken, onInflatedCallback);
 
-        verify(mBubble).setPreparingTransition(bt);
+        verify(mBubble).setCurrentTransition(bt);
 
         bt.onInflated(mBubble);
 

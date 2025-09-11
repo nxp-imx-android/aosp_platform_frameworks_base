@@ -1269,7 +1269,8 @@ public class BubbleStackView extends FrameLayout
             return false;
         }
         if (b instanceof Bubble) {
-            BubbleTransitions.BubbleTransition transition = ((Bubble) b).getPreparingTransition();
+            final BubbleTransitions.BubbleTransition transition =
+                    ((Bubble) b).getCurrentTransition();
             if (transition != null) {
                 // StackView doesn't need to wait for launcher to expand, if we're able to expand,
                 // mark it as ready now.
