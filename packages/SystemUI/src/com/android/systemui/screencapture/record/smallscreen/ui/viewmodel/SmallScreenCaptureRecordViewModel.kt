@@ -133,10 +133,11 @@ constructor(
     }
 
     private fun startRecording() {
-        val shouldShowTaps = recordDetailsParametersViewModel.shouldShowTaps ?: return
         val audioSource = recordDetailsParametersViewModel.audioSource ?: return
-        when (val target = recordDetailsTargetViewModel.currentTarget?.screenCaptureTarget) {
-            is ScreenCaptureTarget.Fullscreen ->
+        val target = recordDetailsTargetViewModel.currentTarget?.screenCaptureTarget ?: return
+        when (target) {
+            is ScreenCaptureTarget.Fullscreen -> {
+                val shouldShowTaps = recordDetailsParametersViewModel.shouldShowTaps ?: return
                 screenRecordingServiceInteractor.startRecording(
                     ScreenRecordingParameters(
                         captureTarget = null,
@@ -145,6 +146,7 @@ constructor(
                         audioSource = audioSource,
                     )
                 )
+            }
             is ScreenCaptureTarget.App -> {
                 val cookie = LaunchCookie("screen_record")
                 activityTaskManager.startActivityFromRecents(
@@ -165,7 +167,7 @@ constructor(
                                 taskId = target.taskId,
                             ),
                         displayId = target.displayId,
-                        shouldShowTaps = shouldShowTaps,
+                        shouldShowTaps = false,
                         audioSource = audioSource,
                     )
                 )
