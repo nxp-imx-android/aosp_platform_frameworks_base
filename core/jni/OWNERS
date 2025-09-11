@@ -127,6 +127,3 @@ per-file *MessageQueue* = file:/MESSAGE_QUEUE_OWNERS
 
 # Perfetto SDK
 per-file android_os_Perfetto* = file:/PERFETTO_OWNERS
-
-# JniStringCache
-per-file *JniStringCache* = file:/PERFORMANCE_OWNERS

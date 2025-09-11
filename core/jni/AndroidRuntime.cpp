@@ -35,7 +35,6 @@
 #include <dlfcn.h>
 #include <nativehelper/JNIHelp.h>
 #include <nativehelper/JniInvocation.h>
-#include "com_android_internal_os_JniStringCache.h"
 #include <server_configurable_flags/get_flags.h>
 #include <signal.h>
 #include <stdio.h>
@@ -109,10 +108,6 @@ extern int register_android_media_PublicFormatUtils(JNIEnv *env);
 extern int register_android_media_ToneGenerator(JNIEnv *env);
 extern int register_android_media_audio_common_AidlConversion(JNIEnv* env);
 extern int register_android_media_midi(JNIEnv *env);
-
-extern "C" JNIEXPORT void JNICALL JNI_OnUnload(JavaVM* vm, void* reserved) {
-    JniStringCache::Unload(vm);
-}
 
 namespace android {
 
@@ -222,7 +217,6 @@ extern int register_com_android_internal_os_ApplicationSharedMemory(JNIEnv *env)
 extern int register_com_android_internal_os_ClassLoaderFactory(JNIEnv* env);
 extern int register_com_android_internal_os_DebugStore(JNIEnv* env);
 extern int register_com_android_internal_os_FuseAppLoop(JNIEnv* env);
-extern int register_com_android_internal_os_JniStringCache(JNIEnv* env);
 extern int register_com_android_internal_os_KernelAllocationStats(JNIEnv* env);
 extern int register_com_android_internal_os_KernelCpuBpfTracking(JNIEnv* env);
 extern int register_com_android_internal_os_KernelCpuTotalBpfMapReader(JNIEnv* env);
@@ -1725,7 +1719,6 @@ static const RegJNIRec gRegJNI[] = {
         REG_JNI(register_com_android_internal_content_F2fsUtils),
         REG_JNI(register_com_android_internal_content_NativeLibraryHelper),
         REG_JNI(register_com_android_internal_os_FuseAppLoop),
-        REG_JNI(register_com_android_internal_os_JniStringCache),
         REG_JNI(register_com_android_internal_os_KernelAllocationStats),
         REG_JNI(register_com_android_internal_os_KernelCpuBpfTracking),
         REG_JNI(register_com_android_internal_os_KernelCpuTotalBpfMapReader),
