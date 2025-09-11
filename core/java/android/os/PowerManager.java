@@ -687,6 +687,7 @@ public final class PowerManager {
             WAKE_REASON_LIFT,
             WAKE_REASON_BIOMETRIC,
             WAKE_REASON_DOCK,
+            WAKE_REASON_DOZE_STOPPED,
     })
     @Retention(RetentionPolicy.SOURCE)
     public @interface WakeReason{}
@@ -834,6 +835,13 @@ public final class PowerManager {
     public static final int WAKE_REASON_DOCK = 18;
 
     /**
+     * Wake up reason code: Waking the dream because the dozing was stopped directly through dream
+     * APIs rather than some other more specific reason.
+     * @hide
+     */
+    public static final int WAKE_REASON_DOZE_STOPPED = 19;
+
+    /**
      * Convert the wake reason to a string for debugging purposes.
      * @hide
      */
@@ -858,6 +866,7 @@ public final class PowerManager {
             case WAKE_REASON_LIFT: return "WAKE_REASON_LIFT";
             case WAKE_REASON_BIOMETRIC: return "WAKE_REASON_BIOMETRIC";
             case WAKE_REASON_DOCK: return "WAKE_REASON_DOCK";
+            case WAKE_REASON_DOZE_STOPPED: return "WAKE_REASON_DOZE_STOPPED";
             default: return Integer.toString(wakeReason);
         }
     }

@@ -27,6 +27,7 @@ import static android.service.dreams.Flags.cleanupDreamSettingsOnUninstall;
 import static android.service.dreams.Flags.disallowDreamOnAutoProjection;
 import static android.service.dreams.Flags.dreamHandlesBeingObscured;
 import static android.service.dreams.Flags.dreamsV2;
+import static android.service.dreams.Flags.wakeOnStoppingDoze;
 
 import static com.android.server.wm.ActivityInterceptorCallback.DREAM_MANAGER_ORDERED_ID;
 
@@ -267,29 +268,29 @@ public final class DreamManagerService extends SystemService {
     }
 
     public DreamManagerService(Context context) {
-        this(context, new DreamHandler(FgThread.get().getLooper()));
+        this(new DefaultInjector(context, new DreamHandler(FgThread.get().getLooper())));
     }
 
     @VisibleForTesting
-    DreamManagerService(Context context, Handler handler) {
-        super(context);
-        mContext = context;
-        mHandler = handler;
-        mController = new DreamController(context, mHandler, mControllerListener);
+    DreamManagerService(Injector injector) {
+        super(injector.getContext());
+        mContext = injector.getContext();
+        mHandler = injector.getHandler();
+        mController = injector.getDreamController(mControllerListener);
 
-        mPowerManager = (PowerManager)context.getSystemService(Context.POWER_SERVICE);
+        mPowerManager = mContext.getSystemService(PowerManager.class);
         mPowerManagerInternal = getLocalService(PowerManagerInternal.class);
-        mUiModeManager = (UiModeManager) context.getSystemService(Context.UI_MODE_SERVICE);
+        mUiModeManager = mContext.getSystemService(UiModeManager.class);
         mAtmInternal = getLocalService(ActivityTaskManagerInternal.class);
         mPmInternal = getLocalService(PackageManagerInternal.class);
-        mUserManager = context.getSystemService(UserManager.class);
+        mUserManager = mContext.getSystemService(UserManager.class);
         mDozeWakeLock = mPowerManager.newWakeLock(PowerManager.DOZE_WAKE_LOCK, DOZE_WAKE_LOCK_TAG);
-        mDozeConfig = new AmbientDisplayConfiguration(mContext);
+        mDozeConfig = injector.getDozeConfig();
         mUiEventLogger = new UiEventLoggerImpl();
         mDreamUiEventLogger = new DreamUiEventLoggerImpl(
                 mContext.getResources().getStringArray(R.array.config_loggable_dream_prefixes));
-        AmbientDisplayConfiguration adc = new AmbientDisplayConfiguration(mContext);
-        mAmbientDisplayComponent = ComponentName.unflattenFromString(adc.ambientDisplayComponent());
+        mAmbientDisplayComponent =
+                ComponentName.unflattenFromString(mDozeConfig.ambientDisplayComponent());
         mDreamsOnlyEnabledForDockUser =
                 mContext.getResources().getBoolean(R.bool.config_dreamsOnlyEnabledForDockUser);
         mDismissDreamOnActivityStart = mContext.getResources().getBoolean(
@@ -702,7 +703,8 @@ public final class DreamManagerService extends SystemService {
         }
     }
 
-    private void startDreamInternal(boolean doze, String reason) {
+    @VisibleForTesting
+    void startDreamInternal(boolean doze, String reason) {
         final int userId = ActivityManager.getCurrentUser();
         final ComponentName dream = chooseDreamForUser(doze, userId);
         if (dream != null) {
@@ -716,13 +718,15 @@ public final class DreamManagerService extends SystemService {
         stopDreamInternal(false, "stopping dream from shell");
     }
 
-    private void stopDreamInternal(boolean immediate, String reason) {
+    @VisibleForTesting
+    void stopDreamInternal(boolean immediate, String reason) {
         synchronized (mLock) {
             stopDreamLocked(immediate, reason);
         }
     }
 
-    private void startDozingInternal(IBinder token, int screenState,
+    @VisibleForTesting
+    void startDozingInternal(IBinder token, int screenState,
             @Display.StateReason int reason, float screenBrightness,
             boolean useNormalBrightnessForDoze) {
         Slog.d(TAG, "Dream requested to start dozing: " + token
@@ -1008,6 +1012,12 @@ public final class DreamManagerService extends SystemService {
                     mCurrentDream.name.flattenToString());
         }
         if (mCurrentDream.isDozing) {
+            if (wakeOnStoppingDoze()) {
+                mPowerManager.wakeUp(
+                        SystemClock.uptimeMillis(),
+                        PowerManager.WAKE_REASON_DOZE_STOPPED,
+                        "android.server.dreams:requestAwaken");
+            }
             mDozeWakeLock.release();
         }
         mCurrentDream = null;
@@ -1084,6 +1094,48 @@ public final class DreamManagerService extends SystemService {
             writePulseGestureEnabled();
         }
     };
+
+    /**
+     * A helper interface to inject dependencies into {@link DreamManagerService}.
+     * @hide
+     */
+    @VisibleForTesting
+    interface Injector {
+        Context getContext();
+        Handler getHandler();
+        AmbientDisplayConfiguration getDozeConfig();
+        DreamController getDreamController(DreamController.Listener controllerListener);
+    }
+
+    private static final class DefaultInjector implements Injector {
+        private final Context mContext;
+        private final Handler mHandler;
+
+        DefaultInjector(Context context, Handler handler) {
+            mContext = context;
+            mHandler = handler;
+        }
+
+        @Override
+        public Context getContext() {
+            return mContext;
+        }
+
+        @Override
+        public Handler getHandler() {
+            return mHandler;
+        }
+
+        @Override
+        public AmbientDisplayConfiguration getDozeConfig() {
+            return new AmbientDisplayConfiguration(mContext);
+        }
+
+        @Override
+        public DreamController getDreamController(DreamController.Listener controllerListener) {
+            return new DreamController(mContext, mHandler, controllerListener);
+        }
+    }
 
     /**
      * Handler for asynchronous operations performed by the dream manager.
