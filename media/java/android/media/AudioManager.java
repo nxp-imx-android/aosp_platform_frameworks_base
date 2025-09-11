@@ -29,7 +29,6 @@ import static android.media.audio.Flags.FLAG_SCO_MANAGED_BY_AUDIO;
 import static android.media.audio.Flags.FLAG_SUPPORTED_DEVICE_TYPES_API;
 import static android.media.audio.Flags.FLAG_UNIFY_ABSOLUTE_VOLUME_MANAGEMENT;
 import static android.media.audio.Flags.autoPublicVolumeApiHardening;
-import static android.media.audio.Flags.cacheGetStreamVolume;
 import static android.media.audiopolicy.Flags.FLAG_ENABLE_FADE_MANAGER_CONFIGURATION;
 import static android.media.audiopolicy.Flags.FLAG_MULTI_ZONE_AUDIO;
 
@@ -1292,7 +1291,7 @@ public class AudioManager {
     public static void clearVolumeCache(String api) {
         if (VOLUME_MAX_CACHING_API.equals(api) || VOLUME_MIN_CACHING_API.equals(api)) {
             IpcDataCache.invalidateCache(IpcDataCache.MODULE_SYSTEM, api);
-        } else if (cacheGetStreamVolume() && VOLUME_CACHING_API.equals(api)) {
+        } else if (VOLUME_CACHING_API.equals(api)) {
             IpcDataCache.invalidateCache(IpcDataCache.MODULE_SYSTEM, api);
         } else {
             Log.w(TAG, "invalid clearVolumeCache for api " + api);
@@ -1377,15 +1376,7 @@ public class AudioManager {
      * @see #setStreamVolume(int, int, int)
      */
     public int getStreamVolume(int streamType) {
-        if (cacheGetStreamVolume()) {
-            return mVolCache.query(new VolumeCacheQuery(streamType, QUERY_VOL));
-        }
-        final IAudioService service = getService();
-        try {
-            return service.getStreamVolume(streamType);
-        } catch (RemoteException e) {
-            throw e.rethrowFromSystemServer();
-        }
+        return mVolCache.query(new VolumeCacheQuery(streamType, QUERY_VOL));
     }
 
     // keep in sync with frameworks/av/services/audiopolicy/common/include/Volume.h
