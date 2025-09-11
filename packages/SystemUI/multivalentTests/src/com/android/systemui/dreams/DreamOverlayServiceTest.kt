@@ -23,6 +23,7 @@ import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import android.platform.test.flag.junit.FlagsParameterization
 import android.service.dreams.Flags
+import android.service.dreams.Flags.FLAG_DREAM_OVERLAY_STARTED_FIX
 import android.service.dreams.IDreamOverlay
 import android.service.dreams.IDreamOverlayCallback
 import android.service.dreams.IDreamOverlayClient
@@ -40,7 +41,6 @@ import com.android.compose.animation.scene.ObservableTransitionState
 import com.android.internal.logging.UiEventLogger
 import com.android.keyguard.KeyguardUpdateMonitor
 import com.android.keyguard.KeyguardUpdateMonitorCallback
-import com.android.systemui.Flags.FLAG_COMMUNAL_HUB
 import com.android.systemui.Flags.FLAG_DREAM_BIOMETRIC_PROMPT_FIXES
 import com.android.systemui.Flags.FLAG_GLANCEABLE_HUB_V2
 import com.android.systemui.Flags.FLAG_SCENE_CONTAINER
@@ -749,7 +749,7 @@ class DreamOverlayServiceTest(flags: FlagsParameterization?) : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_DREAM_WAKE_REDIRECT, FLAG_COMMUNAL_HUB)
+    @EnableFlags(Flags.FLAG_DREAM_WAKE_REDIRECT)
     @DisableFlags(FLAG_SCENE_CONTAINER, FLAG_GLANCEABLE_HUB_V2)
     @kotlin.Throws(RemoteException::class)
     fun testTransitionToGlanceableHub() =
@@ -775,7 +775,7 @@ class DreamOverlayServiceTest(flags: FlagsParameterization?) : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(Flags.FLAG_DREAM_WAKE_REDIRECT, FLAG_SCENE_CONTAINER, FLAG_COMMUNAL_HUB)
+    @EnableFlags(Flags.FLAG_DREAM_WAKE_REDIRECT, FLAG_SCENE_CONTAINER)
     @DisableFlags(FLAG_GLANCEABLE_HUB_V2)
     @kotlin.Throws(RemoteException::class)
     fun testTransitionToGlanceableHub_sceneContainer() =
@@ -803,7 +803,7 @@ class DreamOverlayServiceTest(flags: FlagsParameterization?) : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(Flags.FLAG_DREAM_WAKE_REDIRECT, FLAG_COMMUNAL_HUB, FLAG_GLANCEABLE_HUB_V2)
+    @EnableFlags(Flags.FLAG_DREAM_WAKE_REDIRECT, FLAG_GLANCEABLE_HUB_V2)
     @Throws(RemoteException::class)
     fun testRedirect_v2Enabled_notTriggered() =
         kosmos.runTest {
@@ -823,7 +823,7 @@ class DreamOverlayServiceTest(flags: FlagsParameterization?) : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(Flags.FLAG_DREAM_WAKE_REDIRECT, FLAG_COMMUNAL_HUB)
+    @EnableFlags(Flags.FLAG_DREAM_WAKE_REDIRECT)
     @DisableFlags(FLAG_GLANCEABLE_HUB_V2)
     @Throws(RemoteException::class)
     fun testRedirectExit() =
@@ -1410,6 +1410,86 @@ class DreamOverlayServiceTest(flags: FlagsParameterization?) : SysuiTestCase() {
             assertThat(gestureRepository.gestureBlockedMatchers.value).isEmpty()
         }
 
+    @EnableFlags(FLAG_DREAM_OVERLAY_STARTED_FIX)
+    @Test
+    fun testGestureBlocking_dreamEnded_gestureBlockingNotUpdated() =
+        kosmos.runTest {
+            val client = client
+
+            // Inform the overlay service of dream starting. Do not show dream complications.
+            client.startDream(
+                mWindowParams,
+                mDreamOverlayCallback,
+                DREAM_COMPONENT,
+                false /*isPreview*/,
+                false, /*shouldShowComplication*/
+            )
+            mMainExecutor.runAllReady()
+
+            val callbackCaptor = argumentCaptor<KeyguardUpdateMonitorCallback>()
+            verify(mKeyguardUpdateMonitor).registerCallback(callbackCaptor.capture())
+
+            // Gesture are blocked to start.
+            assertThat(gestureRepository.gestureBlockedMatchers.value).hasSize(1)
+
+            // Trigger dream end, but delay the reset.
+            whenever(mStateController.areExitAnimationsRunning()).thenReturn(true)
+            client.endDream()
+            mMainExecutor.runAllReady()
+
+            // Shade is shown.
+            callbackCaptor.firstValue.onShadeExpandedChanged(true)
+            mMainExecutor.runAllReady()
+
+            // Gesture blocking not updated since dream is already ended.
+            assertThat(gestureRepository.gestureBlockedMatchers.value).hasSize(1)
+
+            // Finish exit animations, end dream.
+            whenever(mStateController.areExitAnimationsRunning()).thenReturn(false)
+            val stateCallbackCaptor = argumentCaptor<DreamOverlayStateController.Callback>()
+            verify(mStateController).addCallback(stateCallbackCaptor.capture())
+            stateCallbackCaptor.lastValue.onStateChanged()
+            mMainExecutor.runAllReady()
+
+            // Gesture blocking removed on dream end.
+            assertThat(gestureRepository.gestureBlockedMatchers.value).isEmpty()
+        }
+
+    @DisableFlags(FLAG_DREAM_OVERLAY_STARTED_FIX)
+    @Test
+    fun testGestureBlocking_dreamEnded_gestureBlockingUpdated() =
+        kosmos.runTest {
+            val client = client
+
+            // Inform the overlay service of dream starting. Do not show dream complications.
+            client.startDream(
+                mWindowParams,
+                mDreamOverlayCallback,
+                DREAM_COMPONENT,
+                false /*isPreview*/,
+                false, /*shouldShowComplication*/
+            )
+            mMainExecutor.runAllReady()
+
+            val callbackCaptor = argumentCaptor<KeyguardUpdateMonitorCallback>()
+            verify(mKeyguardUpdateMonitor).registerCallback(callbackCaptor.capture())
+
+            // Gesture are blocked to start.
+            assertThat(gestureRepository.gestureBlockedMatchers.value).hasSize(1)
+
+            // Trigger dream end, but delay the reset.
+            whenever(mStateController.areExitAnimationsRunning()).thenReturn(true)
+            client.endDream()
+            mMainExecutor.runAllReady()
+
+            // Shade is shown.
+            callbackCaptor.firstValue.onShadeExpandedChanged(true)
+            mMainExecutor.runAllReady()
+
+            // Gesture blocking is still updated as the reset has not happened yet.
+            assertThat(gestureRepository.gestureBlockedMatchers.value).isEmpty()
+        }
+
     @EnableFlags(FLAG_DREAM_BIOMETRIC_PROMPT_FIXES)
     @Test
     fun testBiometricPromptShowing_setsLifecycleState() =
@@ -1575,8 +1655,8 @@ class DreamOverlayServiceTest(flags: FlagsParameterization?) : SysuiTestCase() {
         @Parameters(name = "{0}")
         fun getParams(): List<FlagsParameterization> {
             return FlagsParameterization.allCombinationsOf(
-                    FLAG_COMMUNAL_HUB,
                     FLAG_GLANCEABLE_HUB_V2,
+                    FLAG_DREAM_OVERLAY_STARTED_FIX,
                 )
                 .andSceneContainer()
         }

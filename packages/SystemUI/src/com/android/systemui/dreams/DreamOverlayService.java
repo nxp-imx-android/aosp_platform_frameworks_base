@@ -16,6 +16,7 @@
 
 package com.android.systemui.dreams;
 
+import static android.service.dreams.Flags.dreamOverlayStartedFix;
 import static android.service.dreams.Flags.dreamWakeRedirect;
 import static android.service.dreams.Flags.dreamsV2;
 
@@ -134,8 +135,18 @@ public class DreamOverlayService extends android.service.dreams.DreamOverlayServ
     // A reference to the {@link Window} used to hold the dream overlay.
     private Window mWindow;
 
-    // True if a dream has bound to the service and dream overlay service has started.
+    /**
+     * True if a dream has bound to the service and dream overlay service has started. Does not
+     * immediately flip to false in {@link #onEndDream()}, waits until the overlay service state is
+     * reset.
+     */
     private boolean mStarted = false;
+
+    /**
+     * True if the connected dream has been ended from {@link #onEndDream()} and has not fully
+     * started yet.
+     */
+    private boolean mEnded = false;
 
     // True if the service has been destroyed.
     private boolean mDestroyed = false;
@@ -602,6 +613,7 @@ public class DreamOverlayService extends android.service.dreams.DreamOverlayServ
 
         mDreamOverlayCallbackController.onStartDream();
         mStarted = true;
+        mEnded = false;
 
         mKeyguardUpdateMonitor.registerCallback(mKeyguardCallback);
 
@@ -626,6 +638,9 @@ public class DreamOverlayService extends android.service.dreams.DreamOverlayServ
 
     @Override
     public void onEndDream() {
+        if (dreamOverlayStartedFix()) {
+            mEnded = true;
+        }
         mResetHandler.reset("ending dream");
     }
 
@@ -644,9 +659,14 @@ public class DreamOverlayService extends android.service.dreams.DreamOverlayServ
         }
     }
 
+    /**
+     * Update the back gesture blocking state. Should only be called from
+     * {@link #dreamScopedExecute(Runnable, String)}.
+     */
     private void updateGestureBlockingLocked() {
-        final boolean shouldBlock = mStarted && !mShadeExpanded && !mBouncerShowing
-                && !isDreamInPreviewMode() && !mBiometricPromptShowing;
+        final boolean shouldBlock =
+                (dreamOverlayStartedFix() || mStarted) && !mShadeExpanded && !mBouncerShowing
+                        && !isDreamInPreviewMode() && !mBiometricPromptShowing;
 
         if (shouldBlock) {
             mGestureInteractor.addGestureBlockedMatcher(DREAM_TYPE_MATCHER,
@@ -809,7 +829,7 @@ public class DreamOverlayService extends android.service.dreams.DreamOverlayServ
 
     private void dreamScopedExecute(Runnable runnable, String description) {
         mExecutor.execute(() -> {
-            if (!mStarted) {
+            if (!mStarted || mEnded) {
                 Log.d(TAG, "could not execute when not dreaming:" + description);
                 return;
             }
