@@ -275,6 +275,10 @@ final class SessionMetrics {
         mDeveloperVerificationCancelled = true;
     }
 
+    public void onAddedApksSizeBytesCalculated(long apksSizeBytes) {
+        mApksSizeBytes = apksSizeBytes;
+    }
+
     private void reportStats() {
         final long sessionIdleDurationMillis = mCommittedMillis - mCreatedMillis;
         final long sessionCommitDurationMillis = mFinishedMillis - mCommittedMillis;
@@ -318,7 +322,7 @@ final class SessionMetrics {
                         mIsPreapproval, // 21
                         mIsUnarchive, // 22
                         mIsAutoInstallDependenciesEnabled, // 23
-                        mApksSizeBytes, // 24 // TODO(b/418283971): compute apks size bytes
+                        mApksSizeBytes, // 24
                         getTranslatedStatusCodeForStats(
                                 installStatusToPublicStatus(mStatusCode)), // 25
                         mWasUserActionIntentSent, // 26
