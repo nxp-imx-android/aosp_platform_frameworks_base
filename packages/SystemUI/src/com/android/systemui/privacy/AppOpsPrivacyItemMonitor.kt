@@ -138,17 +138,21 @@ constructor(
                     ) {
                         logger.logUpdatedItemFromAppOps(code, uid, packageName, active)
 
-                        val procInfo =
-                            (activityManager.runningAppProcesses ?: emptyList()).find {
-                                it.uid == uid
-                            }
-                        val importance = procInfo?.importance ?: -1 // Use -1 if process not found
-                        logger.logLocationAppOps(
-                            uid,
-                            packageName,
-                            importance,
-                            !isBackgroundApp(uid),
-                        )
+                        if (code in OPS_LOCATION) {
+                            val procInfo =
+                                (activityManager.runningAppProcesses ?: emptyList()).find {
+                                    it.uid == uid
+                                }
+                            val importance =
+                                procInfo?.importance ?: -1 // Use -1 if process not found
+                            logger.logLocationAppOps(
+                                uid,
+                                packageName,
+                                importance,
+                                !isBackgroundApp(uid),
+                                isSystemApp(code, uid, packageName),
+                            )
+                        }
 
                         dispatchOnPrivacyItemsChanged()
                     }
@@ -441,7 +445,10 @@ constructor(
      * make sure to update PermissionUsageHelper when changing this method.
      */
     private fun isSystemApp(item: AppOpItem): Boolean {
-        val user = UserHandle.getUserHandleForUid(item.uid)
+        return isSystemApp(item.code, item.uid, item.packageName)
+    }
+    private fun isSystemApp(code: Int, uid: Int, packageName: String): Boolean {
+        val user = UserHandle.getUserHandleForUid(uid)
 
         // Don't show apps belonging to background users except managed users.
         var foundUser = false
@@ -454,17 +461,17 @@ constructor(
             return true
         }
 
-        val permission = AppOpsManager.opToPermission(item.code)
+        val permission = AppOpsManager.opToPermission(code)
         val permissionFlags: Int =
-            packageManager.getPermissionFlags(permission, item.packageName, user)
+            packageManager.getPermissionFlags(permission, packageName, user)
         val isSystem =
             if (
                 PermissionChecker.checkPermissionForPreflight(
                     context,
                     permission,
                     PermissionChecker.PID_UNKNOWN,
-                    item.uid,
-                    item.packageName,
+                    uid,
+                    packageName,
                 ) == PermissionChecker.PERMISSION_GRANTED
             ) {
                 ((permissionFlags and PackageManager.FLAG_PERMISSION_USER_SENSITIVE_WHEN_GRANTED) ==
