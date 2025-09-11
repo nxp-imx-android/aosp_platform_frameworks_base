@@ -42,6 +42,7 @@ import com.android.systemui.animation.LaunchableView
 import com.android.systemui.assist.AssistManager
 import com.android.systemui.communal.domain.interactor.CommunalSceneInteractor
 import com.android.systemui.communal.domain.interactor.CommunalSettingsInteractor
+import com.android.systemui.desktop.DesktopFirstRepository
 import com.android.systemui.keyguard.KeyguardViewMediator
 import com.android.systemui.keyguard.WakefulnessLifecycle
 import com.android.systemui.kosmos.testScope
@@ -118,11 +119,14 @@ class LegacyActivityStarterInternalImplTest : SysuiTestCase() {
     @Mock private lateinit var perDisplaySysUiStateRepository: PerDisplayRepository<SysUiState>
     @Mock private lateinit var sysUIState: SysUiState
     @Mock private lateinit var remoteAnimationAdapter: RemoteAnimationAdapter
+    @Mock private lateinit var mDesktopFirstRepository: DesktopFirstRepository
     private lateinit var underTest: LegacyActivityStarterInternalImpl
     private val kosmos = testKosmos()
     private val mainExecutor = FakeExecutor(FakeSystemClock())
     private val shadeAnimationInteractor =
         ShadeAnimationInteractorLegacyImpl(ShadeAnimationRepository(), FakeShadeRepository())
+    private val desktopFirstStateForDefaultDisplay = mutableMapOf(DISPLAY_ID to true)
+    private val nonDesktopFirstStateForDefaultDisplay = mutableMapOf(DISPLAY_ID to false)
 
     @Before
     fun setUp() {
@@ -158,12 +162,15 @@ class LegacyActivityStarterInternalImplTest : SysuiTestCase() {
                 communalSceneInteractor = communalSceneInteractor,
                 communalSettingsInteractor = communalSettingsInteractor,
                 perDisplaySysUiStateRepository = perDisplaySysUiStateRepository,
+                desktopFirstRepository = mDesktopFirstRepository,
             )
         `when`(userTracker.userHandle).thenReturn(UserHandle.OWNER)
         `when`(communalSceneInteractor.isCommunalVisible).thenReturn(MutableStateFlow(false))
         `when`(communalSceneInteractor.isIdleOnCommunal).thenReturn(MutableStateFlow(false))
         `when`(communalSceneInteractor.isLaunchingWidget).thenReturn(MutableStateFlow(false))
         `when`(shadeDialogContextInteractor.context).thenReturn(context)
+        `when`(mDesktopFirstRepository.isDisplayDesktopFirst)
+            .thenReturn(nonDesktopFirstStateForDefaultDisplay)
     }
 
     @Test
@@ -1003,8 +1010,42 @@ class LegacyActivityStarterInternalImplTest : SysuiTestCase() {
         Flags.FLAG_SHADE_APP_LAUNCH_ANIMATION_SKIP_IN_DESKTOP,
     )
     @Test
-    fun startActivity_skipAnimInDesktop_flagEnabled_inDesktop_noAnimate() {
+    fun startActivity_skipAnimInDesktop_flagEnabled_inDesktop_desktopFirst_noAnimate() {
         setupDesktopMode(enabled = true)
+        `when`(mDesktopFirstRepository.isDisplayDesktopFirst)
+            .thenReturn(desktopFirstStateForDefaultDisplay)
+        val (controller, pendingIntent) = setupLaunchWithOccludedKeyguard()
+
+        underTest.startPendingIntentDismissingKeyguard(
+            intent = pendingIntent,
+            dismissShade = true,
+            animationController = controller,
+            showOverLockscreen = true,
+            skipLockscreenChecks = true,
+        )
+        mainExecutor.runAllReady()
+
+        // Verify animate parameter is false
+        verify(activityTransitionAnimator)
+            .startPendingIntentWithAnimation(
+                nullable(ActivityTransitionAnimator.Controller::class.java),
+                eq(kosmos.testScope),
+                /* animate */ eq(false),
+                eq(false),
+                eq(true),
+                any(),
+            )
+    }
+
+    @EnableFlags(
+        Flags.FLAG_ANIMATION_LIBRARY_SHELL_MIGRATION,
+        Flags.FLAG_SHADE_APP_LAUNCH_ANIMATION_SKIP_IN_DESKTOP,
+    )
+    @Test
+    fun startActivity_skipAnimInDesktop_flagEnabled_inDesktop_notDesktopFirst_noAnimate() {
+        setupDesktopMode(enabled = true)
+        `when`(mDesktopFirstRepository.isDisplayDesktopFirst)
+            .thenReturn(nonDesktopFirstStateForDefaultDisplay)
         val (controller, pendingIntent) = setupLaunchWithOccludedKeyguard()
 
         underTest.startPendingIntentDismissingKeyguard(
@@ -1031,8 +1072,40 @@ class LegacyActivityStarterInternalImplTest : SysuiTestCase() {
     @EnableFlags(Flags.FLAG_ANIMATION_LIBRARY_SHELL_MIGRATION)
     @DisableFlags(Flags.FLAG_SHADE_APP_LAUNCH_ANIMATION_SKIP_IN_DESKTOP)
     @Test
-    fun startActivity_skipAnimInDesktop_flagDisabled_inDesktop_doAnimate() {
+    fun startActivity_skipAnimInDesktop_flagDisabled_inDesktop_desktopFirst_doAnimate() {
         setupDesktopMode(enabled = true)
+        `when`(mDesktopFirstRepository.isDisplayDesktopFirst)
+            .thenReturn(desktopFirstStateForDefaultDisplay)
+        val (controller, pendingIntent) = setupLaunchWithOccludedKeyguard()
+
+        underTest.startPendingIntentDismissingKeyguard(
+            intent = pendingIntent,
+            dismissShade = true,
+            animationController = controller,
+            showOverLockscreen = true,
+            skipLockscreenChecks = true,
+        )
+        mainExecutor.runAllReady()
+
+        // Verify animate parameter is true
+        verify(activityTransitionAnimator)
+            .startPendingIntentWithAnimation(
+                nullable(ActivityTransitionAnimator.Controller::class.java),
+                eq(kosmos.testScope),
+                /* animate */ eq(true),
+                eq(false),
+                eq(true),
+                any(),
+            )
+    }
+
+    @EnableFlags(Flags.FLAG_ANIMATION_LIBRARY_SHELL_MIGRATION)
+    @DisableFlags(Flags.FLAG_SHADE_APP_LAUNCH_ANIMATION_SKIP_IN_DESKTOP)
+    @Test
+    fun startActivity_skipAnimInDesktop_flagDisabled_inDesktop_noDesktopFirst_doAnimate() {
+        setupDesktopMode(enabled = true)
+        `when`(mDesktopFirstRepository.isDisplayDesktopFirst)
+            .thenReturn(nonDesktopFirstStateForDefaultDisplay)
         val (controller, pendingIntent) = setupLaunchWithOccludedKeyguard()
 
         underTest.startPendingIntentDismissingKeyguard(
@@ -1061,8 +1134,42 @@ class LegacyActivityStarterInternalImplTest : SysuiTestCase() {
         Flags.FLAG_SHADE_APP_LAUNCH_ANIMATION_SKIP_IN_DESKTOP,
     )
     @Test
-    fun startActivity_skipAnimInDesktop_flagEnabled_notInDesktop_doAnimate() {
+    fun startActivity_skipAnimInDesktop_flagEnabled_notInDesktop_desktopFirst_notAnimate() {
         setupDesktopMode(enabled = false)
+        `when`(mDesktopFirstRepository.isDisplayDesktopFirst)
+            .thenReturn(desktopFirstStateForDefaultDisplay)
+        val (controller, pendingIntent) = setupLaunchWithOccludedKeyguard()
+
+        underTest.startPendingIntentDismissingKeyguard(
+            intent = pendingIntent,
+            dismissShade = true,
+            animationController = controller,
+            showOverLockscreen = true,
+            skipLockscreenChecks = true,
+        )
+        mainExecutor.runAllReady()
+
+        // Verify animate parameter is false
+        verify(activityTransitionAnimator)
+            .startPendingIntentWithAnimation(
+                nullable(ActivityTransitionAnimator.Controller::class.java),
+                eq(kosmos.testScope),
+                /* animate */ eq(false),
+                eq(false),
+                eq(true),
+                any(),
+            )
+    }
+
+    @EnableFlags(
+        Flags.FLAG_ANIMATION_LIBRARY_SHELL_MIGRATION,
+        Flags.FLAG_SHADE_APP_LAUNCH_ANIMATION_SKIP_IN_DESKTOP,
+    )
+    @Test
+    fun startActivity_skipAnimInDesktop_flagEnabled_notInDesktop_notDesktopFirst_doAnimate() {
+        setupDesktopMode(enabled = false)
+        `when`(mDesktopFirstRepository.isDisplayDesktopFirst)
+            .thenReturn(nonDesktopFirstStateForDefaultDisplay)
         val (controller, pendingIntent) = setupLaunchWithOccludedKeyguard()
 
         underTest.startPendingIntentDismissingKeyguard(
@@ -1089,8 +1196,40 @@ class LegacyActivityStarterInternalImplTest : SysuiTestCase() {
     @EnableFlags(Flags.FLAG_ANIMATION_LIBRARY_SHELL_MIGRATION)
     @DisableFlags(Flags.FLAG_SHADE_APP_LAUNCH_ANIMATION_SKIP_IN_DESKTOP)
     @Test
-    fun startActivity_skipAnimInDesktop_flagDisabled_notInDesktop_doAnimate() {
+    fun startActivity_skipAnimInDesktop_flagDisabled_notInDesktop_desktopFirst_doAnimate() {
         setupDesktopMode(enabled = false)
+        `when`(mDesktopFirstRepository.isDisplayDesktopFirst)
+            .thenReturn(desktopFirstStateForDefaultDisplay)
+        val (controller, pendingIntent) = setupLaunchWithOccludedKeyguard()
+
+        underTest.startPendingIntentDismissingKeyguard(
+            intent = pendingIntent,
+            dismissShade = true,
+            animationController = controller,
+            showOverLockscreen = true,
+            skipLockscreenChecks = true,
+        )
+        mainExecutor.runAllReady()
+
+        // Verify animate parameter is true
+        verify(activityTransitionAnimator)
+            .startPendingIntentWithAnimation(
+                nullable(ActivityTransitionAnimator.Controller::class.java),
+                eq(kosmos.testScope),
+                /* animate */ eq(true),
+                eq(false),
+                eq(true),
+                any(),
+            )
+    }
+
+    @EnableFlags(Flags.FLAG_ANIMATION_LIBRARY_SHELL_MIGRATION)
+    @DisableFlags(Flags.FLAG_SHADE_APP_LAUNCH_ANIMATION_SKIP_IN_DESKTOP)
+    @Test
+    fun startActivity_skipAnimInDesktop_flagDisabled_notInDesktop_notDesktopFirst_doAnimate() {
+        setupDesktopMode(enabled = false)
+        `when`(mDesktopFirstRepository.isDisplayDesktopFirst)
+            .thenReturn(nonDesktopFirstStateForDefaultDisplay)
         val (controller, pendingIntent) = setupLaunchWithOccludedKeyguard()
 
         underTest.startPendingIntentDismissingKeyguard(

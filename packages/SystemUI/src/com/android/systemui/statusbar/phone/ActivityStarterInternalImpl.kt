@@ -46,6 +46,7 @@ import com.android.systemui.communal.shared.model.CommunalScenes
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Main
+import com.android.systemui.desktop.DesktopFirstRepository
 import com.android.systemui.deviceentry.domain.interactor.DeviceEntryInteractor
 import com.android.systemui.keyguard.KeyguardViewMediator
 import com.android.systemui.keyguard.domain.interactor.KeyguardInteractor
@@ -107,20 +108,22 @@ constructor(
     private val commandQueue: CommandQueue,
     private val lockScreenUserManager: NotificationLockscreenUserManager,
     private val perDisplaySysUiStateRepository: PerDisplayRepository<SysUiState>,
+    private val desktopFirstRepository: DesktopFirstRepository,
 ) : ActivityStarterInternal {
     private val centralSurfaces: CentralSurfaces?
         get() = centralSurfacesOptLazy.get().getOrNull()
 
-    private val context: Context
+    private val currentShadeContext: Context
         get() = contextInteractor.context
 
-    private val displayId: Int
-        get() = context.displayId
+    private val currentShadeDisplayId: Int
+        get() = currentShadeContext.displayId
 
-    private val isInDesktopMode: Boolean
-        get() =
-            ((perDisplaySysUiStateRepository[displayId]?.flags ?: 0) and
-                SYSUI_STATE_FREEFORM_ACTIVE_IN_DESKTOP_MODE) != 0L
+    private val shadeSysUiState: Long
+        get() = perDisplaySysUiStateRepository[currentShadeDisplayId]?.flags ?: 0
+
+    private val isInDesktopModeOnCurrentShadeDisplay: Boolean
+        get() = (shadeSysUiState and SYSUI_STATE_FREEFORM_ACTIVE_IN_DESKTOP_MODE) != 0L
 
     override fun registerTransition(
         cookie: ActivityTransitionAnimator.TransitionCookie,
@@ -228,7 +231,7 @@ constructor(
                 )
 
                 intent.sendAndReturnResult(
-                    context,
+                    currentShadeContext,
                     0,
                     fillInIntent,
                     null,
@@ -253,7 +256,7 @@ constructor(
                                 ): Int {
                                     return startIntent(
                                         createActivityOptions(
-                                            displayId,
+                                            currentShadeDisplayId,
                                             transition,
                                             controllerWithCookie?.transitionCookie,
                                         )
@@ -272,7 +275,10 @@ constructor(
                                 animationAdapter: RemoteAnimationAdapter?
                             ): Int {
                                 return startIntent(
-                                    CentralSurfaces.getActivityOptions(displayId, animationAdapter)
+                                    CentralSurfaces.getActivityOptions(
+                                        currentShadeDisplayId,
+                                        animationAdapter,
+                                    )
                                 )
                             }
                         },
@@ -421,10 +427,10 @@ constructor(
                     result[0] =
                         activityTaskManager.startActivityAsUser(
                             null,
-                            context.basePackageName,
-                            context.attributionTag,
+                            currentShadeContext.basePackageName,
+                            currentShadeContext.attributionTag,
                             intent,
-                            intent.resolveTypeIfNeeded(context.contentResolver),
+                            intent.resolveTypeIfNeeded(currentShadeContext.contentResolver),
                             null,
                             null,
                             0,
@@ -448,7 +454,7 @@ constructor(
                 ) { transition: RemoteTransition? ->
                     startIntent(
                         createActivityOptions(
-                            displayId,
+                            currentShadeDisplayId,
                             transition,
                             controllerWithCookie?.transitionCookie,
                         )
@@ -460,7 +466,7 @@ constructor(
                     animate,
                     intent.getPackage(),
                 ) { adapter: RemoteAnimationAdapter? ->
-                    startIntent(CentralSurfaces.getActivityOptions(displayId, adapter))
+                    startIntent(CentralSurfaces.getActivityOptions(currentShadeDisplayId, adapter))
                 }
             }
 
@@ -545,11 +551,11 @@ constructor(
                 animate = animate,
                 showOverLockscreen = showOverLockscreenWhenLocked,
             ) { transition: RemoteTransition? ->
-                TaskStackBuilder.create(context)
+                TaskStackBuilder.create(currentShadeContext)
                     .addNextIntent(intent)
                     .startActivities(
                         createActivityOptions(
-                            displayId,
+                            currentShadeDisplayId,
                             transition,
                             controllerWithCookie?.transitionCookie,
                         ),
@@ -563,10 +569,10 @@ constructor(
                 intent.getPackage(),
                 showOverLockscreenWhenLocked,
             ) { adapter: RemoteAnimationAdapter? ->
-                TaskStackBuilder.create(context)
+                TaskStackBuilder.create(currentShadeContext)
                     .addNextIntent(intent)
                     .startActivities(
-                        CentralSurfaces.getActivityOptions(displayId, adapter),
+                        CentralSurfaces.getActivityOptions(currentShadeDisplayId, adapter),
                         userHandle,
                     )
             }
@@ -656,7 +662,11 @@ constructor(
             return false
         }
 
-        if (shadeAppLaunchAnimationSkipInDesktop() && isInDesktopMode) {
+        if (
+            shadeAppLaunchAnimationSkipInDesktop() &&
+                (isInDesktopModeOnCurrentShadeDisplay ||
+                    desktopFirstRepository.isDisplayDesktopFirst[currentShadeDisplayId] == true)
+        ) {
             return false
         }
 
@@ -732,7 +742,7 @@ constructor(
                     shadeControllerLazy.get(),
                     notifShadeWindowControllerLazy.get(),
                     commandQueue,
-                    displayId,
+                    currentShadeDisplayId,
                     isLaunchForActivity,
                 )
             }
