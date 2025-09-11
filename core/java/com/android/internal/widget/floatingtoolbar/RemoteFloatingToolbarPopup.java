@@ -369,8 +369,8 @@ public final class RemoteFloatingToolbarPopup implements FloatingToolbarPopup {
         return PRIORITY_UNKNOWN;
     }
 
-    private static PopupWindow createPopupWindow(Context content) {
-        ViewGroup popupContentHolder = new LinearLayout(content);
+    private static PopupWindow createPopupWindow(Context context) {
+        ViewGroup popupContentHolder = new LinearLayout(context);
         PopupWindow popupWindow = new PopupWindow(popupContentHolder);
         popupWindow.setClippingEnabled(false);
         popupWindow.setWindowLayoutType(
@@ -412,6 +412,12 @@ public final class RemoteFloatingToolbarPopup implements FloatingToolbarPopup {
             mPopupWindow.setHeight(contentRect.height());
             final Point coords = getCoordinatesInWindow(contentRect.left, contentRect.top);
             mPopupWindow.showAtLocation(mParent, Gravity.NO_GRAVITY, coords.x, coords.y);
+
+            WindowManager.LayoutParams layoutParams = (WindowManager.LayoutParams)
+                    mPopupWindow.getContentView().getRootView().getLayoutParams();
+            layoutParams.setCanPlayMoveAnimation(false);
+            // update doesn't need to be called for the new layout params at this point because
+            // onWidgetUpdated is called at the time move animations would be played.
         });
     }
 
@@ -425,7 +431,6 @@ public final class RemoteFloatingToolbarPopup implements FloatingToolbarPopup {
             mPopupWindow.dismiss();
         });
     }
-
 
     private void onWidgetUpdated(WidgetInfo info) {
         runOnUiThread(() -> {
@@ -443,6 +448,7 @@ public final class RemoteFloatingToolbarPopup implements FloatingToolbarPopup {
                                 + coords.y + " w=" + contentRect.width() + " h="
                                 + contentRect.height());
             }
+
             mPopupWindow.update(coords.x, coords.y, contentRect.width(), contentRect.height());
         });
     }
