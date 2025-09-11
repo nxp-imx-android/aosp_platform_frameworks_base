@@ -17802,6 +17802,7 @@ package android.telephony.ims {
     method @NonNull public android.telephony.ims.ImsRegistrationAttributes.Builder setFeatureTags(@NonNull java.util.Set<java.lang.String>);
     method @FlaggedApi("com.android.internal.telephony.flags.emergency_registration_state") @NonNull public android.telephony.ims.ImsRegistrationAttributes.Builder setFlagRegistrationTypeEmergency();
     method @FlaggedApi("com.android.internal.telephony.flags.emergency_registration_state") @NonNull public android.telephony.ims.ImsRegistrationAttributes.Builder setFlagVirtualRegistrationForEmergencyCall();
+    method @FlaggedApi("com.android.internal.telephony.flags.pcscf_address") @NonNull public android.telephony.ims.ImsRegistrationAttributes.Builder setPcscfAddress(@NonNull String);
     method @NonNull public android.telephony.ims.ImsRegistrationAttributes.Builder setSipDetails(@NonNull android.telephony.ims.SipDetails);
   }
 
