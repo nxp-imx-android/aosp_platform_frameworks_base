@@ -141,7 +141,7 @@ private fun RichSwitch(
     onCheckedChange: (isChecked: Boolean) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    SettingsRow(modifier) {
+    SettingsRow(modifier.clickable(onClick = { onCheckedChange(!checked) })) {
         LoadingIcon(icon = icon.value, modifier = Modifier.size(40.dp).padding(8.dp))
         Text(
             text = label,
