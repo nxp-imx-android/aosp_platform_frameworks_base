@@ -215,7 +215,7 @@ public class DisplayController {
             newDisplayLayout.getStableBounds(newStableBounds);
         }
 
-        if (oldStableBounds != newStableBounds) {
+        if (!oldStableBounds.equals(newStableBounds)) {
             for (int i = 0; i < mDisplayChangedListeners.size(); ++i) {
                 mDisplayChangedListeners.get(i).onStableInsetsChanging(
                         displayId, oldDisplayLayout);
