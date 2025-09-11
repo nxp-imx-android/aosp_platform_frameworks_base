@@ -50,7 +50,7 @@ public class ExpandHelper implements Gefingerpoken {
         ExpandableView getChildAtPosition(float x, float y);
         boolean canChildBeExpanded(View v);
         void setUserExpandedChild(View v, boolean userExpanded);
-        void setUserLockedChild(View v, boolean userLocked);
+        void setUserSwipingToExpand(View v, boolean isUserSwiping);
         void expansionStateChanged(boolean isExpanding);
         int getMaxExpandHeight(ExpandableView view);
         void setExpansionCancelled(View view);
@@ -550,7 +550,7 @@ public class ExpandHelper implements Gefingerpoken {
         mExpanding = true;
         mCallback.expansionStateChanged(true);
         if (DEBUG) Log.d(TAG, "scale type " + expandType + " beginning on view: " + v);
-        mCallback.setUserLockedChild(v, true);
+        mCallback.setUserSwipingToExpand(v, true);
         mScaler.setView(v);
         mOldHeight = mScaler.getHeight();
         mCurrentHeight = mOldHeight;
@@ -633,7 +633,7 @@ public class ExpandHelper implements Gefingerpoken {
                     } else {
                         mCallback.setExpansionCancelled(scaledView);
                     }
-                    mCallback.setUserLockedChild(scaledView, false);
+                    mCallback.setUserSwipingToExpand(scaledView, false);
                     mScaleAnimation.removeListener(this);
                     if (wasClosed) {
                         InteractionJankMonitor.getInstance().end(CUJ_NOTIFICATION_SHADE_ROW_EXPAND);
@@ -653,7 +653,7 @@ public class ExpandHelper implements Gefingerpoken {
                 mScaler.setHeight(targetHeight);
             }
             mCallback.setUserExpandedChild(mResizedView, nowExpanded);
-            mCallback.setUserLockedChild(mResizedView, false);
+            mCallback.setUserSwipingToExpand(mResizedView, false);
             mScaler.setView(null);
             if (wasClosed) {
                 InteractionJankMonitor.getInstance().end(CUJ_NOTIFICATION_SHADE_ROW_EXPAND);

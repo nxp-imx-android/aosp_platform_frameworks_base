@@ -1083,7 +1083,7 @@ public class NotificationContentView extends FrameLayout implements Notification
         // When expanding or user locked we want the new type, when collapsing we want
         // the original type
         final int visibleType = (
-                isGroupExpanded() || mContainingNotification.isUserLocked())
+                isGroupExpanded() || mContainingNotification.isUserSwipingToExpandRow())
                 ? calculateVisibleType()
                 : getVisibleType();
         return getBackgroundColor(visibleType);
