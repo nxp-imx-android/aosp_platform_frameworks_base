@@ -335,6 +335,27 @@ flag {
   bug: "430487852"
 }
 
+flag {
+  name: "nm_highlights"
+  namespace: "notifications"
+  description: "Allows the NAS to highlight notifications"
+  bug: "438704838"
+}
+
+flag {
+  name: "nm_insights"
+  namespace: "notifications"
+  description: "Shows insights derived from notifications"
+  bug: "438705144"
+}
+
+flag {
+  name: "nm_contextual_display"
+  namespace: "notifications"
+  description: "Changes notification appearance based on user created rules"
+  bug: "438704204"
+}
+
 # End: exported flags that cannot be removed
 
 
