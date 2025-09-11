@@ -4214,6 +4214,11 @@ public class InputManagerService extends IInputManager.Stub
         }
     }
 
+    @Nullable
+    String getPhysicalLocationPath(int deviceId) {
+        return mNative.getPhysicalLocationPath(deviceId);
+    }
+
     interface KeyboardBacklightControllerInterface {
         default void incrementKeyboardBacklight(int deviceId) {}
         default void decrementKeyboardBacklight(int deviceId) {}

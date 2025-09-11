@@ -771,7 +771,8 @@ class VirtualInputDeviceController {
 
         private int mInputDeviceId = IInputConstants.INVALID_INPUT_DEVICE_ID;
 
-        WaitForDevice(String deviceName, int vendorId, int productId, int associatedDisplayId) {
+        WaitForDevice(@NonNull String phys, @NonNull String deviceName, int vendorId, int productId,
+                int associatedDisplayId) {
             mDeviceName = deviceName;
             mListener = new InputDeviceListener() {
                 @Override
@@ -797,6 +798,9 @@ class VirtualInputDeviceController {
                         return false;
                     }
                     if (!device.getName().equals(deviceName)) {
+                        return false;
+                    }
+                    if (!phys.equals(mService.getPhysicalLocationPath(deviceId))) {
                         return false;
                     }
                     final InputDeviceIdentifier id = device.getIdentifier();
@@ -893,7 +897,8 @@ class VirtualInputDeviceController {
         if (disableSettingsForVirtualDevices()) {
             mService.addVirtualDevice(phys);
         }
-        try (WaitForDevice waiter = new WaitForDevice(deviceName, vendorId, productId, displayId)) {
+        try (WaitForDevice waiter = new WaitForDevice(phys, deviceName, vendorId, productId,
+                displayId)) {
             ptr = deviceOpener.get();
             // See INVALID_PTR in libs/input/VirtualInputDevice.cpp.
             if (ptr == 0) {

@@ -345,6 +345,13 @@ interface NativeInputManagerService {
      */
     void setAccessibilityPointerMotionFilterEnabled(boolean enabled);
 
+    /**
+     * Get the physical location path of the input device, if known. This is also known as the
+     * "phys" identifier.
+     */
+    @Nullable
+    String getPhysicalLocationPath(int deviceId);
+
     /** The native implementation of InputManagerService methods. */
     class NativeImpl implements NativeInputManagerService {
         /** Pointer to native input manager service object, used by native code. */
@@ -673,5 +680,8 @@ interface NativeInputManagerService {
 
         @Override
         public native void setAccessibilityPointerMotionFilterEnabled(boolean enabled);
+
+        @Override
+        public native String getPhysicalLocationPath(int deviceId);
     }
 }

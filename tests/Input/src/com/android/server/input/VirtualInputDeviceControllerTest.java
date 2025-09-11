@@ -44,6 +44,7 @@ import android.os.RemoteException;
 import android.platform.test.annotations.Presubmit;
 import android.testing.AndroidTestingRunner;
 import android.testing.TestableLooper;
+import android.util.SparseArray;
 import android.view.DisplayInfo;
 import android.view.InputDevice;
 import android.view.KeyEvent;
@@ -87,6 +88,8 @@ public class VirtualInputDeviceControllerTest {
     private InputManagerGlobal.TestSession mInputSession;
     private final List<InputDevice> mDevices = new ArrayList<>();
     private IInputDevicesChangedListener mDevicesChangedListener;
+    // deviceId -> phys
+    private final SparseArray<String> mPhysByDeviceId = new SparseArray<>();
     // uniqueId -> displayId
     private final Map<String, Integer> mDisplayIdMapping = new HashMap<>();
     // phys -> uniqueId
@@ -131,6 +134,8 @@ public class VirtualInputDeviceControllerTest {
                 .when(mInputManagerService).addVirtualDevice(anyString());
         doAnswer(inv -> mVirtualDevices.remove(inv.getArgument(0)))
                 .when(mInputManagerService).removeVirtualDevice(anyString());
+        doAnswer(inv -> mPhysByDeviceId.get(inv.getArgument(0)))
+                .when(mInputManagerService).getPhysicalLocationPath(anyInt());
 
 
         // Set a new instance of InputManager for testing that uses the IInputManager mock as the
@@ -177,6 +182,7 @@ public class VirtualInputDeviceControllerTest {
                 .setAssociatedDisplayId(mDisplayIdMapping.get(mUniqueIdAssociationByPort.get(phys)))
                 .build();
         mDevices.add(device);
+        mPhysByDeviceId.put(device.getId(), phys);
         try {
             mDevicesChangedListener.onInputDevicesChanged(
                     mDevices.stream().flatMapToInt(
@@ -236,6 +242,20 @@ public class VirtualInputDeviceControllerTest {
                 IllegalArgumentException.class,
                 () -> mInputController.createDpad(
                         NAME_2, VENDOR_ID, PRODUCT_ID, TOKEN_1, DISPLAY_ID_2));
+    }
+
+    @Test
+    public void createInputDevice_differentDevices_haveUniquePhys() throws RemoteException {
+        final int d1 = mInputController.createDpad(NAME, VENDOR_ID, PRODUCT_ID, TOKEN_1,
+                DISPLAY_ID_1).getInputDeviceId();
+        final int d2 = mInputController.createDpad(NAME_2, VENDOR_ID, PRODUCT_ID, TOKEN_2,
+                DISPLAY_ID_1).getInputDeviceId();
+
+        final String phys1 = mPhysByDeviceId.get(d1);
+        final String phys2 = mPhysByDeviceId.get(d2);
+        assertThat(phys1).isNotEmpty();
+        assertThat(phys2).isNotEmpty();
+        assertThat(phys1).isNotEqualTo(phys2);
     }
 
     @Test

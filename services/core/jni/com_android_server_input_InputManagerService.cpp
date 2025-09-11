@@ -3338,6 +3338,12 @@ static void nativeSetAccessibilityPointerMotionFilterEnabled(JNIEnv* env, jobjec
     im->getInputManager()->getChoreographer().setAccessibilityPointerMotionFilterEnabled(enabled);
 }
 
+static jstring nativeGetPhysicalLocationPath(JNIEnv* env, jobject nativeImplObj, jint deviceId) {
+    NativeInputManager* im = getNativeInputManager(env, nativeImplObj);
+    const auto phys = im->getInputManager()->getReader().getPhysicalLocationPath(deviceId);
+    return !phys.has_value() || phys->empty() ? nullptr : env->NewStringUTF(phys->c_str());
+}
+
 // ----------------------------------------------------------------------------
 
 static const JNINativeMethod gInputManagerMethods[] = {
@@ -3473,6 +3479,7 @@ static const JNINativeMethod gInputManagerMethods[] = {
         {"setKernelWakeEnabled", "(IZ)Z", (void*)nativeSetKernelWakeEnabled},
         {"setAccessibilityPointerMotionFilterEnabled", "(Z)V",
          (void*)nativeSetAccessibilityPointerMotionFilterEnabled},
+        {"getPhysicalLocationPath", "(I)Ljava/lang/String;", (void*)nativeGetPhysicalLocationPath},
 };
 
 #define FIND_CLASS(var, className) \
