@@ -30,7 +30,6 @@ import android.content.pm.ComponentInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.os.Binder;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.PersistableBundle;
 import android.os.RemoteException;
@@ -72,10 +71,15 @@ public final class TelephonyUtils {
     public static final Executor DIRECT_EXECUTOR = Runnable::run;
 
     /**
-     * The feature enforcement is applied since Android V.
+     * Since Android 14-QPR3, the vendor API level is formatted as YYYYMM. E.g., assuming
+     * the SDK api level bumps once a year:
+     *   - Android 15 (SDK level 35): 202404
+     *   - ...
+     *   - Android 18 (SDK level 38): 202704
+     *
+     * The feature enforcement is kept, but delayed until Android 18.
      */
-    public static final int TELEPHONY_FEATURE_ENFORCEMENT_VENDOR_API_LEVEL =
-            Build.VERSION_CODES.VANILLA_ICE_CREAM;
+    public static final int TELEPHONY_FEATURE_ENFORCEMENT_VENDOR_API_LEVEL = 202704;
 
     /**
      * Verify that caller holds {@link android.Manifest.permission#DUMP}.
