@@ -91,9 +91,7 @@ public class NotificationChannelTest {
 
     @Parameters(name = "{0}")
     public static List<FlagsParameterization> getParams() {
-        return FlagsParameterization.allCombinationsOf(
-                Flags.FLAG_NOTIF_CHANNEL_CROP_VIBRATION_EFFECTS,
-                Flags.FLAG_NOTIF_CHANNEL_ESTIMATE_EFFECT_SIZE);
+        return FlagsParameterization.allCombinationsOf();
     }
 
     @Rule
@@ -286,8 +284,7 @@ public class NotificationChannelTest {
     }
 
     @Test
-    @EnableFlags({Flags.FLAG_NOTIFICATION_CHANNEL_VIBRATION_EFFECT_API,
-            Flags.FLAG_NOTIF_CHANNEL_CROP_VIBRATION_EFFECTS})
+    @EnableFlags(Flags.FLAG_NOTIFICATION_CHANNEL_VIBRATION_EFFECT_API)
     public void testLongVibrationFields_canWriteToXml() throws Exception {
         NotificationChannel channel = new NotificationChannel("id", "name", 3);
         // populate pattern with contents
@@ -313,9 +310,7 @@ public class NotificationChannelTest {
     }
 
     @Test
-    @EnableFlags({Flags.FLAG_NOTIFICATION_CHANNEL_VIBRATION_EFFECT_API,
-            Flags.FLAG_NOTIF_CHANNEL_CROP_VIBRATION_EFFECTS,
-            Flags.FLAG_NOTIF_CHANNEL_ESTIMATE_EFFECT_SIZE})
+    @EnableFlags(Flags.FLAG_NOTIFICATION_CHANNEL_VIBRATION_EFFECT_API)
     public void testVibrationEffect_droppedIfTooLargeAndNotTrimmable() {
         NotificationChannel channel = new NotificationChannel("id", "name", 3);
         // populate pattern with contents
@@ -332,9 +327,7 @@ public class NotificationChannelTest {
     }
 
     @Test
-    @EnableFlags({Flags.FLAG_NOTIFICATION_CHANNEL_VIBRATION_EFFECT_API,
-            Flags.FLAG_NOTIF_CHANNEL_CROP_VIBRATION_EFFECTS,
-            Flags.FLAG_NOTIF_CHANNEL_ESTIMATE_EFFECT_SIZE})
+    @EnableFlags(Flags.FLAG_NOTIFICATION_CHANNEL_VIBRATION_EFFECT_API)
     public void testVibrationEffect_trimmedIfLargeAndTrimmable() {
         NotificationChannel channel = new NotificationChannel("id", "name", 3);
         // populate pattern with contents
@@ -353,9 +346,7 @@ public class NotificationChannelTest {
     }
 
     @Test
-    @EnableFlags({Flags.FLAG_NOTIFICATION_CHANNEL_VIBRATION_EFFECT_API,
-            Flags.FLAG_NOTIF_CHANNEL_CROP_VIBRATION_EFFECTS,
-            Flags.FLAG_NOTIF_CHANNEL_ESTIMATE_EFFECT_SIZE})
+    @EnableFlags(Flags.FLAG_NOTIFICATION_CHANNEL_VIBRATION_EFFECT_API)
     public void testVibrationEffect_keptIfSmall() {
         NotificationChannel channel = new NotificationChannel("id", "name", 3);
         VibrationEffect effect = VibrationEffect.createOneShot(1, 100);
