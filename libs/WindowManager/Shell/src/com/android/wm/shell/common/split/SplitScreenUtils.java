@@ -44,10 +44,55 @@ import com.android.wm.shell.RootTaskDisplayAreaOrganizer;
 import com.android.wm.shell.ShellTaskOrganizer;
 import com.android.wm.shell.shared.split.SplitScreenConstants;
 import com.android.wm.shell.splitscreen.StageTaskListener;
+import com.android.wm.shell.splitscreen.LayoutNode;
+import com.android.wm.shell.splitscreen.BranchNode;
+import com.android.wm.shell.splitscreen.LeafNode;
 
 /** Helper utility class for split screen components to use. */
 public class SplitScreenUtils {
     private static final int LARGE_SCREEN_MIN_EDGE_DP = 600;
+
+    /**
+     * Creates a pretty-printed string representation of a LayoutNode tree for debugging.
+     * @param node The root of the tree to dump.
+     * @return A string representing the tree structure.
+     */
+    public static String dumpLayoutNodeTree(LayoutNode node) {
+        StringBuilder sb = new StringBuilder("Split Screen Layout:\n");
+        dumpLayoutNodeTreeRecursive(node, "", true, sb);
+        return sb.toString();
+    }
+
+    private static void dumpLayoutNodeTreeRecursive(LayoutNode node, String prefix, boolean isLast,
+            StringBuilder sb) {
+        sb.append(prefix);
+        if (!prefix.isEmpty()) {
+            sb.append(isLast ? "└─ " : "├─ ");
+        }
+
+        if (node instanceof BranchNode bn) {
+            String orientation = bn.getOrientation() == BranchNode.ORIENTATION_VERTICAL ? "V" : "H";
+            sb.append("Branch (")
+                    .append(orientation)
+                    .append(", w=").append(String.format("%.2f", bn.getWeight()))
+                    .append(", off=").append(bn.isOffscreen())
+                    .append(", main=").append(bn.getMainChildIndex())
+                    .append(")\n");
+
+            String childPrefix = prefix + (isLast ? "    " : "│   ");
+            for (int i = 0; i < bn.getChildren().size(); i++) {
+                LayoutNode child = bn.getChildren().get(i);
+                dumpLayoutNodeTreeRecursive(child, childPrefix, i == bn.getChildren().size() - 1,
+                        sb);
+            }
+        } else if (node instanceof LeafNode ln) {
+            ln.getTaskInfo();
+            sb.append("Leaf (task=")
+                    .append(ln.getTaskInfo().taskId)
+                    .append(", w=").append(String.format("%.2f", ln.getWeight()))
+                    .append(")\n");
+        }
+    }
 
     /** Reverse the split position. */
     @SplitScreenConstants.SplitPosition
