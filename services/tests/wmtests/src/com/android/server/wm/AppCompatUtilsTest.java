@@ -168,6 +168,126 @@ public class AppCompatUtilsTest extends WindowTestsBase {
     }
 
     @Test
+    @DisableFlags(Flags.FLAG_APP_COMPAT_UI_RESTART_ON_FULL_TRANSPARENCY)
+    public void testTopActivityEligibleForRestartButton() {
+        // Transparent activity in size compat mode and fillparent to false
+        runTestScenario((robot) -> {
+            robot.conf().enableTranslucentPolicy(true);
+            robot.applyOnActivity((a) -> {
+                a.createActivityWithComponentInNewTask();
+                a.setTopActivityVisible(true);
+                robot.setTopTaskAsOrganized();
+                a.setTopActivityInSizeCompatMode(true);
+                a.setTopActivityFillsParent(false);
+            });
+
+            robot.checkTaskInfoTopActivityAsInSizeCompatMode(false);
+        });
+
+        // Transparent activity in size compat mode and fillparent to true
+        runTestScenario((robot) -> {
+            robot.conf().enableTranslucentPolicy(true);
+            robot.applyOnActivity((a) -> {
+                a.createActivityWithComponentInNewTask();
+                a.setTopActivityVisible(true);
+                robot.setTopTaskAsOrganized();
+                a.setTopActivityInSizeCompatMode(true);
+                a.setTopActivityFillsParent(true);
+            });
+
+            robot.checkTaskInfoTopActivityAsInSizeCompatMode(true);
+        });
+
+        // Transparent activity NOT in size compat mode and fillparent to false
+        runTestScenario((robot) -> {
+            robot.conf().enableTranslucentPolicy(true);
+            robot.applyOnActivity((a) -> {
+                a.createActivityWithComponentInNewTask();
+                a.setTopActivityVisible(true);
+                robot.setTopTaskAsOrganized();
+                a.setTopActivityInSizeCompatMode(false);
+                a.setTopActivityFillsParent(false);
+            });
+
+            robot.checkTaskInfoTopActivityAsInSizeCompatMode(false);
+        });
+
+        // Transparent activity NOT in size compat mode and fillparent to true
+        runTestScenario((robot) -> {
+            robot.conf().enableTranslucentPolicy(true);
+            robot.applyOnActivity((a) -> {
+                a.createActivityWithComponentInNewTask();
+                a.setTopActivityVisible(true);
+                robot.setTopTaskAsOrganized();
+                a.setTopActivityInSizeCompatMode(false);
+                a.setTopActivityFillsParent(true);
+            });
+
+            robot.checkTaskInfoTopActivityAsInSizeCompatMode(false);
+        });
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_APP_COMPAT_UI_RESTART_ON_FULL_TRANSPARENCY)
+    public void testTopFullyTransparentActivityEligibleForRestartButton() {
+        // Transparent activity in size compat mode and TransparentPolicy NOT running
+        runTestScenario((robot) -> {
+            robot.conf().enableTranslucentPolicy(true);
+            robot.applyOnActivity((a) -> {
+                a.createActivityWithComponentInNewTask();
+                a.setTopActivityVisible(true);
+                robot.setTopTaskAsOrganized();
+                a.setTopActivityInSizeCompatMode(true);
+                robot.setTopActivityTransparentPolicyRunning(false);
+            });
+
+            robot.checkTaskInfoTopActivityAsInSizeCompatMode(true);
+        });
+
+        // Transparent activity in size compat mode and TransparentPolicy running
+        runTestScenario((robot) -> {
+            robot.conf().enableTranslucentPolicy(true);
+            robot.applyOnActivity((a) -> {
+                a.createActivityWithComponentInNewTask();
+                a.setTopActivityVisible(true);
+                robot.setTopTaskAsOrganized();
+                a.setTopActivityInSizeCompatMode(true);
+                robot.setTopActivityTransparentPolicyRunning(true);
+            });
+
+            robot.checkTaskInfoTopActivityAsInSizeCompatMode(false);
+        });
+
+        // Transparent activity NOT in size compat mode and TransparentPolicy NOT running
+        runTestScenario((robot) -> {
+            robot.conf().enableTranslucentPolicy(true);
+            robot.applyOnActivity((a) -> {
+                a.createActivityWithComponentInNewTask();
+                a.setTopActivityVisible(true);
+                robot.setTopTaskAsOrganized();
+                a.setTopActivityInSizeCompatMode(false);
+                robot.setTopActivityTransparentPolicyRunning(false);
+            });
+
+            robot.checkTaskInfoTopActivityAsInSizeCompatMode(false);
+        });
+
+        // Transparent activity NOT in size compat mode and TransparentPolicy running
+        runTestScenario((robot) -> {
+            robot.conf().enableTranslucentPolicy(true);
+            robot.applyOnActivity((a) -> {
+                a.createActivityWithComponentInNewTask();
+                a.setTopActivityVisible(true);
+                robot.setTopTaskAsOrganized();
+                a.setTopActivityInSizeCompatMode(false);
+                robot.setTopActivityTransparentPolicyRunning(true);
+            });
+
+            robot.checkTaskInfoTopActivityAsInSizeCompatMode(false);
+        });
+    }
+
+    @Test
     public void testTopActivityEligibleForUserAspectRatioButton_disabled_notEligible() {
         runTestScenario((robot) -> {
             robot.applyOnActivity((a) -> {
@@ -334,6 +454,7 @@ public class AppCompatUtilsTest extends WindowTestsBase {
             spyOn(activity.mAppCompatController.getAspectRatioPolicy());
             spyOn(activity.mAppCompatController.getSafeRegionPolicy());
             spyOn(activity.mAppCompatController.getLetterboxPolicy());
+            spyOn(activity.mAppCompatController.getTransparentPolicy());
         }
 
         @Override
@@ -372,6 +493,11 @@ public class AppCompatUtilsTest extends WindowTestsBase {
                     .thenReturn(isLetterboxRunning);
         }
 
+        void setTopActivityTransparentPolicyRunning(boolean isTransparentPolicyRunning) {
+            when(activity().top().mAppCompatController.getTransparentPolicy().isRunning())
+                    .thenReturn(isTransparentPolicyRunning);
+        }
+
         void setLetterboxPolicyLetterboxBounds(@NonNull Rect expectedBounds) {
             doAnswer(invocation -> {
                 Rect bounds = invocation.getArgument(0);
@@ -384,6 +510,10 @@ public class AppCompatUtilsTest extends WindowTestsBase {
         void setIsLetterboxedForSafeRegionOnlyAllowed(boolean safeRegionOnly) {
             when(activity().top().mAppCompatController.getSafeRegionPolicy()
                     .isLetterboxedForSafeRegionOnlyAllowed()).thenReturn(safeRegionOnly);
+        }
+
+        void setTopTaskAsOrganized() {
+            doReturn(activity().top().getTask()).when(activity().top()).getOrganizedTask();
         }
 
         void setCameraCompatMode(@CameraCompatMode int mode) {
@@ -421,6 +551,11 @@ public class AppCompatUtilsTest extends WindowTestsBase {
         void checkTaskInfoEligibleForUserAspectRatioButton(boolean eligible) {
             Assert.assertEquals(eligible, getTopTaskInfo().appCompatTaskInfo
                     .eligibleForUserAspectRatioButton());
+        }
+
+        void checkTaskInfoTopActivityAsInSizeCompatMode(boolean eligible) {
+            Assert.assertEquals(eligible, getTopTaskInfo().appCompatTaskInfo
+                    .isTopActivityInSizeCompat());
         }
 
         void checkTaskInfoCameraCompatMode(@CameraCompatTaskInfo.CameraCompatMode int mode) {
