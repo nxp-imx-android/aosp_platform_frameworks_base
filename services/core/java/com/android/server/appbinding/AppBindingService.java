@@ -178,6 +178,26 @@ public class AppBindingService extends Binder {
         return boundConnections;
     }
 
+
+    public <T> void dispatchAppServiceEvent(
+            Class<? extends AppServiceFinder<?, ?>> finderClass,
+            int userId, Consumer<AppServiceConnection> action) {
+        List<AppServiceConnection> serviceConnections = new ArrayList<>();
+        synchronized (mLock) {
+            for (int i = 0; i < mApps.size(); i++) {
+                final AppServiceFinder app = mApps.get(i);
+                if (app.getClass() != finderClass) {
+                    continue;
+                }
+                serviceConnections.addAll(getConnectionsLocked(userId, app));
+            }
+        }
+        for (AppServiceConnection conn: serviceConnections) {
+            conn.addCallback(action);
+            conn.bind();
+        }
+    }
+
     /**
      * Get the connection bound to a specific finder or create one if it does not exist.
      */
