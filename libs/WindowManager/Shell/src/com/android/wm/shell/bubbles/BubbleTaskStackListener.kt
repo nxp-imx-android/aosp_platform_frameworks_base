@@ -24,8 +24,8 @@ import com.android.wm.shell.bubbles.util.BubbleUtils.getExitBubbleTransaction
 import com.android.wm.shell.bubbles.util.BubbleUtils.isBubbleToFullscreen
 import com.android.wm.shell.bubbles.util.BubbleUtils.isBubbleToSplit
 import com.android.wm.shell.common.TaskStackListenerCallback
-import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_BUBBLES
 import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_BUBBLES_NOISY
+import com.android.wm.shell.shared.bubbles.logging.BubbleLog
 import com.android.wm.shell.splitscreen.SplitScreenController
 import com.android.wm.shell.taskview.TaskViewTaskController
 import dagger.Lazy
@@ -70,10 +70,7 @@ class BubbleTaskStackListener(
 
     override fun onTaskMovedToFront(task: ActivityManager.RunningTaskInfo) {
         val taskId = task.taskId
-        ProtoLog.d(
-            WM_SHELL_BUBBLES_NOISY,
-            "BubbleTaskStackListener.onTaskMovedToFront(): taskId=%d",
-            taskId)
+        BubbleLog.d("BubbleTaskStackListener.onTaskMovedToFront(): taskId=%d", taskId)
         bubbleData.getBubbleInStackWithTaskId(taskId)?.let { bubble ->
             when {
                 task.isBubbleToFullscreen() -> moveCollapsedInStackBubbleToFullscreen(bubble, task)
@@ -97,11 +94,9 @@ class BubbleTaskStackListener(
         bubble: Bubble,
         task: ActivityManager.RunningTaskInfo,
     ) {
-        ProtoLog.d(
-            WM_SHELL_BUBBLES,
-            "selectAndExpandInStackBubble - taskId=%d selecting matching bubble=%s",
-            task.taskId,
-            bubble.key,
+        BubbleLog.d(
+            "BubbleTaskStackListener.selectAndExpandInStackBubble() taskId=%d bubble=%s",
+            task.taskId, bubble.key
         )
         bubbleData.setSelectedBubbleAndExpandStack(bubble)
     }
@@ -111,12 +106,9 @@ class BubbleTaskStackListener(
         bubble: Bubble,
         task: ActivityManager.RunningTaskInfo,
     ) {
-        ProtoLog.d(
-            WM_SHELL_BUBBLES,
-            "moveCollapsedInStackBubbleToFullscreen - taskId=%d " +
-                    "moving matching bubble=%s to fullscreen",
-            task.taskId,
-            bubble.key
+        BubbleLog.d(
+            "BubbleTaskStackListener.moveCollapsedInStackBubbleToFullscreen() taskId=%d bubble=%s" +
+                    " to fullscreen", task.taskId, bubble.key
         )
         val taskViewTaskController: TaskViewTaskController = bubble.taskView.controller
         val taskOrganizer: ShellTaskOrganizer = taskViewTaskController.taskOrganizer

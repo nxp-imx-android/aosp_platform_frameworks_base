@@ -53,35 +53,35 @@ object BubbleLog {
     /** Logs a DEBUG level message for all registered [DebugLogger]s. */
     @JvmOverloads
     @JvmStatic
-    fun d(message: String, vararg parameters: Any = emptyArray(), eventData: String? = null) {
+    fun d(message: String, vararg parameters: Any? = emptyArray(), eventData: String? = null) {
         logSafelyForAllLoggers { logger -> logger.d(message, *parameters, eventData = eventData) }
     }
 
     /** Logs a VERBOSE level message for all registered [DebugLogger]s. */
     @JvmOverloads
     @JvmStatic
-    fun v(message: String, vararg parameters: Any = emptyArray(), eventData: String? = null) {
+    fun v(message: String, vararg parameters: Any? = emptyArray(), eventData: String? = null) {
         logSafelyForAllLoggers { logger -> logger.v(message, *parameters, eventData = eventData) }
     }
 
     /** Logs an INFO level message for all registered [DebugLogger]s. */
     @JvmOverloads
     @JvmStatic
-    fun i(message: String, vararg parameters: Any = emptyArray(), eventData: String? = null) {
+    fun i(message: String, vararg parameters: Any? = emptyArray(), eventData: String? = null) {
         logSafelyForAllLoggers { logger -> logger.i(message, *parameters, eventData = eventData) }
     }
 
     /** Logs a WARNING level message for all registered [DebugLogger]s. */
     @JvmOverloads
     @JvmStatic
-    fun w(message: String, vararg parameters: Any = emptyArray(), eventData: String? = null) {
+    fun w(message: String, vararg parameters: Any? = emptyArray(), eventData: String? = null) {
         logSafelyForAllLoggers { logger -> logger.w(message, *parameters, eventData = eventData) }
     }
 
     /** Logs an ERROR level message for all registered [DebugLogger]s. */
     @JvmOverloads
     @JvmStatic
-    fun e(message: String, vararg parameters: Any = emptyArray(), eventData: String? = null) {
+    fun e(message: String, vararg parameters: Any? = emptyArray(), eventData: String? = null) {
         logSafelyForAllLoggers { logger -> logger.e(message, *parameters, eventData = eventData) }
     }
 
