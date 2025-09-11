@@ -3073,6 +3073,48 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
+    @EnableFlags(
+        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
+        com.android.launcher3.Flags.FLAG_ENABLE_ALT_TAB_KQS_FLATENNING,
+        FLAG_MOVE_TO_NEXT_DISPLAY_SHORTCUT_WITH_PROJECTED_MODE,
+    )
+    fun moveToFullscreen_fullscreenNonRunningTask_deskActive_cleansUpSourceDisplay() {
+        whenever(focusTransitionObserver.globallyFocusedDisplayId).thenReturn(SECOND_DISPLAY)
+        taskRepository.addDesk(displayId = SECOND_DISPLAY, deskId = 9)
+        taskRepository.setActiveDesk(displayId = SECOND_DISPLAY, deskId = 9)
+        val task = setUpFullscreenTask(displayId = INVALID_TASK_ID, background = true)
+
+        controller.moveToFullscreen(task.taskId, transitionSource = UNKNOWN)
+
+        val wct = getLatestExitDesktopWct()
+        // Verify that cleanup (e.g. resetting the launcher) is performed on the source display
+        // where the task originated from.
+        wct.assertPendingIntent(launchHomeIntent(SECOND_DISPLAY))
+        wct.assertPendingIntentActivityOptionsLaunchDisplayId(SECOND_DISPLAY)
+    }
+
+    @Test
+    @EnableFlags(
+        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
+        com.android.launcher3.Flags.FLAG_ENABLE_ALT_TAB_KQS_FLATENNING,
+        FLAG_MOVE_TO_NEXT_DISPLAY_SHORTCUT_WITH_PROJECTED_MODE,
+    )
+    fun moveToFullscreen_fullscreenNonRunningTask_noDeskActive_cleansUpSourceDisplay() {
+        whenever(focusTransitionObserver.globallyFocusedDisplayId).thenReturn(SECOND_DISPLAY)
+        taskRepository.addDesk(displayId = SECOND_DISPLAY, deskId = 9)
+        taskRepository.setDeskInactive(deskId = 9)
+        val task = setUpFullscreenTask(displayId = INVALID_TASK_ID, background = true)
+
+        controller.moveToFullscreen(task.taskId, transitionSource = UNKNOWN)
+
+        val wct = getLatestExitDesktopWct()
+        // Verify that cleanup (e.g. resetting the launcher) is performed on the source display
+        // where the task originated from.
+        wct.assertPendingIntent(launchHomeIntent(SECOND_DISPLAY))
+        wct.assertPendingIntentActivityOptionsLaunchDisplayId(SECOND_DISPLAY)
+    }
+
+    @Test
     @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun moveToFullscreen_secondDisplayTaskHasFreeform_secondDisplayNotAffected() {
         val taskDefaultDisplay = setUpFreeformTask(displayId = DEFAULT_DISPLAY)
@@ -12625,6 +12667,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         enableSystemFullscreenOverride: Boolean = false,
         aspectRatioOverrideApplied: Boolean = false,
         visible: Boolean = true,
+        background: Boolean = false,
     ): RunningTaskInfo {
         val task = createFullscreenTask(displayId)
         val activityInfo = ActivityInfo()
@@ -12675,8 +12718,14 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
             }
             isVisible = visible
         }
-        whenever(shellTaskOrganizer.getRunningTaskInfo(task.taskId)).thenReturn(task)
-        runningTasks.add(task)
+        if (background) {
+            whenever(shellTaskOrganizer.getRunningTaskInfo(task.taskId)).thenReturn(null)
+            whenever(recentTasksController.findTaskInBackground(task.taskId))
+                .thenReturn(createRecentTaskInfo(taskId = task.taskId, displayId = INVALID_DISPLAY))
+        } else {
+            whenever(shellTaskOrganizer.getRunningTaskInfo(task.taskId)).thenReturn(task)
+            runningTasks.add(task)
+        }
         return task
     }
 
