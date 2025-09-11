@@ -388,6 +388,7 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
             notifyNonContinuousInputToStabilityCalculator();
         } else {
             Slog.e(TAG, "Invalid action code for performAction: " + actionCode);
+            notifyInteractionFailedToStabilityCalculator();
         }
     }
 
@@ -421,6 +422,7 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
                     mVirtualDisplayId);
             if (ic == null) {
                 Slog.e(TAG, "Unable to insert text: No input connection found!");
+                notifyInteractionFailedToStabilityCalculator();
                 return;
             }
             // TODO(b/422134565): Implement client invoker logic to pass the correct session id when
@@ -633,6 +635,15 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
         synchronized (mStabilityCalculatorLock) {
             if (mStabilityCalculator != null) {
                 mStabilityCalculator.onApplicationLaunch();
+            }
+        }
+    }
+
+    // TODO(b/428957982): Remove once we implement actual stability signals from the framework.
+    private void notifyInteractionFailedToStabilityCalculator() {
+        synchronized (mStabilityCalculatorLock) {
+            if (mStabilityCalculator != null) {
+                mStabilityCalculator.onInteractionFailed();
             }
         }
     }

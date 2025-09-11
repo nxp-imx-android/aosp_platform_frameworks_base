@@ -489,13 +489,48 @@ public class ComputerControlSessionTest {
     }
 
     @Test
-    public void insertText_notifiesStabilityListener() throws Exception {
+    public void performAction_withInvalidCode_notifiesStabilityListener() throws Exception {
+        createComputerControlSession(mDefaultParams);
+        mSession.setStabilityListener(mStabilityListener);
+
+        mSession.performAction(-1);
+
+        verify(mStabilityListener).onSessionStable();
+    }
+
+    @Test
+    @DisableFlags(Flags.FLAG_COMPUTER_CONTROL_TYPING)
+    public void insertTextLegacy_notifiesStabilityListener() throws Exception {
         createComputerControlSession(mDefaultParams);
         mSession.setStabilityListener(mStabilityListener);
 
         mSession.insertText("hello", false /* replaceExisting */, true /* commit */);
 
         verify(mStabilityListener, timeout(STABILITY_TIMEOUT_MS)).onSessionStable();
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_COMPUTER_CONTROL_TYPING)
+    public void insertText_notifiesStabilityListener() throws Exception {
+        createComputerControlSession(mDefaultParams);
+        when(mInjector.getInputConnection(VIRTUAL_DISPLAY_ID)).thenReturn(
+                mRemoteComputerControlInputConnection);
+        mSession.setStabilityListener(mStabilityListener);
+
+        mSession.insertText("hello", false /* replaceExisting */, true /* commit */);
+
+        verify(mStabilityListener, timeout(STABILITY_TIMEOUT_MS)).onSessionStable();
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_COMPUTER_CONTROL_TYPING)
+    public void insertText_withNoInputConnection_notifiesStabilityListener() throws Exception {
+        createComputerControlSession(mDefaultParams);
+        mSession.setStabilityListener(mStabilityListener);
+
+        mSession.insertText("hello", false /* replaceExisting */, true /* commit */);
+
+        verify(mStabilityListener).onSessionStable();
     }
 
     @Test
