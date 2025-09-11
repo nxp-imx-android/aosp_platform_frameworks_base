@@ -32,6 +32,7 @@ import android.graphics.Rect;
 import android.hardware.display.DisplayManagerInternal;
 import android.util.ArraySet;
 import android.util.DisplayMetrics;
+import android.util.IndentingPrintWriter;
 import android.util.Slog;
 import android.util.SparseArray;
 import android.view.Display;
@@ -1296,6 +1297,12 @@ final class LogicalDisplay {
         pw.println("mLayoutLimitedRefreshRate=" + mLayoutLimitedRefreshRate);
         pw.println("mThermalRefreshRateThrottling=" + mThermalRefreshRateThrottling);
         pw.println("mPowerThrottlingDataId=" + mPowerThrottlingDataId);
+
+        IndentingPrintWriter ipw = new IndentingPrintWriter(pw, "  ");
+        ipw.println("DisplayInfoProxy (mInfo):");
+        ipw.increaseIndent();
+        mInfo.dumpLocked(ipw);
+        ipw.decreaseIndent();
     }
 
     @Override
