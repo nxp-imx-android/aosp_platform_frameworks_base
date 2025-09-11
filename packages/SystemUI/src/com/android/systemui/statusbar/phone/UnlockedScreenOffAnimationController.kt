@@ -28,6 +28,8 @@ import com.android.systemui.shade.domain.interactor.PanelExpansionInteractor
 import com.android.systemui.shade.domain.interactor.ShadeLockscreenInteractor
 import com.android.systemui.shared.Flags.ambientAod
 import com.android.systemui.statusbar.CircleReveal
+import com.android.systemui.statusbar.LiftReveal
+import com.android.systemui.statusbar.LightRevealEffect
 import com.android.systemui.statusbar.LightRevealScrim
 import com.android.systemui.statusbar.NotificationShadeWindowController
 import com.android.systemui.statusbar.StatusBarState
@@ -48,6 +50,7 @@ private const val ANIMATE_IN_KEYGUARD_DELAY = 600L
 
 /** Duration for the light reveal portion of the animation. */
 private const val LIGHT_REVEAL_ANIMATION_DURATION = 500L
+private const val LIGHT_REVEAL_ANIMATION_DURATION_MINMODE = 100L
 
 /**
  * Controller for the unlocked screen off animation, which runs when the device is going to sleep
@@ -83,6 +86,7 @@ constructor(
     private var initialized = false
 
     private lateinit var lightRevealScrim: LightRevealScrim
+    private lateinit var revealEffect: LightRevealEffect
 
     private var animatorDurationScale = 1f
     private var shouldAnimateInKeyguard = false
@@ -128,6 +132,11 @@ constructor(
                     }
 
                     override fun onAnimationStart(animation: Animator) {
+                        if (dozeParameters.get().isMinModeActive()) {
+                            lightRevealScrim.revealEffect = LiftReveal
+                        } else {
+                            lightRevealScrim.revealEffect = revealEffect
+                        }
                         interactionJankMonitor.begin(
                             notifShadeWindowControllerLazy.get().windowRootView,
                             CUJ_SCREEN_OFF,
@@ -158,6 +167,7 @@ constructor(
     ) {
         this.initialized = true
         this.lightRevealScrim = lightRevealScrim
+        this.revealEffect = lightRevealScrim.revealEffect
         this.centralSurfaces = centralSurfaces
 
         updateAnimatorDurationScale()
@@ -281,7 +291,12 @@ constructor(
         if (shouldPlayUnlockedScreenOffAnimation()) {
             decidedToAnimateGoingToSleep = true
 
-            shouldAnimateInKeyguard = true
+            shouldAnimateInKeyguard = !dozeParameters.get().isMinModeActive()
+            if (shouldAnimateInKeyguard) {
+                lightRevealAnimator.setDuration(LIGHT_REVEAL_ANIMATION_DURATION)
+            } else {
+                lightRevealAnimator.setDuration(LIGHT_REVEAL_ANIMATION_DURATION_MINMODE)
+            }
 
             // Start the animation on the next frame. startAnimation() is called after
             // PhoneWindowManager makes a binder call to System UI on

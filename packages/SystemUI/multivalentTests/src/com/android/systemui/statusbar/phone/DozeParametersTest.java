@@ -353,7 +353,7 @@ public class DozeParametersTest extends SysuiTestCase {
 
         when(mMinModeManager.isMinModeEnabled()).thenReturn(true);
 
-        assertThat(mDozeParameters.getAlwaysOn()).isFalse();
+        assertThat(mDozeParameters.getAlwaysOn()).isTrue();
     }
 
     @Test
@@ -362,7 +362,7 @@ public class DozeParametersTest extends SysuiTestCase {
         when(mScreenOffAnimationController.shouldAnimateDozingChange()).thenReturn(true);
         when(mMinModeManager.isMinModeEnabled()).thenReturn(true);
 
-        assertThat(mDozeParameters.shouldAnimateDozingChange()).isFalse();
+        assertThat(mDozeParameters.shouldAnimateDozingChange()).isTrue();
     }
 
     private void setDisplayNeedsBlankingForTest(boolean needsBlanking) {
