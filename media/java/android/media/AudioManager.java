@@ -29,7 +29,6 @@ import static android.media.audio.Flags.FLAG_SCO_MANAGED_BY_AUDIO;
 import static android.media.audio.Flags.FLAG_SUPPORTED_DEVICE_TYPES_API;
 import static android.media.audio.Flags.FLAG_UNIFY_ABSOLUTE_VOLUME_MANAGEMENT;
 import static android.media.audio.Flags.autoPublicVolumeApiHardening;
-import static android.media.audio.Flags.cacheGetStreamMinMaxVolume;
 import static android.media.audio.Flags.cacheGetStreamVolume;
 import static android.media.audiopolicy.Flags.FLAG_ENABLE_FADE_MANAGER_CONFIGURATION;
 import static android.media.audiopolicy.Flags.FLAG_MULTI_ZONE_AUDIO;
@@ -1291,8 +1290,7 @@ public class AudioManager {
      * @hide
      **/
     public static void clearVolumeCache(String api) {
-        if (cacheGetStreamMinMaxVolume() && (VOLUME_MAX_CACHING_API.equals(api)
-                || VOLUME_MIN_CACHING_API.equals(api))) {
+        if (VOLUME_MAX_CACHING_API.equals(api) || VOLUME_MIN_CACHING_API.equals(api)) {
             IpcDataCache.invalidateCache(IpcDataCache.MODULE_SYSTEM, api);
         } else if (cacheGetStreamVolume() && VOLUME_CACHING_API.equals(api)) {
             IpcDataCache.invalidateCache(IpcDataCache.MODULE_SYSTEM, api);
@@ -1339,15 +1337,7 @@ public class AudioManager {
      * @see #getStreamVolume(int)
      */
     public int getStreamMaxVolume(int streamType) {
-        if (cacheGetStreamMinMaxVolume()) {
-            return mVolMaxCache.query(new VolumeCacheQuery(streamType, QUERY_VOL_MAX));
-        }
-        final IAudioService service = getService();
-        try {
-            return service.getStreamMaxVolume(streamType);
-        } catch (RemoteException e) {
-            throw e.rethrowFromSystemServer();
-        }
+        return mVolMaxCache.query(new VolumeCacheQuery(streamType, QUERY_VOL_MAX));
     }
 
     /**
@@ -1375,15 +1365,7 @@ public class AudioManager {
      */
     @TestApi
     public int getStreamMinVolumeInt(int streamType) {
-        if (cacheGetStreamMinMaxVolume()) {
-            return mVolMinCache.query(new VolumeCacheQuery(streamType, QUERY_VOL_MIN));
-        }
-        final IAudioService service = getService();
-        try {
-            return service.getStreamMinVolume(streamType);
-        } catch (RemoteException e) {
-            throw e.rethrowFromSystemServer();
-        }
+        return mVolMinCache.query(new VolumeCacheQuery(streamType, QUERY_VOL_MIN));
     }
 
     /**

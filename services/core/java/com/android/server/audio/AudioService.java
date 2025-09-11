@@ -51,7 +51,6 @@ import static android.media.AudioManager.RINGER_MODE_SILENT;
 import static android.media.AudioManager.RINGER_MODE_VIBRATE;
 import static android.media.AudioManager.STREAM_SYSTEM;
 import static android.media.audio.Flags.autoPublicVolumeApiHardening;
-import static android.media.audio.Flags.cacheGetStreamMinMaxVolume;
 import static android.media.audio.Flags.cacheGetStreamVolume;
 import static android.media.audio.Flags.concurrentAudioRecordBypassPermission;
 import static android.media.audio.Flags.dapInjectionStarveManagement;
@@ -5505,8 +5504,7 @@ public class AudioService extends IAudioService.Stub
                 + ringMyCar());
         pw.println("\tandroid.media.audio.Flags.concurrentAudioRecordBypassPermission:"
                 + concurrentAudioRecordBypassPermission());
-        pw.println("\tandroid.media.audio.Flags.cacheGetStreamMinMaxVolume:"
-                + cacheGetStreamMinMaxVolume());
+        pw.println("\tandroid.media.audio.Flags.cacheGetStreamMinMaxVolume - EOL");
         pw.println("\tandroid.media.audio.Flags.cacheGetStreamVolume:"
                 + cacheGetStreamVolume());
         pw.println("\tcom.android.media.audio.optimizeBtDeviceSwitch:"
@@ -10082,7 +10080,7 @@ public class AudioService extends IAudioService.Stub
                     mIndexMinNoPerm = mIndexMin;
                 }
             }
-            if (cacheGetStreamMinMaxVolume() && mStreamType == AudioSystem.STREAM_VOICE_CALL) {
+            if (mStreamType == AudioSystem.STREAM_VOICE_CALL) {
                 if (DEBUG_VOL) {
                     Log.d(TAG, "Clear min volume cache from updateIndexFactors");
                 }
@@ -10134,8 +10132,7 @@ public class AudioService extends IAudioService.Stub
          * @param index minimum index expressed in "UI units", i.e. no 10x factor
          */
         public void updateNoPermMinIndex(int index) {
-            boolean changedNoPermMinIndex =
-                    cacheGetStreamMinMaxVolume() && (index * 10) != mIndexMinNoPerm;
+            boolean changedNoPermMinIndex = (index * 10) != mIndexMinNoPerm;
             mIndexMinNoPerm = index * 10;
             if (mIndexMinNoPerm < mIndexMin) {
                 Log.e(TAG, "Invalid mIndexMinNoPerm for stream " + mStreamType);
