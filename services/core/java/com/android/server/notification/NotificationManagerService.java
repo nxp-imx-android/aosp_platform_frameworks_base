@@ -4892,9 +4892,7 @@ public class NotificationManagerService extends SystemService {
                     List<NotificationRecord> enqueued = findAppNotificationByListLocked(
                             mEnqueuedNotifications, pkg, UserHandle.getUserId(uid));
                     for (NotificationRecord r : enqueued) {
-                        if (promote
-                                && r.getNotification().hasPromotableCharacteristics()
-                                && r.getImportance() > IMPORTANCE_MIN) {
+                        if (promote && isPromotable(r)) {
                             r.getNotification().flags |= FLAG_PROMOTED_ONGOING;
                         } else if (!promote) {
                             r.getNotification().flags &= ~FLAG_PROMOTED_ONGOING;
@@ -4906,8 +4904,7 @@ public class NotificationManagerService extends SystemService {
                     for (NotificationRecord r : posted) {
                         if (promote
                                 && !hasFlag(r.getNotification().flags, FLAG_PROMOTED_ONGOING)
-                                && r.getNotification().hasPromotableCharacteristics()
-                                && r.getImportance() > IMPORTANCE_MIN) {
+                                && isPromotable(r)) {
                             r.getNotification().flags |= FLAG_PROMOTED_ONGOING;
                             // we could set a wake lock here but this value should only change
                             // in response to user action, so the device should be awake long enough
@@ -9216,6 +9213,23 @@ public class NotificationManagerService extends SystemService {
         }
     }
 
+    private boolean isPromotable(NotificationRecord record) {
+        return isPromotable(record.getNotification(), record.getChannel());
+    }
+
+    private static boolean isPromotable(Notification notification, NotificationChannel channel) {
+        if (!notification.hasPromotableCharacteristics()) {
+            return false;
+        }
+        if (channel.getImportance() <= IMPORTANCE_MIN) {
+            return false;
+        }
+        if (android.service.notification.Flags.notificationClassification()
+                && NotificationChannel.SYSTEM_RESERVED_IDS.contains(channel.getId())) {
+            return false;
+        }
+        return true;
+    }
 
     /**
      * Final notification fixup that can only be performed once channel info is available.
@@ -9229,8 +9243,7 @@ public class NotificationManagerService extends SystemService {
     protected void fixNotificationWithChannel(Notification notification,
             NotificationChannel channel, int notificationUid, String pkg) {
         if (android.app.Flags.apiRichOngoing()) {
-            if (notification.hasPromotableCharacteristics()
-                    && channel.getImportance() > IMPORTANCE_MIN) {
+            if (isPromotable(notification, channel)) {
                 // Check permission last - after we make sure this is actually an attempted usage
                 // of promotion - since AppOps tracks usage attempts.
                 boolean canPostPromoted;
