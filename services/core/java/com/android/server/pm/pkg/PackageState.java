@@ -128,6 +128,12 @@ public interface PackageState {
     String getPackageName();
 
     /**
+     * @return The package's PCC application ID
+     * @hide
+     */
+    int getPccId();
+
+    /**
      * @see ApplicationInfo#primaryCpuAbi
      */
     @Nullable

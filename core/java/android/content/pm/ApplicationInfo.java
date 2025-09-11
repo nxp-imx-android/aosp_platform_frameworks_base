@@ -1204,6 +1204,15 @@ public class ApplicationInfo extends PackageItemInfo implements Parcelable {
     public int uid;
 
     /**
+     * The pcc UID that has been assigned to this application. The PCC
+     * will be -1 in case the application does not have any PCC components
+     * inside of it.
+     *
+     * @hide
+     */
+    public int pccUid;
+
+    /**
      * The minimum SDK version this application can run on. It will not run
      * on earlier versions.
      */
@@ -1777,9 +1786,15 @@ public class ApplicationInfo extends PackageItemInfo implements Parcelable {
         if ((dumpFlags & DUMP_FLAG_DETAILS) != 0) {
             pw.println(prefix + "taskAffinity=" + taskAffinity);
         }
-        pw.println(prefix + "uid=" + uid + " flags=0x" + Integer.toHexString(flags)
-                + " privateFlags=0x" + Integer.toHexString(privateFlags)
-                + " theme=0x" + Integer.toHexString(theme));
+        final StringBuilder sb = new StringBuilder();
+        sb.append(prefix).append("uid=").append(uid);
+        if (pccUid > 0) {
+            sb.append(" pccUid=").append(pccUid);
+        }
+        sb.append(" flags=0x").append(Integer.toHexString(flags))
+                .append(" privateFlags=0x").append(Integer.toHexString(privateFlags))
+                .append(" theme=0x").append(Integer.toHexString(theme));
+        pw.println(sb.toString());
         if ((dumpFlags & DUMP_FLAG_DETAILS) != 0) {
             pw.println(prefix + "requiresSmallestWidthDp=" + requiresSmallestWidthDp
                     + " compatibleWidthLimitDp=" + compatibleWidthLimitDp
@@ -2096,6 +2111,7 @@ public class ApplicationInfo extends PackageItemInfo implements Parcelable {
         deviceProtectedDataDir = orig.deviceProtectedDataDir;
         credentialProtectedDataDir = orig.credentialProtectedDataDir;
         uid = orig.uid;
+        pccUid = orig.pccUid;
         minSdkVersion = orig.minSdkVersion;
         targetSdkVersion = orig.targetSdkVersion;
         setVersionCode(orig.longVersionCode);
@@ -2192,6 +2208,7 @@ public class ApplicationInfo extends PackageItemInfo implements Parcelable {
         dest.writeString8(deviceProtectedDataDir);
         dest.writeString8(credentialProtectedDataDir);
         dest.writeInt(uid);
+        dest.writeInt(pccUid);
         dest.writeInt(minSdkVersion);
         dest.writeInt(targetSdkVersion);
         dest.writeLong(longVersionCode);
@@ -2297,6 +2314,7 @@ public class ApplicationInfo extends PackageItemInfo implements Parcelable {
         deviceProtectedDataDir = source.readString8();
         credentialProtectedDataDir = source.readString8();
         uid = source.readInt();
+        pccUid = source.readInt();
         minSdkVersion = source.readInt();
         targetSdkVersion = source.readInt();
         setVersionCode(source.readLong());
