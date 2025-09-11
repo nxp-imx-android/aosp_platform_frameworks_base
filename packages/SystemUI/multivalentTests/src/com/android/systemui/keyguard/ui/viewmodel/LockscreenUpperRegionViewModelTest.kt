@@ -32,6 +32,7 @@ import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.lifecycle.activateIn
 import com.android.systemui.res.R
+import com.android.systemui.shade.data.repository.shadeConfigRepository
 import com.android.systemui.shade.data.repository.shadeRepository
 import com.android.systemui.shade.domain.interactor.enableDualShade
 import com.android.systemui.shade.domain.interactor.enableSingleShade
@@ -138,7 +139,7 @@ class LockscreenUpperRegionViewModelTest(flags: FlagsParameterization) : SysuiTe
         hasNotifications: Boolean = false,
         shadeLayoutWide: Boolean? = null,
     ) {
-        val isWideScreen by collectLastValue(shadeRepository.isWideScreen)
+        val isFullWidthShade by collectLastValue(shadeConfigRepository.isFullWidthShade)
         val legacyUseSplitShade by collectLastValue(shadeRepository.legacyUseSplitShade)
         val collectedClockSize by collectLastValue(keyguardClockInteractor.clockSize)
         val collectedShadeMode by collectLastValue(shadeModeInteractor.shadeMode)
@@ -166,7 +167,7 @@ class LockscreenUpperRegionViewModelTest(flags: FlagsParameterization) : SysuiTe
                 .build()
         runCurrent()
         if (shadeLayoutWide != null) {
-            assertThat(isWideScreen).isEqualTo(shadeLayoutWide)
+            assertThat(isFullWidthShade).isEqualTo(!shadeLayoutWide)
             assertThat(legacyUseSplitShade).isEqualTo(shadeLayoutWide)
         }
         assertThat(collectedShadeMode).isEqualTo(shadeMode)
