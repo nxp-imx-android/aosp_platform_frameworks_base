@@ -38,6 +38,7 @@ import com.android.systemui.battery.BatteryMeterViewController
 import com.android.systemui.communal.data.repository.fakeCommunalSceneRepository
 import com.android.systemui.communal.domain.interactor.communalSceneInteractor
 import com.android.systemui.communal.shared.model.CommunalScenes
+import com.android.systemui.display.data.repository.displaySubcomponentPerDisplayRepository
 import com.android.systemui.dreams.ui.viewmodel.dreamViewModel
 import com.android.systemui.flags.DisableSceneContainer
 import com.android.systemui.flags.EnableSceneContainer
@@ -63,7 +64,6 @@ import com.android.systemui.shade.ShadeViewStateProvider
 import com.android.systemui.statusbar.CommandQueue
 import com.android.systemui.statusbar.StatusBarState
 import com.android.systemui.statusbar.core.NewStatusBarIcons
-import com.android.systemui.statusbar.data.repository.StatusBarContentInsetsProviderStore
 import com.android.systemui.statusbar.events.SystemStatusAnimationScheduler
 import com.android.systemui.statusbar.layout.mockStatusBarContentInsetsProvider
 import com.android.systemui.statusbar.phone.ui.StatusBarIconController
@@ -134,9 +134,6 @@ class KeyguardStatusBarViewControllerTest : SysuiTestCase() {
 
     @Mock private lateinit var biometricUnlockController: BiometricUnlockController
 
-    @Mock
-    private lateinit var statusBarContentInsetsProviderStore: StatusBarContentInsetsProviderStore
-
     @Mock private lateinit var userManager: UserManager
 
     @Captor
@@ -181,8 +178,6 @@ class KeyguardStatusBarViewControllerTest : SysuiTestCase() {
 
         whenever(iconManagerFactory.create(ArgumentMatchers.any(), ArgumentMatchers.any()))
             .thenReturn(iconManager)
-        whenever(statusBarContentInsetsProviderStore.forDisplay(context.displayId))
-            .thenReturn(kosmos.mockStatusBarContentInsetsProvider)
         allowTestableLooperAsMainThread()
         looper.runWithLooper {
             keyguardStatusBarView =
@@ -219,7 +214,7 @@ class KeyguardStatusBarViewControllerTest : SysuiTestCase() {
             kosmos.keyguardStatusBarViewModel,
             biometricUnlockController,
             kosmos.statusBarStateController,
-            statusBarContentInsetsProviderStore,
+            kosmos.displaySubcomponentPerDisplayRepository,
             userManager,
             kosmos.statusBarUserChipViewModel,
             secureSettings,

@@ -43,7 +43,7 @@ import com.android.systemui.shade.domain.interactor.ShadeModeInteractor
 import com.android.systemui.shade.shared.flag.ShadeWindowGoesAround
 import com.android.systemui.statusbar.core.StatusBarConnectedDisplays
 import com.android.systemui.statusbar.data.repository.StatusBarConfigurationController
-import com.android.systemui.statusbar.data.repository.StatusBarContentInsetsProviderStore
+import com.android.systemui.statusbar.layout.StatusBarContentInsetsProvider
 import com.android.systemui.statusbar.policy.Clock
 import com.android.systemui.statusbar.policy.ConfigurationController
 import com.android.systemui.statusbar.window.StatusBarWindowControllerStore
@@ -81,7 +81,7 @@ private constructor(
     private val configurationController: ConfigurationController,
     private val statusOverlayHoverListenerFactory: StatusOverlayHoverListenerFactory,
     private val darkIconDispatcher: DarkIconDispatcher,
-    private val statusBarContentInsetsProviderStore: StatusBarContentInsetsProviderStore,
+    private val statusBarContentInsetsProvider: StatusBarContentInsetsProvider,
     private val lazyStatusBarShadeDisplayPolicy: Lazy<StatusBarTouchShadeDisplayPolicy>,
     private val lazyShadeDisplaysRepository: Lazy<ShadeDisplaysRepository>,
     private val statusBarWindowControllerStore: StatusBarWindowControllerStore,
@@ -91,8 +91,6 @@ private constructor(
     private lateinit var clock: Clock
     private lateinit var startSideContainer: View
     private lateinit var endSideContainer: View
-    private val statusBarContentInsetsProvider
-        get() = statusBarContentInsetsProviderStore.forDisplay(context.displayId)
 
     // Creates a [View.OnTouchListener] that only handles mouse click events.
     private fun createMouseClickListener(onClick: () -> Unit): View.OnTouchListener =
@@ -439,7 +437,7 @@ private constructor(
         private val statusBarConfigurationController: StatusBarConfigurationController,
         private val statusOverlayHoverListenerFactory: StatusOverlayHoverListenerFactory,
         @DisplayAware private val darkIconDispatcher: DarkIconDispatcher,
-        private val statusBarContentInsetsProviderStore: StatusBarContentInsetsProviderStore,
+        @DisplayAware private val statusBarContentInsetsProvider: StatusBarContentInsetsProvider,
         private val lazyStatusBarShadeDisplayPolicy: Lazy<StatusBarTouchShadeDisplayPolicy>,
         private val lazyShadeDisplaysRepository: Lazy<ShadeDisplaysRepository>,
         private val statusBarWindowControllerStore: StatusBarWindowControllerStore,
@@ -462,7 +460,7 @@ private constructor(
                 statusBarConfigurationController,
                 statusOverlayHoverListenerFactory,
                 darkIconDispatcher,
-                statusBarContentInsetsProviderStore,
+                statusBarContentInsetsProvider,
                 lazyStatusBarShadeDisplayPolicy,
                 lazyShadeDisplaysRepository,
                 statusBarWindowControllerStore,

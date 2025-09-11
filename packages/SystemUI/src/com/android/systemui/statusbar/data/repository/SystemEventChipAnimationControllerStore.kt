@@ -17,9 +17,11 @@
 package com.android.systemui.statusbar.data.repository
 
 import android.view.WindowManager.LayoutParams.TYPE_STATUS_BAR
+import com.android.app.displaylib.PerDisplayRepository
 import com.android.systemui.CoreStartable
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Background
+import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent
 import com.android.systemui.display.data.repository.DisplayRepository
 import com.android.systemui.display.data.repository.DisplayWindowPropertiesRepository
 import com.android.systemui.display.data.repository.PerDisplayStore
@@ -49,7 +51,7 @@ constructor(
     private val factory: SystemEventChipAnimationControllerImpl.Factory,
     private val displayWindowPropertiesRepository: DisplayWindowPropertiesRepository,
     private val statusBarWindowControllerStore: StatusBarWindowControllerStore,
-    private val statusBarContentInsetsProviderStore: StatusBarContentInsetsProviderStore,
+    private val perDisplaySubcomponentRepo: PerDisplayRepository<SystemUIDisplaySubcomponent>,
 ) :
     SystemEventChipAnimationControllerStore,
     StatusBarPerDisplayStoreImpl<SystemEventChipAnimationController>(
@@ -62,16 +64,15 @@ constructor(
     }
 
     override fun createInstanceForDisplay(displayId: Int): SystemEventChipAnimationController? {
+        val displaySubcomponent = perDisplaySubcomponentRepo[displayId] ?: return null
         val displayWindowProperties =
             displayWindowPropertiesRepository.get(displayId, TYPE_STATUS_BAR) ?: return null
         val statusBarWindowController =
             statusBarWindowControllerStore.forDisplay(displayId) ?: return null
-        val contentInsetsProvider =
-            statusBarContentInsetsProviderStore.forDisplay(displayId) ?: return null
         return factory.create(
             displayWindowProperties.context,
             statusBarWindowController,
-            contentInsetsProvider,
+            displaySubcomponent.statusBarContentInsetsProvider,
         )
     }
 

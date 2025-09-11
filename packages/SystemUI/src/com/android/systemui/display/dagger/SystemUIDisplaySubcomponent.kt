@@ -24,6 +24,7 @@ import com.android.systemui.display.domain.interactor.DisplayStateInteractor
 import com.android.systemui.plugins.DarkIconDispatcher
 import com.android.systemui.statusbar.chips.ui.viewmodel.OngoingActivityChipsViewModel
 import com.android.systemui.statusbar.domain.interactor.StatusBarIconRefreshInteractor
+import com.android.systemui.statusbar.layout.StatusBarContentInsetsProvider
 import com.android.systemui.statusbar.phone.SysuiDarkIconDispatcher
 import com.android.systemui.statusbar.ui.SystemBarUtilsState
 import com.android.systemui.statusbar.window.StatusBarWindowStateController
@@ -59,6 +60,8 @@ interface SystemUIDisplaySubcomponent {
     @get:DisplayAware val statusBarWindowStateController: StatusBarWindowStateController
 
     @get:DisplayAware val ongoingActivityChipsViewModel: OngoingActivityChipsViewModel
+
+    @get:DisplayAware val statusBarContentInsetsProvider: StatusBarContentInsetsProvider
 
     @get:DisplayAware val darkIconDispatcher: DarkIconDispatcher
 

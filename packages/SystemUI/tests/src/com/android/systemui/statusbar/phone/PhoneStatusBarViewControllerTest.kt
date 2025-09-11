@@ -68,7 +68,8 @@ import com.android.systemui.shade.shared.flag.ShadeWindowGoesAround
 import com.android.systemui.shade.shared.model.ShadeMode
 import com.android.systemui.statusbar.CommandQueue
 import com.android.systemui.statusbar.core.StatusBarConnectedDisplays
-import com.android.systemui.statusbar.data.repository.fakeStatusBarContentInsetsProviderStore
+import com.android.systemui.statusbar.layout.mockStatusBarContentInsetsProvider
+import com.android.systemui.statusbar.layout.statusBarContentInsetsProvider
 import com.android.systemui.statusbar.policy.Clock
 import com.android.systemui.statusbar.policy.mockStatusBarConfigurationController
 import com.android.systemui.statusbar.window.StatusBarWindowControllerStore
@@ -109,11 +110,8 @@ class PhoneStatusBarViewControllerTest(flags: FlagsParameterization) : SysuiTest
 
     private val kosmos = testKosmos().useUnconfinedTestDispatcher()
     private val mStatusBarConfigurationController = kosmos.mockStatusBarConfigurationController
-    private val statusBarContentInsetsProviderStore = kosmos.fakeStatusBarContentInsetsProviderStore
-    private val statusBarContentInsetsProvider = statusBarContentInsetsProviderStore.defaultDisplay
-    private val statusBarContentInsetsProviderForSecondaryDisplay =
-        statusBarContentInsetsProviderStore.forDisplay(SECONDARY_DISPLAY_ID)
     private val windowRootView = mock<WindowRootView>()
+    private val statusBarContentInsetsProvider = kosmos.mockStatusBarContentInsetsProvider
 
     private val fakeDarkIconDispatcher = kosmos.fakeDarkIconDispatcher
     @Mock private lateinit var shadeViewController: ShadeViewController
@@ -156,12 +154,6 @@ class PhoneStatusBarViewControllerTest(flags: FlagsParameterization) : SysuiTest
 
         view = createView(mContext)
         controller = createAndInitController(view)
-
-        whenever(
-                statusBarContentInsetsProviderForSecondaryDisplay
-                    .getStatusBarContentInsetsForCurrentRotation()
-            )
-            .thenReturn(Insets.NONE)
 
         val contextForSecondaryDisplay =
             SysuiTestableContext(
@@ -901,7 +893,7 @@ class PhoneStatusBarViewControllerTest(flags: FlagsParameterization) : SysuiTest
                 mStatusBarConfigurationController,
                 mStatusOverlayHoverListenerFactory,
                 fakeDarkIconDispatcher,
-                statusBarContentInsetsProviderStore,
+                statusBarContentInsetsProvider,
                 { statusBarTouchShadeDisplayPolicy },
                 { shadeDisplayRepository },
                 statusBarWindowControllerStore,

@@ -45,6 +45,7 @@ import androidx.core.animation.AnimatorListenerAdapter;
 import androidx.core.animation.ValueAnimator;
 
 import com.android.app.animation.InterpolatorsAndroidX;
+import com.android.app.displaylib.PerDisplayRepository;
 import com.android.keyguard.AlphaOptimizedLinearLayout;
 import com.android.keyguard.CarrierTextController;
 import com.android.keyguard.KeyguardUpdateMonitor;
@@ -55,6 +56,7 @@ import com.android.systemui.battery.BatteryMeterViewController;
 import com.android.systemui.communal.domain.interactor.CommunalSceneInteractor;
 import com.android.systemui.dagger.qualifiers.Background;
 import com.android.systemui.dagger.qualifiers.Main;
+import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent;
 import com.android.systemui.dreams.ui.viewmodel.DreamViewModel;
 import com.android.systemui.keyguard.domain.interactor.KeyguardInteractor;
 import com.android.systemui.keyguard.ui.viewmodel.GlanceableHubToLockscreenTransitionViewModel;
@@ -72,7 +74,6 @@ import com.android.systemui.statusbar.StatusBarState;
 import com.android.systemui.statusbar.SysuiStatusBarStateController;
 import com.android.systemui.statusbar.core.NewStatusBarIcons;
 import com.android.systemui.statusbar.core.RudimentaryBattery;
-import com.android.systemui.statusbar.data.repository.StatusBarContentInsetsProviderStore;
 import com.android.systemui.statusbar.disableflags.DisableStateTracker;
 import com.android.systemui.statusbar.events.SystemStatusAnimationCallback;
 import com.android.systemui.statusbar.events.SystemStatusAnimationScheduler;
@@ -151,7 +152,7 @@ public class KeyguardStatusBarViewController extends ViewController<KeyguardStat
     private final KeyguardStatusBarViewModel mKeyguardStatusBarViewModel;
     private final BiometricUnlockController mBiometricUnlockController;
     private final SysuiStatusBarStateController mStatusBarStateController;
-    private final StatusBarContentInsetsProviderStore mInsetsProviderStore;
+    private final PerDisplayRepository<SystemUIDisplaySubcomponent> mPerDisplaySubcomponentRepo;
     private final UserManager mUserManager;
     private final StatusBarUserChipViewModel mStatusBarUserChipViewModel;
     private final SecureSettings mSecureSettings;
@@ -374,7 +375,7 @@ public class KeyguardStatusBarViewController extends ViewController<KeyguardStat
             KeyguardStatusBarViewModel keyguardStatusBarViewModel,
             BiometricUnlockController biometricUnlockController,
             SysuiStatusBarStateController statusBarStateController,
-            StatusBarContentInsetsProviderStore statusBarContentInsetsProviderStore,
+            PerDisplayRepository<SystemUIDisplaySubcomponent> perDisplaySubcomponentRepo,
             UserManager userManager,
             StatusBarUserChipViewModel userChipViewModel,
             SecureSettings secureSettings,
@@ -413,7 +414,7 @@ public class KeyguardStatusBarViewController extends ViewController<KeyguardStat
         mKeyguardStatusBarViewModel = keyguardStatusBarViewModel;
         mBiometricUnlockController = biometricUnlockController;
         mStatusBarStateController = statusBarStateController;
-        mInsetsProviderStore = statusBarContentInsetsProviderStore;
+        mPerDisplaySubcomponentRepo = perDisplaySubcomponentRepo;
         mUserManager = userManager;
         mStatusBarUserChipViewModel = userChipViewModel;
         mSecureSettings = secureSettings;
@@ -455,7 +456,8 @@ public class KeyguardStatusBarViewController extends ViewController<KeyguardStat
     }
 
     private StatusBarContentInsetsProvider insetsProvider() {
-        return mInsetsProviderStore.forDisplay(mContext.getDisplayId());
+        return mPerDisplaySubcomponentRepo.get(
+                mContext.getDisplayId()).getStatusBarContentInsetsProvider();
     }
 
     @Override

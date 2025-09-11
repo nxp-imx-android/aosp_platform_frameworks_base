@@ -19,6 +19,7 @@ package com.android.systemui.statusbar.events
 import android.content.Context
 import android.graphics.Rect
 import android.view.ContextThemeWrapper
+import android.view.Display
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
@@ -30,12 +31,13 @@ import androidx.core.animation.Animator
 import androidx.core.animation.AnimatorListenerAdapter
 import androidx.core.animation.AnimatorSet
 import androidx.core.animation.ValueAnimator
+import com.android.app.displaylib.PerDisplayRepository
 import com.android.internal.annotations.VisibleForTesting
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Default
+import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent
 import com.android.systemui.res.R
 import com.android.systemui.statusbar.core.StatusBarConnectedDisplays
-import com.android.systemui.statusbar.data.repository.StatusBarContentInsetsProviderStore
 import com.android.systemui.statusbar.layout.StatusBarContentInsetsChangedListener
 import com.android.systemui.statusbar.layout.StatusBarContentInsetsProvider
 import com.android.systemui.statusbar.window.StatusBarWindowController
@@ -486,12 +488,13 @@ interface SystemEventChipAnimationControllerModule {
             factory: SystemEventChipAnimationControllerImpl.Factory,
             context: Context,
             statusBarWindowControllerStore: StatusBarWindowControllerStore,
-            contentInsetsProviderStore: StatusBarContentInsetsProviderStore,
+            perDisplaySubcomponentRepo: PerDisplayRepository<SystemUIDisplaySubcomponent>,
         ): SystemEventChipAnimationController {
+            val displaySubcomponent = perDisplaySubcomponentRepo[Display.DEFAULT_DISPLAY]!!
             return factory.create(
                 context,
                 statusBarWindowControllerStore.defaultDisplay,
-                contentInsetsProviderStore.defaultDisplay,
+                displaySubcomponent.statusBarContentInsetsProvider,
             )
         }
 
