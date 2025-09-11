@@ -31,6 +31,7 @@ import static android.multiuser.Flags.FLAG_ENABLE_PRIVATE_SPACE_FEATURES;
 import static android.multiuser.Flags.FLAG_HSU_NOT_ADMIN;
 import static android.multiuser.Flags.FLAG_LOGOUT_USER_API;
 import static android.multiuser.Flags.FLAG_UNICORN_MODE_REFACTORING_FOR_HSUM_READ_ONLY;
+import static android.multiuser.Flags.FLAG_USER_FILTER_REFACTORING;
 import static android.os.Flags.FLAG_ALLOW_PRIVATE_PROFILE;
 import static android.os.UserHandle.USER_NULL;
 import static android.os.UserHandle.USER_SYSTEM;
@@ -1392,6 +1393,7 @@ public final class UserManagerServiceMockedTest {
     }
 
     @Test
+    @DisableFlags(FLAG_USER_FILTER_REFACTORING)
     public void testGetUsersWithUnresolvedNames() {
         var headlessSystemUser = addUser(new UserInfo(USER_SYSTEM, A_USER_HAS_NO_NAME, FLAG_ADMIN));
         var adminUser = addUser(new UserInfo(USER_ID, A_USER_HAS_NO_NAME, FLAG_FULL | FLAG_ADMIN));
@@ -1425,6 +1427,14 @@ public final class UserManagerServiceMockedTest {
     }
 
     @Test
+    @EnableFlags(FLAG_USER_FILTER_REFACTORING)
+    public void testGetUsersWithUnresolvedNames_refactored() {
+        // Should behave exactly the same ways as without the flag
+        testGetUsersWithUnresolvedNames();
+    }
+
+    @Test
+    @DisableFlags(FLAG_USER_FILTER_REFACTORING)
     public void testGetUsersInternal_nonHsum() {
         var fullSystemUser =
                 addUser(new UserInfo(USER_SYSTEM, A_USER_HAS_NO_NAME, FLAG_FULL | FLAG_ADMIN));
@@ -1432,9 +1442,24 @@ public final class UserManagerServiceMockedTest {
     }
 
     @Test
+    @EnableFlags(FLAG_USER_FILTER_REFACTORING)
+    public void testGetUsersInternal_nonHsum_refactored() {
+        // Should behave exactly the same ways as without the flag
+        testGetUsersInternal_nonHsum();
+    }
+
+    @Test
+    @DisableFlags(FLAG_USER_FILTER_REFACTORING)
     public void testGetUsersInternal_hsum() {
         var headlessSystemUser = addUser(new UserInfo(USER_SYSTEM, A_USER_HAS_NO_NAME, FLAG_ADMIN));
         testGetUsersInternal(headlessSystemUser);
+    }
+
+    @Test
+    @EnableFlags(FLAG_USER_FILTER_REFACTORING)
+    public void testGetUsersInternal_hsum_refactored() {
+        // Should behave exactly the same ways as without the flag
+        testGetUsersInternal_hsum();
     }
 
     private void testGetUsersInternal(UserInfo systemUser) {
