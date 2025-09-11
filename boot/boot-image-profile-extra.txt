@@ -94,3 +94,6 @@ Lcom/android/internal/pm/SystemFeaturesMetadata;
 # TOOD(b/417492941): Remove after inclusion in generated boot-image-profile.txt.
 HSPLandroid/os/Process;->setThreadPriority(II)V
 HSPLandroid/os/Process;->setThreadPriority(I)V
+
+# TODO: remove after the generated profile is updated.
+HSPLcom/android/internal/util/StringCache;->*

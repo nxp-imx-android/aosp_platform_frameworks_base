@@ -13974,6 +13974,7 @@ com.android.internal.util.StateMachine$SmHandler$StateInfo
 com.android.internal.util.StateMachine$SmHandler
 com.android.internal.util.StateMachine-IA
 com.android.internal.util.StateMachine
+com.android.internal.util.StringCache
 com.android.internal.util.StringPool
 com.android.internal.util.SyncResultReceiver$TimeoutException
 com.android.internal.util.SyncResultReceiver
