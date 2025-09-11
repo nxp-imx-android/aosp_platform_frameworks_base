@@ -2364,7 +2364,13 @@ class DesktopTasksController(
                 )
             }
         val t =
-            if (remoteTransition == null) {
+            // If a desk is active and we are activating a new desk, start switch desk transition.
+            if (repository.isAnyDeskActive(displayId) && shouldActivateDesk) {
+                desktopMixedTransitionHandler.startSwitchDeskTransition(
+                    transitionType = transitionType,
+                    wct = launchTransaction,
+                )
+            } else if (remoteTransition == null) {
                 logV("startLaunchTransition -- no remoteTransition -- wct = $launchTransaction")
                 desktopMixedTransitionHandler.startLaunchTransition(
                     transitionType = transitionType,

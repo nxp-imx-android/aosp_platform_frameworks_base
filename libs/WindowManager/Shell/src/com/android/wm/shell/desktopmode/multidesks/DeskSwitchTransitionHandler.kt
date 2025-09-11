@@ -67,6 +67,23 @@ class DeskSwitchTransitionHandler(
 
     private val pendingTransitions = mutableMapOf<IBinder, PendingSwitch>()
 
+    /** Adds a pending transition that will switch between two desks in the same display. */
+    fun addPendingTransition(
+        transition: IBinder,
+        userId: Int,
+        displayId: Int,
+        fromDeskId: Int,
+        toDeskId: Int,
+    ) {
+        pendingTransitions[transition] =
+            PendingSwitch(
+                displayId = displayId,
+                userId = userId,
+                fromDeskId = fromDeskId,
+                toDeskId = toDeskId,
+            )
+    }
+
     /** Starts a transition to switch between two desks in the same display. */
     fun startTransition(
         wct: WindowContainerTransaction,
@@ -268,6 +285,11 @@ class DeskSwitchTransitionHandler(
                 if (animFraction >= FADE_IN_START_FRACTION && !isFadeInStarted) {
                     isFadeInStarted = true
                     val fadeInTx = transactionProvider()
+                    // Set the desk alpha to 1 so its children can be shown
+                    fadeInTx.apply {
+                        changes.toDesk?.leash?.let { leash -> setAlpha(leash, 1f) }
+                        apply()
+                    }
                     PhysicsAnimator.getInstance(
                             DeskSwitchAnimationUtils.DeskOpacityChange(
                                 leashes = changes.toDeskTasks.map { it.leash },

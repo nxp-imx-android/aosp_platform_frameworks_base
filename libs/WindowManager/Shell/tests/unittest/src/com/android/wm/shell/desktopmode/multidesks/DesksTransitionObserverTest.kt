@@ -1308,6 +1308,241 @@ class DesksTransitionObserverTest : ShellTestCase() {
             verify(mockDesktopModeEventLogger, never()).logPendingSessionExit(any(), any())
         }
 
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
+    fun findDeskToDeskTransition_noRunningTransition_returnsNull() {
+        val transition = Binder()
+        val result = observer.findDeskToDeskTransition(transition)
+        assertThat(result).isNull()
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
+    fun findDeskToDeskTransition_multipleUsers_returnsNull() {
+        val transition = Binder()
+        val repo1 = desktopUserRepositories.getProfile(USER_ID_1)
+        repo1.addDesk(DEFAULT_DISPLAY, deskId = 1)
+        repo1.setActiveDesk(DEFAULT_DISPLAY, deskId = 1)
+
+        val repo2 = desktopUserRepositories.getProfile(USER_ID_2)
+        repo2.addDesk(DEFAULT_DISPLAY, deskId = 2)
+
+        val deactivateTransition =
+            DeskTransition.DeactivateDesk(
+                transition,
+                userId = USER_ID_1,
+                deskId = 1,
+                displayId = DEFAULT_DISPLAY,
+                switchingUser = false,
+                exitReason = ExitReason.UNKNOWN_EXIT,
+            )
+        val activateTransition =
+            DeskTransition.ActivateDesk(
+                transition,
+                userId = USER_ID_2,
+                displayId = DEFAULT_DISPLAY,
+                deskId = 2,
+                enterReason = EnterReason.UNKNOWN_ENTER,
+            )
+        observer.addPendingTransition(deactivateTransition)
+        observer.addPendingTransition(activateTransition)
+        observer.onTransitionReady(
+            transition = transition,
+            info =
+                buildTransitionInfo()
+                    .addDeskChange(deskId = 1, mode = TRANSIT_TO_BACK, userId = USER_ID_1)
+                    .addDeskChange(deskId = 2, mode = TRANSIT_TO_FRONT, userId = USER_ID_2),
+        )
+
+        val result = observer.findDeskToDeskTransition(transition)
+
+        assertThat(result).isNull()
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
+    fun findDeskToDeskTransition_noFromDesk_returnsNull() {
+        val transition = Binder()
+        val repository = desktopUserRepositories.getProfile(USER_ID_1)
+        repository.addDesk(DEFAULT_DISPLAY, deskId = 2)
+
+        val activateTransition =
+            DeskTransition.ActivateDesk(
+                transition,
+                userId = USER_ID_1,
+                displayId = DEFAULT_DISPLAY,
+                deskId = 2,
+                enterReason = EnterReason.UNKNOWN_ENTER,
+            )
+        observer.addPendingTransition(activateTransition)
+        observer.onTransitionReady(
+            transition = transition,
+            info = buildTransitionInfo().addDeskChange(deskId = 2, mode = TRANSIT_TO_FRONT),
+        )
+
+        val result = observer.findDeskToDeskTransition(transition)
+
+        assertThat(result).isNull()
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
+    fun findDeskToDeskTransition_noToDesk_returnsNull() {
+        val transition = Binder()
+        val repository = desktopUserRepositories.getProfile(USER_ID_1)
+        repository.addDesk(DEFAULT_DISPLAY, deskId = 1)
+        repository.setActiveDesk(DEFAULT_DISPLAY, deskId = 1)
+
+        val deactivateTransition =
+            DeskTransition.DeactivateDesk(
+                transition,
+                userId = USER_ID_1,
+                deskId = 1,
+                displayId = DEFAULT_DISPLAY,
+                switchingUser = false,
+                exitReason = ExitReason.UNKNOWN_EXIT,
+            )
+        observer.addPendingTransition(deactivateTransition)
+        observer.onTransitionReady(
+            transition = transition,
+            info = buildTransitionInfo().addDeskChange(deskId = 1, mode = TRANSIT_TO_BACK),
+        )
+
+        val result = observer.findDeskToDeskTransition(transition)
+
+        assertThat(result).isNull()
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
+    fun findDeskToDeskTransition_sameFromAndToDesk_returnsNull() {
+        val transition = Binder()
+        repository.addDesk(DEFAULT_DISPLAY, deskId = 1)
+        repository.setActiveDesk(DEFAULT_DISPLAY, deskId = 1)
+
+        val deactivateTransition =
+            DeskTransition.DeactivateDesk(
+                transition,
+                userId = USER_ID_1,
+                deskId = 1,
+                displayId = DEFAULT_DISPLAY,
+                switchingUser = false,
+                exitReason = ExitReason.UNKNOWN_EXIT,
+            )
+        val activateTransition =
+            DeskTransition.ActivateDesk(
+                transition,
+                userId = USER_ID_1,
+                displayId = DEFAULT_DISPLAY,
+                deskId = 1,
+                enterReason = EnterReason.UNKNOWN_ENTER,
+            )
+        observer.addPendingTransition(deactivateTransition)
+        observer.addPendingTransition(activateTransition)
+        observer.onTransitionReady(
+            transition = transition,
+            info =
+                buildTransitionInfo()
+                    .addDeskChange(deskId = 1, mode = TRANSIT_TO_BACK)
+                    .addDeskChange(deskId = 1, mode = TRANSIT_TO_FRONT),
+        )
+
+        val result = observer.findDeskToDeskTransition(transition)
+
+        assertThat(result).isNull()
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
+    fun findDeskToDeskTransition_validTransition_returnsDeskToDeskTransition() {
+        val transition = Binder()
+        val repository = desktopUserRepositories.getProfile(USER_ID_1)
+        repository.addDesk(DEFAULT_DISPLAY, deskId = 1)
+        repository.setActiveDesk(DEFAULT_DISPLAY, deskId = 1)
+        repository.addDesk(DEFAULT_DISPLAY, deskId = 2)
+
+        val deactivateTransition =
+            DeskTransition.DeactivateDesk(
+                transition,
+                userId = USER_ID_1,
+                deskId = 1,
+                displayId = DEFAULT_DISPLAY,
+                switchingUser = false,
+                exitReason = ExitReason.UNKNOWN_EXIT,
+            )
+        val activateTransition =
+            DeskTransition.ActivateDesk(
+                transition,
+                userId = USER_ID_1,
+                displayId = DEFAULT_DISPLAY,
+                deskId = 2,
+                enterReason = EnterReason.UNKNOWN_ENTER,
+            )
+        observer.addPendingTransition(deactivateTransition)
+        observer.addPendingTransition(activateTransition)
+        observer.onTransitionReady(
+            transition = transition,
+            info =
+                buildTransitionInfo()
+                    .addDeskChange(deskId = 1, mode = TRANSIT_TO_BACK)
+                    .addDeskChange(deskId = 2, mode = TRANSIT_TO_FRONT),
+        )
+
+        val result = observer.findDeskToDeskTransition(transition)
+
+        assertThat(result).isNotNull()
+        assertThat(result?.displayId).isEqualTo(DEFAULT_DISPLAY)
+        assertThat(result?.userId).isEqualTo(USER_ID_1)
+        assertThat(result?.fromDeskId).isEqualTo(1)
+        assertThat(result?.toDeskId).isEqualTo(2)
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
+    fun findDeskToDeskTransition_validTransitionWithActivateTask_returnsDeskToDeskTransition() {
+        val transition = Binder()
+        val repository = desktopUserRepositories.getProfile(USER_ID_1)
+        repository.addDesk(DEFAULT_DISPLAY, deskId = 1)
+        repository.setActiveDesk(DEFAULT_DISPLAY, deskId = 1)
+        repository.addDesk(DEFAULT_DISPLAY, deskId = 2)
+
+        val deactivateTransition =
+            DeskTransition.DeactivateDesk(
+                transition,
+                userId = USER_ID_1,
+                deskId = 1,
+                displayId = DEFAULT_DISPLAY,
+                switchingUser = false,
+                exitReason = ExitReason.UNKNOWN_EXIT,
+            )
+        val activateTransition =
+            DeskTransition.ActivateDeskWithTask(
+                transition,
+                userId = USER_ID_1,
+                displayId = DEFAULT_DISPLAY,
+                deskId = 2,
+                enterTaskId = 123,
+                enterReason = EnterReason.UNKNOWN_ENTER,
+            )
+        observer.addPendingTransition(deactivateTransition)
+        observer.addPendingTransition(activateTransition)
+        observer.onTransitionReady(
+            transition = transition,
+            info =
+                buildTransitionInfo()
+                    .addDeskChange(deskId = 1, mode = TRANSIT_TO_BACK)
+                    .addDeskChange(deskId = 2, mode = TRANSIT_TO_FRONT),
+        )
+
+        val result = observer.findDeskToDeskTransition(transition)
+
+        assertThat(result).isNotNull()
+        assertThat(result?.displayId).isEqualTo(DEFAULT_DISPLAY)
+        assertThat(result?.userId).isEqualTo(USER_ID_1)
+        assertThat(result?.fromDeskId).isEqualTo(1)
+        assertThat(result?.toDeskId).isEqualTo(2)
+    }
+
     private fun buildTransitionInfo() = TransitionInfo(TRANSIT_CHANGE, /* flags= */ 0)
 
     private fun TransitionInfo.addDeskChange(
