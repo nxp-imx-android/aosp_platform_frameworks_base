@@ -19,5 +19,11 @@ package com.android.systemui.volume.panel.component.mediainput.ui.viewmodel
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.volume.panel.component.mediainput.domain.interactor.mediaInputComponentInteractor
 
-var Kosmos.mediaInputViewModel by
-    Kosmos.Fixture { MediaInputViewModel(mediaInputComponentInteractor) }
+var Kosmos.mediaInputViewModel by Kosmos.Fixture { mediaInputViewModelFactory.create() }
+
+val Kosmos.mediaInputViewModelFactory by
+    Kosmos.Fixture {
+        object : MediaInputViewModel.Factory {
+            override fun create() = MediaInputViewModel(mediaInputComponentInteractor)
+        }
+    }

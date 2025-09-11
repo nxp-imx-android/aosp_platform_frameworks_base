@@ -21,11 +21,12 @@ import com.android.systemui.common.shared.model.Icon
 import com.android.systemui.lifecycle.HydratedActivatable
 import com.android.systemui.res.R
 import com.android.systemui.volume.panel.component.mediainput.domain.interactor.MediaInputComponentInteractor
-import javax.inject.Inject
+import dagger.assisted.AssistedFactory
+import dagger.assisted.AssistedInject
 import kotlinx.coroutines.flow.map
 
 class MediaInputViewModel
-@Inject
+@AssistedInject
 constructor(mediaInputComponentInteractor: MediaInputComponentInteractor) : HydratedActivatable() {
     val connectedDeviceName: String? by
         mediaInputComponentInteractor.currentInputDevice
@@ -42,5 +43,10 @@ constructor(mediaInputComponentInteractor: MediaInputComponentInteractor) : Hydr
 
     fun onBarClick(expandable: Expandable?) {
         // TODO(b/442004274): Open input dialog when this function is triggered.
+    }
+
+    @AssistedFactory
+    interface Factory {
+        fun create(): MediaInputViewModel
     }
 }
