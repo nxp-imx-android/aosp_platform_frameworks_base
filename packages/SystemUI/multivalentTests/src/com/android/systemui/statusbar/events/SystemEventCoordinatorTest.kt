@@ -40,7 +40,6 @@ import com.android.systemui.util.mockito.argThat
 import com.android.systemui.util.time.FakeSystemClock
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
@@ -51,7 +50,6 @@ import org.mockito.Mock
 import org.mockito.Mockito.times
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.verifyNoMoreInteractions
-import org.mockito.Mockito.`when`
 import org.mockito.MockitoAnnotations
 import platform.test.runner.parameterized.ParameterizedAndroidJunit4
 import platform.test.runner.parameterized.Parameters
@@ -105,7 +103,6 @@ class SystemEventCoordinatorTest(flags: FlagsParameterization) : SysuiTestCase()
                     logcatLogBuffer("SystemEventCoordinatorTest"),
                 )
                 .apply { attachScheduler(scheduler) }
-        `when`(avControlsChipInteractor.isEnabled).thenReturn(MutableStateFlow(false))
     }
 
     @Test
