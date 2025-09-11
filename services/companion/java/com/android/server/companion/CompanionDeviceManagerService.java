@@ -181,7 +181,7 @@ public class CompanionDeviceManagerService extends SystemService {
                 packageManagerInternal, mAssociationStore);
         mBackupRestoreProcessor = new BackupRestoreProcessor(context, packageManagerInternal,
                 mAssociationStore, associationDiskStore, mSystemDataTransferRequestStore,
-                mAssociationRequestsProcessor);
+                mAssociationRequestsProcessor, mLocalMetadataStore);
 
         mCompanionAppBinder = new CompanionAppBinder(context);
 
