@@ -344,6 +344,9 @@ abstract class MediaRoute2Provider {
         if (!Flags.enableRouteVisibilityControlCompatFixes()) {
             return;
         }
+        if (mProviderInfo == null) {
+            return;  // no need to update provider state if we don't have any
+        }
         List<MediaRoute2Info> possiblyUpdatedRoutes =
                 getVisibilityUpdatedRoutesIfNeeded(mProviderInfo.getRoutes(), mSessionInfos);
         if (possiblyUpdatedRoutes != null) {
