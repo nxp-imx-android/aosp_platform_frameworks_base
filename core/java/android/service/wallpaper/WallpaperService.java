@@ -16,7 +16,6 @@
 
 package android.service.wallpaper;
 
-import static android.app.Flags.enableWallpaperTransformSurfaceControlCommand;
 import static android.app.WallpaperManager.COMMAND_FREEZE;
 import static android.app.WallpaperManager.COMMAND_TRANSFORM_SURFACE_CONTROL;
 import static android.app.WallpaperManager.COMMAND_UNFREEZE;
@@ -388,7 +387,6 @@ public abstract class WallpaperService extends Service {
         private SurfaceControl mScreenshotSurfaceControl;
         private Point mScreenshotSize = new Point();
 
-        private final boolean mEnableTransformSurfaceControlCommand;
         private final boolean mDisableDrawWakeLock;
 
         final BaseSurfaceHolder mSurfaceHolder = new BaseSurfaceHolder() {
@@ -582,7 +580,6 @@ public abstract class WallpaperService extends Service {
         public Engine(Supplier<Long> clockFunction, Handler handler) {
             mClockFunction = clockFunction;
             mHandler = handler;
-            mEnableTransformSurfaceControlCommand = enableWallpaperTransformSurfaceControlCommand();
             mDisableDrawWakeLock = CompatChanges.isChangeEnabled(DISABLE_DRAW_WAKE_LOCK_WALLPAPER)
                     && disableDrawWakeLock();
         }
@@ -1364,20 +1361,17 @@ public abstract class WallpaperService extends Service {
                             (mDisplay.getInstallOrientation() + mDisplay.getRotation()) % 4);
                         mSurfaceControl.setTransformHint(transformHint);
                         if (mBbqSurfaceControl == null) {
-                            if (mEnableTransformSurfaceControlCommand) {
-                                mTransformSurfaceControl = new SurfaceControl.Builder()
-                                        .setName("Wallpaper Transform wrapper")
-                                        .setHidden(false)
-                                        .setParent(mSurfaceControl)
-                                        .setCallsite("Wallpaper#relayout")
-                                        .build();
-                            }
+                            mTransformSurfaceControl = new SurfaceControl.Builder()
+                                    .setName("Wallpaper Transform wrapper")
+                                    .setHidden(false)
+                                    .setParent(mSurfaceControl)
+                                    .setCallsite("Wallpaper#relayout")
+                                    .build();
                             mBbqSurfaceControl = new SurfaceControl.Builder()
                                     .setName("Wallpaper BBQ wrapper")
                                     .setHidden(false)
                                     .setBLASTLayer()
-                                    .setParent(mEnableTransformSurfaceControlCommand
-                                            ? mTransformSurfaceControl : mSurfaceControl)
+                                    .setParent(mTransformSurfaceControl)
                                     .setCallsite("Wallpaper#relayout")
                                     .build();
                             SurfaceControl.Transaction transaction =
@@ -1390,10 +1384,8 @@ public abstract class WallpaperService extends Service {
                             }
                             transaction.setDefaultFrameRateCompatibility(mBbqSurfaceControl,
                                     frameRateCompat).apply();
-                            if (mEnableTransformSurfaceControlCommand) {
-                                // TODO: b/406967924 - remove after creating public APIs
-                                sendTransformSurfaceControl();
-                            }
+                            // TODO: b/406967924 - remove after creating public APIs
+                            sendTransformSurfaceControl();
                         }
                         // Propagate transform hint from WM, so we can use the right hint for the
                         // first frame.
@@ -2252,8 +2244,7 @@ public abstract class WallpaperService extends Service {
             if (mScreenshotSurfaceControl != null) {
                 new SurfaceControl.Transaction()
                         .remove(mScreenshotSurfaceControl)
-                        .show(mEnableTransformSurfaceControlCommand
-                                ? mTransformSurfaceControl : mBbqSurfaceControl)
+                        .show(mTransformSurfaceControl)
                         .apply();
                 mScreenshotSurfaceControl = null;
             }
@@ -2350,8 +2341,7 @@ public abstract class WallpaperService extends Service {
             // Place on top everything else.
             t.setLayer(mScreenshotSurfaceControl, Integer.MAX_VALUE);
             t.show(mScreenshotSurfaceControl);
-            t.hide(mEnableTransformSurfaceControlCommand
-                    ? mTransformSurfaceControl : mBbqSurfaceControl);
+            t.hide(mTransformSurfaceControl);
             t.apply();
 
             return true;
