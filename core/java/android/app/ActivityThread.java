@@ -195,6 +195,7 @@ import android.system.ErrnoException;
 import android.telephony.TelephonyFrameworkInitializer;
 import android.util.AndroidRuntimeException;
 import android.util.ArrayMap;
+import android.util.ArraySet;
 import android.util.DisplayMetrics;
 import android.util.EventLog;
 import android.util.Log;
@@ -294,6 +295,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.TimeZone;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -7130,8 +7132,8 @@ public final class ActivityThread extends ClientTransactionHandler
             return;
         }
         mLastReportedDeviceId = deviceId;
-        ArrayList<Context> nonUIContexts = new ArrayList<>();
-        // Update Application and Service contexts with implicit device association.
+        final Set<Context> nonUIContexts = new ArraySet<>();
+        // Update non UI contexts with implicit device association.
         // UI Contexts are able to derived their device Id association from the display.
         synchronized (mResourcesManager) {
             final int numApps = mAllApplications.size();
@@ -7147,6 +7149,13 @@ public final class ActivityThread extends ClientTransactionHandler
                 }
             }
         }
+        synchronized (mProviderMap) {
+            final int numContentProviders = mLocalProviders.size();
+            for (int i = 0; i < numContentProviders; i++) {
+                nonUIContexts.add(mLocalProviders.valueAt(i).mLocalProvider.getContext());
+            }
+        }
+
         for (Context context : nonUIContexts) {
             try {
                 context.updateDeviceId(deviceId);
