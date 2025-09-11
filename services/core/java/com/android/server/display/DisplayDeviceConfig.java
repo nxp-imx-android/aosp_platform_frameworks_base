@@ -671,18 +671,18 @@ public class DisplayDeviceConfig {
     public static final String DEFAULT_ID = "default";
 
     public static final int DEFAULT_LOW_REFRESH_RATE = 60;
+    public static final long STABLE_FLAG = 1L << 62;
 
     @VisibleForTesting
     static final float BRIGHTNESS_DEFAULT = 0.5f;
     private static final String ETC_DIR = "etc";
     private static final String DISPLAY_CONFIG_DIR = "displayconfig";
-    private static final String CONFIG_FILE_FORMAT = "display_%s.xml";
+    public static final String CONFIG_FILE_FORMAT = "display_%s.xml";
     private static final String DEFAULT_CONFIG_FILE = "default.xml";
     private static final String DEFAULT_CONFIG_FILE_WITH_UIMODE_FORMAT = "default_%s.xml";
-    private static final String PORT_SUFFIX_FORMAT = "port_%d";
-    private static final String STABLE_ID_SUFFIX_FORMAT = "id_%d";
+    public static final String PORT_SUFFIX_FORMAT = "port_%d";
+    public static final String STABLE_ID_SUFFIX_FORMAT = "id_%d";
     private static final String NO_SUFFIX_FORMAT = "%d";
-    private static final long STABLE_FLAG = 1L << 62;
 
     private static final int DEFAULT_HIGH_REFRESH_RATE = 0;
     private static final float[] DEFAULT_BRIGHTNESS_THRESHOLDS = new float[]{};
