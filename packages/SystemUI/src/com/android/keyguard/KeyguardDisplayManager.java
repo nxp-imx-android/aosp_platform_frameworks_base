@@ -39,6 +39,7 @@ import com.android.systemui.dagger.SysUISingleton;
 import com.android.systemui.dagger.qualifiers.Application;
 import com.android.systemui.dagger.qualifiers.Main;
 import com.android.systemui.dagger.qualifiers.UiBackground;
+import com.android.systemui.display.data.repository.DisplayRepository;
 import com.android.systemui.navigationbar.NavigationBarController;
 import com.android.systemui.navigationbar.views.NavigationBarView;
 import com.android.systemui.settings.DisplayTracker;
@@ -73,6 +74,7 @@ public class KeyguardDisplayManager {
     private final ConnectedDisplayKeyguardPresentationFactory
             mConnectedDisplayKeyguardPresentationFactory;
     private final Boolean mIsCentralizedWallpaperPresentationEnabled;
+    private final DisplayRepository mDisplayRepository;
     private final Context mContext;
 
     private boolean mShowing;
@@ -119,7 +121,8 @@ public class KeyguardDisplayManager {
                     connectedDisplayKeyguardPresentationFactory,
             Provider<ShadeDisplaysRepository> shadePositionRepositoryProvider,
             @Application CoroutineScope appScope,
-            @WallpaperPresentationEnabled Boolean isCentralizedWallpaperPresentationEnabled) {
+            @WallpaperPresentationEnabled Boolean isCentralizedWallpaperPresentationEnabled,
+            DisplayRepository displayRepository) {
         mContext = context;
         mNavigationBarControllerLazy = navigationBarControllerLazy;
         mShadePositionRepositoryProvider = shadePositionRepositoryProvider;
@@ -131,6 +134,7 @@ public class KeyguardDisplayManager {
         mKeyguardStateController = keyguardStateController;
         mConnectedDisplayKeyguardPresentationFactory = connectedDisplayKeyguardPresentationFactory;
         mIsCentralizedWallpaperPresentationEnabled = isCentralizedWallpaperPresentationEnabled;
+        mDisplayRepository = displayRepository;
         if (ShadeWindowGoesAround.isEnabled()) {
             collectFlow(appScope, shadePositionRepositoryProvider.get().getDisplayId(),
                     (id) -> onShadeWindowMovedToDisplayId(id));
@@ -306,8 +310,7 @@ public class KeyguardDisplayManager {
             }
         } else {
             if (mIsCentralizedWallpaperPresentationEnabled) {
-                for (Display display : mDisplayTracker.getAllDisplays()) {
-                    int displayId = display.getDisplayId();
+                for (int displayId : mDisplayRepository.getDisplayIds().getValue()) {
                     updateNavigationBarVisibility(displayId, true /* navBarVisible */);
                 }
             } else {

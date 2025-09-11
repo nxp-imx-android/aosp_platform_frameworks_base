@@ -21,6 +21,7 @@ import com.android.keyguard.ConnectedDisplayKeyguardPresentationFactory
 import com.android.keyguard.KeyguardDisplayManager
 import com.android.keyguard.KeyguardDisplayManager.DeviceStateHelper
 import com.android.systemui.concurrency.fakeExecutor
+import com.android.systemui.display.data.repository.displayRepository
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.applicationCoroutineScope
 import com.android.systemui.navigationbar.navigationBarController
@@ -43,5 +44,6 @@ var Kosmos.keyguardDisplayManager by
             { shadeDisplaysRepository },
             applicationCoroutineScope,
             /* isCentralizedWallpaperPresentationEnabled= */ true,
+            displayRepository,
         )
     }
