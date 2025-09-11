@@ -671,16 +671,6 @@ flag {
 }
 
 flag {
-    name: "clipboard_announce_live_region"
-    namespace: "systemui"
-    description: "Use live region for clipboard status announcement"
-    bug: "378856296"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "screen_reactions"
     namespace: "systemui"
     description: "Enables the new screen recording UX"
