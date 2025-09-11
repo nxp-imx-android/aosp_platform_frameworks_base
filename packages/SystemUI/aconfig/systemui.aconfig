@@ -2207,3 +2207,10 @@ flag {
          purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "blur_on_more_surfaces"
+    namespace: "systemui"
+    description: "Enable blur on more systemui surfaces"
+    bug: "444141641"
+}
