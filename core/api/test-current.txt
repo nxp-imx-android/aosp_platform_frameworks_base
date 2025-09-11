@@ -1051,6 +1051,10 @@ package android.content {
     field public static final String TEST_NETWORK_SERVICE = "test_network";
   }
 
+  public static final class Context.BindServiceFlags {
+    method @FlaggedApi("android.content.flags.enable_update_service_bindings") public long getValue();
+  }
+
   public class ContextWrapper extends android.content.Context {
     method public int getDisplayId();
     method public void updateDisplay(int);

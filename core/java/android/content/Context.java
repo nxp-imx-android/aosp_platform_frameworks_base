@@ -366,6 +366,8 @@ public abstract class Context {
          * @return Return flags in 64 bits long integer.
          * @hide
          */
+        @TestApi
+        @FlaggedApi(FLAG_ENABLE_UPDATE_SERVICE_BINDINGS)
         public long getValue() {
             return mValue;
         }
@@ -786,11 +788,14 @@ public abstract class Context {
     /**
      * These bind flags may be updated (i.e. added or removed) for an existing
      * connection.
+     *
+     * Any updates here should also modify the {@link #getUpdateableFlags} documentation
+     * as well as verify that no checks from {@link #bindService} and
+     * {@code ActiveServices.bindServiceLocked} are being skipped.
      * @hide
      */
     public static final long BIND_UPDATEABLE_FLAGS =
             Context.BIND_NOT_FOREGROUND
-                    | Context.BIND_ABOVE_CLIENT
                     | Context.BIND_ALLOW_OOM_MANAGEMENT
                     | Context.BIND_WAIVE_PRIORITY
                     | Context.BIND_IMPORTANT
