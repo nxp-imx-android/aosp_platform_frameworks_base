@@ -21,6 +21,8 @@ import android.graphics.Rect
 import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import android.view.WindowManager
+import android.view.WindowMetrics
+import android.view.windowManager
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.internal.util.ScreenshotRequest
@@ -68,6 +70,8 @@ class PreCaptureViewModelTest : SysuiTestCase() {
     @Mock
     private lateinit var mockScreenRecordingServiceInteractor: ScreenRecordingServiceInteractor
     @Mock private lateinit var mockBitmap: Bitmap
+    @Mock private lateinit var mockWindowMetrics: WindowMetrics
+    private val screenBounds = Rect(0, 0, 100, 100)
     private val displayId = 1234
     private lateinit var viewModel: PreCaptureViewModel
 
@@ -83,6 +87,8 @@ class PreCaptureViewModelTest : SysuiTestCase() {
     @Before
     fun setUp() {
         MockitoAnnotations.openMocks(this)
+        whenever(kosmos.windowManager.currentWindowMetrics).thenReturn(mockWindowMetrics)
+        whenever(mockWindowMetrics.bounds).thenReturn(screenBounds)
     }
 
     @Test
@@ -91,6 +97,18 @@ class PreCaptureViewModelTest : SysuiTestCase() {
             setupViewModel()
 
             assertThat(viewModel.isShowingUi).isTrue()
+        }
+
+    @Test
+    fun onActivated_initializesRegionBox() =
+        kosmos.runTest {
+            setupViewModel()
+
+            val bounds = Rect(0, 0, 100, 100)
+            val expectedRegionBox = Rect(bounds)
+            expectedRegionBox.inset(bounds.width() / 4, bounds.height() / 4)
+            // For a 100x100 screen, the expected inset rect is (25, 25, 75, 75).
+            assertThat(viewModel.regionBox).isEqualTo(expectedRegionBox)
         }
 
     @Test
@@ -216,9 +234,6 @@ class PreCaptureViewModelTest : SysuiTestCase() {
     fun updateRegionBoxBounds_updatesState() =
         kosmos.runTest {
             setupViewModel()
-
-            // State is initially null.
-            assertThat(viewModel.regionBox).isNull()
 
             val regionBox = Rect(0, 0, 100, 100)
             viewModel.updateRegionBoxBounds(regionBox)
@@ -435,16 +450,5 @@ class PreCaptureViewModelTest : SysuiTestCase() {
             viewModel.updateToolbarOpacityForRegionBox(isInteracting = false)
 
             assertThat(viewModel.toolbarOpacity).isEqualTo(0.15f)
-        }
-
-    @Test
-    fun updateToolbarOpacityForRegionBox_notInteracting_noRegion_opacityIsOne() =
-        kosmos.runTest {
-            setupViewModel()
-            viewModel.updateToolbarBounds(Rect(0, 0, 100, 100))
-
-            viewModel.updateToolbarOpacityForRegionBox(isInteracting = false)
-
-            assertThat(viewModel.toolbarOpacity).isEqualTo(1f)
         }
 }

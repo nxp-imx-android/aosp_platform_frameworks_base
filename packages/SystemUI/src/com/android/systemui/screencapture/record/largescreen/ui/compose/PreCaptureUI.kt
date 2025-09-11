@@ -121,6 +121,7 @@ fun PreCaptureUI(viewModel: PreCaptureViewModel) {
                         contentDescription = null,
                     )
                 RegionBox(
+                    initialRect = viewModel.regionBox,
                     buttonText =
                         stringResource(
                             id =
