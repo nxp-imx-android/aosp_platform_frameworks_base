@@ -132,10 +132,10 @@ public class NotificationsQuickSettingsContainer extends ConstraintLayout
     }
 
     public void setQSNegativeMarginBottom(int margin) {
-        if (QSComposeFragment.isEnabled() && mQSContainer != null) {
-            MarginLayoutParams params = (MarginLayoutParams) mQSContainer.getLayoutParams();
+        if (QSComposeFragment.isEnabled() && mQsFrame != null) {
+            MarginLayoutParams params = (MarginLayoutParams) mQsFrame.getLayoutParams();
             params.bottomMargin = -margin;
-            mQSContainer.setLayoutParams(params);
+            mQsFrame.setLayoutParams(params);
         }
     }
 
