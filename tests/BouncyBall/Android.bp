@@ -11,7 +11,6 @@ android_app {
     name: "BouncyBallTest",
     manifest: "app/src/main/AndroidManifest.xml",
     srcs: ["app/src/main/java/**/*.java"],
-    static_libs: ["com.google.android.material_material"],
     resource_dirs: ["app/src/main/res"],
     sdk_version: "current",
 }

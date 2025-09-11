@@ -16,6 +16,7 @@
 
 package com.android.test.bouncyball;
 
+import android.app.Activity;
 import android.hardware.display.DisplayManager;
 import android.os.Bundle;
 import android.os.Trace;
@@ -25,11 +26,9 @@ import android.view.Display;
 import android.view.Window;
 import android.view.WindowManager;
 
-import androidx.appcompat.app.AppCompatActivity;
-
 import java.util.concurrent.Executors;
 
-public class BouncyBallActivity extends AppCompatActivity {
+public class BouncyBallActivity extends Activity {
     // Since logging (to logcat) takes system resources, we chose not to log
     // data every frame by default.
     private static final boolean LOG_EVERY_FRAME = false;
