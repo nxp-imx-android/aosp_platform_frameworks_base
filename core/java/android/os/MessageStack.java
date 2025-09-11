@@ -281,11 +281,9 @@ public final class MessageStack {
      * Remove a message from the stack.
      */
     private void removeFromStack(Message m) {
-        // mLooperProcessed must be updated to the next message that hasn't been removed.
+        // mLooperProcessed must be updated to the next message.
         if (m == mLooperProcessed) {
-            do {
-                mLooperProcessed = mLooperProcessed.next;
-            } while (mLooperProcessed != null && mLooperProcessed.isRemoved());
+            mLooperProcessed = mLooperProcessed.next;
         }
 
         // If prev is null, m was the top at the time the previous heapSweep was called.
