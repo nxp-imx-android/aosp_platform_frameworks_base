@@ -16,6 +16,7 @@
 
 package com.android.wm.shell.transition;
 
+import static android.app.WindowConfiguration.WINDOWING_MODE_PINNED;
 import static android.view.WindowManager.TRANSIT_PIP;
 import static android.view.WindowManager.TRANSIT_TO_BACK;
 
@@ -233,27 +234,11 @@ class DefaultMixedTransition extends DefaultMixedHandler.MixedTransition {
             splitHandler.dismissSplitInBackground(EXIT_REASON_FULLSCREEN_REQUEST);
         }
 
-        TransitionInfo.Change pipChange = null;
-        final TransitionInfo pipInfo = subCopy(info, TRANSIT_PIP, false /* withChanges */);
-        for (int i = info.getChanges().size() - 1; i >= 0; --i) {
-            TransitionInfo.Change change = info.getChanges().get(i);
-            if (mPipHandler.isEnteringPip(change, info.getType())) {
-                if (pipChange != null) {
-                    throw new IllegalStateException("More than 1 pip-entering changes in one"
-                            + " transition? " + info);
-                }
-                pipChange = change;
-                info.getChanges().remove(i);
-                pipInfo.addChange(pipChange);
-            } else if (change.getTaskInfo() == null && change.getParent() != null
-                    && pipChange != null && change.getParent().equals(pipChange.getContainer())) {
-                // Cache the PiP activity if it's a target and cached pip task change is its parent;
-                // note that we are bottom-to-top, so if such activity has a task
-                // that is also a target, then it must have been cached already as pipChange.
-                TransitionInfo.Change pipActivityChange = info.getChanges().remove(i);
-                pipInfo.getChanges().addFirst(pipActivityChange);
-            }
-        }
+        final TransitionInfo pipInfo = removePipChangesFrom(info);
+        final boolean hasPipChange = !pipInfo.getChanges().isEmpty();
+        final TransitionInfo.Change enterPipChange = pipInfo.getChanges().stream().filter(change ->
+                mPipHandler.isEnteringPip(change, info.getType())).findFirst().orElse(null);
+
         TransitionInfo.Change desktopChange = null;
         for (int i = info.getChanges().size() - 1; i >= 0; --i) {
             TransitionInfo.Change change = info.getChanges().get(i);
@@ -273,8 +258,8 @@ class DefaultMixedTransition extends DefaultMixedHandler.MixedTransition {
             if (mInFlightSubAnimations > 0) return;
             finishCallback.onTransitionFinished(mFinishWCT);
         };
-        if ((pipChange == null && desktopChange == null)
-                || (pipChange != null && desktopChange != null)) {
+        if ((!hasPipChange && desktopChange == null)
+                || (hasPipChange && desktopChange != null)) {
             // Don't split the transition. Let the leftovers handler handle it all.
             // TODO: b/? - split the transition into three pieces when there's both a PIP and a
             //  desktop change are present. For example, during remote intent open over a desktop
@@ -287,7 +272,7 @@ class DefaultMixedTransition extends DefaultMixedHandler.MixedTransition {
                 }
             }
             return false;
-        } else if (pipChange != null && desktopChange == null) {
+        } else if (hasPipChange && desktopChange == null) {
             ProtoLog.v(ShellProtoLogGroup.WM_SHELL_TRANSITIONS, "Splitting PIP into a separate"
                             + " animation because remote-animation likely doesn't support it #%d",
                     info.getDebugId());
@@ -299,8 +284,8 @@ class DefaultMixedTransition extends DefaultMixedHandler.MixedTransition {
             if (PipFlags.isPip2ExperimentEnabled()) {
                 mPipHandler.startAnimation(mTransition, pipInfo, startTransaction,
                         finishTransaction, finishCB);
-            } else {
-                mPipHandler.startEnterAnimation(pipChange, otherStartT, finishTransaction,
+            } else if (enterPipChange != null) {
+                mPipHandler.startEnterAnimation(enterPipChange, otherStartT, finishTransaction,
                         finishCB);
             }
 
@@ -314,7 +299,7 @@ class DefaultMixedTransition extends DefaultMixedHandler.MixedTransition {
                     mTransition, info, startTransaction, finishTransaction, finishCB,
                     mMixedHandler);
             return true;
-        } else if (pipChange == null && desktopChange != null) {
+        } else if (!hasPipChange && desktopChange != null) {
             ProtoLog.v(ShellProtoLogGroup.WM_SHELL_TRANSITIONS, "Splitting desktop change into a"
                             + "separate animation because remote-animation likely doesn't support"
                             + "it #%d", info.getDebugId());
@@ -338,6 +323,45 @@ class DefaultMixedTransition extends DefaultMixedHandler.MixedTransition {
             throw new IllegalStateException(
                     "All PIP and Immersive combinations should've been handled");
         }
+    }
+
+    @NonNull
+    private TransitionInfo removePipChangesFrom(@NonNull TransitionInfo outInfo) {
+        final TransitionInfo pipInfo = subCopy(outInfo,
+                // In PiP2, sub-flight PiP transition doesn't have to be entering PiP.
+                PipFlags.isPip2ExperimentEnabled() ? outInfo.getType() : TRANSIT_PIP,
+                false /* withChanges */);
+        // Cache enter PiP change separately to find config-at-end activity change if present.
+        TransitionInfo.Change enterPipChange = null;
+
+        for (int i = outInfo.getChanges().size() - 1; i >= 0; --i) {
+            TransitionInfo.Change change = outInfo.getChanges().get(i);
+
+            if (mPipHandler.isEnteringPip(change, outInfo.getType())) {
+                if (enterPipChange != null) {
+                    throw new IllegalStateException("More than 1 enter-pip changes in one"
+                            + " transition? " + outInfo);
+                }
+                enterPipChange = change;
+                outInfo.getChanges().remove(i);
+                pipInfo.getChanges().addFirst(enterPipChange);
+            } else if (PipFlags.isPip2ExperimentEnabled() && change.getTaskInfo() != null
+                    && change.getTaskInfo().getWindowingMode() == WINDOWING_MODE_PINNED) {
+                // Sometimes a PiP change that isn't an entering change could be collected into
+                // a different transition.
+                outInfo.getChanges().remove(i);
+                pipInfo.addChange(change);
+            } else if (change.getTaskInfo() == null && enterPipChange != null
+                    && change.getParent() != null
+                    && change.getParent().equals(enterPipChange.getContainer())) {
+                // Cache the PiP activity if it's a target and cached pip task change is its parent;
+                // note that we are bottom-to-top, so if such activity has a task
+                // that is also a target, then it must have been cached already as pipChange.
+                TransitionInfo.Change pipActivityChange = outInfo.getChanges().remove(i);
+                pipInfo.getChanges().addFirst(pipActivityChange);
+            }
+        }
+        return pipInfo;
     }
 
     static boolean animateEnterBubbles(
