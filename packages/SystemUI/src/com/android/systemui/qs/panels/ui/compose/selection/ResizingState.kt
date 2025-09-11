@@ -56,6 +56,9 @@ class ResizingState(tileSpec: TileSpec, startsAsIcon: Boolean) {
             anchoredDraggableState.anchors.maxPosition().takeIf { !it.isNaN() }
     }
 
+    /** Whether or not the resizing state is idle at one of the anchors */
+    val isIdle by derivedStateOf { progress().let { it == 0f || it == 1f } }
+
     /** Whether or not the handle is currently being dragged. */
     var isDragActive by mutableStateOf(false)
         private set

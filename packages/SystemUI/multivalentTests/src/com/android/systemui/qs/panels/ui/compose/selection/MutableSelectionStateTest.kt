@@ -16,9 +16,12 @@
 
 package com.android.systemui.qs.panels.ui.compose.selection
 
-import androidx.test.ext.junit.runners.AndroidJUnit4
+import android.platform.test.annotations.DisableFlags
+import android.platform.test.annotations.EnableFlags
+import android.platform.test.flag.junit.FlagsParameterization
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
+import com.android.systemui.qs.flags.QsEditModeV2
 import com.android.systemui.qs.panels.ui.compose.selection.TileState.GreyedOut
 import com.android.systemui.qs.panels.ui.compose.selection.TileState.None
 import com.android.systemui.qs.panels.ui.compose.selection.TileState.Placeable
@@ -29,10 +32,17 @@ import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.test.runTest
 import org.junit.Test
 import org.junit.runner.RunWith
+import platform.test.runner.parameterized.ParameterizedAndroidJunit4
+import platform.test.runner.parameterized.Parameters
 
 @SmallTest
-@RunWith(AndroidJUnit4::class)
-class MutableSelectionStateTest : SysuiTestCase() {
+@RunWith(ParameterizedAndroidJunit4::class)
+class MutableSelectionStateTest(flags: FlagsParameterization) : SysuiTestCase() {
+
+    init {
+        mSetFlagsRule.setFlagsParameterization(flags)
+    }
+
     private val underTest = MutableSelectionState()
 
     @Test
@@ -94,6 +104,7 @@ class MutableSelectionStateTest : SysuiTestCase() {
         assertThat(event.targetSpec).isEqualTo(TEST_SPEC_2)
     }
 
+    @DisableFlags(QsEditModeV2.FLAG_NAME)
     @Test
     fun placementModeDisabled_tapOnSelection_unselect() {
         // Select the tile and tap on it
@@ -102,6 +113,17 @@ class MutableSelectionStateTest : SysuiTestCase() {
 
         assertThat(underTest.placementEnabled).isFalse()
         assertThat(underTest.selected).isFalse()
+    }
+
+    @EnableFlags(QsEditModeV2.FLAG_NAME)
+    @Test
+    fun placementModeDisabled_tapOnSelection_staysSelected() {
+        // Select the tile and tap on it
+        underTest.select(TEST_SPEC)
+        underTest.onTap(TEST_SPEC)
+
+        assertThat(underTest.placementEnabled).isFalse()
+        assertThat(underTest.selected).isTrue()
     }
 
     @Test
@@ -182,6 +204,11 @@ class MutableSelectionStateTest : SysuiTestCase() {
     }
 
     companion object {
+
+        @Parameters(name = "{0}")
+        @JvmStatic
+        fun data() = FlagsParameterization.progressionOf(QsEditModeV2.FLAG_NAME)
+
         private val TEST_SPEC = TileSpec.create("testSpec")
         private val TEST_SPEC_2 = TileSpec.create("testSpec2")
         private val TEST_SPEC_3 = TileSpec.create("testSpec3")
