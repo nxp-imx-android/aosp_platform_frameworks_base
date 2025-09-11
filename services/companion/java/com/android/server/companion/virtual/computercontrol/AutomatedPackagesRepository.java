@@ -17,20 +17,19 @@
 package com.android.server.companion.virtual.computercontrol;
 
 import android.companion.virtual.computercontrol.IAutomatedPackageListener;
-import android.content.pm.PackageManager;
 import android.os.Handler;
 import android.os.RemoteCallbackList;
 import android.os.RemoteException;
 import android.os.UserHandle;
 import android.util.ArrayMap;
 import android.util.ArraySet;
+import android.util.Pair;
 import android.util.Slog;
 import android.util.SparseArray;
 
 import com.android.internal.annotations.GuardedBy;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -40,7 +39,6 @@ public class AutomatedPackagesRepository {
 
     private static final String TAG = AutomatedPackagesRepository.class.getSimpleName();
 
-    private final PackageManager mPackageManager;
     private final Handler mHandler;
 
     private final Object mLock = new Object();
@@ -54,7 +52,7 @@ public class AutomatedPackagesRepository {
     @GuardedBy("mLock")
     final ArrayMap<String, SparseArray<ArraySet<String>>> mAutomatedPackages = new ArrayMap<>();
 
-    // Full mapping of deviceId -> userID -> packageNames running on that device.
+    // Full mapping of deviceId -> userId -> packageNames running on that device.
     // We need the deviceId for correctness, as there may be multiple devices with the same owner.
     @GuardedBy("mLock")
     final SparseArray<SparseArray<ArraySet<String>>> mDevicePackages = new SparseArray<>();
@@ -63,8 +61,7 @@ public class AutomatedPackagesRepository {
     @GuardedBy("mLock")
     final SparseArray<String> mDeviceOwnerPackageNames = new SparseArray<>();
 
-    public AutomatedPackagesRepository(PackageManager packageManager, Handler handler) {
-        mPackageManager = packageManager;
+    public AutomatedPackagesRepository(Handler handler) {
         mHandler = handler;
     }
 
@@ -83,20 +80,21 @@ public class AutomatedPackagesRepository {
     }
 
     /** Update the list of packages running on a device. */
-    public void update(int deviceId, String deviceOwnerPackageName, ArraySet<Integer> runningUids) {
+    public void update(int deviceId, String deviceOwnerPackageName,
+            ArraySet<Pair<Integer, String>> runningPackageUids) {
         synchronized (mLock) {
-            updateLocked(deviceId, deviceOwnerPackageName, runningUids);
+            updateLocked(deviceId, deviceOwnerPackageName, runningPackageUids);
         }
     }
 
-    private void updateLocked(
-            int deviceId, String deviceOwnerPackageName, ArraySet<Integer> runningUids) {
-        if (runningUids.isEmpty()) {
+    private void updateLocked(int deviceId, String deviceOwnerPackageName,
+            ArraySet<Pair<Integer, String>> uidPackagePairs) {
+        if (uidPackagePairs.isEmpty()) {
             mDeviceOwnerPackageNames.remove(deviceId);
             mDevicePackages.remove(deviceId);
         } else {
             mDeviceOwnerPackageNames.put(deviceId, deviceOwnerPackageName);
-            mDevicePackages.put(deviceId, mapUserIdToPackages(runningUids));
+            mDevicePackages.put(deviceId, mapUserIdToPackages(uidPackagePairs));
         }
 
         // userId -> automatedPackages for this device owner.
@@ -161,20 +159,19 @@ public class AutomatedPackagesRepository {
         }
     }
 
-    private SparseArray<ArraySet<String>> mapUserIdToPackages(ArraySet<Integer> runningUids) {
+    private SparseArray<ArraySet<String>> mapUserIdToPackages(
+            ArraySet<Pair<Integer, String>> uidPackagePairs) {
         final SparseArray<ArraySet<String>> userIdToPackages = new SparseArray<>();
-        // TODO(b/442624418): replace this with reporting UID+package directly to GWPC and change
-        // the set<Uid> to set<UidAndPackage> everywhere. Now there's ambiguity in the package names
-        // because several packages may share a uid.
-        for (int i = 0; i < runningUids.size(); ++i) {
-            final int uid = runningUids.valueAt(i);
+        for (int i = 0; i < uidPackagePairs.size(); ++i) {
+            final Pair<Integer, String> uidAndPackage = uidPackagePairs.valueAt(i);
+            final int uid = uidAndPackage.first;
             final int userId = UserHandle.getUserId(uid);
             if (!userIdToPackages.contains(userId)) {
                 userIdToPackages.put(userId, new ArraySet<>());
             }
-            final String[] packageNames = mPackageManager.getPackagesForUid(uid);
-            if (packageNames != null) {
-                userIdToPackages.get(userId).addAll(Arrays.asList(packageNames));
+            final String packageName = uidAndPackage.second;
+            if (packageName != null) {
+                userIdToPackages.get(userId).add(packageName);
             }
         }
         return userIdToPackages;

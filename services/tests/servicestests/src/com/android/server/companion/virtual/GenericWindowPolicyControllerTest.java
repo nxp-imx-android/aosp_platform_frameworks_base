@@ -51,6 +51,7 @@ import android.os.UserHandle;
 import android.platform.test.annotations.Presubmit;
 import android.platform.test.flag.junit.SetFlagsRule;
 import android.util.ArraySet;
+import android.util.Pair;
 import android.view.Display;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
@@ -116,7 +117,8 @@ public class GenericWindowPolicyControllerTest {
 
         assertThat(gwpc.containsUid(TEST_UID)).isFalse();
 
-        gwpc.onRunningAppsChanged(new ArraySet<>(Arrays.asList(TEST_UID)));
+        gwpc.onRunningAppsChanged(new ArraySet<>(Arrays.asList(
+                new Pair<>(TEST_UID, NONBLOCKED_APP_PACKAGE_NAME))));
         assertThat(gwpc.containsUid(TEST_UID)).isTrue();
 
         gwpc.onRunningAppsChanged(new ArraySet<>());
@@ -536,18 +538,19 @@ public class GenericWindowPolicyControllerTest {
 
     @Test
     public void onRunningAppsChanged_listenerNotified() {
-        ArraySet<Integer> uids = new ArraySet<>(Arrays.asList(TEST_UID));
+        ArraySet<Pair<Integer, String>> runningUidPackagePairs = new ArraySet<>(Arrays.asList(
+                new Pair<>(TEST_UID, NONBLOCKED_APP_PACKAGE_NAME)));
         GenericWindowPolicyController gwpc = createGwpc();
-        gwpc.onRunningAppsChanged(uids);
+        gwpc.onRunningAppsChanged(runningUidPackagePairs);
 
-        verify(mActivityListener, timeout(TIMEOUT_MILLIS)).onRunningAppsChanged(DISPLAY_ID, uids);
+        verify(mActivityListener, timeout(TIMEOUT_MILLIS))
+                .onRunningAppsChanged(DISPLAY_ID, runningUidPackagePairs);
     }
 
     @Test
     public void onRunningAppsChanged_empty_onDisplayEmpty() {
-        ArraySet<Integer> uids = new ArraySet<>();
         GenericWindowPolicyController gwpc = createGwpc();
-        gwpc.onRunningAppsChanged(uids);
+        gwpc.onRunningAppsChanged(new ArraySet<>());
 
         verify(mActivityListener, timeout(TIMEOUT_MILLIS)).onDisplayEmpty(DISPLAY_ID);
     }
