@@ -7567,7 +7567,7 @@
     <integer name="config_maxDesktopWindowingActiveTasks">0</integer>
 
     <!-- Maximum number desks on a device running Desktop Windowing. Set to 0 for unlimited. -->
-    <integer name="config_maxDesktopWindowingDesks">0</integer>
+    <integer name="config_maxDesktopWindowingDesks">4</integer>
 
     <!-- Whether a display enters desktop mode by default when the windowing mode of the display's
          root TaskDisplayArea is set to WINDOWING_MODE_FREEFORM. -->
