@@ -103,14 +103,22 @@ constructor(
         super.onBindViewHolder(holder)
         holder.isDividerAllowedAbove = false
         holder.isDividerAllowedBelow = false
+        // ValuePreference should be not clickable
+        holder.itemView.isClickable = false
 
         holder.findViewById(R.id.value_container_1)?.apply {
-            setOnClickListener { onValueClickListener?.onValueClick(FIRST_ITEM) }
+            // Prevent setting clickable to true when invoking setOnClickListener
+            if (onValueClickListener != null) {
+                setOnClickListener { onValueClickListener?.onValueClick(FIRST_ITEM) }
+            }
             contentDescription = firstContentDescription
         }
         holder.findViewById(R.id.value_container_2)?.apply {
             if (secondaryContainerVisibility) {
-                setOnClickListener { onValueClickListener?.onValueClick(SECOND_ITEM) }
+                // Prevent setting clickable to true when invoking setOnClickListener
+                if (onValueClickListener != null) {
+                    setOnClickListener { onValueClickListener?.onValueClick(SECOND_ITEM) }
+                }
                 visibility = VISIBLE
                 contentDescription = secondaryContentDescription
             } else {
