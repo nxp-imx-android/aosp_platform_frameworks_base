@@ -246,7 +246,6 @@ import com.android.internal.os.BackgroundThread;
 import com.android.internal.os.BinderCallsStats;
 import com.android.internal.os.BinderInternal;
 import com.android.internal.os.DebugStore;
-import com.android.internal.os.JniStringCache;
 import com.android.internal.os.RuntimeInit;
 import com.android.internal.os.SafeZipPathValidatorCallback;
 import com.android.internal.os.SomeArgs;
@@ -1954,7 +1953,6 @@ public final class ActivityThread extends ClientTransactionHandler
             }
 
             pw.println(" ");
-            JniStringCache.dump(pw);
         }
 
         @NeverCompile
@@ -7692,10 +7690,6 @@ public final class ActivityThread extends ClientTransactionHandler
             Trace.traceBegin(Trace.TRACE_TAG_ACTIVITY_MANAGER, "trimMemory: " + level);
         }
         if (DEBUG_MEMORY_TRIM) Slog.v(TAG, "Trimming memory to level: " + level);
-
-        if (level >= ComponentCallbacks2.TRIM_MEMORY_BACKGROUND) {
-            JniStringCache.clear();
-        }
 
         try {
             if (skipBgMemTrimOnFgApp()
