@@ -288,7 +288,7 @@ public class CompanionAppBinder {
     }
 
     @Nullable
-    CompanionServiceConnector getPrimaryServiceConnector(
+    public CompanionServiceConnector getPrimaryServiceConnector(
             @UserIdInt int userId, @NonNull String packageName) {
         final List<CompanionServiceConnector> connectors;
         synchronized (mBoundCompanionApplications) {

@@ -17,6 +17,7 @@
 
 package android.companion;
 
+import android.annotation.FlaggedApi;
 import android.annotation.MainThread;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
@@ -295,6 +296,19 @@ public abstract class CompanionDeviceService extends Service {
         // Do nothing. Companion apps can override this function.
     }
 
+    /**
+     * Called by the system when it requests an action for an association managed
+     * by this app.
+     * @param associationInfo The association for which the action is requested.
+     * @param request The specific request being requested
+     */
+    @MainThread
+    @FlaggedApi(Flags.FLAG_ENABLE_DATA_SYNC)
+    public void onActionRequested(
+            @NonNull AssociationInfo associationInfo, @NonNull ActionRequest request) {
+        // Do nothing. Companion apps can override this function.
+    }
+
     @Nullable
     @Override
     public final IBinder onBind(@NonNull Intent intent) {
@@ -333,6 +347,15 @@ public abstract class CompanionDeviceService extends Service {
         public void onDevicePresenceEvent(DevicePresenceEvent event) {
             if (Flags.devicePresence()) {
                 mMainHandler.postAtFrontOfQueue(() -> mService.onDevicePresenceEvent(event));
+            }
+        }
+
+        @Override
+        public void onActionRequested(@NonNull AssociationInfo association,
+                 ActionRequest request) {
+            if (Flags.enableDataSync()) {
+                mMainHandler.postAtFrontOfQueue(
+                        () -> mService.onActionRequested(association, request));
             }
         }
     }
