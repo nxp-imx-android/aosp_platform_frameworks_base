@@ -2243,6 +2243,7 @@ class DesktopTasksController(
                     wct = activateDeskWct,
                     userId = userId,
                     enterReason = EnterReason.APP_FREEFORM_INTENT,
+                    isDeskSwitch = repository.isAnyDeskActive(displayId),
                 )
             // Desk activation must be handled before app launch-related transactions.
             activateDeskWct.merge(launchTransaction, /* transfer= */ true)
@@ -4768,8 +4769,15 @@ class DesktopTasksController(
     private fun getTaskIdToMinimize(
         expandedTasksOrderedFrontToBack: List<Int>,
         newTaskIdInFront: Int?,
+        isDeskSwitch: Boolean = false,
     ): Int? {
-        if (DesktopExperienceFlags.ENABLE_DESKTOP_TASK_LIMIT_SEPARATE_TRANSITION.isTrue) return null
+        // If it's a desk switch, include the minimized task in the same transition. So when the
+        // user switches the desks, the new desk has the correct task minimized already.
+        if (
+            DesktopExperienceFlags.ENABLE_DESKTOP_TASK_LIMIT_SEPARATE_TRANSITION.isTrue &&
+                !isDeskSwitch
+        )
+            return null
         val limiter = desktopTasksLimiter.getOrNull() ?: return null
         return limiter.getTaskIdToMinimize(expandedTasksOrderedFrontToBack, newTaskIdInFront)
     }
@@ -4877,6 +4885,7 @@ class DesktopTasksController(
         switchingUser: Boolean = false,
         displayId: Int = userRepositories.getProfile(userId).getDisplayForDesk(deskId),
         enterReason: EnterReason,
+        isDeskSwitch: Boolean = false,
     ): RunOnTransitStart {
         val repository = userRepositories.getProfile(userId)
         val newTaskIdInFront = newTask?.taskId
@@ -4932,7 +4941,7 @@ class DesktopTasksController(
         // If we're adding a new Task we might need to minimize an old one
         // TODO: b/32994943 - remove dead code when cleaning up task_limit_separate_transition flag
         val taskIdToMinimize =
-            getTaskIdToMinimize(expandedTasksOrderedFrontToBack, newTaskIdInFront)
+            getTaskIdToMinimize(expandedTasksOrderedFrontToBack, newTaskIdInFront, isDeskSwitch)
         if (taskIdToMinimize != null) {
             val taskToMinimize = shellTaskOrganizer.getRunningTaskInfo(taskIdToMinimize)
             // TODO(b/365725441): Handle non running task minimization
