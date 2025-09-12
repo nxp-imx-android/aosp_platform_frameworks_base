@@ -54,13 +54,6 @@ class DesktopRepository(
     val userId: Int,
     val desktopConfig: DesktopConfig,
 ) {
-    /** A display that supports desktops. */
-    private class DesktopDisplay(val displayId: Int) {
-        // The set implementation must preserve order.
-        val orderedDesks: MutableSet<Desk> = mutableSetOf()
-        var activeDeskId: Int? = null
-    }
-
     /** Tiling data preserved after a display got disconnected. */
     data class PreservedTiledAppData(val leftTiledTask: Int?, val rightTiledTask: Int?)
 
@@ -1267,6 +1260,7 @@ class DesktopRepository(
                             userId,
                             desks,
                             getActiveDeskId(displayId),
+                            preservedDisplaysByUniqueId,
                         )
                     } catch (exception: Exception) {
                         logE(
