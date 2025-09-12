@@ -95,3 +95,11 @@ flag {
     bug: "399038494"
     is_fixed_read_only: true
 }
+
+flag {
+    name: "enable_kv_backup_logs_from_transport_with_proper_flow_id"
+    namespace: "onboarding"
+    description: "Enables getting the backup manager monitor from the transport "
+            "on KV backup and logging agent logs with the proper flow id."
+    bug: "443738546"
+}
