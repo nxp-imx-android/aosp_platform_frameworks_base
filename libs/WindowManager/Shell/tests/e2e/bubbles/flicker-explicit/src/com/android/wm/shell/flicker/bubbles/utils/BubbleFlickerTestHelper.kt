@@ -348,7 +348,7 @@ internal object BubbleFlickerTestHelper {
         tapl: LauncherInstrumentation,
         wmHelper: WindowManagerStateHelper,
     ) {
-        Root.get().verifyNoBubbleIsVisible()
+        Root.get().verifyNoExpandedBubbleIsVisible()
         if (tapl.isTablet) {
             Root.get().bubbleBar.dragToDismiss()
         } else {
