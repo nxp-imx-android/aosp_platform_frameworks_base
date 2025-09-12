@@ -3873,11 +3873,11 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
                 // Update user switcher message to activity manager.
                 ActivityManagerInternal activityManagerInternal =
                         mInjector.getActivityManagerInternal();
-                int deviceOwnerUserId = UserHandle.getUserId(deviceOwner.getUid());
-                activityManagerInternal.setSwitchingFromUserMessage(deviceOwnerUserId,
-                        deviceOwner.startUserSessionMessage);
-                activityManagerInternal.setSwitchingToUserMessage(deviceOwnerUserId,
-                        deviceOwner.endUserSessionMessage);
+                int sessionMessageUserId = getSessionMessageTargetUserIdLocked(deviceOwner);
+                activityManagerInternal.setSwitchingFromUserMessage(
+                        sessionMessageUserId, deviceOwner.startUserSessionMessage);
+                activityManagerInternal.setSwitchingToUserMessage(
+                        sessionMessageUserId, deviceOwner.endUserSessionMessage);
             }
 
             revertTransferOwnershipIfNecessaryLocked();
@@ -20292,6 +20292,7 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
         final String startUserSessionMessageString =
                 startUserSessionMessage != null ? startUserSessionMessage.toString() : null;
 
+        int targetUserId;
         synchronized (getLockObject()) {
             final ActiveAdmin deviceOwner = getDeviceOwnerAdminLocked();
             if (TextUtils.equals(deviceOwner.startUserSessionMessage, startUserSessionMessage)) {
@@ -20299,10 +20300,11 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
             }
             deviceOwner.startUserSessionMessage = startUserSessionMessageString;
             saveSettingsLocked(caller.getUserId());
+            targetUserId = getSessionMessageTargetUserIdLocked(deviceOwner);
         }
 
         mInjector.getActivityManagerInternal()
-                .setSwitchingFromUserMessage(caller.getUserId(), startUserSessionMessageString);
+                .setSwitchingFromUserMessage(targetUserId, startUserSessionMessageString);
     }
 
     @Override
@@ -20317,6 +20319,7 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
         final String endUserSessionMessageString =
                 endUserSessionMessage != null ? endUserSessionMessage.toString() : null;
 
+        int targetUserId;
         synchronized (getLockObject()) {
             final ActiveAdmin deviceOwner = getDeviceOwnerAdminLocked();
             if (TextUtils.equals(deviceOwner.endUserSessionMessage, endUserSessionMessage)) {
@@ -20324,10 +20327,27 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
             }
             deviceOwner.endUserSessionMessage = endUserSessionMessageString;
             saveSettingsLocked(caller.getUserId());
+            targetUserId = getSessionMessageTargetUserIdLocked(deviceOwner);
         }
 
         mInjector.getActivityManagerInternal()
-                .setSwitchingToUserMessage(caller.getUserId(), endUserSessionMessageString);
+                .setSwitchingToUserMessage(targetUserId, endUserSessionMessageString);
+    }
+
+    /**
+     * Returns id of the main human user managed by the device owner.
+     */
+    @GuardedBy("getLockObject()")
+    private @UserIdInt int getSessionMessageTargetUserIdLocked(ActiveAdmin deviceOwner) {
+        if (mInjector.userManagerIsHeadlessSystemUserMode()
+                && deviceOwner.info.getHeadlessDeviceOwnerMode()
+                        == HEADLESS_DEVICE_OWNER_MODE_AFFILIATED) {
+            // TODO: This won't work on main-less devices, will return USER_SYSTEM.
+            // Maybe we can assume there is only one admin user?
+            return getMainUserId();
+        } else {
+            return deviceOwner.getUserHandle().getIdentifier();
+        }
     }
 
     @Override
