@@ -1893,7 +1893,7 @@ public class UsageStatsService extends SystemService implements
         mHandler.removeMessages(MSG_FLUSH_TO_DISK);
     }
 
-    private String getTrimmedString(String input) {
+    static String getTrimmedString(String input) {
         if (input != null && input.length() > MAX_TEXT_LENGTH) {
             return input.substring(0, MAX_TEXT_LENGTH);
         }
