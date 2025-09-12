@@ -378,8 +378,9 @@ public class DisplayPolicyTests extends WindowTestsBase {
         provider.setServerVisible(true);
         provider.updateSourceFrame(bar.getFrame());
 
-        final InsetsState prevInsetsState = new InsetsState();
-        prevInsetsState.addSource(new InsetsSource(provider.getSource()));
+        final InsetsSource prevInsetsSource = new InsetsSource(provider.getSource());
+        // Assume that the insets provider is temporarily invisible during switching.
+        provider.getSource().setVisible(false);
 
         final DisplayPolicy displayPolicy = mDisplayContent.getDisplayPolicy();
         final DisplayInfo info = mDisplayContent.getDisplayInfo();
@@ -406,12 +407,17 @@ public class DisplayPolicyTests extends WindowTestsBase {
         // Assume that the InsetsSource in current InsetsState is not updated yet. And it will be
         // replaced by the one in cache.
         InsetsState currentInsetsState = new InsetsState();
-        final InsetsSource prevSource = new InsetsSource(provider.getSource());
-        prevSource.getFrame().scale(0.5f);
-        currentInsetsState.addSource(prevSource);
+        final InsetsSource currentSource = new InsetsSource(provider.getSource());
+        currentSource.setVisible(true);
+        currentSource.getFrame().scale(0.5f);
+        currentInsetsState.addSource(currentSource);
         currentInsetsState = mDisplayContent.getInsetsPolicy().adjustInsetsForWindow(
                 win, currentInsetsState);
-        assertEquals(prevInsetsState.peekSource(insetsId), currentInsetsState.peekSource(insetsId));
+        final InsetsSource adjustedSource = currentInsetsState.peekSource(insetsId);
+        assertNotNull(adjustedSource);
+        // The frame is restored from previous state, but the visibility still uses current state.
+        assertEquals(prevInsetsSource.getFrame(), adjustedSource.getFrame());
+        assertTrue(adjustedSource.isVisible());
 
         // If screen is not fully turned on, then the cache should be preserved.
         displayPolicy.screenTurnedOff(false /* acquireSleepToken */);
