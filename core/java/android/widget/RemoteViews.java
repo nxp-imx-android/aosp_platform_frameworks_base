@@ -131,6 +131,7 @@ import com.android.internal.widget.remotecompose.core.CoreDocument;
 import com.android.internal.widget.remotecompose.core.operations.Theme;
 import com.android.internal.widget.remotecompose.player.RemoteComposeDocument;
 import com.android.internal.widget.remotecompose.player.RemoteComposePlayer;
+import com.android.internal.widget.remotecompose.player.RemoteComposePlayer.PreparedDocument;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -162,6 +163,7 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -6028,35 +6030,66 @@ public class RemoteViews implements Parcelable, Filter {
             }
         }
 
-        @Override
-        public void apply(View root, ViewGroup rootParent, ActionApplyParams params)
-                throws ActionException {
+        private void applyActionListener(RemoteComposePlayer player, ActionApplyParams params) {
+            player.addIdActionListener((viewId, metadata) -> {
+                mActions.forEach(action -> {
+                    if (viewId == action.mViewId
+                            && action instanceof SetOnClickResponse setOnClickResponse) {
+                        final RemoteResponse response = setOnClickResponse.mResponse;
+                        if (response.mFillIntent == null) {
+                            response.mFillIntent = new Intent();
+                        }
+                        response.mFillIntent.putExtra(
+                                "remotecompose_metadata", metadata);
+                        response.handleViewInteraction(player, params.handler);
+                    }
+                });
+            });
+        }
+
+        private Action applyAction(
+                View root, BiFunction<RemoteComposePlayer, RemoteComposeDocument, Action> block) {
             if (drawDataParcel() && mInstructions != null
                     && root instanceof RemoteComposePlayer player) {
                 final List<byte[]> bytes = mInstructions.mInstructions;
                 if (bytes.isEmpty()) {
-                    return;
+                    return ACTION_NOOP;
                 }
                 try (ByteArrayInputStream is = new ByteArrayInputStream(bytes.get(0))) {
-                    player.setDocument(new RemoteComposeDocument(is));
-                    player.addIdActionListener((viewId, metadata) -> {
-                        mActions.forEach(action -> {
-                            if (viewId == action.mViewId
-                                    && action instanceof SetOnClickResponse setOnClickResponse) {
-                                final RemoteResponse response = setOnClickResponse.mResponse;
-                                if (response.mFillIntent == null) {
-                                    response.mFillIntent = new Intent();
-                                }
-                                response.mFillIntent.putExtra(
-                                        "remotecompose_metadata", metadata);
-                                response.handleViewInteraction(player, params.handler);
-                            }
-                        });
-                    });
+                    return block.apply(player, new RemoteComposeDocument(is));
                 } catch (IOException e) {
-                    Log.e(LOG_TAG, "Failed to render draw instructions", e);
+                    Log.e(LOG_TAG, "Failed to parse draw instructions", e);
                 }
             }
+            return ACTION_NOOP;
+        }
+
+        @Override
+        public void apply(View root, ViewGroup rootParent, ActionApplyParams params)
+                throws ActionException {
+            applyAction(root, (player, doc) -> {
+                player.setDocument(doc);
+                applyActionListener(player, params);
+                return ACTION_NOOP;
+            });
+        }
+
+        @Override
+        public final Action initActionAsync(ViewTree root, ViewGroup rootParent,
+                ActionApplyParams params) {
+            return applyAction(root.mRoot, (player, doc) -> {
+                PreparedDocument preparedDoc = player.prepareDocument(doc);
+                return preparedDoc == null ? ACTION_NOOP
+                        :  new RunnableAction(() -> {
+                            player.setPreparedDocument(preparedDoc);
+                            applyActionListener(player, params);
+                        });
+            });
+        }
+
+        @Override
+        public boolean prefersAsyncApply() {
+            return true;
         }
 
         @Override
@@ -9228,7 +9261,7 @@ public class RemoteViews implements Parcelable, Filter {
      */
     private static class ViewTree {
         private static final int INSERT_AT_END_INDEX = -1;
-        private View mRoot;
+        View mRoot;
         private ArrayList<ViewTree> mChildren;
 
         private ViewTree(View root) {
