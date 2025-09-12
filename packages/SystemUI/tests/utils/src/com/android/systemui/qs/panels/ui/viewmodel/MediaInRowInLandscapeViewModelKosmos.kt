@@ -51,7 +51,7 @@ val Kosmos.mediaInRowInLandscapeViewModelFactory by
     }
 
 fun Kosmos.setConfigurationForMediaInRow(mediaInRow: Boolean) {
-    shadeRepository.setShadeLayoutWide(!mediaInRow) // media in row only in non wide
+    shadeRepository.legacyUseSplitShade.value = !mediaInRow // media in row only in non wide
     val config =
         Configuration(mainResources.configuration).apply {
             orientation =
