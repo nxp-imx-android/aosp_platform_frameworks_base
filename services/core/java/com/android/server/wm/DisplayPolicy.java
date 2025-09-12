@@ -2311,9 +2311,11 @@ public class DisplayPolicy {
         final ArrayList<InsetsSource> preservedSources = mCachedDecorInsets.mPreservedInsets;
         final InsetsState state = copyState ? new InsetsState(originalState) : originalState;
         for (int i = preservedSources.size() - 1; i >= 0; i--) {
-            final InsetsSource cacheSource = preservedSources.get(i);
-            if (state.peekSource(cacheSource.getId()) != null) {
-                state.addSource(new InsetsSource(cacheSource));
+            final InsetsSource cachedSource = preservedSources.get(i);
+            final InsetsSource originalSource = state.peekSource(cachedSource.getId());
+            if (originalSource != null) {
+                state.addSource(new InsetsSource(cachedSource)
+                        .setVisible(originalSource.isVisible()));
             }
         }
         return state;
