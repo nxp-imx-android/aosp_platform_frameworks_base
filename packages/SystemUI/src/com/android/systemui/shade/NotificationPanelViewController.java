@@ -3446,7 +3446,7 @@ public final class NotificationPanelViewController implements
     private final class NsslHeightChangedListener implements
             ExpandableView.OnHeightChangedListener {
         @Override
-        public void onHeightChanged(ExpandableView view, boolean needsAnimation) {
+        public void onHeightChanged(ExpandableView view, boolean needsAnimation, String caller) {
             // Block update if we are in QS and just the top padding changed (i.e. view == null).
             if (view == null && mQsController.getExpanded()) {
                 return;

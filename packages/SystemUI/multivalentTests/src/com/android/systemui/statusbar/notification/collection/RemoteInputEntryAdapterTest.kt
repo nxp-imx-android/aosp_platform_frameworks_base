@@ -42,6 +42,8 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.mockito.ArgumentMatchers.anyString
+import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 
@@ -263,7 +265,7 @@ class RemoteInputEntryAdapterTest : SysuiTestCase() {
 
         underTest.notifyHeightChanged(true)
 
-        verify(row).notifyHeightChanged(true)
+        verify(row).notifyHeightChanged(eq(true), anyString())
     }
 
     fun setRemoteInputActive(headsUpManager: HeadsUpManager, isActive: Boolean) {

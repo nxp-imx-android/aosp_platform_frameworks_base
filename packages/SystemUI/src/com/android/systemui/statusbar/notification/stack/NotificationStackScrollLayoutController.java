@@ -2097,8 +2097,8 @@ public class NotificationStackScrollLayoutController implements Dumpable {
         }
 
         @Override
-        public void onHeightChanged(ExpandableView view, boolean needsAnimation) {
-            mView.onChildHeightChanged(view, needsAnimation);
+        public void onHeightChanged(ExpandableView view, boolean needsAnimation, String caller) {
+            mView.onChildHeightChanged(view, needsAnimation, "NSSLC.onHeightChanged");
         }
 
         @Override

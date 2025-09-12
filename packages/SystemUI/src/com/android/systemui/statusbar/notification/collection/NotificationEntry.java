@@ -760,7 +760,7 @@ public final class NotificationEntry extends ListEntry {
     }
 
     public void notifyHeightChanged(boolean needsAnimation) {
-        if (row != null) row.notifyHeightChanged(needsAnimation);
+        if (row != null) row.notifyHeightChanged(needsAnimation, "NotifEntry.notifyHeightChanged");
     }
 
     public void closeRemoteInput() {

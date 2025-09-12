@@ -329,7 +329,7 @@ public abstract class ExpandableView extends FrameLayout implements Dumpable, Ro
             mActualHeight = actualHeight;
             updateClipping();
             if (notifyListeners) {
-                notifyHeightChanged(false  /* needsAnimation */);
+                notifyHeightChanged(false  /* needsAnimation */, "EV.setActualHeight");
             }
         }
     }
@@ -495,9 +495,10 @@ public abstract class ExpandableView extends FrameLayout implements Dumpable, Ro
         return false;
     }
 
-    public void notifyHeightChanged(boolean needsAnimation) {
+    public void notifyHeightChanged(boolean needsAnimation, String caller) {
         if (mOnHeightChangedListener != null) {
-            mOnHeightChangedListener.onHeightChanged(this, needsAnimation);
+            mOnHeightChangedListener.onHeightChanged(this, needsAnimation,
+                    caller + " => EV.notifyHeightChanged");
         }
     }
 
@@ -1072,7 +1073,7 @@ public abstract class ExpandableView extends FrameLayout implements Dumpable, Ro
          *                       padding or the padding between the elements changed
          * @param needsAnimation whether the view height needs to be animated
          */
-        void onHeightChanged(ExpandableView view, boolean needsAnimation);
+        void onHeightChanged(ExpandableView view, boolean needsAnimation, String caller);
 
         /**
          * Called when the view is reset and therefore the height will change abruptly
