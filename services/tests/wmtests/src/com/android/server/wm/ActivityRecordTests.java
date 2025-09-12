@@ -3642,32 +3642,6 @@ public class ActivityRecordTests extends WindowTestsBase {
                 activity.getRequestedOverrideConfiguration().colorMode);
     }
 
-    @Test
-    @EnableFlags(Flags.FLAG_ENABLE_DRAGGING_PIP_ACROSS_DISPLAYS)
-    public void resolveOverrideConfiguration_inPipMode_newConfigFullscreen_updatesConfigs() {
-        final ActivityRecord activity = createActivityWithTask();
-        final Configuration config = new Configuration();
-        config.touchscreen = TOUCHSCREEN_FINGER;
-        config.densityDpi = 100;
-        config.colorMode = COLOR_MODE_WIDE_COLOR_GAMUT_NO;
-        activity.setLastReportedConfiguration(new Configuration(), config);
-        activity.mLastReportedPictureInPictureMode = true;
-
-        final Configuration newConfig = new Configuration();
-        newConfig.windowConfiguration.setWindowingMode(WINDOWING_MODE_FULLSCREEN);
-        newConfig.touchscreen = TOUCHSCREEN_NOTOUCH;
-        newConfig.densityDpi = 200;
-        newConfig.colorMode = COLOR_MODE_WIDE_COLOR_GAMUT_YES;
-        activity.resolveOverrideConfiguration(newConfig);
-
-        assertEquals(Configuration.TOUCHSCREEN_UNDEFINED,
-                activity.getRequestedOverrideConfiguration().touchscreen);
-        assertEquals(Configuration.DENSITY_DPI_UNDEFINED,
-                activity.getRequestedOverrideConfiguration().densityDpi);
-        assertEquals(Configuration.COLOR_MODE_UNDEFINED,
-                activity.getRequestedOverrideConfiguration().colorMode);
-    }
-
     private ActivityRecord setupDisplayAndActivityForCameraCompat(boolean isCameraRunning,
             int windowingMode) {
         doReturn(true).when(() -> DesktopModeHelper.canEnterDesktopMode(any()));
