@@ -702,6 +702,12 @@ public class Process {
     public static final ZygoteProcess ZYGOTE_PROCESS = new ZygoteProcess();
 
     /**
+     * State associated with the native zygote process.
+     * @hide
+     */
+    public static final NativeZygoteProcess NATIVE_ZYGOTE_PROCESS = new NativeZygoteProcess();
+
+    /**
      * The process name set via {@link #setArgV0(String)}.
      */
     private static String sArgV0;
@@ -779,7 +785,10 @@ public class Process {
                                            boolean bindMountSystemOverrides,
                                            long startSeq,
                                            @Nullable String[] zygoteArgs) {
-        return ZYGOTE_PROCESS.start(processClass, niceName, uid, gid, gids,
+        boolean isNative = android.os.Flags.nativeFrameworkPrototype()
+                && (zygotePolicyFlags & ZYGOTE_POLICY_FLAG_NATIVE_PROCESS) != 0;
+        IZygoteProcess process = isNative ? NATIVE_ZYGOTE_PROCESS : ZYGOTE_PROCESS;
+        return process.start(processClass, niceName, uid, gid, gids,
                     runtimeFlags, mountExternal, targetSdkVersion, seInfo,
                     abi, instructionSet, appDataDir, invokeWith, packageName,
                     zygotePolicyFlags, isTopApp, disabledCompatChanges,

@@ -64,12 +64,12 @@ static std::optional<ScopedUtfChars> extract_jstring(JNIEnv* env, jstring manage
 
 namespace android {
 
-static jint android_os_ZygoteProcess_startNativeProcess(JNIEnv* env, jclass /* classObj */,
-                                                        jint uid, jint gid, jlong startSeq,
-                                                        jstring packageName, jstring niceName,
-                                                        jint targetSdkVersion,
-                                                        jboolean startChildZygote,
-                                                        jint runtimeFlags, jstring seInfo) {
+static jint android_os_NativeZygoteProcess_startNativeProcess(JNIEnv* env, jclass /* classObj */,
+                                                              jint uid, jint gid, jlong startSeq,
+                                                              jstring packageName, jstring niceName,
+                                                              jint targetSdkVersion,
+                                                              jboolean startChildZygote,
+                                                              jint runtimeFlags, jstring seInfo) {
     static base::unique_fd fd;
     if (!fd.ok()) {
         fd = get_zygote_socket_fd();
@@ -150,11 +150,12 @@ static const JNINativeMethod method_table[] = {
         /* name, signature, funcPtr */
         {"nativeStartNativeProcess",
          "(IIJLjava/lang/String;Ljava/lang/String;IZILjava/lang/String;)I",
-         (void*)android_os_ZygoteProcess_startNativeProcess},
+         (void*)android_os_NativeZygoteProcess_startNativeProcess},
 };
 
-int register_android_os_ZygoteProcess(JNIEnv* env) {
-    return RegisterMethodsOrDie(env, "android/os/ZygoteProcess", method_table, NELEM(method_table));
+int register_android_os_NativeZygoteProcess(JNIEnv* env) {
+    return RegisterMethodsOrDie(env, "android/os/NativeZygoteProcess", method_table,
+                                NELEM(method_table));
 }
 
 }; // namespace android
