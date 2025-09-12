@@ -757,7 +757,8 @@ public class WindowMagnificationControllerTest extends SysuiTestCase {
         verify(mResources, atLeastOnce()).getDimensionPixelSize(anyInt());
         verify(mSurfaceControlViewHosts.get(0)).release();
         verify(mMirrorWindowControl).destroyControl();
-        verify(mSurfaceControlViewHosts.get(1)).setView(any(), any());
+        verify(mSurfaceControlViewHosts.get(1)).setView(any(),
+                any(WindowManager.LayoutParams.class));
         verify(mMirrorWindowControl).showControl();
     }
 
@@ -1669,7 +1670,8 @@ public class WindowMagnificationControllerTest extends SysuiTestCase {
         dragButton.dispatchTouchEvent(
                 obtainMotionEvent(downTime, downTime, ACTION_UP, 100, 100));
 
-        verify(mSurfaceControlViewHost).setView(any(View.class), any());
+        verify(mSurfaceControlViewHost).setView(any(View.class),
+                any(WindowManager.LayoutParams.class));
     }
 
     private <T extends View> T getInternalView(@IdRes int idRes) {

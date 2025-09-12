@@ -54297,12 +54297,22 @@ package android.view {
   public class SurfaceControlViewHost {
     ctor public SurfaceControlViewHost(@NonNull android.content.Context, @NonNull android.view.Display, @Nullable android.os.IBinder);
     ctor public SurfaceControlViewHost(@NonNull android.content.Context, @NonNull android.view.Display, @Nullable android.window.InputTransferToken);
+    method @FlaggedApi("com.android.window.flags.scvh_set_focusable") @NonNull public android.view.SurfaceControlViewHost.LayoutParams getLayoutParams();
     method @Nullable public android.view.SurfaceControlViewHost.SurfacePackage getSurfacePackage();
     method @Nullable public android.view.View getView();
     method public void relayout(int, int);
+    method @FlaggedApi("com.android.window.flags.scvh_set_focusable") public void relayout(@NonNull android.view.SurfaceControlViewHost.LayoutParams);
     method public void release();
     method public void setView(@NonNull android.view.View, int, int);
+    method @FlaggedApi("com.android.window.flags.scvh_set_focusable") public void setView(@NonNull android.view.View, @NonNull android.view.SurfaceControlViewHost.LayoutParams);
     method @Deprecated public boolean transferTouchGestureToHost();
+  }
+
+  @FlaggedApi("com.android.window.flags.scvh_set_focusable") public static class SurfaceControlViewHost.LayoutParams {
+    ctor @FlaggedApi("com.android.window.flags.scvh_set_focusable") public SurfaceControlViewHost.LayoutParams(int, int, boolean);
+    method @FlaggedApi("com.android.window.flags.scvh_set_focusable") public int getHeight();
+    method @FlaggedApi("com.android.window.flags.scvh_set_focusable") public int getWidth();
+    method @FlaggedApi("com.android.window.flags.scvh_set_focusable") public boolean isFocusable();
   }
 
   public static final class SurfaceControlViewHost.SurfacePackage implements android.os.Parcelable {
