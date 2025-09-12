@@ -148,6 +148,13 @@ public class BubbleTransitions {
     }
 
     /**
+     * Returns whether the given Task is the App Bubble Root Task.
+     */
+    public boolean isAppBubbleRootTask(@NonNull ActivityManager.RunningTaskInfo taskInfo) {
+        return mBubbleController.isAppBubbleRootTask(taskInfo.taskId);
+    }
+
+    /**
      * Returns whether there is a pending transition for the given request.
      */
     public boolean hasPendingEnterTransition(@NonNull TransitionRequestInfo info) {
