@@ -8987,6 +8987,35 @@ public class DevicePolicyManagerTest extends DpmTestBase {
         assertThat(enforcingAdmins.getFirst().getPackageName()).isEqualTo(admin1.getPackageName());
     }
 
+    @Test
+    @RequiresFlagsEnabled(Flags.FLAG_SET_KEYGUARD_DISABLED_FEATURES_COEXISTENCE)
+    public void getEnforcingAdminsForPolicy_keyguardDisabledFeatures_returnsManagedProfileAdminForParent()
+            throws Exception {
+        // Set-up managed profile with parent as system user.
+        mContext.callerPermissions.add(permission.BIND_DEVICE_ADMIN);
+        final int managedProfileUserId = 78;
+        final int managedProfileAdminUid = UserHandle.getUid(managedProfileUserId,
+                DpmMockContext.SYSTEM_UID);
+        mContext.binder.callingUid = DpmMockContext.SYSTEM_UID;
+        mContext.packageName = admin1.getPackageName();
+        // Add a managed profile belonging to the system user.
+        addManagedProfile(admin1, managedProfileAdminUid, admin1);
+        // Set policy on the managed profile.
+        mContext.binder.callingUid = managedProfileAdminUid;
+        dpm.setKeyguardDisabledFeatures(admin1, DevicePolicyManager.KEYGUARD_DISABLE_FINGERPRINT);
+        when(getServices().lockPatternUtils.isProfileWithUnifiedChallenge(
+                managedProfileUserId)).thenReturn(true);
+        mContext.callerPermissions.add(permission.QUERY_ADMIN_POLICY);
+
+        // Get enforcing admins on parent.
+        List<EnforcingAdmin> enforcingAdmins = dpm.getEnforcingAdminsForPolicy(
+                DevicePolicyIdentifiers.KEYGUARD_DISABLED_FEATURES_POLICY,
+                UserHandle.USER_SYSTEM).getAllAdmins();
+
+        assertThat(enforcingAdmins.size()).isEqualTo(1);
+        assertThat(enforcingAdmins.getFirst().getComponentName()).isEqualTo(admin1);
+    }
+
     private void setupVpnAuthorization(String userVpnPackage, int userVpnUid) {
         final AppOpsManager.PackageOps vpnOp = new AppOpsManager.PackageOps(userVpnPackage,
                 userVpnUid, List.of(new AppOpsManager.OpEntry(
