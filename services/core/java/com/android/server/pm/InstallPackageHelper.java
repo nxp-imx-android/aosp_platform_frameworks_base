@@ -1297,7 +1297,7 @@ final class InstallPackageHelper {
                 final ScanResult scanResult = scanPackageTraced(request.getParsedPackage(),
                         request.getParseFlags(), request.getScanFlags(),
                         System.currentTimeMillis(), request.getUser(),
-                        request.getAbiOverride());
+                        request.getAbiOverride(), request.getInstallSource());
                 request.setScanResult(scanResult);
                 request.onScanFinished();
                 if (!scannedPackages.add(packageName)) {
@@ -4215,13 +4215,14 @@ final class InstallPackageHelper {
     }
 
     private ScanResult scanPackageTraced(ParsedPackage parsedPackage,
-            final @ParsingPackageUtils.ParseFlags int parseFlags,
-            @PackageManagerService.ScanFlags int scanFlags, long currentTime,
-            @Nullable UserHandle user, String cpuAbiOverride) throws PackageManagerException {
+            @ParsingPackageUtils.ParseFlags int parseFlags,
+            @PackageManagerService.ScanFlags int scanFlags, long scanTime, UserHandle user,
+            @Nullable String cpuAbiOverride, @Nullable InstallSource installSource)
+            throws PackageManagerException {
         Trace.traceBegin(TRACE_TAG_PACKAGE_MANAGER, "scanPackage");
         try {
-            return scanPackageNew(parsedPackage, parseFlags, scanFlags, currentTime, user,
-                    cpuAbiOverride);
+            return scanPackageNew(parsedPackage, parseFlags, scanFlags, scanTime, user,
+                    cpuAbiOverride, installSource);
         } finally {
             Trace.traceEnd(TRACE_TAG_PACKAGE_MANAGER);
         }
@@ -4230,7 +4231,7 @@ final class InstallPackageHelper {
     private ScanRequest prepareInitialScanRequest(@NonNull ParsedPackage parsedPackage,
             @ParsingPackageUtils.ParseFlags int parseFlags,
             @PackageManagerService.ScanFlags int scanFlags,
-            @Nullable UserHandle user, String cpuAbiOverride)
+            @Nullable UserHandle user, String cpuAbiOverride, @Nullable InstallSource installSource)
             throws PackageManagerException {
         final AndroidPackage platformPackage;
         final String realPkgName;
@@ -4240,9 +4241,9 @@ final class InstallPackageHelper {
         final SharedUserSetting sharedUserSetting;
         SharedUserSetting oldSharedUserSetting = null;
 
+        final boolean isSystemApp = AndroidPackageLegacyUtils.isSystem(parsedPackage);
         synchronized (mPm.mLock) {
             platformPackage = mPm.getPlatformPackage();
-            var isSystemApp = AndroidPackageLegacyUtils.isSystem(parsedPackage);
             final String renamedPkgName = mPm.mSettings.getRenamedPackageLPr(
                     AndroidPackageUtils.getRealPackageOrNull(parsedPackage, isSystemApp));
             realPkgName = ScanPackageUtils.getRealPackageName(parsedPackage, renamedPkgName,
@@ -4287,23 +4288,30 @@ final class InstallPackageHelper {
 
         final boolean isPlatformPackage = platformPackage != null
                 && platformPackage.getPackageName().equals(parsedPackage.getPackageName());
-
+        final  String initiatingPackage = installSource != null
+                ? installSource.mInitiatingPackageName : null;
+        // Run 16 KB alignment checks on 4 KB device if evaluated as true for new installations.
+        // To prevent deadlock, move the call of SettingsProvider out of mLock block
+        final boolean enableAlignmentChecks = ScanPackageUtils.enableAlignmentChecks(
+                parsedPackage, mPm.mInjector.getContext(), initiatingPackage,
+                isSystemApp, isPlatformPackage, scanFlags);
         return new ScanRequest(parsedPackage, oldSharedUserSetting,
                 installedPkgSetting == null ? null : installedPkgSetting.getPkg() /* oldPkg */,
                 installedPkgSetting /* packageSetting */,
                 sharedUserSetting,
                 disabledPkgSetting /* disabledPackageSetting */,
                 originalPkgSetting  /* originalPkgSetting */,
-                realPkgName, parseFlags, scanFlags, isPlatformPackage, user, cpuAbiOverride);
+                realPkgName, parseFlags, scanFlags, isPlatformPackage, user, cpuAbiOverride,
+                enableAlignmentChecks);
     }
 
     private ScanResult scanPackageNew(@NonNull ParsedPackage parsedPackage,
             final @ParsingPackageUtils.ParseFlags int parseFlags,
             @PackageManagerService.ScanFlags int scanFlags, long currentTime,
-            @Nullable UserHandle user, String cpuAbiOverride)
+            @Nullable UserHandle user, String cpuAbiOverride, @Nullable InstallSource installSource)
             throws PackageManagerException {
         final ScanRequest initialScanRequest = prepareInitialScanRequest(parsedPackage, parseFlags,
-                scanFlags, user, cpuAbiOverride);
+                scanFlags, user, cpuAbiOverride, installSource);
         final PackageSetting installedPkgSetting = initialScanRequest.mPkgSetting;
         final PackageSetting disabledPkgSetting = initialScanRequest.mDisabledPkgSetting;
 
@@ -4327,7 +4335,7 @@ final class InstallPackageHelper {
                     initialScanRequest.mSharedUserSetting, disabledPkgSetting,
                     initialScanRequest.mOriginalPkgSetting, initialScanRequest.mRealPkgName,
                     parseFlags, scanFlags, initialScanRequest.mIsPlatformPackage, user,
-                    cpuAbiOverride);
+                    cpuAbiOverride, initialScanRequest.mEnableAlignmentChecks);
             return ScanPackageUtils.scanPackageOnly(request, mPm.mInjector, mPm.mFactoryTest,
                     currentTime);
         }
@@ -4343,7 +4351,7 @@ final class InstallPackageHelper {
             final boolean scanSystemPartition =
                 (parseFlags & ParsingPackageUtils.PARSE_IS_SYSTEM_DIR) != 0;
             final ScanRequest initialScanRequest = prepareInitialScanRequest(parsedPackage,
-                    parseFlags, scanFlags, user, null);
+                    parseFlags, scanFlags, user, null /*cpuAbiOverride*/, null /*installSource*/);
             final PackageSetting installedPkgSetting = initialScanRequest.mPkgSetting;
             final PackageSetting originalPkgSetting = initialScanRequest.mOriginalPkgSetting;
             final PackageSetting pkgSetting =
@@ -4354,6 +4362,7 @@ final class InstallPackageHelper {
             final boolean isSystemPkgUpdated;
             final PackageSetting disabledPkgSetting;
             final boolean isUpgrade;
+
             synchronized (mPm.mLock) {
                 isUpgrade = mPm.isDeviceUpgrading();
                 if (scanSystemPartition && !pkgAlreadyExists
@@ -4381,7 +4390,8 @@ final class InstallPackageHelper {
                             initialScanRequest.mSharedUserSetting,
                             null /* disabledPkgSetting */, null /* originalPkgSetting */,
                             null, parseFlags, scanFlags,
-                            initialScanRequest.mIsPlatformPackage, user, null);
+                            initialScanRequest.mIsPlatformPackage, user, null,
+                            initialScanRequest.mEnableAlignmentChecks);
                     ScanPackageUtils.applyPolicy(parsedPackage, scanFlags,
                             mPm.getPlatformPackage(), true);
                     final ScanResult scanResult =
@@ -4583,7 +4593,8 @@ final class InstallPackageHelper {
 
             final long firstInstallTime = System.currentTimeMillis();
             final ScanResult scanResult = scanPackageNew(parsedPackage, parseFlags,
-                    scanFlags | SCAN_UPDATE_SIGNATURE, firstInstallTime, user, null);
+                    scanFlags | SCAN_UPDATE_SIGNATURE, firstInstallTime, user,
+                    null /*cpuAbiOverride*/, null /*installSource*/);
             // Set scan outcome as successful for InitAppScanMetrics.
             metrics.setInitAppScanOutcome(PackageManager.INSTALL_SUCCEEDED);
             return new Pair<>(scanResult, shouldHideSystemApp);

@@ -48,7 +48,7 @@ import java.util.concurrent.TimeUnit;
 public class AppWarningsTest {
 
     private static final String TEST_APK_PATH =
-            "/data/local/tmp/pagesizewarnings/app_with_4kb_elf_no_override.apk";
+            "/data/local/tmp/pagesizewarnings/app_with_4kb_elf_no_override_debuggable.apk";
     private static final String PACKAGE_INSTALLED_ACTION =
             "com.example.android.testing.PACKAGE_INSTALLED";
     private static final String WARNING_TEXT = "Android App Compatibility";
