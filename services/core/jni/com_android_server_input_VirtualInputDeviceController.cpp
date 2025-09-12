@@ -33,53 +33,53 @@ namespace android {
 static constexpr jlong INVALID_PTR = 0;
 
 static unique_fd openUinputJni(JNIEnv* env, jstring name, jint vendorId, jint productId,
-                               jstring phys, DeviceType deviceType, jint screenHeight,
-                               jint screenWidth) {
+                               jstring phys, DeviceType deviceType,
+                               std::optional<ui::Size> screenSize) {
     ScopedUtfChars readableName(env, name);
     ScopedUtfChars readablePhys(env, phys);
     return openUinput(readableName.c_str(), vendorId, productId, readablePhys.c_str(), deviceType,
-                      screenHeight, screenWidth);
+                      screenSize);
 }
 
 static jlong nativeOpenUinputDpad(JNIEnv* env, jobject thiz, jstring name, jint vendorId,
                                   jint productId, jstring phys) {
     auto fd = openUinputJni(env, name, vendorId, productId, phys, DeviceType::DPAD,
-                            /* screenHeight= */ 0, /* screenWidth= */ 0);
+                            /* screenSize= */ std::nullopt);
     return fd.ok() ? reinterpret_cast<jlong>(new VirtualDpad(std::move(fd))) : INVALID_PTR;
 }
 
 static jlong nativeOpenUinputKeyboard(JNIEnv* env, jobject thiz, jstring name, jint vendorId,
                                       jint productId, jstring phys) {
     auto fd = openUinputJni(env, name, vendorId, productId, phys, DeviceType::KEYBOARD,
-                            /* screenHeight= */ 0, /* screenWidth= */ 0);
+                            /* screenSize= */ std::nullopt);
     return fd.ok() ? reinterpret_cast<jlong>(new VirtualKeyboard(std::move(fd))) : INVALID_PTR;
 }
 
 static jlong nativeOpenUinputMouse(JNIEnv* env, jobject thiz, jstring name, jint vendorId,
                                    jint productId, jstring phys) {
     auto fd = openUinputJni(env, name, vendorId, productId, phys, DeviceType::MOUSE,
-                            /* screenHeight= */ 0, /* screenWidth= */ 0);
+                            /* screenSize= */ std::nullopt);
     return fd.ok() ? reinterpret_cast<jlong>(new VirtualMouse(std::move(fd))) : INVALID_PTR;
 }
 
 static jlong nativeOpenUinputTouchscreen(JNIEnv* env, jobject thiz, jstring name, jint vendorId,
                                          jint productId, jstring phys, jint height, jint width) {
-    auto fd = openUinputJni(env, name, vendorId, productId, phys, DeviceType::TOUCHSCREEN, height,
-                            width);
+    auto fd = openUinputJni(env, name, vendorId, productId, phys, DeviceType::TOUCHSCREEN,
+                            ui::Size{static_cast<int>(width), static_cast<int>(height)});
     return fd.ok() ? reinterpret_cast<jlong>(new VirtualTouchscreen(std::move(fd))) : INVALID_PTR;
 }
 
 static jlong nativeOpenUinputStylus(JNIEnv* env, jobject thiz, jstring name, jint vendorId,
                                     jint productId, jstring phys, jint height, jint width) {
-    auto fd =
-            openUinputJni(env, name, vendorId, productId, phys, DeviceType::STYLUS, height, width);
+    auto fd = openUinputJni(env, name, vendorId, productId, phys, DeviceType::STYLUS,
+                            ui::Size{static_cast<int>(width), static_cast<int>(height)});
     return fd.ok() ? reinterpret_cast<jlong>(new VirtualStylus(std::move(fd))) : INVALID_PTR;
 }
 
 static jlong nativeOpenUinputRotaryEncoder(JNIEnv* env, jobject thiz, jstring name, jint vendorId,
-                                           jint productId, jstring phys, jint height, jint width) {
+                                           jint productId, jstring phys) {
     auto fd = openUinputJni(env, name, vendorId, productId, phys, DeviceType::ROTARY_ENCODER,
-                            /* screenHeight= */ 0, /* screenWidth= */ 0);
+                            /* screenSize= */ std::nullopt);
     return fd.ok() ? reinterpret_cast<jlong>(new VirtualRotaryEncoder(std::move(fd))) : INVALID_PTR;
 }
 
