@@ -16,8 +16,11 @@
 
 package com.android.wm.shell.shared.bubbles.logging
 
+import android.platform.test.annotations.EnableFlags
+import android.platform.test.flag.junit.SetFlagsRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
+import com.android.wm.shell.Flags
 import com.android.wm.shell.shared.bubbles.logging.BubbleEventHistoryLogger.Companion.DATE_FORMAT
 import com.android.wm.shell.shared.bubbles.logging.BubbleEventHistoryLogger.Companion.DATE_FORMATTER
 import com.android.wm.shell.shared.bubbles.logging.BubbleEventHistoryLogger.Companion.MAX_EVENTS
@@ -28,13 +31,17 @@ import java.util.concurrent.CountDownLatch
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 import kotlin.text.split
+import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 
 /** Unit tests for [BubbleEventHistoryLogger]. */
 @SmallTest
 @RunWith(AndroidJUnit4::class)
+@EnableFlags(Flags.FLAG_ENABLE_BUBBLE_EVENT_HISTORY_LOGS)
 class BubbleEventHistoryLoggerTest {
+
+    @get:Rule val flagsRule = SetFlagsRule()
 
     private val logger = BubbleEventHistoryLogger()
     private val logPattern = Regex("^\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}\\.\\d{3} .: .*$")
