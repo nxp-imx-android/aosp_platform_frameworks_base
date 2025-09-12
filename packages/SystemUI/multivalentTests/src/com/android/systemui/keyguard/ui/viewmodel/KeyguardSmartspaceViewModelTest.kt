@@ -19,19 +19,19 @@ package com.android.systemui.keyguard.ui.viewmodel
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
-import com.android.systemui.coroutines.collectLastValue
 import com.android.systemui.keyguard.data.repository.fakeKeyguardClockRepository
 import com.android.systemui.keyguard.data.repository.keyguardClockRepository
 import com.android.systemui.keyguard.data.repository.keyguardSmartspaceRepository
 import com.android.systemui.keyguard.shared.model.ClockSize
+import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.collectLastValue
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.plugins.keyguard.ui.clocks.ClockController
-import com.android.systemui.shade.data.repository.shadeRepository
+import com.android.systemui.shade.domain.interactor.enableSingleShade
+import com.android.systemui.shade.domain.interactor.enableSplitShade
 import com.android.systemui.testKosmos
 import com.android.systemui.util.mockito.whenever
 import com.google.common.truth.Truth.assertThat
-import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -44,7 +44,7 @@ import org.mockito.MockitoAnnotations
 class KeyguardSmartspaceViewModelTest : SysuiTestCase() {
 
     private val kosmos = testKosmos()
-    private val underTest = kosmos.keyguardSmartspaceViewModel
+    private val Kosmos.underTest by Kosmos.Fixture { keyguardSmartspaceViewModel }
 
     @Mock(answer = Answers.RETURNS_DEEP_STUBS) private lateinit var clockController: ClockController
 
@@ -167,7 +167,7 @@ class KeyguardSmartspaceViewModelTest : SysuiTestCase() {
     fun isFullWidthShade_withConfigTrue_false() =
         kosmos.runTest {
             val isFullWidthShade by collectLastValue(underTest.isFullWidthShade)
-            shadeRepository.setShadeLayoutWide(true)
+            enableSplitShade()
 
             assertThat(isFullWidthShade).isFalse()
         }
@@ -176,7 +176,7 @@ class KeyguardSmartspaceViewModelTest : SysuiTestCase() {
     fun isFullWidthShade_withConfigFalse_true() =
         kosmos.runTest {
             val isFullWidthShade by collectLastValue(underTest.isFullWidthShade)
-            shadeRepository.setShadeLayoutWide(false)
+            enableSingleShade()
 
             assertThat(isFullWidthShade).isTrue()
         }
