@@ -20,14 +20,11 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.os.Handler
-import android.platform.test.annotations.DisableFlags
-import android.platform.test.annotations.EnableFlags
-import android.platform.test.flag.junit.FlagsParameterization
-import android.platform.test.flag.junit.FlagsParameterization.allCombinationsOf
 import android.provider.Settings
 import android.service.quicksettings.Tile
 import android.testing.TestableLooper
 import androidx.lifecycle.LifecycleOwner
+import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.internal.logging.MetricsLogger
 import com.android.systemui.SysuiTestCase
@@ -42,14 +39,10 @@ import com.android.systemui.controls.management.ControlsListingController
 import com.android.systemui.controls.ui.ControlsActivity
 import com.android.systemui.controls.ui.ControlsUiController
 import com.android.systemui.controls.ui.SelectedItem
-import com.android.systemui.flags.DisableSceneContainer
-import com.android.systemui.flags.EnableSceneContainer
-import com.android.systemui.flags.andSceneContainer
 import com.android.systemui.plugins.ActivityStarter
 import com.android.systemui.plugins.statusbar.StatusBarStateController
 import com.android.systemui.qs.QSHost
 import com.android.systemui.qs.QsEventLogger
-import com.android.systemui.qs.flags.QSComposeFragment
 import com.android.systemui.qs.logging.QSLogger
 import com.android.systemui.qs.pipeline.domain.interactor.PanelInteractor
 import com.android.systemui.qs.tileimpl.QSTileImpl
@@ -77,17 +70,11 @@ import org.mockito.Mockito.verifyNoMoreInteractions
 import org.mockito.Mockito.`when`
 import org.mockito.MockitoAnnotations
 import org.mockito.kotlin.never
-import platform.test.runner.parameterized.ParameterizedAndroidJunit4
-import platform.test.runner.parameterized.Parameters
 
 @SmallTest
-@RunWith(ParameterizedAndroidJunit4::class)
+@RunWith(AndroidJUnit4::class)
 @TestableLooper.RunWithLooper(setAsMainLooper = true)
-class DeviceControlsTileTest(flags: FlagsParameterization) : SysuiTestCase() {
-
-    init {
-        mSetFlagsRule.setFlagsParameterization(flags)
-    }
+class DeviceControlsTileTest : SysuiTestCase() {
 
     @Mock private lateinit var qsHost: QSHost
     @Mock private lateinit var metricsLogger: MetricsLogger
@@ -431,31 +418,7 @@ class DeviceControlsTileTest(flags: FlagsParameterization) : SysuiTestCase() {
     }
 
     @Test
-    @DisableFlags(QSComposeFragment.FLAG_NAME)
-    @DisableSceneContainer
-    fun tileIconEqualsResourceFromComponent_composeFlagsDisabled() {
-        tile.refreshState()
-        testableLooper.processAllMessages()
-        assertThat(tile.state.icon).isEqualTo(QSTileImpl.ResourceIcon.get(R.drawable.controls_icon))
-    }
-
-    @Test
-    @EnableFlags(QSComposeFragment.FLAG_NAME)
-    fun tileIconEqualsResourceFromComponent_composeFlagEnable() {
-        tile.refreshState()
-        testableLooper.processAllMessages()
-        assertThat(tile.state.icon)
-            .isEqualTo(
-                QSTileImpl.DrawableIconWithRes(
-                    mContext.getDrawable(R.drawable.controls_icon),
-                    R.drawable.controls_icon,
-                )
-            )
-    }
-
-    @Test
-    @EnableSceneContainer
-    fun tileIconEqualsResourceFromComponent_sceneContainerEnabled() {
+    fun tileIconEqualsResourceFromComponent() {
         tile.refreshState()
         testableLooper.processAllMessages()
         assertThat(tile.state.icon)
@@ -485,14 +448,6 @@ class DeviceControlsTileTest(flags: FlagsParameterization) : SysuiTestCase() {
                 it.initialize()
                 testableLooper.processAllMessages()
             }
-    }
-
-    companion object {
-        @JvmStatic
-        @Parameters(name = "{0}")
-        fun getParams(): List<FlagsParameterization> {
-            return allCombinationsOf(QSComposeFragment.FLAG_NAME).andSceneContainer()
-        }
     }
 }
 

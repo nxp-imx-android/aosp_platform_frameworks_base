@@ -10,11 +10,10 @@ import android.platform.test.annotations.EnableFlags
 import android.platform.test.annotations.RequiresFlagsDisabled
 import android.platform.test.annotations.RequiresFlagsEnabled
 import android.platform.test.flag.junit.DeviceFlagsValueProvider
-import android.platform.test.flag.junit.FlagsParameterization
-import android.platform.test.flag.junit.FlagsParameterization.allCombinationsOf
 import android.service.quicksettings.Tile
 import android.testing.TestableLooper
 import android.testing.TestableLooper.RunWithLooper
+import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.dx.mockito.inline.extended.ExtendedMockito
 import com.android.internal.logging.MetricsLogger
@@ -37,9 +36,7 @@ import com.android.systemui.qs.QSHost
 import com.android.systemui.qs.QsEventLogger
 import com.android.systemui.qs.flags.QSComposeFragment
 import com.android.systemui.qs.flags.QsDetailedView
-import com.android.systemui.qs.flags.QsInCompose.isEnabled
 import com.android.systemui.qs.logging.QSLogger
-import com.android.systemui.qs.tileimpl.QSTileImpl
 import com.android.systemui.qs.tileimpl.QSTileImpl.DrawableIconWithRes
 import com.android.systemui.res.R
 import com.android.systemui.statusbar.policy.BluetoothController
@@ -61,17 +58,11 @@ import org.mockito.MockitoAnnotations
 import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
-import platform.test.runner.parameterized.ParameterizedAndroidJunit4
-import platform.test.runner.parameterized.Parameters
 
-@RunWith(ParameterizedAndroidJunit4::class)
+@RunWith(AndroidJUnit4::class)
 @RunWithLooper(setAsMainLooper = true)
 @SmallTest
-class BluetoothTileTest(flags: FlagsParameterization) : SysuiTestCase() {
-
-    init {
-        mSetFlagsRule.setFlagsParameterization(flags)
-    }
+class BluetoothTileTest : SysuiTestCase() {
 
     @get:Rule val checkFlagsRule = DeviceFlagsValueProvider.createCheckFlagsRule()
 
@@ -506,18 +497,6 @@ class BluetoothTileTest(flags: FlagsParameterization) : SysuiTestCase() {
     }
 
     private fun createExpectedIcon(resId: Int): QSTile.Icon {
-        return if (isEnabled) {
-            DrawableIconWithRes(mContext.getDrawable(resId), resId)
-        } else {
-            QSTileImpl.ResourceIcon.get(resId)
-        }
-    }
-
-    companion object {
-        @JvmStatic
-        @Parameters(name = "{0}")
-        fun getParams(): List<FlagsParameterization> {
-            return allCombinationsOf(QSComposeFragment.FLAG_NAME)
-        }
+        return DrawableIconWithRes(mContext.getDrawable(resId), resId)
     }
 }

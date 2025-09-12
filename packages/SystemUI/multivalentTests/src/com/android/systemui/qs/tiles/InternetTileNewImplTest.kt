@@ -17,11 +17,10 @@
 package com.android.systemui.qs.tiles
 
 import android.os.Handler
-import android.platform.test.flag.junit.FlagsParameterization
-import android.platform.test.flag.junit.FlagsParameterization.allCombinationsOf
 import android.service.quicksettings.Tile
 import android.testing.TestableLooper
 import android.testing.TestableLooper.RunWithLooper
+import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.internal.logging.MetricsLogger
 import com.android.systemui.SysuiTestCase
@@ -30,7 +29,6 @@ import com.android.systemui.plugins.ActivityStarter
 import com.android.systemui.plugins.statusbar.StatusBarStateController
 import com.android.systemui.qs.QSHost
 import com.android.systemui.qs.QsEventLogger
-import com.android.systemui.qs.flags.QSComposeFragment
 import com.android.systemui.qs.logging.QSLogger
 import com.android.systemui.qs.tiles.dialog.InternetDetailsViewModel
 import com.android.systemui.qs.tiles.dialog.InternetDialogManager
@@ -65,16 +63,11 @@ import org.mockito.Mock
 import org.mockito.MockitoAnnotations
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
-import platform.test.runner.parameterized.ParameterizedAndroidJunit4
-import platform.test.runner.parameterized.Parameters
 
 @SmallTest
 @RunWithLooper(setAsMainLooper = true)
-@RunWith(ParameterizedAndroidJunit4::class)
-class InternetTileNewImplTest(flags: FlagsParameterization) : SysuiTestCase() {
-    init {
-        mSetFlagsRule.setFlagsParameterization(flags)
-    }
+@RunWith(AndroidJUnit4::class)
+class InternetTileNewImplTest : SysuiTestCase() {
 
     lateinit var underTest: InternetTileNewImpl
 
@@ -250,11 +243,5 @@ class InternetTileNewImplTest(flags: FlagsParameterization) : SysuiTestCase() {
         const val WIFI_SSID = "test ssid"
         val ACTIVE_WIFI =
             WifiNetworkModel.Active.of(isValidated = true, level = 4, ssid = WIFI_SSID)
-
-        @JvmStatic
-        @Parameters(name = "{0}")
-        fun getParams(): List<FlagsParameterization> {
-            return allCombinationsOf(QSComposeFragment.FLAG_NAME)
-        }
     }
 }

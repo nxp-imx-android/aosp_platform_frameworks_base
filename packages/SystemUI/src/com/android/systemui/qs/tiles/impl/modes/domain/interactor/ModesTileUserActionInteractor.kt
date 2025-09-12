@@ -24,7 +24,6 @@ import com.android.settingslib.notification.modes.ZenMode
 import com.android.systemui.animation.Expandable
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Main
-import com.android.systemui.qs.flags.QsInCompose
 import com.android.systemui.qs.tiles.base.domain.actions.QSTileIntentUserInputHandler
 import com.android.systemui.qs.tiles.base.domain.interactor.QSTileUserActionInteractor
 import com.android.systemui.qs.tiles.base.domain.model.QSTileInput
@@ -73,10 +72,6 @@ constructor(
     }
 
     suspend fun handleToggleClick(modesTileModel: ModesTileModel) {
-        if (QsInCompose.isUnexpectedlyInLegacyMode()) {
-            return
-        }
-
         // If no modes are on, turn on the last mode that was manually activated. Otherwise, turn
         // them all off.
         // We want this toggle to work as a shortcut to DND in most cases, but it should still

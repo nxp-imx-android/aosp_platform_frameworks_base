@@ -59,7 +59,6 @@ import com.android.systemui.plugins.qs.TileDetailsViewModel;
 import com.android.systemui.plugins.statusbar.StatusBarStateController;
 import com.android.systemui.qs.QSHost;
 import com.android.systemui.qs.QsEventLogger;
-import com.android.systemui.qs.flags.QsInCompose;
 import com.android.systemui.qs.logging.QSLogger;
 import com.android.systemui.qs.tileimpl.QSTileImpl;
 import com.android.systemui.res.R;
@@ -207,18 +206,15 @@ public class BluetoothTile extends QSTileImpl<BooleanState> {
     protected void handleUpdateState(BooleanState state, Object arg) {
         checkIfRestrictionEnforcedByAdminOnly(state, UserManager.DISALLOW_BLUETOOTH);
         final boolean transientEnabling = arg == ARG_SHOW_TRANSIENT_ENABLING;
-        final boolean transientDisabling =
-                QsInCompose.isEnabled() && arg == ARG_SHOW_TRANSIENT_DISABLING;
+        final boolean transientDisabling = arg == ARG_SHOW_TRANSIENT_DISABLING;
         final boolean enabled =
                 transientEnabling || (mController.isBluetoothEnabled() && !transientDisabling);
         final boolean connected = mController.isBluetoothConnected();
         final boolean connecting = mController.isBluetoothConnecting();
         state.isTransient = transientEnabling || transientDisabling || connecting
-                || mController.getBluetoothState() == BluetoothAdapter.STATE_TURNING_ON;
-        if (QsInCompose.isEnabled()) {
-            state.isTransient = state.isTransient
-                    || mController.getBluetoothState() == BluetoothAdapter.STATE_TURNING_OFF;
-        }
+                || mController.getBluetoothState() == BluetoothAdapter.STATE_TURNING_ON
+                || mController.getBluetoothState() == BluetoothAdapter.STATE_TURNING_OFF;
+
         if (!enabled || !connected || state.isTransient) {
             if (refactorBatteryLevelDisplay()) {
                 unregisterBatteryChangedCallback();
@@ -266,13 +262,8 @@ public class BluetoothTile extends QSTileImpl<BooleanState> {
 
     private void toggleBluetooth() {
         final boolean isEnabled = mState.value;
-        if (QsInCompose.isEnabled()) {
-            // Immediately enter transient enabling state when toggling bluetooth state.
-            refreshState(isEnabled ? ARG_SHOW_TRANSIENT_DISABLING : ARG_SHOW_TRANSIENT_ENABLING);
-        } else {
-            // Immediately enter transient enabling state when turning bluetooth on.
-            refreshState(isEnabled ? ARG_SHOW_TRANSIENT_DISABLING : null);
-        }
+        // Immediately enter transient enabling state when toggling bluetooth state.
+        refreshState(isEnabled ? ARG_SHOW_TRANSIENT_DISABLING : ARG_SHOW_TRANSIENT_ENABLING);
         mController.setBluetoothEnabled(!isEnabled);
     }
 

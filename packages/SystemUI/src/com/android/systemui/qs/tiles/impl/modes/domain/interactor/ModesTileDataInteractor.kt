@@ -26,7 +26,6 @@ import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.keyguard.data.repository.KeyguardRepository
 import com.android.systemui.keyguard.shared.model.StatusBarState
-import com.android.systemui.qs.flags.QsInCompose
 import com.android.systemui.qs.tiles.ModesTile
 import com.android.systemui.qs.tiles.base.domain.interactor.QSTileDataInteractor
 import com.android.systemui.qs.tiles.base.domain.model.DataUpdateTrigger
@@ -113,7 +112,7 @@ constructor(
             if (mainActiveMode != null) {
                 zenModeInteractor.getModeIcon(mainActiveMode)
             } else {
-                if (QsInCompose.isEnabled && quickMode != null) {
+                if (quickMode != null) {
                     zenModeInteractor.getModeIcon(quickMode)
                 } else {
                     getDefaultTileIcon()
@@ -152,7 +151,7 @@ constructor(
     }
 
     fun setQuickModeOverride(deactivatedModeIds: List<String>) {
-        if (!QsInCompose.isEnabled || !Flags.modesUiTileReactivatesLast()) {
+        if (!Flags.modesUiTileReactivatesLast()) {
             return
         }
 
