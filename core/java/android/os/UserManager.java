@@ -1062,6 +1062,24 @@ public class UserManager {
     public static final String DISALLOW_FACTORY_RESET = "no_factory_reset";
 
     /**
+     * Specifies if a user is disallowed from adding new guests. The default value is
+     * <code>false</code>.
+     *
+     * <p>Holders of the permission
+     * {@link android.Manifest.permission#MANAGE_DEVICE_POLICY_MODIFY_USERS}
+     * can set this restriction using the DevicePolicyManager APIs mentioned below.
+     *
+     * <p>Key for user restrictions.
+     * <p>Type: Boolean
+     * @see DevicePolicyManager#addUserRestriction(ComponentName, String)
+     * @see DevicePolicyManager#clearUserRestriction(ComponentName, String)
+     * @see #getUserRestrictions()
+     * @hide
+     */
+    @FlaggedApi(android.os.Flags.FLAG_DISALLOW_ADD_GUEST)
+    public static final String DISALLOW_ADD_GUEST = "no_add_guest";
+
+    /**
      * Specifies if a user is disallowed from adding new users. This can only be set by device
      * owners or profile owners on the main user. The default value is <code>false</code>.
      * <p> When the device is an organization-owned device, this restriction will be set as
@@ -2134,6 +2152,7 @@ public class UserManager {
     @StringDef(value = {
             ALLOW_PARENT_PROFILE_APP_LINKING,
             DISALLOW_ADD_CLONE_PROFILE,
+            DISALLOW_ADD_GUEST,
             DISALLOW_ADD_MANAGED_PROFILE,
             DISALLOW_ADD_PRIVATE_PROFILE,
             DISALLOW_ADD_USER,
