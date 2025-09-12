@@ -139,3 +139,15 @@ flag {
   description: "Enables AppBindingService to dispatch actions to be executed by AppServiceConnection after a connection is established."
   bug: "441932377"
 }
+
+flag {
+  name: "enable_confirmation_dialog_bypass"
+  is_exported: false
+  namespace: "supervision"
+  description: "Flag that enables the confirmation dialog bypass"
+  bug: "415102122"
+
+  metadata {
+    purpose: PURPOSE_BUGFIX
+  }
+}
