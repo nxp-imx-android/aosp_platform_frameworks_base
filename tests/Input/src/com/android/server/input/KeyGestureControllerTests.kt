@@ -110,6 +110,7 @@ import org.mockito.kotlin.times
     com.android.hardware.input.Flags.FLAG_ENABLE_NEW_25Q2_KEYCODES,
     com.android.hardware.input.Flags.FLAG_ENABLE_QUICK_SETTINGS_PANEL_SHORTCUT,
     com.android.hardware.input.Flags.FLAG_ENABLE_PARTIAL_SCREENSHOT_KEYBOARD_SHORTCUT,
+    com.android.hardware.input.Flags.FLAG_KEYBOARD_BACKLIGHT_SHORTCUTS,
 )
 class KeyGestureControllerTests {
 

@@ -329,6 +329,22 @@ object KeyGestureTestData {
                 intArrayOf(KeyGestureEvent.ACTION_GESTURE_COMPLETE),
                 isGestureHandlerRegistered = true,
             ),
+            KeyGestureData(
+                "META + BRIGHTNESS_UP -> Keyboard Backlight Up",
+                intArrayOf(KeyEvent.KEYCODE_META_LEFT, KeyEvent.KEYCODE_BRIGHTNESS_UP),
+                KeyGestureEvent.KEY_GESTURE_TYPE_KEYBOARD_BACKLIGHT_UP,
+                intArrayOf(KeyEvent.KEYCODE_BRIGHTNESS_UP),
+                KeyEvent.META_META_ON,
+                intArrayOf(KeyGestureEvent.ACTION_GESTURE_COMPLETE),
+            ),
+            KeyGestureData(
+                "META + BRIGHTNESS_DOWN -> Keyboard Backlight Down",
+                intArrayOf(KeyEvent.KEYCODE_META_RIGHT, KeyEvent.KEYCODE_BRIGHTNESS_DOWN),
+                KeyGestureEvent.KEY_GESTURE_TYPE_KEYBOARD_BACKLIGHT_DOWN,
+                intArrayOf(KeyEvent.KEYCODE_BRIGHTNESS_DOWN),
+                KeyEvent.META_META_ON,
+                intArrayOf(KeyGestureEvent.ACTION_GESTURE_COMPLETE),
+            ),
         )
 
     // All Key gestures that can be captured by the focused window (and should not happen in
