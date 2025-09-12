@@ -162,7 +162,6 @@ class SuggestedDeviceConnectionManagerTest {
         emulateOnDeviceListUpdate(mediaDevices)
         runCurrent()
 
-        verify(localMediaManager).stopScan()
         verify(localMediaManager).connectDevice(mediaDevice1, ROUTING_CHANGE_INFO)
         assertThat(deviceCallbacks).hasSize(1) // Callback for connection state change
     }
@@ -230,11 +229,13 @@ class SuggestedDeviceConnectionManagerTest {
         runCurrent()
 
         verify(localMediaManager).connectDevice(mediaDevice1, ROUTING_CHANGE_INFO)
+        verify(localMediaManager, never()).stopScan() // don't stop scan until connected.
         localMediaManager.stub { on { currentConnectedDevice } doReturn mediaDevice1 }
         emulateOnSelectedDeviceStateChanged(mediaDevice1, STATE_CONNECTED)
         runCurrent()
 
         verify(callback).invoke(suggestedDeviceState, true)
+        verify(localMediaManager).stopScan()
         assertThat(deviceCallbacks).hasSize(0)
     }
 

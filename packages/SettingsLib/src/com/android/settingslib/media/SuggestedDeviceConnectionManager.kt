@@ -25,6 +25,8 @@ import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.CancellableContinuation
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withTimeoutOrNull
@@ -81,21 +83,31 @@ open class SuggestedDeviceConnectionManager(
     private suspend fun awaitConnect(
         suggestedDeviceState: SuggestedDeviceState,
         routingChangeInfo: RoutingChangeInfo,
-    ): Boolean {
-        val suggestedRouteId = suggestedDeviceState.suggestedDeviceInfo.routeId
-        val deviceFromCache = getDeviceByRouteId(localMediaManager.mediaDevices, suggestedRouteId)
-        val deviceToConnect =
-            deviceFromCache?.also { Log.i(TAG, "Device from cache found.") }
-                ?: run {
-                    Log.i(TAG, "Scanning for device.")
-                    awaitScanForDevice(suggestedRouteId)
-                }
-        if (deviceToConnect == null) {
-            Log.w(TAG, "Failed to find a device to connect to. routeId = $suggestedRouteId")
-            return false
+    ): Boolean = coroutineScope {
+        var scanStarted = false
+        try {
+            val suggestedRouteId = suggestedDeviceState.suggestedDeviceInfo.routeId
+            val deviceFromCache =
+                getDeviceByRouteId(localMediaManager.mediaDevices, suggestedRouteId)
+            val deviceToConnect =
+                deviceFromCache?.also { Log.i(TAG, "Device from cache found.") }
+                    ?: run {
+                        Log.i(TAG, "Scanning for device.")
+                        // Start listening before starting scan to avoid missing events.
+                        val scanResultDeferred = async { awaitScanForDevice(suggestedRouteId) }
+                        localMediaManager.startScan()
+                        scanStarted = true
+                        scanResultDeferred.await()
+                    }
+            if (deviceToConnect == null) {
+                Log.w(TAG, "Failed to find a device to connect to. routeId = $suggestedRouteId")
+                return@coroutineScope false
+            }
+            Log.i(TAG, "Connecting to device. id = ${deviceToConnect.id}")
+            return@coroutineScope awaitConnectToDevice(deviceToConnect, routingChangeInfo)
+        } finally {
+            if (scanStarted) localMediaManager.stopScan()
         }
-        Log.i(TAG, "Connecting to device. id = ${deviceToConnect.id}")
-        return awaitConnectToDevice(deviceToConnect, routingChangeInfo)
     }
 
     private suspend fun awaitScanForDevice(suggestedRouteId: String): MediaDevice? {
@@ -111,12 +123,11 @@ open class SuggestedDeviceConnectionManager(
                                     TAG,
                                     "Scan found matched device. routeId = $suggestedRouteId",
                                 )
-                                continuation.resume(device)
+                                if (continuation.isActive) continuation.resume(device)
                             }
                         }
                     }
                     localMediaManager.registerCallback(callback)
-                    localMediaManager.startScan()
                 }
             } ?: run {
                 Log.w(TAG, "Scan timed out. routeId = $suggestedRouteId")
@@ -124,7 +135,6 @@ open class SuggestedDeviceConnectionManager(
             }
         } finally {
             localMediaManager.unregisterCallback(callback)
-            localMediaManager.stopScan()
         }
     }
 
@@ -149,7 +159,7 @@ open class SuggestedDeviceConnectionManager(
                         private fun checkConnectionStatus() {
                             if (localMediaManager.currentConnectedDevice?.id == deviceId) {
                                 Log.i(TAG, "Successfully connected to device. id = $deviceId")
-                                continuation.resume(true)
+                                if (continuation.isActive) continuation.resume(true)
                             }
                         }
                     }
