@@ -30,7 +30,7 @@ import com.android.systemui.kosmos.runCurrent
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.lifecycle.activateIn
-import com.android.systemui.shade.data.repository.shadeRepository
+import com.android.systemui.shade.domain.interactor.enableSingleShade
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.Job
@@ -45,10 +45,15 @@ import platform.test.runner.parameterized.Parameters
 class LockscreenContentViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
 
     private val kosmos: Kosmos = testKosmos()
-
-    private lateinit var underTest: LockscreenContentViewModel
     private val activationJob = Job()
     private val viewState: ViewStateAccessor = ViewStateAccessor({ 0f })
+    private val Kosmos.underTest by
+        Kosmos.Fixture {
+            lockscreenContentViewModelFactory.create(
+                fakeKeyguardTransitionAnimationCallback,
+                viewState,
+            )
+        }
 
     companion object {
         @JvmStatic
@@ -65,12 +70,7 @@ class LockscreenContentViewModelTest(flags: FlagsParameterization) : SysuiTestCa
     @Before
     fun setup() {
         with(kosmos) {
-            shadeRepository.setShadeLayoutWide(false)
-            underTest =
-                lockscreenContentViewModelFactory.create(
-                    fakeKeyguardTransitionAnimationCallback,
-                    viewState,
-                )
+            enableSingleShade()
             underTest.activateIn(testScope, activationJob)
         }
     }
