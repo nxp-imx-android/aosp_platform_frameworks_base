@@ -45,6 +45,8 @@ import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.server.LocalServices;
 import com.android.server.devicepolicy.OwnersData.OwnerInfo;
+import com.android.server.pm.UserManagerInternal;
+import com.android.server.utils.Slogf;
 import com.android.server.wm.ActivityTaskManagerInternal;
 
 import java.io.File;
@@ -66,6 +68,7 @@ class Owners {
     private final PackageManagerInternal mPackageManagerInternal;
     private final ActivityTaskManagerInternal mActivityTaskManagerInternal;
     private final ActivityManagerInternal mActivityManagerInternal;
+    private final UserManagerInternal mUserManagerInternal;
     private final DeviceStateCacheImpl mDeviceStateCache;
 
     @GuardedBy("mData")
@@ -78,12 +81,14 @@ class Owners {
             PackageManagerInternal packageManagerInternal,
             ActivityTaskManagerInternal activityTaskManagerInternal,
             ActivityManagerInternal activityManagerInternal,
+            UserManagerInternal userManagerInternal,
             DeviceStateCacheImpl deviceStateCache,
             PolicyPathProvider pathProvider) {
         mUserManager = userManager;
         mPackageManagerInternal = packageManagerInternal;
         mActivityTaskManagerInternal = activityTaskManagerInternal;
         mActivityManagerInternal = activityManagerInternal;
+        mUserManagerInternal = userManagerInternal;
         mDeviceStateCache = deviceStateCache;
         mData = new OwnersData(pathProvider);
     }
@@ -119,9 +124,11 @@ class Owners {
     // ActivityTaskManager.
     @GuardedBy("mData")
     private void notifyChangeLocked() {
+        Slogf.d(TAG, "notifyChangeLocked()");
         pushToDevicePolicyManager();
         pushToPackageManagerLocked();
         pushToActivityManagerLocked();
+        pushToUserManagerLocked();
         pushToAppOpsLocked();
     }
 
@@ -168,6 +175,11 @@ class Owners {
             }
         }
         mActivityManagerInternal.setProfileOwnerUid(profileOwners);
+    }
+
+    @GuardedBy("mData")
+    private void pushToUserManagerLocked() {
+        mUserManagerInternal.setDeviceOwnerUserId(getDeviceOwnerUserId());
     }
 
     @GuardedBy("mData")
@@ -731,6 +743,7 @@ class Owners {
         synchronized (mData) {
             mSystemReady = true;
             pushToActivityManagerLocked();
+            pushToUserManagerLocked();
             pushToAppOpsLocked();
         }
     }

@@ -631,6 +631,14 @@ public abstract class UserManagerInternal {
     public abstract void logLaunchedHsuActivity(ComponentName activity);
 
     /**
+     * Sets the id of the {@code DeviceOwner}, if any.
+     *
+     * <p>{@code DeviceOwner} is a {@code DPM} (Device Policy Management) concept and hence should
+     * only be called by the {@code DPM} infra.
+     */
+    public abstract void setDeviceOwnerUserId(@CanBeNULL @UserIdInt int userId);
+
+    /**
      * Checks whether to show a notification for sounds (e.g., alarms, timers, etc.) from background
      * users.
      */
