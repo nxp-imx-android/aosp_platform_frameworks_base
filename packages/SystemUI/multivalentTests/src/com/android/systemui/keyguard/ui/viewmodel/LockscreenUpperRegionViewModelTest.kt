@@ -59,8 +59,8 @@ import platform.test.runner.parameterized.Parameters
 class LockscreenUpperRegionViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
 
     private val kosmos: Kosmos = testKosmos()
-
-    private lateinit var underTest: LockscreenUpperRegionViewModel
+    private val Kosmos.underTest by
+        Kosmos.Fixture { lockscreenUpperRegionViewModelFactory.create() }
     private val activationJob = Job()
 
     companion object {
@@ -78,8 +78,7 @@ class LockscreenUpperRegionViewModelTest(flags: FlagsParameterization) : SysuiTe
     @Before
     fun setup() {
         with(kosmos) {
-            shadeRepository.setShadeLayoutWide(false)
-            underTest = lockscreenUpperRegionViewModelFactory.create()
+            enableSingleShade()
             underTest.activateIn(testScope, activationJob)
         }
     }
