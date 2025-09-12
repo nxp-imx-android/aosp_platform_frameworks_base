@@ -161,7 +161,12 @@ class AccessibilityInputFilterInputTest {
             withSource(STYLUS_SOURCE)
         )
     private val joystickDeviceId = 3
-    private val fromJoystick = allOf(withDeviceId(joystickDeviceId), withSource(SOURCE_JOYSTICK))
+    private val fromJoystick =
+        allOf(
+            withDeviceId(joystickDeviceId),
+            withSource(SOURCE_JOYSTICK),
+            withMotionAction(ACTION_MOVE)
+        )
 
     @Before
     fun setUp() {
