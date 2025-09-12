@@ -23,7 +23,6 @@ import com.android.compose.animation.scene.ObservableTransitionState
 import com.android.compose.animation.scene.OverlayKey
 import com.android.compose.animation.scene.SceneKey
 import com.android.systemui.SysuiTestableContext
-import com.android.systemui.res.R
 import com.android.systemui.scene.domain.interactor.SceneInteractor
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.scene.shared.model.Overlays
@@ -83,29 +82,17 @@ class ShadeTestUtil(val delegate: ShadeTestUtilDelegate) {
         delegate.setTracking(tracking)
     }
 
-    /** Sets the shade to half collapsed with no touch input. */
-    fun programmaticCollapseShade() {
-        delegate.assertFlagValid()
-        delegate.programmaticCollapseShade()
-    }
-
     fun setQsFullscreen(qsFullscreen: Boolean) {
         delegate.assertFlagValid()
         delegate.setQsFullscreen(qsFullscreen)
 
         // If QS is full screen, expansion is 1 and split shade is off.
         delegate.setQsExpansion(1.0f)
-        delegate.setSplitShade(false)
     }
 
     fun setLegacyExpandedOrAwaitingInputTransfer(legacyExpandedOrAwaitingInputTransfer: Boolean) {
         delegate.assertFlagValid()
         delegate.setLegacyExpandedOrAwaitingInputTransfer(legacyExpandedOrAwaitingInputTransfer)
-    }
-
-    fun setSplitShade(splitShade: Boolean) {
-        delegate.assertFlagValid()
-        delegate.setSplitShade(splitShade)
     }
 }
 
@@ -138,8 +125,6 @@ interface ShadeTestUtilDelegate {
     fun setQsFullscreen(qsFullscreen: Boolean)
 
     fun setLegacyExpandedOrAwaitingInputTransfer(legacyExpandedOrAwaitingInputTransfer: Boolean)
-
-    fun setSplitShade(splitShade: Boolean)
 }
 
 /** Sets up shade state for tests when the scene container flag is disabled. */
@@ -202,14 +187,6 @@ class ShadeTestUtilLegacyImpl(
         // Requesting a value will cause the stateIn to begin flowing, otherwise incorrect values
         // may not flow fast enough to the stateIn
         shadeInteractor.isAnyFullyExpanded.value
-    }
-
-    override fun setSplitShade(splitShade: Boolean) {
-        context
-            .getOrCreateTestableResources()
-            .addOverride(R.bool.config_use_split_notification_shade, splitShade)
-        shadeRepository.setShadeLayoutWide(splitShade)
-        testScope.runCurrent()
     }
 }
 
@@ -387,14 +364,6 @@ class ShadeTestUtilSceneImpl(
             }
 
         sceneInteractor.setTransitionState(flowOf(transitionState))
-        testScope.runCurrent()
-    }
-
-    override fun setSplitShade(splitShade: Boolean) {
-        context
-            .getOrCreateTestableResources()
-            .addOverride(R.bool.config_use_split_notification_shade, splitShade)
-        shadeRepository.setShadeLayoutWide(splitShade)
         testScope.runCurrent()
     }
 
