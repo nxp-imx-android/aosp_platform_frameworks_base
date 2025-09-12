@@ -232,6 +232,7 @@ class NotificationListViewModelTest(flags: FlagsParameterization) : SysuiTestCas
     fun shouldShowEmptyShadeView_falseWhenQsExpandedDefault() =
         kosmos.runTest {
             val shouldShow by collectLastValue(underTest.shouldShowEmptyShadeView.map { it.value })
+            enableSingleShade()
 
             // WHEN has no notifs
             activeNotificationListRepository.setActiveNotifs(count = 0)
@@ -269,6 +270,7 @@ class NotificationListViewModelTest(flags: FlagsParameterization) : SysuiTestCas
     fun shouldShowEmptyShadeView_notAnimatingWhenQsExpandedOnKeyguard() =
         kosmos.runTest {
             val shouldShow by collectLastValue(underTest.shouldShowEmptyShadeView)
+            enableSingleShade()
 
             // WHEN has no notifs
             activeNotificationListRepository.setActiveNotifs(count = 0)
