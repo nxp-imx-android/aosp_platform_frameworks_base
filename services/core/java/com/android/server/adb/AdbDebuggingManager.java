@@ -130,6 +130,14 @@ public class AdbDebuggingManager {
     /** The maximum time to wait for the adbd service to change state when toggling. */
     private static final long ADBD_STATE_CHANGE_TIMEOUT = DEFAULT_DISPATCHING_TIMEOUT_MILLIS;
 
+    /**
+     * Parameters for QR code pairing.
+     *
+     * @param serviceName The service name of the mdns client.
+     * @param password The password given by the mdns client.
+     */
+    record QRPairingParams(String serviceName, String password) {}
+
     private AdbPairingThread mAdbPairingThread = null;
 
     /**
@@ -1017,13 +1025,11 @@ public class AdbDebuggingManager {
                     logAdbConnectionChanged(AdbProtoEnums.ADB_WIFI_PAIRING_CODE_STARTED);
                 }
                 case MSG_PAIR_QR_CODE -> {
-                    Bundle bundle = (Bundle) msg.obj;
-                    String serviceName = bundle.getString("serviceName");
-                    String password = bundle.getString("password");
+                    QRPairingParams params = (QRPairingParams) msg.obj;
                     mAdbPairingThread =
                             new AdbPairingThread(
-                                    password,
-                                    serviceName,
+                                    params.password(),
+                                    params.serviceName(),
                                     mContext,
                                     AdbWifiPairingMethod.QR_CODE,
                                     this);
@@ -1619,10 +1625,8 @@ public class AdbDebuggingManager {
 
     /** Enable pairing by pairing code */
     public void enablePairingByQrCode(String serviceName, String password) {
-        Bundle bundle = new Bundle();
-        bundle.putString("serviceName", serviceName);
-        bundle.putString("password", password);
-        Message message = Message.obtain(mHandler, AdbDebuggingHandler.MSG_PAIR_QR_CODE, bundle);
+        Message message = Message.obtain(mHandler, AdbDebuggingHandler.MSG_PAIR_QR_CODE,
+                new QRPairingParams(serviceName, password));
         mHandler.sendMessage(message);
     }
 
