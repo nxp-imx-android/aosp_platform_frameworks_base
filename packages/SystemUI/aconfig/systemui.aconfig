@@ -1749,14 +1749,6 @@ flag {
 }
 
 flag {
-    name: "lockscreen_font"
-    namespace: "systemui"
-    description: "Read-only flag for lockscreen font"
-    bug: "393610165"
-    is_fixed_read_only: true
-}
-
-flag {
     name: "move_transition_animation_layer"
     namespace: "systemui"
     description: "Enables moving the launching window on top of the origin window in the Animation library."
