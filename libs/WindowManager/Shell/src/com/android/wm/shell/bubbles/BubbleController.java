@@ -919,16 +919,13 @@ public class BubbleController implements ConfigurationChangeListener,
         mDataRepository.removeBubblesForUser(removedUserId, parentUserId);
     }
 
-    /** Called when sensitive notification state has changed */
+    /** Called when sensitive notification state has changed (e.g. user screen recording). */
     public void onSensitiveNotificationProtectionStateChanged(
             boolean sensitiveNotificationProtectionActive) {
-        if (mStackView != null) {
-            mStackView.onSensitiveNotificationProtectionStateChanged(
-                    sensitiveNotificationProtectionActive);
-            BubbleLog.d(
-                    "BubbleController.onSensitiveNotificationProtectionStateChanged() active=%b",
-                    sensitiveNotificationProtectionActive);
-        }
+        mBubbleData.setSensitiveNotificationProtectionActive(
+                sensitiveNotificationProtectionActive);
+        BubbleLog.d("BubbleController.onSensitiveNotificationProtectionStateChanged() active=%b",
+                sensitiveNotificationProtectionActive);
     }
 
     /** Whether bubbles would be shown with the bubble bar UI. */

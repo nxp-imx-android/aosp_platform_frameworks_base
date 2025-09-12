@@ -263,6 +263,11 @@ public class BubbleData {
     private Bubbles.PendingIntentCanceledListener mCancelledListener;
 
     /**
+     * When sensitive notification protection is active we shouldn't show the flyout for bubbles.
+     */
+    private boolean mSensitiveNotificationProtectionActive = false;
+
+    /**
      * We track groups with summaries that aren't visibly displayed but still kept around because
      * the bubble(s) associated with the summary still exist.
      *
@@ -313,6 +318,15 @@ public class BubbleData {
     public void setPendingIntentCancelledListener(
             Bubbles.PendingIntentCanceledListener listener) {
         mCancelledListener = listener;
+    }
+
+    /**
+     * Sets whether the sensitive notification protection state is active (e.g. user is screen
+     * recording so we hide bubble flyouts)
+     */
+    public void setSensitiveNotificationProtectionActive(
+            boolean sensitiveNotificationProtectionActive) {
+        mSensitiveNotificationProtectionActive = sensitiveNotificationProtectionActive;
     }
 
     public void onMaxBubblesChanged() {
@@ -583,7 +597,7 @@ public class BubbleData {
             @Nullable BubbleBarLocation bubbleBarLocation) {
         mPendingBubbles.remove(bubble.getKey()); // No longer pending once we're here
         Bubble prevBubble = getBubbleInStackWithKey(bubble.getKey());
-        suppressFlyout |= !bubble.isTextChanged();
+        suppressFlyout |= !bubble.isTextChanged() || mSensitiveNotificationProtectionActive;
         BubbleLog.d("BubbleData.notificationEntryUpdated() notifEntryUpdated=%s prevBubble=%b"
                         + " suppressFlyout=%b showInShade=%b autoExpand=%b",
                 bubble.getKey(), (prevBubble != null), suppressFlyout, showInShade,

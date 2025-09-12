@@ -2759,11 +2759,6 @@ public class BubbleStackView extends FrameLayout
         }
     }
 
-    void onSensitiveNotificationProtectionStateChanged(
-            boolean sensitiveNotificationProtectionActive) {
-        mSensitiveNotificationProtectionActive = sensitiveNotificationProtectionActive;
-    }
-
     /**
      * Asks the BubbleController to hide the IME from anywhere, whether it's focused on Bubbles or
      * not.
@@ -3537,7 +3532,6 @@ public class BubbleStackView extends FrameLayout
                 || isExpanded()
                 || mIsExpansionAnimating
                 || mIsGestureInProgress
-                || mSensitiveNotificationProtectionActive
                 || mBubbleToExpandAfterFlyoutCollapse != null
                 || bubbleView == null) {
             if (bubbleView != null && mFlyout.getVisibility() != VISIBLE) {

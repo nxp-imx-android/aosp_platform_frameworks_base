@@ -1531,6 +1531,29 @@ public class BubbleDataTest extends ShellTestCase {
                 .isEqualTo(Bubbles.DISMISS_JUMPCUT_BUBBLE_SWITCH);
     }
 
+    @Test
+    public void testSensitiveNotificationProtection_active() {
+        mBubbleData.setSensitiveNotificationProtectionActive(true);
+        sendUpdatedEntryAtTime(mEntryA1, 1000);
+        Bubble bubbleA1 = mBubbleData.getBubbleInStackWithKey(mEntryA1.getKey());
+        assertThat(bubbleA1.showFlyout()).isFalse();
+    }
+
+    @Test
+    public void testSensitiveNotificationProtection_notActive() {
+        mBubbleData.setSensitiveNotificationProtectionActive(true);
+        sendUpdatedEntryAtTime(mEntryA1, 1000);
+        Bubble bubbleA1 = mBubbleData.getBubbleInStackWithKey(mEntryA1.getKey());
+        assertThat(bubbleA1.showFlyout()).isFalse();
+
+        mBubbleData.setSensitiveNotificationProtectionActive(false);
+        sendUpdatedEntryAtTime(mEntryA1, 1000);
+        sendUpdatedEntryAtTime(mEntryA2, 1000);
+        assertThat(bubbleA1.showFlyout()).isTrue();
+        Bubble bubbleA2 = mBubbleData.getBubbleInStackWithKey(mEntryA1.getKey());
+        assertThat(bubbleA2.showFlyout()).isTrue();
+    }
+
     private void verifyUpdateReceived() {
         verify(mListener).applyUpdate(mUpdateCaptor.capture());
         reset(mListener);
