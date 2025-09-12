@@ -477,7 +477,7 @@ class CompanionDeviceShellCommand extends ShellCommand {
                     if (bundle == null) {
                         bundle = new PersistableBundle();
                     }
-                    if (value == null) {
+                    if (value == "null") {
                         bundle.remove(key);
                     } else {
                         try {
@@ -489,6 +489,26 @@ class CompanionDeviceShellCommand extends ShellCommand {
                     mDataSyncProcessor.setLocalMetadata(userId, feature, bundle);
                     out.println("Set local metadata for user " + userId + " key " + key
                             + " value " + value);
+                    break;
+                }
+
+                case "get-local-metadata": {
+                    int userId = getNextIntArgRequired();
+                    String feature = getNextArgRequired();
+                    String key = getNextArgRequired();
+                    PersistableBundle bundle = mDataSyncProcessor.getLocalMetadata(userId)
+                            .getPersistableBundle(feature);
+                    out.println(bundle.getString(key, "null"));
+                    break;
+                }
+
+                case "clear-local-metadata": {
+                    int userId = getNextIntArgRequired();
+                    PersistableBundle bundle = mDataSyncProcessor.getLocalMetadata(userId);
+                    bundle.keySet().stream().forEach(key -> {
+                        mDataSyncProcessor.setLocalMetadata(userId, key, null);
+                    });
+                    out.println("Cleared local metadata for user " + userId);
                     break;
                 }
 
@@ -650,6 +670,12 @@ class CompanionDeviceShellCommand extends ShellCommand {
 
         pw.println("  set-local-metadata <USER_ID> <FEATURE_KEY> <KEY> <VALUE>");
         pw.println("      Set local metadata for the user.");
+        pw.println("      USE FOR DEBUGGING AND/OR TESTING PURPOSES ONLY.");
+        pw.println("  get-local-metadata <USER_ID> <FEATURE_KEY> <KEY>");
+        pw.println("      Fetch local metadata for the user at a given key.");
+        pw.println("      USE FOR DEBUGGING AND/OR TESTING PURPOSES ONLY.");
+        pw.println("  clear-local-metadata <USER_ID>");
+        pw.println("      Clear local metadata for the user.");
         pw.println("      USE FOR DEBUGGING AND/OR TESTING PURPOSES ONLY.");
     }
 }
