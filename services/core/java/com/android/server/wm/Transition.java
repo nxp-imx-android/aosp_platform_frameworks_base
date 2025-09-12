@@ -50,6 +50,7 @@ import static android.view.WindowManager.transitTypeToString;
 import static android.window.DesktopExperienceFlags.ENABLE_DESKTOP_WINDOWING_PIP;
 import static android.window.DesktopExperienceFlags.ENABLE_DISPLAY_DISCONNECT_INTERACTION;
 import static android.window.DesktopExperienceFlags.ENABLE_DISPLAY_FOCUS_IN_SHELL_TRANSITIONS;
+import static android.window.DesktopExperienceFlags.ENABLE_FILTER_REMOVING_DISPLAY_BUGFIX;
 import static android.window.TaskFragmentAnimationParams.DEFAULT_ANIMATION_BACKGROUND_COLOR;
 import static android.window.TransitionInfo.AnimationOptions;
 import static android.window.TransitionInfo.FLAGS_IS_OCCLUDED_NO_ANIMATION;
@@ -2429,12 +2430,17 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
             mController.mLatestOnTopTasksReported.put(displayId, onTopTasksEnd);
             onTopTasksEnd = reportedOnTop != null ? reportedOnTop : new ArrayList<>();
             onTopTasksEnd.clear();
-
-            if (ENABLE_DISPLAY_FOCUS_IN_SHELL_TRANSITIONS.isTrue()
+            if (!ENABLE_FILTER_REMOVING_DISPLAY_BUGFIX.isTrue()
+                    && ENABLE_DISPLAY_FOCUS_IN_SHELL_TRANSITIONS.isTrue()
                     && mOnTopDisplayStart != onTopDisplayEnd
                     && displayId == onTopDisplayEnd.mDisplayId) {
                 addToTopChange(onTopDisplayEnd);
             }
+        }
+        if (ENABLE_FILTER_REMOVING_DISPLAY_BUGFIX.isTrue()
+                && ENABLE_DISPLAY_FOCUS_IN_SHELL_TRANSITIONS.isTrue()
+                && mOnTopDisplayStart != onTopDisplayEnd) {
+            addToTopChange(onTopDisplayEnd);
         }
     }
 
