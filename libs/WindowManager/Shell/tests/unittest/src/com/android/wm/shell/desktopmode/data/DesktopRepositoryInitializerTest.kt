@@ -387,7 +387,9 @@ class DesktopRepositoryInitializerTest : ShellTestCase() {
             assertThat(
                     desktopUserRepositories
                         .getProfile(USER_ID_1)
-                        .getPreservedDeskIds(UNIQUE_DISPLAY_ID)
+                        .removePreservedDisplay(UNIQUE_DISPLAY_ID)
+                        ?.orderedDesks
+                        ?.map { desk -> desk.deskId }
                 )
                 .containsExactly(DESKTOP_ID_4)
         }
@@ -422,7 +424,9 @@ class DesktopRepositoryInitializerTest : ShellTestCase() {
             assertThat(
                     desktopUserRepositories
                         .getProfile(USER_ID_1)
-                        .getPreservedDeskIds(UNIQUE_DISPLAY_ID)
+                        .removePreservedDisplay(UNIQUE_DISPLAY_ID)
+                        ?.orderedDesks
+                        ?.map { desk -> desk.deskId }
                 )
                 .containsExactly(DESKTOP_ID_4)
         }
@@ -457,9 +461,9 @@ class DesktopRepositoryInitializerTest : ShellTestCase() {
             assertThat(
                     desktopUserRepositories
                         .getProfile(USER_ID_1)
-                        .getPreservedDeskIds(UNIQUE_DISPLAY_ID)
+                        .removePreservedDisplay(UNIQUE_DISPLAY_ID)
                 )
-                .isEmpty()
+                .isNull()
         }
 
     @Test
@@ -489,7 +493,9 @@ class DesktopRepositoryInitializerTest : ShellTestCase() {
             assertThat(
                     desktopUserRepositories
                         .getProfile(USER_ID_1)
-                        .getPreservedDeskIds(UNIQUE_DISPLAY_ID)
+                        .removePreservedDisplay(UNIQUE_DISPLAY_ID)
+                        ?.orderedDesks
+                        ?.map { desk -> desk.deskId }
                 )
                 .containsExactly(DESKTOP_ID_4)
         }
