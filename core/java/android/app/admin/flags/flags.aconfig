@@ -530,16 +530,6 @@ flag {
 }
 
 flag {
-  name: "fix_hsum_bugreport_share_crash"
-  namespace: "enterprise"
-  description: "[HSUM][Framework Bug][DO] TestDPC crashes when sharing a bugreport requested from TestDPC"
-  bug: "341879351"
-  metadata {
-    purpose: PURPOSE_BUGFIX
-  }
-}
-
-flag {
   name: "multi_user_management_device_provisioning"
   is_exported: true
   namespace: "enterprise"
