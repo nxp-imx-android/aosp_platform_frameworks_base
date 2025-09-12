@@ -16,7 +16,6 @@
 package com.android.wm.shell.pip2.phone;
 
 import static com.android.internal.policy.TaskResizingAlgorithm.CTRL_NONE;
-import static com.android.wm.shell.pip2.phone.PipTransition.ANIMATING_BOUNDS_CHANGE_DURATION;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
@@ -51,6 +50,7 @@ import com.android.wm.shell.common.pip.PipPerfHintController;
 import com.android.wm.shell.common.pip.PipUiEventLogger;
 import com.android.wm.shell.pip2.PipSurfaceTransactionHelper;
 import com.android.wm.shell.pip2.animation.PipResizeAnimator;
+import com.android.wm.shell.pip2.phone.transition.PipBoundsChangeHandler;
 
 import java.io.PrintWriter;
 import java.util.function.Function;
@@ -530,13 +530,14 @@ public class PipResizeGestureHandler implements
                         "No leash cached by mPipTransitionState=" + mPipTransitionState);
 
                 final SurfaceControl.Transaction startTx = extra.getParcelable(
-                        PipTransition.PIP_START_TX, SurfaceControl.Transaction.class);
+                        PipBoundsChangeHandler.PIP_START_TX, SurfaceControl.Transaction.class);
                 final SurfaceControl.Transaction finishTx = extra.getParcelable(
-                        PipTransition.PIP_FINISH_TX, SurfaceControl.Transaction.class);
+                        PipBoundsChangeHandler.PIP_FINISH_TX, SurfaceControl.Transaction.class);
                 final Rect destinationBounds = extra.getParcelable(
-                        PipTransition.PIP_DESTINATION_BOUNDS, Rect.class);
-                final int duration = extra.getInt(ANIMATING_BOUNDS_CHANGE_DURATION,
-                        PipTransition.BOUNDS_CHANGE_JUMPCUT_DURATION);
+                        PipBoundsChangeHandler.PIP_DESTINATION_BOUNDS, Rect.class);
+                final int duration = extra.getInt(
+                        PipBoundsChangeHandler.ANIMATING_BOUNDS_CHANGE_DURATION,
+                        PipBoundsChangeHandler.BOUNDS_CHANGE_JUMPCUT_DURATION);
 
                 PipResizeAnimator animator = new PipResizeAnimator(mContext,
                         mSurfaceTransactionHelper, pipLeash,

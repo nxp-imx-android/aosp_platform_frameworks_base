@@ -75,6 +75,7 @@ import com.android.wm.shell.common.pip.PipUiEventLogger;
 import com.android.wm.shell.common.pip.PipUtils;
 import com.android.wm.shell.pip.Pip;
 import com.android.wm.shell.pip2.PipSurfaceTransactionHelper;
+import com.android.wm.shell.pip2.phone.transition.PipBoundsChangeHandler;
 import com.android.wm.shell.protolog.ShellProtoLogGroup;
 import com.android.wm.shell.shared.pip.PipFlags;
 import com.android.wm.shell.sysui.ConfigurationChangeListener;
@@ -704,11 +705,11 @@ public class PipController implements ConfigurationChangeListener,
                 }
                 mWaitingToPlayDisplayChangeBoundsUpdate = false;
                 final SurfaceControl.Transaction startTx = extra.getParcelable(
-                        PipTransition.PIP_START_TX, SurfaceControl.Transaction.class);
+                        PipBoundsChangeHandler.PIP_START_TX, SurfaceControl.Transaction.class);
                 final SurfaceControl.Transaction finishTx = extra.getParcelable(
-                        PipTransition.PIP_FINISH_TX, SurfaceControl.Transaction.class);
+                        PipBoundsChangeHandler.PIP_FINISH_TX, SurfaceControl.Transaction.class);
                 final Rect destinationBounds = extra.getParcelable(
-                        PipTransition.PIP_DESTINATION_BOUNDS, Rect.class);
+                        PipBoundsChangeHandler.PIP_DESTINATION_BOUNDS, Rect.class);
                 handleJumpcutBoundsUpdate(startTx, finishTx, destinationBounds);
                 break;
         }

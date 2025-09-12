@@ -48,7 +48,6 @@ import android.app.TaskInfo;
 import android.content.Context;
 import android.graphics.Matrix;
 import android.graphics.Point;
-import android.graphics.PointF;
 import android.graphics.Rect;
 import android.os.Bundle;
 import android.os.Debug;
@@ -81,6 +80,7 @@ import com.android.wm.shell.pip2.PipSurfaceTransactionHelper;
 import com.android.wm.shell.pip2.animation.PipAlphaAnimator;
 import com.android.wm.shell.pip2.animation.PipEnterAnimator;
 import com.android.wm.shell.pip2.phone.transition.ContentPipHandler;
+import com.android.wm.shell.pip2.phone.transition.PipBoundsChangeHandler;
 import com.android.wm.shell.pip2.phone.transition.PipDisplayChangeObserver;
 import com.android.wm.shell.pip2.phone.transition.PipExpandHandler;
 import com.android.wm.shell.pip2.phone.transition.PipTransitionUtils;
@@ -103,14 +103,6 @@ public class PipTransition extends PipTransitionController implements
     // Used when for ENTERING_PIP state update.
     private static final String PIP_TASK_LEASH = "pip_task_leash";
     private static final String PIP_TASK_INFO = "pip_task_info";
-
-    // Used for PiP CHANGING_BOUNDS state update.
-    static final String PIP_START_TX = "pip_start_tx";
-    static final String PIP_FINISH_TX = "pip_finish_tx";
-    static final String PIP_DESTINATION_BOUNDS = "pip_dest_bounds";
-    static final String ANIMATING_BOUNDS_CHANGE_DURATION =
-            "animating_bounds_change_duration";
-    static final int BOUNDS_CHANGE_JUMPCUT_DURATION = 0;
 
     //
     // Dependencies
@@ -138,7 +130,6 @@ public class PipTransition extends PipTransitionController implements
     private IBinder mExitViaExpandTransition;
     @Nullable
     private IBinder mBoundsChangeTransition;
-    private int mBoundsChangeDuration = BOUNDS_CHANGE_JUMPCUT_DURATION;
     private boolean mPendingRemoveWithFadeout;
 
 
@@ -148,6 +139,7 @@ public class PipTransition extends PipTransitionController implements
     private final PipExpandHandler mExpandHandler;
     private final ContentPipHandler mContentPipHandler;
     private final PipDisplayChangeObserver mPipDisplayChangeObserver;
+    private final PipBoundsChangeHandler mBoundsChangeHandler;
 
     private Transitions.TransitionFinishCallback mFinishCallback;
 
@@ -192,6 +184,7 @@ public class PipTransition extends PipTransitionController implements
         mDesktopPipTransitionController = desktopPipTransitionController;
         mPipInteractionHandler = pipInteractionHandler;
 
+        mBoundsChangeHandler = new PipBoundsChangeHandler(pipTransitionState);
         mExpandHandler = new PipExpandHandler(mContext, mPipSurfaceTransactionHelper,
                 pipBoundsState, pipBoundsAlgorithm,
                 pipTransitionState, pipDisplayLayoutState, pipDesktopState, pipInteractionHandler,
@@ -250,9 +243,9 @@ public class PipTransition extends PipTransitionController implements
         if (wct == null) {
             return;
         }
+        mBoundsChangeHandler.setAnimatingBoundsChangeDuration(duration);
         mBoundsChangeTransition = mTransitions.startTransition(TRANSIT_PIP_BOUNDS_CHANGE, wct,
                 this);
-        mBoundsChangeDuration = duration;
     }
 
     @Nullable
@@ -406,8 +399,9 @@ public class PipTransition extends PipTransitionController implements
                     finishTransaction, finishCallback);
         } else if (transition == mBoundsChangeTransition) {
             mBoundsChangeTransition = null;
-            return startBoundsChangeAnimation(info, startTransaction, finishTransaction,
-                    finishCallback);
+            mFinishCallback = finishCallback;
+            return mBoundsChangeHandler.startAnimation(transition, info, startTransaction,
+                    finishTransaction, (wct) -> finishTransition());
         }
 
         if (isRemovePipTransition(info)) {
@@ -506,47 +500,6 @@ public class PipTransition extends PipTransitionController implements
     // Animation schedulers and entry points
     //
 
-    private boolean startBoundsChangeAnimation(@NonNull TransitionInfo info,
-            @NonNull SurfaceControl.Transaction startTransaction,
-            @NonNull SurfaceControl.Transaction finishTransaction,
-            @NonNull Transitions.TransitionFinishCallback finishCallback) {
-        TransitionInfo.Change pipChange = getPipChange(info);
-        if (pipChange == null) {
-            return false;
-        }
-        mFinishCallback = finishCallback;
-        // We expect the PiP activity as a separate change in a config-at-end transition;
-        // only flings are not using config-at-end for resize bounds changes
-        TransitionInfo.Change pipActivityChange = PipTransitionUtils.getDeferConfigActivityChange(
-                info, pipChange.getTaskInfo().getToken());
-        if (pipActivityChange != null) {
-            // Transform calculations use PiP params by default, so make sure they are null to
-            // default to using bounds for scaling calculations instead.
-            pipChange.getTaskInfo().pictureInPictureParams = null;
-            prepareConfigAtEndActivity(startTransaction, finishTransaction, pipChange,
-                    pipActivityChange);
-        }
-
-        SurfaceControl pipLeash = pipChange.getLeash();
-        startTransaction.setWindowCrop(pipLeash, pipChange.getEndAbsBounds().width(),
-                pipChange.getEndAbsBounds().height());
-
-        // Classes interested in continuing the animation would subscribe to this state update
-        // getting info such as endBounds, startTx, and finishTx as an extra Bundle
-        // Once done state needs to be updated to CHANGED_PIP_BOUNDS via {@link PipScheduler#}.
-        Bundle extra = new Bundle();
-        extra.putParcelable(PIP_START_TX, startTransaction);
-        extra.putParcelable(PIP_FINISH_TX, finishTransaction);
-        extra.putParcelable(PIP_DESTINATION_BOUNDS, pipChange.getEndAbsBounds());
-        if (mBoundsChangeDuration > BOUNDS_CHANGE_JUMPCUT_DURATION) {
-            extra.putInt(ANIMATING_BOUNDS_CHANGE_DURATION, mBoundsChangeDuration);
-            mBoundsChangeDuration = BOUNDS_CHANGE_JUMPCUT_DURATION;
-        }
-
-        mPipTransitionState.setState(PipTransitionState.CHANGING_PIP_BOUNDS, extra);
-        return true;
-    }
-
     private boolean handleSwipePipToHomeTransition(@NonNull TransitionInfo info,
             @NonNull SurfaceControl.Transaction startTransaction,
             @NonNull SurfaceControl.Transaction finishTransaction,
@@ -598,8 +551,8 @@ public class PipTransition extends PipTransitionController implements
         if (pipActivityChange != null) {
             // Config-at-end transitions need to have their activities transformed before starting
             // the animation; this makes the buffer seem like it's been updated to final size.
-            prepareConfigAtEndActivity(startTransaction, finishTransaction, pipChange,
-                    pipActivityChange);
+            PipTransitionUtils.prepareConfigAtEndActivity(startTransaction, finishTransaction,
+                    pipChange, pipActivityChange);
         }
 
         startTransaction.merge(finishTransaction);
@@ -677,8 +630,8 @@ public class PipTransition extends PipTransitionController implements
 
         // Config-at-end transitions need to have their activities transformed before starting
         // the animation; this makes the buffer seem like it's been updated to final size.
-        prepareConfigAtEndActivity(startTransaction, finishTransaction, pipChange,
-                pipActivityChange);
+        PipTransitionUtils.prepareConfigAtEndActivity(startTransaction, finishTransaction,
+                pipChange, pipActivityChange);
 
         animator.setAnimationStartCallback(() -> animator.setEnterStartState(pipChange));
         animator.setAnimationEndCallback(() -> {
@@ -1030,29 +983,6 @@ public class PipTransition extends PipTransitionController implements
         boolean isPipActivityClosed = pipActivityChange != null
                 && pipActivityChange.getMode() == TRANSIT_CLOSE;
         return isPipTaskClosed || isPipActivityClosed;
-    }
-
-    private void prepareConfigAtEndActivity(@NonNull SurfaceControl.Transaction startTx,
-            @NonNull SurfaceControl.Transaction finishTx,
-            @NonNull TransitionInfo.Change pipChange,
-            @NonNull TransitionInfo.Change pipActivityChange) {
-        PointF initActivityScale = new PointF();
-        PointF initActivityPos = new PointF();
-        PipUtils.calcEndTransform(pipActivityChange, pipChange, initActivityScale,
-                initActivityPos);
-        if (pipActivityChange.getLeash() != null) {
-            startTx.setCrop(pipActivityChange.getLeash(), null);
-            startTx.setScale(pipActivityChange.getLeash(), initActivityScale.x,
-                    initActivityScale.y);
-            startTx.setPosition(pipActivityChange.getLeash(), initActivityPos.x,
-                    initActivityPos.y);
-
-            finishTx.setCrop(pipActivityChange.getLeash(), null);
-            finishTx.setScale(pipActivityChange.getLeash(), initActivityScale.x,
-                    initActivityScale.y);
-            finishTx.setPosition(pipActivityChange.getLeash(), initActivityPos.x,
-                    initActivityPos.y);
-        }
     }
 
     /**

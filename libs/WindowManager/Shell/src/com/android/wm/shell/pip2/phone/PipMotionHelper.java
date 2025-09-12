@@ -26,7 +26,6 @@ import static com.android.wm.shell.common.pip.PipBoundsState.STASH_TYPE_NONE;
 import static com.android.wm.shell.common.pip.PipBoundsState.STASH_TYPE_RIGHT;
 import static com.android.wm.shell.pip2.phone.PipMenuView.ANIM_TYPE_DISMISS;
 import static com.android.wm.shell.pip2.phone.PipMenuView.ANIM_TYPE_NONE;
-import static com.android.wm.shell.pip2.phone.PipTransition.ANIMATING_BOUNDS_CHANGE_DURATION;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
@@ -51,6 +50,7 @@ import com.android.wm.shell.common.pip.PipUiEventLogger;
 import com.android.wm.shell.common.pip.PipUtils;
 import com.android.wm.shell.pip2.PipSurfaceTransactionHelper;
 import com.android.wm.shell.pip2.animation.PipResizeAnimator;
+import com.android.wm.shell.pip2.phone.transition.PipBoundsChangeHandler;
 import com.android.wm.shell.protolog.ShellProtoLogGroup;
 import com.android.wm.shell.shared.animation.PhysicsAnimator;
 import com.android.wm.shell.shared.magnetictarget.MagnetizedObject;
@@ -607,7 +607,7 @@ public class PipMotionHelper implements PipAppOpsListener.Callback,
         setAnimatingToBounds(adjustedBounds);
         Bundle extra = new Bundle();
         extra.putBoolean(ANIMATING_BOUNDS_CHANGE, true);
-        extra.putInt(ANIMATING_BOUNDS_CHANGE_DURATION, SHIFT_DURATION);
+        extra.putInt(PipBoundsChangeHandler.ANIMATING_BOUNDS_CHANGE_DURATION, SHIFT_DURATION);
         mPipTransitionState.setState(PipTransitionState.SCHEDULED_BOUNDS_CHANGE, extra);
     }
 
@@ -754,7 +754,7 @@ public class PipMotionHelper implements PipAppOpsListener.Callback,
         setAnimatingToBounds(toBounds);
         Bundle extra = new Bundle();
         extra.putBoolean(ANIMATING_BOUNDS_CHANGE, true);
-        extra.putInt(ANIMATING_BOUNDS_CHANGE_DURATION, duration);
+        extra.putInt(PipBoundsChangeHandler.ANIMATING_BOUNDS_CHANGE_DURATION, duration);
         mPipTransitionState.setState(PipTransitionState.SCHEDULED_BOUNDS_CHANGE, extra);
     }
 
@@ -792,18 +792,20 @@ public class PipMotionHelper implements PipAppOpsListener.Callback,
                 mPipScheduler.scheduleAnimateResizePip(
                         mPipBoundsState.getMotionBoundsState().getAnimatingToBounds(),
                         mWaitingToPlayBoundsChangeTransition,
-                        extra.getInt(ANIMATING_BOUNDS_CHANGE_DURATION,
-                                PipTransition.BOUNDS_CHANGE_JUMPCUT_DURATION));
+                        extra.getInt(
+                                PipBoundsChangeHandler.ANIMATING_BOUNDS_CHANGE_DURATION,
+                                PipBoundsChangeHandler.BOUNDS_CHANGE_JUMPCUT_DURATION));
                 break;
             case PipTransitionState.CHANGING_PIP_BOUNDS:
                 final SurfaceControl.Transaction startTx = extra.getParcelable(
-                        PipTransition.PIP_START_TX, SurfaceControl.Transaction.class);
+                        PipBoundsChangeHandler.PIP_START_TX, SurfaceControl.Transaction.class);
                 final SurfaceControl.Transaction finishTx = extra.getParcelable(
-                        PipTransition.PIP_FINISH_TX, SurfaceControl.Transaction.class);
+                        PipBoundsChangeHandler.PIP_FINISH_TX, SurfaceControl.Transaction.class);
                 final Rect destinationBounds = extra.getParcelable(
-                        PipTransition.PIP_DESTINATION_BOUNDS, Rect.class);
-                final int duration = extra.getInt(ANIMATING_BOUNDS_CHANGE_DURATION,
-                        PipTransition.BOUNDS_CHANGE_JUMPCUT_DURATION);
+                        PipBoundsChangeHandler.PIP_DESTINATION_BOUNDS, Rect.class);
+                final int duration = extra.getInt(
+                        PipBoundsChangeHandler.ANIMATING_BOUNDS_CHANGE_DURATION,
+                        PipBoundsChangeHandler.BOUNDS_CHANGE_JUMPCUT_DURATION);
 
                 if (mWaitingForFlingTransition) {
                     mWaitingForFlingTransition = false;

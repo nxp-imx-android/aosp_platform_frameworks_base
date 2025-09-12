@@ -59,6 +59,7 @@ import com.android.wm.shell.common.pip.PipBoundsState;
 import com.android.wm.shell.common.pip.PipDisplayLayoutState;
 import com.android.wm.shell.pip2.PipSurfaceTransactionHelper;
 import com.android.wm.shell.pip2.animation.PipResizeAnimator;
+import com.android.wm.shell.pip2.phone.transition.PipBoundsChangeHandler;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -351,7 +352,7 @@ public class PipTaskListenerTest {
                 mMockPipBoundsAlgorithm, mMockShellExecutor);
         Bundle extras = new Bundle();
         extras.putBoolean(ANIMATING_ASPECT_RATIO_CHANGE, true);
-        extras.putParcelable(PipTransition.PIP_DESTINATION_BOUNDS,
+        extras.putParcelable(PipBoundsChangeHandler.PIP_DESTINATION_BOUNDS,
                 new Rect(0, 0, 100, 100));
         when(mMockPipBoundsState.getBounds()).thenReturn(new Rect(0, 0, 200, 200));
 
@@ -379,7 +380,7 @@ public class PipTaskListenerTest {
                 mMockPipBoundsAlgorithm, mMockShellExecutor);
         Bundle extras = new Bundle();
         extras.putBoolean(ANIMATING_ASPECT_RATIO_CHANGE, false);
-        extras.putParcelable(PipTransition.PIP_DESTINATION_BOUNDS,
+        extras.putParcelable(PipBoundsChangeHandler.PIP_DESTINATION_BOUNDS,
                 new Rect(0, 0, 100, 100));
         when(mMockPipBoundsState.getBounds()).thenReturn(new Rect(0, 0, 200, 200));
 
