@@ -55,6 +55,7 @@ import static com.android.dx.mockito.inline.extended.ExtendedMockito.doReturn;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.doThrow;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.eq;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.mock;
+import static com.android.dx.mockito.inline.extended.ExtendedMockito.mockitoSession;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.never;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.spyOn;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.verify;
@@ -138,6 +139,7 @@ import org.junit.Test;
 import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.MockitoSession;
 
 import java.util.List;
 import java.util.function.Consumer;
@@ -5575,6 +5577,44 @@ public class SizeCompatTests extends WindowTestsBase {
         resizeBounds.scale(0.8f);
         mActivity.getTask().setBounds(resizeBounds);
         assertFitted();
+    }
+
+    @Test
+    @EnableCompatChanges({ActivityInfo.UNIVERSAL_RESIZABLE_BY_DEFAULT})
+    public void testRestrictedResizabilityOptOutNotOverrideToUser() {
+        mDisplayContent.setIgnoreOrientationRequest(true);
+        makeDisplayLargeScreen(mDisplayContent);
+        setUpApp(mDisplayContent, new ActivityBuilder(mAtm)
+                .setResizeMode(RESIZE_MODE_UNRESIZEABLE)
+                .setScreenOrientation(SCREEN_ORIENTATION_PORTRAIT));
+
+        assertEquals(SCREEN_ORIENTATION_UNSPECIFIED, mActivity.getOverrideOrientation());
+
+        final AppCompatAspectRatioOverrides overrides =
+                mActivity.mAppCompatController.getAspectRatioOverrides();
+        final MockitoSession session = mockitoSession().spyStatic(AppCompatUtils.class)
+                .strictness(org.mockito.quality.Strictness.LENIENT).startMocking();
+        try {
+            doReturn(true).when(() -> AppCompatUtils.isChangeEnabled(
+                    eq(mActivity), eq(ActivityInfo.OVERRIDE_ANY_ORIENTATION_TO_USER)));
+            overrides.resetSystemFullscreenOverrideCache();
+
+            assertTrue(overrides.isSystemOverrideToFullscreenEnabled());
+            if (!com.android.window.flags.Flags.optOutOverrideOrientationToUser()) {
+                return;
+            }
+
+            final AppCompatResizeOverrides resizeOverrides =
+                    mActivity.mAppCompatController.getResizeOverrides();
+            spyOn(resizeOverrides);
+            doReturn(true).when(resizeOverrides).allowRestrictedResizability();
+            overrides.resetSystemFullscreenOverrideCache();
+
+            assertFalse(overrides.isSystemOverrideToFullscreenEnabled());
+            assertEquals(SCREEN_ORIENTATION_PORTRAIT, mActivity.getOverrideOrientation());
+        } finally {
+            session.finishMocking();
+        }
     }
 
     @Test

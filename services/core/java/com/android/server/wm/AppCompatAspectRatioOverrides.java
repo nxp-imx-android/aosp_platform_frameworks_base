@@ -180,6 +180,9 @@ class AppCompatAspectRatioOverrides {
         final int aspectRatio = getUserMinAspectRatioOverrideCode();
         final boolean baseOverride =
                 isChangeEnabled(mActivityRecord, OVERRIDE_ANY_ORIENTATION_TO_USER)
+                        && (!com.android.window.flags.Flags.optOutOverrideOrientationToUser()
+                                || !mActivityRecord.mAppCompatController.getResizeOverrides()
+                                        .allowRestrictedResizability())
                         && !mAllowOrientationOverrideOptProp.isFalse()
                         && (aspectRatio == USER_MIN_ASPECT_RATIO_UNSET
                             || aspectRatio == USER_MIN_ASPECT_RATIO_FULLSCREEN);
