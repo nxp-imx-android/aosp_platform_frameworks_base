@@ -58,6 +58,10 @@ final class StabilityCalculator {
         notifyListenerAfter(APPLICATION_LAUNCH_STABILITY_TIMEOUT_MS);
     }
 
+    void onInteractionFailed() {
+        notifyListenerImmediately();
+    }
+
     void close() {
         cancelExistingStabilityNotification();
     }
@@ -66,11 +70,7 @@ final class StabilityCalculator {
         cancelExistingStabilityNotification();
 
         ScheduledFuture<?> future = mScheduler.schedule(() -> {
-            try {
-                mListener.onSessionStable();
-            } catch (RemoteException e) {
-                Slog.w(TAG, "Failed to notify about ComputerControlSession stability");
-            }
+            sendStableNotification();
         }, timeoutMs, TimeUnit.MILLISECONDS);
 
         synchronized (this) {
@@ -78,10 +78,24 @@ final class StabilityCalculator {
         }
     }
 
+    private void notifyListenerImmediately() {
+        cancelExistingStabilityNotification();
+        sendStableNotification();
+    }
+
+    private void sendStableNotification() {
+        try {
+            mListener.onSessionStable();
+        } catch (RemoteException e) {
+            Slog.w(TAG, "Failed to notify about ComputerControlSession stability");
+        }
+    }
+
     private void cancelExistingStabilityNotification() {
         synchronized (this) {
             if (mStabilityFuture != null) {
                 mStabilityFuture.cancel(true);
+                mStabilityFuture = null;
             }
         }
     }
