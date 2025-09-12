@@ -16,6 +16,7 @@
 
 package android.app.appfunctions;
 
+import static android.Manifest.permission.INTERACT_ACROSS_USERS_FULL;
 import static android.Manifest.permission.MANAGE_APP_FUNCTION_ACCESS;
 import static android.app.appfunctions.AppFunctionException.ERROR_SYSTEM_ERROR;
 import static android.app.appfunctions.flags.Flags.FLAG_ENABLE_APP_FUNCTION_MANAGER;
@@ -40,6 +41,7 @@ import android.content.Intent;
 import android.content.pm.SignedPackage;
 import android.content.pm.SignedPackageParcel;
 import android.net.Uri;
+import android.os.Binder;
 import android.os.CancellationSignal;
 import android.os.ICancellationSignal;
 import android.os.OutcomeReceiver;
@@ -48,6 +50,7 @@ import android.os.RemoteException;
 import android.os.SystemClock;
 import android.permission.flags.Flags;
 import android.provider.BaseColumns;
+import android.util.ArrayMap;
 import android.util.ArraySet;
 
 import com.android.internal.R;
@@ -444,6 +447,9 @@ public final class AppFunctionManager {
 
     private final IAppFunctionManager mService;
     private final Context mContext;
+
+    private final ArrayMap<OnAppFunctionAccessChangedListener,
+            OnAppFunctionAccessChangeListenerDelegate> mListeners = new ArrayMap<>();
 
     /**
      * The enabled state of the app function.
@@ -921,6 +927,70 @@ public final class AppFunctionManager {
     }
 
     /**
+     * Register an {@link OnAppFunctionAccessChangedListener} for changes to app function access.
+     * If the listener is already registered, this method is a no-op. If the Context user is
+     * different from the calling user, this method requires the
+     * {@link INTERACT_ACROSS_USERS_FULL} permission.
+     *
+     * @param executor The executor to run the listener callbacks on
+     * @param listener The listener to add
+     *
+     * @hide
+     */
+    @SystemApi
+    @UserHandleAware
+    @RequiresPermission(allOf = { MANAGE_APP_FUNCTION_ACCESS, INTERACT_ACROSS_USERS_FULL },
+            conditional = true)
+    @FlaggedApi(Flags.FLAG_APP_FUNCTION_ACCESS_API_ENABLED)
+    public void addAccessChangedListener(@NonNull Executor executor,
+            @NonNull OnAppFunctionAccessChangedListener listener) {
+        synchronized (mListeners) {
+            if (mListeners.containsKey(listener)) {
+                return;
+            }
+            final OnAppFunctionAccessChangeListenerDelegate delegate =
+                    new OnAppFunctionAccessChangeListenerDelegate(listener, executor,
+                            mContext.getUserId());
+            try {
+                mService.addOnAccessChangedListener(delegate, mContext.getUserId());
+            } catch (RemoteException e) {
+                throw e.rethrowFromSystemServer();
+            }
+            mListeners.put(listener, delegate);
+        }
+    }
+
+    /**
+     * Remove an {@link OnAppFunctionAccessChangedListener}. If the Context user is different from
+     * the calling user, this method requires the
+     * {@link INTERACT_ACROSS_USERS_FULL} permission.
+     *
+     * @param listener The listener to remove
+     *
+     * @hide
+     */
+    @SystemApi
+    @UserHandleAware
+    @RequiresPermission(allOf = { MANAGE_APP_FUNCTION_ACCESS, INTERACT_ACROSS_USERS_FULL },
+            conditional = true)
+    @FlaggedApi(Flags.FLAG_APP_FUNCTION_ACCESS_API_ENABLED)
+    public void removeAccessChangedListener(@NonNull OnAppFunctionAccessChangedListener listener) {
+        synchronized (mListeners) {
+            if (!mListeners.containsKey(listener)) {
+                return;
+            }
+            try {
+                final OnAppFunctionAccessChangeListenerDelegate delegate =
+                        mListeners.get(listener);
+                mService.removeOnAccessChangedListener(delegate, delegate.mUserId);
+            } catch (RemoteException e) {
+                throw e.rethrowFromSystemServer();
+            }
+            mListeners.remove(listener);
+        }
+    }
+
+    /**
      * Gets the {@code content://} style URI for the AppFunction access history table for the
      * user from the context used to obtain the instance of this class.
      *
@@ -949,6 +1019,50 @@ public final class AppFunctionManager {
                 .buildUpon()
                 .appendPath(Integer.toString(userId))
                 .build();
+    }
+
+    /**
+     * Listener for changes to app function access for an agent.
+     *
+     * @hide
+     */
+    @SystemApi
+    public interface OnAppFunctionAccessChangedListener {
+        /**
+         * Called when the app function access for an agent UID changes.
+         *
+         * @param agentUid The agent UID
+         */
+        void onAppFunctionAccessChanged(int agentUid);
+    }
+
+    private final class OnAppFunctionAccessChangeListenerDelegate
+            extends IOnAppFunctionAccessChangeListener.Stub {
+
+        private final OnAppFunctionAccessChangedListener mListener;
+        private final Executor mExecutor;
+        private final int mUserId;
+
+        private OnAppFunctionAccessChangeListenerDelegate(
+                OnAppFunctionAccessChangedListener listener,
+                Executor executor,
+                int userId
+        ) {
+            mListener = listener;
+            mExecutor = executor;
+            mUserId = userId;
+        }
+
+        @Override
+        public void onAppFunctionAccessChanged(int agentUid) {
+            final long token = Binder.clearCallingIdentity();
+            try {
+                mExecutor.execute(() -> mListener.onAppFunctionAccessChanged(agentUid));
+            } finally {
+                Binder.restoreCallingIdentity(token);
+            }
+        }
+
     }
 
     private static class CallbackWrapper extends IAppFunctionEnabledCallback.Stub {

@@ -19,6 +19,7 @@ package android.app.appfunctions;
 import android.app.appfunctions.ExecuteAppFunctionAidlRequest;
 import android.app.appfunctions.IAppFunctionEnabledCallback;
 import android.app.appfunctions.IExecuteAppFunctionCallback;
+import android.app.appfunctions.IOnAppFunctionAccessChangeListener;
 import android.os.ICancellationSignal;
 import android.os.UserHandle;
 import android.content.Intent;
@@ -94,4 +95,8 @@ interface IAppFunctionManager {
     void clearAccessHistory(int userId);
 
     Intent createRequestAccessIntent(in String targetPackageName);
+
+    void addOnAccessChangedListener(IOnAppFunctionAccessChangeListener listener, int userId);
+
+    void removeOnAccessChangedListener(IOnAppFunctionAccessChangeListener listener, int userId);
 }

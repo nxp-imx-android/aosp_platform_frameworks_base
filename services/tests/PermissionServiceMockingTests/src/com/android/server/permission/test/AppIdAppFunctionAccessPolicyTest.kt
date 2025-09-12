@@ -37,6 +37,7 @@ import com.android.server.permission.access.MutableAccessState
 import com.android.server.permission.access.MutableUserState
 import com.android.server.permission.access.MutateStateScope
 import com.android.server.permission.access.appfunction.AppIdAppFunctionAccessPolicy
+import com.android.server.permission.access.appfunction.AppIdAppFunctionAccessPolicy.OnAppFunctionAccessFlagsChangedListener
 import com.android.server.permission.access.immutable.*
 import com.android.server.pm.pkg.AndroidPackage
 import com.android.server.pm.pkg.PackageState
@@ -54,6 +55,18 @@ class AppIdAppFunctionAccessPolicyTest {
     private lateinit var oldState: MutableAccessState
     private lateinit var newState: MutableAccessState
     private val appIdAppFunctionPolicy = AppIdAppFunctionAccessPolicy()
+
+    private val listener = object : OnAppFunctionAccessFlagsChangedListener {
+        val responses = mutableListOf<Int>()
+        var updates = 0
+        override fun onAppFunctionAccessFlagsChanged(agentUid: Int) {
+            responses.add(agentUid)
+        }
+
+        override fun onStateMutated() {
+            updates++
+        }
+    }
 
     private fun mockPackageState(
         appId: Int,
@@ -115,6 +128,9 @@ class AppIdAppFunctionAccessPolicyTest {
             SignedPackage(AGENT_PKG_NAME, null),
             SignedPackage(OTHER_AGENT_PKG_NAME, null)
         ))
+        listener.responses.clear()
+        listener.updates = 0
+        appIdAppFunctionPolicy.listener = listener
     }
 
     private fun createUserState(userId: Int) {
@@ -161,6 +177,9 @@ class AppIdAppFunctionAccessPolicyTest {
     private inline fun mutateState(action: MutateStateScope.() -> Unit) {
         newState = oldState.toMutable()
         MutateStateScope(oldState, newState).action()
+        with (appIdAppFunctionPolicy) {
+            GetStateScope(newState).onStateMutated()
+        }
     }
 
     @Test
@@ -480,6 +499,65 @@ class AppIdAppFunctionAccessPolicyTest {
     }
 
     @Test
+    fun testUpdateAccessFlags_callsListenerIfChanged() {
+        createUserState(USER_ID_1)
+        oldState.mutateExternalState().setAgentAllowlist(null)
+        val agent = mockPackageState(
+            AGENT_APP_ID,
+            AGENT_PKG_NAME,
+            isAgent = true,
+            installedUsers = listOf(USER_ID_1)
+        )
+        val target = mockPackageState(
+            TARGET_APP_ID,
+            TARGET_PKG_NAME,
+            isTarget = true,
+            installedUsers = listOf(USER_ID_1)
+        )
+        addPackageState(agent)
+        addPackageState(target)
+        setAccessFlags(AGENT_APP_ID, USER_ID_1, UserHandle.getUid(USER_ID_1, TARGET_APP_ID), ACCESS_FLAG_PREGRANTED)
+        listener.responses.clear()
+        mutateState {
+            with(appIdAppFunctionPolicy) {
+                updateAccessFlags(
+                    AGENT_APP_ID, USER_ID_1, TARGET_APP_ID, USER_ID_1,
+                   ACCESS_FLAG_PREGRANTED, ACCESS_FLAG_PREGRANTED
+                )
+            }
+        }
+        assertWithMessage("Expected listener to not be called when no change happened")
+            .that(listener.responses).isEmpty()
+        assertWithMessage("Expected onStateMutated call to listener, even if no change happened")
+            .that(listener.updates).isEqualTo(1)
+        listener.updates = 0
+
+        mutateState {
+            with(appIdAppFunctionPolicy) {
+                updateAccessFlags(
+                    AGENT_APP_ID, USER_ID_1, TARGET_APP_ID, USER_ID_1,
+                    ACCESS_FLAG_PREGRANTED, 0
+                )
+                updateAccessFlags(
+                    AGENT_APP_ID, USER_ID_1, TARGET_APP_ID, USER_ID_1,
+                    ACCESS_FLAG_MASK_USER, ACCESS_FLAG_USER_GRANTED
+                )
+            }
+        }
+        assertWithMessage("Expected listener to be called when change happened")
+            .that(listener.responses.size).isEqualTo(2)
+        assertWithMessage("Expected listener to be called when change happened")
+            .that(listener.responses.first())
+            .isEqualTo(UserHandle.getUid(USER_ID_1, AGENT_APP_ID))
+        assertWithMessage("Expected listener to be called when change happened")
+            .that(listener.responses[1])
+            .isEqualTo(UserHandle.getUid(USER_ID_1, AGENT_APP_ID))
+        assertWithMessage("Expected multiple update calls, but only one mutate call")
+            .that(listener.updates)
+            .isEqualTo(1)
+    }
+
+    @Test
     fun testGetTargets_needService() {
         val notTarget = mockPackageState(AGENT_APP_ID, AGENT_PKG_NAME)
         val target = mockPackageState(TARGET_APP_ID, TARGET_PKG_NAME, isTarget = true)
@@ -733,11 +811,21 @@ class AppIdAppFunctionAccessPolicyTest {
 
     @Test
     fun testOnAgentRemovedFromAllowlist_flagsCleared() {
-        val agent = mockPackageState(AGENT_APP_ID, AGENT_PKG_NAME)
-        val target = mockPackageState(TARGET_APP_ID, TARGET_PKG_NAME)
+        val agent = mockPackageState(
+            AGENT_APP_ID,
+            AGENT_PKG_NAME,
+            installedUsers = listOf(USER_ID_1, USER_ID_0)
+        )
+        val target = mockPackageState(
+            TARGET_APP_ID,
+            TARGET_PKG_NAME,
+            installedUsers = listOf(USER_ID_1, USER_ID_0)
+        )
+        val targetUid = UserHandle.getUid(USER_ID_1, TARGET_APP_ID)
         addPackageState(agent)
         addPackageState(target)
         setAccessFlags(AGENT_APP_ID, USER_ID_0, TARGET_APP_ID, ACCESS_FLAG_USER_GRANTED)
+        setAccessFlags(AGENT_APP_ID, USER_ID_1, targetUid, ACCESS_FLAG_USER_GRANTED)
         mutateState {
             with(appIdAppFunctionPolicy) {
                 onAgentAllowlistChanged(setOf())
@@ -745,6 +833,9 @@ class AppIdAppFunctionAccessPolicyTest {
         }
         assertWithMessage("all flags for an agent should be cleared when it is removed from the allowlist")
             .that(getAppFunctionFlags(AGENT_APP_ID, USER_ID_0, TARGET_APP_ID, newState))
+            .isEqualTo(0)
+        assertWithMessage("all flags for an agent should be cleared when it is removed from the allowlist")
+            .that(getAppFunctionFlags(AGENT_APP_ID, USER_ID_1, targetUid, newState))
             .isEqualTo(0)
     }
 
