@@ -116,7 +116,14 @@ constructor(
         get() = currentShadeContext.displayId
 
     private val shadeSysUiState: Long
-        get() = perDisplaySysUiStateRepository[currentShadeDisplayId]?.flags ?: 0
+        get() {
+            val sysUiState = perDisplaySysUiStateRepository[currentShadeDisplayId]
+            if (sysUiState == null) {
+                Log.w(TAG, "SysUiState is null for display $currentShadeDisplayId")
+                return 0L
+            }
+            return sysUiState.flags
+        }
 
     private val isInDesktopModeOnCurrentShadeDisplay: Boolean
         get() = (shadeSysUiState and SYSUI_STATE_FREEFORM_ACTIVE_IN_DESKTOP_MODE) != 0L
@@ -802,7 +809,7 @@ constructor(
         if (
             shadeAppLaunchAnimationSkipInDesktop() &&
                 (isInDesktopModeOnCurrentShadeDisplay ||
-                    desktopFirstRepository.isDisplayDesktopFirst[currentShadeDisplayId] == true)
+                    desktopFirstRepository.isDisplayDesktopFirst(currentShadeDisplayId))
         ) {
             return false
         }

@@ -36,11 +36,18 @@ class DesktopFirstRepository @Inject constructor(desktopMode: Optional<DesktopMo
     DesktopFirstListener {
 
     private val _isDisplayDesktopFirst: MutableMap<Int, Boolean> = mutableMapOf()
-    val isDisplayDesktopFirst: Map<Int, Boolean> = _isDisplayDesktopFirst.toMap()
 
     init {
         desktopMode.ifPresent { desktopMode.get().registerDesktopFirstListener(this) }
     }
+
+    /**
+     * Checks if the display with the given [displayId] is in "Desktop First" mode.
+     *
+     * In "Desktop First" mode, new apps on the display open in freeform mode by default. This
+     * function retrieves the tracked state for the specified display.
+     */
+    fun isDisplayDesktopFirst(displayId: Int) = _isDisplayDesktopFirst[displayId] == true
 
     override fun onStateChanged(displayId: Int, isDesktopFirstEnabled: Boolean) {
         _isDisplayDesktopFirst[displayId] = isDesktopFirstEnabled
