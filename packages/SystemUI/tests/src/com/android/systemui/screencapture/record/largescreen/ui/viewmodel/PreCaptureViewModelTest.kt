@@ -86,6 +86,19 @@ class PreCaptureViewModelTest : SysuiTestCase() {
         viewModel.activateIn(kosmos.testScope)
     }
 
+    private fun assertUiClosed() {
+        with(kosmos) {
+            val uiState by
+                collectLastValue(
+                    kosmos.screenCaptureUiRepository.uiState(
+                        com.android.systemui.screencapture.common.shared.model.ScreenCaptureType
+                            .RECORD
+                    )
+                )
+            assertThat(uiState).isEqualTo(ScreenCaptureUiState.Invisible)
+        }
+    }
+
     @Before
     fun setUp() {
         MockitoAnnotations.openMocks(this)
@@ -264,6 +277,19 @@ class PreCaptureViewModelTest : SysuiTestCase() {
         }
 
     @Test
+    fun beginCapture_forFullscreenScreenshot_closesUi() =
+        kosmos.runTest {
+            setupViewModel()
+
+            viewModel.updateCaptureType(ScreenCaptureType.SCREENSHOT)
+            viewModel.updateCaptureRegion(ScreenCaptureRegion.FULLSCREEN)
+
+            viewModel.beginCapture()
+
+            assertUiClosed()
+        }
+
+    @Test
     fun beginCapture_forPartialScreenshot_makesCorrectRequest() =
         kosmos.runTest {
             setupViewModel()
@@ -293,6 +319,29 @@ class PreCaptureViewModelTest : SysuiTestCase() {
             assertThat(capturedRequest.bitmap).isEqualTo(mockBitmap)
             assertThat(capturedRequest.boundsInScreen).isEqualTo(regionBox)
             assertThat(capturedRequest.displayId).isEqualTo(displayId)
+        }
+
+    @Test
+    fun beginCapture_forPartialScreenshot_closesUi() =
+        kosmos.runTest {
+            setupViewModel()
+
+            viewModel.updateCaptureType(ScreenCaptureType.SCREENSHOT)
+            viewModel.updateCaptureRegion(ScreenCaptureRegion.PARTIAL)
+
+            val regionBox = Rect(0, 0, 100, 100)
+            viewModel.updateRegionBoxBounds(regionBox)
+
+            whenever(kosmos.mockImageCapture.captureDisplay(any(), eq(regionBox)))
+                .thenReturn(mockBitmap)
+
+            viewModel.beginCapture()
+
+            // Account for the delay (temporary fix b/435225255)
+            advanceTimeBy(100)
+            runCurrent()
+
+            assertUiClosed()
         }
 
     @Test
@@ -408,17 +457,9 @@ class PreCaptureViewModelTest : SysuiTestCase() {
         kosmos.runTest {
             setupViewModel()
 
-            val uiState by
-                collectLastValue(
-                    kosmos.screenCaptureUiRepository.uiState(
-                        com.android.systemui.screencapture.common.shared.model.ScreenCaptureType
-                            .RECORD
-                    )
-                )
-
             viewModel.closeFromToolbar()
 
-            assertThat(uiState).isEqualTo(ScreenCaptureUiState.Invisible)
+            assertUiClosed()
         }
 
     @Test
