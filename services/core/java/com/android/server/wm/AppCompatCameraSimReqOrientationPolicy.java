@@ -279,7 +279,7 @@ final class AppCompatCameraSimReqOrientationPolicy implements AppCompatCameraSta
                         // TODO(b/365725400): support landscape cameras.
                         .setShouldOverrideSensorOrientation(false)
                         .setShouldAllowTransformInverseDisplay(false);
-            } else if (mCameraStateMonitor.isCameraRunningForActivity(activityRecord)) {
+            } else if (isExternalDisplaySandboxEnabledForActivity(activityRecord)) {
                 // Sandbox only display rotation if needed, for external display.
                 cameraCompatibilityInfoBuilder.setDisplayRotationSandbox(
                                 mCameraDisplayRotationProvider.getCameraDeviceRotation())
@@ -508,10 +508,11 @@ final class AppCompatCameraSimReqOrientationPolicy implements AppCompatCameraSta
      * treatment is more suitable (most likely if it is a fixed-orientation activity).
      */
     boolean isExternalDisplaySandboxEnabledForActivity(@NonNull ActivityRecord activity) {
-        // For compatibility apps (fixed-orientation), apply the full treatment: sandboxing display
-        // rotation to match app's requested orientation, letterboxing, and rotating-and-cropping
-        // the camera feed.
         if (!Flags.enableCameraCompatSandboxDisplayRotationOnExternalDisplaysBugfix()
+                || !mCameraStateMonitor.isCameraRunningForActivity(activity)
+                // For compatibility apps (fixed-orientation), apply the full treatment: sandboxing
+                // display rotation to match app's requested orientation, letterboxing, and
+                // rotating-and-cropping the camera feed.
                 || isCompatibilityTreatmentEnabledForActivity(activity,
                 /* checkOrientation= */ true)) {
             return false;
