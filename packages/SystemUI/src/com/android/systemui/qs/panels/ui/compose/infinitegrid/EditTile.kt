@@ -178,6 +178,7 @@ import com.android.systemui.qs.panels.ui.compose.infinitegrid.EditModeTileDefaul
 import com.android.systemui.qs.panels.ui.compose.infinitegrid.EditModeTileDefaults.TilePlacementSpec
 import com.android.systemui.qs.panels.ui.compose.selection.InteractiveTileContainer
 import com.android.systemui.qs.panels.ui.compose.selection.MutableSelectionState
+import com.android.systemui.qs.panels.ui.compose.selection.QSDragAnchorsData
 import com.android.systemui.qs.panels.ui.compose.selection.ResizingState
 import com.android.systemui.qs.panels.ui.compose.selection.ResizingState.ResizeOperation
 import com.android.systemui.qs.panels.ui.compose.selection.ResizingState.ResizeOperation.FinalResizeOperation
@@ -867,18 +868,8 @@ private fun LazyGridItemScope.TileGridCell(
     val stateDescription = stringResource(id = R.string.accessibility_qs_edit_position, index + 1)
     val tileState by rememberTileState(cell.tile, selectionState)
     val resizingState = rememberResizingState(cell.tile.tileSpec, cell.isIcon)
-    val progress: () -> Float = {
-        if (tileState == TileState.Selected) {
-            resizingState.progress()
-        } else {
-            if (cell.isIcon) 0f else 1f
-        }
-    }
 
-    if (tileState != TileState.Selected) {
-        // Update the draggable anchor state when the tile's size is not manually toggled
-        LaunchedEffect(cell.isIcon) { resizingState.updateCurrentValue(cell.isIcon) }
-    } else {
+    if (tileState == TileState.Selected) {
         // If the tile is selected, listen to new target values from the draggable anchor to toggle
         // the tile's size
         LaunchedEffect(resizingState) {
@@ -892,18 +883,33 @@ private fun LazyGridItemScope.TileGridCell(
     }
 
     val tilePadding = with(LocalDensity.current) { TileArrangementPadding.roundToPx() }
+    var anchorsData: QSDragAnchorsData? by remember { mutableStateOf(null) }
+
+    val scope = rememberCoroutineScope()
+    LaunchedEffect(resizingState.isDragActive, anchorsData, scope) {
+        anchorsData?.let {
+            // Avoid changing anchors during drag gestures as this will snap the drag handle to the
+            // closest anchor
+            if (!resizingState.isDragActive) {
+                resizingState.updateAnchors(it, largeTilesSpan, tilePadding)
+
+                // Launching the animation in a separate scope to avoid cancelling ongoing
+                // animations
+                scope.launch { resizingState.updateCurrentValue(it.isIcon) }
+            }
+        }
+    }
+
     LaunchedEffect(gridState) {
         snapshotFlow { gridState.layoutInfo }
             .map { layoutInfo ->
                 layoutInfo.visibleItemsInfo
                     .find { it.key == cell.key }
-                    ?.let { (it.span == 1) to it.size.width }
+                    ?.let { QSDragAnchorsData(it.span == 1, it.size.width) }
             }
             .filterNotNull()
             .distinctUntilChanged()
-            .collect { (isIcon, width) ->
-                resizingState.updateAnchors(isIcon, width, largeTilesSpan, tilePadding)
-            }
+            .collect { anchorsData = it }
     }
 
     val colors = EditModeTileDefaults.editTileColors()
@@ -1025,7 +1031,7 @@ private fun LazyGridItemScope.TileGridCell(
                 tile = cell.tile,
                 tileState = tileState,
                 state = resizingState,
-                progress = progress,
+                progress = resizingState::progress,
             )
         }
     }
