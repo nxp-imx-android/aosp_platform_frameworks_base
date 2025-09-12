@@ -30,7 +30,6 @@ import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.res.R
 import com.android.systemui.scene.domain.interactor.sceneInteractor
-import com.android.systemui.shade.data.repository.shadeRepository
 import com.android.systemui.shade.domain.interactor.enableDualShade
 import com.android.systemui.shade.domain.interactor.enableSingleShade
 import com.android.systemui.shade.domain.interactor.enableSplitShade
@@ -89,11 +88,11 @@ class NotificationStackAppearanceInteractorTest : SysuiTestCase() {
         kosmos.runTest {
             val stackRounding by collectLastValue(underTest.shadeScrimRounding)
 
-            shadeRepository.setShadeLayoutWide(false)
+            enableSingleShade()
             assertThat(stackRounding)
                 .isEqualTo(ShadeScrimRounding(isTopRounded = true, isBottomRounded = false))
 
-            shadeRepository.setShadeLayoutWide(true)
+            enableSplitShade()
             assertThat(stackRounding)
                 .isEqualTo(ShadeScrimRounding(isTopRounded = true, isBottomRounded = true))
         }
