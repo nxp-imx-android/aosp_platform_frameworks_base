@@ -55,6 +55,7 @@ import static android.view.autofill.AutofillManager.FLAG_SMART_SUGGESTION_SYSTEM
 import static android.view.autofill.AutofillManager.getSmartSuggestionModeToString;
 
 import static com.android.internal.util.function.pooled.PooledLambda.obtainMessage;
+import static com.android.server.autofill.AutofillManagerService.sSupportMultiUserMultiDisplay;
 import static com.android.server.autofill.FillRequestEventLogger.TRIGGER_REASON_EXPLICITLY_REQUESTED;
 import static com.android.server.autofill.FillRequestEventLogger.TRIGGER_REASON_NORMAL_TRIGGER;
 import static com.android.server.autofill.FillRequestEventLogger.TRIGGER_REASON_PRE_TRIGGER;
@@ -1756,7 +1757,9 @@ final class Session
         int displayId =
                 LocalServices.getService(ActivityTaskManagerInternal.class)
                         .getDisplayId(activityToken);
-        mContext = Helper.getDisplayContext(context, displayId);
+        mContext = sSupportMultiUserMultiDisplay
+                ? Helper.getDisplayContext(context, displayId)
+                : context;
         mComponentName = componentName;
         mCompatMode = compatMode;
         mSessionState = STATE_ACTIVE;

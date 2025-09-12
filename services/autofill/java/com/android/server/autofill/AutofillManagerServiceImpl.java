@@ -27,6 +27,7 @@ import static android.view.autofill.AutofillManager.NO_SESSION;
 import static android.view.autofill.AutofillManager.RECEIVER_FLAG_SESSION_FOR_AUGMENTED_AUTOFILL_ONLY;
 
 import static com.android.internal.util.function.pooled.PooledLambda.obtainMessage;
+import static com.android.server.autofill.AutofillManagerService.sSupportMultiUserMultiDisplay;
 import static com.android.server.autofill.Helper.sDebug;
 import static com.android.server.autofill.Helper.sVerbose;
 
@@ -45,7 +46,6 @@ import android.metrics.LogMaker;
 import android.os.AsyncTask;
 import android.os.Binder;
 import android.os.Bundle;
-import android.os.CancellationSignal;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
@@ -73,7 +73,6 @@ import android.util.ArrayMap;
 import android.util.ArraySet;
 import android.util.DebugUtils;
 import android.util.LocalLog;
-import android.util.Log;
 import android.util.Pair;
 import android.util.Slog;
 import android.util.SparseArray;
@@ -99,8 +98,8 @@ import com.android.server.contentcapture.ContentCaptureManagerInternal;
 import com.android.server.infra.AbstractPerUserSystemService;
 import com.android.server.inputmethod.InputMethodManagerInternal;
 import com.android.server.pm.UserManagerInternal;
-import com.android.server.wm.ActivityTaskManagerInternal.ActivityTokens;
 import com.android.server.wm.ActivityTaskManagerInternal;
+import com.android.server.wm.ActivityTaskManagerInternal.ActivityTokens;
 
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -136,6 +135,7 @@ final class AutofillManagerServiceImpl
     private final LocalLog mUiLatencyHistory;
     private final LocalLog mWtfHistory;
     private final FieldClassificationStrategy mFieldClassificationStrategy;
+    private final Context mDisplayContext;
 
     @GuardedBy("mLock")
     @Nullable
@@ -225,6 +225,7 @@ final class AutofillManagerServiceImpl
         mUiLatencyHistory = uiLatencyHistory;
         mWtfHistory = wtfHistory;
         mUi = ui;
+        mDisplayContext = sSupportMultiUserMultiDisplay ? ui.getContext() : getContext();
         mFieldClassificationStrategy = new FieldClassificationStrategy(getContext(), userId);
         mAutofillCompatState = autofillCompatState;
         mInputMethodManagerInternal = LocalServices.getService(InputMethodManagerInternal.class);
@@ -438,10 +439,10 @@ final class AutofillManagerServiceImpl
             return 0;
         }
 
-        // TODO(b/376482880): remove this check once autofill service supports visible
-        // background users.
-        if (mUserManagerInternal.isVisibleBackgroundFullUser(mUserId)) {
-            Slog.d(TAG, "Currently, autofill service does not support visible background users.");
+        if (!Flags.supportMultiUserMultiDisplay()
+                && mUserManagerInternal.isVisibleBackgroundFullUser(mUserId)) {
+            Slog.d(TAG,
+                    "Currently, autofill service does not support visible background users.");
             return 0;
         }
 
@@ -709,7 +710,8 @@ final class AutofillManagerServiceImpl
                 : mInfo.getServiceInfo().getComponentName();
         boolean isPrimaryCredential = (flags & FLAG_VIEW_REQUESTS_CREDMAN_SERVICE) != 0;
 
-        final Session newSession = new Session(this, mUi, getContext(), mHandler, mUserId, mLock,
+        final Session newSession = new Session(this, mUi, mDisplayContext,
+                mHandler, mUserId, mLock,
                 sessionId, taskId, clientUid, clientActivityToken, clientCallback, hasCallback,
                 mUiLatencyHistory, mWtfHistory, serviceComponentName,
                 clientActivity, compatMode, bindInstantServiceAllowed, forAugmentedAutofillOnly,

@@ -36,8 +36,10 @@ import android.metrics.LogMaker;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.UserHandle;
+import android.os.UserManager;
 import android.service.autofill.BatchUpdates;
 import android.service.autofill.CustomDescription;
+import android.service.autofill.Flags;
 import android.service.autofill.InternalOnClickAction;
 import android.service.autofill.InternalTransformation;
 import android.service.autofill.InternalValidator;
@@ -195,7 +197,8 @@ final class SaveUi {
         mComponentName = componentName;
         mCompatMode = compatMode;
 
-        context = new ContextThemeWrapper(Helper.getUserContext(context), mThemeId) {
+        final UserHandle userHandle = context.getUser();
+        context = new ContextThemeWrapper(context, mThemeId) {
             @Override
             public void startActivity(Intent intent) {
                 if (resolveActivity(intent) == null) {
@@ -206,6 +209,10 @@ final class SaveUi {
                 }
                 intent.putExtra(AutofillManager.EXTRA_RESTORE_CROSS_ACTIVITY, true);
 
+                final UserHandle targetUser = Flags.supportMultiUserMultiDisplay()
+                        && UserManager.isVisibleBackgroundUsersEnabled()
+                        ? userHandle
+                        : UserHandle.CURRENT;
                 PendingIntent p = PendingIntent.getActivityAsUser(this, /* requestCode= */ 0,
                         intent,
                         PendingIntent.FLAG_MUTABLE
@@ -213,9 +220,10 @@ final class SaveUi {
                         ActivityOptions.makeBasic()
                                 .setPendingIntentCreatorBackgroundActivityStartMode(
                                         ActivityOptions.MODE_BACKGROUND_ACTIVITY_START_ALLOWED)
-                                .toBundle(), UserHandle.CURRENT);
+                                .toBundle(), targetUser);
                 if (sDebug) {
-                    Slog.d(TAG, "startActivity add save UI restored with intent=" + intent);
+                    Slog.d(TAG, "startActivity add save UI restored with intent=" + intent
+                            + " as user " + targetUser);
                 }
                 // Apply restore mechanism
                 startIntentSenderWithRestore(p, intent);

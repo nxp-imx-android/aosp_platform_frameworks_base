@@ -111,6 +111,10 @@ public final class AutoFillUI {
         mUiModeMgr = LocalServices.getService(UiModeManagerInternal.class);
     }
 
+    public Context getContext() {
+        return mContext;
+    }
+
     public void setCallback(@NonNull AutoFillUiCallback callback) {
         mHandler.post(() -> {
             if (mCallback != callback) {
@@ -201,7 +205,8 @@ public final class AutoFillUI {
      * @param serviceIcon icon of autofill service
      * @param callback identifier for the caller
      * @param userId the user associated wit the session
-     * @param context context with the proper state (like display id) to show the UI
+     * @param context context with the proper state (like display id) to show the UI.
+     *                TODO(b/375500806): remove it once supportMultiUserMultiDisplay is enabled
      * @param sessionId id of the autofill session
      * @param compatMode whether the app is being autofilled in compatibility mode.
      * @param maxInputLengthForAutofill max user input to provide suggestion
@@ -334,6 +339,7 @@ public final class AutoFillUI {
 
     /**
      * Shows the UI asking the user to save for autofill.
+     * TODO(b/375500806): remove context parameter once supportMultiUserMultiDisplay is enabled.
      */
     public void showSaveUi(@NonNull CharSequence serviceLabel, @NonNull Drawable serviceIcon,
             @Nullable String servicePackageName, @NonNull SaveInfo info,
@@ -565,7 +571,8 @@ public final class AutoFillUI {
     }
 
     public void dump(PrintWriter pw) {
-        pw.println("Autofill UI");
+        pw.println("Autofill UI (user:" + mContext.getUserId() + ", display:"
+                + mContext.getDisplayId() + ")");
         final String prefix = "  ";
         final String prefix2 = "    ";
         pw.print(prefix); pw.print("Night mode: ");
