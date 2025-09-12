@@ -230,7 +230,8 @@ class SuggestedDeviceManager(
     newTopSuggestion: SuggestedDeviceInfo?,
     newMediaDevices: List<MediaDevice>,
   ): Boolean {
-    val newSuggestedDeviceState =
+    tryClearSuggestedStateOverrideLocked(newMediaDevices)
+    val newSuggestedDeviceState = suggestedStateOverride ?:
       calculateNewSuggestedDeviceStateLocked(newTopSuggestion, newMediaDevices)
     if (newSuggestedDeviceState != suggestedDeviceState) {
       suggestedDeviceState = newSuggestedDeviceState
@@ -249,20 +250,16 @@ class SuggestedDeviceManager(
     }
 
     if (newTopSuggestion == null) {
-      return suggestedStateOverride ?: null
+      return null
     }
 
     val newConnectionState =
       getConnectionStateFromMatchedDeviceLocked(newTopSuggestion, newMediaDevices)
-    if (shouldClearStateOverride(newConnectionState)) {
-      clearSuggestedStateOverrideLocked()
-    }
-
     return if (isConnectedState(newConnectionState)) {
       // Don't display a suggestion if the MediaDevice that matches the suggestion is connected.
       null
     } else {
-      suggestedStateOverride ?: SuggestedDeviceState(newTopSuggestion, newConnectionState)
+      SuggestedDeviceState(newTopSuggestion, newConnectionState)
     }
   }
 
@@ -277,14 +274,6 @@ class SuggestedDeviceManager(
       return STATE_SELECTED
     }
     return matchedDevice?.state ?: STATE_DISCONNECTED
-  }
-
-  private fun shouldClearStateOverride(
-    @MediaDeviceState newConnectionState: Int,
-  ): Boolean {
-    // Don't clear the state override if a matched device is in DISCONNECTED state. Currently, the
-    // DISCONNECTED state can be reported during connection that can lead to UI flicker.
-    return newConnectionState != STATE_DISCONNECTED
   }
 
   private fun isConnectedState(@MediaDeviceState state: Int): Boolean =
@@ -309,9 +298,20 @@ class SuggestedDeviceManager(
   }
 
   @GuardedBy("lock")
-  private fun clearSuggestedStateOverrideLocked() {
-    suggestedStateOverride = null
-    handler.removeCallbacks(onSuggestedStateOverrideExpiredRunnable)
+  private fun tryClearSuggestedStateOverrideLocked(newMediaDevices: List<MediaDevice>) {
+    suggestedStateOverride?.let { override ->
+      val newConnectionState =
+          getConnectionStateFromMatchedDeviceLocked(override.suggestedDeviceInfo, newMediaDevices)
+      // Clear the state override unless the matched device state is:
+      // - STATE_DISCONNECTED: This state might be reported during the connection process,
+      //   potentially causing UI flicker.
+      // - Same connection state as in the override: Getting an event with the same device state
+      //   should not affect the override timeout.
+      if (newConnectionState !in setOf(STATE_DISCONNECTED, override.connectionState)) {
+        suggestedStateOverride = null
+        handler.removeCallbacks(onSuggestedStateOverrideExpiredRunnable)
+      }
+    }
   }
 
   private fun dispatchOnSuggestedDeviceUpdated() {

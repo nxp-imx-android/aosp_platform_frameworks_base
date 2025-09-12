@@ -244,24 +244,9 @@ class SuggestedDeviceManagerTest {
 
   @Test
   fun onDeviceSuggestionsUpdated_hasStateOverrideAndNewSuggestionDifferent_keepsOverriddenState() {
-    onDeviceSuggestionsUpdated_hasStateOverride_keepsOverriddenState(
-      initialSuggestedDeviceInfo = suggestedDeviceInfo1,
-      updatedSuggestedDeviceInfo = suggestedDeviceInfo2,
-    )
-  }
+    val initialSuggestedDeviceInfo = suggestedDeviceInfo1
+    val updatedSuggestedDeviceInfo = suggestedDeviceInfo2
 
-  @Test
-  fun onDeviceSuggestionsUpdated_hasStateOverrideAndNewSuggestionNull_keepsOverriddenState() {
-    onDeviceSuggestionsUpdated_hasStateOverride_keepsOverriddenState(
-      initialSuggestedDeviceInfo = suggestedDeviceInfo1,
-      updatedSuggestedDeviceInfo = null,
-    )
-  }
-
-  fun onDeviceSuggestionsUpdated_hasStateOverride_keepsOverriddenState(
-    initialSuggestedDeviceInfo: SuggestedDeviceInfo,
-    updatedSuggestedDeviceInfo: SuggestedDeviceInfo?,
-  ) {
     val deviceCallback = addListenerAndCaptureCallback(listener)
     deviceCallback.onDeviceListUpdate(listOf(mediaDevice1, mediaDevice2))
 
@@ -294,7 +279,8 @@ class SuggestedDeviceManagerTest {
       initialSuggestedDeviceState,
       false,
     )
-    val failedSuggestedState = initialSuggestedDeviceState.copy(connectionState = STATE_CONNECTING_FAILED)
+    val failedSuggestedState =
+      initialSuggestedDeviceState.copy(connectionState = STATE_CONNECTING_FAILED)
     verify(listener).onSuggestedDeviceStateUpdated(failedSuggestedState)
     clearInvocations(listener)
 
@@ -340,7 +326,7 @@ class SuggestedDeviceManagerTest {
   }
 
   @Test
-  fun onDeviceListUpdate_fromConnectingOverrideToDisconnected_noDispatch() {
+  fun onDeviceListUpdate_fromConnectingOverrideToSameStateOrDisconnected_noDispatch() {
     val deviceCallback = addListenerAndCaptureCallback(listener)
 
     deviceCallback.onDeviceListUpdate(listOf(mediaDevice1))
@@ -355,10 +341,15 @@ class SuggestedDeviceManagerTest {
     verify(listener)
       .onSuggestedDeviceStateUpdated(SuggestedDeviceState(suggestedDeviceInfo1, STATE_CONNECTING))
 
+    // If the matched device state is the same, override is not cleared.
+    mediaDevice1.stub { on { state } doReturn STATE_CONNECTING }
+    deviceCallback.onDeviceListUpdate(listOf(mediaDevice1))
+
+    // If the matched device state is STATE_DISCONNECTED, override is not cleared.
     mediaDevice1.stub { on { state } doReturn STATE_DISCONNECTED }
     deviceCallback.onDeviceListUpdate(listOf(mediaDevice1))
 
-    // STATE_DISCONNECTED is ignored.
+    // Override was not cleared, therefore no callbacks are dispatched.
     verifyNoMoreInteractions(listener)
   }
 
@@ -378,6 +369,11 @@ class SuggestedDeviceManagerTest {
 
     verify(listener)
       .onSuggestedDeviceStateUpdated(SuggestedDeviceState(suggestedDeviceInfo1, STATE_CONNECTING))
+    clearInvocations(listener)
+
+    // Changing suggestion doesn't affect override.
+    deviceCallback.onDeviceSuggestionsUpdated(listOf(null))
+    verify(listener, never()).onSuggestedDeviceStateUpdated(anyOrNull())
 
     mediaDevice1.stub { on { state } doReturn STATE_CONNECTED }
     deviceCallback.onDeviceListUpdate(listOf(mediaDevice1))
