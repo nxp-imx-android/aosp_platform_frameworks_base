@@ -296,3 +296,13 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "computer_control_user_restriction"
+    namespace: "virtual_devices"
+    description: "Support 'allowed users' in VirtualDevice and use it to constrain CC to calling user and prevent managed profiles"
+    bug: "433734861"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
