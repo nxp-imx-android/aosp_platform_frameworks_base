@@ -15,7 +15,6 @@
  */
 package com.android.server.notification;
 
-import static android.app.Flags.FLAG_LIFETIME_EXTENSION_REFACTOR;
 import static android.content.Context.DEVICE_POLICY_SERVICE;
 import static android.os.UserHandle.USER_ALL;
 import static android.os.UserHandle.USER_CURRENT;
@@ -2468,7 +2467,6 @@ public class ManagedServicesTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(FLAG_LIFETIME_EXTENSION_REFACTOR)
     public void testManagedServiceInfoIsSystemUi() {
         ManagedServices service = new TestManagedServices(getContext(), mLock, mUserProfiles, mIpm,
                 APPROVAL_BY_COMPONENT);

@@ -3683,8 +3683,8 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(android.app.Flags.FLAG_LIFETIME_EXTENSION_REFACTOR)
     public void testCancelWithTagDoesNotCancelLifetimeExtended() throws Exception {
+        mService.setCallerIsNormalPackage();
         final NotificationRecord notif = generateNotificationRecord(null);
         notif.getSbn().getNotification().flags =
                 Notification.FLAG_LIFETIME_EXTENDED_BY_DIRECT_REPLY;
@@ -3714,8 +3714,8 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(android.app.Flags.FLAG_LIFETIME_EXTENSION_REFACTOR)
     public void testMultipleCancelOfLifetimeExtendedSendsOneUpdate() throws Exception {
+        mService.setCallerIsNormalPackage();
         final NotificationRecord notif = generateNotificationRecord(null);
         notif.getSbn().getNotification().flags =
                 Notification.FLAG_LIFETIME_EXTENDED_BY_DIRECT_REPLY;
@@ -3748,7 +3748,6 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(android.app.Flags.FLAG_LIFETIME_EXTENSION_REFACTOR)
     public void testCancelAllClearsLifetimeExtended() throws Exception {
         final NotificationRecord notif = generateNotificationRecord(
                 mTestNotificationChannel, 1, "group", true);
@@ -3771,7 +3770,6 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(android.app.Flags.FLAG_LIFETIME_EXTENSION_REFACTOR)
     public void testAppCancelAllDoesNotCancelLifetimeExtended() throws Exception {
         // Adds a lifetime extended notification.
         final NotificationRecord notif = generateNotificationRecord(mTestNotificationChannel, 1,
@@ -3807,7 +3805,6 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(android.app.Flags.FLAG_LIFETIME_EXTENSION_REFACTOR)
     public void testLifetimeExtendedCancelledOnClick() throws Exception {
         // Adds a lifetime extended notification.
         final NotificationRecord notif = generateNotificationRecord(mTestNotificationChannel, 1,
@@ -4232,7 +4229,6 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(android.app.Flags.FLAG_LIFETIME_EXTENSION_REFACTOR)
     public void testCancelNotificationsFromListener_clearAll_NoClearLifetimeExt()
             throws Exception {
         final NotificationRecord notif = generateNotificationRecord(
@@ -4465,7 +4461,6 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(android.app.Flags.FLAG_LIFETIME_EXTENSION_REFACTOR)
     public void testCancelNotificationsFromListener_byKey_NoClearLifetimeExt()
             throws Exception {
         final NotificationRecord notif = generateNotificationRecord(
@@ -7533,7 +7528,6 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(android.app.Flags.FLAG_LIFETIME_EXTENSION_REFACTOR)
     public void testTimeout_NoCancelLifetimeExtensionNotification() throws Exception {
         // Create a notification with FLAG_LIFETIME_EXTENDED_BY_DIRECT_REPLY
         final NotificationRecord notif = generateNotificationRecord(null);
@@ -7627,7 +7621,6 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(android.app.Flags.FLAG_LIFETIME_EXTENSION_REFACTOR)
     public void testStats_DirectReplyLifetimeExtendedPostsUpdate() throws Exception {
         final NotificationRecord r = generateNotificationRecord(mTestNotificationChannel);
         // Marks the notification as having already been lifetime extended and canceled.
@@ -7675,7 +7668,6 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(android.app.Flags.FLAG_LIFETIME_EXTENSION_REFACTOR)
     public void testStats_DirectReplyLifetimeExtendedPostsUpdate_RestorePostSilently()
             throws Exception {
         final NotificationRecord r = generateNotificationRecord(mTestNotificationChannel);
@@ -7702,7 +7694,6 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(android.app.Flags.FLAG_LIFETIME_EXTENSION_REFACTOR)
     public void testStats_DirectReplyLifetimeExtendedPostsUpdate_RestoreOnlyAlertOnceFlag()
             throws Exception {
         final NotificationRecord r = generateNotificationRecord(mTestNotificationChannel);
@@ -7729,7 +7720,6 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(android.app.Flags.FLAG_LIFETIME_EXTENSION_REFACTOR)
     public void testUpdate_DirectReplyLifetimeExtendedUpdateSucceeds() throws Exception {
         // Creates a lifetime extended notification.
         NotificationRecord original = generateNotificationRecord(mTestNotificationChannel);
@@ -10574,7 +10564,6 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(android.app.Flags.FLAG_LIFETIME_EXTENSION_REFACTOR)
     public void
             testOnNotificationSmartReplySent_isSmartReply_hasSmartReplyAndSendsSmartReplyLogs() {
         final int replyIndex = 2;
@@ -10601,7 +10590,6 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(android.app.Flags.FLAG_LIFETIME_EXTENSION_REFACTOR)
     public void testOnNotificationSmartReplySent_isAnimatedReply_sendsAnimatedReplyLogs() {
         final int replyIndex = 0;
         final String reply = "Hello";
@@ -10638,7 +10626,6 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(android.app.Flags.FLAG_LIFETIME_EXTENSION_REFACTOR)
     public void testStats_SmartReplyAlreadyLifetimeExtendedPostsUpdate() throws Exception {
         final int replyIndex = 2;
         final String reply = "Hello";
@@ -10740,7 +10727,6 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(android.app.Flags.FLAG_LIFETIME_EXTENSION_REFACTOR)
     public void testActionClickLifetimeExtendedCancel() throws Exception {
         final Notification.Action action =
                 new Notification.Action.Builder(null, "text", PendingIntent.getActivity(
@@ -10779,7 +10765,6 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(android.app.Flags.FLAG_LIFETIME_EXTENSION_REFACTOR)
     public void testActionClickLifetimeExtendedCancel_PreventByNoDismiss() throws Exception {
         final Notification.Action action =
                 new Notification.Action.Builder(null, "text", PendingIntent.getActivity(
@@ -10820,7 +10805,6 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(android.app.Flags.FLAG_LIFETIME_EXTENSION_REFACTOR)
     public void testUpdateOnActionClickDropsLifetimeExtendedCancel() throws Exception {
         final Notification.Action action =
                 new Notification.Action.Builder(null, "text", PendingIntent.getActivity(
@@ -17941,7 +17925,6 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(android.app.Flags.FLAG_LIFETIME_EXTENSION_REFACTOR)
     public void testFixNotification_clearsLifetimeExtendedFlag() throws Exception {
         Notification n = new Notification.Builder(mContext, "test")
                 .setFlag(FLAG_LIFETIME_EXTENDED_BY_DIRECT_REPLY, true)

@@ -1001,8 +1001,6 @@ public class NotificationListenersTest extends UiServiceTestCase {
 
     @Test
     public void testListenerPostLifetimeExtended_UpdatesOnlySysui() throws Exception {
-        mSetFlagsRule.enableFlags(android.app.Flags.FLAG_LIFETIME_EXTENSION_REFACTOR);
-
         // Create original notification, with FLAG_LIFETIME_EXTENDED_BY_DIRECT_REPLY.
         String pkg = "pkg";
         int uid = 9;
@@ -1094,8 +1092,6 @@ public class NotificationListenersTest extends UiServiceTestCase {
 
     @Test
     public void testListenerPostLifetimeExtension_postsToAppropriateListeners() throws Exception {
-        mSetFlagsRule.enableFlags(android.app.Flags.FLAG_LIFETIME_EXTENSION_REFACTOR);
-
         // Create original notification, with FLAG_LIFETIME_EXTENDED_BY_DIRECT_REPLY.
         String pkg = "pkg";
         int uid = 9;
