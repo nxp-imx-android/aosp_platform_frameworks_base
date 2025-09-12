@@ -45,7 +45,7 @@
 
     <target_preparer class="com.android.compatibility.common.tradefed.targetprep.FilePusher">
         <option name="cleanup" value="true" />
-        <option name="push" value="app_with_4kb_elf_no_override.apk->/data/local/tmp/pagesizewarnings/app_with_4kb_elf_no_override.apk" />
+        <option name="push" value="app_with_4kb_elf_no_override_debuggable.apk->/data/local/tmp/pagesizewarnings/app_with_4kb_elf_no_override_debuggable.apk" />
     </target_preparer>
 
     <test class="com.android.compatibility.common.tradefed.testtype.JarHostTest" >

@@ -90,7 +90,7 @@ public class AppWarningsHostTest extends BaseHostJUnit4Test {
 
     @Test
     @AppModeFull
-    public void testWarnings_installedBySession()
+    public void testNoWarnings_installedBySession()
             throws FileNotFoundException, DeviceNotAvailableException, TargetSetupError {
         String appPackage = "android.content.pm.tests";
         String testName = "AppWarningsTest";
