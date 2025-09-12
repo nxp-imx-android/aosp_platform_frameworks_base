@@ -261,3 +261,10 @@ flag {
   description: "Enables new keyboard shortcuts to adjust keyboard backlight"
   bug: "401626732"
 }
+
+flag {
+    name: "bluetooth_wakeup_state_check"
+    namespace: "desktop_pnp"
+    description: "Check Bluetooth HID profile connection state is changed before waking up the device."
+    bug: "440645135"
+}
