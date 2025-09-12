@@ -63,6 +63,8 @@ import com.android.wm.shell.desktopmode.DesktopModeUiEventLogger
 import com.android.wm.shell.desktopmode.DesktopModeUiEventLogger.DesktopUiEventEnum.A11Y_APP_HANDLE_MENU_DESKTOP_VIEW
 import com.android.wm.shell.desktopmode.DesktopModeUiEventLogger.DesktopUiEventEnum.A11Y_APP_HANDLE_MENU_FULLSCREEN
 import com.android.wm.shell.desktopmode.DesktopModeUiEventLogger.DesktopUiEventEnum.A11Y_APP_HANDLE_MENU_SPLIT_SCREEN
+import com.android.wm.shell.desktopmode.DesktopModeUiEventLogger.DesktopUiEventEnum.DESKTOP_WINDOWING_APP_TO_WEB_OPEN_IN_APP
+import com.android.wm.shell.desktopmode.DesktopModeUiEventLogger.DesktopUiEventEnum.DESKTOP_WINDOWING_APP_TO_WEB_OPEN_IN_BROWSER
 import com.android.wm.shell.shared.annotations.ShellMainThread
 import com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper
 import com.android.wm.shell.shared.bubbles.ContextUtils.isRtl
@@ -228,6 +230,13 @@ private constructor(
                     bind(taskInfo, shouldShowMoreActionsPill)
                     this.onOpenInAppOrBrowserClickListener = {
                         openInAppOrBrowserClickListener.invoke(openInAppOrBrowserIntent!!)
+                        val uiEvent =
+                            if (isBrowserApp) {
+                                DESKTOP_WINDOWING_APP_TO_WEB_OPEN_IN_APP
+                            } else {
+                                DESKTOP_WINDOWING_APP_TO_WEB_OPEN_IN_BROWSER
+                            }
+                        desktopModeUiEventLogger.log(taskInfo, uiEvent)
                         onHandleMenuClicked.invoke()
                     }
                     this.onOpenByDefaultClickListener = onOpenByDefaultClickListener

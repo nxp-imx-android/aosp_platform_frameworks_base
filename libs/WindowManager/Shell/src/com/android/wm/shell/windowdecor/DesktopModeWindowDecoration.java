@@ -1370,7 +1370,8 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
                     public void onDialogDismissed() {
                         mOpenByDefaultDialog = null;
                     }
-                }
+                },
+                mDesktopModeUiEventLogger
         );
     }
 

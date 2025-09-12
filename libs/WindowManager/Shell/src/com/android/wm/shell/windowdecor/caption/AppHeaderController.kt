@@ -433,6 +433,7 @@ class AppHeaderController(
                         openByDefaultDialog = null
                     }
                 },
+                desktopModeUiEventLogger,
             )
     }
 
