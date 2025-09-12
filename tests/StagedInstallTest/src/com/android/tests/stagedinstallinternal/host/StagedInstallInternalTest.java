@@ -455,6 +455,13 @@ public class StagedInstallInternalTest extends BaseHostJUnit4Test {
     }
 
     @Test
+    public void testAbandonedSessionShouldNotBlockNewStaging() throws Exception {
+        runPhase("testAbandonedSessionShouldNotBlockNewStaging_Commit");
+        getDevice().reboot();
+        runPhase("testAbandonedSessionShouldNotBlockNewStaging_Verify");
+    }
+
+    @Test
     public void testApexActivationFailureIsCapturedInSession() throws Exception {
         // We initiate staging a normal apex update which passes pre-reboot verification.
         // Then we replace the valid apex waiting in /data/app-staging with something
