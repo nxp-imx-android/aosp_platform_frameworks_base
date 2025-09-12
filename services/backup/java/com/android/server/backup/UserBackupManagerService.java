@@ -189,6 +189,14 @@ public class UserBackupManagerService {
     public static final String BACKUP_MANIFEST_FILENAME = "_manifest";
     public static final int BACKUP_MANIFEST_VERSION = 1;
 
+    // Name and current contents version of the cross-platform manifest file
+    //
+    // Manifest version history:
+    //
+    // 1 : initial release
+    public static final String CROSS_PLATFORM_MANIFEST_FILENAME = "_cross_platform_manifest";
+    public static final int CROSS_PLATFORM_MANIFEST_VERSION = 1;
+
     // External archive format version history:
     //
     // 1 : initial release
