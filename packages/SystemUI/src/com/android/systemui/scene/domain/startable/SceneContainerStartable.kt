@@ -74,6 +74,7 @@ import com.android.systemui.shade.domain.interactor.ShadeDisplaysInteractor
 import com.android.systemui.shade.domain.interactor.ShadeInteractor
 import com.android.systemui.shade.domain.interactor.ShadeModeInteractor
 import com.android.systemui.shade.shared.flag.ShadeWindowGoesAround
+import com.android.systemui.statusbar.NotificationLockscreenUserManager
 import com.android.systemui.statusbar.NotificationShadeWindowController
 import com.android.systemui.statusbar.SysuiStatusBarStateController
 import com.android.systemui.statusbar.VibratorHelper
@@ -157,6 +158,7 @@ constructor(
     private val sysuiStateInteractor: SysUIStateDisplaysInteractor,
     private val shadeDisplaysInteractor: Lazy<ShadeDisplaysInteractor>,
     private val surfaceBehindInteractor: KeyguardSurfaceBehindInteractor,
+    private val lockscreenUserManager: NotificationLockscreenUserManager,
 ) : CoreStartable {
     private val centralSurfaces: CentralSurfaces?
         get() = centralSurfacesOptLazy.get().getOrNull()
@@ -191,6 +193,7 @@ constructor(
             refreshLockscreenEnabled()
             hydrateActivityTransitionAnimationState()
             lockWhenDeviceBecomesUntrusted()
+            hydrateLockScreenUserManager()
         } else {
             sceneLogger.logFrameworkEnabled(isEnabled = false)
         }
@@ -412,7 +415,7 @@ constructor(
                             deviceEntryInteractor.canSwipeToEnter.value == false -> {
                             val loggingReason =
                                 "All SIM cards unlocked and device already unlocked and" +
-                                        " lockscreen doesn't require a swipe to dismiss."
+                                    " lockscreen doesn't require a swipe to dismiss."
                             switchToScene(
                                 targetSceneKey = Scenes.Gone,
                                 loggingReason = loggingReason,
@@ -1155,6 +1158,15 @@ constructor(
                     )
                 }
             }
+        }
+    }
+
+    private fun hydrateLockScreenUserManager() {
+        applicationScope.launch {
+            deviceUnlockedInteractor.deviceUnlockStatus
+                .map { it.isUnlocked }
+                .distinctUntilChanged()
+                .collect { _ -> lockscreenUserManager.updatePublicMode() }
         }
     }
 
