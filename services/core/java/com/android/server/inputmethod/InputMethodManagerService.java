@@ -3700,31 +3700,30 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
             );
             return mAllowedImesByPolicyForTest;
         }
-        if (editorInfo != null && editorInfo.targetDevicePolicyUser != null) {
-            ProtoLog.v(IMMS_DEBUG,
-                    "startInputOrWindowGainedFocus editorInfo.targetDevicePolicyUser: %d",
-                    editorInfo.targetDevicePolicyUser);
-            StringBuilder allowedImesLog = new StringBuilder("allowedImes: ");
-            if (allowedImes != null) {
-                allowedImes.forEach(allowedIme ->
-                        allowedImesLog.append(allowedIme.getId()).append(", "));
-            } else {
-                allowedImesLog.append("null");
-            }
-            ProtoLog.d(IMMS_DEBUG, allowedImesLog.toString());
+
+        ProtoLog.v(IMMS_DEBUG,
+                "startInputOrWindowGainedFocus editorInfo.targetDevicePolicyUser: %d",
+                editorInfo.targetDevicePolicyUser);
+        StringBuilder allowedImesLog = new StringBuilder("allowedImes: ");
+        if (allowedImes != null) {
+            allowedImes.forEach(allowedIme ->
+                    allowedImesLog.append(allowedIme.getId()).append(", "));
+        } else {
+            allowedImesLog.append("null");
         }
+        ProtoLog.d(IMMS_DEBUG, allowedImesLog.toString());
         return allowedImes;
     }
 
     private List<InputMethodInfo> getAllowedImesForPackages(
-            Set<String> allowedImePackages, int dpUserId) {
+            @Nullable Set<String> allowedImePackages, @UserIdInt int dpUserId) {
+        if (allowedImePackages == null) {
+            return null;
+        }
         mContext.enforceCallingOrSelfPermission(
                 Manifest.permission.INTERACT_ACROSS_USERS_FULL, null);
         mContext.enforceCallingOrSelfPermission(
                 Manifest.permission.MANAGE_USERS, null);
-        if (allowedImePackages == null) {
-            return null;
-        }
         List<InputMethodInfo> allowedImes = null;
         UserInfo parentUserInfo = UserManager.get(mContext).getProfileParent(dpUserId);
         List<InputMethodInfo> imes = InputMethodManagerInternal
@@ -3737,8 +3736,8 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
             if (ime.isAuxiliaryIme()) {
                 continue;
             }
-            if (allowedImePackages.contains(ime.getPackageName())) {
-                Slog.d(TAG, "getAllowedImesForPackages: add " + ime.getPackageName());
+            if (ime.isSystem() || allowedImePackages.contains(ime.getPackageName())) {
+                ProtoLog.d(IMMS_DEBUG, "getAllowedImesForPackages: add " + ime.getPackageName());
                 allowedImes.add(ime);
             }
         }
