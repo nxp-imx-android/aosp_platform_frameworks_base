@@ -1574,12 +1574,17 @@ public class LockSettingsService extends ILockSettings.Stub {
         mKeyStoreAuthorization.onUserStorageLocked(userId);
     }
 
-    @VisibleForTesting /** Note: this method is overridden in unit tests */
-    protected LockscreenCredential getDecryptedPasswordForUnifiedProfile(int userId)
-            throws KeyStoreException, UnrecoverableKeyException,
-            NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException,
-            InvalidAlgorithmParameterException, IllegalBlockSizeException, BadPaddingException,
-            CertificateException, IOException {
+    private LockscreenCredential getDecryptedPasswordForUnifiedProfile(int userId)
+            throws KeyStoreException,
+                    UnrecoverableKeyException,
+                    NoSuchAlgorithmException,
+                    NoSuchPaddingException,
+                    InvalidKeyException,
+                    InvalidAlgorithmParameterException,
+                    IllegalBlockSizeException,
+                    BadPaddingException,
+                    CertificateException,
+                    IOException {
         Slogf.d(TAG, "Decrypting password for unified profile %d", userId);
         byte[] storedData = mStorage.readChildProfileLock(userId);
         if (storedData == null) {
@@ -2193,9 +2198,12 @@ public class LockSettingsService extends ILockSettings.Stub {
         }
     }
 
-    @VisibleForTesting /** Note: this method is overridden in unit tests */
-    protected void tieProfileLockToParent(int profileUserId, int parentUserId,
-            LockscreenCredential password) {
+    /**
+     * Sets up an encrypted password protected by a new encryption key bound to the parent sid. The
+     * credential must be a PASSWORD, rather than NONE.
+     */
+    private void tieProfileLockToParent(
+            int profileUserId, int parentUserId, LockscreenCredential password) {
         Slogf.i(TAG, "Tying lock for profile user %d to parent user %d", profileUserId,
                 parentUserId);
         final long parentSid;
