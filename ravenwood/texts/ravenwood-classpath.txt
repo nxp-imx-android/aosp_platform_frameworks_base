@@ -33,7 +33,6 @@ flag-junit.jar
 ravenwood-framework.jar
 ravenwood-junit-impl.jar
 mockito-ravenwood-prebuilt.jar
-inline-mockito-ravenwood-prebuilt.jar
 
 {TEST_JARS}
 
