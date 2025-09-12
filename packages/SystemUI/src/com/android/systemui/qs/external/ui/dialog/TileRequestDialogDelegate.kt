@@ -46,7 +46,7 @@ import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 
-class TileRequestDialogComposeDelegate
+class TileRequestDialogDelegate
 @AssistedInject
 constructor(
     private val sysuiDialogFactory: SystemUIDialogFactory,
@@ -121,9 +121,6 @@ constructor(
 
     @AssistedFactory
     interface Factory {
-        fun create(
-            tiledata: TileData,
-            dialogListener: OnClickListener,
-        ): TileRequestDialogComposeDelegate
+        fun create(tiledata: TileData, dialogListener: OnClickListener): TileRequestDialogDelegate
     }
 }

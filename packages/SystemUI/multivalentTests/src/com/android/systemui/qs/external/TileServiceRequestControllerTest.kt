@@ -21,7 +21,6 @@ import android.app.StatusBarManager
 import android.content.ComponentName
 import android.content.DialogInterface
 import android.graphics.drawable.Icon
-import android.platform.test.annotations.EnableFlags
 import android.view.WindowManager
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
@@ -30,10 +29,9 @@ import com.android.systemui.SysuiTestCase
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.runCurrent
 import com.android.systemui.kosmos.runTest
-import com.android.systemui.qs.external.ui.dialog.FakeTileRequestDialogComposeDelegateFactory
+import com.android.systemui.qs.external.ui.dialog.FakeTileRequestDialogDelegateFactory
 import com.android.systemui.qs.external.ui.dialog.fake
-import com.android.systemui.qs.external.ui.dialog.tileRequestDialogComposeDelegateFactory
-import com.android.systemui.qs.flags.QSComposeFragment
+import com.android.systemui.qs.external.ui.dialog.tileRequestDialogDelegateFactory
 import com.android.systemui.qs.pipeline.data.repository.fakeInstalledTilesRepository
 import com.android.systemui.qs.pipeline.domain.interactor.currentTilesInteractor
 import com.android.systemui.qs.pipeline.shared.TileSpec
@@ -48,8 +46,7 @@ import org.mockito.kotlin.mock
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
-@EnableFlags(QSComposeFragment.FLAG_NAME)
-class TileServiceRequestControllerTestComposeOn : SysuiTestCase() {
+class TileServiceRequestControllerTest : SysuiTestCase() {
     private val kosmos = testKosmos()
 
     private val userId: Int
@@ -189,7 +186,7 @@ class TileServiceRequestControllerTestComposeOn : SysuiTestCase() {
     fun positiveAction_tileAdded() =
         kosmos.runTest {
             // Not using a real dialog
-            tileRequestDialogComposeDelegateFactory = FakeTileRequestDialogComposeDelegateFactory()
+            tileRequestDialogDelegateFactory = FakeTileRequestDialogDelegateFactory()
 
             val callback = Callback()
             val dialog =
@@ -202,7 +199,7 @@ class TileServiceRequestControllerTestComposeOn : SysuiTestCase() {
                     callback,
                 )
 
-            tileRequestDialogComposeDelegateFactory.fake.clickListener.onClick(
+            tileRequestDialogDelegateFactory.fake.clickListener.onClick(
                 dialog,
                 DialogInterface.BUTTON_POSITIVE,
             )
@@ -217,7 +214,7 @@ class TileServiceRequestControllerTestComposeOn : SysuiTestCase() {
     fun negativeAction_tileNotAdded() =
         kosmos.runTest {
             // Not using a real dialog
-            tileRequestDialogComposeDelegateFactory = FakeTileRequestDialogComposeDelegateFactory()
+            tileRequestDialogDelegateFactory = FakeTileRequestDialogDelegateFactory()
 
             val callback = Callback()
             val dialog =
@@ -230,7 +227,7 @@ class TileServiceRequestControllerTestComposeOn : SysuiTestCase() {
                     callback,
                 )
 
-            tileRequestDialogComposeDelegateFactory.fake.clickListener.onClick(
+            tileRequestDialogDelegateFactory.fake.clickListener.onClick(
                 dialog,
                 DialogInterface.BUTTON_NEGATIVE,
             )
