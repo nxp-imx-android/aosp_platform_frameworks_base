@@ -5457,6 +5457,12 @@ public class UserManager {
      *
      * Takes into account whether the user type is supported and maximum user limits, but does not
      * take into account UserRestrictions.
+     *
+     * Note that this value is dynamic; the creation of users of another type can sometimes affect
+     * how many users of this type are allowed if they are both subject to the same combined cap.
+     * In particular, the creation of one switchable user will decrease the current number of
+     * allowed users for other switchable user types.
+     *
      * It is consistent with {@link #getRemainingCreatableUserCount(String)}, with the following
      * caveat:
      *
@@ -5484,18 +5490,22 @@ public class UserManager {
     /**
      * Checks whether this device supports users of the given user type.
      *
+     * Takes into account whether the user type is supported, including having a non-zero maximum
+     * user limit, but does not take into account UserRestrictions.
+     *
      * @param userType the type of user, such as {@link UserManager#USER_TYPE_FULL_SECONDARY}.
-     * @return true if the creation of users of the given user type is enabled on this device.
+     * @return true if the creation of users of the given user type is supported on this device.
      * @hide
      */
     @TestApi
+    @FlaggedApi(android.multiuser.Flags.FLAG_QUERY_USER_TYPE_SUPPORTED)
     @RequiresPermission(anyOf = {
             android.Manifest.permission.MANAGE_USERS,
             android.Manifest.permission.CREATE_USERS
     })
-    public boolean isUserTypeEnabled(@NonNull String userType) {
+    public boolean isUserTypeSupported(@NonNull String userType) {
         try {
-            return mService.isUserTypeEnabled(userType);
+            return mService.isUserTypeSupportedIncludingSystem(userType);
         } catch (RemoteException re) {
             throw re.rethrowFromSystemServer();
         }

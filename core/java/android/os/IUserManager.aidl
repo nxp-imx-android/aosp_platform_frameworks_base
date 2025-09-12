@@ -67,7 +67,7 @@ interface IUserManager {
     List<UserInfo> getUsers(boolean excludeDying);
     List<UserInfo> getProfiles(int userId, boolean enabledOnly);
     int[] getProfileIds(int userId, boolean enabledOnly);
-    boolean isUserTypeEnabled(in String userType);
+    boolean isUserTypeSupportedIncludingSystem(in String userType);
     int getCurrentAllowedNumberOfUsers(in String userType);
     boolean canAddMoreUsersOfType(in String userType);
     int getRemainingCreatableUserCount(in String userType);

@@ -53,6 +53,13 @@ flag {
 }
 
 flag {
+    name: "query_user_type_supported"
+    namespace: "multiuser"
+    description: "Infrastructure to determine whether a given user type is supported."
+    bug: "413464199"
+}
+
+flag {
     name: "support_communal_profile_nextgen"
     is_exported: true
     namespace: "multiuser"
