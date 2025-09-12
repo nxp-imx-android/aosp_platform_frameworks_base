@@ -917,10 +917,21 @@ public abstract class ForegroundServiceTypePolicy {
                 sb.append("all of the permissions ");
                 sb.append(mAllOfPermissions.toString());
                 sb.append(' ');
+                if (mAnyOfPermissions != null
+                      || mCustomPermission != null) {
+                    sb.append("and ");
+                }
             }
             if (mAnyOfPermissions != null) {
                 sb.append("any of the permissions ");
                 sb.append(mAnyOfPermissions.toString());
+                sb.append(' ');
+            }
+            if (mCustomPermission != null) {
+                if (mAnyOfPermissions != null) {
+                    sb.append("or ");
+                }
+                sb.append(mCustomPermission.toString());
                 sb.append(' ');
             }
             return sb;
@@ -1109,9 +1120,6 @@ public abstract class ForegroundServiceTypePolicy {
         @Override
         public String toString() {
             final StringBuilder sb = new StringBuilder();
-            sb.append("allOf=");
-            sb.append(mAllOf);
-            sb.append(' ');
             sb.append('[');
             for (int i = 0; i < mPermissions.length; i++) {
                 if (i > 0) {
