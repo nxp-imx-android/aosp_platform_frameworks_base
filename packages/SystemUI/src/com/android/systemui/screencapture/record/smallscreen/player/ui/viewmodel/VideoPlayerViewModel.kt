@@ -20,10 +20,11 @@ import android.content.Context
 import android.media.AudioAttributes
 import android.media.MediaPlayer
 import android.net.Uri
+import android.view.Surface
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import com.android.app.tracing.coroutines.launchTraced
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.lifecycle.HydratedActivatable
@@ -31,7 +32,6 @@ import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import kotlin.coroutines.CoroutineContext
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.withContext
 
 class VideoPlayerViewModel
@@ -45,16 +45,24 @@ constructor(
     var player: MediaPlayer? by mutableStateOf(null)
         private set
 
-    override suspend fun onActivated() {
-        coroutineScope {
-            launchTraced("VideoPlayerViewModel#createPlayer") { player = createPlayer() }
-        }
+    val videoAspectRatio: Float? by derivedStateOf {
+        player?.run { videoWidth.toFloat() / videoHeight.toFloat() }?.takeIf { it > 0 }
     }
 
-    override suspend fun onDeactivated() {
-        player?.let {
+    val controlsViewModel: VideoPlayerControlsViewModel? = null
+
+    suspend fun onSurfaceCreated(surface: Surface) {
+        player =
+            createPlayer().apply {
+                setSurface(surface)
+                start()
+            }
+    }
+
+    fun onSurfaceDestroyed() {
+        player?.let { currentPlayer ->
             player = null
-            it.release()
+            currentPlayer.release()
         }
     }
 

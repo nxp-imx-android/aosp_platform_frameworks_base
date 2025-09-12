@@ -20,7 +20,6 @@ import android.net.Uri
 import androidx.compose.foundation.AndroidExternalSurface
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -49,25 +48,20 @@ constructor(
                 videoPlayerViewModelFactory.create(uri)
             }
         val player = playerViewModel.player
-        if (player == null) {
-            Spacer(modifier = modifier)
-        } else {
-            Box(contentAlignment = Alignment.Center, modifier = modifier) {
-                Box(
-                    modifier =
-                        Modifier.aspectRatio(
-                            player.videoWidth.toFloat() / player.videoHeight.toFloat()
-                        )
-                ) {
-                    AndroidExternalSurface(
-                        onInit = {
-                            onSurface { surface, _, _ ->
-                                player.setSurface(surface)
-                                surface.onDestroyed { player.setSurface(null) }
-                            }
+        Box(contentAlignment = Alignment.Center, modifier = modifier) {
+            val aspectRatioModifier: Modifier =
+                playerViewModel.videoAspectRatio?.let { Modifier.aspectRatio(it) } ?: Modifier
+            Box(modifier = aspectRatioModifier) {
+                AndroidExternalSurface(
+                    onInit = {
+                        onSurface { surface, _, _ ->
+                            playerViewModel.onSurfaceCreated(surface)
+                            surface.onDestroyed { playerViewModel.onSurfaceDestroyed() }
                         }
-                    )
+                    }
+                )
 
+                if (player != null) {
                     val viewModel =
                         rememberViewModel(
                             traceName = "VideoPlayer#controlsViewModel",

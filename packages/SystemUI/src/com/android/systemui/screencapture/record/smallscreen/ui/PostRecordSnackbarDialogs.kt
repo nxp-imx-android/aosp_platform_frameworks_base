@@ -142,7 +142,7 @@ private class SnackbarDialogDelegate(private val onDismissed: () -> Unit) :
         super.onCreate(dialog, savedInstanceState)
         dialog.setOnDismissListener { onDismissed() }
         with(dialog.window!!) {
-            setGravity(Gravity.TOP)
+            setGravity(Gravity.TOP or Gravity.CENTER_HORIZONTAL)
             addFlags(
                 WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
                     WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL or
@@ -154,7 +154,7 @@ private class SnackbarDialogDelegate(private val onDismissed: () -> Unit) :
         }
     }
 
-    override fun getWidth(dialog: SystemUIDialog): Int = WindowManager.LayoutParams.MATCH_PARENT
+    override fun getWidth(dialog: SystemUIDialog): Int = WindowManager.LayoutParams.WRAP_CONTENT
 
     override fun getHeight(dialog: SystemUIDialog): Int = WindowManager.LayoutParams.WRAP_CONTENT
 }
