@@ -573,7 +573,8 @@ class ProcessErrorStateRecord {
             final long startOffset = 0L;
             final long endOffset = firstPidEndOffset.get();
             mService.mProcessList.mAppExitInfoTracker.scheduleLogAnrTrace(
-                    pid, mApp.uid, mApp.getPackageList(), tracesFile, startOffset, endOffset);
+                    pid, mApp.uid, mApp.getProcessPackageNames(), tracesFile, startOffset,
+                    endOffset);
         }
 
         // Check if package is still being loaded

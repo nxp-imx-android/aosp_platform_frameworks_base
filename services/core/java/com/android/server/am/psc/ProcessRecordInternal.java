@@ -282,7 +282,7 @@ public abstract class ProcessRecordInternal {
     public abstract void notifyTopProcChanged();
 
     /** Returns an array of package names associated with this process. */
-    public abstract String[] getPackageList();
+    public abstract String[] getProcessPackageNames();
 
     /** Returns a short string representation of the process. */
     public abstract String toShortString();

@@ -1042,7 +1042,7 @@ public final class AppExitInfoTracker {
             info.setProcessName(app.processName);
             info.setConnectionGroup(app.mServices.getConnectionGroup());
             info.setPackageName(app.info.packageName);
-            info.setPackageList(app.getPackageList());
+            info.setPackageList(app.getProcessPackageNames());
             info.setReason(ApplicationExitInfo.REASON_UNKNOWN);
             info.setSubReason(ApplicationExitInfo.SUBREASON_UNKNOWN);
             info.setStatus(0);
