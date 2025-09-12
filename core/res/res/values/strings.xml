@@ -4437,6 +4437,15 @@
          information. -->
     <string name="gpsVerifNo">No</string>
 
+    <!-- Title for a notification that is shown when a user's location is shared for an emergency. -->
+    <string name="emergency_location_notification_title">Location shared for emergency</string>
+    <!-- Detailed message for a notification that is shown when a user's location is shared for an emergency. -->
+    <string name="emergency_location_notification_message">Emergency services received your location from your carrier</string>
+    <!-- Notification action when a user's location is shared for an emergency, that takes the user to a help center article. -->
+    <string name="emergency_location_notification_learn_more">Learn more</string>
+    <!-- DO NOT TRANSLATE. URL for the "Learn more" link on the emergency location notification. -->
+    <string name="emergency_location_notification_learn_more_url" translatable="false">https://support.google.com/android/answer/9319337?sjid=9024468350750903013-NC#send_location_automatically&amp;zippy=%2Csend-your-location-automatically</string>
+
     <!-- Error message when the sync tried to delete too many things -->
     <string name="sync_too_many_deletes">Delete limit exceeded</string>
     <!-- Dialog message for when there are too many deletes that would take place and we want user confirmation -->

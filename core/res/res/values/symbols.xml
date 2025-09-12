@@ -779,6 +779,10 @@
   <java-symbol type="string" name="gpsNotifTitle" />
   <java-symbol type="string" name="gpsVerifNo" />
   <java-symbol type="string" name="gpsVerifYes" />
+  <java-symbol type="string" name="emergency_location_notification_title" />
+  <java-symbol type="string" name="emergency_location_notification_message" />
+  <java-symbol type="string" name="emergency_location_notification_learn_more" />
+  <java-symbol type="string" name="emergency_location_notification_learn_more_url" />
   <java-symbol type="string" name="gsm_alphabet_default_charset" />
   <java-symbol type="string" name="httpError" />
   <java-symbol type="string" name="httpErrorAuth" />
