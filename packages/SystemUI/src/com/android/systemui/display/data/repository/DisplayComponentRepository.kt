@@ -26,6 +26,7 @@ import com.android.app.tracing.traceSection
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent
 import com.android.systemui.display.flags.DisplayComponentRepositoryFlag.isEagerInitializationEnabled
+import com.android.systemui.display.shared.DisplayNotFoundException
 import dagger.Module
 import dagger.Provides
 import javax.inject.Inject
@@ -54,18 +55,26 @@ constructor(private val componentFactory: SystemUIDisplaySubcomponent.Factory) :
         traceSection("Destroying a display component instance") {
             instance.displayCoroutineScope.cancel("Cancelling scope associated to the display.")
         }
-        instance.lifecycleListeners.forEachTraced(
-            "Notifying listeners of a display component destruction"
-        ) {
-            it.stop()
+        try {
+            instance.lifecycleListeners.forEachTraced(
+                "Notifying listeners of a display component destruction"
+            ) {
+                it.stop()
+            }
+        } catch (exception: DisplayNotFoundException) {
+            Log.e(TAG, "Display no longer exists. Can't destroyInstance", exception)
         }
     }
 
     override fun setupInstance(instance: SystemUIDisplaySubcomponent) {
-        instance.lifecycleListeners.forEachTraced(
-            "Notifying listeners of a display component creation"
-        ) {
-            it.start()
+        try {
+            instance.lifecycleListeners.forEachTraced(
+                "Notifying listeners of a display component creation"
+            ) {
+                it.start()
+            }
+        } catch (exception: DisplayNotFoundException) {
+            Log.e(TAG, "Display no longer exists. Can't setupInstance", exception)
         }
     }
 
