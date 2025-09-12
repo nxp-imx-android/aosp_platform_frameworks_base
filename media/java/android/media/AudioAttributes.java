@@ -1876,8 +1876,9 @@ public final class AudioAttributes implements Parcelable {
             case USAGE_MEDIA:
             case USAGE_GAME:
             case USAGE_ASSISTANCE_NAVIGATION_GUIDANCE:
-            case USAGE_ASSISTANT:
                 return AudioSystem.STREAM_MUSIC;
+            case USAGE_ASSISTANT:
+                return AudioSystem.STREAM_ASSISTANT;
             case USAGE_ASSISTANCE_SONIFICATION:
                 return AudioSystem.STREAM_SYSTEM;
             case USAGE_VOICE_COMMUNICATION:
