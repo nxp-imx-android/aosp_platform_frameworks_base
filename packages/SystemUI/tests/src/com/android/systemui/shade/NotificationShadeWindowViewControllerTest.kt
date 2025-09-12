@@ -57,7 +57,6 @@ import com.android.systemui.kosmos.testDispatcher
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.log.assertLogsWtf
-import com.android.systemui.qs.flags.QSComposeFragment
 import com.android.systemui.res.R
 import com.android.systemui.scene.ui.view.WindowRootViewKeyEventHandler
 import com.android.systemui.settings.brightness.data.repository.BrightnessMirrorShowingRepository
@@ -694,7 +693,6 @@ class NotificationShadeWindowViewControllerTest(flags: FlagsParameterization) : 
     }
 
     @Test
-    @EnableFlags(QSComposeFragment.FLAG_NAME)
     fun mirrorShowing_depthControllerSet() =
         testScope.runTest {
             try {

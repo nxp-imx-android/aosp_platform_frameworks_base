@@ -34,7 +34,6 @@ import com.android.systemui.plugins.qs.TileDetailsViewModel
 import com.android.systemui.plugins.statusbar.StatusBarStateController
 import com.android.systemui.qs.QSHost
 import com.android.systemui.qs.QsEventLogger
-import com.android.systemui.qs.flags.QSComposeFragment
 import com.android.systemui.qs.flags.QsDetailedView
 import com.android.systemui.qs.logging.QSLogger
 import com.android.systemui.qs.tileimpl.QSTileImpl.DrawableIconWithRes
@@ -337,7 +336,6 @@ class BluetoothTileTest : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(QSComposeFragment.FLAG_NAME)
     fun disableBluetooth_transientTurningOff() {
         bypassingSatelliteDialog {
             enableBluetooth()
@@ -356,7 +354,6 @@ class BluetoothTileTest : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(QSComposeFragment.FLAG_NAME)
     fun turningOffState() {
         setBluetoothTurningOff()
 

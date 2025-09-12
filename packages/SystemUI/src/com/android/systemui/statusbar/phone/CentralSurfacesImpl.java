@@ -153,9 +153,7 @@ import com.android.systemui.plugins.qs.QS;
 import com.android.systemui.plugins.statusbar.StatusBarStateController;
 import com.android.systemui.power.domain.interactor.PowerInteractor;
 import com.android.systemui.qs.QSFragmentLegacy;
-import com.android.systemui.qs.QSPanelController;
 import com.android.systemui.qs.composefragment.QSFragmentCompose;
-import com.android.systemui.qs.flags.QSComposeFragment;
 import com.android.systemui.res.R;
 import com.android.systemui.scene.domain.interactor.WindowRootViewVisibilityInteractor;
 import com.android.systemui.scene.shared.flag.SceneContainerFlag;
@@ -356,11 +354,6 @@ public class CentralSurfacesImpl implements CoreStartable, CentralSurfaces {
         mLaunchEmergencyActionWhenFinishedWaking = launch;
     }
 
-    @Override
-    public QSPanelController getQSPanelController() {
-        return mQSPanelController;
-    }
-
     /**
      * The {@link StatusBarState} of the status bar.
      */
@@ -435,7 +428,6 @@ public class CentralSurfacesImpl implements CoreStartable, CentralSurfaces {
     private final ShadeLogger mShadeLogger;
 
     // settings
-    private QSPanelController mQSPanelController;
     private final QuickSettingsController mQsController;
 
     KeyguardIndicationController mKeyguardIndicationController;
@@ -1084,12 +1076,10 @@ public class CentralSurfacesImpl implements CoreStartable, CentralSurfaces {
         mJavaAdapter.alwaysCollectFlow(
                 mCommunalInteractor.isIdleOnCommunal(),
                 mIdleOnCommunalConsumer);
-        if (SceneContainerFlag.isEnabled() || QSComposeFragment.isEnabled()) {
-            mJavaAdapter.alwaysCollectFlow(
-                    mBrightnessMirrorShowingRepository.isShowing(),
-                    this::setBrightnessMirrorShowing
-            );
-        }
+        mJavaAdapter.alwaysCollectFlow(
+                mBrightnessMirrorShowingRepository.isShowing(),
+                this::setBrightnessMirrorShowing
+        );
     }
 
     /**
@@ -1309,7 +1299,6 @@ public class CentralSurfacesImpl implements CoreStartable, CentralSurfaces {
                 QS qs = (QS) f;
                 if (qs instanceof QSFragmentLegacy) {
                     QSFragmentLegacy qsFragment = (QSFragmentLegacy) qs;
-                    mQSPanelController = qsFragment.getQSPanelController();
                     qsFragment.setBrightnessMirrorController(mBrightnessMirrorController);
                 }
             });
@@ -1449,15 +1438,9 @@ public class CentralSurfacesImpl implements CoreStartable, CentralSurfaces {
     }
 
     protected QS createDefaultQSFragment() {
-        Class<? extends QS> klass;
-        if (QSComposeFragment.isEnabled()) {
-            klass = QSFragmentCompose.class;
-        } else {
-            klass = QSFragmentLegacy.class;
-        }
         return mFragmentService
                 .getFragmentHostManager(getNotificationShadeWindowView())
-                .create(klass);
+                .create(QSFragmentCompose.class);
     }
 
     private void setUpPresenter() {
@@ -1950,9 +1933,6 @@ public class CentralSurfacesImpl implements CoreStartable, CentralSurfaces {
     void updateResources() {
         if (!ShadeWindowGoesAround.isEnabled()) {
             // Each class now subscribes to configuration changes by themselves.
-            if (mQSPanelController != null) {
-                mQSPanelController.updateResources();
-            }
 
             if (mShadeSurface != null) {
                 mShadeSurface.updateResources();
@@ -2216,11 +2196,6 @@ public class CentralSurfacesImpl implements CoreStartable, CentralSurfaces {
             mShadeController.instantCollapseShade();
         }
 
-        // Keyguard state has changed, but QS is not listening anymore. Make sure to update the tile
-        // visibilities so next time we open the panel we know the correct height already.
-        if (mQSPanelController != null) {
-            mQSPanelController.refreshAllTiles();
-        }
         mMessageRouter.cancelMessages(MSG_LAUNCH_TRANSITION_TIMEOUT);
         releaseGestureWakeLock();
         mCameraLauncherLazy.get().setLaunchingAffordance(false);

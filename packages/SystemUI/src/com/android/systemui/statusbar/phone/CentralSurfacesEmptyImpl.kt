@@ -22,7 +22,6 @@ import com.android.keyguard.AuthKeyguardMessageArea
 import com.android.systemui.animation.ActivityTransitionAnimator
 import com.android.systemui.navigationbar.views.NavigationBarView
 import com.android.systemui.plugins.ActivityStarter.OnDismissAction
-import com.android.systemui.qs.QSPanelController
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow
 
 /**
@@ -150,8 +149,6 @@ abstract class CentralSurfacesEmptyImpl : CentralSurfaces {
 
     override fun setLaunchEmergencyActionOnFinishedWaking(launch: Boolean) {}
 
-    override fun getQSPanelController(): QSPanelController? = null
-
     override fun getDisplayDensity() = 0f
 
     override fun setIsLaunchingActivityOverLockscreen(
@@ -160,6 +157,6 @@ abstract class CentralSurfacesEmptyImpl : CentralSurfaces {
     ) {}
 
     override fun getAnimatorControllerFromNotification(
-        associatedView: ExpandableNotificationRow?,
+        associatedView: ExpandableNotificationRow?
     ): ActivityTransitionAnimator.Controller? = null
 }

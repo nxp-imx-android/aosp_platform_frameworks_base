@@ -36,7 +36,6 @@ import com.android.systemui.lifecycle.repeatWhenAttached
 import com.android.systemui.navigationbar.NavigationModeController
 import com.android.systemui.plugins.qs.QS
 import com.android.systemui.plugins.qs.QSContainerController
-import com.android.systemui.qs.flags.QSComposeFragment
 import com.android.systemui.res.R
 import com.android.systemui.shade.domain.interactor.ShadeInteractor
 import com.android.systemui.shared.system.QuickStepContract
@@ -230,8 +229,8 @@ constructor(
         mView.setPadding(0, 0, 0, containerPadding)
         mView.setNotificationsMarginBottom(notificationsMargin)
         mView.setQSContainerPaddingBottom(qsContainerPadding)
-        if (QSComposeFragment.isEnabled && !isQSCustomizing) {
-            // To have complete control when QS is in compose, we add negative margin to negate
+        if (!isQSCustomizing) {
+            // To have complete control, we add negative margin to negate
             // the padding of the container. That way we can adjust the padding inside compose.
             mView.setQSNegativeMarginBottom(containerPadding)
         }

@@ -52,7 +52,6 @@ import com.android.systemui.media.controls.ui.view.MediaHost
 import com.android.systemui.media.dream.MediaDreamComplication
 import com.android.systemui.media.remedia.shared.flag.MediaControlsInComposeFlag
 import com.android.systemui.plugins.statusbar.StatusBarStateController
-import com.android.systemui.qs.flags.QSComposeFragment
 import com.android.systemui.res.R
 import com.android.systemui.shade.ShadeDisplayAware
 import com.android.systemui.shade.domain.interactor.ShadeInteractor
@@ -910,8 +909,7 @@ constructor(
         }
         if (
             skipQqsOnExpansion ||
-                (QSComposeFragment.isEnabled &&
-                    desiredLocation == LOCATION_QQS &&
+                (desiredLocation == LOCATION_QQS &&
                     previousLocation == LOCATION_QS &&
                     shadeExpandedFraction == 0.0f)
         ) {

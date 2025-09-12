@@ -76,7 +76,6 @@ import com.android.systemui.plugins.statusbar.NotificationMenuRowPlugin.OnMenuEv
 import com.android.systemui.plugins.statusbar.NotificationSwipeActionHelper;
 import com.android.systemui.plugins.statusbar.StatusBarStateController;
 import com.android.systemui.power.domain.interactor.PowerInteractor;
-import com.android.systemui.qs.flags.QSComposeFragment;
 import com.android.systemui.res.R;
 import com.android.systemui.scene.shared.flag.SceneContainerFlag;
 import com.android.systemui.scene.ui.view.WindowRootView;
@@ -1634,16 +1633,7 @@ public class NotificationStackScrollLayoutController implements Dumpable {
         mView.setExpandedHeight(expandedHeight);
     }
 
-    /**
-     * Sets the QS header. Used to check if a touch is within its bounds.
-     */
-    public void setQsHeader(ViewGroup view) {
-        QSComposeFragment.assertInLegacyMode();
-        mView.setQsHeader(view);
-    }
-
     public void setQsHeaderBoundsProvider(QSHeaderBoundsProvider qsHeaderBoundsProvider) {
-        QSComposeFragment.isUnexpectedlyInLegacyMode();
         mView.setQsHeaderBoundsProvider(qsHeaderBoundsProvider);
     }
 
