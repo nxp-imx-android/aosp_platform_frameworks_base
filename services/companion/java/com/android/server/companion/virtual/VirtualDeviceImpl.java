@@ -101,6 +101,7 @@ import android.os.UserManager;
 import android.util.ArrayMap;
 import android.util.ArraySet;
 import android.util.IntArray;
+import android.util.Pair;
 import android.util.Slog;
 import android.util.SparseArray;
 import android.util.SparseIntArray;
@@ -216,11 +217,12 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub implements IBinder.Dea
     @GuardedBy("mIntentInterceptors")
     private final Map<IBinder, IntentFilter> mIntentInterceptors = new ArrayMap<>();
 
-    // Mapping from displayId to all UIDs running on that display.
+    // Mapping from displayId to all UID+PackageName running on that display.
     @GuardedBy("mVirtualDeviceLock")
-    private final SparseArray<ArraySet<Integer>> mRunningUids = new SparseArray<>();
+    private final SparseArray<ArraySet<Pair<Integer, String>>> mRunningUidPackagePairsPerDisplay =
+            new SparseArray<>();
     @GuardedBy("mVirtualDeviceLock")
-    private ArraySet<Integer> mAllRunningUids = new ArraySet<>();
+    private ArraySet<Pair<Integer, String>> mAllRunningUidPackagePairs = new ArraySet<>();
 
     // The default setting for showing the pointer on new displays.
     @GuardedBy("mVirtualDeviceLock")
@@ -381,34 +383,42 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub implements IBinder.Dea
 
         @SuppressWarnings("AndroidFrameworkRequiresPermission")
         @Override
-        public void onRunningAppsChanged(int displayId, @NonNull ArraySet<Integer> runningUids) {
-            final ArraySet<Integer> newAllUids;
+        public void onRunningAppsChanged(int displayId,
+                @NonNull ArraySet<Pair<Integer, String>> uidPackagePairs) {
+            final ArraySet<Pair<Integer, String>> newAllRunningUidPackagePairs;
             synchronized (mVirtualDeviceLock) {
-                if (Objects.equals(runningUids, mRunningUids.get(displayId))) {
+                if (Objects.equals(uidPackagePairs,
+                        mRunningUidPackagePairsPerDisplay.get(displayId))) {
                     return;
                 }
-                if (runningUids.isEmpty()) {
-                    mRunningUids.remove(displayId);
+                if (uidPackagePairs.isEmpty()) {
+                    mRunningUidPackagePairsPerDisplay.remove(displayId);
                 } else {
-                    mRunningUids.put(displayId, runningUids);
+                    mRunningUidPackagePairsPerDisplay.put(displayId, uidPackagePairs);
                 }
 
-                newAllUids = new ArraySet<>();
-                for (int i = 0; i < mRunningUids.size(); i++) {
-                    newAllUids.addAll(mRunningUids.valueAt(i));
+                newAllRunningUidPackagePairs = new ArraySet<>();
+                for (int i = 0; i < mRunningUidPackagePairsPerDisplay.size(); i++) {
+                    newAllRunningUidPackagePairs.addAll(
+                            mRunningUidPackagePairsPerDisplay.valueAt(i));
                 }
-                if (newAllUids.equals(mAllRunningUids)) {
+                if (newAllRunningUidPackagePairs.equals(mAllRunningUidPackagePairs)) {
                     return;
                 }
-                mAllRunningUids = newAllUids;
+                mAllRunningUidPackagePairs = newAllRunningUidPackagePairs;
             }
 
-            mService.onRunningAppsChanged(mDeviceId, mOwnerPackageName, newAllUids);
+            final ArraySet<Integer> runningUids = new ArraySet<>();
+            for (int i = 0; i < newAllRunningUidPackagePairs.size(); i++) {
+                runningUids.add(newAllRunningUidPackagePairs.valueAt(i).first);
+            }
+            mService.onRunningAppsChanged(
+                    mDeviceId, mOwnerPackageName, runningUids, newAllRunningUidPackagePairs);
             if (mVirtualAudioController != null) {
-                mVirtualAudioController.onRunningAppsChanged(newAllUids);
+                mVirtualAudioController.onRunningAppsChanged(runningUids);
             }
             if (mCameraAccessController != null) {
-                mCameraAccessController.blockCameraAccessIfNeeded(newAllUids);
+                mCameraAccessController.blockCameraAccessIfNeeded(runningUids);
             }
         }
     }

@@ -69,6 +69,7 @@ import android.os.UserHandle;
 import android.util.ArrayMap;
 import android.util.ArraySet;
 import android.util.ExceptionUtils;
+import android.util.Pair;
 import android.util.Slog;
 import android.util.SparseArray;
 import android.view.Display;
@@ -195,8 +196,7 @@ public class VirtualDeviceManagerService extends SystemService {
         mLocalService = new LocalService();
         mComputerControlSessionProcessor =
                 new ComputerControlSessionProcessor(context, mImpl::createLocalVirtualDevice);
-        mAutomatedPackagesRepository =
-                new AutomatedPackagesRepository(context.getPackageManager(), mHandler);
+        mAutomatedPackagesRepository = new AutomatedPackagesRepository(mHandler);
     }
 
     private final ActivityInterceptorCallback mActivityInterceptorCallback =
@@ -303,7 +303,8 @@ public class VirtualDeviceManagerService extends SystemService {
 
     @VisibleForTesting
     void onRunningAppsChanged(int deviceId, @NonNull String deviceOwnerPackageName,
-            @NonNull ArraySet<Integer> runningUids) {
+            @NonNull ArraySet<Integer> runningUids,
+            @NonNull ArraySet<Pair<Integer, String>> uidPackagePairs) {
         final List<VirtualDeviceManagerInternal.AppsOnVirtualDeviceListener> listeners;
         synchronized (mVirtualDeviceManagerLock) {
             listeners = List.copyOf(mAppsOnVirtualDeviceListeners);
@@ -315,7 +316,7 @@ public class VirtualDeviceManagerService extends SystemService {
         });
 
         if (mComputerControlSessionProcessor.isComputerControlSession(deviceId)) {
-            mAutomatedPackagesRepository.update(deviceId, deviceOwnerPackageName, runningUids);
+            mAutomatedPackagesRepository.update(deviceId, deviceOwnerPackageName, uidPackagePairs);
         }
     }
 
