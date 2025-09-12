@@ -19,10 +19,12 @@ package com.android.systemui.screencapture.record.largescreen.ui.viewmodel
 import android.content.Context
 import android.graphics.Rect
 import android.view.WindowManager
+import com.android.internal.logging.UiEventLogger
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.lifecycle.HydratedActivatable
 import com.android.systemui.res.R
+import com.android.systemui.screencapture.ScreenCaptureEvent
 import com.android.systemui.screencapture.common.ScreenCapture
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureUiParameters
 import com.android.systemui.screencapture.common.ui.viewmodel.DrawableLoaderViewModel
@@ -60,6 +62,7 @@ constructor(
     private val drawableLoaderViewModelImpl: DrawableLoaderViewModelImpl,
     private val screenCaptureUiInteractor: ScreenCaptureUiInteractor,
     private val screenRecordingServiceInteractor: ScreenRecordingServiceInteractor,
+    private val uiEventLogger: UiEventLogger,
     @ScreenCapture private val screenCaptureUiParams: ScreenCaptureUiParameters,
     screenCaptureRecordParametersViewModelFactory: ScreenCaptureRecordParametersViewModel.Factory,
 ) : HydratedActivatable(), DrawableLoaderViewModel by drawableLoaderViewModelImpl {
@@ -120,6 +123,12 @@ constructor(
                         null,
                     )
             )
+
+    /** Closes the Screen Capture UI from the pre-capture toolbar. */
+    fun closeFromToolbar() {
+        uiEventLogger.log(ScreenCaptureEvent.SCREEN_CAPTURE_LARGE_SCREEN_CLOSE_UI_WITHOUT_CAPTURE)
+        closeUi()
+    }
 
     fun updateCaptureType(selectedType: ScreenCaptureType) {
         captureTypeSource.value = selectedType
@@ -244,7 +253,7 @@ constructor(
     }
 
     /** Closes the UI by hiding the parent window. */
-    fun closeUi() {
+    private fun closeUi() {
         screenCaptureUiInteractor.hide(
             com.android.systemui.screencapture.common.shared.model.ScreenCaptureType.RECORD
         )
