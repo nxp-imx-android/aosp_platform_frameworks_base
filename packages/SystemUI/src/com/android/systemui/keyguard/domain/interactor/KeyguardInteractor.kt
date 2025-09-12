@@ -389,6 +389,7 @@ constructor(
                 val currentKeyguardState = keyguardTransitionInteractor.currentKeyguardState.value
                 val isKeyguardDismissible = isKeyguardDismissible.value
 
+                if (shadeRepository.qsExpansion.value > 0f) return@transform
                 if (
                     statusBarState.value == StatusBarState.KEYGUARD &&
                         isKeyguardDismissible &&
