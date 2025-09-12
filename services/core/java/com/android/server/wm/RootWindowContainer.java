@@ -3865,6 +3865,9 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
             final DisplayContent display = getChildAt(i);
             display.dump(pw, prefix, dumpAll);
         }
+        if (mDeviceStateAutoRotateSettingController != null) {
+            mDeviceStateAutoRotateSettingController.dump(prefix, pw);
+        }
     }
 
     /**
