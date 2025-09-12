@@ -16,8 +16,6 @@
 
 package com.android.server.usb;
 
-import com.android.internal.annotations.Keep;
-
 import static android.hardware.usb.UsbPortStatus.DATA_ROLE_DEVICE;
 import static android.hardware.usb.UsbPortStatus.DATA_ROLE_HOST;
 import static android.hardware.usb.UsbPortStatus.MODE_AUDIO_ACCESSORY;
@@ -78,6 +76,7 @@ import android.os.UserHandle;
 import android.os.UserManager;
 import android.os.storage.StorageManager;
 import android.os.storage.StorageVolume;
+import android.os.usb.UsbStatsEnums;
 import android.provider.Settings;
 import android.service.usb.UsbDeviceManagerProto;
 import android.service.usb.UsbHandlerProto;
@@ -87,11 +86,13 @@ import android.util.Slog;
 
 import com.android.internal.R;
 import com.android.internal.annotations.GuardedBy;
+import com.android.internal.annotations.Keep;
 import com.android.internal.logging.MetricsLogger;
 import com.android.internal.logging.nano.MetricsProto.MetricsEvent;
 import com.android.internal.messages.nano.SystemMessageProto.SystemMessage;
 import com.android.internal.notification.SystemNotificationChannels;
 import com.android.internal.os.SomeArgs;
+import com.android.internal.util.FrameworkStatsLog;
 import com.android.internal.util.IndentingPrintWriter;
 import com.android.internal.util.dump.DualDumpOutputStream;
 import com.android.server.FgThread;
@@ -367,19 +368,39 @@ public class UsbDeviceManager implements ActivityTaskManagerInternal.ScreenObser
         boolean deviceEnabledUserspaceAoa =
                 SystemProperties.getBoolean(DEVICE_UAOA_ENABLED_PROPERTY, false);
         Slog.i(TAG, "Device enabled userspace AOA: " + deviceEnabledUserspaceAoa);
+
+        boolean checkAccessoryFfsDirectories = nativeCheckAccessoryFfsDirectories();
+        boolean featureEnabledUserspaceAoa =
+                android.hardware.usb.flags.Flags.enableAoaUserspaceImplementation();
+
         mEnableAoaUserspaceImplementation =
-                android.hardware.usb.flags.Flags.enableAoaUserspaceImplementation()
-                        && deviceEnabledUserspaceAoa
-                        && nativeCheckAccessoryFfsDirectories();
+                featureEnabledUserspaceAoa
+                && deviceEnabledUserspaceAoa
+                && checkAccessoryFfsDirectories;
 
         Slog.i(TAG, "Enabling userspace AOA: " + mEnableAoaUserspaceImplementation);
 
+        int openControlResult = UsbStatsEnums.UNSPECIFIED;
         if (mEnableAoaUserspaceImplementation) {
-            if (!nativeOpenAccessoryControl()) {
+            openControlResult = nativeOpenAccessoryControl();
+
+            if (UsbStatsEnums.SUCCESS != openControlResult) {
                 Slog.e(TAG, "Failed to open control for accessory, disabling userspace AOA");
                 mEnableAoaUserspaceImplementation = false;
             }
         }
+
+        int userspaceAoaState = mEnableAoaUserspaceImplementation
+                ? UsbStatsEnums.USERSPACE_AOA_STATE_ENABLED :
+                UsbStatsEnums.USERSPACE_AOA_STATE_DISABLED;
+
+        FrameworkStatsLog.write(
+                FrameworkStatsLog.USB_USERSPACE_AOA_ENABLED,
+                userspaceAoaState,
+                featureEnabledUserspaceAoa,
+                checkAccessoryFfsDirectories,
+                openControlResult
+        );
 
         if (mUsbGadgetHal == null) {
             /**
@@ -496,7 +517,6 @@ public class UsbDeviceManager implements ActivityTaskManagerInternal.ScreenObser
 
         sEventLogger = new EventLogger(DUMPSYS_LOG_BUFFER, "UsbDeviceManager activity");
     }
-
     UsbProfileGroupSettingsManager getCurrentSettings() {
         synchronized (mLock) {
             return mCurrentSettings;
@@ -2871,7 +2891,7 @@ public class UsbDeviceManager implements ActivityTaskManagerInternal.ScreenObser
 
     private native boolean nativeStartVendorControlRequestMonitor();
 
-    private native boolean nativeOpenAccessoryControl();
+    private native int nativeOpenAccessoryControl();
 
     private native boolean nativeCheckAccessoryFfsDirectories();
 
