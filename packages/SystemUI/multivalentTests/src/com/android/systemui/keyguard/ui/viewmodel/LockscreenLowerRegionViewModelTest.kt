@@ -27,12 +27,11 @@ import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.lifecycle.activateIn
 import com.android.systemui.res.R
-import com.android.systemui.shade.data.repository.shadeRepository
+import com.android.systemui.shade.domain.interactor.enableSingleShade
 import com.android.systemui.testKosmos
 import com.android.systemui.unfold.fakeUnfoldTransitionProgressProvider
 import com.google.common.truth.Truth.assertThat
 import java.util.Locale
-import kotlinx.coroutines.Job
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -44,9 +43,8 @@ import platform.test.runner.parameterized.Parameters
 class LockscreenLowerRegionViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
 
     private val kosmos: Kosmos = testKosmos()
-
-    private lateinit var underTest: LockscreenLowerRegionViewModel
-    private val activationJob = Job()
+    private val Kosmos.underTest by
+        Kosmos.Fixture { lockscreenLowerRegionViewModelFactory.create() }
 
     companion object {
         @JvmStatic
@@ -63,9 +61,9 @@ class LockscreenLowerRegionViewModelTest(flags: FlagsParameterization) : SysuiTe
     @Before
     fun setup() {
         with(kosmos) {
-            shadeRepository.setShadeLayoutWide(false)
-            underTest = lockscreenLowerRegionViewModelFactory.create()
-            underTest.activateIn(testScope, activationJob)
+            enableSingleShade()
+            runCurrent()
+            underTest.activateIn(testScope)
         }
     }
 
