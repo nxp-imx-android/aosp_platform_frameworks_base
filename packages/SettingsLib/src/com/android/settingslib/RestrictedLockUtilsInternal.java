@@ -174,7 +174,9 @@ public class RestrictedLockUtilsInternal extends RestrictedLockUtils {
      * or {@code null} If the restriction is not set. If the restriction is set by both device owner
      * and profile owner, then the admin component will be set to {@code null} and userId to
      * {@link UserHandle#USER_NULL}.
+     * @deprecated Use {@link DevicePolicyManager#getEnforcingAdminsForPolicy} instead.
      */
+    @Deprecated
     public static EnforcedAdmin checkIfRestrictionEnforced(Context context,
             String userRestriction, int userId) {
         final DevicePolicyManager dpm = (DevicePolicyManager) context.getSystemService(

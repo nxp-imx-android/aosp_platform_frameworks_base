@@ -429,7 +429,9 @@ public class RestrictedPreferenceHelper {
      *     this preference will be enabled. Otherwise, it will be disabled. Only gray out the
      *     preference which is not {@link RestrictedTopLevelPreference}.
      * @return true if the disabled state was changed.
+     * @deprecated Use {@link #setDisabledByEnforcingAdmin(EnforcingAdmin)} instead.
      */
+    @Deprecated
     public boolean setDisabledByAdmin(EnforcedAdmin admin) {
         if (Flags.policyTransparencyRefactorEnabled()) {
             EnforcingAdmin enforcingAdmin = getEnforcingAdminFromEnforcedAdmin(admin);
