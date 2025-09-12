@@ -9581,15 +9581,10 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
         synchronized (getLockObject()) {
             final Intent intent = new Intent(DeviceAdminReceiver.ACTION_BUGREPORT_SHARE);
             final int deviceOwnerUserId = mOwners.getDeviceOwnerUserId();
-            final Uri bugreportUriForUser;
 
-            if (Flags.fixHsumBugreportShareCrash()) {
-                // Bugreports are collected by the shell, which runs as UserHandle.USER_SYSTEM.
-                bugreportUriForUser = ContentProvider.createContentUriForUser(
+            // Bugreports are collected by the shell, which runs as UserHandle.USER_SYSTEM.
+            final Uri bugreportUriForUser = ContentProvider.createContentUriForUser(
                         bugreportUri, UserHandle.of(UserHandle.USER_SYSTEM));
-            } else {
-                bugreportUriForUser = bugreportUri;
-            }
 
             intent.setComponent(mOwners.getDeviceOwnerComponent());
             intent.setDataAndType(bugreportUriForUser, RemoteBugreportManager.BUGREPORT_MIMETYPE);
