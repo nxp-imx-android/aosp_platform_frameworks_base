@@ -45,6 +45,7 @@ test_module_config {
     test_suites: ["device-tests"],
     exclude_filters: [
         "com.android.wm.shell.flicker.appcompat.AppDialogStaysInsideDesktopAppFlickerTest",
+        "com.android.wm.shell.flicker.appcompat.OpenTrampolineAppInDesktopModeTaskPositionFlickerTest",
         "com.android.wm.shell.flicker.appcompat.ResizeActivityEmbeddedAppToMinimumWindowFlickerTest",
         "com.android.wm.shell.flicker.appcompat.ShowAppDialogInDesktopModeFlickerTest",
         "com.android.wm.shell.flicker.appcompat.ShowQuickShareDialogFromQuickSettingsFlickerTest",
@@ -71,6 +72,7 @@ test_module_config {
         "com.android.wm.shell.flicker.fundamentals.SwitchToOverviewFromDesktopFlickerTest",
         "com.android.wm.shell.flicker.fundamentals.UnlockIntoDesktopFromLockScreenFlickerTest",
         "com.android.wm.shell.flicker.immersive.EnterImmersiveViaHeaderMenuFlickerTest",
+        "com.android.wm.shell.flicker.keyboardshortcuts.ActionTabSwitchToDesktopAppFlickerTest",
         "com.android.wm.shell.flicker.keyboardshortcuts.AltTabSwitchInDesktopModeFlickerTest",
         "com.android.wm.shell.flicker.keyboardshortcuts.AltTabSwitchToUnminimizeInDesktopModeFlickerTest",
         "com.android.wm.shell.flicker.keyboardshortcuts.EnterDesktopFromKeyboardShortcutFlickerTest",
@@ -119,6 +121,13 @@ test_module_config {
     base: "WMShellFlickerTestsDesktopMode",
     test_suites: ["device-tests"],
     include_filters: ["com.android.wm.shell.flicker.appcompat.AppDialogStaysInsideDesktopAppFlickerTest"],
+}
+
+test_module_config {
+    name: "WMShellFlickerTestsDesktopMode-appcompat-OpenTrampolineAppInDesktopModeTaskPositionFlickerTest",
+    base: "WMShellFlickerTestsDesktopMode",
+    test_suites: ["device-tests"],
+    include_filters: ["com.android.wm.shell.flicker.appcompat.OpenTrampolineAppInDesktopModeTaskPositionFlickerTest"],
 }
 
 test_module_config {
