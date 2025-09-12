@@ -138,10 +138,6 @@ public final class StorageStats implements Parcelable {
 
     private static final String TAG = "StorageStats";
 
-    /**
-     * artStatsFetched is only applicable when
-     * Flags.getAppArtManagedBytes() is true;
-     */
     private boolean artStatsFetched;
 
     /**
@@ -282,7 +278,7 @@ public final class StorageStats implements Parcelable {
       try {
         IStorageStatsManager storageStatsManagerService;
         // Fetch art stats only if it is not already fetched.
-        if (Flags.getAppArtManagedBytes() && !artStatsFetched) {
+        if (!artStatsFetched) {
           android.os.IBinder binder = ServiceManager.getService("storagestats");
           storageStatsManagerService = IStorageStatsManager.Stub.asInterface(binder);
 
