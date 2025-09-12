@@ -255,7 +255,8 @@ public final class AppWidgetEvent implements Parcelable {
     public static boolean isAppWidgetEvent(@NonNull UsageEvents.Event event) {
         return event.getEventType() == UsageEvents.Event.USER_INTERACTION
             && event.getExtras().getString(UsageStatsManager.EXTRA_EVENT_ACTION).equals(
-                AppWidgetManager.EVENT_TYPE_WIDGET_INTERACTION);
+                AppWidgetManager.EVENT_TYPE_WIDGET_INTERACTION)
+            && event.getExtras().containsKey(AppWidgetManager.EXTRA_APPWIDGET_ID);
     }
 
     /**
