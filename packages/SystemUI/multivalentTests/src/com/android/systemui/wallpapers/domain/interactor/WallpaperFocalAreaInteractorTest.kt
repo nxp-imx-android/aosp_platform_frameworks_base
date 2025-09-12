@@ -24,9 +24,9 @@ import android.view.View.INVISIBLE
 import android.view.View.VISIBLE
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
-import com.android.compose.animation.scene.ObservableTransitionState
+import com.android.compose.animation.scene.ObservableTransitionState.Idle
+import com.android.compose.animation.scene.ObservableTransitionState.Transition
 import com.android.systemui.SysuiTestCase
-import com.android.systemui.coroutines.collectLastValue
 import com.android.systemui.flags.DisableSceneContainer
 import com.android.systemui.flags.EnableSceneContainer
 import com.android.systemui.keyguard.data.repository.fakeKeyguardTransitionRepository
@@ -37,15 +37,17 @@ import com.android.systemui.keyguard.shared.model.KeyguardState.GONE
 import com.android.systemui.keyguard.shared.model.KeyguardState.LOCKSCREEN
 import com.android.systemui.keyguard.shared.model.TransitionState
 import com.android.systemui.keyguard.shared.model.TransitionStep
+import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.backgroundScope
+import com.android.systemui.kosmos.collectLastValue
+import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.testScope
+import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.res.R
 import com.android.systemui.scene.domain.interactor.sceneInteractor
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.shared.model.Scenes
-import com.android.systemui.shade.data.repository.ShadeRepository
-import com.android.systemui.shade.data.repository.shadeRepository
 import com.android.systemui.shade.domain.interactor.enableDualShade
 import com.android.systemui.shade.domain.interactor.enableSingleShade
 import com.android.systemui.shade.domain.interactor.enableSplitShade
@@ -54,10 +56,7 @@ import com.android.systemui.testKosmos
 import com.android.systemui.wallpapers.data.repository.wallpaperFocalAreaRepository
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.test.runCurrent
-import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -71,12 +70,24 @@ import org.mockito.kotlin.whenever
 @SmallTest
 @RunWith(AndroidJUnit4::class)
 class WallpaperFocalAreaInteractorTest : SysuiTestCase() {
-    private val kosmos = testKosmos()
-    private val testScope = kosmos.testScope
-    lateinit var shadeRepository: ShadeRepository
+
+    private val kosmos = testKosmos().useUnconfinedTestDispatcher()
     private lateinit var mockedResources: Resources
-    private lateinit var underTest: WallpaperFocalAreaInteractor
-    private var wallpaperInteractor: WallpaperInteractor = spy(kosmos.wallpaperInteractorFaked)
+    private var wallpaperInteractorSpy: WallpaperInteractor = spy(kosmos.wallpaperInteractorFaked)
+
+    private val Kosmos.underTest by
+        Kosmos.Fixture {
+            WallpaperFocalAreaInteractor(
+                context = mockedContext,
+                wallpaperFocalAreaRepository = wallpaperFocalAreaRepository,
+                shadeModeInteractor = shadeModeInteractor,
+                smartspaceInteractor = keyguardSmartspaceInteractor,
+                keyguardTransitionInteractor = keyguardTransitionInteractor,
+                sceneInteractor = sceneInteractor,
+                backgroundScope = backgroundScope,
+                wallpaperInteractor = wallpaperInteractorSpy,
+            )
+        }
 
     @Before
     fun setup() {
@@ -101,28 +112,16 @@ class WallpaperFocalAreaInteractorTest : SysuiTestCase() {
             )
             .thenReturn(2f)
 
-        underTest =
-            WallpaperFocalAreaInteractor(
-                context = kosmos.mockedContext,
-                wallpaperFocalAreaRepository = kosmos.wallpaperFocalAreaRepository,
-                shadeModeInteractor = kosmos.shadeModeInteractor,
-                smartspaceInteractor = kosmos.keyguardSmartspaceInteractor,
-                keyguardTransitionInteractor = kosmos.keyguardTransitionInteractor,
-                sceneInteractor = kosmos.sceneInteractor,
-                backgroundScope = kosmos.backgroundScope,
-                wallpaperInteractor = wallpaperInteractor,
-            )
-
         kosmos.fakeWallpaperRepository.setShouldSendFocalArea(true)
     }
 
     @Test
     fun focalAreaBounds_noNotifications_noSmartspaceCard_inHandheldDevices() =
-        testScope.runTest {
+        kosmos.runTest {
             setupHandheldDevice()
             val bounds by collectLastValue(underTest.wallpaperFocalAreaBounds)
+            enableSingleShade()
             setTestFocalAreaBounds(
-                shadeLayoutWide = false,
                 shortcutAbsoluteTop = 1800F,
                 notificationDefaultTop = 400F,
                 notificationStackAbsoluteBottom = 400F,
@@ -137,11 +136,11 @@ class WallpaperFocalAreaInteractorTest : SysuiTestCase() {
 
     @Test
     fun focalAreaBelowNotifs_hasNotifications_noSmartspaceCard_inHandheldDevices() =
-        testScope.runTest {
+        kosmos.runTest {
             setupHandheldDevice()
             val bounds by collectLastValue(underTest.wallpaperFocalAreaBounds)
+            enableSingleShade()
             setTestFocalAreaBounds(
-                shadeLayoutWide = false,
                 shortcutAbsoluteTop = 1800F,
                 notificationDefaultTop = 400F,
                 notificationStackAbsoluteBottom = 600F,
@@ -155,11 +154,11 @@ class WallpaperFocalAreaInteractorTest : SysuiTestCase() {
 
     @Test
     fun focalAreaBelowSmartspace_noNotifcations_hasSmartspaceCard_inHandheldDevice() =
-        testScope.runTest {
+        kosmos.runTest {
             setupHandheldDevice()
             val bounds by collectLastValue(underTest.wallpaperFocalAreaBounds)
+            enableSingleShade()
             setTestFocalAreaBounds(
-                shadeLayoutWide = false,
                 shortcutAbsoluteTop = 1800F,
                 notificationDefaultTop = 400F,
                 notificationStackAbsoluteBottom = 400F,
@@ -174,11 +173,11 @@ class WallpaperFocalAreaInteractorTest : SysuiTestCase() {
 
     @Test
     fun focalAreaBelowNotifs_hasNotifcations_hasSmartspaceCard_inHandheldDevice() =
-        testScope.runTest {
+        kosmos.runTest {
             setupHandheldDevice()
             val bounds by collectLastValue(underTest.wallpaperFocalAreaBounds)
+            enableSingleShade()
             setTestFocalAreaBounds(
-                shadeLayoutWide = false,
                 shortcutAbsoluteTop = 1800F,
                 notificationDefaultTop = 400F,
                 notificationStackAbsoluteBottom = 1000F,
@@ -193,11 +192,11 @@ class WallpaperFocalAreaInteractorTest : SysuiTestCase() {
 
     @Test
     fun focalAreaNotBelowNotifs_hasNotification_noSmartspaceCard_inUnfoldLandscape() =
-        testScope.runTest {
+        kosmos.runTest {
             setupUnfoldLandscape()
             val bounds by collectLastValue(underTest.wallpaperFocalAreaBounds)
+            enableSplitShade()
             setTestFocalAreaBounds(
-                shadeLayoutWide = true,
                 shortcutAbsoluteTop = 1800F,
                 notificationDefaultTop = 200F,
                 notificationStackAbsoluteBottom = 300F,
@@ -211,11 +210,11 @@ class WallpaperFocalAreaInteractorTest : SysuiTestCase() {
 
     @Test
     fun focalAreaBoundsBelowSmartspace_noNotifcations_hasSmartspaceCard_inUnfoldLandscape() =
-        testScope.runTest {
+        kosmos.runTest {
             setupUnfoldLandscape()
             val bounds by collectLastValue(underTest.wallpaperFocalAreaBounds)
+            enableSplitShade()
             setTestFocalAreaBounds(
-                shadeLayoutWide = true,
                 shortcutAbsoluteTop = 1800F,
                 notificationDefaultTop = 400F,
                 notificationStackAbsoluteBottom = 400F,
@@ -229,11 +228,11 @@ class WallpaperFocalAreaInteractorTest : SysuiTestCase() {
 
     @Test
     fun focalAreaBoundsAlwaysCentered_noNotifications_noSmartspaceCard_inTabletLandscape() =
-        testScope.runTest {
+        kosmos.runTest {
             setupTabletLandscape()
             val bounds by collectLastValue(underTest.wallpaperFocalAreaBounds)
+            enableSplitShade()
             setTestFocalAreaBounds(
-                shadeLayoutWide = true,
                 shortcutAbsoluteTop = 1800F,
                 notificationDefaultTop = 300F,
                 notificationStackAbsoluteBottom = 300F,
@@ -245,8 +244,8 @@ class WallpaperFocalAreaInteractorTest : SysuiTestCase() {
             assertThat(bounds?.top).isEqualTo(600F)
             assertThat(bounds?.bottom).isEqualTo(1400F)
 
+            enableSplitShade()
             setTestFocalAreaBounds(
-                shadeLayoutWide = true,
                 shortcutAbsoluteTop = 1800F,
                 notificationDefaultTop = 100F,
                 notificationStackAbsoluteBottom = 1000F,
@@ -259,24 +258,24 @@ class WallpaperFocalAreaInteractorTest : SysuiTestCase() {
 
     @Test
     fun onTapInFocalBounds_sendTapPosition() =
-        testScope.runTest {
+        kosmos.runTest {
             setupHandheldDevice()
             underTest.sendTapPosition(750F, 750F)
-            verify(wallpaperInteractor).sendTapPosition(PointF(625F, 875F))
+            verify(wallpaperInteractorSpy).sendTapPosition(PointF(625F, 875F))
         }
 
     @Test
     fun shouldNotCollectFocalArea_notHasFocalArea() =
-        testScope.runTest {
+        kosmos.runTest {
             val shouldCollectFocalArea by collectLastValue(underTest.shouldCollectFocalArea)
             assertThat(shouldCollectFocalArea).isTrue()
-            kosmos.fakeWallpaperRepository.setShouldSendFocalArea(false)
+            fakeWallpaperRepository.setShouldSendFocalArea(false)
             assertThat(shouldCollectFocalArea).isFalse()
         }
 
     @Test
     fun shouldCollectFocalBounds_onReboot() =
-        testScope.runTest {
+        kosmos.runTest {
             val shouldCollectFocalArea by collectLastValue(underTest.shouldCollectFocalArea)
             assertThat(shouldCollectFocalArea).isTrue()
         }
@@ -284,9 +283,9 @@ class WallpaperFocalAreaInteractorTest : SysuiTestCase() {
     @Test
     @DisableSceneContainer
     fun shouldNotSendBounds_whenGoingFromLockscreenToGone() =
-        testScope.runTest {
+        kosmos.runTest {
             val shouldCollectFocalArea by collectLastValue(underTest.shouldCollectFocalArea)
-            kosmos.fakeKeyguardTransitionRepository.sendTransitionSteps(
+            fakeKeyguardTransitionRepository.sendTransitionSteps(
                 listOf(
                     TransitionStep(
                         transitionState = TransitionState.STARTED,
@@ -303,7 +302,7 @@ class WallpaperFocalAreaInteractorTest : SysuiTestCase() {
             )
             assertThat(shouldCollectFocalArea).isTrue()
 
-            kosmos.fakeKeyguardTransitionRepository.sendTransitionSteps(
+            fakeKeyguardTransitionRepository.sendTransitionSteps(
                 listOf(
                     TransitionStep(
                         transitionState = TransitionState.STARTED,
@@ -313,9 +312,8 @@ class WallpaperFocalAreaInteractorTest : SysuiTestCase() {
                 ),
                 testScope,
             )
-            runCurrent()
             assertThat(shouldCollectFocalArea).isFalse()
-            kosmos.fakeKeyguardTransitionRepository.sendTransitionSteps(
+            fakeKeyguardTransitionRepository.sendTransitionSteps(
                 listOf(
                     TransitionStep(
                         transitionState = TransitionState.FINISHED,
@@ -331,134 +329,112 @@ class WallpaperFocalAreaInteractorTest : SysuiTestCase() {
     @Test
     @DisableSceneContainer
     fun shouldCollectFocalArea_whenTransitioningToLockscreen_sceneContainerDisabled() =
-        testScope.runTest {
+        kosmos.runTest {
             val shouldCollectFocalArea by collectLastValue(underTest.shouldCollectFocalArea)
             // Initially true due to onStart
             assertThat(shouldCollectFocalArea).isTrue()
 
             // Transition away from lockscreen, should stop collecting
-            kosmos.fakeKeyguardTransitionRepository.sendTransitionSteps(
+            fakeKeyguardTransitionRepository.sendTransitionSteps(
                 listOf(
                     TransitionStep(
                         from = LOCKSCREEN,
                         to = GONE,
-                        transitionState = TransitionState.STARTED
+                        transitionState = TransitionState.STARTED,
                     )
                 ),
                 testScope,
             )
-            runCurrent()
             assertThat(shouldCollectFocalArea).isFalse()
 
             // Transition back to lockscreen starts, should start collecting
-            kosmos.fakeKeyguardTransitionRepository.sendTransitionSteps(
+            fakeKeyguardTransitionRepository.sendTransitionSteps(
                 listOf(
                     TransitionStep(
                         from = GONE,
                         to = LOCKSCREEN,
-                        transitionState = TransitionState.STARTED
+                        transitionState = TransitionState.STARTED,
                     )
                 ),
                 testScope,
             )
-            runCurrent()
             assertThat(shouldCollectFocalArea).isTrue()
 
             // Transition to lockscreen finishes, should continue collecting (tests the merge)
-            kosmos.fakeKeyguardTransitionRepository.sendTransitionSteps(
+            fakeKeyguardTransitionRepository.sendTransitionSteps(
                 listOf(
                     TransitionStep(
                         from = GONE,
                         to = LOCKSCREEN,
-                        transitionState = TransitionState.FINISHED
+                        transitionState = TransitionState.FINISHED,
                     )
                 ),
                 testScope,
             )
-            runCurrent()
             assertThat(shouldCollectFocalArea).isTrue()
         }
 
     @Test
     @EnableSceneContainer
     fun shouldNotCollectFocalArea_isIdleInLockscreenWithDualShadeOverlays() =
-        testScope.runTest {
-            kosmos.enableDualShade()
+        kosmos.runTest {
+            enableDualShade()
             val shouldCollectFocalArea by collectLastValue(underTest.shouldCollectFocalArea)
-            kosmos.sceneInteractor.changeScene(toScene = Scenes.Lockscreen, loggingReason = "test")
-            kosmos.sceneInteractor.setTransitionState(
-                MutableStateFlow<ObservableTransitionState>(
-                    ObservableTransitionState.Idle(Scenes.Lockscreen)
-                )
-            )
-            runCurrent()
+            sceneInteractor.changeScene(toScene = Scenes.Lockscreen, loggingReason = "test")
+            sceneInteractor.setTransitionState(flowOf(Idle(Scenes.Lockscreen)))
             assertThat(shouldCollectFocalArea).isTrue()
 
-            kosmos.sceneInteractor.showOverlay(
+            sceneInteractor.showOverlay(
                 overlay = Overlays.QuickSettingsShade,
                 loggingReason = "test",
             )
-            kosmos.sceneInteractor.setTransitionState(
-                MutableStateFlow<ObservableTransitionState>(
-                    ObservableTransitionState.Idle(
-                        Scenes.Lockscreen,
-                        setOf(Overlays.QuickSettingsShade),
-                    )
-                )
+            sceneInteractor.setTransitionState(
+                flowOf(Idle(Scenes.Lockscreen, setOf(Overlays.QuickSettingsShade)))
             )
-            runCurrent()
             assertThat(shouldCollectFocalArea).isFalse()
 
-            kosmos.sceneInteractor.hideOverlay(
+            sceneInteractor.hideOverlay(
                 overlay = Overlays.QuickSettingsShade,
                 loggingReason = "test",
             )
-            kosmos.sceneInteractor.setTransitionState(
-                MutableStateFlow<ObservableTransitionState>(
-                    ObservableTransitionState.Idle(Scenes.Lockscreen)
-                )
-            )
+            sceneInteractor.setTransitionState(flowOf(Idle(Scenes.Lockscreen)))
 
-            runCurrent()
             assertThat(shouldCollectFocalArea).isTrue()
         }
 
     @Test
     @DisableSceneContainer
     fun shouldSendBounds_onLockscreen() =
-        testScope.runTest {
+        kosmos.runTest {
             val shouldCollectFocalArea by collectLastValue(underTest.shouldCollectFocalArea)
             assertThat(shouldCollectFocalArea).isTrue()
-            kosmos.fakeKeyguardTransitionRepository.sendTransitionSteps(
+            fakeKeyguardTransitionRepository.sendTransitionSteps(
                 listOf(TransitionStep(transitionState = TransitionState.STARTED, to = LOCKSCREEN)),
                 testScope,
             )
-            runCurrent()
             assertThat(shouldCollectFocalArea).isTrue()
         }
 
     @Test
     @EnableSceneContainer
     fun shouldCollectFocalArea_isIdleInLockscreen() =
-        testScope.runTest {
+        kosmos.runTest {
             val shouldCollectFocalArea by collectLastValue(underTest.shouldCollectFocalArea)
-            kosmos.sceneInteractor.changeScene(toScene = Scenes.Lockscreen, loggingReason = "test")
+            sceneInteractor.changeScene(toScene = Scenes.Lockscreen, loggingReason = "test")
             assertThat(shouldCollectFocalArea).isTrue()
         }
 
     @Test
     @EnableSceneContainer
     fun shouldNotCollectFocalArea_transitioningFromLockscreen() =
-        testScope.runTest {
+        kosmos.runTest {
             val shouldCollectFocalArea by collectLastValue(underTest.shouldCollectFocalArea)
-            kosmos.sceneInteractor.setTransitionState(
-                MutableStateFlow(ObservableTransitionState.Idle(currentScene = Scenes.Lockscreen))
-            )
+            sceneInteractor.setTransitionState(flowOf(Idle(currentScene = Scenes.Lockscreen)))
             assertThat(shouldCollectFocalArea).isTrue()
 
-            kosmos.sceneInteractor.setTransitionState(
-                MutableStateFlow(
-                    ObservableTransitionState.Transition(
+            sceneInteractor.setTransitionState(
+                flowOf(
+                    Transition(
                         fromScene = Scenes.Lockscreen,
                         toScene = Scenes.Shade,
                         currentScene = flowOf(Scenes.Lockscreen),
@@ -474,16 +450,14 @@ class WallpaperFocalAreaInteractorTest : SysuiTestCase() {
     @Test
     @EnableSceneContainer
     fun shouldNotCollectFocalArea_transitioningFromShadeToLockscreen() =
-        testScope.runTest {
+        kosmos.runTest {
             val shouldCollectFocalArea by collectLastValue(underTest.shouldCollectFocalArea)
-            kosmos.sceneInteractor.setTransitionState(
-                MutableStateFlow(ObservableTransitionState.Idle(currentScene = Scenes.Shade))
-            )
+            sceneInteractor.setTransitionState(flowOf(Idle(currentScene = Scenes.Shade)))
             assertThat(shouldCollectFocalArea).isFalse()
 
-            kosmos.sceneInteractor.setTransitionState(
-                MutableStateFlow(
-                    ObservableTransitionState.Transition(
+            sceneInteractor.setTransitionState(
+                flowOf(
+                    Transition(
                         fromScene = Scenes.Shade,
                         toScene = Scenes.Lockscreen,
                         currentScene = flowOf(Scenes.Shade),
@@ -498,17 +472,17 @@ class WallpaperFocalAreaInteractorTest : SysuiTestCase() {
 
     @Test
     fun lockscreenWallpaperNotHasFocalAreaTarget_hasFocalAreaIsTrue() =
-        testScope.runTest {
+        kosmos.runTest {
             val hasFocalArea by collectLastValue(underTest.hasFocalArea)
-            kosmos.fakeWallpaperRepository.setShouldSendFocalArea(true)
+            fakeWallpaperRepository.setShouldSendFocalArea(true)
             assertThat(hasFocalArea).isTrue()
         }
 
     @Test
     fun lockscreenWallpaperHasFocalAreaTarget_hasFocalAreaIsFalse() =
-        testScope.runTest {
+        kosmos.runTest {
             val hasFocalArea by collectLastValue(underTest.hasFocalArea)
-            kosmos.fakeWallpaperRepository.setShouldSendFocalArea(false)
+            fakeWallpaperRepository.setShouldSendFocalArea(false)
             assertThat(hasFocalArea).isFalse()
         }
 
@@ -518,32 +492,31 @@ class WallpaperFocalAreaInteractorTest : SysuiTestCase() {
         val centerAlignFocalArea: Boolean,
     )
 
-    private fun setupHandheldDevice() {
+    private fun Kosmos.setupHandheldDevice() {
         overrideMockedResources(
             mockedResources,
             OverrideResources(screenWidth = 1000, screenHeight = 2000, centerAlignFocalArea = false),
         )
-        kosmos.enableSingleShade()
+        enableSingleShade()
     }
 
-    private fun setupTabletLandscape() {
+    private fun Kosmos.setupTabletLandscape() {
         overrideMockedResources(
             mockedResources,
             OverrideResources(screenWidth = 3000, screenHeight = 2000, centerAlignFocalArea = true),
         )
-        kosmos.enableSplitShade()
+        enableSplitShade()
     }
 
-    private fun setupUnfoldLandscape() {
+    private fun Kosmos.setupUnfoldLandscape() {
         overrideMockedResources(
             mockedResources,
             OverrideResources(screenWidth = 2500, screenHeight = 2000, centerAlignFocalArea = false),
         )
-        kosmos.enableSplitShade()
+        enableSplitShade()
     }
 
-    private fun setTestFocalAreaBounds(
-        shadeLayoutWide: Boolean = false,
+    private fun Kosmos.setTestFocalAreaBounds(
         shortcutAbsoluteTop: Float = 400F,
         notificationDefaultTop: Float = 20F,
         notificationStackAbsoluteBottom: Float = 20F,
@@ -551,20 +524,18 @@ class WallpaperFocalAreaInteractorTest : SysuiTestCase() {
         smartspaceCardBottom: Float = 0F,
         smartspaceVisibility: Int = INVISIBLE,
     ) {
-        kosmos.shadeRepository.setShadeLayoutWide(shadeLayoutWide)
         if (SceneContainerFlag.isEnabled) {
-            kosmos.wallpaperFocalAreaRepository.shortcutAbsoluteTop.value = shortcutAbsoluteTop
-            kosmos.wallpaperFocalAreaRepository.smallClockViewBottom.value = smallClockViewBottom
-            kosmos.wallpaperFocalAreaRepository.smartspaceCardBottom.value = smartspaceCardBottom
-            kosmos.wallpaperFocalAreaRepository.notificationStackAbsoluteBottom.value =
+            wallpaperFocalAreaRepository.shortcutAbsoluteTop.value = shortcutAbsoluteTop
+            wallpaperFocalAreaRepository.smallClockViewBottom.value = smallClockViewBottom
+            wallpaperFocalAreaRepository.smartspaceCardBottom.value = smartspaceCardBottom
+            wallpaperFocalAreaRepository.notificationStackAbsoluteBottom.value =
                 notificationStackAbsoluteBottom
         } else {
-            kosmos.wallpaperFocalAreaRepository.shortcutAbsoluteTop.value = shortcutAbsoluteTop
-            kosmos.wallpaperFocalAreaRepository.notificationDefaultTop.value =
-                notificationDefaultTop
-            kosmos.wallpaperFocalAreaRepository.notificationStackAbsoluteBottom.value =
+            wallpaperFocalAreaRepository.shortcutAbsoluteTop.value = shortcutAbsoluteTop
+            wallpaperFocalAreaRepository.notificationDefaultTop.value = notificationDefaultTop
+            wallpaperFocalAreaRepository.notificationStackAbsoluteBottom.value =
                 notificationStackAbsoluteBottom
-            kosmos.keyguardSmartspaceInteractor.setBcSmartspaceVisibility(smartspaceVisibility)
+            keyguardSmartspaceInteractor.setBcSmartspaceVisibility(smartspaceVisibility)
         }
     }
 
