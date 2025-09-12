@@ -16,26 +16,38 @@
 
 package com.android.systemui.screencapture.common.shared.model
 
-import android.os.IBinder
-import android.os.ResultReceiver
 import android.os.UserHandle
 import com.android.systemui.screencapture.record.largescreen.shared.model.ScreenCaptureRegion as LargeScreenCaptureRegion
 import com.android.systemui.screencapture.record.largescreen.shared.model.ScreenCaptureType as LargeScreenCaptureType
 
-data class LargeScreenCaptureUiParameters(
-    val defaultCaptureType: LargeScreenCaptureType? = null,
-    val defaultCaptureRegion: LargeScreenCaptureRegion? = null,
-)
+sealed interface ScreenCaptureUiParameters {
 
-data class ScreenCaptureUiParameters
-@JvmOverloads
-constructor(
-    val screenCaptureType: ScreenCaptureType,
-    val isUserConsentRequired: Boolean = false,
-    val resultReceiver: ResultReceiver? = null,
-    val onApprovedCallback: ((Int) -> Unit)? = null,
-    val mediaProjection: IBinder? = null,
-    val hostAppUserHandle: UserHandle = UserHandle.CURRENT,
-    val hostAppUid: Int = 0,
-    val largeScreenParameters: LargeScreenCaptureUiParameters? = null,
-)
+    val screenCaptureType: ScreenCaptureType
+
+    /** Record screen content to the local device. */
+    data class Record(val largeScreenParameters: LargeScreenCaptureUiParameters? = null) :
+        ScreenCaptureUiParameters {
+
+        override val screenCaptureType: ScreenCaptureType = ScreenCaptureType.RECORD
+
+        data class LargeScreenCaptureUiParameters(
+            val defaultCaptureType: LargeScreenCaptureType? = null,
+            val defaultCaptureRegion: LargeScreenCaptureRegion? = null,
+        )
+    }
+
+    /** Cast screen content to a remote device. */
+    data object Cast : ScreenCaptureUiParameters {
+
+        override val screenCaptureType: ScreenCaptureType = ScreenCaptureType.CAST
+    }
+
+    /** Share screen content to a local app. */
+    data class ShareScreen(
+        val hostAppUserHandle: UserHandle,
+        val onApprovedCallback: ((Int) -> Unit)? = null,
+    ) : ScreenCaptureUiParameters {
+
+        override val screenCaptureType: ScreenCaptureType = ScreenCaptureType.SHARE_SCREEN
+    }
+}

@@ -31,7 +31,6 @@ import com.android.systemui.qs.pipeline.domain.interactor.PanelInteractor
 import com.android.systemui.qs.tiles.base.domain.interactor.QSTileUserActionInteractor
 import com.android.systemui.qs.tiles.base.domain.model.QSTileInput
 import com.android.systemui.qs.tiles.base.shared.model.QSTileUserAction
-import com.android.systemui.screencapture.common.shared.model.ScreenCaptureType
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureUiParameters
 import com.android.systemui.screencapture.domain.interactor.ScreenCaptureUiInteractor
 import com.android.systemui.screencapture.record.domain.interactor.ScreenCaptureRecordFeaturesInteractor
@@ -71,14 +70,7 @@ constructor(
                             activityStarter.executeRunnableDismissingKeyguard(
                                 {
                                     screenCaptureUiInteractor.show(
-                                        ScreenCaptureUiParameters(
-                                            ScreenCaptureType.RECORD,
-                                            isUserConsentRequired = false,
-                                            resultReceiver = null,
-                                            mediaProjection = null,
-                                            hostAppUserHandle = user,
-                                            hostAppUid = 0,
-                                        )
+                                        ScreenCaptureUiParameters.Record()
                                     )
                                 },
                                 /* cancelAction= */ null,

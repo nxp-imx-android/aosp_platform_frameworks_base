@@ -26,7 +26,7 @@ import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.screencapture.common.data.repository.fakeScreenCaptureAppContentRepository
 import com.android.systemui.screencapture.common.domain.model.ScreenCaptureAppContent
-import com.android.systemui.screencapture.common.shared.model.castScreenCaptureUiParameters
+import com.android.systemui.screencapture.common.shared.model.ScreenCaptureUiParameters
 import com.android.systemui.testKosmosNew
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.launch
@@ -62,7 +62,7 @@ class ScreenCaptureAppContentInteractorTest : SysuiTestCase() {
                 ScreenCaptureAppContentInteractor(
                     repository = fakeScreenCaptureAppContentRepository,
                     parameters =
-                        castScreenCaptureUiParameters.copy(hostAppUserHandle = fakeUserHandle),
+                        ScreenCaptureUiParameters.ShareScreen(hostAppUserHandle = fakeUserHandle),
                 )
             var result: Result<List<ScreenCaptureAppContent>>? = null
 
@@ -102,7 +102,7 @@ class ScreenCaptureAppContentInteractorTest : SysuiTestCase() {
                 ScreenCaptureAppContentInteractor(
                     repository = fakeScreenCaptureAppContentRepository,
                     parameters =
-                        castScreenCaptureUiParameters.copy(hostAppUserHandle = fakeUserHandle),
+                        ScreenCaptureUiParameters.ShareScreen(hostAppUserHandle = fakeUserHandle),
                 )
             var result: Result<List<ScreenCaptureAppContent>>? = null
 
@@ -139,7 +139,7 @@ class ScreenCaptureAppContentInteractorTest : SysuiTestCase() {
                 ScreenCaptureAppContentInteractor(
                     repository = fakeScreenCaptureAppContentRepository,
                     parameters =
-                        castScreenCaptureUiParameters.copy(hostAppUserHandle = fakeUserHandle),
+                        ScreenCaptureUiParameters.ShareScreen(hostAppUserHandle = fakeUserHandle),
                 )
             var result: List<ScreenCaptureAppContent>? = null
 

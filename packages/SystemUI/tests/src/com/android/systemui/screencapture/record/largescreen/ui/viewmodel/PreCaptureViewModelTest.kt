@@ -34,7 +34,7 @@ import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.lifecycle.activateIn
 import com.android.systemui.screencapture.ScreenCaptureEvent
-import com.android.systemui.screencapture.common.shared.model.LargeScreenCaptureUiParameters
+import com.android.systemui.screencapture.common.shared.model.ScreenCaptureUiParameters.Record.LargeScreenCaptureUiParameters
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureUiState
 import com.android.systemui.screencapture.common.shared.model.largeScreenCaptureUiParameters
 import com.android.systemui.screencapture.data.repository.screenCaptureUiRepository

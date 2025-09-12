@@ -202,7 +202,7 @@ public class MediaProjectionPermissionActivity extends Activity {
 
         final boolean showLargeScreenShareDialog =
                 !hasCastingCapabilities
-                && ScreenCaptureShareScreenFeaturesInteractor
+                        && ScreenCaptureShareScreenFeaturesInteractor
                         .INSTANCE.isLargeScreenSharingEnabled();
         final Runnable screenShareDialogRunnable;
         if (showLargeScreenShareDialog) {

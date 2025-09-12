@@ -25,6 +25,7 @@ import com.android.systemui.kosmos.collectLastValue
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.screencapture.ScreenCaptureEvent
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureType
+import com.android.systemui.screencapture.common.shared.model.ScreenCaptureUiParameters
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureUiState
 import com.android.systemui.screencapture.record.largescreen.shared.model.ScreenCaptureRegion
 import com.android.systemui.screencapture.record.largescreen.shared.model.ScreenCaptureType as LargeScreenCaptureType
@@ -63,7 +64,9 @@ class ScreenCaptureKeyboardShortcutInteractorTest : SysuiTestCase() {
                 collectLastValue(screenCaptureUiInteractor.uiState(ScreenCaptureType.RECORD))
 
             val largeScreenParams =
-                (uiState as ScreenCaptureUiState.Visible).parameters.largeScreenParameters
+                ((uiState as ScreenCaptureUiState.Visible).parameters
+                        as ScreenCaptureUiParameters.Record)
+                    .largeScreenParameters
             assertThat(largeScreenParams).isNotNull()
             assertThat(largeScreenParams?.defaultCaptureType)
                 .isEqualTo(LargeScreenCaptureType.SCREENSHOT)

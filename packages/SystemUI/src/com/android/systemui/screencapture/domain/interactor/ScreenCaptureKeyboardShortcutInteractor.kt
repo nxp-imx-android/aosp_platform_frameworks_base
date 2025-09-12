@@ -19,9 +19,8 @@ package com.android.systemui.screencapture.domain.interactor
 import com.android.internal.logging.UiEventLogger
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.screencapture.ScreenCaptureEvent
-import com.android.systemui.screencapture.common.shared.model.LargeScreenCaptureUiParameters
-import com.android.systemui.screencapture.common.shared.model.ScreenCaptureType
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureUiParameters
+import com.android.systemui.screencapture.common.shared.model.ScreenCaptureUiParameters.Record.LargeScreenCaptureUiParameters
 import com.android.systemui.screencapture.record.domain.interactor.ScreenCaptureRecordFeaturesInteractor
 import com.android.systemui.screencapture.record.largescreen.shared.model.ScreenCaptureRegion
 import com.android.systemui.screencapture.record.largescreen.shared.model.ScreenCaptureType as LargeScreenCaptureType
@@ -44,13 +43,12 @@ constructor(
                 ScreenCaptureEvent.SCREEN_CAPTURE_LARGE_SCREEN_PARTIAL_SCREENSHOT_KEYBOARD_SHORTCUT
             )
             screenCaptureUiInteractor.show(
-                ScreenCaptureUiParameters(
-                    screenCaptureType = ScreenCaptureType.RECORD,
+                ScreenCaptureUiParameters.Record(
                     largeScreenParameters =
                         LargeScreenCaptureUiParameters(
                             defaultCaptureType = LargeScreenCaptureType.SCREENSHOT,
                             defaultCaptureRegion = ScreenCaptureRegion.PARTIAL,
-                        ),
+                        )
                 )
             )
         }

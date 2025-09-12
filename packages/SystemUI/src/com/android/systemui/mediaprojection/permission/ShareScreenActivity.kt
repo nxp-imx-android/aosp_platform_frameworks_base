@@ -29,7 +29,6 @@ import android.os.UserHandle
 import android.util.Log
 import com.android.systemui.mediaprojection.MediaProjectionMetricsLogger
 import com.android.systemui.mediaprojection.MediaProjectionServiceHelper
-import com.android.systemui.screencapture.common.shared.model.ScreenCaptureType
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureUiParameters
 import com.android.systemui.screencapture.domain.interactor.ScreenCaptureUiInteractor
 import com.android.systemui.util.AsyncActivityLauncher
@@ -67,17 +66,11 @@ constructor(
         mediaProjectionMetricsLogger.notifyPermissionRequestDisplayed(uid)
 
         val params =
-            ScreenCaptureUiParameters(
-                screenCaptureType = ScreenCaptureType.SHARE_SCREEN,
-                isUserConsentRequired = reviewGrantedConsentRequired,
-                resultReceiver = null,
+            ScreenCaptureUiParameters.ShareScreen(
                 onApprovedCallback = { taskId ->
                     onTaskSelected(taskId, reviewGrantedConsentRequired, hostUserHandle)
                 },
-                mediaProjection = null,
                 hostAppUserHandle = hostUserHandle,
-                hostAppUid = uid,
-                largeScreenParameters = null,
             )
         screenCaptureUiInteractor.show(params)
     }

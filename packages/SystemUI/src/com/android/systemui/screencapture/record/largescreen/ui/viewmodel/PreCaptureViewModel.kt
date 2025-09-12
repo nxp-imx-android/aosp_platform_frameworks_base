@@ -30,6 +30,7 @@ import com.android.systemui.screencapture.domain.interactor.ScreenCaptureUiInter
 import com.android.systemui.screencapture.record.largescreen.domain.interactor.ScreenshotInteractor
 import com.android.systemui.screencapture.record.largescreen.shared.model.ScreenCaptureRegion
 import com.android.systemui.screencapture.record.largescreen.shared.model.ScreenCaptureType
+import com.android.systemui.screencapture.record.ui.viewmodel.ScreenCaptureRecordParametersViewModel
 import com.android.systemui.screenrecord.ScreenRecordingAudioSource
 import com.android.systemui.screenrecord.domain.ScreenRecordingParameters
 import com.android.systemui.screenrecord.domain.interactor.ScreenRecordingServiceInteractor
@@ -56,16 +57,19 @@ constructor(
     private val uiEventLogger: UiEventLogger,
     @ScreenCapture private val screenCaptureUiParams: ScreenCaptureUiParameters,
     toolbarViewModelFactory: PreCaptureToolbarViewModel.Factory,
+    screenCaptureRecordParametersViewModelFactory: ScreenCaptureRecordParametersViewModel.Factory,
 ) : HydratedActivatable(), DrawableLoaderViewModel by drawableLoaderViewModelImpl {
+
+    private val recordingParameters = screenCaptureUiParams as ScreenCaptureUiParameters.Record
     private val isShowingUiFlow = MutableStateFlow(true)
     private val captureTypeSource =
         MutableStateFlow(
-            screenCaptureUiParams.largeScreenParameters?.defaultCaptureType
+            recordingParameters.largeScreenParameters?.defaultCaptureType
                 ?: ScreenCaptureType.SCREENSHOT
         )
     private val captureRegionSource =
         MutableStateFlow(
-            screenCaptureUiParams.largeScreenParameters?.defaultCaptureRegion
+            recordingParameters.largeScreenParameters?.defaultCaptureRegion
                 ?: ScreenCaptureRegion.FULLSCREEN
         )
     private val regionBoxSource = MutableStateFlow<Rect?>(null)
