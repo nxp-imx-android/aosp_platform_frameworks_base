@@ -303,13 +303,6 @@ flag {
 }
 
 flag {
-    name: "parallel_package_parsing_across_system_dirs"
-    namespace: "system_performance"
-    description: "Continue parsing packages in system dirs instead of blocking on install completion for each directory."
-    bug: "401622806"
-}
-
-flag {
     name: "protect_supervision_packages"
     namespace: "supervision"
     description: "Feature flag to enable protecting Supervision packages."
