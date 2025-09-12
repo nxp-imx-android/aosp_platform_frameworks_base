@@ -17,9 +17,7 @@ use std::fs;
 use std::io::{self};
 use std::path::{Path, PathBuf}; // For Box<dyn Error>
 
-// Import logging macros. A logger (e.g., simple_logger) should be initialized
-// in the binary (main.rs) that uses this library.
-use log::{error, info};
+use log::{debug, error};
 
 /// A generic Result type for the application's operations,
 /// returning `Box<dyn std::error::Error>` on failure.
@@ -82,7 +80,7 @@ impl SysfsUtils {
             Ok(s) => s.chars().next(),
             Err(e) => {
                 if e.kind() == io::ErrorKind::NotFound {
-                    info!(
+                    debug!(
                         "'authorized' file not found at {:?}, skipping authorization.",
                         authorized_path
                     );
@@ -105,10 +103,10 @@ impl SysfsUtils {
         }
 
         let val = if enable {
-            info!("Authorizing: {:?}", devpath);
+            debug!("Authorizing: {:?}", devpath);
             "1"
         } else {
-            info!("Deauthorizing: {:?}", devpath);
+            debug!("Deauthorizing: {:?}", devpath);
             "0"
         };
 
@@ -136,7 +134,7 @@ impl SysfsUtils {
     /// Authorizes all external PCI devices.
     /// Returns `Ok(())` on success, `Err` on failure.
     pub fn authorize_all_devices(&self) -> Result<()> {
-        info!("Authorizing all external PCI devices");
+        debug!("Authorizing all external PCI devices");
 
         // Collect all thunderbolt device paths.
         let mut thunderbolt_devs: Vec<PathBuf> = Vec::new();
@@ -175,7 +173,7 @@ impl SysfsUtils {
     /// Deauthorizes all external PCI devices.
     /// Returns `Ok(())` on success, `Err` on failure.
     pub fn deauthorize_all_devices(&self) -> Result<()> {
-        info!("Deauthorizing all external PCI devices");
+        debug!("Deauthorizing all external PCI devices");
 
         let mut overall_success = true;
 
