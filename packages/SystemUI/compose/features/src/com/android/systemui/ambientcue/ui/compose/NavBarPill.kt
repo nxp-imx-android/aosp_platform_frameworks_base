@@ -111,11 +111,6 @@ fun NavBarPill(
     val hideAnimationInProgress = remember { mutableStateOf(false) }
     val expandAnimationInProgress = remember { mutableStateOf(false) }
     val collapseAnimationInProgress = remember { mutableStateOf(false) }
-    LaunchedEffect(expanded) {
-        if (expanded) {
-            wasEverCollapsed = true
-        }
-    }
 
     var expandedSize by remember { mutableStateOf(IntSize.Zero) }
     val visibleState = remember { MutableTransitionState(false) }
@@ -183,6 +178,11 @@ fun NavBarPill(
             targetValue = 0f,
             animationSpec = tween(durationMillis = BLUR_FADE_DURATION_MILLIS),
         )
+    }
+    LaunchedEffect(expanded, expansionAlpha) {
+        if (expanded && expansionAlpha == 0f) {
+            wasEverCollapsed = true
+        }
     }
 
     val config = LocalConfiguration.current
@@ -308,7 +308,7 @@ fun NavBarPill(
                                 }
                             if ((filteredActions.size == 1 || isMrAction) && !expandedChip) {
                                 expandedChip = true
-                                val hasBackground = filteredActions.size > 1
+                                val hasBackground = (!wasEverCollapsed && filteredActions.size > 1)
                                 // Expanded chip for single action or MR
                                 Row(
                                     horizontalArrangement = Arrangement.spacedBy(6.dp),
