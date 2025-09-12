@@ -1025,7 +1025,8 @@ public class NotificationChildrenContainer extends ViewGroup
     @VisibleForTesting
     int getMaxAllowedVisibleChildren(boolean likeCollapsed) {
         if (isBundle()) {
-            if (mContainingNotification.isGroupExpanded()) {
+            if (mContainingNotification.isGroupExpanded()
+                    || mContainingNotification.isUserLocked()) {
                 return getNumberOfChildrenWhenExpanded();
             } else {
                 return getNumberOfChildrenWhenCollapsed();
