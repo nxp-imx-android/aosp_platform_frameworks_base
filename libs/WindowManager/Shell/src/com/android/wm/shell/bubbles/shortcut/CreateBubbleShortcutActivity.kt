@@ -20,10 +20,9 @@ import android.app.Activity
 import android.content.pm.ShortcutManager
 import android.graphics.drawable.Icon
 import android.os.Bundle
-import com.android.internal.protolog.ProtoLog
 import com.android.wm.shell.Flags
 import com.android.wm.shell.R
-import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_BUBBLES
+import com.android.wm.shell.shared.bubbles.logging.BubbleLog
 
 /** Activity to create a shortcut to open bubbles */
 class CreateBubbleShortcutActivity : Activity() {
@@ -31,7 +30,7 @@ class CreateBubbleShortcutActivity : Activity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         if (Flags.enableRetrievableBubbles()) {
-            ProtoLog.d(WM_SHELL_BUBBLES, "Creating a shortcut for bubbles")
+            BubbleLog.d("CreateBubbleShortcutActivity.onCreate()")
             createShortcut()
         }
         finish()
