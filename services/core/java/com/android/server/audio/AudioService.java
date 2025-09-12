@@ -50,6 +50,7 @@ import static android.media.AudioManager.RINGER_MODE_NORMAL;
 import static android.media.AudioManager.RINGER_MODE_SILENT;
 import static android.media.AudioManager.RINGER_MODE_VIBRATE;
 import static android.media.AudioManager.STREAM_SYSTEM;
+import static android.media.audio.Flags.assistantVolumeControl;
 import static android.media.audio.Flags.autoPublicVolumeApiHardening;
 import static android.media.audio.Flags.concurrentAudioRecordBypassPermission;
 import static android.media.audio.Flags.dapInjectionStarveManagement;
@@ -5468,6 +5469,8 @@ public class AudioService extends IAudioService.Stub
         pw.println("\nFun with Flags:");
         pw.println("\tcom.android.media.audio.as_device_connection_failure:"
                 + asDeviceConnectionFailure());
+        pw.println("\tandroid.media.audio.assistant_volume_control:"
+                + assistantVolumeControl());
         pw.println("\tandroid.media.audio.autoPublicVolumeApiHardening:"
                 + autoPublicVolumeApiHardening());
         pw.println("\tandroid.media.audio.automaticBtDeviceType - EOL");
