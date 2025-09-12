@@ -86,4 +86,6 @@ class StatusBarPopupChipsViewModelTest : SysuiTestCase() {
                 assertThat(shownPopupChips.first().isPopupShown).isTrue()
             }
         }
+
+    // TODO(b/444459963) Add a test for the share screen privacy indicator.
 }

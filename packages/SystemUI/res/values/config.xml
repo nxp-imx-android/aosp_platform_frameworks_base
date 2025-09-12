@@ -1136,6 +1136,9 @@
     <!-- Whether to enable large screen UI for screen capture. -->
     <bool name="config_enableLargeScreenScreencapture">false</bool>
 
+    <!-- Whether to show the large screen privacy indicator. -->
+    <bool name="config_largeScreenPrivacyIndicator">false</bool>
+
     <!-- Whether to enable features improving large screen interaction -->
     <bool name="config_improveLargeScreenInteractionOnLockscreen">false</bool>
 

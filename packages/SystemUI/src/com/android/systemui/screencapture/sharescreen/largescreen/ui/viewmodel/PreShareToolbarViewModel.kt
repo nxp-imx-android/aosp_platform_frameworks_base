@@ -25,6 +25,7 @@ import com.android.systemui.screencapture.common.shared.model.ScreenCaptureType
 import com.android.systemui.screencapture.common.ui.viewmodel.DrawableLoaderViewModel
 import com.android.systemui.screencapture.common.ui.viewmodel.DrawableLoaderViewModelImpl
 import com.android.systemui.screencapture.domain.interactor.ScreenCaptureUiInteractor
+import com.android.systemui.statusbar.featurepods.sharescreen.domain.interactor.ShareScreenPrivacyIndicatorInteractor
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 
@@ -34,6 +35,7 @@ class PreShareToolbarViewModel
 constructor(
     private val drawableLoaderViewModelImpl: DrawableLoaderViewModelImpl,
     private val screenCaptureUiInteractor: ScreenCaptureUiInteractor,
+    private val shareScreenPrivacyIndicatorInteractor: ShareScreenPrivacyIndicatorInteractor,
 ) : HydratedActivatable(), DrawableLoaderViewModel by drawableLoaderViewModelImpl {
     var selectedScreenCaptureTarget: ScreenCaptureTarget by
         mutableStateOf(ScreenCaptureTarget.AppContent(contentId = 0))
@@ -44,6 +46,7 @@ constructor(
 
     fun onShareClicked() {
         screenCaptureUiInteractor.hide(ScreenCaptureType.SHARE_SCREEN)
+        shareScreenPrivacyIndicatorInteractor.showChip()
     }
 
     @AssistedFactory

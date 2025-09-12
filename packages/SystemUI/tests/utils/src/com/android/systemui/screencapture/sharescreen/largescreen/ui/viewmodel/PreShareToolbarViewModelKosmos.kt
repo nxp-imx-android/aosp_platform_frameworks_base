@@ -20,11 +20,16 @@ import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.Kosmos.Fixture
 import com.android.systemui.screencapture.common.ui.viewmodel.drawableLoaderViewModelImpl
 import com.android.systemui.screencapture.domain.interactor.screenCaptureUiInteractor
+import com.android.systemui.statusbar.featurepods.sharescreen.domain.interactor.shareScreenPrivacyIndicatorInteractor
 
 val Kosmos.preShareToolbarViewModelFactory by Fixture {
     object : PreShareToolbarViewModel.Factory {
         override fun create(): PreShareToolbarViewModel {
-            return PreShareToolbarViewModel(drawableLoaderViewModelImpl, screenCaptureUiInteractor)
+            return PreShareToolbarViewModel(
+                drawableLoaderViewModelImpl,
+                screenCaptureUiInteractor,
+                shareScreenPrivacyIndicatorInteractor,
+            )
         }
     }
 }
