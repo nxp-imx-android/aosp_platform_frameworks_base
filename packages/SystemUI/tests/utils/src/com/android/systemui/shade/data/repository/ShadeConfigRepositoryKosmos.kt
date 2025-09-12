@@ -14,19 +14,16 @@
  * limitations under the License.
  */
 
-package com.android.systemui.shade.domain.interactor
+package com.android.systemui.shade.data.repository
 
-import com.android.systemui.display.data.repository.displaySubcomponentPerDisplayRepository
-import com.android.systemui.display.domain.interactor.displayStateInteractor
+import android.content.res.mainResources
+import com.android.systemui.common.ui.data.repository.configurationRepository
 import com.android.systemui.kosmos.Kosmos
-import com.android.systemui.kosmos.Kosmos.Fixture
-import com.android.systemui.kosmos.applicationCoroutineScope
 
-val Kosmos.shadeDisplayStateInteractor by Fixture {
-    ShadeDisplayStateInteractor(
-        applicationCoroutineScope,
-        displayStateInteractor,
-        { shadeDisplaysInteractor },
-        displaySubcomponentPerDisplayRepository,
-    )
-}
+var Kosmos.shadeConfigRepository: ShadeConfigRepository by
+    Kosmos.Fixture {
+        ShadeConfigRepository(
+            resources = mainResources,
+            configurationRepository = configurationRepository,
+        )
+    }

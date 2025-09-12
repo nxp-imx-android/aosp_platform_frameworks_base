@@ -31,7 +31,6 @@ import com.android.systemui.shade.ShadeDisplayAware
 import com.android.systemui.shade.ShadeExpansionStateManager
 import com.android.systemui.shade.TouchLogger.Companion.logTouchesTo
 import com.android.systemui.shade.data.repository.ShadeRepository
-import com.android.systemui.shade.domain.interactor.ShadeDisplayStateInteractor
 import com.android.systemui.shade.domain.interactor.ShadeInteractor
 import com.android.systemui.shade.domain.interactor.ShadeModeInteractor
 import com.android.systemui.shade.transition.ScrimShadeTransitionController
@@ -42,14 +41,12 @@ import com.android.systemui.statusbar.policy.SplitShadeStateController
 import javax.inject.Inject
 import javax.inject.Provider
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
 
-@OptIn(ExperimentalCoroutinesApi::class)
 @SysUISingleton
 class ShadeStartable
 @Inject
@@ -68,7 +65,6 @@ constructor(
     private val pulseExpansionHandler: PulseExpansionHandler,
     private val nsslc: NotificationStackScrollLayoutController,
     private val depthController: NotificationShadeDepthController,
-    private val shadeDisplayStateInteractor: ShadeDisplayStateInteractor,
 ) : CoreStartable {
 
     override fun start() {
@@ -112,16 +108,8 @@ constructor(
     }
 
     private fun hydrateShadeLayoutWidth() {
-        if (SceneContainerFlag.isEnabled) {
-            applicationScope.launch {
-                shadeDisplayStateInteractor.isWideScreen.collect {
-                    shadeRepository.isWideScreen.value = it
-                }
-            }
-        }
-
         applicationScope.launch {
-            configurationRepository.onAnyConfigurationChange
+            configurationRepository.onConfigurationChange
                 // Force initial collection.
                 .onStart { emit(Unit) }
                 .map {

@@ -20,7 +20,6 @@ import android.graphics.Rect
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
-import com.android.systemui.coroutines.collectLastValue
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestScope
@@ -182,25 +181,5 @@ class ShadeRepositoryImplTest : SysuiTestCase() {
 
             underTest.setLegacyIsClosing(true)
             assertThat(underTest.legacyIsClosing.value).isTrue()
-        }
-
-    @Test
-    fun updateLegacyUseSplitShade() =
-        testScope.runTest {
-            val legacyUseSplitShade by collectLastValue(underTest.legacyUseSplitShade)
-            assertThat(legacyUseSplitShade).isFalse()
-
-            underTest.setShadeLayoutWide(true)
-            assertThat(legacyUseSplitShade).isTrue()
-        }
-
-    @Test
-    fun updateIsWideScreen() =
-        testScope.runTest {
-            val isWideScreen by collectLastValue(underTest.isWideScreen)
-            assertThat(isWideScreen).isFalse()
-
-            underTest.setShadeLayoutWide(true)
-            assertThat(isWideScreen).isTrue()
         }
 }

@@ -25,7 +25,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.focus.FocusRequester
@@ -83,7 +82,6 @@ constructor(
         actionsViewModel.activate()
     }
 
-    @OptIn(ExperimentalComposeUiApi::class)
     @Composable
     override fun ContentScope.Content(modifier: Modifier) {
         val notificationStackPadding = dimensionResource(id = R.dimen.notification_side_paddings)
@@ -142,11 +140,7 @@ constructor(
                 focusRequester.requestFocus()
             }
 
-            Column(
-                modifier = Modifier
-                    .focusRequester(focusRequester)
-                    .focusable()
-            ) {
+            Column(modifier = Modifier.focusRequester(focusRequester).focusable()) {
                 if (viewModel.showMedia) {
                     Element(
                         key = Media.Elements.mediaCarousel,
@@ -179,14 +173,11 @@ constructor(
                     shouldFillMaxSize = false,
                     shouldShowScrim = false,
                     supportNestedScrolling = false,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .focusProperties {
+                    modifier =
+                        Modifier.fillMaxWidth().focusProperties {
                             // The `NotificationScrollingStack` is a compose placeholder. Therefore,
                             // focus on the view that actually shows notifications.
-                            onEnter = {
-                                stackScrollView.asView().requestFocus()
-                            }
+                            onEnter = { stackScrollView.asView().requestFocus() }
                         },
                 )
             }

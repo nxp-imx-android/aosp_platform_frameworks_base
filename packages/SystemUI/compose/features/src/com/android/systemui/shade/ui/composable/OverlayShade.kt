@@ -25,7 +25,6 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.safeContent
 import androidx.compose.foundation.layout.union
 import androidx.compose.foundation.layout.width
@@ -44,23 +43,24 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.window.core.layout.WindowSizeClass
 import com.android.compose.animation.scene.ContentScope
 import com.android.compose.animation.scene.ElementKey
 import com.android.compose.animation.scene.LowestZIndexContentPicker
 import com.android.compose.animation.scene.mechanics.TileRevealFlag
 import com.android.compose.animation.scene.mechanics.rememberGestureContext
 import com.android.compose.modifiers.thenIf
-import com.android.compose.windowsizeclass.LocalWindowSizeClass
 import com.android.mechanics.behavior.VerticalExpandContainerSpec
 import com.android.mechanics.behavior.verticalExpandContainerBackground
 import com.android.mechanics.compose.modifier.motionDriver
 import com.android.systemui.res.R
 import com.android.systemui.shade.ui.ShadeColors.shadePanel
 import com.android.systemui.shade.ui.ShadeColors.shadePanelScrimBehind
+import com.android.systemui.shade.ui.composable.OverlayShade.Colors
+import com.android.systemui.shade.ui.composable.OverlayShade.Dimensions
 import com.android.systemui.shade.ui.composable.OverlayShade.rememberShadeExpansionMotion
 import kotlin.math.min
 
@@ -104,7 +104,7 @@ fun ContentScope.OverlayShade(
                     Modifier.overscroll(verticalOverscrollEffect)
                         .element(panelElement)
                         .thenIf(TileRevealFlag.isEnabled) { Modifier.motionDriver(gestureContext) }
-                        .panelWidth(isFullWidth)
+                        .width(Dimensions.PanelWidth)
                         // TODO(440566878): Investigate if this can be optimized by replacing with
                         // onLayoutRectChanged.
                         .onPlaced { coordinates ->
@@ -136,7 +136,7 @@ private fun ContentScope.Scrim(
     onClicked: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val scrimBackgroundColor = OverlayShade.Colors.ScrimBackground
+    val scrimBackgroundColor = Colors.ScrimBackground
     Spacer(
         modifier =
             modifier
@@ -159,10 +159,7 @@ private fun ContentScope.Panel(
         modifier =
             modifier
                 .disableSwipesWhenScrolling()
-                .verticalExpandContainerBackground(
-                    backgroundColor = OverlayShade.Colors.panelBackground(enableTransparency),
-                    spec = spec,
-                )
+                .verticalExpandContainerBackground(Colors.panelBackground(enableTransparency), spec)
     ) {
         Column {
             header?.invoke()
@@ -172,28 +169,13 @@ private fun ContentScope.Panel(
 }
 
 @Composable
-private fun Modifier.panelWidth(isFullWidthPanel: Boolean): Modifier {
-    return if (isFullWidthPanel) {
-        fillMaxWidth()
-    } else {
-        width(dimensionResource(R.dimen.shade_panel_width))
-    }
-}
-
-@Composable
 @ReadOnlyComposable
-internal fun isFullWidthShade(): Boolean {
-    return !LocalWindowSizeClass.current.isWidthAtLeastBreakpoint(
-        WindowSizeClass.WIDTH_DP_MEDIUM_LOWER_BOUND
-    )
-}
+internal fun isFullWidthShade() = LocalResources.current.getBoolean(R.bool.config_isFullWidthShade)
 
 @Composable
 @ReadOnlyComposable
 @SuppressLint("ConfigurationScreenWidthHeight")
-private fun getHalfScreenWidth(): Dp {
-    return LocalConfiguration.current.screenWidthDp.dp / 2
-}
+private fun getHalfScreenWidth() = LocalConfiguration.current.screenWidthDp.dp / 2
 
 @Composable
 private fun Modifier.panelContainerPadding(
@@ -205,13 +187,11 @@ private fun Modifier.panelContainerPadding(
     }
     // On wide screens, the shade panel width is limited to half the screen width.
     val halfScreenWidth = getHalfScreenWidth()
-    val horizontalPaddingDp = dimensionResource(R.dimen.shade_panel_margin_horizontal)
-
     val (startPadding, endPadding) =
         when (alignment) {
-            Alignment.Start -> horizontalPaddingDp to halfScreenWidth
-            Alignment.End -> halfScreenWidth to horizontalPaddingDp
-            else -> horizontalPaddingDp to horizontalPaddingDp
+            Alignment.Start -> Dimensions.PanelPaddingHorizontal to halfScreenWidth
+            Alignment.End -> halfScreenWidth to Dimensions.PanelPaddingHorizontal
+            else -> Dimensions.PanelPaddingHorizontal to Dimensions.PanelPaddingHorizontal
         }
     val paddings = PaddingValues(start = startPadding, end = endPadding)
     val layoutDirection = LocalLayoutDirection.current
@@ -260,6 +240,14 @@ object OverlayShade {
             @Composable
             @ReadOnlyComposable
             get() = dimensionResource(R.dimen.overlay_shade_panel_shape_radius)
+
+        val PanelPaddingHorizontal: Dp
+            @Composable
+            @ReadOnlyComposable
+            get() = dimensionResource(R.dimen.shade_panel_margin_horizontal)
+
+        val PanelWidth: Dp
+            @Composable @ReadOnlyComposable get() = dimensionResource(R.dimen.shade_panel_width)
     }
 
     @Composable
