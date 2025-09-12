@@ -135,10 +135,13 @@ class ScreenshotShelfView(context: Context, attrs: AttributeSet? = null) :
     fun getTouchRegion(insets: WindowInsets): Region {
         val region = getSwipeRegion()
 
-        // only add gesture insets to touch region in gestural mode
+        /* only add gesture insets to touch region in gestural mode and if we have focus. if the
+        screenshot UI doesn't have focus we can't respond to back gestures anyway, so we shouldn't
+        count those regions as touchable. */
         if (
-            resources.getInteger(com.android.internal.R.integer.config_navBarInteractionMode) ==
-                NAV_BAR_MODE_GESTURAL
+            hasWindowFocus() &&
+                resources.getInteger(com.android.internal.R.integer.config_navBarInteractionMode) ==
+                    NAV_BAR_MODE_GESTURAL
         ) {
             val gestureInsets = insets.getInsets(WindowInsets.Type.systemGestures())
             // Receive touches in gesture insets so they don't cause TOUCH_OUTSIDE
