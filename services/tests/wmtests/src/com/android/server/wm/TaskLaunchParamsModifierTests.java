@@ -1068,7 +1068,7 @@ public class TaskLaunchParamsModifierTests extends
         final ActivityRecord source = createSourceActivity(fullscreenDisplay);
         source.getTask().setWindowingMode(WINDOWING_MODE_FREEFORM);
         // Set some bounds to avoid conflict with the other activity.
-        source.setBounds(100, 100, 200, 200);
+        source.getTask().setBounds(100, 100, 200, 200);
 
         final ActivityOptions options = ActivityOptions.makeBasic();
         final Rect expected = new Rect(0, 0, 150, 150);
@@ -1724,11 +1724,31 @@ public class TaskLaunchParamsModifierTests extends
     }
 
     @Test
+    public void testNoShiftIfConflictingTaskIsNotVisible() {
+        final TestDisplayContent freeformDisplay = createNewDisplayContent(
+                WINDOWING_MODE_FREEFORM);
+
+        addFreeformTaskTo(freeformDisplay, new Rect(50, 50, 100, 150),
+                /* isVisible */ false);
+
+        final Rect launchingTaskBounds = new Rect(50, 50, 500, 300);
+        final ActivityOptions options = ActivityOptions.makeBasic();
+        options.setLaunchDisplayId(freeformDisplay.mDisplayId);
+        options.setLaunchBounds(launchingTaskBounds);
+
+        assertEquals(RESULT_CONTINUE,
+                new CalculateRequestBuilder().setOptions(options).calculate());
+
+        assertEquals(launchingTaskBounds, mResult.mBounds);
+    }
+
+    @Test
     public void testShiftsToRightForCloseToLeftBoundsWhenConflict() {
         final TestDisplayContent freeformDisplay = createNewDisplayContent(
                 WINDOWING_MODE_FREEFORM);
 
-        addFreeformTaskTo(freeformDisplay, new Rect(50, 50, 100, 150));
+        addFreeformTaskTo(freeformDisplay, new Rect(50, 50, 100, 150),
+                /* isVisible */ true);
 
         final ActivityOptions options = ActivityOptions.makeBasic();
         options.setLaunchDisplayId(freeformDisplay.mDisplayId);
@@ -1745,7 +1765,8 @@ public class TaskLaunchParamsModifierTests extends
         final TestDisplayContent freeformDisplay = createNewDisplayContent(
                 WINDOWING_MODE_FREEFORM);
 
-        addFreeformTaskTo(freeformDisplay, new Rect(1720, 50, 1830, 150));
+        addFreeformTaskTo(freeformDisplay, new Rect(1720, 50, 1830, 150),
+                /* isVisible */ true);
 
         final ActivityOptions options = ActivityOptions.makeBasic();
         options.setLaunchDisplayId(freeformDisplay.mDisplayId);
@@ -1762,7 +1783,8 @@ public class TaskLaunchParamsModifierTests extends
         final TestDisplayContent freeformDisplay = createNewDisplayContent(
                 WINDOWING_MODE_FREEFORM);
 
-        addFreeformTaskTo(freeformDisplay, new Rect(0, 0, 100, 300));
+        addFreeformTaskTo(freeformDisplay, new Rect(0, 0, 100, 300),
+                /* isVisible */ true);
 
         final ActivityOptions options = ActivityOptions.makeBasic();
         options.setLaunchDisplayId(freeformDisplay.mDisplayId);
@@ -1779,7 +1801,8 @@ public class TaskLaunchParamsModifierTests extends
         final TestDisplayContent freeformDisplay = createNewDisplayContent(
                 WINDOWING_MODE_FREEFORM);
 
-        addFreeformTaskTo(freeformDisplay, new Rect(120, 0, 240, 300));
+        addFreeformTaskTo(freeformDisplay, new Rect(120, 0, 240, 300),
+                /* isVisible */ true);
 
         final ActivityOptions options = ActivityOptions.makeBasic();
         options.setLaunchDisplayId(freeformDisplay.mDisplayId);
@@ -1796,7 +1819,8 @@ public class TaskLaunchParamsModifierTests extends
         final TestDisplayContent freeformDisplay = createNewDisplayContent(
                 WINDOWING_MODE_FREEFORM);
 
-        addFreeformTaskTo(freeformDisplay, new Rect(120, 0, 240, 100));
+        addFreeformTaskTo(freeformDisplay, new Rect(120, 0, 240, 100),
+                /* isVisible */ true);
 
         final ActivityOptions options = ActivityOptions.makeBasic();
         options.setLaunchDisplayId(freeformDisplay.mDisplayId);
@@ -1813,7 +1837,8 @@ public class TaskLaunchParamsModifierTests extends
         final TestDisplayContent freeformDisplay = createNewDisplayContent(
                 WINDOWING_MODE_FREEFORM);
 
-        addFreeformTaskTo(freeformDisplay, new Rect(120, 67, 240, 100));
+        addFreeformTaskTo(freeformDisplay, new Rect(120, 67, 240, 100),
+                /* isVisible */ true);
 
         final ActivityOptions options = ActivityOptions.makeBasic();
         options.setLaunchDisplayId(freeformDisplay.mDisplayId);
@@ -1860,7 +1885,8 @@ public class TaskLaunchParamsModifierTests extends
         final TestDisplayContent freeformDisplay = createNewDisplayContent(
                 WINDOWING_MODE_FREEFORM);
 
-        addFreeformTaskTo(freeformDisplay, new Rect(0, 0, 200, 100));
+        addFreeformTaskTo(freeformDisplay, new Rect(0, 0, 200, 100),
+                /* isVisible */ true);
 
         mCurrent.mPreferredTaskDisplayArea = freeformDisplay.getDefaultTaskDisplayArea();
         mCurrent.mWindowingMode = WINDOWING_MODE_FREEFORM;
@@ -1917,11 +1943,13 @@ public class TaskLaunchParamsModifierTests extends
         return new ActivityBuilder(mAtm).setTask(rootTask).build();
     }
 
-    private void addFreeformTaskTo(TestDisplayContent display, Rect bounds) {
+    private void addFreeformTaskTo(TestDisplayContent display, Rect bounds, Boolean isVisible) {
         final Task rootTask = display.getDefaultTaskDisplayArea()
                 .createRootTask(display.getWindowingMode(), ACTIVITY_TYPE_STANDARD, true);
         rootTask.setWindowingMode(WINDOWING_MODE_FREEFORM);
-        final Task task = new TaskBuilder(mSupervisor).setParentTask(rootTask).build();
+        final Task task = new TaskBuilder(mSupervisor).setParentTask(rootTask)
+                .setCreateActivity(true).build();
+        task.getRootActivity().setVisibility(isVisible);
         // Just work around the unnecessary adjustments for bounds.
         task.getWindowConfiguration().setBounds(bounds);
     }

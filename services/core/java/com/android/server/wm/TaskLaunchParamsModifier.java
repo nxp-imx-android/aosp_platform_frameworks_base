@@ -686,14 +686,12 @@ class TaskLaunchParamsModifier implements LaunchParamsModifier {
     private void adjustBoundsToAvoidConflictInDisplayArea(@NonNull TaskDisplayArea displayArea,
             @NonNull Rect inOutBounds) {
         final List<Rect> taskBoundsToCheck = new ArrayList<>();
-        displayArea.forAllRootTasks(task -> {
-            if (!task.inFreeformWindowingMode()) {
+        displayArea.forAllLeafTasks(task -> {
+            if (!task.inFreeformWindowingMode() || !task.isVisibleRequested()) {
                 return;
             }
+            taskBoundsToCheck.add(task.getBounds());
 
-            for (int j = 0; j < task.getChildCount(); ++j) {
-                taskBoundsToCheck.add(task.getChildAt(j).getBounds());
-            }
         }, false /* traverseTopToBottom */);
         adjustBoundsToAvoidConflict(displayArea.getBounds(), taskBoundsToCheck, inOutBounds);
     }
