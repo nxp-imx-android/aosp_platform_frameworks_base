@@ -3434,10 +3434,12 @@ public class UserManager {
      * class.)
      *
      * @return whether the context user can add a private profile.
+     * @deprecated evaluate canAddMoreProfilesToUser(USER_TYPE_PROFILE_PRIVATE, userId) > 0 instead
      * @hide
      */
+    @Deprecated
     @TestApi
-    @FlaggedApi(android.os.Flags.FLAG_ALLOW_PRIVATE_PROFILE)
+    @FlaggedApi(android.multiuser.Flags.FLAG_CONSISTENT_MAX_USERS)
     @RequiresPermission(anyOf = {
             Manifest.permission.MANAGE_USERS,
             Manifest.permission.CREATE_USERS,
