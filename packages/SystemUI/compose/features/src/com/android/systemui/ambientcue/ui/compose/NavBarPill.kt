@@ -16,6 +16,7 @@
 
 package com.android.systemui.ambientcue.ui.compose
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.animation.core.animateFloat
@@ -24,6 +25,10 @@ import androidx.compose.animation.core.animateIntAsState
 import androidx.compose.animation.core.keyframes
 import androidx.compose.animation.core.rememberTransition
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -227,7 +232,13 @@ fun NavBarPill(
             },
     ) {
         if (visible && !expanded && showEducation) {
-            FirstTimeEducation(Alignment.CenterHorizontally, onCloseClick = onCloseEducation)
+            AnimatedVisibility(
+                visible = enterProgress == 1f,
+                enter = fadeIn() + scaleIn(),
+                exit = fadeOut() + scaleOut(),
+            ) {
+                FirstTimeEducation(Alignment.CenterHorizontally, onCloseClick = onCloseEducation)
+            }
         }
         Row(
             horizontalArrangement = Arrangement.spacedBy(6.dp),
