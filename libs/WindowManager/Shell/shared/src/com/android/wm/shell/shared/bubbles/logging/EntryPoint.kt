@@ -28,4 +28,6 @@ enum class EntryPoint : Parcelable {
     HOTSEAT_ICON_MENU,
     TASKBAR_ICON_DRAG,
     ALL_APPS_ICON_DRAG,
+    NOTIFICATION,
+    NOTIFICATION_BUBBLE_BUTTON,
 }

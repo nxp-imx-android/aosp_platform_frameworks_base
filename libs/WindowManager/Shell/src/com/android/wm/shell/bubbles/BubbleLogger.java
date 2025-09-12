@@ -20,7 +20,9 @@ import com.android.internal.logging.InstanceId;
 import com.android.internal.logging.UiEvent;
 import com.android.internal.logging.UiEventLogger;
 import com.android.internal.util.FrameworkStatsLog;
+import com.android.wm.shell.bubbles.logging.BubbleLoggerExt;
 import com.android.wm.shell.dagger.WMSingleton;
+import com.android.wm.shell.shared.bubbles.logging.EntryPoint;
 
 import javax.inject.Inject;
 
@@ -266,6 +268,16 @@ public class BubbleLogger {
     public void logWithSessionId(UiEventLogger.UiEventEnum e, String packageName,
             InstanceId sessionId) {
         mUiEventLogger.logWithInstanceId(e, /* uid= */ 0, packageName, sessionId);
+    }
+
+    /** Logs a UiEvent for the bubble entry point. */
+    public void logEntryPoint(boolean isBubbleBar, EntryPoint entryPoint, String packageName) {
+        UiEventLogger.UiEventEnum e = isBubbleBar
+                ? BubbleLoggerExt.toBubbleBarUiEvent(entryPoint)
+                : BubbleLoggerExt.toFloatingBubblesUiEvent(entryPoint);
+        if (e != null) {
+            mUiEventLogger.log(e, /* uid= */ 0, packageName);
+        }
     }
 
     /**
