@@ -1215,10 +1215,7 @@ public class EdgeBackGestureHandler {
                 }
             } else {
                 mAllowGesture = isBackAllowedCommon && !mUsingThreeButtonNav && isWithinInsets
-                        && isWithinTouchRegion(ev) && !isButtonPressFromTrackpad(ev);
-                if (blockMouseEdgeBackGesture()) {
-                    mAllowGesture = mAllowGesture && !isButtonPressFromMouse(ev);
-                }
+                        && isWithinTouchRegion(ev) && !isButtonPressFromTrackpadOrMouse(ev);
             }
             if (mAllowGesture) {
                 if (DesktopExperienceFlags.ENABLE_MULTIDISPLAY_TRACKPAD_BACK_GESTURE.isTrue()) {
@@ -1365,14 +1362,18 @@ public class EdgeBackGestureHandler {
         }
     }
 
-    private boolean isButtonPressFromTrackpad(MotionEvent ev) {
-        return ev.getSource() == (SOURCE_MOUSE | SOURCE_TOUCHPAD)
-                && ev.getToolType(ev.getActionIndex()) == TOOL_TYPE_FINGER;
-    }
-
-    private boolean isButtonPressFromMouse(MotionEvent ev) {
-        return ev.getSource() == (SOURCE_MOUSE)
-                && ev.getToolType(ev.getActionIndex()) == TOOL_TYPE_MOUSE;
+    private boolean isButtonPressFromTrackpadOrMouse(MotionEvent ev) {
+        if (blockMouseEdgeBackGesture()) {
+            boolean isSourceMouseOrTouchpad = ev.getSource() == SOURCE_MOUSE
+                    || ev.getSource() == SOURCE_TOUCHPAD
+                    || ev.getSource() == (SOURCE_MOUSE | SOURCE_TOUCHPAD);
+            boolean isTooltypeMouseOrFinger = ev.getToolType(ev.getActionIndex()) == TOOL_TYPE_MOUSE
+                    || ev.getToolType(ev.getActionIndex()) == TOOL_TYPE_FINGER;
+            return isSourceMouseOrTouchpad && isTooltypeMouseOrFinger;
+        } else {
+            return ev.getSource() == (SOURCE_MOUSE | SOURCE_TOUCHPAD)
+                    && ev.getToolType(ev.getActionIndex()) == TOOL_TYPE_FINGER;
+        }
     }
 
     private void dispatchToBackAnimation(MotionEvent event) {
