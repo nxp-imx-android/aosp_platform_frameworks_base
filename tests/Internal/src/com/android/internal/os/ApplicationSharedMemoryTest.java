@@ -21,13 +21,11 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
-import static org.junit.Assume.assumeTrue;
 
 import android.platform.test.annotations.Presubmit;
 
 import androidx.test.filters.SmallTest;
 
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -118,10 +116,8 @@ public class ApplicationSharedMemoryTest {
         }
     }
 
-    /** If system feature caching is enabled, it should be auto-written into app shared memory. */
     @Test
     public void canReadSystemFeatures() throws IOException {
-        assumeTrue(android.content.pm.Flags.cacheSdkSystemFeatures());
         ApplicationSharedMemory instance = ApplicationSharedMemory.getInstance();
         assertThat(instance.readSystemFeaturesCache()).isNotEmpty();
     }

@@ -2271,13 +2271,10 @@ public class ApplicationPackageManager extends PackageManager {
     protected ApplicationPackageManager(ContextImpl context, IPackageManager pm) {
         mContext = context;
         mPM = pm;
-        mUseSystemFeaturesCache = isSystemFeaturesCacheEnabledAndAvailable();
+        mUseSystemFeaturesCache = isSystemFeaturesCacheAvailable();
     }
 
-    private static boolean isSystemFeaturesCacheEnabledAndAvailable() {
-        if (!android.content.pm.Flags.cacheSdkSystemFeatures()) {
-            return false;
-        }
+    private static boolean isSystemFeaturesCacheAvailable() {
         if (ActivityThread.isSystem() && !SystemFeaturesCache.hasInstance()) {
             // There are a handful of utility "system" processes that are neither system_server nor
             // bound as applications. For these processes, we don't have access to application

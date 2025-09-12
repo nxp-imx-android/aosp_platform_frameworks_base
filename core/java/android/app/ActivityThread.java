@@ -1450,10 +1450,8 @@ public final class ActivityThread extends ClientTransactionHandler
             ApplicationSharedMemory instance =
                     ApplicationSharedMemory.fromFileDescriptor(
                             applicationSharedMemoryFd, /* mutable= */ false);
-            if (android.content.pm.Flags.cacheSdkSystemFeatures()) {
-                SystemFeaturesCache.setInstance(
-                        new SystemFeaturesCache(instance.readSystemFeaturesCache()));
-            }
+            SystemFeaturesCache.setInstance(
+                    new SystemFeaturesCache(instance.readSystemFeaturesCache()));
             instance.closeFileDescriptor();
             ApplicationSharedMemory.setInstance(instance);
 

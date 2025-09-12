@@ -2576,15 +2576,13 @@ public class ActivityManagerService extends IActivityManager.Stub
         sCreatorTokenCacheCleaner = new Handler(mHandlerThread.getLooper());
 
         ApplicationSharedMemory applicationSharedMemory = ApplicationSharedMemory.getInstance();
-        if (android.content.pm.Flags.cacheSdkSystemFeatures()) {
-            // Install the cache into the process-wide singleton for in-proc queries, as well as
-            // shared memory. Apps will inflate the cache from shared memory in bindApplication.
-            SystemFeaturesCache systemFeaturesCache =
-                    new SystemFeaturesCache(SystemConfig.getInstance().getAvailableFeatures());
-            SystemFeaturesCache.setInstance(systemFeaturesCache);
-            applicationSharedMemory.writeSystemFeaturesCache(
-                    systemFeaturesCache.getSdkFeatureVersions());
-        }
+        // Install the cache into the process-wide singleton for in-proc queries, as well as
+        // shared memory. Apps will inflate the cache from shared memory in bindApplication.
+        SystemFeaturesCache systemFeaturesCache =
+                new SystemFeaturesCache(SystemConfig.getInstance().getAvailableFeatures());
+        SystemFeaturesCache.setInstance(systemFeaturesCache);
+        applicationSharedMemory.writeSystemFeaturesCache(
+                systemFeaturesCache.getSdkFeatureVersions());
         try {
             mApplicationSharedMemoryReadOnlyFd =
                     applicationSharedMemory.getReadOnlyFileDescriptor();
