@@ -169,7 +169,7 @@
     <string name="app_header_talkback_action_minimize_button_text" msgid="7491054416186901764">"Minimeer appvenster"</string>
     <string name="app_header_talkback_action_close_button_text" msgid="5159612596378268926">"Maak appvenster toe"</string>
     <string name="open_by_default_settings_text" msgid="2526548548598185500">"Maak By Verstek Oop-instellings"</string>
-    <string name="open_by_default_dialog_subheader_text" msgid="1729599730664063881">"Kies hoe om webskakels vir hierdie app oop te maak"</string>
+    <string name="open_by_default_dialog_subheader_text" msgid="1729599730664063881">"Kies vir hierdie app hoe om webskakels oop te maak"</string>
     <string name="open_by_default_dialog_in_app_text" msgid="6978022419634199806">"In die app"</string>
     <string name="open_by_default_dialog_in_browser_text" msgid="8042769465958497081">"In jou blaaier"</string>
     <string name="open_by_default_dialog_dismiss_button_text" msgid="3487238795534582291">"OK"</string>

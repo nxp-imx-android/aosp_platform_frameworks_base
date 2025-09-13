@@ -100,7 +100,7 @@
     <string name="bubble_shortcut_long_label" msgid="6088437544312894043">"బబుల్స్ చూడండి"</string>
     <string name="restart_button_description" msgid="4564728020654658478">"మెరుగైన వీక్షణ కోసం ఈ యాప్‌ను రీస్టార్ట్ చేయడానికి ట్యాప్ చేయండి"</string>
     <string name="user_aspect_ratio_settings_button_hint" msgid="734835849600713016">"సెట్టింగ్‌లలో ఈ యాప్ ఆకార నిష్పత్తిని మార్చండి"</string>
-    <string name="user_aspect_ratio_settings_button_description" msgid="4315566801697411684">"ఆకార నిష్పత్తిని మార్చండి"</string>
+    <string name="user_aspect_ratio_settings_button_description" msgid="4315566801697411684">"యాస్పెక్ట్ రేషియోను (ఆకార నిష్పత్తిని) మార్చండి"</string>
     <string name="camera_compat_treatment_suggested_button_description" msgid="8103916969024076767">"కెమెరా సమస్యలు ఉన్నాయా?\nరీఫిట్ చేయడానికి ట్యాప్ చేయండి"</string>
     <string name="camera_compat_treatment_applied_button_description" msgid="2944157113330703897">"దాని సమస్యను పరిష్కరించలేదా?\nపూర్వస్థితికి మార్చడానికి ట్యాప్ చేయండి"</string>
     <string name="camera_compat_dismiss_button_description" msgid="2795364433503817511">"కెమెరా సమస్యలు లేవా? తీసివేయడానికి ట్యాప్ చేయండి."</string>
@@ -136,7 +136,7 @@
     <string name="open_in_app_text" msgid="2874590745116268525">"యాప్‌లో తెరవండి"</string>
     <string name="new_window_text" msgid="6318648868380652280">"కొత్త విండో"</string>
     <string name="manage_windows_text" msgid="5567366688493093920">"విండోలను మేనేజ్ చేయండి"</string>
-    <string name="change_aspect_ratio_text" msgid="9104456064548212806">"ఆకార నిష్పత్తిని మార్చండి"</string>
+    <string name="change_aspect_ratio_text" msgid="9104456064548212806">"యాస్పెక్ట్ రేషియోను (ఆకార నిష్పత్తిని) మార్చండి"</string>
     <string name="handle_menu_restart_text" msgid="3907767216238298098">"వీక్షణను ఆప్టిమైజ్ చేయండి"</string>
     <string name="handle_menu_error_icon_text" msgid="7200375184879808684">"ఎర్రర్ చిహ్నం"</string>
     <string name="close_text" msgid="4986518933445178928">"మూసివేయండి"</string>

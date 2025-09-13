@@ -169,7 +169,7 @@
     <string name="app_header_talkback_action_minimize_button_text" msgid="7491054416186901764">"מזעור החלון של האפליקציה"</string>
     <string name="app_header_talkback_action_close_button_text" msgid="5159612596378268926">"סגירת החלון של האפליקציה"</string>
     <string name="open_by_default_settings_text" msgid="2526548548598185500">"הגדרות לפתיחה כברירת מחדל"</string>
-    <string name="open_by_default_dialog_subheader_text" msgid="1729599730664063881">"כאן בוחרים איך לפתוח באפליקציה הזו קישורים לדפי אינטרנט"</string>
+    <string name="open_by_default_dialog_subheader_text" msgid="1729599730664063881">"איך היית רוצה שהאפליקציה הזו תפתח קישורים לדפי אינטרנט"</string>
     <string name="open_by_default_dialog_in_app_text" msgid="6978022419634199806">"באפליקציה"</string>
     <string name="open_by_default_dialog_in_browser_text" msgid="8042769465958497081">"בדפדפן"</string>
     <string name="open_by_default_dialog_dismiss_button_text" msgid="3487238795534582291">"אישור"</string>
