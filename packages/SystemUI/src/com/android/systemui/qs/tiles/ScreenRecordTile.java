@@ -140,6 +140,7 @@ public class ScreenRecordTile extends QSTileImpl<QSTile.BooleanState>
                                     /* screenCaptureType= */ ScreenCaptureType.RECORD,
                                     /* isUserConsentRequired= */ false,
                                     /* resultReceiver= */ null,
+                                    /* onApprovedCallback= */ null,
                                     /* mediaProjection= */ null,
                                     /* hostAppUserHandle= */ userHandle,
                                     /* hostAppUid= */ 0

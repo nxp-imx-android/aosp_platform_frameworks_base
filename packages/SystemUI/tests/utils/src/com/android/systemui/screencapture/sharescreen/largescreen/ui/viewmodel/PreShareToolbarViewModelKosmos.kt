@@ -24,14 +24,19 @@ import com.android.systemui.statusbar.featurepods.sharescreen.domain.interactor.
 
 val Kosmos.preShareToolbarViewModelFactory by Fixture {
     object : PreShareToolbarViewModel.Factory {
-        override fun create(): PreShareToolbarViewModel {
+        override fun create(
+            shareContentListViewModel: ShareContentListViewModel
+        ): PreShareToolbarViewModel {
             return PreShareToolbarViewModel(
                 drawableLoaderViewModelImpl,
                 screenCaptureUiInteractor,
                 shareScreenPrivacyIndicatorInteractor,
+                shareContentListViewModel,
             )
         }
     }
 }
 
-val Kosmos.preShareToolbarViewModel by Fixture { preShareToolbarViewModelFactory.create() }
+val Kosmos.preShareToolbarViewModel by Fixture {
+    preShareToolbarViewModelFactory.create(fakeShareContentListViewModel)
+}

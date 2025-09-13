@@ -31,6 +31,7 @@ import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
@@ -51,7 +52,7 @@ constructor(
             .map { resources.getBoolean(R.bool.config_enableLargeScreenScreencapture) }
             .stateIn(scope, SharingStarted.WhileSubscribed(), null)
 
-    fun uiState(type: ScreenCaptureType): Flow<ScreenCaptureUiState> = repository.uiState(type)
+    fun uiState(type: ScreenCaptureType): StateFlow<ScreenCaptureUiState> = repository.uiState(type)
 
     fun show(parameters: ScreenCaptureUiParameters) {
         repository.updateStateForType(type = parameters.screenCaptureType) {
@@ -69,6 +70,17 @@ constructor(
                 return@updateStateForType it
             } else {
                 return@updateStateForType ScreenCaptureUiState.Invisible
+            }
+        }
+    }
+
+    fun onScreenSharingApproved(taskId: Int) {
+        val uiState = repository.uiState(ScreenCaptureType.SHARE_SCREEN).value
+        if (uiState is ScreenCaptureUiState.Visible) {
+            val parameters = uiState.parameters
+            parameters.onApprovedCallback?.invoke(taskId)
+            repository.updateStateForType(ScreenCaptureType.SHARE_SCREEN) {
+                ScreenCaptureUiState.Invisible
             }
         }
     }

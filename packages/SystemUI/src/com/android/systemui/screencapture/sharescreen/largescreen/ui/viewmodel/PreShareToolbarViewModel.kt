@@ -26,6 +26,7 @@ import com.android.systemui.screencapture.common.ui.viewmodel.DrawableLoaderView
 import com.android.systemui.screencapture.common.ui.viewmodel.DrawableLoaderViewModelImpl
 import com.android.systemui.screencapture.domain.interactor.ScreenCaptureUiInteractor
 import com.android.systemui.statusbar.featurepods.sharescreen.domain.interactor.ShareScreenPrivacyIndicatorInteractor
+import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 
@@ -36,6 +37,7 @@ constructor(
     private val drawableLoaderViewModelImpl: DrawableLoaderViewModelImpl,
     private val screenCaptureUiInteractor: ScreenCaptureUiInteractor,
     private val shareScreenPrivacyIndicatorInteractor: ShareScreenPrivacyIndicatorInteractor,
+    @Assisted private val shareContentListViewModel: ShareContentListViewModel,
 ) : HydratedActivatable(), DrawableLoaderViewModel by drawableLoaderViewModelImpl {
     var selectedScreenCaptureTarget: ScreenCaptureTarget by
         mutableStateOf(ScreenCaptureTarget.AppContent(contentId = 0))
@@ -45,12 +47,16 @@ constructor(
     }
 
     fun onShareClicked() {
-        screenCaptureUiInteractor.hide(ScreenCaptureType.SHARE_SCREEN)
+        if (selectedScreenCaptureTarget is ScreenCaptureTarget.App) {
+            shareContentListViewModel.selectedRecentTaskViewModel?.let {
+                screenCaptureUiInteractor.onScreenSharingApproved(it.task.taskId)
+            }
+        }
         shareScreenPrivacyIndicatorInteractor.showChip()
     }
 
     @AssistedFactory
     interface Factory {
-        fun create(): PreShareToolbarViewModel
+        fun create(shareContentListViewModel: ShareContentListViewModel): PreShareToolbarViewModel
     }
 }
