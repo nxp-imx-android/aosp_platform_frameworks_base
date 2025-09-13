@@ -100,12 +100,16 @@ class AppHandleViewHolder(
     // above the status bar. The purpose of this View is to receive input intended for
     // captionHandle.
     private var statusBarInputLayer: AdditionalSystemViewContainer? = null
+    // TODO: b/444730302 - remove config once status bar input layer can be removed for all devices
+    private val shouldAddStatusBarInputLayer =
+        !DesktopExperienceFlags.ENABLE_REMOVE_STATUS_BAR_INPUT_LAYER.isTrue ||
+            !context.resources.getBoolean(R.bool.config_removeStatusBarInputLayer)
 
     init {
         captionView.setOnTouchListener(onCaptionTouchListener)
         captionHandle.setOnTouchListener(onCaptionTouchListener)
         captionHandle.setOnClickListener(onCaptionButtonClickListener)
-        if (DesktopExperienceFlags.ENABLE_REMOVE_STATUS_BAR_INPUT_LAYER.isTrue) {
+        if (!shouldAddStatusBarInputLayer) {
             ViewCompat.replaceAccessibilityAction(
                 captionHandle,
                 AccessibilityActionCompat.ACTION_CLICK,
@@ -158,7 +162,7 @@ class AppHandleViewHolder(
         }
         this.taskInfo = taskInfo
         if (
-            DesktopExperienceFlags.ENABLE_REMOVE_STATUS_BAR_INPUT_LAYER.isTrue &&
+            !shouldAddStatusBarInputLayer &&
                 DesktopExperienceFlags.ENABLE_APP_HANDLE_POSITION_REPORTING.isTrue
         ) {
             return
@@ -297,7 +301,7 @@ class AppHandleViewHolder(
     fun disposeStatusBarInputLayer() {
         if (
             !statusBarInputLayerExists ||
-                (DesktopExperienceFlags.ENABLE_REMOVE_STATUS_BAR_INPUT_LAYER.isTrue &&
+                (!shouldAddStatusBarInputLayer &&
                     DesktopExperienceFlags.ENABLE_APP_HANDLE_POSITION_REPORTING.isTrue)
         ) {
             return
