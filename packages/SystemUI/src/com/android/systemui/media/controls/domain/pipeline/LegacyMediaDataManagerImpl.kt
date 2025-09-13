@@ -37,7 +37,6 @@ import com.android.app.tracing.traceSection
 import com.android.internal.logging.InstanceId
 import com.android.keyguard.KeyguardUpdateMonitor
 import com.android.systemui.Dumpable
-import com.android.systemui.Flags
 import com.android.systemui.broadcast.BroadcastDispatcher
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
@@ -678,21 +677,12 @@ class LegacyMediaDataManagerImpl(
     }
 
     private fun getResumeMediaAction(action: Runnable): MediaAction {
-        val iconId =
-            if (Flags.mediaControlsUiUpdate()) {
-                R.drawable.ic_media_play_button
-            } else {
-                R.drawable.ic_media_play
-            }
+        val iconId = R.drawable.ic_media_play_button
         return MediaAction(
             Icon.createWithResource(context, iconId).setTint(themeText).loadDrawable(context),
             action,
             context.getString(R.string.controls_media_button_play),
-            if (Flags.mediaControlsUiUpdate()) {
-                context.getDrawable(R.drawable.ic_media_play_button_container)
-            } else {
-                context.getDrawable(R.drawable.ic_media_play_container)
-            },
+            context.getDrawable(R.drawable.ic_media_play_button_container),
         )
     }
 

@@ -28,7 +28,6 @@ import androidx.annotation.VisibleForTesting
 import androidx.constraintlayout.widget.ConstraintSet
 import androidx.constraintlayout.widget.ConstraintSet.MATCH_CONSTRAINT
 import com.android.app.tracing.traceSection
-import com.android.systemui.Flags
 import com.android.systemui.media.controls.ui.controller.MediaCarouselController.Companion.calculateAlpha
 import com.android.systemui.media.controls.ui.view.GutsViewHolder
 import com.android.systemui.media.controls.ui.view.MediaHostState
@@ -699,28 +698,7 @@ constructor(
         // These XML resources contain ConstraintSets that will apply to this player's layout
         collapsedLayout.load(context, R.xml.media_session_collapsed)
         expandedLayout.load(context, R.xml.media_session_expanded)
-        readjustUIUpdateConstraints()
         refreshState()
-    }
-
-    private fun readjustUIUpdateConstraints() {
-        // TODO: move to xml file when flag is removed.
-        if (Flags.mediaControlsUiUpdate()) {
-            collapsedLayout.setGuidelineEnd(
-                R.id.action_button_guideline,
-                context.resources.getDimensionPixelSize(
-                    R.dimen.qs_media_session_collapsed_guideline
-                ),
-            )
-            collapsedLayout.constrainWidth(
-                R.id.actionPlayPause,
-                context.resources.getDimensionPixelSize(R.dimen.qs_media_action_play_pause_width),
-            )
-            expandedLayout.constrainWidth(
-                R.id.actionPlayPause,
-                context.resources.getDimensionPixelSize(R.dimen.qs_media_action_play_pause_width),
-            )
-        }
     }
 
     /**
@@ -780,7 +758,7 @@ constructor(
             isFontUpdateAllowed ||
                 MediaHierarchyManager.LOCATION_COMMUNAL_HUB == newLocation ||
                 MediaHierarchyManager.LOCATION_COMMUNAL_HUB == prevLocation
-        if (Flags.mediaControlsUiUpdate() && isFontUpdateAllowed) {
+        if (isFontUpdateAllowed) {
             updateFontPerLocation(viewHolder, newLocation)
             isFontUpdateAllowed = false
         }
