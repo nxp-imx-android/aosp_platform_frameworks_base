@@ -37,6 +37,7 @@ import static android.content.pm.PackageManager.FEATURE_WATCH;
 import static com.android.server.companion.utils.PackageUtils.enforceUsesCompanionDeviceFeature;
 import static com.android.server.companion.utils.PermissionsUtils.PERM_SET_TO_PERMS;
 import static com.android.server.companion.utils.PermissionsUtils.enforcePermissionForCreatingAssociation;
+import static com.android.server.companion.utils.PermissionsUtils.getIndividualPermissionsFromKeys;
 import static com.android.server.companion.utils.RolesUtils.addRoleHolderForAssociation;
 import static com.android.server.companion.utils.RolesUtils.getPermsForProfile;
 import static com.android.server.companion.utils.RolesUtils.isRoleHolder;
@@ -65,6 +66,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.content.pm.PackageManagerInternal;
 import android.graphics.drawable.Icon;
 import android.net.MacAddress;
@@ -79,9 +81,11 @@ import android.util.ArraySet;
 import android.util.Slog;
 
 import com.android.internal.R;
+import com.android.internal.util.CollectionUtils;
 import com.android.server.companion.CompanionDeviceManagerService;
 import com.android.server.companion.transport.Transport;
 import com.android.server.companion.utils.PackageUtils;
+import com.android.server.companion.utils.PermissionsUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -219,7 +223,12 @@ public class AssociationRequestsProcessor {
         request.setPackageName(packageName);
         request.setUserId(userId);
         request.setSkipPrompt(mayAssociateWithoutPrompt(packageName, userId));
-        request.setRequestedPerms(getPermsForProfile(request.getDeviceProfile()));
+        if (request.getDeviceProfile() == null) {
+            request.setRequestedPerms(new ArrayList<>(
+                    PermissionsUtils.extraPermissionsToIds(request.getExtraPermissions())));
+        } else {
+            request.setRequestedPerms(getPermsForProfile(request.getDeviceProfile()));
+        }
 
         // 2b.2. Prepare extras and create an Intent.
         final Bundle extras = new Bundle();
@@ -300,7 +309,7 @@ public class AssociationRequestsProcessor {
             createAssociation(userId, packageName, macAddress, request.getDisplayName(),
                     request.getDeviceProfile(), request.getAssociatedDevice(),
                     request.isSelfManaged(), callback, resultReceiver, request.getDeviceIcon(),
-                    /* skipRoleGrant= */ false);
+                    /* skipRoleGrant= */ false, request.getExtraPermissions());
         });
     }
 
@@ -312,7 +321,7 @@ public class AssociationRequestsProcessor {
             @Nullable String deviceProfile, @Nullable AssociatedDevice associatedDevice,
             boolean selfManaged, @Nullable IAssociationRequestCallback callback,
             @Nullable ResultReceiver resultReceiver, @Nullable Icon deviceIcon,
-            boolean skipRoleGrant) {
+            boolean skipRoleGrant, @NonNull Set<String> extraPermissions) {
         final int id = mAssociationStore.getNextId();
         final long timestamp = System.currentTimeMillis();
 
@@ -341,6 +350,7 @@ public class AssociationRequestsProcessor {
                         .setDeviceId(null)
                         .setPackagesToNotify(null)
                         .setMetadata(new PersistableBundle())
+                        .setExtraPermissions(extraPermissions)
                         .build();
 
         if (skipRoleGrant) {
@@ -366,6 +376,10 @@ public class AssociationRequestsProcessor {
         // If device profile is not specified or role-less, skip role grant and store association.
         if (deviceProfile == null || isRolelessProfile(deviceProfile)) {
             mAssociationStore.addAssociation(association);
+            // Grant extra permissions that were requested for this association.
+            if (!CollectionUtils.isEmpty(association.getExtraPermissions())) {
+                grantExtraPermissionsForNonProfile(association);
+            }
             sendCallbackAndFinish(association, callback, resultReceiver);
             return;
         }
@@ -428,6 +442,27 @@ public class AssociationRequestsProcessor {
         mAssociationStore.updateAssociation(association);
 
         return newDeviceId;
+    }
+
+    /**
+     * Grants requested extra runtime permissions to the specified package for the given user.
+     */
+    private void grantExtraPermissionsForNonProfile(@NonNull AssociationInfo association) {
+        String packageName = association.getPackageName();
+        Set<String> permissionSetKeys = association.getExtraPermissions();
+        int userId = association.getUserId();
+        Set<String> individualPermissionsToGrant =
+                getIndividualPermissionsFromKeys(permissionSetKeys);
+        PackageManager packageManager = mContext.getPackageManager();
+        for (String permissionToGrant : individualPermissionsToGrant) {
+            if (packageManager.checkPermission(permissionToGrant, packageName)
+                    != PackageManager.PERMISSION_GRANTED) {
+                packageManager.grantRuntimePermission(packageName, permissionToGrant,
+                        UserHandle.of(userId));
+                Slog.i(TAG, "Granted permission " + permissionToGrant + " to package "
+                        + packageName);
+            }
+        }
     }
 
     private void sendCallbackAndFinish(@Nullable AssociationInfo association,

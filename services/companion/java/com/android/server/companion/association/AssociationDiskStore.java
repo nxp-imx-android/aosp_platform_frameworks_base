@@ -554,6 +554,7 @@ public final class AssociationDiskStore {
         DeviceId deviceId = null;
         List<String> packagesToNotify = null;
         PersistableBundle metadata = new PersistableBundle();
+        // TODO: read extra perms
         while (true) {
             parser.nextTag();
             if (isEndOfTag(parser, XML_TAG_ASSOCIATION)) {
@@ -669,6 +670,7 @@ public final class AssociationDiskStore {
         if (!a.getMetadata().isEmpty()) {
             writeMetadata(serializer, a);
         }
+        // TODO: write extra perms
         serializer.endTag(null, XML_TAG_ASSOCIATION);
     }
 

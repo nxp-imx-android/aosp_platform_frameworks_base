@@ -46,7 +46,11 @@ import com.android.server.companion.devicepresence.ObservableUuid;
 import com.android.server.companion.transport.CompanionTransportManager;
 
 import java.io.PrintWriter;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
 class CompanionDeviceShellCommand extends ShellCommand {
     private static final String TAG = "CDM_CompanionDeviceShellCommand";
@@ -109,13 +113,20 @@ class CompanionDeviceShellCommand extends ShellCommand {
                     int userId = getNextIntArgRequired();
                     String packageName = getNextArgRequired();
                     String address = getNextArgRequired();
-                    String deviceProfile = getNextArg();
+                    String deviceProfile = Optional.ofNullable(getNextArg())
+                            .filter(arg -> !"null".equalsIgnoreCase(arg))
+                            .orElse(null);
                     boolean selfManaged = getNextBooleanArg();
+                    String permissionsArg = getNextArg();
+                    Set<String> permissions = new HashSet<>();
+                    if (permissionsArg != null) {
+                        permissions.addAll(Arrays.asList(permissionsArg.split(",")));
+                    }
                     final MacAddress macAddress = MacAddress.fromString(address);
                     mAssociationRequestsProcessor.createAssociation(userId, packageName, macAddress,
                             deviceProfile, deviceProfile, /* associatedDevice= */ null, selfManaged,
                             /* callback= */ null, /* resultReceiver= */ null,
-                            /* deviceIcon= */ null, /* skipRoleGrant= */ false);
+                            /* deviceIcon= */ null, /* skipRoleGrant= */ false, permissions);
                 }
                 break;
 

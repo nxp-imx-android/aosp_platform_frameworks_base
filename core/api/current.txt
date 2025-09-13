@@ -10285,6 +10285,7 @@ package android.companion {
     method @Nullable public android.net.MacAddress getDeviceMacAddress();
     method @Nullable public String getDeviceProfile();
     method @Nullable public CharSequence getDisplayName();
+    method @FlaggedApi("android.companion.association_extra_permission") @NonNull public java.util.Set<java.lang.String> getExtraPermissions();
     method public int getId();
     method public int getSystemDataSyncFlags();
     method public boolean isSelfManaged();
@@ -10297,6 +10298,7 @@ package android.companion {
     method @FlaggedApi("android.companion.association_device_icon") @Nullable public android.graphics.drawable.Icon getDeviceIcon();
     method @Nullable public String getDeviceProfile();
     method @Nullable public CharSequence getDisplayName();
+    method @FlaggedApi("android.companion.association_extra_permission") @NonNull public java.util.Set<java.lang.String> getExtraPermissions();
     method public boolean isForceConfirmation();
     method public boolean isSelfManaged();
     method public boolean isSingleDevice();
@@ -10311,6 +10313,7 @@ package android.companion {
     field @RequiresPermission(android.Manifest.permission.REQUEST_COMPANION_PROFILE_NEARBY_DEVICE_STREAMING) public static final String DEVICE_PROFILE_NEARBY_DEVICE_STREAMING = "android.app.role.COMPANION_DEVICE_NEARBY_DEVICE_STREAMING";
     field @FlaggedApi("android.companion.virtualdevice.flags.enable_limited_vdm_role") @RequiresPermission(android.Manifest.permission.REQUEST_COMPANION_PROFILE_VIRTUAL_DEVICE) public static final String DEVICE_PROFILE_VIRTUAL_DEVICE = "android.app.role.COMPANION_DEVICE_VIRTUAL_DEVICE";
     field public static final String DEVICE_PROFILE_WATCH = "android.app.role.COMPANION_DEVICE_WATCH";
+    field @FlaggedApi("android.companion.association_extra_permission") public static final String PERMISSION_NEARBY = "NEARBY_DEVICES";
   }
 
   public static final class AssociationRequest.Builder {
@@ -10320,6 +10323,7 @@ package android.companion {
     method @FlaggedApi("android.companion.association_device_icon") @NonNull @RequiresPermission(android.Manifest.permission.REQUEST_COMPANION_SELF_MANAGED) public android.companion.AssociationRequest.Builder setDeviceIcon(@NonNull android.graphics.drawable.Icon);
     method @NonNull public android.companion.AssociationRequest.Builder setDeviceProfile(@NonNull String);
     method @NonNull public android.companion.AssociationRequest.Builder setDisplayName(@NonNull CharSequence);
+    method @FlaggedApi("android.companion.association_extra_permission") @NonNull public android.companion.AssociationRequest.Builder setExtraPermissions(@NonNull java.util.Set<java.lang.String>);
     method @NonNull @RequiresPermission(android.Manifest.permission.REQUEST_COMPANION_SELF_MANAGED) public android.companion.AssociationRequest.Builder setForceConfirmation(boolean);
     method @NonNull @RequiresPermission(android.Manifest.permission.REQUEST_COMPANION_SELF_MANAGED) public android.companion.AssociationRequest.Builder setSelfManaged(boolean);
     method @NonNull public android.companion.AssociationRequest.Builder setSingleDevice(boolean);

@@ -30,9 +30,12 @@ import android.os.Parcel;
 import android.os.Parcelable;
 import android.os.PersistableBundle;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 /**
  * Details for a specific "association" that has been established between an app and companion
@@ -111,6 +114,13 @@ public final class AssociationInfo implements Parcelable {
     private final Icon mDeviceIcon;
 
     /**
+     * The set of extra permissions requested by the application during the
+     * association request.
+     */
+    @NonNull
+    private final Set<String> mExtraPermissions;
+
+    /**
      * Creates a new Association.
      *
      * @hide
@@ -121,7 +131,8 @@ public final class AssociationInfo implements Parcelable {
             boolean selfManaged, boolean notifyOnDeviceNearby, boolean revoked, boolean pending,
             long timeApprovedMs, long lastTimeConnectedMs, int systemDataSyncFlags,
             int transportFlags, @Nullable Icon deviceIcon, @Nullable DeviceId deviceId,
-            @Nullable List<String> packagesToNotify, @Nullable PersistableBundle metadata) {
+            @Nullable List<String> packagesToNotify, @Nullable PersistableBundle metadata,
+            @NonNull Set<String> extraPermissions) {
         if (id <= 0) {
             throw new IllegalArgumentException("Association ID should be greater than 0");
         }
@@ -149,6 +160,7 @@ public final class AssociationInfo implements Parcelable {
         mDeviceId = deviceId;
         mPackagesToNotify = packagesToNotify;
         mMetadata = metadata;
+        mExtraPermissions = extraPermissions;
     }
 
     /**
@@ -203,7 +215,6 @@ public final class AssociationInfo implements Parcelable {
     /**
      * @return the display name of the companion device (optionally) provided by the companion
      * application.
-     *
      * @see AssociationRequest.Builder#setDisplayName(CharSequence)
      */
     @Nullable
@@ -213,7 +224,7 @@ public final class AssociationInfo implements Parcelable {
 
     /**
      * @return the companion device profile used when establishing this
-     *         association, or {@code null} if no specific profile was used.
+     * association, or {@code null} if no specific profile was used.
      * @see AssociationRequest.Builder#setDeviceProfile(String)
      */
     @Nullable
@@ -232,7 +243,7 @@ public final class AssociationInfo implements Parcelable {
      * </ul>
      *
      * @return the companion device that was associated, or {@code null} if the device is
-     *         self-managed or this association info was retrieved from persistent storage.
+     * self-managed or this association info was retrieved from persistent storage.
      */
     @Nullable
     public AssociatedDevice getAssociatedDevice() {
@@ -315,11 +326,19 @@ public final class AssociationInfo implements Parcelable {
     }
 
     /**
+     * @return A non-null, possibly empty, set of extra permissions.
+     */
+    @FlaggedApi(Flags.FLAG_ASSOCIATION_EXTRA_PERMISSION)
+    @NonNull
+    public Set<String> getExtraPermissions() {
+        return mExtraPermissions;
+    }
+
+    /**
      * Get the device icon of the associated device. The device icon represents the device type.
      *
      * @return the device icon with size 24dp x 24dp.
      * If the associated device has no icon set, it returns {@code null}.
-     *
      * @see AssociationRequest.Builder#setDeviceIcon(Icon)
      */
     @FlaggedApi(Flags.FLAG_ASSOCIATION_DEVICE_ICON)
@@ -384,9 +403,8 @@ public final class AssociationInfo implements Parcelable {
      * address.
      *
      * @return {@code false} if the association is "self-managed".
-     *         {@code false} if the {@code addr} is {@code null} or is not a valid MAC address.
-     *         Otherwise - the result of {@link MacAddress#equals(Object)}
-     *
+     * {@code false} if the {@code addr} is {@code null} or is not a valid MAC address.
+     * Otherwise - the result of {@link MacAddress#equals(Object)}
      * @hide
      */
     public boolean isLinkedTo(@Nullable String addr) {
@@ -407,8 +425,7 @@ public final class AssociationInfo implements Parcelable {
      * Utility method to be used by CdmService only.
      *
      * @return whether CdmService should bind the companion application that "owns" this association
-     *         when the device is present.
-     *
+     * when the device is present.
      * @hide
      */
     public boolean shouldBindWhenPresent() {
@@ -446,13 +463,14 @@ public final class AssociationInfo implements Parcelable {
                 + ", mPending=" + mPending
                 + ", mTimeApprovedMs=" + new Date(mTimeApprovedMs)
                 + ", mLastTimeConnectedMs=" + (
-                    mLastTimeConnectedMs == Long.MAX_VALUE
+                mLastTimeConnectedMs == Long.MAX_VALUE
                         ? LAST_TIME_CONNECTED_NONE : new Date(mLastTimeConnectedMs))
                 + ", mSystemDataSyncFlags=" + mSystemDataSyncFlags
                 + ", mTransportFlags=" + mTransportFlags
                 + ", mDeviceId=" + mDeviceId
                 + ", mPackagesToNotify=" + mPackagesToNotify
                 + ", mMetadata=" + mMetadata
+                + ", mExtraPermissions=" + mExtraPermissions
                 + '}';
     }
 
@@ -480,7 +498,8 @@ public final class AssociationInfo implements Parcelable {
                 && isSameIcon(mDeviceIcon, that.mDeviceIcon)
                 && Objects.equals(mDeviceId, that.mDeviceId)
                 && Objects.equals(mPackagesToNotify, that.mPackagesToNotify)
-                && BaseBundle.kindofEquals(mMetadata, that.mMetadata);
+                && BaseBundle.kindofEquals(mMetadata, that.mMetadata)
+                && Objects.equals(mExtraPermissions, that.mExtraPermissions);
     }
 
     private boolean isSameIcon(Icon iconA, Icon iconB) {
@@ -495,7 +514,8 @@ public final class AssociationInfo implements Parcelable {
         return Objects.hash(mId, mUserId, mPackageName, mDeviceMacAddress, mDisplayName,
                 mDeviceProfile, mAssociatedDevice, mSelfManaged, mNotifyOnDeviceNearby, mRevoked,
                 mPending, mTimeApprovedMs, mLastTimeConnectedMs, mSystemDataSyncFlags,
-                mTransportFlags, mDeviceIcon, mDeviceId, mPackagesToNotify, mMetadata);
+                mTransportFlags, mDeviceIcon, mDeviceId, mPackagesToNotify, mMetadata,
+                mExtraPermissions);
     }
 
     @Override
@@ -536,6 +556,7 @@ public final class AssociationInfo implements Parcelable {
 
         dest.writeStringList(mPackagesToNotify);
         dest.writePersistableBundle(mMetadata);
+        dest.writeStringList(new ArrayList<>(mExtraPermissions));
     }
 
     private AssociationInfo(@NonNull Parcel in) {
@@ -568,21 +589,22 @@ public final class AssociationInfo implements Parcelable {
         }
         mPackagesToNotify = in.createStringArrayList();
         mMetadata = in.readPersistableBundle();
+        mExtraPermissions = new HashSet<>(in.createStringArrayList());
     }
 
     @NonNull
     public static final Parcelable.Creator<AssociationInfo> CREATOR =
             new Parcelable.Creator<AssociationInfo>() {
-        @Override
-        public AssociationInfo[] newArray(int size) {
-            return new AssociationInfo[size];
-        }
+                @Override
+                public AssociationInfo[] newArray(int size) {
+                    return new AssociationInfo[size];
+                }
 
-        @Override
-        public AssociationInfo createFromParcel(@NonNull Parcel in) {
-            return new AssociationInfo(in);
-        }
-    };
+                @Override
+                public AssociationInfo createFromParcel(@NonNull Parcel in) {
+                    return new AssociationInfo(in);
+                }
+            };
 
     /**
      * Builder for {@link AssociationInfo}
@@ -610,6 +632,7 @@ public final class AssociationInfo implements Parcelable {
         private DeviceId mDeviceId;
         private List<String> mPackagesToNotify;
         private PersistableBundle mMetadata = new PersistableBundle(); // Empty bundle by default.
+        private Set<String> mExtraPermissions = new HashSet<>();
 
         /** @hide */
         @TestApi
@@ -641,6 +664,7 @@ public final class AssociationInfo implements Parcelable {
             mDeviceId = info.mDeviceId;
             mPackagesToNotify = info.mPackagesToNotify;
             mMetadata = info.mMetadata;
+            mExtraPermissions = info.mExtraPermissions;
         }
 
         /**
@@ -669,6 +693,7 @@ public final class AssociationInfo implements Parcelable {
             mDeviceId = info.mDeviceId;
             mPackagesToNotify = info.mPackagesToNotify;
             mMetadata = info.mMetadata;
+            mExtraPermissions = info.mExtraPermissions;
         }
 
         /** @hide */
@@ -820,6 +845,21 @@ public final class AssociationInfo implements Parcelable {
             return this;
         }
 
+        /**
+         * Sets the set of extra permissions to be requested during the association.
+         * @hide
+         * @param extraPermissions A set of Android permission strings to request.
+         * @return This {@code Builder} instance for method chaining.
+         */
+        @TestApi
+        @NonNull
+        @SuppressLint("MissingGetterMatchingBuilder")
+        @FlaggedApi(Flags.FLAG_ASSOCIATION_EXTRA_PERMISSION)
+        public Builder setExtraPermissions(@NonNull Set<String> extraPermissions) {
+            mExtraPermissions = extraPermissions;
+            return this;
+        }
+
         /** @hide */
         @TestApi
         @NonNull
@@ -853,7 +893,8 @@ public final class AssociationInfo implements Parcelable {
                     mDeviceIcon,
                     mDeviceId,
                     mPackagesToNotify,
-                    mMetadata
+                    mMetadata,
+                    mExtraPermissions
             );
         }
     }
