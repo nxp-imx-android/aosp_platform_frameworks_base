@@ -1823,10 +1823,9 @@ public final class CameraCharacteristics extends CameraMetadata<CameraCharacteri
     /**
      * <p>List of focal lengths for {@link CaptureRequest#LENS_FOCAL_LENGTH android.lens.focalLength} that are supported by this camera
      * device.</p>
-     * <p>If optical zoom is not supported, this list will only contain
-     * a single value corresponding to the fixed focal length of the
-     * device. Otherwise, this list will include every focal length supported
-     * by the camera device, in ascending order.</p>
+     * <p>In most cases this list will only contain a single value corresponding
+     * to the fixed focal length of the device. Otherwise, this list will include
+     * every focal length supported by the camera device, in ascending order.</p>
      * <p><b>Units</b>: Millimeters</p>
      * <p><b>Range of valid values:</b><br></p>
      * <p>Values are &gt; 0</p>

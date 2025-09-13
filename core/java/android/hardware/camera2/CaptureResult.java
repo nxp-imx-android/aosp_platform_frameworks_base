@@ -892,6 +892,7 @@ public class CaptureResult extends CameraMetadata<CaptureResult.Key<?>> {
      *   <li>{@link #CONTROL_AE_MODE_ON_ALWAYS_FLASH ON_ALWAYS_FLASH}</li>
      *   <li>{@link #CONTROL_AE_MODE_ON_AUTO_FLASH_REDEYE ON_AUTO_FLASH_REDEYE}</li>
      *   <li>{@link #CONTROL_AE_MODE_ON_EXTERNAL_FLASH ON_EXTERNAL_FLASH}</li>
+     *   <li>{@link #CONTROL_AE_MODE_ON_LOW_LIGHT_BOOST_BRIGHTNESS_PRIORITY ON_LOW_LIGHT_BOOST_BRIGHTNESS_PRIORITY}</li>
      * </ul>
      *
      * <p><b>Available values for this device:</b><br>
@@ -916,6 +917,7 @@ public class CaptureResult extends CameraMetadata<CaptureResult.Key<?>> {
      * @see #CONTROL_AE_MODE_ON_ALWAYS_FLASH
      * @see #CONTROL_AE_MODE_ON_AUTO_FLASH_REDEYE
      * @see #CONTROL_AE_MODE_ON_EXTERNAL_FLASH
+     * @see #CONTROL_AE_MODE_ON_LOW_LIGHT_BOOST_BRIGHTNESS_PRIORITY
      */
     @PublicKey
     @NonNull
@@ -3493,28 +3495,36 @@ public class CaptureResult extends CameraMetadata<CaptureResult.Key<?>> {
             new Key<Float>("android.lens.filterDensity", float.class);
 
     /**
-     * <p>The desired lens focal length; used for optical zoom.</p>
-     * <p>This setting controls the physical focal length of the camera
-     * device's lens. Changing the focal length changes the field of
-     * view of the camera device, and is usually used for optical zoom.</p>
-     * <p>Like {@link CaptureRequest#LENS_FOCUS_DISTANCE android.lens.focusDistance} and {@link CaptureRequest#LENS_APERTURE android.lens.aperture}, this
-     * setting won't be applied instantaneously, and it may take several
-     * frames before the lens can change to the requested focal length.
-     * While the focal length is still changing, {@link CaptureResult#LENS_STATE android.lens.state} will
-     * be set to MOVING.</p>
-     * <p>Optical zoom via this control will not be supported on most devices. Starting from API
-     * level 30, the camera device may combine optical and digital zoom through the
-     * {@link CaptureRequest#CONTROL_ZOOM_RATIO android.control.zoomRatio} control.</p>
+     * <p>The desired lens focal length</p>
+     * <p>Focal length is the distance from the optical center of the lens to the
+     * focal point for a thin lens approximation of the camera optical system.
+     * The definition assumes the lens is focused at infinity.</p>
+     * <p>The horizontal field-of-view of the processed full frame camera outputs
+     * can be derived as:</p>
+     * <pre><code>fov = 2 * atan2(sw / 2, fl)
+     * </code></pre>
+     * <p>where:</p>
+     * <ul>
+     * <li><code>sw</code> is the {@link CameraCharacteristics#SENSOR_INFO_PHYSICAL_SIZE android.sensor.info.physicalSize} width,</li>
+     * <li><code>fl</code> is {@link CaptureRequest#LENS_FOCAL_LENGTH android.lens.focalLength}.</li>
+     * </ul>
+     * <p>Using this control to switch between lenses is not supported on most
+     * devices. Starting from API level 30, the application is strongly recommended
+     * to use {@link CaptureRequest#CONTROL_ZOOM_RATIO android.control.zoomRatio} for combined optical and digital zoom. To
+     * exclusively use a particular focal length lens in a logical multi-camera,
+     * applications can iterate over the physical cameras exposed by the logical
+     * multi-camera device via
+     * {@link android.hardware.camera2.CameraCharacteristics#getPhysicalCameraIds }
+     * and select the one with the desired focal length.</p>
      * <p><b>Units</b>: Millimeters</p>
      * <p><b>Range of valid values:</b><br>
      * {@link CameraCharacteristics#LENS_INFO_AVAILABLE_FOCAL_LENGTHS android.lens.info.availableFocalLengths}</p>
      * <p>This key is available on all devices.</p>
      *
      * @see CaptureRequest#CONTROL_ZOOM_RATIO
-     * @see CaptureRequest#LENS_APERTURE
-     * @see CaptureRequest#LENS_FOCUS_DISTANCE
+     * @see CaptureRequest#LENS_FOCAL_LENGTH
      * @see CameraCharacteristics#LENS_INFO_AVAILABLE_FOCAL_LENGTHS
-     * @see CaptureResult#LENS_STATE
+     * @see CameraCharacteristics#SENSOR_INFO_PHYSICAL_SIZE
      */
     @PublicKey
     @NonNull
@@ -3626,8 +3636,7 @@ public class CaptureResult extends CameraMetadata<CaptureResult.Key<?>> {
      * <ul>
      * <li>Fixed focus (<code>{@link CameraCharacteristics#LENS_INFO_MINIMUM_FOCUS_DISTANCE android.lens.info.minimumFocusDistance} == 0</code>), which means
      * {@link CaptureRequest#LENS_FOCUS_DISTANCE android.lens.focusDistance} parameter will always be 0.</li>
-     * <li>Fixed focal length ({@link CameraCharacteristics#LENS_INFO_AVAILABLE_FOCAL_LENGTHS android.lens.info.availableFocalLengths} contains single value),
-     * which means the optical zoom is not supported.</li>
+     * <li>Fixed focal length ({@link CameraCharacteristics#LENS_INFO_AVAILABLE_FOCAL_LENGTHS android.lens.info.availableFocalLengths} contains single value).</li>
      * <li>No ND filter ({@link CameraCharacteristics#LENS_INFO_AVAILABLE_FILTER_DENSITIES android.lens.info.availableFilterDensities} contains only 0).</li>
      * <li>Fixed aperture ({@link CameraCharacteristics#LENS_INFO_AVAILABLE_APERTURES android.lens.info.availableApertures} contains single value).</li>
      * </ul>
@@ -5501,7 +5510,7 @@ public class CaptureResult extends CameraMetadata<CaptureResult.Key<?>> {
      * <p>An array of intra-frame lens intrinsic samples.</p>
      * <p>Contains an array of intra-frame {@link CameraCharacteristics#LENS_INTRINSIC_CALIBRATION android.lens.intrinsicCalibration} updates. This must
      * not be confused or compared to {@link CaptureResult#STATISTICS_OIS_SAMPLES android.statistics.oisSamples}. Although OIS could be the
-     * main driver, all relevant factors such as focus distance and optical zoom must also
+     * main driver, all relevant factors such as focus distance and focal length must also
      * be included. Do note that OIS samples must not be applied on top of the lens intrinsic
      * samples.
      * Support for this capture result can be queried via
