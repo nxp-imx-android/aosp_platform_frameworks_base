@@ -124,6 +124,7 @@ public class SupervisionService extends ISupervisionManager.Stub {
     // BackgroundThread for its connection callbacks. Using the same thread would block while
     // waiting for those callbacks, preventing the new connections from being perceived.
     final ServiceThread mServiceThread;
+    public static final boolean DEBUG = false; // DO NOT SUBMIT WITH TRUE
 
     @GuardedBy("getLockObject()")
     final SupervisionSettings mSupervisionSettings = SupervisionSettings.getInstance();
@@ -167,6 +168,7 @@ public class SupervisionService extends ISupervisionManager.Stub {
         setSupervisionEnabledForUserInternal(userId, enabled, getSystemSupervisionPackage());
     }
 
+    // TODO(b/444411638): Remove this after enable_app_service_connection_callback rollout
     private List<AppServiceConnection> getSupervisionAppServiceConnections(@UserIdInt int userId) {
         AppBindingService abs = mInjector.getAppBindingService();
         return abs != null
@@ -408,28 +410,35 @@ public class SupervisionService extends ISupervisionManager.Stub {
                 mSupervisionSettings.saveUserData();
             }
         }
-        mServiceThread
-                .getThreadExecutor()
-                .execute(
-                        () -> {
-                            updateWebContentFilters(userId, enabled);
-                            dispatchSupervisionEvent(
-                                    userId,
-                                    listener -> listener.onSetSupervisionEnabled(userId, enabled));
-                            if (!enabled) {
-                                clearAllDevicePoliciesAndSuspendedPackages(userId);
-                            } else {
-                                maybeApplyUserRestrictionsFor(UserHandle.of(userId));
-                            }
-                        });
+        executeOnSupervisionEnabled(
+                () -> {
+                    updateWebContentFilters(userId, enabled);
+                    dispatchSupervisionEvent(
+                            userId,
+                            listener -> listener.onSetSupervisionEnabled(userId, enabled));
+                    if (!enabled) {
+                        clearAllDevicePoliciesAndSuspendedPackages(userId);
+                    } else {
+                        maybeApplyUserRestrictionsFor(UserHandle.of(userId));
+                    }
+                });
+    }
+
+    private void executeOnSupervisionEnabled(Runnable runnable) {
+        if (Flags.enableAppServiceConnectionCallback()) {
+            Binder.withCleanCallingIdentity(runnable::run);
+        } else {
+            mServiceThread.getThreadExecutor().execute(runnable);
+        }
     }
 
     @NonNull
+    // TODO(b/444411638): Remove this after enable_app_service_connection_callback rollout
     private List<ISupervisionListener> getSupervisionAppServiceListeners(
             @UserIdInt int userId,
             @NonNull RemoteExceptionIgnoringConsumer<ISupervisionListener> action) {
         ArrayList<ISupervisionListener> listeners = new ArrayList<>();
-        if (!Flags.enableSupervisionAppService()) {
+        if (!Flags.enableSupervisionAppService() || Flags.enableAppServiceConnectionCallback()) {
             return listeners;
         }
 
@@ -460,7 +469,9 @@ public class SupervisionService extends ISupervisionManager.Stub {
     private void dispatchSupervisionEvent(
             @UserIdInt int userId,
             @NonNull RemoteExceptionIgnoringConsumer<ISupervisionListener> action) {
-
+        if (Flags.enableAppServiceConnectionCallback()) {
+            dispatchSupervisionAppServiceEvent(userId, action);
+        }
         // Add SupervisionAppServices listeners before the platform listeners.
         ArrayList<ISupervisionListener> listeners =
                 new ArrayList<>(getSupervisionAppServiceListeners(userId, action));
@@ -475,6 +486,36 @@ public class SupervisionService extends ISupervisionManager.Stub {
         }
 
         listeners.forEach(action);
+    }
+
+    private void dispatchSupervisionAppServiceEvent(
+            @UserIdInt int userId,
+            @NonNull RemoteExceptionIgnoringConsumer<ISupervisionListener> action) {
+        if (!Flags.enableSupervisionAppService()) {
+            return;
+        }
+        AppBindingService abs = mInjector.getAppBindingService();
+        if (abs == null) {
+            Slogf.e(SupervisionLog.TAG, "AppBindingService is not available.");
+            return;
+        }
+
+        abs.dispatchAppServiceEvent(SupervisionAppServiceFinder.class, userId, connection -> {
+            ISupervisionListener binder = (ISupervisionListener) connection.getServiceBinder();
+            String target = connection.getPackageName();
+            if (binder == null) {
+                if (DEBUG) {
+                    Slogf.i(SupervisionLog.TAG,
+                            "Failed to connect to SupervisionAppService in %s", target);
+                }
+            } else {
+                if (DEBUG) {
+                    Slogf.i(SupervisionLog.TAG,
+                            "Connected to SupervisionAppService in %s", target);
+                }
+                action.accept(binder);
+            }
+        });
     }
 
     private void clearAllDevicePoliciesAndSuspendedPackages(@UserIdInt int userId) {

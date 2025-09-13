@@ -14,18 +14,12 @@
  * limitations under the License.
  */
 
-package com.android.server.security.advancedprotection.features;
+package android.companion.datatransfer.continuity;
 
-import android.annotation.NonNull;
-import android.content.Context;
-import android.net.wifi.WifiManager;
-import android.security.advancedprotection.AdvancedProtectionFeature;
+/**
+ * Interface for communication with the Universal Clipboard service.
+ * {@hide}
+ */
+interface IUniversalClipboardManager {
 
-import java.util.List;
-
-public class DisallowWepAdvancedProtectionProvider extends AdvancedProtectionProvider {
-    public List<AdvancedProtectionFeature> getFeatures(@NonNull Context context) {
-        WifiManager wifiManager = context.getSystemService(WifiManager.class);
-        return wifiManager.getAvailableAdvancedProtectionFeatures();
-    }
 }

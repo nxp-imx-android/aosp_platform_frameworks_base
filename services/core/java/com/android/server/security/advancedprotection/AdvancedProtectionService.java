@@ -64,7 +64,6 @@ import com.android.server.security.advancedprotection.features.AdvancedProtectio
 import com.android.server.security.advancedprotection.features.AdvancedProtectionProvider;
 import com.android.server.security.advancedprotection.features.DisallowCellular2GAdvancedProtectionHook;
 import com.android.server.security.advancedprotection.features.DisallowInstallUnknownSourcesAdvancedProtectionHook;
-import com.android.server.security.advancedprotection.features.DisallowWepAdvancedProtectionProvider;
 import com.android.server.security.advancedprotection.features.MemoryTaggingExtensionHook;
 import com.android.server.security.advancedprotection.features.UsbDataAdvancedProtectionHook;
 
@@ -143,8 +142,6 @@ public class AdvancedProtectionService extends IAdvancedProtectionService.Stub {
             Slog.e(TAG, "Failed to initialize UsbDataAdvancedProtection", e);
           }
         }
-
-        mProviders.add(new DisallowWepAdvancedProtectionProvider());
     }
 
     private void initLogging() {
@@ -303,8 +300,6 @@ public class AdvancedProtectionService extends IAdvancedProtectionService.Stub {
                 return AdvancedProtectionProtoEnums.FEATURE_ID_DISALLOW_INSTALL_UNKNOWN_SOURCES;
             case AdvancedProtectionManager.FEATURE_ID_DISALLOW_USB:
                 return AdvancedProtectionProtoEnums.FEATURE_ID_DISALLOW_USB;
-            case AdvancedProtectionManager.FEATURE_ID_DISALLOW_WEP:
-                return AdvancedProtectionProtoEnums.FEATURE_ID_DISALLOW_WEP;
             case AdvancedProtectionManager.FEATURE_ID_ENABLE_MTE:
                 return AdvancedProtectionProtoEnums.FEATURE_ID_ENABLE_MTE;
             default:

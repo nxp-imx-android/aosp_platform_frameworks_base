@@ -296,22 +296,10 @@ class ProcessRecord extends ProcessRecordInternal implements WindowProcessListen
     private boolean mWaitedForDebugger;
 
     /**
-     * For managing the LRU list.
-     */
-    @CompositeRWLock({"mService", "mProcLock"})
-    private long mLastActivityTime;
-
-    /**
      * Set to true when process was launched with a wrapper attached.
      */
     @GuardedBy("mService")
     private boolean mUsingWrapper;
-
-    /**
-     * Class to run on start if this is a special isolated process.
-     */
-    @GuardedBy("mService")
-    private String mIsolatedEntryPoint;
 
     /**
      * Arguments to pass to isolatedEntryPoint's main().
@@ -485,7 +473,7 @@ class ProcessRecord extends ProcessRecordInternal implements WindowProcessListen
         pw.print(prefix); pw.print("thread="); pw.println(mThread);
         pw.print(prefix); pw.print("pid="); pw.println(mPid);
         pw.print(prefix); pw.print("lastActivityTime=");
-        TimeUtils.formatDuration(mLastActivityTime, nowUptime, pw);
+        TimeUtils.formatDuration(getLastActivityTime(), nowUptime, pw);
         pw.print(prefix); pw.print("startUpTime=");
         TimeUtils.formatDuration(mStartUptime, nowUptime, pw);
         pw.print(prefix); pw.print("startElapsedTime=");
@@ -509,8 +497,8 @@ class ProcessRecord extends ProcessRecordInternal implements WindowProcessListen
             pw.print(" killedByAm="); pw.print(isKilledByAm());
             pw.print(" waitingToKill="); pw.println(getWaitingToKill());
         }
-        if (mIsolatedEntryPoint != null || mIsolatedEntryPointArgs != null) {
-            pw.print(prefix); pw.print("isolatedEntryPoint="); pw.println(mIsolatedEntryPoint);
+        if (getIsolatedEntryPoint() != null || mIsolatedEntryPointArgs != null) {
+            pw.print(prefix); pw.print("isolatedEntryPoint="); pw.println(getIsolatedEntryPoint());
             pw.print(prefix); pw.print("isolatedEntryPointArgs=");
             pw.println(Arrays.toString(mIsolatedEntryPointArgs));
         }
@@ -1034,16 +1022,6 @@ class ProcessRecord extends ProcessRecordInternal implements WindowProcessListen
         mWaitedForDebugger = waitedForDebugger;
     }
 
-    @GuardedBy(anyOf = {"mService", "mProcLock"})
-    long getLastActivityTime() {
-        return mLastActivityTime;
-    }
-
-    @GuardedBy({"mService", "mProcLock"})
-    void setLastActivityTime(long lastActivityTime) {
-        mLastActivityTime = lastActivityTime;
-    }
-
     @GuardedBy("mService")
     boolean isUsingWrapper() {
         return mUsingWrapper;
@@ -1053,16 +1031,6 @@ class ProcessRecord extends ProcessRecordInternal implements WindowProcessListen
     void setUsingWrapper(boolean usingWrapper) {
         mUsingWrapper = usingWrapper;
         mWindowProcessController.setUsingWrapper(usingWrapper);
-    }
-
-    @GuardedBy("mService")
-    String getIsolatedEntryPoint() {
-        return mIsolatedEntryPoint;
-    }
-
-    @GuardedBy("mService")
-    void setIsolatedEntryPoint(String isolatedEntryPoint) {
-        mIsolatedEntryPoint = isolatedEntryPoint;
     }
 
     @GuardedBy("mService")
@@ -1570,8 +1538,8 @@ class ProcessRecord extends ProcessRecordInternal implements WindowProcessListen
     }
 
     @Override
-    public String[] getPackageList() {
-        return mPkgList.getPackageList();
+    public String[] getProcessPackageNames() {
+        return mPkgList.getPackageNames();
     }
 
     List<VersionedPackage> getPackageListWithVersionCode() {

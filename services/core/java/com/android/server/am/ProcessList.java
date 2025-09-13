@@ -2545,10 +2545,10 @@ public final class ProcessList implements ProcessStateController.ProcessLruUpdat
 
             boolean bindOverrideSysprops = false;
             if (Build.IS_USERDEBUG || Build.IS_ENG) {
-                String[] syspropOverridePkgNames = DeviceConfig.getString(
+                final String[] syspropOverridePkgNames = DeviceConfig.getString(
                         DeviceConfig.NAMESPACE_APP_COMPAT,
                                 "appcompat_sysprop_override_pkgs", "").split(",");
-                String[] pkgs = app.getPackageList();
+                final String[] pkgs = app.getProcessPackageNames();
                 for (int i = 0; i < pkgs.length; i++) {
                     if (ArrayUtils.contains(syspropOverridePkgNames, pkgs[i])) {
                         bindOverrideSysprops = true;
@@ -4267,7 +4267,7 @@ public final class ProcessList implements ProcessStateController.ProcessLruUpdat
                 // Generate process state info for running application
                 ActivityManager.RunningAppProcessInfo currApp =
                         new ActivityManager.RunningAppProcessInfo(app.processName,
-                                app.getPid(), app.getPackageList());
+                                app.getPid(), app.getProcessPackageNames());
                 if (app.getPkgDeps() != null) {
                     final int size = app.getPkgDeps().size();
                     currApp.pkgDeps = app.getPkgDeps().toArray(new String[size]);

@@ -684,7 +684,7 @@ public class UserRestrictionsUtils {
                     break;
                 case UserManager.DISALLOW_DEBUGGING_FEATURES:
                     if (newValue) {
-                        if (userId == UserHandle.USER_SYSTEM || isDeviceOwner(userId)) {
+                        if (userId == UserHandle.USER_SYSTEM || userId == getDeviceOwnerUserId()) {
                             android.provider.Settings.Global.putStringForUser(cr,
                                     android.provider.Settings.Global.ADB_ENABLED, "0",
                                     userId);
@@ -809,6 +809,9 @@ public class UserRestrictionsUtils {
                     return false;
                 }
                 restriction = UserManager.DISALLOW_DEBUGGING_FEATURES;
+                if (deviceOwnerOrSystemUserHasRestriction(restriction)) {
+                    return true;
+                }
                 break;
 
             case android.provider.Settings.Global.PACKAGE_VERIFIER_INCLUDE_ADB:
@@ -968,9 +971,24 @@ public class UserRestrictionsUtils {
                 UserHandle.of(userId))) ? 0 : 1;
     }
 
-    private static boolean isDeviceOwner(int userId) {
+    private static int getDeviceOwnerUserId() {
         DevicePolicyManagerInternal dpm = LocalServices.getService(
                 DevicePolicyManagerInternal.class);
-        return dpm.getDeviceOwnerUserId() == userId;
+        return dpm.getDeviceOwnerUserId();
+    }
+
+    private static boolean deviceOwnerOrSystemUserHasRestriction(String restriction) {
+        UserManagerInternal userManager = LocalServices.getService(UserManagerInternal.class);
+        if (userManager == null) {
+            return false;
+        }
+
+        if (userManager.hasUserRestriction(restriction, UserHandle.USER_SYSTEM)) {
+            return true;
+        }
+
+        final int deviceOwnerId = getDeviceOwnerUserId();
+        return deviceOwnerId != UserHandle.USER_NULL && deviceOwnerId != UserHandle.USER_SYSTEM
+                && userManager.hasUserRestriction(restriction, deviceOwnerId);
     }
 }

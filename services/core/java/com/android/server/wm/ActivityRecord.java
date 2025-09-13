@@ -7592,29 +7592,23 @@ final class ActivityRecord extends WindowToken {
             requestedOverrideConfig.assetsSeq = ASSETS_SEQ_UNDEFINED;
         }
 
-        if (ENABLE_DRAGGING_PIP_ACROSS_DISPLAYS.isTrue() && mLastReportedPictureInPictureMode) {
-            // If the previously resolved full config of the activity is in PiP, retain the
-            // following configs so that the activity doesn't get destroyed and recreated on display
-            // transfer while still remaining in PiP mode.
-            if (newParentConfiguration.windowConfiguration.getWindowingMode()
-                    == WINDOWING_MODE_PINNED) {
-                final Configuration lastReportedMergedConfig =
-                        mLastReportedConfiguration.getMergedConfiguration();
-                int configChanges = info.getRealConfigChanged();
-                if ((configChanges & ActivityInfo.CONFIG_COLOR_MODE) == 0) {
-                    requestedOverrideConfig.colorMode = lastReportedMergedConfig.colorMode;
-                }
-                if ((configChanges & ActivityInfo.CONFIG_TOUCHSCREEN) == 0) {
-                    requestedOverrideConfig.touchscreen = lastReportedMergedConfig.touchscreen;
-                }
-                if ((configChanges & ActivityInfo.CONFIG_DENSITY) == 0) {
-                    requestedOverrideConfig.densityDpi = lastReportedMergedConfig.densityDpi;
-                }
-            } else {
-                // Reset the configs if we're exiting PiP mode.
-                requestedOverrideConfig.colorMode = Configuration.COLOR_MODE_UNDEFINED;
-                requestedOverrideConfig.touchscreen = Configuration.TOUCHSCREEN_UNDEFINED;
-                requestedOverrideConfig.densityDpi = Configuration.DENSITY_DPI_UNDEFINED;
+        // If the previously resolved full config and new parent activity is in PiP, retain the
+        // following configs so that the activity doesn't get destroyed and recreated on display
+        // transfer while still remaining in PiP mode.
+        if (ENABLE_DRAGGING_PIP_ACROSS_DISPLAYS.isTrue() && mLastReportedPictureInPictureMode
+                && newParentConfiguration.windowConfiguration.getWindowingMode()
+                == WINDOWING_MODE_PINNED) {
+            final Configuration lastReportedMergedConfig =
+                    mLastReportedConfiguration.getMergedConfiguration();
+            int configChanges = info.getRealConfigChanged();
+            if ((configChanges & ActivityInfo.CONFIG_COLOR_MODE) == 0) {
+                requestedOverrideConfig.colorMode = lastReportedMergedConfig.colorMode;
+            }
+            if ((configChanges & ActivityInfo.CONFIG_TOUCHSCREEN) == 0) {
+                requestedOverrideConfig.touchscreen = lastReportedMergedConfig.touchscreen;
+            }
+            if ((configChanges & ActivityInfo.CONFIG_DENSITY) == 0) {
+                requestedOverrideConfig.densityDpi = lastReportedMergedConfig.densityDpi;
             }
         }
 

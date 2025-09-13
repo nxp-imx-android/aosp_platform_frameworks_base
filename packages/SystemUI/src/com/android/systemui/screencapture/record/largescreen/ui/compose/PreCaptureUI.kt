@@ -56,7 +56,7 @@ fun PreCaptureUI(viewModel: PreCaptureViewModel) {
             PreCaptureToolbar(
                 viewModel = viewModel,
                 expanded = true,
-                onCloseClick = { viewModel.closeUi() },
+                onCloseClick = { viewModel.closeFromToolbar() },
                 modifier =
                     Modifier.onGloballyPositioned {
                             val boundsInWindow = it.boundsInWindow()
@@ -121,6 +121,7 @@ fun PreCaptureUI(viewModel: PreCaptureViewModel) {
                         contentDescription = null,
                     )
                 RegionBox(
+                    initialRect = viewModel.regionBox,
                     buttonText =
                         stringResource(
                             id =

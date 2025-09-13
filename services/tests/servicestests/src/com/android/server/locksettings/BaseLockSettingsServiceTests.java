@@ -58,6 +58,7 @@ import com.android.internal.widget.LockPatternUtils;
 import com.android.internal.widget.LockscreenCredential;
 import com.android.server.LocalServices;
 import com.android.server.StorageManagerInternal;
+import com.android.server.locksettings.FakeKeyStore.FakeKeyStoreRule;
 import com.android.server.locksettings.recoverablekeystore.RecoverableKeyStoreManager;
 import com.android.server.pm.UserManagerInternal;
 import com.android.server.security.authenticationpolicy.SecureLockDeviceServiceInternal;
@@ -123,6 +124,8 @@ public abstract class BaseLockSettingsServiceTests {
     @Rule
     public PropertyInvalidatedCacheTestRule mCacheRule = new PropertyInvalidatedCacheTestRule();
 
+    @Rule public FakeKeyStoreRule mKeyStoreRule = new FakeKeyStoreRule();
+
     @Before
     public void setUp_baseServices() throws Exception {
         mResources = createMockResources();
@@ -187,7 +190,8 @@ public abstract class BaseLockSettingsServiceTests {
                         mRecoverableKeyStoreManager,
                         mUserManagerInternal,
                         mDeviceStateCache,
-                        mSecureLockDeviceServiceInternal);
+                        mSecureLockDeviceServiceInternal,
+                        mKeyStoreRule.getKeyStore());
         mService =
                 new LockSettingsServiceTestable(mInjector, mGateKeeperService, mAuthSecretService);
         mService.mHasSecureLockScreen = true;

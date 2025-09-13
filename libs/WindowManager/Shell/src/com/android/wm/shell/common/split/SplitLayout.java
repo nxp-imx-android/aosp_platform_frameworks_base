@@ -936,7 +936,8 @@ public final class SplitLayout implements DisplayInsetsController.OnInsetsChange
                 mIsLeftRightSplit,
                 insets,
                 mPinnedTaskbarInsets.toRect(),
-                mIsLeftRightSplit ? DOCKED_LEFT : DOCKED_TOP /* dockSide */);
+                mIsLeftRightSplit ? DOCKED_LEFT : DOCKED_TOP /* dockSide */,
+                mContext.getDisplay().getDisplayId());
     }
 
     /** Fling divider from current position to end or start position then exit */

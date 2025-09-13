@@ -107,26 +107,6 @@ flag {
 }
 
 flag {
-  name: "notif_channel_crop_vibration_effects"
-  namespace: "systemui"
-  description: "Limits the size of vibration effects that can be stored in a NotificationChannel"
-  bug: "345881518"
-  metadata {
-    purpose: PURPOSE_BUGFIX
-  }
-}
-
-flag {
-  name: "notif_channel_estimate_effect_size"
-  namespace: "systemui"
-  description: "When reading vibration effects from parcel, estimate size instead of unnecessarily serializing to XML"
-  bug: "391908451"
-  metadata {
-    purpose: PURPOSE_BUGFIX
-  }
-}
-
-flag {
   name: "evenly_divided_call_style_action_layout"
   namespace: "systemui"
   description: "Evenly divides horizontal space for action buttons in CallStyle notifications."
@@ -353,6 +333,27 @@ flag {
   namespace: "notifications"
   description: "Allows the NAS to summarize notifications of any type"
   bug: "430487852"
+}
+
+flag {
+  name: "nm_highlights"
+  namespace: "notifications"
+  description: "Allows the NAS to highlight notifications"
+  bug: "438704838"
+}
+
+flag {
+  name: "nm_insights"
+  namespace: "notifications"
+  description: "Shows insights derived from notifications"
+  bug: "438705144"
+}
+
+flag {
+  name: "nm_contextual_display"
+  namespace: "notifications"
+  description: "Changes notification appearance based on user created rules"
+  bug: "438704204"
 }
 
 # End: exported flags that cannot be removed

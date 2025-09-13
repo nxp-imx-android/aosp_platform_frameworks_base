@@ -30,6 +30,7 @@ import android.os.SystemProperties;
 import android.os.UserHandle;
 import android.os.UserManager;
 import android.provider.Settings;
+import android.util.Dumpable;
 import android.util.Log;
 
 import com.android.internal.R;
@@ -39,6 +40,7 @@ import com.android.server.utils.Slogf;
 import com.android.server.utils.TimingsTraceAndSlog;
 
 import java.io.PrintWriter;
+import java.lang.ref.WeakReference;
 import java.util.Arrays;
 
 /**
@@ -61,6 +63,9 @@ public final class HsumBootUserInitializer {
     @VisibleForTesting
     static final String SYSPROP_DESIGNATE_MAIN_USER = "fw.designate_main_user_on_boot";
 
+    // Lazy-instantiated on createInstance()
+    private static @Nullable Dumpable sDumpable;
+
     private final UserManagerService mUms;
     private final ActivityManagerService mAms;
     private final PackageManagerService mPms;
@@ -68,7 +73,6 @@ public final class HsumBootUserInitializer {
     // TODO(b/322150148): Change the type to HsuDeviceProvisioner and remove the cast once the flag
     // is completely pushed.
     private final ContentObserver mDeviceProvisionedObserver;
-
 
     /** Whether it should create a main user on first boot. */
     private final boolean mShouldDesignateMainUser;
@@ -84,8 +88,10 @@ public final class HsumBootUserInitializer {
         if (!UserManager.isHeadlessSystemUserMode()) {
             return null;
         }
-        return new HsumBootUserInitializer(ums, ams, pms, contentResolver,
+        var instance = new HsumBootUserInitializer(ums, ams, pms, contentResolver,
                 designateMainUserOnBoot(context), createInitialUserOnBoot(context));
+        setDumpable(instance, context);
+        return instance;
     }
 
     @VisibleForTesting
@@ -345,8 +351,50 @@ public final class HsumBootUserInitializer {
         }
     }
 
-    /** Called by {@code SystemServer.dump()} */
-    public static void dump(PrintWriter pw, Context context) {
+
+    /**
+     * Creates a static / permanent reference to a {@code Dumpable}.
+     *
+     * <p>That {@code Dumpable} will never be GC'ed and will dump both the static state (which is
+     * inferred from config / system properties) and the effective state of the {@code instance}
+     * (but without keeping a reference to it, so it can be GC'ed after boot).
+     */
+    private static Dumpable setDumpable(HsumBootUserInitializer instance, Context context) {
+        if (sDumpable != null) {
+            Slogf.e(TAG, "setDumpable(%s): already set (as %s)", instance, sDumpable);
+            return sDumpable;
+        }
+        String name = instance.toString();
+        WeakReference<HsumBootUserInitializer> ref = new WeakReference<>(instance);
+        sDumpable = new Dumpable() {
+
+            @Override
+            public String getDumpableName() {
+                return HsumBootUserInitializer.class.getSimpleName();
+            }
+
+            @Override
+            public void dump(PrintWriter pw, String[] args) {
+                HsumBootUserInitializer.dump(pw, context);
+                var self = ref.get();
+                if (self == null) {
+                    pw.printf("Effective state not available (%s has been GC'ed already)\n", name);
+                    return;
+                }
+                self.dump(pw);
+            }
+
+        };
+        return sDumpable;
+    }
+
+    @Nullable
+    public static Dumpable getDumpable() {
+        return sDumpable;
+    }
+
+    // Dumps static static - will always be available
+    private static void dump(PrintWriter pw, Context context) {
         var res = context.getResources();
 
         pw.print("Designate main user on boot: ");
@@ -364,6 +412,14 @@ public final class HsumBootUserInitializer {
         pw.println(createInitialUserOnBoot(context));
         pw.print("  config_createInitialUser: ");
         pw.println(res.getBoolean(R.bool.config_createInitialUser));
+    }
+
+    // Dumps internal static - will only be available until it's garbage collected
+    private void dump(PrintWriter pw) {
+        pw.println("Effective state:");
+        pw.print("  mDeviceProvisionedObserver="); pw.println(mDeviceProvisionedObserver);
+        pw.print("  mShouldDesignateMainUser="); pw.println(mShouldDesignateMainUser);
+        pw.print("  mShouldCreateInitialUser="); pw.println(mShouldCreateInitialUser);
     }
 
     @VisibleForTesting

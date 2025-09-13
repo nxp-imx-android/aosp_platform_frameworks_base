@@ -1120,18 +1120,17 @@ public abstract class OomAdjuster {
         int numEmpty = 0;
         int numTrimming = 0;
 
-        boolean proactiveKillsEnabled = mConstants.PROACTIVE_KILLS_ENABLED;
-        double lowSwapThresholdPercent = mConstants.LOW_SWAP_THRESHOLD_PERCENT;
-        double freeSwapPercent =  proactiveKillsEnabled ? getFreeSwapPercent() : 1.00;
-        ProcessRecord lruCachedApp = null;
+        final boolean proactiveKillsEnabled = mConstants.PROACTIVE_KILLS_ENABLED;
+        final double lowSwapThresholdPercent = mConstants.LOW_SWAP_THRESHOLD_PERCENT;
+        final double freeSwapPercent = proactiveKillsEnabled ? getFreeSwapPercent() : 1.00;
+        ProcessRecordInternal lruCachedApp = null;
 
         for (int i = numLru - 1; i >= 0; i--) {
-            ProcessRecord app = lruList.get(i);
-            final ProcessRecordInternal state = app;
+            final ProcessRecordInternal app = lruList.get(i);
             if (!app.isKilledByAm() && app.isProcessRunning()) {
                 if (!Flags.fixApplyOomadjOrder()) {
                     // We don't need to apply the update for the process which didn't get computed
-                    if (state.getCompletedAdjSeq() == mAdjSeq) {
+                    if (app.getCompletedAdjSeq() == mAdjSeq) {
                         applyOomAdjLSP(app, doingAll, now, nowElapsed, oomAdjReason, true);
                     }
                 }
@@ -1144,23 +1143,23 @@ public abstract class OomAdjuster {
                     continue;
                 }
 
-                final ProcessServiceRecord psr = app.mServices;
+                final ProcessServiceRecordInternal psr = app.getServices();
                 // Count the number of process types.
-                switch (state.getCurProcState()) {
+                switch (app.getCurProcState()) {
                     case PROCESS_STATE_CACHED_ACTIVITY:
                     case ActivityManager.PROCESS_STATE_CACHED_ACTIVITY_CLIENT:
                         mNumCachedHiddenProcs++;
                         numCached++;
                         final int connectionGroup = psr.getConnectionGroup();
                         if (connectionGroup != 0) {
-                            if (lastCachedGroupUid == app.info.uid
+                            if (lastCachedGroupUid == app.getApplicationUid()
                                     && lastCachedGroup == connectionGroup) {
                                 // If this process is the next in the same group, we don't
                                 // want it to count against our limit of the number of cached
                                 // processes, so bump up the group count to account for it.
                                 numCachedExtraGroup++;
                             } else {
-                                lastCachedGroupUid = app.info.uid;
+                                lastCachedGroupUid = app.getApplicationUid();
                                 lastCachedGroup = connectionGroup;
                             }
                         } else {
@@ -1228,7 +1227,7 @@ public abstract class OomAdjuster {
                     updateAppUidRecLSP(app);
                 }
 
-                if (state.getCurProcState() >= ActivityManager.PROCESS_STATE_HOME
+                if (app.getCurProcState() >= ActivityManager.PROCESS_STATE_HOME
                         && !app.isKilledByAm()) {
                     numTrimming++;
                 }
@@ -1239,7 +1238,7 @@ public abstract class OomAdjuster {
             // We need to apply the update starting from the least recently used.
             // Otherwise, they won't be in the correct LRU order in LMKD.
             for (int i = 0; i < numLru; i++) {
-                ProcessRecord app = lruList.get(i);
+                final ProcessRecord app = lruList.get(i);
                 // We don't need to apply the update for the process which didn't get computed
                 if (!app.isKilledByAm() && app.isProcessRunning()
                         && app.getCompletedAdjSeq() == mAdjSeq) {
@@ -2392,7 +2391,7 @@ public abstract class OomAdjuster {
     @GuardedBy({"mService", "mProcLock"})
     private void maybeUpdateUsageStatsLSP(ProcessRecordInternal app, long nowElapsed) {
         if (DEBUG_USAGE_STATS) {
-            Slog.d(TAG, "Checking proc [" + Arrays.toString(app.getPackageList())
+            Slog.d(TAG, "Checking proc [" + Arrays.toString(app.getProcessPackageNames())
                     + "] state changes: old = " + app.getSetProcState() + ", new = "
                     + app.getCurProcState());
         }
@@ -2430,7 +2429,7 @@ public abstract class OomAdjuster {
                 && (!app.getHasReportedInteraction()
                     || (nowElapsed - app.getInteractionEventTime()) > interactionThreshold)) {
             app.setInteractionEventTime(nowElapsed);
-            String[] packages = app.getPackageList();
+            final String[] packages = app.getProcessPackageNames();
             if (packages != null) {
                 for (int i = 0; i < packages.length; i++) {
                     mService.mUsageStatsService.reportEvent(packages[i], app.userId,

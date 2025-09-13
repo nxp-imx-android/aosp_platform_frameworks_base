@@ -39,6 +39,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.UserHandle;
 import android.util.ArraySet;
+import android.util.Pair;
 import android.util.Slog;
 import android.view.Display;
 import android.window.DisplayWindowPolicyController;
@@ -85,8 +86,14 @@ class GenericWindowPolicyController extends DisplayWindowPolicyController {
         /** Returns true when an intent should be intercepted */
         boolean shouldInterceptIntent(@NonNull Intent intent);
 
-        /** Called when the set of running apps on this display changes. */
-        void onRunningAppsChanged(int displayId, @NonNull ArraySet<Integer> runningUids);
+        /**
+         * Called when the set of running apps on this display changes.
+         *
+         * @param uidPackagePairs Set of pairs of UID and package name corresponding to all
+         *   activities currently present on the display.
+         */
+        void onRunningAppsChanged(int displayId,
+                @NonNull ArraySet<Pair<Integer, String>> uidPackagePairs);
     }
 
     /**
@@ -126,7 +133,7 @@ class GenericWindowPolicyController extends DisplayWindowPolicyController {
 
     @NonNull
     @GuardedBy("mGenericWindowPolicyControllerLock")
-    private final ArraySet<Integer> mRunningUids = new ArraySet<>();
+    private final ArraySet<Pair<Integer, String>> mRunningUidPackagePairs = new ArraySet<>();
     @NonNull private final ActivityListener mActivityListener;
     private final Handler mHandler = new Handler(Looper.getMainLooper());
     @NonNull private final Set<String> mDisplayCategories;
@@ -392,16 +399,17 @@ class GenericWindowPolicyController extends DisplayWindowPolicyController {
     }
 
     @Override
-    public void onRunningAppsChanged(ArraySet<Integer> runningUids) {
+    public void onRunningAppsChanged(ArraySet<Pair<Integer, String>> uidPackagePairs) {
         synchronized (mGenericWindowPolicyControllerLock) {
-            mRunningUids.clear();
-            mRunningUids.addAll(runningUids);
+            mRunningUidPackagePairs.clear();
+            mRunningUidPackagePairs.addAll(uidPackagePairs);
             int displayId = waitAndGetDisplayId();
             if (displayId == INVALID_DISPLAY) {
                 return;
             }
-            mHandler.post(() -> mActivityListener.onRunningAppsChanged(displayId, runningUids));
-            if (mRunningUids.isEmpty()) {
+            mHandler.post(() ->
+                    mActivityListener.onRunningAppsChanged(displayId, uidPackagePairs));
+            if (mRunningUidPackagePairs.isEmpty()) {
                 mHandler.post(() -> mActivityListener.onDisplayEmpty(displayId));
             }
         }
@@ -424,8 +432,13 @@ class GenericWindowPolicyController extends DisplayWindowPolicyController {
      */
     boolean containsUid(int uid) {
         synchronized (mGenericWindowPolicyControllerLock) {
-            return mRunningUids.contains(uid);
+            for (int i = 0; i < mRunningUidPackagePairs.size(); ++i) {
+                if (mRunningUidPackagePairs.valueAt(i).first == uid) {
+                    return true;
+                }
+            }
         }
+        return false;
     }
 
     private boolean activityMatchesDisplayCategory(ActivityInfo activityInfo) {

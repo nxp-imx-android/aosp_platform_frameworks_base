@@ -37,6 +37,7 @@ import com.android.wm.shell.desktopmode.data.persistence.DesktopRepositoryState
 import com.android.wm.shell.desktopmode.data.persistence.DesktopTask
 import com.android.wm.shell.desktopmode.data.persistence.DesktopTaskState
 import com.android.wm.shell.desktopmode.data.persistence.DesktopTaskTilingState
+import com.android.wm.shell.desktopmode.data.persistence.PreservedDisplay
 import com.android.wm.shell.shared.desktopmode.FakeDesktopConfig
 import com.android.wm.shell.shared.desktopmode.FakeDesktopState
 import com.android.wm.shell.sysui.ShellController
@@ -386,7 +387,9 @@ class DesktopRepositoryInitializerTest : ShellTestCase() {
             assertThat(
                     desktopUserRepositories
                         .getProfile(USER_ID_1)
-                        .getPreservedDeskIds(UNIQUE_DISPLAY_ID)
+                        .removePreservedDisplay(UNIQUE_DISPLAY_ID)
+                        ?.orderedDesks
+                        ?.map { desk -> desk.deskId }
                 )
                 .containsExactly(DESKTOP_ID_4)
         }
@@ -421,7 +424,78 @@ class DesktopRepositoryInitializerTest : ShellTestCase() {
             assertThat(
                     desktopUserRepositories
                         .getProfile(USER_ID_1)
-                        .getPreservedDeskIds(UNIQUE_DISPLAY_ID)
+                        .removePreservedDisplay(UNIQUE_DISPLAY_ID)
+                        ?.orderedDesks
+                        ?.map { desk -> desk.deskId }
+                )
+                .containsExactly(DESKTOP_ID_4)
+        }
+
+    @Test
+    @EnableFlags(
+        FLAG_ENABLE_DESKTOP_WINDOWING_PERSISTENCE,
+        FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
+        FLAG_ENABLE_EXTERNAL_DISPLAY_PERSISTENCE_BUGFIX,
+    )
+    fun initWithPersistence_preservedDisplayPresent_initializesAsDesk() =
+        runTest(StandardTestDispatcher()) {
+            desktopState.overrideDesktopModeSupportPerDisplay[DEFAULT_DISPLAY] = true
+            whenever(persistentRepository.getUserDesktopRepositoryMap())
+                .thenReturn(mapOf(USER_ID_1 to desktopRepositoryState4))
+            whenever(persistentRepository.getDesktopRepositoryState(USER_ID_1))
+                .thenReturn(desktopRepositoryState4)
+            whenever(persistentRepository.readDesktop(USER_ID_1, DESKTOP_ID_4)).thenReturn(desktop4)
+            whenever(displayController.getAllDisplaysByUniqueId())
+                .thenReturn(mapOf(UNIQUE_DISPLAY_ID to SECOND_DISPLAY_ON_REBOOT))
+            whenever(displayController.getDisplayIdByUniqueIdBlocking(UNIQUE_DISPLAY_ID))
+                .thenReturn(SECOND_DISPLAY_ON_REBOOT)
+
+            repositoryInitializer.initialize(desktopUserRepositories)
+
+            assertThat(
+                    desktopUserRepositories
+                        .getProfile(USER_ID_1)
+                        .getActiveTaskIdsInDesk(DESKTOP_ID_4)
+                )
+                .containsExactly(7, 8)
+            assertThat(
+                    desktopUserRepositories
+                        .getProfile(USER_ID_1)
+                        .removePreservedDisplay(UNIQUE_DISPLAY_ID)
+                )
+                .isNull()
+        }
+
+    @Test
+    @EnableFlags(
+        FLAG_ENABLE_DESKTOP_WINDOWING_PERSISTENCE,
+        FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
+        FLAG_ENABLE_EXTERNAL_DISPLAY_PERSISTENCE_BUGFIX,
+    )
+    fun initWithPersistence_preservedDisplayNotPresent_preservedAgain() =
+        runTest(StandardTestDispatcher()) {
+            desktopState.overrideDesktopModeSupportPerDisplay[DEFAULT_DISPLAY] = true
+            whenever(persistentRepository.getUserDesktopRepositoryMap())
+                .thenReturn(mapOf(USER_ID_1 to desktopRepositoryState4))
+            whenever(persistentRepository.getDesktopRepositoryState(USER_ID_1))
+                .thenReturn(desktopRepositoryState4)
+            whenever(displayController.getDisplayIdByUniqueIdBlocking(UNIQUE_DISPLAY_ID))
+                .thenReturn(INVALID_DISPLAY)
+
+            repositoryInitializer.initialize(desktopUserRepositories)
+
+            assertThat(
+                    desktopUserRepositories
+                        .getProfile(USER_ID_1)
+                        .getActiveTaskIdsInDesk(DESKTOP_ID_4)
+                )
+                .isEmpty()
+            assertThat(
+                    desktopUserRepositories
+                        .getProfile(USER_ID_1)
+                        .removePreservedDisplay(UNIQUE_DISPLAY_ID)
+                        ?.orderedDesks
+                        ?.map { desk -> desk.deskId }
                 )
                 .containsExactly(DESKTOP_ID_4)
         }
@@ -527,6 +601,11 @@ class DesktopRepositoryInitializerTest : ShellTestCase() {
                         .build(),
                 )
                 .build()
+        val preservedDisplay1 =
+            PreservedDisplay.newBuilder()
+                .putPreservedDesktop(DESKTOP_ID_4, desktop4)
+                .setActiveDeskId(DESKTOP_ID_4)
+                .build()
         val desktopRepositoryState1: DesktopRepositoryState =
             DesktopRepositoryState.newBuilder()
                 .putDesktop(DESKTOP_ID_1, desktop1)
@@ -536,5 +615,9 @@ class DesktopRepositoryInitializerTest : ShellTestCase() {
             DesktopRepositoryState.newBuilder().putDesktop(DESKTOP_ID_3, desktop3).build()
         val desktopRepositoryState3: DesktopRepositoryState =
             DesktopRepositoryState.newBuilder().putDesktop(DESKTOP_ID_4, desktop4).build()
+        val desktopRepositoryState4: DesktopRepositoryState =
+            DesktopRepositoryState.newBuilder()
+                .putPreservedDisplayByUniqueId(UNIQUE_DISPLAY_ID, preservedDisplay1)
+                .build()
     }
 }

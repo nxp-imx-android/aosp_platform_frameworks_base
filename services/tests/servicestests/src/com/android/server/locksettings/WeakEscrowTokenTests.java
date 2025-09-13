@@ -58,6 +58,7 @@ public class WeakEscrowTokenTests extends BaseLockSettingsServiceTests{
     @Before
     public void setUp() {
         mService.initializeSyntheticPassword(PRIMARY_USER_ID);
+        mService.initializeSyntheticPassword(MANAGED_PROFILE_USER_ID);
     }
 
     @Test

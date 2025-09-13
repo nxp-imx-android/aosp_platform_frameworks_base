@@ -282,7 +282,7 @@ public abstract class ProcessRecordInternal {
     public abstract void notifyTopProcChanged();
 
     /** Returns an array of package names associated with this process. */
-    public abstract String[] getPackageList();
+    public abstract String[] getProcessPackageNames();
 
     /** Returns a short string representation of the process. */
     public abstract String toShortString();
@@ -836,9 +836,17 @@ public abstract class ProcessRecordInternal {
     @GuardedBy("mProcLock")
     private int mRenderThreadTid;
 
+    /** Class to run on start if this is a special isolated process. */
+    @GuardedBy("mServiceLock")
+    private String mIsolatedEntryPoint;
+
     /** Process is waiting to be killed when in the bg, and reason. */
     @GuardedBy("mServiceLock")
     private String mWaitingToKill;
+
+    /** For managing the LRU list. */
+    @CompositeRWLock({"mServiceLock", "mProcLock"})
+    private long mLastActivityTime;
 
     // TODO(b/425766486): Change to package-private after the OomAdjusterImpl class is moved to
     //                    the psc package.
@@ -1820,6 +1828,16 @@ public abstract class ProcessRecordInternal {
     }
 
     @GuardedBy("mServiceLock")
+    public String getIsolatedEntryPoint() {
+        return mIsolatedEntryPoint;
+    }
+
+    @GuardedBy("mServiceLock")
+    public void setIsolatedEntryPoint(String isolatedEntryPoint) {
+        mIsolatedEntryPoint = isolatedEntryPoint;
+    }
+
+    @GuardedBy("mServiceLock")
     public String getWaitingToKill() {
         return mWaitingToKill;
     }
@@ -1827,6 +1845,16 @@ public abstract class ProcessRecordInternal {
     @GuardedBy("mServiceLock")
     public void setWaitingToKill(String waitingToKill) {
         mWaitingToKill = waitingToKill;
+    }
+
+    @GuardedBy(anyOf = {"mServiceLock", "mProcLock"})
+    public long getLastActivityTime() {
+        return mLastActivityTime;
+    }
+
+    @GuardedBy({"mServiceLock", "mProcLock"})
+    public void setLastActivityTime(long lastActivityTime) {
+        mLastActivityTime = lastActivityTime;
     }
 
     @GuardedBy("mProcLock")

@@ -36,7 +36,6 @@ import android.widget.TextView;
 
 import com.android.internal.R;
 import com.android.internal.view.menu.MenuBuilder;
-import com.android.window.flags.Flags;
 
 /**
  * @hide
@@ -338,9 +337,7 @@ public class ActionBarContextView extends AbsActionBarView {
         final int verticalPadding = getPaddingTop() + getPaddingBottom();
         final int externalVerticalPadding = Math.max(0, verticalPadding - mInternalVerticalPadding);
         final int maxHeight = mContentHeight > 0
-                ? Flags.actionModeEdgeToEdge()
-                        ? mContentHeight + externalVerticalPadding
-                        : mContentHeight
+                ? mContentHeight + externalVerticalPadding
                 : MeasureSpec.getSize(heightMeasureSpec);
         final int height = maxHeight - verticalPadding;
         final int childSpecHeight = MeasureSpec.makeMeasureSpec(height, MeasureSpec.AT_MOST);

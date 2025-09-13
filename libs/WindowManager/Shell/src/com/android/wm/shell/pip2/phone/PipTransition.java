@@ -450,6 +450,11 @@ public class PipTransition extends PipTransitionController implements
     }
 
     @Override
+    public boolean requestHasPipEnter(@NonNull TransitionRequestInfo request) {
+        return request.getType() == TRANSIT_PIP || request.getPipChange() != null;
+    }
+
+    @Override
     public boolean isEnteringPip(@NonNull TransitionInfo.Change change,
             @WindowManager.TransitionType int transitType) {
         if (mPipTransitionState.getState() == PipTransitionState.SCHEDULED_ENTER_PIP

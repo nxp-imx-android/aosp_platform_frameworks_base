@@ -15,10 +15,20 @@ enum DesktopTaskTilingState {
   RIGHT = 3;
 }
 
+message Rect {
+  optional int32 left = 1;
+  optional int32 top = 2;
+  optional int32 right = 3;
+  optional int32 bottom = 4;
+}
+
 message DesktopTask {
   optional int32 task_id = 1;
   optional DesktopTaskState desktop_task_state= 2;
   optional DesktopTaskTilingState desktop_task_tiling_state = 3;
+  // Tracks task bounds; used primarily for display restore functionality as
+  // core will restore task bounds to the task itself on boot.
+  optional Rect task_bounds = 4;
 }
 
 message Desktop {
@@ -30,11 +40,19 @@ message Desktop {
   optional string unique_display_id = 5;
 }
 
+message PreservedDisplay {
+  // Stores a mapping between a preserved display and its desktops. The key is the desktop id.
+  map<int32, Desktop> preserved_desktop = 1;
+  optional int32 active_desk_id = 2;
+}
+
 message DesktopRepositoryState {
   // Stores a mapping between a repository and the desktops in it. The key is the desktop id.
   map<int32, Desktop> desktop = 1;
   // Stores a mapping of the active desk id associated with each display.
   map<string, int32> active_desk_by_unique_display_id = 2;
+  // Stores a mapping of preserved displays by their unique display id.
+  map<string, PreservedDisplay> preserved_display_by_unique_id = 3;
 }
 
 message DesktopPersistentRepositories {

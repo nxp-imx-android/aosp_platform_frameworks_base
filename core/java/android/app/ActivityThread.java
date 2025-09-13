@@ -195,6 +195,7 @@ import android.system.ErrnoException;
 import android.telephony.TelephonyFrameworkInitializer;
 import android.util.AndroidRuntimeException;
 import android.util.ArrayMap;
+import android.util.ArraySet;
 import android.util.DisplayMetrics;
 import android.util.EventLog;
 import android.util.Log;
@@ -246,7 +247,6 @@ import com.android.internal.os.BackgroundThread;
 import com.android.internal.os.BinderCallsStats;
 import com.android.internal.os.BinderInternal;
 import com.android.internal.os.DebugStore;
-import com.android.internal.os.JniStringCache;
 import com.android.internal.os.RuntimeInit;
 import com.android.internal.os.SafeZipPathValidatorCallback;
 import com.android.internal.os.SomeArgs;
@@ -295,6 +295,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.TimeZone;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -1954,7 +1955,6 @@ public final class ActivityThread extends ClientTransactionHandler
             }
 
             pw.println(" ");
-            JniStringCache.dump(pw);
         }
 
         @NeverCompile
@@ -7132,8 +7132,8 @@ public final class ActivityThread extends ClientTransactionHandler
             return;
         }
         mLastReportedDeviceId = deviceId;
-        ArrayList<Context> nonUIContexts = new ArrayList<>();
-        // Update Application and Service contexts with implicit device association.
+        final Set<Context> nonUIContexts = new ArraySet<>();
+        // Update non UI contexts with implicit device association.
         // UI Contexts are able to derived their device Id association from the display.
         synchronized (mResourcesManager) {
             final int numApps = mAllApplications.size();
@@ -7149,6 +7149,13 @@ public final class ActivityThread extends ClientTransactionHandler
                 }
             }
         }
+        synchronized (mProviderMap) {
+            final int numContentProviders = mLocalProviders.size();
+            for (int i = 0; i < numContentProviders; i++) {
+                nonUIContexts.add(mLocalProviders.valueAt(i).mLocalProvider.getContext());
+            }
+        }
+
         for (Context context : nonUIContexts) {
             try {
                 context.updateDeviceId(deviceId);
@@ -7692,10 +7699,6 @@ public final class ActivityThread extends ClientTransactionHandler
             Trace.traceBegin(Trace.TRACE_TAG_ACTIVITY_MANAGER, "trimMemory: " + level);
         }
         if (DEBUG_MEMORY_TRIM) Slog.v(TAG, "Trimming memory to level: " + level);
-
-        if (level >= ComponentCallbacks2.TRIM_MEMORY_BACKGROUND) {
-            JniStringCache.clear();
-        }
 
         try {
             if (skipBgMemTrimOnFgApp()

@@ -258,7 +258,6 @@ cc_defaults_for_libandroid_runtime {
                 "com_android_internal_os_ClassLoaderFactory.cpp",
                 "com_android_internal_os_DebugStore.cpp",
                 "com_android_internal_os_FuseAppLoop.cpp",
-                "com_android_internal_os_JniStringCache.cpp",
                 "com_android_internal_os_KernelAllocationStats.cpp",
                 "com_android_internal_os_KernelCpuBpfTracking.cpp",
                 "com_android_internal_os_KernelCpuTotalBpfMapReader.cpp",

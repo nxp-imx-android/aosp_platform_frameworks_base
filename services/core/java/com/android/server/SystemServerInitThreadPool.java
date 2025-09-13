@@ -74,7 +74,7 @@ public final class SystemServerInitThreadPool implements Dumpable {
                 "system-server-init-thread", Process.THREAD_PRIORITY_FOREGROUND);
     }
 
-    private static SystemServerInitThreadPool getInstance() {
+    static SystemServerInitThreadPool getInstance() {
         SystemServerInitThreadPool instance;
         synchronized (LOCK) {
             Preconditions.checkState(sInstance != null, "Cannot get " + TAG
@@ -144,13 +144,11 @@ public final class SystemServerInitThreadPool implements Dumpable {
      *
      * @throws IllegalStateException if it has been started already without being shut down yet.
      */
-    static SystemServerInitThreadPool start() {
-        SystemServerInitThreadPool instance;
+    static void start() {
         synchronized (LOCK) {
             Preconditions.checkState(sInstance == null, TAG + " already started");
-            instance = sInstance = new SystemServerInitThreadPool();
+            sInstance = new SystemServerInitThreadPool();
         }
-        return instance;
     }
 
     /**

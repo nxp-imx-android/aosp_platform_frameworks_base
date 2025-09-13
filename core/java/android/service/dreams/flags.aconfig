@@ -140,3 +140,24 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "wake_on_stopping_doze"
+    namespace: "systemui"
+    description: "Sends a wakeUp when explicitly stopping the doze dream"
+    bug: "298073718"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+
+flag {
+    name: "dream_overlay_started_fix"
+    namespace: "systemui"
+    description: "Guards fix for the lifetime of when the dream is considered started"
+    bug: "432039567"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}

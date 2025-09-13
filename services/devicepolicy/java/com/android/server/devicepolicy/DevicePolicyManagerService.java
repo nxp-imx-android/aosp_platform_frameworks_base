@@ -255,6 +255,7 @@ import static com.android.server.devicepolicy.DevicePolicyStatsLog.DEVICE_POLICY
 import static com.android.server.devicepolicy.DevicePolicyStatsLog.DEVICE_POLICY_STATE__PASSWORD_COMPLEXITY__COMPLEXITY_NONE;
 import static com.android.server.devicepolicy.DevicePolicyStatsLog.DEVICE_POLICY_STATE__PASSWORD_COMPLEXITY__COMPLEXITY_UNSPECIFIED;
 import static com.android.server.devicepolicy.PolicyDefinition.CROSS_PROFILE_WIDGET_PROVIDER;
+import static com.android.server.devicepolicy.PolicyDefinition.KEYGUARD_DISABLED_FEATURES;
 import static com.android.server.devicepolicy.TransferOwnershipMetadataManager.ADMIN_TYPE_DEVICE_OWNER;
 import static com.android.server.devicepolicy.TransferOwnershipMetadataManager.ADMIN_TYPE_PROFILE_OWNER;
 import static com.android.server.pm.PackageManagerService.PLATFORM_PACKAGE_NAME;
@@ -3872,11 +3873,11 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
                 // Update user switcher message to activity manager.
                 ActivityManagerInternal activityManagerInternal =
                         mInjector.getActivityManagerInternal();
-                int deviceOwnerUserId = UserHandle.getUserId(deviceOwner.getUid());
-                activityManagerInternal.setSwitchingFromUserMessage(deviceOwnerUserId,
-                        deviceOwner.startUserSessionMessage);
-                activityManagerInternal.setSwitchingToUserMessage(deviceOwnerUserId,
-                        deviceOwner.endUserSessionMessage);
+                int sessionMessageUserId = getSessionMessageTargetUserIdLocked(deviceOwner);
+                activityManagerInternal.setSwitchingFromUserMessage(
+                        sessionMessageUserId, deviceOwner.startUserSessionMessage);
+                activityManagerInternal.setSwitchingToUserMessage(
+                        sessionMessageUserId, deviceOwner.endUserSessionMessage);
             }
 
             revertTransferOwnershipIfNecessaryLocked();
@@ -4864,8 +4865,13 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
     private <V> V getResolvedPolicyForUserAndItsManagedProfiles(
             PolicyDefinition<V> policyDefinition, int userHandle,
             Predicate<UserInfo> shouldIncludeProfile) {
-        List<Integer> users = new ArrayList<>();
+        List<Integer> users = getUserAndItsManagedProfiles(userHandle, shouldIncludeProfile);
+        return mDevicePolicyEngine.getResolvedPolicyAcrossUsers(policyDefinition, users);
+    }
 
+    private List<Integer> getUserAndItsManagedProfiles(int userHandle,
+            Predicate<UserInfo> shouldIncludeProfile) {
+        List<Integer> users = new ArrayList<>();
         mInjector.binderWithCleanCallingIdentity(() -> {
             for (UserInfo userInfo : mUserManager.getProfiles(userHandle)) {
                 if (userInfo.id == userHandle) {
@@ -4875,7 +4881,7 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
                 }
             }
         });
-        return mDevicePolicyEngine.getResolvedPolicyAcrossUsers(policyDefinition, users);
+        return users;
     }
 
     private boolean isSeparateProfileChallengeEnabled(int userHandle) {
@@ -9575,15 +9581,10 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
         synchronized (getLockObject()) {
             final Intent intent = new Intent(DeviceAdminReceiver.ACTION_BUGREPORT_SHARE);
             final int deviceOwnerUserId = mOwners.getDeviceOwnerUserId();
-            final Uri bugreportUriForUser;
 
-            if (Flags.fixHsumBugreportShareCrash()) {
-                // Bugreports are collected by the shell, which runs as UserHandle.USER_SYSTEM.
-                bugreportUriForUser = ContentProvider.createContentUriForUser(
+            // Bugreports are collected by the shell, which runs as UserHandle.USER_SYSTEM.
+            final Uri bugreportUriForUser = ContentProvider.createContentUriForUser(
                         bugreportUri, UserHandle.of(UserHandle.USER_SYSTEM));
-            } else {
-                bugreportUriForUser = bugreportUri;
-            }
 
             intent.setComponent(mOwners.getDeviceOwnerComponent());
             intent.setDataAndType(bugreportUriForUser, RemoteBugreportManager.BUGREPORT_MIMETYPE);
@@ -16875,9 +16876,18 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
                                 + "instead.");
             }
 
-            Set<EnforcingAdmin> admins =
-                    mDevicePolicyEngine.getEnforcingAdminsForResolvedPolicy(policyDefinition,
-                            userId);
+            Set<EnforcingAdmin> admins;
+
+            // Lockscreen policies have special case where a policy that's set on managed profile
+            // shows effect on its parent. This case needs to be included in enforcing admins
+            // list to ensure coverage on policy transparency.
+            if (isLockScreenPolicy(policyDefinition)) {
+                admins = getLockScreenPolicyEnforcingAdmins(policyDefinition, userId);
+            } else {
+                admins = new HashSet<>(
+                        mDevicePolicyEngine.getEnforcingAdminsForResolvedPolicy(policyDefinition,
+                                userId));
+            }
 
             // The user restrictions that are set by the admins are already included in the
             // EnforcingAdmin set that DevicePolicyEngine returns in the previous line.
@@ -16940,6 +16950,35 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
                     admin.getUserHandle().getIdentifier()).getParcelableAdmin();
         }
         return null;
+    }
+
+    /**
+     * Lock screen policies can have a different handling as managed profile's policies will take
+     * effect on the parent user if the managed profile has a unified challenge with parent. This
+     * can only happen for lockscreen policies (currently only {@link KEYGUARD_DISABLED_FEATURES})
+     * where this is allowed.
+     */
+    private <V> boolean isLockScreenPolicy(@NonNull PolicyDefinition<V> policyDefinition) {
+        // TODO(414733570): Add password policies to this list as they apply on lockscreen as well.
+        return policyDefinition.equals(KEYGUARD_DISABLED_FEATURES);
+    }
+
+    /**
+     * For lock screen policies, managed profile's policies will take effect on the parent user if
+     * the managed profile has a unified challenge with parent. This method returns the set of
+     * enforcing admins from managed profile in that case. If there's no such policy from
+     * managed profiles or the parent profile, it'll return empty set.
+     */
+    @NonNull
+    private <V> Set<EnforcingAdmin> getLockScreenPolicyEnforcingAdmins(
+            PolicyDefinition<V> definition, int userId) {
+        Set<EnforcingAdmin> admins = new HashSet<>();
+        for (int profileUserId : getUserAndItsManagedProfiles(userId,
+                (user) -> mLockPatternUtils.isProfileWithUnifiedChallenge(user.id))) {
+            admins.addAll(mDevicePolicyEngine.getEnforcingAdminsForResolvedPolicy(definition,
+                    profileUserId));
+        }
+        return admins;
     }
 
 
@@ -20253,6 +20292,7 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
         final String startUserSessionMessageString =
                 startUserSessionMessage != null ? startUserSessionMessage.toString() : null;
 
+        int targetUserId;
         synchronized (getLockObject()) {
             final ActiveAdmin deviceOwner = getDeviceOwnerAdminLocked();
             if (TextUtils.equals(deviceOwner.startUserSessionMessage, startUserSessionMessage)) {
@@ -20260,10 +20300,11 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
             }
             deviceOwner.startUserSessionMessage = startUserSessionMessageString;
             saveSettingsLocked(caller.getUserId());
+            targetUserId = getSessionMessageTargetUserIdLocked(deviceOwner);
         }
 
         mInjector.getActivityManagerInternal()
-                .setSwitchingFromUserMessage(caller.getUserId(), startUserSessionMessageString);
+                .setSwitchingFromUserMessage(targetUserId, startUserSessionMessageString);
     }
 
     @Override
@@ -20278,6 +20319,7 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
         final String endUserSessionMessageString =
                 endUserSessionMessage != null ? endUserSessionMessage.toString() : null;
 
+        int targetUserId;
         synchronized (getLockObject()) {
             final ActiveAdmin deviceOwner = getDeviceOwnerAdminLocked();
             if (TextUtils.equals(deviceOwner.endUserSessionMessage, endUserSessionMessage)) {
@@ -20285,10 +20327,27 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
             }
             deviceOwner.endUserSessionMessage = endUserSessionMessageString;
             saveSettingsLocked(caller.getUserId());
+            targetUserId = getSessionMessageTargetUserIdLocked(deviceOwner);
         }
 
         mInjector.getActivityManagerInternal()
-                .setSwitchingToUserMessage(caller.getUserId(), endUserSessionMessageString);
+                .setSwitchingToUserMessage(targetUserId, endUserSessionMessageString);
+    }
+
+    /**
+     * Returns id of the main human user managed by the device owner.
+     */
+    @GuardedBy("getLockObject()")
+    private @UserIdInt int getSessionMessageTargetUserIdLocked(ActiveAdmin deviceOwner) {
+        if (mInjector.userManagerIsHeadlessSystemUserMode()
+                && deviceOwner.info.getHeadlessDeviceOwnerMode()
+                        == HEADLESS_DEVICE_OWNER_MODE_AFFILIATED) {
+            // TODO: This won't work on main-less devices, will return USER_SYSTEM.
+            // Maybe we can assume there is only one admin user?
+            return getMainUserId();
+        } else {
+            return deviceOwner.getUserHandle().getIdentifier();
+        }
     }
 
     @Override

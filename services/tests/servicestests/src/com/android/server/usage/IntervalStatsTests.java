@@ -16,6 +16,10 @@
 package com.android.server.usage;
 
 import static android.app.usage.UsageEvents.Event.MAX_EVENT_TYPE;
+import static android.app.usage.UsageEvents.Event.USER_INTERACTION;
+import static android.appwidget.flags.Flags.FLAG_ENGAGEMENT_METRICS;
+
+import static com.android.server.usage.PackagesTokenData.UNASSIGNED_TOKEN;
 
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.Truth.assertWithMessage;
@@ -25,24 +29,36 @@ import android.app.usage.UsageEvents;
 import android.app.usage.UsageStatsManager;
 import android.content.res.Configuration;
 import android.os.PersistableBundle;
+import android.platform.test.annotations.RequiresFlagsEnabled;
+import android.platform.test.flag.junit.CheckFlagsRule;
+import android.platform.test.flag.junit.DeviceFlagsValueProvider;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SmallTest;
 
 import com.android.internal.util.ArrayUtils;
 
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.io.ByteArrayInputStream;
 import java.lang.reflect.Field;
+import java.util.Arrays;
 import java.util.Locale;
 
 @RunWith(AndroidJUnit4.class)
 @SmallTest
 public final class IntervalStatsTests {
+    @Rule
+    public final CheckFlagsRule mCheckFlagsRule = DeviceFlagsValueProvider.createCheckFlagsRule();
+
     private static final int NUMBER_OF_PACKAGES = 7;
     private static final int NUMBER_OF_EVENTS_PER_PACKAGE = 200;
     private static final int NUMBER_OF_EVENTS = NUMBER_OF_PACKAGES * NUMBER_OF_EVENTS_PER_PACKAGE;
+    private static final String EXTRA_KEY_INT_ARRAY = "com.example.extra.int_array";
+    private static final String EXTRA_KEY_STRING = "com.example.extra.string";
+    private static final String EXTRA_KEY_BUNDLE = "com.example.extra.bundle";
 
     private void populateIntervalStats(IntervalStats intervalStats) {
         final int timeProgression = 23;
@@ -101,11 +117,17 @@ public final class IntervalStatsTests {
                 case UsageEvents.Event.USER_INTERACTION:
                     if (Flags.userInteractionTypeApi()) {
                         // "random" user interaction extras.
-                        PersistableBundle extras = new PersistableBundle();
+                        final PersistableBundle extras = new PersistableBundle();
                         extras.putString(UsageStatsManager.EXTRA_EVENT_CATEGORY,
                                 "fake.namespace.category" + (i % 13));
                         extras.putString(UsageStatsManager.EXTRA_EVENT_ACTION,
                                 "fakeaction" + (i % 13));
+                        extras.putIntArray(EXTRA_KEY_INT_ARRAY,
+                            new int[]{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10});
+                        final char[] longString = new char[256];
+                        Arrays.fill(longString, 'a');
+                        extras.putString(EXTRA_KEY_STRING, new String(longString));
+                        extras.putPersistableBundle(EXTRA_KEY_BUNDLE, new PersistableBundle());
                         event.mExtras = extras;
                     }
                     break;
@@ -167,6 +189,82 @@ public final class IntervalStatsTests {
         assertThat(intervalStats.packageStats.size()).isEqualTo(NUMBER_OF_PACKAGES);
     }
 
+    @RequiresFlagsEnabled(FLAG_ENGAGEMENT_METRICS)
+    @Test
+    public void testObfuscation_userInteractionExtras() throws Exception {
+        final IntervalStats intervalStats = new IntervalStats();
+        populateIntervalStats(intervalStats);
+
+        final PackagesTokenData packagesTokenData = new PackagesTokenData();
+        intervalStats.obfuscateData(packagesTokenData);
+
+        // validate user interaction extras
+        for (int i = 0; i < intervalStats.events.size(); i++) {
+            UsageEvents.Event event = intervalStats.events.get(i);
+            if (event.mEventType != USER_INTERACTION) continue;
+            assertThat(event.mUserInteractionExtrasToken).isNotNull();
+            assertThat(event.mUserInteractionExtrasToken.mActionToken).isNotEqualTo(
+                UNASSIGNED_TOKEN);
+            assertThat(event.mUserInteractionExtrasToken.mCategoryToken).isNotEqualTo(
+                UNASSIGNED_TOKEN);
+            assertThat(event.mUserInteractionExtrasToken.mTokenizedExtras).isNotNull();
+            PersistableBundle tokenizedExtras = PersistableBundle.readFromStream(
+                new ByteArrayInputStream(event.mUserInteractionExtrasToken.mTokenizedExtras));
+            // Bundle key should be omitted from tokenized extras.
+            assertThat(tokenizedExtras.size()).isEqualTo(2);
+            int packageToken = packagesTokenData.getPackageTokenOrAdd(event.getPackageName(),
+                System.currentTimeMillis());
+            for (String keyToken : tokenizedExtras.keySet()) {
+                String key = packagesTokenData.getString(packageToken, Integer.parseInt(keyToken));
+                assertThat(key).isNotNull();
+                switch (key) {
+                    case EXTRA_KEY_INT_ARRAY:
+                        // int array is truncated
+                        assertThat(tokenizedExtras.getIntArray(keyToken)).hasLength(10);
+                        break;
+                    case EXTRA_KEY_STRING:
+                        // String is truncated
+                        assertThat(tokenizedExtras.getString(keyToken)).hasLength(127);
+                        break;
+                    default:
+                        throw new Exception("Unexpected key " + key + " in tokenized extras");
+                }
+            }
+        }
+    }
+
+    @RequiresFlagsEnabled(FLAG_ENGAGEMENT_METRICS)
+    @Test
+    public void testDeobfuscation_userInteractionExtras() throws Exception {
+        final IntervalStats intervalStats = new IntervalStats();
+        populateIntervalStats(intervalStats);
+
+        final PackagesTokenData packagesTokenData = new PackagesTokenData();
+        intervalStats.obfuscateData(packagesTokenData);
+        intervalStats.deobfuscateData(packagesTokenData);
+
+        // verify user interaction extras are present after deobfuscation
+        for (int i = 0; i < intervalStats.events.size(); i++) {
+            UsageEvents.Event event = intervalStats.events.get(i);
+            if (event.mEventType != USER_INTERACTION) continue;
+            assertThat(event.mExtras).isNotNull();
+            PersistableBundle extras = event.mExtras;
+            // Bundle key is omitted
+            assertThat(extras.keySet()).containsExactly(UsageStatsManager.EXTRA_EVENT_CATEGORY,
+                UsageStatsManager.EXTRA_EVENT_ACTION, EXTRA_KEY_INT_ARRAY, EXTRA_KEY_STRING);
+            int[] array = extras.getIntArray(EXTRA_KEY_INT_ARRAY);
+            assertThat(array).hasLength(10);
+            for (int j : array) {
+                assertThat(array[j]).isEqualTo(j);
+            }
+            String string = extras.getString(EXTRA_KEY_STRING);
+            assertThat(string).hasLength(127);
+            for (char c : string.toCharArray()) {
+                assertThat(c).isEqualTo('a');
+            }
+        }
+    }
+
     @Test
     public void testBadDataOnDeobfuscation() {
         final IntervalStats intervalStats = new IntervalStats();
@@ -214,7 +312,8 @@ public final class IntervalStatsTests {
             "packageStats", "configurations", "activeConfiguration", "events"};
     // All fields in this list are defined in IntervalStats but not persisted
     private static final String[] INTERVALSTATS_IGNORED_FIELDS = {"lastTimeSaved",
-            "packageStatsObfuscated", "CURRENT_MAJOR_VERSION", "CURRENT_MINOR_VERSION", "TAG"};
+            "packageStatsObfuscated", "CURRENT_MAJOR_VERSION", "CURRENT_MINOR_VERSION", "TAG",
+            "MAX_EXTRA_ARRAY_LENGTH"};
 
     @Test
     public void testIntervalStatsFieldsAreKnown() {

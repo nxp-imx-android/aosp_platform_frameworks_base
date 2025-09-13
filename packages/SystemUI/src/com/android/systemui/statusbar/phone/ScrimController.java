@@ -540,10 +540,8 @@ public class ScrimController implements ViewTreeObserver.OnPreDrawListener, Dump
                 mBouncerToGoneScrimAlphaConsumer, mMainDispatcher);
 
         // LOCKSCREEN->DREAMING
-        if (Flags.dreamTransitionFixes()) {
-            collectFlow(behindScrim, mLockscreenToDreamingTransitionViewModel.getScrimAlpha(),
-                    mDreamBehindScrimAlphaConsumer, mMainDispatcher);
-        }
+        collectFlow(behindScrim, mLockscreenToDreamingTransitionViewModel.getScrimAlpha(),
+                mDreamBehindScrimAlphaConsumer, mMainDispatcher);
 
         // LOCKSCREEN<->GLANCEABLE_HUB
         collectFlow(

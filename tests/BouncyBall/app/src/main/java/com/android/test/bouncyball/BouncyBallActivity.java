@@ -16,7 +16,9 @@
 
 package com.android.test.bouncyball;
 
+import android.app.Activity;
 import android.hardware.display.DisplayManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Trace;
 import android.util.Log;
@@ -25,11 +27,9 @@ import android.view.Display;
 import android.view.Window;
 import android.view.WindowManager;
 
-import androidx.appcompat.app.AppCompatActivity;
-
 import java.util.concurrent.Executors;
 
-public class BouncyBallActivity extends AppCompatActivity {
+public class BouncyBallActivity extends Activity {
     // Since logging (to logcat) takes system resources, we chose not to log
     // data every frame by default.
     private static final boolean LOG_EVERY_FRAME = false;
@@ -104,7 +104,14 @@ public class BouncyBallActivity extends AppCompatActivity {
                     if (displayId != mDisplayId) {
                         return;
                     }
-                    setFrameRate(getDisplay().getMode().getRefreshRate());
+                    float frameRate = getDisplay().getMode().getRefreshRate();
+                    if (frameRate == mFrameRate) {
+                        // On devices with API level < 36, we might get this
+                        // called for other reasons (like brightness changing).
+                        // We ignore anything but frame rate changes.
+                        return;
+                    }
+                    setFrameRate(frameRate);
                     Log.i(LOG_TAG, "Using frame rate " + mFrameRate + "Hz");
                 }
             };
@@ -172,9 +179,17 @@ public class BouncyBallActivity extends AppCompatActivity {
         setContentView(R.layout.activity_bouncy_ball);
 
         DisplayManager manager = getSystemService(DisplayManager.class);
-        manager.registerDisplayListener(Executors.newSingleThreadExecutor(),
-                                        DisplayManager.EVENT_TYPE_DISPLAY_REFRESH_RATE,
-                                        mDisplayListener);
+        if (Build.VERSION.SDK_INT >= 36) {
+            // We prefer this newer API, introduced at API level 36.
+            manager.registerDisplayListener(Executors.newSingleThreadExecutor(),
+                                            DisplayManager.EVENT_TYPE_DISPLAY_REFRESH_RATE,
+                                            mDisplayListener);
+        } else {
+            // We don't need a separate Handler because our listener logic is
+            // cheap, and for valid tests only gets invoked before we're looking
+            // for dropped frames.
+            manager.registerDisplayListener(mDisplayListener, null);
+        }
 
         initFrameRate();
         mChoreographer = Choreographer.getInstance();
@@ -198,10 +213,15 @@ public class BouncyBallActivity extends AppCompatActivity {
         Display display = getDisplay();
         Display.Mode currentMode = display.getMode();
         mDisplayId = display.getDisplayId();
-        // TODO(b/442635053): Allow switching between NORMAL and HIGH here,
-        //     so we can also test against the HIGH rate.
-        float minimumFrameRate =
+        float minimumFrameRate = MINIMUM_TEST_FRAME_RATE;
+        if (Build.VERSION.SDK_INT >= 36) {
+            // This API wasn't introduced until API level 36, so for testing
+            // on older devices, we'll just stick with our MINIMUM.
+            // TODO(b/442635053): Allow switching between NORMAL and HIGH here,
+            //     so we can also test against the HIGH rate.
+            minimumFrameRate =
                 display.getSuggestedFrameRate(Display.FRAME_RATE_CATEGORY_NORMAL);
+        }
         if (minimumFrameRate < MINIMUM_TEST_FRAME_RATE) {
             Log.w(LOG_TAG, "getSuggestedFrameRate (" + minimumFrameRate
                     + "Hz) is below our testing minimum (" + MINIMUM_TEST_FRAME_RATE

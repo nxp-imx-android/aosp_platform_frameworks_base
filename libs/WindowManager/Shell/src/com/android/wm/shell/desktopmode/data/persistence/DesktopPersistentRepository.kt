@@ -17,6 +17,8 @@
 package com.android.wm.shell.desktopmode.data.persistence
 
 import android.content.Context
+import android.graphics.Rect
+import android.util.ArrayMap
 import android.util.ArraySet
 import android.util.Log
 import android.view.Display.DEFAULT_DISPLAY
@@ -29,6 +31,8 @@ import androidx.datastore.core.handlers.ReplaceFileCorruptionHandler
 import androidx.datastore.dataStoreFile
 import com.android.framework.protobuf.InvalidProtocolBufferException
 import com.android.wm.shell.desktopmode.data.Desk
+import com.android.wm.shell.desktopmode.data.DesktopDisplay
+import com.android.wm.shell.desktopmode.data.persistence.Rect as RectProto
 import com.android.wm.shell.shared.annotations.ShellBackgroundThread
 import java.io.IOException
 import java.io.InputStream
@@ -109,7 +113,12 @@ class DesktopPersistentRepository(private val dataStore: DataStore<DesktopPersis
             null
         }
 
-    suspend fun addOrUpdateRepository(userId: Int, desks: List<Desk>, activeDeskId: Int?) {
+    suspend fun addOrUpdateRepository(
+        userId: Int,
+        desks: List<Desk>,
+        activeDeskId: Int?,
+        preservedDisplays: ArrayMap<String, DesktopDisplay>,
+    ) {
         try {
             dataStore.updateData { persistentRepositories: DesktopPersistentRepositories ->
                 val currentRepository =
@@ -132,6 +141,7 @@ class DesktopPersistentRepository(private val dataStore: DataStore<DesktopPersis
                                     desk.freeformTasksInZOrder,
                                     desk.leftTiledTaskId,
                                     desk.rightTiledTaskId,
+                                    desk.boundsByTaskId,
                                 )
                                 .updateZOrder(desk.freeformTasksInZOrder)
                                 .updateUniqueDisplayId(desk.uniqueDisplayId)
@@ -151,14 +161,15 @@ class DesktopPersistentRepository(private val dataStore: DataStore<DesktopPersis
                         }
                     }
                 }
-                if (
-                    DesktopExperienceFlags.ENABLE_EXTERNAL_DISPLAY_PERSISTENCE_BUGFIX.isTrue &&
-                        activeDeskId == null
-                ) {
-                    desks.first().uniqueDisplayId.let {
-                        currentUserRepoBuilder.removeActiveDeskByUniqueDisplayId(it)
+                if (DesktopExperienceFlags.ENABLE_EXTERNAL_DISPLAY_PERSISTENCE_BUGFIX.isTrue) {
+                    if (activeDeskId == null) {
+                        desks.first().uniqueDisplayId.let {
+                            currentUserRepoBuilder.removeActiveDeskByUniqueDisplayId(it)
+                        }
                     }
+                    addOrUpdatePreservedDisplays(currentUserRepoBuilder, preservedDisplays)
                 }
+
                 persistentRepositories
                     .toBuilder()
                     .putDesktopRepoByUser(userId, currentUserRepoBuilder.build())
@@ -170,6 +181,41 @@ class DesktopPersistentRepository(private val dataStore: DataStore<DesktopPersis
                 "Error in updating desktop mode related data, data is " +
                     "stored in a file named $DESKTOP_REPOSITORIES_DATASTORE_FILE",
                 exception,
+            )
+        }
+    }
+
+    private fun addOrUpdatePreservedDisplays(
+        currentUserRepoBuilder: DesktopRepositoryState.Builder,
+        preservedDisplaysByUniqueId: ArrayMap<String, DesktopDisplay>,
+    ) {
+        currentUserRepoBuilder.clearPreservedDisplayByUniqueId()
+        preservedDisplaysByUniqueId.forEach { preservedDisplay ->
+            val updatedPreservedDisplayBuilder = PreservedDisplay.newBuilder()
+            preservedDisplay.value.activeDeskId?.let {
+                updatedPreservedDisplayBuilder.setActiveDeskId(it)
+            }
+            preservedDisplay.value.orderedDesks.forEach { desk ->
+                val updatedDesktop =
+                    Desktop.newBuilder()
+                        .setDesktopId(desk.deskId)
+                        .setDisplayId(desk.displayId)
+                        .updateTaskStates(
+                            desk.visibleTasks,
+                            desk.minimizedTasks,
+                            desk.freeformTasksInZOrder,
+                            desk.leftTiledTaskId,
+                            desk.rightTiledTaskId,
+                            desk.boundsByTaskId,
+                        )
+                        .updateZOrder(desk.freeformTasksInZOrder)
+                        .updateUniqueDisplayId(desk.uniqueDisplayId)
+                        .build()
+                updatedPreservedDisplayBuilder.putPreservedDesktop(desk.deskId, updatedDesktop)
+            }
+            currentUserRepoBuilder.putPreservedDisplayByUniqueId(
+                preservedDisplay.key,
+                updatedPreservedDisplayBuilder.build(),
             )
         }
     }
@@ -323,6 +369,7 @@ class DesktopPersistentRepository(private val dataStore: DataStore<DesktopPersis
             freeformTasksInZOrder: ArrayList<Int>,
             leftTiledTask: Int?,
             rightTiledTask: Int?,
+            boundsByTaskId: MutableMap<Int, Rect> = mutableMapOf(),
         ): Desktop.Builder {
             clearTasksByTaskId()
 
@@ -343,12 +390,17 @@ class DesktopPersistentRepository(private val dataStore: DataStore<DesktopPersis
                         it,
                         state = DesktopTaskState.VISIBLE,
                         getTilingStateForTask(it, leftTiledTask, rightTiledTask),
+                        bounds = boundsByTaskId[it] ?: Rect(),
                     )
                 }
             )
             putAllTasksByTaskId(
                 minimizedTasks.associateWith {
-                    createDesktopTask(it, state = DesktopTaskState.MINIMIZED)
+                    createDesktopTask(
+                        it,
+                        state = DesktopTaskState.MINIMIZED,
+                        bounds = boundsByTaskId[it] ?: Rect(),
+                    )
                 }
             )
             return this
@@ -386,11 +438,16 @@ class DesktopPersistentRepository(private val dataStore: DataStore<DesktopPersis
             taskId: Int,
             state: DesktopTaskState = DesktopTaskState.VISIBLE,
             tilingState: DesktopTaskTilingState = DesktopTaskTilingState.NONE,
+            bounds: Rect,
         ): DesktopTask =
             DesktopTask.newBuilder()
                 .setTaskId(taskId)
                 .setDesktopTaskState(state)
                 .setDesktopTaskTilingState(tilingState)
+                .setTaskBounds(bounds.toRectProto())
                 .build()
+
+        private fun Rect.toRectProto() =
+            RectProto.newBuilder().setLeft(left).setTop(top).setRight(right).setBottom(bottom)
     }
 }

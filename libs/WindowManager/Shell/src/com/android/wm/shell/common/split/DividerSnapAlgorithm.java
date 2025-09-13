@@ -16,6 +16,7 @@
 
 package com.android.wm.shell.common.split;
 
+import static android.view.Display.DEFAULT_DISPLAY;
 import static android.view.WindowManager.DOCKED_LEFT;
 import static android.view.WindowManager.DOCKED_RIGHT;
 
@@ -31,6 +32,7 @@ import static com.android.wm.shell.shared.split.SplitScreenConstants.SnapPositio
 
 import android.content.res.Resources;
 import android.graphics.Rect;
+import android.window.DesktopExperienceFlags;
 
 import androidx.annotation.Nullable;
 
@@ -139,14 +141,16 @@ public class DividerSnapAlgorithm {
     private MotionSpec mMotionSpec;
 
     public DividerSnapAlgorithm(Resources res, int displayWidth, int displayHeight, int dividerSize,
-            boolean isLeftRightSplit, Rect insets, Rect pinnedTaskbarInsets, int dockSide) {
+            boolean isLeftRightSplit, Rect insets, Rect pinnedTaskbarInsets, int dockSide,
+            int displayId) {
         this(res, displayWidth, displayHeight, dividerSize, isLeftRightSplit, insets,
-                pinnedTaskbarInsets, dockSide, false /* minimized */, true /* resizable */);
+                pinnedTaskbarInsets, dockSide, displayId, false /* minimized */,
+                true /* resizable */);
     }
 
     public DividerSnapAlgorithm(Resources res, int displayWidth, int displayHeight, int dividerSize,
             boolean isLeftRightSplit, Rect insets, Rect pinnedTaskbarInsets, int dockSide,
-            boolean isMinimizedMode, boolean isHomeResizable) {
+            int displayId, boolean isMinimizedMode, boolean isHomeResizable) {
         mMinFlingVelocityPxPerSecond =
                 MIN_FLING_VELOCITY_DP_PER_SECOND * res.getDisplayMetrics().density;
         mMinDismissVelocityPxPerSecond =
@@ -158,7 +162,10 @@ public class DividerSnapAlgorithm {
         mDockSide = dockSide;
         mInsets.set(insets);
         mPinnedTaskbarInsets.set(pinnedTaskbarInsets);
-        if (Flags.enableFlexibleTwoAppSplit()) {
+        final boolean enableNonDefaultDisplaySplit =
+                DesktopExperienceFlags.ENABLE_NON_DEFAULT_DISPLAY_SPLIT.isTrue();
+        if (Flags.enableFlexibleTwoAppSplit()
+                && (!enableNonDefaultDisplaySplit || displayId == DEFAULT_DISPLAY)) {
             mSnapMode = SNAP_FLEXIBLE_HYBRID;
         } else {
             // Set SNAP_MODE_MINIMIZED, SNAP_MODE_16_9, or SNAP_FIXED_RATIO depending on config

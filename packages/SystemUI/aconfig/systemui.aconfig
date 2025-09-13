@@ -1174,15 +1174,7 @@ flag {
   }
 }
 
-flag {
-  name: "dream_transition_fixes"
-  namespace: "systemui"
-  description: "Flags some minor transition fixes for opening the dream"
-  bug: "409720192"
-  metadata {
-    purpose: PURPOSE_BUGFIX
-  }
-}
+
 
 flag {
   name: "dream_bouncer_transition_fix"
@@ -1757,14 +1749,6 @@ flag {
 }
 
 flag {
-    name: "lockscreen_font"
-    namespace: "systemui"
-    description: "Read-only flag for lockscreen font"
-    bug: "393610165"
-    is_fixed_read_only: true
-}
-
-flag {
     name: "move_transition_animation_layer"
     namespace: "systemui"
     description: "Enables moving the launching window on top of the origin window in the Animation library."
@@ -1810,13 +1794,6 @@ flag {
     namespace: "ailabs"
     description: "Enable the underlay additional layer"
     bug: "403422950"
-}
-
-flag {
-    name: "tv_global_actions_focus"
-    namespace: "systemui"
-    description: "Enables global actions focus on TV."
-    bug: "402759931"
 }
 
 flag {
@@ -2213,4 +2190,18 @@ flag {
     metadata {
          purpose: PURPOSE_BUGFIX
     }
+}
+
+flag {
+    name: "blur_on_more_surfaces"
+    namespace: "systemui"
+    description: "Enable blur on more systemui surfaces"
+    bug: "444141641"
+}
+
+flag {
+    name: "enable_cue_bar_animated_icon"
+    namespace: "ailabs"
+    description: "Enable the animated icon in cue bar"
+    bug: "443197064"
 }

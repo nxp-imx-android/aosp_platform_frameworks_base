@@ -20,6 +20,7 @@ import android.graphics.Rect
 import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import android.platform.test.flag.junit.FlagsParameterization
+import android.util.ArrayMap
 import android.util.ArraySet
 import android.view.Display.DEFAULT_DISPLAY
 import android.view.Display.INVALID_DISPLAY
@@ -477,9 +478,19 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
 
             inOrder(persistentRepository).run {
                 verify(persistentRepository)
-                    .addOrUpdateRepository(DEFAULT_USER_ID, expectedDesks1, DEFAULT_DESKTOP_ID)
+                    .addOrUpdateRepository(
+                        DEFAULT_USER_ID,
+                        expectedDesks1,
+                        DEFAULT_DESKTOP_ID,
+                        ArrayMap(),
+                    )
                 verify(persistentRepository)
-                    .addOrUpdateRepository(DEFAULT_USER_ID, expectedDesks2, DEFAULT_DESKTOP_ID)
+                    .addOrUpdateRepository(
+                        DEFAULT_USER_ID,
+                        expectedDesks2,
+                        DEFAULT_DESKTOP_ID,
+                        ArrayMap(),
+                    )
             }
         }
 
@@ -565,12 +576,14 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
                         DEFAULT_USER_ID,
                         expectedDesksAfterAdding,
                         DEFAULT_DESKTOP_ID,
+                        ArrayMap(),
                     )
                 verify(persistentRepository)
                     .addOrUpdateRepository(
                         DEFAULT_USER_ID,
                         expectedDesksAfterRemoval,
                         DEFAULT_DESKTOP_ID,
+                        ArrayMap(),
                     )
             }
         }
@@ -638,12 +651,14 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
                         DEFAULT_USER_ID,
                         expectedDesksAfterAdding,
                         DEFAULT_DESKTOP_ID,
+                        ArrayMap(),
                     )
                 verify(persistentRepository)
                     .addOrUpdateRepository(
                         DEFAULT_USER_ID,
                         expectedDesksAfterRemoval,
                         DEFAULT_DESKTOP_ID,
+                        ArrayMap(),
                     )
             }
         }
@@ -1128,18 +1143,21 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
                         DEFAULT_USER_ID,
                         expectedDesksInOrder[0],
                         DEFAULT_DESKTOP_ID,
+                        ArrayMap(),
                     )
                 verify(persistentRepository)
                     .addOrUpdateRepository(
                         DEFAULT_USER_ID,
                         expectedDesksInOrder[1],
                         DEFAULT_DESKTOP_ID,
+                        ArrayMap(),
                     )
                 verify(persistentRepository)
                     .addOrUpdateRepository(
                         DEFAULT_USER_ID,
                         expectedDesksInOrder[2],
                         DEFAULT_DESKTOP_ID,
+                        ArrayMap(),
                     )
             }
         }
@@ -1266,18 +1284,21 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
                         DEFAULT_USER_ID,
                         expectedDesksInOrder[0],
                         DEFAULT_DESKTOP_ID,
+                        ArrayMap(),
                     )
                 verify(persistentRepository)
                     .addOrUpdateRepository(
                         DEFAULT_USER_ID,
                         expectedDesksInOrder[1],
                         DEFAULT_DESKTOP_ID,
+                        ArrayMap(),
                     )
                 verify(persistentRepository)
                     .addOrUpdateRepository(
                         DEFAULT_USER_ID,
                         expectedDesksInOrder[2],
                         DEFAULT_DESKTOP_ID,
+                        ArrayMap(),
                     )
                 // Triggers once for updateTask and once for minimize task
                 verify(persistentRepository, times(2))
@@ -1285,6 +1306,7 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
                         DEFAULT_USER_ID,
                         expectedDesksInOrder[3],
                         DEFAULT_DESKTOP_ID,
+                        ArrayMap(),
                     )
             }
         }
@@ -1423,12 +1445,14 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
                         DEFAULT_USER_ID,
                         expectedDesksAfterAddingTask,
                         DEFAULT_DESKTOP_ID,
+                        ArrayMap(),
                     )
                 verify(persistentRepository)
                     .addOrUpdateRepository(
                         DEFAULT_USER_ID,
                         expectedDesksAfterRemovingTask,
                         DEFAULT_DESKTOP_ID,
+                        ArrayMap(),
                     )
             }
         }
@@ -1898,6 +1922,7 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
                     DEFAULT_USER_ID,
                     expectedDesksAfterRemovingDesk,
                     DEFAULT_DESKTOP_ID,
+                    ArrayMap(),
                 )
         }
 
@@ -2062,12 +2087,15 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
         repo.addRightTiledTaskToDesk(SECOND_DISPLAY, 12, 7)
         repo.addLeftTiledTaskToDesk(SECOND_DISPLAY, 13, 7)
         repo.preserveDisplay(SECOND_DISPLAY, UNIQUE_DISPLAY_ID)
+        val preservedDisplay = repo.removePreservedDisplay(UNIQUE_DISPLAY_ID)
 
-        assertThat(repo.getPreservedTaskBounds(UNIQUE_DISPLAY_ID))
-            .isEqualTo(mapOf(12 to TEST_TASK_BOUNDS, 13 to secondTaskBounds))
-        assertThat(repo.getPreservedDeskIds(UNIQUE_DISPLAY_ID)).containsExactly(7)
-        assertThat(repo.getPreservedTilingData(UNIQUE_DISPLAY_ID, 7))
-            .isEqualTo(DesktopRepository.PreservedTiledAppData(13, 12))
+        if (preservedDisplay != null) {
+            assertThat(repo.getPreservedTaskBounds(preservedDisplay))
+                .isEqualTo(mapOf(12 to TEST_TASK_BOUNDS, 13 to secondTaskBounds))
+            assertThat(repo.getPreservedDeskIds(preservedDisplay)).containsExactly(7)
+            assertThat(repo.getPreservedTilingData(preservedDisplay, 7))
+                .isEqualTo(DesktopRepository.PreservedTiledAppData(13, 12))
+        } else fail("Expected to find preserved display.")
     }
 
     @Test
@@ -2093,9 +2121,9 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
         repo.addDesk(SECOND_DISPLAY, deskId = SECOND_DISPLAY)
 
         repo.preserveDisplay(SECOND_DISPLAY, UNIQUE_DISPLAY_ID)
+        val preservedDisplay = repo.removePreservedDisplay(UNIQUE_DISPLAY_ID)
 
-        assertThat(repo.getPreservedTaskBounds(UNIQUE_DISPLAY_ID)).isEmpty()
-        assertThat(repo.getPreservedDeskIds(UNIQUE_DISPLAY_ID)).isEmpty()
+        assertThat(preservedDisplay).isNull()
     }
 
     @Test
@@ -2507,7 +2535,7 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
         assertThat(listener.lastAddition).isNull()
         verify(persistentRepository, never())
             .addOrUpdateDesktop(any(), any(), any(), any(), any(), any(), any(), any())
-        verify(persistentRepository, never()).addOrUpdateRepository(any(), any(), any())
+        verify(persistentRepository, never()).addOrUpdateRepository(any(), any(), any(), any())
     }
 
     @Test
@@ -2529,7 +2557,7 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
         assertThat(listener.lastAddition).isNull()
         verify(persistentRepository, never())
             .addOrUpdateDesktop(any(), any(), any(), any(), any(), any(), any(), any())
-        verify(persistentRepository, never()).addOrUpdateRepository(any(), any(), any())
+        verify(persistentRepository, never()).addOrUpdateRepository(any(), any(), any(), any())
     }
 
     @Test
@@ -2559,7 +2587,7 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
         assertThat(listener.lastAddition).isNull()
         verify(persistentRepository, never())
             .addOrUpdateDesktop(any(), any(), any(), any(), any(), any(), any(), any())
-        verify(persistentRepository, never()).addOrUpdateRepository(any(), any(), any())
+        verify(persistentRepository, never()).addOrUpdateRepository(any(), any(), any(), any())
     }
 
     @Test
@@ -2591,7 +2619,7 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
         assertThat(listener.lastRemoval).isNull()
         verify(persistentRepository, never())
             .addOrUpdateDesktop(any(), any(), any(), any(), any(), any(), any(), any())
-        verify(persistentRepository, never()).addOrUpdateRepository(any(), any(), any())
+        verify(persistentRepository, never()).addOrUpdateRepository(any(), any(), any(), any())
     }
 
     @Test
@@ -2626,7 +2654,7 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
         assertThat(listener.lastRemoval).isNull()
         verify(persistentRepository, never())
             .addOrUpdateDesktop(any(), any(), any(), any(), any(), any(), any(), any())
-        verify(persistentRepository, never()).addOrUpdateRepository(any(), any(), any())
+        verify(persistentRepository, never()).addOrUpdateRepository(any(), any(), any(), any())
     }
 
     @Test
@@ -2657,7 +2685,7 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
         assertThat(listener.lastAddition).isNull()
         verify(persistentRepository, never())
             .addOrUpdateDesktop(any(), any(), any(), any(), any(), any(), any(), any())
-        verify(persistentRepository, never()).addOrUpdateRepository(any(), any(), any())
+        verify(persistentRepository, never()).addOrUpdateRepository(any(), any(), any(), any())
     }
 
     private class TestDeskChangeListener : DesktopRepository.DeskChangeListener {

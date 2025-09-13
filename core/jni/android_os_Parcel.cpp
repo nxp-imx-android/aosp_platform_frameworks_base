@@ -45,7 +45,6 @@
 
 #if defined(__ANDROID__)
 #include <android_os.h>
-#include "com_android_internal_os_JniStringCache.h"
 #endif
 
 //#undef ALOGV
@@ -491,11 +490,6 @@ static jstring android_os_Parcel_readString8(JNIEnv* env, jclass clazz, jlong na
         size_t len;
         const char* str = parcel->readString8Inplace(&len);
         if (str) {
-#if defined(__ANDROID__)
-            if (android::os::parcel_string_cache_enabled()) {
-                return JniStringCache::getInstance().NewStringUTF(env, str, len);
-            }
-#endif
             return env->NewStringUTF(str);
         }
  return NULL;
@@ -509,11 +503,6 @@ static jstring android_os_Parcel_readString16(JNIEnv* env, jclass clazz, jlong n
         size_t len;
         const char16_t* str = parcel->readString16Inplace(&len);
         if (str) {
-#if defined(__ANDROID__)
-            if (android::os::parcel_string_cache_enabled()) {
-                return JniStringCache::getInstance().NewString(env, str, len);
-            }
-#endif
             return env->NewString(reinterpret_cast<const jchar*>(str), len);
         }
  return NULL;

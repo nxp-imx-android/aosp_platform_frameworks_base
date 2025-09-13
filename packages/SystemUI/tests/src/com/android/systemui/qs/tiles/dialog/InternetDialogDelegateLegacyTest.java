@@ -105,6 +105,8 @@ public class InternetDialogDelegateLegacyTest extends SysuiTestCase {
     private View mSubTitle;
     private LinearLayout mEthernet;
     private LinearLayout mMobileDataLayout;
+    private TextView mMobileTitleText;
+    private TextView mMobileSummaryText;
     private Switch mMobileToggleSwitch;
     private LinearLayout mWifiToggle;
     private Switch mWifiToggleSwitch;
@@ -175,6 +177,8 @@ public class InternetDialogDelegateLegacyTest extends SysuiTestCase {
         mSubTitle = mDialogView.requireViewById(R.id.internet_dialog_subtitle);
         mEthernet = mDialogView.requireViewById(R.id.ethernet_layout);
         mMobileDataLayout = mDialogView.requireViewById(R.id.mobile_network_layout);
+        mMobileTitleText = mDialogView.requireViewById(R.id.mobile_title);
+        mMobileSummaryText = mDialogView.requireViewById(R.id.mobile_summary);
         mMobileToggleSwitch = mDialogView.requireViewById(R.id.mobile_toggle);
         mWifiToggle = mDialogView.requireViewById(R.id.turn_on_wifi_layout);
         mWifiToggleSwitch = mDialogView.requireViewById(R.id.wifi_toggle);
@@ -914,6 +918,45 @@ public class InternetDialogDelegateLegacyTest extends SysuiTestCase {
         mInternetDialogDelegateLegacy.mDataInternetContent.observe(
                 mInternetDialogDelegateLegacy.mLifecycleOwner, i -> {
                     assertThat(mMobileDataLayout.getVisibility()).isEqualTo(View.GONE);
+                });
+    }
+
+    @Test
+    public void updateDialog_satelliteStarted_showSatelliteUI() {
+        when(mInternetDetailsContentController.getCurrentSatelliteState()).thenReturn(
+                SATELLITE_STARTED);
+        when(mInternetDetailsContentController.hasActiveSubIdOnDds()).thenReturn(true);
+        mMobileDataLayout.setVisibility(View.GONE);
+
+        mInternetDialogDelegateLegacy.updateDialog(true);
+        mBgExecutor.runAllReady();
+
+        mInternetDialogDelegateLegacy.mDataInternetContent.observe(
+                mInternetDialogDelegateLegacy.mLifecycleOwner, i -> {
+                    assertThat(mMobileDataLayout.getVisibility()).isEqualTo(View.VISIBLE);
+                    assertThat(mMobileTitleText.getText().toString()).isEqualTo(
+                            mContext.getText(R.string.satellite_network_title_text).toString());
+                });
+    }
+
+    @Test
+    public void updateDialog_satelliteConnected_showSatelliteUIAndConnected() {
+        when(mInternetDetailsContentController.getCurrentSatelliteState()).thenReturn(
+                SATELLITE_CONNECTED);
+        when(mInternetDetailsContentController.hasActiveSubIdOnDds()).thenReturn(true);
+        mMobileDataLayout.setVisibility(View.GONE);
+
+        mInternetDialogDelegateLegacy.updateDialog(true);
+        mBgExecutor.runAllReady();
+
+        mInternetDialogDelegateLegacy.mDataInternetContent.observe(
+                mInternetDialogDelegateLegacy.mLifecycleOwner, i -> {
+                    assertThat(mMobileDataLayout.getVisibility()).isEqualTo(View.VISIBLE);
+                    assertThat(mMobileTitleText.getText().toString()).isEqualTo(
+                            mContext.getText(R.string.satellite_network_title_text).toString());
+                    assertThat(mMobileSummaryText.getVisibility()).isEqualTo(View.VISIBLE);
+                    assertThat(mMobileSummaryText.getText().toString()).isEqualTo(
+                            mContext.getText(R.string.mobile_data_connection_active));
                 });
     }
 

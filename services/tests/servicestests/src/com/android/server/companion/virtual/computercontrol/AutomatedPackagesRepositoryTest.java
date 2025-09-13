@@ -24,7 +24,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import android.companion.virtual.computercontrol.IAutomatedPackageListener;
-import android.content.pm.PackageManager;
 import android.os.Binder;
 import android.os.Handler;
 import android.os.HandlerThread;
@@ -34,6 +33,7 @@ import android.os.TestLooperManager;
 import android.os.UserHandle;
 import android.platform.test.annotations.Presubmit;
 import android.util.ArraySet;
+import android.util.Pair;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 
@@ -52,13 +52,13 @@ import java.util.List;
 @RunWith(AndroidJUnit4.class)
 public class AutomatedPackagesRepositoryTest {
 
-    private static final int UID_USER1_PACKAGE1 = 100001;
-    private static final int UID_USER1_PACKAGE2 = 100002;
-    private static final int UID_USER2_PACKAGE1 = 200001;
-    private static final int UID_USER2_PACKAGE2 = 200002;
-
     private static final String PACKAGE1 = "com.foo";
     private static final String PACKAGE2 = "com.bar";
+
+    private static final Pair<Integer, String> UID_USER1_PACKAGE1 = new Pair<>(100001, PACKAGE1);
+    private static final Pair<Integer, String> UID_USER1_PACKAGE2 = new Pair<>(100002, PACKAGE2);
+    private static final Pair<Integer, String> UID_USER2_PACKAGE1 = new Pair<>(200001, PACKAGE1);
+    private static final Pair<Integer, String> UID_USER2_PACKAGE2 = new Pair<>(200002, PACKAGE2);
 
     private static final UserHandle USER1 = UserHandle.of(1);
     private static final UserHandle USER2 = UserHandle.of(2);
@@ -66,9 +66,6 @@ public class AutomatedPackagesRepositoryTest {
     private static final int DEVICE_ID1 = 7;
     private static final int DEVICE_ID2 = 8;
     private static final String DEVICE_OWNER = "com.device.owner";
-
-    @Mock
-    private PackageManager mPackageManager;
 
     @Mock
     private IAutomatedPackageListener mListener;
@@ -90,19 +87,10 @@ public class AutomatedPackagesRepositoryTest {
         IBinder binder = new Binder();
         when(mListener.asBinder()).thenReturn(binder);
 
-        when(mPackageManager.getPackagesForUid(UID_USER1_PACKAGE1))
-                .thenReturn(new String[] { PACKAGE1 });
-        when(mPackageManager.getPackagesForUid(UID_USER2_PACKAGE1))
-                .thenReturn(new String[] { PACKAGE1 });
-        when(mPackageManager.getPackagesForUid(UID_USER1_PACKAGE2))
-                .thenReturn(new String[] { PACKAGE2 });
-        when(mPackageManager.getPackagesForUid(UID_USER2_PACKAGE2))
-                .thenReturn(new String[] { PACKAGE2 });
-
         mTestHandlerThread.start();
         Looper looper = mTestHandlerThread.getLooper();
         mTestLooperManager = new TestLooperManager(looper);
-        mRepo = new AutomatedPackagesRepository(mPackageManager, new Handler(looper));
+        mRepo = new AutomatedPackagesRepository(new Handler(looper));
         mRepo.registerAutomatedPackageListener(mListener);
     }
 

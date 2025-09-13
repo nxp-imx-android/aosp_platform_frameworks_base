@@ -77,11 +77,6 @@ python_test_host {
     test_options: {
         unit_test: true,
     },
-    version: {
-        py3: {
-            enabled: true,
-            // The test needs to use the host python interpreter to be able import the perfetto modules.
-            embedded_launcher: false,
-        },
-    },
+    // The test needs to use the host python interpreter to be able import the perfetto modules.
+    embedded_launcher: false,
 }

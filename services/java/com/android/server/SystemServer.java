@@ -154,6 +154,7 @@ import com.android.server.camera.CameraServiceProxy;
 import com.android.server.clipboard.ClipboardService;
 import com.android.server.companion.CompanionDeviceManagerService;
 import com.android.server.companion.datatransfer.continuity.TaskContinuityManagerService;
+import com.android.server.companion.datatransfer.continuity.UniversalClipboardService;
 import com.android.server.companion.virtual.VirtualDeviceManagerService;
 import com.android.server.compat.PlatformCompat;
 import com.android.server.compat.PlatformCompatNative;
@@ -315,13 +316,16 @@ import com.android.server.wm.ActivityTaskManagerService;
 import com.android.server.wm.WindowManagerGlobalLock;
 import com.android.server.wm.WindowManagerService;
 
+import dalvik.system.VMDebug;
 import dalvik.system.VMRuntime;
 
 import java.io.File;
 import java.io.FileDescriptor;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.lang.ref.WeakReference;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.LinkedList;
@@ -735,8 +739,6 @@ public final class SystemServer implements Dumpable {
         TimeUtils.formatDuration(mRuntimeStartUptime, pw); pw.println();
         pw.print("Runtime start-elapsed time: ");
         TimeUtils.formatDuration(mRuntimeStartElapsedTime, pw); pw.println();
-
-        HsumBootUserInitializer.dump(pw, mSystemContext);
     }
 
     /**
@@ -757,7 +759,7 @@ public final class SystemServer implements Dumpable {
     private final class SystemServerDumper extends Binder {
 
         @GuardedBy("mDumpables")
-        private final ArrayMap<String, Dumpable> mDumpables = new ArrayMap<>(4);
+        private final ArrayMap<String, WeakReference<Dumpable>> mDumpables = new ArrayMap<>(4);
 
         @Override
         protected void dump(FileDescriptor fd, PrintWriter pw, String[] args) {
@@ -778,13 +780,17 @@ public final class SystemServer implements Dumpable {
                         return;
                     }
                     final String name = args[1];
-                    final Dumpable dumpable = mDumpables.get(name);
-                    if (dumpable == null) {
+                    final var ref = mDumpables.get(name);
+                    if (ref == null) {
                         pw.printf("No dumpable named %s\n", name);
                         return;
                     }
-
                     try (IndentingPrintWriter ipw = new IndentingPrintWriter(pw, "  ")) {
+                        final var dumpable = ref.get();
+                        if (dumpable == null) {
+                            ipw.printf("%s has been garbage collected\n", name);
+                            return;
+                        }
                         // Strip --name DUMPABLE from args
                         final String[] actualArgs = Arrays.copyOfRange(args, 2, args.length);
                         dumpable.dump(ipw, actualArgs);
@@ -793,27 +799,47 @@ public final class SystemServer implements Dumpable {
                 }
 
                 final int dumpablesSize = mDumpables.size();
+                List<String> garbageCollected = null;
                 try (IndentingPrintWriter ipw = new IndentingPrintWriter(pw, "  ")) {
                     for (int i = 0; i < dumpablesSize; i++) {
-                        final Dumpable dumpable = mDumpables.valueAt(i);
+                        final var ref = mDumpables.valueAt(i);
+                        final var dumpable = ref.get();
+                        if (dumpable == null) {
+                            if (garbageCollected == null) {
+                                garbageCollected = new ArrayList<>(dumpablesSize);
+                            }
+                            garbageCollected.add(mDumpables.keyAt(i));
+                            continue;
+                        }
                         ipw.printf("%s:\n", dumpable.getDumpableName());
                         ipw.increaseIndent();
                         dumpable.dump(ipw, args);
                         ipw.decreaseIndent();
                         ipw.println();
                     }
+                    if (garbageCollected != null) {
+                        ipw.printf("%d dumpable(s) has been garbage collected: %s\n",
+                                garbageCollected.size(), garbageCollected);
+                    }
                 }
+
             }
         }
 
-        private void addDumpable(@NonNull Dumpable dumpable) {
+        private void addDumpable(Dumpable dumpable) {
             synchronized (mDumpables) {
-                mDumpables.put(dumpable.getDumpableName(), dumpable);
+                mDumpables.put(dumpable.getDumpableName(), new WeakReference<>(dumpable));
             }
         }
     }
 
     private void run() {
+        if (VMDebug.isDebuggingEnabled()
+                && SystemProperties.getBoolean("debug.system_server.jdwp_wait", false)) {
+            Slog.i(TAG, "System server is waiting for debugger before starting...");
+            Debug.waitForDebugger();
+        }
+
         TimingsTraceAndSlog t = new TimingsTraceAndSlog();
         try {
             // Explicitly initialize a 4 MB shmem buffer for Perfetto producers (b/382369925)
@@ -915,8 +941,8 @@ public final class SystemServer implements Dumpable {
             SystemServiceRegistry.sEnableServiceNotFoundWtf = true;
 
             // Prepare the thread pool for init tasks that can be parallelized
-            SystemServerInitThreadPool tp = SystemServerInitThreadPool.start();
-            mDumper.addDumpable(tp);
+            SystemServerInitThreadPool.start();
+            mDumper.addDumpable(SystemServerInitThreadPool.getInstance());
 
             // SystemConfig init is expensive, so enqueue the work as early as possible to allow
             // concurrent execution before it's needed (typically by ActivityManagerService).
@@ -2655,6 +2681,12 @@ public final class SystemServer implements Dumpable {
                 t.traceEnd();
             }
 
+            if (android.companion.Flags.enableUniversalClipboard()) {
+                t.traceBegin("StartUniversalClipboardService");
+                mSystemServiceManager.startService(UniversalClipboardService.class);
+                t.traceEnd();
+            }
+
             if (context.getResources().getBoolean(R.bool.config_enableVirtualDeviceManager)) {
                 t.traceBegin("StartVirtualDeviceManager");
                 mSystemServiceManager.startService(VirtualDeviceManagerService.class);
@@ -3098,6 +3130,13 @@ public final class SystemServer implements Dumpable {
             t.traceBegin("HsumBootUserInitializer.init");
             hsumBootUserInitializer.init(t);
             t.traceEnd();
+            var dumpable = HsumBootUserInitializer.getDumpable();
+            if (dumpable != null) {
+                mDumper.addDumpable(dumpable);
+            } else {
+                // It shouldn't happen, but if does, better log...
+                Slog.e(TAG, "HsumBootUserInitializer doesn't have a dumpable");
+            }
         }
 
         CommunalProfileInitializer communalProfileInitializer = null;

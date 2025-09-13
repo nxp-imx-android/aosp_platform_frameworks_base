@@ -15,6 +15,8 @@
  */
 package android.app.usage;
 
+import static android.appwidget.flags.Flags.FLAG_ENGAGEMENT_METRICS;
+
 import android.annotation.CurrentTimeMillisLong;
 import android.annotation.FlaggedApi;
 import android.annotation.IntDef;
@@ -559,6 +561,8 @@ public final class UsageEvents implements Parcelable {
         public static class UserInteractionEventExtrasToken {
             public int mCategoryToken = UNASSIGNED_TOKEN;
             public int mActionToken = UNASSIGNED_TOKEN;
+            @FlaggedApi(FLAG_ENGAGEMENT_METRICS)
+            public byte[] mTokenizedExtras = null;
 
             public UserInteractionEventExtrasToken() {
                 // Do nothing.

@@ -2442,6 +2442,10 @@ public class UserManager {
     @SystemApi
     public static final int REMOVE_RESULT_ERROR_MAIN_USER_PERMANENT_ADMIN = -5;
 
+    // TODO(b/444663119): expose as @SystemApi
+    // TODO(b/419105275): Currently, the headless system user is also an admin user. When we
+    // disallow the removal of last admin user, we mean the last admin user that's not the HSU.
+    // If/When b/419105275 removes the admin flag from HSU, this comment should be removed.
     /**
      * A response code from {@link #removeUserWhenPossible(UserHandle, boolean)} indicating that
      * user being removed cannot be removed because it is
@@ -2449,14 +2453,9 @@ public class UserManager {
      *
      * @hide
      */
-    // TODO(b/419105275): Currently, the headless system user is also an admin user. When we
-    // disallow the removal of last admin user, we mean the last admin user that's not the HSU.
-    // If/When b/419105275 removes the admin flag from HSU, this comment should be removed.
-    @FlaggedApi(android.multiuser.Flags.FLAG_DISALLOW_REMOVING_LAST_ADMIN_USER)
-    @SystemApi
     public static final int REMOVE_RESULT_ERROR_LAST_ADMIN_USER = -6;
 
-    // TODO(b/435271558): expose as @SystemApi
+    // TODO(b/444663119): expose as @SystemApi
     /**
      * A response code from {@link #removeUserWhenPossible(UserHandle, boolean)} indicating that
      * user being removed cannot be removed because it is the Device Owner on this device.
@@ -3435,10 +3434,12 @@ public class UserManager {
      * class.)
      *
      * @return whether the context user can add a private profile.
+     * @deprecated evaluate canAddMoreProfilesToUser(USER_TYPE_PROFILE_PRIVATE, userId) > 0 instead
      * @hide
      */
+    @Deprecated
     @TestApi
-    @FlaggedApi(android.os.Flags.FLAG_ALLOW_PRIVATE_PROFILE)
+    @FlaggedApi(android.multiuser.Flags.FLAG_CONSISTENT_MAX_USERS)
     @RequiresPermission(anyOf = {
             Manifest.permission.MANAGE_USERS,
             Manifest.permission.CREATE_USERS,
