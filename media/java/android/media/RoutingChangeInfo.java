@@ -38,6 +38,9 @@ public final class RoutingChangeInfo implements Parcelable {
     // Indicates that the route was a suggested route.
     private final boolean mIsSuggested;
 
+    // Indicates the suggestion providers for a route.
+    private final @SuggestionProviderFlags int mSuggestionProviderFlags;
+
     /**
      * Indicates that a routing session started as the result of selecting a route from the output
      * switcher.
@@ -97,6 +100,40 @@ public final class RoutingChangeInfo implements Parcelable {
     @Retention(RetentionPolicy.SOURCE)
     public @interface EntryPoint {}
 
+    /**
+     * Flag indicating that the route was suggested by {@link RouteListingPreference}.
+     *
+     * @hide
+     */
+    public static final int SUGGESTION_PROVIDER_RLP = 1;
+
+    /**
+     * Flag indicating that the route was suggested by the app as a device suggestion.
+     *
+     * @hide
+     */
+    public static final int SUGGESTION_PROVIDER_DEVICE_SUGGESTION_APP = 1 << 1;
+
+    /**
+     * Flag indicating that the route was suggested as a device suggestion by an app not playing the
+     * media.
+     *
+     * @hide
+     */
+    public static final int SUGGESTION_PROVIDER_DEVICE_SUGGESTION_OTHER = 1 << 2;
+
+    /** @hide */
+    @Retention(RetentionPolicy.SOURCE)
+    @IntDef(
+            prefix = "SUGGESTION_PROVIDER",
+            flag = true,
+            value = {
+                SUGGESTION_PROVIDER_RLP,
+                SUGGESTION_PROVIDER_DEVICE_SUGGESTION_APP,
+                SUGGESTION_PROVIDER_DEVICE_SUGGESTION_OTHER
+            })
+    public @interface SuggestionProviderFlags {}
+
     @NonNull
     public static final Creator<RoutingChangeInfo> CREATOR =
             new Creator<>() {
@@ -112,13 +149,22 @@ public final class RoutingChangeInfo implements Parcelable {
             };
 
     public RoutingChangeInfo(@EntryPoint int entryPoint, boolean isSuggested) {
+        this(entryPoint, isSuggested, /* suggestionProviderFlags= */ 0);
+    }
+
+    public RoutingChangeInfo(
+            @EntryPoint int entryPoint,
+            boolean isSuggested,
+            @SuggestionProviderFlags int suggestionProviderFlags) {
         mEntryPoint = entryPoint;
         mIsSuggested = isSuggested;
+        mSuggestionProviderFlags = suggestionProviderFlags;
     }
 
     private RoutingChangeInfo(Parcel in) {
         mEntryPoint = in.readInt();
         mIsSuggested = in.readBoolean();
+        mSuggestionProviderFlags = in.readInt();
     }
 
     @Override
@@ -130,6 +176,7 @@ public final class RoutingChangeInfo implements Parcelable {
     public void writeToParcel(@androidx.annotation.NonNull Parcel dest, int flags) {
         dest.writeInt(mEntryPoint);
         dest.writeBoolean(mIsSuggested);
+        dest.writeInt(mSuggestionProviderFlags);
     }
 
     @Override
@@ -146,13 +193,14 @@ public final class RoutingChangeInfo implements Parcelable {
             return true;
         }
 
-        return other.getEntryPoint() == this.getEntryPoint()
-                && other.isSuggested() == this.mIsSuggested;
+        return other.getEntryPoint() == this.mEntryPoint
+                && other.isSuggested() == this.mIsSuggested
+                && other.mSuggestionProviderFlags == this.mSuggestionProviderFlags;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(mEntryPoint, mIsSuggested);
+        return Objects.hash(mEntryPoint, mIsSuggested, mSuggestionProviderFlags);
     }
 
     public @EntryPoint int getEntryPoint() {
@@ -161,5 +209,26 @@ public final class RoutingChangeInfo implements Parcelable {
 
     public boolean isSuggested() {
         return mIsSuggested;
+    }
+
+    public @SuggestionProviderFlags int getSuggestionProviderFlags() {
+        return mSuggestionProviderFlags;
+    }
+
+    /**
+     * Returns whether the route had an active suggestion from the active route listing preference.
+     */
+    public boolean isSuggestedByRlp() {
+        return (mSuggestionProviderFlags & SUGGESTION_PROVIDER_RLP) != 0;
+    }
+
+    /** Returns whether the route had an active device suggestion from the media app. */
+    public boolean isSuggestedByMediaApp() {
+        return (mSuggestionProviderFlags & SUGGESTION_PROVIDER_DEVICE_SUGGESTION_APP) != 0;
+    }
+
+    /** Whether the route had an active device suggestion from an app other than the media app. */
+    public boolean isSuggestedByAnotherApp() {
+        return (mSuggestionProviderFlags & SUGGESTION_PROVIDER_DEVICE_SUGGESTION_OTHER) != 0;
     }
 }

@@ -75,6 +75,7 @@ import com.android.internal.annotations.VisibleForTesting;
 import java.io.PrintWriter;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.util.ArrayList;
 import java.util.Map;
 
 /**
@@ -314,6 +315,9 @@ final class MediaRouterMetricLogger {
                         routingSessionInfo.isSystemSession(),
                         routingSessionInfo.getTransferReason(),
                         routingChangeInfo.isSuggested(),
+                        routingChangeInfo.isSuggestedByRlp(),
+                        routingChangeInfo.isSuggestedByMediaApp(),
+                        routingChangeInfo.isSuggestedByAnotherApp(),
                         getElapsedRealTime());
         mOngoingRoutingChangeCache.put(routingSessionInfo.getOriginalId(), ongoingRoutingChange);
         mRoutingChangeInfoCache.remove(uniqueRequestId);
@@ -338,12 +342,13 @@ final class MediaRouterMetricLogger {
                     TextUtils.formatSimple(
                             "notifySessionEnd | EntryPoint: %d, ClientPackageUid: %d,"
                                     + " IsSystemSession: %b, TransferReason: %d, IsSuggested: %b,"
-                                    + " SessionLengthInMillis: %d",
+                                    + " SuggestionProviders: %s, SessionLengthInMillis: %d",
                             ongoingRoutingChange.entryPoint,
                             ongoingRoutingChange.clientPackageUid,
                             ongoingRoutingChange.isSystemSession,
                             ongoingRoutingChange.transferReason,
                             ongoingRoutingChange.isSuggested,
+                            ongoingRoutingChange.getSuggestionProvidersDebugString(),
                             sessionLengthInMillis));
         }
 
@@ -354,7 +359,10 @@ final class MediaRouterMetricLogger {
                 ongoingRoutingChange.isSystemSession,
                 convertTransferReasonForLogging(ongoingRoutingChange.transferReason),
                 ongoingRoutingChange.isSuggested,
-                sessionLengthInMillis);
+                sessionLengthInMillis,
+                ongoingRoutingChange.isSuggestedByRlp,
+                ongoingRoutingChange.isSuggestedByMediaApp,
+                ongoingRoutingChange.isSuggestedByAnotherApp);
 
         mOngoingRoutingChangeCache.remove(sessionId);
     }
@@ -745,7 +753,32 @@ final class MediaRouterMetricLogger {
             boolean isSystemSession,
             @TransferReason int transferReason,
             boolean isSuggested,
-            long startTimeInMillis) {}
+            boolean isSuggestedByRlp,
+            boolean isSuggestedByMediaApp,
+            boolean isSuggestedByAnotherApp,
+            long startTimeInMillis) {
+
+        /**
+         * Returns a human-readable representation of the suggestion provider for logging purposes.
+         */
+        public String getSuggestionProvidersDebugString() {
+            var providerStrings = new ArrayList<String>();
+            if (isSuggestedByRlp) {
+                providerStrings.add("RLP");
+            }
+            if (isSuggestedByMediaApp) {
+                providerStrings.add("MEDIA_APP");
+            }
+            if (isSuggestedByAnotherApp) {
+                providerStrings.add("ANOTHER_APP");
+            }
+            if (providerStrings.isEmpty()) {
+                return "NONE";
+            } else {
+                return String.join("|", providerStrings);
+            }
+        }
+    }
 
     /** Tracks the count of changes in route listing preference */
     private record RlpCount(long rlpTotalCount, long rlpWithSuggestionCount) {}
