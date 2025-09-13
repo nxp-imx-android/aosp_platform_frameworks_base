@@ -24,6 +24,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
@@ -56,6 +57,7 @@ fun StatusBarPopup(
 ) {
     val density = Density(LocalContext.current)
     Popup(
+        alignment = Alignment.TopCenter,
         properties =
             PopupProperties(
                 focusable = false,

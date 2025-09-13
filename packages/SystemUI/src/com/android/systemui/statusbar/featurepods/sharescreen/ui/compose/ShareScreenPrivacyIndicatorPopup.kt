@@ -16,11 +16,45 @@
 
 package com.android.systemui.statusbar.featurepods.sharescreen.ui.compose
 
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
+import com.android.systemui.res.R
 
 @Composable
 fun ShareScreenPrivacyIndicatorPopup() {
-    // TODO(b/437918357) Add the pop up button and end the screen sharing session on clicking it.
-    Text("Share Screen Privacy Indicator Popup")
+    Surface(
+        shape = RoundedCornerShape(28.dp),
+        color = MaterialTheme.colorScheme.surfaceBright,
+        shadowElevation = 2.dp,
+        modifier = Modifier.size(width = 129.dp, height = 56.dp),
+    ) {
+        Button(
+            onClick = { /* TODO(b/440627312): End screen sharing session */ },
+            shape = RoundedCornerShape(20.dp), // Outer radius (28) - border (8)
+            modifier = Modifier.fillMaxSize().padding(8.dp),
+            contentPadding = PaddingValues(0.dp),
+            colors =
+                ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.error,
+                    contentColor = MaterialTheme.colorScheme.onError,
+                ),
+        ) {
+            Text(
+                text = stringResource(R.string.screen_share_privacy_indicator_stop_sharing),
+                softWrap = false,
+            )
+        }
+    }
 }
