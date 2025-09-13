@@ -405,6 +405,7 @@ java_defaults {
         // If MimeMap ever becomes its own APEX, then this dependency would need to be removed
         // in favor of an API stubs dependency in java_library "framework" below.
         "mimemap",
+        "libsensor_aidl-java",
         "av-types-aidl-java",
         "tv_tuner_resource_manager_aidl_interface-java",
         "media_quality_aidl_interface-java",
