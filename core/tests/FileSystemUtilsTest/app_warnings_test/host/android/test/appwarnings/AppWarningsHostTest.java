@@ -105,14 +105,14 @@ public class AppWarningsHostTest extends BaseHostJUnit4Test {
     @AppModeFull
     public void runAppWith4KbLib_overrideCompatMode()
             throws FileNotFoundException, DeviceNotAvailableException, TargetSetupError {
-        runPageSizeWarningsTest(TEST_APP_COMPAT_ENABLED, TEST_NO_WARNINGS);
+        runPageSizeWarningsTest(TEST_APP_COMPAT_ENABLED, TEST_WARNINGS);
     }
 
     @Test
     @AppModeFull
     public void runAppWith4KbLib_disabledCompatMode()
             throws FileNotFoundException, DeviceNotAvailableException, TargetSetupError {
-        runPageSizeWarningsTest(TEST_APP_COMPAT_DISABLED, TEST_NO_WARNINGS);
+        runPageSizeWarningsTest(TEST_APP_COMPAT_DISABLED, TEST_WARNINGS);
     }
 
     @Test

@@ -78,21 +78,28 @@ public class PageSizeCompatTest {
     @Test
     public void testPageSizeCompat_compatEnabled() throws Exception {
         testPageSizeCompat_appLaunch(true);
+        //verify warning dialog
+        Assert.assertTrue(findCompatWaring() != null);
     }
 
     @Test
     public void testPageSizeCompat_compatDisabled() throws Exception {
         testPageSizeCompat_appLaunch(false);
+        //verify warning dialog
+        Assert.assertTrue(findCompatWaring() != null);
     }
 
     @Test
     public void testPageSizeCompat_compatByAlignmentChecks() throws Exception {
         testPageSizeCompat_appLaunch(true);
-
         //verify warning dialog
+        Assert.assertTrue(findCompatWaring() != null);
+    }
+
+    private UiObject2 findCompatWaring() {
         UiDevice device = UiDevice.getInstance(getInstrumentation());
         device.waitForWindowUpdate(null, TIMEOUT);
-        UiObject2 targetObject = device.wait(Until.findObject(By.text(WARNING_TEXT)), TIMEOUT);
-        Assert.assertTrue(targetObject != null);
+        UiObject2 object = device.wait(Until.findObject(By.text(WARNING_TEXT)), TIMEOUT);
+        return object;
     }
 }
