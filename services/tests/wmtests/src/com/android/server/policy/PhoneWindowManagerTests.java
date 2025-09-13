@@ -27,10 +27,14 @@ import static android.view.WindowManagerGlobal.ADD_OKAY;
 
 import static androidx.test.platform.app.InstrumentationRegistry.getInstrumentation;
 
+import static com.android.internal.policy.IKeyguardService.SCREEN_TURNING_ON_REASON_UNKNOWN;
+import static com.android.internal.policy.IKeyguardService.SCREEN_TURNING_ON_REASON_DISPLAY_SWITCH;
+import static com.android.hardware.input.Flags.FLAG_BLUETOOTH_WAKEUP_STATE_CHECK;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.doAnswer;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.doNothing;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.doReturn;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.mock;
+import static com.android.dx.mockito.inline.extended.ExtendedMockito.mockitoSession;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.never;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.reset;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.spy;
@@ -70,6 +74,7 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.os.PowerManager;
 import android.os.PowerManagerInternal;
+import android.os.SystemProperties;
 import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
@@ -84,6 +89,7 @@ import android.view.DisplayInfo;
 
 import androidx.test.filters.SmallTest;
 
+import com.android.dx.mockito.inline.extended.StaticMockitoSession;
 import com.android.internal.util.test.LocalServiceKeeperRule;
 import com.android.internal.widget.LockPatternUtils;
 import com.android.server.SystemServiceManager;
@@ -106,6 +112,7 @@ import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.mockito.quality.Strictness;
 
 import java.util.List;
 
@@ -172,10 +179,16 @@ public class PhoneWindowManagerTests {
 
     private static final int INTERCEPT_SYSTEM_KEY_NOT_CONSUMED_DELAY = 0;
 
+    private StaticMockitoSession mMockitoSession;
+
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
         when(mContext.getSystemService(Context.POWER_SERVICE)).thenReturn(mPowerManager);
+        mMockitoSession = mockitoSession()
+                .mockStatic(SystemProperties.class)
+                .strictness(Strictness.LENIENT)
+                .startMocking();
 
         mOffsettableClock = new OffsettableClock.Stopped();
 
@@ -211,6 +224,7 @@ public class PhoneWindowManagerTests {
     public void tearDown() {
         reset(ActivityManager.getService());
         reset(mContext);
+        mMockitoSession.finishMocking();
     }
 
     @Test
@@ -601,12 +615,17 @@ public class PhoneWindowManagerTests {
     }
 
     @Test
+    @EnableFlags(FLAG_BLUETOOTH_WAKEUP_STATE_CHECK)
     public void testBluetoothHidConnectionBroadcastCanWakeup() {
         when(mContext.getPackageManager()).thenReturn(mPackageManager);
         when(mPackageManager.hasSystemFeature(PackageManager.FEATURE_PC)).thenReturn(true);
+        doReturn(true).when(() -> SystemProperties.getBoolean(
+                                eq("bluetooth.power.suspend.hid_wake_up.enabled"), eq(false)));
+
         initNonSpyPhoneWindowManager();
 
         final Intent intent = new Intent(ACTION_CONNECTION_STATE_CHANGED);
+        intent.putExtra(BluetoothProfile.EXTRA_PREVIOUS_STATE, BluetoothProfile.STATE_DISCONNECTED);
         intent.putExtra(BluetoothProfile.EXTRA_STATE, BluetoothProfile.STATE_CONNECTED);
         ArgumentCaptor<BroadcastReceiver> captor = ArgumentCaptor.forClass(BroadcastReceiver.class);
         verify(mContext).registerReceiver(captor.capture(), argThat(intentFilter ->

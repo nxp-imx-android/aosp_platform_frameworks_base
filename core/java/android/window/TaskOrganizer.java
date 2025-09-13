@@ -321,6 +321,37 @@ public class TaskOrganizer extends WindowOrganizer {
     }
 
     /**
+     * Set layers to be excluded when taking a task snapshot.
+     *
+     * Warning: MUST NOT pass layers that are managed by the Window Manager (e.g., from a Task or
+     * Activity). Doing so may cause the corresponding layer to be destroyed when
+     * clearExcludeLayersFromTaskSnapshot is called.
+     * @hide
+     */
+    @RequiresPermission(android.Manifest.permission.MANAGE_ACTIVITY_TASKS)
+    public void setExcludeLayersFromTaskSnapshot(@NonNull WindowContainerToken task,
+            SurfaceControl[] layers) {
+        try {
+            mTaskOrganizerController.setExcludeLayersFromTaskSnapshot(task, layers);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    /**
+     * Clears all layers that were set for exclusion via setExcludeLayersFromTaskSnapshot.
+     * @hide
+     */
+    @RequiresPermission(android.Manifest.permission.MANAGE_ACTIVITY_TASKS)
+    public void clearExcludeLayersFromTaskSnapshot(@NonNull WindowContainerToken task) {
+        try {
+            mTaskOrganizerController.clearExcludeLayersFromTaskSnapshot(task);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    /**
      * Gets the executor to run callbacks on.
      * @hide
      */

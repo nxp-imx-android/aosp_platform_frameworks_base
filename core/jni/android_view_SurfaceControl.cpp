@@ -182,6 +182,11 @@ static struct {
 static struct {
     jclass clazz;
     jmethodID ctor;
+} gDeviceProductInfoEdidStructureMetadataClassInfo;
+
+static struct {
+    jclass clazz;
+    jmethodID ctor;
 } gDisplayedContentSampleClassInfo;
 
 static struct {
@@ -1534,9 +1539,16 @@ static jobject convertDeviceProductInfoToJavaObject(JNIEnv* env,
         connectionToSinkType = IDeviceProductInfoConstants::CONNECTION_TO_SINK_TRANSITIVE;
     }
 
+    jobject edidStructureMetadata =
+            env->NewObject(gDeviceProductInfoEdidStructureMetadataClassInfo.clazz,
+                           gDeviceProductInfoEdidStructureMetadataClassInfo.ctor,
+                           info->edidStructureMetadata.version,
+                           info->edidStructureMetadata.revision);
+    jint videoInputType = info->inputType;
+
     return env->NewObject(gDeviceProductInfoClassInfo.clazz, gDeviceProductInfoClassInfo.ctor, name,
                           manufacturerPnpId, productId, modelYear, manufactureDate,
-                          connectionToSinkType);
+                          connectionToSinkType, edidStructureMetadata, videoInputType);
 }
 
 static jobject nativeGetStaticDisplayInfo(JNIEnv* env, jclass clazz, jlong id) {
@@ -3004,8 +3016,9 @@ int register_android_view_SurfaceControl(JNIEnv* env)
                              "Ljava/lang/String;"
                              "Ljava/lang/String;"
                              "Ljava/lang/Integer;"
-                             "Landroid/hardware/display/DeviceProductInfo$ManufactureDate;"
-                             "I)V");
+                             "Landroid/hardware/display/DeviceProductInfo$ManufactureDate;I"
+                             "Landroid/hardware/display/"
+                             "DeviceProductInfo$EdidStructureMetadata;I)V");
 
     jclass deviceProductInfoManufactureDateClazz =
             FindClassOrDie(env, "android/hardware/display/DeviceProductInfo$ManufactureDate");
@@ -3014,6 +3027,13 @@ int register_android_view_SurfaceControl(JNIEnv* env)
     gDeviceProductInfoManufactureDateClassInfo.ctor =
             GetMethodIDOrDie(env, deviceProductInfoManufactureDateClazz, "<init>",
                              "(Ljava/lang/Integer;Ljava/lang/Integer;)V");
+
+    jclass deviceProductInfoEdidStructureMetadataClazz =
+            FindClassOrDie(env, "android/hardware/display/DeviceProductInfo$EdidStructureMetadata");
+    gDeviceProductInfoEdidStructureMetadataClassInfo.clazz =
+            MakeGlobalRefOrDie(env, deviceProductInfoEdidStructureMetadataClazz);
+    gDeviceProductInfoEdidStructureMetadataClassInfo.ctor =
+            GetMethodIDOrDie(env, deviceProductInfoEdidStructureMetadataClazz, "<init>", "(II)V");
 
     jclass displayedContentSampleClazz = FindClassOrDie(env,
             "android/hardware/display/DisplayedContentSample");

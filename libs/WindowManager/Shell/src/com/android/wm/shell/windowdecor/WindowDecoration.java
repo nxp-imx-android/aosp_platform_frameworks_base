@@ -60,7 +60,9 @@ import com.android.internal.annotations.VisibleForTesting;
 import com.android.wm.shell.ShellTaskOrganizer;
 import com.android.wm.shell.common.BoxShadowHelper;
 import com.android.wm.shell.common.DisplayController;
+import com.android.wm.shell.common.ShellExecutor;
 import com.android.wm.shell.desktopmode.DesktopModeEventLogger;
+import com.android.wm.shell.shared.annotations.ShellBackgroundThread;
 import com.android.wm.shell.shared.annotations.ShellMainThread;
 import com.android.wm.shell.transition.Transitions;
 import com.android.wm.shell.windowdecor.additionalviewcontainer.AdditionalViewHostViewContainer;
@@ -151,6 +153,7 @@ public abstract class WindowDecoration<T extends View & TaskFocusStateConsumer>
                     relayout(mTaskInfo, mHasGlobalFocus, mExclusionRegion);
                 }
             };
+    @ShellBackgroundThread protected final ShellExecutor mBgExecutor;
 
     @VisibleForTesting(visibility = VisibleForTesting.Visibility.PACKAGE)
     public RunningTaskInfo mTaskInfo;
@@ -187,12 +190,13 @@ public abstract class WindowDecoration<T extends View & TaskFocusStateConsumer>
             ShellTaskOrganizer taskOrganizer,
             RunningTaskInfo taskInfo,
             SurfaceControl taskSurface,
-            @NonNull WindowDecorViewHostSupplier<WindowDecorViewHost> windowDecorViewHostSupplier) {
+            @NonNull WindowDecorViewHostSupplier<WindowDecorViewHost> windowDecorViewHostSupplier,
+            @ShellBackgroundThread ShellExecutor bgExecutor) {
         this(context, handler, transitions, userContext, displayController, taskOrganizer, taskInfo,
                 taskSurface, SurfaceControl.Builder::new, SurfaceControl.Transaction::new,
                 WindowContainerTransaction::new, SurfaceControl::new,
                 new SurfaceControlViewHostFactory() {}, windowDecorViewHostSupplier,
-                new DesktopModeEventLogger());
+                new DesktopModeEventLogger(), bgExecutor);
     }
 
     WindowDecoration(
@@ -210,7 +214,8 @@ public abstract class WindowDecoration<T extends View & TaskFocusStateConsumer>
             Supplier<SurfaceControl> surfaceControlSupplier,
             SurfaceControlViewHostFactory surfaceControlViewHostFactory,
             @NonNull WindowDecorViewHostSupplier<WindowDecorViewHost> windowDecorViewHostSupplier,
-            @NonNull DesktopModeEventLogger desktopModeEventLogger
+            @NonNull DesktopModeEventLogger desktopModeEventLogger,
+            @ShellBackgroundThread ShellExecutor bgExecutor
     ) {
         mContext = context;
         mHandler = handler;
@@ -231,6 +236,7 @@ public abstract class WindowDecoration<T extends View & TaskFocusStateConsumer>
         final InsetsState insetsState = mDisplayController.getInsetsState(mTaskInfo.displayId);
         mIsStatusBarVisible = insetsState != null
                 && InsetsStateKt.isVisible(insetsState, statusBars());
+        mBgExecutor = bgExecutor;
     }
 
     /**
@@ -476,6 +482,9 @@ public abstract class WindowDecoration<T extends View & TaskFocusStateConsumer>
                 .setPosition(captionSurface, outResult.mCaptionX, 0 /* y */)
                 .setLayer(captionSurface, CAPTION_LAYER_Z_ORDER)
                 .show(captionSurface);
+        SurfaceControl[] layers = {captionSurface};
+        mBgExecutor.execute(() ->
+                mTaskOrganizer.setExcludeLayersFromTaskSnapshot(mTaskInfo.token, layers));
     }
 
     private void updateCaptionInsets(RelayoutParams params, WindowContainerTransaction wct,
@@ -664,6 +673,8 @@ public abstract class WindowDecoration<T extends View & TaskFocusStateConsumer>
             mWindowDecorViewHostSupplier.release(mViewHost, t);
             mViewHost = null;
             released = true;
+            mBgExecutor.execute(() ->
+                    mTaskOrganizer.clearExcludeLayersFromTaskSnapshot(mTaskInfo.token));
         }
 
         if (mDecorationContainerSurface != null) {

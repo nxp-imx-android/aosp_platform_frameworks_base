@@ -292,6 +292,74 @@ public class BackAnimationControllerTest extends ShellTestCase {
         verify(mTransitions).runOnIdle(any());
     }
 
+    @EnableFlags(Flags.FLAG_PREDICTIVE_BACK_INTERCEPT_TRANSITION)
+    @Test
+    public void testInTransition_retriesWhenIdle() throws RemoteException {
+        // Setup: First call to startBackNavigation returns IN_TRANSITION, second is successful.
+        BackNavigationInfo inTransitionInfo = new BackNavigationInfo.Builder()
+                .setType(BackNavigationInfo.TYPE_IN_TRANSITION)
+                .build();
+        BackNavigationInfo successInfo = new BackNavigationInfo.Builder()
+                .setType(BackNavigationInfo.TYPE_RETURN_TO_HOME)
+                .setOnBackInvokedCallback(mAnimatorCallback)
+                .setPrepareRemoteAnimation(true)
+                .setOnBackNavigationDone(new RemoteCallback(bundle -> {}))
+                .setTouchableRegion(mTouchableRegion)
+                .build();
+        registerAnimation(BackNavigationInfo.TYPE_RETURN_TO_HOME);
+        doReturn(inTransitionInfo)
+                .doReturn(successInfo)
+                .when(mActivityTaskManager).startBackNavigation(any(), any());
+
+        // Action: Start a gesture
+        doStartEvents(0, 100);
+        mShellExecutor.flushAll();
+
+        // Verification (Phase 1): Check that a retry has been scheduled.
+        verify(mActivityTaskManager).startBackNavigation(any(), any());
+        ArgumentCaptor<Runnable> idleRunnableCaptor = ArgumentCaptor.forClass(Runnable.class);
+        verify(mTransitions).runOnIdle(idleRunnableCaptor.capture());
+
+        // Action (Phase 2): Trigger the idle callback.
+        idleRunnableCaptor.getValue().run();
+        mShellExecutor.flushAll();
+
+        // Verification (Phase 2): Check that startBackNavigation is called again and succeeds.
+        verify(mActivityTaskManager, times(2)).startBackNavigation(any(), any());
+
+        // Verify that the normal animation flow continues
+        simulateRemoteAnimationStart();
+        mShellExecutor.flushAll();
+        verify(mAnimatorCallback, atLeastOnce()).onBackStarted(any(BackMotionEvent.class));
+    }
+
+    @EnableFlags(Flags.FLAG_PREDICTIVE_BACK_INTERCEPT_TRANSITION)
+    @Test
+    public void testInTransition_retryIsCancelledIfGestureFinished() throws RemoteException {
+        // Setup: startBackNavigation returns IN_TRANSITION
+        createNavigationInfo(BackNavigationInfo.TYPE_IN_TRANSITION, false, false);
+
+        // Action: Start a gesture
+        doStartEvents(0, 100);
+        mShellExecutor.flushAll();
+
+        // Verification (Phase 1): Check that a retry has been scheduled.
+        verify(mActivityTaskManager).startBackNavigation(any(), any());
+        ArgumentCaptor<Runnable> idleRunnableCaptor = ArgumentCaptor.forClass(Runnable.class);
+        verify(mTransitions).runOnIdle(idleRunnableCaptor.capture());
+
+        // Action (Phase 2): Finish the gesture before the idle callback runs.
+        releaseBackGesture();
+        mShellExecutor.flushAll();
+
+        // Action (Phase 3): Trigger the idle callback.
+        idleRunnableCaptor.getValue().run();
+        mShellExecutor.flushAll();
+
+        // Verification (Phase 3): Check that startBackNavigation is NOT called again.
+        verify(mActivityTaskManager, times(1)).startBackNavigation(any(), any());
+    }
+
     @Test
     public void backToHome_dispatchesEvents() throws RemoteException {
         registerAnimation(BackNavigationInfo.TYPE_RETURN_TO_HOME);

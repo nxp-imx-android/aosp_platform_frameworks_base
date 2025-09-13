@@ -363,7 +363,7 @@ public class LetterboxEduWindowManagerTest extends ShellTestCase {
                 mTaskListener, /* canShow= */ false));
 
         assertNull(windowManager.mLayout);
-        verify(mViewHost, never()).relayout(any());
+        verify(mViewHost, never()).relayout(any(WindowManager.LayoutParams.class));
     }
 
     @Test

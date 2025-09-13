@@ -90,6 +90,7 @@ import com.android.wm.shell.ShellTestCase;
 import com.android.wm.shell.TestHandler;
 import com.android.wm.shell.TestRunningTaskInfoBuilder;
 import com.android.wm.shell.common.DisplayController;
+import com.android.wm.shell.common.ShellExecutor;
 import com.android.wm.shell.desktopmode.DesktopModeEventLogger;
 import com.android.wm.shell.tests.R;
 import com.android.wm.shell.transition.Transitions;
@@ -165,6 +166,9 @@ public class WindowDecorationTests extends ShellTestCase {
     private DesktopModeEventLogger mDesktopModeEventLogger;
     @Mock
     private Transitions mTransitions;
+
+    @Mock
+    private ShellExecutor mMockBGExecutor;
 
     private final List<SurfaceControl.Transaction> mMockSurfaceControlTransactions =
             new ArrayList<>();
@@ -1260,7 +1264,7 @@ public class WindowDecorationTests extends ShellTestCase {
                         () -> mock(SurfaceControl.Transaction.class)),
                 () -> mMockWindowContainerTransaction, () -> mMockTaskSurface,
                 mMockSurfaceControlViewHostFactory, mMockWindowDecorViewHostSupplier,
-                mDesktopModeEventLogger);
+                mDesktopModeEventLogger, mMockBGExecutor);
     }
 
     private class MockObjectSupplier<T> implements Supplier<T> {
@@ -1338,12 +1342,13 @@ public class WindowDecorationTests extends ShellTestCase {
                 SurfaceControlViewHostFactory surfaceControlViewHostFactory,
                 @NonNull WindowDecorViewHostSupplier<WindowDecorViewHost>
                         windowDecorViewHostSupplier,
-                DesktopModeEventLogger desktopModeEventLogger) {
+                DesktopModeEventLogger desktopModeEventLogger,
+                ShellExecutor bgExecutor) {
             super(context, mTestHandler, mTransitions, userContext, displayController,
                     taskOrganizer, taskInfo, taskSurface, surfaceControlBuilderSupplier,
                     surfaceControlTransactionSupplier, windowContainerTransactionSupplier,
                     surfaceControlSupplier, surfaceControlViewHostFactory,
-                    windowDecorViewHostSupplier, desktopModeEventLogger);
+                    windowDecorViewHostSupplier, desktopModeEventLogger, bgExecutor);
         }
 
         void relayout(ActivityManager.RunningTaskInfo taskInfo, boolean hasGlobalFocus) {

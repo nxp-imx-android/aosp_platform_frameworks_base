@@ -26,6 +26,8 @@ sealed class PopupChipId(val value: String) {
     data object MediaControl : PopupChipId("MediaControl")
 
     data object AvControlsIndicator : PopupChipId("AvControlsIndicator")
+
+    data object ShareScreenPrivacyIndicator : PopupChipId("ShareScreenPrivacyIndicator")
 }
 
 /** Model for an optionally clickable icon that is displayed on the chip. */

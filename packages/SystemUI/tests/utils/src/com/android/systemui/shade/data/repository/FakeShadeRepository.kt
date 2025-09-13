@@ -91,8 +91,6 @@ class FakeShadeRepository @Inject constructor() : ShadeRepository {
 
     override val legacyUseSplitShade = MutableStateFlow(false)
 
-    override val isWideScreen = MutableStateFlow(false)
-
     @Deprecated("Use ShadeInteractor instead")
     override fun setLegacyExpandImmediate(legacyExpandImmediate: Boolean) {
         _legacyExpandImmediate.value = legacyExpandImmediate
@@ -176,7 +174,6 @@ class FakeShadeRepository @Inject constructor() : ShadeRepository {
 
     override fun setShadeLayoutWide(isShadeLayoutWide: Boolean) {
         legacyUseSplitShade.value = isShadeLayoutWide
-        isWideScreen.value = isShadeLayoutWide
     }
 }
 

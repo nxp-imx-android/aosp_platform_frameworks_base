@@ -33,9 +33,9 @@ import com.android.systemui.SysuiTestCase
 import com.android.systemui.authentication.data.repository.fakeAuthenticationRepository
 import com.android.systemui.authentication.shared.model.AuthenticationMethodModel
 import com.android.systemui.communal.domain.interactor.setCommunalAvailable
-import com.android.systemui.coroutines.collectLastValue
 import com.android.systemui.deviceentry.data.repository.fakeDeviceEntryRepository
 import com.android.systemui.flags.EnableSceneContainer
+import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.collectLastValue
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.testScope
@@ -48,9 +48,10 @@ import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.scene.shared.model.TransitionKeys
 import com.android.systemui.scene.ui.viewmodel.SceneContainerArea
-import com.android.systemui.shade.data.repository.shadeRepository
 import com.android.systemui.shade.domain.interactor.disableDualShade
 import com.android.systemui.shade.domain.interactor.enableDualShade
+import com.android.systemui.shade.domain.interactor.enableSingleShade
+import com.android.systemui.shade.domain.interactor.enableSplitShade
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
 import kotlin.math.pow
@@ -168,11 +169,11 @@ class LockscreenUserActionsViewModelTest : SysuiTestCase() {
     @JvmField @Parameter(4) var isShadeTouchable: Boolean = false
     @JvmField @Parameter(5) var isCommunalAvailable: Boolean = false
 
-    private val underTest by lazy { kosmos.lockscreenUserActionsViewModel }
+    private val Kosmos.underTest by Kosmos.Fixture { lockscreenUserActionsViewModel }
 
     @Before
     fun setup() {
-        underTest.activateIn(kosmos.testScope)
+        with(kosmos) { underTest.activateIn(testScope) }
     }
 
     @Test
@@ -189,8 +190,12 @@ class LockscreenUserActionsViewModelTest : SysuiTestCase() {
                 }
             )
             sceneInteractor.changeScene(Scenes.Lockscreen, "reason")
-            shadeRepository.setShadeLayoutWide(!isNarrowScreen)
-            kosmos.setCommunalAvailable(isCommunalAvailable)
+            if (isNarrowScreen) {
+                enableSingleShade()
+            } else {
+                enableSplitShade()
+            }
+            setCommunalAvailable(isCommunalAvailable)
             fakePowerRepository.updateWakefulness(
                 rawState = if (isShadeTouchable) WakefulnessState.AWAKE else WakefulnessState.ASLEEP
             )
@@ -274,7 +279,7 @@ class LockscreenUserActionsViewModelTest : SysuiTestCase() {
                 }
             )
             sceneInteractor.changeScene(Scenes.Lockscreen, "reason")
-            kosmos.setCommunalAvailable(isCommunalAvailable)
+            setCommunalAvailable(isCommunalAvailable)
             fakePowerRepository.updateWakefulness(
                 rawState = if (isShadeTouchable) WakefulnessState.AWAKE else WakefulnessState.ASLEEP
             )

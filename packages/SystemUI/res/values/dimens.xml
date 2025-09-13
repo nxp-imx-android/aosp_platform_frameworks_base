@@ -529,9 +529,6 @@
     <!-- some constraints use a negative margin. must be aligned with overlay_border_width, above;
          overlay_border_width_neg = overlay_border_width * -1 -->
     <dimen name="overlay_border_width_neg">-4dp</dimen>
-    <dimen name="overlay_shade_panel_shape_radius">
-        @dimen/aux_spacing_overlay_panel_shape_radius
-    </dimen>
 
     <dimen name="clipboard_preview_size">@dimen/overlay_x_scale</dimen>
     <dimen name="clipboard_overlay_min_font">10sp</dimen>
@@ -647,19 +644,6 @@
     <dimen name="shelf_and_lock_icon_overlap">@dimen/notification_shelf_height</dimen>
 
     <dimen name="notification_panel_margin_horizontal">0dp</dimen>
-
-    <!--
-    The width of the shade overlay panel (both notifications and quick settings). On Compact screens
-    in portrait orientation (< w600dp) this is ignored, and the shade layout takes up the full
-    screen width.
-    -->
-    <dimen name="shade_panel_width">412dp</dimen>
-
-    <!--
-    The horizontal distance between the shade overlay panel (both notifications and quick settings)
-    and the edge of the screen. This is zero only on Compact screens (< sw600dp).
-    -->
-    <dimen name="shade_panel_margin_horizontal">0dp</dimen>
 
     <dimen name="brightness_mirror_height">48dp</dimen>
 
@@ -2300,13 +2284,6 @@
     <!-- rear_display_animation_width_opened - 2 * rear_display_dialog_slider_corner_radius -->
     <dimen name="rear_display_progress_width">231dp</dimen>
     <!-- Rear display mode end -->
-
-    <!-- Spacing attributes to overwrite -->
-    <dimen name="aux_spacing_overlay_panel_shape_radius">46dp</dimen>
-    <dimen name="overlay_qs_layout_brightness_thumb_height">52dp</dimen>
-    <dimen name="overlay_qs_layout_brightness_thumb_width">4dp</dimen>
-    <dimen name="overlay_qs_layout_brightness_track_height">40dp</dimen>
-    <!-- Spacing attributes to overwrite end -->
 
     <!-- Tile Details start-->
     <dimen name="tile_details_toggle_row_height">48dp</dimen>

@@ -91,6 +91,7 @@ import static android.view.WindowManagerGlobal.ADD_OKAY;
 import static android.view.WindowManagerGlobal.ADD_PERMISSION_DENIED;
 import static android.view.contentprotection.flags.Flags.createAccessibilityOverlayAppOpEnabled;
 
+import static com.android.hardware.input.Flags.bluetoothWakeupStateCheck;
 import static com.android.hardware.input.Flags.enableNew25q2Keycodes;
 import static com.android.internal.policy.IKeyguardService.SCREEN_TURNING_ON_REASON_DISPLAY_SWITCH;
 import static com.android.internal.policy.IKeyguardService.SCREEN_TURNING_ON_REASON_UNKNOWN;
@@ -5254,10 +5255,24 @@ public class PhoneWindowManager implements WindowManagerPolicy {
     BroadcastReceiver mBluetoothHidReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
+            if (bluetoothWakeupStateCheck() && !SystemProperties.getBoolean(
+                    "bluetooth.power.suspend.hid_wake_up.enabled", false)) {
+                Slog.d(TAG, "Bluetooth HID wake up disabled.");
+                return;
+            }
             if (ACTION_CONNECTION_STATE_CHANGED.equals(intent.getAction())) {
-                Integer state = (Integer) intent.getExtra(BluetoothProfile.EXTRA_STATE);
+                Integer newState = (Integer) intent.getExtra(BluetoothProfile.EXTRA_STATE);
+                Integer prevState = (Integer) intent.getExtra(
+                        BluetoothProfile.EXTRA_PREVIOUS_STATE);
                 final boolean interactive = mDefaultDisplayPolicy.isAwake();
-                if (state != null && !interactive && state == STATE_CONNECTED) {
+                if (bluetoothWakeupStateCheck()
+                        && (newState == null || prevState == null || prevState.equals(newState))) {
+                    if (DEBUG_WAKEUP) {
+                        Slog.w(TAG, "Bluetooth connection state does not change: " + intent);
+                    }
+                    return;
+                }
+                if (newState != null && !interactive && newState.equals(STATE_CONNECTED)) {
                     mWindowWakeUpPolicy.wakeUpFromBluetooth();
                 }
             }

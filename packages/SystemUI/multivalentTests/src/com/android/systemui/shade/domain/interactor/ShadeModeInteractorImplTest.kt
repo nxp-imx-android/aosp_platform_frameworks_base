@@ -44,8 +44,7 @@ import org.junit.runner.RunWith
 class ShadeModeInteractorImplTest : SysuiTestCase() {
 
     private val kosmos = testKosmos().useUnconfinedTestDispatcher()
-
-    private val underTest: ShadeModeInteractor by lazy { kosmos.shadeModeInteractor }
+    private val Kosmos.underTest by Kosmos.Fixture { shadeModeInteractor }
 
     @Test
     fun legacyShadeMode_narrowScreen_singleShade() =
@@ -88,14 +87,10 @@ class ShadeModeInteractorImplTest : SysuiTestCase() {
     @Test
     fun legacyShadeMode_disableSplitShade_wideScreen_dualShade() =
         kosmos.runTest {
-            enableSplitShade()
-            testableContext.orCreateTestableResources.addOverride(
-                R.bool.config_disableSplitShade,
-                true,
-            )
-            fakeConfigurationRepository.onAnyConfigurationChange()
-
+            overrideResource(R.bool.config_disableSplitShade, true)
             val shadeMode by collectLastValue(underTest.shadeMode)
+            enableSplitShade()
+            fakeConfigurationRepository.onConfigurationChange()
 
             assertThat(shadeMode).isEqualTo(ShadeMode.Dual)
         }
@@ -103,14 +98,11 @@ class ShadeModeInteractorImplTest : SysuiTestCase() {
     @Test
     fun legacyShadeMode_disableSplitShade_narrowScreen_singleShade() =
         kosmos.runTest {
+            overrideResource(R.bool.config_disableSplitShade, true)
             val shadeMode by collectLastValue(underTest.shadeMode)
             enableSingleShade()
 
-            testableContext.orCreateTestableResources.addOverride(
-                R.bool.config_disableSplitShade,
-                true,
-            )
-            fakeConfigurationRepository.onAnyConfigurationChange()
+            fakeConfigurationRepository.onConfigurationChange()
 
             assertThat(shadeMode).isEqualTo(ShadeMode.Single)
         }
@@ -240,12 +232,12 @@ class ShadeModeInteractorImplTest : SysuiTestCase() {
 
     private fun Kosmos.setupScreenConfig(wideScreen: Boolean, legacyUseSplitShade: Boolean) {
         testableContext.orCreateTestableResources.apply {
+            addOverride(R.bool.config_isFullWidthShade, !wideScreen)
             addOverride(R.bool.config_use_split_notification_shade, legacyUseSplitShade)
             addOverride(R.bool.config_use_large_screen_shade_header, legacyUseSplitShade)
         }
-        fakeConfigurationRepository.onAnyConfigurationChange()
+        fakeConfigurationRepository.onConfigurationChange()
         shadeRepository.legacyUseSplitShade.value = legacyUseSplitShade
-        shadeRepository.isWideScreen.value = wideScreen
     }
 
     private fun Kosmos.setupShadeConfig(
@@ -257,6 +249,6 @@ class ShadeModeInteractorImplTest : SysuiTestCase() {
             R.bool.config_disableSplitShade,
             disableSplitShade,
         )
-        fakeConfigurationRepository.onAnyConfigurationChange()
+        fakeConfigurationRepository.onConfigurationChange()
     }
 }

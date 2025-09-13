@@ -72,6 +72,7 @@ public abstract class MediaOutputBaseDialog extends SystemUIDialog
         implements MediaSwitchingController.Callback, Window.Callback {
 
     private static final String TAG = "MediaOutputDialog";
+    public static final int SMALL_SCREEN_HEIGHT_DP = 400;
 
     protected final Handler mMainThreadHandler = new Handler(Looper.getMainLooper());
     private final LinearLayoutManager mLayoutManager;
@@ -168,7 +169,14 @@ public abstract class MediaOutputBaseDialog extends SystemUIDialog
         mDeviceListLayout = mDialogView.requireViewById(R.id.device_list);
         mDoneButton = mDialogView.requireViewById(R.id.done);
         mStopButton = mDialogView.requireViewById(R.id.stop);
-        mAppResourceIcon = mDialogView.requireViewById(R.id.app_source_icon);
+
+        boolean isSmallScreenHeight =
+                mContext.getResources().getConfiguration().screenHeightDp <= SMALL_SCREEN_HEIGHT_DP;
+        mAppResourceIcon = mDialogView.requireViewById(
+                isSmallScreenHeight ? R.id.app_source_icon_small_screen_height
+                        : R.id.app_source_icon);
+        mAppResourceIcon.setVisibility(View.VISIBLE);
+        mMediaMetadataSectionLayout.setVisibility(isSmallScreenHeight ? View.GONE : View.VISIBLE);
 
         // Init device list
         mLayoutManager.setAutoMeasureEnabled(true);
@@ -187,6 +195,7 @@ public abstract class MediaOutputBaseDialog extends SystemUIDialog
         mDismissing = false;
 
         if (enableOutputSwitcherRedesign()) {
+            // TODO(b/444172986): set these properties in the layout file.
             // Reduce radius of dialog background.
             mDialogView.setBackground(AppCompatResources.getDrawable(mContext,
                     R.drawable.media_output_dialog_background_reduced_radius));
@@ -202,17 +211,19 @@ public abstract class MediaOutputBaseDialog extends SystemUIDialog
                     .setTypeface(Typeface.create(GSF_TITLE_MEDIUM_EMPHASIZED, Typeface.NORMAL));
             mHeaderSubtitle
                     .setTypeface(Typeface.create(GSF_TITLE_SMALL, Typeface.NORMAL));
-            // Reduce the size of the app icon.
-            float appIconSize = mContext.getResources().getDimension(
-                    R.dimen.media_output_dialog_app_icon_size);
-            float appIconBottomMargin = mContext.getResources().getDimension(
-                    R.dimen.media_output_dialog_app_icon_bottom_margin);
-            ViewGroup.MarginLayoutParams params =
-                    (ViewGroup.MarginLayoutParams) mAppResourceIcon.getLayoutParams();
-            params.bottomMargin = (int) appIconBottomMargin;
-            params.width = (int) appIconSize;
-            params.height = (int) appIconSize;
-            mAppResourceIcon.setLayoutParams(params);
+            if (!isSmallScreenHeight) {
+                // Reduce the size of the app icon.
+                float appIconSize = mContext.getResources().getDimension(
+                        R.dimen.media_output_dialog_app_icon_size);
+                float appIconBottomMargin = mContext.getResources().getDimension(
+                        R.dimen.media_output_dialog_app_icon_bottom_margin);
+                ViewGroup.MarginLayoutParams params =
+                        (ViewGroup.MarginLayoutParams) mAppResourceIcon.getLayoutParams();
+                params.bottomMargin = (int) appIconBottomMargin;
+                params.width = (int) appIconSize;
+                params.height = (int) appIconSize;
+                mAppResourceIcon.setLayoutParams(params);
+            }
             // Change footer background color on scroll.
             mDevicesRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
                 @Override

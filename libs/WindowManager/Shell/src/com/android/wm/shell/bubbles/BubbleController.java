@@ -1741,7 +1741,7 @@ public class BubbleController implements ConfigurationChangeListener,
                 bubbleBarLocation == null
                         ? null
                         : new UpdateLocationRequest(bubbleBarLocation, UpdateSource.APP_ICON_DRAG);
-        expandStackAndSelectAppBubble(b, updateLocationRequest);
+        expandStackAndSelectAppBubble(b, entryPoint, updateLocationRequest);
     }
 
     /**
@@ -1762,7 +1762,7 @@ public class BubbleController implements ConfigurationChangeListener,
                 bubbleBarLocation == null
                         ? null
                         : new UpdateLocationRequest(bubbleBarLocation, UpdateSource.APP_ICON_DRAG);
-        expandStackAndSelectAppBubble(b, updateLocationRequest);
+        expandStackAndSelectAppBubble(b, entryPoint, updateLocationRequest);
     }
 
     /**
@@ -1781,16 +1781,20 @@ public class BubbleController implements ConfigurationChangeListener,
                 bubbleBarLocation == null
                         ? null
                         : new UpdateLocationRequest(bubbleBarLocation, UpdateSource.APP_ICON_DRAG);
-        expandStackAndSelectAppBubble(b, updateLocationRequest);
+        expandStackAndSelectAppBubble(b, entryPoint, updateLocationRequest);
     }
 
     void expandStackAndSelectAppBubble(Bubble b) {
-        expandStackAndSelectAppBubble(b, /* updateLocationRequest= */ null);
+        expandStackAndSelectAppBubble(b, /* entryPoint= */ null, /* updateLocationRequest= */ null);
     }
 
-    void expandStackAndSelectAppBubble(Bubble b,
+    private void expandStackAndSelectAppBubble(Bubble b,
+            @Nullable EntryPoint entryPoint,
             @Nullable UpdateLocationRequest updateLocationRequest) {
         if (!BubbleAnythingFlagHelper.enableCreateAnyBubble()) return;
+        if (entryPoint != null) {
+            mLogger.logEntryPoint(isShowingAsBubbleBar(), entryPoint, b.getPackageName());
+        }
         BubbleBarLocation location =
                 isShowingAsBubbleBar() && updateLocationRequest != null
                         ? updateLocationRequest.getLocation()
@@ -2393,6 +2397,8 @@ public class BubbleController implements ConfigurationChangeListener,
 
     private void onEntryAdded(BubbleEntry entry) {
         if (canLaunchInTaskView(mContext, entry)) {
+            mLogger.logEntryPoint(isShowingAsBubbleBar(), EntryPoint.NOTIFICATION,
+                    entry.getStatusBarNotification().getPackageName());
             updateBubble(entry);
         }
     }
@@ -2408,6 +2414,11 @@ public class BubbleController implements ConfigurationChangeListener,
             // It was previously a bubble but no longer a bubble -- lets remove it
             removeBubble(entry.getKey(), DISMISS_NO_LONGER_BUBBLE);
         } else if (shouldBubble && entry.isBubble()) {
+            if (!mBubbleData.hasAnyBubbleWithKey(entry.getKey())) {
+                // only log the entry point if this is a newly promoted bubble
+                mLogger.logEntryPoint(isShowingAsBubbleBar(), EntryPoint.NOTIFICATION_BUBBLE_BUTTON,
+                        entry.getStatusBarNotification().getPackageName());
+            }
             updateBubble(entry);
         }
     }
@@ -3161,6 +3172,11 @@ public class BubbleController implements ConfigurationChangeListener,
         mBubbleTransitions.mTaskViewTransitions.dump(pw);
 
         mBubblePositioner.dump(pw);
+
+        if (Flags.enableBubbleEventHistoryLogs()) {
+            BubbleLog.dump(pw, prefix);
+            pw.println();
+        }
     }
 
     /**

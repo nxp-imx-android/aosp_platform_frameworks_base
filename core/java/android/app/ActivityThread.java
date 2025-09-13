@@ -256,6 +256,7 @@ import com.android.internal.protolog.ProtoLog;
 import com.android.internal.util.ArrayUtils;
 import com.android.internal.util.FastPrintWriter;
 import com.android.internal.util.Preconditions;
+import com.android.internal.util.StringCache;
 import com.android.internal.util.function.pooled.PooledLambda;
 import com.android.org.conscrypt.TrustedCertificateStore;
 import com.android.server.am.BitmapDumpProto;
@@ -1450,10 +1451,8 @@ public final class ActivityThread extends ClientTransactionHandler
             ApplicationSharedMemory instance =
                     ApplicationSharedMemory.fromFileDescriptor(
                             applicationSharedMemoryFd, /* mutable= */ false);
-            if (android.content.pm.Flags.cacheSdkSystemFeatures()) {
-                SystemFeaturesCache.setInstance(
-                        new SystemFeaturesCache(instance.readSystemFeaturesCache()));
-            }
+            SystemFeaturesCache.setInstance(
+                    new SystemFeaturesCache(instance.readSystemFeaturesCache()));
             instance.closeFileDescriptor();
             ApplicationSharedMemory.setInstance(instance);
 
@@ -1955,6 +1954,10 @@ public final class ActivityThread extends ClientTransactionHandler
             }
 
             pw.println(" ");
+
+            if (android.os.Flags.parcelStringCacheEnabled()) {
+                StringCache.INSTANCE.dump(pw);
+            }
         }
 
         @NeverCompile
@@ -7719,6 +7722,11 @@ public final class ActivityThread extends ClientTransactionHandler
         }
 
         WindowManagerGlobal.getInstance().trimMemory(level);
+
+        if (android.os.Flags.parcelStringCacheEnabled()
+                && level >= ComponentCallbacks2.TRIM_MEMORY_BACKGROUND) {
+            StringCache.INSTANCE.clear();
+        }
     }
 
     private void setupGraphicsSupport(Context context) {

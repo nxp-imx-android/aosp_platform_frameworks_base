@@ -54,7 +54,6 @@ import com.android.systemui.statusbar.notificationShadeDepthController
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
 import kotlin.math.max
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flowOf
 import org.junit.Before
@@ -64,7 +63,6 @@ import org.mockito.kotlin.verify
 import platform.test.runner.parameterized.ParameterizedAndroidJunit4
 import platform.test.runner.parameterized.Parameters
 
-@OptIn(ExperimentalCoroutinesApi::class)
 @SmallTest
 @RunWithLooper(setAsMainLooper = true)
 @RunWith(ParameterizedAndroidJunit4::class)
@@ -72,7 +70,7 @@ class ShadeStartableTest(flags: FlagsParameterization) : SysuiTestCase() {
 
     private val kosmos = testKosmos().useUnconfinedTestDispatcher()
 
-    private val underTest: ShadeStartable by lazy { kosmos.shadeStartable }
+    private val Kosmos.underTest: ShadeStartable by Kosmos.Fixture { shadeStartable }
 
     companion object {
         @JvmStatic
@@ -219,13 +217,11 @@ class ShadeStartableTest(flags: FlagsParameterization) : SysuiTestCase() {
     @EnableSceneContainer
     fun hydrateFullWidth_singleShade() =
         kosmos.runTest {
-            val isWideScreen by collectLastValue(shadeRepository.isWideScreen)
             val legacyUseSplitShade by collectLastValue(shadeRepository.legacyUseSplitShade)
             enableSingleShade()
             underTest.start()
 
             verify(notificationStackScrollLayoutController).setIsFullWidth(true)
-            assertThat(isWideScreen).isFalse()
             assertThat(legacyUseSplitShade).isFalse()
         }
 
@@ -233,13 +229,11 @@ class ShadeStartableTest(flags: FlagsParameterization) : SysuiTestCase() {
     @EnableSceneContainer
     fun hydrateFullWidth_splitShade() =
         kosmos.runTest {
-            val isWideScreen by collectLastValue(shadeRepository.isWideScreen)
             val legacyUseSplitShade by collectLastValue(shadeRepository.legacyUseSplitShade)
             enableSplitShade()
             underTest.start()
 
             verify(notificationStackScrollLayoutController).setIsFullWidth(false)
-            assertThat(isWideScreen).isTrue()
             assertThat(legacyUseSplitShade).isTrue()
         }
 
@@ -247,13 +241,11 @@ class ShadeStartableTest(flags: FlagsParameterization) : SysuiTestCase() {
     @EnableSceneContainer
     fun hydrateFullWidth_dualShade_narrowScreen() =
         kosmos.runTest {
-            val isWideScreen by collectLastValue(shadeRepository.isWideScreen)
             val legacyUseSplitShade by collectLastValue(shadeRepository.legacyUseSplitShade)
             enableDualShade(wideLayout = false)
             underTest.start()
 
             verify(notificationStackScrollLayoutController).setIsFullWidth(true)
-            assertThat(isWideScreen).isFalse()
             assertThat(legacyUseSplitShade).isFalse()
         }
 
@@ -261,13 +253,11 @@ class ShadeStartableTest(flags: FlagsParameterization) : SysuiTestCase() {
     @EnableSceneContainer
     fun hydrateFullWidth_dualShade_wideScreen() =
         kosmos.runTest {
-            val isWideScreen by collectLastValue(shadeRepository.isWideScreen)
             val legacyUseSplitShade by collectLastValue(shadeRepository.legacyUseSplitShade)
             enableDualShade(wideLayout = true)
             underTest.start()
 
             verify(notificationStackScrollLayoutController).setIsFullWidth(false)
-            assertThat(isWideScreen).isTrue()
             assertThat(legacyUseSplitShade).isTrue()
         }
 

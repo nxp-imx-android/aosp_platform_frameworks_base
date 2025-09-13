@@ -2094,7 +2094,8 @@ class AppWidgetServiceImpl extends IAppWidgetService.Stub implements WidgetBacku
         final int userId = UserHandle.getCallingUserId();
 
         if (DEBUG) {
-            Slog.i(TAG, "getAppWidgetViews() " + userId);
+            Slog.i(TAG, "getAppWidgetViews() " + userId + " callingPackage=" + callingPackage
+                    + " appWidgetId=" + appWidgetId);
         }
 
         // Make sure the package runs under the caller uid.

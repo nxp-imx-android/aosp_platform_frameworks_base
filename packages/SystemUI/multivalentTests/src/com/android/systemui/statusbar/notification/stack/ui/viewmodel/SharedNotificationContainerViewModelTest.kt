@@ -60,6 +60,7 @@ import com.android.systemui.keyguard.ui.viewmodel.ViewStateAccessor
 import com.android.systemui.keyguard.ui.viewmodel.aodBurnInViewModel
 import com.android.systemui.keyguard.ui.viewmodel.keyguardRootViewModel
 import com.android.systemui.kosmos.Kosmos
+import com.android.systemui.kosmos.advanceTimeBy
 import com.android.systemui.kosmos.collectLastValue
 import com.android.systemui.kosmos.collectValues
 import com.android.systemui.kosmos.runTest
@@ -898,25 +899,24 @@ class SharedNotificationContainerViewModelTest(flags: FlagsParameterization) : S
             var notificationCount = 10
             val calculateSpace = { space: Float, useExtraShelfSpace: Boolean -> notificationCount }
             val maxNotifications by collectLastValue(underTest.getMaxNotifications(calculateSpace))
-            testScope.advanceTimeBy(50L)
+            advanceTimeBy(50L)
             showLockscreen()
 
-            shadeTestUtil.setSplitShade(false)
-            fakeConfigurationRepository.onAnyConfigurationChange()
+            enableSingleShade()
 
             assertThat(maxNotifications).isEqualTo(10)
 
             // Also updates when directly requested (as it would from NotificationStackScrollLayout)
             notificationCount = 25
             sharedNotificationContainerInteractor.notificationStackChanged()
-            testScope.advanceTimeBy(50L)
+            advanceTimeBy(50L)
             assertThat(maxNotifications).isEqualTo(25)
 
             // Also ensure another collection starts with the same value. As an example, folding
             // then unfolding will restart the coroutine and it must get the last value immediately.
             val newMaxNotifications by
                 collectLastValue(underTest.getMaxNotifications(calculateSpace))
-            testScope.advanceTimeBy(50L)
+            advanceTimeBy(50L)
             assertThat(newMaxNotifications).isEqualTo(25)
         }
 
@@ -927,7 +927,7 @@ class SharedNotificationContainerViewModelTest(flags: FlagsParameterization) : S
             var notificationCount = 10
             val calculateSpace = { space: Float, useExtraShelfSpace: Boolean -> notificationCount }
             val maxNotifications by collectLastValue(underTest.getMaxNotifications(calculateSpace))
-            testScope.advanceTimeBy(50L)
+            advanceTimeBy(50L)
             showLockscreen()
 
             fakeConfigurationRepository.onAnyConfigurationChange()
@@ -958,13 +958,12 @@ class SharedNotificationContainerViewModelTest(flags: FlagsParameterization) : S
         kosmos.runTest {
             val calculateSpace = { space: Float, useExtraShelfSpace: Boolean -> 10 }
             val maxNotifications by collectLastValue(underTest.getMaxNotifications(calculateSpace))
-            testScope.advanceTimeBy(50L)
+            advanceTimeBy(50L)
 
             // Show lockscreen with shade expanded
             showLockscreenWithShadeExpanded()
 
-            shadeTestUtil.setSplitShade(false)
-            fakeConfigurationRepository.onAnyConfigurationChange()
+            enableSingleShade()
 
             // -1 means No Limit
             assertThat(maxNotifications).isEqualTo(-1)
@@ -1445,19 +1444,19 @@ class SharedNotificationContainerViewModelTest(flags: FlagsParameterization) : S
                         calculateHeight,
                     )
                 )
-            kosmos.activeNotificationListRepository.setActiveNotifs(notificationCount)
+            activeNotificationListRepository.setActiveNotifs(notificationCount)
             showLockscreen()
             keyguardInteractor.setNotificationContainerBounds(
                 NotificationContainerBounds(top = 100F, bottom = 300F)
             )
 
             sharedNotificationContainerInteractor.notificationStackChanged()
-            testScope.advanceTimeBy(50L)
+            advanceTimeBy(50L)
             assertThat(stackAbsoluteBottom).isEqualTo(150F)
 
             notificationCount = 3
             sharedNotificationContainerInteractor.notificationStackChanged()
-            testScope.advanceTimeBy(50L)
+            advanceTimeBy(50L)
             assertThat(stackAbsoluteBottom).isEqualTo(170F)
         }
 
@@ -1483,7 +1482,7 @@ class SharedNotificationContainerViewModelTest(flags: FlagsParameterization) : S
                 NotificationContainerBounds(top = 100F, bottom = 300F)
             )
             activeNotificationListRepository.setActiveNotifs(notificationCount)
-            testScope.advanceTimeBy(50L)
+            advanceTimeBy(50L)
 
             assertThat(stackAbsoluteBottom).isEqualTo(0F)
         }
@@ -1507,18 +1506,18 @@ class SharedNotificationContainerViewModelTest(flags: FlagsParameterization) : S
             activeNotificationListRepository.setActiveNotifs(notificationCount)
             showLockscreen()
 
-            shadeTestUtil.setSplitShade(false)
+            enableSingleShade()
             keyguardInteractor.setNotificationContainerBounds(
                 NotificationContainerBounds(top = 100F, bottom = 300F)
             )
 
             sharedNotificationContainerInteractor.notificationStackChanged()
-            testScope.advanceTimeBy(50L)
+            advanceTimeBy(50L)
             assertThat(stackAbsoluteBottom).isEqualTo(150F)
 
             shelfHeight = 0f
             sharedNotificationContainerInteractor.notificationStackChanged()
-            testScope.advanceTimeBy(50L)
+            advanceTimeBy(50L)
             assertThat(stackAbsoluteBottom).isEqualTo(140F)
         }
 
@@ -1537,9 +1536,9 @@ class SharedNotificationContainerViewModelTest(flags: FlagsParameterization) : S
                         calculateHeight,
                     )
                 )
-            testScope.advanceTimeBy(50L)
+            advanceTimeBy(50L)
 
-            shadeTestUtil.setSplitShade(false)
+            enableSingleShade()
             keyguardInteractor.setNotificationContainerBounds(
                 NotificationContainerBounds(top = 100F, bottom = 300F)
             )
@@ -1567,19 +1566,19 @@ class SharedNotificationContainerViewModelTest(flags: FlagsParameterization) : S
                     )
                 )
             showLockscreen()
-            shadeTestUtil.setSplitShade(false)
+            enableSingleShade()
             activeNotificationListRepository.setActiveNotifs(notificationCount)
             keyguardInteractor.setNotificationContainerBounds(
                 NotificationContainerBounds(top = 100F, bottom = 300F)
             )
-            testScope.advanceTimeBy(50L)
+            advanceTimeBy(50L)
             assertThat(stackAbsoluteBottom).isEqualTo(150F)
 
             showLockscreenWithQSExpanded()
             keyguardInteractor.setNotificationContainerBounds(
                 NotificationContainerBounds(top = 200F, bottom = 300F)
             )
-            testScope.advanceTimeBy(50L)
+            advanceTimeBy(50L)
             assertThat(stackAbsoluteBottom).isEqualTo(150F)
         }
 
@@ -1600,12 +1599,12 @@ class SharedNotificationContainerViewModelTest(flags: FlagsParameterization) : S
                     )
                 )
             showLockscreen()
-            shadeTestUtil.setSplitShade(false)
+            enableSingleShade()
             activeNotificationListRepository.setActiveNotifs(notificationCount)
             keyguardInteractor.setNotificationContainerBounds(
                 NotificationContainerBounds(top = 100F, bottom = 100F)
             )
-            testScope.advanceTimeBy(50L)
+            advanceTimeBy(50L)
             assertThat(stackAbsoluteBottom).isEqualTo(200F)
         }
 

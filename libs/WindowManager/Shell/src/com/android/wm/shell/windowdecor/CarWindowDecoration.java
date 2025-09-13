@@ -48,7 +48,6 @@ import com.android.wm.shell.windowdecor.common.viewhost.WindowDecorViewHostSuppl
  */
 public class CarWindowDecoration extends WindowDecoration<WindowDecorLinearLayout> {
     private WindowDecorLinearLayout mRootView;
-    private @ShellBackgroundThread final ShellExecutor mBgExecutor;
     private final View.OnClickListener mClickListener;
     private final RelayoutParams mRelayoutParams = new RelayoutParams();
     private final RelayoutResult<WindowDecorLinearLayout> mResult = new RelayoutResult<>();
@@ -66,8 +65,7 @@ public class CarWindowDecoration extends WindowDecoration<WindowDecorLinearLayou
             WindowDecorViewHostSupplier<WindowDecorViewHost> windowDecorViewHostSupplier,
             View.OnClickListener clickListener) {
         super(context, handler, transitions, userContext, displayController, taskOrganizer,
-                taskInfo, taskSurface, windowDecorViewHostSupplier);
-        mBgExecutor = bgExecutor;
+                taskInfo, taskSurface, windowDecorViewHostSupplier, bgExecutor);
         mClickListener = clickListener;
     }
 

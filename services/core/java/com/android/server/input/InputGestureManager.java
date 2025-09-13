@@ -25,6 +25,7 @@ import static com.android.hardware.input.Flags.enableTalkbackKeyGestures;
 import static com.android.hardware.input.Flags.enableVoiceAccessKeyGestures;
 import static com.android.hardware.input.Flags.keyboardA11yShortcutControl;
 import static com.android.hardware.input.Flags.enablePartialScreenshotKeyboardShortcut;
+import static com.android.hardware.input.Flags.keyboardBacklightShortcuts;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
@@ -344,6 +345,22 @@ final class InputGestureManager {
                             KeyEvent.META_META_ON | KeyEvent.META_CTRL_ON,
                             KeyGestureEvent.KEY_GESTURE_TYPE_TAKE_PARTIAL_SCREENSHOT,
                             /* allowCaptureByFocusedWindow = */true
+                    ));
+        }
+        if (keyboardBacklightShortcuts()) {
+            systemShortcuts.add(
+                    createKeyGesture(
+                            KeyEvent.KEYCODE_BRIGHTNESS_UP,
+                            KeyEvent.META_META_ON,
+                            KeyGestureEvent.KEY_GESTURE_TYPE_KEYBOARD_BACKLIGHT_UP,
+                            /* allowCaptureByFocusedWindow = */false
+                    ));
+            systemShortcuts.add(
+                    createKeyGesture(
+                            KeyEvent.KEYCODE_BRIGHTNESS_DOWN,
+                            KeyEvent.META_META_ON,
+                            KeyGestureEvent.KEY_GESTURE_TYPE_KEYBOARD_BACKLIGHT_DOWN,
+                            /* allowCaptureByFocusedWindow = */false
                     ));
         }
         synchronized (mGestureLock) {

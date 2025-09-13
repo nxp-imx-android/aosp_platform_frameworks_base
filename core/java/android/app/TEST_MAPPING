@@ -222,6 +222,18 @@
     ],
     "desktop-presubmit": [
         {
+            "name": "CtsWindowManagerDeviceAm_wm_cts",
+            "file_patterns": ["(/|^)ContextImpl.java"]
+        },
+        {
+            "name": "CtsWindowManagerDeviceBackNavigation_wm_cts",
+            "file_patterns": ["(/|^)ContextImpl.java"]
+        },
+        {
+            "name": "CtsWindowManagerDeviceDragAndDrop_wm_cts",
+            "file_patterns": ["(/|^)ContextImpl.java"]
+        },
+        {
             "name": "CtsWindowManagerDevicePip_wm_cts",
             "file_patterns": ["(/|^)ContextImpl.java"]
         }

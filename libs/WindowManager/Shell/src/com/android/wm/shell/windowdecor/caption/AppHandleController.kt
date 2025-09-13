@@ -363,6 +363,7 @@ class AppHandleController(
                         openByDefaultDialog = null
                     }
                 },
+                desktopModeUiEventLogger,
             )
     }
 

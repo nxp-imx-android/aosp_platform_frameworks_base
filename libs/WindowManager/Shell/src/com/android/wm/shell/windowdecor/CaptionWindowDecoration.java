@@ -81,7 +81,6 @@ import java.util.function.BiFunction;
 public class CaptionWindowDecoration extends WindowDecoration<WindowDecorLinearLayout> {
     private final Handler mHandler;
     private final @ShellMainThread ShellExecutor mMainExecutor;
-    private final @ShellBackgroundThread ShellExecutor mBgExecutor;
     private final Choreographer mChoreographer;
     private final SyncTransactionQueue mSyncQueue;
     private final DesktopConfig mDesktopConfig;
@@ -111,10 +110,9 @@ public class CaptionWindowDecoration extends WindowDecoration<WindowDecorLinearL
             @NonNull WindowDecorViewHostSupplier<WindowDecorViewHost> windowDecorViewHostSupplier,
             DesktopConfig desktopConfig) {
         super(context, handler, transitions, userContext, displayController, taskOrganizer,
-                taskInfo, taskSurface, windowDecorViewHostSupplier);
+                taskInfo, taskSurface, windowDecorViewHostSupplier, bgExecutor);
         mHandler = handler;
         mMainExecutor = mainExecutor;
-        mBgExecutor = bgExecutor;
         mChoreographer = choreographer;
         mSyncQueue = syncQueue;
         mDesktopConfig = desktopConfig;

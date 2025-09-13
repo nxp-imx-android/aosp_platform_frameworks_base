@@ -2318,7 +2318,9 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
                 injector.getUserManager(),
                 injector.getPackageManagerInternal(),
                 injector.getActivityTaskManagerInternal(),
-                injector.getActivityManagerInternal(), mStateCache, pathProvider);
+                injector.getActivityManagerInternal(),
+                injector.getUserManagerInternal(),
+                mStateCache, pathProvider);
     }
 
     /**
@@ -10018,13 +10020,12 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
                             UserHandle.of(u));
                 }
 
-                // TODO Send to system too?
                 sendOwnerChangedBroadcast(DevicePolicyManager.ACTION_DEVICE_OWNER_CHANGED, userId);
             });
             mDeviceAdminServiceController.startServiceForAdmin(
                     admin.getPackageName(), userId, "set-device-owner");
 
-            Slogf.i(LOG_TAG, "Device owner set: " + admin + " on user " + userId);
+            Slogf.i(LOG_TAG, "Device owner set: %s on user %d", admin, userId);
         }
 
         if (setProfileOwnerOnCurrentUserIfNecessary
@@ -10439,7 +10440,7 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
                 sendOwnerChangedBroadcast(DevicePolicyManager.ACTION_DEVICE_OWNER_CHANGED,
                         deviceOwnerUserId);
             });
-            Slogf.i(LOG_TAG, "Device owner removed: " + deviceOwnerComponent);
+            Slogf.i(LOG_TAG, "Device owner removed: %s", deviceOwnerComponent);
         }
     }
 

@@ -23,10 +23,12 @@ import com.android.systemui.kosmos.collectLastValue
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.lifecycle.activateIn
+import com.android.systemui.res.R
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureTarget
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureType
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureUiState
 import com.android.systemui.screencapture.data.repository.screenCaptureUiRepository
+import com.android.systemui.statusbar.featurepods.sharescreen.domain.interactor.shareScreenPrivacyIndicatorInteractor
 import com.android.systemui.testKosmosNew
 import com.google.common.truth.Truth.assertThat
 import org.junit.Before
@@ -42,6 +44,10 @@ class PreShareToolbarViewModelTest : SysuiTestCase() {
 
     @Before
     fun setUp() {
+        mContext.orCreateTestableResources.addOverride(
+            R.bool.config_largeScreenPrivacyIndicator,
+            true,
+        )
         viewModel.activateIn(kosmos.testScope)
     }
 
@@ -77,5 +83,15 @@ class PreShareToolbarViewModelTest : SysuiTestCase() {
             viewModel.onShareClicked()
 
             assertThat(uiState).isEqualTo(ScreenCaptureUiState.Invisible)
+        }
+
+    @Test
+    fun onShareClicked_showsPrivacyIndicator() =
+        kosmos.runTest {
+            val isChipVisible by
+                collectLastValue(kosmos.shareScreenPrivacyIndicatorInteractor.isChipVisible)
+            assertThat(isChipVisible).isFalse()
+            viewModel.onShareClicked()
+            assertThat(isChipVisible).isTrue()
         }
 }

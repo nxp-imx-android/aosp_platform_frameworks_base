@@ -22,6 +22,7 @@ import android.window.ITaskOrganizer;
 import android.window.TaskAppearedInfo;
 import android.window.WindowContainerToken;
 import android.window.WindowContainerTransaction;
+import android.view.SurfaceControl;
 
 /** @hide */
 interface ITaskOrganizerController {
@@ -69,4 +70,23 @@ interface ITaskOrganizerController {
      * Restarts the top activity in the given task by killing its process if it is visible.
      */
     void restartTaskTopActivityProcessIfVisible(in WindowContainerToken task);
+
+    /**
+     * Set layers to be excluded when taking a task snapshot.
+     *
+     * Warning: MUST NOT pass layers that are managed by the Window Manager (e.g., from a Task or
+     * Activity). Doing so may cause the corresponding layer to be destroyed when
+     * clearExcludeLayersFromTaskSnapshot is called.
+     */
+    @JavaPassthrough(annotation="@android.annotation.RequiresPermission(value = "
+            + "android.Manifest.permission.MANAGE_ACTIVITY_TASKS)")
+    void setExcludeLayersFromTaskSnapshot(in WindowContainerToken task,
+            in SurfaceControl[] layers);
+
+    /**
+     * Clears all layers that were registered for exclusion via setExcludeLayersFromTaskSnapshot.
+     */
+    @JavaPassthrough(annotation="@android.annotation.RequiresPermission(value = "
+            + "android.Manifest.permission.MANAGE_ACTIVITY_TASKS)")
+    void clearExcludeLayersFromTaskSnapshot(in WindowContainerToken task);
 }

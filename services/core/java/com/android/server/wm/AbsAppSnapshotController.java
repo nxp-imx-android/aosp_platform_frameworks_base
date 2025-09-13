@@ -56,6 +56,7 @@ import com.android.window.flags.Flags;
 
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -313,6 +314,13 @@ abstract class AbsAppSnapshotController<TYPE extends WindowContainer<?>,
                 excludeSurfaces.add(w.getSurfaceControl());
             }
         }, true /* traverseTopToBottom */);
+
+        if (source instanceof Task) {
+            final SurfaceControl[] excludeLayers = ((Task) source).mExcludeLayersFromTaskSnapshot;
+            if (excludeLayers != null) {
+                Collections.addAll(excludeSurfaces, excludeLayers);
+            }
+        }
         final SurfaceControl[] excludeLayers =
                 excludeSurfaces.toArray(new SurfaceControl[excludeSurfaces.size()]);
         builder.setHasImeSurface(!excludeIme && imeWindow != null && imeWindow.isVisible());

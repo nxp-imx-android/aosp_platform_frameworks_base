@@ -16,16 +16,14 @@
 
 package com.android.systemui.shade.domain.interactor
 
-import android.content.Context
 import android.provider.Settings
 import android.util.Log
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.log.table.TableLogBuffer
 import com.android.systemui.log.table.logDiffsForTable
-import com.android.systemui.res.R
 import com.android.systemui.scene.domain.SceneFrameworkTableLog
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
-import com.android.systemui.shade.ShadeDisplayAware
+import com.android.systemui.shade.data.repository.ShadeConfigRepository
 import com.android.systemui.shade.data.repository.ShadeRepository
 import com.android.systemui.shade.shared.model.ShadeMode
 import com.android.systemui.shared.settings.data.repository.SecureSettingsRepository
@@ -80,8 +78,8 @@ class ShadeModeInteractorImpl
 constructor(
     @Background applicationScope: CoroutineScope,
     @Background backgroundDispatcher: CoroutineDispatcher,
-    @ShadeDisplayAware private val context: Context,
     repository: ShadeRepository,
+    private val shadeConfigRepository: ShadeConfigRepository,
     secureSettingsRepository: SecureSettingsRepository,
     @SceneFrameworkTableLog private val tableLogBuffer: TableLogBuffer,
 ) : ShadeModeInteractor {
@@ -95,32 +93,28 @@ constructor(
             flowOf(false)
         }
 
-    private val isSplitShadeDisabled: Boolean =
-        SceneContainerFlag.isEnabled &&
-            context.resources.getBoolean(R.bool.config_disableSplitShade)
-
     override val isFullWidthShade: StateFlow<Boolean> =
         isDualShadeSettingEnabled
             .flatMapLatest { isDualShadeSettingEnabled ->
-                if (isDualShadeSettingEnabled || isSplitShadeDisabled) {
-                    // Dual Shade should be shown; derive the layout from the screen width.
-                    Log.d(TAG, "Shade layout is derived from screen width")
-                    repository.isWideScreen.map { !it }
+                if (isDualShadeSettingEnabled || shadeConfigRepository.isSplitShadeDisabled) {
+                    // Dual Shade should be shown
+                    Log.d(TAG, "Shade layout is derived from the Dual Shade config")
+                    shadeConfigRepository.isFullWidthShade
                 } else {
-                    // Single/Split shade should be shown; derive the layout from the config.
+                    // Single/Split shade should be shown
                     Log.d(TAG, "Shade layout is derived from the legacy config")
                     repository.legacyUseSplitShade.map { !it }
                 }
             }
             .logDiffsForTable(
                 tableLogBuffer = tableLogBuffer,
-                initialValue = !repository.isWideScreen.value,
+                initialValue = shadeConfigRepository.isFullWidthShade(),
                 columnName = "isFullWidthShade",
             )
             .stateIn(
                 applicationScope,
                 SharingStarted.Eagerly,
-                initialValue = !repository.isWideScreen.value,
+                initialValue = shadeConfigRepository.isFullWidthShade(),
             )
 
     private val shadeModeInitialValue: ShadeMode
@@ -148,7 +142,7 @@ constructor(
                         "the setting is 'combined', and the device is a phone " +
                             "(in any orientation) or large screen in portrait"
 
-                isSplitShadeDisabled ->
+                shadeConfigRepository.isSplitShadeDisabled ->
                     ShadeMode.Dual to
                         "the setting is 'combined', " +
                             "but split shade disabled and the device has a large screen"

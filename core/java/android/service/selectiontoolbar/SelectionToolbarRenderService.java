@@ -20,6 +20,7 @@ import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.app.Service;
 import android.content.Intent;
+import android.os.HandlerThread;
 import android.os.IBinder;
 import android.os.RemoteException;
 import android.util.Log;
@@ -29,6 +30,8 @@ import android.view.selectiontoolbar.ShowInfo;
 import android.view.selectiontoolbar.WidgetInfo;
 
 import com.android.internal.annotations.GuardedBy;
+
+import java.util.concurrent.Executor;
 
 /**
  * Service for rendering selection toolbar.
@@ -51,6 +54,17 @@ public abstract class SelectionToolbarRenderService extends Service {
 
     private final Object mLock = new Object();
     private volatile ISelectionToolbarRenderServiceCallback mServiceCallback;
+
+    private final HandlerThread mThread =
+            new HandlerThread(SelectionToolbarRenderService.class.getSimpleName());
+
+    public SelectionToolbarRenderService() {
+        mThread.start();
+    }
+
+    protected final Executor getToolbarUiExecutor() {
+        return mThread.getThreadExecutor();
+    }
 
     /**
      * Binder to receive calls from system server.
