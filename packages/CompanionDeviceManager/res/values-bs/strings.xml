@@ -28,11 +28,11 @@
     <string name="chooser_title" msgid="2235819929238267637">"Odaberite <xliff:g id="PROFILE_NAME">%1$s</xliff:g> za postavljanje"</string>
     <string name="single_device_title" msgid="4199861437545438606">"Traži se <xliff:g id="PROFILE_NAME">%1$s</xliff:g>"</string>
     <string name="summary_watch" msgid="8134580124808507407">"Aplikaciji će biti dozvoljeno da sinhronizira informacije, kao što je ime osobe koja upućuje poziv, i pristupa ovim odobrenjima koje sadržava vaš <xliff:g id="DEVICE_TYPE">%1$s</xliff:g>"</string>
-    <!-- no translation found for profile_name_fitness_tracker (3107192493390199691) -->
-    <skip />
+    <string name="profile_name_fitness_tracker" msgid="3107192493390199691">"uređaj za praćenje fitnesa"</string>
     <string name="confirmation_title_glasses" msgid="8288346850537727333">"Dozvoliti aplikaciji &lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; da upravlja uređajem &lt;strong&gt;<xliff:g id="DEVICE_NAME">%2$s</xliff:g>&lt;/strong&gt;?"</string>
     <string name="profile_name_glasses" msgid="3506504967216601277">"uređaj"</string>
     <string name="summary_glasses" msgid="5469208629679579157">"Aplikaciji će biti dozvoljen pristup ovim odobrenjima koje sadržava vaš <xliff:g id="DEVICE_TYPE">%1$s</xliff:g>"</string>
+    <string name="profile_name_medical" msgid="5617160509499466400">"medicinski uređaj"</string>
     <string name="title_app_streaming" msgid="237666000400427614">"Dozvoliti aplikaciji &lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; da prenosi aplikacije i funkcije sistema između uređaja <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> i &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt;?"</string>
     <string name="summary_app_streaming" msgid="8346968726357732862">"<xliff:g id="APP_NAME">%1$s</xliff:g> će dobiti sljedeća odobrenja:"</string>
     <string name="summary_app_streaming_legacy" msgid="8994180646987541606">"<xliff:g id="APP_NAME_0">%1$s</xliff:g> će imati pristup svemu što se reproducira ili je vidljivo na uređaju <xliff:g id="DEVICE_TYPE">%2$s</xliff:g>, uključujući zvukove, fotografije, podatke o plaćanju, lozinke i poruke.&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME_1">%1$s</xliff:g> će moći prenositi aplikacije na uređaju <xliff:g id="DEVICE_NAME">%3$s</xliff:g> dok ne uklonite pristup ovom odobrenju."</string>
@@ -73,6 +73,8 @@
     <string name="permission_create_virtual_device" msgid="1102905050922460040">"Prenosite podatke na uređaj <xliff:g id="DEVICE_TYPE">%1$s</xliff:g>"</string>
     <string name="permission_add_mirror_display" msgid="3743433250535606288">"Preslikava ekran"</string>
     <string name="permission_add_trusted_display" msgid="9052824856626276723">"Aplikacije za prenos"</string>
+    <string name="permission_schedule_exact_alarm" msgid="5680932535987512225">"Postavi alarme i podsjetnike"</string>
+    <string name="permission_bypass_dnd" msgid="1241123166903040347">"Zaobiđi postavke funkcije Ne ometaj"</string>
     <string name="permission_phone_summary" msgid="8246321093970051702">"Pozivanje i upravljanje telefonskim pozivima"</string>
     <string name="permission_call_logs_summary" msgid="7545243592757693321">"Čitanje i pisanje zapisnika telefonskih poziva"</string>
     <string name="permission_sms_summary" msgid="8499509535410068616">"Slanje i pregledanje SMS poruka"</string>
@@ -88,6 +90,8 @@
     <string name="permission_add_mirror_display_summary" msgid="1385423940454941534">"Snima, prikazuje ili dijeli ekran uređaja <xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g> s uređajem t&lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt;.&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME">%1$s</xliff:g> će imati podatke o svemu što je vidljivo ili pokrenuto na uređaju <xliff:g id="DEVICE_TYPE_1">%2$s</xliff:g>, uključujući zvuk, fotografije, podatke o plaćanju, lozinke i poruke."</string>
     <string name="permission_add_trusted_display_summary" msgid="7399955172055281447">"Prenosite aplikacije s uređaja <xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g> na uređaj &lt;strong&gt;<xliff:g id="DEVICE_NAME_1">%3$s</xliff:g>&lt;/strong&gt;.&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME">%1$s</xliff:g> će imati pristup svemu što je vidljivo ili što se reproducira na uređaju <xliff:g id="DEVICE_NAME_2">%3$s</xliff:g>, uključujući zvuk, fotografije, podatke o plaćanju, lozinke i poruke, čak i kada je uređaj <xliff:g id="DEVICE_TYPE_3">%2$s</xliff:g> zaključan."</string>
     <string name="permission_media_routing_control_summary" msgid="2714631092321412250">"Pristupa listi dostupnih uređaja i kontrolira koji od njih prenosi ili emitira zvuk ili videozapis iz drugih aplikacija"</string>
+    <string name="permission_schedule_exact_alarm_summary" msgid="5938321911309800377"></string>
+    <string name="permission_bypass_dnd_summary" msgid="6221709271927387626"></string>
     <string name="device_type" product="default" msgid="8268703872070046263">"telefon"</string>
     <string name="device_type" product="tablet" msgid="5038791954983067774">"tablet"</string>
     <string name="device_type" product="tv" msgid="5355611506659405636">"TV"</string>

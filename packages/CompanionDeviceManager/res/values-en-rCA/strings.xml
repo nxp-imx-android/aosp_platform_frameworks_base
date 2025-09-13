@@ -32,6 +32,7 @@
     <string name="confirmation_title_glasses" msgid="8288346850537727333">"Allow &lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; to manage &lt;strong&gt;<xliff:g id="DEVICE_NAME">%2$s</xliff:g>&lt;/strong&gt;?"</string>
     <string name="profile_name_glasses" msgid="3506504967216601277">"device"</string>
     <string name="summary_glasses" msgid="5469208629679579157">"This app will be allowed to access these permissions on your <xliff:g id="DEVICE_TYPE">%1$s</xliff:g>"</string>
+    <string name="profile_name_medical" msgid="5617160509499466400">"medical device"</string>
     <string name="title_app_streaming" msgid="237666000400427614">"Allow &lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; to stream apps and system features between your <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> and &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt;?"</string>
     <string name="summary_app_streaming" msgid="8346968726357732862">"<xliff:g id="APP_NAME">%1$s</xliff:g> will be granted the following permissions:"</string>
     <string name="summary_app_streaming_legacy" msgid="8994180646987541606">"<xliff:g id="APP_NAME_0">%1$s</xliff:g> will have access to anything that’s visible or played on your <xliff:g id="DEVICE_TYPE">%2$s</xliff:g>, including audio, photos, payment info, passwords, and messages.&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME_1">%1$s</xliff:g> will be able to stream apps to <xliff:g id="DEVICE_NAME">%3$s</xliff:g> until you remove access to this permission."</string>
@@ -72,6 +73,8 @@
     <string name="permission_create_virtual_device" msgid="1102905050922460040">"Stream data to your <xliff:g id="DEVICE_TYPE">%1$s</xliff:g>"</string>
     <string name="permission_add_mirror_display" msgid="3743433250535606288">"Mirror your screen"</string>
     <string name="permission_add_trusted_display" msgid="9052824856626276723">"Stream apps"</string>
+    <string name="permission_schedule_exact_alarm" msgid="5680932535987512225">"Set alarms and reminders"</string>
+    <string name="permission_bypass_dnd" msgid="1241123166903040347">"Bypass Do Not Disturb settings"</string>
     <string name="permission_phone_summary" msgid="8246321093970051702">"Make and manage phone calls"</string>
     <string name="permission_call_logs_summary" msgid="7545243592757693321">"Read and write phone call log"</string>
     <string name="permission_sms_summary" msgid="8499509535410068616">"Send and view SMS messages"</string>
@@ -87,6 +90,8 @@
     <string name="permission_add_mirror_display_summary" msgid="1385423940454941534">"Record, cast or share your <xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g>’s screen to &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt;.&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME">%1$s</xliff:g> will have access to anything that’s visible or played on your <xliff:g id="DEVICE_TYPE_1">%2$s</xliff:g>, including audio, photos, payment info, passwords and messages."</string>
     <string name="permission_add_trusted_display_summary" msgid="7399955172055281447">"Stream your <xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g>’s apps to &lt;strong&gt;<xliff:g id="DEVICE_NAME_1">%3$s</xliff:g>&lt;/strong&gt;.&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME">%1$s</xliff:g> will have access to anything that’s visible or played on <xliff:g id="DEVICE_NAME_2">%3$s</xliff:g>, including audio, photos, payment info, passwords and messages, even when your <xliff:g id="DEVICE_TYPE_3">%2$s</xliff:g> is locked."</string>
     <string name="permission_media_routing_control_summary" msgid="2714631092321412250">"Access a list of available devices and control which one streams or casts audio or video from other apps"</string>
+    <string name="permission_schedule_exact_alarm_summary" msgid="5938321911309800377"></string>
+    <string name="permission_bypass_dnd_summary" msgid="6221709271927387626"></string>
     <string name="device_type" product="default" msgid="8268703872070046263">"phone"</string>
     <string name="device_type" product="tablet" msgid="5038791954983067774">"tablet"</string>
     <string name="device_type" product="tv" msgid="5355611506659405636">"tv"</string>
