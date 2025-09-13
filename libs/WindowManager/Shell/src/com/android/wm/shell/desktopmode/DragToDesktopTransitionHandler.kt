@@ -25,6 +25,7 @@ import android.os.SystemClock
 import android.os.SystemProperties
 import android.os.UserHandle
 import android.view.Choreographer
+import android.view.Display.DEFAULT_DISPLAY
 import android.view.SurfaceControl
 import android.view.SurfaceControl.Transaction
 import android.view.WindowManager.TRANSIT_CHANGE
@@ -96,7 +97,6 @@ sealed class DragToDesktopTransitionHandler(
 ) : TransitionHandler {
 
     protected val rectEvaluator = RectEvaluator(Rect())
-    private val launchHomeIntent = Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME)
 
     private lateinit var splitScreenController: SplitScreenController
     private var transitionState: TransitionState? = null
@@ -140,6 +140,14 @@ sealed class DragToDesktopTransitionHandler(
             return
         }
 
+        val launchHomeIntent =
+            Intent(Intent.ACTION_MAIN).apply {
+                if (taskInfo.displayId != DEFAULT_DISPLAY) {
+                    addCategory(Intent.CATEGORY_SECONDARY_HOME)
+                } else {
+                    addCategory(Intent.CATEGORY_HOME)
+                }
+            }
         val options =
             ActivityOptions.makeBasic().apply {
                 setTransientLaunch()
