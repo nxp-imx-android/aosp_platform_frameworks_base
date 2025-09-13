@@ -370,8 +370,10 @@
     <string name="permgroupdesc_xr_eye_sensitive" msgid="6050967250223079001">"көздің қозғалуын дәл бақылау"</string>
     <string name="permgrouplab_xr_tracking" msgid="766634536453394700">"Қозғалыс және аймақ деректері"</string>
     <string name="permgroupdesc_xr_tracking" msgid="812429788288001595">"көзді, қол мен денені бақылау және аймақты сканерлеу"</string>
-    <string name="permgrouplab_xr_tracking_sensitive" msgid="4346975608010051186">"Бастың дәл қозғалысы және аймақ деректері"</string>
-    <string name="permgroupdesc_xr_tracking_sensitive" msgid="7925014193164562556">"басты дәл бақылау және аймақты сканерлеу"</string>
+    <!-- no translation found for permgrouplab_xr_tracking_sensitive (6574264227123545314) -->
+    <skip />
+    <!-- no translation found for permgroupdesc_xr_tracking_sensitive (2480835734248509848) -->
+    <skip />
     <string name="capability_title_canRetrieveWindowContent" msgid="7554282892101587296">"Терезе контентін оқып отыру"</string>
     <string name="capability_desc_canRetrieveWindowContent" msgid="6195610527625237661">"Ашық тұрған терезе контентін тексеру."</string>
     <string name="capability_title_canRequestTouchExploration" msgid="327598364696316213">"Түртілген элементтерді дыбыстау функциясын қосу"</string>
@@ -685,7 +687,8 @@
     <string name="permdesc_scene_understanding_coarse" msgid="847344305502345475">"Қолданбаға айналаны сканерлеуге мүмкіндік береді."</string>
     <string name="permlab_scene_understanding_fine" msgid="2899904960307462936">"айналадағы аймақты дәл сканерлеу"</string>
     <string name="permdesc_scene_understanding_fine" msgid="4848943859506977588">"Қолданбаға айналаны дәл сканерлеуге мүмкіндік береді."</string>
-    <string name="permlab_xr_tracking_in_background" msgid="8659516810430027774">"фондағы XR деректерін бақылау"</string>
+    <!-- no translation found for permlab_xr_tracking_in_background (1714941204255185460) -->
+    <skip />
     <string name="permdesc_xr_tracking_in_background" msgid="3151744132692357005">"Қолданбаға фондағы XR деректерін пайдалануға мүмкіндік береді."</string>
     <string name="permlab_capture_keyboard" msgid="4076894823382693032">"пернелерді алу"</string>
     <string name="permdesc_capture_keyboard" msgid="4192269470684407219">"Жүйе өзінің пернелер тіркесімдері мен әрекеттерін орындамай тұрып, қолданбаға пернелерді алуға мүмкіндік береді."</string>
@@ -1986,8 +1989,10 @@
     <string name="package_updated_device_owner" msgid="7770195449213776218">"Әкімшіңіз жаңартты.\nБерілген рұқсаттарды көру үшін параметрлерге өтіңіз."</string>
     <string name="package_deleted_device_owner" msgid="2292335928930293023">"Әкімші жойған"</string>
     <string name="confirm_battery_saver" msgid="5247976246208245754">"Жарайды"</string>
-    <string name="battery_saver_description_with_learn_more" msgid="5444908404021316250">"Батареяны үнемдеу режимі қараңғы режимді іске қосады және фондық әрекеттерге, кейбір визуалдық әсерлерге, белгілі бір функциялар мен кейбір желі байланыстарына шектеу қояды немесе оларды өшіреді."</string>
-    <string name="battery_saver_description" msgid="8518809702138617167">"Батареяны үнемдеу режимі қараңғы режимді іске қосады және фондық әрекеттерге, кейбір визуалдық әсерлерге, белгілі бір функциялар мен кейбір желі байланыстарына шектеу қояды немесе оларды өшіреді."</string>
+    <!-- no translation found for battery_saver_description_with_learn_more (8969945879044849461) -->
+    <skip />
+    <!-- no translation found for battery_saver_description (2820475140307374570) -->
+    <skip />
     <string name="data_saver_description" msgid="4995164271550590517">"Дерек шығынын азайту үшін трафикті үнемдеу режимінде кейбір қолданбаларға деректі фондық режимде жіберуге және алуға тыйым салынады. Ашық тұрған қолданба деректі шектеулі шамада пайдаланады (мысалы, кескіндер оларды түрткенге дейін көрсетілмейді)."</string>
     <string name="data_saver_enable_title" msgid="7080620065745260137">"Трафикті үнемдеу режимі қосылсын ба?"</string>
     <string name="data_saver_enable_button" msgid="4399405762586419726">"Қосу"</string>
@@ -2581,13 +2586,13 @@
     <string name="usb_apm_usb_plugged_in_when_locked_notification_app_title" msgid="285421860627714333">"Қауіпсіздік және құпиялық"</string>
     <string name="usb_apm_usb_plugged_in_when_locked_replug_notification_title" msgid="3711633462195368964">"Экран құлпын ашып, USB-ді қайта жалғаңыз"</string>
     <string name="usb_apm_usb_plugged_in_when_locked_notification_title" msgid="2426356396215833585">"USB-ді жалғау үшін экран құлпын ашыңыз"</string>
-    <string name="usb_apm_usb_plugged_in_when_locked_replug_notification_text" msgid="3936428118409384816">"USB-ді жалғау үшін күшейтілген қорғанысқа экран құлпының ашылғаны қажет"</string>
-    <string name="usb_apm_usb_plugged_in_when_locked_data_notification_text" msgid="8392199274984083972">"USB-ді жалғау үшін күшейтілген қорғанысқа экран құлпының ашылғаны қажет"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_replug_notification_text" msgid="3936428118409384816">"USB арқылы жалғау үшін, \"Күшейтілген қорғаныс\" функциясына экран құлпының ашық болғаны қажет."</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_data_notification_text" msgid="8392199274984083972">"USB арқылы жалғау үшін, \"Күшейтілген қорғаныс\" функциясына экран құлпының ашық болғаны қажет."</string>
     <string name="usb_apm_usb_plugged_in_when_locked_charge_notification_text" msgid="6563939109526112446">"Жылдам зарядтау үшін күшейтілген қорғанысқа экран құлпының ашылғаны қажет"</string>
-    <string name="usb_apm_usb_plugged_in_when_locked_charge_data_notification_text" msgid="411509882563364946">"Жылдам зарядтау немесе USB-ді жалғау үшін күшейтілген қорғанысқа экран құлпының ашылғаны қажет"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_charge_data_notification_text" msgid="411509882563364946">"Жылдам зарядтау немесе USB арқылы жалғау үшін, \"Күшейтілген қорғаныс\" функциясына экран құлпының ашық болғаны қажет."</string>
     <string name="usb_apm_usb_plugged_in_when_locked_notification_silence_action_text" msgid="5495539757631669634">"Дыбысын өшіру"</string>
     <string name="usb_apm_usb_notification_silenced_title" msgid="5114203793430169863">"Хабарландырулар дыбысы өшірілді"</string>
-    <string name="usb_apm_usb_notification_silenced_text" msgid="8394777105856033342">"Құрылғыны өшіріп қоспасаңыз, сізге күшейтілген қорғаныстың USB хабарландырулары келмейді"</string>
+    <string name="usb_apm_usb_notification_silenced_text" msgid="8394777105856033342">"Құрылғыны өшіріп қоспасаңыз, сізге \"Күшейтілген қорғаныс\" функциясының USB туралы хабарландырулары келмейді."</string>
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"USB-ге қатысты күдікті әрекет"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="5772698072220844779">"USB дерек сигналы өшірілді"</string>
     <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"Саусақ ізімен ашу функциясына қатысты мәселе шықты ма?"</string>
