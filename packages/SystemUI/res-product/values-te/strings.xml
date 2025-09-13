@@ -68,4 +68,6 @@
     <string name="media_transfer_playing_this_device" product="tablet" msgid="222514408550408633">"ఈ టాబ్లెట్‌లో ప్లే అవుతోంది"</string>
     <string name="finder_active" product="default" msgid="2734050945122991747">"పవర్ ఆఫ్‌లో ఉన్నప్పుడు కూడా మీరు Find My Deviceతో ఈ ఫోన్‌ను గుర్తించవచ్చు"</string>
     <string name="finder_active" product="tablet" msgid="8045583079989970505">"పవర్ ఆఫ్‌లో ఉన్నప్పుడు కూడా మీరు Find My Deviceతో ఈ టాబ్లెట్‌ను గుర్తించవచ్చు"</string>
+    <string name="find_hub_active" product="default" msgid="8884083861904230143">"పవర్ ఆఫ్‌లో ఉన్నప్పుడు కూడా మీరు Find Hubతో ఈ ఫోన్‌ను గుర్తించవచ్చు"</string>
+    <string name="find_hub_active" product="tablet" msgid="7422713080929515642">"పవర్ ఆఫ్‌లో ఉన్నప్పుడు కూడా మీరు Find Hubతో ఈ టాబ్లెట్‌ను గుర్తించవచ్చు"</string>
 </resources>
