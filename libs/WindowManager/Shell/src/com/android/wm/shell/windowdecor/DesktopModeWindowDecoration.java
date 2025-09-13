@@ -159,7 +159,6 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
     private final @ShellMainThread MainCoroutineDispatcher mMainDispatcher;
     private final @ShellMainThread CoroutineScope mMainScope;
     private final @ShellBackgroundThread CoroutineScope mBgScope;
-    private final @ShellBackgroundThread ShellExecutor mBgExecutor;
     private final Transitions mTransitions;
     private final Choreographer mChoreographer;
     private final SyncTransactionQueue mSyncQueue;
@@ -335,14 +334,13 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
                 taskInfo, taskSurface, surfaceControlBuilderSupplier,
                 surfaceControlTransactionSupplier, windowContainerTransactionSupplier,
                 surfaceControlSupplier, surfaceControlViewHostFactory, windowDecorViewHostSupplier,
-                desktopModeEventLogger);
+                desktopModeEventLogger, bgExecutor);
         mSplitScreenController = splitScreenController;
         mHandler = handler;
         mMainExecutor = mainExecutor;
         mMainDispatcher = mainDispatcher;
         mMainScope = mainScope;
         mBgScope = bgScope;
-        mBgExecutor = bgExecutor;
         mTransitions = transitions;
         mChoreographer = choreographer;
         mSyncQueue = syncQueue;
