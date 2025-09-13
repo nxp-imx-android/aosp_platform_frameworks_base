@@ -17,6 +17,7 @@
 package android.view;
 
 import static android.view.flags.Flags.bufferStuffingRecovery;
+import static android.view.flags.Flags.bufferStuffingMultiRecovery;
 import static android.view.flags.Flags.FLAG_EXPECTED_PRESENTATION_TIME_API;
 import static android.view.DisplayEventReceiver.VSYNC_SOURCE_APP;
 import static android.view.DisplayEventReceiver.VSYNC_SOURCE_SURFACE_FLINGER;
@@ -942,27 +943,52 @@ public final class Choreographer {
     // Returns an enum for the recovery action that should be taken in doFrame().
     BufferStuffingState.RecoveryAction updateBufferStuffingState(long frameTimeNanos,
             DisplayEventReceiver.VsyncEventData vsyncEventData) {
-        if (!mBufferStuffingState.isRecovering) {
-            if (!mBufferStuffingState.isStuffed.getAndSet(false)) {
+        // Multi-recovery allows the app to recover from stuffing multiple times within
+        // the same animation. Without multi-recovery, only 1 attempt at recovering from
+        // stuffing is attempted when it is first detected in an animation.
+        if (bufferStuffingMultiRecovery()) {
+            // Canned animations can recover from buffer stuffing whenever the
+            // client is blocked on dequeueBuffer.
+            if (mBufferStuffingState.isStuffed.getAndSet(false)) {
+                // The start of recovery
+                if (!mBufferStuffingState.isRecovering) {
+                    if (Trace.isTagEnabled(Trace.TRACE_TAG_VIEW)) {
+                        Trace.asyncTraceForTrackBegin(
+                                Trace.TRACE_TAG_VIEW, "Buffer stuffing recovery", "Thread "
+                                + android.os.Process.myTid() + ", recover frame", 0);
+                    }
+                    mBufferStuffingState.isRecovering = true;
+                }
+                Trace.instant(Trace.TRACE_TAG_VIEW, "buffer stuffed");
+                return BufferStuffingState.RecoveryAction.DELAY_FRAME;
+
+            // No recovery action needed when there is no buffer stuffing and
+            // no recovery currently occurring.
+            } else if (!mBufferStuffingState.isRecovering) {
                 return BufferStuffingState.RecoveryAction.NONE;
             }
-            // Canned animations can recover from buffer stuffing whenever the
-            // client is blocked on dequeueBuffer. Frame delay only occurs at
-            // the start of recovery to free a buffer.
-            mBufferStuffingState.isRecovering = true;
-            if (Trace.isTagEnabled(Trace.TRACE_TAG_VIEW)) {
-                Trace.asyncTraceForTrackBegin(
-                        Trace.TRACE_TAG_VIEW, "Buffer stuffing recovery", "Thread "
-                        + android.os.Process.myTid() + ", recover frame", 0);
+        } else {
+            if (!mBufferStuffingState.isRecovering) {
+                if (!mBufferStuffingState.isStuffed.getAndSet(false)) {
+                    return BufferStuffingState.RecoveryAction.NONE;
+                }
+                // Frame delay only occurs at the start of recovery to free a buffer.
+                mBufferStuffingState.isRecovering = true;
+                if (Trace.isTagEnabled(Trace.TRACE_TAG_VIEW)) {
+                    Trace.asyncTraceForTrackBegin(
+                            Trace.TRACE_TAG_VIEW, "Buffer stuffing recovery", "Thread "
+                            + android.os.Process.myTid() + ", recover frame", 0);
+                }
+                return BufferStuffingState.RecoveryAction.DELAY_FRAME;
             }
-            return BufferStuffingState.RecoveryAction.DELAY_FRAME;
         }
 
-        // Total number of frame delays used to detect idle state. Includes an additional
-        // expected frame delay from the natural scheduling of the next vsync event and
-        // the intentional frame delay that was scheduled when stuffing was first detected.
-        int totalFrameDelays = mBufferStuffingState.numberWaitsForNextVsync + 2;
-        long vsyncsSinceLastCallback = mLastFrameIntervalNanos > 0
+        // Recovery is actively happening. Continue the recovery or check between every
+        // frame if the animations have become idle long enough for recovery to end. The
+        // total number of frame delays used to detect idle state includes an additional
+        // expected frame delay from the natural scheduling of the next vsync event.
+        final int totalFrameDelays = mBufferStuffingState.numberWaitsForNextVsync + 1;
+        final long vsyncsSinceLastCallback = mLastFrameIntervalNanos > 0
                 ? (frameTimeNanos - mLastNoOffsetFrameTimeNanos) / mLastFrameIntervalNanos : 0;
 
         // Detected idle state due to a longer inactive period since the last vsync callback
@@ -986,8 +1012,8 @@ public final class Choreographer {
         }
         if (Trace.isTagEnabled(Trace.TRACE_TAG_VIEW)) {
             Trace.instantForTrack(
-                    Trace.TRACE_TAG_VIEW, "Buffer stuffing recovery",
-                    "Negative offset added to animation");
+                    Trace.TRACE_TAG_VIEW, "Buffer stuffing recovery", "Negative offset of "
+                    + vsyncEventData.frameInterval + " ns added to animation");
         }
         return BufferStuffingState.RecoveryAction.OFFSET;
     }
@@ -1017,6 +1043,7 @@ public final class Choreographer {
                     break;
                 case DELAY_FRAME:
                     // Intentional frame delay to help reduce queued buffer count.
+                    mBufferStuffingState.numberWaitsForNextVsync++;
                     scheduleVsyncLocked();
                     return;
                 default:

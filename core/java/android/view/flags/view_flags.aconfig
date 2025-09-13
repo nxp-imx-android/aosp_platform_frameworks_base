@@ -147,3 +147,11 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "buffer_stuffing_multi_recovery"
+    namespace: "window_surfaces"
+    description: "Recover from buffer stuffing multiple times within the same animation"
+    bug: "44156655"
+    is_fixed_read_only: false
+}
