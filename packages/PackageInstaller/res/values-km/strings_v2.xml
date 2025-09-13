@@ -96,22 +96,14 @@
     <string name="message_restore_error_installer_absent" msgid="8492838251989389724">"ដើម្បីស្ដារកម្មវិធីនេះ អ្នកនឹងត្រូវដំឡើង <xliff:g id="INSTALLER_NAME">%1$s</xliff:g>"</string>
     <string name="message_restore_error_generic" msgid="5903850636679929406">"មានបញ្ហាក្នុងការព្យាយាមស្ដារកម្មវិធីនេះ"</string>
     <string name="message_uninstall_activity" msgid="3263352475743590167">"<xliff:g id="ACTIVITY_NAME">%1$s</xliff:g> គឺជាផ្នែកមួយនៃកម្មវិធីខាងក្រោម៖ <xliff:g id="APP_NAME">%2$s</xliff:g>"</string>
-    <!-- no translation found for cannot_install_app_blocked_summary (2082063650842897085) -->
-    <skip />
-    <!-- no translation found for cannot_update_app_blocked_summary (7607734844900187499) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_no_internet_summary (7298957699553589600) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_no_internet_summary (8094414928318316598) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_summary (3830073638843524892) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_unavailable_summary (342184955548504019) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_fail_closed_summary (3552780111383069051) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_unavailable_fail_closed_summary (353457015429601377) -->
-    <skip />
+    <string name="cannot_install_app_blocked_summary" msgid="2082063650842897085">"&lt;p&gt;កម្មវិធីនេះត្រូវបានទប់ស្កាត់។ ដើម្បីជួយរក្សាសុវត្ថិភាពឧបករណ៍ និងទិន្នន័យរបស់អ្នក មានតែកម្មវិធីពីអ្នក​អភិវឌ្ឍន៍ដែលបានផ្ទៀងផ្ទាត់ប៉ុណ្ណោះ ទើបអាចដំឡើងបាន។&lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;ស្វែងយល់បន្ថែមអំពីការផ្ទៀងផ្ទាត់អ្នកអភិវឌ្ឍន៍&lt;/a&gt;"</string>
+    <string name="cannot_update_app_blocked_summary" msgid="7607734844900187499">"&lt;p&gt;កម្មវិធីនេះមិនត្រូវបានដំឡើងកំណែទេ។ ដើម្បីជួយរក្សាសុវត្ថិភាពឧបករណ៍ និងទិន្នន័យរបស់អ្នក មានតែកំណែថ្មីៗពីអ្នក​អភិវឌ្ឍន៍ដែលបានផ្ទៀងផ្ទាត់ប៉ុណ្ណោះ ទើបអាចដំឡើងបាន។&lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;ស្វែងយល់បន្ថែមអំពីការផ្ទៀងផ្ទាត់អ្នកអភិវឌ្ឍន៍&lt;/a&gt;"</string>
+    <string name="cannot_install_verification_no_internet_summary" msgid="7298957699553589600">"&lt;p&gt;កម្មវិធីនេះមិនត្រូវបានដំឡើងទេ។ កម្មវិធីពីអ្នកអភិវឌ្ឍន៍ដែលមិនបានផ្ទៀងផ្ទាត់អាចមិនមានសុវត្ថិភាព។&lt;/p&gt; &lt;p&gt;តម្រូវឱ្យមានការតភ្ជាប់អ៊ីនធឺណិត ដើម្បីផ្ទៀងផ្ទាត់អ្នក​អភិវឌ្ឍន៍កម្មវិធី។ ពិនិត្យមើល​ការតភ្ជាប់​របស់អ្នក រួចព្យាយាម​ដំឡើងម្ដងទៀត។ &lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;ស្វែងយល់បន្ថែមអំពីការផ្ទៀងផ្ទាត់អ្នកអភិវឌ្ឍន៍&lt;/a&gt;"</string>
+    <string name="cannot_update_verification_no_internet_summary" msgid="8094414928318316598">"&lt;p&gt;កម្មវិធីនេះមិនត្រូវបានដំឡើងកំណែទេ។ កំណែថ្មីៗពីអ្នកអភិវឌ្ឍន៍ដែលមិនបានផ្ទៀងផ្ទាត់អាចមិនមានសុវត្ថិភាព។&lt;/p&gt; &lt;p&gt;តម្រូវឱ្យមានការតភ្ជាប់អ៊ីនធឺណិត ដើម្បីផ្ទៀងផ្ទាត់អ្នក​អភិវឌ្ឍន៍កម្មវិធី។ ពិនិត្យមើល​ការតភ្ជាប់​របស់អ្នក រួចព្យាយាម​ដំឡើងកំណែម្ដងទៀត។ &lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;ស្វែងយល់បន្ថែមអំពីការផ្ទៀងផ្ទាត់អ្នកអភិវឌ្ឍន៍&lt;/a&gt;"</string>
+    <string name="cannot_install_verification_unavailable_summary" msgid="3830073638843524892">"&lt;p&gt;មានបញ្ហាក្នុងការផ្ទៀងផ្ទាត់អ្នក​អភិវឌ្ឍន៍កម្មវិធីនេះ។ កម្មវិធីពីអ្នក​អភិវឌ្ឍន៍ដែលមិនបានផ្ទៀងផ្ទាត់អាចមិនមានសុវត្ថិភាព ដូច្នេះកម្មវិធីមិនត្រូវបានដំឡើងទេ។&lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;ស្វែងយល់បន្ថែមអំពីការផ្ទៀងផ្ទាត់អ្នកអភិវឌ្ឍន៍&lt;/a&gt;"</string>
+    <string name="cannot_update_verification_unavailable_summary" msgid="342184955548504019">"&lt;p&gt;មានបញ្ហាក្នុងការផ្ទៀងផ្ទាត់អ្នក​អភិវឌ្ឍន៍កម្មវិធីនេះ។ កំណែថ្មីៗពីអ្នកអភិវឌ្ឍន៍ដែលមិនបានផ្ទៀងផ្ទាត់អាចមិនមានសុវត្ថិភាព ដូច្នេះកម្មវិធីមិនត្រូវបានដំឡើងកំណែទេ។&lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;ស្វែងយល់បន្ថែមអំពីការផ្ទៀងផ្ទាត់អ្នកអភិវឌ្ឍន៍&lt;/a&gt;"</string>
+    <string name="cannot_install_verification_unavailable_fail_closed_summary" msgid="3552780111383069051">"&lt;p&gt;កម្មវិធីនេះត្រូវបានទប់ស្កាត់ ដោយសារមានបញ្ហាក្នុងការផ្ទៀងផ្ទាត់អ្នក​អភិវឌ្ឍន៍។ ដើម្បីជួយរក្សាសុវត្ថិភាពឧបករណ៍ និងទិន្នន័យរបស់អ្នក មានតែកម្មវិធីពីអ្នក​អភិវឌ្ឍន៍ដែលបានផ្ទៀងផ្ទាត់ប៉ុណ្ណោះ ទើបអាចដំឡើងបាន។&lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;ស្វែងយល់បន្ថែមអំពីការផ្ទៀងផ្ទាត់អ្នកអភិវឌ្ឍន៍&lt;/a&gt;"</string>
+    <string name="cannot_update_verification_unavailable_fail_closed_summary" msgid="353457015429601377">"&lt;p&gt;កម្មវិធីនេះមិនត្រូវបានដំឡើងកំណែទេ ដោយសារមានបញ្ហាក្នុងការផ្ទៀងផ្ទាត់អ្នក​អភិវឌ្ឍន៍។ ដើម្បីជួយរក្សាសុវត្ថិភាពឧបករណ៍ និងទិន្នន័យរបស់អ្នក មានតែកំណែថ្មីៗពីអ្នក​អភិវឌ្ឍន៍ដែលបានផ្ទៀងផ្ទាត់ប៉ុណ្ណោះ ទើបអាចដំឡើងបាន។&lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;ស្វែងយល់បន្ថែមអំពីការផ្ទៀងផ្ទាត់អ្នកអភិវឌ្ឍន៍&lt;/a&gt;"</string>
     <string name="more_details_expanded_install_summary" msgid="3545896392881608712">"ប្រសិនបើអ្នកដំឡើងដោយមិនផ្ទៀងផ្ទាត់ សូមចងចាំថាកម្មវិធីពីអ្នកអភិវឌ្ឍន៍ដែលមិនបានផ្ទៀងផ្ទាត់អាចធ្វើឱ្យឧបករណ៍ និងទិន្នន័យរបស់អ្នកប្រឈមនឹងហានិភ័យ។"</string>
     <string name="more_details_expanded_update_summary" msgid="2239162864839036480">"ប្រសិនបើអ្នកដំឡើងកំណែដោយមិនផ្ទៀងផ្ទាត់ សូមចងចាំថាកំណែថ្មីៗពីអ្នកអភិវឌ្ឍន៍ដែលមិនបានផ្ទៀងផ្ទាត់អាចធ្វើឱ្យឧបករណ៍ និងទិន្នន័យរបស់អ្នកប្រឈមនឹងហានិភ័យ។"</string>
     <string name="cannot_install_app_blocked_title" msgid="6372444121824751694">"មិនបានផ្ទៀងផ្ទាត់អ្នក​អភិវឌ្ឍន៍កម្មវិធីទេ"</string>

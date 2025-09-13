@@ -107,7 +107,7 @@
     <string name="more_details_expanded_install_summary" msgid="3545896392881608712">"確認せずにインストールする場合、未確認のデベロッパーのアプリはデバイスやデータを危険にさらす恐れがあることにご注意ください。"</string>
     <string name="more_details_expanded_update_summary" msgid="2239162864839036480">"確認せずに更新する場合、未確認のデベロッパーによるアップデートはデバイスやデータを危険にさらす恐れがあることにご注意ください。"</string>
     <string name="cannot_install_app_blocked_title" msgid="6372444121824751694">"未確認のアプリ デベロッパーです"</string>
-    <string name="cannot_install_verification_no_internet_title" msgid="2862046642298119581">"インターネットに接続されていないため、アプリ デベロッパーを確認できません"</string>
+    <string name="cannot_install_verification_no_internet_title" msgid="2862046642298119581">"アプリ デベロッパーを確認できません"</string>
     <string name="cannot_install_verification_unavailable_title" msgid="2038093442302309120">"アプリ デベロッパーを確認できません"</string>
     <string name="install_without_verifying" msgid="5359680595440741626">"確認せずにインストール"</string>
     <string name="update_without_verifying" msgid="2841466981431484179">"確認せずに更新"</string>

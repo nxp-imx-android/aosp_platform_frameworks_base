@@ -96,22 +96,14 @@
     <string name="message_restore_error_installer_absent" msgid="8492838251989389724">"මෙම යෙදුම ප්‍රතිසාධනය කිරීම සඳහා, ඔබට <xliff:g id="INSTALLER_NAME">%1$s</xliff:g> ස්ථාපනය කිරීමට අවශ්‍ය වනු ඇත"</string>
     <string name="message_restore_error_generic" msgid="5903850636679929406">"මෙම යෙදුම ප්‍රතිසාධනය කිරීමට උත්සාහ කිරීමේ ගැටලුවක් ඇති විය"</string>
     <string name="message_uninstall_activity" msgid="3263352475743590167">"<xliff:g id="ACTIVITY_NAME">%1$s</xliff:g> පහත යෙදුමේ කොටසකි: <xliff:g id="APP_NAME">%2$s</xliff:g>"</string>
-    <!-- no translation found for cannot_install_app_blocked_summary (2082063650842897085) -->
-    <skip />
-    <!-- no translation found for cannot_update_app_blocked_summary (7607734844900187499) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_no_internet_summary (7298957699553589600) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_no_internet_summary (8094414928318316598) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_summary (3830073638843524892) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_unavailable_summary (342184955548504019) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_fail_closed_summary (3552780111383069051) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_unavailable_fail_closed_summary (353457015429601377) -->
-    <skip />
+    <string name="cannot_install_app_blocked_summary" msgid="2082063650842897085">"&lt;p&gt;මෙම යෙදුම අවහිර කර ඇත. ඔබේ උපාංගය සහ දත්ත ආරක්ෂිතව තබා ගැනීමට උදවු කිරීම සඳහා, සත්‍යාපිත සංවර්ධකයින්ගේ යෙදුම් පමණක් ස්ථාපනය කළ හැක.&lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;සංවර්ධක සත්‍යාපනය පිළිබඳ තව දැනගන්න&lt;/a&gt;"</string>
+    <string name="cannot_update_app_blocked_summary" msgid="7607734844900187499">"&lt;p&gt;මෙම යෙදුම යාවත්කාලීන කර නොමැත. ඔබේ උපාංගය සහ දත්ත ආරක්ෂිතව තබා ගැනීමට උදවු කිරීම සඳහා, සත්‍යාපිත සංවර්ධකයින්ගේ යාවත්කාලීන පමණක් ස්ථාපනය කළ හැක.&lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;සංවර්ධක සත්‍යාපනය පිළිබඳ තව දැනගන්න&lt;/a&gt;"</string>
+    <string name="cannot_install_verification_no_internet_summary" msgid="7298957699553589600">"&lt;p&gt;මෙම යෙදුම ස්ථාපනය කර නොමැත. සත්‍යාපනය නොකළ සංවර්ධකයින්ගේ යෙදුම් අනාරක්ෂිත විය හැක.&lt;/p&gt; &lt;p&gt;යෙදුම් සංවර්ධක සත්‍යාපනය කිරීමට අන්තර්ජාල සම්බන්ධතාවයක් අවශ්‍ය වේ. ඔබේ සම්බන්ධතාවය පරීක්ෂා කර, පසුව නැවත ස්ථාපනයට උත්සාහ කරන්න. &lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;සංවර්ධක සත්‍යාපනය පිළිබඳ තව දැන ගන්න&lt;/a&gt;"</string>
+    <string name="cannot_update_verification_no_internet_summary" msgid="8094414928318316598">"&lt;p&gt;මෙම යෙදුම යාවත්කාලීන කර නොමැත. සත්‍යාපනය නොකළ සංවර්ධකයින්ගෙන් ලැබෙන යාවත්කාලීන කිරීම් අනාරක්ෂිත විය හැක.&lt;/p&gt; &lt;p&gt;යෙදුම් සංවර්ධකයා සත්‍යාපනය කිරීමට අන්තර්ජාල සම්බන්ධතාවයක් අවශ්‍ය වේ. ඔබේ සම්බන්ධතාවය පරීක්ෂා කර, පසුව නැවත යාවත්කාලීන කිරීමට උත්සාහ කරන්න. &lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;සංවර්ධක සත්‍යාපනය පිළිබඳ තව දැන ගන්න&lt;/a&gt;"</string>
+    <string name="cannot_install_verification_unavailable_summary" msgid="3830073638843524892">"&lt;p&gt;මෙම යෙදුමේ සංවර්ධකයා සත්‍යාපනය කිරීමේ දී ගැටලුවක් ඇති විය. සත්‍යාපනය නොකළ සංවර්ධකයින්ගේ යෙදුම් අනාරක්ෂිත විය හැකි බැවින්, යෙදුම ස්ථාපනය කර නොමැත.&lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;සංවර්ධක සත්‍යාපනය පිළිබඳ තව දැන ගන්න&lt;/a&gt;"</string>
+    <string name="cannot_update_verification_unavailable_summary" msgid="342184955548504019">"&lt;p&gt;මෙම යෙදුමේ සංවර්ධකයා සත්‍යාපනය කිරීමේ දී ගැටලුවක් ඇති විය. සත්‍යාපනය නොකළ සංවර්ධකයින්ගෙන් ලැබෙන යාවත්කාලීන කිරීම් අනාරක්ෂිත විය හැකි බැවින්, යෙදුම යාවත්කාලීන කර නොමැත.&lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;සංවර්ධක සත්‍යාපනය පිළිබඳ තව දැන ගන්න&lt;/a&gt;"</string>
+    <string name="cannot_install_verification_unavailable_fail_closed_summary" msgid="3552780111383069051">"&lt;p&gt;සංවර්ධකයා සත්‍යාපනය කිරීමේ ගැටලුවක් ඇති වූ නිසා මෙම යෙදුම අවහිර කරන ලදි. ඔබේ උපාංගය සහ දත්ත ආරක්ෂිතව තබා ගැනීමට උදවු කිරීම සඳහා, සත්‍යාපිත සංවර්ධකයින්ගේ යෙදුම් පමණක් ස්ථාපනය කළ හැක.&lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;සංවර්ධක සත්‍යාපනය පිළිබඳ තව දැනගන්න&lt;/a&gt;"</string>
+    <string name="cannot_update_verification_unavailable_fail_closed_summary" msgid="353457015429601377">"&lt;p&gt;සංවර්ධකයා සත්‍යාපනය කිරීමේ ගැටලුවක් ඇති වූ නිසා මෙම යෙදුම යාවත්කාලීන කර නොමැත. ඔබේ උපාංගය සහ දත්ත ආරක්ෂිතව තබා ගැනීමට උදවු කිරීම සඳහා, සත්‍යාපිත සංවර්ධකයින්ගේ යාවත්කාලීන පමණක් ස්ථාපනය කළ හැක.&lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;සංවර්ධක සත්‍යාපනය පිළිබඳ තව දැනගන්න&lt;/a&gt;"</string>
     <string name="more_details_expanded_install_summary" msgid="3545896392881608712">"ඔබ සත්‍යාපනය නොකර ස්ථාපනය කරන්නේ නම්, සත්‍යාපනය නොකළ සංවර්ධකයින්ගේ යෙදුම් ඔබේ උපාංගය සහ දත්ත අවදානමට ලක් කළ හැකි බව මතක තබා ගන්න."</string>
     <string name="more_details_expanded_update_summary" msgid="2239162864839036480">"ඔබ සත්‍යාපනය නොකර යාවත්කාලීන කරන්නේ නම්, සත්‍යාපනය නොකළ සංවර්ධකයින්ගෙන් ලැබෙන යාවත්කාලීන කිරීම් ඔබේ උපාංගය සහ දත්ත අවදානමට ලක් කළ හැකි බව මතක තබා ගන්න."</string>
     <string name="cannot_install_app_blocked_title" msgid="6372444121824751694">"යෙදුම් සංවර්ධක සත්‍යාපනය කර නැත"</string>

@@ -96,26 +96,18 @@
     <string name="message_restore_error_installer_absent" msgid="8492838251989389724">"Per restaurar l\'aplicació, cal que instal·lis <xliff:g id="INSTALLER_NAME">%1$s</xliff:g>"</string>
     <string name="message_restore_error_generic" msgid="5903850636679929406">"Hi ha hagut un problema en intentar restaurar aquesta aplicació"</string>
     <string name="message_uninstall_activity" msgid="3263352475743590167">"<xliff:g id="ACTIVITY_NAME">%1$s</xliff:g> forma part de l\'aplicació següent: <xliff:g id="APP_NAME">%2$s</xliff:g>"</string>
-    <!-- no translation found for cannot_install_app_blocked_summary (2082063650842897085) -->
-    <skip />
-    <!-- no translation found for cannot_update_app_blocked_summary (7607734844900187499) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_no_internet_summary (7298957699553589600) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_no_internet_summary (8094414928318316598) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_summary (3830073638843524892) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_unavailable_summary (342184955548504019) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_fail_closed_summary (3552780111383069051) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_unavailable_fail_closed_summary (353457015429601377) -->
-    <skip />
+    <string name="cannot_install_app_blocked_summary" msgid="2082063650842897085">"&lt;p&gt;Aquesta aplicació s\'ha bloquejat. Per ajudar-te a protegir el dispositiu i les dades, només es poden instal·lar aplicacions de desenvolupadors verificats.&lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;Més informació sobre la verificació de desenvolupadors&lt;/a&gt;"</string>
+    <string name="cannot_update_app_blocked_summary" msgid="7607734844900187499">"&lt;p&gt;Aquesta aplicació no s\'ha actualitzat. Per ajudar-te a protegir el dispositiu i les dades, només es poden instal·lar actualitzacions de desenvolupadors verificats.&lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;Més informació sobre la verificació de desenvolupadors&lt;/a&gt;"</string>
+    <string name="cannot_install_verification_no_internet_summary" msgid="7298957699553589600">"&lt;p&gt;Aquesta aplicació no s\'ha instal·lat. És possible que les aplicacions de desenvolupadors no verificats no siguin segures.&lt;/p&gt; &lt;p&gt;Cal una connexió a Internet per verificar el desenvolupador de l\'aplicació. Comprova la connexió i torna a provar d\'instal·lar l\'aplicació. &lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;Més informació sobre la verificació de desenvolupadors&lt;/a&gt;"</string>
+    <string name="cannot_update_verification_no_internet_summary" msgid="8094414928318316598">"&lt;p&gt;Aquesta aplicació no s\'ha actualitzat. És possible que les actualitzacions de desenvolupadors no verificats no siguin segures.&lt;/p&gt; &lt;p&gt;Cal una connexió a Internet per verificar el desenvolupador de l\'aplicació. Comprova la connexió i torna a provar d\'actualitzar l\'aplicació. &lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;Més informació sobre la verificació de desenvolupadors&lt;/a&gt;"</string>
+    <string name="cannot_install_verification_unavailable_summary" msgid="3830073638843524892">"&lt;p&gt;Hi ha hagut un problema en verificar el desenvolupador d\'aquesta aplicació. És possible que les aplicacions de desenvolupadors no verificats no siguin segures, de manera que l\'aplicació no s\'ha instal·lat.&lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;Més informació sobre la verificació de desenvolupadors&lt;/a&gt;"</string>
+    <string name="cannot_update_verification_unavailable_summary" msgid="342184955548504019">"&lt;p&gt;Hi ha hagut un problema en verificar el desenvolupador d\'aquesta aplicació. És possible que les actualitzacions de desenvolupadors no verificats no siguin segures, de manera que l\'aplicació no s\'ha actualitzat.&lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;Més informació sobre la verificació de desenvolupadors&lt;/a&gt;"</string>
+    <string name="cannot_install_verification_unavailable_fail_closed_summary" msgid="3552780111383069051">"&lt;p&gt;Aquesta aplicació s\'ha bloquejat perquè hi ha hagut un problema en verificar el desenvolupador. Per ajudar-te a protegir el dispositiu i les dades, només es poden instal·lar aplicacions de desenvolupadors verificats.&lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;Més informació sobre la verificació de desenvolupadors&lt;/a&gt;"</string>
+    <string name="cannot_update_verification_unavailable_fail_closed_summary" msgid="353457015429601377">"&lt;p&gt;Aquesta aplicació no s\'ha actualitzat perquè hi ha hagut un problema en verificar el desenvolupador. Per ajudar-te a protegir el dispositiu i les dades, només es poden instal·lar actualitzacions de desenvolupadors verificats.&lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;Més informació sobre la verificació de desenvolupadors&lt;/a&gt;"</string>
     <string name="more_details_expanded_install_summary" msgid="3545896392881608712">"Si la instal·les sense fer la verificació, tingues en compte que les aplicacions de desenvolupadors no verificats poden posar en perill el teu dispositiu i les teves dades."</string>
     <string name="more_details_expanded_update_summary" msgid="2239162864839036480">"Si l\'actualitzes sense fer la verificació, tingues en compte que les actualitzacions de desenvolupadors no verificats poden posar en perill el teu dispositiu i les teves dades."</string>
     <string name="cannot_install_app_blocked_title" msgid="6372444121824751694">"Desenvolupador de l\'aplicació no verificat"</string>
-    <string name="cannot_install_verification_no_internet_title" msgid="2862046642298119581">"No hi ha connexió; no es pot verificar el desenvolupador de l\'app"</string>
+    <string name="cannot_install_verification_no_internet_title" msgid="2862046642298119581">"Sense connexió a Internet; no es pot verificar el desenvolupador de l\'app"</string>
     <string name="cannot_install_verification_unavailable_title" msgid="2038093442302309120">"No es pot verificar el desenvolupador de l\'aplicació"</string>
     <string name="install_without_verifying" msgid="5359680595440741626">"Instal·la sense verificar"</string>
     <string name="update_without_verifying" msgid="2841466981431484179">"Actualitza sense verificar"</string>

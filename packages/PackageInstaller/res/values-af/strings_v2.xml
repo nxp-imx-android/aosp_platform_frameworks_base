@@ -96,22 +96,14 @@
     <string name="message_restore_error_installer_absent" msgid="8492838251989389724">"Jy sal <xliff:g id="INSTALLER_NAME">%1$s</xliff:g> moet installeer om hierdie app terug te stel"</string>
     <string name="message_restore_error_generic" msgid="5903850636679929406">"Daar was ’n probleem met die terugstelling van hierdie app"</string>
     <string name="message_uninstall_activity" msgid="3263352475743590167">"<xliff:g id="ACTIVITY_NAME">%1$s</xliff:g> is deel van die volgende app: <xliff:g id="APP_NAME">%2$s</xliff:g>"</string>
-    <!-- no translation found for cannot_install_app_blocked_summary (2082063650842897085) -->
-    <skip />
-    <!-- no translation found for cannot_update_app_blocked_summary (7607734844900187499) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_no_internet_summary (7298957699553589600) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_no_internet_summary (8094414928318316598) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_summary (3830073638843524892) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_unavailable_summary (342184955548504019) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_fail_closed_summary (3552780111383069051) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_unavailable_fail_closed_summary (353457015429601377) -->
-    <skip />
+    <string name="cannot_install_app_blocked_summary" msgid="2082063650842897085">"&lt;p&gt;Hierdie app is geblokkeer. Om te help om jou toestel en data veilig te hou, kan net apps vanaf geverifieerde ontwikkelaars geïnstalleer word.&lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;Kry meer inligting oor ontwikkelaarverifikasie&lt;/a&gt;"</string>
+    <string name="cannot_update_app_blocked_summary" msgid="7607734844900187499">"&lt;p&gt;Hierdie app is nie opgedateer nie. Om te help om jou toestel en data veilig te hou, kan net opdaterings vanaf geverifieerde ontwikkelaars geïnstalleer word.&lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;Kry meer inligting oor ontwikkelaarverifikasie&lt;/a&gt;"</string>
+    <string name="cannot_install_verification_no_internet_summary" msgid="7298957699553589600">"&lt;p&gt;Hierdie app is nie geïnstalleer nie. Apps vanaf ongeverifieerde ontwikkelaars kan dalk onveilig wees.&lt;/p&gt; &lt;p&gt;’n Internetverbinding word vereis om die appontwikkelaar te verifieer. Gaan jou verbinding na en probeer dan weer om te installeer. &lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;Kry meer inligting oor ontwikkelaarverifikasie&lt;/a&gt;"</string>
+    <string name="cannot_update_verification_no_internet_summary" msgid="8094414928318316598">"&lt;p&gt;Hierdie app is nie opgedateer nie. Opdaterings vanaf ongeverifieerde ontwikkelaars kan dalk onveilig wees.&lt;/p&gt; &lt;p&gt;’n Internetverbinding word vereis om die appontwikkelaar te verifieer. Gaan jou verbinding na en probeer dan weer om op te dateer. &lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;Kry meer inligting oor ontwikkelaarverifikasie&lt;/a&gt;"</string>
+    <string name="cannot_install_verification_unavailable_summary" msgid="3830073638843524892">"&lt;p&gt;Daar was ’n probleem met die verifikasie van hierdie app se ontwikkelaar. Apps vanaf ongeverifieerde ontwikkelaars kan dalk onveilig wees, so die app is nie geïnstalleer nie.&lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;Kry meer inligting oor ontwikkelaarverifikasie&lt;/a&gt;"</string>
+    <string name="cannot_update_verification_unavailable_summary" msgid="342184955548504019">"&lt;p&gt;Daar was ’n probleem met die verifikasie van hierdie app se ontwikkelaar. Opdaterings vanaf ongeverifieerde ontwikkelaars kan dalk onveilig wees, so die app is nie opgedateer nie.&lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;Kry meer inligting oor ontwikkelaarverifikasie&lt;/a&gt;"</string>
+    <string name="cannot_install_verification_unavailable_fail_closed_summary" msgid="3552780111383069051">"&lt;p&gt;Hierdie app is geblokkeer omdat daar ’n probleem met die verifikasie van die ontwikkelaar was. Om te help om jou toestel en data veilig te hou, kan net apps vanaf geverifieerde ontwikkelaars geïnstalleer word.&lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;Kry meer inligting oor ontwikkelaarverifikasie&lt;/a&gt;"</string>
+    <string name="cannot_update_verification_unavailable_fail_closed_summary" msgid="353457015429601377">"&lt;p&gt;Hierdie app is nie opgedateer nie omdat daar ’n probleem met die verifikasie van die ontwikkelaar was. Om te help om jou toestel en data veilig te hou, kan net opdaterings vanaf geverifieerde ontwikkelaars geïnstalleer word.&lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;Kry meer inligting oor ontwikkelaarverifikasie&lt;/a&gt;"</string>
     <string name="more_details_expanded_install_summary" msgid="3545896392881608712">"Indien jy installeer sonder om te verifieer, moet jy in gedagte hou dat apps vanaf ongeverifieerde ontwikkelaars jou toestel en data in gevaar kan stel."</string>
     <string name="more_details_expanded_update_summary" msgid="2239162864839036480">"As jy opdateer sonder verifikasie moet jy in gedagte hou dat opdaterings van ongeverifieerde ontwikkelaars dalk jou toestel en data in gevaar kan stel."</string>
     <string name="cannot_install_app_blocked_title" msgid="6372444121824751694">"Appontwikkelaar is ongeverifieerd"</string>

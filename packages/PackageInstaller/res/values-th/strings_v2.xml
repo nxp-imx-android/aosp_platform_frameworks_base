@@ -96,22 +96,14 @@
     <string name="message_restore_error_installer_absent" msgid="8492838251989389724">"หากต้องการคืนค่าแอปนี้ คุณจะต้องติดตั้ง <xliff:g id="INSTALLER_NAME">%1$s</xliff:g>"</string>
     <string name="message_restore_error_generic" msgid="5903850636679929406">"เกิดปัญหาขณะพยายามคืนค่าแอปนี้"</string>
     <string name="message_uninstall_activity" msgid="3263352475743590167">"<xliff:g id="ACTIVITY_NAME">%1$s</xliff:g> เป็นส่วนหนึ่งของแอป <xliff:g id="APP_NAME">%2$s</xliff:g>"</string>
-    <!-- no translation found for cannot_install_app_blocked_summary (2082063650842897085) -->
-    <skip />
-    <!-- no translation found for cannot_update_app_blocked_summary (7607734844900187499) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_no_internet_summary (7298957699553589600) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_no_internet_summary (8094414928318316598) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_summary (3830073638843524892) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_unavailable_summary (342184955548504019) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_fail_closed_summary (3552780111383069051) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_unavailable_fail_closed_summary (353457015429601377) -->
-    <skip />
+    <string name="cannot_install_app_blocked_summary" msgid="2082063650842897085">"&lt;p&gt;แอปนี้ถูกบล็อก ระบบจะติดตั้งได้เฉพาะแอปจากนักพัฒนาแอปที่ได้รับการตรวจสอบแล้วเท่านั้น เพื่อช่วยรักษาความปลอดภัยให้อุปกรณ์และข้อมูลของคุณ&lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;ดูข้อมูลเพิ่มเติมเกี่ยวกับการตรวจสอบนักพัฒนาแอป&lt;/a&gt;"</string>
+    <string name="cannot_update_app_blocked_summary" msgid="7607734844900187499">"&lt;p&gt;แอปนี้ไม่ได้รับการอัปเดต ระบบจะติดตั้งได้เฉพาะการอัปเดตจากนักพัฒนาซอฟต์แวร์ที่ได้รับการตรวจสอบแล้วเท่านั้น เพื่อช่วยให้อุปกรณ์และข้อมูลของคุณปลอดภัย&lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;ดูข้อมูลเพิ่มเติมเกี่ยวกับการตรวจสอบนักพัฒนาซอฟต์แวร์&lt;/a&gt;"</string>
+    <string name="cannot_install_verification_no_internet_summary" msgid="7298957699553589600">"&lt;p&gt;ไม่ได้ติดตั้งแอปนี้ แอปจากนักพัฒนาแอปที่ไม่ได้รับการตรวจสอบอาจไม่ปลอดภัย&lt;/p&gt; &lt;p&gt;ต้องมีการเชื่อมต่ออินเทอร์เน็ตเพื่อตรวจสอบนักพัฒนาแอป โปรดตรวจสอบการเชื่อมต่อแล้วลองติดตั้งอีกครั้ง &lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;ดูข้อมูลเพิ่มเติมเกี่ยวกับการตรวจสอบนักพัฒนาแอป&lt;/a&gt;"</string>
+    <string name="cannot_update_verification_no_internet_summary" msgid="8094414928318316598">"&lt;p&gt;แอปนี้ไม่ได้รับการอัปเดต การอัปเดตจากนักพัฒนาแอปที่ไม่ได้รับการตรวจสอบอาจไม่ปลอดภัย&lt;/p&gt; &lt;p&gt;ต้องมีการเชื่อมต่ออินเทอร์เน็ตเพื่อตรวจสอบนักพัฒนาแอป โปรดตรวจสอบการเชื่อมต่อแล้วลองอัปเดตอีกครั้ง &lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;ดูข้อมูลเพิ่มเติมเกี่ยวกับการตรวจสอบนักพัฒนาแอป&lt;/a&gt;"</string>
+    <string name="cannot_install_verification_unavailable_summary" msgid="3830073638843524892">"&lt;p&gt;เกิดปัญหาในการตรวจสอบนักพัฒนาแอปนี้ แอปจากนักพัฒนาแอปที่ไม่ได้รับการตรวจสอบอาจไม่ปลอดภัย ระบบจึงไม่ได้ติดตั้งแอป&lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;ดูข้อมูลเพิ่มเติมเกี่ยวกับการตรวจสอบนักพัฒนาแอป&lt;/a&gt;"</string>
+    <string name="cannot_update_verification_unavailable_summary" msgid="342184955548504019">"&lt;p&gt;เกิดปัญหาในการตรวจสอบนักพัฒนาแอปนี้ การอัปเดตจากนักพัฒนาแอปที่ไม่ได้รับการตรวจสอบอาจไม่ปลอดภัย ระบบจึงไม่อัปเดตแอป&lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;ดูข้อมูลเพิ่มเติมเกี่ยวกับการตรวจสอบนักพัฒนาแอป&lt;/a&gt;"</string>
+    <string name="cannot_install_verification_unavailable_fail_closed_summary" msgid="3552780111383069051">"&lt;p&gt;แอปนี้ถูกบล็อกเนื่องจากเกิดปัญหาในการตรวจสอบนักพัฒนาแอป ระบบจะติดตั้งได้เฉพาะแอปจากนักพัฒนาแอปที่ได้รับการตรวจสอบแล้วเท่านั้น เพื่อช่วยรักษาความปลอดภัยให้อุปกรณ์และข้อมูลของคุณ&lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;ดูข้อมูลเพิ่มเติมเกี่ยวกับการตรวจสอบนักพัฒนาแอป&lt;/a&gt;"</string>
+    <string name="cannot_update_verification_unavailable_fail_closed_summary" msgid="353457015429601377">"&lt;p&gt;แอปนี้ไม่อัปเดตเนื่องจากเกิดปัญหาในการตรวจสอบนักพัฒนาซอฟต์แวร์ ระบบจะติดตั้งได้เฉพาะการอัปเดตจากนักพัฒนาซอฟต์แวร์ที่ได้รับการตรวจสอบแล้วเท่านั้น เพื่อช่วยให้อุปกรณ์และข้อมูลของคุณปลอดภัย&lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;ดูข้อมูลเพิ่มเติมเกี่ยวกับการตรวจสอบนักพัฒนาซอฟต์แวร์&lt;/a&gt;"</string>
     <string name="more_details_expanded_install_summary" msgid="3545896392881608712">"หากติดตั้งโดยไม่ตรวจสอบ โปรดทราบว่าแอปจากนักพัฒนาแอปที่ไม่ได้รับการตรวจสอบอาจทำให้อุปกรณ์และข้อมูลของคุณมีความเสี่ยง"</string>
     <string name="more_details_expanded_update_summary" msgid="2239162864839036480">"หากอัปเดตโดยไม่ตรวจสอบ โปรดทราบว่าการอัปเดตจากนักพัฒนาซอฟต์แวร์ที่ไม่ได้รับการตรวจสอบอาจทำให้อุปกรณ์และข้อมูลของคุณตกอยู่ในความเสี่ยง"</string>
     <string name="cannot_install_app_blocked_title" msgid="6372444121824751694">"นักพัฒนาแอปยังไม่ได้รับการตรวจสอบ"</string>
