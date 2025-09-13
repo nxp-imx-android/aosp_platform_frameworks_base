@@ -493,7 +493,23 @@ class DesktopTasksController(
         when (allFocusedTasks.size) {
             0 -> {}
             // Fullscreen -> Desktop.
-            1 -> moveFullscreenTaskToDesktop(allFocusedTasks.single(), transitionSource)
+            1 -> {
+                val focusedTask = allFocusedTasks.single()
+                // No-op toggling to Desktop via keyboard shortcut if we are mid-dragging the same
+                // task to Desktop
+                if (
+                    transitionSource == DesktopModeTransitionSource.KEYBOARD_SHORTCUT &&
+                        focusedTask.taskId == draggingTaskId
+                ) {
+                    logW(
+                        "DesktopTasksController: Abandon keyboard shortcut attempt to toggle " +
+                            "from fullscreen to Desktop because task with id=%d is mid-drag",
+                        focusedTask.taskId,
+                    )
+                    return
+                }
+                moveFullscreenTaskToDesktop(focusedTask, transitionSource)
+            }
             // Split screen -> Fullscreen (the active split screen app is moved into fullscreen).
             2 -> splitScreenController.goToFullscreenFromSplit()
             else ->
