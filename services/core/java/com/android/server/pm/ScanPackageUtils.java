@@ -437,27 +437,27 @@ final class ScanPackageUtils {
             if (parsedPackage.getPageSizeAppCompatFlags()
                     > ApplicationInfo.PAGE_SIZE_APP_COMPAT_FLAG_UNDEFINED) {
                 pkgSetting.setPageSizeAppCompatFlags(parsedPackage.getPageSizeAppCompatFlags());
-            } else {
-                // 16 KB is only support for 64 bit ABIs and for apps which are being installed
-                // Check alignment. System, Apex and Platform packages should be page-agnostic now
-                if ((Build.SUPPORTED_64_BIT_ABIS.length > 0)
-                        && !isSystemApp
-                        && !isApex
-                        && !isPlatformPackage) {
-                    NativeLibraryHelper.AlignmentResult res =
-                            packageAbiHelper.checkPackageAlignment(
-                                    parsedPackage,
-                                    pkgSetting.getLegacyNativeLibraryPath(),
-                                    parsedPackage.isNativeLibraryRootRequiresIsa(),
-                                    pkgSetting.getCpuAbiOverride());
-                    if (res != null && res.unalignedLibraries != null
-                            && res.flags >= ApplicationInfo.PAGE_SIZE_APP_COMPAT_FLAG_UNDEFINED) {
-                        pkgSetting.setPageSizeAppCompatFlags(res.flags);
-                        pkgSetting.setLibraryAlignmentInfo(res.unalignedLibraries);
-                    } else {
-                        Slog.e(TAG, "Error occurred while checking alignment of package : "
-                                + parsedPackage.getPackageName());
-                    }
+            }
+
+            // 16 KB is only support for 64 bit ABIs and for apps which are being installed
+            // Check alignment. System, Apex and Platform packages should be page-agnostic now
+            if ((Build.SUPPORTED_64_BIT_ABIS.length > 0)
+                    && !isSystemApp
+                    && !isApex
+                    && !isPlatformPackage) {
+                NativeLibraryHelper.AlignmentResult res =
+                        packageAbiHelper.checkPackageAlignment(
+                                parsedPackage,
+                                pkgSetting.getLegacyNativeLibraryPath(),
+                                parsedPackage.isNativeLibraryRootRequiresIsa(),
+                                pkgSetting.getCpuAbiOverride());
+                if (res != null && res.unalignedLibraries != null
+                        && res.flags >= ApplicationInfo.PAGE_SIZE_APP_COMPAT_FLAG_UNDEFINED) {
+                    pkgSetting.setPageSizeAppCompatFlags(res.flags);
+                    pkgSetting.setLibraryAlignmentInfo(res.unalignedLibraries);
+                } else {
+                    Slog.e(TAG, "Error occurred while checking alignment of package : "
+                            + parsedPackage.getPackageName());
                 }
             }
         }

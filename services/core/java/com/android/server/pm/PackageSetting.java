@@ -1892,13 +1892,11 @@ public class PackageSetting extends SettingBase implements PackageStateInternal 
      */
     @Override
     public String getPageSizeCompatWarningMessage(Context context) {
-        boolean manifestOverrideEnabled =  (mPageSizeAppCompatFlags
-                & ApplicationInfo.PAGE_SIZE_APP_COMPAT_FLAG_MANIFEST_OVERRIDE_ENABLED) != 0;
         boolean settingsOverrideEnabled =  (mPageSizeAppCompatFlags
                 & ApplicationInfo.PAGE_SIZE_APP_COMPAT_FLAG_SETTINGS_OVERRIDE_ENABLED) != 0;
         boolean settingsOverrideDisabled =  (mPageSizeAppCompatFlags
                 & ApplicationInfo.PAGE_SIZE_APP_COMPAT_FLAG_SETTINGS_OVERRIDE_DISABLED) != 0;
-        if (manifestOverrideEnabled || settingsOverrideEnabled || settingsOverrideDisabled) {
+        if (settingsOverrideEnabled || settingsOverrideDisabled) {
             return null;
         }
 
