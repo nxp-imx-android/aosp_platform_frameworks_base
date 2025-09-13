@@ -46,7 +46,7 @@ class FlexClockViewGroupController(private val clockCtx: ClockContext) : FlexClo
         ClockLogger(null, clockCtx.messageBuffer, FlexClockViewGroupController::class.simpleName!!)
 
     val layerControllers = mutableListOf<FlexClockViewController>()
-    val dozeState = DefaultClockController.AnimationState(1F)
+    val dozeState = AnimationState(1F)
 
     override val view = FlexClockViewGroup(clockCtx)
     override var onViewBoundsChanged by view::onViewBoundsChanged
