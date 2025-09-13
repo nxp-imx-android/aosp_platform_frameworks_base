@@ -41,7 +41,7 @@ import static android.os.UserManager.DISALLOW_USER_SWITCH;
 import static android.os.UserManager.REMOVE_RESULT_ALREADY_BEING_REMOVED;
 import static android.os.UserManager.REMOVE_RESULT_ERROR_LAST_ADMIN_USER;
 import static android.os.UserManager.REMOVE_RESULT_ERROR_MAIN_USER_PERMANENT_ADMIN;
-import static android.os.UserManager.REMOVE_RESULT_DEVICE_OWNER;
+import static android.os.UserManager.REMOVE_RESULT_ERROR_DEVICE_OWNER;
 import static android.os.UserManager.REMOVE_RESULT_ERROR_SYSTEM_USER;
 import static android.os.UserManager.REMOVE_RESULT_ERROR_USER_NOT_FOUND;
 import static android.os.UserManager.REMOVE_RESULT_USER_IS_REMOVABLE;
@@ -2092,7 +2092,8 @@ public final class UserManagerServiceMockedTest {
         expectGetUserRemovability("system user", USER_SYSTEM, REMOVE_RESULT_ERROR_SYSTEM_USER);
         expectGetUserRemovability("null user", USER_NULL, REMOVE_RESULT_ERROR_USER_NOT_FOUND);
         expectGetUserRemovability("dying user", dyingUser.id, REMOVE_RESULT_ALREADY_BEING_REMOVED);
-        expectGetUserRemovability("device owner", deviceOwnerUser.id, REMOVE_RESULT_DEVICE_OWNER);
+        expectGetUserRemovability("device owner", deviceOwnerUser.id,
+                REMOVE_RESULT_ERROR_DEVICE_OWNER);
 
         // Then success ones
         expectGetUserRemovability("non-admin", nonAdminUser.id, REMOVE_RESULT_USER_IS_REMOVABLE);
