@@ -47,7 +47,7 @@ class SysUiSelectionToolbarRenderService : SelectionToolbarRenderService() {
                 ::onPasteAction,
             )
         toolbarCache[uid] = toolbar
-        mainThreadHandler.post { toolbar.show(showInfo) }
+        toolbarUiExecutor.execute { toolbar.show(showInfo) }
 
         Slog.v(TAG, "onShow() for uid: $uid")
     }
@@ -56,7 +56,7 @@ class SysUiSelectionToolbarRenderService : SelectionToolbarRenderService() {
         val toolbar = toolbarCache[uid]
         if (toolbar != null) {
             Slog.v(TAG, "onHide() for uid: $uid")
-            mainThreadHandler.post { toolbar.hide(uid) }
+            toolbarUiExecutor.execute { toolbar.hide(uid) }
         }
     }
 
@@ -68,7 +68,7 @@ class SysUiSelectionToolbarRenderService : SelectionToolbarRenderService() {
     private fun removeAndDismissToolbar(uid: Int) {
         val toolbar = toolbarCache[uid]
         if (toolbar != null) {
-            mainThreadHandler.post { toolbar.dismiss(uid) }
+            toolbarUiExecutor.execute { toolbar.dismiss(uid) }
             toolbarCache -= uid
         }
     }
