@@ -2120,7 +2120,7 @@ flag {
     name: "no_shade_blur_on_dream_start"
     namespace: "systemui"
     description: "Suppress shade blur when starting dream"
-    bug: "440661063"
+    bug: "422835977"
     metadata {
       purpose: PURPOSE_BUGFIX
     }
