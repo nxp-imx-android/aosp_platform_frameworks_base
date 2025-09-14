@@ -105,9 +105,7 @@ public final class ComputerControlSession implements AutoCloseable {
     /**
      * Launches an application's launcher activity in the computer control session.
      *
-     * <p>The application with the given package name must have a launcher activity and the
-     * package name must have been included during the session creation.</p>
-     *
+     * @throws IllegalArgumentException if the package does not have a launcher activity.
      * @see Params#getTargetPackageNames()
      */
     public void launchApplication(@NonNull String packageName) {

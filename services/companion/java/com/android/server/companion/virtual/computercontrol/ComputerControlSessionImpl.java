@@ -320,10 +320,13 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
         return mOwnerPackageName;
     }
 
-    public void launchApplication(@NonNull String packageName) {
-        if (!mParams.getTargetPackageNames().contains(Objects.requireNonNull(packageName))) {
-            throw new IllegalArgumentException(
-                    "Package " + packageName + " is not allowed to be launched in this session.");
+    @Override
+    public void launchApplication(@NonNull String packageName) throws RemoteException {
+        if (Flags.computerControlActivityPolicyStrict()) {
+            // TODO(b/444600407): Remove this once the consent model is per-target app. While the
+            // consent is general, the caller can extend the list of target packages dynamically.
+            mVirtualDevice.addActivityPolicyExemption(
+                    new ActivityPolicyExemption.Builder().setPackageName(packageName).build());
         }
         final UserHandle user = UserHandle.of(UserHandle.getUserId(Binder.getCallingUid()));
         Binder.withCleanCallingIdentity(() -> mInjector.launchApplicationOnDisplayAsUser(
