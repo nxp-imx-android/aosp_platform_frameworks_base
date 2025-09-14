@@ -35,6 +35,7 @@ import android.hardware.location.ContextHubTransaction;
 import android.hardware.location.IContextHubTransactionCallback;
 import android.hardware.location.NanoAppState;
 import android.os.Binder;
+import android.os.DeadObjectException;
 import android.os.IBinder;
 import android.os.PowerManager;
 import android.os.PowerManager.WakeLock;
@@ -321,7 +322,7 @@ public class ContextHubEndpointBroker extends IContextHubEndpoint.Stub
                                 mHalEndpointInfo.id,
                                 serviceDescriptor);
             } catch (RemoteException | IllegalArgumentException | UnsupportedOperationException e) {
-                Log.e(TAG, "Exception while calling HAL openEndpointSession", e);
+                Log.e(TAG, "Exception while calling HAL openEndpointSession: " + e.getMessage());
                 cleanupSessionResources(sessionId);
                 throw e;
             }
@@ -413,13 +414,17 @@ public class ContextHubEndpointBroker extends IContextHubEndpoint.Stub
                 try {
                     getHubInterface().sendMessageToEndpoint(sessionId, halMessage);
                 } catch (RemoteException e) {
+                    byte reason =
+                            (e instanceof DeadObjectException)
+                                    ? Reason.HUB_RESET
+                                    : Reason.UNSPECIFIED;
                     Log.e(
                             TAG,
                             "Exception while sending message on session "
                                     + sessionId
-                                    + ", closing session",
-                            e);
-                    notifySessionClosedToBoth(sessionId, Reason.UNSPECIFIED);
+                                    + ", closing session: "
+                                    + e.getMessage());
+                    notifySessionClosedToBoth(sessionId, reason);
                 }
             } else {
                 IContextHubTransactionCallback wrappedCallback =

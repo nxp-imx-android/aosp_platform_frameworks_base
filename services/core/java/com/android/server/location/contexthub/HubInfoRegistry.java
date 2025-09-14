@@ -179,7 +179,7 @@ class HubInfoRegistry implements ContextHubHalEndpointCallback.IEndpointLifecycl
         try {
             hubInfos = mContextHubWrapper.getHubs();
         } catch (RemoteException e) {
-            Log.e(TAG, "RemoteException while getting Hub info", e);
+            Log.e(TAG, "RemoteException while getting Hub info: " + e.getMessage());
             hubInfos = Collections.emptyList();
         }
 
@@ -193,7 +193,7 @@ class HubInfoRegistry implements ContextHubHalEndpointCallback.IEndpointLifecycl
         try {
             endpointInfos = mContextHubWrapper.getEndpoints();
         } catch (RemoteException e) {
-            Log.e(TAG, "RemoteException while getting Hub info", e);
+            Log.e(TAG, "RemoteException while getting Hub info:" + e.getMessage());
             endpointInfos = Collections.emptyList();
         }
 
