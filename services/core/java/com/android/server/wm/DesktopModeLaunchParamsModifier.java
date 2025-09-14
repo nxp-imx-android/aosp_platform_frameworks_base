@@ -38,6 +38,7 @@ import android.app.WindowConfiguration;
 import android.content.Context;
 import android.content.pm.ActivityInfo;
 import android.graphics.Rect;
+import android.view.Display;
 import android.window.DesktopExperienceFlags;
 import android.window.DesktopModeFlags;
 
@@ -107,6 +108,11 @@ class DesktopModeLaunchParamsModifier implements LaunchParamsModifier {
         appendLog("display-id=" + display.getDisplayId()
                 + " task-display-area-windowing-mode=" + suggestedDisplayArea.getWindowingMode()
                 + " suggested-display-area=" + suggestedDisplayArea);
+
+        if (!isDesktopModeSupportedOnDisplay(display)) {
+            appendLog("desktop mode is not supported on displayId: ", display.getDisplayId());
+            return RESULT_SKIP;
+        }
 
         boolean hasLaunchWindowingMode = false;
         final boolean inDesktopMode = suggestedDisplayArea.inFreeformWindowingMode()
@@ -365,6 +371,18 @@ class DesktopModeLaunchParamsModifier implements LaunchParamsModifier {
         final Task visibleFreeformTask = task.getDisplayContent().getTask(
                 t -> t.inFreeformWindowingMode() && t.isVisibleRequested());
         return visibleFreeformTask != null;
+    }
+
+    /**
+     * Return {@code true} if a given display can host a desktop mode session.
+     */
+    @VisibleForTesting
+    boolean isDesktopModeSupportedOnDisplay(@NonNull DisplayContent display) {
+        if (!DesktopModeHelper.shouldEnforceDeviceRestrictions()) return true;
+        if (display.getDisplay().getType() == Display.TYPE_INTERNAL) {
+            return DesktopModeHelper.canInternalDisplayHostDesktops(mContext);
+        }
+        return display.isEligibleForDesktopMode();
     }
 
     private boolean isRequestingFreeformWindowMode(

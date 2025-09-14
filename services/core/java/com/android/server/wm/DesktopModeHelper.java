@@ -45,8 +45,7 @@ public final class DesktopModeHelper {
     /**
      * Return {@code true} if desktop mode should be restricted to supported devices.
      */
-    @VisibleForTesting
-    static boolean shouldEnforceDeviceRestrictions() {
+    public static boolean shouldEnforceDeviceRestrictions() {
         return ENFORCE_DEVICE_RESTRICTIONS;
     }
 
@@ -73,7 +72,7 @@ public final class DesktopModeHelper {
     /**
      * Return {@code true} if the current device can hosts desktop sessions on its internal display.
      */
-    private static boolean canInternalDisplayHostDesktops(@NonNull Context context) {
+    public static boolean canInternalDisplayHostDesktops(@NonNull Context context) {
         return context.getResources().getBoolean(R.bool.config_canInternalDisplayHostDesktops);
     }
 

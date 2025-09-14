@@ -149,7 +149,16 @@ public class DesktopModeLaunchParamsModifierTests extends
     @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE)
     public void testReturnsSkipIfDesktopWindowingIsEnabledOnUnsupportedDevice() {
         setupDesktopModeLaunchParamsModifier(/*isDesktopModeSupported=*/ false,
-                /*enforceDeviceRestrictions=*/ true);
+                /*enforceDeviceRestrictions=*/ true, /*doesDisplaySupportDesktop*/ true);
+
+        assertEquals(RESULT_SKIP, new CalculateRequestBuilder().setTask(null).calculate());
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE)
+    public void testReturnsSkipIfDesktopWindowingIsNotSupportedOnTargetDisplay() {
+        setupDesktopModeLaunchParamsModifier(/*isDesktopModeSupported=*/ true,
+                /*enforceDeviceRestrictions=*/ true, /*doesDisplaySupportDesktop*/ false);
 
         assertEquals(RESULT_SKIP, new CalculateRequestBuilder().setTask(null).calculate());
     }
@@ -158,7 +167,7 @@ public class DesktopModeLaunchParamsModifierTests extends
     @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE)
     public void testReturnsContinueIfDesktopWindowingIsEnabledAndUnsupportedDeviceOverridden() {
         setupDesktopModeLaunchParamsModifier(/*isDesktopModeSupported=*/ true,
-                /*enforceDeviceRestrictions=*/ false);
+                /*enforceDeviceRestrictions=*/ false, /*doesDisplaySupportDesktop*/ true);
 
         final Task task = new TaskBuilder(mSupervisor).build();
         assertEquals(RESULT_CONTINUE, new CalculateRequestBuilder().setTask(task).calculate());
@@ -2361,15 +2370,17 @@ public class DesktopModeLaunchParamsModifierTests extends
 
     private void setupDesktopModeLaunchParamsModifier() {
         setupDesktopModeLaunchParamsModifier(/*isDesktopModeSupported=*/ true,
-                /*enforceDeviceRestrictions=*/ true);
+                /*enforceDeviceRestrictions=*/ true, /*doesDisplaySupportDesktop*/ true);
     }
 
     private void setupDesktopModeLaunchParamsModifier(boolean isDesktopModeSupported,
-            boolean enforceDeviceRestrictions) {
+            boolean enforceDeviceRestrictions, boolean doesDisplaySupportDesktop) {
         doReturn(isDesktopModeSupported)
                 .when(() -> DesktopModeHelper.canEnterDesktopMode(any()));
         doReturn(enforceDeviceRestrictions)
                 .when(DesktopModeHelper::shouldEnforceDeviceRestrictions);
+        doReturn(doesDisplaySupportDesktop)
+                .when(mTarget).isDesktopModeSupportedOnDisplay(any());
     }
 
     private void allowOverlayPermissionForAllUsers(String[] permissions)

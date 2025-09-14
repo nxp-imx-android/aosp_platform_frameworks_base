@@ -5787,6 +5787,16 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
         return true;
     }
 
+    public boolean isEligibleForDesktopMode() {
+        if (!isSystemDecorationsSupported()) {
+            return false;
+        }
+        if (!isWindowingModeSupported(WINDOWING_MODE_FREEFORM)) {
+            return false;
+        }
+        return isDefaultDisplay || allowContentModeSwitch();
+    }
+
     /**
      * Returns whether the {@param windowingMode} is supported on this display.
      * @param windowingMode The windowing mode to check for.
