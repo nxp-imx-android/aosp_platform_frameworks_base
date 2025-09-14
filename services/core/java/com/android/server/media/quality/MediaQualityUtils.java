@@ -207,290 +207,493 @@ public final class MediaQualityUtils {
             PictureParameter[] parameters) {
         PersistableBundle bundle = new PersistableBundle();
         for (PictureParameter pp : parameters) {
-            if (pp.getBrightness() > -1) {
-                bundle.putDouble(PictureQuality.PARAMETER_BRIGHTNESS, (double) pp.getBrightness());
-            }
-            if (pp.getContrast() > -1) {
-                bundle.putInt(PictureQuality.PARAMETER_CONTRAST, pp.getContrast());
-            }
-            if (pp.getSharpness() > -1) {
-                bundle.putInt(PictureQuality.PARAMETER_SHARPNESS, pp.getSharpness());
-            }
-            if (pp.getSaturation() > -1) {
-                bundle.putInt(PictureQuality.PARAMETER_SATURATION, pp.getSaturation());
-            }
-            if (pp.getHue() > -1) {
-                bundle.putInt(PictureQuality.PARAMETER_HUE, pp.getHue());
-            }
-            if (pp.getColorTunerBrightness() > -1) {
-                bundle.putInt(PictureQuality.PARAMETER_COLOR_TUNER_BRIGHTNESS,
-                        pp.getColorTunerBrightness());
-            }
-            if (pp.getColorTunerSaturation() > -1) {
-                bundle.putInt(PictureQuality.PARAMETER_COLOR_TUNER_SATURATION,
-                        pp.getColorTunerSaturation());
-            }
-            if (pp.getColorTunerHue() > -1) {
-                bundle.putInt(PictureQuality.PARAMETER_COLOR_TUNER_HUE, pp.getColorTunerHue());
-            }
-            if (pp.getColorTunerRedOffset() > -1) {
-                bundle.putInt(PictureQuality.PARAMETER_COLOR_TUNER_RED_OFFSET,
-                        pp.getColorTunerRedOffset());
-            }
-            if (pp.getColorTunerGreenOffset() > -1) {
-                bundle.putInt(PictureQuality.PARAMETER_COLOR_TUNER_GREEN_OFFSET,
-                        pp.getColorTunerGreenOffset());
-            }
-            if (pp.getColorTunerBlueOffset() > -1) {
-                bundle.putInt(PictureQuality.PARAMETER_COLOR_TUNER_BLUE_OFFSET,
-                        pp.getColorTunerBlueOffset());
-            }
-            if (pp.getColorTunerRedGain() > -1) {
-                bundle.putInt(PictureQuality.PARAMETER_COLOR_TUNER_RED_GAIN,
-                        pp.getColorTunerRedGain());
-            }
-            if (pp.getColorTunerGreenGain() > -1) {
-                bundle.putInt(PictureQuality.PARAMETER_COLOR_TUNER_GREEN_GAIN,
-                        pp.getColorTunerGreenGain());
-            }
-            if (pp.getColorTunerBlueGain() > -1) {
-                bundle.putInt(PictureQuality.PARAMETER_COLOR_TUNER_BLUE_GAIN,
-                        pp.getColorTunerBlueGain());
-            }
-            if (pp.getNoiseReduction() > -1) {
-                bundle.putInt(PictureQuality.PARAMETER_NOISE_REDUCTION,
-                        pp.getNoiseReduction());
-            }
-            if (pp.getMpegNoiseReduction() > -1) {
-                bundle.putInt(PictureQuality.PARAMETER_MPEG_NOISE_REDUCTION,
-                        pp.getMpegNoiseReduction());
-            }
-            if (pp.getFleshTone() > -1) {
-                bundle.putInt(PictureQuality.PARAMETER_FLESH_TONE, pp.getFleshTone());
-            }
-            if (pp.getDeContour() > -1) {
-                bundle.putInt(PictureQuality.PARAMETER_DECONTOUR, pp.getDeContour());
-            }
-            if (pp.getDynamicLumaControl() > -1) {
-                bundle.putInt(PictureQuality.PARAMETER_DYNAMIC_LUMA_CONTROL,
-                        pp.getDynamicLumaControl());
-            }
-            if (pp.getColorTemperature() > -1) {
-                bundle.putInt(PictureQuality.PARAMETER_COLOR_TEMPERATURE,
-                        pp.getColorTemperature());
-            }
-            if (pp.getColorTemperatureRedGain() > -1) {
-                bundle.putInt(PictureQuality.PARAMETER_COLOR_TEMPERATURE_RED_GAIN,
-                        pp.getColorTemperatureRedGain());
-            }
-            if (pp.getColorTemperatureGreenGain() > -1) {
-                bundle.putInt(PictureQuality.PARAMETER_COLOR_TEMPERATURE_GREEN_GAIN,
-                        pp.getColorTemperatureGreenGain());
-            }
-            if (pp.getColorTemperatureBlueGain() > -1) {
-                bundle.putInt(PictureQuality.PARAMETER_COLOR_TEMPERATURE_BLUE_GAIN,
-                        pp.getColorTemperatureBlueGain());
-            }
-            if (pp.getLevelRange() > -1) {
-                bundle.putInt(PictureQuality.PARAMETER_LEVEL_RANGE, pp.getLevelRange());
-            }
-            if (pp.getHdmiRgbRange() > -1) {
-                bundle.putInt(PictureQuality.PARAMETER_HDMI_RGB_RANGE, pp.getHdmiRgbRange());
-            }
-            if (pp.getColorSpace() > -1) {
-                bundle.putInt(PictureQuality.PARAMETER_COLOR_SPACE, pp.getColorSpace());
-            }
-            if (pp.getPanelInitMaxLuminceNits() > -1) {
-                bundle.putInt(PictureQuality.PARAMETER_PANEL_INIT_MAX_LUMINCE_NITS,
-                        pp.getPanelInitMaxLuminceNits());
-            }
-            if (pp.getGamma() > -1) {
-                bundle.putInt(PictureQuality.PARAMETER_GAMMA, pp.getGamma());
-            }
-            if (pp.getColorTemperatureRedOffset() > -1) {
-                bundle.putInt(PictureQuality.PARAMETER_COLOR_TEMPERATURE_RED_OFFSET,
-                        pp.getColorTemperatureRedOffset());
-            }
-            if (pp.getColorTemperatureGreenOffset() > -1) {
-                bundle.putInt(PictureQuality.PARAMETER_COLOR_TEMPERATURE_GREEN_OFFSET,
-                        pp.getColorTemperatureGreenOffset());
-            }
-            if (pp.getColorTemperatureBlueOffset() > -1) {
-                bundle.putInt(PictureQuality.PARAMETER_COLOR_TEMPERATURE_BLUE_OFFSET,
-                        pp.getColorTemperatureBlueOffset());
-            }
-            if (pp.getLowBlueLight() > -1) {
-                bundle.putInt(PictureQuality.PARAMETER_LOW_BLUE_LIGHT, pp.getLowBlueLight());
-            }
-            if (pp.getLdMode() > -1) {
-                bundle.putInt(PictureQuality.PARAMETER_LD_MODE, pp.getLdMode());
-            }
-            if (pp.getOsdRedGain() > -1) {
-                bundle.putInt(PictureQuality.PARAMETER_OSD_RED_GAIN, pp.getOsdRedGain());
-            }
-            if (pp.getOsdGreenGain() > -1) {
-                bundle.putInt(PictureQuality.PARAMETER_OSD_GREEN_GAIN, pp.getOsdGreenGain());
-            }
-            if (pp.getOsdBlueGain() > -1) {
-                bundle.putInt(PictureQuality.PARAMETER_OSD_BLUE_GAIN, pp.getOsdBlueGain());
-            }
-            if (pp.getOsdRedOffset() > -1) {
-                bundle.putInt(PictureQuality.PARAMETER_OSD_RED_OFFSET, pp.getOsdRedOffset());
-            }
-            if (pp.getOsdGreenOffset() > -1) {
-                bundle.putInt(PictureQuality.PARAMETER_OSD_GREEN_OFFSET,
-                        pp.getOsdGreenOffset());
-            }
-            if (pp.getOsdBlueOffset() > -1) {
-                bundle.putInt(PictureQuality.PARAMETER_OSD_BLUE_OFFSET, pp.getOsdBlueOffset());
-            }
-            if (pp.getOsdHue() > -1) {
-                bundle.putInt(PictureQuality.PARAMETER_OSD_HUE, pp.getOsdHue());
-            }
-            if (pp.getOsdSaturation() > -1) {
-                bundle.putInt(PictureQuality.PARAMETER_OSD_SATURATION, pp.getOsdSaturation());
-            }
-            if (pp.getOsdContrast() > -1) {
-                bundle.putInt(PictureQuality.PARAMETER_OSD_CONTRAST, pp.getOsdContrast());
-            }
-            if (pp.getColorTunerHueRed() > -1) {
-                bundle.putInt(PictureQuality.PARAMETER_COLOR_TUNER_HUE_RED,
-                        pp.getColorTunerHueRed());
-            }
-            if (pp.getColorTunerHueGreen() > -1) {
-                bundle.putInt(PictureQuality.PARAMETER_COLOR_TUNER_HUE_GREEN,
-                        pp.getColorTunerHueGreen());
-            }
-            if (pp.getColorTunerHueBlue() > -1) {
-                bundle.putInt(PictureQuality.PARAMETER_COLOR_TUNER_HUE_BLUE,
-                        pp.getColorTunerHueBlue());
-            }
-            if (pp.getColorTunerHueCyan() > -1) {
-                bundle.putInt(PictureQuality.PARAMETER_COLOR_TUNER_HUE_CYAN,
-                        pp.getColorTunerHueCyan());
-            }
-            if (pp.getColorTunerHueMagenta() > -1) {
-                bundle.putInt(PictureQuality.PARAMETER_COLOR_TUNER_HUE_MAGENTA,
-                        pp.getColorTunerHueMagenta());
-            }
-            if (pp.getColorTunerHueYellow() > -1) {
-                bundle.putInt(PictureQuality.PARAMETER_COLOR_TUNER_HUE_YELLOW,
-                        pp.getColorTunerHueYellow());
-            }
-            if (pp.getColorTunerHueFlesh() > -1) {
-                bundle.putInt(PictureQuality.PARAMETER_COLOR_TUNER_HUE_FLESH,
-                        pp.getColorTunerHueFlesh());
-            }
-            if (pp.getColorTunerSaturationRed() > -1) {
-                bundle.putInt(PictureQuality.PARAMETER_COLOR_TUNER_SATURATION_RED,
-                        pp.getColorTunerSaturationRed());
-            }
-            if (pp.getColorTunerSaturationGreen() > -1) {
-                bundle.putInt(PictureQuality.PARAMETER_COLOR_TUNER_SATURATION_GREEN,
-                        pp.getColorTunerSaturationGreen());
-            }
-            if (pp.getColorTunerSaturationBlue() > -1) {
-                bundle.putInt(PictureQuality.PARAMETER_COLOR_TUNER_SATURATION_BLUE,
-                        pp.getColorTunerSaturationBlue());
-            }
-            if (pp.getColorTunerSaturationCyan() > -1) {
-                bundle.putInt(PictureQuality.PARAMETER_COLOR_TUNER_SATURATION_CYAN,
-                        pp.getColorTunerSaturationCyan());
-            }
-            if (pp.getColorTunerSaturationMagenta() > -1) {
-                bundle.putInt(PictureQuality.PARAMETER_COLOR_TUNER_SATURATION_MAGENTA,
-                        pp.getColorTunerSaturationMagenta());
-            }
-            if (pp.getColorTunerSaturationYellow() > -1) {
-                bundle.putInt(PictureQuality.PARAMETER_COLOR_TUNER_SATURATION_YELLOW,
-                        pp.getColorTunerSaturationYellow());
-            }
-            if (pp.getColorTunerSaturationFlesh() > -1) {
-                bundle.putInt(PictureQuality.PARAMETER_COLOR_TUNER_SATURATION_FLESH,
-                        pp.getColorTunerSaturationFlesh());
-            }
-            if (pp.getColorTunerLuminanceRed() > -1) {
-                bundle.putInt(PictureQuality.PARAMETER_COLOR_TUNER_LUMINANCE_RED,
-                        pp.getColorTunerLuminanceRed());
-            }
-            if (pp.getColorTunerLuminanceGreen() > -1) {
-                bundle.putInt(PictureQuality.PARAMETER_COLOR_TUNER_LUMINANCE_GREEN,
-                        pp.getColorTunerLuminanceGreen());
-            }
-            if (pp.getColorTunerLuminanceBlue() > -1) {
-                bundle.putInt(PictureQuality.PARAMETER_COLOR_TUNER_LUMINANCE_BLUE,
-                        pp.getColorTunerLuminanceBlue());
-            }
-            if (pp.getColorTunerLuminanceCyan() > -1) {
-                bundle.putInt(PictureQuality.PARAMETER_COLOR_TUNER_LUMINANCE_CYAN,
-                        pp.getColorTunerLuminanceCyan());
-            }
-            if (pp.getColorTunerLuminanceMagenta() > -1) {
-                bundle.putInt(PictureQuality.PARAMETER_COLOR_TUNER_LUMINANCE_MAGENTA,
-                        pp.getColorTunerLuminanceMagenta());
-            }
-            if (pp.getColorTunerLuminanceYellow() > -1) {
-                bundle.putInt(PictureQuality.PARAMETER_COLOR_TUNER_LUMINANCE_YELLOW,
-                        pp.getColorTunerLuminanceYellow());
-            }
-            if (pp.getColorTunerLuminanceFlesh() > -1) {
-                bundle.putInt(PictureQuality.PARAMETER_COLOR_TUNER_LUMINANCE_FLESH,
-                        pp.getColorTunerLuminanceFlesh());
-            }
-            if (pp.getPictureQualityEventType() > -1) {
-                bundle.putInt(PictureQuality.PARAMETER_PICTURE_QUALITY_EVENT_TYPE,
-                        pp.getPictureQualityEventType());
-            }
-            if (pp.getFilmMode()) {
-                bundle.putBoolean(PictureQuality.PARAMETER_FILM_MODE, true);
-            }
-            if (pp.getBlueStretch()) {
-                bundle.putBoolean(PictureQuality.PARAMETER_BLUE_STRETCH, true);
-            }
-            if (pp.getColorTune()) {
-                bundle.putBoolean(PictureQuality.PARAMETER_COLOR_TUNE, true);
-            }
-            if (pp.getGlobeDimming()) {
-                bundle.putBoolean(PictureQuality.PARAMETER_GLOBAL_DIMMING, true);
-            }
-            if (pp.getAutoPictureQualityEnabled()) {
-                bundle.putBoolean(PictureQuality.PARAMETER_AUTO_PICTURE_QUALITY_ENABLED, true);
-            }
-            if (pp.getAutoSuperResolutionEnabled()) {
-                bundle.putBoolean(PictureQuality.PARAMETER_AUTO_SUPER_RESOLUTION_ENABLED, true);
-            }
-            if (pp.getGamutMapping()) {
-                bundle.putBoolean(PictureQuality.PARAMETER_GAMUT_MAPPING, true);
-            }
-            if (pp.getPcMode()) {
-                bundle.putBoolean(PictureQuality.PARAMETER_PC_MODE, true);
-            }
-            if (pp.getLowLatency()) {
-                bundle.putBoolean(PictureQuality.PARAMETER_LOW_LATENCY, true);
-            }
-            if (pp.getVrr()) {
-                bundle.putBoolean(PictureQuality.PARAMETER_VRR, true);
-            }
-            if (pp.getCvrr()) {
-                bundle.putBoolean(PictureQuality.PARAMETER_CVRR, true);
-            }
-            if (pp.getPanelInitMaxLuminceValid()) {
-                bundle.putBoolean(PictureQuality.PARAMETER_PANEL_INIT_MAX_LUMINCE_VALID, true);
-            }
-            if (pp.getColorTunerSwitch()) {
-                bundle.putBoolean(PictureQuality.PARAMETER_COLOR_TUNER_SWITCH, true);
-            }
-            if (pp.getElevenPointRed() != null) {
-                bundle.putIntArray(PictureQuality.PARAMETER_ELEVEN_POINT_RED,
-                        pp.getElevenPointRed());
-            }
-            if (pp.getElevenPointBlue() != null) {
-                bundle.putIntArray(PictureQuality.PARAMETER_ELEVEN_POINT_BLUE,
-                        pp.getElevenPointBlue());
-            }
-            if (pp.getElevenPointGreen() != null) {
-                bundle.putIntArray(PictureQuality.PARAMETER_ELEVEN_POINT_GREEN,
-                        pp.getElevenPointGreen());
+            int tag = pp.getTag();
+            switch (tag) {
+                case PictureParameter.brightness:
+                    if (pp.getBrightness() > -1) {
+                        bundle.putDouble(PictureQuality.PARAMETER_BRIGHTNESS,
+                                (double) pp.getBrightness());
+                    }
+                    break;
+                case PictureParameter.contrast:
+                    if (pp.getContrast() > -1) {
+                        bundle.putInt(PictureQuality.PARAMETER_CONTRAST, pp.getContrast());
+                    }
+                    break;
+                case PictureParameter.sharpness:
+                    if (pp.getSharpness() > -1) {
+                        bundle.putInt(PictureQuality.PARAMETER_SHARPNESS, pp.getSharpness());
+                    }
+                    break;
+                case PictureParameter.saturation:
+                    if (pp.getSaturation() > -1) {
+                        bundle.putInt(PictureQuality.PARAMETER_SATURATION,
+                                pp.getSaturation());
+                    }
+                    break;
+                case PictureParameter.hue:
+                    if (pp.getHue() > -1) {
+                        bundle.putInt(PictureQuality.PARAMETER_HUE, pp.getHue());
+                    }
+                    break;
+                case PictureParameter.colorTunerBrightness:
+                    if (pp.getColorTunerBrightness() > -1) {
+                        bundle.putInt(PictureQuality.PARAMETER_COLOR_TUNER_BRIGHTNESS,
+                                pp.getColorTunerBrightness());
+                    }
+                    break;
+                case PictureParameter.colorTunerSaturation:
+                    if (pp.getColorTunerSaturation() > -1) {
+                        bundle.putInt(PictureQuality.PARAMETER_COLOR_TUNER_SATURATION,
+                                pp.getColorTunerSaturation());
+                    }
+                    break;
+                case PictureParameter.colorTunerHue:
+                    if (pp.getColorTunerHue() > -1) {
+                        bundle.putInt(PictureQuality.PARAMETER_COLOR_TUNER_HUE,
+                                pp.getColorTunerHue());
+                    }
+                    break;
+                case PictureParameter.colorTunerRedOffset:
+                    if (pp.getColorTunerRedOffset() > -1) {
+                        bundle.putInt(PictureQuality.PARAMETER_COLOR_TUNER_RED_OFFSET,
+                                pp.getColorTunerRedOffset());
+                    }
+                    break;
+                case PictureParameter.colorTunerGreenOffset:
+                    if (pp.getColorTunerGreenOffset() > -1) {
+                        bundle.putInt(PictureQuality.PARAMETER_COLOR_TUNER_GREEN_OFFSET,
+                                pp.getColorTunerGreenOffset());
+                    }
+                    break;
+                case PictureParameter.colorTunerBlueOffset:
+                    if (pp.getColorTunerBlueOffset() > -1) {
+                        bundle.putInt(PictureQuality.PARAMETER_COLOR_TUNER_BLUE_OFFSET,
+                                pp.getColorTunerBlueOffset());
+                    }
+                    break;
+                case PictureParameter.colorTunerRedGain:
+                    if (pp.getColorTunerRedGain() > -1) {
+                        bundle.putInt(PictureQuality.PARAMETER_COLOR_TUNER_RED_GAIN,
+                                pp.getColorTunerRedGain());
+                    }
+                    break;
+                case PictureParameter.colorTunerGreenGain:
+                    if (pp.getColorTunerGreenGain() > -1) {
+                        bundle.putInt(PictureQuality.PARAMETER_COLOR_TUNER_GREEN_GAIN,
+                                pp.getColorTunerGreenGain());
+                    }
+                    break;
+                case PictureParameter.colorTunerBlueGain:
+                    if (pp.getColorTunerBlueGain() > -1) {
+                        bundle.putInt(PictureQuality.PARAMETER_COLOR_TUNER_BLUE_GAIN,
+                                pp.getColorTunerBlueGain());
+                    }
+                    break;
+                case PictureParameter.noiseReduction:
+                    if (pp.getNoiseReduction() > -1) {
+                        bundle.putInt(PictureQuality.PARAMETER_NOISE_REDUCTION,
+                                pp.getNoiseReduction());
+                    }
+                    break;
+                case PictureParameter.mpegNoiseReduction:
+                    if (pp.getMpegNoiseReduction() > -1) {
+                        bundle.putInt(PictureQuality.PARAMETER_MPEG_NOISE_REDUCTION,
+                                pp.getMpegNoiseReduction());
+                    }
+                    break;
+                case PictureParameter.fleshTone:
+                    if (pp.getFleshTone() > -1) {
+                        bundle.putInt(PictureQuality.PARAMETER_FLESH_TONE, pp.getFleshTone());
+                    }
+                    break;
+                case PictureParameter.deContour:
+                    if (pp.getDeContour() > -1) {
+                        bundle.putInt(PictureQuality.PARAMETER_DECONTOUR, pp.getDeContour());
+                    }
+                    break;
+                case PictureParameter.dynamicLumaControl:
+                    if (pp.getDynamicLumaControl() > -1) {
+                        bundle.putInt(PictureQuality.PARAMETER_DYNAMIC_LUMA_CONTROL,
+                                pp.getDynamicLumaControl());
+                    }
+                    break;
+                case PictureParameter.filmMode:
+                    if (pp.getFilmMode()) {
+                        bundle.putBoolean(PictureQuality.PARAMETER_FILM_MODE, true);
+                    } else {
+                        bundle.putBoolean(PictureQuality.PARAMETER_FILM_MODE, false);
+                    }
+                    break;
+                case PictureParameter.blueStretch:
+                    if (pp.getBlueStretch()) {
+                        bundle.putBoolean(PictureQuality.PARAMETER_BLUE_STRETCH, true);
+                    } else {
+                        bundle.putBoolean(PictureQuality.PARAMETER_BLUE_STRETCH, false);
+                    }
+                    break;
+                case PictureParameter.colorTune:
+                    if (pp.getColorTemperature() > -1) {
+                        bundle.putInt(PictureQuality.PARAMETER_COLOR_TUNE,
+                                pp.getColorTemperature());
+                    }
+                    break;
+                case PictureParameter.globeDimming:
+                    if (pp.getGlobeDimming()) {
+                        bundle.putBoolean(PictureQuality.PARAMETER_GLOBAL_DIMMING, true);
+                    } else {
+                        bundle.putBoolean(PictureQuality.PARAMETER_GLOBAL_DIMMING, false);
+                    }
+                    break;
+                case PictureParameter.autoPictureQualityEnabled:
+                    if (pp.getAutoPictureQualityEnabled()) {
+                        bundle.putBoolean(
+                                PictureQuality.PARAMETER_AUTO_PICTURE_QUALITY_ENABLED, true);
+                    } else {
+                        bundle.putBoolean(
+                                PictureQuality.PARAMETER_AUTO_PICTURE_QUALITY_ENABLED, false);
+                    }
+                    break;
+                case PictureParameter.autoSuperResolutionEnabled:
+                    if (pp.getAutoSuperResolutionEnabled()) {
+                        bundle.putBoolean(
+                                PictureQuality.PARAMETER_AUTO_SUPER_RESOLUTION_ENABLED, true);
+                    } else {
+                        bundle.putBoolean(
+                                PictureQuality.PARAMETER_AUTO_SUPER_RESOLUTION_ENABLED, false);
+                    }
+                    break;
+                case PictureParameter.levelRange:
+                    if (pp.getLevelRange() > -1) {
+                        bundle.putInt(
+                                PictureQuality.PARAMETER_LEVEL_RANGE, pp.getLevelRange());
+                    }
+                    break;
+                case PictureParameter.gamutMapping:
+                    if (pp.getGamutMapping()) {
+                        bundle.putBoolean(PictureQuality.PARAMETER_GAMUT_MAPPING, true);
+                    } else {
+                        bundle.putBoolean(PictureQuality.PARAMETER_GAMUT_MAPPING, false);
+                    }
+                    break;
+                case PictureParameter.pcMode:
+                    if (pp.getPcMode()) {
+                        bundle.putBoolean(PictureQuality.PARAMETER_PC_MODE, true);
+                    } else {
+                        bundle.putBoolean(PictureQuality.PARAMETER_PC_MODE, false);
+                    }
+                    break;
+                case PictureParameter.lowLatency:
+                    if (pp.getLowLatency()) {
+                        bundle.putBoolean(PictureQuality.PARAMETER_LOW_LATENCY, true);
+                    } else {
+                        bundle.putBoolean(PictureQuality.PARAMETER_LOW_LATENCY, false);
+                    }
+                    break;
+                case PictureParameter.vrr:
+                    if (pp.getVrr()) {
+                        bundle.putBoolean(PictureQuality.PARAMETER_VRR, true);
+                    } else {
+                        bundle.putBoolean(PictureQuality.PARAMETER_VRR, false);
+                    }
+                    break;
+                case PictureParameter.cvrr:
+                    if (pp.getCvrr()) {
+                        bundle.putBoolean(PictureQuality.PARAMETER_CVRR, true);
+                    } else {
+                        bundle.putBoolean(PictureQuality.PARAMETER_CVRR, false);
+                    }
+                    break;
+                case PictureParameter.hdmiRgbRange:
+                    if (pp.getHdmiRgbRange() > -1) {
+                        bundle.putInt(
+                                PictureQuality.PARAMETER_HDMI_RGB_RANGE, pp.getHdmiRgbRange());
+                    }
+                    break;
+                case PictureParameter.colorSpace:
+                    if (pp.getColorSpace() > -1) {
+                        bundle.putInt(PictureQuality.PARAMETER_COLOR_SPACE, pp.getColorSpace());
+                    }
+                    break;
+                case PictureParameter.panelInitMaxLuminceNits:
+                    if (pp.getPanelInitMaxLuminceNits() > -1) {
+                        bundle.putInt(PictureQuality.PARAMETER_PANEL_INIT_MAX_LUMINCE_NITS,
+                                pp.getPanelInitMaxLuminceNits());
+                    }
+                    break;
+                case PictureParameter.panelInitMaxLuminceValid:
+                    if (pp.getPanelInitMaxLuminceValid()) {
+                        bundle.putBoolean(
+                                PictureQuality.PARAMETER_PANEL_INIT_MAX_LUMINCE_VALID, true);
+                    } else {
+                        bundle.putBoolean(
+                                PictureQuality.PARAMETER_PANEL_INIT_MAX_LUMINCE_VALID, false);
+                    }
+                    break;
+                case PictureParameter.gamma:
+                    if (pp.getGamma() > -1) {
+                        bundle.putInt(PictureQuality.PARAMETER_GAMMA, pp.getGamma());
+                    }
+                    break;
+                case PictureParameter.colorTemperatureRedGain:
+                    if (pp.getColorTemperatureRedGain() > -1) {
+                        bundle.putInt(PictureQuality.PARAMETER_COLOR_TEMPERATURE_RED_GAIN,
+                                pp.getColorTemperatureRedGain());
+                    }
+                    break;
+                case PictureParameter.colorTemperatureGreenGain:
+                    if (pp.getColorTemperatureGreenGain() > -1) {
+                        bundle.putInt(PictureQuality.PARAMETER_COLOR_TEMPERATURE_GREEN_GAIN,
+                                pp.getColorTemperatureGreenGain());
+                    }
+                    break;
+                case PictureParameter.colorTemperatureBlueGain:
+                    if (pp.getColorTemperatureBlueGain() > -1) {
+                        bundle.putInt(PictureQuality.PARAMETER_COLOR_TEMPERATURE_BLUE_GAIN,
+                                pp.getColorTemperatureBlueGain());
+                    }
+                    break;
+                case PictureParameter.colorTemperatureRedOffset:
+                    if (pp.getColorTemperatureRedOffset() > -1) {
+                        bundle.putInt(PictureQuality.PARAMETER_COLOR_TEMPERATURE_RED_OFFSET,
+                                pp.getColorTemperatureRedOffset());
+                    }
+                    break;
+                case PictureParameter.colorTemperatureGreenOffset:
+                    if (pp.getColorTemperatureGreenOffset() > -1) {
+                        bundle.putInt(PictureQuality.PARAMETER_COLOR_TEMPERATURE_GREEN_OFFSET,
+                                pp.getColorTemperatureGreenOffset());
+                    }
+                    break;
+                case PictureParameter.colorTemperatureBlueOffset:
+                    if (pp.getColorTemperatureBlueOffset() > -1) {
+                        bundle.putInt(PictureQuality.PARAMETER_COLOR_TEMPERATURE_BLUE_OFFSET,
+                                pp.getColorTemperatureBlueOffset());
+                    }
+                    break;
+                case PictureParameter.elevenPointRed:
+                    if (pp.getElevenPointRed() != null) {
+                        bundle.putIntArray(PictureQuality.PARAMETER_ELEVEN_POINT_RED,
+                                pp.getElevenPointRed());
+                    }
+                    break;
+                case PictureParameter.elevenPointGreen:
+                    if (pp.getElevenPointGreen() != null) {
+                        bundle.putIntArray(PictureQuality.PARAMETER_ELEVEN_POINT_GREEN,
+                                pp.getElevenPointGreen());
+                    }
+                    break;
+                case PictureParameter.elevenPointBlue:
+                    if (pp.getElevenPointBlue() != null) {
+                        bundle.putIntArray(PictureQuality.PARAMETER_ELEVEN_POINT_BLUE,
+                                pp.getElevenPointBlue());
+                    }
+                    break;
+                case PictureParameter.lowBlueLight:
+                    if (pp.getLowBlueLight() > -1) {
+                        bundle.putInt(
+                                PictureQuality.PARAMETER_LOW_BLUE_LIGHT, pp.getLowBlueLight());
+                    }
+                    break;
+                case PictureParameter.LdMode:
+                    if (pp.getLdMode() > -1) {
+                        bundle.putInt(PictureQuality.PARAMETER_LD_MODE, pp.getLdMode());
+                    }
+                    break;
+                case PictureParameter.osdRedGain:
+                    if (pp.getOsdRedGain() > -1) {
+                        bundle.putInt(PictureQuality.PARAMETER_OSD_RED_GAIN, pp.getOsdRedGain());
+                    }
+                    break;
+                case PictureParameter.osdGreenGain:
+                    if (pp.getOsdGreenGain() > -1) {
+                        bundle.putInt(
+                                PictureQuality.PARAMETER_OSD_GREEN_GAIN, pp.getOsdGreenGain());
+                    }
+                    break;
+                case PictureParameter.osdBlueGain:
+                    if (pp.getOsdBlueGain() > -1) {
+                        bundle.putInt(PictureQuality.PARAMETER_OSD_BLUE_GAIN, pp.getOsdBlueGain());
+                    }
+                    break;
+
+                case PictureParameter.colorTunerSwitch:
+                    if (pp.getColorTunerSwitch()) {
+                        bundle.putBoolean(PictureQuality.PARAMETER_COLOR_TUNER_SWITCH, true);
+                    } else {
+                        bundle.putBoolean(PictureQuality.PARAMETER_COLOR_TUNER_SWITCH, false);
+                    }
+                    break;
+                case PictureParameter.colorTunerHueRed:
+                    if (pp.getColorTunerHueRed() > -1) {
+                        bundle.putInt(PictureQuality.PARAMETER_COLOR_TUNER_HUE_RED,
+                                pp.getColorTunerHueRed());
+                    }
+                    break;
+                case PictureParameter.colorTunerHueGreen:
+                    if (pp.getColorTunerHueGreen() > -1) {
+                        bundle.putInt(PictureQuality.PARAMETER_COLOR_TUNER_HUE_GREEN,
+                                pp.getColorTunerHueGreen());
+                    }
+                    break;
+                case PictureParameter.colorTunerHueBlue:
+                    if (pp.getColorTunerHueBlue() > -1) {
+                        bundle.putInt(PictureQuality.PARAMETER_COLOR_TUNER_HUE_BLUE,
+                                pp.getColorTunerHueBlue());
+                    }
+                    break;
+                case PictureParameter.colorTunerHueCyan:
+                    if (pp.getColorTunerHueCyan() > -1) {
+                        bundle.putInt(PictureQuality.PARAMETER_COLOR_TUNER_HUE_CYAN,
+                                pp.getColorTunerHueCyan());
+                    }
+                    break;
+                case PictureParameter.colorTunerHueMagenta:
+                    if (pp.getColorTunerHueMagenta() > -1) {
+                        bundle.putInt(PictureQuality.PARAMETER_COLOR_TUNER_HUE_MAGENTA,
+                                pp.getColorTunerHueMagenta());
+                    }
+                    break;
+                case PictureParameter.colorTunerHueYellow:
+                    if (pp.getColorTunerHueYellow() > -1) {
+                        bundle.putInt(PictureQuality.PARAMETER_COLOR_TUNER_HUE_YELLOW,
+                                pp.getColorTunerHueYellow());
+                    }
+                    break;
+                case PictureParameter.colorTunerHueFlesh:
+                    if (pp.getColorTunerHueFlesh() > -1) {
+                        bundle.putInt(PictureQuality.PARAMETER_COLOR_TUNER_HUE_FLESH,
+                                pp.getColorTunerHueFlesh());
+                    }
+                    break;
+                case PictureParameter.colorTunerSaturationRed:
+                    if (pp.getColorTunerSaturationRed() > -1) {
+                        bundle.putInt(PictureQuality.PARAMETER_COLOR_TUNER_SATURATION_RED,
+                                pp.getColorTunerSaturationRed());
+                    }
+                    break;
+                case PictureParameter.colorTunerSaturationGreen:
+                    if (pp.getColorTunerSaturationGreen() > -1) {
+                        bundle.putInt(PictureQuality.PARAMETER_COLOR_TUNER_SATURATION_GREEN,
+                                pp.getColorTunerSaturationGreen());
+                    }
+                    break;
+                case PictureParameter.colorTunerSaturationBlue:
+                    if (pp.getColorTunerSaturationBlue() > -1) {
+                        bundle.putInt(PictureQuality.PARAMETER_COLOR_TUNER_SATURATION_BLUE,
+                                pp.getColorTunerSaturationBlue());
+                    }
+                    break;
+                case PictureParameter.colorTunerSaturationCyan:
+                    if (pp.getColorTunerSaturationCyan() > -1) {
+                        bundle.putInt(PictureQuality.PARAMETER_COLOR_TUNER_SATURATION_CYAN,
+                                pp.getColorTunerSaturationCyan());
+                    }
+                    break;
+                case PictureParameter.colorTunerSaturationMagenta:
+                    if (pp.getColorTunerSaturationMagenta() > -1) {
+                        bundle.putInt(PictureQuality.PARAMETER_COLOR_TUNER_SATURATION_MAGENTA,
+                                pp.getColorTunerSaturationMagenta());
+                    }
+                    break;
+                case PictureParameter.colorTunerSaturationYellow:
+                    if (pp.getColorTunerSaturationYellow() > -1) {
+                        bundle.putInt(PictureQuality.PARAMETER_COLOR_TUNER_SATURATION_YELLOW,
+                                pp.getColorTunerSaturationYellow());
+                    }
+                    break;
+                case PictureParameter.colorTunerSaturationFlesh:
+                    if (pp.getColorTunerSaturationFlesh() > -1) {
+                        bundle.putInt(PictureQuality.PARAMETER_COLOR_TUNER_SATURATION_FLESH,
+                                pp.getColorTunerSaturationFlesh());
+                    }
+                    break;
+                case PictureParameter.colorTunerLuminanceRed:
+                    if (pp.getColorTunerLuminanceRed() > -1) {
+                        bundle.putInt(PictureQuality.PARAMETER_COLOR_TUNER_LUMINANCE_RED,
+                                pp.getColorTunerLuminanceRed());
+                    }
+                    break;
+                case PictureParameter.colorTunerLuminanceGreen:
+                    if (pp.getColorTunerLuminanceGreen() > -1) {
+                        bundle.putInt(PictureQuality.PARAMETER_COLOR_TUNER_LUMINANCE_GREEN,
+                                pp.getColorTunerLuminanceGreen());
+                    }
+                    break;
+                case PictureParameter.colorTunerLuminanceBlue:
+                    if (pp.getColorTunerLuminanceBlue() > -1) {
+                        bundle.putInt(PictureQuality.PARAMETER_COLOR_TUNER_LUMINANCE_BLUE,
+                                pp.getColorTunerLuminanceBlue());
+                    }
+                    break;
+                case PictureParameter.colorTunerLuminanceCyan:
+                    if (pp.getColorTunerLuminanceCyan() > -1) {
+                        bundle.putInt(PictureQuality.PARAMETER_COLOR_TUNER_LUMINANCE_CYAN,
+                                pp.getColorTunerLuminanceCyan());
+                    }
+                    break;
+                case PictureParameter.colorTunerLuminanceMagenta:
+                    if (pp.getColorTunerLuminanceMagenta() > -1) {
+                        bundle.putInt(PictureQuality.PARAMETER_COLOR_TUNER_LUMINANCE_MAGENTA,
+                                pp.getColorTunerLuminanceMagenta());
+                    }
+                    break;
+                case PictureParameter.colorTunerLuminanceYellow:
+                    if (pp.getColorTunerLuminanceYellow() > -1) {
+                        bundle.putInt(PictureQuality.PARAMETER_COLOR_TUNER_LUMINANCE_YELLOW,
+                                pp.getColorTunerLuminanceYellow());
+                    }
+                    break;
+                case PictureParameter.colorTunerLuminanceFlesh:
+                    if (pp.getColorTunerLuminanceFlesh() > -1) {
+                        bundle.putInt(PictureQuality.PARAMETER_COLOR_TUNER_LUMINANCE_FLESH,
+                                pp.getColorTunerLuminanceFlesh());
+                    }
+                    break;
+                case PictureParameter.osdRedOffset:
+                    if (pp.getOsdRedOffset() > -1) {
+                        bundle.putInt(PictureQuality.PARAMETER_OSD_RED_OFFSET,
+                                pp.getOsdRedOffset());
+                    }
+                    break;
+                case PictureParameter.osdGreenOffset:
+                    if (pp.getOsdGreenOffset() > -1) {
+                        bundle.putInt(PictureQuality.PARAMETER_OSD_GREEN_OFFSET,
+                                pp.getOsdGreenOffset());
+                    }
+                    break;
+                case PictureParameter.osdBlueOffset:
+                    if (pp.getOsdBlueOffset() > -1) {
+                        bundle.putInt(PictureQuality.PARAMETER_OSD_BLUE_OFFSET,
+                                pp.getOsdBlueOffset());
+                    }
+                    break;
+                case PictureParameter.osdHue:
+                    if (pp.getOsdHue() > -1) {
+                        bundle.putInt(PictureQuality.PARAMETER_OSD_HUE, pp.getOsdHue());
+                    }
+                    break;
+                case PictureParameter.osdSaturation:
+                    if (pp.getOsdSaturation() > -1) {
+                        bundle.putInt(PictureQuality.PARAMETER_OSD_SATURATION,
+                                pp.getOsdSaturation());
+                    }
+                    break;
+                case PictureParameter.osdContrast:
+                    if (pp.getOsdContrast() > -1) {
+                        bundle.putInt(PictureQuality.PARAMETER_OSD_CONTRAST, pp.getOsdContrast());
+                    }
+                    break;
+                case PictureParameter.pictureQualityEventType:
+                    if (pp.getPictureQualityEventType() > -1) {
+                        bundle.putInt(PictureQuality.PARAMETER_PICTURE_QUALITY_EVENT_TYPE,
+                                pp.getPictureQualityEventType());
+                    }
+                    break;
+                default:
+                    Log.e(TAG, "Invalid picture parameter tag: " + tag);
+                    break;
+
             }
         }
         return bundle;
@@ -1102,88 +1305,149 @@ public final class MediaQualityUtils {
 
         PersistableBundle bundle = new PersistableBundle();
         for (SoundParameter sp: parameters) {
-            if (sp.getSurroundSoundEnabled()) {
-                bundle.putBoolean(SoundQuality.PARAMETER_SURROUND_SOUND, true);
-            }
-            if (sp.getSpeakersEnabled()) {
-                bundle.putBoolean(SoundQuality.PARAMETER_SPEAKERS, true);
-            }
-            if (sp.getAutoVolumeControl()) {
-                bundle.putBoolean(SoundQuality.PARAMETER_AUTO_VOLUME_CONTROL, true);
-            }
-            if (sp.getDtsDrc()) {
-                bundle.putBoolean(SoundQuality.PARAMETER_DTS_DRC, true);
-            }
-            if (sp.getSurroundSoundEnabled()) {
-                bundle.putBoolean(SoundQuality.PARAMETER_DIGITAL_OUTPUT_DELAY_MILLIS, true);
-            }
-            if (sp.getEnhancedAudioReturnChannelEnabled()) {
-                bundle.putBoolean(SoundQuality.PARAMETER_EARC, true);
-            }
-            if (sp.getBalance() > -1) {
-                bundle.putInt(SoundQuality.PARAMETER_BALANCE, sp.getBalance());
-            }
-            if (sp.getBass() > -1) {
-                bundle.putInt(SoundQuality.PARAMETER_BASS, sp.getBass());
-            }
-            if (sp.getTreble() > -1) {
-                bundle.putInt(SoundQuality.PARAMETER_TREBLE, sp.getTreble());
-            }
-            if (sp.getSpeakersDelayMs() > -1) {
-                bundle.putInt(SoundQuality.PARAMETER_SPEAKERS_DELAY_MILLIS,
-                        sp.getSpeakersDelayMs());
-            }
-            if (sp.getDownmixMode() > -1) {
-                bundle.putInt(SoundQuality.PARAMETER_DOWN_MIX_MODE, sp.getDownmixMode());
-            }
-            if (sp.getSoundStyle() > -1) {
-                bundle.putInt(SoundQuality.PARAMETER_SOUND_STYLE, sp.getSoundStyle());
-            }
-            if (sp.getDigitalOutput() > -1) {
-                bundle.putInt(SoundQuality.PARAMETER_DIGITAL_OUTPUT_MODE,
-                        sp.getDigitalOutput());
-            }
-            if (sp.getDolbyDialogueEnhancer() > -1) {
-                bundle.putInt(SoundQuality.PARAMETER_DIALOGUE_ENHANCER,
-                        sp.getDolbyDialogueEnhancer());
-            }
-            if (sp.getDtsVirtualX().tbHdx) {
-                bundle.putBoolean(SoundQuality.PARAMETER_DTS_VIRTUAL_X_TBHDX, true);
-            }
-            if (sp.getDtsVirtualX().limiter) {
-                bundle.putBoolean(SoundQuality.PARAMETER_DTS_VIRTUAL_X_LIMITER, true);
-            }
-            if (sp.getDtsVirtualX().truSurroundX) {
-                bundle.putBoolean(SoundQuality.PARAMETER_DTS_VIRTUAL_X_TRU_SURROUND_X, true);
-            }
-            if (sp.getDtsVirtualX().truVolumeHd) {
-                bundle.putBoolean(SoundQuality.PARAMETER_DTS_VIRTUAL_X_TRU_VOLUME_HD, true);
-            }
-            if (sp.getDtsVirtualX().dialogClarity) {
-                bundle.putBoolean(SoundQuality.PARAMETER_DTS_VIRTUAL_X_DIALOG_CLARITY, true);
-            }
-            if (sp.getDtsVirtualX().definition) {
-                bundle.putBoolean(SoundQuality.PARAMETER_DTS_VIRTUAL_X_DEFINITION, true);
-            }
-            if (sp.getDtsVirtualX().height) {
-                bundle.putBoolean(SoundQuality.PARAMETER_DTS_VIRTUAL_X_HEIGHT, true);
-            }
-            if (sp.getDolbyAudioProcessing().soundMode > -1) {
-                bundle.putInt(SoundQuality.PARAMETER_DOLBY_AUDIO_PROCESSING_SOUND_MODE,
-                        sp.getDolbyAudioProcessing().soundMode);
-            }
-            if (sp.getDolbyAudioProcessing().volumeLeveler) {
-                bundle.putBoolean(SoundQuality.PARAMETER_DOLBY_AUDIO_PROCESSING_VOLUME_LEVELER,
-                        true);
-            }
-            if (sp.getDolbyAudioProcessing().surroundVirtualizer) {
-                bundle.putBoolean(
-                        SoundQuality.PARAMETER_DOLBY_AUDIO_PROCESSING_SURROUND_VIRTUALIZER,
-                        true);
-            }
-            if (sp.getDolbyAudioProcessing().dolbyAtmos) {
-                bundle.putBoolean(SoundQuality.PARAMETER_DOLBY_AUDIO_PROCESSING_DOLBY_ATMOS,
-                        true);
+            int tag = sp.getTag();
+            switch (tag) {
+                case SoundParameter.surroundSoundEnabled:
+                    if (sp.getSurroundSoundEnabled()) {
+                        bundle.putBoolean(SoundQuality.PARAMETER_SURROUND_SOUND, true);
+                    } else {
+                        bundle.putBoolean(SoundQuality.PARAMETER_SURROUND_SOUND, false);
+                    }
+                    break;
+                case SoundParameter.speakersEnabled:
+                    if (sp.getSpeakersEnabled()) {
+                        bundle.putBoolean(SoundQuality.PARAMETER_SPEAKERS, true);
+                    } else {
+                        bundle.putBoolean(SoundQuality.PARAMETER_SPEAKERS, false);
+                    }
+                    break;
+                case SoundParameter.autoVolumeControl:
+                    if (sp.getAutoVolumeControl()) {
+                        bundle.putBoolean(SoundQuality.PARAMETER_AUTO_VOLUME_CONTROL, true);
+                    } else {
+                        bundle.putBoolean(SoundQuality.PARAMETER_AUTO_VOLUME_CONTROL, false);
+                    }
+                    break;
+                case SoundParameter.dtsDrc:
+                    if (sp.getDtsDrc()) {
+                        bundle.putBoolean(SoundQuality.PARAMETER_DTS_DRC, true);
+                    } else {
+                        bundle.putBoolean(SoundQuality.PARAMETER_DTS_DRC, false);
+                    }
+                    break;
+                case SoundParameter.digitalOutputDelayMs:
+                    bundle.putInt(SoundQuality.PARAMETER_DIGITAL_OUTPUT_DELAY_MILLIS,
+                            sp.getDigitalOutputDelayMs());
+                    break;
+                case SoundParameter.enhancedAudioReturnChannelEnabled:
+                    if (sp.getEnhancedAudioReturnChannelEnabled()) {
+                        bundle.putBoolean(SoundQuality.PARAMETER_EARC, true);
+                    } else {
+                        bundle.putBoolean(SoundQuality.PARAMETER_EARC, false);
+                    }
+                    break;
+                case SoundParameter.balance:
+                    bundle.putInt(SoundQuality.PARAMETER_BALANCE, sp.getBalance());
+                    break;
+                case SoundParameter.bass:
+                    bundle.putInt(SoundQuality.PARAMETER_BASS, sp.getBass());
+                    break;
+                case SoundParameter.treble:
+                    bundle.putInt(SoundQuality.PARAMETER_TREBLE, sp.getTreble());
+                    break;
+                case SoundParameter.speakersDelayMs:
+                    bundle.putInt(SoundQuality.PARAMETER_SPEAKERS_DELAY_MILLIS,
+                            sp.getSpeakersDelayMs());
+                    break;
+                case SoundParameter.downmixMode:
+                    bundle.putInt(SoundQuality.PARAMETER_DOWN_MIX_MODE, sp.getDownmixMode());
+                    break;
+                case SoundParameter.soundStyle:
+                    bundle.putInt(SoundQuality.PARAMETER_SOUND_STYLE, sp.getSoundStyle());
+                    break;
+                case SoundParameter.digitalOutput:
+                    bundle.putInt(SoundQuality.PARAMETER_DIGITAL_OUTPUT_MODE,
+                            sp.getDigitalOutput());
+                    break;
+                case SoundParameter.dolbyDialogueEnhancer:
+                    bundle.putInt(SoundQuality.PARAMETER_DIALOGUE_ENHANCER,
+                            sp.getDolbyDialogueEnhancer());
+                    break;
+                case SoundParameter.dtsVirtualX:
+                    if (sp.getDtsVirtualX().tbHdx) {
+                        bundle.putBoolean(SoundQuality.PARAMETER_DTS_VIRTUAL_X_TBHDX, true);
+                    } else {
+                        bundle.putBoolean(SoundQuality.PARAMETER_DTS_VIRTUAL_X_TBHDX, false);
+                    }
+                    if (sp.getDtsVirtualX().limiter) {
+                        bundle.putBoolean(SoundQuality.PARAMETER_DTS_VIRTUAL_X_LIMITER, true);
+                    } else {
+                        bundle.putBoolean(SoundQuality.PARAMETER_DTS_VIRTUAL_X_LIMITER, false);
+                    }
+                    if (sp.getDtsVirtualX().truSurroundX) {
+                        bundle.putBoolean(
+                                SoundQuality.PARAMETER_DTS_VIRTUAL_X_TRU_SURROUND_X, true);
+                    } else {
+                        bundle.putBoolean(
+                                SoundQuality.PARAMETER_DTS_VIRTUAL_X_TRU_SURROUND_X, false);
+                    }
+                    if (sp.getDtsVirtualX().truVolumeHd) {
+                        bundle.putBoolean(
+                                SoundQuality.PARAMETER_DTS_VIRTUAL_X_TRU_VOLUME_HD, true);
+                    } else {
+                        bundle.putBoolean(
+                                SoundQuality.PARAMETER_DTS_VIRTUAL_X_TRU_VOLUME_HD, false);
+                    }
+                    if (sp.getDtsVirtualX().dialogClarity) {
+                        bundle.putBoolean(
+                                SoundQuality.PARAMETER_DTS_VIRTUAL_X_DIALOG_CLARITY, true);
+                    } else {
+                        bundle.putBoolean(
+                                SoundQuality.PARAMETER_DTS_VIRTUAL_X_DIALOG_CLARITY, false);
+                    }
+                    if (sp.getDtsVirtualX().definition) {
+                        bundle.putBoolean(SoundQuality.PARAMETER_DTS_VIRTUAL_X_DEFINITION, true);
+                    } else {
+                        bundle.putBoolean(SoundQuality.PARAMETER_DTS_VIRTUAL_X_DEFINITION, false);
+                    }
+                    if (sp.getDtsVirtualX().height) {
+                        bundle.putBoolean(SoundQuality.PARAMETER_DTS_VIRTUAL_X_HEIGHT, true);
+                    } else {
+                        bundle.putBoolean(SoundQuality.PARAMETER_DTS_VIRTUAL_X_HEIGHT, false);
+                    }
+                    break;
+                case SoundParameter.dolbyAudioProcessing:
+                    if (sp.getDolbyAudioProcessing().soundMode > -1) {
+                        bundle.putInt(SoundQuality.PARAMETER_DOLBY_AUDIO_PROCESSING_SOUND_MODE,
+                                sp.getDolbyAudioProcessing().soundMode);
+                    }
+                    if (sp.getDolbyAudioProcessing().volumeLeveler) {
+                        bundle.putBoolean(SoundQuality
+                                .PARAMETER_DOLBY_AUDIO_PROCESSING_VOLUME_LEVELER, true);
+                    } else {
+                        bundle.putBoolean(SoundQuality
+                                .PARAMETER_DOLBY_AUDIO_PROCESSING_VOLUME_LEVELER, false);
+                    }
+                    if (sp.getDolbyAudioProcessing().surroundVirtualizer) {
+                        bundle.putBoolean(
+                                SoundQuality.PARAMETER_DOLBY_AUDIO_PROCESSING_SURROUND_VIRTUALIZER,
+                                true);
+                    } else {
+                        bundle.putBoolean(
+                                SoundQuality.PARAMETER_DOLBY_AUDIO_PROCESSING_SURROUND_VIRTUALIZER,
+                                false);
+                    }
+                    if (sp.getDolbyAudioProcessing().dolbyAtmos) {
+                        bundle.putBoolean(SoundQuality.PARAMETER_DOLBY_AUDIO_PROCESSING_DOLBY_ATMOS,
+                                true);
+                    } else {
+                        bundle.putBoolean(SoundQuality.PARAMETER_DOLBY_AUDIO_PROCESSING_DOLBY_ATMOS,
+                                false);
+                    }
+                    break;
+                default:
+                    Log.e(TAG, "Invalid sound parameter tag: " + tag);
+                    break;
             }
         }
         return bundle;
