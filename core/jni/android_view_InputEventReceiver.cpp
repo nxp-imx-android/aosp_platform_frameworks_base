@@ -35,6 +35,7 @@
 #include <utils/Looper.h>
 
 #include <cinttypes>
+#include <sstream>
 #include <variant>
 #include <vector>
 
@@ -46,6 +47,8 @@
 #include "android_view_KeyEvent.h"
 #include "android_view_MotionEvent.h"
 #include "core_jni_helpers.h"
+
+using android::base::StringPrintf;
 
 namespace android {
 
@@ -87,6 +90,32 @@ std::string addPrefix(std::string str, std::string_view prefix) {
         pos += prefixLength + 1;     // advance the position past the newly inserted prefix
     }
     return str;
+}
+
+std::string getDispatchInputEventTraceDescription(const InputEvent& inputEvent) {
+    // For KEY and MOTION events, only print an abbreviated description. For other event types, fall
+    // back to the standard description (useful for debugging, but shouldn't happen in practice).
+    switch (inputEvent.getType()) {
+        case InputEventType::KEY: {
+            const KeyEvent& keyEvent = static_cast<const KeyEvent&>(inputEvent);
+            return StringPrintf("dispatchInputEvent KeyEvent %s deviceId=%d",
+                                KeyEvent::actionToString(keyEvent.getAction()),
+                                keyEvent.getDeviceId());
+        }
+        case InputEventType::MOTION: {
+            const MotionEvent& motionEvent = static_cast<const MotionEvent&>(inputEvent);
+            return StringPrintf("dispatchInputEvent MotionEvent %s deviceId=%d "
+                                "source=0x%" PRIx32 ", historySize=%zu",
+                                MotionEvent::actionToString(motionEvent.getAction()).c_str(),
+                                motionEvent.getDeviceId(), motionEvent.getSource(),
+                                motionEvent.getHistorySize());
+        }
+        default: {
+            std::ostringstream description;
+            description << "dispatchInputEvent " << inputEvent;
+            return description.str();
+        }
+    }
 }
 } // namespace
 
@@ -579,9 +608,14 @@ status_t NativeInputEventReceiver::consumeEvents(JNIEnv* env,
                 if (kDebugDispatchCycle) {
                     ALOGD("channel '%s' ~ Dispatching input event.", mName.c_str());
                 }
+                if (ATRACE_ENABLED()) {
+                    std::string description = getDispatchInputEventTraceDescription(*inputEvent);
+                    ATRACE_BEGIN(description.c_str());
+                }
                 env->CallVoidMethod(receiverObj.get(),
                                     gInputEventReceiverClassInfo.dispatchInputEvent, seq,
                                     inputEventObj.get());
+                ATRACE_END();
                 if (env->ExceptionCheck()) {
                     ALOGE("Exception dispatching input event.");
                     skipCallbacks = true;
