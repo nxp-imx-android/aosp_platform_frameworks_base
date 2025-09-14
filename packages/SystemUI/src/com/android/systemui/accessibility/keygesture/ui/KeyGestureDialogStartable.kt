@@ -81,6 +81,9 @@ constructor(
         /** Called when the positive button is clicked. */
         fun onPositiveButtonClick(info: KeyGestureConfirmInfo)
 
+        /** Called when the dialog is canceled. */
+        fun onDialogCanceled(info: KeyGestureConfirmInfo) {}
+
         /** Called when the dialog is dismissed for any reason. */
         fun onDialogDismissed(info: KeyGestureConfirmInfo) {}
     }
@@ -156,24 +159,18 @@ constructor(
             R.string.accessibility_key_gesture_magnification_dialog_negative_button_text
         override val positiveButtonTextId: Int =
             R.string.accessibility_key_gesture_magnification_dialog_positive_button_text
-        private var magnificationShortcutConfirmed = false
 
         override fun onDialogCreated(info: KeyGestureConfirmInfo) {
             interactor.enableShortcutsForTargets(enable = true, info.targetName)
-            magnificationShortcutConfirmed = false
             interactor.enableMagnificationAndZoomIn(info.displayId)
         }
 
-        override fun onPositiveButtonClick(info: KeyGestureConfirmInfo) {
-            magnificationShortcutConfirmed = true
-        }
+        override fun onPositiveButtonClick(info: KeyGestureConfirmInfo) {}
 
-        override fun onDialogDismissed(info: KeyGestureConfirmInfo) {
-            if (!magnificationShortcutConfirmed) {
-                // We need to remove the shortcut target if the user clicks the negative
-                // button or clicks outside of the dialog.
-                interactor.enableShortcutsForTargets(enable = false, info.targetName)
-            }
+        override fun onDialogCanceled(info: KeyGestureConfirmInfo) {
+            // We need to remove the shortcut target if the user clicks the negative
+            // button or clicks outside of the dialog.
+            interactor.enableShortcutsForTargets(enable = false, info.targetName)
         }
     }
 
@@ -237,7 +234,13 @@ constructor(
                             )
                         },
                         negativeButton = {
-                            PlatformOutlinedButton(onClick = { dialog.dismiss() }) {
+                            PlatformOutlinedButton(
+                                onClick = {
+                                    // We need explicitly call `cancel` here; otherwise, clicking
+                                    // the negative button, the cancel listener won't be triggered.
+                                    dialog.cancel()
+                                }
+                            ) {
                                 Text(stringResource(id = delegate.negativeButtonTextId))
                             }
                         },
@@ -258,6 +261,7 @@ constructor(
         currentDialog?.let { dialog ->
             dialogType = keyGestureConfirmInfo.keyGestureType
             delegate.onDialogCreated(keyGestureConfirmInfo)
+            dialog.setOnCancelListener { delegate.onDialogCanceled(keyGestureConfirmInfo) }
             dialog.setOnDismissListener {
                 delegate.onDialogDismissed(keyGestureConfirmInfo)
                 currentDialog = null
