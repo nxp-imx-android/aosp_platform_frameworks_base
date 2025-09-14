@@ -271,7 +271,7 @@ public class ComputerControlSessionTest {
     }
 
     @Test
-    public void launchApplication_launchesApplication() {
+    public void launchApplication_launchesApplication() throws RemoteException {
         createComputerControlSession(mDefaultParams);
         mSession.launchApplication(TARGET_PACKAGE_1);
         verify(mInjector).launchApplicationOnDisplayAsUser(
@@ -279,10 +279,23 @@ public class ComputerControlSessionTest {
     }
 
     @Test
-    public void launchApplication_undeclaredPackage_throws() {
+    @DisableFlags(Flags.FLAG_COMPUTER_CONTROL_ACTIVITY_POLICY_STRICT)
+    public void launchApplication_noActivityPolicy_launchesApplication() throws RemoteException {
         createComputerControlSession(mDefaultParams);
-        assertThrows(IllegalArgumentException.class,
-                () -> mSession.launchApplication(UNDECLARED_TARGET_PACKAGE));
+        mSession.launchApplication(UNDECLARED_TARGET_PACKAGE);
+        verify(mInjector).launchApplicationOnDisplayAsUser(
+                eq(UNDECLARED_TARGET_PACKAGE), eq(VIRTUAL_DISPLAY_ID), any());
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_COMPUTER_CONTROL_ACTIVITY_POLICY_STRICT)
+    public void launchApplication_strictActivityPolicy_addsExemption() throws RemoteException {
+        createComputerControlSession(mDefaultParams);
+        mSession.launchApplication(UNDECLARED_TARGET_PACKAGE);
+        verify(mVirtualDevice).addActivityPolicyExemption(
+                argThat(new MatchesActivityPolicyExcemption(UNDECLARED_TARGET_PACKAGE)));
+        verify(mInjector).launchApplicationOnDisplayAsUser(
+                eq(UNDECLARED_TARGET_PACKAGE), eq(VIRTUAL_DISPLAY_ID), any());
     }
 
     @Test
