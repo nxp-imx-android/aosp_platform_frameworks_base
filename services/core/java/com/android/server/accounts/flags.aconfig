@@ -1,9 +1,0 @@
-package: "com.android.server.accounts"
-container: "system"
-
-flag {
-     name: "sqlite_sync_normal"
-     namespace: "system_performance"
-     description: "Whether to enable normal sync mode for the accounts database."
-     bug: "438408487"
-}
