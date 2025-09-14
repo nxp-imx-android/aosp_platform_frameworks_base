@@ -319,9 +319,7 @@ public abstract class WMShellModule {
             @NonNull ShellTaskOrganizer organizer,
             SyncTransactionQueue syncQueue
     ) {
-        return TaskViewTransitions.useRepo()
-                ? new TaskViewTransitions(transitions, repository, organizer, syncQueue)
-                : taskViewTransitions;
+        return new TaskViewTransitions(transitions, repository, organizer, syncQueue);
     }
 
     @WMSingleton
