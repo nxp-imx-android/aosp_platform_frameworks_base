@@ -601,6 +601,96 @@ class DesktopTilingWindowDecorationTest : ShellTestCase() {
     }
 
     @Test
+    fun startAnimation_setsWindowCropForAllChanges() {
+        // This test verifies that when startAnimation is called, it iterates through all
+        // changes in the TransitionInfo and applies a window crop based on the endAbsBounds
+        // of each change. This is important for ensuring all surfaces, not just the tiled
+        // task surfaces, are correctly sized at the end of the animation.
+
+        // Setup: Ensure tiling is initialized with two tasks so that startAnimation doesn't
+        // return early.
+        val leftTask = createVisibleTask()
+        val rightTask = createVisibleTask()
+        val leftTaskHelper: DesktopTilingWindowDecoration.AppResizingHelper = mock()
+        val rightTaskHelper: DesktopTilingWindowDecoration.AppResizingHelper = mock()
+        whenever(leftTaskHelper.taskInfo).thenReturn(leftTask)
+        whenever(rightTaskHelper.taskInfo).thenReturn(rightTask)
+        tilingDecoration.leftTaskResizingHelper = leftTaskHelper
+        tilingDecoration.rightTaskResizingHelper = rightTaskHelper
+
+        // Setup: Create mock transactions and a finish callback.
+        val startTransaction: SurfaceControl.Transaction = mock()
+        val finishTransaction: SurfaceControl.Transaction = mock()
+        val finishCallback: Transitions.TransitionFinishCallback = mock()
+
+        // Setup: Create a transition info with multiple mocked changes.
+        // The Change object's endAbsBounds is a 'val', so we must mock the Change object
+        // itself to control the value returned by endAbsBounds for the test.
+        val transitionInfo = TransitionInfo(TRANSIT_CHANGE, 0)
+
+        val change1 = mock<Change>()
+        val change1Leash = mock<SurfaceControl>()
+        val change1EndBounds = Rect(0, 0, 100, 200)
+        whenever(change1.leash).thenReturn(change1Leash)
+        whenever(change1.endAbsBounds).thenReturn(change1EndBounds)
+        transitionInfo.addChange(change1)
+
+        val change2 = mock<Change>()
+        val change2Leash = mock<SurfaceControl>()
+        val change2EndBounds = Rect(100, 0, 200, 200)
+        whenever(change2.leash).thenReturn(change2Leash)
+        whenever(change2.endAbsBounds).thenReturn(change2EndBounds)
+        transitionInfo.addChange(change2)
+
+        // Action: Call the method under test.
+        val result =
+            tilingDecoration.startAnimation(
+                transition,
+                transitionInfo,
+                startTransaction,
+                finishTransaction,
+                finishCallback
+            )
+
+        // Assertions: The method should handle the transition and return true.
+        assertThat(result).isTrue()
+
+        // Verify window crop is set correctly for the first change on both transactions.
+        verify(startTransaction)
+            .setWindowCrop(
+                eq(change1Leash),
+                eq(change1EndBounds.width()),
+                eq(change1EndBounds.height())
+            )
+        verify(finishTransaction)
+            .setWindowCrop(
+                eq(change1Leash),
+                eq(change1EndBounds.width()),
+                eq(change1EndBounds.height())
+            )
+
+        // Verify window crop is set correctly for the second change on both transactions.
+        verify(startTransaction)
+            .setWindowCrop(
+                eq(change2Leash),
+                eq(change2EndBounds.width()),
+                eq(change2EndBounds.height())
+            )
+        verify(finishTransaction)
+            .setWindowCrop(
+                eq(change2Leash),
+                eq(change2EndBounds.width()),
+                eq(change2EndBounds.height())
+            )
+
+        // Verify other expected side effects of the animation start.
+        verify(startTransaction).apply()
+        verify(leftTaskHelper).hideVeil()
+        verify(rightTaskHelper).hideVeil()
+        verify(finishCallback).onTransitionFinished(null)
+    }
+
+    @Test
     fun tiledTasksResizedUsingDividerHandle_shouldLogResizingEvents() {
         // Setup
         val task1 = createVisibleTask()
