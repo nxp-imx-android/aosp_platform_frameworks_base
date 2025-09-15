@@ -16,7 +16,10 @@
 
 package android.processor.devicepolicy
 
-import com.android.json.stream.JsonWriter
+import android.processor.devicepolicy.protos.PolicyMetadataList
+import android.processor.devicepolicy.protos.PolicyMetadata
+import com.google.protobuf.TextFormat
+import java.io.Writer
 import javax.annotation.processing.AbstractProcessor
 import javax.annotation.processing.FilerException
 import javax.annotation.processing.RoundEnvironment
@@ -41,7 +44,7 @@ import javax.tools.StandardLocation
  *     <li> For enums: all options and their documentation. </li>
  * </ul>
  *
- * Data is exported to `policies.json`.
+ * Data is exported to `policies.textproto`.
  */
 class PolicyProcessor : AbstractProcessor() {
     override fun getSupportedSourceVersion(): SourceVersion = SourceVersion.latest()
@@ -89,30 +92,26 @@ class PolicyProcessor : AbstractProcessor() {
 
     private fun <T : Annotation> runProcessor(
         roundEnvironment: RoundEnvironment, processor: Processor<T>
-    ): List<Policy> {
+    ): List<PolicyMetadata> {
         return roundEnvironment.getElementsAnnotatedWith(processor.annotationClass()).mapNotNull {
             processor.process(it)
         }
     }
 
-    fun writePolicies(roundEnvironment: RoundEnvironment, policies: List<Policy>) {
+    fun writePolicies(roundEnvironment: RoundEnvironment, policies: List<PolicyMetadata>) {
         val writer = createWriter(roundEnvironment)
-        writer.setIndent("  ")
-
-        writer.beginObject()
-        writer.name("policies")
-        dumpJSON(writer, policies)
-        writer.endObject()
-
-        writer.close()
+        try {
+            val output = PolicyMetadataList.newBuilder().addAllPolicyMetadata(policies).build()
+            TextFormat.printer().print(output, writer)
+        } finally {
+            writer.close()
+        }
     }
 
-    fun createWriter(roundEnvironment: RoundEnvironment): JsonWriter {
-        return JsonWriter(
-            processingEnv.filer.createResource(
-                StandardLocation.SOURCE_OUTPUT, "android.processor.devicepolicy", "policies.json"
-            ).openWriter()
-        )
+    fun createWriter(roundEnvironment: RoundEnvironment): Writer {
+        return processingEnv.filer.createResource(
+            StandardLocation.SOURCE_OUTPUT, "android.processor.devicepolicy", "policies.textproto"
+        ).openWriter()
     }
 
     private fun printError(element: Element, message: String) {

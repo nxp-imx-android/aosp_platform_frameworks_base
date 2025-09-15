@@ -38,7 +38,7 @@ class PolicyProcessorTest {
 
         const val POLICY_IDENTIFIER = "$RESOURCE_ROOT/PolicyIdentifier"
         const val POLICY_IDENTIFIER_JAVA = "$POLICY_IDENTIFIER.java"
-        const val POLICY_IDENTIFIER_JSON = "$POLICY_IDENTIFIER.json"
+        const val POLICY_IDENTIFIER_TEXTPROTO = "$POLICY_IDENTIFIER.textproto"
 
         const val OTHER_CLASS_JAVA = "$RESOURCE_ROOT/OtherClass.java"
         const val POLICY_IDENTIFIER_INVALID_TYPE_JAVA = "$RESOURCE_ROOT/invalidtype/PolicyIdentifier.java"
@@ -54,7 +54,7 @@ class PolicyProcessorTest {
         /**
          * Build path for the output.
          */
-        const val POLICIES_JSON_LOCATION = "android/processor/devicepolicy/policies.json"
+        const val POLICIES_TEXTPROTO_LOCATION = "android/processor/devicepolicy/policies.textproto"
 
         fun loadTextResource(path: String): String {
             try {
@@ -70,7 +70,7 @@ class PolicyProcessorTest {
 
     @Test
     fun test_PolicyIdendifierFake_generates() {
-        val expectedOutput = loadTextResource(POLICY_IDENTIFIER_JSON)
+        val expectedOutput = loadTextResource(POLICY_IDENTIFIER_TEXTPROTO)
 
         val compilation: Compilation =
             mCompiler.compile(
@@ -80,7 +80,7 @@ class PolicyProcessorTest {
 
         assertThat(compilation).succeeded()
         assertThat(compilation).generatedFile(SOURCE_OUTPUT,
-            POLICIES_JSON_LOCATION).contentsAsUtf8String().isEqualTo(expectedOutput)
+            POLICIES_TEXTPROTO_LOCATION).contentsAsUtf8String().isEqualTo(expectedOutput)
     }
 
     @Test
