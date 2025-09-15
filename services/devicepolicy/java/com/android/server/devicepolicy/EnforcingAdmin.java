@@ -401,27 +401,45 @@ final class EnforcingAdmin {
 
         if (isRoleAuthority) {
             if (packageName == null) {
-                Slogf.wtf(TAG, "Error parsing EnforcingAdmin with RoleAuthority, packageName is "
-                        + "null.");
+                Slogf.wtf(TAG,
+                        "Error parsing EnforcingAdmin with RoleAuthority, packageName is null.");
                 return null;
             }
-            // TODO(b/281697976): load active admin
-            return new EnforcingAdmin(packageName, userId);
+            return createRoleEnforcingAdmin(packageName, userId);
         } else if (systemEntity != null) {
-            return new EnforcingAdmin(systemEntity);
+            return createSystemEnforcingAdmin(systemEntity);
         } else {
             if (packageName == null || authoritiesStr == null) {
-                Slogf.wtf(TAG, "Error parsing EnforcingAdmin, packageName is "
-                        + (packageName == null ? "null" : packageName) + ", and authorities is "
-                        + (authoritiesStr == null ? "null" : authoritiesStr) + ".");
+                Slogf.wtf(TAG, "Error parsing EnforcingAdmin, packageName=%s, authorities=%s.",
+                        packageName, authoritiesStr);
                 return null;
             }
             String className = parser.getAttributeValue(/* namespace= */ null, ATTR_CLASS_NAME);
             ComponentName componentName = className == null
-                    ? null :  new ComponentName(packageName, className);
-            Set<String> authorities = Set.of(authoritiesStr.split(ATTR_AUTHORITIES_SEPARATOR));
-            // TODO(b/281697976): load active admin
-            return new EnforcingAdmin(packageName, componentName, authorities, userId);
+                    ? null : new ComponentName(packageName, className);
+            String[] authorities = authoritiesStr.split(ATTR_AUTHORITIES_SEPARATOR);
+
+            // The only well-formed admin types not handled above are DPCs and DAs.
+            if (authorities.length == 1 && componentName != null) {
+                switch (authorities[0]) {
+                    case DPC_AUTHORITY -> {
+                        return createEnterpriseEnforcingAdmin(componentName, userId);
+                    }
+                    case DEVICE_ADMIN_AUTHORITY -> {
+                        return createDeviceAdminEnforcingAdmin(componentName, userId);
+                    }
+                }
+            }
+
+            // We've got a freak of an admin that should be impossible to create.
+            if (Flags.tightenAdminInstantiation()) {
+                Slogf.wtf(TAG,
+                        "Invalid EnforcingAdmin, package: %s, component: %s, authorities: %s",
+                        packageName, componentName, authoritiesStr);
+                return null;
+            } else {
+                return new EnforcingAdmin(packageName, componentName, Set.of(authorities), userId);
+            }
         }
     }
 
