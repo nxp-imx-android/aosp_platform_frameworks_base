@@ -638,3 +638,11 @@ flag {
     description: "This flag is used to enable the new ACCESS_LOCAL_NETWORK runtime permission. When enabled, this permission will be used for local network protection, replacing NEARBY_WIFI_DEVICES for this purpose."
     bug: "388774939"
 }
+
+flag {
+    name: "content_restriction_role_enabled"
+    is_exported: true
+    namespace: "content_restriction"
+    description: "This flag is used to enable the content restriction role"
+    bug: "441559663"
+}

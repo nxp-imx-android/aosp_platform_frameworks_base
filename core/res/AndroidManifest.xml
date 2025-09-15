@@ -9457,6 +9457,14 @@
             <valid-purpose android:name="notForIdentification" />
     </permission>
 
+    <!-- Permission required to bind content restriction service
+         <p>Protection level: signature
+         @FlaggedApi(android.permission.flags.Flags.FLAG_CONTENT_RESTRICTION_ROLE_ENABLED)
+    -->
+    <permission android:name="android.permission.BIND_CONTENT_RESTRICTION_SERVICE"
+        android:protectionLevel="signature"
+        android:featureFlag="android.permission.flags.content_restriction_role_enabled" />
+
     <!-- Attribution for Geofencing service. -->
     <attribution android:tag="GeofencingService" android:label="@string/geofencing_service"/>
     <!-- Attribution for Country Detector. -->
