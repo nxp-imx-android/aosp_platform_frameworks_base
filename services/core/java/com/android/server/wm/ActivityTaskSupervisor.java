@@ -1394,16 +1394,11 @@ public class ActivityTaskSupervisor implements RecentTasks.Callbacks {
         if (displayId == DEFAULT_DISPLAY || displayId == INVALID_DISPLAY)  {
             return Context.DEVICE_ID_DEFAULT;
         }
-        if (mVirtualDeviceManagerInternal == null) {
-            if (mService.mHasCompanionDeviceSetupFeature) {
-                mVirtualDeviceManagerInternal =
-                        LocalServices.getService(VirtualDeviceManagerInternal.class);
-            }
-            if (mVirtualDeviceManagerInternal == null) {
-                return Context.DEVICE_ID_DEFAULT;
-            }
+        var virtualDeviceManagerInternal = getVirtualDeviceManagerInternal();
+        if (virtualDeviceManagerInternal == null) {
+            return Context.DEVICE_ID_DEFAULT;
         }
-        return mVirtualDeviceManagerInternal.getDeviceIdForDisplayId(displayId);
+        return virtualDeviceManagerInternal.getDeviceIdForDisplayId(displayId);
     }
 
     boolean isDeviceOwnerUid(int displayId, int callingUid) {
@@ -1412,6 +1407,17 @@ public class ActivityTaskSupervisor implements RecentTasks.Callbacks {
             return false;
         }
         return mVirtualDeviceManagerInternal.getDeviceOwnerUid(deviceId) == callingUid;
+    }
+
+    @Nullable
+    Intent createAutomatedAppLaunchWarningIntent(String packageName, int userId,
+            String callingPackageName, int displayId) {
+        var virtualDeviceManagerInternal = getVirtualDeviceManagerInternal();
+        if (virtualDeviceManagerInternal == null) {
+            return null;
+        }
+        return virtualDeviceManagerInternal.createAutomatedAppLaunchWarningIntent(
+                packageName, userId, callingPackageName, displayId);
     }
 
     private AppOpsManager getAppOpsManager() {
@@ -1426,6 +1432,14 @@ public class ActivityTaskSupervisor implements RecentTasks.Callbacks {
             mPermissionManager = mService.mContext.getSystemService(PermissionManager.class);
         }
         return mPermissionManager;
+    }
+
+    private VirtualDeviceManagerInternal getVirtualDeviceManagerInternal() {
+        if (mVirtualDeviceManagerInternal == null && mService.mHasCompanionDeviceSetupFeature) {
+            mVirtualDeviceManagerInternal =
+                    LocalServices.getService(VirtualDeviceManagerInternal.class);
+        }
+        return mVirtualDeviceManagerInternal;
     }
 
     BackgroundActivityStartController getBackgroundActivityLaunchController() {

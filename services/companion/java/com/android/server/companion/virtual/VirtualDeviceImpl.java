@@ -1646,6 +1646,10 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub implements IBinder.Dea
         return mOwnerUid;
     }
 
+    String getOwnerPackageName() {
+        return mOwnerPackageName;
+    }
+
     long getDimDurationMillis() {
         return mParams.getDimDuration().toMillis();
     }

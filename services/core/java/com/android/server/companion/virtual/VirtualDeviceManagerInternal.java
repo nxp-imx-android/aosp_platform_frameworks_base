@@ -18,12 +18,14 @@ package com.android.server.companion.virtual;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.annotation.UserIdInt;
 import android.companion.virtual.IVirtualDevice;
 import android.companion.virtual.VirtualDevice;
 import android.companion.virtual.VirtualDeviceManager;
 import android.companion.virtual.VirtualDeviceParams;
 import android.companion.virtual.sensor.VirtualSensor;
 import android.content.Context;
+import android.content.Intent;
 import android.hardware.display.IVirtualDisplayCallback;
 import android.os.LocaleList;
 import android.util.ArraySet;
@@ -221,4 +223,21 @@ public abstract class VirtualDeviceManagerInternal {
      * Returns if the provided displayId is used for computer control session.
      */
     public abstract boolean isComputerControlDisplay(int displayId);
+
+    /**
+     * Returns the intent to replace the original intent launching an application that is being
+     * automated.
+     *
+     * <p>If the given package is not being automated for this user, or if no intent interception
+     * is needed, returns {@code null}.</p>
+     *
+     * @param packageName the app being launched
+     * @param userId the user associated with that app
+     * @param callingPackageName the package of the app that initiated the launch
+     * @param displayId the display id where the app is being launched
+     */
+    @Nullable
+    public abstract Intent createAutomatedAppLaunchWarningIntent(
+            @NonNull String packageName, @UserIdInt int userId, @Nullable String callingPackageName,
+            int displayId);
 }

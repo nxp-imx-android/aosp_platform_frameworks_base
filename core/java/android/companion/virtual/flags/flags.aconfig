@@ -258,6 +258,16 @@ flag {
 }
 
 flag {
+    name: "automated_app_launch_interception"
+    namespace: "virtual_devices"
+    description: "Show a warning dialog when launching an automated app"
+    bug: "442627126"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "computer_control_activity_policy_strict"
     namespace: "virtual_devices"
     description: "Implements a strict Activity policy for ComputerControl VirtualDevices"

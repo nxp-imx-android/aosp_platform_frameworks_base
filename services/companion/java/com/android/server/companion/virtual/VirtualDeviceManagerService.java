@@ -28,6 +28,7 @@ import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.RequiresPermission;
 import android.annotation.SuppressLint;
+import android.annotation.UserIdInt;
 import android.app.ActivityOptions;
 import android.app.compat.CompatChanges;
 import android.app.role.RoleManager;
@@ -52,6 +53,7 @@ import android.compat.annotation.ChangeId;
 import android.compat.annotation.EnabledAfter;
 import android.content.AttributionSource;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.hardware.display.DisplayManagerInternal;
 import android.hardware.display.IVirtualDisplayCallback;
@@ -421,6 +423,20 @@ public class VirtualDeviceManagerService extends SystemService {
         synchronized (mVirtualDeviceManagerLock) {
             return mVirtualDevices.get(deviceId);
         }
+    }
+
+    private String getDeviceOwnerForDisplayId(int displayId) {
+        if (displayId == Display.INVALID_DISPLAY || displayId == Display.DEFAULT_DISPLAY) {
+            return null;
+        }
+        ArrayList<VirtualDeviceImpl> virtualDevicesSnapshot = getVirtualDevicesSnapshot();
+        for (int i = 0; i < virtualDevicesSnapshot.size(); i++) {
+            VirtualDeviceImpl virtualDevice = virtualDevicesSnapshot.get(i);
+            if (virtualDevice.isDisplayOwnedByVirtualDevice(displayId)) {
+                return virtualDevice.getOwnerPackageName();
+            }
+        }
+        return null;
     }
 
     // TODO(b/442624418): Replace this explicit role holder check with a new role permission.
@@ -934,6 +950,17 @@ public class VirtualDeviceManagerService extends SystemService {
         @Override
         public boolean isComputerControlDisplay(int displayId) {
             return mComputerControlSessionProcessor.isComputerControlDisplay(displayId);
+        }
+
+        @Nullable
+        @Override
+        public Intent createAutomatedAppLaunchWarningIntent(
+                @NonNull String packageName, @UserIdInt int userId,
+                @Nullable String callingPackageName, int displayId) {
+            final String deviceOwnerForLaunchDisplayId = getDeviceOwnerForDisplayId(displayId);
+            return mAutomatedPackagesRepository.createAutomatedAppLaunchWarningIntent(
+                    packageName, userId, callingPackageName, deviceOwnerForLaunchDisplayId,
+                    mComputerControlSessionProcessor::closeSession);
         }
 
         @Override

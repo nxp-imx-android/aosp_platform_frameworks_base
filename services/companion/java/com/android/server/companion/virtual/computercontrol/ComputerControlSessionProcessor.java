@@ -252,6 +252,26 @@ public class ComputerControlSessionProcessor {
         }
     }
 
+    /** Closes the session with the given ID. */
+    public void closeSession(int deviceId) {
+        synchronized (mSessions) {
+            for (int i = 0; i < mSessions.size(); i++) {
+                ComputerControlSessionImpl session = mSessions.valueAt(i);
+                if (session.getDeviceId() != deviceId) {
+                    continue;
+                }
+                try {
+                    session.close();
+                } catch (RemoteException e) {
+                    Slog.w(TAG, "Failed to close ComputerControlSession for deviceId "
+                            + deviceId, e);
+                }
+                return;
+            }
+        }
+        Slog.w(TAG, "Failed to close ComputerControlSession for unknown deviceId " + deviceId);
+    }
+
     @GuardedBy("mSessions")
     private boolean checkSessionCreationPreconditionsLocked(
             @NonNull ComputerControlSessionParams params,

@@ -16,10 +16,21 @@
 
 package com.android.server.companion.virtual.computercontrol;
 
+import static android.companion.virtual.computercontrol.ComputerControlSession.EXTRA_AUTOMATING_PACKAGE_NAME;
+
+import android.annotation.NonNull;
+import android.annotation.Nullable;
+import android.annotation.UserIdInt;
+import android.app.Activity;
 import android.companion.virtual.computercontrol.IAutomatedPackageListener;
+import android.content.ComponentName;
+import android.content.Intent;
+import android.os.Bundle;
 import android.os.Handler;
+import android.os.Parcel;
 import android.os.RemoteCallbackList;
 import android.os.RemoteException;
+import android.os.ResultReceiver;
 import android.os.UserHandle;
 import android.util.ArrayMap;
 import android.util.ArraySet;
@@ -33,11 +44,21 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Consumer;
 
 /** Keeps track of all packages running on computer control sessions and notifies listeners. */
 public class AutomatedPackagesRepository {
 
     private static final String TAG = AutomatedPackagesRepository.class.getSimpleName();
+
+    private static final ArraySet<String> EMPTY_SET = new ArraySet<>();
+
+    private static final String AUTOMATED_APP_LAUNCH_WARNING_PACKAGE =
+            "com.android.virtualdevicemanager";
+
+    private static final ComponentName AUTOMATED_APP_LAUNCH_WARNING_ACTIVITY = new ComponentName(
+            AUTOMATED_APP_LAUNCH_WARNING_PACKAGE,
+            AUTOMATED_APP_LAUNCH_WARNING_PACKAGE + ".AutomatedAppLaunchWarningActivity");
 
     private final Handler mHandler;
 
@@ -50,16 +71,22 @@ public class AutomatedPackagesRepository {
     // Currently automated package names keyed by device owner and user id.
     // The listeners need to be notified if this changes.
     @GuardedBy("mLock")
-    final ArrayMap<String, SparseArray<ArraySet<String>>> mAutomatedPackages = new ArrayMap<>();
+    private final ArrayMap<String, SparseArray<ArraySet<String>>> mAutomatedPackages =
+            new ArrayMap<>();
 
     // Full mapping of deviceId -> userId -> packageNames running on that device.
     // We need the deviceId for correctness, as there may be multiple devices with the same owner.
     @GuardedBy("mLock")
-    final SparseArray<SparseArray<ArraySet<String>>> mDevicePackages = new SparseArray<>();
+    private final SparseArray<SparseArray<ArraySet<String>>> mDevicePackages = new SparseArray<>();
 
     // Mapping of deviceId to the package name of the owner of that device.
     @GuardedBy("mLock")
-    final SparseArray<String> mDeviceOwnerPackageNames = new SparseArray<>();
+    private final SparseArray<String> mDeviceOwnerPackageNames = new SparseArray<>();
+
+    // Set of userId and package pairs that have been intercepted and the user chose to proceed
+    // with launching. These should not be intercepted again.
+    @GuardedBy("mLock")
+    private final ArraySet<Pair<Integer, String>> mInterceptedLaunches = new ArraySet<>();
 
     public AutomatedPackagesRepository(Handler handler) {
         mHandler = handler;
@@ -77,6 +104,48 @@ public class AutomatedPackagesRepository {
         synchronized (mLock) {
             mAutomatedPackageListeners.unregister(listener);
         }
+    }
+
+    /** Returns an intent for intercepting an automated app launch if needed. */
+    @Nullable
+    public Intent createAutomatedAppLaunchWarningIntent(
+            @NonNull String packageName, @UserIdInt int userId,
+            @Nullable String callingPackageName,
+            @Nullable String launchVirtualDeviceOwnerPackageName,
+            @NonNull Consumer<Integer> closeVirtualDevice) {
+        final Pair<Integer, String> uidPackagePair = new Pair<>(userId, packageName);
+        synchronized (mLock) {
+            if (mInterceptedLaunches.remove(uidPackagePair)) {
+                // This package/userId pair has already been intercepted and the user chose to
+                // proceed with the launch.
+                return null;
+            }
+
+            for (int i = 0; i < mDevicePackages.size(); ++i) {
+                if (!mDevicePackages.valueAt(i).get(userId, EMPTY_SET).contains(packageName)) {
+                    // This package/userId pair is not automated.
+                    continue;
+                }
+                final String deviceOwner = mDeviceOwnerPackageNames.get(mDevicePackages.keyAt(i));
+                if (Objects.equals(deviceOwner, callingPackageName)
+                        || Objects.equals(deviceOwner, launchVirtualDeviceOwnerPackageName)) {
+                    // The automating package initiated the launch or the new display is also owned
+                    // by the same automating package.
+                    continue;
+                }
+
+                final int deviceId = mDevicePackages.keyAt(i);
+                final var resultReceiver = new StopAutomationResultReceiver(
+                        uidPackagePair, () -> closeVirtualDevice.accept(deviceId));
+
+                return new Intent()
+                        .setComponent(AUTOMATED_APP_LAUNCH_WARNING_ACTIVITY)
+                        .putExtra(Intent.EXTRA_PACKAGE_NAME, packageName)
+                        .putExtra(EXTRA_AUTOMATING_PACKAGE_NAME, deviceOwner)
+                        .putExtra(Intent.EXTRA_RESULT_RECEIVER, resultReceiver.prepareForIpc());
+            }
+        }
+        return null;
     }
 
     /** Update the list of packages running on a device. */
@@ -193,5 +262,44 @@ public class AutomatedPackagesRepository {
                 });
             }
         });
+    }
+
+    private final class StopAutomationResultReceiver extends ResultReceiver {
+
+        private final Pair<Integer, String> mUidPackagePair;
+        private final Runnable mCloseVirtualDevice;
+
+        StopAutomationResultReceiver(@NonNull Pair<Integer, String> uidPackagePair,
+                @NonNull Runnable closeVirtualDevice) {
+            super(mHandler);
+            mUidPackagePair = uidPackagePair;
+            mCloseVirtualDevice = closeVirtualDevice;
+        }
+
+        @Override
+        protected void onReceiveResult(int resultCode, Bundle data) {
+            if (resultCode == Activity.RESULT_OK) {
+                synchronized (mLock) {
+                    mInterceptedLaunches.add(mUidPackagePair);
+                }
+                mHandler.post(mCloseVirtualDevice);
+            }
+        }
+
+        /**
+         * Convert this instance of a "locally-defined" ResultReceiver to an instance of
+         * {@link android.os.ResultReceiver} itself, which the receiving process will be able to
+         * unmarshall.
+         */
+        private ResultReceiver prepareForIpc() {
+            final Parcel parcel = Parcel.obtain();
+            writeToParcel(parcel, 0);
+            parcel.setDataPosition(0);
+
+            final ResultReceiver ipcFriendly = ResultReceiver.CREATOR.createFromParcel(parcel);
+            parcel.recycle();
+
+            return ipcFriendly;
+        }
     }
 }
