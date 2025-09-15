@@ -98,58 +98,61 @@ public final class DisplayManagerGlobal {
     private static final boolean DEBUG = DisplayManager.DEBUG || sExtraDisplayListenerLogging;
 
     @IntDef(prefix = {"EVENT_DISPLAY_"}, flag = true, value = {
+            EVENT_DISPLAY_CONNECTED,
             EVENT_DISPLAY_ADDED,
             EVENT_DISPLAY_BASIC_CHANGED,
-            EVENT_DISPLAY_REMOVED,
-            EVENT_DISPLAY_BRIGHTNESS_CHANGED,
-            EVENT_DISPLAY_HDR_SDR_RATIO_CHANGED,
-            EVENT_DISPLAY_CONNECTED,
-            EVENT_DISPLAY_DISCONNECTED,
             EVENT_DISPLAY_REFRESH_RATE_CHANGED,
             EVENT_DISPLAY_STATE_CHANGED,
-            EVENT_DISPLAY_COMMITTED_STATE_CHANGED
+            EVENT_DISPLAY_COMMITTED_STATE_CHANGED,
+            EVENT_DISPLAY_HDR_SDR_RATIO_CHANGED,
+            EVENT_DISPLAY_BRIGHTNESS_CHANGED,
+            EVENT_DISPLAY_REMOVED,
+            EVENT_DISPLAY_DISCONNECTED
     })
     @Retention(RetentionPolicy.SOURCE)
     public @interface DisplayEvent {}
 
-    public static final int EVENT_DISPLAY_ADDED = 1;
-    public static final int EVENT_DISPLAY_BASIC_CHANGED = 1 << 1;
-
-    public static final int EVENT_DISPLAY_REMOVED = 1 << 2;
-    public static final int EVENT_DISPLAY_BRIGHTNESS_CHANGED = 1 << 3;
-    public static final int EVENT_DISPLAY_HDR_SDR_RATIO_CHANGED = 1 << 4;
-    public static final int EVENT_DISPLAY_CONNECTED = 1 << 5;
-    public static final int EVENT_DISPLAY_DISCONNECTED = 1 << 6;
-    public static final int EVENT_DISPLAY_REFRESH_RATE_CHANGED = 1 << 7;
-    public static final int EVENT_DISPLAY_STATE_CHANGED = 1 << 8;
-    public static final int EVENT_DISPLAY_COMMITTED_STATE_CHANGED = 1 << 9;
-
+    /**
+     * The order of the events here is important.
+     * It determines the order in which they will be handled.
+     * See {@link DisplayListenerDelegate#handleDisplayEventsInner}
+     */
+    public static final int EVENT_DISPLAY_CONNECTED = 1 << 0;
+    public static final int EVENT_DISPLAY_ADDED = 1 << 1;
+    public static final int EVENT_DISPLAY_BASIC_CHANGED = 1 << 2;
+    public static final int EVENT_DISPLAY_REFRESH_RATE_CHANGED = 1 << 3;
+    public static final int EVENT_DISPLAY_STATE_CHANGED = 1 << 4;
+    public static final int EVENT_DISPLAY_COMMITTED_STATE_CHANGED = 1 << 5;
+    public static final int EVENT_DISPLAY_HDR_SDR_RATIO_CHANGED = 1 << 6;
+    public static final int EVENT_DISPLAY_BRIGHTNESS_CHANGED = 1 << 7;
+    public static final int EVENT_DISPLAY_REMOVED = 1 << 8;
+    public static final int EVENT_DISPLAY_DISCONNECTED = 1 << 9;
 
     @LongDef(prefix = {"INTERNAL_EVENT_FLAG_"}, flag = true, value = {
+            INTERNAL_EVENT_FLAG_TOPOLOGY_UPDATED,
+            INTERNAL_EVENT_FLAG_DISPLAY_CONNECTION_CHANGED,
             INTERNAL_EVENT_FLAG_DISPLAY_ADDED,
             INTERNAL_EVENT_FLAG_DISPLAY_BASIC_CHANGED,
-            INTERNAL_EVENT_FLAG_DISPLAY_REMOVED,
-            INTERNAL_EVENT_FLAG_DISPLAY_BRIGHTNESS_CHANGED,
-            INTERNAL_EVENT_FLAG_DISPLAY_HDR_SDR_RATIO_CHANGED,
-            INTERNAL_EVENT_FLAG_DISPLAY_CONNECTION_CHANGED,
             INTERNAL_EVENT_FLAG_DISPLAY_REFRESH_RATE,
             INTERNAL_EVENT_FLAG_DISPLAY_STATE,
-            INTERNAL_EVENT_FLAG_TOPOLOGY_UPDATED,
-            INTERNAL_EVENT_FLAG_DISPLAY_COMMITTED_STATE_CHANGED
+            INTERNAL_EVENT_FLAG_DISPLAY_COMMITTED_STATE_CHANGED,
+            INTERNAL_EVENT_FLAG_DISPLAY_HDR_SDR_RATIO_CHANGED,
+            INTERNAL_EVENT_FLAG_DISPLAY_BRIGHTNESS_CHANGED,
+            INTERNAL_EVENT_FLAG_DISPLAY_REMOVED
     })
     @Retention(RetentionPolicy.SOURCE)
     public @interface InternalEventFlag {}
 
-    public static final long INTERNAL_EVENT_FLAG_DISPLAY_ADDED = 1L << 0;
-    public static final long INTERNAL_EVENT_FLAG_DISPLAY_BASIC_CHANGED = 1L << 1;
-    public static final long INTERNAL_EVENT_FLAG_DISPLAY_REMOVED = 1L << 2;
-    public static final long INTERNAL_EVENT_FLAG_DISPLAY_BRIGHTNESS_CHANGED = 1L << 3;
-    public static final long INTERNAL_EVENT_FLAG_DISPLAY_HDR_SDR_RATIO_CHANGED = 1L << 4;
-    public static final long INTERNAL_EVENT_FLAG_DISPLAY_CONNECTION_CHANGED = 1L << 5;
-    public static final long INTERNAL_EVENT_FLAG_DISPLAY_REFRESH_RATE = 1L << 6;
-    public static final long INTERNAL_EVENT_FLAG_DISPLAY_STATE = 1L << 7;
-    public static final long INTERNAL_EVENT_FLAG_TOPOLOGY_UPDATED = 1L << 8;
-    public static final long INTERNAL_EVENT_FLAG_DISPLAY_COMMITTED_STATE_CHANGED = 1L << 9;
+    public static final long INTERNAL_EVENT_FLAG_TOPOLOGY_UPDATED = 1L << 0;
+    public static final long INTERNAL_EVENT_FLAG_DISPLAY_CONNECTION_CHANGED = 1L << 1;
+    public static final long INTERNAL_EVENT_FLAG_DISPLAY_ADDED = 1L << 2;
+    public static final long INTERNAL_EVENT_FLAG_DISPLAY_BASIC_CHANGED = 1L << 3;
+    public static final long INTERNAL_EVENT_FLAG_DISPLAY_REFRESH_RATE = 1L << 4;
+    public static final long INTERNAL_EVENT_FLAG_DISPLAY_STATE = 1L << 5;
+    public static final long INTERNAL_EVENT_FLAG_DISPLAY_COMMITTED_STATE_CHANGED = 1L << 6;
+    public static final long INTERNAL_EVENT_FLAG_DISPLAY_HDR_SDR_RATIO_CHANGED = 1L << 7;
+    public static final long INTERNAL_EVENT_FLAG_DISPLAY_BRIGHTNESS_CHANGED = 1L << 8;
+    public static final long INTERNAL_EVENT_FLAG_DISPLAY_REMOVED = 1L << 9;
 
 
     @UnsupportedAppUsage

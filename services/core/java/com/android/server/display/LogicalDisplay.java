@@ -327,7 +327,7 @@ final class LogicalDisplay {
         return mInfo.getDisplayInfoGroupsChanged();
     }
 
-    public DisplayInfo.DisplayInfoChangeSource getDisplayInfoChangeSource() {
+    public DisplayInfo.DisplayInfoChangeSource getDisplayInfoChangeSourceLocked() {
         return mInfo.getDisplayInfoChangeSource();
     }
 

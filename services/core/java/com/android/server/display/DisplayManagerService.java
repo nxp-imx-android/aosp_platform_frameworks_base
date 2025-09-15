@@ -196,6 +196,7 @@ import com.android.server.companion.virtual.VirtualDeviceManagerInternal;
 import com.android.server.display.config.SensorData;
 import com.android.server.display.feature.DeviceConfigParameterProvider;
 import com.android.server.display.feature.DisplayManagerFlags;
+import com.android.server.display.feature.flags.Flags;
 import com.android.server.display.layout.Layout;
 import com.android.server.display.mode.DisplayModeDirector;
 import com.android.server.display.notifications.DisplayNotificationManager;
@@ -3709,7 +3710,7 @@ public final class DisplayManagerService extends SystemService {
         if (mFlags.isDisplayEventsLoggingEnabled()
                 && ((eventMask & DisplayManagerGlobal.EVENT_DISPLAY_BASIC_CHANGED) != 0)) {
             msg.obj = new DisplayInfoChangedFields(display.getDisplayInfoGroupsChangedLocked(),
-                    display.getDisplayInfoChangeSource());
+                    display.getDisplayInfoChangeSourceLocked());
         }
         if (messageType == MSG_DELIVER_DISPLAY_EVENT && mExtraDisplayEventLogging) {
             Slog.i(TAG, "Deliver Display Events on Handler: " + eventsToString(eventMask));
@@ -4320,7 +4321,7 @@ public final class DisplayManagerService extends SystemService {
     }
 
     private final class DisplayManagerHandler extends Handler {
-        public DisplayManagerHandler(Looper looper) {
+        private DisplayManagerHandler(Looper looper) {
             super(looper, null, true /*async*/);
         }
 
@@ -4521,7 +4522,8 @@ public final class DisplayManagerService extends SystemService {
         }
     }
 
-    private final class CallbackRecord implements DeathRecipient, FrozenStateChangeCallback {
+    @VisibleForTesting(visibility = VisibleForTesting.Visibility.PRIVATE)
+    final class CallbackRecord implements DeathRecipient, FrozenStateChangeCallback {
         public final int mPid;
         public final int mUid;
         private final IDisplayManagerCallback mCallback;
@@ -4531,13 +4533,15 @@ public final class DisplayManagerService extends SystemService {
         public boolean mWifiDisplayScanRequested;
 
         // A single pending display eventMask.
-        private record Event(int displayId, int eventMask) { };
+        @VisibleForTesting(visibility = VisibleForTesting.Visibility.PRIVATE)
+        record Event(int displayId, int eventMask) { };
 
         // The list of pending display events. This is null until there is a pending event to be
         // saved.
         @GuardedBy("mCallback")
         @Nullable
-        private ArrayList<Event> mPendingDisplayEvents;
+        @VisibleForTesting(visibility = VisibleForTesting.Visibility.PRIVATE)
+        ArrayList<Event> mPendingDisplayEvents;
 
         @GuardedBy("mCallback")
         @Nullable
@@ -4592,7 +4596,7 @@ public final class DisplayManagerService extends SystemService {
             return true;
         }
 
-        public void updateEventFlagsMask(@InternalEventFlag long internalEventFlag) {
+        private void updateEventFlagsMask(@InternalEventFlag long internalEventFlag) {
             mInternalEventFlagsMask.set(internalEventFlag);
         }
 
@@ -4694,9 +4698,8 @@ public final class DisplayManagerService extends SystemService {
                 if (!isReadyLocked() || (mPendingDisplayEvents != null
                         && !mPendingDisplayEvents.isEmpty())) {
                     // The client is interested in the eventMask but is not ready to receive it.
-                    // Put the eventMask on the pending list.
-                    addDisplayEvent(displayId, eventMask);
-                    return eventMask;
+                    // Put the new events on the pending list.
+                    return addDisplayEvents(displayId, eventMask);
                 }
             }
 
@@ -4712,7 +4715,7 @@ public final class DisplayManagerService extends SystemService {
                 Slog.w(TAG, "Failed to notify process "
                         + mPid + " that displays changed, assuming it died.", ex);
                 binderDied();
-                return eventMask;
+                return 0;
             }
         }
 
@@ -4790,15 +4793,59 @@ public final class DisplayManagerService extends SystemService {
             }
         }
 
-        // Add a single eventMask to the pending list, possibly combining or
-        // collapsing events in the list.
+        /**
+         * Adds display events to the pending list for this callback, merging with previous
+         * events if possible.
+         *
+         * @return A bitmask of the new events that were actually added to the pending queue. If
+         * the event is merged with a pre-existing event, this will be a mask of only the newly
+         * added event types.
+         */
         @GuardedBy("mCallback")
-        private void addDisplayEvent(int displayId, int eventMask) {
+        @VisibleForTesting(visibility = VisibleForTesting.Visibility.PRIVATE)
+        int addDisplayEvents(int displayId, int eventMask) {
             if (mPendingDisplayEvents == null) {
                 mPendingDisplayEvents = new ArrayList<>();
             }
-            if (!mPendingDisplayEvents.isEmpty()) {
-                // Merge eventMasks
+            if (Flags.enableDisplayEventMerging()) {
+                // A mask for events that should not be merged. Events such as BASIC_CHANGED,
+                // REFRESH_RATE_CHANGED can be merged with any other event.
+                final int nonMergeableEvents = DisplayManagerGlobal.EVENT_DISPLAY_ADDED
+                        | DisplayManagerGlobal.EVENT_DISPLAY_CONNECTED
+                        | DisplayManagerGlobal.EVENT_DISPLAY_REMOVED
+                        | DisplayManagerGlobal.EVENT_DISPLAY_DISCONNECTED;
+
+                // Iterate backwards to find the last event for this display.
+                for (int i = mPendingDisplayEvents.size() - 1; i >= 0; i--) {
+                    Event last = mPendingDisplayEvents.get(i);
+                    if (last.displayId() == displayId) {
+                        // Check for all mergeable conditions:
+                        // 1. The new event is a subset of the last one.
+                        // 2. The last event is a subset of the new one.
+                        // 3. The last event is a simple, mergeable type e.g. BASIC_CHANGED can
+                        //    be merged with ADDED.
+                        // 4. The new event is a simple, mergeable type.
+                        if ((last.eventMask | eventMask) == last.eventMask
+                                || (last.eventMask | eventMask) == eventMask
+                                || (last.eventMask & nonMergeableEvents) == 0
+                                || (eventMask & nonMergeableEvents) == 0) {
+                            int newMask = last.eventMask | eventMask;
+                            Event updatedEvent = new Event(displayId, newMask);
+                            mPendingDisplayEvents.set(i, updatedEvent); // Replace old event
+                            if (DEBUG) {
+                                Slog.d(TAG, "Merge display eventMasks. Display ID: "
+                                        + displayId + "/" + eventsToString(eventMask) + " to "
+                                        + mUid + "/" + mPid + ". New mask: "
+                                        + eventsToString(newMask));
+                            }
+                            return eventMask & ~last.eventMask; // get only the new events
+                        }
+                        // If we found the last event for this display but couldn't merge,
+                        // we must stop and add the new event to the end to preserve order.
+                        break;
+                    }
+                }
+            } else if (!mPendingDisplayEvents.isEmpty()) {
                 int lastIndex = mPendingDisplayEvents.size() - 1;
                 Event last = mPendingDisplayEvents.get(lastIndex);
 
@@ -4811,10 +4858,11 @@ public final class DisplayManagerService extends SystemService {
                                 + eventsToString(eventMask) + " to " + mUid + "/" + mPid
                                 + ". New mask: " + eventsToString(newMask));
                     }
-                    return;
+                    return eventMask & ~last.eventMask; // get only the new events
                 }
             }
             mPendingDisplayEvents.add(new Event(displayId, eventMask));
+            return eventMask;
         }
 
         /**
@@ -4867,8 +4915,8 @@ public final class DisplayManagerService extends SystemService {
             }
         }
 
-        // Send all pending events.  This can safely be called if the process is not ready, but it
-        // would be unusual to do so.  The method returns true on success.
+        // Send all pending events. This can safely be called if the process is not ready, but it
+        // would be unusual to do so. The method returns true on success.
         public boolean dispatchPending() {
             Event[] pendingDisplayEvents = null;
             DisplayTopology pendingTopology;
