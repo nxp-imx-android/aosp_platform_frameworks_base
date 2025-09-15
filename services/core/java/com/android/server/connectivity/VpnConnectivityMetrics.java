@@ -34,6 +34,8 @@ import android.net.LinkAddress;
 import android.net.Network;
 import android.net.NetworkCapabilities;
 import android.net.VpnManager;
+import android.util.IndentingPrintWriter;
+import android.util.LocalLog;
 import android.util.Log;
 import android.util.SparseArray;
 import android.util.SparseIntArray;
@@ -56,6 +58,8 @@ import java.util.List;
  */
 public class VpnConnectivityMetrics {
     private static final String TAG = VpnConnectivityMetrics.class.getSimpleName();
+    private static final int MAX_LOG_RECORDS = 100;
+    private final LocalLog mMetricLogs = new LocalLog(MAX_LOG_RECORDS);
     // Copied from corenetworking platform vpn enum
     @VisibleForTesting
     static final int VPN_TYPE_UNKNOWN = 0;
@@ -454,6 +458,14 @@ public class VpnConnectivityMetrics {
 
     private void validateAndReportVpnConnectionEvent(boolean connected) {
         validateAndCorrectMetrics();
+        mMetricLogs.log("Report VPN connection event: " + (connected ? "CONNECTED" : "DISCONNECTED")
+                + ", vpnType=" + mVpnType
+                + ", vpnProfileType=" + mVpnProfileType
+                + ", underlyingNetworkTypes=" + Arrays.toString(mUnderlyingNetworkTypes)
+                + ", vpnNetworkIpProtocol=" + mVpnNetworkIpProtocol
+                + ", serverIpProtocol=" + mServerIpProtocol
+                + ", allowedAlgorithms=" + mAllowedAlgorithms
+                + ", mtu=" + mMtu);
         mDependencies.statsWrite(
                 mVpnType,
                 mVpnNetworkIpProtocol,
@@ -500,5 +512,15 @@ public class VpnConnectivityMetrics {
         mAllowedAlgorithms = 0;
         mMtu = 0;
         mUnderlyingNetworkTypes = new int[0];
+    }
+
+    /**
+     * Dumps the local log buffer.
+     */
+    public void dump(IndentingPrintWriter pw) {
+        pw.println("VpnConnectivityMetrics logs (most recent first):");
+        pw.increaseIndent();
+        mMetricLogs.reverseDump(pw);
+        pw.decreaseIndent();
     }
 }
