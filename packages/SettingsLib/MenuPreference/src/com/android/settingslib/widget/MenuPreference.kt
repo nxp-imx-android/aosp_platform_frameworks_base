@@ -40,6 +40,13 @@ class MenuPreference @JvmOverloads constructor(
     override var preference: Preference? = this
     override var showIconsInPopupMenu: Boolean = false
 
+    /** Provides a content description for the menu button. */
+    var menuButtonContentDescription: String? = null
+        set(value) {
+            field = value
+            notifyChanged()
+        }
+
     init {
         layoutResource =
             if (SettingsThemeHelper.isExpressiveTheme(context)) {
@@ -63,6 +70,9 @@ class MenuPreference @JvmOverloads constructor(
         holder.isDividerAllowedAbove = false
 
         menuButton = holder.findViewById(R.id.settingslib_menu_button) as MaterialButton
+        if (menuButtonContentDescription != null) {
+            menuButton?.contentDescription = menuButtonContentDescription
+        }
 
         // setup the onClickListener
         setupMenuButton(context)
