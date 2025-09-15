@@ -907,8 +907,8 @@ public class AudioDeviceInventory {
                             AudioSystem.isInputDevice(di.mDeviceType)
                                 ? AudioDeviceAttributes.ROLE_INPUT
                                 : AudioDeviceAttributes.ROLE_OUTPUT,
-                            AudioDeviceInfo.convertInternalDeviceToDeviceType(di.mDeviceType),
                             di.mDeviceAddress,
+                            di.mDeviceType,
                             di.mDeviceName,
                             di.mAudioProfiles,
                             di.mAudioDescriptors),
