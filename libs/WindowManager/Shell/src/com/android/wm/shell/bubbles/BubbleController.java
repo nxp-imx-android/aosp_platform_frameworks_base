@@ -660,6 +660,7 @@ public class BubbleController implements ConfigurationChangeListener,
                             wct.setDisablePip(taskInfo.token, true /* disablePip */);
                             wct.setDisableLaunchAdjacent(taskInfo.token,
                                     true /* disableLaunchAdjacent */);
+                            wct.setForceTranslucent(taskInfo.token, true /* forceTranslucent */);
                             mTaskOrganizer.applyTransaction(wct);
                         }
                     });
