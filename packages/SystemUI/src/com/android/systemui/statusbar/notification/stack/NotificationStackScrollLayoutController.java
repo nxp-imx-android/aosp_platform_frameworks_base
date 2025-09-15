@@ -374,6 +374,11 @@ public class NotificationStackScrollLayoutController implements Dumpable {
         }
     };
 
+    // Update sensitivity, because NotificationLockscreenUserManager.isAnyProfilePublicMode()
+    // might have changed.
+    private final NotificationLockscreenUserManager.NotificationStateChangedListener
+            mLockscreenModeChangedListener = () -> updateSensitivenessWithAnimation(false);
+
     /**
      * Recalculate sensitiveness without animation; called when waking up while keyguard occluded,
      * or whenever we update the Lockscreen public mode.
@@ -983,6 +988,10 @@ public class NotificationStackScrollLayoutController implements Dumpable {
         mLockscreenShadeTransitionController.setStackScroller(this);
 
         mLockscreenUserManager.addUserChangedListener(mLockscreenUserChangeListener);
+        if (SceneContainerFlag.isEnabled()) {
+            mLockscreenUserManager.addNotificationStateChangedListener(
+                    mLockscreenModeChangedListener);
+        }
 
         mVisibilityLocationProviderDelegator.setDelegate(this::isInVisibleLocation);
 
