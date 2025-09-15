@@ -28,6 +28,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
@@ -42,7 +43,7 @@ import kotlinx.coroutines.flow.stateIn
  */
 interface AvControlsChipInteractor {
     /** Encodes whether the feature is enabled. */
-    // val isEnabled: StateFlow<Boolean>
+    val isEnabled: StateFlow<Boolean>
 
     /** Chip updates. */
     val model: StateFlow<AvControlsChipModel>
@@ -56,7 +57,7 @@ interface AvControlsChipInteractor {
  * available.
  */
 class NoOpAvControlsChipInteractor @Inject constructor() : AvControlsChipInteractor {
-    // override val isEnabled = MutableStateFlow<Boolean>(false)
+    override val isEnabled = MutableStateFlow<Boolean>(false)
     override val model = MutableStateFlow<AvControlsChipModel>(AvControlsChipModel())
     override val isShowingAvChip = MutableStateFlow<Boolean>(false)
 }
@@ -64,12 +65,12 @@ class NoOpAvControlsChipInteractor @Inject constructor() : AvControlsChipInterac
 class AvControlsChipInteractorImpl
 @Inject
 constructor(
-    @Background private val backgroundScope: CoroutineScope,
+    @Background backgroundScope: CoroutineScope,
     private val privacyChipRepository: PrivacyChipRepository,
     statusBarModeRepositoryStore: StatusBarModeRepositoryStore,
 ) : AvControlsChipInteractor {
-    // override val isEnabled = MutableStateFlow<Boolean>(true)
-
+    private val _isEnabled = MutableStateFlow(true)
+    override val isEnabled = _isEnabled.asStateFlow()
     override val model: StateFlow<AvControlsChipModel> =
         privacyChipRepository.privacyItems
             .map { privacyItems ->
