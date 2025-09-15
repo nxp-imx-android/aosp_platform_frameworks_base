@@ -106,6 +106,7 @@ import com.android.wm.shell.shared.bubbles.ContextUtils;
 import com.android.wm.shell.shared.bubbles.DeviceConfig;
 import com.android.wm.shell.shared.bubbles.DismissView;
 import com.android.wm.shell.shared.bubbles.RelativeTouchListener;
+import com.android.wm.shell.shared.bubbles.logging.BubbleLog;
 import com.android.wm.shell.shared.magnetictarget.MagnetizedObject;
 
 import java.io.PrintWriter;
@@ -363,6 +364,7 @@ public class BubbleStackView extends FrameLayout
         pw.print("  temporarilyInvisible:    "); pw.println(mTemporarilyInvisible);
         pw.print("  expandedViewTemporarilyHidden: "); pw.println(mExpandedViewTemporarilyHidden);
         pw.print("  imeVisible:              "); pw.println(mIsImeVisible);
+        pw.print("  gesture tracker:         "); pw.println(mBubblesNavBarGestureTracker);
         mStackAnimationController.dump(pw);
         mExpandedAnimationController.dump(pw);
         mExpandedViewAnimationController.dump(pw);
@@ -856,6 +858,12 @@ public class BubbleStackView extends FrameLayout
 
         @Override
         public void onMove(float dx, float dy) {
+            if (!mBubbleData.isExpanded()) {
+                BubbleLog.e("BubbleStackView.swipeUpListener - gesture monitor (%s) is registered "
+                        + "while we're collapsed", mBubblesNavBarGestureTracker);
+                stopMonitoringSwipeUpGesture();
+                return;
+            }
             if (isManageEduVisible() || isStackEduVisible()) {
                 return;
             }
