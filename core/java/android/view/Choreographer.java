@@ -16,7 +16,6 @@
 
 package android.view;
 
-import static android.view.flags.Flags.bufferStuffingRecovery;
 import static android.view.flags.Flags.bufferStuffingMultiRecovery;
 import static android.view.flags.Flags.FLAG_EXPECTED_PRESENTATION_TIME_API;
 import static android.view.DisplayEventReceiver.VSYNC_SOURCE_APP;
@@ -1030,25 +1029,23 @@ public final class Choreographer {
 
         // Evaluate if buffer stuffing recovery needs to start or end, and
         // what actions need to be taken for recovery.
-        if (bufferStuffingRecovery()) {
-            switch (updateBufferStuffingState(frameTimeNanos, vsyncEventData)) {
-                case NONE:
-                    // Without buffer stuffing recovery, offsetFrameTimeNanos is
-                    // synonymous with frameTimeNanos.
-                    break;
-                case OFFSET:
-                    // Add animation offset. Used to update frame timeline with
-                    // offset before jitter is calculated.
-                    offsetFrameTimeNanos = frameTimeNanos - frameIntervalNanos;
-                    break;
-                case DELAY_FRAME:
-                    // Intentional frame delay to help reduce queued buffer count.
-                    mBufferStuffingState.numberWaitsForNextVsync++;
-                    scheduleVsyncLocked();
-                    return;
-                default:
-                    break;
-            }
+        switch (updateBufferStuffingState(frameTimeNanos, vsyncEventData)) {
+            case NONE:
+                // Without buffer stuffing recovery, offsetFrameTimeNanos is
+                // synonymous with frameTimeNanos.
+                break;
+            case OFFSET:
+                // Add animation offset. Used to update frame timeline with
+                // offset before jitter is calculated.
+                offsetFrameTimeNanos = frameTimeNanos - frameIntervalNanos;
+                break;
+            case DELAY_FRAME:
+                // Intentional frame delay to help reduce queued buffer count.
+                mBufferStuffingState.numberWaitsForNextVsync++;
+                scheduleVsyncLocked();
+                return;
+            default:
+                break;
         }
 
         try {
