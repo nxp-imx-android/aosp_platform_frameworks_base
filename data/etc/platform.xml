@@ -284,12 +284,10 @@
         <new-permission name="android.permission.BODY_SENSORS_BACKGROUND" />
     </split-permission>
     <split-permission name="android.permission.BODY_SENSORS"
-                      featureFlag="android.permission.flags.replace_body_sensor_permission_enabled"
                       targetSdk="36">
         <new-permission name="android.permission.health.READ_HEART_RATE" />
     </split-permission>
     <split-permission name="android.permission.BODY_SENSORS_BACKGROUND"
-                      featureFlag="android.permission.flags.replace_body_sensor_permission_enabled"
                       targetSdk="36">
         <new-permission name="android.permission.health.READ_HEALTH_DATA_IN_BACKGROUND" />
     </split-permission>
