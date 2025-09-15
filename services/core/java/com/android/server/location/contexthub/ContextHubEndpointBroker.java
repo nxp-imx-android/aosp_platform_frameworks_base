@@ -35,6 +35,7 @@ import android.hardware.location.ContextHubTransaction;
 import android.hardware.location.IContextHubTransactionCallback;
 import android.hardware.location.NanoAppState;
 import android.os.Binder;
+import android.os.DeadObjectException;
 import android.os.IBinder;
 import android.os.PowerManager;
 import android.os.PowerManager.WakeLock;
@@ -90,8 +91,8 @@ public class ContextHubEndpointBroker extends IContextHubEndpoint.Stub
     /** The context of the service. */
     private final Context mContext;
 
-    /** The shared executor service for handling session operation timeout. */
-    private final ScheduledExecutorService mSessionTimeoutExecutor;
+    /** The shared executor service to defer operations. */
+    private final ScheduledExecutorService mExecutor;
 
     /** The proxy to talk to the Context Hub HAL for endpoint communication. */
     @GuardedBy("mRegistrationLock")
@@ -267,7 +268,7 @@ public class ContextHubEndpointBroker extends IContextHubEndpoint.Stub
             String packageName,
             String attributionTag,
             ContextHubTransactionManager transactionManager,
-            ScheduledExecutorService sessionTimeoutExecutor) {
+            ScheduledExecutorService executor) {
         mContext = context;
         mHubInterface = hubInterface;
         mEndpointManager = endpointManager;
@@ -277,7 +278,7 @@ public class ContextHubEndpointBroker extends IContextHubEndpoint.Stub
         mPackageName = packageName;
         mAttributionTag = attributionTag;
         mTransactionManager = transactionManager;
-        mSessionTimeoutExecutor = sessionTimeoutExecutor;
+        mExecutor = executor;
 
         mPid = Binder.getCallingPid();
         mUid = Binder.getCallingUid();
@@ -321,9 +322,20 @@ public class ContextHubEndpointBroker extends IContextHubEndpoint.Stub
                                 mHalEndpointInfo.id,
                                 serviceDescriptor);
             } catch (RemoteException | IllegalArgumentException | UnsupportedOperationException e) {
-                Log.e(TAG, "Exception while calling HAL openEndpointSession", e);
-                cleanupSessionResources(sessionId);
-                throw e;
+                Log.e(
+                        TAG,
+                        "Exception on HAL openEndpointSession (id="
+                                + sessionId
+                                + "), closing session: "
+                                + e.getMessage());
+                mExecutor.execute(
+                        () -> {
+                            byte reason =
+                                    (e instanceof DeadObjectException)
+                                            ? Reason.HUB_RESET
+                                            : Reason.UNSPECIFIED;
+                            onCloseEndpointSession(sessionId, reason);
+                        });
             }
 
             return sessionId;
@@ -413,13 +425,17 @@ public class ContextHubEndpointBroker extends IContextHubEndpoint.Stub
                 try {
                     getHubInterface().sendMessageToEndpoint(sessionId, halMessage);
                 } catch (RemoteException e) {
+                    byte reason =
+                            (e instanceof DeadObjectException)
+                                    ? Reason.HUB_RESET
+                                    : Reason.UNSPECIFIED;
                     Log.e(
                             TAG,
                             "Exception while sending message on session "
                                     + sessionId
-                                    + ", closing session",
-                            e);
-                    notifySessionClosedToBoth(sessionId, Reason.UNSPECIFIED);
+                                    + ", closing session: "
+                                    + e.getMessage());
+                    notifySessionClosedToBoth(sessionId, reason);
                 }
             } else {
                 IContextHubTransactionCallback wrappedCallback =
@@ -701,7 +717,7 @@ public class ContextHubEndpointBroker extends IContextHubEndpoint.Stub
                 existingSessionActive = false;
                 Session pendingSession = new Session(initiator, true);
                 pendingSession.setSessionOpenTimeoutFuture(
-                        mSessionTimeoutExecutor.schedule(
+                        mExecutor.schedule(
                                 () -> onEndpointSessionOpenRequestTimeout(sessionId),
                                 OPEN_SESSION_REQUEST_TIMEOUT_SECONDS,
                                 TimeUnit.SECONDS));
