@@ -646,3 +646,11 @@ flag {
     description: "This flag is used to enable the content restriction role"
     bug: "441559663"
 }
+
+flag {
+    name: "health_connect_provide_device_data_permission_enabled"
+    namespace: "health_fitness_aconfig"
+    description: "This flag protects the permission that is required to call Health Connect device data provider APIs"
+    bug: "416236349"
+    is_exported: true
+}
