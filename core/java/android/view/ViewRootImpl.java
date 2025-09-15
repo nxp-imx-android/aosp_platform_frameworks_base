@@ -2445,12 +2445,6 @@ public final class ViewRootImpl implements ViewParent,
     }
 
     private void onActiveControlsChanged(@NonNull InsetsSourceControl.Array activeControls) {
-        if (!mAdded) {
-            // Do not update the last report if window is not added yet.
-            activeControls.release();
-            return;
-        }
-
         if (isIncomingSeqStale(mLastReportedActiveControlsSeq, activeControls.getSeq())) {
             // The incoming is stale. Skip.
             activeControls.release();
@@ -7081,7 +7075,12 @@ public final class ViewRootImpl implements ViewParent,
                     final InsetsState insetsState = (InsetsState) args.arg1;
                     final InsetsSourceControl.Array activeControls =
                             (InsetsSourceControl.Array) args.arg2;
-                    handleInsetsControlChanged(insetsState, activeControls);
+                    if (mAdded) {
+                        handleInsetsControlChanged(insetsState, activeControls);
+                    } else {
+                        // Do not update the last report if window is not added yet.
+                        activeControls.release();
+                    }
                     args.recycle();
                     break;
                 }
@@ -11955,7 +11954,7 @@ public final class ViewRootImpl implements ViewParent,
             isFromInsetsControlChangeItem = mIsFromTransactionItem;
             mIsFromTransactionItem = false;
             final ViewRootImpl viewAncestor = mViewAncestor.get();
-            if (viewAncestor == null) {
+            if (viewAncestor == null || !viewAncestor.mAdded) {
                 if (isFromInsetsControlChangeItem) {
                     activeControls.release();
                 }
