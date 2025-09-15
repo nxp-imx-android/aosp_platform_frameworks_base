@@ -16,6 +16,7 @@
 
 package com.android.systemui.screencapture.common
 
+import com.android.systemui.screencapture.common.shared.model.ScreenCaptureType
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureUiParameters
 import com.android.systemui.screencapture.ui.ScreenCaptureUi
 import dagger.BindsInstance
@@ -33,6 +34,14 @@ interface ScreenCaptureComponent {
     @ScreenCapture fun coroutineScope(): CoroutineScope
 
     fun screenCaptureUiFactory(): ScreenCaptureUi.Factory
+
+    fun uiComponentBuilders():
+        Map<
+            @JvmSuppressWildcards
+            ScreenCaptureType,
+            @JvmSuppressWildcards
+            ScreenCaptureUiComponent.Builder,
+        >
 
     /**
      * Dagger Subcomponent Builder for [ScreenCaptureComponent].

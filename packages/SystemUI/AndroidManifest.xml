@@ -719,7 +719,7 @@
             android:visibleToInstantApps="true"/>
 
         <activity
-            android:name=".mediaprojection.permission.ShareScreenActivity"
+            android:name=".screencapture.ui.ShareScreenActivity"
             android:showForAllUsers="true"
             android:exported="true"
             android:theme="@style/Theme.SystemUI.MediaProjectionAlertDialog"

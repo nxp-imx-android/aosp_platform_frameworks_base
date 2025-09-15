@@ -19,6 +19,8 @@ package com.android.systemui.screencapture.domain.interactor
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.testDispatcher
 import com.android.systemui.screencapture.common.ScreenCaptureComponent
+import com.android.systemui.screencapture.common.ScreenCaptureUiComponent
+import com.android.systemui.screencapture.common.shared.model.ScreenCaptureType
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureUiParameters
 import com.android.systemui.screencapture.data.repository.screenCaptureComponentRepository
 import com.android.systemui.screencapture.ui.ScreenCaptureUi
@@ -61,5 +63,8 @@ private class FakeScreenCaptureComponentBuilder(private val kosmos: Kosmos) :
 
             override fun screenCaptureUiFactory(): ScreenCaptureUi.Factory =
                 kosmos.screenCaptureUiFactory
+
+            override fun uiComponentBuilders():
+                Map<ScreenCaptureType, ScreenCaptureUiComponent.Builder> = emptyMap()
         }
 }
