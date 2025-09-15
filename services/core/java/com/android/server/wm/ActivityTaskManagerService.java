@@ -260,6 +260,7 @@ import android.window.IWindowOrganizerController;
 import android.window.SplashScreenView.SplashScreenViewParcelable;
 import android.window.TaskSnapshot;
 import android.window.TaskSnapshotManager;
+import android.window.WindowContainerTransaction;
 
 import com.android.internal.R;
 import com.android.internal.annotations.GuardedBy;
@@ -285,7 +286,6 @@ import com.android.server.UiThread;
 import com.android.server.Watchdog;
 import com.android.server.am.ActivityManagerService;
 import com.android.server.am.ActivityManagerServiceDumpProcessesProto;
-import com.android.server.wm.ActivityTaskManagerInternal.HandoffEnablementListener;
 import com.android.server.am.AppTimeTracker;
 import com.android.server.am.AssistDataRequester;
 import com.android.server.am.BaseErrorDialog;
@@ -6482,6 +6482,35 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
             }
 
             mHandoffEnablementListeners.remove(listener);
+        }
+
+        @Override
+        public void moveAllTasks(int fromDisplayId, int toDisplayId) {
+            enforceTaskPermission("moveAllTasks()");
+            synchronized (mGlobalLock) {
+                final DisplayContent fromDc = mRootWindowContainer.getDisplayContent(fromDisplayId);
+                final DisplayContent toDc = mRootWindowContainer.getDisplayContent(toDisplayId);
+
+                if (fromDc == null) {
+                    Slog.w(TAG, "moveAllTasks: invalid fromDisplayId=" + fromDisplayId);
+                    return;
+                }
+                if (toDc == null) {
+                    Slog.w(TAG, "moveAllTasks: invalid toDisplayId=" + toDisplayId);
+                    return;
+                }
+                if (fromDc == toDc) {
+                    Slog.w(TAG, "moveAllTasks: fromDisplayId=" + fromDisplayId
+                            + " and toDisplayId=" + toDisplayId + " are the same");
+                    return;
+                }
+
+                WindowContainerTransaction wct = new WindowContainerTransaction().reparentTasks(
+                        fromDc.getDefaultTaskDisplayArea().mRemoteToken.toWindowContainerToken(),
+                        toDc.getDefaultTaskDisplayArea().mRemoteToken.toWindowContainerToken(),
+                        /* windowingModes= */ null, /* activityTypes= */ null, /* onTop= */ true);
+                mWindowOrganizerController.startNewTransition(TRANSIT_TO_FRONT, wct);
+            }
         }
 
         @Override

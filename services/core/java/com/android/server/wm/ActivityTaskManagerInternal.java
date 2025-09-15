@@ -844,4 +844,7 @@ public abstract class ActivityTaskManagerInternal implements ActiveUids.Observer
     /** Unregisters a listener for handoff enablement changes. */
     public abstract void unregisterHandoffEnablementListener(
         @NonNull HandoffEnablementListener listener);
+
+    /** Moves all tasks from the source display to the destination display. */
+    public abstract void moveAllTasks(int fromDisplayId, int toDisplayId);
 }

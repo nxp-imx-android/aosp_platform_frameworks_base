@@ -73,6 +73,7 @@ import com.android.internal.inputmethod.InputConnectionCommandHeader;
 import com.android.server.LocalServices;
 import com.android.server.inputmethod.InputMethodManagerInternal;
 import com.android.server.pm.UserManagerInternal;
+import com.android.server.wm.ActivityTaskManagerInternal;
 import com.android.server.wm.WindowManagerInternal;
 
 import java.util.ArrayList;
@@ -335,6 +336,12 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
         Binder.withCleanCallingIdentity(() -> mInjector.launchApplicationOnDisplayAsUser(
                 packageName, mVirtualDisplayId, user));
         notifyApplicationLaunchToStabilityCalculator();
+    }
+
+    @Override
+    public void handOverApplications() {
+        Binder.withCleanCallingIdentity(
+                () -> mInjector.moveAllTasks(mVirtualDisplayId, mMainDisplayId));
     }
 
     @Override
@@ -696,6 +703,7 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
         private final WindowManagerInternal mWindowManagerInternal;
         private final InputMethodManagerInternal mInputMethodManagerInternal;
         private final UserManagerInternal mUserManagerInternal;
+        private final ActivityTaskManagerInternal mActivityTaskManagerInternal;
 
         Injector(Context context) {
             mContext = context;
@@ -704,6 +712,8 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
             mInputMethodManagerInternal = LocalServices.getService(
                     InputMethodManagerInternal.class);
             mUserManagerInternal = LocalServices.getService(UserManagerInternal.class);
+            mActivityTaskManagerInternal = LocalServices.getService(
+                    ActivityTaskManagerInternal.class);
         }
 
         public String getPermissionControllerPackageName() {
@@ -757,6 +767,10 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
             // profile here for the CC input connection
             return mInputMethodManagerInternal.getComputerControlInputConnection(
                     mUserManagerInternal.getUserAssignedToDisplay(displayId), displayId);
+        }
+
+        public void moveAllTasks(int fromDisplayId, int toDisplayId) {
+            mActivityTaskManagerInternal.moveAllTasks(fromDisplayId, toDisplayId);
         }
     }
 }

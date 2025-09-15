@@ -115,6 +115,18 @@ public final class ComputerControlSession implements AutoCloseable {
     }
 
     /**
+     * Hand over full control of the automation session to the user.
+     *
+     * <p>All of the applications currently automated in the session are moved from the session's
+     * display to the user's default display. No further automation is possible on these tasks,
+     * although the session remains active and new applications may be launched via
+     * {@link #launchApplication(String)}</p>
+     */
+    public void handOverApplications() {
+        mSession.handOverApplications();
+    }
+
+    /**
      * Screenshot the current display content.
      *
      * <p>The behavior is similar to {@link android.media.ImageReader#acquireLatestImage}, meaning
