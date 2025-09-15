@@ -74,14 +74,13 @@ import android.os.Bundle;
 import android.os.PowerExemptionManager;
 import android.os.RemoteException;
 import android.os.UserHandle;
-import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
+import android.platform.test.flag.junit.FlagsParameterization;
 import android.service.notification.StatusBarNotification;
 import android.testing.TestableLooper;
 import android.view.View;
 
 import androidx.core.graphics.drawable.IconCompat;
-import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SmallTest;
 
 import com.android.media.flags.Flags;
@@ -123,6 +122,9 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import platform.test.runner.parameterized.ParameterizedAndroidJunit4;
+import platform.test.runner.parameterized.Parameters;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -130,7 +132,7 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 @SmallTest
-@RunWith(AndroidJUnit4.class)
+@RunWith(ParameterizedAndroidJunit4.class)
 @TestableLooper.RunWithLooper(setAsMainLooper = true)
 public class MediaSwitchingControllerTest extends SysuiTestCase {
     private static final String TEST_DEVICE_1_ID = "test_device_1_id";
@@ -229,6 +231,16 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
     private MediaDescription mMediaDescription;
     private List<RoutingSessionInfo> mRoutingSessionInfos = new ArrayList<>();
 
+    @Parameters(name = "{0}")
+    public static List<FlagsParameterization> getParams() {
+        return FlagsParameterization.allCombinationsOf(
+                Flags.FLAG_ENABLE_AUDIO_INPUT_DEVICE_ROUTING_AND_VOLUME_CONTROL);
+    }
+
+    public MediaSwitchingControllerTest(FlagsParameterization flags) {
+        mSetFlagsRule.setFlagsParameterization(flags);
+    }
+
     @Before
     public void setUp() {
         mPackageName = mContext.getPackageName();
@@ -236,10 +248,6 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
         MockitoAnnotations.initMocks(this);
         mContext.setMockPackageManager(mPackageManager);
         mSpyContext = spy(mContext);
-        Resources spyResources = spy(mContext.getResources());
-        when(mSpyContext.getResources()).thenReturn(spyResources);
-        when(spyResources.getBoolean(
-                R.bool.config_enableInputRouting)).thenReturn(true);
         final UserHandle userHandle = mock(UserHandle.class);
         when(mUserTracker.getUserHandle()).thenReturn(userHandle);
         when(mSessionMediaController.getPackageName()).thenReturn(mPackageName);
@@ -587,7 +595,6 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
         assertThat(items.get(2).getMediaDevice().get()).isEqualTo(mMediaDevice2);
     }
 
-    @DisableFlags(Flags.FLAG_ENABLE_AUDIO_INPUT_DEVICE_ROUTING_AND_VOLUME_CONTROL)
     @Test
     public void onDeviceListUpdate_verifyDeviceListCallback() {
         mMediaSwitchingController.start(mCb);
@@ -609,6 +616,7 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
     @EnableFlags(Flags.FLAG_ENABLE_AUDIO_INPUT_DEVICE_ROUTING_AND_VOLUME_CONTROL)
     @Test
     public void onDeviceListUpdate_verifyDeviceListCallback_inputRouting() {
+        enableInputRoutingConfig();
         mMediaSwitchingController.start(mCb);
         reset(mCb);
 
@@ -626,7 +634,6 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
         verify(mCb).onDeviceListChanged();
     }
 
-    @DisableFlags(Flags.FLAG_ENABLE_AUDIO_INPUT_DEVICE_ROUTING_AND_VOLUME_CONTROL)
     @Test
     public void advanced_onDeviceListUpdateWithConnectedDeviceRemote_verifyItemSize() {
         when(mMediaDevice1.getFeatures()).thenReturn(
@@ -650,6 +657,7 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
     @EnableFlags(Flags.FLAG_ENABLE_AUDIO_INPUT_DEVICE_ROUTING_AND_VOLUME_CONTROL)
     @Test
     public void advanced_onDeviceListUpdateWithConnectedDeviceRemote_verifyItemSize_inputRouting() {
+        enableInputRoutingConfig();
         when(mMediaDevice1.getFeatures())
                 .thenReturn(ImmutableList.of(MediaRoute2Info.FEATURE_REMOTE_PLAYBACK));
         when(mLocalMediaManager.getCurrentConnectedDevice()).thenReturn(mMediaDevice1);
@@ -673,6 +681,7 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
     @EnableFlags(Flags.FLAG_ENABLE_AUDIO_INPUT_DEVICE_ROUTING_AND_VOLUME_CONTROL)
     @Test
     public void onInputDeviceListUpdate_verifyDeviceListCallback() {
+        enableInputRoutingConfig();
         AudioDeviceInfo[] audioDeviceInfos = {};
         when(mAudioManager.getDevices(AudioManager.GET_DEVICES_INPUTS))
                 .thenReturn(audioDeviceInfos);
@@ -719,10 +728,12 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
     }
 
     @Test
+    @EnableFlags(Flags.FLAG_ENABLE_AUDIO_INPUT_DEVICE_ROUTING_AND_VOLUME_CONTROL)
     public void onInputDeviceListUpdate_verifyCurrentInputDevice() {
+        enableInputRoutingConfig();
         mMediaSwitchingController.start(mCb);
 
-        assertThat(mMediaSwitchingController.mCurrentInputDevice).isNull();
+        assertThat(mMediaSwitchingController.mCurrentInputDevice.orElse(null)).isNull();
 
         final MediaDevice mediaDevice3 =
                 InputMediaDevice.create(
@@ -753,7 +764,8 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
         // Input devices have changed.
         mMediaSwitchingController.mInputDeviceCallback.onInputDeviceListUpdated(inputDevices);
 
-        assertThat(mMediaSwitchingController.mCurrentInputDevice.get()).isEqualTo(mediaDevice3);
+        assertThat(mMediaSwitchingController.mCurrentInputDevice.orElse(null)).isEqualTo(
+                mediaDevice3);
     }
 
     @Test
@@ -1585,6 +1597,7 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
     @EnableFlags(Flags.FLAG_ENABLE_AUDIO_INPUT_DEVICE_ROUTING_AND_VOLUME_CONTROL)
     @Test
     public void selectInputDevice() {
+        enableInputRoutingConfig();
         final MediaDevice inputMediaDevice =
                 InputMediaDevice.create(
                         mContext,
@@ -1603,9 +1616,9 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
         verify(mInputRouteManager, timeout(CALLBACK_WAIT_TIME_MS)).selectDevice(inputMediaDevice);
     }
 
-    @EnableFlags(Flags.FLAG_ENABLE_AUDIO_INPUT_DEVICE_ROUTING_AND_VOLUME_CONTROL)
     @Test
     public void selectOutputDevice() {
+        enableInputRoutingConfig();
         final MediaDevice outputMediaDevice = mock(MediaDevice.class);
         mMediaSwitchingController.connectDevice(outputMediaDevice);
 
@@ -1619,7 +1632,6 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
         assertThat(capturedInfo.isSuggested()).isEqualTo(false);
     }
 
-    @EnableFlags(Flags.FLAG_ENABLE_AUDIO_INPUT_DEVICE_ROUTING_AND_VOLUME_CONTROL)
     @Test
     public void selectSuggestedOutputDevice() {
         final MediaDevice outputMediaDevice = mock(MediaDevice.class);
@@ -1868,6 +1880,13 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
                 .filter(item -> item.getMediaDevice().isPresent())
                 .map(item -> item.getMediaDevice().get())
                 .collect(Collectors.toList());
+    }
+
+    private void enableInputRoutingConfig() {
+        Resources spyResources = spy(mContext.getResources());
+        when(mSpyContext.getResources()).thenReturn(spyResources);
+        when(spyResources.getBoolean(
+                R.bool.config_enableInputRouting)).thenReturn(true);
     }
 
     private int getNumberOfConnectDeviceButtons(List<MediaItem> itemList) {
