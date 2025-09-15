@@ -40,8 +40,7 @@ class MenuPreference @JvmOverloads constructor(
     override var preference: Preference? = this
     override var showIconsInPopupMenu: Boolean = false
 
-    /** Provides a content description for the menu button. */
-    var menuButtonContentDescription: String? = null
+    override var menuButtonContentDescription: String? = null
         set(value) {
             field = value
             notifyChanged()

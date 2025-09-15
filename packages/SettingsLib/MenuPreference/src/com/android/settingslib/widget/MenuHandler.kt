@@ -37,6 +37,9 @@ interface MenuHandler {
     var preference: Preference?
     var showIconsInPopupMenu: Boolean
 
+    /** Provides a content description for the menu button. */
+    var menuButtonContentDescription: String?
+
     interface OnMenuItemClickListener {
         fun onMenuItemClick(item: MenuItem, pref: Preference): Boolean
     }
