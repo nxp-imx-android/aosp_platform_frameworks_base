@@ -158,7 +158,13 @@ interface HomeStatusBarViewModel : Activatable {
     /** All supported activity chips, whether they are currently active or not. */
     val ongoingActivityChips: ChipsVisibilityModel
 
-    /** Invoked each time a chip's on-screen bounds have changed. */
+    /**
+     * Invoked each time a chip's on-screen bounds have changed.
+     *
+     * @param key if [Flags.statusBarHunAnimationCall()] is enabled, then the key is the raw
+     *   notification key without any prefixes. If the flag is disabled, then the key is the chip's
+     *   full key, possibly including prefixes or non-notification keys.
+     */
     fun onChipBoundsChanged(key: String, bounds: RectF)
 
     /** Notifies that the system icons container was clicked. */

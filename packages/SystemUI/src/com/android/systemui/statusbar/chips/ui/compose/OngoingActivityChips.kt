@@ -33,6 +33,7 @@ import androidx.compose.ui.graphics.toAndroidRectF
 import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.unit.dp
+import com.android.systemui.Flags
 import com.android.systemui.compose.modifiers.sysuiResTag
 import com.android.systemui.statusbar.chips.StatusBarChipsReturnAnimations
 import com.android.systemui.statusbar.chips.ui.model.MultipleOngoingActivityChipsModel
@@ -77,10 +78,14 @@ fun OngoingActivityChips(
                 key(it.key) {
                     val chipModifier =
                         Modifier.sysuiResTag(it.key).onGloballyPositioned { coordinates ->
-                            onChipBoundsChanged.invoke(
-                                it.key,
-                                coordinates.boundsInWindow().toAndroidRectF(),
-                            )
+                            val bounds = coordinates.boundsInWindow().toAndroidRectF()
+                            if (Flags.statusBarHunAnimationCall()) {
+                                if (it.notificationKey != null) {
+                                    onChipBoundsChanged(it.notificationKey, bounds)
+                                }
+                            } else {
+                                onChipBoundsChanged(it.key, bounds)
+                            }
                         }
                     if (activeChips.size == 1) {
                         // AnimatedVisibility works well if we have just 1 active chip, but it

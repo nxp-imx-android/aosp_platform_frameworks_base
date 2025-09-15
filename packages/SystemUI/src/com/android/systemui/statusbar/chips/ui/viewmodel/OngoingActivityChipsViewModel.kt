@@ -17,6 +17,7 @@
 package com.android.systemui.statusbar.chips.ui.viewmodel
 
 import android.graphics.RectF
+import com.android.systemui.Flags
 import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent.DisplayAware
 import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent.PerDisplaySingleton
 import com.android.systemui.display.domain.interactor.DisplayStateInteractor
@@ -350,7 +351,13 @@ constructor(
     // value for removed chips.
     private val chipBounds = MutableStateFlow<Map<String, RectF>>(emptyMap())
 
-    /** Invoked each time a chip's on-screen bounds have changed. */
+    /**
+     * Invoked each time a chip's on-screen bounds have changed.
+     *
+     * @param key if [Flags.statusBarHunAnimationCall()] is enabled, then the key is the raw
+     *   notification key without any prefixes. If the flag is disabled, then the key is the chip's
+     *   full key, possibly including prefixes or non-notification keys.
+     */
     fun onChipBoundsChanged(key: String, newBounds: RectF) {
         if (!StatusBarChipToHunAnimation.isEnabled) {
             return
@@ -365,17 +372,30 @@ constructor(
         chipBounds.value = map
     }
 
-    /** A flow modeling just the keys for the currently visible chips. */
-    private val visibleChipKeys: Flow<List<String>> =
-        activeChips.map { chips -> chips.filter { !it.isHidden }.map { it.key } }
+    /** A flow modeling just the keys for the currently visible notification chips. */
+    private val visibleNotificationChipKeys: Flow<List<String>> =
+        if (Flags.statusBarHunAnimationCall()) {
+            activeChips.map { chips ->
+                chips.filter { !it.isHidden }.mapNotNull { it.notificationKey }
+            }
+        } else {
+            activeChips.map { chips -> chips.filter { !it.isHidden }.map { it.key } }
+        }
 
     /** Placeholder chip bounds to use if {@link StatusBarChipToHunAnimation} is disabled. */
     private val placeholderChipBounds = RectF()
 
-    /** A flow modeling the keys and on-screen bounds for the currently visible chips. */
-    val visibleChipsWithBounds: Flow<Map<String, RectF>> =
+    /**
+     * A flow modeling the keys and on-screen bounds for the currently visible chips.
+     *
+     * If [Flags.statusBarHunAnimationCall()] is enabled, then this only contains bounds for chips
+     * tied to notifications and other chips, like screen sharing chips, are *NOT* in this list.
+     *
+     * If that flag is disabled, this contains bounds for all chips.
+     */
+    val visibleNotificationChipsWithBounds: Flow<Map<String, RectF>> =
         if (StatusBarChipToHunAnimation.isEnabled) {
-            combine(visibleChipKeys, chipBounds) { keys, chipBounds ->
+            combine(visibleNotificationChipKeys, chipBounds) { keys, chipBounds ->
                     // TODO(b/393369891): Should we provide the placeholder bounds as a backup and
                     // make those bounds public so that [NotificationStackScrollLayout] can do a
                     // good default animation for chips even if we couldn't fetch the bounds for
@@ -386,7 +406,7 @@ constructor(
         } else {
             // If the custom chip-to-HUN animation isn't enabled, just provide any non-null
             // chip bounds so that [NotificationStackScrollLayout] knows there's a status bar chip.
-            visibleChipKeys
+            visibleNotificationChipKeys
                 .map { keys -> keys.associateWith { placeholderChipBounds } }
                 .distinctUntilChanged()
         }

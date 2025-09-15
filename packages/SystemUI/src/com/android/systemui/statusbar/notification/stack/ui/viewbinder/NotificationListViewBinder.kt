@@ -151,8 +151,8 @@ constructor(
 
                 if (PromotedNotificationUi.isEnabled) {
                     launch {
-                        viewModel.visibleStatusBarChips.collect { chips ->
-                            viewController.updateVisibleStatusBarChips(chips)
+                        viewModel.visibleStatusBarNotificationChips.collect { chips ->
+                            viewController.updateVisibleStatusBarNotificationChips(chips)
                         }
                     }
                 }
