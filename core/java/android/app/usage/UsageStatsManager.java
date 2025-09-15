@@ -1325,13 +1325,13 @@ public final class UsageStatsManager {
             case REASON_MAIN_FORCED_BY_SYSTEM:
                 sb.append("s");
                 if (subReason > 0) {
-                    sb.append("-").append(Integer.toBinaryString(subReason));
+                    sb.append("-").append(forcedSystemSubReasonToString(subReason));
                 }
                 break;
             case REASON_MAIN_FORCED_BY_USER:
                 sb.append("f");
                 if (subReason > 0) {
-                    sb.append("-").append(Integer.toBinaryString(subReason));
+                    sb.append("-").append(forcedUserSubReasonToString(subReason));
                 }
                 break;
             case REASON_MAIN_PREDICTED:
@@ -1397,6 +1397,24 @@ public final class UsageStatsManager {
                 break;
         }
         return sb.toString();
+    }
+
+    private static String forcedSystemSubReasonToString(int subReason) {
+        return switch (subReason) {
+            case REASON_SUB_FORCED_SYSTEM_FLAG_UNDEFINED -> "ud";
+            case REASON_SUB_FORCED_SYSTEM_FLAG_BACKGROUND_RESOURCE_USAGE -> "br";
+            case REASON_SUB_FORCED_SYSTEM_FLAG_ABUSE -> "ab";
+            case REASON_SUB_FORCED_SYSTEM_FLAG_BUGGY -> "bu";
+            default -> Integer.toBinaryString(subReason);
+        };
+    }
+
+    private static String forcedUserSubReasonToString(int subReason) {
+        return switch (subReason) {
+            case REASON_SUB_FORCED_SYSTEM_FLAG_UNDEFINED -> "ud";
+            case REASON_SUB_FORCED_USER_FLAG_INTERACTION -> "i";
+            default -> Integer.toBinaryString(subReason);
+        };
     }
 
     /** @hide */
