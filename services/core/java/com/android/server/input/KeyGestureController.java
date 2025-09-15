@@ -30,6 +30,7 @@ import static android.view.WindowManagerPolicyConstants.FLAG_INTERACTIVE;
 import static android.window.DesktopExperienceFlags.TOGGLE_FULLSCREEN_STATE_VIA_FULLSCREEN_KEY;
 
 import static com.android.hardware.input.Flags.enableNew25q2Keycodes;
+import static com.android.hardware.input.Flags.keyboardBacklightShortcuts;
 import static com.android.hardware.input.Flags.fixSearchModifierFallbacks;
 import static com.android.internal.config.sysui.SystemUiDeviceConfigFlags.SCREENSHOT_KEYCHORD_DELAY;
 
@@ -766,12 +767,12 @@ final class KeyGestureController {
                 }
                 return true;
             case KeyEvent.KEYCODE_KEYBOARD_BACKLIGHT_TOGGLE:
-                // TODO: Add logic
-                if (!down) {
+                final boolean handleOnDown = keyboardBacklightShortcuts();
+                if (!(handleOnDown ^ down)) {
                     handleKeyGesture(deviceId, new int[]{keyCode}, /* modifierState = */0,
-                            KeyGestureEvent.KEY_GESTURE_TYPE_KEYBOARD_BACKLIGHT_TOGGLE,
-                            KeyGestureEvent.ACTION_GESTURE_COMPLETE, displayId,
-                            focusedToken, /* flags = */0, /* appLaunchData = */null);
+                                KeyGestureEvent.KEY_GESTURE_TYPE_KEYBOARD_BACKLIGHT_TOGGLE,
+                                KeyGestureEvent.ACTION_GESTURE_COMPLETE, displayId,
+                                focusedToken, /* flags = */0, /* appLaunchData = */null);
                 }
                 return true;
             case KeyEvent.KEYCODE_ALL_APPS:
