@@ -168,7 +168,9 @@ class DesktopDisplayEventHandler(
         startTransaction: SurfaceControl.Transaction,
         finishTransaction: SurfaceControl.Transaction,
     ) {
+        if (info.changes.isEmpty()) return
         val displayId = info.changes[0].endDisplayId
+        if (displayId !in displayConfigById) return
         val config = displayConfigById[displayId]
         if (info.type == TRANSIT_CHANGE) {
             resizeTasksIfPreconditionsSatisfied(displayId, config, true)
