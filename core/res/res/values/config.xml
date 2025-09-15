@@ -2999,6 +2999,9 @@
     <!-- If AOD can show an ambient version of the wallpaper -->
     <bool name="config_dozeSupportsAodWallpaper">false</bool>
 
+    <!-- If AOD can detect inactivity to power down the display to save power. -->
+    <bool name="config_dozeSupportsAodInactivityDetection">false</bool>
+
     <!-- Whether the display blanks itself when transitioning from a doze to a non-doze state -->
     <bool name="config_displayBlanksAfterDoze">false</bool>
 

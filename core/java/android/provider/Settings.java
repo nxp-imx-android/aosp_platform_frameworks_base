@@ -10630,6 +10630,16 @@ public final class Settings {
                 "doze_always_on_wallpaper_enabled";
 
         /**
+         * Whether to power down the display when no user activity is detected.
+         * <p>
+         * Type: int (0 for false, 1 for true)
+         *
+         * @hide
+         */
+        public static final String DOZE_ALWAYS_ON_INACTIVITY_DETECTION =
+                "doze_always_on_inactivity_detection";
+
+        /**
          * Whether the device should pulse on pick up gesture.
          * @hide
          */

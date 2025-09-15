@@ -132,6 +132,7 @@ public class SecureSettings {
         Settings.Secure.POWER_MENU_LOCKED_SHOW_CONTENT,
         Settings.Secure.DOZE_ENABLED,
         Settings.Secure.DOZE_ALWAYS_ON,
+        Settings.Secure.DOZE_ALWAYS_ON_INACTIVITY_DETECTION,
         Settings.Secure.DOZE_ALWAYS_ON_WALLPAPER_ENABLED,
         Settings.Secure.DOZE_PICK_UP_GESTURE,
         Settings.Secure.DOZE_DOUBLE_TAP_GESTURE,
