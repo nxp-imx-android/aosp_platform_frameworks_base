@@ -5092,6 +5092,19 @@ public class SizeCompatTests extends WindowTestsBase {
         assertTrue(safeRegionBounds.contains(mActivity.getBounds()));
     }
 
+    @Test
+    @EnableFlags(Flags.FLAG_SAFE_REGION_LETTERBOXING_V1)
+    public void testIsLetterboxedForSafeRegionOnlyAllowed_parentBoundsSmaller_returnFalse() {
+        setUpPortraitLargeScreenDisplayWithApp();
+
+        // Parent bounds are 1400x2800. Make safe region larger.
+        setupSafeRegionBoundsParameters(/* dw */ 1500, /* dh */ 2900);
+
+        assertFalse(
+                mActivity.mAppCompatController.getSafeRegionPolicy()
+                        .isLetterboxedForSafeRegionOnlyAllowed());
+    }
+
     private Rect setupSafeRegionBoundsParameters(int dw, int dh) {
         final AppCompatController appCompatController = mActivity.mAppCompatController;
         final AppCompatSafeRegionPolicy safeRegionPolicy =
