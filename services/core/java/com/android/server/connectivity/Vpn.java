@@ -4725,6 +4725,11 @@ public class Vpn {
             pw.increaseIndent();
             mEventChanges.reverseDump(pw);
             pw.decreaseIndent();
+
+            if (mVpnConnectivityMetrics != null) {
+                pw.println();
+                mVpnConnectivityMetrics.dump(pw);
+            }
         }
     }
 
