@@ -3,5 +3,10 @@
     {
       "name": "DevicePolicyAnnotationProcessorTests"
     }
+  ],
+  "presubmit": [
+    {
+      "name": "DevicePolicyAnnotationProcessorTests"
+    }
   ]
 }
