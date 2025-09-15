@@ -41,14 +41,6 @@ flag {
 }
 
 flag {
-     namespace: "backstage_power"
-     name: "real_checkin_history_start_time"
-     description: "Add duration limit to battery stats real check in (csv) format"
-     bug: "403599628"
-     is_fixed_read_only: true
-}
-
-flag {
     name: "report_out_of_order_battery_history_events"
     namespace: "backstage_power"
     description: "Generate a Log.wtf when an out-of-order event is written to battery history"
