@@ -24,6 +24,7 @@ import com.android.app.displaylib.PerDisplayInstanceRepositoryImpl
 import com.android.systemui.dump.dumpManager
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.applicationCoroutineScope
+import com.android.systemui.kosmos.testDispatcher
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.model.SysUiState
 import com.android.systemui.model.sysUiStateOverrideFactory
@@ -112,6 +113,7 @@ val Kosmos.fakePerDisplayInstanceRepository by
                 debugName = "fakePerDisplayInstanceRepository",
                 instanceProvider = fakePerDisplayInstanceProviderWithSetupAndTeardown,
                 lifecycleManager,
+                testDispatcher,
                 testScope.backgroundScope,
                 displayRepository,
                 perDisplayDumpHelper,
@@ -127,6 +129,7 @@ val Kosmos.fakePerDisplaySysUIStateInstanceRepository by
                 debugName = "fakePerDisplaySysUIStateInstanceRepository",
                 instanceProvider = fakePerDisplayInstanceProviderSysUIStateWithSetupAndTeardown,
                 lifecycleManager,
+                testDispatcher,
                 testScope.backgroundScope,
                 displayRepository,
                 perDisplayDumpHelper,
