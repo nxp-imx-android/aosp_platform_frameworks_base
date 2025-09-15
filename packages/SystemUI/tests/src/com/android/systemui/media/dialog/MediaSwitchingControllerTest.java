@@ -33,7 +33,6 @@ import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.same;
-import static org.mockito.Mockito.after;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
@@ -41,7 +40,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
@@ -105,6 +103,7 @@ import com.android.systemui.res.R;
 import com.android.systemui.settings.UserTracker;
 import com.android.systemui.statusbar.notification.collection.NotificationEntry;
 import com.android.systemui.statusbar.notification.collection.notifcollection.CommonNotifCollection;
+import com.android.systemui.util.concurrency.FakeExecutor;
 import com.android.systemui.util.kotlin.JavaAdapter;
 import com.android.systemui.util.time.FakeSystemClock;
 import com.android.systemui.volume.panel.domain.interactor.VolumePanelGlobalStateInteractor;
@@ -147,7 +146,6 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
     private static final int MAX_VOLUME = 1;
     private static final int CURRENT_VOLUME = 0;
     private static final boolean VOLUME_FIXED_TRUE = true;
-    private static final int CALLBACK_WAIT_TIME_MS = 10_000;
     private static final String PRODUCT_NAME_BUILTIN_MIC = "Built-in Mic";
     private static final String PRODUCT_NAME_WIRED_HEADSET = "My Wired Headset";
 
@@ -210,6 +208,7 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
     @Captor private ArgumentCaptor<Consumer<Boolean>> mInAudioSharingCaptor;
 
     private final FakeSystemClock mClock = new FakeSystemClock();
+    private final FakeExecutor mFakeBackgroundExecutor = new FakeExecutor(mClock);
 
     private View mDialogLaunchView = mock(View.class);
     private MediaSwitchingController.Callback mCallback =
@@ -276,6 +275,7 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
                         mPowerExemptionManager,
                         mKeyguardManager,
                         mClock,
+                        mFakeBackgroundExecutor,
                         mVolumePanelGlobalStateInteractor,
                         mUserTracker,
                         mJavaAdapter,
@@ -380,6 +380,7 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
                         mPowerExemptionManager,
                         mKeyguardManager,
                         mClock,
+                        mFakeBackgroundExecutor,
                         mVolumePanelGlobalStateInteractor,
                         mUserTracker,
                         mJavaAdapter,
@@ -425,6 +426,7 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
                         mPowerExemptionManager,
                         mKeyguardManager,
                         mClock,
+                        mFakeBackgroundExecutor,
                         mVolumePanelGlobalStateInteractor,
                         mUserTracker,
                         mJavaAdapter,
@@ -1028,6 +1030,7 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
                         mPowerExemptionManager,
                         mKeyguardManager,
                         mClock,
+                        mFakeBackgroundExecutor,
                         mVolumePanelGlobalStateInteractor,
                         mUserTracker,
                         mJavaAdapter,
@@ -1058,6 +1061,7 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
                         mPowerExemptionManager,
                         mKeyguardManager,
                         mClock,
+                        mFakeBackgroundExecutor,
                         mVolumePanelGlobalStateInteractor,
                         mUserTracker,
                         mJavaAdapter,
@@ -1108,6 +1112,7 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
                         mPowerExemptionManager,
                         mKeyguardManager,
                         mClock,
+                        mFakeBackgroundExecutor,
                         mVolumePanelGlobalStateInteractor,
                         mUserTracker,
                         mJavaAdapter,
@@ -1142,6 +1147,7 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
                         mPowerExemptionManager,
                         mKeyguardManager,
                         mClock,
+                        mFakeBackgroundExecutor,
                         mVolumePanelGlobalStateInteractor,
                         mUserTracker,
                         mJavaAdapter,
@@ -1166,6 +1172,15 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
         mMediaSwitchingController.adjustSessionVolume(testVolume);
 
         verify(mLocalMediaManager).adjustSessionVolume(testVolume);
+    }
+
+    @Test
+    public void adjustDeviceVolume_callsLocalMediaManager() {
+        final MediaDevice mediaDevice = mock(MediaDevice.class);
+        mMediaSwitchingController.adjustVolume(mediaDevice, 15);
+        mFakeBackgroundExecutor.runAllReady();
+
+        verify(mLocalMediaManager).adjustDeviceVolume(mediaDevice, 15);
     }
 
     @Test
@@ -1353,6 +1368,7 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
                         mPowerExemptionManager,
                         mKeyguardManager,
                         mClock,
+                        mFakeBackgroundExecutor,
                         mVolumePanelGlobalStateInteractor,
                         mUserTracker,
                         mJavaAdapter,
@@ -1527,6 +1543,7 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
                         mPowerExemptionManager,
                         mKeyguardManager,
                         mClock,
+                        mFakeBackgroundExecutor,
                         mVolumePanelGlobalStateInteractor,
                         mUserTracker,
                         mJavaAdapter,
@@ -1610,10 +1627,10 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
                         /* isSelected= */ false,
                         PRODUCT_NAME_BUILTIN_MIC);
         mMediaSwitchingController.connectDevice(inputMediaDevice);
+        mFakeBackgroundExecutor.runAllReady();
 
-        verify(mLocalMediaManager, after(CALLBACK_WAIT_TIME_MS).never())
-                .connectDevice(inputMediaDevice);
-        verify(mInputRouteManager, timeout(CALLBACK_WAIT_TIME_MS)).selectDevice(inputMediaDevice);
+        verify(mLocalMediaManager, never()).connectDevice(inputMediaDevice);
+        verify(mInputRouteManager).selectDevice(inputMediaDevice);
     }
 
     @Test
@@ -1621,12 +1638,11 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
         enableInputRoutingConfig();
         final MediaDevice outputMediaDevice = mock(MediaDevice.class);
         mMediaSwitchingController.connectDevice(outputMediaDevice);
+        mFakeBackgroundExecutor.runAllReady();
 
-        verify(mInputRouteManager, after(CALLBACK_WAIT_TIME_MS).never())
-                .selectDevice(outputMediaDevice);
+        verify(mInputRouteManager, never()).selectDevice(outputMediaDevice);
         ArgumentCaptor<RoutingChangeInfo> captor = ArgumentCaptor.forClass(RoutingChangeInfo.class);
-        verify(mLocalMediaManager, timeout(CALLBACK_WAIT_TIME_MS))
-                .connectDevice(eq(outputMediaDevice), captor.capture());
+        verify(mLocalMediaManager).connectDevice(eq(outputMediaDevice), captor.capture());
         RoutingChangeInfo capturedInfo = captor.getValue();
         assertThat(capturedInfo.getEntryPoint()).isEqualTo(ENTRY_POINT_SYSTEM_OUTPUT_SWITCHER);
         assertThat(capturedInfo.isSuggested()).isEqualTo(false);
@@ -1637,11 +1653,11 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
         final MediaDevice outputMediaDevice = mock(MediaDevice.class);
         when(outputMediaDevice.isSuggestedDevice()).thenReturn(true);
         mMediaSwitchingController.connectDevice(outputMediaDevice);
-        verify(mInputRouteManager, after(CALLBACK_WAIT_TIME_MS).never())
-                .selectDevice(outputMediaDevice);
+        mFakeBackgroundExecutor.runAllReady();
+
+        verify(mInputRouteManager, never()).selectDevice(outputMediaDevice);
         ArgumentCaptor<RoutingChangeInfo> captor = ArgumentCaptor.forClass(RoutingChangeInfo.class);
-        verify(mLocalMediaManager, timeout(CALLBACK_WAIT_TIME_MS))
-                .connectDevice(eq(outputMediaDevice), captor.capture());
+        verify(mLocalMediaManager).connectDevice(eq(outputMediaDevice), captor.capture());
         RoutingChangeInfo capturedInfo = captor.getValue();
         assertThat(capturedInfo.getEntryPoint()).isEqualTo(ENTRY_POINT_SYSTEM_OUTPUT_SWITCHER);
         assertThat(capturedInfo.isSuggested()).isEqualTo(true);

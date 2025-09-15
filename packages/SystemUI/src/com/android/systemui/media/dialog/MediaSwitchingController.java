@@ -75,12 +75,10 @@ import com.android.settingslib.media.InputMediaDevice;
 import com.android.settingslib.media.InputRouteManager;
 import com.android.settingslib.media.LocalMediaManager;
 import com.android.settingslib.media.MediaDevice;
-import com.android.settingslib.utils.ThreadUtils;
 import com.android.settingslib.volume.data.repository.AudioSharingRepository;
 import com.android.systemui.animation.ActivityTransitionAnimator;
 import com.android.systemui.animation.DialogTransitionAnimator;
 import com.android.systemui.dagger.qualifiers.Background;
-import com.android.systemui.dagger.qualifiers.Main;
 import com.android.systemui.media.nearby.NearbyMediaDevicesManager;
 import com.android.systemui.monet.ColorScheme;
 import com.android.systemui.plugins.ActivityStarter;
@@ -107,8 +105,6 @@ import java.util.concurrent.CancellationException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Executor;
-
-import javax.inject.Inject;
 
 /**
  * Controller for a dialog that allows users to switch media output and input devices, control
@@ -148,8 +144,7 @@ public class MediaSwitchingController
     private final NearbyMediaDevicesManager mNearbyMediaDevicesManager;
     private final Map<String, Integer> mNearbyDeviceInfoMap = new ConcurrentHashMap<>();
     private final MediaSession.Token mToken;
-    @Inject @Main Executor mMainExecutor;
-    @Inject @Background Executor mBackgroundExecutor;
+    private final Executor mBackgroundExecutor;
     @VisibleForTesting
     boolean mIsRefreshing = false;
     @VisibleForTesting
@@ -210,6 +205,7 @@ public class MediaSwitchingController
             PowerExemptionManager powerExemptionManager,
             KeyguardManager keyGuardManager,
             SystemClock clock,
+            @Background Executor backgroundExecutor,
             VolumePanelGlobalStateInteractor volumePanelGlobalStateInteractor,
             UserTracker userTracker,
             JavaAdapter javaAdapter,
@@ -225,6 +221,7 @@ public class MediaSwitchingController
         mPowerExemptionManager = powerExemptionManager;
         mKeyGuardManager = keyGuardManager;
         mClock = clock;
+        mBackgroundExecutor = backgroundExecutor;
         mUserTracker = userTracker;
         mToken = token;
         mVolumePanelGlobalStateInteractor = volumePanelGlobalStateInteractor;
@@ -732,24 +729,17 @@ public class MediaSwitchingController
         // If input routing is supported and the device is an input device, call mInputRouteManager
         // to handle routing.
         if (enableInputRouting() && device instanceof InputMediaDevice) {
-            var unused =
-                    ThreadUtils.postOnBackgroundThread(
-                            () -> {
-                                mInputRouteManager.selectDevice(device);
-                            });
+            mBackgroundExecutor.execute(() -> mInputRouteManager.selectDevice(device));
             return;
         }
 
         mMetricLogger.updateOutputEndPoints(getCurrentConnectedMediaDevice(), device);
-
-        ThreadUtils.postOnBackgroundThread(
-                () -> {
-                    mLocalMediaManager.connectDevice(
-                            device,
-                            new RoutingChangeInfo(
-                                    ENTRY_POINT_SYSTEM_OUTPUT_SWITCHER,
-                                    device.isSuggestedDevice()));
-                });
+        mBackgroundExecutor.execute(() -> mLocalMediaManager.connectDevice(
+                device,
+                new RoutingChangeInfo(
+                        ENTRY_POINT_SYSTEM_OUTPUT_SWITCHER,
+                        device.isSuggestedDevice()))
+        );
     }
 
     private List<MediaItem> getOutputDeviceList(boolean addConnectDeviceButton) {
@@ -896,9 +886,7 @@ public class MediaSwitchingController
     }
 
     void adjustVolume(MediaDevice device, int volume) {
-        ThreadUtils.postOnBackgroundThread(() -> {
-            mLocalMediaManager.adjustDeviceVolume(device, volume);
-        });
+        mBackgroundExecutor.execute(() -> mLocalMediaManager.adjustDeviceVolume(device, volume));
     }
 
     void logInteractionAdjustVolume(MediaDevice device) {
