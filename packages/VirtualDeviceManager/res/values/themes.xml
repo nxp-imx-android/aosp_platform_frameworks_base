@@ -69,4 +69,21 @@
 
     <!-- END NOTIFY COMPUTER CONTROL BLOCKED ACTIVITY DIALOG -->
 
+    <!-- START AUTOMATED APP LAUNCH WARNING ACTIVITY DIALOG -->
+
+    <style name="Theme.AutomatedAppLaunchWarningActivity" parent="Theme.DeviceDefault.Settings.Transparent">
+        <item name="android:dialogTheme">@style/Theme.AutomatedAppLaunchWarningActivity.Dialog</item>
+    </style>
+
+    <style name="Theme.AutomatedAppLaunchWarningActivity.FilterTouches">
+        <item name="android:filterTouchesWhenObscured">true</item>
+    </style>
+
+    <style name="Theme.AutomatedAppLaunchWarningActivity.Dialog" parent="Theme.DeviceDefault.Dialog.NoActionBar.DayNight">
+        <item name="android:windowMinWidthMajor">@android:dimen/dialog_min_width_major</item>
+        <item name="android:windowMinWidthMinor">@android:dimen/dialog_min_width_minor</item>
+    </style>
+
+    <!-- END AUTOMATED APP LAUNCH WARNING ACTIVITY DIALOG -->
+
 </resources>

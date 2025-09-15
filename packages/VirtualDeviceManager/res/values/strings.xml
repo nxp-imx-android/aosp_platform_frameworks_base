@@ -52,4 +52,20 @@
 
     <!-- END NOTIFY COMPUTER CONTROL BLOCKED ACTIVITY DIALOG -->
 
+    <!-- START AUTOMATED APP LAUNCH WARNING ACTIVITY DIALOG -->
+
+    <!-- Label for the title of automated app launch warning dialog [CHAR LIMIT=70] -->
+    <string name="automated_app_launch_warning_dialog_title"><xliff:g id="agent_app_name" example="Example Agent App">%1$s</xliff:g> is using <xliff:g id="target_app_name" example="Example Target App">%2$s</xliff:g></string>
+
+    <!-- Label for the description of automated app launch warning dialog [CHAR LIMIT=NONE] -->
+    <string name="automated_app_launch_warning_dialog_description">You can use <xliff:g id="target_app_name" example="Example Target App">%2$s</xliff:g> when <xliff:g id="agent_app_name" example="Example Agent App">%1$s</xliff:g> is done, or you can stop <xliff:g id="agent_app_name" example="Example Agent App">%1$s</xliff:g> to open <xliff:g id="target_app_name" example="Example Target App">%2$s</xliff:g> now</string>
+
+    <!-- Label for the stop button for automated app launch warning dialog. [CHAR LIMIT=40] -->
+    <string name="automated_app_launch_warning_dialog_stop">Stop task</string>
+
+    <!-- Label for the wait button for automated app launch warning dialog. [CHAR LIMIT=40] -->
+    <string name="automated_app_launch_warning_dialog_wait">I\u2019ll wait</string>
+
+    <!-- END AUTOMATED APP LAUNCH WARNING ACTIVITY DIALOG -->
+
 </resources>

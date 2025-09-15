@@ -64,6 +64,10 @@ public final class ComputerControlSession implements AutoCloseable {
     public static final String ACTION_REQUEST_ACCESS =
             "android.companion.virtual.computercontrol.action.REQUEST_ACCESS";
 
+    /** @hide */
+    public static final String EXTRA_AUTOMATING_PACKAGE_NAME =
+            "android.companion.virtual.computercontrol.extra.AUTOMATING_PACKAGE_NAME";
+
     /**
      * Error code indicating that a new session cannot be created because the maximum number of
      * allowed concurrent sessions has been reached.

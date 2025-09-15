@@ -23,12 +23,16 @@ import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import android.app.Activity;
+import android.companion.virtual.computercontrol.ComputerControlSession;
 import android.companion.virtual.computercontrol.IAutomatedPackageListener;
+import android.content.Intent;
 import android.os.Binder;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.IBinder;
 import android.os.Looper;
+import android.os.ResultReceiver;
 import android.os.TestLooperManager;
 import android.os.UserHandle;
 import android.platform.test.annotations.Presubmit;
@@ -47,6 +51,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.util.List;
+import java.util.function.Consumer;
 
 @Presubmit
 @RunWith(AndroidJUnit4.class)
@@ -69,6 +74,8 @@ public class AutomatedPackagesRepositoryTest {
 
     @Mock
     private IAutomatedPackageListener mListener;
+    @Mock
+    private Consumer<Integer> mCloseVirtualDeviceMock;
 
     @Captor
     private ArgumentCaptor<List<String>> mPackageNamesCaptor;
@@ -223,14 +230,71 @@ public class AutomatedPackagesRepositoryTest {
         assertThat(mTestLooperManager.poll()).isNull();
     }
 
+    @Test
+    public void createAutomatedAppLaunchWarningIntent_appNotAutomated_returnsNull() {
+        mRepo.update(DEVICE_ID1, DEVICE_OWNER, new ArraySet<>(List.of(UID_USER1_PACKAGE1)));
+
+        assertThat(mRepo.createAutomatedAppLaunchWarningIntent(
+                PACKAGE2, USER1.getIdentifier(), PACKAGE2, null, mCloseVirtualDeviceMock))
+                .isNull();
+    }
+
+    @Test
+    public void createAutomatedAppLaunchWarningIntent_displayBelongsToSessionOwner_returnsNull() {
+        mRepo.update(DEVICE_ID1, DEVICE_OWNER, new ArraySet<>(List.of(UID_USER1_PACKAGE1)));
+        assertThat(mRepo.createAutomatedAppLaunchWarningIntent(
+                PACKAGE1, USER1.getIdentifier(), PACKAGE2, DEVICE_OWNER, mCloseVirtualDeviceMock))
+                .isNull();
+    }
+
+    @Test
+    public void createAutomatedAppLaunchWarningIntent_callerIsSessionOwner_returnsNull() {
+        mRepo.update(DEVICE_ID1, DEVICE_OWNER, new ArraySet<>(List.of(UID_USER1_PACKAGE1)));
+        assertThat(mRepo.createAutomatedAppLaunchWarningIntent(
+                PACKAGE1, USER1.getIdentifier(), DEVICE_OWNER, null, mCloseVirtualDeviceMock))
+                .isNull();
+    }
+
+    @Test
+    public void createAutomatedAppLaunchWarningIntent_createsInterceptionIntent() {
+        mRepo.update(DEVICE_ID1, DEVICE_OWNER, new ArraySet<>(List.of(UID_USER1_PACKAGE1)));
+        processOneHandlerMessage();
+
+        Intent intent = mRepo.createAutomatedAppLaunchWarningIntent(
+                PACKAGE1, USER1.getIdentifier(), PACKAGE2, null, mCloseVirtualDeviceMock);
+        assertThat(intent).isNotNull();
+        assertThat(intent.getStringExtra(Intent.EXTRA_PACKAGE_NAME)).isEqualTo(PACKAGE1);
+        assertThat(intent.getStringExtra(ComputerControlSession.EXTRA_AUTOMATING_PACKAGE_NAME))
+                .isEqualTo(DEVICE_OWNER);
+        ResultReceiver resultReceiver =
+                intent.getParcelableExtra(Intent.EXTRA_RESULT_RECEIVER, ResultReceiver.class);
+
+        // The user chose to stop the automation.
+        resultReceiver.send(Activity.RESULT_OK, null);
+
+        // Subsequent launch is not intercepted.
+        processOneHandlerMessage();
+        assertThat(mRepo.createAutomatedAppLaunchWarningIntent(
+                PACKAGE1, USER1.getIdentifier(), PACKAGE2, null, mCloseVirtualDeviceMock))
+                .isNull();
+
+        // The session is closed.
+        processOneHandlerMessage();
+        verify(mCloseVirtualDeviceMock).accept(DEVICE_ID1);
+    }
+
     private void assertListenerReceived(List<String> packages, UserHandle user) throws Exception {
-        var msg = mTestLooperManager.poll();
-        assertThat(msg).isNotNull();
-        mTestLooperManager.execute(msg);
-        mTestLooperManager.recycle(msg);
+        processOneHandlerMessage();
         verify(mListener).onAutomatedPackagesChanged(
                 eq(DEVICE_OWNER), mPackageNamesCaptor.capture(), eq(user));
         assertThat(mPackageNamesCaptor.getValue()).containsExactlyElementsIn(packages);
         reset(mListener);
+    }
+
+    private void processOneHandlerMessage() {
+        var msg = mTestLooperManager.poll();
+        assertThat(msg).isNotNull();
+        mTestLooperManager.execute(msg);
+        mTestLooperManager.recycle(msg);
     }
 }
