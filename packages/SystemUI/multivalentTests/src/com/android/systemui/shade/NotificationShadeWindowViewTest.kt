@@ -40,6 +40,7 @@ import com.android.systemui.flags.Flags
 import com.android.systemui.keyevent.domain.interactor.SysUIKeyEventHandler
 import com.android.systemui.keyguard.KeyguardUnlockAnimationController
 import com.android.systemui.keyguard.domain.interactor.KeyguardTransitionInteractor
+import com.android.systemui.keyguard.domain.interactor.dozeTouchInteractor
 import com.android.systemui.keyguard.shared.model.Edge
 import com.android.systemui.keyguard.shared.model.KeyguardState.DREAMING
 import com.android.systemui.keyguard.shared.model.KeyguardState.LOCKSCREEN
@@ -73,6 +74,7 @@ import com.android.systemui.statusbar.window.StatusBarWindowStateController
 import com.android.systemui.testKosmos
 import com.android.systemui.unfold.SysUIUnfoldComponent
 import com.android.systemui.unfold.UnfoldTransitionProgressProvider
+import com.android.systemui.util.kotlin.javaAdapter
 import com.android.systemui.util.mockito.any
 import com.android.systemui.util.mockito.whenever
 import com.android.systemui.util.time.FakeSystemClock
@@ -237,6 +239,8 @@ class NotificationShadeWindowViewTest : SysuiTestCase() {
                 brightnessMirrorShowingInteractor,
                 UnconfinedTestDispatcher(),
                 kosmos.shadeStatusBarComponentsInteractor,
+                kosmos.dozeTouchInteractor,
+                kosmos.javaAdapter,
             )
 
         controller.setupExpandedStatusBar()
