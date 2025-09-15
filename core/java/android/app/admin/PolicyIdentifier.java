@@ -16,6 +16,8 @@
 
 package android.app.admin;
 
+import static android.app.admin.DevicePolicyManager.POLICY_SCOPE_DEVICE;
+import static android.app.admin.DevicePolicyManager.POLICY_SCOPE_USER;
 import static android.app.admin.flags.Flags.FLAG_POLICY_STREAMLINING;
 
 import android.annotation.FlaggedApi;
@@ -120,7 +122,7 @@ public final class PolicyIdentifier<T> {
     @FlaggedApi(FLAG_POLICY_STREAMLINING)
     @NonNull
     @EnumPolicyDefinition(
-            base = @PolicyDefinition,
+            base = @PolicyDefinition(allowedScopes = {POLICY_SCOPE_USER, POLICY_SCOPE_DEVICE}),
             intDef = ScreenCaptureValue.class,
             defaultValue = SCREEN_CAPTURE_ALLOWED
     )

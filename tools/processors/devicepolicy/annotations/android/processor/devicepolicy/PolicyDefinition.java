@@ -32,4 +32,12 @@ import java.lang.annotation.RetentionPolicy;
  */
 @Retention(RetentionPolicy.SOURCE)
 public @interface PolicyDefinition {
+    /**
+     * List the scopes that are allowed for a policy. Entries must be a combination of
+     * {@link android.app.admin.DevicePolicyManager.POLICY_SCOPE_DEVICE},
+     * {@link android.app.admin.DevicePolicyManager.POLICY_SCOPE_USER} or
+     * {@link android.app.admin.DevicePolicyManager.POLICY_SCOPE_PARENT_USER}.
+     * Must have a value as an empty list means the policy can not be set.
+     */
+    int[] allowedScopes();
 }
