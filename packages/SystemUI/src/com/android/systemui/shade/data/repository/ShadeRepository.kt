@@ -126,9 +126,6 @@ interface ShadeRepository {
     /** Sets the bounds of a shade overlay if it is currently visible. */
     fun setShadeOverlayBounds(bounds: Rect?)
 
-    /** Sets whether the shade layout should be wide (true) or narrow (false). */
-    fun setShadeLayoutWide(isShadeLayoutWide: Boolean)
-
     /** Sets whether a closing animation is happening. */
     @Deprecated("Use ShadeAnimationInteractor instead") fun setLegacyIsClosing(isClosing: Boolean)
 
@@ -262,10 +259,6 @@ class ShadeRepositoryImpl @Inject constructor(@Background val backgroundScope: C
         shadeOverlayBoundsListeners.forEach { listener ->
             listener.onShadeOverlayBoundsChanged(shadeOverlayBounds)
         }
-    }
-
-    override fun setShadeLayoutWide(isShadeLayoutWide: Boolean) {
-        legacyUseSplitShade.value = isShadeLayoutWide
     }
 
     @Deprecated("Use ShadeInteractor instead")
