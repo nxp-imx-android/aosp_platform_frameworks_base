@@ -36,10 +36,12 @@ import android.net.NetworkCapabilities;
 import android.net.VpnManager;
 import android.util.Log;
 import android.util.SparseArray;
+import android.util.SparseIntArray;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.VisibleForTesting;
 
+import com.android.internal.net.VpnProfile;
 import com.android.internal.util.FrameworkStatsLog;
 
 import java.net.Inet4Address;
@@ -70,6 +72,12 @@ public class VpnConnectivityMetrics {
     @VisibleForTesting
     static final int IP_PROTOCOL_IPv4v6 = 3;
     private static final SparseArray<String> sAlgorithms = new SparseArray<>();
+    /**
+     * A static mapping from {@link VpnProfile} types to the corresponding integer values
+     * defined in the {@code VpnProfileType} enum for metrics reporting. This allows for a
+     * direct and efficient lookup of the profile type integer based on the VpnProfile constant.
+     */
+    private static final SparseIntArray sVpnProfileTypeMap = new SparseIntArray();
     private final int mUserId;
     @NonNull
     private final ConnectivityManager mConnectivityManager;
@@ -107,9 +115,10 @@ public class VpnConnectivityMetrics {
     private int mVpnNetworkIpProtocol = IP_PROTOCOL_UNKNOWN;
     private int mServerIpProtocol = IP_PROTOCOL_UNKNOWN;
 
-    // Static initializer block to populate the sAlgorithms mapping. It associates integer keys
-    // (which also serve as bit positions for the mAllowedAlgorithms bitmask) with their
-    // respective algorithm string constants.
+    // Static initializer block to populate the sAlgorithms and sVpnProfileTypeMap mappings.
+    // For sAlgorithms, it associates integer keys (which also serve as bit positions for the
+    // mAllowedAlgorithms bitmask) with their respective algorithm string constants.
+    // For sVpnProfileTypeMap, it maps VpnProfile types to their corresponding enum values.
     static {
         sAlgorithms.put(0, AUTH_AES_CMAC);
         sAlgorithms.put(1, AUTH_AES_XCBC);
@@ -122,6 +131,26 @@ public class VpnConnectivityMetrics {
         sAlgorithms.put(8, AUTH_HMAC_SHA512);
         sAlgorithms.put(9, CRYPT_AES_CBC);
         sAlgorithms.put(10, CRYPT_AES_CTR);
+
+        sVpnProfileTypeMap.put(VpnProfile.TYPE_PPTP, 1 /* VpnProfileType.TYPE_PPTP */);
+        sVpnProfileTypeMap.put(VpnProfile.TYPE_L2TP_IPSEC_PSK,
+                2 /* VpnProfileType.TYPE_L2TP_IPSEC_PSK */);
+        sVpnProfileTypeMap.put(VpnProfile.TYPE_L2TP_IPSEC_RSA,
+                3 /* VpnProfileType.TYPE_L2TP_IPSEC_RSA */);
+        sVpnProfileTypeMap.put(VpnProfile.TYPE_IPSEC_XAUTH_PSK,
+                4 /* VpnProfileType.TYPE_TYPE_IPSEC_XAUTH_PSK */);
+        sVpnProfileTypeMap.put(VpnProfile.TYPE_IPSEC_XAUTH_RSA,
+                5 /* VpnProfileType.TYPE_IPSEC_XAUTH_RSA */);
+        sVpnProfileTypeMap.put(VpnProfile.TYPE_IPSEC_HYBRID_RSA,
+                6 /* VpnProfileType.TYPE_IPSEC_HYBRID_RSA */);
+        sVpnProfileTypeMap.put(VpnProfile.TYPE_IKEV2_IPSEC_USER_PASS,
+                7 /* VpnProfileType.TYPE_IKEV2_IPSEC_USER_PASS */);
+        sVpnProfileTypeMap.put(VpnProfile.TYPE_IKEV2_IPSEC_PSK,
+                8 /* VpnProfileType.TYPE_IKEV2_IPSEC_PSK */);
+        sVpnProfileTypeMap.put(VpnProfile.TYPE_IKEV2_IPSEC_RSA,
+                9 /* VpnProfileType.TYPE_IKEV2_IPSEC_RSA */);
+        sVpnProfileTypeMap.put(VpnProfile.TYPE_IKEV2_FROM_IKE_TUN_CONN_PARAMS,
+                10 /* VpnProfileType.TYPE_IKEV2_FROM_IKE_TUN_CONN_PARAMS */);
     }
 
     /**
@@ -177,8 +206,7 @@ public class VpnConnectivityMetrics {
      * @param vpnProfile The integer value representing the VPN profile.
      */
     public void setVpnProfileType(int vpnProfile) {
-        // There is a shift (+1) between VpnProfileType and VpnProfile.
-        mVpnProfileType = vpnProfile + 1;
+        mVpnProfileType = sVpnProfileTypeMap.get(vpnProfile, VPN_PROFILE_TYPE_UNKNOWN);
     }
 
     /**
