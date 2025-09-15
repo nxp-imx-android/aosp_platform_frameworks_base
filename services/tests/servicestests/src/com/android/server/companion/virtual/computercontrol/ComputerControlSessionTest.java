@@ -93,6 +93,7 @@ public class ComputerControlSessionTest {
 
     private static final String PERMISSION_CONTROLLER_PACKAGE = "permission.controller.package";
 
+    private static final int MAIN_DISPLAY_ID = 41;
     private static final int VIRTUAL_DISPLAY_ID = 42;
     private static final int DISPLAY_WIDTH = 600;
     private static final int DISPLAY_HEIGHT = 1000;
@@ -147,11 +148,14 @@ public class ComputerControlSessionTest {
     public void setUp() throws Exception {
         mMockitoSession = MockitoAnnotations.openMocks(this);
 
+        when(mInjector.getMainDisplayIdForUser(anyInt())).thenReturn(MAIN_DISPLAY_ID);
+
         DisplayInfo displayInfo = new DisplayInfo();
         displayInfo.logicalWidth = DISPLAY_WIDTH;
         displayInfo.logicalHeight = DISPLAY_HEIGHT;
         displayInfo.logicalDensityDpi = DISPLAY_DPI;
-        when(mInjector.getDisplayInfo(anyInt())).thenReturn(displayInfo);
+        when(mInjector.getDisplayInfo(MAIN_DISPLAY_ID)).thenReturn(displayInfo);
+        when(mInjector.getDisplayInfo(VIRTUAL_DISPLAY_ID)).thenReturn(displayInfo);
 
         when(mInjector.getPermissionControllerPackageName())
                 .thenReturn(PERMISSION_CONTROLLER_PACKAGE);

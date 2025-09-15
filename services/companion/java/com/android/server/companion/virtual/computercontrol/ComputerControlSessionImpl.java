@@ -135,6 +135,7 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
     private final OnClosedListener mOnClosedListener;
     private final IVirtualDevice mVirtualDevice;
     private final int mVirtualDisplayId;
+    private final int mMainDisplayId;
     private final IVirtualDisplayCallback mVirtualDisplayToken;
     private final IVirtualInputDevice mVirtualTouchscreen;
     private final IVirtualInputDevice mVirtualDpad;
@@ -163,6 +164,9 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
         mOwnerPackageName = attributionSource.getPackageName();
         mOnClosedListener = onClosedListener;
         mInjector = injector;
+        // TODO(b/440005498): Consider using the display from the app's context instead.
+        mMainDisplayId = injector.getMainDisplayIdForUser(
+                UserHandle.getUserId(attributionSource.getUid()));
 
         final VirtualDeviceParams virtualDeviceParams = new VirtualDeviceParams.Builder()
                 .setName(mParams.getName())
@@ -189,8 +193,7 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
         final VirtualDisplayConfig virtualDisplayConfig;
         if (params.getDisplaySurface() == null) {
             displayFlags |= DisplayManager.VIRTUAL_DISPLAY_FLAG_ALWAYS_UNLOCKED;
-            final DisplayInfo defaultDisplayInfo =
-                    mInjector.getDisplayInfo(Display.DEFAULT_DISPLAY);
+            final DisplayInfo defaultDisplayInfo = mInjector.getDisplayInfo(mMainDisplayId);
             mDisplayWidth = defaultDisplayInfo.logicalWidth;
             mDisplayHeight = defaultDisplayInfo.logicalHeight;
             virtualDisplayConfig = new VirtualDisplayConfig.Builder(
@@ -328,7 +331,7 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
             mVirtualDevice.addActivityPolicyExemption(
                     new ActivityPolicyExemption.Builder().setPackageName(packageName).build());
         }
-        final UserHandle user = UserHandle.of(UserHandle.getUserId(Binder.getCallingUid()));
+        final UserHandle user = Binder.getCallingUserHandle();
         Binder.withCleanCallingIdentity(() -> mInjector.launchApplicationOnDisplayAsUser(
                 packageName, mVirtualDisplayId, user));
         notifyApplicationLaunchToStabilityCalculator();
@@ -742,6 +745,10 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
 
         public long getLongPressTimeoutMillis() {
             return (long) (ViewConfiguration.getLongPressTimeout() * LONG_PRESS_TIMEOUT_MULTIPLIER);
+        }
+
+        public int getMainDisplayIdForUser(@UserIdInt int user) {
+            return mUserManagerInternal.getMainDisplayAssignedToUser(user);
         }
 
         public IRemoteComputerControlInputConnection getInputConnection(int displayId) {
