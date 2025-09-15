@@ -17,7 +17,12 @@
 package com.android.server.display;
 
 import static android.hardware.devicestate.DeviceState.PROPERTY_EMULATED_ONLY;
+import static android.hardware.devicestate.DeviceState.PROPERTY_FOLDABLE_HARDWARE_CONFIGURATION_FOLD_IN_CLOSED;
+import static android.hardware.devicestate.DeviceState.PROPERTY_FOLDABLE_HARDWARE_CONFIGURATION_FOLD_IN_HALF_OPEN;
+import static android.hardware.devicestate.DeviceState.PROPERTY_FOLDABLE_HARDWARE_CONFIGURATION_FOLD_IN_OPEN;
 import static android.hardware.devicestate.DeviceState.PROPERTY_LAPTOP_HARDWARE_CONFIGURATION_DOCKED;
+import static android.hardware.devicestate.DeviceState.PROPERTY_LAPTOP_HARDWARE_CONFIGURATION_LID_CLOSED;
+import static android.hardware.devicestate.DeviceState.PROPERTY_LAPTOP_HARDWARE_CONFIGURATION_LID_OPEN;
 import static android.hardware.devicestate.DeviceState.PROPERTY_POWER_CONFIGURATION_TRIGGER_SLEEP;
 import static android.hardware.devicestate.DeviceState.PROPERTY_POWER_CONFIGURATION_TRIGGER_WAKE;
 import static android.hardware.devicestate.DeviceStateManager.INVALID_DEVICE_STATE;
@@ -586,18 +591,43 @@ class LogicalDisplayMapper implements DisplayDeviceRepository.Listener {
                 // We already told the displays to turn off, now we need to wake the device as
                 // we transition to this new state. We do it here so that the waking happens
                 // between the transition from one layout to another.
+                final int wakeReason;
+                final String wakeDetails;
+                if (!Flags.changeDefaultDisplayLidClosed() || state.hasProperty(
+                        PROPERTY_FOLDABLE_HARDWARE_CONFIGURATION_FOLD_IN_HALF_OPEN)
+                        || state.hasProperty(
+                        PROPERTY_FOLDABLE_HARDWARE_CONFIGURATION_FOLD_IN_OPEN)) {
+                    wakeReason = PowerManager.WAKE_REASON_UNFOLD_DEVICE;
+                    wakeDetails = "server.display:unfold";
+                } else if (state.hasProperty(PROPERTY_LAPTOP_HARDWARE_CONFIGURATION_LID_OPEN)) {
+                    wakeReason = PowerManager.WAKE_REASON_LID;
+                    wakeDetails = "server.display:lid_open";
+                } else {
+                    wakeReason = PowerManager.GO_TO_SLEEP_REASON_UNKNOWN;
+                    wakeDetails = "";
+                }
                 mHandler.post(() -> {
-                    mPowerManager.wakeUp(SystemClock.uptimeMillis(),
-                            PowerManager.WAKE_REASON_UNFOLD_DEVICE, "server.display:unfold");
+                    mPowerManager.wakeUp(SystemClock.uptimeMillis(), wakeReason, wakeDetails);
                 });
             } else if (sleepDevice) {
                 // Send the device to sleep when required.
-                int goToSleepFlag =
-                        mFoldSettingProvider.shouldSleepOnFold() ? 0
-                                : PowerManager.GO_TO_SLEEP_FLAG_SOFT_SLEEP;
+                final int goToSleepReason;
+                final int goToSleepFlag;
+                if (!Flags.changeDefaultDisplayLidClosed() || state.hasProperty(
+                        PROPERTY_FOLDABLE_HARDWARE_CONFIGURATION_FOLD_IN_CLOSED)) {
+                    goToSleepReason = PowerManager.GO_TO_SLEEP_REASON_DEVICE_FOLD;
+                    goToSleepFlag = mFoldSettingProvider.shouldSleepOnFold() ? 0
+                            : PowerManager.GO_TO_SLEEP_FLAG_SOFT_SLEEP;
+                } else if (state.hasProperty(PROPERTY_LAPTOP_HARDWARE_CONFIGURATION_LID_CLOSED)
+                        || state.hasProperty(PROPERTY_LAPTOP_HARDWARE_CONFIGURATION_DOCKED)) {
+                    goToSleepReason = PowerManager.GO_TO_SLEEP_REASON_LID_SWITCH;
+                    goToSleepFlag = 0;
+                } else {
+                    goToSleepReason = PowerManager.GO_TO_SLEEP_REASON_UNKNOWN;
+                    goToSleepFlag = 0;
+                }
                 mHandler.post(() -> {
-                    mPowerManager.goToSleep(SystemClock.uptimeMillis(),
-                            PowerManager.GO_TO_SLEEP_REASON_DEVICE_FOLD,
+                    mPowerManager.goToSleep(SystemClock.uptimeMillis(), goToSleepReason,
                             goToSleepFlag);
                 });
             }
@@ -639,8 +669,7 @@ class LogicalDisplayMapper implements DisplayDeviceRepository.Listener {
      * @see #shouldDeviceBePutToSleep
      * @see #setDeviceStateLocked
      */
-    @VisibleForTesting
-    boolean shouldDeviceBeWoken(DeviceState pendingState, DeviceState currentState,
+    private boolean shouldDeviceBeWoken(DeviceState pendingState, DeviceState currentState,
             boolean isInteractive, boolean isBootCompleted) {
         if (mDeviceStateManagerFlags.deviceStatePropertyMigration()) {
             if (currentState.hasProperties(PROPERTY_EMULATED_ONLY)
@@ -670,6 +699,9 @@ class LogicalDisplayMapper implements DisplayDeviceRepository.Listener {
      * state override is active, and we shouldn't put the device to sleep to provide a better user
      * experience.
      *
+     * If transitioning to the docked state, the device should go to sleep if no default
+     * secondary display was found, i.e. no special layout was created for the docked state.
+     *
      * @param pendingState device state we are moving to
      * @param currentState device state we are currently in
      * @param isInteractive if the device is in an interactive state
@@ -678,16 +710,20 @@ class LogicalDisplayMapper implements DisplayDeviceRepository.Listener {
      * @see #shouldDeviceBeWoken
      * @see #setDeviceStateLocked
      */
-    @VisibleForTesting
-    boolean shouldDeviceBePutToSleep(DeviceState pendingState, DeviceState currentState,
+    private boolean shouldDeviceBePutToSleep(DeviceState pendingState, DeviceState currentState,
             boolean isInteractive, boolean isBootCompleted) {
         if (mDeviceStateManagerFlags.deviceStatePropertyMigration()) {
-            return pendingState.hasProperty(PROPERTY_POWER_CONFIGURATION_TRIGGER_SLEEP)
+            return (pendingState.hasProperty(PROPERTY_POWER_CONFIGURATION_TRIGGER_SLEEP) || (
+                    pendingState.hasProperty(PROPERTY_LAPTOP_HARDWARE_CONFIGURATION_DOCKED)
+                            && mDeviceStateToLayoutMap.get(pendingState.getIdentifier())
+                            == mDeviceStateToLayoutMap.get(STATE_DEFAULT)))
                     && !currentState.equals(INVALID_DEVICE_STATE)
                     && !currentState.hasProperty(PROPERTY_POWER_CONFIGURATION_TRIGGER_SLEEP)
                     && isInteractive
                     && isBootCompleted
-                    && !mFoldSettingProvider.shouldStayAwakeOnFold();
+                    && !((!Flags.changeDefaultDisplayLidClosed() || pendingState.hasProperty(
+                    PROPERTY_FOLDABLE_HARDWARE_CONFIGURATION_FOLD_IN_CLOSED))
+                    && mFoldSettingProvider.shouldStayAwakeOnFold());
         } else {
             return currentState.getIdentifier()
                     != DeviceStateManager.INVALID_DEVICE_STATE_IDENTIFIER
@@ -739,7 +775,8 @@ class LogicalDisplayMapper implements DisplayDeviceRepository.Listener {
         // The device should only wait for sleep if #shouldStayAwakeOnFold method returns false.
         // If not, device should be marked ready for transition immediately.
         final boolean waitingToSleepDevice = shouldDeviceBePutToSleep(mPendingDeviceState,
-                mDeviceState, mInteractive, mBootCompleted) && !shouldStayAwakeOnFold();
+                mDeviceState, mInteractive, mBootCompleted)
+                && !shouldStayAwakeOnFold(mPendingDeviceState);
 
         final boolean displaysOff = areAllTransitioningDisplaysOffLocked();
         final boolean isReadyToTransition = displaysOff && !waitingToWakeDevice
@@ -1420,9 +1457,11 @@ class LogicalDisplayMapper implements DisplayDeviceRepository.Listener {
      * Returns true if the device would definitely have outer display ON/Stay Awake on fold based on
      * the value of `Continue using app on fold` setting
      */
-    private boolean shouldStayAwakeOnFold() {
-        return mFoldSettingProvider.shouldStayAwakeOnFold()
-                || mFoldSettingProvider.shouldSelectiveStayAwakeOnFold();
+    private boolean shouldStayAwakeOnFold(DeviceState pendingState) {
+        return (!Flags.changeDefaultDisplayLidClosed() || pendingState.hasProperty(
+                PROPERTY_FOLDABLE_HARDWARE_CONFIGURATION_FOLD_IN_CLOSED))
+                && (mFoldSettingProvider.shouldStayAwakeOnFold()
+                || mFoldSettingProvider.shouldSelectiveStayAwakeOnFold());
     }
 
     /** Converts an event mask to a string. */
@@ -1502,6 +1541,12 @@ class LogicalDisplayMapper implements DisplayDeviceRepository.Listener {
         mDeviceStateToLayoutMap.remove(mDeviceState.getIdentifier());
     }
 
+    /**
+     * Create a layout where the internal display is disabled and there is a secondary display that
+     * is the default display and is enabled.
+     *
+     * @param identifier The identifier of the layout
+     */
     private void createLayoutWithDefaultSecondaryDisplayLocked(int identifier) {
         for (int i = 0; i < mLogicalDisplays.size(); i++) {
             LogicalDisplay display = mLogicalDisplays.valueAt(i);
@@ -1580,8 +1625,11 @@ class LogicalDisplayMapper implements DisplayDeviceRepository.Listener {
         }
 
         if (!found) {
-            // If no secondary display can be default, go back to the default layout
+            // If no secondary display can be default, go back to the default layout and put
+            // the device to sleep.
             mDeviceStateToLayoutMap.remove(mDeviceState.getIdentifier());
+            mHandler.post(() -> mPowerManager.goToSleep(SystemClock.uptimeMillis(),
+                    PowerManager.GO_TO_SLEEP_REASON_DISPLAY_GROUP_REMOVED, /* flags= */ 0));
         }
         return true;
     }
