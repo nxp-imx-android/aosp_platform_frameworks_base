@@ -570,7 +570,7 @@ public class InputManagerService extends IInputManager.Stub
         mKeyboardLedController = new KeyboardLedController(mContext, injector.getLooper(),
                 mNative);
         mVirtualInputDeviceController = new VirtualInputDeviceController(
-                mContext.getMainThreadHandler(), this);
+                mContext, mContext.getMainThreadHandler(), this);
         mKeyRemapper = new KeyRemapper(mContext, mNative, mDataStore, injector.getLooper());
         mKeyboardGlyphManager = new KeyboardGlyphManager(mContext, injector.getLooper());
         mPointerIconCache = new PointerIconCache(mContext, mNative);

@@ -20,9 +20,12 @@ import static android.text.TextUtils.formatSimple;
 
 import static com.android.hardware.input.Flags.disableSettingsForVirtualDevices;
 
+import android.Manifest;
 import android.annotation.IntDef;
 import android.annotation.NonNull;
 import android.annotation.StringDef;
+import android.content.Context;
+import android.content.pm.PackageManager;
 import android.graphics.PointF;
 import android.hardware.display.DisplayManagerInternal;
 import android.hardware.input.IVirtualInputDevice;
@@ -41,9 +44,11 @@ import android.os.Binder;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.IInputConstants;
+import android.os.Process;
 import android.os.RemoteException;
 import android.util.ArrayMap;
 import android.util.Slog;
+import android.view.Display;
 import android.view.InputDevice;
 
 import com.android.internal.annotations.GuardedBy;
@@ -53,6 +58,7 @@ import com.android.server.LocalServices;
 import java.io.PrintWriter;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -95,21 +101,25 @@ class VirtualInputDeviceController {
     private final ArrayMap<IBinder, InputDeviceDescriptor> mInputDeviceDescriptors =
             new ArrayMap<>();
 
+    private final Context mContext;
     private final Handler mHandler;
     private final NativeWrapper mNativeWrapper;
     private final InputManagerService mService;
     private final DeviceCreationThreadVerifier mThreadVerifier;
 
-    VirtualInputDeviceController(@NonNull Handler handler, @NonNull InputManagerService service) {
-        this(new NativeWrapper(), handler, service,
+    VirtualInputDeviceController(@NonNull Context context, @NonNull Handler handler,
+            @NonNull InputManagerService service) {
+        this(context, new NativeWrapper(), handler, service,
                 // Verify that virtual input devices are not created on the handler thread.
                 () -> !handler.getLooper().isCurrentThread());
     }
 
     @VisibleForTesting
-    VirtualInputDeviceController(@NonNull NativeWrapper nativeWrapper, @NonNull Handler handler,
+    VirtualInputDeviceController(@NonNull Context context, @NonNull NativeWrapper nativeWrapper,
+            @NonNull Handler handler,
             @NonNull InputManagerService service,
             @NonNull DeviceCreationThreadVerifier threadVerifier) {
+        mContext = context;
         mHandler = handler;
         mNativeWrapper = nativeWrapper;
         mService = service;
@@ -893,7 +903,17 @@ class VirtualInputDeviceController {
 
         final int inputDeviceId;
 
-        setUniqueIdAssociation(displayId, phys);
+        if (displayId == Display.INVALID_DISPLAY) {
+            if (!hasAnyPermission("createDeviceInternal",
+                    Manifest.permission.INJECT_KEY_EVENTS, Manifest.permission.INJECT_EVENTS)) {
+                throw new SecurityException(
+                        "Creating a virtual keyboard without a display ID requires the caller  "
+                                + "to have the INJECT_KEY_EVENTS or INJECT_EVENTS permission.");
+            }
+        } else {
+            setUniqueIdAssociation(displayId, phys);
+        }
+
         if (disableSettingsForVirtualDevices()) {
             mService.addVirtualDevice(phys);
         }
@@ -941,6 +961,27 @@ class VirtualInputDeviceController {
             }
             throw e;
         }
+    }
+
+
+    // Returns true if any of the permissions are granted by the caller.
+    private boolean hasAnyPermission(String func, String...permissions) {
+        if (Binder.getCallingPid() == Process.myPid()) {
+            return true;
+        }
+
+        for (String permission : permissions) {
+            if (mContext.checkCallingPermission(permission) == PackageManager.PERMISSION_GRANTED) {
+                return true;
+            }
+        }
+
+        String msg = "Permission Denial: " + func + " from pid="
+                + Binder.getCallingPid()
+                + ", uid=" + Binder.getCallingUid()
+                + " requires one of: " + Arrays.toString(permissions);
+        Slog.w(TAG, msg);
+        return false;
     }
 
     @VisibleForTesting
