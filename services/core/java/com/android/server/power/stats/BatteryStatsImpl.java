@@ -160,7 +160,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
@@ -575,7 +574,7 @@ public class BatteryStatsImpl extends BatteryStats {
      * implemented so that STATSD can capture those UID times before they are deleted.
      */
     @VisibleForTesting(visibility = VisibleForTesting.Visibility.PACKAGE)
-    protected final Queue<UidToRemove> mPendingRemovedUids;
+    protected final Queue<UidToRemove> mPendingRemovedUids = new ConcurrentLinkedQueue<>();
 
     @NonNull
     public BatteryStatsHistory getHistory() {
@@ -4604,13 +4603,8 @@ public class BatteryStatsImpl extends BatteryStats {
     private void onBeforeIsolatedUidRemoved(int isolatedUid, int parentUid) {
         final long realtime = mClock.elapsedRealtime();
         mPowerStatsUidResolver.retainIsolatedUid(isolatedUid);
-        if (Flags.concurrentQueueForPendingRemovedUids()) {
-            mPendingRemovedUids.add(new UidToRemove(isolatedUid, realtime));
-        } else {
-            synchronized (this) {
-                mPendingRemovedUids.add(new UidToRemove(isolatedUid, realtime));
-            }
-        }
+        mPendingRemovedUids.add(new UidToRemove(isolatedUid, realtime));
+
         if (mExternalSync != null) {
             mExternalSync.scheduleCpuSyncDueToRemovedUid(isolatedUid);
         }
@@ -10788,12 +10782,6 @@ public class BatteryStatsImpl extends BatteryStats {
             @NonNull BatteryStatsHistory.EventLogger eventLogger) {
         mClock = clock;
         initKernelStatsReaders();
-
-        if (Flags.concurrentQueueForPendingRemovedUids()) {
-            mPendingRemovedUids = new ConcurrentLinkedQueue<>();
-        } else {
-            mPendingRemovedUids = new LinkedList<>();
-        }
 
         mBatteryStatsConfig = config;
         mMonotonicClock = monotonicClock;
