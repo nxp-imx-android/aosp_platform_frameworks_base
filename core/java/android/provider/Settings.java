@@ -12923,6 +12923,7 @@ public final class Settings {
          * Whether to enable camera extensions software fallback.
          * @hide
          */
+        @TestApi
         @Readable
         public static final String CAMERA_EXTENSIONS_FALLBACK = "camera_extensions_fallback";
 
