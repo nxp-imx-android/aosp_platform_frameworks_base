@@ -422,16 +422,6 @@ flag {
 }
 
 flag {
-    name: "move_set_screen_lock_dialog_to_settings_app"
-    namespace: "profile_experiences"
-    description: "Move the set screen lock dialog and activity from the platform to the Settings app for theming."
-    bug: "407327874"
-    metadata {
-      purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
      name: "hsu_not_admin"
      namespace: "multiuser"
      description: "The Headless System User is not an Admin user"
