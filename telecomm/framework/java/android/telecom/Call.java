@@ -241,6 +241,15 @@ public final class Call {
             "android.telecom.extra.SILENT_RINGING_REQUESTED";
 
     /**
+     * Connection event used to notify InCallService of phoneaccount changes.
+     * Dialer uses phone account capability to decide whether to enable
+     * some options like RTT. This event will be used for such cases.
+     */
+    @FlaggedApi(android.telecom.flags.Flags.FLAG_PHONE_ACCOUNT_CHANGED)
+    public static final String EVENT_PHONE_ACCOUNT_CHANGED =
+            "android.telecom.event.PHONE_ACCOUNT_CHANGED";
+
+    /**
      * Event reported from the Telecom stack to report an in-call diagnostic message which the
      * dialer app may opt to display to the user.  A diagnostic message is used to communicate
      * scenarios the device has detected which may impact the quality of the ongoing call.
