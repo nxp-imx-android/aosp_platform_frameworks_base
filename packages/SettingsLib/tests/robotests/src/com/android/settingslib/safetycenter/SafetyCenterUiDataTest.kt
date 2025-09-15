@@ -64,6 +64,7 @@ class SafetyCenterUiDataTest {
     private val entry1 = createEntry("entry1", user0, "sourceA")
     private val entry2 = createEntry("entry2", user0, "sourceB")
     private val entry3 = createEntry("entry3", user10, "sourceA")
+    private val entry4 = createEntry("entry4", user10, "sourceC")
 
     private val issue1 =
         createIssue(
@@ -114,7 +115,7 @@ class SafetyCenterUiDataTest {
             entriesByUserIdAndSourceId =
                 mapOf(
                     0 to mapOf("sourceA" to entry1, "sourceB" to entry2),
-                    10 to mapOf("sourceA" to entry3),
+                    10 to mapOf("sourceA" to entry3, "sourceC" to entry4),
                 ),
             activeIssuesBySourceId =
                 mapOf(
@@ -140,6 +141,55 @@ class SafetyCenterUiDataTest {
         assertThat(testSafetyCenterUiData.getEntry(0, "sourceX")).isNull()
         assertThat(testSafetyCenterUiData.getEntry(10, "sourceB")).isNull()
         assertThat(testSafetyCenterUiData.getEntry(99, "sourceA")).isNull()
+    }
+
+    @Test
+    fun getEntriesForSources_noMatchingSources_returnsEmptyList() {
+        val result = testSafetyCenterUiData.getEntriesForSources(listOf("sourceX", "sourceY"))
+        assertThat(result).isEmpty()
+    }
+
+    @Test
+    fun getEntriesForSources_oneMatchingSource_returnsMatchingEntries() {
+        val result = testSafetyCenterUiData.getEntriesForSources(listOf("sourceB"))
+        assertThat(result).containsExactly(entry2)
+    }
+
+    @Test
+    fun getEntriesForSources_multipleMatchingSources_returnsAllMatchingEntries() {
+        val result = testSafetyCenterUiData.getEntriesForSources(listOf("sourceA", "sourceC"))
+        assertThat(result).containsExactly(entry1, entry3, entry4)
+    }
+
+    @Test
+    fun getEntriesForSources_someNonMatchingSources_returnsOnlyMatchingEntries() {
+        val result = testSafetyCenterUiData.getEntriesForSources(listOf("sourceB", "sourceX", "sourceC"))
+        assertThat(result).containsExactly(entry2, entry4)
+    }
+
+    @Test
+    fun getEntriesForSources_duplicateSourceIdsInInput_returnsDistinctEntries() {
+        val result = testSafetyCenterUiData.getEntriesForSources(listOf("sourceA", "sourceA"))
+        assertThat(result).containsExactly(entry1, entry3)
+    }
+
+    @Test
+    fun getEntriesForSources_emptySourceIdList_returnsEmptyList() {
+        val result = testSafetyCenterUiData.getEntriesForSources(emptyList())
+        assertThat(result).isEmpty()
+    }
+
+    @Test
+    fun getEntriesForSources_emptyData_returnsEmptyList() {
+        val emptyUiData =
+            SafetyCenterUiData(
+                status = defaultStatus,
+                entriesByUserIdAndSourceId = emptyMap(),
+                activeIssuesBySourceId = emptyMap(),
+                dismissedIssuesBySourceId = emptyMap(),
+            )
+        val result = emptyUiData.getEntriesForSources(listOf("sourceA"))
+        assertThat(result).isEmpty()
     }
 
     @Test
