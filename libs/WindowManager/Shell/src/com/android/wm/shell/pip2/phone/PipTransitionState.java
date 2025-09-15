@@ -362,7 +362,10 @@ public class PipTransitionState {
         return mPipTaskInfo != null ? mPipTaskInfo.getToken() : null;
     }
 
-    @Nullable SurfaceControl getPinnedTaskLeash() {
+    /**
+     * @return the leash of the pinned PiP task.
+     */
+    @Nullable public SurfaceControl getPinnedTaskLeash() {
         return mPinnedTaskLeash;
     }
 
@@ -389,11 +392,19 @@ public class PipTransitionState {
         mPipTaskInfo = pipTaskInfo;
     }
 
-    @Nullable TaskInfo getPipCandidateTaskInfo() {
+    /**
+     * @return the task info of the PiP candidate task.
+     */
+    @Nullable public TaskInfo getPipCandidateTaskInfo() {
         return mPipCandidateTaskInfo;
     }
 
-    void setPipCandidateTaskInfo(@Nullable TaskInfo pipCandidateTaskInfo) {
+    /**
+     * Sets the task info of the PiP candidate task.
+     *
+     * @param pipCandidateTaskInfo the task info of the PiP candidate task.
+     */
+    public void setPipCandidateTaskInfo(@Nullable TaskInfo pipCandidateTaskInfo) {
         mPipCandidateTaskInfo = pipCandidateTaskInfo;
     }
 
