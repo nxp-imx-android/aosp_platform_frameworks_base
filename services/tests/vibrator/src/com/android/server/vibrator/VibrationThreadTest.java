@@ -518,9 +518,7 @@ public class VibrationThreadTest {
                 // Very long segment so thread will be cancelled after first PWLE is triggered.
                 .addTransition(Duration.ofMillis(100), targetFrequency(100))
                 .build();
-        VibrationEffect repeatingEffect = VibrationEffect.startComposition()
-                .repeatEffectIndefinitely(effect)
-                .compose();
+        VibrationEffect repeatingEffect = VibrationEffect.createRepeatingEffect(effect);
         HalVibration vibration = startThreadAndDispatcher(repeatingEffect);
 
         assertThat(waitUntil(() -> !vibratorHelper.getEffectSegments().isEmpty(),
@@ -547,9 +545,7 @@ public class VibrationThreadTest {
                 // Very long delay so thread will be cancelled after first PWLE is triggered.
                 .addPrimitive(PRIMITIVE_CLICK, 1f, 100)
                 .compose();
-        VibrationEffect repeatingEffect = VibrationEffect.startComposition()
-                .repeatEffectIndefinitely(effect)
-                .compose();
+        VibrationEffect repeatingEffect = VibrationEffect.createRepeatingEffect(effect);
         HalVibration vibration = startThreadAndDispatcher(repeatingEffect);
 
         assertThat(waitUntil(() -> !vibratorHelper.getEffectSegments().isEmpty(),
@@ -2204,9 +2200,8 @@ public class VibrationThreadTest {
         // A simple effect, followed by a repeating effect that gets cancelled, followed by another
         // simple effect.
         VibrationEffect effect1 = VibrationEffect.get(EFFECT_CLICK);
-        VibrationEffect effect2 = VibrationEffect.startComposition()
-                .repeatEffectIndefinitely(VibrationEffect.get(EFFECT_TICK))
-                .compose();
+        VibrationEffect effect2 =
+                VibrationEffect.createRepeatingEffect(VibrationEffect.get(EFFECT_TICK));
         VibrationEffect effect3 = VibrationEffect.startComposition()
                 .addPrimitive(PRIMITIVE_CLICK)
                 .compose();
