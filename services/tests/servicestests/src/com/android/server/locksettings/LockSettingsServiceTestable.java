@@ -61,6 +61,7 @@ public class LockSettingsServiceTestable extends LockSettingsService {
         private DeviceStateCache mDeviceStateCache;
         private Duration mTimeSinceBoot;
         private KeyStore mKeyStore;
+        Runnable mInvalidateLockoutEndTimeCacheMock;
 
         public boolean mIsHeadlessSystemUserMode = false;
 
@@ -78,7 +79,8 @@ public class LockSettingsServiceTestable extends LockSettingsService {
                 UserManagerInternal userManagerInternal,
                 DeviceStateCache deviceStateCache,
                 SecureLockDeviceServiceInternal secureLockDeviceServiceInternal,
-                KeyStore keyStore) {
+                KeyStore keyStore,
+                Runnable invalidateLockoutEndTimeCacheMock) {
             super(context);
             mLockSettingsStorage = storage;
             mStrongAuth = strongAuth;
@@ -93,6 +95,7 @@ public class LockSettingsServiceTestable extends LockSettingsService {
             mDeviceStateCache = deviceStateCache;
             mSecureLockDeviceServiceInternal = secureLockDeviceServiceInternal;
             mKeyStore = keyStore;
+            mInvalidateLockoutEndTimeCacheMock = invalidateLockoutEndTimeCacheMock;
         }
 
         @Override
@@ -190,6 +193,11 @@ public class LockSettingsServiceTestable extends LockSettingsService {
                 return mTimeSinceBoot;
             }
             return super.getTimeSinceBoot();
+        }
+
+        @Override
+        public void invalidateLockoutEndTimeCache() {
+            mInvalidateLockoutEndTimeCacheMock.run();
         }
     }
 

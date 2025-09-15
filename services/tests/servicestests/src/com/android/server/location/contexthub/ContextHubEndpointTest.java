@@ -45,6 +45,7 @@ import android.hardware.contexthub.Reason;
 import android.hardware.location.IContextHubTransactionCallback;
 import android.hardware.location.NanoAppState;
 import android.os.Binder;
+import android.os.DeadObjectException;
 import android.os.RemoteException;
 import android.platform.test.annotations.Presubmit;
 import android.util.Log;
@@ -555,6 +556,24 @@ public class ContextHubEndpointTest {
 
         verify(mMockEndpointCommunications).closeEndpointSession(sessionId, Reason.UNSPECIFIED);
         verify(mMockCallback).onSessionClosed(sessionId, HubEndpoint.REASON_FAILURE);
+        assertThat(mEndpointManager.getNumAvailableSessions()).isEqualTo(SESSION_ID_RANGE);
+
+        unregisterExampleEndpoint(endpoint);
+    }
+
+    @Test
+    public void testSendMessageDeadObjectExceptionClosesSession() throws RemoteException {
+        IContextHubEndpoint endpoint = registerExampleEndpoint();
+        int sessionId = openTestSession(endpoint);
+
+        doThrow(new DeadObjectException("Intended exception in test"))
+                .when(mMockEndpointCommunications)
+                .sendMessageToEndpoint(anyInt(), any(Message.class));
+        endpoint.sendMessage(sessionId, SAMPLE_MESSAGE, null);
+        restartHalAndVerifyHubRegistration();
+
+        // Confirm that the service can close our session on our behalf when the HAL restarts.
+        verify(mMockCallback).onSessionClosed(sessionId, HubEndpoint.REASON_ENDPOINT_STOPPED);
         assertThat(mEndpointManager.getNumAvailableSessions()).isEqualTo(SESSION_ID_RANGE);
 
         unregisterExampleEndpoint(endpoint);

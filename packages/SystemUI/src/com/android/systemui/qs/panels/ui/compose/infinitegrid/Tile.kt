@@ -82,7 +82,6 @@ import com.android.compose.modifiers.thenIf
 import com.android.compose.theme.LocalAndroidColorScheme
 import com.android.mechanics.compose.modifier.verticalFadeContentReveal
 import com.android.mechanics.compose.modifier.verticalTactileSurfaceReveal
-import com.android.mechanics.spec.builder.rememberMotionBuilderContext
 import com.android.systemui.Flags
 import com.android.systemui.animation.Expandable
 import com.android.systemui.common.shared.model.Icon
@@ -154,8 +153,7 @@ private val TileViewModel.traceName
  *   tile is clicked, used to request the feedback text.
  * @param detailsViewModel An optional [DetailsViewModel] used to handle navigation to a detailed
  *   view when a tile is clicked, if applicable.
- * @param revealEffectContainer An optional [ElementKey] identifying a container for a reveal effect
- *   animation. If provided, the tile will animate its appearance.
+ * @param enableRevealEffect If `true`, the tiles will animate using the reveal animation.
  */
 @Composable
 fun ContentScope.Tile(
@@ -206,19 +204,12 @@ fun ContentScope.Tile(
         val surfaceRevealModifier: Modifier
         val contentRevealModifier: Modifier
         if (enableRevealEffect) {
-            val motionBuilderContext = rememberMotionBuilderContext()
             val marginBottom =
                 with(LocalDensity.current) { QuickSettingsShade.Dimensions.Padding.toPx() }
             surfaceRevealModifier =
-                Modifier.verticalTactileSurfaceReveal(
-                    motionBuilderContext = motionBuilderContext,
-                    deltaY = marginBottom,
-                )
+                Modifier.verticalTactileSurfaceReveal(deltaY = marginBottom, label = tile.traceName)
             contentRevealModifier =
-                Modifier.verticalFadeContentReveal(
-                    motionBuilderContext = motionBuilderContext,
-                    deltaY = marginBottom,
-                )
+                Modifier.verticalFadeContentReveal(deltaY = marginBottom, label = tile.traceName)
         } else {
             surfaceRevealModifier = Modifier
             contentRevealModifier = Modifier

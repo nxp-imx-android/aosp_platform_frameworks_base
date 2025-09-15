@@ -37,6 +37,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -67,9 +68,7 @@ import org.junit.runner.RunWith;
 
 import java.time.Duration;
 
-/**
- * atest FrameworksServicesTests:LockSettingsServiceTests
- */
+/** atest FrameworksServicesTests:LockSettingsServiceTests */
 @SmallTest
 @Presubmit
 @RunWith(AndroidJUnit4.class)
@@ -773,6 +772,8 @@ public class LockSettingsServiceTests extends BaseLockSettingsServiceTests {
         final LockscreenCredential credential = newPassword("password");
         final LockscreenCredential wrongGuess = newPassword("wrong");
         final Duration timeout = Duration.ofSeconds(60);
+        final Duration start = Duration.ofSeconds(10);
+        mInjector.setTimeSinceBoot(start);
 
         mSpManager.enableWeaver();
         setCredential(userId, credential);
@@ -784,10 +785,46 @@ public class LockSettingsServiceTests extends BaseLockSettingsServiceTests {
         assertFalse(response.isCredAlreadyTried());
         assertTrue(response.hasTimeout());
         assertEquals(timeout, response.getTimeoutAsDuration());
+        mInjector.setTimeSinceBoot(start.plus(timeout).plusSeconds(1));
 
         response = mService.verifyCredential(wrongGuess, userId, /* flags= */ 0);
         assertTrue(response.isCredAlreadyTried());
         assertEquals(Duration.ZERO, response.getTimeoutAsDuration());
+    }
+
+    // When handling hardware timeouts, both software and hardware timeouts should preempt
+    // duplicate detection.
+    @Test
+    @EnableFlags({
+        android.security.Flags.FLAG_SOFTWARE_RATELIMITER,
+        android.security.Flags.FLAG_MANAGE_LOCKOUT_END_TIME_IN_SERVICE
+    })
+    public void testRepeatOfWrongGuessThrottled_afterWeaverIncorrectKeyWithTimeoutButWithinTimeout()
+            throws Exception {
+        final int userId = PRIMARY_USER_ID;
+        final LockscreenCredential credential = newPassword("password");
+        final LockscreenCredential wrongGuess = newPassword("wrong");
+        final Duration timeout = Duration.ofSeconds(60);
+        final Duration start = Duration.ofSeconds(10);
+        mInjector.setTimeSinceBoot(start);
+        final Duration timeoutRemaining = Duration.ofSeconds(1);
+
+        mSpManager.enableWeaver();
+        setCredential(userId, credential);
+
+        mSpManager.injectWeaverReadResponse(WeaverReadStatus.INCORRECT_KEY, timeout);
+        VerifyCredentialResponse response =
+                mService.verifyCredential(wrongGuess, userId, /* flags= */ 0);
+        assertTrue(response.isCredCertainlyIncorrect());
+        assertFalse(response.isCredAlreadyTried());
+        assertTrue(response.hasTimeout());
+        assertEquals(timeout, response.getTimeoutAsDuration());
+        mInjector.setTimeSinceBoot(start.plus(timeout).minus(timeoutRemaining));
+
+        response = mService.verifyCredential(wrongGuess, userId, /* flags= */ 0);
+        assertFalse(response.isCredCertainlyIncorrect());
+        assertTrue(response.hasTimeout());
+        assertEquals(timeoutRemaining, response.getTimeoutAsDuration());
     }
 
     // Tests that if verifyCredential is passed a correct guess but it fails due to Weaver reporting
@@ -799,6 +836,8 @@ public class LockSettingsServiceTests extends BaseLockSettingsServiceTests {
     public void testRepeatOfCorrectGuessAllowed_afterWeaverThrottle() throws Exception {
         final int userId = PRIMARY_USER_ID;
         final LockscreenCredential credential = newPassword("password");
+        final Duration start = Duration.ofSeconds(10);
+        mInjector.setTimeSinceBoot(start);
         final Duration timeout = Duration.ofSeconds(60);
 
         mSpManager.enableWeaver();
@@ -810,6 +849,7 @@ public class LockSettingsServiceTests extends BaseLockSettingsServiceTests {
         assertTrue(response.hasTimeout());
         assertEquals(timeout, response.getTimeoutAsDuration());
 
+        mInjector.setTimeSinceBoot(start.plus(timeout));
         response = mService.verifyCredential(credential, userId, /* flags= */ 0);
         assertTrue(response.isMatched());
     }
@@ -894,6 +934,118 @@ public class LockSettingsServiceTests extends BaseLockSettingsServiceTests {
         testTimeoutClamping(Duration.ofMillis(Integer.MAX_VALUE), Integer.MAX_VALUE);
         testTimeoutClamping(Duration.ofMillis((long) Integer.MAX_VALUE + 1), Integer.MAX_VALUE);
         testTimeoutClamping(Duration.ofMillis(Long.MAX_VALUE), Integer.MAX_VALUE);
+    }
+
+    @Test
+    public void testGetLockoutEndTime_initialState() {
+        final int userId = PRIMARY_USER_ID;
+
+        reset(mInvalidateLockoutEndTimeCacheMock);
+        Duration lockoutEndTime = mService.getLockoutEndTime(userId).getDuration();
+
+        assertEquals(Duration.ZERO, lockoutEndTime);
+        verify(mInvalidateLockoutEndTimeCacheMock, never()).run();
+    }
+
+    @Test
+    @EnableFlags({
+        android.security.Flags.FLAG_SOFTWARE_RATELIMITER,
+        android.security.Flags.FLAG_MANAGE_LOCKOUT_END_TIME_IN_SERVICE,
+    })
+    public void testGetLockoutEndTime_nonZeroAfterTimedOutAttempt() throws Exception {
+        final int userId = PRIMARY_USER_ID;
+        final LockscreenCredential credential = newPassword("password");
+        final Duration now = Duration.ofSeconds(1);
+        mInjector.setTimeSinceBoot(now);
+        setCredential(userId, credential);
+        reset(mInvalidateLockoutEndTimeCacheMock);
+        guessWrongCredential(userId, /* times= */ 5);
+
+        final Duration lockoutEndTime = mService.getLockoutEndTime(userId).getDuration();
+
+        final Duration expectedEndTime = now.plusSeconds(60);
+        assertEquals(expectedEndTime, lockoutEndTime);
+        verify(mInvalidateLockoutEndTimeCacheMock).run();
+    }
+
+    @Test
+    @EnableFlags({
+        android.security.Flags.FLAG_SOFTWARE_RATELIMITER,
+        android.security.Flags.FLAG_MANAGE_LOCKOUT_END_TIME_IN_SERVICE,
+    })
+    public void testGetLockoutEndTime_zeroAfterVerificationPostLockout() throws Exception {
+        final int userId = PRIMARY_USER_ID;
+        final LockscreenCredential credential = newPassword("password");
+        final Duration now = Duration.ofSeconds(1);
+        mInjector.setTimeSinceBoot(now);
+        setCredential(userId, credential);
+        reset(mInvalidateLockoutEndTimeCacheMock);
+        guessWrongCredential(userId, /* times= */ 5);
+        mInjector.setTimeSinceBoot(now.plusSeconds(61)); // Advance past lockout
+        VerifyCredentialResponse response =
+                mService.verifyCredential(credential, userId, /* flags= */ 0);
+        assertTrue(response.isMatched());
+
+        final Duration lockoutEndTime = mService.getLockoutEndTime(userId).getDuration();
+
+        assertEquals(Duration.ZERO, lockoutEndTime);
+        // invalidate 2 times:
+        // * upon the timeout after 5th failed attempt
+        // * upon verifying the credential for the primary user
+        verify(mInvalidateLockoutEndTimeCacheMock, times(2)).run();
+    }
+
+    @Test
+    @EnableFlags({
+        android.security.Flags.FLAG_SOFTWARE_RATELIMITER,
+        android.security.Flags.FLAG_MANAGE_LOCKOUT_END_TIME_IN_SERVICE,
+    })
+    public void testGetLockoutEndTime_zeroAfterEndTime() throws Exception {
+        final int userId = PRIMARY_USER_ID;
+        final LockscreenCredential credential = newPassword("password");
+        final Duration now = Duration.ofSeconds(1);
+        mInjector.setTimeSinceBoot(now);
+        setCredential(userId, credential);
+        reset(mInvalidateLockoutEndTimeCacheMock);
+        guessWrongCredential(userId, /* times= */ 5);
+        mInjector.setTimeSinceBoot(now.plusSeconds(61)); // Advance past lockout
+
+        final Duration lockoutEndTime = mService.getLockoutEndTime(userId).getDuration();
+
+        assertEquals(Duration.ZERO, lockoutEndTime);
+        // invalidate 2 times:
+        // * upon the timeout after 5th failed attempt
+        // * upon getting the timeout after the boot clock has passed it
+        verify(mInvalidateLockoutEndTimeCacheMock, times(2)).run();
+    }
+
+    @Test
+    @EnableFlags({
+        android.security.Flags.FLAG_SOFTWARE_RATELIMITER,
+        android.security.Flags.FLAG_MANAGE_LOCKOUT_END_TIME_IN_SERVICE,
+    })
+    public void testGetLockoutEndTime_zeroAfterCredentialResetWithToken() throws Exception {
+        byte[] token = "some-high-entropy-secure-token".getBytes();
+        EscrowTokenStateChangeCallback mockActivateListener =
+                mock(EscrowTokenStateChangeCallback.class);
+        final int userId = PRIMARY_USER_ID;
+        final LockscreenCredential credential = newPassword("password");
+        final Duration now = Duration.ofSeconds(1);
+        mInjector.setTimeSinceBoot(now);
+        setCredential(userId, credential);
+        long handle = mLocalService.addEscrowToken(token, userId, mockActivateListener);
+        // Activate token
+        assertTrue(mService.verifyCredential(credential, userId, /* flags= */ 0).isMatched());
+        guessWrongCredential(userId, /* times= */ 5);
+        final LockscreenCredential credential2 = newPassword("password2");
+        reset(mInvalidateLockoutEndTimeCacheMock);
+        mLocalService.setLockCredentialWithToken(credential2, handle, token, userId);
+
+        final Duration lockoutEndTime = mService.getLockoutEndTime(userId).getDuration();
+
+        assertEquals(Duration.ZERO, lockoutEndTime);
+        // should invalidate upon setting the lock credential
+        verify(mInvalidateLockoutEndTimeCacheMock).run();
     }
 
     private void guessWrongCredential(int userId, int times) {

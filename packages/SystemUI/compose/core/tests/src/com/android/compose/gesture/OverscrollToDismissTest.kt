@@ -44,7 +44,6 @@ import androidx.compose.ui.unit.dp
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.android.mechanics.debug.LocalMotionValueDebugController
 import com.android.mechanics.debug.MotionValueDebugController
-import com.android.mechanics.spec.builder.rememberMotionBuilderContext
 import com.google.common.truth.Truth.assertThat
 import kotlin.math.sin
 import org.junit.Rule
@@ -177,7 +176,6 @@ class OverscrollToDismissTest {
                         .background(Color.Blue)
                         .testTag("DismissContainer")
                         .overscrollToDismiss(
-                            rememberMotionBuilderContext(),
                             enabled = isSwipingEnabled,
                             onDismissed = { isDismissed = true },
                         )

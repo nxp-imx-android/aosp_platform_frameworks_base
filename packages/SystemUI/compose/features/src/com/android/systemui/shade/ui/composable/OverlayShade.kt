@@ -103,7 +103,9 @@ fun ContentScope.OverlayShade(
                 modifier =
                     Modifier.overscroll(verticalOverscrollEffect)
                         .element(panelElement)
-                        .thenIf(TileRevealFlag.isEnabled) { Modifier.motionDriver(gestureContext) }
+                        .thenIf(TileRevealFlag.isEnabled) {
+                            Modifier.motionDriver(gestureContext, label = "OverlayShade")
+                        }
                         .width(Dimensions.PanelWidth)
                         // TODO(440566878): Investigate if this can be optimized by replacing with
                         // onLayoutRectChanged.

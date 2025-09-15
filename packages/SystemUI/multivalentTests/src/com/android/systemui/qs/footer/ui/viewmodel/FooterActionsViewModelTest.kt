@@ -38,12 +38,9 @@ import com.android.systemui.broadcast.BroadcastDispatcher
 import com.android.systemui.common.shared.model.ContentDescription
 import com.android.systemui.common.shared.model.Icon
 import com.android.systemui.coroutines.collectLastValue
-import com.android.systemui.flags.DisableSceneContainer
-import com.android.systemui.flags.EnableSceneContainer
 import com.android.systemui.qs.FakeFgsManagerController
 import com.android.systemui.qs.QSSecurityFooterUtils
 import com.android.systemui.qs.QsEventLoggerFake
-import com.android.systemui.qs.flags.QSComposeFragment
 import com.android.systemui.qs.footer.FooterActionsTestUtils
 import com.android.systemui.qs.footer.domain.model.SecurityButtonConfig
 import com.android.systemui.qs.panels.ui.viewmodel.TextFeedbackViewModel
@@ -502,33 +499,7 @@ class FooterActionsViewModelTest : SysuiTestCase() {
     }
 
     @Test
-    @DisableFlags(QSComposeFragment.FLAG_NAME)
-    @DisableSceneContainer
-    fun textFeedback_neverFeedback() = runTest {
-        val qsTileConfigProvider = createAndPopulateQsTileConfigProvider()
-        val textFeedbackInteractor =
-            utils.textFeedbackInteractor(qsTileConfigProvider = qsTileConfigProvider)
-        val underTest =
-            utils.footerActionsViewModel(textFeedbackInteractor = textFeedbackInteractor)
-
-        val textFeedback by collectLastValue(underTest.textFeedback)
-
-        assertThat(textFeedback).isEqualTo(TextFeedbackViewModel.NoFeedback)
-
-        textFeedbackInteractor.requestShowFeedback(AIRPLANE_MODE_TILE_SPEC)
-
-        assertThat(textFeedback).isEqualTo(TextFeedbackViewModel.NoFeedback)
-    }
-
-    @Test
-    @EnableFlags(QSComposeFragment.FLAG_NAME)
-    fun textFeedback_composeFragmentEnabled() = runTest { textFeedback_newComposeUI() }
-
-    @Test
-    @EnableSceneContainer
-    fun textFeedback_sceneContainerEnabled() = runTest { textFeedback_newComposeUI() }
-
-    private fun TestScope.textFeedback_newComposeUI() {
+    fun textFeedback() = runTest {
         val qsTileConfigProvider = createAndPopulateQsTileConfigProvider()
         val textFeedbackInteractor =
             utils.textFeedbackInteractor(qsTileConfigProvider = qsTileConfigProvider)

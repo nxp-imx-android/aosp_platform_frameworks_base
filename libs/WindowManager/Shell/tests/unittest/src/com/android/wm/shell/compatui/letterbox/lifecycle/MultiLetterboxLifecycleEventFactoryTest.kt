@@ -34,8 +34,7 @@ import org.junit.runner.RunWith
 /**
  * Tests for [MultiLetterboxLifecycleEventFactory].
  *
- * Build/Install/Run:
- *  atest WMShellUnitTests:MultiLetterboxLifecycleEventFactoryTest
+ * Build/Install/Run: atest WMShellUnitTests:MultiLetterboxLifecycleEventFactoryTest
  */
 @RunWith(AndroidTestingRunner::class)
 @SmallTest
@@ -53,15 +52,9 @@ class MultiLetterboxLifecycleEventFactoryTest : ShellTestCase() {
                 }
                 validateCanHandle { canHandler ->
                     assertTrue(canHandler)
-                    r.assertOnCandidate(0) { f ->
-                        assertEquals(1, f.canHandleInvokeTimes)
-                    }
-                    r.assertOnCandidate(1) { f ->
-                        assertEquals(1, f.canHandleInvokeTimes)
-                    }
-                    r.assertOnCandidate(2) { f ->
-                        assertEquals(0, f.canHandleInvokeTimes)
-                    }
+                    r.assertOnCandidate(0) { f -> assertEquals(1, f.canHandleInvokeTimes) }
+                    r.assertOnCandidate(1) { f -> assertEquals(1, f.canHandleInvokeTimes) }
+                    r.assertOnCandidate(2) { f -> assertEquals(0, f.canHandleInvokeTimes) }
                 }
             }
         }
@@ -77,9 +70,7 @@ class MultiLetterboxLifecycleEventFactoryTest : ShellTestCase() {
                 inputChange {
                     // No specific Change initialization required.
                 }
-                validateCanHandle { canHandler ->
-                    assertFalse(canHandler)
-                }
+                validateCanHandle { canHandler -> assertFalse(canHandler) }
             }
         }
     }
@@ -114,10 +105,8 @@ class MultiLetterboxLifecycleEventFactoryTest : ShellTestCase() {
                 r.addCandidate(canHandleReturn = false)
                 r.addCandidate(
                     canHandleReturn = true,
-                    eventToReturn = LetterboxLifecycleEvent(
-                        taskId = 30,
-                        taskBounds = Rect(1, 2, 3, 4)
-                    )
+                    eventToReturn =
+                        LetterboxLifecycleEvent(taskId = 30, taskBounds = Rect(1, 2, 3, 4)),
                 )
                 r.addCandidate(canHandleReturn = false)
                 inputChange {
@@ -144,17 +133,13 @@ class MultiLetterboxLifecycleEventFactoryTest : ShellTestCase() {
         }
     }
 
-    /**
-     * Runs a test scenario providing a Robot.
-     */
+    /** Runs a test scenario providing a Robot. */
     fun runTestScenario(consumer: Consumer<LetterboxLifecycleControllerImplRobotTest>) {
         val robot = LetterboxLifecycleControllerImplRobotTest()
         consumer.accept(robot)
     }
 
-    /**
-     * Robot contextual to [MultiLetterboxLifecycleEventFactory].
-     */
+    /** Robot contextual to [MultiLetterboxLifecycleEventFactory]. */
     class LetterboxLifecycleControllerImplRobotTest {
 
         private val candidates = mutableListOf<FakeLetterboxLifecycleEventFactory>()
@@ -165,14 +150,14 @@ class MultiLetterboxLifecycleEventFactoryTest : ShellTestCase() {
 
         fun addCandidate(
             canHandleReturn: Boolean = true,
-            eventToReturn: LetterboxLifecycleEvent = FAKE_EVENT
+            eventToReturn: LetterboxLifecycleEvent = FAKE_EVENT,
         ) {
             candidates.add(FakeLetterboxLifecycleEventFactory(canHandleReturn, eventToReturn))
         }
 
         fun assertOnCandidate(
             position: Int,
-            consumer: (FakeLetterboxLifecycleEventFactory) -> Unit
+            consumer: (FakeLetterboxLifecycleEventFactory) -> Unit,
         ) {
             consumer(candidates[position])
         }

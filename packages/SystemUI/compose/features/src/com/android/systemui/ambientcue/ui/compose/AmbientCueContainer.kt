@@ -179,7 +179,11 @@ private fun TaskBarAnd3ButtonAmbientCue(
                     translationY = pillCenter.y - size.height
                 } else {
                     if (rotation == ROTATION_90) {
-                        translationX = screenWidthPx - pillSize.height - size.width
+                        translationX =
+                            screenWidthPx -
+                                pillSize.width -
+                                size.width -
+                                LANDSCAPE_PADDING.dp.toPx()
                         translationY = pillCenter.y - pillSize.width
                     } else if (rotation == ROTATION_270) {
                         translationX = pillSize.width
@@ -205,6 +209,7 @@ private fun TaskBarAnd3ButtonAmbientCue(
         portrait = portrait,
         pillCenter = pillCenter,
         pillWidth = pillSize.width,
+        pillHeight = pillSize.height,
         rotation = rotation,
         taskBarMode = largeScreen,
     )
@@ -224,7 +229,7 @@ private fun TaskBarAnd3ButtonAmbientCue(
                 Modifier.graphicsLayer {
                         translationX = pillCenter.x - size.width / 2
                         translationY = pillCenter.y - size.height / 2
-                        pillSize = size
+                        pillSize = Size(pillPositionInWindow.width, pillPositionInWindow.height)
                     }
                     .onGloballyPositioned { layoutCoordinates ->
                         layoutCoordinates.parentCoordinates?.let { parentCoordinates ->
@@ -321,3 +326,4 @@ private const val SHORT_PILL_ACTIONS_VERTICAL_PADDING = 38
 private const val NAV_BAR_ACTIONS_PADDING = NAV_BAR_HEIGHT_DP + 24
 private const val ACTIONS_HORIZONTAL_PADDING = 32
 private const val ACTIONS_TOP_PADDING = 42
+private const val LANDSCAPE_PADDING = 65

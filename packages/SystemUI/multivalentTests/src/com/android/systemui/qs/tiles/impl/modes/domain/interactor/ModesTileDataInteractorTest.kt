@@ -213,10 +213,7 @@ class ModesTileDataInteractorTest(flags: FlagsParameterization) : SysuiTestCase(
         }
 
     @Test
-    @EnableFlags(
-        Flags.FLAG_MODES_UI_TILE_REACTIVATES_LAST,
-        com.android.systemui.Flags.FLAG_QS_UI_REFACTOR_COMPOSE_FRAGMENT,
-    )
+    @EnableFlags(Flags.FLAG_MODES_UI_TILE_REACTIVATES_LAST)
     fun tileData_withPastManualActivation_iconOfMruManualMode() =
         testScope.runTest {
             val tileData by
@@ -277,10 +274,7 @@ class ModesTileDataInteractorTest(flags: FlagsParameterization) : SysuiTestCase(
         }
 
     @Test
-    @EnableFlags(
-        Flags.FLAG_MODES_UI_TILE_REACTIVATES_LAST,
-        com.android.systemui.Flags.FLAG_QS_UI_REFACTOR_COMPOSE_FRAGMENT,
-    )
+    @EnableFlags(Flags.FLAG_MODES_UI_TILE_REACTIVATES_LAST)
     fun tileData_withRecentManualDeactivation_quickModeIsLastDeactivatedMode() =
         testScope.runTest {
             val tileData by

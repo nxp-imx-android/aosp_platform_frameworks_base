@@ -32,6 +32,9 @@ interface IComputerControlSession {
     /** Launches an application on the trusted virtual display. */
     void launchApplication(in String packageName);
 
+    /** Hand over full control of the automation session to the user. */
+    void handOverApplications();
+
     /* Injects a tap event into the trusted virtual display. */
     void tap(int x, int y);
 

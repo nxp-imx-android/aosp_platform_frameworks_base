@@ -101,6 +101,7 @@ test_module_config {
         "com.android.wm.shell.flicker.resizing.SnapResizeAppWindowRightWithKeyboardFlickerTest",
         "com.android.wm.shell.flicker.resizing.SnapResizeNonResizableAppWindowLeftWithDragFlickerTest",
         "com.android.wm.shell.flicker.resizing.SnapResizeNonResizableAppWindowRightWithDragFlickerTest",
+        "com.android.wm.shell.flicker.taskbar.LaunchNewInstanceFromTaskbarMenuFlickerTest",
         "com.android.wm.shell.flicker.tiling.TilingDividerResizingAppsFlickerTest",
         "com.android.wm.shell.flicker.tiling.TilingDividerShownAfterHomeSwipeFlickerTest",
         "com.android.wm.shell.flicker.tiling.TilingDividerShownAfterOverviewFlickerTest",
@@ -514,6 +515,13 @@ test_module_config {
     base: "WMShellFlickerTestsDesktopMode",
     test_suites: ["device-tests"],
     include_filters: ["com.android.wm.shell.flicker.resizing.SnapResizeNonResizableAppWindowRightWithDragFlickerTest"],
+}
+
+test_module_config {
+    name: "WMShellFlickerTestsDesktopMode-taskbar-LaunchNewInstanceFromTaskbarMenuFlickerTest",
+    base: "WMShellFlickerTestsDesktopMode",
+    test_suites: ["device-tests"],
+    include_filters: ["com.android.wm.shell.flicker.taskbar.LaunchNewInstanceFromTaskbarMenuFlickerTest"],
 }
 
 test_module_config {

@@ -40,7 +40,6 @@ import android.platform.test.flag.junit.SetFlagsRule
 import android.provider.DeviceConfig
 import android.testing.TestableContext
 import android.testing.TestableResources
-import android.util.AtomicFile
 import android.view.Display.DEFAULT_DISPLAY
 import android.view.InputDevice
 import android.view.KeyCharacterMap
@@ -61,10 +60,8 @@ import com.android.modules.utils.testing.ExtendedMockitoRule
 import com.android.server.LocalServices
 import com.android.server.input.InputManagerService.WindowManagerCallbacks
 import com.android.server.input.InputManagerServiceTests.Companion.ACTION_KEY_EVENTS
+import com.android.server.input.data.TestDataStore
 import com.android.server.wm.WindowManagerInternal
-import java.io.File
-import java.io.FileOutputStream
-import java.io.InputStream
 import junitparams.JUnitParamsRunner
 import junitparams.Parameters
 import org.junit.Assert.assertArrayEquals
@@ -187,8 +184,8 @@ class KeyGestureControllerTests {
     private lateinit var testableResources: TestableResources
     private lateinit var keyGestureController: KeyGestureController
     private lateinit var testLooper: TestLooper
-    private lateinit var tempFile: File
-    private lateinit var inputDataStore: InputDataStore
+    private lateinit var testDataStore: TestDataStore
+    private var events = mutableListOf<KeyGestureEvent>()
 
     @Before
     fun setup() {
@@ -196,41 +193,11 @@ class KeyGestureControllerTests {
         setupInputDevices()
         setupBehaviors()
         testLooper = TestLooper()
+        testDataStore = TestDataStore()
         currentPid = Process.myPid()
         ExtendedMockito.doReturn(windowManagerInternal).`when` {
             LocalServices.getService(ArgumentMatchers.eq(WindowManagerInternal::class.java))
         }
-        tempFile = File.createTempFile("input_gestures", ".xml")
-        inputDataStore =
-            InputDataStore(
-                object : InputDataStore.FileInjector("input_gestures.xml") {
-                    private val atomicFile: AtomicFile = AtomicFile(tempFile)
-
-                    override fun openRead(userId: Int): InputStream? {
-                        return atomicFile.openRead()
-                    }
-
-                    override fun startWrite(userId: Int): FileOutputStream? {
-                        return atomicFile.startWrite()
-                    }
-
-                    override fun finishWrite(
-                        userId: Int,
-                        fos: FileOutputStream?,
-                        success: Boolean,
-                    ) {
-                        if (success) {
-                            atomicFile.finishWrite(fos)
-                        } else {
-                            atomicFile.failWrite(fos)
-                        }
-                    }
-
-                    override fun getAtomicFileForUserId(userId: Int): AtomicFile {
-                        return atomicFile
-                    }
-                }
-            )
     }
 
     private fun setupBehaviors() {
@@ -283,7 +250,7 @@ class KeyGestureControllerTests {
                 testableContext,
                 testLooper.looper,
                 testLooper.looper,
-                inputDataStore,
+                testDataStore.getDataStore(),
                 object : KeyGestureController.Injector() {
                     override fun getAccessibilityShortcutController(
                         context: Context?,
@@ -757,7 +724,7 @@ class KeyGestureControllerTests {
         val backupData = keyGestureController.getInputGestureBackupPayload(userId)
 
         // Delete the old data and reinitialize the controller simulating a "fresh" install.
-        tempFile.delete()
+        testDataStore.clear()
         setupKeyGestureController()
         keyGestureController.setCurrentUserId(userId)
         testLooper.dispatchAll()
@@ -921,7 +888,7 @@ class KeyGestureControllerTests {
         val backupData = keyGestureController.getInputGestureBackupPayload(userId)
 
         // Delete the old data and reinitialize the controller simulating a "fresh" install.
-        tempFile.delete()
+        testDataStore.clear()
         setupKeyGestureController()
         keyGestureController.setCurrentUserId(userId)
         testLooper.dispatchAll()

@@ -41,6 +41,10 @@ class NoOpAvControlsChipInteractorTest() : AvControlsChipInteractorTestBase() {
 
     @Test
     @DisableFlags(FLAG_EXPANDED_PRIVACY_INDICATORS_ON_LARGE_SCREEN)
+    fun disabled() = kosmos.runTest { assertThat(underTest.isEnabled.value).isEqualTo(false) }
+
+    @Test
+    @DisableFlags(FLAG_EXPANDED_PRIVACY_INDICATORS_ON_LARGE_SCREEN)
     fun cameraActive_InactiveModel() =
         kosmos.runTest {
             fakePrivacyChipRepository.setPrivacyItems(listOf(cameraItem))

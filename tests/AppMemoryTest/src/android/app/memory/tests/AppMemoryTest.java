@@ -166,7 +166,7 @@ public class AppMemoryTest {
         Log.i(TAG, "Got PID for " + HELPER + ": " + pid);
 
         // trigger the heap dump
-        cmd = String.format("am dumpheap %s %s", pid, profilePath);
+        cmd = String.format("am dumpheap -b png %s %s", pid, profilePath);
         Log.i(TAG, "Executing heap dump command: " + cmd);
         runShellCommandWithResult(cmd);
 

@@ -25,7 +25,6 @@ import static android.view.WindowManager.TRANSIT_TO_BACK;
 import static android.view.WindowManager.TRANSIT_TO_FRONT;
 
 import static com.android.window.flags.Flags.enableHandlersDebuggingMode;
-import static com.android.wm.shell.Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE;
 import static com.android.wm.shell.bubbles.util.BubbleUtils.getExitBubbleTransaction;
 import static com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_BUBBLES;
 import static com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_BUBBLES_NOISY;
@@ -67,9 +66,7 @@ import com.android.wm.shell.transition.Transitions;
 
 import java.io.PrintWriter;
 import java.util.ArrayList;
-import java.util.Map;
 import java.util.Objects;
-import java.util.WeakHashMap;
 import java.util.concurrent.Executor;
 
 /**
@@ -78,15 +75,6 @@ import java.util.concurrent.Executor;
 public class TaskViewTransitions implements Transitions.TransitionHandler, TaskViewController {
     static final String TAG = "TaskViewTransitions";
 
-    /**
-     * Map of {@link TaskViewTaskController} to {@link TaskViewRepository.TaskViewState}.
-     * <p>
-     * {@link TaskView} keeps a reference to the {@link TaskViewTaskController} instance and
-     * manages its lifecycle.
-     * Only keep a weak reference to the controller instance here to allow for it to be cleaned
-     * up when its TaskView is no longer used.
-     */
-    private final Map<TaskViewTaskController, TaskViewRepository.TaskViewState> mTaskViews;
     private final TaskViewRepository mTaskViewRepo;
     private final ArrayList<PendingTransition> mPending = new ArrayList<>();
     private final Transitions mTransitions;
@@ -150,20 +138,10 @@ public class TaskViewTransitions implements Transitions.TransitionHandler, TaskV
         mTaskOrganizer = taskOrganizer;
         mShellExecutor = taskOrganizer.getExecutor();
         mSyncQueue = syncQueue;
-        if (useRepo()) {
-            mTaskViews = null;
-        } else {
-            mTaskViews = new WeakHashMap<>();
-        }
         mTaskViewRepo = repository;
         // Defer registration until the first TaskView because we want this to be the "first" in
         // priority when handling requests.
         // TODO(210041388): register here once we have an explicit ordering mechanism.
-    }
-
-    /** @return whether the shared taskview repository is being used. */
-    public static boolean useRepo() {
-        return Flags.taskViewRepository() || Flags.enableBubbleAnything();
     }
 
     public TaskViewRepository getRepository() {
@@ -180,22 +158,14 @@ public class TaskViewTransitions implements Transitions.TransitionHandler, TaskV
                 mTransitions.addHandler(this);
             }
         }
-        if (useRepo()) {
-            mTaskViewRepo.add(tv);
-        } else {
-            mTaskViews.put(tv, new TaskViewRepository.TaskViewState(null));
-        }
+        mTaskViewRepo.add(tv);
     }
 
     @Override
     public void unregisterTaskView(TaskViewTaskController tv) {
         ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "Transitions.unregisterTaskView: taskView=%d",
                 tv.hashCode());
-        if (useRepo()) {
-            mTaskViewRepo.remove(tv);
-        } else {
-            mTaskViews.remove(tv);
-        }
+        mTaskViewRepo.remove(tv);
         // Note: Don't unregister handler since this is a singleton with lifetime bound to Shell
     }
 
@@ -347,17 +317,8 @@ public class TaskViewTransitions implements Transitions.TransitionHandler, TaskV
     }
 
     private TaskViewTaskController findTaskView(ActivityManager.RunningTaskInfo taskInfo) {
-        if (useRepo()) {
-            final TaskViewRepository.TaskViewState state = mTaskViewRepo.byToken(taskInfo.token);
-            return state != null ? state.getTaskView() : null;
-        }
-        for (TaskViewTaskController controller : mTaskViews.keySet()) {
-            if (controller.getTaskInfo() == null) continue;
-            if (taskInfo.token.equals(controller.getTaskInfo().token)) {
-                return controller;
-            }
-        }
-        return null;
+        final TaskViewRepository.TaskViewState state = mTaskViewRepo.byToken(taskInfo.token);
+        return state != null ? state.getTaskView() : null;
     }
 
     /** Returns true if the given {@code taskInfo} belongs to a task view. */
@@ -521,9 +482,7 @@ public class TaskViewTransitions implements Transitions.TransitionHandler, TaskV
     public void setTaskViewVisible(TaskViewTaskController taskView, boolean visible,
             boolean reorder, boolean syncHiddenWithVisibilityOnReorder,
             boolean nonBlockingIfPossible, WindowContainerTransaction overrideTransaction) {
-        final TaskViewRepository.TaskViewState state = useRepo()
-                ? mTaskViewRepo.byTaskView(taskView)
-                : mTaskViews.get(taskView);
+        final TaskViewRepository.TaskViewState state = mTaskViewRepo.byTaskView(taskView);
         if (state == null) return;
         if (state.mVisible == visible) return;
         if (taskView.getTaskInfo() == null) {
@@ -567,9 +526,7 @@ public class TaskViewTransitions implements Transitions.TransitionHandler, TaskV
 
     /** Starts a new transition to reorder the given {@code taskView}'s task. */
     public void reorderTaskViewTask(TaskViewTaskController taskView, boolean onTop) {
-        final TaskViewRepository.TaskViewState state = useRepo()
-                ? mTaskViewRepo.byTaskView(taskView)
-                : mTaskViews.get(taskView);
+        final TaskViewRepository.TaskViewState state = mTaskViewRepo.byTaskView(taskView);
         if (state == null) return;
         if (taskView.getTaskInfo() == null) {
             // Nothing to update, task is not yet available
@@ -588,26 +545,16 @@ public class TaskViewTransitions implements Transitions.TransitionHandler, TaskV
 
     /** Updates the bounds state for the given task view. */
     public void updateBoundsState(TaskViewTaskController taskView, Rect boundsOnScreen) {
-        if (useRepo()) {
-            final TaskViewRepository.TaskViewState state = mTaskViewRepo.byTaskView(taskView);
-            if (state == null) return;
-            ProtoLog.d(WM_SHELL_BUBBLES_NOISY,
-                    "Transitions.updateBoundsState(): taskView=%d bounds=%s",
-                    taskView.hashCode(), boundsOnScreen);
-            state.mBounds.set(boundsOnScreen);
-            return;
-        }
-        final TaskViewRepository.TaskViewState state = mTaskViews.get(taskView);
+        final TaskViewRepository.TaskViewState state = mTaskViewRepo.byTaskView(taskView);
         if (state == null) return;
-        ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "Transitions.updateBoundsState(): taskView=%d bounds=%s",
+        ProtoLog.d(WM_SHELL_BUBBLES_NOISY,
+                "Transitions.updateBoundsState(): taskView=%d bounds=%s",
                 taskView.hashCode(), boundsOnScreen);
         state.mBounds.set(boundsOnScreen);
     }
 
     void updateVisibilityState(TaskViewTaskController taskView, boolean visible) {
-        final TaskViewRepository.TaskViewState state = useRepo()
-                ? mTaskViewRepo.byTaskView(taskView)
-                : mTaskViews.get(taskView);
+        final TaskViewRepository.TaskViewState state = mTaskViewRepo.byTaskView(taskView);
         if (state == null) return;
         ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "Transitions.updateVisibilityState(): taskView=%d "
                         + "visible=%b", taskView.hashCode(), visible);
@@ -628,9 +575,7 @@ public class TaskViewTransitions implements Transitions.TransitionHandler, TaskV
     }
 
     private void setTaskBoundsInTransition(TaskViewTaskController taskView, Rect boundsOnScreen) {
-        final TaskViewRepository.TaskViewState state = useRepo()
-                ? mTaskViewRepo.byTaskView(taskView)
-                : mTaskViews.get(taskView);
+        final TaskViewRepository.TaskViewState state = mTaskViewRepo.byTaskView(taskView);
         if (state == null || Objects.equals(boundsOnScreen, state.mBounds)) {
             ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "Transitions.setTaskBoundsInTransition(): "
                     + "Skipping, same bounds");
@@ -794,7 +739,7 @@ public class TaskViewTransitions implements Transitions.TransitionHandler, TaskV
         if (pending != null) {
             mPending.remove(pending);
         }
-        if (useRepo() ? mTaskViewRepo.isEmpty() : mTaskViews.isEmpty()) {
+        if (mTaskViewRepo.isEmpty()) {
             if (pending != null) {
                 Slog.e(TAG, "Pending taskview transition but no task-views");
             }
@@ -964,7 +909,7 @@ public class TaskViewTransitions implements Transitions.TransitionHandler, TaskV
         if (pending != null) {
             mPending.remove(pending);
         }
-        if (useRepo() ? mTaskViewRepo.isEmpty() : mTaskViews.isEmpty()) {
+        if (mTaskViewRepo.isEmpty()) {
             if (pending != null) {
                 Slog.e(TAG, "Pending taskview transition but no task-views");
             }
@@ -1275,9 +1220,7 @@ public class TaskViewTransitions implements Transitions.TransitionHandler, TaskV
         for (PendingTransition pendingTransition : mPending) {
             pendingTransition.dump(pw, "    ");
         }
-        if (useRepo()) {
-            mTaskViewRepo.dump(pw, "  ");
-        }
+        mTaskViewRepo.dump(pw, "  ");
     }
 
     /**

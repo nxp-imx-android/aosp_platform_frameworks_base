@@ -84,6 +84,9 @@ constructor(
     private val systemUIDialogFactory: SystemUIDialogFactory,
 ) : ComponentActivity() {
 
+    private val shouldShowVideoSaved: Boolean
+        get() = intent.getBooleanExtra(SHOULD_SHOW_VIDEO_SAVED, SHOULD_SHOW_VIDEO_SAVED_DEFAULT)
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -98,7 +101,12 @@ constructor(
                 viewModelFactory.create(intent.data ?: error("Data URI is missing"))
             }
 
-        LaunchedEffect(Unit) { postRecordSnackbarDialogs.showVideoSaved() }
+        LaunchedEffect(shouldShowVideoSaved) {
+            if (shouldShowVideoSaved) {
+                intent.putExtra(SHOULD_SHOW_VIDEO_SAVED, false)
+                postRecordSnackbarDialogs.showVideoSaved()
+            }
+        }
 
         val shouldUseFlatBottomBar =
             booleanResource(R.bool.screen_record_post_recording_flat_bottom_bar)
@@ -239,10 +247,18 @@ constructor(
 
     companion object {
 
-        fun getStartingIntent(context: Context, videoUri: Uri): Intent {
+        private const val SHOULD_SHOW_VIDEO_SAVED = "should_show_video_saved"
+        private const val SHOULD_SHOW_VIDEO_SAVED_DEFAULT = false
+
+        fun getStartingIntent(
+            context: Context,
+            videoUri: Uri,
+            shouldShowVideoSaved: Boolean = SHOULD_SHOW_VIDEO_SAVED_DEFAULT,
+        ): Intent {
             return Intent(context, SmallScreenPostRecordingActivity::class.java)
                 .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_GRANT_READ_URI_PERMISSION)
                 .setDataAndType(videoUri, MimeTypes.VIDEO_MP4)
+                .putExtra(SHOULD_SHOW_VIDEO_SAVED, shouldShowVideoSaved)
         }
     }
 }

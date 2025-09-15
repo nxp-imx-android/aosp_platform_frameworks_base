@@ -1498,10 +1498,8 @@ public final class WindowInsets {
             mTypeInsetsMap = insets.mTypeInsetsMap.clone();
             mTypeMaxInsetsMap = insets.mTypeMaxInsetsMap.clone();
             mTypeVisibilityMap = insets.mTypeVisibilityMap.clone();
-            if (com.android.window.flags.Flags.copyCompatFieldsOfWindowInsets()) {
-                mCompatInsetTypes = insets.mCompatInsetsTypes;
-                mCompatIgnoreVisibility = insets.mCompatIgnoreVisibility;
-            }
+            mCompatInsetTypes = insets.mCompatInsetsTypes;
+            mCompatIgnoreVisibility = insets.mCompatIgnoreVisibility;
             mSystemInsetsConsumed = insets.mSystemWindowInsetsConsumed;
             mStableInsetsConsumed = insets.mStableInsetsConsumed;
             mDisplayCutout = displayCutoutCopyConstructorArgument(insets);
@@ -1535,11 +1533,9 @@ public final class WindowInsets {
         public Builder setSystemWindowInsets(@NonNull Insets systemWindowInsets) {
             Objects.requireNonNull(systemWindowInsets);
             assignCompatInsets(mTypeInsetsMap, systemWindowInsets.toRect());
-            if (com.android.window.flags.Flags.copyCompatFieldsOfWindowInsets()) {
-                // This should match the types used in assignCompatInsets.
-                mCompatInsetTypes = STATUS_BARS | NAVIGATION_BARS;
-                mCompatIgnoreVisibility = false;
-            }
+            // This should match the types used in assignCompatInsets.
+            mCompatInsetTypes = STATUS_BARS | NAVIGATION_BARS;
+            mCompatIgnoreVisibility = false;
             mSystemInsetsConsumed = false;
             return this;
         }

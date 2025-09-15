@@ -6175,6 +6175,9 @@ public class Notification implements Parcelable
             // Small icon doesn't need to be reset, as it's always set. Resetting would prevent
             // re-using the drawable when the notification is updated.
             contentView.setBoolean(R.id.expand_button, "setExpanded", false);
+            if (Flags.apiMetricStyle()) {
+                contentView.setViewVisibility(R.id.app_name_text_divider, View.GONE);
+            }
             contentView.setViewVisibility(R.id.app_name_text, View.GONE);
             contentView.setTextViewText(R.id.app_name_text, null);
             contentView.setViewVisibility(R.id.chronometer, View.GONE);
@@ -6568,13 +6571,16 @@ public class Notification implements Parcelable
 
         private void bindNotificationHeader(RemoteViews contentView, StandardTemplateParams p) {
             bindSmallIcon(contentView, p);
+
+            boolean hasTextToLeft = Flags.apiMetricStyle()
+                && p.mTitleViewId == R.id.alt_title && p.hasTitle();
             // Populate text left-to-right so that separators are only shown between strings
-            boolean hasTextToLeft = bindHeaderAppName(contentView, p, false /* force */);
+            hasTextToLeft |= bindHeaderAppName(contentView, p, false /* force */, hasTextToLeft);
             hasTextToLeft |= bindHeaderTextSecondary(contentView, p, hasTextToLeft);
             hasTextToLeft |= bindHeaderText(contentView, p, hasTextToLeft);
             if (!hasTextToLeft) {
                 // If there's still no text, force add the app name so there is some text.
-                hasTextToLeft |= bindHeaderAppName(contentView, p, true /* force */);
+                hasTextToLeft |= bindHeaderAppName(contentView, p, true /* force */, hasTextToLeft);
             }
             bindHeaderChronometerAndTime(contentView, p, hasTextToLeft);
             bindPhishingAlertIcon(contentView, p);
@@ -6708,7 +6714,7 @@ public class Notification implements Parcelable
          * @return {@code true} if the app name will be visible
          */
         private boolean bindHeaderAppName(RemoteViews contentView, StandardTemplateParams p,
-                boolean force) {
+                boolean force, boolean hasTextToLeft) {
             if (p.mViewType == StandardTemplateParams.VIEW_TYPE_MINIMIZED && !force) {
                 // unless the force flag is set, don't show the app name in the minimized state.
                 return false;
@@ -6726,6 +6732,9 @@ public class Notification implements Parcelable
             contentView.setViewVisibility(R.id.app_name_text, View.VISIBLE);
             contentView.setTextViewText(R.id.app_name_text, loadHeaderAppName());
             contentView.setTextColor(R.id.app_name_text, getSecondaryTextColor(p));
+            if (Flags.apiMetricStyle() && hasTextToLeft) {
+                contentView.setViewVisibility(R.id.app_name_text_divider, View.VISIBLE);
+            }
             return true;
         }
 
@@ -11802,6 +11811,7 @@ public class Notification implements Parcelable
             final StandardTemplateParams p = mBuilder.mParams.reset()
                     .viewType(StandardTemplateParams.VIEW_TYPE_NORMAL)
                     .fillTextsFrom(mBuilder).text(null)
+                    .hideProgress(true)
                     .hideRightIcon(true);
             final TemplateBindResult result = new TemplateBindResult();
             final RemoteViews contentView = getStandardView(
@@ -11815,6 +11825,7 @@ public class Notification implements Parcelable
             final StandardTemplateParams p = mBuilder.mParams.reset()
                     .viewType(StandardTemplateParams.VIEW_TYPE_HEADS_UP)
                     .fillTextsFrom(mBuilder).text(null)
+                    .hideProgress(true)
                     .hideRightIcon(true);
             final TemplateBindResult result = new TemplateBindResult();
             final RemoteViews contentView = getStandardView(
@@ -11827,7 +11838,10 @@ public class Notification implements Parcelable
         public RemoteViews makeExpandedContentView() {
             final StandardTemplateParams p = mBuilder.mParams.reset()
                     .viewType(StandardTemplateParams.VIEW_TYPE_EXPANDED)
-                    .fillTextsFrom(mBuilder).text(null)
+                    .hideProgress(true)
+                    .fillTextsFrom(mBuilder)
+                    .text(null)
+                    .titleViewId(R.id.alt_title)
                     .hideRightIcon(true);
             final TemplateBindResult result = new TemplateBindResult();
             final RemoteViews contentView = getStandardView(

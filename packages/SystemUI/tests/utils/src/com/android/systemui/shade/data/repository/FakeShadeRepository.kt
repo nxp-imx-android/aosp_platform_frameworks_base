@@ -171,10 +171,6 @@ class FakeShadeRepository @Inject constructor() : ShadeRepository {
     override fun setLegacyShadeExpansion(expandedFraction: Float) {
         _legacyShadeExpansion.value = expandedFraction
     }
-
-    override fun setShadeLayoutWide(isShadeLayoutWide: Boolean) {
-        legacyUseSplitShade.value = isShadeLayoutWide
-    }
 }
 
 @Module

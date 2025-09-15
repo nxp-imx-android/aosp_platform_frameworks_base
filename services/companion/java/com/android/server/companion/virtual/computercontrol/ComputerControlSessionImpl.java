@@ -73,6 +73,7 @@ import com.android.internal.inputmethod.InputConnectionCommandHeader;
 import com.android.server.LocalServices;
 import com.android.server.inputmethod.InputMethodManagerInternal;
 import com.android.server.pm.UserManagerInternal;
+import com.android.server.wm.ActivityTaskManagerInternal;
 import com.android.server.wm.WindowManagerInternal;
 
 import java.util.ArrayList;
@@ -135,6 +136,7 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
     private final OnClosedListener mOnClosedListener;
     private final IVirtualDevice mVirtualDevice;
     private final int mVirtualDisplayId;
+    private final int mMainDisplayId;
     private final IVirtualDisplayCallback mVirtualDisplayToken;
     private final IVirtualInputDevice mVirtualTouchscreen;
     private final IVirtualInputDevice mVirtualDpad;
@@ -163,6 +165,9 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
         mOwnerPackageName = attributionSource.getPackageName();
         mOnClosedListener = onClosedListener;
         mInjector = injector;
+        // TODO(b/440005498): Consider using the display from the app's context instead.
+        mMainDisplayId = injector.getMainDisplayIdForUser(
+                UserHandle.getUserId(attributionSource.getUid()));
 
         final VirtualDeviceParams virtualDeviceParams = new VirtualDeviceParams.Builder()
                 .setName(mParams.getName())
@@ -189,8 +194,7 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
         final VirtualDisplayConfig virtualDisplayConfig;
         if (params.getDisplaySurface() == null) {
             displayFlags |= DisplayManager.VIRTUAL_DISPLAY_FLAG_ALWAYS_UNLOCKED;
-            final DisplayInfo defaultDisplayInfo =
-                    mInjector.getDisplayInfo(Display.DEFAULT_DISPLAY);
+            final DisplayInfo defaultDisplayInfo = mInjector.getDisplayInfo(mMainDisplayId);
             mDisplayWidth = defaultDisplayInfo.logicalWidth;
             mDisplayHeight = defaultDisplayInfo.logicalHeight;
             virtualDisplayConfig = new VirtualDisplayConfig.Builder(
@@ -328,10 +332,16 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
             mVirtualDevice.addActivityPolicyExemption(
                     new ActivityPolicyExemption.Builder().setPackageName(packageName).build());
         }
-        final UserHandle user = UserHandle.of(UserHandle.getUserId(Binder.getCallingUid()));
+        final UserHandle user = Binder.getCallingUserHandle();
         Binder.withCleanCallingIdentity(() -> mInjector.launchApplicationOnDisplayAsUser(
                 packageName, mVirtualDisplayId, user));
         notifyApplicationLaunchToStabilityCalculator();
+    }
+
+    @Override
+    public void handOverApplications() {
+        Binder.withCleanCallingIdentity(
+                () -> mInjector.moveAllTasks(mVirtualDisplayId, mMainDisplayId));
     }
 
     @Override
@@ -693,6 +703,7 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
         private final WindowManagerInternal mWindowManagerInternal;
         private final InputMethodManagerInternal mInputMethodManagerInternal;
         private final UserManagerInternal mUserManagerInternal;
+        private final ActivityTaskManagerInternal mActivityTaskManagerInternal;
 
         Injector(Context context) {
             mContext = context;
@@ -701,6 +712,8 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
             mInputMethodManagerInternal = LocalServices.getService(
                     InputMethodManagerInternal.class);
             mUserManagerInternal = LocalServices.getService(UserManagerInternal.class);
+            mActivityTaskManagerInternal = LocalServices.getService(
+                    ActivityTaskManagerInternal.class);
         }
 
         public String getPermissionControllerPackageName() {
@@ -744,12 +757,20 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
             return (long) (ViewConfiguration.getLongPressTimeout() * LONG_PRESS_TIMEOUT_MULTIPLIER);
         }
 
+        public int getMainDisplayIdForUser(@UserIdInt int user) {
+            return mUserManagerInternal.getMainDisplayAssignedToUser(user);
+        }
+
         public IRemoteComputerControlInputConnection getInputConnection(int displayId) {
             // getUserAssignedToDisplay returns the main userId, if we want to support cross
             // profile CC interactions and typing on CC display, we need to find the right user
             // profile here for the CC input connection
             return mInputMethodManagerInternal.getComputerControlInputConnection(
                     mUserManagerInternal.getUserAssignedToDisplay(displayId), displayId);
+        }
+
+        public void moveAllTasks(int fromDisplayId, int toDisplayId) {
+            mActivityTaskManagerInternal.moveAllTasks(fromDisplayId, toDisplayId);
         }
     }
 }

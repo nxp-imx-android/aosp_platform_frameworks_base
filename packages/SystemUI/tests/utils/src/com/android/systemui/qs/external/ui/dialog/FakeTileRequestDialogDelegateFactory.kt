@@ -21,14 +21,14 @@ import com.android.systemui.qs.external.TileData
 import org.mockito.Answers
 import org.mockito.kotlin.mock
 
-class FakeTileRequestDialogComposeDelegateFactory : TileRequestDialogComposeDelegate.Factory {
+class FakeTileRequestDialogDelegateFactory : TileRequestDialogDelegate.Factory {
     lateinit var tileData: TileData
     lateinit var clickListener: DialogInterface.OnClickListener
 
     override fun create(
         tileData: TileData,
         dialogListener: DialogInterface.OnClickListener,
-    ): TileRequestDialogComposeDelegate {
+    ): TileRequestDialogDelegate {
         this.tileData = tileData
         this.clickListener = dialogListener
         return mock(defaultAnswer = Answers.RETURNS_MOCKS)

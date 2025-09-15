@@ -44,7 +44,6 @@ android_test_helper_app {
     name: "AppMemoryTest_Helper",
     manifest: "app/AndroidManifest.xml",
     srcs: ["app/src/**/*.java"],
-    resource_dirs: ["app/res"],
     static_libs: ["com.google.android.material_material"],
 
     platform_apis: true,

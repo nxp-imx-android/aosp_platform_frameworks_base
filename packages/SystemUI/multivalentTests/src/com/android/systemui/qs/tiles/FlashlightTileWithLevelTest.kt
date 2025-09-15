@@ -18,10 +18,9 @@ package com.android.systemui.qs.tiles
 
 import android.os.Handler
 import android.platform.test.annotations.EnableFlags
-import android.platform.test.flag.junit.FlagsParameterization
-import android.platform.test.flag.junit.FlagsParameterization.allCombinationsOf
 import android.service.quicksettings.Tile
 import android.testing.TestableLooper
+import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.internal.logging.MetricsLogger
 import com.android.internal.logging.testing.UiEventLoggerFake
@@ -39,7 +38,6 @@ import com.android.systemui.plugins.statusbar.StatusBarStateController
 import com.android.systemui.qs.QSHost
 import com.android.systemui.qs.QsEventLogger
 import com.android.systemui.qs.QsEventLoggerFake
-import com.android.systemui.qs.flags.QSComposeFragment
 import com.android.systemui.qs.logging.QSLogger
 import com.android.systemui.qs.pipeline.shared.TileSpec
 import com.android.systemui.qs.tileimpl.QSTileImpl.DrawableIconWithRes
@@ -65,14 +63,12 @@ import org.mockito.MockitoAnnotations
 import org.mockito.kotlin.capture
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
-import platform.test.runner.parameterized.ParameterizedAndroidJunit4
-import platform.test.runner.parameterized.Parameters
 
-@RunWith(ParameterizedAndroidJunit4::class)
+@RunWith(AndroidJUnit4::class)
 @TestableLooper.RunWithLooper(setAsMainLooper = true)
 @EnableFlags(com.android.systemui.Flags.FLAG_FLASHLIGHT_STRENGTH)
 @SmallTest
-class FlashlightTileWithLevelTest(flags: FlagsParameterization) : SysuiTestCase() {
+class FlashlightTileWithLevelTest : SysuiTestCase() {
     private val kosmos = testKosmos()
 
     @Captor private lateinit var inputCaptor: ArgumentCaptor<QSTileInput<FlashlightModel>>
@@ -94,10 +90,6 @@ class FlashlightTileWithLevelTest(flags: FlagsParameterization) : SysuiTestCase(
     private val falsingManager = FalsingManagerFake()
     private lateinit var testableLooper: TestableLooper
     private lateinit var underTest: FlashlightTileWithLevel
-
-    init {
-        mSetFlagsRule.setFlagsParameterization(flags)
-    }
 
     @Before
     fun setUp() {
@@ -297,11 +289,6 @@ class FlashlightTileWithLevelTest(flags: FlagsParameterization) : SysuiTestCase(
         }
 
     companion object {
-        @JvmStatic
-        @Parameters(name = "{0}")
-        fun getParams(): List<FlagsParameterization> {
-            return allCombinationsOf(QSComposeFragment.FLAG_NAME)
-        }
 
         private const val MAX_LEVEL = 45
 

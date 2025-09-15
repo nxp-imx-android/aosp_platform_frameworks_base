@@ -19,6 +19,7 @@ package android.app.admin;
 import android.annotation.IntDef;
 import android.processor.devicepolicy.BooleanPolicyDefinition;
 import android.processor.devicepolicy.EnumPolicyDefinition;
+import android.processor.devicepolicy.IntegerPolicyDefinition;
 import android.processor.devicepolicy.PolicyDefinition;
 
 import java.lang.annotation.Retention;
@@ -29,7 +30,7 @@ public final class PolicyIdentifier<T> {
     public PolicyIdentifier(String id) {
     }
 
-    private static final String TEST_POLICY_1_KEY = "test_policy_1_key";
+    private static final String SIMPLE_BOOLEAN_POLICY_KEY = "simple_boolean_policy_key";
 
     /**
      * Test policy 1
@@ -37,10 +38,10 @@ public final class PolicyIdentifier<T> {
     @BooleanPolicyDefinition(
             base = @PolicyDefinition
     )
-    public static final PolicyIdentifier<Boolean> TEST_POLICY_1 = new PolicyIdentifier<>(
-            TEST_POLICY_1_KEY);
+    public static final PolicyIdentifier<Boolean> SIMPLE_BOOLEAN_POLICY = new PolicyIdentifier<>(
+            SIMPLE_BOOLEAN_POLICY_KEY);
 
-    private static final String TEST_POLICY_2_KEY = "test_policy_1_key";
+    private static final String SIMPLE_ENUM_POLICY_KEY = "simple_enum_policy_key";
 
     /**
      * First entry
@@ -58,7 +59,7 @@ public final class PolicyIdentifier<T> {
     public static final int ENUM_ENTRY_3 = 2;
 
     /**
-     * Enum for {@link TEST_POLICY_2}
+     * Enum for {@link SIMPLE_ENUM_POLICY}
      *
      * @hide
      */
@@ -68,7 +69,7 @@ public final class PolicyIdentifier<T> {
             ENUM_ENTRY_2,
             ENUM_ENTRY_3
     })
-    public @interface TestPolicy2Enum {}
+    public @interface SimpleEnumPolicyEnum {}
 
     /**
      * Test policy 2
@@ -76,8 +77,19 @@ public final class PolicyIdentifier<T> {
     @EnumPolicyDefinition(
             base = @PolicyDefinition,
             defaultValue = ENUM_ENTRY_2,
-            intDef = TestPolicy2Enum.class
+            intDef = SimpleEnumPolicyEnum.class
     )
-    public static final PolicyIdentifier<Integer> TEST_POLICY_2 = new PolicyIdentifier<>(
-            TEST_POLICY_2_KEY);
+    public static final PolicyIdentifier<Integer> SIMPLE_ENUM_POLICY = new PolicyIdentifier<>(
+            SIMPLE_ENUM_POLICY_KEY);
+
+    private static final String SIMPLE_INTEGER_POLICY_KEY = "simple_integer_policy_key";
+
+    /**
+     * Test policy 3
+     */
+    @IntegerPolicyDefinition(
+            base = @PolicyDefinition
+    )
+    public static final PolicyIdentifier<Integer> SIMPLE_INTEGER_POLICY = new PolicyIdentifier<>(
+            SIMPLE_INTEGER_POLICY_KEY);
 }

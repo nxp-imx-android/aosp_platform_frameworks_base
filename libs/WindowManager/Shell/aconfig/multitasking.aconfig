@@ -139,13 +139,6 @@ flag {
 }
 
 flag {
-    name: "task_view_repository"
-    namespace: "multitasking"
-    description: "Factor task-view state tracking out of taskviewtransitions"
-    bug: "384976265"
-}
-
-flag {
     name: "fix_missing_user_change_callbacks"
     namespace: "multitasking"
     description: "Fix a race condition that could make Shell miss a user change callback."
@@ -274,6 +267,16 @@ flag {
 }
 
 flag {
+    name: "fix_bubbles_ime_focus_flicker"
+    namespace: "multitasking"
+    description: "Fixes an ime flicker due to non-bubbled activity gaining focus when switching bubbles"
+    bug: "416347012"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "dismiss_pip_from_lockscreen"
     namespace: "multitasking"
     description: "Fixes a bug where tapping on a notification for a PiP-ed app while on Lockscreen does not launch it in fullscreen."
@@ -329,3 +332,14 @@ flag {
      description: "Enables the 2x1 split implementation"
      bug: "439992109"
 }
+
+flag {
+    name: "split_to_full_set_window_mode"
+    namespace: "multitasking"
+    description: "Set the launch windowing mode when split screen launches app in fullscreen."
+    bug: "427103183"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+

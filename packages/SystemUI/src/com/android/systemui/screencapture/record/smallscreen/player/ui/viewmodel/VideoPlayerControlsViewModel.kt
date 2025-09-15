@@ -38,7 +38,7 @@ import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.isActive
@@ -51,59 +51,64 @@ constructor(
 ) : HydratedActivatable(), DrawableLoaderViewModel by drawableLoaderViewModelImpl {
 
     val videoDurationMillis: Int
-        get() = mediaPlayer.duration
+        get() = mediaPlayer.callSafe { duration } ?: 0
 
     val videoPositionMillis: Int by
         mediaPlayer
             .currentPositionFlow(10.milliseconds)
             .hydratedStateOf("VideoPlayerControlsViewModel#videoPositionMillis", 0)
 
-    var playing: Boolean by mutableStateOf(false)
-        private set
+    val playing: Boolean
+        get() = mediaPlayer.callSafe { isPlaying } ?: false
 
     var muted: Boolean by mutableStateOf(false)
         private set
 
-    private var wasPlayingBeforeSeek: Boolean = false
+    private var wasPlayingBeforeSeek: Boolean? = null
 
     override suspend fun onActivated() {
         coroutineScope {
             mediaPlayer
                 .onComplete()
-                .onEach {
-                    mediaPlayer.seekTo(0)
-                    playing = false
-                }
+                .onEach { mediaPlayer.callSafe { mediaPlayer.seekTo(0) } }
                 .launchIn(this)
         }
     }
 
     fun updatePlaying(isPlaying: Boolean) {
-        if (isPlaying) {
-            mediaPlayer.start()
-        } else {
-            mediaPlayer.pause()
+        mediaPlayer.callSafe {
+            if (isPlaying) {
+                start()
+            } else {
+                pause()
+            }
         }
-        this.playing = isPlaying
     }
 
     fun seek(positionMillis: Int) {
-        wasPlayingBeforeSeek = playing
-        updatePlaying(false)
-        mediaPlayer.seekTo(positionMillis)
+        mediaPlayer.callSafe {
+            if (wasPlayingBeforeSeek == null) {
+                wasPlayingBeforeSeek = playing
+                updatePlaying(false)
+            }
+            seekTo(positionMillis.toLong(), MediaPlayer.SEEK_CLOSEST)
+        }
     }
 
     fun seekFinished() {
-        updatePlaying(wasPlayingBeforeSeek)
+        wasPlayingBeforeSeek?.let(::updatePlaying)
+        wasPlayingBeforeSeek = null
     }
 
     fun updateMuted(isMuted: Boolean) {
-        if (isMuted) {
-            mediaPlayer.setVolume(0f)
-        } else {
-            mediaPlayer.setVolume(1f)
+        mediaPlayer.callSafe {
+            if (isMuted) {
+                setVolume(0f)
+            } else {
+                setVolume(1f)
+            }
+            muted = isMuted
         }
-        muted = isMuted
     }
 
     @AssistedFactory
@@ -124,7 +129,9 @@ private fun MediaPlayer.currentPositionFlow(pollingDelay: Duration): Flow<Int> {
         setOnSeekCompleteListener(listener)
         awaitClose { setOnSeekCompleteListener(null) }
     }
-    return merge(polling, seeking).map { currentPosition }.distinctUntilChanged()
+    return merge(polling, seeking)
+        .mapNotNull { callSafe { currentPosition } }
+        .distinctUntilChanged()
 }
 
 private fun MediaPlayer.onComplete(): Flow<Unit> = callbackFlow {
@@ -132,3 +139,14 @@ private fun MediaPlayer.onComplete(): Flow<Unit> = callbackFlow {
     setOnCompletionListener(listener)
     awaitClose { setOnCompletionListener(null) }
 }
+
+/**
+ * Unfortunately [MediaPlayer] API doesn't allow to check for the current player state, so there is
+ * no good way to tell if it has been released already or not before calling a method.
+ */
+private fun <T> MediaPlayer.callSafe(action: MediaPlayer.() -> T): T? =
+    try {
+        action()
+    } catch (_: IllegalStateException) {
+        null
+    }

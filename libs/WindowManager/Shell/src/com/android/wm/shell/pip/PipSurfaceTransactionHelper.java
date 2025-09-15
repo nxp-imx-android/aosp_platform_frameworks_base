@@ -32,6 +32,7 @@ import androidx.annotation.Nullable;
 import com.android.wm.shell.Flags;
 import com.android.wm.shell.R;
 import com.android.wm.shell.common.BoxShadowHelper;
+import com.android.wm.shell.common.pip.IPipAnimationListener.PipResources;
 import com.android.wm.shell.common.pip.PipUtils;
 import com.android.wm.shell.transition.Transitions;
 
@@ -55,6 +56,19 @@ public class PipSurfaceTransactionHelper {
     public PipSurfaceTransactionHelper(Context context) {
         onDensityOrFontScaleChanged(context);
         onThemeChanged(context);
+    }
+
+    /**
+     * Operates the alpha on a given transaction and leash
+     * @return resources used by PiP
+     */
+    public PipResources getResources() {
+        PipResources res = new PipResources();
+        res.cornerRadius = mCornerRadius;
+        res.shadowRadius = mShadowRadius;
+        res.boxShadowSettings = mBoxShadowSettings;
+        res.borderSettings = mBorderSettings;
+        return res;
     }
 
     /**

@@ -43,8 +43,7 @@ import org.mockito.kotlin.verify
 /**
  * Tests for [RoundedCornersLetterboxController].
  *
- * Build/Install/Run:
- *  atest WMShellUnitTests:RoundedCornersLetterboxControllerTest
+ * Build/Install/Run: atest WMShellUnitTests:RoundedCornersLetterboxControllerTest
  */
 @RunWith(AndroidTestingRunner::class)
 @SmallTest
@@ -124,7 +123,7 @@ class RoundedCornersLetterboxControllerTest : ShellTestCase() {
             r.checkRoundedCornersVisibilityUpdated(
                 times = 1,
                 expectedVisibility = true,
-                immediate = false
+                immediate = false,
             )
         }
     }
@@ -149,7 +148,7 @@ class RoundedCornersLetterboxControllerTest : ShellTestCase() {
             r.configureRepository()
             r.sendUpdateSurfaceBoundsRequest(
                 taskBounds = Rect(0, 0, 2000, 1000),
-                activityBounds = Rect(500, 0, 1500, 1000)
+                activityBounds = Rect(500, 0, 1500, 1000),
             )
 
             r.checkSurfacePositionUpdated(times = 0)
@@ -160,14 +159,12 @@ class RoundedCornersLetterboxControllerTest : ShellTestCase() {
             r.sendCreateSurfaceRequest()
             r.sendUpdateSurfaceBoundsRequest(
                 taskBounds = Rect(0, 0, 2000, 1000),
-                activityBounds = Rect(500, 0, 1500, 1000)
+                activityBounds = Rect(500, 0, 1500, 1000),
             )
         }
     }
 
-    /**
-     * Runs a test scenario providing a Robot.
-     */
+    /** Runs a test scenario providing a Robot. */
     fun runTestScenario(consumer: Consumer<RoundedCornersControllerRobotTest>) {
         consumer.accept(RoundedCornersControllerRobotTest().apply { initController() })
     }
@@ -186,43 +183,37 @@ class RoundedCornersLetterboxControllerTest : ShellTestCase() {
             letterboxRepository = LetterboxTaskInfoRepository()
             roundedCornersSurface = mock<RoundedCornersSurface>()
             roundedCornersSurfaceBuilder = mock<RoundedCornersSurfaceBuilder>()
-            doReturn(roundedCornersSurface).`when`(roundedCornersSurfaceBuilder).create(
-                any(),
-                any()
-            )
+            doReturn(roundedCornersSurface)
+                .`when`(roundedCornersSurfaceBuilder)
+                .create(any(), any())
         }
 
         override fun buildController(): LetterboxController =
             RoundedCornersLetterboxController(
                 executor,
                 roundedCornersSurfaceBuilder,
-                letterboxRepository
+                letterboxRepository,
             )
 
         fun configureRepository(taskId: Int = TASK_ID) {
             letterboxRepository.insert(
                 taskId,
-                LetterboxTaskInfoState(TOKEN, parentLeash, configuration = testConfiguration)
+                LetterboxTaskInfoState(TOKEN, parentLeash, configuration = testConfiguration),
             )
         }
 
         fun checkSurfaceBuilderInvoked(times: Int = 1) {
-            verify(roundedCornersSurfaceBuilder, times(times)).create(
-                eq(testConfiguration),
-                eq(parentLeash)
-            )
+            verify(roundedCornersSurfaceBuilder, times(times))
+                .create(eq(testConfiguration), eq(parentLeash))
         }
 
         fun checkRoundedCornersVisibilityUpdated(
             times: Int = 1,
             expectedVisibility: Boolean,
-            immediate: Boolean = true
+            immediate: Boolean = true,
         ) {
-            verify(roundedCornersSurface, times(times)).setCornersVisibility(
-                any(),
-                eq(expectedVisibility),
-                eq(immediate)
-            )
+            verify(roundedCornersSurface, times(times))
+                .setCornersVisibility(any(), eq(expectedVisibility), eq(immediate))
         }
 
         fun checkRoundedCornersSurfaceReleased(times: Int = 1) {

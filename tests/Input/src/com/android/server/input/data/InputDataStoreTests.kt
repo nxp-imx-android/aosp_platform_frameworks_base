@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.server.input
+package com.android.server.input.data
 
 import android.app.role.RoleManager
 import android.content.Context
@@ -24,14 +24,11 @@ import android.hardware.input.AppLaunchData
 import android.hardware.input.InputGestureData
 import android.hardware.input.KeyGestureEvent
 import android.platform.test.annotations.Presubmit
-import android.util.AtomicFile
 import android.view.KeyEvent
 import androidx.test.core.app.ApplicationProvider
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.File
-import java.io.FileOutputStream
-import java.io.InputStream
 import java.nio.charset.StandardCharsets
 import kotlin.test.assertEquals
 import org.junit.Before
@@ -62,37 +59,12 @@ class InputDataStoreTests {
 
     private fun setupInputDataStore() {
         tempFile = File.createTempFile("input_gestures", ".xml")
-        inputDataStore =
-            InputDataStore(
-                object : InputDataStore.FileInjector("input_gestures") {
-                    private val atomicFile: AtomicFile = AtomicFile(tempFile)
-
-                    override fun openRead(userId: Int): InputStream? {
-                        return atomicFile.openRead()
-                    }
-
-                    override fun startWrite(userId: Int): FileOutputStream? {
-                        return atomicFile.startWrite()
-                    }
-
-                    override fun finishWrite(
-                        userId: Int,
-                        fos: FileOutputStream?,
-                        success: Boolean,
-                    ) {
-                        if (success) {
-                            atomicFile.finishWrite(fos)
-                        } else {
-                            atomicFile.failWrite(fos)
-                        }
-                    }
-                }
-            )
+        inputDataStore = TestDataStore().getDataStore()
     }
 
-    private fun getPrintableXml(inputGestures: List<InputGestureData>): String {
+    private fun getPrintableInputGestureXml(inputGestures: List<InputGestureData>): String {
         val outputStream = ByteArrayOutputStream()
-        inputDataStore.writeInputGestureXml(outputStream, true, inputGestures)
+        inputDataStore.writeData(outputStream, true, inputGestures, InputGestureData::class.java)
         return outputStream.toString(StandardCharsets.UTF_8).trimIndent()
     }
 
@@ -123,11 +95,11 @@ class InputDataStoreTests {
                     .build(),
             )
 
-        inputDataStore.saveInputGestures(USER_ID, inputGestures)
+        inputDataStore.saveData(USER_ID, inputGestures, InputGestureData::class.java)
         assertEquals(
             inputGestures,
-            inputDataStore.loadInputGestures(USER_ID),
-            getPrintableXml(inputGestures),
+            inputDataStore.loadData(USER_ID, InputGestureData::class.java),
+            getPrintableInputGestureXml(inputGestures),
         )
     }
 
@@ -145,11 +117,11 @@ class InputDataStoreTests {
                     .build()
             )
 
-        inputDataStore.saveInputGestures(USER_ID, inputGestures)
+        inputDataStore.saveData(USER_ID, inputGestures, InputGestureData::class.java)
         assertEquals(
             inputGestures,
-            inputDataStore.loadInputGestures(USER_ID),
-            getPrintableXml(inputGestures),
+            inputDataStore.loadData(USER_ID, InputGestureData::class.java),
+            getPrintableInputGestureXml(inputGestures),
         )
     }
 
@@ -191,11 +163,11 @@ class InputDataStoreTests {
                     .build(),
             )
 
-        inputDataStore.saveInputGestures(USER_ID, inputGestures)
+        inputDataStore.saveData(USER_ID, inputGestures, InputGestureData::class.java)
         assertEquals(
             inputGestures,
-            inputDataStore.loadInputGestures(USER_ID),
-            getPrintableXml(inputGestures),
+            inputDataStore.loadData(USER_ID, InputGestureData::class.java),
+            getPrintableInputGestureXml(inputGestures),
         )
     }
 
@@ -237,11 +209,11 @@ class InputDataStoreTests {
                     .build(),
             )
 
-        inputDataStore.saveInputGestures(USER_ID, inputGestures)
+        inputDataStore.saveData(USER_ID, inputGestures, InputGestureData::class.java)
         assertEquals(
             inputGestures,
-            inputDataStore.loadInputGestures(USER_ID),
-            getPrintableXml(inputGestures),
+            inputDataStore.loadData(USER_ID, InputGestureData::class.java),
+            getPrintableInputGestureXml(inputGestures),
         )
     }
 
@@ -291,7 +263,10 @@ class InputDataStoreTests {
                     .build(),
             )
         val inputStream = ByteArrayInputStream(xmlData.toByteArray(Charsets.UTF_8))
-        assertEquals(validInputGestures, inputDataStore.readInputGesturesXml(inputStream, true))
+        assertEquals(
+            validInputGestures,
+            inputDataStore.readData(inputStream, true, InputGestureData::class.java),
+        )
     }
 
     @Test
@@ -330,7 +305,10 @@ class InputDataStoreTests {
                     .build(),
             )
         val inputStream = ByteArrayInputStream(xmlData.toByteArray(Charsets.UTF_8))
-        assertEquals(validInputGestures, inputDataStore.readInputGesturesXml(inputStream, true))
+        assertEquals(
+            validInputGestures,
+            inputDataStore.readData(inputStream, true, InputGestureData::class.java),
+        )
     }
 
     @Test
@@ -373,7 +351,10 @@ class InputDataStoreTests {
                     .build(),
             )
         val inputStream = ByteArrayInputStream(xmlData.toByteArray(Charsets.UTF_8))
-        assertEquals(validInputGestures, inputDataStore.readInputGesturesXml(inputStream, true))
+        assertEquals(
+            validInputGestures,
+            inputDataStore.readData(inputStream, true, InputGestureData::class.java),
+        )
     }
 
     @Test
@@ -414,7 +395,10 @@ class InputDataStoreTests {
                     .build(),
             )
         val inputStream = ByteArrayInputStream(xmlData.toByteArray(Charsets.UTF_8))
-        assertEquals(validInputGestures, inputDataStore.readInputGesturesXml(inputStream, true))
+        assertEquals(
+            validInputGestures,
+            inputDataStore.readData(inputStream, true, InputGestureData::class.java),
+        )
     }
 
     @Test
@@ -455,7 +439,10 @@ class InputDataStoreTests {
                     .build(),
             )
         val inputStream = ByteArrayInputStream(xmlData.toByteArray(Charsets.UTF_8))
-        assertEquals(validInputGestures, inputDataStore.readInputGesturesXml(inputStream, true))
+        assertEquals(
+            validInputGestures,
+            inputDataStore.readData(inputStream, true, InputGestureData::class.java),
+        )
     }
 
     @Test
@@ -469,7 +456,10 @@ class InputDataStoreTests {
             </root>"""
                 .trimIndent()
         val inputStream = ByteArrayInputStream(xmlData.toByteArray(Charsets.UTF_8))
-        assertEquals(listOf(), inputDataStore.readInputGesturesXml(inputStream, true))
+        assertEquals(
+            listOf(),
+            inputDataStore.readData(inputStream, true, InputGestureData::class.java),
+        )
     }
 
     @Test
@@ -483,6 +473,9 @@ class InputDataStoreTests {
             </root>"""
                 .trimIndent()
         val inputStream = ByteArrayInputStream(xmlData.toByteArray(Charsets.UTF_8))
-        assertEquals(listOf(), inputDataStore.readInputGesturesXml(inputStream, true))
+        assertEquals(
+            listOf(),
+            inputDataStore.readData(inputStream, true, InputGestureData::class.java),
+        )
     }
 }

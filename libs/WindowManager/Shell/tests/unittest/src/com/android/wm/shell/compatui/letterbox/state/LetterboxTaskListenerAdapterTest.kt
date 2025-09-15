@@ -44,8 +44,7 @@ import org.mockito.kotlin.verify
 /**
  * Tests for [LetterboxTaskListenerAdapter].
  *
- * Build/Install/Run:
- *  atest WMShellUnitTests:LetterboxTaskListenerAdapterTest
+ * Build/Install/Run: atest WMShellUnitTests:LetterboxTaskListenerAdapterTest
  */
 @RunWith(AndroidTestingRunner::class)
 @SmallTest
@@ -64,7 +63,7 @@ class LetterboxTaskListenerAdapterTest : ShellTestCase() {
     @Test
     @EnableFlags(
         Flags.FLAG_APP_COMPAT_REFACTORING,
-        Flags.FLAG_APP_COMPAT_REFACTORING_FIX_MULTIWINDOW_TASK_HIERARCHY
+        Flags.FLAG_APP_COMPAT_REFACTORING_FIX_MULTIWINDOW_TASK_HIERARCHY,
     )
     fun `When task hierarchy flag is ENABLED the update listener is registered`() {
         runTestScenario { r ->
@@ -123,22 +122,14 @@ class LetterboxTaskListenerAdapterTest : ShellTestCase() {
                     ti.token = tokenTest
                 }
                 leash { leashTest }
-                validateOnTaskAppeared {
-                    r.validateItem(10) { item ->
-                        assertNotNull(item)
-                    }
-                }
+                validateOnTaskAppeared { r.validateItem(10) { item -> assertNotNull(item) } }
             }
             testTaskVanishedListener(r.getLetterboxTaskListenerAdapterFactory()) {
                 runningTaskInfo { ti ->
                     ti.taskId = 10
                     ti.token = tokenTest
                 }
-                validateOnTaskVanished {
-                    r.validateItem(10) { item ->
-                        assertNull(item)
-                    }
-                }
+                validateOnTaskVanished { r.validateItem(10) { item -> assertNull(item) } }
             }
         }
     }
@@ -146,7 +137,7 @@ class LetterboxTaskListenerAdapterTest : ShellTestCase() {
     @Test
     @EnableFlags(
         Flags.FLAG_APP_COMPAT_REFACTORING,
-        Flags.FLAG_APP_COMPAT_REFACTORING_FIX_MULTIWINDOW_TASK_HIERARCHY
+        Flags.FLAG_APP_COMPAT_REFACTORING_FIX_MULTIWINDOW_TASK_HIERARCHY,
     )
     fun `When a leaf Task appears the TaskInfo data are persisted with parentTaskId`() {
         runTestScenario { r ->
@@ -175,7 +166,7 @@ class LetterboxTaskListenerAdapterTest : ShellTestCase() {
     @Test
     @EnableFlags(
         Flags.FLAG_APP_COMPAT_REFACTORING,
-        Flags.FLAG_APP_COMPAT_REFACTORING_FIX_MULTIWINDOW_TASK_HIERARCHY
+        Flags.FLAG_APP_COMPAT_REFACTORING_FIX_MULTIWINDOW_TASK_HIERARCHY,
     )
     fun `When flag enabled and Task is NOT leaf the TaskInfo data are NOT persisted`() {
         runTestScenario { r ->
@@ -189,11 +180,7 @@ class LetterboxTaskListenerAdapterTest : ShellTestCase() {
                     ti.appCompatTaskInfo.setIsLeafTask(false)
                 }
                 leash { leashTest }
-                validateOnTaskAppeared {
-                    r.validateItem(10) { item ->
-                        assertNull(item)
-                    }
-                }
+                validateOnTaskAppeared { r.validateItem(10) { item -> assertNull(item) } }
             }
         }
     }
@@ -201,7 +188,7 @@ class LetterboxTaskListenerAdapterTest : ShellTestCase() {
     @Test
     @EnableFlags(
         Flags.FLAG_APP_COMPAT_REFACTORING,
-        Flags.FLAG_APP_COMPAT_REFACTORING_FIX_MULTIWINDOW_TASK_HIERARCHY
+        Flags.FLAG_APP_COMPAT_REFACTORING_FIX_MULTIWINDOW_TASK_HIERARCHY,
     )
     fun `When a Task vanishes the TaskInfo data are removed with task hierarchy flag enabled`() {
         runTestScenario { r ->
@@ -214,22 +201,14 @@ class LetterboxTaskListenerAdapterTest : ShellTestCase() {
                     ti.appCompatTaskInfo.setIsLeafTask(true)
                 }
                 leash { leashTest }
-                validateOnTaskAppeared {
-                    r.validateItem(10) { item ->
-                        assertNotNull(item)
-                    }
-                }
+                validateOnTaskAppeared { r.validateItem(10) { item -> assertNotNull(item) } }
             }
             testTaskVanishedListener(r.getLetterboxTaskListenerAdapterFactory()) {
                 runningTaskInfo { ti ->
                     ti.taskId = 10
                     ti.token = tokenTest
                 }
-                validateOnTaskVanished {
-                    r.validateItem(10) { item ->
-                        assertNull(item)
-                    }
-                }
+                validateOnTaskVanished { r.validateItem(10) { item -> assertNull(item) } }
             }
         }
     }
@@ -237,7 +216,7 @@ class LetterboxTaskListenerAdapterTest : ShellTestCase() {
     @Test
     @EnableFlags(
         Flags.FLAG_APP_COMPAT_REFACTORING,
-        Flags.FLAG_APP_COMPAT_REFACTORING_FIX_MULTIWINDOW_TASK_HIERARCHY
+        Flags.FLAG_APP_COMPAT_REFACTORING_FIX_MULTIWINDOW_TASK_HIERARCHY,
     )
     fun `Remove a task from tepository during update when not leaf anymore`() {
         runTestScenario { r ->
@@ -250,11 +229,7 @@ class LetterboxTaskListenerAdapterTest : ShellTestCase() {
                     ti.appCompatTaskInfo.setIsLeafTask(true)
                 }
                 leash { leashTest }
-                validateOnTaskAppeared {
-                    r.validateItem(10) { item ->
-                        assertNotNull(item)
-                    }
-                }
+                validateOnTaskAppeared { r.validateItem(10) { item -> assertNotNull(item) } }
             }
             testTaskInfoChangedListener(r.getLetterboxTaskListenerAdapterFactory()) {
                 runningTaskInfo { ti ->
@@ -262,29 +237,19 @@ class LetterboxTaskListenerAdapterTest : ShellTestCase() {
                     ti.token = tokenTest
                     ti.appCompatTaskInfo.setIsLeafTask(true)
                 }
-                validateOnTaskInfoChanged {
-                    r.validateItem(10) { item ->
-                        assertNotNull(item)
-                    }
-                }
+                validateOnTaskInfoChanged { r.validateItem(10) { item -> assertNotNull(item) } }
             }
             testTaskInfoChangedListener(r.getLetterboxTaskListenerAdapterFactory()) {
                 runningTaskInfo { ti ->
                     ti.taskId = 10
                     ti.token = tokenTest
                 }
-                validateOnTaskInfoChanged {
-                    r.validateItem(10) { item ->
-                        assertNull(item)
-                    }
-                }
+                validateOnTaskInfoChanged { r.validateItem(10) { item -> assertNull(item) } }
             }
         }
     }
 
-    /**
-     * Runs a test scenario providing a Robot.
-     */
+    /** Runs a test scenario providing a Robot. */
     fun runTestScenario(consumer: Consumer<LetterboxTaskListenerAdapterRobotTest>) {
         val robot = LetterboxTaskListenerAdapterRobotTest()
         consumer.accept(robot)
@@ -303,11 +268,12 @@ class LetterboxTaskListenerAdapterTest : ShellTestCase() {
             shellInit = ShellInit(executor)
             shellTaskOrganizer = mock<ShellTaskOrganizer>()
             letterboxTaskInfoRepository = LetterboxTaskInfoRepository()
-            letterboxTaskListenerAdapter = LetterboxTaskListenerAdapter(
-                shellInit,
-                shellTaskOrganizer,
-                letterboxTaskInfoRepository
-            )
+            letterboxTaskListenerAdapter =
+                LetterboxTaskListenerAdapter(
+                    shellInit,
+                    shellTaskOrganizer,
+                    letterboxTaskInfoRepository,
+                )
         }
 
         fun getLetterboxTaskListenerAdapterFactory(): () -> LetterboxTaskListenerAdapter = {

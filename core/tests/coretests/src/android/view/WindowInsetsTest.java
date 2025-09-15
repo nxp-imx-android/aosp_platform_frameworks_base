@@ -30,7 +30,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assume.assumeTrue;
 
 import android.graphics.Insets;
 import android.graphics.Rect;
@@ -173,7 +172,6 @@ public class WindowInsetsTest {
 
     @Test
     public void builder_copy_compatInsetTypes() {
-        assumeTrue(com.android.window.flags.Flags.copyCompatFieldsOfWindowInsets());
         final Insets[] insets = new Insets[TYPES.length];
         final Insets[] maxInsets = new Insets[TYPES.length];
         final boolean[] visible = new boolean[TYPES.length];
@@ -192,7 +190,6 @@ public class WindowInsetsTest {
 
     @Test
     public void builder_copy_compatIgnoreVisibility() {
-        assumeTrue(com.android.window.flags.Flags.copyCompatFieldsOfWindowInsets());
         final Insets[] insets = new Insets[TYPES.length];
         final Insets[] maxInsets = new Insets[TYPES.length];
         final boolean[] visible = new boolean[TYPES.length];
@@ -210,7 +207,6 @@ public class WindowInsetsTest {
 
     @Test
     public void builder_setSystemWindowInsets() {
-        assumeTrue(com.android.window.flags.Flags.copyCompatFieldsOfWindowInsets());
         final Insets[] insets = new Insets[TYPES.length];
         final Insets[] maxInsets = new Insets[TYPES.length];
         final boolean[] visible = new boolean[TYPES.length];

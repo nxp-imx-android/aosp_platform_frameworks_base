@@ -64,6 +64,10 @@ public final class ComputerControlSession implements AutoCloseable {
     public static final String ACTION_REQUEST_ACCESS =
             "android.companion.virtual.computercontrol.action.REQUEST_ACCESS";
 
+    /** @hide */
+    public static final String EXTRA_AUTOMATING_PACKAGE_NAME =
+            "android.companion.virtual.computercontrol.extra.AUTOMATING_PACKAGE_NAME";
+
     /**
      * Error code indicating that a new session cannot be created because the maximum number of
      * allowed concurrent sessions has been reached.
@@ -118,15 +122,6 @@ public final class ComputerControlSession implements AutoCloseable {
     @Nullable
     private ImageReader mImageReader;
 
-    /** Perform provided action on the trusted virtual display. */
-    public void performAction(@Action int actionCode) {
-        try {
-            mSession.performAction(actionCode);
-        } catch (RemoteException e) {
-            throw e.rethrowFromSystemServer();
-        }
-    }
-
     /** @hide */
     public ComputerControlSession(int displayId, @NonNull IVirtualDisplayCallback displayToken,
             @NonNull IComputerControlSession session) {
@@ -165,6 +160,22 @@ public final class ComputerControlSession implements AutoCloseable {
     public void launchApplication(@NonNull String packageName) {
         try {
             mSession.launchApplication(packageName);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    /**
+     * Hand over full control of the automation session to the user.
+     *
+     * <p>All of the applications currently automated in the session are moved from the session's
+     * display to the user's default display. No further automation is possible on these tasks,
+     * although the session remains active and new applications may be launched via
+     * {@link #launchApplication(String)}</p>
+     */
+    public void handOverApplications() {
+        try {
+            mSession.handOverApplications();
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }
@@ -282,6 +293,15 @@ public final class ComputerControlSession implements AutoCloseable {
     public void insertText(@NonNull String text, boolean replaceExisting, boolean commit) {
         try {
             mSession.insertText(text, replaceExisting, commit);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    /** Perform provided action on the trusted virtual display. */
+    public void performAction(@Action int actionCode) {
+        try {
+            mSession.performAction(actionCode);
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }

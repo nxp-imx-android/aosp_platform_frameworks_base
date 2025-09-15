@@ -14,18 +14,19 @@
  * limitations under the License.
  */
 
-package com.android.systemui.statusbar.featurepods.av.domain.interactor
+package com.android.systemui.keyguard.domain.interactor
 
+import com.android.systemui.deviceentry.domain.interactor.deviceEntryInteractor
+import com.android.systemui.deviceentry.domain.interactor.deviceEntryUdfpsInteractor
 import com.android.systemui.kosmos.Kosmos
-import com.android.systemui.kosmos.backgroundScope
-import com.android.systemui.user.domain.interactor.selectedUserInteractor
-import com.android.systemui.util.settings.data.repository.secureSettingsForUserRepository
+import com.android.systemui.kosmos.Kosmos.Fixture
+import com.android.systemui.power.domain.interactor.powerInteractor
 
-val Kosmos.desktopEffectInteractor: DesktopEffectInteractor by
-    Kosmos.Fixture {
-        DesktopEffectInteractor(
-            backgroundScope = backgroundScope,
-            selectedUserInteractor = selectedUserInteractor,
-            secureSettingsForUserRepository = secureSettingsForUserRepository,
-        )
-    }
+val Kosmos.dozeTouchInteractor: DozeTouchInteractor by Fixture {
+    DozeTouchInteractor(
+        keyguardInteractor = keyguardInteractor,
+        powerInteractor = powerInteractor,
+        deviceEntryUdfpsInteractor = deviceEntryUdfpsInteractor,
+        deviceEntryInteractor = deviceEntryInteractor,
+    )
+}

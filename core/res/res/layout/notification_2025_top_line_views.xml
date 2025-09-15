@@ -20,6 +20,27 @@
 <merge
     xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <TextView
+        android:id="@+id/alt_title"
+        android:textAppearance="@style/TextAppearance.DeviceDefault.Notification.Title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:maxLines="1"
+        android:ellipsize="end"
+        android:textAlignment="viewStart"
+        android:visibility="gone"
+        />
+   <TextView
+        android:id="@+id/app_name_text_divider"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="@style/TextAppearance.DeviceDefault.Notification.Info"
+        android:layout_marginStart="@dimen/notification_header_separating_margin"
+        android:layout_marginEnd="@dimen/notification_header_separating_margin"
+        android:text="@string/notification_header_divider_symbol"
+        android:visibility="gone"
+        />
+
     <com.android.internal.widget.ObservableTextView
         android:id="@+id/app_name_text"
         android:layout_width="wrap_content"

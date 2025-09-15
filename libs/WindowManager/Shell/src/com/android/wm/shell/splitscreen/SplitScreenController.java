@@ -325,14 +325,13 @@ public class SplitScreenController implements SplitDragPolicy.Starter,
     }
 
     protected StageCoordinator createStageCoordinator() {
-        return new StageCoordinator(mContext, DEFAULT_DISPLAY, mSyncQueue,
-                mTaskOrganizer, mDisplayController, mDisplayImeController,
+        return StageCoordinatorAbstract.createStageCoordinator(mContext, DEFAULT_DISPLAY,
+                mSyncQueue, mTaskOrganizer, mDisplayController, mDisplayImeController,
                 mDisplayInsetsController, mTransitions, mTransactionPool, mIconProvider,
                 mMainExecutor, mMainHandler, mRecentTasksOptional, mLaunchAdjacentController,
                 mWindowDecorViewModel, mSplitState, mDesktopTasksController,
-                mDesktopUserRepositories, mRootTDAOrganizer,
-                mRootDisplayAreaOrganizer, mDesktopState, mActivityTaskManager, mMSDLPlayer,
-                mBubbleController);
+                mDesktopUserRepositories, mRootTDAOrganizer, mRootDisplayAreaOrganizer,
+                mDesktopState, mActivityTaskManager, mMSDLPlayer, mBubbleController);
     }
 
     @Override

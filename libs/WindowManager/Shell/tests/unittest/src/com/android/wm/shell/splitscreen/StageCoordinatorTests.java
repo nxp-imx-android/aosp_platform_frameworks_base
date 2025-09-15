@@ -22,8 +22,13 @@ import static android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN;
 import static android.app.WindowConfiguration.WINDOWING_MODE_UNDEFINED;
 import static android.view.Display.DEFAULT_DISPLAY;
 import static android.window.WindowContainerTransaction.HierarchyOp.HIERARCHY_OP_TYPE_DISALLOW_OVERRIDE_BOUNDS_FOR_CHILDREN;
+import static android.window.WindowContainerTransaction.HierarchyOp.HIERARCHY_OP_TYPE_LAUNCH_TASK;
+import static android.window.WindowContainerTransaction.HierarchyOp.HIERARCHY_OP_TYPE_PENDING_INTENT;
+import static android.window.WindowContainerTransaction.HierarchyOp.HIERARCHY_OP_TYPE_START_SHORTCUT;
+
 import static com.android.wm.shell.Flags.FLAG_ENABLE_FLEXIBLE_TWO_APP_SPLIT;
 import static com.android.wm.shell.Flags.FLAG_SPLIT_DISABLE_CHILD_TASK_BOUNDS;
+import static com.android.wm.shell.Flags.FLAG_SPLIT_TO_FULL_SET_WINDOW_MODE;
 import static com.android.wm.shell.shared.split.SplitScreenConstants.SNAP_TO_2_50_50;
 import static com.android.wm.shell.shared.split.SplitScreenConstants.SPLIT_INDEX_UNDEFINED;
 import static com.android.wm.shell.shared.split.SplitScreenConstants.SPLIT_POSITION_BOTTOM_OR_RIGHT;
@@ -60,6 +65,8 @@ import android.app.ActivityManager;
 import android.app.ActivityOptions;
 import android.app.IActivityTaskManager;
 import android.app.PendingIntent;
+import android.content.Intent;
+import android.content.pm.ShortcutInfo;
 import android.content.res.Configuration;
 import android.graphics.Rect;
 import android.hardware.display.DisplayManager;
@@ -77,6 +84,7 @@ import android.window.RemoteTransition;
 import android.window.WindowContainerToken;
 import android.window.WindowContainerTransaction;
 import android.window.WindowContainerTransaction.HierarchyOp;
+import android.window.WindowContainerTransaction.HierarchyOp.HierarchyOpType;
 
 import androidx.annotation.Nullable;
 import androidx.test.annotation.UiThreadTest;
@@ -446,6 +454,7 @@ public class StageCoordinatorTests extends ShellTestCase {
     }
 
     @Test
+    @EnableFlags(FLAG_SPLIT_TO_FULL_SET_WINDOW_MODE)
     public void testSplitIntentAndTaskWithPippedApp_launchFullscreen() {
         int taskId = 9;
         mStageCoordinator.setMixedHandler(mDefaultMixedHandler);
@@ -462,8 +471,14 @@ public class StageCoordinatorTests extends ShellTestCase {
                 1 /*snapPosition*/,
                 mRemoteTransition /*remoteTransition*/,
                 null /*instanceId*/);
-        verify(mSplitScreenTransitions, times(1))
-                .startFullscreenTransition(any(), any());
+        verify(mSplitScreenTransitions, times(1)).startFullscreenTransition(mWctCaptor.capture(),
+                any());
+        WindowContainerTransaction wct1 = mWctCaptor.getValue();
+        HierarchyOp op1 = getHierarchyOpForType(wct1, HIERARCHY_OP_TYPE_LAUNCH_TASK);
+        assertThat(op1).isNotNull();
+        Bundle options1 = op1.getLaunchOptions();
+        assertThat(options1).isNotNull();
+        assertThat(getLaunchWindowingMode(options1)).isEqualTo(WINDOWING_MODE_FULLSCREEN);
 
         // Test launching first intent fullscreen
         when(mDefaultMixedHandler.isIntentInPip(pendingIntent)).thenReturn(false);
@@ -478,11 +493,18 @@ public class StageCoordinatorTests extends ShellTestCase {
                 1 /*snapPosition*/,
                 mRemoteTransition /*remoteTransition*/,
                 null /*instanceId*/);
-        verify(mSplitScreenTransitions, times(2))
-                .startFullscreenTransition(any(), any());
+        verify(mSplitScreenTransitions, times(2)).startFullscreenTransition(mWctCaptor.capture(),
+                any());
+        WindowContainerTransaction wct2 = mWctCaptor.getValue();
+        HierarchyOp op2 = getHierarchyOpForType(wct2, HIERARCHY_OP_TYPE_PENDING_INTENT);
+        assertThat(op2).isNotNull();
+        Bundle options2 = op2.getLaunchOptions();
+        assertThat(options2).isNotNull();
+        assertThat(getLaunchWindowingMode(options2)).isEqualTo(WINDOWING_MODE_FULLSCREEN);
     }
 
     @Test
+    @EnableFlags(FLAG_SPLIT_TO_FULL_SET_WINDOW_MODE)
     public void testSplitIntentsWithPippedApp_launchFullscreen() {
         mStageCoordinator.setMixedHandler(mDefaultMixedHandler);
         PendingIntent pendingIntent = mock(PendingIntent.class);
@@ -502,8 +524,14 @@ public class StageCoordinatorTests extends ShellTestCase {
                 1 /*snapPosition*/,
                 mRemoteTransition /*remoteTransition*/,
                 null /*instanceId*/);
-        verify(mSplitScreenTransitions, times(1))
-                .startFullscreenTransition(any(), any());
+        verify(mSplitScreenTransitions, times(1)).startFullscreenTransition(mWctCaptor.capture(),
+                any());
+        WindowContainerTransaction wct1 = mWctCaptor.getValue();
+        HierarchyOp op1 = getHierarchyOpForType(wct1, HIERARCHY_OP_TYPE_PENDING_INTENT);
+        assertThat(op1).isNotNull();
+        Bundle options1 = op1.getLaunchOptions();
+        assertThat(options1).isNotNull();
+        assertThat(getLaunchWindowingMode(options1)).isEqualTo(WINDOWING_MODE_FULLSCREEN);
 
         // Test launching first intent fullscreen
         when(mDefaultMixedHandler.isIntentInPip(pendingIntent)).thenReturn(false);
@@ -521,8 +549,14 @@ public class StageCoordinatorTests extends ShellTestCase {
                 1 /*snapPosition*/,
                 mRemoteTransition /*remoteTransition*/,
                 null /*instanceId*/);
-        verify(mSplitScreenTransitions, times(2))
-                .startFullscreenTransition(any(), any());
+        verify(mSplitScreenTransitions, times(2)).startFullscreenTransition(mWctCaptor.capture(),
+                any());
+        WindowContainerTransaction wct2 = mWctCaptor.getValue();
+        HierarchyOp op2 = getHierarchyOpForType(wct2, HIERARCHY_OP_TYPE_PENDING_INTENT);
+        assertThat(op2).isNotNull();
+        Bundle options2 = op2.getLaunchOptions();
+        assertThat(options2).isNotNull();
+        assertThat(getLaunchWindowingMode(options2)).isEqualTo(WINDOWING_MODE_FULLSCREEN);
     }
 
     @Test
@@ -924,6 +958,58 @@ public class StageCoordinatorTests extends ShellTestCase {
                 eq(wct), anyInt());
     }
 
+    @Test
+    @EnableFlags(FLAG_SPLIT_TO_FULL_SET_WINDOW_MODE)
+    public void startTasks_withOneTask_setsFullscreenWindowingMode() {
+        mStageCoordinator.startTasks(mTaskId, null /* options1 */, INVALID_TASK_ID,
+                null /* options2 */, SPLIT_POSITION_TOP_OR_LEFT, SNAP_TO_2_50_50,
+                mRemoteTransition, null /* instanceId */);
+
+        verify(mSplitScreenTransitions).startFullscreenTransition(mWctCaptor.capture(), any());
+        WindowContainerTransaction wct = mWctCaptor.getValue();
+        HierarchyOp op = getHierarchyOpForType(wct, HIERARCHY_OP_TYPE_LAUNCH_TASK);
+        assertThat(op).isNotNull();
+        Bundle options = op.getLaunchOptions();
+        assertThat(options).isNotNull();
+        assertThat(getLaunchWindowingMode(options)).isEqualTo(WINDOWING_MODE_FULLSCREEN);
+    }
+
+    @Test
+    @EnableFlags(FLAG_SPLIT_TO_FULL_SET_WINDOW_MODE)
+    public void startShortcutAndTask_withOnlyShortcut_setsFullscreenWindowingMode() {
+        ShortcutInfo shortcutInfo = new ShortcutInfo.Builder(mContext, "test").build();
+        mStageCoordinator.startShortcutAndTask(shortcutInfo, null /* options1 */, INVALID_TASK_ID,
+                null /* options2 */, SPLIT_POSITION_TOP_OR_LEFT, SNAP_TO_2_50_50, mRemoteTransition,
+                null /* instanceId */);
+
+        verify(mSplitScreenTransitions).startFullscreenTransition(mWctCaptor.capture(), any());
+        WindowContainerTransaction wct = mWctCaptor.getValue();
+        HierarchyOp op = getHierarchyOpForType(wct, HIERARCHY_OP_TYPE_START_SHORTCUT);
+        assertThat(op).isNotNull();
+        Bundle options = op.getLaunchOptions();
+        assertThat(options).isNotNull();
+        assertThat(getLaunchWindowingMode(options)).isEqualTo(WINDOWING_MODE_FULLSCREEN);
+
+    }
+
+    @Test
+    @EnableFlags(FLAG_SPLIT_TO_FULL_SET_WINDOW_MODE)
+    public void startIntents_withOneIntent_setsFullscreenWindowingMode() {
+        PendingIntent pendingIntent = mock(PendingIntent.class);
+        mStageCoordinator.startIntents(pendingIntent, new Intent(), null /* shortcutInfo1 */,
+                null /* options1 */, null /* pendingIntent2 */, null /* fillInIntent2 */,
+                null /* shortcutInfo2 */, null /* options2 */, SPLIT_POSITION_TOP_OR_LEFT,
+                SNAP_TO_2_50_50, mRemoteTransition, null /* instanceId */);
+
+        verify(mSplitScreenTransitions).startFullscreenTransition(mWctCaptor.capture(), any());
+        WindowContainerTransaction wct = mWctCaptor.getValue();
+        HierarchyOp op = getHierarchyOpForType(wct, HIERARCHY_OP_TYPE_PENDING_INTENT);
+        assertThat(op).isNotNull();
+        Bundle options = op.getLaunchOptions();
+        assertThat(options).isNotNull();
+        assertThat(getLaunchWindowingMode(options)).isEqualTo(WINDOWING_MODE_FULLSCREEN);
+    }
+
     private Transitions createTestTransitions() {
         ShellInit shellInit = new ShellInit(mMainExecutor);
         final Transitions t = new Transitions(mContext, shellInit, mock(ShellController.class),
@@ -932,6 +1018,18 @@ public class StageCoordinatorTests extends ShellTestCase {
                 mock(HomeTransitionObserver.class), mock(FocusTransitionObserver.class));
         shellInit.init();
         return t;
+    }
+
+    @Nullable
+    private static HierarchyOp getHierarchyOpForType(WindowContainerTransaction wct,
+            @HierarchyOpType int type) {
+        return wct.getHierarchyOps().stream()
+                .filter(o -> o.getType() == type)
+                .findFirst().orElse(null);
+    }
+
+    private static int getLaunchWindowingMode(Bundle options) {
+        return options.getInt("android.activity.windowingMode", 0);
     }
 
     private static class TestSplitSelectListener implements SplitScreen.SplitSelectListener {

@@ -32,8 +32,7 @@ import org.junit.runner.RunWith
 /**
  * Tests for [LetterboxControllerStrategy].
  *
- * Build/Install/Run:
- *  atest WMShellUnitTests:LetterboxControllerStrategyTest
+ * Build/Install/Run: atest WMShellUnitTests:LetterboxControllerStrategyTest
  */
 @RunWith(AndroidTestingRunner::class)
 @SmallTest
@@ -43,11 +42,7 @@ class LetterboxControllerStrategyTest : ShellTestCase() {
     fun `LetterboxMode is SINGLE_SURFACE with rounded corners and Not Translucent`() {
         runTestScenario { r ->
             r.configureRoundedCornerRadius(true)
-            r.configureLetterboxMode(
-                r.SIMPLE_TEST_EVENT.copy(
-                    isTranslucent = false
-                )
-            )
+            r.configureLetterboxMode(r.SIMPLE_TEST_EVENT.copy(isTranslucent = false))
             r.checkLetterboxModeIsSingle()
         }
     }
@@ -56,11 +51,7 @@ class LetterboxControllerStrategyTest : ShellTestCase() {
     fun `LetterboxMode is MULTI_SURFACE with rounded corners but Translucent`() {
         runTestScenario { r ->
             r.configureRoundedCornerRadius(true)
-            r.configureLetterboxMode(
-                r.SIMPLE_TEST_EVENT.copy(
-                    isTranslucent = true
-                )
-            )
+            r.configureLetterboxMode(r.SIMPLE_TEST_EVENT.copy(isTranslucent = true))
             r.checkLetterboxModeIsMultiple()
         }
     }
@@ -69,11 +60,7 @@ class LetterboxControllerStrategyTest : ShellTestCase() {
     fun `LetterboxMode is SINGLE_SURFACE with Bubble Events`() {
         runTestScenario { r ->
             r.configureRoundedCornerRadius(true)
-            r.configureLetterboxMode(
-                r.SIMPLE_TEST_EVENT.copy(
-                    isBubble = true
-                )
-            )
+            r.configureLetterboxMode(r.SIMPLE_TEST_EVENT.copy(isBubble = true))
             r.checkLetterboxModeIsSingle()
         }
     }
@@ -81,18 +68,10 @@ class LetterboxControllerStrategyTest : ShellTestCase() {
     @Test
     fun `shouldSupportInputSurface comes from the Event`() {
         runTestScenario { r ->
-            r.configureLetterboxMode(
-                r.SIMPLE_TEST_EVENT.copy(
-                    supportsInput = true
-                )
-            )
+            r.configureLetterboxMode(r.SIMPLE_TEST_EVENT.copy(supportsInput = true))
             r.checkShouldSupportInputSurface(expected = true)
 
-            r.configureLetterboxMode(
-                r.SIMPLE_TEST_EVENT.copy(
-                    supportsInput = false
-                )
-            )
+            r.configureLetterboxMode(r.SIMPLE_TEST_EVENT.copy(supportsInput = false))
             r.checkShouldSupportInputSurface(expected = false)
         }
     }
@@ -106,9 +85,7 @@ class LetterboxControllerStrategyTest : ShellTestCase() {
         }
     }
 
-    /**
-     * Runs a test scenario providing a Robot.
-     */
+    /** Runs a test scenario providing a Robot. */
     fun runTestScenario(consumer: Consumer<LetterboxStrategyRobotTest>) {
         val robot = LetterboxStrategyRobotTest(mContext)
         consumer.accept(robot)
@@ -117,24 +94,19 @@ class LetterboxControllerStrategyTest : ShellTestCase() {
     class LetterboxStrategyRobotTest(ctx: Context) {
 
         companion object {
-            @JvmStatic
-            private val ROUNDED_CORNERS_TRUE = 10
+            @JvmStatic private val ROUNDED_CORNERS_TRUE = 10
 
-            @JvmStatic
-            private val ROUNDED_CORNERS_FALSE = 0
+            @JvmStatic private val ROUNDED_CORNERS_FALSE = 0
         }
 
-        val SIMPLE_TEST_EVENT = LetterboxLifecycleEvent(
-            taskBounds = Rect()
-        )
+        val SIMPLE_TEST_EVENT = LetterboxLifecycleEvent(taskBounds = Rect())
 
         private val letterboxConfiguration: LetterboxConfiguration
         private val letterboxStrategy: LetterboxControllerStrategy
 
         init {
             letterboxConfiguration = LetterboxConfiguration(ctx)
-            letterboxStrategy =
-                LetterboxControllerStrategy(letterboxConfiguration)
+            letterboxStrategy = LetterboxControllerStrategy(letterboxConfiguration)
         }
 
         fun configureRoundedCornerRadius(enabled: Boolean) {

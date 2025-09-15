@@ -93,7 +93,7 @@ constructor(
     fun notifyPrivacyItemsChanged(showAnimation: Boolean = true) {
         // Disabling animation in case that the privacy indicator is implemented as a status bar
         // chip
-        val shouldShowAnimation = showAnimation && !Flags.expandedPrivacyIndicatorsOnLargeScreen()
+        val shouldShowAnimation = showAnimation && !avControlsChipInteractor.isEnabled.value
         val event = PrivacyEvent(shouldShowAnimation)
         event.privacyItems = privacyStateListener.currentPrivacyItems
         event.contentDescription = run {

@@ -496,7 +496,7 @@ public class Bubble implements BubbleViewProvider {
     /** Creates a parcelable flyout message to send to launcher. */
     @Nullable
     private ParcelableFlyoutMessage getParcelableFlyoutMessage() {
-        if (mFlyoutMessage == null) {
+        if (mFlyoutMessage == null || !showFlyout()) {
             return null;
         }
         // the icon is only used in group chats

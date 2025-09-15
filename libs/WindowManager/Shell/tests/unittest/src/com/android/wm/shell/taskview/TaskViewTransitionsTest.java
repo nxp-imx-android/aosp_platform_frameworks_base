@@ -255,7 +255,6 @@ public class TaskViewTransitionsTest extends ShellTestCase {
 
     @Test
     public void testSetTaskVisibility_reorderNoHiddenVisibilitySync_resetsAlwaysOnTopAndReorder() {
-        assumeTrue(TaskViewTransitions.useRepo());
         assumeTrue(BubbleAnythingFlagHelper.enableCreateAnyBubble());
 
         final Rect bounds = new Rect(0, 0, 100, 100);

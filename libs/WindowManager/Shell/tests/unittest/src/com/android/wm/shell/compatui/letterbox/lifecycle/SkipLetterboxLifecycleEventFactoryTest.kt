@@ -31,8 +31,7 @@ import org.junit.runner.RunWith
 /**
  * Tests for [SkipLetterboxLifecycleEventFactory].
  *
- * Build/Install/Run:
- *  atest WMShellUnitTests:SkipLetterboxLifecycleEventFactoryTest
+ * Build/Install/Run: atest WMShellUnitTests:SkipLetterboxLifecycleEventFactoryTest
  */
 @RunWith(AndroidTestingRunner::class)
 @SmallTest
@@ -42,12 +41,8 @@ class SkipLetterboxLifecycleEventFactoryTest : ShellTestCase() {
     fun `Factory is active when Change is a Closing one`() {
         runTestScenario { r ->
             testLetterboxLifecycleEventFactory(r.getLetterboxLifecycleEventFactory()) {
-                inputChange {
-                    mode = TRANSIT_CLOSE
-                }
-                validateCanHandle { canHandle ->
-                    assertTrue(canHandle)
-                }
+                inputChange { mode = TRANSIT_CLOSE }
+                validateCanHandle { canHandle -> assertTrue(canHandle) }
             }
         }
     }
@@ -56,27 +51,19 @@ class SkipLetterboxLifecycleEventFactoryTest : ShellTestCase() {
     fun `Factory is NOT active when Change is NOT a Closing one`() {
         runTestScenario { r ->
             testLetterboxLifecycleEventFactory(r.getLetterboxLifecycleEventFactory()) {
-                inputChange {
-                    mode = TRANSIT_OPEN
-                }
-                validateCanHandle { canHandle ->
-                    assertFalse(canHandle)
-                }
+                inputChange { mode = TRANSIT_OPEN }
+                validateCanHandle { canHandle -> assertFalse(canHandle) }
             }
         }
     }
 
-    /**
-     * Runs a test scenario providing a Robot.
-     */
+    /** Runs a test scenario providing a Robot. */
     fun runTestScenario(consumer: Consumer<DisableLetterboxLifecycleEventFactoryRobotTest>) {
         val robot = DisableLetterboxLifecycleEventFactoryRobotTest()
         consumer.accept(robot)
     }
 
-    /**
-     * Robot contextual to [TaskInfoLetterboxLifecycleEventFactory].
-     */
+    /** Robot contextual to [TaskInfoLetterboxLifecycleEventFactory]. */
     class DisableLetterboxLifecycleEventFactoryRobotTest {
 
         fun getLetterboxLifecycleEventFactory(): () -> LetterboxLifecycleEventFactory = {

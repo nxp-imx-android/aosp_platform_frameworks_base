@@ -180,6 +180,10 @@ class SoftwareRateLimiter {
     SoftwareRateLimiter(Injector injector, boolean enforcing) {
         mInjector = injector;
         mEnforcing = enforcing;
+        if (android.security.Flags.manageLockoutEndTimeInService()) {
+            // The cache doesn't work until it's initialized.
+            mInjector.invalidateLockoutEndTimeCache();
+        }
     }
 
     /**
@@ -279,7 +283,10 @@ class SoftwareRateLimiter {
         return remainingTimeout.isPositive() ? remainingTimeout : Duration.ZERO;
     }
 
-    /** Computes the software enforced lockout and updates the stored lockout end time. */
+    /**
+     * Computes the software enforced lockout and updates the stored lockout end time. Invalidates
+     * the lockout end time cache as needed.
+     */
     @GuardedBy("this")
     private void evaluateSoftwareRateLimit(RateLimiterState state, Duration now) {
         final Duration originalTimeout = getOriginalTimeout(state.numFailures);
@@ -289,8 +296,26 @@ class SoftwareRateLimiter {
     }
 
     /**
+     * Returns the tracked lockout end time for the given LSKF. If no attempts have been made for
+     * this LSKF, no timeouts have happened across attempts, or the existing lockout end time is in
+     * the past, returns {@link Duration#ZERO}.
+     */
+    synchronized Duration getLockoutEndTime(LskfIdentifier id) {
+        Duration now = mInjector.getTimeSinceBoot();
+        RateLimiterState state = getOrComputeState(id, now);
+        Duration lockoutEndTime = state.lockoutEndTime;
+        // TODO: b/322014085 - Get rid of this clear once LSS clients are not depending on
+        //  "lockoutEndTime == 0 iff more LSKF guesses can be made" semantics.
+        if (!lockoutEndTime.isZero() && lockoutEndTime.compareTo(now) < 0) {
+            clearLockoutEndTime(state);
+            return Duration.ZERO;
+        }
+        return lockoutEndTime;
+    }
+
+    /**
      * Updates state.lockoutEndTime to be the later of lockoutEndTime and state.lockoutEndTime, or
-     * zero if that time has already been reached.
+     * zero if that time has already been reached. If it changed, invalidate the cache.
      */
     @GuardedBy("this")
     private void updateLockoutEndTime(
@@ -303,6 +328,9 @@ class SoftwareRateLimiter {
         }
         if (!lockoutEndTime.equals(state.lockoutEndTime)) {
             state.lockoutEndTime = lockoutEndTime;
+            if (android.security.Flags.manageLockoutEndTimeInService()) {
+                mInjector.invalidateLockoutEndTimeCache();
+            }
         }
     }
 
@@ -310,6 +338,9 @@ class SoftwareRateLimiter {
     private void clearLockoutEndTime(RateLimiterState state) {
         if (!state.lockoutEndTime.isZero()) {
             state.lockoutEndTime = Duration.ZERO;
+            if (android.security.Flags.manageLockoutEndTimeInService()) {
+                mInjector.invalidateLockoutEndTimeCache();
+            }
         }
     }
 
@@ -360,20 +391,30 @@ class SoftwareRateLimiter {
      * @param guess the LSKF that was attempted
      * @param isCertainlyWrongGuess true if it's certain that the failure was caused by the guess
      *     being wrong, as opposed to e.g. a transient hardware glitch
+     * @param hwTimeout an externally-imposed timeout from the current time since boot
      * @return the remaining timeout until when the next guess will be allowed
      */
     synchronized Duration reportFailure(
-            LskfIdentifier id, LockscreenCredential guess, boolean isCertainlyWrongGuess) {
+            LskfIdentifier id,
+            LockscreenCredential guess,
+            boolean isCertainlyWrongGuess,
+            Duration hwTimeout) {
         RateLimiterState state = getExistingState(id);
+
+        Duration now = mInjector.getTimeSinceBoot();
+        if (android.security.Flags.manageLockoutEndTimeInService() && hwTimeout.isPositive()) {
+            // Always track any hardware timeouts, including when not enforcing.
+            updateLockoutEndTime(state, now, now.plus(hwTimeout));
+        }
 
         // In non-enforcing mode, ignore duplicate wrong guesses here since they were already
         // counted by apply(), including having stats written for them. In enforcing mode, this
         // method isn't passed duplicate wrong guesses.
         if (!mEnforcing && ArrayUtils.contains(state.savedWrongGuesses, guess)) {
-            return Duration.ZERO;
+            return android.security.Flags.manageLockoutEndTimeInService()
+                    ? computeRemainingTimeout(state, now)
+                    : Duration.ZERO;
         }
-
-        final Duration now = mInjector.getTimeSinceBoot();
 
         // Increment the failure counter regardless of whether the failure is a certainly wrong
         // guess or not. A generic failure might still be caused by a wrong guess. Gatekeeper only
@@ -520,6 +561,9 @@ class SoftwareRateLimiter {
     private void clearLskfStateAtIndex(int index) {
         final RateLimiterState state = mState.valueAt(index);
         forgetSavedWrongGuesses(state);
+        if (android.security.Flags.manageLockoutEndTimeInService()) {
+            clearLockoutEndTime(state);
+        }
         mState.removeAt(index);
     }
 
@@ -582,5 +626,7 @@ class SoftwareRateLimiter {
         void postDelayed(Runnable runnable, Object token, long delayMillis);
 
         int getHardwareRateLimiter(LskfIdentifier id);
+
+        void invalidateLockoutEndTimeCache();
     }
 }

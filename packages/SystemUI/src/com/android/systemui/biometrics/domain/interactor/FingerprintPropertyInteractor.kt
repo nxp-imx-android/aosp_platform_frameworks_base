@@ -47,7 +47,6 @@ constructor(
     private val repository: FingerprintPropertyRepository,
     @Main private val configurationInteractor: ConfigurationInteractor,
     displayStateInteractor: DisplayStateInteractor,
-    udfpsOverlayInteractor: UdfpsOverlayInteractor,
 ) {
     val propertiesInitialized: Flow<Boolean> = repository.propertiesInitialized
     val isUdfps: StateFlow<Boolean> =
@@ -117,15 +116,6 @@ constructor(
                 scale = scale,
             )
         }
-
-    /**
-     * Sensor location for the:
-     * - current physical display
-     * - current screen resolution
-     * - device's current orientation
-     */
-    val udfpsSensorBounds: Flow<Rect> =
-        udfpsOverlayInteractor.udfpsOverlayParams.map { it.sensorBounds }.distinctUntilChanged()
 
     companion object {
 
