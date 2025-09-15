@@ -137,6 +137,7 @@ import static android.security.Flags.preventIntentRedirectShowToastIfNestedKeysN
 import static android.security.Flags.preventIntentRedirectThrowExceptionIfNestedKeysNotCollected;
 import static android.server.Flags.enableThemeService;
 import static android.util.FeatureFlagUtils.SETTINGS_ENABLE_MONITOR_PHANTOM_PROCS;
+import static android.view.Display.DEFAULT_DISPLAY;
 import static android.view.Display.INVALID_DISPLAY;
 
 import static com.android.internal.util.FrameworkStatsLog.EXTRA_INTENT_KEYS_COLLECTED_ON_SERVER;
@@ -258,6 +259,7 @@ import android.app.IUidObserver;
 import android.app.IUnsafeIntentStrictModeCallback;
 import android.app.IUserSwitchObserver;
 import android.app.Instrumentation;
+import android.app.KeyguardManager;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -9924,6 +9926,15 @@ public class ActivityManagerService extends IActivityManager.Stub
 
         if (Debug.isDebuggerConnected()) {
             sb.append("Debugger: Connected\n");
+        }
+        DisplayManager displayManager = mContext.getSystemService(DisplayManager.class);
+        if (displayManager != null) {
+            sb.append("DefaultScreen-State: ").append(Display.stateToString(displayManager
+                .getDisplay(DEFAULT_DISPLAY).getState())).append("\n");
+        }
+        KeyguardManager keyguardManager = mContext.getSystemService(KeyguardManager.class);
+        if (keyguardManager != null) {
+            sb.append("Keyguard-Locked: ").append(keyguardManager.isKeyguardLocked()).append("\n");
         }
         if (crashInfo != null && crashInfo.exceptionHandlerClassName != null
                 && !crashInfo.exceptionHandlerClassName.isEmpty()) {
