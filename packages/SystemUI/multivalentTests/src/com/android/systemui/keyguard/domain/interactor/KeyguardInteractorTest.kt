@@ -382,6 +382,32 @@ class KeyguardInteractorTest : SysuiTestCase() {
         }
 
     @Test
+    fun dismissAlpha_doesNotEmitWhenQsIsExpandedAndKeyguardDismissible() =
+        testScope.runTest {
+            val dismissAlpha by collectValues(underTest.dismissAlpha)
+            assertThat(dismissAlpha[0]).isEqualTo(1f)
+            assertThat(dismissAlpha.size).isEqualTo(1)
+
+            keyguardTransitionRepository.sendTransitionSteps(from = AOD, to = LOCKSCREEN, testScope)
+
+            // QS is fully expanded
+            shadeRepository.setQsExpansion(1f)
+
+            // User begins to swipe up when dimissible
+            repository.setStatusBarState(StatusBarState.KEYGUARD)
+            repository.setKeyguardDismissible(true)
+
+            shadeRepository.setLegacyShadeExpansion(0.5f)
+            runCurrent()
+
+            shadeRepository.setLegacyShadeExpansion(0.98f)
+            runCurrent()
+
+            assertThat(dismissAlpha[0]).isEqualTo(1f)
+            assertThat(dismissAlpha.size).isEqualTo(1)
+        }
+
+    @Test
     @DisableSceneContainer
     fun dismissAlpha_onGlanceableHub_doesNotEmitWhenShadeResets() =
         testScope.runTest {
