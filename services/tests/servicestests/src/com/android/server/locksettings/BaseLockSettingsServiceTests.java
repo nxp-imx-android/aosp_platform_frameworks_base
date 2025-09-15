@@ -117,6 +117,7 @@ public abstract class BaseLockSettingsServiceTests {
     FaceManager mFaceManager;
     PackageManager mPackageManager;
     SecureLockDeviceServiceInternal mSecureLockDeviceServiceInternal;
+    Runnable mInvalidateLockoutEndTimeCacheMock;
     LockSettingsServiceTestable.MockInjector mInjector;
     @Rule
     public FakeSettingsProviderRule mSettingsRule = FakeSettingsProvider.rule();
@@ -147,6 +148,7 @@ public abstract class BaseLockSettingsServiceTests {
         mPackageManager = mock(PackageManager.class);
         mStrongAuth = mock(LockSettingsStrongAuth.class);
         mStrongAuthTracker = mock(LockSettingsService.SynchronizedStrongAuthTracker.class);
+        mInvalidateLockoutEndTimeCacheMock = mock(Runnable.class);
 
         LocalServices.removeServiceForTest(LockSettingsInternal.class);
         LocalServices.removeServiceForTest(DevicePolicyManagerInternal.class);
@@ -191,7 +193,8 @@ public abstract class BaseLockSettingsServiceTests {
                         mUserManagerInternal,
                         mDeviceStateCache,
                         mSecureLockDeviceServiceInternal,
-                        mKeyStoreRule.getKeyStore());
+                        mKeyStoreRule.getKeyStore(),
+                        mInvalidateLockoutEndTimeCacheMock);
         mService =
                 new LockSettingsServiceTestable(mInjector, mGateKeeperService, mAuthSecretService);
         mService.mHasSecureLockScreen = true;

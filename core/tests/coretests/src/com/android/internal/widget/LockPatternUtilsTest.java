@@ -38,10 +38,14 @@ import static org.mockito.Mockito.anyInt;
 import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import android.app.PropertyInvalidatedCache;
+import android.app.test.PropertyInvalidatedCacheTestRule;
 import android.app.trust.TrustManager;
 import android.content.ComponentName;
 import android.content.Context;
@@ -49,6 +53,7 @@ import android.content.ContextWrapper;
 import android.content.pm.UserInfo;
 import android.content.res.Resources;
 import android.os.Looper;
+import android.os.ParcelDuration;
 import android.os.RemoteException;
 import android.os.UserHandle;
 import android.os.UserManager;
@@ -75,8 +80,10 @@ import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Supplier;
 
 @RunWith(AndroidJUnit4.class)
 @SmallTest
@@ -87,9 +94,15 @@ public class LockPatternUtilsTest {
     @Rule
     public final SetFlagsRule mSetFlagsRule = new SetFlagsRule();
 
+    @Rule
+    public final PropertyInvalidatedCacheTestRule mCacheTestRule =
+            new PropertyInvalidatedCacheTestRule();
+
     private ILockSettings mLockSettings;
+    private Supplier<Duration> mTimeSinceBootSupplier = mock(Supplier.class);
     private static final int USER_ID = 1;
     private static final int DEMO_USER_ID = 5;
+    private static final Duration LOCKOUT_END_TIME = Duration.ofSeconds(1);
 
     private LockPatternUtils mLockPatternUtils;
 
@@ -98,7 +111,12 @@ public class LockPatternUtilsTest {
     private void configureTest(boolean isSecure, boolean isDemoUser, int deviceDemoMode)
             throws Exception {
         mLockSettings = mock(ILockSettings.class);
+        when(mTimeSinceBootSupplier.get()).thenReturn(Duration.ZERO);
         final Context context = spy(new ContextWrapper(InstrumentationRegistry.getTargetContext()));
+
+        // Need to invalidate once or else caching doesn't work.
+        PropertyInvalidatedCache.invalidateCache(
+                PropertyInvalidatedCache.MODULE_SYSTEM, LockPatternUtils.LOCKOUT_END_TIME_API);
 
         final MockContentResolver cr = new MockContentResolver(context);
         cr.addProvider(Settings.AUTHORITY, new FakeSettingsProvider());
@@ -110,8 +128,9 @@ public class LockPatternUtilsTest {
                          : LockPatternUtils.CREDENTIAL_TYPE_NONE);
         when(mLockSettings.getLong("lockscreen.password_type", PASSWORD_QUALITY_UNSPECIFIED,
                 DEMO_USER_ID)).thenReturn((long) PASSWORD_QUALITY_MANAGED);
+        when(mLockSettings.getLockoutEndTime(USER_ID)).thenReturn(asParcel(LOCKOUT_END_TIME));
         when(mLockSettings.hasSecureLockScreen()).thenReturn(true);
-        mLockPatternUtils = new LockPatternUtils(context, mLockSettings);
+        mLockPatternUtils = new LockPatternUtils(context, mLockSettings, mTimeSinceBootSupplier);
 
         final UserInfo userInfo = mock(UserInfo.class);
         when(userInfo.isDemo()).thenReturn(isDemoUser);
@@ -409,6 +428,60 @@ public class LockPatternUtilsTest {
         assertThat(mLockPatternUtils.writeRepairModeCredential(USER_ID)).isFalse();
     }
 
+    @Test
+    @EnableFlags(android.security.Flags.FLAG_MANAGE_LOCKOUT_END_TIME_IN_SERVICE)
+    public void testGetLockoutEndTime_once() throws Exception {
+        configureTest(true, false, 2);
+        Duration lockoutEndTime = mLockPatternUtils.getLockoutEndTime(USER_ID);
+
+        assertThat(lockoutEndTime).isEqualTo(LOCKOUT_END_TIME);
+        verify(mLockSettings).getLockoutEndTime(USER_ID);
+    }
+
+    @Test
+    @EnableFlags(android.security.Flags.FLAG_MANAGE_LOCKOUT_END_TIME_IN_SERVICE)
+    public void testGetLockoutEndTime_multipleTimesHitCache() throws Exception {
+        configureTest(true, false, 2);
+        for (int i = 0; i < 5; i++) {
+            Duration lockoutEndTime = mLockPatternUtils.getLockoutEndTime(USER_ID);
+            assertThat(lockoutEndTime).isEqualTo(LOCKOUT_END_TIME);
+        }
+
+        verify(mLockSettings).getLockoutEndTime(USER_ID);
+    }
+
+    @Test
+    @EnableFlags(android.security.Flags.FLAG_MANAGE_LOCKOUT_END_TIME_IN_SERVICE)
+    public void testGetLockoutEndTime_newQueryAfterEndTime() throws Exception {
+        configureTest(true, false, 2);
+        for (int i = 0; i < 5; i++) {
+            Duration lockoutEndTime = mLockPatternUtils.getLockoutEndTime(USER_ID);
+            assertThat(lockoutEndTime).isEqualTo(LOCKOUT_END_TIME);
+        }
+        reset(mTimeSinceBootSupplier, mLockSettings);
+        when(mTimeSinceBootSupplier.get()).thenReturn(LOCKOUT_END_TIME.plusMillis(1));
+        Duration secondLockoutEndTime = LOCKOUT_END_TIME.plusSeconds(1);
+        when(mLockSettings.getLockoutEndTime(USER_ID)).thenReturn(asParcel(secondLockoutEndTime));
+
+        Duration lockoutEndTime = mLockPatternUtils.getLockoutEndTime(USER_ID);
+
+        assertThat(lockoutEndTime).isEqualTo(secondLockoutEndTime);
+        verify(mLockSettings).getLockoutEndTime(USER_ID);
+    }
+
+    @Test
+    @EnableFlags(android.security.Flags.FLAG_MANAGE_LOCKOUT_END_TIME_IN_SERVICE)
+    public void testInvalidateLockoutEndTimeCache_causesNewQuery() throws Exception {
+        configureTest(true, false, 2);
+        for (int i = 0; i < 5; i++) {
+            Duration lockoutEndTime = mLockPatternUtils.getLockoutEndTime(USER_ID);
+            assertThat(lockoutEndTime).isEqualTo(LOCKOUT_END_TIME);
+            LockPatternUtils.invalidateLockoutEndTimeCache();
+        }
+
+        verify(mLockSettings, times(5)).getLockoutEndTime(USER_ID);
+    }
+
     private TestStrongAuthTracker createStrongAuthTracker() {
         final Context context = new ContextWrapper(InstrumentationRegistry.getTargetContext());
         return new TestStrongAuthTracker(context, Looper.getMainLooper());
@@ -436,7 +509,7 @@ public class LockPatternUtilsTest {
         when(context.getSystemService(Context.TRUST_SERVICE)).thenReturn(trustManager);
 
         final ILockSettings ils = mock(ILockSettings.class);
-        mLockPatternUtils = new LockPatternUtils(context, ils);
+        mLockPatternUtils = new LockPatternUtils(context, ils, mTimeSinceBootSupplier);
         return ils;
     }
 
@@ -462,7 +535,7 @@ public class LockPatternUtilsTest {
         final Context context = spy(new ContextWrapper(InstrumentationRegistry.getTargetContext()));
         final ILockSettings ils = mock(ILockSettings.class);
         when(ils.getBoolean(anyString(), anyBoolean(), anyInt())).thenThrow(RemoteException.class);
-        mLockPatternUtils = new LockPatternUtils(context, ils);
+        mLockPatternUtils = new LockPatternUtils(context, ils, mTimeSinceBootSupplier);
 
         mResources = spy(context.getResources());
         when(context.getResources()).thenReturn(mResources);
@@ -518,5 +591,9 @@ public class LockPatternUtilsTest {
     public void isPinEnhancedPrivacyEnabled_OldDefault() throws RemoteException {
         configureSensitiveInputVisibilityTest();
         assertFalse(mLockPatternUtils.isPinEnhancedPrivacyEnabled(USER_ID));
+    }
+
+    private static ParcelDuration asParcel(Duration duration) {
+        return new ParcelDuration(duration);
     }
 }
