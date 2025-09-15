@@ -187,6 +187,13 @@ flag {
 }
 
 flag {
+    name: "enable_max_brightness_cap_override_plugin_type"
+    namespace: "display_manager"
+    description: "Enable max brightness cap override plugin type"
+    bug: "441368631"
+}
+
+flag {
     name: "enable_display_content_mode_management"
     namespace: "lse_desktop_experience"
     description: "Enable switching the content mode of connected displays between mirroring and extended. Also change the default content mode to extended mode."
