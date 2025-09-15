@@ -11811,6 +11811,7 @@ public class Notification implements Parcelable
             final StandardTemplateParams p = mBuilder.mParams.reset()
                     .viewType(StandardTemplateParams.VIEW_TYPE_NORMAL)
                     .fillTextsFrom(mBuilder).text(null)
+                    .hideProgress(true)
                     .hideRightIcon(true);
             final TemplateBindResult result = new TemplateBindResult();
             final RemoteViews contentView = getStandardView(
@@ -11824,6 +11825,7 @@ public class Notification implements Parcelable
             final StandardTemplateParams p = mBuilder.mParams.reset()
                     .viewType(StandardTemplateParams.VIEW_TYPE_HEADS_UP)
                     .fillTextsFrom(mBuilder).text(null)
+                    .hideProgress(true)
                     .hideRightIcon(true);
             final TemplateBindResult result = new TemplateBindResult();
             final RemoteViews contentView = getStandardView(
@@ -11836,6 +11838,7 @@ public class Notification implements Parcelable
         public RemoteViews makeExpandedContentView() {
             final StandardTemplateParams p = mBuilder.mParams.reset()
                     .viewType(StandardTemplateParams.VIEW_TYPE_EXPANDED)
+                    .hideProgress(true)
                     .fillTextsFrom(mBuilder)
                     .text(null)
                     .titleViewId(R.id.alt_title)
