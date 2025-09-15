@@ -37,8 +37,7 @@ import org.mockito.kotlin.verify
 /**
  * Tests for [MixedLetterboxController].
  *
- * Build/Install/Run:
- *  atest WMShellUnitTests:MixedLetterboxControllerTest
+ * Build/Install/Run: atest WMShellUnitTests:MixedLetterboxControllerTest
  */
 @RunWith(AndroidTestingRunner::class)
 @SmallTest
@@ -126,9 +125,7 @@ class MixedLetterboxControllerTest : ShellTestCase() {
         }
     }
 
-    /**
-     * Runs a test scenario providing a Robot.
-     */
+    /** Runs a test scenario providing a Robot. */
     fun runTestScenario(consumer: Consumer<MixedLetterboxControllerRobotTest>) {
         consumer.accept(MixedLetterboxControllerRobotTest(mContext).apply { initController() })
     }
@@ -149,9 +146,9 @@ class MixedLetterboxControllerTest : ShellTestCase() {
         }
 
         fun configureStrategyFor(shouldSupportInputSurface: Boolean) {
-            doReturn(
-                shouldSupportInputSurface
-            ).`when`(controllerStrategy).shouldSupportInputSurface()
+            doReturn(shouldSupportInputSurface)
+                .`when`(controllerStrategy)
+                .shouldSupportInputSurface()
         }
 
         fun configureStrategyFor(consumer: (LetterboxConfiguration) -> Unit) {
@@ -159,39 +156,22 @@ class MixedLetterboxControllerTest : ShellTestCase() {
         }
 
         fun checkCreateInvokedOnSingleController(times: Int = 1) {
-            verify(singleLetterboxController, times(times)).createLetterboxSurface(
-                any(),
-                any(),
-                any(),
-                any()
-            )
+            verify(singleLetterboxController, times(times))
+                .createLetterboxSurface(any(), any(), any(), any())
         }
 
         fun checkCreateInvokedOnMultiController(times: Int = 1) {
-            verify(multipleLetterboxController, times(times)).createLetterboxSurface(
-                any(),
-                any(),
-                any(),
-                any()
-            )
+            verify(multipleLetterboxController, times(times))
+                .createLetterboxSurface(any(), any(), any(), any())
         }
 
         fun checkCreateInvokedOnInputController(times: Int = 1) {
-            verify(inputController, times(times)).createLetterboxSurface(
-                any(),
-                any(),
-                any(),
-                any()
-            )
+            verify(inputController, times(times)).createLetterboxSurface(any(), any(), any(), any())
         }
 
         fun checkCreateInvokedOnRoundedCornersController(times: Int = 1) {
-            verify(roundedCornersController, times(times)).createLetterboxSurface(
-                any(),
-                any(),
-                any(),
-                any()
-            )
+            verify(roundedCornersController, times(times))
+                .createLetterboxSurface(any(), any(), any(), any())
         }
 
         fun checkDestroyInvokedOnSingleController(times: Int = 1) {
@@ -210,13 +190,14 @@ class MixedLetterboxControllerTest : ShellTestCase() {
             verify(roundedCornersController, times(times)).destroyLetterboxSurface(any(), any())
         }
 
-        override fun buildController(): LetterboxController = MixedLetterboxController(
-            letterboxConfiguration,
-            singleLetterboxController,
-            multipleLetterboxController,
-            controllerStrategy,
-            inputController,
-            roundedCornersController
-        )
+        override fun buildController(): LetterboxController =
+            MixedLetterboxController(
+                letterboxConfiguration,
+                singleLetterboxController,
+                multipleLetterboxController,
+                controllerStrategy,
+                inputController,
+                roundedCornersController,
+            )
     }
 }

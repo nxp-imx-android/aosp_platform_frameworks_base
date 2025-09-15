@@ -42,8 +42,7 @@ import org.mockito.kotlin.mock
 /**
  * Tests for [ActivityLetterboxLifecycleEventFactory].
  *
- * Build/Install/Run:
- *  atest WMShellUnitTests:ActivityLetterboxLifecycleEventFactoryTest
+ * Build/Install/Run: atest WMShellUnitTests:ActivityLetterboxLifecycleEventFactoryTest
  */
 @RunWith(AndroidTestingRunner::class)
 @SmallTest
@@ -56,9 +55,7 @@ class ActivityLetterboxLifecycleEventFactoryTest : ShellTestCase() {
                 inputChange {
                     // Empty Change
                 }
-                validateCanHandle { canHandle ->
-                    assertFalse(canHandle)
-                }
+                validateCanHandle { canHandle -> assertFalse(canHandle) }
             }
         }
     }
@@ -70,18 +67,14 @@ class ActivityLetterboxLifecycleEventFactoryTest : ShellTestCase() {
                 val testLeash = mock<SurfaceControl>()
                 val testToken = mock<WindowContainerToken>()
                 inputChange {
-                    activityTransitionInfo {
-                        taskId = 10
-                    }
+                    activityTransitionInfo { taskId = 10 }
                     endAbsBounds = Rect(100, 50, 2000, 1500)
                 }
                 r.addToTaskRepository(
                     10,
-                    LetterboxTaskInfoState(testToken, testLeash, configuration = Configuration())
+                    LetterboxTaskInfoState(testToken, testLeash, configuration = Configuration()),
                 )
-                validateCanHandle { canHandle ->
-                    assertTrue(canHandle)
-                }
+                validateCanHandle { canHandle -> assertTrue(canHandle) }
                 validateCreateLifecycleEvent { event ->
                     assertEquals(Rect(0, 0, 1900, 1450), event?.taskBounds)
                 }
@@ -99,18 +92,14 @@ class ActivityLetterboxLifecycleEventFactoryTest : ShellTestCase() {
                     endAbsBounds = Rect(100, 50, 2000, 1500)
                     activityTransitionInfo {
                         taskId = 10
-                        appCompatTransitionInfo {
-                            letterboxBounds = Rect(500, 50, 1500, 800)
-                        }
+                        appCompatTransitionInfo { letterboxBounds = Rect(500, 50, 1500, 800) }
                     }
                 }
                 r.addToTaskRepository(
                     10,
-                    LetterboxTaskInfoState(testToken, testLeash, configuration = Configuration())
+                    LetterboxTaskInfoState(testToken, testLeash, configuration = Configuration()),
                 )
-                validateCanHandle { canHandle ->
-                    assertTrue(canHandle)
-                }
+                validateCanHandle { canHandle -> assertTrue(canHandle) }
                 validateCreateLifecycleEvent { event ->
                     assertEquals(Rect(0, 0, 1900, 1450), event?.taskBounds)
                     assertEquals(Rect(400, 0, 1400, 750), event?.letterboxBounds)
@@ -127,16 +116,10 @@ class ActivityLetterboxLifecycleEventFactoryTest : ShellTestCase() {
                 val testToken = mock<WindowContainerToken>()
                 r.addToTaskRepository(
                     10,
-                    LetterboxTaskInfoState(testToken, testLeash, configuration = Configuration())
+                    LetterboxTaskInfoState(testToken, testLeash, configuration = Configuration()),
                 )
-                inputChange {
-                    activityTransitionInfo {
-                        taskId = 10
-                    }
-                }
-                validateCanHandle { canHandle ->
-                    assertTrue(canHandle)
-                }
+                inputChange { activityTransitionInfo { taskId = 10 } }
+                validateCanHandle { canHandle -> assertTrue(canHandle) }
                 validateCreateLifecycleEvent { event ->
                     assertEquals(testLeash, event?.taskLeash)
                     assertEquals(testToken, event?.containerToken)
@@ -149,16 +132,12 @@ class ActivityLetterboxLifecycleEventFactoryTest : ShellTestCase() {
     fun `supportsInput comes from LetterboxDependencyHelper`() {
         runTestScenario { r ->
             testLetterboxLifecycleEventFactory(r.getLetterboxLifecycleEventFactory()) {
-                inputChange {
-                    activityTransitionInfo {
-                        taskId = 10
-                    }
-                }
+                inputChange { activityTransitionInfo { taskId = 10 } }
                 val testLeash = mock<SurfaceControl>()
                 val testToken = mock<WindowContainerToken>()
                 r.addToTaskRepository(
                     10,
-                    LetterboxTaskInfoState(testToken, testLeash, configuration = Configuration())
+                    LetterboxTaskInfoState(testToken, testLeash, configuration = Configuration()),
                 )
                 r.shouldSupportInputSurface(shouldSupportInputSurface = true)
                 validateCreateLifecycleEvent { event ->
@@ -179,32 +158,20 @@ class ActivityLetterboxLifecycleEventFactoryTest : ShellTestCase() {
     fun `Event is null if repository has no task data`() {
         runTestScenario { r ->
             testLetterboxLifecycleEventFactory(r.getLetterboxLifecycleEventFactory()) {
-                inputChange {
-                    activityTransitionInfo {
-                        taskId = 10
-                    }
-                }
-                validateCanHandle { canHandle ->
-                    assertTrue(canHandle)
-                }
-                validateCreateLifecycleEvent { event ->
-                    assertNull(event)
-                }
+                inputChange { activityTransitionInfo { taskId = 10 } }
+                validateCanHandle { canHandle -> assertTrue(canHandle) }
+                validateCreateLifecycleEvent { event -> assertNull(event) }
             }
         }
     }
 
-    /**
-     * Runs a test scenario providing a Robot.
-     */
+    /** Runs a test scenario providing a Robot. */
     fun runTestScenario(consumer: Consumer<ActivityLetterboxLifecycleEventFactoryRobotTest>) {
         val robot = ActivityLetterboxLifecycleEventFactoryRobotTest()
         consumer.accept(robot)
     }
 
-    /**
-     * Robot contextual to [ActivityLetterboxLifecycleEventFactory].
-     */
+    /** Robot contextual to [ActivityLetterboxLifecycleEventFactory]. */
     class ActivityLetterboxLifecycleEventFactoryRobotTest {
 
         private val letterboxTaskInfoRepository: LetterboxTaskInfoRepository =
@@ -218,7 +185,8 @@ class ActivityLetterboxLifecycleEventFactoryTest : ShellTestCase() {
         }
 
         fun shouldSupportInputSurface(shouldSupportInputSurface: Boolean) {
-            doReturn(shouldSupportInputSurface).`when`(dependencyHelper)
+            doReturn(shouldSupportInputSurface)
+                .`when`(dependencyHelper)
                 .shouldSupportInputSurface(any())
         }
 
