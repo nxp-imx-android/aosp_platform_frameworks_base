@@ -383,7 +383,7 @@ public final class DisplayManagerGlobal {
             @Nullable Handler handler, @InternalEventFlag long internalEventFlagsMask,
             String packageName, boolean isEventFilterExplicit) {
         Looper looper = getLooperForHandler(handler);
-        Handler springBoard = new Handler(looper);
+        Handler springBoard = Handler.createAsync(looper);
         registerDisplayListener(listener, new HandlerExecutor(springBoard), internalEventFlagsMask,
                 packageName, isEventFilterExplicit);
     }
