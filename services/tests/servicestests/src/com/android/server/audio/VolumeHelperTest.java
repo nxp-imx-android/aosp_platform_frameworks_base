@@ -30,16 +30,19 @@ import static android.media.AudioManager.RINGER_MODE_NORMAL;
 import static android.media.AudioManager.RINGER_MODE_VIBRATE;
 import static android.media.AudioManager.STREAM_ACCESSIBILITY;
 import static android.media.AudioManager.STREAM_ALARM;
+import static android.media.AudioManager.STREAM_ASSISTANT;
 import static android.media.AudioManager.STREAM_BLUETOOTH_SCO;
 import static android.media.AudioManager.STREAM_MUSIC;
 import static android.media.AudioManager.STREAM_NOTIFICATION;
 import static android.media.AudioManager.STREAM_RING;
 import static android.media.AudioManager.STREAM_SYSTEM;
 import static android.media.AudioManager.STREAM_VOICE_CALL;
+import static android.media.audio.Flags.FLAG_UNIFY_ABSOLUTE_VOLUME_MANAGEMENT;
 import static android.media.audio.Flags.autoPublicVolumeApiHardening;
 import static android.view.KeyEvent.ACTION_DOWN;
 import static android.view.KeyEvent.KEYCODE_VOLUME_UP;
 
+import static com.android.media.audio.Flags.FLAG_ABS_VOLUME_STREAM_ALWAYS_MAX;
 import static com.android.media.audio.Flags.FLAG_DISABLE_PRESCALE_ABSOLUTE_VOLUME;
 import static com.android.media.audio.Flags.FLAG_RING_MY_CAR;
 
@@ -58,6 +61,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.atLeast;
+import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
@@ -828,6 +832,56 @@ public class VolumeHelperTest {
                 AudioManager.DEVICE_VOLUME_BEHAVIOR_FIXED, mContext.getOpPackageName());
 
         assertTrue(mAudioService.isVolumeFixed());
+    }
+
+    @Test
+    @EnableFlags({FLAG_ABS_VOLUME_STREAM_ALWAYS_MAX, FLAG_UNIFY_ABSOLUTE_VOLUME_MANAGEMENT})
+    public void absoluteVolumeDrivingStream_raisedByAssistant() throws Exception {
+        assumeFalse("Skipping absoluteVolumeDrivingStream_raisedByAssistant on automotive",
+                mIsAutomotive);
+        final int musicMaxIndex = mAudioService.getStreamMaxVolume(STREAM_MUSIC);
+        final int assistantMaxIndex = mAudioService.getStreamMaxVolume(STREAM_ASSISTANT);
+        mAudioService.setDeviceForStream(STREAM_MUSIC, DEVICE_OUT_BLE_SPEAKER);
+        mAudioService.setDeviceForStream(STREAM_ASSISTANT, DEVICE_OUT_BLE_SPEAKER);
+        mAudioService.setStreamVolume(STREAM_MUSIC, 1, 0, mContext.getOpPackageName());
+        mTestLooper.dispatchAll();
+
+        reset(mSpyAudioSystem);
+        mAudioService.setStreamVolume(STREAM_ASSISTANT, assistantMaxIndex,
+                0, mContext.getOpPackageName());
+        mTestLooper.dispatchAll();
+
+        verify(mSpyAudioSystem, atLeastOnce()).setStreamVolumeIndexAS(
+                eq(STREAM_ASSISTANT), eq(assistantMaxIndex), eq(false), eq(DEVICE_OUT_BLE_SPEAKER));
+        verify(mSpyAudioSystem, atLeastOnce()).setStreamVolumeIndexAS(
+                eq(STREAM_MUSIC), eq(musicMaxIndex), eq(false), eq(DEVICE_OUT_BLE_SPEAKER));
+    }
+
+    @Test
+    @EnableFlags(FLAG_ABS_VOLUME_STREAM_ALWAYS_MAX)
+    public void streamAssistant_loweredByAbsVolumeDrivingStream() throws Exception {
+        assumeFalse("Skipping streamAssistant_loweredByAbsVolumeDrivingStream on automotive",
+                mIsAutomotive);
+        mAudioService.setDeviceForStream(STREAM_MUSIC, DEVICE_OUT_BLE_SPEAKER);
+        mAudioService.setDeviceForStream(STREAM_ASSISTANT, DEVICE_OUT_BLE_SPEAKER);
+
+        int assistantMaxIndex = mAudioService.getStreamMaxVolume(STREAM_ASSISTANT);
+        int assistantMinIndex = mAudioService.getStreamMinVolume(STREAM_ASSISTANT);
+        // this should set the music stream also at max
+        mAudioService.setStreamVolume(STREAM_ASSISTANT, assistantMaxIndex, 0,
+                mContext.getOpPackageName());
+        mTestLooper.dispatchAll();
+
+        reset(mSpyAudioSystem);
+        mAudioService.setStreamVolume(STREAM_MUSIC, mAudioService.getStreamMinVolume(STREAM_MUSIC),
+                0, mContext.getOpPackageName());
+        mTestLooper.dispatchAll();
+
+        verify(mSpyAudioSystem, atLeastOnce()).setStreamVolumeIndexAS(
+                eq(STREAM_MUSIC), eq(mAudioService.getStreamMinVolume(STREAM_MUSIC)), eq(true),
+                eq(DEVICE_OUT_BLE_SPEAKER));
+        verify(mSpyAudioSystem, atLeastOnce()).setStreamVolumeIndexAS(
+                eq(STREAM_ASSISTANT), eq(assistantMinIndex), eq(false), eq(DEVICE_OUT_BLE_SPEAKER));
     }
 
     private int circularNoMinMaxIncrementVolume(int streamType) throws Exception {
