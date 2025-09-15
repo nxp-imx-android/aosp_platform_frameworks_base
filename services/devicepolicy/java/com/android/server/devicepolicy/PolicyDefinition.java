@@ -370,12 +370,6 @@ public final class PolicyDefinition<V> {
             PolicyEnforcerCallbacks::setAutoTimePolicy,
             new IntegerPolicySerializer());
 
-    // The policies that are not yet supported by DevicePolicyEngine, thus don't have definition.
-    static final Set<String> LEGACY_POLICIES = Set.of(
-            DevicePolicyIdentifiers.MANAGED_PROFILE_CALLER_ID_ACCESS_POLICY,
-            DevicePolicyIdentifiers.MANAGED_PROFILE_CONTACTS_ACCESS_POLICY,
-            DevicePolicyIdentifiers.MAX_TIME_TO_LOCK_POLICY);
-
     static PolicyDefinition<Set<String>> CROSS_PROFILE_WIDGET_PROVIDER =
             new PolicyDefinition<>(
                     new NoArgsPolicyKey(

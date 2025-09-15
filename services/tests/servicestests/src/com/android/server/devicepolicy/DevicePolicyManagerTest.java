@@ -9016,6 +9016,60 @@ public class DevicePolicyManagerTest extends DpmTestBase {
         assertThat(enforcingAdmins.getFirst().getComponentName()).isEqualTo(admin1);
     }
 
+    @Test
+    public void getEnforcingAdminsForPolicy_passwordComplexity_returnsManagedProfileAdminForParent()
+            throws Exception {
+        // Set-up managed profile with parent as system user.
+        mContext.callerPermissions.add(permission.BIND_DEVICE_ADMIN);
+        final int managedProfileUserId = 78;
+        final int managedProfileAdminUid = UserHandle.getUid(managedProfileUserId,
+                DpmMockContext.SYSTEM_UID);
+        mContext.binder.callingUid = DpmMockContext.SYSTEM_UID;
+        mContext.packageName = admin1.getPackageName();
+        // Add a managed profile belonging to the system user.
+        addManagedProfileForPasswordTests(managedProfileUserId,
+                managedProfileAdminUid, /* separateChallenge = */ false);
+        // Set policy on the managed profile.
+        mContext.binder.callingUid = managedProfileAdminUid;
+        dpm.setRequiredPasswordComplexity(PASSWORD_COMPLEXITY_HIGH);
+        mContext.callerPermissions.add(permission.QUERY_ADMIN_POLICY);
+
+        // Get enforcing admins on parent.
+        List<EnforcingAdmin> enforcingAdmins = dpm.getEnforcingAdminsForPolicy(
+                DevicePolicyIdentifiers.PASSWORD_COMPLEXITY_POLICY,
+                UserHandle.USER_SYSTEM).getAllAdmins();
+
+        assertThat(enforcingAdmins.size()).isEqualTo(1);
+        assertThat(enforcingAdmins.getFirst().getComponentName()).isEqualTo(admin1);
+    }
+
+    @Test
+    public void getEnforcingAdminsForPolicy_passwordQuality_returnsManagedProfileAdminForParent()
+            throws Exception {
+        // Set-up managed profile with parent as system user.
+        mContext.callerPermissions.add(permission.BIND_DEVICE_ADMIN);
+        final int managedProfileUserId = 78;
+        final int managedProfileAdminUid = UserHandle.getUid(managedProfileUserId,
+                DpmMockContext.SYSTEM_UID);
+        mContext.binder.callingUid = DpmMockContext.SYSTEM_UID;
+        mContext.packageName = admin1.getPackageName();
+        // Add a managed profile belonging to the system user.
+        addManagedProfileForPasswordTests(managedProfileUserId,
+                managedProfileAdminUid, /* separateChallenge = */ false);
+        // Set policy on the managed profile.
+        mContext.binder.callingUid = managedProfileAdminUid;
+        dpm.setPasswordQuality(admin1, DevicePolicyManager.PASSWORD_QUALITY_MANAGED);
+        mContext.callerPermissions.add(permission.QUERY_ADMIN_POLICY);
+
+        // Get enforcing admins on parent.
+        List<EnforcingAdmin> enforcingAdmins = dpm.getEnforcingAdminsForPolicy(
+                DevicePolicyIdentifiers.PASSWORD_QUALITY_POLICY,
+                UserHandle.USER_SYSTEM).getAllAdmins();
+
+        assertThat(enforcingAdmins.size()).isEqualTo(1);
+        assertThat(enforcingAdmins.getFirst().getComponentName()).isEqualTo(admin1);
+    }
+
     private void setupVpnAuthorization(String userVpnPackage, int userVpnUid) {
         final AppOpsManager.PackageOps vpnOp = new AppOpsManager.PackageOps(userVpnPackage,
                 userVpnUid, List.of(new AppOpsManager.OpEntry(
