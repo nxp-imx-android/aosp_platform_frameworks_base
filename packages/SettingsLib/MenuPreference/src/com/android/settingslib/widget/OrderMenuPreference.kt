@@ -44,6 +44,12 @@ class OrderMenuPreference @JvmOverloads constructor(
     override var preference: Preference? = this
     override var showIconsInPopupMenu: Boolean = false
 
+    override var menuButtonContentDescription: String? = null
+        set(value) {
+            field = value
+            notifyChanged()
+        }
+
     var number: Int = 0
         set(value) {
             if (field != value) {
@@ -80,6 +86,9 @@ class OrderMenuPreference @JvmOverloads constructor(
 
         menuButton = holder.findViewById(R.id.settingslib_menu_button) as? MaterialButton
         (menuButton as android.view.View).visibility = if (isMenuButtonVisible) VISIBLE else GONE
+        if (menuButtonContentDescription != null) {
+            menuButton?.contentDescription = menuButtonContentDescription
+        }
 
         // setup the onClickListener
         setupMenuButton(context)
