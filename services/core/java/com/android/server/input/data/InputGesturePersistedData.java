@@ -14,44 +14,27 @@
  * limitations under the License.
  */
 
-package com.android.server.input;
+package com.android.server.input.data;
 
 import android.hardware.input.AppLaunchData;
 import android.hardware.input.InputGestureData;
-import android.os.Environment;
-import android.util.AtomicFile;
 import android.util.Slog;
-import android.util.SparseArray;
-import android.util.Xml;
 
-import com.android.internal.annotations.VisibleForTesting;
 import com.android.modules.utils.TypedXmlPullParser;
 import com.android.modules.utils.TypedXmlSerializer;
 
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Manages persistent state recorded by the input manager service as a set of XML files.
- * Caller must acquire lock on the data store before accessing it.
- */
-public final class InputDataStore {
-    private static final String TAG = "InputDataStore";
+/** {@link PersistedData} implementation for InputGestureData */
+final class InputGesturePersistedData extends PersistedData<InputGestureData> {
 
-    private static final String INPUT_MANAGER_DIRECTORY = "input";
-
+    private static final String TAG = "InputGesturePersistedData";
     private static final String TAG_ROOT = "root";
-
     private static final String TAG_INPUT_GESTURE_LIST = "input_gesture_list";
     private static final String TAG_INPUT_GESTURE = "input_gesture";
     private static final String TAG_KEY_TRIGGER = "key_trigger";
@@ -67,91 +50,26 @@ public final class InputDataStore {
     private static final String ATTR_APP_LAUNCH_DATA_PACKAGE_NAME = "package_name";
     private static final String ATTR_APP_LAUNCH_DATA_CLASS_NAME = "class_name";
 
-    private final FileInjector mInputGestureFileInjector;
-
-    public InputDataStore() {
-        this(new FileInjector("input_gestures.xml"));
-    }
-
-    public InputDataStore(final FileInjector inputGestureFileInjector) {
-        mInputGestureFileInjector = inputGestureFileInjector;
+    InputGesturePersistedData() {
+        super("input_gestures");
     }
 
     /**
-     * Reads from the local disk storage the list of customized input gestures.
-     *
-     * @param userId The user id to fetch the gestures for.
-     * @return List of {@link InputGestureData} which the user previously customized.
-     */
-    public List<InputGestureData> loadInputGestures(int userId) {
-        List<InputGestureData> inputGestureDataList;
-        try {
-            final InputStream inputStream = mInputGestureFileInjector.openRead(userId);
-            inputGestureDataList = readInputGesturesXml(inputStream, false);
-            inputStream.close();
-        } catch (FileNotFoundException exception) {
-            // There are valid reasons for the file to be missing, such as shortcuts having not
-            // been registered by the user.
-            return List.of();
-        } catch (IOException exception) {
-            // In case we are unable to read from the file on disk or another IO operation error,
-            // fail gracefully.
-            Slog.e(TAG, "Failed to read from " + mInputGestureFileInjector.getAtomicFileForUserId(
-                    userId), exception);
-            return List.of();
-        } catch (Exception exception) {
-            // In the case of any other exception, we want it to bubble up as this would be due
-            // to malformed trusted XML data.
-            throw new RuntimeException(
-                    "Failed to read from " + mInputGestureFileInjector.getAtomicFileForUserId(
-                            userId), exception);
-        }
-        return inputGestureDataList;
-    }
-
-    /**
-     * Writes to the local disk storage the list of customized input gestures provided as a param.
-     *
-     * @param userId               The user id to store the {@link InputGestureData} list under.
-     * @param inputGestureDataList The list of custom input gestures for the given {@code userId}.
-     */
-    public void saveInputGestures(int userId, List<InputGestureData> inputGestureDataList) {
-        FileOutputStream outputStream = null;
-        try {
-            outputStream = mInputGestureFileInjector.startWrite(userId);
-            writeInputGestureXml(outputStream, false, inputGestureDataList);
-            mInputGestureFileInjector.finishWrite(userId, outputStream, true);
-        } catch (IOException e) {
-            Slog.e(TAG,
-                    "Failed to write to file " + mInputGestureFileInjector.getAtomicFileForUserId(
-                            userId), e);
-            mInputGestureFileInjector.finishWrite(userId, outputStream, false);
-        }
-    }
-
-    /**
-     * Parses the given input stream and returns the list of {@link InputGestureData} objects.
+     * Parses the given input and returns the list of {@link InputGestureData} objects.
      * This parsing happens on a best effort basis. If invalid data exists in the given payload
      * it will be skipped. An example of this would be a keycode that does not exist in the
      * present version of Android.  If the payload is malformed, instead this will throw an
      * exception and require the caller to handel this appropriately for its situation.
      *
-     * @param stream stream of the input payload of XML data
-     * @param utf8Encoded whether or not the input data is UTF-8 encoded
+     * @param parser XML parser for the input payload of XML data
      * @return list of {@link InputGestureData} objects pulled from the payload
-     * @throws XmlPullParserException
-     * @throws IOException
+     * @throws XmlPullParserException If there is an issue parsing the XML.
+     * @throws IOException            If there is an issue reading from the stream.
      */
-    public List<InputGestureData> readInputGesturesXml(InputStream stream, boolean utf8Encoded)
+    @Override
+    public List<InputGestureData> readListFromXml(TypedXmlPullParser parser)
             throws XmlPullParserException, IOException {
         List<InputGestureData> inputGestureDataList = new ArrayList<>();
-        TypedXmlPullParser parser;
-        if (utf8Encoded) {
-            parser = Xml.newFastPullParser();
-            parser.setInput(stream, StandardCharsets.UTF_8.name());
-        } else {
-            parser = Xml.resolvePullParser(stream);
-        }
         int type;
         while ((type = parser.next()) != XmlPullParser.END_DOCUMENT) {
             if (type != XmlPullParser.START_TAG) {
@@ -173,20 +91,12 @@ public final class InputDataStore {
      * Serializes the given list of {@link InputGestureData} objects to XML in the provided output
      * stream.
      *
-     * @param stream               output stream to put serialized data.
-     * @param utf8Encoded          whether or not to encode the serialized data in UTF-8 format.
+     * @param serializer           XML serializer to output the data
      * @param inputGestureDataList the list of {@link InputGestureData} objects to serialize.
      */
-    public void writeInputGestureXml(OutputStream stream, boolean utf8Encoded,
+    @Override
+    public void writeListToXml(TypedXmlSerializer serializer,
             List<InputGestureData> inputGestureDataList) throws IOException {
-        final TypedXmlSerializer serializer;
-        if (utf8Encoded) {
-            serializer = Xml.newFastSerializer();
-            serializer.setOutput(stream, StandardCharsets.UTF_8.name());
-        } else {
-            serializer = Xml.resolveSerializer(stream);
-        }
-
         serializer.startDocument(null, true);
         serializer.startTag(null, TAG_ROOT);
         writeInputGestureListToXml(serializer, inputGestureDataList);
@@ -328,40 +238,5 @@ public final class InputDataStore {
             writeInputGestureToXml(serializer, inputGestureData);
         }
         serializer.endTag(null, TAG_INPUT_GESTURE_LIST);
-    }
-
-    @VisibleForTesting
-    static class FileInjector {
-        private final SparseArray<AtomicFile> mAtomicFileMap = new SparseArray<>();
-        private final String mFileName;
-
-        FileInjector(String fileName) {
-            mFileName = fileName;
-        }
-
-        InputStream openRead(int userId) throws FileNotFoundException {
-            return getAtomicFileForUserId(userId).openRead();
-        }
-
-        FileOutputStream startWrite(int userId) throws IOException {
-            return getAtomicFileForUserId(userId).startWrite();
-        }
-
-        void finishWrite(int userId, FileOutputStream os, boolean success) {
-            if (success) {
-                getAtomicFileForUserId(userId).finishWrite(os);
-            } else {
-                getAtomicFileForUserId(userId).failWrite(os);
-            }
-        }
-
-        AtomicFile getAtomicFileForUserId(int userId) {
-            if (!mAtomicFileMap.contains(userId)) {
-                mAtomicFileMap.put(userId, new AtomicFile(new File(
-                        Environment.buildPath(Environment.getDataSystemDeDirectory(userId),
-                                INPUT_MANAGER_DIRECTORY), mFileName)));
-            }
-            return mAtomicFileMap.get(userId);
-        }
     }
 }
