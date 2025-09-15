@@ -16,6 +16,7 @@
 
 package com.android.systemui.volume.panel.component.mediainput.ui.viewmodel
 
+import androidx.compose.runtime.getValue
 import com.android.systemui.animation.Expandable
 import com.android.systemui.common.shared.model.Icon
 import com.android.systemui.lifecycle.HydratedActivatable
@@ -28,10 +29,15 @@ import kotlinx.coroutines.flow.map
 class MediaInputViewModel
 @AssistedInject
 constructor(mediaInputComponentInteractor: MediaInputComponentInteractor) : HydratedActivatable() {
+    val hasInputDevice: Boolean by
+        mediaInputComponentInteractor.currentInputDevice
+            .map { mediaDevice -> mediaDevice != null }
+            .hydratedStateOf(traceName = "hasInputDevice", initialValue = false)
+
     val connectedDeviceName: String? by
         mediaInputComponentInteractor.currentInputDevice
             .map { mediaDevice -> mediaDevice?.name }
-            .hydratedStateOf(null)
+            .hydratedStateOf(traceName = "connectedDeviceName", initialValue = null)
 
     val connectedDeviceIcon: Icon by
         mediaInputComponentInteractor.currentInputDevice
@@ -39,7 +45,10 @@ constructor(mediaInputComponentInteractor: MediaInputComponentInteractor) : Hydr
                 mediaDevice?.icon?.let { Icon.Loaded(it, null) }
                     ?: Icon.Resource(R.drawable.ic_media_home_devices, null)
             }
-            .hydratedStateOf(Icon.Resource(R.drawable.ic_media_home_devices, null))
+            .hydratedStateOf(
+                traceName = "connectedDeviceIcon",
+                initialValue = Icon.Resource(R.drawable.ic_media_home_devices, null),
+            )
 
     fun onBarClick(expandable: Expandable?) {
         // TODO(b/442004274): Open input dialog when this function is triggered.

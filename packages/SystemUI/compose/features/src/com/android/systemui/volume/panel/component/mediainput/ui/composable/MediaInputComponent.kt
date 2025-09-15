@@ -60,6 +60,10 @@ constructor(private val viewModelFactory: MediaInputViewModel.Factory) :
             rememberViewModel("MediaInputComponent-viewModel") { viewModelFactory.create() }
         val clickLabel = stringResource(R.string.volume_panel_enter_media_output_settings)
 
+        if (!viewModel.hasInputDevice) {
+            return
+        }
+
         Expandable(
             modifier =
                 Modifier.fillMaxWidth().height(80.dp).semantics {

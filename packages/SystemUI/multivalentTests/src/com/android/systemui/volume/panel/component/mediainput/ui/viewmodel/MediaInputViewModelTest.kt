@@ -75,6 +75,22 @@ class MediaInputViewModelTest : SysuiTestCase() {
     }
 
     @Test
+    fun noCurrentInputDevice_hasInputDeviceFalse() =
+        kosmos.runTest {
+            setCurrentInputDevice(null)
+
+            assertThat(underTest.hasInputDevice).isFalse()
+        }
+
+    @Test
+    fun currentInputDevice_hasInputDeviceTrue() =
+        kosmos.runTest {
+            setCurrentInputDevice(testMediaDevice)
+
+            assertThat(underTest.hasInputDevice).isTrue()
+        }
+
+    @Test
     fun noCurrentInputDevice_connectedDeviceViewModelDeviceName() =
         kosmos.runTest {
             setCurrentInputDevice(null)
@@ -110,7 +126,7 @@ class MediaInputViewModelTest : SysuiTestCase() {
     private fun setCurrentInputDevice(device: MediaDevice?) {
         whenever(kosmos.mediaSwitchingController.currentInputDevice)
             .thenReturn(device?.let { Optional.of(it) })
-        verify(kosmos.mediaSwitchingController, times(2))
+        verify(kosmos.mediaSwitchingController, times(3))
             .start(mediaSwitchingControllerCallback.capture())
         mediaSwitchingControllerCallback.allValues.forEach { callback ->
             callback.onDeviceListChanged()
