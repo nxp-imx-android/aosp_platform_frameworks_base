@@ -82,6 +82,11 @@
     <!-- The maximum width of large tiles in the infinite grid QuickSettings -->
     <integer name="quick_settings_infinite_grid_tile_max_width">4</integer>
 
+    <!-- The screen density threshold for extra large tiles in infinite grid QuickSettings.
+         This value should only be overlaid by device overlays and not configuration
+         overlays-->
+    <integer name="quick_settings_infinite_grid_screen_density_threshold">480</integer>
+
     <!-- The number of columns in the Dual Shade QuickSettings -->
     <integer name="quick_settings_dual_shade_num_columns">4</integer>
 
