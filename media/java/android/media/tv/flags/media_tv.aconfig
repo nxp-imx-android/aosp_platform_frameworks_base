@@ -137,3 +137,10 @@ flag {
     description: "Feature flag to enable TV Watchdog Service eMMC protection"
     bug: "335423167"
 }
+
+flag {
+    name: "tif_extension_standardization_c"
+    namespace: "tv_os"
+    description: "Continue efforts for standardizing AIDL Extension Interface of TIS in Android 17"
+    bug: "443346064"
+}
