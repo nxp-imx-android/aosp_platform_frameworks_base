@@ -322,3 +322,14 @@ flag {
      description: "Enables the 2x1 split implementation"
      bug: "439992109"
 }
+
+flag {
+    name: "split_to_full_set_window_mode"
+    namespace: "multitasking"
+    description: "Set the launch windowing mode when split screen launches app in fullscreen."
+    bug: "427103183"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
