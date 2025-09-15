@@ -22,14 +22,14 @@ import com.android.systemui.qs.external.TileData
 import com.android.systemui.qs.external.ui.viewmodel.tileRequestDialogViewModelFactory
 import com.android.systemui.statusbar.phone.systemUIDialogFactory
 
-var Kosmos.tileRequestDialogComposeDelegateFactory by
-    Kosmos.Fixture<TileRequestDialogComposeDelegate.Factory> {
-        object : TileRequestDialogComposeDelegate.Factory {
+var Kosmos.tileRequestDialogDelegateFactory by
+    Kosmos.Fixture<TileRequestDialogDelegate.Factory> {
+        object : TileRequestDialogDelegate.Factory {
             override fun create(
                 tiledata: TileData,
                 dialogListener: DialogInterface.OnClickListener,
-            ): TileRequestDialogComposeDelegate {
-                return TileRequestDialogComposeDelegate(
+            ): TileRequestDialogDelegate {
+                return TileRequestDialogDelegate(
                     systemUIDialogFactory,
                     tileRequestDialogViewModelFactory,
                     tiledata,
@@ -39,5 +39,5 @@ var Kosmos.tileRequestDialogComposeDelegateFactory by
         }
     }
 
-val TileRequestDialogComposeDelegate.Factory.fake: FakeTileRequestDialogComposeDelegateFactory
-    get() = this as FakeTileRequestDialogComposeDelegateFactory
+val TileRequestDialogDelegate.Factory.fake: FakeTileRequestDialogDelegateFactory
+    get() = this as FakeTileRequestDialogDelegateFactory

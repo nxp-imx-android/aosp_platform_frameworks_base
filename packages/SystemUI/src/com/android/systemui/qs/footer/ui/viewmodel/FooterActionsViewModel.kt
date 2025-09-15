@@ -33,7 +33,6 @@ import com.android.systemui.globalactions.GlobalActionsDialogLite
 import com.android.systemui.plugins.ActivityStarter
 import com.android.systemui.plugins.FalsingManager
 import com.android.systemui.qs.dagger.QSFlagsModule.PM_LITE_ENABLED
-import com.android.systemui.qs.flags.QsInCompose
 import com.android.systemui.qs.footer.data.model.UserSwitcherStatusModel
 import com.android.systemui.qs.footer.domain.interactor.FooterActionsInteractor
 import com.android.systemui.qs.footer.domain.model.SecurityButtonConfig
@@ -61,7 +60,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.isActive
 
@@ -312,12 +310,7 @@ fun createFooterActionsViewModel(
             null
         }
 
-    val textFeedback =
-        if (QsInCompose.isEnabled) {
-            textFeedbackInteractor.textFeedback.map { it.load(qsThemedContext) }
-        } else {
-            flowOf(TextFeedbackViewModel.NoFeedback)
-        }
+    val textFeedback = textFeedbackInteractor.textFeedback.map { it.load(qsThemedContext) }
 
     return FooterActionsViewModel(
         security = security,

@@ -93,8 +93,6 @@ import com.android.systemui.common.shared.model.Icon
 import com.android.systemui.common.ui.compose.Icon
 import com.android.systemui.common.ui.compose.load
 import com.android.systemui.compose.modifiers.sysuiResTag
-import com.android.systemui.qs.flags.QSComposeFragment
-import com.android.systemui.qs.flags.QsInCompose
 import com.android.systemui.qs.footer.ui.compose.FooterActionsDefaults.FOOTER_TEXT_FADE_DURATION_MILLIS
 import com.android.systemui.qs.footer.ui.compose.FooterActionsDefaults.FOOTER_TEXT_MINIMUM_SCALE_Y
 import com.android.systemui.qs.footer.ui.compose.FooterActionsDefaults.FooterButtonHeight
@@ -233,7 +231,7 @@ fun FooterActions(viewModel: FooterActionsViewModel, modifier: Modifier = Modifi
         verticalAlignment = Alignment.CenterVertically,
     ) {
         CompositionLocalProvider(LocalContentColor provides contentColor) {
-            val useModifierBasedExpandable = remember { QSComposeFragment.isEnabled }
+            val useModifierBasedExpandable = true
 
             // The viewModel to show, in order of priority:
             // 1. Text feedback
@@ -531,13 +529,8 @@ private fun TextButton(
             Text(
                 text,
                 Modifier.weight(1f),
-                style =
-                    if (QsInCompose.isEnabled) {
-                        MaterialTheme.typography.labelLarge
-                    } else {
-                        MaterialTheme.typography.bodyMedium
-                    },
-                letterSpacing = if (QsInCompose.isEnabled) 0.em else 0.01.em,
+                style = MaterialTheme.typography.labelLarge,
+                letterSpacing = 0.em,
                 color = colors.content,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
@@ -578,13 +571,8 @@ private fun TextButtonContent(
         Text(
             text,
             Modifier.weight(1f),
-            style =
-                if (QsInCompose.isEnabled) {
-                    MaterialTheme.typography.labelLarge
-                } else {
-                    MaterialTheme.typography.bodyMedium
-                },
-            letterSpacing = if (QsInCompose.isEnabled) 0.em else 0.01.em,
+            style = MaterialTheme.typography.labelLarge,
+            letterSpacing = 0.em,
             color = contentColor,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
@@ -639,7 +627,7 @@ private fun Modifier.animatedScaledHeight(scale: () -> Float): Modifier {
 @Composable
 @ReadOnlyComposable
 private fun textButtonColors(): TextButtonColors {
-    return if (QsInCompose.isEnabled && notificationShadeBlur()) {
+    return if (notificationShadeBlur()) {
         FooterActionsDefaults.blurTextButtonColors()
     } else {
         FooterActionsDefaults.textButtonColors()
@@ -649,7 +637,7 @@ private fun textButtonColors(): TextButtonColors {
 @Composable
 @ReadOnlyComposable
 private fun numberButtonColors(): TextButtonColors {
-    return if (QsInCompose.isEnabled && notificationShadeBlur()) {
+    return if (notificationShadeBlur()) {
         FooterActionsDefaults.blurTextButtonColors()
     } else {
         FooterActionsDefaults.numberButtonColors()
@@ -659,7 +647,7 @@ private fun numberButtonColors(): TextButtonColors {
 @Composable
 @ReadOnlyComposable
 private fun buttonColorsForModel(footerAction: FooterActionsButtonViewModel): ButtonColors {
-    return if (QsInCompose.isEnabled && notificationShadeBlur()) {
+    return if (notificationShadeBlur()) {
         when (footerAction) {
             is FooterActionsButtonViewModel.PowerActionViewModel ->
                 FooterActionsDefaults.activeButtonColors()
