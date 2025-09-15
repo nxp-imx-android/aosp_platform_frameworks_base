@@ -532,10 +532,7 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
     }
 
     @Test
-    @EnableFlags({
-            Flags.FLAG_ENABLE_OUTPUT_SWITCHER_REDESIGN,
-            Flags.FLAG_ALLOW_OUTPUT_SWITCHER_LIST_REARRANGEMENT_WITHIN_TIMEOUT
-    })
+    @EnableFlags(Flags.FLAG_ENABLE_OUTPUT_SWITCHER_REDESIGN)
     public void onDeviceListUpdate_repeatedWithinThresholdPeriod_rearrangesList() {
         mMediaSwitchingController.start(mCb);
         reset(mCb);
@@ -566,10 +563,7 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
     }
 
     @Test
-    @EnableFlags({
-            Flags.FLAG_ENABLE_OUTPUT_SWITCHER_REDESIGN,
-            Flags.FLAG_ALLOW_OUTPUT_SWITCHER_LIST_REARRANGEMENT_WITHIN_TIMEOUT
-    })
+    @EnableFlags(Flags.FLAG_ENABLE_OUTPUT_SWITCHER_REDESIGN)
     public void onDeviceListUpdate_repeatedAfterThresholdPeriod_appendsItemsToTheList() {
         mMediaSwitchingController.start(mCb);
         reset(mCb);
