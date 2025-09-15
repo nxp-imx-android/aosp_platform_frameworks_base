@@ -99,8 +99,9 @@ fun ActionList(
     padding: PaddingValues = PaddingValues(0.dp),
     horizontalAlignment: Alignment.Horizontal = Alignment.CenterHorizontally,
     portrait: Boolean = true,
-    pillCenter: Offset = Offset.Unspecified,
+    pillCenter: Offset = Offset.Zero,
     pillWidth: Float = 0f,
+    pillHeight: Float = 0f,
     rotation: Int = 0,
     taskBarMode: Boolean = false,
 ) {
@@ -111,6 +112,7 @@ fun ActionList(
     val minGradientHeight = 70.dp
     val scrimVerticalPadding = 32.dp
     val scrimHorizontalPadding = 42.dp
+    val landscapeMode = !portrait && !taskBarMode
     val smartScrimAlpha by
         animateFloatAsState(
             if (expanded) {
@@ -127,9 +129,11 @@ fun ActionList(
     val translateStiffnessMultiplier = 50
     val overscrollStiffness = 2063f
     var containerHeightPx by remember { mutableIntStateOf(0) }
+    var containerWidthPx by remember { mutableIntStateOf(0) }
     var radius by remember { mutableFloatStateOf(0f) }
     var wasEverExpanded by remember { mutableStateOf(false) }
     var actionListCenterPositionX by remember { mutableFloatStateOf(0f) }
+    var actionListCenterPositionY by remember { mutableFloatStateOf(0f) }
 
     LaunchedEffect(expanded) {
         if (expanded) {
@@ -225,6 +229,54 @@ fun ActionList(
             label = "scrimOffsetY",
         )
 
+    val landscapeScrimOffsetX by
+        animateFloatAsState(
+            targetValue =
+                if (!expanded) containerWidthPx.toFloat() + pillWidth else containerWidthPx / 2f,
+            animationSpec =
+                if (expanded || wasEverExpanded) {
+                    // Enable animation only when user expands/collapses the action list.
+                    tween(
+                        durationMillis = 250,
+                        // Usually, 200 ms delay is used. But the collapsed delay is reduced to be
+                        // 100 ms to ensure the Action chips and background glow disappear at the
+                        // same pace.
+                        delayMillis = if (expanded) 200 else 100,
+                    )
+                } else {
+                    // Disable animation during Compose initialization.
+                    snap()
+                },
+            label = "landscapeScrimOffsetX",
+        )
+
+    var landscapeCollapsedScrimOffsetY by remember { mutableFloatStateOf(0f) }
+    val landscapeScrimOffsetY by
+        animateFloatAsState(
+            targetValue = if (!expanded) landscapeCollapsedScrimOffsetY else containerHeightPx / 2f,
+            animationSpec =
+                if (expanded || wasEverExpanded) {
+                    // Enable animation only when user expands/collapses the action list.
+                    tween(250, delayMillis = 200)
+                } else {
+                    // Disable animation during Compose initialization.
+                    snap()
+                },
+            label = "landscapeScrimOffsetY",
+        )
+    val landscapeScaleX by
+        animateFloatAsState(
+            targetValue = if (!expanded) 0.15f else 1f,
+            animationSpec =
+                tween(
+                    durationMillis = 250,
+                    // Usually, 200 ms delay is used. But the collapsed delay is reduced to be 100
+                    // ms to ensure the Action chips and background glow disappear at the same pace.
+                    delayMillis = if (expanded) 200 else 100,
+                ),
+            label = "landscapeScaleX",
+        )
+
     LaunchedEffect(visible, expanded) {
         anchoredDraggableState.animateTo(if (visible && expanded) End else Start)
     }
@@ -296,8 +348,11 @@ fun ActionList(
                 )
                 .onGloballyPositioned { layoutCoordinates ->
                     containerHeightPx = layoutCoordinates.size.height
+                    containerWidthPx = layoutCoordinates.size.width
                     actionListCenterPositionX =
                         layoutCoordinates.positionInWindow().x + layoutCoordinates.size.width / 2
+                    actionListCenterPositionY =
+                        layoutCoordinates.positionInWindow().y + layoutCoordinates.size.height / 2
                     anchoredDraggableState.updateAnchors(
                         DraggableAnchors {
                             Start at 0f // Hidden
@@ -317,36 +372,69 @@ fun ActionList(
                     val minScaleY = minGradientHeightPx / (radius * 2f)
                     val scaleY = max(minScaleY, size.height / (radius * 2f) * scrimProgress)
 
-                    scale(scaleX = 1f, scaleY = scaleY, pivot = Offset(0f, size.height)) {
-                        val leftGradientCenter =
-                            Offset(size.width / 2 - sidePaddingPx, scrimOffsetY)
-                        val rightGradientCenter =
-                            Offset(size.width / 2 + sidePaddingPx, scrimOffsetY)
-                        val leftBrush =
+                    scale(
+                        scaleX = if (!landscapeMode) 1f else landscapeScaleX,
+                        scaleY = scaleY,
+                        pivot = Offset(0f, if (!landscapeMode) size.height else 0f),
+                    ) {
+                        landscapeCollapsedScrimOffsetY =
+                            size.height / 2 + pillCenter.y - actionListCenterPositionY
+                        val safeScaleY = if (scaleY == 0f || scaleY.isNaN()) 1f else scaleY
+                        val safeScaleX =
+                            if (landscapeScaleX == 0f || landscapeScaleX.isNaN()) 1f
+                            else landscapeScaleX
+                        val leftOrUpGradientCenter =
+                            if (!landscapeMode) {
+                                Offset(size.width / 2 - sidePaddingPx, scrimOffsetY)
+                            } else {
+                                Offset(
+                                    if (rotation == ROTATION_90) {
+                                        landscapeScrimOffsetX / safeScaleX
+                                    } else {
+                                        (containerWidthPx - landscapeScrimOffsetX) / safeScaleX
+                                    },
+                                    (landscapeScrimOffsetY - pillHeight / 2) / safeScaleY,
+                                )
+                            }
+                        val rightOrDownGradientCenter =
+                            if (!landscapeMode) {
+                                Offset(size.width / 2 + sidePaddingPx, scrimOffsetY)
+                            } else {
+                                Offset(
+                                    if (rotation == ROTATION_90) {
+                                        landscapeScrimOffsetX / safeScaleX
+                                    } else {
+                                        (containerWidthPx - landscapeScrimOffsetX) / safeScaleX
+                                    },
+                                    (landscapeScrimOffsetY + pillHeight / 2) / safeScaleY,
+                                )
+                            }
+
+                        val leftOrUpBrush =
                             Brush.radialGradient(
                                 colors =
                                     listOf(leftGradientColor, leftGradientColor.copy(alpha = 0f)),
-                                center = leftGradientCenter,
+                                center = leftOrUpGradientCenter,
                                 radius = radius,
                             )
-                        val rightBrush =
+                        val rightOrDownBrush =
                             Brush.radialGradient(
                                 colors =
                                     listOf(rightGradientColor, rightGradientColor.copy(alpha = 0f)),
-                                center = rightGradientCenter,
+                                center = rightOrDownGradientCenter,
                                 radius = radius * 0.85f,
                             )
                         drawCircle(
-                            brush = leftBrush,
+                            brush = leftOrUpBrush,
                             alpha = smartScrimAlpha + smartScrimAlphaBoost,
                             radius = radius,
-                            center = leftGradientCenter,
+                            center = leftOrUpGradientCenter,
                         )
                         drawCircle(
-                            brush = rightBrush,
+                            brush = rightOrDownBrush,
                             alpha = smartScrimAlpha + smartScrimAlphaBoost,
                             radius = radius,
-                            center = rightGradientCenter,
+                            center = rightOrDownGradientCenter,
                         )
                     }
                 }
