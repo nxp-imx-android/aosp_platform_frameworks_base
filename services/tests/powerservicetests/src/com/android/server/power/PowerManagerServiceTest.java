@@ -4465,25 +4465,6 @@ public class PowerManagerServiceTest {
     }
 
     @Test
-    @DisableFlags(Flags.FLAG_ENABLE_SCREEN_TIMEOUT_POLICY_LISTENER_API)
-    public void testAcquireWakelock_screenTimeoutListenersDisabled_noCrashes() {
-        IntArray displayGroupIds = IntArray.wrap(new int[]{Display.DEFAULT_DISPLAY_GROUP});
-        when(mDisplayManagerInternalMock.getDisplayGroupIds()).thenReturn(displayGroupIds);
-
-        final DisplayInfo displayInfo = new DisplayInfo();
-        displayInfo.displayGroupId = Display.DEFAULT_DISPLAY_GROUP;
-        when(mDisplayManagerInternalMock.getDisplayInfo(Display.DEFAULT_DISPLAY))
-                .thenReturn(displayInfo);
-
-        createService();
-        startSystem();
-
-        acquireWakeLock("screenBright", PowerManager.SCREEN_BRIGHT_WAKE_LOCK,
-                    Display.DEFAULT_DISPLAY);
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_ENABLE_SCREEN_TIMEOUT_POLICY_LISTENER_API)
     public void testAddWakeLockKeepingScreenOn_addsToNotifierAndReportsTimeoutPolicyChange() {
         IntArray displayGroupIds = IntArray.wrap(new int[]{Display.DEFAULT_DISPLAY_GROUP});
         when(mDisplayManagerInternalMock.getDisplayGroupIds()).thenReturn(displayGroupIds);
@@ -4511,7 +4492,6 @@ public class PowerManagerServiceTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_SCREEN_TIMEOUT_POLICY_LISTENER_API)
     public void test_addAndRemoveScreenTimeoutListener_propagatesToNotifier()
             throws Exception {
         IntArray displayGroupIds = IntArray.wrap(new int[]{Display.DEFAULT_DISPLAY_GROUP});
@@ -4538,7 +4518,6 @@ public class PowerManagerServiceTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_SCREEN_TIMEOUT_POLICY_LISTENER_API)
     public void test_displayIsRemoved_clearsScreenTimeoutListeners()
             throws Exception {
         IntArray displayGroupIds = IntArray.wrap(new int[]{Display.DEFAULT_DISPLAY_GROUP});
@@ -4561,7 +4540,6 @@ public class PowerManagerServiceTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_SCREEN_TIMEOUT_POLICY_LISTENER_API)
     public void testScreenTimeoutListener_screenHasWakelocks_addsWithHeldTimeoutPolicyToNotifier()
             throws Exception {
         IntArray displayGroupIds = IntArray.wrap(new int[]{Display.DEFAULT_DISPLAY_GROUP});
