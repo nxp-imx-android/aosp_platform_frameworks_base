@@ -60,6 +60,7 @@ import com.android.systemui.plugins.FalsingManager.FalsingBeliefListener
 import com.android.systemui.power.domain.interactor.PowerInteractor
 import com.android.systemui.power.shared.model.WakeSleepReason
 import com.android.systemui.scene.data.model.asIterable
+import com.android.systemui.scene.data.model.peek
 import com.android.systemui.scene.domain.SceneFrameworkTableLog
 import com.android.systemui.scene.domain.interactor.DisabledContentInteractor
 import com.android.systemui.scene.domain.interactor.SceneBackInteractor
@@ -810,10 +811,12 @@ constructor(
                         .distinctUntilChanged(),
                     sceneInteractor.isVisible,
                     shadePendingDisplayId,
-                ) { idleState, isVisible, displayId ->
+                    sceneBackInteractor.backStack,
+                ) { idleState, isVisible, displayId, backStack ->
                     displayId to
                         SceneContainerPlugin.SceneContainerPluginState(
                             scene = idleState.currentScene,
+                            sceneBehind = backStack.peek(),
                             overlays = idleState.currentOverlays,
                             isVisible = isVisible,
                         )
