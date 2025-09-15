@@ -175,6 +175,13 @@ flag {
 }
 
 flag {
+    name: "enable_bounds_restoring_on_tiling_exit"
+    namespace: "lse_desktop_experience"
+    description: "Enables restoring to the pre-tiling bounds when exiting tiling."
+    bug: "379664001"
+}
+
+flag {
     name: "enable_bug_fixes_for_secondary_display"
     namespace: "lse_desktop_experience"
     description: "Bugfixes / papercuts to bring Desktop Windowing to secondary displays."
