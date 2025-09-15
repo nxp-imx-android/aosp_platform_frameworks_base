@@ -784,48 +784,27 @@ static binder_status_t writeBlob(AParcel* parcel, uint64_t bitmapId, const SkBit
                                             bitmap.width(), bitmap.height(), size);
         base::unique_fd fd;
 
-        if (com::android::graphics::hwui::flags::bitmap_use_memfd()) {
-            fd.reset(syscall(__NR_memfd_create, ashmemId.c_str(), MFD_CLOEXEC | MFD_ALLOW_SEALING));
-            if (fd.get() < 0) {
-                return STATUS_NO_MEMORY;
-            }
+        fd.reset(syscall(__NR_memfd_create, ashmemId.c_str(), MFD_CLOEXEC | MFD_ALLOW_SEALING));
+        if (fd.get() < 0) {
+            return STATUS_NO_MEMORY;
+        }
 
-            ssize_t written = write(fd.get(), data, size);
-            if (written != size) {
-                return STATUS_NO_MEMORY;
-            }
+        ssize_t written = write(fd.get(), data, size);
+        if (written != size) {
+            return STATUS_NO_MEMORY;
+        }
 
-            if (fcntl(fd, F_ADD_SEALS,
-                      // Disallow growing / shrinking.
-                      F_SEAL_GROW | F_SEAL_SHRINK
-                      // If immutable, disallow writing.
-                      // Use F_SEAL_FUTURE_WRITE instead of F_SEAL_WRITE to work around a bug in
-                      // pre-6.7 kernels.
-                      // There are no writable mappings made prior to this, so both seals are
-                      // functionally equivalent.
-                      // See: b/409846908#comment39
-                      | (immutable ? F_SEAL_FUTURE_WRITE : 0))) {
-                return STATUS_UNKNOWN_ERROR;
-            }
-
-        } else {
-            fd.reset(ashmem_create_region(ashmemId.c_str(), size));
-            if (fd.get() < 0) {
-                return STATUS_NO_MEMORY;
-            }
-
-            {
-                void* dest = mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_SHARED, fd.get(), 0);
-                if (dest == MAP_FAILED) {
-                    return STATUS_NO_MEMORY;
-                }
-                memcpy(dest, data, size);
-                munmap(dest, size);
-            }
-
-            if (immutable && ashmem_set_prot_region(fd.get(), PROT_READ) < 0) {
-                return STATUS_UNKNOWN_ERROR;
-            }
+        if (fcntl(fd, F_ADD_SEALS,
+                    // Disallow growing / shrinking.
+                    F_SEAL_GROW | F_SEAL_SHRINK
+                    // If immutable, disallow writing.
+                    // Use F_SEAL_FUTURE_WRITE instead of F_SEAL_WRITE to work around a bug in
+                    // pre-6.7 kernels.
+                    // There are no writable mappings made prior to this, so both seals are
+                    // functionally equivalent.
+                    // See: b/409846908#comment39
+                    | (immutable ? F_SEAL_FUTURE_WRITE : 0))) {
+            return STATUS_UNKNOWN_ERROR;
         }
 
         // Workaround b/149851140 in AParcel_writeParcelFileDescriptor

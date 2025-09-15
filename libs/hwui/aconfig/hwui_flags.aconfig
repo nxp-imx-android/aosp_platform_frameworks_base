@@ -177,14 +177,6 @@ flag {
 }
 
 flag {
-  name: "bitmap_use_memfd"
-  namespace: "system_performance"
-  description: "Whether to parcel implicit copies of bitmaps to memfd instead of ashmem"
-  bug: "400807118"
-  is_fixed_read_only: true
-}
-
-flag {
   name: "add_surfacecontrol_constants"
   namespace: "core_graphics"
   description: "Add two helper constants to SurfaceControl to improve @IntDef lint"
