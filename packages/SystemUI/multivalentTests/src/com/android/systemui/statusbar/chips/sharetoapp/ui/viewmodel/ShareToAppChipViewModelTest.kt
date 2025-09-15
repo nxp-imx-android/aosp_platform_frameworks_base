@@ -457,6 +457,32 @@ class ShareToAppChipViewModelTest : SysuiTestCase() {
         }
 
     @Test
+    fun chip_singleTaskState_nullNotificationKey() =
+        testScope.runTest {
+            val latest by collectLastValue(underTest.chip)
+
+            mediaProjectionRepo.mediaProjectionState.value =
+                MediaProjectionState.Projecting.SingleTask(
+                    NORMAL_PACKAGE,
+                    hostDeviceName = null,
+                    createTask(taskId = 1),
+                )
+
+            assertThat((latest as OngoingActivityChipModel.Active).notificationKey).isNull()
+        }
+
+    @Test
+    fun chip_entireScreenState_nullNotificationKey() =
+        testScope.runTest {
+            val latest by collectLastValue(underTest.chip)
+
+            mediaProjectionRepo.mediaProjectionState.value =
+                MediaProjectionState.Projecting.EntireScreen(NORMAL_PACKAGE)
+
+            assertThat((latest as OngoingActivityChipModel.Active).notificationKey).isNull()
+        }
+
+    @Test
     fun chip_shareStoppedFromDialog_chipImmediatelyHidden() =
         testScope.runTest {
             val latest by collectLastValue(underTest.chip)
