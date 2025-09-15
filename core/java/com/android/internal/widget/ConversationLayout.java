@@ -33,6 +33,7 @@ import android.annotation.StyleRes;
 import android.app.Notification;
 import android.app.Person;
 import android.app.RemoteInputHistoryItem;
+import android.app.SetNotificationBackgroundColorRefactor;
 import android.content.Context;
 import android.content.res.ColorStateList;
 import android.graphics.Rect;
@@ -225,6 +226,10 @@ public class ConversationLayout extends FrameLayout
             mConversationFacePile.setOutlineProvider(
                     PeopleHelper.getBadgeCutoutOutlineProvider(mConversationFacePile,
                             mConversationIconBadge));
+            if (SetNotificationBackgroundColorRefactor.isEnabled()) {
+                mConversationIconBadgeBg.setImageTintList(ColorStateList.valueOf(
+                    android.R.color.transparent));
+            }
         }
 
         if (notificationsRedesignTemplates()) {
@@ -1157,6 +1162,7 @@ public class ConversationLayout extends FrameLayout
      */
     @RemotableViewMethod
     public void setNotificationBackgroundColor(int color) {
+        SetNotificationBackgroundColorRefactor.assertInLegacyMode();
         mNotificationBackgroundColor = color;
         applyNotificationBackgroundColor(mConversationIconBadgeBg);
     }

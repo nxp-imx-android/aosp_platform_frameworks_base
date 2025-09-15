@@ -28,6 +28,7 @@ import android.annotation.StyleRes;
 import android.app.Notification;
 import android.app.Person;
 import android.app.RemoteInputHistoryItem;
+import android.app.SetNotificationBackgroundColorRefactor;
 import android.content.Context;
 import android.graphics.Rect;
 import android.graphics.drawable.Icon;
@@ -611,6 +612,7 @@ public class MessagingLayout extends FrameLayout
      */
     @RemotableViewMethod
     public void setNotificationBackgroundColor(int color) {
+        SetNotificationBackgroundColorRefactor.assertInLegacyMode();
         // Nothing to do with this
     }
 

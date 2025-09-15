@@ -246,6 +246,13 @@ flag {
   }
 }
 
+flag {
+  name: "set_notification_background_color_refactor"
+  namespace: "systemui"
+  description: "Skips #setNotificationBackgroundColor when unnecessary."
+  bug: "442592454"
+}
+
 # Start: exported flags that cannot be removed
 
 flag {
