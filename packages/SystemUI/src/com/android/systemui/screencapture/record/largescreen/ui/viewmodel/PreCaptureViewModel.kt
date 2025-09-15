@@ -286,6 +286,7 @@ constructor(
                 label = applicationContext.getString(R.string.screen_capture_toolbar_record_button),
                 isSelected = selectedType == ScreenCaptureType.RECORDING,
                 onClick = { updateCaptureType(ScreenCaptureType.RECORDING) },
+                hasTooltip = false,
             ),
             RadioButtonGroupItemViewModel(
                 selectedIcon = icons?.screenshotToolbar,
@@ -294,6 +295,7 @@ constructor(
                     applicationContext.getString(R.string.screen_capture_toolbar_screenshot_button),
                 isSelected = selectedType == ScreenCaptureType.SCREENSHOT,
                 onClick = { updateCaptureType(ScreenCaptureType.SCREENSHOT) },
+                hasTooltip = false,
             ),
         )
     }
@@ -321,6 +323,7 @@ constructor(
                                             .screen_capture_toolbar_app_window_button_record_a11y
                                 }
                             ),
+                        hasTooltip = true,
                     )
                 )
             }
@@ -339,6 +342,7 @@ constructor(
                                     R.string.screen_capture_toolbar_region_button_record_a11y
                             }
                         ),
+                    hasTooltip = true,
                 )
             )
 
@@ -357,6 +361,7 @@ constructor(
                                     R.string.screen_capture_toolbar_fullscreen_button_record_a11y
                             }
                         ),
+                    hasTooltip = true,
                 )
             )
         }

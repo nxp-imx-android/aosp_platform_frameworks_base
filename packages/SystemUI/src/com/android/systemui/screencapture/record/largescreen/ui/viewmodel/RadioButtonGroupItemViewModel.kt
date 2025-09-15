@@ -26,6 +26,7 @@ constructor(
     val isSelected: Boolean,
     val onClick: () -> Unit,
     val contentDescription: String? = null,
+    val hasTooltip: Boolean = false,
 ) {
     init {
         require((selectedIcon != null) == (unselectedIcon != null)) {
@@ -40,6 +41,7 @@ constructor(
         isSelected: Boolean,
         onClick: () -> Unit,
         contentDescription: String? = null,
+        hasTooltip: Boolean = false,
     ) : this(
         label = label,
         selectedIcon = icon,
@@ -47,6 +49,7 @@ constructor(
         isSelected = isSelected,
         onClick = onClick,
         contentDescription = contentDescription,
+        hasTooltip = hasTooltip,
     )
 
     val icon: Icon?
