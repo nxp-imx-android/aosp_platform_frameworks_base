@@ -424,6 +424,7 @@ public class HearingDevicesDialogDelegate implements SystemUIDialog.Delegate,
         presetLayout.setUiEventLogger(mUiEventLogger, mLaunchSourceId);
         mPresetUiController = new PresetUiController(mDialog.getContext(), mLocalBluetoothManager,
                 presetLayout);
+        mPresetUiController.setHideUiWhenHapDisconnected(true);
         mPresetUiController.loadDevice(activeHearingDevice);
         mBgExecutor.execute(() -> mPresetUiController.start());
     }

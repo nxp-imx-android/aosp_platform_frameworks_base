@@ -19,6 +19,7 @@ package com.android.systemui.accessibility.hearingaid;
 import static android.bluetooth.BluetoothDevice.BOND_BONDED;
 import static android.bluetooth.BluetoothHapClient.PRESET_INDEX_UNAVAILABLE;
 import static android.bluetooth.BluetoothProfile.STATE_CONNECTED;
+import static android.bluetooth.BluetoothProfile.STATE_DISCONNECTED;
 
 import static com.android.settingslib.bluetooth.HearingAidInfo.DeviceSide.SIDE_LEFT;
 import static com.android.settingslib.bluetooth.hearingdevices.ui.ExpandableControlUi.SIDE_UNIFIED;
@@ -307,8 +308,21 @@ public class HearingDevicesDialogDelegateTest extends SysuiTestCase {
 
     @Test
     @EnableFlags(Flags.FLAG_HEARING_DEVICES_SEPARATED_PRESET_CONTROL)
+    public void showDialog_hapNotConnected_newPresetLayoutGone() {
+        when(mHapClientProfile.getConnectionStatus(mDevice)).thenReturn(STATE_DISCONNECTED);
+
+        setUpDeviceDialogWithoutPairNewDeviceButton();
+        showDialogAndProcessAllTasks();
+
+        PresetLayout presetLayout = getNewPresetLayout(mDialog);
+        assertThat(presetLayout.getVisibility()).isEqualTo(View.GONE);
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_HEARING_DEVICES_SEPARATED_PRESET_CONTROL)
     public void showDialog_presetExist_newPresetLayoutVisible() {
         BluetoothHapPresetInfo info = getTestPresetInfo();
+        when(mHapClientProfile.getConnectionStatus(mDevice)).thenReturn(STATE_CONNECTED);
         when(mHapClientProfile.getAllPresetInfo(mDevice)).thenReturn(List.of(info));
         when(mHapClientProfile.getActivePresetIndex(mDevice)).thenReturn(TEST_PRESET_INDEX);
 
@@ -323,6 +337,7 @@ public class HearingDevicesDialogDelegateTest extends SysuiTestCase {
     @Test
     @EnableFlags(Flags.FLAG_HEARING_DEVICES_SEPARATED_PRESET_CONTROL)
     public void showDialog_noPreset_newPresetLayoutGone() {
+        when(mHapClientProfile.getConnectionStatus(mDevice)).thenReturn(STATE_CONNECTED);
         when(mHapClientProfile.getAllPresetInfo(mDevice)).thenReturn(new ArrayList<>());
         when(mHapClientProfile.getActivePresetIndex(mDevice)).thenReturn(PRESET_INDEX_UNAVAILABLE);
 
@@ -395,6 +410,7 @@ public class HearingDevicesDialogDelegateTest extends SysuiTestCase {
     @EnableFlags(Flags.FLAG_HEARING_DEVICES_SEPARATED_PRESET_CONTROL)
     public void onActiveDeviceChanged_presetExist_newPresetLayoutVisible() {
         BluetoothHapPresetInfo info = getTestPresetInfo();
+        when(mHapClientProfile.getConnectionStatus(mDevice)).thenReturn(STATE_CONNECTED);
         when(mHapClientProfile.getAllPresetInfo(mDevice)).thenReturn(List.of(info));
         when(mHapClientProfile.getActivePresetIndex(mDevice)).thenReturn(TEST_PRESET_INDEX);
         setUpDeviceDialogWithoutPairNewDeviceButton();
