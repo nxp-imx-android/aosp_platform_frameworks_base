@@ -2581,6 +2581,12 @@ public class BubbleStackView extends FrameLayout
             // If we're collapsing, release the animating-out surface immediately since we have no
             // need for it, and this ensures it cannot remain visible as we collapse.
             releaseAnimatingOutBubbleBuffer();
+            // stop monitoring gestures immediately since we're collapsing.
+            stopMonitoringSwipeUpGesture();
+        }
+
+        if (Flags.fixBubblesExpandedSysuiFlag()) {
+            mSysuiProxyProvider.getSysuiProxy().onStackExpandChanged(shouldExpand);
         }
 
         if (shouldExpand == mIsExpanded) {
@@ -2588,15 +2594,6 @@ public class BubbleStackView extends FrameLayout
         }
 
         boolean wasExpanded = mIsExpanded;
-
-        if (wasExpanded) {
-            // stop monitoring gestures without waiting for the IME to hide if we're collapsing in
-            // case the IME gets hidden after we already were detached from the window.
-            stopMonitoringSwipeUpGesture();
-        }
-        if (Flags.fixBubblesExpandedSysuiFlag()) {
-            mSysuiProxyProvider.getSysuiProxy().onStackExpandChanged(shouldExpand);
-        }
 
         // Do the actual expansion/collapse after the IME is hidden if it's currently visible in
         // order to avoid flickers
