@@ -16,8 +16,6 @@
 
 package android.content.pm;
 
-import static android.content.pm.Flags.FLAG_OPTIMIZE_PARSING_IN_REGISTERED_SERVICES_CACHE;
-
 import static com.google.common.truth.Truth.assertThat;
 
 import static org.mockito.ArgumentMatchers.anyInt;
@@ -44,7 +42,6 @@ import android.os.Handler;
 import android.os.Message;
 import android.os.UserHandle;
 import android.platform.test.annotations.Presubmit;
-import android.platform.test.annotations.RequiresFlagsEnabled;
 import android.platform.test.flag.junit.CheckFlagsRule;
 import android.platform.test.flag.junit.DeviceFlagsValueProvider;
 import android.util.AttributeSet;
@@ -76,7 +73,6 @@ import java.util.Objects;
  */
 @Presubmit
 @RunWith(AndroidJUnit4.class)
-@RequiresFlagsEnabled(FLAG_OPTIMIZE_PARSING_IN_REGISTERED_SERVICES_CACHE)
 public class RegisteredServicesCacheUnitTest {
     private static final String TAG = "RegisteredServicesCacheUnitTest";
     private static final int U0 = 0;

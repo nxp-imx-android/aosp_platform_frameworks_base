@@ -521,24 +521,24 @@ public abstract class RegisteredServicesCache<V> {
             long lastUpdateTime = -1;
             final android.content.pm.ServiceInfo si = resolveInfo.serviceInfo;
             final ComponentName componentName = si.getComponentName();
-            if (Flags.optimizeParsingInRegisteredServicesCache()) {
-                try {
-                    PackageInfo packageInfo = pm.getPackageInfoAsUser(si.packageName,
-                            PackageManager.MATCH_DIRECT_BOOT_AWARE
-                                    | PackageManager.MATCH_DIRECT_BOOT_UNAWARE, userId);
-                    lastUpdateTime = packageInfo.lastUpdateTime;
-                } catch (NameNotFoundException | SecurityException e) {
-                    Slog.d(TAG, "Fail to get the PackageInfo in generateServicesMap: " + e);
-                }
-                if (lastUpdateTime >= 0) {
-                    ServiceInfo<V> serviceInfo = getServiceInfoFromServiceCache(userId,
-                            componentName, lastUpdateTime);
-                    if (serviceInfo != null) {
-                        serviceInfos.add(serviceInfo);
-                        continue;
-                    }
+
+            try {
+                PackageInfo packageInfo = pm.getPackageInfoAsUser(si.packageName,
+                        PackageManager.MATCH_DIRECT_BOOT_AWARE
+                                | PackageManager.MATCH_DIRECT_BOOT_UNAWARE, userId);
+                lastUpdateTime = packageInfo.lastUpdateTime;
+            } catch (NameNotFoundException | SecurityException e) {
+                Slog.d(TAG, "Fail to get the PackageInfo in generateServicesMap: " + e);
+            }
+            if (lastUpdateTime >= 0) {
+                ServiceInfo<V> serviceInfo = getServiceInfoFromServiceCache(userId,
+                        componentName, lastUpdateTime);
+                if (serviceInfo != null) {
+                    serviceInfos.add(serviceInfo);
+                    continue;
                 }
             }
+
             try {
                 ServiceInfo<V> info = parseServiceInfo(resolveInfo, lastUpdateTime);
                 if (info == null) {
@@ -546,26 +546,22 @@ public abstract class RegisteredServicesCache<V> {
                     continue;
                 }
                 serviceInfos.add(info);
-                if (Flags.optimizeParsingInRegisteredServicesCache()) {
-                    synchronized (mUserIdToServiceInfoCaches) {
-                        mUserIdToServiceInfoCaches.add(userId, componentName, info);
-                    }
+                synchronized (mUserIdToServiceInfoCaches) {
+                    mUserIdToServiceInfoCaches.add(userId, componentName, info);
                 }
             } catch (XmlPullParserException | IOException e) {
                 Log.w(TAG, "Unable to load service info " + resolveInfo.toString(), e);
             }
         }
 
-        if (Flags.optimizeParsingInRegisteredServicesCache()) {
-            synchronized (mUserIdToServiceInfoCaches) {
-                if (mUserIdToServiceInfoCaches.numElementsForKey(userId) > 0) {
-                    final ServiceInfoCachesToken<V> token = new ServiceInfoCachesToken<V>(
-                            this /* RegisteredServicesCache<V> */, userId);
-                    mBackgroundHandler.removeCallbacksAndEqualMessages(token);
-                    mBackgroundHandler.postDelayed(
-                            new ClearServiceInfoCachesTimeoutRunnable(userId), token,
-                            SERVICE_INFO_CACHES_TIMEOUT_MILLIS);
-                }
+        synchronized (mUserIdToServiceInfoCaches) {
+            if (mUserIdToServiceInfoCaches.numElementsForKey(userId) > 0) {
+                final ServiceInfoCachesToken<V> token = new ServiceInfoCachesToken<V>(
+                        this /* RegisteredServicesCache<V> */, userId);
+                mBackgroundHandler.removeCallbacksAndEqualMessages(token);
+                mBackgroundHandler.postDelayed(
+                        new ClearServiceInfoCachesTimeoutRunnable(userId), token,
+                        SERVICE_INFO_CACHES_TIMEOUT_MILLIS);
             }
         }
 
@@ -870,10 +866,8 @@ public abstract class RegisteredServicesCache<V> {
         synchronized (mServicesLock) {
             mUserServices.remove(userId);
         }
-        if (Flags.optimizeParsingInRegisteredServicesCache()) {
-            synchronized (mUserIdToServiceInfoCaches) {
-                mUserIdToServiceInfoCaches.delete(userId);
-            }
+        synchronized (mUserIdToServiceInfoCaches) {
+            mUserIdToServiceInfoCaches.delete(userId);
         }
     }
 
