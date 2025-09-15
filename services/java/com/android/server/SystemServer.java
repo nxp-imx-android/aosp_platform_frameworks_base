@@ -1196,12 +1196,10 @@ public final class SystemServer implements Dumpable {
         t.traceEnd();
 
         // Orchestrates some ProtoLogging functionality.
-        if (android.tracing.Flags.clientSideProtoLogging()) {
-            t.traceBegin("StartProtoLogConfigurationService");
-            ServiceManager.addService(
-                    Context.PROTOLOG_CONFIGURATION_SERVICE, new ProtoLogConfigurationServiceImpl());
-            t.traceEnd();
-        }
+        t.traceBegin("StartProtoLogConfigurationService");
+        ServiceManager.addService(
+                Context.PROTOLOG_CONFIGURATION_SERVICE, new ProtoLogConfigurationServiceImpl());
+        t.traceEnd();
 
         t.traceBegin("InitializeProtoLog");
         ProtoLog.init(WmProtoLogGroups.values());
