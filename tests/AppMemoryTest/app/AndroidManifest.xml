@@ -17,10 +17,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
           package="android.app.memory.testhelper"
           >
-    <!-- This app is allowed to generate a heap profile in /data/local/tmp. -->
-    <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE"/>
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
 
     <!-- debuggable="true" is required to be able to generate a heap profile. -->
     <!-- testOnly="true" is required to be able to access "@hide" APIs such as VMDebug. -->
