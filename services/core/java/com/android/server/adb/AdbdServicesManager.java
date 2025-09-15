@@ -24,7 +24,9 @@ import android.os.SystemProperties;
 import android.provider.Settings;
 import android.util.Slog;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class AdbdServicesManager {
@@ -100,6 +102,18 @@ public class AdbdServicesManager {
     void unregisterAll() {
         for (AdbdRegistrationListener service : mRegisteredServices.values()) {
             unregisterService(service.mInstanceName, service.mServiceType);
+        }
+    }
+
+    // When an attribute has changed, we cannot just update the TXT since NsdManager does not
+    // supports it. Instead, we republish all services (see b/445548047).
+    void onAttributeChanged() {
+        List<AdbdRegistrationListener> services = new ArrayList<>(mRegisteredServices.values());
+        for (AdbdRegistrationListener service : services) {
+            unregisterService(service.mInstanceName, service.mServiceType);
+        }
+        for (AdbdRegistrationListener service : services) {
+            registerService(service.mInstanceName, service.mServiceType, service.mPort);
         }
     }
 
