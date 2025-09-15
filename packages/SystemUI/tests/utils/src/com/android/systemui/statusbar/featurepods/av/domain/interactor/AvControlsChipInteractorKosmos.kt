@@ -51,6 +51,7 @@ val Kosmos.fakeAvControlsChipInteractor: FakeAvControlsChipInteractor by
     Kosmos.Fixture { FakeAvControlsChipInteractor() }
 
 class FakeAvControlsChipInteractor : AvControlsChipInteractor {
+    override val isEnabled: MutableStateFlow<Boolean> = MutableStateFlow(true)
     override val model: MutableStateFlow<AvControlsChipModel> =
         MutableStateFlow(AvControlsChipModel(sensorActivityModel = SensorActivityModel.Inactive))
     override val isShowingAvChip: MutableStateFlow<Boolean> = MutableStateFlow(false)
