@@ -276,8 +276,7 @@ final class AppCompatCameraSimReqOrientationPolicy implements AppCompatCameraSta
                         .setShouldLetterboxForCameraCompat(displayRotation != ROTATION_UNDEFINED)
                         .setRotateAndCropRotation(getCameraRotationFromSandboxedDisplayRotation(
                                 displayRotation))
-                        // TODO(b/365725400): support landscape cameras.
-                        .setShouldOverrideSensorOrientation(false)
+                        .setShouldOverrideSensorOrientation(shouldOverrideSensorOrientation())
                         .setShouldAllowTransformInverseDisplay(false);
             } else if (isExternalDisplaySandboxEnabledForActivity(activityRecord)) {
                 // Sandbox only display rotation if needed, for external display.
@@ -311,8 +310,9 @@ final class AppCompatCameraSimReqOrientationPolicy implements AppCompatCameraSta
      * Calculates the angle for camera feed rotate-and-crop.
      *
      * <p>Camera apps most commonly calculate the preview rotation with the formula (simplified):
-     * {code rotation = cameraSensorRotation - displayRotation}. When display rotation is sandboxed,
-     * camera preview needs to be rotated by the same amount to keep the preview upright.
+     * {code rotation = cameraSensorRotation - displayRotation}. When display rotation or sensor
+     * orientation is sandboxed, camera feed needs to be rotated by the same amount to keep the
+     * preview upright.
      */
     private int getCameraRotationFromSandboxedDisplayRotation(@Surface.Rotation int
             displayRotation) {
@@ -320,17 +320,19 @@ final class AppCompatCameraSimReqOrientationPolicy implements AppCompatCameraSta
             return ROTATION_UNDEFINED;
         }
         int realCameraRotation = mCameraDisplayRotationProvider.getCameraDeviceRotation();
-        if (displayRotation == realCameraRotation) {
-            // No need to rotate and crop, display rotation is unchanged.
-            return ROTATION_UNDEFINED;
-        }
-
+        // Most apps that assume camera sensor orientation expect portrait camera orientation.
+        // If sensor orientation is changed (currently only landscape to portrait is supported),
+        // this will affect rotate and crop; otherwise sensorRotationOffset should be 0.
+        // The value of sensorRotationOffset is calculated by the difference between the real
+        // sensor orientation and sandboxed: 0 for landscape cameras, and 90 for portrait cameras.
+        // Camera Framework flips this value based on whether the camera is front or back.
+        final int sensorRotationOffset = shouldOverrideSensorOrientation() ? 270 : 0;
         final int displayRotationInDegrees = getRotationToDegrees(displayRotation);
         final int realCameraRotationInDegrees = getRotationToDegrees(realCameraRotation);
-        // Feed needs to be rotated by the same amount as the display sandboxing difference, in
-        // order to keep the preview upright.
+        // Feed needs to be rotated by the same amount as the display sandboxing difference and the
+        // camera sensor sandboxing difference, in order to keep the preview upright.
         return getRotationDegreesToEnum((displayRotationInDegrees - realCameraRotationInDegrees
-                + 360) % 360);
+                + sensorRotationOffset + 360) % 360);
     }
 
     private static int getRotationToDegrees(@Surface.Rotation int rotation) {
@@ -374,6 +376,10 @@ final class AppCompatCameraSimReqOrientationPolicy implements AppCompatCameraSta
         }
     }
 
+    private boolean shouldOverrideSensorOrientation() {
+        return Flags.cameraCompatLandscapeCameraSupport()
+                && !mCameraDisplayRotationProvider.isCameraDeviceNaturalOrientationPortrait();
+    }
     /**
      * Returns true if letterboxing should be allowed for camera apps, even if otherwise it isn't.
      *
