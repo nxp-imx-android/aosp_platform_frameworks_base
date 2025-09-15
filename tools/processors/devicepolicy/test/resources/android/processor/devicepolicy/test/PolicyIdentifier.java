@@ -19,6 +19,7 @@ package android.app.admin;
 import android.annotation.IntDef;
 import android.processor.devicepolicy.BooleanPolicyDefinition;
 import android.processor.devicepolicy.EnumPolicyDefinition;
+import android.processor.devicepolicy.IntegerPolicyDefinition;
 import android.processor.devicepolicy.PolicyDefinition;
 
 import java.lang.annotation.Retention;
@@ -80,4 +81,15 @@ public final class PolicyIdentifier<T> {
     )
     public static final PolicyIdentifier<Integer> TEST_POLICY_2 = new PolicyIdentifier<>(
             TEST_POLICY_2_KEY);
+
+    private static final String TEST_POLICY_3_KEY = "test_policy_3_key";
+
+    /**
+     * Test policy 3
+     */
+    @IntegerPolicyDefinition(
+            base = @PolicyDefinition
+    )
+    public static final PolicyIdentifier<Integer> TEST_POLICY_3 = new PolicyIdentifier<>(
+            TEST_POLICY_3_KEY);
 }
