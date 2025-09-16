@@ -117,7 +117,8 @@ public class SpatializerHelperTest {
         String settings = mSpyDeviceBroker.getDeviceSettings();
         Log.i(TAG, "device settings: " + settings);
         mSpyDeviceBroker.clearDeviceInventory();
-        mSpyDeviceBroker.setDeviceSettings(settings);
+        mSpyDeviceBroker.setDeviceSettings(settings, true /*binauralEnabledDefault*/,
+                true /*transauralEnabledDefault*/);
         String settingsRestored = mSpyDeviceBroker.getDeviceSettings();
         Log.i(TAG, "device settingsRestored: " + settingsRestored);
         Assert.assertEquals(settings, settingsRestored);
