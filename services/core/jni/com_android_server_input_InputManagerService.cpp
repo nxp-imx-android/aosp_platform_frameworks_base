@@ -555,8 +555,8 @@ private:
         // True if there is an active input method connection.
         bool isInputMethodConnectionActive{false};
 
-        // Keycodes to be remapped.
-        std::map<int32_t /* fromKeyCode */, int32_t /* toKeyCode */> keyRemapping{};
+        // Keycodes to be remapped globally.
+        std::map<int32_t /* fromLocationKeyCode */, int32_t /* toKeyCode */> keyRemapping{};
 
         // Displays which are non-interactive.
         std::set<ui::LogicalDisplayId> nonInteractiveDisplays;
@@ -2278,17 +2278,17 @@ static std::vector<int32_t> getIntArray(JNIEnv* env, jintArray arr) {
     return vec;
 }
 
-static void nativeSetKeyRemapping(JNIEnv* env, jobject nativeImplObj, jintArray fromKeyCodesArr,
-                                  jintArray toKeyCodesArr) {
-    const std::vector<int32_t> fromKeycodes = getIntArray(env, fromKeyCodesArr);
+static void nativeSetKeyRemapping(JNIEnv* env, jobject nativeImplObj,
+                                  jintArray fromLocationKeyCodesArr, jintArray toKeyCodesArr) {
+    const std::vector<int32_t> fromLocationKeycodes = getIntArray(env, fromLocationKeyCodesArr);
     const std::vector<int32_t> toKeycodes = getIntArray(env, toKeyCodesArr);
-    if (fromKeycodes.size() != toKeycodes.size()) {
-        jniThrowRuntimeException(env, "FromKeycodes and toKeycodes cannot match.");
+    if (fromLocationKeycodes.size() != toKeycodes.size()) {
+        jniThrowRuntimeException(env, "FromLocationKeycodes and toKeycodes must have same size.");
     }
     NativeInputManager* im = getNativeInputManager(env, nativeImplObj);
     std::map<int32_t, int32_t> keyRemapping;
-    for (int i = 0; i < fromKeycodes.size(); i++) {
-        keyRemapping.insert_or_assign(fromKeycodes[i], toKeycodes[i]);
+    for (int i = 0; i < fromLocationKeycodes.size(); i++) {
+        keyRemapping.insert_or_assign(fromLocationKeycodes[i], toKeycodes[i]);
     }
     im->setKeyRemapping(keyRemapping);
 }
