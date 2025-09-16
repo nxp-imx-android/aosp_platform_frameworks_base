@@ -1521,14 +1521,6 @@ flag {
 }
 
 flag {
-  name: "shade_header_font_update"
-  namespace: "systemui"
-  description: "Updates the fonts of the shade header"
-  bug: "393609960"
-  is_fixed_read_only: true
-}
-
-flag {
   name: "shade_header_blur_font_color"
   namespace: "systemui"
   description: "Updates the font colors of the shade header for blur"
