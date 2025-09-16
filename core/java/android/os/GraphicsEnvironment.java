@@ -17,6 +17,7 @@
 package android.os;
 
 import android.app.Activity;
+import android.app.ActivityManager;
 import android.app.GameManager;
 import android.content.BroadcastReceiver;
 import android.content.ContentResolver;
@@ -507,6 +508,7 @@ public class GraphicsEnvironment {
             }
             if (android.os.Flags.enableAngleForGames()
                     && applicationInfoWithMetaData.category == ApplicationInfo.CATEGORY_GAME
+                    && !ActivityManager.isLowRamDeviceStatic()
                     && SystemProperties.getInt("ro.vendor.api_level", 0) >= 202604) {
                 Log.v(TAG, packageName + " is in GAME category, enabling ANGLE");
                 return ANGLE_GL_DRIVER_CHOICE_ANGLE;
