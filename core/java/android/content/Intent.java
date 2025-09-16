@@ -1968,8 +1968,8 @@ public class Intent implements Parcelable, Cloneable {
             = "android.intent.extra.RETURN_RESULT";
 
     /**
-     * Package manager install result code.  @hide because result codes are not
-     * yet ready to be exposed.
+     * Package manager install result code.
+     * @hide because result codes are not yet ready to be exposed.
      */
     @SystemApi
     public static final String EXTRA_INSTALL_RESULT = "android.intent.extra.INSTALL_RESULT";

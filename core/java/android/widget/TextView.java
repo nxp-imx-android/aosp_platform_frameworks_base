@@ -493,7 +493,10 @@ public class TextView extends View implements ViewTreeObserver.OnPreDrawListener
     // Accessibility action start id for "process text" actions.
     static final int ACCESSIBILITY_ACTION_PROCESS_TEXT_START_ID = 0x10000100;
 
-    /** Accessibility action start id for "smart" actions. @hide */
+    /**
+     * Accessibility action start id for "smart" actions.
+     * @hide
+     */
     static final int ACCESSIBILITY_ACTION_SMART_START_ID = 0x10001000;
 
     // Stable extra data keys supported by TextView.
