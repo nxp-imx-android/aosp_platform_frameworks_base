@@ -683,11 +683,12 @@ public class DevicePresenceProcessor implements AssociationStore.OnChangeListene
             return;
         }
 
+        onDevicePresenceEvent(mConnectedBtDevices, associationId,
+                new DevicePresenceEvent(associationId, EVENT_BT_DISCONNECTED, null));
+
         // Start BLE scanning when the device is disconnected.
         mBleDeviceProcessor.startScan();
 
-        onDevicePresenceEvent(mConnectedBtDevices, associationId,
-                new DevicePresenceEvent(associationId, EVENT_BT_DISCONNECTED, null));
         // If current device is BLE present but BT is disconnected , means it will be
         // potentially out of range later. Schedule BLE disappeared callback.
         if (isBlePresent(associationId)) {
