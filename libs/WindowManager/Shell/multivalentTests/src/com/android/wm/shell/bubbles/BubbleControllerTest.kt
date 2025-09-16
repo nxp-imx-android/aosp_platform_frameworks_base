@@ -450,7 +450,7 @@ class BubbleControllerTest(flags: FlagsParameterization) {
     @Test
     fun hasStableBubbleForTask_whenBubbleInTransition_returnsFalse() {
         val taskId = 777
-        val bubble = createBubble("key", taskId).apply { preparingTransition = mock() }
+        val bubble = createBubble("key", taskId).apply { currentTransition = mock() }
         getInstrumentation().runOnMainSync {
             bubbleData.notificationEntryUpdated(
                 bubble,

@@ -336,7 +336,7 @@ class BubbleBarLayerViewTest {
         getInstrumentation().runOnMainSync { bubbleBarLayerView.showExpandedView(secondBubble) }
         waitForExpandedViewAnimation()
 
-        firstBubble.preparingTransition = object : BubbleTransitions.BubbleTransition {}
+        firstBubble.currentTransition = object : BubbleTransitions.BubbleTransition {}
 
         getInstrumentation().runOnMainSync { bubbleBarLayerView.removeBubble(firstBubble) {} }
 

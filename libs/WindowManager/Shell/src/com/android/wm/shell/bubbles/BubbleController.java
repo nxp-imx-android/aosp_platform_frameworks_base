@@ -1514,7 +1514,7 @@ public class BubbleController implements ConfigurationChangeListener,
     /** Returns whether the given task is a non-transient bubble. */
     public boolean hasStableBubbleForTask(int taskId) {
         final Bubble bubble = mBubbleData.getBubbleInStackWithTaskId(taskId);
-        return bubble != null && bubble.getPreparingTransition() == null;
+        return bubble != null && bubble.getCurrentTransition() == null;
     }
 
     /** Returns whether the given task should be an App Bubble */
@@ -2571,8 +2571,8 @@ public class BubbleController implements ConfigurationChangeListener,
             }
             if (mBubbleData.getSelectedBubble() instanceof Bubble) {
                 Bubble bubble = (Bubble) mBubbleData.getSelectedBubble();
-                if (bubble.getPreparingTransition() != null) {
-                    bubble.getPreparingTransition().mergeWithUnfold(change.getLeash(), finishT);
+                if (bubble.getCurrentTransition() != null) {
+                    bubble.getCurrentTransition().mergeWithUnfold(change.getLeash(), finishT);
                 }
                 return true;
             }
@@ -2665,7 +2665,7 @@ public class BubbleController implements ConfigurationChangeListener,
         public void removeBubble(Bubble removedBubble) {
             if (mLayerView != null) {
                 final BubbleTransitions.BubbleTransition bubbleTransit =
-                        removedBubble.getPreparingTransition();
+                        removedBubble.getCurrentTransition();
                 mLayerView.removeBubble(removedBubble, () -> {
                     if (bubbleTransit != null) {
                         bubbleTransit.continueCollapse();
@@ -2920,8 +2920,8 @@ public class BubbleController implements ConfigurationChangeListener,
         if (selectedBubble == null) return;
         if (selectedBubble instanceof Bubble) {
             final Bubble bubble = (Bubble) selectedBubble;
-            if (bubble.getPreparingTransition() != null) {
-                bubble.getPreparingTransition().continueExpand();
+            if (bubble.getCurrentTransition() != null) {
+                bubble.getCurrentTransition().continueExpand();
                 return;
             }
         }
@@ -3396,7 +3396,7 @@ public class BubbleController implements ConfigurationChangeListener,
                     "collapseBubbles",
                     (controller) -> {
                         if (mBubbleData.getSelectedBubble() instanceof Bubble) {
-                            if (((Bubble) mBubbleData.getSelectedBubble()).getPreparingTransition()
+                            if (((Bubble) mBubbleData.getSelectedBubble()).getCurrentTransition()
                                     != null) {
                                 // Currently preparing a transition which will, itself, collapse the
                                 // bubble.
@@ -3475,7 +3475,7 @@ public class BubbleController implements ConfigurationChangeListener,
                             // if we're in the process of converting the selected bubble to bar mode
                             // we just received an updated bubble bar relative position so we can
                             // now continue converting the bubble
-                            ((Bubble) mBubbleData.getSelectedBubble()).getPreparingTransition()
+                            ((Bubble) mBubbleData.getSelectedBubble()).getCurrentTransition()
                                     .continueConvert(mLayerView);
                         }
                         if (mLayerView != null) mLayerView.updateExpandedView();

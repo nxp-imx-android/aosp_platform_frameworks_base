@@ -222,11 +222,14 @@ public class Bubble implements BubbleViewProvider {
     private Intent mIntent;
 
     /**
-     * Set while preparing a transition for animation. Several steps are needed before animation
-     * starts, so this is used to detect and route associated events to the coordinating transition.
+     * Sets the transition that is currently animating this Bubble. This should be set when
+     * preparing the transition for animation.
+     * Several steps are needed before animation actually starts, so this is used to detect and
+     * route associated events to the coordinating transition.
+     * It will be cleanup after the transition animation has completed.
      */
     @Nullable
-    private BubbleTransitions.BubbleTransition mPreparingTransition;
+    private BubbleTransitions.BubbleTransition mCurrentTransition;
 
     /**
      * Create a bubble with limited information based on given {@link ShortcutInfo}.
@@ -629,8 +632,8 @@ public class Bubble implements BubbleViewProvider {
     }
 
     @Nullable
-    public BubbleTransitions.BubbleTransition getPreparingTransition() {
-        return mPreparingTransition;
+    public BubbleTransitions.BubbleTransition getCurrentTransition() {
+        return mCurrentTransition;
     }
 
     /**
@@ -708,21 +711,19 @@ public class Bubble implements BubbleViewProvider {
     /**
      * Sets the current bubble-transition that is coordinating a change in this bubble.
      */
-    public void setPreparingTransition(BubbleTransitions.BubbleTransition transit) {
-        ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "setPreparingTransition: transit=%s", transit);
-        mPreparingTransition = transit;
+    public void setCurrentTransition(@Nullable BubbleTransitions.BubbleTransition transit) {
+        ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "setCurrentTransition: transit=%s", transit);
+        mCurrentTransition = transit;
     }
 
     /** Whether this bubble is currently converting to bubble bar. */
     public boolean isConvertingToBar() {
-        return getPreparingTransition() != null
-                && getPreparingTransition().isConvertingBubbleToBar();
+        return getCurrentTransition() != null && getCurrentTransition().isConvertingBubbleToBar();
     }
 
     /** Whether this bubble is currently switching to expanded from another bubble using jumpcut. */
     public boolean isJumpcutBubbleSwitching() {
-        return getPreparingTransition() != null
-                && getPreparingTransition().isJumpcutBubbleSwitching();
+        return getCurrentTransition() != null && getCurrentTransition().isJumpcutBubbleSwitching();
     }
 
     /**
@@ -1311,7 +1312,7 @@ public class Bubble implements BubbleViewProvider {
         pw.print("  autoExpand:    "); pw.println(shouldAutoExpand());
         pw.print("  isDismissable: "); pw.println(mIsDismissable);
         pw.println("  bubbleMetadataFlagListener null?: " + (mBubbleMetadataFlagListener == null));
-        pw.println("  preparingTransition null?: " + (mPreparingTransition == null));
+        pw.println("  mCurrentTransition null?: " + (mCurrentTransition == null));
         pw.println("  isConvertingToBar: " + isConvertingToBar());
         if (mExpandedView != null) {
             mExpandedView.dump(pw, "  ");
