@@ -163,57 +163,67 @@ final class EnforcingAdmin {
     private EnforcingAdmin(
             String packageName, @Nullable ComponentName componentName, Set<String> authorities,
             int userId) {
-        Objects.requireNonNull(packageName);
-        Objects.requireNonNull(authorities);
-
         // Role/System authorities should not be using this constructor
-        mIsRoleAuthority = false;
-        mPackageName = packageName;
-        mSystemEntity = null;
-        mComponentName = componentName;
-        mAuthorities = new HashSet<>(authorities);
-        mUserId = userId;
+        this(
+                Objects.requireNonNull(packageName),
+                null, /* systemEntity */
+                componentName,
+                userId,
+                false, /* isRoleAuthority */
+                new HashSet<>(Objects.requireNonNull(authorities))
+        );
     }
 
     private EnforcingAdmin(String packageName, int userId) {
-        Objects.requireNonNull(packageName);
-
         // Only role authorities use this constructor.
-        mIsRoleAuthority = true;
-        mPackageName = packageName;
-        mSystemEntity = null;
-        mUserId = userId;
-        mComponentName = null;
-        // authorities will be loaded when needed
-        mAuthorities = null;
+        this(
+                Objects.requireNonNull(packageName),
+                null, /* systemEntity */
+                null, /* componentName */
+                userId,
+                true, /* isRoleAuthority */
+                null /* authorities */
+        );
     }
 
     /** Constructor for System authorities. */
     private EnforcingAdmin(@NonNull String systemEntity) {
-        Objects.requireNonNull(systemEntity);
-
         // Only system authorities use this constructor.
-        mIsRoleAuthority = false;
-        // Package name is not used for a system enforcing admin, so an empty string is fine.
-        mPackageName = "";
-        mSystemEntity = systemEntity;
-        mUserId = UserHandle.USER_SYSTEM;
-        mComponentName = null;
-        mAuthorities = getSystemAuthority(systemEntity);
+        this(
+                "", /* packageName */
+                Objects.requireNonNull(systemEntity),
+                null, /* componentName */
+                UserHandle.USER_SYSTEM,
+                false, /* isRoleAuthority */
+                getSystemAuthority(systemEntity)
+        );
     }
 
     private EnforcingAdmin(
             String packageName, @Nullable ComponentName componentName, Set<String> authorities,
             int userId, boolean isRoleAuthority) {
+
+        this(
+                packageName,
+                null, /* systemEntity */
+                componentName,
+                userId,
+                isRoleAuthority,
+                new HashSet<>(authorities)
+        );
+
         Objects.requireNonNull(packageName);
         Objects.requireNonNull(authorities);
+    }
 
-        mIsRoleAuthority = isRoleAuthority;
+    private EnforcingAdmin(String packageName, String systemEntity, ComponentName componentName,
+            int userId, boolean isRoleAuthority, Set<String> authorities) {
         mPackageName = packageName;
-        mSystemEntity = null;
+        mSystemEntity = systemEntity;
         mComponentName = componentName;
-        mAuthorities = new HashSet<>(authorities);
         mUserId = userId;
+        mIsRoleAuthority = isRoleAuthority;
+        mAuthorities = authorities;
     }
 
     private static Set<String> getRoleAuthoritiesOrDefault(String packageName, int userId) {
