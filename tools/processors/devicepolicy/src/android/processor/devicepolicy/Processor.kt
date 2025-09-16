@@ -21,6 +21,7 @@ import android.processor.devicepolicy.protos.TypeSpecificPolicyMetadata
 import javax.annotation.processing.ProcessingEnvironment
 import javax.lang.model.element.Element
 import javax.lang.model.element.ElementKind
+import javax.lang.model.element.TypeElement
 import javax.lang.model.type.DeclaredType
 import javax.lang.model.type.TypeMirror
 import javax.tools.Diagnostic
@@ -150,7 +151,7 @@ abstract class Processor<T : Annotation>(protected val processingEnv: Processing
     private fun loadPolicyDefinition(
         element: Element, definition: PolicyDefinition, typeSpecificMetadata: TypeSpecificPolicyMetadata
     ): PolicyMetadata {
-        val enclosingType = element.enclosingElement.asType()
+        val enclosingType = (element.enclosingElement as TypeElement).getQualifiedName()
 
         val name = "$enclosingType.$element"
         val type = policyType(element).toString()
