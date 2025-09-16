@@ -189,3 +189,13 @@ flag {
     description: "Support IONEX assistance"
     bug: "434875844"
 }
+
+flag {
+    name: "emergency_location_new_notification"
+    namespace: "location"
+    description: "Enables the new emergency location notification with updated text and CTA"
+    bug: "384572637"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
