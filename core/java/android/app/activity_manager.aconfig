@@ -104,14 +104,6 @@ flag {
 }
 
 flag {
-     namespace: "backstage_power"
-     name: "skip_ref_content_provider"
-     description: "Skip refContentProvider calls for unstable connections"
-     bug: "395544023"
-     is_fixed_read_only: true
-}
-
-flag {
      namespace: "system_performance"
      name: "early_render_thread_priority_boost"
      description: "Boost the render thread priority during preload."

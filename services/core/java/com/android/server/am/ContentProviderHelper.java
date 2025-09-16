@@ -909,8 +909,7 @@ public class ContentProviderHelper {
                 (conn.provider != null && conn.provider.info != null
                 ? conn.provider.info.authority : ""));
         try {
-            if (android.app.Flags.skipRefContentProvider()
-                    && unstable <= 0 && conn.unstableCount() <= 0) {
+            if (unstable <= 0 && conn.unstableCount() <= 0) {
                 return false;
             }
             conn.adjustCounts(stable, unstable);
