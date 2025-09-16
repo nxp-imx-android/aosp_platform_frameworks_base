@@ -379,6 +379,16 @@ public interface ParsingPackage {
 
     ParsingPackage setZygotePreloadName(String zygotePreloadName);
 
+    /**
+     * Set the name of the library to preloaded for Native App Zygote
+     */
+    ParsingPackage setZygotePreloadNativeLib(String zygotePreloadNativeLib);
+
+    /**
+     * Set the name of the function to be called once the library specified above is preloaded.
+     */
+    ParsingPackage setZygotePreloadNativeFunc(String zygotePreloadNativeFunc);
+
     ParsingPackage setAllowCrossUidActivitySwitchFromBelow(
             boolean allowCrossUidActivitySwitchFromBelow);
 
@@ -532,6 +542,18 @@ public interface ParsingPackage {
 
     @Nullable
     String getZygotePreloadName();
+
+    /**
+     * Return the name of the library to be preloaded in Native App Zygote
+     */
+    @Nullable
+    String getZygotePreloadNativeLib();
+
+    /**
+     * Return the name of the function to be called after the specified library is preloaded
+     */
+    @Nullable
+    String getZygotePreloadNativeFunc();
 
     boolean isAllowCrossUidActivitySwitchFromBelow();
 

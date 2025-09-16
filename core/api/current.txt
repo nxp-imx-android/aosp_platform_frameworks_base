@@ -1989,6 +1989,8 @@ package android {
     field public static final int yesNoPreferenceStyle = 16842896; // 0x1010090
     field public static final int zAdjustment = 16843201; // 0x10101c1
     field public static final int zygotePreloadName = 16844189; // 0x101059d
+    field @FlaggedApi("android.os.native_app_zygote") public static final int zygotePreloadNativeFunc;
+    field @FlaggedApi("android.os.native_app_zygote") public static final int zygotePreloadNativeLib;
   }
 
   public static final class R.bool {
