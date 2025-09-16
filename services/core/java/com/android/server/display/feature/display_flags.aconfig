@@ -482,8 +482,8 @@ flag {
 }
 
 flag {
-    name: "enable_app_resolution_change"
+    name: "configure_app_resolution_change"
     namespace: "display_manager"
-    description: "Enable dynamic resolution changing requested by apps"
+    description: "Enables app dynamic resolution change configuration"
     bug: "414654227"
 }
