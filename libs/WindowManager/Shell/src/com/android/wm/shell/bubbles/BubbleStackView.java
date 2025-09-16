@@ -2903,7 +2903,7 @@ public class BubbleStackView extends FrameLayout
 
     private void expand(boolean animate) {
         BubbleLog.d("BubbleStackView.expand() animate=%b, expandedBubble=%s",
-                mExpandedBubble != null ? mExpandedBubble.getKey() : "null");
+                animate, mExpandedBubble != null ? mExpandedBubble.getKey() : "null");
         cancelDelayedExpandCollapseSwitchAnimations();
 
         mIsExpanded = true;
