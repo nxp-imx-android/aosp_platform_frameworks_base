@@ -2315,65 +2315,72 @@ public class MediaQualityService extends SystemService {
         public void onPictureProfileAdjusted(
                 android.hardware.tv.mediaquality.PictureProfile pictureProfile)
                 throws RemoteException {
-            Long dbId = pictureProfile.pictureProfileId;
-            if (dbId != null) {
-                android.hardware.tv.mediaquality.PictureParameter[] params =
-                        pictureProfile.parameters.pictureParameters;
-                for (android.hardware.tv.mediaquality.PictureParameter param : params) {
-                    if (param.getTag() == PictureParameter.activeProfile
-                            && !param.getActiveProfile()) {
-                        synchronized (mPictureProfileLock) {
-                            mOriginalHandleToCurrentPictureProfile.remove(dbId);
-                            mCurrentPictureHandleToOriginal.removeValue(dbId);
+            mHandler.post(() -> {
+                Long dbId = pictureProfile.pictureProfileId;
+                if (dbId != null) {
+                    android.hardware.tv.mediaquality.PictureParameter[] params =
+                            pictureProfile.parameters.pictureParameters;
+                    for (android.hardware.tv.mediaquality.PictureParameter param : params) {
+                        if (param.getTag() == PictureParameter.activeProfile
+                                && !param.getActiveProfile()) {
+                            synchronized (mPictureProfileLock) {
+                                mOriginalHandleToCurrentPictureProfile.remove(dbId);
+                                mCurrentPictureHandleToOriginal.removeValue(dbId);
+                            }
+                            break;
                         }
-                        break;
                     }
+                    updatePictureProfileFromHal(dbId, MediaQualityUtils
+                            .convertPictureParameterListToPersistableBundle(params));
                 }
-                updatePictureProfileFromHal(dbId,
-                        MediaQualityUtils.convertPictureParameterListToPersistableBundle(params));
-            }
+            });
         }
 
         @Override
         public void onParamCapabilityChanged(long pictureProfileId, ParamCapability[] caps)
                 throws RemoteException {
-            List<ParameterCapability> paramCaps = new ArrayList<>();
-            for (ParamCapability cap: caps) {
-                String name = MediaQualityUtils.getParameterName(cap.name);
-                boolean isSupported = cap.isSupported;
-                //Reason for +1: please see getParameterCapabilityList()
-                int type = cap.defaultValue == null ? 0 : cap.defaultValue.getTag() + 1;
-                Bundle bundle = MediaQualityUtils.convertToCaps(type, cap.range);
-                putParamCapDefaultValueIntoBundle(bundle, cap.defaultValue);
+            mHandler.post(() -> {
+                List<ParameterCapability> paramCaps = new ArrayList<>();
+                for (ParamCapability cap: caps) {
+                    String name = MediaQualityUtils.getParameterName(cap.name);
+                    boolean isSupported = cap.isSupported;
+                    //Reason for +1: please see getParameterCapabilityList()
+                    int type = cap.defaultValue == null ? 0 : cap.defaultValue.getTag() + 1;
+                    Bundle bundle = MediaQualityUtils.convertToCaps(type, cap.range);
+                    putParamCapDefaultValueIntoBundle(bundle, cap.defaultValue);
 
-                paramCaps.add(new ParameterCapability(name, isSupported, type, bundle));
-            }
-            mMqManagerNotifier.notifyOnPictureProfileParameterCapabilitiesChanged(
-                    pictureProfileId, paramCaps, Binder.getCallingUid(), Binder.getCallingPid());
+                    paramCaps.add(new ParameterCapability(name, isSupported, type, bundle));
+                }
+                mMqManagerNotifier.notifyOnPictureProfileParameterCapabilitiesChanged(
+                        pictureProfileId, paramCaps,
+                        Binder.getCallingUid(), Binder.getCallingPid());
+            });
         }
 
         @Override
         public void onVendorParamCapabilityChanged(long pictureProfileId,
                 VendorParamCapability[] caps) throws RemoteException {
-            List<ParameterCapability> vendorParamCaps = new ArrayList<>();
-            for (VendorParamCapability vpcHal: caps) {
-                String name = MediaQualityUtils.getVendorParameterName(vpcHal);
-                boolean isSupported = vpcHal.isSupported;
-                //Reason for +1: please see getParameterCapabilityList()
-                int type = vpcHal.defaultValue
-                        == null ? 0 : vpcHal.defaultValue.getTag() + 1;
-                Bundle paramRangeBundle = MediaQualityUtils.convertToCaps(
-                        type, vpcHal.range);
-                putParamCapDefaultValueIntoBundle(paramRangeBundle, vpcHal.defaultValue);
-                MediaQualityUtils.convertToVendorCaps(vpcHal, paramRangeBundle);
-                vendorParamCaps.add(new ParameterCapability(
-                        name, isSupported, type, paramRangeBundle));
-            }
-            mMqManagerNotifier.notifyOnPictureProfileParameterCapabilitiesChanged(
-                    pictureProfileId,
-                    vendorParamCaps,
-                    Binder.getCallingUid(),
-                    Binder.getCallingPid());
+            mHandler.post(() -> {
+                List<ParameterCapability> vendorParamCaps = new ArrayList<>();
+                for (VendorParamCapability vpcHal: caps) {
+                    String name = MediaQualityUtils.getVendorParameterName(vpcHal);
+                    boolean isSupported = vpcHal.isSupported;
+                    //Reason for +1: please see getParameterCapabilityList()
+                    int type = vpcHal.defaultValue
+                            == null ? 0 : vpcHal.defaultValue.getTag() + 1;
+                    Bundle paramRangeBundle = MediaQualityUtils.convertToCaps(
+                            type, vpcHal.range);
+                    putParamCapDefaultValueIntoBundle(paramRangeBundle, vpcHal.defaultValue);
+                    MediaQualityUtils.convertToVendorCaps(vpcHal, paramRangeBundle);
+                    vendorParamCaps.add(new ParameterCapability(
+                            name, isSupported, type, paramRangeBundle));
+                }
+                mMqManagerNotifier.notifyOnPictureProfileParameterCapabilitiesChanged(
+                        pictureProfileId,
+                        vendorParamCaps,
+                        Binder.getCallingUid(),
+                        Binder.getCallingPid());
+            });
         }
 
         @Override
@@ -2687,19 +2694,23 @@ public class MediaQualityService extends SystemService {
         @Override
         public void onSoundProfileAdjusted(
                 android.hardware.tv.mediaquality.SoundProfile soundProfile) throws RemoteException {
-            Long dbId = soundProfile.soundProfileId;
-            if (dbId != null) {
-                updateSoundProfileFromHal(dbId,
-                        MediaQualityUtils.convertSoundParameterListToPersistableBundle(
-                                soundProfile.parameters.soundParameters));
-            }
+            mHandler.post(() -> {
+                Long dbId = soundProfile.soundProfileId;
+                if (dbId != null) {
+                    updateSoundProfileFromHal(dbId,
+                            MediaQualityUtils.convertSoundParameterListToPersistableBundle(
+                                    soundProfile.parameters.soundParameters));
+                }
+            });
         }
 
         @Override
         public void onParamCapabilityChanged(long soundProfileId, ParamCapability[] caps)
                 throws RemoteException {
-            mMqManagerNotifier.notifyOnSoundProfileParameterCapabilitiesChanged(
-                    soundProfileId, caps, Binder.getCallingUid(), Binder.getCallingPid());
+            mHandler.post(() -> {
+                mMqManagerNotifier.notifyOnSoundProfileParameterCapabilitiesChanged(
+                        soundProfileId, caps, Binder.getCallingUid(), Binder.getCallingPid());
+            });
         }
 
         @Override
