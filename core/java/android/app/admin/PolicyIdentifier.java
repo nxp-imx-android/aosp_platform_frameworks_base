@@ -88,7 +88,7 @@ public final class PolicyIdentifier<T> {
      * blocking works.
      */
     @FlaggedApi(FLAG_POLICY_STREAMLINING)
-    public static final int SCREEN_CAPTURE_BLOCKED = 1;
+    public static final int SCREEN_CAPTURE_DISALLOWED = 1;
 
     /**
      * Allow screen capture.
@@ -103,7 +103,7 @@ public final class PolicyIdentifier<T> {
      */
     @Retention(RetentionPolicy.SOURCE)
     @IntDef(prefix = { "SCREEN_CAPTURE_" }, value = {
-            SCREEN_CAPTURE_BLOCKED,
+            SCREEN_CAPTURE_DISALLOWED,
             SCREEN_CAPTURE_ALLOWED,
     })
     public @interface ScreenCaptureValue {}

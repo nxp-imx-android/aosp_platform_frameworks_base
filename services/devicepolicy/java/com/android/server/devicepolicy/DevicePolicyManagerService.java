@@ -25095,7 +25095,7 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
         requirePolicyScopeIsOneOf(scope, POLICY_SCOPE_DEVICE, POLICY_SCOPE_USER);
 
         EnforcingAdmin admin = getEnforcingAdmin(caller);
-        boolean disabled = (value == null || value == PolicyIdentifier.SCREEN_CAPTURE_BLOCKED);
+        boolean disabled = (value == null || value == PolicyIdentifier.SCREEN_CAPTURE_DISALLOWED);
 
         switch (scope) {
             case POLICY_SCOPE_DEVICE:
