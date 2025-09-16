@@ -206,7 +206,11 @@ public class KeyguardAbsKeyInputViewControllerTest extends SysuiTestCase {
     public void testOnViewAttached() {
         reset(mLockPatternUtils);
         mKeyguardAbsKeyInputViewController.onViewAttached();
-        verify(mLockPatternUtils).getLockoutAttemptDeadline(anyInt());
+        if (android.security.Flags.manageLockoutEndTimeInService()) {
+            verify(mLockPatternUtils).getLockoutEndTime(anyInt());
+        } else {
+            verify(mLockPatternUtils).getLockoutAttemptDeadline(anyInt());
+        }
     }
 
     @Test

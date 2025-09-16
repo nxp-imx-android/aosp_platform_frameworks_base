@@ -44,6 +44,7 @@ import java.util.function.Function
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
+import kotlin.time.toJavaDuration
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
@@ -178,7 +179,11 @@ class AuthenticationRepositoryTest : SysuiTestCase() {
             val lockoutEnd = clock.elapsedRealtime().milliseconds + 30.seconds
             whenever(lockPatternUtils.getLockoutAttemptDeadline(USER_INFOS[0].id))
                 .thenReturn(lockoutEnd.inWholeMilliseconds)
+            whenever(lockPatternUtils.getLockoutEndTime(USER_INFOS[0].id))
+                .thenReturn(lockoutEnd.toJavaDuration())
             whenever(lockPatternUtils.getLockoutAttemptDeadline(USER_INFOS[1].id)).thenReturn(0)
+            whenever(lockPatternUtils.getLockoutEndTime(USER_INFOS[1].id))
+                .thenReturn(0.seconds.toJavaDuration())
 
             // Switch to a user who is not locked-out.
             userRepository.setSelectedUserInfo(USER_INFOS[1])

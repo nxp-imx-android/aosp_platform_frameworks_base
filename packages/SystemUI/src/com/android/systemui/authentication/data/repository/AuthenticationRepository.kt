@@ -21,6 +21,7 @@ import android.app.admin.DevicePolicyManager
 import android.content.IntentFilter
 import android.os.UserHandle
 import android.security.Flags.lockscreenIndicateDuplicateGuesses
+import android.security.Flags.manageLockoutEndTimeInService
 import android.security.Flags.secureLockDevice
 import android.util.Log
 import com.android.app.tracing.coroutines.launchTraced as launch
@@ -50,6 +51,7 @@ import java.util.function.Function
 import javax.inject.Inject
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.toKotlinDuration
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
@@ -275,9 +277,12 @@ constructor(
 
     override val lockoutEndTime: Duration?
         get() =
-            lockPatternUtils.getLockoutAttemptDeadline(selectedUserId).milliseconds.takeIf {
-                clock.elapsedRealtime().milliseconds < it
-            }
+            if (manageLockoutEndTimeInService()) {
+                    lockPatternUtils.getLockoutEndTime(selectedUserId).toKotlinDuration()
+                } else {
+                    lockPatternUtils.getLockoutAttemptDeadline(selectedUserId).milliseconds
+                }
+                .takeIf { clock.elapsedRealtime().milliseconds < it }
 
     private val _hasLockoutOccurred = MutableStateFlow(false)
     override val hasLockoutOccurred: StateFlow<Boolean> = _hasLockoutOccurred.asStateFlow()

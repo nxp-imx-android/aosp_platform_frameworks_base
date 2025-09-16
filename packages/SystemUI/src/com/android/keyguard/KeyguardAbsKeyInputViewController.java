@@ -17,6 +17,7 @@
 package com.android.keyguard;
 
 import static android.security.Flags.lockscreenIndicateDuplicateGuesses;
+import static android.security.Flags.manageLockoutEndTimeInService;
 
 import static com.android.internal.util.LatencyTracker.ACTION_CHECK_CREDENTIAL;
 import static com.android.internal.util.LatencyTracker.ACTION_CHECK_CREDENTIAL_UNLOCKED;
@@ -121,8 +122,16 @@ public abstract class KeyguardAbsKeyInputViewController<T extends KeyguardAbsKey
         mView.setKeyDownListener(mKeyDownListener);
         mEmergencyButtonController.setEmergencyButtonCallback(mEmergencyButtonCallback);
         // if the user is currently locked out, enforce it.
-        Duration lockoutEndTime = Duration.ofMillis(mLockPatternUtils.getLockoutAttemptDeadline(
-                mSelectedUserInteractor.getSelectedUserId()));
+        Duration lockoutEndTime;
+        if (manageLockoutEndTimeInService()) {
+            lockoutEndTime =
+                    mLockPatternUtils.getLockoutEndTime(
+                            mSelectedUserInteractor.getSelectedUserId());
+        } else {
+            lockoutEndTime =
+                    Duration.ofMillis(mLockPatternUtils.getLockoutAttemptDeadline(
+                            mSelectedUserInteractor.getSelectedUserId()));
+        }
         if (shouldLockout(lockoutEndTime)) {
             handleAttemptLockout(lockoutEndTime);
         }
@@ -219,8 +228,13 @@ public abstract class KeyguardAbsKeyInputViewController<T extends KeyguardAbsKey
                 getKeyguardSecurityCallback()
                         .reportUnlockAttempt(userId, false, timeoutMs, isDuplicate);
                 if (timeoutMs > 0) {
-                    Duration lockoutEndTime = Duration.ofMillis(
+                    Duration lockoutEndTime;
+                    if (manageLockoutEndTimeInService()) {
+                        lockoutEndTime = mLockPatternUtils.getLockoutEndTime(userId);
+                    } else {
+                        lockoutEndTime = Duration.ofMillis(
                                 mLockPatternUtils.setLockoutAttemptDeadline(userId, timeoutMs));
+                    }
                     handleAttemptLockout(lockoutEndTime);
                 }
             }
