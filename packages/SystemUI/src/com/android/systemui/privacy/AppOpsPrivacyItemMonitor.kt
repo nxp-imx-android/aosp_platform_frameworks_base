@@ -64,6 +64,7 @@ constructor(
     private val activityManager: ActivityManager,
     private val context: Context,
     private val uiEventLogger: UiEventLogger,
+    private val locationAccumulatedLogger: LocationAccumulatedLogger,
 ) : PrivacyItemMonitor {
 
     @VisibleForTesting
@@ -225,6 +226,7 @@ constructor(
 
         listening = shouldListen
         if (shouldListen) {
+            locationAccumulatedLogger.startLogging()
             appOpsController.addCallback(OPS, appOpsCallback)
             userTracker.addCallback(userTrackerCallback, bgExecutor)
             onCurrentProfilesChanged()
@@ -303,6 +305,7 @@ constructor(
                 currentState = hasNonSystemForegroundLocationAccess,
                 onEvent = LocationIndicatorEvent.LOCATION_INDICATOR_NON_SYSTEM_APP,
                 offEvent = LocationIndicatorEvent.LOCATION_INDICATOR_NON_SYSTEM_APP_OFF,
+                logType = LocationAccumulatedLogger.LocationLogType.NON_SYSTEM_FG,
             )
 
             // No background access
@@ -312,6 +315,7 @@ constructor(
                 currentState = hasSystemAccess,
                 onEvent = LocationIndicatorEvent.LOCATION_INDICATOR_SYSTEM_APP,
                 offEvent = LocationIndicatorEvent.LOCATION_INDICATOR_SYSTEM_APP_OFF,
+                logType = LocationAccumulatedLogger.LocationLogType.SYSTEM,
             )
 
             // No system access
@@ -322,6 +326,7 @@ constructor(
                 currentState = hasBackgroundAccess,
                 onEvent = LocationIndicatorEvent.LOCATION_INDICATOR_BACKGROUND_APP,
                 offEvent = LocationIndicatorEvent.LOCATION_INDICATOR_BACKGROUND_APP_OFF,
+                logType = LocationAccumulatedLogger.LocationLogType.BACKGROUND,
             )
 
             val hasAllAccess =
@@ -333,6 +338,7 @@ constructor(
                 hasAllAccess,
                 LocationIndicatorEvent.LOCATION_INDICATOR_ALL_APP,
                 LocationIndicatorEvent.LOCATION_INDICATOR_ALL_APP_OFF,
+                LocationAccumulatedLogger.LocationLogType.ALL,
             )
 
             hasHighPowerLocationAccess = false
@@ -347,9 +353,13 @@ constructor(
         currentState: Boolean,
         onEvent: LocationIndicatorEvent,
         offEvent: LocationIndicatorEvent,
+        logType: LocationAccumulatedLogger.LocationLogType? = null,
     ) {
         if (lastState != currentState) {
             uiEventLogger.log(if (currentState) onEvent else offEvent)
+            if (logType == null) return
+
+            locationAccumulatedLogger.logForType(logType, currentState)
         }
     }
 
@@ -501,6 +511,7 @@ constructor(
                 ipw.println("micCameraAvailable: $micCameraAvailable")
                 ipw.println("locationAvailable: $locationAvailable")
                 ipw.println("Callback: $callback")
+                locationAccumulatedLogger.writeToPrintWriter(ipw)
             }
             ipw.println("Current user ids: ${userTracker.userProfiles.map { it.id }}")
         }
