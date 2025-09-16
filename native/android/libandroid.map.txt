@@ -435,6 +435,15 @@ LIBANDROID {
     *;
 };
 
+LIBANDROID_DRAFT { # draft
+  global:
+    ANativeService_setOnBindCallback;
+    ANativeService_setOnUnbindCallback;
+    ANativeService_setOnRebindCallback;
+    ANativeService_setOnDestroyCallback;
+    ANativeService_setOnTrimMemoryCallback;
+};
+
 LIBANDROID_PLATFORM {
   global:
     AThermal_setIThermalServiceForTesting;
