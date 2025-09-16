@@ -225,16 +225,21 @@ public class StringCacheTest {
         mCache.clear();
 
         assertEquals(0, mCache.size());
-        assertEquals(0, mCache.getHitCount());
-        assertEquals(0, mCache.getMissCount());
-        assertEquals(0, mCache.getRejectCount());
-        assertEquals(0, mCache.getEvictCount());
+        // Clearing preserves stats.
+        assertEquals(1, mCache.getHitCount());
+        assertEquals(2, mCache.getMissCount());
 
-        // Caching after clearing should work as if new.
-        mCache.cache("c");
+        // "b" should be a miss after clear.
+        mCache.cache("b");
         assertEquals(1, mCache.size());
-        assertEquals(1, mCache.getMissCount());
-        assertEquals(0, mCache.getHitCount());
+        assertEquals(1, mCache.getHitCount());
+        assertEquals(3, mCache.getMissCount());
+
+        // Ensure that we can still hit.
+        mCache.cache("b");
+        assertEquals(1, mCache.size());
+        assertEquals(2, mCache.getHitCount());
+        assertEquals(3, mCache.getMissCount());
     }
 
     @Test
