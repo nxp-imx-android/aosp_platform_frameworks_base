@@ -45,7 +45,6 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.systemBars
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsBottomHeight
 import androidx.compose.foundation.overscroll
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -99,7 +98,6 @@ import com.android.compose.animation.scene.ContentScope
 import com.android.compose.animation.scene.ElementKey
 import com.android.compose.animation.scene.LowestZIndexContentPicker
 import com.android.compose.animation.scene.SceneTransitionLayoutState
-import com.android.compose.animation.scene.content.state.TransitionState
 import com.android.compose.gesture.effect.OffsetOverscrollEffect
 import com.android.compose.gesture.effect.rememberOffsetOverscrollEffect
 import com.android.compose.modifiers.thenIf
@@ -318,7 +316,7 @@ fun ContentScope.ConstrainedNotificationStack(
             modifier
                 .onSizeChanged { viewModel.onConstrainedAvailableSpaceChanged(it.height) }
                 .onGloballyPositioned {
-                    if (shouldUseLockscreenStackBounds(layoutState.transitionState)) {
+                    if (shouldUseLockscreenStackBounds(layoutState)) {
                         stackScrollView.updateDrawBounds(it.rawBoundsInWindow())
                     }
                 }
@@ -326,7 +324,7 @@ fun ContentScope.ConstrainedNotificationStack(
         NotificationPlaceholder(
             stackScrollView = stackScrollView,
             viewModel = viewModel,
-            useStackBounds = { shouldUseLockscreenStackBounds(layoutState.transitionState) },
+            useStackBounds = { shouldUseLockscreenStackBounds(layoutState) },
             modifier =
                 Modifier.fillMaxWidth()
                     .notificationStackHeight(view = stackScrollView, constrainToMaxHeight = true)
@@ -340,10 +338,7 @@ fun ContentScope.ConstrainedNotificationStack(
             stackScrollView = stackScrollView,
             viewModel = viewModel,
             useHunBounds = {
-                shouldUseLockscreenHunBounds(
-                    layoutState.transitionState,
-                    viewModel.quickSettingsShadeContentKey,
-                )
+                shouldUseLockscreenHunBounds(layoutState, viewModel.quickSettingsShadeContentKey)
             },
             modifier = Modifier.align(Alignment.TopCenter),
         )
@@ -734,7 +729,7 @@ fun ContentScope.NotificationScrollingStack(
                             else stackBottomPadding,
                     )
                     .onGloballyPositioned {
-                        if (!shouldUseLockscreenStackBounds(layoutState.transitionState)) {
+                        if (!shouldUseLockscreenStackBounds(layoutState)) {
                             stackScrollView.updateDrawBounds(it.rawBoundsInWindow())
                         }
                     }
@@ -759,9 +754,7 @@ fun ContentScope.NotificationScrollingStack(
                 NotificationPlaceholder(
                     stackScrollView = stackScrollView,
                     viewModel = viewModel,
-                    useStackBounds = {
-                        !shouldUseLockscreenStackBounds(layoutState.transitionState)
-                    },
+                    useStackBounds = { !shouldUseLockscreenStackBounds(layoutState) },
                     modifier =
                         Modifier.notificationStackHeight(view = stackScrollView).onSizeChanged {
                             size ->
@@ -790,7 +783,7 @@ fun ContentScope.NotificationScrollingStack(
                 viewModel = viewModel,
                 useHunBounds = {
                     !shouldUseLockscreenHunBounds(
-                        layoutState.transitionState,
+                        layoutState,
                         viewModel.quickSettingsShadeContentKey,
                     )
                 },
@@ -909,29 +902,44 @@ private suspend fun scrollNotificationStack(
     }
 }
 
-private fun TransitionState.isOnLockscreen(): Boolean {
-    return currentScene == Scenes.Lockscreen && currentOverlays.isEmpty()
+private fun SceneTransitionLayoutState.isIdleOnLockscreenWithNoShade(): Boolean {
+    return isIdle(Scenes.Lockscreen) &&
+        !isInCurrentOverlays(Overlays.NotificationsShade) &&
+        !isInCurrentOverlays(Overlays.QuickSettingsShade)
 }
 
-private fun shouldUseLockscreenStackBounds(state: TransitionState): Boolean {
-    return when (state) {
-        is TransitionState.Idle -> state.isOnLockscreen()
-        is TransitionState.Transition ->
-            // Keep using the lockscreen stack bounds when there is no placeholder on the next
-            // content
-            state.fromContent == Scenes.Lockscreen && state.toContent != Scenes.Shade ||
-                state.isTransitioningBetween(content = Scenes.Lockscreen, other = Overlays.Bouncer)
+private fun shouldUseLockscreenStackBounds(state: SceneTransitionLayoutState): Boolean {
+    return when {
+        // Idle on the Lockscreen without Shade overlays.
+        state.isIdleOnLockscreenWithNoShade() -> true
+
+        // Transitioning from Lockscreen, but not to Shade. Let Shade send its own bounds.
+        state.isTransitioning(from = Scenes.Lockscreen) &&
+            !state.isTransitioning(to = Scenes.Shade) &&
+            !state.isTransitioning(to = Overlays.NotificationsShade) -> true
+
+        // When transitioning between LS and Bouncer, keep using the LS bounds, because there is no
+        // placeholder on Bouncer.
+        state.isTransitioningBetween(content = Scenes.Lockscreen, other = Overlays.Bouncer) -> true
+
+        // Otherwise don't use the LS bounds.
+        else -> false
     }
 }
 
 private fun shouldUseLockscreenHunBounds(
-    state: TransitionState,
+    state: SceneTransitionLayoutState,
     quickSettingsShade: ContentKey,
 ): Boolean {
-    return when (state) {
-        is TransitionState.Idle -> state.isOnLockscreen()
-        is TransitionState.Transition ->
-            state.isTransitioning(from = quickSettingsShade, to = Scenes.Lockscreen)
+    return when {
+        // Idle on the Lockscreen without Shade overlays.
+        state.isIdleOnLockscreenWithNoShade() -> true
+
+        // Transitioning from QS to LS.
+        state.isTransitioning(from = quickSettingsShade, to = Scenes.Lockscreen) -> true
+
+        // Otherwise don't use the LS bounds.
+        else -> false
     }
 }
 
