@@ -32,23 +32,23 @@ class BubbleEventHistoryLogger : DebugLogger {
     @VisibleForTesting
     val recentEvents: MutableList<BubbleEvent> = mutableListOf()
 
-    override fun d(message: String, vararg parameters: Any, eventData: String?) {
+    override fun d(message: String, vararg parameters: Any?, eventData: String?) {
         logEvent("d: ${TextUtils.formatSimple(message, *parameters)}", eventData)
     }
 
-    override fun v(message: String, vararg parameters: Any, eventData: String?) {
+    override fun v(message: String, vararg parameters: Any?, eventData: String?) {
         logEvent("v: ${TextUtils.formatSimple(message, *parameters)}", eventData)
     }
 
-    override fun i(message: String, vararg parameters: Any, eventData: String?) {
+    override fun i(message: String, vararg parameters: Any?, eventData: String?) {
         logEvent("i: ${TextUtils.formatSimple(message, *parameters)}", eventData)
     }
 
-    override fun w(message: String, vararg parameters: Any, eventData: String?) {
+    override fun w(message: String, vararg parameters: Any?, eventData: String?) {
         logEvent("w: ${TextUtils.formatSimple(message, *parameters)}", eventData)
     }
 
-    override fun e(message: String, vararg parameters: Any, eventData: String?) {
+    override fun e(message: String, vararg parameters: Any?, eventData: String?) {
         logEvent("e: ${TextUtils.formatSimple(message, *parameters)}", eventData)
     }
 

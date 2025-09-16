@@ -19,7 +19,6 @@ package com.android.wm.shell.bubbles;
 import static com.android.wm.shell.bubbles.BadgedImageView.WHITE_SCRIM_ALPHA;
 import static com.android.wm.shell.bubbles.BubbleDebugConfig.TAG_BUBBLES;
 import static com.android.wm.shell.bubbles.BubbleDebugConfig.TAG_WITH_CLASS_NAME;
-import static com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_BUBBLES;
 import static com.android.wm.shell.shared.bubbles.FlyoutDrawableLoader.loadFlyoutDrawable;
 
 import android.annotation.Nullable;
@@ -33,7 +32,6 @@ import android.view.LayoutInflater;
 
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.graphics.ColorUtils;
-import com.android.internal.protolog.ProtoLog;
 import com.android.launcher3.icons.BitmapInfo;
 import com.android.launcher3.icons.BubbleIconFactory;
 import com.android.wm.shell.R;
@@ -41,6 +39,7 @@ import com.android.wm.shell.bubbles.appinfo.BubbleAppInfo;
 import com.android.wm.shell.bubbles.appinfo.BubbleAppInfoProvider;
 import com.android.wm.shell.bubbles.bar.BubbleBarExpandedView;
 import com.android.wm.shell.bubbles.bar.BubbleBarLayerView;
+import com.android.wm.shell.shared.bubbles.logging.BubbleLog;
 
 import java.lang.ref.WeakReference;
 import java.util.concurrent.Executor;
@@ -193,7 +192,7 @@ public class BubbleViewInfoTask {
             // If we're in an inconsistent state, then switched modes and should just bail now.
             return null;
         }
-        ProtoLog.v(WM_SHELL_BUBBLES, "Task loading bubble view info key=%s", mBubble.getKey());
+        BubbleLog.d("BubbleViewInfoTask.loadViewInfo() key=%s", mBubble.getKey());
         if (mLayerView.get() != null) {
             return BubbleViewInfo.populateForBubbleBar(mContext.get(), mTaskViewFactory.get(),
                     mLayerView.get(), mIconFactory, mBubble, mAppInfoProvider, mSkipInflation);
@@ -208,16 +207,17 @@ public class BubbleViewInfoTask {
         if (viewInfo == null || !verifyState()) {
             return;
         }
-        ProtoLog.v(WM_SHELL_BUBBLES, "Task updating bubble view info key=%s", mBubble.getKey());
+        BubbleLog.d("BubbleViewInfoTask.updateViewInfo() key=%s", mBubble.getKey());
         if (!mBubble.isInflated()) {
             if (viewInfo.expandedView != null) {
-                ProtoLog.v(WM_SHELL_BUBBLES, "Task initializing expanded view key=%s",
-                        mBubble.getKey());
+                BubbleLog.d(
+                        "BubbleViewInfoTask.updateViewInfo() initializing floating expanded view"
+                        + " key=%s", mBubble.getKey());
                 viewInfo.expandedView.initialize(mExpandedViewManager.get(), mStackView.get(),
                         mPositioner.get(), false /* isOverflow */, viewInfo.taskView);
             } else if (viewInfo.bubbleBarExpandedView != null) {
-                ProtoLog.v(WM_SHELL_BUBBLES, "Task initializing bubble bar expanded view key=%s",
-                        mBubble.getKey());
+                BubbleLog.d("BubbleViewInfoTask.updateViewInfo() initializing bubble bar"
+                        + " expanded view key=%s", mBubble.getKey());
                 viewInfo.bubbleBarExpandedView.initialize(mExpandedViewManager.get(),
                         mPositioner.get(), false /* isOverflow */, mBubble, viewInfo.taskView);
             }
@@ -277,7 +277,8 @@ public class BubbleViewInfoTask {
             BubbleViewInfo info = new BubbleViewInfo();
 
             if (!skipInflation && !b.isInflated()) {
-                ProtoLog.v(WM_SHELL_BUBBLES, "Task inflating bubble bar views key=%s", b.getKey());
+                BubbleLog.d("BubbleViewInfo.populateForBubbleBar() inflating view for key=%s",
+                        b.getKey());
                 info.taskView = b.getOrCreateBubbleTaskView(taskViewFactory);
                 LayoutInflater inflater = LayoutInflater.from(c);
                 info.bubbleBarExpandedView = (BubbleBarExpandedView) inflater.inflate(
@@ -310,7 +311,8 @@ public class BubbleViewInfoTask {
 
             // View inflation: only should do this once per bubble
             if (!skipInflation && !b.isInflated()) {
-                ProtoLog.v(WM_SHELL_BUBBLES, "Task inflating bubble views key=%s", b.getKey());
+                BubbleLog.d("BubbleViewInfo.populate()"
+                        + " inflating bubble view for key=%s", b.getKey());
                 LayoutInflater inflater = LayoutInflater.from(c);
                 info.imageView = (BadgedImageView) inflater.inflate(
                         R.layout.bubble_view, stackView, false /* attachToRoot */);
