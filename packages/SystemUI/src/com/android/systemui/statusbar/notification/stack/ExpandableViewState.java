@@ -192,6 +192,7 @@ public class ExpandableViewState extends ViewState {
         if (this.height != expandableView.getActualHeight()) {
             if (mUsePhysicsForMovement) {
                 boolean animateHeight = properties.getAnimationFilter().animateHeight;
+                float maxOvershoot = Float.POSITIVE_INFINITY;
                 if (animateHeight) {
                     expandableView.setActualHeightAnimating(true);
                 }
@@ -204,10 +205,22 @@ public class ExpandableViewState extends ViewState {
                             row.setGroupExpansionChanging(false /* isExpansionChanging */);
                         }
                     };
+
+                    float targetHeight = this.height;
+                    float currentHeight = expandableView.getActualHeight();
+                    if (targetHeight < currentHeight && targetHeight > 0) {
+                        // Avoid elements become invisible / very squished when collapsing a large
+                        // list, for example bundle headers. In cases where the start height is
+                        // large, the resulting overshoot could render the collapsed element
+                        // temporarily invisible.
+
+                        // This heuristic to limits the overshoot when collapsing an element to
+                        // never squish it by more than a quarter of its target size.
+                        maxOvershoot = targetHeight / 4f;
+                    }
                 }
                 PhysicsPropertyAnimator.setProperty(child, HEIGHT_PROPERTY, this.height, properties,
-                        animateHeight,
-                        endListener);
+                        animateHeight, endListener, maxOvershoot);
             } else {
                 startHeightAnimationInterpolator(expandableView, properties);
             }
