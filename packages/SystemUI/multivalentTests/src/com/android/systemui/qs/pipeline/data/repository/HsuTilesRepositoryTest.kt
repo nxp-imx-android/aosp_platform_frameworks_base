@@ -16,11 +16,15 @@
 
 package com.android.systemui.qs.pipeline.data.repository
 
+import android.platform.test.annotations.RequiresFlagsDisabled
+import android.platform.test.annotations.RequiresFlagsEnabled
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
+import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.testCase
 import com.android.systemui.kosmos.testScope
+import com.android.systemui.qs.flags.QsSplitInternetTile
 import com.android.systemui.qs.pipeline.shared.TileSpec
 import com.android.systemui.res.R
 import com.android.systemui.testKosmos
@@ -72,6 +76,28 @@ class HsuTilesRepositoryTest : SysuiTestCase() {
 
                 assertThat(result).isFalse()
             }
+        }
+
+    @Test
+    @RequiresFlagsEnabled(QsSplitInternetTile.FLAG_NAME)
+    fun flagEnabled_internetTileAllowed_convertedToWifi() =
+        kosmos.runTest {
+            overrideAllowListResource(arrayOf("internet"))
+            val underTest = HsuTilesRepository(testCase.context.resources)
+
+            assertThat(underTest.isTileAllowed(TileSpec.create("internet"))).isFalse()
+            assertThat(underTest.isTileAllowed(TileSpec.create("wifi"))).isTrue()
+        }
+
+    @Test
+    @RequiresFlagsDisabled(QsSplitInternetTile.FLAG_NAME)
+    fun flagDisabled_wifiTileAllowed_convertedToInternet() =
+        kosmos.runTest {
+            overrideAllowListResource(arrayOf("wifi"))
+            val underTest = HsuTilesRepository(testCase.context.resources)
+
+            assertThat(underTest.isTileAllowed(TileSpec.create("wifi"))).isFalse()
+            assertThat(underTest.isTileAllowed(TileSpec.create("internet"))).isTrue()
         }
 
     private fun overrideAllowListResource(allowList: Array<String>) =

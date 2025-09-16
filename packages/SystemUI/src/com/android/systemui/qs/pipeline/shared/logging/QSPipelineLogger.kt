@@ -26,6 +26,7 @@ import com.android.systemui.qs.pipeline.data.model.RestoreData
 import com.android.systemui.qs.pipeline.data.repository.UserTileSpecRepository
 import com.android.systemui.qs.pipeline.domain.upgrade.CustomTileAddedUpgrade
 import com.android.systemui.qs.pipeline.domain.upgrade.describe
+import com.android.systemui.qs.pipeline.shared.InternetTileMigration
 import com.android.systemui.qs.pipeline.shared.TileSpec
 import javax.inject.Inject
 
@@ -329,6 +330,30 @@ constructor(
             LogLevel.DEBUG,
             { str1 = list.joinToString(",") { it.describe() } },
             { "Injected upgrades: $str1" },
+        )
+    }
+
+    fun logInternetTileMigrationOnRestore(userId: Int) {
+        restoreLogBuffer.log(
+            RESTORE_TAG,
+            LogLevel.INFO,
+            {
+                str1 = InternetTileMigration.migrationString
+                int1 = userId
+            },
+            { "Internet tile migrated in restore for user $int1: $str1" },
+        )
+    }
+
+    fun logInternetTileMigrationOnTileLoad(userId: Int) {
+        tileListLogBuffer.log(
+            TILE_LIST_TAG,
+            LogLevel.INFO,
+            {
+                str1 = InternetTileMigration.migrationString
+                int1 = userId
+            },
+            { "Internet tile migrated in loading from settings for user $int1: $str1" },
         )
     }
 
