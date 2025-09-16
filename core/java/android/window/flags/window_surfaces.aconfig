@@ -85,6 +85,13 @@ flag {
 }
 
 flag {
+    name: "scvh_set_focusable"
+    namespace: "window_surfaces"
+    description: "Adds a focusable flag to SurfaceControlViewHost"
+    bug: "425415517"
+}
+
+flag {
     name: "scvh_surface_control_lifetime_fix"
     namespace: "window_surfaces"
     description: "Fix lifetime issue with SurfaceControl's created by SCVH"
