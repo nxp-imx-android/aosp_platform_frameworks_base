@@ -191,6 +191,42 @@ public abstract class CallRedirectionService extends Service {
     }
 
     /**
+     * The implemented {@link CallRedirectionService} calls this method to respond to a request
+     * received via {@link #onPlaceCall(Uri, PhoneAccountHandle, boolean)} to inform Telecom that
+     * the call should be placed to a different number entirely.
+     * <p>
+     * This is in contrast to {@link #redirectCall(Uri, PhoneAccountHandle, boolean)} which places
+     * the call on the mobile network via a gateway number but still shows the original dialed
+     * number to the user in the Dialer app. This method places the call to the specified number and
+     * also shows that number to the user.
+     * <p>
+     * This is useful for apps which perform number rewriting to add dialing prefixes and the like.
+     *
+     * @param alternateUri the alternate number to place the call to and to show to the user.
+     * @param targetPhoneAccount the {@link PhoneAccountHandle} to use when placing the call.
+     * @param confirmFirst Telecom will ask users to confirm the redirection via a yes/no dialog
+     *                     if the confirmFirst is true, and if the redirection request of this
+     *                     response was sent with a true flag of allowInteractiveResponse via
+     *                     {@link #onPlaceCall(Uri, PhoneAccountHandle, boolean)}
+     */
+
+    @FlaggedApi(Flags.FLAG_PLACE_CALL_TO_ALTERNATE_NUMBER)
+    public final void placeCallToAlternateNumber(@NonNull Uri alternateUri,
+                                                 @NonNull PhoneAccountHandle targetPhoneAccount,
+                                                 boolean confirmFirst) {
+        try {
+            if (mCallRedirectionAdapter == null) {
+                throw new IllegalStateException("Can only be called from onPlaceCall.");
+            }
+            mCallRedirectionAdapter.placeCallToAlternateNumber(alternateUri,
+                                                               targetPhoneAccount,
+                                                               confirmFirst);
+        } catch (RemoteException e) {
+            e.rethrowAsRuntimeException();
+        }
+    }
+
+    /**
      * The implemented {@link CallRedirectionService} calls this method to response a request
      * received via {@link #onPlaceCall(Uri, PhoneAccountHandle, boolean)} to inform Telecom that
      * an outgoing call should be canceled entirely.
