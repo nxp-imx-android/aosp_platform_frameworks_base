@@ -54,10 +54,12 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.contains;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.ArgumentMatchers.refEq;
+import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -93,6 +95,7 @@ import com.android.window.flags.Flags;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -1560,6 +1563,40 @@ public class RootWindowContainerTests extends WindowTestsBase {
         assertEquals(2, result.size());
         assertEquals(activity1.token, result.get(0).getActivityToken());
         assertEquals(activity0.token, result.get(1).getActivityToken());
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_HOME_ACTIVITY_ALWAYS_PRESENT)
+    public void testStartHomeOnDisplaysWithNoHome() {
+        // Create a display with no home activity.
+        final TestDisplayContent displayWithNoHome = new TestDisplayContent.Builder(mAtm, 1000,
+                1500).build();
+        // Ensure there are no tasks on the display.
+        displayWithNoHome.getDefaultTaskDisplayArea().removeIfPossible();
+
+        // Create a display with a home activity.
+        final TestDisplayContent displayWithHome = new TestDisplayContent.Builder(mAtm, 1000,
+                1500).build();
+        new ActivityBuilder(mAtm).setTask(
+                displayWithHome.getDefaultTaskDisplayArea().createRootTask(
+                        WINDOWING_MODE_FULLSCREEN, ACTIVITY_TYPE_HOME, true /* onTop */)).build();
+
+        mRootWindowContainer.startHomeOnDisplaysWithNoHome("test");
+
+        // Capture the TaskDisplayArea arguments passed to startHomeOnTaskDisplayArea.
+        ArgumentCaptor<TaskDisplayArea> tdaCaptor = ArgumentCaptor.forClass(
+                TaskDisplayArea.class);
+        verify(mRootWindowContainer, atLeastOnce()).startHomeOnTaskDisplayArea(anyInt(),
+                anyString(), tdaCaptor.capture(), anyBoolean(), anyBoolean(), anyBoolean());
+
+        List<TaskDisplayArea> capturedTdas = tdaCaptor.getAllValues();
+
+        // Verify that home was started on the display with no home.
+        assertTrue(capturedTdas.stream().anyMatch(
+                tda -> tda == displayWithNoHome.getDefaultTaskDisplayArea()));
+        // Verify that home was NOT started on the display that already had a home.
+        assertFalse(capturedTdas.stream().anyMatch(
+                tda -> tda == displayWithHome.getDefaultTaskDisplayArea()));
     }
 
     @EnableFlags(FLAG_RETURN_ALL_VISIBLE_ACTIVITIES_FOR_VIS)

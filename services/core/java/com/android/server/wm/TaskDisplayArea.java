@@ -254,6 +254,11 @@ final class TaskDisplayArea extends DisplayArea<WindowContainer> {
     void removeRootTaskReferenceIfNeeded(Task rootTask) {
         if (rootTask == mRootHomeTask) {
             mRootHomeTask = null;
+            if (com.android.window.flags.Flags.homeActivityAlwaysPresent()) {
+                // Restart home since home reference is being removed. Doing so will launch the home
+                // activity behind all tasks ensuring no occlusion.
+                mAtmService.mTaskSupervisor.scheduleStartHome("homeCrashed");
+            }
         } else if (rootTask == mRootPinnedTask) {
             mRootPinnedTask = null;
         }
