@@ -102,7 +102,6 @@ flag {
     namespace: "profile_experiences"
     description: "Guards a new Private Profile type in UserManager - everything from its setup to config to deletion."
     bug: "299069460"
-    is_exported: true
 }
 
 flag {
@@ -184,6 +183,14 @@ flag {
     namespace: "system_performance"
     description: "Guards the frozen state change callback API."
     bug: "361157077"
+}
+
+flag {
+     name: "binder_netlink_enabled"
+     is_exported: false
+     namespace: "system_performance"
+     description: "Enables use of netlink for binder error reporting"
+     bug: "332610283"
 }
 
 flag {
