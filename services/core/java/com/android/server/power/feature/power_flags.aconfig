@@ -128,3 +128,13 @@ flag {
       purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    namespace: "wear_frameworks"
+    name: "interactive_doze_experience"
+    description: "Enable active user interaction in doze power state."
+    bug: "331963926"
+    metadata {
+      purpose: PURPOSE_FEATURE
+    }
+}

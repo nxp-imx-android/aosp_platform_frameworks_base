@@ -63,6 +63,7 @@ import android.util.SparseArray;
 import android.util.SparseBooleanArray;
 import android.view.WindowManagerPolicyConstants;
 
+import com.android.internal.R;
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.app.IBatteryStats;
@@ -77,6 +78,7 @@ import com.android.server.inputmethod.InputMethodManagerInternal;
 import com.android.server.policy.WindowManagerPolicy;
 import com.android.server.power.FrameworkStatsLogger.WakelockEventType;
 import com.android.server.power.feature.PowerManagerFlags;
+import com.android.server.power.feature.flags.Flags;
 import com.android.server.statusbar.StatusBarManagerInternal;
 
 import java.io.PrintWriter;
@@ -173,6 +175,11 @@ public class Notifier {
     // begins charging wirelessly
     private final boolean mShowWirelessChargingAnimationConfig;
 
+    // True if Notifier will inform the Input Stack about display interactivity changes caused by
+    // wakefulness. If False, the Input Stack should be notified about display interactivity changes
+    // from elsewhere.
+    private final boolean mShouldNotifyInputAboutWakefulnessChanges;
+
     // Encapsulates interactivity information about a particular display group.
     private static class Interactivity {
         public boolean isInteractive = true;
@@ -254,6 +261,11 @@ public class Notifier {
                 com.android.internal.R.bool.config_suspendWhenScreenOffDueToProximity);
         mShowWirelessChargingAnimationConfig = context.getResources().getBoolean(
                 com.android.internal.R.bool.config_showBuiltinWirelessChargingAnim);
+
+        mShouldNotifyInputAboutWakefulnessChanges =
+                !(Flags.interactiveDozeExperience()
+                        && context.getResources().getBoolean(
+                                R.bool.config_enableInteractiveDoze));
 
         mFullWakeLockLog = mInjector.getWakeLockLog(context);
         mPartialWakeLockLog = mInjector.getWakeLockLog(context);
@@ -592,7 +604,8 @@ public class Notifier {
 
             // Start input as soon as we start waking up or going to sleep.
             mInputMethodManagerInternal.setInteractive(interactive);
-            if (!mFlags.isPerDisplayWakeByTouchEnabled()) {
+            if (mShouldNotifyInputAboutWakefulnessChanges
+                    && !mFlags.isPerDisplayWakeByTouchEnabled()) {
                 // Since wakefulness is a global property in original logic, all displays should
                 // be set to the same interactive state, matching system's global wakefulness
                 SparseBooleanArray displayInteractivities = new SparseBooleanArray();
@@ -835,7 +848,9 @@ public class Notifier {
             // Update input on which displays are interactive
             if (mFlags.isPerDisplayWakeByTouchEnabled()) {
                 updateDisplayInteractivities(groupId, isInteractive);
-                mInputManagerInternal.setDisplayInteractivities(mDisplayInteractivities);
+                if (mShouldNotifyInputAboutWakefulnessChanges) {
+                    mInputManagerInternal.setDisplayInteractivities(mDisplayInteractivities);
+                }
             }
         }
     }
