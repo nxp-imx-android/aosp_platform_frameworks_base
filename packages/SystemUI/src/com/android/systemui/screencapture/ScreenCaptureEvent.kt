@@ -23,7 +23,11 @@ import com.android.internal.logging.UiEventLogger.UiEventEnum
 enum class ScreenCaptureEvent(private val mId: Int) : UiEventEnum {
 
     @UiEvent(doc = "Closed the large-screen pre-capture UI without any capture")
-    SCREEN_CAPTURE_LARGE_SCREEN_CLOSE_UI_WITHOUT_CAPTURE(2486);
+    SCREEN_CAPTURE_LARGE_SCREEN_CLOSE_UI_WITHOUT_CAPTURE(2486),
+    @UiEvent(doc = "Requested a fullscreen screenshot from the large-screen pre-capture UI")
+    SCREEN_CAPTURE_LARGE_SCREEN_FULLSCREEN_SCREENSHOT_REQUESTED(2490),
+    @UiEvent(doc = "Requested a partial screenshot from the large-screen pre-capture UI")
+    SCREEN_CAPTURE_LARGE_SCREEN_PARTIAL_SCREENSHOT_REQUESTED(2491);
 
     override fun getId(): Int = mId
 }

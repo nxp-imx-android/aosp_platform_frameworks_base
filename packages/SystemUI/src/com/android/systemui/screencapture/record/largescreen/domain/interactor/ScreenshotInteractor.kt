@@ -19,10 +19,12 @@ package com.android.systemui.screencapture.record.largescreen.domain.interactor
 import android.graphics.Rect
 import android.os.Handler
 import android.view.WindowManager
+import com.android.internal.logging.UiEventLogger
 import com.android.internal.util.ScreenshotHelper
 import com.android.internal.util.ScreenshotRequest
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Background
+import com.android.systemui.screencapture.ScreenCaptureEvent
 import com.android.systemui.screenshot.ImageCapture
 import com.android.systemui.user.data.repository.UserRepository
 import javax.inject.Inject
@@ -36,6 +38,7 @@ class ScreenshotInteractor
 constructor(
     @Background private val backgroundContext: CoroutineContext,
     @Background private val backgroundHandler: Handler,
+    private val uiEventLogger: UiEventLogger,
     private val imageCapture: ImageCapture,
     private val screenshotHelper: ScreenshotHelper,
     private val userRepository: UserRepository,
@@ -50,6 +53,10 @@ constructor(
                 .build()
 
         takeScreenshot(request)
+
+        uiEventLogger.log(
+            ScreenCaptureEvent.SCREEN_CAPTURE_LARGE_SCREEN_FULLSCREEN_SCREENSHOT_REQUESTED
+        )
     }
 
     suspend fun requestPartialScreenshot(regionBounds: Rect, displayId: Int) {
@@ -69,6 +76,10 @@ constructor(
                 .build()
 
         takeScreenshot(request)
+
+        uiEventLogger.log(
+            ScreenCaptureEvent.SCREEN_CAPTURE_LARGE_SCREEN_PARTIAL_SCREENSHOT_REQUESTED
+        )
     }
 
     // TODO(b/422833825): Implement takeAppWindowScreenshot
