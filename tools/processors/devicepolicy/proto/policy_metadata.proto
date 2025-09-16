@@ -1,0 +1,45 @@
+syntax = "proto3";
+
+package android.processor.devicepolicy;
+
+option java_package = "android.processor.devicepolicy.protos";
+option java_multiple_files = true;
+
+message PolicyMetadata {
+    string name = 1;
+    string type = 2;
+    string documentation = 3;
+    TypeSpecificPolicyMetadata type_specific_metadata = 4;
+}
+
+message TypeSpecificPolicyMetadata {
+    message BooleanPolicyMetadata {
+    }
+
+    message IntegerPolicyMetadata {
+    }
+
+    message EnumPolicyMetadata {
+        int32 default_value = 1;
+        string int_def_name = 2;
+        string documentation = 3;
+
+        message EnumValue {
+            string name = 1;
+            int32 int_value = 2;
+            string documentation = 3;
+        }
+
+        repeated EnumValue values = 4;
+    }
+
+    oneof type_metadata {
+        BooleanPolicyMetadata boolean_metadata = 1;
+        IntegerPolicyMetadata integer_metadata = 2;
+        EnumPolicyMetadata enum_metadata = 3;
+    }
+}
+
+message PolicyMetadataList {
+    repeated PolicyMetadata policy_metadata = 1;
+}

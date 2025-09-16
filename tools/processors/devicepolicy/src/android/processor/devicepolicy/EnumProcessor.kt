@@ -16,7 +16,7 @@
 
 package android.processor.devicepolicy
 
-import com.android.json.stream.JsonWriter
+import android.processor.devicepolicy.protos.TypeSpecificPolicyMetadata
 import com.sun.source.tree.IdentifierTree
 import com.sun.source.tree.MemberSelectTree
 import com.sun.source.tree.NewArrayTree
@@ -85,7 +85,7 @@ class EnumProcessor(processingEnv: ProcessingEnvironment) : Processor<EnumPolicy
      *
      * @return null if the element does not have a @EnumPolicyDefinition or on error, {@link EnumPolicyMetadata} otherwise.
      */
-    override fun processMetadata(element: Element): Pair<PolicyMetadata, PolicyDefinition>? {
+    override fun processMetadata(element: Element): Pair<TypeSpecificPolicyMetadata, PolicyDefinition>? {
         val enumPolicyAnnotation = element.getAnnotation(EnumPolicyDefinition::class.java)
             ?: throw IllegalStateException("Processor should only be called on elements with @EnumPolicyMetadata")
 
@@ -123,9 +123,14 @@ class EnumProcessor(processingEnv: ProcessingEnvironment) : Processor<EnumPolicy
         // In the class-level example above, these would be ENUM_ENTRY_1 and ENUM_ENTRY_2.
         val entries = getIntDefIdentifiers(annotationMirror, intDefElement)
 
-        val metadata = EnumPolicyMetadata(
-            enumPolicyAnnotation.defaultValue, enumName, enumDoc, entries
-        )
+        val metadata = TypeSpecificPolicyMetadata.newBuilder().setEnumMetadata(
+            TypeSpecificPolicyMetadata.EnumPolicyMetadata.newBuilder()
+                .setDefaultValue(enumPolicyAnnotation.defaultValue)
+                .setIntDefName(enumName)
+                .setDocumentation(enumDoc)
+                .addAllValues(entries)
+                .build()
+        ).build()
 
         return Pair(metadata, enumPolicyAnnotation.base)
     }
@@ -157,7 +162,7 @@ class EnumProcessor(processingEnv: ProcessingEnvironment) : Processor<EnumPolicy
      */
     private fun getIntDefIdentifiers(
         annotationMirror: AnnotationMirror, intDefElement: TypeElement
-    ): List<EnumEntryMetadata> {
+    ): List<TypeSpecificPolicyMetadata.EnumPolicyMetadata.EnumValue> {
         val annotationValue: AnnotationValue = annotationMirror.elementValues.firstValue { key ->
             key.simpleName.contentEquals("value")
         }
@@ -182,7 +187,12 @@ class EnumProcessor(processingEnv: ProcessingEnvironment) : Processor<EnumPolicy
         }
 
         return identifiers.mapIndexed { i, identifier ->
-            EnumEntryMetadata(identifier, values[i].value as Int, documentations[i])
+            TypeSpecificPolicyMetadata.EnumPolicyMetadata.EnumValue
+                .newBuilder()
+                .setName(identifier)
+                .setIntValue(values[i].value as Int)
+                .setDocumentation(documentations[i])
+                .build()
         }
     }
 
@@ -217,52 +227,6 @@ class EnumProcessor(processingEnv: ProcessingEnvironment) : Processor<EnumPolicy
             identifiers.add(node.name.toString())
 
             return null
-        }
-    }
-}
-
-class EnumEntryMetadata(val name: String, val value: Int, val documentation: String?) {
-    fun dump(writer: JsonWriter) {
-        writer.apply {
-            beginObject()
-
-            name("name")
-            value(name)
-
-            name("value")
-            value(value.toLong())
-
-            if (documentation != null) {
-                name("documentation")
-                value(documentation)
-            }
-
-            endObject()
-        }
-    }
-}
-
-class EnumPolicyMetadata(
-    val defaultValue: Int,
-    val enum: String,
-    val enumDocumentation: String,
-    val entries: List<EnumEntryMetadata>
-) : PolicyMetadata() {
-    override fun dump(writer: JsonWriter) {
-        writer.apply {
-            name("default")
-            value(defaultValue.toLong())
-
-            name("enum")
-            value(enum)
-
-            name("enumDocumentation")
-            value(enumDocumentation)
-
-            name("options")
-            beginArray()
-            entries.forEach { it.dump(writer) }
-            writer.endArray()
         }
     }
 }

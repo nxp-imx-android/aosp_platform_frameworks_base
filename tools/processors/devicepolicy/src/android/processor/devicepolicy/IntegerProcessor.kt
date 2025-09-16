@@ -16,7 +16,7 @@
 
 package android.processor.devicepolicy
 
-import com.android.json.stream.JsonWriter
+import android.processor.devicepolicy.protos.TypeSpecificPolicyMetadata
 import javax.annotation.processing.ProcessingEnvironment
 import javax.lang.model.element.Element
 import javax.lang.model.type.TypeMirror
@@ -41,7 +41,7 @@ class IntegerProcessor(processingEnv: ProcessingEnvironment) : Processor<Integer
      *
      * @return null on error, {@link IntegerPolicyMetadata} otherwise.
      */
-    override fun processMetadata(element: Element): Pair<PolicyMetadata, PolicyDefinition>? {
+    override fun processMetadata(element: Element): Pair<TypeSpecificPolicyMetadata, PolicyDefinition>? {
         val integerDefinition = element.getAnnotation(IntegerPolicyDefinition::class.java)
             ?: throw IllegalStateException("Processor should only be called on elements with @IntegerPolicyMetadata")
 
@@ -53,16 +53,17 @@ class IntegerProcessor(processingEnv: ProcessingEnvironment) : Processor<Integer
             )
         }
 
-        return Pair(IntegerPolicyMetadata(), integerDefinition.base)
+        val typeSpecificMetadata =
+            TypeSpecificPolicyMetadata
+                .newBuilder()
+                .setIntegerMetadata(
+                    TypeSpecificPolicyMetadata.IntegerPolicyMetadata.getDefaultInstance()
+                ).build()
+
+        return Pair(typeSpecificMetadata, integerDefinition.base)
     }
 
     override fun annotationClass(): Class<IntegerPolicyDefinition> {
         return IntegerPolicyDefinition::class.java
-    }
-}
-
-class IntegerPolicyMetadata() : PolicyMetadata() {
-    override fun dump(writer: JsonWriter) {
-        // Nothing to include for IntegerPolicyMetadata.
     }
 }

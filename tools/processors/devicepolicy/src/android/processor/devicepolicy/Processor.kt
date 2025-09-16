@@ -16,6 +16,8 @@
 
 package android.processor.devicepolicy
 
+import android.processor.devicepolicy.protos.PolicyMetadata
+import android.processor.devicepolicy.protos.TypeSpecificPolicyMetadata
 import javax.annotation.processing.ProcessingEnvironment
 import javax.lang.model.element.Element
 import javax.lang.model.element.ElementKind
@@ -72,14 +74,14 @@ abstract class Processor<T : Annotation>(protected val processingEnv: Processing
     }
 
     /**
-     * Process policy metadata into a {@link (PolicyMetadata, DevicePolicyDefinition)}.
+     * Process policy metadata into a {@link (TypeSpecificPolicyMetadata, DevicePolicyDefinition)}.
      *
      * Errors must be reported using {@link printError} to the user and processing should
      * continue for as long as possible.
      *
      * @return Policy metadata or null when metadata can not be obtained.
      */
-    abstract fun processMetadata(element: Element): Pair<PolicyMetadata, PolicyDefinition>?
+    abstract fun processMetadata(element: Element): Pair<TypeSpecificPolicyMetadata, PolicyDefinition>?
 
     /**
      * Get the class of the annotation for this processor.
@@ -94,7 +96,7 @@ abstract class Processor<T : Annotation>(protected val processingEnv: Processing
      *
      * @return All relevant policy data or null if this can not be obtained.
      */
-    fun process(element: Element): Policy? {
+    fun process(element: Element): PolicyMetadata? {
         if (!isElementValid(element)) {
             return null
         }
@@ -146,8 +148,8 @@ abstract class Processor<T : Annotation>(protected val processingEnv: Processing
     }
 
     private fun loadPolicyDefinition(
-        element: Element, definition: PolicyDefinition, metadata: PolicyMetadata
-    ): Policy {
+        element: Element, definition: PolicyDefinition, typeSpecificMetadata: TypeSpecificPolicyMetadata
+    ): PolicyMetadata {
         val enclosingType = element.enclosingElement.asType()
 
         val name = "$enclosingType.$element"
@@ -158,6 +160,12 @@ abstract class Processor<T : Annotation>(protected val processingEnv: Processing
             printError(element, "Missing JavaDoc")
         }
 
-        return Policy(name, type, documentation, metadata)
+        return PolicyMetadata
+            .newBuilder()
+            .setName(name)
+            .setType(type)
+            .setDocumentation(documentation)
+            .setTypeSpecificMetadata(typeSpecificMetadata)
+            .build()
     }
 }

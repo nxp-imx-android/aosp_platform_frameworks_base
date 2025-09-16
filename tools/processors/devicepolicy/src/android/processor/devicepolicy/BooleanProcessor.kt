@@ -16,7 +16,7 @@
 
 package android.processor.devicepolicy
 
-import com.android.json.stream.JsonWriter
+import android.processor.devicepolicy.protos.TypeSpecificPolicyMetadata
 import javax.annotation.processing.ProcessingEnvironment
 import javax.lang.model.element.Element
 import javax.lang.model.type.TypeMirror
@@ -41,7 +41,7 @@ class BooleanProcessor(processingEnv: ProcessingEnvironment) : Processor<Boolean
      *
      * @return null if the element does not have a @BooleanPolicyDefinition or on error, {@link BooleanPolicyMetadata} otherwise.
      */
-    override fun processMetadata(element: Element): Pair<PolicyMetadata, PolicyDefinition>? {
+    override fun processMetadata(element: Element): Pair<TypeSpecificPolicyMetadata, PolicyDefinition>? {
         val booleanDefinition = element.getAnnotation(BooleanPolicyDefinition::class.java)
             ?: throw IllegalStateException("Processor should only be called on elements with @BooleanPolicyMetadata")
 
@@ -52,16 +52,17 @@ class BooleanProcessor(processingEnv: ProcessingEnvironment) : Processor<Boolean
             )
         }
 
-        return Pair(BooleanPolicyMetadata(), booleanDefinition.base)
+        val typeSpecificMetadata =
+            TypeSpecificPolicyMetadata
+                .newBuilder()
+                .setBooleanMetadata(
+                    TypeSpecificPolicyMetadata.BooleanPolicyMetadata.getDefaultInstance()
+                ).build()
+
+        return Pair(typeSpecificMetadata, booleanDefinition.base)
     }
 
     override fun annotationClass(): Class<BooleanPolicyDefinition> {
         return BooleanPolicyDefinition::class.java
-    }
-}
-
-class BooleanPolicyMetadata() : PolicyMetadata() {
-    override fun dump(writer: JsonWriter) {
-        // Nothing to include for BooleanPolicyMetadata.
     }
 }

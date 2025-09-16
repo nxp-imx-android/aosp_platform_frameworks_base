@@ -13,9 +13,16 @@ java_library_host {
     srcs: [
         "src/**/*.kt",
         "annotations/**/*.java",
+        "proto/**/*.proto",
     ],
+    proto: {
+        type: "full",
+        include_dirs: [
+            "external/protobuf/src",
+        ],
+    },
     use_tools_jar: true,
-    static_libs: ["jsonlib"],
+    static_libs: ["libprotobuf-java-full"],
 }
 
 java_plugin {
@@ -54,7 +61,7 @@ filegroup {
         // We need the java sources for compiler tests.
         ":framework-metalava-annotations",
         "test/resources/**/*.java",
-        "test/resources/**/*.json",
+        "test/resources/**/*.textproto",
     ],
     visibility: ["//visibility:private"],
 }
