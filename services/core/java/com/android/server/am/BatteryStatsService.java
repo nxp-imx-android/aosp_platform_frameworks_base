@@ -3102,16 +3102,14 @@ public final class BatteryStatsService extends IBatteryStats.Stub
                 if ("--checkin".equals(arg)) {
                     useCheckinFormat = true;
                     isRealCheckin = true;
-                    if (Flags.realCheckinHistoryStartTime()) {
-                        long realCheckinDurationLimit = mContext.getResources().getInteger(
-                                com.android.internal.R.integer
-                                .config_batteryHistoryDumpRealCheckinWindowSize);
-                        if (realCheckinDurationLimit > 0) {
-                            monotonicClockStartTime =
-                                mMonotonicClock.monotonicTime() - realCheckinDurationLimit;
-                            if (monotonicClockStartTime < 0) {
-                                monotonicClockStartTime = 0;
-                            }
+                    long realCheckinDurationLimit = mContext.getResources().getInteger(
+                            com.android.internal.R.integer
+                            .config_batteryHistoryDumpRealCheckinWindowSize);
+                    if (realCheckinDurationLimit > 0) {
+                        monotonicClockStartTime =
+                            mMonotonicClock.monotonicTime() - realCheckinDurationLimit;
+                        if (monotonicClockStartTime < 0) {
+                            monotonicClockStartTime = 0;
                         }
                     }
                 } else if ("--history".equals(arg)) {
