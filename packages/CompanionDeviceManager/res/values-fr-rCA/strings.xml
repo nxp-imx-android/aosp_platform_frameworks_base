@@ -28,11 +28,11 @@
     <string name="chooser_title" msgid="2235819929238267637">"Choisir votre <xliff:g id="PROFILE_NAME">%1$s</xliff:g> à configurer"</string>
     <string name="single_device_title" msgid="4199861437545438606">"Recherche de votre <xliff:g id="PROFILE_NAME">%1$s</xliff:g>"</string>
     <string name="summary_watch" msgid="8134580124808507407">"Cette appli sera autorisée à synchroniser des informations, comme le nom de l\'appelant, et à accéder à ces autorisations sur votre <xliff:g id="DEVICE_TYPE">%1$s</xliff:g>"</string>
-    <!-- no translation found for profile_name_fitness_tracker (3107192493390199691) -->
-    <skip />
+    <string name="profile_name_fitness_tracker" msgid="3107192493390199691">"Bracelet d\'act. pour le sport"</string>
     <string name="confirmation_title_glasses" msgid="8288346850537727333">"Autoriser &lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; à gérer &lt;strong&gt;<xliff:g id="DEVICE_NAME">%2$s</xliff:g>&lt;/strong&gt;?"</string>
     <string name="profile_name_glasses" msgid="3506504967216601277">"appareil"</string>
     <string name="summary_glasses" msgid="5469208629679579157">"Cette appli pourra accéder à ces autorisations sur votre <xliff:g id="DEVICE_TYPE">%1$s</xliff:g>"</string>
+    <string name="profile_name_medical" msgid="5617160509499466400">"instrument médical"</string>
     <string name="title_app_streaming" msgid="237666000400427614">"Autoriser &lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; à diffuser des applis et des fonctionnalités du système entre votre <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> et &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt;?"</string>
     <string name="summary_app_streaming" msgid="8346968726357732862">"<xliff:g id="APP_NAME">%1$s</xliff:g> obtiendra les autorisations suivantes :"</string>
     <string name="summary_app_streaming_legacy" msgid="8994180646987541606">"<xliff:g id="APP_NAME_0">%1$s</xliff:g> aura accès à tout ce qui est visible ou lu sur votre <xliff:g id="DEVICE_TYPE">%2$s</xliff:g>, y compris le contenu audio, les photos, les infos de paiement, les mots de passe et les messages.&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME_1">%1$s</xliff:g> pourra diffuser des applis vers <xliff:g id="DEVICE_NAME">%3$s</xliff:g> jusqu\'à ce que vous retiriez l\'accès à cette autorisation."</string>
@@ -73,6 +73,8 @@
     <string name="permission_create_virtual_device" msgid="1102905050922460040">"Diffuser des données sur : <xliff:g id="DEVICE_TYPE">%1$s</xliff:g>"</string>
     <string name="permission_add_mirror_display" msgid="3743433250535606288">"Dupliquer votre écran"</string>
     <string name="permission_add_trusted_display" msgid="9052824856626276723">"Applis de diffusion en continu"</string>
+    <string name="permission_schedule_exact_alarm" msgid="5680932535987512225">"Régler : alarmes et rappels"</string>
+    <string name="permission_bypass_dnd" msgid="1241123166903040347">"Contournement Ne pas déranger"</string>
     <string name="permission_phone_summary" msgid="8246321093970051702">"Passez et gérez des appels téléphoniques"</string>
     <string name="permission_call_logs_summary" msgid="7545243592757693321">"Lisez et écrivez le journal d\'appels téléphoniques"</string>
     <string name="permission_sms_summary" msgid="8499509535410068616">"Envoyez et affichez des messages texte"</string>
@@ -88,6 +90,8 @@
     <string name="permission_add_mirror_display_summary" msgid="1385423940454941534">"Enregistrez, diffusez ou partagez l\'écran de votre <xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g> sur votre &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt;.&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME">%1$s</xliff:g> aura accès à tout ce qui est visible ou lu sur votre <xliff:g id="DEVICE_TYPE_1">%2$s</xliff:g>, y compris le contenu audio, les photos, les infos de paiement, les mots de passe et les messages."</string>
     <string name="permission_add_trusted_display_summary" msgid="7399955172055281447">"Diffusez les applis de votre <xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g> sur &lt;strong&gt;<xliff:g id="DEVICE_NAME_1">%3$s</xliff:g>&lt;/strong&gt;.&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME">%1$s</xliff:g> aura accès à tout ce qui est visible ou lu sur <xliff:g id="DEVICE_NAME_2">%3$s</xliff:g>, y compris le contenu audio, les photos, les infos de paiement, les mots de passe et les messages, même lorsque votre <xliff:g id="DEVICE_TYPE_3">%2$s</xliff:g> est verrouillé."</string>
     <string name="permission_media_routing_control_summary" msgid="2714631092321412250">"Accédez à une liste d\'appareils accessibles et contrôlez ceux qui diffusent du contenu audio ou vidéo à partir d\'autres applis"</string>
+    <string name="permission_schedule_exact_alarm_summary" msgid="5938321911309800377"></string>
+    <string name="permission_bypass_dnd_summary" msgid="6221709271927387626"></string>
     <string name="device_type" product="default" msgid="8268703872070046263">"téléphone"</string>
     <string name="device_type" product="tablet" msgid="5038791954983067774">"tablette"</string>
     <string name="device_type" product="tv" msgid="5355611506659405636">"télévision"</string>
