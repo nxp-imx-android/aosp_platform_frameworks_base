@@ -161,8 +161,6 @@ import java.util.concurrent.TimeUnit;
 class PackageManagerShellCommand extends ShellCommand {
     /** Path for streaming APK content */
     private static final String STDIN_PATH = "-";
-    /** Path where ART profiles snapshots are dumped for the shell user */
-    private final static String ART_PROFILE_SNAPSHOT_DEBUG_LOCATION = "/data/misc/profman/";
     private static final int DEFAULT_STAGED_READY_TIMEOUT_MS = 60 * 1000;
     private static final String TAG = "PackageManagerShellCommand";
     private static final Set<String> UNSUPPORTED_INSTALL_CMD_OPTS = Set.of(
@@ -2023,8 +2021,16 @@ class PackageManagerShellCommand extends ShellCommand {
             pw.println("Error: package name not specified");
             return 1;
         }
+
         final int translatedUserId =
                 translateUserId(userId, UserHandle.USER_NULL, "runInstallExisting");
+        UserManagerInternal umi =
+                LocalServices.getService(UserManagerInternal.class);
+        UserInfo userInfo = umi.getUserInfo(translatedUserId);
+        if (userInfo == null) {
+            throw new IllegalArgumentException(
+                    "The user " + translatedUserId + " doesn't exist");
+        }
 
         int installReason = PackageManager.INSTALL_REASON_UNKNOWN;
         try {
