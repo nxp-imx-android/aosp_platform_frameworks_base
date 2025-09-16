@@ -21,7 +21,6 @@ import android.platform.test.annotations.RequiresFlagsEnabled
 import android.tools.NavBar
 import android.tools.Rotation
 import android.tools.device.apphelpers.StandardAppHelper
-import androidx.test.filters.FlakyTest
 import androidx.test.filters.RequiresDevice
 import com.android.server.wm.flicker.helpers.ShowWhenLockedAppHelper
 import com.android.wm.shell.Flags
@@ -33,7 +32,6 @@ import com.android.wm.shell.flicker.bubbles.utils.RecordTraceWithTransitionRule
 import com.android.wm.shell.flicker.utils.SplitScreenUtils.enterSplit
 import org.junit.FixMethodOrder
 import org.junit.Rule
-import org.junit.Test
 import org.junit.runners.MethodSorters
 
 /**
@@ -97,14 +95,4 @@ class RelaunchSplitScreenToBubbleTest : BubbleFlickerTestBase(),
 
     override val traceDataReader
         get() = recordTraceWithTransitionRule.reader
-
-    @Test
-    @FlakyTest(bugId = 437224803)
-    override fun launcherWindowIsAlwaysVisible() {
-    }
-
-    @Test
-    @FlakyTest(bugId = 437224803)
-    override fun launcherLayerIsAlwaysVisible() {
-    }
 }
