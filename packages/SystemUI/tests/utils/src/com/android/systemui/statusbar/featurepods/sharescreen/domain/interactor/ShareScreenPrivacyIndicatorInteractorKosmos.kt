@@ -20,6 +20,7 @@ import android.content.res.mainResources
 import com.android.systemui.common.ui.data.repository.configurationRepository
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.testScope
+import com.android.systemui.mediaprojection.data.repository.fakeMediaProjectionRepository
 
 val Kosmos.shareScreenPrivacyIndicatorInteractor: ShareScreenPrivacyIndicatorInteractor by
     Kosmos.Fixture {
@@ -27,5 +28,6 @@ val Kosmos.shareScreenPrivacyIndicatorInteractor: ShareScreenPrivacyIndicatorInt
             mainResources,
             configurationRepository,
             scope = testScope.backgroundScope,
+            fakeMediaProjectionRepository,
         )
     }

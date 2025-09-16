@@ -30,10 +30,16 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.res.R
+import com.android.systemui.statusbar.featurepods.sharescreen.ui.viewmodel.ShareScreenPrivacyIndicatorPopupViewModel
 
 @Composable
-fun ShareScreenPrivacyIndicatorPopup() {
+fun ShareScreenPrivacyIndicatorPopup(
+    viewModelFactory: ShareScreenPrivacyIndicatorPopupViewModel.Factory
+) {
+    val viewModel =
+        rememberViewModel("ShareScreenPrivacyIndicatorPopupViewModel") { viewModelFactory.create() }
     Surface(
         shape = RoundedCornerShape(28.dp),
         color = MaterialTheme.colorScheme.surfaceBright,
@@ -41,7 +47,7 @@ fun ShareScreenPrivacyIndicatorPopup() {
         modifier = Modifier.size(width = 129.dp, height = 56.dp),
     ) {
         Button(
-            onClick = { /* TODO(b/440627312): End screen sharing session */ },
+            onClick = { viewModel.stopShare() },
             shape = RoundedCornerShape(20.dp), // Outer radius (28) - border (8)
             modifier = Modifier.fillMaxSize().padding(8.dp),
             contentPadding = PaddingValues(0.dp),
