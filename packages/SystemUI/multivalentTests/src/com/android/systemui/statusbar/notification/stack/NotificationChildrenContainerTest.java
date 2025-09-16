@@ -92,22 +92,22 @@ public class NotificationChildrenContainerTest extends SysuiTestCase {
     }
 
     @Test
-    public void testGetMaxAllowedVisibleChildren_lowPriority_userLocked() {
+    public void testGetMaxAllowedVisibleChildren_lowPriority_userSwipingToExpandRow() {
         mChildrenContainer.setIsMinimized(true);
-        mChildrenContainer.setUserLocked(true);
+        mChildrenContainer.setUserSwipingToExpandRow(true);
         Assert.assertEquals(mChildrenContainer.getMaxAllowedVisibleChildren(),
                 NotificationChildrenContainer.NUMBER_OF_CHILDREN_WHEN_SYSTEM_EXPANDED);
     }
 
     @Test
     @EnableFlags(NotificationBundleUi.FLAG_NAME)
-    public void testGetMaxAllowedVisibleChildren_bundle_userLocked() {
+    public void testGetMaxAllowedVisibleChildren_bundle_userSwipingToExpandRow() {
         ComposeView headerView = new ComposeView(mContext);
         mBundle.setBundleHeaderView(headerView);
 
         NotificationChildrenContainer childrenContainer = mBundle.getChildrenContainer();
         childrenContainer.setBundleHeaderViewModel(mock(BundleHeaderViewModel.class));
-        mBundle.setUserLocked(true);
+        mBundle.setUserSwipingToExpandRow(true);
 
         Assert.assertEquals(
                 "During swipe open, bundle should show the expanded number of children",
@@ -130,8 +130,8 @@ public class NotificationChildrenContainerTest extends SysuiTestCase {
     }
 
     @Test
-    public void testGetMaxAllowedVisibleChildren_userLocked() {
-        mGroup.setUserLocked(true);
+    public void testGetMaxAllowedVisibleChildren_userSwiping() {
+        mGroup.setUserSwipingToExpandRow(true);
         Assert.assertEquals(mChildrenContainer.getMaxAllowedVisibleChildren(),
                 NotificationChildrenContainer.NUMBER_OF_CHILDREN_WHEN_CHILDREN_EXPANDED);
     }
@@ -211,8 +211,8 @@ public class NotificationChildrenContainerTest extends SysuiTestCase {
     }
 
     @Test
-    public void testGetMaxAllowedVisibleChildren_userLocked_expandedChildren_lowPriority() {
-        mGroup.setUserLocked(true);
+    public void testGetMaxAllowedVisibleChildren_userSwiping_expandedChildren_lowPriority() {
+        mGroup.setUserSwipingToExpandRow(true);
         mGroup.setExpandable(true);
         mGroup.setUserExpanded(true);
         mChildrenContainer.setIsMinimized(true);
