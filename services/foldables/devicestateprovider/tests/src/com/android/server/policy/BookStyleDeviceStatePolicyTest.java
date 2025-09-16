@@ -42,6 +42,7 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.hardware.devicestate.DeviceState;
 import android.hardware.display.DisplayManager;
 import android.hardware.input.InputSensorInfo;
 import android.os.Handler;
@@ -71,6 +72,7 @@ import org.mockito.MockitoAnnotations;
 import org.mockito.internal.util.reflection.FieldSetter;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -86,6 +88,9 @@ public final class BookStyleDeviceStatePolicyTest {
     private static final int DEVICE_STATE_CLOSED = 0;
     private static final int DEVICE_STATE_HALF_OPENED = 1;
     private static final int DEVICE_STATE_OPENED = 2;
+    private static final int EXTERNAL_DISPLAY_ID = 17;
+    private static final int DEVICE_STATE_CONCURRENT_INNER_DEFAULT = 4;
+    private static final int DEVICE_STATE_REAR_DISPLAY_OUTER_DEFAULT = 5;
 
     @Captor
     private ArgumentCaptor<Integer> mDeviceStateCaptor;
@@ -758,6 +763,34 @@ public final class BookStyleDeviceStatePolicyTest {
         assertNoListenersForSensor(mLeftAccelerometer);
         assertNoListenersForSensor(mRightAccelerometer);
         assertNoListenersForSensor(mOrientationSensor);
+    }
+
+    @Test
+    public void test_externalDisplay_noDualDisplayModes() {
+        List<Integer> lastStatesIdentifiers = new ArrayList<>();
+        Listener captureStates = new Listener() {
+            @Override
+            public void onSupportedDeviceStatesChanged(DeviceState[] newDeviceStates, int reason) {
+                lastStatesIdentifiers.clear();
+                Arrays.stream(newDeviceStates)
+                        .map(DeviceState::getIdentifier)
+                        .forEach(lastStatesIdentifiers::add);
+            }
+
+            @Override
+            public void onStateChanged(int identifier) {
+            }
+        };
+        mProvider.setListener(captureStates);
+        Display display = mock(Display.class);
+        when(display.getType()).thenReturn(Display.TYPE_EXTERNAL);
+        when(mDisplayManager.getDisplay(EXTERNAL_DISPLAY_ID)).thenReturn(display);
+        DisplayManager.DisplayListener displayListener = (DisplayManager.DisplayListener) mProvider;
+
+        displayListener.onDisplayAdded(EXTERNAL_DISPLAY_ID);
+
+        assertThat(lastStatesIdentifiers).containsNoneOf(DEVICE_STATE_CONCURRENT_INNER_DEFAULT,
+                DEVICE_STATE_REAR_DISPLAY_OUTER_DEFAULT);
     }
 
     @Test
