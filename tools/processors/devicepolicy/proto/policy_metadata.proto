@@ -11,6 +11,7 @@ message PolicyMetadata {
     string documentation = 3;
     TypeSpecificPolicyMetadata type_specific_metadata = 4;
     repeated int32 allowed_scopes = 5;
+    int32 affected_resource = 6;
 }
 
 message TypeSpecificPolicyMetadata {

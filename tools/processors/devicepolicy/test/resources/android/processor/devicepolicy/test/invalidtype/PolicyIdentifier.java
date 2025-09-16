@@ -30,7 +30,10 @@ public final class PolicyIdentifier<T> {
      * Test policy 1
      */
     @BooleanPolicyDefinition(
-            base = @PolicyDefinition(allowedScopes = {0, 1})
+            base = @PolicyDefinition(
+                    allowedScopes = {0, 1},
+                    affectedResource = 1
+            )
     )
     public static final PolicyIdentifier<Integer> TEST_POLICY_1 = new PolicyIdentifier<>(
             TEST_POLICY_1_KEY);

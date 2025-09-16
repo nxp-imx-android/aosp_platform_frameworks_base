@@ -8,6 +8,7 @@ policy_metadata {
   }
   allowed_scopes: 1
   allowed_scopes: 2
+  affected_resource: 2
 }
 policy_metadata {
   name: "android.app.admin.PolicyIdentifier.SIMPLE_ENUM_POLICY"
@@ -36,6 +37,7 @@ policy_metadata {
   }
   allowed_scopes: 2
   allowed_scopes: 3
+  affected_resource: 1
 }
 policy_metadata {
   name: "android.app.admin.PolicyIdentifier.SIMPLE_INTEGER_POLICY"
@@ -46,4 +48,5 @@ policy_metadata {
     }
   }
   allowed_scopes: 1
+  affected_resource: 1
 }

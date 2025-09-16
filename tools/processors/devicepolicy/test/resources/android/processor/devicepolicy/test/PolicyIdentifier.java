@@ -36,7 +36,10 @@ public final class PolicyIdentifier<T> {
      * Test policy 1
      */
     @BooleanPolicyDefinition(
-            base = @PolicyDefinition(allowedScopes = {1, 2})
+            base = @PolicyDefinition(
+                    allowedScopes = {1, 2},
+                    affectedResource = 2
+            )
     )
     public static final PolicyIdentifier<Boolean> SIMPLE_BOOLEAN_POLICY = new PolicyIdentifier<>(
             SIMPLE_BOOLEAN_POLICY_KEY);
@@ -75,7 +78,10 @@ public final class PolicyIdentifier<T> {
      * Test policy 2
      */
     @EnumPolicyDefinition(
-            base = @PolicyDefinition(allowedScopes = {2, 3}),
+            base = @PolicyDefinition(
+                    allowedScopes = {2, 3},
+                    affectedResource = 1
+            ),
             defaultValue = ENUM_ENTRY_2,
             intDef = SimpleEnumPolicyEnum.class
     )
@@ -88,7 +94,10 @@ public final class PolicyIdentifier<T> {
      * Test policy 3
      */
     @IntegerPolicyDefinition(
-            base = @PolicyDefinition(allowedScopes = {1})
+            base = @PolicyDefinition(
+                    allowedScopes = {1},
+                    affectedResource = 1
+            )
     )
     public static final PolicyIdentifier<Integer> SIMPLE_INTEGER_POLICY = new PolicyIdentifier<>(
             SIMPLE_INTEGER_POLICY_KEY);

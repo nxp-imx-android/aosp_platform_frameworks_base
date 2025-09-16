@@ -27,7 +27,10 @@ public final class PolicyIdentifier<T> {
     private static final String TEST_POLICY_1_KEY = "test_policy_1_key";
 
     @BooleanPolicyDefinition(
-            base = @PolicyDefinition(allowedScopes = {0, 1})
+            base = @PolicyDefinition(
+                    allowedScopes = {0, 1},
+                    affectedResource = 1
+            )
     )
     public static final PolicyIdentifier<Boolean> TEST_POLICY_1 = new PolicyIdentifier<>(
             TEST_POLICY_1_KEY);
