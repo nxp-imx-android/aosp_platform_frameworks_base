@@ -320,10 +320,6 @@ public final class JobServiceContext implements ServiceConnection {
         }
     }
 
-    // All instances of JobAnrTimer share the same arguments.
-    private static final AnrTimer.Args sAnrTimerArgs =
-            new AnrTimer.Args().enable(com.android.server.utils.Flags.anrTimerForJobService());
-
     /**
      * An AnrTimer for the JobServiceContext.  There is one instance for each JobServiceContext
      * (these objects are not large).  For convenience, simple no-argument methods are provided
@@ -331,7 +327,7 @@ public final class JobServiceContext implements ServiceConnection {
      */
     private class JobAnrTimer extends AnrTimer<JobCallback> {
         JobAnrTimer() {
-            super(mCallbackHandler, MSG_TIMEOUT, "JobScheduler", sAnrTimerArgs);
+            super(mCallbackHandler, MSG_TIMEOUT, "JobScheduler");
         }
 
         public void start(long timeout) {

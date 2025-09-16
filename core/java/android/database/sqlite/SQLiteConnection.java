@@ -310,7 +310,7 @@ public final class SQLiteConnection implements CancellationSignal.OnCancelListen
             try {
                 mPreparedStatementCache.evictAll();
                 synchronized (mConnectionLock) {
-                    nativeClose(mConnectionPtr, finalized && Flags.noCheckpointOnFinalize());
+                    nativeClose(mConnectionPtr, finalized);
                     mConnectionPtr = 0;
                 }
             } finally {
