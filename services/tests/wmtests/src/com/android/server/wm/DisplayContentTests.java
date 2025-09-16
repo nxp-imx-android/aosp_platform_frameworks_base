@@ -3296,6 +3296,23 @@ public class DisplayContentTests extends WindowTestsBase {
         assertTrue(dc.isRemoved());
     }
 
+    @Test
+    @EnableFlags(Flags.FLAG_DEVICE_ENGAGEMENT_MODE)
+    public void testGetSetEngagementMode() {
+        assertEquals("Initial engagement mode should be the default",
+                DisplayContent.DEFAULT_ENGAGEMENT_MODE, mDefaultDisplay.getEngagementMode());
+
+        final int testMode = WindowManager.ENGAGEMENT_MODE_FLAG_VISUALS_ON;
+        mDefaultDisplay.setEngagementMode(testMode);
+        assertEquals("getEngagementMode should return the value set by setEngagementMode",
+                testMode, mDefaultDisplay.getEngagementMode());
+
+        final int anotherTestMode = WindowManager.ENGAGEMENT_MODE_FLAG_AUDIO_ON;
+        mDefaultDisplay.setEngagementMode(anotherTestMode);
+        assertEquals("getEngagementMode should reflect the most recent change",
+                anotherTestMode, mDefaultDisplay.getEngagementMode());
+    }
+
     private void removeRootTaskTests(@NonNull Runnable runnable) {
         final TaskDisplayArea taskDisplayArea = mRootWindowContainer.getDefaultTaskDisplayArea();
         final Task rootTask1 = taskDisplayArea.createRootTask(WINDOWING_MODE_FULLSCREEN,

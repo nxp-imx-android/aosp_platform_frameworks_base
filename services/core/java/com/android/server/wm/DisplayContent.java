@@ -40,6 +40,7 @@ import static android.internal.perfetto.protos.Windowmanagerservice.DisplayConte
 import static android.internal.perfetto.protos.Windowmanagerservice.DisplayContentProto.DISPLAY_READY;
 import static android.internal.perfetto.protos.Windowmanagerservice.DisplayContentProto.DISPLAY_ROTATION;
 import static android.internal.perfetto.protos.Windowmanagerservice.DisplayContentProto.DPI;
+import static android.internal.perfetto.protos.Windowmanagerservice.DisplayContentProto.ENGAGEMENT_MODE;
 import static android.internal.perfetto.protos.Windowmanagerservice.DisplayContentProto.FOCUSED_APP;
 import static android.internal.perfetto.protos.Windowmanagerservice.DisplayContentProto.FOCUSED_ROOT_TASK_ID;
 import static android.internal.perfetto.protos.Windowmanagerservice.DisplayContentProto.ID;
@@ -242,6 +243,7 @@ import android.view.WindowInsets;
 import android.view.WindowInsets.Type.InsetsType;
 import android.view.WindowManager;
 import android.view.WindowManager.DisplayImePolicy;
+import android.view.WindowManager.EngagementModeFlags;
 import android.view.WindowManagerPolicyConstants.PointerEventListener;
 import android.view.inputmethod.ImeTracker;
 import android.window.DesktopExperienceFlags;
@@ -298,6 +300,21 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
 
     private final boolean mVisibleBackgroundUserEnabled =
             UserManager.isVisibleBackgroundUsersEnabled();
+
+    /**
+     * Default engagement mode: visuals and audio are on.
+     */
+    @VisibleForTesting
+    @EngagementModeFlags
+    static final int DEFAULT_ENGAGEMENT_MODE = WindowManager.ENGAGEMENT_MODE_FLAG_VISUALS_ON
+            | WindowManager.ENGAGEMENT_MODE_FLAG_AUDIO_ON;
+
+    /**
+     * Current user engagement mode state for this display.
+     * Bitmask of flags (e.g. VISUALS_ON, AUDIO_ON).
+     */
+    @EngagementModeFlags
+    private int mEngagementMode = DEFAULT_ENGAGEMENT_MODE;
 
     @IntDef(prefix = { "FORCE_SCALING_MODE_" }, value = {
             FORCE_SCALING_MODE_AUTO,
@@ -3742,6 +3759,9 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
         }
         for (Rect r : mUnrestrictedKeepClearAreas) {
             r.dumpDebug(proto, KEEP_CLEAR_AREAS);
+        }
+        if (com.android.window.flags.Flags.deviceEngagementMode()) {
+            proto.write(ENGAGEMENT_MODE, mEngagementMode);
         }
         proto.end(token);
     }
@@ -7357,4 +7377,23 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
                         || forAllRootTasks(Task::getIsTaskMoveAllowed);
     }
     // LINT.ThenChange(WindowContainer.java:canHoldSelfMovableTasks)
+
+    /**
+     * Sets the user engagement mode for this display.
+     * @param engagementMode A bitmask of engagement mode flags.
+     */
+    void setEngagementMode(@EngagementModeFlags int engagementMode) {
+        mEngagementMode = engagementMode;
+    }
+
+    /**
+     * Gets the current user engagement mode for this display.
+     * @return A bitmask of engagement mode flags.
+     */
+    @EngagementModeFlags
+    int getEngagementMode() {
+        return mEngagementMode;
+    }
+
+
 }
