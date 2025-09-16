@@ -16,8 +16,6 @@
 
 package com.android.server.power.hint;
 
-import static android.os.Flags.adpfUseFmqChannel;
-
 import static com.android.internal.util.ConcurrentUtils.DIRECT_EXECUTOR;
 import static com.android.internal.util.FrameworkStatsLog.CPU_HEADROOM_REPORTED__STATUS__HAL_ERROR;
 import static com.android.internal.util.FrameworkStatsLog.CPU_HEADROOM_REPORTED__STATUS__SUCCESS;
@@ -1518,8 +1516,7 @@ public final class HintManagerService extends SystemService {
 
         @Override
         public @Nullable ChannelConfig getSessionChannel(IBinder token) {
-            if (mPowerHalVersion < 5 || !adpfUseFmqChannel()
-                    || mFMQUsesIntegratedEventFlag) {
+            if (mPowerHalVersion < 5 || mFMQUsesIntegratedEventFlag) {
                 return null;
             }
             java.util.Objects.requireNonNull(token);
@@ -1539,7 +1536,7 @@ public final class HintManagerService extends SystemService {
 
         @Override
         public void closeSessionChannel() {
-            if (mPowerHalVersion < 5 || !adpfUseFmqChannel()) {
+            if (mPowerHalVersion < 5) {
                 return;
             }
             final int callingTgid = Process.getThreadGroupLeader(Binder.getCallingPid());
