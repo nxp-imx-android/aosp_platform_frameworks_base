@@ -16,10 +16,46 @@
 
 package com.android.systemui.volume.panel.component.mediainput.ui.viewmodel
 
-import com.android.systemui.volume.panel.dagger.scope.VolumePanelScope
-import javax.inject.Inject
+import androidx.compose.runtime.getValue
+import com.android.systemui.animation.Expandable
+import com.android.systemui.common.shared.model.Icon
+import com.android.systemui.lifecycle.HydratedActivatable
+import com.android.systemui.res.R
+import com.android.systemui.volume.panel.component.mediainput.domain.interactor.MediaInputComponentInteractor
+import dagger.assisted.AssistedFactory
+import dagger.assisted.AssistedInject
+import kotlinx.coroutines.flow.map
 
-@VolumePanelScope
-class MediaInputViewModel @Inject constructor() {
-    // TODO(b/378513663): Implement the content of media input view model
+class MediaInputViewModel
+@AssistedInject
+constructor(mediaInputComponentInteractor: MediaInputComponentInteractor) : HydratedActivatable() {
+    val hasInputDevice: Boolean by
+        mediaInputComponentInteractor.currentInputDevice
+            .map { mediaDevice -> mediaDevice != null }
+            .hydratedStateOf(traceName = "hasInputDevice", initialValue = false)
+
+    val connectedDeviceName: String? by
+        mediaInputComponentInteractor.currentInputDevice
+            .map { mediaDevice -> mediaDevice?.name }
+            .hydratedStateOf(traceName = "connectedDeviceName", initialValue = null)
+
+    val connectedDeviceIcon: Icon by
+        mediaInputComponentInteractor.currentInputDevice
+            .map { mediaDevice ->
+                mediaDevice?.icon?.let { Icon.Loaded(it, null) }
+                    ?: Icon.Resource(R.drawable.ic_media_home_devices, null)
+            }
+            .hydratedStateOf(
+                traceName = "connectedDeviceIcon",
+                initialValue = Icon.Resource(R.drawable.ic_media_home_devices, null),
+            )
+
+    fun onBarClick(expandable: Expandable?) {
+        // TODO(b/442004274): Open input dialog when this function is triggered.
+    }
+
+    @AssistedFactory
+    interface Factory {
+        fun create(): MediaInputViewModel
+    }
 }

@@ -18,19 +18,13 @@ package com.android.systemui.media.dialog
 
 import com.android.settingslib.media.MediaDevice
 import com.android.systemui.kairos.awaitClose
-import com.android.systemui.qs.flags.QsDetailedView
-import com.android.systemui.util.kotlin.getOrNull
 import com.android.systemui.utils.coroutines.flow.conflatedCallbackFlow
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.onStart
 
-val MediaSwitchingController.currentInputDevice: Flow<MediaDevice?>
+val MediaSwitchingController.currentInputDeviceFlow: Flow<MediaDevice?>
     get() =
         conflatedCallbackFlow {
-                if (!QsDetailedView.isEnabled) {
-                    return@conflatedCallbackFlow
-                }
-
                 val callback =
                     object : MediaSwitchingController.Callback {
                         override fun onMediaChanged() {}
@@ -40,7 +34,7 @@ val MediaSwitchingController.currentInputDevice: Flow<MediaDevice?>
                         override fun onRouteChanged() {}
 
                         override fun onDeviceListChanged() {
-                            trySend(mCurrentInputDevice.getOrNull())
+                            trySend(currentInputDevice?.get())
                         }
 
                         override fun dismissDialog() {}

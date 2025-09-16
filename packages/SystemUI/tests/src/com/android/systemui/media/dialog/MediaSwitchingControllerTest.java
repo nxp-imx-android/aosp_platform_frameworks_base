@@ -729,7 +729,7 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
         enableInputRoutingConfig();
         mMediaSwitchingController.start(mCb);
 
-        assertThat(mMediaSwitchingController.mCurrentInputDevice.orElse(null)).isNull();
+        assertThat(mMediaSwitchingController.getCurrentInputDevice().orElse(null)).isNull();
 
         final MediaDevice mediaDevice3 =
                 InputMediaDevice.create(
@@ -760,7 +760,7 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
         // Input devices have changed.
         mMediaSwitchingController.mInputDeviceCallback.onInputDeviceListUpdated(inputDevices);
 
-        assertThat(mMediaSwitchingController.mCurrentInputDevice.orElse(null)).isEqualTo(
+        assertThat(mMediaSwitchingController.getCurrentInputDevice().orElse(null)).isEqualTo(
                 mediaDevice3);
     }
 
