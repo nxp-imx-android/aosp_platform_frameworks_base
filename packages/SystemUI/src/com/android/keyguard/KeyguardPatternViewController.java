@@ -46,6 +46,7 @@ import com.android.systemui.res.R;
 import com.android.systemui.statusbar.policy.DevicePostureController;
 import com.android.systemui.user.domain.interactor.SelectedUserInteractor;
 
+import java.time.Duration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -196,9 +197,9 @@ public class KeyguardPatternViewController
                 if (isValidPattern) {
                     getKeyguardSecurityCallback().reportUnlockAttempt(userId, false, timeoutMs);
                     if (timeoutMs > 0) {
-                        long deadline = mLockPatternUtils.setLockoutAttemptDeadline(
-                                userId, timeoutMs);
-                        handleAttemptLockout(deadline);
+                        Duration lockoutEndTime = Duration.ofMillis(
+                                mLockPatternUtils.setLockoutAttemptDeadline(userId, timeoutMs));
+                        handleAttemptLockout(lockoutEndTime);
                     }
                 }
                 if (timeoutMs == 0) {
@@ -269,10 +270,10 @@ public class KeyguardPatternViewController
         mView.onDevicePostureChanged(mPostureController.getDevicePosture());
         mPostureController.addCallback(mPostureCallback);
         // if the user is currently locked out, enforce it.
-        long deadline = mLockPatternUtils.getLockoutAttemptDeadline(
-                mSelectedUserInteractor.getSelectedUserId());
-        if (deadline != 0) {
-            handleAttemptLockout(deadline);
+        Duration lockoutEndTime = Duration.ofMillis(mLockPatternUtils.getLockoutAttemptDeadline(
+                mSelectedUserInteractor.getSelectedUserId()));
+        if (!lockoutEndTime.isZero()) {
+            handleAttemptLockout(lockoutEndTime);
         }
         mLockPatternView.setExternalHapticsPlayer(mExternalHapticsPlayer);
     }
@@ -398,12 +399,12 @@ public class KeyguardPatternViewController
         mMessageAreaController.setMessage(getInitialMessageResId());
     }
 
-    private void handleAttemptLockout(long elapsedRealtimeDeadline) {
+    private void handleAttemptLockout(Duration lockoutEndTime) {
         mLockPatternView.clearPattern();
         mLockPatternView.setEnabled(false);
         final long elapsedRealtime = SystemClock.elapsedRealtime();
         final long secondsInFuture = (long) Math.ceil(
-                (elapsedRealtimeDeadline - elapsedRealtime) / 1000.0);
+                (lockoutEndTime.toMillis() - elapsedRealtime) / 1000.0);
         getKeyguardSecurityCallback().onAttemptLockoutStart(secondsInFuture);
         mCountdownTimer = new CountDownTimer(secondsInFuture * 1000, 1000) {
 

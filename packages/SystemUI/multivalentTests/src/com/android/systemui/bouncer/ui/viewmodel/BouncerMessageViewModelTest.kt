@@ -67,6 +67,7 @@ import com.android.systemui.testKosmos
 import com.android.systemui.user.data.repository.fakeUserRepository
 import com.google.common.truth.Truth.assertThat
 import com.google.common.truth.Truth.assertWithMessage
+import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.advanceTimeBy
@@ -140,8 +141,8 @@ class BouncerMessageViewModelTest : SysuiTestCase() {
                 bouncerInteractor.authenticate(WRONG_PIN)
             }
 
-            val lockoutEndMs = authenticationInteractor.lockoutEndTimestamp ?: 0
-            advanceTimeBy(lockoutEndMs - testScope.currentTime)
+            val lockoutEndTime = authenticationInteractor.lockoutEndTime ?: 0.seconds
+            advanceTimeBy(lockoutEndTime - testScope.currentTime.milliseconds)
             assertThat(message?.isUpdateAnimated).isTrue()
         }
 
@@ -151,7 +152,7 @@ class BouncerMessageViewModelTest : SysuiTestCase() {
             val message by collectLastValue(underTest.message)
             val lockoutSeconds = FakeAuthenticationRepository.LOCKOUT_DURATION_SECONDS
             kosmos.fakeAuthenticationRepository.setAuthenticationMethod(Pin)
-            assertThat(kosmos.fakeAuthenticationRepository.lockoutEndTimestamp).isNull()
+            assertThat(kosmos.fakeAuthenticationRepository.lockoutEndTime).isNull()
             runCurrent()
 
             repeat(FakeAuthenticationRepository.MAX_FAILED_AUTH_TRIES_BEFORE_LOCKOUT) { times ->

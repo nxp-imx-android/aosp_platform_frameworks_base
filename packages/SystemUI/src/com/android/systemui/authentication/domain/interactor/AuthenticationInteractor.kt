@@ -157,12 +157,12 @@ constructor(
      * To be notified whenever a lockout is started, the caller should subscribe to
      * [onAuthenticationResult].
      *
-     * Note that the value is in milliseconds and matches [SystemClock.elapsedRealtime].
+     * Note that the value should be compared to [SystemClock.elapsedRealtime].milliseconds.
      *
      * Also note that the value may change when the selected user is changed.
      */
-    val lockoutEndTimestamp: Long?
-        get() = repository.lockoutEndTimestamp
+    val lockoutEndTime: Duration?
+        get() = repository.lockoutEndTime
 
     /**
      * Models an imminent wipe risk to the user, profile, or device upon further unsuccessful
@@ -283,7 +283,7 @@ constructor(
     ): Boolean {
         return when {
             // Lockout is active, the UI layer should not have called this; skip the attempt.
-            repository.lockoutEndTimestamp != null -> true
+            repository.lockoutEndTime != null -> true
             // Auto-confirm attempt when the feature is not enabled; skip the attempt.
             isAutoConfirmAttempt && !isAutoConfirmEnabled.value -> true
             // The pin is too short; skip only if this is an auto-confirm attempt.

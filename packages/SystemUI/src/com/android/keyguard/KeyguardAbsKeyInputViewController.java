@@ -43,6 +43,7 @@ import com.android.systemui.res.R;
 import com.android.systemui.user.domain.interactor.SelectedUserInteractor;
 import com.android.systemui.util.wrapper.LockPatternCheckerWrapper;
 
+import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -117,10 +118,10 @@ public abstract class KeyguardAbsKeyInputViewController<T extends KeyguardAbsKey
         mView.setKeyDownListener(mKeyDownListener);
         mEmergencyButtonController.setEmergencyButtonCallback(mEmergencyButtonCallback);
         // if the user is currently locked out, enforce it.
-        long deadline = mLockPatternUtils.getLockoutAttemptDeadline(
-                mSelectedUserInteractor.getSelectedUserId());
-        if (shouldLockout(deadline)) {
-            handleAttemptLockout(deadline);
+        Duration lockoutEndTime = Duration.ofMillis(mLockPatternUtils.getLockoutAttemptDeadline(
+                mSelectedUserInteractor.getSelectedUserId()));
+        if (shouldLockout(lockoutEndTime)) {
+            handleAttemptLockout(lockoutEndTime);
         }
     }
 
@@ -151,18 +152,18 @@ public abstract class KeyguardAbsKeyInputViewController<T extends KeyguardAbsKey
     }
 
     // Allow subclasses to override this behavior
-    protected boolean shouldLockout(long deadline) {
-        return deadline != 0;
+    protected boolean shouldLockout(Duration lockoutEndTime) {
+        return !lockoutEndTime.isZero();
     }
 
     // Prevent user from using the PIN/Password entry until scheduled deadline.
-    protected void handleAttemptLockout(long elapsedRealtimeDeadline) {
+    protected void handleAttemptLockout(Duration lockoutEndTime) {
         mView.setPasswordEntryEnabled(false);
         mView.setPasswordEntryInputEnabled(false);
         mLockedOut = true;
-        long elapsedRealtime = SystemClock.elapsedRealtime();
+        long now = SystemClock.elapsedRealtime();
         long secondsInFuture = (long) Math.ceil(
-                (elapsedRealtimeDeadline - elapsedRealtime) / 1000.0);
+                (lockoutEndTime.toMillis() - now) / 1000.0);
         getKeyguardSecurityCallback().onAttemptLockoutStart(secondsInFuture);
         mCountdownTimer = new CountDownTimer(secondsInFuture * 1000, 1000) {
 
@@ -213,9 +214,9 @@ public abstract class KeyguardAbsKeyInputViewController<T extends KeyguardAbsKey
             if (isValidPassword) {
                 getKeyguardSecurityCallback().reportUnlockAttempt(userId, false, timeoutMs);
                 if (timeoutMs > 0) {
-                    long deadline = mLockPatternUtils.setLockoutAttemptDeadline(
-                            userId, timeoutMs);
-                    handleAttemptLockout(deadline);
+                    Duration lockoutEndTime = Duration.ofMillis(
+                                mLockPatternUtils.setLockoutAttemptDeadline(userId, timeoutMs));
+                    handleAttemptLockout(lockoutEndTime);
                 }
             }
             if (timeoutMs == 0) {

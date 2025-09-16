@@ -46,6 +46,8 @@ import com.android.systemui.res.R;
 import com.android.systemui.user.domain.interactor.SelectedUserInteractor;
 import com.android.systemui.util.wrapper.LockPatternCheckerWrapper;
 
+import java.time.Duration;
+
 public class KeyguardSimPukViewController
         extends KeyguardPinBasedInputViewController<KeyguardSimPukView> {
     private static final boolean DEBUG = KeyguardConstants.DEBUG;
@@ -347,7 +349,7 @@ public class KeyguardSimPukViewController
     }
 
     @Override
-    protected boolean shouldLockout(long deadline) {
+    protected boolean shouldLockout(Duration lockoutEndTime) {
         // SIM PUK doesn't have a timed lockout
         return false;
     }

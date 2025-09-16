@@ -28,6 +28,8 @@ import com.android.systemui.dagger.SysUISingleton
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.milliseconds
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -36,7 +38,8 @@ import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.currentTime
 
-class FakeAuthenticationRepository(private val currentTime: () -> Long) : AuthenticationRepository {
+class FakeAuthenticationRepository(private val currentTimeMs: () -> Long) :
+    AuthenticationRepository {
 
     override val hintedPinLength: Int = HINTING_PIN_LENGTH
 
@@ -69,6 +72,9 @@ class FakeAuthenticationRepository(private val currentTime: () -> Long) : Authen
 
     private val credentialCheckingMutex = Mutex(locked = false)
 
+    private val currentTime: Duration
+        get() = currentTimeMs().milliseconds
+
     var maximumTimeToLock: Long = 0
     var powerButtonInstantlyLocks: Boolean = true
 
@@ -88,7 +94,7 @@ class FakeAuthenticationRepository(private val currentTime: () -> Long) : Authen
     override suspend fun reportAuthenticationAttempt(isSuccessful: Boolean) {
         if (isSuccessful) {
             _failedAuthenticationAttempts.value = 0
-            _lockoutEndTimestamp = null
+            _lockoutEndTime = null
             hasLockoutOccurred.value = false
             lockoutStartedReportCount = 0
         } else {
@@ -100,12 +106,12 @@ class FakeAuthenticationRepository(private val currentTime: () -> Long) : Authen
     override val failedAuthenticationAttempts: StateFlow<Int> =
         _failedAuthenticationAttempts.asStateFlow()
 
-    private var _lockoutEndTimestamp: Long? = null
-    override val lockoutEndTimestamp: Long?
-        get() = if (currentTime() < (_lockoutEndTimestamp ?: 0)) _lockoutEndTimestamp else null
+    private var _lockoutEndTime: Duration? = null
+    override val lockoutEndTime: Duration?
+        get() = if (currentTime < (_lockoutEndTime ?: 0.milliseconds)) _lockoutEndTime else null
 
     override suspend fun reportLockoutStarted(durationMs: Int) {
-        _lockoutEndTimestamp = (currentTime() + durationMs).takeIf { durationMs > 0 }
+        _lockoutEndTime = (currentTime + durationMs.milliseconds).takeIf { durationMs > 0 }
         hasLockoutOccurred.value = true
         lockoutStartedReportCount++
     }
@@ -266,7 +272,7 @@ object FakeAuthenticationRepositoryModule {
     @Provides
     @SysUISingleton
     fun provideFake(scope: TestScope) =
-        FakeAuthenticationRepository(currentTime = { scope.currentTime })
+        FakeAuthenticationRepository(currentTimeMs = { scope.currentTime })
 
     @Module
     interface Bindings {

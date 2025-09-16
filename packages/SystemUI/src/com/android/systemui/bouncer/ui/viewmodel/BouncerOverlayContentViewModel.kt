@@ -180,8 +180,7 @@ constructor(
                 ),
             )
 
-    private val _isInputEnabled =
-        MutableStateFlow(authenticationInteractor.lockoutEndTimestamp == null)
+    private val _isInputEnabled = MutableStateFlow(authenticationInteractor.lockoutEndTime == null)
     private val isInputEnabled: StateFlow<Boolean> = _isInputEnabled.asStateFlow()
 
     override suspend fun onActivated(): Nothing {

@@ -35,6 +35,7 @@ import com.android.systemui.testKosmos
 import com.android.systemui.user.data.repository.FakeUserRepository
 import com.android.systemui.user.data.repository.fakeUserRepository
 import com.google.common.truth.Truth.assertThat
+import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.currentTime
@@ -104,7 +105,7 @@ class AuthenticationInteractorTest : SysuiTestCase() {
         Assert.assertThrows(IllegalArgumentException::class.java) {
             testScope.runTest {
                 kosmos.fakeAuthenticationRepository.setAuthenticationMethod(Pin)
-                
+
                 underTest.authenticate(listOf())
             }
         }
@@ -189,10 +190,10 @@ class AuthenticationInteractorTest : SysuiTestCase() {
             assertSkipped(
                 underTest.authenticate(
                     defaultPin.subList(0, defaultPin.size - 1),
-                    tryAutoConfirm = true
+                    tryAutoConfirm = true,
                 )
             )
-            assertThat(underTest.lockoutEndTimestamp).isNull()
+            assertThat(underTest.lockoutEndTime).isNull()
             assertThat(kosmos.fakeAuthenticationRepository.lockoutStartedReportCount).isEqualTo(0)
         }
 
@@ -208,9 +209,7 @@ class AuthenticationInteractorTest : SysuiTestCase() {
 
             val wrongPin = FakeAuthenticationRepository.DEFAULT_PIN.map { it + 1 }
 
-            assertFailed(
-                underTest.authenticate(wrongPin, tryAutoConfirm = true),
-            )
+            assertFailed(underTest.authenticate(wrongPin, tryAutoConfirm = true))
         }
 
     @Test
@@ -225,9 +224,7 @@ class AuthenticationInteractorTest : SysuiTestCase() {
 
             val longerPin = FakeAuthenticationRepository.DEFAULT_PIN + listOf(7)
 
-            assertFailed(
-                underTest.authenticate(longerPin, tryAutoConfirm = true),
-            )
+            assertFailed(underTest.authenticate(longerPin, tryAutoConfirm = true))
         }
 
     @Test
@@ -261,7 +258,7 @@ class AuthenticationInteractorTest : SysuiTestCase() {
             assertSkipped(underTest.authenticate(correctPin, tryAutoConfirm = true))
             assertThat(isAutoConfirmEnabled).isFalse()
             assertThat(hintedPinLength).isNull()
-            assertThat(underTest.lockoutEndTimestamp).isNotNull()
+            assertThat(underTest.lockoutEndTime).isNotNull()
         }
 
     @Test
@@ -316,7 +313,7 @@ class AuthenticationInteractorTest : SysuiTestCase() {
             repeat(FakeAuthenticationRepository.MAX_FAILED_AUTH_TRIES_BEFORE_LOCKOUT) {
                 assertFailed(underTest.authenticate(listOf(5, 6, 7))) // Wrong PIN
             }
-            assertThat(underTest.lockoutEndTimestamp).isNotNull()
+            assertThat(underTest.lockoutEndTime).isNotNull()
             assertThat(kosmos.fakeAuthenticationRepository.lockoutStartedReportCount).isEqualTo(1)
 
             // Lockout disabled auto-confirm.
@@ -326,7 +323,7 @@ class AuthenticationInteractorTest : SysuiTestCase() {
             advanceTimeBy(
                 FakeAuthenticationRepository.LOCKOUT_DURATION_SECONDS.seconds.plus(1.seconds)
             )
-            assertThat(underTest.lockoutEndTimestamp).isNull()
+            assertThat(underTest.lockoutEndTime).isNull()
 
             // Auto-confirm is still disabled, because lockout occurred at least once in this
             // session.
@@ -379,39 +376,40 @@ class AuthenticationInteractorTest : SysuiTestCase() {
             val correctPin = FakeAuthenticationRepository.DEFAULT_PIN
 
             underTest.authenticate(correctPin)
-            assertThat(underTest.lockoutEndTimestamp).isNull()
+            assertThat(underTest.lockoutEndTime).isNull()
 
             // Make many wrong attempts, but just shy of what's needed to get locked out:
             repeat(FakeAuthenticationRepository.MAX_FAILED_AUTH_TRIES_BEFORE_LOCKOUT - 1) {
                 underTest.authenticate(listOf(5, 6, 7)) // Wrong PIN
-                assertThat(underTest.lockoutEndTimestamp).isNull()
+                assertThat(underTest.lockoutEndTime).isNull()
             }
 
             // Make one more wrong attempt, leading to lockout:
             underTest.authenticate(listOf(5, 6, 7)) // Wrong PIN
 
-            val expectedLockoutEndTimestamp =
-                testScope.currentTime + FakeAuthenticationRepository.LOCKOUT_DURATION_MS
-            assertThat(underTest.lockoutEndTimestamp).isEqualTo(expectedLockoutEndTimestamp)
+            val expectedLockoutEndTime =
+                (testScope.currentTime + FakeAuthenticationRepository.LOCKOUT_DURATION_MS)
+                    .milliseconds
+            assertThat(underTest.lockoutEndTime).isEqualTo(expectedLockoutEndTime)
             assertThat(kosmos.fakeAuthenticationRepository.lockoutStartedReportCount).isEqualTo(1)
 
             // Correct PIN, but locked out, so doesn't attempt it:
             assertSkipped(underTest.authenticate(correctPin), assertNoResultEvents = false)
-            assertThat(underTest.lockoutEndTimestamp).isEqualTo(expectedLockoutEndTimestamp)
+            assertThat(underTest.lockoutEndTime).isEqualTo(expectedLockoutEndTime)
 
             // Move the clock forward to ALMOST skip the lockout, leaving one second to go:
             repeat(FakeAuthenticationRepository.LOCKOUT_DURATION_SECONDS - 1) {
                 advanceTimeBy(1.seconds)
-                assertThat(underTest.lockoutEndTimestamp).isEqualTo(expectedLockoutEndTimestamp)
+                assertThat(underTest.lockoutEndTime).isEqualTo(expectedLockoutEndTime)
             }
 
             // Move the clock forward one more second, to completely finish the lockout period:
             advanceTimeBy(1.seconds)
-            assertThat(underTest.lockoutEndTimestamp).isNull()
+            assertThat(underTest.lockoutEndTime).isNull()
 
             // Correct PIN and no longer locked out so unlocks successfully:
             assertSucceeded(underTest.authenticate(correctPin))
-            assertThat(underTest.lockoutEndTimestamp).isNull()
+            assertThat(underTest.lockoutEndTime).isNull()
         }
 
     @Test
@@ -439,7 +437,7 @@ class AuthenticationInteractorTest : SysuiTestCase() {
                 underTest.authenticate(wrongPin)
                 expectedFailedAttempts++
                 remainingFailedAttempts--
-                if (underTest.lockoutEndTimestamp != null) {
+                if (underTest.lockoutEndTime != null) {
                     // If there's a lockout, wait it out:
                     advanceTimeBy(FakeAuthenticationRepository.LOCKOUT_DURATION_SECONDS.seconds)
                 }
@@ -455,7 +453,7 @@ class AuthenticationInteractorTest : SysuiTestCase() {
                             AuthenticationWipeModel(
                                 wipeTarget = AuthenticationWipeModel.WipeTarget.WholeDevice,
                                 failedAttempts = expectedFailedAttempts,
-                                remainingAttempts = remainingFailedAttempts
+                                remainingAttempts = remainingFailedAttempts,
                             )
                         )
                 }
@@ -550,14 +548,12 @@ class AuthenticationInteractorTest : SysuiTestCase() {
     private fun assertSucceeded(authenticationResult: AuthenticationResult) {
         assertThat(authenticationResult).isEqualTo(AuthenticationResult.SUCCEEDED)
         assertThat(onAuthenticationResult).isTrue()
-        assertThat(underTest.lockoutEndTimestamp).isNull()
+        assertThat(underTest.lockoutEndTime).isNull()
         assertThat(kosmos.fakeAuthenticationRepository.lockoutStartedReportCount).isEqualTo(0)
         assertThat(failedAuthenticationAttempts).isEqualTo(0)
     }
 
-    private fun assertFailed(
-        authenticationResult: AuthenticationResult,
-    ) {
+    private fun assertFailed(authenticationResult: AuthenticationResult) {
         assertThat(authenticationResult).isEqualTo(AuthenticationResult.FAILED)
         assertThat(onAuthenticationResult).isFalse()
     }
