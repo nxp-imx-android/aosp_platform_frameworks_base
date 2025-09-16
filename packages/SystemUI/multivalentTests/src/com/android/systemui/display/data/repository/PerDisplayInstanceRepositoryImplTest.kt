@@ -25,6 +25,7 @@ import com.android.app.displaylib.PerDisplayInstanceRepositoryImpl
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.dump.dumpManager
 import com.android.systemui.kosmos.runTest
+import com.android.systemui.kosmos.testDispatcher
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.testKosmos
@@ -254,6 +255,7 @@ class PerDisplayInstanceRepositoryImplTest : SysuiTestCase() {
                             }
                         },
                     lifecycleManager = null,
+                    kosmos.testDispatcher,
                     testScope.backgroundScope,
                     displayRepository,
                     perDisplayDumpHelper,
@@ -282,6 +284,7 @@ class PerDisplayInstanceRepositoryImplTest : SysuiTestCase() {
                 object : DisplayInstanceLifecycleManager {
                     override val displayIds: StateFlow<Set<Int>> = displayIdsFlow
                 },
+            kosmos.testDispatcher,
             testScope.backgroundScope,
             kosmos.displayRepository,
             kosmos.perDisplayDumpHelper,

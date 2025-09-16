@@ -22,6 +22,7 @@ import android.view.Display
 import android.view.IWindowManager
 import com.android.app.displaylib.DisplayLibBackground
 import com.android.app.displaylib.DisplayLibComponent
+import com.android.app.displaylib.DisplayLibHandlerThreadBackground
 import com.android.app.displaylib.DisplaysWithDecorationsRepository
 import com.android.app.displaylib.DisplaysWithDecorationsRepositoryCompat
 import com.android.app.displaylib.PerDisplayRepository
@@ -56,8 +57,11 @@ import dagger.Module
 import dagger.Provides
 import dagger.multibindings.ClassKey
 import dagger.multibindings.IntoMap
+import java.util.concurrent.Executor
+import kotlin.coroutines.CoroutineContext
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.asCoroutineDispatcher
 
 /** Module binding display related classes. */
 @Module(includes = [DisplayWindowPropertiesInteractorModule::class, DisplayLibModule::class])
@@ -105,6 +109,12 @@ interface DisplayModule {
     fun bindDisplayLibBackground(@Background bgScope: CoroutineScope): CoroutineScope
 
     companion object {
+        @Provides
+        @DisplayLibHandlerThreadBackground
+        fun provideDisplayLibHandlerThreadBackground(
+            @Background backgroundExecutor: Executor
+        ): CoroutineContext = backgroundExecutor.asCoroutineDispatcher()
+
         @Provides
         fun displayStateInteractor(
             displayComponentRepo: PerDisplayRepository<SystemUIDisplaySubcomponent>
