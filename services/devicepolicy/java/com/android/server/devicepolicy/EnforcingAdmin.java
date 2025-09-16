@@ -83,7 +83,7 @@ final class EnforcingAdmin {
     private final int mUserId;
     private final boolean mIsRoleAuthority;
 
-    static EnforcingAdmin createEnforcingAdmin(@NonNull String packageName, int userId) {
+    static EnforcingAdmin createRoleEnforcingAdmin(@NonNull String packageName, int userId) {
         Objects.requireNonNull(packageName);
         return new EnforcingAdmin(packageName, userId);
     }
@@ -95,7 +95,8 @@ final class EnforcingAdmin {
                 componentName.getPackageName(), componentName, Set.of(DPC_AUTHORITY), userId);
     }
 
-    static EnforcingAdmin createDeviceAdminEnforcingAdmin(ComponentName componentName, int userId) {
+    static EnforcingAdmin createDeviceAdminEnforcingAdmin(
+            @NonNull ComponentName componentName, int userId) {
         Objects.requireNonNull(componentName);
         return new EnforcingAdmin(
                 componentName.getPackageName(), componentName, Set.of(DEVICE_ADMIN_AUTHORITY),
@@ -110,24 +111,28 @@ final class EnforcingAdmin {
     static EnforcingAdmin createEnforcingAdmin(android.app.admin.EnforcingAdmin admin) {
         Objects.requireNonNull(admin);
         Authority authority = admin.getAuthority();
+        int userId = admin.getUserHandle().getIdentifier();
         if (DpcAuthority.DPC_AUTHORITY.equals(authority)) {
-            return new EnforcingAdmin(
-                    admin.getPackageName(), admin.getComponentName(),
-                    Set.of(DPC_AUTHORITY), admin.getUserHandle().getIdentifier());
+            return createEnterpriseEnforcingAdmin(admin.getComponentName(), userId);
         } else if (DeviceAdminAuthority.DEVICE_ADMIN_AUTHORITY.equals(authority)) {
-            return new EnforcingAdmin(
-                    admin.getPackageName(), admin.getComponentName(),
-                    Set.of(DEVICE_ADMIN_AUTHORITY), admin.getUserHandle().getIdentifier());
+            return createDeviceAdminEnforcingAdmin(admin.getComponentName(), userId);
         } else if (authority instanceof RoleAuthority roleAuthority) {
-            return new EnforcingAdmin(
-                    admin.getPackageName(), admin.getComponentName(),
-                    roleAuthority.getRoles(), admin.getUserHandle().getIdentifier(),
-                    /* isRoleAuthority = */ true);
+            if (Flags.tightenAdminInstantiation()) {
+                return createRoleEnforcingAdmin(admin.getPackageName(), userId);
+            } else {
+                return new EnforcingAdmin(admin.getPackageName(), admin.getComponentName(),
+                        roleAuthority.getRoles(), admin.getUserHandle().getIdentifier(),
+                        /* isRoleAuthority = */ true);
+            }
         } else if (authority instanceof SystemAuthority systemAuthority) {
-            return new EnforcingAdmin(systemAuthority.getSystemEntity());
+            return createSystemEnforcingAdmin(systemAuthority.getSystemEntity());
         }
-        return new EnforcingAdmin(admin.getPackageName(), admin.getComponentName(),
-                Set.of(), admin.getUserHandle().getIdentifier());
+        if (Flags.tightenAdminInstantiation()) {
+            throw new IllegalArgumentException("Unknown admin type: " + admin);
+        } else {
+            return new EnforcingAdmin(admin.getPackageName(), admin.getComponentName(),
+                    Set.of(), admin.getUserHandle().getIdentifier());
+        }
     }
 
     static String getRoleAuthorityOf(String roleName) {
