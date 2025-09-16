@@ -136,6 +136,7 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
     private final OnClosedListener mOnClosedListener;
     private final IVirtualDevice mVirtualDevice;
     private final int mVirtualDisplayId;
+    private final int mVirtualDeviceId;
     private final int mMainDisplayId;
     private final IVirtualDisplayCallback mVirtualDisplayToken;
     private final IVirtualInputDevice mVirtualTouchscreen;
@@ -148,8 +149,6 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
 
     private final Injector mInjector;
 
-    private int mDisplayWidth;
-    private int mDisplayHeight;
     private ScheduledFuture<?> mSwipeFuture;
     private ScheduledFuture<?> mInsertTextFuture;
 
@@ -188,6 +187,8 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
         // used as a map key for the virtual input devices.
         mVirtualDisplayToken = new DisplayManagerGlobal.VirtualDisplayCallback(null, null);
 
+        final int displayWidth;
+        final int displayHeight;
         // If the client didn't provide a surface, use the default display dimensions and enable
         // the screenshot API.
         // TODO(b/439774796): Do not allow client-provided surface and dimensions.
@@ -195,18 +196,18 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
         if (params.getDisplaySurface() == null) {
             displayFlags |= DisplayManager.VIRTUAL_DISPLAY_FLAG_ALWAYS_UNLOCKED;
             final DisplayInfo defaultDisplayInfo = mInjector.getDisplayInfo(mMainDisplayId);
-            mDisplayWidth = defaultDisplayInfo.logicalWidth;
-            mDisplayHeight = defaultDisplayInfo.logicalHeight;
+            displayWidth = defaultDisplayInfo.logicalWidth;
+            displayHeight = defaultDisplayInfo.logicalHeight;
             virtualDisplayConfig = new VirtualDisplayConfig.Builder(
-                    mParams.getName() + "-display", mDisplayWidth, mDisplayHeight,
+                    mParams.getName() + "-display", displayWidth, displayHeight,
                     defaultDisplayInfo.logicalDensityDpi)
                     .setFlags(displayFlags)
                     .build();
         } else {
-            mDisplayWidth = mParams.getDisplayWidthPx();
-            mDisplayHeight = mParams.getDisplayHeightPx();
+            displayWidth = mParams.getDisplayWidthPx();
+            displayHeight = mParams.getDisplayHeightPx();
             virtualDisplayConfig = new VirtualDisplayConfig.Builder(
-                    mParams.getName() + "-display", mDisplayWidth, mDisplayHeight,
+                    mParams.getName() + "-display", displayWidth, displayHeight,
                     mParams.getDisplayDpi())
                     .setSurface(mParams.getDisplaySurface())
                     .setFlags(displayFlags)
@@ -216,6 +217,7 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
         try {
             mVirtualDevice = virtualDeviceFactory.createVirtualDevice(mAppToken, attributionSource,
                     virtualDeviceParams, new ComputerControlActivityListener());
+            mVirtualDeviceId = mVirtualDevice.getDeviceId();
 
             applyActivityPolicy();
 
@@ -257,7 +259,7 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
 
             final String touchscreenName = inputDeviceNamePrefix + "-tscr";
             final VirtualTouchscreenConfig virtualTouchscreenConfig =
-                    new VirtualTouchscreenConfig.Builder(mDisplayWidth, mDisplayHeight)
+                    new VirtualTouchscreenConfig.Builder(displayWidth, displayHeight)
                             .setAssociatedDisplayId(mVirtualDisplayId)
                             .setInputDeviceName(touchscreenName)
                             .setVendorId(VENDOR_ID)
@@ -305,11 +307,7 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
     }
 
     int getDeviceId() {
-        try {
-            return mVirtualDevice.getDeviceId();
-        } catch (RemoteException e) {
-            throw e.rethrowFromSystemServer();
-        }
+        return mVirtualDeviceId;
     }
 
     IVirtualDisplayCallback getVirtualDisplayToken() {
