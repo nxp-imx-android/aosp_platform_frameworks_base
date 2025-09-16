@@ -1732,11 +1732,6 @@ public class PackageImpl implements ParsedPackage, AndroidPackageInternal,
     }
 
     @Override
-    public boolean shouldRunInPccSandbox() {
-        return getBoolean2(Booleans2.RUN_IN_PCC_SANDBOX);
-    }
-
-    @Override
     public boolean isResourceOverlay() {
         return getBoolean(Booleans.OVERLAY);
     }
@@ -2245,12 +2240,6 @@ public class PackageImpl implements ParsedPackage, AndroidPackageInternal,
     @Override
     public ParsingPackage setOnBackInvokedCallbackEnabled(boolean value) {
         setBoolean(Booleans.ENABLE_ON_BACK_INVOKED_CALLBACK, value);
-        return this;
-    }
-
-    @Override
-    public ParsingPackage setRunInPccSandbox(boolean value) {
-        setBoolean2(Booleans2.RUN_IN_PCC_SANDBOX, value);
         return this;
     }
 
@@ -3947,13 +3936,11 @@ public class PackageImpl implements ParsedPackage, AndroidPackageInternal,
                 STUB,
                 APEX,
                 UPDATABLE_SYSTEM,
-                RUN_IN_PCC_SANDBOX,
         })
         public @interface Flags {}
 
         private static final long STUB = 1L;
         private static final long APEX = 1L << 1;
         private static final long UPDATABLE_SYSTEM = 1L << 2;
-        private static final long RUN_IN_PCC_SANDBOX = 1L << 3;
     }
 }

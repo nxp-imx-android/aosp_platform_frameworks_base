@@ -323,11 +323,6 @@ class AndroidPackageTest : ParcelableComponentTest(AndroidPackage::class, Packag
             PackageImpl::setAttributionsAreUserVisible,
             true
         ),
-        getSetByValue(
-            AndroidPackage::shouldRunInPccSandbox,
-            PackageImpl::setRunInPccSandbox,
-            true
-        ),
         getSetByValue2(
             AndroidPackage::getOverlayables,
             PackageImpl::addOverlayable,
