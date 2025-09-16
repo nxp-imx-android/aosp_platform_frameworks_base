@@ -552,7 +552,14 @@ public class UsbDataAdvancedProtectionHook extends AdvancedProtectionHook {
         }
 
         Intent silenceIntent = new Intent(ACTION_SILENCE_NOTIFICATION);
-        silenceIntent.putExtra(EXTRA_SILENCE_POWER_NOTIFICATION, true);
+        if(notificationType == NOTIFICATION_CHARGE_DATA) {
+            silenceIntent.putExtra(EXTRA_SILENCE_DATA_NOTIFICATION, true);
+            silenceIntent.putExtra(EXTRA_SILENCE_POWER_NOTIFICATION, true);
+        } else if (notificationType == NOTIFICATION_CHARGE) {
+            silenceIntent.putExtra(EXTRA_SILENCE_POWER_NOTIFICATION, true);
+        } else if (notificationType == NOTIFICATION_DATA) {
+            silenceIntent.putExtra(EXTRA_SILENCE_DATA_NOTIFICATION, true);
+        }
         sendNotification(
                 notificationTitle,
                 notificationBody,
