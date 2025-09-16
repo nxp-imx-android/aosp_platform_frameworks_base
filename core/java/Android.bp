@@ -887,3 +887,10 @@ aidl_interface {
         },
     },
 }
+
+filegroup {
+    name: "framework-device-policy-metadata-sources",
+    srcs: [
+        "android/app/admin/metadata/*.java",
+    ],
+}

@@ -22,7 +22,10 @@ java_library_host {
         ],
     },
     use_tools_jar: true,
-    static_libs: ["libprotobuf-java-full"],
+    static_libs: [
+        "libprotobuf-java-full",
+        "javapoet",
+    ],
 }
 
 java_plugin {
@@ -60,6 +63,7 @@ filegroup {
     srcs: [
         // We need the java sources for compiler tests.
         ":framework-metalava-annotations",
+        ":framework-device-policy-metadata-sources",
         "test/resources/**/*.java",
         "test/resources/**/*.textproto",
     ],

@@ -26,8 +26,14 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
 public final class PolicyIdentifier<T> {
-    // We don't actually do anything with this.
+    private final String mId;
+
     public PolicyIdentifier(String id) {
+        mId = id;
+    }
+
+    public String getId() {
+        return mId;
     }
 
     private static final String SIMPLE_BOOLEAN_POLICY_KEY = "simple_boolean_policy_key";
