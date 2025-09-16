@@ -112,10 +112,6 @@ class DefaultTilesQSHostRepositoryTest : SysuiTestCase() {
             R.string.quick_settings_tiles_default,
             defaultTiles,
         )
-        testCase.context.orCreateTestableResources.addOverride(
-            R.string.quick_settings_tiles_new_default,
-            defaultTiles,
-        )
     }
 
     private fun Kosmos.overrideHsuAllowListResource(allowList: Array<String>) {
