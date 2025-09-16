@@ -64,6 +64,7 @@ import com.android.systemui.plugins.ActivityStarter;
 import com.android.systemui.res.R;
 import com.android.systemui.settings.UserTracker;
 import com.android.systemui.statusbar.notification.collection.notifcollection.CommonNotifCollection;
+import com.android.systemui.util.concurrency.FakeExecutor;
 import com.android.systemui.util.kotlin.JavaAdapter;
 import com.android.systemui.util.time.FakeSystemClock;
 import com.android.systemui.volume.panel.domain.interactor.VolumePanelGlobalStateInteractor;
@@ -151,6 +152,7 @@ public class MediaOutputBaseDialogTest extends SysuiTestCase {
                 VolumePanelGlobalStateInteractorKosmosKt.getVolumePanelGlobalStateInteractor(
                         mKosmos);
 
+        FakeSystemClock fakeSystemClock = new FakeSystemClock();
         mMediaSwitchingController =
                 new MediaSwitchingController(
                         mContext,
@@ -166,7 +168,8 @@ public class MediaOutputBaseDialogTest extends SysuiTestCase {
                         mAudioManager,
                         mPowerExemptionManager,
                         mKeyguardManager,
-                        new FakeSystemClock(),
+                        fakeSystemClock,
+                        new FakeExecutor(fakeSystemClock),
                         volumePanelGlobalStateInteractor,
                         mUserTracker,
                         mJavaAdapter,
