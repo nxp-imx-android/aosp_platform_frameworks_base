@@ -157,6 +157,7 @@ import com.android.wm.shell.recents.RecentsTransitionStateListener
 import com.android.wm.shell.recents.RecentsTransitionStateListener.RecentsTransitionState
 import com.android.wm.shell.recents.RecentsTransitionStateListener.TRANSITION_STATE_NOT_RUNNING
 import com.android.wm.shell.shared.R as SharedR
+import com.android.wm.shell.shared.TransactionPool
 import com.android.wm.shell.shared.TransitionUtil
 import com.android.wm.shell.shared.annotations.ExternalThread
 import com.android.wm.shell.shared.annotations.ShellDesktopThread
@@ -165,7 +166,6 @@ import com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper
 import com.android.wm.shell.shared.desktopmode.DesktopConfig
 import com.android.wm.shell.shared.desktopmode.DesktopFirstListener
 import com.android.wm.shell.shared.desktopmode.DesktopModeTransitionSource
-import com.android.wm.shell.shared.desktopmode.DesktopState
 import com.android.wm.shell.shared.desktopmode.DesktopTaskToFrontReason
 import com.android.wm.shell.shared.split.SplitScreenConstants.SPLIT_INDEX_UNDEFINED
 import com.android.wm.shell.shared.split.SplitScreenConstants.SPLIT_POSITION_BOTTOM_OR_RIGHT
@@ -257,11 +257,12 @@ class DesktopTasksController(
     private val deskSwitchTransitionHandler: DeskSwitchTransitionHandler,
     private val moveToDisplayTransitionHandler: DesktopModeMoveToDisplayTransitionHandler,
     private val homeIntentProvider: HomeIntentProvider,
-    private val desktopState: DesktopState,
+    private val desktopState: ShellDesktopState,
     private val desktopConfig: DesktopConfig,
     private val visualIndicatorUpdateScheduler: VisualIndicatorUpdateScheduler,
     private val desktopFirstListenerManager: Optional<DesktopFirstListenerManager>,
     private val taskSnapshotManager: TaskSnapshotManager,
+    private val transactionPool: TransactionPool,
 ) :
     RemoteCallable<DesktopTasksController>,
     TransitionHandler,
@@ -5977,6 +5978,25 @@ class DesktopTasksController(
             IndicatorType.TO_BUBBLE_RIGHT_INDICATOR -> {
                 // TODO(b/391928049): add support fof dragging desktop apps to a bubble
 
+                if (
+                    DesktopExperienceFlags.ENABLE_WINDOW_DROP_SMOOTH_TRANSITION.isTrue &&
+                        !desktopState.isEligibleWindowDropTarget(displayId)
+                ) {
+                    // The task surface was moved off-screen during the drag operation.
+                    // If the window is dropped on an ineligible display, this resets
+                    // the surface to its original position.
+                    val t = transactionPool.acquire()
+                    t.setPosition(
+                        taskSurface,
+                        dragStartBounds.left.toFloat(),
+                        dragStartBounds.top.toFloat(),
+                    )
+                    t.apply()
+                    transactionPool.release(t)
+                    releaseVisualIndicator()
+                    return true
+                }
+
                 // Create a copy so that we can animate from the current bounds if we end up having
                 // to snap the surface back without a WCT change.
                 val destinationBounds = Rect(currentDragBounds)
@@ -5993,7 +6013,6 @@ class DesktopTasksController(
                     // place, if it didn't and |currentDragBounds| is already at destination then
                     // there's no need to animate.
                     if (destinationBounds != currentDragBounds) {
-                        releaseVisualIndicator()
                         returnToDragStartAnimator.start(
                             taskInfo.taskId,
                             taskSurface,
@@ -6001,6 +6020,7 @@ class DesktopTasksController(
                             endBounds = dragStartBounds,
                         )
                     }
+                    releaseVisualIndicator()
                     return true
                 }
 
@@ -6329,9 +6349,10 @@ class DesktopTasksController(
 
         // We've assumed responsibility of cleaning up the drag surface, so do that now
         // TODO(b/320797628): Do an actual animation here for the drag surface
-        val t = Transaction()
+        val t = transactionPool.acquire()
         t.remove(dragEvent.dragSurface)
         t.apply()
+        transactionPool.release(t)
         return true
     }
 

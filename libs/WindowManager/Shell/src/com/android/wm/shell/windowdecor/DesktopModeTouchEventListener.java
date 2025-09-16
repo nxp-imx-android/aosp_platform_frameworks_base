@@ -652,17 +652,6 @@ public class DesktopModeTouchEventListener
                             ? v.getViewRootImpl().getInputToken() : null;
                     updatePointerIcon(e, dragPointerIdx, inputToken,
                             PointerIcon.TYPE_ARROW);
-                    // If the cursor ends on a non-desktop-mode display, revert the window
-                    // to its initial bounds prior to the drag starting.
-                    if (!mShellDesktopState
-                            .isEligibleWindowDropTarget(e.getDisplayId())) {
-                        newTaskBounds.set(mOnDragStartInitialBounds);
-                        debugLogD(
-                                "handleFreeformMotionEvent(%s) action=%s pointer in non-desktop"
-                                        + " display(%d), reverted to initial bounds=%s",
-                                viewName, MotionEvent.actionToString(e.getAction()),
-                                e.getDisplayId(), newTaskBounds);
-                    }
                 }
 
                 // Tasks bounds haven't actually been updated (only its leash), so pass to

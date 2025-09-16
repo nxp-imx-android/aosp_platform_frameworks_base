@@ -974,11 +974,12 @@ public abstract class WMShellModule {
             DeskSwitchTransitionHandler deskSwitchTransitionHandler,
             DesktopModeMoveToDisplayTransitionHandler moveToDisplayTransitionHandler,
             HomeIntentProvider homeIntentProvider,
-            DesktopState desktopState,
+            ShellDesktopState shellDesktopState,
             DesktopConfig desktopConfig,
             VisualIndicatorUpdateScheduler visualIndicatorUpdateScheduler,
             Optional<DesktopFirstListenerManager> desktopFirstListenerManager,
-            TaskSnapshotManager taskSnapshotManager) {
+            TaskSnapshotManager taskSnapshotManager,
+            TransactionPool transactionPool) {
         return new DesktopTasksController(
                 context,
                 shellInit,
@@ -1024,11 +1025,12 @@ public abstract class WMShellModule {
                 deskSwitchTransitionHandler,
                 moveToDisplayTransitionHandler,
                 homeIntentProvider,
-                desktopState,
+                shellDesktopState,
                 desktopConfig,
                 visualIndicatorUpdateScheduler,
                 desktopFirstListenerManager,
-                taskSnapshotManager);
+                taskSnapshotManager,
+                transactionPool);
     }
 
     @WMSingleton

@@ -1661,7 +1661,7 @@ class DesktopModeWindowDecorViewModelTests : DesktopModeWindowDecorViewModelTest
         Flags.FLAG_ENABLE_BLOCK_NON_DESKTOP_DISPLAY_WINDOW_DRAG_BUGFIX,
         Flags.FLAG_ENABLE_WINDOW_DROP_SMOOTH_TRANSITION,
     )
-    fun testOnFreeformWindowDragMove_toNonDesktopModeDisplay_setsNoDropIconAndKeepsBounds() {
+    fun testOnFreeformWindowDragMove_toNonDesktopModeDisplay_setsNoDropIcon() {
         val onTouchListenerCaptor = argumentCaptor<View.OnTouchListener>()
         val decor =
             createOpenTaskDecoration(
@@ -1766,7 +1766,7 @@ class DesktopModeWindowDecorViewModelTests : DesktopModeWindowDecorViewModelTest
                     any<SurfaceControl>(),
                     eq(SECOND_DISPLAY),
                     eq(PointF(30f, 30f)),
-                    eq(INITIAL_BOUNDS),
+                    eq(BOUNDS_IGNORED_ON_NON_DESKTOP),
                     any<Rect>(),
                     any<Rect>(),
                     any<MotionEvent>(),

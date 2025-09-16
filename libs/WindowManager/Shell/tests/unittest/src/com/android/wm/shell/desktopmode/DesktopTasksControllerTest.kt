@@ -162,6 +162,7 @@ import com.android.wm.shell.recents.RecentsTransitionStateListener
 import com.android.wm.shell.recents.RecentsTransitionStateListener.TRANSITION_STATE_ANIMATING
 import com.android.wm.shell.recents.RecentsTransitionStateListener.TRANSITION_STATE_REQUESTED
 import com.android.wm.shell.shared.R as SharedR
+import com.android.wm.shell.shared.TransactionPool
 import com.android.wm.shell.shared.desktopmode.DesktopModeTransitionSource.ADB_COMMAND
 import com.android.wm.shell.shared.desktopmode.DesktopModeTransitionSource.APP_HANDLE_MENU_BUTTON
 import com.android.wm.shell.shared.desktopmode.DesktopModeTransitionSource.KEYBOARD_SHORTCUT
@@ -304,6 +305,8 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     @Mock private lateinit var visualIndicatorUpdateScheduler: VisualIndicatorUpdateScheduler
     @Mock private lateinit var desktopFirstListenerManager: DesktopFirstListenerManager
     @Mock private lateinit var taskSnapshotManager: TaskSnapshotManager
+    @Mock private lateinit var transactionPool: TransactionPool
+    @Mock private lateinit var surfaceControlTransaction: SurfaceControl.Transaction
 
     private lateinit var controller: DesktopTasksController
     private lateinit var shellInit: ShellInit
@@ -315,6 +318,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     private lateinit var spyContext: TestableContext
     private lateinit var homeIntentProvider: HomeIntentProvider
     private lateinit var desktopState: FakeDesktopState
+    private lateinit var shellDesktopState: FakeShellDesktopState
     private lateinit var desktopConfig: FakeDesktopConfig
 
     private val shellExecutor = TestShellExecutor()
@@ -355,6 +359,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
                 .startMocking()
 
         desktopState = FakeDesktopState()
+        shellDesktopState = FakeShellDesktopState(desktopState)
         desktopConfig = FakeDesktopConfig()
         desktopState.canEnterDesktopMode = true
 
@@ -466,6 +471,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         whenever(freeformTaskTransitionStarter.startPipTransition(any())).thenReturn(Binder())
         whenever(rootTaskDisplayAreaOrganizer.displayIds)
             .thenReturn(intArrayOf(DEFAULT_DISPLAY, SECONDARY_DISPLAY_ID))
+        whenever(transactionPool.acquire()).thenReturn(surfaceControlTransaction)
 
         controller = createController()
         controller.setSplitScreenController(splitScreenController)
@@ -484,6 +490,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         taskRepository = userRepositories.current
         taskRepository.addDesk(displayId = DEFAULT_DISPLAY, deskId = DEFAULT_DISPLAY)
         taskRepository.setActiveDesk(displayId = DEFAULT_DISPLAY, deskId = DEFAULT_DISPLAY)
+        shellDesktopState.canBeWindowDropTarget = true
 
         doReturn(HOME_LAUNCHER_PACKAGE_NAME)
             .whenever(desktopModeCompatPolicy)
@@ -536,11 +543,12 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
             deskSwitchTransitionHandler,
             moveToDisplayTransitionHandler,
             homeIntentProvider,
-            desktopState,
+            shellDesktopState,
             desktopConfig,
             visualIndicatorUpdateScheduler,
             Optional.of(desktopFirstListenerManager),
             taskSnapshotManager,
+            transactionPool,
         )
 
     @After
@@ -9367,6 +9375,39 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
             .logTaskResizingStarted(any(), any(), any(), any(), any(), any(), any())
         verify(desktopModeEventLogger, never())
             .logTaskResizingEnded(any(), any(), any(), any(), any(), any(), any())
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_WINDOW_DROP_SMOOTH_TRANSITION)
+    fun onDesktopDragEnd_noIndicator_dropOnInEligibleDisplay_updateSurfacePosition_noWct() {
+        val task = setUpFreeformTask(bounds = STABLE_BOUNDS)
+        val spyController = spy(controller)
+        val mockSurface = mock(SurfaceControl::class.java)
+        whenever(spyController.getVisualIndicator()).thenReturn(desktopModeVisualIndicator)
+        whenever(desktopModeVisualIndicator.updateIndicatorType(any(), anyOrNull()))
+            .thenReturn(DesktopModeVisualIndicator.IndicatorType.NO_INDICATOR)
+        whenever(motionEvent.displayId).thenReturn(DEFAULT_DISPLAY)
+        shellDesktopState.canBeWindowDropTarget = false
+
+        val startBounds = Rect(0, 50, 500, 550)
+        val currentDragBounds = Rect(100, 100, 600, 600)
+
+        spyController.onDragPositioningEnd(
+            taskInfo = task,
+            taskSurface = mockSurface,
+            displayId = DEFAULT_DISPLAY,
+            inputCoordinate = PointF(250f, 300f),
+            currentDragBounds = currentDragBounds,
+            validDragArea = Rect(0, 0, 2000, 2000),
+            dragStartBounds = startBounds,
+            motionEvent = motionEvent,
+        )
+
+        // Verify task surface is moved back to start position.
+        verify(surfaceControlTransaction)
+            .setPosition(mockSurface, startBounds.left.toFloat(), startBounds.top.toFloat())
+        // Verify no WCT is started.
+        verify(transitions, never()).startTransition(any(), any(), any())
     }
 
     @Test
