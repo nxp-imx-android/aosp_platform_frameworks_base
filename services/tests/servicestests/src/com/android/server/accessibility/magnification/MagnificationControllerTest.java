@@ -2473,11 +2473,12 @@ public class MagnificationControllerTest {
     }
 
     @Test
-    public void zoomInFullScreenMagnification_setsPersistedScale() throws RemoteException {
+    public void zoomInMagnification_setsPersistedScale() {
         final float persistedScale = mScreenMagnificationController.getPersistedScale(TEST_DISPLAY);
 
-        // Perform the zoom-in action
-        mMagnificationController.zoomInFullScreenMagnification(TEST_DISPLAY);
+        // Perform the zoom-in action with full screen mode.
+        mMagnificationController.zoomInMagnification(
+                TEST_DISPLAY, Settings.Secure.ACCESSIBILITY_MAGNIFICATION_MODE_FULLSCREEN);
 
         // Verify that the scale is set to the persisted value
         verify(mScreenMagnificationController)
@@ -2488,6 +2489,18 @@ public class MagnificationControllerTest {
                         eq(Float.NaN),
                         /* animate= */ eq(true),
                         eq(AccessibilityManagerService.MAGNIFICATION_GESTURE_HANDLER_ID));
+    }
+
+    @Test
+    public void zoomInMagnification_windowMode_doNothing() {
+        // Perform the zoom-in action with window mode.
+        mMagnificationController.zoomInMagnification(
+                TEST_DISPLAY, ACCESSIBILITY_MAGNIFICATION_MODE_WINDOW);
+
+        verify(mScreenMagnificationController, never())
+                .setScaleAndCenter(
+                        anyInt(), anyFloat(), anyFloat(), anyFloat(), anyBoolean(), anyInt());
+        verify(mMagnificationConnectionManager, never()).setScale(anyInt(), anyFloat());
     }
 
     private void setMagnificationEnabled(int mode) throws RemoteException {

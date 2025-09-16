@@ -2003,28 +2003,9 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
                                 return;
                             }
 
-                            // TODO: b/425722546 - wrap the following block into
-                            // MagnificationController::zoomInFullScreenMagnification.
-                            synchronized (mLock) {
-                                // If the user already activate Magnification for any mode, we don't
-                                // need to turn on Magnification and zoom in, which will change the
-                                // user's current magnification settings.
-                                if (getMagnificationController()
-                                        .isAnyMagnificationActivated(displayId)) {
-                                    return;
-                                }
-
-                                final AccessibilityUserState userState =
-                                        getCurrentUserStateLocked();
-                                if (userState.getMagnificationModeLocked(displayId)
-                                        == Settings.Secure
-                                                .ACCESSIBILITY_MAGNIFICATION_MODE_FULLSCREEN) {
-                                    // TODO: b/432526188 - Verify that the confirmation dialog is
-                                    // follow keyboard focus after this setting enabled by default.
-                                    getMagnificationController()
-                                            .zoomInFullScreenMagnification(displayId);
-                                }
-                            }
+                            getMagnificationController()
+                                    .zoomInMagnification(
+                                            displayId, getMagnificationMode(displayId));
                         });
     }
 
