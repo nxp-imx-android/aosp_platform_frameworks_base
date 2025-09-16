@@ -7997,13 +7997,7 @@ public class WindowManagerService extends IWindowManager.Stub
                         + "for a display that does not exist: %d", displayId);
                 return false;
             }
-            if (!displayContent.isSystemDecorationsSupported()) {
-                return false;
-            }
-            if (!displayContent.isWindowingModeSupported(WINDOWING_MODE_FREEFORM)) {
-                return false;
-            }
-            return displayContent.isDefaultDisplay || displayContent.allowContentModeSwitch();
+            return displayContent.isEligibleForDesktopMode();
         }
     }
 
