@@ -6485,6 +6485,17 @@ final class ActivityRecord extends WindowToken {
             mTaskSupervisor.mStoppingActivities.add(this);
         }
 
+        if (com.android.window.flags.Flags.reduceUnnecessaryScheduleIdleMsg()) {
+            // Schedule idle to process the stopping activities if there won't be further events to
+            // handle them.
+            if (scheduleIdle && (isSleeping() || (!mTransitionController.inTransition()
+                    && !mTransitionController.inFinishingTransition(this)))) {
+                ProtoLog.v(WM_DEBUG_STATES, "Scheduling idle now");
+                mTaskSupervisor.scheduleIdle();
+            }
+            return;
+        }
+
         final Task rootTask = getRootTask();
         // If we already have a few activities waiting to stop, then give up on things going idle
         // and start clearing them out. Or if r is the last of activity of the last task the root
