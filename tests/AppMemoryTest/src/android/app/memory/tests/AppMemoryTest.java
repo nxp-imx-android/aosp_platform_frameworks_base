@@ -54,18 +54,15 @@ public class AppMemoryTest {
     // The application that boots and then generates its own heap dump.
     private static final String HELPER = "android.app.memory.testhelper";
 
+    private static final String STACK_DEPTH_PROP = "debug.allocTracker.stackDepth";
+
     private static String runShellCommandWithResult(String cmd) {
         ParcelFileDescriptor pfd = InstrumentationRegistry.getInstrumentation().getUiAutomation()
                 .executeShellCommand(cmd);
         try (var result = new ParcelFileDescriptor.AutoCloseInputStream(pfd)) {
-            byte[] response = new byte[100];
-            int len = result.read(response);
-            if (len <= 0) {
-                return "";
-            }
-            return new String(response, 0, len);
+            return new String(result.readAllBytes(), "UTF-8");
         } catch (IOException e) {
-            // Ignore the exception.
+            Log.e(TAG, "Error running command: '" + cmd + "'", e);
         }
         return null;
     }
@@ -87,7 +84,7 @@ public class AppMemoryTest {
 
     @Before
     public void setUp() {
-        runShellCommandWithResult("setprop debug.allocTracker.stackDepth 64");
+        runShellCommandWithResult("setprop " + STACK_DEPTH_PROP + " 64");
         final String apk = mRootPath + HELPER_APK;
         File apkFile = new File(apk);
         assertTrue("apk not found", apkFile.exists());
@@ -99,7 +96,9 @@ public class AppMemoryTest {
 
     @After
     public void tearDown() {
-        runShellCommandWithResult("setprop debug.allocTracker.stackDepth 16");
+        // TODO: b/445722486 - runShellCommand doesn't work with empty string
+        // Set to 0 for now, but ideally want a true reset
+        runShellCommandWithResult("setprop " + STACK_DEPTH_PROP + " 0");
         runShellCommandWithResult("am force-stop " + HELPER);
         uninstallHelper();
     }
@@ -150,13 +149,8 @@ public class AppMemoryTest {
                      + String.format("-n %s/.EmptyActivity ", HELPER);
 
         Log.i(TAG, "starting helper activity");
-        Log.i(TAG, cmd);
-        runShellCommandWithResult(cmd);
-
-        // without this sleep, pidof errors out, meaning maybe when we wait with -W
-        // perhaps when the first frame is drawn the pid is still not assigned?
-        // also serves as a soak delay
-        Thread.sleep(15 * 1000);
+        String r = runShellCommandWithResult(cmd);
+        Log.i(TAG, "started activity with result: " + r);
 
         // get PID of the helper app
         String pid = runShellCommandWithResult("pidof " + HELPER).trim();
@@ -168,20 +162,17 @@ public class AppMemoryTest {
         // trigger the heap dump
         cmd = String.format("am dumpheap -b png %s %s", pid, profilePath);
         Log.i(TAG, "Executing heap dump command: " + cmd);
-        runShellCommandWithResult(cmd);
+        r = runShellCommandWithResult(cmd);
+        Log.i(TAG, "heap dump command executed with result:  " + r);
 
         // make file readable
-        runShellCommandWithResult("chmod 666 " + profilePath);
+        r = runShellCommandWithResult("chmod 666 " + profilePath);
+        Log.i(TAG, "chmod command executed with result:  " + r);
 
         // verify dump exists and readable
         assertTrue("Heap profile does not exist: " + profilePath, profileFile.exists());
         assertTrue("Heap profile is not readable: " + profilePath, profileFile.canRead());
         Log.i(TAG, "Heap dump successfully created at: " + profilePath);
-
-        // without this sleep, am dumpheap creates a file but it is still writing to it.
-        // if Profile() reads it too early, then readVersion() triggers an overflow error.
-        Thread.sleep(15 * 1000);
-
 
         // Extract metrics and report them
         Profile p = new Profile(profileFile);
