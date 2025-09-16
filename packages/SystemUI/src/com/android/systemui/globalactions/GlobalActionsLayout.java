@@ -16,13 +16,18 @@
 
 package com.android.systemui.globalactions;
 
+import static com.android.systemui.Flags.blurOnMoreSurfaces;
+
 import android.content.Context;
+import android.graphics.drawable.Drawable;
 import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.view.View;
 import android.view.ViewGroup;
 
 import com.android.internal.annotations.VisibleForTesting;
+import com.android.internal.graphics.drawable.BackgroundBlurDrawable;
+import com.android.settingslib.Utils;
 import com.android.systemui.HardwareBgDrawable;
 import com.android.systemui.MultiListLayout;
 import com.android.systemui.res.R;
@@ -43,9 +48,22 @@ public abstract class GlobalActionsLayout extends MultiListLayout {
 
     private void setBackgrounds() {
         ViewGroup listView = getListView();
-        int listBgColor = getResources().getColor(
-                R.color.global_actions_grid_background, null);
-        HardwareBgDrawable listBackground = getBackgroundDrawable(listBgColor);
+
+        Drawable listBackground;
+        if (blurOnMoreSurfaces()) {
+            BackgroundBlurDrawable blurDrawable =
+                    listView.getViewRootImpl().createBackgroundBlurDrawable();
+            int dialogCornerRadius = getResources().getDimensionPixelSize(
+                    Utils.getThemeAttr(getContext(),
+                            android.R.attr.dialogCornerRadius));
+            blurDrawable.setCornerRadius(dialogCornerRadius);
+            listBackground = blurDrawable;
+        } else {
+            int listBgColor = getResources().getColor(
+                    R.color.global_actions_grid_background, null);
+            listBackground = getBackgroundDrawable(listBgColor);
+        }
+
         if (listBackground != null) {
             listView.setBackground(listBackground);
         }
