@@ -118,7 +118,15 @@ final class EnforcingAdmin {
 
     static EnforcingAdmin createSystemEnforcingAdmin(@NonNull String systemEntity) {
         Objects.requireNonNull(systemEntity);
-        return new EnforcingAdmin(systemEntity);
+
+        return new EnforcingAdmin(
+                "", /* packageName */
+                systemEntity,
+                null, /* componentName */
+                UserHandle.USER_SYSTEM,
+                false, /* isRoleAuthority */
+                getSystemAuthority(systemEntity)
+        );
     }
 
     static EnforcingAdmin createEnforcingAdmin(android.app.admin.EnforcingAdmin admin) {
@@ -143,8 +151,14 @@ final class EnforcingAdmin {
         if (Flags.tightenAdminInstantiation()) {
             throw new IllegalArgumentException("Unknown admin type: " + admin);
         } else {
-            return new EnforcingAdmin(admin.getPackageName(), admin.getComponentName(),
-                    Set.of(), admin.getUserHandle().getIdentifier());
+            return new EnforcingAdmin(
+                    admin.getPackageName(),
+                    null, /* systemEntity */
+                    admin.getComponentName(),
+                    userId,
+                    false, /* isRoleAuthority */
+                    Set.of() /* authorities */
+            );
         }
     }
 
@@ -182,19 +196,6 @@ final class EnforcingAdmin {
                 userId,
                 true, /* isRoleAuthority */
                 null /* authorities */
-        );
-    }
-
-    /** Constructor for System authorities. */
-    private EnforcingAdmin(@NonNull String systemEntity) {
-        // Only system authorities use this constructor.
-        this(
-                "", /* packageName */
-                Objects.requireNonNull(systemEntity),
-                null, /* componentName */
-                UserHandle.USER_SYSTEM,
-                false, /* isRoleAuthority */
-                getSystemAuthority(systemEntity)
         );
     }
 
