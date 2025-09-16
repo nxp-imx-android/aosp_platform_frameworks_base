@@ -623,9 +623,16 @@ public class PermissionUsageHelper implements AppOpsManager.OnOpActiveChangedLis
                         // But if the location indicator is already visible (e.g. an app
                         // transitioned from foreground to background), we should not filter it out
                         // if it's within the holding period.
+                        long lastFgAccess = attrOpEntry.getLastAccessForegroundTime(opFlags);
+                        boolean isBackgroundAndNotRecentlyForeground =
+                                isBackgroundApp(uid)
+                                        && lastFgAccess < currentRunningThreshold
+                                        && !attrOpEntry.isRunning();
                         if (isSystemApp(op, packageName, user, uid)
-                                || (isBackgroundApp(uid) && !isRunning)) {
-                            // Remove the system & background apps for location op
+                                || isBackgroundAndNotRecentlyForeground) {
+                            // Remove system apps and apps that only used location in the
+                            // background. Apps that recently used location in the foreground
+                            // are kept for the holding period.
                             continue;
                         }
                     }
