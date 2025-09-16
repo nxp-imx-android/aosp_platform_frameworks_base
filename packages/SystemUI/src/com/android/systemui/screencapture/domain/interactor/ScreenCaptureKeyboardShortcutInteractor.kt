@@ -16,7 +16,9 @@
 
 package com.android.systemui.screencapture.domain.interactor
 
+import com.android.internal.logging.UiEventLogger
 import com.android.systemui.dagger.SysUISingleton
+import com.android.systemui.screencapture.ScreenCaptureEvent
 import com.android.systemui.screencapture.common.shared.model.LargeScreenCaptureUiParameters
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureType
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureUiParameters
@@ -29,12 +31,18 @@ import javax.inject.Inject
 @SysUISingleton
 class ScreenCaptureKeyboardShortcutInteractor
 @Inject
-constructor(private val screenCaptureUiInteractor: ScreenCaptureUiInteractor) {
+constructor(
+    private val screenCaptureUiInteractor: ScreenCaptureUiInteractor,
+    private val uiEventLogger: UiEventLogger,
+) {
     fun attemptPartialRegionScreenshot() {
         // TODO(b/420714826) Check if the large-screen screen capture UI is supported on this device
         // device's display (i.e. the focused display or external display). If not supported,
         // default to taking a fullscreen screenshot.
         if (ScreenCaptureRecordFeaturesInteractor.isLargeScreenScreencaptureEnabled) {
+            uiEventLogger.log(
+                ScreenCaptureEvent.SCREEN_CAPTURE_LARGE_SCREEN_PARTIAL_SCREENSHOT_KEYBOARD_SHORTCUT
+            )
             screenCaptureUiInteractor.show(
                 ScreenCaptureUiParameters(
                     screenCaptureType = ScreenCaptureType.RECORD,

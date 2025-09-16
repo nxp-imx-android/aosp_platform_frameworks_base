@@ -13,16 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.android.systemui.screencapture.domain.interactor
 
 import android.platform.test.annotations.EnableFlags
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
+import com.android.internal.logging.uiEventLoggerFake
 import com.android.systemui.Flags
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.kosmos.collectLastValue
 import com.android.systemui.kosmos.runTest
+import com.android.systemui.screencapture.ScreenCaptureEvent
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureType
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureUiState
 import com.android.systemui.screencapture.record.largescreen.shared.model.ScreenCaptureRegion
@@ -68,5 +69,16 @@ class ScreenCaptureKeyboardShortcutInteractorTest : SysuiTestCase() {
                 .isEqualTo(LargeScreenCaptureType.SCREENSHOT)
             assertThat(largeScreenParams?.defaultCaptureRegion)
                 .isEqualTo(ScreenCaptureRegion.PARTIAL)
+        }
+
+    @Test
+    fun attemptPartialRegionScreenshot_logsEvent() =
+        kosmos.runTest {
+            underTest.attemptPartialRegionScreenshot()
+
+            assertThat(uiEventLoggerFake.numLogs()).isEqualTo(1)
+            val event =
+                ScreenCaptureEvent.SCREEN_CAPTURE_LARGE_SCREEN_PARTIAL_SCREENSHOT_KEYBOARD_SHORTCUT
+            assertThat(uiEventLoggerFake.eventId(0)).isEqualTo(event.id)
         }
 }
