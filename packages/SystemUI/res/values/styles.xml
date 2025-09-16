@@ -727,7 +727,7 @@
     </style>
 
     <style name="Theme.SystemUI.Dialog.Media" parent="Theme.SystemUI.Dialog">
-        <item name="android:colorBackground">@color/media_dialog_background</item>
+        <item name="android:colorBackground">@color/media_dialog_surface_container</item>
     </style>
 
     <style name="MediaOutput" />
