@@ -65,6 +65,9 @@ public class DevicePolicyCacheImpl extends DevicePolicyCache {
     /** Maps to {@code ActiveAdmin.mAdminCanGrantSensorsPermissions}. */
     private volatile boolean mCanGrantSensorsPermissions = false;
 
+    /** Maps to {@code Owners.mDeviceManaged}. */
+    private volatile boolean mIsDeviceManaged = false;
+
     @GuardedBy("mLock")
     private final SparseIntArray mContentProtectionPolicy = new SparseIntArray();
 
@@ -151,6 +154,16 @@ public class DevicePolicyCacheImpl extends DevicePolicyCache {
     /** Sets admin control over permission grants. */
     public void setAdminCanGrantSensorsPermissions(boolean canGrant) {
         mCanGrantSensorsPermissions = canGrant;
+    }
+
+    @Override
+    public boolean isDeviceManaged() {
+        return mIsDeviceManaged;
+    }
+
+    /** Sets whether the device is managed. */
+    public void setDeviceManaged(boolean isDeviceManaged) {
+        mIsDeviceManaged = isDeviceManaged;
     }
 
     @Override
