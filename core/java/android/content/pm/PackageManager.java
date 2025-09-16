@@ -8139,7 +8139,10 @@ public abstract class PackageManager {
     }
 
 
-    /** @deprecated @hide */
+    /**
+     * @deprecated
+     * @hide
+     */
     @NonNull
     @Deprecated
     @UnsupportedAppUsage

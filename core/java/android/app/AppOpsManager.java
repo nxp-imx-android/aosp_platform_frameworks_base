@@ -1944,7 +1944,10 @@ public class AppOpsManager {
     /** Access to {@link android.app.usage.UsageStatsManager}. */
     public static final String OPSTR_GET_USAGE_STATS
             = "android:get_usage_stats";
-    /** Activate a VPN connection without user intervention. @hide */
+    /**
+     * Activate a VPN connection without user intervention.
+     * @hide
+     */
     @SystemApi
     public static final String OPSTR_ACTIVATE_VPN
             = "android:activate_vpn";

@@ -66,7 +66,10 @@ import java.util.List;
 @RestrictedForEnvironment(
         environments = ENVIRONMENT_SDK_RUNTIME, from = Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
 public class VpnManager {
-    /** Type representing a lack of VPN @hide */
+    /**
+     * Type representing a lack of VPN
+     * @hide
+     */
     @SystemApi(client = MODULE_LIBRARIES)
     public static final int TYPE_VPN_NONE = -1;
 
