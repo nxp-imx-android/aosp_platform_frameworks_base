@@ -156,12 +156,7 @@ object SplitScreenUtils {
             // second task to split.
             val home = tapl.workspace.switchToOverview()
             ChangeDisplayOrientationRule.setRotation(rotation)
-            val isGridOnlyOverviewEnabled = tapl.isGridOnlyOverviewEnabled
-            if (isGridOnlyOverviewEnabled) {
-                home.currentTask.tapMenu().tapSplitMenuItem()
-            } else {
-                home.overviewActions.clickSplit()
-            }
+            home.currentTask.tapMenu().tapSplitMenuItem()
             val snapshots = device.wait(Until.findObjects(overviewSnapshotSelector), TIMEOUT_MS)
             if (snapshots == null || snapshots.size < 1) {
                 error("Fail to find a overview snapshot to split.")
@@ -174,11 +169,7 @@ object SplitScreenUtils {
                 t2.getVisibleBounds().left - t1.getVisibleBounds().left
             }
             snapshots.sortWith { t1: UiObject2, t2: UiObject2 ->
-                if (isGridOnlyOverviewEnabled) {
-                    t2.getVisibleBounds().top - t1.getVisibleBounds().top
-                } else {
-                    t1.getVisibleBounds().top - t2.getVisibleBounds().top
-                }
+                t2.getVisibleBounds().top - t1.getVisibleBounds().top
             }
             snapshots[0].click()
         } else {
