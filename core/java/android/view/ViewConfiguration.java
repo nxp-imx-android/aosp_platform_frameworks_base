@@ -608,9 +608,7 @@ public class ViewConfiguration {
         mViewBasedRotaryEncoderScrollHapticsEnabledConfig =
                 res.getBoolean(R.bool.config_viewBasedRotaryEncoderHapticsEnabled);
         mViewTouchScreenHapticScrollFeedbackEnabled =
-                Flags.enableScrollFeedbackForTouch()
-                        ? res.getBoolean(R.bool.config_viewTouchScreenHapticScrollFeedbackEnabled)
-                        : false;
+                res.getBoolean(R.bool.config_viewTouchScreenHapticScrollFeedbackEnabled);
 
         mTapTimeoutMillis = res.getInteger(R.integer.config_tapTimeoutMillis);
         mDoubleTapTimeoutMillis = res.getInteger(R.integer.config_doubleTapTimeoutMillis);
