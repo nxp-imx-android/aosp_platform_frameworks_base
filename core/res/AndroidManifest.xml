@@ -9373,6 +9373,31 @@
         android:protectionLevel="signature|role"
         android:featureFlag="com.android.window.flags.enable_window_repositioning_api" />
 
+    <!-- Allows an application to use
+     {@link android.app.ActivityManager.AppTask#WINDOWING_LAYER_PINNED} for its Tasks,
+     typically requested via {@link android.app.ActivityManager.AppTask#requestWindowingLayer}.
+     <p> Granting this permission allows an app to request its task be placed above normal
+     application windows.
+     <p> To ensure system integrity and a consistent user experience, the system imposes several
+     restrictions on tasks using this layer. These may include, but are not limited to:
+     <ul>
+         <li>Forcing the task to be completely opaque and display system decorations.</li>
+         <li>Strictly limiting the number of tasks in this layer (e.g., only one at a time).</li>
+         <li>Limiting the application's control over the task's initial size and position.</li>
+         <li>Making the task non-movable programmatically (including restrictions on workarounds
+            like resizing).</li>
+         <li>Providing users with immediate settings access to disable the feature.</li>
+     </ul>
+     <p> See the API documentation for
+     {@link android.app.ActivityManager.AppTask#requestWindowingLayer} for the full documentation.
+     <p>Protection level: normal
+     @FlaggedApi(com.android.window.flags.Flags.FLAG_ENABLE_INTERACTIVE_PICTURE_IN_PICTURE)
+    -->
+    <permission
+        android:name="android.permission.USE_PINNED_WINDOWING_LAYER"
+        android:protectionLevel="normal"
+        android:featureFlag="com.android.window.flags.enable_interactive_picture_in_picture" />
+
     <!-- @SystemApi
         @FlaggedApi(android.content.pm.Flags.FLAG_VERIFICATION_SERVICE)
         Allows app to be the developer verification agent to verify packages.
