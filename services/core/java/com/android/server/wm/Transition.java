@@ -2081,7 +2081,7 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
         buildFinishTransaction(mFinishTransaction, info, participantDisplays);
         mCleanupTransaction = mWmService.mTransactionFactory.get();
         buildCleanupTransaction(mCleanupTransaction, info);
-        if (mController.getTransitionPlayer() != null && mIsPlayerEnabled) {
+        if (!mController.isFlushing() && mIsPlayerEnabled) {
             mController.dispatchLegacyAppTransitionStarting(participantDisplays,
                     mStatusBarTransitionDelay);
             try {
@@ -2109,12 +2109,10 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
             }
         } else {
             // No player registered or it's not enabled, so just finish/apply immediately
-            if (!mIsPlayerEnabled) {
-                mLogger.mSendTimeNs = SystemClock.elapsedRealtimeNanos();
-                ProtoLog.v(WmProtoLogGroups.WM_DEBUG_WINDOW_TRANSITIONS,
-                        "Apply and finish immediately because player is disabled "
-                                + "for transition #%d .", mSyncId);
-            }
+            mLogger.mSendTimeNs = SystemClock.elapsedRealtimeNanos();
+            ProtoLog.v(WmProtoLogGroups.WM_DEBUG_WINDOW_TRANSITIONS,
+                    "Apply and finish immediately because player is disabled "
+                            + "for transition #%d .", mSyncId);
             postCleanupOnFailure();
         }
         mOverrideOptions = null;

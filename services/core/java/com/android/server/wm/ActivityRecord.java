@@ -4629,7 +4629,7 @@ final class ActivityRecord extends WindowToken {
                     // the token we transfer the animation over. Thus, set this flag to indicate
                     // we've transferred the animation.
                     mTransitionChangeFlags |= FLAG_STARTING_WINDOW_TRANSFER_RECIPIENT;
-                } else if (mTransitionController.getTransitionPlayer() != null) {
+                } else if (!mTransitionController.isFlushing()) {
                     // In the new transit system, just set this every time we transfer the window
                     mTransitionChangeFlags |= FLAG_STARTING_WINDOW_TRANSFER_RECIPIENT;
                 }

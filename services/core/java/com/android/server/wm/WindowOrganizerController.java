@@ -340,7 +340,7 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
         try {
             synchronized (mGlobalLock) {
                 Transition transition = Transition.fromBinder(transitionToken);
-                if (mTransitionController.getTransitionPlayer() == null && transition == null) {
+                if (mTransitionController.isFlushing() && transition == null) {
                     Slog.w(TAG, "Using shell transitions API for legacy transitions.");
                     if (t == null) {
                         throw new IllegalArgumentException("Can't use legacy transitions in"

@@ -277,7 +277,7 @@ class TransitionController {
         mSyncEngine.addOnIdleListener(this::tryStartCollectFromQueue);
     }
 
-    private boolean isFlushing() {
+    boolean isFlushing() {
         return mTransitionPlayers.isEmpty();
     }
 
@@ -879,7 +879,7 @@ class TransitionController {
                     transition.getToken(), null));
             return transition;
         }
-        if (mTransitionPlayers.isEmpty() || transition.isAborted()) {
+        if (isFlushing() || transition.isAborted()) {
             // Either flushing or already flushed, so abort here.
             if (transition.isCollecting()) {
                 transition.abort();
@@ -919,8 +919,7 @@ class TransitionController {
 
             transition.mLogger.mRequestTimeNs = SystemClock.elapsedRealtimeNanos();
             transition.mLogger.mRequest = request;
-            getTransitionPlayer().requestStartTransition(
-                    transition.getToken(), request);
+            getTransitionPlayer().requestStartTransition(transition.getToken(), request);
             if (remoteTransition != null) {
                 transition.setRemoteAnimationApp(remoteTransition.getAppThread());
             }
