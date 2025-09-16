@@ -235,6 +235,10 @@ constructor(
                             override fun onAnimationEnd(animation: Animator) {
                                 veilAnimT.setAlpha(background, 1f).apply()
                             }
+
+                            override fun onAnimationCancel(animation: Animator) {
+                                onAnimationEnd(animation)
+                            }
                         }
                     )
                 }
@@ -251,6 +255,10 @@ constructor(
 
                             override fun onAnimationEnd(animation: Animator) {
                                 iconAnimT.setAlpha(icon, 1f).apply()
+                            }
+
+                            override fun onAnimationCancel(animation: Animator) {
+                                onAnimationEnd(animation)
                             }
                         }
                     )
@@ -284,6 +292,7 @@ constructor(
             t.reparent(veil, parent)
             parentSurface = parent
         }
+        cancelAnimation()
         val backgroundColor =
             when (decorThemeUtil.getAppTheme(taskInfo)) {
                 Theme.LIGHT -> lightColors.surfaceContainer
@@ -390,6 +399,10 @@ constructor(
                         override fun onAnimationEnd(animation: Animator) {
                             surfaceControlTransactionSupplier.get().hide(background).apply()
                         }
+
+                        override fun onAnimationCancel(animation: Animator) {
+                            onAnimationEnd(animation)
+                        }
                     }
                 )
             }
@@ -406,6 +419,10 @@ constructor(
                     object : AnimatorListenerAdapter() {
                         override fun onAnimationEnd(animation: Animator) {
                             surfaceControlTransactionSupplier.get().hide(icon).apply()
+                        }
+
+                        override fun onAnimationCancel(animation: Animator) {
+                            onAnimationEnd(animation)
                         }
                     }
                 )
