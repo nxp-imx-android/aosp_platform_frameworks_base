@@ -7,8 +7,6 @@ import android.os.AsyncTask;
 import android.os.Process;
 import android.util.Log;
 
-import com.android.internal.widget.LockPatternUtils.RequestThrottledException;
-
 /**
  * Helper class to check/verify PIN/Password/Pattern asynchronously.
  */
@@ -31,10 +29,24 @@ public final class LockPatternChecker {
         /**
          * Invoked when a security check is finished.
          *
+         * <p>Calls {@link #onChecked(boolean, int)} by default with the match and timeout from the
+         * response. If overridden, {@link #onChecked(boolean, int)} will not be called.
+         *
+         * @param response Used to determine if the credential is matching and timeout if not.
+         */
+        default void onChecked(VerifyCredentialResponse response) {
+            onChecked(response.isMatched(), response.getTimeout());
+        }
+
+        /**
+         * Invoked when a security check is finished.
+         *
          * @param matched Whether the PIN/Password/Pattern matches the stored one.
          * @param throttleTimeoutMs The amount of time in ms to wait before reattempting
          * the call. Only non-0 if matched is false.
+         * @deprecated Use {@link #onChecked(VerifyCredentialResponse)} instead.
          */
+        @Deprecated
         void onChecked(boolean matched, int throttleTimeoutMs);
 
         /**
@@ -109,11 +121,9 @@ public final class LockPatternChecker {
             final OnCheckCallback callback) {
         // Create a copy of the credential since checking credential is asynchrounous.
         final LockscreenCredential credentialCopy = credential.duplicate();
-        AsyncTask<Void, Void, Boolean> task = new AsyncTask<Void, Void, Boolean>() {
-            private int mThrottleTimeout;
-
+        AsyncTask<Void, Void, VerifyCredentialResponse> task = new AsyncTask<>() {
             @Override
-            protected Boolean doInBackground(Void... args) {
+            protected VerifyCredentialResponse doInBackground(Void... args) {
                 int originalPriority = INVALID_PRIORITY;
                 try {
                     if (runCheckCredentialWithHigherPriority()) {
@@ -126,14 +136,12 @@ public final class LockPatternChecker {
                                             + "priority display", e);
                         }
                     }
-                    return utils.checkCredential(credentialCopy, userId, callback::onEarlyMatched);
-                } catch (RequestThrottledException ex) {
-                    mThrottleTimeout = ex.getTimeoutMs();
-                    return false;
+                    return utils.checkCredentialWithResponse(credentialCopy, userId,
+                            callback::onEarlyMatched);
                 } finally {
                     if (runCheckCredentialWithHigherPriority()
                         && originalPriority != INVALID_PRIORITY) {
-                      try {
+                        try {
                             Process.setThreadPriority(originalPriority);
                         } catch (SecurityException e) {
                             Log.e(TAG,
@@ -145,8 +153,8 @@ public final class LockPatternChecker {
             }
 
             @Override
-            protected void onPostExecute(Boolean result) {
-                callback.onChecked(result, mThrottleTimeout);
+            protected void onPostExecute(VerifyCredentialResponse result) {
+                callback.onChecked(result);
                 credentialCopy.zeroize();
             }
 
