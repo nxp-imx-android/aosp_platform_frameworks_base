@@ -77,6 +77,10 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -219,6 +223,10 @@ public class CachedBluetoothDevice implements Comparable<CachedBluetoothDevice> 
                     dispatchAttributesChanged();
                 }
             };
+
+    private final ScheduledExecutorService mBluetoothFailureTimerScheduler =
+            Executors.newSingleThreadScheduledExecutor();
+    private ScheduledFuture<?> mBluetoothFailureFuture = null;
 
     CachedBluetoothDevice(Context context, LocalBluetoothProfileManager profileManager,
             BluetoothDevice device) {
@@ -369,10 +377,19 @@ public class CachedBluetoothDevice implements Comparable<CachedBluetoothDevice> 
         if (Flags.enableBluetoothDiagnosis() && !isBusy()) {
             if (isProfileConnectedFail()) {
                 mConnectionFailureTimeMillis = SystemClock.elapsedRealtime();
+                Log.d(TAG, "Detect connection failure at " + mConnectionFailureTimeMillis);
                 dispatchAttributesChanged();
+                cancelFailureScheduledFutureIfNeeded();
+                mBluetoothFailureFuture =
+                        mBluetoothFailureTimerScheduler.schedule(
+                                this::dispatchAttributesChanged,
+                                BluetoothUtils.CAN_NOT_CONNECT_TIME_OUT_MILLS,
+                                TimeUnit.MILLISECONDS);
             } else if (mConnectionFailureTimeMillis > -1) {
+                Log.d(TAG, "Connection failure timestamp cleared");
                 mConnectionFailureTimeMillis = -1;
                 dispatchAttributesChanged();
+                cancelFailureScheduledFutureIfNeeded();
             }
         }
 
@@ -402,6 +419,12 @@ public class CachedBluetoothDevice implements Comparable<CachedBluetoothDevice> 
                         ? BluetoothDevice.TRANSPORT_LE
                         : BluetoothDevice.TRANSPORT_BREDR)) {
             Log.w(TAG, "Fail to set preferred transport");
+        }
+    }
+
+    private void cancelFailureScheduledFutureIfNeeded() {
+        if (mBluetoothFailureFuture != null) {
+            mBluetoothFailureFuture.cancel(/* mayInterruptIfRunning= */ false);
         }
     }
 
@@ -1131,6 +1154,13 @@ public class CachedBluetoothDevice implements Comparable<CachedBluetoothDevice> 
             if (Flags.enableBluetoothDiagnosis()) {
                 if (prevBondState == BluetoothDevice.BOND_BONDING) {
                     mBondFailureTimeMillis = SystemClock.elapsedRealtime();
+                    Log.d(TAG, "Detect bonding failure at " + mBondFailureTimeMillis);
+                    cancelFailureScheduledFutureIfNeeded();
+                    mBluetoothFailureFuture =
+                            mBluetoothFailureTimerScheduler.schedule(
+                                    this::refresh,
+                                    BluetoothUtils.CAN_NOT_PAIR_TIME_OUT_MILLS,
+                                    TimeUnit.MILLISECONDS);
                 }
             }
         }
@@ -1152,6 +1182,8 @@ public class CachedBluetoothDevice implements Comparable<CachedBluetoothDevice> 
 
             if (Flags.enableBluetoothDiagnosis()) {
                 mBondFailureTimeMillis = -1;
+                Log.d(TAG, "Bond success");
+                cancelFailureScheduledFutureIfNeeded();
             }
         }
 
