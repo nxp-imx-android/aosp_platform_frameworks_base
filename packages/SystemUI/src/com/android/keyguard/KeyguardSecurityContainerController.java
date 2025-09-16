@@ -252,9 +252,10 @@ public class KeyguardSecurityContainerController extends ViewController<Keyguard
         }
 
         @Override
-        public void reportUnlockAttempt(int userId, boolean success, int timeoutMs) {
+        public void reportUnlockAttempt(int userId, boolean success, int timeoutMs,
+                boolean isDuplicate) {
             if (timeoutMs == 0 && !success) {
-                mBouncerMessageInteractor.onPrimaryAuthIncorrectAttempt();
+                mBouncerMessageInteractor.onPrimaryAuthIncorrectAttempt(isDuplicate);
             }
             int bouncerSide = SysUiStatsLog.KEYGUARD_BOUNCER_PASSWORD_ENTERED__SIDE__DEFAULT;
             if (mView.isSidedSecurityMode()) {

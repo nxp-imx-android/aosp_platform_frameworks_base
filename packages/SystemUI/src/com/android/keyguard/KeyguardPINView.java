@@ -270,7 +270,7 @@ public class KeyguardPINView extends KeyguardPinBasedInputView {
     }
 
     @Override
-    public int getWrongPasswordStringId() {
+    public int getWrongPasswordStringId(boolean isDuplicate) {
         return R.string.kg_wrong_pin;
     }
 

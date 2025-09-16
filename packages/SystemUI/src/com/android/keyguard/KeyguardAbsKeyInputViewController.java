@@ -188,13 +188,14 @@ public abstract class KeyguardAbsKeyInputViewController<T extends KeyguardAbsKey
         }.start();
     }
 
-    void onPasswordChecked(int userId, boolean matched, int timeoutMs, boolean isValidPassword) {
+    void onPasswordChecked(int userId, boolean matched, int timeoutMs, boolean isValidPassword,
+            boolean isDuplicate) {
         boolean dismissKeyguard = mSelectedUserInteractor.getSelectedUserId() == userId;
         if (matched) {
             mBouncerHapticPlayer.playAuthenticationFeedback(
                     /* authenticationSucceeded = */true
             );
-            getKeyguardSecurityCallback().reportUnlockAttempt(userId, true, 0);
+            getKeyguardSecurityCallback().reportUnlockAttempt(userId, true, 0, isDuplicate);
             if (dismissKeyguard) {
                 mDismissing = true;
                 mLatencyTracker.onActionStart(LatencyTracker.ACTION_LOCKSCREEN_UNLOCK);
@@ -211,7 +212,8 @@ public abstract class KeyguardAbsKeyInputViewController<T extends KeyguardAbsKey
             );
             mView.resetPasswordText(true /* animate */, false /* announce deletion if no match */);
             if (isValidPassword) {
-                getKeyguardSecurityCallback().reportUnlockAttempt(userId, false, timeoutMs);
+                getKeyguardSecurityCallback()
+                        .reportUnlockAttempt(userId, false, timeoutMs, isDuplicate);
                 if (timeoutMs > 0) {
                     long deadline = mLockPatternUtils.setLockoutAttemptDeadline(
                             userId, timeoutMs);
@@ -219,7 +221,7 @@ public abstract class KeyguardAbsKeyInputViewController<T extends KeyguardAbsKey
                 }
             }
             if (timeoutMs == 0) {
-                mMessageAreaController.setMessage(mView.getWrongPasswordStringId());
+                mMessageAreaController.setMessage(mView.getWrongPasswordStringId(isDuplicate));
             }
             startErrorAnimation();
         }
@@ -242,7 +244,8 @@ public abstract class KeyguardAbsKeyInputViewController<T extends KeyguardAbsKey
             // to avoid accidental lockout, only count attempts that are long enough to be a
             // real password. This may require some tweaking.
             mView.setPasswordEntryInputEnabled(true);
-            onPasswordChecked(userId, false /* matched */, 0, false /* not valid - too short */);
+            onPasswordChecked(userId, false /* matched */, 0, false /* not valid - too short */,
+                    false /* isDuplicate */);
             password.zeroize();
             return;
         }
@@ -262,7 +265,7 @@ public abstract class KeyguardAbsKeyInputViewController<T extends KeyguardAbsKey
                         mLatencyTracker.onActionEnd(ACTION_CHECK_CREDENTIAL);
 
                         onPasswordChecked(userId, true /* matched */, 0 /* timeoutMs */,
-                                true /* isValidPassword */);
+                                true /* isValidPassword */, false /* isDuplicate */);
                         password.zeroize();
                     }
 
@@ -273,7 +276,7 @@ public abstract class KeyguardAbsKeyInputViewController<T extends KeyguardAbsKey
                         mPendingLockCheck = null;
                         if (!matched) {
                             onPasswordChecked(userId, false /* matched */, timeoutMs,
-                                    true /* isValidPassword */);
+                                    true /* isValidPassword */, false /* isDuplicate */);
                         }
                         password.zeroize();
                     }

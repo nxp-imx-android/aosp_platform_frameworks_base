@@ -85,7 +85,7 @@ class FakeAuthenticationRepository(private val currentTime: () -> Long) : Authen
         credentialOverride = pin
     }
 
-    override suspend fun reportAuthenticationAttempt(isSuccessful: Boolean) {
+    override suspend fun reportAuthenticationAttempt(isSuccessful: Boolean, isDuplicate: Boolean) {
         if (isSuccessful) {
             _failedAuthenticationAttempts.value = 0
             _lockoutEndTimestamp = null
@@ -94,6 +94,7 @@ class FakeAuthenticationRepository(private val currentTime: () -> Long) : Authen
         } else {
             _failedAuthenticationAttempts.value++
         }
+        _isDuplicateAttempt.value = isDuplicate
     }
 
     private var _failedAuthenticationAttempts = MutableStateFlow(0)
@@ -103,6 +104,9 @@ class FakeAuthenticationRepository(private val currentTime: () -> Long) : Authen
     private var _lockoutEndTimestamp: Long? = null
     override val lockoutEndTimestamp: Long?
         get() = if (currentTime() < (_lockoutEndTimestamp ?: 0)) _lockoutEndTimestamp else null
+
+    private var _isDuplicateAttempt = MutableStateFlow(false)
+    override val isDuplicateAttempt: StateFlow<Boolean> = _isDuplicateAttempt.asStateFlow()
 
     override suspend fun reportLockoutStarted(durationMs: Int) {
         _lockoutEndTimestamp = (currentTime() + durationMs).takeIf { durationMs > 0 }

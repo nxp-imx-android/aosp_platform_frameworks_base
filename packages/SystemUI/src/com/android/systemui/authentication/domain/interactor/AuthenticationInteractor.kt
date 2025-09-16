@@ -165,6 +165,13 @@ constructor(
         get() = repository.lockoutEndTimestamp
 
     /**
+     * Whether the primary authentication attempt was the same as a previous attempt since the last
+     * successful authentication.
+     */
+    val isDuplicateAttempt: StateFlow<Boolean>
+        get() = repository.isDuplicateAttempt
+
+    /**
      * Models an imminent wipe risk to the user, profile, or device upon further unsuccessful
      * authentication attempts.
      *
@@ -251,7 +258,10 @@ constructor(
         }
 
         // Authentication failed.
-        repository.reportAuthenticationAttempt(isSuccessful = false)
+        repository.reportAuthenticationAttempt(
+            isSuccessful = false,
+            authenticationResult.isDuplicate,
+        )
 
         if (authenticationResult.lockoutDurationMs > 0) {
             // Lockout has been triggered.

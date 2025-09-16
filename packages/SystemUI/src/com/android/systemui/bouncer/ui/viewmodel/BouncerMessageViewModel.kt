@@ -358,14 +358,21 @@ constructor(
                         deviceEntryBiometricsAllowedInteractor
                             .isFingerprintCurrentlyAllowedOnBouncer,
                         secureLockDeviceInteractor.isSecureLockDeviceEnabled,
+                        authenticationInteractor.isDuplicateAttempt,
                     )
                     .collectLatest {
-                        (_, authMethod, isFingerprintAllowed, isSecureLockDeviceEnabled) ->
+                        (
+                            _,
+                            authMethod,
+                            isFingerprintAllowed,
+                            isSecureLockDeviceEnabled,
+                            isDuplicate) ->
                         message.emit(
                             BouncerMessageStrings.incorrectSecurityInput(
                                     authMethod,
                                     isFingerprintAllowed,
                                     isSecureLockDeviceEnabled,
+                                    isDuplicate,
                                 )
                                 .toMessage()
                         )
@@ -471,7 +478,8 @@ constructor(
     private fun Int.toPluralString(formatterArgs: Map<String, Any>): String =
         PluralsMessageFormatter.format(applicationContext.resources, formatterArgs, this)
 
-    private fun Int.toResString(): String = if (this == 0) "" else applicationContext.getString(this)
+    private fun Int.toResString(): String =
+        if (this == 0) "" else applicationContext.getString(this)
 
     @AssistedFactory
     interface Factory {
