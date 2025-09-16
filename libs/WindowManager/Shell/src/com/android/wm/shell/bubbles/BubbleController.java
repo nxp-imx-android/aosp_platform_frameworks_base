@@ -1808,14 +1808,10 @@ public class BubbleController implements ConfigurationChangeListener,
             // if this is an overflow bubble we need to remove it from overflow first
             final Bubble bubble = isOverflowBubble ? mBubbleData.getOrCreateBubble(null, b) : b;
             bubble.enable(Notification.BubbleMetadata.FLAG_AUTO_EXPAND_BUBBLE);
-            if (isShowingAsBubbleBar() || isOverflowBubble) {
-                ensureBubbleViewsAndWindowCreated();
-                mBubbleTransitions.startLaunchIntoOrConvertToBubble(bubble, mExpandedViewManager,
-                        mBubbleTaskViewFactory, mBubblePositioner, mStackView, mLayerView,
-                        mBubbleIconFactory, mInflateSynchronously, location);
-            } else {
-                inflateAndAdd(b, /* suppressFlyout= */ true, /* showInShade= */ false, location);
-            }
+            ensureBubbleViewsAndWindowCreated();
+            mBubbleTransitions.startLaunchIntoOrConvertToBubble(bubble, mExpandedViewManager,
+                    mBubbleTaskViewFactory, mBubblePositioner, mStackView, mLayerView,
+                    mBubbleIconFactory, mInflateSynchronously, location);
         }
     }
 
