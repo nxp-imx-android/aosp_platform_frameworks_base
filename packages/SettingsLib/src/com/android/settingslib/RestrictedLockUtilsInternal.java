@@ -185,6 +185,19 @@ public class RestrictedLockUtilsInternal extends RestrictedLockUtils {
             return null;
         }
 
+        if (android.app.admin.flags.Flags.policyTransparencyRefactorEnabled()) {
+            PolicyEnforcementInfo policyEnforcementInfo = dpm.getEnforcingAdminsForPolicy(
+                    DevicePolicyIdentifiers.getIdentifierForUserRestriction(userRestriction),
+                    userId);
+            if (policyEnforcementInfo.getAllAdmins().isEmpty()
+                    || policyEnforcementInfo.isOnlyEnforcedBySystem()) {
+                return null;
+            }
+            EnforcingAdmin admin = policyEnforcementInfo.getMostImportantEnforcingAdmin();
+            return new EnforcedAdmin(admin.getComponentName(), userRestriction,
+                    admin.getUserHandle());
+        }
+
         final UserManager um = UserManager.get(context);
         final UserHandle userHandle = UserHandle.of(userId);
         final List<UserManager.EnforcingUser> enforcingUsers =
