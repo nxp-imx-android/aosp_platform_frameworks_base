@@ -20,6 +20,7 @@ import android.annotation.UserIdInt
 import android.app.admin.DevicePolicyManager
 import android.content.IntentFilter
 import android.os.UserHandle
+import android.security.Flags.lockscreenIndicateDuplicateGuesses
 import android.security.Flags.secureLockDevice
 import android.util.Log
 import com.android.app.tracing.coroutines.launchTraced as launch
@@ -300,6 +301,15 @@ constructor(
         credential: LockscreenCredential
     ): AuthenticationResultModel {
         return withContext(backgroundDispatcher) {
+            if (lockscreenIndicateDuplicateGuesses()) {
+                val response =
+                    lockPatternUtils.checkCredentialWithResponse(credential, selectedUserId) {}
+                return@withContext AuthenticationResultModel(
+                    isSuccessful = response.isMatched,
+                    lockoutDurationMs = response.timeout,
+                    isDuplicate = response.isCredAlreadyTried,
+                )
+            }
             try {
                 val matched = lockPatternUtils.checkCredential(credential, selectedUserId) {}
                 AuthenticationResultModel(isSuccessful = matched, lockoutDurationMs = 0)

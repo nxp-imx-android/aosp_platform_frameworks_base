@@ -68,11 +68,20 @@ object BouncerMessageStrings {
         isDuplicate: Boolean = false,
     ): BouncerMessagePair {
         val wrongInputMessage =
-            when (securityMode) {
-                Pattern -> R.string.kg_wrong_pattern_try_again
-                Password -> R.string.kg_wrong_password_try_again
-                Pin -> R.string.kg_wrong_pin_try_again
-                else -> 0
+            if (isDuplicate) {
+                when (securityMode) {
+                    Pattern -> R.string.kg_primary_auth_duplicate_guess_pattern
+                    Password -> R.string.kg_primary_auth_duplicate_guess_password
+                    Pin -> R.string.kg_primary_auth_duplicate_guess_pin
+                    else -> 0
+                }
+            } else {
+                when (securityMode) {
+                    Pattern -> R.string.kg_wrong_pattern_try_again
+                    Password -> R.string.kg_wrong_password_try_again
+                    Pin -> R.string.kg_wrong_pin_try_again
+                    else -> 0
+                }
             }
         if (secureLockDevice() && secureLockDeviceEnabled) {
             return Pair(R.string.kg_prompt_title_after_secure_lock_device, wrongInputMessage)
