@@ -91,16 +91,29 @@ final class EnforcingAdmin {
     static EnforcingAdmin createEnterpriseEnforcingAdmin(
             @NonNull ComponentName componentName, int userId) {
         Objects.requireNonNull(componentName);
+
         return new EnforcingAdmin(
-                componentName.getPackageName(), componentName, Set.of(DPC_AUTHORITY), userId);
+                componentName.getPackageName(),
+                null, /* systemEntity */
+                componentName,
+                userId,
+                false, /* isRoleAuthority */
+                new HashSet<>(Set.of(DPC_AUTHORITY))
+        );
     }
 
     static EnforcingAdmin createDeviceAdminEnforcingAdmin(
             @NonNull ComponentName componentName, int userId) {
         Objects.requireNonNull(componentName);
+
         return new EnforcingAdmin(
-                componentName.getPackageName(), componentName, Set.of(DEVICE_ADMIN_AUTHORITY),
-                userId);
+                componentName.getPackageName(),
+                null, /* systemEntity */
+                componentName,
+                userId,
+                false, /* isRoleAuthority */
+                new HashSet<>(Set.of(DEVICE_ADMIN_AUTHORITY))
+        );
     }
 
     static EnforcingAdmin createSystemEnforcingAdmin(@NonNull String systemEntity) {
@@ -158,20 +171,6 @@ final class EnforcingAdmin {
             return new SystemAuthority(systemEntity);
         }
         return UnknownAuthority.UNKNOWN_AUTHORITY;
-    }
-
-    private EnforcingAdmin(
-            String packageName, @Nullable ComponentName componentName, Set<String> authorities,
-            int userId) {
-        // Role/System authorities should not be using this constructor
-        this(
-                Objects.requireNonNull(packageName),
-                null, /* systemEntity */
-                componentName,
-                userId,
-                false, /* isRoleAuthority */
-                new HashSet<>(Objects.requireNonNull(authorities))
-        );
     }
 
     private EnforcingAdmin(String packageName, int userId) {
@@ -448,7 +447,14 @@ final class EnforcingAdmin {
                         packageName, componentName, authoritiesStr);
                 return null;
             } else {
-                return new EnforcingAdmin(packageName, componentName, Set.of(authorities), userId);
+                return new EnforcingAdmin(
+                        packageName,
+                        null, /* systemEntity */
+                        componentName,
+                        userId,
+                        false, /* isRoleAuthority */
+                        new HashSet<>(Set.of(authorities))
+                );
             }
         }
     }
