@@ -40,7 +40,6 @@ import static android.view.accessibility.Flags.FLAG_SUPPLEMENTAL_DESCRIPTION;
 import static android.view.accessibility.Flags.removeChildHoverCheckForTouchExploration;
 import static android.view.accessibility.Flags.supplementalDescription;
 import static android.view.accessibility.Flags.supportMultipleLabeledby;
-import static android.view.contentcapture.flags.Flags.newHeuristicsForImportanceEnabled;
 import static android.view.displayhash.DisplayHashResultCallback.DISPLAY_HASH_ERROR_INVALID_BOUNDS;
 import static android.view.displayhash.DisplayHashResultCallback.DISPLAY_HASH_ERROR_MISSING_WINDOW;
 import static android.view.displayhash.DisplayHashResultCallback.DISPLAY_HASH_ERROR_NOT_VISIBLE_ON_SCREEN;
@@ -986,13 +985,6 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
      * enabled. This helps avoiding multiple measures in the same frame with the same dimensions.
      */
     private static boolean sUseMeasureCacheDuringForceLayoutFlagValue;
-
-    /**
-     * When true, extends heuristics for calculating whether a node is considered important for
-     * content capture. This will consider nodes with content descriptions and accessibility-related
-     * fields as important.
-     */
-    private static boolean sNewHeuristicsForContentCaptureImportanceEnabledFlagValue;
 
     /**
      * Allow setForeground/setBackground to be called (and ignored) on a textureview,
@@ -2677,8 +2669,6 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
         sToolkitSetFrameRateReadOnlyFlagValue = toolkitSetFrameRateReadOnly();
         sToolkitMetricsForFrameRateDecisionFlagValue = toolkitMetricsForFrameRateDecision();
         sUseMeasureCacheDuringForceLayoutFlagValue = enableUseMeasureCacheDuringForceLayout();
-        sNewHeuristicsForContentCaptureImportanceEnabledFlagValue =
-                newHeuristicsForImportanceEnabled();
     }
 
     /**
@@ -10991,18 +10981,6 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
         // If the app developer explicitly set hints or autofill hintsfor it, it's important.
         if (getAutofillHints() != null) {
             return true;
-        }
-
-        if (sNewHeuristicsForContentCaptureImportanceEnabledFlagValue) {
-            // If the app developer has set a content description, it's important.
-            if (getContentDescription() != null) {
-                return true;
-            }
-
-            // If the app developer has set an accessibility node provider, it's important.
-            if (getAccessibilityNodeProvider() != null || getAccessibilityDelegate() != null) {
-                return true;
-            }
         }
 
         // Otherwise, assume it's not important...
