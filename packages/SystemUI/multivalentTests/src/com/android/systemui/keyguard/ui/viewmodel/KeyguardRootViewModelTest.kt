@@ -693,7 +693,7 @@ class KeyguardRootViewModelTest(flags: FlagsParameterization) : SysuiTestCase() 
 
     @Test
     @DisableSceneContainer
-    @EnableFlags(Flags.FLAG_AMBIENT_AOD, FLAG_GESTURE_BETWEEN_HUB_AND_LOCKSCREEN_MOTION)
+    @EnableFlags(FLAG_GESTURE_BETWEEN_HUB_AND_LOCKSCREEN_MOTION)
     fun scaleFromGlanceableHub_whenTransitionedFromAodToHub() =
         testScope.runTest {
             val scaleToApply by collectLastValue(underTest.scaleFromZoomOut)

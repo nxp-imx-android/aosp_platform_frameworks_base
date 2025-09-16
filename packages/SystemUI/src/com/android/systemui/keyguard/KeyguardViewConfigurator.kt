@@ -45,7 +45,6 @@ import com.android.systemui.plugins.FalsingManager
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.shade.ShadeDisplayAware
 import com.android.systemui.shade.domain.interactor.ShadeInteractor
-import com.android.systemui.shared.Flags.ambientAod
 import com.android.systemui.statusbar.KeyguardIndicationController
 import com.android.systemui.statusbar.LightRevealScrim
 import com.android.systemui.statusbar.VibratorHelper
@@ -101,13 +100,11 @@ constructor(
         bindJankViewModel()
         initializeViews()
 
-        if (ambientAod()) {
-            LightRevealScrimViewBinder.bind(
-                lightRevealScrim,
-                lightRevealScrimViewModel,
-                wallpaperViewModel,
-            )
-        }
+        LightRevealScrimViewBinder.bind(
+            lightRevealScrim,
+            lightRevealScrimViewModel,
+            wallpaperViewModel,
+        )
 
         if (!SceneContainerFlag.isEnabled) {
             KeyguardBlueprintViewBinder.bind(

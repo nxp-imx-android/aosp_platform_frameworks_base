@@ -57,7 +57,6 @@ import com.android.systemui.plugins.keyguard.VPointF.Companion.size
 import com.android.systemui.plugins.keyguard.VRectF
 import com.android.systemui.plugins.keyguard.ui.clocks.ClockAxisStyle
 import com.android.systemui.plugins.keyguard.ui.clocks.ClockViewIds
-import com.android.systemui.shared.Flags.ambientAod
 import java.lang.Thread
 import kotlin.math.max
 import kotlin.math.min
@@ -189,9 +188,7 @@ abstract class DigitalClockTextView(
 
     fun updateColor(lockscreenColor: Int, aodColor: Int = Color.WHITE) {
         this.lockscreenColor = lockscreenColor
-        if (ambientAod()) {
-            this.aodColor = aodColor
-        }
+        this.aodColor = aodColor
         lockScreenPaint.color = lockscreenColor
 
         if (dozeFraction < 1f) {

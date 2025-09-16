@@ -26,8 +26,6 @@ import com.android.systemui.keyguard.WakefulnessLifecycle
 import com.android.systemui.shade.ShadeViewController
 import com.android.systemui.shade.domain.interactor.PanelExpansionInteractor
 import com.android.systemui.shade.domain.interactor.ShadeLockscreenInteractor
-import com.android.systemui.shared.Flags.ambientAod
-import com.android.systemui.statusbar.CircleReveal
 import com.android.systemui.statusbar.LiftReveal
 import com.android.systemui.statusbar.LightRevealEffect
 import com.android.systemui.statusbar.LightRevealScrim
@@ -103,29 +101,8 @@ constructor(
         ValueAnimator.ofFloat(1f, 0f).apply {
             duration = LIGHT_REVEAL_ANIMATION_DURATION
             interpolator = Interpolators.LINEAR
-            addUpdateListener {
-                if (ambientAod()) return@addUpdateListener
-                if (lightRevealScrim.revealEffect !is CircleReveal) {
-                    lightRevealScrim.revealAmount = it.animatedValue as Float
-                }
-                if (
-                    lightRevealScrim.isScrimAlmostOccludes &&
-                        interactionJankMonitor.isInstrumenting(CUJ_SCREEN_OFF)
-                ) {
-                    // ends the instrument when the scrim almost occludes the screen.
-                    // because the following janky frames might not be perceptible.
-                    interactionJankMonitor.end(CUJ_SCREEN_OFF)
-                }
-            }
             addListener(
                 object : AnimatorListenerAdapter() {
-                    override fun onAnimationCancel(animation: Animator) {
-                        if (ambientAod()) return
-                        if (lightRevealScrim.revealEffect !is CircleReveal) {
-                            lightRevealScrim.revealAmount = 1f
-                        }
-                    }
-
                     override fun onAnimationEnd(animation: Animator) {
                         lightRevealAnimationPlaying = false
                         interactionJankMonitor.end(CUJ_SCREEN_OFF)

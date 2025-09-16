@@ -28,7 +28,6 @@ import static android.provider.Settings.Global.HEADS_UP_NOTIFICATIONS_ENABLED;
 import static android.provider.Settings.Global.HEADS_UP_ON;
 
 import static com.android.systemui.flags.Flags.SHORTCUT_LIST_SEARCH_LAYOUT;
-import static com.android.systemui.shared.Flags.FLAG_AMBIENT_AOD;
 import static com.android.systemui.statusbar.StatusBarState.KEYGUARD;
 import static com.android.systemui.statusbar.StatusBarState.SHADE;
 import static com.android.systemui.statusbar.phone.CentralSurfaces.MSG_DISMISS_KEYBOARD_SHORTCUTS_MENU;
@@ -107,7 +106,6 @@ import com.android.systemui.accessibility.floatingmenu.AccessibilityFloatingMenu
 import com.android.systemui.animation.ActivityTransitionAnimator;
 import com.android.systemui.assist.AssistManager;
 import com.android.systemui.back.domain.interactor.BackActionInteractor;
-import com.android.systemui.biometrics.AuthRippleController;
 import com.android.systemui.bouncer.domain.interactor.AlternateBouncerInteractor;
 import com.android.systemui.broadcast.BroadcastDispatcher;
 import com.android.systemui.charging.WiredChargingRippleController;
@@ -242,7 +240,6 @@ import javax.inject.Provider;
 @SmallTest
 @RunWith(AndroidJUnit4.class)
 @RunWithLooper(setAsMainLooper = true)
-@EnableFlags(FLAG_AMBIENT_AOD)
 public class CentralSurfacesImplTest extends SysuiTestCase {
 
     private static final DeviceState FOLD_STATE_FOLDED = new DeviceState(
@@ -290,7 +287,6 @@ public class CentralSurfacesImplTest extends SysuiTestCase {
     @Mock private DozeScrimController mDozeScrimController;
     @Mock private Lazy<BiometricUnlockController> mBiometricUnlockControllerLazy;
     @Mock private BiometricUnlockController mBiometricUnlockController;
-    @Mock private AuthRippleController mAuthRippleController;
     @Mock private KeyguardViewMediator mKeyguardViewMediator;
     @Mock private NotificationLockscreenUserManager mLockscreenUserManager;
     @Mock private NotificationRemoteInputManager mRemoteInputManager;
@@ -607,7 +603,6 @@ public class CentralSurfacesImplTest extends SysuiTestCase {
                 mDozeParameters,
                 () -> mScrimController,
                 mBiometricUnlockControllerLazy,
-                mAuthRippleController,
                 mDozeServiceHost,
                 mBackActionInteractor,
                 mPowerManager,
