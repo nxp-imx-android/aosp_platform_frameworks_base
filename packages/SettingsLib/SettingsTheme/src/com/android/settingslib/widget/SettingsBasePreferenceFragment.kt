@@ -32,9 +32,7 @@ abstract class SettingsBasePreferenceFragment : PreferenceFragmentCompat() {
 
     @CallSuper
     override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
+        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View {
         return super.onCreateView(inflater, container, savedInstanceState)
     }
@@ -62,10 +60,22 @@ abstract class SettingsBasePreferenceFragment : PreferenceFragmentCompat() {
             parent: RecyclerView,
             state: RecyclerView.State,
         ) {
+            val viewHolder = parent.getChildViewHolder(view)
+            val position = viewHolder.bindingAdapterPosition
+
+            val dimensionResId =
+                (parent.adapter as? SettingsPreferenceGroupAdapter)?.let { adapter ->
+                    if (adapter.getItem(position) is ChainedMixin) {
+                        R.dimen.settingslib_expressive_space_none
+                    } else {
+                        R.dimen.settingslib_expressive_space_extrasmall1
+                    }
+                }
+                    ?: R.dimen.settingslib_expressive_space_extrasmall1 // Default if adapter is null or wrong type
+
             with(outRect) {
-                bottom =
-                    view.resources.getDimensionPixelSize(R.dimen.settingslib_expressive_space_extrasmall1)
+                bottom = view.resources.getDimensionPixelSize(dimensionResId)
             }
         }
-  }
+    }
 }

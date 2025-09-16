@@ -134,10 +134,17 @@ open class SettingsPreferenceGroupAdapter(preferenceGroup: PreferenceGroup) :
         var prevItemIndex = -2
         var previousParent: Preference? = null
         var currentParent: Preference? = null
+        var itemSkipped = true
         for (i in 0..<itemCount) {
             val preference = getItem(i)!!
             // If the preference is a group divider, skip this index (resulting in new group)
             if (isGroupDivider(preference)) {
+                itemPositionStates[i] = 0
+                itemSkipped = true
+                continue
+            }
+            // Ignore if the preference is ChainedMixin
+            if (preference is ChainedMixin) {
                 itemPositionStates[i] = 0
                 continue
             }
@@ -148,11 +155,14 @@ open class SettingsPreferenceGroupAdapter(preferenceGroup: PreferenceGroup) :
             //     - We've hit an expanded Expandable parent
             //     - We've changed parent (except: if parent is null, or we hit an Expandable child)
             previousParent = currentParent
-            currentParent = preference.parent
+            val parent = preference.parent
+            if (parent !is ChainedMixin) {
+                currentParent = parent
+            }
             val isExpandedParent = preference is Expandable && preference.isExpanded()
             val isExpandedChild = currentParent is Expandable && currentParent.isExpanded()
             val changedParent = previousParent != currentParent && currentParent != null
-            if (prevItemIndex != i - 1 || isExpandedParent || (changedParent && !isExpandedChild)) {
+            if (itemSkipped || isExpandedParent || (changedParent && !isExpandedChild)) {
                 closeGroup(itemPositionStates, prevItemIndex)
                 itemPositionStates[i] = android.R.attr.state_first
                 prevItemIndex = i
@@ -161,6 +171,7 @@ open class SettingsPreferenceGroupAdapter(preferenceGroup: PreferenceGroup) :
                 itemPositionStates[i] = android.R.attr.state_middle
                 prevItemIndex = i
             }
+            itemSkipped = false
         }
         // Close current group
         closeGroup(itemPositionStates, prevItemIndex)
