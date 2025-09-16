@@ -50,7 +50,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Computer control sessions are used to allow a computer of some sort to control applications on
@@ -70,7 +69,6 @@ public final class ComputerControlSession implements AutoCloseable {
     private final AccessibilityManager mAccessibilityManager;
     private final ComputerControlAccessibilityProxy mAccessibilityProxy;
     private TouchListener mTouchListener = null;
-    private final AtomicBoolean mIsValid = new AtomicBoolean(true);
 
     @VisibleForTesting(otherwise = VisibleForTesting.PACKAGE_PRIVATE)
     ComputerControlSession(
@@ -322,13 +320,9 @@ public final class ComputerControlSession implements AutoCloseable {
      */
     @Override
     public void close() {
-        synchronized (mIsValid) {
-            if (!mIsValid.get()) {
-                return;
-            }
+        if (mSession.isValid()) {
             mAccessibilityManager.unregisterDisplayProxy(mAccessibilityProxy);
             mSession.close();
-            mIsValid.set(false);
         }
     }
 

@@ -121,6 +121,8 @@ public final class ComputerControlSession implements AutoCloseable {
     @GuardedBy("mLock")
     @Nullable
     private ImageReader mImageReader;
+    @GuardedBy("mLock")
+    private boolean mIsValid = true;
 
     /** @hide */
     public ComputerControlSession(int displayId, @NonNull IVirtualDisplayCallback displayToken,
@@ -366,17 +368,30 @@ public final class ComputerControlSession implements AutoCloseable {
         }
     }
 
+    /**
+     * Returns whether the session is still valid or has been closed.
+     *
+     * @hide
+     */
+    public boolean isValid() {
+        synchronized (mLock) {
+            return mIsValid;
+        }
+    }
+
     @Override
     public void close() {
         try {
+            closeInternal();
             mSession.close();
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }
     }
 
-    private void closeImageReader() {
+    private void closeInternal() {
         synchronized (mLock) {
+            mIsValid = false;
             if (mImageReader != null) {
                 mImageReader.close();
                 mImageReader = null;
@@ -466,7 +481,7 @@ public final class ComputerControlSession implements AutoCloseable {
 
         @Override
         public void onSessionClosed() {
-            mSession.closeImageReader();
+            mSession.closeInternal();
             Binder.withCleanCallingIdentity(() ->
                     mExecutor.execute(() -> mCallback.onSessionClosed()));
         }

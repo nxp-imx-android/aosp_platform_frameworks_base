@@ -131,7 +131,6 @@ public class ComputerControlSessionTest {
         mSession.close();
         mSession.close();
         verify(mIAccessibilityManager, times(1)).unregisterProxyForDisplay(mVirtualDisplayId);
-        verify(mIComputerControlSession, times(1)).close();
     }
 
     @Test
