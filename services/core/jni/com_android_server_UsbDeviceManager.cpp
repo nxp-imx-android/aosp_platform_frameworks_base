@@ -1507,7 +1507,7 @@ static jboolean android_server_UsbDeviceManager_openAccessoryControl(JNIEnv * /*
 }
 
 // Function to check if a given path is a functionfs mount point
-bool is_path_mounted_as_functionfs(std::string path) {
+bool is_path_mounted_as_functionfs(const std::string& path) {
 
     std::ifstream mounts_file("/proc/mounts");
     if (!mounts_file.is_open()) {
@@ -1530,7 +1530,7 @@ bool is_path_mounted_as_functionfs(std::string path) {
     return false;
 }
 
-std::string get_parent_directory(std::string path) {
+std::string get_parent_directory(const std::string& path) {
     std::string parent_dir = path;
     size_t pos = path.find_last_of('/');
     if (pos != std::string::npos) {
