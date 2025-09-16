@@ -22,7 +22,6 @@ import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.applicationCoroutineScope
 import com.android.systemui.scene.domain.interactor.sceneInteractor
 import com.android.systemui.statusbar.domain.interactor.keyguardStatusBarInteractor
-import com.android.systemui.statusbar.notification.stack.domain.interactor.headsUpNotificationInteractor
 import com.android.systemui.statusbar.policy.batteryController
 import com.android.systemui.user.domain.interactor.userLogoutInteractor
 
@@ -30,7 +29,6 @@ val Kosmos.keyguardStatusBarViewModel: KeyguardStatusBarViewModel by
     Kosmos.Fixture {
         KeyguardStatusBarViewModel(
             applicationCoroutineScope,
-            headsUpNotificationInteractor,
             desktopInteractor,
             sceneInteractor,
             keyguardInteractor,

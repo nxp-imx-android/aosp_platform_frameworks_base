@@ -88,7 +88,6 @@ import com.android.systemui.statusbar.events.data.repository.systemStatusEventAn
 import com.android.systemui.statusbar.events.shared.model.SystemEventAnimationState.AnimatingIn
 import com.android.systemui.statusbar.events.shared.model.SystemEventAnimationState.AnimatingOut
 import com.android.systemui.statusbar.events.shared.model.SystemEventAnimationState.Idle
-import com.android.systemui.statusbar.headsup.shared.StatusBarNoHunBehavior
 import com.android.systemui.statusbar.notification.data.model.activeNotificationModel
 import com.android.systemui.statusbar.notification.data.repository.ActiveNotificationsStore
 import com.android.systemui.statusbar.notification.data.repository.UnconfinedFakeHeadsUpRowRepository
@@ -769,32 +768,7 @@ class HomeStatusBarViewModelImplTest(flags: FlagsParameterization) : SysuiTestCa
         }
 
     @Test
-    @DisableFlags(StatusBarNoHunBehavior.FLAG_NAME)
-    fun shouldShowOperatorNameView_allowedByInteractor_hunPinned_noHunBehaviorFlagOff_false() =
-        kosmos.runTest {
-            kosmos.setHomeStatusBarInteractorShowOperatorName(true)
-
-            transitionKeyguardToGone()
-
-            fakeDisableFlagsRepository.disableFlags.value =
-                DisableFlagsModel(DISABLE_NONE, DISABLE2_NONE)
-
-            // there is an active HUN
-            headsUpNotificationRepository.setNotifications(
-                UnconfinedFakeHeadsUpRowRepository(
-                    key = "key",
-                    pinnedStatus = MutableStateFlow(PinnedStatus.PinnedBySystem),
-                )
-            )
-
-            val latest by collectLastValue(underTest.shouldShowOperatorNameView)
-
-            assertThat(latest).isFalse()
-        }
-
-    @Test
-    @EnableFlags(StatusBarNoHunBehavior.FLAG_NAME)
-    fun shouldShowOperatorNameView_allowedByInteractor_hunPinned_noHunBehaviorFlagOn_true() =
+    fun shouldShowOperatorNameView_allowedByInteractor_hunPinned_true() =
         kosmos.runTest {
             kosmos.setHomeStatusBarInteractorShowOperatorName(true)
 
@@ -813,7 +787,7 @@ class HomeStatusBarViewModelImplTest(flags: FlagsParameterization) : SysuiTestCa
 
             val latest by collectLastValue(underTest.shouldShowOperatorNameView)
 
-            // THEN we still show the operator name view if NoHunBehavior flag is enabled
+            // THEN we still show the operator name view
             assertThat(latest).isTrue()
         }
 
@@ -858,44 +832,7 @@ class HomeStatusBarViewModelImplTest(flags: FlagsParameterization) : SysuiTestCa
         }
 
     @Test
-    @DisableFlags(StatusBarNoHunBehavior.FLAG_NAME)
-    fun canShowOngoingActivityChips_statusBarNotHidden_noSecureCamera_hunBySystem_noHunFlagOff_false() =
-        kosmos.runTest {
-            val latest by collectLastValue(underTest.canShowOngoingActivityChips)
-
-            transitionKeyguardToGone()
-
-            headsUpNotificationRepository.setNotifications(
-                UnconfinedFakeHeadsUpRowRepository(
-                    key = "key",
-                    pinnedStatus = MutableStateFlow(PinnedStatus.PinnedBySystem),
-                )
-            )
-
-            assertThat(latest).isFalse()
-        }
-
-    @Test
-    @DisableFlags(StatusBarNoHunBehavior.FLAG_NAME)
-    fun canShowOngoingActivityChips_statusBarNotHidden_noSecureCamera_hunByUser_noHunFlagOff_true() =
-        kosmos.runTest {
-            val latest by collectLastValue(underTest.canShowOngoingActivityChips)
-
-            transitionKeyguardToGone()
-
-            headsUpNotificationRepository.setNotifications(
-                UnconfinedFakeHeadsUpRowRepository(
-                    key = "key",
-                    pinnedStatus = MutableStateFlow(PinnedStatus.PinnedByUser),
-                )
-            )
-
-            assertThat(latest).isTrue()
-        }
-
-    @Test
-    @EnableFlags(StatusBarNoHunBehavior.FLAG_NAME)
-    fun canShowOngoingActivityChips_statusBarNotHidden_noSecureCamera_hunBySystem_noHunFlagOn_true() =
+    fun canShowOngoingActivityChips_statusBarNotHidden_noSecureCamera_hunBySystem_true() =
         kosmos.runTest {
             val latest by collectLastValue(underTest.canShowOngoingActivityChips)
 
@@ -912,8 +849,7 @@ class HomeStatusBarViewModelImplTest(flags: FlagsParameterization) : SysuiTestCa
         }
 
     @Test
-    @EnableFlags(StatusBarNoHunBehavior.FLAG_NAME)
-    fun canShowOngoingActivityChips_statusBarNotHidden_noSecureCamera_hunByUser_noHunFlagOn_true() =
+    fun canShowOngoingActivityChips_statusBarNotHidden_noSecureCamera_hunByUser_true() =
         kosmos.runTest {
             val latest by collectLastValue(underTest.canShowOngoingActivityChips)
 
@@ -967,43 +903,8 @@ class HomeStatusBarViewModelImplTest(flags: FlagsParameterization) : SysuiTestCa
         }
 
     @Test
-    @DisableFlags(StatusBarNoHunBehavior.FLAG_NAME)
     @EnableChipsModernization
-    fun ongoingActivityChips_statusBarNotHidden_noSecureCamera_hunBySystem_noHunFlagOff_notAllowed() =
-        kosmos.runTest {
-            transitionKeyguardToGone()
-
-            headsUpNotificationRepository.setNotifications(
-                UnconfinedFakeHeadsUpRowRepository(
-                    key = "key",
-                    pinnedStatus = MutableStateFlow(PinnedStatus.PinnedBySystem),
-                )
-            )
-
-            assertThat(underTest.ongoingActivityChips.areChipsAllowed).isFalse()
-        }
-
-    @Test
-    @DisableFlags(StatusBarNoHunBehavior.FLAG_NAME)
-    @EnableChipsModernization
-    fun ongoingActivityChips_statusBarNotHidden_noSecureCamera_hunByUser_noHunFlagOff_isAllowed() =
-        kosmos.runTest {
-            transitionKeyguardToGone()
-
-            headsUpNotificationRepository.setNotifications(
-                UnconfinedFakeHeadsUpRowRepository(
-                    key = "key",
-                    pinnedStatus = MutableStateFlow(PinnedStatus.PinnedByUser),
-                )
-            )
-
-            assertThat(underTest.ongoingActivityChips.areChipsAllowed).isTrue()
-        }
-
-    @Test
-    @EnableFlags(StatusBarNoHunBehavior.FLAG_NAME)
-    @EnableChipsModernization
-    fun ongoingActivityChips_statusBarNotHidden_noSecureCamera_hunBySystem_noHunFlagOn_isAllowed() =
+    fun ongoingActivityChips_statusBarNotHidden_noSecureCamera_hunBySystem_isAllowed() =
         kosmos.runTest {
             transitionKeyguardToGone()
 
@@ -1018,9 +919,8 @@ class HomeStatusBarViewModelImplTest(flags: FlagsParameterization) : SysuiTestCa
         }
 
     @Test
-    @EnableFlags(StatusBarNoHunBehavior.FLAG_NAME)
     @EnableChipsModernization
-    fun ongoingActivityChips_statusBarNotHidden_noSecureCamera_hunByUser_noHunFlagOn_isAllowed() =
+    fun ongoingActivityChips_statusBarNotHidden_noSecureCamera_hunByUser_isAllowed() =
         kosmos.runTest {
             transitionKeyguardToGone()
 
@@ -1052,8 +952,7 @@ class HomeStatusBarViewModelImplTest(flags: FlagsParameterization) : SysuiTestCa
         }
 
     @Test
-    @DisableFlags(StatusBarNoHunBehavior.FLAG_NAME)
-    fun hunOnLockscreenWithBypass_noHunFlagOff_everythingVisible() =
+    fun hunOnLockscreenWithBypass_everythingHidden() =
         kosmos.runTest {
             val latestNotifs by collectLastValue(underTest.isNotificationIconContainerVisible)
             val latestSystemInfo by collectLastValue(underTest.systemInfoCombinedVis)
@@ -1076,37 +975,7 @@ class HomeStatusBarViewModelImplTest(flags: FlagsParameterization) : SysuiTestCa
                 )
             )
 
-            // THEN status bar content shows if StatusBarNoHunBehavior is off
-            assertThat(latestNotifs!!.visibility).isEqualTo(View.VISIBLE)
-            assertThat(latestSystemInfo!!.baseVisibility.visibility).isEqualTo(View.VISIBLE)
-        }
-
-    @Test
-    @EnableFlags(StatusBarNoHunBehavior.FLAG_NAME)
-    fun hunOnLockscreenWithBypass_noHunFlagOn_everythingHidden() =
-        kosmos.runTest {
-            val latestNotifs by collectLastValue(underTest.isNotificationIconContainerVisible)
-            val latestSystemInfo by collectLastValue(underTest.systemInfoCombinedVis)
-
-            // WHEN on lockscreen with bypass enabled
-            if (SceneContainerFlag.isEnabled) {
-                sceneContainerRepository.instantlyTransitionTo(Scenes.Lockscreen)
-            } else {
-                fakeKeyguardTransitionRepository.transitionTo(
-                    KeyguardState.GONE,
-                    KeyguardState.LOCKSCREEN,
-                )
-            }
-            fakeDeviceEntryFaceAuthRepository.isBypassEnabled.value = true
-            // WHEN there's a HUN
-            headsUpNotificationRepository.setNotifications(
-                UnconfinedFakeHeadsUpRowRepository(
-                    key = "key",
-                    pinnedStatus = MutableStateFlow(PinnedStatus.PinnedBySystem),
-                )
-            )
-
-            // THEN status bar content still hides if StatusBarNoHunBehavior is on
+            // THEN status bar content still hides
             assertThat(latestNotifs!!.visibility).isEqualTo(View.GONE)
             assertThat(latestSystemInfo!!.baseVisibility.visibility).isEqualTo(View.GONE)
         }
@@ -1156,28 +1025,7 @@ class HomeStatusBarViewModelImplTest(flags: FlagsParameterization) : SysuiTestCa
         }
 
     @Test
-    @DisableFlags(StatusBarNoHunBehavior.FLAG_NAME)
-    fun isClockVisible_allowedByDisableFlags_hunPinnedBySystem_noHunBehaviorFlagOff_notVisible() =
-        kosmos.runTest {
-            val latest by collectLastValue(underTest.isClockVisible)
-            transitionKeyguardToGone()
-
-            fakeDisableFlagsRepository.disableFlags.value =
-                DisableFlagsModel(DISABLE_NONE, DISABLE2_NONE)
-            // there is an active HUN
-            headsUpNotificationRepository.setNotifications(
-                UnconfinedFakeHeadsUpRowRepository(
-                    key = "key",
-                    pinnedStatus = MutableStateFlow(PinnedStatus.PinnedBySystem),
-                )
-            )
-
-            assertThat(latest!!.visibility).isEqualTo(View.INVISIBLE)
-        }
-
-    @Test
-    @EnableFlags(StatusBarNoHunBehavior.FLAG_NAME)
-    fun isClockVisible_allowedByDisableFlags_hunPinnedBySystem_noHunBehaviorFlagOn_visible() =
+    fun isClockVisible_allowedByDisableFlags_hunPinnedBySystem_visible() =
         kosmos.runTest {
             val latest by collectLastValue(underTest.isClockVisible)
             transitionKeyguardToGone()
@@ -1192,57 +1040,8 @@ class HomeStatusBarViewModelImplTest(flags: FlagsParameterization) : SysuiTestCa
                 )
             )
 
-            // THEN we still show the clock view if NoHunBehavior flag is enabled
+            // THEN we still show the clock view
             assertThat(latest!!.visibility).isEqualTo(View.VISIBLE)
-        }
-
-    @Test
-    @DisableFlags(StatusBarNoHunBehavior.FLAG_NAME)
-    fun isClockVisible_allowedByDisableFlags_hunBecomesInactive_visibleAgain() =
-        kosmos.runTest {
-            val latest by collectLastValue(underTest.isClockVisible)
-            transitionKeyguardToGone()
-
-            fakeDisableFlagsRepository.disableFlags.value =
-                DisableFlagsModel(DISABLE_NONE, DISABLE2_NONE)
-            // there is an active HUN pinned by the system
-            headsUpNotificationRepository.setNotifications(
-                UnconfinedFakeHeadsUpRowRepository(
-                    key = "key",
-                    pinnedStatus = MutableStateFlow(PinnedStatus.PinnedBySystem),
-                )
-            )
-            assertThat(latest!!.visibility).isEqualTo(View.INVISIBLE)
-
-            // hun goes away
-            headsUpNotificationRepository.setNotifications(listOf())
-
-            assertThat(latest!!.visibility).isEqualTo(View.VISIBLE)
-        }
-
-    @Test
-    @DisableFlags(StatusBarNoHunBehavior.FLAG_NAME)
-    fun isClockVisible_disableFlagsProhibitClock_hunBecomesInactive_neverVisible() =
-        kosmos.runTest {
-            val latest by collectLastValue(underTest.isClockVisible)
-            transitionKeyguardToGone()
-
-            fakeDisableFlagsRepository.disableFlags.value =
-                DisableFlagsModel(DISABLE_CLOCK, DISABLE2_NONE)
-            // there is an active HUN
-            headsUpNotificationRepository.setNotifications(
-                UnconfinedFakeHeadsUpRowRepository(
-                    key = "key",
-                    pinnedStatus = MutableStateFlow(PinnedStatus.PinnedBySystem),
-                )
-            )
-
-            assertThat(latest!!.visibility).isEqualTo(View.INVISIBLE)
-
-            // hun goes away
-            headsUpNotificationRepository.setNotifications(listOf())
-
-            assertThat(latest!!.visibility).isEqualTo(View.INVISIBLE)
         }
 
     @Test
@@ -1322,48 +1121,8 @@ class HomeStatusBarViewModelImplTest(flags: FlagsParameterization) : SysuiTestCa
             assertThat(latest!!.visibility).isEqualTo(View.VISIBLE)
         }
 
-    @DisableFlags(StatusBarNoHunBehavior.FLAG_NAME)
-    fun isNotificationIconContainerVisible_hasChipButAlsoHun_hunBySystem_noHunFlagOff_visible() =
-        kosmos.runTest {
-            val latest by collectLastValue(underTest.isNotificationIconContainerVisible)
-            transitionKeyguardToGone()
-
-            // Chip
-            kosmos.screenRecordRepository.screenRecordState.value = ScreenRecordModel.Recording
-
-            // HUN, PinnedBySystem
-            headsUpNotificationRepository.setNotifications(
-                UnconfinedFakeHeadsUpRowRepository(
-                    key = "key",
-                    pinnedStatus = MutableStateFlow(PinnedStatus.PinnedBySystem),
-                )
-            )
-
-            assertThat(latest!!.visibility).isEqualTo(View.VISIBLE)
-        }
-
-    @DisableFlags(StatusBarNoHunBehavior.FLAG_NAME)
-    fun isNotificationIconContainerVisible_hasChipButAlsoHun_hunByUser_noHunFlagOff_gone() =
-        kosmos.runTest {
-            val latest by collectLastValue(underTest.isNotificationIconContainerVisible)
-            transitionKeyguardToGone()
-
-            // Chip
-            kosmos.screenRecordRepository.screenRecordState.value = ScreenRecordModel.Recording
-
-            // HUN, PinnedByUser
-            headsUpNotificationRepository.setNotifications(
-                UnconfinedFakeHeadsUpRowRepository(
-                    key = "key",
-                    pinnedStatus = MutableStateFlow(PinnedStatus.PinnedByUser),
-                )
-            )
-
-            assertThat(latest!!.visibility).isEqualTo(View.GONE)
-        }
-
-    @EnableFlags(StatusBarNoHunBehavior.FLAG_NAME)
-    fun isNotificationIconContainerVisible_hasChipButAlsoHun_hunBySystem_noHunFlagOn_gone() =
+    @Test
+    fun isNotificationIconContainerVisible_hasChipButAlsoHun_hunBySystem_gone() =
         kosmos.runTest {
             val latest by collectLastValue(underTest.isNotificationIconContainerVisible)
             transitionKeyguardToGone()
@@ -1382,8 +1141,8 @@ class HomeStatusBarViewModelImplTest(flags: FlagsParameterization) : SysuiTestCa
             assertThat(latest!!.visibility).isEqualTo(View.GONE)
         }
 
-    @EnableFlags(StatusBarNoHunBehavior.FLAG_NAME)
-    fun isNotificationIconContainerVisible_hasChipButAlsoHun_hunByUser_noHunFlagOn_gone() =
+    @Test
+    fun isNotificationIconContainerVisible_hasChipButAlsoHun_hunByUser_gone() =
         kosmos.runTest {
             val latest by collectLastValue(underTest.isNotificationIconContainerVisible)
             transitionKeyguardToGone()

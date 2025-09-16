@@ -16,7 +16,6 @@
 
 package com.android.systemui.statusbar.ui.viewmodel
 
-import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import android.platform.test.flag.junit.FlagsParameterization
 import androidx.test.filters.SmallTest
@@ -39,10 +38,8 @@ import com.android.systemui.scene.domain.interactor.sceneInteractor
 import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.statusbar.domain.interactor.keyguardStatusBarInteractor
-import com.android.systemui.statusbar.headsup.shared.StatusBarNoHunBehavior
 import com.android.systemui.statusbar.notification.data.repository.FakeHeadsUpRowRepository
 import com.android.systemui.statusbar.notification.stack.data.repository.headsUpNotificationRepository
-import com.android.systemui.statusbar.notification.stack.domain.interactor.headsUpNotificationInteractor
 import com.android.systemui.statusbar.policy.batteryController
 import com.android.systemui.statusbar.policy.fake
 import com.android.systemui.testKosmos
@@ -68,7 +65,6 @@ class KeyguardStatusBarViewModelTest(flags: FlagsParameterization) : SysuiTestCa
     private val userRepository = kosmos.fakeUserRepository
     private val faceAuthRepository by lazy { kosmos.fakeDeviceEntryFaceAuthRepository }
     private val headsUpRepository by lazy { kosmos.headsUpNotificationRepository }
-    private val headsUpNotificationInteractor by lazy { kosmos.headsUpNotificationInteractor }
     private val keyguardRepository by lazy { kosmos.fakeKeyguardRepository }
     private val keyguardTransitionRepository by lazy { kosmos.fakeKeyguardTransitionRepository }
     private val keyguardInteractor by lazy { kosmos.keyguardInteractor }
@@ -95,7 +91,6 @@ class KeyguardStatusBarViewModelTest(flags: FlagsParameterization) : SysuiTestCa
         underTest =
             KeyguardStatusBarViewModel(
                 testScope.backgroundScope,
-                headsUpNotificationInteractor,
                 kosmos.desktopInteractor,
                 kosmos.sceneInteractor,
                 keyguardInteractor,
@@ -187,8 +182,7 @@ class KeyguardStatusBarViewModelTest(flags: FlagsParameterization) : SysuiTestCa
 
     @Test
     @EnableSceneContainer
-    @DisableFlags(StatusBarNoHunBehavior.FLAG_NAME)
-    fun isVisible_headsUpShown_noHunBehaviorFlagOff_false() =
+    fun isVisible_headsUpShown_true() =
         testScope.runTest {
             val latest by collectLastValue(underTest.isVisible)
 
@@ -201,27 +195,7 @@ class KeyguardStatusBarViewModelTest(flags: FlagsParameterization) : SysuiTestCa
             kosmos.sceneContainerRepository.instantlyTransitionTo(Scenes.Lockscreen)
             faceAuthRepository.isBypassEnabled.value = true
 
-            // THEN KeyguardStatusBar is NOT visible to make space for HeadsUpStatusBar
-            assertThat(latest).isFalse()
-        }
-
-    @Test
-    @EnableSceneContainer
-    @EnableFlags(StatusBarNoHunBehavior.FLAG_NAME)
-    fun isVisible_headsUpShown_noHunBehaviorFlagOn_true() =
-        testScope.runTest {
-            val latest by collectLastValue(underTest.isVisible)
-
-            // WHEN HUN displayed on the bypass lock screen
-            headsUpRepository.setNotifications(FakeHeadsUpRowRepository("key 0", isPinned = true))
-            keyguardTransitionRepository.emitInitialStepsFromOff(
-                KeyguardState.LOCKSCREEN,
-                testSetup = true,
-            )
-            kosmos.sceneContainerRepository.instantlyTransitionTo(Scenes.Lockscreen)
-            faceAuthRepository.isBypassEnabled.value = true
-
-            // THEN KeyguardStatusBar is still visible because StatusBarNoHunBehavior is enabled
+            // THEN KeyguardStatusBar is still visible
             assertThat(latest).isTrue()
         }
 
