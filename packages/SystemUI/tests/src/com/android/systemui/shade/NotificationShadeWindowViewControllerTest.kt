@@ -17,6 +17,7 @@
 package com.android.systemui.shade
 
 import android.content.Context
+import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import android.platform.test.annotations.RequiresFlagsDisabled
 import android.platform.test.flag.junit.FlagsParameterization
@@ -47,8 +48,11 @@ import com.android.systemui.flags.Flags.SPLIT_SHADE_SUBPIXEL_OPTIMIZATION
 import com.android.systemui.flags.andSceneContainer
 import com.android.systemui.keyevent.domain.interactor.SysUIKeyEventHandler
 import com.android.systemui.keyguard.KeyguardUnlockAnimationController
+import com.android.systemui.keyguard.data.repository.fakeKeyguardRepository
 import com.android.systemui.keyguard.domain.interactor.KeyguardTransitionInteractor
 import com.android.systemui.keyguard.domain.interactor.dozeTouchInteractor
+import com.android.systemui.keyguard.shared.model.DozeStateModel
+import com.android.systemui.keyguard.shared.model.DozeTransitionModel
 import com.android.systemui.keyguard.shared.model.Edge
 import com.android.systemui.keyguard.shared.model.KeyguardState.DREAMING
 import com.android.systemui.keyguard.shared.model.KeyguardState.LOCKSCREEN
@@ -467,6 +471,7 @@ class NotificationShadeWindowViewControllerTest(flags: FlagsParameterization) : 
         }
 
     @Test
+    @DisableFlags(com.android.systemui.Flags.FLAG_ALLOW_DOZE_TOUCHES_FOR_LOCK_ICON)
     fun shouldInterceptTouchEvent_dozing_touchNotInLockIconArea_touchIntercepted() {
         // GIVEN dozing
         whenever(sysuiStatusBarStateController.isDozing).thenReturn(true)
@@ -479,9 +484,41 @@ class NotificationShadeWindowViewControllerTest(flags: FlagsParameterization) : 
     }
 
     @Test
+    @DisableFlags(com.android.systemui.Flags.FLAG_ALLOW_DOZE_TOUCHES_FOR_LOCK_ICON)
     fun shouldInterceptTouchEvent_dozing_touchInStatusBar_touchIntercepted() {
         // GIVEN dozing
         whenever(sysuiStatusBarStateController.isDozing).thenReturn(true)
+        // AND quick settings controller DOES want it
+        whenever(quickSettingsController.shouldQuickSettingsIntercept(any(), any(), any()))
+            .thenReturn(true)
+
+        // THEN touch should be intercepted by NotificationShade
+        assertThat(interactionEventHandler.shouldInterceptTouchEvent(DOWN_EVENT)).isTrue()
+    }
+
+    @Test
+    @EnableFlags(com.android.systemui.Flags.FLAG_ALLOW_DOZE_TOUCHES_FOR_LOCK_ICON)
+    fun shouldInterceptTouchEvent_aodInterceptingTouches_touchIntercepted() {
+        // GIVEN dozing
+        kosmos.fakeKeyguardRepository.setDozeTransitionModel(
+            DozeTransitionModel(from = DozeStateModel.INITIALIZED, to = DozeStateModel.DOZE_AOD)
+        )
+        // AND quick settings controller doesn't want it
+        whenever(quickSettingsController.shouldQuickSettingsIntercept(any(), any(), any()))
+            .thenReturn(false)
+
+        // THEN touch should be intercepted by NotificationShade
+        assertThat(interactionEventHandler.shouldInterceptTouchEvent(DOWN_EVENT)).isTrue()
+    }
+
+    @Test
+    @EnableFlags(com.android.systemui.Flags.FLAG_ALLOW_DOZE_TOUCHES_FOR_LOCK_ICON)
+    fun shouldInterceptTouchEvent_aod_touchInStatusBar_touchIntercepted() {
+        // GIVEN dozing
+        kosmos.fakeKeyguardRepository.setDozeTransitionModel(
+            DozeTransitionModel(from = DozeStateModel.INITIALIZED, to = DozeStateModel.DOZE_AOD)
+        )
+
         // AND quick settings controller DOES want it
         whenever(quickSettingsController.shouldQuickSettingsIntercept(any(), any(), any()))
             .thenReturn(true)
@@ -496,6 +533,9 @@ class NotificationShadeWindowViewControllerTest(flags: FlagsParameterization) : 
         whenever(sysuiStatusBarStateController.isDozing).thenReturn(true)
         // AND pulsing
         whenever(dozeServiceHost.isPulsing()).thenReturn(true)
+        kosmos.fakeKeyguardRepository.setDozeTransitionModel(
+            DozeTransitionModel(from = DozeStateModel.DOZE_AOD, to = DozeStateModel.DOZE_PULSING)
+        )
         // AND quick settings controller DOES want it
         whenever(quickSettingsController.shouldQuickSettingsIntercept(any(), any(), any()))
             .thenReturn(true)
