@@ -36,6 +36,7 @@ import com.android.internal.protolog.ProtoLog
 import com.android.internal.statusbar.IStatusBarService
 import com.android.launcher3.icons.BubbleIconFactory
 import com.android.wm.shell.ShellTaskOrganizer
+import com.android.wm.shell.bubbles.logging.BubbleLogger
 import com.android.wm.shell.bubbles.logging.BubbleSessionTracker
 import com.android.wm.shell.bubbles.logging.BubbleSessionTrackerImpl
 import com.android.wm.shell.bubbles.storage.BubblePersistentRepository

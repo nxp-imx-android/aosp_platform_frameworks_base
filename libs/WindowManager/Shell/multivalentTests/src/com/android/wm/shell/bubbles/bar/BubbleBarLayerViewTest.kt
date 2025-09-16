@@ -46,7 +46,6 @@ import com.android.wm.shell.bubbles.BubbleController
 import com.android.wm.shell.bubbles.BubbleData
 import com.android.wm.shell.bubbles.BubbleDataRepository
 import com.android.wm.shell.bubbles.BubbleExpandedViewManager
-import com.android.wm.shell.bubbles.BubbleLogger
 import com.android.wm.shell.bubbles.BubblePositioner
 import com.android.wm.shell.bubbles.BubbleResizabilityChecker
 import com.android.wm.shell.bubbles.BubbleTransitions
@@ -57,6 +56,7 @@ import com.android.wm.shell.bubbles.FakeBubbleFactory
 import com.android.wm.shell.bubbles.FakeBubbleTaskViewFactory
 import com.android.wm.shell.bubbles.UiEventSubject.Companion.assertThat
 import com.android.wm.shell.bubbles.animation.AnimatableScaleMatrix
+import com.android.wm.shell.bubbles.logging.BubbleLogger
 import com.android.wm.shell.bubbles.logging.BubbleSessionTracker
 import com.android.wm.shell.bubbles.logging.BubbleSessionTrackerImpl
 import com.android.wm.shell.bubbles.storage.BubblePersistentRepository

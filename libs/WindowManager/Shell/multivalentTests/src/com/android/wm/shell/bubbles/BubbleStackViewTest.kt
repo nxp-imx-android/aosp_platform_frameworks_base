@@ -44,6 +44,7 @@ import com.android.wm.shell.bubbles.BubbleStackView.SurfaceSynchronizer
 import com.android.wm.shell.bubbles.Bubbles.BubbleExpandListener
 import com.android.wm.shell.bubbles.Bubbles.SysuiProxy
 import com.android.wm.shell.bubbles.animation.AnimatableScaleMatrix
+import com.android.wm.shell.bubbles.logging.BubbleLogger
 import com.android.wm.shell.bubbles.logging.BubbleSessionTracker
 import com.android.wm.shell.bubbles.logging.BubbleSessionTrackerImpl
 import com.android.wm.shell.common.FloatingContentCoordinator

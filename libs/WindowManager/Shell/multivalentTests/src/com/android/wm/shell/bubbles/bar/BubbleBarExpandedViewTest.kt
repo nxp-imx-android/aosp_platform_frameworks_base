@@ -33,13 +33,13 @@ import com.android.internal.protolog.ProtoLog
 import com.android.wm.shell.R
 import com.android.wm.shell.bubbles.Bubble
 import com.android.wm.shell.bubbles.BubbleExpandedViewManager
-import com.android.wm.shell.bubbles.BubbleLogger
 import com.android.wm.shell.bubbles.BubblePositioner
 import com.android.wm.shell.bubbles.BubbleTaskView
 import com.android.wm.shell.bubbles.FakeBubbleExpandedViewManager
 import com.android.wm.shell.bubbles.FakeBubbleFactory
 import com.android.wm.shell.bubbles.FakeBubbleTaskViewFactory
 import com.android.wm.shell.bubbles.UiEventSubject.Companion.assertThat
+import com.android.wm.shell.bubbles.logging.BubbleLogger
 import com.android.wm.shell.common.TestShellExecutor
 import com.android.wm.shell.shared.bubbles.DeviceConfig
 import com.google.common.truth.Truth.assertThat

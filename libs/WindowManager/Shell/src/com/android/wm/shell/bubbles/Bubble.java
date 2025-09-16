@@ -976,7 +976,7 @@ public class Bubble implements BubbleViewProvider {
     /**
      * Whether this notification should be shown in the shade.
      */
-    boolean showInShade() {
+    public boolean showInShade() {
         return !shouldSuppressNotification() || !mIsDismissable;
     }
 

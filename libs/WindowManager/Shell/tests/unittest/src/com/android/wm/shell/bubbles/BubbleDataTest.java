@@ -54,6 +54,7 @@ import androidx.test.filters.SmallTest;
 import com.android.internal.logging.testing.UiEventLoggerFake;
 import com.android.wm.shell.ShellTestCase;
 import com.android.wm.shell.bubbles.BubbleData.TimeSource;
+import com.android.wm.shell.bubbles.logging.BubbleLogger;
 import com.android.wm.shell.common.ShellExecutor;
 import com.android.wm.shell.shared.bubbles.BubbleBarLocation;
 import com.android.wm.shell.shared.bubbles.BubbleBarUpdate;
