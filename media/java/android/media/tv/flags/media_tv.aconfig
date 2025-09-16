@@ -139,6 +139,13 @@ flag {
 }
 
 flag {
+    name: "media_quality_fw_picture_post_processing"
+    namespace: "tv_os"
+    description: "Feature flag to enable picture post processing APIs in media quality framework for Android 17"
+    bug: "443329020"
+}
+
+flag {
     name: "tif_extension_standardization_c"
     namespace: "tv_os"
     description: "Continue efforts for standardizing AIDL Extension Interface of TIS in Android 17"
