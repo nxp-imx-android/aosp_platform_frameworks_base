@@ -96,22 +96,14 @@
     <string name="message_restore_error_installer_absent" msgid="8492838251989389724">"Pour restaurer cette appli, vous devrez installer <xliff:g id="INSTALLER_NAME">%1$s</xliff:g>"</string>
     <string name="message_restore_error_generic" msgid="5903850636679929406">"Un problème est survenu lors de la restauration de cette appli"</string>
     <string name="message_uninstall_activity" msgid="3263352475743590167">"<xliff:g id="ACTIVITY_NAME">%1$s</xliff:g> fait partie de l\'appli suivante : <xliff:g id="APP_NAME">%2$s</xliff:g>"</string>
-    <!-- no translation found for cannot_install_app_blocked_summary (2082063650842897085) -->
-    <skip />
-    <!-- no translation found for cannot_update_app_blocked_summary (7607734844900187499) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_no_internet_summary (7298957699553589600) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_no_internet_summary (8094414928318316598) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_summary (3830073638843524892) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_unavailable_summary (342184955548504019) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_fail_closed_summary (3552780111383069051) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_unavailable_fail_closed_summary (353457015429601377) -->
-    <skip />
+    <string name="cannot_install_app_blocked_summary" msgid="2082063650842897085">"&lt;p&gt;Cette appli a été bloquée. Afin d\'assurer la sécurité de votre appareil et de vos données, seules les applis de développeurs vérifiés peuvent être installées.&lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;En savoir plus sur la vérification des développeurs&lt;/a&gt;"</string>
+    <string name="cannot_update_app_blocked_summary" msgid="7607734844900187499">"&lt;p&gt;Cette appli n\'a pas été mise à jour. Afin d\'assurer la sécurité de votre appareil et de vos données, seules les mises à jour de développeurs vérifiés peuvent être installées.&lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;En savoir plus sur la vérification des développeurs&lt;/a&gt;"</string>
+    <string name="cannot_install_verification_no_internet_summary" msgid="7298957699553589600">"&lt;p&gt;Cette appli n\'a pas été installée. Les applis provenant de développeurs non vérifiés peuvent être dangereuses.&lt;/p&gt; &lt;p&gt;Une connexion Internet est requise pour vérifier le développeur d\'applis. Vérifiez votre connexion, puis réessayez l\'installation. &lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;En savoir plus sur la vérification des développeurs&lt;/a&gt;"</string>
+    <string name="cannot_update_verification_no_internet_summary" msgid="8094414928318316598">"&lt;p&gt;Cette appli n\'a pas été mise à jour. Les mises à jour provenant de développeurs non vérifiés peuvent être dangereuses.&lt;/p&gt; &lt;p&gt;Une connexion Internet est requise pour vérifier le développeur d\'applis. Vérifiez votre connexion, puis réessayez la mise à jour. &lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;En savoir plus sur la vérification des développeurs&lt;/a&gt;"</string>
+    <string name="cannot_install_verification_unavailable_summary" msgid="3830073638843524892">"&lt;p&gt;Un problème est survenu lors de la vérification du développeur de cette appli. Les applis provenant de développeurs non vérifiés peuvent être dangereuses; l\'appli n\'a donc pas été installée.&lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;En savoir plus sur la vérification des développeurs&lt;/a&gt;"</string>
+    <string name="cannot_update_verification_unavailable_summary" msgid="342184955548504019">"&lt;p&gt;Un problème est survenu lors de la vérification du développeur de cette appli. Les mises à jour provenant de développeurs non vérifiés peuvent être dangereuses; l\'appli n\'a donc pas été mise à jour.&lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;En savoir plus sur la vérification des développeurs&lt;/a&gt;"</string>
+    <string name="cannot_install_verification_unavailable_fail_closed_summary" msgid="3552780111383069051">"&lt;p&gt;Cette appli a été bloquée, car un problème est survenu lors de la vérification du développeur. Afin d\'assurer la sécurité de votre appareil et de vos données, seules les applis de développeurs vérifiés peuvent être installées.&lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;En savoir plus sur la vérification des développeurs&lt;/a&gt;"</string>
+    <string name="cannot_update_verification_unavailable_fail_closed_summary" msgid="353457015429601377">"&lt;p&gt;Cette appli n\'a pas été mise à jour, car un problème est survenu lors de la vérification du développeur. Afin d\'assurer la sécurité de votre appareil et de vos données, seules les mises à jour de développeurs vérifiés peuvent être installées.&lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;En savoir plus sur la vérification des développeurs&lt;/a&gt;"</string>
     <string name="more_details_expanded_install_summary" msgid="3545896392881608712">"Si vous installez l\'appli sans effectuer la vérification, gardez à l\'esprit que les applis provenant de développeurs non vérifiés peuvent poser un risque pour votre appareil et vos données."</string>
     <string name="more_details_expanded_update_summary" msgid="2239162864839036480">"Si vous effectuez une mise à jour sans procéder à la vérification, gardez à l\'esprit que les mises à jour provenant de développeurs non vérifiés peuvent poser un risque pour votre appareil et vos données."</string>
     <string name="cannot_install_app_blocked_title" msgid="6372444121824751694">"Développeur d\'applis non vérifié"</string>

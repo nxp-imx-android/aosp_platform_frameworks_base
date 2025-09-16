@@ -96,22 +96,14 @@
     <string name="message_restore_error_installer_absent" msgid="8492838251989389724">"Az alkalmazás visszaállításához telepítse a következőt: <xliff:g id="INSTALLER_NAME">%1$s</xliff:g>."</string>
     <string name="message_restore_error_generic" msgid="5903850636679929406">"Hiba történt az alkalmazás visszaállítása során."</string>
     <string name="message_uninstall_activity" msgid="3263352475743590167">"A(z) <xliff:g id="ACTIVITY_NAME">%1$s</xliff:g> a következő alkalmazás része: <xliff:g id="APP_NAME">%2$s</xliff:g>"</string>
-    <!-- no translation found for cannot_install_app_blocked_summary (2082063650842897085) -->
-    <skip />
-    <!-- no translation found for cannot_update_app_blocked_summary (7607734844900187499) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_no_internet_summary (7298957699553589600) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_no_internet_summary (8094414928318316598) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_summary (3830073638843524892) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_unavailable_summary (342184955548504019) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_fail_closed_summary (3552780111383069051) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_unavailable_fail_closed_summary (353457015429601377) -->
-    <skip />
+    <string name="cannot_install_app_blocked_summary" msgid="2082063650842897085">"&lt;p&gt;Ez az alkalmazás le van tiltva. Az eszköze és az adatai biztonságának megőrzése érdekében csak ellenőrzött fejlesztőktől származó alkalmazások telepíthetők.&lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;További információ a fejlesztők ellenőrzéséről.&lt;/a&gt;"</string>
+    <string name="cannot_update_app_blocked_summary" msgid="7607734844900187499">"&lt;p&gt;Az alkalmazás nem frissült. Az eszköze és az adatai biztonságának megőrzése érdekében csak ellenőrzött fejlesztőktől származó frissítések telepíthetők.&lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;További információ a fejlesztők ellenőrzéséről&lt;/a&gt;."</string>
+    <string name="cannot_install_verification_no_internet_summary" msgid="7298957699553589600">"&lt;p&gt;Az alkalmazás nem lett telepítve. Előfordulhat, hogy a nem ellenőrzött fejlesztőktől származó alkalmazások nem biztonságosak.&lt;/p&gt; &lt;p&gt;Az alkalmazásfejlesztő ellenőrzéséhez internetkapcsolat szükséges. Ellenőrizze a kapcsolatot, majd próbálkozzon újra a telepítéssel. &lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;További információ a fejlesztők ellenőrzéséről&lt;/a&gt;."</string>
+    <string name="cannot_update_verification_no_internet_summary" msgid="8094414928318316598">"&lt;p&gt;Az alkalmazás nem frissült. Előfordulhat, hogy a nem ellenőrzött fejlesztőtől származó frissítések nem biztonságosak.&lt;/p&gt; &lt;p&gt;Az alkalmazásfejlesztő ellenőrzéséhez internetkapcsolat szükséges. Ellenőrizze a kapcsolatot, majd próbálkozzon újra a frissítéssel. &lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;További információ a fejlesztők ellenőrzéséről&lt;/a&gt;."</string>
+    <string name="cannot_install_verification_unavailable_summary" msgid="3830073638843524892">"&lt;p&gt;Hiba történt az alkalmazás fejlesztőjének ellenőrzésekor. Előfordulhat, hogy a nem ellenőrzött fejlesztőktől származó alkalmazások nem biztonságosak, ezért az alkalmazás nem lett telepítve.&lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;További információ a fejlesztők ellenőrzéséről&lt;/a&gt;."</string>
+    <string name="cannot_update_verification_unavailable_summary" msgid="342184955548504019">"&lt;p&gt;Hiba történt az alkalmazás fejlesztőjének ellenőrzésekor. Előfordulhat, hogy a nem ellenőrzött fejlesztőktől származó frissítések nem biztonságosak, ezért az alkalmazás nem frissült.&lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;További információ a fejlesztők ellenőrzéséről&lt;/a&gt;."</string>
+    <string name="cannot_install_verification_unavailable_fail_closed_summary" msgid="3552780111383069051">"&lt;p&gt;Ezt az alkalmazást letiltottuk, mert probléma merült fel a fejlesztő ellenőrzése során. Az eszköze és az adatai biztonságának megőrzése érdekében csak ellenőrzött fejlesztőktől származó alkalmazások telepíthetők.&lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;További információ a fejlesztők ellenőrzéséről.&lt;/a&gt;"</string>
+    <string name="cannot_update_verification_unavailable_fail_closed_summary" msgid="353457015429601377">"&lt;p&gt;Az alkalmazás nem frissült, mert probléma merült fel a fejlesztő ellenőrzése során. Az eszköze és az adatai biztonságának megőrzése érdekében csak ellenőrzött fejlesztőktől származó frissítések telepíthetők.&lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;További információ a fejlesztők ellenőrzéséről&lt;/a&gt;."</string>
     <string name="more_details_expanded_install_summary" msgid="3545896392881608712">"Felhívjuk figyelmét, hogy az ellenőrzés nélküli telepítés esetén a nem ellenőrzött fejlesztőktől származó alkalmazások veszélyeztethetik az Ön eszközét és adatait."</string>
     <string name="more_details_expanded_update_summary" msgid="2239162864839036480">"Ellenőrzés nélküli frissítés esetén tartsa szem előtt, hogy a nem ellenőrzött fejlesztőktől származó frissítések veszélyeztethetik az Ön eszközét és adatait."</string>
     <string name="cannot_install_app_blocked_title" msgid="6372444121824751694">"Az alkalmazásfejlesztő nem ellenőrzött"</string>
