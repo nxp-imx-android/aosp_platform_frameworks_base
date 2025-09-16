@@ -26,7 +26,6 @@ import static android.view.WindowManager.TRANSIT_TO_FRONT;
 
 import static com.android.window.flags.Flags.enableHandlersDebuggingMode;
 import static com.android.wm.shell.bubbles.util.BubbleUtils.getExitBubbleTransaction;
-import static com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_BUBBLES;
 import static com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_BUBBLES_NOISY;
 import static com.android.wm.shell.transition.TransitionDispatchState.CAPTURED_CHANGE_IN_WRONG_TRANSITION;
 import static com.android.wm.shell.transition.TransitionDispatchState.CAPTURED_UNRELATED_CHANGE;
@@ -61,6 +60,7 @@ import com.android.wm.shell.common.ShellExecutor;
 import com.android.wm.shell.common.SyncTransactionQueue;
 import com.android.wm.shell.shared.TransitionUtil;
 import com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper;
+import com.android.wm.shell.shared.bubbles.logging.BubbleLog;
 import com.android.wm.shell.transition.TransitionDispatchState;
 import com.android.wm.shell.transition.Transitions;
 
@@ -186,8 +186,7 @@ public class TaskViewTransitions implements Transitions.TransitionHandler, TaskV
      * In practice, the external is usually another transition on a different handler.
      */
     public void enqueueExternal(@NonNull TaskViewTaskController taskView, ExternalTransition ext) {
-        ProtoLog.d(WM_SHELL_BUBBLES,
-                "TaskViewTransitions.enqueueExternal(): transition=%s taskView=%d pending=%d",
+        BubbleLog.d("TaskViewTransitions.enqueueExternal() transition=%s taskView=%d pending=%d",
                 ext, taskView.hashCode(), mPending.size());
         final PendingTransition pending = new PendingTransition(
                 TRANSIT_NONE, null /* wct */, taskView, null /* cookie */);
@@ -205,9 +204,8 @@ public class TaskViewTransitions implements Transitions.TransitionHandler, TaskV
      */
     public void enqueueRunningExternal(@NonNull TaskViewTaskController taskView,
             IBinder transition) {
-        ProtoLog.d(WM_SHELL_BUBBLES,
-                "TaskViewTransitions.enqueueRunningExternal(): "
-                    + "transition=%s taskView=%d pending=%d",
+        BubbleLog.d("TaskViewTransitions.enqueueRunningExternal() transition=%s taskView=%d"
+                + " pending=%d",
                 transition, taskView.hashCode(), mPending.size());
         final PendingTransition pending = new PendingTransition(
                 TRANSIT_NONE, null /* wct */, taskView, null /* cookie */);
@@ -714,7 +712,7 @@ public class TaskViewTransitions implements Transitions.TransitionHandler, TaskV
         if (transitionInfo == null || transitionInfo.getChanges().isEmpty()) {
             PendingTransition pending = findPending(transition);
             if (pending != null) {
-                ProtoLog.e(WM_SHELL_BUBBLES, "Transitions.startAnimation(): found a transition with"
+                BubbleLog.e("TaskViewTransitions.startAnimation(): found a transition with"
                                 + "no changes that is managed by TaskViewTransitions. taskView=%d "
                                 + "type=%s transition=%s", pending.mTaskView.hashCode(),
                         transitTypeToString(pending.mType), transition);
@@ -823,8 +821,8 @@ public class TaskViewTransitions implements Transitions.TransitionHandler, TaskV
                         updateBounds(infoTv, boundsOnScreen, startTransaction, finishTransaction,
                                 taskInfo, leash, wct);
                         if (changingDisplayId == task.getEndDisplayId()) {
-                            ProtoLog.d(WM_SHELL_BUBBLES, "Transitions.startAnimation(): "
-                                    + "display change, taskView=%d", infoTv.hashCode());
+                            BubbleLog.d("TaskViewTransitions.startAnimation() display change,"
+                                    + " taskView=%d", infoTv.hashCode());
                             // Remove the change from TransitionInfo to avoid the transition from
                             // being handled by another TaskViewTransitions instance.
                             info.getChanges().remove(task);
@@ -1032,8 +1030,7 @@ public class TaskViewTransitions implements Transitions.TransitionHandler, TaskV
             return false;
         }
         if (changingDisplayId > -1 && taskViewChanges != null) {
-            ProtoLog.d(WM_SHELL_BUBBLES, "Transitions.startAnimationLegacy(): "
-                    + "handle display change");
+            BubbleLog.d("TaskViewTransitions.startAnimationLegacy() handle display change");
             // Remove the change from TransitionInfo to avoid being handled by
             // another TaskViewTransitions instance.
             info.getChanges().removeAll(taskViewChanges);
@@ -1205,7 +1202,7 @@ public class TaskViewTransitions implements Transitions.TransitionHandler, TaskV
             updateSurface(leash, startT, finishT, taskView, endBounds.width(), endBounds.height());
             hasHandledTaskView = true;
         }
-        ProtoLog.d(WM_SHELL_BUBBLES, "mergeAnimation(): matchedPending=%b hasHandledTaskView=%b",
+        BubbleLog.d("TaskViewTransitions.mergeAnimation() matchedPending=%b hasHandledTaskView=%b",
                 pending != null, hasHandledTaskView);
         if (hasHandledTaskView) {
             startT.apply();
