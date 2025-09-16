@@ -799,8 +799,7 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
         // TODO (b/291907312): remove feature flag
         // NOTE: Prefer using the @EnableFlags annotation where possible. Do not add any android.app
         //  flags here.
-        mSetFlagsRule.disableFlags(
-                Flags.FLAG_POLITE_NOTIFICATIONS, Flags.FLAG_AUTOGROUP_SUMMARY_ICON_UPDATE);
+        mSetFlagsRule.disableFlags(Flags.FLAG_POLITE_NOTIFICATIONS);
 
         mActivityIntent = spy(PendingIntent.getActivity(mContext, 0,
                 new Intent().setPackage(mPkg), PendingIntent.FLAG_MUTABLE));

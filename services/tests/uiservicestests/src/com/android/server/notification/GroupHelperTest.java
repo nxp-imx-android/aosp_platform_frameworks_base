@@ -1147,7 +1147,6 @@ public class GroupHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags({Flags.FLAG_AUTOGROUP_SUMMARY_ICON_UPDATE})
     public void testAddSummary_sameIcon_sameColor() {
         final String pkg = "package";
         final Icon icon = mock(Icon.class);
@@ -1182,7 +1181,6 @@ public class GroupHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags({Flags.FLAG_AUTOGROUP_SUMMARY_ICON_UPDATE})
     public void testAddSummary_diffIcon_diffColor() {
         final String pkg = "package";
         final Icon initialIcon = mock(Icon.class);
@@ -1230,7 +1228,6 @@ public class GroupHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags({Flags.FLAG_AUTOGROUP_SUMMARY_ICON_UPDATE})
     public void testAddSummary_diffVisibility() {
         final String pkg = "package";
         final Icon icon = mock(Icon.class);
@@ -1274,8 +1271,7 @@ public class GroupHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags({Flags.FLAG_AUTOGROUP_SUMMARY_ICON_UPDATE,
-            FLAG_NOTIFICATION_FORCE_GROUPING})
+    @EnableFlags(FLAG_NOTIFICATION_FORCE_GROUPING)
     public void testAutoGrouped_diffIcon_diffColor_removeChild_updateTo_sameIcon_sameColor_forceGrouping() {
         final String pkg = "package";
         final Icon initialIcon = mock(Icon.class);
@@ -1312,7 +1308,6 @@ public class GroupHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_AUTOGROUP_SUMMARY_ICON_UPDATE)
     public void testAutobundledSummaryIcon_sameIcon() {
         final String pkg = "package";
         final Icon icon = mock(Icon.class);
@@ -1331,7 +1326,6 @@ public class GroupHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_AUTOGROUP_SUMMARY_ICON_UPDATE)
     public void testAutobundledSummaryIcon_diffIcon() {
         final String pkg = "package";
         // Spy GroupHelper for getMonochromeAppIcon
@@ -1352,7 +1346,6 @@ public class GroupHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_AUTOGROUP_SUMMARY_ICON_UPDATE)
     public void testAutobundledSummaryIconColor_sameColor() {
         final String pkg = "package";
         final int iconColor = Color.BLUE;
@@ -1370,7 +1363,6 @@ public class GroupHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_AUTOGROUP_SUMMARY_ICON_UPDATE)
     public void testAutobundledSummaryIconColor_diffColor() {
         final String pkg = "package";
         // Create notifications with different icon colors
@@ -1387,7 +1379,6 @@ public class GroupHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_AUTOGROUP_SUMMARY_ICON_UPDATE)
     public void testAutobundledSummaryVisibility_hasPublicChildren() {
         final String pkg = "package";
         final int iconColor = Color.BLUE;
@@ -1407,7 +1398,6 @@ public class GroupHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_AUTOGROUP_SUMMARY_ICON_UPDATE)
     public void testAutobundledSummaryVisibility_noPublicChildren() {
         final String pkg = "package";
         final int iconColor = Color.BLUE;
@@ -1484,7 +1474,6 @@ public class GroupHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_AUTOGROUP_SUMMARY_ICON_UPDATE)
     public void testAutobundledSummaryChannelId() {
         final String pkg = "package";
         final int iconColor = Color.BLUE;
@@ -1503,7 +1492,6 @@ public class GroupHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_AUTOGROUP_SUMMARY_ICON_UPDATE)
     public void testAutobundledSummaryChannelId_noChildren() {
         final String pkg = "package";
         // No child notifications
@@ -1515,7 +1503,6 @@ public class GroupHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_AUTOGROUP_SUMMARY_ICON_UPDATE)
     public void testMonochromeAppIcon_adaptiveIconExists() throws Exception {
         final String pkg = "testPackage";
         final int monochromeIconResId = 1234;
@@ -1529,7 +1516,6 @@ public class GroupHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_AUTOGROUP_SUMMARY_ICON_UPDATE)
     public void testMonochromeAppIcon_adaptiveIconMissing_fallback() throws Exception {
         final String pkg = "testPackage";
         final int fallbackIconResId = R.drawable.ic_notification_summary_auto;
