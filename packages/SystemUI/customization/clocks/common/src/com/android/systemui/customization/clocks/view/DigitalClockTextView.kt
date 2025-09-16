@@ -677,7 +677,6 @@ abstract class DigitalClockTextView(
         val FIDGET_HAPTICS =
             VibrationEffect.startComposition()
                 .addPrimitive(VibrationEffect.Composition.PRIMITIVE_THUD, 1.0f, 0)
-                .addPrimitive(VibrationEffect.Composition.PRIMITIVE_QUICK_RISE, 1.0f, 43)
                 .compose()
 
         val CHARGE_ANIMATION_DURATION = 400L
