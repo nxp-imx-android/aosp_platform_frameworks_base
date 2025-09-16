@@ -33,7 +33,6 @@ import androidx.test.uiautomator.Until
 import com.android.launcher3.tapl.LauncherInstrumentation
 import com.android.server.wm.flicker.helpers.DesktopModeAppHelper
 import com.android.server.wm.flicker.helpers.SimpleAppHelper
-import com.android.systemui.Flags.qsUiRefactorComposeFragment
 import java.util.regex.Pattern
 import org.junit.After
 import org.junit.Before
@@ -47,8 +46,9 @@ import org.junit.Test
  * - Then make sure the panel for single app selection appears.
  */
 @Ignore("Test Base Class")
-abstract class StartAppScreenRecordingFromNotification(val rotation: Rotation = Rotation.ROTATION_0) :
-    TestScenarioBase(rotation) {
+abstract class StartAppScreenRecordingFromNotification(
+    val rotation: Rotation = Rotation.ROTATION_0
+) : TestScenarioBase(rotation) {
 
     val instrumentation: Instrumentation = InstrumentationRegistry.getInstrumentation()
     val tapl = LauncherInstrumentation()
@@ -60,7 +60,7 @@ abstract class StartAppScreenRecordingFromNotification(val rotation: Rotation = 
     private val sysuiSelectorApp =
         ComponentNameMatcher(
             SYSTEMUI_PACKAGE,
-            "com.android.systemui.mediaprojection.appselector.MediaProjectionAppSelectorActivity"
+            "com.android.systemui.mediaprojection.appselector.MediaProjectionAppSelectorActivity",
         )
 
     @Before
@@ -83,23 +83,14 @@ abstract class StartAppScreenRecordingFromNotification(val rotation: Rotation = 
         openScreenRecorder()
         chooseSingleAppOption()
         startScreenSharing()
-        wmHelper
-            .StateSyncBuilder()
-            .withWindowSurfaceAppeared(sysuiSelectorApp)
-            .waitForAndVerify()
+        wmHelper.StateSyncBuilder().withWindowSurfaceAppeared(sysuiSelectorApp).waitForAndVerify()
     }
 
     protected fun openScreenRecorder() {
         val quickSettings = Root.get().openQuickSettings()
 
-        // Launch the screen recorder by clicking the QuickSettings tile
-        if (qsUiRefactorComposeFragment()) {
-            val screenRecordTile = quickSettings.findComposeTile("Screen record")
-            screenRecordTile.click()
-        } else {
-            val screenRecordTile = quickSettings.findTile("Screen record")
-            screenRecordTile.clickWithoutAssertions()
-        }
+        val screenRecordTile = quickSettings.findComposeTile("Screen record")
+        screenRecordTile.click()
 
         // Wait for the app selection to launch
         Root.get().mediaProjectionPermissionDialog
