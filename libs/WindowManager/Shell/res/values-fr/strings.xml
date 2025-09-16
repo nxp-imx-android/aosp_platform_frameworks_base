@@ -169,7 +169,7 @@
     <string name="app_header_talkback_action_minimize_button_text" msgid="7491054416186901764">"Réduire la fenêtre de l\'application"</string>
     <string name="app_header_talkback_action_close_button_text" msgid="5159612596378268926">"Fermer la fenêtre de l\'application"</string>
     <string name="open_by_default_settings_text" msgid="2526548548598185500">"Ouvrir les paramètres par défaut"</string>
-    <string name="open_by_default_dialog_subheader_text" msgid="1729599730664063881">"Choisir comment ouvrir les liens Web pour cette appli"</string>
+    <string name="open_by_default_dialog_subheader_text" msgid="1729599730664063881">"Choisissez comment ouvrir les liens Web pour cette appli"</string>
     <string name="open_by_default_dialog_in_app_text" msgid="6978022419634199806">"Dans l\'application"</string>
     <string name="open_by_default_dialog_in_browser_text" msgid="8042769465958497081">"Dans votre navigateur"</string>
     <string name="open_by_default_dialog_dismiss_button_text" msgid="3487238795534582291">"OK"</string>
