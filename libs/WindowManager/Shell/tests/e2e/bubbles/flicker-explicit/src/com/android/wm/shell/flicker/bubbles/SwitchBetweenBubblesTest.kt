@@ -106,12 +106,19 @@ class SwitchBetweenBubblesTest(navBar: NavBar) : BubbleFlickerTestBase(),
         if (tapl.isTablet) {
             eventLogSubject.focusChanges(previousApp.toWindowName(), testApp.toWindowName())
         } else {
-            eventLogSubject.focusChanges(
-                previousApp.toWindowName(),
-                // Launcher may get focus when tapping on bubble icon.
-                LAUNCHER.toWindowName(),
-                testApp.toWindowName()
-            )
+            if (Flags.fixBubblesImeFocusFlicker()) {
+                eventLogSubject.focusChanges(
+                    previousApp.toWindowName(),
+                    testApp.toWindowName()
+                )
+            } else {
+                eventLogSubject.focusChanges(
+                    previousApp.toWindowName(),
+                    // Launcher may get focus when tapping on bubble icon.
+                    LAUNCHER.toWindowName(),
+                    testApp.toWindowName()
+                )
+            }
         }
     }
 
