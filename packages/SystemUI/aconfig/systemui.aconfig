@@ -1893,6 +1893,13 @@ flag {
 }
 
 flag {
+    name: "large_screen_screenshot_save_location"
+    namespace: "systemui"
+    description: "Enables ability to specify a custom save location for screenshots within settings menu on large screen devices."
+    bug: "439894467"
+}
+
+flag {
     name: "large_screen_recording"
     namespace: "systemui"
     description: "Enables screen recording UI for large screen devices."
