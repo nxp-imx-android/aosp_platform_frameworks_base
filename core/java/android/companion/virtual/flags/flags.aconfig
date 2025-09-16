@@ -286,3 +286,13 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "computer_control_config_change_override"
+    namespace: "virtual_devices"
+    description: "Overrides configuration changes for display moves from/to ComputerControl VirtualDisplays"
+    bug: "437848392"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
