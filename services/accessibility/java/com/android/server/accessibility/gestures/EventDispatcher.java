@@ -32,7 +32,6 @@ import android.view.accessibility.AccessibilityManager;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.server.accessibility.AccessibilityManagerService;
 import com.android.server.accessibility.EventStreamTransformation;
-import com.android.server.accessibility.Flags;
 import com.android.server.policy.WindowManagerPolicy;
 
 /**
@@ -202,9 +201,7 @@ public class EventDispatcher {
     AccessibilityEvent populateAccessibilityEvent(int type) {
         AccessibilityEvent event = new AccessibilityEvent(type);
         event.setWindowId(mAms.getActiveWindowId());
-        if (Flags.touchExplorerA11yEventsIncludeDisplayId()) {
-            event.setDisplayId(mDisplayId);
-        }
+        event.setDisplayId(mDisplayId);
         return event;
     }
 
