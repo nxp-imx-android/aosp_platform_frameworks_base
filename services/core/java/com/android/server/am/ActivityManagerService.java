@@ -2275,6 +2275,16 @@ public class ActivityManagerService extends IActivityManager.Stub
             }
         }
 
+        @Override
+        public void onUserStarting(@NonNull TargetUser user) {
+            mService.mCoreSettingsObserver.onUserStarting(user.getUserIdentifier());
+        }
+
+        @Override
+        public void onUserStopping(@NonNull TargetUser user) {
+            mService.mCoreSettingsObserver.onUserStopping(user.getUserIdentifier());
+        }
+
         public ActivityManagerService getService() {
             return mService;
         }
@@ -4837,7 +4847,7 @@ public class ActivityManagerService extends IActivityManager.Stub
                         preBindInfo.configuration,
                         app.getCompat(),
                         getCommonServicesLocked(app.isolated),
-                        mCoreSettingsObserver.getCoreSettings(),
+                        mCoreSettingsObserver.getCoreSettings(app.userId),
                         buildSerial,
                         autofillOptions,
                         contentCaptureOptions,
@@ -16268,6 +16278,19 @@ public class ActivityManagerService extends IActivityManager.Stub
     }
 
     void onCoreSettingsChange(Bundle settings) {
+        synchronized (mProcLock) {
+            mProcessList.updateCoreSettingsLOSP(settings);
+        }
+    }
+
+    /**
+     * Called when core settings change for one or more users. This method receives the updated
+     * settings and dispatches them to all relevant application processes.
+     *
+     * @param settings A {@link SparseArray} mapping each user ID to a {@link Bundle} containing
+     * their core settings.
+     */
+    void onCoreSettingsChange(SparseArray<Bundle> settings) {
         synchronized (mProcLock) {
             mProcessList.updateCoreSettingsLOSP(settings);
         }

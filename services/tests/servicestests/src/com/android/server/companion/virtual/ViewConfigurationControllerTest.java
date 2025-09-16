@@ -19,8 +19,8 @@ package com.android.server.companion.virtual;
 import static com.google.common.truth.Truth.assertThat;
 
 import static org.junit.Assert.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -84,12 +84,11 @@ public class ViewConfigurationControllerTest {
         Context context = Mockito.spy(new ContextWrapper(
                 InstrumentationRegistry.getInstrumentation().getTargetContext()));
         when(context.getSystemService(OverlayManager.class)).thenReturn(mOverlayManagerMock);
-        when(context.createDeviceContext(anyInt())).thenReturn(context);
         mViewConfigurationController = new ViewConfigurationController(context, mSettingsWriter);
     }
 
     @Test
-    public void applyViewConfigurationParams_enablesResourceOverlay() throws Exception {
+    public void applyViewConfigurationParams_enablesResourceOverlay() {
         mViewConfigurationController.applyViewConfigurationParams(DEVICE_ID,
                 createParamsRequiringResourceOverlay());
 
@@ -112,7 +111,7 @@ public class ViewConfigurationControllerTest {
     }
 
     @Test
-    public void close_disablesResourceOverlay() throws Exception {
+    public void close_disablesResourceOverlay() {
         mViewConfigurationController.applyViewConfigurationParams(DEVICE_ID,
                 createParamsRequiringResourceOverlay());
         clearInvocations(mOverlayManagerMock);
@@ -131,18 +130,18 @@ public class ViewConfigurationControllerTest {
     }
 
     @Test
-    public void applyViewConfigurationParams_doesNotEnableResourceOverlay() throws Exception {
+    public void applyViewConfigurationParams_doesNotEnableResourceOverlay() {
         mViewConfigurationController.applyViewConfigurationParams(DEVICE_ID,
                 createParamsRequiringSettingsOverride());
         verifyNoInteractions(mOverlayManagerMock);
     }
 
     @Test
-    public void applyViewConfigurationParams_writesSettings() throws Exception {
+    public void applyViewConfigurationParams_writesSettings() {
         mViewConfigurationController.applyViewConfigurationParams(DEVICE_ID,
                 createParamsRequiringSettingsOverride());
-        verify(mSettingsWriter, times(2)).writeSettings(any(), mSettingsKeyCaptor.capture(),
-                anyInt());
+        verify(mSettingsWriter, times(2)).writeSettings(mSettingsKeyCaptor.capture(),
+                anyInt(), eq(DEVICE_ID));
         assertThat(mSettingsKeyCaptor.getAllValues()).containsExactly(
                 Settings.Secure.LONG_PRESS_TIMEOUT, Settings.Secure.MULTI_PRESS_TIMEOUT);
     }
