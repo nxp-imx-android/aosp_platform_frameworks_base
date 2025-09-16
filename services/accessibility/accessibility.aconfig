@@ -32,6 +32,13 @@ flag {
 }
 
 flag {
+    name: "enable_color_correction_saturation"
+    namespace: "accessibility"
+    description: "Feature allows users to change color correction saturation for daltonizer."
+    bug: "322829049"
+}
+
+flag {
     name: "enable_low_vision_generic_feedback"
     namespace: "accessibility"
     description: "Use generic feedback for low vision."
@@ -46,10 +53,24 @@ flag {
 }
 
 flag {
+    name: "enable_magnification_follows_mouse_with_pointer_motion_filter"
+    namespace: "accessibility"
+    description: "Whether to enable mouse following using pointer motion filter"
+    bug: "361817142"
+}
+
+flag {
     name: "enable_magnification_joystick"
     namespace: "accessibility"
     description: "Whether to enable joystick controls for magnification"
     bug: "297211257"
+}
+
+flag {
+    name: "enable_magnification_magnify_nav_bar_and_ime"
+    namespace: "accessibility"
+    description: "Whether to enable magnify navigation bar and ime on full screen"
+    bug: "342509709"
 }
 
 flag {
@@ -64,20 +85,6 @@ flag {
     namespace: "accessibility"
     description: "Whether to allow easy-mode (one finger panning gesture) for magnification"
     bug: "282039824"
-}
-
-flag {
-    name: "enable_magnification_follows_mouse_with_pointer_motion_filter"
-    namespace: "accessibility"
-    description: "Whether to enable mouse following using pointer motion filter"
-    bug: "361817142"
-}
-
-flag {
-    name: "enable_magnification_magnify_nav_bar_and_ime"
-    namespace: "accessibility"
-    description: "Whether to enable magnify navigation bar and ime on full screen"
-    bug: "342509709"
 }
 
 flag {
@@ -129,13 +136,6 @@ flag {
     namespace: "accessibility"
     description: "Sends accessibility events in TouchExplorer#onAccessibilityEvent based on internal state to keep it consistent. This reduces test flakiness."
     bug: "295575684"
-}
-
-flag {
-    name: "enable_color_correction_saturation"
-    namespace: "accessibility"
-    description: "Feature allows users to change color correction saturation for daltonizer."
-    bug: "322829049"
 }
 
 flag {
