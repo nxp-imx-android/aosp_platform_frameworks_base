@@ -54,9 +54,6 @@ import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.graphics.toAndroidRectF
-import androidx.compose.ui.layout.boundsInWindow
-import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.painterResource
@@ -84,7 +81,6 @@ import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.media.remedia.ui.compose.Media
 import com.android.systemui.media.remedia.ui.compose.MediaPresentationStyle
 import com.android.systemui.notifications.ui.composable.SnoozeableHeadsUpNotificationSpace
-import com.android.systemui.notifications.ui.composable.headsUpTopInset
 import com.android.systemui.qs.composefragment.ui.GridAnchor
 import com.android.systemui.qs.flags.QsDetailedView
 import com.android.systemui.qs.panels.ui.compose.EditMode
@@ -165,7 +161,6 @@ constructor(
             quickSettingsContainerViewModel.brightnessSliderViewModel.showMirror
         val contentAlphaFromBrightnessMirror by
             animateFloatAsState(if (showBrightnessMirror) 0f else 1f)
-        val headsUpInset = with(LocalDensity.current) { headsUpTopInset().toPx() }
 
         val targetBlurRadiusPx: Float by
             remember(layoutState) {
@@ -236,17 +231,6 @@ constructor(
                 },
                 stackScrollView = notificationStackScrollView.get(),
                 viewModel = hunPlaceholderViewModel,
-                modifier =
-                    Modifier.onGloballyPositioned { layoutCoordinates ->
-                        val bounds = layoutCoordinates.boundsInWindow().toAndroidRectF()
-                        if (bounds.height() > 0) {
-                            // HUN gesture area must extend from the top of the screen for
-                            // animations
-                            bounds.top = 0f
-                            bounds.bottom += headsUpInset
-                            notificationStackScrollView.get().updateDrawBounds(bounds)
-                        }
-                    },
             )
         }
     }
