@@ -121,6 +121,8 @@ public class BackupEligibilityRulesTest {
         when(mUserManagerInternal.getUserInfo(mUserId)).thenReturn(mUserInfo);
         mockContextForFullUser();
         mBackupEligibilityRules = getBackupEligibilityRules(BackupDestination.CLOUD);
+        when(mContext.createContextAsUser(eq(UserHandle.of(mUserId)), eq(0))).thenReturn(mContext);
+        when(mContext.getPackageManager()).thenReturn(mPackageManager);
     }
 
     @Test

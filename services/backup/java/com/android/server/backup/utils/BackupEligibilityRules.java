@@ -95,6 +95,7 @@ public class BackupEligibilityRules {
     private final PackageManagerInternal mPackageManagerInternal;
     private final UserManagerInternal mUserManagerInternal;
     private final int mUserId;
+    private final Context mContext;
     @BackupDestination private final int mBackupDestination;
     private final boolean mSkipRestoreForLaunchedApps;
 
@@ -151,6 +152,7 @@ public class BackupEligibilityRules {
         mPackageManager = packageManager;
         mPackageManagerInternal = packageManagerInternal;
         mUserId = userId;
+        mContext = context;
         mBackupDestination = backupDestination;
         mUserManagerInternal = LocalServices.getService(UserManagerInternal.class);
         mSkipRestoreForLaunchedApps = skipRestoreForLaunchedApps;
@@ -375,7 +377,9 @@ public class BackupEligibilityRules {
         try {
             Map<String, List<PlatformSpecificParams>> platformSpecificParams =
                     PlatformConfigParser.parsePlatformSpecificConfig(
-                            mPackageManager, applicationInfo);
+                            mContext.createContextAsUser(UserHandle.of(mUserId), /* flags= */ 0)
+                                    .getPackageManager(),
+                            applicationInfo);
             Slog.d(
                     TAG,
                     "Loaded cross-platform configuration for "
