@@ -41,7 +41,7 @@ public class StringCacheTest {
     @Rule
     public final CheckFlagsRule mCheckFlagsRule = DeviceFlagsValueProvider.createCheckFlagsRule();
 
-    private static final int CACHE_SIZE = 3;
+    private static final int CACHE_SIZE = 256;
     private StringCache mCache;
 
     @Before
@@ -75,43 +75,49 @@ public class StringCacheTest {
         assertEquals("two", s2);
         assertEquals(2, mCache.getMissCount());
         assertEquals(0, mCache.getHitCount());
-        assertEquals(2, mCache.size());
     }
 
     @Test
     @RequiresFlagsEnabled(Flags.FLAG_PARCEL_STRING_CACHE_ENABLED)
     public void testEviction() {
-        mCache.cache("1");
-        mCache.cache("2");
-        mCache.cache("3");
-        assertEquals(3, mCache.size());
-        assertEquals(3, mCache.getMissCount());
-        assertEquals(0, mCache.getEvictCount());
+        // In this test we allow at most 3 strings in the cache to exercise eviction.
+        final int cacheCapacity = 3;
+        mCache = new StringCache(cacheCapacity);
 
-        // This should evict "1"
-        mCache.cache("4");
-        assertEquals(3, mCache.size());
-        assertEquals(4, mCache.getMissCount());
-        assertEquals(1, mCache.getEvictCount());
+        // Fill the cache.
+        int i = 0;
+        while (mCache.size() < cacheCapacity) {
+            // Generate a unique string each iteration.
+            // We don't know at what bucket it'll land in, but we should eventually fill all buckets
+            // this way.
+            mCache.cache(Integer.toString(++i));
+        }
 
-        // "1" should now be a miss, and "2" should be evicted
-        mCache.cache("1");
-        assertEquals(3, mCache.size());
-        assertEquals(5, mCache.getMissCount());
-        assertEquals(0, mCache.getHitCount());
-        assertEquals(2, mCache.getEvictCount());
+        long expectedHits = mCache.getHitCount();
+        long expectedMisses = mCache.getMissCount();
+        long expectedEvictions = mCache.getEvictCount();
 
-        // "3" should still be in the cache and a hit.
-        mCache.cache("3");
-        assertEquals(3, mCache.size());
-        assertEquals(5, mCache.getMissCount());
-        assertEquals(1, mCache.getHitCount());
-        assertEquals(2, mCache.getEvictCount());
+        // Cache a new string. It should be a miss, and cause an eviction.
+        mCache.cache("Hello world!");
+        ++expectedMisses;
+        ++expectedEvictions;
+        assertEquals(expectedHits, mCache.getHitCount());
+        assertEquals(expectedMisses, mCache.getMissCount());
+        assertEquals(expectedEvictions, mCache.getEvictCount());
+        assertEquals(cacheCapacity, mCache.size());
+
+        // Retrieve the same string. It should be a hit, and cause no evictions.
+        mCache.cache("Hello world!");
+        ++expectedHits;
+        assertEquals(expectedHits, mCache.getHitCount());
+        assertEquals(expectedMisses, mCache.getMissCount());
+        assertEquals(expectedEvictions, mCache.getEvictCount());
+        assertEquals(cacheCapacity, mCache.size());
     }
 
+    /** Null strings are not cached. */
     @Test
     @RequiresFlagsEnabled(Flags.FLAG_PARCEL_STRING_CACHE_ENABLED)
-    /** Null strings are not cached. */
     public void testNullString() {
         String result = mCache.cache(null);
         assertSame(null, result);
@@ -120,9 +126,9 @@ public class StringCacheTest {
         assertEquals(0, mCache.getRejectCount());
     }
 
+    /** Long strings are not cached. */
     @Test
     @RequiresFlagsEnabled(Flags.FLAG_PARCEL_STRING_CACHE_ENABLED)
-    /** Long strings are not cached. */
     public void testStringTooLong() {
         // Create a string longer than the max length (256)
         StringBuilder sb = new StringBuilder();
@@ -138,9 +144,9 @@ public class StringCacheTest {
         assertEquals(1, mCache.getRejectCount());
     }
 
+    /** The cache can be used safely from multiple threads. */
     @Test
     @RequiresFlagsEnabled(Flags.FLAG_PARCEL_STRING_CACHE_ENABLED)
-    /** The cache can be used safely from multiple threads. */
     public void testMultiThreaded() throws InterruptedException {
         final int numThreads = 10;
         final int iterations = 1000;
@@ -168,9 +174,9 @@ public class StringCacheTest {
         assertTrue(mCache.size() <= CACHE_SIZE);
     }
 
+    /** The cache can be used safely from multiple threads under high contention. */
     @Test
     @RequiresFlagsEnabled(Flags.FLAG_PARCEL_STRING_CACHE_ENABLED)
-    /** The cache can be used safely from multiple threads under high contention. */
     public void testMultiThreadedStress() throws InterruptedException {
         final int numThreads = 50;
         final int iterations = 2000;
@@ -242,9 +248,9 @@ public class StringCacheTest {
         assertEquals(3, mCache.getMissCount());
     }
 
+    /** When the flag is disabled, the cache should be a no-op. */
     @Test
     @RequiresFlagsDisabled(Flags.FLAG_PARCEL_STRING_CACHE_ENABLED)
-    /** When the flag is disabled, the cache should be a no-op. */
     public void testFlagDisabled() {
         // Use the singleton cache, which should be disabled by flag.
         mCache = StringCache.INSTANCE;
