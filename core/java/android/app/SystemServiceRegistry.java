@@ -1844,8 +1844,8 @@ public final class SystemServiceRegistry {
                         }
                         // Wear intentionally removes the service, so do not throw a
                         // ServiceNotFoundException when the service is not absent.
-                        if (ctx.getPackageManager().hasSystemFeature(PackageManager.FEATURE_WATCH)
-                                && android.server.Flags.removeWearableSensingServiceFromWear()) {
+                        if (ctx.getPackageManager().hasSystemFeature(
+                                PackageManager.FEATURE_WATCH)) {
                             return null;
                         }
                         throw new ServiceNotFoundException(Context.WEARABLE_SENSING_SERVICE);
