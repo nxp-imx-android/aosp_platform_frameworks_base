@@ -378,7 +378,7 @@ public class InputManagerService extends IInputManager.Stub
     private final VirtualInputDeviceController mVirtualInputDeviceController;
 
     // Manages Keyboard modifier keys remapping
-    private final KeyRemapper mKeyRemapper;
+    private final ModifierKeyRemapper mModifierKeyRemapper;
 
     // Manages Keyboard glyphs for specific keyboards
     private final KeyboardGlyphManager mKeyboardGlyphManager;
@@ -571,7 +571,8 @@ public class InputManagerService extends IInputManager.Stub
                 mNative);
         mVirtualInputDeviceController = new VirtualInputDeviceController(
                 mContext, mContext.getMainThreadHandler(), this);
-        mKeyRemapper = new KeyRemapper(mContext, mNative, mDataStore, injector.getLooper());
+        mModifierKeyRemapper = new ModifierKeyRemapper(mContext, mNative, mDataStore,
+                injector.getLooper());
         mKeyboardGlyphManager = new KeyboardGlyphManager(mContext, injector.getLooper());
         mPointerIconCache = new PointerIconCache(mContext, mNative);
 
@@ -695,7 +696,7 @@ public class InputManagerService extends IInputManager.Stub
         mSysfsNodeMonitor.systemRunning();
         mKeyboardBacklightController.systemRunning();
         mKeyboardLedController.systemRunning();
-        mKeyRemapper.systemRunning();
+        mModifierKeyRemapper.systemRunning();
         mPointerIconCache.systemRunning();
         mKeyboardGlyphManager.systemRunning();
         mKeyGestureController.systemRunning();
@@ -3124,21 +3125,21 @@ public class InputManagerService extends IInputManager.Stub
     @Override // Binder call
     public void remapModifierKey(int fromKey, int toKey) {
         super.remapModifierKey_enforcePermission();
-        mKeyRemapper.remapKey(fromKey, toKey);
+        mModifierKeyRemapper.remapKey(fromKey, toKey);
     }
 
     @EnforcePermission(Manifest.permission.REMAP_MODIFIER_KEYS)
     @Override // Binder call
     public void clearAllModifierKeyRemappings() {
         super.clearAllModifierKeyRemappings_enforcePermission();
-        mKeyRemapper.clearAllKeyRemappings();
+        mModifierKeyRemapper.clearAllKeyRemappings();
     }
 
     @EnforcePermission(Manifest.permission.REMAP_MODIFIER_KEYS)
     @Override // Binder call
     public Map<Integer, Integer> getModifierKeyRemapping() {
         super.getModifierKeyRemapping_enforcePermission();
-        return mKeyRemapper.getKeyRemapping();
+        return mModifierKeyRemapper.getKeyRemapping();
     }
 
     // Native callback.
