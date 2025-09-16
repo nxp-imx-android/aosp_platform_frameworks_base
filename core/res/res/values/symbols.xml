@@ -6380,4 +6380,7 @@
 
   <!-- Whether to force color fade. -->
   <java-symbol type="bool" name="config_forceColorFade" />
+
+  <!-- The location button render service component name -->
+  <java-symbol type="string" name="config_locationButtonRenderService" />
 </resources>

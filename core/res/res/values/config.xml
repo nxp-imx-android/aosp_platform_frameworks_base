@@ -7806,4 +7806,7 @@
 
     <!-- Whether to force color fade. -->
     <bool name="config_forceColorFade">false</bool>
+
+    <!-- location button service components -->
+    <string name="config_locationButtonRenderService" translatable="false">com.android.systemui/.widget.service.LocationButtonRenderService</string>
 </resources>
