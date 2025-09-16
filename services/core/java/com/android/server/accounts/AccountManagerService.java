@@ -2731,24 +2731,9 @@ public class AccountManagerService
         }
     }
 
-    private List<Pair<Account, String>> invalidateAuthTokenLocked(UserAccounts accounts, String accountType,
-            String authToken) {
-        // TODO Move to AccountsDB
-        List<Pair<Account, String>> results = new ArrayList<>();
-        Cursor cursor = accounts.accountsDb.findAuthtokenForAllAccounts(accountType, authToken);
-
-        try {
-            while (cursor.moveToNext()) {
-                String authTokenId = cursor.getString(0);
-                String accountName = cursor.getString(1);
-                String authTokenType = cursor.getString(2);
-                accounts.accountsDb.deleteAuthToken(authTokenId);
-                results.add(Pair.create(new Account(accountName, accountType), authTokenType));
-            }
-        } finally {
-            cursor.close();
-        }
-        return results;
+    private List<Pair<Account, String>> invalidateAuthTokenLocked(UserAccounts accounts,
+            String accountType, String authToken) {
+        return accounts.accountsDb.invalidateAuthToken(accountType, authToken);
     }
 
     private void saveCachedToken(
@@ -2781,17 +2766,16 @@ public class AccountManagerService
             synchronized (accounts.cacheLock) {
                 shouldBlockWrite = shouldBlockDatabaseWrite(accounts, account, type, authToken);
             }
+            if (authToken != null && shouldBlockWrite) {
+                Log.w(TAG, "Too much storage is used - block token update for accountType="
+                        + account.type);
+                return false; // fail silently.
+            }
             accounts.accountsDb.beginTransaction();
             boolean updateCache = false;
             try {
                 long accountId = accounts.accountsDb.findDeAccountId(account);
                 if (accountId < 0) {
-                    return false;
-                }
-                accounts.accountsDb.deleteAuthtokensByAccountIdAndType(accountId, type);
-                if (authToken != null && shouldBlockWrite) {
-                    Log.w(TAG, "Too much storage is used - block token update for accountType="
-                            + account.type);
                     return false; // fail silently.
                 }
                 if (accounts.accountsDb.insertAuthToken(accountId, type, authToken) >= 0) {
@@ -3039,13 +3023,8 @@ public class AccountManagerService
                 if (accountId < 0) {
                     return;
                 }
-                long extrasId = accounts.accountsDb.findExtrasIdByAccountId(accountId, key);
-                if (extrasId < 0) {
-                    extrasId = accounts.accountsDb.insertExtra(accountId, key, value);
-                    if (extrasId < 0) {
-                        return;
-                    }
-                } else if (!accounts.accountsDb.updateExtra(extrasId, value)) {
+                if (accounts.accountsDb.insertOrReplaceExtra(accountId, key, value) < 0) {
+                    // Failed to insert or replace, likely due to DB error.
                     return;
                 }
                 accounts.accountsDb.setTransactionSuccessful();
