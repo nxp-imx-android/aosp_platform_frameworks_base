@@ -23,6 +23,7 @@ import static android.hardware.devicestate.DeviceStateManager.INVALID_DEVICE_STA
 import static android.os.Trace.TRACE_TAG_SYSTEM_SERVER;
 import static android.view.Display.DEFAULT_DISPLAY;
 import static android.view.Display.TYPE_EXTERNAL;
+import static android.view.Display.TYPE_OVERLAY;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
@@ -396,7 +397,8 @@ public final class FoldableDeviceStateProvider implements DeviceStateProvider,
             if (mIsDualDisplayBlockingEnabled
                     && !mExternalDisplaysConnected.get(displayId, false)) {
                 var display = mDisplayManager.getDisplay(displayId);
-                if (display == null || display.getType() != TYPE_EXTERNAL) {
+                if (display == null || (display.getType() != TYPE_EXTERNAL
+                        && display.getType() != TYPE_OVERLAY)) {
                     return;
                 }
                 mExternalDisplaysConnected.put(displayId, true);
