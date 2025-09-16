@@ -23,13 +23,6 @@ flag {
 }
 
 flag {
-     name: "allow_removing_vpn_service"
-     namespace: "wear_frameworks"
-     description: "Allow removing VpnManagerService"
-     bug: "340928692"
-}
-
-flag {
      name: "migrate_wrist_orientation"
      namespace: "wear_frameworks"
      description: "Migrate wrist orientation service functionality to wear settings service"

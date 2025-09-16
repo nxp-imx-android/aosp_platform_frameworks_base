@@ -527,9 +527,8 @@ public final class SystemServiceRegistry {
             public VpnManager createService(ContextImpl ctx) throws ServiceNotFoundException {
                 IBinder b = ServiceManager.getService(Context.VPN_MANAGEMENT_SERVICE);
                 IVpnManager service = IVpnManager.Stub.asInterface(b);
-                if (service == null
-                        && ctx.getPackageManager().hasSystemFeature(PackageManager.FEATURE_WATCH)
-                        && android.server.Flags.allowRemovingVpnService()) {
+                if (service == null &&
+                        ctx.getPackageManager().hasSystemFeature(PackageManager.FEATURE_WATCH)) {
                     return null;
                 }
                 return new VpnManager(ctx, service);
