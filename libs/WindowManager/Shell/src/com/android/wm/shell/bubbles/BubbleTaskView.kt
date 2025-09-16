@@ -22,6 +22,7 @@ import android.content.ComponentName
 import androidx.annotation.VisibleForTesting
 import com.android.wm.shell.bubbles.util.BubbleUtils.isBubbleToFullscreen
 import com.android.wm.shell.bubbles.util.BubbleUtils.isBubbleToSplit
+import com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper
 import com.android.wm.shell.splitscreen.SplitScreenController
 import com.android.wm.shell.taskview.TaskView
 import dagger.Lazy
@@ -36,6 +37,7 @@ import java.util.concurrent.Executor
 class BubbleTaskView @JvmOverloads constructor(
     val taskView: TaskView,
     executor: Executor,
+    val bubbleController: BubbleController,
     private val splitScreenController: Lazy<Optional<SplitScreenController>> =
         Lazy { Optional.empty() },
 ) {
@@ -118,7 +120,19 @@ class BubbleTaskView @JvmOverloads constructor(
      */
     fun cleanup() {
         val task = taskView.taskInfo
-        if (task.isBubbleToFullscreen() || task.isBubbleToSplit(splitScreenController)) {
+        if (BubbleAnythingFlagHelper.enableRootTaskForBubble()) {
+            task?.let { t ->
+                val bubble = bubbleController.getBubble(t)
+                if ((bubble != null && bubble.isChat)
+                    || bubbleController.shouldBeAppBubble(t)) {
+                    taskView.removeTask()
+                } else {
+                    // Just unregister the task if the task is no longer a bubble, e.g. relaunched
+                    // into split-screen, or desktop.
+                    taskView.unregisterTask()
+                }
+            }
+        } else if (task.isBubbleToFullscreen() || task.isBubbleToSplit(splitScreenController)) {
             taskView.unregisterTask()
         } else {
             taskView.removeTask()

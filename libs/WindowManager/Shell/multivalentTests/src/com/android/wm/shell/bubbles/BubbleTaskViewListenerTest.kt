@@ -112,7 +112,8 @@ class BubbleTaskViewListenerTest {
         bgExecutor = TestShellExecutor()
 
         taskView = TaskView(context, taskViewController, taskViewTaskController)
-        bubbleTaskView = BubbleTaskView(taskView, mainExecutor)
+        val bubbleController = mock<BubbleController>()
+        bubbleTaskView = BubbleTaskView(taskView, mainExecutor, bubbleController)
 
         bubbleTaskViewListener =
             BubbleTaskViewListener(
@@ -488,7 +489,8 @@ class BubbleTaskViewListenerTest {
         val mockTaskView = mock<TaskView>() {
             on { getController() } doReturn taskViewTaskController
         }
-        bubbleTaskView = BubbleTaskView(mockTaskView, mainExecutor)
+        val bubbleController = mock<BubbleController>()
+        bubbleTaskView = BubbleTaskView(mockTaskView, mainExecutor, bubbleController)
 
         bubbleTaskViewListener =
             BubbleTaskViewListener(

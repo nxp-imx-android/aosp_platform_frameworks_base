@@ -164,7 +164,7 @@ public class BubbleTransitionsTest extends ShellTestCase {
                     mContext, mTaskOrganizer, mTaskViewTransitions, mSyncQueue);
             TaskView taskView = new TaskView(mContext, mTaskViewTransitions,
                     taskViewTaskController);
-            return new BubbleTaskView(taskView, syncExecutor);
+            return new BubbleTaskView(taskView, syncExecutor, mBubbleController);
         };
         setUpBubbleBarExpandedView(mBubble);
     }

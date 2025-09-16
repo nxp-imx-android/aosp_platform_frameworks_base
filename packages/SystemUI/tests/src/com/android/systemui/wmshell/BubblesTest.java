@@ -1683,7 +1683,8 @@ public class BubblesTest extends SysuiTestCase {
                 .thenReturn(userContext);
 
         BubbleViewInfoTask.BubbleViewInfo info = BubbleViewInfoTask.BubbleViewInfo.populate(context,
-                () -> new BubbleTaskView(mock(TaskView.class), mock(Executor.class)),
+                () -> new BubbleTaskView(mock(TaskView.class), mock(Executor.class),
+                        mBubbleController),
                 mPositioner,
                 mBubbleController.getStackView(),
                 new BubbleIconFactory(mContext,

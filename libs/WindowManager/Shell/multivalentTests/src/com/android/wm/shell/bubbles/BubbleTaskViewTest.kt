@@ -53,6 +53,7 @@ class BubbleTaskViewTest(flags: FlagsParameterization) {
     private val componentName = ComponentName(context, "TestClass")
     private val runningTaskInfo = ActivityManager.RunningTaskInfo()
     private val splitScreenController = mock<SplitScreenController>()
+    private val bubbleController = mock<BubbleController>()
     private val taskView = mock<TaskView> {
         on { taskInfo } doReturn runningTaskInfo
     }
@@ -60,6 +61,7 @@ class BubbleTaskViewTest(flags: FlagsParameterization) {
         BubbleTaskView(
             taskView,
             executor = directExecutor(),
+            bubbleController,
             splitScreenController = { Optional.of(splitScreenController) },
         )
 
