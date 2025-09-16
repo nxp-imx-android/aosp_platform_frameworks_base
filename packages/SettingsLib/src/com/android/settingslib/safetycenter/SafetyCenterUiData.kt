@@ -50,6 +50,19 @@ data class SafetyCenterUiData(
     }
 
     /**
+     * Retrieves all entries across all profiles that are associated with
+     * any of the provided safety source IDs.
+     *
+     * @param sourceIds A list defining the safety source IDs to filter by.
+     * @return A list of matching SafetyCenterEntry objects.
+     */
+    fun getEntriesForSources(sourceIds: List<String>): List<SafetyCenterEntry> {
+        return entriesByUserIdAndSourceId.values
+            .flatMap { sourceIdToEntryMap -> sourceIdToEntryMap.values }
+            .filter { entry -> sourceIds.contains(entry.safetySourceId) }
+    }
+
+    /**
      * Retrieves all active issues across all profiles, sorted by severity and source ID order.
      *
      * @param sourceIdsOrder An optional list defining the preferred order
