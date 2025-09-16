@@ -210,8 +210,6 @@ flag {
     bug: "416054433"
 }
 
-
-
 flag {
     name: "mouse_to_touch_per_app_compat"
     namespace: "lse_desktop_experience"
@@ -256,10 +254,10 @@ flag {
 }
 
 flag {
-  name: "keyboard_backlight_shortcuts"
-  namespace: "desktop_input"
-  description: "Enables new keyboard shortcuts to adjust keyboard backlight"
-  bug: "401626732"
+    name: "keyboard_backlight_shortcuts"
+    namespace: "desktop_input"
+    description: "Enables new keyboard shortcuts to adjust keyboard backlight"
+    bug: "401626732"
 }
 
 flag {
@@ -277,4 +275,11 @@ flag {
     metadata {
         purpose: PURPOSE_BUGFIX
     }
+}
+
+flag {
+    name: "controller_remapping"
+    namespace: "input"
+    description: "Enables game controller remapping"
+    bug: "435503326"
 }

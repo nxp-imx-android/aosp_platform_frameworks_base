@@ -53,6 +53,8 @@ interface NativeInputManagerService {
 
     void setKeyRemapping(int[] fromKeyCodes, int[] toKeyCodes);
 
+    void setKeyRemappingForDevice(int deviceId, int[] fromKeyCodes, int[] toKeyCodes);
+
     boolean hasKeys(int deviceId, int sourceMask, int[] keyCodes, boolean[] keyExists);
 
     int getKeyCodeForKeyLocation(int deviceId, int locationKeyCode);
@@ -386,6 +388,10 @@ interface NativeInputManagerService {
 
         @Override
         public native void setKeyRemapping(int[] fromKeyCodes, int[] toKeyCodes);
+
+        @Override
+        public native void setKeyRemappingForDevice(int deviceId, int[] fromKeyCodes,
+                int[] toKeyCodes);
 
         @Override
         public native boolean hasKeys(int deviceId, int sourceMask, int[] keyCodes,

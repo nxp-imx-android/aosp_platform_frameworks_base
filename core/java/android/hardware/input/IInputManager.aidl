@@ -150,6 +150,29 @@ interface IInputManager {
             + "android.Manifest.permission.REMAP_MODIFIER_KEYS)")
     Map getModifierKeyRemapping();
 
+    // Controller remapping APIs.
+    @EnforcePermission("CONTROLLER_REMAPPING")
+    @JavaPassthrough(annotation="@android.annotation.RequiresPermission(value = "
+            + "android.Manifest.permission.CONTROLLER_REMAPPING)")
+    void remapControllerButton(int userId, in InputDeviceIdentifier identifier, int fromButton,
+            int toKeyCode);
+
+    @EnforcePermission("CONTROLLER_REMAPPING")
+    @JavaPassthrough(annotation="@android.annotation.RequiresPermission(value = "
+            + "android.Manifest.permission.CONTROLLER_REMAPPING)")
+    void removeControllerButtonRemapping(int userId, in InputDeviceIdentifier identifier,
+            int fromButton);
+
+    @EnforcePermission("CONTROLLER_REMAPPING")
+    @JavaPassthrough(annotation="@android.annotation.RequiresPermission(value = "
+            + "android.Manifest.permission.CONTROLLER_REMAPPING)")
+    void clearAllControllerButtonRemapping(int userId, in InputDeviceIdentifier identifier);
+
+    @EnforcePermission("CONTROLLER_REMAPPING")
+    @JavaPassthrough(annotation="@android.annotation.RequiresPermission(value = "
+            + "android.Manifest.permission.CONTROLLER_REMAPPING)")
+    Map getControllerButtonRemapping(int userId, in InputDeviceIdentifier identifier);
+
     // Registers an input devices changed listener.
     void registerInputDevicesChangedListener(IInputDevicesChangedListener listener);
 
