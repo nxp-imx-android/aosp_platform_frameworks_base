@@ -38,7 +38,6 @@ import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_DESKTOP_MODE
 import com.android.wm.shell.shared.annotations.ShellMainThread
 import com.android.wm.shell.shared.desktopmode.DesktopModeTransitionSource
 import com.android.wm.shell.shared.desktopmode.DesktopState
-import com.android.wm.shell.splitscreen.SplitScreenController
 import com.android.wm.shell.transition.FocusTransitionObserver
 import com.android.wm.shell.windowdecor.DesktopModeWindowDecorViewModel
 import java.util.Optional
@@ -55,7 +54,6 @@ class DesktopModeKeyGestureHandler(
     @ShellMainThread private val mainExecutor: ShellExecutor,
     private val displayController: DisplayController,
     private val desktopState: DesktopState,
-    private val splitScreenController: Optional<SplitScreenController>,
 ) : KeyGestureEventHandler {
 
     init {
