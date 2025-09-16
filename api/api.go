@@ -29,6 +29,7 @@ const conscrypt = "conscrypt.module.public.api"
 const i18n = "i18n.module.public.api"
 const virtualization = "framework-virtualization"
 const location = "framework-location"
+const networkSecurityConfig = "framework-network-security-config"
 const platformCrashrecovery = "framework-platformcrashrecovery"
 const ondeviceintelligence = "framework-ondeviceintelligence-platform"
 const platformTelephony = "framework-platformtelephony"
@@ -43,7 +44,7 @@ var core_libraries_modules = []string{art, conscrypt, i18n}
 // APIs.
 // In addition, the modules in this list are allowed to contribute to test APIs
 // stubs.
-var non_updatable_modules = []string{virtualization, location, platformCrashrecovery, ondeviceintelligence, platformTelephony}
+var non_updatable_modules = []string{virtualization, location, networkSecurityConfig, platformCrashrecovery, ondeviceintelligence, platformTelephony}
 
 // The intention behind this soong plugin is to generate a number of "merged"
 // API-related modules that would otherwise require a large amount of very

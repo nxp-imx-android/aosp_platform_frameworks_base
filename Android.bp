@@ -439,6 +439,7 @@ java_library {
     name: "framework-non-updatable-unbundled-impl-libs",
     static_libs: [
         "framework-location.impl",
+        "framework-network-security-config.impl",
         "framework-virtualization.impl",
     ] + select(soong_config_variable("ANDROID", "release_crashrecovery_module"), {
         "true": [],
@@ -497,6 +498,9 @@ java_library {
         // TODO(b/429127828): Clean this up along with RELEASE_TELEPHONY_MODULE
         "//packages/modules/Telephony:__subpackages__",
         "//packages/modules/Virtualization:__subpackages__",
+    ],
+    libs: [
+        "framework-network-security-config.stubs.module_lib",
     ],
     compile_dex: false,
     headers_only: true,
@@ -584,6 +588,7 @@ java_library {
         "framework-minus-apex",
         "framework-platform-compat-config",
         "framework-location-compat-config",
+        "framework-network-security-config-compat-config",
         "services-platform-compat-config",
         "icu4j-platform-compat-config",
         "TeleService-platform-compat-config",

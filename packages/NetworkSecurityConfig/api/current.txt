@@ -1,0 +1,12 @@
+// Signature format: 2.0
+package android.security {
+
+  public class NetworkSecurityPolicy {
+    method @NonNull public static android.security.NetworkSecurityPolicy getInstance();
+    method public boolean isCertificateTransparencyVerificationRequired(@NonNull String);
+    method public boolean isCleartextTrafficPermitted();
+    method public boolean isCleartextTrafficPermitted(@Nullable String);
+  }
+
+}
+
