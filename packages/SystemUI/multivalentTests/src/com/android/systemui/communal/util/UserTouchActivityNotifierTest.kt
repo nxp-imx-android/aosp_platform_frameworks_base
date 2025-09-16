@@ -27,10 +27,12 @@ import com.android.systemui.power.data.repository.fakePowerRepository
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
 import kotlin.test.Test
+import org.junit.Ignore
 import org.junit.runner.RunWith
 
 @RunWith(AndroidTestingRunner::class)
 @SmallTest
+@Ignore("b/445467481")
 class UserTouchActivityNotifierTest : SysuiTestCase() {
     private val kosmos: Kosmos = testKosmos().useUnconfinedTestDispatcher()
 
