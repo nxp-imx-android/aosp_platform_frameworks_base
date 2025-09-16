@@ -18,16 +18,13 @@ package com.android.systemui.screencapture.sharescreen.largescreen.ui.viewmodel
 
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.Kosmos.Fixture
-import com.android.systemui.screencapture.common.ui.viewmodel.fakeRecentTasksViewModel
+import com.android.systemui.screencapture.common.ui.viewmodel.recentTasksViewModel
 
-val Kosmos.fakeShareContentListViewModelFactory by Fixture {
+var Kosmos.shareContentListViewModelFactory: ShareContentListViewModel.Factory by Fixture {
     object : ShareContentListViewModel.Factory {
-        override fun create(): ShareContentListViewModel {
-            return ShareContentListViewModel(recentTasksViewModel = fakeRecentTasksViewModel)
-        }
+        override fun create(): ShareContentListViewModel =
+            ShareContentListViewModel(recentTasksViewModel)
     }
 }
 
-val Kosmos.fakeShareContentListViewModel by Fixture {
-    fakeShareContentListViewModelFactory.create()
-}
+var Kosmos.shareContentListViewModel by Fixture { shareContentListViewModelFactory.create() }

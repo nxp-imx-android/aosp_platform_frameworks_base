@@ -16,24 +16,36 @@
 
 package com.android.systemui.screencapture.common.ui.viewmodel
 
+import androidx.compose.runtime.State
+import com.android.systemui.lifecycle.HydratedActivatable
 import com.android.systemui.screencapture.common.domain.interactor.ScreenCaptureRecentTaskInteractor
 import com.android.systemui.screencapture.common.domain.model.ScreenCaptureRecentTask
 import javax.inject.Inject
-import kotlinx.coroutines.flow.Flow
 
 /**
  * Interface for view models concerned with recent tasks.
  *
  * Example Usage:
  * ```
- * class FooViewModel(vm: RecentTasksViewModelImpl) : RecentTasksViewModel by vm
+ * class FooViewModel(
+ *     private val vm: RecentTasksViewModel,
+ * ) : HydratedActivatable() {
+ *
+ *     val recentTasks = vm.targets
+ *
+ *     override suspend fun onActivated() {
+ *         coroutineScope {
+ *             launch { vm.activate() }
+ *         }
+ *     }
+ * }
  * ```
  *
  * And then in compose:
  * ```
  * @Composable
  * fun Foo(viewModel: FooViewModel, modelFactory: RecentTaskViewModel.Factory) {
- *     val recentTasks by viewModel.recentTasks.collectAsState()
+ *     val recentTasks by viewModel.recentTasks
  *     LazyRow {
  *         recentTasks?.let {
  *             items(it) { task ->
@@ -47,14 +59,12 @@ import kotlinx.coroutines.flow.Flow
  * }
  * ```
  */
-interface RecentTasksViewModel {
-    /** The current list of recent tasks. */
-    val recentTasks: Flow<List<ScreenCaptureRecentTask>?>
-}
+interface RecentTasksViewModel : TargetsViewModel<ScreenCaptureRecentTask>
 
 /** The default implementation of [RecentTasksViewModel]. */
 class RecentTasksViewModelImpl @Inject constructor(interactor: ScreenCaptureRecentTaskInteractor) :
-    RecentTasksViewModel {
+    RecentTasksViewModel, HydratedActivatable() {
 
-    override val recentTasks: Flow<List<ScreenCaptureRecentTask>?> = interactor.recentTasks
+    override val targets: State<List<ScreenCaptureRecentTask>?> =
+        interactor.recentTasks.hydratedStateOf("RecentTasksViewModel#recentTasks", null)
 }

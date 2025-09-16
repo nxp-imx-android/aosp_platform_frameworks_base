@@ -16,7 +16,9 @@
 
 package com.android.systemui.screencapture.record.smallscreen.ui.viewmodel
 
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import com.android.app.tracing.coroutines.launchTraced
 import com.android.systemui.lifecycle.HydratedActivatable
 import com.android.systemui.screencapture.common.domain.model.ScreenCaptureRecentTask
 import com.android.systemui.screencapture.common.ui.viewmodel.RecentTaskViewModel
@@ -24,19 +26,26 @@ import com.android.systemui.screencapture.common.ui.viewmodel.RecentTasksViewMod
 import com.android.systemui.screencapture.record.smallscreen.ui.SmallScreenPostRecordingActivity
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.coroutineScope
 
 class RecordDetailsAppSelectorViewModel
 @AssistedInject
 constructor(
-    recentTasksViewModel: RecentTasksViewModel,
+    private val recentTasksViewModel: RecentTasksViewModel,
     private val recentTaskViewModelFactory: RecentTaskViewModel.Factory,
 ) : HydratedActivatable() {
 
-    val recentTasks: List<ScreenCaptureRecentTask>? by
-        recentTasksViewModel.recentTasks
-            .map { it?.withoutPostRecordingActivity() }
-            .hydratedStateOf("RecordDetailsAppSelectorViewModel#recentTasks", null)
+    val recentTasks: List<ScreenCaptureRecentTask>? by derivedStateOf {
+        recentTasksViewModel.targets.value?.withoutPostRecordingActivity()
+    }
+
+    override suspend fun onActivated() {
+        coroutineScope {
+            launchTraced("RecordDetailsAppSelectorViewModel#recentTasksViewModel") {
+                recentTasksViewModel.activate()
+            }
+        }
+    }
 
     fun createTaskViewModel(task: ScreenCaptureRecentTask): RecentTaskViewModel =
         recentTaskViewModelFactory.create(task)

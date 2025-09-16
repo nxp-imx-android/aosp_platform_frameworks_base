@@ -40,7 +40,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.screencapture.common.ui.viewmodel.RecentTaskViewModel
 import com.android.systemui.screencapture.sharescreen.largescreen.ui.viewmodel.ShareContentListViewModel
@@ -60,7 +59,7 @@ fun ShareContentList(
     recentTaskViewModelFactory: RecentTaskViewModel.Factory,
     selectedRecentTaskViewModel: RecentTaskViewModel?,
 ) {
-    val recentTasks by viewModel.recentTasks.collectAsStateWithLifecycle(initialValue = null)
+    val recentTasks by viewModel.targets
     Surface(
         shape = RoundedCornerShape(20.dp),
         color = MaterialTheme.colorScheme.surfaceBright,
@@ -80,7 +79,7 @@ fun ShareContentList(
                     SelectorItem(
                         currentRecentTaskViewModel = currentRecentTaskViewModel,
                         isSelected =
-                            currentRecentTaskViewModel.task == selectedRecentTaskViewModel?.task,
+                            currentRecentTaskViewModel.model == selectedRecentTaskViewModel?.model,
                         onItemSelected = {
                             viewModel.selectedRecentTaskViewModel = currentRecentTaskViewModel
                         },

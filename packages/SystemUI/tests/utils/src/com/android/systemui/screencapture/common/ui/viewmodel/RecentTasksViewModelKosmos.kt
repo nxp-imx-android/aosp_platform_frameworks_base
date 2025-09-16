@@ -19,7 +19,7 @@ package com.android.systemui.screencapture.common.ui.viewmodel
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.screencapture.common.domain.interactor.screenCaptureRecentTaskInteractor
 
-var Kosmos.recentTasksViewModel by
+var Kosmos.recentTasksViewModel: RecentTasksViewModel by
     Kosmos.Fixture { RecentTasksViewModelImpl(screenCaptureRecentTaskInteractor) }
 
 val Kosmos.fakeRecentTasksViewModel by Kosmos.Fixture { FakeRecentTasksViewModel() }
