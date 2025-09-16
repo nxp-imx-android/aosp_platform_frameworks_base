@@ -21,6 +21,7 @@ import static android.Manifest.permission.REQUEST_COMPANION_PROFILE_AUTOMOTIVE_P
 import static android.Manifest.permission.REQUEST_COMPANION_PROFILE_COMPUTER;
 import static android.Manifest.permission.REQUEST_COMPANION_PROFILE_MEDICAL;
 import static android.Manifest.permission.REQUEST_COMPANION_PROFILE_WATCH;
+import static android.Manifest.permission.REQUEST_COMPANION_SELF_MANAGED;
 import static android.companion.AssociationInfo.METADATA_TIMESTAMP;
 import static android.graphics.drawable.Icon.TYPE_URI;
 import static android.graphics.drawable.Icon.TYPE_URI_ADAPTIVE_BITMAP;
@@ -206,6 +207,8 @@ public final class CompanionDeviceManager {
     @IntDef(flag = true, prefix = { "FLAG_" }, value = {
             FLAG_CALL_METADATA,
             FLAG_TASK_CONTINUITY,
+            FLAG_UNIVERSAL_MODES,
+            FLAG_UNIVERSAL_CLIPBOARD,
     })
     @Retention(RetentionPolicy.SOURCE)
     public @interface DataSyncTypes {}
@@ -214,14 +217,34 @@ public final class CompanionDeviceManager {
      * Used by {@link #enableSystemDataSyncForTypes(int, int)}}.
      * Sync call metadata like muting, ending and silencing a call.
      */
-    public static final int FLAG_CALL_METADATA = 1;
+    public static final int FLAG_CALL_METADATA = 1 << 0;
 
     /**
      * Used by {@link #enableSystemDataSyncForTypes(int, int)}}.
      * Synchronize task continuity data like open tasks, and enable this transport for Handoff.
      */
     @FlaggedApi(Flags.FLAG_ENABLE_TASK_CONTINUITY)
-    public static final int FLAG_TASK_CONTINUITY = 2;
+    public static final int FLAG_TASK_CONTINUITY = 1 << 1;
+
+    /**
+     * Used by {@link #enableSystemDataSyncForTypes(int, int)}}.
+     * Synchronize contextual modes such as DND, bedtime mode, etc. for Mode Sync.
+     * @hide
+     */
+    @SystemApi
+    @FlaggedApi(Flags.FLAG_ENABLE_DATA_SYNC)
+    @RequiresPermission(Manifest.permission.REQUEST_COMPANION_SELF_MANAGED)
+    public static final int FLAG_UNIVERSAL_MODES = 1 << 2;
+
+    /**
+     * Used by {@link #enableSystemDataSyncForTypes(int, int)}}.
+     * Synchronize copied content across devices for Universal Clipboard.
+     * @hide
+     */
+    @SystemApi
+    @FlaggedApi(Flags.FLAG_ENABLE_DATA_SYNC)
+    @RequiresPermission(Manifest.permission.REQUEST_COMPANION_SELF_MANAGED)
+    public static final int FLAG_UNIVERSAL_CLIPBOARD = 1 << 3;
 
     /**
      * The feature name for task continuity manager.
@@ -664,7 +687,8 @@ public final class CompanionDeviceManager {
      * @param associationId id of the device association.
      * @param flags system data types to be enabled.
      */
-    public void enableSystemDataSyncForTypes(int associationId, @DataSyncTypes int flags) {
+    public void enableSystemDataSyncForTypes(int associationId,
+            @RequiresPermission @DataSyncTypes int flags) {
         if (mService == null) {
             Log.w(TAG, "CompanionDeviceManager service is not available.");
             return;
@@ -687,7 +711,8 @@ public final class CompanionDeviceManager {
      * @param associationId id of the device association.
      * @param flags system data types to be disabled.
      */
-    public void disableSystemDataSyncForTypes(int associationId, @DataSyncTypes int flags) {
+    public void disableSystemDataSyncForTypes(int associationId,
+            @RequiresPermission @DataSyncTypes int flags) {
         if (mService == null) {
             Log.w(TAG, "CompanionDeviceManager service is not available.");
             return;

@@ -138,8 +138,10 @@ interface ICompanionDeviceManager {
 
     PendingIntent buildAssociationCancellationIntent(in String callingPackage, int userId);
 
+    @PermissionManuallyEnforced
     void enableSystemDataSync(int associationId, int flags);
 
+    @PermissionManuallyEnforced
     void disableSystemDataSync(int associationId, int flags);
 
     void enablePermissionsSync(int associationId);

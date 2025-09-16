@@ -10373,10 +10373,10 @@ package android.companion {
     method @Nullable public android.content.IntentSender buildPermissionTransferUserConsentIntent(int) throws android.companion.DeviceNotAssociatedException;
     method @FlaggedApi("android.companion.association_verification") @Nullable public android.companion.DeviceId createAndSetDeviceId(int, @Nullable android.companion.DeviceId);
     method @RequiresPermission(android.Manifest.permission.DELIVER_COMPANION_MESSAGES) public void detachSystemDataTransport(int) throws android.companion.DeviceNotAssociatedException;
-    method public void disableSystemDataSyncForTypes(int, int);
+    method public void disableSystemDataSyncForTypes(int, @RequiresPermission int);
     method @Deprecated public void disassociate(@NonNull String);
     method public void disassociate(int);
-    method public void enableSystemDataSyncForTypes(int, int);
+    method public void enableSystemDataSyncForTypes(int, @RequiresPermission int);
     method @Deprecated @NonNull public java.util.List<java.lang.String> getAssociations();
     method @NonNull public java.util.List<android.companion.AssociationInfo> getMyAssociations();
     method @Deprecated public boolean hasNotificationAccess(android.content.ComponentName);

@@ -36,6 +36,7 @@ import static com.android.server.companion.association.DisassociationProcessor.R
 import static com.android.server.companion.association.DisassociationProcessor.REASON_PKG_DATA_CLEARED;
 import static com.android.server.companion.utils.PackageUtils.enforceUsesCompanionDeviceFeature;
 import static com.android.server.companion.utils.PackageUtils.isRestrictedSettingsAllowed;
+import static com.android.server.companion.utils.PermissionsUtils.enforceCallerCanInteractWithSystemDataSyncFlags;
 import static com.android.server.companion.utils.PermissionsUtils.enforceCallerCanManageAssociationsForPackage;
 import static com.android.server.companion.utils.PermissionsUtils.enforceCallerIsSystemOr;
 import static com.android.server.companion.utils.PermissionsUtils.enforceCallerIsSystemOrCanInteractWithUserId;
@@ -45,6 +46,7 @@ import static java.util.Objects.requireNonNull;
 import android.annotation.EnforcePermission;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.annotation.PermissionManuallyEnforced;
 import android.annotation.SuppressLint;
 import android.annotation.UserIdInt;
 import android.app.ActivityManager;
@@ -662,12 +664,18 @@ public class CompanionDeviceManagerService extends SystemService {
         }
 
         @Override
+        @PermissionManuallyEnforced()
         public void enableSystemDataSync(int associationId, int flags) {
+            enforceCallerCanInteractWithSystemDataSyncFlags(getContext(), flags);
+
             mAssociationRequestsProcessor.enableSystemDataSync(associationId, flags);
         }
 
         @Override
+        @PermissionManuallyEnforced()
         public void disableSystemDataSync(int associationId, int flags) {
+            enforceCallerCanInteractWithSystemDataSyncFlags(getContext(), flags);
+
             mAssociationRequestsProcessor.disableSystemDataSync(associationId, flags);
         }
 
