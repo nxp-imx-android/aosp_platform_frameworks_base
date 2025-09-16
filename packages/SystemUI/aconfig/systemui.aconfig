@@ -26,16 +26,6 @@ flag {
 }
 
 flag {
-   name: "multiuser_open_user_switcher_dialog"
-   namespace: "systemui"
-   description: "Enable multiuser widget to open user switcher dialog"
-   bug: "409328841"
-   metadata {
-        purpose: PURPOSE_BUGFIX
-   }
-}
-
-flag {
    name: "user_encrypted_source"
    namespace: "systemui"
    description: "Get rid of the local cache and rely on UserManager.isUserUnlocked directly to determine whether user CE storage is encrypted."
