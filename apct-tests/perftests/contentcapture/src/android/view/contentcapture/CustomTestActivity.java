@@ -23,6 +23,8 @@ import android.os.Looper;
 import android.os.RemoteCallback;
 import android.view.Choreographer;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -44,6 +46,8 @@ public class CustomTestActivity extends Activity {
     private static final int CUSTOM_CONTAINER_LAYOUT_ID = R.layout.test_container_activity;
     private static final int LAYOUT_GROUP_VIRTUAL_NODES_ID =
             R.layout.test_export_virtual_assist_node_activity;
+    private static final int VIEW_GROUP_LAYOUT_ID =
+            R.layout.test_view_group_activity;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -65,6 +69,9 @@ public class CustomTestActivity extends Activity {
                     createTextViews(findViewById(R.id.group_root_view),
                             getIntent().getIntExtra(INTENT_EXTRA_CUSTOM_VIEWS, MAX_VIEWS));
                 }
+            } else if (layoutId == VIEW_GROUP_LAYOUT_ID) {
+                createViewGroupWithContentDescription(findViewById(R.id.view_group_root_view),
+                        getIntent().getIntExtra(INTENT_EXTRA_CUSTOM_VIEWS, MAX_VIEWS));
             }
         }
 
@@ -118,7 +125,6 @@ public class CustomTestActivity extends Activity {
     private void createCustomViewsWithVirtualChildren(LinearLayout root, int number) {
         for (int i = 0; i < number; i++) {
             MyCustomViewWithA11yProvider customView = new MyCustomViewWithA11yProvider(this);
-            customView.setImportantForContentCapture(View.IMPORTANT_FOR_CONTENT_CAPTURE_YES);
             root.addView(customView);
         }
     }
@@ -147,5 +153,13 @@ public class CustomTestActivity extends Activity {
         group.addView(text);
 
         return group;
+    }
+
+    private void createViewGroupWithContentDescription(LinearLayout root, int number) {
+        for (int i = 0; i < number; i++) {
+            ViewGroup viewGroup = new FrameLayout(this);
+            viewGroup.setContentDescription("content description");
+            root.addView(viewGroup);
+        }
     }
 }

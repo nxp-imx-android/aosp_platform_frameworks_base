@@ -48,3 +48,10 @@ flag {
     description: "Feature flag to reduce binder transaction for content capture, by batching metrics logging and reducing the number of flush events"
     bug: "433614684"
 }
+
+flag {
+    name: "new_heuristics_for_importance_enabled"
+    namespace: "ailabs"
+    description: "Feature flag to extend heuristics for calculating whether a node is considered important for content capture"
+    bug: "444631439"
+}
