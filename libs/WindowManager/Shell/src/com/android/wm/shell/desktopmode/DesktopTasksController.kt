@@ -5869,7 +5869,7 @@ class DesktopTasksController(
                     // to its original location. This is as long as it moved some in the first
                     // place, if it didn't and |currentDragBounds| is already at destination then
                     // there's no need to animate.
-                    if (currentDragBounds != dragStartBounds) {
+                    if (destinationBounds != currentDragBounds) {
                         releaseVisualIndicator()
                         returnToDragStartAnimator.start(
                             taskInfo.taskId,
