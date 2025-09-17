@@ -132,7 +132,7 @@ constructor(
         private var ttsPrompt: TtsPrompt? = null
 
         override fun onDialogCreated(info: KeyGestureConfirmInfo) {
-            ttsPrompt = interactor.performTtsPromptForText(info.contentText)
+            ttsPrompt = interactor.createTtsPromptForText(info.contentText)
         }
 
         override fun onDialogDismissed(info: KeyGestureConfirmInfo) {

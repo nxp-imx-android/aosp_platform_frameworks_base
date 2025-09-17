@@ -22,13 +22,17 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.content.res.Resources
 import android.hardware.input.KeyGestureEvent
+import android.os.Handler
 import android.text.BidiFormatter
 import android.text.TextUtils
 import android.view.KeyEvent
 import android.view.accessibility.AccessibilityManager
 import com.android.hardware.input.Flags
 import com.android.internal.accessibility.common.ShortcutConstants
+import com.android.internal.accessibility.util.FrameworkObjectProvider
+import com.android.internal.accessibility.util.TtsPrompt
 import com.android.systemui.dagger.SysUISingleton
+import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.keyboard.shortcut.data.repository.ShortcutHelperKeys
@@ -49,6 +53,8 @@ interface AccessibilityShortcutsRepository {
 
     fun getActionKeyIconResId(): Int
 
+    fun createTtsPromptForText(text: CharSequence): TtsPrompt
+
     fun enableShortcutsForTargets(enable: Boolean, targetName: String)
 
     fun enableMagnificationAndZoomIn(displayId: Int)
@@ -58,12 +64,13 @@ interface AccessibilityShortcutsRepository {
 class AccessibilityShortcutsRepositoryImpl
 @Inject
 constructor(
-    private val context: Context,
+    @param:Application private val context: Context,
     private val accessibilityManager: AccessibilityManager,
     private val packageManager: PackageManager,
     private val userTracker: UserTracker,
     @Main private val resources: Resources,
     @Background private val backgroundDispatcher: CoroutineDispatcher,
+    @param:Main private val handler: Handler,
 ) : AccessibilityShortcutsRepository {
     // Action key
     private val MODIFIER_KEY = KeyEvent.META_META_ON
@@ -129,10 +136,14 @@ constructor(
         return ShortcutHelperKeys.metaModifierIconResId
     }
 
+    override fun createTtsPromptForText(text: CharSequence): TtsPrompt {
+        return TtsPrompt(context, handler, FrameworkObjectProvider(), text)
+    }
+
     @SuppressLint("MissingPermission") // android.permission.MANAGE_ACCESSIBILITY
     override fun enableShortcutsForTargets(enable: Boolean, targetName: String) {
         accessibilityManager.enableShortcutsForTargets(
-            /* enable= */ enable,
+            enable,
             ShortcutConstants.UserShortcutType.KEY_GESTURE,
             setOf(targetName),
             userTracker.userId,

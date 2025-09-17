@@ -24,6 +24,7 @@ import android.content.pm.ResolveInfo
 import android.content.pm.ServiceInfo
 import android.content.res.mainResources
 import android.hardware.input.KeyGestureEvent
+import android.os.fakeExecutorHandler
 import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import android.platform.test.flag.junit.SetFlagsRule
@@ -82,6 +83,7 @@ class AccessibilityShortcutsRepositoryImplTest : SysuiTestCase() {
                 userTracker,
                 resources,
                 kosmos.testDispatcher,
+                kosmos.fakeExecutorHandler,
             )
     }
 
