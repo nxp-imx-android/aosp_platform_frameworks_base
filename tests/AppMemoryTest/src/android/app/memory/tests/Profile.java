@@ -132,6 +132,15 @@ public class Profile {
         return total;
     }
 
+    // Return the number of objects in the heap.
+    long count() {
+        long total = 0;
+        for (var e : mEntries) {
+            total += e.count();
+        }
+        return total;
+    }
+
     /**
      * Main method for stand-alone tests.
      */
