@@ -17,6 +17,7 @@
 package com.android.systemui.statusbar.data.repository
 
 import com.android.systemui.display.data.repository.displayRepository
+import com.android.systemui.display.data.repository.displaySubcomponentPerDisplayRepository
 import com.android.systemui.display.data.repository.displayWindowPropertiesRepository
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.applicationCoroutineScope
@@ -34,7 +35,7 @@ val Kosmos.systemEventChipAnimationControllerStoreImpl by
             factory = { _, _, _ -> mock() },
             displayWindowPropertiesRepository = displayWindowPropertiesRepository,
             statusBarWindowControllerStore = statusBarWindowControllerStore,
-            statusBarContentInsetsProviderStore = statusBarContentInsetsProviderStore,
+            perDisplaySubcomponentRepo = displaySubcomponentPerDisplayRepository,
         )
     }
 

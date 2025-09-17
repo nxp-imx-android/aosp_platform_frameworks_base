@@ -28,12 +28,14 @@ import android.widget.FrameLayout
 import android.widget.ImageView
 import androidx.core.animation.Animator
 import com.android.app.animation.Interpolators
+import com.android.app.displaylib.PerDisplayRepository
 import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.internal.annotations.GuardedBy
 import com.android.systemui.ScreenDecorationsThread
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Main
+import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent
 import com.android.systemui.plugins.statusbar.StatusBarStateController
 import com.android.systemui.privacy.PrivacyConfig
 import com.android.systemui.privacy.PrivacyItem
@@ -44,7 +46,6 @@ import com.android.systemui.shade.shared.flag.ShadeWindowGoesAround
 import com.android.systemui.statusbar.StatusBarState.SHADE
 import com.android.systemui.statusbar.StatusBarState.SHADE_LOCKED
 import com.android.systemui.statusbar.core.StatusBarConnectedDisplays
-import com.android.systemui.statusbar.data.repository.StatusBarContentInsetsProviderStore
 import com.android.systemui.statusbar.events.PrivacyDotCorner.BottomLeft
 import com.android.systemui.statusbar.events.PrivacyDotCorner.BottomRight
 import com.android.systemui.statusbar.events.PrivacyDotCorner.TopLeft
@@ -769,12 +770,12 @@ object PrivacyDotViewControllerModule {
         factory: PrivacyDotViewControllerImpl.Factory,
         @Application scope: CoroutineScope,
         configurationController: ConfigurationController,
-        contentInsetsProviderStore: StatusBarContentInsetsProviderStore,
+        perDisplaySubcomponentRepo: PerDisplayRepository<SystemUIDisplaySubcomponent>,
     ): PrivacyDotViewController {
         return factory.create(
             scope,
             configurationController,
-            contentInsetsProviderStore.defaultDisplay,
+            perDisplaySubcomponentRepo[Display.DEFAULT_DISPLAY]!!.statusBarContentInsetsProvider,
             Display.DEFAULT_DISPLAY,
         )
     }

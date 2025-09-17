@@ -32,8 +32,8 @@ import com.android.systemui.SysuiTestCase
 import com.android.systemui.dump.DumpManager
 import com.android.systemui.statusbar.commandline.CommandRegistry
 import com.android.systemui.statusbar.core.StatusBarConnectedDisplays
+import com.android.systemui.statusbar.data.repository.StatusBarConfigurationController
 import com.android.systemui.statusbar.phone.ConfigurationControllerImpl
-import com.android.systemui.statusbar.policy.ConfigurationController
 import com.android.systemui.util.leak.RotationUtils
 import com.android.systemui.util.leak.RotationUtils.ROTATION_LANDSCAPE
 import com.android.systemui.util.leak.RotationUtils.ROTATION_NONE
@@ -60,7 +60,7 @@ class StatusBarContentInsetsProviderTest : SysuiTestCase() {
     private val display = mock<Display>()
     private val configuration = Configuration()
 
-    private lateinit var configurationController: ConfigurationController
+    private lateinit var configurationController: StatusBarConfigurationController
 
     @Before
     fun setup() {

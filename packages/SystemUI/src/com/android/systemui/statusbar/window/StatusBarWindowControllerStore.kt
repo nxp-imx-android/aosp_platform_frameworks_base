@@ -19,15 +19,16 @@ package com.android.systemui.statusbar.window
 import android.content.Context
 import android.view.Display
 import android.view.WindowManager
+import com.android.app.displaylib.PerDisplayRepository
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Background
+import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent
 import com.android.systemui.display.data.repository.DisplayRepository
 import com.android.systemui.display.data.repository.DisplayWindowPropertiesRepository
 import com.android.systemui.display.data.repository.PerDisplayStore
 import com.android.systemui.display.data.repository.SingleDisplayStore
 import com.android.systemui.statusbar.core.StatusBarConnectedDisplays
 import com.android.systemui.statusbar.data.repository.StatusBarConfigurationControllerStore
-import com.android.systemui.statusbar.data.repository.StatusBarContentInsetsProviderStore
 import com.android.systemui.statusbar.data.repository.StatusBarPerDisplayStoreImpl
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
@@ -43,7 +44,7 @@ constructor(
     private val controllerFactory: StatusBarWindowController.Factory,
     private val displayWindowPropertiesRepository: DisplayWindowPropertiesRepository,
     private val statusBarConfigurationControllerStore: StatusBarConfigurationControllerStore,
-    private val statusBarContentInsetsProviderStore: StatusBarContentInsetsProviderStore,
+    private val perDisplaySubcomponentRepo: PerDisplayRepository<SystemUIDisplaySubcomponent>,
     displayRepository: DisplayRepository,
 ) :
     StatusBarWindowControllerStore,
@@ -57,6 +58,7 @@ constructor(
     }
 
     override fun createInstanceForDisplay(displayId: Int): StatusBarWindowController? {
+        val displaySubcomponent = perDisplaySubcomponentRepo[displayId] ?: return null
         val statusBarDisplayContext =
             displayWindowPropertiesRepository.get(
                 displayId = displayId,
@@ -64,13 +66,11 @@ constructor(
             ) ?: return null
         val statusBarConfigurationController =
             statusBarConfigurationControllerStore.forDisplay(displayId) ?: return null
-        val contentInsetsProvider =
-            statusBarContentInsetsProviderStore.forDisplay(displayId) ?: return null
         return controllerFactory.create(
             statusBarDisplayContext.context,
             statusBarDisplayContext.windowManager,
             statusBarConfigurationController,
-            contentInsetsProvider,
+            displaySubcomponent.statusBarContentInsetsProvider,
             displayId,
         )
     }
@@ -90,7 +90,7 @@ constructor(
     windowManager: WindowManager,
     factory: StatusBarWindowControllerImpl.Factory,
     statusBarConfigurationControllerStore: StatusBarConfigurationControllerStore,
-    statusBarContentInsetsProviderStore: StatusBarContentInsetsProviderStore,
+    perDisplaySubcomponentRepo: PerDisplayRepository<SystemUIDisplaySubcomponent>,
 ) :
     StatusBarWindowControllerStore,
     PerDisplayStore<StatusBarWindowController> by SingleDisplayStore(
@@ -98,7 +98,7 @@ constructor(
             context,
             windowManager,
             statusBarConfigurationControllerStore.defaultDisplay,
-            statusBarContentInsetsProviderStore.defaultDisplay,
+            perDisplaySubcomponentRepo[Display.DEFAULT_DISPLAY]!!.statusBarContentInsetsProvider,
             Display.DEFAULT_DISPLAY,
         )
     ) {

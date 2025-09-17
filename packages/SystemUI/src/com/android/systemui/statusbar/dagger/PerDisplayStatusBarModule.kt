@@ -19,6 +19,7 @@ package com.android.systemui.statusbar.dagger
 import android.content.Context
 import com.android.systemui.common.ui.ConfigurationState
 import com.android.systemui.common.ui.ConfigurationStateImpl
+import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent
 import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent.DisplayAware
 import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent.PerDisplaySingleton
 import com.android.systemui.statusbar.chips.ui.viewmodel.OngoingActivityChipsViewModel
@@ -26,12 +27,15 @@ import com.android.systemui.statusbar.data.repository.StatusBarConfigurationCont
 import com.android.systemui.statusbar.data.repository.StatusBarConfigurationControllerStore
 import com.android.systemui.statusbar.domain.interactor.StatusBarIconRefreshInteractor
 import com.android.systemui.statusbar.domain.interactor.StatusBarIconRefreshInteractorImpl
+import com.android.systemui.statusbar.layout.StatusBarContentInsetsProvider
+import com.android.systemui.statusbar.layout.StatusBarContentInsetsProviderImpl
 import com.android.systemui.statusbar.pipeline.shared.domain.interactor.HomeStatusBarInteractor
 import com.android.systemui.statusbar.ui.SystemBarUtilsState
 import com.android.systemui.statusbar.window.StatusBarWindowStateController
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
+import dagger.multibindings.IntoSet
 
 /**
  * Contains bindings that are [SystemUIDisplaySubcomponent.DisplayAware] related to the statusbar.
@@ -51,6 +55,18 @@ interface PerDisplayStatusBarModule {
     fun statusBarWindowStateController(
         controller: StatusBarWindowStateController
     ): StatusBarWindowStateController
+
+    @Binds
+    @DisplayAware
+    fun statusBarContentInsetsProvider(
+        impl: StatusBarContentInsetsProviderImpl
+    ): StatusBarContentInsetsProvider
+
+    @Binds
+    @IntoSet
+    fun statusBarContentInsetsProviderAsLifecycleListener(
+        impl: StatusBarContentInsetsProviderImpl
+    ): SystemUIDisplaySubcomponent.LifecycleListener
 
     @Binds
     @PerDisplaySingleton

@@ -20,6 +20,7 @@ import com.android.app.displaylib.PerDisplayRepository
 import com.android.systemui.CoreStartable
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Background
+import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent
 import com.android.systemui.display.data.repository.DisplayRepository
 import com.android.systemui.display.data.repository.PerDisplayStore
 import com.android.systemui.display.data.repository.SingleDisplayStore
@@ -46,7 +47,7 @@ constructor(
     private val factory: PrivacyDotViewControllerImpl.Factory,
     private val displayScopeRepository: PerDisplayRepository<CoroutineScope>,
     private val statusBarConfigurationControllerStore: StatusBarConfigurationControllerStore,
-    private val contentInsetsProviderStore: StatusBarContentInsetsProviderStore,
+    private val perDisplaySubcomponentRepo: PerDisplayRepository<SystemUIDisplaySubcomponent>,
 ) :
     PrivacyDotViewControllerStore,
     StatusBarPerDisplayStoreImpl<PrivacyDotViewController>(
@@ -55,14 +56,14 @@ constructor(
     ) {
 
     override fun createInstanceForDisplay(displayId: Int): PrivacyDotViewController? {
+        val displaySubcomponent = perDisplaySubcomponentRepo[displayId] ?: return null
         val configurationController =
             statusBarConfigurationControllerStore.forDisplay(displayId) ?: return null
-        val contentInsetsProvider = contentInsetsProviderStore.forDisplay(displayId) ?: return null
         val displayScope = displayScopeRepository[displayId] ?: return null
         return factory.create(
             displayScope,
             configurationController,
-            contentInsetsProvider,
+            displaySubcomponent.statusBarContentInsetsProvider,
             displayId,
         )
     }

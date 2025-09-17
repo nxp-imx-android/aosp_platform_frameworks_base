@@ -42,6 +42,7 @@ import com.android.systemui.battery.BatteryMeterView
 import com.android.systemui.battery.BatteryMeterViewController
 import com.android.systemui.demomode.DemoMode
 import com.android.systemui.demomode.DemoModeController
+import com.android.systemui.display.data.repository.displaySubcomponentPerDisplayRepository
 import com.android.systemui.dump.DumpManager
 import com.android.systemui.plugins.ActivityStarter
 import com.android.systemui.qs.ChipVisibilityListener
@@ -54,7 +55,7 @@ import com.android.systemui.shade.ShadeHeaderController.Companion.QS_HEADER_CONS
 import com.android.systemui.shade.carrier.ShadeCarrierGroup
 import com.android.systemui.shade.carrier.ShadeCarrierGroupController
 import com.android.systemui.shade.data.repository.shadeDisplaysRepository
-import com.android.systemui.statusbar.data.repository.fakeStatusBarContentInsetsProviderStore
+import com.android.systemui.statusbar.layout.mockStatusBarContentInsetsProvider
 import com.android.systemui.statusbar.phone.StatusIconContainer
 import com.android.systemui.statusbar.phone.StatusOverlayHoverListenerFactory
 import com.android.systemui.statusbar.phone.ui.StatusBarIconController
@@ -99,8 +100,7 @@ private val EMPTY_CHANGES = ConstraintsChanges()
 class ShadeHeaderControllerTest : SysuiTestCase() {
 
     private val kosmos = testKosmos()
-    private val insetsProviderStore = kosmos.fakeStatusBarContentInsetsProviderStore
-    private val insetsProvider = insetsProviderStore.forDisplay(context.displayId)
+    private val insetsProvider = kosmos.mockStatusBarContentInsetsProvider
 
     @Mock(answer = Answers.RETURNS_MOCKS) private lateinit var view: MotionLayout
     @Mock private lateinit var statusIcons: StatusIconContainer
@@ -198,7 +198,7 @@ class ShadeHeaderControllerTest : SysuiTestCase() {
                 statusBarIconController,
                 iconManagerFactory,
                 privacyIconsController,
-                insetsProviderStore,
+                kosmos.displaySubcomponentPerDisplayRepository,
                 configurationController,
                 viewContext,
                 Lazy { kosmos.shadeDisplaysRepository },
