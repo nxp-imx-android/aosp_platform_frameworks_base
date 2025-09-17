@@ -25,6 +25,7 @@ import com.android.systemui.keyguard.data.repository.KeyguardRepository
 import com.android.systemui.keyguard.shared.model.StatusBarState
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.shade.ShadeOverlayBoundsListener
+import com.android.systemui.shade.data.repository.ShadeConfigRepository
 import com.android.systemui.shade.data.repository.ShadeRepository
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
@@ -48,6 +49,7 @@ constructor(
     @Application val scope: CoroutineScope,
     keyguardRepository: KeyguardRepository,
     private val repository: ShadeRepository,
+    shadeConfigRepository: ShadeConfigRepository,
 ) : BaseShadeInteractor {
     init {
         SceneContainerFlag.assertInLegacyMode()
@@ -63,7 +65,7 @@ constructor(
                 keyguardRepository.statusBarState,
                 repository.legacyShadeExpansion,
                 repository.qsExpansion,
-                repository.legacyUseSplitShade,
+                shadeConfigRepository.legacyUseSplitShade,
             ) {
                 lockscreenShadeExpansion,
                 statusBarState,

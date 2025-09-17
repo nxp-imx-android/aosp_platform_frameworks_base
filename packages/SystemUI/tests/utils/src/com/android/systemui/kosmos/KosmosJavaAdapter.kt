@@ -74,6 +74,7 @@ import com.android.systemui.settings.brightness.data.repository.brightnessMirror
 import com.android.systemui.settings.displayTracker
 import com.android.systemui.shade.data.repository.fakeFocusedDisplayRepository
 import com.android.systemui.shade.data.repository.fakeShadeDisplaysRepository
+import com.android.systemui.shade.data.repository.shadeConfigRepository
 import com.android.systemui.shade.data.repository.shadeRepository
 import com.android.systemui.shade.domain.interactor.shadeInteractor
 import com.android.systemui.shade.domain.interactor.shadeLayoutParams
@@ -200,6 +201,7 @@ class KosmosJavaAdapter() {
     val qsLongPressEffect by lazy { kosmos.qsLongPressEffect }
     val shadeController by lazy { kosmos.shadeController }
     val shadeRepository by lazy { kosmos.shadeRepository }
+    val shadeConfigRepository by lazy { kosmos.shadeConfigRepository }
     val shadeInteractor by lazy { kosmos.shadeInteractor }
     val notificationShadeWindowModel by lazy { kosmos.notificationShadeWindowModel }
     val visualStabilityProvider by lazy { kosmos.visualStabilityProvider }

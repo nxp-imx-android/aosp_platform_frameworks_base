@@ -29,7 +29,6 @@ import com.android.systemui.kosmos.collectLastValue
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.res.R
-import com.android.systemui.shade.data.repository.shadeRepository
 import com.android.systemui.shade.shared.model.ShadeMode
 import com.android.systemui.shared.settings.data.repository.fakeSecureSettingsRepository
 import com.android.systemui.testKosmos
@@ -237,7 +236,6 @@ class ShadeModeInteractorImplTest : SysuiTestCase() {
             addOverride(R.bool.config_use_large_screen_shade_header, legacyUseSplitShade)
         }
         fakeConfigurationRepository.onConfigurationChange()
-        shadeRepository.legacyUseSplitShade.value = legacyUseSplitShade
     }
 
     private fun Kosmos.setupShadeConfig(

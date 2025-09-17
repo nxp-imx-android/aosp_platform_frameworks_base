@@ -359,7 +359,8 @@ public class NotificationPanelViewControllerBaseTest extends SysuiTestCase {
                 new ShadeInteractorLegacyImpl(
                         mTestScope.getBackgroundScope(),
                         mFakeKeyguardRepository,
-                        mShadeRepository
+                        mShadeRepository,
+                        mKosmos.getShadeConfigRepository()
                 ),
                 mKosmos.getSceneInteractor());
         SystemClock systemClock = new FakeSystemClock();

@@ -24,7 +24,6 @@ import com.android.systemui.log.table.logDiffsForTable
 import com.android.systemui.scene.domain.SceneFrameworkTableLog
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.shade.data.repository.ShadeConfigRepository
-import com.android.systemui.shade.data.repository.ShadeRepository
 import com.android.systemui.shade.shared.model.ShadeMode
 import com.android.systemui.shared.settings.data.repository.SecureSettingsRepository
 import javax.inject.Inject
@@ -78,7 +77,6 @@ class ShadeModeInteractorImpl
 constructor(
     @Background applicationScope: CoroutineScope,
     @Background backgroundDispatcher: CoroutineDispatcher,
-    repository: ShadeRepository,
     private val shadeConfigRepository: ShadeConfigRepository,
     secureSettingsRepository: SecureSettingsRepository,
     @SceneFrameworkTableLog private val tableLogBuffer: TableLogBuffer,
@@ -103,7 +101,7 @@ constructor(
                 } else {
                     // Single/Split shade should be shown
                     Log.d(TAG, "Shade layout is derived from the legacy config")
-                    repository.legacyUseSplitShade.map { !it }
+                    shadeConfigRepository.legacyUseSplitShade.map { !it }
                 }
             }
             .logDiffsForTable(

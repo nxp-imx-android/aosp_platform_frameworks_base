@@ -25,6 +25,7 @@ import com.android.systemui.kosmos.testScope
 import com.android.systemui.power.domain.interactor.powerInteractor
 import com.android.systemui.scene.domain.interactor.sceneInteractor
 import com.android.systemui.shade.ShadeModule
+import com.android.systemui.shade.data.repository.shadeConfigRepository
 import com.android.systemui.shade.data.repository.shadeRepository
 import com.android.systemui.statusbar.disableflags.domain.interactor.disableFlagsInteractor
 import com.android.systemui.statusbar.phone.dozeParameters
@@ -54,6 +55,7 @@ val Kosmos.shadeInteractorLegacyImpl by
             scope = applicationCoroutineScope,
             keyguardRepository = keyguardRepository,
             repository = shadeRepository,
+            shadeConfigRepository = shadeConfigRepository,
         )
     }
 var Kosmos.shadeInteractor: ShadeInteractor by Kosmos.Fixture { shadeInteractorImpl }

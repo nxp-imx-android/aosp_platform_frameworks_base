@@ -17,6 +17,8 @@
 
 package com.android.systemui.keyguard.domain.interactor
 
+import android.content.Context
+import androidx.test.core.app.ApplicationProvider
 import com.android.internal.widget.LockPatternUtils
 import com.android.systemui.bouncer.data.repository.FakeKeyguardBouncerRepository
 import com.android.systemui.common.ui.data.repository.FakeConfigurationRepository
@@ -27,6 +29,7 @@ import com.android.systemui.keyguard.shared.model.KeyguardState
 import com.android.systemui.keyguard.shared.model.TransitionStep
 import com.android.systemui.scene.domain.interactor.SceneInteractor
 import com.android.systemui.shade.data.repository.FakeShadeRepository
+import com.android.systemui.shade.data.repository.ShadeConfigRepository
 import com.android.systemui.util.mockito.mock
 import com.android.systemui.util.mockito.whenever
 import com.android.systemui.wallpapers.domain.interactor.WallpaperFocalAreaInteractor
@@ -44,11 +47,18 @@ object KeyguardInteractorFactory {
     @JvmOverloads
     @JvmStatic
     fun create(
+        context: Context = ApplicationProvider.getApplicationContext(),
         featureFlags: FakeFeatureFlags = FakeFeatureFlags(),
         repository: FakeKeyguardRepository = FakeKeyguardRepository(),
         bouncerRepository: FakeKeyguardBouncerRepository = FakeKeyguardBouncerRepository(),
         configurationRepository: FakeConfigurationRepository = FakeConfigurationRepository(),
         shadeRepository: FakeShadeRepository = FakeShadeRepository(),
+        shadeConfigRepository: ShadeConfigRepository =
+            ShadeConfigRepository(
+                resources = context.resources,
+                configurationRepository = configurationRepository,
+                featureFlags = featureFlags,
+            ),
         wallpaperFocalAreaInteractor: WallpaperFocalAreaInteractor = mock(),
         lockPatternUtils: LockPatternUtils = mock(),
         sceneInteractor: SceneInteractor = mock(),
@@ -78,6 +88,7 @@ object KeyguardInteractorFactory {
                 bouncerRepository = bouncerRepository,
                 configurationInteractor = ConfigurationInteractorImpl(configurationRepository),
                 shadeRepository = shadeRepository,
+                shadeConfigRepository = shadeConfigRepository,
                 keyguardTransitionInteractor = keyguardTransitionInteractor,
                 sceneInteractorProvider = { sceneInteractor },
                 fromGoneTransitionInteractor = { fromGoneTransitionInteractor },
