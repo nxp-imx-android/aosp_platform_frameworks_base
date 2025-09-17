@@ -80,6 +80,8 @@ public abstract class NotificationViewWrapper implements TransformableView {
                 return new NotificationCompactMessagingTemplateViewWrapper(ctx, v, row);
             } else if ("progress".equals(v.getTag())) {
                 return new NotificationProgressTemplateViewWrapper(ctx, v, row);
+            } else if ("metric".equals(v.getTag())) {
+                return new NotificationMetricTemplateViewWrapper(ctx, v, row);
             }
 
             if (NotificationBundleUi.isEnabled()
