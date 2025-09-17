@@ -358,14 +358,21 @@ constructor(
                         deviceEntryBiometricsAllowedInteractor
                             .isFingerprintCurrentlyAllowedOnBouncer,
                         secureLockDeviceInteractor.isSecureLockDeviceEnabled,
+                        authenticationInteractor.isDuplicateAttempt,
                     )
                     .collectLatest {
-                        (_, authMethod, isFingerprintAllowed, isSecureLockDeviceEnabled) ->
+                        (
+                            _,
+                            authMethod,
+                            isFingerprintAllowed,
+                            isSecureLockDeviceEnabled,
+                            isDuplicate) ->
                         message.emit(
                             BouncerMessageStrings.incorrectSecurityInput(
                                     authMethod,
                                     isFingerprintAllowed,
                                     isSecureLockDeviceEnabled,
+                                    isDuplicate,
                                 )
                                 .toMessage()
                         )

@@ -128,7 +128,8 @@ public class KeyguardPatternViewController
                             0.7, getClass().getSimpleName(), "empty pattern input"));
                 }
                 mLockPatternView.enableInput();
-                onPatternChecked(userId, false, 0, false /* not valid - too short */);
+                onPatternChecked(userId, false, 0, false /* not valid - too short */,
+                        false /* isDuplicate */);
                 return;
             }
 
@@ -144,7 +145,7 @@ public class KeyguardPatternViewController
                         public void onEarlyMatched() {
                             mLatencyTracker.onActionEnd(ACTION_CHECK_CREDENTIAL);
                             onPatternChecked(userId, true /* matched */, 0 /* timeoutMs */,
-                                    true /* isValidPattern */);
+                                    true /* isValidPattern */, false /* isDuplicate */);
                         }
 
                         @Override
@@ -153,8 +154,12 @@ public class KeyguardPatternViewController
                             mLockPatternView.enableInput();
                             mPendingLockCheck = null;
                             if (!matched) {
-                                onPatternChecked(userId, false /* matched */, timeoutMs,
-                                        true /* isValidPattern */);
+                                onPatternChecked(
+                                        userId,
+                                        false /* matched */,
+                                        timeoutMs,
+                                        true /* isValidPattern */,
+                                        false /* isDuplicate */);
                             }
                         }
 
@@ -172,13 +177,13 @@ public class KeyguardPatternViewController
         }
 
         private void onPatternChecked(int userId, boolean matched, int timeoutMs,
-                boolean isValidPattern) {
+                boolean isValidPattern, boolean isDuplicate) {
             boolean dismissKeyguard = mSelectedUserInteractor.getSelectedUserId() == userId;
             if (matched) {
                 mBouncerHapticPlayer.playAuthenticationFeedback(
                         /* authenticationSucceeded= */true
                 );
-                getKeyguardSecurityCallback().reportUnlockAttempt(userId, true, 0);
+                getKeyguardSecurityCallback().reportUnlockAttempt(userId, true, 0, isDuplicate);
                 if (dismissKeyguard) {
                     mLockPatternView.setDisplayMode(LockPatternView.DisplayMode.Correct);
                     mLatencyTracker.onActionStart(LatencyTracker.ACTION_LOCKSCREEN_UNLOCK);
@@ -195,7 +200,8 @@ public class KeyguardPatternViewController
                 );
                 mLockPatternView.setDisplayMode(LockPatternView.DisplayMode.Wrong);
                 if (isValidPattern) {
-                    getKeyguardSecurityCallback().reportUnlockAttempt(userId, false, timeoutMs);
+                    getKeyguardSecurityCallback().reportUnlockAttempt(userId, false, timeoutMs,
+                            isDuplicate);
                     if (timeoutMs > 0) {
                         Duration lockoutEndTime = Duration.ofMillis(
                                 mLockPatternUtils.setLockoutAttemptDeadline(userId, timeoutMs));

@@ -346,13 +346,14 @@ constructor(
         countDownTimerUtil.startNewTimer(secondsBeforeLockoutReset * 1000, 1000, callback)
     }
 
-    fun onPrimaryAuthIncorrectAttempt() {
+    fun onPrimaryAuthIncorrectAttempt(isDuplicate: Boolean) {
         if (!Flags.revampedBouncerMessages()) return
         setMessage(
             BouncerMessageStrings.incorrectSecurityInput(
                     currentSecurityMode.toAuthModel(),
                     isFingerprintAuthCurrentlyAllowedOnBouncer.value,
                     isSecureLockDeviceEnabled(),
+                    isDuplicate,
                 )
                 .toMessage()
         )

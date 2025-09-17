@@ -289,7 +289,7 @@ class BouncerMessageInteractorTest : SysuiTestCase() {
         testScope.runTest {
             init()
             val bouncerMessage by collectLastValue(underTest.bouncerMessage)
-            underTest.onPrimaryAuthIncorrectAttempt()
+            underTest.onPrimaryAuthIncorrectAttempt(isDuplicate = false)
 
             assertThat(bouncerMessage).isNotNull()
             assertThat(primaryResMessage(bouncerMessage)).isEqualTo("Wrong PIN. Try again.")
@@ -306,7 +306,7 @@ class BouncerMessageInteractorTest : SysuiTestCase() {
                 secureLockDeviceBiometricAuthActive = false,
             )
             val bouncerMessage by collectLastValue(underTest.bouncerMessage)
-            underTest.onPrimaryAuthIncorrectAttempt()
+            underTest.onPrimaryAuthIncorrectAttempt(isDuplicate = false)
 
             assertThat(bouncerMessage).isNotNull()
             val expectedTitle = resString(R.string.kg_prompt_title_after_secure_lock_device)
@@ -363,7 +363,7 @@ class BouncerMessageInteractorTest : SysuiTestCase() {
         testScope.runTest {
             init()
             val bouncerMessage by collectLastValue(underTest.bouncerMessage)
-            underTest.onPrimaryAuthIncorrectAttempt()
+            underTest.onPrimaryAuthIncorrectAttempt(isDuplicate = false)
             assertThat(primaryResMessage(bouncerMessage)).isEqualTo("Wrong PIN. Try again.")
 
             underTest.onPrimaryBouncerUserInput()

@@ -109,6 +109,12 @@ interface AuthenticationRepository {
     val hasLockoutOccurred: StateFlow<Boolean>
 
     /**
+     * Whether the primary authentication attempt was the same as a previous attempt since the last
+     * successful authentication.
+     */
+    val isDuplicateAttempt: StateFlow<Boolean>
+
+    /**
      * The currently-configured authentication method. This determines how the authentication
      * challenge needs to be completed in order to unlock an otherwise locked device.
      *
@@ -154,7 +160,7 @@ interface AuthenticationRepository {
     suspend fun getPinLength(): Int
 
     /** Reports an authentication attempt. */
-    suspend fun reportAuthenticationAttempt(isSuccessful: Boolean)
+    suspend fun reportAuthenticationAttempt(isSuccessful: Boolean, isDuplicate: Boolean = false)
 
     /** Reports that the user has entered a temporary device lockout (throttling). */
     suspend fun reportLockoutStarted(durationMs: Int)
@@ -266,6 +272,9 @@ constructor(
     private val _hasLockoutOccurred = MutableStateFlow(false)
     override val hasLockoutOccurred: StateFlow<Boolean> = _hasLockoutOccurred.asStateFlow()
 
+    private val _isDuplicateAttempt = MutableStateFlow(false)
+    override val isDuplicateAttempt: StateFlow<Boolean> = _isDuplicateAttempt.asStateFlow()
+
     init {
         if (SceneContainerFlag.isEnabled) {
             // Hydrate failedAuthenticationAttempts initially and whenever the selected user
@@ -298,7 +307,7 @@ constructor(
         return withContext(backgroundDispatcher) { lockPatternUtils.getPinLength(selectedUserId) }
     }
 
-    override suspend fun reportAuthenticationAttempt(isSuccessful: Boolean) {
+    override suspend fun reportAuthenticationAttempt(isSuccessful: Boolean, isDuplicate: Boolean) {
         withContext(backgroundDispatcher) {
             if (isSuccessful) {
                 if (
@@ -321,6 +330,7 @@ constructor(
             } else {
                 lockPatternUtils.reportFailedPasswordAttempt(selectedUserId)
             }
+            _isDuplicateAttempt.value = isDuplicate
             _failedAuthenticationAttempts.value = getFailedAuthenticationAttemptCount()
         }
     }

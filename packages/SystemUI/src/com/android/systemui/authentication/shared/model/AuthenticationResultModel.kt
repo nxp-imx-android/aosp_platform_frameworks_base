@@ -22,4 +22,6 @@ data class AuthenticationResultModel(
     val isSuccessful: Boolean = false,
     /** If [isSuccessful] is `false`, how long the user must wait before trying again. */
     val lockoutDurationMs: Int = 0,
+    /** If [isSuccessful] is `false`, whether the attempt was a duplicate. */
+    val isDuplicate: Boolean = false,
 )
