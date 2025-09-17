@@ -1054,7 +1054,7 @@
     <string name="lockscreen_pattern_correct" msgid="8050630103651508582">"ಸರಿಯಾಗಿದೆ!"</string>
     <string name="lockscreen_pattern_wrong" msgid="2940138714468358458">"ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ"</string>
     <string name="lockscreen_password_wrong" msgid="8605355913868947490">"ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ"</string>
-    <string name="lockscreen_storage_locked" msgid="634993789186443380">"ಎಲ್ಲ ವೈಶಿಷ್ಟ್ಯಗಳು ಮತ್ತು ಡೇಟಾಗೆ ಅನ್‌ಲಾಕ್ ಮಾಡಿ"</string>
+    <string name="lockscreen_storage_locked" msgid="634993789186443380">"ಎಲ್ಲ ಫೀಚರ್‌ಗಳು ಮತ್ತು ಡೇಟಾಗೆ ಅನ್‌ಲಾಕ್ ಮಾಡಿ"</string>
     <string name="faceunlock_multiple_failures" msgid="681991538434031708">"ಗರಿಷ್ಠ ಫೇಸ್ ಅನ್‍ಲಾಕ್ ಪ್ರಯತ್ನಗಳು ಮೀರಿವೆ"</string>
     <string name="lockscreen_missing_sim_message_short" msgid="1229301273156907613">"SIM ಇಲ್ಲ"</string>
     <string name="lockscreen_missing_sim_message" product="tablet" msgid="3986843848305639161">"ಟ್ಯಾಬ್ಲೆಟ್‌ನಲ್ಲಿ SIM ಇಲ್ಲ."</string>
@@ -1623,6 +1623,12 @@
     <string name="gpsNotifMessage" msgid="7346649122793758032">"<xliff:g id="NAME">%1$s</xliff:g> (<xliff:g id="SERVICE">%2$s</xliff:g>) ಅವರಿಂದ ವಿನಂತಿಸಲಾಗಿದೆ"</string>
     <string name="gpsVerifYes" msgid="3719843080744112940">"ಹೌದು"</string>
     <string name="gpsVerifNo" msgid="1671201856091564741">"ಇಲ್ಲ"</string>
+    <!-- no translation found for emergency_location_notification_title (917557758257778958) -->
+    <skip />
+    <!-- no translation found for emergency_location_notification_message (1877038822515882885) -->
+    <skip />
+    <!-- no translation found for emergency_location_notification_learn_more (8718634939217070481) -->
+    <skip />
     <string name="sync_too_many_deletes" msgid="6999440774578705300">"ಅಳಿಸುವ ಮಿತಿ ಮೀರಿದೆ"</string>
     <string name="sync_too_many_deletes_desc" msgid="7409327940303504440">"<xliff:g id="TYPE_OF_SYNC">%2$s</xliff:g>, <xliff:g id="ACCOUNT_NAME">%3$s</xliff:g> ಗಾಗಿ <xliff:g id="NUMBER_OF_DELETED_ITEMS">%1$d</xliff:g> ಅಳಿಸಲಾಗಿರುವ ಐಟಂಗಳು ಕಂಡುಬಂದಿವೆ. ನೀವು ಏನು ಮಾಡಬೇಕೆಂದು ಬಯಸುವಿರಿ?"</string>
     <string name="sync_really_delete" msgid="5657871730315579051">"ಐಟಂಗಳನ್ನು ಅಳಿಸಿ"</string>
@@ -1986,10 +1992,8 @@
     <string name="package_updated_device_owner" msgid="7770195449213776218">"ನಿಮ್ಮ ನಿರ್ವಾಹಕರು ಅಪ್‌ಡೇಟ್ ಮಾಡಿದ್ದಾರೆ.\nನೀಡಲಾದ ಅನುಮತಿಗಳನ್ನು ವೀಕ್ಷಿಸಲು ಸೆಟ್ಟಿಂಗ್‌ಗಳಿಗೆ ಹೋಗಿ"</string>
     <string name="package_deleted_device_owner" msgid="2292335928930293023">"ನಿಮ್ಮ ನಿರ್ವಾಹಕರು ಅಳಿಸಿದ್ದಾರೆ"</string>
     <string name="confirm_battery_saver" msgid="5247976246208245754">"ಸರಿ"</string>
-    <!-- no translation found for battery_saver_description_with_learn_more (8969945879044849461) -->
-    <skip />
-    <!-- no translation found for battery_saver_description (2820475140307374570) -->
-    <skip />
+    <string name="battery_saver_description_with_learn_more" msgid="8969945879044849461">"ಬ್ಯಾಟರಿ ಸೇವರ್ ಡಾರ್ಕ್ ಥೀಮ್ ಅನ್ನು ಆನ್ ಮಾಡುತ್ತದೆ ಮತ್ತು ಹಿನ್ನೆಲೆ ಚಟುವಟಿಕೆ, ಕೆಲವು ವಿಷುವಲ್ ಎಫೆಕ್ಟ್‌ಗಳು, ಕೆಲವು ಫೀಚರ್‌ಗಳು ಮತ್ತು ಕೆಲವು ನೆಟ್‌ವರ್ಕ್ ಕನೆಕ್ಷನ್‌ಗಳನ್ನು ಮಿತಿಗೊಳಿಸುತ್ತದೆ ಅಥವಾ ಆಫ್ ಮಾಡುತ್ತದೆ."</string>
+    <string name="battery_saver_description" msgid="2820475140307374570">"ಬ್ಯಾಟರಿ ಸೇವರ್ ಡಾರ್ಕ್ ಥೀಮ್ ಅನ್ನು ಆನ್ ಮಾಡುತ್ತದೆ ಮತ್ತು ಹಿನ್ನೆಲೆ ಚಟುವಟಿಕೆ, ಕೆಲವು ವಿಷುವಲ್ ಎಫೆಕ್ಟ್‌ಗಳು, ಕೆಲವು ಫೀಚರ್‌ಗಳು ಮತ್ತು ಕೆಲವು ನೆಟ್‌ವರ್ಕ್ ಕನೆಕ್ಷನ್‌ಗಳನ್ನು ಮಿತಿಗೊಳಿಸುತ್ತದೆ ಅಥವಾ ಆಫ್ ಮಾಡುತ್ತದೆ."</string>
     <string name="data_saver_description" msgid="4995164271550590517">"ಡೇಟಾ ಬಳಕೆ ಕಡಿಮೆ ಮಾಡಲು ನೆರವಾಗಲು, ಡೇಟಾ ಸೇವರ್ ಕೆಲವು ಆ್ಯಪ್‍ಗಳು ಹಿನ್ನೆಲೆಯಲ್ಲಿ ಡೇಟಾ ಕಳುಹಿಸುವುದನ್ನು ಅಥವಾ ಸ್ವೀಕರಿಸುವುದನ್ನು ತಡೆಯುತ್ತದೆ. ನೀವು ಪ್ರಸ್ತುತ ಬಳಸುತ್ತಿರುವ ಆ್ಯಪ್, ಡೇಟಾವನ್ನು ಆ್ಯಕ್ಸೆಸ್ ಮಾಡಬಹುದು ಆದರೆ ಅಷ್ಟೊಂದು ಪದೇ ಪದೇ ಆ್ಯಕ್ಸೆಸ್ ಮಾಡದಿರಬಹುದು. ಇದರರ್ಥ, ಉದಾಹರಣೆಗೆ, ನೀವು ಆ ಚಿತ್ರಗಳನ್ನು ಟ್ಯಾಪ್ ಮಾಡುವವರೆಗೆ ಅವುಗಳು ಕಾಣಿಸಿಕೊಳ್ಳುವುದಿಲ್ಲ."</string>
     <string name="data_saver_enable_title" msgid="7080620065745260137">"ಡೇಟಾ ಸೇವರ್ ಆನ್ ಮಾಡಬೇಕೇ?"</string>
     <string name="data_saver_enable_button" msgid="4399405762586419726">"ಆನ್‌ ಮಾಡಿ"</string>

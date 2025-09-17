@@ -1623,6 +1623,12 @@
     <string name="gpsNotifMessage" msgid="7346649122793758032">"<xliff:g id="NAME">%1$s</xliff:g> (<xliff:g id="SERVICE">%2$s</xliff:g>) അഭ്യർത്ഥിച്ചത്"</string>
     <string name="gpsVerifYes" msgid="3719843080744112940">"വേണം"</string>
     <string name="gpsVerifNo" msgid="1671201856091564741">"വേണ്ട"</string>
+    <!-- no translation found for emergency_location_notification_title (917557758257778958) -->
+    <skip />
+    <!-- no translation found for emergency_location_notification_message (1877038822515882885) -->
+    <skip />
+    <!-- no translation found for emergency_location_notification_learn_more (8718634939217070481) -->
+    <skip />
     <string name="sync_too_many_deletes" msgid="6999440774578705300">"ഇല്ലാതാക്കൽ പരിധി കഴിഞ്ഞു"</string>
     <string name="sync_too_many_deletes_desc" msgid="7409327940303504440">"<xliff:g id="ACCOUNT_NAME">%3$s</xliff:g> എന്ന അക്കൗണ്ടിലെ <xliff:g id="TYPE_OF_SYNC">%2$s</xliff:g> എന്നതിനായി ഇല്ലാതാക്കിയ <xliff:g id="NUMBER_OF_DELETED_ITEMS">%1$d</xliff:g> ഇനങ്ങളുണ്ട്. നിങ്ങൾ എന്തുചെയ്യാൻ താൽപ്പര്യപ്പെടുന്നു?"</string>
     <string name="sync_really_delete" msgid="5657871730315579051">"ഇനങ്ങൾ ഇല്ലാതാക്കുക"</string>
@@ -1986,10 +1992,8 @@
     <string name="package_updated_device_owner" msgid="7770195449213776218">"നിങ്ങളുടെ അഡ്‌മിൻ അപ്‌ഡേറ്റ് ചെയ്തത്.\nനൽകിയ അനുമതികൾ കാണാൻ ക്രമീകരണത്തിലേക്ക് പോകുക"</string>
     <string name="package_deleted_device_owner" msgid="2292335928930293023">"നിങ്ങളുടെ അഡ്‌മിൻ ഇല്ലാതാക്കുന്നത്"</string>
     <string name="confirm_battery_saver" msgid="5247976246208245754">"ശരി"</string>
-    <!-- no translation found for battery_saver_description_with_learn_more (8969945879044849461) -->
-    <skip />
-    <!-- no translation found for battery_saver_description (2820475140307374570) -->
-    <skip />
+    <string name="battery_saver_description_with_learn_more" msgid="8969945879044849461">"ബാറ്ററി സേവർ ഡാർക്ക് തീം ഓണാക്കുന്നു, പശ്ചാത്തല ആക്‌റ്റിവിറ്റിയും ചില വിഷ്വൽ ഇഫക്റ്റുകളും ചില ഫീച്ചറുകളും ചില നെറ്റ്‌വർക്ക് കണക്ഷനുകളും അത് പരിമിതപ്പെടുത്തുകയോ ഓഫാക്കുകയോ ചെയ്യുന്നു."</string>
+    <string name="battery_saver_description" msgid="2820475140307374570">"ബാറ്ററി സേവർ ഡാർക്ക് തീം ഓണാക്കുന്നു, പശ്ചാത്തല ആക്‌റ്റിവിറ്റിയും ചില വിഷ്വൽ ഇഫക്റ്റുകളും ചില ഫീച്ചറുകളും ചില നെറ്റ്‌വർക്ക് കണക്ഷനുകളും അത് പരിമിതപ്പെടുത്തുകയോ ഓഫാക്കുകയോ ചെയ്യുന്നു."</string>
     <string name="data_saver_description" msgid="4995164271550590517">"ഡാറ്റാ ഉപയോഗം കുറയ്ക്കാൻ സഹായിക്കുന്നതിനായി പശ്ചാത്തലത്തിൽ ഡാറ്റ അയയ്ക്കുകയോ സ്വീകരിക്കുകയോ ചെയ്യുന്നതിൽ നിന്ന് ചില ആപ്പുകളെ ഡാറ്റാ സേവർ തടയുന്നു. നിങ്ങൾ നിലവിൽ ഉപയോഗിക്കുന്ന ഒരു ആപ്പിന് ഡാറ്റ ആക്‌സസ് ചെയ്യാനാകും, എന്നാൽ വല്ലപ്പോഴും മാത്രമെ സംഭവിക്കുന്നുള്ളു. ഇതിനർത്ഥം, ഉദാഹരണമായി നിങ്ങൾ ടാപ്പ് ചെയ്യുന്നത് വരെ ചിത്രങ്ങൾ പ്രദ‍‍‍ർശിപ്പിക്കുകയില്ല എന്നാണ്."</string>
     <string name="data_saver_enable_title" msgid="7080620065745260137">"ഡാറ്റാ സേവർ ഓണാക്കണോ?"</string>
     <string name="data_saver_enable_button" msgid="4399405762586419726">"ഓണാക്കുക"</string>

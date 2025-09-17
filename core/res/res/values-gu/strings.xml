@@ -370,10 +370,8 @@
     <string name="permgroupdesc_xr_eye_sensitive" msgid="6050967250223079001">"આંખની હલનચલન સચોટ રીતે ટ્રૅક કરવી"</string>
     <string name="permgrouplab_xr_tracking" msgid="766634536453394700">"હલનચન અને વિસ્તારનો ડેટા"</string>
     <string name="permgroupdesc_xr_tracking" msgid="812429788288001595">"આંખો, ચહેરા, શરીરને ટ્રૅક કરવું અને વિસ્તારને સ્કૅન કરવો"</string>
-    <!-- no translation found for permgrouplab_xr_tracking_sensitive (6574264227123545314) -->
-    <skip />
-    <!-- no translation found for permgroupdesc_xr_tracking_sensitive (2480835734248509848) -->
-    <skip />
+    <string name="permgrouplab_xr_tracking_sensitive" msgid="6574264227123545314">"સચોટ હલનચન અને વિસ્તારનો ડેટા"</string>
+    <string name="permgroupdesc_xr_tracking_sensitive" msgid="2480835734248509848">"માથાને સચોટ રીતે ટ્રૅક કરવું અને વિસ્તારને સ્કૅન કરવો"</string>
     <string name="capability_title_canRetrieveWindowContent" msgid="7554282892101587296">"વિંડો કન્ટેન્ટ પુનઃપ્રાપ્ત કરો"</string>
     <string name="capability_desc_canRetrieveWindowContent" msgid="6195610527625237661">"તમે જેની સાથે ક્રિયા-પ્રતિક્રિયા કરી રહ્યાં છો તે વિંડોનું કન્ટેન્ટ તપાસો."</string>
     <string name="capability_title_canRequestTouchExploration" msgid="327598364696316213">"સ્પર્શ કરીને શોધખોળ કરવું ચાલુ કરો"</string>
@@ -687,8 +685,7 @@
     <string name="permdesc_scene_understanding_coarse" msgid="847344305502345475">"ઍપને તમારી આસપાસની વસ્તુઓ સ્કૅન કરવાની મંજૂરી આપે છે."</string>
     <string name="permlab_scene_understanding_fine" msgid="2899904960307462936">"તમારી આસપાસનો વિસ્તાર સચોટ રીતે સ્કૅન કરવો"</string>
     <string name="permdesc_scene_understanding_fine" msgid="4848943859506977588">"ઍપને તમારી આસપાસની વસ્તુઓ સચોટ રીતે સ્કૅન કરવાની મંજૂરી આપે છે."</string>
-    <!-- no translation found for permlab_xr_tracking_in_background (1714941204255185460) -->
-    <skip />
+    <string name="permlab_xr_tracking_in_background" msgid="1714941204255185460">"બૅકગ્રાઉન્ડમાં XR ટ્રૅકિંગ ઍક્સેસ કરવો"</string>
     <string name="permdesc_xr_tracking_in_background" msgid="3151744132692357005">"ઍપને બૅકગ્રાઉન્ડમાં XR ડેટા ઍક્સેસ કરવાની મંજૂરી આપે છે."</string>
     <string name="permlab_capture_keyboard" msgid="4076894823382693032">"કી કૅપ્ચર કરો"</string>
     <string name="permdesc_capture_keyboard" msgid="4192269470684407219">"સિસ્ટમ શૉર્ટકટ અને ઍક્શન પર સિસ્ટમ પ્રક્રિયા કરી શકે તે પહેલાં ઍપને કી કૅપ્ચર કરવાની મંજૂરી આપે છે."</string>
@@ -1626,6 +1623,12 @@
     <string name="gpsNotifMessage" msgid="7346649122793758032">"<xliff:g id="NAME">%1$s</xliff:g> (<xliff:g id="SERVICE">%2$s</xliff:g>) દ્વારા વિનંતી કરાઈ"</string>
     <string name="gpsVerifYes" msgid="3719843080744112940">"હા"</string>
     <string name="gpsVerifNo" msgid="1671201856091564741">"નહીં"</string>
+    <!-- no translation found for emergency_location_notification_title (917557758257778958) -->
+    <skip />
+    <!-- no translation found for emergency_location_notification_message (1877038822515882885) -->
+    <skip />
+    <!-- no translation found for emergency_location_notification_learn_more (8718634939217070481) -->
+    <skip />
     <string name="sync_too_many_deletes" msgid="6999440774578705300">"કાઢી નાખવાની સીમા ઓળંગાઈ"</string>
     <string name="sync_too_many_deletes_desc" msgid="7409327940303504440">"<xliff:g id="TYPE_OF_SYNC">%2$s</xliff:g>, એકાઉન્ટ <xliff:g id="ACCOUNT_NAME">%3$s</xliff:g> માટે <xliff:g id="NUMBER_OF_DELETED_ITEMS">%1$d</xliff:g> કાઢી નાખેલ આઇટમ્સ છે. તમે શું કરવા માગો છો?"</string>
     <string name="sync_really_delete" msgid="5657871730315579051">"આઇટમ્સ કાઢી નાખો"</string>
@@ -1989,10 +1992,8 @@
     <string name="package_updated_device_owner" msgid="7770195449213776218">"તમારા ઍડમિન દ્વારા અપડેટ કરવામાં આવ્યું છે.\nઆપેલી પરવાનગીઓ જોવા માટે સેટિંગ પર જાઓ"</string>
     <string name="package_deleted_device_owner" msgid="2292335928930293023">"તમારા વ્યવસ્થાપક દ્વારા કાઢી નાખવામાં આવેલ છે"</string>
     <string name="confirm_battery_saver" msgid="5247976246208245754">"ઓકે"</string>
-    <!-- no translation found for battery_saver_description_with_learn_more (8969945879044849461) -->
-    <skip />
-    <!-- no translation found for battery_saver_description (2820475140307374570) -->
-    <skip />
+    <string name="battery_saver_description_with_learn_more" msgid="8969945879044849461">"બૅટરી સેવર ડાર્ક થીમની સુવિધા ચાલુ કરે છે અને બૅકગ્રાઉન્ડ ઍક્ટિવિટી, અમુક વિઝ્યુઅલ ઇફેક્ટ, અમુક સુવિધાઓ અને કેટલાક નેટવર્ક કનેક્શન મર્યાદિત કે બંધ કરે છે."</string>
+    <string name="battery_saver_description" msgid="2820475140307374570">"બૅટરી સેવર ડાર્ક થીમની સુવિધા ચાલુ કરે છે અને બૅકગ્રાઉન્ડ ઍક્ટિવિટી, અમુક વિઝ્યુઅલ ઇફેક્ટ, અમુક સુવિધાઓ અને કેટલાક નેટવર્ક કનેક્શન મર્યાદિત કે બંધ કરે છે."</string>
     <string name="data_saver_description" msgid="4995164271550590517">"ડેટા વપરાશને ઘટાડવામાં મદદ માટે, ડેટા સેવર કેટલીક ઍપને બૅકગ્રાઉન્ડમાં ડેટા મોકલવા અથવા પ્રાપ્ત કરવાથી અટકાવે છે. તમે હાલમાં ઉપયોગ કરી રહ્યાં છો તે ઍપ ડેટાને ઍક્સેસ કરી શકે છે, પરંતુ તે આ ક્યારેક જ કરી શકે છે. આનો અર્થ એ હોઈ શકે છે, ઉદાહરણ તરીકે, છબીઓ ત્યાં સુધી ડિસ્પ્લે થશે નહીં જ્યાં સુધી તમે તેમને ટૅપ નહીં કરો."</string>
     <string name="data_saver_enable_title" msgid="7080620065745260137">"ડેટા સેવર ચાલુ કરીએ?"</string>
     <string name="data_saver_enable_button" msgid="4399405762586419726">"ચાલુ કરો"</string>

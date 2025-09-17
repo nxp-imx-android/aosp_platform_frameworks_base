@@ -370,10 +370,8 @@
     <string name="permgroupdesc_xr_eye_sensitive" msgid="6050967250223079001">"눈 움직임을 정확하게 추적"</string>
     <string name="permgrouplab_xr_tracking" msgid="766634536453394700">"움직임 및 영역 데이터"</string>
     <string name="permgroupdesc_xr_tracking" msgid="812429788288001595">"눈, 얼굴, 신체 추적 및 영역을 스캔"</string>
-    <!-- no translation found for permgrouplab_xr_tracking_sensitive (6574264227123545314) -->
-    <skip />
-    <!-- no translation found for permgroupdesc_xr_tracking_sensitive (2480835734248509848) -->
-    <skip />
+    <string name="permgrouplab_xr_tracking_sensitive" msgid="6574264227123545314">"정확한 움직임 및 영역 데이터"</string>
+    <string name="permgroupdesc_xr_tracking_sensitive" msgid="2480835734248509848">"영역을 정확하게 스캔하고 머리 움직임을 추적"</string>
     <string name="capability_title_canRetrieveWindowContent" msgid="7554282892101587296">"창 콘텐츠 가져오기"</string>
     <string name="capability_desc_canRetrieveWindowContent" msgid="6195610527625237661">"상호작용 중인 창의 콘텐츠를 검사합니다."</string>
     <string name="capability_title_canRequestTouchExploration" msgid="327598364696316213">"터치하여 탐색 사용"</string>
@@ -687,8 +685,7 @@
     <string name="permdesc_scene_understanding_coarse" msgid="847344305502345475">"앱이 주변 환경을 스캔하도록 허용합니다."</string>
     <string name="permlab_scene_understanding_fine" msgid="2899904960307462936">"주변 영역을 정확하게 스캔"</string>
     <string name="permdesc_scene_understanding_fine" msgid="4848943859506977588">"앱이 주변 환경을 정확하게 스캔하도록 허용합니다."</string>
-    <!-- no translation found for permlab_xr_tracking_in_background (1714941204255185460) -->
-    <skip />
+    <string name="permlab_xr_tracking_in_background" msgid="1714941204255185460">"백그라운드에서 XR 추적에 액세스"</string>
     <string name="permdesc_xr_tracking_in_background" msgid="3151744132692357005">"앱이 백그라운드에서 XR 데이터에 액세스하도록 허용합니다."</string>
     <string name="permlab_capture_keyboard" msgid="4076894823382693032">"키 캡처"</string>
     <string name="permdesc_capture_keyboard" msgid="4192269470684407219">"시스템이 시스템 단축키 및 작업을 처리하기 전에 앱이 키를 캡처할 수 있도록 허용합니다."</string>
@@ -1626,6 +1623,12 @@
     <string name="gpsNotifMessage" msgid="7346649122793758032">"요청한 사람: <xliff:g id="NAME">%1$s</xliff:g>(<xliff:g id="SERVICE">%2$s</xliff:g>)"</string>
     <string name="gpsVerifYes" msgid="3719843080744112940">"예"</string>
     <string name="gpsVerifNo" msgid="1671201856091564741">"아니요"</string>
+    <!-- no translation found for emergency_location_notification_title (917557758257778958) -->
+    <skip />
+    <!-- no translation found for emergency_location_notification_message (1877038822515882885) -->
+    <skip />
+    <!-- no translation found for emergency_location_notification_learn_more (8718634939217070481) -->
+    <skip />
     <string name="sync_too_many_deletes" msgid="6999440774578705300">"삭제 한도를 초과했습니다."</string>
     <string name="sync_too_many_deletes_desc" msgid="7409327940303504440">"<xliff:g id="TYPE_OF_SYNC">%2$s</xliff:g>, <xliff:g id="ACCOUNT_NAME">%3$s</xliff:g> 계정에 대해 <xliff:g id="NUMBER_OF_DELETED_ITEMS">%1$d</xliff:g>개의 삭제된 항목이 있습니다. 어떻게 하시겠습니까?"</string>
     <string name="sync_really_delete" msgid="5657871730315579051">"항목 삭제"</string>
@@ -1989,10 +1992,8 @@
     <string name="package_updated_device_owner" msgid="7770195449213776218">"관리자에 의해 업데이트되었습니다.\n부여된 권한을 확인하려면 설정으로 이동하세요."</string>
     <string name="package_deleted_device_owner" msgid="2292335928930293023">"관리자에 의해 삭제되었습니다."</string>
     <string name="confirm_battery_saver" msgid="5247976246208245754">"확인"</string>
-    <!-- no translation found for battery_saver_description_with_learn_more (8969945879044849461) -->
-    <skip />
-    <!-- no translation found for battery_saver_description (2820475140307374570) -->
-    <skip />
+    <string name="battery_saver_description_with_learn_more" msgid="8969945879044849461">"절전 모드는 어두운 테마를 사용하고 백그라운드 활동, 일부 시각 효과, 특정 기능 및 일부 네트워크 연결을 제한하거나 사용 중지합니다."</string>
+    <string name="battery_saver_description" msgid="2820475140307374570">"절전 모드는 어두운 테마를 사용하고 백그라운드 활동, 일부 시각 효과, 특정 기능 및 일부 네트워크 연결을 제한하거나 사용 중지합니다."</string>
     <string name="data_saver_description" msgid="4995164271550590517">"데이터 사용량을 줄이기 위해 데이터 절약 모드는 일부 앱이 백그라운드에서 데이터를 전송하거나 수신하지 못하도록 합니다. 현재 사용 중인 앱에서 데이터에 액세스할 수 있지만 빈도가 줄어듭니다. 예를 들면, 이미지를 탭하기 전에는 이미지가 표시되지 않습니다."</string>
     <string name="data_saver_enable_title" msgid="7080620065745260137">"데이터 절약 모드를 사용 설정하시겠습니까?"</string>
     <string name="data_saver_enable_button" msgid="4399405762586419726">"사용 설정"</string>

@@ -370,10 +370,8 @@
     <string name="permgroupdesc_xr_eye_sensitive" msgid="6050967250223079001">"göz hərəkətlərini dəqiq şəkildə izləyir"</string>
     <string name="permgrouplab_xr_tracking" msgid="766634536453394700">"Hərəkət və sahə datası"</string>
     <string name="permgroupdesc_xr_tracking" msgid="812429788288001595">"gözləri, üzü, bədəni izləyir və ətraf mühiti yoxlayır"</string>
-    <!-- no translation found for permgrouplab_xr_tracking_sensitive (6574264227123545314) -->
-    <skip />
-    <!-- no translation found for permgroupdesc_xr_tracking_sensitive (2480835734248509848) -->
-    <skip />
+    <string name="permgrouplab_xr_tracking_sensitive" msgid="6574264227123545314">"Dəqiq hərəkət və sahə datası"</string>
+    <string name="permgroupdesc_xr_tracking_sensitive" msgid="2480835734248509848">"sahəni dəqiq skan edin və baş hərəkətini izləyin"</string>
     <string name="capability_title_canRetrieveWindowContent" msgid="7554282892101587296">"Pəncərənin məzmununu əldə edin"</string>
     <string name="capability_desc_canRetrieveWindowContent" msgid="6195610527625237661">"Əlaqədə olduğunuz pəncərənin məzmununu nəzərdən keçirin."</string>
     <string name="capability_title_canRequestTouchExploration" msgid="327598364696316213">"Toxunuşla öyrənmə funksiyasını aktiv edin"</string>
@@ -687,8 +685,7 @@
     <string name="permdesc_scene_understanding_coarse" msgid="847344305502345475">"Tətbiqə ətraf mühiti yoxlamağa icazə verir."</string>
     <string name="permlab_scene_understanding_fine" msgid="2899904960307462936">"ətraf mühiti dəqiqliklə yoxlayır"</string>
     <string name="permdesc_scene_understanding_fine" msgid="4848943859506977588">"Tətbiqə ətraf mühiti dəqiq şəkildə yoxlamağa icazə verir."</string>
-    <!-- no translation found for permlab_xr_tracking_in_background (1714941204255185460) -->
-    <skip />
+    <string name="permlab_xr_tracking_in_background" msgid="1714941204255185460">"arxa fonda XR izləməsinə daxil olun"</string>
     <string name="permdesc_xr_tracking_in_background" msgid="3151744132692357005">"Tətbiqə uzadılmış reallıq datasına fonda daxil olmağa icazə verir."</string>
     <string name="permlab_capture_keyboard" msgid="4076894823382693032">"düymə siqnallarını qəbul etmək"</string>
     <string name="permdesc_capture_keyboard" msgid="4192269470684407219">"Tətbiqə sistemin qısayolları və əmrlərini emal etməzdən əvvəl düymə siqnallarını qəbul etmək imkanı verir."</string>
@@ -1626,6 +1623,12 @@
     <string name="gpsNotifMessage" msgid="7346649122793758032">"<xliff:g id="NAME">%1$s</xliff:g> (<xliff:g id="SERVICE">%2$s</xliff:g>) tərəfindən tələb edilib"</string>
     <string name="gpsVerifYes" msgid="3719843080744112940">"Bəli"</string>
     <string name="gpsVerifNo" msgid="1671201856091564741">"Xeyr"</string>
+    <!-- no translation found for emergency_location_notification_title (917557758257778958) -->
+    <skip />
+    <!-- no translation found for emergency_location_notification_message (1877038822515882885) -->
+    <skip />
+    <!-- no translation found for emergency_location_notification_learn_more (8718634939217070481) -->
+    <skip />
     <string name="sync_too_many_deletes" msgid="6999440774578705300">"Limiti keçəni silin"</string>
     <string name="sync_too_many_deletes_desc" msgid="7409327940303504440">"<xliff:g id="TYPE_OF_SYNC">%2$s</xliff:g> üçün <xliff:g id="NUMBER_OF_DELETED_ITEMS">%1$d</xliff:g> silinmiş fayl var, <xliff:g id="ACCOUNT_NAME">%3$s</xliff:g> hesabı. Nə etmək istəyirsiniz?"</string>
     <string name="sync_really_delete" msgid="5657871730315579051">"Elementləri sil"</string>
@@ -1989,10 +1992,8 @@
     <string name="package_updated_device_owner" msgid="7770195449213776218">"Admin güncəlləyib.\nTəmin edilən icazələrə baxmaq üçün ayarlara keçin"</string>
     <string name="package_deleted_device_owner" msgid="2292335928930293023">"Admin tərəfindən silindi"</string>
     <string name="confirm_battery_saver" msgid="5247976246208245754">"OK"</string>
-    <!-- no translation found for battery_saver_description_with_learn_more (8969945879044849461) -->
-    <skip />
-    <!-- no translation found for battery_saver_description (2820475140307374570) -->
-    <skip />
+    <string name="battery_saver_description_with_learn_more" msgid="8969945879044849461">"Enerjiyə Qənaət rejimi Tünd temanı aktivləşdirir, habelə arxa fon fəaliyyətini, bəzi vizual effektləri, müəyyən xüsusiyyətləri və bəzi şəbəkə bağlantılarını məhdudlaşdırır, yaxud söndürür."</string>
+    <string name="battery_saver_description" msgid="2820475140307374570">"Enerjiyə Qənaət rejimi Tünd temanı aktivləşdirir, habelə arxa fon fəaliyyətini, bəzi vizual effektləri, müəyyən xüsusiyyətləri və bəzi şəbəkə bağlantılarını məhdudlaşdırır, yaxud söndürür."</string>
     <string name="data_saver_description" msgid="4995164271550590517">"Mobil interneti qənaətlə işlətmək məqsədilə Data Qanaəti bəzi tətbiqlərin fonda data göndərməsinin və qəbulunun qarşısını alır. Hazırda işlətdiyiniz tətbiq nisbətən az müntəzəmliklə data istifadə edə bilər. Örnək olaraq bu, o deməkdir ki, şəkil fayllarına toxunmadıqca onlar açılmayacaq."</string>
     <string name="data_saver_enable_title" msgid="7080620065745260137">"Trafikə qənaət edilsin?"</string>
     <string name="data_saver_enable_button" msgid="4399405762586419726">"Aktivləşdirin"</string>

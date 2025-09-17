@@ -370,10 +370,8 @@
     <string name="permgroupdesc_xr_eye_sensitive" msgid="6050967250223079001">"မျက်လုံးလှုပ်ရှားမှုကို အတိအကျ ခြေရာခံသည်"</string>
     <string name="permgrouplab_xr_tracking" msgid="766634536453394700">"လှုပ်ရှားမှုနှင့် နေရာဆိုင်ရာ ဒေတာ"</string>
     <string name="permgroupdesc_xr_tracking" msgid="812429788288001595">"မျက်လုံး၊ မျက်နှာ၊ ခန္ဓာကိုယ်တို့ကို ခြေရာခံပြီး နေရာကို စကင်ဖတ်သည်"</string>
-    <!-- no translation found for permgrouplab_xr_tracking_sensitive (6574264227123545314) -->
-    <skip />
-    <!-- no translation found for permgroupdesc_xr_tracking_sensitive (2480835734248509848) -->
-    <skip />
+    <string name="permgrouplab_xr_tracking_sensitive" msgid="6574264227123545314">"တိကျသောလှုပ်ရှားမှု၊ နေရာဆိုင်ရာ ဒေတာ"</string>
+    <string name="permgroupdesc_xr_tracking_sensitive" msgid="2480835734248509848">"နေရာကို အတိအကျ စကင်ဖတ်ပြီး ဦးခေါင်းကို ခြေရာခံနိုင်သည်"</string>
     <string name="capability_title_canRetrieveWindowContent" msgid="7554282892101587296">"ဝင်းဒိုးတွင် ပါရှိသည်များကို ပြန်လည်ရယူရန်"</string>
     <string name="capability_desc_canRetrieveWindowContent" msgid="6195610527625237661">"သင်အသုံးပြုနေသော ဝင်းဒိုးတွင် ပါရှိသည်များကို ကြည့်ရှုစစ်ဆေးသည်။"</string>
     <string name="capability_title_canRequestTouchExploration" msgid="327598364696316213">"တို့ထိခြင်းဖြင့် ရှာဖွေမှုကို ဖွင့်ရန်"</string>
@@ -687,8 +685,7 @@
     <string name="permdesc_scene_understanding_coarse" msgid="847344305502345475">"သင့်ပတ်ဝန်းကျင်ကို စကင်ဖတ်ရန် အက်ပ်အား ခွင့်ပြုသည်။"</string>
     <string name="permlab_scene_understanding_fine" msgid="2899904960307462936">"သင့်ပတ်ဝန်းကျင်နေရာကို အတိအကျ စကင်ဖတ်ခြင်း"</string>
     <string name="permdesc_scene_understanding_fine" msgid="4848943859506977588">"သင့်ပတ်ဝန်းကျင်ကို အတိအကျ စကင်ဖတ်ရန် အက်ပ်အား ခွင့်ပြုသည်။"</string>
-    <!-- no translation found for permlab_xr_tracking_in_background (1714941204255185460) -->
-    <skip />
+    <string name="permlab_xr_tracking_in_background" msgid="1714941204255185460">"နောက်ခံတွင် XR ခြေရာခံမှုကို သုံးခြင်း"</string>
     <string name="permdesc_xr_tracking_in_background" msgid="3151744132692357005">"XR ဒေတာကို နောက်ခံတွင်သုံးရန် အက်ပ်အား ခွင့်ပြုသည်။"</string>
     <string name="permlab_capture_keyboard" msgid="4076894823382693032">"ကီးများ မှတ်သားခြင်း"</string>
     <string name="permdesc_capture_keyboard" msgid="4192269470684407219">"စနစ်က စနစ်ဖြတ်လမ်းနှင့် လုပ်ဆောင်ချက်များကို မဆောင်ရွက်မီ ကီးများကို အက်ပ်အား မှတ်သားခွင့်ပြုသည်။"</string>
@@ -1626,6 +1623,12 @@
     <string name="gpsNotifMessage" msgid="7346649122793758032">"<xliff:g id="NAME">%1$s</xliff:g> (<xliff:g id="SERVICE">%2$s</xliff:g>)မှတောင်းခံသည်"</string>
     <string name="gpsVerifYes" msgid="3719843080744112940">"Yes"</string>
     <string name="gpsVerifNo" msgid="1671201856091564741">"No"</string>
+    <!-- no translation found for emergency_location_notification_title (917557758257778958) -->
+    <skip />
+    <!-- no translation found for emergency_location_notification_message (1877038822515882885) -->
+    <skip />
+    <!-- no translation found for emergency_location_notification_learn_more (8718634939217070481) -->
+    <skip />
     <string name="sync_too_many_deletes" msgid="6999440774578705300">"ပယ်ဖျက်မည့်ကန့်သတ်နှုန်းကျော်လွန်သည်"</string>
     <string name="sync_too_many_deletes_desc" msgid="7409327940303504440">"<xliff:g id="TYPE_OF_SYNC">%2$s</xliff:g>၊  account <xliff:g id="ACCOUNT_NAME">%3$s</xliff:g> အတွက် စုစုပေါင်း <xliff:g id="NUMBER_OF_DELETED_ITEMS">%1$d</xliff:g> အရာဖျက်ထားပါသည်။ သင်ဘာလုပ်ချင်ပါလဲ?"</string>
     <string name="sync_really_delete" msgid="5657871730315579051">"ဤအရာများကိုဖျက်ပါ"</string>
@@ -1989,10 +1992,8 @@
     <string name="package_updated_device_owner" msgid="7770195449213776218">"သင့်စီမံခန့်ခွဲသူက အပ်ဒိတ်လုပ်ထားသည်။\nပေးထားသည့် ခွင့်ပြုချက်များကို ကြည့်ရန် ဆက်တင်များသို့ သွားပါ"</string>
     <string name="package_deleted_device_owner" msgid="2292335928930293023">"သင်၏ စီမံခန့်ခွဲသူက ဖျက်လိုက်ပါပြီ"</string>
     <string name="confirm_battery_saver" msgid="5247976246208245754">"OK"</string>
-    <!-- no translation found for battery_saver_description_with_learn_more (8969945879044849461) -->
-    <skip />
-    <!-- no translation found for battery_saver_description (2820475140307374570) -->
-    <skip />
+    <string name="battery_saver_description_with_learn_more" msgid="8969945879044849461">"‘ဘက်ထရီ အားထိန်း’ က ‘အမှောင်နောက်ခံ’ ကို ဖွင့်ပြီး နောက်ခံလုပ်ဆောင်ချက်၊ ဖန်တီးပြသချက်အချို့၊ ဝန်ဆောင်မှုအချို့နှင့် ကွန်ရက်ချိတ်ဆက်မှုအချို့တို့ကို ကန့်သတ်သည် သို့မဟုတ် ပိတ်သည်။"</string>
+    <string name="battery_saver_description" msgid="2820475140307374570">"‘ဘက်ထရီ အားထိန်း’ က ‘အမှောင်နောက်ခံ’ ကို ဖွင့်ပြီး နောက်ခံလုပ်ဆောင်ချက်၊ ဖန်တီးပြသချက်အချို့၊ ဝန်ဆောင်မှုအချို့နှင့် ကွန်ရက်ချိတ်ဆက်မှုအချို့တို့ကို ကန့်သတ်သည် သို့မဟုတ် ပိတ်သည်။"</string>
     <string name="data_saver_description" msgid="4995164271550590517">"ဒေတာအသုံးလျှော့ချနိုင်ရန်အတွက် အက်ပ်များကို နောက်ခံတွင် ဒေတာပို့ခြင်းနှင့် လက်ခံခြင်းမပြုရန် \'ဒေတာချွေတာမှု\' စနစ်က တားဆီးထားပါသည်။ ယခုအက်ပ်ဖြင့် ဒေတာအသုံးပြုနိုင်သော်လည်း အကြိမ်လျှော့၍သုံးရပါမည်။ ဥပမာ၊ သင်က မတို့မချင်း ပုံများပေါ်လာမည် မဟုတ်ပါ။"</string>
     <string name="data_saver_enable_title" msgid="7080620065745260137">"ဒေတာချွေတာမှုစနစ် ဖွင့်မလား။"</string>
     <string name="data_saver_enable_button" msgid="4399405762586419726">"ဖွင့်ရန်"</string>

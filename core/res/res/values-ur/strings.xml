@@ -1623,6 +1623,12 @@
     <string name="gpsNotifMessage" msgid="7346649122793758032">"درخواست کردہ بذریعہ <xliff:g id="NAME">%1$s</xliff:g> (<xliff:g id="SERVICE">%2$s</xliff:g>)"</string>
     <string name="gpsVerifYes" msgid="3719843080744112940">"ہاں"</string>
     <string name="gpsVerifNo" msgid="1671201856091564741">"نہیں"</string>
+    <!-- no translation found for emergency_location_notification_title (917557758257778958) -->
+    <skip />
+    <!-- no translation found for emergency_location_notification_message (1877038822515882885) -->
+    <skip />
+    <!-- no translation found for emergency_location_notification_learn_more (8718634939217070481) -->
+    <skip />
     <string name="sync_too_many_deletes" msgid="6999440774578705300">"حذف کرنے کی حد سے متجاوز ہو گیا"</string>
     <string name="sync_too_many_deletes_desc" msgid="7409327940303504440">"<xliff:g id="TYPE_OF_SYNC">%2$s</xliff:g>، اکاؤنٹ <xliff:g id="ACCOUNT_NAME">%3$s</xliff:g> کیلئے <xliff:g id="NUMBER_OF_DELETED_ITEMS">%1$d</xliff:g> حذف کردہ آئٹمز ہیں۔ آپ کیا کرنا چاہتے ہیں؟"</string>
     <string name="sync_really_delete" msgid="5657871730315579051">"آئٹمز حذف کریں"</string>
@@ -1986,10 +1992,8 @@
     <string name="package_updated_device_owner" msgid="7770195449213776218">"آپ کے منتظم نے اپ ڈیٹ کیا ہے۔\nدی گئی اجازتیں دیکھنے کیلئے ترتیبات پر جائیں"</string>
     <string name="package_deleted_device_owner" msgid="2292335928930293023">"آپ کے منتظم کے ذریعے حذف کیا گیا"</string>
     <string name="confirm_battery_saver" msgid="5247976246208245754">"ٹھیک ہے"</string>
-    <!-- no translation found for battery_saver_description_with_learn_more (8969945879044849461) -->
-    <skip />
-    <!-- no translation found for battery_saver_description (2820475140307374570) -->
-    <skip />
+    <string name="battery_saver_description_with_learn_more" msgid="8969945879044849461">"بیٹری سیور گہری تھیم کو آن کرتی ہے اور پس منظر کی سرگرمی، کچھ بصری اثرات، مخصوص خصوصیات اور کچھ نیٹ ورک کنکشنز کو محدود یا آف کرتی ہے۔"</string>
+    <string name="battery_saver_description" msgid="2820475140307374570">"بیٹری سیور گہری تھیم کو آن کرتی ہے اور پس منظر کی سرگرمی، کچھ بصری اثرات، مخصوص خصوصیات اور کچھ نیٹ ورک کنکشنز کو محدود یا آف کرتی ہے۔"</string>
     <string name="data_saver_description" msgid="4995164271550590517">"ڈیٹا کے استعمال کو کم کرنے میں مدد کیلئے، ڈیٹا سیور پس منظر میں کچھ ایپس کو ڈیٹا بھیجنے یا موصول کرنے سے روکتی ہے۔ آپ جو ایپ فی الحال استعمال کر رہے ہیں وہ ڈیٹا تک رسائی کر سکتی ہے مگر ہو سکتا ہے ایسا اکثر نہ ہو۔ اس کا مطلب مثال کے طور پر یہ ہو سکتا ہے کہ تصاویر تھپتھپانے تک ظاہر نہ ہوں۔"</string>
     <string name="data_saver_enable_title" msgid="7080620065745260137">"ڈیٹا سیور آن کریں؟"</string>
     <string name="data_saver_enable_button" msgid="4399405762586419726">"آن کریں"</string>

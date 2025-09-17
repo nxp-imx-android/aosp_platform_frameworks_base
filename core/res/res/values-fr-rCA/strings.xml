@@ -1055,7 +1055,7 @@
     <string name="lockscreen_pattern_correct" msgid="8050630103651508582">"C\'est exact!"</string>
     <string name="lockscreen_pattern_wrong" msgid="2940138714468358458">"Réessayer"</string>
     <string name="lockscreen_password_wrong" msgid="8605355913868947490">"Réessayer"</string>
-    <string name="lockscreen_storage_locked" msgid="634993789186443380">"Déverr. pour acc. aux autres fonction. et données"</string>
+    <string name="lockscreen_storage_locked" msgid="634993789186443380">"Déverr. toutes les fonctionnalités et données"</string>
     <string name="faceunlock_multiple_failures" msgid="681991538434031708">"Nombre maximal atteint de tentatives de déverrouillage par reconnaissance faciale"</string>
     <string name="lockscreen_missing_sim_message_short" msgid="1229301273156907613">"Aucune carte SIM"</string>
     <string name="lockscreen_missing_sim_message" product="tablet" msgid="3986843848305639161">"Aucune carte SIM ne se trouve dans la tablette."</string>
@@ -1624,6 +1624,12 @@
     <string name="gpsNotifMessage" msgid="7346649122793758032">"Demande de <xliff:g id="NAME">%1$s</xliff:g> (<xliff:g id="SERVICE">%2$s</xliff:g>)"</string>
     <string name="gpsVerifYes" msgid="3719843080744112940">"Oui"</string>
     <string name="gpsVerifNo" msgid="1671201856091564741">"Non"</string>
+    <!-- no translation found for emergency_location_notification_title (917557758257778958) -->
+    <skip />
+    <!-- no translation found for emergency_location_notification_message (1877038822515882885) -->
+    <skip />
+    <!-- no translation found for emergency_location_notification_learn_more (8718634939217070481) -->
+    <skip />
     <string name="sync_too_many_deletes" msgid="6999440774578705300">"Le nombre maximal de suppressions a été atteint."</string>
     <string name="sync_too_many_deletes_desc" msgid="7409327940303504440">"<xliff:g id="NUMBER_OF_DELETED_ITEMS">%1$d</xliff:g> éléments vont être supprimés lors de la synchronisation <xliff:g id="TYPE_OF_SYNC">%2$s</xliff:g> pour le compte <xliff:g id="ACCOUNT_NAME">%3$s</xliff:g>. Voulez-vous continuer?"</string>
     <string name="sync_really_delete" msgid="5657871730315579051">"Supprimer les éléments"</string>
@@ -1749,7 +1755,7 @@
     <string name="kg_wrong_pin" msgid="3680925703673166482">"NIP incorrect."</string>
     <string name="kg_pattern_instructions" msgid="8366024510502517748">"Dessinez votre schéma."</string>
     <string name="kg_sim_pin_instructions" msgid="6479401489471690359">"Saisissez le NIP de la carte SIM"</string>
-    <string name="kg_pin_instructions" msgid="7355933174673539021">"Saisissez le NIP."</string>
+    <string name="kg_pin_instructions" msgid="7355933174673539021">"Entrez le NIP"</string>
     <string name="kg_password_instructions" msgid="7179782578809398050">"Saisissez votre mot de passe."</string>
     <string name="kg_puk_enter_puk_hint" msgid="6696187482616360994">"La carte SIM est maintenant désactivée. Saisissez le code PUK pour continuer. Contactez votre opérateur pour en savoir plus."</string>
     <string name="kg_puk_enter_pin_hint" msgid="8190982314659429770">"Saisir le NIP souhaité"</string>
@@ -1953,7 +1959,7 @@
     <string name="print_service_installed_title" msgid="6134880817336942482">"Le service « <xliff:g id="NAME">%s</xliff:g> » a bien été installé"</string>
     <string name="print_service_installed_message" msgid="7005672469916968131">"Toucher pour activer"</string>
     <string name="restr_pin_enter_admin_pin" msgid="1199419462726962697">"Entrez le NIP d\'administrateur"</string>
-    <string name="restr_pin_enter_pin" msgid="373139384161304555">"Saisissez le NIP"</string>
+    <string name="restr_pin_enter_pin" msgid="373139384161304555">"Entrez le NIP"</string>
     <string name="restr_pin_incorrect" msgid="3861383632940852496">"Incorrect"</string>
     <string name="restr_pin_enter_old_pin" msgid="7537079094090650967">"NIP actuel"</string>
     <string name="restr_pin_enter_new_pin" msgid="3267614461844565431">"Nouveau NIP"</string>
@@ -1987,10 +1993,8 @@
     <string name="package_updated_device_owner" msgid="7770195449213776218">"Installé par votre administrateur.\nAccédez aux paramètres pour consulter les autorisations accordées"</string>
     <string name="package_deleted_device_owner" msgid="2292335928930293023">"Supprimé par votre administrateur"</string>
     <string name="confirm_battery_saver" msgid="5247976246208245754">"OK"</string>
-    <!-- no translation found for battery_saver_description_with_learn_more (8969945879044849461) -->
-    <skip />
-    <!-- no translation found for battery_saver_description (2820475140307374570) -->
-    <skip />
+    <string name="battery_saver_description_with_learn_more" msgid="8969945879044849461">"Le mode Économiseur de pile active le thème sombre et limite ou désactive l\'activité en arrière-plan, certains effets visuels, certaines fonctionnalités et certaines connexions réseau."</string>
+    <string name="battery_saver_description" msgid="2820475140307374570">"Le mode Économiseur de pile active le thème sombre et limite ou désactive l\'activité en arrière-plan, certains effets visuels, certaines fonctionnalités et certaines connexions réseau."</string>
     <string name="data_saver_description" msgid="4995164271550590517">"Pour aider à diminuer l\'utilisation des données, la fonctionnalité Économiseur de données empêche certaines applis d\'envoyer ou de recevoir des données en arrière-plan. Une appli que vous êtes en train d\'utiliser peut accéder à des données, mais peut le faire moins souvent. Cela peut signifier, par exemple, que les images ne s\'affichent pas jusqu\'à ce que vous les touchiez."</string>
     <string name="data_saver_enable_title" msgid="7080620065745260137">"Activer l\'Économiseur de données?"</string>
     <string name="data_saver_enable_button" msgid="4399405762586419726">"Activer"</string>
