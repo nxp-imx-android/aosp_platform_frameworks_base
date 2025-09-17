@@ -66,25 +66,20 @@ public interface WindowProvider {
 
     /**
      * Gets the window type to be overridden when {@link android.view.WindowManager#addView}
+     * and {@link android.view.WindowManager#updateViewLayout} if the added window is not
+     * {@link #isSelfOrSubWindowType(int)}.
      */
     @WindowType
-    default int getWindowTypeOverride() {
+    default int getFallbackWindowType() {
         return INVALID_WINDOW_TYPE;
     }
 
     /**
-     * Returns {@code true} if the given type is a valid window type for this
-     * {@link WindowProvider}.
+     * Returns {@code true} if the given type is {@link #getWindowType()} or a sub-window type.
      *
      * @param type the requested window type
      */
-    default boolean isValidWindowType(@WindowType int type) {
-        if (type == getWindowType()) {
-            // Valid. The requested window type is the type of WindowContext.
-            return true;
-        }
-        // Don't need to check sub-window type because sub window should be allowed to be attached
-        // to the parent window.
-        return isSubWindowType(type);
+    default boolean isSelfOrSubWindowType(@WindowType int type) {
+        return getWindowType() == type || isSubWindowType(type);
     }
 }
