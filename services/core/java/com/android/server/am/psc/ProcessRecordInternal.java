@@ -284,6 +284,9 @@ public abstract class ProcessRecordInternal {
     /** Returns an array of package names associated with this process. */
     public abstract String[] getProcessPackageNames();
 
+    /** Checks if this process hosts any packages that should be kept warm. */
+    public abstract boolean shouldKeepWarm();
+
     /** Returns a short string representation of the process. */
     public abstract String toShortString();
 

@@ -123,7 +123,6 @@ import android.app.ActivityManager;
 import android.app.ActivityManagerInternal.OomAdjReason;
 import android.app.ApplicationExitInfo;
 import android.app.usage.UsageEvents;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.ServiceInfo;
@@ -554,25 +553,19 @@ public abstract class OomAdjuster {
      */
     @GuardedBy("mService")
     public void prewarmServicesIfNecessary() {
-        mProcessList.forEachLruProcessesLOSP(false,
-                this::updateKeepWarmIfNecessaryForProcessLocked);
+        final ArrayList<? extends ProcessRecordInternal> lruList =
+                mProcessList.getLruProcessesLOSP();
+        for (int i = lruList.size() - 1; i >= 0; i--) {
+            updateKeepWarmIfNecessaryForProcessLocked(lruList.get(i));
+        }
     }
 
     @GuardedBy("mService")
-    private void updateKeepWarmIfNecessaryForProcessLocked(final ProcessRecord app) {
-        final ArraySet<ComponentName> warmServices = mService.mConstants.KEEP_WARMING_SERVICES;
-        boolean includeWarmPkg = false;
-        final PackageList pkgList = app.getPkgList();
-        for (int j = warmServices.size() - 1; j >= 0; j--) {
-            if (pkgList.containsKey(warmServices.valueAt(j).getPackageName())) {
-                includeWarmPkg = true;
-                break;
-            }
-        }
-        if (!includeWarmPkg) {
+    private void updateKeepWarmIfNecessaryForProcessLocked(final ProcessRecordInternal app) {
+        if (!app.shouldKeepWarm()) {
             return;
         }
-        final ProcessServiceRecordInternal psr = app.mServices;
+        final ProcessServiceRecordInternal psr = app.getServices();
         for (int j = psr.numberOfRunningServices() - 1; j >= 0; j--) {
             psr.getRunningServiceAt(j).updateKeepWarmLocked();
         }
@@ -740,11 +733,11 @@ public abstract class OomAdjuster {
             }
             // See if this process has any corresponding SDK sandbox processes running, and if so
             // scan them as well.
-            final List<ProcessRecord> sdkSandboxes =
+            final List<? extends ProcessRecordInternal> sdkSandboxes =
                     mProcessList.getSdkSandboxProcessesForAppLocked(pr.uid);
             final int numSdkSandboxes = sdkSandboxes != null ? sdkSandboxes.size() : 0;
             for (int i = numSdkSandboxes - 1; i >= 0; i--) {
-                ProcessRecord sdkSandbox = sdkSandboxes.get(i);
+                final ProcessRecordInternal sdkSandbox = sdkSandboxes.get(i);
                 containsCycle |= sdkSandbox.isReachable();
                 if (sdkSandbox.isReachable()) {
                     continue;
@@ -944,7 +937,7 @@ public abstract class OomAdjuster {
     }
 
     @GuardedBy({"mService", "mProcLock"})
-    protected void applyLruAdjust(ArrayList<ProcessRecord> lruList) {
+    protected void applyLruAdjust(ArrayList<? extends ProcessRecordInternal> lruList) {
         final int numLru = lruList.size();
         int nextVisibleAppAdj = VISIBLE_APP_ADJ;
         int nextPreviousAppAdj = PREVIOUS_APP_ADJ;
@@ -989,19 +982,18 @@ public abstract class OomAdjuster {
         int lastCachedGroupUid = 0;
 
         for (int i = numLru - 1; i >= 0; i--) {
-            ProcessRecord app = lruList.get(i);
-            final ProcessRecordInternal state = app;
-            final int curAdj = state.getCurAdj();
+            final ProcessRecordInternal app = lruList.get(i);
+            final int curAdj = app.getCurAdj();
             if (VISIBLE_APP_ADJ <= curAdj && curAdj <= VISIBLE_APP_MAX_ADJ) {
-                state.setCurAdj(nextVisibleAppAdj);
+                app.setCurAdj(nextVisibleAppAdj);
                 nextVisibleAppAdj = Math.min(nextVisibleAppAdj + 1, VISIBLE_APP_MAX_ADJ);
             } else if (PREVIOUS_APP_ADJ <= curAdj && curAdj <= PREVIOUS_APP_MAX_ADJ) {
-                state.setCurAdj(nextPreviousAppAdj);
+                app.setCurAdj(nextPreviousAppAdj);
                 nextPreviousAppAdj = Math.min(nextPreviousAppAdj + 1, PREVIOUS_APP_MAX_ADJ);
             } else if (!app.isKilledByAm() && app.isProcessRunning() && curAdj >= UNKNOWN_ADJ) {
                 // If we haven't yet assigned the final cached adj to the process, do that now.
-                final ProcessServiceRecordInternal psr = app.mServices;
-                switch (state.getCurProcState()) {
+                final ProcessServiceRecordInternal psr = app.getServices();
+                switch (app.getCurProcState()) {
                     case PROCESS_STATE_LAST_ACTIVITY:
                     case PROCESS_STATE_CACHED_ACTIVITY:
                     case ActivityManager.PROCESS_STATE_CACHED_ACTIVITY_CLIENT:
@@ -1045,12 +1037,12 @@ public abstract class OomAdjuster {
                         // assign it the next cached value for that type, and then
                         // step that cached level.
                         final int rawAdj = curCachedAdj + curCachedImpAdj;
-                        state.setCurRawAdj(rawAdj);
-                        state.setCurAdj(
+                        app.setCurRawAdj(rawAdj);
+                        app.setCurAdj(
                                 applyBindAboveClientToAdj(psr.isHasAboveClient(), rawAdj));
                         if (DEBUG_LRU) {
                             Slog.d(TAG_LRU, "Assigning activity LRU #" + i
-                                    + " adj: " + state.getCurAdj()
+                                    + " adj: " + app.getCurAdj()
                                     + " (curCachedAdj=" + curCachedAdj
                                     + " curCachedImpAdj=" + curCachedImpAdj + ")");
                         }
@@ -1073,12 +1065,12 @@ public abstract class OomAdjuster {
                         // long-running services that have dropped down to the
                         // cached level will be treated as empty (since their process
                         // state is still as a service), which is what we want.
-                        state.setCurRawAdj(curEmptyAdj);
-                        state.setCurAdj(applyBindAboveClientToAdj(psr.isHasAboveClient(),
+                        app.setCurRawAdj(curEmptyAdj);
+                        app.setCurAdj(applyBindAboveClientToAdj(psr.isHasAboveClient(),
                                 curEmptyAdj));
                         if (DEBUG_LRU) {
                             Slog.d(TAG_LRU, "Assigning empty LRU #" + i
-                                    + " adj: " + state.getCurAdj()
+                                    + " adj: " + app.getCurAdj()
                                     + " (curEmptyAdj=" + curEmptyAdj
                                     + ")");
                         }
@@ -1099,7 +1091,8 @@ public abstract class OomAdjuster {
     private void updateAndTrimProcessLSP(final long now, final long nowElapsed,
             final long oldTime, @OomAdjReason int oomAdjReason,
             boolean doingAll) {
-        ArrayList<ProcessRecord> lruList = mProcessList.getLruProcessesLOSP();
+        final ArrayList<? extends ProcessRecordInternal> lruList =
+                mProcessList.getLruProcessesLOSP();
         final int numLru = lruList.size();
 
         final boolean doKillExcessiveProcesses = shouldKillExcessiveProcesses(now);
@@ -1238,7 +1231,7 @@ public abstract class OomAdjuster {
             // We need to apply the update starting from the least recently used.
             // Otherwise, they won't be in the correct LRU order in LMKD.
             for (int i = 0; i < numLru; i++) {
-                final ProcessRecord app = lruList.get(i);
+                final ProcessRecordInternal app = lruList.get(i);
                 // We don't need to apply the update for the process which didn't get computed
                 if (!app.isKilledByAm() && app.isProcessRunning()
                         && app.getCompletedAdjSeq() == mAdjSeq) {
@@ -2549,7 +2542,7 @@ public abstract class OomAdjuster {
     @GuardedBy("mService")
     void dumpProcCountsLocked(PrintWriter pw) {
         pw.println("  mNumNonCachedProcs=" + mNumNonCachedProcs
-                + " (" + mProcessList.getLruSizeLOSP() + " total)"
+                + " (" + mProcessList.getLruProcessesLOSP().size() + " total)"
                 + " mNumCachedHiddenProcs=" + mNumCachedHiddenProcs
                 + " mNumServiceProcs=" + mNumServiceProcs
                 + " mNewNumServiceProcs=" + mNewNumServiceProcs);
