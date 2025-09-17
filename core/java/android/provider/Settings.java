@@ -9768,6 +9768,7 @@ public final class Settings {
          *
          * @hide
          */
+        @Readable
         public static final String ACCESSIBILITY_TEXT_CURSOR_BLINK_INTERVAL_MS =
                 "accessibility_text_cursor_blink_interval_ms";
 
