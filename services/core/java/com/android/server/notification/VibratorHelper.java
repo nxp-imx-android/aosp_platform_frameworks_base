@@ -131,9 +131,7 @@ public final class VibratorHelper {
 
             VibrationEffect effect = waveformBuilder.build();
             if (insistent) {
-                return VibrationEffect.startComposition()
-                        .repeatEffectIndefinitely(effect)
-                        .compose();
+                return VibrationEffect.createRepeatingEffect(effect);
             }
             return effect;
         } catch (IllegalArgumentException e) {

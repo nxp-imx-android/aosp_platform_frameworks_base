@@ -139,7 +139,6 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 
-import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -1449,8 +1448,7 @@ public class VibratorManagerServiceTest {
         vibrate(service, effect, pipelineAttrs);
         // This vibration will be enqueued, but evicted by the EFFECT_CLICK.
         vibrate(service, VibrationEffect.startComposition()
-                .addOffDuration(Duration.ofSeconds(10))
-                .addPrimitive(PRIMITIVE_SLOW_RISE)
+                .addPrimitive(PRIMITIVE_SLOW_RISE, 1.0f, 10_000) // 10s delay
                 .compose(), pipelineAttrs);  // This will queue and be evicted for the click.
 
         vibrateAndWaitUntilFinished(service, VibrationEffect.get(EFFECT_CLICK), pipelineAttrs);

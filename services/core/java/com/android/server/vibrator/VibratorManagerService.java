@@ -3127,15 +3127,12 @@ public class VibratorManagerService extends IVibratorManagerService.Stub {
 
         private void addOneShotToComposition(VibrationEffect.Composition composition) {
             boolean hasAmplitude = false;
-            int delay = 0;
 
             getNextArgRequired(); // consume "oneshot"
             String nextOption;
             while ((nextOption = getNextOption()) != null) {
                 if ("-a".equals(nextOption)) {
                     hasAmplitude = true;
-                } else if ("-w".equals(nextOption)) {
-                    delay = parseInt(getNextArgRequired(), "Expected delay millis after -w");
                 }
             }
 
@@ -3143,7 +3140,6 @@ public class VibratorManagerService extends IVibratorManagerService.Stub {
             int amplitude = hasAmplitude
                     ? parseInt(getNextArgRequired(), "Expected one-shot amplitude")
                     : VibrationEffect.DEFAULT_AMPLITUDE;
-            composition.addOffDuration(Duration.ofMillis(delay));
             composition.addEffect(VibrationEffect.createOneShot(duration, amplitude));
         }
 
@@ -3269,7 +3265,6 @@ public class VibratorManagerService extends IVibratorManagerService.Stub {
             boolean hasFrequencies = false;
             boolean isContinuous = false;
             int repeat = -1;
-            int delay = 0;
 
             getNextArgRequired(); // consume "waveform"
             String nextOption;
@@ -3280,8 +3275,6 @@ public class VibratorManagerService extends IVibratorManagerService.Stub {
                     case "-c" -> isContinuous = true;
                     case "-r" -> repeat = parseInt(getNextArgRequired(),
                             "Expected repeat index after -r");
-                    case "-w" -> delay = parseInt(getNextArgRequired(),
-                            "Expected delay millis after -w");
                 }
             }
             List<Integer> durations = new ArrayList<>();
@@ -3310,9 +3303,6 @@ public class VibratorManagerService extends IVibratorManagerService.Stub {
                             parseFloat(getNextArgRequired(), "Expected waveform frequency"));
                 }
             }
-
-            // Add delay before the waveform.
-            composition.addOffDuration(Duration.ofMillis(delay));
 
             VibrationEffect.WaveformBuilder waveform = VibrationEffect.startWaveform();
             for (int i = 0; i < durations.size(); i++) {
@@ -3352,26 +3342,22 @@ public class VibratorManagerService extends IVibratorManagerService.Stub {
                 composition.addEffect(waveform.build());
             } else {
                 // The waveform was already split at the repeat index, just repeat what remains.
-                composition.repeatEffectIndefinitely(waveform.build());
+                composition.addEffect(VibrationEffect.createRepeatingEffect(waveform.build()));
             }
         }
 
         private void addPrebakedToComposition(VibrationEffect.Composition composition) {
             boolean shouldFallback = false;
-            int delay = 0;
 
             getNextArgRequired(); // consume "prebaked"
             String nextOption;
             while ((nextOption = getNextOption()) != null) {
                 if ("-b".equals(nextOption)) {
                     shouldFallback = true;
-                } else if ("-w".equals(nextOption)) {
-                    delay = parseInt(getNextArgRequired(), "Expected delay millis after -w");
                 }
             }
 
             int effectId = parseInt(getNextArgRequired(), "Expected prebaked effect id");
-            composition.addOffDuration(Duration.ofMillis(delay));
             composition.addEffect(VibrationEffect.get(effectId, shouldFallback));
         }
 
@@ -3492,17 +3478,13 @@ public class VibratorManagerService extends IVibratorManagerService.Stub {
                 pw.println("    Cancels any active vibration");
                 pw.println("");
                 pw.println("Effect commands:");
-                pw.println("  oneshot [-w delay] [-a] <duration> [<amplitude>]");
+                pw.println("  oneshot [-a] <duration> [<amplitude>]");
                 pw.println("    Vibrates for duration milliseconds.");
-                pw.println("    If -w is provided, the effect will be played after the specified");
-                pw.println("    wait time in milliseconds.");
                 pw.println("    If -a is provided, the command accepts a second argument for ");
                 pw.println("    amplitude, in a scale of 1-255.");
-                pw.print("  waveform [-w delay] [-r index] [-a] [-f] [-c] ");
+                pw.print("  waveform [-r index] [-a] [-f] [-c] ");
                 pw.println("(<duration> [<amplitude>] [<frequency>])...");
                 pw.println("    Vibrates for durations and amplitudes in list.");
-                pw.println("    If -w is provided, the effect will be played after the specified");
-                pw.println("    wait time in milliseconds.");
                 pw.println("    If -r is provided, the waveform loops back to the specified");
                 pw.println("    index (e.g. 0 loops from the beginning).");
                 pw.println("    If -a is provided, the command expects amplitude to follow each");
@@ -3526,10 +3508,8 @@ public class VibratorManagerService extends IVibratorManagerService.Stub {
                 pw.println("    it will start from.");
                 pw.println("    If -r is provided, the waveform loops back to the specified index");
                 pw.println("    (e.g. 0 loops from the beginning).");
-                pw.println("  prebaked [-w delay] [-b] <effect-id>");
+                pw.println("  prebaked [-b] <effect-id>");
                 pw.println("    Vibrates with prebaked effect.");
-                pw.println("    If -w is provided, the effect will be played after the specified");
-                pw.println("    wait time in milliseconds.");
                 pw.println("    If -b is provided, the prebaked fallback effect will be played if");
                 pw.println("    the device doesn't support the given effect-id.");
                 pw.print("  primitives ([-w delay] [-o time] [-s scale]");
@@ -3538,7 +3518,7 @@ public class VibratorManagerService extends IVibratorManagerService.Stub {
                 pw.println("    If -w is provided, the next primitive will be played after the ");
                 pw.println("    specified wait time in milliseconds.");
                 pw.println("    If -o is provided, the next primitive will be played at the ");
-                pw.println("    specified start offset time in milliseconds.");
+                pw.println("    specified relative start offset time in milliseconds.");
                 pw.println("    If -s is provided, the next primitive will be played with the");
                 pw.println("    specified amplitude scale, in a scale of [0,1].");
                 pw.println("");
