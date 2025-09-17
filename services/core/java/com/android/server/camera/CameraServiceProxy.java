@@ -126,7 +126,19 @@ import java.util.concurrent.TimeUnit;
 public class CameraServiceProxy extends SystemService
         implements Handler.Callback, IBinder.DeathRecipient {
     private static final String TAG = "CameraService_proxy";
-    private static final boolean DEBUG = Log.isLoggable(TAG, Log.DEBUG);
+    private static final boolean DEBUG;
+
+    // TODO(b/442009819): inline DEBUG once Flag is ramped-up
+    static {
+        boolean debug = false;
+        try {
+            debug = Log.isLoggable(TAG, Log.DEBUG) || Flags.fixManagedProfilesReceiver();
+        } catch (Throwable t) {
+            Slogf.e(TAG, t, "Error setting DEBUG (most likely reading "
+                    + "Flags.fixManagedProfilesReceiver()");
+        }
+        DEBUG = debug;
+    }
 
     /**
      * This must match the ICameraService.aidl definition
@@ -603,6 +615,10 @@ public class CameraServiceProxy extends SystemService
         public void onReceive(Context context, Intent intent) {
             final String action = intent.getAction();
             if (action == null) return;
+
+            if (DEBUG) {
+                Slogf.d(TAG, "onReceive(): action=%s on user %d", action, context.getUserId());
+            }
 
             switch (action) {
                 case Intent.ACTION_USER_ADDED:
@@ -1099,6 +1115,10 @@ public class CameraServiceProxy extends SystemService
         filter.addAction(Intent.ACTION_USER_ADDED);
         filter.addAction(Intent.ACTION_USER_REMOVED);
         filter.addAction(Intent.ACTION_USER_INFO_CHANGED);
+        // NOTE: we don't need to register the PROFILE actions here on HSUM devices (those area
+        // added on UserSwitching()), but it doesn't hurt to, as recommended by the wise Justin
+        // (last name Case).
+        // TODO(b/442009819); optimize it so it's only set if the system user can have profiles.
         filter.addAction(Intent.ACTION_MANAGED_PROFILE_ADDED);
         filter.addAction(Intent.ACTION_MANAGED_PROFILE_REMOVED);
         filter.addAction(UsbManager.ACTION_USB_DEVICE_ATTACHED);
@@ -1131,10 +1151,12 @@ public class CameraServiceProxy extends SystemService
 
     @Override
     public void onUserStarting(@NonNull TargetUser user) {
-        if (DEBUG) {
-            Slogf.d(TAG, "onUserStarting(): %s", user);
-        }
         synchronized(mLock) {
+            if (DEBUG) {
+                Slogf.d(TAG, "onUserStarting(%s): mEnabledCameraUsers=%s", user,
+                        mEnabledCameraUsers);
+            }
+
             if (mEnabledCameraUsers == null) {
                 // Initialize cameraserver, or update cameraserver if we are recovering
                 // from a crash.
@@ -1150,6 +1172,33 @@ public class CameraServiceProxy extends SystemService
         }
         synchronized(mLock) {
             switchUserLocked(to.getUserIdentifier());
+        }
+
+        if (!Flags.fixManagedProfilesReceiver()) {
+            return;
+        }
+
+        // TODO(b/442009819): optimize code below so it only registers the receiver when the to user
+        // can have profiles
+
+        //  mIntentReceiver is registered (on constructor) to only receive BCs sent to system user
+        // (A.K.A. "user 0), but ACTION_MANAGED_PROFILE_* are sent to the parent of the profile,
+        // which is not necessarily the system user.
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(Intent.ACTION_MANAGED_PROFILE_ADDED);
+        filter.addAction(Intent.ACTION_MANAGED_PROFILE_REMOVED);
+        var newContext = mContext.createContextAsUser(to.getUserHandle(), /* flags= */ 0);
+        if (DEBUG) {
+            Slogf.d(TAG, "Registering BC receiver on user %d", newContext.getUserId());
+        }
+        newContext.registerReceiver(mIntentReceiver, filter);
+        if (from != null && from.getUserIdentifier() != UserHandle.USER_SYSTEM) {
+            var prevContext = mContext.createContextAsUser(from.getUserHandle(),
+                    /* flags= */ 0);
+            if (DEBUG) {
+                Slogf.d(TAG, "Unregistering BC receiver from user %d", prevContext.getUserId());
+            }
+            prevContext.unregisterReceiver(mIntentReceiver);
         }
     }
 
