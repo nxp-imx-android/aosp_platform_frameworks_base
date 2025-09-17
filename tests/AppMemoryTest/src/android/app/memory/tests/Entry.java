@@ -514,14 +514,18 @@ public class Entry {
     }
 
     static class DumpInfo extends Alloc {
-        final long mName;
+        final String mHeapName;
+
         DumpInfo(long id, Scanner s, Context c) {
             super(Root.DumpInfo, id);
-            mName = s.id();
+
+            long nameId = s.id();
+            HeapString heapString = c.getStr(nameId);
+            this.mHeapName = (heapString != null) ? heapString.toString() : "unknown";
         }
 
         @Override void dump(PrintStream o) {
-            o.println("  dump info");
+            o.println("  dump info for heap: " + mHeapName);
         }
     }
 
@@ -544,11 +548,19 @@ public class Entry {
 
         @Override
         long size() {
-            long s = 0;
+            long totalAppHeapSize = 0;
+            boolean inAppHeap = false;
+
             for (Alloc a : mAlloc) {
-                s += a.size();
+                if (a instanceof DumpInfo) {
+                    // flip flag to indicate we are in app heap section
+                    DumpInfo info = (DumpInfo) a;
+                    inAppHeap = "app".equals(info.mHeapName);
+                } else if (inAppHeap) {
+                    totalAppHeapSize += a.size();
+                }
             }
-            return s;
+            return totalAppHeapSize;
         }
 
         private Alloc alloc(Scanner s, Context c) {
