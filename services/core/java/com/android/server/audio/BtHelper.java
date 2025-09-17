@@ -1358,25 +1358,24 @@ public class BtHelper {
         }
 
         byte[] deviceType = device.getMetadata(BluetoothDevice.METADATA_DEVICE_TYPE);
-        if (deviceType == null) {
-            return AUDIO_DEVICE_CATEGORY_UNKNOWN;
-        }
-        String deviceCategory = new String(deviceType);
-        switch (deviceCategory) {
-            case DEVICE_TYPE_HEARING_AID:
-                return AUDIO_DEVICE_CATEGORY_HEARING_AID;
-            case DEVICE_TYPE_CARKIT:
-                return AUDIO_DEVICE_CATEGORY_CARKIT;
-            case DEVICE_TYPE_HEADSET:
-            case DEVICE_TYPE_UNTETHERED_HEADSET:
-                return AUDIO_DEVICE_CATEGORY_HEADPHONES;
-            case DEVICE_TYPE_SPEAKER:
-                return AUDIO_DEVICE_CATEGORY_SPEAKER;
-            case DEVICE_TYPE_WATCH:
-                return AUDIO_DEVICE_CATEGORY_WATCH;
-            case DEVICE_TYPE_DEFAULT:
-            default:
-                // fall through
+        if (deviceType != null) {
+            String deviceCategory = new String(deviceType);
+            switch (deviceCategory) {
+                case DEVICE_TYPE_HEARING_AID:
+                    return AUDIO_DEVICE_CATEGORY_HEARING_AID;
+                case DEVICE_TYPE_CARKIT:
+                    return AUDIO_DEVICE_CATEGORY_CARKIT;
+                case DEVICE_TYPE_HEADSET:
+                case DEVICE_TYPE_UNTETHERED_HEADSET:
+                    return AUDIO_DEVICE_CATEGORY_HEADPHONES;
+                case DEVICE_TYPE_SPEAKER:
+                    return AUDIO_DEVICE_CATEGORY_SPEAKER;
+                case DEVICE_TYPE_WATCH:
+                    return AUDIO_DEVICE_CATEGORY_WATCH;
+                case DEVICE_TYPE_DEFAULT:
+                default:
+                    // fall through
+            }
         }
 
         BluetoothClass deviceClass = device.getBluetoothClass();
