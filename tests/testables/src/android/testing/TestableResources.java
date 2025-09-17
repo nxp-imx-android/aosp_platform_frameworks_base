@@ -14,9 +14,8 @@
 
 package android.testing;
 
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.withSettings;
 
 import android.content.Context;
 import android.content.res.Configuration;
@@ -24,7 +23,9 @@ import android.content.res.Resources;
 import android.util.Log;
 import android.util.SparseArray;
 
+import org.mockito.AdditionalAnswers;
 import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 
 import java.util.Arrays;
 
@@ -40,14 +41,23 @@ import java.util.Arrays;
 public class TestableResources {
 
     private static final String TAG = "TestableResources";
+    private final Answer<Object> mRealAnswer;
     private final Resources mResources;
     private final SparseArray<Object> mOverrides = new SparseArray<>();
 
     /** Creates a TestableResources instance that calls through to the given real Resources. */
     public TestableResources(Resources realResources) {
-        mResources = mock(Resources.class, withSettings()
-                .spiedInstance(realResources)
-                .defaultAnswer(this::answer));
+        // Avoid using spy on realResources, because internally within Mockito, a spied
+        // instance (realResources) is only used at mock creation time: its internal data
+        // structure and state is either copied or mocked to build the instrumented instance.
+        // This internal copy/mock behavior may mess up realResources's internal fields under
+        // certain conditions (exact reason unknown), especially when inline mocking is involved
+        // and Mockito.framework().clearInlineMocks() has been called to reset all inline mocks.
+        // To avoid all these unnecessary complications, let's just use the straightforward
+        // "delegation" model: create a mock Resources instance from scratch, and delegate all
+        // method calls to realResources unless explicitly instrumented.
+        mRealAnswer = AdditionalAnswers.delegatesTo(realResources);
+        mResources = mock(Resources.class, this::answer);
     }
 
     /**
@@ -64,7 +74,7 @@ public class TestableResources {
      * @param configuration the configuration to return from resources.
      */
     public void overrideConfiguration(Configuration configuration) {
-        when(mResources.getConfiguration()).thenReturn(configuration);
+        doReturn(configuration).when(mResources).getConfiguration();
     }
 
     /**
@@ -126,6 +136,6 @@ public class TestableResources {
                 }
             }
         }
-        return invocationOnMock.callRealMethod();
+        return mRealAnswer.answer(invocationOnMock);
     }
 }
