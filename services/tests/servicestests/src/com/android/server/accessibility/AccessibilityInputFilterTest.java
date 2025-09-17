@@ -183,8 +183,8 @@ public class AccessibilityInputFilterTest {
 
         setDisplayCount(1);
         mAms = spy(new AccessibilityManagerService(context));
-        mA11yInputFilter = new AccessibilityInputFilter(
-                context, mAms, mEventHandler, mMagnificationGestureHandler);
+        mA11yInputFilter = new AccessibilityInputFilter(context, mAms,
+                mEventHandler, mMagnificationGestureHandler, context.getMainLooper());
         mA11yInputFilter.onInstalled();
 
         doReturn(mDisplayList).when(mAms).getValidDisplayList();

@@ -5295,7 +5295,7 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
         }
     }
 
-    boolean isDisplayProxyed(int displayId) {
+    public boolean isDisplayProxyed(int displayId) {
         return mProxyManager.isProxyedDisplay(displayId);
     }
 
