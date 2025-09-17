@@ -16,15 +16,11 @@
 package com.android.server.accessibility.gestures
 
 import android.content.Context
-import android.platform.test.annotations.EnableFlags
-import android.platform.test.flag.junit.SetFlagsRule
 import android.view.accessibility.AccessibilityEvent
 import androidx.test.runner.AndroidJUnit4
 import com.android.server.accessibility.AccessibilityManagerService
 import com.android.server.accessibility.EventStreamTransformation
-import com.android.server.accessibility.Flags
 import junit.framework.Assert
-import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.kotlin.doReturn
@@ -33,7 +29,6 @@ import org.mockito.kotlin.stub
 
 @RunWith(AndroidJUnit4::class)
 class EventDispatcherTest {
-    @get:Rule val mSetFlagsRule = SetFlagsRule()
 
     private val ams: AccessibilityManagerService = mock<AccessibilityManagerService>()
     private var dispatcher: EventDispatcher = EventDispatcher(
@@ -45,7 +40,6 @@ class EventDispatcherTest {
     )
 
     @Test
-    @EnableFlags(Flags.FLAG_TOUCH_EXPLORER_A11Y_EVENTS_INCLUDE_DISPLAY_ID)
     fun populateAccessibilityEvent_matchesParameters() {
         val windowId = 1
         val displayId = 2
