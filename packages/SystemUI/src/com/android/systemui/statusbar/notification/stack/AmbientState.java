@@ -837,6 +837,13 @@ public class AmbientState implements Dumpable {
         return mTrackedHeadsUpRow;
     }
 
+    /**
+     * @return mTrackedHeadsUpRow as is, regardless of any other state
+     */
+    public ExpandableNotificationRow getTrackedHeadsUpRowActual() {
+        return mTrackedHeadsUpRow;
+    }
+
     public void setAppearFraction(float appearFraction) {
         mAppearFraction = appearFraction;
     }
