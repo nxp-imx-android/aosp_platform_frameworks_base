@@ -534,15 +534,27 @@ class DesktopModeLaunchParamsModifier implements LaunchParamsModifier {
             @NonNull ActivityRecord activityToCheck,
             @NonNull ActivityRecord launchingActivity,
             @NonNull Task launchingTask) {
-        return (Objects.equals(activityToCheck.packageName, launchingActivity.packageName)
-                && (activityToCheck.mUserId == launchingTask.mUserId)
-                && activityToCheck.getTask().mTaskId != launchingTask.mTaskId
-                // Safe to inherit activity bounds if activity is no longer visible or will be
-                // closing as in either case there is not worry of content overlapping and being
-                // obscured.
-                && (!activityToCheck.isVisible()
-                    || (isLaunchingNewSingleTask(launchingActivity.launchMode)
-                        && isClosingExitingInstance(launchingTask.getBaseIntent().getFlags()))));
+        if (!Objects.equals(activityToCheck.packageName, launchingActivity.packageName)) {
+            // Activities are not from the same package so do not inherit.
+            return false;
+        }
+        if (activityToCheck.mUserId != launchingTask.mUserId) {
+            // Activities belong to different users so do not inherit.
+            return false;
+        }
+        if (activityToCheck.getTask().mTaskId == launchingTask.mTaskId) {
+            // Activities belong to the same task, no need to inherit.
+            return false;
+        }
+        if (isLaunchingNewSingleTask(launchingActivity.launchMode)
+                && isClosingExitingInstance(launchingTask.getBaseIntent().getFlags())) {
+            // Single instance task where the existing activity is closing so safe to inherit as
+            // there is no worry of content overlapping and being obscured.
+            return true;
+        }
+        // Safe to inherit activity bounds if activity is no longer visible as there is no worry of
+        // content overlapping and being obscured.
+        return !activityToCheck.isVisible();
     }
 
     /**
