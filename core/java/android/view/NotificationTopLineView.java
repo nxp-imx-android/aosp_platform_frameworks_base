@@ -53,6 +53,7 @@ public class NotificationTopLineView extends ViewGroup {
     private OnClickListener mFeedbackListener;
     private HeaderTouchListener mTouchListener = new HeaderTouchListener();
     private View mFeedbackIcon;
+    private View mVerificationText;
     private int mHeaderTextMarginEnd;
 
     private Set<View> mViewsToDisappear = new HashSet<>();
@@ -105,6 +106,7 @@ public class NotificationTopLineView extends ViewGroup {
         mSecondaryHeaderText = findViewById(R.id.header_text_secondary);
         mSecondaryHeaderTextDivider = findViewById(R.id.header_text_secondary_divider);
         mFeedbackIcon = findViewById(R.id.feedback);
+        mVerificationText = findViewById(R.id.verification_text);
     }
 
     @Override
@@ -157,10 +159,15 @@ public class NotificationTopLineView extends ViewGroup {
                     .adjust(mHeaderText, mHeaderTextDivider, mChildMinWidth)
                     // Next, shrink the secondary header text  (this rarely has conversationTitle)
                     .adjust(mSecondaryHeaderText, mSecondaryHeaderTextDivider, 0)
+                    // Next, shrink the verification text for CallStyle
+                    .adjust(mVerificationText, null, mChildMinWidth)
                     // Next, shrink the title text (this has contentTitle; only in headerless views)
                     .adjust(mTitle, null, mChildMinWidth)
                     // Next, shrink the header down to 0 if still necessary.
                     .adjust(mHeaderText, mHeaderTextDivider, 0)
+                    // Next, shrink the verification text down to 0 if still necessary. The
+                    // verification icon will always remain present though.
+                    .adjust(mVerificationText, null, 0)
                     // Finally, shrink the title to 0 if necessary (media is super cramped)
                     .adjust(mTitle, null, 0)
                     // Clean up
