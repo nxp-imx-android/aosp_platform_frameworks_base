@@ -991,6 +991,16 @@ flag {
 }
 
 flag {
+    name: "enable_filter_removing_display_bugfix"
+    namespace: "lse_desktop_experience"
+    description: "Filter out removing display when reporting top display."
+    bug: "441826525"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "enable_freeform_box_shadows"
     namespace: "lse_desktop_experience"
     description: "Enables box shadows for freeform windows."
