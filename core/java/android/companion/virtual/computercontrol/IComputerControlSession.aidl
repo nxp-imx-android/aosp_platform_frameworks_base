@@ -30,7 +30,7 @@ import android.view.Surface;
 interface IComputerControlSession {
 
     /** Launches an application on the trusted virtual display. */
-    void launchApplication(in String packageName);
+    void launchApplication(in String packageName, in String className);
 
     /** Hand over full control of the automation session to the user. */
     void handOverApplications();
