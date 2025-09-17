@@ -50,7 +50,6 @@ import android.util.SparseIntArray;
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.util.ArrayUtils;
-import com.android.internal.util.StringCache;
 
 import dalvik.annotation.optimization.CriticalNative;
 import dalvik.annotation.optimization.FastNative;
@@ -3451,20 +3450,12 @@ public final class Parcel {
 
     /** @hide */
     public @Nullable String readString8NoHelper() {
-        if (Flags.parcelStringCacheEnabled()) {
-            return StringCache.INSTANCE.cache(nativeReadString8(mNativePtr));
-        } else {
-            return nativeReadString8(mNativePtr);
-        }
+        return nativeReadString8(mNativePtr);
     }
 
     /** @hide */
     public @Nullable String readString16NoHelper() {
-        if (Flags.parcelStringCacheEnabled()) {
-            return StringCache.INSTANCE.cache(nativeReadString16(mNativePtr));
-        } else {
-            return nativeReadString16(mNativePtr);
-        }
+        return nativeReadString16(mNativePtr);
     }
 
     /**
