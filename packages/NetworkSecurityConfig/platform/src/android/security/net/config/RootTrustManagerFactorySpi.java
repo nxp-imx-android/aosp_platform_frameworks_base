@@ -16,26 +16,19 @@
 
 package android.security.net.config;
 
-import android.util.Pair;
+import com.android.internal.annotations.VisibleForTesting;
+
 import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidParameterException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.Provider;
-import java.security.Security;
-import java.util.Set;
+
 import javax.net.ssl.ManagerFactoryParameters;
 import javax.net.ssl.TrustManager;
-import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.TrustManagerFactorySpi;
-
-import com.android.internal.annotations.VisibleForTesting;
 
 /** @hide */
 public class RootTrustManagerFactorySpi extends TrustManagerFactorySpi {
     private ApplicationConfig mApplicationConfig;
-    private NetworkSecurityConfig mConfig;
 
     @Override
     public void engineInit(ManagerFactoryParameters spec)
