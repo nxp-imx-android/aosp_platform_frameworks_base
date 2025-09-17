@@ -14,8 +14,12 @@
  * limitations under the License.
  */
 
-package com.android.compose.animation.scene.mechanics
+package com.android.systemui.qs.ui.composable
+
+import com.android.systemui.Flags
+
 object TileRevealFlag {
     // TODO(b/435138055) Remove once perf issues are addressed
-    const val isEnabled: Boolean = false
+    val isEnabled: Boolean
+        get() = Flags.qsMmAnimation()
 }

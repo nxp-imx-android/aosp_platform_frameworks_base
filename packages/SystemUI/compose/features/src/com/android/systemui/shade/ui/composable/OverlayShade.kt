@@ -50,12 +50,12 @@ import androidx.compose.ui.unit.dp
 import com.android.compose.animation.scene.ContentScope
 import com.android.compose.animation.scene.ElementKey
 import com.android.compose.animation.scene.LowestZIndexContentPicker
-import com.android.compose.animation.scene.mechanics.TileRevealFlag
 import com.android.compose.animation.scene.mechanics.rememberGestureContext
 import com.android.compose.modifiers.thenIf
 import com.android.mechanics.behavior.VerticalExpandContainerSpec
 import com.android.mechanics.behavior.verticalExpandContainerBackground
 import com.android.mechanics.compose.modifier.motionDriver
+import com.android.systemui.qs.ui.composable.TileRevealFlag
 import com.android.systemui.res.R
 import com.android.systemui.shade.ui.ShadeColors.shadePanel
 import com.android.systemui.shade.ui.ShadeColors.shadePanelScrimBehind

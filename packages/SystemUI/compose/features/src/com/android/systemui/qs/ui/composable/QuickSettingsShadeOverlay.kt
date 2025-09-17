@@ -66,7 +66,6 @@ import com.android.compose.animation.scene.ElementKey
 import com.android.compose.animation.scene.UserAction
 import com.android.compose.animation.scene.UserActionResult
 import com.android.compose.animation.scene.content.state.TransitionState
-import com.android.compose.animation.scene.mechanics.TileRevealFlag
 import com.android.compose.gesture.gesturesDisabled
 import com.android.compose.lifecycle.DisposableEffectWithLifecycle
 import com.android.compose.lifecycle.LaunchedEffectWithLifecycle
@@ -274,10 +273,10 @@ private fun ContentScope.QuickSettingsContainer(
     }
 
     AnimatedContent(
-        modifier = Modifier
-            .focusRequester(focusRequester)
-            .focusable()
-            .sysuiResTag("quick_settings_container"),
+        modifier =
+            Modifier.focusRequester(focusRequester)
+                .focusable()
+                .sysuiResTag("quick_settings_container"),
         targetState =
             when {
                 isEditing -> ShadeBodyState.Editing

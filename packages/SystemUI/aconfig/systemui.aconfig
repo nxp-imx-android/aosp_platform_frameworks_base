@@ -273,6 +273,13 @@ flag {
 }
 
 flag {
+    name: "qs_mm_animation"
+    namespace: "systemui"
+    description: "Enable the new reveal animation in Quick Settings tiles."
+    bug: "435138055"
+}
+
+flag {
    name: "global_actions_emphasized_font"
    namespace: "systemui"
    description: "Use emphasized font for global actions."
