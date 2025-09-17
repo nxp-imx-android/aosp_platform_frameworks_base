@@ -41,7 +41,6 @@ import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.atLeastOnce;
-import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
@@ -51,8 +50,6 @@ import static org.mockito.internal.verification.VerificationModeFactory.times;
 
 import android.annotation.NonNull;
 import android.content.ContentResolver;
-import android.content.Context;
-import android.content.ContextWrapper;
 import android.content.res.Resources;
 import android.database.ContentObserver;
 import android.hardware.Sensor;
@@ -72,18 +69,17 @@ import android.os.RemoteException;
 import android.os.Temperature;
 import android.provider.DeviceConfig;
 import android.provider.Settings;
-import android.test.mock.MockContentResolver;
+import android.testing.TestableContext;
 import android.util.Slog;
 import android.util.SparseArray;
-import android.util.TypedValue;
 import android.view.Display;
 import android.view.DisplayInfo;
 import android.view.SurfaceControl;
 import android.view.SurfaceControl.IdleScreenRefreshRateConfig;
 import android.view.SurfaceControl.RefreshRateRange;
 
-import androidx.test.core.app.ApplicationProvider;
 import androidx.test.filters.SmallTest;
+import androidx.test.platform.app.InstrumentationRegistry;
 
 import com.android.internal.R;
 import com.android.internal.display.BrightnessSynchronizer;
@@ -116,7 +112,6 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.quality.Strictness;
-import org.mockito.stubbing.Answer;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -253,8 +248,6 @@ public class DisplayModeDirectorTest {
 
     private static final float HBM_TRANSITION_POINT_INVALID = Float.POSITIVE_INFINITY;
 
-    private Context mContext;
-    private Resources mResources;
     private FakesInjector mInjector;
     private Handler mHandler;
     @Rule
@@ -271,6 +264,10 @@ public class DisplayModeDirectorTest {
     private DisplayModeDirector.DisplayDeviceConfigProvider mDisplayDeviceConfigProvider;
 
     @Rule
+    public final TestableContext mContext = new TestableContext(
+            InstrumentationRegistry.getInstrumentation().getContext());
+
+    @Rule
     public final ExtendedMockitoRule mExtendedMockitoRule =
             new ExtendedMockitoRule.Builder(this)
                     .setStrictness(Strictness.LENIENT)
@@ -279,69 +276,13 @@ public class DisplayModeDirectorTest {
 
     @Before
     public void setUp() throws Exception {
-        mContext = spy(new ContextWrapper(ApplicationProvider.getApplicationContext()));
-        mResources = mockResources();
-        when(mContext.getResources()).thenReturn(mResources);
-        final MockContentResolver resolver = mSettingsProviderRule.mockContentResolver(mContext);
-        when(mContext.getContentResolver()).thenReturn(resolver);
+        mSettingsProviderRule.mockContentResolver(mContext);
         mInjector = spy(new FakesInjector(mDisplayManagerInternalMock, mStatusBarMock,
                 mSensorManagerInternalMock));
         mHandler = new Handler(Looper.getMainLooper());
         mInjector.setEnabledDisplays(Map.of(DISPLAY_ID, Display.TYPE_INTERNAL,
                 DISPLAY_ID_2, Display.TYPE_INTERNAL));
         when(mDisplayManagerFlags.isOnDisplayAddedInObserverEnabled()).thenReturn(true);
-    }
-
-    private Resources mockResources() {
-        var resources = mock(Resources.class);
-        when(resources.getBoolean(R.bool.config_ignoreUdfpsVote))
-                .thenReturn(false);
-        when(resources.getBoolean(R.bool.config_refreshRateSynchronizationEnabled))
-                .thenReturn(false);
-        when(resources.getInteger(R.integer.config_displayWhiteBalanceBrightnessFilterHorizon))
-                .thenReturn(10000);
-        when(resources.getInteger(R.integer.config_defaultPeakRefreshRate))
-                .thenReturn(0);
-        when(resources.getInteger(R.integer.config_externalDisplayPeakRefreshRate))
-                .thenReturn(0);
-        when(resources.getInteger(R.integer.config_externalDisplayPeakWidth))
-                .thenReturn(0);
-        when(resources.getInteger(R.integer.config_externalDisplayPeakHeight))
-                .thenReturn(0);
-        when(resources.getInteger(R.integer.config_fixedRefreshRateInHighZone))
-                .thenReturn(0);
-        when(resources.getInteger(R.integer.config_defaultRefreshRateInZone))
-                .thenReturn(0);
-        when(resources.getInteger(R.integer.config_defaultRefreshRate))
-                .thenReturn(60);
-        when(resources.getInteger(R.integer.config_defaultRefreshRateInHbmHdr))
-                .thenReturn(0);
-        when(resources.getInteger(R.integer.config_defaultRefreshRateInHbmSunlight))
-                .thenReturn(0);
-
-        when(resources.getString(R.string.config_displayLightSensorType))
-                .thenReturn(null);
-
-        when(resources.getIntArray(R.array.config_brightnessThresholdsOfPeakRefreshRate))
-                .thenReturn(new int[]{});
-        when(resources.getIntArray(
-                R.array.config_highDisplayBrightnessThresholdsOfFixedRefreshRate))
-                .thenReturn(new int[]{});
-        when(resources.getIntArray(
-                R.array.config_highAmbientBrightnessThresholdsOfFixedRefreshRate))
-                .thenReturn(new int[]{});
-        when(resources.getIntArray(R.array.config_ambientThresholdsOfPeakRefreshRate))
-                .thenReturn(new int[]{});
-
-        doAnswer(invocation -> {
-            TypedValue value = invocation.getArgument(1);
-            value.type = TypedValue.TYPE_FLOAT;
-            value.data = Float.floatToIntBits(10f);
-            return null; // void method, so return null
-        }).when(resources).getValue(eq(R.dimen.config_displayWhiteBalanceBrightnessFilterIntercept),
-                any(), eq(true));
-
-        return resources;
     }
 
     private DisplayModeDirector createDirectorFromRefreshRateArray(
@@ -2001,8 +1942,9 @@ public class DisplayModeDirectorTest {
     })
     public void testExternalDisplayMaxRefreshRate(boolean isRefreshRateSynchronizationEnabled,
             boolean isExternalDisplay, float expectedMaxRenderFrameRate) {
-        when(mResources.getBoolean(R.bool.config_refreshRateSynchronizationEnabled))
-                .thenReturn(isRefreshRateSynchronizationEnabled);
+        mContext.getOrCreateTestableResources().addOverride(
+                R.bool.config_refreshRateSynchronizationEnabled,
+                isRefreshRateSynchronizationEnabled);
         mInjector.setEnabledDisplays(Map.of(DISPLAY_ID_2,
                 isExternalDisplay ? Display.TYPE_EXTERNAL : Display.TYPE_INTERNAL));
 
@@ -3268,41 +3210,33 @@ public class DisplayModeDirectorTest {
 
     @Test
     public void testNotifyDefaultDisplayDeviceUpdated() {
-        when(mResources.getInteger(com.android.internal.R.integer.config_defaultPeakRefreshRate))
-            .thenReturn(75);
-        when(mResources.getInteger(R.integer.config_defaultRefreshRate))
-            .thenReturn(45);
-        when(mResources.getInteger(R.integer.config_fixedRefreshRateInHighZone))
-            .thenReturn(65);
-        when(mResources.getInteger(R.integer.config_defaultRefreshRateInZone))
-            .thenReturn(85);
-        when(mResources.getInteger(R.integer.config_defaultRefreshRateInHbmHdr))
-            .thenReturn(95);
-        when(mResources.getInteger(R.integer.config_defaultRefreshRateInHbmSunlight))
-            .thenReturn(100);
-        when(mResources.getIntArray(R.array.config_brightnessThresholdsOfPeakRefreshRate))
-            .thenReturn(new int[]{5});
-        when(mResources.getIntArray(R.array.config_ambientThresholdsOfPeakRefreshRate))
-            .thenReturn(new int[]{10});
-        when(
-            mResources.getIntArray(
-                    R.array.config_highDisplayBrightnessThresholdsOfFixedRefreshRate))
-            .thenReturn(new int[]{250});
-        when(
-            mResources.getIntArray(
-                    R.array.config_highAmbientBrightnessThresholdsOfFixedRefreshRate))
-            .thenReturn(new int[]{7000});
-        when(mResources.getInteger(
-            com.android.internal.R.integer.config_displayWhiteBalanceBrightnessFilterHorizon))
-            .thenReturn(3);
-        ArgumentCaptor<TypedValue> valueArgumentCaptor = ArgumentCaptor.forClass(TypedValue.class);
-        doAnswer((Answer<Void>) invocation -> {
-            valueArgumentCaptor.getValue().type = 4;
-            valueArgumentCaptor.getValue().data = 13;
-            return null;
-        }).when(mResources).getValue(eq(com.android.internal.R.dimen
-                .config_displayWhiteBalanceBrightnessFilterIntercept),
-                valueArgumentCaptor.capture(), eq(true));
+        mContext.getOrCreateTestableResources().addOverride(
+                com.android.internal.R.integer.config_defaultPeakRefreshRate, 75);
+        mContext.getOrCreateTestableResources().addOverride(
+                R.integer.config_defaultRefreshRate, 45);
+        mContext.getOrCreateTestableResources().addOverride(
+                R.integer.config_fixedRefreshRateInHighZone, 65);
+        mContext.getOrCreateTestableResources().addOverride(
+                R.integer.config_defaultRefreshRateInZone, 85);
+        mContext.getOrCreateTestableResources().addOverride(
+                R.integer.config_defaultRefreshRateInHbmHdr, 95);
+        mContext.getOrCreateTestableResources().addOverride(
+                R.integer.config_defaultRefreshRateInHbmSunlight, 100);
+        mContext.getOrCreateTestableResources().addOverride(
+                R.array.config_brightnessThresholdsOfPeakRefreshRate, new int[]{5});
+        mContext.getOrCreateTestableResources().addOverride(
+                R.array.config_ambientThresholdsOfPeakRefreshRate, new int[]{10});
+        mContext.getOrCreateTestableResources().addOverride(
+                R.array.config_highDisplayBrightnessThresholdsOfFixedRefreshRate, new int[]{250});
+        mContext.getOrCreateTestableResources().addOverride(
+                R.array.config_highAmbientBrightnessThresholdsOfFixedRefreshRate, new int[]{7000});
+        mContext.getOrCreateTestableResources().addOverride(
+                com.android.internal.R.integer.config_displayWhiteBalanceBrightnessFilterHorizon,
+                3);
+        mContext.getOrCreateTestableResources().addOverride(
+                com.android.internal.R.dimen.config_displayWhiteBalanceBrightnessFilterIntercept,
+                13f);
+
         DisplayModeDirector director =
                 createDirectorFromRefreshRateArray(new float[]{60.0f, 90.0f}, 0);
         SensorManager sensorManager = createMockSensorManager(createLightSensor());
@@ -3476,17 +3410,12 @@ public class DisplayModeDirectorTest {
         when(ddcMock.getHighDisplayBrightnessThresholds()).thenReturn(new float[]{0.21f});
         when(ddcMock.getHighAmbientBrightnessThresholds()).thenReturn(new float[]{2100});
 
-        Resources resMock = mock(Resources.class);
-        when(resMock.getInteger(
-                com.android.internal.R.integer.config_displayWhiteBalanceBrightnessFilterHorizon))
-                .thenReturn(3);
-        ArgumentCaptor<TypedValue> valueArgumentCaptor = ArgumentCaptor.forClass(TypedValue.class);
-        doAnswer((Answer<Void>) invocation -> {
-            valueArgumentCaptor.getValue().type = 4;
-            valueArgumentCaptor.getValue().data = 13;
-            return null;
-        }).when(resMock).getValue(anyInt(), valueArgumentCaptor.capture(), eq(true));
-        when(mContext.getResources()).thenReturn(resMock);
+        mContext.getOrCreateTestableResources().addOverride(
+                com.android.internal.R.integer.config_displayWhiteBalanceBrightnessFilterHorizon,
+                3);
+        mContext.getOrCreateTestableResources().addOverride(
+                com.android.internal.R.dimen.config_displayWhiteBalanceBrightnessFilterIntercept,
+                13f);
 
         director.defaultDisplayDeviceUpdated(ddcMock);
 
@@ -4023,7 +3952,7 @@ public class DisplayModeDirectorTest {
 
         protected Display createDisplay(int id) {
             return new Display(DisplayManagerGlobal.getInstance(), id, mDisplayInfo,
-                    ApplicationProvider.getApplicationContext().getResources());
+                    InstrumentationRegistry.getInstrumentation().getContext().getResources());
         }
 
         void notifyPeakRefreshRateChanged() {
