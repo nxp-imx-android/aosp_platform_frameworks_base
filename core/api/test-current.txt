@@ -1862,6 +1862,7 @@ package android.hardware.display {
 
   public static interface DisplayManager.DisplayListener {
     method public default void onDisplayConnected(int);
+    method @FlaggedApi("com.android.server.display.feature.flags.display_listener_snapshot") public default void onDisplayConnectedSnapshot(@NonNull int[]);
     method public default void onDisplayDisconnected(int);
   }
 
