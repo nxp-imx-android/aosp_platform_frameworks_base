@@ -128,6 +128,22 @@ sealed interface SceneTransitionLayoutState {
      * [content], if it is not null).
      */
     fun isTransitioningFromOrTo(content: ContentKey): Boolean
+
+    /**
+     * Whether [content] is the current Scene.
+     *
+     * If this is the state of a [ContentScope.NestedSceneTransitionLayout], then this will also
+     * consider ancestors and return `true` if *any* ancestor's current scene is [content].
+     */
+    fun isCurrentScene(content: SceneKey): Boolean
+
+    /**
+     * Whether the [content] is in the current Overlays.
+     *
+     * If this is the state of a [ContentScope.NestedSceneTransitionLayout], then this will also
+     * consider ancestors and return `true` if *any* ancestor has [content] as an Overlay.
+     */
+    fun isInCurrentOverlays(content: OverlayKey): Boolean
 }
 
 /** A [SceneTransitionLayoutState] whose target scene can be imperatively set. */
@@ -434,6 +450,14 @@ internal class MutableSceneTransitionLayoutStateImpl(
     override fun isTransitioningFromOrTo(content: ContentKey): Boolean {
         val transition = currentTransition ?: return false
         return transition.isTransitioningFromOrTo(content)
+    }
+
+    override fun isCurrentScene(content: SceneKey): Boolean {
+        return transitionState.currentScene == content
+    }
+
+    override fun isInCurrentOverlays(content: OverlayKey): Boolean {
+        return transitionState.currentOverlays.contains(content)
     }
 
     override fun setTargetScene(
