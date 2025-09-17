@@ -444,8 +444,7 @@ public class BubbleController implements ConfigurationChangeListener,
         mSessionTracker = sessionTracker;
         shellInit.addInitCallback(this::onInit, this);
 
-        if (unfoldProgressProvider.isPresent() && Flags.enableBubbleBar()
-                && Flags.enableBubbleBarToFloatingTransition()) {
+        if (unfoldProgressProvider.isPresent() && Flags.enableBubbleBar()) {
             addUnfoldProgressProviderListener(unfoldProgressProvider.get());
         }
     }
