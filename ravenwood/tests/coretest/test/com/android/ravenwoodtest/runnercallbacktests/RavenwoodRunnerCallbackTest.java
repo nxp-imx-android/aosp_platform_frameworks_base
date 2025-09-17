@@ -337,9 +337,11 @@ public class RavenwoodRunnerCallbackTest extends RavenwoodRunnerTestBase {
     @Expected("""
     testRunStarted: classes
     testSuiteStarted: classes
-    testStarted: initializationError(com.android.ravenwoodtest.runnercallbacktests.RavenwoodRunnerCallbackTest$ExceptionFromInnerRunnerConstructorTest)
+    testSuiteStarted: <init>(com.android.ravenwoodtest.runnercallbacktests.RavenwoodRunnerCallbackTest$ExceptionFromInnerRunnerConstructorTest)
+    testStarted: <init>(com.android.ravenwoodtest.runnercallbacktests.RavenwoodRunnerCallbackTest$ExceptionFromInnerRunnerConstructorTest)
     testFailure: Failed to instantiate class androidx.test.ext.junit.runners.AndroidJUnit4
-    testFinished: initializationError(com.android.ravenwoodtest.runnercallbacktests.RavenwoodRunnerCallbackTest$ExceptionFromInnerRunnerConstructorTest)
+    testFinished: <init>(com.android.ravenwoodtest.runnercallbacktests.RavenwoodRunnerCallbackTest$ExceptionFromInnerRunnerConstructorTest)
+    testSuiteFinished: <init>(com.android.ravenwoodtest.runnercallbacktests.RavenwoodRunnerCallbackTest$ExceptionFromInnerRunnerConstructorTest)
     testSuiteFinished: classes
     testRunFinished: 1,1,0,0
     """)
@@ -439,9 +441,11 @@ public class RavenwoodRunnerCallbackTest extends RavenwoodRunnerTestBase {
     @Expected("""
     testRunStarted: classes
     testSuiteStarted: classes
-    testStarted: initializationError(com.android.ravenwoodtest.runnercallbacktests.RavenwoodRunnerCallbackTest$BrokenRunnerTest)
+    testSuiteStarted: <init>(com.android.ravenwoodtest.runnercallbacktests.RavenwoodRunnerCallbackTest$BrokenRunnerTest)
+    testStarted: <init>(com.android.ravenwoodtest.runnercallbacktests.RavenwoodRunnerCallbackTest$BrokenRunnerTest)
     testFailure: Failed to instantiate class com.android.ravenwoodtest.runnercallbacktests.RavenwoodRunnerCallbackTest$BrokenTestRunner
-    testFinished: initializationError(com.android.ravenwoodtest.runnercallbacktests.RavenwoodRunnerCallbackTest$BrokenRunnerTest)
+    testFinished: <init>(com.android.ravenwoodtest.runnercallbacktests.RavenwoodRunnerCallbackTest$BrokenRunnerTest)
+    testSuiteFinished: <init>(com.android.ravenwoodtest.runnercallbacktests.RavenwoodRunnerCallbackTest$BrokenRunnerTest)
     testSuiteFinished: classes
     testRunFinished: 1,1,0,0
     """)

@@ -287,6 +287,8 @@ public class RavenwoodDriver {
         DeviceConfig_ravenwood.reset();
         Binder.restoreCallingIdentity(
                 RavenwoodEnvironment.getInstance().getDefaultCallingIdentity());
+        RavenwoodAppDriver.getInstance().reset();
+        Looper.getMainLooper().getQueue().resetForTest();
 
         SystemProperties.clearChangeCallbacksForTest();
 

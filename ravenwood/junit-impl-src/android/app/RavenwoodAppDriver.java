@@ -110,7 +110,6 @@ public final class RavenwoodAppDriver {
         var uiAutomation = new UiAutomation(
                 mInstContext, new IUiAutomationConnection.Default());
 
-        var instArgs = Bundle.EMPTY;
         try {
             var clazz = Class.forName(env.getInstrumentationClass());
             mInstrumentation = (Instrumentation) clazz.getConstructor().newInstance();
@@ -123,7 +122,6 @@ public final class RavenwoodAppDriver {
 
         // Need to set it, as it's used by LoadedApk afer this.
         mActivityThread.mInstrumentation = mInstrumentation;
-        InstrumentationRegistry.registerInstance(mInstrumentation, instArgs);
 
         // Create the Application instance, which will be the "target" context.
         var application = mTargetLoadedApk.makeApplicationInner(
@@ -139,11 +137,13 @@ public final class RavenwoodAppDriver {
         mActivityThread.mInitialApplication = application;
         mTargetContext = appContext;
 
-        mInstrumentation.onCreate(instArgs);
+        mInstrumentation.onCreate(Bundle.EMPTY);
         mInstrumentation.callApplicationOnCreate(application);
 
         // Maybe do it first?
         RavenwoodSystemServer.init(mSystemContextImpl);
+
+        reset();
     }
 
     /**
@@ -244,5 +244,12 @@ public final class RavenwoodAppDriver {
 
     public Instrumentation getInstrumentation() {
         return mInstrumentation;
+    }
+
+    /**
+     * Reset some global state.
+     */
+    public void reset() {
+        InstrumentationRegistry.registerInstance(mInstrumentation, Bundle.EMPTY);
     }
 }

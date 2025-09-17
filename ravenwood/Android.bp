@@ -127,12 +127,14 @@ java_host_for_device {
     visibility: ["//visibility:private"],
 }
 
-// We use java_import to strip out the sdk_version of AndroidX libraries.
+// We use java_import to ignore sdk_version of libraries, e.g. AndroidX.
+// This allows us to build ravenwood-junit-impl with core_current.
 java_import {
-    name: "ravenwood-androidx",
-    // Put the list of all AndroidX libraries Ravenwood needs here.
+    name: "ravenwood-deps",
     jars: [
         ":androidx.test.monitor",
+        // Adds android.os.ext.SdkExtensions
+        ":framework-sdkextensions.impl{.jar}",
     ],
     visibility: ["//visibility:private"],
 }
@@ -146,7 +148,7 @@ java_library {
         "junit-src/**/*.java",
     ],
     static_libs: [
-        "ravenwood-androidx",
+        "ravenwood-deps",
         "ravenwood-common-utils",
         "ravenwood-libcore",
         "ow2-asm",
@@ -293,19 +295,11 @@ java_library {
 // On Ravenwood, we now use Mockito 5 throughout.
 // Mockito 5 doesn't have an "inline-*" module, which only contained a "marker" file
 // which would signal Mockito 4 used inline-mockito.
-// Mockito 5 uses the "inline" storategy by default, so we no longer need an "inline"
+// Mockito 5 uses the "inline" strategy by default, so we no longer need an "inline"
 // module.
-// However, because we can't delete an existing jar in the runtime directory
-// for b/418236847, we still keep "inline-mockito-ravenwood-prebuilt" as an empty jar.
 java_import {
     name: "mockito-ravenwood-prebuilt",
     jars: [":mockito5-hostside-prebuilt"],
-    sdk_version: "core_current",
-}
-
-java_library {
-    name: "inline-mockito-ravenwood-prebuilt",
-    installable: false,
     sdk_version: "core_current",
 }
 
@@ -605,7 +599,6 @@ android_ravenwood_libgroup {
         "ravenwood-framework",
         "ravenwood-junit-impl",
         "mockito-ravenwood-prebuilt",
-        "inline-mockito-ravenwood-prebuilt",
         "framework-updatable-stubs-module_libs_api-for-host",
         "all-updatable-modules-system-stubs-for-host",
     ],
@@ -621,7 +614,6 @@ android_ravenwood_libgroup {
     name: "ravenwood-utils",
     libs: [
         "flag-junit",
-        "inline-mockito-ravenwood-prebuilt",
         "junit",
         "mockito-ravenwood-prebuilt",
         "ravenwood-framework",

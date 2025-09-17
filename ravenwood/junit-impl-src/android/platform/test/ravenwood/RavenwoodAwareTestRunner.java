@@ -26,14 +26,13 @@ import android.platform.test.annotations.RavenwoodTestRunnerInitializing;
 import android.platform.test.annotations.internal.InnerRunner;
 import android.util.Log;
 
-import com.android.ravenwood.common.RavenwoodInternalUtils;
-
 import org.junit.rules.TestRule;
 import org.junit.runner.Description;
 import org.junit.runner.Runner;
 import org.junit.runner.manipulation.Filter;
 import org.junit.runner.manipulation.Filterable;
 import org.junit.runner.manipulation.NoTestsRemainException;
+import org.junit.runner.notification.Failure;
 import org.junit.runner.notification.RunNotifier;
 import org.junit.runners.BlockJUnit4ClassRunner;
 import org.junit.runners.Suite;
@@ -71,18 +70,16 @@ public final class RavenwoodAwareTestRunner extends RavenwoodAwareTestRunnerBase
         Inner,
     }
 
-    private record HookRule(Scope scope, Order order) implements TestRule {
-        @Override
-        public Statement apply(Statement base, Description description) {
-            return getCurrentRunner().wrapWithHooks(base, description, scope, order);
-        }
-    }
+    // A rule that does nothing
+    private static final TestRule sNoopRule = (base, desc) -> base;
 
     // The following four rule instances will be injected to tests by the Ravenizer tool.
-    public static final TestRule sImplicitClassOuterRule = new HookRule(Scope.Class, Order.Outer);
-    public static final TestRule sImplicitClassInnerRule = new HookRule(Scope.Class, Order.Inner);
-    public static final TestRule sImplicitInstOuterRule = new HookRule(Scope.Instance, Order.Outer);
-    public static final TestRule sImplicitInstInnerRule = new HookRule(Scope.Instance, Order.Inner);
+    // We only actually need the outer instance rule, to reduce unnecessary code logic and
+    // stack frames shown in stack trace, make all others no-op.
+    public static final TestRule sImplicitClassOuterRule = sNoopRule;
+    public static final TestRule sImplicitClassInnerRule = sNoopRule;
+    public static final TestRule sImplicitInstOuterRule = new MethodOuterHook();
+    public static final TestRule sImplicitInstInnerRule = sNoopRule;
 
     /** Keeps track of the runner on the current thread. */
     private static final ThreadLocal<RavenwoodAwareTestRunner> sCurrentRunner = new ThreadLocal<>();
@@ -96,7 +93,7 @@ public final class RavenwoodAwareTestRunner extends RavenwoodAwareTestRunnerBase
     }
 
     final Class<?> mTestJavaClass;
-    private final Runner mRealRunner;
+    private Runner mRealRunner;
     private TestClass mTestClass = null;
 
     /**
@@ -114,25 +111,31 @@ public final class RavenwoodAwareTestRunner extends RavenwoodAwareTestRunnerBase
 
         /*
          * If the class has @DisabledOnRavenwood, then we'll delegate to
-         * ClassSkippingTestRunner, which simply skips it.
+         * ClassIgnoreTestRunner, which simply skips it.
          *
          * We need to do it before instantiating TestClass for b/367694651.
          */
         if (!RavenwoodEnablementChecker.getInstance().shouldRunClassOnRavenwood(testClass)) {
-            mRealRunner = new ClassSkippingTestRunner(testClass);
+            mRealRunner = new ClassIgnoreTestRunner(testClass);
             return;
         }
 
-        mTestClass = new TestClass(testClass);
+        try {
+            mTestClass = new TestClass(testClass);
 
-        Log.i(TAG, "RavenwoodAwareTestRunner initializing for " + testClass.getCanonicalName());
+            Log.i(TAG, "RavenwoodAwareTestRunner initializing for " + testClass.getCanonicalName());
 
-        // Hook point to allow more customization.
-        runAnnotatedMethodsOnRavenwood(RavenwoodTestRunnerInitializing.class, null);
+            // Hook point to allow more customization.
+            runAnnotatedMethodsOnRavenwood(RavenwoodTestRunnerInitializing.class, null);
 
-        mRealRunner = instantiateRealRunner(mTestClass);
+            mRealRunner = instantiateRealRunner(mTestClass);
 
-        mState.enterTestRunner();
+            mState.enterTestRunner();
+        } catch (Throwable throwable) {
+            // If any exception occurs during the real runner instantiation, delegate to
+            // ClassFailTestRunner so that this error will be reported properly.
+            mRealRunner = new ClassFailTestRunner(testClass, throwable);
+        }
     }
 
     @Override
@@ -166,7 +169,7 @@ public final class RavenwoodAwareTestRunner extends RavenwoodAwareTestRunnerBase
 
         RavenwoodTestStats.getInstance().attachToRunNotifier(notifier);
 
-        if (mRealRunner instanceof ClassSkippingTestRunner) {
+        if (mRealRunner instanceof ClassBypassTestRunner) {
             if (RAVENWOOD_VERBOSE_LOGGING) {
                 Log.v(TAG, "onClassSkipped: description=" + description);
             }
@@ -211,39 +214,16 @@ public final class RavenwoodAwareTestRunner extends RavenwoodAwareTestRunnerBase
         }
     }
 
-    private Statement wrapWithHooks(Statement base, Description description, Scope scope,
-            Order order) {
-        return new Statement() {
-            @Override
-            public void evaluate() throws Throwable {
-                runWithHooks(description, scope, order, base);
-            }
-        };
-    }
-
-    private void runWithHooks(Description description, Scope scope, Order order, Statement s)
-            throws Throwable {
-        assumeTrue(onBefore(description, scope, order));
-        try {
-            s.evaluate();
-            onAfter(description, scope, order, null);
-        } catch (Throwable t) {
-            RavenwoodInternalUtils
-                    .runIgnoringException(() -> onAfter(description, scope, order, t));
-            throw t;
-        }
-    }
-
     /**
-     * A runner that simply skips a class. It still has to support {@link Filterable}
+     * A runner that bypasses a class. It still has to support {@link Filterable}
      * because otherwise the result still says "SKIPPED" even when it's not included in the
      * filter.
      */
-    private static class ClassSkippingTestRunner extends Runner implements Filterable {
+    private abstract static class ClassBypassTestRunner extends Runner implements Filterable {
         private final Description mDescription;
         private boolean mFilteredOut;
 
-        ClassSkippingTestRunner(Class<?> testClass) {
+        ClassBypassTestRunner(Class<?> testClass) {
             mDescription = Description.createTestDescription(testClass, "<init>");
             mFilteredOut = false;
         }
@@ -254,12 +234,12 @@ public final class RavenwoodAwareTestRunner extends RavenwoodAwareTestRunnerBase
         }
 
         @Override
-        public void run(RunNotifier notifier) {
+        public final void run(RunNotifier notifier) {
             if (mFilteredOut) {
                 return;
             }
             notifier.fireTestSuiteStarted(mDescription);
-            notifier.fireTestIgnored(mDescription);
+            onRun(notifier);
             notifier.fireTestSuiteFinished(mDescription);
         }
 
@@ -271,50 +251,64 @@ public final class RavenwoodAwareTestRunner extends RavenwoodAwareTestRunnerBase
                 throw new NoTestsRemainException();
             }
         }
+
+        abstract void onRun(RunNotifier notifier);
     }
 
     /**
-     * Called before a test / class.
-     *
-     * Return false if it should be skipped.
+     * A runner that simply ignore a class.
      */
-    private boolean onBefore(Description description, Scope scope, Order order) {
-        if (RAVENWOOD_VERBOSE_LOGGING) {
-            Log.v(TAG, "onBefore: description=" + description + ", " + scope + ", " + order);
+    private static class ClassIgnoreTestRunner extends ClassBypassTestRunner {
+        ClassIgnoreTestRunner(Class<?> testClass) {
+            super(testClass);
         }
 
-        final var classDescription = getDescription();
-
-        // Class-level annotations are checked by the runner already, so we only check
-        // method-level annotations here.
-        if (scope == Scope.Instance && order == Order.Outer) {
-            if (!RavenwoodEnablementChecker.getInstance().shouldEnableOnRavenwood(description)) {
-                return false;
-            }
+        @Override
+        void onRun(RunNotifier notifier) {
+            notifier.fireTestIgnored(getDescription());
         }
-
-        if (scope == Scope.Instance && order == Order.Outer) {
-            // Start of a test method.
-            mState.enterTestMethod(description);
-        }
-
-        return true;
     }
 
     /**
-     * Called after a test / class.
+     * A runner that simply fail a class.
      */
-    private void onAfter(Description description, Scope scope, Order order, Throwable th) {
-        if (RAVENWOOD_VERBOSE_LOGGING) {
-            Log.v(TAG, "onAfter: description=" + description + ", " + scope + ", " + order + ", "
-                    + th);
+    private static class ClassFailTestRunner extends ClassBypassTestRunner {
+        private final Throwable mError;
+
+        ClassFailTestRunner(Class<?> testClass, Throwable error) {
+            super(testClass);
+            mError = error;
         }
 
-        final var classDescription = getDescription();
+        @Override
+        void onRun(RunNotifier notifier) {
+            var desc = getDescription();
+            notifier.fireTestStarted(desc);
+            notifier.fireTestFailure(new Failure(desc, mError));
+            notifier.fireTestFinished(desc);
+        }
+    }
 
-        if (scope == Scope.Instance && order == Order.Outer) {
-            // End of a test method.
-            mState.exitTestMethod(description);
+    /**
+     * The outermost (first) rule for each test method.
+     */
+    private static class MethodOuterHook implements TestRule {
+        @Override
+        public Statement apply(Statement base, Description methodDesc) {
+            return new Statement() {
+                @Override
+                public void evaluate() throws Throwable {
+                    // If the method has @DisabledOnRavenwood, this will skip the execution.
+                    assumeTrue(RavenwoodEnablementChecker.getInstance()
+                            .shouldEnableOnRavenwood(methodDesc));
+                    getCurrentRunner().mState.enterTestMethod(methodDesc);
+                    try {
+                        base.evaluate();
+                    } finally {
+                        getCurrentRunner().mState.exitTestMethod(methodDesc);
+                    }
+                }
+            };
         }
     }
 
