@@ -30,4 +30,7 @@ flag {
     namespace: "systemui"
     description: "Makes the ring around for the notification badge transparent"
     bug: "409346132"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
 }
