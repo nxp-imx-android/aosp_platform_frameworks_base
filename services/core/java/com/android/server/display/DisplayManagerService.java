@@ -2420,8 +2420,13 @@ public final class DisplayManagerService extends SystemService {
     }
 
     @GuardedBy("mSyncRoot")
-    private void handleLogicalDisplayDisconnectedLocked(LogicalDisplay display) {
-        releaseDisplayAndEmitEvent(display, DisplayManagerGlobal.EVENT_DISPLAY_DISCONNECTED);
+    private void handleLogicalDisplayDisconnectedPreProcessLocked(LogicalDisplay display) {
+        releaseDisplay(display);
+    }
+
+    @GuardedBy("mSyncRoot")
+    private void handleLogicalDisplayDisconnectedPostProcessLocked(LogicalDisplay display) {
+        scheduleTraversalLocked(false);
         mExternalDisplayPolicy.handleLogicalDisplayDisconnectedLocked(display);
     }
 
@@ -2485,15 +2490,16 @@ public final class DisplayManagerService extends SystemService {
     }
 
     @SuppressLint("AndroidFrameworkRequiresPermission")
-    private void handleLogicalDisplayConnectedLocked(LogicalDisplay display) {
+    private void handleLogicalDisplayConnectedPreProcessLocked(LogicalDisplay display) {
         setupLogicalDisplay(display);
 
         if (ExternalDisplayPolicy.isExternalDisplayLocked(display)) {
             mExternalDisplayPolicy.handleExternalDisplayConnectedLocked(display);
-        } else {
-            sendDisplayEventsLocked(display, DisplayManagerGlobal.EVENT_DISPLAY_CONNECTED);
         }
+    }
 
+    @SuppressLint("AndroidFrameworkRequiresPermission")
+    private void handleLogicalDisplayConnectedPostProcessLocked(LogicalDisplay display) {
         updateLogicalDisplayState(display);
     }
 
@@ -2517,7 +2523,7 @@ public final class DisplayManagerService extends SystemService {
     }
 
     @SuppressLint("AndroidFrameworkRequiresPermission")
-    private void handleLogicalDisplayAddedLocked(LogicalDisplay display) {
+    private void handleLogicalDisplayAddedPreProcessLocked(LogicalDisplay display) {
         final int displayId = display.getDisplayIdLocked();
         final boolean isDefault = displayId == Display.DEFAULT_DISPLAY;
 
@@ -2525,9 +2531,10 @@ public final class DisplayManagerService extends SystemService {
         if (isDefault) {
             mSyncRoot.notifyAll();
         }
+    }
 
-        sendDisplayEventsIfEnabledLocked(display, DisplayManagerGlobal.EVENT_DISPLAY_ADDED);
-
+    @SuppressLint("AndroidFrameworkRequiresPermission")
+    private void handleLogicalDisplayAddedPostProcessLocked(LogicalDisplay display) {
         updateLogicalDisplayState(display);
 
         mExternalDisplayPolicy.handleLogicalDisplayContentModeChange(display);
@@ -2543,17 +2550,25 @@ public final class DisplayManagerService extends SystemService {
     }
 
     private void handleLogicalDisplayChangedLocked(@NonNull LogicalDisplay display) {
+        handleLogicalDisplayChangedPreProcessLocked(display);
+        // We don't bother invalidating the display info caches here because any changes to the
+        // display info will trigger a cache invalidation inside of LogicalDisplay before we hit
+        // this point.
+        sendDisplayEventsIfEnabledLocked(display, DisplayManagerGlobal.EVENT_DISPLAY_BASIC_CHANGED);
+        handleLogicalDisplayChangedPostProcessLocked(display);
+    }
+
+
+    private void handleLogicalDisplayChangedPreProcessLocked(@NonNull LogicalDisplay display) {
         updateViewportPowerStateLocked(display);
 
         final int displayId = display.getDisplayIdLocked();
         if (displayId == Display.DEFAULT_DISPLAY) {
             recordTopInsetLocked(display);
         }
-        // We don't bother invalidating the display info caches here because any changes to the
-        // display info will trigger a cache invalidation inside of LogicalDisplay before we hit
-        // this point.
-        sendDisplayEventsIfEnabledLocked(display, DisplayManagerGlobal.EVENT_DISPLAY_BASIC_CHANGED);
+    }
 
+    private void handleLogicalDisplayChangedPostProcessLocked(@NonNull LogicalDisplay display) {
         applyDisplayChangedLocked(display);
 
         if (mDisplayTopologyCoordinator != null) {
@@ -2616,16 +2631,15 @@ public final class DisplayManagerService extends SystemService {
         scheduleTraversalLocked(false);
     }
 
-    private void handleLogicalDisplayRemovedLocked(@NonNull LogicalDisplay display) {
+    private void handleLogicalDisplayRemovedPreProcessLocked(@NonNull LogicalDisplay display) {
         // The display is removed when disabled, and it might still exist.
         // Resources must only be released when the disconnected signal is received.
         if (display.isValidLocked()) {
             updateViewportPowerStateLocked(display);
         }
+    }
 
-        // Note: This method is only called if the display was enabled before being removed.
-        sendDisplayEventsLocked(display, DisplayManagerGlobal.EVENT_DISPLAY_REMOVED);
-
+    private void handleLogicalDisplayRemovedPostProcessLocked(@NonNull LogicalDisplay display) {
         if (display.isValidLocked()) {
             applyDisplayChangedLocked(display);
         }
@@ -2636,7 +2650,7 @@ public final class DisplayManagerService extends SystemService {
         Slog.i(TAG, "Logical display removed: " + display.getDisplayIdLocked());
     }
 
-    private void releaseDisplayAndEmitEvent(LogicalDisplay display, int event) {
+    private void releaseDisplay(LogicalDisplay display) {
         final int displayId = display.getDisplayIdLocked();
 
         final DisplayPowerController dpc =
@@ -2659,9 +2673,6 @@ public final class DisplayManagerService extends SystemService {
                 });
             }
         }
-
-        sendDisplayEventsLocked(display, event);
-        scheduleTraversalLocked(false);
     }
 
     private void handleLogicalDisplaySwappedLocked(@NonNull LogicalDisplay display) {
@@ -2677,25 +2688,6 @@ public final class DisplayManagerService extends SystemService {
         } finally {
             Trace.traceEnd(Trace.TRACE_TAG_POWER);
         }
-    }
-
-    private void handleLogicalDisplayHdrSdrRatioChangedLocked(@NonNull LogicalDisplay display) {
-        sendDisplayEventsIfEnabledLocked(display,
-                DisplayManagerGlobal.EVENT_DISPLAY_HDR_SDR_RATIO_CHANGED);
-    }
-
-    private void handleLogicalDisplayRefreshRateChangedLocked(@NonNull LogicalDisplay display) {
-        sendDisplayEventsIfEnabledLocked(display,
-                DisplayManagerGlobal.EVENT_DISPLAY_REFRESH_RATE_CHANGED);
-    }
-
-    private void handleLogicalDisplayStateChangedLocked(@NonNull LogicalDisplay display) {
-        sendDisplayEventsIfEnabledLocked(display, DisplayManagerGlobal.EVENT_DISPLAY_STATE_CHANGED);
-    }
-
-    private void handleLogicalDisplayCommittedStateChangedLocked(@NonNull LogicalDisplay display) {
-        sendDisplayEventsIfEnabledLocked(display,
-                DisplayManagerGlobal.EVENT_DISPLAY_COMMITTED_STATE_CHANGED);
     }
 
     private void notifyDefaultDisplayDeviceUpdated(LogicalDisplay display) {
@@ -4389,53 +4381,112 @@ public final class DisplayManagerService extends SystemService {
 
         @GuardedBy("mSyncRoot")
         @Override
-        public void onLogicalDisplayEventLocked(LogicalDisplay display, int event) {
-            switch (event) {
-                case LogicalDisplayMapper.LOGICAL_DISPLAY_EVENT_ADDED:
-                    handleLogicalDisplayAddedLocked(display);
-                    break;
-
-                case LogicalDisplayMapper.LOGICAL_DISPLAY_EVENT_BASIC_CHANGED:
-                    handleLogicalDisplayChangedLocked(display);
-                    break;
-
-                case LogicalDisplayMapper.LOGICAL_DISPLAY_EVENT_REMOVED:
-                    handleLogicalDisplayRemovedLocked(display);
-                    break;
-
-                case LogicalDisplayMapper.LOGICAL_DISPLAY_EVENT_SWAPPED:
-                    handleLogicalDisplaySwappedLocked(display);
-                    break;
-
-                case LogicalDisplayMapper.LOGICAL_DISPLAY_EVENT_FRAME_RATE_OVERRIDES_CHANGED:
-                    handleLogicalDisplayFrameRateOverridesChangedLocked(display);
-                    break;
-
-                case LogicalDisplayMapper.LOGICAL_DISPLAY_EVENT_DEVICE_STATE_TRANSITION:
-                    handleLogicalDisplayDeviceStateTransitionLocked(display);
-                    break;
-
-                case LogicalDisplayMapper.LOGICAL_DISPLAY_EVENT_HDR_SDR_RATIO_CHANGED:
-                    handleLogicalDisplayHdrSdrRatioChangedLocked(display);
-                    break;
-
-                case LogicalDisplayMapper.LOGICAL_DISPLAY_EVENT_CONNECTED:
-                    handleLogicalDisplayConnectedLocked(display);
-                    break;
-
-                case LogicalDisplayMapper.LOGICAL_DISPLAY_EVENT_DISCONNECTED:
-                    handleLogicalDisplayDisconnectedLocked(display);
-                    break;
-                case LogicalDisplayMapper.LOGICAL_DISPLAY_EVENT_REFRESH_RATE_CHANGED:
-                    handleLogicalDisplayRefreshRateChangedLocked(display);
-                    break;
-                case LogicalDisplayMapper.LOGICAL_DISPLAY_EVENT_STATE_CHANGED:
-                    handleLogicalDisplayStateChangedLocked(display);
-                    break;
-                case LogicalDisplayMapper.LOGICAL_DISPLAY_EVENT_COMMITTED_STATE_CHANGED:
-                    handleLogicalDisplayCommittedStateChangedLocked(display);
-                    break;
+        public void onLogicalDisplayEventLocked(LogicalDisplay display, int eventMask) {
+            // Does not send message of type MSG_DELIVER_DISPLAY_EVENT
+            if ((eventMask
+                    & LogicalDisplayMapper.LOGICAL_DISPLAY_EVENT_DEVICE_STATE_TRANSITION) != 0) {
+                handleLogicalDisplayDeviceStateTransitionLocked(display);
             }
+            // Sends message of type MSG_DELIVER_DISPLAY_EVENT_FRAME_RATE_OVERRIDE
+            if ((eventMask
+                    & LogicalDisplayMapper.LOGICAL_DISPLAY_EVENT_FRAME_RATE_OVERRIDES_CHANGED)
+                    != 0) {
+                handleLogicalDisplayFrameRateOverridesChangedLocked(display);
+            }
+            // Sends MSG_DELIVER_DISPLAY_EVENT message but uses traces
+            if ((eventMask & LogicalDisplayMapper.LOGICAL_DISPLAY_EVENT_SWAPPED) != 0) {
+                handleLogicalDisplaySwappedLocked(display);
+            }
+
+            // Handle all "before" logic and state updates
+            handleBeforeLogicalDisplayEventsLocked(display, eventMask);
+
+            // Send all events of type MSG_DELIVER_DISPLAY_EVENT
+            int sendDisplayEventLockedMask = getSendDisplayEventMaskLocked(display, eventMask);
+            sendDisplayEventsLocked(display, sendDisplayEventLockedMask);
+
+            // It is important to keep the "before" and "after" logic in this order
+            // and separated to avoid race conditions.
+            handleAfterLogicalDisplayEventsLocked(display, eventMask);
+        }
+
+        /** Handles all preliminary logic before display events are sent. */
+        private void handleBeforeLogicalDisplayEventsLocked(LogicalDisplay display, int eventMask) {
+            if ((eventMask & LogicalDisplayMapper.LOGICAL_DISPLAY_EVENT_REMOVED) != 0) {
+                handleLogicalDisplayRemovedPreProcessLocked(display);
+            }
+            if ((eventMask & LogicalDisplayMapper.LOGICAL_DISPLAY_EVENT_DISCONNECTED) != 0) {
+                handleLogicalDisplayDisconnectedPreProcessLocked(display);
+            }
+            if ((eventMask & LogicalDisplayMapper.LOGICAL_DISPLAY_EVENT_CONNECTED) != 0) {
+                handleLogicalDisplayConnectedPreProcessLocked(display);
+            }
+            if ((eventMask & LogicalDisplayMapper.LOGICAL_DISPLAY_EVENT_BASIC_CHANGED) != 0) {
+                handleLogicalDisplayChangedPreProcessLocked(display);
+            }
+            if ((eventMask & LogicalDisplayMapper.LOGICAL_DISPLAY_EVENT_ADDED) != 0) {
+                handleLogicalDisplayAddedPreProcessLocked(display);
+            }
+        }
+
+        /** Handles all follow-up logic after display events have been sent. */
+        private void handleAfterLogicalDisplayEventsLocked(LogicalDisplay display, int eventMask) {
+            if ((eventMask & LogicalDisplayMapper.LOGICAL_DISPLAY_EVENT_REMOVED) != 0) {
+                handleLogicalDisplayRemovedPostProcessLocked(display);
+            }
+            if ((eventMask & LogicalDisplayMapper.LOGICAL_DISPLAY_EVENT_DISCONNECTED) != 0) {
+                handleLogicalDisplayDisconnectedPostProcessLocked(display);
+            }
+            if ((eventMask & LogicalDisplayMapper.LOGICAL_DISPLAY_EVENT_CONNECTED) != 0) {
+                handleLogicalDisplayConnectedPostProcessLocked(display);
+            }
+            if ((eventMask & LogicalDisplayMapper.LOGICAL_DISPLAY_EVENT_BASIC_CHANGED) != 0) {
+                handleLogicalDisplayChangedPostProcessLocked(display);
+            }
+            if ((eventMask & LogicalDisplayMapper.LOGICAL_DISPLAY_EVENT_ADDED) != 0) {
+                handleLogicalDisplayAddedPostProcessLocked(display);
+            }
+        }
+
+        /** Calculates the eventMask mask for events that should be sent. */
+        private int getSendDisplayEventMaskLocked(LogicalDisplay display, int eventMask) {
+            int mask = 0;
+            if ((eventMask & LogicalDisplayMapper.LOGICAL_DISPLAY_EVENT_REMOVED) != 0) {
+                mask |= DisplayManagerGlobal.EVENT_DISPLAY_REMOVED;
+            }
+            if ((eventMask & LogicalDisplayMapper.LOGICAL_DISPLAY_EVENT_DISCONNECTED) != 0) {
+                mask |= DisplayManagerGlobal.EVENT_DISPLAY_DISCONNECTED;
+            }
+            if ((eventMask & LogicalDisplayMapper.LOGICAL_DISPLAY_EVENT_CONNECTED) != 0) {
+                if (!ExternalDisplayPolicy.isExternalDisplayLocked(display)) {
+                    mask |= DisplayManagerGlobal.EVENT_DISPLAY_CONNECTED;
+                }
+            }
+            if (shouldSendDisplayEventsIfEnabledLocked(display, eventMask)) {
+                if ((eventMask & LogicalDisplayMapper.LOGICAL_DISPLAY_EVENT_BASIC_CHANGED) != 0) {
+                    mask |= DisplayManagerGlobal.EVENT_DISPLAY_BASIC_CHANGED;
+                }
+                if ((eventMask
+                        & LogicalDisplayMapper.LOGICAL_DISPLAY_EVENT_REFRESH_RATE_CHANGED) != 0) {
+                    mask |= DisplayManagerGlobal.EVENT_DISPLAY_REFRESH_RATE_CHANGED;
+                }
+                if ((eventMask & LogicalDisplayMapper.LOGICAL_DISPLAY_EVENT_STATE_CHANGED) != 0) {
+                    mask |= DisplayManagerGlobal.EVENT_DISPLAY_STATE_CHANGED;
+                }
+                if ((eventMask
+                        & LogicalDisplayMapper.LOGICAL_DISPLAY_EVENT_COMMITTED_STATE_CHANGED)
+                        != 0) {
+                    mask |= DisplayManagerGlobal.EVENT_DISPLAY_COMMITTED_STATE_CHANGED;
+                }
+                if ((eventMask & LogicalDisplayMapper.LOGICAL_DISPLAY_EVENT_ADDED) != 0) {
+                    mask |= DisplayManagerGlobal.EVENT_DISPLAY_ADDED;
+                }
+                if ((eventMask
+                        & LogicalDisplayMapper.LOGICAL_DISPLAY_EVENT_HDR_SDR_RATIO_CHANGED) != 0) {
+                    mask |= DisplayManagerGlobal.EVENT_DISPLAY_HDR_SDR_RATIO_CHANGED;
+                }
+            }
+            return mask;
         }
 
         @Override
