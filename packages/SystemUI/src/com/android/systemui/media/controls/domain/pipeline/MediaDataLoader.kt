@@ -52,6 +52,7 @@ import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.graphics.ImageLoader
 import com.android.systemui.media.NotificationMediaManager.isPlayingState
+import com.android.systemui.media.controls.shared.MediaLogger
 import com.android.systemui.media.controls.shared.model.MediaAction
 import com.android.systemui.media.controls.shared.model.MediaButton
 import com.android.systemui.media.controls.shared.model.MediaData
@@ -86,6 +87,7 @@ constructor(
     private val imageLoader: ImageLoader,
     private val statusBarManager: StatusBarManager,
     private val media3ActionFactory: Media3ActionFactory,
+    private val mediaLogger: MediaLogger,
 ) {
     private val mediaProcessingJobs = ConcurrentHashMap<String, Job>()
 
@@ -192,6 +194,7 @@ constructor(
                 }
             }
 
+            mediaLogger.logMediaNotificationEnteredPipeline(sbn.packageName, song)
             // Don't attempt to load bitmaps if the job was cancelled.
             coroutineContext.ensureActive()
 

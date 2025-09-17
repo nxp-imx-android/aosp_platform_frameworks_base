@@ -34,11 +34,11 @@ import androidx.media.utils.MediaConstants
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
-import com.android.systemui.flags.fakeFeatureFlagsClassic
 import com.android.systemui.graphics.ImageLoader
 import com.android.systemui.graphics.imageLoader
 import com.android.systemui.kosmos.testDispatcher
 import com.android.systemui.kosmos.testScope
+import com.android.systemui.media.controls.shared.mediaLogger
 import com.android.systemui.media.controls.shared.model.MediaData
 import com.android.systemui.media.controls.util.fakeMediaControllerFactory
 import com.android.systemui.media.controls.util.mediaFlags
@@ -77,7 +77,6 @@ class MediaDataLoaderTest : SysuiTestCase() {
     private val testDispatcher = kosmos.testDispatcher
     private val statusBarManager = kosmos.statusBarManager
     private val mediaController = mock<MediaController>()
-    private val fakeFeatureFlags = kosmos.fakeFeatureFlagsClassic
     private val mediaFlags = kosmos.mediaFlags
     private val mediaControllerFactory = kosmos.fakeMediaControllerFactory
     private lateinit var media3ActionFactory: Media3ActionFactory
@@ -107,6 +106,7 @@ class MediaDataLoaderTest : SysuiTestCase() {
                 kosmos.imageLoader,
                 statusBarManager,
                 kosmos.media3ActionFactory,
+                kosmos.mediaLogger,
             )
     }
 
@@ -397,6 +397,7 @@ class MediaDataLoaderTest : SysuiTestCase() {
                     mockImageLoader,
                     statusBarManager,
                     media3ActionFactory,
+                    kosmos.mediaLogger,
                 )
             metadataBuilder.putString(
                 MediaMetadata.METADATA_KEY_ALBUM_ART_URI,
@@ -425,6 +426,7 @@ class MediaDataLoaderTest : SysuiTestCase() {
                     mockImageLoader,
                     statusBarManager,
                     media3ActionFactory,
+                    kosmos.mediaLogger,
                 )
             metadataBuilder.putString(
                 MediaMetadata.METADATA_KEY_ALBUM_ART_URI,
