@@ -50,6 +50,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
+import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.ComposeView
@@ -65,7 +68,9 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.isSpecified
+import com.android.compose.theme.LocalAndroidColorScheme
 import com.android.compose.theme.PlatformTheme
+import com.android.systemui.Flags
 import com.android.systemui.keyboard.shortcut.ui.composable.hasCompactWindowSize
 import com.android.systemui.res.R
 import kotlin.math.roundToInt
@@ -147,10 +152,12 @@ fun SystemUIDialogFactory.createBottomSheet(
             }
             Box(
                 modifier =
-                    Modifier.bottomSheetClickable { dialog.dismiss() }
+                    Modifier
+                        .bottomSheetClickable { dialog.dismiss() }
                         .then(
                             if (isDraggable)
-                                Modifier.anchoredDraggable(
+                                Modifier
+                                    .anchoredDraggable(
                                         state = dragState!!,
                                         interactionSource = interactionSource,
                                         orientation = Orientation.Vertical,
@@ -178,18 +185,52 @@ fun SystemUIDialogFactory.createBottomSheet(
                 contentAlignment = Alignment.BottomCenter,
             ) {
                 val radius = dimensionResource(R.dimen.bottom_sheet_corner_radius)
+                val backgroundBlurModifier =
+                    if (Flags.blurOnMoreSurfaces()) {
+                        val bottomsheetBlurRadius =
+                            dimensionResource(R.dimen.bottomsheet_blur_radius)
+                        val cornerRadius = dimensionResource(R.dimen.bottom_sheet_corner_radius)
+                        val drawable = remember {
+                            dialog.window!!.decorView.getViewRootImpl()
+                                .createBackgroundBlurDrawable()
+                        }
+                        Modifier.drawBehind {
+                            drawable.apply {
+                                setBlurRadius(bottomsheetBlurRadius.roundToPx())
+                                setCornerRadius(cornerRadius.toPx())
+                            }
+                            drawIntoCanvas { canvas ->
+                                drawable.setBounds(
+                                    0,
+                                    0,
+                                    size.width.toInt(),
+                                    size.height.toInt()
+                                )
+                                drawable.draw(canvas.nativeCanvas)
+                            }
+                        }
+                    } else {
+                        null
+                    }
                 Surface(
                     modifier =
-                        Modifier.bottomSheetPaddings()
+                        Modifier
+                            .bottomSheetPaddings()
                             // consume input so it doesn't get to the parent Composable
                             .bottomSheetClickable {}
                             .widthIn(
                                 max =
                                     if (maxWidth.isSpecified) maxWidth
                                     else DraggableBottomSheet.MaxWidth
-                            ),
+                            )
+                            .then(backgroundBlurModifier ?: Modifier),
                     shape = RoundedCornerShape(topStart = radius, topEnd = radius),
-                    color = MaterialTheme.colorScheme.surfaceContainer,
+                    color =
+                        if (Flags.blurOnMoreSurfaces()) {
+                            LocalAndroidColorScheme.current.shadePanelScrim
+                        } else {
+                            MaterialTheme.colorScheme.surfaceContainer
+                        },
                 ) {
                     Box(
                         Modifier.padding(
@@ -286,7 +327,8 @@ private fun DragHandle(dialog: Dialog) {
         stringResource(id = R.string.shortcut_helper_content_description_drag_handle)
     Surface(
         modifier =
-            Modifier.padding(top = 16.dp, bottom = 6.dp)
+            Modifier
+                .padding(top = 16.dp, bottom = 6.dp)
                 .semantics {
                     contentDescription = dragHandleContentDescription
                     hideFromAccessibility()

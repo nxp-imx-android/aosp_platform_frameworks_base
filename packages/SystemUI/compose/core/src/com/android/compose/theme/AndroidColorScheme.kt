@@ -82,6 +82,7 @@ class AndroidColorScheme(
     val surfaceEffect1: Color,
     val surfaceEffect2: Color,
     val surfaceEffect3: Color,
+    val shadePanelScrim: Color,
 ) {
     companion object {
         internal fun color(context: Context, @ColorRes id: Int): Color {
@@ -131,6 +132,7 @@ class AndroidColorScheme(
                 surfaceEffect1 = color(context, R.color.surface_effect_1),
                 surfaceEffect2 = color(context, R.color.surface_effect_2),
                 surfaceEffect3 = color(context, R.color.surface_effect_3),
+                shadePanelScrim = color(context, R.color.shade_panel_scrim),
             )
         }
     }
