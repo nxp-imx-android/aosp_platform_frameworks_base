@@ -261,8 +261,6 @@ protected constructor(
 
         const val ACTION_STOP =
             "com.android.systemui.screenrecord.ScreenRecordingService.ACTION_STOP"
-        const val ACTION_SHARE =
-            "com.android.systemui.screenrecord.ScreenRecordingService.ACTION_SHARE"
         const val EXTRA_STOP_REASON =
             "com.android.systemui.screenrecord.ScreenRecordingService.EXTRA_STOP_REASON"
     }

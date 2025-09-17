@@ -149,13 +149,16 @@ class ScreenRecordingServiceNotificationInteractor(
             Notification.Action.Builder(
                     Icon.createWithResource(context, R.drawable.ic_screenrecord),
                     strings.shareLabel,
-                    PendingIntent.getService(
+                    PendingIntent.getActivity(
                         context,
                         REQUEST_CODE,
-                        Intent(context, serviceClass)
-                            .setAction(ScreenRecordingService.ACTION_SHARE)
-                            .setDataAndType(savedRecording.uri, MimeTypes.VIDEO_MP4),
-                        PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
+                        Intent.createChooser(
+                            Intent(Intent.ACTION_SEND)
+                                .putExtra(Intent.EXTRA_STREAM, savedRecording.uri)
+                                .setDataAndType(savedRecording.uri, MimeTypes.VIDEO_MP4),
+                            context.getString(R.string.screenrecord_share_label),
+                        ),
+                        PendingIntent.FLAG_IMMUTABLE,
                     ),
                 )
                 .build()
