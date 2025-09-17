@@ -27,8 +27,11 @@ import android.graphics.Region
 import android.hardware.input.InputManager
 import android.os.Handler
 import android.view.Display
+import android.view.InsetsSource
+import android.view.InsetsState
 import android.view.SurfaceControl
 import android.view.View
+import android.view.WindowInsets
 import android.view.WindowInsetsController.APPEARANCE_TRANSPARENT_CAPTION_BAR_BACKGROUND
 import android.view.WindowManager.LayoutParams
 import com.android.internal.jank.InteractionJankMonitor
@@ -47,11 +50,11 @@ import com.android.wm.shell.shared.desktopmode.DesktopConfig
 import com.android.wm.shell.shared.desktopmode.DesktopState
 import com.android.wm.shell.shared.desktopmode.FakeDesktopState
 import com.android.wm.shell.splitscreen.SplitScreenController
-import com.android.wm.shell.sysui.ShellInit
 import com.android.wm.shell.transition.FocusTransitionObserver
 import com.android.wm.shell.transition.Transitions
 import com.android.wm.shell.util.StubTransaction
 import com.android.wm.shell.windowdecor.WindowDecorationTestHelper.TestAppHeaderDimensions.Companion.CUSTOMIZABLE_REGION_MARGIN_START
+import com.android.wm.shell.windowdecor.common.CaptionVisibilityHelper
 import com.android.wm.shell.windowdecor.common.DrawableInsets
 import com.android.wm.shell.windowdecor.common.InputPilferer
 import com.android.wm.shell.windowdecor.common.WindowDecorTaskResourceLoader
@@ -98,11 +101,19 @@ object WindowDecorationTestHelper {
         }
     }
 
+    /** Adds an inset source of the given type to the [InsetsState]. */
+    fun InsetsState.addInsetsSource(@WindowInsets.Type.InsetsType type: Int, visible: Boolean) {
+        InsetsSource(/* id= */ 0, type).also {
+            it.setVisible(visible)
+            addSource(it)
+        }
+    }
+
     /** Creates a window decoration. */
     fun createWindowDecoration(
         context: Context,
         taskInfo: RunningTaskInfo,
-        windowDecorationFinder: ((Int) -> WindowDecorationWrapper?),
+        windowDecorationFinder: ((Int) -> WindowDecorationWrapper?) = mock(),
         desktopState: DesktopState,
         shellDesktopState: ShellDesktopState =
             FakeShellDesktopState(desktopState as FakeDesktopState),
@@ -110,7 +121,6 @@ object WindowDecorationTestHelper {
         scope: CoroutineScope,
         handler: Handler,
         executor: ShellExecutor,
-        shellInit: ShellInit = ShellInit(executor),
         inputPilferer: InputPilferer = TestInputPilferer(),
         inputManager: InputManager = mock(),
         displayController: DisplayController,
@@ -120,6 +130,7 @@ object WindowDecorationTestHelper {
         taskOperations: TaskOperations,
         desktopModeUiEventLogger: DesktopModeUiEventLogger = mock(),
         windowDecorationActions: WindowDecorationActions = mock(),
+        captionVisibilityHelper: CaptionVisibilityHelper = mock(),
         appHeaderViewHolderFactory: AppHeaderViewHolder.Factory =
             AppHeaderViewHolder.DefaultFactory(),
         windowDecorationExclusionTracker: WindowDecorationGestureExclusionTracker = mock(),
@@ -156,6 +167,7 @@ object WindowDecorationTestHelper {
                 desktopConfig = desktopConfig,
                 windowDecorationActions = windowDecorationActions,
                 appToWebRepository = mock(),
+                captionVisibilityHelper = captionVisibilityHelper,
                 windowManagerWrapper = mock(),
                 lockTaskChangeListener = mock(),
                 surfaceControlTransactionSupplier = { StubTransaction() },

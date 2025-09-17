@@ -79,6 +79,16 @@ flag {
 }
 
 flag {
+    name: "enable_add_window_decoration_to_all_tasks"
+    namespace: "lse_desktop_experience"
+    description: "Adds window decorations to all tasks, even if caption is not being shown."
+    bug: "445542519"
+    metadata {
+            purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "enable_app_handle_position_reporting"
     namespace: "lse_desktop_experience"
     description: "Report app handle position to the SysUi."

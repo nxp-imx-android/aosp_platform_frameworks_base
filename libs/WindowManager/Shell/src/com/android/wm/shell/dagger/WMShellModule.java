@@ -212,7 +212,7 @@ import com.android.wm.shell.windowdecor.CaptionWindowDecorViewModel;
 import com.android.wm.shell.windowdecor.DesktopModeWindowDecorViewModel;
 import com.android.wm.shell.windowdecor.WindowDecorViewModel;
 import com.android.wm.shell.windowdecor.additionalviewcontainer.AdditionalSystemViewContainer;
-import com.android.wm.shell.windowdecor.common.AppHandleAndHeaderVisibilityHelper;
+import com.android.wm.shell.windowdecor.common.CaptionVisibilityHelper;
 import com.android.wm.shell.windowdecor.common.WindowDecorTaskResourceLoader;
 import com.android.wm.shell.windowdecor.common.WindowDecorTaskResourceLoaderImpl;
 import com.android.wm.shell.windowdecor.common.viewhost.DefaultWindowDecorViewHostSupplier;
@@ -1341,7 +1341,7 @@ public abstract class WMShellModule {
             MultiInstanceHelper multiInstanceHelper,
             Optional<DesktopTasksLimiter> desktopTasksLimiter,
             AppHandleEducationController appHandleEducationController,
-            AppHandleAndHeaderVisibilityHelper appHandleAndHeaderVisibilityHelper,
+            CaptionVisibilityHelper captionVisibilityHelper,
             WindowDecorCaptionRepository windowDecorCaptionRepository,
             Optional<DesktopActivityOrientationChangeHandler> activityOrientationChangeHandler,
             FocusTransitionObserver focusTransitionObserver,
@@ -1372,7 +1372,7 @@ public abstract class WMShellModule {
                 rootTaskDisplayAreaOrganizer, interactionJankMonitor, genericLinksParser,
                 appToWebRepository, assistContentRequester, windowDecorViewHostSupplier,
                 multiInstanceHelper, desktopTasksLimiter, appHandleEducationController,
-                appHandleAndHeaderVisibilityHelper, windowDecorCaptionRepository,
+                captionVisibilityHelper, windowDecorCaptionRepository,
                 activityOrientationChangeHandler, focusTransitionObserver, desktopModeEventLogger,
                 desktopModeUiEventLogger, taskResourceLoader, recentsTransitionHandler,
                 desktopModeCompatPolicy, desktopTilingDecorViewModel,
@@ -1422,13 +1422,14 @@ public abstract class WMShellModule {
 
     @WMSingleton
     @Provides
-    static AppHandleAndHeaderVisibilityHelper provideAppHandleAndHeaderVisibilityHelper(
+    static CaptionVisibilityHelper provideCaptionVisibilityHelper(
             @NonNull DisplayController displayController,
             @NonNull DesktopModeCompatPolicy desktopModeCompatPolicy,
             @NonNull DesktopState desktopState,
-            Optional<BubbleController> bubbleController) {
-        return new AppHandleAndHeaderVisibilityHelper(displayController,
-                desktopModeCompatPolicy, desktopState, bubbleController);
+            Optional<BubbleController> bubbleController,
+            LockTaskChangeListener lockTaskChangeListener) {
+        return new CaptionVisibilityHelper(displayController,
+                desktopModeCompatPolicy, desktopState, bubbleController, lockTaskChangeListener);
     }
 
     @WMSingleton
