@@ -31,7 +31,6 @@ import com.android.systemui.log.echo.LogcatEchoTrackerProd;
 import com.android.systemui.log.table.TableLogBuffer;
 import com.android.systemui.log.table.TableLogBufferFactory;
 import com.android.systemui.plugins.keyguard.ui.clocks.ClockMessageBuffers;
-import com.android.systemui.qs.QSFragmentLegacy;
 import com.android.systemui.qs.pipeline.shared.QSPipelineFlagsRepository;
 import com.android.systemui.qs.pipeline.shared.TileSpec;
 import com.android.systemui.util.wakelock.WakeLockLog;

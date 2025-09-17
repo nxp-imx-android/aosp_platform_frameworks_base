@@ -23,7 +23,7 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
-import com.android.systemui.qs.QSFragmentLegacy
+import com.android.systemui.qs.composefragment.QSFragmentCompose
 import com.android.systemui.res.R
 import com.android.systemui.util.mockito.whenever
 import com.google.common.truth.Truth.assertThat
@@ -40,7 +40,7 @@ class NotificationsQuickSettingsContainerTest : SysuiTestCase() {
     @Mock private lateinit var qsFrame: View
     @Mock private lateinit var stackScroller: View
     @Mock private lateinit var keyguardStatusBar: View
-    @Mock private lateinit var qsFragment: QSFragmentLegacy
+    @Mock private lateinit var qsFragment: QSFragmentCompose
 
     private lateinit var qsView: ViewGroup
     private lateinit var qsContainer: View
