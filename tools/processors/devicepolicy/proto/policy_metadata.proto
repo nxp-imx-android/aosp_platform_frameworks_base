@@ -10,6 +10,7 @@ message PolicyMetadata {
     string type = 2;
     string documentation = 3;
     TypeSpecificPolicyMetadata type_specific_metadata = 4;
+    repeated int32 allowed_scopes = 5;
 }
 
 message TypeSpecificPolicyMetadata {

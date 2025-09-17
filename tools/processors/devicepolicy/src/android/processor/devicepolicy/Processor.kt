@@ -156,6 +156,7 @@ abstract class Processor<T : Annotation>(protected val processingEnv: Processing
         val name = "$enclosingType.$element"
         val type = policyType(element).toString()
         val documentation = processingEnv.elementUtils.getDocComment(element) ?: ""
+        val allowedScopes = definition.allowedScopes.toList()
 
         if (documentation.trim().isEmpty()) {
             printError(element, "Missing JavaDoc")
@@ -167,6 +168,7 @@ abstract class Processor<T : Annotation>(protected val processingEnv: Processing
             .setType(type)
             .setDocumentation(documentation)
             .setTypeSpecificMetadata(typeSpecificMetadata)
+            .addAllAllowedScopes(allowedScopes)
             .build()
     }
 }

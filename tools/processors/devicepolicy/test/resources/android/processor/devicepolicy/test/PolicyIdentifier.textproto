@@ -6,6 +6,8 @@ policy_metadata {
     boolean_metadata {
     }
   }
+  allowed_scopes: 1
+  allowed_scopes: 2
 }
 policy_metadata {
   name: "android.app.admin.PolicyIdentifier.SIMPLE_ENUM_POLICY"
@@ -32,6 +34,8 @@ policy_metadata {
       }
     }
   }
+  allowed_scopes: 2
+  allowed_scopes: 3
 }
 policy_metadata {
   name: "android.app.admin.PolicyIdentifier.SIMPLE_INTEGER_POLICY"
@@ -41,4 +45,5 @@ policy_metadata {
     integer_metadata {
     }
   }
+  allowed_scopes: 1
 }
