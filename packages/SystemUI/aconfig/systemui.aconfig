@@ -2207,3 +2207,13 @@ flag {
          purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "expandable_force_modifier_implementation"
+    namespace: "systemui"
+    description: "Always use the Compose Expandable modifier implementation everywhere, independently of useModifierBasedImplementation"
+    bug: "428899288"
+    metadata {
+      purpose: PURPOSE_BUGFIX
+    }
+}
