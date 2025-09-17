@@ -584,16 +584,6 @@ flag {
 }
 
 flag {
-   name: "activity_transition_use_largest_window"
-   namespace: "systemui"
-   description: "Target largest opening window during activity transitions."
-   bug: "323294573"
-   metadata {
-       purpose: PURPOSE_BUGFIX
-  }
-}
-
-flag {
   name: "enable_layout_tracing"
   namespace: "systemui"
   description: "Enables detailed traversal slices during measure and layout in perfetto traces"
