@@ -28,6 +28,7 @@ import com.android.systemui.customization.clocks.DigitalTimespec
 import com.android.systemui.customization.clocks.DigitalTimespecHandler
 import com.android.systemui.customization.clocks.FontTextStyle
 import com.android.systemui.customization.clocks.view.DigitalAlignment
+import com.android.systemui.plugins.keyguard.VPointF
 import com.android.systemui.plugins.keyguard.data.model.AlarmData
 import com.android.systemui.plugins.keyguard.data.model.WeatherData
 import com.android.systemui.plugins.keyguard.data.model.ZenData
@@ -173,7 +174,7 @@ open class FlexClockTextViewController(
             override fun onPositionAnimated(args: ClockPositionAnimationArgs) {}
 
             override fun onFidgetTap(x: Float, y: Float) {
-                view.animateFidget(x, y)
+                view.animateFidget(VPointF(x, y), enforceBounds = true)
             }
         }
 
