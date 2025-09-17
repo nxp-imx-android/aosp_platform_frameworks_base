@@ -471,7 +471,7 @@ public final class SystemServer implements Dumpable {
     private static final String ANOMALY_DETECTOR_SERVICE_CLASS =
             "com.android.os.profiling.anomaly.AnomalyDetectorService";
     private static final String SIGNAL_COLLECTOR_SERVICE_CLASS =
-            "com.android.server.signalcollector";
+            "com.android.server.signalcollector.SignalCollectorService";
     private static final String UPROBESTATS_SERVICE_JAR_PATH =
             "/apex/com.android.uprobestats/javalib/service-uprobestats.jar";
     private static final String UPROBESTATS_SERVICE_CLASS =

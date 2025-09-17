@@ -31,6 +31,7 @@ import android.util.Slog;
 import android.util.SparseIntArray;
 
 import com.android.internal.annotations.GuardedBy;
+import com.android.internal.annotations.Keep;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.os.profiling.anomaly.AnomalyDetectorManagerLocal;
 import com.android.os.profiling.anomaly.collector.binder.BinderSpamConfig;
@@ -43,6 +44,7 @@ import com.android.server.signalcollector.binder.BinderSpamSignalCollector;
  * Service for managing signal collectors and tracking process state for anomaly
  * detection.
  */
+@Keep
 public final class SignalCollectorService extends SystemService {
     private static final String TAG = "SignalCollectorService";
 
