@@ -239,7 +239,7 @@ constructor(
     private fun finishExpansion() {
         val startingChild = mStartingChild
         if (mStartingChild != null) {
-            setUserSwipingToExpandRow(mStartingChild!!, false)
+            setUserLocked(mStartingChild!!, false)
             mStartingChild = null
         }
         if (statusBarStateController.isDozing) {
@@ -282,7 +282,7 @@ constructor(
         if (mStartingChild == null && !bypassController.bypassEnabled) {
             mStartingChild = findView(x, y)
             if (mStartingChild != null) {
-                setUserSwipingToExpandRow(mStartingChild!!, true)
+                setUserLocked(mStartingChild!!, true)
             }
         }
     }
@@ -293,7 +293,7 @@ constructor(
         animationDuration: Long = SPRING_BACK_ANIMATION_LENGTH_MS.toLong(),
     ) {
         if (child.actualHeight == child.collapsedHeight) {
-            setUserSwipingToExpandRow(child, false)
+            setUserLocked(child, false)
             return
         }
         val anim = ValueAnimator.ofInt(child.actualHeight, child.collapsedHeight)
@@ -306,16 +306,16 @@ constructor(
         anim.addListener(
             object : AnimatorListenerAdapter() {
                 override fun onAnimationEnd(animation: Animator) {
-                    setUserSwipingToExpandRow(child, false)
+                    setUserLocked(child, false)
                 }
             }
         )
         anim.start()
     }
 
-    private fun setUserSwipingToExpandRow(child: ExpandableView, isUserSwiping: Boolean) {
+    private fun setUserLocked(child: ExpandableView, userLocked: Boolean) {
         if (child is ExpandableNotificationRow) {
-            child.isUserSwipingToExpandRow = isUserSwiping
+            child.isUserLocked = userLocked
         }
     }
 

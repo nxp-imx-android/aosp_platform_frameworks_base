@@ -492,7 +492,7 @@ constructor(
                         (canPeek ||
                             view.isPromotedOngoing ||
                                 (view.isBundle && view.isGroupExpanded) ||
-                                    (SceneContainerFlag.isEnabled && view.isUserSwipingToExpandRow))
+                                    (SceneContainerFlag.isEnabled && view.isUserLocked))
                 ) {
                     height
                 } else {
