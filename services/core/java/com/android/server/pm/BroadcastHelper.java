@@ -367,13 +367,11 @@ public final class BroadcastHelper {
             tracePackageChangedBroadcastEvent(true /* applyFlag */, reasonForTrace, packageName,
                     "<implicit>" /* targetPackageName */, "whole" /* targetComponent */,
                     componentNames.size(), callingPackageNameForTrace);
-            BroadcastOptions bOptions = null;
-            if (android.content.pm.Flags.mergePackageChangedBroadcast()) {
-                bOptions = new BroadcastOptions()
-                        .setDeliveryGroupPolicy(BroadcastOptions.DELIVERY_GROUP_POLICY_MOST_RECENT)
-                        .setDeliveryGroupMatchingKey(Intent.ACTION_PACKAGE_CHANGED,
-                                packageName + "-" + packageUid);
-            }
+            BroadcastOptions bOptions = new BroadcastOptions()
+                    .setDeliveryGroupPolicy(BroadcastOptions.DELIVERY_GROUP_POLICY_MOST_RECENT)
+                    .setDeliveryGroupMatchingKey(Intent.ACTION_PACKAGE_CHANGED,
+                            packageName + "-" + packageUid);
+
             sendPackageChangedBroadcastWithPermissions(packageName, dontKillApp, componentNames,
                     packageUid, reason, userIds, instantUserIds, broadcastAllowList,
                     null /* targetPackageName */, null /* requiredPermissions */,
