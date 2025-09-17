@@ -301,12 +301,12 @@ class BouncerInteractorTest : SysuiTestCase() {
                     assertThat(lockoutStartedEvents).isEmpty()
                 }
             }
-            assertThat(authenticationInteractor.lockoutEndTimestamp).isNotNull()
+            assertThat(authenticationInteractor.lockoutEndTime).isNotNull()
             assertThat(lockoutStartedEvents.size).isEqualTo(1)
 
             // Advance the time to finish the lockout:
             advanceTimeBy(FakeAuthenticationRepository.LOCKOUT_DURATION_SECONDS.seconds)
-            assertThat(authenticationInteractor.lockoutEndTimestamp).isNull()
+            assertThat(authenticationInteractor.lockoutEndTime).isNull()
             assertThat(lockoutStartedEvents.size).isEqualTo(1)
 
             // Trigger lockout again:

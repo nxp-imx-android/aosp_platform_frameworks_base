@@ -41,6 +41,8 @@ import com.android.systemui.util.mockito.whenever
 import com.android.systemui.util.time.FakeSystemClock
 import com.google.common.truth.Truth.assertThat
 import java.util.function.Function
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runCurrent
@@ -171,25 +173,29 @@ class AuthenticationRepositoryTest : SysuiTestCase() {
         }
 
     @Test
-    fun lockoutEndTimestamp() =
+    fun lockoutEndTime() =
         testScope.runTest {
-            val lockoutEndMs = clock.elapsedRealtime() + 30.seconds.inWholeMilliseconds
+            val lockoutEnd = clock.elapsedRealtime().milliseconds + 30.seconds
             whenever(lockPatternUtils.getLockoutAttemptDeadline(USER_INFOS[0].id))
-                .thenReturn(lockoutEndMs)
+                .thenReturn(lockoutEnd.inWholeMilliseconds)
             whenever(lockPatternUtils.getLockoutAttemptDeadline(USER_INFOS[1].id)).thenReturn(0)
 
             // Switch to a user who is not locked-out.
             userRepository.setSelectedUserInfo(USER_INFOS[1])
-            assertThat(underTest.lockoutEndTimestamp).isNull()
+            assertThat(underTest.lockoutEndTime).isNull()
 
-            // Switch back to the locked-out user, verify the timestamp is up-to-date.
+            // Switch back to the locked-out user, verify the time is up-to-date.
             userRepository.setSelectedUserInfo(USER_INFOS[0])
-            assertThat(underTest.lockoutEndTimestamp).isEqualTo(lockoutEndMs)
+            assertThat(underTest.lockoutEndTime).isEqualTo(lockoutEnd)
 
             // After the lockout expires, null is returned.
-            clock.setElapsedRealtime(lockoutEndMs)
-            assertThat(underTest.lockoutEndTimestamp).isNull()
+            clock.setElapsedRealtime(lockoutEnd)
+            assertThat(underTest.lockoutEndTime).isNull()
         }
+
+    private fun FakeSystemClock.setElapsedRealtime(duration: Duration) {
+        setElapsedRealtime(duration.inWholeMilliseconds)
+    }
 
     @Test
     fun hasLockoutOccurred() =

@@ -35,6 +35,8 @@ import com.android.systemui.statusbar.policy.DevicePostureController;
 import com.android.systemui.user.domain.interactor.SelectedUserInteractor;
 import com.android.systemui.util.wrapper.LockPatternCheckerWrapper;
 
+import java.time.Duration;
+
 public class KeyguardPinViewController
         extends KeyguardPinBasedInputViewController<KeyguardPINView> {
     private final KeyguardUpdateMonitor mKeyguardUpdateMonitor;
@@ -133,8 +135,8 @@ public class KeyguardPinViewController
     }
 
     @Override
-    protected void handleAttemptLockout(long elapsedRealtimeDeadline) {
-        super.handleAttemptLockout(elapsedRealtimeDeadline);
+    protected void handleAttemptLockout(Duration lockoutEndTime) {
+        super.handleAttemptLockout(lockoutEndTime);
         updateAutoConfirmationState();
     }
 

@@ -462,16 +462,17 @@ constructor(
         }
     }
 
-    private fun remainingLockoutSeconds(): Int {
-        val endTimestampMs = authenticationInteractor.lockoutEndTimestamp ?: 0
-        val remainingMs = max(0, endTimestampMs - clock.elapsedRealtime())
-        return ceil(remainingMs / 1000f).toInt()
+    private fun remainingLockoutSeconds(): Long {
+        val endTime = authenticationInteractor.lockoutEndTime?.inWholeMilliseconds ?: 0
+        val remainingMs = max(0, endTime - clock.elapsedRealtime())
+        return ceil(remainingMs / 1000f).toLong()
     }
 
     private fun Int.toPluralString(formatterArgs: Map<String, Any>): String =
         PluralsMessageFormatter.format(applicationContext.resources, formatterArgs, this)
 
-    private fun Int.toResString(): String = if (this == 0) "" else applicationContext.getString(this)
+    private fun Int.toResString(): String =
+        if (this == 0) "" else applicationContext.getString(this)
 
     @AssistedFactory
     interface Factory {

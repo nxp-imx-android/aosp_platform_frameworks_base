@@ -149,7 +149,7 @@ constructor(
     val onLockoutStarted: Flow<Unit> =
         authenticationInteractor.onAuthenticationResult
             .filter { successfullyAuthenticated ->
-                !successfullyAuthenticated && authenticationInteractor.lockoutEndTimestamp != null
+                !successfullyAuthenticated && authenticationInteractor.lockoutEndTime != null
             }
             .map {}
 
