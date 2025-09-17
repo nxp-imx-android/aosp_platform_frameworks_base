@@ -31,7 +31,7 @@ public final class PolicyIdentifier<T> {
      */
     @BooleanPolicyDefinition(
             base = @PolicyDefinition(
-                    allowedScopes = {0, 1},
+                    allowedScopes = {1, 2},
                     affectedResource = 1
             )
     )

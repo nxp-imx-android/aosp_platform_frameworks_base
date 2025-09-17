@@ -6,8 +6,8 @@ policy_metadata {
     boolean_metadata {
     }
   }
-  allowed_scopes: 1
-  allowed_scopes: 2
+  allowed_scopes: POLICY_SCOPE_USER
+  allowed_scopes: POLICY_SCOPE_DEVICE
   affected_resource: 2
 }
 policy_metadata {
@@ -35,8 +35,8 @@ policy_metadata {
       }
     }
   }
-  allowed_scopes: 2
-  allowed_scopes: 3
+  allowed_scopes: POLICY_SCOPE_DEVICE
+  allowed_scopes: POLICY_SCOPE_PARENT_USER
   affected_resource: 1
 }
 policy_metadata {
@@ -47,6 +47,6 @@ policy_metadata {
     integer_metadata {
     }
   }
-  allowed_scopes: 1
+  allowed_scopes: POLICY_SCOPE_USER
   affected_resource: 1
 }

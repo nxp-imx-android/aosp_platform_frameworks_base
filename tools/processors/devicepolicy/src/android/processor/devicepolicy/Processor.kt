@@ -156,7 +156,7 @@ abstract class Processor<T : Annotation>(protected val processingEnv: Processing
         val name = "$enclosingType.$element"
         val type = policyType(element).toString()
         val documentation = processingEnv.elementUtils.getDocComment(element) ?: ""
-        val allowedScopes = definition.allowedScopes.toList()
+        val allowedScopes = convertScopes(element, definition.allowedScopes.toList())
         val affectedResource = definition.affectedResource
 
         if (documentation.trim().isEmpty()) {
@@ -172,5 +172,39 @@ abstract class Processor<T : Annotation>(protected val processingEnv: Processing
             .addAllAllowedScopes(allowedScopes)
             .setAffectedResource(affectedResource)
             .build()
+    }
+
+    private fun convertScopes(element: Element, allowedScopes: List<Int>): List<PolicyMetadata.PolicyScope> {
+        if (allowedScopes.isEmpty()) {
+            printError(element, "allowedScopes must not be empty.")
+        }
+
+        val duplicatedScopes = allowedScopes.groupingBy { it }.eachCount().filter { it.value > 1 }
+        if (!duplicatedScopes.isEmpty()) {
+            val scopesMessage = duplicatedScopes.map { it.key }.joinToString(separator = ",")
+            printError(
+                element,
+                "allowedScopes contains duplicated scopes [$scopesMessage]; Use a scope only once."
+            )
+        }
+
+        return allowedScopes.mapNotNull { allowedScope ->
+            PolicyMetadata.PolicyScope.forNumber(allowedScope)
+                ?.let {
+                    if (it == PolicyMetadata.PolicyScope.POLICY_SCOPE_UNSPECIFIED) {
+                        // Not valid.
+                        null
+                    } else {
+                        it
+                    }
+                } ?: run {
+                    printError(
+                        element,
+                        "allowedScopes contains an unknown value $allowedScope, only use POLICY_SCOPE_* constants."
+                    )
+
+                    null
+                }
+        }
     }
 }
