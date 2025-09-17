@@ -27,6 +27,7 @@ import com.android.systemui.Flags.FLAG_COMMUNAL_HUB
 import com.android.systemui.Flags.FLAG_GLANCEABLE_HUB_V2
 import com.android.systemui.Flags.FLAG_KEYGUARD_WM_STATE_REFACTOR
 import com.android.systemui.Flags.FLAG_SCENE_CONTAINER
+import com.android.systemui.Flags.FLAG_WAKEFULNESS_FOR_ANIMATIONS
 import com.android.systemui.Flags.glanceableHubV2
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.communal.data.repository.FakeCommunalSceneRepository
@@ -446,5 +447,48 @@ class FromDozingTransitionInteractorTest(flags: FlagsParameterization?) : SysuiT
             // We should head back to GONE since we started there.
             assertThat(transitionRepository)
                 .startedTransition(from = KeyguardState.DOZING, to = KeyguardState.OCCLUDED)
+        }
+
+    @Test
+    @EnableFlags(FLAG_WAKEFULNESS_FOR_ANIMATIONS)
+    @DisableFlags(FLAG_KEYGUARD_WM_STATE_REFACTOR) // Test the legacy path
+    fun testTransition_flagOn_onlyTriggersOnAwake_notOnStartingToWake() =
+        kosmos.runTest {
+            // We start in AOD and asleep (from setup())
+
+            // Start waking up
+            powerInteractor.onStartedWakingUp(
+                PowerManager.WAKE_REASON_POWER_BUTTON,
+                /* powerButtonLaunchGestureTriggeredOnWakeUp = */ false
+            )
+
+            // Ensure transition isn't playing yet
+            assertThat(transitionRepository).noTransitionsStarted()
+
+            // Finish waking up
+            powerInteractor.onFinishedWakingUp()
+
+            // Ensure transition plays
+            assertThat(transitionRepository)
+                .startedTransition(from = KeyguardState.DOZING, to = KeyguardState.LOCKSCREEN)
+        }
+
+    @Test
+    @DisableFlags(FLAG_WAKEFULNESS_FOR_ANIMATIONS, FLAG_KEYGUARD_WM_STATE_REFACTOR) // Test legacy path
+    fun testTransition_flagOff_triggersOnStartingToWake() =
+        kosmos.runTest {
+            // We start in AOD and asleep (from setup())
+
+            // Start waking up
+            powerInteractor.onStartedWakingUp(
+                PowerManager.WAKE_REASON_POWER_BUTTON,
+                /* powerButtonLaunchGestureTriggeredOnWakeUp = */ false
+            )
+
+            advanceTimeBy(100) // account for debouncing
+
+            // Ensure transition plays
+            assertThat(transitionRepository)
+                .startedTransition(from = KeyguardState.DOZING, to = KeyguardState.LOCKSCREEN)
         }
 }

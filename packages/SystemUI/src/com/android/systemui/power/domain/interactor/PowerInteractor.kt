@@ -73,6 +73,17 @@ constructor(
             .map { it.isAwake() }
             .distinctUntilChanged(checkEquivalentUnlessEmitDuplicatesUnderTest)
 
+    /**
+     * A stricter version of [isAwake] intended for triggering animations.
+     *
+     * This flow only emits `true` when the device is fully [WakefulnessState.AWAKE],
+     * excluding the [WakefulnessState.STARTING_TO_WAKE] state.
+     */
+    val isAwakeForAnimations =
+        repository.wakefulness
+            .map { it.isAwakeForAnimations() }
+            .distinctUntilChanged(checkEquivalentUnlessEmitDuplicatesUnderTest)
+
     /** Helper flow in case "isAsleep" reads better than "!isAwake". */
     val isAsleep = isAwake.map { !it }
 
