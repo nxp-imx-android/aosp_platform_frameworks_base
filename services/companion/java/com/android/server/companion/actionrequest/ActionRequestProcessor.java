@@ -31,6 +31,7 @@ import android.companion.ActionResult;
 import android.companion.AssociationInfo;
 import android.companion.IOnActionResultListener;
 import android.os.RemoteException;
+import android.os.Trace;
 import android.util.Slog;
 
 import com.android.server.companion.association.AssociationStore;
@@ -414,6 +415,12 @@ public class ActionRequestProcessor implements AssociationStore.OnChangeListener
             final IOnActionResultListener listener = findListenerForService(serviceName);
             if (listener != null) {
                 try {
+                    android.os.Trace.asyncTraceForTrackEnd(
+                            Trace.TRACE_TAG_SYSTEM_SERVER,
+                            "CompanionDeviceManager",
+                            result.hashCode()
+                    );
+
                     listener.onActionResult(associationId, result);
                 } catch (RemoteException e) {
                     Slog.e(TAG, "Error sending action result to " + serviceName, e);
