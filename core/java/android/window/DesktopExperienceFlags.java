@@ -192,6 +192,8 @@ public enum DesktopExperienceFlags {
             Flags.FLAG_ENABLE_EMPTY_DESK_ON_MINIMIZE),
     ENABLE_EXTERNAL_DISPLAY_PERSISTENCE_BUGFIX(Flags::enableExternalDisplayPersistenceBugfix, false,
             Flags.FLAG_ENABLE_EXTERNAL_DISPLAY_PERSISTENCE_BUGFIX),
+    ENABLE_FILTER_REMOVING_DISPLAY_BUGFIX(Flags::enableFilterRemovingDisplayBugfix, false,
+            Flags.FLAG_ENABLE_FILTER_REMOVING_DISPLAY_BUGFIX),
     ENABLE_FIX_LEAKING_VISUAL_INDICATOR(Flags::fixLeakingVisualIndicator, false,
             Flags.FLAG_FIX_LEAKING_VISUAL_INDICATOR),
     ENABLE_FREEFORM_BOX_SHADOWS(Flags::enableFreeformBoxShadows, false,
