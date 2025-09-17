@@ -59,9 +59,17 @@ sealed class OngoingActivityChipModel {
     /** This chip should be shown with the given information. */
     data class Active(
         /**
-         * A key that uniquely identifies this chip. Used for better visual effects, like animation.
+         * A key that uniquely identifies this chip. Used for better visual effects, like animation,
+         * and UI event logging.
+         *
+         * Should be guaranteed to be unique from all other chips.
          */
         val key: String,
+        /**
+         * If this chip is associated with a notification, this is just the notification key. For
+         * chips not associated with a notification, this is null.
+         */
+        val notificationKey: String? = null,
         /** The package name of the app managing this chip. */
         val managingPackageName: String? = null,
         /**

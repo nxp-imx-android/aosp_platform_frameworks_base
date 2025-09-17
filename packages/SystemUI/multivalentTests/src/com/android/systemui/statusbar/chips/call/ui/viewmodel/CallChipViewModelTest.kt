@@ -127,6 +127,18 @@ class CallChipViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
         }
 
     @Test
+    fun chip_inCall_notificationKeyHasNoPrefix() =
+        kosmos.runTest {
+            val latest by collectLastValue(underTest.chip)
+
+            addOngoingCallState(startTimeMs = 0, isAppVisible = false, key = NOTIFICATION_KEY)
+
+            assertThat(latest).isInstanceOf(OngoingActivityChipModel.Active::class.java)
+            assertThat((latest as OngoingActivityChipModel.Active).notificationKey)
+                .isEqualTo(NOTIFICATION_KEY)
+        }
+
+    @Test
     @EnableFlags(PromotedNotificationUi.FLAG_NAME)
     fun chip_inCall_optInPromotedEnabled_callDidNotRequestPromotion_callChipIsShown() =
         kosmos.runTest {

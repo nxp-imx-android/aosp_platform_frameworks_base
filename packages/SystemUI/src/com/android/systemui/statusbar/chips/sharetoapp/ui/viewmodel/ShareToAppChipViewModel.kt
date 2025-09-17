@@ -227,6 +227,7 @@ constructor(
     ): OngoingActivityChipModel.Active {
         return OngoingActivityChipModel.Active(
             key = KEY,
+            notificationKey = null, // Not tied to a notification
             isImportantForPrivacy = true,
             icon =
                 OngoingActivityChipModel.ChipIcon.SingleColorIcon(
@@ -276,6 +277,7 @@ constructor(
     ): OngoingActivityChipModel.Active {
         return OngoingActivityChipModel.Active(
             key = KEY,
+            notificationKey = null, // Not tied to a notification
             isImportantForPrivacy = true,
             icon =
                 OngoingActivityChipModel.ChipIcon.SingleColorIcon(

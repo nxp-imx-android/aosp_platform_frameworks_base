@@ -258,6 +258,26 @@ class ScreenRecordChipViewModelTest : SysuiTestCase() {
         }
 
     @Test
+    fun chip_startingState_nullNotificationKey() =
+        testScope.runTest {
+            val latest by collectLastValue(underTest.chip)
+
+            screenRecordRepo.screenRecordState.value = ScreenRecordModel.Starting(2000L)
+
+            assertThat((latest as OngoingActivityChipModel.Active).notificationKey).isNull()
+        }
+
+    @Test
+    fun chip_recordingState_nullNotificationKey() =
+        testScope.runTest {
+            val latest by collectLastValue(underTest.chip)
+
+            screenRecordRepo.screenRecordState.value = ScreenRecordModel.Recording
+
+            assertThat((latest as OngoingActivityChipModel.Active).notificationKey).isNull()
+        }
+
+    @Test
     fun chip_timeResetsOnEachNewRecording() =
         testScope.runTest {
             val latest by collectLastValue(underTest.chip)

@@ -197,6 +197,7 @@ constructor(
     ): OngoingActivityChipModel.Active {
         return OngoingActivityChipModel.Active(
             key = KEY,
+            notificationKey = null, // Not tied to a notification
             isImportantForPrivacy = true,
             icon =
                 OngoingActivityChipModel.ChipIcon.SingleColorIcon(
@@ -250,6 +251,7 @@ constructor(
     private fun createIconOnlyCastChip(deviceName: String?): OngoingActivityChipModel.Active {
         return OngoingActivityChipModel.Active(
             key = KEY,
+            notificationKey = null, // Not tied to a notification
             isImportantForPrivacy = true,
             icon =
                 OngoingActivityChipModel.ChipIcon.SingleColorIcon(

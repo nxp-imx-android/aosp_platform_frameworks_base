@@ -419,6 +419,16 @@ flag {
 }
 
 flag {
+    name: "status_bar_hun_animation_call"
+    namespace: "systemui"
+    description: "Fix the HUN animation when tapping on a status bar call chip"
+    bug: "444551887"
+    metadata {
+      purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "status_bar_share_dialog_with_app_name"
     namespace: "systemui"
     description: "Update the status bar share-to-app chip dialog to include the app name more often"

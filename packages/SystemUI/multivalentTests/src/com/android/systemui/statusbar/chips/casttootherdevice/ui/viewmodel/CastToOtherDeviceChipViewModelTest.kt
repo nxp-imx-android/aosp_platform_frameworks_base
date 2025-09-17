@@ -208,6 +208,32 @@ class CastToOtherDeviceChipViewModelTest : SysuiTestCase() {
         }
 
     @Test
+    fun chip_singleTask_nullNotificationKey() =
+        testScope.runTest {
+            val latest by collectLastValue(underTest.chip)
+
+            mediaProjectionRepo.mediaProjectionState.value =
+                MediaProjectionState.Projecting.SingleTask(
+                    CAST_TO_OTHER_DEVICES_PACKAGE,
+                    hostDeviceName = null,
+                    createTask(taskId = 1),
+                )
+
+            assertThat((latest as OngoingActivityChipModel.Active).notificationKey).isNull()
+        }
+
+    @Test
+    fun chip_entireScreen_nullNotificationKey() =
+        testScope.runTest {
+            val latest by collectLastValue(underTest.chip)
+
+            mediaProjectionRepo.mediaProjectionState.value =
+                MediaProjectionState.Projecting.EntireScreen(CAST_TO_OTHER_DEVICES_PACKAGE)
+
+            assertThat((latest as OngoingActivityChipModel.Active).notificationKey).isNull()
+        }
+
+    @Test
     fun chip_routerStateDoingNothing_isHidden() =
         testScope.runTest {
             val latest by collectLastValue(underTest.chip)
