@@ -10190,21 +10190,10 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
                 "Caller must be shell or hold MANAGE_PROFILE_AND_DEVICE_OWNERS to call "
                         + "clearMultiUserDeviceManagement");
         synchronized (getLockObject()) {
-            setDeviceManagedLocked(false);
+            mOwners.setDeviceManaged(false);
+            mOwners.writeDeviceOwner();
             forceRemoveActiveAdminUnchecked(adminReceiver, UserHandle.USER_SYSTEM);
         }
-    }
-
-    /**
-     * Sets the device managed state.
-     *
-     * @param isDeviceManaged true if the device is managed, false otherwise.
-     */
-    private void setDeviceManagedLocked(boolean isDeviceManaged) {
-        ensureLocked();
-        mOwners.setDeviceManaged(isDeviceManaged);
-        mOwners.writeDeviceOwner();
-        mPolicyCache.setDeviceManaged(isDeviceManaged);
     }
 
     /**
@@ -22867,7 +22856,8 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
             // provisioning-related data instead of ActiveAdmin.
             enableAndSetActiveAdmin(UserHandle.USER_SYSTEM, UserHandle.USER_SYSTEM, deviceAdmin);
 
-            setDeviceManagedLocked(true);
+            mOwners.setDeviceManaged(true);
+            mOwners.writeDeviceOwner();
 
             onProvisionMultiUserDeviceCompleted(provisioningParams);
             // TODO(b/390162247): This is only used by ManagedProvisioning app

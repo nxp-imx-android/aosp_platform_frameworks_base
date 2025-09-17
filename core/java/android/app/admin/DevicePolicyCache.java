@@ -80,11 +80,6 @@ public abstract class DevicePolicyCache {
     public abstract Map<String, String> getLauncherShortcutOverrides();
 
     /**
-     * Returns whether the device is managed.
-     */
-    public abstract boolean isDeviceManaged();
-
-    /**
      * Empty implementation.
      */
     private static class EmptyDevicePolicyCache extends DevicePolicyCache {
@@ -117,10 +112,6 @@ public abstract class DevicePolicyCache {
         @Override
         public Map<String, String>  getLauncherShortcutOverrides() {
             return Collections.EMPTY_MAP;
-        }
-        @Override
-        public boolean isDeviceManaged() {
-            return false;
         }
     }
 }
