@@ -29,6 +29,12 @@ public interface SelectionToolbarRenderCallback {
      * The selection toolbar is shown.
      */
     void onShown(WidgetInfo widgetInfo);
+
+    /**
+     * The selection toolbar is not shown.
+     */
+    void onInvisible();
+
     /**
      * The selection toolbar has changed.
      */

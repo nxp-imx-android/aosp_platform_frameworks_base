@@ -17,6 +17,7 @@
 package android.service.selectiontoolbar;
 
 import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
 import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
 import android.animation.ValueAnimator;
@@ -114,8 +115,8 @@ public final class RemoteSelectionToolbar {
 
     /* Animations. */
     private final AnimatorSet mShowAnimation;
-    private final AnimatorSet mDismissAnimation;
-    private final AnimatorSet mHideAnimation;
+    private final AnimatorSet mDelayedHideAnimation;
+    private final AnimatorSet mImmediateHideAnimation;
     private final AnimationSet mOpenOverflowAnimation;
     private final AnimationSet mCloseOverflowAnimation;
     private final Animation.AnimationListener mOverflowAnimationListener;
@@ -240,14 +241,37 @@ public final class RemoteSelectionToolbar {
             }
         });
         mShowAnimation = createEnterAnimation(mContentContainer);
-        mDismissAnimation = createExitAnimation(
+        mDelayedHideAnimation = createExitAnimation(
                 mContentContainer,
                 150,  // startDelay
-                null);
-        mHideAnimation = createExitAnimation(
+                new AnimatorListenerAdapter() {
+                    private boolean mCanceled;
+
+                    @Override
+                    public void onAnimationCancel(Animator animation) {
+                        mCanceled = true;
+                    }
+
+                    @Override
+                    public void onAnimationEnd(Animator animation) {
+                        if (mCanceled) {
+                            mCanceled = false;
+                            return;
+                        }
+                        releaseSurfaceControlViewHost();
+                        mCallbackWrapper.onInvisible();
+                    }
+                });
+        mImmediateHideAnimation = createExitAnimation(
                 mContentContainer,
                 0,  // startDelay
-                null); // TODO(b/215497659): should handle hide after animation
+                new AnimatorListenerAdapter() {
+                    @Override
+                    public void onAnimationEnd(Animator animation) {
+                        releaseSurfaceControlViewHost();
+                        mCallbackWrapper.onInvisible();
+                    }
+                });
         mMenuItemButtonOnClickListener = v -> {
             // Post the callback to fg thread because the onPasteAction() callback
             // needs to be synchronous but it shouldn't block the main thread.
@@ -302,6 +326,7 @@ public final class RemoteSelectionToolbar {
     }
 
     private void releaseSurfaceControlViewHost() {
+        mContentContainer.removeAllViews();
         if (mSurfaceControlViewHost != null) {
             // If hiding has finished before dismissing there will not be a SCVH to release at this
             // point.
@@ -368,9 +393,11 @@ public final class RemoteSelectionToolbar {
         if (mState == TOOLBAR_STATE_DISMISSED) {
             return;
         }
-        releaseSurfaceControlViewHost();
-        mHideAnimation.cancel();
-        mDismissAnimation.start();
+
+        if (!mImmediateHideAnimation.isStarted()) {
+            mDelayedHideAnimation.start();
+        }
+        mContentHolder.setContentRectEmpty();
         mState = TOOLBAR_STATE_DISMISSED;
     }
 
@@ -382,8 +409,9 @@ public final class RemoteSelectionToolbar {
         if (!isShowing()) {
             return;
         }
-        releaseSurfaceControlViewHost();
-        mHideAnimation.start();
+        mDelayedHideAnimation.cancel();
+        mImmediateHideAnimation.start();
+        mContentHolder.setContentRectEmpty();
         mState = TOOLBAR_STATE_HIDDEN;
     }
 
@@ -480,8 +508,8 @@ public final class RemoteSelectionToolbar {
     }
 
     private void cancelDismissAndHideAnimations() {
-        mDismissAnimation.cancel();
-        mHideAnimation.cancel();
+        mDelayedHideAnimation.cancel();
+        mImmediateHideAnimation.cancel();
     }
 
     private void cancelOverflowAnimations() {

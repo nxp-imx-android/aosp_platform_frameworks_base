@@ -153,6 +153,7 @@ public final class RemoteFloatingToolbarPopup implements FloatingToolbarPopup {
             return;
         }
         boolean isLayoutRequired = !isDuplicateRequest || mWidthChanged;
+        mWidthChanged = false;
 
         Rect screenViewPort = new Rect();
         mParent.getWindowVisibleDisplayFrame(screenViewPort);
@@ -210,7 +211,6 @@ public final class RemoteFloatingToolbarPopup implements FloatingToolbarPopup {
                     "RemoteFloatingToolbarPopup.dismiss().");
         }
         mSelectionToolbarManager.dismissToolbar();
-        resetStateAndDismissPopupWindow();
         mState = TOOLBAR_STATE_DISMISSED;
     }
 
@@ -229,12 +229,7 @@ public final class RemoteFloatingToolbarPopup implements FloatingToolbarPopup {
                     "RemoteFloatingToolbarPopup.hide().");
         }
         mSelectionToolbarManager.hideToolbar();
-        dismissToolbar();
         mState = TOOLBAR_STATE_HIDDEN;
-    }
-
-    private void dismissToolbar() {
-        mPopupWindow.dismiss();
     }
 
     @UiThread
@@ -385,16 +380,6 @@ public final class RemoteFloatingToolbarPopup implements FloatingToolbarPopup {
         return popupWindow;
     }
 
-    private void resetStateAndDismissPopupWindow() {
-        mMenuItems = null;
-        mMenuItemClickListener = null;
-        mSuggestedWidth = 0;
-        mWidthChanged = true;
-        resetCoords();
-        mContentRect.setEmpty();
-        dismissToolbar();
-    }
-
     private void resetCoords() {
         mCoordsOnScreen[0] = 0;
         mCoordsOnScreen[1] = 0;
@@ -429,6 +414,18 @@ public final class RemoteFloatingToolbarPopup implements FloatingToolbarPopup {
             mPopupWindow.showAtLocation(mParent, Gravity.NO_GRAVITY, coords.x, coords.y);
         });
     }
+
+    private void onInvisible() {
+        runOnUiThread(() -> {
+            if (DEBUG) {
+                Log.v(FloatingToolbar.FLOATING_TOOLBAR_TAG,
+                        "onInvisible callback: The widget is no longer shown.");
+            }
+            mWidthChanged = true;
+            mPopupWindow.dismiss();
+        });
+    }
+
 
     private void onWidgetUpdated(WidgetInfo info) {
         runOnUiThread(() -> {
@@ -491,6 +488,21 @@ public final class RemoteFloatingToolbarPopup implements FloatingToolbarPopup {
             } else {
                 Log.w(FloatingToolbar.FLOATING_TOOLBAR_TAG,
                         "Lost remoteFloatingToolbarPopup reference for onShown.");
+            }
+        }
+
+        @Override
+        public void onInvisible() {
+            if (DEBUG) {
+                Log.v(FloatingToolbar.FLOATING_TOOLBAR_TAG,
+                        "SelectionToolbarCallbackImpl onInvisible.");
+            }
+            final RemoteFloatingToolbarPopup remoteFloatingToolbarPopup = mRemotePopup.get();
+            if (remoteFloatingToolbarPopup != null) {
+                remoteFloatingToolbarPopup.onInvisible();
+            } else {
+                Log.w(FloatingToolbar.FLOATING_TOOLBAR_TAG,
+                        "Lost remoteFloatingToolbarPopup reference for onInvisible.");
             }
         }
 

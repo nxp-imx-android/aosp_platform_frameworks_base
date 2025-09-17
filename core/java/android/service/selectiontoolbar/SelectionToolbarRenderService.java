@@ -230,6 +230,15 @@ public abstract class SelectionToolbarRenderService extends Service {
         }
 
         @Override
+        public void onInvisible() {
+            try {
+                mRemoteCallback.onInvisible();
+            } catch (RemoteException e) {
+                // no-op
+            }
+        }
+
+        @Override
         public void onWidgetUpdated(WidgetInfo widgetInfo) {
             try {
                 mRemoteCallback.onWidgetUpdated(widgetInfo);
