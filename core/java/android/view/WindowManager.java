@@ -4177,6 +4177,9 @@ public interface WindowManager extends ViewManager {
          * <p>
          * This must be one of the supported modes obtained for the display(s) the window is on.
          * A value of {@code 0} means no preference.
+         * <p>
+         * The display resolution part of the mode requested by apps is treated as a
+         * preference and may be ignored by the system based on device capabilities.
          *
          * @see Display#getSupportedModes()
          * @see Display.Mode#getModeId()
