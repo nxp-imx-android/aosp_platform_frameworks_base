@@ -45750,6 +45750,8 @@ package android.telephony {
     field public static final String KEY_SATELLITE_ROAMING_SCREEN_OFF_INACTIVITY_TIMEOUT_SEC_INT = "satellite_roaming_screen_off_inactivity_timeout_sec_int";
     field @FlaggedApi("com.android.internal.telephony.flags.satellite_system_apis") public static final String KEY_SATELLITE_ROAMING_TURN_OFF_SESSION_FOR_EMERGENCY_CALL_BOOL = "satellite_roaming_turn_off_session_for_emergency_call_bool";
     field @FlaggedApi("com.android.internal.telephony.flags.satellite_system_apis") public static final String KEY_SATELLITE_SOS_MAX_DATAGRAM_SIZE_BYTES_INT = "satellite_sos_max_datagram_size_bytes_int";
+    field @FlaggedApi("com.android.internal.telephony.flags.satellite_26q2_apis") public static final String KEY_SATELLITE_SUPPORTED_DISASTER_PLMN_STRING_ARRAY = "satellite_supported_disaster_plmn_string_array";
+    field @FlaggedApi("com.android.internal.telephony.flags.satellite_26q2_apis") public static final String KEY_SATELLITE_SUPPORTED_EMERGENCY_PLMN_STRING_ARRAY = "satellite_supported_emergency_plmn_string_array";
     field @FlaggedApi("com.android.internal.telephony.flags.satellite_system_apis") public static final String KEY_SATELLITE_SUPPORTED_MSG_APPS_STRING_ARRAY = "satellite_supported_msg_apps_string_array";
     field public static final String KEY_SHOW_4G_FOR_3G_DATA_ICON_BOOL = "show_4g_for_3g_data_icon_bool";
     field public static final String KEY_SHOW_4G_FOR_LTE_DATA_ICON_BOOL = "show_4g_for_lte_data_icon_bool";
@@ -47065,6 +47067,7 @@ package android.telephony {
     field public static final int NR_STATE_RESTRICTED = 1; // 0x1
     field public static final int SERVICE_TYPE_DATA = 2; // 0x2
     field public static final int SERVICE_TYPE_EMERGENCY = 5; // 0x5
+    field @FlaggedApi("com.android.internal.telephony.flags.satellite_26q2_apis") public static final int SERVICE_TYPE_EMERGENCY_SMS = 7; // 0x7
     field public static final int SERVICE_TYPE_MMS = 6; // 0x6
     field public static final int SERVICE_TYPE_SMS = 3; // 0x3
     field public static final int SERVICE_TYPE_UNKNOWN = 0; // 0x0
