@@ -206,6 +206,7 @@ import static com.android.server.wm.ActivityTaskManagerService.RELAUNCH_REASON_N
 import static com.android.server.wm.ActivityTaskManagerService.RELAUNCH_REASON_WINDOWING_MODE_RESIZE;
 import static com.android.server.wm.ActivityTaskManagerService.getInputDispatchingTimeoutMillisLocked;
 import static com.android.server.wm.ActivityTaskManagerService.isPip2ExperimentEnabled;
+import static com.android.server.wm.AppCompatSandboxingPolicy.ConfigOverrideHint;
 import static com.android.server.wm.StartingData.AFTER_TRANSACTION_COPY_TO_CLIENT;
 import static com.android.server.wm.StartingData.AFTER_TRANSACTION_IDLE;
 import static com.android.server.wm.StartingData.AFTER_TRANSACTION_REMOVE_DIRECTLY;
@@ -603,7 +604,7 @@ final class ActivityRecord extends WindowToken {
     private SizeConfigurationBuckets mSizeConfigurations;
 
     @VisibleForTesting
-    final TaskFragment.ConfigOverrideHint mResolveConfigHint;
+    final ConfigOverrideHint mResolveConfigHint;
 
     final boolean mOptOutEdgeToEdge;
 
@@ -1878,7 +1879,7 @@ final class ActivityRecord extends WindowToken {
         // Don't move below setOrientation(info.screenOrientation) since it triggers
         // getOverrideOrientation that requires having mAppCompatController initialised.
         mAppCompatController = new AppCompatController(mWmService, this);
-        mResolveConfigHint = new TaskFragment.ConfigOverrideHint();
+        mResolveConfigHint = new ConfigOverrideHint();
         // When the stable configuration is the default behavior, override for the legacy apps
         // without forward override flag.
         mResolveConfigHint.mUseOverrideInsetsForConfig =

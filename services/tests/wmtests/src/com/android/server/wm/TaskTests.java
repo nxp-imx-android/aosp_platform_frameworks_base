@@ -46,6 +46,7 @@ import static com.android.dx.mockito.inline.extended.ExtendedMockito.times;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.verify;
 import static com.android.server.policy.WindowManagerPolicy.USER_ROTATION_FREE;
 import static com.android.server.wm.ActivityRecord.State.RESUMED;
+import static com.android.server.wm.AppCompatSandboxingPolicy.ConfigOverrideHint;
 import static com.android.server.wm.Task.FLAG_FORCE_HIDDEN_FOR_TASK_ORG;
 import static com.android.server.wm.TaskFragment.EMBEDDED_DIM_AREA_PARENT_TASK;
 import static com.android.server.wm.TaskFragment.TASK_FRAGMENT_VISIBILITY_VISIBLE_BEHIND_TRANSLUCENT;
@@ -963,7 +964,7 @@ public class TaskTests extends WindowTestsBase {
                 new AppCompatDisplayInsets(
                         display, activity, /* letterboxedContainerBounds */ null,
                         /* useOverrideInsets */ false);
-        final TaskFragment.ConfigOverrideHint overrideHint = new TaskFragment.ConfigOverrideHint();
+        final ConfigOverrideHint overrideHint = activity.mResolveConfigHint;
         overrideHint.mTmpCompatInsets = compatInsets;
         task.computeConfigResourceOverrides(inOutConfig, parentConfig, overrideHint);
 
