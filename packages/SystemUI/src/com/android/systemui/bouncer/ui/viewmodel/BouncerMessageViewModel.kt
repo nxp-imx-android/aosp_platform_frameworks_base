@@ -17,6 +17,7 @@
 package com.android.systemui.bouncer.ui.viewmodel
 
 import android.content.Context
+import android.security.Flags.lockscreenTimeoutShortlink
 import android.security.Flags.secureLockDevice
 import android.util.PluralsMessageFormatter
 import com.android.app.tracing.coroutines.launchTraced as launch
@@ -440,7 +441,18 @@ constructor(
                             BouncerMessageStrings.primaryAuthLockedOut(authMethod)
                         lockoutMessage.value =
                             if (remainingSeconds > 0) {
-
+                                val secondaryText =
+                                    if (lockscreenTimeoutShortlink()) {
+                                        val shortlink =
+                                            com.android.internal.R.string
+                                                .config_lockscreenLockoutShortlink
+                                                .toResString()
+                                        authLockedOutMsg.secondaryMessage.toPluralString(
+                                            mutableMapOf<String, Any>(Pair("shortlink", shortlink))
+                                        )
+                                    } else {
+                                        authLockedOutMsg.secondaryMessage.toResString()
+                                    }
                                 MessageViewModel(
                                     text =
                                         kg_too_many_failed_attempts_countdown.toPluralString(
@@ -448,7 +460,7 @@ constructor(
                                                 Pair("count", remainingSeconds)
                                             )
                                         ),
-                                    secondaryText = authLockedOutMsg.secondaryMessage.toResString(),
+                                    secondaryText,
                                     isUpdateAnimated = false,
                                 )
                             } else {

@@ -115,6 +115,13 @@ flag {
 }
 
 flag {
+    name: "lockscreen_timeout_shortlink"
+    namespace: "security"
+    description: "Show a shortlink when there is a non-zero timeout"
+    bug: "445533486"
+}
+
+flag {
     name: "protect_device_config_flags"
     namespace: "psap_ai"
     description: "Feature flag to limit adb shell to allowlisted flags"
