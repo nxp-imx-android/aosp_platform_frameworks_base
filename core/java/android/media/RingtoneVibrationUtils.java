@@ -29,9 +29,9 @@ import android.net.Uri;
  */
 @FlaggedApi(Flags.FLAG_RINGTONE_VIBRATION_UTILS_API)
 @SystemApi(client = MODULE_LIBRARIES)
-public final class VibrationUtils {
+public final class RingtoneVibrationUtils {
     // Not instantiable.
-    private VibrationUtils() {}
+    private RingtoneVibrationUtils() {}
 
     /**
      * The vibration uri key parameter used to query its existence from the ringtone uri
