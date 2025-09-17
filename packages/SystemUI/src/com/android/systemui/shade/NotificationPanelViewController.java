@@ -137,7 +137,6 @@ import com.android.systemui.plugins.statusbar.StatusBarStateController;
 import com.android.systemui.plugins.statusbar.StatusBarStateController.StateListener;
 import com.android.systemui.power.domain.interactor.PowerInteractor;
 import com.android.systemui.power.shared.model.WakefulnessModel;
-import com.android.systemui.qs.flags.QSComposeFragment;
 import com.android.systemui.res.R;
 import com.android.systemui.scene.shared.flag.SceneContainerFlag;
 import com.android.systemui.settings.brightness.data.repository.BrightnessMirrorShowingRepository;
@@ -936,12 +935,10 @@ public final class NotificationPanelViewController implements
                     }
                 },
                 mMainDispatcher);
-        if (QSComposeFragment.isEnabled()) {
-            collectFlow(mView,
-                    mBrightnessMirrorShowingRepository.isShowing(),
-                    this::onBrightnessMirrorShowingChanged
-            );
-        }
+        collectFlow(mView,
+                mBrightnessMirrorShowingRepository.isShowing(),
+                this::onBrightnessMirrorShowingChanged
+        );
     }
 
     private void onBrightnessMirrorShowingChanged(boolean isShowing) {

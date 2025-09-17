@@ -19,7 +19,6 @@ package com.android.systemui.statusbar.connectivity
 import android.os.UserManager
 import com.android.systemui.bluetooth.qsdialog.dagger.AudioSharingModule
 import com.android.systemui.qs.QsEventLogger
-import com.android.systemui.qs.flags.QsInCompose
 import com.android.systemui.qs.pipeline.shared.TileSpec
 import com.android.systemui.qs.shared.model.TileCategory
 import com.android.systemui.qs.tileimpl.QSTileImpl
@@ -236,12 +235,7 @@ interface ConnectivityModule {
                 tileSpec = TileSpec.create(INTERNET_TILE_SPEC),
                 uiConfig =
                     QSTileUIConfig.Resource(
-                        iconRes =
-                            if (QsInCompose.isEnabled) {
-                                com.android.settingslib.R.drawable.ic_wifi_3
-                            } else {
-                                R.drawable.ic_qs_no_internet_available
-                            },
+                        iconRes = com.android.settingslib.R.drawable.ic_wifi_3,
                         labelRes = R.string.quick_settings_internet_label,
                     ),
                 instanceId = uiEventLogger.getNewInstanceId(),

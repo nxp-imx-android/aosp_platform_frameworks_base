@@ -76,7 +76,6 @@ import com.android.systemui.flags.FakeFeatureFlags;
 import com.android.systemui.flags.FeatureFlags;
 import com.android.systemui.flags.Flags;
 import com.android.systemui.kosmos.KosmosJavaAdapter;
-import com.android.systemui.qs.flags.QSComposeFragment;
 import com.android.systemui.res.R;
 import com.android.systemui.shade.QSHeaderBoundsProvider;
 import com.android.systemui.shade.ShadeController;
@@ -824,48 +823,8 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
     }
 
     @Test
-    @DisableFlags(QSComposeFragment.FLAG_NAME)
     @DisableSceneContainer
     public void testInsideQSHeader_noOffset() {
-        ViewGroup qsHeader = mock(ViewGroup.class);
-        Rect boundsOnScreen = new Rect(0, 0, 1000, 1000);
-        mockBoundsOnScreen(qsHeader, boundsOnScreen);
-
-        mStackScroller.setQsHeader(qsHeader);
-        mStackScroller.setLeftTopRightBottom(0, 0, 2000, 2000);
-
-        MotionEvent event1 = transformEventForView(createMotionEvent(100f, 100f), mStackScroller);
-        assertTrue(mStackScroller.isInsideQsHeader(event1));
-
-        MotionEvent event2 = transformEventForView(createMotionEvent(1100f, 100f), mStackScroller);
-        assertFalse(mStackScroller.isInsideQsHeader(event2));
-    }
-
-    @Test
-    @DisableFlags(QSComposeFragment.FLAG_NAME)
-    @DisableSceneContainer
-    public void testInsideQSHeader_Offset() {
-        ViewGroup qsHeader = mock(ViewGroup.class);
-        Rect boundsOnScreen = new Rect(100, 100, 1000, 1000);
-        mockBoundsOnScreen(qsHeader, boundsOnScreen);
-
-        mStackScroller.setQsHeader(qsHeader);
-        mStackScroller.setLeftTopRightBottom(200, 200, 2000, 2000);
-
-        MotionEvent event1 = transformEventForView(createMotionEvent(50f, 50f), mStackScroller);
-        assertFalse(mStackScroller.isInsideQsHeader(event1));
-
-        MotionEvent event2 = transformEventForView(createMotionEvent(150f, 150f), mStackScroller);
-        assertFalse(mStackScroller.isInsideQsHeader(event2));
-
-        MotionEvent event3 = transformEventForView(createMotionEvent(250f, 250f), mStackScroller);
-        assertTrue(mStackScroller.isInsideQsHeader(event3));
-    }
-
-    @Test
-    @EnableFlags(QSComposeFragment.FLAG_NAME)
-    @DisableSceneContainer
-    public void testInsideQSHeader_noOffset_qsCompose() {
         ViewGroup qsHeader = mock(ViewGroup.class);
         Rect boundsOnScreen = new Rect(0, 0, 1000, 1000);
         mockBoundsOnScreen(qsHeader, boundsOnScreen);
@@ -890,9 +849,8 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
     }
 
     @Test
-    @EnableFlags(QSComposeFragment.FLAG_NAME)
     @DisableSceneContainer
-    public void testInsideQSHeader_Offset_qsCompose() {
+    public void testInsideQSHeader_Offset() {
         ViewGroup qsHeader = mock(ViewGroup.class);
         Rect boundsOnScreen = new Rect(100, 100, 1000, 1000);
         mockBoundsOnScreen(qsHeader, boundsOnScreen);

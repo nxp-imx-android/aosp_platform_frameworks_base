@@ -95,7 +95,6 @@ import com.android.systemui.Dumpable;
 import com.android.systemui.ExpandHelper;
 import com.android.systemui.flags.FeatureFlags;
 import com.android.systemui.flags.Flags;
-import com.android.systemui.qs.flags.QSComposeFragment;
 import com.android.systemui.res.R;
 import com.android.systemui.scene.shared.flag.SceneContainerFlag;
 import com.android.systemui.shade.QSHeaderBoundsProvider;
@@ -379,7 +378,6 @@ public class NotificationStackScrollLayout
     private final ArrayList<ExpandableView> mTmpSortedChildren = new ArrayList<>();
     private final ArrayList<ExpandableView> mTmpNonOverlapChildren = new ArrayList<>();
     private final ArrayDeque<ExpandableView> mTmpStack = new ArrayDeque<>();
-    protected ViewGroup mQsHeader;
 
     @Nullable
     private QSHeaderBoundsProvider mQSHeaderBoundsProvider;
@@ -1235,18 +1233,10 @@ public class NotificationStackScrollLayout
             // Give The Algorithm information regarding the QS height so it can layout notifications
             // properly. Needed for some devices that grows notifications down-to-top
             int height;
-            if (QSComposeFragment.isEnabled()) {
-                if (mQSHeaderBoundsProvider != null) {
-                    height = mQSHeaderBoundsProvider.getHeightProvider().invoke();
-                } else {
-                    height = 0;
-                }
+            if (mQSHeaderBoundsProvider != null) {
+                height = mQSHeaderBoundsProvider.getHeightProvider().invoke();
             } else {
-                if (mQsHeader != null) {
-                    height = mQsHeader.getHeight();
-                } else {
-                    height = 0;
-                }
+                height = 0;
             }
             mStackScrollAlgorithm.updateQSFrameTop(height);
         }
@@ -2222,14 +2212,8 @@ public class NotificationStackScrollLayout
         return Math.min(mMaxLayoutHeight, mCurrentStackHeight);
     }
 
-    public void setQsHeader(ViewGroup qsHeader) {
-        QSComposeFragment.assertInLegacyMode();
-        mQsHeader = qsHeader;
-    }
-
     public void setQsHeaderBoundsProvider(QSHeaderBoundsProvider qsHeaderBoundsProvider) {
         SceneContainerFlag.assertInLegacyMode();
-        QSComposeFragment.isUnexpectedlyInLegacyMode();
         mQSHeaderBoundsProvider = qsHeaderBoundsProvider;
     }
 
@@ -4379,20 +4363,11 @@ public class NotificationStackScrollLayout
 
     protected boolean isInsideQsHeader(MotionEvent ev) {
         SceneContainerFlag.assertInLegacyMode();
-        if (QSComposeFragment.isEnabled()) {
-            if (mQSHeaderBoundsProvider == null) {
-                return false;
-            } else {
-                mQSHeaderBoundsProvider.getBoundsOnScreenProvider().invoke(mQsHeaderBound);
-            }
+        if (mQSHeaderBoundsProvider == null) {
+            return false;
         } else {
-            if (mQsHeader == null) {
-                return false;
-            } else {
-                mQsHeader.getBoundsOnScreen(mQsHeaderBound);
-            }
+            mQSHeaderBoundsProvider.getBoundsOnScreenProvider().invoke(mQsHeaderBound);
         }
-
         /**
          * One-handed mode defines a feature FEATURE_ONE_HANDED of DisplayArea {@link DisplayArea}
          * that will translate down the Y-coordinate whole window screen type except for
@@ -4402,9 +4377,7 @@ public class NotificationStackScrollLayout
          * of DisplayArea into relative coordinates for all windows, we need to correct the
          * QS Head bounds here.
          */
-        int left =
-                QSComposeFragment.isEnabled() ? mQSHeaderBoundsProvider.getLeftProvider().invoke()
-                        : mQsHeader.getLeft();
+        int left = mQSHeaderBoundsProvider.getLeftProvider().invoke();
         final int xOffset = Math.round(ev.getRawX() - ev.getX() + left);
         final int yOffset = Math.round(ev.getRawY() - ev.getY());
         mQsHeaderBound.offsetTo(xOffset, yOffset);

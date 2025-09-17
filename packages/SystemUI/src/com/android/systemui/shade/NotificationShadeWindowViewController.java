@@ -55,7 +55,6 @@ import com.android.systemui.keyguard.domain.interactor.KeyguardTransitionInterac
 import com.android.systemui.keyguard.shared.model.Edge;
 import com.android.systemui.keyguard.shared.model.TransitionState;
 import com.android.systemui.keyguard.shared.model.TransitionStep;
-import com.android.systemui.qs.flags.QSComposeFragment;
 import com.android.systemui.res.R;
 import com.android.systemui.scene.shared.flag.SceneContainerFlag;
 import com.android.systemui.scene.ui.view.WindowRootViewKeyEventHandler;
@@ -279,11 +278,9 @@ public class NotificationShadeWindowViewController implements Dumpable {
                 mView,
                 isLaunchAnimationRunning,
                 this::setExpandAnimationRunning);
-        if (QSComposeFragment.isEnabled()) {
-            collectFlow(mView,
-                    brightnessMirrorShowingInteractor.isShowing(),
-                    this::setBrightnessMirrorShowingForDepth);
-        }
+        collectFlow(mView,
+                brightnessMirrorShowingInteractor.isShowing(),
+                this::setBrightnessMirrorShowingForDepth);
 
         var keyguardUnfoldTransition = unfoldComponent.map(
                 SysUIUnfoldComponent::getKeyguardUnfoldTransition);

@@ -76,7 +76,6 @@ import android.os.Looper;
 import android.os.PowerManager;
 import android.os.UserHandle;
 import android.platform.test.annotations.DisableFlags;
-import android.platform.test.annotations.EnableFlags;
 import android.service.dreams.IDreamManager;
 import android.support.test.metricshelper.MetricsAsserts;
 import android.testing.TestableLooper;
@@ -135,7 +134,6 @@ import com.android.systemui.plugins.PluginDependencyProvider;
 import com.android.systemui.plugins.PluginManager;
 import com.android.systemui.plugins.statusbar.StatusBarStateController;
 import com.android.systemui.power.domain.interactor.PowerInteractor;
-import com.android.systemui.qs.flags.QSComposeFragment;
 import com.android.systemui.res.R;
 import com.android.systemui.scene.domain.interactor.WindowRootViewVisibilityInteractor;
 import com.android.systemui.scene.shared.flag.SceneContainerFlag;
@@ -1193,8 +1191,7 @@ public class CentralSurfacesImplTest extends SysuiTestCase {
 
     @Test
     @DisableSceneContainer // Scrims updated elsewhere when the scene framework is enabled.
-    @EnableFlags(QSComposeFragment.FLAG_NAME)
-    public void brightnesShowingChanged_qsUiRefactorFlagEnabled_ScrimControllerNotified() {
+    public void brightnesShowingChanged_ScrimControllerNotified() {
         mBrightnessMirrorShowingRepository.setMirrorShowing(true);
         mTestScope.getTestScheduler().runCurrent();
         verify(mScrimController, atLeastOnce()).legacyTransitionTo(ScrimState.BRIGHTNESS_MIRROR);
@@ -1206,17 +1203,6 @@ public class CentralSurfacesImplTest extends SysuiTestCase {
         // The default is to call the one with the callback argument
         verify(mScrimController, atLeastOnce()).legacyTransitionTo(captor.capture(), any());
         assertThat(captor.getValue()).isNotEqualTo(ScrimState.BRIGHTNESS_MIRROR);
-    }
-
-    @Test
-    @DisableSceneContainer // Scrims updated elsewhere when the scene framework is enabled.
-    @DisableFlags(QSComposeFragment.FLAG_NAME)
-    public void brightnesShowingChanged_flagsDisabled_ScrimControllerNotified() {
-        mBrightnessMirrorShowingRepository.setMirrorShowing(true);
-        mTestScope.getTestScheduler().runCurrent();
-        verify(mScrimController, never()).legacyTransitionTo(ScrimState.BRIGHTNESS_MIRROR);
-        verify(mScrimController, never())
-                .legacyTransitionTo(eq(ScrimState.BRIGHTNESS_MIRROR), any());
     }
 
     @Test
