@@ -150,14 +150,14 @@ abstract class Processor<T : Annotation>(protected val processingEnv: Processing
 
     private fun loadPolicyDefinition(
         element: Element, definition: PolicyDefinition, typeSpecificMetadata: TypeSpecificPolicyMetadata
-    ): PolicyMetadata {
+    ): PolicyMetadata? {
         val enclosingType = (element.enclosingElement as TypeElement).getQualifiedName()
 
         val name = "$enclosingType.$element"
         val type = policyType(element).toString()
         val documentation = processingEnv.elementUtils.getDocComment(element) ?: ""
         val allowedScopes = convertScopes(element, definition.allowedScopes.toList())
-        val affectedResource = definition.affectedResource
+        val affectedResource = convertResourceType(element, definition.affectedResource) ?: return null
 
         if (documentation.trim().isEmpty()) {
             printError(element, "Missing JavaDoc")
@@ -207,4 +207,20 @@ abstract class Processor<T : Annotation>(protected val processingEnv: Processing
                 }
         }
     }
+    fun convertResourceType(element: Element, affectedResource: Int): PolicyMetadata.ResourceType? =
+        PolicyMetadata.ResourceType.forNumber(affectedResource)
+            ?.let {
+                if (it == PolicyMetadata.ResourceType.RESOURCE_TYPE_UNSPECIFIED) {
+                    null
+                } else {
+                    it
+                }
+            } ?: run {
+                printError(
+                    element,
+                    "affectedResource is set to an unknown value $affectedResource, only use RESOURCE_* constants."
+                )
+
+                null
+            }
 }
