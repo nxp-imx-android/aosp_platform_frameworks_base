@@ -62,6 +62,7 @@ java_library {
     name: "androidx.window.extensions",
     srcs: [
         "src/androidx/window/extensions/**/*.java",
+        "src/androidx/window/extensions/**/*.aidl",
         "src/androidx/window/util/**/*.java",
         "src/androidx/window/common/**/*.java",
     ],
