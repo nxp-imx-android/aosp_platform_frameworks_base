@@ -233,7 +233,7 @@ public class NotificationTopLineView extends ViewGroup {
                 // If this is the first child, don't include the start margin. The children will
                 // generally have a 2dp start margin by default to space them out, but if the child
                 // is first we don't need that.
-                if (!android.app.Flags.notificationTopLineMarginFix() || !isFirstVisibleChild) {
+                if (!isFirstVisibleChild) {
                     start += params.getMarginStart();
                 }
                 int end = start + child.getMeasuredWidth();
