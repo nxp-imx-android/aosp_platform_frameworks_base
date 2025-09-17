@@ -291,7 +291,6 @@ fun ContentScope.SnoozeableHeadsUpNotificationSpace(
                                 // extend bounds to the screen top to avoid cutting off HUN
                                 // transitions
                                 top = 0f
-                                bottom += headsUpInset
                             }
                         )
                     }
