@@ -56,8 +56,6 @@ import com.android.systemui.settings.FakeDisplayTracker
 import com.android.systemui.settings.UserTracker
 import com.android.systemui.shade.ShadeViewController
 import com.android.systemui.shade.display.StatusBarTouchShadeDisplayPolicy
-import com.android.systemui.shade.domain.interactor.shadeInteractor
-import com.android.systemui.shade.domain.interactor.shadeModeInteractor
 import com.android.systemui.shared.recents.ILauncherProxy
 import com.android.systemui.shared.system.QuickStepContract.SYSUI_STATE_NAVIGATION_BAR_DISABLED
 import com.android.systemui.shared.system.QuickStepContract.SYSUI_STATE_WAKEFULNESS_MASK
@@ -100,6 +98,7 @@ import org.mockito.Mockito.times
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
 import org.mockito.MockitoAnnotations
+import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.argThat
 import org.mockito.kotlin.doNothing
 import org.mockito.kotlin.never
@@ -358,7 +357,7 @@ class LauncherProxyServiceTest : SysuiTestCase() {
                 .thenReturn(MutableStateFlow(shadeDisplayId))
 
             val event =
-                MotionEvent.obtain(500, 500, MotionEvent.ACTION_MOVE, 500f, 500f, 0).apply {
+                MotionEvent.obtain(500, 500, MotionEvent.ACTION_DOWN, 500f, 500f, 0).apply {
                     displayId = 0
                 }
 
@@ -392,9 +391,11 @@ class LauncherProxyServiceTest : SysuiTestCase() {
                 .thenReturn(MutableStateFlow(shadeDisplayId))
 
             val event =
-                MotionEvent.obtain(500, 500, MotionEvent.ACTION_MOVE, 500f, 500f, 0).apply {
+                MotionEvent.obtain(500, 500, MotionEvent.ACTION_DOWN, 500f, 500f, 0).apply {
                     displayId = 0
                 }
+
+            whenever(statusBarWinController.windowRootView).thenReturn(mock(ViewGroup::class.java))
 
             subject.mSysUiProxy.onStatusBarTouchEvent(event)
             verify(statusBarShadeDisplayPolicy)
@@ -418,9 +419,11 @@ class LauncherProxyServiceTest : SysuiTestCase() {
                     displayId = 0
                 }
 
+            whenever(statusBarWinController.windowRootView).thenReturn(mock(ViewGroup::class.java))
+
             subject.mSysUiProxy.onStatusBarTouchEvent(event)
 
-            verify(shadeViewController, never()).startExpandLatencyTracking()
+            verify(shadeViewController, never()).handleExternalTouch(anyOrNull())
         }
 
     @Test
@@ -436,6 +439,8 @@ class LauncherProxyServiceTest : SysuiTestCase() {
                 MotionEvent.obtain(500, 500, MotionEvent.ACTION_DOWN, 500f, 500f, 0).apply {
                     displayId = 0
                 }
+
+            whenever(statusBarWinController.windowRootView).thenReturn(mock(ViewGroup::class.java))
 
             subject.mSysUiProxy.onStatusBarTouchEvent(event)
             verify(statusBarShadeDisplayPolicy)
@@ -456,13 +461,19 @@ class LauncherProxyServiceTest : SysuiTestCase() {
                     displayId = shadeDisplayId
                 }
 
+            whenever(statusBarWinController.windowRootView).thenReturn(mock(ViewGroup::class.java))
+
             subject.mSysUiProxy.onStatusBarTouchEvent(event)
             verify(statusBarShadeDisplayPolicy)
                 .onStatusBarOrLauncherTouched(
                     argThat<MotionEvent> { displayId == shadeDisplayId },
                     anyInt(),
                 )
-            verify(shadeViewController).startExpandLatencyTracking()
+            verify(statusBarShadeDisplayPolicy)
+                .onStatusBarOrLauncherTouched(
+                    argThat<MotionEvent> { displayId == event.displayId },
+                    anyInt(),
+                )
         }
 
     private fun createLauncherProxyService(ctx: Context): LauncherProxyService {
@@ -479,8 +490,6 @@ class LauncherProxyServiceTest : SysuiTestCase() {
             statusBarWinController,
             kosmos.fakeSysUIStatePerDisplayRepository,
             { sceneInteractor },
-            { kosmos.shadeInteractor },
-            { kosmos.shadeModeInteractor },
             statusBarShadeDisplayPolicy,
             userTracker,
             userManager,
