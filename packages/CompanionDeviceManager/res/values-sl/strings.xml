@@ -32,8 +32,7 @@
     <string name="confirmation_title_glasses" msgid="8288346850537727333">"Želite aplikaciji &lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; dovoliti upravljanje naprave &lt;strong&gt;<xliff:g id="DEVICE_NAME">%2$s</xliff:g>&lt;/strong&gt;?"</string>
     <string name="profile_name_glasses" msgid="3506504967216601277">"naprava"</string>
     <string name="summary_glasses" msgid="5469208629679579157">"Ta aplikacija bo lahko dostopala do teh dovoljenj v napravi »<xliff:g id="DEVICE_TYPE">%1$s</xliff:g>«."</string>
-    <!-- no translation found for profile_name_medical (5617160509499466400) -->
-    <skip />
+    <string name="profile_name_medical" msgid="5617160509499466400">"medicinska naprava"</string>
     <string name="title_app_streaming" msgid="237666000400427614">"Ali aplikaciji &lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; dovolite pretočno predvajanje aplikacij in sistemskih funkcij med napravo <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> in napravo &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt;?"</string>
     <string name="summary_app_streaming" msgid="8346968726357732862">"Aplikaciji <xliff:g id="APP_NAME">%1$s</xliff:g> bodo odobrena ta dovoljenja:"</string>
     <string name="summary_app_streaming_legacy" msgid="8994180646987541606">"Aplikacija <xliff:g id="APP_NAME_0">%1$s</xliff:g> bo imela dostop do vsega, kar je prikazano ali se predvaja v vaši napravi <xliff:g id="DEVICE_TYPE">%2$s</xliff:g>, vključno z zvokom, fotografijami, podatki za plačilo, gesli in sporočili.&lt;br/&gt;&lt;br/&gt;Aplikacija <xliff:g id="APP_NAME_1">%1$s</xliff:g> bo lahko pretočno predvajala aplikacije v napravo <xliff:g id="DEVICE_NAME">%3$s</xliff:g>, dokler ne odstranite dostopa do tega dovoljenja."</string>
@@ -74,10 +73,8 @@
     <string name="permission_create_virtual_device" msgid="1102905050922460040">"Pretakanje podatkov v napravo <xliff:g id="DEVICE_TYPE">%1$s</xliff:g>"</string>
     <string name="permission_add_mirror_display" msgid="3743433250535606288">"Zrcaljenje zaslona"</string>
     <string name="permission_add_trusted_display" msgid="9052824856626276723">"Pretočno predvajanje aplikacij"</string>
-    <!-- no translation found for permission_schedule_exact_alarm (5680932535987512225) -->
-    <skip />
-    <!-- no translation found for permission_bypass_dnd (1241123166903040347) -->
-    <skip />
+    <string name="permission_schedule_exact_alarm" msgid="5680932535987512225">"Nastavljanje alarmov in opomnikov"</string>
+    <string name="permission_bypass_dnd" msgid="1241123166903040347">"Zaobidenje nastavitev načina Ne moti"</string>
     <string name="permission_phone_summary" msgid="8246321093970051702">"Opravljanje in upravljanje telefonskih klicev"</string>
     <string name="permission_call_logs_summary" msgid="7545243592757693321">"Branje in zapisovanje dnevnika klicev v telefonu"</string>
     <string name="permission_sms_summary" msgid="8499509535410068616">"Pošiljanje in ogled sporočil SMS"</string>

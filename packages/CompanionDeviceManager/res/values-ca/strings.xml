@@ -32,8 +32,7 @@
     <string name="confirmation_title_glasses" msgid="8288346850537727333">"Permet que &lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; gestioni &lt;strong&gt;<xliff:g id="DEVICE_NAME">%2$s</xliff:g>&lt;/strong&gt;"</string>
     <string name="profile_name_glasses" msgid="3506504967216601277">"dispositiu"</string>
     <string name="summary_glasses" msgid="5469208629679579157">"Aquesta aplicació podrà accedir a aquests permisos del <xliff:g id="DEVICE_TYPE">%1$s</xliff:g>"</string>
-    <!-- no translation found for profile_name_medical (5617160509499466400) -->
-    <skip />
+    <string name="profile_name_medical" msgid="5617160509499466400">"dispositiu mèdic"</string>
     <string name="title_app_streaming" msgid="237666000400427614">"Vols permetre que &lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; reprodueixi en continu aplicacions i funcions del sistema entre el dispositiu (<xliff:g id="DEVICE_TYPE">%2$s</xliff:g>) i &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt;?"</string>
     <string name="summary_app_streaming" msgid="8346968726357732862">"Es concediran els permisos següents a <xliff:g id="APP_NAME">%1$s</xliff:g>:"</string>
     <string name="summary_app_streaming_legacy" msgid="8994180646987541606">"<xliff:g id="APP_NAME_0">%1$s</xliff:g> podrà accedir a qualsevol cosa que sigui visible o que es reprodueixi al teu dispositiu (<xliff:g id="DEVICE_TYPE">%2$s</xliff:g>), inclosos àudios, fotos, informació de pagament, contrasenyes i missatges.&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME_1">%1$s</xliff:g> podrà reproduir en continu aplicacions al dispositiu <xliff:g id="DEVICE_NAME">%3$s</xliff:g> fins que suprimeixis l\'accés a aquest permís."</string>
@@ -74,10 +73,8 @@
     <string name="permission_create_virtual_device" msgid="1102905050922460040">"Reprodueix dades en continu al <xliff:g id="DEVICE_TYPE">%1$s</xliff:g>"</string>
     <string name="permission_add_mirror_display" msgid="3743433250535606288">"Duplica la pantalla"</string>
     <string name="permission_add_trusted_display" msgid="9052824856626276723">"Reprodueix apps en continu"</string>
-    <!-- no translation found for permission_schedule_exact_alarm (5680932535987512225) -->
-    <skip />
-    <!-- no translation found for permission_bypass_dnd (1241123166903040347) -->
-    <skip />
+    <string name="permission_schedule_exact_alarm" msgid="5680932535987512225">"Definir alarmes i recordatoris"</string>
+    <string name="permission_bypass_dnd" msgid="1241123166903040347">"Omet la config. de No molestis"</string>
     <string name="permission_phone_summary" msgid="8246321093970051702">"Fer i gestionar trucades telefòniques"</string>
     <string name="permission_call_logs_summary" msgid="7545243592757693321">"Llegir i escriure el registre de trucades del telèfon"</string>
     <string name="permission_sms_summary" msgid="8499509535410068616">"Enviar i llegir missatges SMS"</string>

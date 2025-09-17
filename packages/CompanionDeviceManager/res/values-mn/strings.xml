@@ -32,8 +32,7 @@
     <string name="confirmation_title_glasses" msgid="8288346850537727333">"&lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt;-д &lt;strong&gt;<xliff:g id="DEVICE_NAME">%2$s</xliff:g>&lt;/strong&gt;-г удирдахыг зөвшөөрөх үү?"</string>
     <string name="profile_name_glasses" msgid="3506504967216601277">"төхөөрөмж"</string>
     <string name="summary_glasses" msgid="5469208629679579157">"Энэ аппад таны <xliff:g id="DEVICE_TYPE">%1$s</xliff:g> дээрх эдгээр зөвшөөрөлд хандахыг зөвшөөрнө"</string>
-    <!-- no translation found for profile_name_medical (5617160509499466400) -->
-    <skip />
+    <string name="profile_name_medical" msgid="5617160509499466400">"эрүүл мэндийн төхөөрөмж"</string>
     <string name="title_app_streaming" msgid="237666000400427614">"&lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt;-д таны <xliff:g id="DEVICE_TYPE">%2$s</xliff:g>, &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt;-н хооронд апп, системийн онцлогийг дамжуулахыг зөвшөөрөх үү?"</string>
     <string name="summary_app_streaming" msgid="8346968726357732862">"<xliff:g id="APP_NAME">%1$s</xliff:g>-д дараах зөвшөөрлүүдийг олгоно:"</string>
     <string name="summary_app_streaming_legacy" msgid="8994180646987541606">"<xliff:g id="APP_NAME_0">%1$s</xliff:g> аудио, зураг, төлбөрийн мэдээлэл, нууц үг, мессеж зэрэг таны <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> дээр харагдаж эсвэл тоглуулж буй аливаа зүйлд хандах эрхтэй байх болно.&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME_1">%1$s</xliff:g> таныг энэ зөвшөөрөлд хандах эрхийг нь хасах хүртэл <xliff:g id="DEVICE_NAME">%3$s</xliff:g>-д апп дамжуулах боломжтой байх болно."</string>
@@ -74,10 +73,8 @@
     <string name="permission_create_virtual_device" msgid="1102905050922460040">"Өгөгдлийг өөрийн <xliff:g id="DEVICE_TYPE">%1$s</xliff:g>-д дамжуулах"</string>
     <string name="permission_add_mirror_display" msgid="3743433250535606288">"Таны дэлгэцийн тусгалыг үүсгэх"</string>
     <string name="permission_add_trusted_display" msgid="9052824856626276723">"Апп дамжуулах"</string>
-    <!-- no translation found for permission_schedule_exact_alarm (5680932535987512225) -->
-    <skip />
-    <!-- no translation found for permission_bypass_dnd (1241123166903040347) -->
-    <skip />
+    <string name="permission_schedule_exact_alarm" msgid="5680932535987512225">"Сэрүүлэг, сануулагч тохируулах"</string>
+    <string name="permission_bypass_dnd" msgid="1241123166903040347">"Бүү саад бол тохиргоог алгасах"</string>
     <string name="permission_phone_summary" msgid="8246321093970051702">"Утасны дуудлага хийх болон удирдах"</string>
     <string name="permission_call_logs_summary" msgid="7545243592757693321">"Утасны дуудлагын жагсаалтыг унших болон бичих"</string>
     <string name="permission_sms_summary" msgid="8499509535410068616">"SMS мессеж илгээх болон харах"</string>

@@ -32,8 +32,7 @@
     <string name="confirmation_title_glasses" msgid="8288346850537727333">"Engedélyezi, hogy a(z) &lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; kezelje a következő eszközt: &lt;strong&gt;<xliff:g id="DEVICE_NAME">%2$s</xliff:g>&lt;/strong&gt;?"</string>
     <string name="profile_name_glasses" msgid="3506504967216601277">"eszköz"</string>
     <string name="summary_glasses" msgid="5469208629679579157">"Az alkalmazás hozzáférhet majd ezekhez az engedélyekhez a következőn: <xliff:g id="DEVICE_TYPE">%1$s</xliff:g>"</string>
-    <!-- no translation found for profile_name_medical (5617160509499466400) -->
-    <skip />
+    <string name="profile_name_medical" msgid="5617160509499466400">"orvosi eszköz"</string>
     <string name="title_app_streaming" msgid="237666000400427614">"Engedélyezi a(z) &lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; számára az alkalmazás- és rendszerfunkciók streamelését a(z) <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> és a(z) &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt; között?"</string>
     <string name="summary_app_streaming" msgid="8346968726357732862">"A(z) <xliff:g id="APP_NAME">%1$s</xliff:g> a következő engedélyeket kapja meg:"</string>
     <string name="summary_app_streaming_legacy" msgid="8994180646987541606">"A(z) <xliff:g id="APP_NAME_0">%1$s</xliff:g> hozzáférhet <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> eszköze minden látható vagy lejátszható tartalmához, így az audiotartalmakhoz, fényképekhez, fizetési adatokhoz, jelszavakhoz és üzenetekhez is.&lt;br/&gt;&lt;br/&gt;Amíg Ön el nem távolítja az ehhez az engedélyhez való hozzáférést, a(z) <xliff:g id="APP_NAME_1">%1$s</xliff:g> képes lesz majd az alkalmazások <xliff:g id="DEVICE_NAME">%3$s</xliff:g> eszközre való streamelésére."</string>
@@ -74,10 +73,8 @@
     <string name="permission_create_virtual_device" msgid="1102905050922460040">"Adatok streamelése <xliff:g id="DEVICE_TYPE">%1$s</xliff:g> eszközére"</string>
     <string name="permission_add_mirror_display" msgid="3743433250535606288">"Képernyőtükrözés"</string>
     <string name="permission_add_trusted_display" msgid="9052824856626276723">"Alkalmazások streamelése"</string>
-    <!-- no translation found for permission_schedule_exact_alarm (5680932535987512225) -->
-    <skip />
-    <!-- no translation found for permission_bypass_dnd (1241123166903040347) -->
-    <skip />
+    <string name="permission_schedule_exact_alarm" msgid="5680932535987512225">"Ébresztések és emlékeztetők beállítása"</string>
+    <string name="permission_bypass_dnd" msgid="1241123166903040347">"A Ne zavarjanak beállításainak megkerülése"</string>
     <string name="permission_phone_summary" msgid="8246321093970051702">"Telefonhívások kezdeményezése és kezelése"</string>
     <string name="permission_call_logs_summary" msgid="7545243592757693321">"Hívásnapló olvasása és írása"</string>
     <string name="permission_sms_summary" msgid="8499509535410068616">"SMS-ek küldése és megtekintése"</string>

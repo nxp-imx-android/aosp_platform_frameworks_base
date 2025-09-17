@@ -32,8 +32,7 @@
     <string name="confirmation_title_glasses" msgid="8288346850537727333">"Leyfa &lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; að stjórna &lt;strong&gt;<xliff:g id="DEVICE_NAME">%2$s</xliff:g>&lt;/strong&gt;?"</string>
     <string name="profile_name_glasses" msgid="3506504967216601277">"tæki"</string>
     <string name="summary_glasses" msgid="5469208629679579157">"Þetta forrit fær aðgang að eftirfarandi heimildum í <xliff:g id="DEVICE_TYPE">%1$s</xliff:g>"</string>
-    <!-- no translation found for profile_name_medical (5617160509499466400) -->
-    <skip />
+    <string name="profile_name_medical" msgid="5617160509499466400">"lækningatæki"</string>
     <string name="title_app_streaming" msgid="237666000400427614">"Leyfa &lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; að streyma forritum og kerfiseiginleikum á milli <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> og &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt;?"</string>
     <string name="summary_app_streaming" msgid="8346968726357732862">"<xliff:g id="APP_NAME">%1$s</xliff:g> fær eftirfarandi heimildir:"</string>
     <string name="summary_app_streaming_legacy" msgid="8994180646987541606">"<xliff:g id="APP_NAME_0">%1$s</xliff:g> fær aðgang að öllu sem er sýnilegt eða spilað í <xliff:g id="DEVICE_TYPE">%2$s</xliff:g>, þ.m.t. hljóði, myndum, greiðsluupplýsingum, aðgangsorðum og skilaboðum.&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME_1">%1$s</xliff:g> getur streymt forritum í <xliff:g id="DEVICE_NAME">%3$s</xliff:g> þar til þú fjarlægir þessa heimild."</string>
@@ -74,10 +73,8 @@
     <string name="permission_create_virtual_device" msgid="1102905050922460040">"Streyma gögnum í <xliff:g id="DEVICE_TYPE">%1$s</xliff:g>"</string>
     <string name="permission_add_mirror_display" msgid="3743433250535606288">"Spegla skjáinn"</string>
     <string name="permission_add_trusted_display" msgid="9052824856626276723">"Streyma forrit"</string>
-    <!-- no translation found for permission_schedule_exact_alarm (5680932535987512225) -->
-    <skip />
-    <!-- no translation found for permission_bypass_dnd (1241123166903040347) -->
-    <skip />
+    <string name="permission_schedule_exact_alarm" msgid="5680932535987512225">"Stilla vekjara og áminningar"</string>
+    <string name="permission_bypass_dnd" msgid="1241123166903040347">"Sneiða hjá stillingunni „Ónáðið ekki“"</string>
     <string name="permission_phone_summary" msgid="8246321093970051702">"Hringja og stjórna símtölum"</string>
     <string name="permission_call_logs_summary" msgid="7545243592757693321">"Lesa og skrifa símtalaskrá símans"</string>
     <string name="permission_sms_summary" msgid="8499509535410068616">"Senda og skoða SMS-skilaboð"</string>

@@ -32,8 +32,7 @@
     <string name="confirmation_title_glasses" msgid="8288346850537727333">"Cho phép &lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; quản lý &lt;strong&gt;<xliff:g id="DEVICE_NAME">%2$s</xliff:g>&lt;/strong&gt;?"</string>
     <string name="profile_name_glasses" msgid="3506504967216601277">"thiết bị"</string>
     <string name="summary_glasses" msgid="5469208629679579157">"Ứng dụng này sẽ được phép dùng những quyền sau trên <xliff:g id="DEVICE_TYPE">%1$s</xliff:g> của bạn"</string>
-    <!-- no translation found for profile_name_medical (5617160509499466400) -->
-    <skip />
+    <string name="profile_name_medical" msgid="5617160509499466400">"thiết bị y tế"</string>
     <string name="title_app_streaming" msgid="237666000400427614">"Cho phép &lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; truyền trực tuyến các ứng dụng và tính năng của hệ thống giữa <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> và &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt;?"</string>
     <string name="summary_app_streaming" msgid="8346968726357732862">"<xliff:g id="APP_NAME">%1$s</xliff:g> sẽ được cấp các quyền sau:"</string>
     <string name="summary_app_streaming_legacy" msgid="8994180646987541606">"<xliff:g id="APP_NAME_0">%1$s</xliff:g> sẽ có quyền truy cập vào mọi nội dung hiển thị hoặc phát trên <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> của bạn, bao gồm âm thanh, ảnh, thông tin thanh toán, mật khẩu và tin nhắn.&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME_1">%1$s</xliff:g> sẽ có thể truyền trực tuyến các ứng dụng đến <xliff:g id="DEVICE_NAME">%3$s</xliff:g> cho đến khi bạn thu hồi quyền này."</string>
@@ -74,10 +73,8 @@
     <string name="permission_create_virtual_device" msgid="1102905050922460040">"Truyền dữ liệu đến <xliff:g id="DEVICE_TYPE">%1$s</xliff:g>"</string>
     <string name="permission_add_mirror_display" msgid="3743433250535606288">"Phản chiếu màn hình"</string>
     <string name="permission_add_trusted_display" msgid="9052824856626276723">"Truyền trực tuyến ứng dụng"</string>
-    <!-- no translation found for permission_schedule_exact_alarm (5680932535987512225) -->
-    <skip />
-    <!-- no translation found for permission_bypass_dnd (1241123166903040347) -->
-    <skip />
+    <string name="permission_schedule_exact_alarm" msgid="5680932535987512225">"Đặt chuông báo và lời nhắc"</string>
+    <string name="permission_bypass_dnd" msgid="1241123166903040347">"Bỏ qua chế độ Không làm phiền"</string>
     <string name="permission_phone_summary" msgid="8246321093970051702">"Gọi và quản lý cuộc gọi điện thoại"</string>
     <string name="permission_call_logs_summary" msgid="7545243592757693321">"Đọc và ghi nhật ký cuộc gọi điện thoại"</string>
     <string name="permission_sms_summary" msgid="8499509535410068616">"Gửi và xem tin nhắn SMS"</string>

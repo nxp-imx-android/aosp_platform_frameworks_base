@@ -32,8 +32,7 @@
     <string name="confirmation_title_glasses" msgid="8288346850537727333">"Vai atļaut lietotnei &lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; piekļūt ierīcei &lt;strong&gt;<xliff:g id="DEVICE_NAME">%2$s</xliff:g>&lt;/strong&gt;?"</string>
     <string name="profile_name_glasses" msgid="3506504967216601277">"ierīce"</string>
     <string name="summary_glasses" msgid="5469208629679579157">"Šī lietotne drīkstēs piekļūt norādītajām <xliff:g id="DEVICE_TYPE">%1$s</xliff:g> atļaujām."</string>
-    <!-- no translation found for profile_name_medical (5617160509499466400) -->
-    <skip />
+    <string name="profile_name_medical" msgid="5617160509499466400">"medicīniska ierīce"</string>
     <string name="title_app_streaming" msgid="237666000400427614">"Vai atļaut lietotnei &lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; straumēt lietotnes un sistēmas funkcijas starp jūsu ierīci (<xliff:g id="DEVICE_TYPE">%2$s</xliff:g>) un ierīci &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt;?"</string>
     <string name="summary_app_streaming" msgid="8346968726357732862">"Lietotnei <xliff:g id="APP_NAME">%1$s</xliff:g> tiks piešķirtas tālāk norādītās atļaujas."</string>
     <string name="summary_app_streaming_legacy" msgid="8994180646987541606">"Lietotne <xliff:g id="APP_NAME_0">%1$s</xliff:g> varēs piekļūt visam ierīcē <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> ekrānā parādītajam vai atskaņotajam saturam, tostarp audio, fotoattēliem, maksājumu informācijai, parolēm un ziņojumiem.&lt;br/&gt;&lt;br/&gt;Lietotne <xliff:g id="APP_NAME_1">%1$s</xliff:g> varēs straumēt lietotnes ierīcē <xliff:g id="DEVICE_NAME">%3$s</xliff:g>, līdz noņemsiet piekļuvi šai atļaujai."</string>
@@ -74,10 +73,8 @@
     <string name="permission_create_virtual_device" msgid="1102905050922460040">"Datu straumēšana uz ierīci (<xliff:g id="DEVICE_TYPE">%1$s</xliff:g>)"</string>
     <string name="permission_add_mirror_display" msgid="3743433250535606288">"Ekrāna spoguļošana"</string>
     <string name="permission_add_trusted_display" msgid="9052824856626276723">"Lietotņu straumēšana"</string>
-    <!-- no translation found for permission_schedule_exact_alarm (5680932535987512225) -->
-    <skip />
-    <!-- no translation found for permission_bypass_dnd (1241123166903040347) -->
-    <skip />
+    <string name="permission_schedule_exact_alarm" msgid="5680932535987512225">"Iestatiet signālus un atgādinājumus"</string>
+    <string name="permission_bypass_dnd" msgid="1241123166903040347">"Ignorēt režīma “Netraucēt” iestatījumus"</string>
     <string name="permission_phone_summary" msgid="8246321093970051702">"Veikt un pārvaldīt tālruņa zvanus"</string>
     <string name="permission_call_logs_summary" msgid="7545243592757693321">"Lasīt un rakstīt tālruņa zvanu žurnālu"</string>
     <string name="permission_sms_summary" msgid="8499509535410068616">"Sūtīt un skatīt īsziņas"</string>

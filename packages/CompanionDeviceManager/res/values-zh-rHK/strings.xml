@@ -32,8 +32,7 @@
     <string name="confirmation_title_glasses" msgid="8288346850537727333">"要允許「<xliff:g id="APP_NAME">%1$s</xliff:g>」&lt;strong&gt;&lt;/strong&gt;管理「<xliff:g id="DEVICE_NAME">%2$s</xliff:g>」&lt;strong&gt;&lt;/strong&gt;嗎？"</string>
     <string name="profile_name_glasses" msgid="3506504967216601277">"裝置"</string>
     <string name="summary_glasses" msgid="5469208629679579157">"此應用程式將可在<xliff:g id="DEVICE_TYPE">%1$s</xliff:g>上取得以下權限"</string>
-    <!-- no translation found for profile_name_medical (5617160509499466400) -->
-    <skip />
+    <string name="profile_name_medical" msgid="5617160509499466400">"醫療裝置"</string>
     <string name="title_app_streaming" msgid="237666000400427614">"要允許「<xliff:g id="APP_NAME">%1$s</xliff:g>」&lt;strong&gt;&lt;/strong&gt;在你的<xliff:g id="DEVICE_TYPE">%2$s</xliff:g>和「<xliff:g id="DEVICE_NAME">%3$s</xliff:g>」之間串流應用程式和系統功能嗎&lt;strong&gt;&lt;/strong&gt;？"</string>
     <string name="summary_app_streaming" msgid="8346968726357732862">"「<xliff:g id="APP_NAME">%1$s</xliff:g>」將獲授予以下權限："</string>
     <string name="summary_app_streaming_legacy" msgid="8994180646987541606">"「<xliff:g id="APP_NAME_0">%1$s</xliff:g>」將能存取<xliff:g id="DEVICE_TYPE">%2$s</xliff:g>上顯示或播放的任何內容，包括音訊、相片、付款資料、密碼和訊息。&lt;br/&gt;&lt;br/&gt;「<xliff:g id="APP_NAME_1">%1$s</xliff:g>」將能串流應用程式內容至「<xliff:g id="DEVICE_NAME">%3$s</xliff:g>」，直至你移除此存取權限為止。"</string>
@@ -74,10 +73,8 @@
     <string name="permission_create_virtual_device" msgid="1102905050922460040">"串流資料至你的<xliff:g id="DEVICE_TYPE">%1$s</xliff:g>"</string>
     <string name="permission_add_mirror_display" msgid="3743433250535606288">"鏡像顯示螢幕畫面"</string>
     <string name="permission_add_trusted_display" msgid="9052824856626276723">"串流應用程式"</string>
-    <!-- no translation found for permission_schedule_exact_alarm (5680932535987512225) -->
-    <skip />
-    <!-- no translation found for permission_bypass_dnd (1241123166903040347) -->
-    <skip />
+    <string name="permission_schedule_exact_alarm" msgid="5680932535987512225">"設定鬧鐘或提醒"</string>
+    <string name="permission_bypass_dnd" msgid="1241123166903040347">"繞過「請勿騷擾」設定"</string>
     <string name="permission_phone_summary" msgid="8246321093970051702">"撥打及管理通話"</string>
     <string name="permission_call_logs_summary" msgid="7545243592757693321">"讀取及寫入手機通話記錄"</string>
     <string name="permission_sms_summary" msgid="8499509535410068616">"傳送和查看短訊"</string>

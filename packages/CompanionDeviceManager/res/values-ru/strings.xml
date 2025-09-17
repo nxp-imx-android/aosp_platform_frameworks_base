@@ -32,8 +32,7 @@
     <string name="confirmation_title_glasses" msgid="8288346850537727333">"Разрешить приложению &lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; управлять устройством &lt;strong&gt;<xliff:g id="DEVICE_NAME">%2$s</xliff:g>&lt;/strong&gt;?"</string>
     <string name="profile_name_glasses" msgid="3506504967216601277">"устройстве"</string>
     <string name="summary_glasses" msgid="5469208629679579157">"Это приложение получит указанные разрешения на вашем устройстве (<xliff:g id="DEVICE_TYPE">%1$s</xliff:g>)."</string>
-    <!-- no translation found for profile_name_medical (5617160509499466400) -->
-    <skip />
+    <string name="profile_name_medical" msgid="5617160509499466400">"медицинское изделие"</string>
     <string name="title_app_streaming" msgid="237666000400427614">"Разрешить приложению &lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; транслировать приложения и системные функции между вашим устройством (<xliff:g id="DEVICE_TYPE">%2$s</xliff:g>) и &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt;?"</string>
     <string name="summary_app_streaming" msgid="8346968726357732862">"Приложение \"<xliff:g id="APP_NAME">%1$s</xliff:g>\" получит перечисленные ниже разрешения."</string>
     <string name="summary_app_streaming_legacy" msgid="8994180646987541606">"Приложению \"<xliff:g id="APP_NAME_0">%1$s</xliff:g>\" будет доступно все, что показывается или воспроизводится на устройстве \"<xliff:g id="DEVICE_TYPE">%2$s</xliff:g>\", включая аудиофайлы, фотографии, пароли, сообщения и платежные данные.&lt;br/&gt;&lt;br/&gt;Приложение \"<xliff:g id="APP_NAME_1">%1$s</xliff:g>\" сможет транслировать приложения на <xliff:g id="DEVICE_NAME">%3$s</xliff:g>, пока вы не отзовете разрешение."</string>
@@ -74,10 +73,8 @@
     <string name="permission_create_virtual_device" msgid="1102905050922460040">"Трансляция данных на <xliff:g id="DEVICE_TYPE">%1$s</xliff:g>"</string>
     <string name="permission_add_mirror_display" msgid="3743433250535606288">"Дублирование экрана"</string>
     <string name="permission_add_trusted_display" msgid="9052824856626276723">"Трансляция приложений"</string>
-    <!-- no translation found for permission_schedule_exact_alarm (5680932535987512225) -->
-    <skip />
-    <!-- no translation found for permission_bypass_dnd (1241123166903040347) -->
-    <skip />
+    <string name="permission_schedule_exact_alarm" msgid="5680932535987512225">"Будильники и напоминания"</string>
+    <string name="permission_bypass_dnd" msgid="1241123166903040347">"Игнорировать \"Не беспокоить\""</string>
     <string name="permission_phone_summary" msgid="8246321093970051702">"Совершение телефонных звонков и управление ими"</string>
     <string name="permission_call_logs_summary" msgid="7545243592757693321">"Просмотр списка телефонных вызовов и создание записей в нем"</string>
     <string name="permission_sms_summary" msgid="8499509535410068616">"Отправка и просмотр SMS-сообщений"</string>

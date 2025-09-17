@@ -32,8 +32,7 @@
     <string name="confirmation_title_glasses" msgid="8288346850537727333">"&lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; қолданбасына &lt;strong&gt;<xliff:g id="DEVICE_NAME">%2$s</xliff:g>&lt;/strong&gt; құрылғысын басқаруға рұқсат беру керек пе?"</string>
     <string name="profile_name_glasses" msgid="3506504967216601277">"құрылғы"</string>
     <string name="summary_glasses" msgid="5469208629679579157">"Бұл қолданба құрылғыда (<xliff:g id="DEVICE_TYPE">%1$s</xliff:g>) осы рұқсаттарды пайдалана алады."</string>
-    <!-- no translation found for profile_name_medical (5617160509499466400) -->
-    <skip />
+    <string name="profile_name_medical" msgid="5617160509499466400">"медициналық құрылғы"</string>
     <string name="title_app_streaming" msgid="237666000400427614">"&lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; қолданбасына <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> құрылғыңыз бен &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt; құрылғысы арасында қолданбалар мен жүйе функцияларын трансляциялауға рұқсат берілсін бе?"</string>
     <string name="summary_app_streaming" msgid="8346968726357732862">"<xliff:g id="APP_NAME">%1$s</xliff:g> қолданбасына келесі рұқсаттар беріледі:"</string>
     <string name="summary_app_streaming_legacy" msgid="8994180646987541606">"<xliff:g id="APP_NAME_0">%1$s</xliff:g> қолданбасы <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> құрылғысында көрінетін не ойнайтын барлық контентті, соның ішінде аудионы, фотосуреттерді, төлем туралы ақпаратты, құпия сөздер мен хабарларды пайдалана алады.&lt;br/&gt;&lt;br/&gt;Осы рұқсатты өшірмесеңіз, <xliff:g id="APP_NAME_1">%1$s</xliff:g> қолданбасы <xliff:g id="DEVICE_NAME">%3$s</xliff:g> құрылғысына қолданбаларды трансляциялай алады."</string>
@@ -74,10 +73,8 @@
     <string name="permission_create_virtual_device" msgid="1102905050922460040">"Деректерді <xliff:g id="DEVICE_TYPE">%1$s</xliff:g> құрылғысына трансляциялау"</string>
     <string name="permission_add_mirror_display" msgid="3743433250535606288">"Экранды синхрондау"</string>
     <string name="permission_add_trusted_display" msgid="9052824856626276723">"Қолданбаларды трансляциялау"</string>
-    <!-- no translation found for permission_schedule_exact_alarm (5680932535987512225) -->
-    <skip />
-    <!-- no translation found for permission_bypass_dnd (1241123166903040347) -->
-    <skip />
+    <string name="permission_schedule_exact_alarm" msgid="5680932535987512225">"Оятқыш не еске салғыш орнату"</string>
+    <string name="permission_bypass_dnd" msgid="1241123166903040347">"Мазаламау параметрлерін елемеу"</string>
     <string name="permission_phone_summary" msgid="8246321093970051702">"Қоңырау шалу және телефон қоңырауларын басқару"</string>
     <string name="permission_call_logs_summary" msgid="7545243592757693321">"Телефонның қоңыраулар журналын оқу және жазу"</string>
     <string name="permission_sms_summary" msgid="8499509535410068616">"SMS хабарларын жіберу және көру"</string>
