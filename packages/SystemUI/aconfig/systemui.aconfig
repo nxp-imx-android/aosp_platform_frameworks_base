@@ -708,16 +708,6 @@ flag {
 }
 
 flag {
-    name: "clipboard_use_description_mimetype"
-    namespace: "systemui"
-    description: "Read item mimetype from description rather than checking URI"
-    bug: "357197236"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "screenshot_announce_live_region"
     namespace: "systemui"
     description: "Use live region for screenshot saving announcement"
