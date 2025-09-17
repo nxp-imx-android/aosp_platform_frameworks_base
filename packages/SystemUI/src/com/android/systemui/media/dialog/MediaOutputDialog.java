@@ -17,7 +17,6 @@
 package com.android.systemui.media.dialog;
 
 import static com.android.media.flags.Flags.enableOutputSwitcherPersonalAudioSharing;
-import static com.android.media.flags.Flags.enableOutputSwitcherRedesign;
 
 import android.annotation.Nullable;
 import android.app.Dialog;
@@ -63,10 +62,7 @@ public class MediaOutputDialog extends MediaOutputBaseDialog {
         super(context, broadcastSender, mediaSwitchingController, includePlaybackAndAppMetadata);
         mDialogTransitionAnimator = dialogTransitionAnimator;
         mUiEventLogger = uiEventLogger;
-        mAdapter = enableOutputSwitcherRedesign()
-                ? new MediaOutputAdapter(mMediaSwitchingController)
-                : new MediaOutputAdapterLegacy(mMediaSwitchingController, mainExecutor,
-                        backgroundExecutor);
+        mAdapter = new MediaOutputAdapter(mMediaSwitchingController);
         mOnDialogEventListener = onDialogEventListener;
         if (!aboveStatusbar) {
             getWindow().setType(WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY);

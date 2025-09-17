@@ -532,7 +532,6 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_OUTPUT_SWITCHER_REDESIGN)
     public void onDeviceListUpdate_repeatedWithinThresholdPeriod_rearrangesList() {
         mMediaSwitchingController.start(mCb);
         reset(mCb);
@@ -563,7 +562,6 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_OUTPUT_SWITCHER_REDESIGN)
     public void onDeviceListUpdate_repeatedAfterThresholdPeriod_appendsItemsToTheList() {
         mMediaSwitchingController.start(mCb);
         reset(mCb);
@@ -823,10 +821,7 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
     }
 
     @Test
-    @EnableFlags({
-            Flags.FLAG_ENABLE_OUTPUT_SWITCHER_REDESIGN,
-            Flags.FLAG_ENABLE_OUTPUT_SWITCHER_PERSONAL_AUDIO_SHARING
-    })
+    @EnableFlags(Flags.FLAG_ENABLE_OUTPUT_SWITCHER_PERSONAL_AUDIO_SHARING)
     public void onDeviceListUpdate_groupPlaybackAndExpanded_allSelectedDevicesOnTop() {
         when(mMediaDevice1.isSelected()).thenReturn(true);
         when(mMediaDevice2.isSelected()).thenReturn(true);
@@ -858,10 +853,7 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
     }
 
     @Test
-    @EnableFlags({
-            Flags.FLAG_ENABLE_OUTPUT_SWITCHER_REDESIGN,
-            Flags.FLAG_ENABLE_OUTPUT_SWITCHER_PERSONAL_AUDIO_SHARING
-    })
+    @EnableFlags(Flags.FLAG_ENABLE_OUTPUT_SWITCHER_PERSONAL_AUDIO_SHARING)
     public void onDeviceListUpdate_groupPlaybackAndCollapsed_groupControlAtTheTop() {
         when(mMediaDevice1.isSelected()).thenReturn(true);
         when(mMediaDevice2.isSelected()).thenReturn(true);
@@ -888,10 +880,7 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
     }
 
     @Test
-    @EnableFlags({
-            Flags.FLAG_ENABLE_OUTPUT_SWITCHER_REDESIGN,
-            Flags.FLAG_ENABLE_OUTPUT_SWITCHER_PERSONAL_AUDIO_SHARING
-    })
+    @EnableFlags(Flags.FLAG_ENABLE_OUTPUT_SWITCHER_PERSONAL_AUDIO_SHARING)
     public void onDeviceListUpdate_sessionVolumeUnavailable_noGroupControl() {
         when(mMediaDevice1.isSelected()).thenReturn(true);
         when(mMediaDevice2.isSelected()).thenReturn(true);
@@ -922,10 +911,7 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
     }
 
     @Test
-    @EnableFlags({
-            Flags.FLAG_ENABLE_OUTPUT_SWITCHER_REDESIGN,
-            Flags.FLAG_ENABLE_OUTPUT_SWITCHER_PERSONAL_AUDIO_SHARING
-    })
+    @EnableFlags(Flags.FLAG_ENABLE_OUTPUT_SWITCHER_PERSONAL_AUDIO_SHARING)
     public void onDeviceListUpdate_groupPlaybackCreatedLater_noGroupControl() {
         when(mMediaDevice1.isSelected()).thenReturn(true);
         when(mMediaDevice2.isSelected()).thenReturn(false);

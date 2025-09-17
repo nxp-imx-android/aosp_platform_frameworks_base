@@ -21,7 +21,6 @@ import android.annotation.NonNull;
 import android.annotation.Nullable;
 
 import com.android.settingslib.media.MediaDevice;
-import com.android.systemui.res.R;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -166,15 +165,6 @@ public class MediaItem {
 
     public Optional<MediaDevice> getMediaDevice() {
         return mMediaDeviceOptional;
-    }
-
-    /** Get layout id based on media item Type. */
-    public static int getMediaLayoutId(@MediaItemType int mediaItemType) {
-        return switch (mediaItemType) {
-            case MediaItemType.TYPE_DEVICE, MediaItemType.TYPE_PAIR_NEW_DEVICE ->
-                    R.layout.media_output_list_item_advanced;
-            default -> R.layout.media_output_list_group_divider;
-        };
     }
 
     public String getTitle() {

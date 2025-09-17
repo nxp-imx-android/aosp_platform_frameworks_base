@@ -62,7 +62,6 @@ import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 
 @SmallTest
-@EnableFlags(Flags.FLAG_ENABLE_OUTPUT_SWITCHER_REDESIGN)
 @RunWith(AndroidJUnit4::class)
 @RunWithLooper(setAsMainLooper = true)
 class MediaOutputAdapterTest : SysuiTestCase() {
@@ -90,7 +89,6 @@ class MediaOutputAdapterTest : SysuiTestCase() {
             on { sessionVolumeMax } doReturn TEST_MAX_VOLUME
             on { sessionVolume } doReturn TEST_CURRENT_VOLUME
             on { sessionName } doReturn TEST_SESSION_NAME
-            on { colorSchemeLegacy } doReturn mock<MediaOutputColorSchemeLegacy>()
             on { colorScheme } doReturn mock<MediaOutputColorScheme>()
         }
 

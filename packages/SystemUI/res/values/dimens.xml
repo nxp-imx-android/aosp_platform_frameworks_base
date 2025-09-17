@@ -1618,15 +1618,10 @@
     <dimen name="media_output_dialog_header_icon_padding">16dp</dimen>
     <dimen name="media_output_dialog_icon_corner_radius">16dp</dimen>
     <dimen name="media_output_dialog_title_anim_y_delta">12.5dp</dimen>
-    <dimen name="media_output_dialog_background_radius">16dp</dimen>
-    <dimen name="media_output_dialog_active_background_radius">32dp</dimen>
-    <dimen name="media_output_dialog_item_height">64dp</dimen>
     <dimen name="media_output_dialog_margin_horizontal">16dp</dimen>
     <dimen name="media_output_dialog_list_padding_top">8dp</dimen>
     <dimen name="media_output_dialog_app_icon_size">16dp</dimen>
     <dimen name="media_output_dialog_app_icon_bottom_margin">11dp</dimen>
-    <dimen name="media_output_dialog_icon_left_radius">@dimen/media_output_dialog_active_background_radius</dimen>
-    <dimen name="media_output_dialog_icon_right_radius">0dp</dimen>
     <dimen name="media_output_dialog_corner_radius">20dp</dimen>
     <dimen name="media_output_dialog_button_gap">8dp</dimen>
     <dimen name="media_output_item_content_vertical_margin">4dp</dimen>
