@@ -209,6 +209,9 @@ flag {
   namespace: "systemui"
   description: "Skips #setNotificationBackgroundColor when unnecessary."
   bug: "442592454"
+  metadata {
+    purpose: PURPOSE_BUGFIX
+  }
 }
 
 # Start: exported flags that cannot be removed
