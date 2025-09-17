@@ -359,6 +359,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         desktopState.canEnterDesktopMode = true
 
         spyContext = spy(mContext)
+        spyContext.setMockPackageManager(packageManager)
         shellInit = spy(ShellInit(testExecutor))
         whenever(shellController.currentUserId).thenReturn(DEFAULT_USER_ID)
         whenever(shellController.currentUserProfiles)
@@ -484,8 +485,9 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         taskRepository.addDesk(displayId = DEFAULT_DISPLAY, deskId = DEFAULT_DISPLAY)
         taskRepository.setActiveDesk(displayId = DEFAULT_DISPLAY, deskId = DEFAULT_DISPLAY)
 
-        spyContext.setMockPackageManager(packageManager)
-        whenever(packageManager.getHomeActivities(ArrayList())).thenReturn(homeComponentName)
+        doReturn(HOME_LAUNCHER_PACKAGE_NAME)
+            .whenever(desktopModeCompatPolicy)
+            .getDefaultHomePackage(any())
     }
 
     private fun createController() =
@@ -12576,7 +12578,10 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         visible: Boolean = true,
         background: Boolean = false,
     ): RunningTaskInfo {
-        val task = createFullscreenTask(displayId)
+        val task =
+            createFullscreenTask(displayId).apply {
+                baseActivity = ComponentName(/* pkg= */ "", /* cls= */ "")
+            }
         val activityInfo = ActivityInfo()
         activityInfo.screenOrientation = screenOrientation
         activityInfo.windowLayout = ActivityInfo.WindowLayout(0, 0F, 0, 0F, gravity, 0, 0)
@@ -12657,7 +12662,10 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     private fun setUpSplitScreenTask(displayId: Int = DEFAULT_DISPLAY): RunningTaskInfo {
-        val task = createSplitScreenTask(displayId)
+        val task =
+            createSplitScreenTask(displayId).apply {
+                baseActivity = ComponentName(/* pkg= */ "", /* cls= */ "")
+            }
         whenever(splitScreenController.isTaskInSplitScreen(task.taskId)).thenReturn(true)
         whenever(shellTaskOrganizer.getRunningTaskInfo(task.taskId)).thenReturn(task)
         runningTasks.add(task)

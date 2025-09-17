@@ -19,6 +19,7 @@ package com.android.wm.shell.shared.desktopmode
 import android.Manifest.permission.SYSTEM_ALERT_WINDOW
 import android.app.TaskInfo
 import android.app.WindowConfiguration.ACTIVITY_TYPE_DREAM
+import android.app.role.RoleManager
 import android.compat.testing.PlatformCompatChangeRule
 import android.content.ComponentName
 import android.content.pm.ActivityInfo
@@ -69,6 +70,7 @@ class DesktopModeCompatPolicyTest : ShellTestCase() {
     private lateinit var mockContext: TestableContext
     private lateinit var desktopModeCompatPolicy: DesktopModeCompatPolicy
     private val packageManager: PackageManager = mock()
+    private val roleManager: RoleManager = mock()
     private val homeActivities = ComponentName(HOME_LAUNCHER_PACKAGE_NAME, /* class */ "")
     private val baseActivityTest = ComponentName("com.test.dummypackage", "TestClass")
     private val configExemptActivity = ComponentName("com.test.configExemptPackage", /* class */ "")
@@ -81,14 +83,15 @@ class DesktopModeCompatPolicyTest : ShellTestCase() {
         doReturn(configExemptPackageList).`when`(resources)
             .getStringArray(R.array.config_desktopExemptPackages)
         doReturn(resources).`when`(mockContext).resources
-        desktopModeCompatPolicy = DesktopModeCompatPolicy(mockContext)
-        whenever(packageManager.getHomeActivities(any())).thenReturn(homeActivities)
+        desktopModeCompatPolicy = spy(DesktopModeCompatPolicy(mockContext))
+        mContext.addMockSystemService(RoleManager::class.java, roleManager)
+        doReturn(HOME_LAUNCHER_PACKAGE_NAME).`when`(desktopModeCompatPolicy).getDefaultHomePackage(any())
         mockContext.setMockPackageManager(packageManager)
     }
 
     @Test
     @DisableFlags(Flags.FLAG_ENABLE_MODALS_FULLSCREEN_WITH_PERMISSION,
-        Flags.FLAG_ENABLE_MODALS_FULLSCREEN_WITH_PLATFORM_SIGNATURE)
+        Flags.FLAG_ENABLE_MODALS_FULLSCREEN_WITH_PLATFORM_SIGNATURE,)
     fun testIsTopActivityExemptFromDesktopWindowing_onlyTransparentActivitiesInStack() {
         assertTrue(desktopModeCompatPolicy.isTopActivityExemptFromDesktopWindowing(
             createFreeformTask()
@@ -288,11 +291,7 @@ class DesktopModeCompatPolicyTest : ShellTestCase() {
 
     @Test
     fun testIsTopActivityExemptFromDesktopWindowing_defaultHomePackage_notYetAvailable() {
-        val emptyHomeActivities: ComponentName = mock()
-        mockContext.setMockPackageManager(packageManager)
-
-        whenever(emptyHomeActivities.packageName).thenReturn(null)
-        whenever(packageManager.getHomeActivities(any())).thenReturn(emptyHomeActivities)
+        doReturn(null).`when`(desktopModeCompatPolicy).getDefaultHomePackage(any())
 
         assertTrue(desktopModeCompatPolicy.isTopActivityExemptFromDesktopWindowing(
             createFreeformTask()
@@ -364,11 +363,7 @@ class DesktopModeCompatPolicyTest : ShellTestCase() {
 
     @Test
     fun testShouldDisableDesktopEntryPoints_defaultHomePackage_notYetAvailable() {
-        val emptyHomeActivities: ComponentName = mock()
-        mockContext.setMockPackageManager(packageManager)
-
-        whenever(emptyHomeActivities.packageName).thenReturn(null)
-        whenever(packageManager.getHomeActivities(any())).thenReturn(emptyHomeActivities)
+        doReturn(null).`when`(desktopModeCompatPolicy).getDefaultHomePackage(any())
 
         assertTrue(desktopModeCompatPolicy.shouldDisableDesktopEntryPoints(
             createFullscreenTask()))
