@@ -3170,21 +3170,43 @@ public class ActivityTaskSupervisor implements RecentTasks.Callbacks {
             // container, unless the children are adjacent fragments, in which case as long as they
             // are all opaque then |container| is also considered opaque, even if the adjacent
             // task fragment aren't filling.
-            for (int i = 0; i < container.getChildCount(); i++) {
+            TaskFragment.AdjacentVisibilityHelper adjacentVisibilityHelper = null;
+            for (int i = container.getChildCount() - 1; i >= 0; --i) {
                 final WindowContainer<?> child = container.getChildAt(i);
                 if (child.fillsParent() && isOpaque(child)) {
                     return true;
                 }
 
-                if (child.asTaskFragment() != null
-                        && child.asTaskFragment().hasAdjacentTaskFragment()) {
-                    final boolean isAnyTranslucent = !isOpaque(child)
-                            || child.asTaskFragment().forOtherAdjacentTaskFragments(
+                if (com.android.window.flags.Flags.fixTfAdjacentVisibility()) {
+                    final TaskFragment tf = child.asTaskFragment();
+                    if (tf != null) {
+                        if (tf.hasAdjacentTaskFragment() && adjacentVisibilityHelper == null) {
+                            adjacentVisibilityHelper = tf.getAdjacentTaskFragments()
+                                    .getVisibilityHelper(this::isOpaque);
+                        }
+                        if (adjacentVisibilityHelper != null) {
+                            adjacentVisibilityHelper.process(tf);
+                            if (adjacentVisibilityHelper.isAllAdjacentTaskFragmentProcessed()) {
+                                if (adjacentVisibilityHelper.occludesParent()) {
+                                    // return early if the adjacent TFs are opaque.
+                                    return true;
+                                } else {
+                                    adjacentVisibilityHelper = null;
+                                }
+                            }
+                        }
+                    }
+                } else {
+                    if (child.asTaskFragment() != null
+                            && child.asTaskFragment().hasAdjacentTaskFragment()) {
+                        final boolean isAnyTranslucent = !isOpaque(child)
+                                || child.asTaskFragment().forOtherAdjacentTaskFragments(
                                     tf -> !isOpaque(tf));
-                    if (!isAnyTranslucent) {
-                        // This task fragment and all its adjacent task fragments are opaque,
-                        // consider it opaque even if it doesn't fill its parent.
-                        return true;
+                        if (!isAnyTranslucent) {
+                            // This task fragment and all its adjacent task fragments are opaque,
+                            // consider it opaque even if it doesn't fill its parent.
+                            return true;
+                        }
                     }
                 }
             }

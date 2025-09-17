@@ -187,6 +187,16 @@ flag {
 
 flag {
     namespace: "windowing_sdk"
+    name: "fix_tf_adjacent_visibility"
+    description: "Fix the incorrect visibility calculation on adjacent TaskFragments."
+    bug: "444352552"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
+    namespace: "windowing_sdk"
     name: "fix_rapid_top_resumed_switch"
     description: "Prevent top-resumed-activity rapidly switched in multi-window mode."
     bug: "417956804"
