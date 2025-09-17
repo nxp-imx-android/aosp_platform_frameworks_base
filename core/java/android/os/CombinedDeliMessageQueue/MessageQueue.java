@@ -28,7 +28,6 @@ import android.compat.annotation.UnsupportedAppUsage;
 import android.ravenwood.annotation.RavenwoodKeepWholeClass;
 import android.ravenwood.annotation.RavenwoodRedirect;
 import android.ravenwood.annotation.RavenwoodRedirectionClass;
-import android.ravenwood.annotation.RavenwoodReplace;
 import android.ravenwood.annotation.RavenwoodThrow;
 import android.util.Log;
 import android.util.Printer;
@@ -43,14 +42,9 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.VarHandle;
 import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.NoSuchElementException;
-import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.LockSupport;
-import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * Low-level class holding the list of messages to be dispatched by a
@@ -160,16 +154,7 @@ public final class MessageQueue {
 
     private static boolean computeUseDeliQueue() {
         if (Flags.useConcurrentMessageQueueInApps()) {
-            // b/379472827: Robolectric tests use reflection to access MessageQueue.mMessages.
-            // This is a hack to allow Robolectric tests to use the legacy implementation.
-            try {
-                Class.forName("org.robolectric.Robolectric");
-                // This is a Robolectric test. Concurrent MessageQueue is not supported yet.
-                return false;
-            } catch (ClassNotFoundException e) {
-                // This is not a Robolectric test.
-                return true;
-            }
+            return true;
         }
 
         final String processName = Process.myProcessName();

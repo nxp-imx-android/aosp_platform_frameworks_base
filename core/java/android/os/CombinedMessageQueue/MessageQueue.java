@@ -174,16 +174,7 @@ public final class MessageQueue {
 
     private static boolean computeUseConcurrent() {
         if (Flags.useConcurrentMessageQueueInApps()) {
-            // b/379472827: Robolectric tests use reflection to access MessageQueue.mMessages.
-            // This is a hack to allow Robolectric tests to use the legacy implementation.
-            try {
-                Class.forName("org.robolectric.Robolectric");
-                // This is a Robolectric test. Concurrent MessageQueue is not supported yet.
-                return false;
-            } catch (ClassNotFoundException e) {
-                // This is not a Robolectric test.
-                return true;
-            }
+            return true;
         }
 
         final String processName = Process.myProcessName();
