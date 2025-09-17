@@ -2605,10 +2605,13 @@ public final class DisplayManagerService extends SystemService {
 
     private void handleLogicalDisplayFrameRateOverridesChangedLocked(
             @NonNull LogicalDisplay display) {
+        int event = (mFlags.isFramerateOverrideTriggersRrCallbacksEnabled())
+                ? DisplayManagerGlobal.EVENT_DISPLAY_REFRESH_RATE_CHANGED
+                : DisplayManagerGlobal.EVENT_DISPLAY_BASIC_CHANGED;
         // We don't bother invalidating the display info caches here because any changes to the
         // display info will trigger a cache invalidation inside of LogicalDisplay before we hit
         // this point.
-        sendDisplayEventFrameRateOverrideLocked(display);
+        sendEventLocked(display, event, MSG_DELIVER_DISPLAY_EVENT_FRAME_RATE_OVERRIDE);
         scheduleTraversalLocked(false);
     }
 
@@ -3694,37 +3697,27 @@ public final class DisplayManagerService extends SystemService {
         }
     }
 
-    private void sendDisplayEventLocked(@NonNull LogicalDisplay display, @DisplayEvent int event) {
+    private void sendEventLocked(@NonNull LogicalDisplay display,
+            @DisplayEvent int event, int messageType) {
         int displayId = display.getDisplayIdLocked();
-        Message msg = mHandler.obtainMessage(MSG_DELIVER_DISPLAY_EVENT, displayId, event);
+        Message msg = mHandler.obtainMessage(messageType, displayId, event);
         if (mFlags.isDisplayEventsLoggingEnabled()
                 && event == DisplayManagerGlobal.EVENT_DISPLAY_BASIC_CHANGED) {
             msg.obj = new DisplayInfoChangedFields(display.getDisplayInfoGroupsChangedLocked(),
                     display.getDisplayInfoChangeSource());
         }
-        if (mExtraDisplayEventLogging) {
+        if (messageType == MSG_DELIVER_DISPLAY_EVENT && mExtraDisplayEventLogging) {
             Slog.i(TAG, "Deliver Display Event on Handler: " + event);
         }
         mHandler.sendMessage(msg);
     }
 
-    private void sendDisplayGroupEvent(int groupId, int event) {
-        Message msg = mHandler.obtainMessage(MSG_DELIVER_DISPLAY_GROUP_EVENT, groupId, event);
-        mHandler.sendMessage(msg);
+    private void sendDisplayEventLocked(@NonNull LogicalDisplay display, @DisplayEvent int event) {
+        sendEventLocked(display, event, MSG_DELIVER_DISPLAY_EVENT);
     }
 
-    private void sendDisplayEventFrameRateOverrideLocked(LogicalDisplay display) {
-        int event = (mFlags.isFramerateOverrideTriggersRrCallbacksEnabled())
-                ? DisplayManagerGlobal.EVENT_DISPLAY_REFRESH_RATE_CHANGED
-                : DisplayManagerGlobal.EVENT_DISPLAY_BASIC_CHANGED;
-        int displayId = display.getDisplayIdLocked();
-        Message msg = mHandler.obtainMessage(MSG_DELIVER_DISPLAY_EVENT_FRAME_RATE_OVERRIDE,
-                displayId, event);
-        if (mFlags.isDisplayEventsLoggingEnabled()
-                && event == DisplayManagerGlobal.EVENT_DISPLAY_BASIC_CHANGED) {
-            msg.obj = new DisplayInfoChangedFields(display.getDisplayInfoGroupsChangedLocked(),
-                    display.getDisplayInfoChangeSource());
-        }
+    private void sendDisplayGroupEvent(int groupId, int event) {
+        Message msg = mHandler.obtainMessage(MSG_DELIVER_DISPLAY_GROUP_EVENT, groupId, event);
         mHandler.sendMessage(msg);
     }
 
