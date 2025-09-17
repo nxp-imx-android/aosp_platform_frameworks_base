@@ -950,6 +950,30 @@ struct BinderProxyNativeData {
     // JavaFrozenStateChangeCallback hold a weak reference that can be
     // temporarily promoted.
     sp<FrozenStateChangeCallbackList> mFrozenStateChangeCallbackList;
+
+private:
+    bool mOwnsObjectTag = false;
+
+public:
+    void tryTagObject() {
+        // Sometimes, you will have the case:
+        // BinderProxy created in map.
+        // BinderProxy is dropped in Java and only held by weak reference
+        //   but it is not GC'd yet, and finalize hasn't run, so the existing
+        //   BinderProxyNativeData is held in memory.
+        // getInstance can't promote the weak reference, so we create a new
+        //   BinderProxyNativeData.
+        // Tagging will fail for this second instance. It's okay though because
+        //   we can still catch bugs, and other times, we'll win the race, so
+        //   we'll catch the bug.
+        mOwnsObjectTag = mObject->getWeakRefs()->tryTag(RefBase::OBJECT_TAG_JAVA_PROXY);
+    }
+
+    ~BinderProxyNativeData() {
+        if (mOwnsObjectTag) {
+            mObject->getWeakRefs()->untag(RefBase::OBJECT_TAG_JAVA_PROXY);
+        }
+    }
 };
 
 BinderProxyNativeData* getBPNativeData(JNIEnv* env, jobject obj) {
@@ -973,7 +997,7 @@ jobject javaObjectForIBinder(JNIEnv* env, const sp<IBinder>& val)
         return object;
     }
 
-    BinderProxyNativeData* nativeData = new BinderProxyNativeData();
+    BinderProxyNativeData* nativeData = new BinderProxyNativeData;
     nativeData->mOrgue = sp<DeathRecipientList>::make();
     nativeData->mFrozenStateChangeCallbackList = sp<FrozenStateChangeCallbackList>::make();
     nativeData->mObject = val;
@@ -985,7 +1009,12 @@ jobject javaObjectForIBinder(JNIEnv* env, const sp<IBinder>& val)
         return NULL;
     }
     BinderProxyNativeData* actualNativeData = getBPNativeData(env, object);
-    if (actualNativeData != nativeData) {
+
+    const bool createdOwningObject = actualNativeData == nativeData;
+    if (createdOwningObject) {
+        nativeData->tryTagObject();
+    } else {
+        // another thread created the de facto native data object
         delete nativeData;
     }
 
