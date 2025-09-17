@@ -217,3 +217,11 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "support_codetype_in_gnss_status"
+    namespace: "location"
+    description: "Support code type and elapsed real time in GnssStatus"
+    bug: "361042865"
+}
+

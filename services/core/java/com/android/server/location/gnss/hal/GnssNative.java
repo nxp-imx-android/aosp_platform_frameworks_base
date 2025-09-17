@@ -1149,8 +1149,9 @@ public class GnssNative {
             float[] elevations, float[] azimuths, float[] carrierFrequencies,
             float[] basebandCn0DbHzs) {
         Binder.withCleanCallingIdentity(() -> {
-            GnssStatus gnssStatus = GnssStatus.wrap(svCount, svidWithFlags, cn0DbHzs, elevations,
-                    azimuths, carrierFrequencies, basebandCn0DbHzs);
+            GnssStatus gnssStatus = GnssStatus.create(svCount, svidWithFlags, cn0DbHzs, elevations,
+                    azimuths, carrierFrequencies, basebandCn0DbHzs,
+                    new String[svCount], new long[svCount], new double[svCount]);
             for (int i = 0; i < mSvStatusCallbacks.length; i++) {
                 mSvStatusCallbacks[i].onReportSvStatus(gnssStatus);
             }
