@@ -10268,16 +10268,6 @@ package android.companion {
     field public static final int REQUEST_TRANSPORT = 2; // 0x2
   }
 
-  @FlaggedApi("android.companion.enable_data_sync") public final class ActionResult implements android.os.Parcelable {
-    method public int describeContents();
-    method @NonNull public android.companion.ActionRequest getActionRequest();
-    method public int getResultCode();
-    method public void writeToParcel(@NonNull android.os.Parcel, int);
-    field @NonNull public static final android.os.Parcelable.Creator<android.companion.ActionResult> CREATOR;
-    field public static final int RESULT_FAILED = 1; // 0x1
-    field public static final int RESULT_SUCCESS = 0; // 0x0
-  }
-
   public final class AssociatedDevice implements android.os.Parcelable {
     method public int describeContents();
     method @Nullable public android.bluetooth.le.ScanResult getBleDevice();
@@ -10450,7 +10440,7 @@ package android.companion {
   }
 
   public final class DevicePresenceEvent implements android.os.Parcelable {
-    ctor public DevicePresenceEvent(int, int, @Nullable android.os.ParcelUuid);
+    ctor @Deprecated @FlaggedApi("android.companion.enable_data_sync") public DevicePresenceEvent(int, int, @Nullable android.os.ParcelUuid);
     method public int describeContents();
     method public int getAssociationId();
     method public int getEvent();

@@ -30,7 +30,9 @@ import java.util.Objects;
  * A result reported by a companion app in response to an {@link ActionRequest}.
  *
  * @see CompanionDeviceManager#notifyActionResult(int, ActionResult)
+ * @hide
  */
+@SystemApi
 @FlaggedApi(Flags.FLAG_ENABLE_DATA_SYNC)
 public final class ActionResult implements Parcelable {
     /** @hide */
@@ -129,9 +131,7 @@ public final class ActionResult implements Parcelable {
 
     /**
      * Builder for creating an {@link ActionResult}.
-     * @hide
      */
-    @SystemApi
     public static final class Builder {
 
         private int mResultCode;

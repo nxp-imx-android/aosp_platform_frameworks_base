@@ -3491,6 +3491,16 @@ package android.apphibernation {
 
 package android.companion {
 
+  @FlaggedApi("android.companion.enable_data_sync") public final class ActionResult implements android.os.Parcelable {
+    method public int describeContents();
+    method @NonNull public android.companion.ActionRequest getActionRequest();
+    method public int getResultCode();
+    method public void writeToParcel(@NonNull android.os.Parcel, int);
+    field @NonNull public static final android.os.Parcelable.Creator<android.companion.ActionResult> CREATOR;
+    field public static final int RESULT_FAILED = 1; // 0x1
+    field public static final int RESULT_SUCCESS = 0; // 0x0
+  }
+
   public static final class ActionResult.Builder {
     ctor public ActionResult.Builder(@NonNull android.companion.ActionRequest, int);
     method @NonNull public android.companion.ActionResult build();
