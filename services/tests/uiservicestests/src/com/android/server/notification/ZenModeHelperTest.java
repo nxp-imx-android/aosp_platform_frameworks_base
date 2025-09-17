@@ -23,7 +23,6 @@ import static android.app.AutomaticZenRule.TYPE_SCHEDULE_TIME;
 import static android.app.AutomaticZenRule.TYPE_THEATER;
 import static android.app.AutomaticZenRule.TYPE_UNKNOWN;
 import static android.app.Flags.FLAG_BACKUP_RESTORE_LOGGING;
-import static android.app.Flags.FLAG_MODES_UI_TILE_REACTIVATES_LAST;
 import static android.app.NotificationManager.AUTOMATIC_RULE_STATUS_ACTIVATED;
 import static android.app.NotificationManager.AUTOMATIC_RULE_STATUS_DEACTIVATED;
 import static android.app.NotificationManager.AUTOMATIC_RULE_STATUS_DISABLED;
@@ -179,9 +178,7 @@ import android.service.notification.ZenPolicy;
 import android.testing.TestWithLooperRule;
 import android.testing.TestableLooper;
 import android.util.ArrayMap;
-import android.util.Log;
 import android.util.IntArray;
-import android.util.Log;
 import android.util.StatsEvent;
 import android.util.StatsEventTestUtils;
 import android.util.Xml;
@@ -307,8 +304,7 @@ public class ZenModeHelperTest extends UiServiceTestCase {
     @Parameters(name = "{0}")
     public static List<FlagsParameterization> getParams() {
         return FlagsParameterization.allCombinationsOf(
-                FLAG_BACKUP_RESTORE_LOGGING,
-                FLAG_MODES_UI_TILE_REACTIVATES_LAST);
+                FLAG_BACKUP_RESTORE_LOGGING);
     }
 
     public ZenModeHelperTest(FlagsParameterization flags) {
@@ -7190,7 +7186,6 @@ public class ZenModeHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(FLAG_MODES_UI_TILE_REACTIVATES_LAST)
     public void setAutomaticZenRuleState_updatesLastActivation() {
         String ruleOne = mZenModeHelper.addAutomaticZenRule(UserHandle.CURRENT, mPkg,
                 new AutomaticZenRule.Builder("rule", CONDITION_ID)
@@ -7281,7 +7276,6 @@ public class ZenModeHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(FLAG_MODES_UI_TILE_REACTIVATES_LAST)
     public void setManualZenMode_updatesLastActivation() {
         assertThat(mZenModeHelper.mConfig.manualRule.lastActivation).isNull();
         assertThat(mZenModeHelper.mConfig.manualRule.lastDeactivation).isNull();
@@ -7320,7 +7314,6 @@ public class ZenModeHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(FLAG_MODES_UI_TILE_REACTIVATES_LAST)
     public void setAutomaticZenRuleState_notChangingActiveState_doesNotUpdateLastActivation() {
         String ruleId = mZenModeHelper.addAutomaticZenRule(UserHandle.CURRENT, mPkg,
                 new AutomaticZenRule.Builder("rule", CONDITION_ID)
@@ -7352,7 +7345,6 @@ public class ZenModeHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(FLAG_MODES_UI_TILE_REACTIVATES_LAST)
     public void addOrUpdateRule_doesNotUpdateLastActivation() {
         AutomaticZenRule azr = new AutomaticZenRule.Builder("rule", CONDITION_ID)
                 .setConfigurationActivity(new ComponentName(mPkg, "cls"))

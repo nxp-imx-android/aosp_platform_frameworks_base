@@ -479,11 +479,9 @@ public class ZenModeConfigTest extends UiServiceTestCase {
         rule.deletionInstant = Instant.ofEpochMilli(1701790147000L);
         rule.disabledOrigin = ZenModeConfig.ORIGIN_USER_IN_SYSTEMUI;
         rule.lastActivation = Instant.ofEpochMilli(456);
-        if (Flags.modesUiTileReactivatesLast()) {
-            rule.lastManualActivation = Instant.ofEpochMilli(789);
-            rule.lastDeactivation = Instant.ofEpochMilli(876);
-            rule.lastManualDeactivation = Instant.ofEpochMilli(543);
-        }
+        rule.lastManualActivation = Instant.ofEpochMilli(789);
+        rule.lastDeactivation = Instant.ofEpochMilli(876);
+        rule.lastManualDeactivation = Instant.ofEpochMilli(543);
         config.automaticRules.put(rule.id, rule);
 
         BackupRestoreEventLogger logger = null;
@@ -520,11 +518,10 @@ public class ZenModeConfigTest extends UiServiceTestCase {
         assertEquals(rule.deletionInstant, ruleActual.deletionInstant);
         assertEquals(rule.disabledOrigin, ruleActual.disabledOrigin);
         assertEquals(rule.lastActivation, ruleActual.lastActivation);
-        if (Flags.modesUiTileReactivatesLast()) {
-            assertEquals(rule.lastManualActivation, ruleActual.lastManualActivation);
-            assertEquals(rule.lastDeactivation, ruleActual.lastDeactivation);
-            assertEquals(rule.lastManualDeactivation, ruleActual.lastManualDeactivation);
-        }
+        assertEquals(rule.lastManualActivation, ruleActual.lastManualActivation);
+        assertEquals(rule.lastDeactivation, ruleActual.lastDeactivation);
+        assertEquals(rule.lastManualDeactivation, ruleActual.lastManualDeactivation);
+
         if (Flags.backupRestoreLogging()) {
             verify(logger).logItemsBackedUp(DATA_TYPE_ZEN_RULES, 2);
             verify(logger).logItemsRestored(DATA_TYPE_ZEN_RULES, 2);
@@ -557,11 +554,9 @@ public class ZenModeConfigTest extends UiServiceTestCase {
         rule.deletionInstant = Instant.ofEpochMilli(1701790147000L);
         rule.disabledOrigin = ZenModeConfig.ORIGIN_USER_IN_SYSTEMUI;
         rule.lastActivation = Instant.ofEpochMilli(789);
-        if (Flags.modesUiTileReactivatesLast()) {
-            rule.lastManualActivation = Instant.ofEpochMilli(123);
-            rule.lastDeactivation = Instant.ofEpochMilli(296);
-            rule.lastManualDeactivation = Instant.ofEpochMilli(481);
-        }
+        rule.lastManualActivation = Instant.ofEpochMilli(123);
+        rule.lastDeactivation = Instant.ofEpochMilli(296);
+        rule.lastManualDeactivation = Instant.ofEpochMilli(481);
 
         Parcel parcel = Parcel.obtain();
         rule.writeToParcel(parcel, 0);
@@ -592,11 +587,9 @@ public class ZenModeConfigTest extends UiServiceTestCase {
         assertEquals(rule.deletionInstant, parceled.deletionInstant);
         assertEquals(rule.disabledOrigin, parceled.disabledOrigin);
         assertEquals(rule.lastActivation, parceled.lastActivation);
-        if (Flags.modesUiTileReactivatesLast()) {
-            assertEquals(rule.lastManualActivation, parceled.lastManualActivation);
-            assertEquals(rule.lastDeactivation, parceled.lastDeactivation);
-            assertEquals(rule.lastManualDeactivation, parceled.lastManualDeactivation);
-        }
+        assertEquals(rule.lastManualActivation, parceled.lastManualActivation);
+        assertEquals(rule.lastDeactivation, parceled.lastDeactivation);
+        assertEquals(rule.lastManualDeactivation, parceled.lastManualDeactivation);
 
         assertEquals(rule, parceled);
         assertEquals(rule.hashCode(), parceled.hashCode());
@@ -676,11 +669,9 @@ public class ZenModeConfigTest extends UiServiceTestCase {
         rule.deletionInstant = Instant.ofEpochMilli(1701790147000L);
         rule.disabledOrigin = ZenModeConfig.ORIGIN_APP;
         rule.lastActivation = Instant.ofEpochMilli(123);
-        if (Flags.modesUiTileReactivatesLast()) {
-            rule.lastManualActivation = Instant.ofEpochMilli(456);
-            rule.lastDeactivation = Instant.ofEpochMilli(285);
-            rule.lastManualDeactivation = Instant.ofEpochMilli(301);
-        }
+        rule.lastManualActivation = Instant.ofEpochMilli(456);
+        rule.lastDeactivation = Instant.ofEpochMilli(285);
+        rule.lastManualDeactivation = Instant.ofEpochMilli(301);
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         writeRuleXml(rule, baos);
@@ -715,11 +706,9 @@ public class ZenModeConfigTest extends UiServiceTestCase {
         assertEquals(rule.deletionInstant, fromXml.deletionInstant);
         assertEquals(rule.disabledOrigin, fromXml.disabledOrigin);
         assertEquals(rule.lastActivation, fromXml.lastActivation);
-        if (Flags.modesUiTileReactivatesLast()) {
-            assertEquals(rule.lastManualActivation, fromXml.lastManualActivation);
-            assertEquals(rule.lastDeactivation, fromXml.lastDeactivation);
-            assertEquals(rule.lastManualDeactivation, fromXml.lastManualDeactivation);
-        }
+        assertEquals(rule.lastManualActivation, fromXml.lastManualActivation);
+        assertEquals(rule.lastDeactivation, fromXml.lastDeactivation);
+        assertEquals(rule.lastManualDeactivation, fromXml.lastManualDeactivation);
     }
 
     @Test

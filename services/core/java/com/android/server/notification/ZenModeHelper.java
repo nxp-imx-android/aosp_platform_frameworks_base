@@ -58,7 +58,6 @@ import android.annotation.SuppressLint;
 import android.annotation.UserIdInt;
 import android.app.AppOpsManager;
 import android.app.AutomaticZenRule;
-import android.app.Flags;
 import android.app.NotificationManager;
 import android.app.NotificationManager.Policy;
 import android.app.backup.BackupRestoreEventLogger;
@@ -132,13 +131,13 @@ import java.io.PrintWriter;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.function.IntPredicate;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.IntPredicate;
 
 /**
  * NotificationManagerService helper for functionality related to zen mode.
@@ -2020,30 +2019,26 @@ public class ZenModeHelper {
 
             if (!mConfig.isManualActive() && config.isManualActive()) {
                 config.manualRule.lastActivation = now;
-                if (Flags.modesUiTileReactivatesLast() && isManualOrigin) {
+                if (isManualOrigin) {
                     config.manualRule.lastManualActivation = now;
                 }
             } else if (mConfig.isManualActive() && !config.isManualActive()) {
-                if (Flags.modesUiTileReactivatesLast()) {
-                    config.manualRule.lastDeactivation = now;
-                    if (isManualOrigin) {
-                        config.manualRule.lastManualDeactivation = now;
-                    }
+                config.manualRule.lastDeactivation = now;
+                if (isManualOrigin) {
+                    config.manualRule.lastManualDeactivation = now;
                 }
             }
             for (ZenRule rule : config.automaticRules.values()) {
                 ZenRule previousRule = mConfig.automaticRules.get(rule.id);
                 if (rule.isActive() && (previousRule == null || !previousRule.isActive())) {
                     rule.lastActivation = now;
-                    if (Flags.modesUiTileReactivatesLast() && isManualOrigin) {
+                    if (isManualOrigin) {
                         rule.lastManualActivation = now;
                     }
                 } else if (!rule.isActive() && previousRule != null && previousRule.isActive()) {
-                    if (Flags.modesUiTileReactivatesLast()) {
-                        rule.lastDeactivation = now;
-                        if (isManualOrigin) {
-                            rule.lastManualDeactivation = now;
-                        }
+                    rule.lastDeactivation = now;
+                    if (isManualOrigin) {
+                        rule.lastManualDeactivation = now;
                     }
                 }
             }

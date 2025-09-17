@@ -48,7 +48,6 @@ import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.app.ActivityManager;
 import android.app.AutomaticZenRule;
-import android.app.Flags;
 import android.app.NotificationManager;
 import android.app.NotificationManager.Policy;
 import android.app.backup.BackupRestoreEventLogger;
@@ -927,14 +926,11 @@ public class ZenModeConfig implements Parcelable {
         rt.conditionOverride = safeInt(parser, RULE_ATT_CONDITION_OVERRIDE,
                 ZenRule.OVERRIDE_NONE);
         rt.lastActivation = safeInstant(parser, RULE_ATT_LAST_ACTIVATION, null);
-        if (Flags.modesUiTileReactivatesLast()) {
-            rt.lastManualActivation = safeInstant(parser, RULE_ATT_LAST_MANUAL_ACTIVATION,
-                    null);
-            rt.lastDeactivation = safeInstant(parser, RULE_ATT_LAST_DEACTIVATION, null);
-            rt.lastManualDeactivation = safeInstant(parser, RULE_ATT_LAST_MANUAL_DEACTIVATION,
-                    null);
-        }
-
+        rt.lastManualActivation = safeInstant(parser, RULE_ATT_LAST_MANUAL_ACTIVATION,
+                null);
+        rt.lastDeactivation = safeInstant(parser, RULE_ATT_LAST_DEACTIVATION, null);
+        rt.lastManualDeactivation = safeInstant(parser, RULE_ATT_LAST_MANUAL_DEACTIVATION,
+                null);
         return rt;
     }
 
@@ -991,14 +987,10 @@ public class ZenModeConfig implements Parcelable {
             out.attributeInt(null, RULE_ATT_CONDITION_OVERRIDE, rule.conditionOverride);
         }
         writeXmlAttributeInstant(out, RULE_ATT_LAST_ACTIVATION, rule.lastActivation);
-        if (Flags.modesUiTileReactivatesLast()) {
-            writeXmlAttributeInstant(out, RULE_ATT_LAST_MANUAL_ACTIVATION,
-                    rule.lastManualActivation);
-            writeXmlAttributeInstant(out, RULE_ATT_LAST_DEACTIVATION,
-                    rule.lastDeactivation);
-            writeXmlAttributeInstant(out, RULE_ATT_LAST_MANUAL_DEACTIVATION,
-                    rule.lastManualDeactivation);
-        }
+        writeXmlAttributeInstant(out, RULE_ATT_LAST_MANUAL_ACTIVATION, rule.lastManualActivation);
+        writeXmlAttributeInstant(out, RULE_ATT_LAST_DEACTIVATION, rule.lastDeactivation);
+        writeXmlAttributeInstant(out, RULE_ATT_LAST_MANUAL_DEACTIVATION,
+                rule.lastManualDeactivation);
     }
 
     private static void writeXmlAttributeInstant(TypedXmlSerializer out, String att,
@@ -2270,16 +2262,14 @@ public class ZenModeConfig implements Parcelable {
             if (source.readInt() == 1) {
                 lastActivation = Instant.ofEpochMilli(source.readLong());
             }
-            if (Flags.modesUiTileReactivatesLast()) {
-                if (source.readInt() == 1) {
-                    lastManualActivation = Instant.ofEpochMilli(source.readLong());
-                }
-                if (source.readInt() == 1) {
-                    lastDeactivation = Instant.ofEpochMilli(source.readLong());
-                }
-                if (source.readInt() == 1) {
-                    lastManualDeactivation = Instant.ofEpochMilli(source.readLong());
-                }
+            if (source.readInt() == 1) {
+                lastManualActivation = Instant.ofEpochMilli(source.readLong());
+            }
+            if (source.readInt() == 1) {
+                lastDeactivation = Instant.ofEpochMilli(source.readLong());
+            }
+            if (source.readInt() == 1) {
+                lastManualDeactivation = Instant.ofEpochMilli(source.readLong());
             }
         }
 
@@ -2347,11 +2337,9 @@ public class ZenModeConfig implements Parcelable {
             dest.writeInt(legacySuppressedEffects);
             dest.writeInt(conditionOverride);
             writeInstantToParcel(dest, lastActivation);
-            if (Flags.modesUiTileReactivatesLast()) {
-                writeInstantToParcel(dest, lastManualActivation);
-                writeInstantToParcel(dest, lastDeactivation);
-                writeInstantToParcel(dest, lastManualDeactivation);
-            }
+            writeInstantToParcel(dest, lastManualActivation);
+            writeInstantToParcel(dest, lastDeactivation);
+            writeInstantToParcel(dest, lastManualDeactivation);
         }
 
         private static void writeInstantToParcel(Parcel dest, @Nullable Instant instant) {
@@ -2406,12 +2394,9 @@ public class ZenModeConfig implements Parcelable {
             sb.append(",disabledOrigin=").append(disabledOrigin);
             sb.append(",legacySuppressedEffects=").append(legacySuppressedEffects);
             sb.append(",lastActivation=").append(lastActivation);
-            if (Flags.modesUiTileReactivatesLast()) {
-                sb.append(",lastManualActivation=").append(lastManualActivation);
-                sb.append(",lastDeactivation=").append(lastDeactivation);
-                sb.append(",lastManualDeactivation=").append(lastManualDeactivation);
-            }
-
+            sb.append(",lastManualActivation=").append(lastManualActivation);
+            sb.append(",lastDeactivation=").append(lastDeactivation);
+            sb.append(",lastManualDeactivation=").append(lastManualDeactivation);
             return sb.append(']').toString();
         }
 
@@ -2453,10 +2438,9 @@ public class ZenModeConfig implements Parcelable {
 
         @Override
         public boolean equals(@Nullable Object o) {
-            if (!(o instanceof ZenRule)) return false;
+            if (!(o instanceof ZenRule other)) return false;
             if (o == this) return true;
-            final ZenRule other = (ZenRule) o;
-            boolean finalEquals = other.enabled == enabled
+            return other.enabled == enabled
                     && Objects.equals(other.name, name)
                     && other.zenMode == zenMode
                     && Objects.equals(other.conditionId, conditionId)
@@ -2480,38 +2464,21 @@ public class ZenModeConfig implements Parcelable {
                     && other.disabledOrigin == disabledOrigin
                     && other.legacySuppressedEffects == legacySuppressedEffects
                     && other.conditionOverride == conditionOverride
-                    && Objects.equals(other.lastActivation, lastActivation);
-
-            if (Flags.modesUiTileReactivatesLast()) {
-                finalEquals = finalEquals
-                        && Objects.equals(other.lastManualActivation, lastManualActivation)
-                        && Objects.equals(other.lastDeactivation, lastDeactivation)
-                        && Objects.equals(other.lastManualDeactivation, lastManualDeactivation);
-            }
-
-            return finalEquals;
+                    && Objects.equals(other.lastActivation, lastActivation)
+                    && Objects.equals(other.lastManualActivation, lastManualActivation)
+                    && Objects.equals(other.lastDeactivation, lastDeactivation)
+                    && Objects.equals(other.lastManualDeactivation, lastManualDeactivation);
         }
 
         @Override
         public int hashCode() {
-            if (Flags.modesUiTileReactivatesLast()) {
-                return Objects.hash(enabled, name, zenMode, conditionId, condition,
-                        component, configurationActivity, pkg, id, enabler, zenPolicy,
-                        zenDeviceEffects, allowManualInvocation, iconResName,
-                        triggerDescription, type, userModifiedFields,
-                        zenPolicyUserModifiedFields, zenDeviceEffectsUserModifiedFields,
-                        deletionInstant, disabledOrigin, legacySuppressedEffects,
-                        conditionOverride, lastActivation, lastManualActivation,
-                        lastDeactivation, lastManualDeactivation);
-            } else {
-                return Objects.hash(enabled, name, zenMode, conditionId, condition,
-                        component, configurationActivity, pkg, id, enabler, zenPolicy,
-                        zenDeviceEffects, allowManualInvocation, iconResName,
-                        triggerDescription, type, userModifiedFields,
-                        zenPolicyUserModifiedFields, zenDeviceEffectsUserModifiedFields,
-                        deletionInstant, disabledOrigin, legacySuppressedEffects,
-                        conditionOverride, lastActivation);
-            }
+            return Objects.hash(enabled, name, zenMode, conditionId, condition, component,
+                    configurationActivity, pkg, id, enabler, zenPolicy, zenDeviceEffects,
+                    allowManualInvocation, iconResName, triggerDescription, type,
+                    userModifiedFields, zenPolicyUserModifiedFields,
+                    zenDeviceEffectsUserModifiedFields, deletionInstant, disabledOrigin,
+                    legacySuppressedEffects, conditionOverride, lastActivation,
+                    lastManualActivation, lastDeactivation, lastManualDeactivation);
         }
 
         /** Returns a deep copy of the {@link ZenRule}. */
