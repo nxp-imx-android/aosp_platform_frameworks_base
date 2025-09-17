@@ -142,6 +142,22 @@ class SuggestedDeviceManagerTest {
   }
 
   @Test
+  fun requestDeviceSuggestion_duringActiveConnection_doesNothing() {
+    mediaDevice1.stub { on { state } doReturn STATE_CONNECTING }
+    val deviceCallback = addListenerAndCaptureCallback(listener)
+    deviceCallback.onDeviceListUpdate(listOf(mediaDevice1))
+    deviceCallback.onDeviceSuggestionsUpdated(listOf(suggestedDeviceInfo1))
+
+    assertThat(mSuggestedDeviceManager.getSuggestedDevice()?.connectionState).isEqualTo(
+      STATE_CONNECTING
+    )
+
+    mSuggestedDeviceManager.requestDeviceSuggestion()
+
+    verify(localMediaManager, never()).requestDeviceSuggestion()
+  }
+
+  @Test
   fun getSuggestedDevice_beforeListenersSet_callsLocalMediaManager() {
     localMediaManager.stub {
       on { mediaDevices } doReturn listOf(mediaDevice1)

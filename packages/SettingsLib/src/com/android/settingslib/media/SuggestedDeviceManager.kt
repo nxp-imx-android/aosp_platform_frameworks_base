@@ -144,6 +144,10 @@ class SuggestedDeviceManager(
   }
 
   fun requestDeviceSuggestion() {
+    if (suggestedDeviceState?.connectionState == STATE_CONNECTING) {
+      Log.i(TAG, "Connection in progress, aborting request for a new suggestion.")
+      return
+    }
     localMediaManager.requestDeviceSuggestion()
     stopHidingSuggestedDeviceState()
   }
