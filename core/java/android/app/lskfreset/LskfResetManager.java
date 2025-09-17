@@ -14,24 +14,24 @@
  * limitations under the License.
  */
 
-package android.app.userrecovery;
+package android.app.lskfreset;
 
-import static android.app.userrecovery.flags.Flags.FLAG_ENABLE_USER_RECOVERY_MANAGER;
+import static android.app.lskfreset.flags.Flags.FLAG_ENABLE_LSKF_RESET_MANAGER;
 
 import android.annotation.FlaggedApi;
 import android.annotation.SystemService;
 import android.content.Context;
 
 /**
- * Provides user recovery related functionalities.
+ * Provides LSKF reset related functionalities.
  *
  * @hide
  */
-@FlaggedApi(FLAG_ENABLE_USER_RECOVERY_MANAGER)
-@SystemService(Context.USER_RECOVERY_SERVICE)
-public final class UserRecoveryManager {
+@FlaggedApi(FLAG_ENABLE_LSKF_RESET_MANAGER)
+@SystemService(Context.LSKF_RESET_SERVICE)
+public final class LskfResetManager {
     @SuppressWarnings("unused")
-    private final IUserRecoveryManager mService;
+    private final ILskfResetManager mService;
     @SuppressWarnings("unused")
     private final Context mContext;
 
@@ -40,7 +40,7 @@ public final class UserRecoveryManager {
      *
      * @hide
      */
-    public UserRecoveryManager(IUserRecoveryManager mService, Context context) {
+    public LskfResetManager(ILskfResetManager mService, Context context) {
         this.mService = mService;
         this.mContext = context;
     }

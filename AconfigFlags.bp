@@ -32,7 +32,7 @@ aconfig_declarations_group {
         "android.app.jank.flags-aconfig-java",
         "android.app.ondeviceintelligence-aconfig-java",
         "android.app.privatecompute.flags-aconfig-java",
-        "android.app.userrecovery.flags-aconfig-java",
+        "android.app.lskfreset.flags-aconfig-java",
         "android.app.smartspace.flags-aconfig-java",
         "android.app.supervision.flags-aconfig-java",
         "android.app.usage.flags-aconfig-java",
@@ -1412,16 +1412,16 @@ aconfig_declarations {
 
 // User Recovery
 aconfig_declarations {
-    name: "android.app.userrecovery.flags-aconfig",
+    name: "android.app.lskfreset.flags-aconfig",
     exportable: true,
-    package: "android.app.userrecovery.flags",
+    package: "android.app.lskfreset.flags",
     container: "system",
-    srcs: ["core/java/android/app/userrecovery/flags/flags.aconfig"],
+    srcs: ["core/java/android/app/lskfreset/flags/flags.aconfig"],
 }
 
 java_aconfig_library {
-    name: "android.app.userrecovery.flags-aconfig-java",
-    aconfig_declarations: "android.app.userrecovery.flags-aconfig",
+    name: "android.app.lskfreset.flags-aconfig-java",
+    aconfig_declarations: "android.app.lskfreset.flags-aconfig",
     defaults: ["framework-minus-apex-aconfig-java-defaults"],
 }
 
