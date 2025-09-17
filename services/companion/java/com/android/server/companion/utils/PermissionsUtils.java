@@ -68,6 +68,10 @@ import static android.companion.AssociationRequest.DEVICE_PROFILE_NEARBY_DEVICE_
 import static android.companion.AssociationRequest.DEVICE_PROFILE_VIRTUAL_DEVICE;
 import static android.companion.AssociationRequest.DEVICE_PROFILE_WATCH;
 import static android.companion.AssociationRequest.DEVICE_PROFILE_WEARABLE_SENSING;
+import static android.companion.CompanionDeviceManager.FLAG_CALL_METADATA;
+import static android.companion.CompanionDeviceManager.FLAG_TASK_CONTINUITY;
+import static android.companion.CompanionDeviceManager.FLAG_UNIVERSAL_MODES;
+import static android.companion.CompanionDeviceManager.FLAG_UNIVERSAL_CLIPBOARD;
 import static android.companion.CompanionResources.PERMISSION_ADD_MIRROR_DISPLAY;
 import static android.companion.CompanionResources.PERMISSION_ADD_TRUSTED_DISPLAY;
 import static android.companion.CompanionResources.PERMISSION_CALENDAR;
@@ -166,6 +170,17 @@ public final class PermissionsUtils {
                 Manifest.permission.REQUEST_COMPANION_PROFILE_VIRTUAL_DEVICE);
 
         DEVICE_PROFILE_TO_PERMISSION = unmodifiableMap(map);
+    }
+
+    private static final Map<Integer, String> SYSTEM_DATA_SYNC_FLAG_TO_PERMISSION;
+    static {
+        final Map<Integer, String> map = new ArrayMap<>();
+        map.put(FLAG_CALL_METADATA, null);
+        map.put(FLAG_TASK_CONTINUITY, null);
+        map.put(FLAG_UNIVERSAL_MODES, Manifest.permission.REQUEST_COMPANION_SELF_MANAGED);
+        map.put(FLAG_UNIVERSAL_CLIPBOARD, Manifest.permission.REQUEST_COMPANION_SELF_MANAGED);
+
+        SYSTEM_DATA_SYNC_FLAG_TO_PERMISSION = unmodifiableMap(map);
     }
 
     /**
@@ -319,6 +334,32 @@ public final class PermissionsUtils {
         if (!hasRequirePermissions) {
             throw new SecurityException("Caller (uid=" + getCallingUid() + ") does not have "
                     + "permissions to request observing device presence base on the device id");
+        }
+    }
+
+    /**
+     * Require the caller to hold necessary permission to interact with the system data sync flags.
+     */
+    public static void enforceCallerCanInteractWithSystemDataSyncFlags(@NonNull Context context,
+            int flags) {
+        if (flags == 0) {
+            return;
+        }
+
+        Set<String> requiredPermissions = new ArraySet<>();
+        for (Map.Entry<Integer, String> entry : SYSTEM_DATA_SYNC_FLAG_TO_PERMISSION.entrySet()) {
+            if (entry.getValue() == null) {
+                continue;
+            }
+            if ((entry.getKey() & flags) != 0) {
+                requiredPermissions.add(entry.getValue());
+            }
+        }
+        for (String permission : requiredPermissions) {
+            if (context.checkCallingPermission(permission) != PERMISSION_GRANTED) {
+                throw new SecurityException("Caller (uid=" + getCallingUid() + ") does not have "
+                        + "permission to interact with system data sync flags: " + flags);
+            }
         }
     }
 

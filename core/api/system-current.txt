@@ -3522,6 +3522,8 @@ package android.companion {
     method @Deprecated @FlaggedApi("android.companion.enable_data_sync") @RequiresPermission(android.Manifest.permission.REQUEST_COMPANION_SELF_MANAGED) public void notifyDeviceDisappeared(int);
     method @FlaggedApi("android.companion.enable_data_sync") @RequiresPermission(android.Manifest.permission.REQUEST_COMPANION_SELF_MANAGED) public void notifyDevicePresence(int, @NonNull android.companion.DevicePresenceEvent);
     method @RequiresPermission("android.permission.MANAGE_COMPANION_DEVICES") public void removeOnAssociationsChangedListener(@NonNull android.companion.CompanionDeviceManager.OnAssociationsChangedListener);
+    field @FlaggedApi("android.companion.enable_data_sync") @RequiresPermission(android.Manifest.permission.REQUEST_COMPANION_SELF_MANAGED) public static final int FLAG_UNIVERSAL_CLIPBOARD = 8; // 0x8
+    field @FlaggedApi("android.companion.enable_data_sync") @RequiresPermission(android.Manifest.permission.REQUEST_COMPANION_SELF_MANAGED) public static final int FLAG_UNIVERSAL_MODES = 4; // 0x4
   }
 
   public static interface CompanionDeviceManager.OnAssociationsChangedListener {
