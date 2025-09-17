@@ -551,6 +551,15 @@ func createSrcs(modules proptools.Configurable[[]string], tag string) proptools.
 }
 
 // Creates an array of "<prefix><m><suffix>", for each m in <modules>.
+type transformArrayProcessor struct {
+	prefix, suffix string
+}
+
+func (p transformArrayProcessor) PostProcess(modules []string) []string {
+	return transformArray(modules, p.prefix, p.suffix)
+}
+
+// Creates an array of "<prefix><m><suffix>", for each m in <modules>.
 func transformArray(modules []string, prefix, suffix string) []string {
 	a := make([]string, 0, len(modules))
 	for _, module := range modules {
@@ -559,31 +568,24 @@ func transformArray(modules []string, prefix, suffix string) []string {
 	return a
 }
 
-// Creates an array of "<prefix><m><suffix>", for each m in <modules>.
 func transformConfigurableArray(modules proptools.Configurable[[]string], prefix, suffix string) {
-	modules.AddPostProcessor(func(s []string) []string {
-		return transformArray(s, prefix, suffix)
-	})
+	modules.AddPostProcessor(transformArrayProcessor{prefix, suffix})
 }
 
 func removeAll(s proptools.Configurable[[]string], vs []string) {
-	s.AddPostProcessor(func(s []string) []string {
-		a := make([]string, 0, len(s))
-		for _, module := range s {
-			if !slices.Contains(vs, module) {
-				a = append(a, module)
-			}
-		}
-		return a
-	})
+	s.AddPostProcessor(removeAllPostProcessor{vs})
 }
 
-func remove(s []string, v string) []string {
-	s2 := make([]string, 0, len(s))
-	for _, sv := range s {
-		if sv != v {
-			s2 = append(s2, sv)
+type removeAllPostProcessor struct {
+	vs []string
+}
+
+func (p removeAllPostProcessor) PostProcess(s []string) []string {
+	a := make([]string, 0, len(s))
+	for _, module := range s {
+		if !slices.Contains(p.vs, module) {
+			a = append(a, module)
 		}
 	}
-	return s2
+	return a
 }
