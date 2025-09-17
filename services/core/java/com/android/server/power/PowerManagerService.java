@@ -449,6 +449,10 @@ public final class PowerManagerService extends SystemService
     // The screen will be off if we are in quiescent mode.
     private boolean mBootCompleted;
 
+    // True if ACTION_BOOT_COMPLETED was delivered. We keep the screen on until this happens.
+    // The screen will be off if we are in quiescent mode.
+    private boolean mUserBootCompleted;
+
     // True if auto-suspend mode is enabled.
     // Refer to autosuspend.h.
     private boolean mHalAutoSuspendModeEnabled;
@@ -1559,6 +1563,15 @@ public final class PowerManagerService extends SystemService
         filter = new IntentFilter();
         filter.addAction(Intent.ACTION_DOCK_EVENT);
         mContext.registerReceiver(new DockReceiver(), filter, null, mHandler);
+
+        if (mFeatureFlags.isWaitForUserBootCompleteEnabled()) {
+            filter = new IntentFilter();
+            filter.addAction(Intent.ACTION_BOOT_COMPLETED);
+            // To ensure that keeping suspendBlocker after finished the broadcast of BootCompleted
+            filter.setPriority(IntentFilter.SYSTEM_LOW_PRIORITY);
+            mContext.registerReceiver(new UserBootCompletedReceiver(), filter, null,
+                    mHandler, Context.RECEIVER_NOT_EXPORTED);
+        }
     }
 
     @VisibleForTesting
@@ -4116,10 +4129,18 @@ public final class PowerManagerService extends SystemService
         }
 
         // First acquire suspend blockers if needed.
-        if (!mBootCompleted && !mHoldingBootingSuspendBlocker) {
-            mBootingSuspendBlocker.acquire();
-            mHoldingBootingSuspendBlocker = true;
+        if (mFeatureFlags.isWaitForUserBootCompleteEnabled()) {
+            if (!mUserBootCompleted && !mHoldingBootingSuspendBlocker) {
+                mBootingSuspendBlocker.acquire();
+                mHoldingBootingSuspendBlocker = true;
+            }
+        } else {
+            if (!mBootCompleted && !mHoldingBootingSuspendBlocker) {
+                mBootingSuspendBlocker.acquire();
+                mHoldingBootingSuspendBlocker = true;
+            }
         }
+
         if (needWakeLockSuspendBlocker && !mHoldingWakeLockSuspendBlocker) {
             mWakeLockSuspendBlocker.acquire();
             mHoldingWakeLockSuspendBlocker = true;
@@ -4146,10 +4167,18 @@ public final class PowerManagerService extends SystemService
         }
 
         // Then release suspend blockers if needed.
-        if (mBootCompleted && mHoldingBootingSuspendBlocker) {
-            mBootingSuspendBlocker.release();
-            mHoldingBootingSuspendBlocker = false;
+        if (mFeatureFlags.isWaitForUserBootCompleteEnabled()) {
+            if (mUserBootCompleted && mHoldingBootingSuspendBlocker) {
+                mBootingSuspendBlocker.release();
+                mHoldingBootingSuspendBlocker = false;
+            }
+        } else {
+            if (mBootCompleted && mHoldingBootingSuspendBlocker) {
+                mBootingSuspendBlocker.release();
+                mHoldingBootingSuspendBlocker = false;
+            }
         }
+
         if (!needWakeLockSuspendBlocker && mHoldingWakeLockSuspendBlocker) {
             mWakeLockSuspendBlocker.release();
             mHoldingWakeLockSuspendBlocker = false;
@@ -5623,6 +5652,16 @@ public final class PowerManagerService extends SystemService
                     mDirty |= DIRTY_DOCK_STATE;
                     updatePowerStateLocked();
                 }
+            }
+        }
+    }
+
+    private final class UserBootCompletedReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            synchronized (mLock) {
+                mUserBootCompleted = true;
+                updateSuspendBlockerLocked();
             }
         }
     }

@@ -138,3 +138,13 @@ flag {
       purpose: PURPOSE_FEATURE
     }
 }
+
+flag {
+    name: "wait_for_user_boot_complete"
+    namespace: "power"
+    description: "When enabled, holds the BootSuspendBlocker until after the ACTION_BOOT_COMPLETED broadcast is sent. This prevents the CPU from suspending prematurely during a quiescent reboot."
+    bug: "440425374"
+    metadata {
+          purpose: PURPOSE_BUGFIX
+    }
+}
