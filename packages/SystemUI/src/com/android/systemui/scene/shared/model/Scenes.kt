@@ -17,7 +17,7 @@
 package com.android.systemui.scene.shared.model
 
 import com.android.compose.animation.scene.SceneKey
-import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenSceneKeys
+import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenMovableParentKeys
 
 /**
  * Keys of all known scenes.
@@ -37,8 +37,14 @@ object Scenes {
      */
     @JvmField val Gone = SceneKey("gone")
 
-    /** The lockscreen is the scene that shows when the device is locked. */
-    @JvmField val Lockscreen = LockscreenSceneKeys.Lockscreen
+    /**
+     * The lockscreen is the scene that shows when the device is locked.
+     *
+     * This key is defined within the plugin lib so that plugins can use MovableElement keys which
+     * are part of this scene. This is necessary due to the dependency order of the plugin lib and
+     * the need to use MovableElement for animating our legacy views.
+     */
+    @JvmField val Lockscreen = LockscreenMovableParentKeys.Lockscreen
 
     /**
      * Activities that render over lockscreen. Similar to [Gone], it is the absence of any SystemUI

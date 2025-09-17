@@ -18,7 +18,6 @@ package com.android.systemui.keyguard.ui.composable.blueprint
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.android.compose.animation.scene.ContentScope
@@ -46,11 +45,13 @@ import com.android.systemui.keyguard.ui.viewmodel.AodBurnInViewModel
 import com.android.systemui.keyguard.ui.viewmodel.KeyguardClockViewModel
 import com.android.systemui.keyguard.ui.viewmodel.LockscreenContentViewModel
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementContext
+import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementFactory
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementKeys.Clock
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementKeys.MediaCarousel
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementKeys.SettingsMenu
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementKeys.Shortcuts
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementKeys.Smartspace
+import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenScope
 import javax.inject.Inject
 
 /** Renders the lockscreen scene when showing a standard phone or tablet layout */
@@ -75,32 +76,43 @@ constructor(
     private val mediaElementProvider: MediaElementProvider,
     private val elementFactoryBuilder: LockscreenElementFactoryImpl.Builder,
 ) : ComposableLockscreenSceneBlueprint {
-
     override val id: String = "default"
 
     @Composable
-    override fun ContentScope.Content(viewModel: LockscreenContentViewModel, modifier: Modifier) {
+    private fun rememberElementFactory(): LockscreenElementFactory {
         val currentClock by keyguardClockViewModel.currentClock.collectAsStateWithLifecycle()
-        val elementFactory =
-            elementFactoryBuilder.createRemembered(
-                mediaElementProvider,
-                lockIconElementProvider,
-                shortcutElementProvider,
-                statusBarElementProvider,
-                smartspaceElementProvider,
-                upperRegionElementProvider,
-                lowerRegionElementProvider,
-                clockRegionElementProvider,
-                settingsMenuElementProvider,
-                indicationAreaElementProvider,
-                notificationStackElementProvider,
-                aodNotificationIconElementProvider,
-                aodPromotedNotificationElementProvider,
-                currentClock?.smallClock?.layout,
-                currentClock?.largeClock?.layout,
-                *oemElementProviders.toTypedArray(),
-            )
+        return elementFactoryBuilder.createRemembered(
+            mediaElementProvider,
+            lockIconElementProvider,
+            shortcutElementProvider,
+            statusBarElementProvider,
+            smartspaceElementProvider,
+            upperRegionElementProvider,
+            lowerRegionElementProvider,
+            clockRegionElementProvider,
+            settingsMenuElementProvider,
+            indicationAreaElementProvider,
+            notificationStackElementProvider,
+            aodNotificationIconElementProvider,
+            aodPromotedNotificationElementProvider,
+            currentClock?.smallClock?.layout,
+            currentClock?.largeClock?.layout,
+            *oemElementProviders.toTypedArray(),
+        )
+    }
 
+    @Composable
+    override fun ContentScope.Elements(
+        ctx: LockscreenElementContext,
+        content: @Composable LockscreenScope<ContentScope>.() -> Unit,
+    ) {
+        val elementFactory = rememberElementFactory()
+        val elementContext = LockscreenElementContext()
+        with(LockscreenScopeImpl(this, elementFactory, elementContext)) { content() }
+    }
+
+    @Composable
+    override fun ContentScope.Content(viewModel: LockscreenContentViewModel, modifier: Modifier) {
         val burnIn = rememberBurnIn(keyguardClockViewModel)
         LockscreenTouchHandling(
             viewModelFactory = viewModel.touchHandlingFactory,
@@ -132,8 +144,7 @@ constructor(
                     },
                 )
 
-            LockscreenScopeImpl(this@Content, elementFactory, elementContext)
-                .LockscreenSceneLayout(viewModel)
+            Elements(elementContext) { LockscreenSceneLayout(viewModel) }
         }
     }
 }

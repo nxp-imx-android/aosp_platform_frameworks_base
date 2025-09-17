@@ -21,9 +21,18 @@ import androidx.compose.ui.Modifier
 import com.android.compose.animation.scene.ContentScope
 import com.android.systemui.keyguard.shared.model.LockscreenSceneBlueprint
 import com.android.systemui.keyguard.ui.viewmodel.LockscreenContentViewModel
+import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementContext
+import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenScope
 
 /** Defines interface for classes that can render the content for a specific blueprint/layout. */
 interface ComposableLockscreenSceneBlueprint : LockscreenSceneBlueprint {
+    /** Creates the relevant lockscreen content scope for rendering elements of this blueprint */
+    @Composable
+    fun ContentScope.Elements(
+        ctx: LockscreenElementContext,
+        content: @Composable LockscreenScope<ContentScope>.() -> Unit,
+    )
+
     /** Renders the content of this blueprint. */
     @Composable fun ContentScope.Content(viewModel: LockscreenContentViewModel, modifier: Modifier)
 }

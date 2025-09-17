@@ -18,7 +18,6 @@ package com.android.systemui.keyguard.ui.viewmodel
 
 import com.android.systemui.deviceentry.domain.interactor.deviceEntryBypassInteractor
 import com.android.systemui.deviceentry.domain.interactor.deviceEntryUdfpsInteractor
-import com.android.systemui.keyguard.domain.interactor.keyguardBlueprintInteractor
 import com.android.systemui.keyguard.shared.transition.KeyguardTransitionAnimationCallback
 import com.android.systemui.keyguard.shared.transition.keyguardTransitionAnimationCallbackDelegator
 import com.android.systemui.kosmos.Kosmos
@@ -34,7 +33,6 @@ val Kosmos.lockscreenContentViewModelFactory by Fixture {
             viewState: ViewStateAccessor,
         ): LockscreenContentViewModel {
             return LockscreenContentViewModel(
-                interactor = keyguardBlueprintInteractor,
                 touchHandlingFactory = keyguardTouchHandlingViewModelFactory,
                 shadeModeInteractor = shadeModeInteractor,
                 deviceEntryBypassInteractor = deviceEntryBypassInteractor,

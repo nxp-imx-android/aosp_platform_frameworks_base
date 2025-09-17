@@ -27,6 +27,7 @@ import com.android.systemui.keyguard.ui.composable.LockscreenContent
 import com.android.systemui.keyguard.ui.composable.LockscreenScene
 import com.android.systemui.keyguard.ui.composable.LockscreenSceneBlueprintModule
 import com.android.systemui.keyguard.ui.composable.blueprint.ComposableLockscreenSceneBlueprint
+import com.android.systemui.keyguard.ui.composable.blueprint.LockscreenBlueprintSelector
 import com.android.systemui.keyguard.ui.viewmodel.LockscreenBehindScrimViewModel
 import com.android.systemui.keyguard.ui.viewmodel.LockscreenContentViewModel
 import com.android.systemui.keyguard.ui.viewmodel.LockscreenFrontScrimViewModel
@@ -63,7 +64,7 @@ interface LockscreenSceneModule {
             viewModelFactory: LockscreenContentViewModel.Factory,
             lockscreenFrontScrimViewModelFactory: LockscreenFrontScrimViewModel.Factory,
             lockscreenBehindScrimViewModelFactory: LockscreenBehindScrimViewModel.Factory,
-            blueprints: Set<@JvmSuppressWildcards ComposableLockscreenSceneBlueprint>,
+            blueprintSelectorFactory: LockscreenBlueprintSelector.Factory,
             clockInteractor: KeyguardClockInteractor,
             interactionJankMonitor: InteractionJankMonitor,
         ): LockscreenContent {
@@ -71,7 +72,7 @@ interface LockscreenSceneModule {
                 viewModelFactory,
                 lockscreenFrontScrimViewModelFactory,
                 lockscreenBehindScrimViewModelFactory,
-                blueprints,
+                blueprintSelectorFactory,
                 clockInteractor,
                 interactionJankMonitor,
             )

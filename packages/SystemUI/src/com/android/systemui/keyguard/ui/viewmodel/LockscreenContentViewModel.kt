@@ -21,7 +21,6 @@ import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.compose.animation.scene.content.state.TransitionState
 import com.android.systemui.deviceentry.domain.interactor.DeviceEntryBypassInteractor
 import com.android.systemui.deviceentry.domain.interactor.DeviceEntryUdfpsInteractor
-import com.android.systemui.keyguard.domain.interactor.KeyguardBlueprintInteractor
 import com.android.systemui.keyguard.shared.transition.KeyguardTransitionAnimationCallback
 import com.android.systemui.keyguard.shared.transition.KeyguardTransitionAnimationCallbackDelegator
 import com.android.systemui.lifecycle.ExclusiveActivatable
@@ -37,13 +36,10 @@ import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.map
 
 class LockscreenContentViewModel
 @AssistedInject
 constructor(
-    interactor: KeyguardBlueprintInteractor,
     val touchHandlingFactory: KeyguardTouchHandlingViewModel.Factory,
     shadeModeInteractor: ShadeModeInteractor,
     deviceEntryBypassInteractor: DeviceEntryBypassInteractor,
@@ -56,7 +52,6 @@ constructor(
     @Assisted private val keyguardTransitionAnimationCallback: KeyguardTransitionAnimationCallback,
     @Assisted private val viewStateAccessor: ViewStateAccessor,
 ) : ExclusiveActivatable() {
-
     private val hydrator = Hydrator("LockscreenContentViewModel.hydrator")
 
     /** @see ShadeModeInteractor.isFullWidthShade */
@@ -75,13 +70,6 @@ constructor(
         hydrator.hydratedStateOf(
             traceName = "isBypassEnabled",
             source = deviceEntryBypassInteractor.isBypassEnabled,
-        )
-
-    val blueprintId: String by
-        hydrator.hydratedStateOf(
-            traceName = "blueprintId",
-            initialValue = interactor.getCurrentBlueprint().id,
-            source = interactor.blueprint.map { it.id }.distinctUntilChanged(),
         )
 
     /** Whether udfps is supported. */
