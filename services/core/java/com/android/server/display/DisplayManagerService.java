@@ -46,6 +46,7 @@ import static android.hardware.display.DisplayManager.VIRTUAL_DISPLAY_FLAG_STEAL
 import static android.hardware.display.DisplayManager.VIRTUAL_DISPLAY_FLAG_TRUSTED;
 import static android.hardware.display.DisplayManagerGlobal.DisplayEvent;
 import static android.hardware.display.DisplayManagerGlobal.InternalEventFlag;
+import static android.hardware.display.DisplayManagerGlobal.eventsToString;
 import static android.hardware.display.DisplayViewport.VIEWPORT_EXTERNAL;
 import static android.hardware.display.DisplayViewport.VIEWPORT_INTERNAL;
 import static android.hardware.display.DisplayViewport.VIEWPORT_VIRTUAL;
@@ -3734,16 +3735,16 @@ public final class DisplayManagerService extends SystemService {
 
     // Runs on Handler thread.
     // Delivers display event notifications to callbacks.
-    private void deliverDisplayEvent(int displayId, ArraySet<Integer> uids,
-            @DisplayEvent int event, DisplayInfoChangedFields displayInfoChangedFields) {
+    private void deliverDisplayEvents(int displayId, ArraySet<Integer> uids,
+            int eventMask, DisplayInfoChangedFields displayInfoChangedFields) {
         if (DEBUG || mExtraDisplayEventLogging) {
-            Slog.d(TAG, "Delivering display event: displayId="
-                    + displayId + ", event=" + event
+            Slog.d(TAG, "Delivering display events: displayId="
+                    + displayId + ", events=" + eventsToString(eventMask)
                     + (uids != null ? ", uids=" + uids : ""));
         }
         if (Trace.isTagEnabled(Trace.TRACE_TAG_POWER)) {
             Trace.instant(Trace.TRACE_TAG_POWER,
-                    "deliverDisplayEvent#event=" + event + ",displayId="
+                    "deliverDisplayEvent#events=" + eventsToString(eventMask) + ",displayId="
                             + displayId   + (uids != null ? ", uids=" + uids : ""));
         }
         // Grab the lock and copy the callbacks.
@@ -3758,25 +3759,25 @@ public final class DisplayManagerService extends SystemService {
             }
         }
 
-        // Map that maps a uid to the number of times it was notified
-        SparseIntArray notifiedUids = new SparseIntArray();
+        // Maps a uid to the events (eventMask) it is notified about
+        SparseIntArray notifiedUidsToEvents = new SparseIntArray();
 
         // After releasing the lock, send the notifications out.
         for (int i = 0; i < mTempCallbacks.size(); i++) {
             CallbackRecord callbackRecord = mTempCallbacks.get(i);
-            boolean notified = callbackRecord.notifyDisplayEventAsync(displayId, event);
-            if (notified) {
+            int eventsToSendMask = callbackRecord.notifyDisplayEventAsync(displayId, eventMask);
+            if (eventsToSendMask != 0) {
                 int uid = callbackRecord.mUid;
-                notifiedUids.put(uid, notifiedUids.get(uid, 0) + 1);
+                notifiedUidsToEvents.put(uid, eventsToSendMask);
             }
         }
 
         if (mFlags.isDisplayEventsLoggingEnabled()) {
             // Log DisplayEventCallbackOccurred atom
-            mStatsLogger.logDisplayEvent(event, notifiedUids);
+            mStatsLogger.logDisplayEvents(notifiedUidsToEvents);
 
             // Log DisplayInfoChanged atom
-            if (event == DisplayManagerGlobal.EVENT_DISPLAY_BASIC_CHANGED) {
+            if ((eventMask & DisplayManagerGlobal.EVENT_DISPLAY_BASIC_CHANGED) != 0) {
                 mStatsLogger.logDisplayInfoChanged(displayInfoChangedFields.changedGroups(),
                         displayInfoChangedFields.source());
             }
@@ -4318,7 +4319,7 @@ public final class DisplayManagerService extends SystemService {
                     break;
 
                 case MSG_DELIVER_DISPLAY_EVENT:
-                    deliverDisplayEvent(msg.arg1, null, msg.arg2,
+                    deliverDisplayEvents(msg.arg1, null, msg.arg2,
                             (DisplayInfoChangedFields) msg.obj);
                     break;
 
@@ -4363,7 +4364,7 @@ public final class DisplayManagerService extends SystemService {
                         uids = display.getPendingFrameRateOverrideUids();
                         display.clearPendingFrameRateOverrideUids();
                     }
-                    deliverDisplayEvent(msg.arg1, uids, msg.arg2,
+                    deliverDisplayEvents(msg.arg1, uids, msg.arg2,
                             (DisplayInfoChangedFields) msg.obj);
                     break;
 
@@ -4453,8 +4454,8 @@ public final class DisplayManagerService extends SystemService {
 
         public boolean mWifiDisplayScanRequested;
 
-        // A single pending display event.
-        private record Event(int displayId, @DisplayEvent int event) { };
+        // A single pending display eventMask.
+        private record Event(int displayId, int eventMask) { };
 
         // The list of pending display events. This is null until there is a pending event to be
         // saved.
@@ -4502,9 +4503,9 @@ public final class DisplayManagerService extends SystemService {
             mPackageName = packageNames == null ? null : packageNames[0];
         }
 
-        public boolean shouldReceiveRefreshRateWithChangeUpdate(int event) {
+        public boolean shouldReceiveRefreshRateWithChangeUpdate(int eventMask) {
             if (mFlags.isRefreshRateEventForForegroundAppsEnabled()
-                    && event == DisplayManagerGlobal.EVENT_DISPLAY_REFRESH_RATE_CHANGED
+                    && (eventMask & DisplayManagerGlobal.EVENT_DISPLAY_REFRESH_RATE_CHANGED) != 0
                     && mActivityManagerInternal != null) {
                 int procState = mActivityManagerInternal.getUidProcessState(mUid);
                 int importance = ActivityManager.RunningAppProcessInfo
@@ -4587,68 +4588,85 @@ public final class DisplayManagerService extends SystemService {
         }
 
         /**
-         * @return {@code true} if the notification was processed (sent, queued).
-         * Returns {@code false} if the notification was not sent e.g. because client is
-         * not registered for this event.
+         * @return the event mask that was sent to the client. Returns 0 if the notification was
+         * not sent e.g. because client is not registered for any of the events.
          */
-        public boolean notifyDisplayEventAsync(int displayId, @DisplayEvent int event) {
-            if (!shouldSendDisplayEvent(event)) {
+        private int notifyDisplayEventAsync(int displayId, int oldEventMask) {
+            int eventMask = calculateEventsToSend(oldEventMask);
+            if (eventMask == 0) {
                 if (extraLogging(mPackageName)) {
                     Slog.i(TAG,
-                            "Not sending displayEvent: " + event + " due to mask:"
-                                    + mInternalEventFlagsMask);
+                            "Not sending displayEvent: " + eventsToString(eventMask)
+                                    + " due to mask:" + mInternalEventFlagsMask);
                 }
                 if (Trace.isTagEnabled(Trace.TRACE_TAG_POWER)) {
                     Trace.instant(Trace.TRACE_TAG_POWER,
-                            "notifyDisplayEventAsync#notSendingEvent=" + event
-                                    + ",mInternalEventFlagsMask=" + mInternalEventFlagsMask
-                                    + ",uid" + mUid);
+                            "notifyDisplayEventAsync#notSendingEvents="
+                                    + eventsToString(eventMask) + ",mInternalEventFlagsMask="
+                                    + mInternalEventFlagsMask + ",uid" + mUid);
                 }
-                // The client is not interested in this event, so do nothing.
-                return false;
+                // The client is not interested in these events, so do nothing.
+                return 0;
             }
 
             synchronized (mCallback) {
-                // Add the new event to the pending list if the client frozen or cached (not
+                // Add the new eventMask to the pending list if the client frozen or cached (not
                 // ready) or if there are existing pending events.  The latter condition
                 // occurs as the client is transitioning to ready but pending events have not
-                // been dispatched.  The new event must be added to the pending list to
-                // preserve event ordering.
+                // been dispatched.  The new eventMask must be added to the pending list to
+                // preserve eventMask ordering.
                 if (!isReadyLocked() || (mPendingDisplayEvents != null
                         && !mPendingDisplayEvents.isEmpty())) {
-                    // The client is interested in the event but is not ready to receive it.
-                    // Put the event on the pending list.
-                    addDisplayEvent(displayId, event);
-                    return true;
+                    // The client is interested in the eventMask but is not ready to receive it.
+                    // Put the eventMask on the pending list.
+                    addDisplayEvent(displayId, eventMask);
+                    return eventMask;
                 }
             }
 
-            if (!shouldReceiveRefreshRateWithChangeUpdate(event)) {
+            if (!shouldReceiveRefreshRateWithChangeUpdate(eventMask)) {
                 // The client is not visible to the user and is not a system service, so do nothing.
-                return false;
+                return 0;
             }
 
             try {
-                transmitDisplayEvent(displayId, event);
-                return true;
+                transmitDisplayEvents(displayId, eventMask);
+                return eventMask;
             } catch (RemoteException ex) {
                 Slog.w(TAG, "Failed to notify process "
                         + mPid + " that displays changed, assuming it died.", ex);
                 binderDied();
-                return false;
+                return eventMask;
             }
         }
 
         /**
-         * Transmit a single display event.  The client is presumed ready.  This throws if the
+         * Transmit a display eventMask. The client is presumed ready.  This throws if the
          * client has died; callers must catch and handle the exception.  The exception cannot be
          * handled directly here because {@link #binderDied()} must not be called whilst holding
          * the mCallback lock.
          */
-        private void transmitDisplayEvent(int displayId, @DisplayEvent int event)
+        private void transmitDisplayEvents(int displayId, int eventMask)
                 throws RemoteException {
-            // The client is ready to receive the event.
-            mCallback.onDisplayEvent(displayId, event);
+            // The client is ready to receive the eventMask(s).
+            mCallback.onDisplayEvent(displayId, eventMask);
+        }
+
+        /** Calculate which events should be sent */
+        private int calculateEventsToSend(int eventMask) {
+            int maskToSend = 0;
+            int remainingEvents = eventMask;
+
+            while (remainingEvents != 0) {
+                // Isolate the lowest single event bit (e.g., 1, 2, 4, 8...)
+                int nextEvent = Integer.lowestOneBit(remainingEvents);
+                if (shouldSendDisplayEvent(nextEvent)) {
+                    maskToSend |= nextEvent;
+                }
+                remainingEvents &= ~nextEvent;
+            }
+
+            return maskToSend;
         }
 
         /**
@@ -4696,26 +4714,31 @@ public final class DisplayManagerService extends SystemService {
             }
         }
 
-        // Add a single event to the pending list, possibly combining or collapsing events in the
-        // list.
+        // Add a single eventMask to the pending list, possibly combining or
+        // collapsing events in the list.
         @GuardedBy("mCallback")
-        private void addDisplayEvent(int displayId, int event) {
+        private void addDisplayEvent(int displayId, int eventMask) {
             if (mPendingDisplayEvents == null) {
                 mPendingDisplayEvents = new ArrayList<>();
             }
             if (!mPendingDisplayEvents.isEmpty()) {
-                // Ignore redundant events. Further optimization is possible by merging adjacent
-                // events.
-                Event last = mPendingDisplayEvents.get(mPendingDisplayEvents.size() - 1);
-                if (last.displayId == displayId && last.event == event) {
+                // Merge eventMasks
+                int lastIndex = mPendingDisplayEvents.size() - 1;
+                Event last = mPendingDisplayEvents.get(lastIndex);
+
+                if (last.displayId() == displayId) {
+                    int newMask = last.eventMask | eventMask;
+                    Event updatedEvent = new Event(last.displayId, newMask);
+                    mPendingDisplayEvents.set(lastIndex, updatedEvent); // Replace old event
                     if (DEBUG) {
-                        Slog.d(TAG, "Ignore redundant display event " + displayId + "/" + event
-                                + " to " + mUid + "/" + mPid);
+                        Slog.d(TAG, "Merge display eventMasks. Display ID: " + displayId + "/"
+                                + eventsToString(eventMask) + " to " + mUid + "/" + mPid
+                                + ". New mask: " + eventsToString(newMask));
                     }
                     return;
                 }
             }
-            mPendingDisplayEvents.add(new Event(displayId, event));
+            mPendingDisplayEvents.add(new Event(displayId, eventMask));
         }
 
         /**
@@ -4795,16 +4818,16 @@ public final class DisplayManagerService extends SystemService {
                     for (int i = 0; i < pendingDisplayEvents.length; i++) {
                         Event displayEvent = pendingDisplayEvents[i];
                         if (DEBUG) {
-                            Slog.d(TAG, "Send pending display event #" + i + " "
+                            Slog.d(TAG, "Send pending display eventMask #" + i + " "
                                     + displayEvent.displayId + "/"
-                                    + displayEvent.event + " to " + mUid + "/" + mPid);
+                                    + displayEvent.eventMask + " to " + mUid + "/" + mPid);
                         }
 
-                        if (!shouldReceiveRefreshRateWithChangeUpdate(displayEvent.event)) {
+                        if (!shouldReceiveRefreshRateWithChangeUpdate(displayEvent.eventMask)) {
                             continue;
                         }
 
-                        transmitDisplayEvent(displayEvent.displayId, displayEvent.event);
+                        transmitDisplayEvents(displayEvent.displayId, displayEvent.eventMask);
                     }
                 }
 
