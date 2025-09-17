@@ -81,6 +81,7 @@ import android.os.UserManager;
 import android.stats.camera.nano.CameraProtos.CameraStreamProto;
 import android.util.ArrayMap;
 import android.util.ArraySet;
+import android.util.DebugUtils;
 import android.util.Log;
 import android.util.Range;
 import android.util.Slog;
@@ -93,11 +94,13 @@ import com.android.framework.protobuf.nano.MessageNano;
 import com.android.internal.R;
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.camera.flags.Flags;
+import com.android.internal.util.DumpUtils;
 import com.android.internal.util.FrameworkStatsLog;
 import com.android.server.LocalServices;
 import com.android.server.ServiceThread;
 import com.android.server.SystemService;
 import com.android.server.am.StackTracesDumpHelper;
+import com.android.server.utils.Slogf;
 import com.android.server.wm.WindowManagerInternal;
 
 import java.io.FileDescriptor;
@@ -123,7 +126,7 @@ import java.util.concurrent.TimeUnit;
 public class CameraServiceProxy extends SystemService
         implements Handler.Callback, IBinder.DeathRecipient {
     private static final String TAG = "CameraService_proxy";
-    private static final boolean DEBUG = false;
+    private static final boolean DEBUG = Log.isLoggable(TAG, Log.DEBUG);
 
     /**
      * This must match the ICameraService.aidl definition
@@ -213,7 +216,10 @@ public class CameraServiceProxy extends SystemService
     private UserManager mUserManager;
 
     private final Object mLock = new Object();
+
+    @GuardedBy("mLock")
     private Set<Integer> mEnabledCameraUsers;
+    @GuardedBy("mLock")
     private int mLastUser;
     // The current set of device state flags. May be different from mLastReportedDeviceState if the
     // native camera service has not been notified of the change.
@@ -225,6 +231,7 @@ public class CameraServiceProxy extends SystemService
     @DeviceStateFlags
     private int mLastReportedDeviceState;
 
+    @GuardedBy("mLock")
     private ICameraService mCameraServiceRaw;
 
     // Map of currently active camera IDs
@@ -605,14 +612,19 @@ public class CameraServiceProxy extends SystemService
                 case Intent.ACTION_MANAGED_PROFILE_REMOVED:
                     synchronized(mLock) {
                         // Return immediately if we haven't seen any users start yet
-                        if (mEnabledCameraUsers == null) return;
+                        if (mEnabledCameraUsers == null) {
+                            Slogf.w(TAG, "Received event intent %s, but no user has started yet "
+                                    + "(last user is %d)", action, mLastUser);
+                            return;
+                        }
                         switchUserLocked(mLastUser);
                     }
                     break;
                 case UsbManager.ACTION_USB_DEVICE_ATTACHED:
                 case UsbManager.ACTION_USB_DEVICE_DETACHED:
                     synchronized (mLock) {
-                        UsbDevice device = intent.getParcelableExtra(UsbManager.EXTRA_DEVICE, android.hardware.usb.UsbDevice.class);
+                        UsbDevice device = intent.getParcelableExtra(UsbManager.EXTRA_DEVICE,
+                                android.hardware.usb.UsbDevice.class);
                         if (device != null) {
                             notifyUsbDeviceHotplugLocked(device,
                                     action.equals(UsbManager.ACTION_USB_DEVICE_ATTACHED));
@@ -922,6 +934,29 @@ public class CameraServiceProxy extends SystemService
                 .exec(this, in, out, err, args, callback, resultReceiver);
         }
 
+        @Override
+        protected void dump(FileDescriptor fd, PrintWriter pw, String[] args) {
+            if (!DumpUtils.checkDumpPermission(mContext, TAG, pw)) return;
+
+            pw.printf("DEBUG logging: %b\n", DEBUG);
+
+            synchronized (mLock) {
+                pw.printf("Raw service: %s\n", mCameraServiceRaw);
+                pw.printf("Device state: %s\n", deviceStateToString(mDeviceState));
+                pw.printf("Last reported device state: %s\n",
+                        deviceStateToString(mLastReportedDeviceState));
+                pw.printf("Last user: %d\n", mLastUser);
+                pw.printf("Enabled camera users: %s\n", mEnabledCameraUsers);
+            }
+
+            // Don't need to dump other state (like mCameraEventHistory) as it's dumped by the
+            // native service
+        }
+
+        private static String deviceStateToString(@DeviceStateFlags int state) {
+            return DebugUtils.flagsToString(ICameraService.class, "DEVICE_STATE_", state);
+        }
+
         private static class CSPShellCmd extends ShellCommand {
             private static final String TAG = "CSPShellCmd";
             private static final String USAGE = """
@@ -979,7 +1014,9 @@ public class CameraServiceProxy extends SystemService
         mHandler = new Handler(mHandlerThread.getLooper(), this);
 
         mNotifyNfc = SystemProperties.getInt(NFC_NOTIFICATION_PROP, 0) > 0;
-        if (DEBUG) Slog.v(TAG, "Notify NFC behavior is " + (mNotifyNfc ? "active" : "disabled"));
+        if (DEBUG) {
+            Slogf.v(TAG, "Notify NFC behavior is %s", (mNotifyNfc ? "active" : "disabled"));
+        }
         // Don't keep any extra logging threads if not needed
         mLogWriterService.setKeepAliveTime(1, TimeUnit.SECONDS);
         mLogWriterService.allowCoreThreadTimeOut(true);
@@ -1094,6 +1131,9 @@ public class CameraServiceProxy extends SystemService
 
     @Override
     public void onUserStarting(@NonNull TargetUser user) {
+        if (DEBUG) {
+            Slogf.d(TAG, "onUserStarting(): %s", user);
+        }
         synchronized(mLock) {
             if (mEnabledCameraUsers == null) {
                 // Initialize cameraserver, or update cameraserver if we are recovering
@@ -1105,6 +1145,9 @@ public class CameraServiceProxy extends SystemService
 
     @Override
     public void onUserSwitching(@Nullable TargetUser from, @NonNull TargetUser to) {
+        if (DEBUG) {
+            Slogf.d(TAG, "onUserSwitching(): from %s to %s", from, to);
+        }
         synchronized(mLock) {
             switchUserLocked(to.getUserIdentifier());
         }
@@ -1182,6 +1225,7 @@ public class CameraServiceProxy extends SystemService
     }
 
     @Nullable
+    @GuardedBy("mLock")
     private ICameraService getCameraServiceRawLocked() {
         if (mCameraServiceRaw == null) {
             IBinder cameraServiceBinder = getBinderService(CAMERA_SERVICE_BINDER_NAME);
@@ -1200,10 +1244,19 @@ public class CameraServiceProxy extends SystemService
         return mCameraServiceRaw;
     }
 
+    @GuardedBy("mLock")
     private void switchUserLocked(int userHandle) {
         Set<Integer> currentUserHandles = getEnabledUserHandles(userHandle);
+        if (DEBUG) {
+            Slogf.d(TAG, "switchUserLocked(%d): currentUserHandles=%s", userHandle,
+                    currentUserHandles);
+        }
         mLastUser = userHandle;
         if (mEnabledCameraUsers == null || !mEnabledCameraUsers.equals(currentUserHandles)) {
+            if (DEBUG) {
+                Slogf.d(TAG, "switchUserLocked(%d): mEnabledCameraUsers changed from %s to %s",
+                        userHandle, mEnabledCameraUsers, currentUserHandles);
+            }
             // Some user handles have been added or removed, update cameraserver.
             mEnabledCameraUsers = currentUserHandles;
             notifySwitchWithRetriesLocked(RETRY_TIMES);
@@ -1239,7 +1292,12 @@ public class CameraServiceProxy extends SystemService
         }
     }
 
+    @GuardedBy("mLock")
     private void notifySwitchWithRetriesLocked(int retries) {
+        if (DEBUG) {
+            Slogf.d(TAG, "notifySwitchWithRetriesLocked(retries=%d): mEnabledCameraUsers=%s",
+                    retries, mEnabledCameraUsers);
+        }
         if (mEnabledCameraUsers == null) {
             return;
         }
@@ -1254,7 +1312,12 @@ public class CameraServiceProxy extends SystemService
                 RETRY_DELAY_TIME);
     }
 
+    @GuardedBy("mLock")
     private boolean notifyCameraserverLocked(int eventType, Set<Integer> updatedUserHandles) {
+        if (DEBUG) {
+            Slogf.d(TAG, "notifyCameraserverLocked(): eventType=%d, users=%s", eventType,
+                    updatedUserHandles);
+        }
         // Forward the user switch event to the native camera service running in the cameraserver
         // process.
         ICameraService cameraService = getCameraServiceRawLocked();
