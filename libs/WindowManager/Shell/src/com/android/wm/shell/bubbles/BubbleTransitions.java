@@ -445,7 +445,7 @@ public class BubbleTransitions {
         default void skip() {}
         default void continueCollapse() {}
         /** Continues the conversion transition. */
-        default void continueConvert(BubbleBarLayerView layerView) {}
+        default void continueConvert() {}
         /** Merge this transition with the unfold transition. */
         default void mergeWithUnfold(
                 SurfaceControl taskLeash, SurfaceControl.Transaction finishT) {}
@@ -2026,7 +2026,7 @@ public class BubbleTransitions {
      * <p>This transition class should be created after switching over to the new Bubbles window for
      * bubble bar mode, and adding the TaskView to the new window.
      *
-     * <p>The transition is only started after calling {@link #continueConvert(BubbleBarLayerView)}
+     * <p>The transition is only started after calling {@link #continueConvert()}
      * once the bubble bar location on the screen is known.
      */
     class FloatingToBarConversion implements TransitionHandler, BubbleTransition {
@@ -2035,7 +2035,6 @@ public class BubbleTransitions {
         private final TransactionProvider mTransactionProvider;
         IBinder mTransition;
         private final Rect mBounds = new Rect();
-        private final WindowContainerTransaction mWct = new WindowContainerTransaction();
         private SurfaceControl mTaskLeash;
         private SurfaceControl.Transaction mFinishTransaction;
         private boolean mIsStarted = false;
@@ -2133,10 +2132,15 @@ public class BubbleTransitions {
         }
 
         @Override
-        public void continueConvert(BubbleBarLayerView layerView) {
+        public void surfaceCreated() {
+            if (canStart()) {
+                startTransition();
+            }
+        }
+
+        @Override
+        public void continueConvert() {
             mHasBounds = true;
-            mPositioner.getTaskViewRestBounds(mBounds);
-            mWct.setBounds(mBubble.getTaskView().getTaskInfo().token, mBounds);
             if (canStart()) {
                 startTransition();
             }
@@ -2151,14 +2155,21 @@ public class BubbleTransitions {
         }
 
         private boolean canStart() {
-            return mHasBounds && mCanExpand && !mIsStarted;
+            return mHasBounds && mCanExpand && !mIsStarted && hasTaskInfo();
+        }
+
+        private boolean hasTaskInfo() {
+            return mBubble.getTaskView().getTaskInfo() != null;
         }
 
         private void startTransition() {
             mIsStarted = true;
             final TaskView tv = mBubble.getTaskView();
+            mPositioner.getTaskViewRestBounds(mBounds);
+            WindowContainerTransaction wct = new WindowContainerTransaction();
+            wct.setBounds(tv.getTaskInfo().token, mBounds);
             mTransition = mTransitions.startTransition(TRANSIT_BUBBLE_CONVERT_FLOATING_TO_BAR,
-                    mWct, this);
+                    wct, this);
             mTaskViewTransitions.removePendingTransitions(tv.getController());
             mTaskViewTransitions.enqueueRunningExternal(tv.getController(), mTransition);
         }

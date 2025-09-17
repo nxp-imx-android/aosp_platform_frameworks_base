@@ -62,7 +62,6 @@ import android.platform.test.annotations.EnableFlags;
 import android.view.SurfaceControl;
 import android.view.ViewRootImpl;
 import android.window.TransitionInfo;
-import android.window.WindowContainerToken;
 import android.window.WindowContainerTransaction;
 
 import androidx.core.animation.AnimatorTestRule;
@@ -176,8 +175,7 @@ public class BubbleTransitionsTest extends ShellTestCase {
     private ActivityManager.RunningTaskInfo setupBubble(Bubble bubble, TaskView taskView,
             TaskViewTaskController taskViewTaskController) {
         final ActivityManager.RunningTaskInfo taskInfo = new ActivityManager.RunningTaskInfo();
-        final WindowContainerToken token = new MockToken().token();
-        taskInfo.token = token;
+        taskInfo.token = new MockToken().token();
         taskInfo.configuration.windowConfiguration.setActivityType(ACTIVITY_TYPE_STANDARD);
         doReturn(taskInfo).when(taskViewTaskController).getTaskInfo();
         doReturn(taskViewTaskController).when(taskView).getController();
@@ -563,7 +561,7 @@ public class BubbleTransitionsTest extends ShellTestCase {
                 .thenReturn(transition);
 
         bt.continueExpand();
-        bt.continueConvert(mLayerView);
+        bt.continueConvert();
 
         verify(mTransitions)
                 .startTransition(eq(TRANSIT_BUBBLE_CONVERT_FLOATING_TO_BAR), any(), eq(bt));
@@ -634,7 +632,7 @@ public class BubbleTransitionsTest extends ShellTestCase {
                 .thenReturn(transition);
 
         bt.continueExpand();
-        bt.continueConvert(mLayerView);
+        bt.continueConvert();
 
         verify(mTransitions)
                 .startTransition(eq(TRANSIT_BUBBLE_CONVERT_FLOATING_TO_BAR), any(), eq(bt));
@@ -673,9 +671,9 @@ public class BubbleTransitionsTest extends ShellTestCase {
         verify(mTransitions, never()).startTransition(anyInt(), any(), eq(bt));
         bt.continueExpand();
 
-        bt.continueConvert(mLayerView);
+        bt.continueConvert();
         // call continue convert again
-        bt.continueConvert(mLayerView);
+        bt.continueConvert();
 
         // verify we only started the transition once
         verify(mTransitions, times(1))
@@ -688,7 +686,7 @@ public class BubbleTransitionsTest extends ShellTestCase {
 
         final BubbleTransitions.FloatingToBarConversion bt =
                 mBubbleTransitions.new FloatingToBarConversion(mBubble, mBubblePositioner);
-        bt.continueConvert(mLayerView);
+        bt.continueConvert();
 
         verify(mTransitions, never()).startTransition(anyInt(), any(), eq(bt));
 
@@ -696,6 +694,29 @@ public class BubbleTransitionsTest extends ShellTestCase {
 
         // verify we only started the transition once
         verify(mTransitions, times(1))
+                .startTransition(eq(TRANSIT_BUBBLE_CONVERT_FLOATING_TO_BAR), any(), eq(bt));
+    }
+
+    @Test
+    public void convertFloatingBubbleToBarBubble_waitsForTaskInfo() {
+        // set up the bubble with null task info
+        ActivityManager.RunningTaskInfo taskInfo = setupBubble();
+        doReturn(null).when(mTaskViewTaskController).getTaskInfo();
+        doReturn(null).when(mTaskView).getTaskInfo();
+
+        final BubbleTransitions.FloatingToBarConversion bt =
+                mBubbleTransitions.new FloatingToBarConversion(mBubble, mBubblePositioner);
+        bt.continueExpand();
+        bt.continueConvert();
+
+        verify(mTransitions, never()).startTransition(anyInt(), any(), eq(bt));
+
+        doReturn(taskInfo).when(mTaskViewTaskController).getTaskInfo();
+        doReturn(taskInfo).when(mTaskView).getTaskInfo();
+        bt.surfaceCreated();
+
+        // verify the transition was started
+        verify(mTransitions)
                 .startTransition(eq(TRANSIT_BUBBLE_CONVERT_FLOATING_TO_BAR), any(), eq(bt));
     }
 

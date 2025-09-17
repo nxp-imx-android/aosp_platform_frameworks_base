@@ -3471,7 +3471,7 @@ public class BubbleController implements ConfigurationChangeListener,
                             // we just received an updated bubble bar relative position so we can
                             // now continue converting the bubble
                             ((Bubble) mBubbleData.getSelectedBubble()).getCurrentTransition()
-                                    .continueConvert(mLayerView);
+                                    .continueConvert();
                         }
                         if (mLayerView != null) mLayerView.updateExpandedView();
                     });
