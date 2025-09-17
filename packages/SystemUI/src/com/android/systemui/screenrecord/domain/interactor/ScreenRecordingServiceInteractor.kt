@@ -24,6 +24,7 @@ import android.graphics.drawable.Icon
 import android.media.projection.StopReason
 import android.net.Uri
 import android.os.IBinder
+import android.view.Display
 import androidx.annotation.WorkerThread
 import com.android.app.tracing.coroutines.flow.asStateFlowTraced
 import com.android.app.tracing.coroutines.flow.stateInTraced
@@ -119,6 +120,7 @@ constructor(
     }
 
     override fun startRecording(parameters: ScreenRecordingParameters) {
+        require(parameters.displayId != Display.INVALID_DISPLAY) { "Provide a valid displayId" }
         _status.update { currentStatus ->
             if (currentStatus is Status.Started) {
                 currentStatus

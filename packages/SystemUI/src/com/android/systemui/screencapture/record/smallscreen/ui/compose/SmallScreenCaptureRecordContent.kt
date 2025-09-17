@@ -57,7 +57,11 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Rect
@@ -80,6 +84,8 @@ import com.android.systemui.screencapture.record.smallscreen.ui.viewmodel.Record
 import com.android.systemui.screencapture.record.smallscreen.ui.viewmodel.SmallScreenCaptureRecordViewModel
 import com.android.systemui.util.view.listenToComputeInternalInsets
 import javax.inject.Inject
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 
 @ScreenCaptureUiScope
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
@@ -161,9 +167,20 @@ constructor(
                         )
                     }
                     Spacer(Modifier.width(12.dp))
+
+                    val coroutineScope = rememberCoroutineScope()
+                    var buttonJob: Job? by remember { mutableStateOf(null) }
                     ToolbarPrimaryButton(
                         recording = viewModel.isRecording,
-                        onClick = { viewModel.onPrimaryButtonTapped() },
+                        onClick = {
+                            if (buttonJob == null) {
+                                buttonJob =
+                                    coroutineScope.launch {
+                                        viewModel.onPrimaryButtonTapped()
+                                        buttonJob = null
+                                    }
+                            }
+                        },
                         viewModel = viewModel,
                         modifier = Modifier.height(40.dp),
                     )

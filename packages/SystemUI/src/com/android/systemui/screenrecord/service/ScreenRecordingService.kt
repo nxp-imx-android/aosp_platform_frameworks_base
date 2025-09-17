@@ -16,7 +16,6 @@
 package com.android.systemui.screenrecord.service
 
 import android.app.NotificationManager
-import android.app.Service
 import android.content.Context
 import android.content.Intent
 import android.media.MediaRecorder
@@ -220,7 +219,8 @@ protected constructor(
             shouldShowTaps: Boolean,
         ) {
             val screenRecordingAudioSource = ScreenRecordingAudioSource.entries[audioSource]
-            RecordingContext(
+            val context =
+                RecordingContext(
                     notificationId = UUID.randomUUID().mostSignificantBits.toInt(),
                     originalShouldShowTouches = getShouldShowTouches(),
                     captureTarget = captureTarget,
@@ -238,10 +238,8 @@ protected constructor(
                             screenMediaRecorderListener,
                         ),
                 )
-                .also { context ->
-                    recordingContext = context
-                    context.startRecording()
-                }
+            context.startRecording()
+            recordingContext = context
         }
     }
 
@@ -268,6 +266,10 @@ protected constructor(
     }
 }
 
-private fun Service.showToast(@StringRes message: Int) {
-    Toast.makeText(this, message, Toast.LENGTH_LONG).show()
+private fun ComponentService.showToast(@StringRes message: Int) {
+    if (Looper.myLooper() != null) {
+        Toast.makeText(this, message, Toast.LENGTH_LONG).show()
+    } else {
+        coroutineScope.launch { showToast(message) }
+    }
 }
