@@ -12151,7 +12151,6 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(android.app.Flags.FLAG_MODES_UI_DND_SLICE)
     public void onConfigChanged_sendsInternalZenChangedBroadcast() throws Exception {
         mService.mZenModeHelper.getCallbacks().forEach(c -> c.onConfigChanged());
 
