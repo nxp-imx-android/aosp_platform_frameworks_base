@@ -113,16 +113,16 @@ public final class DisplayManagerGlobal {
     public @interface DisplayEvent {}
 
     public static final int EVENT_DISPLAY_ADDED = 1;
-    public static final int EVENT_DISPLAY_BASIC_CHANGED = 2;
+    public static final int EVENT_DISPLAY_BASIC_CHANGED = 1 << 1;
 
-    public static final int EVENT_DISPLAY_REMOVED = 3;
-    public static final int EVENT_DISPLAY_BRIGHTNESS_CHANGED = 4;
-    public static final int EVENT_DISPLAY_HDR_SDR_RATIO_CHANGED = 5;
-    public static final int EVENT_DISPLAY_CONNECTED = 6;
-    public static final int EVENT_DISPLAY_DISCONNECTED = 7;
-    public static final int EVENT_DISPLAY_REFRESH_RATE_CHANGED = 8;
-    public static final int EVENT_DISPLAY_STATE_CHANGED = 9;
-    public static final int EVENT_DISPLAY_COMMITTED_STATE_CHANGED = 10;
+    public static final int EVENT_DISPLAY_REMOVED = 1 << 2;
+    public static final int EVENT_DISPLAY_BRIGHTNESS_CHANGED = 1 << 3;
+    public static final int EVENT_DISPLAY_HDR_SDR_RATIO_CHANGED = 1 << 4;
+    public static final int EVENT_DISPLAY_CONNECTED = 1 << 5;
+    public static final int EVENT_DISPLAY_DISCONNECTED = 1 << 6;
+    public static final int EVENT_DISPLAY_REFRESH_RATE_CHANGED = 1 << 7;
+    public static final int EVENT_DISPLAY_STATE_CHANGED = 1 << 8;
+    public static final int EVENT_DISPLAY_COMMITTED_STATE_CHANGED = 1 << 9;
 
 
     @LongDef(prefix = {"INTERNAL_EVENT_FLAG_"}, flag = true, value = {
@@ -519,7 +519,7 @@ public final class DisplayManagerGlobal {
         // There can be racing condition between DMS and WMS callbacks, so force triggering the
         // listener to make sure the client can get the onDisplayChanged callback even if
         // DisplayInfo is not changed (Display read from both DisplayInfo and WindowConfiguration).
-        handleDisplayEvent(displayId, EVENT_DISPLAY_BASIC_CHANGED, true /* forceUpdate */);
+        handleDisplayEvents(displayId, EVENT_DISPLAY_BASIC_CHANGED, true /* forceUpdate */);
     }
 
     private static Looper getLooperForHandler(@Nullable Handler handler) {
@@ -600,12 +600,13 @@ public final class DisplayManagerGlobal {
         }
     }
 
-    private void handleDisplayEvent(int displayId, @DisplayEvent int event, boolean forceUpdate) {
+    private void handleDisplayEvents(int displayId, int eventMask, boolean forceUpdate) {
         final DisplayInfo info;
         synchronized (mLock) {
             info = getDisplayInfoLocked(displayId);
-            if ((event == EVENT_DISPLAY_BASIC_CHANGED
-                    || event == EVENT_DISPLAY_REFRESH_RATE_CHANGED) && mDispatchNativeCallbacks) {
+            if ((((eventMask & EVENT_DISPLAY_BASIC_CHANGED) != 0)
+                    || (eventMask & EVENT_DISPLAY_REFRESH_RATE_CHANGED) != 0)
+                    && mDispatchNativeCallbacks) {
                 // Choreographer only supports a single display, so only dispatch refresh rate
                 // changes for the default display.
                 if (displayId == Display.DEFAULT_DISPLAY) {
@@ -624,7 +625,7 @@ public final class DisplayManagerGlobal {
         // Accepting an Executor means the listener may be synchronously invoked, so we must
         // not be holding mLock when we do so
         for (DisplayListenerDelegate listener : mDisplayListeners) {
-            listener.sendDisplayEvent(displayId, event, info, forceUpdate);
+            listener.sendDisplayEvents(displayId, eventMask, info, forceUpdate);
         }
     }
 
@@ -1526,12 +1527,12 @@ public final class DisplayManagerGlobal {
 
     private final class DisplayManagerCallback extends IDisplayManagerCallback.Stub {
         @Override
-        public void onDisplayEvent(int displayId, @DisplayEvent int event) {
+        public void onDisplayEvent(int displayId, int eventMask) {
             if (DEBUG) {
                 Log.d(TAG, "onDisplayEvent: displayId=" + displayId + ", event="
-                        + eventToString(event));
+                        + eventsToString(eventMask));
             }
-            handleDisplayEvent(displayId, event, false /* forceUpdate */);
+            handleDisplayEvents(displayId, eventMask, false /* forceUpdate */);
         }
 
         @Override
@@ -1569,16 +1570,16 @@ public final class DisplayManagerGlobal {
             mIsEventFilterExplicit = isEventFilterExplicit;
         }
 
-        void sendDisplayEvent(int displayId, @DisplayEvent int event, @Nullable DisplayInfo info,
+        void sendDisplayEvents(int displayId, int eventMask, @Nullable DisplayInfo info,
                 boolean forceUpdate) {
             if (extraLogging()) {
-                Slog.i(TAG, "Sending Display Event: " + eventToString(event));
+                Slog.i(TAG, "Sending Display Events: " + eventsToString(eventMask));
             }
             long generationId = this.mGenerationId.get();
             mExecutor.execute(() -> {
                 // If the generation id's don't match we were canceled
                 if (generationId == this.mGenerationId.get()) {
-                    handleDisplayEventInner(displayId, event, info, forceUpdate);
+                    handleDisplayEventsInner(displayId, eventMask, info, forceUpdate);
                 }
             });
         }
@@ -1604,6 +1605,19 @@ public final class DisplayManagerGlobal {
                     && !mIsEventFilterExplicit) {
                 setEventsMask(internalEventFlagsMask
                         | INTERNAL_EVENT_FLAG_DISPLAY_REFRESH_RATE);
+            }
+        }
+
+        private void handleDisplayEventsInner(int displayId, int eventMask,
+                @Nullable DisplayInfo info, boolean forceUpdate) {
+            // For each display event do handleDisplayEventInner
+            int remainingEvents = eventMask;
+            while (remainingEvents != 0) {
+                // Isolate the lowest single event bit (e.g., 1, 2, 4, 8...)
+                int nextEvent = Integer.lowestOneBit(remainingEvents);
+                handleDisplayEventInner(displayId, nextEvent, info, forceUpdate);
+                // Remove the processed event from the mask
+                remainingEvents &= ~nextEvent;
             }
         }
 
@@ -1835,6 +1849,24 @@ public final class DisplayManagerGlobal {
             mDispatchNativeCallbacks = false;
             updateCallbackIfNeededLocked();
         }
+    }
+
+    private static String eventsToString(int eventMask) {
+        if (eventMask == 0) {
+            return "NONE";
+        }
+
+        StringBuilder sb = new StringBuilder();
+        int remainingEvents = eventMask;
+        while (remainingEvents != 0) {
+            int nextEvent = Integer.lowestOneBit(remainingEvents);
+            if (sb.length() > 0) {
+                sb.append(", ");
+            }
+            sb.append(eventToString(nextEvent));
+            remainingEvents &= ~nextEvent;
+        }
+        return sb.toString();
     }
 
     private static String eventToString(@DisplayEvent int event) {
