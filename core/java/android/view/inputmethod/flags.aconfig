@@ -237,3 +237,11 @@ flag {
     purpose: PURPOSE_BUGFIX
   }
 }
+
+flag {
+  name: "guard_input_method_list_apis"
+  namespace: "input_method"
+  description: "Guards getInputMethodList, getEnabledInputMethodList, getEnabledInputMethodSubtypeList APIs with permission."
+  bug: "417788162"
+  is_exported: true
+}
