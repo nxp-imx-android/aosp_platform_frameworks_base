@@ -88,6 +88,7 @@ constructor(
         userHandle: UserHandle? = null,
         token: MediaSession.Token? = null,
         onDialogEventListener: MediaOutputDialog.OnDialogEventListener? = null,
+        mediaSwitchingType: MediaSwitchingType? = null,
     ) {
         createAndShow(
             packageName,
@@ -97,12 +98,14 @@ constructor(
             userHandle = userHandle,
             token = token,
             onDialogEventListener = onDialogEventListener,
+            mediaSwitchingType = mediaSwitchingType,
         )
     }
 
     open fun createAndShowForSystemRouting(
         controller: DialogTransitionAnimator.Controller? = null,
         onDialogEventListener: MediaOutputDialog.OnDialogEventListener? = null,
+        mediaSwitchingType: MediaSwitchingType? = null,
     ) {
         createAndShow(
             packageName = null,
@@ -111,6 +114,7 @@ constructor(
             includePlaybackAndAppMetadata = false,
             userHandle = null,
             onDialogEventListener = onDialogEventListener,
+            mediaSwitchingType = mediaSwitchingType,
         )
     }
 
@@ -125,11 +129,18 @@ constructor(
         userHandle: UserHandle? = null,
         token: MediaSession.Token? = null,
         onDialogEventListener: MediaOutputDialog.OnDialogEventListener? = null,
+        mediaSwitchingType: MediaSwitchingType? = null,
     ) {
         // Dismiss the previous dialog, if any.
         mediaOutputDialog?.dismiss()
 
-        val controller = mediaSwitchingControllerFactory.create(packageName, userHandle, token)
+        val controller =
+            mediaSwitchingControllerFactory.create(
+                packageName,
+                userHandle,
+                token,
+                mediaSwitchingType,
+            )
 
         val mediaOutputDialog =
             MediaOutputDialog(

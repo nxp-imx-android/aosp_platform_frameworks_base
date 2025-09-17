@@ -28,6 +28,7 @@ import com.android.systemui.animation.Expandable
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.media.dialog.MediaOutputDialog
 import com.android.systemui.media.dialog.MediaOutputDialogManager
+import com.android.systemui.media.dialog.MediaSwitchingType
 import com.android.systemui.qs.panels.data.repository.QSPanelAppearanceRepository
 import com.android.systemui.res.R
 import com.android.systemui.statusbar.notification.stack.shared.model.ShadeScrimShape
@@ -50,7 +51,11 @@ constructor(
         context.getResources().getDimensionPixelSize(R.dimen.shade_panel_width)
     private val mDesktopDialogHeight = 650
 
-    fun onBarClick(model: MediaOutputComponentModel?, expandable: Expandable?) {
+    fun onBarClick(
+        model: MediaOutputComponentModel?,
+        expandable: Expandable?,
+        mediaSwitchingType: MediaSwitchingType?,
+    ) {
         val onDialogEventListener =
             if (expandedAudioTileDetailsFeatureInteractor.isEnabled()) {
                 object : MediaOutputDialog.OnDialogEventListener {
@@ -72,11 +77,13 @@ constructor(
                 aboveStatusBar = false,
                 controller = expandable?.dialogController(),
                 onDialogEventListener = onDialogEventListener,
+                mediaSwitchingType = mediaSwitchingType,
             )
         } else {
             mediaOutputDialogManager.createAndShowForSystemRouting(
                 expandable?.dialogController(),
                 onDialogEventListener,
+                mediaSwitchingType,
             )
         }
     }

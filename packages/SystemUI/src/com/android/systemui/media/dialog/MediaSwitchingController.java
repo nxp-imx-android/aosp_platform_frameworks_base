@@ -141,6 +141,7 @@ public class MediaSwitchingController
     private final NearbyMediaDevicesManager mNearbyMediaDevicesManager;
     private final Map<String, Integer> mNearbyDeviceInfoMap = new ConcurrentHashMap<>();
     private final MediaSession.Token mToken;
+    @NonNull private final MediaSwitchingType mMediaSwitchingType;
     private final Executor mBackgroundExecutor;
     @VisibleForTesting
     boolean mIsRefreshing = false;
@@ -187,6 +188,7 @@ public class MediaSwitchingController
             @Assisted String packageName,
             @Assisted @Nullable UserHandle userHandle,
             @Assisted @Nullable MediaSession.Token token,
+            @Assisted @Nullable MediaSwitchingType mediaSwitchingType,
             MediaSessionManager mediaSessionManager,
             @Nullable LocalBluetoothManager lbm,
             ActivityStarter starter,
@@ -226,7 +228,17 @@ public class MediaSwitchingController
         mNearbyMediaDevicesManager = nearbyMediaDevicesManager;
         mMediaOutputColorScheme = MediaOutputColorScheme.fromSystemColors(mContext);
 
-        if (enableInputRouting()) {
+        if (mediaSwitchingType == null) {
+            if (enableInputRouting()) {
+                mMediaSwitchingType = MediaSwitchingType.ALL;
+            } else {
+                mMediaSwitchingType = MediaSwitchingType.OUTPUT;
+            }
+        } else {
+            mMediaSwitchingType = mediaSwitchingType;
+        }
+
+        if (mMediaSwitchingType != MediaSwitchingType.OUTPUT) {
             mInputRouteManager = new InputRouteManager(mContext, audioManager, mInfoMediaManager);
         }
 
@@ -238,7 +250,10 @@ public class MediaSwitchingController
     public interface Factory {
         /** Construct a MediaSwitchingController */
         MediaSwitchingController create(
-                String packageName, UserHandle userHandle, MediaSession.Token token);
+                String packageName,
+                UserHandle userHandle,
+                MediaSession.Token token,
+                MediaSwitchingType mediaSwitchingType);
     }
 
     /**
@@ -251,10 +266,6 @@ public class MediaSwitchingController
         synchronized (mMediaDevicesLock) {
             mCachedMediaDevices.clear();
             mOutputMediaItemListProxy.clear();
-        }
-        mNearbyDeviceInfoMap.clear();
-        if (mNearbyMediaDevicesManager != null) {
-            mNearbyMediaDevicesManager.registerNearbyDevicesCallback(this);
         }
         if (!TextUtils.isEmpty(mPackageName)) {
             mMediaController = getMediaController();
@@ -272,10 +283,16 @@ public class MediaSwitchingController
             }
         }
         mCallback = cb;
-        mLocalMediaManager.registerCallback(this);
-        mLocalMediaManager.startScan();
+        mNearbyDeviceInfoMap.clear();
+        if (mMediaSwitchingType != MediaSwitchingType.INPUT) {
+            if (mNearbyMediaDevicesManager != null) {
+                mNearbyMediaDevicesManager.registerNearbyDevicesCallback(this);
+            }
+            mLocalMediaManager.registerCallback(this);
+            mLocalMediaManager.startScan();
+        }
 
-        if (enableInputRouting()) {
+        if (mMediaSwitchingType != MediaSwitchingType.OUTPUT) {
             mInputRouteManager.registerCallback(mInputDeviceCallback);
         }
         mHasAdjustVolumeUserRestriction = checkIfAdjustVolumeRestrictionEnforced();
@@ -303,18 +320,20 @@ public class MediaSwitchingController
         if (mMediaController != null) {
             mMediaController.unregisterCallback(mCb);
         }
-        mLocalMediaManager.unregisterCallback(this);
-        mLocalMediaManager.stopScan();
+        if (mMediaSwitchingType != MediaSwitchingType.INPUT) {
+            mLocalMediaManager.unregisterCallback(this);
+            mLocalMediaManager.stopScan();
+            if (mNearbyMediaDevicesManager != null) {
+                mNearbyMediaDevicesManager.unregisterNearbyDevicesCallback(this);
+            }
+        }
         synchronized (mMediaDevicesLock) {
             mCachedMediaDevices.clear();
             mOutputMediaItemListProxy.clear();
         }
-        if (mNearbyMediaDevicesManager != null) {
-            mNearbyMediaDevicesManager.unregisterNearbyDevicesCallback(this);
-        }
         mNearbyDeviceInfoMap.clear();
 
-        if (enableInputRouting()) {
+        if (mMediaSwitchingType != MediaSwitchingType.OUTPUT) {
             mInputRouteManager.unregisterCallback(mInputDeviceCallback);
             synchronized (mInputMediaDevicesLock) {
                 mInputMediaItemList.clear();
@@ -707,7 +726,7 @@ public class MediaSwitchingController
                 device, LocalMediaManager.MediaDeviceState.STATE_CONNECTING);
         // If input routing is supported and the device is an input device, call mInputRouteManager
         // to handle routing.
-        if (enableInputRouting() && device instanceof InputMediaDevice) {
+        if (device instanceof InputMediaDevice) {
             mBackgroundExecutor.execute(() -> mInputRouteManager.selectDevice(device));
             return;
         }
@@ -728,7 +747,6 @@ public class MediaSwitchingController
         coalesceSelectedDevices(mediaItems);
         return mediaItems;
     }
-
 
     private void addSeparatorForTheFirstGroupDivider(List<MediaItem> outputList) {
         for (int i = 0; i < outputList.size(); i++) {
@@ -777,16 +795,16 @@ public class MediaSwitchingController
      * Returns a list of media items to be rendered in the device list.
      */
     public List<MediaItem> getMediaItemList() {
-        // If input routing is not enabled, only return output media items.
-        if (!enableInputRouting()) {
-            return getOutputDeviceList();
-        }
-
-        // If input routing is enabled, return both output and input media items.
-        List<MediaItem> mediaItems = new ArrayList<>();
-        addOutputDevices(mediaItems);
-        addInputDevices(mediaItems);
-        return mediaItems;
+        return switch (mMediaSwitchingType) {
+            case OUTPUT -> getOutputDeviceList();
+            case INPUT -> mInputMediaItemList;
+            case ALL -> {
+                List<MediaItem> mediaItems = new ArrayList<>();
+                addOutputDevices(mediaItems);
+                addInputDevices(mediaItems);
+                yield mediaItems;
+            }
+        };
     }
 
     public MediaDevice getCurrentConnectedMediaDevice() {
