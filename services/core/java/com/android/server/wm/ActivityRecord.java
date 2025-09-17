@@ -607,6 +607,9 @@ final class ActivityRecord extends WindowToken {
 
     final boolean mOptOutEdgeToEdge;
 
+    /**
+     * Always use {@link #getConstrainDisplayApisConfig } to access this constant.
+     */
     private static ConstrainDisplayApisConfig sConstrainDisplayApisConfig;
 
     boolean pendingVoiceInteractionStart;   // Waiting for activity-invoked voice session
@@ -7752,8 +7755,8 @@ final class ActivityRecord extends WindowToken {
                                 + "should create compatDisplayInsets = %s",
                         getUid(),
                         mTmpBounds,
-                        info.neverSandboxDisplayApis(sConstrainDisplayApisConfig),
-                        info.alwaysSandboxDisplayApis(sConstrainDisplayApisConfig),
+                        info.neverSandboxDisplayApis(getConstrainDisplayApisConfig()),
+                        info.alwaysSandboxDisplayApis(getConstrainDisplayApisConfig()),
                         !matchParentBounds(),
                         scmPolicy.hasAppCompatDisplayInsetsWithoutInheritance(),
                         shouldCreateAppCompatDisplayInsets());
@@ -7776,6 +7779,15 @@ final class ActivityRecord extends WindowToken {
         mResolveConfigHint.resetTmpOverrides();
 
         logAppCompatState();
+    }
+
+    /**
+     * Always use this getter to access static constant sConstrainDisplayApisConfig.
+     */
+    @VisibleForTesting
+    @NonNull
+    ConstrainDisplayApisConfig getConstrainDisplayApisConfig() {
+        return sConstrainDisplayApisConfig;
     }
 
     @Nullable Rect getParentAppBoundsOverride() {
@@ -8229,11 +8241,11 @@ final class ActivityRecord extends WindowToken {
             return false;
         }
         // Never apply sandboxing to an app that should be explicitly excluded from the config.
-        if (info.neverSandboxDisplayApis(sConstrainDisplayApisConfig)) {
+        if (info.neverSandboxDisplayApis(getConstrainDisplayApisConfig())) {
             return false;
         }
         // Always apply sandboxing to an app that should be explicitly included from the config.
-        if (info.alwaysSandboxDisplayApis(sConstrainDisplayApisConfig)) {
+        if (info.alwaysSandboxDisplayApis(getConstrainDisplayApisConfig())) {
             return true;
         }
         // Max bounds should be sandboxed when an activity should have mAppCompatDisplayInsets,
