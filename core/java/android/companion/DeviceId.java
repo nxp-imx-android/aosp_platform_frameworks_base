@@ -47,6 +47,11 @@ public final class DeviceId implements Parcelable {
      */
     public DeviceId(@Nullable String customId, @Nullable MacAddress macAddress,
             @Nullable byte[] key) {
+        if (customId != null
+                && customId.length() > CUSTOM_ID_LENGTH_LIMIT) {
+            throw new IllegalArgumentException("Length of the custom id must be at most "
+                    + CUSTOM_ID_LENGTH_LIMIT + " characters");
+        }
         mCustomId = customId;
         mMacAddress = macAddress;
         mKey = key;
