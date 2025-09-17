@@ -19,6 +19,7 @@ package com.android.systemui.wallpapers
 import android.app.Presentation
 import android.util.Log
 import android.view.Display
+import android.view.WindowManager.InvalidDisplayException
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent
@@ -92,7 +93,14 @@ constructor(
                 debugLog(enabled = DEBUG, tag = TAG) {
                     "Show presentation $it for display ${display.displayId}"
                 }
-                it.show()
+                try {
+                    it.show()
+                } catch (e: InvalidDisplayException) {
+                    Log.w(
+                        TAG,
+                        "Display not found. Not showing presentation for ${display.displayId}",
+                    )
+                }
             }
     }
 
