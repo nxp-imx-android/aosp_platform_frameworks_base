@@ -65,9 +65,10 @@ import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.bubbles.Bubbles.BubbleExpandListener
 import com.android.wm.shell.bubbles.Bubbles.DISMISS_USER_GESTURE
 import com.android.wm.shell.bubbles.Bubbles.SysuiProxy
-import com.android.wm.shell.bubbles.BubbleLogger.Event.BUBBLE_CREATED_FROM_NOTIF
-import com.android.wm.shell.bubbles.BubbleLogger.Event.BUBBLE_CREATED_FROM_NOTIF_BUBBLE_BUTTON
-import com.android.wm.shell.bubbles.BubbleLogger.Event.BUBBLE_CREATED_FROM_ALL_APPS_ICON_MENU
+import com.android.wm.shell.bubbles.logging.BubbleLogger
+import com.android.wm.shell.bubbles.logging.BubbleLogger.Event.BUBBLE_CREATED_FROM_ALL_APPS_ICON_MENU
+import com.android.wm.shell.bubbles.logging.BubbleLogger.Event.BUBBLE_CREATED_FROM_NOTIF
+import com.android.wm.shell.bubbles.logging.BubbleLogger.Event.BUBBLE_CREATED_FROM_NOTIF_BUBBLE_BUTTON
 import com.android.wm.shell.bubbles.logging.BubbleSessionTracker
 import com.android.wm.shell.bubbles.logging.BubbleSessionTrackerImpl
 import com.android.wm.shell.bubbles.storage.BubblePersistentRepository

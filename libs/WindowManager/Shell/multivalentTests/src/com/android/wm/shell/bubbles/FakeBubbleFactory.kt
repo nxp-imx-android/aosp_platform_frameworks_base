@@ -24,6 +24,7 @@ import com.android.internal.logging.testing.UiEventLoggerFake
 import com.android.wm.shell.R
 import com.android.wm.shell.bubbles.BubbleViewInfoTask.BubbleViewInfo
 import com.android.wm.shell.bubbles.bar.BubbleBarExpandedView
+import com.android.wm.shell.bubbles.logging.BubbleLogger
 import com.android.wm.shell.common.TestShellExecutor
 import com.google.common.util.concurrent.MoreExecutors.directExecutor
 

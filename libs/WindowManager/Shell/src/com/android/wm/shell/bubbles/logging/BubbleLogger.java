@@ -14,13 +14,14 @@
  * limitations under the License.
  */
 
-package com.android.wm.shell.bubbles;
+package com.android.wm.shell.bubbles.logging;
 
 import com.android.internal.logging.InstanceId;
 import com.android.internal.logging.UiEvent;
 import com.android.internal.logging.UiEventLogger;
 import com.android.internal.util.FrameworkStatsLog;
-import com.android.wm.shell.bubbles.logging.BubbleLoggerExt;
+import com.android.wm.shell.bubbles.Bubble;
+import com.android.wm.shell.bubbles.Bubbles;
 import com.android.wm.shell.dagger.WMSingleton;
 import com.android.wm.shell.shared.bubbles.logging.EntryPoint;
 
@@ -318,7 +319,8 @@ public class BubbleLogger {
         }
     }
 
-    void logStackUiChanged(String packageName, int action, int bubbleCount, float normalX,
+    /** Logs an interaction with the bubble stack ui. */
+    public void logStackUiChanged(String packageName, int action, int bubbleCount, float normalX,
             float normalY) {
         FrameworkStatsLog.write(FrameworkStatsLog.BUBBLE_UI_CHANGED,
                 packageName,
@@ -334,12 +336,14 @@ public class BubbleLogger {
                 false /* isAppForeground (unused) */);
     }
 
-    void logShowOverflow(String packageName, int currentUserId) {
+    /** Logs showing the overflow ui. */
+    public void logShowOverflow(String packageName, int currentUserId) {
         mUiEventLogger.log(BubbleLogger.Event.BUBBLE_OVERFLOW_SELECTED, currentUserId,
                 packageName);
     }
 
-    void logBubbleUiChanged(Bubble bubble, String packageName, int action, int bubbleCount,
+    /** Logs an event related to an individual bubble. */
+    public void logBubbleUiChanged(Bubble bubble, String packageName, int action, int bubbleCount,
             float normalX, float normalY, int index) {
         FrameworkStatsLog.write(FrameworkStatsLog.BUBBLE_UI_CHANGED,
                 packageName,

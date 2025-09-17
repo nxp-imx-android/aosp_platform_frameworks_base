@@ -18,19 +18,19 @@
 
 package com.android.wm.shell.bubbles.logging
 
-import com.android.wm.shell.bubbles.BubbleLogger.Event.BUBBLE_BAR_CREATED_FROM_ALL_APPS_ICON_DRAG
-import com.android.wm.shell.bubbles.BubbleLogger.Event.BUBBLE_BAR_CREATED_FROM_ALL_APPS_ICON_MENU
-import com.android.wm.shell.bubbles.BubbleLogger.Event.BUBBLE_BAR_CREATED_FROM_HOTSEAT_ICON_MENU
-import com.android.wm.shell.bubbles.BubbleLogger.Event.BUBBLE_BAR_CREATED_FROM_LAUNCHER_ICON_MENU
-import com.android.wm.shell.bubbles.BubbleLogger.Event.BUBBLE_BAR_CREATED_FROM_NOTIF
-import com.android.wm.shell.bubbles.BubbleLogger.Event.BUBBLE_BAR_CREATED_FROM_NOTIF_BUBBLE_BUTTON
-import com.android.wm.shell.bubbles.BubbleLogger.Event.BUBBLE_BAR_CREATED_FROM_TASKBAR_ICON_MENU
-import com.android.wm.shell.bubbles.BubbleLogger.Event.BUBBLE_BAR_CREATED_FROM_TASKBAR_ICON_DRAG
-import com.android.wm.shell.bubbles.BubbleLogger.Event.BUBBLE_CREATED_FROM_ALL_APPS_ICON_MENU
-import com.android.wm.shell.bubbles.BubbleLogger.Event.BUBBLE_CREATED_FROM_HOTSEAT_ICON_MENU
-import com.android.wm.shell.bubbles.BubbleLogger.Event.BUBBLE_CREATED_FROM_LAUNCHER_ICON_MENU
-import com.android.wm.shell.bubbles.BubbleLogger.Event.BUBBLE_CREATED_FROM_NOTIF
-import com.android.wm.shell.bubbles.BubbleLogger.Event.BUBBLE_CREATED_FROM_NOTIF_BUBBLE_BUTTON
+import com.android.wm.shell.bubbles.logging.BubbleLogger.Event.BUBBLE_BAR_CREATED_FROM_ALL_APPS_ICON_DRAG
+import com.android.wm.shell.bubbles.logging.BubbleLogger.Event.BUBBLE_BAR_CREATED_FROM_ALL_APPS_ICON_MENU
+import com.android.wm.shell.bubbles.logging.BubbleLogger.Event.BUBBLE_BAR_CREATED_FROM_HOTSEAT_ICON_MENU
+import com.android.wm.shell.bubbles.logging.BubbleLogger.Event.BUBBLE_BAR_CREATED_FROM_LAUNCHER_ICON_MENU
+import com.android.wm.shell.bubbles.logging.BubbleLogger.Event.BUBBLE_BAR_CREATED_FROM_NOTIF
+import com.android.wm.shell.bubbles.logging.BubbleLogger.Event.BUBBLE_BAR_CREATED_FROM_NOTIF_BUBBLE_BUTTON
+import com.android.wm.shell.bubbles.logging.BubbleLogger.Event.BUBBLE_BAR_CREATED_FROM_TASKBAR_ICON_DRAG
+import com.android.wm.shell.bubbles.logging.BubbleLogger.Event.BUBBLE_BAR_CREATED_FROM_TASKBAR_ICON_MENU
+import com.android.wm.shell.bubbles.logging.BubbleLogger.Event.BUBBLE_CREATED_FROM_ALL_APPS_ICON_MENU
+import com.android.wm.shell.bubbles.logging.BubbleLogger.Event.BUBBLE_CREATED_FROM_HOTSEAT_ICON_MENU
+import com.android.wm.shell.bubbles.logging.BubbleLogger.Event.BUBBLE_CREATED_FROM_LAUNCHER_ICON_MENU
+import com.android.wm.shell.bubbles.logging.BubbleLogger.Event.BUBBLE_CREATED_FROM_NOTIF
+import com.android.wm.shell.bubbles.logging.BubbleLogger.Event.BUBBLE_CREATED_FROM_NOTIF_BUBBLE_BUTTON
 import com.android.wm.shell.shared.bubbles.logging.EntryPoint
 import com.android.wm.shell.shared.bubbles.logging.EntryPoint.ALL_APPS_ICON_DRAG
 import com.android.wm.shell.shared.bubbles.logging.EntryPoint.ALL_APPS_ICON_MENU
