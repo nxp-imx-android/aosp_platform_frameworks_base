@@ -63,13 +63,11 @@ import com.android.systemui.statusbar.events.shared.model.SystemEventAnimationSt
 import com.android.systemui.statusbar.featurepods.popups.StatusBarPopupChips
 import com.android.systemui.statusbar.featurepods.popups.ui.model.PopupChipModel
 import com.android.systemui.statusbar.featurepods.popups.ui.viewmodel.StatusBarPopupChipsViewModel
-import com.android.systemui.statusbar.headsup.shared.StatusBarNoHunBehavior
 import com.android.systemui.statusbar.layout.ui.viewmodel.AppHandlesViewModel
 import com.android.systemui.statusbar.layout.ui.viewmodel.StatusBarBoundsViewModel
 import com.android.systemui.statusbar.layout.ui.viewmodel.StatusBarContentInsetsViewModelStore
 import com.android.systemui.statusbar.notification.domain.interactor.ActiveNotificationsInteractor
 import com.android.systemui.statusbar.notification.domain.interactor.HeadsUpNotificationInteractor
-import com.android.systemui.statusbar.notification.headsup.PinnedStatus
 import com.android.systemui.statusbar.notification.promoted.PromotedNotificationUi
 import com.android.systemui.statusbar.phone.domain.interactor.DarkIconInteractor
 import com.android.systemui.statusbar.phone.domain.interactor.IsAreaDark
@@ -513,14 +511,6 @@ constructor(
                 headsUpState,
                 isGoneToDream,
                 isKeyguardVisible ->
-                val showForHeadsUp =
-                    if (StatusBarNoHunBehavior.isEnabled) {
-                        false
-                    } else {
-                        // HUNs can appear on lockscreen if face auth with bypass is enabled, in
-                        // which case we need to show the HUN app name in the status bar
-                        headsUpState.isPinned
-                    }
                 // When launching the camera over the lockscreen, the status icons would typically
                 // become visible momentarily before animating out, since we're not yet aware that
                 // the launching camera activity is fullscreen. Even once the activity finishes
@@ -531,13 +521,12 @@ constructor(
                 // Similar to launching the camera: when dream is launched, the icons are
                 // momentarily visible because the dream animation has finished, but SysUI has not
                 // been informed that the dream is full-screen. See b/273314977.
-                showForHeadsUp ||
-                    (isHomeStatusBarAllowed &&
-                        !isSecureCameraActive &&
-                        !isGoneToDream &&
-                        // In legacy code, check if keyguard is visible to cover canceled
-                        // transitions. In Flexi, the scene state is enough to cover this case.
-                        if (!SceneContainerFlag.isEnabled) !isKeyguardVisible else true)
+                isHomeStatusBarAllowed &&
+                    !isSecureCameraActive &&
+                    !isGoneToDream &&
+                    // In legacy code, check if keyguard is visible to cover canceled
+                    // transitions. In Flexi, the scene state is enough to cover this case.
+                    if (!SceneContainerFlag.isEnabled) !isKeyguardVisible else true
             }
             .distinctUntilChanged()
             .logDiffsForTable(
@@ -547,32 +536,13 @@ constructor(
             )
             .stateIn(bgDisplayScope, SharingStarted.WhileSubscribed(), initialValue = false)
 
-    /**
-     * True if we need to hide the usual start side content in order to show the heads up
-     * notification info.
-     */
-    private val hideStartSideContentForHeadsUp: Flow<Boolean> =
-        if (StatusBarNoHunBehavior.isEnabled) {
-            flowOf(false)
-        } else {
-            headsUpNotificationInteractor.statusBarHeadsUpStatus.map {
-                it == PinnedStatus.PinnedBySystem
-            }
-        }
-
     override val shouldShowOperatorNameView: Flow<Boolean> =
         combine(
                 shouldHomeStatusBarBeVisible,
-                hideStartSideContentForHeadsUp,
                 homeStatusBarInteractor.visibilityViaDisableFlags,
                 homeStatusBarInteractor.shouldShowOperatorName,
-            ) {
-                shouldStatusBarBeVisible,
-                hideStartSideContentForHeadsUp,
-                visibilityViaDisableFlags,
-                shouldShowOperator ->
+            ) { shouldStatusBarBeVisible, visibilityViaDisableFlags, shouldShowOperator ->
                 shouldStatusBarBeVisible &&
-                    !hideStartSideContentForHeadsUp &&
                     visibilityViaDisableFlags.isSystemInfoAllowed &&
                     shouldShowOperator
             }
@@ -585,12 +555,10 @@ constructor(
             .flowOn(bgDispatcher)
 
     override val canShowOngoingActivityChips: Flow<Boolean> =
-        combine(
+        combine(isHomeStatusBarAllowed, keyguardInteractor.isSecureCameraActive) {
             isHomeStatusBarAllowed,
-            keyguardInteractor.isSecureCameraActive,
-            hideStartSideContentForHeadsUp,
-        ) { isHomeStatusBarAllowed, isSecureCameraActive, hideStartSideContentForHeadsUp ->
-            isHomeStatusBarAllowed && !isSecureCameraActive && !hideStartSideContentForHeadsUp
+            isSecureCameraActive ->
+            isHomeStatusBarAllowed && !isSecureCameraActive
         }
 
     private val chipsVisibilityModel: StateFlow<ChipsVisibilityModel> =
@@ -658,16 +626,10 @@ constructor(
         }
 
     override val isClockVisible: Flow<VisibilityModel> =
-        combine(
-                shouldHomeStatusBarBeVisible,
-                hideStartSideContentForHeadsUp,
-                homeStatusBarInteractor.visibilityViaDisableFlags,
-            ) { shouldStatusBarBeVisible, hideStartSideContentForHeadsUp, visibilityViaDisableFlags
-                ->
-                val showClock =
-                    shouldStatusBarBeVisible &&
-                        visibilityViaDisableFlags.isClockAllowed &&
-                        !hideStartSideContentForHeadsUp
+        combine(shouldHomeStatusBarBeVisible, homeStatusBarInteractor.visibilityViaDisableFlags) {
+                shouldStatusBarBeVisible,
+                visibilityViaDisableFlags ->
+                val showClock = shouldStatusBarBeVisible && visibilityViaDisableFlags.isClockAllowed
                 // Always use View.INVISIBLE here, so that animations work
                 VisibilityModel(showClock.toVisibleOrInvisible(), visibilityViaDisableFlags.animate)
             }

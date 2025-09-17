@@ -16,7 +16,6 @@
 package com.android.systemui.statusbar.notification.icon.domain.interactor
 
 import android.content.applicationContext
-import android.platform.test.annotations.DisableFlags
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
@@ -25,12 +24,10 @@ import com.android.systemui.deviceentry.data.repository.fakeDeviceEntryBypassRep
 import com.android.systemui.kosmos.testDispatcher
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.statusbar.data.repository.notificationListenerSettingsRepository
-import com.android.systemui.statusbar.headsup.shared.StatusBarNoHunBehavior
 import com.android.systemui.statusbar.notification.data.repository.activeNotificationListRepository
 import com.android.systemui.statusbar.notification.data.repository.getPipelineModels
 import com.android.systemui.statusbar.notification.data.repository.getPopulatedActiveNotificationsStore
 import com.android.systemui.statusbar.notification.data.repository.notificationsKeyguardViewStateRepository
-import com.android.systemui.statusbar.notification.domain.interactor.headsUpNotificationIconInteractor
 import com.android.systemui.statusbar.notification.promoted.domain.interactor.aodPromotedNotificationInteractor
 import com.android.systemui.statusbar.notification.shared.ActiveBundleModel
 import com.android.systemui.statusbar.notification.shared.ActiveNotificationModel
@@ -67,7 +64,6 @@ class NotificationIconsInteractorTest : SysuiTestCase() {
         NotificationIconsInteractor(
             kosmos.activeNotificationListRepository,
             kosmos.bubblesOptional,
-            kosmos.headsUpNotificationIconInteractor,
             kosmos.aodPromotedNotificationInteractor,
             kosmos.notificationsKeyguardViewStateRepository,
             kosmos.applicationContext,
@@ -407,14 +403,5 @@ class StatusBarNotificationIconsInteractorTest : SysuiTestCase() {
                 .containsNoneIn(
                     testIcons.filter { it is ActiveNotificationModel && it.isLastMessageFromReply }
                 )
-        }
-
-    @Test
-    @DisableFlags(StatusBarNoHunBehavior.FLAG_NAME)
-    fun filteredEntrySet_includesIsolatedIcon() =
-        testScope.runTest {
-            val filteredSet by collectLastValue(underTest.statusBarNotifs)
-            kosmos.headsUpNotificationIconInteractor.setIsolatedIconNotificationKey("notif5")
-            assertThat(filteredSet).comparingElementsUsing(byIconNotifKey).contains("notif5")
         }
 }

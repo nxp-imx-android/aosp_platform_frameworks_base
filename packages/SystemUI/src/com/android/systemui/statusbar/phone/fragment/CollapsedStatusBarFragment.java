@@ -55,7 +55,6 @@ import com.android.systemui.shade.domain.interactor.PanelExpansionInteractor;
 import com.android.systemui.statusbar.CommandQueue;
 import com.android.systemui.statusbar.OperatorNameView;
 import com.android.systemui.statusbar.OperatorNameViewController;
-import com.android.systemui.statusbar.StatusBarState;
 import com.android.systemui.statusbar.core.StatusBarConnectedDisplays;
 import com.android.systemui.statusbar.core.StatusBarRootModernization;
 import com.android.systemui.statusbar.data.repository.StatusBarConfigurationController;
@@ -63,7 +62,6 @@ import com.android.systemui.statusbar.data.repository.StatusBarConfigurationCont
 import com.android.systemui.statusbar.disableflags.DisableFlagsLogger;
 import com.android.systemui.statusbar.events.SystemStatusAnimationCallback;
 import com.android.systemui.statusbar.events.SystemStatusAnimationScheduler;
-import com.android.systemui.statusbar.headsup.shared.StatusBarNoHunBehavior;
 import com.android.systemui.statusbar.notification.icon.ui.viewbinder.NotificationIconContainerStatusBarViewBinder;
 import com.android.systemui.statusbar.notification.promoted.PromotedNotificationUi;
 import com.android.systemui.statusbar.phone.NotificationIconContainer;
@@ -664,16 +662,6 @@ public class CollapsedStatusBarFragment extends Fragment implements CommandQueue
             StatusBarVisibilityModel externalModel) {
         StatusBarRootModernization.assertInLegacyMode();
 
-        // TODO(b/328393714) use HeadsUpNotificationInteractor.showHeadsUpStatusBar instead.
-        boolean headsUpVisible = mHomeStatusBarComponent
-                .getHeadsUpAppearanceController()
-                .shouldHeadsUpStatusBarBeVisible();
-        if (StatusBarNoHunBehavior.isEnabled()) {
-            // With this flag enabled, we have no custom HUN behavior, so just always consider it
-            // to be not visible.
-            headsUpVisible = false;
-        }
-
         if (SceneContainerFlag.isEnabled()) {
             // With the scene container, only use the value calculated by the view model to
             // determine if the status bar needs hiding.
@@ -685,14 +673,12 @@ public class CollapsedStatusBarFragment extends Fragment implements CommandQueue
             // status bar needs hiding.
             if (!mKeyguardStateController.isLaunchTransitionFadingAway()
                     && !mKeyguardStateController.isKeyguardFadingAway()
-                    && shouldHideStatusBar()
-                    && !(mStatusBarStateController.getState() == StatusBarState.KEYGUARD
-                    && headsUpVisible)) {
+                    && shouldHideStatusBar()) {
                 return createHiddenModel();
             }
         }
 
-        boolean showClock = externalModel.getShowClock() && !headsUpVisible;
+        boolean showClock = externalModel.getShowClock();
 
         boolean showPrimaryOngoingActivityChip = mHasPrimaryOngoingActivity;
         boolean showSecondaryOngoingActivityChip =
@@ -701,8 +687,8 @@ public class CollapsedStatusBarFragment extends Fragment implements CommandQueue
         return new StatusBarVisibilityModel(
                 showClock,
                 externalModel.getShowNotificationIcons(),
-                showPrimaryOngoingActivityChip && !headsUpVisible,
-                showSecondaryOngoingActivityChip && !headsUpVisible,
+                showPrimaryOngoingActivityChip,
+                showSecondaryOngoingActivityChip,
                 externalModel.getShowSystemInfo());
     }
 
