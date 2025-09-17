@@ -84,14 +84,14 @@ final class KeyRemapper {
 
     private void setKeyRemapping(Map<Integer, Integer> keyRemapping) {
         int index = 0;
-        int[] fromLocationKeyCodesArr = new int[keyRemapping.size()];
+        int[] fromKeycodesArr = new int[keyRemapping.size()];
         int[] toKeycodesArr = new int[keyRemapping.size()];
         for (Map.Entry<Integer, Integer> entry : keyRemapping.entrySet()) {
-            fromLocationKeyCodesArr[index] = entry.getKey();
+            fromKeycodesArr[index] = entry.getKey();
             toKeycodesArr[index] = entry.getValue();
             index++;
         }
-        mNative.setKeyRemapping(fromLocationKeyCodesArr, toKeycodesArr);
+        mNative.setKeyRemapping(fromKeycodesArr, toKeycodesArr);
     }
 
     private void remapKeyInternal(int fromKey, int toKey) {

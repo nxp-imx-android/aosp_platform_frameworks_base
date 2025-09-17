@@ -51,7 +51,7 @@ interface NativeInputManagerService {
 
     int getSwitchState(int deviceId, int sourceMask, int sw);
 
-    void setKeyRemapping(int[] fromLocationKeyCodes, int[] toKeyCodes);
+    void setKeyRemapping(int[] fromKeyCodes, int[] toKeyCodes);
 
     boolean hasKeys(int deviceId, int sourceMask, int[] keyCodes, boolean[] keyExists);
 
@@ -383,7 +383,7 @@ interface NativeInputManagerService {
         public native int getSwitchState(int deviceId, int sourceMask, int sw);
 
         @Override
-        public native void setKeyRemapping(int[] fromLocationKeyCodes, int[] toKeyCodes);
+        public native void setKeyRemapping(int[] fromKeyCodes, int[] toKeyCodes);
 
         @Override
         public native boolean hasKeys(int deviceId, int sourceMask, int[] keyCodes,
