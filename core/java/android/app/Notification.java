@@ -804,6 +804,7 @@ public class Notification implements Parcelable
             DecoratedCustomViewStyle.class,
             DecoratedMediaCustomViewStyle.class,
             MessagingStyle.class,
+            ProgressStyle.class,
             CallStyle.class
     );
 
@@ -813,10 +814,6 @@ public class Notification implements Parcelable
         }
 
         if (PLATFORM_STYLE_CLASSES.contains(style.getClass())) {
-            return true;
-        }
-
-        if (Flags.apiRichOngoing() && style.getClass() == ProgressStyle.class) {
             return true;
         }
 
@@ -844,9 +841,8 @@ public class Notification implements Parcelable
                      R.layout.notification_2025_template_expanded_media,
                      R.layout.notification_2025_template_expanded_big_picture,
                      R.layout.notification_2025_template_expanded_big_text,
+                     R.layout.notification_2025_template_expanded_progress,
                      R.layout.notification_2025_template_expanded_inbox -> true;
-                case R.layout.notification_2025_template_expanded_progress
-                        -> Flags.apiRichOngoing();
                 case R.layout.notification_2025_template_collapsed_metric
                         -> Flags.apiMetricStyle();
                 case R.layout.notification_2025_template_expanded_metric
@@ -854,10 +850,8 @@ public class Notification implements Parcelable
                 default -> false;
             };
         }
-        if (Flags.apiRichOngoing()) {
-            if (layoutId == R.layout.notification_template_material_progress) {
-                return true;
-            }
+        if (layoutId == R.layout.notification_template_material_progress) {
+            return true;
         }
         return STANDARD_LAYOUTS.contains(layoutId);
     }
@@ -3263,15 +3257,12 @@ public class Notification implements Parcelable
             }
             visitIconUri(visitor, extras.getParcelable(EXTRA_VERIFICATION_ICON, Icon.class));
 
-
-            if (Flags.apiRichOngoing()) {
-                visitIconUri(visitor, extras.getParcelable(EXTRA_PROGRESS_TRACKER_ICON,
-                    Icon.class));
-                visitIconUri(visitor, extras.getParcelable(EXTRA_PROGRESS_START_ICON,
-                    Icon.class));
-                visitIconUri(visitor, extras.getParcelable(EXTRA_PROGRESS_END_ICON,
-                    Icon.class));
-            }
+            visitIconUri(visitor, extras.getParcelable(EXTRA_PROGRESS_TRACKER_ICON,
+                Icon.class));
+            visitIconUri(visitor, extras.getParcelable(EXTRA_PROGRESS_START_ICON,
+                Icon.class));
+            visitIconUri(visitor, extras.getParcelable(EXTRA_PROGRESS_END_ICON,
+                Icon.class));
         }
 
         if (mBubbleMetadata != null) {
@@ -4338,11 +4329,9 @@ public class Notification implements Parcelable
                 flags &= ~FLAG_LIFETIME_EXTENDED_BY_DIRECT_REPLY;
             }
         }
-        if (Flags.apiRichOngoing()) {
-            if ((flags & FLAG_PROMOTED_ONGOING) != 0) {
-                flagStrings.add("PROMOTED_ONGOING");
-                flags &= ~FLAG_PROMOTED_ONGOING;
-            }
+        if ((flags & FLAG_PROMOTED_ONGOING) != 0) {
+            flagStrings.add("PROMOTED_ONGOING");
+            flags &= ~FLAG_PROMOTED_ONGOING;
         }
 
         if (android.service.notification.Flags.notificationSilentFlag()) {
@@ -8524,11 +8513,6 @@ public class Notification implements Parcelable
             }
         }
 
-        if (Flags.apiRichOngoing()) {
-            if (templateClass.equals(ProgressStyle.class.getName())) {
-                return ProgressStyle.class;
-            }
-        }
         if (Flags.apiMetricStyle()) {
             if (templateClass.equals(MetricStyle.class.getName())) {
                 return MetricStyle.class;

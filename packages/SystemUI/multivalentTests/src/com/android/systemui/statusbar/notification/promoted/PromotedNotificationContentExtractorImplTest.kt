@@ -166,18 +166,6 @@ class PromotedNotificationContentExtractorImplTest : SysuiTestCase() {
 
     @Test
     @EnableFlags(PromotedNotificationUi.FLAG_NAME)
-    @DisableFlags(android.app.Flags.FLAG_API_RICH_ONGOING)
-    fun extractContent_apiFlagOff_shortCriticalTextNotExtracted() =
-        kosmos.runTest {
-            val entry = createEntry { setShortCriticalText(TEST_SHORT_CRITICAL_TEXT) }
-
-            val content = requireContent(entry).privateVersion
-
-            assertThat(content.text).isNull()
-        }
-
-    @Test
-    @EnableFlags(PromotedNotificationUi.FLAG_NAME, android.app.Flags.FLAG_API_RICH_ONGOING)
     fun extractContent_apiFlagOn_shortCriticalTextExtracted() =
         kosmos.runTest {
             val entry = createEntry { setShortCriticalText(TEST_SHORT_CRITICAL_TEXT) }
@@ -188,7 +176,7 @@ class PromotedNotificationContentExtractorImplTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(PromotedNotificationUi.FLAG_NAME, android.app.Flags.FLAG_API_RICH_ONGOING)
+    @EnableFlags(PromotedNotificationUi.FLAG_NAME)
     fun extractContent_noShortCriticalTextSet_textIsNull() =
         kosmos.runTest {
             val entry = createEntry { setShortCriticalText(null) }
@@ -570,7 +558,7 @@ class PromotedNotificationContentExtractorImplTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(PromotedNotificationUi.FLAG_NAME, android.app.Flags.FLAG_API_RICH_ONGOING)
+    @EnableFlags(PromotedNotificationUi.FLAG_NAME)
     fun extractContent_fromProgressStyle() =
         kosmos.runTest {
             val entry = createEntry {

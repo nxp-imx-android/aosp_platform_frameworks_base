@@ -94,7 +94,6 @@ import java.util.stream.Stream;
 import javax.annotation.Nullable;
 
 @RunWith(AndroidJUnit4.class)
-@EnableFlags({Flags.FLAG_API_RICH_ONGOING})
 public class NotificationVisitUrisTest extends UiServiceTestCase {
     @Rule
     public final SetFlagsRule mSetFlagsRule = new SetFlagsRule();

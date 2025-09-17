@@ -24,7 +24,6 @@ import static android.app.ActivityManager.RunningAppProcessInfo.IMPORTANCE_VISIB
 import static android.app.ActivityManagerInternal.ServiceNotificationPolicy.NOT_FOREGROUND_SERVICE;
 import static android.app.ActivityManagerInternal.ServiceNotificationPolicy.SHOW_IMMEDIATELY;
 import static android.app.ActivityTaskManager.INVALID_TASK_ID;
-import static android.app.Flags.FLAG_API_RICH_ONGOING;
 import static android.app.Flags.FLAG_API_RICH_ONGOING_PERMISSION;
 import static android.app.Flags.FLAG_NM_SUMMARIZATION;
 import static android.app.Flags.FLAG_NM_SUMMARIZATION_UI;
@@ -15570,31 +15569,31 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags({FLAG_API_RICH_ONGOING, FLAG_UI_RICH_ONGOING})
+    @EnableFlags({FLAG_UI_RICH_ONGOING})
     public void testPromotion_permissionAllowed() throws Exception {
         testPromotion(PermissionManager.PERMISSION_GRANTED, mTestNotificationChannel, true);
     }
 
     @Test
-    @EnableFlags({FLAG_API_RICH_ONGOING, FLAG_UI_RICH_ONGOING})
+    @EnableFlags({FLAG_UI_RICH_ONGOING})
     public void testPromotion_permissionDenied() throws Exception {
         testPromotion(PermissionManager.PERMISSION_SOFT_DENIED, mTestNotificationChannel, false);
     }
 
     @Test
-    @EnableFlags({FLAG_API_RICH_ONGOING, FLAG_UI_RICH_ONGOING})
+    @EnableFlags({FLAG_UI_RICH_ONGOING})
     public void testPromotion_bundledNotification() throws Exception {
         testPromotion(PermissionManager.PERMISSION_GRANTED, mNewsChannel, false);
     }
 
     @Test
-    @EnableFlags({FLAG_API_RICH_ONGOING, FLAG_UI_RICH_ONGOING})
+    @EnableFlags({FLAG_UI_RICH_ONGOING})
     public void testPromotion_silentChannel() throws Exception {
         testPromotion(PermissionManager.PERMISSION_GRANTED, mSilentChannel, true);
     }
 
     @Test
-    @EnableFlags({FLAG_API_RICH_ONGOING, FLAG_UI_RICH_ONGOING})
+    @EnableFlags({FLAG_UI_RICH_ONGOING})
     public void testPromotion_minimizedChannel() throws Exception {
         testPromotion(PermissionManager.PERMISSION_GRANTED, mMinChannel, false);
     }
@@ -18762,7 +18761,7 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags({FLAG_API_RICH_ONGOING,
+    @EnableFlags({
             android.service.notification.Flags.FLAG_NOTIFICATION_CLASSIFICATION,
             android.app.Flags.FLAG_NOTIFICATION_CLASSIFICATION_UI})
     public void testApplyAdjustment_promotedOngoingNotification_doesNotApply() throws Exception {
@@ -18807,14 +18806,13 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags({FLAG_API_RICH_ONGOING})
     @DisableFlags({FLAG_UI_RICH_ONGOING, FLAG_API_RICH_ONGOING_PERMISSION})
     public void testSetCanBePromoted_granted_noui() throws Exception {
         testSetCanBePromoted_granted();
     }
 
     @Test
-    @EnableFlags({FLAG_API_RICH_ONGOING, FLAG_UI_RICH_ONGOING})
+    @EnableFlags({FLAG_UI_RICH_ONGOING})
     @DisableFlags({FLAG_API_RICH_ONGOING_PERMISSION})
     public void testSetCanBePromoted_granted_ui() throws Exception {
         // UI flag includes permission enforcement via PermissionMgr/AppOps
@@ -18909,14 +18907,13 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags({FLAG_API_RICH_ONGOING})
     @DisableFlags({FLAG_UI_RICH_ONGOING, FLAG_API_RICH_ONGOING_PERMISSION})
     public void testSetCanBePromoted_granted_onlyNotifiesOnce_noui() throws Exception {
         testSetCanBePromoted_granted_onlyNotifiesOnce();
     }
 
     @Test
-    @EnableFlags({FLAG_API_RICH_ONGOING, FLAG_UI_RICH_ONGOING})
+    @EnableFlags({FLAG_UI_RICH_ONGOING})
     @DisableFlags({FLAG_API_RICH_ONGOING_PERMISSION})
     public void testSetCanBePromoted_granted_onlyNotifiesOnce_ui() throws Exception {
         // UI flag includes permission enforcement via PermissionMgr/AppOps
@@ -18950,7 +18947,6 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags({FLAG_API_RICH_ONGOING})
     public void testSetCanBePromoted_revoked() throws Exception {
         // start from true state
         mBinderService.setCanBePromoted(mPkg, mUid, true, true);
@@ -18999,7 +18995,6 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags({FLAG_API_RICH_ONGOING})
     public void testSetCanBePromoted_revoked_onlyNotifiesOnce() throws Exception {
         // start from true state
         mBinderService.setCanBePromoted(mPkg, mUid, true, true);
@@ -19025,7 +19020,6 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags({FLAG_API_RICH_ONGOING})
     public void testPostPromotableNotification() throws Exception {
         mBinderService.setCanBePromoted(mPkg, mUid, true, true);
         assertThat(mBinderService.appCanBePromoted(mPkg, mUid)).isTrue();
@@ -19048,7 +19042,6 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags({FLAG_API_RICH_ONGOING})
     @DisableFlags({FLAG_API_RICH_ONGOING_PERMISSION, FLAG_UI_RICH_ONGOING})
     public void testPostPromotableNotification_noPermission_preferences() throws Exception {
         mBinderService.setCanBePromoted(mPkg, mUid, false, true);
@@ -19057,7 +19050,7 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
 
 
     @Test
-    @EnableFlags({FLAG_API_RICH_ONGOING, FLAG_API_RICH_ONGOING_PERMISSION})
+    @EnableFlags({FLAG_API_RICH_ONGOING_PERMISSION})
     public void testPostPromotableNotification_noPermission_appOps() throws Exception {
         when(mPermissionManager.checkPermissionForPreflight(
                 eq(Manifest.permission.POST_PROMOTED_NOTIFICATIONS), any()))
@@ -19089,7 +19082,6 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags({FLAG_API_RICH_ONGOING})
     public void testPostPromotableNotification_unimportantNotification() throws Exception {
         mBinderService.setCanBePromoted(mPkg, mUid, true, true);
         Notification n = createPromotableNotification(mMinChannel);

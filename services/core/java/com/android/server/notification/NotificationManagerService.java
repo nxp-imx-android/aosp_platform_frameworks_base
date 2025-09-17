@@ -4815,9 +4815,6 @@ public class NotificationManagerService extends SystemService {
         @FlaggedApi(android.app.Flags.FLAG_API_RICH_ONGOING)
         public boolean appCanBePromoted(String pkg, int uid) {
             checkCallerIsSystemOrSystemUiOrShell();
-            if (!android.app.Flags.apiRichOngoing()) {
-                return false;
-            }
             return checkPostPromotedNotificationPermission(
                     pkg, uid);
         }
@@ -4826,10 +4823,6 @@ public class NotificationManagerService extends SystemService {
         @FlaggedApi(android.app.Flags.FLAG_API_RICH_ONGOING)
         public boolean canBePromoted(String callingPkg) {
             checkCallerIsSameApp(callingPkg);
-            if (!android.app.Flags.apiRichOngoing()) {
-                return false;
-            }
-
             return checkPostPromotedNotificationPermission(
                     callingPkg, Binder.getCallingUid());
         }
@@ -4848,9 +4841,6 @@ public class NotificationManagerService extends SystemService {
                 String pkg, int uid, boolean promote, boolean fromUser) {
             // Only the OS is allowed to change this permission
             checkCallerIsSystemOrSystemUiOrShell();
-            if (!android.app.Flags.apiRichOngoing()) {
-                return;
-            }
 
             final boolean changed;
 
@@ -7764,8 +7754,7 @@ public class NotificationManagerService extends SystemService {
                         adjustments);
                 if (newChannel == null || newChannel.getId().equals(r.getChannel().getId())) {
                     adjustments.remove(KEY_TYPE);
-                } else if (android.app.Flags.apiRichOngoing() && hasFlag(r.getNotification().flags,
-                        FLAG_PROMOTED_ONGOING)) {
+                } else if (hasFlag(r.getNotification().flags, FLAG_PROMOTED_ONGOING)) {
                     // Don't bundle any promoted ongoing notifications
                     adjustments.remove(KEY_TYPE);
                 } else {
@@ -9242,24 +9231,22 @@ public class NotificationManagerService extends SystemService {
     @RequiresPermission(UPDATE_APP_OPS_STATS)
     protected void fixNotificationWithChannel(Notification notification,
             NotificationChannel channel, int notificationUid, String pkg) {
-        if (android.app.Flags.apiRichOngoing()) {
-            if (isPromotable(notification, channel)) {
-                // Check permission last - after we make sure this is actually an attempted usage
-                // of promotion - since AppOps tracks usage attempts.
-                boolean canPostPromoted;
-                if (android.app.Flags.uiRichOngoing()) {
-                    final AttributionSource attributionSource =
-                            new AttributionSource.Builder(notificationUid)
-                                    .setPackageName(pkg).build();
-                    canPostPromoted = mPermissionManager.checkPermissionForDataDelivery(
-                            permission.POST_PROMOTED_NOTIFICATIONS, attributionSource,
-                            /* message= */ null) == PermissionManager.PERMISSION_GRANTED;
-                } else {
-                    canPostPromoted = mPreferencesHelper.canBePromoted(pkg, notificationUid);
-                }
-                if (canPostPromoted) {
-                    notification.flags |= FLAG_PROMOTED_ONGOING;
-                }
+        if (isPromotable(notification, channel)) {
+            // Check permission last - after we make sure this is actually an attempted usage
+            // of promotion - since AppOps tracks usage attempts.
+            boolean canPostPromoted;
+            if (android.app.Flags.uiRichOngoing()) {
+                final AttributionSource attributionSource =
+                        new AttributionSource.Builder(notificationUid)
+                                .setPackageName(pkg).build();
+                canPostPromoted = mPermissionManager.checkPermissionForDataDelivery(
+                        permission.POST_PROMOTED_NOTIFICATIONS, attributionSource,
+                        /* message= */ null) == PermissionManager.PERMISSION_GRANTED;
+            } else {
+                canPostPromoted = mPreferencesHelper.canBePromoted(pkg, notificationUid);
+            }
+            if (canPostPromoted) {
+                notification.flags |= FLAG_PROMOTED_ONGOING;
             }
         }
     }
