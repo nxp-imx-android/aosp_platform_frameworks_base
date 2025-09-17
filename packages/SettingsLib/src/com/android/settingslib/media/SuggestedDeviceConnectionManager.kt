@@ -87,18 +87,12 @@ open class SuggestedDeviceConnectionManager(
         var scanStarted = false
         try {
             val suggestedRouteId = suggestedDeviceState.suggestedDeviceInfo.routeId
-            val deviceFromCache =
-                getDeviceByRouteId(localMediaManager.mediaDevices, suggestedRouteId)
-            val deviceToConnect =
-                deviceFromCache?.also { Log.i(TAG, "Device from cache found.") }
-                    ?: run {
-                        Log.i(TAG, "Scanning for device.")
-                        // Start listening before starting scan to avoid missing events.
-                        val scanResultDeferred = async { awaitScanForDevice(suggestedRouteId) }
-                        localMediaManager.startScan()
-                        scanStarted = true
-                        scanResultDeferred.await()
-                    }
+            // Start listening before starting scan to avoid missing events.
+            val deviceDiscoveryResult = async { awaitForDevice(suggestedRouteId) }
+            localMediaManager.startScan()
+            scanStarted = true
+            val deviceToConnect = deviceDiscoveryResult.await()
+
             if (deviceToConnect == null) {
                 Log.w(TAG, "Failed to find a device to connect to. routeId = $suggestedRouteId")
                 return@coroutineScope false
@@ -110,7 +104,15 @@ open class SuggestedDeviceConnectionManager(
         }
     }
 
-    private suspend fun awaitScanForDevice(suggestedRouteId: String): MediaDevice? {
+    private suspend fun awaitForDevice(suggestedRouteId: String): MediaDevice? {
+        val deviceFromCache =
+            getDeviceByRouteId(localMediaManager.mediaDevices, suggestedRouteId)
+        deviceFromCache?.let {
+            Log.i(TAG, "Device from cache found.")
+            return it
+        }
+
+        Log.i(TAG, "Scanning for device.")
         var callback: LocalMediaManager.DeviceCallback? = null
         try {
             return withTimeoutOrNull(SCAN_TIMEOUT) {
