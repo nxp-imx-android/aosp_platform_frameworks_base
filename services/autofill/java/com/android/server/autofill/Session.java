@@ -249,9 +249,10 @@ final class Session
                 RemoteFieldClassificationService.FieldClassificationServiceCallbacks {
     private static final String TAG = "AutofillSession";
 
-    // This should never be true in production. This is only for local debugging.
+    // These should never be true in production. This is only for local debugging.
     // Otherwise it will spam logcat.
     private static final boolean DBG = false;
+    private static final boolean DEBUG_DUMP_STRUCTURE = false;
 
     private static final String ACTION_DELAYED_FILL =
             "android.service.autofill.action.DELAYED_FILL";
@@ -974,6 +975,11 @@ final class Session
                     }
                     flags |= FillRequest.FLAG_COMPATIBILITY_MODE_REQUEST;
                 }
+
+                if (DEBUG_DUMP_STRUCTURE) {
+                    structure.dump(/* showSensitive= */ true);
+                }
+
                 structure.sanitizeForParceling(true);
 
                 if (mContexts == null) {
