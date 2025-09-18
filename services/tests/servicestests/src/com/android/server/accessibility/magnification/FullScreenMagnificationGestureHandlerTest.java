@@ -69,7 +69,6 @@ import android.os.SystemClock;
 import android.os.UserHandle;
 import android.os.VibrationEffect;
 import android.os.Vibrator;
-import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.RequiresFlagsDisabled;
 import android.platform.test.annotations.RequiresFlagsEnabled;
 import android.platform.test.flag.junit.CheckFlagsRule;
@@ -590,7 +589,6 @@ public class FullScreenMagnificationGestureHandlerTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MAGNIFICATION_MAGNIFY_NAV_BAR_AND_IME)
     public void testTripleTap_tapPerformedNotOverIme_activatesMagnification() {
         showIme(new Region(IME_BOUNDS));
         goFromStateIdleTo(STATE_IDLE);
@@ -604,7 +602,6 @@ public class FullScreenMagnificationGestureHandlerTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MAGNIFICATION_MAGNIFY_NAV_BAR_AND_IME)
     public void testTripleTap_tapPerformedOverIme_doesNotActivateMagnification() {
         showIme(new Region(IME_BOUNDS));
         goFromStateIdleTo(STATE_IDLE);
@@ -628,7 +625,6 @@ public class FullScreenMagnificationGestureHandlerTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MAGNIFICATION_MAGNIFY_NAV_BAR_AND_IME)
     public void testTripleTap_tapPerformedOverIme_alreadyMagnified_doesNotDeactivate() {
         showIme(new Region(IME_BOUNDS));
         goFromStateIdleTo(STATE_ACTIVATED);
@@ -656,7 +652,6 @@ public class FullScreenMagnificationGestureHandlerTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MAGNIFICATION_MAGNIFY_NAV_BAR_AND_IME)
     public void testSingleTapAfterTriggeringShortcut_tapPerformedOverIme_activatesMagnification() {
         showIme(new Region(IME_BOUNDS));
         goFromStateIdleTo(STATE_SHORTCUT_TRIGGERED);

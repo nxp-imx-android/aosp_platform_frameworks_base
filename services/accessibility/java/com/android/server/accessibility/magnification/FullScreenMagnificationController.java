@@ -654,9 +654,6 @@ public class FullScreenMagnificationController implements
 
         @GuardedBy("mLock")
         boolean imeRegionContains(float x, float y) {
-            if (!Flags.enableMagnificationMagnifyNavBarAndIme()) {
-                return false;
-            }
             // mImeRegion uses global unmagnified coordinates, so convert screen-relative
             // coordinates (x,y) to global unmagnified coordinates first.
             x = (x - mCurrentMagnificationSpec.offsetX) / mCurrentMagnificationSpec.scale;
