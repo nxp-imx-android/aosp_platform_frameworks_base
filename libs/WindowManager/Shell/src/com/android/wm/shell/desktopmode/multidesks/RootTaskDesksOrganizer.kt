@@ -424,6 +424,13 @@ class RootTaskDesksOrganizer(
     override fun getDeskIdFromChange(change: TransitionInfo.Change): Int? =
         change.takeIf { isDeskRootChange(it) }?.taskId
 
+    override fun getDeskIdFromTaskInfo(taskInfo: TaskInfo): Int? {
+        val parentTaskId = taskInfo.parentTaskId
+        if (parentTaskId == INVALID_TASK_ID) return null
+        if (parentTaskId in deskRootsByDeskId) return parentTaskId
+        return null
+    }
+
     private fun isDeskRootChange(change: TransitionInfo.Change): Boolean =
         change.taskId in deskRootsByDeskId
 
