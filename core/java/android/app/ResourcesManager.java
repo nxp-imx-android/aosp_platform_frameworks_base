@@ -1102,8 +1102,6 @@ public class ResourcesManager {
      * @see #applyDisplayMetricsToConfiguration(DisplayMetrics, Configuration)
      */
     private void rebaseKeyForDisplay(ResourcesKey key, int overrideDisplay) {
-        final Configuration temp = new Configuration();
-
         final boolean hasOverrideConfiguration = key.hasOverrideConfiguration();
         final DisplayAdjustments daj = hasOverrideConfiguration
                 ? new DisplayAdjustments(key.mOverrideConfiguration)
@@ -1111,12 +1109,14 @@ public class ResourcesManager {
         daj.setCompatibilityInfo(key.mCompatInfo);
 
         final DisplayMetrics dm = getDisplayMetrics(overrideDisplay, daj);
-        applyDisplayMetricsToConfiguration(dm, temp);
-
         if (hasOverrideConfiguration) {
+            final Configuration temp = new Configuration();
+            applyDisplayMetricsToConfiguration(dm, temp);
             temp.updateFrom(key.mOverrideConfiguration);
+            key.mOverrideConfiguration.setTo(temp);
+        } else {
+            applyDisplayMetricsToConfiguration(dm, key.mOverrideConfiguration);
         }
-        key.mOverrideConfiguration.setTo(temp);
     }
 
     /**
