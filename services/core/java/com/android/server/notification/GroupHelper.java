@@ -333,31 +333,19 @@ public class GroupHelper {
                         sbn.getNotification().getSmallIcon(), sbn.getNotification().color,
                         VISIBILITY_PRIVATE, Notification.GROUP_ALERT_CHILDREN,
                         sbn.getNotification().getChannelId());
-                if (Flags.autogroupSummaryIconUpdate()) {
-                    attr = updateAutobundledSummaryAttributes(sbn.getPackageName(), childrenAttr,
+                attr = updateAutobundledSummaryAttributes(sbn.getPackageName(), childrenAttr,
                             attr);
-                }
 
                 mCallback.updateAutogroupSummary(sbn.getUserId(), sbn.getPackageName(),
                         AUTOGROUP_KEY, attr);
             } else {
-                Icon summaryIcon = sbn.getNotification().getSmallIcon();
-                int summaryIconColor = sbn.getNotification().color;
-                int summaryVisibility = VISIBILITY_PRIVATE;
-                String summaryChannelId = sbn.getNotification().getChannelId();
-                if (Flags.autogroupSummaryIconUpdate()) {
-                    // Calculate the initial summary icon, icon color and visibility
-                    NotificationAttributes iconAttr = getAutobundledSummaryAttributes(
-                            sbn.getPackageName(), childrenAttr);
-                    summaryIcon = iconAttr.icon;
-                    summaryIconColor = iconAttr.iconColor;
-                    summaryVisibility = iconAttr.visibility;
-                    summaryChannelId = iconAttr.channelId;
-                }
+                // Calculate the initial summary icon, icon color and visibility
+                NotificationAttributes iconAttr = getAutobundledSummaryAttributes(
+                        sbn.getPackageName(), childrenAttr);
 
-                NotificationAttributes attr = new NotificationAttributes(flags, summaryIcon,
-                        summaryIconColor, summaryVisibility, Notification.GROUP_ALERT_CHILDREN,
-                        summaryChannelId);
+                NotificationAttributes attr = new NotificationAttributes(flags, iconAttr.icon,
+                        iconAttr.iconColor, iconAttr.visibility, Notification.GROUP_ALERT_CHILDREN,
+                        iconAttr.channelId);
                 mCallback.addAutoGroupSummary(sbn.getUserId(), sbn.getPackageName(), sbn.getKey(),
                         AUTOGROUP_KEY, Integer.MAX_VALUE, attr);
             }
@@ -429,13 +417,11 @@ public class GroupHelper {
                     VISIBILITY_PRIVATE, Notification.GROUP_ALERT_CHILDREN,
                     sbn.getNotification().getChannelId());
             boolean attributesUpdated = false;
-            if (Flags.autogroupSummaryIconUpdate()) {
-                NotificationAttributes newAttr = updateAutobundledSummaryAttributes(
-                        sbn.getPackageName(), childrenAttrs, attr);
-                if (!newAttr.equals(attr)) {
-                    attributesUpdated = true;
-                    attr = newAttr;
-                }
+            NotificationAttributes newAttr = updateAutobundledSummaryAttributes(
+                    sbn.getPackageName(), childrenAttrs, attr);
+            if (!newAttr.equals(attr)) {
+                attributesUpdated = true;
+                attr = newAttr;
             }
 
             if (updateSummaryFlags || attributesUpdated) {

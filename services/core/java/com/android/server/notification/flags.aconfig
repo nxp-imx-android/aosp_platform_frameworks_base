@@ -30,13 +30,6 @@ flag {
 }
 
 flag {
-  name: "autogroup_summary_icon_update"
-  namespace: "systemui"
-  description: "This flag controls the fix for notifications autogroup summary icon updates"
-  bug: "227693160"
-}
-
-flag {
     name: "screenshare_notification_hiding"
     namespace: "systemui"
     description: "Enable hiding of notifications during screenshare"
@@ -225,3 +218,14 @@ flag {
     purpose: PURPOSE_BUGFIX
   }
 }
+
+# Start: Flags that have been cleaned up in code but must remain defined for CTS
+
+flag {
+  name: "autogroup_summary_icon_update"
+  namespace: "systemui"
+  description: "This flag controls the fix for notifications autogroup summary icon updates"
+  bug: "227693160"
+}
+
+# End: Flags that have been cleaned up in code but must remain defined for CTS
