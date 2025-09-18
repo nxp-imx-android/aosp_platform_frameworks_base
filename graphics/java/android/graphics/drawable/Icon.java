@@ -631,6 +631,9 @@ public final class Icon implements Parcelable {
         }
         if (mType == TYPE_RESOURCE && mObj1 != null) {
             Resources cachedResources = (Resources) mObj1;
+            if (cachedResources == null) {
+                return;
+            }
             if (cachedResources.getConfiguration().diff(context.getResources().getConfiguration())
                     != 0) {
                 // Invalidate the cache if the configuration has changed.
