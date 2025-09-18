@@ -26,7 +26,6 @@ import com.android.systemui.SysuiTestCase
 import com.android.systemui.log.LogcatOnlyMessageBuffer
 import com.android.systemui.log.assertRunnableLogsWtf
 import com.android.systemui.log.core.LogLevel
-import com.android.systemui.log.core.MessageBuffer
 import com.android.systemui.plugins.Plugin
 import com.android.systemui.plugins.PluginLifecycleManager
 import com.android.systemui.plugins.PluginListener
@@ -54,7 +53,6 @@ import org.junit.runner.RunWith
 @RunWith(AndroidJUnit4::class)
 class PluginInstanceTest : SysuiTestCase() {
     private lateinit var mPluginListener: FakeListener
-    private lateinit var mVersionInfo: VersionInfo
 
     private var mVersionCheckResult = true
     private lateinit var mVersionChecker: VersionChecker
@@ -77,7 +75,6 @@ class PluginInstanceTest : SysuiTestCase() {
         mAppInfo = mContext.applicationInfo
         mAppInfo.packageName = TEST_PLUGIN_COMPONENT_NAME.packageName
         mPluginListener = FakeListener()
-        mVersionInfo = VersionInfo()
         mVersionChecker =
             object : VersionChecker {
                 override fun <T : Plugin> checkVersion(
@@ -89,7 +86,7 @@ class PluginInstanceTest : SysuiTestCase() {
                 }
 
                 override fun <T : Plugin> getVersionInfo(instanceClass: Class<T>): VersionInfo {
-                    return mVersionInfo
+                    return VersionInfo(instanceClass)
                 }
             }
 
@@ -341,9 +338,7 @@ class PluginInstanceTest : SysuiTestCase() {
         var mUnloadCount: Int = 0
             private set
 
-        override fun getLogBuffer(): MessageBuffer {
-            return LogcatOnlyMessageBuffer(LogLevel.DEBUG)
-        }
+        override val logBuffer = LogcatOnlyMessageBuffer(LogLevel.DEBUG)
 
         override fun onPluginAttached(manager: PluginLifecycleManager<TestPlugin>): Boolean {
             mAttachedCount++

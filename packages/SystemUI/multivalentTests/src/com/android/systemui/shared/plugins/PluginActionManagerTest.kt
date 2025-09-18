@@ -68,6 +68,7 @@ class PluginActionManagerTest : SysuiTestCase() {
     private val mFakeExecutor = FakeExecutor(FakeSystemClock())
     @Mock private lateinit var mNotificationManager: NotificationManager
     @Mock private lateinit var mPluginInstance: PluginInstance<TestPlugin>
+    @Mock lateinit var mMockPluginPrefs: PluginPrefs
     private val mPluginInstanceFactory: PluginInstance.Factory =
         object :
             PluginInstance.Factory(
@@ -106,6 +107,7 @@ class PluginActionManagerTest : SysuiTestCase() {
                 mMockEnabler,
                 PluginManager.Config(),
                 mPluginInstanceFactory,
+                mMockPluginPrefs,
             )
 
         mPluginActionManager =
@@ -200,6 +202,7 @@ class PluginActionManagerTest : SysuiTestCase() {
                 mMockEnabler,
                 PluginManager.Config(listOf(PRIVILEGED_PACKAGE)),
                 mPluginInstanceFactory,
+                mMockPluginPrefs,
             )
         mPluginActionManager =
             factory.create("myAction", mMockListener, TestPlugin::class.java, allowMultiple = true)
@@ -254,6 +257,7 @@ class PluginActionManagerTest : SysuiTestCase() {
                 mMockEnabler,
                 PluginManager.Config(listOf(PRIVILEGED_PACKAGE)),
                 mPluginInstanceFactory,
+                mMockPluginPrefs,
             )
         mPluginActionManager =
             factory.create("myAction", mMockListener, TestPlugin::class.java, allowMultiple = true)
@@ -323,9 +327,7 @@ class PluginActionManagerTest : SysuiTestCase() {
     // the mock version info is called.
     @Requires(target = PluginManagerTest::class, version = 1)
     class TestPlugin : Plugin {
-        override fun getVersion(): Int {
-            return 1
-        }
+        override val version: Int = 1
 
         override fun onCreate(sysuiContext: Context, pluginContext: Context) {}
 

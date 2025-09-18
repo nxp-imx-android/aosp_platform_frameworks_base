@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 The Android Open Source Project
+ * Copyright (C) 2025 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
  * except in compliance with the License. You may obtain a copy of the License at
@@ -11,16 +11,15 @@
  * KIND, either express or implied. See the License for the specific language governing
  * permissions and limitations under the License.
  */
+package com.android.systemui.plugins.annotations
 
-package com.android.systemui.plugins;
+import kotlin.reflect.KClass
 
-import android.content.Context;
-import android.view.View;
-
-public class PluginUtils {
-
-    public static void setId(Context sysuiContext, View view, String id) {
-        int i = sysuiContext.getResources().getIdentifier(id, "id", sysuiContext.getPackageName());
-        view.setId(i);
-    }
-}
+/**
+ * Used to indicate that an interface in the plugin library needs another interface to function
+ * properly. When this is added, it will be enforced that all plugins that @Requires the annotated
+ * interface also @Requires the specified class as well.
+ */
+@Retention(AnnotationRetention.RUNTIME)
+@JvmRepeatable(value = Dependencies::class)
+annotation class DependsOn(val target: KClass<*>)

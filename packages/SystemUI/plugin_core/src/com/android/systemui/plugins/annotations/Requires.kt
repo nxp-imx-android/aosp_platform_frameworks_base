@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 The Android Open Source Project
+ * Copyright (C) 2025 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
  * except in compliance with the License. You may obtain a copy of the License at
@@ -11,20 +11,17 @@
  * KIND, either express or implied. See the License for the specific language governing
  * permissions and limitations under the License.
  */
+package com.android.systemui.plugins.annotations
 
-package com.android.systemui.plugins.annotations;
-
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
+import kotlin.reflect.KClass
 
 /**
- * Should be added to all interfaces in plugin lib to specify their
- * current version and optionally their action to implement the plugin.
+ * Used to annotate which interfaces a given plugin depends on.
+ *
+ * At minimum all plugins should have at least one @Requires annotation for the plugin interface
+ * that they are implementing. They will also need an @Requires for each class that the plugin
+ * interface @DependsOn.
  */
-@Retention(RetentionPolicy.RUNTIME)
-public @interface ProvidesInterface {
-    int version();
-
-    String action() default "";
-
-}
+@Retention(AnnotationRetention.RUNTIME)
+@JvmRepeatable(value = Requirements::class)
+annotation class Requires(val target: KClass<*>, val version: Int)

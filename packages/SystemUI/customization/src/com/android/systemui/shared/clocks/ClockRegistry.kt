@@ -128,7 +128,7 @@ open class ClockRegistry(
 
     private val pluginListener =
         object : PluginListener<ClockProviderPlugin> {
-            override fun getLogBuffer(): MessageBuffer = logger.buffer
+            override val logBuffer: MessageBuffer = logger.buffer
 
             override fun onPluginAttached(
                 manager: PluginLifecycleManager<ClockProviderPlugin>
