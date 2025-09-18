@@ -57,7 +57,6 @@ import com.android.internal.protolog.ProtoLog
 import com.android.internal.statusbar.IStatusBarService
 import com.android.window.flags.Flags.FLAG_ROOT_TASK_FOR_BUBBLE
 import com.android.wm.shell.Flags.FLAG_ENABLE_BUBBLE_BAR
-import com.android.wm.shell.Flags.FLAG_ENABLE_BUBBLE_BAR_TO_FLOATING_TRANSITION
 import com.android.wm.shell.Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE
 import com.android.wm.shell.R
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer
@@ -691,7 +690,7 @@ class BubbleControllerTest(flags: FlagsParameterization) {
         assertThat(bubbleData.isExpanded).isTrue()
     }
 
-    @EnableFlags(FLAG_ENABLE_BUBBLE_BAR, FLAG_ENABLE_BUBBLE_BAR_TO_FLOATING_TRANSITION)
+    @EnableFlags(FLAG_ENABLE_BUBBLE_BAR)
     @Test
     fun expandBubbleBar_thenFold_stayAwakeOnFold_shouldKeepBubbleExpanded() {
         isStayAwakeOnFold = true
@@ -736,7 +735,7 @@ class BubbleControllerTest(flags: FlagsParameterization) {
         assertThat(bubble.taskView.alpha).isEqualTo(1)
     }
 
-    @EnableFlags(FLAG_ENABLE_BUBBLE_BAR, FLAG_ENABLE_BUBBLE_BAR_TO_FLOATING_TRANSITION)
+    @EnableFlags(FLAG_ENABLE_BUBBLE_BAR)
     @Test
     fun expandBubbleBar_thenFold_notStayAwakeOnFold_shouldCollapse() {
         isStayAwakeOnFold = false
