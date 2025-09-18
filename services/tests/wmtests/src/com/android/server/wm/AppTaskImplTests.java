@@ -38,6 +38,7 @@ import static com.android.dx.mockito.inline.extended.ExtendedMockito.mock;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.mockitoSession;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.spy;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.verify;
+import static com.android.server.wm.AppTaskImpl.WINDOWING_LAYER_CALLBACK_INVOKE_TIMEOUT_MS;
 import static com.android.window.flags.Flags.FLAG_ENABLE_INTERACTIVE_PICTURE_IN_PICTURE;
 import static com.android.window.flags.Flags.FLAG_ENABLE_WINDOW_REPOSITIONING_API;
 
@@ -61,6 +62,9 @@ import android.window.TransitionRequestInfo.WindowingLayerChange;
 
 import androidx.test.filters.SmallTest;
 
+import com.android.server.testutils.OffsettableClock;
+import com.android.server.testutils.TestHandler;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -79,10 +83,14 @@ import org.mockito.quality.Strictness;
 @RunWith(WindowTestRunner.class)
 public class AppTaskImplTests extends WindowTestsBase {
 
+
+
     private final IRemoteCallback mMockCallback = mock(IRemoteCallback.class);
     private TransitionController mTransitionController;
     private TestTransitionPlayer mTestTransitionPlayer;
     private AppOpsManager mAppOpsManager;
+    private OffsettableClock mClock;
+    private TestHandler mHandler;
 
     @Before
     public void setUp() {
@@ -93,6 +101,8 @@ public class AppTaskImplTests extends WindowTestsBase {
 
         mAppOpsManager = mAtm.getAppOpsManager();
         mockPipAppOppToReturn(MODE_ALLOWED);
+        mClock = new OffsettableClock.Stopped();
+        mHandler = new TestHandler(null, mClock);
     }
 
     /**
@@ -296,8 +306,43 @@ public class AppTaskImplTests extends WindowTestsBase {
                 any());
     }
 
+    @EnableFlags(FLAG_ENABLE_INTERACTIVE_PICTURE_IN_PICTURE)
+    @Test
+    public void testRequestWindowingLayer_fallbacksWhenTransitionEndsWithoutResultInTime()
+            throws Exception {
+        final Task task = getSampleTask();
+        final AppTaskImpl appTask = getAppTask(task.getRootTaskId());
+
+        appTask.requestWindowingLayer(WINDOWING_LAYER_PINNED, mMockCallback);
+
+        verify(mMockCallback, never()).sendResult(any());
+        completeRequestedTransition();
+        advanceTimeBy(WINDOWING_LAYER_CALLBACK_INVOKE_TIMEOUT_MS + 1);
+        verifyCallbackReceivedWindowingLayerErrorCode(mMockCallback,
+                TaskWindowingLayerRequestHandler.RESULT_FAILED_BAD_STATE);
+    }
+
+    @EnableFlags(FLAG_ENABLE_INTERACTIVE_PICTURE_IN_PICTURE)
+    @Test
+    public void testRequestWindowingLayer_skipsFallbackIfCallbackAlreadyInvoked()
+            throws Exception {
+        final Task task = getSampleTask();
+        final AppTaskImpl appTask = getAppTask(task.getRootTaskId());
+        final Bundle sampleBundle = new Bundle();
+
+        appTask.requestWindowingLayer(WINDOWING_LAYER_PINNED, mMockCallback);
+        final WindowingLayerChange change =
+                mTestTransitionPlayer.mLastRequest.getWindowingLayerChange();
+        assertNotNull(change);
+        change.getRemoteCallback().sendResult(sampleBundle); // simulate callback
+
+        completeRequestedTransition();
+        advanceTimeBy(WINDOWING_LAYER_CALLBACK_INVOKE_TIMEOUT_MS + 1);
+        verify(mMockCallback).sendResult(eq(sampleBundle)); // only once, with sampleBundle
+    }
+
     private AppTaskImpl getAppTask(int taskId) {
-        return new AppTaskImpl(mAtm, taskId, Binder.getCallingUid());
+        return new AppTaskImpl(mAtm, taskId, Binder.getCallingUid(), mHandler);
     }
 
     private Task getSelfMovableTask() {
@@ -369,5 +414,10 @@ public class AppTaskImplTests extends WindowTestsBase {
         transit.setAllReady();
         mTransitionController.mSyncEngine.tryFinishForTest(transit.getSyncId());
         waitUntilHandlersIdle();
+    }
+
+    private void advanceTimeBy(int timeMs) {
+        mClock.fastForward(timeMs);
+        mHandler.timeAdvance();
     }
 }

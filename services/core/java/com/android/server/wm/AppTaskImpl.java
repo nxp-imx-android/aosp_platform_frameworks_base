@@ -56,14 +56,18 @@ import android.content.Intent;
 import android.graphics.Rect;
 import android.os.Binder;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
 import android.os.IRemoteCallback;
+import android.os.Looper;
 import android.os.Parcel;
 import android.os.Process;
 import android.os.RemoteException;
 import android.os.UserHandle;
 import android.util.Slog;
 import android.window.TransitionRequestInfo.WindowingLayerChange;
+
+import com.android.internal.annotations.VisibleForTesting;
 
 import java.util.Objects;
 
@@ -74,15 +78,25 @@ import java.util.Objects;
  */
 class AppTaskImpl extends IAppTask.Stub {
     private static final String TAG = "AppTaskImpl";
+    /** Used to detect potential SysUI crash to reject the unhandled request. */
+    @VisibleForTesting
+    static final int WINDOWING_LAYER_CALLBACK_INVOKE_TIMEOUT_MS = 1000;
     private final ActivityTaskManagerService mService;
 
     private final int mTaskId;
     private final int mCallingUid;
+    private final Handler mHandler;
 
     public AppTaskImpl(ActivityTaskManagerService service, int taskId, int callingUid) {
+        this(service, taskId, callingUid, new Handler(Looper.getMainLooper()));
+    }
+
+    @VisibleForTesting
+    AppTaskImpl(ActivityTaskManagerService service, int taskId, int callingUid, Handler handler) {
         mService = service;
         mTaskId = taskId;
         mCallingUid = callingUid;
+        mHandler = handler;
     }
 
     private void checkCallerOrSystemOrRoot() {
@@ -442,8 +456,12 @@ class AppTaskImpl extends IAppTask.Stub {
                                     return;
                                 }
                             }
+                            final ObservedRemoteCallback observedCallback =
+                                    new ObservedRemoteCallback(callback);
+                            transition.addTransitionEndedListener(() ->
+                                    rejectRequestIfNotHandledAfterTimeout(observedCallback));
                             controller.requestStartWindowingLayerTransition(transition, task,
-                                    new WindowingLayerChange(layer, callback));
+                                    new WindowingLayerChange(layer, observedCallback));
                             transition.setReady(task, true);
                         });
             }
@@ -474,6 +492,63 @@ class AppTaskImpl extends IAppTask.Stub {
             callback.sendResult(bundle);
         } catch (RemoteException e) {
             // Client thrown an exception back to the server, ignoring it.
+        }
+    }
+
+    /** Verifies the callback was invoked by sysUI in time and rejects the request if wasn't */
+    private void rejectRequestIfNotHandledAfterTimeout(ObservedRemoteCallback callback) {
+        mHandler.postDelayed(() -> {
+            final Bundle bundle = new Bundle();
+            bundle.putInt(TaskWindowingLayerRequestHandler.REMOTE_CALLBACK_RESULT_KEY,
+                    TaskWindowingLayerRequestHandler.RESULT_FAILED_BAD_STATE);
+            try {
+                callback.sendFallbackResult(bundle,
+                        () -> Slog.w(TAG, "WindowingLayerChange not handled properly, "
+                                + "rejecting."));
+            } catch (RemoteException e) {
+                // Client thrown an exception back to the server, ignoring it.
+            }
+        }, WINDOWING_LAYER_CALLBACK_INVOKE_TIMEOUT_MS);
+    }
+
+    /**
+     * {@link IRemoteCallback} decorator to observe whether base callback was called.
+     */
+    private static final class ObservedRemoteCallback extends IRemoteCallback.Stub {
+
+        private boolean mAnyResultSent = false;
+        private final IRemoteCallback mCallback;
+
+        private ObservedRemoteCallback(IRemoteCallback callback) {
+            mCallback = callback;
+        }
+
+        /**
+         * Sends a {@code data} as a fallback callback execution, only if callback was not already
+         * invoked, otherwise it's a no-op.
+         *
+         * @param onFallback executed if fallback is actually triggered
+         */
+        void sendFallbackResult(Bundle data, Runnable onFallback) throws RemoteException {
+            synchronized (this) {
+                if (!mAnyResultSent) {
+                    onFallback.run();
+                    sendResult(data);
+                }
+            }
+        }
+
+        @Override
+        public void sendResult(Bundle data) throws RemoteException {
+            synchronized (this) {
+                if (mAnyResultSent) {
+                    Slog.w(TAG, "Attempted to invoke callback more than once. Skipping sending"
+                            + " result with bundle=" + data);
+                    return;
+                }
+                mAnyResultSent = true;
+                mCallback.sendResult(data);
+            }
         }
     }
 }
