@@ -19,7 +19,7 @@ package com.android.systemui.qs.ui.composable
 import com.android.systemui.Flags
 
 object TileRevealFlag {
-    // TODO(b/435138055) Remove once perf issues are addressed
+    // TODO(b/435138055) Feature flag for motion mechanics animations in QS
     val isEnabled: Boolean
-        get() = Flags.qsMmAnimation()
+        get() = Flags.qsTilesRevealAnimation()
 }

@@ -263,9 +263,9 @@ flag {
 }
 
 flag {
-    name: "qs_mm_animation"
+    name: "qs_tiles_reveal_animation"
     namespace: "systemui"
-    description: "Enable the new reveal animation in Quick Settings tiles."
+    description: "Enables a new reveal animation for Quick Settings tiles."
     bug: "435138055"
 }
 
