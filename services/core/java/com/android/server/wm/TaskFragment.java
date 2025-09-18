@@ -50,8 +50,6 @@ import static android.os.Process.INVALID_UID;
 import static android.os.Process.SYSTEM_UID;
 import static android.os.UserHandle.USER_NULL;
 import static android.view.Display.INVALID_DISPLAY;
-import static android.view.Surface.ROTATION_270;
-import static android.view.Surface.ROTATION_90;
 import static android.view.WindowManager.LayoutParams.FLAG_DIM_BEHIND;
 import static android.window.DesktopExperienceFlags.ENABLE_DESKTOP_WINDOWING_ENTERPRISE_BUGFIX;
 
@@ -69,6 +67,7 @@ import static com.android.server.wm.ActivityTaskManagerDebugConfig.TAG_ATM;
 import static com.android.server.wm.ActivityTaskManagerDebugConfig.TAG_WITH_CLASS_NAME;
 import static com.android.server.wm.ActivityTaskManagerService.checkPermission;
 import static com.android.server.wm.ActivityTaskSupervisor.printThisActivity;
+import static com.android.server.wm.AppCompatSandboxingPolicy.ConfigOverrideHint;
 
 import android.annotation.IntDef;
 import android.annotation.NonNull;
@@ -85,7 +84,6 @@ import android.content.PermissionChecker;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
-import android.graphics.Insets;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.os.IBinder;
@@ -2446,56 +2444,6 @@ class TaskFragment extends WindowContainer<WindowContainer> {
 
     private int getTaskId() {
         return getTask() != null ? getTask().mTaskId : INVALID_TASK_ID;
-    }
-
-    static class ConfigOverrideHint {
-        @Nullable DisplayInfo mTmpOverrideDisplayInfo;
-        @Nullable AppCompatDisplayInsets mTmpCompatInsets;
-        @Nullable Rect mParentAppBoundsOverride;
-        @Nullable Rect mParentBoundsOverride;
-        int mTmpOverrideConfigOrientation;
-        boolean mUseOverrideInsetsForConfig;
-
-        void resolveTmpOverrides(DisplayContent dc, Configuration parentConfig,
-                boolean isFixedRotationTransforming, @Nullable Rect safeRegionBounds,
-                boolean shouldApplyLegacyInsets) {
-            mParentAppBoundsOverride = safeRegionBounds != null ? safeRegionBounds : new Rect(
-                    parentConfig.windowConfiguration.getAppBounds());
-            mParentBoundsOverride = safeRegionBounds != null ? safeRegionBounds : new Rect(
-                    parentConfig.windowConfiguration.getBounds());
-            mTmpOverrideConfigOrientation = parentConfig.orientation;
-            Insets insets = Insets.NONE;
-            if (safeRegionBounds != null) {
-                // Modify orientation based on the parent app bounds if safe region bounds are set.
-                mTmpOverrideConfigOrientation =
-                        mParentAppBoundsOverride.height() >= mParentAppBoundsOverride.width()
-                                ? ORIENTATION_PORTRAIT : ORIENTATION_LANDSCAPE;
-            } else if (shouldApplyLegacyInsets && mUseOverrideInsetsForConfig && dc != null) {
-                // Insets are decoupled from configuration by default from V+, use legacy
-                // compatibility behaviour for apps targeting SDK earlier than 35
-                // (see applySizeOverrideIfNeeded).
-                int rotation = parentConfig.windowConfiguration.getRotation();
-                if (rotation == ROTATION_UNDEFINED && !isFixedRotationTransforming) {
-                    rotation = dc.getRotation();
-                }
-                final boolean rotated = (rotation == ROTATION_90 || rotation == ROTATION_270);
-                final int dw = rotated ? dc.mBaseDisplayHeight : dc.mBaseDisplayWidth;
-                final int dh = rotated ? dc.mBaseDisplayWidth : dc.mBaseDisplayHeight;
-                DisplayPolicy.DecorInsets.Info decorInsets = dc.getDisplayPolicy()
-                        .getDecorInsetsInfo(rotation, dw, dh);
-                final Rect stableBounds = decorInsets.mOverrideConfigFrame;
-                mTmpOverrideConfigOrientation = stableBounds.width() > stableBounds.height()
-                        ? ORIENTATION_LANDSCAPE : ORIENTATION_PORTRAIT;
-                insets = Insets.of(decorInsets.mOverrideNonDecorInsets);
-            }
-            mParentAppBoundsOverride.inset(insets);
-        }
-
-        void resetTmpOverrides() {
-            mTmpOverrideDisplayInfo = null;
-            mTmpCompatInsets = null;
-            mTmpOverrideConfigOrientation = ORIENTATION_UNDEFINED;
-        }
     }
 
     void computeConfigResourceOverrides(@NonNull Configuration inOutConfig,
