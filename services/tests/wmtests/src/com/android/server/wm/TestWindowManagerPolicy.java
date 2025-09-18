@@ -163,7 +163,7 @@ class TestWindowManagerPolicy implements WindowManagerPolicy {
     }
 
     @Override
-    public boolean isScreenOn() {
+    public boolean isScreenOn(int displayId) {
         return true;
     }
 
