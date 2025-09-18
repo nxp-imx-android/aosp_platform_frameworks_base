@@ -120,6 +120,16 @@ flag {
 }
 
 flag {
+  name: "reduce_unnecessary_schedule_idle_msg"
+  namespace: "windowing_frontend"
+  description: "Reduce lock contention on display thread"
+  bug: "445613287"
+  metadata {
+    purpose: PURPOSE_BUGFIX
+  }
+}
+
+flag {
   name: "opt_out_override_orientation_to_user"
   namespace: "windowing_frontend"
   description: "If apps opt out universal resizable, the override-to-user should not take effect"
