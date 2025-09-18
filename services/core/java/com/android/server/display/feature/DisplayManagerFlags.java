@@ -125,10 +125,6 @@ public class DisplayManagerFlags {
             Flags::enableSynthetic60hzModes
     );
 
-    private final FlagState mOffloadSessionCancelBlockScreenOn = new FlagState(
-            Flags.FLAG_OFFLOAD_SESSION_CANCEL_BLOCK_SCREEN_ON,
-            Flags::offloadSessionCancelBlockScreenOn);
-
     private final FlagState mNormalBrightnessForDozeParameter = new FlagState(
             Flags.FLAG_NORMAL_BRIGHTNESS_FOR_DOZE_PARAMETER,
             Flags::normalBrightnessForDozeParameter
@@ -351,10 +347,6 @@ public class DisplayManagerFlags {
         return mPeakRefreshRatePhysicalLimit.isEnabled();
     }
 
-    public boolean isOffloadSessionCancelBlockScreenOnEnabled() {
-        return mOffloadSessionCancelBlockScreenOn.isEnabled();
-    }
-
     public boolean isSynthetic60HzModesEnabled() {
         return mSynthetic60hzModes.isEnabled();
     }
@@ -549,7 +541,6 @@ public class DisplayManagerFlags {
         pw.println(" " + mUseFusionProxSensor);
         pw.println(" " + mPeakRefreshRatePhysicalLimit);
         pw.println(" " + mSynthetic60hzModes);
-        pw.println(" " + mOffloadSessionCancelBlockScreenOn);
         pw.println(" " + mNormalBrightnessForDozeParameter);
         pw.println(" " + mEnableBatteryStatsForAllDisplays);
         pw.println(" " + mBlockAutobrightnessChangesOnStylusUsage);
