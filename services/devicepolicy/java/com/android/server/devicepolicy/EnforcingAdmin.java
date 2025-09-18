@@ -149,9 +149,14 @@ final class EnforcingAdmin {
             if (Flags.tightenAdminInstantiation()) {
                 return createRoleEnforcingAdmin(admin.getPackageName(), userId);
             } else {
-                return new EnforcingAdmin(admin.getPackageName(), admin.getComponentName(),
-                        roleAuthority.getRoles(), admin.getUserHandle().getIdentifier(),
-                        /* isRoleAuthority = */ true);
+                return new EnforcingAdmin(
+                        admin.getPackageName(),
+                        null, /* systemEntity */
+                        admin.getComponentName(),
+                        admin.getUserHandle().getIdentifier(),
+                        true,
+                        new HashSet<>(roleAuthority.getRoles())
+                        );
             }
         } else if (authority instanceof SystemAuthority systemAuthority) {
             return createSystemEnforcingAdmin(systemAuthority.getSystemEntity());
@@ -193,23 +198,6 @@ final class EnforcingAdmin {
             return new SystemAuthority(systemEntity);
         }
         return UnknownAuthority.UNKNOWN_AUTHORITY;
-    }
-
-    private EnforcingAdmin(
-            String packageName, @Nullable ComponentName componentName, Set<String> authorities,
-            int userId, boolean isRoleAuthority) {
-
-        this(
-                packageName,
-                null, /* systemEntity */
-                componentName,
-                userId,
-                isRoleAuthority,
-                new HashSet<>(authorities)
-        );
-
-        Objects.requireNonNull(packageName);
-        Objects.requireNonNull(authorities);
     }
 
     private EnforcingAdmin(String packageName, String systemEntity, ComponentName componentName,
