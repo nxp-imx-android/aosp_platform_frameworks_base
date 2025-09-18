@@ -312,7 +312,7 @@ public abstract class MediaOutputBaseDialog extends SystemUIDialog
         } else if (appSourceIcon != null) {
             Icon appIcon = appSourceIcon.toIcon(mContext);
             mAppResourceIcon.setColorFilter(
-                    mMediaSwitchingController.getColorSchemeLegacy().getColorItemContent());
+                    mMediaSwitchingController.getColorScheme().getSecondary());
             mAppResourceIcon.setImageIcon(appIcon);
         } else {
             Drawable appIconDrawable = mMediaSwitchingController.getAppSourceIconFromPackage();
