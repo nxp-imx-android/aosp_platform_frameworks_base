@@ -15,9 +15,6 @@
  */
 package com.android.wm.shell.pip2.phone;
 
-import static com.android.wm.shell.pip2.phone.PipTransition.ANIMATING_BOUNDS_CHANGE_DURATION;
-import static com.android.wm.shell.pip2.phone.PipTransition.PIP_DESTINATION_BOUNDS;
-
 import android.annotation.Nullable;
 import android.app.TaskInfo;
 import android.content.Context;
@@ -43,6 +40,7 @@ import com.android.wm.shell.common.pip.PipBoundsState;
 import com.android.wm.shell.common.pip.PipDisplayLayoutState;
 import com.android.wm.shell.pip2.PipSurfaceTransactionHelper;
 import com.android.wm.shell.pip2.animation.PipResizeAnimator;
+import com.android.wm.shell.pip2.phone.transition.PipBoundsChangeHandler;
 import com.android.wm.shell.protolog.ShellProtoLogGroup;
 
 /**
@@ -117,7 +115,7 @@ public class PipDisplayTransferHandler implements
         Bundle extra = new Bundle();
         extra.putInt(ORIGIN_DISPLAY_ID_KEY, originDisplayId);
         extra.putInt(TARGET_DISPLAY_ID_KEY, targetDisplayId);
-        extra.putParcelable(PIP_DESTINATION_BOUNDS, boundsOnRelease);
+        extra.putParcelable(PipBoundsChangeHandler.PIP_DESTINATION_BOUNDS, boundsOnRelease);
 
         mPipTransitionState.setState(PipTransitionState.SCHEDULED_BOUNDS_CHANGE, extra);
     }
@@ -172,7 +170,8 @@ public class PipDisplayTransferHandler implements
 
                 mWaitingForDisplayTransfer = true;
                 mPipScheduler.scheduleMoveToDisplay(mTargetDisplayId,
-                        extra.getParcelable(PIP_DESTINATION_BOUNDS, Rect.class));
+                        extra.getParcelable(PipBoundsChangeHandler.PIP_DESTINATION_BOUNDS,
+                        Rect.class));
                 break;
             case PipTransitionState.CHANGING_PIP_BOUNDS:
                 if (!mWaitingForDisplayTransfer) {
@@ -184,14 +183,15 @@ public class PipDisplayTransferHandler implements
                 final SurfaceControl pipLeash = mPipTransitionState.getPinnedTaskLeash();
                 final TaskInfo pipTaskInfo = mPipTransitionState.getPipTaskInfo();
                 final TaskInfo pipCandidateTaskInfo = mPipTransitionState.getPipCandidateTaskInfo();
-                final int duration = extra.getInt(ANIMATING_BOUNDS_CHANGE_DURATION,
-                        PipTransition.BOUNDS_CHANGE_JUMPCUT_DURATION);
+                final int duration = extra.getInt(
+                        PipBoundsChangeHandler.ANIMATING_BOUNDS_CHANGE_DURATION,
+                        PipBoundsChangeHandler.BOUNDS_CHANGE_JUMPCUT_DURATION);
                 final Transaction startTx = extra.getParcelable(
-                        PipTransition.PIP_START_TX, Transaction.class);
+                        PipBoundsChangeHandler.PIP_START_TX, Transaction.class);
                 final Transaction finishTx = extra.getParcelable(
-                        PipTransition.PIP_FINISH_TX, Transaction.class);
+                        PipBoundsChangeHandler.PIP_FINISH_TX, Transaction.class);
                 final Rect pipBounds = extra.getParcelable(
-                        PIP_DESTINATION_BOUNDS, Rect.class);
+                        PipBoundsChangeHandler.PIP_DESTINATION_BOUNDS, Rect.class);
 
                 Trace.instant(Trace.TRACE_TAG_WINDOW_MANAGER,
                         "PipDisplayTransferHandler#changingPipBounds");
