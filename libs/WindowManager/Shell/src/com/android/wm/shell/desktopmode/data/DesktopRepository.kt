@@ -628,7 +628,7 @@ class DesktopRepository(
 
     fun isActiveTask(taskId: Int) = desksSequence().any { taskId in it.activeTasks }
 
-    @VisibleForTesting
+    /** Returns whether the given task is active in the given desk. */
     fun isActiveTaskInDesk(taskId: Int, deskId: Int): Boolean {
         val desk = desktopData.getDesk(deskId) ?: return false
         return taskId in desk.activeTasks
