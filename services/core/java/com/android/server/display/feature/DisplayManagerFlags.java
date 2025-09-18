@@ -637,13 +637,14 @@ public class DisplayManagerFlags {
 
         @Override
         public String toString() {
-            // remove com.android.server.display.feature.flags. from the beginning of the name.
+            // remove "com.android.server.display.feature.flags." from the beginning of the name.
+            String shortName = TextUtils.substring(mName, 41, mName.length());
+
             // align all isEnabled() values.
-            // Adjust lengths if we end up with longer names
-            final int nameLength = mName.length();
-            return TextUtils.substring(mName,  41, nameLength) + ": "
-                    + TextUtils.formatSimple("%" + (93 - nameLength) + "s%s", " " , isEnabled())
-                    + " (def:" + mFlagFunction.get() + ")";
+            return String.format("%-53s %b (def:%b)",
+                    shortName + ":",
+                    isEnabled(),
+                    mFlagFunction.get());
         }
     }
 }
