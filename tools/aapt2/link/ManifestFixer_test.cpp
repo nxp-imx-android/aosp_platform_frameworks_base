@@ -88,8 +88,8 @@ TEST_F(ManifestFixerTest, EnsureManifestIsRootTag) {
 TEST_F(ManifestFixerTest, EnsureManifestHasPackage) {
   EXPECT_THAT(Verify("<manifest package=\"android\" />"), NotNull());
   EXPECT_THAT(Verify("<manifest package=\"com.android\" />"), NotNull());
-  EXPECT_THAT(Verify("<manifest package=\"com.android.google\" />"), NotNull());
-  EXPECT_THAT(Verify("<manifest package=\"com.android.google.Class$1\" />"), IsNull());
+  EXPECT_THAT(Verify("<manifest package=\"com.android.foo\" />"), NotNull());
+  EXPECT_THAT(Verify("<manifest package=\"com.android.foo.Class$1\" />"), IsNull());
   EXPECT_THAT(Verify("<manifest xmlns:android=\"http://schemas.android.com/apk/res/android\" "
                      "android:package=\"com.android\" />"),
               IsNull());
@@ -253,7 +253,15 @@ TEST_F(ManifestFixerTest, RenameManifestPackageAndFullyQualifyClasses) {
         <uses-split android:name="feature_a" />
         <application android:name=".MainApplication" text="hello">
           <activity android:name=".activity.Start" />
-          <receiver android:name="com.google.android.Receiver" />
+          <receiver android:name="com.foo.android.Receiver" />
+          <activity-alias android:name=".activityAlias.Start"
+                          android:targetActivity=".activity.Start" />
+          <private-compute>
+            <activity android:name=".activity.Start" />
+            <receiver android:name="com.foo.android.Receiver" />
+            <activity-alias android:name=".activityAlias.Start"
+                            android:targetActivity=".activity.Start" />
+          </private-compute>
         </application>
       </manifest>)EOF",
                                                             options);
@@ -299,7 +307,46 @@ TEST_F(ManifestFixerTest, RenameManifestPackageAndFullyQualifyClasses) {
 
   attr = el->FindAttribute(xml::kSchemaAndroid, "name");
   ASSERT_THAT(el, NotNull());
-  EXPECT_THAT(attr->value, StrEq("com.google.android.Receiver"));
+  EXPECT_THAT(attr->value, StrEq("com.foo.android.Receiver"));
+
+  el = application_el->FindChild({}, "activity-alias");
+  ASSERT_THAT(el, NotNull());
+
+  attr = el->FindAttribute(xml::kSchemaAndroid, "name");
+  ASSERT_THAT(el, NotNull());
+  EXPECT_THAT(attr->value, StrEq("android.activityAlias.Start"));
+
+  attr = el->FindAttribute(xml::kSchemaAndroid, "targetActivity");
+  ASSERT_THAT(el, NotNull());
+  EXPECT_THAT(attr->value, StrEq("android.activity.Start"));
+
+  xml::Element* private_compute_el = application_el->FindChild({}, "private-compute");
+  ASSERT_THAT(private_compute_el, NotNull());
+
+  el = private_compute_el->FindChild({}, "activity");
+  ASSERT_THAT(el, NotNull());
+
+  attr = el->FindAttribute(xml::kSchemaAndroid, "name");
+  ASSERT_THAT(el, NotNull());
+  EXPECT_THAT(attr->value, StrEq("android.activity.Start"));
+
+  el = private_compute_el->FindChild({}, "receiver");
+  ASSERT_THAT(el, NotNull());
+
+  attr = el->FindAttribute(xml::kSchemaAndroid, "name");
+  ASSERT_THAT(el, NotNull());
+  EXPECT_THAT(attr->value, StrEq("com.foo.android.Receiver"));
+
+  el = private_compute_el->FindChild({}, "activity-alias");
+  ASSERT_THAT(el, NotNull());
+
+  attr = el->FindAttribute(xml::kSchemaAndroid, "name");
+  ASSERT_THAT(el, NotNull());
+  EXPECT_THAT(attr->value, StrEq("android.activityAlias.Start"));
+
+  attr = el->FindAttribute(xml::kSchemaAndroid, "targetActivity");
+  ASSERT_THAT(el, NotNull());
+  EXPECT_THAT(attr->value, StrEq("android.activity.Start"));
 }
 
 TEST_F(ManifestFixerTest,
@@ -908,7 +955,7 @@ TEST_F(ManifestFixerTest, IgnoreNamespacedElements) {
   std::string input = R"EOF(
       <manifest xmlns:android="http://schemas.android.com/apk/res/android"
                 package="android">
-        <special:tag whoo="true" xmlns:special="http://google.com" />
+        <special:tag whoo="true" xmlns:special="http://foo.com" />
       </manifest>)EOF";
   EXPECT_THAT(Verify(input), NotNull());
 }

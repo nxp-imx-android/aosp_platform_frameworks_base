@@ -3093,8 +3093,10 @@
          access to data managed by the application.
 
          <p>This appears as a child tag of the
-         {@link #AndroidManifestApplication application} tag. -->
-    <declare-styleable name="AndroidManifestProvider" parent="AndroidManifestApplication">
+         {@link #AndroidManifestApplication application} or
+         {@link #AndroidManifestPrivateCompute private-compute} tag. -->
+    <declare-styleable name="AndroidManifestProvider"
+        parent="AndroidManifestApplication AndroidManifestPrivateCompute">
         <!-- Required name of the class implementing the provider, deriving from
             {@link android.content.ContentProvider}.  This is a fully
             qualified class name (for example, com.mycompany.myapp.MyProvider); as a
@@ -3214,8 +3216,10 @@
          that can connect with it.  If none are specified, the service can
          only be accessed by direct specification of its class name.
          The service tag appears as a child tag of the
-         {@link #AndroidManifestApplication application} tag. -->
-    <declare-styleable name="AndroidManifestService" parent="AndroidManifestApplication">
+         {@link #AndroidManifestApplication application} or
+         {@link #AndroidManifestPrivateCompute private-compute} tag. -->
+    <declare-styleable name="AndroidManifestService"
+        parent="AndroidManifestApplication AndroidManifestPrivateCompute">
         <!-- Required name of the class implementing the service, deriving from
             {@link android.app.Service}.  This is a fully
             qualified class name (for example, com.mycompany.myapp.MyService); as a
@@ -3334,8 +3338,10 @@
          it will receive.  If none are specified, the receiver will only
          be run when an Intent is broadcast that is directed at its specific
          class name.  The receiver tag appears as a child tag of the
-         {@link #AndroidManifestApplication application} tag. -->
-    <declare-styleable name="AndroidManifestReceiver" parent="AndroidManifestApplication">
+         {@link #AndroidManifestApplication application} or
+         {@link #AndroidManifestPrivateCompute private-compute} tag. -->
+    <declare-styleable name="AndroidManifestReceiver"
+        parent="AndroidManifestApplication AndroidManifestPrivateCompute">
         <!-- Required name of the class implementing the receiver, deriving from
             {@link android.content.BroadcastReceiver}.  This is a fully
             qualified class name (for example, com.mycompany.myapp.MyReceiver); as a
@@ -3377,8 +3383,10 @@
          that it can handle.  If none are specified, the activity can
          only be started through direct specification of its class name.
          The activity tag appears as a child tag of the
-         {@link #AndroidManifestApplication application} tag. -->
-    <declare-styleable name="AndroidManifestActivity" parent="AndroidManifestApplication">
+         {@link #AndroidManifestApplication application} or
+         {@link #AndroidManifestPrivateCompute private-compute} tag. -->
+    <declare-styleable name="AndroidManifestActivity"
+        parent="AndroidManifestApplication AndroidManifestPrivateCompute">
         <!-- Required name of the class implementing the activity, deriving from
             {@link android.app.Activity}.  This is a fully
             qualified class name (for example, com.mycompany.myapp.MyActivity); as a
@@ -3571,8 +3579,10 @@
          that it can handle.  If none are specified, the activity can
          only be started through direct specification of its class name.
          The activity-alias tag appears as a child tag of the
-         {@link #AndroidManifestApplication application} tag. -->
-    <declare-styleable name="AndroidManifestActivityAlias" parent="AndroidManifestApplication">
+         {@link #AndroidManifestApplication application} or
+         {@link #AndroidManifestPrivateCompute private-compute} tag. -->
+    <declare-styleable name="AndroidManifestActivityAlias"
+        parent="AndroidManifestApplication AndroidManifestPrivateCompute">
         <!-- Required name of the class implementing the activity, deriving from
             {@link android.app.Activity}.  This is a fully
             qualified class name (for example, com.mycompany.myapp.MyActivity); as a
@@ -3604,6 +3614,18 @@
         <attr name="knownActivityEmbeddingCerts" />
         <attr name="intentMatchingFlags"/>
     </declare-styleable>
+
+    <!-- The <code>private-compute</code> tag contains a set of
+         {@link #AndroidManifestProvider provider} or {@link #AndroidManifestActivity activity} or
+         {@link #AndroidManifestActivityAlias activity-alias} or
+         {@link #AndroidManifestReceiver receiver} or {@link #AndroidManifestService service} or
+         components that are available as part of the package's application components,
+         but they run in the Private Compute Core sandbox and will be subject to
+         system restrictions, limiting access to some system resources and
+         restricting communication with non-PCC components.
+         @FlaggedApi(android.app.privatecompute.flags.Flags.FLAG_ENABLE_PCC_FRAMEWORK_SUPPORT)
+    -->
+    <declare-styleable name="AndroidManifestPrivateCompute" parent="AndroidManifestApplication"/>
 
     <!-- The <code>meta-data</code> tag is used to attach additional
          arbitrary data to an application component.  The data can later
