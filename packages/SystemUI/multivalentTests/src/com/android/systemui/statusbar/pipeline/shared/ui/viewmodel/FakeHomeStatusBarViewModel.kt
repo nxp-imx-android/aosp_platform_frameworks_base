@@ -173,6 +173,15 @@ class FakeHomeStatusBarViewModel(
             initialValue = false,
         )
 
+    val hasStatusBarNotificationsSource = MutableStateFlow(false)
+
+    override val hasStatusBarNotifications: Boolean by
+        hydrator.hydratedStateOf(
+            traceName = "hasStatusBarNotifications",
+            source = hasStatusBarNotificationsSource,
+            initialValue = false,
+        )
+
     val isQuickSettingsChipHighlightedSource = mutableStateOf(false)
     override val isQuickSettingsChipHighlighted: Boolean by isQuickSettingsChipHighlightedSource
 

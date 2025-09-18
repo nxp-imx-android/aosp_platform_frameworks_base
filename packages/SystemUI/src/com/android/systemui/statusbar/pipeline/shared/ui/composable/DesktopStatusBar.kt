@@ -68,6 +68,7 @@ import com.android.systemui.statusbar.systemstatusicons.SystemStatusIconsInCompo
 import com.android.systemui.statusbar.systemstatusicons.ui.compose.SystemStatusIcons
 import com.android.systemui.statusbar.systemstatusicons.ui.compose.SystemStatusIconsLegacy
 import com.android.systemui.statusbar.systemstatusicons.ui.compose.movableSystemStatusIconsLegacyAndroidView
+import com.android.systemui.statusbar.ui.composable.getStatusBarItemSize
 
 object DesktopStatusBar {
     object Dimensions {
@@ -164,6 +165,7 @@ private fun NotificationsChip(viewModel: HomeStatusBarViewModel, modifier: Modif
         } else {
             ChipHighlightModel.Transparent
         }
+
     ShadeHighlightChip(
         modifier = modifier,
         onClick = { viewModel.onNotificationIconChipClicked() },
@@ -180,11 +182,16 @@ private fun NotificationsChip(viewModel: HomeStatusBarViewModel, modifier: Modif
             Icon(
                 icon =
                     Icon.Resource(
-                        resId = R.drawable.ic_notification_bell,
+                        resId =
+                            if (viewModel.hasStatusBarNotifications) {
+                                R.drawable.ic_notification_bell_unread
+                            } else {
+                                R.drawable.ic_notification_bell
+                            },
                         contentDescription = null,
                     ),
                 tint = tint,
-                modifier = Modifier.size(20.dp).padding(1.dp),
+                modifier = Modifier.size(getStatusBarItemSize()).align(Alignment.CenterVertically),
             )
         }
     }
