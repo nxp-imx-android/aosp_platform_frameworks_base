@@ -79,13 +79,17 @@ class RecordTraceWithTransitionRule(
 
     private fun recordTraceWithTransition() {
         setUpBeforeTransition()
+        var error: Throwable? = null
         reader = runTransitionWithTrace {
             try {
                 transition()
             } catch (e: Throwable) {
                 Log.e(TAG, "Transition is aborted due to the exception:\n $e", e)
+                // Don't throw yet to allow reader to be initialized
+                error = e
             }
         }
+        error?.let { throw it }
     }
 
     /**
