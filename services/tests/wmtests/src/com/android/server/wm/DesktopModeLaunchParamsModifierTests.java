@@ -671,6 +671,39 @@ public class DesktopModeLaunchParamsModifierTests extends
     @Test
     @EnableFlags({Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE,
             Flags.FLAG_INHERIT_TASK_BOUNDS_FOR_TRAMPOLINE_TASK_LAUNCHES})
+    public void testDontInheritTaskBoundsFromExistingInstanceIfDifferentPackage() {
+        setupDesktopModeLaunchParamsModifier();
+
+        final String packageName1 = "com.package.one";
+        final String packageName2 = "com.package.two";
+        // Setup existing task.
+        final DisplayContent dc = spy(createNewDisplay());
+        final Task existingFreeformTask = new TaskBuilder(mSupervisor).setCreateActivity(true)
+                .setWindowingMode(WINDOWING_MODE_FREEFORM).setPackage(packageName1).build();
+        existingFreeformTask.topRunningActivity().launchMode = LAUNCH_SINGLE_INSTANCE;
+        existingFreeformTask.setBounds(
+                /* left */ 0,
+                /* top */ 0,
+                /* right */ 500,
+                /* bottom */ 500);
+        doReturn(existingFreeformTask.getRootActivity()).when(dc)
+                .getTopMostVisibleFreeformActivity();
+        // Set up new instance of a task from a different package.
+        final Task launchingTask = new TaskBuilder(mSupervisor).setPackage(packageName2)
+                .setCreateActivity(true).build();
+        launchingTask.topRunningActivity().launchMode = LAUNCH_SINGLE_INSTANCE;
+        launchingTask.onDisplayChanged(dc);
+
+
+        new CalculateRequestBuilder().setTask(launchingTask)
+                .setActivity(launchingTask.getRootActivity()).calculate();
+        // New instance should not inherit task bounds of old instance as packages differ.
+        assertNotEquals(existingFreeformTask.getBounds(), mResult.mBounds);
+    }
+
+    @Test
+    @EnableFlags({Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE,
+            Flags.FLAG_INHERIT_TASK_BOUNDS_FOR_TRAMPOLINE_TASK_LAUNCHES})
     public void testDontInheritTaskBoundsFromSameTask() {
         setupDesktopModeLaunchParamsModifier();
 
