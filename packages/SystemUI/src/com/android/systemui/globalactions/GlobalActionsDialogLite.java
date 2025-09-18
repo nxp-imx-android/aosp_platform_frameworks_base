@@ -133,7 +133,6 @@ import com.android.systemui.globalactions.domain.interactor.GlobalActionsInterac
 import com.android.systemui.plugins.ActivityStarter;
 import com.android.systemui.plugins.GlobalActions.GlobalActionsManager;
 import com.android.systemui.plugins.GlobalActionsPanelPlugin;
-import com.android.systemui.qs.flags.QsInCompose;
 import com.android.systemui.scrim.ScrimDrawable;
 import com.android.systemui.settings.UserTracker;
 import com.android.systemui.shade.ShadeController;
@@ -1029,16 +1028,15 @@ public class GlobalActionsDialogLite implements DialogInterface.OnDismissListene
     }
 
     protected int getEmergencyIconColor(Context context) {
-        return context.getResources().getColor(QsInCompose.isEnabled()
-                ? com.android.systemui.res.R.color.global_actions_lite_emergency_icon_new_color
-                : com.android.systemui.res.R.color.global_actions_lite_emergency_icon);
+        return context.getResources()
+                .getColor(com.android.systemui.res.R.color.global_actions_lite_emergency_icon);
+
     }
 
     protected int getEmergencyBackgroundColor(Context context) {
-        return context.getResources().getColor(QsInCompose.isEnabled()
-                ?
-                com.android.systemui.res.R.color.global_actions_lite_emergency_background_new_color
-                : com.android.systemui.res.R.color.global_actions_lite_emergency_background);
+        return context.getResources().getColor(
+                com.android.systemui.res.R.color.global_actions_lite_emergency_background
+        );
     }
 
     private class EmergencyAffordanceAction extends EmergencyAction {
@@ -2062,17 +2060,6 @@ public class GlobalActionsDialogLite implements DialogInterface.OnDismissListene
                 messageView.setText(mMessageResId);
             }
 
-            if (QsInCompose.isEnabled()) {
-                int textAndIconColor = context.getColor(R.color.materialColorOnSurface);
-                messageView.setTextColor(textAndIconColor);
-                mIconView.setBackgroundTintList(
-                        ColorStateList.valueOf(
-                                context.getColor(R.color.materialColorSurfaceContainerHighest)
-                        )
-                );
-                mIconView.setImageTintList(ColorStateList.valueOf(textAndIconColor));
-            }
-
             return v;
         }
 
@@ -2772,13 +2759,6 @@ public class GlobalActionsDialogLite implements DialogInterface.OnDismissListene
                 mBackgroundDrawable = new ScrimDrawable();
                 mScrimAlpha = 1.0f;
             }
-            if (QsInCompose.isEnabled()) {
-                View v = findViewById(R.id.list);
-                v.setBackgroundTintList(ColorStateList.valueOf(
-                        getContext().getColor(R.color.materialColorSurfaceContainerLow)
-                ));
-            }
-
             // If user entered from the lock screen and smart lock was enabled, disable it
             int user = mSelectedUserInteractor.getSelectedUserId();
             boolean userHasTrust = mKeyguardUpdateMonitor.getUserHasTrust(user);
