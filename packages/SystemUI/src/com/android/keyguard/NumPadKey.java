@@ -15,6 +15,9 @@
  */
 package com.android.keyguard;
 
+import static android.animation.AnimatorInflater.loadStateListAnimator;
+import static android.security.Flags.lockscreenTimeoutDeactivatePinPad;
+
 import static com.android.systemui.Flags.bouncerUiRevamp2;
 
 import android.content.Context;
@@ -146,6 +149,11 @@ public class NumPadKey extends ViewGroup implements NumPadAnimationListener {
             mAnimator = null;
         }
 
+        if (lockscreenTimeoutDeactivatePinPad()) {
+            setStateListAnimator(
+                    loadStateListAnimator(context, R.animator.numpad_key_alpha_animator));
+        }
+
         if (bouncerUiRevamp2()) {
             mDigitText.setTypeface(
                     Typeface.create(FontStyles.GSF_LABEL_SMALL_EMPHASIZED, Typeface.NORMAL));
@@ -172,6 +180,9 @@ public class NumPadKey extends ViewGroup implements NumPadAnimationListener {
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
+        if (lockscreenTimeoutDeactivatePinPad() && !isEnabled()) {
+            return super.onTouchEvent(event);
+        }
         switch(event.getActionMasked()) {
             case MotionEvent.ACTION_DOWN:
                 doHapticKeyClick();
@@ -243,6 +254,10 @@ public class NumPadKey extends ViewGroup implements NumPadAnimationListener {
     public void setProgress(float progress) {
         if (mAnimator != null) {
             mAnimator.setProgress(progress);
+        }
+        if (lockscreenTimeoutDeactivatePinPad()) {
+            float targetAlpha = isEnabled() ? 1f : 0.2f;
+            setAlpha(progress * targetAlpha);
         }
     }
 

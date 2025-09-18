@@ -16,6 +16,7 @@
 
 package com.android.systemui.bouncer.ui.composable
 
+import android.security.Flags.lockscreenTimeoutDeactivatePinPad
 import android.view.MotionEvent
 import android.view.View
 import androidx.compose.animation.animateColorAsState
@@ -44,6 +45,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.focus.FocusRequester
@@ -270,6 +272,9 @@ private fun PinPadButton(
             DurationUnit.MILLISECONDS
         )
 
+    val enabledAlpha by
+        animateFloatAsState(if (isEnabled) 1f else 0.2f, label = "Pin pad enabled alpha")
+
     val cornerRadius: Dp by
         animateDpAsState(
             if (isAnimationEnabled && isPressed) 24.dp else pinButtonMaxSize / 2,
@@ -300,8 +305,10 @@ private fun PinPadButton(
         contentAlignment = Alignment.Center,
         modifier =
             modifier
-                .focusRequester(FocusRequester.Default)
-                .focusable()
+                .thenIf(!lockscreenTimeoutDeactivatePinPad() || isEnabled) {
+                    Modifier.focusRequester(FocusRequester.Default).focusable()
+                }
+                .thenIf(lockscreenTimeoutDeactivatePinPad()) { Modifier.alpha(enabledAlpha) }
                 .sizeIn(maxWidth = pinButtonMaxSize, maxHeight = pinButtonMaxSize)
                 .aspectRatio(1f)
                 .drawBehind {
