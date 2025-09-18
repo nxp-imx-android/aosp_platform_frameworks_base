@@ -146,6 +146,9 @@ public class DefaultMixedHandler implements MixedTransitionHandler,
          */
         static final int TYPE_LAUNCH_OR_CONVERT_TO_BUBBLE_FROM_EXISTING_BUBBLE = 16;
 
+        /** Transition of a visible app in desktop mode into a bubble. */
+        static final int TYPE_LAUNCH_OR_CONVERT_DESKTOP_TASK_TO_BUBBLE = 17;
+
         /**
          * Returns {@code true} if the given type is one of the mixed transition type for app
          * bubble transition.
@@ -154,7 +157,8 @@ public class DefaultMixedHandler implements MixedTransitionHandler,
             return type == TYPE_LAUNCH_OR_CONVERT_TO_BUBBLE
                     || type == TYPE_LAUNCH_OR_CONVERT_SPLIT_TASK_TO_BUBBLE
                     || type == TYPE_LAUNCH_OR_CONVERT_PIP_TASK_TO_BUBBLE
-                    || type == TYPE_LAUNCH_OR_CONVERT_TO_BUBBLE_FROM_EXISTING_BUBBLE;
+                    || type == TYPE_LAUNCH_OR_CONVERT_TO_BUBBLE_FROM_EXISTING_BUBBLE
+                    || type == TYPE_LAUNCH_OR_CONVERT_DESKTOP_TASK_TO_BUBBLE;
         }
 
         @IntDef(prefix = {"TYPE_"}, value = {
@@ -174,6 +178,7 @@ public class DefaultMixedHandler implements MixedTransitionHandler,
                 TYPE_LAUNCH_OR_CONVERT_SPLIT_TASK_TO_BUBBLE,
                 TYPE_LAUNCH_OR_CONVERT_PIP_TASK_TO_BUBBLE,
                 TYPE_LAUNCH_OR_CONVERT_TO_BUBBLE_FROM_EXISTING_BUBBLE,
+                TYPE_LAUNCH_OR_CONVERT_DESKTOP_TASK_TO_BUBBLE,
         })
         @Retention(RetentionPolicy.SOURCE)
         @interface MixedTransitionType {
@@ -342,10 +347,11 @@ public class DefaultMixedHandler implements MixedTransitionHandler,
     public WindowContainerTransaction handleRequest(@NonNull IBinder transition,
             @NonNull TransitionRequestInfo request) {
         // Transitions involving a task that is being bubbled
+        final ActivityManager.RunningTaskInfo task = request.getTriggerTask();
         if (requestHasBubbleEnter(request)) {
             consumeRemoteTransitionIfNecessary(transition, request.getRemoteTransition());
 
-            if (mSplitHandler.requestImpliesSplitToBubble(request.getTriggerTask())) {
+            if (mSplitHandler.requestImpliesSplitToBubble(task)) {
                 ProtoLog.v(ShellProtoLogGroup.WM_SHELL_TRANSITIONS,
                         " Got a Bubble-enter request from a split task");
                 mBubbleTransitions.storePendingEnterTransition(transition, request);
@@ -355,14 +361,24 @@ public class DefaultMixedHandler implements MixedTransitionHandler,
                 WindowContainerTransaction out = new WindowContainerTransaction();
                 mSplitHandler.addExitForBubblesIfNeeded(request, out);
                 return out;
-            } else if (request.getTriggerTask() != null
-                    && mPipHandler.isTaskActiveInPip(request.getTriggerTask().taskId)) {
+            } else if (task != null && mPipHandler.isTaskActiveInPip(task.taskId)) {
                 ProtoLog.v(ShellProtoLogGroup.WM_SHELL_TRANSITIONS,
                         " Got a Bubble-enter request from a pip task");
                 mBubbleTransitions.storePendingEnterTransition(transition, request);
                 mActiveTransitions.add(createDefaultMixedTransition(
                         MixedTransition.TYPE_LAUNCH_OR_CONVERT_PIP_TASK_TO_BUBBLE, transition));
                 return new WindowContainerTransaction();
+            } else if (task != null && mDesktopTasksController != null
+                    && mDesktopTasksController.isDesktopTask(task)) {
+                ProtoLog.v(ShellProtoLogGroup.WM_SHELL_TRANSITIONS,
+                        " Got a Bubble-enter request from a desktop task");
+                mBubbleTransitions.storePendingEnterTransition(transition, request);
+                mActiveTransitions.add(createDefaultMixedTransition(
+                        MixedTransition.TYPE_LAUNCH_OR_CONVERT_DESKTOP_TASK_TO_BUBBLE, transition));
+
+                final WindowContainerTransaction out = new WindowContainerTransaction();
+                mDesktopTasksController.addMoveToBubbleFromDesktopChange(out, task, transition);
+                return out;
             } else {
                 // This check should happen after we've checked for split + bubble enter
                 ProtoLog.v(ShellProtoLogGroup.WM_SHELL_TRANSITIONS,
@@ -375,7 +391,7 @@ public class DefaultMixedHandler implements MixedTransitionHandler,
         } else if (requestHasBubbleEnterFromAppBubbleOrExistingBubble(request)) {
             consumeRemoteTransitionIfNecessary(transition, request.getRemoteTransition());
 
-            if (mSplitHandler.requestImpliesSplitToBubble(request.getTriggerTask())) {
+            if (mSplitHandler.requestImpliesSplitToBubble(task)) {
                 // TODO: Handle from split
             } else {
                 // Note: This will currently "intercept" launches even while the bubble is collapsed
@@ -420,9 +436,9 @@ public class DefaultMixedHandler implements MixedTransitionHandler,
             return out;
         } else if (request.getRemoteTransition() != null
                 && TransitionUtil.isOpeningType(request.getType())
-                && (request.getTriggerTask() == null
-                || (request.getTriggerTask().topActivityType != ACTIVITY_TYPE_HOME
-                        && request.getTriggerTask().topActivityType != ACTIVITY_TYPE_RECENTS))) {
+                && (task == null
+                || (task.topActivityType != ACTIVITY_TYPE_HOME
+                && task.topActivityType != ACTIVITY_TYPE_RECENTS))) {
             // Only select transitions with an intent-provided remote-animation because that will
             // usually grab priority and often won't handle PiP. If there isn't an intent-provided
             // remote, then the transition will be dispatched normally and the PipHandler will
@@ -442,10 +458,9 @@ public class DefaultMixedHandler implements MixedTransitionHandler,
             }
             return handler.second;
         } else if (mSplitHandler.isSplitScreenVisible()
-                && isOpeningType(request.getType())
-                && request.getTriggerTask() != null
-                && request.getTriggerTask().getWindowingMode() == WINDOWING_MODE_FULLSCREEN
-                && request.getTriggerTask().getActivityType() == ACTIVITY_TYPE_HOME) {
+                && isOpeningType(request.getType()) && task != null
+                && task.getWindowingMode() == WINDOWING_MODE_FULLSCREEN
+                && task.getActivityType() == ACTIVITY_TYPE_HOME) {
             ProtoLog.v(ShellProtoLogGroup.WM_SHELL_TRANSITIONS, " Got a going-home request while "
                     + "Split-Screen is foreground, so treat it as Mixed.");
             Pair<Transitions.TransitionHandler, WindowContainerTransaction> handler =
@@ -459,8 +474,7 @@ public class DefaultMixedHandler implements MixedTransitionHandler,
                         new WindowContainerTransaction());
             }
             final MixedTransition mixed = createRecentsMixedTransition(
-                    MixedTransition.TYPE_RECENTS_DURING_SPLIT, transition,
-                    request.getTriggerTask().displayId);
+                    MixedTransition.TYPE_RECENTS_DURING_SPLIT, transition, task.displayId);
             mixed.mLeftoversHandler = handler.first;
             mActiveTransitions.add(mixed);
             return handler.second;

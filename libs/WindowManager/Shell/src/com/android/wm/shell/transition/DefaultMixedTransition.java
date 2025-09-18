@@ -109,6 +109,9 @@ class DefaultMixedTransition extends DefaultMixedHandler.MixedTransition {
             case TYPE_LAUNCH_OR_CONVERT_PIP_TASK_TO_BUBBLE ->
                     animateEnterBubblesFromPip(this, transition, info, startTransaction,
                             finishTransaction, finishCallback, mPipHandler, mBubbleTransitions);
+            case TYPE_LAUNCH_OR_CONVERT_DESKTOP_TASK_TO_BUBBLE ->
+                    animateEnterBubblesFromDesktop(this, transition, info, startTransaction,
+                            finishTransaction, finishCallback, mBubbleTransitions);
             case TYPE_KEYGUARD ->
                     animateKeyguard(this, info, startTransaction, finishTransaction, finishCallback,
                             mKeyguardHandler, mPipHandler);
@@ -266,10 +269,8 @@ class DefaultMixedTransition extends DefaultMixedHandler.MixedTransition {
             //  with both a PIP capable task and an immersive task.
             if (mLeftoversHandler != null) {
                 mInFlightSubAnimations = 1;
-                if (mLeftoversHandler.startAnimation(
-                        mTransition, info, startTransaction, finishTransaction, finishCB)) {
-                    return true;
-                }
+                return mLeftoversHandler.startAnimation(
+                        mTransition, info, startTransaction, finishTransaction, finishCB);
             }
             return false;
         } else if (hasPipChange && desktopChange == null) {
@@ -431,6 +432,23 @@ class DefaultMixedTransition extends DefaultMixedHandler.MixedTransition {
         ProtoLog.v(ShellProtoLogGroup.WM_SHELL_TRANSITIONS, " Animating a mixed transition for "
                 + "entering Bubbles while PIP is foreground by %s", handler);
         pipHandler.cleanUpState();
+        handler.startAnimation(transition, info, startTransaction, finishTransaction,
+                finishCallback);
+        return true;
+    }
+
+    static boolean animateEnterBubblesFromDesktop(
+            @NonNull DefaultMixedHandler.MixedTransition mixed,
+            @NonNull IBinder transition,
+            @NonNull TransitionInfo info,
+            @NonNull SurfaceControl.Transaction startTransaction,
+            @NonNull SurfaceControl.Transaction finishTransaction,
+            @NonNull Transitions.TransitionFinishCallback finishCallback,
+            @NonNull BubbleTransitions bubbleTransitions) {
+        final Transitions.TransitionHandler handler = bubbleTransitions.getRunningEnterTransition(
+                transition);
+        ProtoLog.v(ShellProtoLogGroup.WM_SHELL_TRANSITIONS, " Animating a mixed transition for "
+                + "entering Bubbles while Desktop is foreground by %s", handler);
         handler.startAnimation(transition, info, startTransaction, finishTransaction,
                 finishCallback);
         return true;
@@ -598,10 +616,8 @@ class DefaultMixedTransition extends DefaultMixedHandler.MixedTransition {
         if (desktopChange == null) {
             if (mLeftoversHandler != null) {
                 mInFlightSubAnimations = 1;
-                if (mLeftoversHandler.startAnimation(
-                        mTransition, info, startTransaction, finishTransaction, finishCB)) {
-                    return true;
-                }
+                return mLeftoversHandler.startAnimation(
+                        mTransition, info, startTransaction, finishTransaction, finishCB);
             }
             return false;
         }
@@ -667,6 +683,7 @@ class DefaultMixedTransition extends DefaultMixedHandler.MixedTransition {
             case TYPE_LAUNCH_OR_CONVERT_SPLIT_TASK_TO_BUBBLE:
             case TYPE_LAUNCH_OR_CONVERT_TO_BUBBLE_FROM_EXISTING_BUBBLE:
             case TYPE_LAUNCH_OR_CONVERT_PIP_TASK_TO_BUBBLE:
+            case TYPE_LAUNCH_OR_CONVERT_DESKTOP_TASK_TO_BUBBLE:
                 final Transitions.TransitionHandler handler =
                         mBubbleTransitions.getRunningEnterTransition(transition);
                 if (handler != null) {
@@ -709,6 +726,7 @@ class DefaultMixedTransition extends DefaultMixedHandler.MixedTransition {
             case TYPE_LAUNCH_OR_CONVERT_SPLIT_TASK_TO_BUBBLE:
             case TYPE_LAUNCH_OR_CONVERT_TO_BUBBLE_FROM_EXISTING_BUBBLE:
             case TYPE_LAUNCH_OR_CONVERT_PIP_TASK_TO_BUBBLE:
+            case TYPE_LAUNCH_OR_CONVERT_DESKTOP_TASK_TO_BUBBLE:
                 final Transitions.TransitionHandler handler =
                         mBubbleTransitions.getRunningEnterTransition(transition);
                 if (handler != null) {
