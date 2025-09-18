@@ -18,6 +18,7 @@ package android.app;
 import static com.android.internal.annotations.VisibleForTesting.Visibility.PACKAGE;
 
 import android.annotation.CallbackExecutor;
+import android.annotation.IntDef;
 import android.annotation.NonNull;
 import android.os.Bundle;
 import android.os.IRemoteCallback;
@@ -35,6 +36,12 @@ import java.util.concurrent.Executor;
  */
 public class TaskWindowingLayerRequestHandler {
 
+    @IntDef(prefix = { "RESULT_" }, value = {
+            RESULT_APPROVED,
+            RESULT_FAILED_BAD_STATE,
+            RESULT_FAILED_INSUFFICIENT_PERMISSIONS
+    })
+    public @interface Result {}
 
     /**
      * The key used for specifying the final result of a windowing layer request in the
@@ -55,6 +62,11 @@ public class TaskWindowingLayerRequestHandler {
      * handle the request.
      */
     public static final int RESULT_FAILED_BAD_STATE = 1;
+
+    /**
+     * The request has beed rejected due to insufficient permissions.
+     */
+    public static final int RESULT_FAILED_INSUFFICIENT_PERMISSIONS = 2;
 
     /**
      * Requests the windowing layer via {@link IAppTask}.
@@ -88,6 +100,11 @@ public class TaskWindowingLayerRequestHandler {
                         executor.execute(() -> callback.onError(new IllegalStateException(
                                 "The current system windowing state is not appropriate to fulfill"
                                         + " the request.")));
+                        break;
+                    case RESULT_FAILED_INSUFFICIENT_PERMISSIONS:
+                        executor.execute(() -> callback.onError(new SecurityException(
+                                "The caller does not hold sufficient permissions to request"
+                                        + " provided windowing layer.")));
                         break;
                     default:
                         executor.execute(() -> callback.onError(new IllegalStateException(

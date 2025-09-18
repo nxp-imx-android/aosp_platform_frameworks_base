@@ -18,6 +18,9 @@ package com.android.server.wm;
 
 import static android.Manifest.permission.REPOSITION_SELF_WINDOWS;
 import static android.app.ActivityManager.AppTask.WINDOWING_LAYER_PINNED;
+import static android.app.AppOpsManager.MODE_ALLOWED;
+import static android.app.AppOpsManager.MODE_ERRORED;
+import static android.app.AppOpsManager.OP_PICTURE_IN_PICTURE;
 import static android.app.TaskInfo.SELF_MOVABLE_ALLOWED;
 import static android.app.TaskInfo.SELF_MOVABLE_DENIED;
 import static android.app.TaskMoveRequestHandler.REMOTE_CALLBACK_RESULT_KEY;
@@ -28,6 +31,7 @@ import static android.app.TaskMoveRequestHandler.RESULT_FAILED_NONEXISTENT_DISPL
 import static android.app.TaskMoveRequestHandler.RESULT_FAILED_NO_PERMISSIONS;
 import static android.app.TaskMoveRequestHandler.RESULT_FAILED_UNABLE_TO_PLACE_TASK;
 import static android.content.pm.PackageManager.PERMISSION_DENIED;
+import static android.view.WindowManager.TRANSIT_OPEN;
 
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.doReturn;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.mock;
@@ -44,6 +48,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.testng.AssertJUnit.assertNotNull;
 
+import android.app.AppOpsManager;
 import android.app.TaskWindowingLayerRequestHandler;
 import android.graphics.Rect;
 import android.os.Binder;
@@ -77,6 +82,7 @@ public class AppTaskImplTests extends WindowTestsBase {
     private final IRemoteCallback mMockCallback = mock(IRemoteCallback.class);
     private TransitionController mTransitionController;
     private TestTransitionPlayer mTestTransitionPlayer;
+    private AppOpsManager mAppOpsManager;
 
     @Before
     public void setUp() {
@@ -84,6 +90,9 @@ public class AppTaskImplTests extends WindowTestsBase {
         mTransitionController.setSyncEngine(createTestBLASTSyncEngine());
         mTestTransitionPlayer = registerTestTransitionPlayer();
         doReturn(mTransitionController).when(mAtm).getTransitionController();
+
+        mAppOpsManager = mAtm.getAppOpsManager();
+        mockPipAppOppToReturn(MODE_ALLOWED);
     }
 
     /**
@@ -251,6 +260,42 @@ public class AppTaskImplTests extends WindowTestsBase {
         assertNotNull(change.getRemoteCallback());
     }
 
+    @EnableFlags(FLAG_ENABLE_INTERACTIVE_PICTURE_IN_PICTURE)
+    @Test
+    public void testRequestWindowingLayer_deniesPinnedRequestWithoutPipAppOpAllowed()
+            throws Exception {
+        final Task task = getSampleTask();
+        final AppTaskImpl appTask = getAppTask(task.getRootTaskId());
+        mockPipAppOppToReturn(MODE_ERRORED);
+
+        appTask.requestWindowingLayer(WINDOWING_LAYER_PINNED, mMockCallback);
+
+        verifyCallbackReceivedWindowingLayerErrorCode(mMockCallback,
+                TaskWindowingLayerRequestHandler.RESULT_FAILED_INSUFFICIENT_PERMISSIONS);
+        verify(mTransitionController, never()).startCollectOrQueue(any(), any());
+    }
+
+    @EnableFlags(FLAG_ENABLE_INTERACTIVE_PICTURE_IN_PICTURE)
+    @Test
+    public void testRequestWindowingLayer_revalidatesPermissionIfDeferred()
+            throws Exception {
+        final Task task = getSampleTask();
+        final AppTaskImpl appTask = getAppTask(task.getRootTaskId());
+        // queue windowing layer transition after sample one
+        Transition sampleTransition = createAndCollectSampleTransition();
+        appTask.requestWindowingLayer(WINDOWING_LAYER_PINNED, mMockCallback);
+        waitUntilHandlersIdle();
+
+        verify(mMockCallback, never()).sendResult(any()); // windowing request was not rejected yet
+        mockPipAppOppToReturn(MODE_ERRORED); // change permission to deny the request
+        startAndFinish(sampleTransition); // proceed with sample transition to collect next one
+
+        verifyCallbackReceivedWindowingLayerErrorCode(mMockCallback,
+                TaskWindowingLayerRequestHandler.RESULT_FAILED_INSUFFICIENT_PERMISSIONS);
+        verify(mTransitionController, never()).requestStartWindowingLayerTransition(any(), any(),
+                any());
+    }
+
     private AppTaskImpl getAppTask(int taskId) {
         return new AppTaskImpl(mAtm, taskId, Binder.getCallingUid());
     }
@@ -305,5 +350,24 @@ public class AppTaskImplTests extends WindowTestsBase {
         waitUntilHandlersIdle();
         mTestTransitionPlayer.mLastTransit.invokePresentedListenersForTest();
         mTestTransitionPlayer.finish();
+    }
+
+    private void mockPipAppOppToReturn(@AppOpsManager.Mode int mode) {
+        doReturn(mode).when(mAppOpsManager).checkOpNoThrow(eq(OP_PICTURE_IN_PICTURE),
+                anyInt(), any());
+    }
+
+    private Transition createAndCollectSampleTransition() {
+        Transition transit = new Transition(TRANSIT_OPEN, 0 /* flags */, mTransitionController,
+                mTransitionController.mSyncEngine);
+        mTransitionController.startCollectOrQueue(transit, (deferred) -> {});
+        return transit;
+    }
+
+    private void startAndFinish(Transition transit) {
+        transit.start();
+        transit.setAllReady();
+        mTransitionController.mSyncEngine.tryFinishForTest(transit.getSyncId());
+        waitUntilHandlersIdle();
     }
 }
