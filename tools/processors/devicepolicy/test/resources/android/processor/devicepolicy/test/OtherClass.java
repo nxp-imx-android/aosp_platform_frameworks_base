@@ -30,7 +30,10 @@ public final class OtherClass {
      * Test policy 1
      */
     @BooleanPolicyDefinition(
-            base = @PolicyDefinition(allowedScopes = {0})
+            base = @PolicyDefinition(
+                    allowedScopes = {0},
+                    affectedResource = 1
+            )
     )
     public static final PolicyIdentifier<Boolean> TEST_POLICY_1 = new PolicyIdentifier<>(
             TEST_POLICY_1_KEY);

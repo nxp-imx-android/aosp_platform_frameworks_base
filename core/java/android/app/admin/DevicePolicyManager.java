@@ -18678,6 +18678,34 @@ public class DevicePolicyManager {
     public @interface PolicyScope {}
 
     /**
+     * Indicates that a policy has a device wide effect. There is a single final value that
+     * controls what the behaviour of the system should be.
+     *
+     * @hide
+     */
+    public static final int RESOURCE_DEVICE_WIDE = 0x0001;
+
+    /**
+     * Indicates that a policy can have a different effect for each user. The effective value of
+     * the policy depends on the user it is queried for.
+     *
+     * @hide
+     */
+    public static final int RESOURCE_PER_USER = 0x0002;
+
+    /**
+     * Possible resource types
+     *
+     * @hide
+     */
+    @IntDef(prefix = { "RESOURCE_DEVICE_" }, value = {
+            RESOURCE_DEVICE_WIDE,
+            RESOURCE_PER_USER,
+    })
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface ResourceType {}
+
+    /**
      * Sets the given policy.
      *
      * @param id The policy identifier to update. It must be one of the values inside
