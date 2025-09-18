@@ -66,7 +66,7 @@ interface SecureLockDeviceModule {
             secureLockDeviceRepository: SecureLockDeviceRepository,
             biometricSettingsInteractor: DeviceEntryBiometricSettingsInteractor,
             deviceEntryFaceAuthInteractor: SystemUIDeviceEntryFaceAuthInteractor,
-            fingerprintPropertyInteractor: FingerprintPropertyInteractor,
+            fingerprintPropertyInteractor: Lazy<FingerprintPropertyInteractor>,
             facePropertyInteractor: FacePropertyInteractor,
             lockPatternUtils: LockPatternUtils,
             authenticationPolicyManager: AuthenticationPolicyManager?,

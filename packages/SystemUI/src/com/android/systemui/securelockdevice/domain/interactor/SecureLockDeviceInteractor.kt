@@ -71,7 +71,7 @@ constructor(
     private val secureLockDeviceRepository: SecureLockDeviceRepository,
     biometricSettingsInteractor: DeviceEntryBiometricSettingsInteractor,
     private val deviceEntryFaceAuthInteractor: SystemUIDeviceEntryFaceAuthInteractor,
-    fingerprintPropertyInteractor: FingerprintPropertyInteractor,
+    fingerprintPropertyInteractor: Lazy<FingerprintPropertyInteractor>,
     facePropertyInteractor: FacePropertyInteractor,
     private val lockPatternUtils: LockPatternUtils,
     private val authenticationPolicyManager: AuthenticationPolicyManager?,
@@ -265,11 +265,11 @@ constructor(
     }
 
     /** Strong biometric modalities enrolled and enabled on the device. */
-    val enrolledStrongBiometricModalities: Flow<BiometricModalities> =
+    val enrolledStrongBiometricModalities: Flow<BiometricModalities> by lazy {
         combine(
                 biometricSettingsInteractor.isFingerprintAuthEnrolledAndEnabled,
                 biometricSettingsInteractor.isFaceAuthEnrolledAndEnabled,
-                fingerprintPropertyInteractor.sensorInfo,
+                fingerprintPropertyInteractor.get().sensorInfo,
                 facePropertyInteractor.sensorInfo,
             ) { fingerprintEnrolledAndEnabled, faceEnrolledAndEnabled, fpSensorInfo, faceSensorInfo
                 ->
@@ -289,18 +289,21 @@ constructor(
                 }
             }
             .distinctUntilChanged()
+    }
 
     /** Whether the device has a strong fingerprint enrollment on the device. */
-    val hasFingerprint: StateFlow<Boolean> =
+    val hasFingerprint: StateFlow<Boolean> by lazy {
         enrolledStrongBiometricModalities
             .map { it.hasFingerprint }
-            .stateIn(applicationScope, SharingStarted.Eagerly, false)
+            .stateIn(applicationScope, SharingStarted.Lazily, false)
+    }
 
     /** Whether the device has a strong face enrollment on the device. */
-    val hasFace: StateFlow<Boolean> =
+    val hasFace: StateFlow<Boolean> by lazy {
         enrolledStrongBiometricModalities
             .map { it.hasFace }
-            .stateIn(applicationScope, SharingStarted.Eagerly, false)
+            .stateIn(applicationScope, SharingStarted.Lazily, false)
+    }
 
     /** Called when biometric authentication is requested for secure lock device. */
     fun onBiometricAuthRequested() {
