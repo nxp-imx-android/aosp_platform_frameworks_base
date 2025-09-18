@@ -132,6 +132,16 @@ flag {
 }
 
 flag {
+    name: "remove_all_shortcuts_when_force_stop_always_on_service"
+    namespace: "accessibility"
+    description: "Remove all a11y shortcuts when always-on a11y services are force stop."
+    bug: "364691067"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "send_a11y_events_based_on_state"
     namespace: "accessibility"
     description: "Sends accessibility events in TouchExplorer#onAccessibilityEvent based on internal state to keep it consistent. This reduces test flakiness."

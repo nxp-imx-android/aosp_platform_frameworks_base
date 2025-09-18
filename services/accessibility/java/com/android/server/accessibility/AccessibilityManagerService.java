@@ -1035,7 +1035,7 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
     /**
      * Handles a package or packages being force stopped.
      * Will disable any relevant services,
-     * and remove any button targets of continuous services,
+     * and remove any shortcut targets of continuous services,
      * denoted by {@link AccessibilityServiceInfo#FLAG_REQUEST_ACCESSIBILITY_BUTTON}.
      * If the result is {@code true},
      * then {@link AccessibilityManagerService#onUserStateChangedLocked(
@@ -1043,18 +1043,18 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
      *
      * @param packages list of packages that have stopped.
      * @param userState user state to be read & modified.
-     * @return {@code true} if the lists of enabled services or buttons were changed,
+     * @return {@code true} if the lists of enabled services or shortcuts were changed,
      * {@code false} otherwise.
      */
     @VisibleForTesting
     boolean onPackagesForceStoppedLocked(
             String[] packages, AccessibilityUserState userState) {
         final Set<String> packageSet = new HashSet<>(List.of(packages));
-        final ArrayList<ComponentName> continuousServices = new ArrayList<>(
+        final Set<ComponentName> continuousServices =
                 userState.mInstalledServices.stream().filter(service ->
                         (service.flags & FLAG_REQUEST_ACCESSIBILITY_BUTTON)
                                 == FLAG_REQUEST_ACCESSIBILITY_BUTTON
-                ).map(AccessibilityServiceInfo::getComponentName).toList());
+                ).map(AccessibilityServiceInfo::getComponentName).collect(Collectors.toSet());
 
         // Filter out continuous packages that are not from the array of stopped packages.
         continuousServices.removeIf(
@@ -1078,20 +1078,42 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
                     userState.mEnabledServices, userState.mUserId);
         }
 
-        // Remove any button targets that match any stopped continuous services
-        Set<String> buttonTargets = userState.getShortcutTargetsLocked(SOFTWARE);
-        boolean buttonTargetsChanged = buttonTargets.removeIf(
-                target -> continuousServices.stream().anyMatch(
-                        continuousName -> continuousName.flattenToString().equals(target)));
-        if (buttonTargetsChanged) {
-            userState.updateShortcutTargetsLocked(buttonTargets, SOFTWARE);
-            persistColonDelimitedSetToSettingLocked(
-                    ShortcutUtils.convertToKey(SOFTWARE),
-                    userState.mUserId,
-                    buttonTargets, str -> str);
-        }
+        if (Flags.removeAllShortcutsWhenForceStopAlwaysOnService()) {
+            boolean shortcutTargetsChanged = false;
+            // Remove any shortcut targets that match any stopped continuous services
+            List<String> shortcutTargetsToRemove = userState.getShortcutTargetsLocked(ALL)
+                    .stream()
+                    .filter(target ->
+                            continuousServices.contains(ComponentName.unflattenFromString(target)))
+                    .toList();
+            if (!shortcutTargetsToRemove.isEmpty()) {
+                shortcutTargetsChanged = true;
+                enableShortcutsForTargets(
+                        /* enable= */ false,
+                        ALL,
+                        shortcutTargetsToRemove,
+                        userState.mUserId
+                );
+            }
 
-        return enabledServicesChanged || buttonTargetsChanged;
+            return enabledServicesChanged || shortcutTargetsChanged;
+        } else {
+
+            // Remove any button targets that match any stopped continuous services
+            Set<String> buttonTargets = userState.getShortcutTargetsLocked(SOFTWARE);
+            boolean buttonTargetsChanged = buttonTargets.removeIf(
+                    target -> continuousServices.contains(
+                            ComponentName.unflattenFromString(target)));
+            if (buttonTargetsChanged) {
+                userState.updateShortcutTargetsLocked(buttonTargets, SOFTWARE);
+                persistColonDelimitedSetToSettingLocked(
+                        ShortcutUtils.convertToKey(SOFTWARE),
+                        userState.mUserId,
+                        buttonTargets, str -> str);
+            }
+
+            return enabledServicesChanged || buttonTargetsChanged;
+        }
     }
 
     @VisibleForTesting

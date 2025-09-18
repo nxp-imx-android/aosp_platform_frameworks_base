@@ -33,6 +33,7 @@ import static android.view.accessibility.Flags.FLAG_SKIP_ACCESSIBILITY_WARNING_D
 import static com.android.input.flags.Flags.FLAG_KEYBOARD_REPEAT_KEYS;
 import static com.android.internal.accessibility.AccessibilityShortcutController.ACCESSIBILITY_HEARING_AIDS_COMPONENT_NAME;
 import static com.android.internal.accessibility.AccessibilityShortcutController.MAGNIFICATION_CONTROLLER_NAME;
+import static com.android.internal.accessibility.common.ShortcutConstants.USER_SHORTCUT_TYPES;
 import static com.android.internal.accessibility.common.ShortcutConstants.UserShortcutType.GESTURE;
 import static com.android.internal.accessibility.common.ShortcutConstants.UserShortcutType.HARDWARE;
 import static com.android.internal.accessibility.common.ShortcutConstants.UserShortcutType.KEY_GESTURE;
@@ -955,6 +956,7 @@ public class AccessibilityManagerServiceTest {
         assertThat(enabledServices).containsExactly(info_b.getComponentName().flattenToString());
     }
 
+    @DisableFlags(Flags.FLAG_REMOVE_ALL_SHORTCUTS_WHEN_FORCE_STOP_ALWAYS_ON_SERVICE)
     @Test
     public void testPackagesForceStopped_fromContinuousService_removesButtonTarget() {
         final AccessibilityServiceInfo info_a = new AccessibilityServiceInfo();
@@ -994,6 +996,70 @@ public class AccessibilityManagerServiceTest {
         final Set<String> targetsFromSetting = readStringsFromSetting(
                 ShortcutUtils.convertToKey(SOFTWARE));
         assertThat(targetsFromSetting).containsExactly(info_b.getComponentName().flattenToString());
+    }
+
+    @EnableFlags(Flags.FLAG_REMOVE_ALL_SHORTCUTS_WHEN_FORCE_STOP_ALWAYS_ON_SERVICE)
+    @Test
+    public void continuousServiceForceStopped_removesAllAssociatedShortcuts() {
+        mFakePermissionEnforcer.grant(Manifest.permission.MANAGE_ACCESSIBILITY);
+
+        final AccessibilityServiceInfo info_a = createFakeAccessibilityServiceInfo(
+                COMPONENT_NAME, /* hasQsTile= */ true);
+        info_a.flags = FLAG_REQUEST_ACCESSIBILITY_BUTTON;
+        final AccessibilityServiceInfo info_b = createFakeAccessibilityServiceInfo(
+                new ComponentName(COMPONENT_NAME.getPackageName(), "FakeA11yServiceB"),
+                /* hasQsTile= */ true);
+        final AccessibilityServiceInfo info_c = createFakeAccessibilityServiceInfo(
+                new ComponentName("FakeA11yPkg", "FakeA11yServiceC"), /* hasQsTile= */ true);
+
+        AccessibilityUserState userState = mA11yms.getCurrentUserState();
+        userState.mInstalledServices.clear();
+        userState.mInstalledServices.add(info_a);
+        userState.mInstalledServices.add(info_b);
+        userState.mInstalledServices.add(info_c);
+        userState.updateTileServiceMapForAccessibilityServiceLocked();
+
+        Set<String> shortcutTargets = Set.of(
+                info_a.getComponentName().flattenToString(),
+                info_b.getComponentName().flattenToString(),
+                info_c.getComponentName().flattenToString());
+
+        for (int shortcutType : USER_SHORTCUT_TYPES) {
+            if (shortcutType == UserShortcutType.TRIPLETAP
+                    || shortcutType == UserShortcutType.TWOFINGER_DOUBLETAP) {
+                continue;
+            }
+            userState.updateShortcutTargetsLocked(shortcutTargets, shortcutType);
+            writeStringsToSetting(shortcutTargets, ShortcutUtils.convertToKey(shortcutType));
+        }
+
+        // despite force stopping both packages, only the first service has the relevant flag,
+        // so only the first should be removed.
+        mA11yms.onPackagesForceStoppedLocked(
+                new String[]{
+                        info_a.getComponentName().getPackageName(),
+                        info_b.getComponentName().getPackageName(),
+                        info_c.getComponentName().getPackageName()},
+                userState);
+        mTestableLooper.processAllMessages();
+
+        //Assert shortcut settings
+        Set<String> shortcutContainsAnyTargets = new ArraySet<>();
+        for (int shortcutType : USER_SHORTCUT_TYPES) {
+            if (shortcutType == UserShortcutType.TRIPLETAP
+                    || shortcutType == UserShortcutType.TWOFINGER_DOUBLETAP) {
+                continue;
+            }
+            shortcutContainsAnyTargets.addAll(
+                    ShortcutUtils.getShortcutTargetsFromSettings(mTestableContext, shortcutType,
+                            mA11yms.getCurrentUserIdLocked())
+            );
+        }
+        assertThat(shortcutContainsAnyTargets).doesNotContain(
+                info_a.getComponentName().flattenToString());
+        assertThat(shortcutContainsAnyTargets).containsExactly(
+                info_b.getComponentName().flattenToString(),
+                info_c.getComponentName().flattenToString());
     }
 
     @Test
@@ -2791,7 +2857,7 @@ public class AccessibilityManagerServiceTest {
     }
 
     private void clearAllShortcuts(int userId) {
-        for (int type : ShortcutConstants.USER_SHORTCUT_TYPES) {
+        for (int type : USER_SHORTCUT_TYPES) {
             clearShortcutType(type, userId);
         }
     }
@@ -2817,6 +2883,26 @@ public class AccessibilityManagerServiceTest {
         when(mMockSecurityPolicy.resolveProfileParentLocked(anyInt())).thenReturn(newUserId);
         mA11yms.switchUser(newUserId);
         mTestableLooper.processAllMessages();
+    }
+
+    private AccessibilityServiceInfo createFakeAccessibilityServiceInfo(
+            ComponentName componentName, boolean hasQsTile) {
+        AccessibilityServiceInfo accessibilityServiceInfo = spy(new AccessibilityServiceInfo());
+        accessibilityServiceInfo.setComponentName(componentName);
+        ResolveInfo resolveInfo = new ResolveInfo();
+        accessibilityServiceInfo.setResolveInfo(resolveInfo);
+        resolveInfo.serviceInfo = new ServiceInfo();
+        resolveInfo.serviceInfo.packageName = componentName.getPackageName();
+        resolveInfo.serviceInfo.name = componentName.getShortClassName();
+        resolveInfo.serviceInfo.applicationInfo = new ApplicationInfo();
+        resolveInfo.serviceInfo.applicationInfo.packageName = componentName.getPackageName();
+        resolveInfo.serviceInfo.applicationInfo.targetSdkVersion = Build.VERSION_CODES.BAKLAVA;
+        if (hasQsTile) {
+            when(accessibilityServiceInfo.getTileServiceName())
+                    .thenReturn(componentName.flattenToString() + "_Tile");
+        }
+
+        return accessibilityServiceInfo;
     }
 
     private static class TestDisplayManagerWrapper extends
