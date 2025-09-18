@@ -19,12 +19,13 @@ package com.android.systemui.screencapture.record.smallscreen.ui.viewmodel
 import android.app.ActivityOptions
 import android.app.ActivityOptions.LaunchCookie
 import android.app.ActivityOptions.MODE_BACKGROUND_ACTIVITY_START_ALLOW_ALWAYS
-import android.app.IActivityTaskManager
 import android.media.projection.StopReason
+import android.view.Display
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import com.android.app.tracing.coroutines.launchTraced
+import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.lifecycle.HydratedActivatable
 import com.android.systemui.mediaprojection.MediaProjectionCaptureTarget
 import com.android.systemui.screencapture.common.ScreenCaptureUiScope
@@ -37,21 +38,25 @@ import com.android.systemui.screencapture.record.ui.viewmodel.ScreenCaptureRecor
 import com.android.systemui.screenrecord.domain.ScreenRecordingParameters
 import com.android.systemui.screenrecord.domain.interactor.ScreenRecordingServiceInteractor
 import com.android.systemui.screenrecord.domain.interactor.Status
+import com.android.systemui.shared.system.ActivityManagerWrapper
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
+import kotlin.coroutines.CoroutineContext
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.withContext
 
 class SmallScreenCaptureRecordViewModel
 @AssistedInject
 constructor(
+    @Background private val bgContext: CoroutineContext,
     private val screenRecordingServiceInteractor: ScreenRecordingServiceInteractor,
     recordDetailsAppSelectorViewModelFactory: RecordDetailsAppSelectorViewModel.Factory,
     screenCaptureRecordParametersViewModelFactory: ScreenCaptureRecordParametersViewModel.Factory,
     recordDetailsTargetViewModelFactory: RecordDetailsTargetViewModel.Factory,
     private val drawableLoaderViewModelImpl: DrawableLoaderViewModelImpl,
     private val screenCaptureUiInteractor: ScreenCaptureUiInteractor,
-    private val activityTaskManager: IActivityTaskManager,
+    private val activityManager: ActivityManagerWrapper,
 ) : HydratedActivatable(), DrawableLoaderViewModel by drawableLoaderViewModelImpl {
 
     val recordDetailsAppSelectorViewModel: RecordDetailsAppSelectorViewModel =
@@ -123,7 +128,7 @@ constructor(
         screenCaptureUiInteractor.hide(ScreenCaptureType.RECORD)
     }
 
-    fun onPrimaryButtonTapped() {
+    suspend fun onPrimaryButtonTapped() {
         if (screenRecordingServiceInteractor.status.value.isRecording) {
             screenRecordingServiceInteractor.stopRecording(StopReason.STOP_HOST_APP)
         } else {
@@ -132,7 +137,7 @@ constructor(
         dismiss()
     }
 
-    private fun startRecording() {
+    private suspend fun startRecording() {
         val audioSource = recordDetailsParametersViewModel.audioSource ?: return
         val target = recordDetailsTargetViewModel.currentTarget?.screenCaptureTarget ?: return
         when (target) {
@@ -149,16 +154,27 @@ constructor(
             }
             is ScreenCaptureTarget.App -> {
                 val cookie = LaunchCookie("screen_record")
-                activityTaskManager.startActivityFromRecents(
-                    target.taskId,
-                    ActivityOptions.makeBasic()
-                        .apply {
+                withContext(bgContext) {
+                    activityManager.startActivityFromRecents(
+                        target.taskId,
+                        ActivityOptions.makeBasic().apply {
                             pendingIntentBackgroundActivityStartMode =
                                 MODE_BACKGROUND_ACTIVITY_START_ALLOW_ALWAYS
                             setLaunchCookie(cookie)
+                        },
+                    )
+                }
+                val displayId: Int =
+                    if (target.displayId == Display.INVALID_DISPLAY) {
+                        withContext(bgContext) {
+                            val runningTasks = activityManager.getRunningTasks(false)
+                            runningTasks.find { it.taskId == target.taskId }?.displayId
+                                ?: Display.DEFAULT_DISPLAY
                         }
-                        .toBundle(),
-                )
+                    } else {
+                        target.displayId
+                    }
+
                 screenRecordingServiceInteractor.startRecording(
                     ScreenRecordingParameters(
                         captureTarget =
@@ -166,7 +182,7 @@ constructor(
                                 launchCookie = cookie,
                                 taskId = target.taskId,
                             ),
-                        displayId = target.displayId,
+                        displayId = displayId,
                         shouldShowTaps = false,
                         audioSource = audioSource,
                     )
