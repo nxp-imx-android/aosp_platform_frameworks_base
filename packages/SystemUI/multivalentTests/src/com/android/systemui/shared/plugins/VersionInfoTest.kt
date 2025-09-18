@@ -30,7 +30,7 @@ import org.junit.runner.RunWith
 @SmallTest
 @RunWith(AndroidJUnit4::class)
 class VersionInfoTest : SysuiTestCase() {
-    @Rule var mThrown: ExpectedException = ExpectedException.none()
+    @Rule @JvmField val mThrown: ExpectedException = ExpectedException.none()
 
     @Test
     fun testHasInfo() {

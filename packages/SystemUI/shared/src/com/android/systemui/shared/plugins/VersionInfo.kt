@@ -24,6 +24,12 @@ inline fun <reified T> VersionInfo() = VersionInfo(T::class.java)
 class VersionInfo(classes: List<Class<*>>) {
     constructor(cls: Class<*>) : this(listOf(cls))
 
+    init {
+        if (classes.isEmpty()) {
+            throw IllegalArgumentException("Must specify at least one class")
+        }
+    }
+
     private data class Version(val version: Int, val isRequired: Boolean)
 
     private val versions = buildMap { classes.forEach { cls -> addClass(cls, isRequired = false) } }
