@@ -37,7 +37,7 @@ import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
 
 /**
- * Swiping to overview from desktop.
+ * Swipe up or press overview button to launch into overview from desktop.
  */
 @RequiresDesktopDevice
 @RunWith(Parameterized::class)
@@ -80,7 +80,6 @@ class SwitchToOverviewFromDesktopFlickerTest(flicker: FlickerTest) :
         @JvmStatic
         fun getParams(): Collection<FlickerChecker> {
             return FlickerTestFactory.nonRotationTests(
-                supportedNavigationModes = listOf(NavBar.MODE_GESTURAL)
             )
         }
     }
