@@ -4577,6 +4577,9 @@
     <!-- Content description for arrow in Pager Dots to navigate to next page [CHAR LIMIT=NONE] -->
     <string name="pager_dots_next_content_description">Next</string>
 
+    <!-- Accessibility text for the click action on the pager dots. This will be used following "Double-tap to..." [CHAR LIMIT=NONE] -->
+    <string name="accessibility_pager_dots_navigate_to_next_page_action">navigate to the next page</string>
+
     <!-- Description for the Ambient Cue accessibility action label for autofilling. [CHAR LIMIT=NONE] -->
     <string name="ambient_cue_autofill_action">autofill</string>
 
