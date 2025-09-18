@@ -133,7 +133,7 @@ public class AppZoomOutController implements RemoteCallable<AppZoomOutController
 
     /**
      * Scales all content on the screen belonging to
-     * {@link DisplayAreaOrganizer#FEATURE_WINDOWED_MAGNIFICATION} and applies a cropping.
+     * {@link DisplayAreaOrganizer#FEATURE_TOP_LEVEL_ZOOM} and applies a cropping.
      *
      * @param progress progress to be applied to the top-level zoom effect.
      * @param vsyncId The vsync id to align the frame to.

@@ -31,8 +31,8 @@ import static android.view.WindowManager.LayoutParams.TYPE_INPUT_METHOD;
 import static android.view.WindowManager.LayoutParams.TYPE_INPUT_METHOD_DIALOG;
 import static android.window.DisplayAreaOrganizer.FEATURE_DEFAULT_TASK_CONTAINER;
 import static android.window.DisplayAreaOrganizer.FEATURE_IME_PLACEHOLDER;
+import static android.window.DisplayAreaOrganizer.FEATURE_TOP_LEVEL_ZOOM;
 import static android.window.DisplayAreaOrganizer.FEATURE_VENDOR_FIRST;
-import static android.window.DisplayAreaOrganizer.FEATURE_WINDOWED_MAGNIFICATION;
 
 import static com.android.compatibility.common.util.PackageUtil.supportsRotation;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.spyOn;
@@ -689,14 +689,13 @@ public class DualDisplayAreaGroupPolicyTest extends WindowTestsBase {
                 @NonNull DisplayContent content, @NonNull RootDisplayArea root,
                 @NonNull DisplayArea.Tokens imeContainer) {
             // Root
-            // Include FEATURE_WINDOWED_MAGNIFICATION because it will be used as the screen rotation
-            // layer
+            // Include FEATURE_TOP_LEVEL_ZOOM because it will be used as the screen rotation layer
             DisplayAreaPolicyBuilder.HierarchyBuilder rootHierarchy =
                     new DisplayAreaPolicyBuilder.HierarchyBuilder(root)
                             .setImeContainer(imeContainer)
                             .addFeature(new DisplayAreaPolicyBuilder.Feature.Builder(
                                     wmService.mPolicy,
-                                    "WindowedMagnification", FEATURE_WINDOWED_MAGNIFICATION)
+                                    "TopLevelZoom", FEATURE_TOP_LEVEL_ZOOM)
                                     .upTo(TYPE_ACCESSIBILITY_MAGNIFICATION_OVERLAY)
                                     .except(TYPE_ACCESSIBILITY_MAGNIFICATION_OVERLAY)
                                     .setNewDisplayAreaSupplier(DisplayArea.Dimmable::new)

@@ -73,16 +73,16 @@ public class DisplayAreaOrganizer extends WindowOrganizer {
     public static final int FEATURE_ONE_HANDED = FEATURE_SYSTEM_FIRST + 3;
 
     /**
-     * Display area that can be magnified in
-     * {@link Settings.Secure.ACCESSIBILITY_MAGNIFICATION_MODE_WINDOW}. It contains all windows
+     * Display area that can be zoomed out. It contains all windows
      * below {@link WindowManager.LayoutParams#TYPE_ACCESSIBILITY_MAGNIFICATION_OVERLAY}.
+     * @hide
      */
-    public static final int FEATURE_WINDOWED_MAGNIFICATION = FEATURE_SYSTEM_FIRST + 4;
+    public static final int FEATURE_TOP_LEVEL_ZOOM = FEATURE_SYSTEM_FIRST + 4;
 
     /**
      * Display area that can be magnified in
-     * {@link Settings.Secure.ACCESSIBILITY_MAGNIFICATION_MODE_FULLSCREEN}. This is different from
-     * {@link #FEATURE_WINDOWED_MAGNIFICATION} that the whole display will be magnified.
+     * {@link Settings.Secure.ACCESSIBILITY_MAGNIFICATION_MODE_FULLSCREEN}. The whole display will
+     * be magnified with this.
      * @hide
      */
     public static final int FEATURE_FULLSCREEN_MAGNIFICATION = FEATURE_SYSTEM_FIRST + 5;
@@ -115,7 +115,7 @@ public class DisplayAreaOrganizer extends WindowOrganizer {
      * Display area that includes all areas which can have windows. It is used to separate the
      * window content to provide the ability of display level animation and display recording.
      * It is usually only a placeholder that organizer should not control it. This only exists
-     * if {@link #FEATURE_WINDOWED_MAGNIFICATION} is not available to be the windowing layer.
+     * if {@link #FEATURE_TOP_LEVEL_ZOOM} is not available to be the windowing layer.
      * @hide
      */
     public static final int FEATURE_WINDOWING_LAYER = FEATURE_SYSTEM_FIRST + 9;

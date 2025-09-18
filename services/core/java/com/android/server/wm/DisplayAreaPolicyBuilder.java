@@ -24,8 +24,8 @@ import static android.view.WindowManager.LayoutParams.TYPE_SYSTEM_ERROR;
 import static android.view.WindowManager.LayoutParams.TYPE_SYSTEM_OVERLAY;
 import static android.view.WindowManagerPolicyConstants.APPLICATION_LAYER;
 import static android.window.DisplayAreaOrganizer.FEATURE_DEFAULT_TASK_CONTAINER;
+import static android.window.DisplayAreaOrganizer.FEATURE_TOP_LEVEL_ZOOM;
 import static android.window.DisplayAreaOrganizer.FEATURE_VENDOR_LAST;
-import static android.window.DisplayAreaOrganizer.FEATURE_WINDOWED_MAGNIFICATION;
 import static android.window.DisplayAreaOrganizer.FEATURE_WINDOWING_LAYER;
 import static android.window.DisplayAreaOrganizer.KEY_ROOT_DISPLAY_AREA_ID;
 
@@ -280,7 +280,7 @@ class DisplayAreaPolicyBuilder {
 
     /** Returns {@code true} if the feature id can be used to put all window content. */
     private static boolean canBeWindowingLayer(int featureId) {
-        return featureId == FEATURE_WINDOWED_MAGNIFICATION || featureId == FEATURE_WINDOWING_LAYER;
+        return featureId == FEATURE_TOP_LEVEL_ZOOM || featureId == FEATURE_WINDOWING_LAYER;
     }
 
     /**
@@ -939,7 +939,7 @@ class DisplayAreaPolicyBuilder {
                 }
             }
             throw new IllegalStateException("There must be exactly one DisplayArea at top for the "
-                    + "FEATURE_WINDOWED_MAGNIFICATION or FEATURE_WINDOWING_LAYER");
+                    + "FEATURE_TOP_LEVEL_ZOOM or FEATURE_WINDOWING_LAYER");
         }
 
         @Override
