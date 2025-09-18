@@ -7,6 +7,7 @@ import android.app.WindowConfiguration.ACTIVITY_TYPE_STANDARD
 import android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN
 import android.app.WindowConfiguration.WINDOWING_MODE_MULTI_WINDOW
 import android.app.WindowConfiguration.WindowingMode
+import android.content.Intent
 import android.graphics.PointF
 import android.graphics.Rect
 import android.os.IBinder
@@ -96,6 +97,7 @@ class DragToDesktopTransitionHandlerTest : ShellTestCase() {
     private lateinit var dragToDesktopStateListener:
         DragToDesktopTransitionHandler.DragToDesktopStateListener
     private lateinit var desktopState: FakeDesktopState
+    private val wctCaptor = argumentCaptor<WindowContainerTransaction>()
 
     private val transactionSupplier = Supplier {
         val transaction = mock<SurfaceControl.Transaction>()
@@ -148,7 +150,7 @@ class DragToDesktopTransitionHandlerTest : ShellTestCase() {
         whenever(
                 transitions.startTransition(
                     eq(TRANSIT_DESKTOP_MODE_END_DRAG_TO_DESKTOP),
-                    /* wct= */ any(),
+                    wctCaptor.capture(),
                     eq(defaultHandler),
                 )
             )
@@ -298,6 +300,30 @@ class DragToDesktopTransitionHandlerTest : ShellTestCase() {
                 any(),
                 eq(defaultHandler),
             )
+    }
+
+    @Test
+    fun startDragToDesktop_onDefaultDisplay_usesHomeCategory() {
+        val task = createTask().apply { displayId = Display.DEFAULT_DISPLAY }
+        startDragToDesktopTransition(defaultHandler, task, dragAnimator)
+
+        val wct: WindowContainerTransaction = wctCaptor.firstValue
+        val capturedIntent = wct.hierarchyOps.mapNotNull { it.activityIntent }.first()
+
+        assertThat(capturedIntent.hasCategory(Intent.CATEGORY_HOME)).isTrue()
+        assertThat(capturedIntent.hasCategory(Intent.CATEGORY_SECONDARY_HOME)).isFalse()
+    }
+
+    @Test
+    fun startDragToDesktop_onSecondaryDisplay_usesSecondaryHomeCategory() {
+        val task = createTask().apply { displayId = SECONDARY_DISPLAY }
+        startDragToDesktopTransition(defaultHandler, task, dragAnimator)
+
+        val wct: WindowContainerTransaction = wctCaptor.firstValue
+        val capturedIntent = wct.hierarchyOps.mapNotNull { it.activityIntent }.first()
+
+        assertThat(capturedIntent.hasCategory(Intent.CATEGORY_HOME)).isFalse()
+        assertThat(capturedIntent.hasCategory(Intent.CATEGORY_SECONDARY_HOME)).isTrue()
     }
 
     @Test
@@ -1220,7 +1246,7 @@ class DragToDesktopTransitionHandlerTest : ShellTestCase() {
         whenever(
                 transitions.startTransition(
                     eq(TRANSIT_DESKTOP_MODE_START_DRAG_TO_DESKTOP),
-                    any(),
+                    wctCaptor.capture(),
                     eq(handler),
                 )
             )
@@ -1345,5 +1371,7 @@ class DragToDesktopTransitionHandlerTest : ShellTestCase() {
 
     private companion object {
         private const val TOLERANCE = 1e-5f
+        const val SECONDARY_DISPLAY = 2
     }
 }
+
