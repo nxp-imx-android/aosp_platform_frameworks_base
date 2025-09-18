@@ -315,46 +315,47 @@ constructor(
      * applied within this function.
      */
     private fun simulateTransitionStepsForSceneTransitions(edge: Edge) =
-        sceneInteractor.transitionState.flatMapLatestWithFinished {
-            when (it) {
-                is ObservableTransitionState.Idle -> {
-                    flowOf()
-                }
-                is ObservableTransitionState.Transition -> {
-                    val isMatchingTransition =
-                        when (edge) {
-                            is Edge.StateToState ->
-                                throw IllegalStateException("Should not be reachable.")
-                            is Edge.ContentToState -> it.isTransitioning(from = edge.from)
-                            is Edge.StateToContent -> it.isTransitioning(to = edge.to)
-                        }
-                    if (!isMatchingTransition) {
-                        return@flatMapLatestWithFinished flowOf()
+        sceneInteractor.transitionState
+            .flatMapLatestWithFinished {
+                when (it) {
+                    is ObservableTransitionState.Idle -> {
+                        flowOf()
                     }
-                    flow {
-                        emit(
-                            TransitionStep(
-                                from = UNDEFINED,
-                                to = UNDEFINED,
-                                value = 0f,
-                                transitionState = TransitionState.STARTED,
-                            )
-                        )
-                        emitAll(
-                            it.progress.map { progress ->
+                    is ObservableTransitionState.Transition -> {
+                        val isMatchingTransition =
+                            when (edge) {
+                                is Edge.StateToState ->
+                                    throw IllegalStateException("Should not be reachable.")
+                                is Edge.ContentToState -> it.isTransitioning(from = edge.from)
+                                is Edge.StateToContent -> it.isTransitioning(to = edge.to)
+                            }
+                        if (!isMatchingTransition) {
+                            return@flatMapLatestWithFinished flowOf()
+                        }
+                        flow {
+                            emit(
                                 TransitionStep(
                                     from = UNDEFINED,
                                     to = UNDEFINED,
-                                    value = progress,
-                                    transitionState = TransitionState.RUNNING,
+                                    value = 0f,
+                                    transitionState = TransitionState.STARTED,
                                 )
-                            }
-                        )
+                            )
+                            emitAll(
+                                it.progress.map { progress ->
+                                    TransitionStep(
+                                        from = UNDEFINED,
+                                        to = UNDEFINED,
+                                        value = progress,
+                                        transitionState = TransitionState.RUNNING,
+                                    )
+                                }
+                            )
+                        }
                     }
                 }
             }
-        }
-        .traceAs("KTF-transition-simulator")
+            .traceAs("KTF-transition-simulator")
 
     /**
      * This function is similar to flatMapLatest but it will additionally emit a FINISHED
@@ -370,42 +371,41 @@ constructor(
      */
     private fun <T> Flow<T>.flatMapLatestWithFinished(
         transform: suspend (T) -> Flow<TransitionStep>
-    ): Flow<TransitionStep> =
-        channelFlow {
-                var job: Job? = null
-                var startedEmitted = false
+    ): Flow<TransitionStep> = channelFlow {
+        var job: Job? = null
+        var startedEmitted = false
 
-                coroutineScope {
-                    collect { value ->
-                        traceCoroutine("cancelAndJoin") { job?.cancelAndJoin() }
+        coroutineScope {
+            collect { value ->
+                traceCoroutine("cancelAndJoin") { job?.cancelAndJoin() }
 
-                        job =
-                            launch("KTF-flatMapLatestWithFinished") {
-                                val innerFlow = transform(value)
-                                try {
-                                    innerFlow.collect { step ->
-                                        if (step.transitionState == TransitionState.STARTED) {
-                                            startedEmitted = true
-                                        }
-                                        traceCoroutine("send($step)") { send(step) }
-                                    }
-                                } finally {
-                                    if (startedEmitted) {
-                                        val step =
-                                            TransitionStep(
-                                                from = UNDEFINED,
-                                                to = UNDEFINED,
-                                                value = 1f,
-                                                transitionState = TransitionState.FINISHED,
-                                            )
-                                        traceCoroutine("send($step)") { send(step) }
-                                        startedEmitted = false
-                                    }
+                job =
+                    launch("KTF-flatMapLatestWithFinished") {
+                        val innerFlow = transform(value)
+                        try {
+                            innerFlow.collect { step ->
+                                if (step.transitionState == TransitionState.STARTED) {
+                                    startedEmitted = true
                                 }
+                                traceCoroutine("send($step)") { send(step) }
                             }
+                        } finally {
+                            if (startedEmitted) {
+                                val step =
+                                    TransitionStep(
+                                        from = UNDEFINED,
+                                        to = UNDEFINED,
+                                        value = 1f,
+                                        transitionState = TransitionState.FINISHED,
+                                    )
+                                traceCoroutine("send($step)") { send(step) }
+                                startedEmitted = false
+                            }
+                        }
                     }
-                }
             }
+        }
+    }
 
     /**
      * Converts old KTF states to UNDEFINED when [SceneContainerFlag] is enabled.
@@ -591,9 +591,44 @@ constructor(
             .distinctUntilChanged()
     }
 
+    /**
+     * Whether we're in a transition between two [KeyguardState]s that match the given predicates,
+     * but haven't yet completed it.
+     */
+    fun isInTransitionWhere(
+        toStatePredicate: (KeyguardState, ContentKey?) -> Boolean
+    ): Flow<Boolean> {
+        return repository.transitions
+            .filter { it.transitionState != TransitionState.CANCELED }
+            .mapLatest {
+                it.transitionState != TransitionState.FINISHED &&
+                    toStatePredicate(
+                        it.to,
+                        if (SceneContainerFlag.isEnabled) {
+                            sceneInteractor.currentScene.value
+                        } else {
+                            null
+                        },
+                    )
+            }
+            .distinctUntilChanged()
+    }
+
     /** Whether we've FINISHED a transition to a state that matches the given predicate. */
     fun isFinishedInStateWhere(stateMatcher: (KeyguardState) -> Boolean): Flow<Boolean> {
         return finishedKeyguardState.map { stateMatcher(it) }.distinctUntilChanged()
+    }
+
+    /**
+     * Whether we've FINISHED a transition to a state that matches the given predicate with the
+     * current scene.
+     */
+    fun isFinishedInStateWhereWithScene(
+        stateMatcher: (KeyguardState, ContentKey) -> Boolean
+    ): Flow<Boolean> {
+        return finishedKeyguardState
+            .map { stateMatcher(it, sceneInteractor.currentScene.value) }
+            .distinctUntilChanged()
     }
 
     fun isFinishedIn(

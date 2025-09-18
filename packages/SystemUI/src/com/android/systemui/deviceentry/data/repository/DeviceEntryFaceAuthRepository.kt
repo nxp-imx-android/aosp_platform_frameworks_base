@@ -66,7 +66,6 @@ import com.android.systemui.user.data.model.SelectionStatus
 import com.android.systemui.user.data.repository.UserRepository
 import com.android.systemui.utils.coroutines.flow.conflatedCallbackFlow
 import com.google.errorprone.annotations.CompileTimeConstant
-import dagger.Lazy
 import java.io.PrintWriter
 import java.util.concurrent.Executor
 import javax.inject.Inject
@@ -396,7 +395,7 @@ constructor(
             Pair(
                 combine(
                     displayStateInteractor.isDefaultDisplayOff,
-                    keyguardTransitionInteractor.isFinishedInStateWhere(
+                    keyguardTransitionInteractor.isFinishedInStateWhereWithScene(
                         KeyguardState::deviceIsAwakeInState
                     ),
                 ) { defaultDisplayOff, finishedInAwakeState ->

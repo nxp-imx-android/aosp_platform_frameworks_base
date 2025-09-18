@@ -299,6 +299,7 @@ class HomeStatusBarViewModelImplTest(flags: FlagsParameterization) : SysuiTestCa
         }
 
     @Test
+    @DisableSceneContainer
     fun transitionFromLockscreenToDreamStartedEvent_started_emitted() =
         kosmos.runTest {
             val emissions by collectValues(underTest.transitionFromLockscreenToDreamStartedEvent)
@@ -316,6 +317,7 @@ class HomeStatusBarViewModelImplTest(flags: FlagsParameterization) : SysuiTestCa
         }
 
     @Test
+    @DisableSceneContainer
     fun transitionFromLockscreenToDreamStartedEvent_startedMultiple_emittedMultiple() =
         kosmos.runTest {
             val emissions by collectValues(underTest.transitionFromLockscreenToDreamStartedEvent)
@@ -351,6 +353,7 @@ class HomeStatusBarViewModelImplTest(flags: FlagsParameterization) : SysuiTestCa
         }
 
     @Test
+    @DisableSceneContainer
     fun transitionFromLockscreenToDreamStartedEvent_startedThenRunning_emittedOnlyOne() =
         kosmos.runTest {
             val emissions by collectValues(underTest.transitionFromLockscreenToDreamStartedEvent)
@@ -417,6 +420,7 @@ class HomeStatusBarViewModelImplTest(flags: FlagsParameterization) : SysuiTestCa
         }
 
     @Test
+    @DisableSceneContainer
     fun transitionFromLockscreenToDreamStartedEvent_irrelevantTransitionState_notEmitted() =
         kosmos.runTest {
             val emissions by collectValues(underTest.transitionFromLockscreenToDreamStartedEvent)

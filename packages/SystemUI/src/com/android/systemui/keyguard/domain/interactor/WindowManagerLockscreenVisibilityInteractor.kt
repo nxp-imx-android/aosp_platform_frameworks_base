@@ -346,8 +346,14 @@ constructor(
 
                 val transitionInfo = transitionRepository.currentTransitionInfo
                 val wakingDirectlyToGone =
-                    deviceIsAsleepInState(transitionInfo.from) &&
-                        transitionInfo.to == KeyguardState.GONE
+                    deviceIsAsleepInState(
+                        transitionInfo.from,
+                        if (SceneContainerFlag.isEnabled) {
+                            sceneInteractor.get().currentScene.value
+                        } else {
+                            null
+                        },
+                    ) && transitionInfo.to == KeyguardState.GONE
 
                 if (returningToGoneAfterCancellation || wakingDirectlyToGone) {
                     // GONE -> AOD/DOZING (cancel) -> GONE is the camera launch transition,

@@ -24,6 +24,7 @@ import com.android.systemui.deviceentry.domain.interactor.DeviceUnlockedInteract
 import com.android.systemui.keyguard.data.repository.KeyguardOcclusionRepository
 import com.android.systemui.keyguard.shared.model.KeyguardState
 import com.android.systemui.power.domain.interactor.PowerInteractor
+import com.android.systemui.scene.domain.interactor.SceneInteractor
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.util.kotlin.BooleanFlowOperators.anyOf
@@ -63,6 +64,7 @@ constructor(
     private val internalTransitionInteractor: InternalKeyguardTransitionInteractor,
     keyguardInteractor: KeyguardInteractor,
     deviceUnlockedInteractor: Lazy<DeviceUnlockedInteractor>,
+    private val sceneInteractor: Lazy<SceneInteractor>,
 ) {
     val showWhenLockedActivityInfo = repository.showWhenLockedActivityInfo.asStateFlow()
 
@@ -93,7 +95,12 @@ constructor(
         // *_BOUNCER -> LOCKSCREEN.
         return powerInteractor.detailedWakefulness.value.powerButtonLaunchGestureTriggered &&
             KeyguardState.deviceIsAsleepInState(
-                internalTransitionInteractor.currentTransitionInfoInternal().to
+                internalTransitionInteractor.currentTransitionInfoInternal().to,
+                if (SceneContainerFlag.isEnabled) {
+                    sceneInteractor.get().currentScene.value
+                } else {
+                    null
+                },
             )
     }
 
