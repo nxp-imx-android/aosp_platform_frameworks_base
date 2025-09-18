@@ -10537,44 +10537,52 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     @EnableFlags(
         Flags.FLAG_ENABLE_DESKTOP_TAB_TEARING_MINIMIZE_ANIMATION_BUGFIX,
         Flags.FLAG_ENABLE_DESKTOP_TAB_TEARING_LAUNCH_ANIMATION,
+        Flags.FLAG_ENABLE_INTERACTION_DEPENDENT_TAB_TEARING_BOUNDS,
     )
     fun onUnhandledDrag_newFreeformIntent_tabTearingAnimationBugfixFlagEnabled_tabTearingLaunchAnimationFlagEnabled() {
         testOnUnhandledDrag(
             DesktopModeVisualIndicator.IndicatorType.TO_DESKTOP_INDICATOR,
             PointF(1200f, 700f),
-            Rect(279, 700, 2122, 1852),
+            Rect(1100, 700, 1300, 900),
             tabTearingMinimizeAnimationFlagEnabled = true,
             tabTearingLaunchAnimationFlagEnabled = true,
         )
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_TAB_TEARING_MINIMIZE_ANIMATION_BUGFIX)
+    @EnableFlags(
+        Flags.FLAG_ENABLE_DESKTOP_TAB_TEARING_MINIMIZE_ANIMATION_BUGFIX,
+        Flags.FLAG_ENABLE_INTERACTION_DEPENDENT_TAB_TEARING_BOUNDS,
+        )
     @DisableFlags(Flags.FLAG_ENABLE_DESKTOP_TAB_TEARING_LAUNCH_ANIMATION)
     fun onUnhandledDrag_newFreeformIntent_tabTearingAnimationBugfixFlagEnabled_tabTearingLaunchAnimationFlagDisabled() {
         testOnUnhandledDrag(
             DesktopModeVisualIndicator.IndicatorType.TO_DESKTOP_INDICATOR,
             PointF(1200f, 700f),
-            Rect(279, 700, 2122, 1852),
+            Rect(1100, 700, 1300, 900),
             tabTearingMinimizeAnimationFlagEnabled = true,
             tabTearingLaunchAnimationFlagEnabled = false,
         )
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_TAB_TEARING_LAUNCH_ANIMATION)
+    @EnableFlags(
+        Flags.FLAG_ENABLE_DESKTOP_TAB_TEARING_LAUNCH_ANIMATION,
+        Flags.FLAG_ENABLE_INTERACTION_DEPENDENT_TAB_TEARING_BOUNDS,
+        )
     @DisableFlags(Flags.FLAG_ENABLE_DESKTOP_TAB_TEARING_MINIMIZE_ANIMATION_BUGFIX)
     fun onUnhandledDrag_newFreeformIntent_tabTearingAnimationBugfixFlagDisabled_tabTearingLaunchAnimationFlagEnabled() {
         testOnUnhandledDrag(
             DesktopModeVisualIndicator.IndicatorType.TO_DESKTOP_INDICATOR,
             PointF(1200f, 700f),
-            Rect(279, 700, 2122, 1852),
+            Rect(1100, 700, 1300, 900),
             tabTearingMinimizeAnimationFlagEnabled = false,
             tabTearingLaunchAnimationFlagEnabled = true,
         )
     }
 
     @Test
+    @EnableFlags(Flags.FLAG_ENABLE_INTERACTION_DEPENDENT_TAB_TEARING_BOUNDS)
     @DisableFlags(
         Flags.FLAG_ENABLE_DESKTOP_TAB_TEARING_MINIMIZE_ANIMATION_BUGFIX,
         Flags.FLAG_ENABLE_DESKTOP_TAB_TEARING_LAUNCH_ANIMATION,
@@ -10583,7 +10591,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         testOnUnhandledDrag(
             DesktopModeVisualIndicator.IndicatorType.TO_DESKTOP_INDICATOR,
             PointF(1200f, 700f),
-            Rect(279, 700, 2122, 1852),
+            Rect(1100, 700, 1300, 900),
             tabTearingMinimizeAnimationFlagEnabled = false,
             tabTearingLaunchAnimationFlagEnabled = false,
         )
@@ -10762,6 +10770,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         Flags.FLAG_ENABLE_DESKTOP_TAB_TEARING_MINIMIZE_ANIMATION_BUGFIX,
         Flags.FLAG_ENABLE_DESKTOP_TAB_TEARING_LAUNCH_ANIMATION,
         Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
+        Flags.FLAG_ENABLE_INTERACTION_DEPENDENT_TAB_TEARING_BOUNDS,
     )
     fun onUnhandledDrag_crossDisplayDrag_succeedsOnFocusedFreeformTask() {
         taskRepository.addDesk(displayId = SECOND_DISPLAY, deskId = SECOND_DISPLAY)
@@ -10770,7 +10779,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         testOnUnhandledDrag(
             DesktopModeVisualIndicator.IndicatorType.NO_INDICATOR,
             PointF(1200f, 700f),
-            Rect(279, 700, 2122, 1852),
+            Rect(1100, 700, 1300, 900),
             tabTearingMinimizeAnimationFlagEnabled = true,
             tabTearingLaunchAnimationFlagEnabled = true,
             destinationDisplayId = SECOND_DISPLAY,
@@ -10783,6 +10792,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         Flags.FLAG_ENABLE_DESKTOP_TAB_TEARING_LAUNCH_ANIMATION,
         Flags.FLAG_EXCLUDE_DESK_ROOTS_FROM_DESKTOP_TASKS,
         Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
+        Flags.FLAG_ENABLE_INTERACTION_DEPENDENT_TAB_TEARING_BOUNDS,
     )
     fun onUnhandledDrag_crossDisplayDrag_succeedsOnFocusedDeskRoot() {
         val task = createFreeformTask(displayId = SECOND_DISPLAY).apply { isFocused = true }
@@ -10793,7 +10803,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         testOnUnhandledDrag(
             DesktopModeVisualIndicator.IndicatorType.NO_INDICATOR,
             PointF(1200f, 700f),
-            Rect(279, 700, 2122, 1852),
+            Rect(1100, 700, 1300, 900),
             tabTearingMinimizeAnimationFlagEnabled = true,
             tabTearingLaunchAnimationFlagEnabled = true,
             destinationDisplayId = SECOND_DISPLAY,
