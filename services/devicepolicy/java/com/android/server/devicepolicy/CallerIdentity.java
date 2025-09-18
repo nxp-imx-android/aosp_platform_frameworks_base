@@ -25,7 +25,7 @@ import android.os.UserHandle;
  * All parameters are verified on object creation unless the component name is null and the
  * caller is a delegate.
  */
-final class CallerIdentity {
+public final class CallerIdentity {
 
     private final int mPid;
     private final int mUid;
