@@ -130,7 +130,7 @@ fun BiometricPromptFallbackView(promptViewModel: PromptViewModel, callback: Spag
             }
             Spacer(modifier = Modifier.height(16.dp))
             Column(
-                modifier = Modifier.fillMaxWidth().verticalScroll(scrollState).weight(1f),
+                modifier = Modifier.fillMaxWidth().verticalScroll(scrollState),
                 verticalArrangement = Arrangement.spacedBy(2.dp),
             ) {
                 val options = mutableListOf<@Composable (Int, Int) -> Unit>()
