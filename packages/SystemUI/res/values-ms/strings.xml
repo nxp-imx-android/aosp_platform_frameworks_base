@@ -21,10 +21,8 @@
     xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
     <string name="app_label" msgid="4811759950673118541">"UI Sistem"</string>
     <string name="battery_low_title" msgid="5319680173344341779">"Hidupkan Penjimat Bateri?"</string>
-    <!-- no translation found for battery_low_description (7848989602036547056) -->
-    <skip />
-    <!-- no translation found for battery_low_intro (8033783734931200690) -->
-    <skip />
+    <string name="battery_low_description" msgid="7848989602036547056">"Paras bateri anda ialah <xliff:g id="PERCENTAGE">%s</xliff:g>. Penjimat Bateri menghidupkan Tema gelap, mengehadkan aktiviti latar dan menangguhkan pemberitahuan."</string>
+    <string name="battery_low_intro" msgid="8033783734931200690">"Penjimat Bateri menghidupkan Tema gelap, mengehadkan aktiviti latar dan menangguhkan pemberitahuan."</string>
     <string name="battery_low_percent_format" msgid="4276661262843170964">"<xliff:g id="PERCENTAGE">%s</xliff:g> yang tinggal"</string>
     <string name="invalid_charger_title" msgid="938685362320735167">"Tidak dapat mengecas melalui USB"</string>
     <string name="invalid_charger_text" msgid="2339310107232691577">"Gunakan pengecas yang disertakan dengan peranti anda"</string>
@@ -428,6 +426,8 @@
     <string name="quick_settings_cast_detail_empty_text" msgid="2846282280014617785">"Tiada peranti tersedia"</string>
     <string name="quick_settings_cast_no_network" msgid="3863016850468559522">"Tiada sambungan Wi‑Fi atau Ethernet"</string>
     <string name="quick_settings_cast_disconnect" msgid="4836025217838730930">"Putuskan sambungan"</string>
+    <!-- no translation found for quick_settings_audio_current_input (8219735427828862612) -->
+    <skip />
     <string name="quick_settings_brightness_dialog_title" msgid="4980669966716685588">"Kecerahan"</string>
     <string name="quick_settings_inversion_label" msgid="3501527749494755688">"Penyongsangan warna"</string>
     <string name="quick_settings_color_correction_label" msgid="5636617913560474664">"Pembetulan warna"</string>

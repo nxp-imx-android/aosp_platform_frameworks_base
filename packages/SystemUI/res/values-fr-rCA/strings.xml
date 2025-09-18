@@ -21,10 +21,8 @@
     xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
     <string name="app_label" msgid="4811759950673118541">"IU système"</string>
     <string name="battery_low_title" msgid="5319680173344341779">"Activer l\'Économiseur de pile?"</string>
-    <!-- no translation found for battery_low_description (7848989602036547056) -->
-    <skip />
-    <!-- no translation found for battery_low_intro (8033783734931200690) -->
-    <skip />
+    <string name="battery_low_description" msgid="7848989602036547056">"Il vous reste <xliff:g id="PERCENTAGE">%s</xliff:g> d\'autonomie. L\'économiseur de pile active le thème sombre, limite l\'activité en arrière-plan et retarde les notifications."</string>
+    <string name="battery_low_intro" msgid="8033783734931200690">"L\'économiseur de pile active le thème sombre, limite l\'activité en arrière-plan et retarde les notifications."</string>
     <string name="battery_low_percent_format" msgid="4276661262843170964">"<xliff:g id="PERCENTAGE">%s</xliff:g> restants"</string>
     <string name="invalid_charger_title" msgid="938685362320735167">"Impossible de charger l\'appareil par USB"</string>
     <string name="invalid_charger_text" msgid="2339310107232691577">"Servez-vous du chargeur fourni avec votre appareil"</string>
@@ -156,7 +154,7 @@
     <string name="screen_record_edit" msgid="8733014191240769309">"Modifier"</string>
     <string name="screen_record_delete" msgid="1023421937978254537">"Supprimer"</string>
     <string name="screen_record_delete_dialog_title" msgid="5868561491974057044">"Supprimer cet enregistrement?"</string>
-    <string name="screen_record_delete_dialog_content" msgid="2610040845214024496">"Supprimer l\'enregistrement supprimera le fichier vidéo de votre appareil."</string>
+    <string name="screen_record_delete_dialog_content" msgid="2610040845214024496">"Supprimer l\'enr. supprimera la vidéo de l\'appareil."</string>
     <string name="screen_record_play" msgid="4732544724679889445">"Lire"</string>
     <string name="screen_record_pause" msgid="1715012292444967776">"Mettre en pause"</string>
     <string name="screen_record_mute" msgid="8111682249858638168">"Désactiver le son"</string>
@@ -428,6 +426,8 @@
     <string name="quick_settings_cast_detail_empty_text" msgid="2846282280014617785">"Aucun appareil à proximité"</string>
     <string name="quick_settings_cast_no_network" msgid="3863016850468559522">"Aucune connexion Wi-Fi ou Ethernet"</string>
     <string name="quick_settings_cast_disconnect" msgid="4836025217838730930">"Déconnecter"</string>
+    <!-- no translation found for quick_settings_audio_current_input (8219735427828862612) -->
+    <skip />
     <string name="quick_settings_brightness_dialog_title" msgid="4980669966716685588">"Luminosité"</string>
     <string name="quick_settings_inversion_label" msgid="3501527749494755688">"Inversion des couleurs"</string>
     <string name="quick_settings_color_correction_label" msgid="5636617913560474664">"Correction des couleurs"</string>
@@ -497,10 +497,8 @@
     <string name="accessibility_hearing_device_pair_new_device" msgid="8440082580186130090">"Cliquez ici pour associer un nouvel appareil"</string>
     <string name="hearing_devices_presets_error" msgid="350363093458408536">"Impossible de mettre à jour le préréglage"</string>
     <string name="hearing_devices_preset_label" msgid="7878267405046232358">"Préréglage"</string>
-    <!-- no translation found for hearing_devices_preset_label_left (7427947566560179945) -->
-    <skip />
-    <!-- no translation found for hearing_devices_preset_label_right (1847206329436268522) -->
-    <skip />
+    <string name="hearing_devices_preset_label_left" msgid="7427947566560179945">"Préréglage de l\'appareil gauche"</string>
+    <string name="hearing_devices_preset_label_right" msgid="1847206329436268522">"Préréglage de l\'appareil droit"</string>
     <string name="hearing_devices_input_routing_label" msgid="730396728151232306">"Microphone par défaut pour les appels"</string>
   <string-array name="hearing_device_input_routing_options">
     <item msgid="4582190415045337003">"Microphone pour prothèse auditive"</item>
@@ -571,7 +569,7 @@
     <string name="keyguard_unlock" msgid="8031975796351361601">"Balayez l\'écran vers le haut pour ouvrir"</string>
     <string name="keyguard_unlock_press" msgid="9140109453735019209">"Appuyez sur l\'icône Déverrouiller pour ouvrir"</string>
     <string name="keyguard_face_successful_unlock_swipe" msgid="6180997591385846073">"Déverrouillé par le visage. Balayez vers le haut pour ouvrir."</string>
-    <string name="keyguard_face_successful_unlock_confirm_button" msgid="3862344771780817393">"Déverr. par reconnaissance faciale. Appuyez pour continuer."</string>
+    <string name="keyguard_face_successful_unlock_confirm_button" msgid="3862344771780817393">"Déverr. par reconn. faciale. Confirmez pour continuer."</string>
     <string name="keyguard_face_successful_unlock_press" msgid="25520941264602588">"Déverr. par reconn. faciale. App. sur l\'icône pour ouvrir."</string>
     <string name="keyguard_face_successful_unlock_press_alt_1" msgid="5715461103913071474">"Déverr. par reconnaissance faciale. Appuyez pour ouvrir."</string>
     <string name="keyguard_face_successful_unlock_press_alt_2" msgid="8310787946357120406">"Visage reconnu. Appuyez pour ouvrir."</string>

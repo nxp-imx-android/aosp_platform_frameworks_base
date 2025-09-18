@@ -21,10 +21,8 @@
     xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
     <string name="app_label" msgid="4811759950673118541">"IU del sistema"</string>
     <string name="battery_low_title" msgid="5319680173344341779">"¿Quieres activar el Ahorro de batería?"</string>
-    <!-- no translation found for battery_low_description (7848989602036547056) -->
-    <skip />
-    <!-- no translation found for battery_low_intro (8033783734931200690) -->
-    <skip />
+    <string name="battery_low_description" msgid="7848989602036547056">"Tienes <xliff:g id="PERCENTAGE">%s</xliff:g> de batería restante. El Ahorro de batería activa el Tema oscuro, restringe la actividad en segundo plano y retrasa las notificaciones."</string>
+    <string name="battery_low_intro" msgid="8033783734931200690">"El Ahorro de batería activa el Tema oscuro, restringe la actividad en segundo plano y retrasa las notificaciones."</string>
     <string name="battery_low_percent_format" msgid="4276661262843170964">"Queda un <xliff:g id="PERCENTAGE">%s</xliff:g> de batería."</string>
     <string name="invalid_charger_title" msgid="938685362320735167">"No se puede cargar mediante USB"</string>
     <string name="invalid_charger_text" msgid="2339310107232691577">"Usa el cargador que se incluyó con el dispositivo"</string>
@@ -150,16 +148,13 @@
     <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"Mostrar toques"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"Elige una app para grabar"</string>
     <string name="screen_record_video_saved" msgid="1345283626390232282">"Se guardó el video"</string>
-    <!-- no translation found for screen_record_video_deleted (30786214839944540) -->
-    <skip />
+    <string name="screen_record_video_deleted" msgid="30786214839944540">"Video borrado"</string>
     <string name="screen_record_undo" msgid="7942716736019800870">"Deshacer"</string>
     <string name="screen_record_retake" msgid="3846643688365398450">"Volver a tomar"</string>
     <string name="screen_record_edit" msgid="8733014191240769309">"Editar"</string>
     <string name="screen_record_delete" msgid="1023421937978254537">"Borrar"</string>
-    <!-- no translation found for screen_record_delete_dialog_title (5868561491974057044) -->
-    <skip />
-    <!-- no translation found for screen_record_delete_dialog_content (2610040845214024496) -->
-    <skip />
+    <string name="screen_record_delete_dialog_title" msgid="5868561491974057044">"¿Quieres borrar esta grabación?"</string>
+    <string name="screen_record_delete_dialog_content" msgid="2610040845214024496">"Si borras esta grabación, se borrará de forma permanente el archivo de video."</string>
     <string name="screen_record_play" msgid="4732544724679889445">"Reproducir"</string>
     <string name="screen_record_pause" msgid="1715012292444967776">"Pausar"</string>
     <string name="screen_record_mute" msgid="8111682249858638168">"Silenciar"</string>
@@ -180,17 +175,12 @@
     <string name="screen_capture_toolbar_fullscreen_button_screenshot_a11y" msgid="8699983355979869210">"Tomar una captura de la pantalla completa"</string>
     <string name="screen_capture_toolbar_fullscreen_button_record_a11y" msgid="852148867883959158">"Grabar toda la pantalla"</string>
     <string name="screen_capture_toolbar_settings_button_a11y" msgid="8014446956996739704">"Configuración de captura de pantalla"</string>
-    <!-- no translation found for screen_capture_show_clicks_and_keys (2151690554364148717) -->
-    <skip />
-    <!-- no translation found for screen_capture_device_audio (1537290197773737349) -->
-    <skip />
-    <!-- no translation found for screen_capture_microphone_audio (1698835678818747741) -->
-    <skip />
-    <!-- no translation found for screen_capture_front_camera (1214647538302639358) -->
-    <skip />
+    <string name="screen_capture_show_clicks_and_keys" msgid="2151690554364148717">"Mostrar clics y teclas"</string>
+    <string name="screen_capture_device_audio" msgid="1537290197773737349">"Audio del dispositivo"</string>
+    <string name="screen_capture_microphone_audio" msgid="1698835678818747741">"Micrófono"</string>
+    <string name="screen_capture_front_camera" msgid="1214647538302639358">"Cámara frontal"</string>
     <string name="screen_capture_region_dimensions" msgid="2317064050253056256">"<xliff:g id="WIDTH">%1$d</xliff:g> × <xliff:g id="HEIGHT">%2$d</xliff:g>"</string>
-    <!-- no translation found for screen_share_privacy_indicator_stop_sharing (2297045039651417274) -->
-    <skip />
+    <string name="screen_share_privacy_indicator_stop_sharing" msgid="2297045039651417274">"Dejar de compartir"</string>
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"Compartiendo pantalla"</string>
     <string name="share_to_app_chip_accessibility_label_generic" msgid="5517431657924536133">"Compartiendo contenido"</string>
     <string name="share_to_app_stop_dialog_title" msgid="9212915050910250438">"¿Quieres dejar de compartir la pantalla?"</string>
@@ -435,6 +425,8 @@
     <string name="quick_settings_cast_detail_empty_text" msgid="2846282280014617785">"No hay dispositivos disponibles"</string>
     <string name="quick_settings_cast_no_network" msgid="3863016850468559522">"No hay conexión Ethernet ni Wi-Fi"</string>
     <string name="quick_settings_cast_disconnect" msgid="4836025217838730930">"Desconectar"</string>
+    <!-- no translation found for quick_settings_audio_current_input (8219735427828862612) -->
+    <skip />
     <string name="quick_settings_brightness_dialog_title" msgid="4980669966716685588">"Brillo"</string>
     <string name="quick_settings_inversion_label" msgid="3501527749494755688">"Inversión de colores"</string>
     <string name="quick_settings_color_correction_label" msgid="5636617913560474664">"Corrección de colores"</string>
@@ -504,10 +496,8 @@
     <string name="accessibility_hearing_device_pair_new_device" msgid="8440082580186130090">"Haz clic para vincular un dispositivo nuevo"</string>
     <string name="hearing_devices_presets_error" msgid="350363093458408536">"No se pudo actualizar el ajuste predeterminado"</string>
     <string name="hearing_devices_preset_label" msgid="7878267405046232358">"Ajuste predeterminado"</string>
-    <!-- no translation found for hearing_devices_preset_label_left (7427947566560179945) -->
-    <skip />
-    <!-- no translation found for hearing_devices_preset_label_right (1847206329436268522) -->
-    <skip />
+    <string name="hearing_devices_preset_label_left" msgid="7427947566560179945">"Ajuste predeterminado izquierdo"</string>
+    <string name="hearing_devices_preset_label_right" msgid="1847206329436268522">"Ajuste predeterminado derecho"</string>
     <string name="hearing_devices_input_routing_label" msgid="730396728151232306">"Micrófono predeterminado para llamadas"</string>
   <string-array name="hearing_device_input_routing_options">
     <item msgid="4582190415045337003">"Micrófono de audífonos"</item>
@@ -908,8 +898,7 @@
     <string name="notification_guts_news_summary" msgid="638697931043407835">"Noticias destacadas, editoriales y más"</string>
     <string name="notification_guts_social_summary" msgid="3749147631983977040">"Me gusta, publicaciones y más"</string>
     <string name="notification_guts_recs_summary" msgid="8391881843238947007">"Boletines informativos, contenido recomendado y más"</string>
-    <!-- no translation found for notification_onboarding_summaries_turn_on (3831339570984683297) -->
-    <skip />
+    <string name="notification_onboarding_summaries_turn_on" msgid="3831339570984683297">"Activar en Configuración"</string>
     <string name="notification_onboarding_summaries_message" msgid="6061524903176459064">"Ahora, puedes obtener resúmenes rápidos de tus conversaciones más largas"</string>
     <string name="notification_onboarding_bundles_message" msgid="4612908213178622912">"El organizador de notificaciones agrupa y silencia las notificaciones de menor prioridad. Agrega más categorías en Configuración."</string>
     <string name="notification_bundle_header_counter" msgid="5515532701569242265">"{count,plural, =1{# notificación}many{# de notificaciones}other{# notificaciones}}"</string>

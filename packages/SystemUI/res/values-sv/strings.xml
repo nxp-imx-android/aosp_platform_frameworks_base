@@ -21,10 +21,8 @@
     xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
     <string name="app_label" msgid="4811759950673118541">"Gränssnitt"</string>
     <string name="battery_low_title" msgid="5319680173344341779">"Vill du aktivera batterisparläget?"</string>
-    <!-- no translation found for battery_low_description (7848989602036547056) -->
-    <skip />
-    <!-- no translation found for battery_low_intro (8033783734931200690) -->
-    <skip />
+    <string name="battery_low_description" msgid="7848989602036547056">"<xliff:g id="PERCENTAGE">%s</xliff:g> av batteriet återstår. I batterisparläget aktiveras mörkt tema, bakgrundsaktivitet begränsas och aviseringar skjuts upp."</string>
+    <string name="battery_low_intro" msgid="8033783734931200690">"I batterisparläget aktiveras mörkt tema, bakgrundsaktivitet begränsas och aviseringar skjuts upp."</string>
     <string name="battery_low_percent_format" msgid="4276661262843170964">"<xliff:g id="PERCENTAGE">%s</xliff:g> kvar"</string>
     <string name="invalid_charger_title" msgid="938685362320735167">"Det går inte att ladda via USB"</string>
     <string name="invalid_charger_text" msgid="2339310107232691577">"Använd laddaren som följde med enheten."</string>
@@ -182,8 +180,7 @@
     <string name="screen_capture_microphone_audio" msgid="1698835678818747741">"Mikrofon"</string>
     <string name="screen_capture_front_camera" msgid="1214647538302639358">"Främre kamera"</string>
     <string name="screen_capture_region_dimensions" msgid="2317064050253056256">"<xliff:g id="WIDTH">%1$d</xliff:g> × <xliff:g id="HEIGHT">%2$d</xliff:g>"</string>
-    <!-- no translation found for screen_share_privacy_indicator_stop_sharing (2297045039651417274) -->
-    <skip />
+    <string name="screen_share_privacy_indicator_stop_sharing" msgid="2297045039651417274">"Sluta dela"</string>
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"Skärmen delas"</string>
     <string name="share_to_app_chip_accessibility_label_generic" msgid="5517431657924536133">"Delar innehåll"</string>
     <string name="share_to_app_stop_dialog_title" msgid="9212915050910250438">"Vill du sluta dela skärmen?"</string>
@@ -428,6 +425,8 @@
     <string name="quick_settings_cast_detail_empty_text" msgid="2846282280014617785">"Inga tillgängliga enheter"</string>
     <string name="quick_settings_cast_no_network" msgid="3863016850468559522">"Ingen wifi- eller Ethernet-anslutning"</string>
     <string name="quick_settings_cast_disconnect" msgid="4836025217838730930">"Koppla från"</string>
+    <!-- no translation found for quick_settings_audio_current_input (8219735427828862612) -->
+    <skip />
     <string name="quick_settings_brightness_dialog_title" msgid="4980669966716685588">"Ljusstyrka"</string>
     <string name="quick_settings_inversion_label" msgid="3501527749494755688">"Färg­invertering"</string>
     <string name="quick_settings_color_correction_label" msgid="5636617913560474664">"Färg­korrigering"</string>

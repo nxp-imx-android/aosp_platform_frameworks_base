@@ -21,10 +21,8 @@
     xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
     <string name="app_label" msgid="4811759950673118541">"ממשק משתמש של המערכת"</string>
     <string name="battery_low_title" msgid="5319680173344341779">"להפעיל את התכונה \'חיסכון בסוללה\'?"</string>
-    <!-- no translation found for battery_low_description (7848989602036547056) -->
-    <skip />
-    <!-- no translation found for battery_low_intro (8033783734931200690) -->
-    <skip />
+    <string name="battery_low_description" msgid="7848989602036547056">"אחוז הטעינה של הסוללה: <xliff:g id="PERCENTAGE">%s</xliff:g>. התכונה \'חיסכון בסוללה\' מפעילה עיצוב כהה, מגבילה את הפעילת ברקע ומשהה את ההתראות."</string>
+    <string name="battery_low_intro" msgid="8033783734931200690">"התכונה \'חיסכון בסוללה\' מפעילה עיצוב כהה, מגבילה את הפעילת ברקע ומשהה את ההתראות."</string>
     <string name="battery_low_percent_format" msgid="4276661262843170964">"נותרו <xliff:g id="PERCENTAGE">%s</xliff:g>"</string>
     <string name="invalid_charger_title" msgid="938685362320735167">"‏לא ניתן לטעון באמצעות USB"</string>
     <string name="invalid_charger_text" msgid="2339310107232691577">"שימוש במטען שסופק עם המכשיר"</string>
@@ -428,6 +426,8 @@
     <string name="quick_settings_cast_detail_empty_text" msgid="2846282280014617785">"אין מכשירים זמינים"</string>
     <string name="quick_settings_cast_no_network" msgid="3863016850468559522">"‏אין חיבור ל-Wi-Fi או לאתרנט"</string>
     <string name="quick_settings_cast_disconnect" msgid="4836025217838730930">"ניתוק"</string>
+    <!-- no translation found for quick_settings_audio_current_input (8219735427828862612) -->
+    <skip />
     <string name="quick_settings_brightness_dialog_title" msgid="4980669966716685588">"בהירות"</string>
     <string name="quick_settings_inversion_label" msgid="3501527749494755688">"היפוך צבעים"</string>
     <string name="quick_settings_color_correction_label" msgid="5636617913560474664">"תיקון צבע"</string>
@@ -497,10 +497,8 @@
     <string name="accessibility_hearing_device_pair_new_device" msgid="8440082580186130090">"צריך ללחוץ כדי להתאים מכשיר חדש"</string>
     <string name="hearing_devices_presets_error" msgid="350363093458408536">"לא ניתן לעדכן את ההגדרה הקבועה מראש"</string>
     <string name="hearing_devices_preset_label" msgid="7878267405046232358">"הגדרה קבועה מראש"</string>
-    <!-- no translation found for hearing_devices_preset_label_left (7427947566560179945) -->
-    <skip />
-    <!-- no translation found for hearing_devices_preset_label_right (1847206329436268522) -->
-    <skip />
+    <string name="hearing_devices_preset_label_left" msgid="7427947566560179945">"הגדרה קבועה מראש לשמאל"</string>
+    <string name="hearing_devices_preset_label_right" msgid="1847206329436268522">"הגדרה קבועה מראש לימין"</string>
     <string name="hearing_devices_input_routing_label" msgid="730396728151232306">"מיקרופון ברירת המחדל לשיחות"</string>
   <string-array name="hearing_device_input_routing_options">
     <item msgid="4582190415045337003">"המיקרופון של מכשיר השמיעה"</item>

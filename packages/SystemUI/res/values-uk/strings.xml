@@ -21,10 +21,8 @@
     xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
     <string name="app_label" msgid="4811759950673118541">"Інтерфейс системи"</string>
     <string name="battery_low_title" msgid="5319680173344341779">"Увімкнути режим енергозбереження?"</string>
-    <!-- no translation found for battery_low_description (7848989602036547056) -->
-    <skip />
-    <!-- no translation found for battery_low_intro (8033783734931200690) -->
-    <skip />
+    <string name="battery_low_description" msgid="7848989602036547056">"У вас залишилося <xliff:g id="PERCENTAGE">%s</xliff:g> заряду акумулятора. У режимі енергозбереження вмикається Темна тема, обмежуються дії у фоновому режимі та затримуються сповіщення."</string>
+    <string name="battery_low_intro" msgid="8033783734931200690">"У режимі енергозбереження вмикається Темна тема, обмежуються дії у фоновому режимі та затримуються сповіщення."</string>
     <string name="battery_low_percent_format" msgid="4276661262843170964">"Залишилося <xliff:g id="PERCENTAGE">%s</xliff:g>"</string>
     <string name="invalid_charger_title" msgid="938685362320735167">"Не вдається зарядити через USB"</string>
     <string name="invalid_charger_text" msgid="2339310107232691577">"Використовуйте зарядний пристрій, який входить у комплект пристрою"</string>
@@ -150,16 +148,13 @@
     <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"Показувати дотики"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"Виберіть додаток для запису"</string>
     <string name="screen_record_video_saved" msgid="1345283626390232282">"Відео збережено"</string>
-    <!-- no translation found for screen_record_video_deleted (30786214839944540) -->
-    <skip />
+    <string name="screen_record_video_deleted" msgid="30786214839944540">"Відео видалено"</string>
     <string name="screen_record_undo" msgid="7942716736019800870">"Відмінити"</string>
     <string name="screen_record_retake" msgid="3846643688365398450">"Повторити"</string>
     <string name="screen_record_edit" msgid="8733014191240769309">"Змінити"</string>
     <string name="screen_record_delete" msgid="1023421937978254537">"Видалити"</string>
-    <!-- no translation found for screen_record_delete_dialog_title (5868561491974057044) -->
-    <skip />
-    <!-- no translation found for screen_record_delete_dialog_content (2610040845214024496) -->
-    <skip />
+    <string name="screen_record_delete_dialog_title" msgid="5868561491974057044">"Видалити цей запис?"</string>
+    <string name="screen_record_delete_dialog_content" msgid="2610040845214024496">"Видаливши цей запис, ви назавжди вилучите відеофайл зі свого пристрою."</string>
     <string name="screen_record_play" msgid="4732544724679889445">"Відтворити"</string>
     <string name="screen_record_pause" msgid="1715012292444967776">"Призупинити"</string>
     <string name="screen_record_mute" msgid="8111682249858638168">"Вимкнути звук"</string>
@@ -180,14 +175,10 @@
     <string name="screen_capture_toolbar_fullscreen_button_screenshot_a11y" msgid="8699983355979869210">"Зробити знімок усього екрана"</string>
     <string name="screen_capture_toolbar_fullscreen_button_record_a11y" msgid="852148867883959158">"Записувати весь екран"</string>
     <string name="screen_capture_toolbar_settings_button_a11y" msgid="8014446956996739704">"Налаштування запису екрана"</string>
-    <!-- no translation found for screen_capture_show_clicks_and_keys (2151690554364148717) -->
-    <skip />
-    <!-- no translation found for screen_capture_device_audio (1537290197773737349) -->
-    <skip />
-    <!-- no translation found for screen_capture_microphone_audio (1698835678818747741) -->
-    <skip />
-    <!-- no translation found for screen_capture_front_camera (1214647538302639358) -->
-    <skip />
+    <string name="screen_capture_show_clicks_and_keys" msgid="2151690554364148717">"Показувати кліки й клавіші"</string>
+    <string name="screen_capture_device_audio" msgid="1537290197773737349">"Звук із пристрою"</string>
+    <string name="screen_capture_microphone_audio" msgid="1698835678818747741">"Мікрофон"</string>
+    <string name="screen_capture_front_camera" msgid="1214647538302639358">"Фронтальна камера"</string>
     <string name="screen_capture_region_dimensions" msgid="2317064050253056256">"<xliff:g id="WIDTH">%1$d</xliff:g> x <xliff:g id="HEIGHT">%2$d</xliff:g>"</string>
     <!-- no translation found for screen_share_privacy_indicator_stop_sharing (2297045039651417274) -->
     <skip />
@@ -437,6 +428,8 @@
     <string name="quick_settings_cast_detail_empty_text" msgid="2846282280014617785">"Немає пристроїв"</string>
     <string name="quick_settings_cast_no_network" msgid="3863016850468559522">"Немає з’єднання з Wi-Fi або Ethernet"</string>
     <string name="quick_settings_cast_disconnect" msgid="4836025217838730930">"Від’єднати"</string>
+    <!-- no translation found for quick_settings_audio_current_input (8219735427828862612) -->
+    <skip />
     <string name="quick_settings_brightness_dialog_title" msgid="4980669966716685588">"Яскравість"</string>
     <string name="quick_settings_inversion_label" msgid="3501527749494755688">"Інверсія кольорів"</string>
     <string name="quick_settings_color_correction_label" msgid="5636617913560474664">"Корекція кольору"</string>
@@ -506,10 +499,8 @@
     <string name="accessibility_hearing_device_pair_new_device" msgid="8440082580186130090">"Натисніть, щоб підключити новий пристрій"</string>
     <string name="hearing_devices_presets_error" msgid="350363093458408536">"Не вдалось оновити набір налаштувань"</string>
     <string name="hearing_devices_preset_label" msgid="7878267405046232358">"Набір налаштувань"</string>
-    <!-- no translation found for hearing_devices_preset_label_left (7427947566560179945) -->
-    <skip />
-    <!-- no translation found for hearing_devices_preset_label_right (1847206329436268522) -->
-    <skip />
+    <string name="hearing_devices_preset_label_left" msgid="7427947566560179945">"Набір налаштувань для апарата зліва"</string>
+    <string name="hearing_devices_preset_label_right" msgid="1847206329436268522">"Набір налаштувань для апарата справа"</string>
     <string name="hearing_devices_input_routing_label" msgid="730396728151232306">"Мікрофон за умовчанням для дзвінків"</string>
   <string-array name="hearing_device_input_routing_options">
     <item msgid="4582190415045337003">"Мікрофон слухового апарата"</item>
@@ -910,8 +901,7 @@
     <string name="notification_guts_news_summary" msgid="638697931043407835">"Головні новини, редакційні статті тощо"</string>
     <string name="notification_guts_social_summary" msgid="3749147631983977040">"Позначки \"подобається\", дописи тощо"</string>
     <string name="notification_guts_recs_summary" msgid="8391881843238947007">"Інформаційні листи, рекомендований медіаконтент тощо"</string>
-    <!-- no translation found for notification_onboarding_summaries_turn_on (3831339570984683297) -->
-    <skip />
+    <string name="notification_onboarding_summaries_turn_on" msgid="3831339570984683297">"Увімкнути в налаштуваннях"</string>
     <string name="notification_onboarding_summaries_message" msgid="6061524903176459064">"Тепер ви можете отримувати короткі перекази довгих розмов"</string>
     <string name="notification_onboarding_bundles_message" msgid="4612908213178622912">"Органайзер сповіщень групує сповіщення з низьким пріоритетом і вимикає їх звук. Додайте інші категорії в налаштуваннях."</string>
     <string name="notification_bundle_header_counter" msgid="5515532701569242265">"{count,plural, =1{# сповіщення}one{# сповіщення}few{# сповіщення}many{# сповіщень}other{# сповіщення}}"</string>

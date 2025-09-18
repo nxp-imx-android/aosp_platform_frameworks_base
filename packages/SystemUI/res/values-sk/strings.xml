@@ -21,10 +21,8 @@
     xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
     <string name="app_label" msgid="4811759950673118541">"UI systému"</string>
     <string name="battery_low_title" msgid="5319680173344341779">"Chcete zapnúť šetrič batérie?"</string>
-    <!-- no translation found for battery_low_description (7848989602036547056) -->
-    <skip />
-    <!-- no translation found for battery_low_intro (8033783734931200690) -->
-    <skip />
+    <string name="battery_low_description" msgid="7848989602036547056">"Zostáva vám <xliff:g id="PERCENTAGE">%s</xliff:g> batérie. Šetrič batérie zapne tmavý motív, obmedzí aktivity na pozadí a odloží upozornenia."</string>
+    <string name="battery_low_intro" msgid="8033783734931200690">"Šetrič batérie zapne tmavý motív, obmedzí aktivity na pozadí a odloží upozornenia."</string>
     <string name="battery_low_percent_format" msgid="4276661262843170964">"Zostáva <xliff:g id="PERCENTAGE">%s</xliff:g>"</string>
     <string name="invalid_charger_title" msgid="938685362320735167">"Nedá sa nabíjať cez USB"</string>
     <string name="invalid_charger_text" msgid="2339310107232691577">"Použite nabíjačku dodanú so zariadením"</string>
@@ -150,16 +148,13 @@
     <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"Zobraziť dotyky"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"Vyberte aplikáciu na nahrávanie"</string>
     <string name="screen_record_video_saved" msgid="1345283626390232282">"Video bolo uložené"</string>
-    <!-- no translation found for screen_record_video_deleted (30786214839944540) -->
-    <skip />
+    <string name="screen_record_video_deleted" msgid="30786214839944540">"Video bolo odstránené"</string>
     <string name="screen_record_undo" msgid="7942716736019800870">"Späť"</string>
     <string name="screen_record_retake" msgid="3846643688365398450">"Znova nasnímať"</string>
     <string name="screen_record_edit" msgid="8733014191240769309">"Upraviť"</string>
     <string name="screen_record_delete" msgid="1023421937978254537">"Odstrániť"</string>
-    <!-- no translation found for screen_record_delete_dialog_title (5868561491974057044) -->
-    <skip />
-    <!-- no translation found for screen_record_delete_dialog_content (2610040845214024496) -->
-    <skip />
+    <string name="screen_record_delete_dialog_title" msgid="5868561491974057044">"Chcete odstrániť túto nahrávku?"</string>
+    <string name="screen_record_delete_dialog_content" msgid="2610040845214024496">"Odstránením tejto nahrávky natrvalo vymažete videosúbor zo zariadenia."</string>
     <string name="screen_record_play" msgid="4732544724679889445">"Prehrať"</string>
     <string name="screen_record_pause" msgid="1715012292444967776">"Pozastaviť"</string>
     <string name="screen_record_mute" msgid="8111682249858638168">"Vypnúť zvuk"</string>
@@ -180,14 +175,10 @@
     <string name="screen_capture_toolbar_fullscreen_button_screenshot_a11y" msgid="8699983355979869210">"Vytvoriť snímku celej obrazovky"</string>
     <string name="screen_capture_toolbar_fullscreen_button_record_a11y" msgid="852148867883959158">"Nahrávať celú obrazovku"</string>
     <string name="screen_capture_toolbar_settings_button_a11y" msgid="8014446956996739704">"Nastavenia snímania obrazovky"</string>
-    <!-- no translation found for screen_capture_show_clicks_and_keys (2151690554364148717) -->
-    <skip />
-    <!-- no translation found for screen_capture_device_audio (1537290197773737349) -->
-    <skip />
-    <!-- no translation found for screen_capture_microphone_audio (1698835678818747741) -->
-    <skip />
-    <!-- no translation found for screen_capture_front_camera (1214647538302639358) -->
-    <skip />
+    <string name="screen_capture_show_clicks_and_keys" msgid="2151690554364148717">"Zobraziť kliknutia a klávesy"</string>
+    <string name="screen_capture_device_audio" msgid="1537290197773737349">"Zvuk zariadenia"</string>
+    <string name="screen_capture_microphone_audio" msgid="1698835678818747741">"Mikrofón"</string>
+    <string name="screen_capture_front_camera" msgid="1214647538302639358">"Predná kamera"</string>
     <string name="screen_capture_region_dimensions" msgid="2317064050253056256">"<xliff:g id="WIDTH">%1$d</xliff:g> × <xliff:g id="HEIGHT">%2$d</xliff:g>"</string>
     <!-- no translation found for screen_share_privacy_indicator_stop_sharing (2297045039651417274) -->
     <skip />
@@ -435,6 +426,8 @@
     <string name="quick_settings_cast_detail_empty_text" msgid="2846282280014617785">"Nie sú k dispozícii žiadne zariadenia"</string>
     <string name="quick_settings_cast_no_network" msgid="3863016850468559522">"Žiadna sieť Wi‑Fi ani ethernetové pripojenie"</string>
     <string name="quick_settings_cast_disconnect" msgid="4836025217838730930">"Odpojiť"</string>
+    <!-- no translation found for quick_settings_audio_current_input (8219735427828862612) -->
+    <skip />
     <string name="quick_settings_brightness_dialog_title" msgid="4980669966716685588">"Jas"</string>
     <string name="quick_settings_inversion_label" msgid="3501527749494755688">"Inverzia farieb"</string>
     <string name="quick_settings_color_correction_label" msgid="5636617913560474664">"Úprava farieb"</string>
@@ -504,10 +497,8 @@
     <string name="accessibility_hearing_device_pair_new_device" msgid="8440082580186130090">"Kliknutím spárujete nové zariadenie"</string>
     <string name="hearing_devices_presets_error" msgid="350363093458408536">"Predvoľbu sa nepodarilo aktualizovať"</string>
     <string name="hearing_devices_preset_label" msgid="7878267405046232358">"Predvoľba"</string>
-    <!-- no translation found for hearing_devices_preset_label_left (7427947566560179945) -->
-    <skip />
-    <!-- no translation found for hearing_devices_preset_label_right (1847206329436268522) -->
-    <skip />
+    <string name="hearing_devices_preset_label_left" msgid="7427947566560179945">"Predvoľba pre ľavé"</string>
+    <string name="hearing_devices_preset_label_right" msgid="1847206329436268522">"Predvoľba pre pravé"</string>
     <string name="hearing_devices_input_routing_label" msgid="730396728151232306">"Predvolený mikrofón pre hovory"</string>
   <string-array name="hearing_device_input_routing_options">
     <item msgid="4582190415045337003">"Mikrofón načúvadla"</item>
@@ -908,8 +899,7 @@
     <string name="notification_guts_news_summary" msgid="638697931043407835">"Najčítanejšie články, úvodníky a ďalší obsah"</string>
     <string name="notification_guts_social_summary" msgid="3749147631983977040">"Označenia páči sa, príspevky a ďalší obsah"</string>
     <string name="notification_guts_recs_summary" msgid="8391881843238947007">"Bulletiny, odporúčané médiá a ďalší obsah"</string>
-    <!-- no translation found for notification_onboarding_summaries_turn_on (3831339570984683297) -->
-    <skip />
+    <string name="notification_onboarding_summaries_turn_on" msgid="3831339570984683297">"Zapnúť v Nastaveniach"</string>
     <string name="notification_onboarding_summaries_message" msgid="6061524903176459064">"Dlhšie konverzácie je možné teraz zhrnúť, aby ste mali k dispozícii rýchle súhrny"</string>
     <string name="notification_onboarding_bundles_message" msgid="4612908213178622912">"Nástroj na usporiadanie upozornení zoskupí upozornenia s nižšou prioritou a vypne ich zvuk. Ďalšie kategórie môžete pridať v Nastaveniach."</string>
     <string name="notification_bundle_header_counter" msgid="5515532701569242265">"{count,plural, =1{# upozornenie}few{# upozornenia}many{# notifications}other{# upozornení}}"</string>
@@ -1035,7 +1025,7 @@
     <string name="system_multitasking_splitscreen_focus_rhs" msgid="3838578650313318508">"Prechod na aplikáciu vpravo alebo dole pri rozdelenej obrazovke"</string>
     <string name="system_multitasking_splitscreen_focus_lhs" msgid="3164261844398662518">"Prechod na aplikáciu vľavo alebo hore pri rozdelenej obrazovke"</string>
     <string name="system_multitasking_replace" msgid="7410071959803642125">"Počas rozdelenej obrazovky: nahradenie aplikácie inou"</string>
-    <string name="system_multitasking_move_to_next_display" msgid="6169737557526976997">"Presun aktívneho okna medzi obrazovkami"</string>
+    <string name="system_multitasking_move_to_next_display" msgid="6169737557526976997">"Presunúť aktívne okno na ďalšiu obrazovku"</string>
     <string name="system_desktop_mode_snap_left_window" msgid="8636204689945162298">"Presun okna doľava"</string>
     <string name="system_desktop_mode_snap_right_window" msgid="2162560187639411929">"Presun okna doprava"</string>
     <string name="system_desktop_mode_toggle_maximize_window" msgid="4084100093691768239">"Maximalizovanie okna"</string>

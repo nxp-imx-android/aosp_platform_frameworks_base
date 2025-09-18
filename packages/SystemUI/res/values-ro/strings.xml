@@ -21,10 +21,8 @@
     xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
     <string name="app_label" msgid="4811759950673118541">"UI sistem"</string>
     <string name="battery_low_title" msgid="5319680173344341779">"Activezi Economisirea bateriei?"</string>
-    <!-- no translation found for battery_low_description (7848989602036547056) -->
-    <skip />
-    <!-- no translation found for battery_low_intro (8033783734931200690) -->
-    <skip />
+    <string name="battery_low_description" msgid="7848989602036547056">"Mai ai <xliff:g id="PERCENTAGE">%s</xliff:g> din baterie. Economisirea bateriei activează Tema întunecată, restricționează activitatea în fundal și amână notificările."</string>
+    <string name="battery_low_intro" msgid="8033783734931200690">"Economisirea bateriei activează Tema întunecată, restricționează activitatea în fundal și amână notificările."</string>
     <string name="battery_low_percent_format" msgid="4276661262843170964">"Procent rămas din baterie: <xliff:g id="PERCENTAGE">%s</xliff:g>"</string>
     <string name="invalid_charger_title" msgid="938685362320735167">"Nu se poate realiza încărcarea prin USB"</string>
     <string name="invalid_charger_text" msgid="2339310107232691577">"Folosește încărcătorul livrat împreună cu dispozitivul"</string>
@@ -150,16 +148,13 @@
     <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"Afișează atingerile"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"Alege o aplicație pentru a înregistra"</string>
     <string name="screen_record_video_saved" msgid="1345283626390232282">"Videoclip salvat"</string>
-    <!-- no translation found for screen_record_video_deleted (30786214839944540) -->
-    <skip />
+    <string name="screen_record_video_deleted" msgid="30786214839944540">"Videoclip șters"</string>
     <string name="screen_record_undo" msgid="7942716736019800870">"Anulează"</string>
     <string name="screen_record_retake" msgid="3846643688365398450">"Înregistrează iar"</string>
     <string name="screen_record_edit" msgid="8733014191240769309">"Editează"</string>
     <string name="screen_record_delete" msgid="1023421937978254537">"Șterge"</string>
-    <!-- no translation found for screen_record_delete_dialog_title (5868561491974057044) -->
-    <skip />
-    <!-- no translation found for screen_record_delete_dialog_content (2610040845214024496) -->
-    <skip />
+    <string name="screen_record_delete_dialog_title" msgid="5868561491974057044">"Ștergi înregistrarea?"</string>
+    <string name="screen_record_delete_dialog_content" msgid="2610040845214024496">"Dacă ștergi înregistrarea, fișierul video va fi șters definitiv de pe dispozitiv."</string>
     <string name="screen_record_play" msgid="4732544724679889445">"Redă"</string>
     <string name="screen_record_pause" msgid="1715012292444967776">"Întrerupe"</string>
     <string name="screen_record_mute" msgid="8111682249858638168">"Dezactivează sunetul"</string>
@@ -171,8 +166,8 @@
     <string name="screen_capture_toolbar_screenshot_button" msgid="5676585348709494125">"Captură de ecran"</string>
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"Înregistrează"</string>
     <string name="screen_share_toolbar_share_button" msgid="9182050596136815833">"Trimite"</string>
-    <string name="screen_share_no_select_app_thumbnail" msgid="1630012401570567430">"Selectează o aplicație pentru a trimite"</string>
-    <string name="screen_share_app_audio_sharing" msgid="7201172218924898712">"Trimite conținutul audio din fereastră"</string>
+    <string name="screen_share_no_select_app_thumbnail" msgid="1630012401570567430">"Selectează aplicația pentru a trimite"</string>
+    <string name="screen_share_app_audio_sharing" msgid="7201172218924898712">"Trimite audio din fereastră"</string>
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"Fă o captură de ecran a ferestrei"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"Înregistrează fereastra"</string>
     <string name="screen_capture_toolbar_region_button_screenshot_a11y" msgid="2102262602357521192">"Fă o captură de ecran a zonei selectate"</string>
@@ -180,14 +175,10 @@
     <string name="screen_capture_toolbar_fullscreen_button_screenshot_a11y" msgid="8699983355979869210">"Fă o captură de ecran a întregului ecran"</string>
     <string name="screen_capture_toolbar_fullscreen_button_record_a11y" msgid="852148867883959158">"Înregistrează tot ecranul"</string>
     <string name="screen_capture_toolbar_settings_button_a11y" msgid="8014446956996739704">"Setări pentru capturile de ecran"</string>
-    <!-- no translation found for screen_capture_show_clicks_and_keys (2151690554364148717) -->
-    <skip />
-    <!-- no translation found for screen_capture_device_audio (1537290197773737349) -->
-    <skip />
-    <!-- no translation found for screen_capture_microphone_audio (1698835678818747741) -->
-    <skip />
-    <!-- no translation found for screen_capture_front_camera (1214647538302639358) -->
-    <skip />
+    <string name="screen_capture_show_clicks_and_keys" msgid="2151690554364148717">"Afișează clicurile și tastele"</string>
+    <string name="screen_capture_device_audio" msgid="1537290197773737349">"Conținutul audio de la dispozitiv"</string>
+    <string name="screen_capture_microphone_audio" msgid="1698835678818747741">"Microfon"</string>
+    <string name="screen_capture_front_camera" msgid="1214647538302639358">"Camera foto frontală"</string>
     <string name="screen_capture_region_dimensions" msgid="2317064050253056256">"<xliff:g id="WIDTH">%1$d</xliff:g> x <xliff:g id="HEIGHT">%2$d</xliff:g>"</string>
     <!-- no translation found for screen_share_privacy_indicator_stop_sharing (2297045039651417274) -->
     <skip />
@@ -435,6 +426,8 @@
     <string name="quick_settings_cast_detail_empty_text" msgid="2846282280014617785">"Niciun dispozitiv disponibil"</string>
     <string name="quick_settings_cast_no_network" msgid="3863016850468559522">"Fără conexiune Wi‑Fi sau Ethernet"</string>
     <string name="quick_settings_cast_disconnect" msgid="4836025217838730930">"Deconectează"</string>
+    <!-- no translation found for quick_settings_audio_current_input (8219735427828862612) -->
+    <skip />
     <string name="quick_settings_brightness_dialog_title" msgid="4980669966716685588">"Luminozitate"</string>
     <string name="quick_settings_inversion_label" msgid="3501527749494755688">"Inversarea culorilor"</string>
     <string name="quick_settings_color_correction_label" msgid="5636617913560474664">"Corecția culorii"</string>
@@ -504,10 +497,8 @@
     <string name="accessibility_hearing_device_pair_new_device" msgid="8440082580186130090">"Dă clic pentru a asocia un nou dispozitiv"</string>
     <string name="hearing_devices_presets_error" msgid="350363093458408536">"Nu s-a putut actualiza presetarea"</string>
     <string name="hearing_devices_preset_label" msgid="7878267405046232358">"Presetare"</string>
-    <!-- no translation found for hearing_devices_preset_label_left (7427947566560179945) -->
-    <skip />
-    <!-- no translation found for hearing_devices_preset_label_right (1847206329436268522) -->
-    <skip />
+    <string name="hearing_devices_preset_label_left" msgid="7427947566560179945">"Presetarea pentru partea stângă"</string>
+    <string name="hearing_devices_preset_label_right" msgid="1847206329436268522">"Presetarea pentru partea dreaptă"</string>
     <string name="hearing_devices_input_routing_label" msgid="730396728151232306">"Microfon prestabilit pentru apeluri"</string>
   <string-array name="hearing_device_input_routing_options">
     <item msgid="4582190415045337003">"Microfonul aparatului auditiv"</item>
@@ -908,8 +899,7 @@
     <string name="notification_guts_news_summary" msgid="638697931043407835">"Cele mai populare subiecte, editoriale și altele"</string>
     <string name="notification_guts_social_summary" msgid="3749147631983977040">"Aprecieri, postări și altele"</string>
     <string name="notification_guts_recs_summary" msgid="8391881843238947007">"Buletine informative, conținut media recomandat și altele"</string>
-    <!-- no translation found for notification_onboarding_summaries_turn_on (3831339570984683297) -->
-    <skip />
+    <string name="notification_onboarding_summaries_turn_on" msgid="3831339570984683297">"Activează în Setări"</string>
     <string name="notification_onboarding_summaries_message" msgid="6061524903176459064">"Conversațiile mai lungi pot fi acum rezumate pentru a-ți oferi rezumate scurte"</string>
     <string name="notification_onboarding_bundles_message" msgid="4612908213178622912">"Organizatorul de notificări grupează și dezactivează sunetul notificărilor cu prioritate redusă. Adaugă mai multe categorii în Setări."</string>
     <string name="notification_bundle_header_counter" msgid="5515532701569242265">"{count,plural, =1{# notificare}few{# notificări}other{# de notificări}}"</string>
