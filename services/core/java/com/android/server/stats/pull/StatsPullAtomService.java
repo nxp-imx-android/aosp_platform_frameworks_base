@@ -2748,7 +2748,7 @@ public class StatsPullAtomService extends SystemService {
                         metrics.vmallocUsedKb,
                         metrics.pageTablesKb,
                         metrics.kernelStackKb,
-                        metrics.totalIonKb,
+                        0, /* totalIonKb - deprecated */
                         metrics.unaccountedKb,
                         metrics.gpuTotalUsageKb,
                         metrics.gpuPrivateAllocationsKb,
