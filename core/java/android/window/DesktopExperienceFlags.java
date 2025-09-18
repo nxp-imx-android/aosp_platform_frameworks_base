@@ -115,6 +115,9 @@ public enum DesktopExperienceFlags {
     ENABLE_DEFAULT_DISPLAY_IN_TOPOLOGY_SWITCH(
             com.android.server.display.feature.flags.Flags::enableDefaultDisplayInTopologySwitch,
             true, FLAG_ENABLE_DEFAULT_DISPLAY_IN_TOPOLOGY_SWITCH),
+    ENABLE_DENSITY_RESET_ON_CROSS_DISPLAYS_PIP_LAUNCH(
+            Flags::enableDensityResetOnCrossDisplaysPipLaunch, false,
+            Flags.FLAG_ENABLE_DENSITY_RESET_ON_CROSS_DISPLAYS_PIP_LAUNCH),
     ENABLE_DESKTOP_APP_HEADER_STATE_CHANGE_ANNOUNCEMENTS(
             Flags::enableDesktopAppHeaderStateChangeAnnouncements, false,
             Flags.FLAG_ENABLE_DESKTOP_APP_HEADER_STATE_CHANGE_ANNOUNCEMENTS),
