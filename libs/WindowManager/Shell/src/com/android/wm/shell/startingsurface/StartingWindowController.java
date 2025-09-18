@@ -87,7 +87,7 @@ public class StartingWindowController implements RemoteCallable<StartingWindowCo
     public static final String TAG = "ShellStartingWindow";
 
     private static final long TASK_BG_COLOR_RETAIN_TIME_MS = 5000;
-    private static final long UNCERTAIN_TRANSITION_TIMEOUT_MS = 5000;
+    static final long UNCERTAIN_TRANSITION_TIMEOUT_MS = 2000;
 
     private final StartingSurfaceDrawer mStartingSurfaceDrawer;
     private final StartingWindowTypeAlgorithm mStartingWindowTypeAlgorithm;
