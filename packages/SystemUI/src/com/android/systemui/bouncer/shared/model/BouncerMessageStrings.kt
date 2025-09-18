@@ -16,6 +16,7 @@
 
 package com.android.systemui.bouncer.shared.model
 
+import android.security.Flags.lockscreenTimeoutShortlink
 import android.security.Flags.secureLockDevice
 import com.android.systemui.authentication.shared.model.AuthenticationMethodModel
 import com.android.systemui.authentication.shared.model.AuthenticationMethodModel.Biometric
@@ -336,17 +337,29 @@ object BouncerMessageStrings {
             Pattern ->
                 Pair(
                     R.string.kg_too_many_failed_attempts_countdown,
-                    R.string.kg_primary_auth_locked_out_pattern,
+                    if (lockscreenTimeoutShortlink()) {
+                        R.string.kg_primary_auth_locked_out_pattern_shortlink
+                    } else {
+                        R.string.kg_primary_auth_locked_out_pattern
+                    },
                 )
             Password ->
                 Pair(
                     R.string.kg_too_many_failed_attempts_countdown,
-                    R.string.kg_primary_auth_locked_out_password,
+                    if (lockscreenTimeoutShortlink()) {
+                        R.string.kg_primary_auth_locked_out_password_shortlink
+                    } else {
+                        R.string.kg_primary_auth_locked_out_password
+                    },
                 )
             Pin ->
                 Pair(
                     R.string.kg_too_many_failed_attempts_countdown,
-                    R.string.kg_primary_auth_locked_out_pin,
+                    if (lockscreenTimeoutShortlink()) {
+                        R.string.kg_primary_auth_locked_out_pin_shortlink
+                    } else {
+                        R.string.kg_primary_auth_locked_out_pin
+                    },
                 )
             else -> EmptyMessage
         }

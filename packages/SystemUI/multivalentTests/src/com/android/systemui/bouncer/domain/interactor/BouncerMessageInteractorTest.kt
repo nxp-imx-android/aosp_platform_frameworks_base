@@ -20,6 +20,8 @@ import android.content.pm.UserInfo
 import android.hardware.biometrics.BiometricFaceConstants
 import android.hardware.biometrics.BiometricSourceType
 import android.platform.test.annotations.EnableFlags
+import android.platform.test.annotations.RequiresFlagsDisabled
+import android.platform.test.annotations.RequiresFlagsEnabled
 import android.security.Flags.FLAG_SECURE_LOCK_DEVICE
 import android.testing.TestableLooper
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -51,6 +53,8 @@ import com.android.systemui.keyguard.data.repository.fakeTrustRepository
 import com.android.systemui.keyguard.shared.model.AuthenticationFlags
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.res.R
+import com.android.systemui.res.R.string.kg_primary_auth_locked_out_pin
+import com.android.systemui.res.R.string.kg_primary_auth_locked_out_pin_shortlink
 import com.android.systemui.res.R.string.kg_too_many_failed_attempts_countdown
 import com.android.systemui.res.R.string.kg_trust_agent_disabled
 import com.android.systemui.securelockdevice.data.repository.fakeSecureLockDeviceRepository
@@ -473,6 +477,31 @@ class BouncerMessageInteractorTest : SysuiTestCase() {
         }
 
     @Test
+    @RequiresFlagsDisabled(android.security.Flags.FLAG_LOCKSCREEN_TIMEOUT_SHORTLINK)
+    fun onPrimaryAuthLockoutWithoutShortlink_startsTimerForSpecifiedNumberOfSeconds() =
+        testScope.runTest {
+            init()
+            val bouncerMessage by collectLastValue(underTest.bouncerMessage)
+
+            underTest.onPrimaryAuthLockedOut(3)
+
+            verify(countDownTimerUtil)
+                .startNewTimer(eq(3000L), eq(1000L), countDownTimerCallback.capture())
+
+            countDownTimerCallback.value.onTick(2000L)
+
+            val primaryMessage = bouncerMessage!!.message!!
+            assertThat(primaryMessage.messageResId!!)
+                .isEqualTo(kg_too_many_failed_attempts_countdown)
+            assertThat(primaryMessage.formatterArgs).isEqualTo(mapOf(Pair("count", 2)))
+
+            val secondaryMessage = bouncerMessage!!.secondaryMessage!!
+            assertThat(secondaryMessage.messageResId!!).isEqualTo(kg_primary_auth_locked_out_pin)
+            assertThat(secondaryMessage.formatterArgs).isNull()
+        }
+
+    @Test
+    @RequiresFlagsEnabled(android.security.Flags.FLAG_LOCKSCREEN_TIMEOUT_SHORTLINK)
     fun onPrimaryAuthLockout_startsTimerForSpecifiedNumberOfSeconds() =
         testScope.runTest {
             init()
@@ -489,6 +518,15 @@ class BouncerMessageInteractorTest : SysuiTestCase() {
             assertThat(primaryMessage.messageResId!!)
                 .isEqualTo(kg_too_many_failed_attempts_countdown)
             assertThat(primaryMessage.formatterArgs).isEqualTo(mapOf(Pair("count", 2)))
+
+            val secondaryMessage = bouncerMessage!!.secondaryMessage!!
+            assertThat(secondaryMessage.messageResId!!)
+                .isEqualTo(kg_primary_auth_locked_out_pin_shortlink)
+            val expectedShortlink =
+                resString(com.android.internal.R.string.config_lockscreenLockoutShortlink)
+            assertThat(expectedShortlink).isNotEmpty()
+            assertThat(secondaryMessage.formatterArgs)
+                .isEqualTo(mapOf(Pair("shortlink", expectedShortlink)))
         }
 
     @Test

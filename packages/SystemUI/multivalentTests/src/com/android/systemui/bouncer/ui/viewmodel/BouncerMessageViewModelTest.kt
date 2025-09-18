@@ -160,6 +160,10 @@ class BouncerMessageViewModelTest : SysuiTestCase() {
                 runCurrent()
                 if (times == FakeAuthenticationRepository.MAX_FAILED_AUTH_TRIES_BEFORE_LOCKOUT) {
                     assertTryAgainMessage(message?.text, lockoutSeconds)
+                    assertTooManyAttemptsMessage(
+                        message?.secondaryText,
+                        android.security.Flags.lockscreenTimeoutShortlink(),
+                    )
                     assertThat(message?.isUpdateAnimated).isFalse()
                 } else {
                     assertThat(message?.text).isEqualTo("Wrong PIN. Try again.")
@@ -763,6 +767,16 @@ class BouncerMessageViewModelTest : SysuiTestCase() {
 
     private fun assertTryAgainMessage(message: String?, time: Int) {
         assertThat(message).contains("Try again in $time second")
+    }
+
+    private fun assertTooManyAttemptsMessage(message: String?, includesShortlink: Boolean) {
+        assertThat(message).contains("Too many attempts with incorrect")
+        if (includesShortlink) {
+            assertThat(message)
+                .contains(
+                    resString(com.android.internal.R.string.config_lockscreenLockoutShortlink)
+                )
+        }
     }
 
     companion object {

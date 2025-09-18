@@ -16,9 +16,11 @@
 
 package com.android.systemui.bouncer.domain.interactor
 
+import android.content.res.Resources
 import android.hardware.biometrics.BiometricFaceConstants
 import android.hardware.biometrics.BiometricSourceType
 import android.os.CountDownTimer
+import android.security.Flags.lockscreenTimeoutShortlink
 import android.security.Flags.secureLockDevice
 import com.android.internal.widget.LockPatternUtils.StrongAuthTracker.STRONG_AUTH_NOT_REQUIRED
 import com.android.keyguard.KeyguardSecurityModel
@@ -42,6 +44,7 @@ import com.android.systemui.keyguard.data.repository.TrustRepository
 import com.android.systemui.keyguard.shared.model.AuthenticationFlags
 import com.android.systemui.res.R
 import com.android.systemui.securelockdevice.domain.interactor.SecureLockDeviceInteractor
+import com.android.systemui.shade.ShadeDisplayAware
 import com.android.systemui.user.data.repository.UserRepository
 import com.android.systemui.util.kotlin.Nonuple
 import com.android.systemui.util.kotlin.combine
@@ -81,6 +84,7 @@ constructor(
     private val securityModel: KeyguardSecurityModel,
     deviceEntryBiometricsAllowedInteractor: DeviceEntryBiometricsAllowedInteractor,
     private val secureLockDeviceInteractor: Lazy<SecureLockDeviceInteractor>,
+    @ShadeDisplayAware private val resources: Resources,
 ) {
     private val isFaceAuthCurrentlyAllowedOnBouncer =
         deviceEntryBiometricsAllowedInteractor.isFaceCurrentlyAllowedOnBouncer.stateIn(
@@ -340,6 +344,14 @@ constructor(
                     message.message?.animate = false
                     message.message?.formatterArgs =
                         mutableMapOf<String, Any>(Pair("count", secondsRemaining))
+                    if (lockscreenTimeoutShortlink()) {
+                        val shortlink =
+                            resources.getString(
+                                com.android.internal.R.string.config_lockscreenLockoutShortlink
+                            )
+                        message.secondaryMessage?.formatterArgs =
+                            mutableMapOf<String, Any>(Pair("shortlink", shortlink))
+                    }
                     setMessage(message)
                 }
             }

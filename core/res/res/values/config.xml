@@ -1537,6 +1537,9 @@
          wrong guesses, improving usability. -->
     <bool name="config_softwareLskfRateLimiterEnforcing">false</bool>
 
+    <!-- The shortlink to display when the user is locked out on the lockscreen. -->
+    <string name="config_lockscreenLockoutShortlink" translatable="false">g.co/android/unlock</string>
+
     <!-- Default value of the setting that controls whether animations should be disabled while
          entering the PIN on the lockscreen.
          False means animations should be enabled by default.

@@ -226,6 +226,15 @@
     <!-- Message shown when primary auth is locked out after too many attempts [CHAR LIMIT=70]  -->
     <string name="kg_primary_auth_locked_out_password">Too many attempts with incorrect password</string>
 
+    <!-- Message shown when primary auth is locked out after too many attempts. A shortlink is included on a new line. [ICU Syntax] [CHAR LIMIT=70]  -->
+    <string name="kg_primary_auth_locked_out_pin_shortlink">Too many attempts with incorrect PIN\n{shortlink}</string>
+
+    <!-- Message shown when primary auth is locked out after too many attempts. A shortlink is included on a new line. [ICU Syntax] [CHAR LIMIT=70]  -->
+    <string name="kg_primary_auth_locked_out_pattern_shortlink">Too many attempts with incorrect pattern\n{shortlink}</string>
+
+    <!-- Message shown when primary auth is locked out after too many attempts. A shortlink is included on a new line. [ICU Syntax] [CHAR LIMIT=70]  -->
+    <string name="kg_primary_auth_locked_out_password_shortlink">Too many attempts with incorrect password\n{shortlink}</string>
+
     <!-- Countdown message shown after too many failed unlock attempts [CHAR LIMIT=48]-->
     <string name="kg_too_many_failed_attempts_countdown">{count, plural,
         =1 {Try again in # second.}
