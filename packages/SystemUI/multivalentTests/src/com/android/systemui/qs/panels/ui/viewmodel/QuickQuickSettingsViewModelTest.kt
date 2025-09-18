@@ -16,6 +16,7 @@
 
 package com.android.systemui.qs.panels.ui.viewmodel
 
+import android.content.res.Configuration
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
@@ -69,6 +70,10 @@ class QuickQuickSettingsViewModelTest : SysuiTestCase() {
             testCase.context.orCreateTestableResources.addOverride(
                 R.integer.quick_settings_infinite_grid_num_columns,
                 4,
+            )
+            // Manually set the screen density to avoid triggering extra large tiles
+            testCase.context.orCreateTestableResources.overrideConfiguration(
+                Configuration().apply { this.densityDpi = 400 }
             )
             fakeConfigurationRepository.onConfigurationChange()
             usingMediaInComposeFragment = true

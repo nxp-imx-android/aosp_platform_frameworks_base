@@ -50,11 +50,22 @@ constructor(
 
     val defaultTileMaxWidth: Int = DEFAULT_LARGE_TILE_WIDTH
 
-    val currentUseExtraLargeTiles: Boolean
-        get() = resources.configuration.fontScale >= FONT_SCALE_THRESHOLD
+    /** Use extra large tiles if the font scale or the screen density are past the thresholds. */
+    private val currentUseExtraLargeTiles: Boolean
+        get() =
+            resources.configuration.fontScale >= FONT_SCALE_THRESHOLD ||
+                resources.configuration.densityDpi >= displayDensityThreshold
 
-    val currentTileMaxWidth: Int
+    private val currentTileMaxWidth: Int
         get() = resources.getInteger(R.integer.quick_settings_infinite_grid_tile_max_width)
+
+    /**
+     * The screen density threshold for using extra large tiles.
+     * This value is only retrieved once on creation and will not be updated on configuration
+     * changes.
+     */
+    private val displayDensityThreshold: Int =
+        resources.getInteger(R.integer.quick_settings_infinite_grid_screen_density_threshold)
 
     private companion object {
         const val FONT_SCALE_THRESHOLD = 1.8f
