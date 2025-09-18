@@ -22,7 +22,6 @@ import android.hardware.devicestate.DeviceStateManager
 import android.hardware.input.InputManagerGlobal
 import android.os.Handler
 import android.os.Trace
-import com.android.systemui.Flags.unfoldAnimationBackgroundProgress
 import com.android.systemui.flags.FeatureFlagsClassic
 import com.android.systemui.flags.Flags
 import com.android.systemui.statusbar.LinearLightRevealEffect
@@ -49,7 +48,6 @@ constructor(
     @UnfoldBg private val unfoldProgressHandler: Handler,
     @UnfoldBg
     private val unfoldTransitionBgProgressProvider: Provider<UnfoldTransitionProgressProvider>,
-    private val unfoldTransitionProgressProvider: Provider<UnfoldTransitionProgressProvider>,
     private val deviceStateManager: DeviceStateManager,
     private val threadFactory: ThreadFactory,
     private val fullscreenLightRevealAnimationControllerFactory:
@@ -76,11 +74,7 @@ constructor(
         controller.init()
         bgExecutor = threadFactory.buildDelayableExecutorOnHandler(unfoldProgressHandler)
         deviceStateManager.registerCallback(bgExecutor, FoldListener())
-        if (unfoldAnimationBackgroundProgress()) {
-            unfoldTransitionBgProgressProvider.get().addCallback(transitionListener)
-        } else {
-            unfoldTransitionProgressProvider.get().addCallback(transitionListener)
-        }
+        unfoldTransitionBgProgressProvider.get().addCallback(transitionListener)
     }
 
     /**
