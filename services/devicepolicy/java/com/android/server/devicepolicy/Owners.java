@@ -113,6 +113,7 @@ class Owners {
             for (int userId : usersIds) {
                 mDeviceStateCache.setHasProfileOwner(userId, hasProfileOwner(userId));
             }
+            mDeviceStateCache.setDeviceManaged(mData.mDeviceManaged);
 
             notifyChangeLocked();
             pushDeviceOwnerUidToActivityTaskManagerLocked();
@@ -429,6 +430,7 @@ class Owners {
     void setDeviceManaged(boolean deviceManaged) {
         synchronized (mData) {
             mData.mDeviceManaged = deviceManaged;
+            mDeviceStateCache.setDeviceManaged(deviceManaged);
         }
     }
 
