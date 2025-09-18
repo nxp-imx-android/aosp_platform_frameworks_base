@@ -23,19 +23,16 @@ import com.android.systemui.display.data.repository.displayStateRepository
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.Kosmos.Fixture
 import com.android.systemui.kosmos.applicationCoroutineScope
-import com.android.systemui.kosmos.testDispatcher
 import com.android.systemui.log.table.logcatTableLogBuffer
 import com.android.systemui.res.R
 import com.android.systemui.shade.data.repository.shadeConfigRepository
-import com.android.systemui.shared.settings.data.repository.fakeSecureSettingsRepository
+import com.android.systemui.shared.settings.data.repository.secureSettingsRepository
 import kotlinx.coroutines.runBlocking
 
 val Kosmos.shadeModeInteractor by Fixture {
     ShadeModeInteractorImpl(
         applicationScope = applicationCoroutineScope,
-        backgroundDispatcher = testDispatcher,
         shadeConfigRepository = shadeConfigRepository,
-        secureSettingsRepository = fakeSecureSettingsRepository,
         tableLogBuffer = logcatTableLogBuffer(this, "sceneFrameworkTableLogBuffer"),
     )
 }
@@ -49,10 +46,18 @@ val Kosmos.shadeMode by Fixture { shadeModeInteractor.shadeMode }
  *
  * In a wide layout, notifications and quick settings shades each take up only half the screen
  * width. In a narrow layout, they each take up the entire screen width.
+ *
+ * @param enabledBySetting Whether to enable it via the user-visible setting (`true`), or by default
+ *   (`false`).
  */
-fun Kosmos.enableDualShade(wideLayout: Boolean? = null) {
-    runBlocking { fakeSecureSettingsRepository.setBoolean(Settings.Secure.DUAL_SHADE, true) }
-    testableContext.orCreateTestableResources.addOverride(R.bool.config_disableSplitShade, true)
+fun Kosmos.enableDualShade(wideLayout: Boolean? = null, enabledBySetting: Boolean = true) {
+    if (enabledBySetting) {
+        overrideResource(R.bool.config_useDualShadeSetting, true)
+        runBlocking { secureSettingsRepository.setBoolean(Settings.Secure.DUAL_SHADE, true) }
+    } else {
+        overrideResource(R.bool.config_useDualShadeSetting, false)
+        overrideResource(R.bool.config_dualShadeEnabledByDefault, true)
+    }
     fakeConfigurationRepository.onAnyConfigurationChange()
 
     if (wideLayout != null) {
@@ -62,19 +67,22 @@ fun Kosmos.enableDualShade(wideLayout: Boolean? = null) {
 }
 
 // TODO(b/391578667): Make this user-aware once supported by FakeSecureSettingsRepository.
-fun Kosmos.disableDualShade() {
-    runBlocking { fakeSecureSettingsRepository.setBoolean(Settings.Secure.DUAL_SHADE, false) }
-    testableContext.orCreateTestableResources.addOverride(R.bool.config_disableSplitShade, false)
+fun Kosmos.disableDualShade(disabledBySetting: Boolean = true) {
+    if (disabledBySetting) {
+        overrideResource(R.bool.config_useDualShadeSetting, true)
+        runBlocking { secureSettingsRepository.setBoolean(Settings.Secure.DUAL_SHADE, false) }
+    } else {
+        overrideResource(R.bool.config_useDualShadeSetting, false)
+        overrideResource(R.bool.config_dualShadeEnabledByDefault, false)
+    }
     fakeConfigurationRepository.onAnyConfigurationChange()
 }
 
 fun Kosmos.enableSingleShade(wideLayout: Boolean = false) {
     disableDualShade()
     overrideLargeScreenResources(isLargeScreen = wideLayout)
-    testableContext.orCreateTestableResources.addOverride(
-        R.bool.config_use_split_notification_shade,
-        false,
-    )
+    overrideResource(R.bool.config_use_split_notification_shade, false)
+    fakeConfigurationRepository.onConfigurationChange()
     displayStateRepository.setIsWideScreen(wideLayout)
     displayStateRepository.setIsLargeScreen(false)
 }
@@ -87,11 +95,13 @@ fun Kosmos.enableSplitShade() {
 }
 
 private fun Kosmos.overrideLargeScreenResources(isLargeScreen: Boolean) {
-    with(testableContext.orCreateTestableResources) {
-        addOverride(R.bool.config_isFullWidthShade, !isLargeScreen)
-        addOverride(R.bool.config_use_split_notification_shade, isLargeScreen)
-        addOverride(R.bool.config_use_large_screen_shade_header, isLargeScreen)
-    }
+    overrideResource(R.bool.config_isFullWidthShade, !isLargeScreen)
+    overrideResource(R.bool.config_use_split_notification_shade, isLargeScreen)
+    overrideResource(R.bool.config_use_large_screen_shade_header, isLargeScreen)
     fakeConfigurationRepository.onConfigurationChange()
     fakeConfigurationRepository.onAnyConfigurationChange()
+}
+
+private fun Kosmos.overrideResource(id: Int, value: Boolean) {
+    testableContext.orCreateTestableResources.addOverride(id, value)
 }

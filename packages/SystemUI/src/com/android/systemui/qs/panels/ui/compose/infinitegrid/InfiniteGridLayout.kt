@@ -27,6 +27,7 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.util.fastMap
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -200,8 +201,12 @@ constructor(
                     coroutineScope.launch { scrollState.animateScrollTo(0) }
                 }
             }
+        val showDualShadeSetting =
+            LocalResources.current.getBoolean(R.bool.config_useDualShadeSetting)
         val actions =
-            remember(topBarActionsViewModel) { topBarActionsViewModel.actions.toMutableStateList() }
+            remember(topBarActionsViewModel, showDualShadeSetting) {
+                topBarActionsViewModel.actions(showDualShadeSetting).toMutableStateList()
+            }
         val columns = columnsViewModel.columns
         val largeTilesSpan = columnsViewModel.largeSpan
         val largeTiles by viewModel.iconTilesViewModel.largeTilesState

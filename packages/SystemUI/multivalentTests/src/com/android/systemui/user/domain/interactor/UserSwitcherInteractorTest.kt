@@ -139,6 +139,7 @@ class UserSwitcherInteractorTest : SysuiTestCase() {
         spyContext = spy(context)
         keyguardReply =
             KeyguardInteractorFactory.create(
+                backgroundDispatcher = kosmos.testDispatcher,
                 context = spyContext,
                 featureFlags = kosmos.fakeFeatureFlagsClassic,
             )

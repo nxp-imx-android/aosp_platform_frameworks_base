@@ -298,7 +298,9 @@ public class KeyguardIndicationControllerBaseTest extends SysuiTestCase {
                 mock(BouncerMessageInteractor.class),
                 mIndicationHelper,
                 mDeviceEntryBiometricSettingsInteractor,
-                KeyguardInteractorFactory.create(mContext, mFlags).getKeyguardInteractor(),
+                KeyguardInteractorFactory
+                        .create(mKosmos.getTestDispatcher(), mContext, mFlags)
+                        .getKeyguardInteractor(),
                 mBiometricMessageInteractor,
                 mDeviceEntryFingerprintAuthInteractor,
                 mDeviceEntryFaceAuthInteractor,
