@@ -133,3 +133,13 @@ flag {
     purpose: PURPOSE_BUGFIX
   }
 }
+
+flag {
+  name: "use_focused_view_to_get_afm_in_view_root"
+  namespace: "autofill"
+  description: "Use focused view context to get autofill manager, for fixing dropdown suggestion blocking physical keyboard input"
+  bug: "329678461"
+  metadata {
+      purpose: PURPOSE_BUGFIX
+   }
+}
