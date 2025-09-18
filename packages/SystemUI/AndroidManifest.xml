@@ -719,6 +719,16 @@
             android:visibleToInstantApps="true"/>
 
         <activity
+            android:name=".mediaprojection.permission.ShareScreenActivity"
+            android:showForAllUsers="true"
+            android:exported="true"
+            android:theme="@style/Theme.SystemUI.MediaProjectionAlertDialog"
+            android:finishOnCloseSystemDialogs="true"
+            android:launchMode="singleTop"
+            android:excludeFromRecents="true"
+            android:visibleToInstantApps="true"/>
+
+        <activity
             android:name=".mediaprojection.appselector.MediaProjectionAppSelectorActivity"
             android:theme="@style/Theme.SystemUI.MediaProjectionAppSelector"
             android:showForAllUsers="true"

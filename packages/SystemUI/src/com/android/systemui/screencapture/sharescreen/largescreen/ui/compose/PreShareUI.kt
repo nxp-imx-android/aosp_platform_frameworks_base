@@ -17,7 +17,10 @@
 package com.android.systemui.screencapture.sharescreen.largescreen.ui.compose
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -36,21 +39,26 @@ fun PreShareUI(
     audioSwitchViewModel: AudioSwitchViewModel,
     recentTaskViewModelFactory: RecentTaskViewModel.Factory,
 ) {
-    Column(
-        verticalArrangement = Arrangement.spacedBy(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier.width(560.dp),
+    Box(
+        contentAlignment = Alignment.TopCenter,
+        modifier = Modifier.fillMaxSize().padding(top = 16.dp),
     ) {
-        PreShareToolbar(
-            preShareToolbarViewModel = preShareToolbarViewModel,
-            expanded = true,
-            onCloseClick = { preShareToolbarViewModel.onCloseClicked() },
-            shareButtonEnabled = shareContentListViewModel.selectedRecentTaskViewModel != null,
-        )
-        ShareContentSelector(
-            shareContentListViewModel = shareContentListViewModel,
-            recentTaskViewModelFactory = recentTaskViewModelFactory,
-            audioSwitchViewModel = audioSwitchViewModel,
-        )
+        Column(
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier.width(560.dp),
+        ) {
+            PreShareToolbar(
+                preShareToolbarViewModel = preShareToolbarViewModel,
+                expanded = true,
+                onCloseClick = { preShareToolbarViewModel.onCloseClicked() },
+                shareButtonEnabled = shareContentListViewModel.selectedRecentTaskViewModel != null,
+            )
+            ShareContentSelector(
+                shareContentListViewModel = shareContentListViewModel,
+                recentTaskViewModelFactory = recentTaskViewModelFactory,
+                audioSwitchViewModel = audioSwitchViewModel,
+            )
+        }
     }
 }

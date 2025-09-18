@@ -36,13 +36,13 @@ constructor(
 
     @Composable
     override fun Content() {
-        val preShareToolbarViewModel: PreShareToolbarViewModel =
-            rememberViewModel("PreShareToolbarViewModel") {
-                preShareToolbarViewModelFactory.create()
-            }
         val shareContentListViewModel: ShareContentListViewModel =
             rememberViewModel("ShareContentListViewModel") {
                 shareContentListViewModelFactory.create()
+            }
+        val preShareToolbarViewModel: PreShareToolbarViewModel =
+            rememberViewModel("PreShareToolbarViewModel") {
+                preShareToolbarViewModelFactory.create(shareContentListViewModel)
             }
         val audioSwitchViewModel: AudioSwitchViewModel =
             rememberViewModel("AudioSwitchViewModel") { audioSwitchViewModelFactory.create() }

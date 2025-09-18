@@ -33,6 +33,7 @@ constructor(
     val screenCaptureType: ScreenCaptureType,
     val isUserConsentRequired: Boolean = false,
     val resultReceiver: ResultReceiver? = null,
+    val onApprovedCallback: ((Int) -> Unit)? = null,
     val mediaProjection: IBinder? = null,
     val hostAppUserHandle: UserHandle = UserHandle.CURRENT,
     val hostAppUid: Int = 0,
