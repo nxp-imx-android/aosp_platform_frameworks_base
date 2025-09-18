@@ -906,8 +906,18 @@ public interface WindowManagerPolicy extends WindowManagerPolicyConstants {
 
     /**
      * Return whether the default display is on and not blocked by a black surface.
+     *
+     * @deprecated Use {@link #isScreenOn(int)} instead, to better support multi-display.
      */
-    public boolean isScreenOn();
+    @Deprecated
+    default boolean isScreenOn() {
+        return isScreenOn(Display.DEFAULT_DISPLAY);
+    }
+
+    /**
+     * Return whether the specified display is on and not blocked by a black surface.
+     */
+    boolean isScreenOn(int displayId);
 
     /**
      * @param ignoreScreenOn {@code true} if screen state should be ignored.

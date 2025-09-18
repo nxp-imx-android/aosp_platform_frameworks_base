@@ -55,6 +55,7 @@ import android.window.ScreenCaptureInternal.ScreenshotHardwareBuffer;
 import com.android.internal.policy.KeyInterceptionInfo;
 import com.android.server.input.InputManagerService;
 import com.android.server.policy.WindowManagerPolicy;
+import com.android.server.wm.DisplayPolicy;
 import com.android.server.wm.SensitiveContentPackages.PackageInfo;
 
 import java.lang.annotation.Retention;
@@ -871,6 +872,15 @@ public abstract class WindowManagerInternal {
      * @param displayId The id of the display
      */
     public abstract Context getDisplayUiContext(int displayId);
+
+    /**
+     * Returns the display policy for a given display.
+     *
+     * @param displayId The display id.
+     * @return The display policy, or null if display not found.
+     */
+    @Nullable
+    public abstract DisplayPolicy getDisplayPolicy(int displayId);
 
     /**
      * Sets the rotation of a non-default display.

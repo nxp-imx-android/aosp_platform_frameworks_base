@@ -4520,10 +4520,15 @@ public class WindowManagerService extends IWindowManager.Stub
             if (displayContent == null) {
                 if (DEBUG_SCREENSHOT) {
                     Slog.i(TAG_WM, "Screenshot returning null. No Display for displayId="
-                            + DEFAULT_DISPLAY);
+                            + displayId);
                 }
                 captureArgs = null;
             } else {
+                if (DEBUG_SCREENSHOT) {
+                    Slog.i(TAG_WM, "Taking assist screenshot for displayId=" + displayId
+                            + " display state="
+                            + Display.stateToString(displayContent.getDisplayInfo().state));
+                }
                 captureArgs = displayContent.getLayerCaptureArgs(predicate,
                         /*useWindowingLayerAsScreenshotRoot*/ enableLppAssistInvocationEffect());
             }
@@ -4542,7 +4547,7 @@ public class WindowManagerService extends IWindowManager.Stub
         }
 
         if (screenshotBuffer == null) {
-            Slog.w(TAG_WM, "Failed to take screenshot");
+            Slog.w(TAG_WM, "Failed to take screenshot for displayId=" + displayId);
         }
 
         return screenshotBuffer;
@@ -8663,6 +8668,15 @@ public class WindowManagerService extends IWindowManager.Stub
         public Context getDisplayUiContext(int displayId) {
             synchronized (mGlobalLock) {
                 return mRoot.getDisplayUiContext(displayId);
+            }
+        }
+
+        @Override
+        @Nullable
+        public DisplayPolicy getDisplayPolicy(int displayId) {
+            synchronized (mGlobalLock) {
+                final DisplayContent dc = mRoot.getDisplayContent(displayId);
+                return dc == null ? null : dc.getDisplayPolicy();
             }
         }
 

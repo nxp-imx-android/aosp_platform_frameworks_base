@@ -5304,9 +5304,10 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
      */
     LayerCaptureArgs getLayerCaptureArgs(@Nullable ToBooleanFunction<WindowState> predicate,
             boolean useWindowingLayerAsScreenshotRoot) {
-        if (!mWmService.mPolicy.isScreenOn()) {
+        if (!mWmService.mPolicy.isScreenOn(mDisplayId)) {
             if (DEBUG_SCREENSHOT) {
-                Slog.i(TAG_WM, "Attempted to take screenshot while display was off.");
+                Slog.i(TAG_WM, "Attempted to take screenshot while display " + mDisplayId
+                        + " was off.");
             }
             return null;
         }

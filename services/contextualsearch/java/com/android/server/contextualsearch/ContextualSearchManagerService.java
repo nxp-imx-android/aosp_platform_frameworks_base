@@ -386,6 +386,7 @@ public class ContextualSearchManagerService extends SystemService {
             }
         }
         final int displayId = getDisplayIdFromConfig(config);
+        if (DEBUG) Log.d(TAG, "Taking contextual search screenshot for displayId=" + displayId);
         final ScreenshotHardwareBuffer shb =
                 mWmInternal.takeContextualSearchScreenshot(csUid, displayId);
         final Bitmap bm = shb != null ? shb.asBitmap() : null;
