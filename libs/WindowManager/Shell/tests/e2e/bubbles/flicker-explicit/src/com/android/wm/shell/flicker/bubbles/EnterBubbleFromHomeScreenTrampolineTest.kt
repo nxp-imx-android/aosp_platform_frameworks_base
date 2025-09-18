@@ -61,7 +61,13 @@ open class EnterBubbleFromHomeScreenTrampolineTest :
         private val recordTraceWithTransitionRule =
             RecordTraceWithTransitionRule(
                 transition = {
-                    launchBubbleViaBubbleMenu(trampolineApp, tapl, wmHelper, FROM_HOME_SCREEN)
+                    launchBubbleViaBubbleMenu(
+                        runningApp,
+                        tapl,
+                        wmHelper,
+                        FROM_HOME_SCREEN,
+                        trampolineApp,
+                    )
                 },
                 tearDownAfterTransition = {
                     runningApp.exit(wmHelper)

@@ -66,14 +66,16 @@ internal object BubbleFlickerTestHelper {
      * @param tapl the [LauncherInstrumentation]
      * @param wmHelper the [WindowManagerStateHelper]
      * @param fromSource the source of launching bubble
+     * @param trampolineApp trampoline that is used to launch the bubble and should open [testApp]
      */
     fun launchBubbleViaBubbleMenu(
         testApp: StandardAppHelper,
         tapl: LauncherInstrumentation,
         wmHelper: WindowManagerStateHelper,
         fromSource: BubbleLaunchSource = FROM_ALL_APPS,
+        trampolineApp: StandardAppHelper? = null,
     ) {
-        val appName = testApp.appName
+        val appName = trampolineApp?.appName ?: testApp.appName
         val workspace = tapl.goHome()
         // Go to all apps to launch app into a bubble.
         val appIcon = when (fromSource) {
@@ -82,10 +84,10 @@ internal object BubbleFlickerTestHelper {
                 SplitScreenUtils.createShortcutOnHotseatIfNotExist(tapl, appName)
                 val overview = tapl.goHome().switchToOverview()
                 val taskBar = overview.taskbar ?: error("Can't find TaskBar")
-                taskBar.getAppIcon(testApp.appName)
+                taskBar.getAppIcon(appName)
             }
             FROM_HOME_SCREEN -> {
-                val homeScreenIcon = workspace.tryGetWorkspaceAppIcon(testApp.appName)
+                val homeScreenIcon = workspace.tryGetWorkspaceAppIcon(appName)
                 if (homeScreenIcon != null) {
                     // If there's an icon on the homeScreen, just use it.
                     homeScreenIcon
@@ -108,16 +110,19 @@ internal object BubbleFlickerTestHelper {
      * @param testApp the test app to launch into bubble
      * @param tapl the [LauncherInstrumentation]
      * @param wmHelper the [WindowManagerStateHelper]
+     * @param trampolineApp trampoline that is used to launch the bubble and should open [testApp]
      */
     fun launchBubbleViaDragToBubbleBar(
         testApp: StandardAppHelper,
         tapl: LauncherInstrumentation,
         wmHelper: WindowManagerStateHelper,
+        trampolineApp: StandardAppHelper? = null,
     ) {
+        val appName = trampolineApp?.appName ?: testApp.appName
         // Switch to overview to show task bar.
         val overview = tapl.goHome().switchToOverview()
         val taskBar = overview.taskbar ?: error("Can't find TaskBar")
-        val taskBarAppIcon = taskBar.getAppIcon(testApp.appName)
+        val taskBarAppIcon = taskBar.getAppIcon(appName)
         taskBarAppIcon.dragToBubbleBarLocation(false /* isBubbleBarLeftDropTarget */)
 
         waitAndAssertBubbleAppInExpandedState(testApp, wmHelper)
