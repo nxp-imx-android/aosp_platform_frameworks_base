@@ -85,7 +85,15 @@ final class EnforcingAdmin {
 
     static EnforcingAdmin createRoleEnforcingAdmin(@NonNull String packageName, int userId) {
         Objects.requireNonNull(packageName);
-        return new EnforcingAdmin(packageName, userId);
+
+        return new EnforcingAdmin(
+                packageName,
+                null, /* systemEntity */
+                null, /* componentName */
+                userId,
+                true, /* isRoleAuthority */
+                null /* authorities */
+        );
     }
 
     static EnforcingAdmin createEnterpriseEnforcingAdmin(
@@ -185,18 +193,6 @@ final class EnforcingAdmin {
             return new SystemAuthority(systemEntity);
         }
         return UnknownAuthority.UNKNOWN_AUTHORITY;
-    }
-
-    private EnforcingAdmin(String packageName, int userId) {
-        // Only role authorities use this constructor.
-        this(
-                Objects.requireNonNull(packageName),
-                null, /* systemEntity */
-                null, /* componentName */
-                userId,
-                true, /* isRoleAuthority */
-                null /* authorities */
-        );
     }
 
     private EnforcingAdmin(
