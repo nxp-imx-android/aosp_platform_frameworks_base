@@ -251,9 +251,9 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
      */
     private boolean mExpandedWhenPinned;
     /**
-     * Is the user currently swiping down on this row to expand it
+     * Is the user touching this row
      */
-    private boolean mIsUserSwipingToExpandRow;
+    private boolean mUserLocked;
     /**
      * Are we showing the "public" version
      */
@@ -3148,8 +3148,8 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
 
     @Override
     public void setClipToActualHeight(boolean clipToActualHeight) {
-        super.setClipToActualHeight(clipToActualHeight || isUserSwipingToExpandRow());
-        getShowingLayout().setClipToActualHeight(clipToActualHeight || isUserSwipingToExpandRow());
+        super.setClipToActualHeight(clipToActualHeight || isUserLocked());
+        getShowingLayout().setClipToActualHeight(clipToActualHeight || isUserLocked());
     }
 
     /**
@@ -3218,21 +3218,21 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
         updateShelfIconColor();
     }
 
-    public boolean isUserSwipingToExpandRow() {
-        return mIsUserSwipingToExpandRow;
+    public boolean isUserLocked() {
+        return mUserLocked;
     }
 
-    public void setUserSwipingToExpandRow(boolean userSwipingToExpandRow) {
+    public void setUserLocked(boolean userLocked) {
         if (isPromotedOngoing()) return;
 
-        mIsUserSwipingToExpandRow = userSwipingToExpandRow;
-        mPrivateLayout.setUserExpanding(userSwipingToExpandRow);
-        mPublicLayout.setUserExpanding(userSwipingToExpandRow);
+        mUserLocked = userLocked;
+        mPrivateLayout.setUserExpanding(userLocked);
+        mPublicLayout.setUserExpanding(userLocked);
         // This is intentionally not guarded with mIsSummaryWithChildren since we might have had
         // children but not anymore.
         if (mChildrenContainer != null) {
-            mChildrenContainer.setUserSwipingToExpandRow(userSwipingToExpandRow);
-            if (mIsSummaryWithChildren && (userSwipingToExpandRow || !isGroupExpanded())) {
+            mChildrenContainer.setUserLocked(userLocked);
+            if (mIsSummaryWithChildren && (userLocked || !isGroupExpanded())) {
                 updateBackgroundForGroupState();
             }
         }
@@ -3305,7 +3305,7 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
 
     @Override
     public int getIntrinsicHeight() {
-        if (isUserSwipingToExpandRow()) {
+        if (isUserLocked()) {
             return getActualHeight();
         }
         if (mGuts != null && mGuts.isExposed()) {
@@ -3588,7 +3588,7 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
     @Override
     public void notifyHeightChanged(boolean needsAnimation) {
         super.notifyHeightChanged(needsAnimation);
-        getShowingLayout().requestSelectLayout(needsAnimation || isUserSwipingToExpandRow());
+        getShowingLayout().requestSelectLayout(needsAnimation || isUserLocked());
     }
 
     public void setSensitive(boolean sensitive, boolean hideSensitive) {
@@ -4200,7 +4200,7 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
             mChildrenContainer.updateHeaderForExpansion(mShowNoBackground);
         } else if (mIsSummaryWithChildren) {
             mShowNoBackground = !mShowGroupBackgroundWhenExpanded && isGroupExpanded()
-                    && !isGroupExpansionChanging() && !isUserSwipingToExpandRow();
+                    && !isGroupExpansionChanging() && !isUserLocked();
             mChildrenContainer.updateHeaderForExpansion(mShowNoBackground);
             List<ExpandableNotificationRow> children = mChildrenContainer.getAttachedChildren();
             for (int i = 0; i < children.size(); i++) {
@@ -4218,7 +4218,7 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
                 // expanding / collapsing and has a custom background color.
                 final boolean showBackground = isGroupExpanded()
                         || ((mNotificationParent.isGroupExpansionChanging()
-                        || mNotificationParent.isUserSwipingToExpandRow()) && childColor != 0);
+                        || mNotificationParent.isUserLocked()) && childColor != 0);
                 mShowNoBackground = !showBackground;
             }
         } else {
@@ -4771,7 +4771,7 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
                 true /* atLeastMinHeight */));
         pw.println();
         pw.print("Intrinsic Height Factors: ");
-        pw.print("isUserSwipingToExpandRow()", isUserSwipingToExpandRow());
+        pw.print("isUserLocked()", isUserLocked());
         pw.print("isChildInGroup()", isChildInGroup());
         pw.print("isGroupExpanded()", isGroupExpanded());
         pw.print("sensitive", mSensitive);

@@ -755,8 +755,8 @@ public final class NotificationEntry extends ListEntry {
         return row;
     }
 
-    public void setUserSwipingToExpandRow(boolean isUserSwiping) {
-        if (row != null) row.setUserSwipingToExpandRow(isUserSwiping);
+    public void setUserLocked(boolean userLocked) {
+        if (row != null) row.setUserLocked(userLocked);
     }
 
     public void notifyHeightChanged(boolean needsAnimation) {

@@ -595,7 +595,7 @@ constructor(
             val cancelHandler = Runnable {
                 statusBarStateController.setLeaveOpenOnKeyguardHide(false)
                 draggedDownEntry?.apply {
-                    setUserSwipingToExpandRow(false)
+                    setUserLocked(false)
                     notifyHeightChanged(/* needsAnimation= */ false)
                     draggedDownEntry = null
                 }
@@ -643,7 +643,7 @@ constructor(
             }
         }
         draggedDownEntry?.apply {
-            setUserSwipingToExpandRow(false)
+            setUserLocked(false)
             draggedDownEntry = null
         }
     }
@@ -873,7 +873,7 @@ class DragDownHelper(
                     val dragDown = y - initialTouchY
                     dragDownCallback.onDraggedDown(startingChild, dragDown.toInt())
                     if (startingChild != null) {
-                        expandCallback.setUserSwipingToExpand(startingChild, false)
+                        expandCallback.setUserLockedChild(startingChild, false)
                         startingChild = null
                     }
                     isDraggingDown = false
@@ -897,7 +897,7 @@ class DragDownHelper(
             startingChild = findView(x, y)
             if (startingChild != null) {
                 if (dragDownCallback.isDragDownEnabledForView(startingChild)) {
-                    expandCallback.setUserSwipingToExpand(startingChild, true)
+                    expandCallback.setUserLockedChild(startingChild, true)
                 } else {
                     startingChild = null
                 }
@@ -932,7 +932,7 @@ class DragDownHelper(
         animationDuration: Long = SPRING_BACK_ANIMATION_LENGTH_MS,
     ) {
         if (child.actualHeight == child.collapsedHeight) {
-            expandCallback.setUserSwipingToExpand(child, false)
+            expandCallback.setUserLockedChild(child, false)
             return
         }
         val anim = ValueAnimator.ofInt(child.actualHeight, child.collapsedHeight)
@@ -945,7 +945,7 @@ class DragDownHelper(
         anim.addListener(
             object : AnimatorListenerAdapter() {
                 override fun onAnimationEnd(animation: Animator) {
-                    expandCallback.setUserSwipingToExpand(child, false)
+                    expandCallback.setUserLockedChild(child, false)
                 }
             }
         )
