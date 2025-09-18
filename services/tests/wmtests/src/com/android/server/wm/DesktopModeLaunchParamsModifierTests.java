@@ -129,12 +129,15 @@ public class DesktopModeLaunchParamsModifierTests extends
         mResult = new LaunchParamsController.LaunchParams();
         mResult.reset();
 
-        Context spyContext = spy(mContext);
+        final Context spyContext = spy(mContext);
+        final DesktopModeCompatPolicy desktopModeCompatPolicy =
+                spy(new DesktopModeCompatPolicy(spyContext));
         mTarget = spy(new DesktopModeLaunchParamsModifier(spyContext, mSupervisor,
-                new DesktopModeCompatPolicy(spyContext)));
+                desktopModeCompatPolicy));
         doReturn(true).when(mTarget).isEnteringDesktopMode(any(), any(), any(), any(), any());
-        doReturn(HOME_ACTIVITIES).when(mPackageManager).getHomeActivities(any());
         doReturn(mPackageManager).when(spyContext).getPackageManager();
+        doReturn(HOME_ACTIVITIES.getPackageName()).when(desktopModeCompatPolicy)
+                .getDefaultHomePackage(anyInt());
     }
 
     @Test
