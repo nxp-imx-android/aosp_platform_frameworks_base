@@ -16,6 +16,7 @@
 
 package com.android.systemui.qs.panels.ui.compose
 
+import android.platform.test.annotations.EnableFlags
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -30,10 +31,12 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithContentDescription
 import androidx.compose.ui.test.onFirst
 import androidx.compose.ui.test.onNodeWithContentDescription
+import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performCustomAccessibilityActionWithLabel
 import androidx.compose.ui.test.performTouchInput
+import androidx.compose.ui.test.swipeUp
 import androidx.compose.ui.text.AnnotatedString
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
@@ -42,6 +45,7 @@ import com.android.systemui.SysuiTestCase
 import com.android.systemui.common.shared.model.ContentDescription
 import com.android.systemui.common.shared.model.Icon
 import com.android.systemui.compose.modifiers.resIdToTestTag
+import com.android.systemui.qs.flags.QsEditModeV2
 import com.android.systemui.qs.panels.ui.compose.infinitegrid.DefaultEditTileGrid
 import com.android.systemui.qs.panels.ui.compose.infinitegrid.EditAction
 import com.android.systemui.qs.panels.ui.viewmodel.AvailableEditActions
@@ -272,6 +276,25 @@ class EditModeTest : SysuiTestCase() {
         composeRule.onNodeWithText("tileF").assertDoesNotExist()
     }
 
+    @EnableFlags(QsEditModeV2.FLAG_NAME)
+    @Test
+    fun topBar_reactsToScroll() {
+        composeRule.setContent { EditTileGridUnderTest() }
+        composeRule.waitForIdle()
+
+        composeRule.onNodeWithText("Edit tiles").assertExists()
+        composeRule
+            .onNodeWithText(context.getString(R.string.select_to_rearrange_tiles))
+            .assertExists()
+
+        composeRule.onNodeWithTag(EDIT_MODE_ROOT_TEST_TAG).performTouchInput { swipeUp() }
+
+        composeRule.onNodeWithText("Edit tiles").assertExists()
+        composeRule
+            .onNodeWithText(context.getString(R.string.select_to_rearrange_tiles))
+            .assertDoesNotExist()
+    }
+
     private fun ComposeContentTestRule.assertCurrentTilesGridContainsExactly(specs: List<String>) =
         assertGridContainsExactly(CURRENT_TILES_GRID_TEST_TAG, specs)
 
@@ -282,6 +305,7 @@ class EditModeTest : SysuiTestCase() {
     companion object {
         private val CURRENT_TILES_GRID_TEST_TAG = resIdToTestTag("CurrentTilesGrid")
         private val AVAILABLE_TILES_GRID_TEST_TAG = resIdToTestTag("AvailableTilesGrid")
+        private val EDIT_MODE_ROOT_TEST_TAG = resIdToTestTag("EditModeRoot")
 
         private fun createEditTile(
             tileSpec: String,
