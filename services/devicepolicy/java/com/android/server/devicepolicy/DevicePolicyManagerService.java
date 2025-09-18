@@ -17715,7 +17715,7 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
     private int checkProvisioningPreconditionSkipPermission(
             String action, String packageName, @Nullable ComponentName componentName, int userId) {
         if (Flags.multiUserManagementDeviceProvisioning()
-                && action == DevicePolicyManager.ACTION_PROVISION_MULTI_USER_DEVICE) {
+                && DevicePolicyManager.ACTION_PROVISION_MULTI_USER_DEVICE.equals(action)) {
             return checkMultiUserDeviceProvisioningPreCondition(userId);
         }
         if (!mHasFeature && !shouldEnableForRetailDemoPackage(packageName)) {
@@ -17968,7 +17968,10 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
             }
             // There must be no users that have completed setup.
             for (int i = 0; i < mUserData.size(); i++) {
-                if (mInjector.hasUserSetupCompleted(getUserData(i))) {
+                int userId = mUserData.keyAt(i);
+                if (mInjector.hasUserSetupCompleted(getUserData(userId))) {
+                    Slogf.d(LOG_TAG, "checkMultiUserDeviceProvisioningPreCondition: User %d has "
+                            + "completed setup", userId);
                     return STATUS_USER_SETUP_COMPLETED;
                 }
             }
