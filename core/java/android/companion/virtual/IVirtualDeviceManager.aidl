@@ -26,6 +26,7 @@ import android.companion.virtual.computercontrol.ComputerControlSessionParams;
 import android.companion.virtual.computercontrol.IAutomatedPackageListener;
 import android.companion.virtual.computercontrol.IComputerControlSessionCallback;
 import android.content.AttributionSource;
+import android.content.Intent;
 
 /**
  * Interface for communication between VirtualDeviceManager and VirtualDeviceManagerService.
@@ -90,6 +91,11 @@ interface IVirtualDeviceManager {
      * Unregisters a previously registered listener.
      */
     void unregisterAutomatedPackageListener(in IAutomatedPackageListener listener);
+
+    /**
+     * Returns the intent to warn the user about launching an application that is being automated.
+     */
+    Intent createAutomatedAppLaunchWarningIntent(in String packageName, int userId);
 
     /**
      * Returns the ID of the device which owns the display with the given ID.

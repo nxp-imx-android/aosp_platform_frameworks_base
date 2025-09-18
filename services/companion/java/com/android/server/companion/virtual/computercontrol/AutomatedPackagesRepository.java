@@ -96,6 +96,24 @@ public class AutomatedPackagesRepository {
     public void registerAutomatedPackageListener(IAutomatedPackageListener listener) {
         synchronized (mLock) {
             mAutomatedPackageListeners.register(listener);
+
+            // Immediately dispatch the currently automated packages.
+            for (int i = 0; i < mAutomatedPackages.size(); ++i) {
+                final String ownerPackage = mAutomatedPackages.keyAt(i);
+                final SparseArray<ArraySet<String>> userToPackages = mAutomatedPackages.valueAt(i);
+                for (int j = 0; j < userToPackages.size(); ++j) {
+                    final UserHandle user = UserHandle.of(userToPackages.keyAt(j));
+                    final ArrayList<String> packages = new ArrayList<>(userToPackages.valueAt(j));
+                    mHandler.post(() -> {
+                        try {
+                            listener.onAutomatedPackagesChanged(ownerPackage, packages, user);
+                        } catch (RemoteException e) {
+                            Slog.w(TAG, "Failed to invoke onAutomatedPackagesChanged listener: "
+                                    + e.getMessage());
+                        }
+                    });
+                }
+            }
         }
     }
 
@@ -111,7 +129,7 @@ public class AutomatedPackagesRepository {
     public Intent createAutomatedAppLaunchWarningIntent(
             @NonNull String packageName, @UserIdInt int userId,
             @Nullable String callingPackageName,
-            @Nullable String launchVirtualDeviceOwnerPackageName,
+            @Nullable String deviceOwnerForLaunchDisplayId,
             @NonNull Consumer<Integer> closeVirtualDevice) {
         final Pair<Integer, String> uidPackagePair = new Pair<>(userId, packageName);
         synchronized (mLock) {
@@ -128,7 +146,7 @@ public class AutomatedPackagesRepository {
                 }
                 final String deviceOwner = mDeviceOwnerPackageNames.get(mDevicePackages.keyAt(i));
                 if (Objects.equals(deviceOwner, callingPackageName)
-                        || Objects.equals(deviceOwner, launchVirtualDeviceOwnerPackageName)) {
+                        || Objects.equals(deviceOwner, deviceOwnerForLaunchDisplayId)) {
                     // The automating package initiated the launch or the new display is also owned
                     // by the same automating package.
                     continue;

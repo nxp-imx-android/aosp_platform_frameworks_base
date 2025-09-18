@@ -98,7 +98,6 @@ public class AutomatedPackagesRepositoryTest {
         Looper looper = mTestHandlerThread.getLooper();
         mTestLooperManager = new TestLooperManager(looper);
         mRepo = new AutomatedPackagesRepository(new Handler(looper));
-        mRepo.registerAutomatedPackageListener(mListener);
     }
 
     @After
@@ -111,6 +110,8 @@ public class AutomatedPackagesRepositoryTest {
 
     @Test
     public void update_singleDevice_singleUser_notifiesListeners() throws Exception {
+        mRepo.registerAutomatedPackageListener(mListener);
+
         // Add a single package.
         mRepo.update(DEVICE_ID1, DEVICE_OWNER, new ArraySet<>(List.of(UID_USER1_PACKAGE1)));
         assertListenerReceived(List.of(PACKAGE1), USER1);
@@ -135,6 +136,8 @@ public class AutomatedPackagesRepositoryTest {
 
     @Test
     public void update_singleDevice_multiUser_notifiesListeners() throws Exception {
+        mRepo.registerAutomatedPackageListener(mListener);
+
         // Add one package for two different users.
         mRepo.update(DEVICE_ID1, DEVICE_OWNER,
                 new ArraySet<>(List.of(UID_USER1_PACKAGE1, UID_USER2_PACKAGE1)));
@@ -169,6 +172,8 @@ public class AutomatedPackagesRepositoryTest {
 
     @Test
     public void update_multiDevice_singleUser_notifiesListeners() throws Exception {
+        mRepo.registerAutomatedPackageListener(mListener);
+
         // Device 1 adds a package for user 1.
         mRepo.update(DEVICE_ID1, DEVICE_OWNER, new ArraySet<>(List.of(UID_USER1_PACKAGE1)));
         assertListenerReceived(List.of(PACKAGE1), USER1);
@@ -198,6 +203,8 @@ public class AutomatedPackagesRepositoryTest {
 
     @Test
     public void update_multiDevice_multiUser_notifiesListeners() throws Exception {
+        mRepo.registerAutomatedPackageListener(mListener);
+
         // Device 1 adds a package for user 1.
         mRepo.update(DEVICE_ID1, DEVICE_OWNER, new ArraySet<>(List.of(UID_USER1_PACKAGE1)));
         assertListenerReceived(List.of(PACKAGE1), USER1);
@@ -227,6 +234,19 @@ public class AutomatedPackagesRepositoryTest {
         mRepo.update(DEVICE_ID1, DEVICE_OWNER, new ArraySet<>());
         assertListenerReceived(List.of(), USER1);
         assertListenerReceived(List.of(), USER2);
+        assertThat(mTestLooperManager.poll()).isNull();
+    }
+
+    @Test
+    public void registerListener_receivesCurrentAutomatedPackages() throws Exception {
+        mRepo.update(DEVICE_ID1, DEVICE_OWNER, new ArraySet<>(List.of(UID_USER1_PACKAGE1)));
+        processOneHandlerMessage();
+        mRepo.update(DEVICE_ID2, DEVICE_OWNER, new ArraySet<>(List.of(UID_USER2_PACKAGE2)));
+        processOneHandlerMessage();
+
+        mRepo.registerAutomatedPackageListener(mListener);
+        assertListenerReceived(List.of(PACKAGE1), USER1);
+        assertListenerReceived(List.of(PACKAGE2), USER2);
         assertThat(mTestLooperManager.poll()).isNull();
     }
 

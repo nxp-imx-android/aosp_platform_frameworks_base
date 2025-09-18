@@ -140,6 +140,7 @@ public class VirtualDeviceManagerService extends SystemService {
      */
     private final Object mVirtualDeviceManagerLock = new Object();
 
+    private ActivityTaskManagerInternal mActivityTaskManagerInternal;
     private final VirtualDeviceManagerImpl mImpl;
     private final VirtualDeviceManagerNativeImpl mNativeImpl;
     private final VirtualDeviceManagerInternal mLocalService;
@@ -231,9 +232,8 @@ public class VirtualDeviceManagerService extends SystemService {
         publishBinderService(Context.VIRTUAL_DEVICE_SERVICE, mImpl);
         publishBinderService(VIRTUAL_DEVICE_NATIVE_SERVICE, mNativeImpl);
         publishLocalService(VirtualDeviceManagerInternal.class, mLocalService);
-        ActivityTaskManagerInternal activityTaskManagerInternal = getLocalService(
-                ActivityTaskManagerInternal.class);
-        activityTaskManagerInternal.registerActivityStartInterceptor(
+        mActivityTaskManagerInternal = getLocalService(ActivityTaskManagerInternal.class);
+        mActivityTaskManagerInternal.registerActivityStartInterceptor(
                 VIRTUAL_DEVICE_SERVICE_ORDERED_ID,
                 mActivityInterceptorCallback);
 
@@ -440,11 +440,15 @@ public class VirtualDeviceManagerService extends SystemService {
     }
 
     // TODO(b/442624418): Replace this explicit role holder check with a new role permission.
-    private void checkCallerHoldsHomeRole() {
+    private void checkCallerIsRecentsOrHomeRoleHolder() {
+        final int callingUid = Binder.getCallingUid();
+        if (mActivityTaskManagerInternal.isCallerRecents(callingUid)) {
+            return;
+        }
         final RoleManager roleManager = getContext().getSystemService(RoleManager.class);
         final List<String> homePackages = roleManager.getRoleHolders(RoleManager.ROLE_HOME);
         final String[] callerPackages =
-                getContext().getPackageManager().getPackagesForUid(Binder.getCallingUid());
+                getContext().getPackageManager().getPackagesForUid(callingUid);
         for (int i = 0; i < callerPackages.length; i++) {
             for (int j = 0; j < homePackages.size(); j++) {
                 if (callerPackages[i].equals(homePackages.get(j))) {
@@ -452,7 +456,7 @@ public class VirtualDeviceManagerService extends SystemService {
                 }
             }
         }
-        throw new SecurityException("Caller does not hold the HOME role.");
+        throw new SecurityException("Caller is neither recents, nor a HOME role holder.");
     }
 
     class VirtualDeviceManagerImpl extends IVirtualDeviceManager.Stub {
@@ -620,14 +624,28 @@ public class VirtualDeviceManagerService extends SystemService {
 
         @Override // Binder call
         public void registerAutomatedPackageListener(IAutomatedPackageListener listener) {
-            checkCallerHoldsHomeRole();
+            checkCallerIsRecentsOrHomeRoleHolder();
             mAutomatedPackagesRepository.registerAutomatedPackageListener(listener);
         }
 
         @Override // Binder call
         public void unregisterAutomatedPackageListener(IAutomatedPackageListener listener) {
-            checkCallerHoldsHomeRole();
+            checkCallerIsRecentsOrHomeRoleHolder();
             mAutomatedPackagesRepository.unregisterAutomatedPackageListener(listener);
+        }
+
+        @Override // Binder call
+        @Nullable
+        public Intent createAutomatedAppLaunchWarningIntent(
+                @NonNull String packageName, @UserIdInt int userId) {
+            // TODO(b/442624418): Replace this with a permission check.
+            if (!mActivityTaskManagerInternal.isCallerRecents(Binder.getCallingUid())) {
+                throw new SecurityException("Caller is not recents");
+            }
+            return mAutomatedPackagesRepository.createAutomatedAppLaunchWarningIntent(
+                    packageName, userId, /* callingPackageName= */ null,
+                    /* deviceOwnerForLaunchDisplayId= */ null,
+                    mComputerControlSessionProcessor::closeSession);
         }
 
         @Override // Binder call
