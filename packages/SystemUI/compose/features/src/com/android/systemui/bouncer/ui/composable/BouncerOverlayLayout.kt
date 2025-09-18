@@ -20,6 +20,7 @@ import androidx.annotation.VisibleForTesting
 import androidx.compose.runtime.Composable
 import androidx.window.core.layout.WindowSizeClass
 import com.android.compose.windowsizeclass.LocalWindowSizeClass
+import com.android.systemui.Flags
 
 /**
  * Returns the [BouncerOverlayLayout] that should be used by the bouncer scene. If
@@ -29,6 +30,14 @@ import com.android.compose.windowsizeclass.LocalWindowSizeClass
 @Composable
 fun calculateLayout(isOneHandedModeSupported: Boolean): BouncerOverlayLayout {
     return calculateLayoutInternal(LocalWindowSizeClass.current, isOneHandedModeSupported)
+}
+
+@Composable
+fun shouldBeContainerized(): Boolean {
+    if (!Flags.containerizeBouncerOnLargeScreens()) {
+        return false
+    }
+    return shouldBeContainerizedInternal(LocalWindowSizeClass.current)
 }
 
 /** Enumerates all known adaptive layout configurations. */
@@ -68,4 +77,12 @@ fun calculateLayoutInternal(
         }.takeIf { it != BouncerOverlayLayout.BESIDE_USER_SWITCHER || isOneHandedModeSupported }
             ?: BouncerOverlayLayout.STANDARD_BOUNCER
     }
+}
+
+@VisibleForTesting
+fun shouldBeContainerizedInternal(windowSizeClass: WindowSizeClass): Boolean {
+    return windowSizeClass.isAtLeastBreakpoint(
+        WindowSizeClass.WIDTH_DP_EXTRA_LARGE_LOWER_BOUND,
+        WindowSizeClass.HEIGHT_DP_EXPANDED_LOWER_BOUND,
+    )
 }
