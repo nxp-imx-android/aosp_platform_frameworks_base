@@ -2696,11 +2696,20 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
                 }
                 if (DesktopExperienceFlags.ENABLE_DESKTOP_WINDOWING_ENTERPRISE_BUGFIX.isTrue()
                         && getTransitionController().isShellTransitionsEnabled()) {
+                    if (!canEnterLockTaskMode(task)) {
+                        Slog.w(TAG, "startLockTaskMode: Can't lock due to auth");
+                        return;
+                    }
                     final Transition transition = new Transition(TRANSIT_START_LOCK_TASK_MODE,
                             0 /* flags */,
                             getTransitionController(), mWindowManager.mSyncEngine);
                     getTransitionController().startCollectOrQueue(transition,
                             (deferred) -> {
+                                if (deferred && !task.isAttached()) {
+                                    Slog.w(TAG, "startLockTaskMode aborted: the task is removed.");
+                                    transition.abort();
+                                    return;
+                                }
                                 final ActionChain chain = mChainTracker.start(
                                         "startSystemLockTaskMOde",
                                         transition);
@@ -2787,6 +2796,17 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
         } finally {
             Binder.restoreCallingIdentity(ident);
         }
+    }
+
+    /** @return either a task can enter LockTask mode or not. */
+    public boolean canEnterLockTaskMode(Task task) {
+        return task.isAttached() && task.mLockTaskAuth != LOCK_TASK_AUTH_DONT_LOCK;
+    }
+
+    /** @return either a task is the top most or not. */
+    public boolean isTopMostTask(Task task) {
+        final Task rootTask = mRootWindowContainer.getTopDisplayFocusedRootTask();
+        return rootTask != null && task == rootTask.getTopMostTask();
     }
 
     @Override
