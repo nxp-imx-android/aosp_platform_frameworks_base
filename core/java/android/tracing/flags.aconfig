@@ -47,3 +47,10 @@ flag {
     description: "Clear incremental state when protolog is enabled"
     bug: "441704171"
 }
+
+flag {
+    name: "surface_control_registry_protolog"
+    namespace: "windowing_tools"
+    description: "Enable protologging for SurfaceControlRegistry"
+    bug: "399468864"
+}
