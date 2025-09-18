@@ -653,6 +653,31 @@ class KeyguardSecurityContainerControllerTest : SysuiTestCase() {
 
     @Test
     @DisableSceneContainer
+    fun showNextSecurityScreenOrFinish_Password_SimPin() {
+        // GIVEN the current security method is SimPin
+        whenever(keyguardUpdateMonitor.getUserHasTrust(anyInt())).thenReturn(false)
+        whenever(keyguardUpdateMonitor.getUserUnlockedWithBiometric(TARGET_USER_ID))
+            .thenReturn(false)
+        underTest.showSecurityScreen(SecurityMode.PIN)
+
+        // WHEN a request is made from the PIN screen to show the next security method
+        whenever(keyguardSecurityModel.getSecurityMode(TARGET_USER_ID))
+            .thenReturn(SecurityMode.SimPin)
+
+        // WHEN the PIN has successfully been entered and authenticate looks complete
+        underTest.showNextSecurityScreenOrFinish(
+            /* authenticated= */ true,
+            TARGET_USER_ID,
+            /* bypassSecondaryLockScreen= */ true,
+            SecurityMode.PIN,
+        )
+
+        // THEN we will show the SimPin screen.
+        verify(viewFlipperController).getSecurityView(eq(SecurityMode.SimPin), any(), any())
+    }
+
+    @Test
+    @DisableSceneContainer
     fun showNextSecurityScreenOrFinish_SimPin_SimPin() {
         // GIVEN the current security method is SimPin
         whenever(keyguardUpdateMonitor.getUserHasTrust(anyInt())).thenReturn(false)
