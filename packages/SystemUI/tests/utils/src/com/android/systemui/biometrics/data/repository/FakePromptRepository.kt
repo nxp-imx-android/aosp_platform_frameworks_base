@@ -97,4 +97,8 @@ class FakePromptRepository : PromptRepository {
     fun setIsShowing(showing: Boolean) {
         _isShowing.value = showing
     }
+
+    fun setFallbackOptions(options: List<FallbackOptionModel>) {
+        _fallbackOptions.value = options
+    }
 }
