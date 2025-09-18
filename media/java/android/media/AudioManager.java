@@ -26,9 +26,11 @@ import static android.media.audio.Flags.FLAG_FOCUS_EXCLUSIVE_WITH_RECORDING;
 import static android.media.audio.Flags.FLAG_FOCUS_FREEZE_TEST_API;
 import static android.media.audio.Flags.FLAG_REGISTER_VOLUME_CALLBACK_API_HARDENING;
 import static android.media.audio.Flags.FLAG_SCO_MANAGED_BY_AUDIO;
+import static android.media.audio.Flags.FLAG_STREAM_ASSISTANT_PUBLIC;
 import static android.media.audio.Flags.FLAG_SUPPORTED_DEVICE_TYPES_API;
 import static android.media.audio.Flags.FLAG_UNIFY_ABSOLUTE_VOLUME_MANAGEMENT;
 import static android.media.audio.Flags.autoPublicVolumeApiHardening;
+import static android.media.audio.Flags.streamAssistantPublic;
 import static android.media.audiopolicy.Flags.FLAG_ENABLE_FADE_MANAGER_CONFIGURATION;
 import static android.media.audiopolicy.Flags.FLAG_MULTI_ZONE_AUDIO;
 
@@ -427,9 +429,8 @@ public class AudioManager {
     public static final int STREAM_TTS = AudioSystem.STREAM_TTS;
     /** Used to identify the volume of audio streams for accessibility prompts */
     public static final int STREAM_ACCESSIBILITY = AudioSystem.STREAM_ACCESSIBILITY;
-    /** @hide Used to identify the volume of audio streams for virtual assistant */
-    @SystemApi
-    @RequiresPermission(Manifest.permission.MODIFY_AUDIO_ROUTING)
+    /** Used to identify the volume of audio streams for virtual assistant */
+    @FlaggedApi(FLAG_STREAM_ASSISTANT_PUBLIC)
     public static final int STREAM_ASSISTANT = AudioSystem.STREAM_ASSISTANT;
 
     /** Number of audio streams */
@@ -445,8 +446,18 @@ public class AudioManager {
             AudioManager.STREAM_DTMF,  AudioManager.STREAM_ACCESSIBILITY };
 
     /** @hide */
+    private static final int[] PUBLIC_STREAM_TYPES_WITH_ASSISTANT = {AudioManager.STREAM_VOICE_CALL,
+            AudioManager.STREAM_SYSTEM, AudioManager.STREAM_RING, AudioManager.STREAM_MUSIC,
+            AudioManager.STREAM_ALARM, AudioManager.STREAM_NOTIFICATION,
+            AudioManager.STREAM_DTMF, AudioManager.STREAM_ACCESSIBILITY,
+            AudioManager.STREAM_ASSISTANT};
+
+    /** @hide */
     @TestApi
     public static final int[] getPublicStreamTypes() {
+        if (streamAssistantPublic()) {
+            return PUBLIC_STREAM_TYPES_WITH_ASSISTANT;
+        }
         return PUBLIC_STREAM_TYPES;
     }
 
@@ -1391,25 +1402,11 @@ public class AudioManager {
             STREAM_ALARM,
             STREAM_NOTIFICATION,
             STREAM_DTMF,
-            STREAM_ACCESSIBILITY }
-    )
-    @Retention(RetentionPolicy.SOURCE)
-    public @interface PublicStreamTypes {}
-
-    /** @hide */
-    @IntDef(flag = false, prefix = "STREAM", value = {
-            STREAM_VOICE_CALL,
-            STREAM_SYSTEM,
-            STREAM_RING,
-            STREAM_MUSIC,
-            STREAM_ALARM,
-            STREAM_NOTIFICATION,
-            STREAM_DTMF,
             STREAM_ACCESSIBILITY,
             STREAM_ASSISTANT }
     )
     @Retention(RetentionPolicy.SOURCE)
-    public @interface VolumeControlStreamTypes {}
+    public @interface PublicStreamTypes {}
 
     /**
      * Returns the volume in dB (decibel) for the given stream type at the given volume index, on
@@ -1451,6 +1448,12 @@ public class AudioManager {
      * @return true if the stream type is available in SDK
      */
     public static boolean isPublicStreamType(int streamType) {
+        if (streamAssistantPublic()) {
+            if (streamType == STREAM_ASSISTANT) {
+                return true;
+            }
+        }
+
         switch (streamType) {
             case STREAM_VOICE_CALL:
             case STREAM_SYSTEM:
