@@ -387,6 +387,11 @@ public class SystemConfig {
     // updated to avoid cached/potentially tampered results.
     private final Set<String> mPreinstallPackagesWithStrictSignatureCheck = new ArraySet<>();
 
+
+    // A set of packages that will be dexopted in a PVM. The compilation of these artifacts will
+    // be verified on each boot.
+    private final Set<String> mPreinstalledPackagesWithVerifiedCompilation = new ArraySet<>();
+
     // A set of packages that should be considered "trusted packages" by ECM (Enhanced
     // Confirmation Mode). "Trusted packages" are exempt from ECM (i.e., they will never be
     // considered "restricted").
@@ -627,6 +632,10 @@ public class SystemConfig {
     @NonNull
     public ArrayMap<String, Integer> getOemDefinedUids() {
         return mOemDefinedUids;
+    }
+
+    public Set<String> getPreinstallPackagesWithVerifiedCompilation() {
+        return mPreinstalledPackagesWithVerifiedCompilation;
     }
 
     /**
@@ -1971,6 +1980,11 @@ public class SystemConfig {
                     + " at " + parser.getPositionDescription());
         } else {
             mPreinstallPackagesWithStrictSignatureCheck.add(packageName);
+      if(android.content.pm.Flags.verifiedDexopt()){
+            if (parser.getAttributeValue(null, "verified-compilation-enabled") != null){
+              mPreinstalledPackagesWithVerifiedCompilation.add(packageName);
+            }
+      }
         }
         XmlUtils.skipCurrentTag(parser);
     }

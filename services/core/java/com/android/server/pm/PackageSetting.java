@@ -107,6 +107,7 @@ public class PackageSetting extends SettingBase implements PackageStateInternal 
                 PENDING_RESTORE,
                 DEBUGGABLE,
                 IS_LEAVING_SHARED_USER,
+                VERIFY_COMPILATION_ARTIFACTS,
         })
         public @interface Flags {
         }
@@ -117,6 +118,7 @@ public class PackageSetting extends SettingBase implements PackageStateInternal 
         private static final int PENDING_RESTORE = 1 << 4;
         private static final int DEBUGGABLE = 1 << 5;
         private static final int IS_LEAVING_SHARED_USER = 1 << 6;
+        private static final int VERIFY_COMPILATION_ARTIFACTS= 1 << 7;
     }
     private int mBooleans;
 
@@ -631,9 +633,24 @@ public class PackageSetting extends SettingBase implements PackageStateInternal 
         return this;
     }
 
+
     @Override
     public boolean isLeavingSharedUser() {
         return getBoolean(Booleans.IS_LEAVING_SHARED_USER);
+    }
+
+    /**
+     * @see PackageState#shouldVerifyCompilationArtifacts.
+     */
+    public PackageSetting setShouldVerifyCompilationArtifacts(boolean value) {
+        setBoolean(Booleans.VERIFY_COMPILATION_ARTIFACTS, value);
+        onChanged();
+        return this;
+    }
+
+    @Override
+    public boolean shouldVerifyCompilationArtifacts() {
+        return getBoolean(Booleans.VERIFY_COMPILATION_ARTIFACTS);
     }
 
     /**

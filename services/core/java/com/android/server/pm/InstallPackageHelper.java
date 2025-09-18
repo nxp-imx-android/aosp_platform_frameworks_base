@@ -419,6 +419,13 @@ final class InstallPackageHelper {
 
         pkgSetting.getPkgState().setApexModuleName(request.getApexModuleName());
 
+
+      if(android.content.pm.Flags.verifiedDexopt()){
+            String packageName =pkgSetting.getPackageName();
+            if (shouldVerifyCompilationArtifacts(packageName)) {
+                pkgSetting.setShouldVerifyCompilationArtifacts(true);
+            }
+      }
         // TODO(toddke): Consider a method specifically for modifying the Package object
         // post scan; or, moving this stuff out of the Package object since it has nothing
         // to do with the package on disk.
@@ -4638,6 +4645,14 @@ final class InstallPackageHelper {
     private boolean needSignatureMatchToSystem(String packageName) {
         return mPm.mInjector.getSystemConfig().getPreinstallPackagesWithStrictSignatureCheck()
             .contains(packageName);
+    }
+
+    /**
+     * Returns whether the package supports secure compilation.
+     */
+    private boolean shouldVerifyCompilationArtifacts(String packageName) {
+        return mPm.mInjector.getSystemConfig().getPreinstallPackagesWithVerifiedCompilation()
+                .contains(packageName);
     }
 
     /**
