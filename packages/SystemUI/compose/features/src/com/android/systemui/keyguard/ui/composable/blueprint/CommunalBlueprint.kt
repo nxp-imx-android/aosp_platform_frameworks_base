@@ -26,6 +26,8 @@ import androidx.compose.ui.graphics.Color
 import com.android.compose.animation.scene.ContentScope
 import com.android.systemui.keyguard.ui.composable.LockscreenTouchHandling
 import com.android.systemui.keyguard.ui.viewmodel.LockscreenContentViewModel
+import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementContext
+import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenScope
 import dagger.Binds
 import dagger.Module
 import dagger.multibindings.IntoSet
@@ -35,6 +37,14 @@ import javax.inject.Inject
 class CommunalBlueprint @Inject constructor() : ComposableLockscreenSceneBlueprint {
 
     override val id: String = "communal"
+
+    @Composable
+    override fun ContentScope.Elements(
+        ctx: LockscreenElementContext,
+        content: @Composable LockscreenScope<ContentScope>.() -> Unit,
+    ) {
+        // TODO(b/316211368): communal blueprint
+    }
 
     @Composable
     override fun ContentScope.Content(viewModel: LockscreenContentViewModel, modifier: Modifier) {

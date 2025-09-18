@@ -38,7 +38,7 @@ import com.android.systemui.compose.modifiers.sysuiResTag
 import com.android.systemui.keyguard.domain.interactor.KeyguardClockInteractor
 import com.android.systemui.keyguard.shared.model.KeyguardState
 import com.android.systemui.keyguard.shared.transition.KeyguardTransitionAnimationCallback
-import com.android.systemui.keyguard.ui.composable.blueprint.ComposableLockscreenSceneBlueprint
+import com.android.systemui.keyguard.ui.composable.blueprint.LockscreenBlueprintSelector
 import com.android.systemui.keyguard.ui.viewmodel.LockscreenBehindScrimViewModel
 import com.android.systemui.keyguard.ui.viewmodel.LockscreenContentViewModel
 import com.android.systemui.keyguard.ui.viewmodel.LockscreenFrontScrimViewModel
@@ -57,14 +57,10 @@ class LockscreenContent(
     private val viewModelFactory: LockscreenContentViewModel.Factory,
     private val lockscreenFrontScrimViewModelFactory: LockscreenFrontScrimViewModel.Factory,
     private val lockscreenBehindScrimViewModelFactory: LockscreenBehindScrimViewModel.Factory,
-    private val blueprints: Set<@JvmSuppressWildcards ComposableLockscreenSceneBlueprint>,
+    private val blueprintSelectorFactory: LockscreenBlueprintSelector.Factory,
     private val clockInteractor: KeyguardClockInteractor,
     private val interactionJankMonitor: InteractionJankMonitor,
 ) {
-    private val blueprintByBlueprintId: Map<String, ComposableLockscreenSceneBlueprint> by lazy {
-        blueprints.associateBy { it.id }
-    }
-
     @Composable
     fun ContentScope.Content(modifier: Modifier = Modifier) {
         val view = LocalView.current
@@ -76,6 +72,11 @@ class LockscreenContent(
                         KeyguardTransitionAnimationCallbackImpl(view, interactionJankMonitor),
                     viewState = ViewStateAccessor(alpha = { lockscreenAlpha }),
                 )
+            }
+
+        val blueprintSelector =
+            rememberViewModel("LockscreenContent-blueprintSelector") {
+                blueprintSelectorFactory.create()
             }
 
         LaunchedEffect(viewModel.alpha) { lockscreenAlpha = viewModel.alpha }
@@ -150,8 +151,7 @@ class LockscreenContent(
             onDispose { handle.dispose() }
         }
 
-        val blueprint = blueprintByBlueprintId[viewModel.blueprintId] ?: return
-        with(blueprint) {
+        with(blueprintSelector.blueprint) {
             LockscreenBehindScrim(
                 lockscreenBehindScrimViewModel,
                 Modifier.element(LockscreenElementKeys.BehindScrim),

@@ -19,11 +19,19 @@ package com.android.systemui.plugins.keyguard.ui.composable.elements
 import com.android.compose.animation.scene.DefaultElementContentPicker
 import com.android.compose.animation.scene.ElementKey
 import com.android.compose.animation.scene.MovableElementKey
+import com.android.compose.animation.scene.OverlayKey
 import com.android.compose.animation.scene.SceneKey
 
-/** Keys for lockscreen scenes that our movable elements may appear in */
-object LockscreenSceneKeys {
-    val Lockscreen = SceneKey("lockscreen") // Non-nested top-level scene
+/** Keys for scenes and overlays that our movable elements may appear in */
+object LockscreenMovableParentKeys {
+    /** Non-nested top-level scene */
+    val Lockscreen = SceneKey("lockscreen")
+
+    /**
+     * The notifications shade is not part of lockscreen, but we render the small clock within it,
+     * so we must be able to reference it when creating movable element keys for the clock.
+     */
+    val NotificationsShade = OverlayKey("notifications_shade")
 
     /** Subscenes used by the UpperRegion layouts */
     object UpperRegion {
@@ -59,12 +67,13 @@ object LockscreenElementKeys {
         DefaultElementContentPicker(
             contents =
                 setOf(
-                    LockscreenSceneKeys.Lockscreen,
-                    LockscreenSceneKeys.UpperRegion.NarrowLayout.LargeClock,
-                    LockscreenSceneKeys.UpperRegion.NarrowLayout.SmallClock,
-                    LockscreenSceneKeys.UpperRegion.WideLayout.CenteredClock,
-                    LockscreenSceneKeys.UpperRegion.WideLayout.TwoColumn.LargeClock,
-                    LockscreenSceneKeys.UpperRegion.WideLayout.TwoColumn.SmallClock,
+                    LockscreenMovableParentKeys.Lockscreen,
+                    LockscreenMovableParentKeys.NotificationsShade,
+                    LockscreenMovableParentKeys.UpperRegion.NarrowLayout.LargeClock,
+                    LockscreenMovableParentKeys.UpperRegion.NarrowLayout.SmallClock,
+                    LockscreenMovableParentKeys.UpperRegion.WideLayout.CenteredClock,
+                    LockscreenMovableParentKeys.UpperRegion.WideLayout.TwoColumn.LargeClock,
+                    LockscreenMovableParentKeys.UpperRegion.WideLayout.TwoColumn.SmallClock,
                 )
         )
 
