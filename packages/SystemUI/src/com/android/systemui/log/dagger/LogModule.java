@@ -277,7 +277,7 @@ public abstract class LogModule {
     @SysUISingleton
     @MediaLog
     public static LogBuffer providesMediaLogBuffer(LogBufferFactory factory) {
-        return factory.create("MediaLog", 20);
+        return factory.create("MediaLog", 100);
     }
 
     /**
