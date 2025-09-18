@@ -43,7 +43,6 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
 import org.mockito.Mock;
 
 public final class HsuDeviceProvisionerTest {
@@ -59,7 +58,6 @@ public final class HsuDeviceProvisionerTest {
                     .spyStatic(Settings.Secure.class)
                     .build();
     @Mock private ContentResolver mMockContentResolver;
-    @Captor private ArgumentCaptor<ContentObserver> mCaptorContentObserver;
 
     private HsuDeviceProvisioner mFixture;
 
@@ -71,34 +69,42 @@ public final class HsuDeviceProvisionerTest {
     }
 
     @Test
-    public void testInit_UserSetupComplete_provisioned() {
-
+    public void testInit_provisioned() {
         mockIsDeviceProvisioned(true);
+
         mFixture.init();
 
-        verifyUserSetupCompleteNeverCalled();
         verifyContentObserverNeverRegistered();
+        verifyNoSecureSettingsSet();
     }
 
     @Test
-    public void testInit_UserSetupNotComplete_notProvisioned() {
-
+    public void testInit_notProvisioned_setObserver() {
         mockIsDeviceProvisioned(false);
+
         mFixture.init();
 
-        verify(mMockContentResolver)
-                .registerContentObserver(
-                        eq(Settings.Global.getUriFor(Settings.Global.DEVICE_PROVISIONED)),
-                        eq(false),
-                        mCaptorContentObserver.capture());
+        var contentObserver = verifyContentObserverRegistered();
+        expect.that(contentObserver).isSameInstanceAs(mFixture);
+        verifyNoSecureSettingsSet();
+    }
 
-        var contentObserver = mCaptorContentObserver.getValue();
+    @Test
+    public void testOnChange_notProvisioned_dontSetAnything() {
+        mockIsDeviceProvisioned(false);
 
+        mFixture.onChange(true);
+
+        verifyNoSecureSettingsSet();
+    }
+
+    @Test
+    public void testOnChange_provisioned_setUserSetupComplete() {
         mockIsDeviceProvisioned(true);
+
         mFixture.onChange(true);
 
         verifyUserSetupCompleteCalled();
-        verifyContentObserverUnregistered(contentObserver);
     }
 
     private void mockIsDeviceProvisioned(boolean value) {
@@ -111,16 +117,17 @@ public final class HsuDeviceProvisionerTest {
             verify(() -> Settings.Secure.putInt(mMockContentResolver, USER_SETUP_COMPLETE, 1));
         } catch (Throwable t) {
             Log.e(TAG, "verify failure:", t);
-            expect.withMessage("USER_SETUP_COMPLETE was not set").fail();
+            expect.withMessage("USER_SETUP_COMPLETE was not set, verify() failed: %s", t).fail();
         }
     }
 
-    private void verifyUserSetupCompleteNeverCalled() {
+    private void verifyNoSecureSettingsSet() {
         try {
-            verify(() -> Settings.Secure.putInt(any(), eq(USER_SETUP_COMPLETE), anyInt()), never());
+            verify(() -> Settings.Secure.putInt(any(), any(), anyInt()), never());
         } catch (Throwable t) {
             Log.e(TAG, "verify failure:", t);
-            expect.withMessage("USER_SETUP_COMPLETE should not have been set").fail();
+            expect.withMessage("Settings.Secure.putInt() should not have been called, verify() "
+                    + "failed: %s", t).fail();
         }
     }
 
@@ -129,7 +136,8 @@ public final class HsuDeviceProvisionerTest {
             verify(mMockContentResolver).unregisterContentObserver(contentObserver);
         } catch (Throwable t) {
             Log.e(TAG, "verify failure:", t);
-            expect.withMessage("ContentResolver (%s) was not unregistered", contentObserver).fail();
+            expect.withMessage("ContentResolver (%s) was not unregistered, verify() failed: %s",
+                    contentObserver, t).fail();
         }
     }
 
@@ -139,7 +147,18 @@ public final class HsuDeviceProvisionerTest {
                     .registerContentObserver(any(), anyBoolean(), any());
         } catch (Throwable t) {
             Log.e(TAG, "verify failure:", t);
-            expect.withMessage("should not have registered a content observer").fail();
+            expect.withMessage("should not have registered a content observer, verify() failed: %s",
+                    t).fail();
         }
+    }
+
+    private ContentObserver verifyContentObserverRegistered() {
+        ArgumentCaptor<ContentObserver> captor = ArgumentCaptor.forClass(ContentObserver.class);
+        verify(mMockContentResolver)
+                .registerContentObserver(
+                        eq(Settings.Global.getUriFor(Settings.Global.DEVICE_PROVISIONED)),
+                        eq(false),
+                        captor.capture());
+        return captor.getValue();
     }
 }
