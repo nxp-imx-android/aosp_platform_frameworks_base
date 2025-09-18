@@ -21,8 +21,10 @@ import com.android.systemui.lifecycle.HydratedActivatable
 import com.android.systemui.screencapture.common.domain.model.ScreenCaptureRecentTask
 import com.android.systemui.screencapture.common.ui.viewmodel.RecentTaskViewModel
 import com.android.systemui.screencapture.common.ui.viewmodel.RecentTasksViewModel
+import com.android.systemui.screencapture.record.smallscreen.ui.SmallScreenPostRecordingActivity
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
+import kotlinx.coroutines.flow.map
 
 class RecordDetailsAppSelectorViewModel
 @AssistedInject
@@ -32,13 +34,19 @@ constructor(
 ) : HydratedActivatable() {
 
     val recentTasks: List<ScreenCaptureRecentTask>? by
-        recentTasksViewModel.recentTasks.hydratedStateOf(
-            "RecordDetailsAppSelectorViewModel#recentTasks",
-            null,
-        )
+        recentTasksViewModel.recentTasks
+            .map { it?.withoutPostRecordingActivity() }
+            .hydratedStateOf("RecordDetailsAppSelectorViewModel#recentTasks", null)
 
     fun createTaskViewModel(task: ScreenCaptureRecentTask): RecentTaskViewModel =
         recentTaskViewModelFactory.create(task)
+
+    private fun List<ScreenCaptureRecentTask>.withoutPostRecordingActivity():
+        List<ScreenCaptureRecentTask> {
+        return filter { task ->
+            SmallScreenPostRecordingActivity::class.qualifiedName != task.component?.className
+        }
+    }
 
     @AssistedFactory
     interface Factory {
