@@ -66,6 +66,7 @@ class TaskSnapshotCache extends SnapshotCache<Task> {
             mAppIdMap.put(top, task.mTaskId);
             mRunningCache.put(task.mTaskId, new CacheEntry(snapshot, top));
         }
+        onSnapshotEntryPutOrRemoved(task.mTaskId);
     }
 
     /**

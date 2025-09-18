@@ -16,11 +16,14 @@
 
 package android.window;
 
+import static android.os.Trace.TRACE_TAG_WINDOW_MANAGER;
+
 import android.annotation.IntDef;
 import android.annotation.NonNull;
 import android.annotation.RequiresPermission;
 import android.app.ActivityTaskManager;
 import android.os.RemoteException;
+import android.os.Trace;
 import android.system.SystemCleaner;
 import android.util.AndroidRuntimeException;
 import android.util.Log;
@@ -124,12 +127,21 @@ public class TaskSnapshotManager {
                 st.increaseReference();
             }
         }
+        final boolean traceEnabled = Trace.isTagEnabled(TRACE_TAG_WINDOW_MANAGER);
+        if (traceEnabled) {
+            Trace.traceBegin(TRACE_TAG_WINDOW_MANAGER, "getTaskSnapshot#" + taskId
+                    + "_res=" + retrieveResolution);
+        }
         try {
             t = ISnapshotManagerSingleton.get().getTaskSnapshot(taskId,
                     captureTime, retrieveResolution);
         } catch (RemoteException r) {
             Log.e(TAG, "getTaskSnapshot fail: " + r);
             throw r;
+        } finally {
+            if (traceEnabled) {
+                Trace.traceEnd(TRACE_TAG_WINDOW_MANAGER);
+            }
         }
         if (t == null) {
             return previousSnapshot;
@@ -176,12 +188,21 @@ public class TaskSnapshotManager {
             boolean lowResolution) throws RemoteException {
         sIsUsed = true;
         final TaskSnapshot t;
+        final boolean traceEnabled = Trace.isTagEnabled(TRACE_TAG_WINDOW_MANAGER);
+        if (traceEnabled) {
+            Trace.traceBegin(TRACE_TAG_WINDOW_MANAGER, "takeTaskSnapshot#" + taskId
+                    + "_low=" + lowResolution);
+        }
         try {
             t = ISnapshotManagerSingleton.get().takeTaskSnapshot(taskId, updateCache,
                     lowResolution);
         } catch (RemoteException r) {
             Log.e(TAG, "takeTaskSnapshot fail: " + r);
             throw r;
+        } finally {
+            if (traceEnabled) {
+                Trace.traceEnd(TRACE_TAG_WINDOW_MANAGER);
+            }
         }
         if (t != null) {
             synchronized (mLock) {

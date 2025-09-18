@@ -73,6 +73,7 @@ class SnapshotPersistQueue {
     private final UserManagerInternal mUserManagerInternal;
     private boolean mShutdown;
     final int mMaxTotalStoreQueue;
+    final ConvertingRecord mConvertingRecord = new ConvertingRecord();
 
     SnapshotPersistQueue() {
         mUserManagerInternal = LocalServices.getService(UserManagerInternal.class);
@@ -268,6 +269,7 @@ class SnapshotPersistQueue {
                             if (next.isReady(mUserManagerInternal)) {
                                 isReadyToWrite = true;
                                 next.onDequeuedLocked();
+                                next.onProcess();
                             } else if (!mShutdown) {
                                 mWriteQueue.addLast(next);
                             } else {
@@ -287,6 +289,7 @@ class SnapshotPersistQueue {
                         SystemClock.sleep(DELAY_MS);
                     }
                 }
+                mConvertingRecord.reset();
                 synchronized (mLock) {
                     final boolean writeQueueEmpty = mWriteQueue.isEmpty();
                     if (!writeQueueEmpty && !mPaused) {
@@ -334,6 +337,11 @@ class SnapshotPersistQueue {
         void onDequeuedLocked() {
         }
 
+        /**
+         * Called when this queue item will start process.
+         */
+        void onProcess() { }
+
         boolean isDuplicateOrExclusiveItem(WriteQueueItem testItem) {
             return false;
         }
@@ -343,6 +351,22 @@ class SnapshotPersistQueue {
             PersistInfoProvider provider,
             Consumer<LowResSnapshotSupplier> lowResSnapshotConsumer) {
         return new StoreWriteQueueItem(id, userId, snapshot, provider, lowResSnapshotConsumer);
+    }
+
+    // Check if a task snapshot is(or will) convert a low-res snapshot.
+    boolean isConvertingToLowRes(int taskId, int userId) {
+        if (!mUserManagerInternal.isUserUnlocked(userId) || mShutdown) {
+            return false;
+        }
+        if (mConvertingRecord.isProcess(taskId, userId)) {
+            return true;
+        }
+        // Only peek the up-coming one
+        synchronized (mLock) {
+            final StoreWriteQueueItem item = mStoreQueueItems.peek();
+            return item != null && item.mId == taskId && item.mUserId == userId
+                    && item.mLowResSnapshotConsumer != null;
+        }
     }
 
     void updateKnownLowResSnapshotIfPossible(int id, TaskSnapshot lowResSnapshot) {
@@ -390,6 +414,13 @@ class SnapshotPersistQueue {
         @Override
         void onDequeuedLocked() {
             mStoreQueueItems.remove(this);
+        }
+
+        @Override
+        void onProcess() {
+            if (mLowResSnapshotConsumer != null) {
+                mConvertingRecord.processing(mId, mUserId);
+            }
         }
 
         boolean updateKnownLowResSnapshotIfPossible(TaskSnapshot lowResSnapshot) {
@@ -640,6 +671,25 @@ class SnapshotPersistQueue {
         pw.println(prefix + "PersistQueue contains:");
         for (int i = items.length - 1; i >= 0; --i) {
             pw.println(prefix + "  " + items[i] + "");
+        }
+    }
+
+    // The current writing task.
+    private static class ConvertingRecord {
+        int mTaskId;
+        int mUserId;
+
+        void reset() {
+            processing(0, 0);
+        }
+
+        synchronized void processing(int taskId, int userId) {
+            mTaskId = taskId;
+            mUserId = userId;
+        }
+
+        synchronized boolean isProcess(int taskId, int userId) {
+            return mTaskId == taskId && mUserId == userId;
         }
     }
 }
