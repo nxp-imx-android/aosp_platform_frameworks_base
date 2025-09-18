@@ -266,16 +266,9 @@ public class ThemeOverlayController implements CoreStartable, Dumpable {
         reevaluateSystemTheme(true /* forceReload */);
     };
 
-    private int getDefaultWallpaperColorsSource(int userId) {
-        if (com.android.systemui.shared.Flags.newCustomizationPickerUi()) {
-            // The wallpaper colors source is always the home wallpaper.
-            return WallpaperManager.FLAG_SYSTEM;
-        } else {
-            // The wallpaper colors source is based on the last set wallpaper.
-            return mWallpaperManager.getWallpaperIdForUser(WallpaperManager.FLAG_LOCK, userId)
-                    > mWallpaperManager.getWallpaperIdForUser(WallpaperManager.FLAG_SYSTEM, userId)
-                    ? WallpaperManager.FLAG_LOCK : WallpaperManager.FLAG_SYSTEM;
-        }
+    private int getDefaultWallpaperColorsSource() {
+        // The wallpaper colors source is always the home wallpaper.
+        return WallpaperManager.FLAG_SYSTEM;
     }
 
     private boolean isSeedColorSet(JSONObject jsonObject, WallpaperColors newWallpaperColors) {
@@ -309,7 +302,7 @@ public class ThemeOverlayController implements CoreStartable, Dumpable {
     private void handleWallpaperColors(WallpaperColors wallpaperColors, int flags, int userId) {
         final int currentUser = mUserTracker.getUserId();
         final boolean hadWallpaperColors = mCurrentColors.get(userId) != null;
-        int wallpaperColorsSource = getDefaultWallpaperColorsSource(userId);
+        int wallpaperColorsSource = getDefaultWallpaperColorsSource();
         boolean wallpaperColorsNeedUpdate = (flags & wallpaperColorsSource) != 0;
         if (wallpaperColorsNeedUpdate) {
             mCurrentColors.put(userId, wallpaperColors);
@@ -582,7 +575,7 @@ public class ThemeOverlayController implements CoreStartable, Dumpable {
 
         } else {
             systemColor = mWallpaperManager.getWallpaperColors(
-                    getDefaultWallpaperColorsSource(mUserTracker.getUserId()));
+                    getDefaultWallpaperColorsSource());
         }
 
         // Upon boot, make sure we have the most up to date colors
@@ -955,7 +948,7 @@ public class ThemeOverlayController implements CoreStartable, Dumpable {
 
         if (isWallpaper) {
             WallpaperColors wallpaperColors = mWallpaperManager.getWallpaperColors(
-                    getDefaultWallpaperColorsSource(mUserTracker.getUserId()));
+                    getDefaultWallpaperColorsSource());
 
             if (wallpaperColors != null) {
                 defaultSeedColor = wallpaperColors.getPrimaryColor();
