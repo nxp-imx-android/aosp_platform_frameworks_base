@@ -27,6 +27,7 @@ import static android.hardware.biometrics.SensorProperties.STRENGTH_CONVENIENCE;
 import static android.hardware.biometrics.SensorProperties.STRENGTH_STRONG;
 import static android.hardware.fingerprint.FingerprintSensorProperties.TYPE_UDFPS_OPTICAL;
 import static android.security.Flags.FLAG_SECURE_LOCK_DEVICE;
+import static android.security.Flags.FLAG_AUTO_SIM_PIN_MANAGEMENT;
 import static android.telephony.SubscriptionManager.DATA_ROAMING_DISABLE;
 import static android.telephony.SubscriptionManager.NAME_SOURCE_CARRIER_ID;
 import static android.telephony.SubscriptionManager.PROFILE_CLASS_DEFAULT;
@@ -108,6 +109,7 @@ import android.os.PowerManager;
 import android.os.RemoteException;
 import android.os.UserHandle;
 import android.os.UserManager;
+import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.flag.junit.FlagsParameterization;
 import android.service.dreams.IDreamManager;
@@ -2603,6 +2605,44 @@ public class KeyguardUpdateMonitorTest extends SysuiTestCase {
 
         callback.onWakeUp();
         assertThat(mKeyguardUpdateMonitor.isDreamingWithOverlay()).isFalse();
+    }
+
+    @EnableFlags(FLAG_AUTO_SIM_PIN_MANAGEMENT)
+    @Test
+    public void isPlatformManaged_returnsCorrectlyOnInvalidSubscription() {
+        assertThat(mKeyguardUpdateMonitor.isSimPinPlatformManaged(
+                SubscriptionManager.INVALID_SUBSCRIPTION_ID)).isFalse();
+    }
+
+    @EnableFlags(FLAG_AUTO_SIM_PIN_MANAGEMENT)
+    @Test
+    public void isPlatformManaged_returnsCorrectlyOnNonPlatformManaged() {
+        TelephonyManager subInstance = mock(TelephonyManager.class);
+        when(subInstance.getSimAutoPinManagementEnrollmentStatus()).thenReturn(
+                TelephonyManager.SIM_PIN_ENROLLMENT_STATUS_MANUALLY_MANAGED);
+        when(mTelephonyManager.createForSubscriptionId(0)).thenReturn(subInstance);
+        assertThat(mKeyguardUpdateMonitor.isSimPinPlatformManaged(0)).isFalse();
+    }
+
+    @EnableFlags(FLAG_AUTO_SIM_PIN_MANAGEMENT)
+    @Test
+    public void isPlatformManaged_returnsCorrectlyOnPlatformManaged() {
+        TelephonyManager subInstance = mock(TelephonyManager.class);
+        when(subInstance.getSimAutoPinManagementEnrollmentStatus()).thenReturn(
+                TelephonyManager.SIM_PIN_ENROLLMENT_STATUS_PLATFORM_MANAGED);
+        when(mTelephonyManager.createForSubscriptionId(0)).thenReturn(subInstance);
+        assertThat(mKeyguardUpdateMonitor.isSimPinPlatformManaged(0)).isTrue();
+    }
+
+    @DisableFlags(FLAG_AUTO_SIM_PIN_MANAGEMENT)
+    @Test
+    public void isPlatformManaged_returnsFalseIfFlagDisabled() {
+        TelephonyManager subInstance = mock(TelephonyManager.class);
+        when(subInstance.getSimAutoPinManagementEnrollmentStatus()).thenReturn(
+                TelephonyManager.SIM_PIN_ENROLLMENT_STATUS_PLATFORM_MANAGED);
+        when(mTelephonyManager.createForSubscriptionId(0)).thenReturn(subInstance);
+        assertThat(mKeyguardUpdateMonitor.isSimPinPlatformManaged(0)).isFalse();
+
     }
 
     private Intent defaultSimStateChangedIntent() {

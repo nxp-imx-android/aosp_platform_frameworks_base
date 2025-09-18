@@ -4370,4 +4370,38 @@ public class KeyguardUpdateMonitor implements TrustManager.TrustListener, CoreSt
             Trace.endSection();
         });
     }
+
+    /**
+     * Returns true if the SIM denoted by the subscription ID has its PIN managed by the platform,
+     * false otherwise.
+     *
+     * @param subId Subscription denoting the SIM to check.
+     * @return True if the PIN for the SIM is platform managed, false otherwise.
+     */
+    public boolean isSimPinPlatformManaged(int subId) {
+        if (!SubscriptionManager.isValidSubscriptionId(subId)) {
+            return false;
+        }
+
+        // Return false if the flag is set to false, because flagged API is not supposed to be
+        // called if the flag is not set.
+        // However, there is a risk that the flag has been previously enabled on the device
+        // and a SIM enrolled in automatic PIN management. In that case, the user need to have
+        // kept the PIN out-of-band.
+        if (!android.security.Flags.autoSimPinManagement()) {
+            return false;
+        }
+
+        // NOTE: Instead of querying the TelephonyManager, it is possible to store whether the PIN
+        // is platform-managed or not in the SimData class. The upside of doing so is that no
+        // queries are performed into the TelephonyManager for the check.
+        // The downside is that there are multiple call-sites where the SimData is constructed and
+        // all of them would have to be updated to ensure the state is stored correctly.
+        int simAutoPinManagementEnrollmentStatus = mTelephonyManager.createForSubscriptionId(
+                subId).getSimAutoPinManagementEnrollmentStatus();
+        Log.d(TAG, "Enrollment Status for Subscription " + subId + " is: "
+                + simAutoPinManagementEnrollmentStatus);
+        return simAutoPinManagementEnrollmentStatus
+                == TelephonyManager.SIM_PIN_ENROLLMENT_STATUS_PLATFORM_MANAGED;
+    }
 }

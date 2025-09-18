@@ -19,7 +19,6 @@ import static android.security.Flags.secureLockDevice;
 
 import static com.android.systemui.DejankUtils.whitelistIpcs;
 
-import android.app.admin.DevicePolicyManager;
 import android.content.res.Resources;
 import android.telephony.SubscriptionManager;
 import android.telephony.TelephonyManager;
@@ -111,9 +110,17 @@ public class KeyguardSecurityModel {
             return SecurityMode.SimPuk;
         }
 
-        if (SubscriptionManager.isValidSubscriptionId(
-                mKeyguardUpdateMonitor.getNextSubIdForState(
-                        TelephonyManager.SIM_STATE_PIN_REQUIRED))) {
+        int nextSubIdInPinRequiredState = mKeyguardUpdateMonitor.getNextSubIdForState(
+                TelephonyManager.SIM_STATE_PIN_REQUIRED);
+        // Return the {@code SimPin} security mode if the SIM in the "pin required" state and
+        // the PIN is not managed by the platform. If it's managed by the platform, there SIM
+        // PIN keyguard must not be displayed to the user.
+        // NOTE: Another approach is to make the KeyguardUpdateMonitor.getNextSubIdForState method
+        // "ignore" SIMs in the "pin required" state. However that might be an abstraction
+        // violation as the KeyguardUpdateMonitor does not make decisions about what to show to
+        // the user, only keeps state.
+        if (SubscriptionManager.isValidSubscriptionId(nextSubIdInPinRequiredState)
+                && !mKeyguardUpdateMonitor.isSimPinPlatformManaged(nextSubIdInPinRequiredState)) {
             return SecurityMode.SimPin;
         }
 
