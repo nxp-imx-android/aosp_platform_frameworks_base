@@ -365,10 +365,7 @@ java_library {
         "service-blobstore",
         "service-jobscheduler",
         "android.hidl.base-V1.0-java",
-    ] + select(release_flag("RELEASE_MOVE_VCN_TO_MAINLINE"), {
-        true: [],
-        default: ["service-connectivity-b-platform"],
-    }) + select(release_flag("RELEASE_ANOMALY_DETECTOR"), {
+    ] + select(release_flag("RELEASE_ANOMALY_DETECTOR"), {
         true: ["services.signal-collectors"],
         default: [],
     }),

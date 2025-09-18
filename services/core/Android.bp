@@ -144,9 +144,6 @@ java_library_static {
 
         // Telecom sources to move out to Telecom module
         ":service-telecom-sources",
-
-        // Indicate whether VCN is in platform or mainline
-        ":vcn-location-sources",
     ],
 
     libs: [

@@ -120,7 +120,6 @@ import com.android.internal.util.ConcurrentUtils;
 import com.android.internal.util.EmergencyAffordanceManager;
 import com.android.internal.util.FrameworkStatsLog;
 import com.android.internal.widget.ILockSettings;
-import com.android.modules.utils.build.SdkLevel;
 import com.android.server.accessibility.AccessibilityManagerService;
 import com.android.server.accounts.AccountManagerService;
 import com.android.server.adb.AdbService;
@@ -305,7 +304,6 @@ import com.android.server.usage.StorageStatsService;
 import com.android.server.usage.UsageStatsService;
 import com.android.server.usb.UsbService;
 import com.android.server.utils.TimingsTraceAndSlog;
-import com.android.server.vcn.VcnLocation;
 import com.android.server.vibrator.VibratorManagerService;
 import com.android.server.voiceinteraction.VoiceInteractionManagerService;
 import com.android.server.wallpaper.WallpaperManagerService;
@@ -2292,28 +2290,6 @@ public final class SystemServer implements Dumpable {
                 // VPN management currently does not work in Wear, so skip starting the
                 // VPN manager SystemService.
                 Slog.i(TAG, "Not starting VpnManagerService");
-            }
-
-            // TODO: b/374174952 In the end state, VCN registration will be moved to Tethering
-            // module. Thus the following code block should be removed after Baklava is released
-            if (!VcnLocation.IS_VCN_IN_MAINLINE || !SdkLevel.isAtLeastB()) {
-                t.traceBegin("StartVcnManagementService");
-
-                try {
-                    if (!VcnLocation.IS_VCN_IN_MAINLINE) {
-                        mSystemServiceManager.startService(
-                                CONNECTIVITY_SERVICE_INITIALIZER_B_CLASS);
-                    } else {
-                        // When VCN is in mainline but the SDK level is B-, start the service with
-                        // the apex path. This path can only be hit on an unfinalized B platform
-                        mSystemServiceManager.startServiceFromJar(
-                                CONNECTIVITY_SERVICE_INITIALIZER_B_CLASS,
-                                CONNECTIVITY_SERVICE_APEX_PATH);
-                    }
-                } catch (Throwable e) {
-                    reportWtf("starting VCN Management Service", e);
-                }
-                t.traceEnd();
             }
 
             t.traceBegin("StartSystemUpdateManagerService");
