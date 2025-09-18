@@ -16,7 +16,7 @@
 
 package com.android.systemui.statusbar.core
 
-import android.content.testableContext
+import android.content.applicationContext
 import android.view.Display
 import com.android.app.displaylib.fakes.FakePerDisplayRepository
 import com.android.systemui.bouncer.domain.interactor.primaryBouncerInteractor
@@ -66,7 +66,7 @@ val Kosmos.multiDisplayStatusBarOrchestratorStore by
 val Kosmos.statusBarIconRefreshInteractor by
     Kosmos.Fixture {
         StatusBarIconRefreshInteractorImpl(
-            testableContext.displayId,
+            applicationContext.displayId,
             statusBarConfigurationController,
             statusBarIconController,
         )
@@ -82,7 +82,7 @@ val Kosmos.statusBarIconRefreshPerDisplayRepository by
 val Kosmos.statusBarOrchestrator by
     Kosmos.Fixture {
         StatusBarOrchestrator(
-            testableContext.displayId,
+            applicationContext.displayId,
             applicationCoroutineScope,
             fakeStatusBarWindowStatePerDisplayRepository,
             fakeStatusBarModePerDisplayRepository,

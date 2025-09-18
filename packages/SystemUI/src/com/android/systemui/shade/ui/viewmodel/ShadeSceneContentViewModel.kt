@@ -44,8 +44,8 @@ import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.shared.model.SceneFamilies
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.shade.domain.interactor.ShadeModeInteractor
+import com.android.systemui.shade.domain.interactor.ShadeStatusBarComponentsInteractor
 import com.android.systemui.shade.shared.model.ShadeMode
-import com.android.systemui.statusbar.disableflags.domain.interactor.DisableFlagsInteractor
 import com.android.systemui.unfold.domain.interactor.UnfoldTransitionInteractor
 import com.android.systemui.window.domain.interactor.WindowRootViewBlurInteractor
 import dagger.assisted.AssistedFactory
@@ -75,7 +75,6 @@ constructor(
     val mediaCarouselInteractor: MediaCarouselInteractor,
     private val shadeModeInteractor: ShadeModeInteractor,
     val mediaViewModelFactory: MediaViewModel.Factory,
-    disableFlagsInteractor: DisableFlagsInteractor,
     private val footerActionsViewModelFactory: FooterActionsViewModel.Factory,
     private val footerActionsController: FooterActionsController,
     keyguardInteractor: KeyguardInteractor,
@@ -86,6 +85,7 @@ constructor(
     private val tileSquishinessInteractor: TileSquishinessInteractor,
     windowRootViewBlurInteractor: WindowRootViewBlurInteractor,
     mediaInRowInLandscapeViewModelFactory: MediaInRowInLandscapeViewModel.Factory,
+    shadeStatusBarComponentsInteractor: ShadeStatusBarComponentsInteractor,
 ) : ExclusiveActivatable() {
 
     private val hydrator = Hydrator("ShadeSceneContentViewModel.hydrator")
@@ -137,8 +137,10 @@ constructor(
     val isQsEnabled: Boolean by
         hydrator.hydratedStateOf(
             traceName = "isQsEnabled",
-            initialValue = disableFlagsInteractor.disableFlags.value.isQuickSettingsEnabled(),
-            source = disableFlagsInteractor.disableFlags.map { it.isQuickSettingsEnabled() },
+            initialValue =
+                shadeStatusBarComponentsInteractor.disableFlags.value.isQuickSettingsEnabled(),
+            source =
+                shadeStatusBarComponentsInteractor.disableFlags.map { it.isQuickSettingsEnabled() },
         )
 
     /**

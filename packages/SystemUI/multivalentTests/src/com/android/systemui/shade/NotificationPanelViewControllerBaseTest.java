@@ -349,7 +349,6 @@ public class NotificationPanelViewControllerBaseTest extends SysuiTestCase {
         mShadeInteractor = new ShadeInteractorImpl(
                 mTestScope.getBackgroundScope(),
                 mKosmos.getDeviceProvisioningInteractor(),
-                mKosmos.getDisableFlagsInteractor(),
                 mDozeParameters,
                 mFakeKeyguardRepository,
                 mKeyguardTransitionInteractor,
@@ -362,7 +361,8 @@ public class NotificationPanelViewControllerBaseTest extends SysuiTestCase {
                         mShadeRepository,
                         mKosmos.getShadeConfigRepository()
                 ),
-                mKosmos.getSceneInteractor());
+                mKosmos.getSceneInteractor(),
+                mKosmos.getShadeStatusBarComponentsInteractor());
         SystemClock systemClock = new FakeSystemClock();
         mStatusBarStateController = new StatusBarStateControllerImpl(
                 mUiEventLogger,

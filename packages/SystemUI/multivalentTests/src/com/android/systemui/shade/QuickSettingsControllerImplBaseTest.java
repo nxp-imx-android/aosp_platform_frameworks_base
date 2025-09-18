@@ -187,7 +187,6 @@ public class QuickSettingsControllerImplBaseTest extends SysuiTestCase {
         mShadeInteractor = new ShadeInteractorImpl(
                 mTestScope.getBackgroundScope(),
                 mKosmos.getDeviceProvisioningInteractor(),
-                mKosmos.getDisableFlagsInteractor(),
                 mDozeParameters,
                 mKeyguardRepository,
                 keyguardTransitionInteractor,
@@ -200,7 +199,8 @@ public class QuickSettingsControllerImplBaseTest extends SysuiTestCase {
                         mShadeRepository,
                         mKosmos.getShadeConfigRepository()
                 ),
-                mKosmos.getSceneInteractor());
+                mKosmos.getSceneInteractor(),
+                mKosmos.getShadeStatusBarComponentsInteractor());
 
         when(mResources.getDimensionPixelSize(
                 R.dimen.lockscreen_shade_qs_transition_distance)).thenReturn(DEFAULT_HEIGHT);

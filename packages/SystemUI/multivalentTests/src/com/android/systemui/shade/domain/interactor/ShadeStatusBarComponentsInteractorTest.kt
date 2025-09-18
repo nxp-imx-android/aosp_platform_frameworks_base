@@ -21,18 +21,27 @@ import android.platform.test.annotations.EnableFlags
 import android.view.Display
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
+import com.android.systemui.Flags
 import com.android.systemui.SysuiTestCase
+import com.android.systemui.display.data.repository.createFakeDisplaySubcomponent
+import com.android.systemui.display.data.repository.displaySubcomponentPerDisplayRepository
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.collectLastValue
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.shade.data.repository.fakeShadeDisplaysRepository
 import com.android.systemui.shade.shared.flag.ShadeWindowGoesAround
+import com.android.systemui.statusbar.chips.ui.viewmodel.OngoingActivityChipsViewModel
 import com.android.systemui.statusbar.data.repository.homeStatusBarComponentsRepository
+import com.android.systemui.statusbar.disableflags.data.repository.FakeDisableFlagsRepository
+import com.android.systemui.statusbar.disableflags.data.repository.fakeDisableFlagsRepository
+import com.android.systemui.statusbar.disableflags.domain.interactor.createDisableFlagsInteractor
+import com.android.systemui.statusbar.disableflags.shared.model.DisableFlagsModel
 import com.android.systemui.statusbar.phone.PhoneStatusBarViewController
 import com.android.systemui.statusbar.phone.fragment.dagger.HomeStatusBarComponent
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
+import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.kotlin.mock
@@ -44,7 +53,42 @@ class ShadeStatusBarComponentsInteractorTest : SysuiTestCase() {
 
     private val kosmos = testKosmos().useUnconfinedTestDispatcher()
 
+    private val defaultDisableFlags = DisableFlagsModel(1)
+    private val secondaryDisableFlags = DisableFlagsModel(2)
+    private val singleDisplayDisableFlags = DisableFlagsModel(3)
+    private val defaultOngoingActivityChipsViewModel = mock<OngoingActivityChipsViewModel>()
+    private val secondaryOngoingActivityChipsViewModel = mock<OngoingActivityChipsViewModel>()
+
     private val Kosmos.underTest by Kosmos.Fixture { shadeStatusBarComponentsInteractor }
+
+    @Before
+    fun setUp() {
+        val defaultDisableFlagsRepository =
+            FakeDisableFlagsRepository().also { it.disableFlags.value = defaultDisableFlags }
+        val secondaryDisableFlagsRepository =
+            FakeDisableFlagsRepository().also { it.disableFlags.value = secondaryDisableFlags }
+
+        kosmos.displaySubcomponentPerDisplayRepository.apply {
+            add(
+                DEFAULT_DISPLAY,
+                kosmos.createFakeDisplaySubcomponent(
+                    disableFlagsInteractor = {
+                        kosmos.createDisableFlagsInteractor(defaultDisableFlagsRepository)
+                    },
+                    ongoingActivityChipsViewModel = { defaultOngoingActivityChipsViewModel },
+                ),
+            )
+            add(
+                SECONDARY_DISPLAY,
+                kosmos.createFakeDisplaySubcomponent(
+                    disableFlagsInteractor = {
+                        kosmos.createDisableFlagsInteractor(secondaryDisableFlagsRepository)
+                    },
+                    ongoingActivityChipsViewModel = { secondaryOngoingActivityChipsViewModel },
+                ),
+            )
+        }
+    }
 
     @Test
     fun phoneStatusBarViewController_initiallyNullWhenNoComponents() =
@@ -165,6 +209,47 @@ class ShadeStatusBarComponentsInteractorTest : SysuiTestCase() {
 
             // THEN the controller becomes null, even though the secondary component still exists
             assertThat(controller).isNull()
+        }
+
+    @Test
+    @EnableFlags(ShadeWindowGoesAround.FLAG_NAME)
+    fun ongoingActivityChipsViewModel_updatesAfterDisplayChange() =
+        kosmos.runTest {
+            val viewModel by collectLastValue(underTest.ongoingActivityChipsViewModel)
+
+            fakeShadeDisplaysRepository.setDisplayId(DEFAULT_DISPLAY)
+            assertThat(viewModel).isEqualTo(defaultOngoingActivityChipsViewModel)
+
+            fakeShadeDisplaysRepository.setDisplayId(SECONDARY_DISPLAY)
+            assertThat(viewModel).isEqualTo(secondaryOngoingActivityChipsViewModel)
+        }
+
+    @Test
+    @EnableFlags(ShadeWindowGoesAround.FLAG_NAME, Flags.FLAG_DISABLE_FLAGS_PER_DISPLAY)
+    fun disableFlags_perDisplayDisableFlagsEnabled_updatesAfterDisplayChange() =
+        kosmos.runTest {
+            val disableFlags by collectLastValue(underTest.disableFlags)
+
+            fakeShadeDisplaysRepository.setDisplayId(DEFAULT_DISPLAY)
+            assertThat(disableFlags).isEqualTo(defaultDisableFlags)
+
+            fakeShadeDisplaysRepository.setDisplayId(SECONDARY_DISPLAY)
+            assertThat(disableFlags).isEqualTo(secondaryDisableFlags)
+        }
+
+    @Test
+    @EnableFlags(ShadeWindowGoesAround.FLAG_NAME)
+    @DisableFlags(Flags.FLAG_DISABLE_FLAGS_PER_DISPLAY)
+    fun disableFlags_perDisplayDisabledFlagsDisabled_alwaysUsesSingleDisplayDisableFlags() =
+        kosmos.runTest {
+            val disableFlags by collectLastValue(underTest.disableFlags)
+            fakeDisableFlagsRepository.disableFlags.value = singleDisplayDisableFlags
+
+            fakeShadeDisplaysRepository.setDisplayId(DEFAULT_DISPLAY)
+            assertThat(disableFlags).isEqualTo(singleDisplayDisableFlags)
+
+            fakeShadeDisplaysRepository.setDisplayId(SECONDARY_DISPLAY)
+            assertThat(disableFlags).isEqualTo(singleDisplayDisableFlags)
         }
 
     /** Helper to create a mock HomeStatusBarComponent */

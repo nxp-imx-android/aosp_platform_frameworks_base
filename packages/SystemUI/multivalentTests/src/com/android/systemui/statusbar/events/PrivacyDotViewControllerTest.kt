@@ -86,9 +86,6 @@ class PrivacyDotViewControllerTest(flags: FlagsParameterization) : SysuiTestCase
     private val statusBarStateController = FakeStatusBarStateController()
     private val configurationController = FakeConfigurationController()
     private val contentInsetsProvider = createMockContentInsetsProvider()
-    private val shadeDisplaysInteractor = kosmos.shadeDisplaysInteractor
-    private val shadeDisplaysRepository = kosmos.fakeShadeDisplaysRepository
-    private val shadeInteractor = kosmos.shadeInteractor
 
     private val topLeftView = initDotView()
     private val topRightView = initDotView()
@@ -108,11 +105,11 @@ class PrivacyDotViewControllerTest(flags: FlagsParameterization) : SysuiTestCase
             configurationController,
             contentInsetsProvider,
             animationScheduler = mockAnimationScheduler,
-            shadeInteractor = shadeInteractor,
+            shadeInteractor = kosmos.shadeInteractor,
             avControlsChipInteractor = kosmos.fakeAvControlsChipInteractor,
             uiExecutor = executor,
             displayId = DISPLAY_ID,
-            shadeDisplaysInteractor = { shadeDisplaysInteractor },
+            shadeDisplaysInteractor = { kosmos.shadeDisplaysInteractor },
         )
 
     companion object {
@@ -343,12 +340,12 @@ class PrivacyDotViewControllerTest(flags: FlagsParameterization) : SysuiTestCase
     @EnableFlags(FLAG_STATUS_BAR_CONNECTED_DISPLAYS, FLAG_SHADE_WINDOW_GOES_AROUND)
     fun init_shadeExpandedOnDifferentDisplay_doesNotChangeShadeExpandedState() =
         kosmos.runTest {
-            shadeDisplaysRepository.setDisplayId(Display.DEFAULT_DISPLAY)
+            fakeShadeDisplaysRepository.setDisplayId(Display.DEFAULT_DISPLAY)
             statusBarStateController.state = SHADE
             statusBarStateController.expanded = true
 
             val controller = createAndInitializeController()
-            shadeDisplaysRepository.setDisplayId(DISPLAY_ID + 1) // other display id
+            fakeShadeDisplaysRepository.setDisplayId(DISPLAY_ID + 1) // other display id
             statusBarStateController.fakeShadeExpansionFullyChanged(true)
 
             assertThat(controller.currentViewState.shadeExpanded).isEqualTo(false)
@@ -358,12 +355,12 @@ class PrivacyDotViewControllerTest(flags: FlagsParameterization) : SysuiTestCase
     @EnableFlags(FLAG_STATUS_BAR_CONNECTED_DISPLAYS, FLAG_SHADE_WINDOW_GOES_AROUND)
     fun init_shadeExpandedOnThisDisplay_doesChangeShadeExpandedState() =
         kosmos.runTest {
-            shadeDisplaysRepository.setDisplayId(Display.DEFAULT_DISPLAY)
+            fakeShadeDisplaysRepository.setDisplayId(Display.DEFAULT_DISPLAY)
             statusBarStateController.state = SHADE
             statusBarStateController.expanded = false
 
             val controller = createAndInitializeController()
-            shadeDisplaysRepository.setDisplayId(DISPLAY_ID)
+            fakeShadeDisplaysRepository.setDisplayId(DISPLAY_ID)
             statusBarStateController.fakeShadeExpansionFullyChanged(true)
 
             assertThat(controller.currentViewState.shadeExpanded).isEqualTo(true)
