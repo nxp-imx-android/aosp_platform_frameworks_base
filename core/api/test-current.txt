@@ -750,9 +750,9 @@ package android.app.appfunctions {
     method @FlaggedApi("android.permission.flags.app_function_access_api_enabled") @RequiresPermission(android.Manifest.permission.MANAGE_APP_FUNCTION_ACCESS) public void clearAccessHistory();
     method @FlaggedApi("android.permission.flags.app_function_access_api_enabled") @NonNull @RequiresPermission(android.Manifest.permission.MANAGE_APP_FUNCTION_ACCESS) public java.util.List<android.content.pm.SignedPackage> getAgentAllowlist();
     method @FlaggedApi("android.permission.flags.app_function_access_api_enabled") @NonNull public java.util.Set<java.lang.String> getDeviceSettingPackages();
-    field public static final int ACCESS_FLAG_MASK_ALL = 31; // 0x1f
-    field public static final int ACCESS_FLAG_MASK_OTHER = 6; // 0x6
-    field public static final int ACCESS_FLAG_MASK_USER = 24; // 0x18
+    field @FlaggedApi("android.permission.flags.app_function_access_api_enabled") public static final int ACCESS_FLAG_MASK_ALL = 63; // 0x3f
+    field @FlaggedApi("android.permission.flags.app_function_access_api_enabled") public static final int ACCESS_FLAG_MASK_OTHER = 12; // 0xc
+    field @FlaggedApi("android.permission.flags.app_function_access_api_enabled") public static final int ACCESS_FLAG_MASK_USER = 48; // 0x30
   }
 
 }

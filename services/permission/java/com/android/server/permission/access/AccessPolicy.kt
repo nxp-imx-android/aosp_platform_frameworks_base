@@ -17,6 +17,7 @@
 package com.android.server.permission.access
 
 import android.content.pm.SignedPackage
+import android.permission.flags.Flags.appFunctionAccessServiceEnabled
 import android.util.Slog
 import com.android.modules.utils.BinaryXmlPullParser
 import com.android.modules.utils.BinaryXmlSerializer
@@ -460,7 +461,12 @@ private constructor(
     companion object {
         private val LOG_TAG = AccessPolicy::class.java.simpleName
 
-        internal const val VERSION_LATEST = 17
+        internal val VERSION_LATEST =
+            if (appFunctionAccessServiceEnabled()) {
+                18
+            } else {
+                17
+            }
 
         private const val TAG_ACCESS = "access"
         private const val TAG_DEFAULT_PERMISSION_GRANT = "default-permission-grant"

@@ -347,6 +347,15 @@ public final class AppFunctionManager {
     public static final int ACCESS_FLAG_PREGRANTED = 1;
 
     /**
+     * A flag indicating the app function access state has been granted as part of a system upgrade
+     *
+     * @hide
+     */
+    @FlaggedApi(Flags.FLAG_APP_FUNCTION_ACCESS_API_ENABLED)
+    @SystemApi
+    public static final int ACCESS_FLAG_UPGRADE_GRANTED = 1 << 1;
+
+    /**
      * A flag indicating the app function access is granted through a mechanism not tied to any
      * other flag (e.g. ADB)
      *
@@ -354,7 +363,7 @@ public final class AppFunctionManager {
      */
     @FlaggedApi(Flags.FLAG_APP_FUNCTION_ACCESS_API_ENABLED)
     @SystemApi
-    public static final int ACCESS_FLAG_OTHER_GRANTED = 1 << 1;
+    public static final int ACCESS_FLAG_OTHER_GRANTED = 1 << 2;
 
     /**
      * A flag indicating the app function access state has been denied by some other mechanism not
@@ -364,7 +373,7 @@ public final class AppFunctionManager {
      */
     @FlaggedApi(Flags.FLAG_APP_FUNCTION_ACCESS_API_ENABLED)
     @SystemApi
-    public static final int ACCESS_FLAG_OTHER_DENIED = 1 << 2;
+    public static final int ACCESS_FLAG_OTHER_DENIED = 1 << 3;
 
     /**
      * A flag indicating the user granted the app function access state through UI
@@ -373,7 +382,7 @@ public final class AppFunctionManager {
      */
     @FlaggedApi(Flags.FLAG_APP_FUNCTION_ACCESS_API_ENABLED)
     @SystemApi
-    public static final int ACCESS_FLAG_USER_GRANTED = 1 << 3;
+    public static final int ACCESS_FLAG_USER_GRANTED = 1 << 4;
 
     /**
      * A flag indicating the app function access state has been denied by the user
@@ -382,13 +391,14 @@ public final class AppFunctionManager {
      */
     @FlaggedApi(Flags.FLAG_APP_FUNCTION_ACCESS_API_ENABLED)
     @SystemApi
-    public static final int ACCESS_FLAG_USER_DENIED = 1 << 4;
+    public static final int ACCESS_FLAG_USER_DENIED = 1 << 5;
 
     /**
      * All USER flags
      *
      * @hide
      */
+    @FlaggedApi(Flags.FLAG_APP_FUNCTION_ACCESS_API_ENABLED)
     @TestApi
     public static final int ACCESS_FLAG_MASK_USER =
             ACCESS_FLAG_USER_GRANTED | ACCESS_FLAG_USER_DENIED;
@@ -398,6 +408,7 @@ public final class AppFunctionManager {
      *
      * @hide
      */
+    @FlaggedApi(Flags.FLAG_APP_FUNCTION_ACCESS_API_ENABLED)
     @TestApi
     public static final int ACCESS_FLAG_MASK_OTHER =
             ACCESS_FLAG_OTHER_GRANTED | ACCESS_FLAG_OTHER_DENIED;
@@ -407,9 +418,11 @@ public final class AppFunctionManager {
      *
      * @hide
      */
+    @FlaggedApi(Flags.FLAG_APP_FUNCTION_ACCESS_API_ENABLED)
     @TestApi
     public static final int ACCESS_FLAG_MASK_ALL =
             ACCESS_FLAG_PREGRANTED
+                    | ACCESS_FLAG_UPGRADE_GRANTED
                     | ACCESS_FLAG_OTHER_GRANTED
                     | ACCESS_FLAG_OTHER_DENIED
                     | ACCESS_FLAG_USER_GRANTED
@@ -419,11 +432,12 @@ public final class AppFunctionManager {
             prefix = {"ACCESS_FLAG_"},
             flag = true,
             value = {
-                ACCESS_FLAG_PREGRANTED,
-                ACCESS_FLAG_OTHER_GRANTED,
-                ACCESS_FLAG_OTHER_DENIED,
-                ACCESS_FLAG_USER_GRANTED,
-                ACCESS_FLAG_USER_DENIED
+                    ACCESS_FLAG_PREGRANTED,
+                    ACCESS_FLAG_UPGRADE_GRANTED,
+                    ACCESS_FLAG_OTHER_GRANTED,
+                    ACCESS_FLAG_OTHER_DENIED,
+                    ACCESS_FLAG_USER_GRANTED,
+                    ACCESS_FLAG_USER_DENIED
             })
     @Retention(RetentionPolicy.SOURCE)
     @interface AppFunctionAccessFlags {}
