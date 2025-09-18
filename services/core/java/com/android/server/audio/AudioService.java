@@ -81,6 +81,7 @@ import static com.android.media.audio.Flags.equalScoLeaVcIndexRange;
 import static com.android.media.audio.Flags.optimizeBtDeviceSwitch;
 import static com.android.media.audio.Flags.ringMyCar;
 import static com.android.media.audio.Flags.ringerModeAffectsAlarm;
+import static com.android.media.audio.Flags.streamAssistantNotAliasedToMusic;
 import static com.android.media.audio.Flags.updatePreferredDevicesForStrategy;
 import static com.android.media.flags.Flags.enableAudioInputDeviceRoutingAndVolumeControl;
 import static com.android.server.audio.SoundDoseHelper.ACTION_CHECK_MUSIC_ACTIVE;
@@ -2910,9 +2911,12 @@ public class AudioService extends IAudioService.Stub
         int dtmfStreamAlias;
         final int a11yStreamAlias = sIndependentA11yVolume ?
                 AudioSystem.STREAM_ACCESSIBILITY : AudioSystem.STREAM_MUSIC;
-        final int assistantStreamAlias = mContext.getResources().getBoolean(
+        int assistantStreamAlias = mContext.getResources().getBoolean(
                 com.android.internal.R.bool.config_useAssistantVolume) ?
                 AudioSystem.STREAM_ASSISTANT : AudioSystem.STREAM_MUSIC;
+        if (streamAssistantNotAliasedToMusic()) {
+            assistantStreamAlias = AudioSystem.STREAM_ASSISTANT;
+        }
 
         if (mIsSingleVolume) {
             if (isPlatformPc()) {
@@ -5500,6 +5504,8 @@ public class AudioService extends IAudioService.Stub
                 + equalScoLeaVcIndexRange());
         pw.println("\tcom.android.media.audio.ringMyCar:"
                 + ringMyCar());
+        pw.println("\tcom.android.media.audio.streamAssistantNotAliasedToMusic:"
+                + streamAssistantNotAliasedToMusic());
         pw.println("\tandroid.media.audio.Flags.concurrentAudioRecordBypassPermission:"
                 + concurrentAudioRecordBypassPermission());
         pw.println("\tandroid.media.audio.Flags.cacheGetStreamMinMaxVolume - EOL");
