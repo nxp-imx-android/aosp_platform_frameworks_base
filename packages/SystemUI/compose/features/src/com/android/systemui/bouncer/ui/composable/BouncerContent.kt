@@ -43,7 +43,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -247,15 +246,7 @@ fun BouncerContent(
     modifier: Modifier,
 ) {
     val scale by viewModel.scale.collectAsStateWithLifecycle()
-    Box(
-        // Allows the content within each of the layouts to react to the appearance and
-        // disappearance of the IME, which is also known as the software keyboard.
-        //
-        // Despite the keyboard only being part of the password bouncer, adding it at this level is
-        // both necessary to properly handle the keyboard in all layouts and harmless in cases when
-        // the keyboard isn't used (like the PIN or pattern auth methods).
-        modifier = modifier.imePadding().onKeyEvent(viewModel::onKeyEvent).scale(scale)
-    ) {
+    Box(modifier = modifier.onKeyEvent(viewModel::onKeyEvent).scale(scale)) {
         when (layout) {
             BouncerOverlayLayout.STANDARD_BOUNCER -> StandardLayout(viewModel = viewModel)
             BouncerOverlayLayout.BESIDE_USER_SWITCHER ->
@@ -573,22 +564,12 @@ private fun BesideUserSwitcherLayout(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     modifier = Modifier.fillMaxWidth(),
                 ) {
-                    val isOutputAreaVisible = authMethod !is PatternBouncerViewModel
-                    // If there is an output area and the window is not tall enough, spacing needs
-                    // to be added between the input and the output areas (otherwise the two get
-                    // very squished together).
-                    val addSpacingBetweenOutputAndInput = isOutputAreaVisible && !isHeightExpanded
-
-                    Box(
-                        modifier =
-                            Modifier.weight(1f)
-                                .padding(top = (if (addSpacingBetweenOutputAndInput) 24 else 0).dp)
-                    ) {
+                    Box(modifier = Modifier.weight(1f)) {
                         InputArea(
                             viewModel = viewModel,
                             pinButtonRowVerticalSpacing = 12.dp,
                             centerPatternDotsVertically = true,
-                            modifier = Modifier.align(Alignment.BottomCenter),
+                            modifier = Modifier.padding(top = 24.dp).align(Alignment.BottomCenter),
                         )
                     }
 
