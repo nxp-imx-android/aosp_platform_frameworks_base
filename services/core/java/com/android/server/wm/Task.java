@@ -4709,7 +4709,9 @@ class Task extends TaskFragment {
                 .equals(mMultiWindowRestoreParent)) {
             // Restore previous parent if parent has changed.
             final Task parent = fromWindowContainerToken(mMultiWindowRestoreParent);
-            reparent(parent, MAX_VALUE);
+            if (parent != null && parent.isAttached()) {
+                reparent(parent, MAX_VALUE);
+            }
         }
 
         // mMultiWindowRestoreWindowingMode is INVALID for non-root tasks
