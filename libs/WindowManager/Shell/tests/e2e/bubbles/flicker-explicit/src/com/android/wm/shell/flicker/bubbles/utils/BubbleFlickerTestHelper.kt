@@ -126,7 +126,10 @@ internal object BubbleFlickerTestHelper {
         taskBarAppIcon.dragToBubbleBarLocation(false /* isBubbleBarLeftDropTarget */)
 
         waitAndAssertBubbleAppInExpandedState(testApp, wmHelper)
-        tapl.launchedAppState.assertTaskbarHidden()
+        if (tapl.isTransientTaskbar) {
+            // Transient taskbar is stashed when bubble bar expands
+            tapl.launchedAppState.assertTaskbarHidden()
+        }
         assertWithMessage("The education must not show for Application bubble")
             .that(Root.get().bubble.isEducationVisible).isFalse()
     }
