@@ -29,11 +29,6 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.role
-import androidx.compose.ui.semantics.stateDescription
-import androidx.compose.ui.semantics.toggleableState
-import androidx.compose.ui.state.ToggleableState
 import androidx.compose.ui.unit.dp
 import com.android.settingslib.bluetooth.devicesettings.shared.model.DeviceSettingModel
 import com.android.settingslib.bluetooth.devicesettings.shared.model.DeviceSettingStateModel
@@ -74,16 +69,7 @@ constructor(
                             DeviceSettingStateModel.ActionSwitchPreferenceState(!isChecked)
                         )
                     },
-                    semantics = {
-                        role = Role.Switch
-                        toggleableState =
-                            if (isChecked) {
-                                ToggleableState.On
-                            } else {
-                                ToggleableState.Off
-                            }
-                        contentDescription = setting.title
-                    },
+                    semanticsRole = Role.Switch,
                 )
             }
             is DeviceSettingModel.MultiTogglePreference -> {
@@ -94,7 +80,7 @@ constructor(
                 var gravity by remember { mutableIntStateOf(Gravity.CENTER_HORIZONTAL) }
                 val selectedToggle = setting.toggles[setting.state.selectedIndex]
                 VolumePanelButton(
-                    label = setting.title,
+                    label = selectedToggle.label,
                     icon = selectedToggle.icon.toSysUiIcon(LocalContext.current, null),
                     isActive = setting.isActive,
                     isEnabled = setting.isAllowedChangingState,
@@ -103,11 +89,7 @@ constructor(
                             .create(viewModelFactory)
                             .show(expandable = expandable, horizontalGravity = gravity)
                     },
-                    semantics = {
-                        role = Role.Button
-                        contentDescription = setting.title
-                        stateDescription = selectedToggle.label
-                    },
+                    semanticsRole = Role.Button,
                     modifier =
                         modifier.onGloballyPositioned {
                             gravity = calculateGravity(it, screenWidth)
