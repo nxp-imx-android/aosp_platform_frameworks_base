@@ -27,6 +27,7 @@ import com.android.systemui.customization.clocks.FontTextStyle
 import com.android.systemui.customization.clocks.view.DigitalAlignment
 import com.android.systemui.customization.clocks.view.HorizontalAlignment
 import com.android.systemui.customization.clocks.view.VerticalAlignment
+import com.android.systemui.plugins.keyguard.VPointF
 import com.android.systemui.plugins.keyguard.data.model.AlarmData
 import com.android.systemui.plugins.keyguard.data.model.WeatherData
 import com.android.systemui.plugins.keyguard.data.model.ZenData
@@ -161,7 +162,7 @@ class FlexClockViewGroupController(private val clockCtx: ClockContext) : FlexClo
             override fun onPickerCarouselSwiping(swipingFraction: Float) {}
 
             override fun onFidgetTap(x: Float, y: Float) {
-                view.animateFidget(x, y)
+                view.animateFidget(VPointF(x, y), enforceBounds = true)
             }
 
             private var hasFontAxes = false
