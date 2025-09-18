@@ -133,6 +133,7 @@ import com.android.internal.protolog.WmProtoLogGroups;
 import com.android.internal.util.function.pooled.PooledLambda;
 import com.android.server.inputmethod.InputMethodManagerInternal;
 import com.android.server.statusbar.StatusBarManagerInternal;
+import com.android.window.flags.Flags;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -4064,6 +4065,13 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
         if (mState < STATE_STARTED && this == mController.getCollectingTransition()) {
             applyDisplayChangeIfNeeded(new ArraySet<>());
         }
+    }
+
+    /**
+     * @return true if the provided container is allowed to be a part of a transition if invisible
+     */
+    public static boolean allowsInvisibleExistenceChange(@NonNull WindowContainer wc) {
+        return Flags.transitInvisibleExistenceChange() || wc.inPinnedWindowingMode();
     }
 
     @NonNull

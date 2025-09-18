@@ -937,7 +937,8 @@ class TransitionController {
     Transition requestCloseTransitionIfNeeded(@NonNull WindowContainer<?> wc) {
         if (!Flags.fallbackTransitionPlayer() && mTransitionPlayers.isEmpty()) return null;
         if (isCollecting()) return null;
-        if (!wc.isVisibleRequested()) return null;
+
+        if (!Transition.allowsInvisibleExistenceChange(wc) && !wc.isVisibleRequested()) return null;
         return requestStartTransition(createTransition(TRANSIT_CLOSE, 0 /* flags */), wc.asTask(),
                 null /* remoteTransition */, null /* displayChange */);
     }
