@@ -26,14 +26,18 @@ import android.os.Bundle
  * all necessary validation.
  *
  * @property schema The schema that this set of parameters conforms to.
- * @property values The validated bundle of parameter names to their string values.
+ * @property values The validated map of parameter names to their string values.
  */
-class KeyParameters internal constructor(
+@ConsistentCopyVisibility
+data class KeyParameters internal constructor(
     private val schema: KeyParametersSchema,
-    // TODO (b/442385176): replace the bundle with a map<String, String> once the catalyst client
-    // stops passing the arguments as a bundle.
-    private val values: Bundle
+    internal val values: Map<String, String>
 ) {
+    /**
+     * Returns `true` if this [KeyParameters] object contains no parameters.
+     */
+    val isEmpty = values.isEmpty()
+
     /**
      * Retrieves the value for a given parameter key.
      *
@@ -46,7 +50,7 @@ class KeyParameters internal constructor(
         if (!schema.containsKey(key)) {
             throw IllegalArgumentException("Parameter '$key' is not defined in the schema.")
         }
-        return values.getString(key)
+        return values[key]
     }
 
     /**
@@ -72,23 +76,29 @@ class KeyParameters internal constructor(
             throw IllegalArgumentException("Parameter '$key' is not defined as required in the schema.")
         }
 
-        return values.getString(key) ?: error("Value for required parameter '$key' was null.")
+        return values[key] ?: error("Value for required parameter '$key' was null.")
     }
 
-    // TODO (b/442385176): remove this method once the catalyst client stops passing the arguments as a bundle.
-    fun toBundle(): Bundle = values
+    /**
+     * Converts this [KeyParameters] instance into an Android [Bundle].
+     *
+     * @return A new [Bundle] containing all the key-value pairs stored in this object.
+     */
+    fun toBundle(): Bundle {
+        val bundle = Bundle()
+        values.forEach { (k, v) -> bundle.putString(k, v) }
+        return bundle
+    }
 
     /**
      * Converts the key-value parameters into a string format suitable for persistence and parsing.
      * The format is `[key1=value1,key2=value2,...]`.
      */
     fun toParametersString(): String {
-        return values.keySet().joinToString(separator = ",", prefix = "[", postfix = "]") { key ->
-            "$key=${values.getString(key)}"
+        return values.entries.joinToString(separator = ",", prefix = "[", postfix = "]") {
+            (key, value) -> "$key=$value"
         }
     }
-
-    override fun toString(): String = "KeyParameters(schema=$schema, values=${toParametersString()})"
 }
 
 /**
@@ -113,7 +123,12 @@ class KeyParametersSchema private constructor(
         val name: String,
         val description: String,
         val required: Boolean
-    )
+    ) {
+        fun toParameterSchemaString(): String {
+            val escapedDescription = description.replace("\"", "\\\"")
+            return "{\"description\":\"$escapedDescription\",\"required\":$required}"
+        }
+    }
 
     /**
      * A builder for constructing a [KeyParametersSchema] using a DSL-style syntax.
@@ -154,20 +169,13 @@ class KeyParametersSchema private constructor(
      * is provided.
      */
     fun prepare(providedValues: Map<String, String>): KeyParameters {
-        val finalValues = Bundle()
-
-        // Check for unknown parameters
-        providedValues.keys.forEach { key ->
-            if (!schema.containsKey(key)) {
-                throw IllegalArgumentException("Unknown parameter '$key' provided.")
-            }
-        }
+        val finalValues = mutableMapOf<String, String>()
 
         // Validate provided values and check for required parameters
         schema.forEach { (name, def) ->
             val value = providedValues[name]
             if (value != null) {
-                finalValues.putString(name, value)
+                finalValues[name] = value
             } else if (def.required) {
                 throw IllegalArgumentException("Required parameter '$name' is missing.")
             }
@@ -194,6 +202,35 @@ class KeyParametersSchema private constructor(
             bundle.getString(key)?.let { value -> key to value }
         }.toMap()
         return prepare(providedValues)
+    }
+
+    /**
+     * Creates a new [KeyParameters] instance by updating an existing one with new values.
+     *
+     * This method takes an existing, valid [KeyParameters] object, merges it with the
+     * new values, and then re-validates the entire set to produce a new, immutable object.
+     *
+     * @param existing The original [KeyParameters] object.
+     * @param newValues A map of the new key-value pairs to apply.
+     * @return A new, validated [KeyParameters] instance.
+     * @throws IllegalArgumentException if validation fails.
+     */
+    fun prepareWith(existing: KeyParameters?, newValues: Map<String, String>): KeyParameters {
+        val currentValues = existing?.values?.toMutableMap() ?: mutableMapOf()
+
+        // TODO (b/452555836): remove this "schemaDevtool" devtool testing
+        currentValues.remove("schemaDevtool")
+
+        currentValues.putAll(newValues)
+
+        return prepare(currentValues)
+    }
+
+    /**
+     * A convenience overload for updating with a single key-value pair.
+     */
+    fun prepareWith(existing: KeyParameters?, vararg newValues: Pair<String, String>): KeyParameters {
+        return prepareWith(existing, newValues.toMap())
     }
 
     /**
@@ -234,6 +271,16 @@ class KeyParametersSchema private constructor(
     }
 
     /**
+     * Creates an empty [KeyParameters] instance.
+     *
+     * This method is primarily used for backward compatibility when a preference screen
+     * transitions from being non-parameterized to parameterized. In such migration scenarios,
+     * the parameterized screen is expected to gracefully accept and handle empty [KeyParameters]
+     * to ensure compatibility with older configurations or entry points.
+     */
+    fun prepareEmpty() = prepare(emptyMap())
+
+    /**
      * Checks if a parameter key is defined in this schema.
      */
     internal fun containsKey(key: String): Boolean = schema.containsKey(key)
@@ -249,13 +296,23 @@ class KeyParametersSchema private constructor(
         return schema[key]?.required ?: false
     }
 
-    fun toParametersSchemaString() : String {
-        return schema.entries.joinToString(separator = ",", prefix = "[", postfix = "]") {
-            "${it.key}=${it.value}"
+    fun toParametersSchemaString(): String {
+        return schema.entries.joinToString(separator = ",", prefix = "{", postfix = "}") {
+            "\"${it.key}\":${it.value.toParameterSchemaString()}"
         }
     }
 
     override fun toString() = "KeyParametersSchema(schema=${toParametersSchemaString()})"
+
+    companion object {
+        /**
+         * An empty [KeyParametersSchema] instance.
+         *
+         * TODO (b/457182494): This should be removed once all the parameterized screen have been migrated.
+         */
+        @JvmStatic
+        val EMPTY = KeyParametersSchema { }
+    }
 }
 
 /**
@@ -273,3 +330,31 @@ fun KeyParametersSchema(block: KeyParametersSchema.Builder.() -> Unit): KeyParam
     block(builder)
     return builder.build()
 }
+
+// Should we have here a unified place to store the keys?
+const val KEY_PACKAGE_NAME = "pkg"
+
+/**
+ * Adds the app package name parameter to the schema.
+ * @param required Whether this parameter must be provided. Defaults to `true`.
+ */
+fun KeyParametersSchema.Builder.withAppPackageName() {
+    parameter(KEY_PACKAGE_NAME, "The package name of the app", required = true)
+}
+
+/**
+ * Convenience method to prepare KeyParameters with a single application package name.
+ * Assumes the schema includes the KEY_PACKAGE_NAME parameter.
+ *
+ * @param packageName The package name value.
+ * @return Validated KeyParameters.
+ */
+fun KeyParametersSchema.prepareForApp(packageName: String): KeyParameters {
+    return prepare(KEY_PACKAGE_NAME to packageName)
+}
+
+/**
+ * Convenience method to retrieve the package name from a KeyParameters.
+ */
+val KeyParameters.packageName: String
+    get() = getRequired(KEY_PACKAGE_NAME)

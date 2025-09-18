@@ -22,6 +22,7 @@ import android.os.Bundle
 import androidx.annotation.AnyThread
 import androidx.annotation.StringRes
 import androidx.fragment.app.Fragment
+import com.android.settingslib.catalyst.flags.Flags as CatalystFlags
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 
@@ -36,15 +37,21 @@ import kotlinx.coroutines.flow.Flow
  *
  * For parameterized preference screen that relies on additional information (e.g. package name,
  * language code) to build its content, the subclass must:
- * - override [arguments] in constructor
+ * - override [arguments] in constructor (Deprecated: Will be removed once the catalyst framework
+ *   stops passing the arguments as a bundle. Instead: override [KeyParameters])
  * - override [bindingKey] to distinguish the preferences on the preference hierarchy
- * - add a static method `fun parameters(context: Context): Flow<Bundle>` (context is optional) to
- *   provide all possible arguments
+ * - add a companion object that inherits from [ParameterizedPreferenceScreenArgumentsFactory] and
+ *   provide the parameter schema and implement the `fun parameters(context: Context): Flow<Bundle>`
+ *   (context is optional) to provide all possible arguments
  */
 @AnyThread
 interface PreferenceScreenMetadata : PreferenceGroup {
     /** Arguments to build the screen content. */
+    @Deprecated("This property will be removed once the catalyst framework stops passing the arguments as a bundle. Use the keyParameters instead.")
     val arguments: Bundle?
+        get() = null
+
+    val keyParameters: KeyParameters?
         get() = null
 
     /**
@@ -173,7 +180,12 @@ fun interface PreferenceScreenMetadataFactory {
  * [ProvidePreferenceScreen] when [ProvidePreferenceScreen.parameterized] is `true`.
  */
 interface PreferenceScreenMetadataParameterizedFactory : PreferenceScreenMetadataFactory {
-    override fun create(context: Context) = create(context, Bundle.EMPTY)
+    override fun create(context: Context) =
+        if (CatalystFlags.catalystUseKeyParameters()) {
+            createWithKeyParameters(context, parametersSchema.prepareEmpty())
+        } else {
+            create(context, Bundle.EMPTY)
+        }
 
     /**
      * Creates a new [PreferenceScreenMetadata] with given arguments.
@@ -205,4 +217,47 @@ interface PreferenceScreenMetadataParameterizedFactory : PreferenceScreenMetadat
      * take care of backward compatibility.
      */
     fun acceptEmptyArguments(): Boolean = false
+
+    /**
+     * Creates a new [PreferenceScreenMetadata] with given key-parameters.
+     *
+     * @param context application context to create the PreferenceScreenMetadata
+     * @param keyParameters parameters to create the screen metadata
+     */
+    fun createWithKeyParameters(context: Context, keyParameters: KeyParameters): PreferenceScreenMetadata
+
+    /**
+     * Returns all possible key-parameters to create [PreferenceScreenMetadata].
+     *
+     * Note that an empty key-parameters is used for backward compatibility when a preference screen
+     * transitions from being non-parameterized to parameterized. In such migration scenarios
+     * the parameterized screen is expected to gracefully accept and handle empty key-parameters
+     * to ensure compatibility with older configurations or entry points.
+     *
+     * To mark a preference screen as transitioning from non-parameterized to parameterized:
+     * 1. Set [ProvidePreferenceScreen.parameterizedMigration] to `true`, so that the generated
+     *    [acceptEmptyArguments] will be `true`.
+     * 2. In the [keyParameters] implementation, produce a parametersSchema.prepareEmpty() for the
+     *    default case.
+     */
+    fun keyParameters(context: Context): Flow<KeyParameters>
+
+    /**
+     * Defines the schema for the parameters in order to create an instance of the parameterized
+     * screen.
+     */
+    val parametersSchema: KeyParametersSchema
+}
+
+interface ParameterizedPreferenceScreenArgumentsFactory {
+    /**
+     * Defines the schema for the parameters in order to create an instance of the parameterized
+     * screen.
+     */
+    val parametersSchema: KeyParametersSchema
+
+    /**
+     * Returns all possible parameters to create a [PreferenceScreenMetadata].
+     */
+    fun keyParameters(context: Context): Flow<KeyParameters>
 }

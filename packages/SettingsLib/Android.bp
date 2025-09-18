@@ -68,6 +68,7 @@ android_library {
         "SettingsLibValuePreference",
         "SettingsLibZeroStatePreference",
         "settingslib_media_flags_lib",
+        "settingslib_catalyst_flags_lib",
     ],
     libs: [
         // This flag library has been added in frameworks jar
@@ -132,4 +133,22 @@ aconfig_declarations {
 java_aconfig_library {
     name: "settingslib_media_flags_lib",
     aconfig_declarations: "settingslib_media_flags",
+    defaults: ["SettingsLibApexDefaults"],
+    min_sdk_version: "30",
+}
+
+aconfig_declarations {
+    name: "settingslib_catalyst_flags",
+    package: "com.android.settingslib.catalyst.flags",
+    container: "system",
+    srcs: [
+        "aconfig/settingslib_catalyst_flag_declarations.aconfig",
+    ],
+}
+
+java_aconfig_library {
+    name: "settingslib_catalyst_flags_lib",
+    aconfig_declarations: "settingslib_catalyst_flags",
+    defaults: ["SettingsLibApexDefaults"],
+    min_sdk_version: "30",
 }

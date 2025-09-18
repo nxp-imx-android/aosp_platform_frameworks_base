@@ -19,9 +19,9 @@ package com.android.settingslib.metadata
 import android.os.Bundle
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.common.truth.Truth.assertThat
-import kotlin.test.assertFailsWith
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.junit.Assert.assertThrows
 
 @RunWith(AndroidJUnit4::class)
 class KeyParametersTest {
@@ -37,7 +37,7 @@ class KeyParametersTest {
 
     @Test
     fun schemaBuilder_duplicateParameter_throwsException() {
-        val exception = assertFailsWith<IllegalArgumentException> {
+        val exception = assertThrows(IllegalArgumentException::class.java) {
             KeyParametersSchema {
                 parameter("param1", "description1")
                 parameter("param1", "description2")
@@ -49,7 +49,7 @@ class KeyParametersTest {
     @Test
     fun schemaBuilder_noParameters() {
         val emptySchema = KeyParametersSchema {}
-        assertThat(emptySchema.toString()).isEqualTo("KeyParametersSchema(schema=[])")
+        assertThat(emptySchema.toString()).isEqualTo("KeyParametersSchema(schema={})")
     }
 
     @Test
@@ -75,7 +75,7 @@ class KeyParametersTest {
 
     @Test
     fun prepare_missingRequiredParameter_throwsException() {
-        val exception = assertFailsWith<IllegalArgumentException> {
+        val exception = assertThrows(IllegalArgumentException::class.java) {
             testSchema.prepare(mapOf("optional_param" to "value2"))
         }
         assertThat(exception.message).isEqualTo("Required parameter 'required_param' is missing.")
@@ -83,7 +83,7 @@ class KeyParametersTest {
 
     @Test
     fun prepare_unknownParameter_throwsException() {
-        val exception = assertFailsWith<IllegalArgumentException> {
+        val exception = assertThrows(IllegalArgumentException::class.java) {
             testSchema.prepare(
                 mapOf(
                     "required_param" to "value1",
@@ -130,7 +130,7 @@ class KeyParametersTest {
         val bundle = Bundle().apply {
             putString("optional_param", "bundle_value2")
         }
-        val exception = assertFailsWith<IllegalArgumentException> {
+        val exception = assertThrows(IllegalArgumentException::class.java) {
             testSchema.prepare(bundle)
         }
         assertThat(exception.message).isEqualTo("Required parameter 'required_param' is missing.")
@@ -142,7 +142,7 @@ class KeyParametersTest {
             putString("required_param", "bundle_value1")
             putString("unknown_param", "unknown")
         }
-        val exception = assertFailsWith<IllegalArgumentException> {
+        val exception = assertThrows(IllegalArgumentException::class.java) {
             testSchema.prepare(bundle)
         }
         assertThat(exception.message).isEqualTo("Unknown parameter 'unknown_param' provided.")
@@ -162,7 +162,7 @@ class KeyParametersTest {
     @Test
     fun prepareFromBundle_emptyBundle_throwsForRequired() {
         val bundle = Bundle()
-        val exception = assertFailsWith<IllegalArgumentException> {
+        val exception = assertThrows(IllegalArgumentException::class.java) {
             testSchema.prepare(bundle)
         }
         assertThat(exception.message).isEqualTo("Required parameter 'required_param' is missing.")
@@ -190,7 +190,7 @@ class KeyParametersTest {
     @Test
     fun get_unknownKey_throwsException() {
         val params = testSchema.prepare("required_param" to "value1")
-        val exception = assertFailsWith<IllegalArgumentException> {
+        val exception = assertThrows(IllegalArgumentException::class.java) {
             params.get("unknown_key")
         }
         assertThat(exception.message).isEqualTo("Parameter 'unknown_key' is not defined in the schema.")
@@ -205,7 +205,7 @@ class KeyParametersTest {
     @Test
     fun getRequired_unknownKey_throwsException() {
         val params = testSchema.prepare("required_param" to "value1")
-        val exception = assertFailsWith<IllegalArgumentException> {
+        val exception = assertThrows(IllegalArgumentException::class.java) {
             params.getRequired("unknown_key")
         }
         assertThat(exception.message).isEqualTo("Parameter 'unknown_key' is not defined in the schema.")
@@ -217,7 +217,7 @@ class KeyParametersTest {
             "required_param" to "value1",
             "optional_param" to "value2"
         )
-        val exception = assertFailsWith<IllegalArgumentException> {
+        val exception = assertThrows(IllegalArgumentException::class.java) {
             params.getRequired("optional_param")
         }
         assertThat(exception.message).isEqualTo("Parameter 'optional_param' is not defined as required in the schema.")
@@ -244,7 +244,7 @@ class KeyParametersTest {
         assertThat(params.toParametersString()).isEqualTo("[]")
     }
 
-     @Test
+    @Test
     fun toParametersString_specialChars() {
         val params = testSchema.prepare(
             "required_param" to "value with spaces, and=equals",
@@ -314,7 +314,7 @@ class KeyParametersTest {
 
     @Test
     fun prepareFromString_emptyContent_failsWithRequiredParam() {
-        val exception = assertFailsWith<IllegalArgumentException> {
+        val exception = assertThrows(IllegalArgumentException::class.java) {
             testSchema.prepare("[]")
         }
         assertThat(exception.message).isEqualTo("Required parameter 'required_param' is missing.")
@@ -328,7 +328,7 @@ class KeyParametersTest {
 
     @Test
     fun prepareFromString_missingOpeningBracket_throwsException() {
-        val exception = assertFailsWith<IllegalArgumentException> {
+        val exception = assertThrows(IllegalArgumentException::class.java) {
             testSchema.prepare("required_param=value1]")
         }
         assertThat(exception.message).isEqualTo("String must be enclosed in brackets [].")
@@ -336,7 +336,7 @@ class KeyParametersTest {
 
     @Test
     fun prepareFromString_missingClosingBracket_throwsException() {
-        val exception = assertFailsWith<IllegalArgumentException> {
+        val exception = assertThrows(IllegalArgumentException::class.java) {
             testSchema.prepare("[required_param=value1")
         }
         assertThat(exception.message).isEqualTo("String must be enclosed in brackets [].")
@@ -344,7 +344,7 @@ class KeyParametersTest {
 
     @Test
     fun prepareFromString_malformedPair_noEquals_throwsException() {
-        val exception = assertFailsWith<IllegalArgumentException> {
+        val exception = assertThrows(IllegalArgumentException::class.java) {
             testSchema.prepare("[required_param:value1]")
         }
         assertThat(exception.message).isEqualTo("Malformed key-value pair: 'required_param:value1'")
@@ -352,9 +352,133 @@ class KeyParametersTest {
 
     @Test
     fun prepareFromString_emptyKey_throwsException() {
-        val exception = assertFailsWith<IllegalArgumentException> {
+        val exception = assertThrows(IllegalArgumentException::class.java) {
             testSchema.prepare("[=value,required_param=app]")
         }
         assertThat(exception.message).isEqualTo("Key cannot be empty in pair: '=value'")
+    }
+
+    @Test
+    fun isEmpty_whenEmpty_isTrue() {
+        val params = optionalSchema.prepare(emptyMap())
+        assertThat(params.isEmpty).isTrue()
+    }
+
+    @Test
+    fun isEmpty_whenNotEmpty_isFalse() {
+        val params = testSchema.prepare("required_param" to "value1")
+        assertThat(params.isEmpty).isFalse()
+    }
+
+    @Test
+    fun equals_sameSchemaAndValues_isTrue() {
+        val params1 = testSchema.prepare("required_param" to "value1", "optional_param" to "value2")
+        val params2 = testSchema.prepare("required_param" to "value1", "optional_param" to "value2")
+        assertThat(params1).isEqualTo(params2)
+    }
+
+    @Test
+    fun equals_differentSchema_isFalse() {
+        val params1 = testSchema.prepare("required_param" to "value1")
+        val params2 = optionalSchema.prepare("optional_param" to "value1")
+        assertThat(params1).isNotEqualTo(params2)
+    }
+
+    @Test
+    fun equals_differentValues_isFalse() {
+        val params1 = testSchema.prepare("required_param" to "value1")
+        val params2 = testSchema.prepare("required_param" to "value2")
+        assertThat(params1).isNotEqualTo(params2)
+    }
+
+    @Test
+    fun equals_differentOrder_isTrue() {
+        val params1 = testSchema.prepare("optional_param" to "value2", "required_param" to "value1")
+        val params2 = testSchema.prepare("required_param" to "value1", "optional_param" to "value2")
+        assertThat(params1).isEqualTo(params2)
+    }
+
+    @Test
+    fun hashCode_sameSchemaAndValues_isEqual() {
+        val params1 = testSchema.prepare("required_param" to "value1", "optional_param" to "value2")
+        val params2 = testSchema.prepare("required_param" to "value1", "optional_param" to "value2")
+        assertThat(params1.hashCode()).isEqualTo(params2.hashCode())
+    }
+
+    @Test
+    fun hashCode_differentValues_isNotEqual() {
+        val params1 = testSchema.prepare("required_param" to "value1")
+        val params2 = testSchema.prepare("required_param" to "value2")
+        assertThat(params1.hashCode()).isNotEqualTo(params2.hashCode())
+    }
+
+    @Test
+    fun hashCode_differentOrder_isEqual() {
+        val params1 = testSchema.prepare("optional_param" to "value2", "required_param" to "value1")
+        val params2 = testSchema.prepare("required_param" to "value1", "optional_param" to "value2")
+        assertThat(params1.hashCode()).isEqualTo(params2.hashCode())
+    }
+
+    @Test
+    fun prepareWith_addNewValue_succeeds() {
+        val initialParams = testSchema.prepare("required_param" to "value1")
+        val newParams = testSchema.prepareWith(initialParams, "optional_param" to "newValue")
+        assertThat(newParams["required_param"]).isEqualTo("value1")
+        assertThat(newParams["optional_param"]).isEqualTo("newValue")
+    }
+
+    @Test
+    fun prepareWith_updateExistingValue_succeeds() {
+        val initialParams = testSchema.prepare("required_param" to "value1", "optional_param" to "oldValue")
+        val newParams = testSchema.prepareWith(initialParams, "optional_param" to "newValue")
+        assertThat(newParams["required_param"]).isEqualTo("value1")
+        assertThat(newParams["optional_param"]).isEqualTo("newValue")
+    }
+
+    @Test
+    fun prepareWith_varargs_succeeds() {
+        val initialParams = testSchema.prepare("required_param" to "value1")
+        val newParams = testSchema.prepareWith(initialParams, "optional_param" to "newValue", "required_param" to "updatedValue")
+        assertThat(newParams["required_param"]).isEqualTo("updatedValue")
+        assertThat(newParams["optional_param"]).isEqualTo("newValue")
+    }
+
+    @Test
+    fun toParametersSchemaString_returnsCorrectJson() {
+        val schemaString = testSchema.toParametersSchemaString()
+        val expectedString = "{\"required_param\":{\"description\":\"A required parameter\",\"required\":true},\"optional_param\":{\"description\":\"An optional parameter\",\"required\":false}}"
+        assertThat(schemaString).isEqualTo(expectedString)
+    }
+
+    @Test
+    fun emptyObject_isEmpty() {
+        assertThat(testSchema.prepareEmpty().isEmpty).isTrue()
+    }
+
+    @Test
+    fun withAppPackageName_addsParameterToSchema() {
+        val schema = KeyParametersSchema {
+            withAppPackageName()
+        }
+        assertThat(schema.containsKey(KEY_PACKAGE_NAME)).isTrue()
+        assertThat(schema.isRequiredParameter(KEY_PACKAGE_NAME)).isTrue()
+    }
+
+    @Test
+    fun prepareForApp_createsCorrectParameters() {
+        val schema = KeyParametersSchema {
+            withAppPackageName()
+        }
+        val params = schema.prepareForApp("com.example.app")
+        assertThat(params[KEY_PACKAGE_NAME]).isEqualTo("com.example.app")
+    }
+
+    @Test
+    fun getPackageName_returnsCorrectValue() {
+        val schema = KeyParametersSchema {
+            withAppPackageName()
+        }
+        val params = schema.prepareForApp("com.example.app")
+        assertThat(params.packageName).isEqualTo("com.example.app")
     }
 }
