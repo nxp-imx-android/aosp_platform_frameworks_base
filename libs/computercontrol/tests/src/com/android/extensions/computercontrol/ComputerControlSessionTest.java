@@ -68,6 +68,7 @@ public class ComputerControlSessionTest {
     private static final int TIMEOUT_MS = 2_000;
     private static final String SESSION_NAME = "test";
     private static final String TARGET_PACKAGE = "com.android.foo";
+    private static final String TARGET_CLASS = "com.android.foo.FooActivity";
     private final Context mContext =
             InstrumentationRegistry.getInstrumentation().getTargetContext();
 
@@ -136,8 +137,15 @@ public class ComputerControlSessionTest {
     @Test
     public void launchApplication_launchesApplication() throws Exception {
         mSession.launchApplication(TARGET_PACKAGE);
-        verify(mIComputerControlSession).launchApplication(eq(TARGET_PACKAGE));
+        verify(mIComputerControlSession).launchApplication(TARGET_PACKAGE, null);
     }
+
+    @Test
+    public void launchApplication_withComponentName_launchesApplication() throws Exception {
+        mSession.launchApplication(new ComponentName(TARGET_PACKAGE, TARGET_CLASS));
+        verify(mIComputerControlSession).launchApplication(TARGET_PACKAGE, TARGET_CLASS);
+    }
+
 
     @Test
     public void tap_taps() throws Exception {

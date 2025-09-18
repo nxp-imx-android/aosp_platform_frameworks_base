@@ -22,6 +22,7 @@ import android.annotation.IntRange;
 import android.app.ActivityOptions;
 import android.companion.virtual.computercontrol.ComputerControlSession.Action;
 import android.companion.virtual.computercontrol.InteractiveMirrorDisplay;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.hardware.display.VirtualDisplay;
@@ -109,6 +110,17 @@ public final class ComputerControlSession implements AutoCloseable {
      */
     public void launchApplication(@NonNull String packageName) {
         mSession.launchApplication(Objects.requireNonNull(packageName));
+        mAccessibilityProxy.resetStabilityState();
+    }
+
+    /**
+     * Launches an application's launcher activity in the computer control session.
+     *
+     * @throws IllegalArgumentException if the component is not a launcher activity.
+     * @see Params#getTargetPackageNames()
+     */
+    public void launchApplication(@NonNull ComponentName component) {
+        mSession.launchApplication(Objects.requireNonNull(component));
         mAccessibilityProxy.resetStabilityState();
     }
 

@@ -49,6 +49,7 @@ import android.companion.virtual.computercontrol.ComputerControlSessionParams;
 import android.companion.virtual.computercontrol.IComputerControlStabilityListener;
 import android.companion.virtualdevice.flags.Flags;
 import android.content.AttributionSource;
+import android.content.Intent;
 import android.hardware.display.DisplayManager;
 import android.hardware.display.VirtualDisplayConfig;
 import android.hardware.input.IVirtualInputDevice;
@@ -105,6 +106,8 @@ public class ComputerControlSessionTest {
     private static final List<String> TARGET_PACKAGE_NAMES =
             List.of(TARGET_PACKAGE_1, TARGET_PACKAGE_2);
     private static final String UNDECLARED_TARGET_PACKAGE = "com.android.baz";
+    private static final String TARGET_CLASS = "com.android.foo.FooActivity";
+    private static final Intent LAUNCH_INTENT = new Intent(Intent.ACTION_MAIN);
 
     @Mock
     private ComputerControlSessionProcessor.VirtualDeviceFactory mVirtualDeviceFactory;
@@ -277,29 +280,31 @@ public class ComputerControlSessionTest {
     @Test
     public void launchApplication_launchesApplication() throws RemoteException {
         createComputerControlSession(mDefaultParams);
-        mSession.launchApplication(TARGET_PACKAGE_1);
+        when(mInjector.getLaunchIntent(TARGET_PACKAGE_1, TARGET_CLASS)).thenReturn(LAUNCH_INTENT);
+        mSession.launchApplication(TARGET_PACKAGE_1, TARGET_CLASS);
         verify(mInjector).launchApplicationOnDisplayAsUser(
-                eq(TARGET_PACKAGE_1), eq(VIRTUAL_DISPLAY_ID), any());
-    }
-
-    @Test
-    @DisableFlags(Flags.FLAG_COMPUTER_CONTROL_ACTIVITY_POLICY_STRICT)
-    public void launchApplication_noActivityPolicy_launchesApplication() throws RemoteException {
-        createComputerControlSession(mDefaultParams);
-        mSession.launchApplication(UNDECLARED_TARGET_PACKAGE);
-        verify(mInjector).launchApplicationOnDisplayAsUser(
-                eq(UNDECLARED_TARGET_PACKAGE), eq(VIRTUAL_DISPLAY_ID), any());
+                eq(LAUNCH_INTENT), eq(VIRTUAL_DISPLAY_ID), any());
     }
 
     @Test
     @EnableFlags(Flags.FLAG_COMPUTER_CONTROL_ACTIVITY_POLICY_STRICT)
     public void launchApplication_strictActivityPolicy_addsExemption() throws RemoteException {
         createComputerControlSession(mDefaultParams);
-        mSession.launchApplication(UNDECLARED_TARGET_PACKAGE);
+        when(mInjector.getLaunchIntent(UNDECLARED_TARGET_PACKAGE, TARGET_CLASS))
+                .thenReturn(LAUNCH_INTENT);
+        mSession.launchApplication(UNDECLARED_TARGET_PACKAGE, TARGET_CLASS);
         verify(mVirtualDevice).addActivityPolicyExemption(
                 argThat(new MatchesActivityPolicyExcemption(UNDECLARED_TARGET_PACKAGE)));
         verify(mInjector).launchApplicationOnDisplayAsUser(
-                eq(UNDECLARED_TARGET_PACKAGE), eq(VIRTUAL_DISPLAY_ID), any());
+                eq(LAUNCH_INTENT), eq(VIRTUAL_DISPLAY_ID), any());
+    }
+
+    @Test
+    public void launchApplication_noLaunchIntent_throws() throws RemoteException {
+        createComputerControlSession(mDefaultParams);
+        when(mInjector.getLaunchIntent(TARGET_PACKAGE_1, TARGET_CLASS)).thenReturn(null);
+        assertThrows(IllegalArgumentException.class,
+                () -> mSession.launchApplication(TARGET_PACKAGE_1, TARGET_CLASS));
     }
 
     @Test
@@ -565,7 +570,8 @@ public class ComputerControlSessionTest {
         createComputerControlSession(mDefaultParams);
         mSession.setStabilityListener(mStabilityListener);
 
-        mSession.launchApplication(TARGET_PACKAGE_1);
+        when(mInjector.getLaunchIntent(TARGET_PACKAGE_1, TARGET_CLASS)).thenReturn(LAUNCH_INTENT);
+        mSession.launchApplication(TARGET_PACKAGE_1, TARGET_CLASS);
 
         verify(mStabilityListener, timeout(STABILITY_TIMEOUT_MS)).onSessionStable();
     }

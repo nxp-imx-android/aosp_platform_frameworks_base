@@ -23,6 +23,7 @@ import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.app.Activity;
 import android.app.PendingIntent;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentSender;
@@ -161,7 +162,21 @@ public final class ComputerControlSession implements AutoCloseable {
      */
     public void launchApplication(@NonNull String packageName) {
         try {
-            mSession.launchApplication(packageName);
+            mSession.launchApplication(packageName, /* className= */ null);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    /**
+     * Launches an application's launcher activity in the computer control session.
+     *
+     * @throws IllegalArgumentException if the component is not a launcher activity.
+     * @see ComputerControlSessionParams#getTargetPackageNames()
+     */
+    public void launchApplication(@NonNull ComponentName component) {
+        try {
+            mSession.launchApplication(component.getPackageName(), component.getClassName());
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }

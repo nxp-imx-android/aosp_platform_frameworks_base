@@ -24,6 +24,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.testng.Assert.assertThrows;
 
+import android.content.ComponentName;
 import android.hardware.display.DisplayManagerGlobal;
 import android.hardware.display.IDisplayManager;
 import android.hardware.display.IVirtualDisplayCallback;
@@ -50,6 +51,7 @@ public class ComputerControlSessionTest {
     private static final int WIDTH = 1920;
     private static final int HEIGHT = 1080;
     private static final String TARGET_PACKAGE = "com.android.foo";
+    private static final String TARGET_CLASS = "com.android.foo.FooActivity";
 
     @Mock
     private IComputerControlSession mMockSession;
@@ -144,7 +146,13 @@ public class ComputerControlSessionTest {
     @Test
     public void launchApplication_launchesApplication() throws RemoteException {
         mSession.launchApplication(TARGET_PACKAGE);
-        verify(mMockSession).launchApplication(eq(TARGET_PACKAGE));
+        verify(mMockSession).launchApplication(TARGET_PACKAGE, null);
+    }
+
+    @Test
+    public void launchApplication_withComponentName_launchesApplication() throws RemoteException {
+        mSession.launchApplication(new ComponentName(TARGET_PACKAGE, TARGET_CLASS));
+        verify(mMockSession).launchApplication(TARGET_PACKAGE, TARGET_CLASS);
     }
 
     @Test

@@ -42,6 +42,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.content.pm.PackageManager;
+import android.content.pm.PackageManager.ResolveInfoFlags;
+import android.content.pm.ResolveInfo;
 import android.hardware.display.DisplayManager;
 import android.hardware.display.DisplayManagerGlobal;
 import android.hardware.display.IVirtualDisplayCallback;
@@ -323,7 +325,13 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
     }
 
     @Override
-    public void launchApplication(@NonNull String packageName) throws RemoteException {
+    public void launchApplication(@NonNull String packageName, @Nullable String className)
+            throws RemoteException {
+        final Intent intent = mInjector.getLaunchIntent(packageName, className);
+        if (intent == null) {
+            throw new IllegalArgumentException(
+                    "Could not find launcher activity for " + packageName + "/" + className);
+        }
         if (Flags.computerControlActivityPolicyStrict()) {
             // TODO(b/444600407): Remove this once the consent model is per-target app. While the
             // consent is general, the caller can extend the list of target packages dynamically.
@@ -332,7 +340,7 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
         }
         final UserHandle user = Binder.getCallingUserHandle();
         Binder.withCleanCallingIdentity(() -> mInjector.launchApplicationOnDisplayAsUser(
-                packageName, mVirtualDisplayId, user));
+                intent, mVirtualDisplayId, user));
         notifyApplicationLaunchToStabilityCalculator();
     }
 
@@ -718,15 +726,25 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
             return mPackageManager.getPermissionControllerPackageName();
         }
 
-        public void launchApplicationOnDisplayAsUser(String packageName, int displayId,
+        public void launchApplicationOnDisplayAsUser(Intent intent, int displayId,
                 UserHandle user) {
-            Intent intent = mPackageManager.getLaunchIntentForPackage(packageName);
-            if (intent == null) {
-                throw new IllegalArgumentException(
-                        "Package " + packageName + " does not have a launcher activity.");
-            }
             mContext.startActivityAsUser(intent,
                     ActivityOptions.makeBasic().setLaunchDisplayId(displayId).toBundle(), user);
+        }
+
+        public Intent getLaunchIntent(String packageName, String className) {
+            if (className == null) {
+                return mPackageManager.getLaunchIntentForPackage(packageName);
+            }
+            final Intent intent = new Intent(Intent.ACTION_MAIN)
+                    .addCategory(Intent.CATEGORY_LAUNCHER)
+                    .setClassName(packageName, className);
+            final List<ResolveInfo> resolveInfos = mPackageManager.queryIntentActivities(
+                    intent, ResolveInfoFlags.of(PackageManager.MATCH_ALL));
+            if (resolveInfos.isEmpty()) {
+                return null;
+            }
+            return intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         }
 
         public void startCustomBlockedActivityOnDisplay(Intent intent, int displayId) {
