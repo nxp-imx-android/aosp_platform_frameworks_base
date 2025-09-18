@@ -46,7 +46,6 @@ import com.android.extensions.computercontrol.input.KeyEvent;
 import com.android.extensions.computercontrol.input.TouchEvent;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.Executor;
@@ -250,14 +249,10 @@ public final class ComputerControlSession implements AutoCloseable {
 
     /**
      * Returns all windows on the display associated with the {@link ComputerControlSession}.
-     *
-     * @deprecated This method is no longer in use and will be removed in a future release.
      */
-    // TODO: b/437852886 - Remove this method when moving to v1 of the API.
-    @Deprecated
     @NonNull
     public List<AccessibilityWindowInfo> getAccessibilityWindows() {
-        return Collections.emptyList();
+        return mAccessibilityProxy.getWindows();
     }
 
     /**
