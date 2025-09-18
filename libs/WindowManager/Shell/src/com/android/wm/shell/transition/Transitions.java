@@ -1773,11 +1773,11 @@ public class Transitions implements RemoteCallable<Transitions>,
         }
 
         @Override
-        public void setHomeTransitionListener(IHomeTransitionListener listener) {
+        public void setHomeTransitionListener(IHomeTransitionListener listener, int userId) {
             executeRemoteCallWithTaskPermission(mTransitions, "setHomeTransitionListener",
                     (transitions) -> {
                         transitions.mHomeTransitionObserver.setHomeTransitionListener(transitions,
-                                listener);
+                                listener, userId);
                     });
         }
 
