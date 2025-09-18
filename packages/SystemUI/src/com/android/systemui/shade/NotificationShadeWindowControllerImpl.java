@@ -106,7 +106,7 @@ public class NotificationShadeWindowControllerImpl implements NotificationShadeW
 
     private final Context mContext;
     private final WindowRootViewComponent.Factory mWindowRootViewComponentFactory;
-    private WindowManager mWindowManager;
+    private final WindowManager mWindowManager;
     private final IActivityManager mActivityManager;
     private final DozeParameters mDozeParameters;
     private final KeyguardStateController mKeyguardStateController;
@@ -301,15 +301,14 @@ public class NotificationShadeWindowControllerImpl implements NotificationShadeW
             windowContext.attachWindow(mWindowRootView);
         }
         mWindowManager.addView(mWindowRootView, mLp);
-        // After the notification shade window is attached, override the window type to attached
-        // dialog, which makes the following added windows will be attached dialogs regardless of
-        // the window type of attached dialogs.
+        // After the notification shade window is attached, set the fallback window type to attached
+        // dialog, which override the window type if the attached window is not a sub-window.
         // Note that while the window type override won't affect the attached windows, such as
         // the shade window we just attached, we should make sure the override window type is reset
         // (via windowContext.setWindowTypeOverride(INVALID_WINDOW_TYPE)) before adding the shade
         // window to prevent its type is overridden unexpectedly.
         if (windowContext != null) {
-            windowContext.setWindowTypeOverride(TYPE_APPLICATION_ATTACHED_DIALOG);
+            windowContext.setFallbackWindowType(TYPE_APPLICATION_ATTACHED_DIALOG);
         }
 
 
@@ -467,9 +466,9 @@ public class NotificationShadeWindowControllerImpl implements NotificationShadeW
     }
 
     private void adjustScreenOrientation(NotificationShadeWindowState state) {
-        boolean dreamShowingAndRotationAllowed = dreamsV2() ? mContext.getResources().getBoolean(
+        boolean dreamShowingAndRotationAllowed = dreamsV2() && mContext.getResources().getBoolean(
                 com.android.internal.R.bool.config_alwaysAllowDreamRotation)
-                && state.isOnOrGoingToDream : false;
+                && state.isOnOrGoingToDream;
         if (state.bouncerShowing || (state.isKeyguardShowingAndNotOccluded()
                 && !dreamShowingAndRotationAllowed) || state.dozing) {
             if (mKeyguardStateController.isKeyguardScreenRotationAllowed()) {

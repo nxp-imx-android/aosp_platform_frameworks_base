@@ -60,7 +60,7 @@ public class WindowContext extends ContextWrapper implements WindowProvider,
     @Nullable
     private final Bundle mOptions;
     @WindowType
-    private int mWindowTypeOverride = INVALID_WINDOW_TYPE;
+    private int mFallbackWindowType = INVALID_WINDOW_TYPE;
     private final ComponentCallbacksController mCallbacksController =
             new ComponentCallbacksController();
     private final WindowContextController mController;
@@ -176,37 +176,10 @@ public class WindowContext extends ContextWrapper implements WindowProvider,
         mCallbacksController.unregisterCallbacks(callback);
     }
 
-    /**
-     * If set, this {@code WindowContext} will override the window type when
-     * {@link WindowManager#addView} or {@link WindowManager#updateViewLayout}.
-     * <p>
-     * Allowed window types are {@link #getWindowType()} and
-     * any sub-window types. If set to {@link WindowManager.LayoutParams#INVALID_WINDOW_TYPE},
-     * this {@code WindowContext} won't override the type.
-     * <p>
-     * Note:
-     * <ol>
-     *   <li>If a view is attached, the window type won't be overridden to another window type.</li>
-     *   <li>If a sub-window override is requested, a parent window must be prepared. It can
-     *   be either by using {@link WindowManager} from a {@link Window} or calling
-     *   {@link #attachWindow(View)} before adding any sub-windows, or
-     *   {@link IllegalArgumentException} throws when {@link WindowManager#addView}.
-     *   </li>
-     * </ol>
-     *
-     * @throws IllegalArgumentException if the passed {@code windowTypeOverride} is not an allowed
-     *     window type mentioned above.
-     */
-    public void setWindowTypeOverride(@WindowType int windowTypeOverride) {
-        if (!isValidWindowType(windowTypeOverride) && windowTypeOverride != INVALID_WINDOW_TYPE) {
-            throw new IllegalArgumentException(
-                    "The window type override must be either "
-                    + mType
-                    + " or a sub window type, but it's "
-                    + windowTypeOverride
-            );
-        }
-        mWindowTypeOverride = windowTypeOverride;
+    @WindowType
+    @Override
+    public int getFallbackWindowType() {
+        return mFallbackWindowType;
     }
 
     /**
@@ -263,10 +236,38 @@ public class WindowContext extends ContextWrapper implements WindowProvider,
         return mOptions;
     }
 
-    @WindowType
-    @Override
-    public int getWindowTypeOverride() {
-        return mWindowTypeOverride;
+    /**
+     * If set, this {@code WindowContext} will override the window type when
+     * {@link WindowManager#addView} or {@link WindowManager#updateViewLayout} if the window does
+     * not use {@link #isSelfOrSubWindowType(int)}.
+     * <p>
+     * The default is {@link WindowManager.LayoutParams#INVALID_WINDOW_TYPE},
+     * which won't override the type.
+     * <p>
+     * Note:
+     * <ol>
+     *   <li>If a view is attached, the window type won't be overridden to another window type.</li>
+     *   <li>If a sub-window override is requested, a parent window must be prepared. It can
+     *   be either by using {@link WindowManager} from a {@link Window} or calling
+     *   {@link #attachWindow(View)} before adding any sub-windows, or
+     *   {@link IllegalArgumentException} throws when {@link WindowManager#addView}.
+     *   </li>
+     * </ol>
+     *
+     * @throws IllegalArgumentException if the passed {@code fallbackWindowType} is not
+     * {@link #isSelfOrSubWindowType(int)}.
+     */
+    public void setFallbackWindowType(@WindowType int fallbackWindowType) {
+        if (!isSelfOrSubWindowType(fallbackWindowType)
+                && fallbackWindowType != INVALID_WINDOW_TYPE) {
+            throw new IllegalArgumentException(
+                    "The window type override must be either "
+                    + mType
+                    + " or a sub window type, but it's "
+                            + fallbackWindowType
+            );
+        }
+        mFallbackWindowType = fallbackWindowType;
     }
 
 /* === ConfigurationDispatcher APIs === */
