@@ -1504,17 +1504,36 @@ static jboolean android_server_UsbDeviceManager_openAccessoryControl(JNIEnv * /*
         return JNI_FALSE;
     }
 
+    // To enable testing of the userspace AOA prior to the necessary kernel change
+    // landing on test devices, we allow this this check to continue if selinux is
+    // in permissive mode. This patch will be reverted once the kernel patch lands
+    // in the GKI kernels and populates to the necessary device kernel prebuilts.
+    int sel_status = security_getenforce();
+    // security_getenforce() returns 0 if permissive, 1 if enforcing, or a negative
+    // value if an error has occurred. In the error case, assume selinux is
+    // enforcing.
+    bool selinux_en = (sel_status != 0);
     int err = selinux_android_restorecon(FFS_ACCESSORY_EP1, 0);
     if (err < 0) {
         ALOGE("Applying SELINUX labels to accessory EP1 failed: %d", err);
-        close(fd);
-        return JNI_FALSE;
+        if (selinux_en) {
+            ALOGE("Selinux is enforcing, failed to apply label to accessory ep1, closing");
+            close(fd);
+            return JNI_FALSE;
+        } else {
+            ALOGW("SELinux is permissive, continuing for testing purposes");
+        }
     }
     err = selinux_android_restorecon(FFS_ACCESSORY_EP2, 0);
     if (err < 0) {
         ALOGE("Applying SELINUX labels to accessory EP2 failed: %d", err);
-        close(fd);
-        return JNI_FALSE;
+        if (selinux_en) {
+            ALOGE("Selinux is enforcing, failed to apply label to accessory ep2, closing");
+            close(fd);
+            return JNI_FALSE;
+        } else {
+            ALOGW("SELinux is permissive, continuing for testing purposes");
+        }
     }
 
     ALOGI("USB Accessory Descriptors written successfully");
