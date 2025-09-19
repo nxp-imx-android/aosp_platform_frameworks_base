@@ -383,8 +383,22 @@ class FlexClockViewGroup(clockCtx: ClockContext) :
         }
     }
 
-    override fun animateFidget(x: Float, y: Float) {
-        childViews.forEach { it.animateFidget(x, y) }
+    override fun animateFidget(pt: VPointF, enforceBounds: Boolean): Boolean {
+        if (enforceBounds) {
+            if (visibility != View.VISIBLE) {
+                logger.animateFidget(pt, isSuppressed = true)
+                return false
+            }
+
+            val bounds = VRectF(left.toFloat(), top.toFloat(), right.toFloat(), bottom.toFloat())
+            if (!bounds.contains(pt)) {
+                logger.animateFidget(pt, isSuppressed = true)
+                return false
+            }
+        }
+
+        childViews.forEach { it.animateFidget(pt, enforceBounds = false) }
+        return true
     }
 
     private fun updateLocale(locale: Locale) {

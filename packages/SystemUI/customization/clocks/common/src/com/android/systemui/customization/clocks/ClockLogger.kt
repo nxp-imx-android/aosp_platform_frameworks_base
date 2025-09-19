@@ -133,8 +133,11 @@ class ClockLogger(private val view: View?, buffer: MessageBuffer, tag: String) :
         d("animateCharge()")
     }
 
-    fun animateFidget(x: Float, y: Float) {
-        d({ "animateFidget(${VPointF.fromLong(long1)})" }) { long1 = VPointF(x, y).toLong() }
+    fun animateFidget(pt: VPointF, isSuppressed: Boolean) {
+        d({ "animateFidget(${VPointF.fromLong(long1)}, isSuppressed=$bool1})" }) {
+            long1 = pt.toLong()
+            bool1 = isSuppressed
+        }
     }
 
     companion object {

@@ -29,6 +29,7 @@ import android.util.Log
 import android.util.MathUtils.lerp
 import android.util.TypedValue
 import android.view.MotionEvent
+import android.view.View
 import android.view.View.MeasureSpec.EXACTLY
 import android.view.animation.Interpolator
 import android.view.animation.PathInterpolator
@@ -64,7 +65,7 @@ import kotlin.math.min
 import kotlin.math.roundToInt
 
 interface DigitalClockTextViewParent {
-    fun animateFidget(x: Float, y: Float)
+    fun animateFidget(pt: VPointF, enforceBounds: Boolean): Boolean
 
     fun updateMeasuredSize()
 
@@ -165,10 +166,10 @@ abstract class DigitalClockTextView(
     override fun onTouchEvent(evt: MotionEvent): Boolean {
         if (super.onTouchEvent(evt)) return true
 
-        if (clockFidgetAnimation() && evt.action == MotionEvent.ACTION_UP) {
-            (parent as? DigitalClockTextViewParent)?.animateFidget(evt.x, evt.y)
-                ?: animateFidget(evt.x, evt.y)
-            return true
+        if (clockFidgetAnimation() && evt.action == MotionEvent.ACTION_DOWN) {
+            val pt = VPointF(evt.x, evt.y)
+            return (parent as? DigitalClockTextViewParent)?.animateFidget(pt, enforceBounds = false)
+                ?: animateFidget(pt, enforceBounds = false)
         }
 
         return false
@@ -379,13 +380,26 @@ abstract class DigitalClockTextView(
         )
     }
 
-    fun animateFidget(x: Float, y: Float) {
+    fun animateFidget(pt: VPointF, enforceBounds: Boolean): Boolean {
         if (!this::textAnimator.isInitialized || textAnimator.isRunning) {
             // Skip fidget animation if other animation is already playing.
-            return
+            return false
         }
 
-        logger.animateFidget(x, y)
+        if (enforceBounds) {
+            if (visibility != View.VISIBLE) {
+                logger.animateFidget(pt, isSuppressed = true)
+                return false
+            }
+
+            val bounds = getInterpolatedTextBounds()
+            if (!bounds.contains(pt)) {
+                logger.animateFidget(pt, isSuppressed = true)
+                return false
+            }
+        }
+
+        logger.animateFidget(pt, isSuppressed = false)
         clockCtx.vibrator?.vibrate(FIDGET_HAPTICS)
 
         textAnimator.setTextStyle(
@@ -406,6 +420,7 @@ abstract class DigitalClockTextView(
                 },
             ),
         )
+        return true
     }
 
     fun refreshText() {
@@ -677,7 +692,6 @@ abstract class DigitalClockTextView(
         val FIDGET_HAPTICS =
             VibrationEffect.startComposition()
                 .addPrimitive(VibrationEffect.Composition.PRIMITIVE_THUD, 1.0f, 0)
-                .addPrimitive(VibrationEffect.Composition.PRIMITIVE_QUICK_RISE, 1.0f, 43)
                 .compose()
 
         val CHARGE_ANIMATION_DURATION = 400L

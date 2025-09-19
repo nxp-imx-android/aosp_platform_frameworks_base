@@ -2896,12 +2896,18 @@ class MediaRouter2ServiceImpl {
          * Updates the device suggestions for the given suggesting package.
          *
          * @param suggestingPackageName The package name of the suggesting app.
-         * @param deviceSuggestions The device suggestions.
+         * @param deviceSuggestions The device suggestions. May be null if the caller is clearing
+         *     out their suggestions.
          */
         @GuardedBy("mLock")
         public void putDeviceSuggestionsLocked(
-                String suggestingPackageName, List<SuggestedDeviceInfo> deviceSuggestions) {
-            mDeviceSuggestions.put(suggestingPackageName, deviceSuggestions);
+                String suggestingPackageName,
+                @Nullable List<SuggestedDeviceInfo> deviceSuggestions) {
+            if (deviceSuggestions != null) {
+                mDeviceSuggestions.put(suggestingPackageName, deviceSuggestions);
+            } else {
+                mDeviceSuggestions.remove(suggestingPackageName);
+            }
         }
 
         /**
