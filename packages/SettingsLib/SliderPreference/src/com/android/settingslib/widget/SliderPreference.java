@@ -357,9 +357,9 @@ public class SliderPreference extends Preference {
         if (!TextUtils.isEmpty(mSliderContentDescription)) {
             holder.itemView.setContentDescription(mSliderContentDescription);
         } else if (!TextUtils.isEmpty(title)) {
-            holder.itemView.setContentDescription(title);
+            mSlider.setContentDescription(title);
         } else {
-            holder.itemView.setContentDescription(null);
+            mSlider.setContentDescription(null);
         }
         if (!TextUtils.isEmpty(mSliderStateDescription)) {
             mSlider.setStateDescription(mSliderStateDescription);
