@@ -19,7 +19,6 @@ package com.android.systemui;
 import static androidx.dynamicanimation.animation.DynamicAnimation.TRANSLATION_X;
 import static androidx.dynamicanimation.animation.FloatPropertyCompat.createFloatPropertyCompat;
 
-import static com.android.systemui.Flags.magneticNotificationSwipes;
 import static com.android.systemui.classifier.Classifier.NOTIFICATION_DISMISS;
 import static com.android.systemui.statusbar.notification.NotificationUtils.logKey;
 
@@ -47,7 +46,6 @@ import android.view.accessibility.AccessibilityEvent;
 import androidx.annotation.VisibleForTesting;
 
 import com.android.app.animation.Interpolators;
-import com.android.internal.dynamicanimation.animation.SpringForce;
 import com.android.systemui.flags.FeatureFlags;
 import com.android.systemui.flags.Flags;
 import com.android.systemui.plugins.FalsingManager;
@@ -70,6 +68,8 @@ public class SwipeHelper implements Gefingerpoken, Dumpable {
     private static final int MAX_ESCAPE_ANIMATION_DURATION = 400; // ms
     private static final int MAX_DISMISS_VELOCITY = 4000; // dp/sec
     private static final int MIN_DISMISS_VELOCITY = 2000; // dp/sec
+    private static final float SNAP_BACK_SPRING_STIFFNESS = 550f;
+    private static final float SNAP_BACK_SPRING_DAMPING_RATIO = 0.52f;
 
     public static final float SWIPE_PROGRESS_FADE_END = 0.6f; // fraction of thumbnail width
                                               // beyond which swipe progress->0
@@ -158,12 +158,8 @@ public class SwipeHelper implements Gefingerpoken, Dumpable {
                 R.bool.config_fadeDependingOnAmountSwiped);
         mFalsingManager = falsingManager;
         mFeatureFlags = featureFlags;
-        if (magneticNotificationSwipes()) {
-            mSnapBackSpringConfig = new SpringConfig(550f /*stiffness*/, 0.52f /*dampingRatio*/);
-        } else {
-            mSnapBackSpringConfig = new SpringConfig(
-                    SpringForce.STIFFNESS_LOW, SpringForce.DAMPING_RATIO_LOW_BOUNCY);
-        }
+        mSnapBackSpringConfig =
+                new SpringConfig(SNAP_BACK_SPRING_STIFFNESS, SNAP_BACK_SPRING_DAMPING_RATIO);
         mFlingAnimationUtils = new FlingAnimationUtils(resources.getDisplayMetrics(),
                 getMaxEscapeAnimDuration() / 1000f);
     }
@@ -432,12 +428,10 @@ public class SwipeHelper implements Gefingerpoken, Dumpable {
     public void dismissChild(final View animView, float velocity, final Consumer<Boolean> endAction,
             long delay, boolean useAccelerateInterpolator, long fixedDuration,
             boolean isDismissAll) {
-        if (magneticNotificationSwipes()) {
-            int direction = mCallback.getMagneticDetachDirection(animView);
-            if (direction != 0) {
-                // If detached, modify the velocity to agree with the detaching direction
-                velocity = direction * Math.max(getMinDismissVelocity(), Math.abs(velocity));
-            }
+        int direction = mCallback.getMagneticDetachDirection(animView);
+        if (direction != 0) {
+            // If detached, modify the velocity to agree with the detaching direction
+            velocity = direction * Math.max(getMinDismissVelocity(), Math.abs(velocity));
         }
         final boolean canBeDismissed = mCallback.canChildBeDismissed(animView);
         float newPos;
@@ -825,12 +819,8 @@ public class SwipeHelper implements Gefingerpoken, Dumpable {
 
     /** Can the swipe gesture on the touched view be considered as a dismiss intention */
     public boolean isSwipeDismissible() {
-        if (magneticNotificationSwipes()) {
-            float velocity = getVelocity(mVelocityTracker);
-            return mCallback.isMagneticViewDismissible(mTouchedView, velocity);
-        } else {
-            return swipedFastEnough() || swipedFarEnough();
-        }
+        float velocity = getVelocity(mVelocityTracker);
+        return mCallback.isMagneticViewDismissible(mTouchedView, velocity);
     }
 
     /** Returns true if the gesture should be rejected. */

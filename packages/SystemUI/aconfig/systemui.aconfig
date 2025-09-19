@@ -1597,13 +1597,6 @@ flag {
 }
 
 flag {
-   name: "magnetic_notification_swipes"
-   namespace: "systemui"
-   description: "Add support for magnetic behavior on horizontal notification swipes."
-   bug: "390179908"
-}
-
-flag {
   name: "permission_helper_ui_rich_ongoing"
   namespace: "systemui"
   description: "[RONs] Guards inline permission helper for demoting RONs [Guts/card version]"

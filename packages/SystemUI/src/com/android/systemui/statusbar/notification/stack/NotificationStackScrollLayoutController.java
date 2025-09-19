@@ -62,7 +62,6 @@ import com.android.internal.statusbar.IStatusBarService;
 import com.android.internal.view.OneShotPreDrawListener;
 import com.android.systemui.Dumpable;
 import com.android.systemui.ExpandHelper;
-import com.android.systemui.Flags;
 import com.android.systemui.Gefingerpoken;
 import com.android.systemui.classifier.Classifier;
 import com.android.systemui.classifier.FalsingCollector;
@@ -739,9 +738,7 @@ public class NotificationStackScrollLayoutController implements Dumpable {
 
                 @Override
                 public void onChildSnapBackOvershoots() {
-                    if (Flags.magneticNotificationSwipes()) {
-                        mMagneticNotificationRowManager.resetRoundness();
-                    }
+                    mMagneticNotificationRowManager.resetRoundness();
                 }
 
                 @Override

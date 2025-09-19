@@ -25,7 +25,6 @@ import static android.view.MotionEvent.ACTION_UP;
 import static com.android.app.tracing.TrackGroupUtils.trackGroup;
 import static com.android.internal.jank.InteractionJankMonitor.CUJ_NOTIFICATION_SHADE_SCROLL_FLING;
 import static com.android.internal.jank.InteractionJankMonitor.CUJ_SHADE_CLEAR_ALL;
-import static com.android.systemui.Flags.magneticNotificationSwipes;
 import static com.android.systemui.Flags.physicalNotificationMovement;
 import static com.android.systemui.statusbar.notification.stack.NotificationPriorityBucketKt.BUCKET_NEWS;
 import static com.android.systemui.statusbar.notification.stack.NotificationPriorityBucketKt.BUCKET_PROMO;
@@ -6302,23 +6301,6 @@ public class NotificationStackScrollLayout
                 getChildrenWithBackground()
         );
 
-        if (!magneticNotificationSwipes()) {
-            RoundableTargets targets = mController
-                    .getNotificationTargetsHelper()
-                    .findRoundableTargets(
-                            (ExpandableNotificationRow) viewSwiped,
-                            this,
-                            mSectionsManager);
-
-            mController.getNotificationRoundnessManager()
-                    .setViewsAffectedBySwipe(
-                            targets.getBefore(),
-                            targets.getSwiped(),
-                            targets.getAfter());
-            mController.getNotificationRoundnessManager()
-                    .setRoundnessForAffectedViews(/* roundness */ 1f);
-        }
-
         updateFirstAndLastBackgroundViews();
         requestDisallowInterceptTouchEvent(true);
         updateContinuousShadowDrawing();
@@ -6327,10 +6309,6 @@ public class NotificationStackScrollLayout
 
     void onSwipeEnd() {
         updateFirstAndLastBackgroundViews();
-        if (!magneticNotificationSwipes()) {
-            mController.getNotificationRoundnessManager()
-                    .setViewsAffectedBySwipe(null, null, null);
-        }
         // Round bottom corners for notification right before shelf.
         mShelf.updateAppearance();
     }
