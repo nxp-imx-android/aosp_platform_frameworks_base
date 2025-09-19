@@ -87,7 +87,7 @@ public final class VolumeInfo implements Parcelable {
      * @throws IllegalStateException when called on a VolumeInfo not configured for
      *      stream types.
      */
-    public @AudioManager.VolumeControlStreamTypes int getStreamType() {
+    public @AudioManager.PublicStreamTypes int getStreamType() {
         if (!mUsesStreamType) {
             throw new IllegalStateException("VolumeInfo doesn't use stream types");
         }
@@ -206,7 +206,7 @@ public final class VolumeInfo implements Parcelable {
      */
     public static final class Builder {
         private boolean mUsesStreamType = true; // false implies AudioVolumeGroup is used
-        private @AudioManager.VolumeControlStreamTypes int mStreamType = AudioManager.STREAM_MUSIC;
+        private @AudioManager.PublicStreamTypes int mStreamType = AudioManager.STREAM_MUSIC;
         private boolean mHasMuteState = false;
         private boolean mIsMuted = false;
         private int mVolIndex = INDEX_NOT_SET;
@@ -217,7 +217,7 @@ public final class VolumeInfo implements Parcelable {
         /**
          * Builder constructor for stream type-based VolumeInfo
          */
-        public Builder(@AudioManager.VolumeControlStreamTypes int streamType) {
+        public Builder(@AudioManager.PublicStreamTypes int streamType) {
             if (!AudioManager.isVolumeControlStreamType(streamType)) {
                 throw new IllegalArgumentException("Not a valid public stream type " + streamType);
             }
