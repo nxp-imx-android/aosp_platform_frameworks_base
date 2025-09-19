@@ -1015,6 +1015,12 @@ public final class MediaRouter2 {
      *
      * <p>Please note that the list can be changed before callbacks are invoked.
      *
+     * <p>This method returns routes available to the routing framework that contain at least one of
+     * the {@link RouteDiscoveryPreference#getPreferredFeatures() route features} registered by the
+     * application through {@link #registerRouteCallback}. As a result, you need to register at
+     * least one {@link RouteCallback} (associated with the features that you are interested in), in
+     * order for this method to return a non-empty list.
+     *
      * @return the list of routes that contains at least one of the route features in discovery
      *     preferences registered by the application
      */
