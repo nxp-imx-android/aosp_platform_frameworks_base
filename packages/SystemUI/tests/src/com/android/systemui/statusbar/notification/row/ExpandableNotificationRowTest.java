@@ -495,13 +495,13 @@ public class ExpandableNotificationRowTest extends SysuiTestCase {
     }
 
     @Test
-    public void testUserLockedResetEvenWhenNoChildren() throws Exception {
+    public void testUserSwipingResetEvenWhenNoChildren() throws Exception {
         ExpandableNotificationRow group = mKosmos.createRowGroup();
 
-        group.setUserLocked(true);
-        group.setUserLocked(false);
+        group.setUserSwipingToExpandRow(true);
+        group.setUserSwipingToExpandRow(false);
         assertFalse("The childrencontainer should not be userlocked but is, the state "
-                + "seems out of sync.", group.getChildrenContainer().isUserLocked());
+                + "seems out of sync.", group.getChildrenContainer().isUserSwipingToExpandRow());
     }
 
     @Test
