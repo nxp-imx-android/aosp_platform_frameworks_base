@@ -249,6 +249,7 @@ java_library_static {
         "clipboard_flags_lib",
         "aconfig_adbdauth_flags_java_lib",
         "AvfBuildFlags",
+        "textclassifier_flags_lib",
     ],
     javac_shard_size: 50,
     javacflags: [
