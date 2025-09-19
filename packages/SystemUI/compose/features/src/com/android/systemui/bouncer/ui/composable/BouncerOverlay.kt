@@ -21,22 +21,25 @@ import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.imePadding
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.overscroll
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.dimensionResource
+import androidx.compose.ui.unit.DpSize
 import com.android.compose.animation.scene.ContentScope
 import com.android.compose.animation.scene.ElementKey
 import com.android.compose.animation.scene.UserAction
 import com.android.compose.animation.scene.UserActionResult
+import com.android.compose.layout.ContainerConfig
+import com.android.compose.layout.containerize
 import com.android.systemui.bouncer.ui.BouncerDialogFactory
 import com.android.systemui.bouncer.ui.viewmodel.BouncerOverlayContentViewModel
 import com.android.systemui.bouncer.ui.viewmodel.BouncerUserActionsViewModel
@@ -102,7 +105,7 @@ private fun ContentScope.BouncerOverlay(
     val backgroundColor = viewModel.backgroundColor
 
     DisposableEffect(Unit) { onDispose { viewModel.onUiDestroyed() } }
-    val shouldBeContainerized = shouldBeContainerized()
+    val isContainerized = shouldBeContainerized()
     Box(
         modifier
             .fillMaxSize()
@@ -118,33 +121,21 @@ private fun ContentScope.BouncerOverlay(
     ) {
         Box(
             Modifier.then(
-                    if (shouldBeContainerized) {
-                        // temporarily container size is fixed, might be dynamic in the future
-                        Modifier.size(
-                                width = dimensionResource(R.dimen.bouncer_container_width),
-                                height = dimensionResource(R.dimen.bouncer_container_height),
-                            )
-                            .padding(dimensionResource(R.dimen.bouncer_container_min_padding))
+                    if (isContainerized) {
+                        Modifier.containerize(containerConfig())
                     } else {
                         Modifier.fillMaxSize()
                     }
                 )
                 .align(Alignment.Center)
         ) {
+
             // Background is defined in a separate Composable from BouncerContent to be able to
             // animate it differently.
-            Box(
-                Modifier.element(Bouncer.Elements.Background)
-                    .fillMaxSize()
-                    .background(
-                        color = backgroundColor,
-                        shape =
-                            if (shouldBeContainerized)
-                                RoundedCornerShape(
-                                    dimensionResource(R.dimen.bouncer_container_corner_radius)
-                                )
-                            else RectangleShape,
-                    )
+            Background(
+                Modifier.element(Bouncer.Elements.Background),
+                color = backgroundColor,
+                isContainerized = isContainerized,
             )
 
             // Separate the bouncer content into a reusable composable that doesn't have any
@@ -161,4 +152,34 @@ private fun ContentScope.BouncerOverlay(
             )
         }
     }
+}
+
+@Composable
+private fun Background(modifier: Modifier, color: Color, isContainerized: Boolean) {
+    Box(
+        modifier
+            .fillMaxSize()
+            .background(
+                color = color,
+                shape = if (isContainerized) MaterialTheme.shapes.extraLarge else RectangleShape,
+            )
+    )
+}
+
+@Composable
+private fun containerConfig(): ContainerConfig {
+    val sizePercentage =
+        LocalContext.current.resources.getFloat(R.dimen.bouncer_container_size_percentage)
+    val minSize =
+        DpSize(
+            dimensionResource(R.dimen.bouncer_container_min_width),
+            dimensionResource(R.dimen.bouncer_container_min_height),
+        )
+
+    val maxSize =
+        DpSize(
+            dimensionResource(R.dimen.bouncer_container_max_width),
+            dimensionResource(R.dimen.bouncer_container_max_height),
+        )
+    return ContainerConfig(sizePercentage, minSize, maxSize)
 }
