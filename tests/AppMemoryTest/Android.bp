@@ -66,9 +66,6 @@ android_test_helper_app {
         ":AppMemoryTest_Helper_gen_sources",
     ],
     resource_zips: [":AppMemoryTest_Helper_gen_resources"],
-    static_libs: ["com.google.android.material_material"],
-
-    platform_apis: true,
     test_suites: ["general-tests"],
     certificate: "platform",
     dex_preopt: {
