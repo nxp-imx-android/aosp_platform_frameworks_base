@@ -162,3 +162,11 @@ flag {
     purpose: PURPOSE_BUGFIX
   }
 }
+
+flag {
+  name: "enable_supervision_pin_metrics"
+  is_exported: false
+  namespace: "supervision"
+  description: "Flag that enables metrics log for PIN related flows"
+  bug: "443286819"
+}
