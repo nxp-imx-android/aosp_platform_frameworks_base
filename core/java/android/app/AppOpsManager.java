@@ -5962,8 +5962,10 @@ public class AppOpsManager {
         public void increaseAccessCount(int opCode, int uid, @NonNull String packageName,
                 @Nullable String attributionTag, @UidState int uidState,  @OpFlags int flags,
                 long increment) {
-            getOrCreateHistoricalUidOps(uid).increaseAccessCount(opCode,
-                    packageName, attributionTag, uidState, flags, increment);
+            if (increment > 0) {
+                getOrCreateHistoricalUidOps(uid).increaseAccessCount(opCode,
+                        packageName, attributionTag, uidState, flags, increment);
+            }
         }
 
         /** @hide */
@@ -5971,8 +5973,10 @@ public class AppOpsManager {
         public void increaseRejectCount(int opCode, int uid, @NonNull String packageName,
                 @Nullable String attributionTag, @UidState int uidState, @OpFlags int flags,
                 long increment) {
-            getOrCreateHistoricalUidOps(uid).increaseRejectCount(opCode,
-                    packageName, attributionTag, uidState, flags, increment);
+            if (increment > 0) {
+                getOrCreateHistoricalUidOps(uid).increaseRejectCount(opCode,
+                        packageName, attributionTag, uidState, flags, increment);
+            }
         }
 
         /** @hide */
@@ -5980,8 +5984,10 @@ public class AppOpsManager {
         public void increaseAccessDuration(int opCode, int uid, @NonNull String packageName,
                 @Nullable String attributionTag, @UidState int uidState, @OpFlags int flags,
                 long increment) {
-            getOrCreateHistoricalUidOps(uid).increaseAccessDuration(opCode,
-                    packageName, attributionTag, uidState, flags, increment);
+            if (increment > 0) {
+                getOrCreateHistoricalUidOps(uid).increaseAccessDuration(opCode,
+                       packageName, attributionTag, uidState, flags, increment);
+            }
         }
 
         /** @hide */
