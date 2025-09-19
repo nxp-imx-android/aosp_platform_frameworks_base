@@ -41,7 +41,6 @@ import androidx.core.animation.doOnEnd
 import androidx.core.animation.doOnStart
 import com.android.internal.logging.UiEventLogger
 import com.android.systemui.Flags
-import com.android.systemui.Flags.screenshotAnnounceLiveRegion
 import com.android.systemui.log.DebugLogger.debugLog
 import com.android.systemui.res.R
 import com.android.systemui.screenshot.LogConfig.DEBUG_DISMISS
@@ -220,9 +219,7 @@ constructor(
         screenshotTakenInPortrait: Boolean,
         onTransitionPrepared: Runnable,
     ) {
-        if (screenshotAnnounceLiveRegion()) {
-            setSavingAnnouncement("")
-        }
+        setSavingAnnouncement("")
         viewModel.setScrollingScrimBitmap(newScreenshot)
         viewModel.setScrollableRect(scrollableAreaOnScreen(response))
         animationController.fadeForLongScreenshotTransition()
@@ -281,10 +278,6 @@ constructor(
         view.setSavingAnnouncement(string)
     }
 
-    fun announceForAccessibility(string: String) {
-        view.announceForAccessibility(string)
-    }
-
     fun prepareEntranceAnimation(runnable: Runnable) {
         view.viewTreeObserver.addOnPreDrawListener(
             object : ViewTreeObserver.OnPreDrawListener {
@@ -299,9 +292,7 @@ constructor(
     }
 
     fun fadeForSharedTransition() {
-        if (screenshotAnnounceLiveRegion()) {
-            setSavingAnnouncement("")
-        }
+        setSavingAnnouncement("")
         animationController.fadeForSharedTransition()
     }
 
