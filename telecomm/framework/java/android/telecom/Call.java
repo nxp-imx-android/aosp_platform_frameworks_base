@@ -804,6 +804,12 @@ public final class Call {
             if (can(capabilities, CAPABILITY_SUPPORTS_VT_REMOTE_BIDIRECTIONAL)) {
                 builder.append(" CAPABILITY_SUPPORTS_VT_REMOTE_BIDIRECTIONAL");
             }
+            if (can(capabilities, CAPABILITY_SEPARATE_FROM_CONFERENCE)) {
+                builder.append(" CAPABILITY_SEPARATE_FROM_CONFERENCE");
+            }
+            if (can(capabilities, CAPABILITY_DISCONNECT_FROM_CONFERENCE)) {
+                builder.append(" CAPABILITY_DISCONNECT_FROM_CONFERENCE");
+            }
             if (can(capabilities, CAPABILITY_SPEED_UP_MT_AUDIO)) {
                 builder.append(" CAPABILITY_SPEED_UP_MT_AUDIO");
             }
