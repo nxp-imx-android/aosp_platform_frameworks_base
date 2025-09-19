@@ -96,7 +96,7 @@ constructor(
     val horizontalAlignment: Alignment.Horizontal by
         hydrator.hydratedStateOf(
             traceName = "horizontalAlignment",
-            source = interactor.notificationStackHorizontalAlignment,
+            source = shadeModeInteractor.notificationStackHorizontalAlignment,
         )
 
     /**

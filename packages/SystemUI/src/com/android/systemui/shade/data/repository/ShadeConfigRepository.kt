@@ -90,6 +90,14 @@ constructor(
     val useDualShadeSetting: Flow<Boolean> = booleanConfigFlow(R.bool.config_useDualShadeSetting)
 
     /**
+     * Whether notifications shade should be in the top end position (e.g. the right side of the
+     * screen in an LTR locale) on wide screens. Only used in Dual Shade mode, when
+     * `config_isFullWidthShade` is `false`. Ignored in all other cases.
+     */
+    val isNotificationShadeOnTopEnd: Flow<Boolean> =
+        booleanConfigFlow(R.bool.config_notificationShadeOnTopEnd)
+
+    /**
      * Whether the shade layout should be Split Shade (`true`) or Single Shade (`false`). Only
      * applicable when Dual Shade is disabled.
      */

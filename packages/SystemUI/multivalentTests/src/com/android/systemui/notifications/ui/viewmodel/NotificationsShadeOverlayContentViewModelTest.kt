@@ -18,7 +18,6 @@ package com.android.systemui.notifications.ui.viewmodel
 
 import android.app.StatusBarManager.DISABLE2_QUICK_SETTINGS
 import android.content.res.Configuration
-import android.content.res.mainResources
 import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import android.testing.TestableLooper
@@ -32,24 +31,17 @@ import com.android.systemui.SysuiTestCase
 import com.android.systemui.authentication.data.repository.FakeAuthenticationRepository
 import com.android.systemui.authentication.domain.interactor.AuthenticationResult
 import com.android.systemui.authentication.domain.interactor.authenticationInteractor
-import com.android.systemui.desktop.domain.interactor.DesktopInteractor
-import com.android.systemui.desktop.domain.interactor.desktopInteractor
 import com.android.systemui.flags.EnableSceneContainer
 import com.android.systemui.keyguard.ui.transitions.blurConfig
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.Kosmos.Fixture
-import com.android.systemui.kosmos.applicationCoroutineScope
-import com.android.systemui.kosmos.backgroundScope
 import com.android.systemui.kosmos.collectLastValue
 import com.android.systemui.kosmos.runTest
-import com.android.systemui.kosmos.testDispatcher
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.lifecycle.activateIn
-import com.android.systemui.media.controls.domain.pipeline.interactor.mediaCarouselInteractor
 import com.android.systemui.media.controls.shared.model.MediaData
 import com.android.systemui.media.remedia.data.repository.mediaPipelineRepository
-import com.android.systemui.media.remedia.ui.viewmodel.factory.mediaViewModelFactory
 import com.android.systemui.power.domain.interactor.PowerInteractor.Companion.setAsleepForTest
 import com.android.systemui.power.domain.interactor.PowerInteractor.Companion.setAwakeForTest
 import com.android.systemui.power.domain.interactor.powerInteractor
@@ -62,21 +54,12 @@ import com.android.systemui.shade.domain.interactor.enableDualShade
 import com.android.systemui.shade.domain.interactor.enableSingleShade
 import com.android.systemui.shade.domain.interactor.enableSplitShade
 import com.android.systemui.shade.domain.interactor.shadeInteractor
-import com.android.systemui.shade.domain.interactor.shadeModeInteractor
 import com.android.systemui.shade.ui.viewmodel.notificationsShadeOverlayContentViewModel
-import com.android.systemui.shade.ui.viewmodel.shadeHeaderViewModelFactory
 import com.android.systemui.statusbar.core.StatusBarForDesktop
 import com.android.systemui.statusbar.disableflags.data.repository.fakeDisableFlagsRepository
-import com.android.systemui.statusbar.disableflags.domain.interactor.disableFlagsInteractor
-import com.android.systemui.statusbar.notification.stack.data.repository.notificationPlaceholderRepository
-import com.android.systemui.statusbar.notification.stack.data.repository.notificationViewHeightRepository
-import com.android.systemui.statusbar.notification.stack.domain.interactor.NotificationStackAppearanceInteractor
-import com.android.systemui.statusbar.notification.stack.domain.interactor.notificationStackAppearanceInteractor
-import com.android.systemui.statusbar.notification.stack.ui.viewmodel.notificationsPlaceholderViewModelFactory
 import com.android.systemui.statusbar.policy.configurationController
 import com.android.systemui.testKosmos
 import com.android.systemui.window.data.repository.fakeWindowRootViewBlurRepository
-import com.android.systemui.window.domain.interactor.windowRootViewBlurInteractor
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.flow.update
 import org.junit.Before
@@ -139,10 +122,9 @@ class NotificationsShadeOverlayContentViewModelTest : SysuiTestCase() {
     @EnableFlags(StatusBarForDesktop.FLAG_NAME)
     fun alignmentOnWideScreens_configDisabled_statusBarForDesktopEnabled_start() =
         kosmos.runTest {
-            enableDualShade(wideLayout = true)
             overrideResource(R.bool.config_notificationShadeOnTopEnd, false)
+            enableDualShade(wideLayout = true)
 
-            val underTest = createTestInstance().apply { activateIn(testScope) }
             assertThat(underTest.alignmentOnWideScreens).isEqualTo(Alignment.Start)
         }
 
@@ -150,11 +132,9 @@ class NotificationsShadeOverlayContentViewModelTest : SysuiTestCase() {
     @EnableFlags(StatusBarForDesktop.FLAG_NAME)
     fun alignmentOnWideScreens_configEnabled_statusBarForDesktopEnabled_end() =
         kosmos.runTest {
-            enableDualShade(wideLayout = true)
             overrideResource(R.bool.config_notificationShadeOnTopEnd, true)
-            notificationStackAppearanceInteractor.notificationStackHorizontalAlignment
+            enableDualShade(wideLayout = true)
 
-            val underTest = createTestInstance().apply { activateIn(testScope) }
             assertThat(underTest.alignmentOnWideScreens).isEqualTo(Alignment.End)
         }
 
@@ -414,39 +394,5 @@ class NotificationsShadeOverlayContentViewModelTest : SysuiTestCase() {
         enableDualShade(wideLayout = true)
         overrideResource(R.bool.config_useDesktopStatusBar, enable)
         configurationController.onConfigurationChanged(Configuration())
-    }
-
-    // TODO(441100057): Remove once DesktopInteractor.isNotificationShadeOnTopEnd supports runtime
-    //  config updates.
-    private fun Kosmos.createTestInstance(): NotificationsShadeOverlayContentViewModel {
-        val desktopInteractor =
-            DesktopInteractor(
-                resources = mainResources,
-                scope = backgroundScope,
-                configurationController = configurationController,
-            )
-        return NotificationsShadeOverlayContentViewModel(
-            mainDispatcher = testDispatcher,
-            shadeHeaderViewModelFactory = shadeHeaderViewModelFactory,
-            notificationsPlaceholderViewModelFactory = notificationsPlaceholderViewModelFactory,
-            notificationStackAppearanceInteractor =
-                NotificationStackAppearanceInteractor(
-                    applicationScope = applicationCoroutineScope,
-                    viewHeightRepository = notificationViewHeightRepository,
-                    placeholderRepository = notificationPlaceholderRepository,
-                    sceneInteractor = sceneInteractor,
-                    shadeModeInteractor = shadeModeInteractor,
-                    desktopInteractor = desktopInteractor,
-                ),
-            sceneInteractor = sceneInteractor,
-            shadeInteractor = shadeInteractor,
-            shadeModeInteractor = shadeModeInteractor,
-            disableFlagsInteractor = disableFlagsInteractor,
-            mediaCarouselInteractor = mediaCarouselInteractor,
-            blurConfig = blurConfig,
-            windowRootViewBlurInteractor = windowRootViewBlurInteractor,
-            desktopInteractor = desktopInteractor,
-            mediaViewModelFactory = mediaViewModelFactory,
-        )
     }
 }

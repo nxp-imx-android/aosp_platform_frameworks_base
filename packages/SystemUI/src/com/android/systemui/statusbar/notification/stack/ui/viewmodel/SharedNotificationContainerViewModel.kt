@@ -266,7 +266,7 @@ constructor(
     val configurationBasedDimensions: Flow<ConfigurationBasedDimensions> =
         if (SceneContainerFlag.isEnabled) {
                 combine(
-                    notificationStackAppearanceInteractor.notificationStackHorizontalAlignment,
+                    shadeModeInteractor.notificationStackHorizontalAlignment,
                     shadeModeInteractor.shadeMode,
                     configurationInteractor.onAnyConfigurationChange,
                 ) { horizontalAlignment, shadeMode, _ ->
