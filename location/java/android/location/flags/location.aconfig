@@ -112,6 +112,16 @@ flag {
 }
 
 flag {
+    name: "location_indicator_default_background"
+    namespace: "location"
+    description: "Flag for treating the not-found process as background"
+    bug: "444299019"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "update_min_location_request_interval"
     namespace: "location"
     description: "Flag for updating the default logic for the minimal interval for location request"
