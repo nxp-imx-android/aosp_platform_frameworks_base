@@ -250,6 +250,7 @@ java_library_static {
         "aconfig_adbdauth_flags_java_lib",
         "AvfBuildFlags",
         "textclassifier_flags_lib",
+        "accounts_flags_lib",
     ],
     javac_shard_size: 50,
     javacflags: [
