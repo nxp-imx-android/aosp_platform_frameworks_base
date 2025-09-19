@@ -442,10 +442,19 @@ private fun BesideUserSwitcherLayout(
     // Default layout is assumed as user switcher followed by bouncer input area in the direction
     // of layout.
     val isSwapped = isLeftToRight == isInputPreferredOnLeftSide
+
     val isHeightExpanded =
         LocalWindowSizeClass.current.isHeightAtLeastBreakpoint(
             WindowSizeClass.HEIGHT_DP_EXPANDED_LOWER_BOUND
         )
+    val isContainerized = shouldBeContainerized()
+    val padding =
+        when {
+            isContainerized -> PaddingValues(vertical = 96.dp)
+            isHeightExpanded -> PaddingValues(vertical = 128.dp)
+            else -> PaddingValues(top = 96.dp, bottom = 48.dp)
+        }
+
     val authMethod by viewModel.authMethodViewModel.collectAsStateWithLifecycle()
 
     var swapAnimationEnd by remember { mutableStateOf(false) }
@@ -489,10 +498,7 @@ private fun BesideUserSwitcherLayout(
                 .motionTestValues {
                     swapAnimationEnd exportAs BouncerMotionTestKeys.swapAnimationEnd
                 }
-                .padding(
-                    top = if (isHeightExpanded) 128.dp else 96.dp,
-                    bottom = if (isHeightExpanded) 128.dp else 48.dp,
-                )
+                .padding(padding)
     ) {
         LaunchedEffect(isSwapped) { swapAnimationEnd = false }
         val animatedOffset by
