@@ -495,7 +495,7 @@ public class SurfaceControlViewHost {
      * @param view The {@link View} to add
      * @param attrs The {@link LayoutParams} parameters for the {@link View}.
      */
-    @FlaggedApi(Flags.FLAG_SCVH_SET_FOCUSABLE)
+    @FlaggedApi(Flags.FLAG_SCVH_SET_FOCUSABLE_API)
     public void setView(@NonNull View view, @NonNull LayoutParams attrs) {
         Objects.requireNonNull(attrs);
         setView(view, attrs.toWindowManagerLayoutParams());
@@ -570,7 +570,7 @@ public class SurfaceControlViewHost {
     /**
      * Modifies the {@link LayoutParams} of the root view.
      */
-    @FlaggedApi(Flags.FLAG_SCVH_SET_FOCUSABLE)
+    @FlaggedApi(Flags.FLAG_SCVH_SET_FOCUSABLE_API)
     public void relayout(@NonNull LayoutParams attrs) {
         Objects.requireNonNull(attrs);
         relayout(attrs.toWindowManagerLayoutParams());
@@ -579,7 +579,7 @@ public class SurfaceControlViewHost {
     /**
      * Returns the {@link LayoutParams} of the root view.
      */
-    @FlaggedApi(Flags.FLAG_SCVH_SET_FOCUSABLE)
+    @FlaggedApi(Flags.FLAG_SCVH_SET_FOCUSABLE_API)
     public @NonNull LayoutParams getLayoutParams() {
         return LayoutParams.from(mViewRoot.mWindowAttributes);
     }
@@ -670,7 +670,7 @@ public class SurfaceControlViewHost {
      * SurfaceControlViewHost}. This is a subset of {@link WindowManager.LayoutParams} that are
      * applicable for {@link View}s hosted by {@code SurfaceControlViewHost}.
      */
-    @FlaggedApi(Flags.FLAG_SCVH_SET_FOCUSABLE)
+    @FlaggedApi(Flags.FLAG_SCVH_SET_FOCUSABLE_API)
     public static class LayoutParams {
         private final boolean mFocusable;
         private final int mWidth;
@@ -686,7 +686,7 @@ public class SurfaceControlViewHost {
          * @param height The height, in pixels, of the bounds for the {@link View}.
          * @param focusable Whether the {@link View} can receive key input focus.
          */
-        @FlaggedApi(Flags.FLAG_SCVH_SET_FOCUSABLE)
+        @FlaggedApi(Flags.FLAG_SCVH_SET_FOCUSABLE_API)
         public LayoutParams(int width, int height, boolean focusable) {
             mWidth = width;
             mHeight = height;
@@ -696,7 +696,7 @@ public class SurfaceControlViewHost {
         /**
          * Returns {@code true} if this {@link View} can receive key input focus.
          */
-        @FlaggedApi(Flags.FLAG_SCVH_SET_FOCUSABLE)
+        @FlaggedApi(Flags.FLAG_SCVH_SET_FOCUSABLE_API)
         public boolean isFocusable() {
             return mFocusable;
         }
@@ -704,7 +704,7 @@ public class SurfaceControlViewHost {
         /**
          * Returns the width, in pixels, of the bounds for the {@link View}.
          */
-        @FlaggedApi(Flags.FLAG_SCVH_SET_FOCUSABLE)
+        @FlaggedApi(Flags.FLAG_SCVH_SET_FOCUSABLE_API)
         public int getWidth() {
             return mWidth;
         }
@@ -712,7 +712,7 @@ public class SurfaceControlViewHost {
         /**
          * Returns the height, in pixels, of the bounds for the {@link View}.
          */
-        @FlaggedApi(Flags.FLAG_SCVH_SET_FOCUSABLE)
+        @FlaggedApi(Flags.FLAG_SCVH_SET_FOCUSABLE_API)
         public int getHeight() {
             return mHeight;
         }
