@@ -47,7 +47,6 @@ import com.android.wm.shell.desktopmode.DesktopPipTransitionController;
 import com.android.wm.shell.pip.PipTransitionController;
 import com.android.wm.shell.pip2.PipSurfaceTransactionHelper;
 import com.android.wm.shell.pip2.animation.PipAlphaAnimator;
-import com.android.wm.shell.pip2.phone.transition.PipBoundsChangeHandler;
 import com.android.wm.shell.protolog.ShellProtoLogGroup;
 import com.android.wm.shell.shared.split.SplitScreenConstants;
 import com.android.wm.shell.splitscreen.SplitScreenController;
@@ -236,7 +235,7 @@ public class PipScheduler implements PipTransitionState.PipTransitionStateChange
      */
     public void scheduleAnimateResizePip(Rect toBounds, boolean configAtEnd) {
         scheduleAnimateResizePip(toBounds, configAtEnd,
-                PipBoundsChangeHandler.BOUNDS_CHANGE_JUMPCUT_DURATION);
+                PipTransition.BOUNDS_CHANGE_JUMPCUT_DURATION);
     }
 
     /**

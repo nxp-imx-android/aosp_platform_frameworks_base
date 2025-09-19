@@ -16,6 +16,8 @@
 
 package com.android.wm.shell.pip2.phone;
 
+import static com.android.wm.shell.pip2.phone.PipTransition.ANIMATING_BOUNDS_CHANGE_DURATION;
+
 import android.app.ActivityManager;
 import android.app.PictureInPictureParams;
 import android.app.RemoteAction;
@@ -37,7 +39,6 @@ import com.android.wm.shell.common.pip.PipBoundsState;
 import com.android.wm.shell.common.pip.PipUtils;
 import com.android.wm.shell.pip2.PipSurfaceTransactionHelper;
 import com.android.wm.shell.pip2.animation.PipResizeAnimator;
-import com.android.wm.shell.pip2.phone.transition.PipBoundsChangeHandler;
 import com.android.wm.shell.protolog.ShellProtoLogGroup;
 import com.android.wm.shell.shared.annotations.ShellMainThread;
 import com.android.wm.shell.shared.pip.PipFlags;
@@ -196,14 +197,13 @@ public class PipTaskListener implements ShellTaskOrganizer.TaskListener,
                 break;
             case PipTransitionState.CHANGING_PIP_BOUNDS:
                 final SurfaceControl.Transaction startTx = extra.getParcelable(
-                        PipBoundsChangeHandler.PIP_START_TX, SurfaceControl.Transaction.class);
+                        PipTransition.PIP_START_TX, SurfaceControl.Transaction.class);
                 final SurfaceControl.Transaction finishTx = extra.getParcelable(
-                        PipBoundsChangeHandler.PIP_FINISH_TX, SurfaceControl.Transaction.class);
+                        PipTransition.PIP_FINISH_TX, SurfaceControl.Transaction.class);
                 final Rect destinationBounds = extra.getParcelable(
-                        PipBoundsChangeHandler.PIP_DESTINATION_BOUNDS, Rect.class);
-                final int duration = extra.getInt(
-                        PipBoundsChangeHandler.ANIMATING_BOUNDS_CHANGE_DURATION,
-                        PipBoundsChangeHandler.BOUNDS_CHANGE_JUMPCUT_DURATION);
+                        PipTransition.PIP_DESTINATION_BOUNDS, Rect.class);
+                final int duration = extra.getInt(ANIMATING_BOUNDS_CHANGE_DURATION,
+                        PipTransition.BOUNDS_CHANGE_JUMPCUT_DURATION);
 
                 Preconditions.checkNotNull(mPipTransitionState.getPinnedTaskLeash(),
                         "Leash is null for bounds transition.");

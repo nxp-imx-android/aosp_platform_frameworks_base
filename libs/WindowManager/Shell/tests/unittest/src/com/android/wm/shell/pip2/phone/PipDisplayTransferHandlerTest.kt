@@ -53,8 +53,8 @@ import com.android.modules.utils.testing.ExtendedMockitoRule
 import com.android.wm.shell.pip2.PipSurfaceTransactionHelper
 import com.android.wm.shell.pip2.phone.PipDisplayTransferHandler.ORIGIN_DISPLAY_ID_KEY
 import com.android.wm.shell.pip2.phone.PipDisplayTransferHandler.TARGET_DISPLAY_ID_KEY
-import com.android.wm.shell.pip2.phone.transition.PipBoundsChangeHandler.PIP_DESTINATION_BOUNDS
-import com.android.wm.shell.pip2.phone.transition.PipBoundsChangeHandler.PIP_START_TX
+import com.android.wm.shell.pip2.phone.PipTransition.PIP_DESTINATION_BOUNDS
+import com.android.wm.shell.pip2.phone.PipTransition.PIP_START_TX
 import com.android.wm.shell.pip2.phone.PipTransitionState.CHANGING_PIP_BOUNDS
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.times
