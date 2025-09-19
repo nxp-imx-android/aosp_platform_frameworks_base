@@ -22,6 +22,7 @@ $ ./update-enablement-policy.py ../texts/enablement-policy-sysui.txt
 """
 
 import csv
+import operator
 import pathlib
 import sys
 
@@ -48,11 +49,17 @@ class PolicyFile:
     # Start with empty policies
     self.policies: dict[str, bool] = {}
 
+    # Class stats
+    self.classes: dict[str, bool] = {}
+
     # Stats
-    self.total = 0
-    self.passed = 0
-    self.failed = 0
-    self.skipped = 0
+    self.class_total = 0
+    self.class_cannot_init = 0
+    self.class_skipped = 0
+    self.method_total = 0
+    self.method_passed = 0
+    self.method_failed = 0
+    self.method_skipped = 0
 
   def update_with_csv(self, csv_file: Path):
     """Clear existing policies and update from csv test stats."""
@@ -62,36 +69,43 @@ class PolicyFile:
       reader = csv.DictReader(f)
       for row in reader:
         if row["Type"] == "c":
+          self.class_total += 1
           continue
 
-        self.total += 1
+        class_name = row["Class"]
+        failed = int(row["Failed"]) > 0
+        skipped = int(row["Skipped"]) > 0
+        passed = int(row["Passed"]) > 0
 
         if row["RawMethodName"] == "<init>":
-          # Something happened at the class-level
-          if int(row["Failed"]) > 0:
-            self.failed += 1
-            self.policies[row["Class"]] = False
-          elif int(row["Skipped"]) > 0:
-            self.skipped += 1
+          # Something happened at the class-runner level
+          if failed:
+            self.class_cannot_init += 1
+            self.policies[class_name] = False
+          elif skipped:
+            self.class_skipped += 1
         else:
+          # An actual test method run
+          self.method_total += 1
+
+          # Default to True, will be set to False whenever a failure happens
+          if class_name not in self.classes:
+            self.classes[class_name] = True
+
           # Record method-level result
           method = f"{row['Class']}#{row['RawMethodName']}"
-          if int(row["Passed"]) > 0:
+          if passed:
+            self.method_passed += 1
             # It's possible that the same method failed with different parameters.
-            # If any of its variant failed, we keep it disabled.
-            if method in self.policies:
-              if not self.policies[method]:
-                self.failed += 1
-              else:
-                self.passed += 1
-            else:
-              self.passed += 1
+            # If any of its variant failed, we keep the policy disabled.
+            if method not in self.policies:
               self.policies[method] = True
-          elif int(row["Failed"]) > 0:
-            self.failed += 1
+          elif failed:
+            self.method_failed += 1
             self.policies[method] = False
-          elif int(row["Skipped"]) > 0:
-            self.skipped += 1
+            self.classes[class_name] = False
+          elif skipped:
+            self.method_skipped += 1
 
   def write(self):
     """Writes the enablement policy file to disk."""
@@ -99,10 +113,20 @@ class PolicyFile:
     with open(tmp, "w") as f:
       f.writelines(self.header)
 
+      class_ran = len(self.classes)
+      all_pass = operator.countOf(self.classes.values(), True)
+
       f.write("# AUTO-GENERATED START\n")
       f.write("\n")
+      f.write("# Class-level stats:\n")
       f.write(
-          f"# Total={self.total} Passed={self.passed} Failed={self.failed} Skipped={self.skipped}\n"
+          f"# Total={self.class_total} Ran={class_ran} Passed={all_pass}"
+          f" CannotInit={self.class_cannot_init} Skipped={self.class_skipped}\n"
+      )
+      f.write("# Method-level stats:\n")
+      f.write(
+          f"# Total={self.method_total} Passed={self.method_passed}"
+          f" Failed={self.method_failed} Skipped={self.method_skipped}\n"
       )
       f.write("\n")
 
