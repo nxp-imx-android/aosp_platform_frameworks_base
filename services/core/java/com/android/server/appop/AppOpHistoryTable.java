@@ -176,6 +176,9 @@ final class AppOpHistoryTable {
 
     static final String SELECT_RECORDS_COUNT = "SELECT COUNT(1) FROM " + TABLE_NAME;
 
+    static final String SELECT_DISTINCT_PACKAGE_NAMES = "SELECT DISTINCT "
+            + Columns.PACKAGE_NAME + " FROM " + TABLE_NAME;
+
     // Index on access time
     static final String CREATE_INDEX_SQL = "CREATE INDEX IF NOT EXISTS "
             + INDEX_APP_OP + " ON " + TABLE_NAME
