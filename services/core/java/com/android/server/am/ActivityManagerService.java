@@ -15437,7 +15437,7 @@ public class ActivityManagerService extends IActivityManager.Stub
                 ? uidRec.getSetProcState() : PROCESS_STATE_NONEXISTENT;
         final int procAdj = uidRec != null
                 ? uidRec.getMinProcAdj() : INVALID_ADJ;
-        final long procStateSeq = uidRec != null ? uidRec.curProcStateSeq : 0;
+        final long procStateSeq = uidRec != null ? uidRec.getCurProcStateSeq() : 0;
         final int capability = uidRec != null ? uidRec.getSetCapability() : 0;
         final boolean ephemeral = uidRec != null ? uidRec.isEphemeral() : isEphemeralLocked(uid);
 

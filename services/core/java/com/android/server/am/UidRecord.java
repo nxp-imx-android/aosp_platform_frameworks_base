@@ -45,14 +45,6 @@ public final class UidRecord extends UidRecordInternal {
     private ArraySet<ProcessRecord> mProcRecords = new ArraySet<>();
 
     /**
-     * Sequence number associated with the {@link #mCurProcState}. This is incremented using
-     * {@link ActivityManagerService#mProcStateSeqCounter}
-     * when {@link #mCurProcState} changes from background to foreground or vice versa.
-     */
-    @GuardedBy("networkStateUpdate")
-    long curProcStateSeq;
-
-    /**
      * Last seq number for which NetworkPolicyManagerService notified ActivityManagerService that
      * network policies rules were updated.
      */
@@ -245,7 +237,7 @@ public final class UidRecord extends UidRecordInternal {
         }
 
         long seqToken = proto.start(UidRecordProto.NETWORK_STATE_UPDATE);
-        proto.write(UidRecordProto.ProcStateSequence.CURURENT, curProcStateSeq);
+        proto.write(UidRecordProto.ProcStateSequence.CURURENT, getCurProcStateSeq());
         proto.write(UidRecordProto.ProcStateSequence.LAST_NETWORK_UPDATED,
                 lastNetworkUpdatedProcStateSeq);
         proto.end(seqToken);
@@ -330,7 +322,7 @@ public final class UidRecord extends UidRecordInternal {
         sb.append(" procs:0");
 
         sb.append(" seq(");
-        sb.append(curProcStateSeq);
+        sb.append(getCurProcStateSeq());
         sb.append(",");
         sb.append(lastNetworkUpdatedProcStateSeq);
         sb.append(")}");

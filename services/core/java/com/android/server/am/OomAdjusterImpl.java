@@ -106,6 +106,7 @@ import com.android.server.am.psc.ActiveUidsInternal;
 import com.android.server.am.psc.ConnectionRecordInternal;
 import com.android.server.am.psc.ContentProviderConnectionInternal;
 import com.android.server.am.psc.ContentProviderRecordInternal;
+import com.android.server.am.psc.ProcessListInternal;
 import com.android.server.am.psc.ProcessProviderRecordInternal;
 import com.android.server.am.psc.ProcessRecordInternal;
 import com.android.server.am.psc.ProcessServiceRecordInternal;
@@ -606,7 +607,7 @@ public class OomAdjusterImpl extends OomAdjuster {
     private final ComputeConnectionsConsumer mComputeConnectionsConsumer =
             new ComputeConnectionsConsumer();
 
-    OomAdjusterImpl(ActivityManagerService service, ProcessList processList,
+    OomAdjusterImpl(ActivityManagerService service, ProcessListInternal processList,
             ActiveUids activeUids, ServiceThread adjusterThread, Constants oomConstants,
             GlobalState globalState, Injector injector, Callback callback) {
         super(service, processList, activeUids, adjusterThread, oomConstants, globalState, injector,
