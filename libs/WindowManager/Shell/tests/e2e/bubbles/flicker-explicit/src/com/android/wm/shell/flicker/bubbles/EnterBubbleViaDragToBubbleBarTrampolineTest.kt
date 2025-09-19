@@ -31,7 +31,6 @@ import org.junit.Assume.assumeTrue
 import org.junit.Before
 import org.junit.FixMethodOrder
 import org.junit.Rule
-import org.junit.Test
 import org.junit.rules.TestRule
 import org.junit.runner.RunWith
 import org.junit.runners.MethodSorters
@@ -75,7 +74,14 @@ class EnterBubbleViaDragToBubbleBarTrampolineTest(navBar: NavBar) :
                 setUpBeforeTransition = {
                     SplitScreenUtils.createShortcutOnHotseatIfNotExist(tapl, trampolineApp.appName)
                 },
-                transition = { launchBubbleViaDragToBubbleBar(trampolineApp, tapl, wmHelper) },
+                transition = {
+                    launchBubbleViaDragToBubbleBar(
+                        runningApp,
+                        tapl,
+                        wmHelper,
+                        trampolineApp,
+                    )
+                },
                 tearDownAfterTransition = { runningApp.exit(wmHelper) },
             )
 
