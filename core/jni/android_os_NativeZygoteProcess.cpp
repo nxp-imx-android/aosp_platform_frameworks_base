@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-#define LOG_TAG "ZygoteProcess"
 #include <android-base/logging.h>
 #include <android-base/unique_fd.h>
 #include <binder/IInterface.h>
@@ -22,6 +21,7 @@
 #include <flatbuffers/flatbuffers.h>
 #include <libzygote_messages_schemas/messages.h>
 #include <nativehelper/JNIHelp.h>
+#include <nativehelper/JNIPlatformHelp.h>
 #include <nativehelper/ScopedUtfChars.h>
 #include <sys/socket.h>
 #include <sys/un.h>
@@ -33,25 +33,9 @@
 #include "com_android_internal_os_Zygote.h"
 #include "core_jni_helpers.h"
 
-#define ZYGOTE_NEXT_SOCKET_NAME "zygote_next"
-
 #define RESPONSE_DATA_BUF_SIZE 1024
 
 namespace {
-
-android::base::unique_fd get_zygote_socket_fd() {
-    android::base::unique_fd fd(socket(AF_UNIX, SOCK_SEQPACKET, 0));
-    if (fd.ok()) {
-        if (socket_local_client_connect(fd.get(), ZYGOTE_NEXT_SOCKET_NAME,
-                                        ANDROID_SOCKET_NAMESPACE_RESERVED, SOCK_SEQPACKET) == -1) {
-            PLOG(ERROR) << "Failed to connect to the zygote socket";
-            fd.reset();
-        }
-    } else {
-        PLOG(ERROR) << "Failed to create a socket";
-    }
-    return fd;
-}
 
 static std::optional<ScopedUtfChars> extract_jstring(JNIEnv* env, jstring managed_string) {
     if (managed_string == nullptr) {
@@ -64,21 +48,15 @@ static std::optional<ScopedUtfChars> extract_jstring(JNIEnv* env, jstring manage
 
 namespace android {
 
-static jint android_os_NativeZygoteProcess_startNativeProcess(JNIEnv* env, jclass /* classObj */,
-                                                              jint uid, jint gid, jlong startSeq,
-                                                              jstring packageName, jstring niceName,
-                                                              jint targetSdkVersion,
-                                                              jboolean startChildZygote,
-                                                              jint runtimeFlags, jstring seInfo) {
-    static base::unique_fd fd;
-    if (!fd.ok()) {
-        fd = get_zygote_socket_fd();
-        if (!fd.ok()) {
-            PLOG(ERROR) << "Failed to get the zygote socket fd!";
-            return -1;
-        }
+static jint android_os_NativeZygoteProcess_startNativeProcess(
+        JNIEnv* env, jclass /* classObj */, jobject sockFd, jint uid, jint gid, jlong startSeq,
+        jstring packageName, jstring niceName, jint targetSdkVersion, jboolean startChildZygote,
+        jint runtimeFlags, jstring seInfo) {
+    int fd = jniGetFDFromFileDescriptor(env, sockFd);
+    if (fd < 0) {
+        jniThrowIOException(env, errno);
+        return -1;
     }
-
     auto packageNameStr = extract_jstring(env, packageName);
     auto niceNameStr = extract_jstring(env, niceName);
     auto seInfoStr = extract_jstring(env, seInfo);
@@ -112,24 +90,22 @@ static jint android_os_NativeZygoteProcess_startNativeProcess(JNIEnv* env, jclas
     uint8_t* buf = builder.GetBufferPointer();
     ssize_t size = builder.GetSize();
 
-    ssize_t written = write(fd.get(), buf, size);
+    ssize_t written = write(fd, buf, size);
     if (written == -1 || written != size) {
-        PLOG(ERROR) << "Failed to write to the socket written=" << written;
-        fd.reset();
+        jniThrowIOException(env, errno);
         return -1;
     }
 
     uint8_t response_buf[RESPONSE_DATA_BUF_SIZE];
     memset(response_buf, 0, sizeof(response_buf));
-    int received = read(fd.get(), response_buf, sizeof(response_buf));
+    int received = read(fd, response_buf, sizeof(response_buf));
     if (received == -1) {
-        PLOG(ERROR) << __func__ << ": Failed to receive the response";
-        fd.reset();
+        jniThrowIOException(env, errno);
         return -1;
     }
     flatbuffers::Verifier verifier(response_buf, received);
     if (!VerifyParcelBuffer(verifier)) {
-        LOG(ERROR) << "Failed to verify the response";
+        jniThrowRuntimeException(env, "Failed to verify the response");
         return -1;
     }
     const auto* response = GetParcel(response_buf);
@@ -139,7 +115,7 @@ static jint android_os_NativeZygoteProcess_startNativeProcess(JNIEnv* env, jclas
             return spawn_res->pid();
         }
         default:
-            LOG(ERROR) << "Received an unexpected type response";
+            jniThrowRuntimeException(env, "Received an unexpected type response");
             return -1;
     }
 }
@@ -149,7 +125,7 @@ static jint android_os_NativeZygoteProcess_startNativeProcess(JNIEnv* env, jclas
 static const JNINativeMethod method_table[] = {
         /* name, signature, funcPtr */
         {"nativeStartNativeProcess",
-         "(IIJLjava/lang/String;Ljava/lang/String;IZILjava/lang/String;)I",
+         "(Ljava/io/FileDescriptor;IIJLjava/lang/String;Ljava/lang/String;IZILjava/lang/String;)I",
          (void*)android_os_NativeZygoteProcess_startNativeProcess},
 };
 
