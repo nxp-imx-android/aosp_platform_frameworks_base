@@ -574,4 +574,13 @@
      <!-- Whether to wait for carrier config loaded before using operator name to publish from modem. -->
     <bool name="config_update_operator_name_after_carrier_config_loaded">false</bool>
     <java-symbol type="bool" name="config_update_operator_name_after_carrier_config_loaded" />
+
+
+    <!-- Name of the NetworkChangeNotification that prompts the user when the 2G network is
+    enabled/disabled by the carrier. -->
+    <string name="config_network_change_notification">
+        com.android.settings/com.android.settings.network.telephony.NetworkChangeNotification
+    </string>
+    <java-symbol type="string" name="config_network_change_notification" />
+
 </resources>

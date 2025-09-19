@@ -1736,6 +1736,19 @@ public class TelephonyManager {
     public static final String EXTRA_DEFAULT_SUBSCRIPTION_SELECT_TYPE =
             "android.telephony.extra.DEFAULT_SUBSCRIPTION_SELECT_TYPE";
 
+    /**
+     * Broadcast intent sent to indicate 2g has disabled by carrier.
+     *
+     * <p class="note">This is a protected intent that can only be sent by the system.
+     *
+     * @hide
+     */
+    @FlaggedApi(Flags.FLAG_KEY_CARRIER_2G_TOGGLE)
+    @SdkConstant(SdkConstantType.BROADCAST_INTENT_ACTION)
+    @BroadcastBehavior(explicitOnly = true)
+    public static final String ACTION_2G_DISABLED_BY_CARRIER =
+            "android.telephony.action.2G_DISABLED_BY_CARRIER";
+
     /** @hide */
     @IntDef({
             EXTRA_DEFAULT_SUBSCRIPTION_SELECT_TYPE_NONE,
