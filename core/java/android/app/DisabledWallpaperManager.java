@@ -68,11 +68,6 @@ final class DisabledWallpaperManager extends WallpaperManager {
     }
 
     @Override
-    public boolean isLockscreenLiveWallpaperEnabled() {
-        return unsupportedBoolean();
-    }
-
-    @Override
     public boolean shouldEnableWideColorGamut() {
         return unsupportedBoolean();
     }
