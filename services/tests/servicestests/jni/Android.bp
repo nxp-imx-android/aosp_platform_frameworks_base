@@ -41,6 +41,7 @@ cc_library_shared {
         "libandroid_runtime",
         "libbase",
         "libbinder",
+        "libbindernetlink",
         "libgralloctypes",
         "libgui",
         "libhidlbase",

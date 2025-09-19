@@ -82,6 +82,7 @@ import android.util.Slog;
 import android.util.SparseArray;
 
 import com.android.internal.annotations.GuardedBy;
+import com.android.internal.annotations.Keep;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.os.BinderfsStatsReader;
 import com.android.internal.os.ProcLocksReader;
@@ -537,6 +538,7 @@ public class CachedAppOptimizer {
     @GuardedBy("mProcLock")
     private boolean mFreezerOverride = false;
     private long mFreezerBinderCallbackLast = -1;
+    private boolean mBinderMonitorEnabled = false;
 
     @VisibleForTesting volatile long mFreezerDebounceTimeout = DEFAULT_FREEZER_DEBOUNCE_TIMEOUT;
     @VisibleForTesting volatile boolean mFreezerExemptInstPkg = DEFAULT_FREEZER_EXEMPT_INST_PKG;
@@ -563,6 +565,31 @@ public class CachedAppOptimizer {
         mSettingsObserver = new SettingsContentObserver();
         mProcLocksReader = new ProcLocksReader();
         mFreezer = mAm.getFreezer();
+
+        // This must be done exactly once, and as early as possible so that system_server can open
+        // the singleton binder netlink socket.  mBinderMonitorEnabled will be false in test
+        // processes, regardless of the flag.
+        mBinderMonitorEnabled = android.os.Flags.binderNetlinkEnabled() && enableBinderReport();
+
+        // Start the monitor thread only if binder monitoring is enabled.
+        if (mBinderMonitorEnabled) {
+            new Thread("BinderMonitor") {
+                @Override
+                public void run() {
+                    Slog.d(TAG_AM, "BinderMonitor enabled");
+                    try {
+                        handleBinderReport();
+                    } catch (RuntimeException e) {
+                        Slog.e(TAG_AM, "Binder monitor failed", e);
+                    } finally {
+                        Slog.e(TAG_AM, "BinderMonitor disabled");
+                        // The thread has exited: ensure that further errors are processed with
+                        // legacy logic.
+                        mBinderMonitorEnabled = false;
+                    }
+                }
+            }.start();
+        }
     }
 
     /**
@@ -746,6 +773,17 @@ public class CachedAppOptimizer {
     }
 
     private native void compactSystem();
+
+    /**
+     * Enable binder reports via generic netlink
+     * @return true if the operation completed successfully, false otherwise.
+     */
+    private native boolean enableBinderReport();
+
+    /**
+     * Wait, read and process binder reports from kernel binder driver.
+     */
+    private native void handleBinderReport();
 
     /**
      * Compacts a process or app
@@ -2342,11 +2380,71 @@ public class CachedAppOptimizer {
         }
     }
 
+    // Binder error codes that are shared between the jni and java layers.
+    // LINT.IfChange(binderCodes)
+    private static final int BR_REPORT_FAILED = -1;
+    private static final int BR_FROZEN_REPLY = 1;
+    private static final int BR_FAILED_REPLY = 2;
+    private static final int BR_ONEWAY_SPAM_SUSPECT = 3;
+    private static final int BR_TRANSACTION_PENDING_FROZEN = 4;
+    // LINT.ThenChange(/services/core/jni/com_android_server_am_CachedAppOptimizer.cpp:binderCodes)
+
+    /**
+     * Process a binder error message.  This method is called by the binder monitor thread in the
+     * native layer.  The method returns false if there is an error and the monitor thread should
+     * exit.
+     */
+    @Keep
+    private boolean handleBinderReport(int error, int toPid, boolean large, boolean oneway) {
+        switch (error) {
+            case BR_REPORT_FAILED:
+                Slog.e(TAG_AM, "failed to retrieve binder report");
+                break;
+
+            case BR_FROZEN_REPLY:
+                killFrozenProcess(toPid, "Sync transaction while frozen",
+                        ApplicationExitInfo.REASON_FREEZER,
+                        ApplicationExitInfo.SUBREASON_FREEZER_BINDER_TRANSACTION);
+                break;
+
+            case BR_FAILED_REPLY:
+                if (large) {
+                    // If the message was "large", a TransactionTooLargeException} will be
+                    // thrown, and the process will be dealt with in the handler.
+                    Slog.d(TAG_AM, "Ignoring TransactionTooLarge failure");
+                } else if (!oneway) {
+                    // This is an unknown synchronous message failure.  The target might be
+                    // dead, but nothing can be done here.
+                    Slog.d(TAG_AM, "Ignoring unknown synchronous message failure");
+                } else {
+                    killFrozenProcess(toPid, "Async binder space running out while frozen",
+                            ApplicationExitInfo.REASON_FREEZER,
+                            ApplicationExitInfo.SUBREASON_FREEZER_BINDER_ASYNC_FULL);
+                }
+                break;
+
+            case BR_ONEWAY_SPAM_SUSPECT:
+            case BR_TRANSACTION_PENDING_FROZEN:
+                // Binder spamming.
+                break;
+
+            default:
+                // Should not be sent from the lower layers.
+                Slog.e(TAG_AM, "unknown binder error code: " + error);
+                break;
+        }
+        // The monitor thread should continue unless the error code is "failure".  If the monitor
+        // thread exits, the code reverts to
+        return error != BR_REPORT_FAILED;
+    }
+
     /**
      * Kill a frozen process with a specified reason
      */
-    public void killProcess(int pid, String reason, @Reason int reasonCode,
+    @Keep
+    private void killFrozenProcess(int pid, String reason, @Reason int reasonCode,
             @SubReason int subReason) {
+        Slog.i(TAG_AM, "binder error: kill " + pid + " " + reason);
         mAm.mHandler.post(() -> {
             synchronized (mAm) {
                 synchronized (mProcLock) {
@@ -2393,7 +2491,7 @@ public class CachedAppOptimizer {
 
         // Do nothing if the binder error callback is not enabled.
         // That means the frozen apps in a wrong state will be killed when they are unfrozen later.
-        if (!mUseFreezer || !mFreezerBinderCallbackEnabled) {
+        if (!mUseFreezer || !mFreezerBinderCallbackEnabled || mBinderMonitorEnabled) {
             return;
         }
 
@@ -2419,7 +2517,7 @@ public class CachedAppOptimizer {
                 int freezeInfo = mFreezer.getBinderFreezeInfo(current);
 
                 if ((freezeInfo & SYNC_RECEIVED_WHILE_FROZEN) != 0) {
-                    killProcess(current, "Sync transaction while frozen",
+                    killFrozenProcess(current, "Sync transaction while frozen",
                             ApplicationExitInfo.REASON_FREEZER,
                             ApplicationExitInfo.SUBREASON_FREEZER_BINDER_TRANSACTION);
 
@@ -2462,7 +2560,7 @@ public class CachedAppOptimizer {
                     if (free < mFreezerBinderAsyncThreshold) {
                         Slog.w(TAG_AM, "pid " + current
                                 + " has " + free + " free async space, killing");
-                        killProcess(current, "Async binder space running out while frozen",
+                        killFrozenProcess(current, "Async binder space running out while frozen",
                                 ApplicationExitInfo.REASON_FREEZER,
                                 ApplicationExitInfo.SUBREASON_FREEZER_BINDER_ASYNC_FULL);
                     }
