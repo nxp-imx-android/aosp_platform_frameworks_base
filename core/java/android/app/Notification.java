@@ -59,7 +59,6 @@ import android.annotation.SystemApi;
 import android.annotation.TestApi;
 import android.app.admin.DevicePolicyManager;
 import android.app.compat.CompatChanges;
-import android.app.SetNotificationBackgroundColorRefactor;
 import android.compat.annotation.ChangeId;
 import android.compat.annotation.EnabledSince;
 import android.compat.annotation.UnsupportedAppUsage;
@@ -2062,6 +2061,60 @@ public class Notification implements Parcelable
         @SuppressLint("ActionValue")
         public static final String EXTRA_IS_ANIMATED = "android.extra.IS_ANIMATED";
 
+        /**
+         * The action’s visual emphasis is generally the default, or may be automatically
+         * determined by the system based on context.
+         */
+        @FlaggedApi(Flags.FLAG_API_NOTIFICATION_ACTION_CUSTOM)
+        public static final int EMPHASIS_AUTO = 0;
+
+        /**
+         * The action’s visual emphasis may indicate that this action is more important than others.
+         */
+        @FlaggedApi(Flags.FLAG_API_NOTIFICATION_ACTION_CUSTOM)
+        public static final int EMPHASIS_PRIMARY = 1;
+
+        /**
+         * The action’s visual emphasis may indicate that this action is less important than others.
+         */
+        @FlaggedApi(Flags.FLAG_API_NOTIFICATION_ACTION_CUSTOM)
+        public static final int EMPHASIS_SECONDARY = 2;
+
+        /** @hide */
+        @IntDef(prefix = { "EMPHASIS_" }, value = {
+                EMPHASIS_AUTO,
+                EMPHASIS_PRIMARY,
+                EMPHASIS_SECONDARY
+        })
+        @Retention(RetentionPolicy.SOURCE)
+        public @interface Emphasis {}
+
+        /** The action can be presented with the best form for the content and context. */
+        @FlaggedApi(Flags.FLAG_API_NOTIFICATION_ACTION_CUSTOM)
+        public static final int STYLE_AUTO = 0;
+
+        /** The action is best represented by only the text (its {@link #title}). */
+        @FlaggedApi(Flags.FLAG_API_NOTIFICATION_ACTION_CUSTOM)
+        public static final int STYLE_TEXT_ONLY = 1;
+
+        /** The action is best represented by a combo of the icon and text. */
+        @FlaggedApi(Flags.FLAG_API_NOTIFICATION_ACTION_CUSTOM)
+        public static final int STYLE_ICON_AND_TEXT = 2;
+
+        /** The action is best represented by only its icon. */
+        @FlaggedApi(Flags.FLAG_API_NOTIFICATION_ACTION_CUSTOM)
+        public static final int STYLE_ICON_ONLY = 3;
+
+        /** @hide */
+        @IntDef(prefix = { "STYLE_" }, value = {
+                STYLE_AUTO,
+                STYLE_TEXT_ONLY,
+                STYLE_ICON_AND_TEXT,
+                STYLE_ICON_ONLY
+        })
+        @Retention(RetentionPolicy.SOURCE)
+        public @interface Style {}
+
         private final Bundle mExtras;
         @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.P, trackingBug = 115609023)
         private Icon mIcon;
@@ -2069,7 +2122,9 @@ public class Notification implements Parcelable
         private boolean mAllowGeneratedReplies = true;
         private final @SemanticAction int mSemanticAction;
         private final boolean mIsContextual;
-        private boolean mAuthenticationRequired;
+        private final @Emphasis int mEmphasisHint;
+        private final @Style int mStyleHint;
+        private final boolean mAuthenticationRequired;
 
         /**
          * Small icon representing the action.
@@ -2106,6 +2161,8 @@ public class Notification implements Parcelable
             mAllowGeneratedReplies = in.readInt() == 1;
             mSemanticAction = in.readInt();
             mIsContextual = in.readInt() == 1;
+            mEmphasisHint = in.readInt();
+            mStyleHint = in.readInt();
             mAuthenticationRequired = in.readInt() == 1;
         }
 
@@ -2115,13 +2172,15 @@ public class Notification implements Parcelable
         @Deprecated
         public Action(int icon, CharSequence title, @Nullable PendingIntent intent) {
             this(Icon.createWithResource("", icon), title, intent, new Bundle(), null, true,
-                    SEMANTIC_ACTION_NONE, false /* isContextual */, false /* requireAuth */);
+                    SEMANTIC_ACTION_NONE, /* isContextual= */ false, EMPHASIS_AUTO, STYLE_AUTO,
+                    /* requireAuth= */ false);
         }
 
         /** Keep in sync with {@link Notification.Action.Builder#Builder(Action)}! */
         private Action(Icon icon, CharSequence title, PendingIntent intent, Bundle extras,
                 RemoteInput[] remoteInputs, boolean allowGeneratedReplies,
                 @SemanticAction int semanticAction, boolean isContextual,
+                @Emphasis int emphasisHint, @Style int styleHint,
                 boolean requireAuth) {
             this.mIcon = icon;
             if (icon != null && icon.getType() == Icon.TYPE_RESOURCE) {
@@ -2134,6 +2193,8 @@ public class Notification implements Parcelable
             this.mAllowGeneratedReplies = allowGeneratedReplies;
             this.mSemanticAction = semanticAction;
             this.mIsContextual = isContextual;
+            this.mEmphasisHint = emphasisHint;
+            this.mStyleHint = styleHint;
             this.mAuthenticationRequired = requireAuth;
         }
 
@@ -2191,6 +2252,23 @@ public class Notification implements Parcelable
         }
 
         /**
+         * Returns the app’s hint about the importance of this action relative to others in this
+         * notification.
+         */
+        @Emphasis
+        @FlaggedApi(Flags.FLAG_API_NOTIFICATION_ACTION_CUSTOM)
+        public int getEmphasisHint() {
+            return mEmphasisHint;
+        }
+
+        /** Returns the app’s hint about the preferred visual style of this action. */
+        @Style
+        @FlaggedApi(Flags.FLAG_API_NOTIFICATION_ACTION_CUSTOM)
+        public int getStyleHint() {
+            return mStyleHint;
+        }
+
+        /**
          * Get the list of inputs to be collected from the user that ONLY accept data when this
          * action is sent. These remote inputs are guaranteed to return {@code true} on a call to
          * {@link RemoteInput#isDataOnly}.
@@ -2227,6 +2305,8 @@ public class Notification implements Parcelable
             @Nullable private ArrayList<RemoteInput> mRemoteInputs;
             private @SemanticAction int mSemanticAction;
             private boolean mIsContextual;
+            private @Emphasis int mEmphasisHint;
+            private @Style int mStyleHint;
             private boolean mAuthenticationRequired;
 
             /**
@@ -2277,7 +2357,10 @@ public class Notification implements Parcelable
              * system UI.
              */
             public Builder(Icon icon, CharSequence title, @Nullable PendingIntent intent) {
-                this(icon, title, intent, new Bundle(), null, true, SEMANTIC_ACTION_NONE, false);
+                this(icon, title, intent, new Bundle(), /* remoteInputs= */ null,
+                        /* allowGeneratedReplies= */ true, SEMANTIC_ACTION_NONE,
+                        /* isContextual= */ false, EMPHASIS_AUTO, STYLE_AUTO,
+                        /* authRequired= */ false);
             }
 
             /**
@@ -2289,13 +2372,15 @@ public class Notification implements Parcelable
                 this(action.getIcon(), action.title, action.actionIntent,
                         new Bundle(action.mExtras), action.getRemoteInputs(),
                         action.getAllowGeneratedReplies(), action.getSemanticAction(),
+                        action.isContextual(), action.getEmphasisHint(), action.getStyleHint(),
                         action.isAuthenticationRequired());
             }
 
             private Builder(@Nullable Icon icon, @Nullable CharSequence title,
                     @Nullable PendingIntent intent, @NonNull Bundle extras,
                     @Nullable RemoteInput[] remoteInputs, boolean allowGeneratedReplies,
-                    @SemanticAction int semanticAction, boolean authRequired) {
+                    @SemanticAction int semanticAction, boolean isContextual,
+                    @Emphasis int emphasisHint, @Style int styleHint, boolean authRequired) {
                 mIcon = icon;
                 mTitle = title;
                 mIntent = intent;
@@ -2306,6 +2391,9 @@ public class Notification implements Parcelable
                 }
                 mAllowGeneratedReplies = allowGeneratedReplies;
                 mSemanticAction = semanticAction;
+                mIsContextual = isContextual;
+                mEmphasisHint = emphasisHint;
+                mStyleHint = styleHint;
                 mAuthenticationRequired = authRequired;
             }
 
@@ -2391,6 +2479,30 @@ public class Notification implements Parcelable
             }
 
             /**
+             * Sets a hint about the importance of this action relative to others in this
+             * notification. This may be used for {@link Notification#FLAG_PROMOTED_ONGOING
+             * promoted ongoing} notifications, and is not binding on standard notifications.
+             */
+            @FlaggedApi(Flags.FLAG_API_NOTIFICATION_ACTION_CUSTOM)
+            @NonNull
+            public Builder setEmphasisHint(@Emphasis int emphasis) {
+                mEmphasisHint = emphasis;
+                return this;
+            }
+
+            /**
+             * Sets a preferred visual style of this action. This may be used for
+             * {@link Notification#FLAG_PROMOTED_ONGOING promoted ongoing} notifications, and is
+             * not binding on standard notifications.
+             */
+            @FlaggedApi(Flags.FLAG_API_NOTIFICATION_ACTION_CUSTOM)
+            @NonNull
+            public Builder setStyleHint(@Style int style) {
+                mStyleHint = style;
+                return this;
+            }
+
+            /**
              * Apply an {@link Extender} to this action builder. Extenders may be used to add
              * metadata or change options on this builder.
              */
@@ -2468,7 +2580,7 @@ public class Notification implements Parcelable
                         ? null : textInputs.toArray(new RemoteInput[textInputs.size()]);
                 return new Action(mIcon, mTitle, mIntent, mExtras, textInputsArr,
                         mAllowGeneratedReplies, mSemanticAction, mIsContextual,
-                        mAuthenticationRequired);
+                        mEmphasisHint, mStyleHint, mAuthenticationRequired);
             }
         }
 
@@ -2487,6 +2599,8 @@ public class Notification implements Parcelable
                     getAllowGeneratedReplies(),
                     getSemanticAction(),
                     isContextual(),
+                    getEmphasisHint(),
+                    getStyleHint(),
                     isAuthenticationRequired());
         }
 
@@ -2516,6 +2630,8 @@ public class Notification implements Parcelable
             out.writeInt(mAllowGeneratedReplies ? 1 : 0);
             out.writeInt(mSemanticAction);
             out.writeInt(mIsContextual ? 1 : 0);
+            out.writeInt(mEmphasisHint);
+            out.writeInt(mStyleHint);
             out.writeInt(mAuthenticationRequired ? 1 : 0);
         }
 
