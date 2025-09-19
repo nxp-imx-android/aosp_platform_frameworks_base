@@ -143,11 +143,7 @@ constructor(
                 val phoneStatusBarView = cv.findViewById<PhoneStatusBarView>(R.id.status_bar)
                 component =
                     componentFactory
-                        .create(
-                            phoneStatusBarView,
-                            statusBarConfigurationController,
-                            statusBarWindowController,
-                        )
+                        .create(phoneStatusBarView, statusBarConfigurationController)
                         .also { component ->
                             // CollapsedStatusBarFragment used to be responsible initializing
                             component.init()

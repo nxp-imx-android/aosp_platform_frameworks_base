@@ -26,6 +26,9 @@ import com.android.systemui.log.logcatLogBuffer
 import com.android.systemui.statusbar.layout.statusBarContentInsetsProvider
 import com.android.systemui.statusbar.policy.mockStatusBarConfigurationController
 import java.util.Optional
+import org.mockito.kotlin.mock
+
+val Kosmos.mockStatusBarWindowController by Kosmos.Fixture { mock<StatusBarWindowController>() }
 
 val Kosmos.fakeStatusBarWindowController by Kosmos.Fixture { FakeStatusBarWindowController() }
 
@@ -50,15 +53,3 @@ val Kosmos.statusBarWindowControllerImpl by
 
 var Kosmos.statusBarWindowController: StatusBarWindowController by
     Kosmos.Fixture { fakeStatusBarWindowController }
-
-val Kosmos.fakeStatusBarWindowControllerStore by
-    Kosmos.Fixture { FakeStatusBarWindowControllerStore() }
-
-var Kosmos.statusBarWindowControllerStore: StatusBarWindowControllerStore by
-    Kosmos.Fixture { fakeStatusBarWindowControllerStore }
-
-val Kosmos.fakeStatusBarWindowControllerFactory by
-    Kosmos.Fixture { FakeStatusBarWindowControllerFactory() }
-
-var Kosmos.statusBarWindowControllerFactory: StatusBarWindowController.Factory by
-    Kosmos.Fixture { fakeStatusBarWindowControllerFactory }

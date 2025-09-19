@@ -21,14 +21,17 @@ import android.app.IActivityManager
 import android.app.PendingIntent
 import android.app.UidObserver
 import android.content.Context
+import android.view.Display
 import android.view.View
 import androidx.annotation.VisibleForTesting
+import com.android.app.displaylib.PerDisplayRepository
 import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.internal.logging.InstanceId
 import com.android.systemui.CoreStartable
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Main
+import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent
 import com.android.systemui.dump.DumpManager
 import com.android.systemui.log.LogBuffer
 import com.android.systemui.log.core.LogLevel
@@ -45,7 +48,6 @@ import com.android.systemui.statusbar.notification.shared.CallType
 import com.android.systemui.statusbar.phone.ongoingcall.data.repository.OngoingCallRepository
 import com.android.systemui.statusbar.phone.ongoingcall.shared.model.OngoingCallModel
 import com.android.systemui.statusbar.policy.CallbackController
-import com.android.systemui.statusbar.window.StatusBarWindowControllerStore
 import java.io.PrintWriter
 import java.util.concurrent.Executor
 import javax.inject.Inject
@@ -68,11 +70,15 @@ constructor(
     @Main private val mainExecutor: Executor,
     private val iActivityManager: IActivityManager,
     private val dumpManager: DumpManager,
-    private val statusBarWindowControllerStore: StatusBarWindowControllerStore,
     private val swipeStatusBarAwayGestureHandler: SwipeStatusBarAwayGestureHandler,
+    displayComponentRepo: PerDisplayRepository<SystemUIDisplaySubcomponent>,
     private val statusBarModeRepository: StatusBarModeRepositoryStore,
     @OngoingCallLog private val logger: LogBuffer,
 ) : CallbackController<OngoingCallListener>, CoreStartable {
+
+    private val statusBarWindowController =
+        displayComponentRepo[Display.DEFAULT_DISPLAY]!!.statusBarWindowController
+
     private var isFullscreen: Boolean = false
     /** Non-null if there's an active call notification. */
     private var callNotificationInfo: CallNotificationInfo? = null
@@ -127,9 +133,7 @@ constructor(
         this.chipView = chipView
         val backgroundView: ChipBackgroundContainer? =
             chipView.findViewById(R.id.ongoing_activity_chip_background)
-        backgroundView?.maxHeightFetcher = {
-            statusBarWindowControllerStore.defaultDisplay.statusBarHeight
-        }
+        backgroundView?.maxHeightFetcher = { statusBarWindowController.statusBarHeight }
         if (hasOngoingCall()) {
             updateChip()
         }
@@ -262,8 +266,10 @@ constructor(
             // completely deprecated and does nothing.
             uidObserver.registerWithUid(currentCallNotificationInfo.uid)
             if (!currentCallNotificationInfo.statusBarSwipedAway) {
-                statusBarWindowControllerStore.defaultDisplay
-                    .setOngoingProcessRequiresStatusBarVisible(visible = true, source = TAG)
+                statusBarWindowController.setOngoingProcessRequiresStatusBarVisible(
+                    visible = true,
+                    source = TAG,
+                )
             }
             updateGestureListening()
             sendStateChangeEvent()
@@ -307,7 +313,7 @@ constructor(
         StatusBarChipsModernization.assertInLegacyMode()
 
         callNotificationInfo = null
-        statusBarWindowControllerStore.defaultDisplay.setOngoingProcessRequiresStatusBarVisible(
+        statusBarWindowController.setOngoingProcessRequiresStatusBarVisible(
             visible = false,
             source = TAG,
         )
@@ -336,7 +342,7 @@ constructor(
 
         logger.log(TAG, LogLevel.DEBUG, {}, { "Swipe away gesture detected" })
         callNotificationInfo = callNotificationInfo?.copy(statusBarSwipedAway = true)
-        statusBarWindowControllerStore.defaultDisplay.setOngoingProcessRequiresStatusBarVisible(
+        statusBarWindowController.setOngoingProcessRequiresStatusBarVisible(
             visible = false,
             source = TAG,
         )

@@ -29,6 +29,7 @@ import android.os.RemoteException
 import android.os.UserHandle
 import android.provider.Settings
 import android.util.Log
+import android.view.Display
 import android.view.RemoteAnimationAdapter
 import android.view.View
 import android.view.WindowManager
@@ -48,6 +49,7 @@ import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.desktop.DesktopFirstRepository
 import com.android.systemui.deviceentry.domain.interactor.DeviceEntryInteractor
+import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent
 import com.android.systemui.keyguard.KeyguardViewMediator
 import com.android.systemui.keyguard.domain.interactor.KeyguardInteractor
 import com.android.systemui.keyguard.domain.interactor.KeyguardTransitionInteractor
@@ -66,7 +68,6 @@ import com.android.systemui.statusbar.NotificationLockscreenUserManager
 import com.android.systemui.statusbar.NotificationShadeWindowController
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow
 import com.android.systemui.statusbar.policy.domain.interactor.DeviceProvisioningInteractor
-import com.android.systemui.statusbar.window.StatusBarWindowControllerStore
 import com.android.systemui.user.domain.interactor.SelectedUserInteractor
 import com.android.systemui.util.concurrency.DelayableExecutor
 import com.android.systemui.util.kotlin.getOrNull
@@ -101,7 +102,7 @@ constructor(
     @Application private val applicationScope: CoroutineScope,
     private val shadeControllerLazy: Lazy<ShadeController>,
     private val communalSceneInteractor: CommunalSceneInteractor,
-    private val statusBarWindowControllerStore: StatusBarWindowControllerStore,
+    private val perDisplaySubcomponentRepository: PerDisplayRepository<SystemUIDisplaySubcomponent>,
     private val keyguardViewMediatorLazy: Lazy<KeyguardViewMediator>,
     private val shadeAnimationInteractor: ShadeAnimationInteractor,
     private val notifShadeWindowControllerLazy: Lazy<NotificationShadeWindowController>,
@@ -150,8 +151,11 @@ constructor(
                 ): ActivityTransitionAnimator.Controller {
                     val baseController = controllerFactory.createController(forLaunch)
                     val rootView = baseController.transitionContainer.rootView
+                    // TODO: b/432402434 - use display specific instance of
+                    //  StatusBarWindowController
                     val controllerFromStatusBar: Optional<ActivityTransitionAnimator.Controller> =
-                        statusBarWindowControllerStore.defaultDisplay
+                        perDisplaySubcomponentRepository[Display.DEFAULT_DISPLAY]!!
+                            .statusBarWindowController
                             .wrapAnimationControllerIfInStatusBar(rootView, baseController)
                     return if (controllerFromStatusBar.isPresent) {
                         controllerFromStatusBar.get()
@@ -730,11 +734,11 @@ constructor(
             return null
         }
         val rootView = animationController.transitionContainer.rootView
+        // TODO: b/432402434 - use display specific instance of StatusBarWindowController
         val controllerFromStatusBar: Optional<ActivityTransitionAnimator.Controller> =
-            statusBarWindowControllerStore.defaultDisplay.wrapAnimationControllerIfInStatusBar(
-                rootView,
-                animationController,
-            )
+            perDisplaySubcomponentRepository[Display.DEFAULT_DISPLAY]!!
+                .statusBarWindowController
+                .wrapAnimationControllerIfInStatusBar(rootView, animationController)
         if (controllerFromStatusBar.isPresent) {
             return controllerFromStatusBar.get()
         }

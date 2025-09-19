@@ -41,7 +41,6 @@ import com.android.systemui.statusbar.core.StatusBarConnectedDisplays
 import com.android.systemui.statusbar.layout.StatusBarContentInsetsChangedListener
 import com.android.systemui.statusbar.layout.StatusBarContentInsetsProvider
 import com.android.systemui.statusbar.window.StatusBarWindowController
-import com.android.systemui.statusbar.window.StatusBarWindowControllerStore
 import com.android.systemui.util.animation.AnimationUtil.Companion.frames
 import dagger.Lazy
 import dagger.Module
@@ -487,13 +486,12 @@ interface SystemEventChipAnimationControllerModule {
         fun defaultController(
             factory: SystemEventChipAnimationControllerImpl.Factory,
             context: Context,
-            statusBarWindowControllerStore: StatusBarWindowControllerStore,
             perDisplaySubcomponentRepo: PerDisplayRepository<SystemUIDisplaySubcomponent>,
         ): SystemEventChipAnimationController {
             val displaySubcomponent = perDisplaySubcomponentRepo[Display.DEFAULT_DISPLAY]!!
             return factory.create(
                 context,
-                statusBarWindowControllerStore.defaultDisplay,
+                displaySubcomponent.statusBarWindowController,
                 displaySubcomponent.statusBarContentInsetsProvider,
             )
         }

@@ -18,6 +18,7 @@ package com.android.systemui.display.dagger
 
 import android.content.Context
 import android.view.Display
+import android.view.WindowManager
 import com.android.app.displaylib.DisplayRepository
 import com.android.systemui.CameraProtectionLoader
 import com.android.systemui.CameraProtectionLoaderImpl
@@ -39,6 +40,7 @@ import com.android.systemui.statusbar.dagger.PerDisplayStatusBarModule
 import com.android.systemui.statusbar.phone.DarkIconDispatcherImpl
 import com.android.systemui.statusbar.phone.SysuiDarkIconDispatcher
 import com.android.systemui.statusbar.pipeline.shared.ui.composable.StatusBarRootFactory
+import com.android.systemui.utils.windowmanager.WindowManagerUtils
 import com.android.systemui.wallpapers.dagger.PerDisplayWallpaperModule
 import dagger.Binds
 import dagger.Module
@@ -125,6 +127,13 @@ interface PerDisplaySystemUIModule {
             } else {
                 context.createDisplayContext(display)
             }
+        }
+
+        @Provides
+        @PerDisplaySingleton
+        @DisplayAware
+        fun provideWindowManager(@DisplayAware context: Context): WindowManager {
+            return WindowManagerUtils.getWindowManager(context)
         }
 
         @Provides

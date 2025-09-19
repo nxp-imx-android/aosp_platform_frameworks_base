@@ -45,7 +45,6 @@ import com.android.systemui.statusbar.phone.AutoHideControllerStore
 import com.android.systemui.statusbar.phone.CentralSurfacesCommandQueueCallbacks
 import com.android.systemui.statusbar.phone.MultiDisplayAutoHideControllerStore
 import com.android.systemui.statusbar.phone.SingleDisplayAutoHideControllerStore
-import com.android.systemui.statusbar.window.StatusBarWindowControllerStore
 import com.android.systemui.statusbar.window.data.repository.StatusBarWindowStateRepositoryStore
 import com.android.systemui.statusbar.window.data.repository.StatusBarWindowStateRepositoryStoreImpl
 import dagger.Binds
@@ -110,14 +109,13 @@ interface StatusBarPhoneModule {
         @SysUISingleton
         fun statusBarInitializerImpl(
             implFactory: StatusBarInitializerImpl.Factory,
-            statusBarWindowControllerStore: StatusBarWindowControllerStore,
             statusBarModeRepositoryStore: StatusBarModeRepositoryStore,
             statusBarConfigurationControllerStore: StatusBarConfigurationControllerStore,
             displayComponentRepo: PerDisplayRepository<ReferenceSysUIDisplaySubcomponent>,
         ): StatusBarInitializerImpl {
             val systemUIDisplaySubcomponent = displayComponentRepo[Display.DEFAULT_DISPLAY]!!
             return implFactory.create(
-                statusBarWindowControllerStore.defaultDisplay,
+                systemUIDisplaySubcomponent.statusBarWindowController,
                 statusBarModeRepositoryStore.defaultDisplay,
                 statusBarConfigurationControllerStore.defaultDisplay,
                 systemUIDisplaySubcomponent.statusBarFragmentProvider,

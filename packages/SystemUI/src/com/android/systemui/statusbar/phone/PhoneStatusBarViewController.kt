@@ -46,7 +46,7 @@ import com.android.systemui.statusbar.data.repository.StatusBarConfigurationCont
 import com.android.systemui.statusbar.layout.StatusBarContentInsetsProvider
 import com.android.systemui.statusbar.policy.Clock
 import com.android.systemui.statusbar.policy.ConfigurationController
-import com.android.systemui.statusbar.window.StatusBarWindowControllerStore
+import com.android.systemui.statusbar.window.StatusBarWindowController
 import com.android.systemui.statusbar.window.StatusBarWindowStateController
 import com.android.systemui.unfold.UNFOLD_STATUS_BAR
 import com.android.systemui.unfold.util.ScopedUnfoldTransitionProgressProvider
@@ -84,7 +84,7 @@ private constructor(
     private val statusBarContentInsetsProvider: StatusBarContentInsetsProvider,
     private val lazyStatusBarShadeDisplayPolicy: Lazy<StatusBarTouchShadeDisplayPolicy>,
     private val lazyShadeDisplaysRepository: Lazy<ShadeDisplaysRepository>,
-    private val statusBarWindowControllerStore: StatusBarWindowControllerStore,
+    private val statusBarWindowController: StatusBarWindowController,
 ) : ViewController<PhoneStatusBarView>(view) {
 
     private lateinit var battery: BatteryMeterView
@@ -197,7 +197,7 @@ private constructor(
             configurationController.addCallback(configurationListener)
         }
         if (!StatusBarConnectedDisplays.isEnabled) {
-            mView.setStatusBarWindowControllerStore(statusBarWindowControllerStore)
+            mView.setStatusBarWindowController(statusBarWindowController)
         }
     }
 
@@ -440,7 +440,7 @@ private constructor(
         @DisplayAware private val statusBarContentInsetsProvider: StatusBarContentInsetsProvider,
         private val lazyStatusBarShadeDisplayPolicy: Lazy<StatusBarTouchShadeDisplayPolicy>,
         private val lazyShadeDisplaysRepository: Lazy<ShadeDisplaysRepository>,
-        private val statusBarWindowControllerStore: StatusBarWindowControllerStore,
+        @DisplayAware private val statusBarWindowController: StatusBarWindowController,
     ) {
         fun create(view: PhoneStatusBarView): PhoneStatusBarViewController {
             return PhoneStatusBarViewController(
@@ -463,7 +463,7 @@ private constructor(
                 statusBarContentInsetsProvider,
                 lazyStatusBarShadeDisplayPolicy,
                 lazyShadeDisplaysRepository,
-                statusBarWindowControllerStore,
+                statusBarWindowController,
             )
         }
     }
