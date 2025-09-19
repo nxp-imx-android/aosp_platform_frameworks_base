@@ -338,7 +338,7 @@ internal object BubbleFlickerTestHelper {
 
         if (previousApp != null) {
             // If there's a previous app, the app will be expanded.
-            waitAndAssertBubbleAppInExpandedState(testApp, wmHelper)
+            waitAndAssertBubbleAppInExpandedState(previousApp, wmHelper)
         } else {
             // Otherwise, if there's no previous app, the bubble bar or floating icon will be
             // dismissed.
