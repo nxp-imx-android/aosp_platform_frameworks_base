@@ -212,14 +212,6 @@ package android.service.translation {
 
 }
 
-package android.telecom {
-
-  public class TelecomManager {
-    method @Deprecated @RequiresPermission(allOf={android.Manifest.permission.MODIFY_PHONE_STATE, android.Manifest.permission.WRITE_SECURE_SETTINGS}) public boolean setDefaultDialer(@Nullable String);
-  }
-
-}
-
 package android.telephony {
 
   public class TelephonyManager {

@@ -74,6 +74,7 @@ stubs_defaults {
         ":framework-sdkextensions-sources",
         ":framework-sdksandbox-sources",
         ":framework-statsd-sources",
+        ":framework-telecom-internal-sources",
         ":framework-tethering-srcs",
         ":framework-uwb-updatable-sources",
         ":framework-wifi-updatable-sources",

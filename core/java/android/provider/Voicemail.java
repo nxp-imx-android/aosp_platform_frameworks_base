@@ -14,11 +14,12 @@
  * limitations under the License.
  */
 
-package android.telecom;
+package android.provider;
 
 import android.net.Uri;
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.telecom.PhoneAccountHandle;
 
 /**
  * Represents a single voicemail stored in the voicemail content provider.

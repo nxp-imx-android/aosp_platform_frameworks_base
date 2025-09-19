@@ -16,7 +16,4 @@
 
 package android.telecom;
 
-/**
- * @hide
- */
 parcelable CallEndpoint;

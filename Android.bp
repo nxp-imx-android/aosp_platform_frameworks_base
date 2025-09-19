@@ -80,7 +80,7 @@ filegroup {
         ":framework-opengl-sources",
         ":framework-rs-sources",
         ":framework-sax-sources",
-        ":framework-telecomm-sources",
+        ":framework-telecom-annotation-sources",
         ":framework-telephony-common-sources",
         ":framework-telephony-sources",
         ":framework-wifi-annotations",
@@ -190,7 +190,6 @@ java_defaults {
             "opengl/java",
             "rs/java",
             "sax/java",
-            "telecomm/framework/java",
 
             // TODO(b/147699819): remove this
             "telephony/java",
@@ -300,7 +299,6 @@ java_defaults {
             ":framework-opengl-sources",
             ":framework-rs-sources",
             ":framework-sax-sources",
-            ":framework-telecomm-sources",
             ":framework-telephony-common-sources",
             ":framework-telephony-sources",
             ":framework-wifi-annotations",
@@ -337,6 +335,7 @@ java_defaults {
         include_dirs: [
             "frameworks/av/media/aidl",
             "frameworks/native/libs/permission/aidl",
+            "frameworks/base/telecomm/framework/aidl-export",
             "packages/modules/Bluetooth/framework/aidl-export",
             "packages/modules/Connectivity/framework/aidl-export",
             "packages/modules/Media/apex/aidl/stable",
@@ -441,7 +440,12 @@ java_library {
         "framework-location.impl",
         "framework-network-security-config.impl",
         "framework-virtualization.impl",
-    ] + select(soong_config_variable("ANDROID", "release_crashrecovery_module"), {
+    ] + select(release_flag("RELEASE_TELECOM_MAINLINE_MODULE"), {
+        true: [],
+        default: [
+            "framework-telecom.impl",
+        ],
+    }) + select(soong_config_variable("ANDROID", "release_crashrecovery_module"), {
         "true": [],
         default: [
             "framework-platformcrashrecovery.impl",
@@ -501,6 +505,7 @@ java_library {
     ],
     libs: [
         "framework-network-security-config.stubs.module_lib",
+        "framework-telecom.stubs.module_lib",
     ],
     compile_dex: false,
     headers_only: true,
@@ -607,6 +612,9 @@ java_library {
     }) + select(release_flag("RELEASE_TELEPHONY_MODULE"), {
         true: [],
         default: ["framework-platformtelephony-compat-config"],
+    }) + select(release_flag("RELEASE_TELECOM_MAINLINE_MODULE"), {
+        true: [],
+        default: ["framework-telecom-compat-config"],
     }),
 }
 
@@ -621,6 +629,13 @@ filegroup {
     srcs: [
         "core/java/com/android/internal/util/HexDump.java",
         "core/java/com/android/internal/util/WakeupMessage.java",
+        "telephony/java/android/telephony/Annotation.java",
+    ],
+}
+
+filegroup {
+    name: "framework-telecom-ext-annotation-srcs",
+    srcs: [
         "telephony/java/android/telephony/Annotation.java",
     ],
 }

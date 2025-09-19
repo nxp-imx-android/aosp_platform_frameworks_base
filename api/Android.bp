@@ -94,6 +94,7 @@ combined_apis {
         "framework-sdkextensions",
         "framework-sdksandbox",
         "framework-statsd",
+        "framework-telecom",
         "framework-tethering",
         "framework-uwb",
         "framework-virtualization",
@@ -397,6 +398,7 @@ stubs_defaults {
         include_dirs: [
             "frameworks/av/media/aidl",
             "frameworks/base/media/aidl",
+            "frameworks/base/telecomm/framework/aidl-export",
             "frameworks/base/telephony/java",
             "frameworks/native/libs/permission/aidl",
             "hardware/interfaces/biometrics/common/aidl",
