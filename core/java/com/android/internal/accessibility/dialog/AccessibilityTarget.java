@@ -66,9 +66,11 @@ public abstract class AccessibilityTarget implements TargetOperations, OnTargetS
     public AccessibilityTarget(Context context, @UserShortcutType int shortcutType,
             @AccessibilityFragmentType int fragmentType, boolean isShortcutSwitched, String id,
             int uid, CharSequence label, Drawable icon, String key) {
-        if (!isRecognizedShortcutType(shortcutType)) {
-            throw new IllegalArgumentException(
-                    "Unexpected shortcut type " + ShortcutUtils.convertToKey(shortcutType));
+        if (!android.view.accessibility.Flags.enableA11yTopRowShortcut()) {
+            if (!isRecognizedShortcutType(shortcutType)) {
+                throw new IllegalArgumentException(
+                        "Unexpected shortcut type " + ShortcutUtils.convertToKey(shortcutType));
+            }
         }
         mContext = context;
         mShortcutType = shortcutType;

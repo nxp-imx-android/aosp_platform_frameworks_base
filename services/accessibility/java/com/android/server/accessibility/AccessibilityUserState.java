@@ -33,6 +33,7 @@ import static com.android.internal.accessibility.common.ShortcutConstants.UserSh
 import static com.android.internal.accessibility.common.ShortcutConstants.UserShortcutType.KEY_GESTURE;
 import static com.android.internal.accessibility.common.ShortcutConstants.UserShortcutType.QUICK_SETTINGS;
 import static com.android.internal.accessibility.common.ShortcutConstants.UserShortcutType.SOFTWARE;
+import static com.android.internal.accessibility.common.ShortcutConstants.UserShortcutType.TOP_ROW_KEY;
 import static com.android.internal.accessibility.common.ShortcutConstants.UserShortcutType.TRIPLETAP;
 import static com.android.internal.accessibility.common.ShortcutConstants.UserShortcutType.TWOFINGER_DOUBLETAP;
 
@@ -221,6 +222,7 @@ public class AccessibilityUserState {
         mShortcutTargets.put(GESTURE, new ArraySet<>());
         mShortcutTargets.put(QUICK_SETTINGS, new ArraySet<>());
         mShortcutTargets.put(KEY_GESTURE, new ArraySet<>());
+        mShortcutTargets.put(TOP_ROW_KEY, new ArraySet<>());
     }
 
     boolean isHandlingAccessibilityEventsLocked() {
@@ -609,6 +611,7 @@ public class AccessibilityUserState {
         dumpShortcutTargets(pw, QUICK_SETTINGS, "qs shortcut targets");
         pw.append("     a11y tiles in QS panel:").append(mA11yTilesInQsPanel.toString());
         pw.println();
+        dumpShortcutTargets(pw, TOP_ROW_KEY, "top row key");
         pw.append("     Bound services:{");
         final int serviceCount = mBoundServices.size();
         for (int j = 0; j < serviceCount; j++) {
@@ -941,8 +944,7 @@ public class AccessibilityUserState {
         if (shortcutType == TRIPLETAP
                 || shortcutType == TWOFINGER_DOUBLETAP) {
             throw new UnsupportedOperationException(
-                    "removeShortcutTargetLocked only support shortcut type: "
-                            + "software and hardware and quick settings for now"
+                    "removeShortcutTargetLocked does not support TRIPLETAP or TWOFINGER_DOUBLETAP."
             );
         }
 
