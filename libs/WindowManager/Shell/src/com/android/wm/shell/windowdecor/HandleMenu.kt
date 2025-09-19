@@ -1078,7 +1078,7 @@ private constructor(
             }
 
             openByDefaultBtn.apply {
-                isGone = isBrowserApp
+                isGone = isBrowserApp || taskInfo.baseActivity == null
                 imageTintList = ColorStateList.valueOf(style.textColor)
                 background =
                     createBackgroundDrawable(
