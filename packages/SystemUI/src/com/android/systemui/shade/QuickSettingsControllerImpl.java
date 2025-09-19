@@ -442,6 +442,9 @@ public class QuickSettingsControllerImpl implements QuickSettingsController, Dum
                 R.dimen.notification_side_paddings);
         mDistanceForFullShadeTransition = mResources.getDimensionPixelSize(
                 R.dimen.lockscreen_shade_qs_transition_distance);
+        Log.d("b/445707756",
+                "loadDimens in QuickSettingsControllerImpl for display=" + getDisplayId()
+                        + " mScrimCornerRadius=" + mScrimCornerRadius);
     }
 
     void updateResources() {
@@ -2214,6 +2217,9 @@ public class QuickSettingsControllerImpl implements QuickSettingsController, Dum
         return new QsFragmentListener();
     }
 
+    private int getDisplayId() {
+        return mPanelView.getContext().getDisplayId();
+    }
     /** */
     public final class QsFragmentListener implements FragmentHostManager.FragmentListener {
 
@@ -2283,9 +2289,7 @@ public class QuickSettingsControllerImpl implements QuickSettingsController, Dum
             updateExpansion();
         }
 
-        private int getDisplayId() {
-            return mPanelView.getContext().getDisplayId();
-        }
+
 
         /** */
         @Override
