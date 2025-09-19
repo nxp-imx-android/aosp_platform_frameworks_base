@@ -67,6 +67,8 @@ public class NotificationTemplateViewWrapper extends NotificationHeaderViewWrapp
     protected ImageView mLeftIcon;
     private ProgressBar mProgressBar;
     private TextView mTitle;
+    private TextView mAltTitle;
+
     private TextView mText;
     protected View mSmartReplyContainer;
     protected View mActionsContainer;
@@ -175,6 +177,8 @@ public class NotificationTemplateViewWrapper extends NotificationHeaderViewWrapp
             mLeftIcon.setTag(ImageTransformState.ICON_TAG, getLargeIcon(sbn.getNotification()));
         }
         mTitle = mView.findViewById(com.android.internal.R.id.title);
+        mAltTitle = mView.findViewById(com.android.internal.R.id.alt_title);
+
         mText = mView.findViewById(com.android.internal.R.id.text);
         final View progress = mView.findViewById(com.android.internal.R.id.progress);
         if (progress instanceof ProgressBar) {
@@ -296,6 +300,9 @@ public class NotificationTemplateViewWrapper extends NotificationHeaderViewWrapp
         if (mTitle != null) {
             mTransformationHelper.addTransformedView(TransformableView.TRANSFORMING_VIEW_TITLE,
                     mTitle);
+        } else if (mAltTitle != null && mAltTitle.getVisibility() == View.VISIBLE) {
+            mTransformationHelper.addTransformedView(TransformableView.TRANSFORMING_VIEW_TITLE,
+                    mAltTitle);
         }
         if (mText != null) {
             mTransformationHelper.addTransformedView(TransformableView.TRANSFORMING_VIEW_TEXT,

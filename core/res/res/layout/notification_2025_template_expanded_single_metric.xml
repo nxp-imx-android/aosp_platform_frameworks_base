@@ -20,7 +20,7 @@
     android:layout_height="wrap_content"
     android:orientation="vertical"
     android:clipChildren="false"
-    android:tag="big"
+    android:tag="metric"
     >
 
     <LinearLayout
