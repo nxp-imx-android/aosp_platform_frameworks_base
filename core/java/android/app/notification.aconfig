@@ -63,16 +63,6 @@ flag {
 }
 
 flag {
-  name: "modes_ui_dnd_slice"
-  namespace: "systemui"
-  description: "Restores a (tweaked) DND slice in Settings; dependent on modes_ui"
-  bug: "406238205"
-  metadata {
-    purpose: PURPOSE_BUGFIX
-  }
-}
-
-flag {
   name: "notification_expansion_optional"
   namespace: "systemui"
   description: "Experiment to restore the pre-S behavior where standard notifications are not expandable unless they have actions."
