@@ -107,7 +107,10 @@ public class IntegrationTests {
     }
 
     @Test
-    @RequiresFlagsEnabled(Flags.FLAG_DETAILED_APP_JANK_METRICS_API)
+    @RequiresFlagsEnabled({
+        Flags.FLAG_DETAILED_APP_JANK_METRICS_API,
+        Flags.FLAG_RETAIN_WIDGET_PARAMETERS
+    })
     public void reportJankStats_confirmPendingStatsIncreases() {
         Activity jankTrackerActivity = mJankTrackerActivityRule.launchActivity(null);
         mDevice.wait(Until.findObject(
@@ -121,14 +124,25 @@ public class IntegrationTests {
                 jankTracker.getPendingJankStats();
         assertEquals(0, pendingStats.size());
 
-        editText.reportAppJankStats(JankUtils.getAppJankStats());
+        AppJankStats jankStat = JankUtils.getAppJankStats();
+        editText.reportAppJankStats(jankStat);
 
         // wait until pending results are available.
         JankUtils.waitForResults(jankTracker, WAIT_FOR_PENDING_JANKSTATS_MS);
 
         pendingStats = jankTracker.getPendingJankStats();
-
         assertEquals(1, pendingStats.size());
+
+        JankDataProcessor.PendingJankStat pendingJankStat =
+                pendingStats.entrySet().iterator().next().getValue();
+        assertNotNull(pendingJankStat);
+
+        assertEquals(jankStat.getWidgetId(), pendingJankStat.getWidgetId());
+        assertEquals(jankStat.getJankyFrameCount(), pendingJankStat.getJankyFrames());
+        assertEquals(jankStat.getTotalFrameCount(), pendingJankStat.getTotalFrames());
+        assertEquals(jankStat.getUid(), pendingJankStat.getUid());
+        assertEquals(jankStat.getWidgetCategory(), pendingJankStat.getWidgetCategory());
+        assertEquals(jankStat.getWidgetState(), pendingJankStat.getWidgetState());
     }
 
     @Test
