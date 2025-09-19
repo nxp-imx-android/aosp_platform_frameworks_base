@@ -139,10 +139,27 @@ public class AnrTimer<V> implements AutoCloseable {
     /**
      * This class allows test code to provide instance-specific overrides.
      */
+    @VisibleForTesting
     static class Injector {
+        /**
+         * Return true if native timers should be disabled.  This is used by unit tests to test
+         * functionality in non-standard environments that do not support native timers.
+         */
+        boolean disableNativeTimersForTesting() {
+            return false;
+        }
+
+        /**
+         * Return true if the native clocks should placed in test mode.
+         */
+        boolean setNativeTimersInTestMode() {
+            return false;
+        }
+
         boolean traceEnabled() {
             return AnrTimer.traceFeatureEnabled();
         }
+
     }
 
     /** The default injector. */
@@ -190,9 +207,6 @@ public class AnrTimer<V> implements AutoCloseable {
         /** The Injector (used only for testing). */
         private Injector mInjector = AnrTimer.sDefaultInjector;
 
-        /** Enable native timers (if they are available). */
-        private boolean mEnable = true;
-
         /** Grant timer extensions when the system is heavily loaded. */
         private boolean mExtend = false;
 
@@ -209,27 +223,15 @@ public class AnrTimer<V> implements AutoCloseable {
                 new TreeSet<>(comparingInt(SplitPoint::percent)
                         .thenComparingInt(SplitPoint::token));
 
-        /** Make this AnrTimer use test-mode clocking.  This is only useful in tests. */
-        private boolean mTestMode = false;
-
         // This is only used for testing, so it is limited to package visibility.
+        @VisibleForTesting
         Args injector(@NonNull Injector injector) {
             mInjector = injector;
             return this;
         }
 
-        public Args enable(boolean flag) {
-            mEnable = flag;
-            return this;
-        }
-
         public Args extend(boolean flag) {
             mExtend = flag;
-            return this;
-        }
-
-        public Args testMode(boolean flag) {
-            mTestMode = flag;
             return this;
         }
 
@@ -448,7 +450,8 @@ public class AnrTimer<V> implements AutoCloseable {
     // flag-enabled and if the native shadow was successfully created.  Otherwise, FeatureDisabled
     // is returned.
     private FeatureSwitch createFeatureSwitch() {
-        final boolean enabled = mArgs.mEnable && nativeTimersSupported();
+        final boolean enabled =
+                !mArgs.mInjector.disableNativeTimersForTesting() && nativeTimersSupported();
         if (!enabled) {
             return new FeatureDisabled();
         } else {
@@ -473,17 +476,6 @@ public class AnrTimer<V> implements AutoCloseable {
      */
     public AnrTimer(@NonNull Handler handler, int what, @NonNull String label) {
         this(handler, what, label, new Args());
-    }
-
-    /**
-     * Return true if the service is enabled on this instance.  Clients should use this method to
-     * decide if the feature is enabled, and not read the flags directly.  This method should be
-     * deleted if and when the feature is enabled permanently.
-     *
-     * @return true if the service is flag-enabled.
-     */
-    public boolean serviceEnabled() {
-        return mFeature.enabled();
     }
 
     /**
@@ -513,8 +505,6 @@ public class AnrTimer<V> implements AutoCloseable {
         abstract ExpiredTimer accept(@NonNull V arg);
 
         abstract boolean discard(@NonNull V arg);
-
-        abstract boolean enabled();
 
         abstract void dump(IndentingPrintWriter pw, boolean verbose);
 
@@ -554,12 +544,6 @@ public class AnrTimer<V> implements AutoCloseable {
         @Override
         boolean discard(@NonNull V arg) {
             return true;
-        }
-
-        /** The feature is not enabled. */
-        @Override
-        boolean enabled() {
-            return false;
         }
 
         /** Dump the limited statistics captured when the feature is disabled. */
@@ -611,7 +595,7 @@ public class AnrTimer<V> implements AutoCloseable {
         /** Create the native AnrTimerService that will host all timers from this instance. */
         FeatureEnabled() {
             mNative = nativeAnrTimerCreate(mLabel, mArgs.mExtend, mArgs.getSplitPercentArray(),
-                    mArgs.getSplitTokenArray(), mArgs.mTestMode);
+                    mArgs.getSplitTokenArray(), mArgs.mInjector.setNativeTimersInTestMode());
             if (mNative == 0) throw new IllegalArgumentException("unable to create native timer");
             synchronized (sAnrTimerList) {
                 sAnrTimerList.put(mNative, new WeakReference(AnrTimer.this));
@@ -714,12 +698,6 @@ public class AnrTimer<V> implements AutoCloseable {
             }
         }
 
-        /** The feature is enabled. */
-        @Override
-        boolean enabled() {
-            return true;
-        }
-
         /** Dump statistics from the native layer. */
         @Override
         void dump(IndentingPrintWriter pw, boolean verbose) {
@@ -783,10 +761,10 @@ public class AnrTimer<V> implements AutoCloseable {
             return r;
         }
 
-        /** This is always safe to call; it does nothing if the timer is not in test mode. */
+        /** Set the native clocks to time "now".  This throws if timers are not in test mode. */
         @Override
         void setTime(long now) {
-            if (!mArgs.mTestMode) {
+            if (!mArgs.mInjector.setNativeTimersInTestMode()) {
                 throw new UnsupportedOperationException("setTime called outside test mode");
             } else if (!nativeAnrTimerSetTime(mNative, now)) {
                 throw new RuntimeException("setTime failure");
