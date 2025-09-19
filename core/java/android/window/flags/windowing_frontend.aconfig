@@ -252,6 +252,16 @@ flag {
 }
 
 flag {
+  name: "prevent_scheduling_redundant_frame"
+  namespace: "windowing_frontend"
+  description: "Prevent scheduling redundant frames for insets animation"
+  bug: "446575234"
+  metadata {
+    purpose: PURPOSE_BUGFIX
+  }
+}
+
+flag {
     name: "reduce_changed_exclusion_rects_msgs"
     namespace: "windowing_frontend"
     description: "Don't send MSG_SYSTEM_GESTURE_EXCLUSION_CHANGED when there is no change"

@@ -75,6 +75,7 @@ import java.io.PrintWriter;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -666,6 +667,14 @@ public class InsetsController implements WindowInsetsController, InsetsAnimation
     private final SparseArray<InsetsSourceControl> mTmpControlArray = new SparseArray<>();
     @NonNull
     private final ArrayList<RunningAnimation> mRunningAnimations = new ArrayList<>();
+    @NonNull
+    private final ArrayList<SyncRtSurfaceTransactionApplier.SurfaceParams> mPendingSurfaceParams =
+            new ArrayList<>();
+    @NonNull
+    private final ArrayList<SurfaceControl> mPendingReleaseSurfaceControls = new ArrayList<>();
+    private boolean mInAnimCallback;
+    private boolean mIsInSynchronizedAnimation;
+
     @Nullable
     private WindowInsets mLastInsets;
 
@@ -838,6 +847,7 @@ public class InsetsController implements WindowInsetsController, InsetsAnimation
                 return;
             }
 
+            mInAnimCallback = true;
             final var runningAnimations = new ArrayList<WindowInsetsAnimation>();
             final var finishedAnimations = new ArrayList<WindowInsetsAnimation>();
             final var state = new InsetsState(mState, true /* copySources */);
@@ -878,10 +888,56 @@ public class InsetsController implements WindowInsetsController, InsetsAnimation
             for (int i = finishedAnimations.size() - 1; i >= 0; i--) {
                 dispatchAnimationEnd(finishedAnimations.get(i));
             }
+            mInAnimCallback = false;
+            if (com.android.window.flags.Flags.preventSchedulingRedundantFrame()) {
+                if (!mPendingSurfaceParams.isEmpty()) {
+                    mHost.applySurfaceParams(mPendingSurfaceParams.toArray(
+                            new SyncRtSurfaceTransactionApplier.SurfaceParams[0]));
+                    mPendingSurfaceParams.clear();
+                }
+                if (!mPendingReleaseSurfaceControls.isEmpty()) {
+                    for (int i = mPendingReleaseSurfaceControls.size() - 1; i >= 0; i--) {
+                        mHost.releaseSurfaceControlFromRt(mPendingReleaseSurfaceControls.get(i));
+                    }
+                    mPendingReleaseSurfaceControls.clear();
+                }
+            }
         };
 
         // Make mImeSourceConsumer always non-null.
         mImeSourceConsumer = getSourceConsumer(ID_IME, ime());
+    }
+
+    @Override
+    public void applySurfaceParams(
+            @NonNull SyncRtSurfaceTransactionApplier.SurfaceParams... params) {
+        if (com.android.window.flags.Flags.preventSchedulingRedundantFrame() && mInAnimCallback) {
+            // Don't apply the params before dispatching animation callbacks (onProgress and onEnd)
+            // but after, so that the host can know the transaction should be applied immediately or
+            // in the next frame.
+            mPendingSurfaceParams.addAll(Arrays.asList(params));
+        } else {
+            mHost.applySurfaceParams(params);
+        }
+    }
+
+    @Override
+    public void releaseSurfaceControlFromRt(@NonNull SurfaceControl sc) {
+        if (com.android.window.flags.Flags.preventSchedulingRedundantFrame() && mInAnimCallback) {
+            // Don't release the control before calling Host#applySurfaceParams.
+            mPendingReleaseSurfaceControls.add(sc);
+        } else {
+            mHost.releaseSurfaceControlFromRt(sc);
+        }
+    }
+
+    /**
+     * Returns true if {@link #applySurfaceParams} or {@link #releaseSurfaceControlFromRt} is called
+     * from a non-{@link Choreographer#CALLBACK_INSETS_ANIMATION} message. This is for the host to
+     * decide if the transaction of insets surfaces should be applied with the host or not.
+     */
+    boolean isInSynchronizedAnimation() {
+        return mIsInSynchronizedAnimation;
     }
 
     @VisibleForTesting(visibility = VisibleForTesting.Visibility.PACKAGE)
@@ -1649,12 +1705,6 @@ public class InsetsController implements WindowInsetsController, InsetsAnimation
         reportRequestedVisibleTypes(null /* statsToken */);
     }
 
-    @Override
-    public void applySurfaceParams(
-            @NonNull SyncRtSurfaceTransactionApplier.SurfaceParams... params) {
-        mHost.applySurfaceParams(params);
-    }
-
     void notifyControlRevoked(@NonNull InsetsSourceConsumer consumer) {
         @InsetsType
         final int type = consumer.getType();
@@ -1679,7 +1729,12 @@ public class InsetsController implements WindowInsetsController, InsetsAnimation
         if (invokeCallback) {
             ImeTracker.forLogging().onCancelled(runner.getStatsToken(),
                     ImeTracker.PHASE_CLIENT_ANIMATION_CANCEL);
-            runner.cancel();
+            try {
+                mIsInSynchronizedAnimation = true;
+                runner.cancel();
+            } finally {
+                mIsInSynchronizedAnimation = false;
+            }
         } else {
             // Succeeds if invokeCallback is false (i.e. when called from notifyFinished).
             ImeTracker.forLogging().onProgress(runner.getStatsToken(),
@@ -2025,7 +2080,12 @@ public class InsetsController implements WindowInsetsController, InsetsAnimation
     @Override
     public void scheduleApplyChangeInsets(@NonNull InsetsAnimationControlRunner runner) {
         if (mStartingAnimation || runner.getAnimationType() == ANIMATION_TYPE_USER) {
-            mAnimCallback.run();
+            try {
+                mIsInSynchronizedAnimation = true;
+                mAnimCallback.run();
+            } finally {
+                mIsInSynchronizedAnimation = false;
+            }
             mAnimCallbackScheduled = false;
             return;
         }
@@ -2156,11 +2216,6 @@ public class InsetsController implements WindowInsetsController, InsetsAnimation
             @NonNull OnControllableInsetsChangedListener listener) {
         Objects.requireNonNull(listener);
         mControllableInsetsChangedListeners.remove(listener);
-    }
-
-    @Override
-    public void releaseSurfaceControlFromRt(@NonNull SurfaceControl sc) {
-        mHost.releaseSurfaceControlFromRt(sc);
     }
 
     @Override
