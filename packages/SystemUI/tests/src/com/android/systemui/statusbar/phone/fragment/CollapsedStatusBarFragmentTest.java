@@ -620,28 +620,6 @@ public class CollapsedStatusBarFragmentTest extends SysuiBaseFragmentTest {
         assertEquals(View.GONE, getSecondaryOngoingActivityChipView().getVisibility());
     }
 
-    
-
-  
-
-    @Test
-    @EnableFlags({PromotedNotificationUi.FLAG_NAME})
-    @DisableFlags({StatusBarRootModernization.FLAG_NAME, StatusBarChipsModernization.FLAG_NAME})
-    public void hasOngoingActivitiesButAlsoHun_chipsNotHidden() {
-        CollapsedStatusBarFragment fragment = resumeAndGetFragment();
-
-        mCollapsedStatusBarViewBinder.getListener().onOngoingActivityStatusChanged(
-              /* hasPrimaryOngoingActivity= */ true,
-              /* hasSecondaryOngoingActivity= */ true,
-              /* shouldAnimate= */ false);
-        when(mHeadsUpAppearanceController.shouldHeadsUpStatusBarBeVisible()).thenReturn(true);
-
-        fragment.disable(DEFAULT_DISPLAY, 0, 0, false);
-
-        assertEquals(View.VISIBLE, getPrimaryOngoingActivityChipView().getVisibility());
-        assertEquals(View.VISIBLE, getSecondaryOngoingActivityChipView().getVisibility());
-    }
-
   @Test
   @DisableFlags({
     PromotedNotificationUi.FLAG_NAME,
@@ -925,17 +903,6 @@ public class CollapsedStatusBarFragmentTest extends SysuiBaseFragmentTest {
         fragment.disable(DEFAULT_DISPLAY, 0, 0, false);
 
         assertEquals(View.VISIBLE, getEndSideContentView().getVisibility());
-        assertEquals(View.VISIBLE, getClockView().getVisibility());
-    }
-
-    @Test
-    @DisableFlags({StatusBarRootModernization.FLAG_NAME, StatusBarChipsModernization.FLAG_NAME})
-    public void disable_shouldHeadsUpStatusBarBeVisibleTrue_clockNotDisabled() {
-        CollapsedStatusBarFragment fragment = resumeAndGetFragment();
-        when(mHeadsUpAppearanceController.shouldHeadsUpStatusBarBeVisible()).thenReturn(true);
-
-        fragment.disable(DEFAULT_DISPLAY, 0, 0, false);
-
         assertEquals(View.VISIBLE, getClockView().getVisibility());
     }
 

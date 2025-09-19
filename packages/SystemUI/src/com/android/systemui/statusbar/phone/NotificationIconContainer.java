@@ -325,7 +325,7 @@ public class NotificationIconContainer extends ViewGroup {
         if (child instanceof StatusBarIconView) {
             boolean isReplacingIcon = isReplacingIcon(child);
             final StatusBarIconView icon = (StatusBarIconView) child;
-            if (areAnimationsEnabled(icon) && icon.getVisibleState() != StatusBarIconView.STATE_HIDDEN
+            if (mAnimationsEnabled && icon.getVisibleState() != StatusBarIconView.STATE_HIDDEN
                     && child.getVisibility() == VISIBLE && isReplacingIcon) {
                 int animationStartIndex = findFirstViewIndexAfter(icon.getTranslationX());
                 if (mAddAnimationStartIndex < 0) {
@@ -336,7 +336,7 @@ public class NotificationIconContainer extends ViewGroup {
             }
             if (!mChangingViewPositions) {
                 mIconStates.remove(child);
-                if (areAnimationsEnabled(icon) && !isReplacingIcon) {
+                if (mAnimationsEnabled && !isReplacingIcon) {
                     addTransientView(icon, 0);
                     icon.setVisibleState(StatusBarIconView.STATE_HIDDEN, true /* animate */,
                             () -> removeTransientView(icon), 0);
@@ -362,11 +362,6 @@ public class NotificationIconContainer extends ViewGroup {
 
     public boolean areIconsOverflowing() {
         return mIsShowingOverflowDot;
-    }
-
-    // TODO(b/444176294): Remove unused param from this method.
-    private boolean areAnimationsEnabled(StatusBarIconView icon) {
-        return mAnimationsEnabled;
     }
 
     /**
@@ -762,7 +757,7 @@ public class NotificationIconContainer extends ViewGroup {
                             && icon.getVisibleState() == StatusBarIconView.STATE_DOT)
                     || (visibleState == StatusBarIconView.STATE_DOT
                         && icon.getVisibleState() == StatusBarIconView.STATE_HIDDEN);
-            return areAnimationsEnabled(icon)
+            return mAnimationsEnabled
                     && !mDisallowNextAnimation
                     && !noAnimations
                     && !isLowPriorityIconChange;

@@ -65,9 +65,7 @@ constructor(
         }
 
     /** Returns a subset of all active notifications based on the supplied filtration parameters. */
-    // TODO(b/444176294): Remove unused forceShowHeadsUp parameter.
     fun filteredNotifSet(
-        forceShowHeadsUp: Boolean = false,
         showAmbient: Boolean = true,
         showLowPriority: Boolean = true,
         showDismissed: Boolean = true,
@@ -239,7 +237,6 @@ constructor(
         settingsRepository.showSilentStatusIcons
             .flatMapLatest { showSilentIcons ->
                 iconsInteractor.filteredNotifSet(
-                    forceShowHeadsUp = true,
                     showAmbient = false,
                     showLowPriority = showSilentIcons,
                     showDismissed = false,

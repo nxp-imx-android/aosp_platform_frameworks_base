@@ -110,10 +110,6 @@ constructor(
                     object : ShadeViewStateProvider {
                         override val lockscreenShadeDragProgress: Float = 0f
                         override val panelViewExpandedHeight: Float = 0f
-
-                        override fun shouldHeadsUpBeVisible(): Boolean {
-                            return false
-                        }
                     }
 
                 componentFactory.build(view, provider).keyguardStatusBarViewController

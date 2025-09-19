@@ -175,9 +175,6 @@ interface ShadeViewStateProvider {
     /** Returns the expanded height of the panel view. */
     @Deprecated("deprecated by SceneContainerFlag.isEnabled") val panelViewExpandedHeight: Float
 
-    /** Returns true if heads up should be visible. */
-    @Deprecated("deprecated by SceneContainerFlag.isEnabled.") fun shouldHeadsUpBeVisible(): Boolean
-
     /** Return the fraction of the shade that's expanded, when in lockscreen. */
     @Deprecated("deprecated by SceneContainerFlag.isEnabled") val lockscreenShadeDragProgress: Float
 }

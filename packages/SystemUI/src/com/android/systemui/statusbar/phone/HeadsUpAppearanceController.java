@@ -21,23 +21,19 @@ import android.util.MathUtils;
 import androidx.annotation.NonNull;
 
 import com.android.internal.annotations.VisibleForTesting;
-import com.android.systemui.plugins.statusbar.StatusBarStateController;
+import com.android.systemui.dagger.qualifiers.RootView;
 import com.android.systemui.shade.ShadeHeadsUpTracker;
 import com.android.systemui.shade.ShadeViewController;
-import com.android.systemui.statusbar.HeadsUpStatusBarView;
-import com.android.systemui.statusbar.StatusBarState;
 import com.android.systemui.statusbar.notification.NotificationWakeUpCoordinator;
 import com.android.systemui.statusbar.notification.SourceType;
 import com.android.systemui.statusbar.notification.collection.NotificationEntry;
 import com.android.systemui.statusbar.notification.headsup.HeadsUpManager;
 import com.android.systemui.statusbar.notification.headsup.OnHeadsUpChangedListener;
-import com.android.systemui.statusbar.notification.headsup.PinnedStatus;
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow;
 import com.android.systemui.statusbar.notification.row.shared.AsyncGroupHeaderViewInflation;
 import com.android.systemui.statusbar.notification.stack.NotificationRoundnessManager;
 import com.android.systemui.statusbar.notification.stack.NotificationStackScrollLayoutController;
 import com.android.systemui.statusbar.phone.fragment.dagger.HomeStatusBarScope;
-import com.android.systemui.statusbar.policy.KeyguardStateController;
 import com.android.systemui.util.ViewController;
 
 import java.util.function.BiConsumer;
@@ -46,11 +42,15 @@ import java.util.function.Consumer;
 import javax.inject.Inject;
 
 /**
- * Controls the appearance of heads up notifications in the icon area and the header itself.
- * It also controls the roundness of the heads up notifications and the pulsing notifications.
+ * Controls items related to heads up notifications. Mostly, controls the roundness of the heads up
+ * notifications and the pulsing notifications.
+ *
+ * Now that this controller isn't tied to HeadsUpStatusBarView and doesn't control any
+ * status-bar-related behavior, we should likely make it not a ViewController and move it somewhere
+ * else.
  */
 @HomeStatusBarScope
-public class HeadsUpAppearanceController extends ViewController<HeadsUpStatusBarView>
+public class HeadsUpAppearanceController extends ViewController<PhoneStatusBarView>
         implements OnHeadsUpChangedListener,
         NotificationWakeUpCoordinator.WakeUpListener {
     private static final SourceType HEADS_UP = SourceType.from("HeadsUp");
@@ -63,33 +63,24 @@ public class HeadsUpAppearanceController extends ViewController<HeadsUpStatusBar
     private final Consumer<ExpandableNotificationRow>
             mSetTrackingHeadsUp = this::setTrackingHeadsUp;
     private final BiConsumer<Float, Float> mSetExpandedHeight = this::setAppearFraction;
-    private final KeyguardBypassController mBypassController;
-    private final StatusBarStateController mStatusBarStateController;
     private final PhoneStatusBarTransitions mPhoneStatusBarTransitions;
-    private final NotificationWakeUpCoordinator mWakeUpCoordinator;
 
     @VisibleForTesting
     float mExpandedHeight;
     @VisibleForTesting
     float mAppearFraction;
     private ExpandableNotificationRow mTrackedChild;
-    private final KeyguardStateController mKeyguardStateController;
 
     @VisibleForTesting
     @Inject
     public HeadsUpAppearanceController(
             HeadsUpManager headsUpManager,
-            StatusBarStateController stateController,
             PhoneStatusBarTransitions phoneStatusBarTransitions,
-            KeyguardBypassController bypassController,
-            NotificationWakeUpCoordinator wakeUpCoordinator,
-            KeyguardStateController keyguardStateController,
             NotificationStackScrollLayoutController stackScrollerController,
             ShadeViewController shadeViewController,
             NotificationRoundnessManager notificationRoundnessManager,
-            // TODO(b/444176294): Delete headsUpStatusBarView now that it's unused.
-            HeadsUpStatusBarView headsUpStatusBarView) {
-        super(headsUpStatusBarView);
+            @RootView PhoneStatusBarView phoneStatusBarView) {
+        super(phoneStatusBarView);
         mNotificationRoundnessManager = notificationRoundnessManager;
         mHeadsUpManager = headsUpManager;
 
@@ -105,11 +96,7 @@ public class HeadsUpAppearanceController extends ViewController<HeadsUpStatusBar
         mStackScrollerController = stackScrollerController;
         mShadeViewController = shadeViewController;
         mStackScrollerController.setHeadsUpAppearanceController(this);
-        mBypassController = bypassController;
-        mStatusBarStateController = stateController;
         mPhoneStatusBarTransitions = phoneStatusBarTransitions;
-        mWakeUpCoordinator = wakeUpCoordinator;
-        mKeyguardStateController = keyguardStateController;
     }
 
     @Override
@@ -142,37 +129,6 @@ public class HeadsUpAppearanceController extends ViewController<HeadsUpStatusBar
     public void onHeadsUpStateChanged(@NonNull NotificationEntry entry, boolean isHeadsUp) {
         updateHeadsUpAndPulsingRoundness(entry.getRow());
         mPhoneStatusBarTransitions.onHeadsUpStateChanged(isHeadsUp);
-    }
-
-    // TODO(b/444176294): Remove this method.
-    @VisibleForTesting
-    public PinnedStatus getPinnedStatus() {
-        return PinnedStatus.NotPinned;
-    }
-
-    /** True if the device's current state allows us to show HUNs and false otherwise. */
-    private boolean canShowHeadsUp() {
-        boolean notificationsShown = !mWakeUpCoordinator.getNotificationsFullyHidden();
-        if (mBypassController.getBypassEnabled() &&
-                (mStatusBarStateController.getState() == StatusBarState.KEYGUARD
-                        || mKeyguardStateController.isKeyguardGoingAway())
-                && notificationsShown) {
-            return true;
-        }
-        return !isExpanded() && notificationsShown;
-    }
-
-    /**
-     * True if the headsup status bar view (which has just the HUN icon and app name) should be
-     * visible right now and false otherwise.
-     *
-     * @deprecated use {@link com.android.systemui.statusbar.notification.domain.interactor.HeadsUpNotificationInteractor#getStatusBarHeadsUpState()}
-     *    instead.
-     */
-    // TODO(b/444176294): Remove this method.
-    @Deprecated
-    public boolean shouldHeadsUpStatusBarBeVisible() {
-        return false;
     }
 
     @Override
@@ -208,10 +164,6 @@ public class HeadsUpAppearanceController extends ViewController<HeadsUpStatusBar
             updateHeader(previousTracked);
             updateHeadsUpAndPulsingRoundness(previousTracked);
         }
-    }
-
-    private boolean isExpanded() {
-        return mExpandedHeight > 0;
     }
 
     private void updateHeadsUpHeaders() {

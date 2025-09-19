@@ -78,7 +78,6 @@ import com.android.systemui.statusbar.events.SystemStatusAnimationCallback;
 import com.android.systemui.statusbar.events.SystemStatusAnimationScheduler;
 import com.android.systemui.statusbar.layout.StatusBarContentInsetsProvider;
 import com.android.systemui.statusbar.notification.AnimatableProperty;
-import com.android.systemui.statusbar.notification.PropertyAnimator;
 import com.android.systemui.statusbar.notification.stack.AnimationProperties;
 import com.android.systemui.statusbar.notification.stack.StackStateAnimator;
 import com.android.systemui.statusbar.phone.domain.interactor.DarkIconInteractor;
@@ -328,7 +327,6 @@ public class KeyguardStatusBarViewController extends ViewController<KeyguardStat
     private boolean mDelayShowingKeyguardStatusBar;
     private int mStatusBarState;
     private boolean mDozing;
-    private boolean mShowingKeyguardHeadsUp;
     private StatusBarSystemEventDefaultAnimator mSystemEventAnimator;
     private float mSystemEventAnimatorAlpha = 1;
     private final Consumer<Float> mToGlanceableHubStatusBarAlphaConsumer =
@@ -820,35 +818,6 @@ public class KeyguardStatusBarViewController extends ViewController<KeyguardStat
     List<String> getBlockedIcons() {
         synchronized (mLock) {
             return new ArrayList<>(mBlockedIcons);
-        }
-    }
-
-    /**
-      Update {@link KeyguardStatusBarView}'s visibility based on whether keyguard is showing and
-     * whether heads up is visible.
-     */
-    public void updateForHeadsUp() {
-        // [KeyguardStatusBarViewBinder] handles visibility when SceneContainerFlag is on.
-        SceneContainerFlag.assertInLegacyMode();
-        updateForHeadsUp(true);
-    }
-
-    @VisibleForTesting
-    void updateForHeadsUp(boolean animate) {
-        boolean showingKeyguardHeadsUp =
-                isKeyguardShowing() && mShadeViewStateProvider.shouldHeadsUpBeVisible();
-        if (mShowingKeyguardHeadsUp != showingKeyguardHeadsUp) {
-            mShowingKeyguardHeadsUp = showingKeyguardHeadsUp;
-            if (isKeyguardShowing()) {
-                PropertyAnimator.setProperty(
-                        mView,
-                        mHeadsUpShowingAmountAnimation,
-                        showingKeyguardHeadsUp ? 1.0f : 0.0f,
-                        KEYGUARD_HUN_PROPERTIES,
-                        animate);
-            } else {
-                PropertyAnimator.applyImmediately(mView, mHeadsUpShowingAmountAnimation, 0.0f);
-            }
         }
     }
 

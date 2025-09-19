@@ -925,10 +925,6 @@
         <item name="android:fontFamily">variable-label-medium</item>
     </style>
 
-    <style name="TextAppearance.HeadsUpStatusBarText"
-        parent="@*android:style/TextAppearance.DeviceDefault.Notification.Info">
-    </style>
-
     <style name="TextAppearance.QSEdit" >
         <item name="android:textSize">14sp</item>
         <item name="android:letterSpacing">0.01</item>
