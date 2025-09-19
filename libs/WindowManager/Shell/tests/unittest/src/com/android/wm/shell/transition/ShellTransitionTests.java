@@ -49,6 +49,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
@@ -106,6 +107,7 @@ import com.android.wm.shell.TestShellExecutor;
 import com.android.wm.shell.common.DisplayController;
 import com.android.wm.shell.common.DisplayInsetsController;
 import com.android.wm.shell.common.DisplayLayout;
+import com.android.wm.shell.common.HandlerExecutor;
 import com.android.wm.shell.common.ShellExecutor;
 import com.android.wm.shell.desktopmode.multidesks.DesksOrganizer;
 import com.android.wm.shell.recents.IRecentsAnimationRunner;
@@ -1754,6 +1756,40 @@ public class ShellTransitionTests extends ShellTestCase {
         verify(changeTransitionFinishT).show(any());
     }
 
+    @Test
+    public void testDisallowNewTransitionWithInvalidTransitionType() {
+        final Transitions transitions = createTestTransitions();
+        assertThrows(IllegalArgumentException.class, () -> {
+            transitions.startTransition(
+                    -1 /* type */,
+                    new WindowContainerTransaction(),
+                    null /* handler */);
+        });
+    }
+
+    @Test
+    public void testDisallowRequestTransitionWithInvalidToken() {
+        final Transitions transitions = createTestTransitions();
+        assertThrows(IllegalArgumentException.class, () -> {
+            transitions.requestStartTransition(null,
+                    new TransitionRequestInfo(TRANSIT_OPEN, null /* trigger */, null /* remote */));
+        });
+    }
+
+    @Test
+    public void testDisallowNewTransitionOnNonShellMainThread() {
+        final Looper looper = mock(Looper.class);
+        doReturn(false).when(looper).isCurrentThread();
+        final ShellExecutor otherMainExecutor = new HandlerExecutor(new Handler(looper));
+        final Transitions transitions = createTestTransitions(otherMainExecutor);
+        assertThrows(IllegalStateException.class, () -> {
+            transitions.startTransition(
+                    TRANSIT_TO_FRONT,
+                    new WindowContainerTransaction(),
+                    null /* handler */);
+        });
+    }
+
     class TestTransitionHandler implements Transitions.TransitionHandler {
         ArrayList<Pair<IBinder, Transitions.TransitionFinishCallback>> mFinishes =
                 new ArrayList<>();
@@ -1871,10 +1907,14 @@ public class ShellTransitionTests extends ShellTestCase {
     }
 
     private Transitions createTestTransitions() {
-        ShellInit shellInit = new ShellInit(mMainExecutor);
+        return createTestTransitions(mMainExecutor);
+    }
+
+    private Transitions createTestTransitions(ShellExecutor executor) {
+        ShellInit shellInit = new ShellInit(executor);
         final Transitions t = new Transitions(mContext, shellInit, mock(ShellController.class),
                 mOrganizer, mTransactionPool, createTestDisplayController(), mDisplayInsets,
-                mMainExecutor, mMainHandler, mAnimExecutor, mock(HomeTransitionObserver.class),
+                executor, mMainHandler, mAnimExecutor, mock(HomeTransitionObserver.class),
                 mock(FocusTransitionObserver.class));
         shellInit.init();
         return t;
