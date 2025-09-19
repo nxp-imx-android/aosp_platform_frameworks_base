@@ -462,6 +462,7 @@ import com.android.server.UiThread;
 import com.android.server.Watchdog;
 import com.android.server.am.LowMemDetector.MemFactor;
 import com.android.server.am.MemoryUsageStats;
+import com.android.server.am.psc.ActiveUidsInternal;
 import com.android.server.am.psc.ProcessRecordInternal;
 import com.android.server.appop.AppOpsService;
 import com.android.server.compat.PlatformCompat;
@@ -19457,6 +19458,11 @@ public class ActivityManagerService extends IActivityManager.Stub
         public void onProcessGroupUpdated(ProcessRecordInternal app, int group) {
             setProcessGroup(app.getPid(), group, app.processName);
             mPhantomProcessList.setProcessGroupForPhantomProcessOfApp((ProcessRecord) app, group);
+        }
+
+        @Override
+        public void onProcStateSeqIncremented(ActiveUidsInternal activeUids) {
+            mProcessList.notifyProcStateChangedForNetworkLOSP((ActiveUids) activeUids);
         }
     }
 
