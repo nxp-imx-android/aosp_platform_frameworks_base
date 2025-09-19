@@ -70,6 +70,22 @@ class ButtonComponent(
             with(LocalDensity.current) { LocalConfiguration.current.screenWidthDp.dp.toPx() }
         var gravity by remember { mutableIntStateOf(Gravity.CENTER_HORIZONTAL) }
 
+        if (Flags.volumeRedesign()) {
+            VolumePanelButton(
+                label = viewModel.label,
+                icon = viewModel.icon,
+                isActive = viewModel.isActive,
+                onClick = { expandable -> onClick(expandable, gravity) },
+                semantics = {
+                    role = Role.Button
+                    contentDescription = viewModel.label
+                    viewModel.stateDescription?.let { stateDescription = it }
+                },
+                modifier =
+                    modifier.onGloballyPositioned { gravity = calculateGravity(it, screenWidth) },
+            )
+            return
+        }
         Column(
             modifier =
                 modifier.onGloballyPositioned { gravity = calculateGravity(it, screenWidth) },

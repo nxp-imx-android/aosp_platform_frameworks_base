@@ -33,14 +33,13 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -58,6 +57,8 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.android.compose.animation.Expandable
+import com.android.compose.modifiers.thenIf
+import com.android.systemui.Flags
 import com.android.systemui.common.ui.compose.Icon
 import com.android.systemui.common.ui.compose.toColor
 import com.android.systemui.compose.modifiers.sysuiResTag
@@ -89,20 +90,33 @@ class MediaOutputComponent @Inject constructor(private val viewModel: MediaOutpu
 
         Expandable(
             modifier =
-                Modifier.fillMaxWidth().height(80.dp).semantics {
-                    liveRegion = LiveRegionMode.Polite
-                    this.onClick(label = clickLabel) {
-                        viewModel.onBarClick(null)
-                        true
-                    }
-                },
+                Modifier.fillMaxWidth()
+                    .height(if (Flags.volumeRedesign()) 56.dp else 80.dp)
+                    .semantics {
+                        liveRegion = LiveRegionMode.Polite
+                        this.onClick(label = clickLabel) {
+                            viewModel.onBarClick(null)
+                            true
+                        }
+                    },
             color =
-                if (enabled) {
+                if (Flags.volumeRedesign()) {
                     MaterialTheme.colorScheme.surface
                 } else {
-                    MaterialTheme.colorScheme.surfaceContainerHighest
+                    if (enabled) {
+                        MaterialTheme.colorScheme.surface
+                    } else {
+                        MaterialTheme.colorScheme.surfaceContainerHighest
+                    }
                 },
-            shape = RoundedCornerShape(28.dp),
+            shape =
+                RoundedCornerShape(
+                    if (Flags.volumeRedesign()) {
+                        12.dp
+                    } else {
+                        28.dp
+                    }
+                ),
             useModifierBasedImplementation = true,
             onClick =
                 if (enabled) {
@@ -111,8 +125,14 @@ class MediaOutputComponent @Inject constructor(private val viewModel: MediaOutpu
                     null
                 },
         ) { _ ->
-            Row(modifier = Modifier, verticalAlignment = Alignment.CenterVertically) {
-                connectedDeviceViewModel?.let { ConnectedDeviceText(it) }
+            Row(
+                modifier =
+                    Modifier.fillMaxHeight().thenIf(!Flags.volumeRedesign()) {
+                        Modifier.padding(start = 24.dp, end = 16.dp)
+                    },
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                connectedDeviceViewModel?.let { ConnectedDeviceText(it, Modifier.weight(1f)) }
 
                 deviceIconViewModel?.let { ConnectedDeviceIcon(it) }
             }
@@ -120,11 +140,11 @@ class MediaOutputComponent @Inject constructor(private val viewModel: MediaOutpu
     }
 
     @Composable
-    private fun RowScope.ConnectedDeviceText(connectedDeviceViewModel: ConnectedDeviceViewModel) {
-        Column(
-            modifier = Modifier.weight(1f).padding(start = 24.dp),
-            verticalArrangement = Arrangement.spacedBy(4.dp),
-        ) {
+    private fun ConnectedDeviceText(
+        connectedDeviceViewModel: ConnectedDeviceViewModel,
+        modifier: Modifier = Modifier,
+    ) {
+        Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(4.dp)) {
             Text(
                 modifier = Modifier.basicMarquee(),
                 text = connectedDeviceViewModel.label.toString(),
@@ -145,7 +165,10 @@ class MediaOutputComponent @Inject constructor(private val viewModel: MediaOutpu
     }
 
     @Composable
-    private fun ConnectedDeviceIcon(deviceIconViewModel: DeviceIconViewModel) {
+    private fun ConnectedDeviceIcon(
+        deviceIconViewModel: DeviceIconViewModel,
+        modifier: Modifier = Modifier,
+    ) {
         val transition = updateTransition(deviceIconViewModel, label = "MediaOutputIconTransition")
         val isTransitionIdle by
             remember(transition) {
@@ -155,7 +178,7 @@ class MediaOutputComponent @Inject constructor(private val viewModel: MediaOutpu
             }
         Box(
             modifier =
-                Modifier.padding(16.dp).fillMaxHeight().aspectRatio(1f).motionTestValues {
+                modifier.size(if (Flags.volumeRedesign()) 56.dp else 48.dp).motionTestValues {
                     isTransitionIdle exportAs
                         MediaOutputComponentMotionTestKeys.isIconTransitionIdle
                 },
@@ -182,7 +205,7 @@ class MediaOutputComponent @Inject constructor(private val viewModel: MediaOutpu
                         Modifier.fillMaxSize()
                             .background(
                                 color = targetViewModel.backgroundColor.toColor(),
-                                shape = RoundedCornerShape(12.dp),
+                                shape = RoundedCornerShape(16.dp),
                             )
                             .sysuiResTag(
                                 if (targetViewModel is DeviceIconViewModel.IsPlaying) {
@@ -215,8 +238,7 @@ class MediaOutputComponent @Inject constructor(private val viewModel: MediaOutpu
                     icon = targetViewModel.icon,
                     tint = targetViewModel.iconColor.toColor(),
                     modifier =
-                        Modifier.padding(12.dp)
-                            .fillMaxSize()
+                        Modifier.size(24.dp)
                             .sysuiResTag(
                                 if (targetViewModel is DeviceIconViewModel.IsPlaying) {
                                     MediaOutputComponentMotionTestKeys.PLAYING_ICON_TAG

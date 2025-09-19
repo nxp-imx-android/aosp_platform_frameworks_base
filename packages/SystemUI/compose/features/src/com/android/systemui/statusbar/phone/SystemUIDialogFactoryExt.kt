@@ -51,6 +51,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.input.pointer.pointerInput
@@ -132,6 +133,7 @@ fun SystemUIDialogFactory.createBottomSheet(
     isDraggable: Boolean = true,
     // TODO(b/337205027): remove maxWidth parameter when aligned to M3 spec
     maxWidth: Dp = Dp.Unspecified,
+    containerColorProvider: @Composable () -> Color = { MaterialTheme.colorScheme.surfaceContainer },
 ): ComponentSystemUIDialog {
     return create(
         context = context,
@@ -153,12 +155,10 @@ fun SystemUIDialogFactory.createBottomSheet(
             }
             Box(
                 modifier =
-                    Modifier
-                        .bottomSheetClickable { dialog.dismiss() }
+                    Modifier.bottomSheetClickable { dialog.dismiss() }
                         .then(
                             if (isDraggable)
-                                Modifier
-                                    .anchoredDraggable(
+                                Modifier.anchoredDraggable(
                                         state = dragState!!,
                                         interactionSource = interactionSource,
                                         orientation = Orientation.Vertical,
@@ -194,7 +194,9 @@ fun SystemUIDialogFactory.createBottomSheet(
                             dimensionResource(R.dimen.bottomsheet_blur_radius)
                         val cornerRadius = dimensionResource(R.dimen.bottom_sheet_corner_radius)
                         val drawable = remember {
-                            dialog.window!!.decorView.getViewRootImpl()
+                            dialog.window!!
+                                .decorView
+                                .getViewRootImpl()
                                 .createBackgroundBlurDrawable()
                         }
                         Modifier.drawBehind {
@@ -208,7 +210,7 @@ fun SystemUIDialogFactory.createBottomSheet(
                                         0,
                                         0,
                                         size.width.toInt(),
-                                        size.height.toInt()
+                                        size.height.toInt(),
                                     )
                                     drawable.draw(canvas.nativeCanvas)
                                 }
@@ -219,8 +221,7 @@ fun SystemUIDialogFactory.createBottomSheet(
                     }
                 Surface(
                     modifier =
-                        Modifier
-                            .bottomSheetPaddings()
+                        Modifier.bottomSheetPaddings()
                             // consume input so it doesn't get to the parent Composable
                             .bottomSheetClickable {}
                             .widthIn(
@@ -238,7 +239,7 @@ fun SystemUIDialogFactory.createBottomSheet(
                                 LocalAndroidColorScheme.current.surfaceEffect0Fallback
                             }
                         } else {
-                            MaterialTheme.colorScheme.surfaceContainer
+                            containerColorProvider()
                         },
                 ) {
                     Box(
@@ -336,8 +337,7 @@ private fun DragHandle(dialog: Dialog) {
         stringResource(id = R.string.shortcut_helper_content_description_drag_handle)
     Surface(
         modifier =
-            Modifier
-                .padding(top = 16.dp, bottom = 6.dp)
+            Modifier.padding(top = 16.dp, bottom = 6.dp)
                 .semantics {
                     contentDescription = dragHandleContentDescription
                     hideFromAccessibility()
