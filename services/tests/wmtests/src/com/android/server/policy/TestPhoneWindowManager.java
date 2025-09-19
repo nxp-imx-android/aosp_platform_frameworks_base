@@ -577,7 +577,8 @@ class TestPhoneWindowManager {
     }
 
     void overrideLaunchHome() {
-        doNothing().when(mPhoneWindowManager).launchHomeFromHotKey(anyInt());
+        doNothing().when(mPhoneWindowManager).launchHomeFromHotKey(anyInt(), anyBoolean(),
+                anyBoolean());
     }
 
     void overrideKeyguardOn(boolean isKeyguardOn) {
@@ -905,12 +906,13 @@ class TestPhoneWindowManager {
 
     void assertGoToHomescreen() {
         mTestLooper.dispatchAll();
-        verify(mPhoneWindowManager).launchHomeFromHotKey(anyInt());
+        verify(mPhoneWindowManager).launchHomeFromHotKey(anyInt(), anyBoolean(), anyBoolean());
     }
 
     void assertNotGoToHomescreen() {
         mTestLooper.dispatchAll();
-        verify(mPhoneWindowManager, never()).launchHomeFromHotKey(anyInt());
+        verify(mPhoneWindowManager, never())
+                .launchHomeFromHotKey(anyInt(), anyBoolean(), anyBoolean());
     }
 
     void assertOpenAllAppView() {

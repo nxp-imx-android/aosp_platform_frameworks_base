@@ -826,6 +826,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                     final int keyCode = msg.arg1;
                     final long downTime = (Long) msg.obj;
                     mDeferredKeyActionExecutor.setActionsExecutable(keyCode, downTime);
+                    mSingleKeyGestureDetector.notifyUnhandledKey(keyCode, downTime);
                     break;
             }
         }
@@ -2504,23 +2505,23 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         }
 
         @Override
-        boolean supportLongPress() {
+        public boolean supportLongPress() {
             return hasLongPressOnPowerBehavior();
         }
 
         @Override
-        boolean supportVeryLongPress() {
+        public boolean supportVeryLongPress() {
             return hasVeryLongPressOnPowerBehavior();
         }
 
 
         @Override
-        int getMaxMultiPressCount() {
+        public int getMaxMultiPressCount() {
             return getMaxMultiPressPowerCount();
         }
 
         @Override
-        void onKeyGesture(@NonNull SingleKeyGestureEvent event) {
+        public void onKeyGesture(@NonNull SingleKeyGestureEvent event) {
             final long startTime = event.getStartTime();
             final int displayId = event.getDisplayId();
             final int pressCount = event.getPressCount();
@@ -2556,7 +2557,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         }
 
         @Override
-        long getLongPressTimeoutMs() {
+        public long getLongPressTimeoutMs() {
             if (getResolvedLongPressOnPowerBehavior() == LONG_PRESS_POWER_ASSISTANT) {
                 return mLongPressOnPowerAssistantTimeoutMs;
             } else {
@@ -2603,7 +2604,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         }
 
         @Override
-        void onKeyUp(int count, KeyEvent event) {
+        public void onKeyUp(int count, KeyEvent event) {
             if (mShouldEarlyShortPressOnPower && count == 1) {
                 powerPress(event.getDownTime(), 1 /*pressCount*/, event.getDisplayId());
             }
@@ -2619,12 +2620,12 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         }
 
         @Override
-        boolean supportLongPress() {
+        public boolean supportLongPress() {
             return hasLongPressOnBackBehavior();
         }
 
         @Override
-        void onKeyGesture(@NonNull SingleKeyGestureEvent event) {
+        public void onKeyGesture(@NonNull SingleKeyGestureEvent event) {
             if (event.getAction() != ACTION_COMPLETE) {
                 return;
             }
@@ -2650,17 +2651,17 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         }
 
         @Override
-        boolean supportLongPress() {
+        public boolean supportLongPress() {
             return hasLongPressOnStemPrimaryBehavior();
         }
 
         @Override
-        int getMaxMultiPressCount() {
+        public int getMaxMultiPressCount() {
             return getMaxMultiPressStemPrimaryCount();
         }
 
         @Override
-        void onKeyGesture(@NonNull SingleKeyGestureEvent event) {
+        public void onKeyGesture(@NonNull SingleKeyGestureEvent event) {
             final long startTime = event.getStartTime();
             final int pressCount = event.getPressCount();
             if (event.getAction() != ACTION_COMPLETE) {
@@ -2743,7 +2744,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         }
 
         @Override
-        void onKeyUp(int count, KeyEvent event) {
+        public void onKeyUp(int count, KeyEvent event) {
             if (count == 1) {
                 // Save info about the most recent task on the first press of the stem key. This
                 // may be used later to switch to the most recent app using double press gesture.
@@ -2803,12 +2804,12 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         }
 
         @Override
-        int getMaxMultiPressCount() {
+        public int getMaxMultiPressCount() {
             return 2;
         }
 
         @Override
-        void onKeyUp(int pressCount, KeyEvent event) {
+        public void onKeyUp(int pressCount, KeyEvent event) {
             if (pressCount != 1) {
                 return;
             }
@@ -2853,7 +2854,14 @@ public class PhoneWindowManager implements WindowManagerPolicy {
 
     private void initSingleKeyGestureRules(Looper looper) {
         mSingleKeyGestureDetector = SingleKeyGestureDetector.get(mContext, looper);
-        mSingleKeyGestureDetector.addRule(new PowerKeyRule());
+        // The final goal is that no `SingleKeyRule`s with the same keycode are allowed. Wear device
+        // although uses KEYCODE_POWER for its crown key, the keycode remapping of the crown is
+        // planed. So, we temporarily allow Wear device to override it. Such exempt will be
+        // removed as soon as Wear's keycode remapping is done.
+        // TODO(b/422274999): remove this temporary override exemption when remapping is done.
+        if (!mHasFeatureWatch || !com.android.server.policy.Flags.wearKeyGestureHandling()) {
+            mSingleKeyGestureDetector.addRule(new PowerKeyRule());
+        }
         if (hasLongPressOnBackBehavior()) {
             mSingleKeyGestureDetector.addRule(new BackKeyRule());
         }
@@ -3992,6 +4000,12 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         mKeyguardDelegate.showDismissibleKeyguard();
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public KeyguardServiceDelegate getKeyguardServiceDelegate() {
+        return mKeyguardDelegate;
+    }
+
     // There are several different flavors of "assistant" that can be launched from
     // various parts of the UI.
 
@@ -4505,7 +4519,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
 
         // This could prevent some wrong state in multi-displays environment,
         // the default display may turned off but interactive is true.
-        final boolean isDefaultDisplayOn = Display.isOnState(mDefaultDisplay.getState());
+        final int defaultDisplayState = mDefaultDisplay.getState();
         final boolean isDefaultDisplayAwake = mDefaultDisplayPolicy.isAwake();
         final boolean interactiveAndAwake = interactive && isDefaultDisplayAwake;
         if (isKeyGestureTriggered) {
@@ -4513,7 +4527,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
             mSingleKeyGestureDetector.reset();
         } else {
             if ((event.getFlags() & KeyEvent.FLAG_FALLBACK) == 0) {
-                handleKeyGesture(event, interactiveAndAwake, isDefaultDisplayOn);
+                handleKeyGesture(event, interactiveAndAwake, defaultDisplayState);
             }
         }
 
@@ -4927,7 +4941,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         return result;
     }
 
-    private void handleKeyGesture(KeyEvent event, boolean interactive, boolean defaultDisplayOn) {
+    private void handleKeyGesture(KeyEvent event, boolean interactive, int defaultDisplayState) {
         if (event.getKeyCode() == KEYCODE_POWER && event.getAction() == KeyEvent.ACTION_DOWN) {
             mPowerKeyHandled = handleCameraGesture(event, interactive);
             if (mPowerKeyHandled) {
@@ -4937,7 +4951,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
             }
         }
 
-        mSingleKeyGestureDetector.interceptKey(event, interactive, defaultDisplayOn);
+        mSingleKeyGestureDetector.interceptKey(event, interactive, defaultDisplayState);
     }
 
     // The camera gesture will be detected by GestureLauncherService.
@@ -6413,6 +6427,10 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         return mGlobalKeyManager.shouldHandleGlobalKey(keyCode);
     }
 
+    @Override
+    public void addSingleKeyRule(@NonNull SingleKeyGestureDetector.SingleKeyRule singleKeyRule) {
+        mSingleKeyGestureDetector.addRule(singleKeyRule);
+    }
 
     @Override
     public void keepScreenOnStartedLw() {
