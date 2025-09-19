@@ -86,6 +86,8 @@ import com.android.systemui.statusbar.policy.ZenModeControllerImpl;
 import com.android.systemui.statusbar.policy.bluetooth.data.repository.BluetoothRepository;
 import com.android.systemui.statusbar.policy.bluetooth.data.repository.BluetoothRepositoryImpl;
 import com.android.systemui.statusbar.policy.data.repository.DeviceProvisioningRepositoryModule;
+import com.android.systemui.statusbar.policy.domain.interactor.TtyStatusInteractor;
+import com.android.systemui.statusbar.policy.domain.interactor.impl.TtyStatusInteractorImpl;
 import com.android.systemui.statusbar.policy.profile.data.repository.ManagedProfileRepository;
 import com.android.systemui.statusbar.policy.profile.data.repository.impl.ManagedProfileRepositoryImpl;
 import com.android.systemui.statusbar.policy.vpn.data.repository.VpnRepository;
@@ -158,6 +160,10 @@ public interface StatusBarPolicyModule {
     /** */
     @Binds
     LocationController provideLocationController(LocationControllerImpl controllerImpl);
+
+    /** */
+    @Binds
+    TtyStatusInteractor provideTtyStatusInteractor(TtyStatusInteractorImpl impl);
 
     /** */
     @Binds
