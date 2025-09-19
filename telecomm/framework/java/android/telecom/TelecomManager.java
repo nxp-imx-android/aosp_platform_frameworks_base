@@ -1105,18 +1105,6 @@ public class TelecomManager {
      */
     public static final String PROPERTY_VIDEOCALL_AUDIO_OUTPUT = "persist.radio.call.audio.output";
 
-
-    /**
-     * {@link Duration} value used with
-     * {@link #setLocalVoicemailTimeout(PhoneAccountHandle, Duration)} to indicate that local
-     * voicemail is disabled.
-     * @hide
-     */
-    @SystemApi
-    @NonNull // Needed for link purposes.
-    @FlaggedApi(Flags.FLAG_LOCAL_VOICEMAIL)
-    public static final Duration LOCAL_VOICEMAIL_DISABLED = Duration.ofSeconds(-1);
-
     /*
      * Values for the adb property "persist.radio.call.audio.output"
      */
