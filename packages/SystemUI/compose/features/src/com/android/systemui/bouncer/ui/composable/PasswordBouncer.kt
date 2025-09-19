@@ -51,6 +51,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.android.compose.PlatformIconButton
 import com.android.systemui.bouncer.ui.viewmodel.PasswordBouncerViewModel
 import com.android.systemui.common.ui.compose.SelectedUserAwareInputConnection
+import com.android.systemui.common.ui.compose.SelectedUserAwareLocalContext
 import com.android.systemui.compose.modifiers.sysuiResTag
 import com.android.systemui.res.R
 
@@ -84,44 +85,46 @@ internal fun PasswordBouncer(viewModel: PasswordBouncerViewModel, modifier: Modi
     val color = MaterialTheme.colorScheme.onSurfaceVariant
 
     SelectedUserAwareInputConnection(selectedUserId) {
-        OutlinedSecureTextField(
-            state = viewModel.textFieldState,
-            enabled = isInputEnabled,
-            textStyle = LocalTextStyle.current.copy(textAlign = TextAlign.Center),
-            keyboardOptions =
-                KeyboardOptions(
-                    autoCorrectEnabled = false,
-                    keyboardType = KeyboardType.Password,
-                    imeAction = ImeAction.Done,
-                ),
-            onKeyboardAction = { viewModel.onAuthenticateKeyPressed() },
-            modifier =
-                modifier
-                    .width(dimensionResource(id = R.dimen.keyguard_password_field_width))
-                    .sysuiResTag("bouncer_text_entry")
-                    .focusRequester(focusRequester)
-                    .onFocusChanged { viewModel.onTextFieldFocusChanged(it.isFocused) }
-                    .onInterceptKeyBeforeSoftKeyboard { keyEvent ->
-                        if (keyEvent.key == Key.Back) {
-                            viewModel.onImeDismissed()
-                            true
-                        } else {
-                            false
-                        }
+        SelectedUserAwareLocalContext(selectedUserId) {
+            OutlinedSecureTextField(
+                state = viewModel.textFieldState,
+                enabled = isInputEnabled,
+                textStyle = LocalTextStyle.current.copy(textAlign = TextAlign.Center),
+                keyboardOptions =
+                    KeyboardOptions(
+                        autoCorrectEnabled = false,
+                        keyboardType = KeyboardType.Password,
+                        imeAction = ImeAction.Done,
+                    ),
+                onKeyboardAction = { viewModel.onAuthenticateKeyPressed() },
+                modifier =
+                    modifier
+                        .width(dimensionResource(id = R.dimen.keyguard_password_field_width))
+                        .sysuiResTag("bouncer_text_entry")
+                        .focusRequester(focusRequester)
+                        .onFocusChanged { viewModel.onTextFieldFocusChanged(it.isFocused) }
+                        .onInterceptKeyBeforeSoftKeyboard { keyEvent ->
+                            if (keyEvent.key == Key.Back) {
+                                viewModel.onImeDismissed()
+                                true
+                            } else {
+                                false
+                            }
+                        },
+                trailingIcon =
+                    if (isImeSwitcherButtonVisible) {
+                        { ImeSwitcherButton(viewModel, color) }
+                    } else {
+                        null
                     },
-            trailingIcon =
-                if (isImeSwitcherButtonVisible) {
-                    { ImeSwitcherButton(viewModel, color) }
-                } else {
-                    null
-                },
-            shape = RoundedCornerShape(28.dp),
-            colors =
-                OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = color,
-                    unfocusedBorderColor = color,
-                ),
-        )
+                shape = RoundedCornerShape(28.dp),
+                colors =
+                    OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = color,
+                        unfocusedBorderColor = color,
+                    ),
+            )
+        }
     }
 }
 
