@@ -16,15 +16,18 @@
 
 package com.android.systemui.statusbar.phone.ongoingcall.domain.interactor
 
+import android.content.applicationContext
 import com.android.systemui.activity.data.repository.activityManagerRepository
 import com.android.systemui.display.data.repository.displaySubcomponentPerDisplayRepository
 import com.android.systemui.keyguard.domain.interactor.keyguardInteractor
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.applicationCoroutineScope
+import com.android.systemui.kosmos.mainCoroutineContext
 import com.android.systemui.log.logcatLogBuffer
 import com.android.systemui.statusbar.data.repository.fakeStatusBarModeRepository
 import com.android.systemui.statusbar.gesture.swipeStatusBarAwayGestureHandler
 import com.android.systemui.statusbar.notification.domain.interactor.activeNotificationsInteractor
+import com.android.systemui.statusbar.window.fakeStatusBarWindowController
 
 val Kosmos.ongoingCallInteractor: OngoingCallInteractor by
     Kosmos.Fixture {
@@ -33,9 +36,23 @@ val Kosmos.ongoingCallInteractor: OngoingCallInteractor by
             activeNotificationsInteractor = activeNotificationsInteractor,
             activityManagerRepository = activityManagerRepository,
             statusBarModeRepositoryStore = fakeStatusBarModeRepository,
-            perDisplaySubcomponentRepository = displaySubcomponentPerDisplayRepository,
-            swipeStatusBarAwayGestureHandler = swipeStatusBarAwayGestureHandler,
+            displayComponentRepo = displaySubcomponentPerDisplayRepository,
             keyguardInteractor = keyguardInteractor,
             logBuffer = logcatLogBuffer("OngoingCallInteractorKosmos"),
+        )
+    }
+
+val Kosmos.ongoingCallStatusBarInteractor: OngoingCallStatusBarInteractor by
+    Kosmos.Fixture {
+        OngoingCallStatusBarInteractor(
+            displayId = applicationContext.displayId,
+            scope = applicationCoroutineScope,
+            statusBarModeRepositoryStore = fakeStatusBarModeRepository,
+            statusBarWindowController = fakeStatusBarWindowController,
+            swipeStatusBarAwayGestureHandler = swipeStatusBarAwayGestureHandler,
+            ongoingCallInteractor = ongoingCallInteractor,
+            keyguardInteractor = keyguardInteractor,
+            logBuffer = logcatLogBuffer("OngoingCallStatusBarInteractorKosmos"),
+            mainCoroutineContext = mainCoroutineContext,
         )
     }

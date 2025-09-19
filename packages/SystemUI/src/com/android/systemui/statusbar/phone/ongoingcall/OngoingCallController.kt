@@ -40,7 +40,6 @@ import com.android.systemui.statusbar.StatusBarIconView
 import com.android.systemui.statusbar.chips.ui.view.ChipBackgroundContainer
 import com.android.systemui.statusbar.chips.ui.view.ChipChronometer
 import com.android.systemui.statusbar.data.repository.StatusBarModeRepositoryStore
-import com.android.systemui.statusbar.gesture.SwipeStatusBarAwayGestureHandler
 import com.android.systemui.statusbar.notification.domain.interactor.ActiveNotificationsInteractor
 import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModels
 import com.android.systemui.statusbar.notification.shared.ActiveNotificationModel
@@ -70,11 +69,13 @@ constructor(
     @Main private val mainExecutor: Executor,
     private val iActivityManager: IActivityManager,
     private val dumpManager: DumpManager,
-    private val swipeStatusBarAwayGestureHandler: SwipeStatusBarAwayGestureHandler,
     displayComponentRepo: PerDisplayRepository<SystemUIDisplaySubcomponent>,
     private val statusBarModeRepository: StatusBarModeRepositoryStore,
     @OngoingCallLog private val logger: LogBuffer,
 ) : CallbackController<OngoingCallListener>, CoreStartable {
+
+    private val swipeStatusBarAwayGestureHandler =
+        displayComponentRepo[Display.DEFAULT_DISPLAY]!!.swipeStatusBarAwayGestureHandler
 
     private val statusBarWindowController =
         displayComponentRepo[Display.DEFAULT_DISPLAY]!!.statusBarWindowController

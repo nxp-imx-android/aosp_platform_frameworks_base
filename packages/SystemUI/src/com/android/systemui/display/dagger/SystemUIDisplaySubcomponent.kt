@@ -25,6 +25,7 @@ import com.android.systemui.plugins.DarkIconDispatcher
 import com.android.systemui.statusbar.chips.ui.viewmodel.OngoingActivityChipsViewModel
 import com.android.systemui.statusbar.disableflags.domain.interactor.DisableFlagsInteractor
 import com.android.systemui.statusbar.domain.interactor.StatusBarIconRefreshInteractor
+import com.android.systemui.statusbar.gesture.SwipeStatusBarAwayGestureHandler
 import com.android.systemui.statusbar.layout.StatusBarContentInsetsProvider
 import com.android.systemui.statusbar.phone.SysuiDarkIconDispatcher
 import com.android.systemui.statusbar.ui.SystemBarUtilsState
@@ -78,6 +79,8 @@ interface SystemUIDisplaySubcomponent {
     @get:DisplayAware val sysUICutoutProvider: SysUICutoutProvider
 
     @get:DisplayAware val disableFlagsInteractor: DisableFlagsInteractor
+
+    @get:DisplayAware val swipeStatusBarAwayGestureHandler: SwipeStatusBarAwayGestureHandler
 
     @Subcomponent.Factory
     interface Factory {

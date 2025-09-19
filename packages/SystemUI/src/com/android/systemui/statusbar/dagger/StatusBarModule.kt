@@ -41,6 +41,7 @@ import com.android.systemui.statusbar.phone.ongoingcall.OngoingCallController
 import com.android.systemui.statusbar.phone.ongoingcall.OngoingCallLog
 import com.android.systemui.statusbar.phone.ongoingcall.StatusBarChipsModernization
 import com.android.systemui.statusbar.phone.ongoingcall.domain.interactor.OngoingCallInteractor
+import com.android.systemui.statusbar.phone.ongoingcall.shared.PerDisplayOngoingCallStatusBarVisibility
 import com.android.systemui.statusbar.ui.StatusBarUiLayerModule
 import com.android.systemui.statusbar.ui.SystemBarUtilsProxyImpl
 import com.android.systemui.statusbar.window.StatusBarWindowLog
@@ -98,7 +99,10 @@ interface StatusBarModule {
         @IntoMap
         @ClassKey(OngoingCallInteractor::class)
         fun ongoingCallInteractor(interactor: OngoingCallInteractor): CoreStartable =
-            if (StatusBarChipsModernization.isEnabled) {
+            if (
+                StatusBarChipsModernization.isEnabled &&
+                    !PerDisplayOngoingCallStatusBarVisibility.isEnabled
+            ) {
                 interactor
             } else {
                 CoreStartable.NOP
