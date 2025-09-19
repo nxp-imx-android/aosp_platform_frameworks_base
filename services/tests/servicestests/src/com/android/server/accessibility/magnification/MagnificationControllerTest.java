@@ -2138,10 +2138,9 @@ public class MagnificationControllerTest {
                 eq(TEST_DISPLAY));
     }
 
-
     @Test
-    public void
-            onTouchInteractionChanged_fullscreenNotActivated_notShowMagnificationButton()
+    @DisableFlags(com.android.server.accessibility.Flags.FLAG_THROTTLE_MOTION_EVENTS_FOR_UI_UPDATE)
+    public void onTouchInteractionChanged_fullscreenNotActivated_notShowMagnificationButton()
             throws RemoteException {
         setMagnificationModeSettings(MODE_FULLSCREEN);
 
@@ -2151,6 +2150,22 @@ public class MagnificationControllerTest {
         verify(mMagnificationConnectionManager, never()).showMagnificationButton(eq(TEST_DISPLAY),
                 eq(MODE_FULLSCREEN));
         verify(mMagnificationConnectionManager, times(2)).removeMagnificationSettingsPanel(
+                eq(TEST_DISPLAY));
+    }
+
+    @Test
+    @EnableFlags(com.android.server.accessibility.Flags.FLAG_THROTTLE_MOTION_EVENTS_FOR_UI_UPDATE)
+    public void
+            onTouchInteractionChanged_fullscreenNotActivated_notShowMagnificationButton_throttled()
+            throws RemoteException {
+        setMagnificationModeSettings(MODE_FULLSCREEN);
+
+        mMagnificationController.onTouchInteractionStart(TEST_DISPLAY, MODE_FULLSCREEN);
+        mMagnificationController.onTouchInteractionEnd(TEST_DISPLAY, MODE_FULLSCREEN);
+
+        verify(mMagnificationConnectionManager, never()).showMagnificationButton(eq(TEST_DISPLAY),
+                eq(MODE_FULLSCREEN));
+        verify(mMagnificationConnectionManager, times(1)).removeMagnificationSettingsPanel(
                 eq(TEST_DISPLAY));
     }
 
