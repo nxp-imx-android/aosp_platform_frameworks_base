@@ -3089,6 +3089,23 @@ public final class MotionEvent extends InputEvent implements Parcelable {
      * Equivalent to {@link #getRawX(int)} for pointer index 0 (regardless of
      * the pointer identifier).
      *
+     * <p>Warning: Typical apps should almost never use this method. It's designed for system-level
+     * components or multi-window apps/services that must operate within the full coordinate space
+     * of the device display, regardless of window boundaries.
+     *
+     * <p>For typical applications, this method will lead to incorrect and unpredictable behavior
+     * because it does not account for crucial factors, such as:
+     *
+     * <ul>
+     *   <li>Window positioning (e.g. split-screen and freeform desktop modes)
+     *   <li>Accessibility features (e.g. screen magnification)
+     *   <li>And other display-related caveats
+     * </ul>
+     *
+     * <p>Using it will likely break an app's touch and interaction logic. Use {@link #getX()}
+     * instead, which correctly handles these scenarios and provides coordinates relative to the
+     * app's own view.
+     *
      * @return The X coordinate of the first pointer index in the coordinate
      *      space of the device display.
      *
@@ -3102,6 +3119,23 @@ public final class MotionEvent extends InputEvent implements Parcelable {
     /**
      * Equivalent to {@link #getRawY(int)} for pointer index 0 (regardless of
      * the pointer identifier).
+     *
+     * <p>Warning: Typical apps should almost never use this method. It's designed for system-level
+     * components or multi-window apps/services that must operate within the full coordinate space
+     * of the device display, regardless of window boundaries.
+     *
+     * <p>For typical applications, this method will lead to incorrect and unpredictable behavior
+     * because it does not account for crucial factors, such as:
+     *
+     * <ul>
+     *   <li>Window positioning (e.g. split-screen and freeform desktop modes)
+     *   <li>Accessibility features (e.g. screen magnification)
+     *   <li>And other display-related caveats
+     * </ul>
+     *
+     * <p>Using it will likely break an app's touch and interaction logic. Use {@link #getY()}
+     * instead, which correctly handles these scenarios and provides coordinates relative to the
+     * app's own view.
      *
      * @return The Y coordinate of the first pointer index in the coordinate
      *      space of the device display.
@@ -3120,6 +3154,23 @@ public final class MotionEvent extends InputEvent implements Parcelable {
      * decorations and whether or not the system is in multi-window mode. If the
      * app spans multiple screens in a multiple-screen environment, the
      * coordinate space includes all of the spanned screens.
+     *
+     * <p>Warning: Typical apps should almost never use this method. It's designed for system-level
+     * components or multi-window apps/services that must operate within the full coordinate space
+     * of the device display, regardless of window boundaries.
+     *
+     * <p>For typical applications, this method will lead to incorrect and unpredictable behavior
+     * because it does not account for crucial factors, such as:
+     *
+     * <ul>
+     *   <li>Window positioning (e.g. split-screen and freeform desktop modes)
+     *   <li>Accessibility features (e.g. screen magnification)
+     *   <li>And other display-related caveats
+     * </ul>
+     *
+     * <p>Using it will likely break an app's touch and interaction logic. Use {@link #getX(int
+     * } instead, which correctly handles these scenarios and provides coordinates relative to the
+     * app's own view.
      *
      * <p>In multi-window mode, the coordinate space extends beyond the bounds
      * of the app window to encompass the entire display area. For example, if
@@ -3161,6 +3212,23 @@ public final class MotionEvent extends InputEvent implements Parcelable {
      * decorations and whether or not the system is in multi-window mode. If the
      * app spans multiple screens in a multiple-screen environment, the
      * coordinate space includes all of the spanned screens.
+     *
+     * <p>Warning: Typical apps should almost never use this method. It's designed for system-level
+     * components or multi-window apps/services that must operate within the full coordinate space
+     * of the device display, regardless of window boundaries.
+     *
+     * <p>For typical applications, this method will lead to incorrect and unpredictable behavior
+     * because it does not account for crucial factors, such as:
+     *
+     * <ul>
+     *   <li>Window positioning (e.g. split-screen and freeform desktop modes)
+     *   <li>Accessibility features (e.g. screen magnification)
+     *   <li>And other display-related caveats
+     * </ul>
+     *
+     * <p>Using it will likely break an app's touch and interaction logic. Use {@link #getY(int
+     * } instead, which correctly handles these scenarios and provides coordinates relative to the
+     * app's own view.
      *
      * <p>In multi-window mode, the coordinate space extends beyond the bounds
      * of the app window to encompass the entire device screen. For example, if
