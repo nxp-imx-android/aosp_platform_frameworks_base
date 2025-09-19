@@ -258,13 +258,34 @@ internal object BubbleFlickerTestHelper {
     }
 
     /**
-     * Dismisses the bubble app via dragging the bubble to dismiss view.
+     * Dismisses the bubble app via dragging it to dismiss view.
+     *
+     * @param testApp the bubble app to dismiss
+     * @param tapl the [LauncherInstrumentation]
+     * @param wmHelper the [WindowManagerStateHelper]
+     * @param previousApp the last focused bubble app, which defaults to `null`
+     */
+    fun dismissBubbleAppViaDrag(
+        testApp: StandardAppHelper,
+        tapl: LauncherInstrumentation,
+        wmHelper: WindowManagerStateHelper,
+        previousApp: StandardAppHelper? = null,
+    ) {
+        if (tapl.isTablet) {
+            dismissBubbleAppViaBubbleBarItem(testApp, wmHelper, previousApp)
+        } else {
+            dismissBubbleAppViaFloatingBubbleView(testApp, wmHelper, previousApp)
+        }
+    }
+
+    /**
+     * Dismisses the bubble app via dragging the floating bubble to dismiss view.
      *
      * @param testApp the bubble app to dismiss
      * @param wmHelper the [WindowManagerStateHelper]
      * @param previousApp the last focused bubble app, which defaults to `null`
      */
-    fun dismissBubbleAppViaBubbleView(
+    fun dismissBubbleAppViaFloatingBubbleView(
         testApp: StandardAppHelper,
         wmHelper: WindowManagerStateHelper,
         previousApp: StandardAppHelper? = null,
@@ -338,7 +359,7 @@ internal object BubbleFlickerTestHelper {
 
         if (previousApp != null) {
             // If there's a previous app, the app will be expanded.
-            waitAndAssertBubbleAppInExpandedState(testApp, wmHelper)
+            waitAndAssertBubbleAppInExpandedState(previousApp, wmHelper)
         } else {
             // Otherwise, if there's no previous app, the bubble bar or floating icon will be
             // dismissed.
