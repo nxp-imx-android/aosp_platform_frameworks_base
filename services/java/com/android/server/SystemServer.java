@@ -274,6 +274,7 @@ import com.android.server.smartspace.SmartspaceManagerService;
 import com.android.server.soundtrigger.SoundTriggerService;
 import com.android.server.soundtrigger_middleware.SoundTriggerMiddlewareService;
 import com.android.server.speech.SpeechRecognitionManagerService;
+import com.android.server.stats.binder.BinderStatsConsumerService;
 import com.android.server.stats.bootstrap.StatsBootstrapAtomService;
 import com.android.server.stats.pull.StatsPullAtomService;
 import com.android.server.statusbar.StatusBarManagerService;
@@ -1484,6 +1485,7 @@ public final class SystemServer implements Dumpable {
         mSystemServiceManager.startService(CachedDeviceStateService.class);
         t.traceEnd();
 
+        // TODO(b/407694522): Disable service after native binder stats are rolled out.
         // Tracks cpu time spent in binder calls
         t.traceBegin("StartBinderCallsStatsService");
         mSystemServiceManager.startService(BinderCallsStatsService.LifeCycle.class);
@@ -2930,6 +2932,13 @@ public final class SystemServer implements Dumpable {
         t.traceBegin("StatsBootstrapAtomService");
         mSystemServiceManager.startService(StatsBootstrapAtomService.Lifecycle.class);
         t.traceEnd();
+
+        // Log atoms to statsd from binder services.
+        if (BinderObserverConfig.ENABLED) {
+            t.traceBegin("BinderStatsConsumerService");
+            mSystemServiceManager.startService(BinderStatsConsumerService.Lifecycle.class);
+            t.traceEnd();
+        }
 
         // Incidentd and dumpstated helper
         t.traceBegin("StartIncidentCompanionService");

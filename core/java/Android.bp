@@ -720,12 +720,27 @@ filegroup {
     ],
 }
 
-filegroup {
-    name: "android-os-statsbootstrap-aidl",
+aidl_interface {
+    name: "android.os.statsbootstrap_aidl",
+    unstable: true,
     srcs: [
         "android/os/IStatsBootstrapAtomService.aidl",
         "android/os/StatsBootstrapAtom.aidl",
         "android/os/StatsBootstrapAtomValue.aidl",
+    ],
+    backend: {
+        cpp: {
+            enabled: true,
+        },
+    },
+}
+
+filegroup {
+    name: "android-os-binderstatsconsumer-aidl",
+    srcs: [
+        "android/os/binder/IBinderStatsConsumerService.aidl",
+        "android/os/binder/BinderCallsStats.aidl",
+        "android/os/binder/BinderSpamStats.aidl",
     ],
     visibility: ["//frameworks/native/libs/binder"],
 }

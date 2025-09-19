@@ -6557,6 +6557,12 @@ public abstract class Context {
     public static final String STATS_BOOTSTRAP_ATOM_SERVICE = "statsbootstrap";
 
     /**
+     * Service to assist libbinder in logging atoms to statsd.
+     * @hide
+     */
+    public static final String BINDER_STATS_CONSUMER_SERVICE = "binder_stats_consumer";
+
+    /**
      * Use with {@link #getSystemService(String)} to retrieve an {@link android.app.StatsManager}.
      * @hide
      */
