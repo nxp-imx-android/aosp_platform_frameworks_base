@@ -55,6 +55,7 @@ public class RavenwoodTestStats {
     private static final String TAG = RavenwoodInternalUtils.TAG;
     private static final String HEADER =
             "Type,Module,Class,Method,RawMethodName,Reason,Passed,Failed,Skipped,DurationMillis";
+    private static final String FORMAT = "%s,%s,%s,%s,%s,%s,%d,%d,%d,%f\n";
 
     private static RavenwoodTestStats sInstance;
 
@@ -214,18 +215,22 @@ public class RavenwoodTestStats {
 
                 var rawMethodName = extractMethodName(method);
 
-                // Per-method status, with "m".
-                mOutputWriter.printf("m,%s,%s,%s,%s,%s,%d,%d,%d,%f\n",
-                        mTestModuleName,
-                        className, normalize(method), normalize(rawMethodName),
+                mOutputWriter.printf(FORMAT,
+                        "m", // Type: method
+                        mTestModuleName, className,
+                        normalize(method), normalize(rawMethodName),
                         normalize(outcome.reason()),
                         outcome.passedCount(), outcome.failedCount(), outcome.skippedCount(),
                         outcome.duration.toMillis() / 1000f);
             }
 
-            // Per-class status, with "c".
-            mOutputWriter.printf("c,%s,%s,-,-,%d,%d,%d,%f\n", mTestModuleName, className,
-                    passed, failed, skipped, totalDuration.toMillis() / 1000f);
+            mOutputWriter.printf(FORMAT,
+                    "c", // Type: class
+                    mTestModuleName, className,
+                    "-", "-", // method name / row method name.
+                    "-", // reason.
+                    passed, failed, skipped,
+                    totalDuration.toMillis() / 1000f);
         });
         mOutputWriter.flush();
         mStats.clear();
