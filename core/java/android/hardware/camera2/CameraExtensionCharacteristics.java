@@ -295,9 +295,16 @@ public final class CameraExtensionCharacteristics {
                 Intent intent = new Intent();
                 intent.setClassName(PROXY_PACKAGE_NAME, PROXY_SERVICE_NAME);
                 String vendorProxyPackage = SystemProperties.get(
-                    "ro.vendor.camera.extensions.package");
+                        "ro.vendor.camera.extensions.package");
                 String vendorProxyService = SystemProperties.get(
-                    "ro.vendor.camera.extensions.service");
+                        "ro.vendor.camera.extensions.service");
+                if (Flags.efvCaptureLatency()) {
+                    String efvProxyService = SystemProperties.get(
+                            "ro.frameworks.camera2.extension.service");
+                    if (!efvProxyService.isEmpty()) {
+                        vendorProxyService = efvProxyService;
+                    }
+                }
                 if (!vendorProxyPackage.isEmpty() && !vendorProxyService.isEmpty()) {
                   Log.v(TAG,
                       "Choosing the vendor camera extensions proxy package: "
