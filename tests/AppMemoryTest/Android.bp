@@ -31,9 +31,13 @@ android_test {
         "platform-test-annotations",
         "flag-junit",
         "androidx.test.uiautomator_uiautomator",
+        "collector-device-lib",
     ],
     device_common_data: [
         ":AppMemoryTest_Helper",
+    ],
+    data: [
+        "perfetto.textproto",
     ],
     platform_apis: true,
     test_suites: ["general-tests"],
