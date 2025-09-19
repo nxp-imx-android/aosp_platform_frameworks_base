@@ -525,7 +525,10 @@ public class DesktopModeVisualIndicator {
      *         {@code false} otherwise.
      */
     private boolean isSplitAllowedOnDisplay() {
-        return mTaskInfo.displayId == DEFAULT_DISPLAY
-                || DesktopExperienceFlags.ENABLE_NON_DEFAULT_DISPLAY_SPLIT.isTrue();
+        if (mTaskInfo.getWindowingMode() == WINDOWING_MODE_FULLSCREEN) {
+            return mTaskInfo.displayId == DEFAULT_DISPLAY
+                    || DesktopExperienceFlags.ENABLE_NON_DEFAULT_DISPLAY_SPLIT.isTrue();
+        }
+        return true;
     }
 }
