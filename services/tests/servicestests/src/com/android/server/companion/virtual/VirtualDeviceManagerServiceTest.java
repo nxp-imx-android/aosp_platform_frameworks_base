@@ -16,6 +16,9 @@
 
 package com.android.server.companion.virtual;
 
+import static android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN;
+import static android.app.admin.DevicePolicyManager.NEARBY_STREAMING_NOT_CONTROLLED_BY_POLICY;
+import static android.app.admin.DevicePolicyManager.NEARBY_STREAMING_SAME_MANAGED_ACCOUNT_ONLY;
 import static android.companion.virtual.VirtualDeviceParams.DEVICE_POLICY_CUSTOM;
 import static android.companion.virtual.VirtualDeviceParams.DEVICE_POLICY_DEFAULT;
 import static android.companion.virtual.VirtualDeviceParams.DEVICE_POLICY_INVALID;
@@ -49,7 +52,8 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 import static org.testng.Assert.assertThrows;
 
-import android.app.WindowConfiguration;
+import static java.util.Objects.requireNonNull;
+
 import android.app.admin.DevicePolicyManager;
 import android.companion.AssociationInfo;
 import android.companion.AssociationRequest;
@@ -99,6 +103,8 @@ import android.os.LocaleList;
 import android.os.PowerManager;
 import android.os.Process;
 import android.os.RemoteException;
+import android.os.UserHandle;
+import android.os.UserManager;
 import android.os.WorkSource;
 import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
@@ -245,6 +251,8 @@ public class VirtualDeviceManagerServiceTest {
     @Mock
     private VirtualDeviceImpl.PendingTrampolineCallback mPendingTrampolineCallback;
     @Mock
+    private UserManager mUserManager;
+    @Mock
     private DevicePolicyManager mDevicePolicyManagerMock;
     @Mock
     private InputManagerInternal mInputManagerInternalMock;
@@ -303,7 +311,7 @@ public class VirtualDeviceManagerServiceTest {
         Intent blockedAppIntent = BlockedAppStreamingActivity.createIntent(
                 activityInfo, mAssociationInfo.getDisplayName());
         gwpc.canActivityBeLaunched(activityInfo, blockedAppIntent,
-                WindowConfiguration.WINDOWING_MODE_FULLSCREEN, DISPLAY_ID_1, /* isNewTask= */ false,
+                WINDOWING_MODE_FULLSCREEN, DISPLAY_ID_1, /* isNewTask= */ false,
                 /* isResultExpected = */ false, /* intentSender= */ null);
         return blockedAppIntent;
     }
@@ -351,6 +359,7 @@ public class VirtualDeviceManagerServiceTest {
                 InstrumentationRegistry.getInstrumentation().getTargetContext()));
         doReturn(mContext).when(mContext).createContextAsUser(any(), anyInt());
         doNothing().when(mContext).sendBroadcastAsUser(any(), any());
+        when(mContext.getSystemService(Context.USER_SERVICE)).thenReturn(mUserManager);
         when(mContext.getSystemService(Context.DEVICE_POLICY_SERVICE)).thenReturn(
                 mDevicePolicyManagerMock);
         when(mContext.getSystemService(Context.WINDOW_SERVICE)).thenReturn(mWindowManager);
@@ -607,6 +616,82 @@ public class VirtualDeviceManagerServiceTest {
                 .isEqualTo(DEVICE_POLICY_DEFAULT);
         assertThat(mVdm.getDevicePolicyForDisplayId(DISPLAY_ID_2, POLICY_TYPE_SENSORS))
                 .isEqualTo(DEVICE_POLICY_DEFAULT);
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_COMPUTER_CONTROL_USER_RESTRICTION)
+    public void allowedUsers_nearbyStreamingNotControlled_onlyAllowedUsers() {
+        when(mUserManager.getAllProfiles()).thenReturn(
+                List.of(UserHandle.of(10), UserHandle.of(20), UserHandle.of(30)));
+        when(mDevicePolicyManagerMock.getNearbyAppStreamingPolicy(anyInt()))
+                .thenReturn(NEARBY_STREAMING_NOT_CONTROLLED_BY_POLICY);
+        VirtualDeviceParams params = new VirtualDeviceParams.Builder()
+                .setAllowedUsers(Set.of(UserHandle.of(10), UserHandle.of(20))) // 30 not allowed
+                .build();
+        mDeviceImpl.close();
+        mDeviceImpl = createVirtualDevice(VIRTUAL_DEVICE_ID_1, DEVICE_OWNER_UID_1, params);
+        addVirtualDisplay(mDeviceImpl, DISPLAY_ID_1);
+
+        assertThat(isUserAllowed(DISPLAY_ID_1, 10)).isTrue();
+        assertThat(isUserAllowed(DISPLAY_ID_1, 20)).isTrue();
+        assertThat(isUserAllowed(DISPLAY_ID_1, 30)).isFalse();
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_COMPUTER_CONTROL_USER_RESTRICTION)
+    public void allowedUsers_nearbyStreamingSameManagedAccountOnly_onlyAllowedMatchingAccount() {
+        when(mUserManager.getAllProfiles()).thenReturn(
+                List.of(UserHandle.of(10), UserHandle.of(20), UserHandle.of(30)));
+        when(mDevicePolicyManagerMock.getNearbyAppStreamingPolicy(anyInt()))
+                .thenReturn(NEARBY_STREAMING_SAME_MANAGED_ACCOUNT_ONLY);
+        VirtualDeviceParams params = new VirtualDeviceParams.Builder()
+                .setAllowedUsers(Set.of(UserHandle.of(10), UserHandle.of(20))) // 30 not allowed
+                .setUsersWithMatchingAccounts(
+                        Set.of(UserHandle.of(10), UserHandle.of(30))) // 20 not allowed
+                .build();
+        mDeviceImpl.close();
+        mDeviceImpl = createVirtualDevice(VIRTUAL_DEVICE_ID_1, DEVICE_OWNER_UID_1, params);
+        addVirtualDisplay(mDeviceImpl, DISPLAY_ID_1);
+
+        assertThat(isUserAllowed(DISPLAY_ID_1, 10)).isTrue();
+        assertThat(isUserAllowed(DISPLAY_ID_1, 20)).isFalse();
+        assertThat(isUserAllowed(DISPLAY_ID_1, 30)).isFalse();
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_COMPUTER_CONTROL_USER_RESTRICTION)
+    public void allowedUsers_allowedUsersEmpty_allUsersAllowed() {
+        when(mUserManager.getAllProfiles()).thenReturn(
+                List.of(UserHandle.of(10), UserHandle.of(20), UserHandle.of(30)));
+        when(mDevicePolicyManagerMock.getNearbyAppStreamingPolicy(anyInt()))
+                .thenReturn(NEARBY_STREAMING_NOT_CONTROLLED_BY_POLICY);
+        VirtualDeviceParams params = new VirtualDeviceParams.Builder().build();
+        mDeviceImpl.close();
+        mDeviceImpl = createVirtualDevice(VIRTUAL_DEVICE_ID_1, DEVICE_OWNER_UID_1, params);
+        addVirtualDisplay(mDeviceImpl, DISPLAY_ID_1);
+
+        assertThat(isUserAllowed(DISPLAY_ID_1, 10)).isTrue();
+        assertThat(isUserAllowed(DISPLAY_ID_1, 20)).isTrue();
+        assertThat(isUserAllowed(DISPLAY_ID_1, 30)).isTrue();
+    }
+
+    @Test
+    @DisableFlags(Flags.FLAG_COMPUTER_CONTROL_USER_RESTRICTION)
+    public void allowedUsers_userRestrictionFlagDisabled_allUsersAllowed() {
+        when(mUserManager.getAllProfiles()).thenReturn(
+                List.of(UserHandle.of(10), UserHandle.of(20), UserHandle.of(30)));
+        when(mDevicePolicyManagerMock.getNearbyAppStreamingPolicy(anyInt()))
+                .thenReturn(NEARBY_STREAMING_NOT_CONTROLLED_BY_POLICY);
+        VirtualDeviceParams params = new VirtualDeviceParams.Builder()
+                .setAllowedUsers(Set.of(UserHandle.of(10))) // Ignored
+                .build();
+        mDeviceImpl.close();
+        mDeviceImpl = createVirtualDevice(VIRTUAL_DEVICE_ID_1, DEVICE_OWNER_UID_1, params);
+        addVirtualDisplay(mDeviceImpl, DISPLAY_ID_1);
+
+        assertThat(isUserAllowed(DISPLAY_ID_1, 10)).isTrue();
+        assertThat(isUserAllowed(DISPLAY_ID_1, 20)).isTrue();
+        assertThat(isUserAllowed(DISPLAY_ID_1, 30)).isTrue();
     }
 
     @Test
@@ -1319,7 +1404,7 @@ public class VirtualDeviceManagerServiceTest {
         Intent blockedAppIntent = BlockedAppStreamingActivity.createIntent(
                 activityInfo, mAssociationInfo.getDisplayName());
         gwpc.canActivityBeLaunched(activityInfo, blockedAppIntent,
-                WindowConfiguration.WINDOWING_MODE_FULLSCREEN, DISPLAY_ID_1, /* isNewTask= */ false,
+                WINDOWING_MODE_FULLSCREEN, DISPLAY_ID_1, /* isNewTask= */ false,
                 /* isResultExpected = */ false, /* intentSender= */ null);
 
         verify(mContext, never()).startActivityAsUser(argThat(intent ->
@@ -1341,7 +1426,7 @@ public class VirtualDeviceManagerServiceTest {
         Intent blockedAppIntent = BlockedAppStreamingActivity.createIntent(
                 activityInfo, mAssociationInfo.getDisplayName());
         gwpc.canActivityBeLaunched(activityInfo, blockedAppIntent,
-                WindowConfiguration.WINDOWING_MODE_FULLSCREEN, DISPLAY_ID_1, /* isNewTask= */ false,
+                WINDOWING_MODE_FULLSCREEN, DISPLAY_ID_1, /* isNewTask= */ false,
                 /* isResultExpected = */ false, /* intentSender= */ null);
 
         verify(mContext).startActivityAsUser(argThat(intent ->
@@ -1363,7 +1448,7 @@ public class VirtualDeviceManagerServiceTest {
         Intent blockedAppIntent = BlockedAppStreamingActivity.createIntent(
                 activityInfo, mAssociationInfo.getDisplayName());
         gwpc.canActivityBeLaunched(activityInfo, blockedAppIntent,
-                WindowConfiguration.WINDOWING_MODE_FULLSCREEN, DISPLAY_ID_1, /* isNewTask= */ false,
+                WINDOWING_MODE_FULLSCREEN, DISPLAY_ID_1, /* isNewTask= */ false,
                 /* isResultExpected = */ false, /* intentSender= */ null);
 
         verify(mContext).startActivityAsUser(argThat(intent ->
@@ -1382,7 +1467,7 @@ public class VirtualDeviceManagerServiceTest {
                 /* displayOnRemoteDevices */ true,
                 /* targetDisplayCategory */ null);
         assertThat(gwpc.canActivityBeLaunched(activityInfo, intent,
-                WindowConfiguration.WINDOWING_MODE_FULLSCREEN, DISPLAY_ID_1, /* isNewTask= */ false,
+                WINDOWING_MODE_FULLSCREEN, DISPLAY_ID_1, /* isNewTask= */ false,
                 /* isResultExpected = */ false, /* intentSender= */ null))
                 .isTrue();
     }
@@ -1414,7 +1499,7 @@ public class VirtualDeviceManagerServiceTest {
         // register interceptor and intercept intent
         mDeviceImpl.registerIntentInterceptor(interceptor, intentFilter);
         assertThat(gwpc.canActivityBeLaunched(activityInfo, intent,
-                WindowConfiguration.WINDOWING_MODE_FULLSCREEN, DISPLAY_ID_1, /* isNewTask= */ false,
+                WINDOWING_MODE_FULLSCREEN, DISPLAY_ID_1, /* isNewTask= */ false,
                 /* isResultExpected = */ false, /* intentSender= */ null))
                 .isFalse();
         ArgumentCaptor<Intent> intentCaptor = ArgumentCaptor.forClass(Intent.class);
@@ -1427,7 +1512,7 @@ public class VirtualDeviceManagerServiceTest {
         // unregister interceptor and launch activity
         mDeviceImpl.unregisterIntentInterceptor(interceptor);
         assertThat(gwpc.canActivityBeLaunched(activityInfo, intent,
-                WindowConfiguration.WINDOWING_MODE_FULLSCREEN, DISPLAY_ID_1, /* isNewTask= */ false,
+                WINDOWING_MODE_FULLSCREEN, DISPLAY_ID_1, /* isNewTask= */ false,
                 /* isResultExpected = */ false, /* intentSender= */ null))
                 .isTrue();
     }
@@ -1459,7 +1544,7 @@ public class VirtualDeviceManagerServiceTest {
         mDeviceImpl.registerIntentInterceptor(interceptor, intentFilter);
 
         assertThat(gwpc.canActivityBeLaunched(activityInfo, intent,
-                WindowConfiguration.WINDOWING_MODE_FULLSCREEN, DISPLAY_ID_1, /* isNewTask= */ false,
+                WINDOWING_MODE_FULLSCREEN, DISPLAY_ID_1, /* isNewTask= */ false,
                 /* isResultExpected = */ false, /* intentSender= */ null))
                 .isTrue();
     }
@@ -1653,5 +1738,19 @@ public class VirtualDeviceManagerServiceTest {
                 .setTimeApproved(0)
                 .setLastTimeConnected(0)
                 .build();
+    }
+
+    private boolean isUserAllowed(int displayId, int userId) {
+        GenericWindowPolicyController gwpc =
+                requireNonNull(mDeviceImpl.getDisplayWindowPolicyControllerForTest(displayId));
+        gwpc.setActivityLaunchDefaultAllowed(true);
+        ActivityInfo activityInfo = new ActivityInfo();
+        activityInfo.packageName = "com.example";
+        activityInfo.name = "com.example.MainActivity";
+        activityInfo.applicationInfo = new ApplicationInfo();
+        activityInfo.applicationInfo.uid = UserHandle.getUid(userId, /* appId = */ 0);
+        activityInfo.flags = FLAG_CAN_DISPLAY_ON_REMOTE_DEVICES;
+        return gwpc.canContainActivity(
+                activityInfo, WINDOWING_MODE_FULLSCREEN, displayId, /* isNewTask = */ true);
     }
 }

@@ -1474,21 +1474,36 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub implements IBinder.Dea
             DevicePolicyManager dpm = mContext.getSystemService(DevicePolicyManager.class);
             UserManager userManager = mContext.getSystemService(UserManager.class);
             for (UserHandle profile : userManager.getAllProfiles()) {
-                int nearbyAppStreamingPolicy = dpm.getNearbyAppStreamingPolicy(
-                        profile.getIdentifier());
-                if (nearbyAppStreamingPolicy == NEARBY_STREAMING_ENABLED
-                        || nearbyAppStreamingPolicy == NEARBY_STREAMING_NOT_CONTROLLED_BY_POLICY) {
+                if (isInAllowedUsers(profile)
+                        && isAllowedByNearbyAppStreamingPolicy(
+                                dpm.getNearbyAppStreamingPolicy(profile.getIdentifier()),
+                                profile)) {
                     result.add(profile);
-                } else if (nearbyAppStreamingPolicy == NEARBY_STREAMING_SAME_MANAGED_ACCOUNT_ONLY) {
-                    if (mParams.getUsersWithMatchingAccounts().contains(profile)) {
-                        result.add(profile);
-                    }
                 }
             }
         } finally {
             Binder.restoreCallingIdentity(token);
         }
         return result;
+    }
+
+    /** Returns whether the user is allowed based on {@link VirtualDeviceParams#getAllowedUsers}. */
+    private boolean isInAllowedUsers(UserHandle profile) {
+        return !Flags.computerControlUserRestriction()
+                || mParams.getAllowedUsers().isEmpty()
+                || mParams.getAllowedUsers().contains(profile);
+    }
+
+    /**
+     * Returns whether the user is allowed based on
+     * {@link VirtualDeviceParams#getUsersWithMatchingAccounts()}.
+     */
+    private boolean isAllowedByNearbyAppStreamingPolicy(
+            int nearbyAppStreamingPolicy, UserHandle profile) {
+        return nearbyAppStreamingPolicy == NEARBY_STREAMING_ENABLED
+                || nearbyAppStreamingPolicy == NEARBY_STREAMING_NOT_CONTROLLED_BY_POLICY
+                || (nearbyAppStreamingPolicy == NEARBY_STREAMING_SAME_MANAGED_ACCOUNT_ONLY
+                    && mParams.getUsersWithMatchingAccounts().contains(profile));
     }
 
     /**

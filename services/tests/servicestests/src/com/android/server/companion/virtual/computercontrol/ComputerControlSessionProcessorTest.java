@@ -16,6 +16,9 @@
 
 package com.android.server.companion.virtual.computercontrol;
 
+import static android.os.UserManager.USER_TYPE_FULL_SECONDARY;
+import static android.os.UserManager.USER_TYPE_PROFILE_MANAGED;
+
 import static com.android.server.companion.virtual.computercontrol.ComputerControlSessionProcessor.MAXIMUM_CONCURRENT_SESSIONS;
 
 import static org.junit.Assert.assertThrows;
@@ -44,8 +47,11 @@ import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.content.pm.UserInfo;
 import android.os.Binder;
 import android.os.ResultReceiver;
+import android.os.UserHandle;
+import android.os.UserManager;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
 import android.platform.test.flag.junit.SetFlagsRule;
@@ -76,6 +82,18 @@ public class ComputerControlSessionProcessorTest {
 
     private static final int CALLBACK_TIMEOUT_MS = 1_000;
     private static final String PACKAGE_NAME_PERMISSION_CONTROLLER = "permission.controller";
+    private static final int CALLING_USER_ID = 100;
+    private static final AttributionSource ATTRIBUTION_SOURCE = new AttributionSource(
+            UserHandle.getUid(CALLING_USER_ID, 0), "com.package", "tag");
+    private static final ComputerControlSessionParams PARAMS =
+            new ComputerControlSessionParams.Builder()
+                    .setName(ComputerControlSessionTest.class.getSimpleName())
+                    .setDisplayDpi(100)
+                    .setDisplayHeightPx(200)
+                    .setDisplayWidthPx(300)
+                    .setDisplaySurface(new Surface())
+                    .setDisplayAlwaysUnlocked(true)
+                    .build();
 
     @Rule
     public SetFlagsRule mSetFlagsRule = new SetFlagsRule();
@@ -90,6 +108,8 @@ public class ComputerControlSessionProcessorTest {
     @Mock
     private UserManagerInternal mUserManagerInternal;
     @Mock
+    private UserManager mUserManager;
+    @Mock
     private ComputerControlSessionProcessor.VirtualDeviceFactory mVirtualDeviceFactory;
     @Mock
     private ComputerControlSessionProcessor.PendingIntentFactory mPendingIntentFactory;
@@ -101,15 +121,6 @@ public class ComputerControlSessionProcessorTest {
     private ArgumentCaptor<Intent> mIntentArgumentCaptor;
     @Captor
     private ArgumentCaptor<IComputerControlSession> mSessionArgumentCaptor;
-
-    private final ComputerControlSessionParams mParams = new ComputerControlSessionParams.Builder()
-            .setName(ComputerControlSessionTest.class.getSimpleName())
-            .setDisplayDpi(100)
-            .setDisplayHeightPx(200)
-            .setDisplayWidthPx(300)
-            .setDisplaySurface(new Surface())
-            .setDisplayAlwaysUnlocked(true)
-            .build();
 
     private Context mContext;
     private ComputerControlSessionProcessor mProcessor;
@@ -130,7 +141,13 @@ public class ComputerControlSessionProcessorTest {
                 InstrumentationRegistry.getInstrumentation().getTargetContext()));
         when(mContext.getSystemService(Context.KEYGUARD_SERVICE)).thenReturn(mKeyguardManager);
         when(mContext.getSystemService(Context.APP_OPS_SERVICE)).thenReturn(mAppOpsManager);
+        when(mContext.getSystemService(Context.USER_SERVICE)).thenReturn(mUserManager);
         when(mContext.getPackageManager()).thenReturn(mPackageManager);
+
+        when(mUserManager.getUserInfo(CALLING_USER_ID))
+                .thenReturn(new UserInfo(
+                        CALLING_USER_ID, "name", "icon", /* flags= */ 0, USER_TYPE_FULL_SECONDARY));
+        when(mUserManager.getAllProfiles()).thenReturn(List.of(UserHandle.of(CALLING_USER_ID)));
 
         when(mAppOpsManager.noteOpNoThrow(eq(AppOpsManager.OP_COMPUTER_CONTROL), any(), any()))
                 .thenReturn(AppOpsManager.MODE_ALLOWED);
@@ -154,8 +171,8 @@ public class ComputerControlSessionProcessorTest {
     public void keyguardLocked_sessionNotCreated() throws Exception {
         when(mKeyguardManager.isDeviceLocked()).thenReturn(true);
 
-        mProcessor.processNewSessionRequest(AttributionSource.myAttributionSource(),
-                mParams, mComputerControlSessionCallback);
+        mProcessor.processNewSessionRequest(
+                ATTRIBUTION_SOURCE, PARAMS, mComputerControlSessionCallback);
         verify(mComputerControlSessionCallback, timeout(CALLBACK_TIMEOUT_MS))
                 .onSessionCreationFailed(ComputerControlSession.ERROR_DEVICE_LOCKED);
     }
@@ -164,15 +181,16 @@ public class ComputerControlSessionProcessorTest {
     public void maximumNumberOfSessions_isEnforced() throws Exception {
         try {
             for (int i = 0; i < MAXIMUM_CONCURRENT_SESSIONS; ++i) {
-                mProcessor.processNewSessionRequest(AttributionSource.myAttributionSource(),
-                        generateUniqueParams(i), mComputerControlSessionCallback);
+                mProcessor.processNewSessionRequest(
+                        ATTRIBUTION_SOURCE, generateUniqueParams(i),
+                        mComputerControlSessionCallback);
             }
             verify(mComputerControlSessionCallback,
                     timeout(CALLBACK_TIMEOUT_MS).times(MAXIMUM_CONCURRENT_SESSIONS))
                     .onSessionCreated(anyInt(), any(), mSessionArgumentCaptor.capture());
 
-            mProcessor.processNewSessionRequest(AttributionSource.myAttributionSource(),
-                    generateUniqueParams(-1), mComputerControlSessionCallback);
+            mProcessor.processNewSessionRequest(
+                    ATTRIBUTION_SOURCE, generateUniqueParams(-1), mComputerControlSessionCallback);
             verify(mComputerControlSessionCallback, timeout(CALLBACK_TIMEOUT_MS))
                     .onSessionCreationFailed(ComputerControlSession.ERROR_SESSION_LIMIT_REACHED);
 
@@ -182,8 +200,8 @@ public class ComputerControlSessionProcessorTest {
             mSessionArgumentCaptor.getAllValues().getFirst().close();
             verify(mComputerControlSessionCallback, times(1)).onSessionClosed();
 
-            mProcessor.processNewSessionRequest(AttributionSource.myAttributionSource(),
-                    generateUniqueParams(-1), mComputerControlSessionCallback);
+            mProcessor.processNewSessionRequest(
+                    ATTRIBUTION_SOURCE, generateUniqueParams(-1), mComputerControlSessionCallback);
             verify(mComputerControlSessionCallback,
                     timeout(CALLBACK_TIMEOUT_MS).times(MAXIMUM_CONCURRENT_SESSIONS + 1))
                     .onSessionCreated(anyInt(), any(), mSessionArgumentCaptor.capture());
@@ -202,8 +220,8 @@ public class ComputerControlSessionProcessorTest {
         when(mAppOpsManager.noteOpNoThrow(eq(AppOpsManager.OP_COMPUTER_CONTROL), any(), any()))
                 .thenReturn(AppOpsManager.MODE_IGNORED);
 
-        mProcessor.processNewSessionRequest(AttributionSource.myAttributionSource(),
-                mParams, mComputerControlSessionCallback);
+        mProcessor.processNewSessionRequest(
+                ATTRIBUTION_SOURCE, PARAMS, mComputerControlSessionCallback);
         verify(mPendingIntentFactory).create(any(), anyInt(), mIntentArgumentCaptor.capture());
         verify(mComputerControlSessionCallback).onSessionPending(any());
 
@@ -220,8 +238,8 @@ public class ComputerControlSessionProcessorTest {
         when(mAppOpsManager.noteOpNoThrow(eq(AppOpsManager.OP_COMPUTER_CONTROL), any(), any()))
                 .thenReturn(AppOpsManager.MODE_IGNORED);
 
-        mProcessor.processNewSessionRequest(AttributionSource.myAttributionSource(),
-                mParams, mComputerControlSessionCallback);
+        mProcessor.processNewSessionRequest(
+                ATTRIBUTION_SOURCE, PARAMS, mComputerControlSessionCallback);
         verify(mPendingIntentFactory).create(any(), anyInt(), mIntentArgumentCaptor.capture());
         verify(mComputerControlSessionCallback).onSessionPending(any());
 
@@ -234,13 +252,13 @@ public class ComputerControlSessionProcessorTest {
 
     @Test
     public void validateParams_sessionNameMustBeUnique() throws Exception {
-        mProcessor.processNewSessionRequest(AttributionSource.myAttributionSource(),
-                mParams, mComputerControlSessionCallback);
+        mProcessor.processNewSessionRequest(
+                ATTRIBUTION_SOURCE, PARAMS, mComputerControlSessionCallback);
         verify(mComputerControlSessionCallback, timeout(CALLBACK_TIMEOUT_MS))
                 .onSessionCreated(anyInt(), any(), any());
         assertThrows(IllegalArgumentException.class,
-                () -> mProcessor.processNewSessionRequest(AttributionSource.myAttributionSource(),
-                mParams, mComputerControlSessionCallback));
+                () -> mProcessor.processNewSessionRequest(
+                        ATTRIBUTION_SOURCE, PARAMS, mComputerControlSessionCallback));
     }
 
     @EnableFlags(Flags.FLAG_COMPUTER_CONTROL_ACTIVITY_POLICY_STRICT)
@@ -254,8 +272,8 @@ public class ComputerControlSessionProcessorTest {
 
         when(mPackageManager.getLaunchIntentForPackage(packageName)).thenReturn(new Intent());
 
-        mProcessor.processNewSessionRequest(AttributionSource.myAttributionSource(),
-                params, mComputerControlSessionCallback);
+        mProcessor.processNewSessionRequest(
+                ATTRIBUTION_SOURCE, params, mComputerControlSessionCallback);
 
         verify(mComputerControlSessionCallback, timeout(CALLBACK_TIMEOUT_MS))
                 .onSessionCreated(anyInt(), any(), any());
@@ -274,8 +292,8 @@ public class ComputerControlSessionProcessorTest {
         when(mPackageManager.getLaunchIntentForPackage(packageName)).thenReturn(new Intent());
 
         assertThrows(IllegalArgumentException.class, () -> {
-            mProcessor.processNewSessionRequest(AttributionSource.myAttributionSource(),
-                    params, mComputerControlSessionCallback);
+            mProcessor.processNewSessionRequest(
+                    ATTRIBUTION_SOURCE, params, mComputerControlSessionCallback);
         });
     }
 
@@ -291,17 +309,31 @@ public class ComputerControlSessionProcessorTest {
         when(mPackageManager.getLaunchIntentForPackage(packageName)).thenReturn(null);
 
         assertThrows(IllegalArgumentException.class, () -> {
-            mProcessor.processNewSessionRequest(AttributionSource.myAttributionSource(),
-                    params, mComputerControlSessionCallback);
+            mProcessor.processNewSessionRequest(
+                    ATTRIBUTION_SOURCE, params, mComputerControlSessionCallback);
         });
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_COMPUTER_CONTROL_USER_RESTRICTION)
+    public void validateParams_userNotAllowed_throwsSecurityException() {
+        when(mUserManager.getUserInfo(CALLING_USER_ID))
+                .thenReturn(new UserInfo(
+                        CALLING_USER_ID, "name", "icon", /* flags= */ 0,
+                        USER_TYPE_PROFILE_MANAGED));
+
+        assertThrows(SecurityException.class, () ->
+            mProcessor.processNewSessionRequest(
+                    ATTRIBUTION_SOURCE,
+                    validParams(), mComputerControlSessionCallback));
     }
 
     @Test
     public void isComputerControlDisplay_returnsTrueForDisplaysWithActiveSession()
             throws Exception {
         when(mVirtualDevice.createVirtualDisplay(any(), any())).thenReturn(123);
-        mProcessor.processNewSessionRequest(AttributionSource.myAttributionSource(),
-                mParams, mComputerControlSessionCallback);
+        mProcessor.processNewSessionRequest(
+                ATTRIBUTION_SOURCE, PARAMS, mComputerControlSessionCallback);
         verify(mComputerControlSessionCallback,
                 timeout(CALLBACK_TIMEOUT_MS).times(1))
                 .onSessionCreated(anyInt(), any(), mSessionArgumentCaptor.capture());
@@ -312,14 +344,23 @@ public class ComputerControlSessionProcessorTest {
         assertFalse(mProcessor.isComputerControlDisplay(123));
     }
 
+    private ComputerControlSessionParams validParams() {
+        String packageName = "package.name";
+        when(mPackageManager.getLaunchIntentForPackage(packageName)).thenReturn(new Intent());
+        return new ComputerControlSessionParams.Builder()
+                .setName(ComputerControlSessionTest.class.getSimpleName())
+                .setTargetPackageNames(List.of(packageName))
+                .build();
+    }
+
     private ComputerControlSessionParams generateUniqueParams(int index) {
         return new ComputerControlSessionParams.Builder()
-                .setName(mParams.getName() + index)
-                .setDisplayDpi(mParams.getDisplayDpi())
-                .setDisplayHeightPx(mParams.getDisplayHeightPx())
-                .setDisplayWidthPx(mParams.getDisplayWidthPx())
-                .setDisplaySurface(mParams.getDisplaySurface())
-                .setDisplayAlwaysUnlocked(mParams.isDisplayAlwaysUnlocked())
+                .setName(PARAMS.getName() + index)
+                .setDisplayDpi(PARAMS.getDisplayDpi())
+                .setDisplayHeightPx(PARAMS.getDisplayHeightPx())
+                .setDisplayWidthPx(PARAMS.getDisplayWidthPx())
+                .setDisplaySurface(PARAMS.getDisplaySurface())
+                .setDisplayAlwaysUnlocked(PARAMS.isDisplayAlwaysUnlocked())
                 .build();
     }
 }

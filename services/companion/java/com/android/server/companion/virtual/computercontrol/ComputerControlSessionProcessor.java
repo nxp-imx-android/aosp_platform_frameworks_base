@@ -55,6 +55,7 @@ import com.android.internal.annotations.VisibleForTesting;
 import com.android.server.ServiceThread;
 
 import java.util.Objects;
+import java.util.Set;
 
 /**
  * Handles creation and lifecycle of {@link ComputerControlSession}s.
@@ -74,6 +75,7 @@ public class ComputerControlSessionProcessor {
     private final KeyguardManager mKeyguardManager;
     private final AppOpsManager mAppOpsManager;
     private final PackageManager mPackageManager;
+    private final ComputerControlAccessManager mAccessManager;
     private final VirtualDeviceFactory mVirtualDeviceFactory;
     private final PendingIntentFactory mPendingIntentFactory;
 
@@ -100,6 +102,7 @@ public class ComputerControlSessionProcessor {
         mKeyguardManager = context.getSystemService(KeyguardManager.class);
         mAppOpsManager = context.getSystemService(AppOpsManager.class);
         mPackageManager = context.getPackageManager();
+        mAccessManager = new ComputerControlAccessManager(context);
     }
 
     /**
@@ -114,6 +117,7 @@ public class ComputerControlSessionProcessor {
             @NonNull ComputerControlSessionParams params,
             @NonNull IComputerControlSessionCallback callback) {
         validateParams(attributionSource, params);
+        Set<UserHandle> allowedUsers = mAccessManager.validateAndGetAllowedUsers(attributionSource);
         startHandlerThreadIfNeeded();
 
         final boolean canCreateWithoutConsent;
@@ -126,7 +130,7 @@ public class ComputerControlSessionProcessor {
         }
 
         if (canCreateWithoutConsent) {
-            mHandler.post(() -> createSession(attributionSource, params, callback));
+            mHandler.post(() -> createSession(attributionSource, params, allowedUsers, callback));
             return;
         }
 
@@ -137,7 +141,8 @@ public class ComputerControlSessionProcessor {
         }
 
         final ResultReceiver resultReceiver =
-                new ConsentResultReceiver(attributionSource, params, callback).prepareForIpc();
+                new ConsentResultReceiver(attributionSource, params, allowedUsers, callback)
+                        .prepareForIpc();
         final Intent intent = new Intent(ComputerControlSession.ACTION_REQUEST_ACCESS)
                 .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                 .putExtra(Intent.EXTRA_PACKAGE_NAME, attributionSource.getPackageName())
@@ -217,8 +222,10 @@ public class ComputerControlSessionProcessor {
         }
     }
 
-    private void createSession(@NonNull AttributionSource attributionSource,
+    private void createSession(
+            @NonNull AttributionSource attributionSource,
             @NonNull ComputerControlSessionParams params,
+            @NonNull Set<UserHandle> allowedUsers,
             @NonNull IComputerControlSessionCallback callback) {
         if (!callback.asBinder().pingBinder()) {
             Slog.w(TAG, "Binder is dead for ComputerControlSession " + params.getName()
@@ -233,9 +240,8 @@ public class ComputerControlSessionProcessor {
             }
             Slog.d(TAG, "Creating ComputerControlSession " + params.getName());
             session = new ComputerControlSessionImpl(
-                    callback.asBinder(), params, attributionSource, mVirtualDeviceFactory,
-                    new OnSessionClosedListener(params.getName(), callback),
-                    new ComputerControlSessionImpl.Injector(mContext));
+                    mContext, callback.asBinder(), params, attributionSource, mVirtualDeviceFactory,
+                    allowedUsers, new OnSessionClosedListener(params.getName(), callback));
             mSessions.add(session);
         }
 
@@ -316,21 +322,26 @@ public class ComputerControlSessionProcessor {
 
         private final AttributionSource mAttributionSource;
         private final ComputerControlSessionParams mParams;
+        private final Set<UserHandle> mAllowedUsers;
         private final IComputerControlSessionCallback mCallback;
 
-        ConsentResultReceiver(@NonNull AttributionSource attributionSource,
+        ConsentResultReceiver(
+                @NonNull AttributionSource attributionSource,
                 @NonNull ComputerControlSessionParams params,
+                @NonNull Set<UserHandle> allowedUsers,
                 @NonNull IComputerControlSessionCallback callback) {
             super(mHandler);
             mAttributionSource = attributionSource;
             mParams = params;
+            mAllowedUsers = allowedUsers;
             mCallback = callback;
         }
 
         @Override
         protected void onReceiveResult(int resultCode, Bundle data) {
             if (resultCode == Activity.RESULT_OK) {
-                mHandler.post(() -> createSession(mAttributionSource, mParams, mCallback));
+                mHandler.post(
+                        () -> createSession(mAttributionSource, mParams, mAllowedUsers, mCallback));
             } else {
                 dispatchSessionCreationFailed(mCallback, mParams,
                         ComputerControlSession.ERROR_PERMISSION_DENIED);

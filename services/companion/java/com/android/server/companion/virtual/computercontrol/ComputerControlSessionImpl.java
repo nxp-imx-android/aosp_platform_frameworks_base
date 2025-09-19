@@ -81,6 +81,7 @@ import com.android.server.wm.WindowManagerInternal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -148,7 +149,7 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
     private final ScheduledExecutorService mScheduler =
             Executors.newSingleThreadScheduledExecutor();
     private final Object mStabilityCalculatorLock = new Object();
-
+    private final Set<UserHandle> mAllowedUsers;
     private final Injector mInjector;
 
     private ScheduledFuture<?> mSwipeFuture;
@@ -157,14 +158,25 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
     @GuardedBy("mStabilityCalculatorLock")
     private StabilityCalculator mStabilityCalculator;
 
-    ComputerControlSessionImpl(IBinder appToken, ComputerControlSessionParams params,
-            AttributionSource attributionSource,
+    ComputerControlSessionImpl(Context context, IBinder appToken,
+            ComputerControlSessionParams params, AttributionSource attributionSource,
             ComputerControlSessionProcessor.VirtualDeviceFactory virtualDeviceFactory,
-            OnClosedListener onClosedListener, Injector injector) {
+            Set<UserHandle> allowedUsers, OnClosedListener onClosedListener) {
+        this(
+                appToken, params, attributionSource, virtualDeviceFactory, allowedUsers,
+                onClosedListener, new Injector(context));
+    }
+
+    @VisibleForTesting
+    ComputerControlSessionImpl(IBinder appToken,
+            ComputerControlSessionParams params, AttributionSource attributionSource,
+            ComputerControlSessionProcessor.VirtualDeviceFactory virtualDeviceFactory,
+            Set<UserHandle> allowedUsers, OnClosedListener onClosedListener, Injector injector) {
         mAppToken = appToken;
         mParams = params;
         mOwnerPackageName = attributionSource.getPackageName();
         mOnClosedListener = onClosedListener;
+        mAllowedUsers = allowedUsers;
         mInjector = injector;
         // TODO(b/440005498): Consider using the display from the app's context instead.
         mMainDisplayId = injector.getMainDisplayIdForUser(
@@ -173,6 +185,7 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
         final VirtualDeviceParams virtualDeviceParams = new VirtualDeviceParams.Builder()
                 .setName(mParams.getName())
                 .setDevicePolicy(POLICY_TYPE_BLOCKED_ACTIVITY, DEVICE_POLICY_CUSTOM)
+                .setAllowedUsers(mAllowedUsers)
                 .build();
 
         int displayFlags = DisplayManager.VIRTUAL_DISPLAY_FLAG_TRUSTED
