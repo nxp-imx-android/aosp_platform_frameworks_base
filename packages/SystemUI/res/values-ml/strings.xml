@@ -21,10 +21,8 @@
     xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
     <string name="app_label" msgid="4811759950673118541">"സിസ്റ്റം UI"</string>
     <string name="battery_low_title" msgid="5319680173344341779">"ബാറ്ററി സേവർ ഓണാക്കണോ?"</string>
-    <!-- no translation found for battery_low_description (7848989602036547056) -->
-    <skip />
-    <!-- no translation found for battery_low_intro (8033783734931200690) -->
-    <skip />
+    <string name="battery_low_description" msgid="7848989602036547056">"നിങ്ങളുടെ ബാറ്ററിയിൽ <xliff:g id="PERCENTAGE">%s</xliff:g> ചാർജ് ശേഷിക്കുന്നു. ബാറ്ററി സേവർ, ഡാർക്ക് തീം ഓണാക്കുകയും പശ്ചാത്തല ആക്‌റ്റിവിറ്റി നിയന്ത്രിക്കുകയും അറിയിപ്പുകൾ വെെകിപ്പിക്കുകയും ചെയ്യുന്നു."</string>
+    <string name="battery_low_intro" msgid="8033783734931200690">"ബാറ്ററി സേവർ, ഡാർക്ക് തീം ഓണാക്കുകയും പശ്ചാത്തല ആക്‌റ്റിവിറ്റി നിയന്ത്രിക്കുകയും അറിയിപ്പുകൾ വെെകിപ്പിക്കുകയും ചെയ്യുന്നു."</string>
     <string name="battery_low_percent_format" msgid="4276661262843170964">"<xliff:g id="PERCENTAGE">%s</xliff:g> ശേഷിക്കുന്നു"</string>
     <string name="invalid_charger_title" msgid="938685362320735167">"USB വഴി ചാർജ് ചെയ്യാനാകില്ല"</string>
     <string name="invalid_charger_text" msgid="2339310107232691577">"ഉപകരണത്തിനൊപ്പം ലഭിച്ച ചാർജർ ഉപയോഗിക്കുക"</string>
@@ -182,8 +180,7 @@
     <string name="screen_capture_microphone_audio" msgid="1698835678818747741">"മൈക്രോഫോൺ"</string>
     <string name="screen_capture_front_camera" msgid="1214647538302639358">"മുൻ ക്യാമറ"</string>
     <string name="screen_capture_region_dimensions" msgid="2317064050253056256">"<xliff:g id="WIDTH">%1$d</xliff:g> x <xliff:g id="HEIGHT">%2$d</xliff:g>"</string>
-    <!-- no translation found for screen_share_privacy_indicator_stop_sharing (2297045039651417274) -->
-    <skip />
+    <string name="screen_share_privacy_indicator_stop_sharing" msgid="2297045039651417274">"പങ്കിടൽ നിർത്തുക"</string>
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"സ്‌ക്രീൻ പങ്കിടുന്നു"</string>
     <string name="share_to_app_chip_accessibility_label_generic" msgid="5517431657924536133">"ഉള്ളടക്കം പങ്കിടൽ"</string>
     <string name="share_to_app_stop_dialog_title" msgid="9212915050910250438">"സ്‌ക്രീൻ പങ്കിടുന്നത് നിർത്തണോ?"</string>
@@ -428,6 +425,8 @@
     <string name="quick_settings_cast_detail_empty_text" msgid="2846282280014617785">"ഉപകരണങ്ങളൊന്നും ലഭ്യമല്ല"</string>
     <string name="quick_settings_cast_no_network" msgid="3863016850468559522">"വൈഫൈ അല്ലെങ്കിൽ ഇതർനെറ്റ് കണക്ഷൻ ഇല്ല"</string>
     <string name="quick_settings_cast_disconnect" msgid="4836025217838730930">"വിച്ഛേദിക്കുക"</string>
+    <!-- no translation found for quick_settings_audio_current_input (8219735427828862612) -->
+    <skip />
     <string name="quick_settings_brightness_dialog_title" msgid="4980669966716685588">"തെളിച്ചം"</string>
     <string name="quick_settings_inversion_label" msgid="3501527749494755688">"നിറം വിപരീതമാക്കൽ"</string>
     <string name="quick_settings_color_correction_label" msgid="5636617913560474664">"നിറം ശരിയാക്കൽ"</string>
@@ -497,10 +496,8 @@
     <string name="accessibility_hearing_device_pair_new_device" msgid="8440082580186130090">"പുതിയ ഉപകരണം ജോടിയാക്കാൻ ക്ലിക്ക് ചെയ്യുക"</string>
     <string name="hearing_devices_presets_error" msgid="350363093458408536">"പ്രീസെറ്റ് അപ്ഡേറ്റ് ചെയ്യാനായില്ല"</string>
     <string name="hearing_devices_preset_label" msgid="7878267405046232358">"പ്രീസെറ്റ്"</string>
-    <!-- no translation found for hearing_devices_preset_label_left (7427947566560179945) -->
-    <skip />
-    <!-- no translation found for hearing_devices_preset_label_right (1847206329436268522) -->
-    <skip />
+    <string name="hearing_devices_preset_label_left" msgid="7427947566560179945">"ഇടത് പ്രീസെറ്റ്"</string>
+    <string name="hearing_devices_preset_label_right" msgid="1847206329436268522">"വലത് പ്രീസെറ്റ്"</string>
     <string name="hearing_devices_input_routing_label" msgid="730396728151232306">"കോളുകൾക്കുള്ള ഡിഫോൾട്ട് മൈക്രോഫോൺ"</string>
   <string-array name="hearing_device_input_routing_options">
     <item msgid="4582190415045337003">"ശ്രവണ സഹായി മൈക്രോഫോൺ"</item>

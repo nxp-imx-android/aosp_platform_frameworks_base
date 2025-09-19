@@ -21,10 +21,8 @@
     xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
     <string name="app_label" msgid="4811759950673118541">"Інтэрфейс сістэмы"</string>
     <string name="battery_low_title" msgid="5319680173344341779">"Уключыць рэжым энергазберажэння?"</string>
-    <!-- no translation found for battery_low_description (7848989602036547056) -->
-    <skip />
-    <!-- no translation found for battery_low_intro (8033783734931200690) -->
-    <skip />
+    <string name="battery_low_description" msgid="7848989602036547056">"Засталося <xliff:g id="PERCENTAGE">%s</xliff:g> зараду акумулятара. У рэжыме энергазберажэння ўключаецца цёмная тэма, абмяжоўваюцца дзеянні ў фонавым рэжыме і затрымліваюцца апавяшчэнні."</string>
+    <string name="battery_low_intro" msgid="8033783734931200690">"У рэжыме энергазберажэння ўключаецца цёмная тэма, абмяжоўваюцца дзеянні ў фонавым рэжыме і затрымліваюцца апавяшчэнні."</string>
     <string name="battery_low_percent_format" msgid="4276661262843170964">"Засталося <xliff:g id="PERCENTAGE">%s</xliff:g>"</string>
     <string name="invalid_charger_title" msgid="938685362320735167">"Не ўдалося выканаць зарадку праз USB"</string>
     <string name="invalid_charger_text" msgid="2339310107232691577">"Выкарыстоўвайце зараднае прыстасаванне з камплекта прылады"</string>
@@ -150,16 +148,13 @@
     <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"Паказваць дотыкі"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"Выберыце праграму для запісу"</string>
     <string name="screen_record_video_saved" msgid="1345283626390232282">"Відэа захавана"</string>
-    <!-- no translation found for screen_record_video_deleted (30786214839944540) -->
-    <skip />
+    <string name="screen_record_video_deleted" msgid="30786214839944540">"Відэа выдалена"</string>
     <string name="screen_record_undo" msgid="7942716736019800870">"Адрабіць"</string>
     <string name="screen_record_retake" msgid="3846643688365398450">"Перазняць"</string>
     <string name="screen_record_edit" msgid="8733014191240769309">"Змяніць"</string>
     <string name="screen_record_delete" msgid="1023421937978254537">"Выдаліць"</string>
-    <!-- no translation found for screen_record_delete_dialog_title (5868561491974057044) -->
-    <skip />
-    <!-- no translation found for screen_record_delete_dialog_content (2610040845214024496) -->
-    <skip />
+    <string name="screen_record_delete_dialog_title" msgid="5868561491974057044">"Выдаліць гэты запіс?"</string>
+    <string name="screen_record_delete_dialog_content" msgid="2610040845214024496">"Пры выдаленні гэтага запісу відэафайл будзе назаўсёды выдалены з прылады."</string>
     <string name="screen_record_play" msgid="4732544724679889445">"Прайграць"</string>
     <string name="screen_record_pause" msgid="1715012292444967776">"Прыпыніць"</string>
     <string name="screen_record_mute" msgid="8111682249858638168">"Выключыць гук"</string>
@@ -180,17 +175,12 @@
     <string name="screen_capture_toolbar_fullscreen_button_screenshot_a11y" msgid="8699983355979869210">"Зрабіць здымак усяго экрана"</string>
     <string name="screen_capture_toolbar_fullscreen_button_record_a11y" msgid="852148867883959158">"Запісаць змесціва ўсяго экрана"</string>
     <string name="screen_capture_toolbar_settings_button_a11y" msgid="8014446956996739704">"Налады здымання экрана"</string>
-    <!-- no translation found for screen_capture_show_clicks_and_keys (2151690554364148717) -->
-    <skip />
-    <!-- no translation found for screen_capture_device_audio (1537290197773737349) -->
-    <skip />
-    <!-- no translation found for screen_capture_microphone_audio (1698835678818747741) -->
-    <skip />
-    <!-- no translation found for screen_capture_front_camera (1214647538302639358) -->
-    <skip />
+    <string name="screen_capture_show_clicks_and_keys" msgid="2151690554364148717">"Паказваць націсканні"</string>
+    <string name="screen_capture_device_audio" msgid="1537290197773737349">"Аўдыя з прылады"</string>
+    <string name="screen_capture_microphone_audio" msgid="1698835678818747741">"Мікрафон"</string>
+    <string name="screen_capture_front_camera" msgid="1214647538302639358">"Пярэдняя камера"</string>
     <string name="screen_capture_region_dimensions" msgid="2317064050253056256">"<xliff:g id="WIDTH">%1$d</xliff:g> x <xliff:g id="HEIGHT">%2$d</xliff:g>"</string>
-    <!-- no translation found for screen_share_privacy_indicator_stop_sharing (2297045039651417274) -->
-    <skip />
+    <string name="screen_share_privacy_indicator_stop_sharing" msgid="2297045039651417274">"Спыніць абагульванне"</string>
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"Экран абагульваецца"</string>
     <string name="share_to_app_chip_accessibility_label_generic" msgid="5517431657924536133">"Абагульваецца змесціва"</string>
     <string name="share_to_app_stop_dialog_title" msgid="9212915050910250438">"Спыніць абагульванне экрана?"</string>
@@ -435,6 +425,8 @@
     <string name="quick_settings_cast_detail_empty_text" msgid="2846282280014617785">"Няма даступных прылад"</string>
     <string name="quick_settings_cast_no_network" msgid="3863016850468559522">"Няма падключэння праз Wi-Fi або Ethernet"</string>
     <string name="quick_settings_cast_disconnect" msgid="4836025217838730930">"Адключыць"</string>
+    <!-- no translation found for quick_settings_audio_current_input (8219735427828862612) -->
+    <skip />
     <string name="quick_settings_brightness_dialog_title" msgid="4980669966716685588">"Яркасць"</string>
     <string name="quick_settings_inversion_label" msgid="3501527749494755688">"Інверсія колераў"</string>
     <string name="quick_settings_color_correction_label" msgid="5636617913560474664">"Карэкцыя колераў"</string>
@@ -504,10 +496,8 @@
     <string name="accessibility_hearing_device_pair_new_device" msgid="8440082580186130090">"Націсніце, каб спалучыць новую прыладу"</string>
     <string name="hearing_devices_presets_error" msgid="350363093458408536">"Не ўдалося абнавіць набор налад"</string>
     <string name="hearing_devices_preset_label" msgid="7878267405046232358">"Набор налад"</string>
-    <!-- no translation found for hearing_devices_preset_label_left (7427947566560179945) -->
-    <skip />
-    <!-- no translation found for hearing_devices_preset_label_right (1847206329436268522) -->
-    <skip />
+    <string name="hearing_devices_preset_label_left" msgid="7427947566560179945">"Набор налад для прылады злева"</string>
+    <string name="hearing_devices_preset_label_right" msgid="1847206329436268522">"Набор налад для прылады справа"</string>
     <string name="hearing_devices_input_routing_label" msgid="730396728151232306">"Стандартны мікрафон для выклікаў"</string>
   <string-array name="hearing_device_input_routing_options">
     <item msgid="4582190415045337003">"Мікрафон слыхавога апарата"</item>
@@ -908,8 +898,7 @@
     <string name="notification_guts_news_summary" msgid="638697931043407835">"Папулярныя гісторыі, рэдактарскія артыкулы і іншае змесціва"</string>
     <string name="notification_guts_social_summary" msgid="3749147631983977040">"Адзнакі \"Падабаецца\", запісы ў сацыяльных сетках і іншая інфармацыя"</string>
     <string name="notification_guts_recs_summary" msgid="8391881843238947007">"Рассылкі, рэкамендаваныя медыя і іншае змесціва"</string>
-    <!-- no translation found for notification_onboarding_summaries_turn_on (3831339570984683297) -->
-    <skip />
+    <string name="notification_onboarding_summaries_turn_on" msgid="3831339570984683297">"Уключыць у наладах"</string>
     <string name="notification_onboarding_summaries_message" msgid="6061524903176459064">"Цяпер доўгія размовы можна падсумоўваць у кароткія зводкі"</string>
     <string name="notification_onboarding_bundles_message" msgid="4612908213178622912">"Інструмент арганізацыі апавяшчэнняў групуе апавяшчэнні з нізкім прыярытэтам і выключае іх гук. Катэгорыі апавяшчэнняў можна дадаць у наладах."</string>
     <string name="notification_bundle_header_counter" msgid="5515532701569242265">"{count,plural, =1{# апавяшчэнне}one{# апавяшчэнне}few{# апавяшчэнні}many{# апавяшчэнняў}other{# апавяшчэння}}"</string>

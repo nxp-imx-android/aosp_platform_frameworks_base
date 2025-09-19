@@ -21,10 +21,8 @@
     xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
     <string name="app_label" msgid="4811759950673118541">"ਸਿਸਟਮ UI"</string>
     <string name="battery_low_title" msgid="5319680173344341779">"ਕੀ ਬੈਟਰੀ ਸੇਵਰ ਚਾਲੂ ਕਰਨਾ ਹੈ?"</string>
-    <!-- no translation found for battery_low_description (7848989602036547056) -->
-    <skip />
-    <!-- no translation found for battery_low_intro (8033783734931200690) -->
-    <skip />
+    <string name="battery_low_description" msgid="7848989602036547056">"ਤੁਹਾਡੇ ਕੋਲ <xliff:g id="PERCENTAGE">%s</xliff:g> ਬੈਟਰੀ ਬਾਕੀ ਬਚੀ ਹੈ। ਬੈਟਰੀ ਸੇਵਰ ਗੂੜ੍ਹੇ ਥੀਮ ਨੂੰ ਚਾਲੂ ਕਰਦਾ ਹੈ, ਬੈਕਗ੍ਰਾਊਂਡ ਸਰਗਰਮੀ \'ਤੇ ਪਾਬੰਦੀ ਲਗਾਉਂਦਾ ਹੈ ਅਤੇ ਸੂਚਨਾਵਾਂ ਵਿੱਚ ਦੇਰੀ ਕਰਦਾ ਹੈ।"</string>
+    <string name="battery_low_intro" msgid="8033783734931200690">"ਬੈਟਰੀ ਸੇਵਰ ਗੂੜ੍ਹੇ ਥੀਮ ਨੂੰ ਚਾਲੂ ਕਰਦਾ ਹੈ, ਬੈਕਗ੍ਰਾਊਂਡ ਸਰਗਰਮੀ \'ਤੇ ਪਾਬੰਦੀ ਲਗਾਉਂਦਾ ਹੈ ਅਤੇ ਸੂਚਨਾਵਾਂ ਵਿੱਚ ਦੇਰੀ ਕਰਦਾ ਹੈ।"</string>
     <string name="battery_low_percent_format" msgid="4276661262843170964">"<xliff:g id="PERCENTAGE">%s</xliff:g> ਬਾਕੀ"</string>
     <string name="invalid_charger_title" msgid="938685362320735167">"USB ਰਾਹੀਂ ਚਾਰਜ ਨਹੀਂ ਕੀਤਾ ਜਾ ਸਕਦਾ"</string>
     <string name="invalid_charger_text" msgid="2339310107232691577">"ਆਪਣੇ ਡੀਵਾਈਸ ਨਾਲ ਮਿਲੇ ਚਾਰਜਰ ਦੀ ਵਰਤੋਂ ਕਰੋ"</string>
@@ -156,7 +154,7 @@
     <string name="screen_record_edit" msgid="8733014191240769309">"ਸੰਪਾਦਨ ਕਰੋ"</string>
     <string name="screen_record_delete" msgid="1023421937978254537">"ਮਿਟਾਓ"</string>
     <string name="screen_record_delete_dialog_title" msgid="5868561491974057044">"ਕੀ ਇਸ ਰਿਕਾਰਡਿੰਗ ਨੂੰ ਮਿਟਾਉਣਾ ਹੈ?"</string>
-    <string name="screen_record_delete_dialog_content" msgid="2610040845214024496">"ਇਸ ਰਿਕਾਰਡਿੰਗ ਨੂੰ ਮਿਟਾਉਣ ਨਾਲ ਤੁਹਾਡੇ ਡੀਵਾਈਸ ਤੋਂ ਵੀਡੀਓ ਫ਼ਾਈਲ ਸਥਾਈ ਤੌਰ \'ਤੇ ਮਿਟ ਜਾਵੇਗੀ।"</string>
+    <string name="screen_record_delete_dialog_content" msgid="2610040845214024496">"ਇਹ ਰਿਕਾਰਡਿੰਗ ਮਿਟਾਉਣ ਨਾਲ ਤੁਹਾਡੇ ਡੀਵਾਈਸ ਤੋਂ ਵੀਡੀਓ ਫ਼ਾਈਲ ਪੱਕੇ ਤੌਰ \'ਤੇ ਮਿਟ ਜਾਵੇਗੀ।"</string>
     <string name="screen_record_play" msgid="4732544724679889445">"ਚਲਾਓ"</string>
     <string name="screen_record_pause" msgid="1715012292444967776">"ਰੋਕੋ"</string>
     <string name="screen_record_mute" msgid="8111682249858638168">"ਮਿਊਟ ਕਰੋ"</string>
@@ -177,7 +175,7 @@
     <string name="screen_capture_toolbar_fullscreen_button_screenshot_a11y" msgid="8699983355979869210">"ਪੂਰੀ ਸਕ੍ਰੀਨ ਦਾ ਸਕ੍ਰੀਨਸ਼ਾਟ ਲਓ"</string>
     <string name="screen_capture_toolbar_fullscreen_button_record_a11y" msgid="852148867883959158">"ਪੂਰੀ ਸਕ੍ਰੀਨ ਨੂੰ ਰਿਕਾਰਡ ਕਰੋ"</string>
     <string name="screen_capture_toolbar_settings_button_a11y" msgid="8014446956996739704">"ਸਕ੍ਰੀਨ ਕੈਪਚਰ ਸੈਟਿੰਗਾਂ"</string>
-    <string name="screen_capture_show_clicks_and_keys" msgid="2151690554364148717">"ਕਲਿੱਕਾਂ ਅਤੇ ਕੁੰਜੀਆਂ ਦਿਖਾਓ"</string>
+    <string name="screen_capture_show_clicks_and_keys" msgid="2151690554364148717">"ਕਲਿੱਕ ਅਤੇ ਕੁੰਜੀਆਂ ਦਿਖਾਓ"</string>
     <string name="screen_capture_device_audio" msgid="1537290197773737349">"ਡੀਵਾਈਸ ਆਡੀਓ"</string>
     <string name="screen_capture_microphone_audio" msgid="1698835678818747741">"ਮਾਈਕ੍ਰੋਫ਼ੋਨ"</string>
     <string name="screen_capture_front_camera" msgid="1214647538302639358">"ਅਗਲਾ ਕੈਮਰਾ"</string>
@@ -428,6 +426,8 @@
     <string name="quick_settings_cast_detail_empty_text" msgid="2846282280014617785">"ਕੋਈ ਡਿਵਾਈਸਾਂ ਉਪਲਬਧ ਨਹੀਂ"</string>
     <string name="quick_settings_cast_no_network" msgid="3863016850468559522">"ਕੋਈ Wi‑Fi ਜਾਂ ਈਥਰਨੈੱਟ ਕਨੈਕਸ਼ਨ ਨਹੀਂ ਹੈ"</string>
     <string name="quick_settings_cast_disconnect" msgid="4836025217838730930">"ਡਿਸਕਨੈਕਟ ਕਰੋ"</string>
+    <!-- no translation found for quick_settings_audio_current_input (8219735427828862612) -->
+    <skip />
     <string name="quick_settings_brightness_dialog_title" msgid="4980669966716685588">"ਚਮਕ"</string>
     <string name="quick_settings_inversion_label" msgid="3501527749494755688">"ਰੰਗ ਪਲਟਨਾ"</string>
     <string name="quick_settings_color_correction_label" msgid="5636617913560474664">"ਰੰਗ ਸੁਧਾਈ"</string>
@@ -497,10 +497,8 @@
     <string name="accessibility_hearing_device_pair_new_device" msgid="8440082580186130090">"\'ਨਵਾਂ ਡੀਵਾਈਸ ਜੋੜਾਬੱਧ ਕਰੋ\' \'ਤੇ ਕਲਿੱਕ ਕਰੋ"</string>
     <string name="hearing_devices_presets_error" msgid="350363093458408536">"ਪ੍ਰੀਸੈੱਟ ਨੂੰ ਅੱਪਡੇਟ ਨਹੀਂ ਕੀਤਾ ਜਾ ਸਕਿਆ"</string>
     <string name="hearing_devices_preset_label" msgid="7878267405046232358">"ਪ੍ਰੀਸੈੱਟ"</string>
-    <!-- no translation found for hearing_devices_preset_label_left (7427947566560179945) -->
-    <skip />
-    <!-- no translation found for hearing_devices_preset_label_right (1847206329436268522) -->
-    <skip />
+    <string name="hearing_devices_preset_label_left" msgid="7427947566560179945">"ਖੱਬਾ ਪ੍ਰੀਸੈੱਟ"</string>
+    <string name="hearing_devices_preset_label_right" msgid="1847206329436268522">"ਸੱਜਾ ਪ੍ਰੀਸੈੱਟ"</string>
     <string name="hearing_devices_input_routing_label" msgid="730396728151232306">"ਕਾਲਾਂ ਲਈ ਪੂਰਵ-ਨਿਰਧਾਰਿਤ ਮਾਈਕ੍ਰੋਫ਼ੋਨ"</string>
   <string-array name="hearing_device_input_routing_options">
     <item msgid="4582190415045337003">"ਸੁਣਨ ਦੇ ਸਾਧਨ ਦਾ ਮਾਈਕ੍ਰੋਫ਼ੋਨ"</item>

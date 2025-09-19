@@ -21,10 +21,8 @@
     xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
     <string name="app_label" msgid="4811759950673118541">"IU do sistema"</string>
     <string name="battery_low_title" msgid="5319680173344341779">"Ativar a Poupança de bateria?"</string>
-    <!-- no translation found for battery_low_description (7848989602036547056) -->
-    <skip />
-    <!-- no translation found for battery_low_intro (8033783734931200690) -->
-    <skip />
+    <string name="battery_low_description" msgid="7848989602036547056">"Resta-lhe <xliff:g id="PERCENTAGE">%s</xliff:g> de bateria. A Poupança de bateria ativa o tema escuro, restringe a atividade em segundo plano e atrasa as notificações."</string>
+    <string name="battery_low_intro" msgid="8033783734931200690">"A Poupança de bateria ativa o tema escuro, restringe a atividade em segundo plano e atrasa as notificações."</string>
     <string name="battery_low_percent_format" msgid="4276661262843170964">"<xliff:g id="PERCENTAGE">%s</xliff:g> restante"</string>
     <string name="invalid_charger_title" msgid="938685362320735167">"Não é possível carregar através de USB."</string>
     <string name="invalid_charger_text" msgid="2339310107232691577">"Utilize o carregador fornecido com o dispositivo."</string>
@@ -150,16 +148,13 @@
     <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"Apresentar toques"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"Escolha uma app para gravar"</string>
     <string name="screen_record_video_saved" msgid="1345283626390232282">"Vídeo guardado"</string>
-    <!-- no translation found for screen_record_video_deleted (30786214839944540) -->
-    <skip />
+    <string name="screen_record_video_deleted" msgid="30786214839944540">"Vídeo eliminado"</string>
     <string name="screen_record_undo" msgid="7942716736019800870">"Anular"</string>
     <string name="screen_record_retake" msgid="3846643688365398450">"Repetir"</string>
     <string name="screen_record_edit" msgid="8733014191240769309">"Editar"</string>
     <string name="screen_record_delete" msgid="1023421937978254537">"Eliminar"</string>
-    <!-- no translation found for screen_record_delete_dialog_title (5868561491974057044) -->
-    <skip />
-    <!-- no translation found for screen_record_delete_dialog_content (2610040845214024496) -->
-    <skip />
+    <string name="screen_record_delete_dialog_title" msgid="5868561491974057044">"Eliminar esta gravação?"</string>
+    <string name="screen_record_delete_dialog_content" msgid="2610040845214024496">"A eliminação desta gravação elimina permanentemente o ficheiro de vídeo do seu dispositivo."</string>
     <string name="screen_record_play" msgid="4732544724679889445">"Ver"</string>
     <string name="screen_record_pause" msgid="1715012292444967776">"Pausar"</string>
     <string name="screen_record_mute" msgid="8111682249858638168">"Desativar som"</string>
@@ -180,17 +175,12 @@
     <string name="screen_capture_toolbar_fullscreen_button_screenshot_a11y" msgid="8699983355979869210">"Fazer captura de ecrã de todo o ecrã"</string>
     <string name="screen_capture_toolbar_fullscreen_button_record_a11y" msgid="852148867883959158">"Gravar ecrã inteiro"</string>
     <string name="screen_capture_toolbar_settings_button_a11y" msgid="8014446956996739704">"Definições da captura de ecrã"</string>
-    <!-- no translation found for screen_capture_show_clicks_and_keys (2151690554364148717) -->
-    <skip />
-    <!-- no translation found for screen_capture_device_audio (1537290197773737349) -->
-    <skip />
-    <!-- no translation found for screen_capture_microphone_audio (1698835678818747741) -->
-    <skip />
-    <!-- no translation found for screen_capture_front_camera (1214647538302639358) -->
-    <skip />
+    <string name="screen_capture_show_clicks_and_keys" msgid="2151690554364148717">"Mostrar cliques e teclas"</string>
+    <string name="screen_capture_device_audio" msgid="1537290197773737349">"Áudio do dispositivo"</string>
+    <string name="screen_capture_microphone_audio" msgid="1698835678818747741">"Microfone"</string>
+    <string name="screen_capture_front_camera" msgid="1214647538302639358">"Câmara frontal"</string>
     <string name="screen_capture_region_dimensions" msgid="2317064050253056256">"<xliff:g id="WIDTH">%1$d</xliff:g> x <xliff:g id="HEIGHT">%2$d</xliff:g>"</string>
-    <!-- no translation found for screen_share_privacy_indicator_stop_sharing (2297045039651417274) -->
-    <skip />
+    <string name="screen_share_privacy_indicator_stop_sharing" msgid="2297045039651417274">"Parar partilha"</string>
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"A partilhar o ecrã"</string>
     <string name="share_to_app_chip_accessibility_label_generic" msgid="5517431657924536133">"A partilhar conteúdo"</string>
     <string name="share_to_app_stop_dialog_title" msgid="9212915050910250438">"Parar a partilha do ecrã?"</string>
@@ -435,6 +425,8 @@
     <string name="quick_settings_cast_detail_empty_text" msgid="2846282280014617785">"Sem dispositivos disponíveis"</string>
     <string name="quick_settings_cast_no_network" msgid="3863016850468559522">"Sem ligação Wi-Fi ou Ethernet"</string>
     <string name="quick_settings_cast_disconnect" msgid="4836025217838730930">"Desassociar"</string>
+    <!-- no translation found for quick_settings_audio_current_input (8219735427828862612) -->
+    <skip />
     <string name="quick_settings_brightness_dialog_title" msgid="4980669966716685588">"Brilho"</string>
     <string name="quick_settings_inversion_label" msgid="3501527749494755688">"Inversão de cores"</string>
     <string name="quick_settings_color_correction_label" msgid="5636617913560474664">"Correção da cor"</string>
@@ -906,8 +898,7 @@
     <string name="notification_guts_news_summary" msgid="638697931043407835">"Notícias principais, editoriais e muito mais"</string>
     <string name="notification_guts_social_summary" msgid="3749147631983977040">"Gostos, publicações e muito mais"</string>
     <string name="notification_guts_recs_summary" msgid="8391881843238947007">"Newsletters, multimédia recomendado e muito mais"</string>
-    <!-- no translation found for notification_onboarding_summaries_turn_on (3831339570984683297) -->
-    <skip />
+    <string name="notification_onboarding_summaries_turn_on" msgid="3831339570984683297">"Ativar nas Definições"</string>
     <string name="notification_onboarding_summaries_message" msgid="6061524903176459064">"Agora, é possível resumir as suas conversas mais longas para lhe dar resumos rápidos"</string>
     <string name="notification_onboarding_bundles_message" msgid="4612908213178622912">"O organizador de notificações agrupa e silencia as notificações de prioridade mais baixa. Adicione mais categorias nas Definições."</string>
     <string name="notification_bundle_header_counter" msgid="5515532701569242265">"{count,plural, =1{# notificação}many{# notificações}other{# notificações}}"</string>

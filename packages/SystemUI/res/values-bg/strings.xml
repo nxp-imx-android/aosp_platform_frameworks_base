@@ -21,10 +21,8 @@
     xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
     <string name="app_label" msgid="4811759950673118541">"Системен ПИ"</string>
     <string name="battery_low_title" msgid="5319680173344341779">"Да се включи ли режимът за запазване на батерията?"</string>
-    <!-- no translation found for battery_low_description (7848989602036547056) -->
-    <skip />
-    <!-- no translation found for battery_low_intro (8033783734931200690) -->
-    <skip />
+    <string name="battery_low_description" msgid="7848989602036547056">"Оставащ заряд на батерията: <xliff:g id="PERCENTAGE">%s</xliff:g>. Режимът за запазване на батерията включва тъмната тема, ограничава активността на заден план и отлага известията."</string>
+    <string name="battery_low_intro" msgid="8033783734931200690">"Режимът за запазване на батерията включва тъмната тема, ограничава активността на заден план и отлага известията."</string>
     <string name="battery_low_percent_format" msgid="4276661262843170964">"Остава/т <xliff:g id="PERCENTAGE">%s</xliff:g>"</string>
     <string name="invalid_charger_title" msgid="938685362320735167">"Зареждането през USB не е възможно"</string>
     <string name="invalid_charger_text" msgid="2339310107232691577">"Използвайте оригиналното зарядно устройство"</string>
@@ -150,16 +148,13 @@
     <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"Показване на докосванията"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"Избор на приложение за записване"</string>
     <string name="screen_record_video_saved" msgid="1345283626390232282">"Видеокл. бе запазен"</string>
-    <!-- no translation found for screen_record_video_deleted (30786214839944540) -->
-    <skip />
+    <string name="screen_record_video_deleted" msgid="30786214839944540">"Видеоклипът е изтрит"</string>
     <string name="screen_record_undo" msgid="7942716736019800870">"Отмяна"</string>
     <string name="screen_record_retake" msgid="3846643688365398450">"Нов опит"</string>
     <string name="screen_record_edit" msgid="8733014191240769309">"Редактиране"</string>
     <string name="screen_record_delete" msgid="1023421937978254537">"Изтриване"</string>
-    <!-- no translation found for screen_record_delete_dialog_title (5868561491974057044) -->
-    <skip />
-    <!-- no translation found for screen_record_delete_dialog_content (2610040845214024496) -->
-    <skip />
+    <string name="screen_record_delete_dialog_title" msgid="5868561491974057044">"Да се изтрие ли този запис?"</string>
+    <string name="screen_record_delete_dialog_content" msgid="2610040845214024496">"Изтриването на този запис ще изтрие за постоянно видеофайла от устройството ви."</string>
     <string name="screen_record_play" msgid="4732544724679889445">"Пускане"</string>
     <string name="screen_record_pause" msgid="1715012292444967776">"Пауза"</string>
     <string name="screen_record_mute" msgid="8111682249858638168">"Спиране на звука"</string>
@@ -180,14 +175,10 @@
     <string name="screen_capture_toolbar_fullscreen_button_screenshot_a11y" msgid="8699983355979869210">"Създаване на екранна снимка на целия екран"</string>
     <string name="screen_capture_toolbar_fullscreen_button_record_a11y" msgid="852148867883959158">"Записване на целия екран"</string>
     <string name="screen_capture_toolbar_settings_button_a11y" msgid="8014446956996739704">"Настройки за заснемане на екрана"</string>
-    <!-- no translation found for screen_capture_show_clicks_and_keys (2151690554364148717) -->
-    <skip />
-    <!-- no translation found for screen_capture_device_audio (1537290197773737349) -->
-    <skip />
-    <!-- no translation found for screen_capture_microphone_audio (1698835678818747741) -->
-    <skip />
-    <!-- no translation found for screen_capture_front_camera (1214647538302639358) -->
-    <skip />
+    <string name="screen_capture_show_clicks_and_keys" msgid="2151690554364148717">"Кликвания/клавиши: Показване"</string>
+    <string name="screen_capture_device_audio" msgid="1537290197773737349">"Звук от устройството"</string>
+    <string name="screen_capture_microphone_audio" msgid="1698835678818747741">"Микрофон"</string>
+    <string name="screen_capture_front_camera" msgid="1214647538302639358">"Предна камера"</string>
     <string name="screen_capture_region_dimensions" msgid="2317064050253056256">"<xliff:g id="WIDTH">%1$d</xliff:g> x <xliff:g id="HEIGHT">%2$d</xliff:g>"</string>
     <!-- no translation found for screen_share_privacy_indicator_stop_sharing (2297045039651417274) -->
     <skip />
@@ -435,6 +426,8 @@
     <string name="quick_settings_cast_detail_empty_text" msgid="2846282280014617785">"Няма налични устройства"</string>
     <string name="quick_settings_cast_no_network" msgid="3863016850468559522">"Няма Wi‑Fi/Ethernet връзка"</string>
     <string name="quick_settings_cast_disconnect" msgid="4836025217838730930">"Прекратяване на връзката"</string>
+    <!-- no translation found for quick_settings_audio_current_input (8219735427828862612) -->
+    <skip />
     <string name="quick_settings_brightness_dialog_title" msgid="4980669966716685588">"Яркост"</string>
     <string name="quick_settings_inversion_label" msgid="3501527749494755688">"Инвертиране на цветовете"</string>
     <string name="quick_settings_color_correction_label" msgid="5636617913560474664">"Корекция на цветове"</string>
@@ -504,10 +497,8 @@
     <string name="accessibility_hearing_device_pair_new_device" msgid="8440082580186130090">"Кликнете за сдвояване на ново устройство"</string>
     <string name="hearing_devices_presets_error" msgid="350363093458408536">"Предварително зададените настройки не бяха актуализирани"</string>
     <string name="hearing_devices_preset_label" msgid="7878267405046232358">"Предварително зададено"</string>
-    <!-- no translation found for hearing_devices_preset_label_left (7427947566560179945) -->
-    <skip />
-    <!-- no translation found for hearing_devices_preset_label_right (1847206329436268522) -->
-    <skip />
+    <string name="hearing_devices_preset_label_left" msgid="7427947566560179945">"Предварително зададено за лявата страна"</string>
+    <string name="hearing_devices_preset_label_right" msgid="1847206329436268522">"Предварително зададено за дясната страна"</string>
     <string name="hearing_devices_input_routing_label" msgid="730396728151232306">"Микрофон по подразбиране за обажданията"</string>
   <string-array name="hearing_device_input_routing_options">
     <item msgid="4582190415045337003">"Микрофонът на слуховия апарат"</item>
@@ -908,8 +899,7 @@
     <string name="notification_guts_news_summary" msgid="638697931043407835">"Водещи материали, редакторски статии и др."</string>
     <string name="notification_guts_social_summary" msgid="3749147631983977040">"Харесвания, публикации и др."</string>
     <string name="notification_guts_recs_summary" msgid="8391881843238947007">"Бюлетини, препоръчани медии и др."</string>
-    <!-- no translation found for notification_onboarding_summaries_turn_on (3831339570984683297) -->
-    <skip />
+    <string name="notification_onboarding_summaries_turn_on" msgid="3831339570984683297">"Включване от настройките"</string>
     <string name="notification_onboarding_summaries_message" msgid="6061524903176459064">"По-дългите ви разговори вече могат да бъдат обобщени, за да получите кратка обзорна информация"</string>
     <string name="notification_onboarding_bundles_message" msgid="4612908213178622912">"Инструментът за организиране на известията групира и заглушава известията с по-нисък приоритет. Добавете още категории в настройките."</string>
     <string name="notification_bundle_header_counter" msgid="5515532701569242265">"{count,plural, =1{# известие}other{# известия}}"</string>

@@ -21,10 +21,8 @@
     xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
     <string name="app_label" msgid="4811759950673118541">"Sistemski uporabniški vmesnik"</string>
     <string name="battery_low_title" msgid="5319680173344341779">"Želite vklopiti varčevanje z energijo baterije?"</string>
-    <!-- no translation found for battery_low_description (7848989602036547056) -->
-    <skip />
-    <!-- no translation found for battery_low_intro (8033783734931200690) -->
-    <skip />
+    <string name="battery_low_description" msgid="7848989602036547056">"Preostala napolnjenost baterije: <xliff:g id="PERCENTAGE">%s</xliff:g>. Funkcija varčevanja z energijo baterije vklopi temno temo, omeji dejavnost v ozadju in prikazuje obvestila z zakasnitvijo."</string>
+    <string name="battery_low_intro" msgid="8033783734931200690">"Funkcija varčevanja z energijo baterije vklopi temno temo, omeji dejavnost v ozadju in prikazuje obvestila z zakasnitvijo."</string>
     <string name="battery_low_percent_format" msgid="4276661262843170964">"Še <xliff:g id="PERCENTAGE">%s</xliff:g>"</string>
     <string name="invalid_charger_title" msgid="938685362320735167">"Ni mogoče polniti prek USB-ja"</string>
     <string name="invalid_charger_text" msgid="2339310107232691577">"Uporabite polnilnik, ki je bil priložen napravi"</string>
@@ -150,16 +148,13 @@
     <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"Pokaži dotike"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"Izberite aplikacijo za snemanje"</string>
     <string name="screen_record_video_saved" msgid="1345283626390232282">"Video je shranjen"</string>
-    <!-- no translation found for screen_record_video_deleted (30786214839944540) -->
-    <skip />
+    <string name="screen_record_video_deleted" msgid="30786214839944540">"Videoposnetek je izbrisan"</string>
     <string name="screen_record_undo" msgid="7942716736019800870">"Razveljavi"</string>
     <string name="screen_record_retake" msgid="3846643688365398450">"Nov posnetek"</string>
     <string name="screen_record_edit" msgid="8733014191240769309">"Uredi"</string>
     <string name="screen_record_delete" msgid="1023421937978254537">"Izbriši"</string>
-    <!-- no translation found for screen_record_delete_dialog_title (5868561491974057044) -->
-    <skip />
-    <!-- no translation found for screen_record_delete_dialog_content (2610040845214024496) -->
-    <skip />
+    <string name="screen_record_delete_dialog_title" msgid="5868561491974057044">"Želite izbrisati ta posnetek?"</string>
+    <string name="screen_record_delete_dialog_content" msgid="2610040845214024496">"Če izbrišete ta posnetek, bo videodatoteka trajno izbrisana iz naprave."</string>
     <string name="screen_record_play" msgid="4732544724679889445">"Predvajaj"</string>
     <string name="screen_record_pause" msgid="1715012292444967776">"Začasno zaustavi"</string>
     <string name="screen_record_mute" msgid="8111682249858638168">"Izklopi zvok"</string>
@@ -180,17 +175,12 @@
     <string name="screen_capture_toolbar_fullscreen_button_screenshot_a11y" msgid="8699983355979869210">"Ustvarjanje posnetka celotnega zaslona"</string>
     <string name="screen_capture_toolbar_fullscreen_button_record_a11y" msgid="852148867883959158">"Snemanje celotnega zaslona"</string>
     <string name="screen_capture_toolbar_settings_button_a11y" msgid="8014446956996739704">"Nastavitve zajema zaslonske slike"</string>
-    <!-- no translation found for screen_capture_show_clicks_and_keys (2151690554364148717) -->
-    <skip />
-    <!-- no translation found for screen_capture_device_audio (1537290197773737349) -->
-    <skip />
-    <!-- no translation found for screen_capture_microphone_audio (1698835678818747741) -->
-    <skip />
-    <!-- no translation found for screen_capture_front_camera (1214647538302639358) -->
-    <skip />
+    <string name="screen_capture_show_clicks_and_keys" msgid="2151690554364148717">"Prikaz klikov in tipk"</string>
+    <string name="screen_capture_device_audio" msgid="1537290197773737349">"Zvok v napravi"</string>
+    <string name="screen_capture_microphone_audio" msgid="1698835678818747741">"Mikrofon"</string>
+    <string name="screen_capture_front_camera" msgid="1214647538302639358">"Sprednji fotoaparat"</string>
     <string name="screen_capture_region_dimensions" msgid="2317064050253056256">"<xliff:g id="WIDTH">%1$d</xliff:g> × <xliff:g id="HEIGHT">%2$d</xliff:g>"</string>
-    <!-- no translation found for screen_share_privacy_indicator_stop_sharing (2297045039651417274) -->
-    <skip />
+    <string name="screen_share_privacy_indicator_stop_sharing" msgid="2297045039651417274">"Ustavi deljenje"</string>
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"Deljenje zaslona"</string>
     <string name="share_to_app_chip_accessibility_label_generic" msgid="5517431657924536133">"Deljenje vsebine"</string>
     <string name="share_to_app_stop_dialog_title" msgid="9212915050910250438">"Želite ustaviti deljenje zaslona?"</string>
@@ -435,6 +425,8 @@
     <string name="quick_settings_cast_detail_empty_text" msgid="2846282280014617785">"Na voljo ni nobene naprave"</string>
     <string name="quick_settings_cast_no_network" msgid="3863016850468559522">"Ni povezave Wi‑Fi ali ethernetne povezave"</string>
     <string name="quick_settings_cast_disconnect" msgid="4836025217838730930">"Prekini povezavo"</string>
+    <!-- no translation found for quick_settings_audio_current_input (8219735427828862612) -->
+    <skip />
     <string name="quick_settings_brightness_dialog_title" msgid="4980669966716685588">"Svetlost"</string>
     <string name="quick_settings_inversion_label" msgid="3501527749494755688">"Inverzija barv"</string>
     <string name="quick_settings_color_correction_label" msgid="5636617913560474664">"Popravljanje barv"</string>
@@ -576,7 +568,7 @@
     <string name="keyguard_unlock" msgid="8031975796351361601">"Povlecite navzgor, da odprete"</string>
     <string name="keyguard_unlock_press" msgid="9140109453735019209">"Za odpiranje pritisnite ikono za odklepanje."</string>
     <string name="keyguard_face_successful_unlock_swipe" msgid="6180997591385846073">"Odklenjeno z obrazom. Povlecite navzgor, da odprete."</string>
-    <string name="keyguard_face_successful_unlock_confirm_button" msgid="3862344771780817393">"Odklenjeno z obrazom. Za nadaljevanje pritisnite »Potrdi«."</string>
+    <string name="keyguard_face_successful_unlock_confirm_button" msgid="3862344771780817393">"Odklenjeno z obrazom. Za nadaljevanje pritisnite »Potrdite«."</string>
     <string name="keyguard_face_successful_unlock_press" msgid="25520941264602588">"Odklenjeno z obrazom. Za odpiranje pritisnite ikono za odklepanje."</string>
     <string name="keyguard_face_successful_unlock_press_alt_1" msgid="5715461103913071474">"Odklenjeno z obrazom. Pritisnite za odpiranje."</string>
     <string name="keyguard_face_successful_unlock_press_alt_2" msgid="8310787946357120406">"Obraz je prepoznan. Pritisnite za odpiranje."</string>
@@ -906,8 +898,7 @@
     <string name="notification_guts_news_summary" msgid="638697931043407835">"Najpomembnejše novice, uvodniki in drugo"</string>
     <string name="notification_guts_social_summary" msgid="3749147631983977040">"Všečki, objave in drugo"</string>
     <string name="notification_guts_recs_summary" msgid="8391881843238947007">"Glasila, priporočena predstavnost in drugo"</string>
-    <!-- no translation found for notification_onboarding_summaries_turn_on (3831339570984683297) -->
-    <skip />
+    <string name="notification_onboarding_summaries_turn_on" msgid="3831339570984683297">"Vklopite v nastavitvah"</string>
     <string name="notification_onboarding_summaries_message" msgid="6061524903176459064">"Daljše pogovore lahko zdaj povzamete in si ogledate hitre povzetke"</string>
     <string name="notification_onboarding_bundles_message" msgid="4612908213178622912">"Organizator obvestil združuje in utiša manj pomembna obvestila. Dodajte več kategorij v nastavitvah."</string>
     <string name="notification_bundle_header_counter" msgid="5515532701569242265">"{count,plural, =1{# obvestilo}one{# obvestilo}two{# obvestili}few{# obvestila}other{# obvestil}}"</string>

@@ -21,10 +21,8 @@
     xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
     <string name="app_label" msgid="4811759950673118541">"सिस्टीम UI"</string>
     <string name="battery_low_title" msgid="5319680173344341779">"बॅटरी सेव्हर सुरू करायचे आहे का?"</string>
-    <!-- no translation found for battery_low_description (7848989602036547056) -->
-    <skip />
-    <!-- no translation found for battery_low_intro (8033783734931200690) -->
-    <skip />
+    <string name="battery_low_description" msgid="7848989602036547056">"तुमच्याकडे <xliff:g id="PERCENTAGE">%s</xliff:g> बॅटरी शिल्लक आहे. बॅटरी सेव्हर गडद थीम सुरू करते, बॅकग्राउंड ॲक्टिव्हिटी मर्यादित करते, यामुळे सूचना विलंबाने मिळतात."</string>
+    <string name="battery_low_intro" msgid="8033783734931200690">"बॅटरी सेव्हर गडद थीम सुरू करते, बॅकग्राउंड ॲक्टिव्हिटी मर्यादित करते, यामुळे सूचना विलंबाने मिळतात."</string>
     <string name="battery_low_percent_format" msgid="4276661262843170964">"<xliff:g id="PERCENTAGE">%s</xliff:g> शिल्लक"</string>
     <string name="invalid_charger_title" msgid="938685362320735167">"USB द्वारे चार्ज होऊ शकत नाही"</string>
     <string name="invalid_charger_text" msgid="2339310107232691577">"तुमच्या डिव्हाइससह आलेल्या चार्जरचा वापर करा"</string>
@@ -428,6 +426,8 @@
     <string name="quick_settings_cast_detail_empty_text" msgid="2846282280014617785">"कोणतेही डिव्हाइसेस उपलब्ध नाहीत"</string>
     <string name="quick_settings_cast_no_network" msgid="3863016850468559522">"वाय-फाय किंवा इथरनेट कनेक्शन नाही"</string>
     <string name="quick_settings_cast_disconnect" msgid="4836025217838730930">"डिस्कनेक्ट करा"</string>
+    <!-- no translation found for quick_settings_audio_current_input (8219735427828862612) -->
+    <skip />
     <string name="quick_settings_brightness_dialog_title" msgid="4980669966716685588">"चमक"</string>
     <string name="quick_settings_inversion_label" msgid="3501527749494755688">"कलर इन्व्हर्जन"</string>
     <string name="quick_settings_color_correction_label" msgid="5636617913560474664">"रंग सुधारणा"</string>
@@ -497,10 +497,8 @@
     <string name="accessibility_hearing_device_pair_new_device" msgid="8440082580186130090">"नवीन डिव्हाइस पेअर करण्यासाठी क्लिक करा"</string>
     <string name="hearing_devices_presets_error" msgid="350363093458408536">"प्रीसेट अपडेट करता आले नाही"</string>
     <string name="hearing_devices_preset_label" msgid="7878267405046232358">"प्रीसेट"</string>
-    <!-- no translation found for hearing_devices_preset_label_left (7427947566560179945) -->
-    <skip />
-    <!-- no translation found for hearing_devices_preset_label_right (1847206329436268522) -->
-    <skip />
+    <string name="hearing_devices_preset_label_left" msgid="7427947566560179945">"डावा प्रीसेट"</string>
+    <string name="hearing_devices_preset_label_right" msgid="1847206329436268522">"उजवा प्रीसेट"</string>
     <string name="hearing_devices_input_routing_label" msgid="730396728151232306">"कॉलसाठी डीफॉल्ट मायक्रोफोन"</string>
   <string-array name="hearing_device_input_routing_options">
     <item msgid="4582190415045337003">"श्रवणयंत्र मायक्रोफोन"</item>

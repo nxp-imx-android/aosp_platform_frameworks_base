@@ -21,10 +21,8 @@
     xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
     <string name="app_label" msgid="4811759950673118541">"Stelsel-UI"</string>
     <string name="battery_low_title" msgid="5319680173344341779">"Skakel Batterybespaarder aan?"</string>
-    <!-- no translation found for battery_low_description (7848989602036547056) -->
-    <skip />
-    <!-- no translation found for battery_low_intro (8033783734931200690) -->
-    <skip />
+    <string name="battery_low_description" msgid="7848989602036547056">"Jy het <xliff:g id="PERCENTAGE">%s</xliff:g> batterykrag oor. Batterybespaarder skakel Donkertema aan, beperk agtergrondaktiwiteit en vertraag kennisgewings."</string>
+    <string name="battery_low_intro" msgid="8033783734931200690">"Batterybespaarder skakel Donkertema aan, beperk agtergrondaktiwiteit en vertraag kennisgewings."</string>
     <string name="battery_low_percent_format" msgid="4276661262843170964">"<xliff:g id="PERCENTAGE">%s</xliff:g> oor"</string>
     <string name="invalid_charger_title" msgid="938685362320735167">"Kan nie deur USB laai nie"</string>
     <string name="invalid_charger_text" msgid="2339310107232691577">"Gebruik die laaier wat jy saam met jou toestel gekry het"</string>
@@ -150,16 +148,13 @@
     <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"Wys aanrakings"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"Kies ’n app om op te neem"</string>
     <string name="screen_record_video_saved" msgid="1345283626390232282">"Video is gestoor"</string>
-    <!-- no translation found for screen_record_video_deleted (30786214839944540) -->
-    <skip />
+    <string name="screen_record_video_deleted" msgid="30786214839944540">"Video is uitgevee"</string>
     <string name="screen_record_undo" msgid="7942716736019800870">"Ontdoen"</string>
     <string name="screen_record_retake" msgid="3846643688365398450">"Neem weer"</string>
     <string name="screen_record_edit" msgid="8733014191240769309">"Wysig"</string>
     <string name="screen_record_delete" msgid="1023421937978254537">"Vee uit"</string>
-    <!-- no translation found for screen_record_delete_dialog_title (5868561491974057044) -->
-    <skip />
-    <!-- no translation found for screen_record_delete_dialog_content (2610040845214024496) -->
-    <skip />
+    <string name="screen_record_delete_dialog_title" msgid="5868561491974057044">"Vee hierdie opname uit?"</string>
+    <string name="screen_record_delete_dialog_content" msgid="2610040845214024496">"Uitvee van hierdie opname sal videolêer permanent van jou toestel af uitvee."</string>
     <string name="screen_record_play" msgid="4732544724679889445">"Speel"</string>
     <string name="screen_record_pause" msgid="1715012292444967776">"Onderbreek"</string>
     <string name="screen_record_mute" msgid="8111682249858638168">"Demp"</string>
@@ -180,14 +175,10 @@
     <string name="screen_capture_toolbar_fullscreen_button_screenshot_a11y" msgid="8699983355979869210">"Neem ’n skermskoot van die hele skerm"</string>
     <string name="screen_capture_toolbar_fullscreen_button_record_a11y" msgid="852148867883959158">"Neem die hele skerm op"</string>
     <string name="screen_capture_toolbar_settings_button_a11y" msgid="8014446956996739704">"Skermskootinstellings"</string>
-    <!-- no translation found for screen_capture_show_clicks_and_keys (2151690554364148717) -->
-    <skip />
-    <!-- no translation found for screen_capture_device_audio (1537290197773737349) -->
-    <skip />
-    <!-- no translation found for screen_capture_microphone_audio (1698835678818747741) -->
-    <skip />
-    <!-- no translation found for screen_capture_front_camera (1214647538302639358) -->
-    <skip />
+    <string name="screen_capture_show_clicks_and_keys" msgid="2151690554364148717">"Wys klikke en sleutels"</string>
+    <string name="screen_capture_device_audio" msgid="1537290197773737349">"Toesteloudio"</string>
+    <string name="screen_capture_microphone_audio" msgid="1698835678818747741">"Mikrofoon"</string>
+    <string name="screen_capture_front_camera" msgid="1214647538302639358">"Voorste kamera"</string>
     <string name="screen_capture_region_dimensions" msgid="2317064050253056256">"<xliff:g id="WIDTH">%1$d</xliff:g> x <xliff:g id="HEIGHT">%2$d</xliff:g>"</string>
     <!-- no translation found for screen_share_privacy_indicator_stop_sharing (2297045039651417274) -->
     <skip />
@@ -435,6 +426,8 @@
     <string name="quick_settings_cast_detail_empty_text" msgid="2846282280014617785">"Geen toestelle beskikbaar nie"</string>
     <string name="quick_settings_cast_no_network" msgid="3863016850468559522">"Geen wi-fi- of Ethernet-verbinding nie"</string>
     <string name="quick_settings_cast_disconnect" msgid="4836025217838730930">"Ontkoppel"</string>
+    <!-- no translation found for quick_settings_audio_current_input (8219735427828862612) -->
+    <skip />
     <string name="quick_settings_brightness_dialog_title" msgid="4980669966716685588">"Helderheid"</string>
     <string name="quick_settings_inversion_label" msgid="3501527749494755688">"Kleuromkering"</string>
     <string name="quick_settings_color_correction_label" msgid="5636617913560474664">"Kleurregstelling"</string>
@@ -504,10 +497,8 @@
     <string name="accessibility_hearing_device_pair_new_device" msgid="8440082580186130090">"Klik om nuwe toestel saam te bind"</string>
     <string name="hearing_devices_presets_error" msgid="350363093458408536">"Kon nie voorafstelling opdateer nie"</string>
     <string name="hearing_devices_preset_label" msgid="7878267405046232358">"Voorafstelling"</string>
-    <!-- no translation found for hearing_devices_preset_label_left (7427947566560179945) -->
-    <skip />
-    <!-- no translation found for hearing_devices_preset_label_right (1847206329436268522) -->
-    <skip />
+    <string name="hearing_devices_preset_label_left" msgid="7427947566560179945">"Linkervoorafstelling"</string>
+    <string name="hearing_devices_preset_label_right" msgid="1847206329436268522">"Regtervoorafstelling"</string>
     <string name="hearing_devices_input_routing_label" msgid="730396728151232306">"Verstekmikrofoon vir oproepe"</string>
   <string-array name="hearing_device_input_routing_options">
     <item msgid="4582190415045337003">"Gehoortoestelmikrofoon"</item>
@@ -908,8 +899,7 @@
     <string name="notification_guts_news_summary" msgid="638697931043407835">"Topstories, hoofartikels en meer"</string>
     <string name="notification_guts_social_summary" msgid="3749147631983977040">"Opduime, plasings en meer"</string>
     <string name="notification_guts_recs_summary" msgid="8391881843238947007">"Nuusbriewe, aanbevole media en meer"</string>
-    <!-- no translation found for notification_onboarding_summaries_turn_on (3831339570984683297) -->
-    <skip />
+    <string name="notification_onboarding_summaries_turn_on" msgid="3831339570984683297">"Skakel aan in Instellings"</string>
     <string name="notification_onboarding_summaries_message" msgid="6061524903176459064">"Jou langer gesprekke kan nou opgesom word om vir jou vinnige samevattings te gee"</string>
     <string name="notification_onboarding_bundles_message" msgid="4612908213178622912">"Kennisgewingorganiseerder bondel en demp kennisgewings met laer prioritieit. Voeg nog kategorieë in Instellings by."</string>
     <string name="notification_bundle_header_counter" msgid="5515532701569242265">"{count,plural, =1{# kennisgewing}other{# kennisgewings}}"</string>

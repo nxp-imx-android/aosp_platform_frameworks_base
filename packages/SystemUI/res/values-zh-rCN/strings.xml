@@ -21,10 +21,8 @@
     xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
     <string name="app_label" msgid="4811759950673118541">"系统界面"</string>
     <string name="battery_low_title" msgid="5319680173344341779">"要开启省电模式吗？"</string>
-    <!-- no translation found for battery_low_description (7848989602036547056) -->
-    <skip />
-    <!-- no translation found for battery_low_intro (8033783734931200690) -->
-    <skip />
+    <string name="battery_low_description" msgid="7848989602036547056">"您的电池还剩 <xliff:g id="PERCENTAGE">%s</xliff:g> 的电量。省电模式会开启深色主题、限制后台活动，并将通知延迟。"</string>
+    <string name="battery_low_intro" msgid="8033783734931200690">"省电模式会开启深色主题、限制后台活动，并延迟通知发送时间。"</string>
     <string name="battery_low_percent_format" msgid="4276661262843170964">"剩余<xliff:g id="PERCENTAGE">%s</xliff:g>"</string>
     <string name="invalid_charger_title" msgid="938685362320735167">"无法通过 USB 充电"</string>
     <string name="invalid_charger_text" msgid="2339310107232691577">"使用设备随附的充电器"</string>
@@ -156,7 +154,7 @@
     <string name="screen_record_edit" msgid="8733014191240769309">"修改"</string>
     <string name="screen_record_delete" msgid="1023421937978254537">"删除"</string>
     <string name="screen_record_delete_dialog_title" msgid="5868561491974057044">"要删除此录像吗？"</string>
-    <string name="screen_record_delete_dialog_content" msgid="2610040845214024496">"删除此录像会从设备中永久删除相应的视频文件。"</string>
+    <string name="screen_record_delete_dialog_content" msgid="2610040845214024496">"如果删除此录像，相应视频文件就会从设备中永久删除。"</string>
     <string name="screen_record_play" msgid="4732544724679889445">"播放"</string>
     <string name="screen_record_pause" msgid="1715012292444967776">"暂停"</string>
     <string name="screen_record_mute" msgid="8111682249858638168">"静音"</string>
@@ -428,6 +426,8 @@
     <string name="quick_settings_cast_detail_empty_text" msgid="2846282280014617785">"没有可用设备"</string>
     <string name="quick_settings_cast_no_network" msgid="3863016850468559522">"没有 Wi-Fi 或以太网连接"</string>
     <string name="quick_settings_cast_disconnect" msgid="4836025217838730930">"断开连接"</string>
+    <!-- no translation found for quick_settings_audio_current_input (8219735427828862612) -->
+    <skip />
     <string name="quick_settings_brightness_dialog_title" msgid="4980669966716685588">"亮度"</string>
     <string name="quick_settings_inversion_label" msgid="3501527749494755688">"颜色反转"</string>
     <string name="quick_settings_color_correction_label" msgid="5636617913560474664">"色彩校正"</string>
@@ -497,10 +497,8 @@
     <string name="accessibility_hearing_device_pair_new_device" msgid="8440082580186130090">"点击即可与新设备配对"</string>
     <string name="hearing_devices_presets_error" msgid="350363093458408536">"无法更新预设"</string>
     <string name="hearing_devices_preset_label" msgid="7878267405046232358">"预设"</string>
-    <!-- no translation found for hearing_devices_preset_label_left (7427947566560179945) -->
-    <skip />
-    <!-- no translation found for hearing_devices_preset_label_right (1847206329436268522) -->
-    <skip />
+    <string name="hearing_devices_preset_label_left" msgid="7427947566560179945">"左（预设)"</string>
+    <string name="hearing_devices_preset_label_right" msgid="1847206329436268522">"右（预设）"</string>
     <string name="hearing_devices_input_routing_label" msgid="730396728151232306">"通话的默认麦克风"</string>
   <string-array name="hearing_device_input_routing_options">
     <item msgid="4582190415045337003">"助听器麦克风"</item>

@@ -21,10 +21,8 @@
     xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
     <string name="app_label" msgid="4811759950673118541">"واسط کاربری سیستم"</string>
     <string name="battery_low_title" msgid="5319680173344341779">"«بهینه‌سازی باتری» روشن شود؟"</string>
-    <!-- no translation found for battery_low_description (7848989602036547056) -->
-    <skip />
-    <!-- no translation found for battery_low_intro (8033783734931200690) -->
-    <skip />
+    <string name="battery_low_description" msgid="7848989602036547056">"<xliff:g id="PERCENTAGE">%s</xliff:g> از باتری‌تان باقی مانده است. «بهینه‌سازی باتری» زمینه تاریک را روشن می‌کند، فعالیت‌های پس‌زمینه را محدود می‌کند، و اعلان‌ها را به‌تأخیر می‌اندازد."</string>
+    <string name="battery_low_intro" msgid="8033783734931200690">"«بهینه‌سازی باتری» زمینه «تیره» را روشن می‌کند، فعالیت‌های پس‌زمینه را محدود می‌کند، و اعلان‌ها را به‌تأخیر می‌اندازد."</string>
     <string name="battery_low_percent_format" msgid="4276661262843170964">"<xliff:g id="PERCENTAGE">%s</xliff:g> باقی مانده است"</string>
     <string name="invalid_charger_title" msgid="938685362320735167">"‏ازطریق USB شارژ نمی‌شود"</string>
     <string name="invalid_charger_text" msgid="2339310107232691577">"از شارژر ارائه‌شده با دستگاه استفاده کنید"</string>
@@ -428,6 +426,8 @@
     <string name="quick_settings_cast_detail_empty_text" msgid="2846282280014617785">"دستگاهی موجود نیست"</string>
     <string name="quick_settings_cast_no_network" msgid="3863016850468559522">"‏اتصال Wi-Fi یا اترنت وجود ندارد"</string>
     <string name="quick_settings_cast_disconnect" msgid="4836025217838730930">"قطع اتصال"</string>
+    <!-- no translation found for quick_settings_audio_current_input (8219735427828862612) -->
+    <skip />
     <string name="quick_settings_brightness_dialog_title" msgid="4980669966716685588">"روشنایی"</string>
     <string name="quick_settings_inversion_label" msgid="3501527749494755688">"وارونگی رنگ"</string>
     <string name="quick_settings_color_correction_label" msgid="5636617913560474664">"تصحیح رنگ"</string>
@@ -497,10 +497,8 @@
     <string name="accessibility_hearing_device_pair_new_device" msgid="8440082580186130090">"برای جفت کردن دستگاه جدید، کلیک کنید"</string>
     <string name="hearing_devices_presets_error" msgid="350363093458408536">"پیش‌تنظیم به‌روزرسانی نشد"</string>
     <string name="hearing_devices_preset_label" msgid="7878267405046232358">"پیش‌تنظیم"</string>
-    <!-- no translation found for hearing_devices_preset_label_left (7427947566560179945) -->
-    <skip />
-    <!-- no translation found for hearing_devices_preset_label_right (1847206329436268522) -->
-    <skip />
+    <string name="hearing_devices_preset_label_left" msgid="7427947566560179945">"پیش‌تنظیم سمت چپ"</string>
+    <string name="hearing_devices_preset_label_right" msgid="1847206329436268522">"پیش‌تنظیم سمت راست"</string>
     <string name="hearing_devices_input_routing_label" msgid="730396728151232306">"میکروفون پیش‌فرض برای تماس‌ها"</string>
   <string-array name="hearing_device_input_routing_options">
     <item msgid="4582190415045337003">"میکروفون سمعک"</item>
@@ -656,7 +654,7 @@
     <string name="user_limit_reached_message" msgid="1070703858915935796">"{count,plural, =1{فقط یک کاربر می‌توان ایجاد کرد.}one{حداکثر # کاربر می‌توانید اضافه کنید.}other{حداکثر # کاربر می‌توانید اضافه کنید.}}"</string>
     <string name="user_remove_user_title" msgid="9124124694835811874">"کاربر حذف شود؟"</string>
     <string name="user_remove_user_message" msgid="6702834122128031833">"همه برنامه‌ها و داده‌های این کاربر حذف می‌شود."</string>
-    <string name="user_remove_user_remove" msgid="8387386066949061256">"حذف"</string>
+    <string name="user_remove_user_remove" msgid="8387386066949061256">"برداشتن"</string>
     <string name="media_projection_dialog_title" msgid="3316063622495360646">"ضبط یا پخش محتوا با <xliff:g id="APP_SEEKING_PERMISSION">%s</xliff:g> شروع شود؟"</string>
     <string name="media_projection_dialog_warning" msgid="1303664408388363598">"<xliff:g id="APP_SEEKING_PERMISSION">%s</xliff:g> به همه اطلاعاتی که روی صفحه‌نمایش قابل‌مشاهد است و هنگام ضبط کردن یا پخش محتوا از دستگاهتان پخش می‌شود دسترسی خواهد داشت. این شامل اطلاعاتی مانند گذرواژه‌ها، جزئیات پرداخت، عکس‌ها، پیام‌ها، و صداهایی که پخش می‌کنید می‌شود."</string>
     <string name="media_projection_sys_service_dialog_title" msgid="3751133258891897878">"ضبط یا پخش محتوا شروع شود؟"</string>
