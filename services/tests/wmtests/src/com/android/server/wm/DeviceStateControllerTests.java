@@ -261,6 +261,27 @@ public class DeviceStateControllerTests {
         assertEquals(DeviceStateController.DeviceStateEnum.DOCKED, mDeviceStateEnum);
     }
 
+    @Test
+    @RequiresFlagsEnabled(FLAG_DESKTOP_DEVICE_STATE_PROPERTY_API)
+    public void testWithLaptopSupported_returnsThatDeviceIsLaptop() {
+        initialize(false /* supportFold */, false /* supportHalfFolded */,
+                true /* supportLaptop */);
+
+        final boolean isLaptop = mTarget.isLaptop();
+
+        assertTrue(isLaptop);
+    }
+
+    @Test
+    @RequiresFlagsEnabled(FLAG_DESKTOP_DEVICE_STATE_PROPERTY_API)
+    public void testWithLaptopNotSupported_returnsThatDeviceIsNotLaptop() {
+        initialize(false /* supportFold */, false /* supportHalfFolded */,
+                false /* supportLaptop */);
+
+        final boolean isLaptop = mTarget.isLaptop();
+
+        assertFalse(isLaptop);
+    }
 
     private final List<DeviceState> mFoldedStates = new ArrayList<>(
             List.of(new DeviceState(new DeviceState.Configuration.Builder(0,

@@ -201,6 +201,16 @@ final class DeviceStateController {
     }
 
     /**
+     * Checks if the current device is a laptop device based on if there is at least one laptop
+     * device state
+     * @return true if this is a laptop device, false otherwise
+     */
+    boolean isLaptop() {
+        return mLidClosedDeviceStates.size() != 0 || mLidOpenDeviceStates.size() != 0
+               || mSlateDeviceStates.size() != 0 || mDockedDeviceStates.size() != 0;
+    }
+
+    /**
      * @return true if the rotation direction on the Z axis should be reversed for the default
      * display.
      */
