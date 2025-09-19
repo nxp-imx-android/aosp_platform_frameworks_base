@@ -88,6 +88,13 @@ flag {
 }
 
 flag {
+    name: "enable_media_route_2_provider_info_builder_caching"
+    namespace: "media_better_together"
+    description: "Enables caching for mPackageName and mIsSystem of provider info in MediaRoute2ProviderInfo."
+    bug: "441980279"
+}
+
+flag {
     name: "enable_media_route_2_info_provider_package_name"
     namespace: "media_better_together"
     description: "Enables a new API to obtain the provider package name from MediaRoute2Info."
