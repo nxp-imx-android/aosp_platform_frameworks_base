@@ -7,6 +7,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.Layout
+import androidx.compose.ui.text.TextStyle
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
@@ -15,26 +16,13 @@ fun VariableDayDate(
     shorterDateText: String,
     textColor: Color,
     modifier: Modifier = Modifier,
+    textStyle: TextStyle = MaterialTheme.typography.bodyMediumEmphasized,
 ) {
     Layout(
         contents =
             listOf(
-                {
-                    Text(
-                        text = longerDateText,
-                        style = MaterialTheme.typography.bodyMediumEmphasized,
-                        color = textColor,
-                        maxLines = 1,
-                    )
-                },
-                {
-                    Text(
-                        text = shorterDateText,
-                        style = MaterialTheme.typography.bodyMediumEmphasized,
-                        color = textColor,
-                        maxLines = 1,
-                    )
-                },
+                { Text(text = longerDateText, style = textStyle, color = textColor, maxLines = 1) },
+                { Text(text = shorterDateText, style = textStyle, color = textColor, maxLines = 1) },
             ),
         modifier = modifier,
     ) { measureables, constraints ->

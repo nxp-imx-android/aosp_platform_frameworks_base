@@ -22,10 +22,12 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -74,11 +76,13 @@ object DesktopStatusBar {
     object Dimensions {
         val ElementSpacing = 8.dp
         val ChipInternalSpacing = 6.dp
+        val ChipHeight = 24.dp
     }
 }
 
 // TODO(b/343358983): Add support for color themes in this composable.
 /** Top level composable responsible for all UI shown for the Status Bar for DesktopMode. */
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun DesktopStatusBar(
     viewModel: HomeStatusBarViewModel,
@@ -92,7 +96,10 @@ fun DesktopStatusBar(
     modifier: Modifier = Modifier,
 ) {
     // TODO(433589833): Update padding values to match UX specs.
-    Row(modifier = modifier.fillMaxWidth().padding(top = 4.dp, start = 12.dp, end = 12.dp)) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = modifier.fillMaxSize().padding(start = 16.dp, end = 12.dp),
+    ) {
         WithAdaptiveTint(
             isDarkProvider = { bounds -> viewModel.areaDark.isDarkTheme(bounds) },
             isHighlighted = false,
@@ -115,6 +122,7 @@ fun DesktopStatusBar(
                     longerDateText = clockViewModel.longerDateText,
                     shorterDateText = clockViewModel.shorterDateText,
                     textColor = tint,
+                    textStyle = MaterialTheme.typography.labelLargeEmphasized,
                 )
             }
         }
@@ -167,7 +175,7 @@ private fun NotificationsChip(viewModel: HomeStatusBarViewModel, modifier: Modif
         }
 
     ShadeHighlightChip(
-        modifier = modifier,
+        modifier = modifier.height(DesktopStatusBar.Dimensions.ChipHeight),
         onClick = { viewModel.onNotificationIconChipClicked() },
         backgroundColor = chipHighlightModel.backgroundColor,
         onHoveredBackgroundColor = chipHighlightModel.onHoveredBackgroundColor,
@@ -211,7 +219,7 @@ private fun QuickSettingsChip(
             ChipHighlightModel.Transparent
         }
     ShadeHighlightChip(
-        modifier = modifier,
+        modifier = modifier.height(DesktopStatusBar.Dimensions.ChipHeight),
         onClick = { viewModel.onQuickSettingsChipClicked() },
         backgroundColor = chipHighlightModel.backgroundColor,
         onHoveredBackgroundColor = chipHighlightModel.onHoveredBackgroundColor,
