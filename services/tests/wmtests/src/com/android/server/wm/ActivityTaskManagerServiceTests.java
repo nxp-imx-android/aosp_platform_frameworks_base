@@ -261,10 +261,10 @@ public class ActivityTaskManagerServiceTests extends WindowTestsBase {
         final Task task = new TaskBuilder(mSupervisor).setCreateActivity(true).build();
         final ActivityRecord activity = task.getTopNonFinishingActivity();
         mAtm.getAtmInternal().registerHandoffEnablementListener(handoffEnablementListener);
-        activity.setHandoffEnabled(true, true);
+        setHandoffEnabled(activity, true);
         verify(handoffEnablementListener, never())
             .onHandoffEnabledChanged(activity.getRootTaskId(), true);
-        activity.setHandoffEnabled(false, true);
+        setHandoffEnabled(activity, false);
         verify(handoffEnablementListener, never())
             .onHandoffEnabledChanged(activity.getRootTaskId(), false);
     }
@@ -277,10 +277,10 @@ public class ActivityTaskManagerServiceTests extends WindowTestsBase {
         final Task task = new TaskBuilder(mSupervisor).setCreateActivity(true).build();
         final ActivityRecord activity = task.getTopNonFinishingActivity();
         mAtm.getAtmInternal().registerHandoffEnablementListener(handoffEnablementListener);
-        activity.setHandoffEnabled(true, true);
+        setHandoffEnabled(activity, true);
         verify(handoffEnablementListener)
             .onHandoffEnabledChanged(anyInt(), anyBoolean());
-        activity.setHandoffEnabled(false, true);
+        setHandoffEnabled(activity, false);
         verify(handoffEnablementListener)
             .onHandoffEnabledChanged(activity.getRootTaskId(), false);
     }
@@ -294,10 +294,10 @@ public class ActivityTaskManagerServiceTests extends WindowTestsBase {
         final ActivityRecord activity = task.getTopNonFinishingActivity();
         mAtm.getAtmInternal().registerHandoffEnablementListener(handoffEnablementListener);
         mAtm.getAtmInternal().unregisterHandoffEnablementListener(handoffEnablementListener);
-        activity.setHandoffEnabled(true, true);
+        setHandoffEnabled(activity, true);
         verify(handoffEnablementListener, never())
             .onHandoffEnabledChanged(activity.getRootTaskId(), true);
-        activity.setHandoffEnabled(false, true);
+        setHandoffEnabled(activity, false);
         verify(handoffEnablementListener, never())
             .onHandoffEnabledChanged(activity.getRootTaskId(), false);
     }
@@ -315,10 +315,16 @@ public class ActivityTaskManagerServiceTests extends WindowTestsBase {
     public void testIsHandoffEnabledForTask_returnsTrueIfHandoffEnabled() {
         final Task task = new TaskBuilder(mSupervisor).setCreateActivity(true).build();
         final ActivityRecord activity = task.getTopNonFinishingActivity();
-        activity.setHandoffEnabled(true, true);
+        setHandoffEnabled(activity, true);
         assertTrue(mAtm.getAtmInternal().isHandoffEnabledForTask(task.getRootTaskId()));
-        activity.setHandoffEnabled(false, true);
+        setHandoffEnabled(activity, false);
         assertFalse(mAtm.getAtmInternal().isHandoffEnabledForTask(task.getRootTaskId()));
+    }
+
+    private void setHandoffEnabled(ActivityRecord r, boolean enabled) {
+        r.setHandoffEnabled(enabled, true /* allowFullTaskRecreation */);
+        // HandoffEnablementListener#onHandoffEnabledChanged runs on handler.
+        waitHandlerIdle(mAtm.mH);
     }
 
     @Test
@@ -336,7 +342,7 @@ public class ActivityTaskManagerServiceTests extends WindowTestsBase {
         TestHandoffTaskDataReceiver receiver = new TestHandoffTaskDataReceiver();
 
         // Request Handoff
-        mAtm.requestHandoffTaskData(task.getRootTaskId(), receiver);
+        requestHandoffTaskData(task.getRootTaskId(), receiver);
 
         // Verify that the result code is failure.
         receiver.verifyFailed(task.getRootTaskId(),
@@ -350,7 +356,7 @@ public class ActivityTaskManagerServiceTests extends WindowTestsBase {
         TestHandoffTaskDataReceiver receiver = new TestHandoffTaskDataReceiver();
 
         // Request Handoff
-        mAtm.requestHandoffTaskData(0, receiver);
+        requestHandoffTaskData(0 /* taskId */, receiver);
 
         // Verify that the result code is failure.
         receiver.verifyFailed(0, HandoffFailureCode.HANDOFF_FAILURE_UNKNOWN_TASK);
@@ -366,7 +372,7 @@ public class ActivityTaskManagerServiceTests extends WindowTestsBase {
         TestHandoffTaskDataReceiver receiver = new TestHandoffTaskDataReceiver();
 
         // Request Handoff
-        mAtm.requestHandoffTaskData(task.getRootTaskId(), receiver);
+        requestHandoffTaskData(task.getRootTaskId(), receiver);
 
         // Verify that the result code is failure.
         receiver.verifyFailed(
@@ -386,7 +392,7 @@ public class ActivityTaskManagerServiceTests extends WindowTestsBase {
         TestHandoffTaskDataReceiver receiver = new TestHandoffTaskDataReceiver();
 
         // Request Handoff
-        mAtm.requestHandoffTaskData(task.getRootTaskId(), receiver);
+        requestHandoffTaskData(task.getRootTaskId(), receiver);
 
         // Verify that the result code is failure.
         receiver.verifyFailed(
@@ -414,7 +420,7 @@ public class ActivityTaskManagerServiceTests extends WindowTestsBase {
         TestHandoffTaskDataReceiver receiver = new TestHandoffTaskDataReceiver();
 
         // Request Handoff
-        mAtm.requestHandoffTaskData(task.getRootTaskId(), receiver);
+        requestHandoffTaskData(task.getRootTaskId(), receiver);
 
         ArgumentCaptor<IBinder> requestTokenCaptor = ArgumentCaptor.forClass(IBinder.class);
         ArgumentCaptor<List<IBinder>> activityTokenCaptor = ArgumentCaptor.forClass(List.class);
@@ -454,7 +460,7 @@ public class ActivityTaskManagerServiceTests extends WindowTestsBase {
         final TestHandoffTaskDataReceiver receiver = new TestHandoffTaskDataReceiver();
 
         // Request Handoff
-        mAtm.requestHandoffTaskData(task.getRootTaskId(), receiver);
+        requestHandoffTaskData(task.getRootTaskId(), receiver);
 
         // Verify that the result code is success.
         receiver.verifySucceeded(task.getRootTaskId(), handoffActivityData);
@@ -480,7 +486,7 @@ public class ActivityTaskManagerServiceTests extends WindowTestsBase {
         TestHandoffTaskDataReceiver receiver = new TestHandoffTaskDataReceiver();
 
         // Request Handoff
-        mAtm.requestHandoffTaskData(task.getRootTaskId(), receiver);
+        requestHandoffTaskData(task.getRootTaskId(), receiver);
 
         ArgumentCaptor<IBinder> requestTokenCaptor = ArgumentCaptor.forClass(IBinder.class);
         ArgumentCaptor<List<IBinder>> activityTokenCaptor
@@ -500,6 +506,12 @@ public class ActivityTaskManagerServiceTests extends WindowTestsBase {
         receiver.verifyFailed(
             task.getRootTaskId(),
             HandoffFailureCode.HANDOFF_FAILURE_APP_DID_NOT_REPORT_HANDOFF_DATA);
+    }
+
+    private void requestHandoffTaskData(int taskId, IHandoffTaskDataReceiver receiver) {
+        mAtm.requestHandoffTaskData(taskId, receiver);
+        // IHandoffTaskDataReceiver runs on handler.
+        waitHandlerIdle(mAtm.mH);
     }
 
     @Test
