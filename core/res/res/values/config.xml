@@ -7759,23 +7759,4 @@
         It can only contain non-AOSP permissions outside of the android.*
         and com.android.* namespace. -->
     <string-array name="config_watchFacePermissions" translatable="false"/>
-
-    <!-- Services for Personal Context triggers. -->
-    <string-array name="config_personalContextTriggerComponents" translatable="false">
-    </string-array>
-
-    <!-- Services for Personal Context refiners. -->
-    <string-array name="config_personalContextRefinerComponents" translatable="false">
-    </string-array>
-
-    <!-- Services for Personal Context understander. -->
-    <string name="config_personalContextUnderstanderComponent" translatable="false"></string>
-
-    <!-- Services for Personal Context transformers. -->
-    <string-array name="config_personalContextTransformerComponents" translatable="false">
-    </string-array>
-
-    <!-- Services for Personal Context renderers. -->
-    <string-array name="config_personalContextRendererComponents" translatable="false">
-    </string-array>
 </resources>

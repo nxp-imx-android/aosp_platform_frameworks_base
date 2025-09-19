@@ -262,8 +262,6 @@ import android.service.oemlock.IOemLockService;
 import android.service.oemlock.OemLockManager;
 import android.service.persistentdata.IPersistentDataBlockService;
 import android.service.persistentdata.PersistentDataBlockManager;
-import android.service.personalcontext.IPersonalContextManager;
-import android.service.personalcontext.PersonalContextManager;
 import android.service.vr.IVrManager;
 import android.system.virtualmachine.VirtualizationFrameworkInitializer;
 import android.telecom.TelecomManager;
@@ -1715,22 +1713,6 @@ public final class SystemServiceRegistry {
                             throws ServiceNotFoundException {
                         return new DreamManager(ctx);
                     }});
-
-        if (android.service.personalcontext.Flags.enablePersonalContextService()) {
-            registerService(Context.PERSONAL_CONTEXT_SERVICE, PersonalContextManager.class,
-                    new CachedServiceFetcher<>() {
-                        @Override
-                        public PersonalContextManager createService(ContextImpl ctx)
-                                throws ServiceNotFoundException {
-                            IBinder iBinder = ServiceManager.getServiceOrThrow(
-                                    Context.PERSONAL_CONTEXT_SERVICE);
-                            IPersonalContextManager service =
-                                    IPersonalContextManager.Stub.asInterface(iBinder);
-                            return new PersonalContextManager(service);
-                        }
-                    });
-        }
-
         registerService(Context.DEVICE_STATE_SERVICE, DeviceStateManager.class,
                 new CachedServiceFetcher<DeviceStateManager>() {
                     @Override
