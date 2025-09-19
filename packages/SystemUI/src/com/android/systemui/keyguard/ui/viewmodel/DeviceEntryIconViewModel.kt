@@ -28,12 +28,11 @@ import com.android.systemui.deviceentry.domain.interactor.DeviceEntryUdfpsIntera
 import com.android.systemui.keyguard.domain.interactor.BurnInInteractor
 import com.android.systemui.keyguard.domain.interactor.KeyguardInteractor
 import com.android.systemui.keyguard.domain.interactor.KeyguardTransitionInteractor
+import com.android.systemui.keyguard.shared.model.Edge
 import com.android.systemui.keyguard.shared.model.KeyguardState
 import com.android.systemui.keyguard.ui.transitions.DeviceEntryIconTransition
 import com.android.systemui.keyguard.ui.view.DeviceEntryIconView
-import com.android.systemui.scene.domain.interactor.SceneInteractor
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
-import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.shade.domain.interactor.ShadeInteractor
 import com.android.systemui.shared.customization.data.SensorLocation
 import dagger.Lazy
@@ -72,7 +71,6 @@ constructor(
     private val deviceEntrySourceInteractor: DeviceEntrySourceInteractor,
     private val accessibilityInteractor: AccessibilityInteractor,
     @Application private val scope: CoroutineScope,
-    private val sceneInteractor: Lazy<SceneInteractor>,
 ) {
     val isUdfpsSupported: StateFlow<Boolean> = deviceEntryUdfpsInteractor.isUdfpsSupported
     val udfpsLocation: StateFlow<SensorLocation?> =
@@ -129,13 +127,47 @@ constructor(
             )
         }
 
-    val deviceEntryViewAlpha: Flow<Float> =
-        combine(transitionAlpha, alphaMultiplierFromShadeExpansion) { alpha, alphaMultiplier ->
-                alpha * alphaMultiplier
+    private val showDeviceEntryIcon: Flow<Boolean> =
+        deviceEntryUdfpsInteractor.isUdfpsEnrolledAndEnabled.flatMapLatest {
+            if (it) {
+                // if UDFPS is enrolled, then always show icon in Lockscreen Scene
+                flowOf(true)
+            } else {
+                // if UDFPS isn't enrolled, then don't show icon while in AOD or Dozing
+                merge(
+                        transitionInteractor.transition(
+                            Edge.create(from = null, to = KeyguardState.AOD)
+                        ),
+                        transitionInteractor.transition(
+                            Edge.create(from = null, to = KeyguardState.DOZING)
+                        ),
+                        transitionInteractor.transition(
+                            Edge.create(from = KeyguardState.AOD, to = null)
+                        ),
+                        transitionInteractor.transition(
+                            Edge.create(from = KeyguardState.DOZING, to = null)
+                        ),
+                    )
+                    .map { step -> step.to != KeyguardState.DOZING && step.to != KeyguardState.AOD }
+                    .onStart { emit(true) }
             }
-            .stateIn(scope = scope, started = SharingStarted.WhileSubscribed(), initialValue = 0f)
+        }
+    val deviceEntryViewAlpha: Flow<Float> =
+        if (SceneContainerFlag.isEnabled) {
+            showDeviceEntryIcon.map { if (it) 1f else 0f }
+        } else {
+            combine(transitionAlpha, alphaMultiplierFromShadeExpansion) { alpha, alphaMultiplier ->
+                    alpha * alphaMultiplier
+                }
+                .stateIn(
+                    scope = scope,
+                    started = SharingStarted.WhileSubscribed(),
+                    initialValue = 0f,
+                )
+        }
 
     private fun initialAlphaFromKeyguardState(keyguardState: KeyguardState): Float {
+        SceneContainerFlag.assertInLegacyMode()
         return when (keyguardState) {
             KeyguardState.OFF,
             KeyguardState.PRIMARY_BOUNCER,
@@ -147,19 +179,7 @@ constructor(
             KeyguardState.AOD,
             KeyguardState.ALTERNATE_BOUNCER,
             KeyguardState.LOCKSCREEN -> 1f
-            KeyguardState.UNDEFINED -> calculateAlphaForKeyguardStateUndefined()
-        }
-    }
-
-    private fun calculateAlphaForKeyguardStateUndefined(): Float {
-        return if (SceneContainerFlag.isEnabled) {
-            when (sceneInteractor.get().currentScene.value) {
-                Scenes.Shade,
-                Scenes.QuickSettings -> 1f
-                else -> 0f
-            }
-        } else {
-            1f
+            KeyguardState.UNDEFINED -> 0f // shouldn't get here
         }
     }
 

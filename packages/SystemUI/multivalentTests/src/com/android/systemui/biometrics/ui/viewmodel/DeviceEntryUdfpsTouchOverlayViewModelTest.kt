@@ -22,8 +22,10 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.bouncer.data.repository.fakeKeyguardBouncerRepository
+import com.android.systemui.flags.DisableSceneContainer
 import com.android.systemui.flags.Flags
 import com.android.systemui.flags.fakeFeatureFlagsClassic
+import com.android.systemui.keyguard.data.repository.fakeBiometricSettingsRepository
 import com.android.systemui.keyguard.data.repository.fakeKeyguardTransitionRepository
 import com.android.systemui.keyguard.shared.model.KeyguardState
 import com.android.systemui.keyguard.ui.viewmodel.fakeDeviceEntryIconViewModelTransition
@@ -32,11 +34,15 @@ import com.android.systemui.kosmos.collectLastValue
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
+import com.android.systemui.scene.domain.interactor.sceneInteractor
+import com.android.systemui.scene.shared.flag.SceneContainerFlag
+import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.securelockdevice.data.repository.fakeSecureLockDeviceRepository
 import com.android.systemui.statusbar.phone.SystemUIDialogManager
 import com.android.systemui.statusbar.phone.mockSystemUIDialogManager
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
+import kotlinx.coroutines.test.TestScope
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -67,6 +73,7 @@ class DeviceEntryUdfpsTouchOverlayViewModelTest : SysuiTestCase() {
         kosmos.runTest {
             val shouldHandleTouches by collectLastValue(underTest.shouldHandleTouches)
 
+            deviceEntryIconViewModelVisible(true, kosmos.testScope)
             fakeDeviceEntryIconViewModelTransition.setDeviceEntryParentViewAlpha(1f)
 
             verify(mockSystemUIDialogManager).registerListener(sysuiDialogListenerCaptor.capture())
@@ -76,6 +83,7 @@ class DeviceEntryUdfpsTouchOverlayViewModelTest : SysuiTestCase() {
         }
 
     @Test
+    @DisableSceneContainer
     fun transitionAlphaIsSmall_shouldHandleTouchesFalse() =
         kosmos.runTest {
             val shouldHandleTouches by collectLastValue(underTest.shouldHandleTouches)
@@ -93,6 +101,7 @@ class DeviceEntryUdfpsTouchOverlayViewModelTest : SysuiTestCase() {
         kosmos.runTest {
             val shouldHandleTouches by collectLastValue(underTest.shouldHandleTouches)
 
+            deviceEntryIconViewModelVisible(true, kosmos.testScope)
             fakeDeviceEntryIconViewModelTransition.setDeviceEntryParentViewAlpha(1f)
 
             verify(mockSystemUIDialogManager).registerListener(sysuiDialogListenerCaptor.capture())
@@ -106,6 +115,7 @@ class DeviceEntryUdfpsTouchOverlayViewModelTest : SysuiTestCase() {
         kosmos.runTest {
             val shouldHandleTouches by collectLastValue(underTest.shouldHandleTouches)
 
+            deviceEntryIconViewModelVisible(false, kosmos.testScope)
             fakeDeviceEntryIconViewModelTransition.setDeviceEntryParentViewAlpha(0f)
 
             fakeKeyguardBouncerRepository.setAlternateVisible(true)
@@ -131,6 +141,7 @@ class DeviceEntryUdfpsTouchOverlayViewModelTest : SysuiTestCase() {
         kosmos.runTest {
             val shouldHandleTouches by collectLastValue(underTest.shouldHandleTouches)
 
+            deviceEntryIconViewModelVisible(false, kosmos.testScope)
             fakeDeviceEntryIconViewModelTransition.setDeviceEntryParentViewAlpha(0f)
 
             fakeSecureLockDeviceRepository.onSecureLockDeviceEnabled()
@@ -138,4 +149,35 @@ class DeviceEntryUdfpsTouchOverlayViewModelTest : SysuiTestCase() {
 
             assertThat(shouldHandleTouches).isTrue()
         }
+
+    suspend fun deviceEntryIconViewModelVisible(visible: Boolean, testScope: TestScope) {
+        if (SceneContainerFlag.isEnabled) {
+            kosmos.fakeBiometricSettingsRepository.setIsFingerprintAuthEnrolledAndEnabled(true)
+            if (visible) {
+                kosmos.sceneInteractor.changeScene(
+                    Scenes.Lockscreen,
+                    "DeviceEntryUdfpsTouchOverlayViewModelTest",
+                )
+                kosmos.fakeKeyguardTransitionRepository.sendTransitionSteps(
+                    from = KeyguardState.UNDEFINED,
+                    to = KeyguardState.LOCKSCREEN,
+                    testScope = testScope,
+                )
+            } else {
+                kosmos.sceneInteractor.changeScene(
+                    Scenes.Lockscreen,
+                    "DeviceEntryUdfpsTouchOverlayViewModelTest",
+                )
+                kosmos.fakeKeyguardTransitionRepository.sendTransitionSteps(
+                    from = KeyguardState.LOCKSCREEN,
+                    to = KeyguardState.UNDEFINED,
+                    testScope = testScope,
+                )
+                kosmos.sceneInteractor.changeScene(
+                    Scenes.Shade,
+                    "DeviceEntryUdfpsTouchOverlayViewModelTest",
+                )
+            }
+        }
+    }
 }
