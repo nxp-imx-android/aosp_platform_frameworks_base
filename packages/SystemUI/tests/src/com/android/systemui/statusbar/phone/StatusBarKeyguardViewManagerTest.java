@@ -709,6 +709,7 @@ public class StatusBarKeyguardViewManagerTest extends SysuiTestCase {
     }
 
     @Test
+    @DisableSceneContainer
     public void testHideTaskbar() {
         when(mTaskbarDelegate.isInitialized()).thenReturn(true);
         mStatusBarKeyguardViewManager.setTaskbarDelegate(mTaskbarDelegate);
