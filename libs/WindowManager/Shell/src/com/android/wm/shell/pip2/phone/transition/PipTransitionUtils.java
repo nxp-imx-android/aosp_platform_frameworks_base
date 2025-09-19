@@ -22,7 +22,6 @@ import static android.view.Surface.ROTATION_0;
 
 import android.annotation.NonNull;
 import android.app.PictureInPictureParams;
-import android.graphics.PointF;
 import android.view.Surface;
 import android.view.SurfaceControl;
 import android.window.TransitionInfo;
@@ -32,7 +31,6 @@ import androidx.annotation.Nullable;
 
 import com.android.internal.util.Preconditions;
 import com.android.wm.shell.common.pip.PipDisplayLayoutState;
-import com.android.wm.shell.common.pip.PipUtils;
 
 /**
  * A set of utility methods to help resolve PiP transitions.
@@ -161,31 +159,5 @@ public class PipTransitionUtils {
         return pipChange.getTaskInfo().pictureInPictureParams != null
                 ? pipChange.getTaskInfo().pictureInPictureParams
                 : new PictureInPictureParams.Builder().build();
-    }
-
-    /**
-     * Prepares the activity for a config-at-end transition.
-     */
-    public static void prepareConfigAtEndActivity(@NonNull SurfaceControl.Transaction startTx,
-            @NonNull SurfaceControl.Transaction finishTx,
-            @NonNull TransitionInfo.Change pipChange,
-            @NonNull TransitionInfo.Change pipActivityChange) {
-        PointF initActivityScale = new PointF();
-        PointF initActivityPos = new PointF();
-        PipUtils.calcEndTransform(pipActivityChange, pipChange, initActivityScale,
-                initActivityPos);
-        if (pipActivityChange.getLeash() != null) {
-            startTx.setCrop(pipActivityChange.getLeash(), null);
-            startTx.setScale(pipActivityChange.getLeash(), initActivityScale.x,
-                    initActivityScale.y);
-            startTx.setPosition(pipActivityChange.getLeash(), initActivityPos.x,
-                    initActivityPos.y);
-
-            finishTx.setCrop(pipActivityChange.getLeash(), null);
-            finishTx.setScale(pipActivityChange.getLeash(), initActivityScale.x,
-                    initActivityScale.y);
-            finishTx.setPosition(pipActivityChange.getLeash(), initActivityPos.x,
-                    initActivityPos.y);
-        }
     }
 }
