@@ -54,6 +54,7 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.compat.CompatChanges;
 import android.bluetooth.BluetoothCodecConfig;
+import android.bluetooth.BluetoothCodecType;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothLeAudioCodecConfig;
 import android.companion.virtual.VirtualDeviceManager;
@@ -8530,10 +8531,20 @@ public class AudioManager {
         }
 
         for (Integer format : formatsList) {
-            int btSourceCodec = AudioSystem.audioFormatToBluetoothSourceCodec(format);
-            if (btSourceCodec != BluetoothCodecConfig.SOURCE_CODEC_TYPE_INVALID) {
-                codecConfigList.add(
-                        new BluetoothCodecConfig.Builder().setCodecType(btSourceCodec).build());
+            if (com.android.bluetooth.flags.Flags.a2dpCreateCodecTypeFromIdApi()) {
+                long codecId = AudioSystem.audioFormatToBluetoothA2dpSourceCodec(format);
+                if (codecId != -1) {
+                    codecConfigList.add(
+                            new BluetoothCodecConfig.Builder()
+                                    .setExtendedCodecType(BluetoothCodecType.createFromId(codecId))
+                                    .build());
+                }
+            } else {
+                int btSourceCodec = AudioSystem.audioFormatToBluetoothSourceCodec(format);
+                if (btSourceCodec != BluetoothCodecConfig.SOURCE_CODEC_TYPE_INVALID) {
+                    codecConfigList.add(
+                            new BluetoothCodecConfig.Builder().setCodecType(btSourceCodec).build());
+                }
             }
         }
         return codecConfigList;
