@@ -27,7 +27,7 @@ import com.android.wm.shell.Flags
 import com.android.wm.shell.Utils
 import com.android.wm.shell.flicker.bubbles.testcase.MultipleBubbleExpandBubbleAppTestCases
 import com.android.wm.shell.flicker.bubbles.utils.ApplyPerParameterRule
-import com.android.wm.shell.flicker.bubbles.utils.BubbleFlickerTestHelper.dismissBubbleAppViaBubbleView
+import com.android.wm.shell.flicker.bubbles.utils.BubbleFlickerTestHelper.dismissBubbleAppViaDrag
 import com.android.wm.shell.flicker.bubbles.utils.BubbleFlickerTestHelper.launchBubbleViaBubbleMenu
 import com.android.wm.shell.flicker.bubbles.utils.BubbleFlickerTestHelper.launchBubbleViaOverflow
 import com.android.wm.shell.flicker.bubbles.utils.RecordTraceWithTransitionRule
@@ -73,7 +73,7 @@ class EnterBubbleViaOverflowMenuTest(navBar: NavBar) : BubbleFlickerTestBase(),
             setUpBeforeTransition = {
                 // Launch and dismiss a bubble app to make it show in overflow.
                 launchBubbleViaBubbleMenu(testApp, tapl, wmHelper)
-                dismissBubbleAppViaBubbleView(testApp, wmHelper)
+                dismissBubbleAppViaDrag(testApp, tapl, wmHelper)
                 // Launch message app to bubble to make overflow show.
                 launchBubbleViaBubbleMenu(messageApp, tapl, wmHelper)
             },

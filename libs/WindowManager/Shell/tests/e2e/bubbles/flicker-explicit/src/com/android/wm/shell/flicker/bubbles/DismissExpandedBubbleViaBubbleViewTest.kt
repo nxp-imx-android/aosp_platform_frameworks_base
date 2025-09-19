@@ -25,7 +25,7 @@ import com.android.wm.shell.Flags
 import com.android.wm.shell.Utils
 import com.android.wm.shell.flicker.bubbles.testcase.DismissSingleExpandedBubbleTestCases
 import com.android.wm.shell.flicker.bubbles.utils.ApplyPerParameterRule
-import com.android.wm.shell.flicker.bubbles.utils.BubbleFlickerTestHelper.dismissBubbleAppViaBubbleView
+import com.android.wm.shell.flicker.bubbles.utils.BubbleFlickerTestHelper.dismissBubbleAppViaFloatingBubbleView
 import com.android.wm.shell.flicker.bubbles.utils.BubbleFlickerTestHelper.launchBubbleViaBubbleMenu
 import com.android.wm.shell.flicker.bubbles.utils.RecordTraceWithTransitionRule
 import org.junit.Assume.assumeFalse
@@ -68,7 +68,7 @@ class DismissExpandedBubbleViaBubbleViewTest(navBar: NavBar) : BubbleFlickerTest
     companion object {
         private val recordTraceWithTransitionRule = RecordTraceWithTransitionRule(
             setUpBeforeTransition = { launchBubbleViaBubbleMenu(testApp, tapl, wmHelper) },
-            transition = { dismissBubbleAppViaBubbleView(testApp, wmHelper) },
+            transition = { dismissBubbleAppViaFloatingBubbleView(testApp, wmHelper) },
             tearDownAfterTransition = { testApp.exit() }
         )
 
