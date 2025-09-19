@@ -839,6 +839,11 @@ class AccountsDb implements AutoCloseable {
         return map;
     }
 
+    long countAllDeAccounts() {
+        SQLiteDatabase db = mDeDatabase.getReadableDatabase();
+        return DatabaseUtils.queryNumEntries(db, TABLE_ACCOUNTS);
+    }
+
     String findDeAccountPreviousName(Account account) {
         SQLiteDatabase db = mDeDatabase.getReadableDatabase();
         String[] columns = {ACCOUNTS_PREVIOUS_NAME};

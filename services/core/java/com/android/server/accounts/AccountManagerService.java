@@ -1997,7 +1997,7 @@ public class AccountManagerService
                                 + ", skipping since the account already exists");
                         return false;
                     }
-                    if (accounts.accountsDb.findAllDeAccounts().size() > 100) {
+                    if (accounts.accountsDb.countAllDeAccounts() > 100) {
                         Log.w(TAG, "insertAccountIntoDatabase: " + account.toSafeString()
                                 + ", skipping since more than 100 accounts on device exist");
                         return false;
