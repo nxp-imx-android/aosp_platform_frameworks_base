@@ -1152,6 +1152,14 @@ public abstract class Connection extends Conferenceable {
                 == CAPABILITY_SUPPORTS_VT_REMOTE_BIDIRECTIONAL) {
             builder.append(isLong ? " CAPABILITY_SUPPORTS_VT_REMOTE_BIDIRECTIONAL" : " VTrbi");
         }
+        if ((capabilities & CAPABILITY_SEPARATE_FROM_CONFERENCE)
+                == CAPABILITY_SEPARATE_FROM_CONFERENCE) {
+            builder.append(isLong ? " CAPABILITY_SEPARATE_FROM_CONFERENCE" : "sep_cnf");
+        }
+        if ((capabilities & CAPABILITY_DISCONNECT_FROM_CONFERENCE)
+                == CAPABILITY_DISCONNECT_FROM_CONFERENCE) {
+            builder.append(isLong ? " CAPABILITY_DISCONNECT_FROM_CONFERENCE" : "dis_cnf");
+        }
         if ((capabilities & CAPABILITY_CANNOT_DOWNGRADE_VIDEO_TO_AUDIO)
                 == CAPABILITY_CANNOT_DOWNGRADE_VIDEO_TO_AUDIO) {
             builder.append(isLong ? " CAPABILITY_CANNOT_DOWNGRADE_VIDEO_TO_AUDIO" : " !v2a");
