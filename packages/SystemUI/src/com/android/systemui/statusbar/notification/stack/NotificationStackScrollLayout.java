@@ -175,7 +175,7 @@ public class NotificationStackScrollLayout
     public static final float BACKGROUND_ALPHA_DIMMED = 0.7f;
     private static final String TAG = "StackScroller";
     private static final boolean SPEW = Log.isLoggable(TAG, Log.VERBOSE);
-
+    private static final boolean DEBUG_CHILD_HEIGHT_CHANGE = false;
     private boolean mShadeNeedsToClose = false;
 
     @VisibleForTesting
@@ -628,8 +628,10 @@ public class NotificationStackScrollLayout
     private final ExpandableView.OnHeightChangedListener mOnChildHeightChangedListener =
             new ExpandableView.OnHeightChangedListener() {
                 @Override
-                public void onHeightChanged(ExpandableView view, boolean needsAnimation) {
-                    onChildHeightChanged(view, needsAnimation);
+                public void onHeightChanged(ExpandableView view, boolean needsAnimation,
+                        String caller) {
+                    onChildHeightChanged(view, needsAnimation,
+                            caller + " => NSSL.EV.onHeightChanged");
                 }
 
                 @Override
@@ -1054,7 +1056,8 @@ public class NotificationStackScrollLayout
 
     private void notifyHeightChangeListener(ExpandableView view, boolean needsAnimation) {
         if (mOnHeightChangedListener != null) {
-            mOnHeightChangedListener.onHeightChanged(view, needsAnimation);
+            mOnHeightChangedListener.onHeightChanged(view, needsAnimation,
+                    "NSSL.notifyHeightChangeListener");
         }
 
         if (mOnHeightChangedRunnable != null) {
@@ -4873,7 +4876,11 @@ public class NotificationStackScrollLayout
         }
     }
 
-    void onChildHeightChanged(ExpandableView view, boolean needsAnimation) {
+    void onChildHeightChanged(ExpandableView view, boolean needsAnimation, String caller) {
+        if (DEBUG_CHILD_HEIGHT_CHANGE) {
+            Log.d(TAG, caller + " => NSSL.onChildHeightChanged: needsAnimation=" + needsAnimation);
+        }
+
         boolean previouslyNeededAnimation = mAnimateStackYForContentHeightChange;
         if (needsAnimation) {
             mAnimateStackYForContentHeightChange = true;
@@ -7261,7 +7268,7 @@ public class NotificationStackScrollLayout
         }
 
         changedRow.setChildrenExpanded(expanded);
-        onChildHeightChanged(changedRow, false /* needsAnimation */);
+        onChildHeightChanged(changedRow, false /* needsAnimation */, "NSSL.onGroupExpandChanged");
 
         runAfterAnimationFinished(changedRow::onFinishedExpansionChange);
     }

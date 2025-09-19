@@ -322,7 +322,8 @@ public class NotificationGutsManager implements NotifGutsViewManager, CoreStarta
             row.onGutsClosed();
             if (!g.willBeRemoved() && !row.isRemoved()) {
                 mListContainer.onHeightChanged(
-                        row, !mPresenter.isPresenterFullyCollapsed() /* needsAnimation */);
+                        row, !mPresenter.isPresenterFullyCollapsed() /* needsAnimation */,
+                        "NGM.bindGuts");
             }
             if (mNotificationGutsExposed == g) {
                 mNotificationGutsExposed = null;
@@ -386,7 +387,8 @@ public class NotificationGutsManager implements NotifGutsViewManager, CoreStarta
         notificationSnoozeView.setStatusBarNotification(sbn);
         notificationSnoozeView.setSnoozeOptions(ranking.getSnoozeCriteria());
         guts.setHeightChangedListener((NotificationGuts g) -> {
-            mListContainer.onHeightChanged(row, row.isShown() /* needsAnimation */);
+            mListContainer.onHeightChanged(row, row.isShown() /* needsAnimation */,
+                    "NGM.initializeSnoozeView");
         });
     }
 
@@ -862,7 +864,8 @@ public class NotificationGutsManager implements NotifGutsViewManager, CoreStarta
                 }
 
                 row.closeRemoteInput();
-                mListContainer.onHeightChanged(row, true /* needsAnimation */);
+                mListContainer.onHeightChanged(row, true /* needsAnimation */,
+                        "NGM.openGutsInternal");
                 mGutsMenuItem = menuItem;
                 if(NotificationBundleUi.isEnabled()) {
                     row.getEntryAdapter().setInlineControlsShown(true);

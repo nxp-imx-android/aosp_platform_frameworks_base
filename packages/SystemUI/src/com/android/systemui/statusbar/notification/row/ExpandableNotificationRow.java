@@ -457,7 +457,7 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
                 setUserExpanded(nowExpanded);
             }
 
-            notifyHeightChanged(/* needsAnimation= */ true);
+            notifyHeightChanged(/* needsAnimation= */ true, "ENR.toggleExpansionState");
             if (NotificationBundleUi.isEnabled()) {
                 mOnExpandClickListener.onExpandClicked(this, mEntryAdapter, nowExpanded);
             } else {
@@ -1006,7 +1006,7 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
             mChildrenContainer.updateGroupOverflow();
         }
         if (intrinsicBefore != getIntrinsicHeight()) {
-            notifyHeightChanged(/* needsAnimation= */ false);
+            notifyHeightChanged(/* needsAnimation= */ false, "ENR.setHeadsUp");
         }
         if (isHeadsUp) {
             mMustStayOnScreen = true;
@@ -1085,7 +1085,7 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
             if (mChildrenContainer != null) {
                 mChildrenContainer.setHeaderVisibleAmount(headerVisibleAmount);
             }
-            notifyHeightChanged(/* needsAnimation= */ false);
+            notifyHeightChanged(/* needsAnimation= */ false, "setHeaderVisibleAmount");
         }
     }
 
@@ -1350,7 +1350,7 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
         boolean wasAboveShelf = isAboveShelf();
         mPinnedStatus = pinnedStatus;
         if (intrinsicHeight != getIntrinsicHeight()) {
-            notifyHeightChanged(/* needsAnimation= */ false);
+            notifyHeightChanged(/* needsAnimation= */ false, "ENR.setPinnedStatus");
         }
         if (pinnedStatus.isPinned()) {
             setAnimationRunning(true);
@@ -3201,7 +3201,7 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
         onExpansionChanged(true /* userAction */, wasExpanded);
         if (!wasExpanded && isExpanded()
                 && getActualHeight() != getIntrinsicHeight()) {
-            notifyHeightChanged(/* needsAnimation= */ true);
+            notifyHeightChanged(/* needsAnimation= */ true, "ENR.setUserExpanded");
         }
     }
 
@@ -3213,7 +3213,7 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
             if (mIsSummaryWithChildren) {
                 mChildrenContainer.onExpansionChanged();
             }
-            notifyHeightChanged(/* needsAnimation= */ false);
+            notifyHeightChanged(/* needsAnimation= */ false, "ENR.resetUserExpansion");
         }
         updateShelfIconColor();
     }
@@ -3258,7 +3258,7 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
                 wasExpanded = mGroupExpansionManager.isGroupExpanded(mEntryAdapter);
                 mGroupExpansionManager.setGroupExpanded(mEntryAdapter, expand);
             }
-            notifyHeightChanged(/* needsAnimation= */ false);
+            notifyHeightChanged(/* needsAnimation= */ false, "ENR.setSystemExpanded");
             onExpansionChanged(false /* userAction */, wasExpanded);
             if (mIsSummaryWithChildren) {
                 mChildrenContainer.updateGroupOverflow();
@@ -3283,7 +3283,7 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
             if (mIsSummaryWithChildren) {
                 mChildrenContainer.updateGroupOverflow();
             }
-            notifyHeightChanged(/* needsAnimation= */ false);
+            notifyHeightChanged(/* needsAnimation= */ !onKeyguard, "ENR.setOnKeyguard="+onKeyguard);
         }
         if (isAboveShelf() != wasAboveShelf) {
             mAboveShelfChangedListener.onAboveShelfStateChanged(!wasAboveShelf);
@@ -3554,7 +3554,7 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
         super.onLayout(changed, left, top, right, bottom);
         if (intrinsicBefore != getIntrinsicHeight()
                 && (intrinsicBefore != 0 || getActualHeight() > 0)) {
-            notifyHeightChanged(/* needsAnimation= */ true);
+            notifyHeightChanged(/* needsAnimation= */ true, "ENR.onLayout");
         }
         if (mMenuRow != null && mMenuRow.getMenuView() != null) {
             mMenuRow.onParentHeightUpdate();
@@ -3586,8 +3586,8 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
     }
 
     @Override
-    public void notifyHeightChanged(boolean needsAnimation) {
-        super.notifyHeightChanged(needsAnimation);
+    public void notifyHeightChanged(boolean needsAnimation, String caller) {
+        super.notifyHeightChanged(needsAnimation, caller);
         getShowingLayout().requestSelectLayout(needsAnimation || isUserLocked());
     }
 
@@ -3602,7 +3602,7 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
         mSensitiveHiddenInGeneral = hideSensitive;
         int intrinsicAfter = getIntrinsicHeight();
         if (intrinsicBefore != intrinsicAfter) {
-            notifyHeightChanged(/* needsAnimation= */ true);
+            notifyHeightChanged(/* needsAnimation= */ true, "ENR.setSensitive");
         } else if (notificationsRedesignTemplates()) {
             // Just request the correct layout, even if the height hasn't changed
             getShowingLayout().requestSelectLayout(/* needsAnimation= */ true);
@@ -3773,7 +3773,7 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
                 mGroupExpansionManager.setGroupExpanded(getEntryLegacy(), true);
             }
         }
-        notifyHeightChanged(/* needsAnimation= */ false);
+        notifyHeightChanged(/* needsAnimation= */ false, "ENR.makeActionsVisible");
     }
 
     public void setChildrenExpanded(boolean expanded) {

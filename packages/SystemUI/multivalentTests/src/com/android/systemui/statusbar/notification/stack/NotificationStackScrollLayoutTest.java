@@ -34,6 +34,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyFloat;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.doAnswer;
@@ -1154,7 +1155,7 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
                 anyFloat(),
                 any())
         ).thenReturn((float) stackHeightAfterUpdate);
-        mStackScroller.onChildHeightChanged(row, /* needsAnimation = */ false);
+        mStackScroller.onChildHeightChanged(row, /* needsAnimation = */ false, "test");
 
         // Then the stack heights are updated
         assertThat(mStackScroller.getIntrinsicStackHeight()).isEqualTo(stackHeightAfterUpdate);
@@ -1172,7 +1173,7 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
 
         mStackScroller.setMaxDisplayedNotifications(50);
 
-        verify(listener).onHeightChanged(mNotificationShelf, false);
+        verify(listener).onHeightChanged(eq(mNotificationShelf), eq(false), anyString());
         verify(runnable).run();
     }
 
