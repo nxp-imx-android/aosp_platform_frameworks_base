@@ -32,8 +32,7 @@
     <string name="confirmation_title_glasses" msgid="8288346850537727333">"Payagan ang &lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; na pamahalaan ang &lt;strong&gt;<xliff:g id="DEVICE_NAME">%2$s</xliff:g>&lt;/strong&gt;?"</string>
     <string name="profile_name_glasses" msgid="3506504967216601277">"device"</string>
     <string name="summary_glasses" msgid="5469208629679579157">"Papayagan ang app na ito na ma-access ang mga pahintulot na ito sa iyong <xliff:g id="DEVICE_TYPE">%1$s</xliff:g>"</string>
-    <!-- no translation found for profile_name_medical (5617160509499466400) -->
-    <skip />
+    <string name="profile_name_medical" msgid="5617160509499466400">"medical device"</string>
     <string name="title_app_streaming" msgid="237666000400427614">"Payagan ang &lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; na mag-stream ng mga app at feature ng system sa pagitan ng iyong <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> at &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt;?"</string>
     <string name="summary_app_streaming" msgid="8346968726357732862">"Bibigyan ang <xliff:g id="APP_NAME">%1$s</xliff:g> ng mga sumusunod na pahintulot:"</string>
     <string name="summary_app_streaming_legacy" msgid="8994180646987541606">"Magkakaroon ng access ang <xliff:g id="APP_NAME_0">%1$s</xliff:g> sa kahit anong nakikita o pine-play sa iyong <xliff:g id="DEVICE_TYPE">%2$s</xliff:g>, kasama ang audio, mga larawan, impormasyon sa pagbabayad, mga password, at mga mensahe.&lt;br/&gt;&lt;br/&gt;Magagawa ng<xliff:g id="APP_NAME_1">%1$s</xliff:g> na mag-stream ng mga app sa <xliff:g id="DEVICE_NAME">%3$s</xliff:g> hanggang sa alisin mo ang access sa pahintulot na ito."</string>
@@ -74,10 +73,8 @@
     <string name="permission_create_virtual_device" msgid="1102905050922460040">"I-stream ang data sa iyong <xliff:g id="DEVICE_TYPE">%1$s</xliff:g>"</string>
     <string name="permission_add_mirror_display" msgid="3743433250535606288">"I-mirror ang iyong screen"</string>
     <string name="permission_add_trusted_display" msgid="9052824856626276723">"Mag-stream ng mga app"</string>
-    <!-- no translation found for permission_schedule_exact_alarm (5680932535987512225) -->
-    <skip />
-    <!-- no translation found for permission_bypass_dnd (1241123166903040347) -->
-    <skip />
+    <string name="permission_schedule_exact_alarm" msgid="5680932535987512225">"Magtakda ng alarm at paalala"</string>
+    <string name="permission_bypass_dnd" msgid="1241123166903040347">"I-bypass ang Huwag Istorbohin"</string>
     <string name="permission_phone_summary" msgid="8246321093970051702">"Tumawag at mamahala ng mga tawag sa telepono"</string>
     <string name="permission_call_logs_summary" msgid="7545243592757693321">"I-read at i-write ang log ng tawag sa telepono"</string>
     <string name="permission_sms_summary" msgid="8499509535410068616">"Magpadala at tumingin ng mga mensaheng SMS"</string>

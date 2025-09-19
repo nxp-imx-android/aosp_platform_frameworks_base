@@ -32,8 +32,7 @@
     <string name="confirmation_title_glasses" msgid="8288346850537727333">"อนุญาตให้ &lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; จัดการ &lt;strong&gt;<xliff:g id="DEVICE_NAME">%2$s</xliff:g>&lt;/strong&gt; ไหม"</string>
     <string name="profile_name_glasses" msgid="3506504967216601277">"อุปกรณ์"</string>
     <string name="summary_glasses" msgid="5469208629679579157">"แอปนี้จะได้รับสิทธิ์ดังต่อไปนี้ใน<xliff:g id="DEVICE_TYPE">%1$s</xliff:g>ของคุณ"</string>
-    <!-- no translation found for profile_name_medical (5617160509499466400) -->
-    <skip />
+    <string name="profile_name_medical" msgid="5617160509499466400">"อุปกรณ์ทางการแพทย์"</string>
     <string name="title_app_streaming" msgid="237666000400427614">"อนุญาตให้ &lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; สตรีมแอปและฟีเจอร์ของระบบระหว่าง<xliff:g id="DEVICE_TYPE">%2$s</xliff:g>กับ &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt; ไหม"</string>
     <string name="summary_app_streaming" msgid="8346968726357732862">"<xliff:g id="APP_NAME">%1$s</xliff:g> จะได้รับสิทธิ์ต่อไปนี้"</string>
     <string name="summary_app_streaming_legacy" msgid="8994180646987541606">"<xliff:g id="APP_NAME_0">%1$s</xliff:g> จะมีสิทธิ์เข้าถึงทุกอย่างที่ปรากฏหรือเล่นบน<xliff:g id="DEVICE_TYPE">%2$s</xliff:g> ซึ่งรวมถึงเสียง รูปภาพ ข้อมูลการชำระเงิน รหัสผ่าน และข้อความ&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME_1">%1$s</xliff:g> จะสามารถสตรีมแอปไปยัง <xliff:g id="DEVICE_NAME">%3$s</xliff:g> ได้จนกว่าคุณจะนำการให้สิทธิ์นี้ออก"</string>
@@ -74,10 +73,8 @@
     <string name="permission_create_virtual_device" msgid="1102905050922460040">"สตรีมข้อมูลไปยัง<xliff:g id="DEVICE_TYPE">%1$s</xliff:g>"</string>
     <string name="permission_add_mirror_display" msgid="3743433250535606288">"มิเรอร์หน้าจอ"</string>
     <string name="permission_add_trusted_display" msgid="9052824856626276723">"สตรีมแอป"</string>
-    <!-- no translation found for permission_schedule_exact_alarm (5680932535987512225) -->
-    <skip />
-    <!-- no translation found for permission_bypass_dnd (1241123166903040347) -->
-    <skip />
+    <string name="permission_schedule_exact_alarm" msgid="5680932535987512225">"ตั้งนาฬิกาปลุกและการช่วยเตือน"</string>
+    <string name="permission_bypass_dnd" msgid="1241123166903040347">"ข้ามการตั้งค่าโหมดห้ามรบกวน"</string>
     <string name="permission_phone_summary" msgid="8246321093970051702">"โทรและจัดการการโทร"</string>
     <string name="permission_call_logs_summary" msgid="7545243592757693321">"อ่านและเขียนบันทึกการโทรของโทรศัพท์"</string>
     <string name="permission_sms_summary" msgid="8499509535410068616">"ส่งและดูข้อความ SMS"</string>

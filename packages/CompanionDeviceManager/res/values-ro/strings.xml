@@ -32,8 +32,7 @@
     <string name="confirmation_title_glasses" msgid="8288346850537727333">"Permiți ca &lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; să gestioneze &lt;strong&gt;<xliff:g id="DEVICE_NAME">%2$s</xliff:g>&lt;/strong&gt;?"</string>
     <string name="profile_name_glasses" msgid="3506504967216601277">"dispozitiv"</string>
     <string name="summary_glasses" msgid="5469208629679579157">"Aplicația va putea să acceseze următoarele permisiuni pe <xliff:g id="DEVICE_TYPE">%1$s</xliff:g>"</string>
-    <!-- no translation found for profile_name_medical (5617160509499466400) -->
-    <skip />
+    <string name="profile_name_medical" msgid="5617160509499466400">"dispozitiv medical"</string>
     <string name="title_app_streaming" msgid="237666000400427614">"Permiți ca &lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; să redea în stream aplicații și funcții de sistem între <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> și &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt;?"</string>
     <string name="summary_app_streaming" msgid="8346968726357732862">"<xliff:g id="APP_NAME">%1$s</xliff:g> va primi următoarele permisiuni:"</string>
     <string name="summary_app_streaming_legacy" msgid="8994180646987541606">"<xliff:g id="APP_NAME_0">%1$s</xliff:g> va avea acces la tot conținutul vizibil sau redat pe <xliff:g id="DEVICE_TYPE">%2$s</xliff:g>, inclusiv conținut audio, fotografii, informații de plată, parole și mesaje.&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME_1">%1$s</xliff:g> va putea să redea în stream aplicații pe <xliff:g id="DEVICE_NAME">%3$s</xliff:g> până când elimini accesul la această permisiune."</string>
@@ -74,10 +73,8 @@
     <string name="permission_create_virtual_device" msgid="1102905050922460040">"Să redea în stream date pe <xliff:g id="DEVICE_TYPE">%1$s</xliff:g>"</string>
     <string name="permission_add_mirror_display" msgid="3743433250535606288">"Să oglindească ecranul"</string>
     <string name="permission_add_trusted_display" msgid="9052824856626276723">"Să redea în stream aplicații"</string>
-    <!-- no translation found for permission_schedule_exact_alarm (5680932535987512225) -->
-    <skip />
-    <!-- no translation found for permission_bypass_dnd (1241123166903040347) -->
-    <skip />
+    <string name="permission_schedule_exact_alarm" msgid="5680932535987512225">"Setează alarme și mementouri"</string>
+    <string name="permission_bypass_dnd" msgid="1241123166903040347">"Ignoră setările Nu deranja"</string>
     <string name="permission_phone_summary" msgid="8246321093970051702">"Să inițieze și să gestioneze apeluri telefonice"</string>
     <string name="permission_call_logs_summary" msgid="7545243592757693321">"Să citească și să scrie jurnalul de apeluri telefonice"</string>
     <string name="permission_sms_summary" msgid="8499509535410068616">"Să trimită și să vadă SMS-urile"</string>

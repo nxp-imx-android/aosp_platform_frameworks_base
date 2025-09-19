@@ -32,8 +32,7 @@
     <string name="confirmation_title_glasses" msgid="8288346850537727333">"Να επιτρέπεται στην εφαρμογή &lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; να διαχειρίζεται τη συσκευή &lt;strong&gt;<xliff:g id="DEVICE_NAME">%2$s</xliff:g>&lt;/strong&gt; ;"</string>
     <string name="profile_name_glasses" msgid="3506504967216601277">"συσκευή"</string>
     <string name="summary_glasses" msgid="5469208629679579157">"Αυτή η εφαρμογή θα μπορεί να έχει πρόσβαση σε αυτές τις άδειες στη συσκευή <xliff:g id="DEVICE_TYPE">%1$s</xliff:g>"</string>
-    <!-- no translation found for profile_name_medical (5617160509499466400) -->
-    <skip />
+    <string name="profile_name_medical" msgid="5617160509499466400">"ιατρική συσκευή"</string>
     <string name="title_app_streaming" msgid="237666000400427614">"Να επιτρέπεται στην εφαρμογή &lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; η μετάδοση εφαρμογών και λειτουργιών συστήματος σε ροή μεταξύ της συσκευής <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> και της συσκευής &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt;;"</string>
     <string name="summary_app_streaming" msgid="8346968726357732862">"Η εφαρμογή <xliff:g id="APP_NAME">%1$s</xliff:g> θα αποκτήσει τις ακόλουθες άδειες:"</string>
     <string name="summary_app_streaming_legacy" msgid="8994180646987541606">"Η εφαρμογή <xliff:g id="APP_NAME_0">%1$s</xliff:g> θα έχει πρόσβαση σε οτιδήποτε είναι ορατό ή αναπαράγεται στη συσκευή <xliff:g id="DEVICE_TYPE">%2$s</xliff:g>, συμπεριλαμβανομένων ήχων, φωτογραφιών, στοιχείων πληρωμής, κωδικών πρόσβασης και μηνυμάτων.&lt;br/&gt;&lt;br/&gt;Η εφαρμογή <xliff:g id="APP_NAME_1">%1$s</xliff:g> θα έχει τη δυνατότητα μετάδοσης εφαρμογών σε ροή στη συσκευή <xliff:g id="DEVICE_NAME">%3$s</xliff:g>, μέχρι να καταργήσετε την πρόσβαση σε αυτή την άδεια."</string>
@@ -74,10 +73,8 @@
     <string name="permission_create_virtual_device" msgid="1102905050922460040">"Μετάδοση δεδομένων σε ροή στο <xliff:g id="DEVICE_TYPE">%1$s</xliff:g>"</string>
     <string name="permission_add_mirror_display" msgid="3743433250535606288">"Κατοπτρισμός της οθόνης"</string>
     <string name="permission_add_trusted_display" msgid="9052824856626276723">"Μετάδοση εφαρμογών σε ροή"</string>
-    <!-- no translation found for permission_schedule_exact_alarm (5680932535987512225) -->
-    <skip />
-    <!-- no translation found for permission_bypass_dnd (1241123166903040347) -->
-    <skip />
+    <string name="permission_schedule_exact_alarm" msgid="5680932535987512225">"Ορισμός ξυπνητ. και υπενθυμ."</string>
+    <string name="permission_bypass_dnd" msgid="1241123166903040347">"Ρυθμ. παράβλεψης Μην ενοχλείτε"</string>
     <string name="permission_phone_summary" msgid="8246321093970051702">"Πραγματοποίηση και διαχείριση τηλεφωνικών κλήσεων"</string>
     <string name="permission_call_logs_summary" msgid="7545243592757693321">"Ανάγνωση και εγγραφή αρχείου καταγραφής τηλεφωνικών κλήσεων"</string>
     <string name="permission_sms_summary" msgid="8499509535410068616">"Αποστολή και προβολή μηνυμάτων SMS"</string>

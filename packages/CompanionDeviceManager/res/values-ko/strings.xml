@@ -32,8 +32,7 @@
     <string name="confirmation_title_glasses" msgid="8288346850537727333">"&lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt;에서 &lt;strong&gt;<xliff:g id="DEVICE_NAME">%2$s</xliff:g>&lt;/strong&gt; 기기를 관리하도록 허용하시겠습니까?"</string>
     <string name="profile_name_glasses" msgid="3506504967216601277">"기기"</string>
     <string name="summary_glasses" msgid="5469208629679579157">"앱이 <xliff:g id="DEVICE_TYPE">%1$s</xliff:g>에서 이러한 권한에 액세스할 수 있게 됩니다."</string>
-    <!-- no translation found for profile_name_medical (5617160509499466400) -->
-    <skip />
+    <string name="profile_name_medical" msgid="5617160509499466400">"의료 기기"</string>
     <string name="title_app_streaming" msgid="237666000400427614">"&lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt;에서 <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> 기기와 &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt; 기기 간에 앱 및 시스템 기능을 스트리밍하도록 허용하시겠습니까?"</string>
     <string name="summary_app_streaming" msgid="8346968726357732862">"<xliff:g id="APP_NAME">%1$s</xliff:g>에 다음 권한이 부여됩니다."</string>
     <string name="summary_app_streaming_legacy" msgid="8994180646987541606">"<xliff:g id="APP_NAME_0">%1$s</xliff:g>에서 오디오, 사진, 결제 정보, 비밀번호, 메시지 등 <xliff:g id="DEVICE_TYPE">%2$s</xliff:g>에 표시되거나 해당 기기에서 재생되는 모든 항목에 액세스할 수 있습니다.&lt;br/&gt;&lt;br/&gt;이 권한에 대한 액세스를 삭제할 때까지 <xliff:g id="APP_NAME_1">%1$s</xliff:g>에서 <xliff:g id="DEVICE_NAME">%3$s</xliff:g> 기기로 앱을 스트리밍할 수 있습니다."</string>
@@ -74,10 +73,8 @@
     <string name="permission_create_virtual_device" msgid="1102905050922460040">"<xliff:g id="DEVICE_TYPE">%1$s</xliff:g> 기기로 데이터 스트리밍"</string>
     <string name="permission_add_mirror_display" msgid="3743433250535606288">"화면 미러링"</string>
     <string name="permission_add_trusted_display" msgid="9052824856626276723">"앱 스트리밍"</string>
-    <!-- no translation found for permission_schedule_exact_alarm (5680932535987512225) -->
-    <skip />
-    <!-- no translation found for permission_bypass_dnd (1241123166903040347) -->
-    <skip />
+    <string name="permission_schedule_exact_alarm" msgid="5680932535987512225">"알람 및 리마인더 설정"</string>
+    <string name="permission_bypass_dnd" msgid="1241123166903040347">"방해 금지 모드 설정 우회"</string>
     <string name="permission_phone_summary" msgid="8246321093970051702">"전화 걸기 및 관리"</string>
     <string name="permission_call_logs_summary" msgid="7545243592757693321">"통화 기록 읽고 쓰기"</string>
     <string name="permission_sms_summary" msgid="8499509535410068616">"SMS 메시지 보내기 및 보기"</string>

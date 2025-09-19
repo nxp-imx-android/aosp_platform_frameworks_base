@@ -32,8 +32,7 @@
     <string name="confirmation_title_glasses" msgid="8288346850537727333">"Zezwolić na dostęp aplikacji &lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; do urządzenia &lt;strong&gt;<xliff:g id="DEVICE_NAME">%2$s</xliff:g>&lt;/strong&gt;?"</string>
     <string name="profile_name_glasses" msgid="3506504967216601277">"urządzenie"</string>
     <string name="summary_glasses" msgid="5469208629679579157">"Aplikacja będzie miała dostęp do tych uprawnień na Twoim urządzeniu (<xliff:g id="DEVICE_TYPE">%1$s</xliff:g>)"</string>
-    <!-- no translation found for profile_name_medical (5617160509499466400) -->
-    <skip />
+    <string name="profile_name_medical" msgid="5617160509499466400">"urządzenie medyczne"</string>
     <string name="title_app_streaming" msgid="237666000400427614">"Zezwolić aplikacji &lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; na strumieniowanie aplikacji i funkcji systemowych między urządzeniami (<xliff:g id="DEVICE_TYPE">%2$s</xliff:g> i &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt;)?"</string>
     <string name="summary_app_streaming" msgid="8346968726357732862">"<xliff:g id="APP_NAME">%1$s</xliff:g> otrzyma te uprawnienia:"</string>
     <string name="summary_app_streaming_legacy" msgid="8994180646987541606">"<xliff:g id="APP_NAME_0">%1$s</xliff:g> będzie mieć dostęp do wszystkich treści, jakie są wyświetlane i odtwarzane przez <xliff:g id="DEVICE_TYPE">%2$s</xliff:g>, w tym do dźwięku, zdjęć, danych do płatności, haseł i wiadomości.&lt;br/&gt;&lt;br/&gt;Aplikacja <xliff:g id="APP_NAME_1">%1$s</xliff:g> będzie mogła strumieniować aplikacje na urządzenie <xliff:g id="DEVICE_NAME">%3$s</xliff:g>, dopóki nie usuniesz dostępu do tego uprawnienia."</string>
@@ -74,10 +73,8 @@
     <string name="permission_create_virtual_device" msgid="1102905050922460040">"Strumieniowanie danych na <xliff:g id="DEVICE_TYPE">%1$s</xliff:g>"</string>
     <string name="permission_add_mirror_display" msgid="3743433250535606288">"Odbicie lustrzane ekranu"</string>
     <string name="permission_add_trusted_display" msgid="9052824856626276723">"Strumieniowanie aplikacji"</string>
-    <!-- no translation found for permission_schedule_exact_alarm (5680932535987512225) -->
-    <skip />
-    <!-- no translation found for permission_bypass_dnd (1241123166903040347) -->
-    <skip />
+    <string name="permission_schedule_exact_alarm" msgid="5680932535987512225">"Wybór alarmów i przypomnień"</string>
+    <string name="permission_bypass_dnd" msgid="1241123166903040347">"Ignoruj tryb Nie przeszkadzać"</string>
     <string name="permission_phone_summary" msgid="8246321093970051702">"Nawiązywanie połączeń telefonicznych i zarządzanie nimi"</string>
     <string name="permission_call_logs_summary" msgid="7545243592757693321">"Odczytywanie i zapisywanie rejestru połączeń telefonicznych"</string>
     <string name="permission_sms_summary" msgid="8499509535410068616">"Wysyłanie i wyświetlanie SMS‑ów"</string>

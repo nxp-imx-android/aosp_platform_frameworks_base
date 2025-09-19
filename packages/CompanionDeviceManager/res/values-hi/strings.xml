@@ -32,8 +32,7 @@
     <string name="confirmation_title_glasses" msgid="8288346850537727333">"क्या &lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; को &lt;strong&gt;<xliff:g id="DEVICE_NAME">%2$s</xliff:g>&lt;/strong&gt; मैनेज करने की अनुमति देनी है?"</string>
     <string name="profile_name_glasses" msgid="3506504967216601277">"डिवाइस"</string>
     <string name="summary_glasses" msgid="5469208629679579157">"यह ऐप्लिकेशन, आपके <xliff:g id="DEVICE_TYPE">%1$s</xliff:g> पर इन अनुमतियों को ऐक्सेस कर पाएगा"</string>
-    <!-- no translation found for profile_name_medical (5617160509499466400) -->
-    <skip />
+    <string name="profile_name_medical" msgid="5617160509499466400">"मेडिकल डिवाइस"</string>
     <string name="title_app_streaming" msgid="237666000400427614">"क्या &lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; को आपके <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> और &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt; पर ऐप्लिकेशन और सिस्टम की सुविधाएं स्ट्रीम करने की अनुमति देनी है?"</string>
     <string name="summary_app_streaming" msgid="8346968726357732862">"<xliff:g id="APP_NAME">%1$s</xliff:g> को ये अनुमतियां मिल जाएंगी:"</string>
     <string name="summary_app_streaming_legacy" msgid="8994180646987541606">"<xliff:g id="APP_NAME_0">%1$s</xliff:g> के पास ऐसे हर कॉन्टेंट का ऐक्सेस होगा जो आपके <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> पर दिखता है या चलाया जाता है. जैसे, ऑडियो, फ़ोटो, क्रेडिट/डेबिट कार्ड की जानकारी, पासवर्ड, और मैसेज.&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME_1">%1$s</xliff:g>, <xliff:g id="DEVICE_NAME">%3$s</xliff:g> पर तब तक ऐप्लिकेशन को स्ट्रीम कर सकेगा, जब तक आप यह अनुमति हटा न दें."</string>
@@ -74,10 +73,8 @@
     <string name="permission_create_virtual_device" msgid="1102905050922460040">"अपने <xliff:g id="DEVICE_TYPE">%1$s</xliff:g> पर डेटा स्ट्रीम करें"</string>
     <string name="permission_add_mirror_display" msgid="3743433250535606288">"अपनी स्क्रीन शेयर करें"</string>
     <string name="permission_add_trusted_display" msgid="9052824856626276723">"ऐप्लिकेशन स्ट्रीम करें"</string>
-    <!-- no translation found for permission_schedule_exact_alarm (5680932535987512225) -->
-    <skip />
-    <!-- no translation found for permission_bypass_dnd (1241123166903040347) -->
-    <skip />
+    <string name="permission_schedule_exact_alarm" msgid="5680932535987512225">"अलार्म और रिमाइंडर सेट करना"</string>
+    <string name="permission_bypass_dnd" msgid="1241123166903040347">"\'परेशान न करें\' मोड की सेटिंग बायपास करना"</string>
     <string name="permission_phone_summary" msgid="8246321093970051702">"फ़ोन कॉल करने और उन्हें मैनेज करने की अनुमति दें"</string>
     <string name="permission_call_logs_summary" msgid="7545243592757693321">"कॉल लॉग की जानकारी देखने और उसमें बदलाव करने की अनुमति दें"</string>
     <string name="permission_sms_summary" msgid="8499509535410068616">"एसएमएस (मैसेज) भेजने और देखने की अनुमति दें"</string>

@@ -32,8 +32,7 @@
     <string name="confirmation_title_glasses" msgid="8288346850537727333">"&lt;strong&gt;<xliff:g id="DEVICE_NAME">%2$s</xliff:g>&lt;/strong&gt; kudeatzeko baimena eman nahi diozu &lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; aplikazioari?"</string>
     <string name="profile_name_glasses" msgid="3506504967216601277">"gailua"</string>
     <string name="summary_glasses" msgid="5469208629679579157">"Baimen hauek izango ditu aplikazioak <xliff:g id="DEVICE_TYPE">%1$s</xliff:g> erabiltzean:"</string>
-    <!-- no translation found for profile_name_medical (5617160509499466400) -->
-    <skip />
+    <string name="profile_name_medical" msgid="5617160509499466400">"gailu medikoak"</string>
     <string name="title_app_streaming" msgid="237666000400427614">"Zure <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> eta &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt; gailuen artean aplikazioak eta sistemaren eginbideak zuzenean igortzeko baimena eman nahi diozu &lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; aplikazioari?"</string>
     <string name="summary_app_streaming" msgid="8346968726357732862">"Baimen hauek emango zaizkio <xliff:g id="APP_NAME">%1$s</xliff:g> aplikazioari:"</string>
     <string name="summary_app_streaming_legacy" msgid="8994180646987541606">"<xliff:g id="APP_NAME_0">%1$s</xliff:g> aplikazioak <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> gailuan ikusgai dagoen edo erreproduzitzen den eduki guztia atzitu ahal izango du, audioa, argazkiak, ordainketa-informazioa, pasahitzak eta mezuak barne.&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME_1">%1$s</xliff:g> <xliff:g id="DEVICE_NAME">%3$s</xliff:g> gailura aplikazioak zuzenean igortzeko gai izango da, baimen hori kentzen diozun arte."</string>
@@ -74,10 +73,8 @@
     <string name="permission_create_virtual_device" msgid="1102905050922460040">"Igorri datuak zuzenean <xliff:g id="DEVICE_TYPE">%1$s</xliff:g> gailura"</string>
     <string name="permission_add_mirror_display" msgid="3743433250535606288">"Pantaila islatu"</string>
     <string name="permission_add_trusted_display" msgid="9052824856626276723">"Aplikazioak zuzenean igorri"</string>
-    <!-- no translation found for permission_schedule_exact_alarm (5680932535987512225) -->
-    <skip />
-    <!-- no translation found for permission_bypass_dnd (1241123166903040347) -->
-    <skip />
+    <string name="permission_schedule_exact_alarm" msgid="5680932535987512225">"Alarmak eta gogorarazpenak ezarri"</string>
+    <string name="permission_bypass_dnd" msgid="1241123166903040347">"Ez molestatzeko moduaren ezarpenak saihestu"</string>
     <string name="permission_phone_summary" msgid="8246321093970051702">"Telefono-deiak egin eta kudeatu"</string>
     <string name="permission_call_logs_summary" msgid="7545243592757693321">"Telefonoko deien erregistroa irakurri eta bertan idatzi"</string>
     <string name="permission_sms_summary" msgid="8499509535410068616">"SMS mezuak bidali eta ikusi"</string>
