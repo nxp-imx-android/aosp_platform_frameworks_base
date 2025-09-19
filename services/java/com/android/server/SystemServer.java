@@ -216,7 +216,6 @@ import com.android.server.os.instrumentation.DynamicInstrumentationManagerServic
 import com.android.server.pdb.PersistentDataBlockService;
 import com.android.server.people.PeopleService;
 import com.android.server.permission.access.AccessCheckingService;
-import com.android.server.personalcontext.PersonalContextManagerService;
 import com.android.server.pinner.PinnerService;
 import com.android.server.pm.ApexManager;
 import com.android.server.pm.ApexSystemServiceInfo;
@@ -2651,12 +2650,6 @@ public final class SystemServer implements Dumpable {
             ServiceManager.addService(GraphicsStatsService.GRAPHICS_STATS_SERVICE,
                     new GraphicsStatsService(context));
             t.traceEnd();
-
-            if (android.service.personalcontext.Flags.enablePersonalContextService()) {
-                t.traceBegin("StartPersonalContextService");
-                mSystemServiceManager.startService(PersonalContextManagerService.class);
-                t.traceEnd();
-            }
 
             if (CoverageService.ENABLED) {
                 t.traceBegin("AddCoverageService");
