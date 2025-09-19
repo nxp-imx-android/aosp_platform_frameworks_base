@@ -364,9 +364,6 @@ constructor(
     private fun Notification.subText(): String? = getStringExtraUnlessEmpty(EXTRA_SUB_TEXT)
 
     private fun Notification.shortCriticalText(): String? {
-        if (!android.app.Flags.apiRichOngoing()) {
-            return null
-        }
         if (shortCriticalText != null) {
             return shortCriticalText
         }

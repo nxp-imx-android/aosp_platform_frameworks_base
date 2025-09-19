@@ -509,7 +509,7 @@ public class NotificationTest {
     }
 
     @Test
-    @EnableFlags({Flags.FLAG_UI_RICH_ONGOING, Flags.FLAG_API_RICH_ONGOING})
+    @EnableFlags({Flags.FLAG_UI_RICH_ONGOING})
     public void testHasPromotableStyle_progress() {
         Notification n = new Notification.Builder(mContext, "test")
                 .setSmallIcon(android.R.drawable.sym_def_app_icon)
@@ -718,7 +718,6 @@ public class NotificationTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_API_RICH_ONGOING)
     public void testGetShortCriticalText_noneSet() {
         Notification n = new Notification.Builder(mContext, "test")
                 .build();
@@ -727,7 +726,6 @@ public class NotificationTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_API_RICH_ONGOING)
     public void testGetShortCriticalText_isSet() {
         Notification n = new Notification.Builder(mContext, "test")
                 .setShortCriticalText("short critical text here")
@@ -2353,7 +2351,6 @@ public class NotificationTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_API_RICH_ONGOING)
     public void progressStyle_richOngoingEnabled_platformClass() {
         assertThat(
                 Notification.getNotificationStyleClass(Notification.ProgressStyle.class.getName()))
@@ -2361,15 +2358,6 @@ public class NotificationTest {
     }
 
     @Test
-    @DisableFlags(Flags.FLAG_API_RICH_ONGOING)
-    public void progressStyle_richOngoingDisabled_notPlatformClass() {
-        assertThat(
-                Notification.getNotificationStyleClass(Notification.ProgressStyle.class.getName()))
-                .isNull();
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_API_RICH_ONGOING)
     public void progressStyle_onSegmentChange_visiblyDifferent() {
         final Notification.Builder nProgress1 = new Notification.Builder(mContext, "test")
                 .setStyle(new Notification.ProgressStyle()
@@ -2388,7 +2376,6 @@ public class NotificationTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_API_RICH_ONGOING)
     public void indeterminateProgressStyle_onSegmentChange_visiblyNotDifferent() {
         final Notification.Builder nProgress1 = new Notification.Builder(mContext, "test")
                 .setStyle(new Notification.ProgressStyle().setProgressIndeterminate(true)
@@ -2407,7 +2394,6 @@ public class NotificationTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_API_RICH_ONGOING)
     public void progressStyle_onStartIconChange_visiblyDifferent() {
         final Icon icon1 = Icon.createWithBitmap(BitmapFactory.decodeResource(
                 mContext.getResources(), com.android.frameworks.coretests.R.drawable.test128x96));
@@ -2425,7 +2411,6 @@ public class NotificationTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_API_RICH_ONGOING)
     public void progressStyle_onEndIconChange_visiblyDifferent() {
         final Icon icon1 = Icon.createWithBitmap(BitmapFactory.decodeResource(
                 mContext.getResources(), com.android.frameworks.coretests.R.drawable.test128x96));
@@ -2443,7 +2428,6 @@ public class NotificationTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_API_RICH_ONGOING)
     public void progressStyle_onProgressChange_visiblyDifferent() {
         final Notification.Builder nProgress1 = new Notification.Builder(mContext, "test")
                 .setStyle(new Notification.ProgressStyle().setProgress(20));
@@ -2455,7 +2439,6 @@ public class NotificationTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_API_RICH_ONGOING)
     public void indeterminateProgressStyle_onProgressChange_visiblyNotDifferent() {
         final Notification.Builder nProgress1 = new Notification.Builder(mContext, "test")
                 .setStyle(new Notification.ProgressStyle()
@@ -2469,7 +2452,6 @@ public class NotificationTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_API_RICH_ONGOING)
     public void progressStyle_onIsStyledByProgressChange_visiblyDifferent() {
         final Notification.Builder nProgress1 = new Notification.Builder(mContext, "test")
                 .setStyle(new Notification.ProgressStyle().setStyledByProgress(true));
@@ -2481,7 +2463,6 @@ public class NotificationTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_API_RICH_ONGOING)
     public void indeterminateProgressStyle_onIsStyledByProgressChange_visiblyNotDifferent() {
         final Notification.Builder nProgress1 = new Notification.Builder(mContext, "test")
                 .setStyle(new Notification.ProgressStyle()
@@ -2495,7 +2476,6 @@ public class NotificationTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_API_RICH_ONGOING)
     public void progressStyle_onProgressPointChange_visiblyDifferent() {
         final Notification.Builder nProgress1 = new Notification.Builder(mContext, "test")
                 .setStyle(new Notification.ProgressStyle()
@@ -2509,7 +2489,6 @@ public class NotificationTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_API_RICH_ONGOING)
     public void indeterminateProgressStyle_onProgressPointChange_visiblyNotDifferent() {
         final Notification.Builder nProgress1 = new Notification.Builder(mContext, "test")
                 .setStyle(new Notification.ProgressStyle().setProgressIndeterminate(true)
@@ -2523,7 +2502,6 @@ public class NotificationTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_API_RICH_ONGOING)
     public void progressStyle_onTrackerIconChange_visiblyDifferent() {
         final Icon icon1 = Icon.createWithBitmap(BitmapFactory.decodeResource(
                 mContext.getResources(), com.android.frameworks.coretests.R.drawable.test128x96));
@@ -2541,7 +2519,6 @@ public class NotificationTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_API_RICH_ONGOING)
     public void indeterminateProgressStyle_onTrackerIconChange_visiblyNotDifferent() {
         final Icon icon1 = Icon.createWithBitmap(BitmapFactory.decodeResource(
                 mContext.getResources(), com.android.frameworks.coretests.R.drawable.test128x96));
@@ -2561,7 +2538,6 @@ public class NotificationTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_API_RICH_ONGOING)
     public void progressStyle_onIndeterminateChange_visiblyDifferent() {
         final Notification.Builder nProgress1 = new Notification.Builder(mContext, "test")
                 .setStyle(new Notification.ProgressStyle().setProgressIndeterminate(true));
@@ -2573,14 +2549,12 @@ public class NotificationTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_API_RICH_ONGOING)
     public void progressStyle_getProgressMax_default100() {
         final Notification.ProgressStyle progressStyle = new Notification.ProgressStyle();
         assertThat(progressStyle.getProgressMax()).isEqualTo(100);
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_API_RICH_ONGOING)
     public void progressStyle_getProgressMax_noSegments_returnsDefault() {
         final Notification.ProgressStyle progressStyle = new Notification.ProgressStyle();
         progressStyle.setProgressSegments(Collections.emptyList());
@@ -2588,7 +2562,6 @@ public class NotificationTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_API_RICH_ONGOING)
     public void progressStyle_getProgressMax_returnsSumOfSegmentLength() {
         final Notification.ProgressStyle progressStyle = new Notification.ProgressStyle();
         progressStyle
@@ -2601,7 +2574,6 @@ public class NotificationTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_API_RICH_ONGOING)
     public void progressStyle_getProgressMax_onSetProgressSegments_resets() {
         final Notification.ProgressStyle progressStyle = new Notification.ProgressStyle();
         progressStyle
@@ -2614,7 +2586,6 @@ public class NotificationTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_API_RICH_ONGOING)
     public void progressStyle_getProgressMax_onSegmentOverflow_returnsDefault() {
         final Notification.ProgressStyle progressStyle = new Notification.ProgressStyle();
         progressStyle
@@ -2625,7 +2596,6 @@ public class NotificationTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_API_RICH_ONGOING)
     public void progressStyle_getProgressMax_onSegmentLimitExceeded_returnsSumOfSegmentLength() {
         // GIVEN
         final Notification.ProgressStyle progressStyle = new Notification.ProgressStyle();
@@ -2640,7 +2610,6 @@ public class NotificationTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_API_RICH_ONGOING)
     public void progressStyle_addProgressSegment_dropsInvalidSegments() {
         // GIVEN
         final Notification.ProgressStyle progressStyle = new Notification.ProgressStyle();
@@ -2655,7 +2624,6 @@ public class NotificationTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_API_RICH_ONGOING)
     public void progressStyle_setProgressSegment_dropsInvalidSegments() {
         // GIVEN
         final Notification.ProgressStyle progressStyle = new Notification.ProgressStyle();
@@ -2669,7 +2637,6 @@ public class NotificationTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_API_RICH_ONGOING)
     public void progressStyle_addProgressPoint_dropsNegativePoints() {
         // GIVEN
         final Notification.ProgressStyle progressStyle = new Notification.ProgressStyle();
@@ -2683,7 +2650,6 @@ public class NotificationTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_API_RICH_ONGOING)
     public void progressStyle_setProgressPoint_dropsNegativePoints() {
         // GIVEN
         final Notification.ProgressStyle progressStyle = new Notification.ProgressStyle();
@@ -2697,7 +2663,6 @@ public class NotificationTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_API_RICH_ONGOING)
     public void progressStyle_addProgressPoint_dropsZeroPoints() {
         // GIVEN
         final Notification.ProgressStyle progressStyle = new Notification.ProgressStyle();
@@ -2710,7 +2675,6 @@ public class NotificationTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_API_RICH_ONGOING)
     public void progressStyle_setProgressPoint_dropsZeroPoints() {
         // GIVEN
         final Notification.ProgressStyle progressStyle = new Notification.ProgressStyle();
@@ -2723,7 +2687,6 @@ public class NotificationTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_API_RICH_ONGOING)
     public void progressStyle_createProgressModel_ignoresPointsAtMax() {
         // GIVEN
         final Notification.ProgressStyle progressStyle = new Notification.ProgressStyle();
@@ -2737,7 +2700,6 @@ public class NotificationTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_API_RICH_ONGOING)
     public void progressStyle_createProgressModel_ignoresPointsExceedingMax() {
         // GIVEN
         final Notification.ProgressStyle progressStyle = new Notification.ProgressStyle();
@@ -2752,7 +2714,6 @@ public class NotificationTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_API_RICH_ONGOING)
     public void progressStyle_createProgressModel_ignoresOverLimitPoints() {
         // GIVEN
         final Notification.ProgressStyle progressStyle = new Notification.ProgressStyle();
@@ -2792,7 +2753,6 @@ public class NotificationTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_API_RICH_ONGOING)
     public void progressStyle_createProgressModel_mergeSegmentsOnOverflow() {
         // GIVEN
         final Notification.ProgressStyle progressStyle = new Notification.ProgressStyle();
@@ -2811,7 +2771,6 @@ public class NotificationTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_API_RICH_ONGOING)
     public void progressStyle_createProgressModel_useSegmentColorWhenAllMatch() {
         // GIVEN
         final Notification.ProgressStyle progressStyle = new Notification.ProgressStyle();
@@ -2840,7 +2799,6 @@ public class NotificationTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_API_RICH_ONGOING)
     public void progressStyle_createProgressModel_useDefaultColorWhenAllNotMatch() {
         // GIVEN
         final Notification.ProgressStyle progressStyle = new Notification.ProgressStyle();
@@ -2870,7 +2828,6 @@ public class NotificationTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_API_RICH_ONGOING)
     public void progressStyle_indeterminate_defaultValueFalse() {
         final Notification.ProgressStyle progressStyle1 = new Notification.ProgressStyle();
 
@@ -2878,7 +2835,6 @@ public class NotificationTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_API_RICH_ONGOING)
     public void progressStyle_styledByProgress_defaultValueTrue() {
         final Notification.ProgressStyle progressStyle1 = new Notification.ProgressStyle();
 

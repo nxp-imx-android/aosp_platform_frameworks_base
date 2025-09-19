@@ -6694,7 +6694,6 @@ public class PreferencesHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(android.app.Flags.FLAG_API_RICH_ONGOING)
     @DisableFlags(android.app.Flags.FLAG_UI_RICH_ONGOING)
     public void testNoAppHasPermissionToPromoteByDefault() {
         mHelper.setShowBadge(PKG_P, UID_P, true);
@@ -6702,7 +6701,6 @@ public class PreferencesHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(android.app.Flags.FLAG_API_RICH_ONGOING)
     // ui_rich_ongoing uses permissions, not preferences
     @DisableFlags(android.app.Flags.FLAG_UI_RICH_ONGOING)
     public void testSetCanBePromoted() {
@@ -6715,7 +6713,6 @@ public class PreferencesHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(android.app.Flags.FLAG_API_RICH_ONGOING)
     // ui_rich_ongoing uses permissions, not preferences
     @DisableFlags(android.app.Flags.FLAG_UI_RICH_ONGOING)
     public void testSetCanBePromoted_allowlistNotOverrideUser() {
