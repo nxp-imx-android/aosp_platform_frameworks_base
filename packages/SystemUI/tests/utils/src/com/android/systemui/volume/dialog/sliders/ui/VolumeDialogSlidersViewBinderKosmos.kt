@@ -17,10 +17,15 @@
 package com.android.systemui.volume.dialog.sliders.ui
 
 import com.android.systemui.kosmos.Kosmos
+import com.android.systemui.volume.dialog.domain.interactor.expandedAudioTileDetailsFeatureInteractor
 import com.android.systemui.volume.dialog.sliders.ui.viewmodel.volumeDialogSlidersViewModel
 import com.android.systemui.volume.dialog.ui.viewmodel.volumeDialogViewModel
 
 val Kosmos.volumeDialogSlidersViewBinder by
     Kosmos.Fixture {
-        VolumeDialogSlidersViewBinder(volumeDialogSlidersViewModel, volumeDialogViewModel)
+        VolumeDialogSlidersViewBinder(
+            volumeDialogSlidersViewModel,
+            volumeDialogViewModel,
+            expandedAudioTileDetailsFeatureInteractor,
+        )
     }
