@@ -197,8 +197,8 @@ public class TvView extends ViewGroup {
         mDefStyleAttr = defStyleAttr;
         resetSurfaceView();
         mTvInputManager = (TvInputManager) getContext().getSystemService(Context.TV_INPUT_SERVICE);
-        mMediaQualityManager = (MediaQualityManager) getContext().getSystemService(
-                Context.MEDIA_QUALITY_SERVICE);
+        mMediaQualityManager = (MediaQualityManager) getContext().getApplicationContext()
+                .getSystemService(Context.MEDIA_QUALITY_SERVICE);
         mTvAppAttributionSource = getContext().getAttributionSource();
     }
 
