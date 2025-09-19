@@ -816,9 +816,11 @@ public class BubbleTransitions {
 
         private void cleanup() {
             BubbleLog.d("LaunchNewTaskBubbleForExistingTransition.cleanup()");
+            mBubble.setCurrentTransition(null);
+            // Trigger finishCb after reset current transition as it will immediately kick off
+            // the next transition, which may set transition to the previous Bubble.
             mFinishCb.onTransitionFinished(mFinishWct);
             mFinishCb = null;
-            mBubble.setCurrentTransition(null);
         }
     }
 
@@ -870,6 +872,7 @@ public class BubbleTransitions {
             mTransitionProgress = new TransitionProgress();
             mOpeningBubble.setInflateSynchronously(inflateSync);
             mOpeningBubble.setCurrentTransition(this);
+            mClosingBubble.setCurrentTransition(this);
             // Still need the inflate to update the app icon in Bubble.
             mOpeningBubble.inflate(
                     b -> {
@@ -1042,12 +1045,15 @@ public class BubbleTransitions {
         }
 
         private void cleanup() {
+            mOpeningBubble.setCurrentTransition(null);
+            mClosingBubble.setCurrentTransition(null);
             if (mFinishCb != null) {
+                // Trigger finishCb after reset current transition as it will immediately kick off
+                // the next transition, which may set transition to the previous Bubble.
                 ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "JumpcutBubbleSwitchTransition.cleanup()");
                 mFinishCb.onTransitionFinished(mFinishWct);
                 mFinishCb = null;
             }
-            mOpeningBubble.setCurrentTransition(null);
         }
     }
 
@@ -1390,11 +1396,13 @@ public class BubbleTransitions {
         private void cleanup() {
             ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "LaunchOrConvertToBubble.cleanup(): removeCookie=%s",
                     mLaunchCookie.binder);
+            mBubble.setCurrentTransition(null);
+            // Trigger finishCb after reset current transition as it will immediately kick off
+            // the next transition, which may set transition to the previous Bubble.
             mFinishCb.onTransitionFinished(mFinishWct);
             mFinishCb = null;
             mPendingEnterTransitions.remove(mLaunchCookie.binder);
             mEnterTransitions.remove(mPlayingTransition);
-            mBubble.setCurrentTransition(null);
         }
     }
 
@@ -1668,11 +1676,13 @@ public class BubbleTransitions {
 
         private void cleanup() {
             ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "ConvertToBubble.cleanup()");
+            mBubble.setCurrentTransition(null);
             if (mFinishCb != null) {
+                // Trigger finishCb after reset current transition as it will immediately kick off
+                // the next transition, which may set transition to the previous Bubble.
                 mFinishCb.onTransitionFinished(mFinishWct);
                 mFinishCb = null;
             }
-            mBubble.setCurrentTransition(null);
         }
     }
 
@@ -1852,11 +1862,13 @@ public class BubbleTransitions {
 
         private void cleanup() {
             ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "ConvertFromBubble.cleanup()");
+            mBubble.setCurrentTransition(null);
             if (mFinishCb != null) {
+                // Trigger finishCb after reset current transition as it will immediately kick off
+                // the next transition, which may set transition to the previous Bubble.
                 mFinishCb.onTransitionFinished(mFinishWct);
                 mFinishCb = null;
             }
-            mBubble.setCurrentTransition(null);
         }
     }
 
@@ -2012,11 +2024,13 @@ public class BubbleTransitions {
 
         private void cleanup() {
             ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "DraggedBubbleIconToFullscreen.cleanup()");
+            mBubble.setCurrentTransition(null);
             if (mFinishCb != null) {
+                // Trigger finishCb after reset current transition as it will immediately kick off
+                // the next transition, which may set transition to the previous Bubble.
                 mFinishCb.onTransitionFinished(null);
                 mFinishCb = null;
             }
-            mBubble.setCurrentTransition(null);
         }
     }
 
@@ -2093,8 +2107,8 @@ public class BubbleTransitions {
                     mBubble.getTaskView().getController();
             if (taskViewTaskController == null) {
                 mTaskViewTransitions.onExternalDone(transition);
-                finishCallback.onTransitionFinished(null);
                 cleanup();
+                finishCallback.onTransitionFinished(null);
                 return true;
             }
 
@@ -2104,8 +2118,8 @@ public class BubbleTransitions {
                         + "one, cleaning up the task view");
                 taskViewTaskController.setTaskNotFound();
                 mTaskViewTransitions.onExternalDone(transition);
-                finishCallback.onTransitionFinished(null);
                 cleanup();
+                finishCallback.onTransitionFinished(null);
                 return true;
             }
 

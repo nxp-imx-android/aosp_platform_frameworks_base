@@ -100,7 +100,6 @@ import androidx.annotation.Nullable;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.protolog.ProtoLog;
 import com.android.internal.statusbar.IStatusBarService;
-import com.android.internal.util.CollectionUtils;
 import com.android.launcher3.icons.BubbleIconFactory;
 import com.android.wm.shell.Flags;
 import com.android.wm.shell.R;
@@ -213,6 +212,11 @@ public class BubbleController implements ConfigurationChangeListener,
         void bubbleOverflowChanged(boolean hasBubbles);
         /** Called when the visibility of bubble views should be updated. */
         void updateVisibility(boolean visible);
+        /**
+         * Called when the provided bubble is jumpcut closing. This is different from
+         * {@link #removeBubble} as the Bubble TaskView may not be ready to be removed yet.
+         */
+        void hideJumpcutClosingBubble(Bubble closingBubble);
     }
 
     private final Context mContext;
@@ -2632,6 +2636,13 @@ public class BubbleController implements ConfigurationChangeListener,
                 mStackView.setVisibility(visible ? VISIBLE : INVISIBLE);
             }
         }
+
+        @Override
+        public void hideJumpcutClosingBubble(Bubble closingBubble) {
+            if (mStackView != null) {
+                mStackView.hideJumpcutClosingBubble(closingBubble);
+            }
+        }
     };
 
     /** When bubbles are in the bubble bar, this will be used to notify bubble bar views. */
@@ -2738,6 +2749,11 @@ public class BubbleController implements ConfigurationChangeListener,
                 mLayerView.setVisibility(visible ? VISIBLE : INVISIBLE);
             }
         }
+
+        @Override
+        public void hideJumpcutClosingBubble(Bubble closingBubble) {
+            // Nothing to do for our views, handled by launcher / in the bubble bar.
+        }
     };
 
     @SuppressWarnings("FieldCanBeLocal")
@@ -2819,6 +2835,12 @@ public class BubbleController implements ConfigurationChangeListener,
                 }
             }
             mDataRepository.removeBubbles(mCurrentUserId, bubblesToBeRemovedFromRepository);
+
+            if (update.jumpcutBubbleSwitchClosingBubble != null) {
+                // We want to hide the bubble icon now, but not yet ready to remove the task bubble
+                mBubbleViewCallback.hideJumpcutClosingBubble(
+                        update.jumpcutBubbleSwitchClosingBubble);
+            }
 
             if (update.addedBubble != null) {
                 mDataRepository.addBubble(mCurrentUserId, update.addedBubble);

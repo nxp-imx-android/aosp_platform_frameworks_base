@@ -271,8 +271,10 @@ public class BubbleTransitionsTest extends ShellTestCase {
         final TransitionInfo info = setupFullscreenTaskTransition(taskInfo, taskLeash, snapshot);
         final SurfaceControl.Transaction startT = mock(SurfaceControl.Transaction.class);
         final SurfaceControl.Transaction finishT = mock(SurfaceControl.Transaction.class);
-        final boolean[] finishCalled = new boolean[]{false};
+        final boolean[] finishCalled = new boolean[] { false };
         final Transitions.TransitionFinishCallback finishCb = wct -> {
+            // Must clear current transition before finishCb.
+            verify(mBubble).setCurrentTransition(isNull());
             assertThat(finishCalled[0]).isFalse();
             finishCalled[0] = true;
         };
@@ -300,7 +302,6 @@ public class BubbleTransitionsTest extends ShellTestCase {
         animCb.getValue().run();
 
         assertThat(finishCalled[0]).isTrue();
-        verify(mBubble).setCurrentTransition(isNull());
     }
 
     @Test
@@ -814,6 +815,8 @@ public class BubbleTransitionsTest extends ShellTestCase {
         final SurfaceControl.Transaction finishT = mock(SurfaceControl.Transaction.class);
         final boolean[] finishCalled = new boolean[] { false };
         final Transitions.TransitionFinishCallback finishCb = wct -> {
+            // Must clear current transition before finishCb.
+            verify(mBubble).setCurrentTransition(isNull());
             assertThat(finishCalled[0]).isFalse();
             finishCalled[0] = true;
         };
@@ -858,7 +861,6 @@ public class BubbleTransitionsTest extends ShellTestCase {
         animCb.getValue().run();
 
         assertThat(finishCalled[0]).isTrue();
-        verify(mBubble).setCurrentTransition(null);
 
         // Verify that the playing transition and pending cookie are removed
         assertThat(mBubbleTransitions.mEnterTransitions).doesNotContainKey(transitionToken);
@@ -900,6 +902,8 @@ public class BubbleTransitionsTest extends ShellTestCase {
         final SurfaceControl.Transaction finishT = mock(SurfaceControl.Transaction.class);
         final boolean[] finishCalled = new boolean[] { false };
         final Transitions.TransitionFinishCallback finishCb = wct -> {
+            // Must clear current transition before finishCb.
+            verify(mBubble).setCurrentTransition(isNull());
             assertThat(finishCalled[0]).isFalse();
             finishCalled[0] = true;
         };
@@ -939,15 +943,16 @@ public class BubbleTransitionsTest extends ShellTestCase {
 
         // Trigger animation callback to finish
         assertThat(finishCalled[0]).isFalse();
+        verify(mBubble, never()).setCurrentTransition(isNull());
+
         animCb.getValue().run();
+
         assertThat(finishCalled[0]).isTrue();
 
         // Verify that the playing transition and pending cookie are removed
         assertThat(mBubbleTransitions.mEnterTransitions).doesNotContainKey(transitionToken);
         assertThat(mBubbleTransitions.mPendingEnterTransitions).doesNotContainKey(
                 bt.mLaunchCookie.binder);
-        // Verify we cleared the preparing transition after the animation finished
-        verify(mBubble).setCurrentTransition(null);
     }
 
     @Test
@@ -979,6 +984,8 @@ public class BubbleTransitionsTest extends ShellTestCase {
         final SurfaceControl.Transaction finishT = mock(SurfaceControl.Transaction.class);
         final boolean[] finishCalled = new boolean[] { false };
         final Transitions.TransitionFinishCallback finishCb = wct -> {
+            // Must clear current transition before finishCb.
+            verify(mBubble).setCurrentTransition(isNull());
             assertThat(finishCalled[0]).isFalse();
             finishCalled[0] = true;
         };
@@ -999,7 +1006,10 @@ public class BubbleTransitionsTest extends ShellTestCase {
 
         // Trigger animation callback to finish
         assertThat(finishCalled[0]).isFalse();
+        verify(mBubble, never()).setCurrentTransition(isNull());
+
         animCb.getValue().run();
+
         assertThat(finishCalled[0]).isTrue();
 
         // Verify that the playing transition and pending cookie are removed
@@ -1098,8 +1108,14 @@ public class BubbleTransitionsTest extends ShellTestCase {
         final SurfaceControl.Transaction finishT = spy(new SurfaceControl.Transaction());
         doNothing().when(startT).apply();
         doNothing().when(finishT).apply();
-        final Transitions.TransitionFinishCallback finishCb =
-                mock(Transitions.TransitionFinishCallback.class);
+        final boolean[] finishCalled = new boolean[] { false };
+        final Transitions.TransitionFinishCallback finishCb = wct -> {
+            // Must clear current transition before finishCb.
+            verify(mBubble).setCurrentTransition(isNull());
+            verify(closingBubble).setCurrentTransition(isNull());
+            assertThat(finishCalled[0]).isFalse();
+            finishCalled[0] = true;
+        };
 
         final BubbleTransitions.JumpcutBubbleSwitchTransition bt =
                 (BubbleTransitions.JumpcutBubbleSwitchTransition) mBubbleTransitions
@@ -1109,6 +1125,7 @@ public class BubbleTransitionsTest extends ShellTestCase {
                                 transitionToken, onInflatedCallback);
 
         verify(mBubble).setCurrentTransition(bt);
+        verify(closingBubble).setCurrentTransition(bt);
 
         bt.onInflated(mBubble);
 
@@ -1134,14 +1151,14 @@ public class BubbleTransitionsTest extends ShellTestCase {
 
         // Trigger animation callback to finish
         clearInvocations(mBubble);
+        assertThat(finishCalled[0]).isFalse();
         verify(mBubble, never()).setCurrentTransition(isNull());
-        verify(finishCb, never()).onTransitionFinished(any());
+        verify(closingBubble, never()).setCurrentTransition(isNull());
 
         animCb.getValue().run();
 
         // Verify cleanup
-        verify(finishCb).onTransitionFinished(any());
-        verify(mBubble).setCurrentTransition(null);
+        assertThat(finishCalled[0]).isTrue();
     }
 
     /**

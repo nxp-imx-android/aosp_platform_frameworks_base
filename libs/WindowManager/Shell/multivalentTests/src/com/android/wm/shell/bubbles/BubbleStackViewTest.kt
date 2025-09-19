@@ -69,7 +69,12 @@ import java.util.concurrent.Semaphore
 import java.util.concurrent.TimeUnit
 import java.util.function.Consumer
 
-/** Unit tests for [BubbleStackView]. */
+/**
+ * Unit tests for [BubbleStackView].
+ *
+ * Build/Install/Run:
+ *  atest WMShellMultivalentTestsOnDevice:BubbleStackViewTest (on device)
+ */
 @SmallTest
 @RunWith(AndroidJUnit4::class)
 class BubbleStackViewTest {
@@ -1197,6 +1202,51 @@ class BubbleStackViewTest {
         assertThat(bubble.iconView!!.scaleX).isEqualTo(1)
         assertThat(bubble.iconView!!.scaleY).isEqualTo(1)
         assertThat(bubbleStackView.bubbleCount).isEqualTo(1)
+    }
+
+    @EnableFlags(com.android.window.flags.Flags.FLAG_FIX_BUBBLE_TRAMPOLINE_ANIMATION)
+    @Test
+    fun removeJumpcutSwitchClosingBubble() {
+        val closingBubble = createAndInflateBubble()
+        val openingBubble = createAndInflateBubble()
+        InstrumentationRegistry.getInstrumentation().runOnMainSync {
+            bubbleStackView.addBubble(closingBubble)
+            bubbleStackView.addBubble(openingBubble)
+            bubbleStackView.setSelectedBubble(openingBubble)
+            bubbleStackView.hideJumpcutClosingBubble(closingBubble)
+            bubbleStackView.isExpanded = true
+            shellExecutor.flushAll()
+        }
+        InstrumentationRegistry.getInstrumentation().waitForIdleSync()
+
+        assertThat(bubbleStackView.isExpanded).isTrue()
+        assertThat(bubbleStackView.bubbleCount).isEqualTo(1)
+        assertThat(closingBubble.expandedView).isNotNull()
+        assertThat(closingBubble.iconView).isNotNull()
+        assertThat(bubbleStackView.getBubbleIndex(closingBubble)).isEqualTo(-1)
+        assertThat(openingBubble.expandedView).isNotNull()
+        assertThat(openingBubble.iconView).isNotNull()
+        assertThat(bubbleStackView.getBubbleIndex(openingBubble)).isEqualTo(0)
+
+        InstrumentationRegistry.getInstrumentation().runOnMainSync {
+            // remove it from the data + stack
+            bubbleData.dismissBubbleWithKey(closingBubble.key, Bubbles.DISMISS_USER_GESTURE)
+            bubbleStackView.removeBubble(closingBubble)
+            // Start the scrim animation
+            animatorTestRule.advanceTimeBy(100)
+            shellExecutor.flushAll()
+        }
+        InstrumentationRegistry.getInstrumentation().waitForIdleSync()
+
+        // Check that proper changes to removed bubble happened
+        assertThat(bubbleStackView.isExpanded).isTrue()
+        assertThat(bubbleStackView.bubbleCount).isEqualTo(1)
+        assertThat(closingBubble.expandedView).isNull()
+        assertThat(closingBubble.iconView).isNull()
+        assertThat(bubbleStackView.getBubbleIndex(closingBubble)).isEqualTo(-1)
+        assertThat(openingBubble.expandedView).isNotNull()
+        assertThat(openingBubble.iconView).isNotNull()
+        assertThat(bubbleStackView.getBubbleIndex(openingBubble)).isEqualTo(0)
     }
 
     @Test

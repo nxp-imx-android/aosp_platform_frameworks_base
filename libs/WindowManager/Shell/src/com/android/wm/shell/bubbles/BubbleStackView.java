@@ -2234,6 +2234,14 @@ public class BubbleStackView extends FrameLayout
     }
 
     /**
+     * Whether the expanded bubble is currently switching to expanded from another bubble using
+     * jumpcut.
+     */
+    public boolean isJumpcutBubbleSwitching() {
+        return (mExpandedBubble instanceof Bubble bubble) && bubble.isJumpcutBubbleSwitching();
+    }
+
+    /**
      * The {@link Bubble} that is expanded, null if one does not exist.
      */
     @VisibleForTesting
@@ -2305,8 +2313,13 @@ public class BubbleStackView extends FrameLayout
 
     // via BubbleData.Listener
     void removeBubble(Bubble bubble) {
-        boolean isLastBubble = getBubbleCount() == 1;
-        if (isExpanded() && isLastBubble) {
+        // In case like jumpcut switching, we may remove the icon view from stack before removing
+        // the bubble, so checking if the removing bubble is the last bubble in stack.
+        final int indexInStack = getBubbleIndex(bubble);
+        final boolean isLastBubble = getBubbleCount() == 1
+                && (!com.android.window.flags.Flags.fixBubbleTrampolineAnimation()
+                || indexInStack >= 0);
+        if (isLastBubble && isExpanded()) {
             mRemovingLastBubbleWhileExpanded = true;
             // We're expanded while the last bubble is being removed. Let the scrim animate away
             // and then remove our views (removing the icon view triggers the removal of the
@@ -2384,37 +2397,44 @@ public class BubbleStackView extends FrameLayout
             });
             logBubbleEvent(bubble, FrameworkStatsLog.BUBBLE_UICHANGED__ACTION__DISMISSED);
             return;
-        } else if (getBubbleCount() == 1) {
+        } else if (isLastBubble) {
             mExpandedBubble = null;
             mStackAnimationController.onLastBubbleRemoved();
         }
         // Remove it from the views
-        for (int i = 0; i < getBubbleCount(); i++) {
-            View v = mBubbleContainer.getChildAt(i);
-            if (v instanceof BadgedImageView
-                    && ((BadgedImageView) v).getKey().equals(bubble.getKey())) {
-                mBubbleContainer.removeViewAt(i);
-                if (!isLastBubble && mBubbleData.hasOverflowBubbleWithKey(bubble.getKey())) {
-                    // Overflow bubbles show the icon view so just clean up the expanded view.
-                    bubble.cleanupExpandedView();
-                } else {
-                    bubble.cleanupViews();
-                }
-                updateExpandedView();
-                if (isLastBubble && !isExpanded()) {
-                    // This is the last bubble and the stack is collapsed
-                    updateStackPosition();
-                }
-                logBubbleEvent(bubble, FrameworkStatsLog.BUBBLE_UICHANGED__ACTION__DISMISSED);
-                return;
+        if (indexInStack >= 0) {
+            mBubbleContainer.removeViewAt(indexInStack);
+            if (!isLastBubble && mBubbleData.hasOverflowBubbleWithKey(bubble.getKey())) {
+                // Overflow bubbles show the icon view so just clean up the expanded view.
+                bubble.cleanupExpandedView();
+            } else {
+                bubble.cleanupViews();
             }
+            updateExpandedView();
+            if (isLastBubble && !isExpanded()) {
+                // This is the last bubble and the stack is collapsed
+                updateStackPosition();
+            }
+            logBubbleEvent(bubble, FrameworkStatsLog.BUBBLE_UICHANGED__ACTION__DISMISSED);
+            return;
         }
-        // If a bubble is suppressed, it is not attached to the container. Clean it up.
-        if (bubble.isSuppressed()) {
+        // If a bubble is suppressed or previously removed from stack view, it is not attached to
+        // the container. Clean it up.
+        if (bubble.isSuppressed() || bubble.isPendingRemoval()) {
             bubble.cleanupViews();
             logBubbleEvent(bubble, FrameworkStatsLog.BUBBLE_UICHANGED__ACTION__DISMISSED);
         } else {
             Log.w(TAG, "was asked to remove Bubble, but didn't find the view! " + bubble);
+        }
+    }
+
+    // via BubbleData.Listener
+    void hideJumpcutClosingBubble(Bubble bubble) {
+        if (bubble.getIconView() != null) {
+            // Immediately remove the Bubble icon view so it gets replaced by the opening Bubble
+            // in the same frame update.
+            bubble.markAsPendingRemoval();
+            mBubbleContainer.removeView(bubble.getIconView());
         }
     }
 
@@ -2440,9 +2460,20 @@ public class BubbleStackView extends FrameLayout
     }
 
     private void updateBubbleOrderInternal(List<Bubble> bubbles, boolean updatePointerPosition) {
+        // This is an event of reorder, so only update Bubbles that are still attached to the stack.
+        // For case like jumpcut Bubble switching, we may have removed the Bubble icon, and the
+        // reorder should not add it back.
+        final List<Bubble> bubblesInStack;
+        if (com.android.window.flags.Flags.fixBubbleTrampolineAnimation()) {
+            bubblesInStack = bubbles.stream()
+                    .filter(b -> getBubbleIndex(b) >= 0)
+                    .toList();
+        } else {
+            bubblesInStack = bubbles;
+        }
         final Runnable reorder = () -> {
-            for (int i = 0; i < bubbles.size(); i++) {
-                Bubble bubble = bubbles.get(i);
+            for (int i = 0; i < bubblesInStack.size(); i++) {
+                Bubble bubble = bubblesInStack.get(i);
                 mBubbleContainer.reorderView(bubble.getIconView(), i);
             }
         };
@@ -2451,8 +2482,9 @@ public class BubbleStackView extends FrameLayout
             updateBadges(false /* setBadgeForCollapsedStack */);
             updateBubbleShadows(true /* isExpanded */);
         } else {
-            List<View> bubbleViews = bubbles.stream()
-                    .map(b -> b.getIconView()).collect(Collectors.toList());
+            final List<View> bubbleViews = bubblesInStack.stream()
+                    .map(Bubble::getIconView)
+                    .collect(Collectors.toList());
             mStackAnimationController.animateReorder(bubbleViews, reorder);
         }
 
@@ -3181,8 +3213,7 @@ public class BubbleStackView extends FrameLayout
             return;
         }
 
-        final boolean isJumpcutBubbleSwitching = (mExpandedBubble instanceof Bubble bubble)
-                && bubble.isJumpcutBubbleSwitching();
+        final boolean isJumpcutBubbleSwitching = isJumpcutBubbleSwitching();
 
         // The surface contains a screenshot of the animating out bubble, so we just need to animate
         // it out (and then release the GraphicBuffer).

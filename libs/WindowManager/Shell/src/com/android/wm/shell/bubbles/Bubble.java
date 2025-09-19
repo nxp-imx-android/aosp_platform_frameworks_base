@@ -230,6 +230,9 @@ public class Bubble implements BubbleViewProvider {
     @Nullable
     private BubbleTransitions.BubbleTransition mCurrentTransition;
 
+    /** Sets to true in case we remove the icon review before Bubble removal. */
+    private boolean mIsPendingRemoval;
+
     /**
      * Create a bubble with limited information based on given {@link ShortcutInfo}.
      * Note: Currently this is only being used when the bubble is persisted to disk.
@@ -994,6 +997,15 @@ public class Bubble implements BubbleViewProvider {
      */
     boolean isSuppressable() {
         return (mFlags & Notification.BubbleMetadata.FLAG_SUPPRESSABLE_BUBBLE) != 0;
+    }
+
+    /** Marks as pending removal in case we remove the icon review before Bubble removal. */
+    void markAsPendingRemoval() {
+        mIsPendingRemoval = true;
+    }
+
+    boolean isPendingRemoval() {
+        return mIsPendingRemoval;
     }
 
     /**

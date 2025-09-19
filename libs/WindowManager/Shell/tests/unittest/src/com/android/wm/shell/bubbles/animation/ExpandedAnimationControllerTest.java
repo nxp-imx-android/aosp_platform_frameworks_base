@@ -19,6 +19,7 @@ package com.android.wm.shell.bubbles.animation;
 import static com.google.common.truth.Truth.assertThat;
 
 import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -46,6 +47,12 @@ import org.junit.runner.RunWith;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * Tests of {@link ExpandedAnimationController}.
+ *
+ * Build/Install/Run:
+ *  atest WMShellUnitTests:ExpandedAnimationControllerTest
+ */
 @SmallTest
 @RunWith(AndroidJUnit4.class)
 public class ExpandedAnimationControllerTest extends PhysicsAnimationLayoutTestCase {
@@ -57,6 +64,7 @@ public class ExpandedAnimationControllerTest extends PhysicsAnimationLayoutTestC
     private int mStackOffset;
     private PointF mExpansionPoint;
     private BubblePositioner mPositioner;
+    private BubbleStackView mBubbleStackView;
     private final BubbleStackView.StackViewState mStackViewState =
             new BubbleStackView.StackViewState();
 
@@ -69,11 +77,11 @@ public class ExpandedAnimationControllerTest extends PhysicsAnimationLayoutTestC
         mPositioner.updateInternal(Insets.of(0, 0, 0, 0),
                 new Rect(0, 0, 500, 1000));
 
-        BubbleStackView stackView = mock(BubbleStackView.class);
+        mBubbleStackView = mock(BubbleStackView.class);
 
         mExpandedController = new ExpandedAnimationController(mPositioner,
                 mOnBubbleAnimatedOutAction,
-                stackView);
+                mBubbleStackView);
 
         addOneMoreThanBubbleLimitBubbles();
         mLayout.setActiveController(mExpandedController);
@@ -83,7 +91,7 @@ public class ExpandedAnimationControllerTest extends PhysicsAnimationLayoutTestC
         mExpansionPoint = new PointF(100, 100);
 
         getStackViewState();
-        when(stackView.getState()).thenAnswer(i -> getStackViewState());
+        when(mBubbleStackView.getState()).thenAnswer(i -> getStackViewState());
         waitForMainThread();
     }
 
@@ -140,6 +148,33 @@ public class ExpandedAnimationControllerTest extends PhysicsAnimationLayoutTestC
         assertThat(mBubbleRemovedSemaphore.tryAcquire(2, 2, TimeUnit.SECONDS)).isTrue();
 
         waitForAnimation();
+        testBubblesInCorrectExpandedPositions();
+    }
+
+    @Test
+    public void testJumptcutBubbleSwitching_onChildAdded() throws Exception {
+        expand();
+        waitForMainThread();
+        doReturn(true).when(mBubbleStackView).isJumpcutBubbleSwitching();
+
+        // Add another new view and no need to wait for its animation.
+        final View newView = new FrameLayout(getContext());
+        mLayout.addView(newView, 0);
+
+        testBubblesInCorrectExpandedPositions();
+    }
+
+    @Test
+    public void testJumptcutBubbleSwitching_onChildRemoved() throws Exception {
+        expand();
+        waitForMainThread();
+        doReturn(true).when(mBubbleStackView).isJumpcutBubbleSwitching();
+
+        // Remove some views and verify the remaining child views still pass the expansion test.
+        mLayout.removeView(mViews.get(0));
+        mLayout.removeView(mViews.get(3));
+
+        // No need to wait for its animation.
         testBubblesInCorrectExpandedPositions();
     }
 
