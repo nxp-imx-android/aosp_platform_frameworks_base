@@ -79,6 +79,7 @@ import com.android.wm.shell.windowdecor.viewholder.AppHandleViewHolder
 import com.android.wm.shell.windowdecor.viewholder.AppHandleViewHolder.HandleData
 import com.android.wm.shell.windowdecor.viewholder.WindowDecorationViewHolder
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.MainCoroutineDispatcher
 import kotlinx.coroutines.launch
 
@@ -136,13 +137,14 @@ class AppHandleController(
     override val captionType = CaptionType.APP_HANDLE
     private lateinit var viewHolder: AppHandleViewHolder
 
-    private var handleMenu: HandleMenu? = null
+    var handleMenu: HandleMenu? = null
     private var openByDefaultDialog: OpenByDefaultDialog? = null
     private var manageWindowsMenu: DesktopHandleManageWindowsMenu? = null
 
     override val handleMenuController = this
     override val manageWindowsMenuController = this
 
+    private var handleMenuCreationJob: Job? = null
     override val isHandleMenuActive: Boolean
         get() = handleMenu != null
 
@@ -371,23 +373,25 @@ class AppHandleController(
 
     /** Updates app info and creates and displays handle menu window. */
     override fun createHandleMenu(minimumInstancesFound: Boolean) {
-        if (isHandleMenuActive) return
-        mainScope.launch {
-            val isBrowserApp = isBrowserApp()
-            val appToWebIntent =
-                if (canShowAppLinks(display, desktopState)) {
-                    appToWebRepository.getAppToWebIntent(taskInfo, isBrowserApp)
-                } else {
-                    // Skip request for assist content as it is only used for links, which are not
-                    // supported
-                    null
-                }
-            createHandleMenu(
-                openInAppOrBrowserIntent = appToWebIntent,
-                isBrowserApp = isBrowserApp,
-                minimumInstancesFound = minimumInstancesFound,
-            )
-        }
+        if (isHandleMenuActive || handleMenuCreationJob?.isActive == true) return
+
+        handleMenuCreationJob =
+            mainScope.launch {
+                val isBrowserApp = isBrowserApp()
+                val appToWebIntent =
+                    if (canShowAppLinks(display, desktopState)) {
+                        appToWebRepository.getAppToWebIntent(taskInfo, isBrowserApp)
+                    } else {
+                        // Skip request for assist content as it is only used for links, which are
+                        // not supported
+                        null
+                    }
+                createHandleMenu(
+                    openInAppOrBrowserIntent = appToWebIntent,
+                    isBrowserApp = isBrowserApp,
+                    minimumInstancesFound = minimumInstancesFound,
+                )
+            }
     }
 
     /** Creates and shows the handle menu. */
