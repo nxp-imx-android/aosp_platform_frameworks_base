@@ -114,6 +114,13 @@ flag {
 }
 
 flag {
+    name: "enable_a11y_top_row_shortcut"
+    namespace: "accessibility"
+    description: "Support physical keyboard top row accessibility key shortcut"
+    bug: "440411783"
+}
+
+flag {
     name: "enable_refresh_window_info"
     namespace: "accessibility"
     is_exported: true
