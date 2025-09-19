@@ -22,11 +22,11 @@ import android.platform.test.annotations.RequiresFlagsEnabled
 import android.tools.NavBar
 import androidx.test.filters.RequiresDevice
 import com.android.wm.shell.Flags
-import com.android.wm.shell.Utils
+import com.android.wm.shell.Utils.testSetupRule
 import com.android.wm.shell.flicker.bubbles.testcase.BubbleAlwaysVisibleTestCases
-import com.android.wm.shell.flicker.bubbles.utils.ApplyPerParameterRule
 import com.android.wm.shell.flicker.bubbles.utils.BubbleFlickerTestHelper.launchBubbleViaBubbleMenu
 import com.android.wm.shell.flicker.bubbles.utils.RecordTraceWithTransitionRule
+import com.android.wm.shell.flicker.bubbles.utils.RunOncePerParameterRule
 import com.google.common.truth.Truth.assertWithMessage
 import org.junit.Assume.assumeTrue
 import org.junit.Before
@@ -89,9 +89,9 @@ class ExpandedBubbleAppMoveTest : BubbleFlickerTestBase(),
         private val navBar = NavBar.MODE_GESTURAL
     }
 
-    @get:Rule
-    val setUpRule = ApplyPerParameterRule(
-        Utils.testSetupRule(navBar).around(recordTraceWithTransitionRule),
+    @get:Rule(order = 1)
+    val setUpRule = RunOncePerParameterRule(
+        wrappedRule = testSetupRule(navBar).around(recordTraceWithTransitionRule),
     )
 
     override val traceDataReader
@@ -99,8 +99,7 @@ class ExpandedBubbleAppMoveTest : BubbleFlickerTestBase(),
 
     @Before
     override fun setUp() {
-        // Bubble bar handle is only enabled on large screen devices.
-        assumeTrue(tapl.isTablet)
+        assumeTrue("Bubble bar handle is only enabled on large screen devices", tapl.isTablet)
         super.setUp()
     }
 

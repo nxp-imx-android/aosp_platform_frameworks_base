@@ -21,11 +21,11 @@ import android.platform.test.annotations.RequiresFlagsEnabled
 import android.tools.NavBar
 import androidx.test.filters.RequiresDevice
 import com.android.wm.shell.Flags
-import com.android.wm.shell.Utils
+import com.android.wm.shell.Utils.testSetupRule
 import com.android.wm.shell.flicker.bubbles.testcase.EnterBubbleViaDragToBubbleBarTestCases
-import com.android.wm.shell.flicker.bubbles.utils.ApplyPerParameterRule
 import com.android.wm.shell.flicker.bubbles.utils.BubbleFlickerTestHelper.launchBubbleViaDragToBubbleBar
 import com.android.wm.shell.flicker.bubbles.utils.RecordTraceWithTransitionRule
+import com.android.wm.shell.flicker.bubbles.utils.RunOncePerParameterRule
 import com.android.wm.shell.flicker.utils.SplitScreenUtils
 import org.junit.Assume.assumeTrue
 import org.junit.Before
@@ -35,6 +35,7 @@ import org.junit.rules.TestRule
 import org.junit.runner.RunWith
 import org.junit.runners.MethodSorters
 import org.junit.runners.Parameterized
+import org.junit.runners.Parameterized.Parameters
 
 /**
  * Test entering bubble via dragging the [testApp] icon from task bar to bubble bar location.
@@ -71,14 +72,14 @@ class EnterBubbleViaDragToBubbleBarTest(navBar: NavBar) : BubbleFlickerTestBase(
             tearDownAfterTransition = { testApp.exit(wmHelper) }
         )
 
-        @Parameterized.Parameters(name = "{0}")
+        @Parameters(name = "{0}")
         @JvmStatic
-        fun data(): List<NavBar> = listOf(NavBar.MODE_GESTURAL, NavBar.MODE_3BUTTON)
+        fun data(): List<NavBar> = NavBar.entries
     }
 
-    @get:Rule
-    val setUpRule: TestRule = ApplyPerParameterRule(
-        Utils.testSetupRule(navBar).around(recordTraceWithTransitionRule),
+    @get:Rule(order = 1)
+    val setUpRule: TestRule = RunOncePerParameterRule(
+        wrappedRule = testSetupRule(navBar).around(recordTraceWithTransitionRule),
         params = arrayOf(navBar),
     )
 
@@ -87,8 +88,7 @@ class EnterBubbleViaDragToBubbleBarTest(navBar: NavBar) : BubbleFlickerTestBase(
 
     @Before
     override fun setUp() {
-        // Bubble and task bar are not available on phone.
-        assumeTrue(tapl.isTablet)
+        assumeTrue("Bubble and task bar are not available on phone", tapl.isTablet)
         super.setUp()
     }
 }

@@ -25,15 +25,15 @@ import androidx.test.filters.FlakyTest
 import androidx.test.filters.RequiresDevice
 import com.android.server.wm.flicker.helpers.ImeShownOnAppStartHelper
 import com.android.wm.shell.Flags
-import com.android.wm.shell.Utils
+import com.android.wm.shell.Utils.testSetupRule
 import com.android.wm.shell.flicker.bubbles.ExpandBubbleWithImeViaBubbleBarTest.Companion.testApp
 import com.android.wm.shell.flicker.bubbles.testcase.ExpandBubbleTestCases
 import com.android.wm.shell.flicker.bubbles.testcase.ImeBecomesVisibleAndBubbleIsShrunkTestCase
-import com.android.wm.shell.flicker.bubbles.utils.ApplyPerParameterRule
 import com.android.wm.shell.flicker.bubbles.utils.BubbleFlickerTestHelper.collapseBubbleAppViaBackKey
 import com.android.wm.shell.flicker.bubbles.utils.BubbleFlickerTestHelper.expandBubbleAppViaBubbleBar
 import com.android.wm.shell.flicker.bubbles.utils.BubbleFlickerTestHelper.launchBubbleViaBubbleMenu
 import com.android.wm.shell.flicker.bubbles.utils.RecordTraceWithTransitionRule
+import com.android.wm.shell.flicker.bubbles.utils.RunOncePerParameterRule
 import org.junit.Assume.assumeTrue
 import org.junit.Before
 import org.junit.FixMethodOrder
@@ -41,6 +41,7 @@ import org.junit.Rule
 import org.junit.runner.RunWith
 import org.junit.runners.MethodSorters
 import org.junit.runners.Parameterized
+import org.junit.runners.Parameterized.Parameters
 
 /**
  * Test tapping on bubble bar to expand a bubble that was in collapsed state and show IME.
@@ -105,14 +106,14 @@ class ExpandBubbleWithImeViaBubbleBarTest(navBar: NavBar) : BubbleFlickerTestBas
             tearDownAfterTransition = { testApp.exit(wmHelper) }
         )
 
-        @Parameterized.Parameters(name = "{0}")
+        @Parameters(name = "{0}")
         @JvmStatic
-        fun data(): List<NavBar> = listOf(NavBar.MODE_GESTURAL, NavBar.MODE_3BUTTON)
+        fun data(): List<NavBar> = NavBar.entries
     }
 
-    @get:Rule
-    val setUpRule = ApplyPerParameterRule(
-        Utils.testSetupRule(navBar).around(recordTraceWithTransitionRule),
+    @get:Rule(order = 1)
+    val setUpRule = RunOncePerParameterRule(
+        wrappedRule = testSetupRule(navBar).around(recordTraceWithTransitionRule),
         params = arrayOf(navBar),
     )
 
@@ -130,7 +131,7 @@ class ExpandBubbleWithImeViaBubbleBarTest(navBar: NavBar) : BubbleFlickerTestBas
 
     @Before
     override fun setUp() {
-        assumeTrue(tapl.isTablet)
+        assumeTrue("The bubble bar is only available on large screen devices", tapl.isTablet)
         super.setUp()
     }
 }
