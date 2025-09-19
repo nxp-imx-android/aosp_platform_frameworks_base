@@ -599,7 +599,10 @@ class AppOpsPrivacyItemMonitorTest : SysuiTestCase() {
         setMapsToNonSystem()
 
         // Set to background
-        doReturn(IMPORTANCE_CACHED).`when`(activityManager).getUidImportance(eq(TEST_UID))
+        val process = ActivityManager.RunningAppProcessInfo()
+        process.uid = TEST_UID
+        process.importance = IMPORTANCE_CACHED
+        doReturn(listOf(process)).`when`(activityManager).runningAppProcesses
 
         // First, location is used by a background app
         doReturn(
@@ -612,8 +615,7 @@ class AppOpsPrivacyItemMonitorTest : SysuiTestCase() {
             .getActiveAppOps(anyBoolean())
 
         assertEquals(appOpsPrivacyItemMonitor.getActivePrivacyItems().size, 0)
-        // Expect logs for BACKGROUND_APP and ALL_APP when location is first used by a background
-        // app.
+        // Expect logs for BACKGROUND_APP and ALL_APP when location is first used by a background app.
         assertEquals(uiEventLogger.numLogs(), 2)
         Truth.assertThat(
                 uiEventLogger.logs.any { log ->
@@ -664,7 +666,10 @@ class AppOpsPrivacyItemMonitorTest : SysuiTestCase() {
         setMapsToNonSystem()
 
         // Set to background
-        doReturn(IMPORTANCE_CACHED).`when`(activityManager).getUidImportance(eq(TEST_UID))
+        val process = ActivityManager.RunningAppProcessInfo()
+        process.uid = TEST_UID
+        process.importance = IMPORTANCE_CACHED
+        doReturn(listOf(process)).`when`(activityManager).runningAppProcesses
 
         doReturn(
                 listOf(
