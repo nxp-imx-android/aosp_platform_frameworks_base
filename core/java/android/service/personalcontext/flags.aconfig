@@ -1,0 +1,10 @@
+package: "android.service.personalcontext"
+container: "system"
+
+flag {
+     namespace: "communal"
+     name: "enable_personal_context_service"
+     is_exported: false
+     description: "Personal Context Service"
+     bug: "445425545"
+}
