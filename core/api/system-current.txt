@@ -6623,6 +6623,7 @@ package android.hardware.location {
     method @Deprecated @RequiresPermission(android.Manifest.permission.ACCESS_CONTEXT_HUB) public int[] getContextHubHandles();
     method @Deprecated @RequiresPermission(android.Manifest.permission.ACCESS_CONTEXT_HUB) public android.hardware.location.ContextHubInfo getContextHubInfo(int);
     method @NonNull @RequiresPermission(android.Manifest.permission.ACCESS_CONTEXT_HUB) public java.util.List<android.hardware.location.ContextHubInfo> getContextHubs();
+    method @FlaggedApi("android.chre.flags.get_hubs_api") @NonNull @RequiresPermission(android.Manifest.permission.ACCESS_CONTEXT_HUB) public java.util.List<android.hardware.location.HubInfo> getHubs();
     method @Deprecated @Nullable @RequiresPermission(android.Manifest.permission.ACCESS_CONTEXT_HUB) public android.hardware.location.NanoAppInstanceInfo getNanoAppInstanceInfo(int);
     method @Deprecated @RequiresPermission(android.Manifest.permission.ACCESS_CONTEXT_HUB) public int loadNanoApp(int, @NonNull android.hardware.location.NanoApp);
     method @NonNull @RequiresPermission(android.Manifest.permission.ACCESS_CONTEXT_HUB) public android.hardware.location.ContextHubTransaction<java.lang.Void> loadNanoApp(@NonNull android.hardware.location.ContextHubInfo, @NonNull android.hardware.location.NanoAppBinary);
@@ -6789,6 +6790,18 @@ package android.hardware.location {
     method public void setUnknownTimer(int);
   }
 
+  @FlaggedApi("android.chre.flags.get_hubs_api") public final class HubInfo implements android.os.Parcelable {
+    method public int describeContents();
+    method @Nullable public android.hardware.location.ContextHubInfo getContextHubInfo();
+    method public long getId();
+    method public int getType();
+    method @Nullable public android.hardware.location.VendorHubInfo getVendorHubInfo();
+    method public void writeToParcel(@NonNull android.os.Parcel, int);
+    field @NonNull public static final android.os.Parcelable.Creator<android.hardware.location.HubInfo> CREATOR;
+    field public static final int TYPE_CONTEXT_HUB = 0; // 0x0
+    field public static final int TYPE_VENDOR_HUB = 1; // 0x1
+  }
+
   public class MemoryRegion implements android.os.Parcelable {
     ctor public MemoryRegion(android.os.Parcel);
     method public int describeContents();
@@ -6918,6 +6931,14 @@ package android.hardware.location {
     method public boolean isEnabled();
     method public void writeToParcel(android.os.Parcel, int);
     field @NonNull public static final android.os.Parcelable.Creator<android.hardware.location.NanoAppState> CREATOR;
+  }
+
+  @FlaggedApi("android.chre.flags.get_hubs_api") public final class VendorHubInfo implements android.os.Parcelable {
+    method public int describeContents();
+    method @NonNull public String getName();
+    method public int getVersion();
+    method public void writeToParcel(@NonNull android.os.Parcel, int);
+    field @NonNull public static final android.os.Parcelable.Creator<android.hardware.location.VendorHubInfo> CREATOR;
   }
 
 }
