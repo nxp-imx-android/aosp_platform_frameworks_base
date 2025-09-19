@@ -1785,14 +1785,11 @@ public class UserManagerService extends IUserManager.Stub {
         }
     }
 
-    // TODO(b/142482943): Will probably need a getProfiles(userType). But permissions may vary.
-
     @Override
     public int[] getProfileIds(@UserIdInt int userId, boolean enabledOnly) {
         return getProfileIds(userId, null, enabledOnly, /* excludeHidden */ false);
     }
 
-    // TODO(b/142482943): Probably @Override and make this accessible in UserManager.
     /**
      * Returns all the users of type userType that are in the same profile group as userId
      * (including userId itself, if it is of the appropriate user type).
@@ -5319,7 +5316,6 @@ public class UserManagerService extends IUserManager.Stub {
                         try {
                             userData.info.userType = UserInfo.getDefaultUserType(flags);
                         } catch (IllegalArgumentException e) {
-                            // TODO(b/142482943): What should we do here? Delete user? Crashloop?
                             throw new IllegalStateException("Cannot upgrade user with flags "
                                     + Integer.toHexString(flags) + " because it doesn't correspond "
                                     + "to a valid user type.", e);
@@ -9151,17 +9147,6 @@ public class UserManagerService extends IUserManager.Stub {
             }
         }
         return 0;
-    }
-
-    /**
-     * Formerly: Checks if the given user has a profile associated with it.
-     * Now: Just throws. Do not use it.
-     * @param userId The parent user (passing in a profile user is not supported)
-     * @deprecated
-     */
-    boolean hasProfile(@UserIdInt int userId) {
-        // TODO(b/332664521): Remove this method entirely. It is no longer used.
-        throw new UnsupportedOperationException();
     }
 
     /**
