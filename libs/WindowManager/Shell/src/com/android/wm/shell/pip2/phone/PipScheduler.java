@@ -361,14 +361,7 @@ public class PipScheduler implements PipTransitionState.PipTransitionStateChange
         tx.apply();
     }
 
-    /**
-     * Starts a fade-out animation for the given overlay leash.
-     *
-     * @param overlayLeash the leash of the overlay to fade out.
-     * @param withStartDelay whether to start the animation with a delay.
-     * @param onAnimationEnd a callback to run when the animation ends.
-     */
-    public void startOverlayFadeoutAnimation(@NonNull SurfaceControl overlayLeash,
+    void startOverlayFadeoutAnimation(@NonNull SurfaceControl overlayLeash,
             boolean withStartDelay, @NonNull Runnable onAnimationEnd) {
         mOverlayFadeoutAnimator = mPipAlphaAnimatorSupplier.get(mContext,
                 mPipSurfaceTransactionHelper, overlayLeash,

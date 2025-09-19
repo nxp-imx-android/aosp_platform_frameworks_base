@@ -106,12 +106,7 @@ public class PipTaskListener implements ShellTaskOrganizer.TaskListener,
         mSurfaceTransactionHelper = pipSurfaceTransactionHelper;
     }
 
-    /**
-     * Sets the Picture-in-Picture parameters.
-     *
-     * @param params the new Picture-in-Picture parameters.
-     */
-    public void setPictureInPictureParams(@Nullable PictureInPictureParams params) {
+    void setPictureInPictureParams(@Nullable PictureInPictureParams params) {
         if (mPictureInPictureParams.equals(params)) {
             return;
         }
