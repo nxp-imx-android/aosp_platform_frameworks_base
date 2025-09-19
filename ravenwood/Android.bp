@@ -165,7 +165,6 @@ java_library {
         "ravenwood-framework",
         "services.core.ravenwood",
         "objenesis",
-        "mockito-ravenwood-prebuilt",
     ],
     sdk_version: "core_current",
     visibility: [":__subpackages__"],
