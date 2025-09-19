@@ -1623,6 +1623,12 @@
     <string name="gpsNotifMessage" msgid="7346649122793758032">"请求人：<xliff:g id="NAME">%1$s</xliff:g>（<xliff:g id="SERVICE">%2$s</xliff:g>）"</string>
     <string name="gpsVerifYes" msgid="3719843080744112940">"是"</string>
     <string name="gpsVerifNo" msgid="1671201856091564741">"否"</string>
+    <!-- no translation found for emergency_location_notification_title (917557758257778958) -->
+    <skip />
+    <!-- no translation found for emergency_location_notification_message (1877038822515882885) -->
+    <skip />
+    <!-- no translation found for emergency_location_notification_learn_more (8718634939217070481) -->
+    <skip />
     <string name="sync_too_many_deletes" msgid="6999440774578705300">"超出删除限制"</string>
     <string name="sync_too_many_deletes_desc" msgid="7409327940303504440">"账号 <xliff:g id="ACCOUNT_NAME">%3$s</xliff:g> 在进行“<xliff:g id="TYPE_OF_SYNC">%2$s</xliff:g>”同步时删除了 <xliff:g id="NUMBER_OF_DELETED_ITEMS">%1$d</xliff:g> 项内容。您要如何处理这些删除的内容？"</string>
     <string name="sync_really_delete" msgid="5657871730315579051">"删除这些内容"</string>
@@ -1986,10 +1992,8 @@
     <string name="package_updated_device_owner" msgid="7770195449213776218">"由您的管理员更新。\n前往设置可查看已授予的权限"</string>
     <string name="package_deleted_device_owner" msgid="2292335928930293023">"已由您的管理员删除"</string>
     <string name="confirm_battery_saver" msgid="5247976246208245754">"确定"</string>
-    <!-- no translation found for battery_saver_description_with_learn_more (8969945879044849461) -->
-    <skip />
-    <!-- no translation found for battery_saver_description (2820475140307374570) -->
-    <skip />
+    <string name="battery_saver_description_with_learn_more" msgid="8969945879044849461">"在省电模式下，系统会启用深色主题，并限制或关闭后台活动、某些视觉效果、特定功能和部分网络连接。"</string>
+    <string name="battery_saver_description" msgid="2820475140307374570">"在省电模式下，系统会启用深色主题，并限制或关闭后台活动、某些视觉效果、特定功能和部分网络连接。"</string>
     <string name="data_saver_description" msgid="4995164271550590517">"流量节省模式会阻止部分应用在后台收发数据，以减少流量消耗。您正在使用的应用可以收发数据，但频率可能会降低。例如，图片可能需要点按才会显示。"</string>
     <string name="data_saver_enable_title" msgid="7080620065745260137">"要开启流量节省模式吗？"</string>
     <string name="data_saver_enable_button" msgid="4399405762586419726">"开启"</string>

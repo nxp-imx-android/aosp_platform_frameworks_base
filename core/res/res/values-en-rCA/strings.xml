@@ -1623,6 +1623,9 @@
     <string name="gpsNotifMessage" msgid="7346649122793758032">"Requested by <xliff:g id="NAME">%1$s</xliff:g> (<xliff:g id="SERVICE">%2$s</xliff:g>)"</string>
     <string name="gpsVerifYes" msgid="3719843080744112940">"Yes"</string>
     <string name="gpsVerifNo" msgid="1671201856091564741">"No"</string>
+    <string name="emergency_location_notification_title" msgid="917557758257778958">"Location shared for emergency"</string>
+    <string name="emergency_location_notification_message" msgid="1877038822515882885">"Emergency services received your location from your carrier"</string>
+    <string name="emergency_location_notification_learn_more" msgid="8718634939217070481">"Learn more"</string>
     <string name="sync_too_many_deletes" msgid="6999440774578705300">"Delete limit exceeded"</string>
     <string name="sync_too_many_deletes_desc" msgid="7409327940303504440">"There are <xliff:g id="NUMBER_OF_DELETED_ITEMS">%1$d</xliff:g> deleted items for <xliff:g id="TYPE_OF_SYNC">%2$s</xliff:g>, account <xliff:g id="ACCOUNT_NAME">%3$s</xliff:g>. What do you want to do?"</string>
     <string name="sync_really_delete" msgid="5657871730315579051">"Delete the items"</string>
@@ -1986,10 +1989,8 @@
     <string name="package_updated_device_owner" msgid="7770195449213776218">"Updated by your admin.\nGo to settings to view granted permissions"</string>
     <string name="package_deleted_device_owner" msgid="2292335928930293023">"Deleted by your admin"</string>
     <string name="confirm_battery_saver" msgid="5247976246208245754">"OK"</string>
-    <!-- no translation found for battery_saver_description_with_learn_more (8969945879044849461) -->
-    <skip />
-    <!-- no translation found for battery_saver_description (2820475140307374570) -->
-    <skip />
+    <string name="battery_saver_description_with_learn_more" msgid="8969945879044849461">"Battery Saver turns on dark theme and limits or turns off background activity, some visual effects, certain features, and some network connections."</string>
+    <string name="battery_saver_description" msgid="2820475140307374570">"Battery Saver turns on dark theme and limits or turns off background activity, some visual effects, certain features, and some network connections."</string>
     <string name="data_saver_description" msgid="4995164271550590517">"To help reduce data usage, Data Saver prevents some apps from sending or receiving data in the background. An app you\'re currently using can access data, but may do so less frequently. This may mean, for example, that images don\'t display until you tap them."</string>
     <string name="data_saver_enable_title" msgid="7080620065745260137">"Turn on Data Saver?"</string>
     <string name="data_saver_enable_button" msgid="4399405762586419726">"Turn on"</string>

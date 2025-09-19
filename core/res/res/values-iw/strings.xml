@@ -1624,6 +1624,12 @@
     <string name="gpsNotifMessage" msgid="7346649122793758032">"הבקשה נשלחה על ידי <xliff:g id="NAME">%1$s</xliff:g>‏ (<xliff:g id="SERVICE">%2$s</xliff:g>)"</string>
     <string name="gpsVerifYes" msgid="3719843080744112940">"כן"</string>
     <string name="gpsVerifNo" msgid="1671201856091564741">"לא"</string>
+    <!-- no translation found for emergency_location_notification_title (917557758257778958) -->
+    <skip />
+    <!-- no translation found for emergency_location_notification_message (1877038822515882885) -->
+    <skip />
+    <!-- no translation found for emergency_location_notification_learn_more (8718634939217070481) -->
+    <skip />
     <string name="sync_too_many_deletes" msgid="6999440774578705300">"חרגת ממגבלת המחיקה"</string>
     <string name="sync_too_many_deletes_desc" msgid="7409327940303504440">"יש <xliff:g id="NUMBER_OF_DELETED_ITEMS">%1$d</xliff:g> פריטים שנמחקו עבור <xliff:g id="TYPE_OF_SYNC">%2$s</xliff:g> , בחשבון <xliff:g id="ACCOUNT_NAME">%3$s</xliff:g>. איזו פעולה ברצונך לבצע?"</string>
     <string name="sync_really_delete" msgid="5657871730315579051">"מחיקת הפריטים"</string>
@@ -1987,10 +1993,8 @@
     <string name="package_updated_device_owner" msgid="7770195449213776218">"החבילה עודכנה על ידי האדמין.\nצריך לעבור להגדרות כדי לראות את ההרשאות שניתנו"</string>
     <string name="package_deleted_device_owner" msgid="2292335928930293023">"נמחקה על ידי מנהל המערכת"</string>
     <string name="confirm_battery_saver" msgid="5247976246208245754">"אישור"</string>
-    <!-- no translation found for battery_saver_description_with_learn_more (8969945879044849461) -->
-    <skip />
-    <!-- no translation found for battery_saver_description (2820475140307374570) -->
-    <skip />
+    <string name="battery_saver_description_with_learn_more" msgid="8969945879044849461">"התכונה \'חיסכון בסוללה\' מפעילה עיצוב כהה ומגבילה או מכבה פעילות ברקע, חלק מהאפקטים החזותיים, תכונות מסוימות וחלק מהחיבורים לרשתות."</string>
+    <string name="battery_saver_description" msgid="2820475140307374570">"התכונה \'חיסכון בסוללה\' מפעילה עיצוב כהה ומגבילה או מכבה פעילות ברקע, חלק מהאפקטים החזותיים, תכונות מסוימות וחלק מהחיבורים לרשתות."</string>
     <string name="data_saver_description" msgid="4995164271550590517">"‏כדי לסייע בהפחתת השימוש בנתונים, חוסך הנתונים (Data Saver) מונע מאפליקציות מסוימות לשלוח או לקבל נתונים ברקע. אפליקציות שבהן נעשה שימוש כרגע יכולות לגשת לנתונים, אבל בתדירות נמוכה יותר. המשמעות היא, למשל, שתמונות יוצגו רק לאחר שלוחצים עליהן."</string>
     <string name="data_saver_enable_title" msgid="7080620065745260137">"להפעיל את חוסך הנתונים?"</string>
     <string name="data_saver_enable_button" msgid="4399405762586419726">"הפעלה"</string>

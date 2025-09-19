@@ -1623,6 +1623,12 @@
     <string name="gpsNotifMessage" msgid="7346649122793758032">"درخواست‌کننده <xliff:g id="NAME">%1$s</xliff:g> (<xliff:g id="SERVICE">%2$s</xliff:g>)"</string>
     <string name="gpsVerifYes" msgid="3719843080744112940">"بله"</string>
     <string name="gpsVerifNo" msgid="1671201856091564741">"نه"</string>
+    <!-- no translation found for emergency_location_notification_title (917557758257778958) -->
+    <skip />
+    <!-- no translation found for emergency_location_notification_message (1877038822515882885) -->
+    <skip />
+    <!-- no translation found for emergency_location_notification_learn_more (8718634939217070481) -->
+    <skip />
     <string name="sync_too_many_deletes" msgid="6999440774578705300">"از حد حذف کردن فراتر رفتید"</string>
     <string name="sync_too_many_deletes_desc" msgid="7409327940303504440">"‏<xliff:g id="NUMBER_OF_DELETED_ITEMS">%1$d</xliff:g> مورد حذف‌شده برای <xliff:g id="TYPE_OF_SYNC">%2$s</xliff:g>، حساب <xliff:g id="ACCOUNT_NAME">%3$s</xliff:g> وجود دارد. می‎خواهید چه کار بکنید؟"</string>
     <string name="sync_really_delete" msgid="5657871730315579051">"حذف موارد"</string>
@@ -1780,7 +1786,7 @@
     <string name="kg_failed_attempts_almost_at_login" product="tv" msgid="4670840383567106114">"‏الگوی بازگشایی قفل را <xliff:g id="NUMBER_0">%1$d</xliff:g> بار اشتباه کشیده‌اید. اگر <xliff:g id="NUMBER_1">%2$d</xliff:g> تلاش ناموفق دیگر داشته باشید، از شما خواسته می‌شود بااستفاده از حساب ایمیلتان، قفل دستگاه Android TV را باز کنید.\n\n <xliff:g id="NUMBER_2">%3$d</xliff:g> ثانیه دیگر دوباره امتحان کنید."</string>
     <string name="kg_failed_attempts_almost_at_login" product="default" msgid="5270861875006378092">"‏الگوی بازگشایی قفل را <xliff:g id="NUMBER_0">%1$d</xliff:g> بار اشتباه کشیده‌اید. پس‌از <xliff:g id="NUMBER_1">%2$d</xliff:g> تلاش ناموفق، از شما خواسته می‌‎شود که بااستفاده از یک حساب ایمیل قفل تلفنتان را باز کنید.\n\n لطفاً پس‌از <xliff:g id="NUMBER_2">%3$d</xliff:g> ثانیه دوباره امتحان کنید."</string>
     <string name="kg_text_message_separator" product="default" msgid="4503708889934976866">" — "</string>
-    <string name="kg_reordering_delete_drop_target_text" msgid="2034358143731750914">"حذف"</string>
+    <string name="kg_reordering_delete_drop_target_text" msgid="2034358143731750914">"برداشتن"</string>
     <string name="safe_media_volume_warning" product="default" msgid="3751676824423049994">"میزان صدا را به بالاتر از حد توصیه شده افزایش می‌دهید؟\n\nگوش دادن به صداهای بلند برای مدت طولانی می‌تواند به شنوایی‌تان آسیب وارد کند."</string>
     <string name="csd_dose_reached_warning" product="default" msgid="491875107583931974">"همچنان می‌خواهید با صدای بلند گوش کنید؟\n\nصدای هدفون برای مدتی طولانی‌تر از حد توصیه‌شده بلند بوده است. این موضوع می‌تواند به شنوایی شما آسیب بزند."</string>
     <string name="csd_momentary_exposure_warning" product="default" msgid="7730840903435405501">"صدای بلند شناسایی شد\n\nصدای هدفون برای مدتی طولانی‌تر از حد توصیه‌شده بلند بوده است. این موضوع می‌تواند به شنوایی شما آسیب بزند."</string>
@@ -1986,10 +1992,8 @@
     <string name="package_updated_device_owner" msgid="7770195449213776218">"سرپرستتان آن را به‌روز کرده است.\nبرای مشاهده اجازه‌های اعطاشده به تنظیمات بروید"</string>
     <string name="package_deleted_device_owner" msgid="2292335928930293023">"توسط سرپرست سیستم حذف شد"</string>
     <string name="confirm_battery_saver" msgid="5247976246208245754">"تأیید"</string>
-    <!-- no translation found for battery_saver_description_with_learn_more (8969945879044849461) -->
-    <skip />
-    <!-- no translation found for battery_saver_description (2820475140307374570) -->
-    <skip />
+    <string name="battery_saver_description_with_learn_more" msgid="8969945879044849461">"«بهینه‌سازی باتری» «زمینه تاریک» را روشن می‌کند و فعالیت پس‌زمینه، برخی از جلوه‌های بصری، ویژگی‌هایی خاص، و برخی از اتصال‌های شبکه را محدود یا خاموش می‌کند."</string>
+    <string name="battery_saver_description" msgid="2820475140307374570">"«بهینه‌سازی باتری» «زمینه تاریک» را روشن می‌کند و فعالیت پس‌زمینه، برخی از جلوه‌های بصری، ویژگی‌هایی خاص، و برخی از اتصال‌های شبکه را محدود یا خاموش می‌کند."</string>
     <string name="data_saver_description" msgid="4995164271550590517">"برای کمک به کاهش مصرف داده، «صرفه‌جویی داده» از ارسال و دریافت داده در پس‌زمینه در بعضی برنامه‌ها جلوگیری می‌کند. برنامه‌ای که درحال‌حاضر استفاده می‌کنید می‌تواند به داده‌ها دسترسی داشته باشد اما دفعات دسترسی آن محدود است. این می‌تواند به این معنی باشد که، برای مثال، تصاویر تازمانی‌که روی آن‌ها ضربه نزنید نشان داده نمی‌شوند."</string>
     <string name="data_saver_enable_title" msgid="7080620065745260137">"«صرفه‌جویی داده» روشن شود؟"</string>
     <string name="data_saver_enable_button" msgid="4399405762586419726">"روشن کردن"</string>
