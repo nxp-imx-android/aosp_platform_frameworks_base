@@ -58,7 +58,6 @@ import com.android.wm.shell.desktopmode.data.DesktopRepository
 import com.android.wm.shell.shared.desktopmode.DesktopModeTransitionSource
 import com.android.wm.shell.shared.desktopmode.FakeDesktopConfig
 import com.android.wm.shell.shared.desktopmode.FakeDesktopState
-import com.android.wm.shell.splitscreen.SplitScreenController
 import com.android.wm.shell.sysui.ShellController
 import com.android.wm.shell.sysui.ShellInit
 import com.android.wm.shell.transition.FocusTransitionObserver
@@ -106,7 +105,6 @@ class DesktopModeKeyGestureHandlerTest : ShellTestCase() {
     private val desktopTasksController = mock<DesktopTasksController>()
     private val desktopState = FakeDesktopState()
     private val shellController = mock<ShellController>()
-    private val splitScreenController = mock<SplitScreenController>()
 
     private lateinit var desktopModeKeyGestureHandler: DesktopModeKeyGestureHandler
     private lateinit var keyGestureEventHandler: KeyGestureEventHandler
@@ -177,7 +175,6 @@ class DesktopModeKeyGestureHandlerTest : ShellTestCase() {
                 testExecutor,
                 displayController,
                 desktopState,
-                Optional.of(splitScreenController),
             )
     }
 
@@ -429,7 +426,6 @@ class DesktopModeKeyGestureHandlerTest : ShellTestCase() {
                 desktopTasksController.getFocusedNonDesktopTasks(task.displayId, repository.userId)
             )
             .thenReturn(listOf(splitRoot, task))
-        whenever(splitScreenController.isTaskInSplitScreen(task.taskId)).thenReturn(true)
 
         // Create and handle the key gesture event
         val event =
