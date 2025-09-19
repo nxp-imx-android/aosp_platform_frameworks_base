@@ -21,6 +21,7 @@ import android.annotation.Nullable;
 import android.app.AppOpsManager;
 import android.content.ContentResolver;
 import android.os.RemoteCallback;
+import android.util.ArraySet;
 
 import java.io.PrintWriter;
 import java.text.SimpleDateFormat;
@@ -103,6 +104,16 @@ public interface HistoricalRegistryInterface {
             long endTimeMillis,
             @AppOpsManager.OpFlags int flags, @Nullable String[] attributionExemptPkgs,
             @NonNull RemoteCallback callback);
+
+    /**
+     * Returns a set of recently used package names based on given op names and other filters.
+     */
+    default @NonNull ArraySet<String> getRecentlyUsedPackageNames(@NonNull String[] opNames,
+            @AppOpsManager.OpHistoryFlags int historyFlags,
+            @AppOpsManager.HistoricalOpsRequestFilter int filter, long beginTimeMillis,
+            long endTimeMillis, @AppOpsManager.OpFlags int opFlags) {
+        return new ArraySet<>();
+    }
 
     /**
      * Remove app op events for a given UID and package.
