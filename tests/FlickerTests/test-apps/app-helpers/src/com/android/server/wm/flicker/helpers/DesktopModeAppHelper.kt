@@ -704,10 +704,14 @@ open class DesktopModeAppHelper(private val innerHelper: StandardAppHelper) :
         wmHelper.StateSyncBuilder().withAppTransitionIdle().waitForAndVerify()
     }
 
-    fun exitDesktopModeToFullScreenWithAppHeader(wmHelper: WindowManagerStateHelper) {
+    fun clickOpenMenuButton(wmHelper: WindowManagerStateHelper) {
         val openMenuButton = getDesktopAppViewByRes(OPEN_MENU_BUTTON)
         openMenuButton?.click()
         wmHelper.StateSyncBuilder().withAppTransitionIdle().waitForAndVerify()
+    }
+
+    fun exitDesktopModeToFullScreenWithAppHeader(wmHelper: WindowManagerStateHelper) {
+        clickOpenMenuButton(wmHelper)
 
         val pill = getDesktopAppViewByRes(PILL_CONTAINER)
         val fullScreenModeButton =
@@ -720,9 +724,7 @@ open class DesktopModeAppHelper(private val innerHelper: StandardAppHelper) :
     }
 
     fun exitDesktopModeToSplitScreenWithAppHeader(wmHelper: WindowManagerStateHelper) {
-        val openMenuButton = getDesktopAppViewByRes(OPEN_MENU_BUTTON)
-        openMenuButton?.click()
-        wmHelper.StateSyncBuilder().withAppTransitionIdle().waitForAndVerify()
+        clickOpenMenuButton(wmHelper)
 
         val pill = getDesktopAppViewByRes(PILL_CONTAINER)
         val splitScreenModeButton =
@@ -735,9 +737,7 @@ open class DesktopModeAppHelper(private val innerHelper: StandardAppHelper) :
     }
 
     fun restartFromAppHandleMenu(wmHelper: WindowManagerStateHelper) {
-        val openMenuButton = getDesktopAppViewByRes(OPEN_MENU_BUTTON)
-        openMenuButton?.click()
-        wmHelper.StateSyncBuilder().withAppTransitionIdle().waitForAndVerify()
+        clickOpenMenuButton(wmHelper)
 
         val restartHandleMenu = getDesktopAppViewByRes(RESTART_BUTTON)
         restartHandleMenu?.click()
