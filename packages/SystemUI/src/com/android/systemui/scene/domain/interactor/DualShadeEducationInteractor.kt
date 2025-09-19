@@ -164,6 +164,32 @@ constructor(
                         }
                     }
                 }
+
+                launch {
+                    repeatWhenOverlayBecomesHidden(Overlays.NotificationsShade) {
+                        if (education == DualShadeEducationModel.ForQuickSettingsShade) {
+                            logD(TAG) {
+                                "${Overlays.NotificationsShade.debugName} hidden while" +
+                                    " the tooltip for the other overlay is still showing, hiding" +
+                                    " tooltip"
+                            }
+                            education = DualShadeEducationModel.None
+                        }
+                    }
+                }
+
+                launch {
+                    repeatWhenOverlayBecomesHidden(Overlays.QuickSettingsShade) {
+                        if (education == DualShadeEducationModel.ForNotificationsShade) {
+                            logD(TAG) {
+                                "${Overlays.QuickSettingsShade.debugName} hidden while" +
+                                    " the tooltip for the other overlay is still showing, hiding" +
+                                    " tooltip"
+                            }
+                            education = DualShadeEducationModel.None
+                        }
+                    }
+                }
             }
         }
     }
@@ -253,6 +279,20 @@ constructor(
             .collectLatest { isOverlayShown ->
                 if (isOverlayShown) {
                     logD(TAG) { "${overlay.debugName} shown, reacting" }
+                    cancellable()
+                }
+            }
+    }
+
+    private suspend fun repeatWhenOverlayBecomesHidden(
+        overlay: OverlayKey,
+        cancellable: suspend () -> Unit,
+    ) {
+        sceneInteractor.currentOverlays
+            .map { it.contains(overlay) }
+            .distinctUntilChanged()
+            .collect { isOverlayShown ->
+                if (!isOverlayShown) {
                     cancellable()
                 }
             }

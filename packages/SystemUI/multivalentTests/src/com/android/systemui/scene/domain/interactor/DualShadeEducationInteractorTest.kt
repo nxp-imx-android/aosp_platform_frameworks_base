@@ -155,6 +155,19 @@ class DualShadeEducationInteractorTest(private val forOverlay: OverlayKey) : Sys
             assertEducation(expectedEducation(forOverlay))
         }
 
+    @Test
+    fun hidesTooltip_whenOverlayHidden() =
+        kosmos.runTest {
+            val otherOverlay = otherOverlay(forOverlay)
+            showOverlay(otherOverlay)
+            advanceTimeBy(DualShadeEducationInteractor.TOOLTIP_APPEARANCE_DELAY_MS)
+            assertEducation(expectedEducation(forOverlay))
+
+            hideOverlay(otherOverlay)
+
+            assertEducation(DualShadeEducationModel.None)
+        }
+
     /**
      * Returns the complementary overlay for [forOverlay]; the one that, when shown, the tooltip
      * will show for [forOverlay].
