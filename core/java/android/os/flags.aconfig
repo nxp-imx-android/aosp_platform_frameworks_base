@@ -117,7 +117,6 @@ flag {
     namespace: "profile_experiences"
     description: "Guards a new Private Profile type in UserManager - everything from its setup to config to deletion."
     bug: "299069460"
-    is_exported: true
 }
 
 flag {
@@ -401,6 +400,14 @@ flag {
     namespace: "backstage_power"
     description: "Guards StrictMode APIs for detecting restricted network access."
     bug: "317250784"
+}
+
+flag {
+    name: "supplemental_security_patches"
+    is_exported: false
+    namespace: "dynamic_spl"
+    description: "access supplemental security files of CVEs patched beyond the SPL"
+    bug: "446032302"
 }
 
 flag {
