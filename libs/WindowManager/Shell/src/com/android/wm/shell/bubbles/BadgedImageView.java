@@ -21,6 +21,7 @@ import android.annotation.DrawableRes;
 import android.annotation.Nullable;
 import android.content.Context;
 import android.content.res.TypedArray;
+import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Outline;
 import android.graphics.PointF;
@@ -39,6 +40,7 @@ import com.android.launcher3.icons.DotRenderer;
 import com.android.launcher3.icons.DotRenderer.IconShapeInfo;
 import com.android.wm.shell.R;
 import com.android.wm.shell.shared.animation.Interpolators;
+import com.android.wm.shell.shared.bubbles.model.BubbleIcon;
 
 import java.util.EnumSet;
 
@@ -158,7 +160,7 @@ public class BadgedImageView extends ConstraintLayout {
      */
     public void setRenderedBubble(BubbleViewProvider bubble) {
         mBubble = bubble;
-        mBubbleIcon.setImageBitmap(bubble.getBubbleIcon());
+        bubble.getBubbleIcon().setOnImageView(mBubbleIcon);
         BitmapInfo appBadgeInfo = bubble.getAppBadge();
         mAppIcon.setImageDrawable(appBadgeInfo == null ? null : appBadgeInfo.newIcon(getContext()));
         if (mDotSuppressionFlags.contains(SuppressionFlag.BEHIND_STACK)) {
@@ -338,15 +340,18 @@ public class BadgedImageView extends ConstraintLayout {
     void showBadge() {
         BitmapInfo appBadgeBitmap = mBubble.getAppBadge();
         final boolean showAppBadge = (mBubble instanceof Bubble)
-                && ((Bubble) mBubble).showAppBadge();
+                && ((Bubble) mBubble).showAppBadge()
+                && mBubble.getBubbleIcon() instanceof BubbleIcon.Custom;
         if (appBadgeBitmap == null || !showAppBadge) {
             mAppIcon.setVisibility(GONE);
             return;
         }
 
+        Bitmap bubbleBitmap = ((BubbleIcon.Custom) (mBubble.getBubbleIcon())).getBitmap();
+
         int translationX;
         if (mBadgeOnLeft) {
-            translationX = -(mBubble.getBubbleIcon().getWidth() - appBadgeBitmap.icon.getWidth());
+            translationX = -(bubbleBitmap.getWidth() - appBadgeBitmap.icon.getWidth());
         } else {
             translationX = 0;
         }

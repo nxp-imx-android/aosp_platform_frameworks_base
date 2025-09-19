@@ -24,7 +24,6 @@ import static com.android.wm.shell.shared.bubbles.FlyoutDrawableLoader.loadFlyou
 import android.annotation.Nullable;
 import android.content.Context;
 import android.content.pm.ShortcutInfo;
-import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.util.Log;
@@ -40,6 +39,7 @@ import com.android.wm.shell.bubbles.appinfo.BubbleAppInfoProvider;
 import com.android.wm.shell.bubbles.bar.BubbleBarExpandedView;
 import com.android.wm.shell.bubbles.bar.BubbleBarLayerView;
 import com.android.wm.shell.shared.bubbles.logging.BubbleLog;
+import com.android.wm.shell.shared.bubbles.model.BubbleIcon;
 
 import java.lang.ref.WeakReference;
 import java.util.concurrent.Executor;
@@ -264,7 +264,7 @@ public class BubbleViewInfoTask {
         @Nullable BubbleExpandedView expandedView;
         int dotColor;
         Bubble.FlyoutMessage flyoutMessage;
-        Bitmap bubbleBitmap;
+        BubbleIcon bubbleIcon;
 
         @Nullable
         public static BubbleViewInfo populateForBubbleBar(Context c,
@@ -361,20 +361,7 @@ public class BubbleViewInfoTask {
             info.appName = appInfo.getAppName();
         }
 
-        Drawable bubbleDrawable = null;
-        try {
-            // Badged bubble image
-            bubbleDrawable = iconFactory.getBubbleDrawable(c, info.shortcutInfo,
-                    b.getIcon());
-        } catch (Exception e) {
-            // If we can't create the icon we'll default to the app icon
-            Log.w(TAG, "Exception creating icon for the bubble: " + b.getKey());
-        }
-
-        if (bubbleDrawable == null) {
-            // Default to app icon
-            bubbleDrawable = appIcon;
-        }
+        info.bubbleIcon = getBubbleIcon(info, c, b, iconFactory, appIcon);
 
         BitmapInfo badgeBitmapInfo = iconFactory.getBadgeBitmap(
                 appIcon,
@@ -386,10 +373,31 @@ public class BubbleViewInfoTask {
                 ? iconFactory.getBadgeBitmap(appIcon, appInfo.getUser(), false)
                 : badgeBitmapInfo;
 
-        info.bubbleBitmap = iconFactory.getBubbleBitmap(bubbleDrawable);
-
         info.dotColor = ColorUtils.blendARGB(badgeBitmapInfo.color,
                 Color.WHITE, WHITE_SCRIM_ALPHA);
         return true;
+    }
+
+    private static BubbleIcon getBubbleIcon(BubbleViewInfo info, Context c, Bubble b,
+            BubbleIconFactory iconFactory, Drawable appIcon) {
+        if (b.isApp()) {
+            return new BubbleIcon.AppIcon(iconFactory.getAppBubbleBitmapInfo(appIcon, b.getUser()));
+        } else {
+            Drawable bubbleDrawable = null;
+            try {
+                // Badged bubble image
+                bubbleDrawable = iconFactory.getBubbleDrawable(c, info.shortcutInfo,
+                        b.getIcon());
+            } catch (Exception e) {
+                // If we can't create the icon we'll default to the app icon
+                Log.w(TAG, "Exception creating icon for the bubble: " + b.getKey());
+            }
+
+            if (bubbleDrawable == null) {
+                // Default to app icon
+                bubbleDrawable = appIcon;
+            }
+            return new BubbleIcon.Custom(iconFactory.getBubbleBitmap(bubbleDrawable));
+        }
     }
 }
