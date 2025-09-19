@@ -21,8 +21,6 @@
 
     <dimen name="remote_input_view_text_stroke">2dp</dimen>
 
-    <!-- thickness (height) of the navigation bar on phones that require it -->
-    <dimen name="navigation_bar_size">@*android:dimen/navigation_bar_height</dimen>
     <!-- thickness (height) of the dead zone at the top of the navigation bar,
          reducing false presses on navbar buttons; approx 2mm -->
     <dimen name="navigation_bar_deadzone_size">12dp</dimen>
@@ -550,27 +548,9 @@
     <!-- Height of the status bar header bar in the car setting. -->
     <dimen name="car_status_bar_header_height">128dp</dimen>
 
-    <!-- The height of the container that holds the battery and time in the quick settings header.
-    Preferred over using "@*android:dimen/quick_qs_offset_height" as system icons are not always
-    present in quick settings (e.g. in split shade) and it's useful to be able to override this
-    value in such cases.
-         -->
-    <dimen name="qs_header_system_icons_area_height">@*android:dimen/quick_qs_offset_height</dimen>
-
     <!-- The height of the container that holds the system icons in the quick settings header in the
          car setting. -->
     <dimen name="car_qs_header_system_icons_area_height">54dp</dimen>
-
-    <!-- The height of the quick settings footer that holds the pagination dots and edit button -->
-    <dimen name="qs_footer_height">48dp</dimen>
-
-    <!-- 40dp (circles) + 8dp (circle padding) + 8dp (top) + 4dp (bottom) -->
-    <dimen name="footer_actions_height">60dp</dimen>
-
-    <!-- The size of each of the icon buttons in the QS footer -->
-    <dimen name="qs_footer_action_button_size">48dp</dimen>
-
-    <dimen name="qs_footer_action_corner_radius">20dp</dimen>
 
     <!-- (48dp - 40dp) / 2 -->
     <dimen name="qs_footer_action_inset">4dp</dimen>
@@ -578,11 +558,6 @@
     <dimen name="qs_footer_actions_bottom_padding">4dp</dimen>
     <dimen name="qs_footer_action_inset_negative">-4dp</dimen>
 
-    <!-- Margins on each side of QS Footer -->
-    <dimen name="qs_footer_margin">2dp</dimen>
-
-    <!-- Padding on each QS Footer Icon to make the icons 20dpx20dp -->
-    <dimen name="qs_footer_icon_padding">14dp</dimen>
     <!-- 3/4 of icon width 20dpx20dp -->
     <dimen name="qs_footer_tuner_icon_translation">15dp</dimen>
 
@@ -724,12 +699,9 @@
     <dimen name="pull_span_min">25dp</dimen>
 
     <dimen name="qs_corner_radius">28dp</dimen>
-    <dimen name="qs_tile_height">80dp</dimen>
     <dimen name="qs_tile_margin_horizontal">8dp</dimen>
     <dimen name="qs_tile_margin_vertical">@dimen/qs_tile_margin_horizontal</dimen>
-    <dimen name="qs_tile_margin_top_bottom">4dp</dimen>
     <dimen name="qs_brightness_margin_top">8dp</dimen>
-    <dimen name="qs_brightness_margin_bottom">16dp</dimen>
     <dimen name="qqs_layout_margin_top">16dp</dimen>
     <dimen name="qqs_layout_padding_bottom">24dp</dimen>
     <item name="qqs_expand_clock_scale" format="float" type="dimen">2.57</item>
@@ -744,20 +716,7 @@
          becomes independent  -->
     <dimen name="qs_content_horizontal_padding">@dimen/notification_shade_content_margin_horizontal</dimen>
 
-    <!-- Most of the time it should be the same as notification_side_paddings as it's vertically
-        aligned with notifications. That's not the case on large screen when we have either split
-        shade and QS is not above notifications or in portrait shade when notification scrim is no
-        longer full width and next page of tiles should be at the edge of the screen -->
-    <dimen name="qs_tiles_page_horizontal_margin">@dimen/notification_side_paddings</dimen>
-
-    <dimen name="qs_customize_internal_side_paddings">8dp</dimen>
-    <dimen name="qs_icon_size">20dp</dimen>
-    <dimen name="qs_side_view_size">28dp</dimen>
     <dimen name="qs_label_container_margin">10dp</dimen>
-    <dimen name="qs_quick_tile_size">60dp</dimen>
-    <dimen name="qs_tile_padding">12dp</dimen>
-    <dimen name="qs_tile_start_padding">16dp</dimen>
-    <dimen name="qs_drawable_end_margin">4dp</dimen>
     <dimen name="qs_page_indicator_width">16dp</dimen>
     <dimen name="qs_page_indicator_height">8dp</dimen>
     <!-- The size of a single dot in relation to the whole animation.
@@ -766,9 +725,6 @@
     <dimen name="qs_page_indicator_dot_width">6.4dp</dimen>
     <dimen name="qs_tile_text_size">14sp</dimen>
     <dimen name="qs_panel_padding">16dp</dimen>
-    <dimen name="qs_dual_tile_padding_horizontal">6dp</dimen>
-    <dimen name="qs_panel_elevation">4dp</dimen>
-    <dimen name="qs_panel_padding_bottom">@dimen/footer_actions_height</dimen>
     <dimen name="qs_panel_padding_top">80dp</dimen>
 
     <!-- Size is in sp because the icon is inlined in text -->
@@ -787,7 +743,6 @@
     <dimen name="new_qs_header_non_clickable_element_height">24sp</dimen>
 
     <dimen name="qs_footer_padding">20dp</dimen>
-    <dimen name="qs_footers_margin_bottom">8dp</dimen>
 
     <dimen name="segmented_button_spacing">0dp</dimen>
     <dimen name="borderless_button_radius">2dp</dimen>
@@ -1181,8 +1136,6 @@
     <dimen name="udfps_burn_in_offset_x">7px</dimen>
     <dimen name="udfps_burn_in_offset_y">20px</dimen>
 
-    <!-- The absolute side margins of quick settings -->
-    <dimen name="quick_settings_bottom_margin_media">8dp</dimen>
     <dimen name="nav_content_padding">0dp</dimen>
 
     <!-- Navigation bar shadow params. -->
