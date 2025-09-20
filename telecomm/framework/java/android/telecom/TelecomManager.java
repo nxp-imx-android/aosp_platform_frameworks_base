@@ -2061,7 +2061,7 @@ public class TelecomManager {
      *
      * @return {@code true} if there is an ongoing call that is external, {@code false} otherwise.
      */
-    @FlaggedApi(Flags.FLAG_IS_IN_EXTERNAL_CALL)
+    @FlaggedApi(android.telecom.flags.Flags.FLAG_IS_IN_EXTERNAL_CALL)
     @RequiresPermission(android.Manifest.permission.READ_PHONE_STATE)
     public boolean isInExternalCall() {
         ITelecomService service = getTelecomService();
