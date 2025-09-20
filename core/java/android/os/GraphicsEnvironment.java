@@ -478,10 +478,12 @@ public class GraphicsEnvironment {
         Log.v(TAG, packageName + " is not listed in per-application setting");
 
         // Check the per-device allowlist shipped in the platform
-        String[] angleAllowListPackages =
+        final String[] angleAllowListPackages =
                 context.getResources().getStringArray(R.array.config_angleAllowList);
-        String allowListPackageList = String.join(" ", angleAllowListPackages);
-        Log.v(TAG, "ANGLE allowlist from config: " + allowListPackageList);
+        final String allowListPackageList = String.join(" ", angleAllowListPackages);
+        if (DEBUG) {
+            Log.v(TAG, "ANGLE allowlist from config: " + allowListPackageList);
+        }
         for (String allowedPackage : angleAllowListPackages) {
             if (allowedPackage.equals(packageName)) {
                 Log.v(
@@ -493,16 +495,32 @@ public class GraphicsEnvironment {
             }
         }
 
-        // Check the per-device denylist shipped in the platform
         if (android.os.Flags.enableAngleDenyList()) {
-            // Check the per-device denylist
-            String[] angleDenyListPackages =
+            // check the per-device denylist
+            final String[] deviceDenylist =
                     context.getResources().getStringArray(R.array.config_angleDenyList);
-            for (String deniedPackage : angleDenyListPackages) {
+            if (DEBUG) {
+                Log.v(TAG, "ANGLE device denylist: " + Arrays.toString(deviceDenylist));
+            }
+            for (final String deniedPackage : deviceDenylist) {
                 if (deniedPackage.equals(packageName)) {
-                    Log.v(TAG, packageName
-                            + " is listed in ANGLE denylist, disabling ANGLE");
+                    Log.v(TAG,
+                            packageName + " is listed in device ANGLE denylist, disabling ANGLE");
                     return ANGLE_GL_DRIVER_CHOICE_NATIVE;
+                }
+            }
+            if (android.provider.flags.Flags.angleDynamicDenylist()) {
+                final List<String> dynamicDenylist = getGlobalSettingsString(
+                        contentResolver, bundle, Settings.Global.ANGLE_DYNAMIC_DENYLIST);
+                if (DEBUG) {
+                    Log.v(TAG, "ANGLE dynamic denylist: " + dynamicDenylist);
+                }
+                for (final String deniedPackage : dynamicDenylist) {
+                    if (deniedPackage.equals(packageName)) {
+                        Log.v(TAG, packageName
+                                + " is listed in dynamic ANGLE denylist, disabling ANGLE");
+                        return ANGLE_GL_DRIVER_CHOICE_NATIVE;
+                    }
                 }
             }
             if (android.os.Flags.enableAngleForGames()

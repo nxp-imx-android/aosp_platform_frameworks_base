@@ -17511,6 +17511,16 @@ public final class Settings {
         public static final String ANGLE_DEBUG_PACKAGE = "angle_debug_package";
 
         /**
+         * List of package names that should not use ANGLE unless explicitly opted in by users.
+         * This is not a list of installed packages on the device, but a dynamic list of denied
+         * names set through adb commands or server config push.
+         *
+         * @hide
+         */
+        @Readable
+        public static final String ANGLE_DYNAMIC_DENYLIST = "angle_dynamic_denylist";
+
+        /**
          * Force all PKGs to use ANGLE, regardless of any other settings
          * The value is a boolean (1 or 0).
          * @hide
