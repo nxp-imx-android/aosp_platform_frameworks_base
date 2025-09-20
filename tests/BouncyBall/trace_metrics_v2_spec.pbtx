@@ -1,0 +1,115 @@
+# TODO(b/446226426): This needs a first-principles review by an expert.
+
+# This is the "summary-spec" file we provide to "trace_processor_shell".
+
+# Most critically, we collect missed_app_frames.  Non-zero means we failed.
+# For basic diagnostics, we also grab the total_frames, and frame duration
+# at the P50, P90, P99, and maximum.
+
+metric_spec: {
+  id: "total_frames_bouncyball"
+  value: "total_frames"
+  query: {
+    inner_query_id: "frame_timeline_summary_bouncyball"
+  }
+}
+metric_spec: {
+  id: "missed_app_frames_bouncyball"
+  value: "missed_app_frames"
+  query: {
+    inner_query_id: "frame_timeline_summary_bouncyball"
+  }
+}
+metric_spec: {
+  id: "frame_dur_max_bouncyball"
+  value: "frame_dur_max"
+  query: {
+    inner_query_id: "frame_timeline_summary_bouncyball"
+  }
+}
+metric_spec: {
+  id: "frame_dur_p99_bouncyball"
+  value: "frame_dur_p99"
+  query: {
+    inner_query_id: "frame_timeline_summary_bouncyball"
+  }
+}
+metric_spec: {
+  id: "frame_dur_p90_bouncyball"
+  value: "frame_dur_p90"
+  query: {
+    inner_query_id: "frame_timeline_summary_bouncyball"
+  }
+}
+metric_spec: {
+  id: "frame_dur_p50_bouncyball"
+  value: "frame_dur_p50"
+  query: {
+    inner_query_id: "frame_timeline_summary_bouncyball"
+  }
+}
+
+query: {
+  id: "frame_timeline_summary_bouncyball"
+  sql: {
+    sql: "
+      INCLUDE PERFETTO MODULE android.frames.timeline;
+      WITH frames AS (
+        SELECT
+          process.upid,
+          process.name AS process_name,
+          timeline.name AS vsync,
+          jank_type GLOB '*App Deadline Missed*' AS missed_app_frame,
+          IIF(jank_type GLOB '*Dropped Frame*', NULL, timeline.dur) AS dur,
+          timeline.ts AS frame_ts,
+          timeline.dur AS frame_slice_dur
+        FROM actual_frame_timeline_slice AS timeline
+        JOIN process USING (upid)
+      )
+      SELECT
+        f.process_name,
+        COUNT(*) AS total_frames,
+        CAST(PERCENTILE(f.dur, 50) AS INTEGER) AS frame_dur_p50,
+        CAST(PERCENTILE(f.dur, 90) AS INTEGER) AS frame_dur_p90,
+        CAST(PERCENTILE(f.dur, 99) AS INTEGER) AS frame_dur_p99,
+        MAX(f.dur) AS frame_dur_max,
+        SUM(f.missed_app_frame) AS missed_app_frames
+      FROM frames AS f
+      WHERE
+        f.process_name = 'com.android.test.bouncyball' AND
+        EXISTS (
+          SELECT 1
+          FROM process_counter_track pct
+          JOIN counter c ON pct.id = c.track_id
+          WHERE
+            pct.upid = f.upid AND
+            pct.name = 'relevant_frame' AND
+            /* TODO(b/437906487#comment12): Note we strongly suspect there is
+             *     a bug in this area. */
+            /* 2 is the value of TRACE_STATE_IN_TEST_TIME in the APK.  We limit
+             * our data to frames that happen while the app is in this state. */
+            /*
+             # LINT.IfChange
+             */
+            c.value = 2 AND
+            /*
+             # LINT.ThenChange(/tests/BouncyBall/app/src/main/java/com/android/test/bouncyball/BouncyBallActivity.java)
+             */
+            c.ts BETWEEN f.frame_ts AND f.frame_ts + f.frame_slice_dur
+        )
+      GROUP BY f.process_name
+    "
+    column_names: "process_name"
+    column_names: "total_frames"
+    column_names: "frame_dur_p50"
+    column_names: "frame_dur_p90"
+    column_names: "frame_dur_p99"
+    column_names: "frame_dur_max"
+    column_names: "missed_app_frames"
+  }
+  filters: {
+    column_name: "process_name"
+    op: EQUAL
+    string_rhs: "com.android.test.bouncyball"
+  }
+}
