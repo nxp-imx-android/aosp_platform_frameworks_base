@@ -805,9 +805,8 @@ private class AnimatedDialog(
                 if (hasInstrumentedJank) {
                     interactionJankMonitor.end(controller.cuj!!.cujType)
                 }
-                if (Flags.qsTileTransitionInteractionRefinement()) {
-                    dialogTouchInterceptorView?.visibility = View.GONE
-                }
+
+                dialogTouchInterceptorView?.visibility = View.GONE
             },
         )
     }
@@ -866,11 +865,9 @@ private class AnimatedDialog(
                 // Remove the dim background as soon as we start the animation.
                 dialog.window?.clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND)
 
-                if (Flags.qsTileTransitionInteractionRefinement()) {
-                    // While collapsing the dialog with animation, allow other quick tiles to be
-                    // clickable.
-                    dialog.window?.addFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
-                }
+                // While collapsing the dialog with animation, allow other quick tiles to be
+                // clickable.
+                dialog.window?.addFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
             },
             onLaunchAnimationEnd = {
                 val dialogContentWithBackground = this.dialogContentWithBackground!!
@@ -979,10 +976,8 @@ private class AnimatedDialog(
                     state.visible = !state.visible
                     endController.onTransitionAnimationProgress(state, progress, linearProgress)
 
-                    if (Flags.qsTileTransitionInteractionRefinement()) {
-                        // animate touch Interceptor view
-                        updateTouchInterceptorViewConstraints(state)
-                    }
+                    // animate touch Interceptor view
+                    updateTouchInterceptorViewConstraints(state)
 
                     // If the dialog content is complex, its dimension might change during the
                     // launch animation. The animation end position might also change during the
