@@ -339,39 +339,22 @@ class AccountsDb implements AutoCloseable {
                 Flags.detachDeCe() ? TABLE_AUTHTOKENS : CE_TABLE_AUTHTOKENS;
         String[] selectionArgs = {authToken, accountType};
         String sql = "DELETE FROM " + authtokensTable
-                + " WHERE " + AUTHTOKENS_AUTHTOKEN + " = ? AND " + AUTHTOKENS_ACCOUNTS_ID + " IN ("
-                + " SELECT " + ACCOUNTS_ID + " FROM " + accountsTable
-                + " WHERE " + ACCOUNTS_TYPE + " = ?)"
-                + " RETURNING " + AUTHTOKENS_ACCOUNTS_ID + ", " + AUTHTOKENS_TYPE;
-
-        Map<Long, List<String>> accountIdToTokenTypes = new HashMap<>();
-        try (Cursor cursor = db.rawQuery(sql, selectionArgs)) {
-            while (cursor.moveToNext()) {
-                long accountId = cursor.getLong(0);
-                String tokenType = cursor.getString(1);
-                accountIdToTokenTypes.computeIfAbsent(accountId, k -> new ArrayList<>()).add(tokenType);
-            }
-        }
-
-        if (accountIdToTokenTypes.isEmpty()) {
-            return Collections.emptyList();
-        }
+                + " WHERE " + AUTHTOKENS_AUTHTOKEN + " = ?"
+                + " AND " + AUTHTOKENS_ACCOUNTS_ID + " IN ("
+                + " SELECT " + ACCOUNTS_ID + " FROM " + accountsTable + " WHERE " + ACCOUNTS_TYPE
+                + " = ?)"
+                + " RETURNING (SELECT " + ACCOUNTS_NAME + " FROM " + accountsTable
+                + " WHERE " + accountsTable + "." + ACCOUNTS_ID + " = "
+                + AUTHTOKENS_ACCOUNTS_ID
+                + "), " + AUTHTOKENS_TYPE;
 
         List<Pair<Account, String>> invalidatedTokens = new ArrayList<>();
-        String[] accountIdStrs = accountIdToTokenTypes.keySet().stream().map(String::valueOf).toArray(String[]::new);
-        String placeholders = TextUtils.join(",", Collections.nCopies(accountIdStrs.length, "?"));
-
-        try (Cursor cursor = db.query(accountsTable,
-                new String[]{ACCOUNTS_ID, ACCOUNTS_NAME},
-                ACCOUNTS_ID + " IN (" + placeholders + ")",
-                accountIdStrs, null, null, null)) {
+        try (Cursor cursor = db.rawQuery(sql, selectionArgs)) {
             while (cursor.moveToNext()) {
-                long accountId = cursor.getLong(0);
-                String accountName = cursor.getString(1);
-                Account account = new Account(accountName, accountType);
-                for (String tokenType : accountIdToTokenTypes.get(accountId)) {
-                    invalidatedTokens.add(Pair.create(account, tokenType));
-                }
+                final String accountName = cursor.getString(0);
+                final String tokenType = cursor.getString(1);
+                invalidatedTokens.add(
+                        Pair.create(new Account(accountName, accountType), tokenType));
             }
         }
         return invalidatedTokens;
