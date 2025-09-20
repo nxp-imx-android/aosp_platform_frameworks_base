@@ -832,8 +832,7 @@ private fun Modifier.bouncy(
     }
 
     return this.thenIf(isEnabled) {
-        Modifier.offset { IntOffset(x = 0, y = animatable.value.roundToInt()) }
-            .onGloballyPositioned { coordinates ->
+        Modifier.onGloballyPositioned { coordinates ->
                 val offset = coordinates.positionInWindow()
                 onBoundsChange(
                     IntRect(
@@ -842,6 +841,7 @@ private fun Modifier.bouncy(
                     )
                 )
             }
+            .offset { IntOffset(x = 0, y = animatable.value.roundToInt()) }
     }
 }
 

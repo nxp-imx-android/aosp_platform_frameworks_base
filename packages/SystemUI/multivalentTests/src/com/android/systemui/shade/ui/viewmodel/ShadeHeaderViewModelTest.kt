@@ -55,7 +55,9 @@ import org.mockito.Mockito.verify
 class ShadeHeaderViewModelTest : SysuiTestCase() {
 
     private val kosmos = testKosmos().useUnconfinedTestDispatcher()
-    private val underTest by lazy { kosmos.shadeHeaderViewModel }
+    private val underTest by lazy {
+        kosmos.shadeHeaderViewModelFactory.create(ignoreTestHarness = true)
+    }
 
     @Before
     fun setUp() {

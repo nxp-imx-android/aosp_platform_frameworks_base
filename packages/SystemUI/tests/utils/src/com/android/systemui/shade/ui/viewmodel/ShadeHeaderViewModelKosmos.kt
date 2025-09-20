@@ -39,7 +39,7 @@ import com.android.systemui.statusbar.pipeline.mobile.ui.viewmodel.mobileIconsVi
 import com.android.systemui.statusbar.systemstatusicons.ui.viewmodel.systemStatusIconsViewModelFactory
 import org.mockito.kotlin.mock
 
-val Kosmos.shadeHeaderViewModel: ShadeHeaderViewModel by
+private val Kosmos.shadeHeaderViewModel: ShadeHeaderViewModel by
     Kosmos.Fixture {
         ShadeHeaderViewModel(
             activityStarter = activityStarter,
@@ -59,13 +59,14 @@ val Kosmos.shadeHeaderViewModel: ShadeHeaderViewModel by
             dualShadeEducationInteractor = dualShadeEducationInteractor,
             desktopInteractor = desktopInteractor,
             systemStatusIconsViewModelFactory = systemStatusIconsViewModelFactory,
+            ignoreTestHarness = true,
         )
     }
 
 val Kosmos.shadeHeaderViewModelFactory: ShadeHeaderViewModel.Factory by
     Kosmos.Fixture {
         object : ShadeHeaderViewModel.Factory {
-            override fun create(): ShadeHeaderViewModel {
+            override fun create(ignoreTestHarness: Boolean): ShadeHeaderViewModel {
                 return shadeHeaderViewModel
             }
         }
