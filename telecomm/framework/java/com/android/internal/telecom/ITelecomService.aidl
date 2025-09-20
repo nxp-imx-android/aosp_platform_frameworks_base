@@ -436,4 +436,19 @@ interface ITelecomService {
      * @see TelecomServiceImpl#setCallConnectedIndicatorPreference
      */
     void setCallConnectedIndicatorPreference(in String callingPackage, in int preference);
+
+    /**
+     * Returns a map containing the packages that have integrated call logs and their enabled
+     * states determined by user preference.
+     * @see TelecomServiceImpl#getVoipCallLogIntegrationStatus
+     */
+     @JavaPassthrough(annotation="@android.annotation.RequiresPermission(android.Manifest.permission.READ_PRIVILEGED_PHONE_STATE)")
+     Map getVoipCallLogIntegrationStatus(in String callingPackage);
+
+    /**
+     * @see TelecomServiceImpl#setVoipCallLogIntegrationEnabled
+     */
+    @JavaPassthrough(annotation="@android.annotation.RequiresPermission(android.Manifest.permission.MODIFY_PHONE_STATE)")
+     void setVoipCallLogIntegrationEnabled(in String callingPackage, in String packageName,
+         in boolean enabled);
 }

@@ -65,6 +65,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.Executor;
 
@@ -3154,6 +3155,63 @@ public class TelecomManager {
         }
     }
 
+    /**
+     * Retrieves the list of VoIP applications which support integrating its call logs into the
+     * system call log. The VoIP app must declare the {@link TelecomManager#ACTION_CALL_BACK} intent
+     * in their app's manifest.
+     * @return A map of the VoIP package names that support integrating calls into the system call
+     *         log.
+     * @throws SecurityException if the caller does not have the required permissions.
+     *
+     * @hide
+     */
+    @SystemApi
+    @FlaggedApi(Flags.FLAG_INTEGRATED_CALL_LOGS_STAGE2)
+    @RequiresPermission(READ_PRIVILEGED_PHONE_STATE)
+    public @NonNull Map<String, Boolean> getVoipCallLogIntegrationStatus() {
+        ITelecomService service = getTelecomService();
+        if (service != null) {
+            try {
+                return service.getVoipCallLogIntegrationStatus(mContext.getOpPackageName());
+            } catch (RemoteException e) {
+                Log.e(TAG, "RemoteException getVoipCallLogIntegrationStatus: " + e);
+                throw e.rethrowFromSystemServer();
+            }
+        }
+        throw new IllegalStateException("Telecom is not available");
+    }
+
+    /**
+     * Sets the user's preference for whether a specific VoIP application is allowed to integrate
+     * its call logs into the system call log.
+     * @param packageName The package name of the VoIP application.
+     * @param enabled {@code true} to allow call log integration, {@code false} to disable it.
+     * @throws SecurityException if the caller does not have the required permissions.
+     * @throws IllegalArgumentException if the package name is non-existent or does not support call
+     *         log integration.
+     *
+     * @hide
+     */
+    @SystemApi
+    @FlaggedApi(Flags.FLAG_INTEGRATED_CALL_LOGS_STAGE2)
+    @RequiresPermission(Manifest.permission.MODIFY_PHONE_STATE)
+    public void setVoipCallLogIntegrationEnabled(@NonNull String packageName, boolean enabled) {
+        ITelecomService service = getTelecomService();
+        if (packageName == null || packageName.isEmpty()) {
+            throw new IllegalArgumentException("Package name is invalid.");
+        }
+        if (service != null) {
+            try {
+                service.setVoipCallLogIntegrationEnabled(mContext.getOpPackageName(),
+                        packageName, enabled);
+            } catch (RemoteException e) {
+                Log.e(TAG, "RemoteException setVoipCallLogIntegrationEnabled: " + e);
+                throw e.rethrowFromSystemServer();
+            }
+        } else {
+            throw new IllegalStateException("Telecom is not available");
+        }
+    }
 
     private boolean isSystemProcess() {
         return Process.myUid() == Process.SYSTEM_UID;
