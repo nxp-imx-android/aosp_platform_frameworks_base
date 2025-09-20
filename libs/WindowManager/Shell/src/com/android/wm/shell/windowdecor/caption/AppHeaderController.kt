@@ -37,7 +37,6 @@ import android.window.DesktopModeFlags
 import android.window.TaskSnapshot
 import android.window.WindowContainerTransaction
 import com.android.app.tracing.traceSection
-import com.android.internal.policy.SystemBarUtils.getDesktopViewAppHeaderHeightId
 import com.android.window.flags.Flags
 import com.android.wm.shell.R
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer
@@ -86,6 +85,8 @@ import com.android.wm.shell.windowdecor.extension.requestingImmersive
 import com.android.wm.shell.windowdecor.viewholder.AppHeaderViewHolder
 import com.android.wm.shell.windowdecor.viewholder.AppHeaderViewHolder.HeaderData
 import com.android.wm.shell.windowdecor.viewholder.WindowDecorationViewHolder
+import com.android.wm.shell.windowdecor.viewholder.util.DefaultAppHeaderDimensions
+import com.android.wm.shell.windowdecor.viewholder.util.LargeAppHeaderDimensions
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.MainCoroutineDispatcher
@@ -129,7 +130,7 @@ class AppHeaderController(
     private val maximizeMenuFactory: MaximizeMenuFactory = DefaultMaximizeMenuFactory,
     private val handleMenuFactory: HandleMenuFactory = HandleMenuFactory,
     private val appHeaderViewHolderFactory: AppHeaderViewHolder.Factory =
-        AppHeaderViewHolder.Factory(),
+        AppHeaderViewHolder.DefaultFactory(),
     private val surfaceControlBuilderSupplier: () -> SurfaceControl.Builder = {
         SurfaceControl.Builder()
     },
@@ -189,6 +190,12 @@ class AppHeaderController(
             DesktopExperienceFlags.ENABLE_DESKTOP_WINDOWING_APP_TO_WEB_EDUCATION_INTEGRATION
                 .isTrue ||
             DesktopExperienceFlags.ENABLE_APP_HANDLE_POSITION_REPORTING.isTrue
+    private val dimensions =
+        if (DesktopExperienceFlags.ENABLE_TALL_APP_HEADERS.isTrue) {
+            LargeAppHeaderDimensions(decorWindowContext.resources)
+        } else {
+            DefaultAppHeaderDimensions(decorWindowContext.resources)
+        }
 
     private var isMaximizeMenuHovered = false
     private var isAppHeaderMaximizeButtonHovered = false
@@ -662,6 +669,7 @@ class AppHeaderController(
                 onCaptionGenericMotionListener = onCaptionGenericMotionListener,
                 onMaximizeHoverAnimationFinishedListener = { createMaximizeMenu() },
                 desktopModeUiEventLogger = desktopModeUiEventLogger,
+                dimensions = dimensions,
             )
 
         loadAppInfoJob =
@@ -739,9 +747,7 @@ class AppHeaderController(
     private fun determineMaxY(requiredEmptySpace: Int, stableBounds: Rect): Int =
         stableBounds.bottom - requiredEmptySpace
 
-    override fun getCaptionHeight(): Int =
-        context.resources.getDimensionPixelSize(getDesktopViewAppHeaderHeightId()) +
-            getCaptionTopPadding()
+    override fun getCaptionHeight(): Int = dimensions.height + getCaptionTopPadding()
 
     override fun getCaptionWidth(): Int =
         taskInfo.getConfiguration().windowConfiguration.bounds.width()

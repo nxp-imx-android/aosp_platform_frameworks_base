@@ -19,11 +19,14 @@ import android.annotation.DimenRes
 import android.content.res.Resources
 import android.graphics.Rect
 import android.window.DesktopModeFlags
+import com.android.internal.policy.SystemBarUtils.getDesktopViewAppHeaderHeightId
 import com.android.wm.shell.R
 import com.android.wm.shell.windowdecor.common.DrawableInsets
 
 /** The default dimensions of the App Header. */
 class DefaultAppHeaderDimensions(private val resources: Resources) : AppHeaderDimensions {
+    override val height: Int = getDimensionPixelSize(getDesktopViewAppHeaderHeightId())
+
     override val buttonCornerRadius: Int =
         getDimensionPixelSize(R.dimen.desktop_mode_header_buttons_ripple_radius)
 

@@ -20,6 +20,7 @@ import android.annotation.IdRes
 import android.app.ActivityManager
 import android.app.ActivityManager.RunningTaskInfo
 import android.content.Context
+import android.content.res.Resources
 import android.graphics.Bitmap
 import android.graphics.Rect
 import android.graphics.Region
@@ -29,7 +30,7 @@ import android.view.Display
 import android.view.SurfaceControl
 import android.view.View
 import android.view.WindowInsetsController.APPEARANCE_TRANSPARENT_CAPTION_BAR_BACKGROUND
-import android.view.WindowManager
+import android.view.WindowManager.LayoutParams
 import com.android.internal.jank.InteractionJankMonitor
 import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.common.DisplayController
@@ -49,11 +50,18 @@ import com.android.wm.shell.sysui.ShellInit
 import com.android.wm.shell.transition.FocusTransitionObserver
 import com.android.wm.shell.transition.Transitions
 import com.android.wm.shell.util.StubTransaction
+import com.android.wm.shell.windowdecor.WindowDecorationTestHelper.TestAppHeaderDimensions.Companion.CUSTOMIZABLE_REGION_MARGIN_START
+import com.android.wm.shell.windowdecor.common.DrawableInsets
+import com.android.wm.shell.windowdecor.common.InputPilferer
 import com.android.wm.shell.windowdecor.common.WindowDecorTaskResourceLoader
 import com.android.wm.shell.windowdecor.common.WindowDecorationGestureExclusionTracker
 import com.android.wm.shell.windowdecor.common.viewhost.DefaultWindowDecorViewHost
+import com.android.wm.shell.windowdecor.common.viewhost.SurfaceControlViewHostAdapter
 import com.android.wm.shell.windowdecor.common.viewhost.WindowDecorViewHost
 import com.android.wm.shell.windowdecor.common.viewhost.WindowDecorViewHostSupplier
+import com.android.wm.shell.windowdecor.viewholder.AppHeaderViewHolder
+import com.android.wm.shell.windowdecor.viewholder.util.AppHeaderDimensions
+import com.android.wm.shell.windowdecor.viewholder.util.LargeAppHeaderDimensions
 import kotlinx.coroutines.CoroutineScope
 import org.mockito.kotlin.mock
 
@@ -102,6 +110,8 @@ object WindowDecorationTestHelper {
         handler: Handler,
         executor: ShellExecutor,
         shellInit: ShellInit = ShellInit(executor),
+        inputPilferer: InputPilferer = TestInputPilferer(),
+        inputManager: InputManager = mock(),
         displayController: DisplayController,
         desktopUserRepositories: DesktopUserRepositories,
         splitScreenController: SplitScreenController,
@@ -109,6 +119,9 @@ object WindowDecorationTestHelper {
         taskOperations: TaskOperations,
         desktopModeUiEventLogger: DesktopModeUiEventLogger = mock(),
         windowDecorationActions: WindowDecorationActions = mock(),
+        appHeaderViewHolderFactory: AppHeaderViewHolder.Factory =
+            AppHeaderViewHolder.DefaultFactory(),
+        windowDecorationExclusionTracker: WindowDecorationGestureExclusionTracker = mock(),
     ): TestWindowDecoration {
         val viewHostSupplier = TestWindowDecorViewHostSupplier(scope)
         val decoration =
@@ -144,6 +157,7 @@ object WindowDecorationTestHelper {
                 windowManagerWrapper = mock(),
                 lockTaskChangeListener = mock(),
                 surfaceControlTransactionSupplier = { StubTransaction() },
+                appHeaderViewHolderFactory = appHeaderViewHolderFactory,
             )
         val wrapped = decoration.wrapped()
         val positioner =
@@ -171,15 +185,9 @@ object WindowDecorationTestHelper {
                 desktopModeUiEventLogger,
                 windowDecorationActions,
                 desktopUserRepositories,
-                WindowDecorationGestureExclusionTracker(
-                    context,
-                    mock(),
-                    mock(),
-                    executor,
-                    shellInit,
-                    { _, _ -> },
-                ),
-                mock<InputManager>(),
+                windowDecorationExclusionTracker,
+                inputPilferer,
+                inputManager,
                 mock<FocusTransitionObserver>(),
                 shellDesktopState,
                 mock<MultiDisplayDragMoveIndicatorController>(),
@@ -204,26 +212,48 @@ object WindowDecorationTestHelper {
     /** A test supplier for [WindowDecorViewHost]. */
     class TestWindowDecorViewHostSupplier(private val scope: CoroutineScope) :
         WindowDecorViewHostSupplier<WindowDecorViewHost> {
-
         private val viewHosts = mutableListOf<DefaultWindowDecorViewHost>()
 
         /** Finds a task's caption view by its id. */
         fun getView(taskId: Int, @IdRes id: Int): View? {
             for (vh in viewHosts) {
-                val view = vh.viewHostAdapter.viewHost?.view ?: continue
-                val lp = view.layoutParams as? WindowManager.LayoutParams ?: continue
+                val rootView = vh.viewHostAdapter.viewHost?.view ?: continue
+                val lp = rootView.layoutParams as? LayoutParams ?: continue
                 if (!lp.title.contains(taskId.toString())) continue
-                return view.findViewById(id)
+                val view = rootView.findViewById<View>(id) ?: continue
+                return view
             }
             return null
         }
 
         override fun acquire(context: Context, display: Display): WindowDecorViewHost =
-            DefaultWindowDecorViewHost(context = context, mainScope = scope, display = display)
+            DefaultWindowDecorViewHost(
+                    context = context,
+                    mainScope = scope,
+                    display = display,
+                    viewHostAdapter = TestSurfaceControlViewHostAdapter(context, display),
+                )
                 .also { viewHosts.add(it) }
 
         override fun release(viewHost: WindowDecorViewHost, t: SurfaceControl.Transaction) {
             viewHosts.remove(viewHost)
+        }
+
+        /**
+         * A test [SurfaceControlViewHostAdapter] that intercepts [updateView] to remove the
+         * [LayoutParams.INPUT_FEATURE_SPY] flag before updating the underlying SCVH. This is useful
+         * to avoid a SecurityException thrown by SurfaceControlViewHost/ViewRootImpl when
+         * attempting to add a window using [LayoutParams.INPUT_FEATURE_SPY] without the
+         * MONITOR_INPUT permission.
+         */
+        class TestSurfaceControlViewHostAdapter(context: Context, display: Display) :
+            SurfaceControlViewHostAdapter(context, display) {
+            override fun updateView(view: View, attrs: LayoutParams) {
+                val lp = LayoutParams()
+                lp.copyFrom(attrs)
+                lp.inputFeatures = lp.inputFeatures and LayoutParams.INPUT_FEATURE_SPY.inv()
+                super.updateView(view, lp)
+            }
         }
     }
 
@@ -255,6 +285,26 @@ object WindowDecorationTestHelper {
                 id = id,
             )
         }
+
+        /** Modifies [outRegion] to include a custom region in this decor's caption. */
+        fun addCustomCaptionContent(outRegion: Region, contentWidth: Int) {
+            val taskBounds = getBounds()
+            // Add a custom area at the start of the customizable region.
+            outRegion.union(
+                Rect(
+                    taskBounds.left + CUSTOMIZABLE_REGION_MARGIN_START,
+                    taskBounds.top,
+                    taskBounds.left + CUSTOMIZABLE_REGION_MARGIN_START + contentWidth,
+                    taskBounds.top + getCaptionHeight(),
+                )
+            )
+        }
+
+        private fun getBounds(): Rect =
+            defaultWindowDecoration.taskInfo.configuration.windowConfiguration.bounds
+
+        private fun getCaptionHeight(): Int =
+            defaultWindowDecoration.captionController?.getCaptionHeight() ?: 0
     }
 
     private class TestWindowDecorTaskResourceLoader : WindowDecorTaskResourceLoader {
@@ -275,6 +325,92 @@ object WindowDecorationTestHelper {
 
         override fun onWindowDecorClosed(taskInfo: RunningTaskInfo) {
             // No-op.
+        }
+    }
+
+    /**
+     * A test implementation of [AppHeaderViewHolder.Factory] that allows overriding the dimensions
+     * used to create an app header.
+     */
+    class TestAppHeaderViewHolderFactory(private val overrideDimensions: AppHeaderDimensions) :
+        AppHeaderViewHolder.Factory {
+
+        override fun create(
+            rootView: View?,
+            context: Context,
+            windowDecorationActions: WindowDecorationActions,
+            onCaptionTouchListener: View.OnTouchListener,
+            onCaptionButtonClickListener: View.OnClickListener,
+            onLongClickListener: View.OnLongClickListener,
+            onCaptionGenericMotionListener: View.OnGenericMotionListener,
+            onMaximizeHoverAnimationFinishedListener: () -> Unit,
+            desktopModeUiEventLogger: DesktopModeUiEventLogger,
+            dimensions: AppHeaderDimensions,
+        ): AppHeaderViewHolder {
+            return AppHeaderViewHolder(
+                rootView,
+                context,
+                windowDecorationActions,
+                onCaptionTouchListener,
+                onCaptionButtonClickListener,
+                onLongClickListener,
+                onCaptionGenericMotionListener,
+                onMaximizeHoverAnimationFinishedListener,
+                desktopModeUiEventLogger,
+                overrideDimensions,
+            )
+        }
+    }
+
+    /**
+     * A test implementation of [AppHeaderDimensions] that uses hard-coded values instead of loading
+     * them from a context.
+     */
+    class TestAppHeaderDimensions
+    private constructor(private val largeAppHeaderDimensions: LargeAppHeaderDimensions) :
+        AppHeaderDimensions by largeAppHeaderDimensions {
+
+        constructor(resources: Resources) : this(LargeAppHeaderDimensions(resources))
+
+        override val height: Int = APP_HEADER_HEIGHT
+        override val buttonCornerRadius: Int = 16
+        override val appNameMaxWidth: Int = 130
+        override val expandMenuErrorImageWidth: Int = 16
+        override val expandMenuErrorImageMargin: Int = 8
+        override val appChipBackgroundInsets: DrawableInsets = DrawableInsets(0, 0, 0, 0)
+        override val minimizeBackgroundInsets: DrawableInsets = DrawableInsets(0, 0, 0, 0)
+        override val maximizeBackgroundInsets: DrawableInsets = DrawableInsets(0, 0, 0, 0)
+        override val closeBackgroundInsets: DrawableInsets = DrawableInsets(0, 0, 0, 0)
+        override val windowControlButtonWidth: Int = BUTTON_SIZE
+        override val windowControlButtonHeight: Int = BUTTON_SIZE
+        override val windowControlButtonPadding: Rect = Rect(12, 12, 12, 12)
+        override val windowControlButtonMarginEnd: Int = 8
+        override val customizableRegionMarginStart: Int = CUSTOMIZABLE_REGION_MARGIN_START
+        override val customizableRegionEmptyDragSpace: Int = BUTTON_SIZE
+
+        companion object {
+            const val CUSTOMIZABLE_REGION_MARGIN_START = 84
+            const val APP_HEADER_HEIGHT = 48
+            const val BUTTON_SIZE = 48
+        }
+    }
+
+    /** A test implementation of [InputPilferer]. */
+    class TestInputPilferer : InputPilferer {
+        var pilferCallCount = 0
+            private set
+
+        var lastPilferedView: View? = null
+            private set
+
+        override fun pilferPointers(v: View) {
+            pilferCallCount++
+            lastPilferedView = v
+        }
+
+        fun reset() {
+            pilferCallCount = 0
+            lastPilferedView = null
         }
     }
 }

@@ -125,6 +125,8 @@ import com.android.wm.shell.windowdecor.viewholder.AppHandleIdentifier;
 import com.android.wm.shell.windowdecor.viewholder.AppHandleViewHolder;
 import com.android.wm.shell.windowdecor.viewholder.AppHeaderViewHolder;
 import com.android.wm.shell.windowdecor.viewholder.WindowDecorationViewHolder;
+import com.android.wm.shell.windowdecor.viewholder.util.DefaultAppHeaderDimensions;
+import com.android.wm.shell.windowdecor.viewholder.util.LargeAppHeaderDimensions;
 
 import kotlin.Pair;
 import kotlin.Unit;
@@ -1039,7 +1041,11 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
                         createMaximizeMenu();
                         return Unit.INSTANCE;
                     },
-                    mDesktopModeUiEventLogger);
+                    mDesktopModeUiEventLogger,
+                    /* dimensions = */ DesktopExperienceFlags.ENABLE_TALL_APP_HEADERS.isTrue()
+                            ? new LargeAppHeaderDimensions(mDecorWindowContext.getResources())
+                            : new DefaultAppHeaderDimensions(mDecorWindowContext.getResources())
+                    );
         }
         throw new IllegalArgumentException("Unexpected layout resource id");
     }

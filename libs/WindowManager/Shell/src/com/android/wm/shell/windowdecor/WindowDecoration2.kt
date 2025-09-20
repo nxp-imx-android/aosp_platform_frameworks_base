@@ -43,6 +43,7 @@ import android.window.DesktopExperienceFlags
 import android.window.TaskConstants
 import android.window.WindowContainerTransaction
 import com.android.app.tracing.traceSection
+import com.android.internal.annotations.VisibleForTesting
 import com.android.internal.protolog.ProtoLog
 import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.common.BoxShadowHelper
@@ -93,7 +94,7 @@ abstract class WindowDecoration2<T>(
     },
 ) : AutoCloseable where T : View, T : TaskFocusStateConsumer {
 
-    protected var captionController: CaptionController<T>? = null
+    @VisibleForTesting var captionController: CaptionController<T>? = null
     /** Returns the display associated with the task. */
     var display: Display? = displayController.getDisplay(taskInfo.displayId)
     private var windowDecorConfig: Configuration? = null
