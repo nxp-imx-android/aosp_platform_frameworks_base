@@ -203,7 +203,6 @@ class MediaOutputAdapter(controller: MediaSwitchingController) :
         }
 
         override fun renderDeviceItem(
-            hideGroupItem: Boolean,
             device: MediaDevice,
             connectionState: ConnectionState,
             restrictVolumeAdjustment: Boolean,

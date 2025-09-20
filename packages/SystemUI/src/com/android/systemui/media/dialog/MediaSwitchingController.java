@@ -21,7 +21,6 @@ import static android.media.RouteListingPreference.EXTRA_ROUTE_ID;
 import static android.media.RoutingChangeInfo.ENTRY_POINT_SYSTEM_OUTPUT_SWITCHER;
 import static android.provider.Settings.ACTION_BLUETOOTH_SETTINGS;
 
-import static com.android.media.flags.Flags.enableOutputSwitcherRedesign;
 import static com.android.systemui.Flags.enableOutputSwitcherAudioSharingButton;
 import static com.android.systemui.media.dialog.MediaItem.MediaItemType.TYPE_GROUP_DIVIDER;
 
@@ -162,7 +161,6 @@ public class MediaSwitchingController
     private final UserTracker mUserTracker;
     private final VolumePanelGlobalStateInteractor mVolumePanelGlobalStateInteractor;
     @NonNull private MediaOutputColorScheme mMediaOutputColorScheme;
-    @NonNull private MediaOutputColorSchemeLegacy mMediaOutputColorSchemeLegacy;
     private boolean mIsGroupListCollapsed = true;
     private boolean mHasAdjustVolumeUserRestriction = false;
     private long mStartTime;
@@ -236,7 +234,6 @@ public class MediaSwitchingController
         mDialogTransitionAnimator = dialogTransitionAnimator;
         mNearbyMediaDevicesManager = nearbyMediaDevicesManager;
         mMediaOutputColorScheme = MediaOutputColorScheme.fromSystemColors(mContext);
-        mMediaOutputColorSchemeLegacy = MediaOutputColorSchemeLegacy.fromSystemColors(mContext);
 
         if (enableInputRouting()) {
             mInputRouteManager = new InputRouteManager(mContext, audioManager, mInfoMediaManager);
@@ -611,16 +608,10 @@ public class MediaSwitchingController
                 isDarkTheme);
         mMediaOutputColorScheme = MediaOutputColorScheme.fromDynamicColors(
                 currentColorScheme);
-        mMediaOutputColorSchemeLegacy = MediaOutputColorSchemeLegacy.fromDynamicColors(
-                currentColorScheme, isDarkTheme);
     }
 
     MediaOutputColorScheme getColorScheme() {
         return mMediaOutputColorScheme;
-    }
-
-    MediaOutputColorSchemeLegacy getColorSchemeLegacy() {
-        return mMediaOutputColorSchemeLegacy;
     }
 
     public void refreshDataSetIfNeeded() {
@@ -752,10 +743,8 @@ public class MediaSwitchingController
     private List<MediaItem> getOutputDeviceList(boolean addConnectDeviceButton) {
         List<MediaItem> mediaItems = new ArrayList<>(
                 mOutputMediaItemListProxy.getOutputMediaItemList());
-        if (enableOutputSwitcherRedesign()) {
-            addSeparatorForTheFirstGroupDivider(mediaItems);
-            coalesceSelectedDevices(mediaItems);
-        }
+        addSeparatorForTheFirstGroupDivider(mediaItems);
+        coalesceSelectedDevices(mediaItems);
         if (addConnectDeviceButton) {
             attachConnectNewDeviceItemIfNeeded(mediaItems);
         }
@@ -898,14 +887,6 @@ public class MediaSwitchingController
 
     void logInteractionAdjustVolume(MediaDevice device) {
         mMetricLogger.logInteractionAdjustVolume(device);
-    }
-
-    void logInteractionMuteDevice(MediaDevice device) {
-        mMetricLogger.logInteractionMute(device);
-    }
-
-    void logInteractionUnmuteDevice(MediaDevice device) {
-        mMetricLogger.logInteractionUnmute(device);
     }
 
     boolean hasAdjustVolumeUserRestriction() {

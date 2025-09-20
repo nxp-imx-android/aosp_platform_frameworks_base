@@ -19,7 +19,6 @@ package com.android.systemui.media.dialog;
 import static android.view.WindowInsets.Type.navigationBars;
 import static android.view.WindowInsets.Type.statusBars;
 
-import static com.android.media.flags.Flags.enableOutputSwitcherRedesign;
 import static com.android.systemui.Flags.enableOutputSwitcherAudioSharingButton;
 import static com.android.systemui.FontStyles.GSF_LABEL_LARGE;
 import static com.android.systemui.FontStyles.GSF_TITLE_MEDIUM_EMPHASIZED;
@@ -30,9 +29,6 @@ import android.app.WallpaperColors;
 import android.content.Context;
 import android.content.res.ColorStateList;
 import android.content.res.Configuration;
-import android.graphics.ColorFilter;
-import android.graphics.PorterDuff;
-import android.graphics.PorterDuffColorFilter;
 import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.Icon;
@@ -194,50 +190,48 @@ public abstract class MediaOutputBaseDialog extends SystemUIDialog
 
         mDismissing = false;
 
-        if (enableOutputSwitcherRedesign()) {
-            // TODO(b/444172986): set these properties in the layout file.
-            // Reduce radius of dialog background.
-            mDialogView.setBackground(AppCompatResources.getDrawable(mContext,
-                    R.drawable.media_output_dialog_background_reduced_radius));
-            // Set non-transparent footer background to change it color on scroll.
-            mDialogFooter.setBackground(AppCompatResources.getDrawable(mContext,
-                    R.drawable.media_output_dialog_footer_background));
+        // TODO(b/444172986): set these properties in the layout file.
+        // Reduce radius of dialog background.
+        mDialogView.setBackground(AppCompatResources.getDrawable(mContext,
+                R.drawable.media_output_dialog_background));
+        // Set non-transparent footer background to change it color on scroll.
+        mDialogFooter.setBackground(AppCompatResources.getDrawable(mContext,
+                R.drawable.media_output_dialog_footer_background));
 
-            // Update font family to Google Sans Flex.
-            Typeface buttonTypeface = Typeface.create(GSF_LABEL_LARGE, Typeface.NORMAL);
-            mDoneButton.setTypeface(buttonTypeface);
-            mStopButton.setTypeface(buttonTypeface);
-            mHeaderTitle
-                    .setTypeface(Typeface.create(GSF_TITLE_MEDIUM_EMPHASIZED, Typeface.NORMAL));
-            mHeaderSubtitle
-                    .setTypeface(Typeface.create(GSF_TITLE_SMALL, Typeface.NORMAL));
-            if (!isSmallScreenHeight) {
-                // Reduce the size of the app icon.
-                float appIconSize = mContext.getResources().getDimension(
-                        R.dimen.media_output_dialog_app_icon_size);
-                float appIconBottomMargin = mContext.getResources().getDimension(
-                        R.dimen.media_output_dialog_app_icon_bottom_margin);
-                ViewGroup.MarginLayoutParams params =
-                        (ViewGroup.MarginLayoutParams) mAppResourceIcon.getLayoutParams();
-                params.bottomMargin = (int) appIconBottomMargin;
-                params.width = (int) appIconSize;
-                params.height = (int) appIconSize;
-                mAppResourceIcon.setLayoutParams(params);
-            }
-            // Change footer background color on scroll.
-            mDevicesRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
-                @Override
-                public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
-                    super.onScrolled(recyclerView, dx, dy);
-                    changeFooterColorForScroll();
-                }
-            });
-            // Changes footer background when the list dimensions changed without scroll.
-            mDevicesRecyclerView.addOnLayoutChangeListener(
-                    (v, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom) -> {
-                        changeFooterColorForScroll();
-                    });
+        // Update font family to Google Sans Flex.
+        Typeface buttonTypeface = Typeface.create(GSF_LABEL_LARGE, Typeface.NORMAL);
+        mDoneButton.setTypeface(buttonTypeface);
+        mStopButton.setTypeface(buttonTypeface);
+        mHeaderTitle
+                .setTypeface(Typeface.create(GSF_TITLE_MEDIUM_EMPHASIZED, Typeface.NORMAL));
+        mHeaderSubtitle
+                .setTypeface(Typeface.create(GSF_TITLE_SMALL, Typeface.NORMAL));
+        if (!isSmallScreenHeight) {
+            // Reduce the size of the app icon.
+            float appIconSize = mContext.getResources().getDimension(
+                    R.dimen.media_output_dialog_app_icon_size);
+            float appIconBottomMargin = mContext.getResources().getDimension(
+                    R.dimen.media_output_dialog_app_icon_bottom_margin);
+            ViewGroup.MarginLayoutParams params =
+                    (ViewGroup.MarginLayoutParams) mAppResourceIcon.getLayoutParams();
+            params.bottomMargin = (int) appIconBottomMargin;
+            params.width = (int) appIconSize;
+            params.height = (int) appIconSize;
+            mAppResourceIcon.setLayoutParams(params);
         }
+        // Change footer background color on scroll.
+        mDevicesRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
+                super.onScrolled(recyclerView, dx, dy);
+                changeFooterColorForScroll();
+            }
+        });
+        // Changes footer background when the list dimensions changed without scroll.
+        mDevicesRecyclerView.addOnLayoutChangeListener(
+                (v, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom) -> {
+                    changeFooterColorForScroll();
+                });
     }
 
     @Override
@@ -349,25 +343,11 @@ public abstract class MediaOutputBaseDialog extends SystemUIDialog
         mStopButton.setText(getStopButtonText());
         mStopButton.setOnClickListener(v -> onStopButtonClick());
 
-        if (!enableOutputSwitcherRedesign()) {
-            if (getStopButtonVisibility() == View.VISIBLE) {
-                // If both buttons are visible, spread them to both the ends.
-                mButtonsFlow.setHorizontalStyle(Flow.CHAIN_SPREAD_INSIDE);
-                mButtonsFlow.setHorizontalBias(0.5f);
-            } else {
-                // If only one button is visible, align it to the end.
-                mButtonsFlow.setHorizontalStyle(Flow.CHAIN_PACKED);
-                mButtonsFlow.setHorizontalBias(1.0f);
-            }
-        } else {
-            // If redesign is enabled, buttons stay towards the end.
-            mButtonsFlow.setHorizontalStyle(Flow.CHAIN_PACKED);
-            mButtonsFlow.setHorizontalBias(1.0f);
-            mButtonsFlow.setHorizontalGap(
-                    (int)
-                            mContext.getResources()
-                                    .getDimension(R.dimen.media_output_dialog_button_gap));
-        }
+        // Buttons stay towards the end.
+        mButtonsFlow.setHorizontalStyle(Flow.CHAIN_PACKED);
+        mButtonsFlow.setHorizontalBias(1.0f);
+        mButtonsFlow.setHorizontalGap(
+                (int) mContext.getResources().getDimension(R.dimen.media_output_dialog_button_gap));
 
         if (!mAdapter.isDragging()) {
             int currentActivePosition = mAdapter.getCurrentActivePosition();
@@ -384,28 +364,18 @@ public abstract class MediaOutputBaseDialog extends SystemUIDialog
     }
 
     private void updateButtonBackgroundColorFilter() {
-        if (enableOutputSwitcherRedesign()) {
-            mDoneButton.getBackground().setTint(
-                    mMediaSwitchingController.getColorScheme().getPrimary());
-            mDoneButton.setTextColor(mMediaSwitchingController.getColorScheme().getOnPrimary());
-            mStopButton.getBackground().setTint(
-                    mMediaSwitchingController.getColorScheme().getOutlineVariant());
-            mStopButton.setTextColor(mMediaSwitchingController.getColorScheme().getPrimary());
-            mConnectDeviceButton.setTextColor(
-                    mMediaSwitchingController.getColorScheme().getOnSurfaceVariant());
-            mConnectDeviceButton.setStrokeColor(ColorStateList.valueOf(
-                    mMediaSwitchingController.getColorScheme().getOutlineVariant()));
-            mConnectDeviceButton.setIconTint(ColorStateList.valueOf(
-                    mMediaSwitchingController.getColorScheme().getPrimary()));
-        } else {
-            ColorFilter buttonColorFilter = new PorterDuffColorFilter(
-                    mMediaSwitchingController.getColorSchemeLegacy().getColorButtonBackground(),
-                    PorterDuff.Mode.SRC_IN);
-            mDoneButton.getBackground().setColorFilter(buttonColorFilter);
-            mStopButton.getBackground().setColorFilter(buttonColorFilter);
-            mDoneButton.setTextColor(
-                    mMediaSwitchingController.getColorSchemeLegacy().getColorPositiveButtonText());
-        }
+        mDoneButton.getBackground().setTint(
+                mMediaSwitchingController.getColorScheme().getPrimary());
+        mDoneButton.setTextColor(mMediaSwitchingController.getColorScheme().getOnPrimary());
+        mStopButton.getBackground().setTint(
+                mMediaSwitchingController.getColorScheme().getOutlineVariant());
+        mStopButton.setTextColor(mMediaSwitchingController.getColorScheme().getPrimary());
+        mConnectDeviceButton.setTextColor(
+                mMediaSwitchingController.getColorScheme().getOnSurfaceVariant());
+        mConnectDeviceButton.setStrokeColor(ColorStateList.valueOf(
+                mMediaSwitchingController.getColorScheme().getOutlineVariant()));
+        mConnectDeviceButton.setIconTint(ColorStateList.valueOf(
+                mMediaSwitchingController.getColorScheme().getPrimary()));
 
         if (enableOutputSwitcherAudioSharingButton()) {
             MediaOutputColorScheme colorScheme = mMediaSwitchingController.getColorScheme();
@@ -435,9 +405,7 @@ public abstract class MediaOutputBaseDialog extends SystemUIDialog
     }
 
     private void updateDialogBackgroundColor() {
-        int backgroundColor = enableOutputSwitcherRedesign()
-                ? mMediaSwitchingController.getColorScheme().getSurfaceContainer()
-                : mMediaSwitchingController.getColorSchemeLegacy().getColorDialogBackground();
+        int backgroundColor = mMediaSwitchingController.getColorScheme().getSurfaceContainer();
         getDialogView().getBackground().setTint(backgroundColor);
         mDeviceListLayout.setBackgroundColor(backgroundColor);
     }
@@ -473,15 +441,11 @@ public abstract class MediaOutputBaseDialog extends SystemUIDialog
             mAudioSharingButton.setVisibility(View.GONE);
         }
 
-        if (enableOutputSwitcherRedesign()) {
-            if (mMediaSwitchingController.getConnectNewDeviceItem() != null) {
-                showQuickAccessShelf = true;
-                mConnectDeviceButton.setVisibility(View.VISIBLE);
-                mConnectDeviceButton.setOnClickListener(
-                        mMediaSwitchingController::launchBluetoothPairing);
-            } else {
-                mConnectDeviceButton.setVisibility(View.GONE);
-            }
+        if (mMediaSwitchingController.getConnectNewDeviceItem() != null) {
+            showQuickAccessShelf = true;
+            mConnectDeviceButton.setVisibility(View.VISIBLE);
+            mConnectDeviceButton.setOnClickListener(
+                    mMediaSwitchingController::launchBluetoothPairing);
         } else {
             mConnectDeviceButton.setVisibility(View.GONE);
         }
