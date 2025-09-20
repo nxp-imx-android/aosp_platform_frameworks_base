@@ -408,6 +408,7 @@ public class BubbleData {
 
     /** Sets the expanded state to false without dispatching changes. */
     public void collapseNoUpdate() {
+        BubbleLog.d("BubbleData.collapseNoUpdate()");
         mExpanded = false;
     }
 
@@ -512,6 +513,7 @@ public class BubbleData {
         if (entry != null) {
             bubbleToReturn.setEntry(entry);
         }
+        BubbleLog.d("BubbleData.getOrCreateBubble() key=%s", key);
         mPendingBubbles.put(key, bubbleToReturn);
         return bubbleToReturn;
     }
@@ -675,6 +677,7 @@ public class BubbleData {
      * removal is ignored.
      */
     public void dismissBubbleWithKey(String key, @DismissReason int reason, long removalTimestamp) {
+        BubbleLog.d("BubbleData.dismissBubbleWithKey() key=%s", key);
         boolean shouldRemove = true;
         // if the bubble was removed from launcher, verify that the removal happened after the last
         // time it was updated
@@ -698,6 +701,7 @@ public class BubbleData {
      * @param notifKey the notification entry key of that summary.
      */
     void addSummaryToSuppress(String groupKey, String notifKey) {
+        BubbleLog.d("BubbleData.addSummaryToSuppress() groupKey=%s", groupKey);
         mSuppressedGroupKeys.put(groupKey, notifKey);
         mStateChange.suppressedSummaryChanged = true;
         mStateChange.suppressedSummaryGroup = groupKey;
@@ -718,6 +722,7 @@ public class BubbleData {
      * Removes a group key indicating that summary for this group should no longer be suppressed.
      */
     void removeSuppressedSummary(String groupKey) {
+        BubbleLog.d("BubbleData.removeSuppressedSummary() groupKey=%s", groupKey);
         mSuppressedGroupKeys.remove(groupKey);
         mStateChange.suppressedSummaryChanged = true;
         mStateChange.suppressedSummaryGroup = groupKey;
@@ -738,7 +743,7 @@ public class BubbleData {
      */
     public void removeBubblesWithInvalidShortcuts(
             String packageName, List<ShortcutInfo> validShortcuts, int reason) {
-
+        BubbleLog.d("BubbleData.removeBubblesWithInvalidShortcuts() package=%s", packageName);
         final Set<String> validShortcutIds = new HashSet<String>();
         for (ShortcutInfo info : validShortcuts) {
             validShortcutIds.add(info.getId());
@@ -768,6 +773,7 @@ public class BubbleData {
 
     /** Removes all bubbles from the given package. */
     public void removeBubblesWithPackageName(String packageName, int reason) {
+        BubbleLog.d("BubbleData.removeBubblesWithPackageName() package=%s", packageName);
         final Predicate<Bubble> bubbleMatchesPackage = bubble ->
                 bubble.getPackageName().equals(packageName);
 
@@ -780,6 +786,7 @@ public class BubbleData {
 
     /** Removes all bubbles for the given user. */
     public void removeBubblesForUser(int userId) {
+        BubbleLog.d("BubbleData.removeBubblesForUser() userId=%d", userId);
         final List<Bubble> removedBubbles = filterAllBubbles(bubble ->
                 userId == bubble.getUser().getIdentifier());
         for (Bubble b : removedBubbles) {
@@ -1180,10 +1187,11 @@ public class BubbleData {
      * @param shouldExpand the new requested state
      */
     private void setExpandedInternal(boolean shouldExpand) {
+        BubbleLog.d("BubbleData.setExpandedInternal() shouldExpand=%b, mExpanded=%b", shouldExpand,
+                mExpanded);
         if (mExpanded == shouldExpand) {
             return;
         }
-        BubbleLog.d("BubbleData.setExpandedInternal() shouldExpand=%b", shouldExpand);
         if (shouldExpand) {
             if (mBubbles.isEmpty() && !mShowingOverflow) {
                 Log.e(TAG, "Attempt to expand stack when empty!");
