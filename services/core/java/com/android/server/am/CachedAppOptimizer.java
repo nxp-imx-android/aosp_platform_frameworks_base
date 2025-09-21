@@ -1730,7 +1730,7 @@ public class CachedAppOptimizer {
 
             if (valid == null) {
                 // Use JNI only once
-                valid = new Boolean(compactionFlagsValidForMemcg(getCompactionFlags(profile)));
+                valid = compactionFlagsValidForMemcg(getCompactionFlags(profile));
                 mProfileValidForMemcgMap.put(profile, valid);
             }
 
