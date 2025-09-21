@@ -32,6 +32,7 @@ import android.view.View.OnLongClickListener
 import android.view.View.OnTouchListener
 import android.window.DesktopExperienceFlags
 import android.window.WindowContainerTransaction
+import com.android.wm.shell.pinnedlayer.phone.PinnedLayerController
 import com.android.wm.shell.windowdecor.DragPositioningCallbackUtility.DragEventListener
 import com.android.wm.shell.windowdecor.DragResizeWindowGeometry.DisabledEdge
 import com.android.wm.shell.windowdecor.common.ExclusionRegionListener
@@ -172,6 +173,15 @@ private constructor(
             when {
                 defaultWindowDecor != null -> requireDefaultWindowDecor().handleMenuController
                 desktopWindowDecor != null -> requireDesktopWindowDecor()
+                else -> error("Expected Non-null default or desktop window decoration")
+            }
+
+    val pinnedLayerController: PinnedLayerController?
+        get() =
+            when {
+                defaultWindowDecor != null -> requireDefaultWindowDecor().pinnedLayerController
+                desktopWindowDecor != null -> null // Unsupported in this context
+                captionWindowDecoration != null -> null // Unsupported in this context
                 else -> error("Expected Non-null default or desktop window decoration")
             }
 

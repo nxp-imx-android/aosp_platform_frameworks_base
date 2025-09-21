@@ -452,6 +452,7 @@ abstract class CaptionController<T>(
     enum class CaptionType {
         APP_HANDLE,
         APP_HEADER,
+        APP_PINNED,
         NO_CAPTION,
     }
 
