@@ -87,6 +87,12 @@
     <string name="kg_primary_auth_locked_out_pin" msgid="5492230176361601475">"הקשת קוד אימות שגוי יותר מדי פעמים"</string>
     <string name="kg_primary_auth_locked_out_pattern" msgid="8266214607346180952">"ציירת קו פתיחת נעילה שגוי יותר מדי פעמים"</string>
     <string name="kg_primary_auth_locked_out_password" msgid="6170245108400198659">"הסיסמה שהקלדת הייתה שגויה יותר מדי פעמים"</string>
+    <!-- no translation found for kg_primary_auth_locked_out_pin_shortlink (6337373088574808830) -->
+    <skip />
+    <!-- no translation found for kg_primary_auth_locked_out_pattern_shortlink (4178881609951888747) -->
+    <skip />
+    <!-- no translation found for kg_primary_auth_locked_out_password_shortlink (7931086124151522515) -->
+    <skip />
     <string name="kg_too_many_failed_attempts_countdown" msgid="2038195171919795529">"{count,plural, =1{אפשר לנסות שוב בעוד שנייה אחת.}one{אפשר לנסות שוב בעוד # שניות.}two{אפשר לנסות שוב בעוד # שניות.}other{אפשר לנסות שוב בעוד # שניות.}}"</string>
     <string name="kg_sim_pin_instructions" msgid="1942424305184242951">"‏יש להזין את קוד האימות של כרטיס ה-SIM."</string>
     <string name="kg_sim_pin_instructions_multi" msgid="3639863309953109649">"‏יש להזין את קוד האימות של כרטיס ה-SIM של <xliff:g id="CARRIER">%1$s</xliff:g>."</string>
