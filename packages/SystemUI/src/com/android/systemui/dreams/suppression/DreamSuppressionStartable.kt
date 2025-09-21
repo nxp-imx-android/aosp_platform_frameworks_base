@@ -28,13 +28,16 @@ import com.android.systemui.dreams.suppression.shared.model.DreamSuppression
 import com.android.systemui.log.LogBuffer
 import com.android.systemui.log.core.Logger
 import com.android.systemui.log.dagger.DreamLog
+import com.android.systemui.statusbar.pipeline.battery.domain.interactor.BatteryInteractor
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.dropWhile
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.launch
 
 /** Manages the suppression of dreams. */
 @SysUISingleton
@@ -43,11 +46,13 @@ class DreamSuppressionStartable
 constructor(
     @Background private val bgScope: CoroutineScope,
     private val activityRecognitionRepository: ActivityRecognitionRepository,
+    private val batteryInteractor: BatteryInteractor,
     private val powerManager: PowerManager,
     @DreamLog private val logBuffer: LogBuffer,
 ) : CoreStartable {
 
     private val logger = Logger(logBuffer, TAG)
+    private var inVehicleJob: Job? = null
 
     @RequiresPermission(WRITE_DREAM_STATE)
     override fun start() {
@@ -55,36 +60,69 @@ constructor(
             return
         }
 
-        activityRecognitionRepository.inVehicle
-            .map { inVehicle ->
-                if (inVehicle) {
-                    DreamSuppression.InVehicle
+        batteryInteractor.isCharging
+            .onEach { isCharging ->
+                if (isCharging) {
+                    startInVehicleDetection()
                 } else {
-                    DreamSuppression.None
-                }
-            }
-            .distinctUntilChanged()
-            // No-op until dream suppression becomes true
-            .dropWhile { !it.isSuppressed() }
-            .onEach { dreamSuppression ->
-                logger.i({ "Dream suppression updated: suppressed=$bool1 reason=$str1" }) {
-                    bool1 = dreamSuppression.isSuppressed()
-                    str1 = dreamSuppression.token
-                }
-
-                if (dreamSuppression.isSuppressed()) {
-                    powerManager.suppressAmbientDisplay(
-                        dreamSuppression.token,
-                        PowerManager.FLAG_AMBIENT_SUPPRESSION_DREAM,
-                    )
-                } else {
-                    powerManager.suppressAmbientDisplay(
-                        dreamSuppression.token,
-                        /*suppress=*/ false,
-                    )
+                    stopInVehicleDetection()
                 }
             }
             .launchIn(bgScope)
+    }
+
+    @RequiresPermission(WRITE_DREAM_STATE)
+    private fun startInVehicleDetection() {
+        if (inVehicleJob != null) {
+            return
+        }
+
+        logger.i("Starting in-vehicle detection")
+        inVehicleJob =
+            bgScope.launch {
+                activityRecognitionRepository.inVehicle
+                    .map { inVehicle ->
+                        if (inVehicle) {
+                            DreamSuppression.InVehicle
+                        } else {
+                            DreamSuppression.None
+                        }
+                    }
+                    .distinctUntilChanged()
+                    // No-op until dream suppression becomes true
+                    .dropWhile { !it.isSuppressed() }
+                    .onEach { dreamSuppression ->
+                        logger.i({ "Dream suppression updated: suppressed=$bool1 reason=$str1" }) {
+                            bool1 = dreamSuppression.isSuppressed()
+                            str1 = dreamSuppression.token
+                        }
+
+                        if (dreamSuppression.isSuppressed()) {
+                            powerManager.suppressAmbientDisplay(
+                                dreamSuppression.token,
+                                PowerManager.FLAG_AMBIENT_SUPPRESSION_DREAM,
+                            )
+                        } else {
+                            powerManager.suppressAmbientDisplay(
+                                DreamSuppression.InVehicle.token,
+                                /*suppress=*/ false,
+                            )
+                        }
+                    }
+                    .launchIn(this)
+            }
+    }
+
+    @RequiresPermission(WRITE_DREAM_STATE)
+    private fun stopInVehicleDetection() {
+        if (inVehicleJob == null) {
+            return
+        }
+
+        logger.i("Stopping in-vehicle detection")
+        inVehicleJob?.cancel()
+        inVehicleJob = null
+        powerManager.suppressAmbientDisplay(DreamSuppression.InVehicle.token, /* suppress= */ false)
     }
 
     private companion object {

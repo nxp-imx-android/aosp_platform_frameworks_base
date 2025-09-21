@@ -22,7 +22,9 @@ import android.platform.test.annotations.EnableFlags
 import android.testing.AndroidTestingRunner
 import android.view.Display
 import android.view.Display.DEFAULT_DISPLAY
+import android.view.WindowManager.TRANSIT_CHANGE
 import android.window.DisplayAreaInfo
+import android.window.TransitionInfo
 import androidx.test.filters.SmallTest
 import com.android.server.display.feature.flags.Flags as DisplayFlags
 import com.android.window.flags.Flags
@@ -60,6 +62,7 @@ import org.mockito.Mockito.spy
 import org.mockito.Mockito.times
 import org.mockito.Mockito.verify
 import org.mockito.kotlin.any
+import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.clearInvocations
 import org.mockito.kotlin.eq
@@ -180,6 +183,31 @@ class DesktopDisplayEventHandlerTest : ShellTestCase() {
             verify(mockDesksOrganizer)
                 .warmUpDefaultDesk(DEFAULT_DISPLAY, mockDesktopRepository.userId)
         }
+
+    @Test
+    fun onTransitionReady_emptyChanges_doesNothing() {
+        val info = TransitionInfo(TRANSIT_CHANGE, 0)
+
+        handler.onTransitionReady(mock(), info, mock(), mock())
+
+        verify(mockDesktopTasksController, never())
+            .onDisplayDpiChanging(any(), anyOrNull(), anyOrNull())
+        verify(transitions, never()).unregisterObserver(any())
+    }
+
+    @Test
+    fun onTransitionReady_displayIdNotInConfig_doesNothing() {
+        val info = TransitionInfo(TRANSIT_CHANGE, 0)
+        val mockChange: TransitionInfo.Change = mock()
+        info.changes.add(mockChange)
+        whenever(mockChange.endDisplayId).thenReturn(externalDisplayId)
+
+        handler.onTransitionReady(mock(), info, mock(), mock())
+
+        verify(mockDesktopTasksController, never())
+            .onDisplayDpiChanging(any(), anyOrNull(), anyOrNull())
+        verify(transitions, never()).unregisterObserver(any())
+    }
 
     @Test
     @EnableFlags(

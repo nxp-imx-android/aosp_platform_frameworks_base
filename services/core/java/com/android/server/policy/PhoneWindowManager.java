@@ -5788,8 +5788,17 @@ public class PhoneWindowManager implements WindowManagerPolicy {
     }
 
     @Override
-    public boolean isScreenOn() {
-        return mDefaultDisplayPolicy.isScreenOnEarly();
+    public boolean isScreenOn(int displayId) {
+        final DisplayPolicy policy = getDisplayPolicy(displayId);
+        return policy != null && policy.isScreenOnEarly();
+    }
+
+    @Nullable
+    private DisplayPolicy getDisplayPolicy(int displayId) {
+        if (displayId == DEFAULT_DISPLAY) {
+            return mDefaultDisplayPolicy;
+        }
+        return mWindowManagerInternal.getDisplayPolicy(displayId);
     }
 
     @Override
