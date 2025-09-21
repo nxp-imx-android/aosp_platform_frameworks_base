@@ -65,3 +65,10 @@ xsd_config {
     api_dir: "supplemental_security_patches/schema",
     package_name: "android.security.patches",
 }
+
+xsd_config {
+    name: "advanced-protection-config",
+    srcs: ["advanced-protection-config/advanced-protection-config.xsd"],
+    api_dir: "advanced-protection-config/schema",
+    package_name: "com.android.server.security.advancedprotection.config",
+}

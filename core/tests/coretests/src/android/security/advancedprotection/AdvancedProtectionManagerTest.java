@@ -24,21 +24,23 @@ import static android.security.advancedprotection.AdvancedProtectionManager.EXTR
 import static android.security.advancedprotection.AdvancedProtectionManager.FEATURE_ID_DISALLOW_CELLULAR_2G;
 import static android.security.advancedprotection.AdvancedProtectionManager.FEATURE_ID_DISALLOW_INSTALL_UNKNOWN_SOURCES;
 import static android.security.advancedprotection.AdvancedProtectionManager.FEATURE_ID_DISALLOW_INSECURE_WIFI_AUTOJOIN;
+import static android.security.advancedprotection.AdvancedProtectionManager.FEATURE_ID_DISALLOW_USB;
+import static android.security.advancedprotection.AdvancedProtectionManager.FEATURE_ID_DISALLOW_WEP;
 import static android.security.advancedprotection.AdvancedProtectionManager.FEATURE_ID_ENABLE_MTE;
 import static android.security.advancedprotection.AdvancedProtectionManager.SUPPORT_DIALOG_TYPE_BLOCKED_INTERACTION;
 import static android.security.advancedprotection.AdvancedProtectionManager.SUPPORT_DIALOG_TYPE_DISABLED_SETTING;
 import static android.security.advancedprotection.AdvancedProtectionManager.SUPPORT_DIALOG_TYPE_UNKNOWN;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
 
 import android.content.Intent;
 import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
+import android.platform.test.flag.junit.SetFlagsRule;
 import android.security.Flags;
 
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -50,6 +52,8 @@ public class AdvancedProtectionManagerTest {
     //TODO(b/378931989): Switch to android.app.admin.DevicePolicyIdentifiers.MEMORY_TAGGING_POLICY
     //when the appropriate flag is launched.
     private static final String MEMORY_TAGGING_POLICY = "memoryTagging";
+
+    @Rule public final SetFlagsRule mSetFlagsRule = new SetFlagsRule();
 
     @Test
     public void testCreateSupportIntent_validFeature_validTypeUnknown_createsIntent() {
@@ -167,5 +171,83 @@ public class AdvancedProtectionManagerTest {
         assertThrows(IllegalArgumentException.class, () ->
                 AdvancedProtectionManager.createSupportIntent(
                         FEATURE_ID_DISALLOW_INSECURE_WIFI_AUTOJOIN, SUPPORT_DIALOG_TYPE_UNKNOWN));
+    }
+
+    @Test
+    public void featureIdToString_validId_returnsCorrectString() {
+        assertEquals("DISALLOW_CELLULAR_2G",
+                AdvancedProtectionManager.featureIdToString(FEATURE_ID_DISALLOW_CELLULAR_2G));
+        assertEquals("DISALLOW_INSTALL_UNKNOWN_SOURCES",
+                AdvancedProtectionManager.featureIdToString(
+                        FEATURE_ID_DISALLOW_INSTALL_UNKNOWN_SOURCES));
+        assertEquals("DISALLOW_USB",
+                AdvancedProtectionManager.featureIdToString(FEATURE_ID_DISALLOW_USB));
+        assertEquals("DISALLOW_WEP",
+                AdvancedProtectionManager.featureIdToString(FEATURE_ID_DISALLOW_WEP));
+        assertEquals("ENABLE_MTE",
+                AdvancedProtectionManager.featureIdToString(FEATURE_ID_ENABLE_MTE));
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_AAPM_FEATURE_DISABLE_INSECURE_WIFI_AUTOJOIN)
+    public void featureIdToString_insecureWifiAutojoinFlagEnabled_returnsCorrectString() {
+        assertEquals("DISALLOW_INSECURE_WIFI_AUTOJOIN",
+                AdvancedProtectionManager.featureIdToString(
+                        FEATURE_ID_DISALLOW_INSECURE_WIFI_AUTOJOIN));
+    }
+
+    @Test
+    @DisableFlags(Flags.FLAG_AAPM_FEATURE_DISABLE_INSECURE_WIFI_AUTOJOIN)
+    public void featureIdToString_insecureWifiAutojoinFlagDisabled_throwsIllegalArgument() {
+        assertThrows(IllegalArgumentException.class,
+                () -> AdvancedProtectionManager.featureIdToString(
+                        FEATURE_ID_DISALLOW_INSECURE_WIFI_AUTOJOIN));
+    }
+
+    @Test
+    public void featureIdToString_invalidId_throwsIllegalArgumentException() {
+        assertThrows(IllegalArgumentException.class,
+                () -> AdvancedProtectionManager.featureIdToString(FEATURE_ID_INVALID));
+    }
+
+    @Test
+    public void featureStringToId_validString_returnsCorrectId() {
+        assertEquals(FEATURE_ID_DISALLOW_CELLULAR_2G,
+                AdvancedProtectionManager.featureStringToId("DISALLOW_CELLULAR_2G"));
+        assertEquals(FEATURE_ID_DISALLOW_INSTALL_UNKNOWN_SOURCES,
+                AdvancedProtectionManager.featureStringToId("DISALLOW_INSTALL_UNKNOWN_SOURCES"));
+        assertEquals(FEATURE_ID_DISALLOW_USB,
+                AdvancedProtectionManager.featureStringToId("DISALLOW_USB"));
+        assertEquals(FEATURE_ID_DISALLOW_WEP,
+                AdvancedProtectionManager.featureStringToId("DISALLOW_WEP"));
+        assertEquals(FEATURE_ID_ENABLE_MTE,
+                AdvancedProtectionManager.featureStringToId("ENABLE_MTE"));
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_AAPM_FEATURE_DISABLE_INSECURE_WIFI_AUTOJOIN)
+    public void featureStringToId_insecureWifiAutojoinFlagEnabled_returnsCorrectId() {
+        assertEquals(FEATURE_ID_DISALLOW_INSECURE_WIFI_AUTOJOIN,
+                AdvancedProtectionManager.featureStringToId("DISALLOW_INSECURE_WIFI_AUTOJOIN"));
+    }
+
+    @Test
+    @DisableFlags(Flags.FLAG_AAPM_FEATURE_DISABLE_INSECURE_WIFI_AUTOJOIN)
+    public void featureStringToId_insecureWifiAutojoinFlagDisabled_throwsIllegalArgument() {
+        assertThrows(IllegalArgumentException.class,
+                () -> AdvancedProtectionManager.featureStringToId(
+                        "DISALLOW_INSECURE_WIFI_AUTOJOIN"));
+    }
+
+    @Test
+    public void featureStringToId_invalidString_throwsIllegalArgumentException() {
+        assertThrows(IllegalArgumentException.class,
+                () -> AdvancedProtectionManager.featureStringToId("INVALID_STRING"));
+    }
+
+    @Test
+    public void featureStringToId_nullString_throwsNullPointerException() {
+        assertThrows(NullPointerException.class,
+                () -> AdvancedProtectionManager.featureStringToId(null));
     }
 }
