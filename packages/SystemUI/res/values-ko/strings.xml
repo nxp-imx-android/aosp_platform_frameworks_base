@@ -22,7 +22,7 @@
     <string name="app_label" msgid="4811759950673118541">"시스템 UI"</string>
     <string name="battery_low_title" msgid="5319680173344341779">"절전 모드를 사용 설정하시겠습니까?"</string>
     <string name="battery_low_description" msgid="7848989602036547056">"배터리가 <xliff:g id="PERCENTAGE">%s</xliff:g> 남았습니다. 절전 모드는 어두운 테마를 사용 설정하고 백그라운드 활동을 제한하며 알림을 지연시킵니다."</string>
-    <string name="battery_low_intro" msgid="8033783734931200690">"절전 모드는 어두운 테마를 사용하고 백그라운드 활동을 제한하며 알림을 지연시킵니다."</string>
+    <string name="battery_low_intro" msgid="8033783734931200690">"절전 모드는 어두운 테마를 사용 설정하고 백그라운드 활동을 제한하며 알림을 지연시킵니다."</string>
     <string name="battery_low_percent_format" msgid="4276661262843170964">"<xliff:g id="PERCENTAGE">%s</xliff:g> 남았습니다."</string>
     <string name="invalid_charger_title" msgid="938685362320735167">"USB로 충전할 수 없습니다."</string>
     <string name="invalid_charger_text" msgid="2339310107232691577">"기기와 함께 제공된 충전기를 사용하세요."</string>
@@ -180,8 +180,7 @@
     <string name="screen_capture_microphone_audio" msgid="1698835678818747741">"마이크"</string>
     <string name="screen_capture_front_camera" msgid="1214647538302639358">"전면 카메라"</string>
     <string name="screen_capture_region_dimensions" msgid="2317064050253056256">"<xliff:g id="WIDTH">%1$d</xliff:g>x<xliff:g id="HEIGHT">%2$d</xliff:g>"</string>
-    <!-- no translation found for screen_share_privacy_indicator_stop_sharing (2297045039651417274) -->
-    <skip />
+    <string name="screen_share_privacy_indicator_stop_sharing" msgid="2297045039651417274">"공유 중지"</string>
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"화면 공유 중"</string>
     <string name="share_to_app_chip_accessibility_label_generic" msgid="5517431657924536133">"콘텐츠 공유"</string>
     <string name="share_to_app_stop_dialog_title" msgid="9212915050910250438">"화면 공유를 중지하시겠습니까?"</string>
@@ -317,8 +316,6 @@
     <string name="accessibility_cast_name" msgid="7344437925388773685">"<xliff:g id="CAST">%s</xliff:g>에 연결됨"</string>
     <string name="accessibility_expand_group" msgid="521237935987978624">"그룹을 펼칩니다."</string>
     <string name="accessibility_collapse_group" msgid="1842704016768329517">"그룹을 접습니다."</string>
-    <string name="accessibility_add_device_to_group" msgid="5446422960697860806">"기기를 그룹에 추가합니다."</string>
-    <string name="accessibility_remove_device_from_group" msgid="3114694270949142228">"그룹에서 기기를 삭제합니다."</string>
     <string name="accessibility_add_device_to_group_with_name" msgid="1042306202917036858">"<xliff:g id="DEVICE_NAME">%s</xliff:g> 기기를 그룹에 추가합니다."</string>
     <string name="accessibility_remove_device_from_group_with_name" msgid="5582015497111561027">"그룹에서 <xliff:g id="DEVICE_NAME">%s</xliff:g> 기기를 삭제합니다."</string>
     <string name="accessibility_open_application" msgid="1749126077501259712">"애플리케이션을 엽니다."</string>
@@ -1387,7 +1384,6 @@
     <string name="media_output_dialog_multiple_devices" msgid="1093771040315422350">"기기 <xliff:g id="COUNT">%1$d</xliff:g>대 선택됨"</string>
     <string name="media_output_item_connected_state" msgid="297439499870755458">"연결됨"</string>
     <string name="media_output_dialog_connect_failed" msgid="3080972621975339387">"전환할 수 없습니다. 다시 시도하려면 탭하세요."</string>
-    <string name="media_output_dialog_pairing_new" msgid="5098212763195577270">"기기 연결"</string>
     <string name="media_output_dialog_button_connect_device" msgid="2819038239946643550">"기기 연결"</string>
     <string name="media_output_dialog_unknown_launch_app_name" msgid="1084899329829371336">"알 수 없는 앱"</string>
     <string name="media_output_dialog_button_stop_casting" msgid="6581379537930199189">"전송 중지"</string>
@@ -1397,7 +1393,6 @@
     <string name="media_output_group_title_connected_speakers" msgid="3413876972919684479">"연결된 스피커"</string>
     <string name="media_output_group_title_speakers_and_displays" msgid="7169712332365659820">"스피커 및 디스플레이"</string>
     <string name="media_output_group_title_suggested" msgid="5097061363820410332">"추천"</string>
-    <string name="media_output_group_title_suggested_device" msgid="4157186235837903826">"추천 기기"</string>
     <string name="media_input_group_title" msgid="2057057473860783021">"입력"</string>
     <string name="media_output_group_title" msgid="6789001895863332576">"출력"</string>
     <string name="media_output_end_session_dialog_summary" msgid="5954520685989877347">"미디어를 다른 기기로 이동하려면 공유 세션을 중지하세요."</string>

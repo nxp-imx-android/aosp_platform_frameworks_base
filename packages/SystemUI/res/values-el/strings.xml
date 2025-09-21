@@ -316,8 +316,6 @@
     <string name="accessibility_cast_name" msgid="7344437925388773685">"Συνδέθηκε σε <xliff:g id="CAST">%s</xliff:g>."</string>
     <string name="accessibility_expand_group" msgid="521237935987978624">"Αναπτύξτε την ομάδα."</string>
     <string name="accessibility_collapse_group" msgid="1842704016768329517">"Σύμπτυξη ομάδας."</string>
-    <string name="accessibility_add_device_to_group" msgid="5446422960697860806">"Προσθήκη συσκευής στην ομάδα."</string>
-    <string name="accessibility_remove_device_from_group" msgid="3114694270949142228">"Κατάργηση συσκευής από την ομάδα."</string>
     <string name="accessibility_add_device_to_group_with_name" msgid="1042306202917036858">"Προσθήκη συσκευής <xliff:g id="DEVICE_NAME">%s</xliff:g> στην ομάδα."</string>
     <string name="accessibility_remove_device_from_group_with_name" msgid="5582015497111561027">"Κατάργηση συσκευής <xliff:g id="DEVICE_NAME">%s</xliff:g> από την ομάδα."</string>
     <string name="accessibility_open_application" msgid="1749126077501259712">"Ανοίξτε την εφαρμογή."</string>
@@ -1386,7 +1384,6 @@
     <string name="media_output_dialog_multiple_devices" msgid="1093771040315422350">"Επιλέχτηκαν <xliff:g id="COUNT">%1$d</xliff:g> συσκευές"</string>
     <string name="media_output_item_connected_state" msgid="297439499870755458">"Συνδέθηκε"</string>
     <string name="media_output_dialog_connect_failed" msgid="3080972621975339387">"Δεν είναι δυνατή η εναλλαγή. Πατήστε για επανάληψη."</string>
-    <string name="media_output_dialog_pairing_new" msgid="5098212763195577270">"Σύνδεση συσκευής"</string>
     <string name="media_output_dialog_button_connect_device" msgid="2819038239946643550">"Σύνδεση συσκευής"</string>
     <string name="media_output_dialog_unknown_launch_app_name" msgid="1084899329829371336">"Άγνωστη εφαρμογή"</string>
     <string name="media_output_dialog_button_stop_casting" msgid="6581379537930199189">"Διακοπή μετάδοσης"</string>
@@ -1396,7 +1393,6 @@
     <string name="media_output_group_title_connected_speakers" msgid="3413876972919684479">"Συνδεδεμένα ηχεία"</string>
     <string name="media_output_group_title_speakers_and_displays" msgid="7169712332365659820">"Ηχεία και οθόνες"</string>
     <string name="media_output_group_title_suggested" msgid="5097061363820410332">"Προτεινόμενα"</string>
-    <string name="media_output_group_title_suggested_device" msgid="4157186235837903826">"Προτεινόμενες συσκευές"</string>
     <string name="media_input_group_title" msgid="2057057473860783021">"Είσοδος"</string>
     <string name="media_output_group_title" msgid="6789001895863332576">"Έξοδος"</string>
     <string name="media_output_end_session_dialog_summary" msgid="5954520685989877347">"Διακόψτε την κοινόχρηστη περίοδο λειτουργίας για να μεταφέρετε μέσα σε άλλη συσκευή"</string>

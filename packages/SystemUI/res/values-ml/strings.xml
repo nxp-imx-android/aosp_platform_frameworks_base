@@ -316,8 +316,6 @@
     <string name="accessibility_cast_name" msgid="7344437925388773685">"<xliff:g id="CAST">%s</xliff:g> എന്നതിലേക്ക് കണക്റ്റുചെയ്തു."</string>
     <string name="accessibility_expand_group" msgid="521237935987978624">"ഗ്രൂപ്പ് വികസിപ്പിക്കുക."</string>
     <string name="accessibility_collapse_group" msgid="1842704016768329517">"ഗ്രൂപ്പ് ചുരുക്കുക."</string>
-    <string name="accessibility_add_device_to_group" msgid="5446422960697860806">"ഉപകരണം ഗ്രൂപ്പിലേക്ക് ചേർക്കുക."</string>
-    <string name="accessibility_remove_device_from_group" msgid="3114694270949142228">"ഉപകരണം ഗ്രൂപ്പിൽ നിന്ന് നീക്കം ചെയ്യുക."</string>
     <string name="accessibility_add_device_to_group_with_name" msgid="1042306202917036858">"<xliff:g id="DEVICE_NAME">%s</xliff:g> ഗ്രൂപ്പിലേക്ക് ചേർക്കുക."</string>
     <string name="accessibility_remove_device_from_group_with_name" msgid="5582015497111561027">"<xliff:g id="DEVICE_NAME">%s</xliff:g> ഗ്രൂപ്പിൽ നിന്ന് നീക്കം ചെയ്യുക."</string>
     <string name="accessibility_open_application" msgid="1749126077501259712">"ആപ്പ് തുറക്കുക."</string>
@@ -1386,7 +1384,6 @@
     <string name="media_output_dialog_multiple_devices" msgid="1093771040315422350">"<xliff:g id="COUNT">%1$d</xliff:g> ഉപകരണങ്ങൾ തിരഞ്ഞെടുത്തു"</string>
     <string name="media_output_item_connected_state" msgid="297439499870755458">"കണക്‌റ്റ് ചെയ്‌തു"</string>
     <string name="media_output_dialog_connect_failed" msgid="3080972621975339387">"മാറാനാകുന്നില്ല. വീണ്ടും ശ്രമിക്കാൻ ടാപ്പ് ചെയ്യുക."</string>
-    <string name="media_output_dialog_pairing_new" msgid="5098212763195577270">"ഒരു ഉപകരണം കണക്റ്റ് ചെയ്യുക"</string>
     <string name="media_output_dialog_button_connect_device" msgid="2819038239946643550">"ഉപകരണം കണക്‌റ്റ് ചെയ്യുക"</string>
     <string name="media_output_dialog_unknown_launch_app_name" msgid="1084899329829371336">"അജ്ഞാതമായ ആപ്പ്"</string>
     <string name="media_output_dialog_button_stop_casting" msgid="6581379537930199189">"കാസ്റ്റ് ചെയ്യുന്നത് നിർത്തുക"</string>
@@ -1396,7 +1393,6 @@
     <string name="media_output_group_title_connected_speakers" msgid="3413876972919684479">"കണക്റ്റ് ചെയ്ത സ്‌പീക്കറുകൾ"</string>
     <string name="media_output_group_title_speakers_and_displays" msgid="7169712332365659820">"സ്‌പീക്കറുകളും ഡിസ്പ്ലേകളും"</string>
     <string name="media_output_group_title_suggested" msgid="5097061363820410332">"നിർദ്ദേശിക്കുന്നത്"</string>
-    <string name="media_output_group_title_suggested_device" msgid="4157186235837903826">"നിർദ്ദേശിച്ച ഉപകരണങ്ങൾ"</string>
     <string name="media_input_group_title" msgid="2057057473860783021">"ഇൻപുട്ട്"</string>
     <string name="media_output_group_title" msgid="6789001895863332576">"ഔട്ട്പുട്ട്"</string>
     <string name="media_output_end_session_dialog_summary" msgid="5954520685989877347">"മീഡിയയെ മറ്റൊരു ഉപകരണത്തിലേക്ക് നീക്കുന്നതിന് നിങ്ങളുടെ പങ്കിട്ട സെഷൻ നിർത്തുക"</string>

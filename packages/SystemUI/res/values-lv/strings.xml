@@ -21,8 +21,8 @@
     xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
     <string name="app_label" msgid="4811759950673118541">"Sistēmas UI"</string>
     <string name="battery_low_title" msgid="5319680173344341779">"Vai ieslēgt akumulatora enerģijas taupīšanas režīmu?"</string>
-    <string name="battery_low_description" msgid="7848989602036547056">"Atlikušais akumulatora uzlādes līmenis: <xliff:g id="PERCENTAGE">%s</xliff:g>. Akumulatora enerģijas taupīšanas režīmā tiek ieslēgts tumšais motīvs, ierobežotas darbības fonā un aizkavēti paziņojumi."</string>
-    <string name="battery_low_intro" msgid="8033783734931200690">"Akumulatora enerģijas taupīšanas režīmā tiek ieslēgts tumšais motīvs, ierobežotas darbības fonā un aizkavēti paziņojumi."</string>
+    <string name="battery_low_description" msgid="7848989602036547056">"Atlikušais akumulatora uzlādes līmenis: <xliff:g id="PERCENTAGE">%s</xliff:g>. Akumulatora enerģijas taupīšanas režīmā tiek ieslēgts tumšais motīvs, tiek ierobežotas fonā izpildāmas darbības un tiek aizkavēti paziņojumi."</string>
+    <string name="battery_low_intro" msgid="8033783734931200690">"Akumulatora enerģijas taupīšanas režīmā tiek ieslēgts tumšais motīvs, tiek ierobežotas fonā izpildāmas darbības un tiek aizkavēti paziņojumi."</string>
     <string name="battery_low_percent_format" msgid="4276661262843170964">"Atlikuši <xliff:g id="PERCENTAGE">%s</xliff:g>"</string>
     <string name="invalid_charger_title" msgid="938685362320735167">"Nevar veikt uzlādi, izmantojot USB"</string>
     <string name="invalid_charger_text" msgid="2339310107232691577">"Izmantojiet ierīces komplektācijā iekļauto lādētāju"</string>
@@ -180,8 +180,7 @@
     <string name="screen_capture_microphone_audio" msgid="1698835678818747741">"Mikrofons"</string>
     <string name="screen_capture_front_camera" msgid="1214647538302639358">"Priekšējā kamera"</string>
     <string name="screen_capture_region_dimensions" msgid="2317064050253056256">"<xliff:g id="WIDTH">%1$d</xliff:g> x <xliff:g id="HEIGHT">%2$d</xliff:g>"</string>
-    <!-- no translation found for screen_share_privacy_indicator_stop_sharing (2297045039651417274) -->
-    <skip />
+    <string name="screen_share_privacy_indicator_stop_sharing" msgid="2297045039651417274">"Apturēt kopīgošanu"</string>
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"Notiek ekrāna kopīgošana"</string>
     <string name="share_to_app_chip_accessibility_label_generic" msgid="5517431657924536133">"Notiek satura kopīgošana"</string>
     <string name="share_to_app_stop_dialog_title" msgid="9212915050910250438">"Vai apturēt ekrāna kopīgošanu?"</string>
@@ -317,8 +316,6 @@
     <string name="accessibility_cast_name" msgid="7344437925388773685">"Savienots ar ierīci <xliff:g id="CAST">%s</xliff:g>."</string>
     <string name="accessibility_expand_group" msgid="521237935987978624">"Izvērst grupu."</string>
     <string name="accessibility_collapse_group" msgid="1842704016768329517">"Sakļaut grupu."</string>
-    <string name="accessibility_add_device_to_group" msgid="5446422960697860806">"Pievienot ierīci grupai."</string>
-    <string name="accessibility_remove_device_from_group" msgid="3114694270949142228">"Noņemt ierīci no grupas."</string>
     <string name="accessibility_add_device_to_group_with_name" msgid="1042306202917036858">"Pievienot ierīci <xliff:g id="DEVICE_NAME">%s</xliff:g> grupai."</string>
     <string name="accessibility_remove_device_from_group_with_name" msgid="5582015497111561027">"Noņemt ierīci <xliff:g id="DEVICE_NAME">%s</xliff:g> no grupas."</string>
     <string name="accessibility_open_application" msgid="1749126077501259712">"Atvērt lietojumprogrammu."</string>
@@ -1387,7 +1384,6 @@
     <string name="media_output_dialog_multiple_devices" msgid="1093771040315422350">"Atlasītas vairākas ierīces (kopā <xliff:g id="COUNT">%1$d</xliff:g>)"</string>
     <string name="media_output_item_connected_state" msgid="297439499870755458">"Izveidots savienojums"</string>
     <string name="media_output_dialog_connect_failed" msgid="3080972621975339387">"Nevar pārslēgt. Pieskarieties, lai mēģinātu vēlreiz."</string>
-    <string name="media_output_dialog_pairing_new" msgid="5098212763195577270">"Savienot ar ierīci"</string>
     <string name="media_output_dialog_button_connect_device" msgid="2819038239946643550">"Pievienot ierīci"</string>
     <string name="media_output_dialog_unknown_launch_app_name" msgid="1084899329829371336">"Nezināma lietotne"</string>
     <string name="media_output_dialog_button_stop_casting" msgid="6581379537930199189">"Apturēt apraidi"</string>
@@ -1397,7 +1393,6 @@
     <string name="media_output_group_title_connected_speakers" msgid="3413876972919684479">"Pievienotie skaļruņi"</string>
     <string name="media_output_group_title_speakers_and_displays" msgid="7169712332365659820">"Skaļruņi un displeji"</string>
     <string name="media_output_group_title_suggested" msgid="5097061363820410332">"Ieteikumi"</string>
-    <string name="media_output_group_title_suggested_device" msgid="4157186235837903826">"Ieteiktās ierīces"</string>
     <string name="media_input_group_title" msgid="2057057473860783021">"Ievade"</string>
     <string name="media_output_group_title" msgid="6789001895863332576">"Izvade"</string>
     <string name="media_output_end_session_dialog_summary" msgid="5954520685989877347">"Pārtrauciet savu kopīgoto sesiju, lai pārvietotu multivides saturu uz citu ierīci."</string>

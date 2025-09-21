@@ -256,7 +256,7 @@
     <string name="biometric_dialog_identity_check_footer" msgid="4176895548458429932">"‏ميزة \"التحقّق من الهوية\" مفعَّلة ويمكنها تأكيد هويتك فقط باستخدام بصمة إصبعك أو وجهك. %1$s"</string>
     <string name="biometric_dialog_identity_check_watch_ranging" msgid="2994378079915744485">"جارٍ تقييم المخاطر…"</string>
     <string name="biometric_dialog_unavailable" msgid="8242160331783709764">"غير متوفّر"</string>
-    <string name="biometric_dialog_use_pin" msgid="8385294115283000709">"استخدام رقم تعريف شخصي"</string>
+    <string name="biometric_dialog_use_pin" msgid="8385294115283000709">"استخدام رقم التعريف الشخصي"</string>
     <string name="biometric_dialog_use_pattern" msgid="2315593393167211194">"استخدام النقش"</string>
     <string name="biometric_dialog_use_password" msgid="3445033859393474779">"استخدام كلمة المرور"</string>
     <string name="biometric_dialog_enter_pin" msgid="8625265944863623975">"إدخال رقم التعريف الشخصي"</string>
@@ -316,8 +316,6 @@
     <string name="accessibility_cast_name" msgid="7344437925388773685">"تم الاتصال بـ <xliff:g id="CAST">%s</xliff:g>."</string>
     <string name="accessibility_expand_group" msgid="521237935987978624">"سيتم توسيع المجموعة."</string>
     <string name="accessibility_collapse_group" msgid="1842704016768329517">"تصغير المجموعة"</string>
-    <string name="accessibility_add_device_to_group" msgid="5446422960697860806">"إضافة الجهاز إلى المجموعة"</string>
-    <string name="accessibility_remove_device_from_group" msgid="3114694270949142228">"إزالة الجهاز من المجموعة"</string>
     <string name="accessibility_add_device_to_group_with_name" msgid="1042306202917036858">"إضافة <xliff:g id="DEVICE_NAME">%s</xliff:g> إلى المجموعة"</string>
     <string name="accessibility_remove_device_from_group_with_name" msgid="5582015497111561027">"إزالة <xliff:g id="DEVICE_NAME">%s</xliff:g> من المجموعة"</string>
     <string name="accessibility_open_application" msgid="1749126077501259712">"سيتم فتح التطبيق."</string>
@@ -1386,7 +1384,6 @@
     <string name="media_output_dialog_multiple_devices" msgid="1093771040315422350">"تم اختيار <xliff:g id="COUNT">%1$d</xliff:g> جهاز."</string>
     <string name="media_output_item_connected_state" msgid="297439499870755458">"متّصل"</string>
     <string name="media_output_dialog_connect_failed" msgid="3080972621975339387">"لا يمكن التبديل. انقر لإعادة المحاولة."</string>
-    <string name="media_output_dialog_pairing_new" msgid="5098212763195577270">"ربط جهاز"</string>
     <string name="media_output_dialog_button_connect_device" msgid="2819038239946643550">"ربط جهاز"</string>
     <string name="media_output_dialog_unknown_launch_app_name" msgid="1084899329829371336">"تطبيق غير معروف"</string>
     <string name="media_output_dialog_button_stop_casting" msgid="6581379537930199189">"إيقاف البث"</string>
@@ -1396,7 +1393,6 @@
     <string name="media_output_group_title_connected_speakers" msgid="3413876972919684479">"مكبرات الصوت المتصلة"</string>
     <string name="media_output_group_title_speakers_and_displays" msgid="7169712332365659820">"مكبّرات الصوت والشاشات"</string>
     <string name="media_output_group_title_suggested" msgid="5097061363820410332">"الاقتراحات"</string>
-    <string name="media_output_group_title_suggested_device" msgid="4157186235837903826">"الأجهزة المقترَحة"</string>
     <string name="media_input_group_title" msgid="2057057473860783021">"الإدخال"</string>
     <string name="media_output_group_title" msgid="6789001895863332576">"الإخراج"</string>
     <string name="media_output_end_session_dialog_summary" msgid="5954520685989877347">"أوقِف الجلسة المشتركة لنقل الوسائط إلى جهاز آخر."</string>

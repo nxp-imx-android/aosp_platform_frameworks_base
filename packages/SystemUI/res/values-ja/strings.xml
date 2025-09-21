@@ -316,8 +316,6 @@
     <string name="accessibility_cast_name" msgid="7344437925388773685">"<xliff:g id="CAST">%s</xliff:g>に接続されています。"</string>
     <string name="accessibility_expand_group" msgid="521237935987978624">"グループを開きます。"</string>
     <string name="accessibility_collapse_group" msgid="1842704016768329517">"グループを閉じます。"</string>
-    <string name="accessibility_add_device_to_group" msgid="5446422960697860806">"グループにデバイスを追加します。"</string>
-    <string name="accessibility_remove_device_from_group" msgid="3114694270949142228">"グループからデバイスを削除します。"</string>
     <string name="accessibility_add_device_to_group_with_name" msgid="1042306202917036858">"<xliff:g id="DEVICE_NAME">%s</xliff:g> をグループに追加します。"</string>
     <string name="accessibility_remove_device_from_group_with_name" msgid="5582015497111561027">"<xliff:g id="DEVICE_NAME">%s</xliff:g> をグループから削除します。"</string>
     <string name="accessibility_open_application" msgid="1749126077501259712">"アプリを開きます。"</string>
@@ -427,8 +425,7 @@
     <string name="quick_settings_cast_detail_empty_text" msgid="2846282280014617785">"利用可能なデバイスがありません"</string>
     <string name="quick_settings_cast_no_network" msgid="3863016850468559522">"Wi-Fi またはイーサネットに接続されていません"</string>
     <string name="quick_settings_cast_disconnect" msgid="4836025217838730930">"接続を解除"</string>
-    <!-- no translation found for quick_settings_audio_current_input (8219735427828862612) -->
-    <skip />
+    <string name="quick_settings_audio_current_input" msgid="8219735427828862612">"現在のマイク入力:"</string>
     <string name="quick_settings_brightness_dialog_title" msgid="4980669966716685588">"画面の明るさ"</string>
     <string name="quick_settings_inversion_label" msgid="3501527749494755688">"色反転"</string>
     <string name="quick_settings_color_correction_label" msgid="5636617913560474664">"色補正"</string>
@@ -1388,7 +1385,6 @@
     <string name="media_output_dialog_multiple_devices" msgid="1093771040315422350">"選択したデバイス: <xliff:g id="COUNT">%1$d</xliff:g> 台"</string>
     <string name="media_output_item_connected_state" msgid="297439499870755458">"接続済み"</string>
     <string name="media_output_dialog_connect_failed" msgid="3080972621975339387">"切り替えられません。タップしてやり直してください。"</string>
-    <string name="media_output_dialog_pairing_new" msgid="5098212763195577270">"デバイスを接続"</string>
     <string name="media_output_dialog_button_connect_device" msgid="2819038239946643550">"デバイスを接続"</string>
     <string name="media_output_dialog_unknown_launch_app_name" msgid="1084899329829371336">"不明なアプリ"</string>
     <string name="media_output_dialog_button_stop_casting" msgid="6581379537930199189">"キャストを停止"</string>
@@ -1398,7 +1394,6 @@
     <string name="media_output_group_title_connected_speakers" msgid="3413876972919684479">"接続済みのスピーカー"</string>
     <string name="media_output_group_title_speakers_and_displays" msgid="7169712332365659820">"スピーカーとディスプレイ"</string>
     <string name="media_output_group_title_suggested" msgid="5097061363820410332">"候補"</string>
-    <string name="media_output_group_title_suggested_device" msgid="4157186235837903826">"デバイスの候補"</string>
     <string name="media_input_group_title" msgid="2057057473860783021">"入力"</string>
     <string name="media_output_group_title" msgid="6789001895863332576">"出力"</string>
     <string name="media_output_end_session_dialog_summary" msgid="5954520685989877347">"メディアを他のデバイスに移動する共有中のセッションを停止します。"</string>
