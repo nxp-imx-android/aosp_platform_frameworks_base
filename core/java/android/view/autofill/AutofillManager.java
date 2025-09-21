@@ -26,6 +26,7 @@ import static android.service.autofill.FillRequest.FLAG_SUPPORTS_FILL_DIALOG;
 import static android.service.autofill.FillRequest.FLAG_VIEW_NOT_FOCUSED;
 import static android.service.autofill.FillRequest.FLAG_VIEW_REQUESTS_CREDMAN_SERVICE;
 import static android.service.autofill.Flags.FLAG_FILL_DIALOG_IMPROVEMENTS;
+import static android.service.autofill.Flags.getViewCoordinatesInUiThread;
 import static android.service.autofill.Flags.improveFillDialogAconfig;
 import static android.service.autofill.Flags.relayoutFix;
 import static android.view.ContentInfo.SOURCE_AUTOFILL;
@@ -42,6 +43,7 @@ import android.annotation.RequiresFeature;
 import android.annotation.SystemApi;
 import android.annotation.SystemService;
 import android.annotation.TestApi;
+import android.annotation.UiThread;
 import android.app.ActivityOptions;
 import android.app.assist.AssistStructure.ViewNode;
 import android.app.assist.AssistStructure.ViewNodeBuilder;
@@ -124,6 +126,7 @@ import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
 import sun.misc.Cleaner;
 
@@ -5088,6 +5091,28 @@ public final class AutofillManager {
             final AutofillManager afm = mAfm.get();
             if (afm == null) return null;
 
+            if (!getViewCoordinatesInUiThread()) {
+                return getViewCoordinates(afm, id);
+            }
+
+            final AtomicReference<Rect> result = new AtomicReference<>();
+            final CountDownLatch latch = new CountDownLatch(1);
+            afm.post(() -> {
+                result.set(getViewCoordinates(afm, id));
+                latch.countDown();
+            });
+            try {
+                if (!latch.await(5000, TimeUnit.MILLISECONDS)) {
+                    Log.w(TAG, "getViewCoordinates timeout: " + id);
+                }
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+            return result.get();
+        }
+
+        @UiThread // requires UI thread to avoid native crash when view.getLocationOnScreen
+        private Rect getViewCoordinates(@NonNull AutofillManager afm, @NonNull AutofillId id) {
             final View view = getView(afm, id);
             if (view == null) {
                 return null;
