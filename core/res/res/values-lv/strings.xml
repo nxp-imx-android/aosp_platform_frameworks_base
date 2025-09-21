@@ -1993,8 +1993,8 @@
     <string name="package_updated_device_owner" msgid="7770195449213776218">"Instalēja jūsu administrators.\nPārejiet uz iestatījumiem, lai skatītu piešķirtās atļaujas."</string>
     <string name="package_deleted_device_owner" msgid="2292335928930293023">"Dzēsa administrators"</string>
     <string name="confirm_battery_saver" msgid="5247976246208245754">"Labi"</string>
-    <string name="battery_saver_description_with_learn_more" msgid="8969945879044849461">"Akumulatora enerģijas taupīšanas režīmā tiek ieslēgts tumšais motīvs un tiek ierobežotas vai izslēgtas darbības fonā, daži vizuālie efekti, noteiktas funkcijas un noteikti tīkla savienojumi."</string>
-    <string name="battery_saver_description" msgid="2820475140307374570">"Akumulatora enerģijas taupīšanas režīmā tiek ieslēgts tumšais motīvs un tiek ierobežotas vai izslēgtas darbības fonā, daži vizuālie efekti, noteiktas funkcijas un noteikti tīkla savienojumi."</string>
+    <string name="battery_saver_description_with_learn_more" msgid="8969945879044849461">"Akumulatora enerģijas taupīšanas režīmā tiek ieslēgts tumšais motīvs un tiek ierobežotas vai izslēgtas fonā izpildāmas darbības, daži vizuālie efekti, noteiktas funkcijas un noteikti tīkla savienojumi."</string>
+    <string name="battery_saver_description" msgid="2820475140307374570">"Akumulatora enerģijas taupīšanas režīmā tiek ieslēgts tumšais motīvs un tiek ierobežotas vai izslēgtas fonā izpildāmas darbības, daži vizuālie efekti, noteiktas funkcijas un noteikti tīkla savienojumi."</string>
     <string name="data_saver_description" msgid="4995164271550590517">"Lai samazinātu datu lietojumu, datu lietojuma samazinātājs neļauj dažām lietotnēm fonā nosūtīt vai saņemt datus. Lietotne, kuru pašlaik izmantojat, var piekļūt datiem, bet, iespējams, piekļūs tiem retāk (piemēram, attēli tiks parādīti tikai tad, kad tiem pieskarsieties)."</string>
     <string name="data_saver_enable_title" msgid="7080620065745260137">"Vai ieslēgt datu lietojuma samazinātāju?"</string>
     <string name="data_saver_enable_button" msgid="4399405762586419726">"Ieslēgt"</string>

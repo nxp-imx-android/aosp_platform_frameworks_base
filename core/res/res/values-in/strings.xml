@@ -1992,8 +1992,8 @@
     <string name="package_updated_device_owner" msgid="7770195449213776218">"Diperbarui oleh admin Anda.\nBuka setelan untuk melihat izin yang diberikan"</string>
     <string name="package_deleted_device_owner" msgid="2292335928930293023">"Dihapus oleh admin Anda"</string>
     <string name="confirm_battery_saver" msgid="5247976246208245754">"Oke"</string>
-    <string name="battery_saver_description_with_learn_more" msgid="8969945879044849461">"Penghemat Baterai akan mengaktifkan Tema gelap dan membatasi atau menonaktifkan aktivitas latar belakang, beberapa efek visual, fitur tertentu, dan beberapa koneksi jaringan."</string>
-    <string name="battery_saver_description" msgid="2820475140307374570">"Penghemat Baterai akan mengaktifkan Tema gelap dan membatasi atau menonaktifkan aktivitas latar belakang, beberapa efek visual, fitur tertentu, dan beberapa koneksi jaringan."</string>
+    <string name="battery_saver_description_with_learn_more" msgid="8969945879044849461">"Penghemat Baterai akan mengaktifkan tema gelap dan membatasi atau menonaktifkan aktivitas latar belakang, beberapa efek visual, fitur tertentu, dan beberapa koneksi jaringan."</string>
+    <string name="battery_saver_description" msgid="2820475140307374570">"Penghemat Baterai akan mengaktifkan tema gelap dan membatasi atau menonaktifkan aktivitas latar belakang, beberapa efek visual, fitur tertentu, dan beberapa koneksi jaringan."</string>
     <string name="data_saver_description" msgid="4995164271550590517">"Untuk membantu mengurangi penggunaan data, Penghemat Data mencegah beberapa aplikasi mengirim atau menerima data di latar belakang. Aplikasi yang sedang digunakan dapat mengakses data, tetapi frekuensinya mungkin lebih jarang. Misalnya, gambar hanya akan ditampilkan setelah diketuk."</string>
     <string name="data_saver_enable_title" msgid="7080620065745260137">"Aktifkan Penghemat Data?"</string>
     <string name="data_saver_enable_button" msgid="4399405762586419726">"Aktifkan"</string>
