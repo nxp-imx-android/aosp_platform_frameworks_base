@@ -357,7 +357,7 @@ fun ContentScope.OverlayShadeHeader(
             Box(modifier = Modifier.padding(horizontal = horizontalPadding)) {
                 ShadeHighlightChip(
                     backgroundColor = notificationsHighlight.backgroundColor,
-                    onHoveredBackgroundColor = notificationsHighlight.onHoveredBackgroundColor,
+                    hoverBackgroundColor = notificationsHighlight.hoverBackgroundColor,
                     horizontalArrangement = Arrangement.spacedBy(5.dp),
                     onClick = viewModel::onNotificationIconChipClicked,
                     modifier =
@@ -391,7 +391,7 @@ fun ContentScope.OverlayShadeHeader(
             ) {
                 ShadeHighlightChip(
                     backgroundColor = quickSettingsHighlight.backgroundColor,
-                    onHoveredBackgroundColor = quickSettingsHighlight.onHoveredBackgroundColor,
+                    hoverBackgroundColor = quickSettingsHighlight.hoverBackgroundColor,
                     onClick = viewModel::onSystemIconChipClicked,
                     modifier =
                         Modifier.bouncy(

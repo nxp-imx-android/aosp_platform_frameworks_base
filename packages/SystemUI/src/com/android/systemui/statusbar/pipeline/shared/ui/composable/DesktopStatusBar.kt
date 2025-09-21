@@ -174,19 +174,30 @@ private fun NotificationsChip(viewModel: HomeStatusBarViewModel, modifier: Modif
             ChipHighlightModel.Transparent
         }
 
-    ShadeHighlightChip(
-        modifier = modifier.height(DesktopStatusBar.Dimensions.ChipHeight),
-        onClick = { viewModel.onNotificationIconChipClicked() },
-        backgroundColor = chipHighlightModel.backgroundColor,
-        onHoveredBackgroundColor = chipHighlightModel.onHoveredBackgroundColor,
-        horizontalArrangement =
-            Arrangement.spacedBy(DesktopStatusBar.Dimensions.ChipInternalSpacing, Alignment.Start),
-    ) {
-        // TODO(433589833): Add new icon resources for the notification chip icon.
-        WithAdaptiveTint(
-            isHighlighted = viewModel.isNotificationsChipHighlighted,
-            isDarkProvider = { bounds -> viewModel.areaDark.isDarkTheme(bounds) },
-        ) { tint ->
+    WithAdaptiveTint(
+        isHighlighted = viewModel.isNotificationsChipHighlighted,
+        isDarkProvider = { bounds -> viewModel.areaDark.isDarkTheme(bounds) },
+    ) { tint ->
+        val (hoverColor, rippleColor) =
+            when (chipHighlightModel) {
+                is ChipHighlightModel.Transparent ->
+                    tint.copy(alpha = ChipHighlightModel.Companion.Alpha.TRANSPARENT_HOVER) to
+                        tint.copy(alpha = ChipHighlightModel.Companion.Alpha.TRANSPARENT_RIPPLE)
+                else -> chipHighlightModel.hoverBackgroundColor to chipHighlightModel.rippleColor
+            }
+
+        ShadeHighlightChip(
+            modifier = modifier.height(DesktopStatusBar.Dimensions.ChipHeight),
+            onClick = { viewModel.onNotificationIconChipClicked() },
+            backgroundColor = chipHighlightModel.backgroundColor,
+            hoverBackgroundColor = hoverColor,
+            rippleColor = rippleColor,
+            horizontalArrangement =
+                Arrangement.spacedBy(
+                    DesktopStatusBar.Dimensions.ChipInternalSpacing,
+                    Alignment.Start,
+                ),
+        ) {
             Icon(
                 icon =
                     Icon.Resource(
@@ -218,46 +229,54 @@ private fun QuickSettingsChip(
         } else {
             ChipHighlightModel.Transparent
         }
-    ShadeHighlightChip(
-        modifier = modifier.height(DesktopStatusBar.Dimensions.ChipHeight),
-        onClick = { viewModel.onQuickSettingsChipClicked() },
-        backgroundColor = chipHighlightModel.backgroundColor,
-        onHoveredBackgroundColor = chipHighlightModel.onHoveredBackgroundColor,
-        horizontalArrangement =
-            Arrangement.spacedBy(DesktopStatusBar.Dimensions.ChipInternalSpacing, Alignment.Start),
-    ) {
-        if (SystemStatusIconsInCompose.isEnabled) {
-            WithAdaptiveTint(
-                isHighlighted = viewModel.isQuickSettingsChipHighlighted,
-                isDarkProvider = { bounds -> viewModel.areaDark.isDarkTheme(bounds) },
-            ) { tint ->
+
+    WithAdaptiveTint(
+        isHighlighted = viewModel.isQuickSettingsChipHighlighted,
+        isDarkProvider = { bounds -> viewModel.areaDark.isDarkTheme(bounds) },
+    ) { tint ->
+        val (hoverColor, rippleColor) =
+            when (chipHighlightModel) {
+                is ChipHighlightModel.Transparent ->
+                    tint.copy(alpha = ChipHighlightModel.Companion.Alpha.TRANSPARENT_HOVER) to
+                        tint.copy(alpha = ChipHighlightModel.Companion.Alpha.TRANSPARENT_RIPPLE)
+                else -> chipHighlightModel.hoverBackgroundColor to chipHighlightModel.rippleColor
+            }
+
+        ShadeHighlightChip(
+            modifier = modifier.height(DesktopStatusBar.Dimensions.ChipHeight),
+            onClick = { viewModel.onQuickSettingsChipClicked() },
+            backgroundColor = chipHighlightModel.backgroundColor,
+            hoverBackgroundColor = hoverColor,
+            rippleColor = rippleColor,
+            horizontalArrangement =
+                Arrangement.spacedBy(
+                    DesktopStatusBar.Dimensions.ChipInternalSpacing,
+                    Alignment.Start,
+                ),
+        ) {
+            if (SystemStatusIconsInCompose.isEnabled) {
                 SystemStatusIcons(
                     viewModelFactory = viewModel.systemStatusIconsViewModelFactory,
                     tint = tint,
                     modifier = modifier,
                 )
-            }
-        } else {
-            val localContext = LocalContext.current
-            val iconContainer =
-                remember(localContext, iconManagerFactory) {
-                    StatusIconContainer(
-                        ContextThemeWrapper(localContext, R.style.Theme_SystemUI),
-                        null,
-                    )
-                }
-            val iconManager =
-                remember(iconContainer) {
-                    iconManagerFactory.create(iconContainer, StatusBarLocation.HOME)
-                }
+            } else {
+                val localContext = LocalContext.current
+                val iconContainer =
+                    remember(localContext, iconManagerFactory) {
+                        StatusIconContainer(
+                            ContextThemeWrapper(localContext, R.style.Theme_SystemUI),
+                            null,
+                        )
+                    }
+                val iconManager =
+                    remember(iconContainer) {
+                        iconManagerFactory.create(iconContainer, StatusBarLocation.HOME)
+                    }
 
-            val movableContent =
-                remember(iconManager) { movableSystemStatusIconsLegacyAndroidView(iconManager) }
+                val movableContent =
+                    remember(iconManager) { movableSystemStatusIconsLegacyAndroidView(iconManager) }
 
-            WithAdaptiveTint(
-                isHighlighted = viewModel.isQuickSettingsChipHighlighted,
-                isDarkProvider = { bounds -> viewModel.areaDark.isDarkTheme(bounds) },
-            ) { tint ->
                 SystemStatusIconsLegacy(
                     statusBarIconController = statusBarIconController,
                     iconContainer = iconContainer,
@@ -273,20 +292,20 @@ private fun QuickSettingsChip(
                     content = movableContent,
                 )
             }
-        }
 
-        val batteryHeight =
-            with(LocalDensity.current) {
-                BatteryViewModel.getStatusBarBatteryHeight(LocalContext.current).toDp()
-            }
-        UnifiedBattery(
-            viewModel =
-                rememberViewModel("DesktopStatusBar.BatteryViewModel") {
-                    viewModel.unifiedBatteryViewModel.create()
-                },
-            isDarkProvider = { viewModel.areaDark },
-            modifier = Modifier.height(batteryHeight),
-        )
+            val batteryHeight =
+                with(LocalDensity.current) {
+                    BatteryViewModel.getStatusBarBatteryHeight(LocalContext.current).toDp()
+                }
+            UnifiedBattery(
+                viewModel =
+                    rememberViewModel("DesktopStatusBar.BatteryViewModel") {
+                        viewModel.unifiedBatteryViewModel.create()
+                    },
+                isDarkProvider = { viewModel.areaDark },
+                modifier = Modifier.height(batteryHeight),
+            )
+        }
     }
 }
 
