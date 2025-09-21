@@ -41,11 +41,6 @@ import java.util.ArrayList;
  */
 final class ProcessServiceRecord extends ProcessServiceRecordInternal {
     /**
-     * Are there any client services with activities?
-     */
-    private boolean mHasClientActivities;
-
-    /**
      * Running any services that are foreground?
      */
     private boolean mHasForegroundServices;
@@ -122,17 +117,10 @@ final class ProcessServiceRecord extends ProcessServiceRecordInternal {
     private final ActivityManagerService mService;
 
     ProcessServiceRecord(ProcessRecord app) {
+        super(app);
+
         mApp = app;
         mService = app.mService;
-    }
-
-    void setHasClientActivities(boolean hasClientActivities) {
-        mHasClientActivities = hasClientActivities;
-        mApp.getWindowProcessController().setHasClientActivities(hasClientActivities);
-    }
-
-    boolean hasClientActivities() {
-        return mHasClientActivities;
     }
 
     void setHasForegroundServices(boolean hasForegroundServices, int fgServiceTypes,
@@ -591,8 +579,8 @@ final class ProcessServiceRecord extends ProcessServiceRecordInternal {
             pw.print(" mLastTopStartedAlmostPerceptibleBindRequestUptimeMs=");
             pw.println(mLastTopStartedAlmostPerceptibleBindRequestUptimeMs);
         }
-        if (mHasClientActivities || isHasAboveClient() || isTreatLikeActivity()) {
-            pw.print(prefix); pw.print("hasClientActivities="); pw.print(mHasClientActivities);
+        if (hasClientActivities() || isHasAboveClient() || isTreatLikeActivity()) {
+            pw.print(prefix); pw.print("hasClientActivities="); pw.print(hasClientActivities());
             pw.print(" hasAboveClient="); pw.print(isHasAboveClient());
             pw.print(" treatLikeActivity="); pw.println(isTreatLikeActivity());
         }
