@@ -2143,6 +2143,7 @@ final class ActivityManagerConstants extends ContentObserver {
         mProcStateDebugSetUidStateDelay = 0;
         if (val.length() == 0) {
             mProcStateDebugUids = new SparseBooleanArray(0);
+            mService.mProcessStateController.setProcStateDebugUids(mProcStateDebugUids);
             return;
         }
         final String[] uids = val.split(",");
@@ -2186,6 +2187,7 @@ final class ActivityManagerConstants extends ContentObserver {
             }
         }
         mProcStateDebugUids = newArray;
+        mService.mProcessStateController.setProcStateDebugUids(mProcStateDebugUids);
     }
 
     private void updateMinAssocLogDuration() {
@@ -2336,28 +2338,6 @@ final class ActivityManagerConstants extends ContentObserver {
                 DEFAULT_ENABLE_BATCHING_OOM_ADJ);
     }
 
-    boolean shouldDebugUidForProcState(int uid) {
-        SparseBooleanArray ar = mProcStateDebugUids;
-        final var size = ar.size();
-        if (size == 0) { // Most common case.
-            return false;
-        }
-        // If the array is small (also common), avoid the binary search.
-        if (size <= 8) {
-            for (int i = 0; i < size; i++) {
-                if (ar.keyAt(i) == uid) {
-                    return ar.valueAt(i);
-                }
-            }
-            return false;
-        }
-        return ar.get(uid, false);
-    }
-
-    boolean shouldEnableProcStateDebug() {
-        return mProcStateDebugUids.size() > 0;
-    }
-
     /** Creates and initializes an {@link OomAdjuster.Constants} instance with values. */
     OomAdjuster.Constants createOomConstants() {
         OomAdjuster.Constants oomConstants = new OomAdjuster.Constants();
@@ -2368,6 +2348,7 @@ final class ActivityManagerConstants extends ContentObserver {
         oomConstants.mCurMaxCachedProcesses = CUR_MAX_CACHED_PROCESSES;
         oomConstants.mCurMaxEmptyProcesses = CUR_MAX_EMPTY_PROCESSES;
         oomConstants.mCurTrimEmptyProcesses = CUR_TRIM_EMPTY_PROCESSES;
+        oomConstants.mProcStateDebugUids = mProcStateDebugUids;
         return oomConstants;
     }
 

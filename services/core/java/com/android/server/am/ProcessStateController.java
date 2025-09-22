@@ -37,6 +37,7 @@ import android.os.Looper;
 import android.os.PowerManagerInternal;
 import android.util.Slog;
 import android.util.SparseArray;
+import android.util.SparseBooleanArray;
 
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
@@ -131,6 +132,10 @@ public class ProcessStateController {
 
     public void setCurTrimEmptyProcesses(int value) {
         mOomConstants.mCurTrimEmptyProcesses = value;
+    }
+
+    public void setProcStateDebugUids(SparseBooleanArray value) {
+        mOomConstants.mProcStateDebugUids = value;
     }
 
     /**
