@@ -18646,6 +18646,7 @@ public class DevicePolicyManager {
         return HEADLESS_DEVICE_OWNER_MODE_UNSUPPORTED;
     }
 
+    // LINT.IfChange(policy_scope)
     /**
      * Flag used by {@link #setPolicy} to apply the policy to the same user as the context user.
      */
@@ -18676,6 +18677,7 @@ public class DevicePolicyManager {
     })
     @Retention(RetentionPolicy.SOURCE)
     public @interface PolicyScope {}
+    // LINT.ThenChange(/frameworks/base/tools/processors/devicepolicy/proto/policy_metadata.proto:policy_scope)
 
     /**
      * Indicates that a policy has a device wide effect. There is a single final value that

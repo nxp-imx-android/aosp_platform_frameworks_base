@@ -10,8 +10,20 @@ message PolicyMetadata {
     string type = 2;
     string documentation = 3;
     TypeSpecificPolicyMetadata type_specific_metadata = 4;
-    repeated int32 allowed_scopes = 5;
+
+    // LINT.IfChange(policy_scope)
+    enum PolicyScope {
+        // UNSPECIFIED should not be used.
+        POLICY_SCOPE_UNSPECIFIED = 0;
+        POLICY_SCOPE_USER = 1;
+        POLICY_SCOPE_DEVICE = 2;
+        POLICY_SCOPE_PARENT_USER = 3;
+    }
+    // LINT.ThenChange(/frameworks/base/core/java/android/app/admin/DevicePolicyManager.java:policy_scope)
+    repeated PolicyScope allowed_scopes = 5;
+
     int32 affected_resource = 6;
+
 }
 
 message TypeSpecificPolicyMetadata {

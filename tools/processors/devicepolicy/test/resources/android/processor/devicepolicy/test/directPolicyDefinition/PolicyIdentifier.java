@@ -29,7 +29,7 @@ public final class PolicyIdentifier<T> {
      * Test policy 1
      */
     @PolicyDefinition(
-            allowedScopes = {0, 1},
+            allowedScopes = {1, 2},
             affectedResource = 1
     )
     public static final PolicyIdentifier<Boolean>

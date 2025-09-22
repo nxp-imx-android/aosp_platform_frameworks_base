@@ -44,6 +44,7 @@ class PolicyProcessorTest {
         const val POLICY_IDENTIFIER_INVALID_TYPE_JAVA = "$RESOURCE_ROOT/invalidtype/PolicyIdentifier.java"
         const val POLICY_IDENTIFIER_DIRECT_DEFINITION_JAVA = "$RESOURCE_ROOT/directPolicyDefinition/PolicyIdentifier.java"
         const val POLICY_IDENTIFIER_MISSING_DOCUMENTATION_JAVA = "$RESOURCE_ROOT/missingDocumentation/PolicyIdentifier.java"
+        const val POLICY_IDENTIFIER_SCOPE_VALIDATION_JAVA = "$RESOURCE_ROOT/scopeValidation/PolicyIdentifier.java"
 
 
         /**
@@ -121,6 +122,16 @@ class PolicyProcessorTest {
         assertThat(compilation).hadErrorContaining("Missing JavaDoc")
     }
 
+    @Test
+    fun test_scopeValidation_failsToCompile() {
+        val compilation: Compilation = mCompiler.compile(
+            JavaFileObjects.forResource(POLICY_IDENTIFIER_SCOPE_VALIDATION_JAVA)
+        )
+        assertThat(compilation).failed()
+        assertThat(compilation).hadErrorContaining("allowedScopes must not be empty")
+        assertThat(compilation).hadErrorContaining("allowedScopes contains an unknown value")
+    }
+
     /**
      * Errors should only come from our processor.
      */
@@ -139,5 +150,6 @@ class PolicyProcessorTest {
         checkCompileSucceeds(POLICY_IDENTIFIER_INVALID_TYPE_JAVA)
         checkCompileSucceeds(POLICY_IDENTIFIER_DIRECT_DEFINITION_JAVA)
         checkCompileSucceeds(POLICY_IDENTIFIER_MISSING_DOCUMENTATION_JAVA)
+        checkCompileSucceeds(POLICY_IDENTIFIER_SCOPE_VALIDATION_JAVA)
     }
 }
