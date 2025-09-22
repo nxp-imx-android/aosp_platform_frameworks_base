@@ -58,6 +58,7 @@ import com.android.systemui.res.R.string.kg_primary_auth_locked_out_pin_shortlin
 import com.android.systemui.res.R.string.kg_too_many_failed_attempts_countdown
 import com.android.systemui.res.R.string.kg_trust_agent_disabled
 import com.android.systemui.securelockdevice.data.repository.fakeSecureLockDeviceRepository
+import com.android.systemui.securelockdevice.domain.interactor.secureLockDeviceInteractor
 import com.android.systemui.testKosmos
 import com.android.systemui.user.data.repository.fakeUserRepository
 import com.android.systemui.util.mockito.KotlinArgumentCaptor
@@ -107,7 +108,7 @@ class BouncerMessageInteractorTest : SysuiTestCase() {
     suspend fun TestScope.init(
         faceAuthCurrentlyAllowed: Boolean = false,
         faceAuthEnrolledAndEnabled: Boolean = false,
-        hasStrongFace: Boolean = true,
+        hasStrongFace: Boolean = false,
         fingerprintAuthCurrentlyAllowed: Boolean = true,
         fingerprintAuthEnrolledAndEnabled: Boolean = true,
         secureLockDeviceEnabled: Boolean? = null,
@@ -176,6 +177,20 @@ class BouncerMessageInteractorTest : SysuiTestCase() {
         }
         kosmos.fakeKeyguardBouncerRepository.setPrimaryShow(true)
         runCurrent()
+
+        if (secureLockDeviceEnabled == true) {
+            val hasFingerprint by collectLastValue(kosmos.secureLockDeviceInteractor.hasFingerprint)
+            val hasFace by collectLastValue(kosmos.secureLockDeviceInteractor.hasFace)
+
+            runCurrent()
+            if (fingerprintAuthEnrolledAndEnabled) {
+                assertThat(hasFingerprint).isTrue()
+            }
+
+            if (hasStrongFace) {
+                assertThat(hasFace).isTrue()
+            }
+        }
     }
 
     @Test
@@ -240,6 +255,7 @@ class BouncerMessageInteractorTest : SysuiTestCase() {
             init(
                 faceAuthCurrentlyAllowed = true,
                 faceAuthEnrolledAndEnabled = true,
+                hasStrongFace = true,
                 fingerprintAuthCurrentlyAllowed = false,
                 fingerprintAuthEnrolledAndEnabled = false,
                 secureLockDeviceEnabled = true,
@@ -262,6 +278,7 @@ class BouncerMessageInteractorTest : SysuiTestCase() {
             init(
                 faceAuthCurrentlyAllowed = true,
                 faceAuthEnrolledAndEnabled = true,
+                hasStrongFace = true,
                 fingerprintAuthCurrentlyAllowed = true,
                 fingerprintAuthEnrolledAndEnabled = true,
                 secureLockDeviceEnabled = true,
@@ -326,6 +343,7 @@ class BouncerMessageInteractorTest : SysuiTestCase() {
             init(
                 faceAuthCurrentlyAllowed = true,
                 faceAuthEnrolledAndEnabled = true,
+                hasStrongFace = true,
                 secureLockDeviceEnabled = true,
                 secureLockDeviceBiometricAuthActive = true,
             )
@@ -624,6 +642,7 @@ class BouncerMessageInteractorTest : SysuiTestCase() {
             init(
                 faceAuthEnrolledAndEnabled = true,
                 faceAuthCurrentlyAllowed = false,
+                hasStrongFace = true,
                 secureLockDeviceEnabled = true,
                 secureLockDeviceBiometricAuthActive = false,
             )
@@ -643,7 +662,13 @@ class BouncerMessageInteractorTest : SysuiTestCase() {
     @Test
     fun onFaceLockout_whenItIsClass3_propagatesState() =
         testScope.runTest {
-            init(faceAuthEnrolledAndEnabled = true)
+            init(
+                faceAuthCurrentlyAllowed = true,
+                faceAuthEnrolledAndEnabled = true,
+                hasStrongFace = true,
+                fingerprintAuthCurrentlyAllowed = true,
+                fingerprintAuthEnrolledAndEnabled = true,
+            )
             val lockoutMessage by collectLastValue(underTest.bouncerMessage)
             kosmos.fakeDeviceEntryFaceAuthRepository.setLockedOut(true)
             runCurrent()
@@ -757,6 +782,7 @@ class BouncerMessageInteractorTest : SysuiTestCase() {
                 fingerprintAuthEnrolledAndEnabled = false,
                 faceAuthCurrentlyAllowed = true,
                 faceAuthEnrolledAndEnabled = true,
+                hasStrongFace = true,
                 secureLockDeviceEnabled = true,
                 secureLockDeviceBiometricAuthActive = true,
             )
@@ -794,6 +820,7 @@ class BouncerMessageInteractorTest : SysuiTestCase() {
                 fingerprintAuthEnrolledAndEnabled = false,
                 faceAuthCurrentlyAllowed = true,
                 faceAuthEnrolledAndEnabled = true,
+                hasStrongFace = true,
                 secureLockDeviceEnabled = true,
                 secureLockDeviceBiometricAuthActive = true,
             )
@@ -820,6 +847,7 @@ class BouncerMessageInteractorTest : SysuiTestCase() {
                 fingerprintAuthEnrolledAndEnabled = false,
                 faceAuthCurrentlyAllowed = true,
                 faceAuthEnrolledAndEnabled = true,
+                hasStrongFace = true,
                 secureLockDeviceEnabled = true,
                 secureLockDeviceBiometricAuthActive = true,
             )
@@ -848,6 +876,7 @@ class BouncerMessageInteractorTest : SysuiTestCase() {
                 fingerprintAuthEnrolledAndEnabled = true,
                 faceAuthCurrentlyAllowed = true,
                 faceAuthEnrolledAndEnabled = true,
+                hasStrongFace = true,
                 secureLockDeviceEnabled = true,
                 secureLockDeviceBiometricAuthActive = true,
             )

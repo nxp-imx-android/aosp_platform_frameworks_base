@@ -37,7 +37,7 @@ val Kosmos.secureLockDeviceInteractor by
             secureLockDeviceRepository = secureLockDeviceRepository,
             biometricSettingsInteractor = deviceEntryBiometricSettingsInteractor,
             deviceEntryFaceAuthInteractor = deviceEntryFaceAuthInteractor,
-            fingerprintPropertyInteractor = fingerprintPropertyInteractor,
+            fingerprintPropertyInteractor = { fingerprintPropertyInteractor },
             facePropertyInteractor = facePropertyInteractor,
             lockPatternUtils = lockPatternUtils,
             authenticationPolicyManager = authenticationPolicyManager,
