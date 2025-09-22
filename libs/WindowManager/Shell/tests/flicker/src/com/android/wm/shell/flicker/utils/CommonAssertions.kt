@@ -171,12 +171,6 @@ fun FlickerTest.layerKeepVisible(component: IComponentMatcher) {
     assertLayers { this.isVisible(component) }
 }
 
-fun FlickerTest.layerKeepVisibleOrOccluded(component: IComponentMatcher) {
-    assertLayers { this.isVisible(component)
-        .then().isOccluded(component)
-        .then().isVisible(component) }
-}
-
 fun FlickerTest.splitAppLayerBoundsBecomesVisible(
     component: IComponentMatcher,
     landscapePosLeft: Boolean,
