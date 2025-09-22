@@ -52,7 +52,7 @@ import org.junit.Test
  */
 abstract class BubbleFlickerTestBase : BubbleFlickerSubjects {
 
-    @get:Rule
+    @get:Rule(order = 0)
     val checkFlagsRule: CheckFlagsRule = DeviceFlagsValueProvider.createCheckFlagsRule()
 
     /**

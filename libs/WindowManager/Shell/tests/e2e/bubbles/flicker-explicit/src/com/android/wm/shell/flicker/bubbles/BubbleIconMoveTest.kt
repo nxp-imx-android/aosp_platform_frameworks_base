@@ -22,21 +22,21 @@ import android.platform.test.annotations.RequiresFlagsEnabled
 import android.tools.NavBar
 import androidx.test.filters.RequiresDevice
 import com.android.wm.shell.Flags
-import com.android.wm.shell.Utils
+import com.android.wm.shell.Utils.testSetupRule
 import com.android.wm.shell.flicker.bubbles.testcase.BubbleAlwaysVisibleTestCases
-import com.android.wm.shell.flicker.bubbles.utils.ApplyPerParameterRule
+import com.android.wm.shell.flicker.bubbles.utils.AssumptionRule
 import com.android.wm.shell.flicker.bubbles.utils.BubbleFlickerTestHelper.collapseBubbleAppViaBackKey
 import com.android.wm.shell.flicker.bubbles.utils.BubbleFlickerTestHelper.launchBubbleViaBubbleMenu
 import com.android.wm.shell.flicker.bubbles.utils.RecordTraceWithTransitionRule
-import com.google.common.truth.Truth
-import org.junit.Assume
-import org.junit.Before
+import com.android.wm.shell.flicker.bubbles.utils.RunOncePerParameterRule
+import com.google.common.truth.Truth.assertWithMessage
 import org.junit.FixMethodOrder
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.MethodSorters
 import org.junit.runners.Parameterized
+import org.junit.runners.Parameterized.Parameters
 
 /**
  * Test dragging a collapsed bubble stack to a new location on the screen.
@@ -63,9 +63,7 @@ import org.junit.runners.Parameterized
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 @Presubmit
 @RunWith(Parameterized::class)
-class BubbleIconMoveTest(navBar: NavBar) :
-    BubbleFlickerTestBase(),
-    BubbleAlwaysVisibleTestCases {
+class BubbleIconMoveTest(navBar: NavBar) : BubbleFlickerTestBase(), BubbleAlwaysVisibleTestCases {
 
     companion object {
         private var bubblePositionChanged = false
@@ -89,33 +87,32 @@ class BubbleIconMoveTest(navBar: NavBar) :
             tearDownAfterTransition = { testApp.exit(wmHelper) }
         )
 
-        @Parameterized.Parameters(name = "{0}")
+        @Parameters(name = "{0}")
         @JvmStatic
-        fun data(): List<NavBar> = listOf(NavBar.MODE_GESTURAL, NavBar.MODE_3BUTTON)
+        fun data(): List<NavBar> = NavBar.entries
     }
 
-    @get:Rule
-    val setUpRule = ApplyPerParameterRule(
-        Utils.testSetupRule(navBar).around(recordTraceWithTransitionRule),
+    @get:Rule(order = 1)
+    val assumptionRule = AssumptionRule(
+        condition = { !tapl.isTablet },
+        message = "The floating bubble is only available on compact phones",
+    )
+
+    @get:Rule(order = 2)
+    val setUpRule = RunOncePerParameterRule(
+        wrappedRule = testSetupRule(navBar).around(recordTraceWithTransitionRule),
         params = arrayOf(navBar),
     )
 
     override val traceDataReader
         get() = recordTraceWithTransitionRule.reader
 
-    @Before
-    override fun setUp() {
-        // The floating bubble is only available on compact phones.
-        Assume.assumeFalse(tapl.isTablet)
-        super.setUp()
-    }
-
     /**
      * Verifies that the bubble's position on screen has changed after being dragged.
      */
     @Test
     fun bubblePositionShouldChange() {
-        Truth.assertWithMessage("Bubble stack position should change after dragging")
+        assertWithMessage("Bubble stack position should change after dragging")
             .that(bubblePositionChanged).isTrue()
     }
 }
