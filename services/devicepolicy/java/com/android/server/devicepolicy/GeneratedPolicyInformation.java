@@ -40,7 +40,7 @@ public class GeneratedPolicyInformation {
     static {
         addPolicy(new EnumPolicyInformation(PolicyIdentifier.SCREEN_CAPTURE,
                 Set.of(PolicyIdentifier.SCREEN_CAPTURE_ALLOWED,
-                        PolicyIdentifier.SCREEN_CAPTURE_BLOCKED),
+                        PolicyIdentifier.SCREEN_CAPTURE_DISALLOWED),
                 Set.of(POLICY_SCOPE_DEVICE, POLICY_SCOPE_USER),
                 android.Manifest.permission.MANAGE_DEVICE_POLICY_SCREEN_CAPTURE));
     }
