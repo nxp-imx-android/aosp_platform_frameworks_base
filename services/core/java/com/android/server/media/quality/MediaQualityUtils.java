@@ -215,6 +215,9 @@ public final class MediaQualityUtils {
                                 (double) pp.getBrightness());
                     }
                     break;
+                case PictureParameter.streamStatus:
+                    Log.d(TAG, "new version test");
+                    break;
                 case PictureParameter.contrast:
                     if (pp.getContrast() > -1) {
                         bundle.putInt(PictureQuality.PARAMETER_CONTRAST, pp.getContrast());
