@@ -68,7 +68,6 @@ aconfig_declarations_group {
         "android.provider.flags-aconfig-java",
         "android.sdk.flags-aconfig-java",
         "android.security.flags-aconfig-java",
-        "android.server.app.flags-aconfig-java",
         "android.service.appprediction.flags-aconfig-java",
         "android.service.autofill.flags-aconfig-java",
         "android.service.chooser.flags-aconfig-java",
@@ -1773,20 +1772,6 @@ java_aconfig_library {
     name: "android.appwidget.flags-aconfig-java-host",
     aconfig_declarations: "android.appwidget.flags-aconfig",
     host_supported: true,
-    defaults: ["framework-minus-apex-aconfig-java-defaults"],
-}
-
-// App
-aconfig_declarations {
-    name: "android.server.app.flags-aconfig",
-    package: "android.server.app",
-    container: "system",
-    srcs: ["services/core/java/com/android/server/app/flags.aconfig"],
-}
-
-java_aconfig_library {
-    name: "android.server.app.flags-aconfig-java",
-    aconfig_declarations: "android.server.app.flags-aconfig",
     defaults: ["framework-minus-apex-aconfig-java-defaults"],
 }
 
