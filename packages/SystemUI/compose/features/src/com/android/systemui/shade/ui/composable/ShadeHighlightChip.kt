@@ -103,7 +103,10 @@ fun ShadeHighlightChip(
         modifier =
             modifier
                 .clip(RoundedCornerShape(25.dp))
-                .clickableWithoutFocus(onClick)
+                .clickableWithoutFocus(
+                    interactionSource = interactionSource,
+                    indication = null
+                ) { onClick() }
                 .thenIf(backgroundColor != Color.Unspecified) {
                     Modifier.background(
                             if (isHovered) {
