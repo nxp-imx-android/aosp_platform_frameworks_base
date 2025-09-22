@@ -25,6 +25,8 @@ import static android.view.Display.DEFAULT_DISPLAY;
 import static android.view.Display.TYPE_EXTERNAL;
 import static android.view.Display.TYPE_OVERLAY;
 
+import static com.android.server.power.hint.Flags.powerHintOnDeviceStateChange;
+
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.content.BroadcastReceiver;
@@ -40,6 +42,7 @@ import android.hardware.display.DisplayManager;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.PowerManager;
+import android.os.PowerManagerInternal;
 import android.os.Trace;
 import android.util.Dumpable;
 import android.util.Slog;
@@ -100,6 +103,8 @@ public final class FoldableDeviceStateProvider implements DeviceStateProvider,
     @Nullable
     private final Sensor mHallSensor;
     private static final Predicate<FoldableDeviceStateProvider> ALLOWED = p -> true;
+    @Nullable
+    private final PowerManagerInternal mPowerManagerInternal;
 
     @Nullable
     @GuardedBy("mLock")
@@ -127,9 +132,11 @@ public final class FoldableDeviceStateProvider implements DeviceStateProvider,
             @NonNull Sensor hingeAngleSensor,
             @Nullable Sensor hallSensor,
             @NonNull DisplayManager displayManager,
+            @NonNull PowerManager powerManager,
+            @NonNull PowerManagerInternal powerManagerInternal,
             @NonNull DeviceStatePredicateWrapper[] deviceStatePredicateWrappers) {
         this(new FeatureFlagsImpl(), context, sensorManager, hingeAngleSensor, hallSensor,
-                displayManager, deviceStatePredicateWrappers);
+                displayManager, powerManager, powerManagerInternal, deviceStatePredicateWrappers);
     }
 
     @VisibleForTesting
@@ -140,8 +147,9 @@ public final class FoldableDeviceStateProvider implements DeviceStateProvider,
             @NonNull Sensor hingeAngleSensor,
             @Nullable Sensor hallSensor,
             @NonNull DisplayManager displayManager,
+            @NonNull PowerManager powerManager,
+            @NonNull PowerManagerInternal powerManagerInternal,
             @NonNull DeviceStatePredicateWrapper[] deviceStatePredicateWrappers) {
-
         Preconditions.checkArgument(deviceStatePredicateWrappers.length > 0,
                 "Device state configurations array must not be empty");
 
@@ -149,6 +157,7 @@ public final class FoldableDeviceStateProvider implements DeviceStateProvider,
         mHallSensor = hallSensor;
         mDisplayManager = displayManager;
         mConfigurations = deviceStatePredicateWrappers;
+        mPowerManagerInternal = powerManagerInternal;
         mIsDualDisplayBlockingEnabled = featureFlags.enableDualDisplayBlocking();
 
         sensorManager.registerListener(this, mHingeAngleSensor, SENSOR_DELAY_FASTEST);
@@ -173,32 +182,29 @@ public final class FoldableDeviceStateProvider implements DeviceStateProvider,
 
         Arrays.sort(mOrderedStates, Comparator.comparingInt(DeviceState::getIdentifier));
 
-        PowerManager powerManager = context.getSystemService(PowerManager.class);
-        if (powerManager != null) {
-            // If any of the device states are thermal sensitive, i.e. it should be disabled when
-            // the device is overheating, then we will update the list of supported states when
-            // thermal status changes.
-            if (hasThermalSensitiveState(deviceStatePredicateWrappers)) {
-                powerManager.addThermalStatusListener(this);
-            }
+        // If any of the device states are thermal sensitive, i.e. it should be disabled when
+        // the device is overheating, then we will update the list of supported states when
+        // thermal status changes.
+        if (hasThermalSensitiveState(deviceStatePredicateWrappers)) {
+            powerManager.addThermalStatusListener(this);
+        }
 
-            // If any of the device states are power sensitive, i.e. it should be disabled when
-            // power save mode is enabled, then we will update the list of supported states when
-            // power save mode is toggled.
-            if (hasPowerSaveSensitiveState(deviceStatePredicateWrappers)) {
-                IntentFilter filter = new IntentFilter(
-                        PowerManager.ACTION_POWER_SAVE_MODE_CHANGED_INTERNAL);
-                BroadcastReceiver receiver = new BroadcastReceiver() {
-                    @Override
-                    public void onReceive(Context context, Intent intent) {
-                        if (PowerManager.ACTION_POWER_SAVE_MODE_CHANGED_INTERNAL.equals(
-                                intent.getAction())) {
-                            onPowerSaveModeChanged(powerManager.isPowerSaveMode());
-                        }
+        // If any of the device states are power sensitive, i.e. it should be disabled when
+        // power save mode is enabled, then we will update the list of supported states when
+        // power save mode is toggled.
+        if (hasPowerSaveSensitiveState(deviceStatePredicateWrappers)) {
+            IntentFilter filter = new IntentFilter(
+                    PowerManager.ACTION_POWER_SAVE_MODE_CHANGED_INTERNAL);
+            BroadcastReceiver receiver = new BroadcastReceiver() {
+                @Override
+                public void onReceive(Context context, Intent intent) {
+                    if (PowerManager.ACTION_POWER_SAVE_MODE_CHANGED_INTERNAL.equals(
+                            intent.getAction())) {
+                        onPowerSaveModeChanged(powerManager.isPowerSaveMode());
                     }
-                };
-                context.registerReceiver(receiver, filter);
-            }
+                }
+            };
+            context.registerReceiver(receiver, filter);
         }
     }
 
@@ -331,6 +337,12 @@ public final class FoldableDeviceStateProvider implements DeviceStateProvider,
                     Trace.instant(TRACE_TAG_SYSTEM_SERVER,
                             "[Device state changed] Last hinge sensor event timestamp: "
                                     + mLastHingeAngleSensorEvent.timestamp);
+                }
+                // TODO(b/437104147): consider removing below after assessing performance difference
+                if (powerHintOnDeviceStateChange()) {
+                    Slog.i(TAG, "Setting power mode on caused by device state change");
+                    mPowerManagerInternal.setPowerMode(PowerManagerInternal.MODE_DISPLAY_CHANGE,
+                            /* enabled= */ true);
                 }
                 mLastReportedState = newState;
                 stateToReport = newState;
