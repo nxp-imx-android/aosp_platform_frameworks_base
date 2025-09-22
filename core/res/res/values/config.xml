@@ -7759,4 +7759,7 @@
         It can only contain non-AOSP permissions outside of the android.*
         and com.android.* namespace. -->
     <string-array name="config_watchFacePermissions" translatable="false"/>
+
+    <!-- Whether the device supports Interactive Doze mode. -->
+    <bool name="config_enableInteractiveDoze">false</bool>
 </resources>

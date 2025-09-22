@@ -6354,4 +6354,7 @@
 
   <!-- Action for opening trusted location settings page -->
   <java-symbol type="string" name="trusted_location_settings_action" />
+
+  <!-- For Interactive Doze -->
+  <java-symbol type="bool" name="config_enableInteractiveDoze" />
 </resources>
