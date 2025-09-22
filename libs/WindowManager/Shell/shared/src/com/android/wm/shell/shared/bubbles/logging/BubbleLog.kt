@@ -18,6 +18,8 @@ package com.android.wm.shell.shared.bubbles.logging
 
 import android.util.Log
 import androidx.annotation.VisibleForTesting
+import com.android.wm.shell.shared.bubbles.logging.BubbleLog.addLogger
+import com.android.wm.shell.shared.bubbles.logging.BubbleLog.dump
 import java.io.PrintWriter
 
 /**
@@ -47,7 +49,7 @@ object BubbleLog {
      */
     @JvmStatic
     fun addLogger(debugLogger: DebugLogger) {
-        loggers.add(debugLogger)
+        synchronized(loggers) { loggers.add(debugLogger) }
     }
 
     /** Logs a DEBUG level message for all registered [DebugLogger]s. */
@@ -85,13 +87,27 @@ object BubbleLog {
         logSafelyForAllLoggers { logger -> logger.e(message, *parameters, eventData = eventData) }
     }
 
+    /** Logs a record to be printed on the [dump] only */
+    @JvmOverloads
+    @JvmStatic
+    fun record(message: String, vararg parameters: Any? = emptyArray(), eventData: String? = null) {
+        performSafely("Exception while logging for history logger") {
+            bubbleEventHistoryLogger.record(message, *parameters, eventData = eventData)
+        }
+    }
+
     private inline fun logSafelyForAllLoggers(logFunction: (DebugLogger) -> Unit) {
-        for (logger in loggers) {
-            try {
-                logFunction.invoke(logger)
-            } catch (e: Exception) {
-                Log.e(TAG, "Exception while logging for $logger", e)
-            }
+        val loggersCopy = synchronized(loggers) { ArrayList(loggers) }
+        for (logger in loggersCopy) {
+            performSafely("Exception while logging for $logger") { logFunction.invoke(logger) }
+        }
+    }
+
+    private inline fun performSafely(errorMessage: String, action: () -> Unit) {
+        try {
+            action.invoke()
+        } catch (e: Exception) {
+            Log.e(TAG, errorMessage, e)
         }
     }
 
