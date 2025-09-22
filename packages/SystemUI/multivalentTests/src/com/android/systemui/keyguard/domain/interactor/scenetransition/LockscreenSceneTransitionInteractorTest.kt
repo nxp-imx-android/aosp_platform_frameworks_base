@@ -39,6 +39,7 @@ import kotlin.test.Test
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.runner.RunWith
@@ -587,7 +588,7 @@ class LockscreenSceneTransitionInteractorTest : SysuiTestCase() {
                 ObservableTransitionState.Transition(
                     Scenes.Gone,
                     Scenes.Shade,
-                    flowOf(Scenes.Lockscreen),
+                    flowOf(Scenes.Shade),
                     progress,
                     false,
                     flowOf(false),
@@ -788,7 +789,7 @@ class LockscreenSceneTransitionInteractorTest : SysuiTestCase() {
                 ObservableTransitionState.Transition(
                     Scenes.Gone,
                     Scenes.Shade,
-                    flowOf(Scenes.Lockscreen),
+                    flowOf(Scenes.Shade),
                     progress,
                     false,
                     flowOf(false),
@@ -1320,12 +1321,12 @@ class LockscreenSceneTransitionInteractorTest : SysuiTestCase() {
         }
 
     /**
-     * STL: Ls -> Gone, then interrupted by Gone -> Bouncer. This happens when the next transition
+     * STL: Ls -> Gone, then interrupted by Gone -> Occluded. This happens when the next transition
      * is immediately started from Gone without settling in Idle. In STL there is no guarantee that
      * transitions settle in Idle before continuing.
      */
     @Test
-    fun transition_from_ls_scene_interrupted_by_other_stl_transition() =
+    fun transition_from_ls_scene_interrupted_to_another_scene() =
         testScope.runTest {
             val currentStep by collectLastValue(kosmos.realKeyguardTransitionRepository.transitions)
             sceneTransitions.value = lsToGone
@@ -1342,7 +1343,48 @@ class LockscreenSceneTransitionInteractorTest : SysuiTestCase() {
             sceneTransitions.value =
                 ObservableTransitionState.Transition(
                     Scenes.Gone,
-                    Scenes.Dream,
+                    Scenes.Occluded,
+                    flowOf(Scenes.Occluded),
+                    progress,
+                    false,
+                    flowOf(false),
+                )
+            runCurrent()
+
+            // Should finish going to UNDEFINED since Gone and Occluded are both UNDEFINED.
+            assertTransition(
+                step = currentStep!!,
+                from = KeyguardState.LOCKSCREEN,
+                to = KeyguardState.UNDEFINED,
+                state = TransitionState.FINISHED,
+                progress = 1f,
+            )
+        }
+
+    /**
+     * STL: Ls -> Gone, then interrupted by Gone -> Ls. This happens when the next transition is
+     * immediately started from Gone without settling in Idle. In STL there is no guarantee that
+     * transitions settle in Idle before continuing.
+     */
+    @Test
+    fun transition_from_ls_scene_interrupted_back_to_ls() =
+        testScope.runTest {
+            val currentStep by collectLastValue(kosmos.realKeyguardTransitionRepository.transitions)
+            sceneTransitions.value = lsToGone
+            progress.value = 0.4f
+
+            assertTransition(
+                step = currentStep!!,
+                from = KeyguardState.LOCKSCREEN,
+                to = KeyguardState.UNDEFINED,
+                state = TransitionState.RUNNING,
+                progress = 0.4f,
+            )
+
+            sceneTransitions.value =
+                ObservableTransitionState.Transition(
+                    Scenes.Gone,
+                    Scenes.Lockscreen,
                     flowOf(Scenes.Lockscreen),
                     progress,
                     false,
@@ -1351,10 +1393,10 @@ class LockscreenSceneTransitionInteractorTest : SysuiTestCase() {
 
             assertTransition(
                 step = currentStep!!,
-                from = KeyguardState.LOCKSCREEN,
-                to = KeyguardState.UNDEFINED,
-                state = TransitionState.FINISHED,
-                progress = 1f,
+                from = KeyguardState.UNDEFINED,
+                to = KeyguardState.LOCKSCREEN,
+                state = TransitionState.RUNNING,
+                progress = 0.4f,
             )
         }
 
