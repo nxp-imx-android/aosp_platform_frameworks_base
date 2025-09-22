@@ -18,6 +18,7 @@ package com.android.systemui.shade.data.repository
 
 import android.content.res.mainResources
 import com.android.systemui.common.ui.data.repository.configurationRepository
+import com.android.systemui.flags.featureFlagsClassic
 import com.android.systemui.kosmos.Kosmos
 
 var Kosmos.shadeConfigRepository: ShadeConfigRepository by
@@ -25,5 +26,6 @@ var Kosmos.shadeConfigRepository: ShadeConfigRepository by
         ShadeConfigRepository(
             resources = mainResources,
             configurationRepository = configurationRepository,
+            featureFlags = featureFlagsClassic,
         )
     }

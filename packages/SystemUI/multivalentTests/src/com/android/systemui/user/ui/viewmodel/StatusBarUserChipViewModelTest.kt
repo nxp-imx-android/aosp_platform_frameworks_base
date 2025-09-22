@@ -250,7 +250,10 @@ class StatusBarUserChipViewModelTest : SysuiTestCase() {
                     repository = userRepository,
                     activityStarter = activityStarter,
                     keyguardInteractor =
-                        KeyguardInteractorFactory.create(featureFlags = featureFlags)
+                        KeyguardInteractorFactory.create(
+                                context = context,
+                                featureFlags = featureFlags,
+                            )
                             .keyguardInteractor,
                     featureFlags = featureFlags,
                     manager = manager,

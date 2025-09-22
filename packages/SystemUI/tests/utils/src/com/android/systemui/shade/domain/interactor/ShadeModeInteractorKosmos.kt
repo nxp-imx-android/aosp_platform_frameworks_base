@@ -26,9 +26,7 @@ import com.android.systemui.kosmos.applicationCoroutineScope
 import com.android.systemui.kosmos.testDispatcher
 import com.android.systemui.log.table.logcatTableLogBuffer
 import com.android.systemui.res.R
-import com.android.systemui.shade.data.repository.fakeShadeRepository
 import com.android.systemui.shade.data.repository.shadeConfigRepository
-import com.android.systemui.shade.data.repository.shadeRepository
 import com.android.systemui.shared.settings.data.repository.fakeSecureSettingsRepository
 import kotlinx.coroutines.runBlocking
 
@@ -36,7 +34,6 @@ val Kosmos.shadeModeInteractor by Fixture {
     ShadeModeInteractorImpl(
         applicationScope = applicationCoroutineScope,
         backgroundDispatcher = testDispatcher,
-        repository = shadeRepository,
         shadeConfigRepository = shadeConfigRepository,
         secureSettingsRepository = fakeSecureSettingsRepository,
         tableLogBuffer = logcatTableLogBuffer(this, "sceneFrameworkTableLogBuffer"),
@@ -60,7 +57,6 @@ fun Kosmos.enableDualShade(wideLayout: Boolean? = null) {
 
     if (wideLayout != null) {
         overrideLargeScreenResources(isLargeScreen = wideLayout)
-        fakeShadeRepository.legacyUseSplitShade.value = wideLayout
         displayStateRepository.setIsWideScreen(wideLayout)
     }
 }
@@ -75,7 +71,10 @@ fun Kosmos.disableDualShade() {
 fun Kosmos.enableSingleShade(wideLayout: Boolean = false) {
     disableDualShade()
     overrideLargeScreenResources(isLargeScreen = wideLayout)
-    fakeShadeRepository.legacyUseSplitShade.value = false
+    testableContext.orCreateTestableResources.addOverride(
+        R.bool.config_use_split_notification_shade,
+        false,
+    )
     displayStateRepository.setIsWideScreen(wideLayout)
     displayStateRepository.setIsLargeScreen(false)
 }
@@ -83,7 +82,6 @@ fun Kosmos.enableSingleShade(wideLayout: Boolean = false) {
 fun Kosmos.enableSplitShade() {
     disableDualShade()
     overrideLargeScreenResources(isLargeScreen = true)
-    fakeShadeRepository.legacyUseSplitShade.value = true
     displayStateRepository.setIsWideScreen(true)
     displayStateRepository.setIsLargeScreen(true)
 }

@@ -20,6 +20,8 @@ import android.content.res.Resources
 import androidx.annotation.BoolRes
 import com.android.systemui.common.ui.data.repository.ConfigurationRepository
 import com.android.systemui.dagger.SysUISingleton
+import com.android.systemui.flags.FeatureFlagsClassic
+import com.android.systemui.flags.Flags
 import com.android.systemui.res.R
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.shade.ShadeDisplayAware
@@ -38,6 +40,7 @@ class ShadeConfigRepository
 constructor(
     @ShadeDisplayAware private val resources: Resources,
     @ShadeDisplayAware private val configurationRepository: ConfigurationRepository,
+    featureFlags: FeatureFlagsClassic,
 ) {
     /** @see ShadeModeInteractor.isFullWidthShade */
     val isFullWidthShade: Flow<Boolean> = booleanConfigFlow(R.bool.config_isFullWidthShade)
@@ -45,6 +48,20 @@ constructor(
     /** Whether Dual Shade should be used instead of Split Shade, regardless of setting. */
     val isSplitShadeDisabled: Boolean =
         SceneContainerFlag.isEnabled && resources.getBoolean(R.bool.config_disableSplitShade)
+
+    /**
+     * Whether the shade layout should be Split Shade (`true`) or Single Shade (`false`). Only
+     * applicable when Dual Shade is disabled.
+     */
+    val legacyUseSplitShade: Flow<Boolean> =
+        configurationRepository.onConfigurationChange.emitOnStart().map {
+            with(resources) {
+                // Based on the logic in the deprecated `SplitShadeStateController`.
+                getBoolean(R.bool.config_use_split_notification_shade) ||
+                    (featureFlags.isEnabled(Flags.LOCKSCREEN_ENABLE_LANDSCAPE) &&
+                        getBoolean(R.bool.force_config_use_split_notification_shade))
+            }
+        }
 
     /** @see isFullWidthShade (the `val` above) */
     fun isFullWidthShade(): Boolean = resources.getBoolean(R.bool.config_isFullWidthShade)

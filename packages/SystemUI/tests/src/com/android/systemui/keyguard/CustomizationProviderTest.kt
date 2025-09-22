@@ -186,6 +186,7 @@ class CustomizationProviderTest : SysuiTestCase() {
             KeyguardQuickAffordanceInteractor(
                 keyguardInteractor =
                     KeyguardInteractorFactory.create(
+                            context = mContext,
                             featureFlags = featureFlags,
                             sceneInteractor =
                                 mock {

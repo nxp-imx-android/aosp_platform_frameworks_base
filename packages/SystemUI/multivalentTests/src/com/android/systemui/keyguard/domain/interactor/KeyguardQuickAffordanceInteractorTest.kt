@@ -187,7 +187,11 @@ class KeyguardQuickAffordanceInteractorTest : SysuiTestCase() {
         featureFlags = FakeFeatureFlags()
 
         val withDeps =
-            KeyguardInteractorFactory.create(featureFlags = featureFlags, repository = repository)
+            KeyguardInteractorFactory.create(
+                context = context,
+                featureFlags = featureFlags,
+                repository = repository,
+            )
 
         underTest =
             KeyguardQuickAffordanceInteractor(

@@ -42,7 +42,6 @@ import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.scene.shared.model.fakeSceneDataSource
 import com.android.systemui.shade.ShadeExpansionChangeEvent
 import com.android.systemui.shade.data.repository.fakeShadeDisplaysRepository
-import com.android.systemui.shade.data.repository.shadeRepository
 import com.android.systemui.shade.domain.interactor.enableDualShade
 import com.android.systemui.shade.domain.interactor.enableSingleShade
 import com.android.systemui.shade.domain.interactor.enableSplitShade
@@ -217,48 +216,40 @@ class ShadeStartableTest(flags: FlagsParameterization) : SysuiTestCase() {
     @EnableSceneContainer
     fun hydrateFullWidth_singleShade() =
         kosmos.runTest {
-            val legacyUseSplitShade by collectLastValue(shadeRepository.legacyUseSplitShade)
             enableSingleShade()
             underTest.start()
 
             verify(notificationStackScrollLayoutController).setIsFullWidth(true)
-            assertThat(legacyUseSplitShade).isFalse()
         }
 
     @Test
     @EnableSceneContainer
     fun hydrateFullWidth_splitShade() =
         kosmos.runTest {
-            val legacyUseSplitShade by collectLastValue(shadeRepository.legacyUseSplitShade)
             enableSplitShade()
             underTest.start()
 
             verify(notificationStackScrollLayoutController).setIsFullWidth(false)
-            assertThat(legacyUseSplitShade).isTrue()
         }
 
     @Test
     @EnableSceneContainer
     fun hydrateFullWidth_dualShade_narrowScreen() =
         kosmos.runTest {
-            val legacyUseSplitShade by collectLastValue(shadeRepository.legacyUseSplitShade)
             enableDualShade(wideLayout = false)
             underTest.start()
 
             verify(notificationStackScrollLayoutController).setIsFullWidth(true)
-            assertThat(legacyUseSplitShade).isFalse()
         }
 
     @Test
     @EnableSceneContainer
     fun hydrateFullWidth_dualShade_wideScreen() =
         kosmos.runTest {
-            val legacyUseSplitShade by collectLastValue(shadeRepository.legacyUseSplitShade)
             enableDualShade(wideLayout = true)
             underTest.start()
 
             verify(notificationStackScrollLayoutController).setIsFullWidth(false)
-            assertThat(legacyUseSplitShade).isTrue()
         }
 
     private fun Kosmos.changeScene(
