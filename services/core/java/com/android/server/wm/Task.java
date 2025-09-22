@@ -2422,14 +2422,14 @@ class Task extends TaskFragment {
         if (mSurfaceControl == null
                 // Organized tasks are controlled by shell, so only manipulate those surfaces
                 // during syncs
-                || (isOrganized() && (!Flags.updateTaskCropInSync() || !inSync))) {
+                || (isOrganized() && !inSync)) {
             return;
         }
 
         // Apply crop to root tasks only and clear the crops of the descendant tasks.
         int width = 0;
         int height = 0;
-        if ((isRootTask() || (Flags.updateTaskCropInSync() && !fillsParentBounds()))
+        if ((isRootTask() || !fillsParentBounds())
                 && !mTransitionController.mIsWaitingForDisplayEnabled) {
             final Rect taskBounds = getBounds();
             width = taskBounds.width();
