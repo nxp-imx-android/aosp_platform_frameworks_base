@@ -13350,14 +13350,13 @@ public class TelephonyManager {
      *
      * @param slotIndex of phone whose service state is returned
      * @return ServiceState on specified SIM slot.
-     *
-     * @hide
      */
     @RequiresPermission(allOf = {
             Manifest.permission.READ_PHONE_STATE,
             Manifest.permission.ACCESS_COARSE_LOCATION
     })
     @RequiresFeature(PackageManager.FEATURE_TELEPHONY_RADIO_ACCESS)
+    @FlaggedApi(Flags.FLAG_GET_SERVICE_STATE_FOR_SLOT)
     public @Nullable ServiceState getServiceStateForSlot(int slotIndex) {
         return getServiceStateForSlot(slotIndex, false, false);
     }
