@@ -293,11 +293,14 @@ public class MagnificationConnectionManager implements
      *
      * @param connect {@code true} if needs connection, otherwise set the connection to null and
      *                destroy all window magnifications.
-     * @return {@code true} if {@link IMagnificationConnection} state is going to change.
      */
     public boolean requestConnection(boolean connect) {
-        final int callingUserId = getCallingUserId();
-        boolean isValidUser = false;
+        return requestConnection(connect, getCallingUserId());
+    }
+
+    @VisibleForTesting
+    boolean requestConnection(boolean connect, int callingUserId) {
+        boolean isValidUser;
 
         if (Flags.magnificationConnectionApprovesSystemUser()) {
             isValidUser = callingUserId == USER_SYSTEM

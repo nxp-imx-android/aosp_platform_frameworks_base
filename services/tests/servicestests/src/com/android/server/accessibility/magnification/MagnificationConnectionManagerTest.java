@@ -1048,10 +1048,11 @@ public class MagnificationConnectionManagerTest {
     @Test
     @DisableFlags(Flags.FLAG_MAGNIFICATION_CONNECTION_APPROVES_SYSTEM_USER)
     public void requestConnection_systemUser_isVisibleBackgroundUser_throwsException() {
+
         when(mMockUserManagerInternal.isVisibleBackgroundFullUser(
                 USER_SYSTEM)).thenReturn(true);
 
-        assertThrows(() -> mMagnificationConnectionManager.requestConnection(true));
+        assertThrows(() -> mMagnificationConnectionManager.requestConnection(true, USER_SYSTEM));
     }
 
     @Test
@@ -1060,7 +1061,7 @@ public class MagnificationConnectionManagerTest {
         when(mMockUserManagerInternal.isVisibleBackgroundFullUser(
                 USER_SYSTEM)).thenReturn(true);
 
-        mMagnificationConnectionManager.requestConnection(true);
+        mMagnificationConnectionManager.requestConnection(true, USER_SYSTEM);
     }
 
     private MotionEvent generatePointersDownEvent(PointF[] pointersLocation) {
