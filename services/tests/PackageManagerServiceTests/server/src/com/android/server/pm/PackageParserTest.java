@@ -1456,7 +1456,7 @@ public class PackageParserTest {
                 .addProvider(new ParsedProviderImpl())
                 .addService(new ParsedServiceImpl())
                 .addInstrumentation(new ParsedInstrumentationImpl())
-                .addUsesPermission(new ParsedUsesPermissionImpl("foo7", 0, Collections.emptySet()))
+                .addUsesPermission(new ParsedUsesPermissionImpl("foo7", 0, Collections.emptySet(), Collections.emptySet()))
                 .addImplicitPermission("foo25")
                 .addProtectedBroadcast("foo8")
                 .setSdkLibraryName("sdk12")

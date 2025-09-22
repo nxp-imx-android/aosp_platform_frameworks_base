@@ -57,4 +57,7 @@ public interface ParsedUsesPermission {
 
     @NonNull
     Set<String> getPurposes();
+
+    @NonNull
+    Set<String> getGeneralPurposes();
 }

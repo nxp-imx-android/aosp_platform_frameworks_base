@@ -539,7 +539,10 @@ public class PackageImpl implements ParsedPackage, AndroidPackageInternal,
     public PackageImpl addImplicitPermission(String permission) {
         addUsesPermission(
                 new ParsedUsesPermissionImpl(
-                        permission, /* usesPermissionFlags= */ 0, /* purposes= */ emptySet()));
+                        permission,
+                        /* usesPermissionFlags= */ 0,
+                        /* purposes= */ emptySet(),
+                        /* generalPurposes= */ emptySet()));
         this.implicitPermissions = CollectionUtils.add(this.implicitPermissions,
                 TextUtils.safeIntern(permission));
         return this;

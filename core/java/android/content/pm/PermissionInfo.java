@@ -556,6 +556,19 @@ public class PermissionInfo extends PackageItemInfo implements Parcelable {
      */
     public @NonNull Map<String, ValidPurposeInfo> validPurposes = Collections.emptyMap();
 
+    /**
+     * Specifies the set of valid general purposes for this permission. Only applies when app's
+     * target version is greater than or equal to {@link #requiresGeneralPurposeTargetSdkVersion}.
+     *
+     * @hide
+     */
+    // Following pattern that most other fields in this class are also mutable.
+    @SuppressLint("MutableBareField")
+    @SystemApi
+    @FlaggedApi(android.permission.flags.Flags.FLAG_PPD_MANIFEST_ENABLED)
+    public @NonNull Map<String, ValidGeneralPurposeInfo> validGeneralPurposes =
+            Collections.emptyMap();
+
     /** @hide */
     public static int fixProtectionLevel(int level) {
         if (level == PROTECTION_SIGNATURE_OR_SYSTEM) {
@@ -731,6 +744,7 @@ public class PermissionInfo extends PackageItemInfo implements Parcelable {
         requiresPurposeTargetSdkVersion = orig.requiresPurposeTargetSdkVersion;
         requiresGeneralPurposeTargetSdkVersion = orig.requiresGeneralPurposeTargetSdkVersion;
         validPurposes = orig.validPurposes;
+        validGeneralPurposes = orig.validGeneralPurposes;
     }
 
     /**
@@ -800,6 +814,7 @@ public class PermissionInfo extends PackageItemInfo implements Parcelable {
         dest.writeInt(requiresPurposeTargetSdkVersion);
         writeValidPurposes(dest);
         dest.writeInt(requiresGeneralPurposeTargetSdkVersion);
+        writeValidGeneralPurposes(dest);
     }
 
     /** @hide */
@@ -865,6 +880,7 @@ public class PermissionInfo extends PackageItemInfo implements Parcelable {
         requiresPurposeTargetSdkVersion = source.readInt();
         readValidPurposes(source);
         requiresGeneralPurposeTargetSdkVersion = source.readInt();
+        readValidGeneralPurposes(source);
     }
 
     private void readValidPurposes(@NonNull Parcel in) {
@@ -879,11 +895,35 @@ public class PermissionInfo extends PackageItemInfo implements Parcelable {
         validPurposes = purposes;
     }
 
+    private void readValidGeneralPurposes(@NonNull Parcel in) {
+        final Bundle bundle = in.readBundle(ValidGeneralPurposeInfo.class.getClassLoader());
+        Map<String, ValidGeneralPurposeInfo> purposes = Collections.emptyMap();
+        if (bundle == null) {
+            validGeneralPurposes = purposes;
+            return;
+        }
+        for (String key : bundle.keySet()) {
+            purposes = CollectionUtils.add(purposes, key, bundle.getParcelable(
+                    key, ValidGeneralPurposeInfo.class));
+        }
+        validGeneralPurposes = purposes;
+    }
+
     private void writeValidPurposes(@NonNull Parcel dest) {
         final Bundle bundle = new Bundle();
         for (Map.Entry<String, ValidPurposeInfo> entry : validPurposes.entrySet()) {
             bundle.putParcelable(entry.getKey(), entry.getValue());
         }
+        dest.writeBundle(bundle);
+    }
+
+    private void writeValidGeneralPurposes(@NonNull Parcel dest) {
+        if (validGeneralPurposes.isEmpty()) {
+            dest.writeBundle(null);
+            return;
+        }
+        final Bundle bundle = new Bundle();
+        validGeneralPurposes.forEach(bundle::putParcelable);
         dest.writeBundle(bundle);
     }
 }

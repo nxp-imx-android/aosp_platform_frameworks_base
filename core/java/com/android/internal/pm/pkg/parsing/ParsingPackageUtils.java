@@ -1377,9 +1377,11 @@ public class ParsingPackageUtils {
                             0);
 
             final Set<String> purposes = new ArraySet<>();
-            final boolean isPurposesEnabled =
-                    android.permission.flags.Flags.ppdInstallTimeEnabled();
-
+            final Set<String> generalPurposes = new ArraySet<>();
+            final boolean isAllPurposesEnabled =
+                    android.permission.flags.Flags.ppdManifestEnabled();
+            final boolean isPurposesEnabled = isAllPurposesEnabled
+                    || android.permission.flags.Flags.ppdInstallTimeEnabled();
             final int outerDepth = parser.getDepth();
             int type;
             while ((type = parser.next()) != XmlPullParser.END_DOCUMENT
@@ -1411,6 +1413,15 @@ public class ParsingPackageUtils {
                                         : input.success(null);
                         if (result.isSuccess() && result.getResult() != null) {
                             purposes.add((String) result.getResult());
+                        }
+                        break;
+                    case "general-purpose":
+                        result =
+                                isAllPurposesEnabled
+                                        ? parseGeneralPurpose(input, res, parser)
+                                        : input.success(null);
+                        if (result.isSuccess() && result.getResult() != null) {
+                            generalPurposes.add((String) result.getResult());
                         }
                         break;
                     default:
@@ -1473,6 +1484,16 @@ public class ParsingPackageUtils {
                                         + pkg.getPackageName()
                                         + " at: "
                                         + parser.getPositionDescription());
+                    } else if (isAllPurposesEnabled
+                            && !Objects.equals(usesPermission.getGeneralPurposes(),
+                            generalPurposes)) {
+                        return input.error(
+                                "Conflicting uses-permissions general purposes: "
+                                        + name
+                                        + " in package: "
+                                        + pkg.getPackageName()
+                                        + " at: "
+                                        + parser.getPositionDescription());
                     } else {
                         Slog.w(TAG, "Ignoring duplicate uses-permissions/uses-permissions-sdk-m: "
                                 + name + " in package: " + pkg.getPackageName() + " at: "
@@ -1485,7 +1506,7 @@ public class ParsingPackageUtils {
 
             if (!found) {
                 pkg.addUsesPermission(
-                        new ParsedUsesPermissionImpl(name, usesPermissionFlags, purposes));
+                        new ParsedUsesPermissionImpl(name, usesPermissionFlags, purposes, generalPurposes));
             }
             return success;
         } finally {
@@ -1508,6 +1529,32 @@ public class ParsingPackageUtils {
                     parseMinOrMaxSdkVersion(
                             sa,
                             R.styleable.AndroidManifestPurpose_maxSdkVersion,
+                            Integer.MAX_VALUE);
+
+            return input.success(
+                    isValidPurpose(purpose, minSdkVersion, maxSdkVersion) ? purpose : null);
+        } finally {
+            sa.recycle();
+        }
+    }
+
+    private ParseResult<String> parseGeneralPurpose(ParseInput input,
+            Resources res,
+            AttributeSet attrs) {
+        final TypedArray sa =
+                res.obtainAttributes(
+                        attrs, com.android.internal.R.styleable.AndroidManifestGeneralPurpose);
+        try {
+            final String purpose = sa.getString(R.styleable.AndroidManifestGeneralPurpose_name);
+            final int minSdkVersion =
+                    parseMinOrMaxSdkVersion(
+                            sa,
+                            R.styleable.AndroidManifestGeneralPurpose_minSdkVersion,
+                            Integer.MIN_VALUE);
+            final int maxSdkVersion =
+                    parseMinOrMaxSdkVersion(
+                            sa,
+                            R.styleable.AndroidManifestGeneralPurpose_maxSdkVersion,
                             Integer.MAX_VALUE);
 
             return input.success(

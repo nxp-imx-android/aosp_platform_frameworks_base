@@ -1274,6 +1274,14 @@ package android.content.pm {
     method @NonNull public android.content.pm.UserProperties.Builder setShowInSharingSurfaces(int);
   }
 
+  @FlaggedApi("android.permission.flags.ppd_manifest_enabled") public final class UsesPermissionPurposeInfo implements android.os.Parcelable {
+    ctor @FlaggedApi("android.permission.flags.ppd_manifest_enabled") public UsesPermissionPurposeInfo(@NonNull String, @NonNull java.util.Set<java.lang.String>);
+  }
+
+  @FlaggedApi("android.permission.flags.ppd_manifest_enabled") public final class ValidGeneralPurposeInfo implements android.os.Parcelable {
+    ctor @FlaggedApi("android.permission.flags.ppd_manifest_enabled") public ValidGeneralPurposeInfo(@NonNull String, int);
+  }
+
 }
 
 package android.content.res {

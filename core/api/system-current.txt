@@ -4431,6 +4431,10 @@ package android.content.pm {
     field @RequiresPermission(android.Manifest.permission.ACCESS_SHORTCUTS) public static final int FLAG_GET_PERSONS_DATA = 2048; // 0x800
   }
 
+  public class PackageInfo implements android.os.Parcelable {
+    field @FlaggedApi("android.permission.flags.ppd_manifest_enabled") @NonNull public java.util.Map<java.lang.String,android.content.pm.UsesPermissionPurposeInfo> requestedPermissionsPurposes;
+  }
+
   public class PackageInstaller {
     method @FlaggedApi("android.content.pm.verification_service") @RequiresPermission(value=android.Manifest.permission.DEVELOPER_VERIFICATION_AGENT, conditional=true) public final int getDeveloperVerificationPolicy();
     method @FlaggedApi("android.content.pm.verification_service") @Nullable @RequiresPermission(android.Manifest.permission.DEVELOPER_VERIFICATION_AGENT) public String getDeveloperVerificationPolicyDelegatePackage();
@@ -4758,6 +4762,7 @@ package android.content.pm {
     field @NonNull public java.util.Set<java.lang.String> knownCerts;
     field @StringRes public int requestRes;
     field @FlaggedApi("android.permission.flags.ppd_manifest_enabled") public int requiresGeneralPurposeTargetSdkVersion;
+    field @FlaggedApi("android.permission.flags.ppd_manifest_enabled") @NonNull public java.util.Map<java.lang.String,android.content.pm.ValidGeneralPurposeInfo> validGeneralPurposes;
   }
 
   public class ResolveInfo implements android.os.Parcelable {
@@ -4822,6 +4827,22 @@ package android.content.pm {
     field public static final int SHOW_IN_SHARING_SURFACES_SEPARATE = 1; // 0x1
     field public static final int SHOW_IN_SHARING_SURFACES_UNKNOWN = -1; // 0xffffffff
     field public static final int SHOW_IN_SHARING_SURFACES_WITH_PARENT = 0; // 0x0
+  }
+
+  @FlaggedApi("android.permission.flags.ppd_manifest_enabled") public final class UsesPermissionPurposeInfo implements android.os.Parcelable {
+    method public int describeContents();
+    method @NonNull public java.util.Set<java.lang.String> getGeneralPurposes();
+    method @NonNull public String getPermissionName();
+    method public void writeToParcel(@NonNull android.os.Parcel, int);
+    field @NonNull public static final android.os.Parcelable.Creator<android.content.pm.UsesPermissionPurposeInfo> CREATOR;
+  }
+
+  @FlaggedApi("android.permission.flags.ppd_manifest_enabled") public final class ValidGeneralPurposeInfo implements android.os.Parcelable {
+    method public int describeContents();
+    method public int getMaxTargetSdkVersion();
+    method @NonNull public String getName();
+    method public void writeToParcel(@NonNull android.os.Parcel, int);
+    field @NonNull public static final android.os.Parcelable.Creator<android.content.pm.ValidGeneralPurposeInfo> CREATOR;
   }
 
 }
