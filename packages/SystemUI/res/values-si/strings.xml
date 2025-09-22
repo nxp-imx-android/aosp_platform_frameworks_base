@@ -21,7 +21,7 @@
     xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
     <string name="app_label" msgid="4811759950673118541">"පද්ධති UI"</string>
     <string name="battery_low_title" msgid="5319680173344341779">"බැටරි සුරැකුම ක්‍රියාත්මක කරන්නද?"</string>
-    <string name="battery_low_description" msgid="7848989602036547056">"ඔබට බැටරිය <xliff:g id="PERCENTAGE">%s</xliff:g> ඉතිරිව ඇත. බැටරි සුරැකුම අඳුරු තේමාව ක්‍රියාත්මක කරයි, පසුබිම් ක්‍රියාකාරකම සීමා කරයි, සහ දැනුම්දීම් ප්‍රමාද කරයි."</string>
+    <string name="battery_low_description" msgid="7848989602036547056">"ඔබට බැටරිය <xliff:g id="PERCENTAGE">%s</xliff:g>ක් ඉතිරිව ඇත. බැටරි සුරැකුම අඳුරු තේමාව ක්‍රියාත්මක කරයි, පසුබිම් ක්‍රියාකාරකම සීමා කරයි, සහ දැනුම්දීම් ප්‍රමාද කරයි."</string>
     <string name="battery_low_intro" msgid="8033783734931200690">"බැටරි සුරැකුම අඳුරු තේමාව ක්‍රියාත්මක කරයි, පසුබිම් ක්‍රියාකාරකම සීමා කරයි, සහ දැනුම්දීම් ප්‍රමාද කරයි."</string>
     <string name="battery_low_percent_format" msgid="4276661262843170964">"<xliff:g id="PERCENTAGE">%s</xliff:g> ඉතිරිව තිබේ"</string>
     <string name="invalid_charger_title" msgid="938685362320735167">"USB හරහා ආරෝපණය කළ නොහැකිය"</string>
@@ -180,8 +180,7 @@
     <string name="screen_capture_microphone_audio" msgid="1698835678818747741">"මයික්‍රෆෝනය"</string>
     <string name="screen_capture_front_camera" msgid="1214647538302639358">"ඉදිරිපස කැමරාව"</string>
     <string name="screen_capture_region_dimensions" msgid="2317064050253056256">"<xliff:g id="WIDTH">%1$d</xliff:g> x <xliff:g id="HEIGHT">%2$d</xliff:g>"</string>
-    <!-- no translation found for screen_share_privacy_indicator_stop_sharing (2297045039651417274) -->
-    <skip />
+    <string name="screen_share_privacy_indicator_stop_sharing" msgid="2297045039651417274">"බෙදා ගැනීම නවත්වන්න"</string>
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"තිරය ​​බෙදා ගැනීම"</string>
     <string name="share_to_app_chip_accessibility_label_generic" msgid="5517431657924536133">"අන්තර්ගතය බෙදා ගැනීම"</string>
     <string name="share_to_app_stop_dialog_title" msgid="9212915050910250438">"තිරය ​​බෙදා ගැනීම නවත්වන්න ද?"</string>
@@ -317,8 +316,6 @@
     <string name="accessibility_cast_name" msgid="7344437925388773685">"<xliff:g id="CAST">%s</xliff:g> වෙත සම්බන්ධ විය."</string>
     <string name="accessibility_expand_group" msgid="521237935987978624">"සමූහය දිගහැරීම"</string>
     <string name="accessibility_collapse_group" msgid="1842704016768329517">"සමූහය හකුළන්න."</string>
-    <string name="accessibility_add_device_to_group" msgid="5446422960697860806">"සමූහයට උපාංගය එක් කරන්න."</string>
-    <string name="accessibility_remove_device_from_group" msgid="3114694270949142228">"උපාංගය සමූහයෙන් ඉවත් කරන්න."</string>
     <string name="accessibility_add_device_to_group_with_name" msgid="1042306202917036858">"සමූහයට <xliff:g id="DEVICE_NAME">%s</xliff:g> එක් කරන්න"</string>
     <string name="accessibility_remove_device_from_group_with_name" msgid="5582015497111561027">"සමූහයෙන් <xliff:g id="DEVICE_NAME">%s</xliff:g> ඉවත් කරන්න"</string>
     <string name="accessibility_open_application" msgid="1749126077501259712">"යෙදුම විවෘත කරන්න."</string>
@@ -1387,7 +1384,6 @@
     <string name="media_output_dialog_multiple_devices" msgid="1093771040315422350">"උපාංග <xliff:g id="COUNT">%1$d</xliff:g>ක් තෝරන ලදී"</string>
     <string name="media_output_item_connected_state" msgid="297439499870755458">"සම්බන්ධිතයි"</string>
     <string name="media_output_dialog_connect_failed" msgid="3080972621975339387">"මාරු කිරීමට නොහැකිය. නැවත උත්සාහ කිරීමට තට්ටු කරන්න."</string>
-    <string name="media_output_dialog_pairing_new" msgid="5098212763195577270">"උපාංගයක් සම්බන්ධ කරන්න"</string>
     <string name="media_output_dialog_button_connect_device" msgid="2819038239946643550">"උපාංගය සම්බන්ධ කරන්න"</string>
     <string name="media_output_dialog_unknown_launch_app_name" msgid="1084899329829371336">"නොදන්නා යෙදුම"</string>
     <string name="media_output_dialog_button_stop_casting" msgid="6581379537930199189">"විකාශය නවතන්න"</string>
@@ -1397,7 +1393,6 @@
     <string name="media_output_group_title_connected_speakers" msgid="3413876972919684479">"සම්බන්ධිත ස්පීකර්"</string>
     <string name="media_output_group_title_speakers_and_displays" msgid="7169712332365659820">"ස්පීකර් සහ සංදර්ශක"</string>
     <string name="media_output_group_title_suggested" msgid="5097061363820410332">"යෝජිත"</string>
-    <string name="media_output_group_title_suggested_device" msgid="4157186235837903826">"යෝජිත උපාංග"</string>
     <string name="media_input_group_title" msgid="2057057473860783021">"ආදානය"</string>
     <string name="media_output_group_title" msgid="6789001895863332576">"ප්‍රතිදානය"</string>
     <string name="media_output_end_session_dialog_summary" msgid="5954520685989877347">"මාධ්‍ය වෙනත් උපාංගයකට ගෙන යාමට ඔබේ බෙදා ගත් සැසිය නවත්වන්න"</string>

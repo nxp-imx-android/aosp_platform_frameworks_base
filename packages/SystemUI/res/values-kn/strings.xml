@@ -316,8 +316,6 @@
     <string name="accessibility_cast_name" msgid="7344437925388773685">"<xliff:g id="CAST">%s</xliff:g> ಗೆ ಸಂಪರ್ಕಿಸಲಾಗಿದೆ."</string>
     <string name="accessibility_expand_group" msgid="521237935987978624">"ಗುಂಪು ವಿಸ್ತರಿಸಿ."</string>
     <string name="accessibility_collapse_group" msgid="1842704016768329517">"ಗುಂಪನ್ನು ಕುಗ್ಗಿಸಿ."</string>
-    <string name="accessibility_add_device_to_group" msgid="5446422960697860806">"ಸಾಧನವನ್ನು ಗುಂಪಿಗೆ ಸೇರಿಸಿ."</string>
-    <string name="accessibility_remove_device_from_group" msgid="3114694270949142228">"ಸಾಧನವನ್ನು ಗುಂಪಿನಿಂದ ತೆಗೆದುಹಾಕಿ."</string>
     <string name="accessibility_add_device_to_group_with_name" msgid="1042306202917036858">"<xliff:g id="DEVICE_NAME">%s</xliff:g> ಗುಂಪಿಗೆ ಸೇರಿಸಿ."</string>
     <string name="accessibility_remove_device_from_group_with_name" msgid="5582015497111561027">"ಗುಂಪಿನಿಂದ <xliff:g id="DEVICE_NAME">%s</xliff:g> ತೆಗೆದುಹಾಕಿ."</string>
     <string name="accessibility_open_application" msgid="1749126077501259712">"ಅಪ್ಲಿಕೇಶನ್ ತೆರೆಯಿರಿ."</string>
@@ -1386,7 +1384,6 @@
     <string name="media_output_dialog_multiple_devices" msgid="1093771040315422350">"<xliff:g id="COUNT">%1$d</xliff:g> ಸಾಧನಗಳನ್ನು ಆಯ್ಕೆ ಮಾಡಲಾಗಿದೆ"</string>
     <string name="media_output_item_connected_state" msgid="297439499870755458">"ಕನೆಕ್ಟ್ ಆಗಿದೆ"</string>
     <string name="media_output_dialog_connect_failed" msgid="3080972621975339387">"ಬದಲಿಸಲು ಸಾಧ್ಯವಿಲ್ಲ. ಪುನಃ ಪ್ರಯತ್ನಿಸಲು ಟ್ಯಾಪ್ ಮಾಡಿ."</string>
-    <string name="media_output_dialog_pairing_new" msgid="5098212763195577270">"ಸಾಧನವನ್ನು ಕನೆಕ್ಟ್ ಮಾಡಿ"</string>
     <string name="media_output_dialog_button_connect_device" msgid="2819038239946643550">"ಸಾಧನವನ್ನು ಕನೆಕ್ಟ್ ಮಾಡಿ"</string>
     <string name="media_output_dialog_unknown_launch_app_name" msgid="1084899329829371336">"ಅಪರಿಚಿತ ಆ್ಯಪ್"</string>
     <string name="media_output_dialog_button_stop_casting" msgid="6581379537930199189">"ಕ್ಯಾಸ್ಟಿಂಗ್ ನಿಲ್ಲಿಸಿ"</string>
@@ -1396,7 +1393,6 @@
     <string name="media_output_group_title_connected_speakers" msgid="3413876972919684479">"ಕನೆಕ್ಟ್ ಮಾಡಿರುವ ಸ್ಪೀಕರ್‌ಗಳು"</string>
     <string name="media_output_group_title_speakers_and_displays" msgid="7169712332365659820">"ಸ್ಪೀಕರ್‌ಗಳು ಮತ್ತು ಡಿಸ್‌ಪ್ಲೇಗಳು"</string>
     <string name="media_output_group_title_suggested" msgid="5097061363820410332">"ಸಲಹೆ ಮಾಡಿರುವುದು"</string>
-    <string name="media_output_group_title_suggested_device" msgid="4157186235837903826">"ಸೂಚಿಸಿದ ಸಾಧನಗಳು"</string>
     <string name="media_input_group_title" msgid="2057057473860783021">"ಇನ್‌ಪುಟ್"</string>
     <string name="media_output_group_title" msgid="6789001895863332576">"ಔಟ್‌ಪುಟ್"</string>
     <string name="media_output_end_session_dialog_summary" msgid="5954520685989877347">"ಮೀಡಿಯಾವನ್ನು ಮತ್ತೊಂದು ಸಾಧನಕ್ಕೆ ಸರಿಸಲು ನಿಮ್ಮ ಹಂಚಿಕೊಂಡ ಸೆಶನ್ ಅನ್ನು ನಿಲ್ಲಿಸಿ"</string>

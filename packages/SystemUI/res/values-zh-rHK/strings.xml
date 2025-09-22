@@ -180,8 +180,7 @@
     <string name="screen_capture_microphone_audio" msgid="1698835678818747741">"麥克風"</string>
     <string name="screen_capture_front_camera" msgid="1214647538302639358">"前置鏡頭"</string>
     <string name="screen_capture_region_dimensions" msgid="2317064050253056256">"<xliff:g id="WIDTH">%1$d</xliff:g> x <xliff:g id="HEIGHT">%2$d</xliff:g>"</string>
-    <!-- no translation found for screen_share_privacy_indicator_stop_sharing (2297045039651417274) -->
-    <skip />
+    <string name="screen_share_privacy_indicator_stop_sharing" msgid="2297045039651417274">"停止分享"</string>
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"正在分享螢幕"</string>
     <string name="share_to_app_chip_accessibility_label_generic" msgid="5517431657924536133">"分享內容"</string>
     <string name="share_to_app_stop_dialog_title" msgid="9212915050910250438">"要停止分享螢幕嗎？"</string>
@@ -317,8 +316,6 @@
     <string name="accessibility_cast_name" msgid="7344437925388773685">"已連接至 <xliff:g id="CAST">%s</xliff:g>。"</string>
     <string name="accessibility_expand_group" msgid="521237935987978624">"展開群組。"</string>
     <string name="accessibility_collapse_group" msgid="1842704016768329517">"收合群組。"</string>
-    <string name="accessibility_add_device_to_group" msgid="5446422960697860806">"將裝置新增至群組。"</string>
-    <string name="accessibility_remove_device_from_group" msgid="3114694270949142228">"從群組移除裝置。"</string>
     <string name="accessibility_add_device_to_group_with_name" msgid="1042306202917036858">"將「<xliff:g id="DEVICE_NAME">%s</xliff:g>」加入群組。"</string>
     <string name="accessibility_remove_device_from_group_with_name" msgid="5582015497111561027">"從群組中移除「<xliff:g id="DEVICE_NAME">%s</xliff:g>」。"</string>
     <string name="accessibility_open_application" msgid="1749126077501259712">"開啟應用程式。"</string>
@@ -1387,7 +1384,6 @@
     <string name="media_output_dialog_multiple_devices" msgid="1093771040315422350">"已選取 <xliff:g id="COUNT">%1$d</xliff:g> 部裝置"</string>
     <string name="media_output_item_connected_state" msgid="297439499870755458">"已連接"</string>
     <string name="media_output_dialog_connect_failed" msgid="3080972621975339387">"無法切換，輕按即可重試。"</string>
-    <string name="media_output_dialog_pairing_new" msgid="5098212763195577270">"連接裝置"</string>
     <string name="media_output_dialog_button_connect_device" msgid="2819038239946643550">"連接裝置"</string>
     <string name="media_output_dialog_unknown_launch_app_name" msgid="1084899329829371336">"不明應用程式"</string>
     <string name="media_output_dialog_button_stop_casting" msgid="6581379537930199189">"停止投放"</string>
@@ -1397,7 +1393,6 @@
     <string name="media_output_group_title_connected_speakers" msgid="3413876972919684479">"已連接喇叭"</string>
     <string name="media_output_group_title_speakers_and_displays" msgid="7169712332365659820">"喇叭和螢幕"</string>
     <string name="media_output_group_title_suggested" msgid="5097061363820410332">"建議"</string>
-    <string name="media_output_group_title_suggested_device" msgid="4157186235837903826">"建議的裝置"</string>
     <string name="media_input_group_title" msgid="2057057473860783021">"輸入"</string>
     <string name="media_output_group_title" msgid="6789001895863332576">"輸出"</string>
     <string name="media_output_end_session_dialog_summary" msgid="5954520685989877347">"停止共享工作階段以移動媒體至其他裝置"</string>

@@ -316,8 +316,6 @@
     <string name="accessibility_cast_name" msgid="7344437925388773685">"Csatlakozva a következőhöz: <xliff:g id="CAST">%s</xliff:g>."</string>
     <string name="accessibility_expand_group" msgid="521237935987978624">"Csoport kibontása."</string>
     <string name="accessibility_collapse_group" msgid="1842704016768329517">"Csoport összecsukása."</string>
-    <string name="accessibility_add_device_to_group" msgid="5446422960697860806">"Eszköz hozzáadása csoporthoz."</string>
-    <string name="accessibility_remove_device_from_group" msgid="3114694270949142228">"Eszköz eltávolítása csoportból."</string>
     <string name="accessibility_add_device_to_group_with_name" msgid="1042306202917036858">"<xliff:g id="DEVICE_NAME">%s</xliff:g> hozzáadása a csoporthoz."</string>
     <string name="accessibility_remove_device_from_group_with_name" msgid="5582015497111561027">"<xliff:g id="DEVICE_NAME">%s</xliff:g> eltávolítása a csoportból."</string>
     <string name="accessibility_open_application" msgid="1749126077501259712">"Alkalmazás megnyitása."</string>
@@ -1386,7 +1384,6 @@
     <string name="media_output_dialog_multiple_devices" msgid="1093771040315422350">"<xliff:g id="COUNT">%1$d</xliff:g> eszköz kiválasztva"</string>
     <string name="media_output_item_connected_state" msgid="297439499870755458">"Csatlakozva"</string>
     <string name="media_output_dialog_connect_failed" msgid="3080972621975339387">"A váltás nem sikerült. Próbálja újra."</string>
-    <string name="media_output_dialog_pairing_new" msgid="5098212763195577270">"Eszköz csatlakoztatása"</string>
     <string name="media_output_dialog_button_connect_device" msgid="2819038239946643550">"Eszköz csatlakoztatása"</string>
     <string name="media_output_dialog_unknown_launch_app_name" msgid="1084899329829371336">"Ismeretlen alkalmazás"</string>
     <string name="media_output_dialog_button_stop_casting" msgid="6581379537930199189">"Átküldés leállítása"</string>
@@ -1396,7 +1393,6 @@
     <string name="media_output_group_title_connected_speakers" msgid="3413876972919684479">"Csatlakoztatott hangfalak"</string>
     <string name="media_output_group_title_speakers_and_displays" msgid="7169712332365659820">"Hangfalak és kijelzők"</string>
     <string name="media_output_group_title_suggested" msgid="5097061363820410332">"Javasolt"</string>
-    <string name="media_output_group_title_suggested_device" msgid="4157186235837903826">"Javasolt eszközök"</string>
     <string name="media_input_group_title" msgid="2057057473860783021">"Bemenet"</string>
     <string name="media_output_group_title" msgid="6789001895863332576">"Kimenet"</string>
     <string name="media_output_end_session_dialog_summary" msgid="5954520685989877347">"Állítsa le a megosztott munkamenetet, ha át szeretné helyezni a médiát egy másik eszközre"</string>

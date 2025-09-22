@@ -21,8 +21,8 @@
     xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
     <string name="app_label" msgid="4811759950673118541">"सिस्टीम UI"</string>
     <string name="battery_low_title" msgid="5319680173344341779">"बॅटरी सेव्हर सुरू करायचे आहे का?"</string>
-    <string name="battery_low_description" msgid="7848989602036547056">"तुमच्याकडे <xliff:g id="PERCENTAGE">%s</xliff:g> बॅटरी शिल्लक आहे. बॅटरी सेव्हर गडद थीम सुरू करते, बॅकग्राउंड ॲक्टिव्हिटी मर्यादित करते, यामुळे सूचना विलंबाने मिळतात."</string>
-    <string name="battery_low_intro" msgid="8033783734931200690">"बॅटरी सेव्हर गडद थीम सुरू करते, बॅकग्राउंड ॲक्टिव्हिटी मर्यादित करते, यामुळे सूचना विलंबाने मिळतात."</string>
+    <string name="battery_low_description" msgid="7848989602036547056">"तुमच्याकडे <xliff:g id="PERCENTAGE">%s</xliff:g> बॅटरी शिल्लक आहे. बॅटरी सेव्हर गडद थीम सुरू करते, बॅकग्राउंड ॲक्टिव्हिटी मर्यादित करते, यामुळे नोटिफिकेशन विलंबाने मिळतात."</string>
+    <string name="battery_low_intro" msgid="8033783734931200690">"बॅटरी सेव्हर गडद थीम सुरू करते, बॅकग्राउंड ॲक्टिव्हिटी मर्यादित करते, यामुळे नोटिफिकेशन विलंबाने मिळतात."</string>
     <string name="battery_low_percent_format" msgid="4276661262843170964">"<xliff:g id="PERCENTAGE">%s</xliff:g> शिल्लक"</string>
     <string name="invalid_charger_title" msgid="938685362320735167">"USB द्वारे चार्ज होऊ शकत नाही"</string>
     <string name="invalid_charger_text" msgid="2339310107232691577">"तुमच्या डिव्हाइससह आलेल्या चार्जरचा वापर करा"</string>
@@ -180,8 +180,7 @@
     <string name="screen_capture_microphone_audio" msgid="1698835678818747741">"मायक्रोफोन"</string>
     <string name="screen_capture_front_camera" msgid="1214647538302639358">"फ्रंट कॅमेरा"</string>
     <string name="screen_capture_region_dimensions" msgid="2317064050253056256">"<xliff:g id="WIDTH">%1$d</xliff:g> x <xliff:g id="HEIGHT">%2$d</xliff:g>"</string>
-    <!-- no translation found for screen_share_privacy_indicator_stop_sharing (2297045039651417274) -->
-    <skip />
+    <string name="screen_share_privacy_indicator_stop_sharing" msgid="2297045039651417274">"शेअर करणे थांबवा"</string>
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"स्क्रीन शेअर करत आहे"</string>
     <string name="share_to_app_chip_accessibility_label_generic" msgid="5517431657924536133">"आशय शेअर करत आहे"</string>
     <string name="share_to_app_stop_dialog_title" msgid="9212915050910250438">"स्क्रीन शेअर करणे थांबवायचे आहे का?"</string>
@@ -317,8 +316,6 @@
     <string name="accessibility_cast_name" msgid="7344437925388773685">"<xliff:g id="CAST">%s</xliff:g> शी कनेक्ट केले."</string>
     <string name="accessibility_expand_group" msgid="521237935987978624">"गटाचा विस्तार करा."</string>
     <string name="accessibility_collapse_group" msgid="1842704016768329517">"गट कोलॅप्स करा."</string>
-    <string name="accessibility_add_device_to_group" msgid="5446422960697860806">"डिव्हाइस गटामध्ये जोडा."</string>
-    <string name="accessibility_remove_device_from_group" msgid="3114694270949142228">"डिव्हाइस गटामधून काढून टाका."</string>
     <string name="accessibility_add_device_to_group_with_name" msgid="1042306202917036858">"<xliff:g id="DEVICE_NAME">%s</xliff:g> ला गटामध्ये जोडा."</string>
     <string name="accessibility_remove_device_from_group_with_name" msgid="5582015497111561027">"<xliff:g id="DEVICE_NAME">%s</xliff:g> ला गटामधून काढून टाका."</string>
     <string name="accessibility_open_application" msgid="1749126077501259712">"अ‍ॅप उघडा."</string>
@@ -1387,7 +1384,6 @@
     <string name="media_output_dialog_multiple_devices" msgid="1093771040315422350">"<xliff:g id="COUNT">%1$d</xliff:g> डिव्हाइस निवडली आहेत"</string>
     <string name="media_output_item_connected_state" msgid="297439499870755458">"कनेक्ट केला आहे"</string>
     <string name="media_output_dialog_connect_failed" msgid="3080972621975339387">"स्विच करू शकत नाही. पुन्हा प्रयत्न करण्यासाठी टॅप करा."</string>
-    <string name="media_output_dialog_pairing_new" msgid="5098212763195577270">"डिव्हाइस कनेक्ट करा"</string>
     <string name="media_output_dialog_button_connect_device" msgid="2819038239946643550">"डिव्हाइस कनेक्ट करा"</string>
     <string name="media_output_dialog_unknown_launch_app_name" msgid="1084899329829371336">"अज्ञात अ‍ॅप"</string>
     <string name="media_output_dialog_button_stop_casting" msgid="6581379537930199189">"कास्ट करणे थांबवा"</string>
@@ -1397,7 +1393,6 @@
     <string name="media_output_group_title_connected_speakers" msgid="3413876972919684479">"कनेक्ट केलेले स्पीकर"</string>
     <string name="media_output_group_title_speakers_and_displays" msgid="7169712332365659820">"स्पीकर आणि डिस्प्ले"</string>
     <string name="media_output_group_title_suggested" msgid="5097061363820410332">"सुचवलेले"</string>
-    <string name="media_output_group_title_suggested_device" msgid="4157186235837903826">"सुचवलेली डिव्हाइस"</string>
     <string name="media_input_group_title" msgid="2057057473860783021">"इनपुट"</string>
     <string name="media_output_group_title" msgid="6789001895863332576">"आउटपुट"</string>
     <string name="media_output_end_session_dialog_summary" msgid="5954520685989877347">"मीडिया दुसऱ्या डिव्हाइसवर शेअर करण्यासाठी तुमचे शेअर केलेले सेशन थांबवा"</string>

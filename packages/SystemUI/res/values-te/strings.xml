@@ -21,8 +21,8 @@
     xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
     <string name="app_label" msgid="4811759950673118541">"సిస్టమ్ UI"</string>
     <string name="battery_low_title" msgid="5319680173344341779">"బ్యాటరీ సేవర్‌ను ఆన్ చేయాలా?"</string>
-    <string name="battery_low_description" msgid="7848989602036547056">"బ్యాటరీ <xliff:g id="PERCENTAGE">%s</xliff:g> మిగిలి ఉంది. \"బ్యాటరీ సేవర్\" వల్ల డార్క్ థీమ్ ఆన్ అవుతుంది, బ్యాక్‌గ్రౌండ్ యాక్టివిటీ పరిమితం అవుతుంది, అలాగే నోటిఫికేషన్‌లు ఆలస్యంగా వస్తాయి."</string>
-    <string name="battery_low_intro" msgid="8033783734931200690">"బ్యాటరీ సేవర్ ముదురు రంగు రూపాన్ని ఆన్ చేస్తుంది, బ్యాక్‌గ్రౌండ్ యాక్టివిటీని పరిమితం చేస్తుంది, అలాగే నోటిఫికేషన్‌లను ఆలస్యంగా పంపిస్తుంది."</string>
+    <string name="battery_low_description" msgid="7848989602036547056">"మీకు <xliff:g id="PERCENTAGE">%s</xliff:g> బ్యాటరీ మిగిలి ఉంది. బ్యాటరీ సేవర్ డార్క్ థీమ్‌ను ఆన్ చేసి, బ్యాక్‌గ్రౌండ్ యాక్టివిటీని పరిమితం చేస్తుంది, అలాగే నోటిఫికేషన్‌లను ఆలస్యంగా పంపుతుంది."</string>
+    <string name="battery_low_intro" msgid="8033783734931200690">"బ్యాటరీ సేవర్ డార్క్ థీమ్‌ను ఆన్ చేసి, బ్యాక్‌గ్రౌండ్ యాక్టివిటీని పరిమితం చేస్తుంది, అలాగే నోటిఫికేషన్‌లను ఆలస్యంగా పంపుతుంది."</string>
     <string name="battery_low_percent_format" msgid="4276661262843170964">"<xliff:g id="PERCENTAGE">%s</xliff:g> మిగిలి ఉంది"</string>
     <string name="invalid_charger_title" msgid="938685362320735167">"USB ద్వారా ఛార్జ్ చేయలేరు"</string>
     <string name="invalid_charger_text" msgid="2339310107232691577">"మీ పరికరంతో వచ్చిన ఛార్జర్‌ను ఉపయోగించండి"</string>
@@ -180,8 +180,7 @@
     <string name="screen_capture_microphone_audio" msgid="1698835678818747741">"మైక్రోఫోన్"</string>
     <string name="screen_capture_front_camera" msgid="1214647538302639358">"ముందు వైపు కెమెరా"</string>
     <string name="screen_capture_region_dimensions" msgid="2317064050253056256">"<xliff:g id="WIDTH">%1$d</xliff:g> x <xliff:g id="HEIGHT">%2$d</xliff:g>"</string>
-    <!-- no translation found for screen_share_privacy_indicator_stop_sharing (2297045039651417274) -->
-    <skip />
+    <string name="screen_share_privacy_indicator_stop_sharing" msgid="2297045039651417274">"షేరింగ్‌ను ఆపివేయండి"</string>
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"స్క్రీన్‌ను షేర్ చేస్తోంది"</string>
     <string name="share_to_app_chip_accessibility_label_generic" msgid="5517431657924536133">"కంటెంట్‌ను షేర్ చేస్తోంది"</string>
     <string name="share_to_app_stop_dialog_title" msgid="9212915050910250438">"స్క్రీన్‌ను షేర్ చేయడం ఆపివేయాలా?"</string>
@@ -317,8 +316,6 @@
     <string name="accessibility_cast_name" msgid="7344437925388773685">"<xliff:g id="CAST">%s</xliff:g>కి కనెక్ట్ చేయబడింది."</string>
     <string name="accessibility_expand_group" msgid="521237935987978624">"గ్రూప్‌ను విస్తరించండి."</string>
     <string name="accessibility_collapse_group" msgid="1842704016768329517">"గ్రూప్‌ను కుదించండి."</string>
-    <string name="accessibility_add_device_to_group" msgid="5446422960697860806">"గ్రూప్‌కి పరికరాన్ని జోడించండి."</string>
-    <string name="accessibility_remove_device_from_group" msgid="3114694270949142228">"గ్రూప్ నుండి పరికరాన్ని తీసివేయండి."</string>
     <string name="accessibility_add_device_to_group_with_name" msgid="1042306202917036858">"<xliff:g id="DEVICE_NAME">%s</xliff:g>‌ను గ్రూప్‌నకు జోడిస్తుంది."</string>
     <string name="accessibility_remove_device_from_group_with_name" msgid="5582015497111561027">"<xliff:g id="DEVICE_NAME">%s</xliff:g>‌ను గ్రూప్ నుండి తీసివేస్తుంది."</string>
     <string name="accessibility_open_application" msgid="1749126077501259712">"యాప్‌ను తెరవండి."</string>
@@ -1387,7 +1384,6 @@
     <string name="media_output_dialog_multiple_devices" msgid="1093771040315422350">"<xliff:g id="COUNT">%1$d</xliff:g> పరికరాలు ఎంచుకోబడ్డాయి"</string>
     <string name="media_output_item_connected_state" msgid="297439499870755458">"కనెక్ట్ చేయబడింది"</string>
     <string name="media_output_dialog_connect_failed" msgid="3080972621975339387">"స్విచ్ చేయడం సాధ్యం కాదు. మళ్ళీ ట్రై చేయడానికి ట్యాప్ చేయండి."</string>
-    <string name="media_output_dialog_pairing_new" msgid="5098212763195577270">"డివైజ్‌ను కనెక్ట్ చేయండి"</string>
     <string name="media_output_dialog_button_connect_device" msgid="2819038239946643550">"డివైజ్‌ను కనెక్ట్ చేయండి"</string>
     <string name="media_output_dialog_unknown_launch_app_name" msgid="1084899329829371336">"తెలియని యాప్"</string>
     <string name="media_output_dialog_button_stop_casting" msgid="6581379537930199189">"ప్రసారాన్ని ఆపివేయండి"</string>
@@ -1397,7 +1393,6 @@
     <string name="media_output_group_title_connected_speakers" msgid="3413876972919684479">"కనెక్ట్ అయిన స్పీకర్‌లు"</string>
     <string name="media_output_group_title_speakers_and_displays" msgid="7169712332365659820">"స్పీకర్‌లు &amp; డిస్‌ప్లేలు"</string>
     <string name="media_output_group_title_suggested" msgid="5097061363820410332">"సూచించినవి"</string>
-    <string name="media_output_group_title_suggested_device" msgid="4157186235837903826">"సూచించబడిన పరికరాలు"</string>
     <string name="media_input_group_title" msgid="2057057473860783021">"ఇన్‌పుట్"</string>
     <string name="media_output_group_title" msgid="6789001895863332576">"అవుట్‌పుట్"</string>
     <string name="media_output_end_session_dialog_summary" msgid="5954520685989877347">"మీడియాను మరొక పరికరానికి తరలించడానికి మీ షేర్ చేసిన సెషన్‌ను ఆపండి"</string>

@@ -21,8 +21,8 @@
     xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
     <string name="app_label" msgid="4811759950673118541">"IU système"</string>
     <string name="battery_low_title" msgid="5319680173344341779">"Activer l\'Économiseur de pile?"</string>
-    <string name="battery_low_description" msgid="7848989602036547056">"Il vous reste <xliff:g id="PERCENTAGE">%s</xliff:g> d\'autonomie. L\'économiseur de pile active le thème sombre, limite l\'activité en arrière-plan et retarde les notifications."</string>
-    <string name="battery_low_intro" msgid="8033783734931200690">"L\'économiseur de pile active le thème sombre, limite l\'activité en arrière-plan et retarde les notifications."</string>
+    <string name="battery_low_description" msgid="7848989602036547056">"Il vous reste <xliff:g id="PERCENTAGE">%s</xliff:g> d\'autonomie. L\'Économiseur de pile active le thème Sombre, limite l\'activité en arrière-plan et retarde les notifications."</string>
+    <string name="battery_low_intro" msgid="8033783734931200690">"L\'Économiseur de pile active le thème Sombre, limite l\'activité en arrière-plan et retarde les notifications."</string>
     <string name="battery_low_percent_format" msgid="4276661262843170964">"<xliff:g id="PERCENTAGE">%s</xliff:g> restants"</string>
     <string name="invalid_charger_title" msgid="938685362320735167">"Impossible de charger l\'appareil par USB"</string>
     <string name="invalid_charger_text" msgid="2339310107232691577">"Servez-vous du chargeur fourni avec votre appareil"</string>
@@ -180,8 +180,7 @@
     <string name="screen_capture_microphone_audio" msgid="1698835678818747741">"Microphone"</string>
     <string name="screen_capture_front_camera" msgid="1214647538302639358">"Appareil photo avant"</string>
     <string name="screen_capture_region_dimensions" msgid="2317064050253056256">"<xliff:g id="WIDTH">%1$d</xliff:g> x <xliff:g id="HEIGHT">%2$d</xliff:g>"</string>
-    <!-- no translation found for screen_share_privacy_indicator_stop_sharing (2297045039651417274) -->
-    <skip />
+    <string name="screen_share_privacy_indicator_stop_sharing" msgid="2297045039651417274">"Arrêter le partage"</string>
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"Partage d\'écran en cours…"</string>
     <string name="share_to_app_chip_accessibility_label_generic" msgid="5517431657924536133">"Partage de contenu en cours…"</string>
     <string name="share_to_app_stop_dialog_title" msgid="9212915050910250438">"Arrêter le partage d\'écran?"</string>
@@ -317,8 +316,6 @@
     <string name="accessibility_cast_name" msgid="7344437925388773685">"Connecté à <xliff:g id="CAST">%s</xliff:g>."</string>
     <string name="accessibility_expand_group" msgid="521237935987978624">"Développer le groupe."</string>
     <string name="accessibility_collapse_group" msgid="1842704016768329517">"Réduire le groupe."</string>
-    <string name="accessibility_add_device_to_group" msgid="5446422960697860806">"Ajouter un appareil au groupe."</string>
-    <string name="accessibility_remove_device_from_group" msgid="3114694270949142228">"Retirer l\'appareil du groupe."</string>
     <string name="accessibility_add_device_to_group_with_name" msgid="1042306202917036858">"Ajouter <xliff:g id="DEVICE_NAME">%s</xliff:g> au groupe."</string>
     <string name="accessibility_remove_device_from_group_with_name" msgid="5582015497111561027">"Retirer <xliff:g id="DEVICE_NAME">%s</xliff:g> du groupe."</string>
     <string name="accessibility_open_application" msgid="1749126077501259712">"Ouvrir l\'appli."</string>
@@ -1387,7 +1384,6 @@
     <string name="media_output_dialog_multiple_devices" msgid="1093771040315422350">"<xliff:g id="COUNT">%1$d</xliff:g> appareil sélectionné"</string>
     <string name="media_output_item_connected_state" msgid="297439499870755458">"Connecté"</string>
     <string name="media_output_dialog_connect_failed" msgid="3080972621975339387">"Changement impossible. Touchez pour réessayer."</string>
-    <string name="media_output_dialog_pairing_new" msgid="5098212763195577270">"Connecter un appareil"</string>
     <string name="media_output_dialog_button_connect_device" msgid="2819038239946643550">"Connecter un appareil"</string>
     <string name="media_output_dialog_unknown_launch_app_name" msgid="1084899329829371336">"Appli inconnue"</string>
     <string name="media_output_dialog_button_stop_casting" msgid="6581379537930199189">"Arrêter la diffusion"</string>
@@ -1397,7 +1393,6 @@
     <string name="media_output_group_title_connected_speakers" msgid="3413876972919684479">"Haut-parleurs connectés"</string>
     <string name="media_output_group_title_speakers_and_displays" msgid="7169712332365659820">"Haut-parleurs et écrans"</string>
     <string name="media_output_group_title_suggested" msgid="5097061363820410332">"Suggestions"</string>
-    <string name="media_output_group_title_suggested_device" msgid="4157186235837903826">"Appareils suggérés"</string>
     <string name="media_input_group_title" msgid="2057057473860783021">"Entrée"</string>
     <string name="media_output_group_title" msgid="6789001895863332576">"Sortie"</string>
     <string name="media_output_end_session_dialog_summary" msgid="5954520685989877347">"Arrêtez votre session partagée pour déplacer des contenus multimédias vers un autre appareil"</string>

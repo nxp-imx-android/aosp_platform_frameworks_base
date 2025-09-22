@@ -180,8 +180,7 @@
     <string name="screen_capture_microphone_audio" msgid="1698835678818747741">"مائیکروفون"</string>
     <string name="screen_capture_front_camera" msgid="1214647538302639358">"فرنٹ کیمرا"</string>
     <string name="screen_capture_region_dimensions" msgid="2317064050253056256">"<xliff:g id="HEIGHT">%2$d</xliff:g> x <xliff:g id="WIDTH">%1$d</xliff:g>"</string>
-    <!-- no translation found for screen_share_privacy_indicator_stop_sharing (2297045039651417274) -->
-    <skip />
+    <string name="screen_share_privacy_indicator_stop_sharing" msgid="2297045039651417274">"اشتراک کرنا روکیں"</string>
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"اسکرین کا اشتراک ہو رہا ہے"</string>
     <string name="share_to_app_chip_accessibility_label_generic" msgid="5517431657924536133">"مواد کا اشتراک کیا جا رہا ہے"</string>
     <string name="share_to_app_stop_dialog_title" msgid="9212915050910250438">"اسکرین کا اشتراک روکیں؟"</string>
@@ -317,8 +316,6 @@
     <string name="accessibility_cast_name" msgid="7344437925388773685">"<xliff:g id="CAST">%s</xliff:g> سے منسلک ہے۔"</string>
     <string name="accessibility_expand_group" msgid="521237935987978624">"گروپ کو پھیلائیں۔"</string>
     <string name="accessibility_collapse_group" msgid="1842704016768329517">"گروپ کو سکیڑیں۔"</string>
-    <string name="accessibility_add_device_to_group" msgid="5446422960697860806">"آلہ کو گروپ میں شامل کریں۔"</string>
-    <string name="accessibility_remove_device_from_group" msgid="3114694270949142228">"آلہ کو گروپ سے ہٹائیں۔"</string>
     <string name="accessibility_add_device_to_group_with_name" msgid="1042306202917036858">"‫<xliff:g id="DEVICE_NAME">%s</xliff:g> کو گروپ میں شامل کریں۔"</string>
     <string name="accessibility_remove_device_from_group_with_name" msgid="5582015497111561027">"‫<xliff:g id="DEVICE_NAME">%s</xliff:g> کو گروپ سے ہٹائیں۔"</string>
     <string name="accessibility_open_application" msgid="1749126077501259712">"ایپلیکیشن کھولیں۔"</string>
@@ -1387,7 +1384,6 @@
     <string name="media_output_dialog_multiple_devices" msgid="1093771040315422350">"<xliff:g id="COUNT">%1$d</xliff:g> آلات منتخب کیے گئے"</string>
     <string name="media_output_item_connected_state" msgid="297439499870755458">"منسلک ہے"</string>
     <string name="media_output_dialog_connect_failed" msgid="3080972621975339387">"سوئچ نہیں کر سکتے۔ دوبارہ کوشش کرنے کے لیے تھپتھپائیں۔"</string>
-    <string name="media_output_dialog_pairing_new" msgid="5098212763195577270">"آلہ منسلک کریں"</string>
     <string name="media_output_dialog_button_connect_device" msgid="2819038239946643550">"آلہ منسلک کریں"</string>
     <string name="media_output_dialog_unknown_launch_app_name" msgid="1084899329829371336">"نامعلوم ایپ"</string>
     <string name="media_output_dialog_button_stop_casting" msgid="6581379537930199189">"کاسٹ کرنا بند کریں"</string>
@@ -1397,7 +1393,6 @@
     <string name="media_output_group_title_connected_speakers" msgid="3413876972919684479">"منسلک اسپیکرز"</string>
     <string name="media_output_group_title_speakers_and_displays" msgid="7169712332365659820">"اسپیکرز اور ڈسپلیز"</string>
     <string name="media_output_group_title_suggested" msgid="5097061363820410332">"تجویز کردہ"</string>
-    <string name="media_output_group_title_suggested_device" msgid="4157186235837903826">"تجویز کردہ آلات"</string>
     <string name="media_input_group_title" msgid="2057057473860783021">"ان پٹ"</string>
     <string name="media_output_group_title" msgid="6789001895863332576">"آؤٹ پٹ"</string>
     <string name="media_output_end_session_dialog_summary" msgid="5954520685989877347">"میڈیا کو دوسرے آلے پر منتقل کرنے کے لیے اپنا مشترکہ سیشن بند کریں"</string>

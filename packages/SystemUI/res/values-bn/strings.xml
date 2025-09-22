@@ -21,8 +21,8 @@
     xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
     <string name="app_label" msgid="4811759950673118541">"সিস্টেম UI"</string>
     <string name="battery_low_title" msgid="5319680173344341779">"\'ব্যাটারি সেভার\' চালু করতে চান?"</string>
-    <string name="battery_low_description" msgid="7848989602036547056">"আপনার আর <xliff:g id="PERCENTAGE">%s</xliff:g> ব্যাটারি আছে। ব্যাটারি সেভার ডার্ক থিম চালু করে, ব্যাকগ্রাউন্ড অ্যাক্টিভিটি সীমিত করে এবং বিজ্ঞপ্তিতে দেরি করে।"</string>
-    <string name="battery_low_intro" msgid="8033783734931200690">"ব্যাটারি সেভার ডার্ক থিম চালু করে, ব্যাকগ্রাউন্ড অ্যাক্টিভিটি সীমিত করে এবং বিজ্ঞপ্তিতে দেরি করে।"</string>
+    <string name="battery_low_description" msgid="7848989602036547056">"ব্যাটারিতে আর <xliff:g id="PERCENTAGE">%s</xliff:g> চার্জ আছে। ব্যাটারি সেভার ডার্ক থিম চালু করে, ব্যাকগ্রাউন্ড অ্যাক্টিভিটি সীমিত করে এবং বিজ্ঞপ্তি দেখাতে দেরি করে।"</string>
+    <string name="battery_low_intro" msgid="8033783734931200690">"ব্যাটারি সেভার ডার্ক থিম চালু করে, ব্যাকগ্রাউন্ড অ্যাক্টিভিটি সীমিত করে এবং বিজ্ঞপ্তি দেখাতে দেরি করে।"</string>
     <string name="battery_low_percent_format" msgid="4276661262843170964">"<xliff:g id="PERCENTAGE">%s</xliff:g> অবশিষ্ট আছে"</string>
     <string name="invalid_charger_title" msgid="938685362320735167">"ইউএসবি দিয়ে চার্জ করা যাবে না"</string>
     <string name="invalid_charger_text" msgid="2339310107232691577">"ডিভাইসের সাথে যে চার্জারটি পেয়েছেন, সেটি ব্যবহার করুন"</string>
@@ -180,8 +180,7 @@
     <string name="screen_capture_microphone_audio" msgid="1698835678818747741">"মাইক্রোফোন"</string>
     <string name="screen_capture_front_camera" msgid="1214647538302639358">"সামনের ক্যামেরা"</string>
     <string name="screen_capture_region_dimensions" msgid="2317064050253056256">"<xliff:g id="WIDTH">%1$d</xliff:g> x <xliff:g id="HEIGHT">%2$d</xliff:g>"</string>
-    <!-- no translation found for screen_share_privacy_indicator_stop_sharing (2297045039651417274) -->
-    <skip />
+    <string name="screen_share_privacy_indicator_stop_sharing" msgid="2297045039651417274">"শেয়ার করা বন্ধ করুন"</string>
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"স্ক্রিন শেয়ার করা হচ্ছে"</string>
     <string name="share_to_app_chip_accessibility_label_generic" msgid="5517431657924536133">"কন্টেন্ট শেয়ার করা হচ্ছে"</string>
     <string name="share_to_app_stop_dialog_title" msgid="9212915050910250438">"স্ক্রিন শেয়ার করা বন্ধ করবেন?"</string>
@@ -317,8 +316,6 @@
     <string name="accessibility_cast_name" msgid="7344437925388773685">"<xliff:g id="CAST">%s</xliff:g> এর সাথে সংযুক্ত৷"</string>
     <string name="accessibility_expand_group" msgid="521237935987978624">"গ্রুপ বড় করুন।"</string>
     <string name="accessibility_collapse_group" msgid="1842704016768329517">"গ্রুপ আড়াল করুন।"</string>
-    <string name="accessibility_add_device_to_group" msgid="5446422960697860806">"গ্রুপে ডিভাইস যোগ করুন।"</string>
-    <string name="accessibility_remove_device_from_group" msgid="3114694270949142228">"গ্রুপ থেকে ডিভাইস সরিয়ে দিন।"</string>
     <string name="accessibility_add_device_to_group_with_name" msgid="1042306202917036858">"গ্রুপে <xliff:g id="DEVICE_NAME">%s</xliff:g> ডিভাইস যোগ করুন।"</string>
     <string name="accessibility_remove_device_from_group_with_name" msgid="5582015497111561027">"গ্রুপ থেকে <xliff:g id="DEVICE_NAME">%s</xliff:g> ডিভাইস সরান।"</string>
     <string name="accessibility_open_application" msgid="1749126077501259712">"অ্যাপ্লিকেশন খুলুন।"</string>
@@ -1387,7 +1384,6 @@
     <string name="media_output_dialog_multiple_devices" msgid="1093771040315422350">"<xliff:g id="COUNT">%1$d</xliff:g>টি ডিভাইস বেছে নেওয়া হয়েছে"</string>
     <string name="media_output_item_connected_state" msgid="297439499870755458">"কানেক্ট করা আছে"</string>
     <string name="media_output_dialog_connect_failed" msgid="3080972621975339387">"পাল্টানো যাচ্ছে না। আবার চেষ্টা করতে ট্যাপ করুন।"</string>
-    <string name="media_output_dialog_pairing_new" msgid="5098212763195577270">"ডিভাইস কানেক্ট করুন"</string>
     <string name="media_output_dialog_button_connect_device" msgid="2819038239946643550">"ডিভাইস কানেক্ট করুন"</string>
     <string name="media_output_dialog_unknown_launch_app_name" msgid="1084899329829371336">"অজানা অ্যাপ"</string>
     <string name="media_output_dialog_button_stop_casting" msgid="6581379537930199189">"কাস্ট করা বন্ধ করুন"</string>
@@ -1397,7 +1393,6 @@
     <string name="media_output_group_title_connected_speakers" msgid="3413876972919684479">"কানেক্ট করা স্পিকার"</string>
     <string name="media_output_group_title_speakers_and_displays" msgid="7169712332365659820">"স্পিকার ও ডিসপ্লে"</string>
     <string name="media_output_group_title_suggested" msgid="5097061363820410332">"সাজেস্ট করা হয়েছে"</string>
-    <string name="media_output_group_title_suggested_device" msgid="4157186235837903826">"সাজেস্ট করা ডিভাইস"</string>
     <string name="media_input_group_title" msgid="2057057473860783021">"ইনপুট"</string>
     <string name="media_output_group_title" msgid="6789001895863332576">"আউটপুট"</string>
     <string name="media_output_end_session_dialog_summary" msgid="5954520685989877347">"অন্য ডিভাইসে মিডিয়া সরাতে আপনার শেয়ার করা সেশন বন্ধ করুন"</string>

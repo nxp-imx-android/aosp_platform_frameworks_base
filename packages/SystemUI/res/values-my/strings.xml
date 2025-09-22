@@ -21,8 +21,8 @@
     xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
     <string name="app_label" msgid="4811759950673118541">"စနစ်၏ UI"</string>
     <string name="battery_low_title" msgid="5319680173344341779">"‘ဘက်ထရီ အားထိန်း’ ဖွင့်မလား။"</string>
-    <string name="battery_low_description" msgid="7848989602036547056">"သင့်တွင် ဘက်ထရီ <xliff:g id="PERCENTAGE">%s</xliff:g> ကျန်သည်။ ‘ဘက်ထရီ အားထိန်း’ က ‘မှောင်သည့် အပြင်အဆင်’ ဖွင့်ပြီး နောက်ခံလုပ်ဆောင်ချက်ကို ကန့်သတ်ကာ အကြောင်းကြားချက်များကို နှောင့်နှေးစေသည်။"</string>
-    <string name="battery_low_intro" msgid="8033783734931200690">"‘ဘက်ထရီ အားထိန်း’ က ‘အမှောင်နောက်ခံ’ ကို ဖွင့်ပြီး နောက်ခံလုပ်ဆောင်ချက်ကို ကန့်သတ်ကာ အကြောင်းကြားချက်များကို နှောင့်နှေးစေသည်။"</string>
+    <string name="battery_low_description" msgid="7848989602036547056">"သင့်တွင် ဘက်ထရီ <xliff:g id="PERCENTAGE">%s</xliff:g> ကျန်သည်။ ‘ဘက်ထရီ အားထိန်း’ က အမှောင်အပြင်အဆင်ဖွင့်ပြီး နောက်ခံလုပ်ဆောင်ချက်ကို ကန့်သတ်ကာ အကြောင်းကြားချက်များကို နှောင့်နှေးစေသည်။"</string>
+    <string name="battery_low_intro" msgid="8033783734931200690">"‘ဘက်ထရီ အားထိန်း’ က အမှောင်အပြင်အဆင်ဖွင့်ပြီး နောက်ခံလုပ်ဆောင်ချက်ကို ကန့်သတ်ကာ အကြောင်းကြားချက်များကို နှောင့်နှေးစေသည်။"</string>
     <string name="battery_low_percent_format" msgid="4276661262843170964">"<xliff:g id="PERCENTAGE">%s</xliff:g> ကျန်ရှိနေ"</string>
     <string name="invalid_charger_title" msgid="938685362320735167">"USB ဖြင့် အားသွင်း၍မရပါ"</string>
     <string name="invalid_charger_text" msgid="2339310107232691577">"သင့်စက်ပစ္စည်းနှင့် အတူပါလာသည့် အားသွင်းကိရိယာကို အသုံးပြုပါ"</string>
@@ -180,8 +180,7 @@
     <string name="screen_capture_microphone_audio" msgid="1698835678818747741">"မိုက်ခရိုဖုန်း"</string>
     <string name="screen_capture_front_camera" msgid="1214647538302639358">"ရှေ့ကင်မရာ"</string>
     <string name="screen_capture_region_dimensions" msgid="2317064050253056256">"<xliff:g id="WIDTH">%1$d</xliff:g> x <xliff:g id="HEIGHT">%2$d</xliff:g>"</string>
-    <!-- no translation found for screen_share_privacy_indicator_stop_sharing (2297045039651417274) -->
-    <skip />
+    <string name="screen_share_privacy_indicator_stop_sharing" msgid="2297045039651417274">"မျှဝေခြင်း ရပ်ရန်"</string>
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"ဖန်သားပြင်ကို မျှဝေနေသည်"</string>
     <string name="share_to_app_chip_accessibility_label_generic" msgid="5517431657924536133">"အကြောင်းအရာကို မျှဝေနေသည်"</string>
     <string name="share_to_app_stop_dialog_title" msgid="9212915050910250438">"ဖန်သားပြင်မျှဝေခြင်း ရပ်မလား။"</string>
@@ -317,8 +316,6 @@
     <string name="accessibility_cast_name" msgid="7344437925388773685">"<xliff:g id="CAST">%s</xliff:g> သို့ချိတ်ဆက်ထားပါသည်။"</string>
     <string name="accessibility_expand_group" msgid="521237935987978624">"အုပ်စုကို ပိုပြသည်။"</string>
     <string name="accessibility_collapse_group" msgid="1842704016768329517">"အဖွဲ့ကို လျှော့ပြပါ။"</string>
-    <string name="accessibility_add_device_to_group" msgid="5446422960697860806">"အဖွဲ့သို့ စက်ပစ္စည်းထည့်ရန်။"</string>
-    <string name="accessibility_remove_device_from_group" msgid="3114694270949142228">"အဖွဲ့မှ စက်ပစ္စည်းကို ဖယ်ရှားရန်။"</string>
     <string name="accessibility_add_device_to_group_with_name" msgid="1042306202917036858">"<xliff:g id="DEVICE_NAME">%s</xliff:g> ကို အုပ်စုသို့ ထည့်ရန်။"</string>
     <string name="accessibility_remove_device_from_group_with_name" msgid="5582015497111561027">"<xliff:g id="DEVICE_NAME">%s</xliff:g> ကို အုပ်စုမှ ဖယ်ရှားရန်။"</string>
     <string name="accessibility_open_application" msgid="1749126077501259712">"အပလီကေးရှင်းကို ဖွင့်သည်။"</string>
@@ -1387,7 +1384,6 @@
     <string name="media_output_dialog_multiple_devices" msgid="1093771040315422350">"စက်ပစ္စည်း <xliff:g id="COUNT">%1$d</xliff:g> ခုကို ရွေးချယ်ထားသည်"</string>
     <string name="media_output_item_connected_state" msgid="297439499870755458">"ချိတ်ဆက်ထားသည်"</string>
     <string name="media_output_dialog_connect_failed" msgid="3080972621975339387">"ပြောင်း၍ မရပါ။ ပြန်စမ်းကြည့်ရန် တို့ပါ။"</string>
-    <string name="media_output_dialog_pairing_new" msgid="5098212763195577270">"စက်တစ်ခုနှင့် ချိတ်ဆက်ရန်"</string>
     <string name="media_output_dialog_button_connect_device" msgid="2819038239946643550">"စက်ပစ္စည်း ချိတ်ဆက်ရန်"</string>
     <string name="media_output_dialog_unknown_launch_app_name" msgid="1084899329829371336">"အမည်မသိ အက်ပ်"</string>
     <string name="media_output_dialog_button_stop_casting" msgid="6581379537930199189">"ကာစ် ရပ်ရန်"</string>
@@ -1397,7 +1393,6 @@
     <string name="media_output_group_title_connected_speakers" msgid="3413876972919684479">"ချိတ်ဆက်ထားသော စပီကာများ"</string>
     <string name="media_output_group_title_speakers_and_displays" msgid="7169712332365659820">"စပီကာနှင့် ပြကွက်"</string>
     <string name="media_output_group_title_suggested" msgid="5097061363820410332">"အကြံပြုထားသည်များ"</string>
-    <string name="media_output_group_title_suggested_device" msgid="4157186235837903826">"အကြံပြုထားသော စက်ပစ္စည်းများ"</string>
     <string name="media_input_group_title" msgid="2057057473860783021">"ထည့်သွင်းချက်"</string>
     <string name="media_output_group_title" msgid="6789001895863332576">"ထုတ်လုပ်ချက်"</string>
     <string name="media_output_end_session_dialog_summary" msgid="5954520685989877347">"အခြားစက်သို့ မီဒီယာရွှေ့ပြောင်းရန် သင်၏မျှဝေထားသောစက်ရှင်ကို ရပ်ပါ"</string>

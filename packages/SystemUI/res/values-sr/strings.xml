@@ -316,8 +316,6 @@
     <string name="accessibility_cast_name" msgid="7344437925388773685">"Повезани смо са уређајем <xliff:g id="CAST">%s</xliff:g>."</string>
     <string name="accessibility_expand_group" msgid="521237935987978624">"Проширите групу."</string>
     <string name="accessibility_collapse_group" msgid="1842704016768329517">"Скупите групу."</string>
-    <string name="accessibility_add_device_to_group" msgid="5446422960697860806">"Додајте уређај у групу."</string>
-    <string name="accessibility_remove_device_from_group" msgid="3114694270949142228">"Уклоните уређај из групе."</string>
     <string name="accessibility_add_device_to_group_with_name" msgid="1042306202917036858">"Додајте <xliff:g id="DEVICE_NAME">%s</xliff:g> у групу."</string>
     <string name="accessibility_remove_device_from_group_with_name" msgid="5582015497111561027">"Уклоните <xliff:g id="DEVICE_NAME">%s</xliff:g> из групе."</string>
     <string name="accessibility_open_application" msgid="1749126077501259712">"Отворите апликацију."</string>
@@ -1386,7 +1384,6 @@
     <string name="media_output_dialog_multiple_devices" msgid="1093771040315422350">"Изабраних уређаја: <xliff:g id="COUNT">%1$d</xliff:g>"</string>
     <string name="media_output_item_connected_state" msgid="297439499870755458">"Повезано"</string>
     <string name="media_output_dialog_connect_failed" msgid="3080972621975339387">"Пребацивање није успело. Пробајте поново."</string>
-    <string name="media_output_dialog_pairing_new" msgid="5098212763195577270">"Повежите уређај"</string>
     <string name="media_output_dialog_button_connect_device" msgid="2819038239946643550">"Повежи уређај"</string>
     <string name="media_output_dialog_unknown_launch_app_name" msgid="1084899329829371336">"Непозната апликација"</string>
     <string name="media_output_dialog_button_stop_casting" msgid="6581379537930199189">"Заустави пребацивање"</string>
@@ -1396,7 +1393,6 @@
     <string name="media_output_group_title_connected_speakers" msgid="3413876972919684479">"Повезани звучници"</string>
     <string name="media_output_group_title_speakers_and_displays" msgid="7169712332365659820">"Звучници и екрани"</string>
     <string name="media_output_group_title_suggested" msgid="5097061363820410332">"Предложено"</string>
-    <string name="media_output_group_title_suggested_device" msgid="4157186235837903826">"Предложени уређаји"</string>
     <string name="media_input_group_title" msgid="2057057473860783021">"Улаз"</string>
     <string name="media_output_group_title" msgid="6789001895863332576">"Излаз"</string>
     <string name="media_output_end_session_dialog_summary" msgid="5954520685989877347">"Зауставите дељену сесију да бисте преместили медијски садржај на други уређај"</string>

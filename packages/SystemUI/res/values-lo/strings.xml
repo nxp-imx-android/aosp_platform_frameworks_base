@@ -316,8 +316,6 @@
     <string name="accessibility_cast_name" msgid="7344437925388773685">"ເຊື່ອມຕໍ່ຫາ <xliff:g id="CAST">%s</xliff:g> ແລ້ວ."</string>
     <string name="accessibility_expand_group" msgid="521237935987978624">"ຂະຫຍາຍກຸ່ມ."</string>
     <string name="accessibility_collapse_group" msgid="1842704016768329517">"ຫຍໍ້ກຸ່ມເຂົ້າ."</string>
-    <string name="accessibility_add_device_to_group" msgid="5446422960697860806">"ເພີ່ມອຸປະກອນໃສ່ໃນກຸ່ມ."</string>
-    <string name="accessibility_remove_device_from_group" msgid="3114694270949142228">"ລຶບອຸປະກອນອອກຈາກກຸ່ມ."</string>
     <string name="accessibility_add_device_to_group_with_name" msgid="1042306202917036858">"ເພີ່ມ <xliff:g id="DEVICE_NAME">%s</xliff:g> ໃສ່ກຸ່ມ."</string>
     <string name="accessibility_remove_device_from_group_with_name" msgid="5582015497111561027">"ລຶບ <xliff:g id="DEVICE_NAME">%s</xliff:g> ອອກຈາກກຸ່ມ."</string>
     <string name="accessibility_open_application" msgid="1749126077501259712">"ເປີດແອັບພລິເຄຊັນ."</string>
@@ -425,8 +423,7 @@
     <string name="quick_settings_cast_detail_empty_text" msgid="2846282280014617785">"​ບໍ່​ມີ​ອຸ​ປະ​ກອນ​ທີ່​ສາ​ມາດ​ໃຊ້​ໄດ້"</string>
     <string name="quick_settings_cast_no_network" msgid="3863016850468559522">"ບໍ່ມີການເຊື່ອມຕໍ່ Wi-Fi ຫຼື ອີເທີເນັດ"</string>
     <string name="quick_settings_cast_disconnect" msgid="4836025217838730930">"ຕັດການເຊື່ອມຕໍ່"</string>
-    <!-- no translation found for quick_settings_audio_current_input (8219735427828862612) -->
-    <skip />
+    <string name="quick_settings_audio_current_input" msgid="8219735427828862612">"ປັດຈຸບັນໄມແມ່ນ"</string>
     <string name="quick_settings_brightness_dialog_title" msgid="4980669966716685588">"ຄວາມແຈ້ງ"</string>
     <string name="quick_settings_inversion_label" msgid="3501527749494755688">"ການປີ້ນສີ"</string>
     <string name="quick_settings_color_correction_label" msgid="5636617913560474664">"ການແກ້ໄຂສີ"</string>
@@ -1386,7 +1383,6 @@
     <string name="media_output_dialog_multiple_devices" msgid="1093771040315422350">"ເລືອກ <xliff:g id="COUNT">%1$d</xliff:g> ອຸປະກອນແລ້ວ"</string>
     <string name="media_output_item_connected_state" msgid="297439499870755458">"ເຊື່ອມຕໍ່ແລ້ວ"</string>
     <string name="media_output_dialog_connect_failed" msgid="3080972621975339387">"ບໍ່ສາມາດສະຫຼັບໄດ້. ແຕະເພື່ອລອງໃໝ່."</string>
-    <string name="media_output_dialog_pairing_new" msgid="5098212763195577270">"ເຊື່ອມຕໍ່ຫາອຸປະກອນ"</string>
     <string name="media_output_dialog_button_connect_device" msgid="2819038239946643550">"ເຊື່ອມຕໍ່ອຸປະກອນ"</string>
     <string name="media_output_dialog_unknown_launch_app_name" msgid="1084899329829371336">"ແອັບທີ່ບໍ່ຮູ້ຈັກ"</string>
     <string name="media_output_dialog_button_stop_casting" msgid="6581379537930199189">"ຢຸດການສົ່ງສັນຍານ"</string>
@@ -1396,7 +1392,6 @@
     <string name="media_output_group_title_connected_speakers" msgid="3413876972919684479">"ລຳໂພງທີ່ເຊື່ອມຕໍ່ແລ້ວ"</string>
     <string name="media_output_group_title_speakers_and_displays" msgid="7169712332365659820">"ລຳໂພງ ແລະ ຈໍສະແດງຜົນ"</string>
     <string name="media_output_group_title_suggested" msgid="5097061363820410332">"ແນະນຳ"</string>
-    <string name="media_output_group_title_suggested_device" msgid="4157186235837903826">"ອຸປະກອນທີ່ແນະນຳ"</string>
     <string name="media_input_group_title" msgid="2057057473860783021">"ອິນພຸດ"</string>
     <string name="media_output_group_title" msgid="6789001895863332576">"ເອົ້າພຸດ"</string>
     <string name="media_output_end_session_dialog_summary" msgid="5954520685989877347">"ຢຸດເຊດຊັນທີ່ແບ່ງປັນຂອງທ່ານເພື່ອຍ້າຍມີເດຍໄປຫາອຸປະກອນອື່ນ"</string>

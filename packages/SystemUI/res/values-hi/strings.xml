@@ -21,8 +21,8 @@
     xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
     <string name="app_label" msgid="4811759950673118541">"सिस्‍टम यूआई"</string>
     <string name="battery_low_title" msgid="5319680173344341779">"क्या आपको बैटरी सेवर मोड चालू करना है?"</string>
-    <string name="battery_low_description" msgid="7848989602036547056">"आपकी बैटरी <xliff:g id="PERCENTAGE">%s</xliff:g> बची है. बैटरी सेवर मोड पर, गहरे रंग वाली थीम चालू होती है और बैकग्राउंड में चल रही गतिविधियों पर रोक लग जाती है. इसके अलावा, आपको सूचनाएं भी देरी से मिलती हैं."</string>
-    <string name="battery_low_intro" msgid="8033783734931200690">"बैटरी सेवर मोड पर, गहरे रंग वाली थीम चालू होती है और बैकग्राउंड में चल रही गतिविधियों पर रोक लग जाती है. इसके अलावा, आपको सूचनाएं भी देरी से मिलती हैं."</string>
+    <string name="battery_low_description" msgid="7848989602036547056">"आपके डिवाइस में <xliff:g id="PERCENTAGE">%s</xliff:g> बैटरी बची है. बैटरी सेवर मोड, गहरे रंग वाली थीम चालू करता है और बैकग्राउंड में होने वाली गतिविधियों को कम कर देता है. साथ ही, यह आपको देर में सूचनाएं दिखता है."</string>
+    <string name="battery_low_intro" msgid="8033783734931200690">"बैटरी सेवर मोड, गहरे रंग वाली थीम चालू करता है और बैकग्राउंड में होने वाली गतिविधियों को कम कर देता है. साथ ही, यह आपको देर में सूचनाएं दिखता है."</string>
     <string name="battery_low_percent_format" msgid="4276661262843170964">"<xliff:g id="PERCENTAGE">%s</xliff:g> शेष"</string>
     <string name="invalid_charger_title" msgid="938685362320735167">"यूएसबी के ज़रिए चार्ज नहीं किया जा सकता"</string>
     <string name="invalid_charger_text" msgid="2339310107232691577">"अपने डिवाइस के साथ मिलने वाले चार्जर का इस्तेमाल करें"</string>
@@ -180,8 +180,7 @@
     <string name="screen_capture_microphone_audio" msgid="1698835678818747741">"माइक्रोफ़ोन"</string>
     <string name="screen_capture_front_camera" msgid="1214647538302639358">"फ़्रंट कैमरा"</string>
     <string name="screen_capture_region_dimensions" msgid="2317064050253056256">"<xliff:g id="WIDTH">%1$d</xliff:g> x <xliff:g id="HEIGHT">%2$d</xliff:g>"</string>
-    <!-- no translation found for screen_share_privacy_indicator_stop_sharing (2297045039651417274) -->
-    <skip />
+    <string name="screen_share_privacy_indicator_stop_sharing" msgid="2297045039651417274">"शेयर करना बंद करें"</string>
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"स्क्रीन शेयर की जा रही है"</string>
     <string name="share_to_app_chip_accessibility_label_generic" msgid="5517431657924536133">"कॉन्टेंट शेयर करें"</string>
     <string name="share_to_app_stop_dialog_title" msgid="9212915050910250438">"स्क्रीन शेयर की जा रही है, क्या इसे बंद करना है?"</string>
@@ -317,8 +316,6 @@
     <string name="accessibility_cast_name" msgid="7344437925388773685">"<xliff:g id="CAST">%s</xliff:g> से कनेक्ट है."</string>
     <string name="accessibility_expand_group" msgid="521237935987978624">"ग्रुप को बड़ा करें."</string>
     <string name="accessibility_collapse_group" msgid="1842704016768329517">"ग्रुप को छोटा करें."</string>
-    <string name="accessibility_add_device_to_group" msgid="5446422960697860806">"डिवाइस को ग्रुप में जोड़ें."</string>
-    <string name="accessibility_remove_device_from_group" msgid="3114694270949142228">"डिवाइस को ग्रुप से हटाएं."</string>
     <string name="accessibility_add_device_to_group_with_name" msgid="1042306202917036858">"<xliff:g id="DEVICE_NAME">%s</xliff:g> को ग्रुप में जोड़ें."</string>
     <string name="accessibility_remove_device_from_group_with_name" msgid="5582015497111561027">"<xliff:g id="DEVICE_NAME">%s</xliff:g> को ग्रुप से हटाएं."</string>
     <string name="accessibility_open_application" msgid="1749126077501259712">"ऐप्लिकेशन खोलें."</string>
@@ -1387,7 +1384,6 @@
     <string name="media_output_dialog_multiple_devices" msgid="1093771040315422350">"<xliff:g id="COUNT">%1$d</xliff:g> डिवाइस चुने गए"</string>
     <string name="media_output_item_connected_state" msgid="297439499870755458">"कनेक्ट है"</string>
     <string name="media_output_dialog_connect_failed" msgid="3080972621975339387">"स्विच नहीं किया जा सकता. फिर से कोशिश करने के लिए टैप करें."</string>
-    <string name="media_output_dialog_pairing_new" msgid="5098212763195577270">"कोई डिवाइस कनेक्ट करें"</string>
     <string name="media_output_dialog_button_connect_device" msgid="2819038239946643550">"डिवाइस कनेक्ट करें"</string>
     <string name="media_output_dialog_unknown_launch_app_name" msgid="1084899329829371336">"अनजान ऐप्लिकेशन"</string>
     <string name="media_output_dialog_button_stop_casting" msgid="6581379537930199189">"कास्ट करना बंद करें"</string>
@@ -1397,7 +1393,6 @@
     <string name="media_output_group_title_connected_speakers" msgid="3413876972919684479">"कनेक्ट किए गए स्पीकर"</string>
     <string name="media_output_group_title_speakers_and_displays" msgid="7169712332365659820">"स्पीकर और डिसप्ले"</string>
     <string name="media_output_group_title_suggested" msgid="5097061363820410332">"सुझाया गया"</string>
-    <string name="media_output_group_title_suggested_device" msgid="4157186235837903826">"सुझाए गए डिवाइस"</string>
     <string name="media_input_group_title" msgid="2057057473860783021">"इनपुट"</string>
     <string name="media_output_group_title" msgid="6789001895863332576">"आउटपुट"</string>
     <string name="media_output_end_session_dialog_summary" msgid="5954520685989877347">"मीडिया को किसी दूसरे डिवाइस में ट्रांसफ़र करने के लिए, अपने शेयर किए गए सेशन को बंद करें"</string>

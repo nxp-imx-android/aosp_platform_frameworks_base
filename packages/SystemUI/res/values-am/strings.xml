@@ -21,8 +21,8 @@
     xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
     <string name="app_label" msgid="4811759950673118541">"የስርዓት UI"</string>
     <string name="battery_low_title" msgid="5319680173344341779">"ባትሪ ቆጣቢ ይብራ?"</string>
-    <string name="battery_low_description" msgid="7848989602036547056">"<xliff:g id="PERCENTAGE">%s</xliff:g> ቀሪ ባትሪ አለዎት። የባትሪ ኃይል ቆጣቢ ጠቆር ያለ ገጽታ ያበራል፣ የበስተጀርባ እንቅስቃሴን ይገድባል እና ማሳወቂያዎችን ያዘገያል።"</string>
-    <string name="battery_low_intro" msgid="8033783734931200690">"የባትሪ ኃይል ቆጣቢ ጠቆር ያለ ገጽታ ያበራል፣ የበስተጀርባ እንቅስቃሴን ይገድባል እና ማሳወቂያዎችን ያዘገያል።"</string>
+    <string name="battery_low_description" msgid="7848989602036547056">"<xliff:g id="PERCENTAGE">%s</xliff:g> ቀሪ ባትሪ አለዎት። የባትሪ ኃይል ቆጣቢ ጠቆር ያለ ገጽታን ያበራል፣ የዳራ እንቅስቃሴን ይገድባል እና ማሳወቂያዎችን ያዘገያል።"</string>
+    <string name="battery_low_intro" msgid="8033783734931200690">"የባትሪ ኃይል ቆጣቢ ጠቆር ያለ ገጽታን ያበራል፣ የዳራ እንቅስቃሴን ይገድባል እና ማሳወቂያዎችን ያዘገያል።"</string>
     <string name="battery_low_percent_format" msgid="4276661262843170964">"<xliff:g id="PERCENTAGE">%s</xliff:g> ይቀራል"</string>
     <string name="invalid_charger_title" msgid="938685362320735167">"በዩኤስቢ በኩል ኃይል መሙላት አይቻልም"</string>
     <string name="invalid_charger_text" msgid="2339310107232691577">"ከእርስዎ መሣሪያ ጋር የመጣውን ኃይል መሙያ ይጠቀሙ"</string>
@@ -180,8 +180,7 @@
     <string name="screen_capture_microphone_audio" msgid="1698835678818747741">"ማይክሮፎን"</string>
     <string name="screen_capture_front_camera" msgid="1214647538302639358">"የፊት ካሜራ"</string>
     <string name="screen_capture_region_dimensions" msgid="2317064050253056256">"<xliff:g id="WIDTH">%1$d</xliff:g> x <xliff:g id="HEIGHT">%2$d</xliff:g>"</string>
-    <!-- no translation found for screen_share_privacy_indicator_stop_sharing (2297045039651417274) -->
-    <skip />
+    <string name="screen_share_privacy_indicator_stop_sharing" msgid="2297045039651417274">"ማጋራት አቁም"</string>
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"ማያ ገፅን በማጋራት ላይ"</string>
     <string name="share_to_app_chip_accessibility_label_generic" msgid="5517431657924536133">"ይዘት በማጋራት ላይ"</string>
     <string name="share_to_app_stop_dialog_title" msgid="9212915050910250438">"ማያ ገፅን ማጋራት ይቁም?"</string>
@@ -317,8 +316,6 @@
     <string name="accessibility_cast_name" msgid="7344437925388773685">"ከ<xliff:g id="CAST">%s</xliff:g> ጋር ተገናኝቷል።"</string>
     <string name="accessibility_expand_group" msgid="521237935987978624">"ቡድንን ዘርጋ።"</string>
     <string name="accessibility_collapse_group" msgid="1842704016768329517">"ቡድን ሰብስብ።"</string>
-    <string name="accessibility_add_device_to_group" msgid="5446422960697860806">"መሣሪያን ወደ ቡድን አክል።"</string>
-    <string name="accessibility_remove_device_from_group" msgid="3114694270949142228">"መሣሪያን ከቡድን ላይ አስወግድ።"</string>
     <string name="accessibility_add_device_to_group_with_name" msgid="1042306202917036858">"<xliff:g id="DEVICE_NAME">%s</xliff:g>ን ወደ ቡድን አክል።"</string>
     <string name="accessibility_remove_device_from_group_with_name" msgid="5582015497111561027">"<xliff:g id="DEVICE_NAME">%s</xliff:g>ን ከቡድን አስወግድ።"</string>
     <string name="accessibility_open_application" msgid="1749126077501259712">"መተግበሪያ ክፈት።"</string>
@@ -1387,7 +1384,6 @@
     <string name="media_output_dialog_multiple_devices" msgid="1093771040315422350">"<xliff:g id="COUNT">%1$d</xliff:g> መሣሪያዎች ተመርጠዋል"</string>
     <string name="media_output_item_connected_state" msgid="297439499870755458">"ተገናኝቷል"</string>
     <string name="media_output_dialog_connect_failed" msgid="3080972621975339387">"መቀየር አይቻልም። እንደገና ለመሞከር መታ ያድርጉ።"</string>
-    <string name="media_output_dialog_pairing_new" msgid="5098212763195577270">"አንድ መሣሪያ ያገናኙ"</string>
     <string name="media_output_dialog_button_connect_device" msgid="2819038239946643550">"መሣሪያን አገናኝ"</string>
     <string name="media_output_dialog_unknown_launch_app_name" msgid="1084899329829371336">"የማይታወቅ መተግበሪያ"</string>
     <string name="media_output_dialog_button_stop_casting" msgid="6581379537930199189">"Cast ማድረግ አቁም"</string>
@@ -1397,7 +1393,6 @@
     <string name="media_output_group_title_connected_speakers" msgid="3413876972919684479">"የተገናኙ ድምፅ ማውጫዎች"</string>
     <string name="media_output_group_title_speakers_and_displays" msgid="7169712332365659820">"ድምፅ ማውጫዎች እና ማሳያዎች"</string>
     <string name="media_output_group_title_suggested" msgid="5097061363820410332">"በአስተያየት የተጠቆሙ"</string>
-    <string name="media_output_group_title_suggested_device" msgid="4157186235837903826">"የተጠቆሙ መሣሪያዎች"</string>
     <string name="media_input_group_title" msgid="2057057473860783021">"ግብዓት"</string>
     <string name="media_output_group_title" msgid="6789001895863332576">"ውጤት"</string>
     <string name="media_output_end_session_dialog_summary" msgid="5954520685989877347">"ሚዲያን ወደ ሌላ መሣሪያ ለማንቀሳቀስ የተጋራውን ክፍለ ጊዜዎን ያቁሙ"</string>

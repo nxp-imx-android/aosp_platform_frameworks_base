@@ -21,8 +21,8 @@
     xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
     <string name="app_label" msgid="4811759950673118541">"واسط کاربری سیستم"</string>
     <string name="battery_low_title" msgid="5319680173344341779">"«بهینه‌سازی باتری» روشن شود؟"</string>
-    <string name="battery_low_description" msgid="7848989602036547056">"<xliff:g id="PERCENTAGE">%s</xliff:g> از باتری‌تان باقی مانده است. «بهینه‌سازی باتری» زمینه تاریک را روشن می‌کند، فعالیت‌های پس‌زمینه را محدود می‌کند، و اعلان‌ها را به‌تأخیر می‌اندازد."</string>
-    <string name="battery_low_intro" msgid="8033783734931200690">"«بهینه‌سازی باتری» زمینه «تیره» را روشن می‌کند، فعالیت‌های پس‌زمینه را محدود می‌کند، و اعلان‌ها را به‌تأخیر می‌اندازد."</string>
+    <string name="battery_low_description" msgid="7848989602036547056">"‏‫‎<xliff:g id="PERCENTAGE">%s</xliff:g> از شارژ باتری باقی مانده است. «بهینه‌سازی باتری» «زمینه تیره» را روشن می‌کند، فعالیت‌های پس‌زمینه را محدود می‌کند، و اعلان‌ها را به‌تأخیر می‌اندازد."</string>
+    <string name="battery_low_intro" msgid="8033783734931200690">"«بهینه‌سازی باتری» «زمینه تیره» را روشن می‌کند، فعالیت‌های پس‌زمینه را محدود می‌کند، و اعلان‌ها را به‌تأخیر می‌اندازد."</string>
     <string name="battery_low_percent_format" msgid="4276661262843170964">"<xliff:g id="PERCENTAGE">%s</xliff:g> باقی مانده است"</string>
     <string name="invalid_charger_title" msgid="938685362320735167">"‏ازطریق USB شارژ نمی‌شود"</string>
     <string name="invalid_charger_text" msgid="2339310107232691577">"از شارژر ارائه‌شده با دستگاه استفاده کنید"</string>
@@ -180,8 +180,7 @@
     <string name="screen_capture_microphone_audio" msgid="1698835678818747741">"میکروفون"</string>
     <string name="screen_capture_front_camera" msgid="1214647538302639358">"دوربین جلو"</string>
     <string name="screen_capture_region_dimensions" msgid="2317064050253056256">"‪<xliff:g id="WIDTH">%1$d</xliff:g> × <xliff:g id="HEIGHT">%2$d</xliff:g>"</string>
-    <!-- no translation found for screen_share_privacy_indicator_stop_sharing (2297045039651417274) -->
-    <skip />
+    <string name="screen_share_privacy_indicator_stop_sharing" msgid="2297045039651417274">"توقف هم‌رسانی"</string>
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"درحال هم‌رسانی صفحه"</string>
     <string name="share_to_app_chip_accessibility_label_generic" msgid="5517431657924536133">"هم‌رسانی محتوا"</string>
     <string name="share_to_app_stop_dialog_title" msgid="9212915050910250438">"هم‌رسانی صفحه متوقف شود؟"</string>
@@ -317,8 +316,6 @@
     <string name="accessibility_cast_name" msgid="7344437925388773685">"به <xliff:g id="CAST">%s</xliff:g> متصل شد."</string>
     <string name="accessibility_expand_group" msgid="521237935987978624">"گروه را از هم باز می‌کند."</string>
     <string name="accessibility_collapse_group" msgid="1842704016768329517">"جمع کردن گروه."</string>
-    <string name="accessibility_add_device_to_group" msgid="5446422960697860806">"افزودن دستگاه به گروه."</string>
-    <string name="accessibility_remove_device_from_group" msgid="3114694270949142228">"حذف دستگاه از گروه."</string>
     <string name="accessibility_add_device_to_group_with_name" msgid="1042306202917036858">"افزودن <xliff:g id="DEVICE_NAME">%s</xliff:g> به گروه."</string>
     <string name="accessibility_remove_device_from_group_with_name" msgid="5582015497111561027">"برداشتن <xliff:g id="DEVICE_NAME">%s</xliff:g> از گروه."</string>
     <string name="accessibility_open_application" msgid="1749126077501259712">"برنامه را باز می‌کند."</string>
@@ -1387,7 +1384,6 @@
     <string name="media_output_dialog_multiple_devices" msgid="1093771040315422350">"<xliff:g id="COUNT">%1$d</xliff:g> دستگاه انتخاب شد"</string>
     <string name="media_output_item_connected_state" msgid="297439499870755458">"متصل‌شده"</string>
     <string name="media_output_dialog_connect_failed" msgid="3080972621975339387">"عوض نمی‌شود. برای تلاش مجدد تک‌ضرب بزنید."</string>
-    <string name="media_output_dialog_pairing_new" msgid="5098212763195577270">"متصل کردن دستگاه"</string>
     <string name="media_output_dialog_button_connect_device" msgid="2819038239946643550">"متصل کردن دستگاه"</string>
     <string name="media_output_dialog_unknown_launch_app_name" msgid="1084899329829371336">"برنامه ناشناس"</string>
     <string name="media_output_dialog_button_stop_casting" msgid="6581379537930199189">"توقف پخش محتوا"</string>
@@ -1397,7 +1393,6 @@
     <string name="media_output_group_title_connected_speakers" msgid="3413876972919684479">"بلندگوهای متصل‌شده"</string>
     <string name="media_output_group_title_speakers_and_displays" msgid="7169712332365659820">"بلندگوها و نمایشگرها"</string>
     <string name="media_output_group_title_suggested" msgid="5097061363820410332">"پیشنهادی"</string>
-    <string name="media_output_group_title_suggested_device" msgid="4157186235837903826">"دستگاه‌های پیشنهادی"</string>
     <string name="media_input_group_title" msgid="2057057473860783021">"ورودی"</string>
     <string name="media_output_group_title" msgid="6789001895863332576">"برونداد"</string>
     <string name="media_output_end_session_dialog_summary" msgid="5954520685989877347">"جلسه مشترک برای انتقال رسانه به دستگاهی دیگر متوقف می‌شود"</string>
@@ -1583,7 +1578,7 @@
     <string name="privacy_dialog_expand_action" msgid="9129262348628331377">"ازهم بازکردن و نمایش گزینه‌ها"</string>
     <string name="privacy_dialog_collapse_action" msgid="277419962019466347">"جمع کردن"</string>
     <string name="privacy_dialog_close_app_button" msgid="8006250171305878606">"بستن این برنامه"</string>
-    <string name="privacy_dialog_close_app_message" msgid="1316408652526310985">"<xliff:g id="APP_NAME">%1$s</xliff:g> بسته شد"</string>
+    <string name="privacy_dialog_close_app_message" msgid="1316408652526310985">"«<xliff:g id="APP_NAME">%1$s</xliff:g>» بسته است"</string>
     <string name="privacy_dialog_manage_service" msgid="8320590856621823604">"مدیریت سرویس"</string>
     <string name="privacy_dialog_manage_permissions" msgid="2543451567190470413">"مدیریت دسترسی"</string>
     <string name="privacy_dialog_active_call_usage" msgid="7858746847946397562">"تماس تلفنی از آن استفاده می‌کند"</string>
