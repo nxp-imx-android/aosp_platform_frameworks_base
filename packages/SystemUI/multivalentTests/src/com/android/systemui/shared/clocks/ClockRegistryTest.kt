@@ -189,7 +189,6 @@ class ClockRegistryTest : SysuiTestCase() {
                     scope = scope.backgroundScope,
                     mainDispatcher = dispatcher,
                     bgDispatcher = dispatcher,
-                    isEnabled = true,
                     handleAllUsers = true,
                     defaultClockProvider = fakeDefaultProvider,
                     keepAllLoaded = false,

@@ -64,7 +64,7 @@ open class FlexClockTextViewController(
     override var onViewMaxSizeChanged by view::onViewMaxSizeChanged
 
     override val config = ClockFaceConfig()
-    var dozeState: DefaultClockController.AnimationState? = null
+    var dozeState: AnimationState? = null
 
     init {
         view.layoutParams =
@@ -144,7 +144,7 @@ open class FlexClockTextViewController(
 
             override fun doze(fraction: Float) {
                 if (dozeState == null) {
-                    dozeState = DefaultClockController.AnimationState(fraction)
+                    dozeState = AnimationState(fraction)
                     view.animateDoze(dozeState!!.isActive, false)
                 } else {
                     val (hasChanged, hasJumped) = dozeState!!.update(fraction)

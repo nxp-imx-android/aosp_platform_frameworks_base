@@ -90,7 +90,6 @@ open class ClockRegistry(
     val scope: CoroutineScope,
     val mainDispatcher: CoroutineDispatcher,
     val bgDispatcher: CoroutineDispatcher,
-    val isEnabled: Boolean,
     val handleAllUsers: Boolean,
     defaultClockProvider: ClockProvider,
     val fallbackClockId: ClockId = DEFAULT_CLOCK_ID,
@@ -459,7 +458,7 @@ open class ClockRegistry(
     }
 
     fun registerListeners() {
-        if (!isEnabled || isRegistered) {
+        if (isRegistered) {
             return
         }
 
@@ -608,7 +607,6 @@ open class ClockRegistry(
 
     fun getClocks(includeDeprecated: Boolean = false): List<ClockMetadata> {
         return when {
-            !isEnabled -> listOf(availableClocks[DEFAULT_CLOCK_ID]!!.metadata)
             includeDeprecated -> availableClocks.map { (_, clock) -> clock.metadata }
             else -> availableClocks.map { (_, clock) -> clock.metadata }.filter { !it.isDeprecated }
         }
@@ -680,11 +678,6 @@ open class ClockRegistry(
     fun createCurrentClock(ctx: Context): ClockController {
         val clockId = currentClockId
         if (clockId.isEmpty()) {
-            return createDefaultClock(ctx) { attachEndChangeTrace(this) }
-        }
-
-        if (!isEnabled) {
-            logger.i("Customized clocks disabled")
             return createDefaultClock(ctx) { attachEndChangeTrace(this) }
         }
 

@@ -178,10 +178,7 @@ class CustomizationProviderTest : SysuiTestCase() {
                 userHandle = UserHandle.SYSTEM,
             )
         val featureFlags =
-            FakeFeatureFlags().apply {
-                set(Flags.LOCKSCREEN_CUSTOM_CLOCKS, true)
-                set(Flags.WALLPAPER_FULLSCREEN_PREVIEW, true)
-            }
+            FakeFeatureFlags().apply { set(Flags.WALLPAPER_FULLSCREEN_PREVIEW, true) }
         underTest.interactor =
             KeyguardQuickAffordanceInteractor(
                 keyguardInteractor =
