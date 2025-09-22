@@ -594,7 +594,12 @@ public final class TransitionInfo implements Parcelable {
     public void releaseAllSurfaces() {
         releaseAnimSurfaces();
         for (int i = mChanges.size() - 1; i >= 0; --i) {
-            mChanges.get(i).getLeash().release();
+            final Change c = mChanges.get(i);
+            c.getLeash().release();
+            if (c.mTopCompatActivityLeash != null) {
+                c.mTopCompatActivityLeash.release();
+                c.mTopCompatActivityLeash = null;
+            }
         }
     }
 
@@ -656,6 +661,12 @@ public final class TransitionInfo implements Parcelable {
         private SurfaceControl mSnapshot = null;
         private float mSnapshotLuma;
         private ActivityTransitionInfo mActivityTransitionInfo = null;
+        /**
+         * This is not null if the change is not activity level and it's required by some
+         * app compat treatment (e.g. Letterboxing in Shell)
+         */
+        @Nullable
+        private SurfaceControl mTopCompatActivityLeash = null;
         private AnimationOptions mAnimationOptions = null;
         private IBinder mTaskFragmentToken = null;
 
@@ -688,6 +699,7 @@ public final class TransitionInfo implements Parcelable {
             mSnapshot = in.readTypedObject(SurfaceControl.CREATOR);
             mSnapshotLuma = in.readFloat();
             mActivityTransitionInfo = in.readTypedObject(ActivityTransitionInfo.CREATOR);
+            mTopCompatActivityLeash = in.readTypedObject(SurfaceControl.CREATOR);
             mAnimationOptions = in.readTypedObject(AnimationOptions.CREATOR);
             mTaskFragmentToken = in.readStrongBinder();
         }
@@ -716,6 +728,7 @@ public final class TransitionInfo implements Parcelable {
             if (mActivityTransitionInfo != null) {
                 out.mActivityTransitionInfo = new ActivityTransitionInfo(mActivityTransitionInfo);
             }
+            out.mTopCompatActivityLeash = mTopCompatActivityLeash;
             out.mAnimationOptions = mAnimationOptions;
             out.mTaskFragmentToken = mTaskFragmentToken;
             return out;
@@ -823,6 +836,13 @@ public final class TransitionInfo implements Parcelable {
         /** Sets the activity-specific transition information. Container must be an Activity. */
         public void setActivityTransitionInfo(@Nullable ActivityTransitionInfo info) {
             mActivityTransitionInfo = info;
+        }
+
+        /**
+         * Sets the app compat activity-specific leash.
+         */
+        public void setTopCompatActivityLeash(@Nullable SurfaceControl topCompatActivityLeash) {
+            mTopCompatActivityLeash = topCompatActivityLeash;
         }
 
         /**
@@ -997,6 +1017,15 @@ public final class TransitionInfo implements Parcelable {
         }
 
         /**
+         * @return the app compat activity-specific leash, or {@code null} if this container is
+         * not a Task.
+         */
+        @Nullable
+        public SurfaceControl getTopCompatActivityLeash() {
+            return mTopCompatActivityLeash;
+        }
+
+        /**
          * Returns the {@link AnimationOptions}.
          */
         @Nullable
@@ -1038,6 +1067,7 @@ public final class TransitionInfo implements Parcelable {
             dest.writeTypedObject(mSnapshot, flags);
             dest.writeFloat(mSnapshotLuma);
             dest.writeTypedObject(mActivityTransitionInfo, flags);
+            dest.writeTypedObject(mTopCompatActivityLeash, flags);
             dest.writeTypedObject(mAnimationOptions, flags);
             dest.writeStrongBinder(mTaskFragmentToken);
         }
@@ -1111,6 +1141,9 @@ public final class TransitionInfo implements Parcelable {
             }
             if (mActivityTransitionInfo != null) {
                 sb.append(" activity=").append(mActivityTransitionInfo);
+            }
+            if (mTopCompatActivityLeash != null) {
+                sb.append(" topCompatActivityLeash=").append(mTopCompatActivityLeash);
             }
             if (mTaskInfo != null) {
                 sb.append(" taskParent=");
