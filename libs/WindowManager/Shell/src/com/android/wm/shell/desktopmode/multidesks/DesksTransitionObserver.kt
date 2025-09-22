@@ -701,7 +701,8 @@ class DesksTransitionObserver(
 
     private fun TransitionInfo.desktopWallpaperChanges(): List<TransitionInfo.Change> =
         changes.filter { c ->
-            c.container == desktopWallpaperActivityTokenProvider.getToken(c.endDisplayId)
+            val token = desktopWallpaperActivityTokenProvider.getToken(c.endDisplayId)
+            token != null && c.container == token
         }
 
     private fun logD(msg: String, vararg arguments: Any?) {
