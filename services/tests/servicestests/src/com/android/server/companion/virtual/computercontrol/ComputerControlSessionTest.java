@@ -175,6 +175,9 @@ public class ComputerControlSessionTest {
         when(mVirtualDevice.createVirtualDpad(any(), any())).thenReturn(mVirtualDpad);
         when(mInjector.getLongPressTimeoutMillis()).thenReturn(
                 LONG_PRESS_STEP_COUNT * TOUCH_EVENT_DELAY_MS);
+        // Keeping the global timeout > stability hint timeouts to avoid "session closure" affecting
+        // tests checking stability hints.
+        when(mInjector.getMaxSessionDurationMillis()).thenReturn(10000L);
     }
 
     @After
@@ -591,6 +594,14 @@ public class ComputerControlSessionTest {
 
         assertThrows(IllegalStateException.class,
                 () -> mSession.setStabilityListener(mStabilityListener));
+    }
+
+    @Test
+    public void sessionCloses_afterGlobalTimeout() throws Exception {
+        when(mInjector.getMaxSessionDurationMillis()).thenReturn(100L);
+        createComputerControlSession(mDefaultParams);
+
+        verify(mOnClosedListener, timeout(2 * 100L)).onClosed(mSession);
     }
 
     private void createComputerControlSession(ComputerControlSessionParams params) {

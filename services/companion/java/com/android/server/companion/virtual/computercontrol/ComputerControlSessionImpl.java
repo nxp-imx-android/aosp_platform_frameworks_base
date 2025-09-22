@@ -97,6 +97,9 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
 
     private static final String TAG = "ComputerControlSession";
 
+    public static final long GLOBAL_SESSION_TIMEOUT_DURATION_MS =
+            TimeUnit.MILLISECONDS.convert(360, TimeUnit.MINUTES);
+
     private static final String CUSTOM_BLOCKED_APP_PACKAGE = "com.android.virtualdevicemanager";
 
     private static final ComponentName CUSTOM_BLOCKED_APP_ACTIVITY = new ComponentName(
@@ -154,6 +157,7 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
 
     private ScheduledFuture<?> mSwipeFuture;
     private ScheduledFuture<?> mInsertTextFuture;
+    private ScheduledFuture<?> mCloseSessionFuture;
 
     @GuardedBy("mStabilityCalculatorLock")
     private StabilityCalculator mStabilityCalculator;
@@ -284,6 +288,7 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
                     virtualTouchscreenConfig, new Binder(touchscreenName));
 
             mAppToken.linkToDeath(this, 0);
+            startSessionCloseGlobalTimeout();
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }
@@ -529,6 +534,9 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
 
     @Override
     public void close() throws RemoteException {
+        cancelOngoingKeyGestures();
+        cancelOngoingTouchGestures();
+        cancelPendingCloseSession();
         clearStabilityCalculator();
         mVirtualDevice.close();
         mAppToken.unlinkToDeath(this, 0);
@@ -610,6 +618,17 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
                 TimeUnit.MILLISECONDS);
     }
 
+    private void startSessionCloseGlobalTimeout() {
+        mCloseSessionFuture = mScheduler.schedule(() -> {
+            try {
+                close();
+            } catch (RemoteException e) {
+                throw e.rethrowFromSystemServer();
+            }
+        },
+        mInjector.getMaxSessionDurationMillis(), TimeUnit.MILLISECONDS);
+    }
+
     private void cancelOngoingKeyGestures() {
         if (mInsertTextFuture != null) {
             mInsertTextFuture.cancel(false);
@@ -621,6 +640,13 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
         if (mSwipeFuture != null && mSwipeFuture.cancel(false)) {
             mVirtualTouchscreen.sendTouchEvent(
                     createTouchEvent(0, 0, VirtualTouchEvent.ACTION_CANCEL));
+        }
+    }
+
+    private void cancelPendingCloseSession() {
+        if (mCloseSessionFuture != null) {
+            mCloseSessionFuture.cancel(false);
+            mCloseSessionFuture = null;
         }
     }
 
@@ -800,6 +826,10 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
 
         public void moveAllTasks(int fromDisplayId, int toDisplayId) {
             mActivityTaskManagerInternal.moveAllTasks(fromDisplayId, toDisplayId);
+        }
+
+        public long getMaxSessionDurationMillis() {
+            return GLOBAL_SESSION_TIMEOUT_DURATION_MS;
         }
     }
 }
