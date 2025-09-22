@@ -21,7 +21,7 @@ import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import android.testing.AndroidTestingRunner
 import androidx.test.filters.SmallTest
-import com.android.internal.hidden_from_bootclasspath.com.android.window.flags.Flags
+import com.android.window.flags.Flags
 import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.compatui.letterbox.LetterboxControllerStrategy.LetterboxMode
 import com.android.wm.shell.compatui.letterbox.roundedcorners.RoundedCornersLetterboxController
