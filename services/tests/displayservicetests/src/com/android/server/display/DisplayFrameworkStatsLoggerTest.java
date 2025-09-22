@@ -20,8 +20,6 @@ import static com.android.dx.mockito.inline.extended.ExtendedMockito.mockitoSess
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.collection.IsIterableContainingInAnyOrder.containsInAnyOrder;
 import static org.mockito.Mockito.times;
 
 import android.hardware.display.DisplayManagerGlobal;
@@ -140,6 +138,7 @@ public class DisplayFrameworkStatsLoggerTest {
         uidMap.put(1002, DisplayManagerGlobal.EVENT_DISPLAY_ADDED
                 | DisplayManagerGlobal.EVENT_DISPLAY_REMOVED);
         uidMap.put(1003, DisplayManagerGlobal.EVENT_DISPLAY_REMOVED);
+        uidMap.put(1004, DisplayManagerGlobal.EVENT_DISPLAY_REMOVED);
         ArgumentCaptor<Integer> protoTypeCaptor = ArgumentCaptor.forClass(Integer.class);
         ArgumentCaptor<Integer> countCaptor = ArgumentCaptor.forClass(Integer.class);
 
@@ -154,13 +153,17 @@ public class DisplayFrameworkStatsLoggerTest {
         ), times(2));
 
         // Assert that both events were logged.
-        assertThat(protoTypeCaptor.getAllValues(), containsInAnyOrder(
-                FrameworkStatsLog.DISPLAY_EVENT_CALLBACK_OCCURRED__EVENT_TYPE__TYPE_DISPLAY_ADDED,
-                FrameworkStatsLog.DISPLAY_EVENT_CALLBACK_OCCURRED__EVENT_TYPE__TYPE_DISPLAY_REMOVED
-        ));
+        assertEquals(
+                List.of(
+                    FrameworkStatsLog
+                            .DISPLAY_EVENT_CALLBACK_OCCURRED__EVENT_TYPE__TYPE_DISPLAY_ADDED,
+                    FrameworkStatsLog
+                            .DISPLAY_EVENT_CALLBACK_OCCURRED__EVENT_TYPE__TYPE_DISPLAY_REMOVED
+                ),
+                protoTypeCaptor.getAllValues());
 
         // Assert that both were logged with correct count
-        assertEquals(List.of(2, 2), countCaptor.getAllValues());
+        assertEquals(List.of(2, 3), countCaptor.getAllValues());
     }
 
     @Test

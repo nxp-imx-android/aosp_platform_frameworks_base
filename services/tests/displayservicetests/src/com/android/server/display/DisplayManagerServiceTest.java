@@ -145,6 +145,9 @@ import android.os.TestLooperManager;
 import android.os.UserHandle;
 import android.os.UserManager;
 import android.os.test.FakePermissionEnforcer;
+import android.platform.test.annotations.RequiresFlagsEnabled;
+import android.platform.test.flag.junit.CheckFlagsRule;
+import android.platform.test.flag.junit.DeviceFlagsValueProvider;
 import android.platform.test.flag.junit.SetFlagsRule;
 import android.provider.Settings;
 import android.provider.Settings.SettingNotFoundException;
@@ -184,6 +187,7 @@ import com.android.server.display.DisplayManagerService.SyncRoot;
 import com.android.server.display.config.HdrBrightnessData;
 import com.android.server.display.config.SensorData;
 import com.android.server.display.feature.DisplayManagerFlags;
+import com.android.server.display.feature.flags.Flags;
 import com.android.server.display.layout.Layout;
 import com.android.server.display.notifications.DisplayNotificationManager;
 import com.android.server.display.plugin.PluginManager;
@@ -268,6 +272,13 @@ public class DisplayManagerServiceTest {
     private static final String DISPLAY_GROUP_EVENT_CHANGED = "DISPLAY_GROUP_EVENT_CHANGED";
     private static final String TOPOLOGY_CHANGED_EVENT = "TOPOLOGY_CHANGED_EVENT";
 
+    // For CallbackRecord tests
+    private DisplayManagerService.CallbackRecord mCallbackRecord;
+    private static final int CALLBACK_RECORD_PID = 1234;
+    private static final int CALLBACK_RECORD_UID = 5678;
+    private static final int DISPLAY_ID_1 = 1;
+    private static final int DISPLAY_ID_2 = 2;
+
     @Rule(order = 0)
     public TestRule compatChangeRule = new PlatformCompatChangeRule();
     @Rule(order = 1)
@@ -275,6 +286,9 @@ public class DisplayManagerServiceTest {
     @Rule
     public SetFlagsRule mSetFlagsRule =
             new SetFlagsRule(SetFlagsRule.DefaultInitValueType.DEVICE_DEFAULT);
+    @Rule
+    public final CheckFlagsRule mCheckFlagsRule =
+            DeviceFlagsValueProvider.createCheckFlagsRule();
     @Rule
     public FakeSettingsProviderRule mSettingsProviderRule = FakeSettingsProvider.rule();
 
@@ -525,6 +539,14 @@ public class DisplayManagerServiceTest {
         // Disable binder caches in this process.
         PropertyInvalidatedCache.disableForTestMode();
         setUpDisplay();
+
+        // Setup for CallbackRecord tests
+        IDisplayManagerCallback mockCallback = mock(IDisplayManagerCallback.class);
+        IBinder mockBinder = mock(IBinder.class);
+        when(mockCallback.asBinder()).thenReturn(mockBinder);
+        mCallbackRecord = new DisplayManagerService(mContext, mBasicInjector).new CallbackRecord(
+                CALLBACK_RECORD_PID, CALLBACK_RECORD_UID,
+                mockCallback, -1L);
     }
 
     @After
@@ -4786,6 +4808,180 @@ public class DisplayManagerServiceTest {
         assertThrows(SecurityException.class,
                 () -> displayManagerBinderService.setBrightnessByUnit(Display.DEFAULT_DISPLAY, 0.3f,
                         BRIGHTNESS_UNIT_PERCENTAGE));
+    }
+
+    @Test
+    @RequiresFlagsEnabled(Flags.FLAG_ENABLE_DISPLAY_EVENT_MERGING)
+    public void testAddEvent_mergingEnabled_mergeSimpleEvents() {
+        // Add two different, simple, mergeable events for the same display.
+        int addedMask1 = mCallbackRecord.addDisplayEvents(DISPLAY_ID_1,
+                DisplayManagerGlobal.EVENT_DISPLAY_BASIC_CHANGED);
+        int addedMask2 = mCallbackRecord.addDisplayEvents(DISPLAY_ID_1,
+                DisplayManagerGlobal.EVENT_DISPLAY_BRIGHTNESS_CHANGED);
+
+        assertEquals("First call should add the full event mask",
+                DisplayManagerGlobal.EVENT_DISPLAY_BASIC_CHANGED, addedMask1);
+        assertEquals("Second call should only report the newly added event",
+                DisplayManagerGlobal.EVENT_DISPLAY_BRIGHTNESS_CHANGED, addedMask2);
+
+        ArrayList<DisplayManagerService.CallbackRecord.Event> pendingEvents =
+                mCallbackRecord.mPendingDisplayEvents;
+        assertNotNull(pendingEvents);
+        assertEquals("Two simple events should be merged", 1, pendingEvents.size());
+
+        int expectedMask = DisplayManagerGlobal.EVENT_DISPLAY_BASIC_CHANGED
+                | DisplayManagerGlobal.EVENT_DISPLAY_BRIGHTNESS_CHANGED;
+        assertEquals(expectedMask, pendingEvents.get(0).eventMask());
+    }
+
+    @Test
+    @RequiresFlagsEnabled(Flags.FLAG_ENABLE_DISPLAY_EVENT_MERGING)
+    public void testAddEvent_mergingEnabled_noMergeForDifferentDisplays() {
+        // Add events for two different displays.
+        int addedMask1 = mCallbackRecord.addDisplayEvents(DISPLAY_ID_1,
+                DisplayManagerGlobal.EVENT_DISPLAY_BASIC_CHANGED);
+        int addedMask2 = mCallbackRecord.addDisplayEvents(DISPLAY_ID_2,
+                DisplayManagerGlobal.EVENT_DISPLAY_BASIC_CHANGED);
+
+        assertEquals("First event should be fully added",
+                DisplayManagerGlobal.EVENT_DISPLAY_BASIC_CHANGED, addedMask1);
+        assertEquals("Second event for a different display should be fully added",
+                DisplayManagerGlobal.EVENT_DISPLAY_BASIC_CHANGED, addedMask2);
+
+        ArrayList<DisplayManagerService.CallbackRecord.Event> pendingEvents =
+                mCallbackRecord.mPendingDisplayEvents;
+        assertNotNull(pendingEvents);
+        assertEquals("Events for different displays should not be merged", 2,
+                pendingEvents.size());
+    }
+
+    @Test
+    @RequiresFlagsEnabled(Flags.FLAG_ENABLE_DISPLAY_EVENT_MERGING)
+    public void testAddEvent_mergingEnabled_mergeWithInterleavedEvents() {
+        // Add events for Display 1, then Display 2, then Display 1 again.
+        int addedMask1 = mCallbackRecord.addDisplayEvents(DISPLAY_ID_1,
+                DisplayManagerGlobal.EVENT_DISPLAY_BASIC_CHANGED);
+        int addedMask2 = mCallbackRecord.addDisplayEvents(DISPLAY_ID_2,
+                DisplayManagerGlobal.EVENT_DISPLAY_BRIGHTNESS_CHANGED);
+        int addedMask3 = mCallbackRecord.addDisplayEvents(DISPLAY_ID_1,
+                DisplayManagerGlobal.EVENT_DISPLAY_REFRESH_RATE_CHANGED);
+
+        assertEquals(DisplayManagerGlobal.EVENT_DISPLAY_BASIC_CHANGED, addedMask1);
+        assertEquals(DisplayManagerGlobal.EVENT_DISPLAY_BRIGHTNESS_CHANGED, addedMask2);
+        assertEquals("Third event should merge and report only the new event type",
+                DisplayManagerGlobal.EVENT_DISPLAY_REFRESH_RATE_CHANGED, addedMask3);
+
+        ArrayList<DisplayManagerService.CallbackRecord.Event> pendingEvents =
+                mCallbackRecord.mPendingDisplayEvents;
+        assertNotNull(pendingEvents);
+        assertEquals("Interleaved events for the same display should be merged", 2,
+                pendingEvents.size());
+
+        // The first event for DISPLAY_ID_1 should be updated in place.
+        int expectedMask = DisplayManagerGlobal.EVENT_DISPLAY_BASIC_CHANGED
+                | DisplayManagerGlobal.EVENT_DISPLAY_REFRESH_RATE_CHANGED;
+        assertEquals(DISPLAY_ID_1, pendingEvents.get(0).displayId());
+        assertEquals(expectedMask, pendingEvents.get(0).eventMask());
+        assertEquals(DISPLAY_ID_2, pendingEvents.get(1).displayId());
+    }
+
+    @Test
+    @RequiresFlagsEnabled(Flags.FLAG_ENABLE_DISPLAY_EVENT_MERGING)
+    public void testAddEvent_mergingEnabled_noMergeForCriticalEvents() {
+        // Add two different, non-mergeable events.
+        int addedMask1 = mCallbackRecord.addDisplayEvents(DISPLAY_ID_1,
+                DisplayManagerGlobal.EVENT_DISPLAY_ADDED);
+        int addedMask2 = mCallbackRecord.addDisplayEvents(DISPLAY_ID_1,
+                DisplayManagerGlobal.EVENT_DISPLAY_REMOVED);
+
+        assertEquals(DisplayManagerGlobal.EVENT_DISPLAY_ADDED, addedMask1);
+        assertEquals("A new critical event should not merge and return its full mask",
+                DisplayManagerGlobal.EVENT_DISPLAY_REMOVED, addedMask2);
+
+        ArrayList<DisplayManagerService.CallbackRecord.Event> pendingEvents =
+                mCallbackRecord.mPendingDisplayEvents;
+        assertNotNull(pendingEvents);
+        assertEquals("Critical (non-mergeable) events should not be merged", 2,
+                pendingEvents.size());
+        assertEquals(DisplayManagerGlobal.EVENT_DISPLAY_ADDED, pendingEvents.get(0).eventMask());
+        assertEquals(DisplayManagerGlobal.EVENT_DISPLAY_REMOVED, pendingEvents.get(1).eventMask());
+    }
+
+    @Test
+    @RequiresFlagsEnabled(Flags.FLAG_ENABLE_DISPLAY_EVENT_MERGING)
+    public void testAddEvent_mergingEnabled_mergeSimpleIntoCritical_criticalBeforeSimple() {
+        // Add a simple event after a critical one.
+        int addedMask1 = mCallbackRecord.addDisplayEvents(DISPLAY_ID_1,
+                DisplayManagerGlobal.EVENT_DISPLAY_ADDED);
+        int addedMask2 = mCallbackRecord.addDisplayEvents(DISPLAY_ID_1,
+                DisplayManagerGlobal.EVENT_DISPLAY_BASIC_CHANGED);
+
+        assertEquals(DisplayManagerGlobal.EVENT_DISPLAY_ADDED, addedMask1);
+        assertEquals("Simple event should merge and report itself as newly added",
+                DisplayManagerGlobal.EVENT_DISPLAY_BASIC_CHANGED, addedMask2);
+
+        ArrayList<DisplayManagerService.CallbackRecord.Event> pendingEvents =
+                mCallbackRecord.mPendingDisplayEvents;
+        assertNotNull(pendingEvents);
+        assertEquals("A simple event should merge into a preceding critical event", 1,
+                pendingEvents.size());
+
+        int expectedMask = DisplayManagerGlobal.EVENT_DISPLAY_ADDED
+                | DisplayManagerGlobal.EVENT_DISPLAY_BASIC_CHANGED;
+        assertEquals(expectedMask, pendingEvents.get(0).eventMask());
+    }
+
+    @Test
+    @RequiresFlagsEnabled(Flags.FLAG_ENABLE_DISPLAY_EVENT_MERGING)
+    public void testAddEvent_mergingEnabled_noMergeCriticalIntoSimple_simpleBeforeCritical() {
+        // Add a critical event after a simple one.
+        int addedMask1 = mCallbackRecord.addDisplayEvents(DISPLAY_ID_1,
+                DisplayManagerGlobal.EVENT_DISPLAY_BASIC_CHANGED);
+        int addedMask2 = mCallbackRecord.addDisplayEvents(DISPLAY_ID_1,
+                DisplayManagerGlobal.EVENT_DISPLAY_BASIC_CHANGED
+                | DisplayManagerGlobal.EVENT_DISPLAY_REMOVED);
+
+        assertEquals(DisplayManagerGlobal.EVENT_DISPLAY_BASIC_CHANGED, addedMask1);
+        assertEquals("EVENT_DISPLAY_BASIC_CHANGED should be merged",
+                DisplayManagerGlobal.EVENT_DISPLAY_REMOVED, addedMask2);
+
+        ArrayList<DisplayManagerService.CallbackRecord.Event> pendingEvents =
+                mCallbackRecord.mPendingDisplayEvents;
+        assertNotNull(pendingEvents);
+        assertEquals("A critical event should merge into a preceding simple event", 1,
+                pendingEvents.size());
+
+        int expectedMask = DisplayManagerGlobal.EVENT_DISPLAY_REMOVED
+                | DisplayManagerGlobal.EVENT_DISPLAY_BASIC_CHANGED;
+        assertEquals(expectedMask, pendingEvents.get(0).eventMask());
+    }
+
+    @Test
+    @RequiresFlagsEnabled(Flags.FLAG_ENABLE_DISPLAY_EVENT_MERGING)
+    public void testAddEvent_mergingEnabled_mergeMultipleCombinedMasks() {
+        // Add two events, both with combined masks of simple events.
+        int addedMask1 = mCallbackRecord.addDisplayEvents(DISPLAY_ID_1,
+                DisplayManagerGlobal.EVENT_DISPLAY_BASIC_CHANGED
+                        | DisplayManagerGlobal.EVENT_DISPLAY_BRIGHTNESS_CHANGED);
+        int addedMask2 = mCallbackRecord.addDisplayEvents(DISPLAY_ID_1,
+                DisplayManagerGlobal.EVENT_DISPLAY_BRIGHTNESS_CHANGED
+                        | DisplayManagerGlobal.EVENT_DISPLAY_REFRESH_RATE_CHANGED);
+
+        assertEquals(DisplayManagerGlobal.EVENT_DISPLAY_BASIC_CHANGED
+                | DisplayManagerGlobal.EVENT_DISPLAY_BRIGHTNESS_CHANGED, addedMask1);
+        assertEquals("Should only report the truly new event type",
+                DisplayManagerGlobal.EVENT_DISPLAY_REFRESH_RATE_CHANGED, addedMask2);
+
+        ArrayList<DisplayManagerService.CallbackRecord.Event> pendingEvents =
+                mCallbackRecord.mPendingDisplayEvents;
+        assertNotNull(pendingEvents);
+        assertEquals("Two combined masks of simple events should merge", 1,
+                pendingEvents.size());
+
+        int expectedMask = DisplayManagerGlobal.EVENT_DISPLAY_BASIC_CHANGED
+                | DisplayManagerGlobal.EVENT_DISPLAY_BRIGHTNESS_CHANGED
+                | DisplayManagerGlobal.EVENT_DISPLAY_REFRESH_RATE_CHANGED;
+        assertEquals(expectedMask, pendingEvents.get(0).eventMask());
     }
 
     private void initDisplayPowerController(DisplayManagerInternal localService) {

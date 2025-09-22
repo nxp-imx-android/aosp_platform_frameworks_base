@@ -26,7 +26,9 @@ import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import android.content.Context;
@@ -170,6 +172,68 @@ public class DisplayManagerGlobalTest {
         callback.onDisplayEvent(displayId, EVENT_DISPLAY_STATE_CHANGED);
         waitForHandler();
         Mockito.verify(mDisplayListener).onDisplayChanged(eq(displayId));
+        Mockito.verifyNoMoreInteractions(mDisplayListener);
+    }
+
+    @Test
+    @RequiresFlagsEnabled({
+            Flags.FLAG_DISPLAY_LISTENER_PERFORMANCE_IMPROVEMENTS,
+            Flags.FLAG_COMMITTED_STATE_SEPARATE_EVENT
+    })
+    public void testDisplayEventsAreHandledInCorrectOrder() throws RemoteException {
+        // Register a listener for all possible events.
+        long allInternalEvents =
+                DisplayManagerGlobal.INTERNAL_EVENT_FLAG_TOPOLOGY_UPDATED
+                        | DisplayManagerGlobal.INTERNAL_EVENT_FLAG_DISPLAY_CONNECTION_CHANGED
+                        | DisplayManagerGlobal.INTERNAL_EVENT_FLAG_DISPLAY_ADDED
+                        | DisplayManagerGlobal.INTERNAL_EVENT_FLAG_DISPLAY_BASIC_CHANGED
+                        | DisplayManagerGlobal.INTERNAL_EVENT_FLAG_DISPLAY_REFRESH_RATE
+                        | DisplayManagerGlobal.INTERNAL_EVENT_FLAG_DISPLAY_STATE
+                        | DisplayManagerGlobal.INTERNAL_EVENT_FLAG_DISPLAY_COMMITTED_STATE_CHANGED
+                        | DisplayManagerGlobal.INTERNAL_EVENT_FLAG_DISPLAY_HDR_SDR_RATIO_CHANGED
+                        | DisplayManagerGlobal.INTERNAL_EVENT_FLAG_DISPLAY_BRIGHTNESS_CHANGED
+                        | DisplayManagerGlobal.INTERNAL_EVENT_FLAG_DISPLAY_REMOVED;
+
+        mDisplayManagerGlobal.registerDisplayListener(mDisplayListener, mHandler,
+                allInternalEvents, /* packageName= */ null,
+                /* isEventFilterExplicit */ true);
+        Mockito.verify(mDisplayManager)
+                .registerCallbackWithEventMask(mCallbackCaptor.capture(), anyLong());
+        IDisplayManagerCallback callback = mCallbackCaptor.getValue();
+
+        int displayId = 1;
+        // Mock IDisplayManager to return a different display info to trigger display change.
+        final DisplayInfo newDisplayInfo = new DisplayInfo();
+        newDisplayInfo.rotation++;
+        doReturn(newDisplayInfo).when(mDisplayManager).getDisplayInfo(displayId);
+
+        int allEventsMask =
+                DisplayManagerGlobal.EVENT_DISPLAY_CONNECTED
+                        | DisplayManagerGlobal.EVENT_DISPLAY_ADDED
+                        | DisplayManagerGlobal.EVENT_DISPLAY_BASIC_CHANGED
+                        | DisplayManagerGlobal.EVENT_DISPLAY_REFRESH_RATE_CHANGED
+                        | DisplayManagerGlobal.EVENT_DISPLAY_STATE_CHANGED
+                        | DisplayManagerGlobal.EVENT_DISPLAY_COMMITTED_STATE_CHANGED
+                        | DisplayManagerGlobal.EVENT_DISPLAY_HDR_SDR_RATIO_CHANGED
+                        | DisplayManagerGlobal.EVENT_DISPLAY_BRIGHTNESS_CHANGED
+                        | DisplayManagerGlobal.EVENT_DISPLAY_REMOVED
+                        | DisplayManagerGlobal.EVENT_DISPLAY_DISCONNECTED;
+
+        // Trigger the event.
+        callback.onDisplayEvent(displayId, allEventsMask);
+        waitForHandler();
+
+        // Verify the order of callbacks. The order should be based on the event's integer value,
+        // not the order they were OR'd into the mask.
+        InOrder inOrder = inOrder(mDisplayListener);
+        inOrder.verify(mDisplayListener).onDisplayConnected(eq(displayId));
+        inOrder.verify(mDisplayListener).onDisplayAdded(eq(displayId));
+        // BASIC_CHANGED, REFRESH_RATE_CHANGED, STATE_CHANGED, COMMITTED_STATE_CHANGED
+        // HDR_SDR_RATIO_CHANGED, BRIGHTNESS_CHANGED
+        inOrder.verify(mDisplayListener, times(6)).onDisplayChanged(eq(displayId));
+        inOrder.verify(mDisplayListener).onDisplayRemoved(eq(displayId));
+        inOrder.verify(mDisplayListener).onDisplayDisconnected(eq(displayId));
+
         Mockito.verifyNoMoreInteractions(mDisplayListener);
     }
 

@@ -34,6 +34,7 @@ import static com.android.server.display.DisplayAdapter.DISPLAY_DEVICE_EVENT_REM
 import static com.android.server.display.DisplayDeviceInfo.DIFF_EVERYTHING;
 import static com.android.server.display.DisplayDeviceInfo.FLAG_ALLOWED_TO_BE_DEFAULT_DISPLAY;
 import static com.android.server.display.LogicalDisplayMapper.LOGICAL_DISPLAY_EVENT_ADDED;
+import static com.android.server.display.LogicalDisplayMapper.LOGICAL_DISPLAY_EVENT_BASIC_CHANGED;
 import static com.android.server.display.LogicalDisplayMapper.LOGICAL_DISPLAY_EVENT_COMMITTED_STATE_CHANGED;
 import static com.android.server.display.LogicalDisplayMapper.LOGICAL_DISPLAY_EVENT_CONNECTED;
 import static com.android.server.display.LogicalDisplayMapper.LOGICAL_DISPLAY_EVENT_DISCONNECTED;
@@ -1566,6 +1567,116 @@ public class LogicalDisplayMapperTest {
                         | LOGICAL_DISPLAY_EVENT_STATE_CHANGED
                         | LOGICAL_DISPLAY_EVENT_COMMITTED_STATE_CHANGED,
                 mLogicalDisplayMapper.updateAndGetMaskForDisplayPropertyChanges(newDisplayInfo));
+    }
+
+    @Test
+    @RequiresFlagsEnabled({Flags.FLAG_ENABLE_DISPLAY_EVENT_MERGING,
+            Flags.FLAG_COMMITTED_STATE_SEPARATE_EVENT,
+            Flags.FLAG_DISPLAY_LISTENER_PERFORMANCE_IMPROVEMENTS})
+    public void testUpdateLogicalDisplays_multiplePropertyChangesAreBatched() {
+        // This test verifies that when multiple properties of a single display change in one
+        // update cycle, they are batched into a single event notification with a combined mask.
+        when(mFlagsMock.isDisplayListenerPerformanceImprovementsEnabled()).thenReturn(true);
+        when(mFlagsMock.isCommittedStateSeparateEventEnabled()).thenReturn(true);
+        initLogicalDisplayMapper();
+
+        // 1. Add an initial display device and let it settle.
+        TestDisplayDevice device = createDisplayDevice(TYPE_INTERNAL, 600, 800,
+                FLAG_ALLOWED_TO_BE_DEFAULT_DISPLAY);
+        LogicalDisplay display = add(device);
+        assertEquals(DEFAULT_DISPLAY, id(display));
+        clearInvocations(mListenerMock);
+
+        // 2. Modify multiple properties of the display device info to trigger different events.
+        DisplayDeviceInfo info = device.getSourceInfo();
+        info.width = 601; // Triggers BASIC_CHANGED
+        info.state = STATE_OFF; // Triggers STATE_CHANGED
+        info.committedState = STATE_OFF; // Triggers COMMITTED_STATE_CHANGED
+        // Create a new mode with a different refresh rate.
+        info.supportedModes = new Display.Mode[]{
+                new Display.Mode(/* modeId= */ 1, /* width= */ 601, /* height= */ 800,
+                        /* refreshRate= */ 90f)
+        };
+        info.modeId = 1; // Triggers REFRESH_RATE_CHANGED
+
+        // 3. Trigger an update by signaling that the display device has changed.
+        mDisplayDeviceRepo.onDisplayDeviceEvent(device, DISPLAY_DEVICE_EVENT_CHANGED);
+
+        // 4. Verify that a single event is sent with a combined mask.
+        verify(mListenerMock).onLogicalDisplayEventLocked(
+                mDisplayCaptor.capture(), mDisplayEventCaptor.capture());
+
+        // Check that the correct display was updated.
+        assertThat(mDisplayCaptor.getValue()).isEqualTo(display);
+
+        // Check that the event mask contains all the expected change flags, confirming they were
+        // batched.
+        int capturedMask = mDisplayEventCaptor.getValue();
+        int expectedMask = LOGICAL_DISPLAY_EVENT_BASIC_CHANGED
+                | LOGICAL_DISPLAY_EVENT_REFRESH_RATE_CHANGED
+                | LOGICAL_DISPLAY_EVENT_STATE_CHANGED
+                | LOGICAL_DISPLAY_EVENT_COMMITTED_STATE_CHANGED;
+        assertThat(capturedMask).isEqualTo(expectedMask);
+    }
+
+    @Test
+    @RequiresFlagsEnabled({Flags.FLAG_ENABLE_DISPLAY_EVENT_MERGING,
+            Flags.FLAG_DISPLAY_LISTENER_PERFORMANCE_IMPROVEMENTS})
+    public void testUpdateLogicalDisplays_multipleDisplaysChange_sendsDisplayCentricEvents() {
+        // This test verifies that when two different displays change, the system sends two
+        // separate, display-specific notifications.
+        when(mFlagsMock.isDisplayListenerPerformanceImprovementsEnabled()).thenReturn(true);
+        initLogicalDisplayMapper();
+
+        // 1. Add two display devices and let them settle.
+        TestDisplayDevice device1 = createDisplayDevice(TYPE_INTERNAL, 600, 800,
+                FLAG_ALLOWED_TO_BE_DEFAULT_DISPLAY);
+        TestDisplayDevice device2 = createDisplayDevice(TYPE_INTERNAL, 1024, 768, 0);
+        LogicalDisplay display1 = add(device1);
+        LogicalDisplay display2 = add(device2);
+        clearInvocations(mListenerMock);
+
+        // 2. Modify properties on both devices.
+        DisplayDeviceInfo info1 = device1.getSourceInfo();
+        info1.width = 601; // Triggers BASIC_CHANGED for display1
+        info1.supportedModes = new Display.Mode[]{
+                new Display.Mode(/* modeId= */ 1, /* width= */ 601, /* height= */ 800,
+                        /* refreshRate= */ 60f)
+        };
+        info1.modeId = 1;
+        // Triggers STATE_CHANGED for display2, this also includes BASIC_CHANGED since STATE is part
+        // of BASIC_CHANGED events.
+        device2.getSourceInfo().state = STATE_OFF;
+
+        // 3. Notify the repository of each change individually.
+        mDisplayDeviceRepo.onDisplayDeviceEvent(device1, DISPLAY_DEVICE_EVENT_CHANGED);
+        mDisplayDeviceRepo.onDisplayDeviceEvent(device2, DISPLAY_DEVICE_EVENT_CHANGED);
+
+        // 4. Verify that two separate, display-centric events are sent with their appropriate masks
+        verify(mListenerMock, times(2)).onLogicalDisplayEventLocked(
+                mDisplayCaptor.capture(), mDisplayEventCaptor.capture());
+
+        List<LogicalDisplay> capturedDisplays = mDisplayCaptor.getAllValues();
+        List<Integer> capturedMasks = mDisplayEventCaptor.getAllValues();
+
+        boolean display1Found = false;
+        boolean display2Found = false;
+
+        for (int i = 0; i < capturedDisplays.size(); i++) {
+            LogicalDisplay capturedDisplay = capturedDisplays.get(i);
+            int capturedMask = capturedMasks.get(i);
+            if (capturedDisplay.getDisplayIdLocked() == display1.getDisplayIdLocked()) {
+                assertThat(capturedMask).isEqualTo(LOGICAL_DISPLAY_EVENT_BASIC_CHANGED);
+                display1Found = true;
+            } else if (capturedDisplay.getDisplayIdLocked() == display2.getDisplayIdLocked()) {
+                assertThat(capturedMask).isEqualTo(LOGICAL_DISPLAY_EVENT_STATE_CHANGED
+                        | LOGICAL_DISPLAY_EVENT_BASIC_CHANGED);
+                display2Found = true;
+            }
+        }
+
+        assertThat(display1Found).isTrue();
+        assertThat(display2Found).isTrue();
     }
 
     /////////////////
