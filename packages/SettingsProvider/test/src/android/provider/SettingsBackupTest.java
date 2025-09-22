@@ -33,8 +33,6 @@ import android.provider.settings.backup.SystemSettings;
 import androidx.test.filters.SmallTest;
 import androidx.test.runner.AndroidJUnit4;
 
-import com.android.server.display.feature.flags.Flags;
-
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -960,10 +958,6 @@ public class SettingsBackupTest {
                         // Potentially disruptive to on-boarding flow on new devices
                         Settings.System.TOUCHPAD_ENABLED
                 );
-        if (!Flags.backUpSmoothDisplayAndForcePeakRefreshRate()) {
-            settings.add(Settings.System.MIN_REFRESH_RATE);
-            settings.add(Settings.System.PEAK_REFRESH_RATE);
-        }
         return settings;
     }
 

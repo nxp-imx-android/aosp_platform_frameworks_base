@@ -19,8 +19,6 @@ package android.provider.settings.backup;
 import android.compat.annotation.UnsupportedAppUsage;
 import android.provider.Settings;
 
-import com.android.server.display.feature.flags.Flags;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -129,12 +127,10 @@ public class SystemSettings {
                 Settings.System.PREFERRED_REGION,
                 Settings.System.CV_ENABLED,
                 Settings.System.CV_DYNAMIC_ENABLED,
-                Settings.System.CV_PREFERRED_INTENSITY
+                Settings.System.CV_PREFERRED_INTENSITY,
+                Settings.System.PEAK_REFRESH_RATE,
+                Settings.System.MIN_REFRESH_RATE
         ));
-        if (Flags.backUpSmoothDisplayAndForcePeakRefreshRate()) {
-            settings.add(Settings.System.PEAK_REFRESH_RATE);
-            settings.add(Settings.System.MIN_REFRESH_RATE);
-        }
         return settings.toArray(new String[0]);
     }
 }

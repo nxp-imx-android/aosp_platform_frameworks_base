@@ -1328,8 +1328,6 @@ public class DisplayModeDirectorTest {
 
     @Test
     public void testLockFps_DisplayWithOneMode() throws Exception {
-        when(mDisplayManagerFlags.isBackUpSmoothDisplayAndForcePeakRefreshRateEnabled())
-                .thenReturn(true);
         DisplayModeDirector director =
                 new DisplayModeDirector(mContext, mHandler, mInjector,
                         mDisplayManagerFlags, mDisplayDeviceConfigProvider);
@@ -1762,8 +1760,6 @@ public class DisplayModeDirectorTest {
 
     @Test
     public void testPeakRefreshRate_FlagEnabled() {
-        when(mDisplayManagerFlags.isBackUpSmoothDisplayAndForcePeakRefreshRateEnabled())
-                .thenReturn(true);
         DisplayModeDirector director =
                 new DisplayModeDirector(mContext, mHandler, mInjector,
                         mDisplayManagerFlags, mDisplayDeviceConfigProvider);
@@ -1815,8 +1811,6 @@ public class DisplayModeDirectorTest {
 
     @Test
     public void testPeakRefreshRate_FlagDisabled() {
-        when(mDisplayManagerFlags.isBackUpSmoothDisplayAndForcePeakRefreshRateEnabled())
-                .thenReturn(false);
         float peakRefreshRate = 130;
         DisplayModeDirector director =
                 createDirectorFromRefreshRateArray(new float[] {60.f, 90.f}, 0);
@@ -1843,8 +1837,6 @@ public class DisplayModeDirectorTest {
 
     @Test
     public void testPeakRefreshRate_notAppliedToExternalDisplays() {
-        when(mDisplayManagerFlags.isBackUpSmoothDisplayAndForcePeakRefreshRateEnabled())
-                .thenReturn(true);
         mInjector.setEnabledDisplays(Map.of(DISPLAY_ID, Display.TYPE_EXTERNAL));
         DisplayModeDirector director =
                 new DisplayModeDirector(mContext, mHandler, mInjector,
@@ -1900,8 +1892,6 @@ public class DisplayModeDirectorTest {
 
     @Test
     public void testPeakRefreshRate_DisplayChanged() {
-        when(mDisplayManagerFlags.isBackUpSmoothDisplayAndForcePeakRefreshRateEnabled())
-                .thenReturn(true);
         DisplayModeDirector director =
                 new DisplayModeDirector(mContext, mHandler, mInjector,
                         mDisplayManagerFlags, mDisplayDeviceConfigProvider);
@@ -1938,8 +1928,6 @@ public class DisplayModeDirectorTest {
 
     @Test
     public void testPeakRefreshRate_UserSwitch() {
-        when(mDisplayManagerFlags.isBackUpSmoothDisplayAndForcePeakRefreshRateEnabled())
-                .thenReturn(true);
         DisplayModeDirector director =
                 new DisplayModeDirector(mContext, mHandler, mInjector,
                         mDisplayManagerFlags, mDisplayDeviceConfigProvider);
@@ -2025,8 +2013,6 @@ public class DisplayModeDirectorTest {
 
     @Test
     public void testMinRefreshRate_FlagEnabled() {
-        when(mDisplayManagerFlags.isBackUpSmoothDisplayAndForcePeakRefreshRateEnabled())
-                .thenReturn(true);
         DisplayModeDirector director =
                 new DisplayModeDirector(mContext, mHandler, mInjector,
                         mDisplayManagerFlags, mDisplayDeviceConfigProvider);
@@ -2078,8 +2064,6 @@ public class DisplayModeDirectorTest {
 
     @Test
     public void testMinRefreshRate_FlagDisabled() {
-        when(mDisplayManagerFlags.isBackUpSmoothDisplayAndForcePeakRefreshRateEnabled())
-                .thenReturn(false);
         float minRefreshRate = 130;
         DisplayModeDirector director =
                 createDirectorFromRefreshRateArray(new float[] {60.f, 90.f}, 0);
@@ -2106,8 +2090,6 @@ public class DisplayModeDirectorTest {
 
     @Test
     public void testMinRefreshRate_DisplayChanged() {
-        when(mDisplayManagerFlags.isBackUpSmoothDisplayAndForcePeakRefreshRateEnabled())
-                .thenReturn(true);
         DisplayModeDirector director =
                 new DisplayModeDirector(mContext, mHandler, mInjector,
                         mDisplayManagerFlags, mDisplayDeviceConfigProvider);
@@ -2145,8 +2127,6 @@ public class DisplayModeDirectorTest {
 
     @Test
     public void testMinRefreshRate_UserSwitch() {
-        when(mDisplayManagerFlags.isBackUpSmoothDisplayAndForcePeakRefreshRateEnabled())
-                .thenReturn(true);
         DisplayModeDirector director =
                 new DisplayModeDirector(mContext, mHandler, mInjector,
                         mDisplayManagerFlags, mDisplayDeviceConfigProvider);
@@ -2201,8 +2181,6 @@ public class DisplayModeDirectorTest {
 
     @Test
     public void testPeakAndMinRefreshRate_FlagEnabled_DisplayWithOneMode() {
-        when(mDisplayManagerFlags.isBackUpSmoothDisplayAndForcePeakRefreshRateEnabled())
-                .thenReturn(true);
         DisplayModeDirector director =
                 new DisplayModeDirector(mContext, mHandler, mInjector,
                         mDisplayManagerFlags, mDisplayDeviceConfigProvider);
