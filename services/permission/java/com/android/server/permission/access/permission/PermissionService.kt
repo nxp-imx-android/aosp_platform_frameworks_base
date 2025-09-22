@@ -2044,11 +2044,11 @@ class PermissionService(private val service: AccessCheckingService) :
     override fun backupRuntimePermissions(userId: Int): ByteArray? {
         Preconditions.checkArgumentNonnegative(userId, "userId cannot be null")
         val backup = CompletableFuture<ByteArray>()
-        getPermissionControllerManager(userId).getRuntimePermissionBackup(
+        getPermissionControllerManager(userId)?.getRuntimePermissionBackup(
             UserHandle.of(userId),
             PermissionThread.getExecutor(),
             backup::complete,
-        )
+        ) ?: return null
 
         return try {
             backup.get(BACKUP_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS)
@@ -2072,7 +2072,7 @@ class PermissionService(private val service: AccessCheckingService) :
         synchronized(isDelayedPermissionBackupFinished) {
             isDelayedPermissionBackupFinished -= userId
         }
-        getPermissionControllerManager(userId).stageAndApplyRuntimePermissionsBackup(
+        getPermissionControllerManager(userId)?.stageAndApplyRuntimePermissionsBackup(
             backup,
             UserHandle.of(userId),
         )
@@ -2087,7 +2087,7 @@ class PermissionService(private val service: AccessCheckingService) :
                 return
             }
         }
-        getPermissionControllerManager(userId).applyStagedRuntimePermissionBackup(
+        getPermissionControllerManager(userId)?.applyStagedRuntimePermissionBackup(
             packageName,
             UserHandle.of(userId),
             PermissionThread.getExecutor(),
@@ -2101,11 +2101,16 @@ class PermissionService(private val service: AccessCheckingService) :
         }
     }
 
-    private fun getPermissionControllerManager(userId: Int): PermissionControllerManager =
+    private fun getPermissionControllerManager(userId: Int): PermissionControllerManager? =
         synchronized(permissionControllerManagers) {
-            permissionControllerManagers.getOrPut(userId) {
+            permissionControllerManagers[userId] ?: try {
                 val userContext = context.createContextAsUser(UserHandle.of(userId), 0)
-                PermissionControllerManager(userContext, PermissionThread.getHandler())
+                PermissionControllerManager(userContext, PermissionThread.getHandler()).also {
+                    permissionControllerManagers[userId] = it
+                }
+            } catch (e: IllegalStateException) {
+                Slog.w(LOG_TAG, "Failed to create PermissionControllerManager for user $userId", e)
+                null
             }
         }
 
