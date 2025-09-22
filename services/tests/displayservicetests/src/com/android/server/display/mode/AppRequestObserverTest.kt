@@ -39,7 +39,6 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.kotlin.mock
-import org.mockito.kotlin.whenever
 
 @SmallTest
 @RunWith(TestParameterInjector::class)
@@ -66,8 +65,6 @@ class AppRequestObserverTest {
     @Test
     @EnableFlags(Flags.FLAG_CONFIGURE_APP_RESOLUTION_CHANGE)
     fun testAppRequestVotes(@TestParameter testCase: AppRequestTestCase) {
-        whenever(mockFlags.ignoreAppPreferredRefreshRateRequest())
-            .thenReturn(testCase.ignoreRefreshRateRequest)
         mContext.getOrCreateTestableResources().addOverride(
             R.bool.config_appResolutionSwitchVoteDisabled,
             false
@@ -198,7 +195,6 @@ class AppRequestObserverTest {
     }
 
     enum class AppRequestTestCase(
-        val ignoreRefreshRateRequest: Boolean,
         val modeId: Int,
         val requestedRefreshRates: Float,
         val requestedMinRefreshRates: Float,
@@ -207,29 +203,41 @@ class AppRequestObserverTest {
         internal val expectedSizeVote: Vote?,
         internal val expectedRenderRateVote: Vote?,
     ) {
-        BASE_MODE_60(true, 1, 0f, 0f, 0f,
-            BaseModeRefreshRateVote(60f), SizeVote(1000, 1000, 1000, 1000), null),
-        BASE_MODE_90(true, 2, 0f, 0f, 0f,
-            BaseModeRefreshRateVote(90f), SizeVote(1000, 1000, 1000, 1000), null),
-        MIN_REFRESH_RATE_60(true, 0, 0f, 60f, 0f,
-            null, null, RenderVote(60f, Float.POSITIVE_INFINITY)),
-        MIN_REFRESH_RATE_120(true, 0, 0f, 120f, 0f,
-        null, null, RenderVote(120f, Float.POSITIVE_INFINITY)),
-        MAX_REFRESH_RATE_60(true, 0, 0f, 0f, 60f,
-            null, null, RenderVote(0f, 60f)),
-        MAX_REFRESH_RATE_120(true, 0, 0f, 0f, 120f,
-            null, null, RenderVote(0f, 120f)),
-        INVALID_MIN_MAX_REFRESH_RATE(true, 0, 0f, 90f, 60f,
-        null, null, null),
-        BASE_MODE_MIN_MAX(true, 1, 0f, 60f, 90f,
-            BaseModeRefreshRateVote(60f), SizeVote(1000, 1000, 1000, 1000), RenderVote(60f, 90f)),
-        PREFERRED_REFRESH_RATE(false, 0, 60f, 0f, 0f,
-            BaseModeRefreshRateVote(60f), SizeVote(1000, 1000, 1000, 1000), null),
-        PREFERRED_REFRESH_RATE_IGNORE_BASE_MODE_CONVERSION(true, 0, 60f, 0f, 0f,
-            RequestedRefreshRateVote(60f), null, null),
-        PREFERRED_REFRESH_RATE_INVALID(false, 0, 25f, 0f, 0f,
-            null, null, null),
-        SYNTHETIC_MODE(false, 99, 0f, 0f, 0f,
-            RequestedRefreshRateVote(45f), SizeVote(1000, 1000, 1000, 1000), null),
+        BASE_MODE_60(
+            1, 0f, 0f, 0f,
+            BaseModeRefreshRateVote(60f), SizeVote(1000, 1000, 1000, 1000), null
+        ),
+        BASE_MODE_90(
+            2, 0f, 0f, 0f,
+            BaseModeRefreshRateVote(90f), SizeVote(1000, 1000, 1000, 1000), null
+        ),
+        MIN_REFRESH_RATE_60(
+            0, 0f, 60f, 0f,
+            null, null, RenderVote(60f, Float.POSITIVE_INFINITY)
+        ),
+        MIN_REFRESH_RATE_120(
+            0, 0f, 120f, 0f,
+            null, null, RenderVote(120f, Float.POSITIVE_INFINITY)
+        ),
+        MAX_REFRESH_RATE_60(
+            0, 0f, 0f, 60f,
+            null, null, RenderVote(0f, 60f)
+        ),
+        MAX_REFRESH_RATE_120(
+            0, 0f, 0f, 120f,
+            null, null, RenderVote(0f, 120f)
+        ),
+        INVALID_MIN_MAX_REFRESH_RATE(
+            0, 0f, 90f, 60f,
+            null, null, null
+        ),
+        BASE_MODE_MIN_MAX(
+            1, 0f, 60f, 90f,
+            BaseModeRefreshRateVote(60f), SizeVote(1000, 1000, 1000, 1000), RenderVote(60f, 90f)
+        ),
+        PREFERRED_REFRESH_RATE(
+            0, 60f, 0f, 0f,
+            RequestedRefreshRateVote(60f), null, null
+        )
     }
 }

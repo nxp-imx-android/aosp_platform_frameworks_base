@@ -120,11 +120,6 @@ public class DisplayManagerFlags {
             Flags::enablePeakRefreshRatePhysicalLimit
     );
 
-    private final FlagState mIgnoreAppPreferredRefreshRate = new FlagState(
-            Flags.FLAG_IGNORE_APP_PREFERRED_REFRESH_RATE_REQUEST,
-            Flags::ignoreAppPreferredRefreshRateRequest
-    );
-
     private final FlagState mSynthetic60hzModes = new FlagState(
             Flags.FLAG_ENABLE_SYNTHETIC_60HZ_MODES,
             Flags::enableSynthetic60hzModes
@@ -360,13 +355,6 @@ public class DisplayManagerFlags {
         return mOffloadSessionCancelBlockScreenOn.isEnabled();
     }
 
-    /**
-     * @return Whether to ignore preferredRefreshRate app request conversion to display mode or not
-     */
-    public boolean ignoreAppPreferredRefreshRateRequest() {
-        return mIgnoreAppPreferredRefreshRate.isEnabled();
-    }
-
     public boolean isSynthetic60HzModesEnabled() {
         return mSynthetic60hzModes.isEnabled();
     }
@@ -560,7 +548,6 @@ public class DisplayManagerFlags {
         pw.println(" " + mResolutionBackupRestore);
         pw.println(" " + mUseFusionProxSensor);
         pw.println(" " + mPeakRefreshRatePhysicalLimit);
-        pw.println(" " + mIgnoreAppPreferredRefreshRate);
         pw.println(" " + mSynthetic60hzModes);
         pw.println(" " + mOffloadSessionCancelBlockScreenOn);
         pw.println(" " + mNormalBrightnessForDozeParameter);

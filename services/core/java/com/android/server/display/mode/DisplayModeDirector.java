@@ -1278,13 +1278,10 @@ public class DisplayModeDirector {
      *  Responsible for keeping track of app requested refresh rates per display
      */
     public final class AppRequestObserver {
-        private final boolean mIgnorePreferredRefreshRate;
         private final boolean mEnableSizeVote;
 
 
         AppRequestObserver(DisplayManagerFlags flags) {
-            mIgnorePreferredRefreshRate = flags.ignoreAppPreferredRefreshRateRequest();
-
             // Enable size vote if the app resolution change feature is off, or if the feature is on
             // but not disabled by the config.
             mEnableSizeVote = !Flags.configureAppResolutionChange() || !mContext.getResources()
@@ -1323,14 +1320,6 @@ public class DisplayModeDirector {
             Display.Mode mode = null;
             if (modeId != 0) {
                 mode = findAppModeByIdLocked(displayId, modeId);
-            } else if (requestedRefreshRate != 0 && !mIgnorePreferredRefreshRate) { // modeId == 0
-                // Scan supported modes returned to find a mode with the same
-                // size as the default display mode but with the specified refresh rate instead.
-                mode = findDefaultModeByRefreshRateLocked(displayId, requestedRefreshRate);
-                if (mode == null) {
-                    Slog.e(TAG, "Couldn't find a mode for the requestedRefreshRate: "
-                            + requestedRefreshRate + " on Display: " + displayId);
-                }
             }
             return mode;
         }
@@ -1363,24 +1352,10 @@ public class DisplayModeDirector {
                 } else {
                     vote = Vote.forBaseModeRefreshRate(mode.getRefreshRate());
                 }
-            } else if (requestedRefreshRate != 0f && mIgnorePreferredRefreshRate) {
+            } else if (requestedRefreshRate != 0f) {
                 vote = Vote.forRequestedRefreshRate(requestedRefreshRate);
-            } // !mIgnorePreferredRefreshRate case is handled by findModeLocked
-            return vote;
-        }
-
-        @Nullable
-        @GuardedBy("mLock")
-        private Display.Mode findDefaultModeByRefreshRateLocked(int displayId, float refreshRate) {
-            Display.Mode[] modes = mAppSupportedModesByDisplay.get(displayId);
-            Display.Mode defaultMode = mDefaultModeByDisplay.get(displayId);
-            for (int i = 0; i < modes.length; i++) {
-                if (modes[i].matches(defaultMode.getPhysicalWidth(),
-                        defaultMode.getPhysicalHeight(), refreshRate)) {
-                    return modes[i];
-                }
             }
-            return null;
+            return vote;
         }
 
         @GuardedBy("mLock")
@@ -1400,7 +1375,6 @@ public class DisplayModeDirector {
         @GuardedBy("mLock")
         private void dumpLocked(PrintWriter pw) {
             pw.println("  AppRequestObserver");
-            pw.println("    mIgnorePreferredRefreshRate: " + mIgnorePreferredRefreshRate);
         }
     }
 
