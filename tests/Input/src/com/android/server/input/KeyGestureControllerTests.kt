@@ -612,7 +612,7 @@ class KeyGestureControllerTests {
                 intArrayOf(KeyGestureEvent.ACTION_GESTURE_COMPLETE),
             ),
             KeyGestureData(
-                "META + ALT + Q -> Launch app",
+                "CTRL + SHIFT + Q -> Launch app",
                 intArrayOf(
                     KeyEvent.KEYCODE_CTRL_LEFT,
                     KeyEvent.KEYCODE_SHIFT_LEFT,
@@ -623,6 +623,22 @@ class KeyGestureControllerTests {
                 KeyEvent.META_CTRL_ON or KeyEvent.META_SHIFT_ON,
                 intArrayOf(KeyGestureEvent.ACTION_GESTURE_COMPLETE),
                 AppLaunchData.createLaunchDataForComponent("com.test", "com.test.BookmarkTest"),
+            ),
+            KeyGestureData(
+                "CTRL + Overview -> Toggle Notification Panel",
+                intArrayOf(KeyEvent.KEYCODE_CTRL_LEFT, KeyEvent.KEYCODE_RECENT_APPS),
+                KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_NOTIFICATION_PANEL,
+                intArrayOf(KeyEvent.KEYCODE_RECENT_APPS),
+                KeyEvent.META_CTRL_ON,
+                intArrayOf(KeyGestureEvent.ACTION_GESTURE_COMPLETE),
+            ),
+            KeyGestureData(
+                "SHIFT + Brightness Up -> Keyboard Backlight Up",
+                intArrayOf(KeyEvent.KEYCODE_SHIFT_LEFT, KeyEvent.KEYCODE_BRIGHTNESS_UP),
+                KeyGestureEvent.KEY_GESTURE_TYPE_KEYBOARD_BACKLIGHT_UP,
+                intArrayOf(KeyEvent.KEYCODE_BRIGHTNESS_UP),
+                KeyEvent.META_SHIFT_ON,
+                intArrayOf(KeyGestureEvent.ACTION_GESTURE_COMPLETE),
             ),
         )
     }

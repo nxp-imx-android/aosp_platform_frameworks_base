@@ -387,7 +387,7 @@ final class InputGestureManager {
             }
             if (trigger instanceof InputGestureData.KeyTrigger keyTrigger) {
                 if (KeyEvent.isModifierKey(keyTrigger.getKeycode()) ||
-                        KeyEvent.isSystemKey(keyTrigger.getKeycode())) {
+                        !isKeyAllowedForCustomGesture(keyTrigger.getKeycode())) {
                     return new InputGestureData.Builder().setTrigger(trigger).setKeyGestureType(
                             KeyGestureEvent.KEY_GESTURE_TYPE_SYSTEM_RESERVED).build();
                 }
@@ -412,7 +412,7 @@ final class InputGestureManager {
             }
             if (newGesture.getTrigger() instanceof InputGestureData.KeyTrigger keyTrigger) {
                 if (KeyEvent.isModifierKey(keyTrigger.getKeycode()) ||
-                        KeyEvent.isSystemKey(keyTrigger.getKeycode())) {
+                        !isKeyAllowedForCustomGesture(keyTrigger.getKeycode())) {
                     return InputManager.CUSTOM_INPUT_GESTURE_RESULT_ERROR_RESERVED_GESTURE;
                 }
             }
@@ -541,6 +541,74 @@ final class InputGestureManager {
                 .setKeyGestureType(keyGestureType)
                 .setAllowCaptureByFocusedWindow(allowCaptureByFocusedWindow)
                 .build();
+    }
+
+    private static boolean isKeyAllowedForCustomGesture(int keyCode) {
+        // Don't allow system keys that are always (or conditionally) consumed in
+        // interceptKeyBeforeQueueing, to be used for custom input gesture.
+        // This is to ensure the custom gestures are predictable for the user.
+        // If we want to allow custom key gesture using any of these keys, move them out of
+        // {@link PhoneWindowManager#inteceptKeyBeforeQueueing} or make sure these keys always
+        // reach the custom input gesture handling when they have an associated modifier state.
+        switch (keyCode) {
+            case KeyEvent.KEYCODE_POWER:
+            case KeyEvent.KEYCODE_TV_POWER:
+            case KeyEvent.KEYCODE_ENDCALL:
+            case KeyEvent.KEYCODE_SYSTEM_NAVIGATION_DOWN:
+            case KeyEvent.KEYCODE_SYSTEM_NAVIGATION_UP:
+            case KeyEvent.KEYCODE_SYSTEM_NAVIGATION_LEFT:
+            case KeyEvent.KEYCODE_SYSTEM_NAVIGATION_RIGHT:
+            case KeyEvent.KEYCODE_SLEEP:
+            case KeyEvent.KEYCODE_SOFT_SLEEP:
+            case KeyEvent.KEYCODE_WAKEUP:
+            case KeyEvent.KEYCODE_MUTE:
+            case KeyEvent.KEYCODE_CALL:
+            case KeyEvent.KEYCODE_MEDIA_PLAY:
+            case KeyEvent.KEYCODE_MEDIA_PAUSE:
+            case KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE:
+            case KeyEvent.KEYCODE_HEADSETHOOK:
+            case KeyEvent.KEYCODE_MEDIA_STOP:
+            case KeyEvent.KEYCODE_MEDIA_NEXT:
+            case KeyEvent.KEYCODE_MEDIA_PREVIOUS:
+            case KeyEvent.KEYCODE_MEDIA_REWIND:
+            case KeyEvent.KEYCODE_MEDIA_RECORD:
+            case KeyEvent.KEYCODE_MEDIA_FAST_FORWARD:
+            case KeyEvent.KEYCODE_MEDIA_AUDIO_TRACK:
+            case KeyEvent.KEYCODE_VOLUME_DOWN:
+            case KeyEvent.KEYCODE_VOLUME_UP:
+            case KeyEvent.KEYCODE_VOLUME_MUTE:
+            case KeyEvent.KEYCODE_ASSIST:
+            case KeyEvent.KEYCODE_VOICE_ASSIST:
+            case KeyEvent.KEYCODE_WINDOW:
+            case KeyEvent.KEYCODE_STEM_PRIMARY:
+            case KeyEvent.KEYCODE_VIDEO_APP_1:
+            case KeyEvent.KEYCODE_VIDEO_APP_2:
+            case KeyEvent.KEYCODE_VIDEO_APP_3:
+            case KeyEvent.KEYCODE_VIDEO_APP_4:
+            case KeyEvent.KEYCODE_VIDEO_APP_5:
+            case KeyEvent.KEYCODE_VIDEO_APP_6:
+            case KeyEvent.KEYCODE_VIDEO_APP_7:
+            case KeyEvent.KEYCODE_VIDEO_APP_8:
+            case KeyEvent.KEYCODE_FEATURED_APP_1:
+            case KeyEvent.KEYCODE_FEATURED_APP_2:
+            case KeyEvent.KEYCODE_FEATURED_APP_3:
+            case KeyEvent.KEYCODE_FEATURED_APP_4:
+            case KeyEvent.KEYCODE_DEMO_APP_1:
+            case KeyEvent.KEYCODE_DEMO_APP_2:
+            case KeyEvent.KEYCODE_DEMO_APP_3:
+            case KeyEvent.KEYCODE_DEMO_APP_4:
+            case KeyEvent.KEYCODE_STYLUS_BUTTON_PRIMARY:
+            case KeyEvent.KEYCODE_STYLUS_BUTTON_SECONDARY:
+            case KeyEvent.KEYCODE_STYLUS_BUTTON_TERTIARY:
+            case KeyEvent.KEYCODE_STYLUS_BUTTON_TAIL:
+            case KeyEvent.KEYCODE_MACRO_1:
+            case KeyEvent.KEYCODE_MACRO_2:
+            case KeyEvent.KEYCODE_MACRO_3:
+            case KeyEvent.KEYCODE_MACRO_4:
+                return false;
+            default:
+                return true;
+        }
     }
 
     public void dump(IndentingPrintWriter ipw) {
