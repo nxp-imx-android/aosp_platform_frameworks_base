@@ -30,19 +30,13 @@ import com.android.systemui.flags.EnableSceneContainer
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.lifecycle.activateIn
-import com.android.systemui.media.dialog.MediaSwitchingController
-import com.android.systemui.media.dialog.mediaSwitchingController
 import com.android.systemui.res.R
 import com.android.systemui.testKosmosNew
+import com.android.systemui.volume.panel.component.mediainput.data.repository.mediaInputComponentRepository
 import com.google.common.truth.Truth.assertThat
-import java.util.Optional
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.mockito.kotlin.argumentCaptor
-import org.mockito.kotlin.times
-import org.mockito.kotlin.verify
-import org.mockito.kotlin.whenever
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
@@ -65,9 +59,6 @@ class MediaInputViewModelTest : SysuiTestCase() {
             /*isSelected=*/ true,
             /*productName=*/ "Built-in Mic",
         )
-
-    private val mediaSwitchingControllerCallback =
-        argumentCaptor<MediaSwitchingController.Callback>()
 
     @Before
     fun setUp() {
@@ -124,12 +115,6 @@ class MediaInputViewModelTest : SysuiTestCase() {
         }
 
     private fun setCurrentInputDevice(device: MediaDevice?) {
-        whenever(kosmos.mediaSwitchingController.currentInputDevice)
-            .thenReturn(device?.let { Optional.of(it) })
-        verify(kosmos.mediaSwitchingController, times(3))
-            .start(mediaSwitchingControllerCallback.capture())
-        mediaSwitchingControllerCallback.allValues.forEach { callback ->
-            callback.onDeviceListChanged()
-        }
+        kosmos.mediaInputComponentRepository.setCurrentInputDevice(device)
     }
 }

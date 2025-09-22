@@ -17,9 +17,8 @@
 package com.android.systemui.volume.panel.component.mediainput.domain.interactor
 
 import com.android.settingslib.media.MediaDevice
-import com.android.systemui.media.dialog.MediaSwitchingController
-import com.android.systemui.media.dialog.currentInputDeviceFlow
 import com.android.systemui.qs.flags.QsDetailedView
+import com.android.systemui.volume.panel.component.mediainput.data.repository.MediaInputComponentRepository
 import com.android.systemui.volume.panel.dagger.scope.VolumePanelScope
 import javax.inject.Inject
 import kotlinx.coroutines.flow.Flow
@@ -27,13 +26,11 @@ import kotlinx.coroutines.flow.flowOf
 
 /** Gathers together a domain state for the Media Input Volume Panel component. */
 @VolumePanelScope
-class MediaInputComponentInteractor @Inject constructor(factory: MediaSwitchingController.Factory) {
-    private val mediaSwitchingController = factory.create("", null, null)
-
+class MediaInputComponentInteractor @Inject constructor(repository: MediaInputComponentRepository) {
     val currentInputDevice: Flow<MediaDevice?> =
         if (!QsDetailedView.isEnabled) {
             flowOf(null)
         } else {
-            mediaSwitchingController.currentInputDeviceFlow
+            repository.currentInputDevice()
         }
 }

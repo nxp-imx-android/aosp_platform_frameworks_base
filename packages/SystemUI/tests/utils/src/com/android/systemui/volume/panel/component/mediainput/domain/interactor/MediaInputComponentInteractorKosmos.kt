@@ -17,7 +17,7 @@
 package com.android.systemui.volume.panel.component.mediainput.domain.interactor
 
 import com.android.systemui.kosmos.Kosmos
-import com.android.systemui.media.dialog.mediaSwitchingControllerFactory
+import com.android.systemui.volume.panel.component.mediainput.data.repository.mediaInputComponentRepository
 
 var Kosmos.mediaInputComponentInteractor by
-    Kosmos.Fixture { MediaInputComponentInteractor(mediaSwitchingControllerFactory) }
+    Kosmos.Fixture { MediaInputComponentInteractor(mediaInputComponentRepository) }
