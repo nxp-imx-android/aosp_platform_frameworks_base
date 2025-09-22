@@ -34,7 +34,6 @@ import com.android.systemui.communal.domain.interactor.setCommunalV2ConfigEnable
 import com.android.systemui.communal.shared.model.CommunalScenes
 import com.android.systemui.coroutines.collectLastValue
 import com.android.systemui.deviceentry.data.repository.fakeDeviceEntryBypassRepository
-import com.android.systemui.deviceentry.data.repository.fakeDeviceEntryRepository
 import com.android.systemui.flags.DisableSceneContainer
 import com.android.systemui.flags.EnableSceneContainer
 import com.android.systemui.flags.parameterizeSceneContainerFlag
@@ -92,7 +91,6 @@ class KeyguardRootViewModelTest(flags: FlagsParameterization) : SysuiTestCase() 
     private val keyguardRepository by lazy { kosmos.fakeKeyguardRepository }
     private val communalRepository by lazy { kosmos.communalSceneRepository }
     private val screenOffAnimationController by lazy { kosmos.screenOffAnimationController }
-    private val deviceEntryRepository by lazy { kosmos.fakeDeviceEntryRepository }
     private val deviceEntryBypassRepository by lazy { kosmos.fakeDeviceEntryBypassRepository }
     private val pulseExpansionInteractor by lazy { kosmos.pulseExpansionInteractor }
     private val notificationsKeyguardInteractor by lazy { kosmos.notificationsKeyguardInteractor }
@@ -206,6 +204,18 @@ class KeyguardRootViewModelTest(flags: FlagsParameterization) : SysuiTestCase() 
         }
 
     @Test
+    @EnableSceneContainer
+    fun iconContainer_isVisible_bypassEnabled() =
+        testScope.runTest {
+            val isVisible by collectLastValue(underTest.isNotifIconContainerVisible)
+            runCurrent()
+            deviceEntryBypassRepository.setBypassEnabled(true)
+            runCurrent()
+
+            assertThat(isVisible?.value).isTrue()
+        }
+
+    @Test
     fun iconContainer_isNotVisible_pulseExpanding_notBypassing() =
         testScope.runTest {
             val isVisible by collectLastValue(underTest.isNotifIconContainerVisible)
@@ -215,6 +225,28 @@ class KeyguardRootViewModelTest(flags: FlagsParameterization) : SysuiTestCase() 
             runCurrent()
 
             assertThat(isVisible?.value).isEqualTo(false)
+        }
+
+    @Test
+    @EnableSceneContainer
+    fun iconContainer_isNotVisible_bypassDisabled_onLockscreen() =
+        testScope.runTest {
+            val isVisible by collectLastValue(underTest.isNotifIconContainerVisible)
+            runCurrent()
+            keyguardTransitionRepository.sendTransitionSteps(
+                from = KeyguardState.AOD,
+                to = KeyguardState.LOCKSCREEN,
+                testScope,
+            )
+            pulseExpansionInteractor.setPulseExpanding(false)
+            deviceEntryBypassRepository.setBypassEnabled(false)
+            whenever(dozeParameters.alwaysOn).thenReturn(true)
+            whenever(dozeParameters.displayNeedsBlanking).thenReturn(false)
+            notificationsKeyguardInteractor.setNotificationsFullyHidden(true)
+            runCurrent()
+
+            assertThat(isVisible?.value).isFalse()
+            assertThat(isVisible?.isAnimating).isTrue()
         }
 
     @Test
@@ -294,6 +326,7 @@ class KeyguardRootViewModelTest(flags: FlagsParameterization) : SysuiTestCase() 
         }
 
     @Test
+    @DisableSceneContainer
     fun iconContainer_isNotVisible_notifsFullyHiddenThenVisible_bypassEnabled() =
         testScope.runTest {
             val isVisible by collectLastValue(underTest.isNotifIconContainerVisible)
