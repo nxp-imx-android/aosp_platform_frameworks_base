@@ -38,6 +38,8 @@ import com.android.systemui.common.ui.view.ChoreographerUtils
 import com.android.systemui.common.ui.view.ChoreographerUtilsImpl
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Main
+import com.android.systemui.display.data.repository.DisplayTypeRepository
+import com.android.systemui.display.data.repository.ShadeDisplayTypeRepository
 import com.android.systemui.keyevent.domain.interactor.SysUIKeyEventHandler
 import com.android.systemui.log.LogBuffer
 import com.android.systemui.log.LogBufferFactory
@@ -331,6 +333,15 @@ object ShadeDisplayAwareModule {
         } else {
             CoreStartable.NOP
         }
+    }
+
+    @Provides
+    @ShadeDisplayAware
+    @SysUISingleton
+    fun provideShadeDisplayTypeRepository(
+        shadeDisplayTypeRepository: ShadeDisplayTypeRepository
+    ): DisplayTypeRepository {
+        return shadeDisplayTypeRepository
     }
 }
 
