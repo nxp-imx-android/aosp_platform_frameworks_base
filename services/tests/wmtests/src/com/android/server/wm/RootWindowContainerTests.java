@@ -701,6 +701,7 @@ public class RootWindowContainerTests extends WindowTestsBase {
         verify(task, times(expectWakeFromSleep ? 1 : 0)).awakeFromSleeping();
         verify(task, times(expectResumeTopActivity ? 1 : 0)).resumeTopActivityUncheckedLocked(
                 isNull() /* target */, isNull() /* targetOptions */, eq(false) /* deferPause */);
+        waitHandlerIdle(mAtm.mH);
     }
 
     @Test
