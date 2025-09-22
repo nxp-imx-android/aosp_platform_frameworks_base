@@ -4,6 +4,13 @@ container: "system"
 # NOTE: Keep alphabetized to help limit merge conflicts from multiple simultaneous editors.
 
 flag {
+    name: "bouncer_accessibility_button_for_desktop"
+    namespace: "accessibility"
+    description: "Adds an accessibility button on the bouncer screen for desktop for accessing accessibility services."
+    bug: "446014706"
+}
+
+flag {
     name: "cleanup_instances_when_display_removed"
     namespace: "accessibility"
     description: "When a specific display is removed, cleanup the cached instances related to it."
