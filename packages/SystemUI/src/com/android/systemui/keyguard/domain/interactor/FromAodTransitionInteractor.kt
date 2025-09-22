@@ -180,10 +180,12 @@ constructor(
                                 ownerReason = "listen for aod to awake",
                             )
                         } else if (shouldTransitionToOccluded) {
-                            startTransitionTo(
-                                toState = KeyguardState.OCCLUDED,
-                                ownerReason = "waking up and isOccluded=true",
-                            )
+                            if (!SceneContainerFlag.isEnabled) {
+                                startTransitionTo(
+                                    toState = KeyguardState.OCCLUDED,
+                                    ownerReason = "waking up and isOccluded=true",
+                                )
+                            }
                         }
                     }
                 }

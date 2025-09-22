@@ -220,7 +220,10 @@ constructor(
 
     fun onCameraLaunchGestureDetected() {
         if (!isPowerButtonGestureSuppressed()) {
-            repository.updateWakefulness(powerButtonLaunchGestureTriggered = true)
+            repository.updateWakefulness(
+                powerButtonLaunchGestureTriggered = true,
+                lastSleepReason = WakeSleepReason.POWER_BUTTON,
+            )
         }
     }
 
@@ -284,13 +287,14 @@ constructor(
         @JvmOverloads
         fun PowerInteractor.setAwakeForTest(
             @PowerManager.WakeReason reason: Int = PowerManager.WAKE_REASON_UNKNOWN,
+            powerButtonGestureTriggered: Boolean = false,
             forceEmit: Boolean = false,
         ) {
             emitDuplicateWakefulnessValue = forceEmit
 
             this.onStartedWakingUp(
                 reason = reason,
-                powerButtonLaunchGestureTriggeredOnWakeUp = false,
+                powerButtonLaunchGestureTriggeredOnWakeUp = powerButtonGestureTriggered,
             )
             this.onFinishedWakingUp()
         }

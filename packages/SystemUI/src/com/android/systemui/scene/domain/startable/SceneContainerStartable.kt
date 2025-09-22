@@ -412,7 +412,7 @@ constructor(
                             deviceEntryInteractor.canSwipeToEnter.value == false -> {
                             val loggingReason =
                                 "All SIM cards unlocked and device already unlocked and" +
-                                        " lockscreen doesn't require a swipe to dismiss."
+                                    " lockscreen doesn't require a swipe to dismiss."
                             switchToScene(
                                 targetSceneKey = Scenes.Gone,
                                 loggingReason = loggingReason,
@@ -612,16 +612,22 @@ constructor(
 
                 // If we're mid-transition from Gone to Lockscreen due to the first power button
                 // press, then return to Gone.
-                val transition: ObservableTransitionState.Transition =
+                val transition: ObservableTransitionState.Transition? =
                     sceneInteractor.transitionState.value as? ObservableTransitionState.Transition
-                        ?: return@collect
+
                 if (
-                    transition.fromContent == Scenes.Gone &&
+                    transition != null &&
+                        transition.fromContent == Scenes.Gone &&
                         transition.toContent == Scenes.Lockscreen
                 ) {
                     switchToScene(
                         targetSceneKey = Scenes.Gone,
                         loggingReason = "double-tap power gesture",
+                    )
+                } else if (occlusionInteractor.shouldTransitionFromPowerButtonGesture()) {
+                    switchToScene(
+                        Scenes.Occluded,
+                        "double tap power while not doing gone -> lockscreen",
                     )
                 }
             }

@@ -116,7 +116,9 @@ sealed class TransitionInteractor(
             if (!maybeHandleInsecurePowerGesture()) {
                 // Otherwise, the double tap gesture occurred while not GONE and not dismissable,
                 // which means we will launch the secure camera, which OCCLUDES the keyguard.
-                startTransition(KeyguardState.OCCLUDED, "Power button gesture on lockscreen")
+                if (!SceneContainerFlag.isEnabled) {
+                    startTransition(KeyguardState.OCCLUDED, "Power button gesture on lockscreen")
+                }
             }
 
             return true
@@ -124,8 +126,9 @@ sealed class TransitionInteractor(
             // A SHOW_WHEN_LOCKED activity is on top of the task stack. Transition to OCCLUDED so
             // it's visible.
             // TODO(b/307976454) - Centralize transition to DREAMING here.
-            startTransition(KeyguardState.OCCLUDED, "SHOW_WHEN_LOCKED activity on top")
-
+            if (!SceneContainerFlag.isEnabled) {
+                startTransition(KeyguardState.OCCLUDED, "SHOW_WHEN_LOCKED activity on top")
+            }
             return true
         } else {
             // No transition needed, let the interactor figure out where to go.
