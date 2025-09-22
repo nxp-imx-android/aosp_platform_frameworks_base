@@ -335,7 +335,8 @@ public class AccountsDbTest {
     @Test
     public void testCrossDbTransactions() {
         mAccountsDb.attachCeDatabase(ceDb);
-        mAccountsDb.beginTransaction();
+        mAccountsDb.beginTransactionDe();
+        mAccountsDb.beginTransactionCe();
         Account account = new Account("name", "example.com");
         long accId;
         accId = mAccountsDb.insertCeAccount(account, "password");
@@ -344,7 +345,8 @@ public class AccountsDbTest {
         assertEquals(accId, actualId);
         actualId = mAccountsDb.findDeAccountId(account);
         assertEquals(accId, actualId);
-        mAccountsDb.endTransaction();
+        mAccountsDb.endTransactionCe();
+        mAccountsDb.endTransactionDe();
         // Verify that records were removed
         actualId = mAccountsDb.findCeAccountId(account);
         assertEquals(-1, actualId);
