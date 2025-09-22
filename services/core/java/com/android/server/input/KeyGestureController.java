@@ -696,6 +696,7 @@ final class KeyGestureController {
         final int keyCode = event.getKeyCode();
         final int repeatCount = event.getRepeatCount();
         final int metaState = event.getMetaState() & SHORTCUT_META_MASK;
+        final boolean hasModifiers = metaState != 0;
         final boolean down = event.getAction() == KeyEvent.ACTION_DOWN;
         final boolean canceled = event.isCanceled();
         final int displayId = event.getDisplayId();
@@ -718,71 +719,79 @@ final class KeyGestureController {
         // Handle system keys
         switch (keyCode) {
             case KeyEvent.KEYCODE_RECENT_APPS:
-                if (firstDown) {
+                if (firstDown && !hasModifiers) {
                     handleKeyGesture(deviceId, new int[]{keyCode}, /* modifierState = */0,
                             KeyGestureEvent.KEY_GESTURE_TYPE_RECENT_APPS,
                             KeyGestureEvent.ACTION_GESTURE_COMPLETE, displayId,
                             focusedToken, /* flags = */0, /* appLaunchData = */null);
+                    return true;
                 }
-                return true;
+                break;
             case KeyEvent.KEYCODE_APP_SWITCH:
-                if (firstDown) {
+                if (firstDown && !hasModifiers) {
                     handleKeyGesture(deviceId, new int[]{keyCode}, /* modifierState = */0,
                             KeyGestureEvent.KEY_GESTURE_TYPE_APP_SWITCH,
                             KeyGestureEvent.ACTION_GESTURE_START, displayId,
                             focusedToken, /* flags = */0, /* appLaunchData = */null);
-                } else if (!down) {
+                    return true;
+                } else if (!down && !hasModifiers) {
                     handleKeyGesture(deviceId, new int[]{keyCode}, /* modifierState = */0,
                             KeyGestureEvent.KEY_GESTURE_TYPE_APP_SWITCH,
                             KeyGestureEvent.ACTION_GESTURE_COMPLETE, displayId,
                             focusedToken, canceled ? KeyGestureEvent.FLAG_CANCELLED : 0,
                             /* appLaunchData = */null);
+                    return true;
                 }
-                return true;
+                break;
             case KeyEvent.KEYCODE_BRIGHTNESS_UP:
             case KeyEvent.KEYCODE_BRIGHTNESS_DOWN:
-                if (down) {
+                if (down && !hasModifiers) {
                     handleKeyGesture(deviceId, new int[]{keyCode}, /* modifierState = */0,
                             keyCode == KeyEvent.KEYCODE_BRIGHTNESS_UP
                                     ? KeyGestureEvent.KEY_GESTURE_TYPE_BRIGHTNESS_UP
                                     : KeyGestureEvent.KEY_GESTURE_TYPE_BRIGHTNESS_DOWN,
                             KeyGestureEvent.ACTION_GESTURE_COMPLETE, displayId,
                             focusedToken, /* flags = */0, /* appLaunchData = */null);
+                    return true;
                 }
-                return true;
+                break;
             case KeyEvent.KEYCODE_KEYBOARD_BACKLIGHT_DOWN:
-                if (down) {
+                if (down && !hasModifiers) {
                     handleKeyGesture(deviceId, new int[]{keyCode}, /* modifierState = */0,
                             KeyGestureEvent.KEY_GESTURE_TYPE_KEYBOARD_BACKLIGHT_DOWN,
                             KeyGestureEvent.ACTION_GESTURE_COMPLETE, displayId,
                             focusedToken, /* flags = */0, /* appLaunchData = */null);
+                    return true;
                 }
-                return true;
+                break;
             case KeyEvent.KEYCODE_KEYBOARD_BACKLIGHT_UP:
-                if (down) {
+                if (down && !hasModifiers) {
                     handleKeyGesture(deviceId, new int[]{keyCode}, /* modifierState = */0,
                             KeyGestureEvent.KEY_GESTURE_TYPE_KEYBOARD_BACKLIGHT_UP,
                             KeyGestureEvent.ACTION_GESTURE_COMPLETE, displayId,
                             focusedToken, /* flags = */0, /* appLaunchData = */null);
+                    return true;
                 }
-                return true;
+                break;
             case KeyEvent.KEYCODE_KEYBOARD_BACKLIGHT_TOGGLE:
                 final boolean handleOnDown = keyboardBacklightShortcuts();
-                if (!(handleOnDown ^ down)) {
+                if (handleOnDown == down && !hasModifiers) {
                     handleKeyGesture(deviceId, new int[]{keyCode}, /* modifierState = */0,
                                 KeyGestureEvent.KEY_GESTURE_TYPE_KEYBOARD_BACKLIGHT_TOGGLE,
                                 KeyGestureEvent.ACTION_GESTURE_COMPLETE, displayId,
                                 focusedToken, /* flags = */0, /* appLaunchData = */null);
+                    return true;
                 }
-                return true;
+                break;
             case KeyEvent.KEYCODE_ALL_APPS:
-                if (firstDown) {
+                if (firstDown && !hasModifiers) {
                     handleKeyGesture(deviceId, new int[]{keyCode}, /* modifierState = */0,
                             KeyGestureEvent.KEY_GESTURE_TYPE_ALL_APPS,
                             KeyGestureEvent.ACTION_GESTURE_COMPLETE, displayId,
                             focusedToken, /* flags = */0, /* appLaunchData = */null);
+                    return true;
                 }
-                return true;
+                break;
             case KeyEvent.KEYCODE_CAPS_LOCK:
                 // Just logging/notifying purposes
                 // Caps lock is already handled in inputflinger native
@@ -798,27 +807,29 @@ final class KeyGestureController {
                 }
                 break;
             case KeyEvent.KEYCODE_SCREENSHOT:
-                if (firstDown) {
+                if (firstDown && !hasModifiers) {
                     handleKeyGesture(deviceId, new int[]{keyCode}, /* modifierState = */0,
                             KeyGestureEvent.KEY_GESTURE_TYPE_TAKE_SCREENSHOT,
                             KeyGestureEvent.ACTION_GESTURE_COMPLETE, displayId,
                             focusedToken, /* flags = */0, /* appLaunchData = */null);
+                    return true;
                 }
-                return true;
+                break;
             case KeyEvent.KEYCODE_LOCK:
                 if (enableNew25q2Keycodes()) {
-                    if (firstDown) {
+                    if (firstDown && !hasModifiers) {
                         handleKeyGesture(deviceId, new int[]{KeyEvent.KEYCODE_LOCK},
                                 /* modifierState = */0,
                                 KeyGestureEvent.KEY_GESTURE_TYPE_LOCK_SCREEN,
                                 KeyGestureEvent.ACTION_GESTURE_COMPLETE, displayId,
                                 focusedToken, /* flags = */0, /* appLaunchData = */null);
+                        return true;
                     }
                 }
-                return true;
+                break;
             case KeyEvent.KEYCODE_FULLSCREEN:
                 if (enableNew25q2Keycodes()) {
-                    if (firstDown) {
+                    if (firstDown && !hasModifiers) {
                         handleKeyGesture(deviceId, new int[]{KeyEvent.KEYCODE_FULLSCREEN},
                                 /* modifierState = */0,
                                 TOGGLE_FULLSCREEN_STATE_VIA_FULLSCREEN_KEY.isTrue()
@@ -826,9 +837,10 @@ final class KeyGestureController {
                                         : KeyGestureEvent.KEY_GESTURE_TYPE_MULTI_WINDOW_NAVIGATION,
                                 KeyGestureEvent.ACTION_GESTURE_COMPLETE, displayId,
                                 focusedToken, /* flags = */0, /* appLaunchData = */null);
+                        return true;
                     }
                 }
-                return true;
+                break;
             case KeyEvent.KEYCODE_ESCAPE:
                 // TODO(b/358569822): Currently implemented long press using handler and delayed
                 //  message here, instead of using SingleKeyGestureDetector because that detection
@@ -877,15 +889,16 @@ final class KeyGestureController {
                 return true;
             case KeyEvent.KEYCODE_DO_NOT_DISTURB:
                 if (enableNew25q2Keycodes()) {
-                    if (firstDown) {
+                    if (firstDown && !hasModifiers) {
                         handleKeyGesture(deviceId, new int[]{KeyEvent.KEYCODE_DO_NOT_DISTURB},
                                 /* modifierState = */0,
                                 KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_DO_NOT_DISTURB,
                                 KeyGestureEvent.ACTION_GESTURE_COMPLETE, displayId,
                                 focusedToken, /* flags = */0, /* appLaunchData = */null);
+                        return true;
                     }
                 }
-                return true;
+                break;
         }
 
         return mWindowManagerCallbacks.interceptKeyBeforeDispatching(focusedToken, event);
@@ -1004,6 +1017,7 @@ final class KeyGestureController {
         final int keyCode = event.getKeyCode();
         final int repeatCount = event.getRepeatCount();
         final int metaState = event.getMetaState() & SHORTCUT_META_MASK;
+        final boolean hasModifiers = metaState != 0;
         final boolean down = event.getAction() == KeyEvent.ACTION_DOWN;
         final int displayId = event.getDisplayId();
         final int deviceId = event.getDeviceId();
@@ -1061,7 +1075,7 @@ final class KeyGestureController {
 
         switch (keyCode) {
             case KeyEvent.KEYCODE_NOTIFICATION:
-                if (!down) {
+                if (!down && !hasModifiers) {
                     handleKeyGesture(deviceId, new int[]{keyCode}, /* modifierState = */0,
                             KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_NOTIFICATION_PANEL,
                             KeyGestureEvent.ACTION_GESTURE_COMPLETE, displayId,
@@ -1069,7 +1083,8 @@ final class KeyGestureController {
                 }
                 return true;
             case KeyEvent.KEYCODE_SEARCH:
-                if (firstDown && mSearchKeyBehavior == SEARCH_KEY_BEHAVIOR_TARGET_ACTIVITY) {
+                if (firstDown && !hasModifiers
+                        && mSearchKeyBehavior == SEARCH_KEY_BEHAVIOR_TARGET_ACTIVITY) {
                     handleKeyGesture(deviceId, new int[]{keyCode}, /* modifierState = */0,
                             KeyGestureEvent.KEY_GESTURE_TYPE_LAUNCH_SEARCH,
                             KeyGestureEvent.ACTION_GESTURE_COMPLETE, displayId,
@@ -1078,7 +1093,7 @@ final class KeyGestureController {
                 }
                 break;
             case KeyEvent.KEYCODE_SETTINGS:
-                if (firstDown) {
+                if (firstDown && !hasModifiers) {
                     if (mSettingsKeyBehavior == SETTINGS_KEY_BEHAVIOR_SETTINGS_ACTIVITY) {
                         handleKeyGesture(deviceId,
                                 new int[]{keyCode}, /* modifierState = */0,
@@ -1095,13 +1110,29 @@ final class KeyGestureController {
                 }
                 return true;
             case KeyEvent.KEYCODE_LANGUAGE_SWITCH:
-                if (firstDown) {
+                if (firstDown && !hasModifiers) {
                     handleKeyGesture(deviceId, new int[]{keyCode},
                             event.isShiftPressed() ? KeyEvent.META_SHIFT_ON : 0,
                             KeyGestureEvent.KEY_GESTURE_TYPE_LANGUAGE_SWITCH,
                             KeyGestureEvent.ACTION_GESTURE_COMPLETE, displayId,
                             focusedToken, /* flags = */0, /* appLaunchData = */null);
                 }
+                return true;
+            // Ensure system keys are fully captured (in before key capture stage, we only capture
+            // system keys if no modifier is pressed, to allow custom shortcuts using top row keys)
+            // So, fully capture them here after custom shortcuts are executed (if any).
+            case KeyEvent.KEYCODE_RECENT_APPS:
+            case KeyEvent.KEYCODE_APP_SWITCH:
+            case KeyEvent.KEYCODE_BRIGHTNESS_UP:
+            case KeyEvent.KEYCODE_BRIGHTNESS_DOWN:
+            case KeyEvent.KEYCODE_KEYBOARD_BACKLIGHT_DOWN:
+            case KeyEvent.KEYCODE_KEYBOARD_BACKLIGHT_UP:
+            case KeyEvent.KEYCODE_KEYBOARD_BACKLIGHT_TOGGLE:
+            case KeyEvent.KEYCODE_ALL_APPS:
+            case KeyEvent.KEYCODE_SCREENSHOT:
+            case KeyEvent.KEYCODE_LOCK:
+            case KeyEvent.KEYCODE_FULLSCREEN:
+            case KeyEvent.KEYCODE_DO_NOT_DISTURB:
                 return true;
         }
         return false;
