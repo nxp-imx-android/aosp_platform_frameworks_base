@@ -14,7 +14,11 @@
  * limitations under the License.
  */
 
-package com.android.systemui.util.settings;
+package com.android.systemui.util.settings.impl;
+
+import com.android.systemui.util.settings.GlobalSettings;
+import com.android.systemui.util.settings.SecureSettings;
+import com.android.systemui.util.settings.SystemSettings;
 
 import dagger.Binds;
 import dagger.Module;
