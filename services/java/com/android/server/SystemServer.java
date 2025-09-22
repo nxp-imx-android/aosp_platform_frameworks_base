@@ -3399,7 +3399,7 @@ public final class SystemServer implements Dumpable {
                     networkManagementF.systemReady();
                 }
             } catch (Throwable e) {
-                reportWtf("making Network Managment Service ready", e);
+                reportWtf("making Network Management Service ready", e);
             }
             CountDownLatch networkPolicyInitReadySignal = null;
             if (networkPolicyF != null) {
