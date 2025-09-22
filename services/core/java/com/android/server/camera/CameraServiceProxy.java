@@ -503,7 +503,8 @@ public class CameraServiceProxy extends SystemService
                     extensionType, extensionIsAdvanced, mUsedUltraWide,
                     mUsedZoomOverride,
                     mMostRequestedFpsRange.getLower(), mMostRequestedFpsRange.getUpper(),
-                    extensionCaptureFormat);
+                    extensionCaptureFormat,
+                    FrameworkStatsLog.CAMERA_ACTION_EVENT__ERROR_STATE__CAMERA_UNKNOWN);
 
         }
     }
