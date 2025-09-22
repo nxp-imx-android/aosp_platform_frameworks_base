@@ -87,6 +87,12 @@
     <string name="kg_primary_auth_locked_out_pin" msgid="5492230176361601475">"වැරදි PIN එකක් සමග බොහෝ උත්සාහයන් ගණනකි"</string>
     <string name="kg_primary_auth_locked_out_pattern" msgid="8266214607346180952">"වැරදි රටාවක් සමග බොහෝ උත්සාහයන් ගණනකි"</string>
     <string name="kg_primary_auth_locked_out_password" msgid="6170245108400198659">"වැරදි මුරපදයක් සමග බොහෝ උත්සාහයන් ගණනකි"</string>
+    <!-- no translation found for kg_primary_auth_locked_out_pin_shortlink (6337373088574808830) -->
+    <skip />
+    <!-- no translation found for kg_primary_auth_locked_out_pattern_shortlink (4178881609951888747) -->
+    <skip />
+    <!-- no translation found for kg_primary_auth_locked_out_password_shortlink (7931086124151522515) -->
+    <skip />
     <string name="kg_too_many_failed_attempts_countdown" msgid="2038195171919795529">"{count,plural, =1{තත්පර #කින් නැවත උත්සාහ කරන්න.}one{තත්පර #කින් නැවත උත්සාහ කරන්න.}other{තත්පර #කින් නැවත උත්සාහ කරන්න.}}"</string>
     <string name="kg_sim_pin_instructions" msgid="1942424305184242951">"SIM PIN ඇතුළු කරන්න"</string>
     <string name="kg_sim_pin_instructions_multi" msgid="3639863309953109649">"\"<xliff:g id="CARRIER">%1$s</xliff:g>\" සඳහා SIM PIN ඇතුළු කරන්න"</string>

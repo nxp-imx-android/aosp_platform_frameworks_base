@@ -87,6 +87,12 @@
     <string name="kg_primary_auth_locked_out_pin" msgid="5492230176361601475">"Túl sok próbálkozás helytelen PIN-kóddal"</string>
     <string name="kg_primary_auth_locked_out_pattern" msgid="8266214607346180952">"Túl sok próbálkozás helytelen mintával"</string>
     <string name="kg_primary_auth_locked_out_password" msgid="6170245108400198659">"Túl sok próbálkozás helytelen jelszóval"</string>
+    <!-- no translation found for kg_primary_auth_locked_out_pin_shortlink (6337373088574808830) -->
+    <skip />
+    <!-- no translation found for kg_primary_auth_locked_out_pattern_shortlink (4178881609951888747) -->
+    <skip />
+    <!-- no translation found for kg_primary_auth_locked_out_password_shortlink (7931086124151522515) -->
+    <skip />
     <string name="kg_too_many_failed_attempts_countdown" msgid="2038195171919795529">"{count,plural, =1{Próbálja újra # másodperc múlva.}other{Próbálja újra # másodperc múlva.}}"</string>
     <string name="kg_sim_pin_instructions" msgid="1942424305184242951">"Adja meg a SIM-kártya PIN-kódját."</string>
     <string name="kg_sim_pin_instructions_multi" msgid="3639863309953109649">"Adja meg a(z) „<xliff:g id="CARRIER">%1$s</xliff:g>” SIM-kártya PIN-kódját."</string>
