@@ -32,7 +32,9 @@ import androidx.dynamicanimation.animation.SpringAnimation
 import androidx.dynamicanimation.animation.SpringForce
 import com.android.app.tracing.coroutines.launchInTraced
 import com.android.app.tracing.coroutines.launchTraced
+import com.android.internal.graphics.drawable.BackgroundBlurDrawable
 import com.android.internal.R as internalR
+import com.android.systemui.Flags.blurOnMoreSurfaces
 import com.android.systemui.res.R
 import com.android.systemui.volume.dialog.dagger.scope.VolumeDialogScope
 import com.android.systemui.volume.dialog.ringer.ui.util.VolumeDialogRingerDrawerTransitionListener
@@ -118,8 +120,13 @@ constructor(
             backgroundAnimationProgress = it
         }
         drawerContainer.setTransitionListener(ringerDrawerTransitionListener)
-        volumeDialogBackgroundView.background = volumeDialogBackgroundView.background.mutate()
-        ringerBackgroundView.background = ringerBackgroundView.background.mutate()
+        if (blurOnMoreSurfaces()) {
+            volumeDialogBackgroundView.updateBackground()
+            ringerBackgroundView.updateBackground()
+        } else {
+            volumeDialogBackgroundView.background = volumeDialogBackgroundView.background.mutate()
+            ringerBackgroundView.background = ringerBackgroundView.background.mutate()
+        }
         launchTraced("VDRVB#addTouchableBounds") {
             dialogViewModel.addTouchableBounds(ringerBackgroundView)
         }
@@ -142,8 +149,20 @@ constructor(
 
                         // Set up view background and visibility
                         drawerContainer.visibility = View.VISIBLE
-                        (volumeDialogBackgroundView.background as GradientDrawable).cornerRadii =
-                            bottomCornerRadii
+                        if (blurOnMoreSurfaces()) {
+                            if (volumeDialogBackgroundView.background !is BackgroundBlurDrawable) {
+                                volumeDialogBackgroundView.updateBackground()
+                            }
+                            (volumeDialogBackgroundView.background as BackgroundBlurDrawable)
+                                .setCornerRadius(
+                                    0f,
+                                    0f,
+                                    bottomDefaultRadius,
+                                    bottomDefaultRadius)
+                        } else {
+                            (volumeDialogBackgroundView.background as GradientDrawable)
+                                .cornerRadii = bottomCornerRadii
+                        }
                         when (uiModel.drawerState) {
                             is RingerDrawerState.Initial -> {
                                 drawerContainer.animateAndBindDrawerButtons(
@@ -439,8 +458,25 @@ constructor(
 
     private fun View.applyCorners(fullRadius: Int, diff: Int, progress: Float) {
         val radius = fullRadius - progress * diff
-        (background as GradientDrawable).cornerRadius = radius
+        if (blurOnMoreSurfaces()) {
+            (background as BackgroundBlurDrawable).setCornerRadius(radius)
+        } else {
+            (background as GradientDrawable).cornerRadius = radius
+        }
         background.invalidateSelf()
+    }
+
+    private fun View.updateBackground() {
+        val blurDrawable: BackgroundBlurDrawable =
+            getViewRootImpl().createBackgroundBlurDrawable()
+        val dialogCornerRadius: Int = context.resources.getDimensionPixelSize(
+            R.dimen.volume_dialog_background_corner_radius
+        )
+        blurDrawable.setCornerRadius(dialogCornerRadius.toFloat())
+        blurDrawable.setBlurRadius(
+            context.resources.getDimensionPixelSize(
+                R.dimen.volume_dialog_background_surface_blur_radius))
+        setBackgroundDrawable(blurDrawable)
     }
 }
 
