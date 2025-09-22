@@ -43,7 +43,6 @@ import com.android.systemui.statusbar.notification.emptyshade.ui.view.EmptyShade
 import com.android.systemui.statusbar.notification.emptyshade.ui.view.EmptyShadeView
 import com.android.systemui.statusbar.notification.emptyshade.ui.viewbinder.EmptyShadeViewBinder
 import com.android.systemui.statusbar.notification.emptyshade.ui.viewmodel.EmptyShadeViewModel
-import com.android.systemui.statusbar.notification.footer.shared.NotifRedesignFooter
 import com.android.systemui.statusbar.notification.footer.ui.view.FooterView
 import com.android.systemui.statusbar.notification.footer.ui.viewbinder.FooterViewBinder
 import com.android.systemui.statusbar.notification.footer.ui.viewmodel.FooterViewModel
@@ -182,8 +181,7 @@ constructor(
         // The footer needs to be re-inflated every time the theme or the font size changes.
         configuration
             .inflateLayout<FooterView>(
-                if (NotifRedesignFooter.isEnabled) R.layout.notification_2025_footer
-                else R.layout.status_bar_notification_footer,
+                R.layout.notification_2025_footer,
                 parentView,
                 attachToRoot = false,
             )

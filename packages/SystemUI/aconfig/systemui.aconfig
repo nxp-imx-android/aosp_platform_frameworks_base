@@ -43,13 +43,6 @@ flag {
 }
 
 flag {
-  name: "notifications_redesign_footer_view"
-  namespace: "systemui"
-  description: "Notifications Redesign: Update the look of the notifications footer."
-  bug: "375010573"
-}
-
-flag {
   name: "show_icon_in_empty_shade"
   namespace: "systemui"
   description: "Show a representative icon when there are no notifications in the shade."
