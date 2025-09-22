@@ -325,15 +325,13 @@ class WindowMagnificationController implements View.OnTouchListener, SurfaceHold
         mAllowDiagonalScrolling = secureSettings.getIntForUser(
                 Settings.Secure.ACCESSIBILITY_ALLOW_DIAGONAL_SCROLLING, 1,
                 UserHandle.USER_CURRENT) == 1;
-        if (com.android.server.accessibility.Flags.enableMagnificationMagnifyNavBarAndIme()) {
-            mAllowMagnifyTyping = secureSettings.getIntForUser(
-                    Settings.Secure.ACCESSIBILITY_MAGNIFICATION_FOLLOW_TYPING_ENABLED, 1,
-                    UserHandle.USER_CURRENT) == 1;
-            mAllowMagnifyKeyboard = secureSettings.getIntForUser(
-                    Settings.Secure.ACCESSIBILITY_MAGNIFICATION_MAGNIFY_NAV_AND_IME,
-                    AccessibilityUtils.getMagnificationMagnifyKeyboardDefaultValue(mContext),
-                    UserHandle.USER_CURRENT) == 1;
-        }
+        mAllowMagnifyTyping = secureSettings.getIntForUser(
+                Settings.Secure.ACCESSIBILITY_MAGNIFICATION_FOLLOW_TYPING_ENABLED, 1,
+                UserHandle.USER_CURRENT) == 1;
+        mAllowMagnifyKeyboard = secureSettings.getIntForUser(
+                Settings.Secure.ACCESSIBILITY_MAGNIFICATION_MAGNIFY_NAV_AND_IME,
+                AccessibilityUtils.getMagnificationMagnifyKeyboardDefaultValue(mContext),
+                UserHandle.USER_CURRENT) == 1;
 
         setupMagnificationSizeScaleOptions();
 

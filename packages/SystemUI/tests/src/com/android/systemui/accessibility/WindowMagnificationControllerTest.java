@@ -64,7 +64,6 @@ import android.hardware.input.InputManager;
 import android.os.Handler;
 import android.os.RemoteException;
 import android.os.SystemClock;
-import android.platform.test.annotations.EnableFlags;
 import android.provider.Settings;
 import android.testing.TestableLooper;
 import android.testing.TestableResources;
@@ -92,7 +91,6 @@ import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.LargeTest;
 
 import com.android.internal.accessibility.util.AccessibilityUtils;
-import com.android.systemui.Flags;
 import com.android.systemui.SysuiTestCase;
 import com.android.systemui.animation.AnimatorTestRule;
 import com.android.systemui.kosmos.KosmosJavaAdapter;
@@ -280,8 +278,6 @@ public class WindowMagnificationControllerTest extends SysuiTestCase {
     }
 
     @Test
-    @EnableFlags(com.android.server.accessibility
-            .Flags.FLAG_ENABLE_MAGNIFICATION_MAGNIFY_NAV_BAR_AND_IME)
     public void initWindowMagnificationController_checkAllowMagnifyTypingWithSecureSettings() {
         verify(mSecureSettings).getIntForUser(
                 eq(Settings.Secure.ACCESSIBILITY_MAGNIFICATION_FOLLOW_TYPING_ENABLED),
@@ -290,8 +286,6 @@ public class WindowMagnificationControllerTest extends SysuiTestCase {
     }
 
     @Test
-    @EnableFlags(com.android.server.accessibility
-            .Flags.FLAG_ENABLE_MAGNIFICATION_MAGNIFY_NAV_BAR_AND_IME)
     public void initWindowMagnificationController_checkAllowMagnifyKeyboardWithSecureSettings() {
         int defaultValue = AccessibilityUtils.getMagnificationMagnifyKeyboardDefaultValue(mContext);
         verify(mSecureSettings).getIntForUser(

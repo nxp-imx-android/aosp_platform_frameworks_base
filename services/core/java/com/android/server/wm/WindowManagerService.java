@@ -869,10 +869,8 @@ public class WindowManagerService extends IWindowManager.Stub
                     UserHandle.USER_ALL);
             resolver.registerContentObserver(mDisableSecureWindowsUri, false, this,
                     UserHandle.USER_ALL);
-            if (com.android.server.accessibility.Flags.enableMagnificationMagnifyNavBarAndIme()) {
-                resolver.registerContentObserver(mMagnifyImeEnabledUri, false, this,
-                        UserHandle.USER_ALL);
-            }
+            resolver.registerContentObserver(mMagnifyImeEnabledUri, false, this,
+                    UserHandle.USER_ALL);
             resolver.registerContentObserver(mPolicyControlUri, false, this, UserHandle.USER_ALL);
             if (DesktopModeHelper.isDesktopExperienceDevOptionSupported(mContext)) {
                 disableForceDesktopModeOnExternalDisplays();
@@ -1073,11 +1071,6 @@ public class WindowManagerService extends IWindowManager.Stub
         }
 
         void updateMagnifyIme() {
-            if (!com.android.server.accessibility.Flags.enableMagnificationMagnifyNavBarAndIme()) {
-                mMagnifyIme = false;
-                return;
-            }
-
             boolean enabledMagnifyIme = Settings.Secure.getIntForUser(
                     mContext.getContentResolver(),
                     Settings.Secure.ACCESSIBILITY_MAGNIFICATION_MAGNIFY_NAV_AND_IME,

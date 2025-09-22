@@ -57,7 +57,6 @@ import android.widget.SeekBar;
 import com.android.internal.accessibility.util.AccessibilityUtils;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.graphics.SfVsyncFrameCallbackProvider;
-import com.android.server.accessibility.Flags;
 import com.android.systemui.common.ui.view.SeekBarWithIconButtonsView;
 import com.android.systemui.res.R;
 import com.android.systemui.util.settings.SecureSettings;
@@ -172,27 +171,25 @@ class WindowMagnificationSettings implements MagnificationGestureDetector.OnGest
             }
         };
 
-        if (Flags.enableMagnificationMagnifyNavBarAndIme()) {
-            mMagnifyTypingObserver = new ContentObserver(
-                    mContext.getMainThreadHandler()) {
-                @Override
-                public void onChange(boolean selfChange) {
-                    mSettingView.post(() -> {
-                        updateMagnifyTypingUI();
-                    });
-                }
-            };
+        mMagnifyTypingObserver = new ContentObserver(
+                mContext.getMainThreadHandler()) {
+            @Override
+            public void onChange(boolean selfChange) {
+                mSettingView.post(() -> {
+                    updateMagnifyTypingUI();
+                });
+            }
+        };
 
-            mMagnifyKeyboardObserver = new ContentObserver(
-                    mContext.getMainThreadHandler()) {
-                @Override
-                public void onChange(boolean selfChange) {
-                    mSettingView.post(() -> {
-                        updateMagnifyKeyboardUI();
-                    });
-                }
-            };
-        }
+        mMagnifyKeyboardObserver = new ContentObserver(
+                mContext.getMainThreadHandler()) {
+            @Override
+            public void onChange(boolean selfChange) {
+                mSettingView.post(() -> {
+                    updateMagnifyKeyboardUI();
+                });
+            }
+        };
     }
 
     private class ZoomSeekbarChangeListener implements
@@ -350,10 +347,8 @@ class WindowMagnificationSettings implements MagnificationGestureDetector.OnGest
 
         // Unregister observer before removing view
         mSecureSettings.unregisterContentObserverSync(mMagnificationCapabilityObserver);
-        if (Flags.enableMagnificationMagnifyNavBarAndIme()) {
-            mSecureSettings.unregisterContentObserverSync(mMagnifyTypingObserver);
-            mSecureSettings.unregisterContentObserverSync(mMagnifyKeyboardObserver);
-        }
+        mSecureSettings.unregisterContentObserverSync(mMagnifyTypingObserver);
+        mSecureSettings.unregisterContentObserverSync(mMagnifyKeyboardObserver);
         mWindowManager.removeView(mSettingView);
         mIsVisible = false;
         if (resetPosition) {
@@ -406,10 +401,8 @@ class WindowMagnificationSettings implements MagnificationGestureDetector.OnGest
         if (!mIsVisible) {
             updateUIControlsIfNeeded();
             updatePanelSize(mContext);
-            if (Flags.enableMagnificationMagnifyNavBarAndIme()) {
-                updateMagnifyTypingUI();
-                updateMagnifyKeyboardUI();
-            }
+            updateMagnifyTypingUI();
+            updateMagnifyKeyboardUI();
             setScaleSeekbar(getMagnificationScale());
             if (resetPosition) {
                 mDraggableWindowBounds.set(getDraggableWindowBounds());
@@ -424,17 +417,15 @@ class WindowMagnificationSettings implements MagnificationGestureDetector.OnGest
                     mMagnificationCapabilityObserver,
                     UserHandle.USER_CURRENT);
 
-            if (Flags.enableMagnificationMagnifyNavBarAndIme()) {
-                mSecureSettings.registerContentObserverForUserSync(
-                        Settings.Secure.ACCESSIBILITY_MAGNIFICATION_FOLLOW_TYPING_ENABLED,
-                        mMagnifyTypingObserver,
-                        UserHandle.USER_CURRENT);
+            mSecureSettings.registerContentObserverForUserSync(
+                    Settings.Secure.ACCESSIBILITY_MAGNIFICATION_FOLLOW_TYPING_ENABLED,
+                    mMagnifyTypingObserver,
+                    UserHandle.USER_CURRENT);
 
-                mSecureSettings.registerContentObserverForUserSync(
-                        Settings.Secure.ACCESSIBILITY_MAGNIFICATION_MAGNIFY_NAV_AND_IME,
-                        mMagnifyKeyboardObserver,
-                        UserHandle.USER_CURRENT);
-            }
+            mSecureSettings.registerContentObserverForUserSync(
+                    Settings.Secure.ACCESSIBILITY_MAGNIFICATION_MAGNIFY_NAV_AND_IME,
+                    mMagnifyKeyboardObserver,
+                    UserHandle.USER_CURRENT);
 
             // Exclude magnification switch button from system gesture area.
             setSystemGestureExclusion();
@@ -512,10 +503,8 @@ class WindowMagnificationSettings implements MagnificationGestureDetector.OnGest
                 mEditButton.setVisibility(View.VISIBLE);
                 mAllowDiagonalScrollingView.setVisibility(View.VISIBLE);
                 mFullScreenButton.setVisibility(View.GONE);
-                if (Flags.enableMagnificationMagnifyNavBarAndIme()) {
-                    mMagnifyTypingView.setVisibility(View.VISIBLE);
-                    mMagnifyKeyboardView.setVisibility(View.GONE);
-                }
+                mMagnifyTypingView.setVisibility(View.VISIBLE);
+                mMagnifyKeyboardView.setVisibility(View.GONE);
                 if (selectedButtonIndex == MagnificationSize.FULLSCREEN) {
                     selectedButtonIndex =
                             windowMagnificationFrameSizePrefs.getIndexForCurrentDensity();
@@ -530,19 +519,15 @@ class WindowMagnificationSettings implements MagnificationGestureDetector.OnGest
                     // prevent the size title from too close to the size buttons
                     mEditButton.setVisibility(View.INVISIBLE);
                     mAllowDiagonalScrollingView.setVisibility(View.GONE);
-                    if (Flags.enableMagnificationMagnifyNavBarAndIme()) {
-                        mMagnifyTypingView.setVisibility(View.VISIBLE);
-                        mMagnifyKeyboardView.setVisibility(View.VISIBLE);
-                    }
+                    mMagnifyTypingView.setVisibility(View.VISIBLE);
+                    mMagnifyKeyboardView.setVisibility(View.VISIBLE);
                     // force the fullscreen button showing
                     selectedButtonIndex = MagnificationSize.FULLSCREEN;
                 } else { // mode = ACCESSIBILITY_MAGNIFICATION_MODE_WINDOW
                     mEditButton.setVisibility(View.VISIBLE);
                     mAllowDiagonalScrollingView.setVisibility(View.VISIBLE);
-                    if (Flags.enableMagnificationMagnifyNavBarAndIme()) {
-                        mMagnifyTypingView.setVisibility(View.VISIBLE);
-                        mMagnifyKeyboardView.setVisibility(View.GONE);
-                    }
+                    mMagnifyTypingView.setVisibility(View.VISIBLE);
+                    mMagnifyKeyboardView.setVisibility(View.GONE);
                     selectedButtonIndex =
                             windowMagnificationFrameSizePrefs.getIndexForCurrentDensity();
                 }
@@ -623,23 +608,21 @@ class WindowMagnificationSettings implements MagnificationGestureDetector.OnGest
         mAllowDiagonalScrollingSwitch.setOnCheckedChangeListener(
                 (view, isChecked) -> setDiagonalScrolling(isChecked));
 
-        if (Flags.enableMagnificationMagnifyNavBarAndIme()) {
-            mMagnifyTypingView =
-                    (LinearLayout) mSettingView.findViewById(R.id.magnifier_typing_view);
-            mMagnifyTypingSwitch =
-                    (MaterialSwitch) mSettingView.findViewById(R.id.magnifier_typing_switch);
-            mMagnifyTypingSwitch.setChecked(isMagnifyTypingEnabled());
-            mMagnifyTypingSwitch.setOnCheckedChangeListener(
-                    (view, isChecked) -> setMagnifyTyping(isChecked));
+        mMagnifyTypingView =
+                (LinearLayout) mSettingView.findViewById(R.id.magnifier_typing_view);
+        mMagnifyTypingSwitch =
+                (MaterialSwitch) mSettingView.findViewById(R.id.magnifier_typing_switch);
+        mMagnifyTypingSwitch.setChecked(isMagnifyTypingEnabled());
+        mMagnifyTypingSwitch.setOnCheckedChangeListener(
+                (view, isChecked) -> setMagnifyTyping(isChecked));
 
-            mMagnifyKeyboardView =
-                    (LinearLayout) mSettingView.findViewById(R.id.magnifier_keyboard_view);
-            mMagnifyKeyboardSwitch =
-                    (MaterialSwitch) mSettingView.findViewById(R.id.magnifier_keyboard_switch);
-            mMagnifyKeyboardSwitch.setChecked(isMagnifyKeyboardEnabled());
-            mMagnifyKeyboardSwitch.setOnCheckedChangeListener(
-                    (view, isChecked) -> setMagnifyKeyboard(isChecked));
-        }
+        mMagnifyKeyboardView =
+                (LinearLayout) mSettingView.findViewById(R.id.magnifier_keyboard_view);
+        mMagnifyKeyboardSwitch =
+                (MaterialSwitch) mSettingView.findViewById(R.id.magnifier_keyboard_switch);
+        mMagnifyKeyboardSwitch.setChecked(isMagnifyKeyboardEnabled());
+        mMagnifyKeyboardSwitch.setOnCheckedChangeListener(
+                (view, isChecked) -> setMagnifyKeyboard(isChecked));
 
         mSmallButton.setOnClickListener(mButtonClickListener);
         mMediumButton.setOnClickListener(mButtonClickListener);

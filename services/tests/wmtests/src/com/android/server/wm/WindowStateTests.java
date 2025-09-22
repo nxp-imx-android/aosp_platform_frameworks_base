@@ -324,35 +324,6 @@ public class WindowStateTests extends WindowTestsBase {
     }
 
     @Test
-    @DisableFlags(com.android.server.accessibility
-            .Flags.FLAG_ENABLE_MAGNIFICATION_MAGNIFY_NAV_BAR_AND_IME)
-    public void testMagnifyIme_flagOffAndSettingsEnabled_typeIsIme_shouldNotMagnify() {
-        final ContentResolver cr = useFakeSettingsProvider();
-        Settings.Secure.putInt(cr,
-                Settings.Secure.ACCESSIBILITY_MAGNIFICATION_MAGNIFY_NAV_AND_IME, 1);
-        mWm.mSettingsObserver.onChange(false /* selfChange */,
-                Settings.Secure.getUriFor(
-                        Settings.Secure.ACCESSIBILITY_MAGNIFICATION_MAGNIFY_NAV_AND_IME));
-        final WindowState imeWindow = newWindowBuilder("imeWindow", TYPE_INPUT_METHOD).build();
-        final WindowState imeDialogWindow =
-                newWindowBuilder("imeDialogWindow", TYPE_INPUT_METHOD_DIALOG).build();
-        final WindowState privateImeWindow = newWindowBuilder("appWindow",
-                TYPE_APPLICATION).build();
-        privateImeWindow.mAttrs.privateFlags |= PRIVATE_FLAG_INPUT_METHOD_WINDOW;
-
-        imeWindow.setHasSurface(true);
-        imeDialogWindow.setHasSurface(true);
-        privateImeWindow.setHasSurface(true);
-
-        assertFalse(mWm.isMagnifyImeEnabled());
-        assertFalse(imeWindow.shouldMagnify());
-        assertFalse(imeDialogWindow.shouldMagnify());
-        assertFalse(privateImeWindow.shouldMagnify());
-    }
-
-    @Test
-    @EnableFlags(com.android.server.accessibility
-            .Flags.FLAG_ENABLE_MAGNIFICATION_MAGNIFY_NAV_BAR_AND_IME)
     public void testMagnifyIme_flagOnAndSettingsDisabled_typeIsIme_shouldNotMagnify() {
         final ContentResolver cr = useFakeSettingsProvider();
         Settings.Secure.putInt(cr,
@@ -378,8 +349,6 @@ public class WindowStateTests extends WindowTestsBase {
     }
 
     @Test
-    @EnableFlags(com.android.server.accessibility
-            .Flags.FLAG_ENABLE_MAGNIFICATION_MAGNIFY_NAV_BAR_AND_IME)
     public void testMagnifyIme_flagOnAndSettingsEnabled_typeIsIme_shouldMagnify() {
         final ContentResolver cr = useFakeSettingsProvider();
         Settings.Secure.putInt(cr,
@@ -405,8 +374,6 @@ public class WindowStateTests extends WindowTestsBase {
     }
 
     @Test
-    @EnableFlags(com.android.server.accessibility
-            .Flags.FLAG_ENABLE_MAGNIFICATION_MAGNIFY_NAV_BAR_AND_IME)
     public void testMagnifyIme_flagOnAndDefaultEnable_typeIsIme_shouldMagnify() {
         useFakeSettingsProvider();  // This resets the Settings.Secure value.
         spyOn(mContext.getResources());
@@ -433,8 +400,6 @@ public class WindowStateTests extends WindowTestsBase {
     }
 
     @Test
-    @EnableFlags(com.android.server.accessibility
-            .Flags.FLAG_ENABLE_MAGNIFICATION_MAGNIFY_NAV_BAR_AND_IME)
     public void testMagnifyIme_flagOnAndDefaultDisable_typeIsIme_shouldNotMagnify() {
         useFakeSettingsProvider();  // This resets the Settings.Secure value.
         spyOn(mContext.getResources());
@@ -461,8 +426,6 @@ public class WindowStateTests extends WindowTestsBase {
     }
 
     @Test
-    @EnableFlags(com.android.server.accessibility
-            .Flags.FLAG_ENABLE_MAGNIFICATION_MAGNIFY_NAV_BAR_AND_IME)
     public void testMagnifyNavBar_WhenImeIsMagnified_shouldNotMagnify() {
         final ContentResolver cr = useFakeSettingsProvider();
         Settings.Secure.putInt(cr,
@@ -497,8 +460,6 @@ public class WindowStateTests extends WindowTestsBase {
     }
 
     @Test
-    @EnableFlags(com.android.server.accessibility
-            .Flags.FLAG_ENABLE_MAGNIFICATION_MAGNIFY_NAV_BAR_AND_IME)
     public void testMagnifyNavBar_WhenImeIsMagnified_withMouse_shouldMagnify() {
         final ContentResolver cr = useFakeSettingsProvider();
         Settings.Secure.putInt(cr,
@@ -521,8 +482,6 @@ public class WindowStateTests extends WindowTestsBase {
     }
 
     @Test
-    @EnableFlags(com.android.server.accessibility
-            .Flags.FLAG_ENABLE_MAGNIFICATION_MAGNIFY_NAV_BAR_AND_IME)
     public void testMagnifyNavBar_WhenImeIsMagnified_withKeyboard_shouldMagnify() {
         final ContentResolver cr = useFakeSettingsProvider();
         Settings.Secure.putInt(cr,
@@ -933,8 +892,6 @@ public class WindowStateTests extends WindowTestsBase {
     }
 
     @Test
-    @EnableFlags(com.android.server.accessibility
-            .Flags.FLAG_ENABLE_MAGNIFICATION_MAGNIFY_NAV_BAR_AND_IME)
     public void testSwitchUser_settingValueIsDisabled_shouldNotMagnify() {
         final ContentResolver cr = useFakeSettingsProvider();
         Settings.Secure.putIntForUser(cr,
@@ -946,8 +903,6 @@ public class WindowStateTests extends WindowTestsBase {
     }
 
     @Test
-    @EnableFlags(com.android.server.accessibility
-            .Flags.FLAG_ENABLE_MAGNIFICATION_MAGNIFY_NAV_BAR_AND_IME)
     public void testSwitchUser_settingValueIsEnabled_shouldMagnify() {
         final ContentResolver cr = useFakeSettingsProvider();
         Settings.Secure.putIntForUser(cr,
