@@ -2192,6 +2192,8 @@ public class QuickSettingsControllerImpl implements QuickSettingsController, Dum
         ipw.println(mUseLargeScreenShadeHeader);
         ipw.print("mVisible=");
         ipw.println(mVisible);
+        ipw.print("displayId=");
+        ipw.println(mPanelView.getContext().getDisplayId());
     }
 
     /** */
