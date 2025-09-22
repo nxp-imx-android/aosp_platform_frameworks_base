@@ -265,17 +265,13 @@ constructor(
         alphaOnShadeExpansion
             .map { it < 1f }
             .distinctUntilChanged()
-            .onStart { emit(false) }.flatMapLatest { isExpanding ->
+            .onStart { emit(false) }
+            .flatMapLatest { isExpanding ->
                 if (Flags.deferDozeTransitionOnShadeDrag() && isExpanding) {
                     // If shade is expanding, switch to a flow that never emits.
                     emptyFlow()
                 } else {
-                    // Otherwise, use the original flow.
-                    if (Flags.newDozingKeyguardStates()) {
-                        dozingToLockscreenTransitionViewModel.lockscreenAlpha(viewState)
-                    } else {
-                        dozingToLockscreenTransitionViewModel.lockscreenAlpha
-                    }
+                    dozingToLockscreenTransitionViewModel.lockscreenAlpha(viewState)
                 }
             }
 
