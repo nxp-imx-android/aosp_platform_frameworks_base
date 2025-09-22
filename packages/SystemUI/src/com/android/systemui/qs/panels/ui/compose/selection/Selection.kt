@@ -42,7 +42,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.State
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -74,6 +73,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.toSize
 import androidx.compose.ui.zIndex
 import com.android.compose.modifiers.thenIf
+import com.android.systemui.common.ui.compose.gestures.dragSpy
 import com.android.systemui.qs.panels.ui.compose.infinitegrid.CommonTileDefaults.InactiveCornerRadius
 import com.android.systemui.qs.panels.ui.compose.selection.SelectionDefaults.BADGE_ANGLE_RAD
 import com.android.systemui.qs.panels.ui.compose.selection.SelectionDefaults.BadgeIconSize
@@ -169,6 +169,12 @@ fun InteractiveTileContainer(
                         orientation = Orientation.Horizontal,
                     )
                     .clickable(enabled = tileState != None, onClick = onClick)
+                    .thenIf(tileState == Selected) {
+                        Modifier.dragSpy(
+                            onDragStart = resizingState::dragStarted,
+                            onDragEnd = resizingState::dragEnded,
+                        )
+                    }
                     .semantics { contentDescription?.let { this.contentDescription = it } }
             ) {
                 val size = with(LocalDensity.current) { BadgeIconSize.toDp() }
@@ -291,13 +297,11 @@ private fun MinimumInteractiveSizeComponent(
 
 @Composable
 private fun Modifier.resizable(selected: Boolean, state: ResizingState): Modifier {
-    if (!selected) return zIndex(1f)
-
-    return zIndex(2f).layout { measurable, constraints ->
-        val isIdle by derivedStateOf { state.progress().let { it == 0f || it == 1f } }
-        // Grab the width from the resizing state if a resize is in progress
+    return zIndex(if (selected) 2f else 1f).layout { measurable, constraints ->
+        // Grab the width from the resizing state regardless of if the tile is selected or not to
+        // animate undo actions
         val width =
-            state.anchoredDraggableState.requireOffset().roundToInt().takeIf { !isIdle }
+            state.anchoredDraggableState.offset.takeIf { !it.isNaN() }?.roundToInt()
                 ?: constraints.maxWidth
         val placeable = measurable.measure(constraints.copy(minWidth = width, maxWidth = width))
         layout(constraints.maxWidth, placeable.height) { placeable.placeRelative(0, 0) }
