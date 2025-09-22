@@ -277,6 +277,15 @@ constructor(
     private fun reparentToDisplayId(id: Int) {
         t.traceSyncAndAsync({ "reparentToDisplayId(id=$id)" }) {
             shadeContext.reparentToDisplay(id)
+            logBuffer.log(
+                TAG,
+                LogLevel.DEBUG,
+                { int1 = id },
+                {
+                    "Shade window reparent to display $int1 succeeded. " +
+                        "Resources are accurate from now on."
+                },
+            )
         }
     }
 

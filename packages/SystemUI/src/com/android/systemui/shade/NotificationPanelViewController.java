@@ -686,7 +686,9 @@ public final class NotificationPanelViewController implements
 
         mView.addOnLayoutChangeListener(new ShadeLayoutChangeListener());
         mView.setOnTouchListener(getTouchHandler());
-        mView.setOnConfigurationChangedListener(config -> loadDimens());
+        if (!ShadeWindowGoesAround.isEnabled()) {
+            mView.setOnConfigurationChangedListener(config -> loadDimens());
+        }
 
         mResources = mView.getResources();
         mKeyguardStateController = keyguardStateController;
@@ -3534,6 +3536,9 @@ public final class NotificationPanelViewController implements
         @Override
         public void onDensityOrFontScaleChanged() {
             debugLog("onDensityOrFontScaleChanged");
+            if (ShadeWindowGoesAround.isEnabled()) {
+                loadDimens();
+            }
             reInflateViews();
         }
     }
