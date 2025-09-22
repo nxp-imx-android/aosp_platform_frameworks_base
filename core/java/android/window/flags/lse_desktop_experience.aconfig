@@ -154,6 +154,13 @@ flag {
 }
 
 flag {
+    name: "enable_auto_rotate_on_slate_state"
+    namespace: "lse_desktop_experience"
+    description: "Enables Auto Rotate when a device is in SLATE state"
+    bug: "394947531"
+}
+
+flag {
     name: "enable_backup_and_restore_display_window_settings"
     namespace: "lse_desktop_experience"
     description: "Enables backup and restore for display window settings."
