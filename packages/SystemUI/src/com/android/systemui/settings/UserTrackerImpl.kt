@@ -292,11 +292,15 @@ internal constructor(
     protected open fun handleProfilesChanged() {
         Assert.isNotMainThread()
 
-        val profiles = userManager.getProfiles(userId)
-        synchronized(mutex) {
-            userProfiles = profiles.map { UserInfo(it) } // save a "deep" copy
+        try {
+            val profiles = userManager.getProfiles(userId)
+            synchronized(mutex) {
+                userProfiles = profiles.map { UserInfo(it) } // save a "deep" copy
+            }
+            notifySubscribers { callback, _ -> callback.onProfilesChanged(profiles) }
+        } catch (e: SecurityException) {
+            Log.e(TAG, "Unable to process profile change", e)
         }
-        notifySubscribers { callback, _ -> callback.onProfilesChanged(profiles) }
     }
 
     override fun addCallback(callback: UserTracker.Callback, executor: Executor) {
@@ -316,7 +320,9 @@ internal constructor(
             val callback = it.callback.get()
             if (callback != null) {
                 it.executor.execute {
-                    traceSection({ "UserTrackerImpl::$callback" }) { action(callback) { latch.countDown() } }
+                    traceSection({ "UserTrackerImpl::$callback" }) {
+                        action(callback) { latch.countDown() }
+                    }
                 }
             } else {
                 latch.countDown()
