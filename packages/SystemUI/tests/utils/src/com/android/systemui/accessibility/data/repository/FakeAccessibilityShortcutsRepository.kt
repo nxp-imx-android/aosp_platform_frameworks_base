@@ -19,10 +19,10 @@ package com.android.systemui.accessibility.data.repository
 import android.content.Context
 import android.hardware.input.KeyGestureEvent
 import android.os.Handler
-import com.android.internal.accessibility.util.FrameworkObjectProvider
 import com.android.internal.accessibility.util.TtsPrompt
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Main
+import org.mockito.Mockito.mock
 
 class FakeAccessibilityShortcutsRepository(
     @param:Application private val context: Context,
@@ -74,7 +74,6 @@ class FakeAccessibilityShortcutsRepository(
 
     override fun createTtsPromptForText(text: CharSequence): TtsPrompt {
         ttsText = text
-        ttsPrompt = TtsPrompt(context, handler, FrameworkObjectProvider(), text)
-        return ttsPrompt as TtsPrompt
+        return mock(TtsPrompt::class.java).also { ttsPrompt = it }
     }
 }

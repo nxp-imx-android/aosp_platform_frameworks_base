@@ -36,6 +36,7 @@ import com.android.systemui.broadcast.broadcastDispatcher
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.backgroundScope
 import com.android.systemui.kosmos.runTest
+import com.android.systemui.runOnMainThreadAndWaitForIdleSync
 import com.android.systemui.statusbar.phone.systemUIDialogFactory
 import com.android.systemui.testKosmosNew
 import com.google.common.truth.Truth.assertThat
@@ -63,7 +64,11 @@ class KeyGestureDialogStartableTest : SysuiTestCase() {
 
     @Before
     fun setUp() {
-        onTeardown { with(kosmos) { underTest.currentDialog?.dismiss() } }
+        onTeardown {
+            runOnMainThreadAndWaitForIdleSync {
+                with(kosmos) { underTest.currentDialog?.dismiss() }
+            }
+        }
     }
 
     @Test
