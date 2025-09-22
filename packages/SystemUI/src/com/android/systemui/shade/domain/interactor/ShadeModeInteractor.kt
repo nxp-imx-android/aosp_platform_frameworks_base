@@ -17,6 +17,7 @@
 package com.android.systemui.shade.domain.interactor
 
 import android.util.Log
+import androidx.compose.ui.Alignment
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.log.table.TableLogBuffer
 import com.android.systemui.log.table.logDiffsForTable
@@ -55,6 +56,12 @@ interface ShadeModeInteractor {
      * Note: In non-Dual-Shade modes, this value may be `true` even when the screen is wide.
      */
     val isFullWidthShade: StateFlow<Boolean>
+
+    /**
+     * The horizontal alignment of the notification stack on the screen. This determines the
+     * position of the notifications shade, lockscreen content columns, HUNs, etc.
+     */
+    val notificationStackHorizontalAlignment: StateFlow<Alignment.Horizontal>
 
     /** Convenience shortcut for querying whether the current [shadeMode] is [ShadeMode.Dual]. */
     val isDualShade: Boolean
@@ -145,6 +152,30 @@ constructor(
         }
     }
 
+    override val notificationStackHorizontalAlignment: StateFlow<Alignment.Horizontal> =
+        combine(shadeMode, isFullWidthShade, shadeConfigRepository.isNotificationShadeOnTopEnd) {
+                shadeMode,
+                isFullWidthShade,
+                isNotificationShadeOnTopEnd ->
+                when (shadeMode) {
+                    is ShadeMode.Single -> Alignment.CenterHorizontally
+                    is ShadeMode.Split -> Alignment.End
+                    is ShadeMode.Dual ->
+                        if (isFullWidthShade) {
+                            Alignment.CenterHorizontally
+                        } else if (isNotificationShadeOnTopEnd) {
+                            Alignment.End
+                        } else {
+                            Alignment.Start
+                        }
+                }
+            }
+            .stateIn(
+                scope = applicationScope,
+                started = SharingStarted.Eagerly,
+                initialValue = Alignment.CenterHorizontally,
+            )
+
     companion object {
         private const val TAG = "ShadeModeInteractorImpl"
     }
@@ -155,4 +186,7 @@ class ShadeModeInteractorEmptyImpl @Inject constructor() : ShadeModeInteractor {
     override val shadeMode: StateFlow<ShadeMode> = MutableStateFlow(ShadeMode.Single)
 
     override val isFullWidthShade: StateFlow<Boolean> = MutableStateFlow(false)
+
+    override val notificationStackHorizontalAlignment: StateFlow<Alignment.Horizontal> =
+        MutableStateFlow(Alignment.End)
 }

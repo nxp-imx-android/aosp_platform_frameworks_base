@@ -24,7 +24,6 @@ import com.android.compose.animation.scene.ObservableTransitionState
 import com.android.systemui.Flags.FLAG_GESTURE_BETWEEN_HUB_AND_LOCKSCREEN_MOTION
 import com.android.systemui.Flags.FLAG_GLANCEABLE_HUB_V2
 import com.android.systemui.Flags.FLAG_LOCKSCREEN_SHADE_TO_DREAM_TRANSITION_FIX
-import com.android.systemui.Flags.FLAG_STATUS_BAR_FOR_DESKTOP
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.bouncer.data.repository.keyguardBouncerRepository
 import com.android.systemui.common.shared.model.NotificationContainerBounds
@@ -32,7 +31,6 @@ import com.android.systemui.common.ui.data.repository.fakeConfigurationRepositor
 import com.android.systemui.communal.data.repository.communalSceneRepository
 import com.android.systemui.communal.domain.interactor.communalSceneInteractor
 import com.android.systemui.communal.shared.model.CommunalScenes
-import com.android.systemui.desktop.domain.interactor.enableUsingDesktopStatusBar
 import com.android.systemui.flags.BrokenWithSceneContainer
 import com.android.systemui.flags.DisableSceneContainer
 import com.android.systemui.flags.EnableSceneContainer
@@ -171,16 +169,14 @@ class SharedNotificationContainerViewModelTest(flags: FlagsParameterization) : S
 
     @Test
     @EnableSceneContainer
-    @EnableFlags(FLAG_STATUS_BAR_FOR_DESKTOP)
     fun validateMarginStart_dualShade_notificationShadeEndAligned() =
         kosmos.runTest {
             overrideResource(R.bool.config_notificationShadeOnTopEnd, true)
-            enableUsingDesktopStatusBar()
             enableDualShade(wideLayout = true)
 
             val dimens by collectLastValue(underTest.configurationBasedDimensions)
 
-            fakeConfigurationRepository.onAnyConfigurationChange()
+            fakeConfigurationRepository.onConfigurationChange()
 
             assertThat(checkNotNull(dimens).marginStart).isEqualTo(0)
         }
@@ -260,12 +256,10 @@ class SharedNotificationContainerViewModelTest(flags: FlagsParameterization) : S
 
     @Test
     @EnableSceneContainer
-    @EnableFlags(FLAG_STATUS_BAR_FOR_DESKTOP)
     fun validateHorizontalPosition_dualShade_notificationShadeEndAligned() =
         kosmos.runTest {
             overrideResource(R.bool.config_notificationShadeOnTopEnd, true)
             overrideDimensionPixelSize(R.dimen.shade_panel_width, 200)
-            enableUsingDesktopStatusBar()
             enableDualShade(wideLayout = true)
 
             val dimens by collectLastValue(underTest.configurationBasedDimensions)
@@ -336,17 +330,15 @@ class SharedNotificationContainerViewModelTest(flags: FlagsParameterization) : S
 
     @Test
     @EnableSceneContainer
-    @EnableFlags(FLAG_STATUS_BAR_FOR_DESKTOP)
     fun validateMarginEnd_dualShade_isNotificationShadeEndAligned() =
         kosmos.runTest {
             overrideResource(R.bool.config_notificationShadeOnTopEnd, true)
             overrideResource(R.dimen.shade_panel_margin_horizontal, 50)
-            enableUsingDesktopStatusBar()
             enableDualShade(wideLayout = true)
 
             val dimens by collectLastValue(underTest.configurationBasedDimensions)
 
-            fakeConfigurationRepository.onAnyConfigurationChange()
+            fakeConfigurationRepository.onConfigurationChange()
 
             assertThat(checkNotNull(dimens).marginEnd).isEqualTo(50)
         }

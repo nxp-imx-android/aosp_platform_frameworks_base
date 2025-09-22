@@ -27,7 +27,9 @@
 
     <!--
     Whether notifications shade should be in the top end position (e.g. the right side of the screen
-    in an LTR locale) on wide screens. Ignored when `config_isFullWidth` is `true`.
+    in an LTR locale) on wide screens.
+    Only used in Dual Shade mode, when `config_isFullWidthShade` is `false`. Ignored in all other
+    cases.
     -->
     <bool name="config_notificationShadeOnTopEnd">false</bool>
 

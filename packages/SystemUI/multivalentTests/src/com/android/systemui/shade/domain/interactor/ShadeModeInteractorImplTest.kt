@@ -17,6 +17,7 @@
 package com.android.systemui.shade.domain.interactor
 
 import android.provider.Settings
+import androidx.compose.ui.Alignment
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
@@ -231,6 +232,70 @@ class ShadeModeInteractorImplTest : SysuiTestCase() {
 
             setupShadeConfig(dualShadeSettingEnabled = false, dualShadeEnabledByDefault = false)
             assertThat(isFullWidthShade).isTrue()
+        }
+
+    @Test
+    fun notificationStackHorizontalAlignment_singleShade_centeredHorizontally() =
+        kosmos.runTest {
+            val alignment by collectLastValue(underTest.notificationStackHorizontalAlignment)
+
+            enableSingleShade(wideLayout = true)
+
+            assertThat(alignment).isEqualTo(Alignment.CenterHorizontally)
+        }
+
+    @Test
+    fun notificationStackHorizontalAlignment_splitShade_endAligned() =
+        kosmos.runTest {
+            val alignment by collectLastValue(underTest.notificationStackHorizontalAlignment)
+
+            enableSplitShade()
+
+            assertThat(alignment).isEqualTo(Alignment.End)
+        }
+
+    @Test
+    fun notificationStackHorizontalAlignment_dualShadeNarrow_centeredHorizontally() =
+        kosmos.runTest {
+            val alignment by collectLastValue(underTest.notificationStackHorizontalAlignment)
+
+            enableDualShade(wideLayout = false)
+
+            assertThat(alignment).isEqualTo(Alignment.CenterHorizontally)
+        }
+
+    @Test
+    fun notificationStackHorizontalAlignment_dualShadeWide_startAligned() =
+        kosmos.runTest {
+            val alignment by collectLastValue(underTest.notificationStackHorizontalAlignment)
+
+            enableDualShade(wideLayout = true)
+
+            assertThat(alignment).isEqualTo(Alignment.Start)
+        }
+
+    @Test
+    fun notificationStackHorizontalAlignment_desktopWithTopEndConfig_endAligned() =
+        kosmos.runTest {
+            overrideResource(R.bool.config_notificationShadeOnTopEnd, true)
+
+            val alignment by collectLastValue(underTest.notificationStackHorizontalAlignment)
+
+            enableDualShade(wideLayout = true)
+
+            assertThat(alignment).isEqualTo(Alignment.End)
+        }
+
+    @Test
+    fun notificationStackHorizontalAlignment_desktopWithoutTopEndConfig_startAligned() =
+        kosmos.runTest {
+            overrideResource(R.bool.config_notificationShadeOnTopEnd, false)
+
+            val alignment by collectLastValue(underTest.notificationStackHorizontalAlignment)
+
+            enableDualShade(wideLayout = true)
+
+            assertThat(alignment).isEqualTo(Alignment.Start)
         }
 
     private fun Kosmos.setupScreenConfig(wideScreen: Boolean, legacyUseSplitShade: Boolean) {

@@ -17,4 +17,5 @@
 
 <resources>
     <bool name="config_dualShadeEnabledByDefault">true</bool>
+    <bool name="config_notificationShadeOnTopEnd">true</bool>
 </resources>
