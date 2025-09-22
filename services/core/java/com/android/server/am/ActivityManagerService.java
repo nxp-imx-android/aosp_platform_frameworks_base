@@ -19571,7 +19571,7 @@ public class ActivityManagerService extends IActivityManager.Stub
 
         @Override
         public void onProcStateSeqIncremented(ActiveUidsInternal activeUids) {
-            mProcessList.notifyProcStateChangedForNetworkLOSP((ActiveUids) activeUids);
+            mProcessList.notifyProcStateChangedForNetworkLOSP(activeUids);
         }
 
         @Override

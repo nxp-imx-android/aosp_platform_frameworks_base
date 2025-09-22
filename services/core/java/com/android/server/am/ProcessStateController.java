@@ -42,6 +42,7 @@ import android.util.SparseBooleanArray;
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.server.ServiceThread;
+import com.android.server.am.psc.ActiveUidsInternal;
 import com.android.server.am.psc.AsyncBatchSession;
 import com.android.server.am.psc.ProcessListInternal;
 import com.android.server.am.psc.ProcessRecordInternal;
@@ -84,7 +85,7 @@ public class ProcessStateController {
     private final ConcurrentLinkedQueue<Runnable> mStagingQueue = new ConcurrentLinkedQueue<>();
 
     private ProcessStateController(ActivityManagerService ams, ProcessListInternal processList,
-            ActiveUids activeUids, ServiceThread handlerThread,
+            ActiveUidsInternal activeUids, ServiceThread handlerThread,
             Object lock, Object procLock, Consumer<ProcessRecord> topChangeCallback,
             ProcessLruUpdater lruUpdater, OomAdjuster.Injector oomAdjInjector,
             OomAdjuster.Constants oomConstants, OomAdjuster.Callback callback) {
@@ -1173,7 +1174,7 @@ public class ProcessStateController {
     public static class Builder {
         private final ActivityManagerService mAms;
         private final ProcessListInternal mProcessList;
-        private final ActiveUids mActiveUids;
+        private final ActiveUidsInternal mActiveUids;
         private final OomAdjuster.Constants mOomConstants;
         private final OomAdjuster.Callback mOomAdjCallback;
 
@@ -1184,7 +1185,7 @@ public class ProcessStateController {
         private OomAdjuster.Injector mOomAdjInjector = null;
 
         public Builder(ActivityManagerService ams, ProcessListInternal processList,
-                ActiveUids activeUids, OomAdjuster.Constants oomConstants,
+                ActiveUidsInternal activeUids, OomAdjuster.Constants oomConstants,
                 OomAdjuster.Callback oomAdjCallback) {
             mAms = ams;
             mProcessList = processList;
