@@ -11819,22 +11819,18 @@ public class Notification implements Parcelable
         /** @hide */
         @Override
         public RemoteViews makeHeadsUpContentView() {
-            final StandardTemplateParams p = mBuilder.mParams.reset()
-                    .viewType(StandardTemplateParams.VIEW_TYPE_HEADS_UP)
-                    .fillTextsFrom(mBuilder).text(null)
-                    .hideProgress(true)
-                    .hideRightIcon(true);
-            final TemplateBindResult result = new TemplateBindResult();
-            final RemoteViews contentView = getStandardView(
-                    mBuilder.getCollapsedMetricLayoutResource(), p, result);
-            return bindMetricStyleMetrics(contentView, p, /* isExpandedView = */ false);
+            return makeLargeMetricContentView(StandardTemplateParams.VIEW_TYPE_HEADS_UP);
         }
 
         /** @hide */
         @Override
         public RemoteViews makeExpandedContentView() {
+            return makeLargeMetricContentView(StandardTemplateParams.VIEW_TYPE_EXPANDED);
+        }
+
+        private RemoteViews makeLargeMetricContentView(int viewType){
             final StandardTemplateParams p = mBuilder.mParams.reset()
-                    .viewType(StandardTemplateParams.VIEW_TYPE_EXPANDED)
+                    .viewType(viewType)
                     .hideProgress(true)
                     .fillTextsFrom(mBuilder)
                     .text(null)
@@ -11847,6 +11843,7 @@ public class Notification implements Parcelable
             } else {
                 expandedLayoutRes = mBuilder.getExpandedMetricLayoutResource();
             }
+
             final RemoteViews contentView = getStandardView(expandedLayoutRes, p, result);
             return bindMetricStyleMetrics(contentView, p, /* isExpandedView = */true);
         }
