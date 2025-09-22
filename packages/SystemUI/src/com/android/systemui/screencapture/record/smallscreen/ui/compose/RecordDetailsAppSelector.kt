@@ -16,7 +16,6 @@
 
 package com.android.systemui.screencapture.record.smallscreen.ui.compose
 
-import android.graphics.Bitmap
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -33,7 +32,6 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -147,31 +145,31 @@ private fun AppPreview(
                 Color.Black
             }
         Box(
+            contentAlignment = Alignment.Center,
             modifier =
-                Modifier.shadow(
-                        elevation = 4.dp,
-                        shape = shape,
-                        spotColor = shadowColor,
-                        ambientColor = shadowColor,
-                    )
-                    .clip(shape)
-                    .clickable(onClick = onClick)
-                    .background(MaterialTheme.colorScheme.surfaceContainer)
-                    .aspectRatio(viewModel?.thumbnail?.getOrNull().aspectRatio)
+                Modifier.aspectRatio(
+                    with(LocalResources.current.displayMetrics) {
+                        widthPixels / heightPixels.toFloat()
+                    }
+                ),
         ) {
             AnimatedContent(
                 targetState = viewModel?.thumbnail?.getOrNull(),
-                contentAlignment = Alignment.Center,
                 transitionSpec = { fadeIn() togetherWith fadeOut() },
-                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center,
+                modifier =
+                    Modifier.shadow(
+                            elevation = 4.dp,
+                            shape = shape,
+                            spotColor = shadowColor,
+                            ambientColor = shadowColor,
+                        )
+                        .clip(shape)
+                        .clickable(onClick = onClick)
+                        .background(MaterialTheme.colorScheme.surfaceContainer),
             ) { thumbnail ->
                 if (thumbnail == null) {
-                    Spacer(
-                        modifier =
-                            Modifier.background(
-                                color = MaterialTheme.colorScheme.surfaceContainerHigh
-                            )
-                    )
+                    Spacer(modifier = Modifier)
                 } else {
                     Image(bitmap = thumbnail.asImageBitmap(), contentDescription = null)
                 }
@@ -179,13 +177,3 @@ private fun AppPreview(
         }
     }
 }
-
-private val Bitmap?.aspectRatio: Float
-    @Composable
-    get() {
-        return if (this == null) {
-            with(LocalResources.current.displayMetrics) { widthPixels / heightPixels.toFloat() }
-        } else {
-            width / height.toFloat()
-        }
-    }
