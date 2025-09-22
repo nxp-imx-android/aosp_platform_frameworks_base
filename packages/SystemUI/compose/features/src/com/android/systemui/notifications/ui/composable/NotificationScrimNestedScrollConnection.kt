@@ -50,9 +50,8 @@ fun NotificationScrimNestedScrollConnection(
         orientation = Orientation.Vertical,
         // scrolling up and inner content is taller than the scrim, so scrim needs to
         // expand; content can scroll once scrim is at the minScrimOffset.
-        canStartPreScroll = { offsetAvailable, offsetBeforeStart, _ ->
+        canStartPreScroll = { offsetAvailable, _, _ ->
             offsetAvailable < 0 &&
-                offsetBeforeStart == 0f &&
                 contentHeight() > minVisibleScrimHeight() &&
                 scrimOffset() > minScrimOffset()
         },

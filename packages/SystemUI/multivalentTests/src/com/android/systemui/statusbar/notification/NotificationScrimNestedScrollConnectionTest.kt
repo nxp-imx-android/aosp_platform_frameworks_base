@@ -195,6 +195,24 @@ class NotificationScrimNestedScrollConnectionTest : SysuiTestCase() {
     }
 
     @Test
+    fun canContinueScroll_upAndDownInBetweenMinMaxOffset_true() = runTest {
+        scrimOffset = (MIN_SCRIM_OFFSET + MAX_SCRIM_OFFSET) / 2f
+        contentHeight = EXPANDED_CONTENT_HEIGHT
+
+        // Scroll Up
+        scrollConnection.onPreScroll(available = Offset(x = 0f, y = -1f), source = UserInput)
+        assertThat(isStarted).isEqualTo(true)
+
+        // Scroll down
+        scrollConnection.onPreScroll(available = Offset(x = 0f, y = 1f), source = UserInput)
+        assertThat(isStarted).isEqualTo(true)
+
+        // Scroll Up again
+        scrollConnection.onPreScroll(available = Offset(x = 0f, y = -1f), source = UserInput)
+        assertThat(isStarted).isEqualTo(true)
+    }
+
+    @Test
     fun canContinueScroll_atMaxOffset_false() = runTest {
         scrimOffset = MAX_SCRIM_OFFSET
         contentHeight = EXPANDED_CONTENT_HEIGHT
