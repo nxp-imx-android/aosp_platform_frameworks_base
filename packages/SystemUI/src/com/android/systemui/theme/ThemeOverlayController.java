@@ -466,7 +466,8 @@ public class ThemeOverlayController implements CoreStartable, Dumpable {
         dumpManager.registerDumpable(TAG, this);
 
         Flow<Boolean> isFinishedInAsleepStateFlow = mKeyguardTransitionInteractor
-                .isFinishedInStateWhere(KeyguardState.Companion::deviceIsAsleepInState);
+                .isFinishedInStateWhereWithScene(KeyguardState.Companion::deviceIsAsleepInState);
+
         mIsKeyguardOnAsleepState = mJavaAdapter.stateInApp(isFinishedInAsleepStateFlow, false);
     }
 

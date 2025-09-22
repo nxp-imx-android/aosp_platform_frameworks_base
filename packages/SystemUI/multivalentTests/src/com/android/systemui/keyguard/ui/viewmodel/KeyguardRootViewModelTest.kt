@@ -969,6 +969,7 @@ class KeyguardRootViewModelTest(flags: FlagsParameterization) : SysuiTestCase() 
         }
 
     @Test
+    @DisableSceneContainer
     fun alpha_shadeClosedOverDream_isZero() =
         testScope.runTest {
             val alpha by collectLastValue(underTest.alpha(viewState))
@@ -1032,12 +1033,13 @@ class KeyguardRootViewModelTest(flags: FlagsParameterization) : SysuiTestCase() 
         }
 
     @Test
+    @DisableSceneContainer
     fun alpha_idleOnDream_isZero() =
         testScope.runTest {
             val alpha by collectLastValue(underTest.alpha(viewState))
             assertThat(alpha).isEqualTo(1f)
 
-            // Go to GONE state
+            // Go to DREAMING state
             keyguardTransitionRepository.sendTransitionSteps(
                 from = KeyguardState.LOCKSCREEN,
                 to = KeyguardState.DREAMING,

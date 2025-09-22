@@ -23,6 +23,7 @@ import com.android.systemui.keyguard.data.repository.fakeKeyguardRepository
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.applicationCoroutineScope
 import com.android.systemui.power.domain.interactor.powerInteractor
+import com.android.systemui.scene.domain.interactor.sceneInteractor
 import com.android.systemui.user.domain.interactor.selectedUserInteractor
 import com.android.systemui.util.settings.fakeSettings
 import com.android.systemui.util.time.systemClock
@@ -44,5 +45,6 @@ val Kosmos.keyguardWakeDirectlyToGoneInteractor: KeyguardWakeDirectlyToGoneInter
             keyguardEnabledInteractor,
             keyguardServiceShowLockscreenInteractor,
             keyguardInteractor,
+            { sceneInteractor },
         )
     }

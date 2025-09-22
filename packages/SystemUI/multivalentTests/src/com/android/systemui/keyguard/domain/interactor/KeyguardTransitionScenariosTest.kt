@@ -1695,7 +1695,7 @@ class KeyguardTransitionScenariosTest(flags: FlagsParameterization?) : SysuiTest
         runCurrent()
         reset(transitionRepository)
 
-        if (KeyguardState.deviceIsAwakeInState(to)) {
+        if (KeyguardState.deviceIsAwakeInState(to, to.mapToSceneContainerContent())) {
             powerInteractor.setAwakeForTest()
         } else {
             powerInteractor.setAsleepForTest()
