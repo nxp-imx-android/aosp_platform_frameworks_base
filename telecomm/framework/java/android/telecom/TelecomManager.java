@@ -830,18 +830,13 @@ public class TelecomManager {
     public static final char DTMF_CHARACTER_WAIT = ';';
 
     /**
-     * @hide
-     */
-    @IntDef(prefix = { "TTY_MODE_" },
-            value = {TTY_MODE_OFF, TTY_MODE_FULL, TTY_MODE_HCO, TTY_MODE_VCO})
-    @Retention(RetentionPolicy.SOURCE)
-    public @interface TtyMode {}
-
-    /**
      * TTY (teletypewriter) mode is off.
      *
+     * @deprecated Use {@link TelephonyManager#TTY_MODE_OFF} instead
      * @hide
      */
+    @Deprecated
+    @FlaggedApi(com.android.server.telecom.flags.Flags.FLAG_MOVE_GET_TTY_MODE_TO_TELEPHONY_MANAGER)
     @SystemApi
     public static final int TTY_MODE_OFF = 0;
 
@@ -849,8 +844,11 @@ public class TelecomManager {
      * TTY (teletypewriter) mode is on. The speaker is off and the microphone is muted. The user
      * will communicate with the remote party by sending and receiving text messages.
      *
+     * @deprecated Use {@link TelephonyManager#TTY_MODE_FULL} instead
      * @hide
      */
+    @Deprecated
+    @FlaggedApi(com.android.server.telecom.flags.Flags.FLAG_MOVE_GET_TTY_MODE_TO_TELEPHONY_MANAGER)
     @SystemApi
     public static final int TTY_MODE_FULL = 1;
 
@@ -859,8 +857,11 @@ public class TelecomManager {
      * speaker is on. The user will communicate with the remote party by sending text messages and
      * hearing an audible reply.
      *
+     * @deprecated Use {@link TelephonyManager#TTY_MODE_HCO} instead
      * @hide
      */
+    @Deprecated
+    @FlaggedApi(com.android.server.telecom.flags.Flags.FLAG_MOVE_GET_TTY_MODE_TO_TELEPHONY_MANAGER)
     @SystemApi
     public static final int TTY_MODE_HCO = 2;
 
@@ -869,8 +870,11 @@ public class TelecomManager {
      * microphone is still on. User will communicate with the remote party by speaking and receiving
      * text message replies.
      *
+     * @deprecated Use {@link TelephonyManager#TTY_MODE_VCO} instead
      * @hide
      */
+    @Deprecated
+    @FlaggedApi(com.android.server.telecom.flags.Flags.FLAG_MOVE_GET_TTY_MODE_TO_TELEPHONY_MANAGER)
     @SystemApi
     public static final int TTY_MODE_VCO = 3;
 
@@ -892,15 +896,15 @@ public class TelecomManager {
      *
      * Valid modes are:
      * <ul>
-     *     <li>{@link #TTY_MODE_OFF}</li>
-     *     <li>{@link #TTY_MODE_FULL}</li>
-     *     <li>{@link #TTY_MODE_HCO}</li>
-     *     <li>{@link #TTY_MODE_VCO}</li>
+     *     <li>{@link TelephonyManager#TTY_MODE_OFF}</li>
+     *     <li>{@link TelephonyManager#TTY_MODE_FULL}</li>
+     *     <li>{@link TelephonyManager#TTY_MODE_HCO}</li>
+     *     <li>{@link TelephonyManager#TTY_MODE_VCO}</li>
      * </ul>
      *
      * This TTY mode is distinct from the one sent via {@link #ACTION_TTY_PREFERRED_MODE_CHANGED},
-     * since the current TTY mode will always be {@link #TTY_MODE_OFF}unless a TTY terminal is
-     * plugged into the device.
+     * since the current TTY mode will always be {@link TelephonyManager#TTY_MODE_OFF}unless a TTY
+     * terminal is plugged into the device.
      * @hide
      */
     @SystemApi
@@ -925,10 +929,10 @@ public class TelecomManager {
      *
      * Valid modes are:
      * <ul>
-     *     <li>{@link #TTY_MODE_OFF}</li>
-     *     <li>{@link #TTY_MODE_FULL}</li>
-     *     <li>{@link #TTY_MODE_HCO}</li>
-     *     <li>{@link #TTY_MODE_VCO}</li>
+     *     <li>{@link TelephonyManager#TTY_MODE_OFF}</li>
+     *     <li>{@link TelephonyManager#TTY_MODE_FULL}</li>
+     *     <li>{@link TelephonyManager#TTY_MODE_HCO}</li>
+     *     <li>{@link TelephonyManager#TTY_MODE_VCO}</li>
      * </ul>
      * @hide
      */
@@ -2315,25 +2319,38 @@ public class TelecomManager {
      * Returns the current TTY mode of the device. For TTY to be on the user must enable it in
      * settings and have a wired headset plugged in.
      * Valid modes are:
-     * - {@link TelecomManager#TTY_MODE_OFF}
-     * - {@link TelecomManager#TTY_MODE_FULL}
-     * - {@link TelecomManager#TTY_MODE_HCO}
-     * - {@link TelecomManager#TTY_MODE_VCO}
+     * - {@link TelephonyManager#TTY_MODE_OFF}
+     * - {@link TelephonyManager#TTY_MODE_FULL}
+     * - {@link TelephonyManager#TTY_MODE_HCO}
+     * - {@link TelephonyManager#TTY_MODE_VCO}
+     *
+     * @deprecated Use {@link TelephonyManager#getCurrentTtyMode()} instead
      * @hide
      */
     @SystemApi
+    @Deprecated
     @RequiresPermission(READ_PRIVILEGED_PHONE_STATE)
-    public @TtyMode int getCurrentTtyMode() {
-        ITelecomService service = getTelecomService();
-        if (service != null) {
-            try {
-                return service.getCurrentTtyMode(mContext.getOpPackageName(),
-                        mContext.getAttributionTag());
-            } catch (RemoteException e) {
-                Log.e(TAG, "RemoteException attempting to get the current TTY mode.", e);
+    @FlaggedApi(com.android.server.telecom.flags.Flags.FLAG_MOVE_GET_TTY_MODE_TO_TELEPHONY_MANAGER)
+    public @TelephonyManager.TtyMode int getCurrentTtyMode() {
+        if (Flags.moveGetTtyModeToTelephonyManager()) {
+            TelephonyManager tm = mContext.getSystemService(TelephonyManager.class);
+            if (tm != null) {
+                return tm.getCurrentTtyMode();
+            } else {
+                return TelephonyManager.TTY_MODE_OFF;
             }
+        } else {
+            ITelecomService service = getTelecomService();
+            if (service != null) {
+                try {
+                    return service.getCurrentTtyMode(mContext.getOpPackageName(),
+                            mContext.getAttributionTag());
+                } catch (RemoteException e) {
+                    Log.e(TAG, "RemoteException attempting to get the current TTY mode.", e);
+                }
+            }
+            return TelephonyManager.TTY_MODE_OFF;
         }
-        return TTY_MODE_OFF;
     }
 
     /**

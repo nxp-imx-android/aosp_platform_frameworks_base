@@ -16,6 +16,7 @@
 
 package android.telephony;
 
+import static android.Manifest.permission.READ_PRIVILEGED_PHONE_STATE;
 import static android.content.Context.TELECOM_SERVICE;
 import static android.provider.Telephony.Carriers.DPC_URI;
 import static android.provider.Telephony.Carriers.INVALID_APN_ID;
@@ -78,6 +79,7 @@ import android.os.RemoteException;
 import android.os.ResultReceiver;
 import android.os.SystemProperties;
 import android.os.WorkSource;
+import android.provider.Settings;
 import android.provider.Settings.SettingNotFoundException;
 import android.service.carrier.CarrierIdentifier;
 import android.service.carrier.CarrierService;
@@ -11065,6 +11067,25 @@ public class TelephonyManager {
     }
 
     /**
+     * Returns the current TTY mode of the device. For TTY to be on the user must enable it in
+     * settings and have a wired headset plugged in.
+     */
+    @RequiresFeature(PackageManager.FEATURE_TELEPHONY_CALLING)
+    @RequiresPermission(READ_PRIVILEGED_PHONE_STATE)
+    @FlaggedApi(com.android.server.telecom.flags.Flags.FLAG_MOVE_GET_TTY_MODE_TO_TELEPHONY_MANAGER)
+    public @TtyMode int getCurrentTtyMode() {
+        try {
+            ITelephony telephony = getITelephony();
+            if (telephony != null)
+                return telephony.getCurrentTtyMode();
+        } catch (RemoteException e) {
+            Log.e(TAG, "Error calling ITelephony#getCurrentTtyMode", e);
+            e.rethrowAsRuntimeException();
+        }
+        return TTY_MODE_OFF;
+    }
+
+    /**
      * @throws UnsupportedOperationException If the device does not have
      *          {@link PackageManager#FEATURE_TELEPHONY_SUBSCRIPTION}.
      * @hide
@@ -12500,6 +12521,55 @@ public class TelephonyManager {
      * @hide
      */
     public static final int CARD_POWER_UP_PASS_THROUGH = 2;
+
+    /**
+     * @hide
+     */
+    @IntDef(prefix = { "TTY_MODE_" },
+            value = {TTY_MODE_OFF, TTY_MODE_FULL, TTY_MODE_HCO, TTY_MODE_VCO})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface TtyMode {}
+
+    /**
+     * TTY (teletypewriter) mode is off.
+     *
+     * @hide
+     */
+    @FlaggedApi(com.android.server.telecom.flags.Flags.FLAG_MOVE_GET_TTY_MODE_TO_TELEPHONY_MANAGER)
+    @SystemApi
+    public static final int TTY_MODE_OFF = 0;
+
+    /**
+     * TTY (teletypewriter) mode is on. The speaker is off and the microphone is muted. The user
+     * will communicate with the remote party by sending and receiving text messages.
+     *
+     * @hide
+     */
+    @FlaggedApi(com.android.server.telecom.flags.Flags.FLAG_MOVE_GET_TTY_MODE_TO_TELEPHONY_MANAGER)
+    @SystemApi
+    public static final int TTY_MODE_FULL = 1;
+
+    /**
+     * TTY (teletypewriter) mode is in hearing carryover mode (HCO). The microphone is muted but the
+     * speaker is on. The user will communicate with the remote party by sending text messages and
+     * hearing an audible reply.
+     *
+     * @hide
+     */
+    @FlaggedApi(com.android.server.telecom.flags.Flags.FLAG_MOVE_GET_TTY_MODE_TO_TELEPHONY_MANAGER)
+    @SystemApi
+    public static final int TTY_MODE_HCO = 2;
+
+    /**
+     * TTY (teletypewriter) mode is in voice carryover mode (VCO). The speaker is off but the
+     * microphone is still on. User will communicate with the remote party by speaking and receiving
+     * text message replies.
+     *
+     * @hide
+     */
+    @FlaggedApi(com.android.server.telecom.flags.Flags.FLAG_MOVE_GET_TTY_MODE_TO_TELEPHONY_MANAGER)
+    @SystemApi
+    public static final int TTY_MODE_VCO = 3;
 
     /** @hide */
     @Retention(RetentionPolicy.SOURCE)
