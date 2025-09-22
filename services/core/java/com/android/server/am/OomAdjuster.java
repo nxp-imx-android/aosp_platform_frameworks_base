@@ -431,6 +431,10 @@ public abstract class OomAdjuster {
 
         /** Notifies when the process state sequence number has been incremented for active UIDs. */
         void onProcStateSeqIncremented(ActiveUidsInternal activeUids);
+
+        /** Notifies when the {@link UidRecordInternal}'s last background time is updated. */
+        void onUidLastBackgroundTimeUpdated(UidRecordInternal uidRec, long nowElapsed,
+                OomAdjusterDebugLogger logger);
     }
 
     @VisibleForTesting
@@ -1367,22 +1371,7 @@ public abstract class OomAdjuster {
                                 || uidRec.isSetAllowListed()
                                 || uidRec.getLastBackgroundTime() == 0) {
                             uidRec.setLastBackgroundTime(nowElapsed);
-                            if (shouldLog) {
-                                mLogger.logSetLastBackgroundTime(uidRec.getUid(), nowElapsed);
-                            }
-                            if (mService.mDeterministicUidIdle
-                                    || !mService.mHandler.hasMessages(IDLE_UIDS_MSG)) {
-                                // Note: the background settle time is in elapsed realtime, while
-                                // the handler time base is uptime.  All this means is that we may
-                                // stop background uids later than we had intended, but that only
-                                // happens because the device was sleeping so we are okay anyway.
-                                if (shouldLog) {
-                                    mLogger.logScheduleUidIdle1(uidRec.getUid(),
-                                            mConstants.BACKGROUND_SETTLE_TIME);
-                                }
-                                mService.mHandler.sendEmptyMessageDelayed(IDLE_UIDS_MSG,
-                                        mConstants.BACKGROUND_SETTLE_TIME); // XXX
-                            }
+                            mCallback.onUidLastBackgroundTimeUpdated(uidRec, nowElapsed, mLogger);
                         }
                         if (uidRec.isIdle() && !uidRec.isSetIdle()) {
                             uidChange |= UidRecord.CHANGE_IDLE;
