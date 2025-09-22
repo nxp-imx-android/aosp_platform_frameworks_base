@@ -64,6 +64,7 @@ class BubbleExpandedViewTest {
         on { taskOrganizer } doReturn taskOrganizer
         on { taskToken } doReturn taskViewTaskToken
     }
+    private val bubbleController = mock<BubbleController>()
 
     private lateinit var taskView: TaskView
     private lateinit var bubbleTaskView: BubbleTaskView
@@ -75,7 +76,7 @@ class BubbleExpandedViewTest {
         ProtoLog.init()
 
         taskView = TaskView(context, taskViewController, taskViewTaskController)
-        bubbleTaskView = BubbleTaskView(taskView, directExecutor())
+        bubbleTaskView = BubbleTaskView(taskView, directExecutor(), bubbleController)
 
         expandedView = BubbleExpandedView(context).apply {
             initialize(

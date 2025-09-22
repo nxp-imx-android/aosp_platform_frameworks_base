@@ -85,7 +85,7 @@ class BubbleViewInfoTaskTest {
     private lateinit var sessionTracker: BubbleSessionTracker
 
     private val bubbleTaskViewFactory = BubbleTaskViewFactory {
-        BubbleTaskView(mock<TaskView>(), directExecutor())
+        BubbleTaskView(mock<TaskView>(), directExecutor(), bubbleController)
     }
 
     @Before

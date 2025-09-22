@@ -432,7 +432,8 @@ public class BubbleController implements ConfigurationChangeListener,
                         context, organizer, mTaskViewController, syncQueue);
                 TaskView taskView = new TaskView(context, mTaskViewController,
                         taskViewTaskController);
-                return new BubbleTaskView(taskView, mainExecutor, splitScreenController);
+                return new BubbleTaskView(taskView, mainExecutor, BubbleController.this,
+                        splitScreenController);
             }
         };
         mExpandedViewManager = BubbleExpandedViewManager.fromBubbleController(this);
@@ -1535,6 +1536,12 @@ public class BubbleController implements ConfigurationChangeListener,
         }
 
         return taskInfo.isAppBubble;
+    }
+
+    /** @return the bubble in the stack that matches the provided taskInfo. */
+    @Nullable
+    public Bubble getBubble(@NonNull ActivityManager.RunningTaskInfo taskInfo) {
+        return mBubbleData.getBubbleInStackWithTaskId(taskInfo.taskId);
     }
 
     public boolean isStackExpanded() {

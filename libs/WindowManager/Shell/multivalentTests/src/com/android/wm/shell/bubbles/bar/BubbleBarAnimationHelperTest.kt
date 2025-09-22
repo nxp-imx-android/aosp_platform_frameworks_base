@@ -39,6 +39,7 @@ import androidx.test.platform.app.InstrumentationRegistry.getInstrumentation
 import com.android.internal.logging.testing.UiEventLoggerFake
 import com.android.internal.protolog.ProtoLog
 import com.android.wm.shell.bubbles.Bubble
+import com.android.wm.shell.bubbles.BubbleController
 import com.android.wm.shell.bubbles.BubbleExpandedViewManager
 import com.android.wm.shell.bubbles.BubbleOverflow
 import com.android.wm.shell.bubbles.BubblePositioner
@@ -467,12 +468,13 @@ class BubbleBarAnimationHelperTest {
         key: String,
         taskViewController: TaskViewController = mock<TaskViewController>(),
         taskViewTaskController: TaskViewTaskController = mock<TaskViewTaskController>(),
+        bubbleController: BubbleController = mock<BubbleController>(),
     ): Bubble {
         val taskView = TaskView(context, taskViewController, taskViewTaskController)
         val taskInfo = mock<ActivityManager.RunningTaskInfo>()
         whenever(taskViewTaskController.taskInfo).thenReturn(taskInfo)
         val bubble = FakeBubbleFactory.createChatBubble(context, key)
-        val bubbleTaskView = BubbleTaskView(taskView, mainExecutor)
+        val bubbleTaskView = BubbleTaskView(taskView, mainExecutor, bubbleController)
         bubbleTaskView.listener.onTaskCreated(/* taskId= */ 1, ComponentName("package", "class"))
 
         FakeBubbleFactory.createExpandedView(

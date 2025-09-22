@@ -81,7 +81,7 @@ class BubbleViewInfoTest : ShellTestCase() {
     private lateinit var bubbleAppInfoProvider: PackageManagerBubbleAppInfoProvider
 
     private val bubbleTaskViewFactory = BubbleTaskViewFactory {
-        BubbleTaskView(mock<TaskView>(), mock<Executor>())
+        BubbleTaskView(mock<TaskView>(), mock<Executor>(), bubbleController)
     }
 
     @Before

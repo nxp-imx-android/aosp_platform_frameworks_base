@@ -36,7 +36,8 @@ class FakeBubbleTaskViewFactory(
         val taskViewTaskController = mock<TaskViewTaskController>()
         val taskView = TaskView(context, mock<TaskViewController>(), taskViewTaskController)
         val taskInfo = mock<ActivityManager.RunningTaskInfo>()
+        val bubbleController = mock<BubbleController>()
         whenever(taskViewTaskController.taskInfo).thenReturn(taskInfo)
-        return BubbleTaskView(taskView, mainExecutor)
+        return BubbleTaskView(taskView, mainExecutor, bubbleController)
     }
 }
