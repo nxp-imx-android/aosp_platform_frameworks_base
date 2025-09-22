@@ -181,6 +181,7 @@ class AccountsDb implements AutoCloseable {
     private static final String SELECTION_META_BY_AUTHENTICATOR_TYPE = META_KEY + " LIKE ?";
 
     private final DeDatabaseHelper mDeDatabase;
+    private CeDatabaseHelper mCeDatabase;
     private final Context mContext;
     private final File mPreNDatabaseFile;
 
@@ -273,6 +274,14 @@ class AccountsDb implements AutoCloseable {
         }
 
         @Override
+        public void onConfigure(SQLiteDatabase db) {
+            if (Flags.detachDeCe()) {
+                db.enableWriteAheadLogging();
+                db.execSQL("PRAGMA synchronous = NORMAL");
+            }
+        }
+
+        @Override
         public void onOpen(SQLiteDatabase db) {
             if (Log.isLoggable(TAG, Log.VERBOSE)) Log.v(TAG, "opened database " + CE_DATABASE_NAME);
         }
@@ -324,51 +333,38 @@ class AccountsDb implements AutoCloseable {
     }
 
     List<Pair<Account, String>> invalidateAuthToken(String accountType, String authToken) {
-        SQLiteDatabase db = mDeDatabase.getWritableDatabaseUserIsUnlocked();
+        final SQLiteDatabase db = getWritableCeDb();
+        final String accountsTable = Flags.detachDeCe() ? TABLE_ACCOUNTS : CE_TABLE_ACCOUNTS;
+        final String authtokensTable =
+                Flags.detachDeCe() ? TABLE_AUTHTOKENS : CE_TABLE_AUTHTOKENS;
         String[] selectionArgs = {authToken, accountType};
-        String sql = "DELETE FROM " + CE_TABLE_AUTHTOKENS
-                + " WHERE " + AUTHTOKENS_AUTHTOKEN + " = ? AND " + AUTHTOKENS_ACCOUNTS_ID + " IN ("
-                + " SELECT " + ACCOUNTS_ID + " FROM " + CE_TABLE_ACCOUNTS
-                + " WHERE " + ACCOUNTS_TYPE + " = ?)"
-                + " RETURNING " + AUTHTOKENS_ACCOUNTS_ID + ", " + AUTHTOKENS_TYPE;
-
-        Map<Long, List<String>> accountIdToTokenTypes = new HashMap<>();
-        try (Cursor cursor = db.rawQuery(sql, selectionArgs)) {
-            while (cursor.moveToNext()) {
-                long accountId = cursor.getLong(0);
-                String tokenType = cursor.getString(1);
-                accountIdToTokenTypes.computeIfAbsent(accountId, k -> new ArrayList<>()).add(tokenType);
-            }
-        }
-
-        if (accountIdToTokenTypes.isEmpty()) {
-            return Collections.emptyList();
-        }
+        String sql = "DELETE FROM " + authtokensTable
+                + " WHERE " + AUTHTOKENS_AUTHTOKEN + " = ?"
+                + " AND " + AUTHTOKENS_ACCOUNTS_ID + " IN ("
+                + " SELECT " + ACCOUNTS_ID + " FROM " + accountsTable + " WHERE " + ACCOUNTS_TYPE
+                + " = ?)"
+                + " RETURNING (SELECT " + ACCOUNTS_NAME + " FROM " + accountsTable
+                + " WHERE " + accountsTable + "." + ACCOUNTS_ID + " = "
+                + AUTHTOKENS_ACCOUNTS_ID
+                + "), " + AUTHTOKENS_TYPE;
 
         List<Pair<Account, String>> invalidatedTokens = new ArrayList<>();
-        String[] accountIdStrs = accountIdToTokenTypes.keySet().stream().map(String::valueOf).toArray(String[]::new);
-        String placeholders = TextUtils.join(",", Collections.nCopies(accountIdStrs.length, "?"));
-
-        try (Cursor cursor = db.query(CE_TABLE_ACCOUNTS,
-                new String[]{ACCOUNTS_ID, ACCOUNTS_NAME},
-                ACCOUNTS_ID + " IN (" + placeholders + ")",
-                accountIdStrs, null, null, null)) {
+        try (Cursor cursor = db.rawQuery(sql, selectionArgs)) {
             while (cursor.moveToNext()) {
-                long accountId = cursor.getLong(0);
-                String accountName = cursor.getString(1);
-                Account account = new Account(accountName, accountType);
-                for (String tokenType : accountIdToTokenTypes.get(accountId)) {
-                    invalidatedTokens.add(Pair.create(account, tokenType));
-                }
+                final String accountName = cursor.getString(0);
+                final String tokenType = cursor.getString(1);
+                invalidatedTokens.add(
+                        Pair.create(new Account(accountName, accountType), tokenType));
             }
         }
         return invalidatedTokens;
     }
 
     Map<String, String> findAuthTokensByAccount(Account account) {
-        SQLiteDatabase db = mDeDatabase.getReadableDatabaseUserIsUnlocked();
+        final SQLiteDatabase db = getReadableCeDb();
+        final String authtokensTable = Flags.detachDeCe() ? TABLE_AUTHTOKENS : CE_TABLE_AUTHTOKENS;
         HashMap<String, String> authTokensForAccount = new HashMap<>();
-        Cursor cursor = db.query(CE_TABLE_AUTHTOKENS,
+        Cursor cursor = db.query(authtokensTable,
                 COLUMNS_AUTHTOKENS_TYPE_AND_AUTHTOKEN,
                 SELECTION_ACCOUNTS_ID_BY_ACCOUNT,
                 new String[] {account.name, account.type},
@@ -386,53 +382,58 @@ class AccountsDb implements AutoCloseable {
     }
 
     long insertAuthToken(long accountId, String authTokenType, String authToken) {
-        SQLiteDatabase db = mDeDatabase.getWritableDatabaseUserIsUnlocked();
+        final SQLiteDatabase db = getWritableCeDb();
+        final String authtokensTable = Flags.detachDeCe() ? TABLE_AUTHTOKENS : CE_TABLE_AUTHTOKENS;
         ContentValues values = new ContentValues();
         values.put(AUTHTOKENS_ACCOUNTS_ID, accountId);
         values.put(AUTHTOKENS_TYPE, authTokenType);
         values.put(AUTHTOKENS_AUTHTOKEN, authToken);
-        return db.insert(
-                CE_TABLE_AUTHTOKENS, AUTHTOKENS_AUTHTOKEN, values);
+        return db.insert(authtokensTable, AUTHTOKENS_AUTHTOKEN, values);
     }
 
     long insertOrReplaceAuthToken(long accountId, String authTokenType, String authToken) {
-        SQLiteDatabase db = mDeDatabase.getWritableDatabaseUserIsUnlocked();
+        final SQLiteDatabase db = getWritableCeDb();
+        final String authtokensTable = Flags.detachDeCe() ? TABLE_AUTHTOKENS : CE_TABLE_AUTHTOKENS;
         ContentValues values = new ContentValues();
         values.put(AUTHTOKENS_ACCOUNTS_ID, accountId);
         values.put(AUTHTOKENS_TYPE, authTokenType);
         values.put(AUTHTOKENS_AUTHTOKEN, authToken);
         return db.insertWithOnConflict(
-                CE_TABLE_AUTHTOKENS, null, values, SQLiteDatabase.CONFLICT_REPLACE);
+                authtokensTable, null, values, SQLiteDatabase.CONFLICT_REPLACE);
     }
 
     int updateCeAccountPassword(long accountId, String password) {
-        SQLiteDatabase db = mDeDatabase.getWritableDatabaseUserIsUnlocked();
+        final SQLiteDatabase db = getWritableCeDb();
+        final String accountsTable = Flags.detachDeCe() ? TABLE_ACCOUNTS : CE_TABLE_ACCOUNTS;
         final ContentValues values = new ContentValues();
         values.put(ACCOUNTS_PASSWORD, password);
         return db.update(
-                CE_TABLE_ACCOUNTS, values, ACCOUNTS_ID + "=?",
+                accountsTable, values, ACCOUNTS_ID + "=?",
                 new String[] {String.valueOf(accountId)});
     }
 
     boolean renameCeAccount(long accountId, String newName) {
-        SQLiteDatabase db = mDeDatabase.getWritableDatabaseUserIsUnlocked();
+        final SQLiteDatabase db = getWritableCeDb();
+        final String accountsTable = Flags.detachDeCe() ? TABLE_ACCOUNTS : CE_TABLE_ACCOUNTS;
         final ContentValues values = new ContentValues();
         values.put(ACCOUNTS_NAME, newName);
         final String[] argsAccountId = {String.valueOf(accountId)};
         return db.update(
-                CE_TABLE_ACCOUNTS, values, ACCOUNTS_ID + "=?", argsAccountId) > 0;
+                accountsTable, values, ACCOUNTS_ID + "=?", argsAccountId) > 0;
     }
 
     boolean deleteAuthTokensByAccountId(long accountId) {
-        SQLiteDatabase db = mDeDatabase.getWritableDatabaseUserIsUnlocked();
-        return db.delete(CE_TABLE_AUTHTOKENS, AUTHTOKENS_ACCOUNTS_ID + "=?",
+        final SQLiteDatabase db = getWritableCeDb();
+        final String authtokensTable = Flags.detachDeCe() ? TABLE_AUTHTOKENS : CE_TABLE_AUTHTOKENS;
+        return db.delete(authtokensTable, AUTHTOKENS_ACCOUNTS_ID + "=?",
                 new String[] {String.valueOf(accountId)}) > 0;
     }
 
     long findExtrasIdByAccountId(long accountId, String key) {
-        SQLiteDatabase db = mDeDatabase.getReadableDatabaseUserIsUnlocked();
+        final SQLiteDatabase db = getReadableCeDb();
+        final String extrasTable = Flags.detachDeCe() ? TABLE_EXTRAS : CE_TABLE_EXTRAS;
         Cursor cursor = db.query(
-                CE_TABLE_EXTRAS, new String[]{EXTRAS_ID},
+                extrasTable, new String[]{EXTRAS_ID},
                 EXTRAS_ACCOUNTS_ID + "=" + accountId + " AND " + EXTRAS_KEY + "=?",
                 new String[]{key}, null, null, null);
         try {
@@ -446,29 +447,32 @@ class AccountsDb implements AutoCloseable {
     }
 
     long insertExtra(long accountId, String key, String value) {
-        SQLiteDatabase db = mDeDatabase.getWritableDatabaseUserIsUnlocked();
+        final SQLiteDatabase db = getWritableCeDb();
+        final String extrasTable = Flags.detachDeCe() ? TABLE_EXTRAS : CE_TABLE_EXTRAS;
         ContentValues values = new ContentValues();
         values.put(EXTRAS_KEY, key);
         values.put(EXTRAS_ACCOUNTS_ID, accountId);
         values.put(EXTRAS_VALUE, value);
-        return db.insert(CE_TABLE_EXTRAS, EXTRAS_KEY, values);
+        return db.insert(extrasTable, EXTRAS_KEY, values);
     }
 
     long insertOrReplaceExtra(long accountId, String key, String value) {
-        SQLiteDatabase db = mDeDatabase.getWritableDatabaseUserIsUnlocked();
+        final SQLiteDatabase db = getWritableCeDb();
+        final String extrasTable = Flags.detachDeCe() ? TABLE_EXTRAS : CE_TABLE_EXTRAS;
         ContentValues values = new ContentValues();
         values.put(EXTRAS_KEY, key);
         values.put(EXTRAS_ACCOUNTS_ID, accountId);
         values.put(EXTRAS_VALUE, value);
-        return db.insertWithOnConflict(CE_TABLE_EXTRAS, EXTRAS_KEY, values,
+        return db.insertWithOnConflict(extrasTable, EXTRAS_KEY, values,
                 SQLiteDatabase.CONFLICT_REPLACE);
     }
 
     Map<String, String> findUserExtrasForAccount(Account account) {
-        SQLiteDatabase db = mDeDatabase.getReadableDatabaseUserIsUnlocked();
+        final SQLiteDatabase db = getReadableCeDb();
+        final String extrasTable = Flags.detachDeCe() ? TABLE_EXTRAS : CE_TABLE_EXTRAS;
         Map<String, String> userExtrasForAccount = new HashMap<>();
         String[] selectionArgs = {account.name, account.type};
-        try (Cursor cursor = db.query(CE_TABLE_EXTRAS,
+        try (Cursor cursor = db.query(extrasTable,
                 COLUMNS_EXTRAS_KEY_AND_VALUE,
                 SELECTION_ACCOUNTS_ID_BY_ACCOUNT,
                 selectionArgs,
@@ -483,11 +487,12 @@ class AccountsDb implements AutoCloseable {
     }
 
     long findCeAccountId(Account account) {
-        SQLiteDatabase db = mDeDatabase.getReadableDatabaseUserIsUnlocked();
+        final SQLiteDatabase db = getReadableCeDb();
+        final String accountsTable = Flags.detachDeCe() ? TABLE_ACCOUNTS : CE_TABLE_ACCOUNTS;
         String[] columns = { ACCOUNTS_ID };
         String selection = "name=? AND type=?";
         String[] selectionArgs = {account.name, account.type};
-        try (Cursor cursor = db.query(CE_TABLE_ACCOUNTS, columns, selection, selectionArgs,
+        try (Cursor cursor = db.query(accountsTable, columns, selection, selectionArgs,
                 null, null, null)) {
             if (cursor.moveToNext()) {
                 return cursor.getLong(0);
@@ -497,11 +502,12 @@ class AccountsDb implements AutoCloseable {
     }
 
     String findAccountPasswordByNameAndType(String name, String type) {
-        SQLiteDatabase db = mDeDatabase.getReadableDatabaseUserIsUnlocked();
+        final SQLiteDatabase db = getReadableCeDb();
+        final String accountsTable = Flags.detachDeCe() ? TABLE_ACCOUNTS : CE_TABLE_ACCOUNTS;
         String selection = ACCOUNTS_NAME + "=? AND " + ACCOUNTS_TYPE + "=?";
         String[] selectionArgs = {name, type};
         String[] columns = {ACCOUNTS_PASSWORD};
-        try (Cursor cursor = db.query(CE_TABLE_ACCOUNTS, columns, selection, selectionArgs,
+        try (Cursor cursor = db.query(accountsTable, columns, selection, selectionArgs,
                 null, null, null)) {
             if (cursor.moveToNext()) {
                 return cursor.getString(0);
@@ -511,13 +517,13 @@ class AccountsDb implements AutoCloseable {
     }
 
     long insertCeAccount(Account account, String password) {
-        SQLiteDatabase db = mDeDatabase.getWritableDatabaseUserIsUnlocked();
+        final SQLiteDatabase db = getWritableCeDb();
+        final String accountsTable = Flags.detachDeCe() ? TABLE_ACCOUNTS : CE_TABLE_ACCOUNTS;
         ContentValues values = new ContentValues();
         values.put(ACCOUNTS_NAME, account.name);
         values.put(ACCOUNTS_TYPE, account.type);
         values.put(ACCOUNTS_PASSWORD, password);
-        return db.insert(
-                CE_TABLE_ACCOUNTS, ACCOUNTS_NAME, values);
+        return db.insert(accountsTable, ACCOUNTS_NAME, values);
     }
 
 
@@ -716,6 +722,13 @@ class AccountsDb implements AutoCloseable {
         return db.delete(TABLE_ACCOUNTS, ACCOUNTS_ID + "=" + accountId, null) > 0;
     }
 
+    boolean deleteDeAccount(Account account) {
+        SQLiteDatabase db = mDeDatabase.getWritableDatabase();
+        final String whereClause = ACCOUNTS_NAME + "=? AND " + ACCOUNTS_TYPE + "=?";
+        final String[] whereArgs = {account.name, account.type};
+        return db.delete(TABLE_ACCOUNTS, whereClause, whereArgs) > 0;
+    }
+
     long insertSharedAccount(Account account) {
         SQLiteDatabase db = mDeDatabase.getWritableDatabase();
         ContentValues values = new ContentValues();
@@ -810,7 +823,7 @@ class AccountsDb implements AutoCloseable {
     long findDeAccountId(Account account) {
         SQLiteDatabase db = mDeDatabase.getReadableDatabase();
         String[] columns = {ACCOUNTS_ID};
-        String selection = "name=? AND type=?";
+        String selection = ACCOUNTS_NAME + "=? AND " + ACCOUNTS_TYPE + "=?";
         String[] selectionArgs = {account.name, account.type};
         try (Cursor cursor = db.query(TABLE_ACCOUNTS, columns, selection, selectionArgs,
                 null, null, null)) {
@@ -831,6 +844,24 @@ class AccountsDb implements AutoCloseable {
                 final long accountId = cursor.getLong(0);
                 final String accountType = cursor.getString(1);
                 final String accountName = cursor.getString(2);
+
+                final Account account = new Account(accountName, accountType);
+                map.put(accountId, account);
+            }
+        }
+        return map;
+    }
+
+    private Map<Long, Account> findDeAccountsAsMap() {
+        SQLiteDatabase db = mDeDatabase.getReadableDatabase();
+        HashMap<Long, Account> map = new HashMap<>();
+        String[] columns = {ACCOUNTS_ID, ACCOUNTS_NAME, ACCOUNTS_TYPE};
+        try (Cursor cursor = db.query(TABLE_ACCOUNTS, columns,
+            null, null, null, null, ACCOUNTS_ID)) {
+            while (cursor.moveToNext()) {
+                final long accountId = cursor.getLong(0);
+                final String accountName = cursor.getString(1);
+                final String accountType = cursor.getString(2);
 
                 final Account account = new Account(accountName, accountType);
                 map.put(accountId, account);
@@ -1251,55 +1282,122 @@ class AccountsDb implements AutoCloseable {
     }
 
     List<Account> findCeAccountsNotInDe() {
-        SQLiteDatabase db = mDeDatabase.getReadableDatabaseUserIsUnlocked();
-        // Select accounts from CE that do not exist in DE
-        Cursor cursor = db.rawQuery(
-                "SELECT " + ACCOUNTS_NAME + "," + ACCOUNTS_TYPE
-                        + " FROM " + CE_TABLE_ACCOUNTS
-                        + " WHERE NOT EXISTS "
-                        + " (SELECT " + ACCOUNTS_ID + " FROM " + TABLE_ACCOUNTS
-                        + " WHERE " + ACCOUNTS_ID + "=" + CE_TABLE_ACCOUNTS + "." + ACCOUNTS_ID
-                        + " )", null);
-        try {
-            List<Account> accounts = new ArrayList<>(cursor.getCount());
-            while (cursor.moveToNext()) {
-                String accountName = cursor.getString(0);
-                String accountType = cursor.getString(1);
-                accounts.add(new Account(accountName, accountType));
+        if (Flags.detachDeCe()) {
+            if (!mDeDatabase.mCeAttached) {
+                return Collections.emptyList();
             }
-            return accounts;
-        } finally {
-            cursor.close();
+            Map<Long, Account> ceAccounts = findCeAccountsAsMap();
+            Map<Long, Account> deAccounts = findDeAccountsAsMap();
+            ceAccounts.keySet().removeAll(deAccounts.keySet());
+            return new ArrayList<>(ceAccounts.values());
+        } else {
+            SQLiteDatabase db = mDeDatabase.getReadableDatabaseUserIsUnlocked();
+            // Select accounts from CE that do not exist in DE
+            Cursor cursor = db.rawQuery(
+                    "SELECT " + ACCOUNTS_NAME + "," + ACCOUNTS_TYPE
+                            + " FROM " + CE_TABLE_ACCOUNTS
+                            + " WHERE NOT EXISTS "
+                            + " (SELECT " + ACCOUNTS_ID + " FROM " + TABLE_ACCOUNTS
+                            + " WHERE " + ACCOUNTS_ID + "=" + CE_TABLE_ACCOUNTS + "." + ACCOUNTS_ID
+                            + " )", null);
+            try {
+                List<Account> accounts = new ArrayList<>(cursor.getCount());
+                while (cursor.moveToNext()) {
+                    String accountName = cursor.getString(0);
+                    String accountType = cursor.getString(1);
+                    accounts.add(new Account(accountName, accountType));
+                }
+                return accounts;
+            } finally {
+                cursor.close();
+            }
         }
     }
 
+    private Map<Long, Account> findCeAccountsAsMap() {
+        final SQLiteDatabase db = getReadableCeDb();
+        final String accountsTable = Flags.detachDeCe() ? TABLE_ACCOUNTS : CE_TABLE_ACCOUNTS;
+        LinkedHashMap<Long, Account> map = new LinkedHashMap<>();
+        String[] columns = {ACCOUNTS_ID, ACCOUNTS_TYPE, ACCOUNTS_NAME};
+        try (Cursor cursor = db.query(accountsTable, columns,
+                null, null, null, null, ACCOUNTS_ID)) {
+            while (cursor.moveToNext()) {
+                final long accountId = cursor.getLong(0);
+                final String accountType = cursor.getString(1);
+                final String accountName = cursor.getString(2);
+
+                final Account account = new Account(accountName, accountType);
+                map.put(accountId, account);
+            }
+        }
+        return map;
+    }
+
     boolean deleteCeAccount(long accountId) {
-        SQLiteDatabase db = mDeDatabase.getWritableDatabaseUserIsUnlocked();
-        return db.delete(
-                CE_TABLE_ACCOUNTS, ACCOUNTS_ID + "=" + accountId, null) > 0;
+        final SQLiteDatabase db = getWritableCeDb();
+        final String accountsTable = Flags.detachDeCe() ? TABLE_ACCOUNTS : CE_TABLE_ACCOUNTS;
+        return db.delete(accountsTable, ACCOUNTS_ID + "=" + accountId, null) > 0;
     }
 
     boolean isCeDatabaseAttached() {
         return mDeDatabase.mCeAttached;
     }
 
-    void beginTransaction() {
+    void beginTransactionDe() {
         mDeDatabase.getWritableDatabase().beginTransaction();
     }
 
-    void setTransactionSuccessful() {
+    void setTransactionSuccessfulDe() {
         mDeDatabase.getWritableDatabase().setTransactionSuccessful();
     }
 
-    void endTransaction() {
+    void endTransactionDe() {
         mDeDatabase.getWritableDatabase().endTransaction();
     }
 
+    void beginTransactionCe() {
+        getWritableCeDb().beginTransaction();
+    }
+
+    void setTransactionSuccessfulCe() {
+        getWritableCeDb().setTransactionSuccessful();
+    }
+
+    void endTransactionCe() {
+        getWritableCeDb().endTransaction();
+    }
+
+
+    private SQLiteDatabase getReadableCeDb() {
+        if (!mDeDatabase.mCeAttached) {
+            throw new SQLiteException("CE database is not attached");
+        }
+        if (Flags.detachDeCe()) {
+            return mCeDatabase.getReadableDatabase();
+        }
+        return mDeDatabase.getReadableDatabaseUserIsUnlocked();
+    }
+
+    private SQLiteDatabase getWritableCeDb() {
+        if (!mDeDatabase.mCeAttached) {
+            throw new SQLiteException("CE database is not attached");
+        }
+        if (Flags.detachDeCe()) {
+            return mCeDatabase.getWritableDatabase();
+        }
+        return mDeDatabase.getWritableDatabaseUserIsUnlocked();
+    }
+
     void attachCeDatabase(File ceDbFile) {
-        CeDatabaseHelper.create(mContext, mPreNDatabaseFile, ceDbFile);
-        SQLiteDatabase db = mDeDatabase.getWritableDatabase();
-        db.execSQL("ATTACH DATABASE '" +  ceDbFile.getPath()+ "' AS ceDb");
-        mDeDatabase.mCeAttached = true;
+        if (Flags.detachDeCe()) {
+            mCeDatabase = CeDatabaseHelper.create(mContext, mPreNDatabaseFile, ceDbFile);
+            mDeDatabase.mCeAttached = true;
+        } else {
+            CeDatabaseHelper.create(mContext, mPreNDatabaseFile, ceDbFile);
+            SQLiteDatabase db = mDeDatabase.getWritableDatabase();
+            db.execSQL("ATTACH DATABASE '" +  ceDbFile.getPath()+ "' AS ceDb");
+            mDeDatabase.mCeAttached = true;
+        }
     }
 
     /*
