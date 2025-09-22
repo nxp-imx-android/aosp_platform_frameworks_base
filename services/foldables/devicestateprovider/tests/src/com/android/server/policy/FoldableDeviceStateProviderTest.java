@@ -17,7 +17,6 @@
 package com.android.server.policy;
 
 
-import static android.os.PowerManagerInternal.MODE_DISPLAY_CHANGE;
 import static android.view.Display.DEFAULT_DISPLAY;
 import static android.view.Display.STATE_OFF;
 import static android.view.Display.STATE_ON;
@@ -31,18 +30,13 @@ import static com.android.server.devicestate.DeviceStateProvider.SUPPORTED_DEVIC
 import static com.android.server.devicestate.DeviceStateProvider.SUPPORTED_DEVICE_STATES_CHANGED_POWER_SAVE_ENABLED;
 import static com.android.server.devicestate.DeviceStateProvider.SUPPORTED_DEVICE_STATES_CHANGED_THERMAL_CRITICAL;
 import static com.android.server.devicestate.DeviceStateProvider.SUPPORTED_DEVICE_STATES_CHANGED_THERMAL_NORMAL;
-import static com.android.server.policy.BookStyleDeviceStatePolicy.DEVICE_STATE_CLOSED;
-import static com.android.server.policy.BookStyleDeviceStatePolicy.DEVICE_STATE_HALF_OPENED;
-import static com.android.server.policy.BookStyleDeviceStatePolicy.DEVICE_STATE_OPENED;
 import static com.android.server.policy.FoldableDeviceStateProvider.DeviceStatePredicateWrapper.createConfig;
-import static com.android.server.power.hint.Flags.FLAG_POWER_HINT_ON_DEVICE_STATE_CHANGE;
 
 import static com.google.common.truth.Truth.assertThat;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
-import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.clearInvocations;
@@ -62,10 +56,6 @@ import android.hardware.display.DisplayManager;
 import android.hardware.input.InputSensorInfo;
 import android.os.Handler;
 import android.os.PowerManager;
-import android.os.PowerManagerInternal;
-import android.platform.test.annotations.DisableFlags;
-import android.platform.test.annotations.EnableFlags;
-import android.platform.test.flag.junit.SetFlagsRule;
 import android.testing.AndroidTestingRunner;
 import android.view.Display;
 
@@ -77,7 +67,6 @@ import com.android.server.policy.feature.flags.FakeFeatureFlagsImpl;
 import com.android.server.policy.feature.flags.Flags;
 
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -98,9 +87,6 @@ import java.util.Set;
  */
 @RunWith(AndroidTestingRunner.class)
 public final class FoldableDeviceStateProviderTest {
-
-    @Rule
-    public final SetFlagsRule mSetFlagsRule = new SetFlagsRule();
 
     private static final Set<Integer> EMPTY_PROPERTY_SET = new HashSet<>();
     private static final Set<Integer> THERMAL_PROPERTY_SET = new HashSet<>(
@@ -131,12 +117,6 @@ public final class FoldableDeviceStateProviderTest {
     private Display mExternalDisplay;
 
     private final FakeFeatureFlagsImpl mFakeFeatureFlags = new FakeFeatureFlagsImpl();
-
-    @Mock
-    private PowerManager mPowerManager;
-    @Mock
-    private PowerManagerInternal mPowerManagerInternal;
-
     @Before
     public void setup() {
         MockitoAnnotations.initMocks(this);
@@ -620,49 +600,6 @@ public final class FoldableDeviceStateProviderTest {
 
         assertThat(mProvider.hasNoConnectedExternalDisplay()).isTrue();
     }
-
-    @Test
-    @DisableFlags(FLAG_POWER_HINT_ON_DEVICE_STATE_CHANGE)
-    public void stateChanged_flagOff_powerModeDoesntTurnOn() {
-        createProviderWithFoldableStates();
-
-        sendSensorEventForState(DEVICE_STATE_HALF_OPENED);
-
-        verify(mPowerManagerInternal, never()).setPowerMode(anyInt(), anyBoolean());
-    }
-
-    @Test
-    @EnableFlags(FLAG_POWER_HINT_ON_DEVICE_STATE_CHANGE)
-    public void stateChanged_flagOn_powerModeTurnsOn() {
-        createProviderWithFoldableStates();
-
-        sendSensorEventForState(DEVICE_STATE_HALF_OPENED);
-
-        verify(mPowerManagerInternal).setPowerMode(eq(MODE_DISPLAY_CHANGE), eq(true));
-    }
-
-    private void createProviderWithFoldableStates() {
-        createProvider(
-                createConfig(createDeviceState(DEVICE_STATE_CLOSED, "CLOSED"),
-                        (c) -> c.getHingeAngle() < 5f),
-                createConfig(createDeviceState(DEVICE_STATE_HALF_OPENED, "HALF_OPENED"),
-                        (c) -> c.getHingeAngle() < 90f),
-                createConfig(createDeviceState(DEVICE_STATE_OPENED, "OPENED"),
-                        (c) -> c.getHingeAngle() < 180f)
-        );
-        mProvider.setListener(mock(Listener.class));
-    }
-
-    private void sendSensorEventForState(int state) {
-        var hingeAngle = switch(state) {
-            case DEVICE_STATE_CLOSED -> 0f;
-            case DEVICE_STATE_HALF_OPENED -> 20f;
-            case DEVICE_STATE_OPENED -> 170f;
-            default -> throw new IllegalArgumentException("Incorrect state");
-        };
-        sendSensorEvent(mHingeAngleSensor, hingeAngle);
-    }
-
     private void addExternalDisplay(int displayId) {
         when(mDisplayManager.getDisplay(displayId)).thenReturn(mExternalDisplay);
         when(mExternalDisplay.getType()).thenReturn(TYPE_EXTERNAL);
@@ -704,8 +641,7 @@ public final class FoldableDeviceStateProviderTest {
 
     private void createProvider(DeviceStatePredicateWrapper... configurations) {
         mProvider = new FoldableDeviceStateProvider(mFakeFeatureFlags, mContext, mSensorManager,
-                mHingeAngleSensor, mHallSensor, mDisplayManager, mPowerManager,
-                mPowerManagerInternal, configurations);
+                mHingeAngleSensor, mHallSensor, mDisplayManager, configurations);
         verify(mDisplayManager)
                 .registerDisplayListener(
                         mDisplayListenerCaptor.capture(),

@@ -25,7 +25,6 @@ android_test {
         "androidx.test.uiautomator_uiautomator",
         "androidx.test.ext.junit",
         "testables",
-        "flag-junit",
     ],
     test_suites: ["device-tests"],
 }
