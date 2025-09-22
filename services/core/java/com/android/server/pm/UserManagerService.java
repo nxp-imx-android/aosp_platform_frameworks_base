@@ -4310,14 +4310,11 @@ public class UserManagerService extends IUserManager.Stub {
         if (!android.multiuser.Flags.consistentMaxUsers()) {
             throw new UnsupportedOperationException("This method requires flag consistentMaxUsers");
         }
-        if (!isUserTypeEnabled(userTypeDetails)) {
-            return 0;
-        }
-        if (!doSystemFeaturesSupportUserType(userTypeDetails.getName())) {
-            return 0;
-        }
         if (userTypeDetails.isSystem()) {
             // You can never create another system user.
+            return 0;
+        }
+        if (!isUserTypeSupported(userTypeDetails)) {
             return 0;
         }
         synchronized (mUsersLock) {
@@ -4415,10 +4412,54 @@ public class UserManagerService extends IUserManager.Stub {
         return userTypeDetails != null && canAddMoreUsersOfType(userTypeDetails);
     }
 
-    /** Returns whether the creation of users of the given user type is enabled on this device. */
+    /**
+     * Returns whether the given user type is supported on this device.
+     * Also works for SYSTEM user types.
+     */
     @Override
-    public boolean isUserTypeEnabled(String userType) {
-        checkCreateUsersPermission("check if user type is enabled.");
+    public boolean isUserTypeSupportedIncludingSystem(String userType) {
+        checkCreateUsersPermission("check if user type is supported.");
+        final UserTypeDetails userTypeDetails = mUserTypes.get(userType);
+        if (!android.multiuser.Flags.queryUserTypeSupported()) {
+            return userTypeDetails != null && isUserTypeEnabled(userTypeDetails);
+        }
+        if (userTypeDetails == null) {
+            return false;
+        }
+        if (userTypeDetails.isSystem()) {
+            // Regardless of the theoretical configuration, the only supported system user type is
+            // that of the device's actual system user.
+            synchronized (mUsersLock) {
+                final UserData systemUserData = mUsers.get(UserHandle.USER_SYSTEM);
+                return userType.equals(systemUserData.info.userType);
+            }
+        }
+        return isUserTypeSupported(userTypeDetails);
+    }
+
+    /**
+     * Returns whether the creation of users of the given user type is supported on this device.
+     *
+     * Does not apply to SYSTEM user types, which can never be "created" and are only supported if
+     * the existing system user is of that type. So don't call this for SYSTEM user types.
+     */
+    private boolean isUserTypeSupported(@NonNull UserTypeDetails userTypeDetails) {
+        if (isCreationOverrideEnabled()) {
+            return true;
+        }
+        return isUserTypeEnabled(userTypeDetails)
+                && userTypeDetails.getMaxAllowed() > 0
+                && (!isUserTypeSubjectToSwitchableUserMaximum(userTypeDetails)
+                        || UserManager.getMaxSwitchableUsers() > 0)
+                && doSystemFeaturesSupportUserType(userTypeDetails.getName());
+    }
+
+    /** Returns whether the creation of users of the given user type is enabled on this device. */
+    private boolean isUserTypeEnabled(String userType) {
+        if (android.multiuser.Flags.consistentMaxUsers()) {
+            // TODO(b/394178333): When the flag is permanent, delete this method entirely.
+            throw new UnsupportedOperationException("This method is no longer supported");
+        }
         final UserTypeDetails userTypeDetails = mUserTypes.get(userType);
         return userTypeDetails != null && isUserTypeEnabled(userTypeDetails);
     }
@@ -6372,6 +6413,7 @@ public class UserManagerService extends IUserManager.Stub {
                             + ") and userTypeDetails (" + userType +  ") are inconsistent.",
                     USER_OPERATION_ERROR_UNKNOWN);
         }
+
         // Preliminary checks for sake of error messaging. Creation would've failed later anyway.
         if ((flags & UserInfo.FLAG_SYSTEM) != 0) {
             throwCheckedUserOperationException(
