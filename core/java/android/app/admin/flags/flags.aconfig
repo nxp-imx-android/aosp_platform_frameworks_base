@@ -535,3 +535,10 @@ flag {
   description: "Enable the multi user management device provisioning APIs."
   bug: "390162247"
 }
+
+flag {
+  name: "policy_streamlining_screen_capture"
+  namespace: "enterprise"
+  description: "Redirect set/getScreenCaptureDisabled to the generic set/getPolicy APIs"
+  bug: "434919316"
+}
