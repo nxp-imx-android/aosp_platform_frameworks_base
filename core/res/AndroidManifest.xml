@@ -9076,6 +9076,15 @@
         android:knownCerts="@array/config_restoreHealthConnectDataAndSettingsKnownSigners"
         android:featureFlag="android.permission.flags.health_connect_backup_restore_permission_enabled" />
 
+    <!-- @hide @SystemApi Allows an app to write device level data to Health Connect.
+             <p>Protection level: privileged
+         @FlaggedApi(android.permission.flags.Flags.FLAG_HEALTH_CONNECT_PROVIDE_DEVICE_DATA_PERMISSION_ENABLED)
+    -->
+    <permission
+        android:name="android.permission.PROVIDE_HEALTH_CONNECT_DEVICE_DATA"
+        android:protectionLevel="signature|privileged"
+        android:featureFlag="android.permission.flags.health_connect_provide_device_data_permission_enabled" />
+
     <!-- @SystemApi Allows an app to query apps in clone profile. The permission is
          bidirectional in nature, i.e. cloned apps would be able to query apps in root user.
          The permission is not meant for 3P apps as of now.
