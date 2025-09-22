@@ -40,7 +40,7 @@ import static com.android.window.flags.Flags.enableMultiDisplaySplit;
 import static com.android.window.flags.Flags.enableNonDefaultDisplaySplit;
 import static com.android.wm.shell.Flags.enableFlexibleSplit;
 import static com.android.wm.shell.Flags.enableFlexibleTwoAppSplit;
-import static com.android.wm.shell.Flags.splitDisableChildTaskBounds;
+
 import static com.android.wm.shell.Flags.splitToFullSetWindowMode;
 import static com.android.wm.shell.common.split.SplitLayout.PARALLAX_ALIGN_CENTER;
 import static com.android.wm.shell.common.split.SplitLayout.PARALLAX_FLEX_HYBRID;
@@ -2653,11 +2653,9 @@ public class StageCoordinator extends StageCoordinatorAbstract {
             wct.reparent(mSideStage.mRootTaskInfo.token, rootTaskInfo.token, true);
         }
 
-        if (splitDisableChildTaskBounds()) {
-            // Disallow child tasks to override bounds and always inherits from the stage root tasks
-            wct.setDisallowOverrideBoundsForChildren(mMainStage.mRootTaskInfo.token, true);
-            wct.setDisallowOverrideBoundsForChildren(mSideStage.mRootTaskInfo.token, true);
-        }
+        // Disallow child tasks to override bounds and always inherits from the stage root tasks
+        wct.setDisallowOverrideBoundsForChildren(mMainStage.mRootTaskInfo.token, true);
+        wct.setDisallowOverrideBoundsForChildren(mSideStage.mRootTaskInfo.token, true);
 
         setRootForceTranslucent(true, wct);
         if (!enableFlexibleSplit()) {

@@ -207,16 +207,6 @@ flag {
 }
 
 flag {
-    name: "split_disable_child_task_bounds"
-    namespace: "multitasking"
-    description: "Fixes a bug where split task can keep bounds from previous multitasking mode."
-    bug: "427245857"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "fix_task_view_rotation_animation"
     namespace: "multitasking"
     description: "Fixes jump-cut animation and un-synced bounds (including bubbles) when rotating."

@@ -27,7 +27,7 @@ import static android.window.WindowContainerTransaction.HierarchyOp.HIERARCHY_OP
 import static android.window.WindowContainerTransaction.HierarchyOp.HIERARCHY_OP_TYPE_START_SHORTCUT;
 
 import static com.android.wm.shell.Flags.FLAG_ENABLE_FLEXIBLE_TWO_APP_SPLIT;
-import static com.android.wm.shell.Flags.FLAG_SPLIT_DISABLE_CHILD_TASK_BOUNDS;
+
 import static com.android.wm.shell.Flags.FLAG_SPLIT_TO_FULL_SET_WINDOW_MODE;
 import static com.android.wm.shell.shared.split.SplitScreenConstants.SNAP_TO_2_50_50;
 import static com.android.wm.shell.shared.split.SplitScreenConstants.SPLIT_INDEX_UNDEFINED;
@@ -680,7 +680,6 @@ public class StageCoordinatorTests extends ShellTestCase {
     }
 
     @Test
-    @EnableFlags(FLAG_SPLIT_DISABLE_CHILD_TASK_BOUNDS)
     public void onRootTaskAppeared_disableChildTaskBounds() {
         // root tasks for stages are created in setUp, mark them set
         mMainStage.mHasRootTask = true;
