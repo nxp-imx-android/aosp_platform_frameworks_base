@@ -131,16 +131,6 @@ private constructor(
                 else -> error("Expected Non-null window decoration")
             }
 
-    /** Returns the system's [Context]. */
-    val context: Context
-        get() =
-            when {
-                defaultWindowDecor != null -> requireDefaultWindowDecor().context
-                desktopWindowDecor != null -> requireDesktopWindowDecor().mContext
-                captionWindowDecoration != null -> requireCaptionWindowDecor().mContext
-                else -> error("Expected Non-null default or desktop window decoration")
-            }
-
     /** Returns if the task associated with the window decor is focused. */
     val isFocused: Boolean
         get() =

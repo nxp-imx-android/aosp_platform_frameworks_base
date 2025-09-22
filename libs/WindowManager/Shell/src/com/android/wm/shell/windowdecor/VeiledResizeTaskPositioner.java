@@ -218,7 +218,7 @@ public class VeiledResizeTaskPositioner implements TaskPositioner, Transitions.T
     private InteractionJankMonitor.Configuration.Builder createLongTimeoutJankConfigBuilder(
             @Cuj.CujType int cujType) {
         return InteractionJankMonitor.Configuration.Builder
-                .withSurface(cujType, mWindowDecoration.getContext(),
+                .withSurface(cujType, mWindowDecoration.getDecorWindowContext(),
                         mWindowDecoration.getTaskSurface(), mHandler)
                 .setTimeout(LONG_CUJ_TIMEOUT_MS);
     }

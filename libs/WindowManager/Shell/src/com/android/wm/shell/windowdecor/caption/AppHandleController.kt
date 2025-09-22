@@ -88,7 +88,6 @@ import kotlinx.coroutines.launch
 class AppHandleController(
     taskInfo: RunningTaskInfo,
     windowDecorViewHostSupplier: WindowDecorViewHostSupplier<WindowDecorViewHost>,
-    private val context: Context,
     private val userContext: Context,
     private val transitions: Transitions,
     private val displayController: DisplayController,
@@ -348,7 +347,7 @@ class AppHandleController(
         if (isOpenByDefaultDialogActive) return
         openByDefaultDialog =
             OpenByDefaultDialog(
-                context,
+                decorWindowContext,
                 userContext,
                 transitions,
                 taskInfo,
@@ -525,7 +524,7 @@ class AppHandleController(
                 captionWidth = captionLayoutResult.captionWidth,
                 windowManagerWrapper = windowManagerWrapper,
                 desktopState = desktopState,
-                context = context,
+                context = decorWindowContext,
                 snapshotList = snapshotList,
                 onIconClickListener = { requestedTaskId ->
                     closeManageWindowsMenu()
@@ -544,7 +543,9 @@ class AppHandleController(
         SystemBarUtils.getStatusBarHeight(decorWindowContext.resources, display.cutout)
 
     override fun getCaptionWidth(): Int =
-        context.resources.getDimensionPixelSize(R.dimen.desktop_mode_fullscreen_decor_caption_width)
+        decorWindowContext.resources.getDimensionPixelSize(
+            R.dimen.desktop_mode_fullscreen_decor_caption_width
+        )
 
     override val occludingElements: List<OccludingElement> = emptyList()
 

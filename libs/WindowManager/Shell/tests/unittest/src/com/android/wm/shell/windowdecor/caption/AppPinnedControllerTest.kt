@@ -57,7 +57,6 @@ class AppPinnedControllerTest : ShellTestCase() {
             taskInfo,
             mockDecorViewHostSupplier,
             mContext,
-            mContext,
             mockDisplayController,
             mockTouchListener,
             mockMotionListener,
