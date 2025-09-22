@@ -1993,7 +1993,7 @@
     <string name="package_deleted_device_owner" msgid="2292335928930293023">"Kerfisstjóri eyddi"</string>
     <string name="confirm_battery_saver" msgid="5247976246208245754">"Í lagi"</string>
     <string name="battery_saver_description_with_learn_more" msgid="8969945879044849461">"Rafhlöðusparnaður kveikir á dökku þema og takmarkar eða slekkur á bakgrunnsvirkni, sumum myndáhrifum, tilteknum eiginleikum og sumum nettengingum."</string>
-    <string name="battery_saver_description" msgid="2820475140307374570">"Rafhlöðusparnaður kveikir á dökku þema og takmarkar eða slekkur á bakgrunnsvirkni, sumum áhrifum, tilteknum eiginleikum og sumum nettengingum."</string>
+    <string name="battery_saver_description" msgid="2820475140307374570">"Rafhlöðusparnaður kveikir á dökku þema og takmarkar eða slekkur á bakgrunnsvirkni, sumum myndáhrifum, tilteknum eiginleikum og sumum nettengingum."</string>
     <string name="data_saver_description" msgid="4995164271550590517">"Gagnasparnaður getur hjálpað til við að draga úr gagnanotkun með því að hindra forrit í að senda eða sækja gögn í bakgrunni. Forrit sem er í notkun getur náð í gögn, en gerir það kannski sjaldnar. Niðurstaðan getur verið að myndir eru ekki birtar fyrr en þú ýtir á þær, svo dæmi sé tekið."</string>
     <string name="data_saver_enable_title" msgid="7080620065745260137">"Kveikja á gagnasparnaði?"</string>
     <string name="data_saver_enable_button" msgid="4399405762586419726">"Kveikja"</string>

@@ -2591,7 +2591,7 @@
     <string name="usb_apm_usb_plugged_in_when_locked_data_notification_text" msgid="8392199274984083972">"ਅਡਵਾਂਸ ਸੁਰੱਖਿਆ ਦੀ ਵਰਤੋਂ ਕਰਨ ਵੇਲੇ, USB ਕਨੈਕਟੀਵਿਟੀ ਸ਼ੁਰੂ ਕਰਨ ਲਈ ਤੁਹਾਡੀ ਸਕ੍ਰੀਨ ਨੂੰ ਅਣਲਾਕ ਕਰਨ ਦੀ ਲੋੜ ਹੁੰਦੀ ਹੈ"</string>
     <string name="usb_apm_usb_plugged_in_when_locked_charge_notification_text" msgid="6563939109526112446">"ਅਡਵਾਂਸ ਸੁਰੱਖਿਆ ਦੀ ਵਰਤੋਂ ਕਰਨ ਵੇਲੇ, ਤੇਜ਼ ਚਾਰਜਿੰਗ ਲਈ ਤੁਹਾਡੀ ਸਕ੍ਰੀਨ ਨੂੰ ਅਣਲਾਕ ਕਰਨ ਦੀ ਲੋੜ ਹੁੰਦੀ ਹੈ"</string>
     <string name="usb_apm_usb_plugged_in_when_locked_charge_data_notification_text" msgid="411509882563364946">"ਅਡਵਾਂਸ ਸੁਰੱਖਿਆ ਦੀ ਵਰਤੋਂ ਕਰਨ ਵੇਲੇ, ਤੇਜ਼ ਚਾਰਜਿੰਗ ਜਾਂ USB ਕਨੈਕਟੀਵਿਟੀ ਸ਼ੁਰੂ ਕਰਨ ਲਈ ਤੁਹਾਡੀ ਸਕ੍ਰੀਨ ਨੂੰ ਅਣਲਾਕ ਕਰਨ ਦੀ ਲੋੜ ਹੁੰਦੀ ਹੈ"</string>
-    <string name="usb_apm_usb_plugged_in_when_locked_notification_silence_action_text" msgid="5495539757631669634">"ਖਮੋਸ਼ੀ"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_notification_silence_action_text" msgid="5495539757631669634">"ਖਮੋਸ਼ ਕਰੋ"</string>
     <string name="usb_apm_usb_notification_silenced_title" msgid="5114203793430169863">"ਸੂਚਨਾਵਾਂ ਨੂੰ ਖਮੋਸ਼ ਕੀਤਾ ਗਿਆ"</string>
     <string name="usb_apm_usb_notification_silenced_text" msgid="8394777105856033342">"ਜਦੋਂ ਤੱਕ ਤੁਸੀਂ ਆਪਣਾ ਡੀਵਾਈਸ ਮੁੜ-ਸ਼ੁਰੂ ਨਹੀਂ ਕਰਦੇ, ਉਦੋਂ ਤੱਕ ਤੁਹਾਨੂੰ ਅਡਵਾਂਸ ਸੁਰੱਖਿਆ USB ਸੂਚਨਾਵਾਂ ਪ੍ਰਾਪਤ ਨਹੀਂ ਹੋਣਗੀਆਂ"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"ਸ਼ੱਕੀ USB ਸਰਗਰਮੀ"</string>

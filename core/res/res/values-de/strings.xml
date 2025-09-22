@@ -1992,8 +1992,8 @@
     <string name="package_updated_device_owner" msgid="7770195449213776218">"Von deinem Administrator aktualisiert.\nRufe die Einstellungen auf, um gewährte Berechtigungen anzusehen."</string>
     <string name="package_deleted_device_owner" msgid="2292335928930293023">"Von deinem Administrator gelöscht"</string>
     <string name="confirm_battery_saver" msgid="5247976246208245754">"OK"</string>
-    <string name="battery_saver_description_with_learn_more" msgid="8969945879044849461">"Der Energiesparmodus aktiviert das dunkle Design. Hintergrundaktivitäten, einige Funktionen und optische Effekte und manche Netzwerkverbindungen werden eingeschränkt oder deaktiviert."</string>
-    <string name="battery_saver_description" msgid="2820475140307374570">"Der Energiesparmodus aktiviert das dunkle Design. Hintergrundaktivitäten, einige Funktionen und optische Effekte sowie manche Netzwerkverbindungen werden eingeschränkt oder deaktiviert."</string>
+    <string name="battery_saver_description_with_learn_more" msgid="8969945879044849461">"Im Energiesparmodus wird das dunkle Design aktiviert. Hintergrundaktivitäten, einige Funktionen und visuelle Effekte sowie manche Netzwerkverbindungen werden eingeschränkt oder deaktiviert."</string>
+    <string name="battery_saver_description" msgid="2820475140307374570">"Im Energiesparmodus wird das dunkle Design aktiviert. Hintergrundaktivitäten, einige Funktionen und visuelle Effekte sowie manche Netzwerkverbindungen werden eingeschränkt oder deaktiviert."</string>
     <string name="data_saver_description" msgid="4995164271550590517">"Der Datensparmodus verhindert, dass manche Apps im Hintergrund Daten senden oder empfangen. So werden weniger Daten verbraucht. Auch die Datenzugriffe der gerade aktiven App werden eingeschränkt, was etwa dazu führen kann, dass Bilder erst angetippt werden müssen, bevor sie sichtbar werden."</string>
     <string name="data_saver_enable_title" msgid="7080620065745260137">"Datensparmodus aktivieren?"</string>
     <string name="data_saver_enable_button" msgid="4399405762586419726">"Aktivieren"</string>

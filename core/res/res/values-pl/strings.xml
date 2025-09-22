@@ -1994,8 +1994,8 @@
     <string name="package_updated_device_owner" msgid="7770195449213776218">"Zaktualizowany przez administratora.\nAby zobaczyć przyznane uprawnienia, przejdź do ustawień"</string>
     <string name="package_deleted_device_owner" msgid="2292335928930293023">"Usunięty przez administratora"</string>
     <string name="confirm_battery_saver" msgid="5247976246208245754">"OK"</string>
-    <string name="battery_saver_description_with_learn_more" msgid="8969945879044849461">"Oszczędzanie baterii uruchamia ciemny motyw oraz wyłącza lub ogranicza aktywność w tle, niektóre efekty wizualne, pewne funkcje oraz wybrane połączenia sieciowe."</string>
-    <string name="battery_saver_description" msgid="2820475140307374570">"Oszczędzanie baterii uruchamia ciemny motyw oraz wyłącza lub ogranicza aktywność w tle, niektóre efekty wizualne, pewne funkcje oraz wybrane połączenia sieciowe."</string>
+    <string name="battery_saver_description_with_learn_more" msgid="8969945879044849461">"Oszczędzanie baterii włącza ciemny motyw i ogranicza lub wyłącza aktywność w tle oraz niektóre efekty wizualne, funkcje i połączenia sieciowe."</string>
+    <string name="battery_saver_description" msgid="2820475140307374570">"Oszczędzanie baterii włącza ciemny motyw i ogranicza lub wyłącza aktywność w tle oraz niektóre efekty wizualne, funkcje i połączenia sieciowe."</string>
     <string name="data_saver_description" msgid="4995164271550590517">"Oszczędzanie danych uniemożliwia niektórym aplikacjom wysyłanie i odbieranie danych w tle, zmniejszając w ten sposób ich użycie. Aplikacja, z której w tej chwili korzystasz, może uzyskiwać dostęp do danych, ale rzadziej. Może to powodować, że obrazy będą się wyświetlać dopiero po kliknięciu."</string>
     <string name="data_saver_enable_title" msgid="7080620065745260137">"Włączyć oszczędzanie danych?"</string>
     <string name="data_saver_enable_button" msgid="4399405762586419726">"Włącz"</string>

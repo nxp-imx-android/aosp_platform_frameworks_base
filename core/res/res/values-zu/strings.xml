@@ -1992,8 +1992,8 @@
     <string name="package_updated_device_owner" msgid="7770195449213776218">"Kubuyekezwe ngumphathi wakho.\nIya kumasethingi ukuze ubuke izimvume ezinikeziwe"</string>
     <string name="package_deleted_device_owner" msgid="2292335928930293023">"Kususwe umlawuli wakho"</string>
     <string name="confirm_battery_saver" msgid="5247976246208245754">"KULUNGILE"</string>
-    <string name="battery_saver_description_with_learn_more" msgid="8969945879044849461">"Isilondolozi Sebhethri sivula ingqikithi emnyama futhi sibeke umkhawulo noma sivale umsebenzi ongemuva, imiphumela ethile yokubuka, izici ezithile, nokuxhumeka okuthile kwenethiwekhi."</string>
-    <string name="battery_saver_description" msgid="2820475140307374570">"Isilondolozi Sebhethri sivula ingqikithi emnyama futhi sibeke umkhawulo noma sivale umsebenzi ongemuva, imiphumela ethile yokubuka, izici ezithile, nokuxhumeka okuthile kwenethiwekhi."</string>
+    <string name="battery_saver_description_with_learn_more" msgid="8969945879044849461">"Isilondolozi Sebhethri sivula itimu emnyama futhi sibeke umkhawulo noma sivale umsebenzi ongemuva, imiphumela ethile yokubukwayo, izakhi ezithile, nokuxhumeka okuthile kwenethiwekhi."</string>
+    <string name="battery_saver_description" msgid="2820475140307374570">"Isilondolozi Sebhethri sivula itimu emnyama futhi sibeke umkhawulo noma sivale umsebenzi ongemuva, imiphumela ethile yokubukwayo, izakhi ezithile, nokuxhumeka okuthile kwenethiwekhi."</string>
     <string name="data_saver_description" msgid="4995164271550590517">"Ukusiza ukwehlisa ukusetshenziswa kwedatha, iseva yedatha igwema ezinye izinhlelo zokusebenza ukuthi zithumele noma zamukele idatha ngasemuva. Uhlelo lokusebenza olisebenzisa okwamanje lingafinyelela idatha, kodwa lingenza kanjalo kancane. Lokhu kungachaza, isibonelo, ukuthi izithombe azibonisi uze uzithephe."</string>
     <string name="data_saver_enable_title" msgid="7080620065745260137">"Vula iseva yedatha?"</string>
     <string name="data_saver_enable_button" msgid="4399405762586419726">"Vula"</string>

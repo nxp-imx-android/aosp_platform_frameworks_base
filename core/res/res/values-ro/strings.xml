@@ -1993,8 +1993,8 @@
     <string name="package_updated_device_owner" msgid="7770195449213776218">"Instalat de administrator.\nAccesează setările ca să vezi permisiunile acordate"</string>
     <string name="package_deleted_device_owner" msgid="2292335928930293023">"Șters de administrator"</string>
     <string name="confirm_battery_saver" msgid="5247976246208245754">"OK"</string>
-    <string name="battery_saver_description_with_learn_more" msgid="8969945879044849461">"Economisirea bateriei activează tema întunecată și restricționează sau dezactivează activitatea în fundal, unele efecte vizuale, alte funcții și câteva conexiuni la rețea."</string>
-    <string name="battery_saver_description" msgid="2820475140307374570">"Economisirea bateriei activează tema întunecată și restricționează sau dezactivează activitatea în fundal, unele efecte vizuale, alte funcții și câteva conexiuni la rețea."</string>
+    <string name="battery_saver_description_with_learn_more" msgid="8969945879044849461">"Economisirea bateriei activează Tema întunecată și restricționează sau dezactivează activitatea în fundal, unele efecte vizuale, anumite funcții și câteva conexiuni la rețea."</string>
+    <string name="battery_saver_description" msgid="2820475140307374570">"Economisirea bateriei activează Tema întunecată și restricționează sau dezactivează activitatea în fundal, unele efecte vizuale, anumite funcții și câteva conexiuni la rețea."</string>
     <string name="data_saver_description" msgid="4995164271550590517">"Pentru a contribui la reducerea utilizării de date, Economizorul de date împiedică unele aplicații să trimită sau să primească date în fundal. O aplicație pe care o folosești poate accesa datele, însă mai rar. Aceasta poate însemna, de exemplu, că imaginile se afișează numai după ce le atingi."</string>
     <string name="data_saver_enable_title" msgid="7080620065745260137">"Activezi Economizorul de date?"</string>
     <string name="data_saver_enable_button" msgid="4399405762586419726">"Activează"</string>
