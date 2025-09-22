@@ -227,3 +227,13 @@ flag {
   description: "Deprecating skipAnimationOnce and using initiallyVisible instead."
   bug: "440511879"
 }
+
+flag {
+  name: "remove_navbar_dead_zone"
+  namespace: "input_method"
+  description: "Remove DeadZone from IME navbar"
+  bug: "364856257"
+  metadata {
+    purpose: PURPOSE_BUGFIX
+  }
+}
