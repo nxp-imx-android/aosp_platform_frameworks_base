@@ -44,6 +44,8 @@ import org.mockito.ArgumentCaptor
 import org.mockito.ArgumentMatchers.anyFloat
 import org.mockito.ArgumentMatchers.anyInt
 import org.mockito.Mock
+import org.mockito.Mockito.inOrder
+import org.mockito.Mockito.reset
 import org.mockito.Spy
 import org.mockito.kotlin.any
 import org.mockito.kotlin.doReturn
@@ -230,6 +232,67 @@ class ResizeVeilTest : ShellTestCase() {
         advanceUntilIdle()
 
         assertThat(veil.iconView.drawable).isNull()
+    }
+
+    @Test
+    fun showVeilFadeIn_animationCancelled_setsFinalAlpha() = runTest {
+        val veil = createResizeVeil()
+        val parent = mock<SurfaceControl>()
+        val bounds = Rect(0, 0, 100, 100)
+
+        // Start the fade-in animation.
+        veil.showVeil(parent, bounds, taskInfo)
+
+        // Before animation finishes, cancel it by disposing.
+        veil.dispose()
+
+        // Verify that the cancellation of the show animation sets the final alpha value of 1.0f
+        // before the surfaces are removed during disposal.
+        val inOrder = inOrder(mockTransaction)
+        // setAlpha is called from onAnimationCancel
+        inOrder.verify(mockTransaction).setAlpha(mockBackgroundSurface, 1f)
+        inOrder.verify(mockTransaction).setAlpha(mockIconSurface, 1f)
+        // remove is called from dispose
+        inOrder.verify(mockTransaction).remove(mockBackgroundSurface)
+        inOrder.verify(mockTransaction).remove(mockIconSurface)
+    }
+
+    @Test
+    fun hideVeil_animationCancelledByShowVeil_hidesSurfaces() = runTest {
+        val veil = createResizeVeil()
+        val parent = mock<SurfaceControl>()
+        val bounds = Rect(0, 0, 100, 100)
+
+        // Show the veil first without animation to set it up.
+        veil.showVeil(mockTransaction, parent, bounds, taskInfo, false /* fadeIn */)
+        // Reset mock to ignore setup calls and focus on the hide/show interaction.
+        reset(mockTransaction)
+        // Redo mock returns after reset
+        doReturn(mockTransaction).whenever(mockTransaction).setLayer(any(), anyInt())
+        doReturn(mockTransaction).whenever(mockTransaction).setAlpha(any(), anyFloat())
+        doReturn(mockTransaction).whenever(mockTransaction).show(any())
+        doReturn(mockTransaction).whenever(mockTransaction).hide(any())
+        doReturn(mockTransaction)
+            .whenever(mockTransaction)
+            .setPosition(any(), anyFloat(), anyFloat())
+        doReturn(mockTransaction).whenever(mockTransaction).setWindowCrop(any(), anyInt(), anyInt())
+
+        // Start hiding with animation.
+        veil.hideVeil()
+
+        // Before hide animation finishes, show it again. This should cancel the hide animation.
+        veil.showVeil(mockTransaction, parent, bounds, taskInfo, false /* fadeIn */)
+
+        // Verify that the cancellation of the hide animation hides the surfaces before they are
+        // shown again.
+        val inOrder = inOrder(mockTransaction)
+        // hide is called from onAnimationCancel
+        inOrder.verify(mockTransaction).hide(mockBackgroundSurface)
+        inOrder.verify(mockTransaction).hide(mockIconSurface)
+        // show is called from showVeil
+        inOrder.verify(mockTransaction).show(mockResizeVeilSurface)
+        inOrder.verify(mockTransaction).show(mockIconSurface)
+        inOrder.verify(mockTransaction).show(mockBackgroundSurface)
     }
 
     private suspend fun TestScope.createResizeVeil(
