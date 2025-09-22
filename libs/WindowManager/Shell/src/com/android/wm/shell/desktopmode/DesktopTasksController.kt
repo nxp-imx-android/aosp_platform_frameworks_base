@@ -1222,10 +1222,6 @@ class DesktopTasksController(
         desksOrganizer.moveTaskToDesk(wct, deskId, task, minimized = minimized)
         taskBounds?.let { wct.setBounds(task.token, it) }
 
-        if (!minimized) {
-            // Bring display to front if task is not minimized to ensure display focus.
-            wct.reorder(task.token, /* onTop= */ true, /* includingParents= */ true)
-        }
         return { transition ->
             desksTransitionObserver.addPendingTransition(
                 DeskTransition.AddTaskToDesk(
