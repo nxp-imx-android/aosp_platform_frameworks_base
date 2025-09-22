@@ -282,10 +282,10 @@ public class RootWindowContainerTests extends WindowTestsBase {
         activity1.setVisibleRequested(false);
         activity2.setVisibleRequested(false);
         doReturn(true).when(mAtm).isSleepingOrShuttingDownLocked();
-        doReturn(true).when(mRootWindowContainer).putTasksToSleep(anyBoolean(), anyBoolean());
+        doReturn(true).when(mRootWindowContainer).putTasksToSleep(anyBoolean());
         mSupervisor.mGoingToSleepWakeLock = mock(PowerManager.WakeLock.class);
         doReturn(false).when(mSupervisor.mGoingToSleepWakeLock).isHeld();
-        mAtm.mTaskSupervisor.checkReadyForSleepLocked(false /* allowDelay */);
+        mAtm.mTaskSupervisor.finishEnteringSleep();
         assertEquals(Task.LAYER_RANK_INVISIBLE, task1.mLayerRank);
         assertEquals(Task.LAYER_RANK_INVISIBLE, task2.mLayerRank);
     }

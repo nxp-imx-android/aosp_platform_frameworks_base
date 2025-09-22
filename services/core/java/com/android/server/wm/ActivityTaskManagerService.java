@@ -5672,6 +5672,7 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
                 mActivityStateUpdater.setTopProcessStateAsync(mInternal.getTopProcessState());
                 Slog.d(TAG, "Top Process State changed to PROCESS_STATE_TOP_SLEEPING");
                 mTaskSupervisor.goingToSleepLocked();
+                mTaskSupervisor.checkReadyForSleepLocked();
                 updateResumedAppTrace(null /* resumed */);
                 updateOomAdj = true;
             }
@@ -6900,7 +6901,6 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
             mShuttingDown = true;
             mWindowManager.mSnapshotController.mTaskSnapshotController.prepareShutdown();
             synchronized (mGlobalLock) {
-                mRootWindowContainer.prepareForShutdown();
                 updateEventDispatchingLocked(booted);
                 notifyTaskPersisterLocked(null, true);
                 return mTaskSupervisor.shutdownLocked(timeout);

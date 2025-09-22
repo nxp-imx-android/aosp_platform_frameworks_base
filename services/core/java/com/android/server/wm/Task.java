@@ -5058,7 +5058,7 @@ class Task extends TaskFragment {
 
     void checkReadyForSleep() {
         if (shouldSleepActivities() && goToSleepIfPossible(false /* shuttingDown */)) {
-            mTaskSupervisor.checkReadyForSleepLocked(true /* allowDelay */);
+            mTaskSupervisor.checkReadyForSleepLocked();
         }
     }
 

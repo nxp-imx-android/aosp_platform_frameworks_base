@@ -2159,18 +2159,16 @@ public class ActivityTaskSupervisor implements RecentTasks.Callbacks {
         }
 
         mRootWindowContainer.applySleepTokens(false /* applyToRootTasks */);
-
-        checkReadyForSleepLocked(true /* allowDelay */);
     }
 
     boolean shutdownLocked(int timeout) {
+        mRootWindowContainer.prepareForShutdown();
         goingToSleepLocked();
 
         boolean timedout = false;
         final long endTime = System.currentTimeMillis() + timeout;
         while (true) {
-            if (!mRootWindowContainer.putTasksToSleep(
-                    true /* allowDelay */, true /* shuttingDown */)) {
+            if (!mRootWindowContainer.putTasksToSleep(true /* shuttingDown */)) {
                 long timeRemaining = endTime - System.currentTimeMillis();
                 if (timeRemaining > 0) {
                     try {
@@ -2189,8 +2187,11 @@ public class ActivityTaskSupervisor implements RecentTasks.Callbacks {
         long timeRemaining = endTime - System.currentTimeMillis();
         mWindowManager.mSnapshotController.mTaskSnapshotController.waitFlush(timeRemaining);
 
-        // Force checkReadyForSleep to complete.
-        checkReadyForSleepLocked(false /* allowDelay */);
+        if (timedout) {
+            // Force enter sleep to complete.
+            mRootWindowContainer.putTasksToSleepNow();
+        }
+        finishEnteringSleep();
 
         return timedout;
     }
@@ -2202,17 +2203,21 @@ public class ActivityTaskSupervisor implements RecentTasks.Callbacks {
         }
     }
 
-    void checkReadyForSleepLocked(boolean allowDelay) {
+    void checkReadyForSleepLocked() {
         if (!mService.isSleepingOrShuttingDownLocked()) {
             // Do not care.
             return;
         }
 
-        if (!mRootWindowContainer.putTasksToSleep(
-                allowDelay, false /* shuttingDown */)) {
+        if (!mRootWindowContainer.putTasksToSleep(false /* shuttingDown */)) {
             return;
         }
 
+        finishEnteringSleep();
+    }
+
+    @VisibleForTesting
+    void finishEnteringSleep() {
         // End power mode launch before going sleep
         mService.endPowerMode(ActivityTaskManagerService.POWER_MODE_REASON_ALL);
 
@@ -2895,7 +2900,8 @@ public class ActivityTaskSupervisor implements RecentTasks.Callbacks {
                 case SLEEP_TIMEOUT_MSG: {
                     if (mService.isSleepingOrShuttingDownLocked()) {
                         Slog.w(TAG, "Sleep timeout!  Sleeping now.");
-                        checkReadyForSleepLocked(false /* allowDelay */);
+                        mRootWindowContainer.putTasksToSleepNow();
+                        finishEnteringSleep();
                     }
                 } break;
                 case LAUNCH_TIMEOUT_MSG: {

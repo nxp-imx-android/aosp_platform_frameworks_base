@@ -6479,7 +6479,7 @@ final class ActivityRecord extends WindowToken {
         } else {
             mAtmService.updatePreviousProcess(this);
         }
-        mTaskSupervisor.checkReadyForSleepLocked(true /* allowDelay */);
+        mTaskSupervisor.checkReadyForSleepLocked();
     }
 
     void addToStopping(boolean scheduleIdle, boolean idleDelayed, String reason) {
