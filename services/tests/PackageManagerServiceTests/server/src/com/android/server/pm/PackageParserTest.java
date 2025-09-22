@@ -969,6 +969,9 @@ public class PackageParserTest {
         try {
             final ParsedPackage pkg = new TestPackageParser2().parsePackage(testFile, 0, false);
 
+            // Check HAS_PCC_COMPONENTS flag
+            assertTrue(pkg.hasPccComponents());
+
             // Check activities
             final List<ParsedActivity> activities = pkg.getActivities();
             assertThat(activities.stream().map(ParsedActivity::getName).collect(toList()))
@@ -1057,6 +1060,9 @@ public class PackageParserTest {
         final File testFile = extractFile(TEST_APP_PCC_APK);
         try {
             final ParsedPackage pkg = new TestPackageParser2().parsePackage(testFile, 0, false);
+
+            // Check HAS_PCC_COMPONENTS flag
+            assertFalse(pkg.hasPccComponents());
 
             // Check that PCC components are not parsed
             final List<String> activities = pkg.getActivities().stream()

@@ -2614,6 +2614,9 @@ public class ParsingPackageUtils {
                     resultToReturn.mHasActivityOrder |= mainComponent.mHasActivityOrder;
                     resultToReturn.mHasReceiverOrder |= mainComponent.mHasReceiverOrder;
                     resultToReturn.mHasServiceOrder |= mainComponent.mHasServiceOrder;
+
+                    // set the package to indicate it has pcc components
+                    pkg.setHasPccComponents(true);
                 }
                 currentParseResult = mainComponentResult;
             } else {

@@ -1872,6 +1872,11 @@ public class PackageImpl implements ParsedPackage, AndroidPackageInternal,
         return getBoolean(Booleans.VM_SAFE_MODE);
     }
 
+    @Override
+    public boolean hasPccComponents() {
+        return getBoolean2(Booleans2.HAS_PCC_COMPONENTS);
+    }
+
     @Override public PackageImpl removeUsesOptionalNativeLibrary(String libraryName) {
         this.usesOptionalNativeLibraries = CollectionUtils.remove(this.usesOptionalNativeLibraries,
                 libraryName);
@@ -3768,6 +3773,12 @@ public class PackageImpl implements ParsedPackage, AndroidPackageInternal,
     }
 
     @Override
+    public ParsingPackage setHasPccComponents(boolean hasPccComponents) {
+        setBoolean2(Booleans2.HAS_PCC_COMPONENTS, hasPccComponents);
+        return this;
+    }
+
+    @Override
     public int getIntentMatchingFlags() {
         return mIntentMatchingFlags;
     }
@@ -3936,11 +3947,13 @@ public class PackageImpl implements ParsedPackage, AndroidPackageInternal,
                 STUB,
                 APEX,
                 UPDATABLE_SYSTEM,
+                HAS_PCC_COMPONENTS,
         })
         public @interface Flags {}
 
         private static final long STUB = 1L;
         private static final long APEX = 1L << 1;
         private static final long UPDATABLE_SYSTEM = 1L << 2;
+        private static final long HAS_PCC_COMPONENTS = 1L << 3;
     }
 }
