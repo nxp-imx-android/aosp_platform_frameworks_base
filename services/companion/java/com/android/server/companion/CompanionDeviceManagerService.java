@@ -124,6 +124,7 @@ import com.android.server.wm.ActivityTaskManagerInternal;
 import java.io.FileDescriptor;
 import java.io.PrintWriter;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -336,7 +337,8 @@ public class CompanionDeviceManagerService extends SystemService {
                         /* macAddress= */ null, request.getDisplayName(),
                         request.getDeviceProfile(), /* associatedDevice= */ null,
                         request.isSelfManaged(), callback, /* resultReceiver= */ null,
-                        request.getDeviceIcon(), /* skipRoleGrant= */ true);
+                        request.getDeviceIcon(), /* skipRoleGrant= */ true,
+                        request.getExtraPermissions());
             } else {
                 mAssociationRequestsProcessor.processNewAssociationRequest(
                         request, packageName, userId, callback);
@@ -459,7 +461,7 @@ public class CompanionDeviceManagerService extends SystemService {
         @Override
         @EnforcePermission(USE_COMPANION_TRANSPORTS)
         public void removeOnTransportEventListener(int associationId,
-                                                IOnTransportEventListener listener) {
+                IOnTransportEventListener listener) {
             removeOnTransportEventListener_enforcePermission();
 
             mTransportManager.removeListener(associationId, listener);
@@ -641,7 +643,7 @@ public class CompanionDeviceManagerService extends SystemService {
         @Override
         @EnforcePermission(DELIVER_COMPANION_MESSAGES)
         public void attachSystemDataTransport(String packageName, int userId, int associationId,
-                                              ParcelFileDescriptor fd) {
+                ParcelFileDescriptor fd) {
             attachSystemDataTransport_enforcePermission();
 
             mTransportManager.attachSystemDataTransport(associationId, fd);
@@ -743,7 +745,7 @@ public class CompanionDeviceManagerService extends SystemService {
 
             final MacAddress macAddressObj = MacAddress.fromString(macAddress);
             mAssociationRequestsProcessor.createAssociation(userId, packageName, macAddressObj,
-                    null, null, null, false, null, null, null, false);
+                    null, null, null, false, null, null, null, false, new HashSet<>());
         }
 
         private void checkCanCallNotificationApi(String callingPackage, int userId) {

@@ -41,12 +41,17 @@ import android.os.Parcelable;
 import android.provider.OneTimeUseBuilder;
 
 import com.android.internal.util.ArrayUtils;
+import com.android.internal.util.CollectionUtils;
 
+import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 /**
  * A request for the user to select a companion device to associate with.
@@ -135,8 +140,8 @@ public final class AssociationRequest implements Parcelable {
      * <p>
      * This profile may only be used by the system.
      *
-     * @see AssociationRequest.Builder#setDeviceProfile
      * @hide
+     * @see AssociationRequest.Builder#setDeviceProfile
      */
     public static final String DEVICE_PROFILE_WEARABLE_SENSING =
             "android.companion.COMPANION_DEVICE_WEARABLE_SENSING";
@@ -198,6 +203,12 @@ public final class AssociationRequest implements Parcelable {
             "android.app.role.SYSTEM_AUTOMOTIVE_PROJECTION";
 
     /**
+     * Permission group to access nearby devices.
+     */
+    @FlaggedApi(Flags.FLAG_ASSOCIATION_EXTRA_PERMISSION)
+    public static final String PERMISSION_NEARBY = "NEARBY_DEVICES";
+
+    /**
      * Device profile: Allows the companion app to access notification, recent photos and media for
      * computer cross-device features.
      *
@@ -213,11 +224,29 @@ public final class AssociationRequest implements Parcelable {
 
     /** @hide */
     @Retention(RetentionPolicy.SOURCE)
-    @StringDef(value = { DEVICE_PROFILE_WATCH, DEVICE_PROFILE_COMPUTER,
+    @StringDef(value = {DEVICE_PROFILE_WATCH, DEVICE_PROFILE_COMPUTER,
             DEVICE_PROFILE_AUTOMOTIVE_PROJECTION, DEVICE_PROFILE_APP_STREAMING,
             DEVICE_PROFILE_GLASSES, DEVICE_PROFILE_NEARBY_DEVICE_STREAMING,
-            DEVICE_PROFILE_WEARABLE_SENSING })
-    public @interface DeviceProfile {}
+            DEVICE_PROFILE_WEARABLE_SENSING})
+    public @interface DeviceProfile {
+    }
+
+    /**
+     * Defines the set of valid permission strings for extra permissions.
+     *
+     * @hide
+     */
+    @Target(ElementType.TYPE_USE)
+    @StringDef(
+            prefix = {"PERMISSION_"},
+            value = {
+                    PERMISSION_NEARBY
+            }
+    )
+    @Retention(RetentionPolicy.SOURCE)
+    @FlaggedApi(Flags.FLAG_ASSOCIATION_EXTRA_PERMISSION)
+    public @interface Permission {
+    }
 
     /**
      * Whether only a single device should match the provided filter.
@@ -274,6 +303,7 @@ public final class AssociationRequest implements Parcelable {
     /**
      * The app package name of the application the association will belong to.
      * Populated by the system.
+     *
      * @hide
      */
     @Nullable
@@ -282,6 +312,7 @@ public final class AssociationRequest implements Parcelable {
     /**
      * The UserId of the user the association will belong to.
      * Populated by the system.
+     *
      * @hide
      */
     @UserIdInt
@@ -290,6 +321,7 @@ public final class AssociationRequest implements Parcelable {
     /**
      * The user-readable description of the device profile's privileges.
      * Populated by the system.
+     *
      * @hide
      */
     @Nullable
@@ -297,6 +329,7 @@ public final class AssociationRequest implements Parcelable {
 
     /**
      * The time at which his request was created
+     *
      * @hide
      */
     private final long mCreationTime;
@@ -304,12 +337,14 @@ public final class AssociationRequest implements Parcelable {
     /**
      * Whether the user-prompt may be skipped once the device is found.
      * Populated by the system.
+     *
      * @hide
      */
     private boolean mSkipPrompt;
 
     /**
      * The device icon displayed in selfManaged association dialog.
+     *
      * @hide
      */
     @Nullable
@@ -317,31 +352,43 @@ public final class AssociationRequest implements Parcelable {
 
     /**
      * Requested permissions for profile.
+     *
      * @hide
      */
     @Nullable
     private List<Integer> mRequestedPerms = new ArrayList<>();
 
+    /**
+     * The extra permissions to request/grant for non-profile device.
+     */
+    @NonNull
+    private Set<String> mExtraPermissions = new HashSet<>();
+
     private static final int DISPLAY_NAME_LENGTH_LIMIT = 1024;
+
+    private static final Set<String> ALLOWED_EXTRA_PERMISSIONS = Set.of(
+            PERMISSION_NEARBY
+    );
 
     /**
      * Creates a new AssociationRequest.
      *
-     * @param singleDevice
-     *   Whether only a single device should match the provided filter.
+     * @param singleDevice     Whether only a single device should match the provided filter.
      *
-     *   When scanning for a single device with a specific {@link BluetoothDeviceFilter} mac
-     *   address, bonded devices are also searched among. This allows to obtain the necessary app
-     *   privileges even if the device is already paired.
-     * @param deviceFilters
-     *   If set, only devices matching either of the given filters will be shown to the user
-     * @param deviceProfile
-     *   Profile of the device.
-     * @param displayName
-     *   The Display name of the device to be shown in the CDM confirmation UI. Must be non-null for
-     *   "self-managed" association.
-     * @param selfManaged
-     *   Whether the association is to be managed by the companion application.
+     *                         When scanning for a single device with a specific
+     *                         {@link BluetoothDeviceFilter} mac
+     *                         address, bonded devices are also searched among. This allows to
+     *                         obtain the necessary app
+     *                         privileges even if the device is already paired.
+     * @param deviceFilters    If set, only devices matching either of the given filters will be
+     *                         shown to the user
+     * @param deviceProfile    Profile of the device.
+     * @param displayName      The Display name of the device to be shown in the CDM confirmation
+     *                         UI. Must be non-null for
+     *                         "self-managed" association.
+     * @param selfManaged      Whether the association is to be managed by the companion
+     *                         application.
+     * @param extraPermissions The extra permissions to request/grant for non-profile device.
      */
     private AssociationRequest(
             boolean singleDevice,
@@ -351,7 +398,9 @@ public final class AssociationRequest implements Parcelable {
             boolean selfManaged,
             boolean forceConfirmation,
             boolean skipRoleGrant,
-            @Nullable Icon deviceIcon) {
+            @Nullable Icon deviceIcon,
+            @NonNull Set<String> extraPermissions
+    ) {
         mSingleDevice = singleDevice;
         mDeviceFilters = requireNonNull(deviceFilters);
         mDeviceProfile = deviceProfile;
@@ -361,6 +410,7 @@ public final class AssociationRequest implements Parcelable {
         mSkipRoleGrant = skipRoleGrant;
         mCreationTime = System.currentTimeMillis();
         mDeviceIcon = deviceIcon;
+        mExtraPermissions = extraPermissions;
     }
 
     /**
@@ -404,8 +454,8 @@ public final class AssociationRequest implements Parcelable {
     /**
      * Whether to skip the role grant, permission checks and consent dialog.
      *
-     * @see Builder#setSkipRoleGrant(boolean)
      * @hide
+     * @see Builder#setSkipRoleGrant(boolean)
      */
     @SuppressLint("UnflaggedApi") // @TestApi without associated feature.
     @TestApi
@@ -428,7 +478,6 @@ public final class AssociationRequest implements Parcelable {
      * Get the device icon of the self-managed association request.
      *
      * @return the device icon, or {@code null} if no device icon has been set.
-     *
      * @see Builder#setDeviceIcon(Icon)
      */
     @FlaggedApi(Flags.FLAG_ASSOCIATION_DEVICE_ICON)
@@ -441,6 +490,17 @@ public final class AssociationRequest implements Parcelable {
     @Nullable
     public List<Integer> getRequestedPerms() {
         return mRequestedPerms;
+    }
+
+    /**
+     * Gets the extra permissions to request/grant for non-profile device.
+     *
+     * @return A set of permission strings.
+     */
+    @FlaggedApi(Flags.FLAG_ASSOCIATION_EXTRA_PERMISSION)
+    @NonNull
+    public Set<String> getExtraPermissions() {
+        return mExtraPermissions;
     }
 
     /** @hide */
@@ -502,8 +562,10 @@ public final class AssociationRequest implements Parcelable {
         private boolean mForceConfirmation = false;
         private boolean mSkipRoleGrant = false;
         private Icon mDeviceIcon = null;
+        private Set<String> mExtraPermissions = new HashSet<>();
 
-        public Builder() {}
+        public Builder() {
+        }
 
         /**
          * Whether only a single device should match the provided filter.
@@ -619,7 +681,8 @@ public final class AssociationRequest implements Parcelable {
          * <p>The given device icon will be resized to 24dp x 24dp.
          *
          * @throws IllegalArgumentException if the icon is
-         * {@link Icon#TYPE_URI} or {@link Icon#TYPE_URI_ADAPTIVE_BITMAP}.
+         *                                  {@link Icon#TYPE_URI} or
+         *                                  {@link Icon#TYPE_URI_ADAPTIVE_BITMAP}.
          * @see #setSelfManaged(boolean)
          */
         @NonNull
@@ -628,6 +691,30 @@ public final class AssociationRequest implements Parcelable {
         public Builder setDeviceIcon(@NonNull Icon deviceIcon) {
             checkNotUsed();
             mDeviceIcon = requireNonNull(deviceIcon);
+            return this;
+        }
+
+        /**
+         * Sets the set of extra permissions to be requested for this association.
+         *
+         * @param permissions a non-null set of permissions from
+         *                    {@link android.companion.AssociationRequest.Permission}.
+         *
+         * @throws IllegalArgumentException if the provided {@code permissions} set is empty or
+         * contains any unsupported permissions.
+         */
+        @FlaggedApi(Flags.FLAG_ASSOCIATION_EXTRA_PERMISSION)
+        @NonNull
+        public Builder setExtraPermissions(
+                @NonNull Set<@AssociationRequest.Permission String> permissions) {
+            if (CollectionUtils.isEmpty(permissions)
+                    || !ALLOWED_EXTRA_PERMISSIONS.containsAll(permissions)) {
+                throw new IllegalArgumentException(
+                        "Provided permissions set contains unsupported permission."
+                );
+            }
+            checkNotUsed();
+            mExtraPermissions.addAll(permissions);
             return this;
         }
 
@@ -642,7 +729,7 @@ public final class AssociationRequest implements Parcelable {
             }
             return new AssociationRequest(mSingleDevice, emptyIfNull(mDeviceFilters),
                     mDeviceProfile, mDisplayName, mSelfManaged, mForceConfirmation, mSkipRoleGrant,
-                    mDeviceIcon);
+                    mDeviceIcon, mExtraPermissions);
         }
     }
 
@@ -725,6 +812,7 @@ public final class AssociationRequest implements Parcelable {
                 + ", creationTime = " + mCreationTime
                 + ", skipPrompt = " + mSkipPrompt
                 + ", requestedPerms = " + mRequestedPerms
+                + ", extraPermissions = " + mExtraPermissions
                 + " }";
     }
 
@@ -744,9 +832,11 @@ public final class AssociationRequest implements Parcelable {
                 && Objects.equals(mPackageName, that.mPackageName)
                 && mUserId == that.mUserId
                 && Objects.equals(mDeviceProfilePrivilegesDescription,
-                        that.mDeviceProfilePrivilegesDescription)
+                that.mDeviceProfilePrivilegesDescription)
                 && mCreationTime == that.mCreationTime
                 && mSkipPrompt == that.mSkipPrompt
+                && Objects.equals(mRequestedPerms, that.mRequestedPerms)
+                && Objects.equals(mExtraPermissions, that.mExtraPermissions)
                 && (mDeviceIcon == null ? that.mDeviceIcon == null
                 : mDeviceIcon.sameAs(that.mDeviceIcon));
     }
@@ -788,6 +878,7 @@ public final class AssociationRequest implements Parcelable {
         } else {
             dest.writeInt(0);
         }
+        dest.writeStringList(new ArrayList<>(mExtraPermissions));
     }
 
     @Override
@@ -840,19 +931,20 @@ public final class AssociationRequest implements Parcelable {
         if (in.readInt() == 1) {
             in.readList(mRequestedPerms, Integer.class.getClassLoader(), Integer.class);
         }
+        mExtraPermissions =  new HashSet<>(in.createStringArrayList());
     }
 
     @NonNull
     public static final Parcelable.Creator<AssociationRequest> CREATOR =
             new Parcelable.Creator<AssociationRequest>() {
-        @Override
-        public AssociationRequest[] newArray(int size) {
-            return new AssociationRequest[size];
-        }
+                @Override
+                public AssociationRequest[] newArray(int size) {
+                    return new AssociationRequest[size];
+                }
 
-        @Override
-        public AssociationRequest createFromParcel(@NonNull Parcel in) {
-            return new AssociationRequest(in);
-        }
-    };
+                @Override
+                public AssociationRequest createFromParcel(@NonNull Parcel in) {
+                    return new AssociationRequest(in);
+                }
+            };
 }

@@ -910,6 +910,7 @@ package android.companion {
     method @NonNull public android.companion.AssociationInfo.Builder setDeviceMacAddress(@Nullable android.net.MacAddress);
     method @NonNull public android.companion.AssociationInfo.Builder setDeviceProfile(@Nullable String);
     method @NonNull public android.companion.AssociationInfo.Builder setDisplayName(@Nullable CharSequence);
+    method @FlaggedApi("android.companion.association_extra_permission") @NonNull public android.companion.AssociationInfo.Builder setExtraPermissions(@NonNull java.util.Set<java.lang.String>);
     method @NonNull public android.companion.AssociationInfo.Builder setLastTimeConnected(long);
     method @FlaggedApi("android.companion.enable_data_sync") @NonNull public android.companion.AssociationInfo.Builder setMetadata(@NonNull android.os.PersistableBundle);
     method @NonNull public android.companion.AssociationInfo.Builder setNotifyOnDeviceNearby(boolean);

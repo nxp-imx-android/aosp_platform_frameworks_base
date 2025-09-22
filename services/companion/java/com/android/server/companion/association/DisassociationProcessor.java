@@ -21,10 +21,12 @@ import static android.companion.AssociationRequest.DEVICE_PROFILE_AUTOMOTIVE_PRO
 
 import static com.android.internal.util.CollectionUtils.any;
 import static com.android.internal.util.CollectionUtils.filter;
+import static com.android.server.companion.utils.PermissionsUtils.PERM_SET_TO_PERMS;
 import static com.android.server.companion.utils.RolesUtils.NLS_PROFILES;
 import static com.android.server.companion.utils.RolesUtils.isRoleInUseByAssociations;
 import static com.android.server.companion.utils.RolesUtils.removeRoleHolderForAssociation;
 
+import static java.util.Objects.requireNonNull;
 import static java.util.concurrent.TimeUnit.DAYS;
 
 import android.annotation.NonNull;
@@ -45,12 +47,18 @@ import android.os.UserHandle;
 import android.service.notification.NotificationListenerService;
 import android.util.Slog;
 
+import com.android.internal.util.CollectionUtils;
 import com.android.server.companion.datatransfer.SystemDataTransferRequestStore;
 import com.android.server.companion.devicepresence.CompanionAppBinder;
 import com.android.server.companion.devicepresence.DevicePresenceProcessor;
 import com.android.server.companion.transport.CompanionTransportManager;
+import com.android.server.companion.utils.PermissionsUtils;
+import com.android.server.companion.utils.RolesUtils;
 
+import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 
 /**
  * This class responsible for disassociation.
@@ -143,8 +151,10 @@ public class DisassociationProcessor {
                 isRoleInUseByAssociations(otherActiveAssociations, deviceProfile);
 
         final int packageProcessImportance = getPackageProcessImportance(userId, packageName);
-        if (packageProcessImportance <= IMPORTANCE_FOREGROUND && deviceProfile != null
-                && !isRoleInUseByOtherAssociations) {
+        if (packageProcessImportance <= IMPORTANCE_FOREGROUND
+                && ((deviceProfile != null && !isRoleInUseByOtherAssociations)
+                        || (deviceProfile == null
+                            && !CollectionUtils.isEmpty(association.getExtraPermissions())))) {
             // Need to remove the app from the list of role holders, but the process is visible
             // to the user at the moment, so we'll need to do it later.
             Slog.i(TAG, "Cannot disassociate id=[" + id + "] now - process is visible. "
@@ -185,6 +195,15 @@ public class DisassociationProcessor {
             }
         });
 
+        // If the device profile is null and extraPermission is not empty,
+        // revoke the granted extra permissions.
+        if (deviceProfile == null && !CollectionUtils.isEmpty(association.getExtraPermissions())) {
+            revokeExtraPermissionsForNonProfile(association.getPackageName(),
+                    association.getExtraPermissions(), association.getUserId());
+        }
+
+        // TODO: Handle permission effects on a non-profile device when a role-holding
+        //  device disassociates. b/445751225
         // If role is not in use by other associations, revoke the role.
         // Do not need to remove the system role since it was pre-granted by the system.
         if (!isRoleInUseByOtherAssociations && deviceProfile != null && !deviceProfile.equals(
@@ -330,5 +349,57 @@ public class DisassociationProcessor {
                 stopListening();
             }
         }
+    }
+
+    private void revokeExtraPermissionsForNonProfile(String packageName,
+            Set<String> permissionSetKeys,
+            int userId
+    ) {
+        if (permissionSetKeys == null || permissionSetKeys.isEmpty()) {
+            return;
+        }
+        requireNonNull(packageName);
+
+        Binder.withCleanCallingIdentity(() -> {
+            final PackageManager packageManager = mContext.getPackageManager();
+            final UserHandle user = UserHandle.of(userId);
+
+            PermissionsUtils.getIndividualPermissionsFromKeys(permissionSetKeys).stream()
+                    .filter(permission ->
+                            packageManager.checkPermission(permission, packageName)
+                                == PackageManager.PERMISSION_GRANTED
+                            && !checkIfOtherAssociationsNeedPermission(
+                                    packageName, userId, permission))
+                    .forEach(permission ->
+                            packageManager.revokeRuntimePermission(packageName, permission, user));
+        });
+    }
+
+    private boolean checkIfOtherAssociationsNeedPermission(String packageName, int userId,
+            String permission) {
+        return mAssociationStore.getAssociationsByPackage(userId, packageName)
+                .stream()
+                .anyMatch(
+                        associationInfo -> {
+                            Collection<Integer> permissionIds;
+                            String deviceProfile = associationInfo.getDeviceProfile();
+                            // Get the initial stream of permission IDs
+                            // based on whether a profile exists.
+                            if (deviceProfile == null) {
+                                // No device profile. Use the "extra permissions".
+                                permissionIds = PermissionsUtils.extraPermissionsToIds(
+                                        associationInfo.getExtraPermissions());
+                            } else {
+                                // A device profile exists. Get permission IDs from the profile.
+                                permissionIds = RolesUtils.getPermsForProfile(deviceProfile);
+                            }
+
+                            // Convert the stream of IDs into a stream of actual permission strings.
+                            return permissionIds.stream()
+                                    .map(PERM_SET_TO_PERMS::get)
+                                    .filter(Objects::nonNull)
+                                    .flatMap(Collection::stream)
+                                    .anyMatch(permission::equals);
+                        });
     }
 }
