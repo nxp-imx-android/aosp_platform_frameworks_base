@@ -20,7 +20,6 @@ import static android.view.WindowManager.TRANSIT_CHANGE;
 import static android.view.WindowManager.TRANSIT_FLAG_DISPLAY_LEVEL_TRANSITION;
 
 import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_WINDOW_TRANSITIONS_MIN;
-import static com.android.server.power.hint.Flags.powerHintOnDeviceStateChange;
 import static com.android.server.wm.ActivityTaskManagerService.POWER_MODE_REASON_CHANGE_DISPLAY;
 import static com.android.server.wm.utils.DisplayInfoOverrides.WM_OVERRIDE_FIELDS;
 import static com.android.server.wm.utils.DisplayInfoOverrides.copyDisplayInfoFields;
@@ -211,11 +210,7 @@ class DeferredDisplayUpdater {
                 mDisplayContent.mTransitionController,
                 mDisplayContent.mTransitionController.mSyncEngine);
 
-        if (!powerHintOnDeviceStateChange()) {
-            // if flag is enabled it means power mode was already activated when changing device
-            // state, see FoldableDeviceStateProvider
-            mDisplayContent.mAtmService.startPowerMode(POWER_MODE_REASON_CHANGE_DISPLAY);
-        }
+        mDisplayContent.mAtmService.startPowerMode(POWER_MODE_REASON_CHANGE_DISPLAY);
 
         if (physicalDisplayUpdated) {
             mInPhysicalDisplayChangeTransition = true;

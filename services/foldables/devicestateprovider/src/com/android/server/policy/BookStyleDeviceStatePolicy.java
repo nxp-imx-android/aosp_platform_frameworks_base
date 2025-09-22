@@ -44,10 +44,7 @@ import android.hardware.Sensor;
 import android.hardware.SensorManager;
 import android.hardware.devicestate.DeviceState;
 import android.hardware.display.DisplayManager;
-import android.os.PowerManager;
-import android.os.PowerManagerInternal;
 
-import com.android.server.LocalServices;
 import com.android.server.devicestate.DeviceStatePolicy;
 import com.android.server.devicestate.DeviceStateProvider;
 import com.android.server.policy.FoldableDeviceStateProvider.DeviceStatePredicateWrapper;
@@ -70,12 +67,12 @@ import java.util.function.Predicate;
 public class BookStyleDeviceStatePolicy extends DeviceStatePolicy implements
         BookStyleClosedStatePredicate.ClosedStateUpdatesListener {
 
-    static final int DEVICE_STATE_CLOSED = 0;
-    static final int DEVICE_STATE_HALF_OPENED = 1;
-    static final int DEVICE_STATE_OPENED = 2;
-    static final int DEVICE_STATE_REAR_DISPLAY = 3;
-    static final int DEVICE_STATE_CONCURRENT_INNER_DEFAULT = 4;
-    static final int DEVICE_STATE_REAR_DISPLAY_OUTER_DEFAULT = 5;
+    private static final int DEVICE_STATE_CLOSED = 0;
+    private static final int DEVICE_STATE_HALF_OPENED = 1;
+    private static final int DEVICE_STATE_OPENED = 2;
+    private static final int DEVICE_STATE_REAR_DISPLAY = 3;
+    private static final int DEVICE_STATE_CONCURRENT_INNER_DEFAULT = 4;
+    private static final int DEVICE_STATE_REAR_DISPLAY_OUTER_DEFAULT = 5;
     private static final int TENT_MODE_SWITCH_ANGLE_DEGREES = 90;
     private static final int TABLE_TOP_MODE_SWITCH_ANGLE_DEGREES = 125;
     private static final int MIN_CLOSED_ANGLE_DEGREES = 0;
@@ -106,9 +103,6 @@ public class BookStyleDeviceStatePolicy extends DeviceStatePolicy implements
 
         final SensorManager sensorManager = mContext.getSystemService(SensorManager.class);
         final DisplayManager displayManager = mContext.getSystemService(DisplayManager.class);
-        final PowerManager powerManager = mContext.getSystemService(PowerManager.class);
-        final PowerManagerInternal powerManagerInternal = LocalServices.getService(
-                PowerManagerInternal.class);
 
         mEnablePostureBasedClosedState = featureFlags.enableFoldablesPostureBasedClosedState();
         if (mEnablePostureBasedClosedState) {
@@ -123,7 +117,7 @@ public class BookStyleDeviceStatePolicy extends DeviceStatePolicy implements
                 leftAccelerometerSensor, rightAccelerometerSensor, closeAngleDegrees, featureFlags);
 
         mProvider = new FoldableDeviceStateProvider(mContext, sensorManager, hingeAngleSensor,
-                hallSensor, displayManager, powerManager, powerManagerInternal, configuration);
+                hallSensor, displayManager, configuration);
     }
 
     private DeviceStatePredicateWrapper[] createConfiguration(
