@@ -59,6 +59,8 @@ class AppIdAppFunctionAccessPolicy : SchemePolicy() {
 
     private val upgrade = AppIdAppFunctionAccessUpgrade(this)
 
+    @Volatile var listener: OnAppFunctionAccessFlagsChangedListener? = null
+
     fun GetStateScope.getAccessRequestState(
         agentAppId: Int,
         agentUserId: Int,
@@ -132,6 +134,7 @@ class AppIdAppFunctionAccessPolicy : SchemePolicy() {
             newState.mutateUserState(agentUserId)!!.mutateAppIdAppFunctionAccessFlags()
         val flags = appIdAppFunctionAccessFlags.mutateOrPut(agentAppId) { MutableIntIntMap() }
         flags.putWithDefault(targetUid, newFlags, 0)
+        listener?.onAppFunctionAccessFlagsChanged(UserHandle.getUid(agentUserId, agentAppId))
         return true
     }
 
@@ -244,6 +247,10 @@ class AppIdAppFunctionAccessPolicy : SchemePolicy() {
     private fun PackageState.isInstalledForUser(userId: Int) =
         getUserStateOrDefault(userId).isInstalled
 
+    override fun GetStateScope.onStateMutated() {
+        listener?.onStateMutated()
+    }
+
     override fun MutateStateScope.onAgentAllowlistChanged(agentAllowlist: Set<SignedPackage>?) {
         if (agentAllowlist == null) {
             // if the allowlist is null, then it isn't enforced, don't clean up state
@@ -257,7 +264,7 @@ class AppIdAppFunctionAccessPolicy : SchemePolicy() {
                     ?: return@forEachIndexed
             )
         }
-        newState.userStates.forEachIndexed { userIndex, user, _ ->
+        newState.userStates.forEachIndexed { userIndex, userId, _ ->
             val appIdAppFunctionAccessFlags =
                 newState.mutateUserStateAt(userIndex).mutateAppIdAppFunctionAccessFlags()
             appIdAppFunctionAccessFlags.forEachReversedIndexed { appIdIndex, appId, _ ->
@@ -353,6 +360,12 @@ class AppIdAppFunctionAccessPolicy : SchemePolicy() {
 
     override fun BinaryXmlSerializer.serializeUserState(state: AccessState, userId: Int) {
         with(persistence) { this@serializeUserState.serializeUserState(state, userId) }
+    }
+
+    interface OnAppFunctionAccessFlagsChangedListener {
+        fun onAppFunctionAccessFlagsChanged(agentUid: Int)
+
+        fun onStateMutated()
     }
 
     companion object {

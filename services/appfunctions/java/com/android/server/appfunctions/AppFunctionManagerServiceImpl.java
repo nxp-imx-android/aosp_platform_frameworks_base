@@ -46,6 +46,7 @@ import android.app.appfunctions.IAppFunctionManager;
 import android.app.appfunctions.IAppFunctionService;
 import android.app.appfunctions.ICancellationCallback;
 import android.app.appfunctions.IExecuteAppFunctionCallback;
+import android.app.appfunctions.IOnAppFunctionAccessChangeListener;
 import android.app.appfunctions.SafeOneTimeExecuteAppFunctionCallback;
 import android.app.appsearch.AppSearchBatchResult;
 import android.app.appsearch.AppSearchManager;
@@ -671,6 +672,18 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
         } catch (IllegalStateException e) {
             Slog.w(TAG, "Unable to clear access history", e);
         }
+    }
+
+    @Override
+    public void addOnAccessChangedListener(@NonNull IOnAppFunctionAccessChangeListener listener,
+            int userId) {
+        mAppFunctionAccessService.addOnAccessChangedListener(listener, userId);
+    }
+
+    @Override
+    public void removeOnAccessChangedListener(
+            @NonNull IOnAppFunctionAccessChangeListener listener, int userId) {
+        mAppFunctionAccessService.removeOnAccessChangedListener(listener, userId);
     }
 
     private void enforceClearAccessHistoryUserPermission(int userId) {

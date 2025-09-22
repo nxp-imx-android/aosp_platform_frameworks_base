@@ -1807,11 +1807,13 @@ package android.app.ambientcontext {
 package android.app.appfunctions {
 
   @FlaggedApi("android.app.appfunctions.flags.enable_app_function_manager") public final class AppFunctionManager {
+    method @FlaggedApi("android.permission.flags.app_function_access_api_enabled") @RequiresPermission(allOf={android.Manifest.permission.MANAGE_APP_FUNCTION_ACCESS, android.Manifest.permission.INTERACT_ACROSS_USERS_FULL}, conditional=true) public void addAccessChangedListener(@NonNull java.util.concurrent.Executor, @NonNull android.app.appfunctions.AppFunctionManager.OnAppFunctionAccessChangedListener);
     method @FlaggedApi("android.permission.flags.app_function_access_api_enabled") @RequiresPermission(android.Manifest.permission.MANAGE_APP_FUNCTION_ACCESS) public int getAccessFlags(@NonNull String, @NonNull String);
     method @FlaggedApi("android.permission.flags.app_function_access_api_enabled") @NonNull public android.net.Uri getAccessHistoryContentUri();
     method @FlaggedApi("android.permission.flags.app_function_access_api_enabled") @RequiresPermission(value=android.Manifest.permission.MANAGE_APP_FUNCTION_ACCESS, conditional=true) public int getAccessRequestState(@NonNull String, @NonNull String);
     method @FlaggedApi("android.permission.flags.app_function_access_api_enabled") @NonNull @RequiresPermission(android.Manifest.permission.MANAGE_APP_FUNCTION_ACCESS) public java.util.List<java.lang.String> getValidAgents();
     method @FlaggedApi("android.permission.flags.app_function_access_api_enabled") @NonNull @RequiresPermission(android.Manifest.permission.MANAGE_APP_FUNCTION_ACCESS) public java.util.List<java.lang.String> getValidTargets();
+    method @FlaggedApi("android.permission.flags.app_function_access_api_enabled") @RequiresPermission(allOf={android.Manifest.permission.MANAGE_APP_FUNCTION_ACCESS, android.Manifest.permission.INTERACT_ACROSS_USERS_FULL}, conditional=true) public void removeAccessChangedListener(@NonNull android.app.appfunctions.AppFunctionManager.OnAppFunctionAccessChangedListener);
     method @FlaggedApi("android.permission.flags.app_function_access_api_enabled") @RequiresPermission(android.Manifest.permission.MANAGE_APP_FUNCTION_ACCESS) public void updateAccessFlags(@NonNull String, @NonNull String, int, int);
     field @FlaggedApi("android.permission.flags.app_function_access_api_enabled") public static final int ACCESS_FLAG_OTHER_DENIED = 32; // 0x20
     field @FlaggedApi("android.permission.flags.app_function_access_api_enabled") public static final int ACCESS_FLAG_OTHER_GRANTED = 16; // 0x10
@@ -1831,6 +1833,10 @@ package android.app.appfunctions {
     field public static final String COLUMN_INTERACTION_URI = "interaction_uri";
     field public static final String COLUMN_TARGET_PACKAGE_NAME = "target_package_name";
     field public static final String COLUMN_THREAD_ID = "thread_id";
+  }
+
+  public static interface AppFunctionManager.OnAppFunctionAccessChangedListener {
+    method public void onAppFunctionAccessChanged(int);
   }
 
 }

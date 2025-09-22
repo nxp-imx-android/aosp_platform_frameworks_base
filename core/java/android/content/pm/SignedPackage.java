@@ -83,4 +83,11 @@ public class SignedPackage {
     public int hashCode() {
         return Objects.hash(mData.packageName, Arrays.hashCode(mData.certificateDigest));
     }
+
+    @Override
+    public String toString() {
+        return "SignedPackage{"
+                + "packageName='" + mData.packageName
+                + ", certificateDigest=" + Arrays.toString(mData.certificateDigest) + "}";
+    }
 }
