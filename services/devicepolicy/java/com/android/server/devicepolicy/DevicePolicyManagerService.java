@@ -9152,18 +9152,6 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
             return;
         }
 
-        if (Flags.policyStreamliningScreenCapture()) {
-            CallerIdentity caller = getCallerIdentity(who, callerPackage);
-            boolean deviceScope = parent || isDefaultDeviceOwner(caller);
-            int scope = deviceScope ? POLICY_SCOPE_DEVICE : POLICY_SCOPE_USER;
-            int enumValue = disabled ? PolicyIdentifier.SCREEN_CAPTURE_BLOCKED
-                    : PolicyIdentifier.SCREEN_CAPTURE_ALLOWED;
-
-            setPolicy(caller, PolicyIdentifier.SCREEN_CAPTURE.getId(), scope,
-                    PolicyValueTransport.integerField(enumValue));
-            return;
-        }
-
         CallerIdentity caller = getCallerIdentity(who, callerPackage);
         int callerUserId = Binder.getCallingUserHandle().getIdentifier();
         int targetUserId = parent ? getProfileParentId(callerUserId) : callerUserId;
