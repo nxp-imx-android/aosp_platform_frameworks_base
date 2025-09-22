@@ -120,6 +120,7 @@ java_sdk_library {
     libs: [
         "app-compat-annotations",
         "framework-connectivity.stubs",
+        "android.security.flags-aconfig-java",
     ],
     static_libs: [
         "networksecurity_exported_aconfig_flags_lib",

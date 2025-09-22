@@ -16,6 +16,11 @@
 
 package android.security.net.config;
 
+import static android.security.NetworkSecurityPolicy.DOMAIN_ENCRYPTION_MODE_DISABLED;
+import static android.security.NetworkSecurityPolicy.DOMAIN_ENCRYPTION_MODE_FAIL_CLOSED;
+import static android.security.NetworkSecurityPolicy.DOMAIN_ENCRYPTION_MODE_OPPORTUNISTIC;
+import static android.security.NetworkSecurityPolicy.DOMAIN_ENCRYPTION_MODE_STRICT;
+
 import static com.android.org.conscrypt.net.flags.Flags.certificateTransparencyDefaultEnabled;
 
 import android.annotation.FlaggedApi;
@@ -55,12 +60,22 @@ public final class NetworkSecurityConfig {
     @EnabledAfter(targetSdkVersion = Build.VERSION_CODES.BAKLAVA)
     static final long DEFAULT_ENABLE_CERTIFICATE_TRANSPARENCY = 407952621L;
 
+    /**
+     * Corresponds to the IntDef defined in
+     * {@link android.security.NetworkSecurityPolicy.DomainEncryptionMode}.
+     *
+     * @hide
+     */
+    static final int DEFAULT_DOMAIN_ENCRYPTION_MODE =
+            DOMAIN_ENCRYPTION_MODE_OPPORTUNISTIC;
+
     private static final AtomicReference<Boolean>
             sCertificateTransparencyVerificationRequiredDefault = new AtomicReference<>();
 
     private final boolean mCleartextTrafficPermitted;
     private final boolean mHstsEnforced;
     private final boolean mCertificateTransparencyVerificationRequired;
+    private final int mDomainEncryptionMode;
     private final PinSet mPins;
     private final List<CertificatesEntryRef> mCertificatesEntryRefs;
     private Set<TrustAnchor> mAnchors;
@@ -72,11 +87,13 @@ public final class NetworkSecurityConfig {
             boolean cleartextTrafficPermitted,
             boolean hstsEnforced,
             boolean certificateTransparencyVerificationRequired,
+            int domainEncryptionMode,
             PinSet pins,
             List<CertificatesEntryRef> certificatesEntryRefs) {
         mCleartextTrafficPermitted = cleartextTrafficPermitted;
         mHstsEnforced = hstsEnforced;
         mCertificateTransparencyVerificationRequired = certificateTransparencyVerificationRequired;
+        mDomainEncryptionMode = domainEncryptionMode;
         mPins = pins;
         mCertificatesEntryRefs = certificatesEntryRefs;
         // Sort the certificates entry refs so that all entries that override pins come before
@@ -131,6 +148,14 @@ public final class NetworkSecurityConfig {
 
     public boolean isCertificateTransparencyVerificationRequired() {
         return mCertificateTransparencyVerificationRequired;
+    }
+
+    /**
+     * Corresponds to the IntDef defined in
+     * {@link android.security.NetworkSecurityPolicy.DomainEncryptionMode}.
+     */
+    public int getDomainEncryptionMode() {
+        return mDomainEncryptionMode;
     }
 
     public PinSet getPins() {
@@ -270,6 +295,8 @@ public final class NetworkSecurityConfig {
         private boolean mCertificateTransparencyVerificationRequired =
                 certificateTransparencyVerificationRequiredDefault();
         private boolean mCertificateTransparencyVerificationRequiredSet = false;
+        private int mDomainEncryptionMode = DEFAULT_DOMAIN_ENCRYPTION_MODE;
+        private boolean mDomainEncryptionModeSet = false;
         private Builder mParentBuilder;
 
         /**
@@ -401,17 +428,47 @@ public final class NetworkSecurityConfig {
             return certificateTransparencyVerificationRequiredDefault();
         }
 
+        Builder setDomainEncryptionMode(String domainEncryptionValue) {
+            mDomainEncryptionMode = switch(domainEncryptionValue) {
+                case "disabled" -> DOMAIN_ENCRYPTION_MODE_DISABLED;
+                case "closed" -> DOMAIN_ENCRYPTION_MODE_FAIL_CLOSED;
+                case "strict" -> DOMAIN_ENCRYPTION_MODE_STRICT;
+                case "opportunistic" -> DOMAIN_ENCRYPTION_MODE_OPPORTUNISTIC;
+                default -> DEFAULT_DOMAIN_ENCRYPTION_MODE;
+            };
+            mDomainEncryptionModeSet = true;
+            return this;
+        }
+
+        /**
+         * Corresponds to the IntDef defined in
+         * {@link android.security.NetworkSecurityPolicy.DomainEncryptionMode}.
+         */
+        private int getDomainEncryptionMode() {
+            if (mDomainEncryptionModeSet) {
+                return mDomainEncryptionMode;
+            }
+
+            if (mParentBuilder != null) {
+                return mParentBuilder.getDomainEncryptionMode();
+            }
+
+            return DEFAULT_DOMAIN_ENCRYPTION_MODE;
+        }
+
         public NetworkSecurityConfig build() {
             boolean cleartextPermitted = getEffectiveCleartextTrafficPermitted();
             boolean hstsEnforced = getEffectiveHstsEnforced();
             boolean certificateTransparencyVerificationRequired =
                     getCertificateTransparencyVerificationRequired();
+            int domainEncryptionMode = getDomainEncryptionMode();
             PinSet pinSet = getEffectivePinSet();
             List<CertificatesEntryRef> entryRefs = getEffectiveCertificatesEntryRefs();
             return new NetworkSecurityConfig(
                     cleartextPermitted,
                     hstsEnforced,
                     certificateTransparencyVerificationRequired,
+                    domainEncryptionMode,
                     pinSet,
                     entryRefs);
         }
