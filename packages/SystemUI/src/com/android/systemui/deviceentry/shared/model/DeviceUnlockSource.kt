@@ -35,4 +35,6 @@ sealed class DeviceUnlockSource(val dismissesLockscreen: Boolean) {
     data object BouncerInput : DeviceUnlockSource(dismissesLockscreen = true)
 
     data object SecureLockDeviceTwoFactorAuth : DeviceUnlockSource(dismissesLockscreen = true)
+
+    data object UnlockedPowerButtonGesture : DeviceUnlockSource(dismissesLockscreen = true)
 }

@@ -281,9 +281,13 @@ constructor(
         return repository.getMaximumTimeToLock()
     }
 
-    /** Returns `true` if the power button should instantly lock the device, `false` otherwise. */
-    suspend fun getPowerButtonInstantlyLocks(): Boolean {
-        return !getAuthenticationMethod().isSecure || repository.getPowerButtonInstantlyLocks()
+    /**
+     * Returns `true` if the power button should instantly lock the device, `false` otherwise.
+     *
+     * WARNING: This causes a blocking IPC to LockPatternUtils (b/446735679).
+     */
+    fun getPowerButtonInstantlyLocks(): Boolean {
+        return repository.getPowerButtonInstantlyLocks()
     }
 
     private suspend fun shouldSkipAuthenticationAttempt(

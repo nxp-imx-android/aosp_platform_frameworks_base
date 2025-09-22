@@ -76,8 +76,8 @@ constructor(
     /**
      * A stricter version of [isAwake] intended for triggering animations.
      *
-     * This flow only emits `true` when the device is fully [WakefulnessState.AWAKE],
-     * excluding the [WakefulnessState.STARTING_TO_WAKE] state.
+     * This flow only emits `true` when the device is fully [WakefulnessState.AWAKE], excluding the
+     * [WakefulnessState.STARTING_TO_WAKE] state.
      */
     val isAwakeForAnimations =
         repository.wakefulness
@@ -325,12 +325,15 @@ constructor(
         @JvmOverloads
         fun PowerInteractor.setAsleepForTest(
             @PowerManager.GoToSleepReason sleepReason: Int = PowerManager.GO_TO_SLEEP_REASON_MIN,
+            powerButtonGestureTriggered: Boolean = false,
             forceEmit: Boolean = false,
         ) {
             emitDuplicateWakefulnessValue = forceEmit
 
             this.onStartedGoingToSleep(reason = sleepReason)
-            this.onFinishedGoingToSleep(powerButtonLaunchGestureTriggeredDuringSleep = false)
+            this.onFinishedGoingToSleep(
+                powerButtonLaunchGestureTriggeredDuringSleep = powerButtonGestureTriggered
+            )
         }
 
         /** Helper method for tests to simulate the device screen state change event. */
