@@ -243,6 +243,14 @@ public class SizeCompatTests extends WindowTestsBase {
         setUpLargeScreenDisplayWithApp(/* dw */ 1400, /* dh */ 2800);
     }
 
+    private void setUseOverrideInsetsForConfig(@NonNull ActivityRecord activity,
+            boolean useOverrideInsets) {
+        final AppCompatSandboxingPolicy.ConfigOverrideHint overrideHint =
+                activity.mAppCompatController.getSandboxingPolicy().getResolveConfigHint();
+        spyOn(overrideHint);
+        doReturn(useOverrideInsets).when(overrideHint).shouldUseOverrideInsetsForConfig();
+    }
+
     @Test
     public void testHorizontalReachabilityEnabledForTranslucentActivities() {
         testReachabilityEnabledForTranslucentActivity(/* dw */ 2500,  /* dh */1000,
@@ -749,7 +757,7 @@ public class SizeCompatTests extends WindowTestsBase {
         setUpApp(display);
 
         // Simulate inset override for legacy app bound behaviour.
-        mActivity.mResolveConfigHint.mUseOverrideInsetsForConfig = true;
+        setUseOverrideInsetsForConfig(mActivity, true);
 
         // Set up activity task to be in app bubble.
         mTask.mLaunchNextToBubble = true;
@@ -787,7 +795,7 @@ public class SizeCompatTests extends WindowTestsBase {
     @Test
     public void testMoveToDifferentOrientationDisplay() {
         setUpDisplaySizeWithApp(1000, 2500);
-        mActivity.mResolveConfigHint.mUseOverrideInsetsForConfig = true;
+        setUseOverrideInsetsForConfig(mActivity, true);
         prepareUnresizable(mActivity, -1.f /* maxAspect */, SCREEN_ORIENTATION_PORTRAIT);
         assertFitted();
 
@@ -839,7 +847,7 @@ public class SizeCompatTests extends WindowTestsBase {
         final int width = 1000;
         setUpApp(new TestDisplayContent.Builder(mAtm, width, 2500)
                 .setNotch(notchHeight).build());
-        mActivity.mResolveConfigHint.mUseOverrideInsetsForConfig = true;
+        setUseOverrideInsetsForConfig(mActivity, true);
         // Bounds=[0, 0 - 1000, 1400], AppBounds=[0, 60 - 1000, 1460].
         final float maxAspect = 1.4f;
         prepareUnresizable(mActivity, 1.4f /* maxAspect */, SCREEN_ORIENTATION_PORTRAIT);
@@ -1808,7 +1816,7 @@ public class SizeCompatTests extends WindowTestsBase {
         final int dh = 2500;
         final int notchHeight = 200;
         setUpApp(new TestDisplayContent.Builder(mAtm, dw, dh).setNotch(notchHeight).build());
-        mActivity.mResolveConfigHint.mUseOverrideInsetsForConfig = true;
+        setUseOverrideInsetsForConfig(mActivity, true);
         // The test assumes the notch will be at left side when the orientation is landscape.
         if (mContext.getResources().getBoolean(
                 com.android.internal.R.bool.config_reverseDefaultRotation)) {
@@ -3725,7 +3733,7 @@ public class SizeCompatTests extends WindowTestsBase {
                 .setNotch(100)
                 .build();
         setUpApp(display);
-        mActivity.mResolveConfigHint.mUseOverrideInsetsForConfig = true;
+        setUseOverrideInsetsForConfig(mActivity, true);
         TestWindowState statusBar = addStatusBar(mActivity.mDisplayContent);
         spyOn(statusBar);
         doReturn(new Rect(0, 0, statusBar.mRequestedWidth, statusBar.mRequestedHeight))
@@ -4118,7 +4126,7 @@ public class SizeCompatTests extends WindowTestsBase {
                 .build();
 
         setUpApp(display);
-        mActivity.mResolveConfigHint.mUseOverrideInsetsForConfig = true;
+        setUseOverrideInsetsForConfig(mActivity, true);
         prepareUnresizable(mActivity, 2.1f, SCREEN_ORIENTATION_UNSPECIFIED);
         // The activity height is 2100 and the display's app bounds height is 2250, so the activity
         // can be aligned inside parentAppBounds
@@ -4456,7 +4464,7 @@ public class SizeCompatTests extends WindowTestsBase {
                 .build();
         setUpApp(display);
 
-        mActivity.mResolveConfigHint.mUseOverrideInsetsForConfig = true;
+        setUseOverrideInsetsForConfig(mActivity, true);
         // Prepare unresizable activity with max aspect ratio
         prepareUnresizable(mActivity, 1.1f, SCREEN_ORIENTATION_UNSPECIFIED);
 
@@ -4478,7 +4486,7 @@ public class SizeCompatTests extends WindowTestsBase {
         setUpApp(display);
 
         // Simulate inset override for legacy app bound behaviour
-        mActivity.mResolveConfigHint.mUseOverrideInsetsForConfig = true;
+        setUseOverrideInsetsForConfig(mActivity, true);
         // Set task as freeform
         mTask.setWindowingMode(WindowConfiguration.WINDOWING_MODE_FREEFORM);
         prepareUnresizable(mActivity, SCREEN_ORIENTATION_PORTRAIT);
