@@ -152,7 +152,7 @@
     <string name="desktop_mode_talkback_state_not_focused" msgid="4640618691603218929">"<xliff:g id="APP_NAME">%1$s</xliff:g> (மையப்படுத்தப்படவில்லை)"</string>
     <string name="desktop_mode_maximize_menu_immersive_button_text" msgid="559492223133829481">"முழுத்திரையும்"</string>
     <string name="desktop_mode_maximize_menu_immersive_restore_button_text" msgid="4900114367354709257">"மீட்டெடுக்கும்"</string>
-    <string name="desktop_mode_maximize_menu_maximize_button_text" msgid="3090199175564175845">"பெரிதாக்கும்"</string>
+    <string name="desktop_mode_maximize_menu_maximize_button_text" msgid="3090199175564175845">"பெரிதாக்கு"</string>
     <string name="desktop_mode_maximize_menu_restore_button_text" msgid="4234449220944704387">"மீட்டெடுக்கும்"</string>
     <string name="desktop_mode_maximize_menu_snap_left_button_text" msgid="8077452201179893424">"இடதுபுறம் நகர்த்தும்"</string>
     <string name="desktop_mode_maximize_menu_snap_right_button_text" msgid="7117751068945657304">"வலதுபுறம் நகர்த்தும்"</string>
