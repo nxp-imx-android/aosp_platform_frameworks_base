@@ -26,6 +26,8 @@ import com.android.systemui.keyguard.domain.interactor.KeyguardKeyEventInteracto
 import com.android.systemui.util.mockito.eq
 import com.android.systemui.util.mockito.whenever
 import com.google.common.truth.Truth.assertThat
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -35,6 +37,7 @@ import org.mockito.Mockito.never
 import org.mockito.Mockito.verify
 import org.mockito.junit.MockitoJUnit
 
+@OptIn(ExperimentalCoroutinesApi::class)
 @SmallTest
 @RunWith(AndroidJUnit4::class)
 class SysUIKeyEventHandlerTest : SysuiTestCase() {
@@ -49,7 +52,12 @@ class SysUIKeyEventHandlerTest : SysuiTestCase() {
 
     @Before
     fun setup() {
-        keyguardInteractorWithDependencies = KeyguardInteractorFactory.create(context)
+        val testDisptacher = UnconfinedTestDispatcher()
+        keyguardInteractorWithDependencies =
+            KeyguardInteractorFactory.create(
+                backgroundDispatcher = testDisptacher,
+                context = context,
+            )
         underTest = SysUIKeyEventHandler(backActionInteractor, keyguardKeyEventInteractor)
     }
 

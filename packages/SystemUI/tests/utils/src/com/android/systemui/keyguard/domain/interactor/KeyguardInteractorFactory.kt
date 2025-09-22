@@ -30,23 +30,29 @@ import com.android.systemui.keyguard.shared.model.TransitionStep
 import com.android.systemui.scene.domain.interactor.SceneInteractor
 import com.android.systemui.shade.data.repository.FakeShadeRepository
 import com.android.systemui.shade.data.repository.ShadeConfigRepository
+import com.android.systemui.shared.settings.data.repository.FakeSecureSettingsRepository
 import com.android.systemui.util.mockito.mock
 import com.android.systemui.util.mockito.whenever
 import com.android.systemui.wallpapers.domain.interactor.WallpaperFocalAreaInteractor
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.test.TestScope
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import org.mockito.kotlin.any
 
 /**
  * Simply put, I got tired of adding a constructor argument and then having to tweak dozens of
  * files. This should alleviate some of the burden by providing defaults for testing.
  */
+@OptIn(ExperimentalCoroutinesApi::class)
 object KeyguardInteractorFactory {
 
     @JvmOverloads
     @JvmStatic
     fun create(
+        backgroundDispatcher: CoroutineDispatcher = UnconfinedTestDispatcher(),
         context: Context = ApplicationProvider.getApplicationContext(),
         featureFlags: FakeFeatureFlags = FakeFeatureFlags(),
         repository: FakeKeyguardRepository = FakeKeyguardRepository(),
@@ -55,8 +61,10 @@ object KeyguardInteractorFactory {
         shadeRepository: FakeShadeRepository = FakeShadeRepository(),
         shadeConfigRepository: ShadeConfigRepository =
             ShadeConfigRepository(
+                backgroundDispatcher = backgroundDispatcher,
                 resources = context.resources,
                 configurationRepository = configurationRepository,
+                secureSettingsRepository = FakeSecureSettingsRepository(),
                 featureFlags = featureFlags,
             ),
         wallpaperFocalAreaInteractor: WallpaperFocalAreaInteractor = mock(),
