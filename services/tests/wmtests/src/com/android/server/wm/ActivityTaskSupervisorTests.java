@@ -63,6 +63,7 @@ import android.os.IBinder;
 import android.os.RemoteException;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
+import android.platform.test.annotations.RequiresFlagsDisabled;
 import android.platform.test.annotations.RequiresFlagsEnabled;
 import android.view.Display;
 
@@ -457,10 +458,25 @@ public class ActivityTaskSupervisorTests extends WindowTestsBase {
      * encryption aware home app.
      */
     @Test
+    @RequiresFlagsDisabled(Flags.FLAG_HOME_ACTIVITY_ALWAYS_PRESENT)
     public void testStartHomeAfterUserUnlocked() {
         mSupervisor.onUserUnlocked(0);
         waitHandlerIdle(mAtm.mH);
-        verify(mRootWindowContainer, timeout(TIMEOUT_MS)).startHomeOnEmptyDisplays("userUnlocked");
+        verify(mRootWindowContainer, timeout(TIMEOUT_MS))
+                .startHomeOnEmptyDisplays("userUnlocked");
+    }
+
+    /**
+     * We need to launch home again after user unlocked for those displays that do not have
+     * encryption aware home app.
+     */
+    @Test
+    @EnableFlags(Flags.FLAG_HOME_ACTIVITY_ALWAYS_PRESENT)
+    public void testStartHomeAfterUserUnlocked_() {
+        mSupervisor.onUserUnlocked(0);
+        waitHandlerIdle(mAtm.mH);
+        verify(mRootWindowContainer, timeout(TIMEOUT_MS))
+                .startHomeOnDisplaysWithNoHome("userUnlocked");
     }
 
     /** Verifies that launch from recents sets the launch cookie on the activity. */
