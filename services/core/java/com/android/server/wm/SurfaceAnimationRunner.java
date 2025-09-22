@@ -95,26 +95,22 @@ class SurfaceAnimationRunner {
     }
 
     @VisibleForTesting
-    SurfaceAnimationRunner(@Nullable AnimationFrameCallbackProvider callbackProvider,
+    SurfaceAnimationRunner(@Nullable final AnimationFrameCallbackProvider callbackProvider,
             AnimatorFactory animatorFactory, Transaction frameTransaction,
             PowerManagerInternal powerManagerInternal) {
+        mAnimationHandler = new AnimationHandler();
         if (com.android.window.flags.Flags.deprecateSurfaceAnimationFrameCallback()) {
-            mSurfaceAnimationHandler.runWithScissors(
-                    () -> mChoreographer = Choreographer.getInstance(), 0 /* timeout */);
+            mSurfaceAnimationHandler.runWithScissors(() -> {
+                mChoreographer = Choreographer.getInstance();
+                mAnimationHandler.setProvider(callbackProvider);
+            }, 0 /* timeout */);
         } else {
             mSurfaceAnimationHandler.runWithScissors(
                     () -> mChoreographer = Choreographer.getSfInstance(), 0 /* timeout */);
+            mAnimationHandler.setProvider(callbackProvider != null ? callbackProvider
+                    : new SfVsyncFrameCallbackProvider(mChoreographer));
         }
         mFrameTransaction = frameTransaction;
-        mAnimationHandler = new AnimationHandler();
-        if (!com.android.window.flags.Flags.deprecateSurfaceAnimationFrameCallback()) {
-            callbackProvider =
-                    callbackProvider != null
-                            ? callbackProvider
-                            : new SfVsyncFrameCallbackProvider(mChoreographer);
-        }
-
-        mAnimationHandler.setProvider(callbackProvider);
         mAnimatorFactory = animatorFactory != null
                 ? animatorFactory
                 : SfValueAnimator::new;
