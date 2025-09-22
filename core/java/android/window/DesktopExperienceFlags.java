@@ -82,6 +82,8 @@ public enum DesktopExperienceFlags {
             Flags.FLAG_ENABLE_APP_TO_WEB_EDUCATION_ANIMATION),
     ENABLE_AUTO_RESTART_ON_DISPLAY_MOVE(Flags::enableAutoRestartOnDisplayMove, false,
             Flags.FLAG_ENABLE_AUTO_RESTART_ON_DISPLAY_MOVE),
+    ENABLE_AUTO_ROTATE_ON_SLATE_STATE(Flags::enableAutoRotateOnSlateState, false,
+            Flags.FLAG_ENABLE_AUTO_ROTATE_ON_SLATE_STATE),
     ENABLE_BACKUP_AND_RESTORE_DISPLAY_WINDOW_SETTINGS(
             Flags::enableBackupAndRestoreDisplayWindowSettings, false,
             Flags.FLAG_ENABLE_BACKUP_AND_RESTORE_DISPLAY_WINDOW_SETTINGS),

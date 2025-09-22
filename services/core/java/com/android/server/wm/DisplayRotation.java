@@ -71,6 +71,7 @@ import android.util.proto.ProtoOutputStream;
 import android.view.DisplayAddress;
 import android.view.IWindowManager;
 import android.view.Surface;
+import android.window.DesktopExperienceFlags;
 import android.window.TransitionRequestInfo;
 import android.window.WindowContainerTransaction;
 
@@ -111,6 +112,8 @@ public class DisplayRotation {
 
     @Nullable
     final FoldController mFoldController;
+    @Nullable
+    final LaptopController mLaptopController;
 
     private final WindowManagerService mService;
     private final DisplayContent mDisplayContent;
@@ -293,8 +296,15 @@ public class DisplayRotation {
             } else {
                 mFoldController = null;
             }
+            if (DesktopExperienceFlags.ENABLE_AUTO_ROTATE_ON_SLATE_STATE.isTrue()
+                    && mSupportAutoRotation && mDeviceStateController.isLaptop()) {
+                mLaptopController = new LaptopController();
+            } else {
+                mLaptopController = null;
+            }
         } else {
             mFoldController = null;
+            mLaptopController = null;
         }
     }
 
@@ -1640,6 +1650,11 @@ public class DisplayRotation {
                 mFoldController.foldStateChanged(deviceStateEnum);
             }
         }
+        if (mLaptopController != null) {
+            synchronized (mLock) {
+                mLaptopController.foldStateChanged(deviceStateEnum);
+            }
+        }
     }
 
     /**
@@ -2011,6 +2026,16 @@ public class DisplayRotation {
                         updateSensorRotationBlockIfNeeded();
                     };
                 }, mHingeAngleRotationBlockTimeMs);
+            }
+        }
+    }
+
+    class LaptopController {
+        void foldStateChanged(DeviceStateController.DeviceStateEnum newState) {
+            if (newState == DeviceStateController.DeviceStateEnum.SLATE) {
+                setFixedToUserRotation(IWindowManager.FIXED_TO_USER_ROTATION_DISABLED);
+            } else {
+                setFixedToUserRotation(IWindowManager.FIXED_TO_USER_ROTATION_DEFAULT);
             }
         }
     }
