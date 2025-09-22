@@ -41,7 +41,6 @@ import android.hardware.display.DisplayManagerInternal;
 import android.hardware.display.Time;
 import android.os.Handler;
 import android.os.UserHandle;
-import android.platform.test.annotations.RequiresFlagsEnabled;
 import android.platform.test.flag.junit.CheckFlagsRule;
 import android.platform.test.flag.junit.DeviceFlagsValueProvider;
 import android.provider.Settings;
@@ -57,7 +56,6 @@ import com.android.internal.R;
 import com.android.internal.util.test.FakeSettingsProvider;
 import com.android.internal.util.test.LocalServiceKeeperRule;
 import com.android.server.SystemService;
-import com.android.server.display.feature.flags.Flags;
 import com.android.server.twilight.TwilightListener;
 import com.android.server.twilight.TwilightManager;
 import com.android.server.twilight.TwilightState;
@@ -1015,7 +1013,6 @@ public class ColorDisplayServiceTest {
     }
 
     @Test
-    @RequiresFlagsEnabled(Flags.FLAG_EVEN_DIMMER)
     public void ensureRbcDisabledWhenEvenDimmerEnabled() {
         // If rbc & even dimmer are enabled
         doReturn(true).when(mResourcesSpy).getBoolean(

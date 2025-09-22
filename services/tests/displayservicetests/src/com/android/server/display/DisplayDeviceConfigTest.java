@@ -44,7 +44,6 @@ import android.content.res.TypedArray;
 import android.hardware.display.DisplayManagerInternal;
 import android.os.PowerManager;
 import android.os.Temperature;
-import android.platform.test.annotations.RequiresFlagsEnabled;
 import android.platform.test.flag.junit.CheckFlagsRule;
 import android.platform.test.flag.junit.DeviceFlagsValueProvider;
 import android.provider.Settings;
@@ -65,7 +64,6 @@ import com.android.server.display.config.RefreshRateData;
 import com.android.server.display.config.SupportedModeData;
 import com.android.server.display.config.ThermalStatus;
 import com.android.server.display.feature.DisplayManagerFlags;
-import com.android.server.display.feature.flags.Flags;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -1003,10 +1001,8 @@ public final class DisplayDeviceConfigTest {
         assertFalse(mDisplayDeviceConfig.isAutoBrightnessAvailable());
     }
 
-    @RequiresFlagsEnabled(Flags.FLAG_EVEN_DIMMER)
     @Test
     public void testEvenDimmer() throws IOException {
-        when(mFlags.isEvenDimmerEnabled()).thenReturn(true);
         when(mResources.getBoolean(R.bool.config_evenDimmerEnabled)).thenReturn(true);
         setupDisplayDeviceConfigFromDisplayConfigFile(getContent(getValidLuxThrottling(),
                 getValidProxSensor(), /* includeIdleMode= */ false, /* enableEvenDimmer= */ true));
