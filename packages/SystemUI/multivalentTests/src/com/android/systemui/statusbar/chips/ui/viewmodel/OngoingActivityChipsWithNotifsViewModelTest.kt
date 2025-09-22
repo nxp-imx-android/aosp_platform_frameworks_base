@@ -1501,7 +1501,7 @@ class OngoingActivityChipsWithNotifsViewModelTest : SysuiTestCase() {
 
     @Test
     @DisableChipsModernization
-    @DisableFlags(StatusBarChipToHunAnimation.FLAG_NAME)
+    @DisableFlags(StatusBarChipToHunAnimation.FLAG_NAME, Flags.FLAG_STATUS_BAR_HUN_ANIMATION_CALL)
     fun visibleNotificationChipsWithBounds_chipsModOff_animFlagOff_screenRecordAndCallAndPromotedNotifs_topTwoInList() =
         kosmos.runTest {
             val latest by collectLastValue(underTest.visibleNotificationChipsWithBounds)
@@ -1536,8 +1536,8 @@ class OngoingActivityChipsWithNotifsViewModelTest : SysuiTestCase() {
 
     @Test
     @EnableChipsModernization
-    @DisableFlags(StatusBarChipToHunAnimation.FLAG_NAME)
-    fun visibleNotificationChipsWithBounds_chipsModOn_animFlagOff_screenRecordAndCallAndPromotedNotifs_topThreeInList() =
+    @DisableFlags(StatusBarChipToHunAnimation.FLAG_NAME, Flags.FLAG_STATUS_BAR_HUN_ANIMATION_CALL)
+    fun visibleNotificationChipsWithBounds_chipsModOn_animFlagOff_hunAnimFlagOff_screenRecordAndCallAndPromotedNotifs_topThreeInList() =
         kosmos.runTest {
             val latest by collectLastValue(underTest.visibleNotificationChipsWithBounds)
 
@@ -1572,8 +1572,27 @@ class OngoingActivityChipsWithNotifsViewModelTest : SysuiTestCase() {
 
     @Test
     @EnableChipsModernization
+    @DisableFlags(StatusBarChipToHunAnimation.FLAG_NAME)
+    @EnableFlags(Flags.FLAG_STATUS_BAR_HUN_ANIMATION_CALL)
+    fun visibleNotificationChipsWithBounds_chipsModOn_animFlagOff_hunAnimFlagOn_callAndPromotedNotifs_topThreeInList() =
+        kosmos.runTest {
+            val latest by collectLastValue(underTest.visibleNotificationChipsWithBounds)
+
+            addOngoingCallState("call")
+            addPromotedNotif("notif1")
+            addPromotedNotif("notif2")
+            addPromotedNotif("notif3")
+
+            assertThat(latest!!.map { it.key })
+                .containsExactly("call", "notif1", "notif2")
+                .inOrder()
+        }
+
+    @Test
+    @EnableChipsModernization
     @EnableFlags(StatusBarChipToHunAnimation.FLAG_NAME)
-    fun visibleNotificationChipsWithBounds_chipsModOn_animFlagOn_screenRecordAndCallAndPromotedNotifs_topThreeInListWithBounds() =
+    @DisableFlags(Flags.FLAG_STATUS_BAR_HUN_ANIMATION_CALL)
+    fun visibleNotificationChipsWithBounds_chipsModOn_animFlagOn_hunAnimFlagOff_screenRecordAndCallAndPromotedNotifs_topThreeInListWithBounds() =
         kosmos.runTest {
             val latest by collectLastValue(underTest.visibleNotificationChipsWithBounds)
 
@@ -1607,6 +1626,29 @@ class OngoingActivityChipsWithNotifsViewModelTest : SysuiTestCase() {
             assertThat(latest!![callKeyForChip]).isEqualTo(RectF(2f, 2f, 2f, 2f))
             assertThat(latest!!["notif1"]).isEqualTo(RectF(3f, 3f, 3f, 3f))
             assertThat(latest).doesNotContainKey("notif2")
+        }
+
+    @Test
+    @EnableChipsModernization
+    @EnableFlags(StatusBarChipToHunAnimation.FLAG_NAME, Flags.FLAG_STATUS_BAR_HUN_ANIMATION_CALL)
+    fun visibleNotificationChipsWithBounds_chipsModOn_animFlagOn_hunAnimFlagOn_screenRecordAndCallAndPromotedNotifs_topThreeInListWithBounds() =
+        kosmos.runTest {
+            val latest by collectLastValue(underTest.visibleNotificationChipsWithBounds)
+
+            addOngoingCallState("call")
+            addPromotedNotif("notif1")
+            addPromotedNotif("notif2")
+            addPromotedNotif("notif3")
+
+            underTest.onChipBoundsChanged("call", RectF(1f, 1f, 1f, 1f))
+            underTest.onChipBoundsChanged("notif1", RectF(2f, 2f, 2f, 2f))
+            underTest.onChipBoundsChanged("notif2", RectF(3f, 3f, 3f, 3f))
+            underTest.onChipBoundsChanged("notif3", RectF(4f, 4f, 4f, 4f))
+
+            assertThat(latest!!["call"]).isEqualTo(RectF(1f, 1f, 1f, 1f))
+            assertThat(latest!!["notif1"]).isEqualTo(RectF(2f, 2f, 2f, 2f))
+            assertThat(latest!!["notif2"]).isEqualTo(RectF(3f, 3f, 3f, 3f))
+            assertThat(latest).doesNotContainKey("notif3")
         }
 
     // The ranking between different chips should stay consistent between
@@ -2241,7 +2283,7 @@ class OngoingActivityChipsWithNotifsViewModelTest : SysuiTestCase() {
         activeNotificationListRepository.addNotif(
             activeNotificationModel(
                 key = key,
-                packageName = "fake.package",
+                packageName = "fake.package.$key",
                 statusBarChipIcon = createStatusBarIconViewOrNull(),
                 promotedContent = PromotedNotificationContentBuilder(key).build(),
             )
