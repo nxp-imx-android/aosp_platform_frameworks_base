@@ -413,6 +413,11 @@ public class SplitScreenController implements SplitDragPolicy.Starter,
         return mStageCoordinator.isRootOrStageRoot(taskId);
     }
 
+    /** Returns true if a divider fling animation is currently playing. */
+    public boolean isDividerFlinging() {
+        return mStageCoordinator.isDividerFlinging();
+    }
+
     public @SplitPosition int getSplitPosition(int taskId) {
         return mStageCoordinator.getSplitPosition(taskId);
     }

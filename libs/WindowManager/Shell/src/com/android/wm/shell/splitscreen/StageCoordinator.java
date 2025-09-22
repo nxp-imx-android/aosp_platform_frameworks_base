@@ -349,6 +349,11 @@ public class StageCoordinator extends StageCoordinatorAbstract {
         }
     }
 
+    /** Returns true if a divider fling animation is currently playing. */
+    public boolean isDividerFlinging() {
+        return mSplitLayout.isCurrentlyDividerFlinging();
+    }
+
     class SplitRequest {
         @SplitPosition
         int mActivatePosition;

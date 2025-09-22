@@ -1045,6 +1045,12 @@ public final class SplitLayout implements DisplayInsetsController.OnInsetsChange
         mDividerFlingAnimator.start();
     }
 
+    /** Returns true if a divider fling animation is currently playing. */
+    public boolean isCurrentlyDividerFlinging() {
+        return mDividerFlingAnimator != null && mDividerFlingAnimator.isRunning();
+    }
+
+
     /** Switch both surface position with animation. */
     public void playSwapAnimation(SurfaceControl.Transaction t, StageTaskListener topLeftStage,
             StageTaskListener bottomRightStage, Consumer<Rect> finishCallback) {

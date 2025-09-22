@@ -402,6 +402,28 @@ class DesktopModeWindowDecorViewModelTests : DesktopModeWindowDecorViewModelTest
     }
 
     @Test
+    @EnableFlags(FLAG_CLOSE_FULLSCREEN_AND_SPLITSCREEN_KEYBOARD_SHORTCUT)
+    fun testCloseTask_splitScreen_dividerFlinging_doNothing() {
+        desktopModeWindowDecorViewModel.setFreeformTaskTransitionStarter(
+            mockFreeformTaskTransitionStarter
+        )
+        val decor = createOpenTaskDecoration(windowingMode = WINDOWING_MODE_MULTI_WINDOW)
+        val otherTask = createTask(windowingMode = WINDOWING_MODE_MULTI_WINDOW)
+
+        whenever(mockSplitScreenController.isTaskInSplitScreen(decor.taskInfo.taskId))
+            .thenReturn(true)
+        whenever(mockSplitScreenController.getSplitPosition(decor.taskInfo.taskId))
+            .thenReturn(SPLIT_POSITION_TOP_OR_LEFT)
+        whenever(mockSplitScreenController.getTaskInfo(SPLIT_POSITION_BOTTOM_OR_RIGHT))
+            .thenReturn(otherTask)
+
+        whenever(mockSplitScreenController.isDividerFlinging).thenReturn(true)
+
+        desktopModeWindowDecorViewModel.closeTask(decor.taskInfo)
+
+        verify(mockSplitScreenController, never()).moveTaskToFullscreen(any(), any())
+    }
+
     @EnableFlags(Flags.FLAG_ENABLE_MINIMIZE_BUTTON)
     @DisableFlags(Flags.FLAG_ENABLE_DESKTOP_APP_HEADER_STATE_CHANGE_ANNOUNCEMENTS)
     fun testMinimizeButtonInFreeform_minimizeWindow() {
