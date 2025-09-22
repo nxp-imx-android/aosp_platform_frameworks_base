@@ -28,11 +28,14 @@ import android.os.IRemoteCallback
 import android.os.RemoteException
 import android.util.Slog
 import android.view.SurfaceControl
+import android.view.WindowManager.TRANSIT_CLOSE
+import android.view.WindowManager.TRANSIT_TO_BACK
 import android.window.TransitionInfo
 import android.window.TransitionRequestInfo
 import android.window.TransitionRequestInfo.WindowingLayerChange
 import android.window.WindowContainerToken
 import android.window.WindowContainerTransaction
+import com.android.wm.shell.shared.TransitionUtil
 import com.android.wm.shell.sysui.ShellInit
 import com.android.wm.shell.transition.Transitions
 
@@ -46,7 +49,8 @@ class PinnedLayerController(shellInit: ShellInit, private val transitions: Trans
 
     // Stores ids of pinned TaskInfo.
     private val pinnedTasks = mutableSetOf<Int>()
-    private var pinnedTask: TaskInfo? = null
+    var currentPinnedTask: TaskInfo? = null
+        private set
 
     // Stores pin layer transitions that are in progress.
     private val activeTransitions = mutableMapOf<IBinder, MutableSet<ActiveTransition>>()
@@ -72,31 +76,29 @@ class PinnedLayerController(shellInit: ShellInit, private val transitions: Trans
 
         // TODO(b/444435367): Do nothing for already visible pinned task.
         val wct = WindowContainerTransaction()
-        if (windowingLayerChange.isLayerPinningRequest()) {
-            checkNotNull(windowingLayerChange) {
-                "WindowingLayerChange can't be null on the confirmed pin request."
-            }
 
+        // Based on the previous checks, it's either not pinned and request contains a pin request
+        // or an already pinned task is brought to foreground.
+        if (windowingLayerChange.isLayerPinningRequest() || request.isOpeningPinnedRequest()) {
             val transitions = mutableSetOf<ActiveTransition>()
             activeTransitions[transition] = transitions
 
             wct.merge(getLayerPinnedWct(triggerTask.token), /* transfer= */ true)
-            transitions += ActiveTransition.Pin(triggerTask, windowingLayerChange.remoteCallback)
+            transitions += ActiveTransition.Pin(triggerTask, windowingLayerChange?.remoteCallback)
         }
-
-        // The task is pinned, but this is not a direct PINNED layer request. It might be
-        // TRANSIT_TO_FRONT or TRANSIT_TO_BACK.
-        // TODO(b/444434453): Handle TRANSIT_TO_FRONT, TRANSIT_OPEN
 
         // Unpinning can occur as a side-effect of another action, check if a task (not necessary
         // the pinned one) is eligible to be unpinned.
-        if (containsActivePinningTransition(transition)) {
-            // TODO(b/444434453): handle TRANSIT_TO_BACK, TRANSIT_CLOSE
-            pinnedTask?.let { pinned ->
-                val transitions = activeTransitions.getOrPut(transition) { mutableSetOf() }
-                transitions += ActiveTransition.Unpin(pinned)
-                wct.merge(getLayerUnpinnedWct(pinned.token), true)
-            }
+        val isUnpinningNeeded =
+            containsActivePinningTransition(transition) || request.isClosingPinnedRequest()
+        val task = if (request.isClosingPinnedRequest()) triggerTask else currentPinnedTask
+        if (isUnpinningNeeded && task != null) {
+            val transitions = activeTransitions.getOrPut(transition) { mutableSetOf() }
+            transitions += ActiveTransition.Unpin(task)
+            wct.merge(
+                getLayerUnpinnedWct(task.token, isMinimizing = request.type != TRANSIT_CLOSE),
+                /* transfer= */ true,
+            )
         }
 
         return wct.takeUnless { it.isEmpty }
@@ -104,6 +106,16 @@ class PinnedLayerController(shellInit: ShellInit, private val transitions: Trans
 
     private fun WindowingLayerChange?.isLayerPinningRequest(): Boolean {
         return this != null && windowingLayer == WINDOWING_LAYER_PINNED
+    }
+
+    private fun TransitionRequestInfo.isOpeningPinnedRequest(): Boolean {
+        val task = triggerTask
+        return task != null && isPinned(task.taskId) && TransitionUtil.isOpeningType(type)
+    }
+
+    private fun TransitionRequestInfo.isClosingPinnedRequest(): Boolean {
+        val task = triggerTask
+        return task != null && isPinned(task.taskId) && TransitionUtil.isClosingType(type)
     }
 
     private fun containsActivePinningTransition(transition: IBinder): Boolean {
@@ -131,7 +143,12 @@ class PinnedLayerController(shellInit: ShellInit, private val transitions: Trans
                     }
                 }
                 is ActiveTransition.Unpin -> {
-                    unpin(transition.taskInfo, rememberAsPinned = true)
+                    val isMovingToBack =
+                        info.changes.any {
+                            it.taskInfo?.token == transition.taskInfo.token &&
+                                it.mode == TRANSIT_TO_BACK
+                        }
+                    unpin(transition.taskInfo, rememberAsPinned = isMovingToBack)
                 }
             }
         }
@@ -142,7 +159,7 @@ class PinnedLayerController(shellInit: ShellInit, private val transitions: Trans
 
     private fun pin(taskInfo: TaskInfo) {
         pinnedTasks += taskInfo.taskId
-        pinnedTask = taskInfo
+        currentPinnedTask = taskInfo
     }
 
     private fun unpin(taskInfo: TaskInfo, rememberAsPinned: Boolean = false) {
@@ -150,8 +167,8 @@ class PinnedLayerController(shellInit: ShellInit, private val transitions: Trans
             pinnedTasks -= taskInfo.taskId
         }
 
-        if (pinnedTask?.taskId == taskInfo.taskId) {
-            pinnedTask = null
+        if (currentPinnedTask?.taskId == taskInfo.taskId) {
+            currentPinnedTask = null
         }
     }
 
