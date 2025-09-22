@@ -188,6 +188,7 @@ flag {
     namespace: "location"
     description: "Support IONEX assistance"
     bug: "434875844"
+    is_exported: true
 }
 
 flag {
