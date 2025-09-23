@@ -16,10 +16,7 @@
 
 package android.companion.virtual.computercontrol;
 
-import android.companion.virtual.computercontrol.IComputerControlStabilityListener;
 import android.companion.virtual.computercontrol.IInteractiveMirrorDisplay;
-import android.hardware.input.VirtualKeyEvent;
-import android.hardware.input.VirtualTouchEvent;
 import android.view.Surface;
 
 /**
@@ -44,19 +41,6 @@ interface IComputerControlSession {
     /** Injects a long press event into the trusted virtual display. */
     void longPress(int x, int y);
 
-    /** Returns the ID of the single trusted virtual display for this session. */
-    int getVirtualDisplayId();
-
-    /** Injects a key event into the trusted virtual display. */
-    void sendKeyEvent(in VirtualKeyEvent event);
-
-    /** Injects a touch event into the trusted virtual display. */
-    void sendTouchEvent(in VirtualTouchEvent event);
-
-    /** Creates an interactive virtual display, mirroring the trusted one. */
-    IInteractiveMirrorDisplay createInteractiveMirrorDisplay(
-            int width, int height, in Surface surface);
-
     /**
      * Inserts text into the current active input connection. If there is no active input
      * connection, this method is no-op.
@@ -71,8 +55,9 @@ interface IComputerControlSession {
     /** Performs computer control action on the computer control display. */
     void performAction(int actionCode);
 
-    /** Sets a listener to be notified when the computer control session is potentially stable. */
-    void setStabilityListener(in IComputerControlStabilityListener listener);
+    /** Creates an interactive virtual display, mirroring the trusted one. */
+    IInteractiveMirrorDisplay createInteractiveMirrorDisplay(
+            int width, int height, in Surface surface);
 
     /** Closes this session. */
     void close();

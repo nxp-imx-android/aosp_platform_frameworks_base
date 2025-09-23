@@ -33,7 +33,6 @@ import android.companion.virtual.VirtualDeviceParams;
 import android.companion.virtual.computercontrol.ComputerControlSession;
 import android.companion.virtual.computercontrol.ComputerControlSessionParams;
 import android.companion.virtual.computercontrol.IComputerControlSession;
-import android.companion.virtual.computercontrol.IComputerControlStabilityListener;
 import android.companion.virtual.computercontrol.IInteractiveMirrorDisplay;
 import android.companion.virtualdevice.flags.Flags;
 import android.content.AttributionSource;
@@ -49,7 +48,6 @@ import android.hardware.display.DisplayManagerGlobal;
 import android.hardware.display.IVirtualDisplayCallback;
 import android.hardware.display.VirtualDisplayConfig;
 import android.hardware.input.IVirtualInputDevice;
-import android.hardware.input.VirtualDpad;
 import android.hardware.input.VirtualDpadConfig;
 import android.hardware.input.VirtualKeyEvent;
 import android.hardware.input.VirtualKeyboardConfig;
@@ -68,7 +66,6 @@ import android.view.Surface;
 import android.view.ViewConfiguration;
 import android.view.WindowManager;
 
-import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.inputmethod.IRemoteComputerControlInputConnection;
 import com.android.internal.inputmethod.InputConnectionCommandHeader;
@@ -151,16 +148,12 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
     private final AtomicInteger mMirrorDisplayCounter = new AtomicInteger(0);
     private final ScheduledExecutorService mScheduler =
             Executors.newSingleThreadScheduledExecutor();
-    private final Object mStabilityCalculatorLock = new Object();
     private final Set<UserHandle> mAllowedUsers;
     private final Injector mInjector;
 
     private ScheduledFuture<?> mSwipeFuture;
     private ScheduledFuture<?> mInsertTextFuture;
     private ScheduledFuture<?> mCloseSessionFuture;
-
-    @GuardedBy("mStabilityCalculatorLock")
-    private StabilityCalculator mStabilityCalculator;
 
     ComputerControlSessionImpl(Context context, IBinder appToken,
             ComputerControlSessionParams params, AttributionSource attributionSource,
@@ -193,10 +186,8 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
                 .build();
 
         int displayFlags = DisplayManager.VIRTUAL_DISPLAY_FLAG_TRUSTED
+                | DisplayManager.VIRTUAL_DISPLAY_FLAG_ALWAYS_UNLOCKED
                 | DisplayManager.VIRTUAL_DISPLAY_FLAG_STEAL_TOP_FOCUS_DISABLED;
-        if (mParams.isDisplayAlwaysUnlocked()) {
-            displayFlags |= DisplayManager.VIRTUAL_DISPLAY_FLAG_ALWAYS_UNLOCKED;
-        }
 
         // This is used as a death detection token to release the display upon app death. We're in
         // the system process, so this won't happen, but this is OK because we already do death
@@ -206,32 +197,14 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
         // used as a map key for the virtual input devices.
         mVirtualDisplayToken = new DisplayManagerGlobal.VirtualDisplayCallback(null, null);
 
-        final int displayWidth;
-        final int displayHeight;
-        // If the client didn't provide a surface, use the default display dimensions and enable
-        // the screenshot API.
-        // TODO(b/439774796): Do not allow client-provided surface and dimensions.
-        final VirtualDisplayConfig virtualDisplayConfig;
-        if (params.getDisplaySurface() == null) {
-            displayFlags |= DisplayManager.VIRTUAL_DISPLAY_FLAG_ALWAYS_UNLOCKED;
-            final DisplayInfo defaultDisplayInfo = mInjector.getDisplayInfo(mMainDisplayId);
-            displayWidth = defaultDisplayInfo.logicalWidth;
-            displayHeight = defaultDisplayInfo.logicalHeight;
-            virtualDisplayConfig = new VirtualDisplayConfig.Builder(
-                    mParams.getName() + "-display", displayWidth, displayHeight,
-                    defaultDisplayInfo.logicalDensityDpi)
-                    .setFlags(displayFlags)
-                    .build();
-        } else {
-            displayWidth = mParams.getDisplayWidthPx();
-            displayHeight = mParams.getDisplayHeightPx();
-            virtualDisplayConfig = new VirtualDisplayConfig.Builder(
-                    mParams.getName() + "-display", displayWidth, displayHeight,
-                    mParams.getDisplayDpi())
-                    .setSurface(mParams.getDisplaySurface())
-                    .setFlags(displayFlags)
-                    .build();
-        }
+        final DisplayInfo mainDisplayInfo = mInjector.getDisplayInfo(mMainDisplayId);
+        final int displayWidth = mainDisplayInfo.logicalWidth;
+        final int displayHeight = mainDisplayInfo.logicalHeight;
+        final VirtualDisplayConfig virtualDisplayConfig = new VirtualDisplayConfig.Builder(
+                mParams.getName() + "-display", displayWidth, displayHeight,
+                mainDisplayInfo.logicalDensityDpi)
+                .setFlags(displayFlags)
+                .build();
 
         try {
             mVirtualDevice = virtualDeviceFactory.createVirtualDevice(mAppToken, attributionSource,
@@ -307,7 +280,6 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
             exemptedPackageNames.addAll(mParams.getTargetPackageNames());
             exemptedPackageNames.add(CUSTOM_BLOCKED_APP_PACKAGE);
         } else {
-            // TODO(b/439774796): Remove once v0 API is removed and the flag is rolled out.
             // This legacy policy allows all apps other than PermissionController to be automated.
             String permissionControllerPackage = mInjector.getPermissionControllerPackageName();
             exemptedPackageNames.add(permissionControllerPackage);
@@ -321,7 +293,6 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
         }
     }
 
-    @Override
     public int getVirtualDisplayId() {
         return mVirtualDisplayId;
     }
@@ -359,7 +330,6 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
         final UserHandle user = Binder.getCallingUserHandle();
         Binder.withCleanCallingIdentity(() -> mInjector.launchApplicationOnDisplayAsUser(
                 intent, mVirtualDisplayId, user));
-        notifyApplicationLaunchToStabilityCalculator();
     }
 
     @Override
@@ -373,7 +343,6 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
         cancelOngoingTouchGestures();
         mVirtualTouchscreen.sendTouchEvent(createTouchEvent(x, y, VirtualTouchEvent.ACTION_DOWN));
         mVirtualTouchscreen.sendTouchEvent(createTouchEvent(x, y, VirtualTouchEvent.ACTION_UP));
-        notifyNonContinuousInputToStabilityCalculator();
     }
 
     @Override
@@ -384,7 +353,6 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
         mVirtualTouchscreen.sendTouchEvent(
                 createTouchEvent(fromX, fromY, VirtualTouchEvent.ACTION_DOWN));
         performSwipeStep(fromX, fromY, toX, toY, /* step= */ 0, SWIPE_STEPS);
-        notifyContinuousInputToStabilityCalculator();
     }
 
     @Override
@@ -397,21 +365,6 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
                 (int) Math.ceil(
                         (double) mInjector.getLongPressTimeoutMillis() / TOUCH_EVENT_DELAY_MS);
         performSwipeStep(x, y, x, y, /* step= */ 0, longPressStepCount);
-        notifyContinuousInputToStabilityCalculator();
-    }
-
-    @Override
-    public void sendTouchEvent(@NonNull VirtualTouchEvent event) throws RemoteException {
-        mVirtualTouchscreen.sendTouchEvent(Objects.requireNonNull(event));
-    }
-
-    @Override
-    public void sendKeyEvent(@NonNull VirtualKeyEvent event) throws RemoteException {
-        if (VirtualDpad.isKeyCodeSupported(Objects.requireNonNull(event).getKeyCode())) {
-            mVirtualDpad.sendKeyEvent(event);
-        } else {
-            mVirtualKeyboard.sendKeyEvent(event);
-        }
     }
 
     @Override
@@ -422,10 +375,8 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
                     createKeyEvent(KeyEvent.KEYCODE_BACK, VirtualKeyEvent.ACTION_DOWN));
             mVirtualDpad.sendKeyEvent(
                     createKeyEvent(KeyEvent.KEYCODE_BACK, VirtualKeyEvent.ACTION_UP));
-            notifyNonContinuousInputToStabilityCalculator();
         } else {
             Slog.e(TAG, "Invalid action code for performAction: " + actionCode);
-            notifyInteractionFailedToStabilityCalculator();
         }
     }
 
@@ -459,7 +410,6 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
                     mVirtualDisplayId);
             if (ic == null) {
                 Slog.e(TAG, "Unable to insert text: No input connection found!");
-                notifyInteractionFailedToStabilityCalculator();
                 return;
             }
             // TODO(b/422134565): Implement client invoker logic to pass the correct session id when
@@ -515,21 +465,6 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
             }
             performKeyStep(keysToSend, 0);
         }
-        notifyNonContinuousInputToStabilityCalculator();
-    }
-
-    @Override
-    public void setStabilityListener(IComputerControlStabilityListener listener) {
-        synchronized (mStabilityCalculatorLock) {
-            if (listener == null) {
-                clearStabilityCalculatorLocked();
-                return;
-            }
-            if (mStabilityCalculator != null) {
-                throw new IllegalStateException("Stability listener already set");
-            }
-            mStabilityCalculator = new StabilityCalculator(listener, mScheduler);
-        }
     }
 
     @Override
@@ -537,7 +472,6 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
         cancelOngoingKeyGestures();
         cancelOngoingTouchGestures();
         cancelPendingCloseSession();
-        clearStabilityCalculator();
         mVirtualDevice.close();
         mAppToken.unlinkToDeath(this, 0);
         mOnClosedListener.onClosed(this);
@@ -655,55 +589,6 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
         return (prefix.length() > MAX_INPUT_DEVICE_NAME_PREFIX_LENGTH)
                 ? prefix.substring(prefix.length() - MAX_INPUT_DEVICE_NAME_PREFIX_LENGTH)
                 : prefix;
-    }
-
-    private void clearStabilityCalculator() {
-        synchronized (mStabilityCalculatorLock) {
-            clearStabilityCalculatorLocked();
-        }
-    }
-
-    private void clearStabilityCalculatorLocked() {
-        if (mStabilityCalculator != null) {
-            mStabilityCalculator.close();
-            mStabilityCalculator = null;
-        }
-    }
-
-    // TODO(b/428957982): Remove once we implement actual stability signals from the framework.
-    private void notifyContinuousInputToStabilityCalculator() {
-        synchronized (mStabilityCalculatorLock) {
-            if (mStabilityCalculator != null) {
-                mStabilityCalculator.onContinuousInputEvent();
-            }
-        }
-    }
-
-    // TODO(b/428957982): Remove once we implement actual stability signals from the framework.
-    private void notifyNonContinuousInputToStabilityCalculator() {
-        synchronized (mStabilityCalculatorLock) {
-            if (mStabilityCalculator != null) {
-                mStabilityCalculator.onNonContinuousInputEvent();
-            }
-        }
-    }
-
-    // TODO(b/428957982): Remove once we implement actual stability signals from the framework.
-    private void notifyApplicationLaunchToStabilityCalculator() {
-        synchronized (mStabilityCalculatorLock) {
-            if (mStabilityCalculator != null) {
-                mStabilityCalculator.onApplicationLaunch();
-            }
-        }
-    }
-
-    // TODO(b/428957982): Remove once we implement actual stability signals from the framework.
-    private void notifyInteractionFailedToStabilityCalculator() {
-        synchronized (mStabilityCalculatorLock) {
-            if (mStabilityCalculator != null) {
-                mStabilityCalculator.onInteractionFailed();
-            }
-        }
     }
 
     private class ComputerControlActivityListener extends IVirtualDeviceActivityListener.Stub {

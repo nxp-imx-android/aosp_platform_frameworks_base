@@ -27,7 +27,6 @@ import android.content.IntentSender;
 import android.content.pm.PackageManager;
 import android.os.UserHandle;
 import android.util.ArrayMap;
-import android.view.accessibility.AccessibilityManager;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -96,11 +95,6 @@ public class ComputerControlExtensions {
                 new ComputerControlSessionParams.Builder()
                         .setName(params.getName())
                         .setTargetPackageNames(params.getTargetPackageNames())
-                        .setDisplayWidthPx(params.getDisplayWidthPx())
-                        .setDisplayHeightPx(params.getDisplayHeightPx())
-                        .setDisplayDpi(params.getDisplayDpi())
-                        .setDisplaySurface(params.getDisplaySurface())
-                        .setDisplayAlwaysUnlocked(params.isDisplayAlwaysUnlocked())
                         .build();
 
         var sessionCallback =
@@ -108,24 +102,13 @@ public class ComputerControlExtensions {
 
                     @Override
                     public void onSessionPending(@NonNull IntentSender intentSender) {
-                        // TODO(b/437901655): Pass this to the caller.
-                        try {
-                            params.getContext().startIntentSender(intentSender, null, 0, 0, 0);
-                        } catch (IntentSender.SendIntentException e) {
-                            callback.onSessionCreationFailed(
-                                    android.companion.virtual.computercontrol
-                                            .ComputerControlSession.ERROR_PERMISSION_DENIED);
-                        }
+                        callback.onSessionPending(intentSender);
                     }
-
                     @Override
                     public void onSessionCreated(
                             @NonNull android.companion.virtual.computercontrol
                                     .ComputerControlSession session) {
-                        AccessibilityManager accessibilityManager =
-                                params.getContext().getSystemService(AccessibilityManager.class);
-                        callback.onSessionCreated(
-                                new ComputerControlSession(session, params, accessibilityManager));
+                        callback.onSessionCreated(new ComputerControlSession(session));
                     }
 
                     @Override
