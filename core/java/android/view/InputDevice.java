@@ -233,9 +233,23 @@ public final class InputDevice implements Parcelable {
 
     /**
      * The input source is a mouse pointing device.
-     * This value is also used for other mouse-like pointing devices such as touchpads and pointing
-     * sticks. When used in combination with {@link #SOURCE_STYLUS}, it denotes an external drawing
-     * tablet.
+     * <p>
+     * This value is also used for other indirect pointing devices (that is, where the device or
+     * finger is not in the same physical location as the pointer on the screen), specifically:
+     * <ul>
+     *     <li>
+     *         touchpads, which will return {@code SOURCE_MOUSE | SOURCE_TOUCHPAD} from
+     *         {@link #getSources()}, but only {@code SOURCE_MOUSE} from
+     *         {@link MotionEvent#getSource()} (see {@link MotionEvent#getSource()} for details);
+     *     </li>
+     *     <li>
+     *         external drawing tablets, which use it in combination with {@link #SOURCE_STYLUS};
+     *         and
+     *     </li>
+     *     <li>
+     *         other mouse-like pointing devices such as pointing sticks.
+     *     </li>
+     * </ul>
      *
      * @see #SOURCE_CLASS_POINTER
      */
@@ -306,8 +320,13 @@ public final class InputDevice implements Parcelable {
     public static final int SOURCE_MOUSE_RELATIVE = 0x00020000 | SOURCE_CLASS_TRACKBALL;
 
     /**
-     * The input source is a touchpad (also known as a trackpad). Touchpads that are used to move
-     * the mouse cursor will also have {@link #SOURCE_MOUSE}.
+     * The input source is a touchpad (also known as a trackpad).
+     * <p>
+     * Touchpads will return {@code SOURCE_MOUSE | SOURCE_TOUCHPAD} from {@link #getSources()}
+     * <p>
+     * <b>Note:</b> instead of {@code SOURCE_TOUCHPAD}, <b>{@link MotionEvent#getSource()} will
+     * normally return only {@link #SOURCE_MOUSE}</b> for events from touchpads. See
+     * {@link MotionEvent#getSource()} for more details.
      *
      * @see #SOURCE_CLASS_POSITION
      */
