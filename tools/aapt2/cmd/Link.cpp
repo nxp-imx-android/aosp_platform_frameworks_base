@@ -2017,6 +2017,31 @@ class Linker {
     return success;
   }
 
+  // Returns true if no read/write feature flags are used in overlay resources.
+  bool VerifyNoReadWriteFlagsInOverlays(xml::XmlResource* manifest_xml) {
+    xml::Element* manifest_el = xml::FindRootElement(manifest_xml->root.get());
+    if (manifest_el && manifest_el->FindChild({}, "overlay")) {
+      for (const auto& package : final_table_.packages) {
+        for (const auto& type : package->types) {
+          for (const auto& entry : type->entries) {
+            if (!entry->readwrite_flag_values.empty()) {
+              context_->GetDiagnostics()->Error(
+                  android::DiagMessage() << "Read/Write flags not allowed in overlay packages");
+              if (context_->IsVerbose()) {
+                context_->GetDiagnostics()->Note(
+                    android::DiagMessage()
+                    << "Found Read/Write flag on resource "
+                    << ResourceNameRef(package->name, type->named_type, entry->name));
+              }
+              return false;
+            }
+          }
+        }
+      }
+    }
+    return true;
+  }
+
   int Run(const std::vector<std::string>& input_files) {
     TRACE_CALL();
     // Load the AndroidManifest.xml
@@ -2135,6 +2160,10 @@ class Linker {
     }
 
     if (!VerifyNoExternalPackages()) {
+      return 1;
+    }
+
+    if (!VerifyNoReadWriteFlagsInOverlays(manifest_xml.get())) {
       return 1;
     }
 

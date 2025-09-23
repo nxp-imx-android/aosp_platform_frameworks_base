@@ -263,4 +263,30 @@ TEST_F(FlaggedResourcesTest, ReadWriteFlagChunk) {
   ASSERT_TRUE(output.contains(expected2));
 }
 
+TEST_F(FlaggedResourcesTest, ReadWriteFlagsOnOverlayFails) {
+  const std::string compiled_files_dir = GetTestPath("compiled");
+  ASSERT_TRUE(CompileFile(GetTestPath("res/values/strings.xml"),
+                          R"(<resources  xmlns:android="http://schemas.android.com/apk/res/android">
+<string name="text1" android:featureFlag="test.package.rwFlag">foobar</string>
+                              </resources>)",
+                          compiled_files_dir, &noop_diag,
+                          {"--feature-flags", "test.package.rwFlag"}));
+  const std::string manifest_file = GetTestPath("AndroidManifest.xml");
+  WriteFile(manifest_file, R"(
+    <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+        package="com.aapt.command.test">
+      <overlay android:targetPackage="com.example.target" />
+    </manifest>)");
+  const std::string out_apk = GetTestPath("out.apk");
+  std::vector<std::string> link_args = {
+      "--manifest",
+      manifest_file,
+      "-o",
+      out_apk,
+  };
+
+  test::TestDiagnosticsImpl diag;
+  ASSERT_FALSE(Link(link_args, compiled_files_dir, &diag));
+  ASSERT_TRUE(diag.GetLog().contains("Read/Write flags not allowed in overlay packages"));
+}
 }  // namespace aapt
