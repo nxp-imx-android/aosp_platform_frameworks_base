@@ -40,6 +40,7 @@ import android.hardware.camera2.params.DynamicRangeProfiles;
 import android.hardware.camera2.params.MultiResolutionStreamInfo;
 import android.hardware.camera2.utils.HashCodeHelpers;
 import android.hardware.camera2.utils.SurfaceUtils;
+import android.hardware.camera2.utils.ListUtils;
 import android.media.ImageReader;
 import android.os.Parcel;
 import android.os.Parcelable;
@@ -1664,7 +1665,7 @@ public final class OutputConfiguration implements Parcelable {
                 mConfiguredFormat, mConfiguredDataspace);
         mPhysicalCameraId = physicalCameraId;
         mIsMultiResolution = isMultiResolutionOutput;
-        mSensorPixelModesUsed = convertIntArrayToIntegerList(sensorPixelModesUsed);
+        mSensorPixelModesUsed = ListUtils.convertIntArrayToIntegerList(sensorPixelModesUsed);
         mDynamicRangeProfile = dynamicRangeProfile;
         mColorSpace = colorSpace;
         mStreamUseCase = streamUseCase;
@@ -1847,25 +1848,6 @@ public final class OutputConfiguration implements Parcelable {
         return 0;
     }
 
-    private static int[] convertIntegerToIntList(List<Integer> integerList) {
-        int[] integerArray = new int[integerList.size()];
-        for (int i = 0; i < integerList.size(); i++) {
-            integerArray[i] = integerList.get(i);
-        }
-        return integerArray;
-    }
-
-    private static ArrayList<Integer> convertIntArrayToIntegerList(int[] intArray) {
-        ArrayList<Integer> integerList = new ArrayList<Integer>();
-        if (intArray == null) {
-            return integerList;
-        }
-        for (int i = 0; i < intArray.length; i++) {
-            integerList.add(intArray[i]);
-        }
-        return integerList;
-    }
-
     @Override
     public void writeToParcel(Parcel dest, int flags) {
         if (dest == null) {
@@ -1886,7 +1868,7 @@ public final class OutputConfiguration implements Parcelable {
         dest.writeString(mPhysicalCameraId);
         dest.writeInt(mIsMultiResolution ? 1 : 0);
         // writeList doesn't seem to work well with Integer list.
-        dest.writeIntArray(convertIntegerToIntList(mSensorPixelModesUsed));
+        dest.writeIntArray(ListUtils.convertIntegerListToIntArray(mSensorPixelModesUsed));
         dest.writeLong(mDynamicRangeProfile);
         dest.writeInt(mColorSpace);
         dest.writeLong(mStreamUseCase);
