@@ -114,6 +114,10 @@ public class MediaOutputDialog extends MediaOutputBaseDialog {
 
     @Override
     int getStopButtonVisibility() {
+        if (mMediaSwitchingController.getMediaSwitchingType() == MediaSwitchingType.INPUT) {
+            return View.GONE;
+        }
+
         boolean isActiveRemoteDevice = false;
         if (mMediaSwitchingController.getCurrentConnectedMediaDevice() != null) {
             isActiveRemoteDevice =

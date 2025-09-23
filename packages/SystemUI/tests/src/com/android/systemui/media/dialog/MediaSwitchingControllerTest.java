@@ -1899,6 +1899,47 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
                 .isEqualTo(R.string.media_output_dialog_button_share_audio);
     }
 
+    @Test
+    public void getAudioSharingButtonState_mediaSwitchingTypeIsInput_returnsNull() {
+        mMediaSwitchingController =
+                new MediaSwitchingController(
+                        mSpyContext,
+                        mPackageName,
+                        mContext.getUser(),
+                        /* token */ null,
+                        MediaSwitchingType.INPUT,
+                        mMediaSessionManager,
+                        mLocalBluetoothManager,
+                        mStarter,
+                        mNotifCollection,
+                        mDialogTransitionAnimator,
+                        mNearbyMediaDevicesManager,
+                        mAudioManager,
+                        mPowerExemptionManager,
+                        mKeyguardManager,
+                        mClock,
+                        mFakeBackgroundExecutor,
+                        mVolumePanelGlobalStateInteractor,
+                        mUserTracker,
+                        mJavaAdapter,
+                        mAudioSharingRepository);
+        LocalBluetoothProfileManager profileManager = mock(LocalBluetoothProfileManager.class);
+        LocalBluetoothLeBroadcastAssistant assistantProfile =
+                mock(LocalBluetoothLeBroadcastAssistant.class);
+        BluetoothDevice bluetoothDevice = mock(BluetoothDevice.class);
+        MutableStateFlow<Boolean> inAudioSharingFlow = MutableStateFlow(false);
+        when(mLocalBluetoothManager.getProfileManager()).thenReturn(profileManager);
+        when(profileManager.getLeAudioBroadcastAssistantProfile()).thenReturn(assistantProfile);
+        when(assistantProfile.getAllConnectedDevices()).thenReturn(List.of(bluetoothDevice));
+        when(mAudioSharingRepository.getInAudioSharing()).thenReturn(inAudioSharingFlow);
+        mMediaSwitchingController.start(mCb);
+
+        AudioSharingButtonState buttonState =
+                mMediaSwitchingController.getAudioSharingButtonState();
+
+        assertThat(buttonState).isNull();
+    }
+
     private List<MediaDevice> getMediaDevices(List<MediaItem> mediaItemList) {
         return mediaItemList.stream()
                 .filter(item -> item.getMediaDevice().isPresent())

@@ -316,6 +316,11 @@ public class MediaSwitchingController
         mIsRefreshing = refreshing;
     }
 
+    @NonNull
+    public MediaSwitchingType getMediaSwitchingType() {
+        return mMediaSwitchingType;
+    }
+
     protected void stop() {
         if (mMediaController != null) {
             mMediaController.unregisterCallback(mCb);
@@ -1001,6 +1006,9 @@ public class MediaSwitchingController
      */
     @Nullable
     protected AudioSharingButtonState getAudioSharingButtonState() {
+        if (mMediaSwitchingType == MediaSwitchingType.INPUT) {
+            return null;
+        }
         if (mInAudioSharing) {
             return new AudioSharingButtonState(
                     /* resId= */ R.string.media_output_dialog_button_sharing_audio,
