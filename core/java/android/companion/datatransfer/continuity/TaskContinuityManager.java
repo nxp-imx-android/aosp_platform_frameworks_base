@@ -41,10 +41,10 @@ import java.util.Map;
 import java.util.Objects;
 
 /**
- * This class facilitates task continuity between devices owned by the same user.
- * This includes synchronizing lists of open tasks between a user's devices, as well as requesting
- * to hand off a task from one device to another. Handing a task off to a device will resume the
- * application on the receiving device, preserving the state of the task.
+ * This class facilitates task continuity between devices owned by the same user. This includes
+ * synchronizing lists of open tasks between a user's devices, as well as requesting to hand off a
+ * task from one device to another. Handing a task off to a device will resume the application on
+ * the receiving device, preserving the state of the task.
  *
  * @hide
  */
@@ -58,21 +58,20 @@ public class TaskContinuityManager {
     private final RemoteTaskListenerHolder mListenerHolder;
 
     /** @hide */
-    @IntDef(prefix = {"HANDOFF_REQUEST_RESULT"}, value = {
-        HANDOFF_REQUEST_RESULT_SUCCESS,
-        HANDOFF_REQUEST_RESULT_FAILURE_TASK_NOT_FOUND,
-        HANDOFF_REQUEST_RESULT_FAILURE_NO_DATA_PROVIDED_BY_TASK,
-        HANDOFF_REQUEST_RESULT_FAILURE_SENDER_LOST_CONNECTION,
-        HANDOFF_REQUEST_RESULT_FAILURE_TIMEOUT,
-        HANDOFF_REQUEST_RESULT_FAILURE_DEVICE_NOT_FOUND,
-    })
-
+    @IntDef(
+            prefix = {"HANDOFF_REQUEST_RESULT"},
+            value = {
+                HANDOFF_REQUEST_RESULT_SUCCESS,
+                HANDOFF_REQUEST_RESULT_FAILURE_TASK_NOT_FOUND,
+                HANDOFF_REQUEST_RESULT_FAILURE_NO_DATA_PROVIDED_BY_TASK,
+                HANDOFF_REQUEST_RESULT_FAILURE_SENDER_LOST_CONNECTION,
+                HANDOFF_REQUEST_RESULT_FAILURE_TIMEOUT,
+                HANDOFF_REQUEST_RESULT_FAILURE_DEVICE_NOT_FOUND,
+            })
     @Retention(RetentionPolicy.SOURCE)
     public @interface HandoffRequestResultCode {}
 
-    /**
-     * Indicate a request for handoff completed successfully.
-     */
+    /** Indicate a request for handoff completed successfully. */
     public static final int HANDOFF_REQUEST_RESULT_SUCCESS = 0;
 
     /**
@@ -99,9 +98,7 @@ public class TaskContinuityManager {
      */
     public static final int HANDOFF_REQUEST_RESULT_FAILURE_TIMEOUT = 4;
 
-    /**
-     * Indicates a request for handoff failed because the remote device was not found.
-     */
+    /** Indicates a request for handoff failed because the remote device was not found. */
     public static final int HANDOFF_REQUEST_RESULT_FAILURE_DEVICE_NOT_FOUND = 5;
 
     /**
@@ -112,17 +109,14 @@ public class TaskContinuityManager {
 
     /** @hide */
     public TaskContinuityManager(
-        @NonNull Context context,
-        @NonNull ITaskContinuityManager service) {
+            @NonNull Context context, @NonNull ITaskContinuityManager service) {
 
         mContext = context;
         mService = service;
         mListenerHolder = new RemoteTaskListenerHolder(service);
     }
 
-    /**
-     * Listener to be notified when the list of remote tasks changes.
-    */
+    /** Listener to be notified when the list of remote tasks changes. */
     public interface RemoteTaskListener {
         /**
          * Invoked when the list of remote tasks changes.
@@ -132,9 +126,7 @@ public class TaskContinuityManager {
         void onRemoteTasksChanged(@NonNull List<RemoteTask> remoteTasks);
     }
 
-    /**
-     * Callback to be invoked when a handoff request is completed.
-     */
+    /** Callback to be invoked when a handoff request is completed. */
     public interface HandoffRequestCallback {
 
         /**
@@ -145,9 +137,7 @@ public class TaskContinuityManager {
          * @param resultCode The result code of the handoff request.
          */
         void onHandoffRequestFinished(
-            int associationId,
-            int remoteTaskId,
-            @HandoffRequestResultCode int resultCode);
+                int associationId, int remoteTaskId, @HandoffRequestResultCode int resultCode);
     }
 
     /**
@@ -155,13 +145,12 @@ public class TaskContinuityManager {
      *
      * @param executor The executor to be used to invoke the listener.
      * @param listener The listener to be registered.
-     * @throws SecurityException if the caller does not hold the
-     *      {@link android.Manifest.permission#READ_REMOTE_TASKS} permission.
+     * @throws SecurityException if the caller does not hold the {@link
+     *     android.Manifest.permission#READ_REMOTE_TASKS} permission.
      */
     @RequiresPermission(android.Manifest.permission.READ_REMOTE_TASKS)
     public void registerRemoteTaskListener(
-        @NonNull Executor executor,
-        @NonNull RemoteTaskListener listener) {
+            @NonNull Executor executor, @NonNull RemoteTaskListener listener) {
 
         Objects.requireNonNull(executor);
         Objects.requireNonNull(listener);
@@ -176,12 +165,11 @@ public class TaskContinuityManager {
     }
 
     /**
-     * Unregisters a listener previously registered with
-     * {@link #registerRemoteTaskListener}.
+     * Unregisters a listener previously registered with {@link #registerRemoteTaskListener}.
      *
      * @param listener The listener to be unregistered.
-     * @throws SecurityException if the caller does not hold the
-     *      {@link android.Manifest.permission#READ_REMOTE_TASKS} permission.
+     * @throws SecurityException if the caller does not hold the {@link
+     *     android.Manifest.permission#READ_REMOTE_TASKS} permission.
      */
     @RequiresPermission(android.Manifest.permission.READ_REMOTE_TASKS)
     public void unregisterRemoteTaskListener(@NonNull RemoteTaskListener listener) {
@@ -198,26 +186,26 @@ public class TaskContinuityManager {
      * Requests a handoff of the specified remote task to the current device.
      *
      * @param associationId The ID of the association to which the remote device is connected. This
-     *                      is the same ID returned by {@link RemoteTask#getDeviceId()}.
+     *     is the same ID returned by {@link RemoteTask#getDeviceId()}.
      * @param remoteTaskId The remote task to hand off.
      * @param executor The executor to be used to invoke the callback.
      * @param callback The callback to be invoked when the handoff request is finished.
-     * @throws SecurityException if the caller does not hold the
-     *      {@link android.Manifest.permission#REQUEST_TASK_HANDOFF} permission.
+     * @throws SecurityException if the caller does not hold the {@link
+     *     android.Manifest.permission#REQUEST_TASK_HANDOFF} permission.
      */
     @RequiresPermission(android.Manifest.permission.REQUEST_TASK_HANDOFF)
     public void requestHandoff(
-        int associationId,
-        int remoteTaskId,
-        @NonNull Executor executor,
-        @NonNull HandoffRequestCallback callback) {
+            int associationId,
+            int remoteTaskId,
+            @NonNull Executor executor,
+            @NonNull HandoffRequestCallback callback) {
 
         Objects.requireNonNull(executor);
         Objects.requireNonNull(callback);
 
         try {
-            HandoffRequestCallbackHolder callbackHolder
-                = new HandoffRequestCallbackHolder(executor, callback);
+            HandoffRequestCallbackHolder callbackHolder =
+                    new HandoffRequestCallbackHolder(executor, callback);
 
             mService.requestHandoff(associationId, remoteTaskId, callbackHolder);
         } catch (RemoteException e) {
@@ -230,8 +218,7 @@ public class TaskContinuityManager {
         private final HandoffRequestCallback mCallback;
 
         HandoffRequestCallbackHolder(
-            @NonNull Executor executor,
-            @NonNull HandoffRequestCallback callback) {
+                @NonNull Executor executor, @NonNull HandoffRequestCallback callback) {
 
             mExecutor = executor;
             mCallback = callback;
@@ -239,18 +226,19 @@ public class TaskContinuityManager {
 
         @Override
         public void onHandoffRequestFinished(
-            int associationId,
-            int remoteTaskId,
-            @HandoffRequestResultCode int resultCode) throws RemoteException {
+                int associationId, int remoteTaskId, @HandoffRequestResultCode int resultCode)
+                throws RemoteException {
             mExecutor.execute(
-                () -> mCallback.onHandoffRequestFinished(associationId, remoteTaskId, resultCode));
+                    () ->
+                            mCallback.onHandoffRequestFinished(
+                                    associationId, remoteTaskId, resultCode));
         }
     }
 
     /**
      * Helper class which manages registered listeners and proxies them behind a single
-     * IRemoteTaskListener, which is lazily registered with ITaskContinuityManager if there is
-     * a single registered listener.
+     * IRemoteTaskListener, which is lazily registered with ITaskContinuityManager if there is a
+     * single registered listener.
      */
     private final class RemoteTaskListenerHolder extends IRemoteTaskListener.Stub {
 
@@ -272,20 +260,18 @@ public class TaskContinuityManager {
          * @param listener The listener to register.
          */
         public void registerListener(
-            @NonNull Executor executor,
-            @NonNull RemoteTaskListener listener) throws RemoteException {
+                @NonNull Executor executor, @NonNull RemoteTaskListener listener)
+                throws RemoteException {
 
             Objects.requireNonNull(executor);
             Objects.requireNonNull(listener);
 
-            synchronized(mListeners) {
+            synchronized (mListeners) {
                 if (!mRegistered) {
                     mService.registerRemoteTaskListener(this);
                     mRegistered = true;
                 } else {
-                    executor.execute(() ->
-                        listener.onRemoteTasksChanged(mLastReceivedRemoteTasks)
-                    );
+                    executor.execute(() -> listener.onRemoteTasksChanged(mLastReceivedRemoteTasks));
                 }
 
                 mListeners.put(listener, executor);
@@ -297,12 +283,12 @@ public class TaskContinuityManager {
          *
          * @param listener The listener to unregister.
          */
-        public void unregisterListener(
-            @NonNull RemoteTaskListener listener) throws RemoteException {
+        public void unregisterListener(@NonNull RemoteTaskListener listener)
+                throws RemoteException {
 
             Objects.requireNonNull(listener);
 
-            synchronized(mListeners) {
+            synchronized (mListeners) {
                 mListeners.remove(listener);
                 if (mListeners.isEmpty() && mRegistered) {
                     mRegistered = false;
@@ -313,7 +299,7 @@ public class TaskContinuityManager {
 
         @Override
         public void onRemoteTasksChanged(List<RemoteTask> remoteTasks) throws RemoteException {
-            synchronized(mListeners) {
+            synchronized (mListeners) {
                 mLastReceivedRemoteTasks.clear();
                 mLastReceivedRemoteTasks.addAll(remoteTasks);
 
