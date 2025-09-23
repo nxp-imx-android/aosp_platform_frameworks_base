@@ -188,7 +188,6 @@ class SyntheticPasswordManager {
      * tuned to always be quick enough so that users barely feel the cost.
      */
     private static final int PASSWORD_SCRYPT_LOG_N = 9;
-    private static final int PASSWORD_SCRYPT_LOG_N__OLD = 11;
     private static final int PASSWORD_SCRYPT_LOG_R = 3;
     private static final int PASSWORD_SCRYPT_LOG_P = 1;
 
@@ -400,11 +399,7 @@ class SyntheticPasswordManager {
 
         public static PasswordData create(int credentialType, int pinLength) {
             PasswordData result = new PasswordData();
-            if (android.security.Flags.scryptParameterChange()) {
-                result.scryptLogN = PASSWORD_SCRYPT_LOG_N;
-            } else {
-                result.scryptLogN = PASSWORD_SCRYPT_LOG_N__OLD;
-            }
+            result.scryptLogN = PASSWORD_SCRYPT_LOG_N;
             result.scryptLogR = PASSWORD_SCRYPT_LOG_R;
             result.scryptLogP = PASSWORD_SCRYPT_LOG_P;
             result.credentialType = credentialType;
