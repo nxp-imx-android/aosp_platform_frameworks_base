@@ -18,7 +18,6 @@ package com.android.server.wm;
 
 import static android.app.WallpaperManager.COMMAND_FREEZE;
 import static android.app.WallpaperManager.COMMAND_UNFREEZE;
-import static android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM;
 import static android.view.Display.DEFAULT_DISPLAY;
 import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
 
@@ -37,9 +36,7 @@ import android.graphics.Point;
 import android.graphics.Rect;
 import android.os.Bundle;
 import android.os.Debug;
-import android.os.IBinder;
 import android.os.RemoteException;
-import android.os.SystemClock;
 import android.util.MathUtils;
 import android.util.Slog;
 import android.util.SparseArray;
@@ -625,15 +622,6 @@ class WallpaperController {
 
     private void findWallpaperTarget() {
         mFindResults.reset();
-        if (!com.android.window.flags.Flags.doNotForceWallpaperForFreeformTask()
-                && mService.mAtmService.mSupportsFreeformWindowManagement
-                && mDisplayContent.getDefaultTaskDisplayArea()
-                .isRootTaskVisible(WINDOWING_MODE_FREEFORM)) {
-            // In freeform mode we set the wallpaper as its own target, so we don't need an
-            // additional window to make it visible.
-            mFindResults.setUseTopWallpaperAsTarget(true);
-        }
-
         findWallpapers();
         mDisplayContent.forAllWindows(mFindWallpaperTargetFunction, true /* traverseTopToBottom */);
         if (mFindResults.mNeedsShowWhenLockedWallpaper) {
