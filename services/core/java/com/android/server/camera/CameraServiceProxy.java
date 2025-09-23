@@ -93,6 +93,7 @@ import android.view.WindowManagerGlobal;
 import com.android.framework.protobuf.nano.MessageNano;
 import com.android.internal.R;
 import com.android.internal.annotations.GuardedBy;
+import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.camera.flags.Flags;
 import com.android.internal.util.DumpUtils;
 import com.android.internal.util.FrameworkStatsLog;
@@ -291,13 +292,14 @@ public class CameraServiceProxy extends SystemService
         public Range<Integer> mMostRequestedFpsRange;
         public final long mLogId;
         public final int mSessionIndex;
+        private int mErrorState;
 
         private long mDurationOrStartTimeMs;  // Either start time, or duration once completed
         public CameraExtensionSessionStats mExtSessionStats = null;
 
         CameraUsageEvent(String cameraId, int facing, String clientName, int apiLevel,
                 boolean isNdk, int action, int latencyMs, int operatingMode, boolean deviceError,
-                long logId, int sessionIdx) {
+                long logId, int sessionIdx, int errorState) {
             mCameraId = cameraId;
             mCameraFacing = facing;
             mClientName = clientName;
@@ -311,6 +313,7 @@ public class CameraServiceProxy extends SystemService
             mDeviceError = deviceError;
             mLogId = logId;
             mSessionIndex = sessionIdx;
+            mErrorState = errorState;
             mMostRequestedFpsRange = new Range<Integer>(0, 0);
         }
 
@@ -319,7 +322,7 @@ public class CameraServiceProxy extends SystemService
                 List<CameraStreamStats>  streamStats, String userTag,
                 int videoStabilizationMode, boolean usedUltraWide,
                 boolean usedZoomOverride, Range<Integer> mostRequestedFpsRange,
-                CameraExtensionSessionStats extStats) {
+                CameraExtensionSessionStats extStats, int errorState) {
             if (mCompleted) {
                 return;
             }
@@ -336,6 +339,7 @@ public class CameraServiceProxy extends SystemService
             mUsedZoomOverride = usedZoomOverride;
             mExtSessionStats = extStats;
             mMostRequestedFpsRange = mostRequestedFpsRange;
+            mErrorState = errorState;
             if (CameraServiceProxy.DEBUG) {
                 Slog.v(TAG, "A camera facing " + cameraFacingToString(mCameraFacing) +
                         " was in use by " + mClientName + " for " +
@@ -435,6 +439,7 @@ public class CameraServiceProxy extends SystemService
                         + mostRequestedFpsRangeDebug
                         + ", logId " + mLogId
                         + ", sessionIndex " + mSessionIndex
+                        + ", errorState " + mErrorState
                         + ", mExtSessionStats {type " + extensionType
                         + " isAdvanced " + extensionIsAdvanced
                         + extensionCaptureFormatDebug + "}");
@@ -503,8 +508,7 @@ public class CameraServiceProxy extends SystemService
                     extensionType, extensionIsAdvanced, mUsedUltraWide,
                     mUsedZoomOverride,
                     mMostRequestedFpsRange.getLower(), mMostRequestedFpsRange.getUpper(),
-                    extensionCaptureFormat,
-                    FrameworkStatsLog.CAMERA_ACTION_EVENT__ERROR_STATE__CAMERA_UNKNOWN);
+                    extensionCaptureFormat, /* errorState */ mErrorState);
 
         }
     }
@@ -1247,6 +1251,7 @@ public class CameraServiceProxy extends SystemService
     /**
      * Get camera usage event count
      */
+    @VisibleForTesting
     int getUsageEventCount() {
         synchronized (mLock) {
             return mCameraEventHistory.size();
@@ -1257,6 +1262,7 @@ public class CameraServiceProxy extends SystemService
      * Dump camera events to log.
      * Package-private
      */
+    @VisibleForTesting
     void dumpCameraEvents() {
         synchronized(mLock) {
             // Randomize order of events so that it's not meaningful
@@ -1454,7 +1460,8 @@ public class CameraServiceProxy extends SystemService
         return Math.max(Math.min(maxFps, MAX_PREVIEW_FPS), MIN_PREVIEW_FPS);
     }
 
-    private void updateActivityCount(CameraSessionStats cameraState) {
+    @VisibleForTesting
+    void updateActivityCount(CameraSessionStats cameraState) {
         String cameraId = cameraState.getCameraId();
         int newCameraState = cameraState.getNewCameraState();
         int facing = cameraState.getFacing();
@@ -1474,6 +1481,7 @@ public class CameraServiceProxy extends SystemService
         boolean usedZoomOverride = cameraState.getUsedZoomOverride();
         long logId = cameraState.getLogId();
         int sessionIdx = cameraState.getSessionIndex();
+        int errorState = cameraState.getErrorState();
         CameraExtensionSessionStats extSessionStats = cameraState.getExtensionSessionStats();
         Range<Integer> mostRequestedFpsRange = Flags.analytics24q3()
                 ? cameraState.getMostRequestedFpsRange()
@@ -1500,7 +1508,7 @@ public class CameraServiceProxy extends SystemService
                     CameraUsageEvent openEvent = new CameraUsageEvent(
                             cameraId, facing, clientName, apiLevel, isNdk,
                             FrameworkStatsLog.CAMERA_ACTION_EVENT__ACTION__OPEN,
-                            latencyMs, sessionType, deviceError, logId, sessionIdx);
+                            latencyMs, sessionType, deviceError, logId, sessionIdx, errorState);
                     mCameraEventHistory.add(openEvent);
                     break;
                 case CameraSessionStats.CAMERA_STATE_ACTIVE:
@@ -1527,7 +1535,7 @@ public class CameraServiceProxy extends SystemService
                     CameraUsageEvent newEvent = new CameraUsageEvent(
                             cameraId, facing, clientName, apiLevel, isNdk,
                             FrameworkStatsLog.CAMERA_ACTION_EVENT__ACTION__SESSION,
-                            latencyMs, sessionType, deviceError, logId, sessionIdx);
+                            latencyMs, sessionType, deviceError, logId, sessionIdx, errorState);
                     CameraUsageEvent oldEvent = mActiveCameraUsage.put(cameraId, newEvent);
                     if (oldEvent != null) {
                         Slog.w(TAG, "Camera " + cameraId + " was already marked as active");
@@ -1535,7 +1543,7 @@ public class CameraServiceProxy extends SystemService
                                 /*resultErrorCount*/0, /*deviceError*/false, streamStats,
                                 /*userTag*/"", /*videoStabilizationMode*/-1, /*usedUltraWide*/false,
                                 /*usedZoomOverride*/false, new Range<Integer>(0, 0),
-                                new CameraExtensionSessionStats());
+                                new CameraExtensionSessionStats(), errorState);
                         mCameraEventHistory.add(oldEvent);
                     }
                     break;
@@ -1547,10 +1555,11 @@ public class CameraServiceProxy extends SystemService
                         doneEvent.markCompleted(internalReconfigureCount, requestCount,
                                 resultErrorCount, deviceError, streamStats, userTag,
                                 videoStabilizationMode, usedUltraWide, usedZoomOverride,
-                                mostRequestedFpsRange, extSessionStats);
+                                mostRequestedFpsRange, extSessionStats, errorState);
                         mCameraEventHistory.add(doneEvent);
                         // Do not double count device error
                         deviceError = false;
+                        errorState = 0;
 
                         // Check current active camera IDs to see if this package is still
                         // talking to some camera
@@ -1574,7 +1583,7 @@ public class CameraServiceProxy extends SystemService
                         CameraUsageEvent closeEvent = new CameraUsageEvent(
                                 cameraId, facing, clientName, apiLevel, isNdk,
                                 FrameworkStatsLog.CAMERA_ACTION_EVENT__ACTION__CLOSE,
-                                latencyMs, sessionType, deviceError, logId, sessionIdx);
+                                latencyMs, sessionType, deviceError, logId, sessionIdx, errorState);
                         mCameraEventHistory.add(closeEvent);
                     }
 

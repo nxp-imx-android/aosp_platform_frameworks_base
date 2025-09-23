@@ -70,6 +70,7 @@ public class CameraSessionStats implements Parcelable {
     private boolean mUsedZoomOverride;
     private Range<Integer> mMostRequestedFpsRange;
     private int mSessionIndex;
+    private int mErrorState;
     private CameraExtensionSessionStats mCameraExtensionSessionStats;
 
     public CameraSessionStats() {
@@ -91,13 +92,14 @@ public class CameraSessionStats implements Parcelable {
         mUsedZoomOverride = false;
         mMostRequestedFpsRange = new Range<Integer>(0, 0);
         mSessionIndex = 0;
+        mErrorState = 0;
         mCameraExtensionSessionStats = new CameraExtensionSessionStats();
     }
 
     public CameraSessionStats(String cameraId, int facing, int newCameraState,
             String clientName, int apiLevel, boolean isNdk, int creationDuration,
             float maxPreviewFps, int sessionType, int internalReconfigure, long logId,
-            int sessionIdx) {
+            int sessionIdx, int errorState) {
         mCameraId = cameraId;
         mFacing = facing;
         mNewCameraState = newCameraState;
@@ -115,6 +117,7 @@ public class CameraSessionStats implements Parcelable {
         mUsedZoomOverride = false;
         mMostRequestedFpsRange = new Range<Integer>(0, 0);
         mSessionIndex = sessionIdx;
+        mErrorState = errorState;
         mCameraExtensionSessionStats = new CameraExtensionSessionStats();
     }
 
@@ -162,6 +165,7 @@ public class CameraSessionStats implements Parcelable {
         dest.writeBoolean(mUsedUltraWide);
         dest.writeBoolean(mUsedZoomOverride);
         dest.writeInt(mSessionIndex);
+        dest.writeInt(mErrorState);
         mCameraExtensionSessionStats.writeToParcel(dest, 0);
         dest.writeInt(mMostRequestedFpsRange.getLower());
         dest.writeInt(mMostRequestedFpsRange.getUpper());
@@ -194,6 +198,7 @@ public class CameraSessionStats implements Parcelable {
         mUsedZoomOverride = in.readBoolean();
 
         mSessionIndex = in.readInt();
+        mErrorState = in.readInt();
         mCameraExtensionSessionStats = CameraExtensionSessionStats.CREATOR.createFromParcel(in);
         int minFps = in.readInt();
         int maxFps = in.readInt();
@@ -278,6 +283,10 @@ public class CameraSessionStats implements Parcelable {
 
     public int getSessionIndex() {
         return mSessionIndex;
+    }
+
+    public int getErrorState() {
+        return mErrorState;
     }
 
     public CameraExtensionSessionStats getExtensionSessionStats() {
