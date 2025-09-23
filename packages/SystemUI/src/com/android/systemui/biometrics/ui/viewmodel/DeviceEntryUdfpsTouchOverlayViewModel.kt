@@ -22,6 +22,7 @@ import com.android.systemui.bouncer.domain.interactor.AlternateBouncerInteractor
 import com.android.systemui.keyguard.ui.viewmodel.DeviceEntryIconViewModel
 import com.android.systemui.scene.domain.interactor.SceneInteractor
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
+import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.securelockdevice.domain.interactor.SecureLockDeviceInteractor
 import com.android.systemui.statusbar.phone.SystemUIDialogManager
@@ -50,10 +51,14 @@ constructor(
 ) : UdfpsTouchOverlayViewModel {
     private val deviceEntryViewAlphaIsMostlyVisible: Flow<Boolean> =
         if (SceneContainerFlag.isEnabled) {
-            combine(deviceEntryIconViewModel.isVisible, sceneInteractor.get().currentScene) {
-                isVisible,
-                currentScene ->
-                isVisible && currentScene == Scenes.Lockscreen
+            combine(
+                deviceEntryIconViewModel.isVisible,
+                sceneInteractor.get().currentScene,
+                sceneInteractor.get().currentOverlays,
+            ) { isVisible, currentScene, currentOverlays ->
+                isVisible &&
+                    currentScene == Scenes.Lockscreen &&
+                    !currentOverlays.contains(Overlays.Bouncer)
             }
         } else {
             deviceEntryIconViewModel.deviceEntryViewAlpha
