@@ -16,31 +16,27 @@
 package com.android.systemui.statusbar.phone
 
 import android.platform.test.annotations.DisableFlags
-import android.platform.test.annotations.EnableFlags
 import android.testing.TestableLooper.RunWithLooper
-import android.view.View
-import android.widget.TextView
+import android.view.LayoutInflater
+import android.widget.FrameLayout
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.plugins.fakeDarkIconDispatcher
 import com.android.systemui.plugins.statusbar.statusBarStateController
+import com.android.systemui.res.R
 import com.android.systemui.shade.ShadeHeadsUpTracker
 import com.android.systemui.shade.shadeViewController
-import com.android.systemui.statusbar.HeadsUpStatusBarView
-import com.android.systemui.statusbar.commandQueue
 import com.android.systemui.statusbar.notification.collection.NotificationEntry
 import com.android.systemui.statusbar.notification.collection.buildNotificationEntry
 import com.android.systemui.statusbar.notification.headsup.PinnedStatus
 import com.android.systemui.statusbar.notification.headsup.mockHeadsUpManager
-import com.android.systemui.statusbar.notification.promoted.PromotedNotificationUi
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow
 import com.android.systemui.statusbar.notification.row.createRowWithEntry
 import com.android.systemui.statusbar.notification.row.shared.AsyncGroupHeaderViewInflation
 import com.android.systemui.statusbar.notification.stack.NotificationRoundnessManager
 import com.android.systemui.statusbar.notification.stack.NotificationStackScrollLayoutController
-import com.android.systemui.statusbar.policy.keyguardStateController
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
 import org.junit.Before
@@ -62,19 +58,13 @@ class HeadsUpAppearanceControllerTest : SysuiTestCase() {
     private val shadeViewController = kosmos.shadeViewController
     private val shadeHeadsUpTracker = mock<ShadeHeadsUpTracker>()
     private val darkIconDispatcher = kosmos.fakeDarkIconDispatcher
-    private val statusBarStateController = kosmos.statusBarStateController
     private val phoneStatusBarTransitions = kosmos.mockPhoneStatusBarTransitions
-    private val bypassController = kosmos.keyguardBypassController
-    private val wakeUpCoordinator = kosmos.notificationWakeUpCoordinator
-    private val keyguardStateController = kosmos.keyguardStateController
-    private val commandQueue = kosmos.commandQueue
     private val notificationRoundnessManager = mock<NotificationRoundnessManager>()
     private var headsUpManager = kosmos.mockHeadsUpManager
 
     private lateinit var row: ExpandableNotificationRow
     private lateinit var entry: NotificationEntry
-    private lateinit var headsUpStatusBarView: HeadsUpStatusBarView
-    private lateinit var operatorNameView: View
+    private lateinit var phoneStatusBarView: PhoneStatusBarView
 
     private lateinit var underTest: HeadsUpAppearanceController
 
@@ -84,54 +74,25 @@ class HeadsUpAppearanceControllerTest : SysuiTestCase() {
         allowTestableLooperAsMainThread()
         entry = kosmos.buildNotificationEntry()
         row = kosmos.createRowWithEntry(entry)
-        headsUpStatusBarView = HeadsUpStatusBarView(mContext, mock<View>(), mock<TextView>())
-        operatorNameView = View(mContext)
+        phoneStatusBarView =
+            LayoutInflater.from(context)
+                .inflate(
+                    R.layout.status_bar,
+                    /* root= */ FrameLayout(context),
+                    /* attachToRoot = */ false,
+                ) as PhoneStatusBarView
 
         whenever(shadeViewController.shadeHeadsUpTracker).thenReturn(shadeHeadsUpTracker)
         underTest =
             HeadsUpAppearanceController(
                 headsUpManager,
-                statusBarStateController,
                 phoneStatusBarTransitions,
-                bypassController,
-                wakeUpCoordinator,
-                keyguardStateController,
                 stackScrollerController,
                 shadeViewController,
                 notificationRoundnessManager,
-                headsUpStatusBarView,
+                phoneStatusBarView,
             )
         underTest.setAppearFraction(0.0f, 0.0f)
-    }
-
-    @Test
-    fun showingEntryNotUpdated_whenPinnedBySystem() {
-        row.setPinnedStatus(PinnedStatus.PinnedBySystem)
-        setHeadsUpNotifOnManager(entry)
-        underTest.onHeadsUpPinned(entry)
-
-        assertThat(headsUpStatusBarView.showingEntry).isNull()
-    }
-
-    @Test
-    @EnableFlags(PromotedNotificationUi.FLAG_NAME)
-    fun showingEntryNotUpdated_whenPinnedByUser_andNotifChipsFlagOn() {
-        // WHEN the HUN was pinned by the user
-        row.setPinnedStatus(PinnedStatus.PinnedByUser)
-        setHeadsUpNotifOnManager(entry)
-        underTest.onHeadsUpPinned(entry)
-
-        // THEN we don't show the HUN status bar view
-        assertThat(headsUpStatusBarView.showingEntry).isNull()
-    }
-
-    @Test
-    fun pinnedStatusNotUpdatedToSystem_whenPinnedBySystem() {
-        row.setPinnedStatus(PinnedStatus.PinnedBySystem)
-        setHeadsUpNotifOnManager(entry)
-        underTest.onHeadsUpPinned(entry)
-
-        assertThat(underTest.pinnedStatus).isEqualTo(PinnedStatus.NotPinned)
     }
 
     @Test
@@ -149,27 +110,6 @@ class HeadsUpAppearanceControllerTest : SysuiTestCase() {
     }
 
     @Test
-    fun operatorNameViewNotUpdated_whenPinnedBySystem() {
-        row.setPinnedStatus(PinnedStatus.PinnedBySystem)
-        setHeadsUpNotifOnManager(entry)
-        underTest.onHeadsUpPinned(entry)
-
-        assertThat(operatorNameView.visibility).isEqualTo(View.VISIBLE)
-    }
-
-    @Test
-    @EnableFlags(PromotedNotificationUi.FLAG_NAME)
-    fun operatorNameViewNotUpdated_whenPinnedByUser_andNotifChipsFlagOn() {
-        // WHEN the row was pinned by the user
-        row.setPinnedStatus(PinnedStatus.PinnedByUser)
-        setHeadsUpNotifOnManager(entry)
-        underTest.onHeadsUpPinned(entry)
-
-        // THEN we don't need to hide the operator name view
-        assertThat(operatorNameView.visibility).isEqualTo(View.VISIBLE)
-    }
-
-    @Test
     fun constructor_animationValuesUpdated() {
         val appearFraction = .75f
         val expandedHeight = 400f
@@ -179,15 +119,11 @@ class HeadsUpAppearanceControllerTest : SysuiTestCase() {
         val newController =
             HeadsUpAppearanceController(
                 headsUpManager,
-                statusBarStateController,
                 phoneStatusBarTransitions,
-                bypassController,
-                wakeUpCoordinator,
-                keyguardStateController,
                 stackScrollerController,
                 shadeViewController,
                 notificationRoundnessManager,
-                headsUpStatusBarView,
+                phoneStatusBarView,
             )
 
         assertThat(newController.mExpandedHeight).isEqualTo(expandedHeight)

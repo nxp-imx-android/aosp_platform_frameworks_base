@@ -719,36 +719,6 @@ class KeyguardStatusBarViewControllerTest : SysuiTestCase() {
         assertThat(keyguardStatusBarView.alpha).isNotEqualTo(0.5f)
     }
 
-    // TODO(b/195442899): Add more tests for #updateViewState once CLs are finalized.
-    @Test
-    @DisableSceneContainer
-    fun updateForHeadsUp_headsUpShouldBeVisible_viewHidden() {
-        controller.onViewAttached()
-        updateStateToKeyguard()
-        keyguardStatusBarView.visibility = View.VISIBLE
-
-        shadeViewStateProvider.setShouldHeadsUpBeVisible(true)
-        controller.updateForHeadsUp(/* animate= */ false)
-
-        assertThat(keyguardStatusBarView.visibility).isEqualTo(View.INVISIBLE)
-    }
-
-    @Test
-    @DisableSceneContainer
-    fun updateForHeadsUp_headsUpShouldNotBeVisible_viewShown() {
-        controller.onViewAttached()
-        updateStateToKeyguard()
-
-        // Start with the opposite state.
-        shadeViewStateProvider.setShouldHeadsUpBeVisible(true)
-        controller.updateForHeadsUp(/* animate= */ false)
-
-        shadeViewStateProvider.setShouldHeadsUpBeVisible(false)
-        controller.updateForHeadsUp(/* animate= */ false)
-
-        assertThat(keyguardStatusBarView.visibility).isEqualTo(View.VISIBLE)
-    }
-
     @Test
     fun testNewUserSwitcherDisablesAvatar_newUiOn() =
         testScope.runTest {
@@ -1161,16 +1131,7 @@ class KeyguardStatusBarViewControllerTest : SysuiTestCase() {
 
     private class TestShadeViewStateProvider : ShadeViewStateProvider {
         override var panelViewExpandedHeight: Float = 100f
-        private var mShouldHeadsUpBeVisible = false
         override var lockscreenShadeDragProgress: Float = 0f
-
-        override fun shouldHeadsUpBeVisible(): Boolean {
-            return mShouldHeadsUpBeVisible
-        }
-
-        fun setShouldHeadsUpBeVisible(shouldHeadsUpBeVisible: Boolean) {
-            this.mShouldHeadsUpBeVisible = shouldHeadsUpBeVisible
-        }
     }
 
     private fun lockscreenToDreamTransitionStep(
