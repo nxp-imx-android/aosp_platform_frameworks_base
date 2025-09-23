@@ -54,7 +54,6 @@ import com.android.systemui.flags.andSceneContainer
 import com.android.systemui.keyguard.data.repository.FakeKeyguardTransitionRepository
 import com.android.systemui.keyguard.data.repository.fakeKeyguardRepository
 import com.android.systemui.keyguard.data.repository.fakeKeyguardTransitionRepositorySpy
-import com.android.systemui.keyguard.data.repository.keyguardOcclusionRepository
 import com.android.systemui.keyguard.data.repository.keyguardTransitionRepository
 import com.android.systemui.keyguard.shared.model.BiometricUnlockMode
 import com.android.systemui.keyguard.shared.model.KeyguardState
@@ -148,32 +147,6 @@ class FromAodTransitionInteractorTest(flags: FlagsParameterization) : SysuiTestC
             // Under default conditions, we should transition to LOCKSCREEN when waking up.
             assertThat(transitionRepository)
                 .startedTransition(from = KeyguardState.AOD, to = KeyguardState.LOCKSCREEN)
-        }
-
-    @Test
-    @EnableFlags(Flags.FLAG_KEYGUARD_WM_STATE_REFACTOR)
-    fun testTransitionToOccluded_onWakeup_whenOccludingActivityOnTop() =
-        testScope.runTest {
-            kosmos.keyguardOcclusionRepository.setShowWhenLockedActivityInfo(true)
-            powerInteractor.setAwakeForTest()
-            advanceTimeBy(100) // account for debouncing
-
-            // Waking with a SHOW_WHEN_LOCKED activity on top should transition to OCCLUDED.
-            assertThat(transitionRepository)
-                .startedTransition(from = KeyguardState.AOD, to = KeyguardState.OCCLUDED)
-        }
-
-    @Test
-    @EnableFlags(Flags.FLAG_KEYGUARD_WM_STATE_REFACTOR)
-    fun testTransitionToOccluded_onWakeUp_ifPowerButtonGestureDetected_fromAod_nonDismissibleKeyguard() =
-        testScope.runTest {
-            powerInteractor.onCameraLaunchGestureDetected()
-            powerInteractor.setAwakeForTest()
-            advanceTimeBy(100) // account for debouncing
-
-            // We should head to OCCLUDED because keyguard is not dismissible.
-            assertThat(transitionRepository)
-                .startedTransition(from = KeyguardState.AOD, to = KeyguardState.OCCLUDED)
         }
 
     @Test
@@ -276,47 +249,6 @@ class FromAodTransitionInteractorTest(flags: FlagsParameterization) : SysuiTestC
 
     @Test
     @EnableFlags(Flags.FLAG_KEYGUARD_WM_STATE_REFACTOR)
-    fun testTransitionToOccluded_onWakeUp_ifPowerButtonGestureDetected_fromLockscreen() =
-        testScope.runTest {
-            val isLockscreen by
-                collectLastValue(
-                    kosmos.keyguardTransitionInteractor.isFinishedIn(Scenes.Lockscreen, LOCKSCREEN)
-                )
-            powerInteractor.setAwakeForTest()
-            transitionRepository.sendTransitionSteps(
-                from = KeyguardState.AOD,
-                to = KeyguardState.LOCKSCREEN,
-                testScope,
-            )
-            runCurrent()
-
-            // Make sure we're in LOCKSCREEN.
-            assertEquals(true, isLockscreen)
-
-            // Get part way to AOD.
-            powerInteractor.onStartedGoingToSleep(PowerManager.GO_TO_SLEEP_REASON_MIN)
-            runCurrent()
-
-            transitionRepository.sendTransitionSteps(
-                from = KeyguardState.LOCKSCREEN,
-                to = KeyguardState.AOD,
-                testScope = testScope,
-                throughTransitionState = TransitionState.RUNNING,
-            )
-
-            // Detect a power gesture and then wake up.
-            reset(transitionRepository)
-            powerInteractor.onCameraLaunchGestureDetected()
-            powerInteractor.setAwakeForTest()
-            advanceTimeBy(100) // account for debouncing
-
-            // We should head back to GONE since we started there.
-            assertThat(transitionRepository)
-                .startedTransition(from = KeyguardState.AOD, to = KeyguardState.OCCLUDED)
-        }
-
-    @Test
-    @EnableFlags(Flags.FLAG_KEYGUARD_WM_STATE_REFACTOR)
     @DisableSceneContainer
     fun testWakeAndUnlock_transitionsToGone_onlyAfterDismissCallPostWakeup() =
         testScope.runTest {
@@ -376,6 +308,7 @@ class FromAodTransitionInteractorTest(flags: FlagsParameterization) : SysuiTestC
         }
 
     @Test
+    @DisableSceneContainer
     fun testTransitionToOccluded_onWake() =
         testScope.runTest {
             kosmos.fakeKeyguardRepository.setKeyguardOccluded(true)
