@@ -27,7 +27,9 @@ import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewParent;
 import android.view.ViewRootImpl;
+import android.view.ViewTreeObserver;
 import android.widget.FrameLayout;
 
 import androidx.annotation.NonNull;
@@ -50,11 +52,24 @@ public class MirrorView extends FrameLayout {
     @Nullable
     private ComputerControlSession mComputerControlSession = null;
     private boolean mIsInteractive = false;
+    private boolean mIsMirrorSurfaceVisible = false;
 
     // This member can only be read or written to from the auxiliary handler thread,
     // since its creation and interactions involve binder calls.
     @Nullable
     private InteractiveMirror mInteractiveMirror = null;
+
+    private float mLastCompoundedAlpha = -1f;
+
+    private final ViewTreeObserver.OnPreDrawListener mOnPreDrawListener = () -> {
+        final float compoundedAlpha = getCompoundedAlpha();
+
+        if (compoundedAlpha != mLastCompoundedAlpha) {
+            mLastCompoundedAlpha = compoundedAlpha;
+            mMirrorSurface.setAlpha(mLastCompoundedAlpha);
+        }
+        return true;
+    };
 
     public MirrorView(Context context) {
         super(context);
@@ -110,7 +125,7 @@ public class MirrorView extends FrameLayout {
 
             post(() -> {
                 mMirrorSurface.setMirrorSurfaceControl(mirrorSurface, size);
-                mMirrorSurface.setVisibility(mirrorSurface == null ? View.GONE : View.VISIBLE);
+                updateMirrorSurfaceVisibility(/* visible= */ mirrorSurface != null);
             });
         });
     }
@@ -136,6 +151,32 @@ public class MirrorView extends FrameLayout {
         mMirrorSurface.setVisibility(View.GONE);
         addView(mMirrorSurface, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.MATCH_PARENT));
+    }
+
+    private float getCompoundedAlpha() {
+        float compoundedAlpha = getAlpha();
+        ViewParent current = getParent();
+
+        while (current instanceof View) {
+            compoundedAlpha *= ((View) current).getAlpha();
+            current = current.getParent();
+        }
+
+        return compoundedAlpha;
+    }
+
+    private void updateMirrorSurfaceVisibility(boolean visible) {
+        if (mIsMirrorSurfaceVisible == visible) {
+            return;
+        }
+        mIsMirrorSurfaceVisible = visible;
+        if (visible) {
+            mMirrorSurface.setVisibility(View.VISIBLE);
+            getViewTreeObserver().addOnPreDrawListener(mOnPreDrawListener);
+        } else {
+            mMirrorSurface.setVisibility(View.GONE);
+            getViewTreeObserver().removeOnPreDrawListener(mOnPreDrawListener);
+        }
     }
 
     @MainThread
