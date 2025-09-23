@@ -81,7 +81,12 @@ constructor(
                     LockscreenElement(Shortcuts.Start)
                 }
 
-                Box(Modifier.weight(1f)) { LockscreenElement(IndicationArea) }
+                Box(
+                    Modifier.weight(1f)
+                        .wrapContentHeight(Alignment.CenterVertically, unbounded = true)
+                ) {
+                    LockscreenElement(IndicationArea)
+                }
 
                 Box(
                     Modifier.graphicsLayer { translationX = viewModel.unfoldTranslations.end }
