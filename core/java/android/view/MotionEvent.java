@@ -3168,8 +3168,8 @@ public final class MotionEvent extends InputEvent implements Parcelable {
      *   <li>And other display-related caveats
      * </ul>
      *
-     * <p>Using it will likely break an app's touch and interaction logic. Use {@link #getX(int
-     * } instead, which correctly handles these scenarios and provides coordinates relative to the
+     * <p>Using it will likely break an app's touch and interaction logic. Use {@link #getX(int)}
+     * instead, which correctly handles these scenarios and provides coordinates relative to the
      * app's own view.
      *
      * <p>In multi-window mode, the coordinate space extends beyond the bounds
@@ -3226,8 +3226,8 @@ public final class MotionEvent extends InputEvent implements Parcelable {
      *   <li>And other display-related caveats
      * </ul>
      *
-     * <p>Using it will likely break an app's touch and interaction logic. Use {@link #getY(int
-     * } instead, which correctly handles these scenarios and provides coordinates relative to the
+     * <p>Using it will likely break an app's touch and interaction logic. Use {@link #getY(int)}
+     * instead, which correctly handles these scenarios and provides coordinates relative to the
      * app's own view.
      *
      * <p>In multi-window mode, the coordinate space extends beyond the bounds
