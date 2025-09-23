@@ -13,7 +13,7 @@ import android.view.WindowManager.fixScale
 import com.android.app.animation.Interpolators
 import com.android.app.tracing.namedRunnable
 import com.android.internal.jank.InteractionJankMonitor
-import com.android.internal.jank.InteractionJankMonitor.CUJ_SCREEN_OFF
+import com.android.internal.jank.InteractionJankMonitor.CUJ_KEYGUARD_AOD_ENTER_ANIMATION
 import com.android.server.power.feature.flags.Flags as powerManagerFlags
 import com.android.systemui.DejankUtils
 import com.android.systemui.dagger.SysUISingleton
@@ -95,7 +95,7 @@ constructor(
                 object : AnimatorListenerAdapter() {
                     override fun onAnimationEnd(animation: Animator) {
                         lightRevealAnimationPlaying = false
-                        interactionJankMonitor.end(CUJ_SCREEN_OFF)
+                        interactionJankMonitor.end(CUJ_KEYGUARD_AOD_ENTER_ANIMATION)
                     }
 
                     override fun onAnimationStart(animation: Animator) {
@@ -106,7 +106,7 @@ constructor(
                         }
                         interactionJankMonitor.begin(
                             notifShadeWindowControllerLazy.get().windowRootView,
-                            CUJ_SCREEN_OFF,
+                            CUJ_KEYGUARD_AOD_ENTER_ANIMATION,
                         )
                     }
                 }

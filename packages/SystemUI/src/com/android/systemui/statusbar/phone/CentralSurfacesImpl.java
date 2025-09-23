@@ -2457,7 +2457,7 @@ public class CentralSurfacesImpl implements CoreStartable, CentralSurfaces {
                 mWakeUpCoordinator.setWakingUp(true);
                 updateIsKeyguard();
                 // TODO(b/301913237): can't delay transition if config_displayBlanksAfterDoze=true,
-                // otherwise, the clock will flicker during LOCKSCREEN_TRANSITION_FROM_AOD
+                // otherwise, the clock will flicker during KEYGUARD_TRANSITION_AOD_TO_LOCKSCREEN
                 mShouldDelayLockscreenTransitionFromAod = mDozeParameters.getAlwaysOn()
                         && !mDozeParameters.getDisplayNeedsBlanking();
                 if (!mShouldDelayLockscreenTransitionFromAod) {
@@ -2468,11 +2468,11 @@ public class CentralSurfacesImpl implements CoreStartable, CentralSurfaces {
         }
 
         /**
-         * Private helper for starting the LOCKSCREEN_TRANSITION_FROM_AOD animation - only necessary
+         * Private helper for starting the KEYGUARD_TRANSITION_AOD_TO_LOCKSCREEN animation - only necessary
          * so we can start it from either onFinishedWakingUp() or onFinishedWakingUp().
          */
         private void startLockscreenTransitionFromAod() {
-            // stopDozing() starts the LOCKSCREEN_TRANSITION_FROM_AOD animation.
+            // stopDozing() starts the KEYGUARD_TRANSITION_AOD_TO_LOCKSCREEN animation.
             mDozeServiceHost.stopDozing();
             updateNotificationPanelTouchState();
             mShadeTouchableRegionManager.updateTouchableRegion();

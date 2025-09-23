@@ -30,7 +30,7 @@ import static android.view.WindowManagerPolicyConstants.KEYGUARD_GOING_AWAY_FLAG
 
 import static com.android.internal.config.sysui.SystemUiDeviceConfigFlags.NAV_BAR_HANDLE_SHOW_OVER_LOCKSCREEN;
 import static com.android.internal.jank.InteractionJankMonitor.CUJ_LOCKSCREEN_OCCLUSION;
-import static com.android.internal.jank.InteractionJankMonitor.CUJ_LOCKSCREEN_TRANSITION_FROM_AOD;
+import static com.android.internal.jank.InteractionJankMonitor.CUJ_KEYGUARD_TRANSITION_AOD_TO_LOCKSCREEN;
 import static com.android.internal.jank.InteractionJankMonitor.CUJ_LOCKSCREEN_UNLOCK_ANIMATION;
 import static com.android.internal.widget.LockPatternUtils.StrongAuthTracker.SOME_AUTH_REQUIRED_AFTER_ADAPTIVE_AUTH_REQUEST;
 import static com.android.internal.widget.LockPatternUtils.StrongAuthTracker.SOME_AUTH_REQUIRED_AFTER_TRUSTAGENT_EXPIRED;
@@ -2395,7 +2395,7 @@ public class KeyguardViewMediator implements CoreStartable,
         Log.d(TAG, "handleSetOccluded(" + isOccluded + ")");
         EventLogTags.writeSysuiKeyguard(isOccluded ? 1 : 0, animate ? 1 : 0);
 
-        mInteractionJankMonitor.cancel(CUJ_LOCKSCREEN_TRANSITION_FROM_AOD);
+        mInteractionJankMonitor.cancel(CUJ_KEYGUARD_TRANSITION_AOD_TO_LOCKSCREEN);
 
         synchronized (KeyguardViewMediator.this) {
             mPowerGestureIntercepted =
@@ -4133,7 +4133,7 @@ public class KeyguardViewMediator implements CoreStartable,
      */
     public void startKeyguardExitAnimation(SurfaceTransition.Params params) {
         Trace.beginSection("KeyguardViewMediator#startKeyguardExitAnimation");
-        mInteractionJankMonitor.cancel(CUJ_LOCKSCREEN_TRANSITION_FROM_AOD);
+        mInteractionJankMonitor.cancel(CUJ_KEYGUARD_TRANSITION_AOD_TO_LOCKSCREEN);
         Message msg = mHandler.obtainMessage(START_KEYGUARD_EXIT_ANIM, params);
         mHandler.sendMessage(msg);
         Trace.endSection();
