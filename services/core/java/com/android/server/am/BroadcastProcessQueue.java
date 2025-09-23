@@ -771,6 +771,7 @@ class BroadcastProcessQueue {
             mCountManifest++;
         }
         invalidateRunnableAt();
+        tracePendingBroadcastsCount();
     }
 
     /**
@@ -812,6 +813,12 @@ class BroadcastProcessQueue {
             mCountManifest--;
         }
         invalidateRunnableAt();
+        tracePendingBroadcastsCount();
+    }
+
+    private void tracePendingBroadcastsCount() {
+        Trace.instantForTrack(Trace.TRACE_TAG_ACTIVITY_MANAGER, "Broadcasts pending per receiver",
+                processName + "/" + uid + ":" + mCountEnqueued);
     }
 
     public void traceProcessStartingBegin() {
