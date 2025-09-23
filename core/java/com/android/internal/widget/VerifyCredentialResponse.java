@@ -28,6 +28,8 @@ import com.android.internal.util.Preconditions;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.time.Duration;
+import java.util.Arrays;
+import java.util.Objects;
 
 /**
  * Response object for a ILockSettings credential verification request.
@@ -45,12 +47,12 @@ public final class VerifyCredentialResponse implements Parcelable {
     private static final int RESPONSE_OK = 0;
 
     /**
-     * The credential could not be verified because a timeout is still active. {@link #getTimeout()}
-     * gives the currently active timeout.
+     * The credential could not be verified because a timeout is still active. {@link
+     * #getTimeoutAsDuration()} gives the currently active timeout.
      *
      * <p>Alternatively, a timeout was not active, the credential was incorrect, and there is a
-     * timeout before the <em>next</em> attempt will be allowed. {@link #getTimeout()} gives the
-     * newly active timeout. The preferred response code in this case is {@link
+     * timeout before the <em>next</em> attempt will be allowed. {@link #getTimeoutAsDuration()}
+     * gives the newly active timeout. The preferred response code in this case is {@link
      * #RESPONSE_CRED_INCORRECT}, but some devices use a rate-limiting HAL implementation that does
      * not differentiate this case from the "timeout is still active" case.
      */
@@ -66,7 +68,7 @@ public final class VerifyCredentialResponse implements Parcelable {
      * Credential was incorrect and none of {@link #RESPONSE_RETRY}, {@link
      * #RESPONSE_CRED_TOO_SHORT}, or {@link #RESPONSE_CRED_ALREADY_TRIED} applies.
      *
-     * <p>{@link #getTimeout()} gives the newly active timeout, if any.
+     * <p>{@link #getTimeoutAsDuration()} gives the newly active timeout, if any.
      */
     private static final int RESPONSE_CRED_INCORRECT = 4;
 
@@ -81,7 +83,7 @@ public final class VerifyCredentialResponse implements Parcelable {
     @Retention(RetentionPolicy.SOURCE)
     @interface ResponseCode {}
 
-    private static final Duration MAX_TIMEOUT = Duration.ofMillis(Integer.MAX_VALUE);
+    private static final Duration MAX_INT_TIMEOUT = Duration.ofMillis(Integer.MAX_VALUE);
 
     public static final VerifyCredentialResponse OK = new VerifyCredentialResponse.Builder()
             .build();
@@ -89,28 +91,32 @@ public final class VerifyCredentialResponse implements Parcelable {
     private static final String TAG = "VerifyCredentialResponse";
 
     private final @ResponseCode int mResponseCode;
-    private final int mTimeout;
+    private final Duration mTimeout;
     @Nullable private final byte[] mGatekeeperHAT;
     private final long mGatekeeperPasswordHandle;
 
-    public static final Parcelable.Creator<VerifyCredentialResponse> CREATOR
-            = new Parcelable.Creator<VerifyCredentialResponse>() {
-        @Override
-        public VerifyCredentialResponse createFromParcel(Parcel source) {
-            final @ResponseCode int responseCode = source.readInt();
-            final int timeout = source.readInt();
-            final byte[] gatekeeperHAT = source.createByteArray();
-            long gatekeeperPasswordHandle = source.readLong();
+    public static final Parcelable.Creator<VerifyCredentialResponse> CREATOR =
+            new Parcelable.Creator<VerifyCredentialResponse>() {
+                @Override
+                public VerifyCredentialResponse createFromParcel(Parcel source) {
+                    final @ResponseCode int responseCode = source.readInt();
+                    final long timeoutSeconds = source.readLong();
+                    final long timeoutNanos = source.readInt();
+                    final byte[] gatekeeperHAT = source.createByteArray();
+                    long gatekeeperPasswordHandle = source.readLong();
 
-            return new VerifyCredentialResponse(responseCode, timeout, gatekeeperHAT,
-                    gatekeeperPasswordHandle);
-        }
+                    return new VerifyCredentialResponse(
+                            responseCode,
+                            Duration.ofSeconds(timeoutSeconds, timeoutNanos),
+                            gatekeeperHAT,
+                            gatekeeperPasswordHandle);
+                }
 
-        @Override
-        public VerifyCredentialResponse[] newArray(int size) {
-            return new VerifyCredentialResponse[size];
-        }
-    };
+                @Override
+                public VerifyCredentialResponse[] newArray(int size) {
+                    return new VerifyCredentialResponse[size];
+                }
+            };
 
     public static class Builder {
         @Nullable private byte[] mGatekeeperHAT;
@@ -135,8 +141,9 @@ public final class VerifyCredentialResponse implements Parcelable {
          * @return
          */
         public VerifyCredentialResponse build() {
-            return new VerifyCredentialResponse(RESPONSE_OK,
-                    0 /* timeout */,
+            return new VerifyCredentialResponse(
+                    RESPONSE_OK,
+                    Duration.ZERO /* timeout */,
                     mGatekeeperHAT,
                     mGatekeeperPasswordHandle);
         }
@@ -147,47 +154,30 @@ public final class VerifyCredentialResponse implements Parcelable {
      * in milliseconds.
      */
     public static VerifyCredentialResponse fromTimeout(int timeout) {
-        return new VerifyCredentialResponse(RESPONSE_RETRY,
+        return fromTimeout(Duration.ofMillis(timeout));
+    }
+
+    /**
+     * Builds a {@link VerifyCredentialResponse} with {@link #RESPONSE_RETRY} and the given timeout.
+     */
+    public static VerifyCredentialResponse fromTimeout(Duration timeout) {
+        return new VerifyCredentialResponse(
+                RESPONSE_RETRY,
                 timeout,
                 null /* gatekeeperHAT */,
                 0L /* gatekeeperPasswordHandle */);
     }
 
     /**
-     * Builds a {@link VerifyCredentialResponse} with {@link #RESPONSE_RETRY} and the given timeout.
-     *
-     * <p>The timeout is clamped to fit in an int. See {@link #timeoutToClampedMillis(Duration)}.
-     */
-    public static VerifyCredentialResponse fromTimeout(Duration timeout) {
-        return fromTimeout(timeoutToClampedMillis(timeout));
-    }
-
-    /**
      * Builds a {@link VerifyCredentialResponse} with {@link #RESPONSE_CRED_INCORRECT} and the given
      * timeout.
-     *
-     * <p>The timeout is clamped to fit in an int. See {@link #timeoutToClampedMillis(Duration)}.
      */
     public static VerifyCredentialResponse credIncorrect(Duration timeout) {
         return new VerifyCredentialResponse(
                 VerifyCredentialResponse.RESPONSE_CRED_INCORRECT,
-                timeoutToClampedMillis(timeout),
+                timeout,
                 /* gatekeeperHAT= */ null,
                 /* gatekeeperPasswordHandle= */ 0L);
-    }
-
-    /**
-     * Clamps the given timeout to fit in an int that holds a non-negative milliseconds value.
-     *
-     * <p>A negative timeout should never occur here, since the rate-limiters do not report negative
-     * timeouts. If a negative timeout is seen anyway, fail secure and treat it as possibly intended
-     * to be an unsigned value, i.e. clamp it to MAX_VALUE rather than MIN_VALUE.
-     */
-    private static int timeoutToClampedMillis(Duration timeout) {
-        if (timeout.isNegative() || timeout.compareTo(MAX_TIMEOUT) > 0) {
-            return Integer.MAX_VALUE;
-        }
-        return (int) timeout.toMillis();
     }
 
     /** Builds a {@link VerifyCredentialResponse} with {@link #RESPONSE_OTHER_ERROR}. */
@@ -222,13 +212,16 @@ public final class VerifyCredentialResponse implements Parcelable {
                         || responseCode == RESPONSE_CRED_INCORRECT);
         return new VerifyCredentialResponse(
                 responseCode,
-                0 /* timeout */,
+                Duration.ZERO /* timeout */,
                 null /* gatekeeperHAT */,
                 0L /* gatekeeperPasswordHandle */);
     }
 
-    private VerifyCredentialResponse(@ResponseCode int responseCode, int timeout,
-            @Nullable byte[] gatekeeperHAT, long gatekeeperPasswordHandle) {
+    private VerifyCredentialResponse(
+            @ResponseCode int responseCode,
+            Duration timeout,
+            @Nullable byte[] gatekeeperHAT,
+            long gatekeeperPasswordHandle) {
         mResponseCode = responseCode;
         mTimeout = timeout;
         mGatekeeperHAT = gatekeeperHAT;
@@ -238,7 +231,11 @@ public final class VerifyCredentialResponse implements Parcelable {
     @Override
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeInt(mResponseCode);
-        dest.writeInt(mTimeout);
+        // A {@link Duration} is represented by
+        // * a 64-bit seconds part
+        // * a 32-bit nanosecond part between 0 and 999,999,999.
+        dest.writeLong(mTimeout.getSeconds());
+        dest.writeInt(mTimeout.getNano());
         dest.writeByteArray(mGatekeeperHAT);
         dest.writeLong(mGatekeeperPasswordHandle);
     }
@@ -261,12 +258,27 @@ public final class VerifyCredentialResponse implements Parcelable {
         return mGatekeeperPasswordHandle != 0L;
     }
 
+    /**
+     * Get the timeout in milliseconds clamped to fit in an int. It can only represent up to ~25
+     * days.
+     *
+     * <p>A negative timeout should never occur here, since the rate-limiters do not report negative
+     *    timeouts. If a negative timeout is seen anyway, fail secure and treat it as possibly
+     *    intended to be an unsigned value, i.e. MAX_VALUE rather than MIN_VALUE.
+     *
+     * @deprecated Use {@link #getTimeoutAsDuration()}, which can represent larger timeout ranges.
+     */
+    @Deprecated
     public int getTimeout() {
-        return mTimeout;
+        Duration timeout = getTimeoutAsDuration();
+        if (timeout.isNegative() || timeout.compareTo(MAX_INT_TIMEOUT) > 0) {
+            return Integer.MAX_VALUE;
+        }
+        return (int) timeout.toMillis();
     }
 
     public Duration getTimeoutAsDuration() {
-        return Duration.ofMillis(mTimeout);
+        return mTimeout;
     }
 
     /** Returns true if credential verification succeeded. */
@@ -282,7 +294,7 @@ public final class VerifyCredentialResponse implements Parcelable {
         if (android.security.Flags.softwareRatelimiter()) {
             // Check mTimeout directly. It can be nonzero for either RESPONSE_RETRY or
             // RESPONSE_CRED_INCORRECT.
-            return mTimeout != 0;
+            return !mTimeout.isZero();
         }
         return mResponseCode == RESPONSE_RETRY;
     }
@@ -325,9 +337,33 @@ public final class VerifyCredentialResponse implements Parcelable {
 
     @Override
     public String toString() {
-        return "Response: " + mResponseCode
-                + ", GK HAT: " + (mGatekeeperHAT != null)
-                + ", GK PW: " + (mGatekeeperPasswordHandle != 0L);
+        return "Response: "
+                + mResponseCode
+                + ", Timeout: "
+                + mTimeout
+                + ", GK HAT: "
+                + (mGatekeeperHAT != null)
+                + ", GK PW: "
+                + (mGatekeeperPasswordHandle != 0L);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        VerifyCredentialResponse that = (VerifyCredentialResponse) o;
+        return mResponseCode == that.mResponseCode
+                && Objects.equals(mTimeout, that.mTimeout)
+                && mGatekeeperPasswordHandle == that.mGatekeeperPasswordHandle
+                && Objects.deepEquals(mGatekeeperHAT, that.mGatekeeperHAT);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(
+                mResponseCode,
+                mTimeout,
+                Arrays.hashCode(mGatekeeperHAT),
+                mGatekeeperPasswordHandle);
     }
 
     public static VerifyCredentialResponse fromGateKeeperResponse(
