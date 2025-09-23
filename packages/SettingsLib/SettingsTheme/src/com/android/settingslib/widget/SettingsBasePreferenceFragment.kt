@@ -30,6 +30,8 @@ import com.android.settingslib.widget.theme.R
 /** Base class for Settings to use PreferenceFragmentCompat */
 abstract class SettingsBasePreferenceFragment : PreferenceFragmentCompat() {
 
+    protected open val isPreferenceSpacingEnabled = true
+
     @CallSuper
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -45,7 +47,9 @@ abstract class SettingsBasePreferenceFragment : PreferenceFragmentCompat() {
         if (SettingsThemeHelper.isExpressiveTheme(requireContext())) {
             // Don't allow any divider in between the preferences in expressive design.
             setDivider(null)
-            listView?.addItemDecoration(MarginItemDecoration())
+            if (isPreferenceSpacingEnabled) {
+                listView?.addItemDecoration(MarginItemDecoration())
+            }
         }
     }
 
