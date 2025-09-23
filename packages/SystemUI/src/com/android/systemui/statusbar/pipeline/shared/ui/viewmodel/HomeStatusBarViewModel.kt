@@ -68,6 +68,7 @@ import com.android.systemui.statusbar.layout.ui.viewmodel.StatusBarBoundsViewMod
 import com.android.systemui.statusbar.layout.ui.viewmodel.StatusBarContentInsetsViewModelStore
 import com.android.systemui.statusbar.notification.domain.interactor.ActiveNotificationsInteractor
 import com.android.systemui.statusbar.notification.domain.interactor.HeadsUpNotificationInteractor
+import com.android.systemui.statusbar.notification.icon.domain.interactor.StatusBarNotificationIconsInteractor
 import com.android.systemui.statusbar.notification.promoted.PromotedNotificationUi
 import com.android.systemui.statusbar.phone.domain.interactor.DarkIconInteractor
 import com.android.systemui.statusbar.phone.domain.interactor.IsAreaDark
@@ -242,6 +243,9 @@ interface HomeStatusBarViewModel : Activatable {
     /** True if the desktop status bar is enabled. */
     val useDesktopStatusBar: Boolean
 
+    /** Emits `true` whenever there is at least one status bar notification. */
+    val hasStatusBarNotifications: Boolean
+
     /** Interface for the assisted factory, to allow for providing a fake in tests */
     interface HomeStatusBarViewModelFactory {
         fun create(): HomeStatusBarViewModel
@@ -267,6 +271,7 @@ constructor(
     headsUpNotificationInteractor: HeadsUpNotificationInteractor,
     keyguardTransitionInteractor: KeyguardTransitionInteractor,
     keyguardInteractor: KeyguardInteractor,
+    statusBarNotificationIconsInteractor: StatusBarNotificationIconsInteractor,
     override val operatorNameViewModel: StatusBarOperatorNameViewModel,
     private val sceneInteractor: SceneInteractor,
     occlusionInteractor: KeyguardOcclusionInteractor,
@@ -470,6 +475,13 @@ constructor(
             traceName = "isNotificationsChipHighlighted",
             initialValue = false,
             source = shadeInteractor.isNotificationsExpanded,
+        )
+
+    override val hasStatusBarNotifications: Boolean by
+        hydrator.hydratedStateOf(
+            traceName = "hasStatusBarNotifications",
+            initialValue = false,
+            source = statusBarNotificationIconsInteractor.hasStatusBarNotifications,
         )
 
     /**

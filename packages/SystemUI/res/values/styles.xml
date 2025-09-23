@@ -701,6 +701,10 @@
         <item name="android:fontFamily">variable-body-medium-emphasized</item>
     </style>
 
+    <style name="Theme.SystemUI.DesktopStatusBar">
+        <item name="android:fontFamily">variable-label-large-emphasized</item>
+    </style>
+
     <style name="QSIconTheme">
         <item name="backgroundColor">?android:attr/textColorHint</item>
         <item name="fillColor">?android:attr/textColorPrimary</item>

@@ -92,6 +92,7 @@ import com.android.systemui.statusbar.notification.data.model.activeNotification
 import com.android.systemui.statusbar.notification.data.repository.ActiveNotificationsStore
 import com.android.systemui.statusbar.notification.data.repository.UnconfinedFakeHeadsUpRowRepository
 import com.android.systemui.statusbar.notification.data.repository.activeNotificationListRepository
+import com.android.systemui.statusbar.notification.data.repository.getPopulatedActiveNotificationsStore
 import com.android.systemui.statusbar.notification.headsup.PinnedStatus
 import com.android.systemui.statusbar.notification.promoted.PromotedNotificationUi
 import com.android.systemui.statusbar.notification.shared.ActiveNotificationModel
@@ -1742,6 +1743,17 @@ class HomeStatusBarViewModelImplTest(flags: FlagsParameterization) : SysuiTestCa
             underTest.onNotificationIconChipClicked()
 
             assertThat(currentOverlays).contains(Overlays.NotificationsShade)
+        }
+
+    @Test
+    fun hasStatusBarNotifications_ifNotificationsExist_isTrue() =
+        kosmos.runTest {
+            assertThat(underTest.hasStatusBarNotifications).isFalse()
+
+            activeNotificationListRepository.activeNotifications.value =
+                kosmos.getPopulatedActiveNotificationsStore()
+
+            assertThat(underTest.hasStatusBarNotifications).isTrue()
         }
 
     private fun activeNotificationsStore(notifications: List<ActiveNotificationModel>) =

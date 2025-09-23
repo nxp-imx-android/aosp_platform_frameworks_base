@@ -19,6 +19,7 @@ package com.android.systemui.clock.ui.composable
 import android.view.ContextThemeWrapper
 import androidx.compose.foundation.clickable
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
@@ -32,14 +33,16 @@ import com.android.systemui.res.R
  */
 @Composable
 fun ClockLegacy(textColor: Color, onClick: (() -> Unit)?, modifier: Modifier = Modifier) {
+    val intColor = remember(textColor) { textColor.toArgb() }
+
     AndroidView(
         factory = { context ->
             com.android.systemui.statusbar.policy.Clock(
-                ContextThemeWrapper(context, R.style.Theme_SystemUI),
+                ContextThemeWrapper(context, R.style.Theme_SystemUI_DesktopStatusBar),
                 null,
             )
         },
-        update = { view -> view.setTextColor(textColor.toArgb()) },
+        update = { view -> view.setTextColor(intColor) },
         modifier = modifier.thenIf(onClick != null) { Modifier.clickable { onClick?.invoke() } },
     )
 }
