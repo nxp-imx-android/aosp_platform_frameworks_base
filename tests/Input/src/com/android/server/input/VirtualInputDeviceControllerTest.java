@@ -131,6 +131,11 @@ public class VirtualInputDeviceControllerTest {
         doAnswer(this::handleNativeOpenInputDevice).when(mNativeWrapperMock)
                 .openUinputTouchscreen(anyString(), anyInt(), anyInt(), anyString(), anyInt(),
                         anyInt());
+        doAnswer(this::handleNativeOpenInputDevice).when(mNativeWrapperMock)
+                .openUinputStylus(anyString(), anyInt(), anyInt(), anyString(), anyInt(),
+                        anyInt());
+        doAnswer(this::handleNativeOpenInputDevice).when(mNativeWrapperMock)
+                .openUinputRotaryEncoder(anyString(), anyInt(), anyInt(), anyString());
 
         doAnswer(inv -> mDevicesChangedListener = inv.getArgument(0))
                 .when(mInputManagerService).registerInputDevicesChangedListener(notNull());
@@ -215,6 +220,24 @@ public class VirtualInputDeviceControllerTest {
         mInputController.createMouse(NAME, VENDOR_ID, PRODUCT_ID, TOKEN_1, DISPLAY_ID_1);
         verify(mNativeWrapperMock)
                 .openUinputMouse(eq(NAME), eq(VENDOR_ID), eq(PRODUCT_ID), anyString());
+    }
+
+    @Test
+    public void createStylus_opensUinput() {
+        final int height = 50;
+        final int width = 60;
+        mInputController.createStylus(NAME, VENDOR_ID, PRODUCT_ID, TOKEN_1, DISPLAY_ID_1,
+                height, width);
+        verify(mNativeWrapperMock)
+                .openUinputStylus(eq(NAME), eq(VENDOR_ID), eq(PRODUCT_ID), anyString(), eq(height),
+                        eq(width));
+    }
+
+    @Test
+    public void createRotaryEncoder_opensUinput() {
+        mInputController.createRotaryEncoder(NAME, VENDOR_ID, PRODUCT_ID, TOKEN_1, DISPLAY_ID_1);
+        verify(mNativeWrapperMock)
+                .openUinputRotaryEncoder(eq(NAME), eq(VENDOR_ID), eq(PRODUCT_ID), anyString());
     }
 
     @Test
