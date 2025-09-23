@@ -218,6 +218,9 @@ constructor(
                         },
                     trustInteractor.isTrusted.filter { it }.map { DeviceUnlockSource.TrustAgent },
                     onUnlockFromBouncer.map { DeviceUnlockSource.BouncerInput },
+                    unlockForPowerButtonGestureRequests.receiveAsFlow().map {
+                        DeviceUnlockSource.UnlockedPowerButtonGesture
+                    },
                 )
             }
         }
@@ -243,6 +246,12 @@ constructor(
 
     /** A [Channel] of "lock now" requests where the values are the debugging reasons. */
     private val lockNowRequests = Channel<String>()
+
+    /**
+     * A [Channel] of "unlock now" requests where the values are the debugging reasons. Currently
+     * only used by the power button launch gesture.
+     */
+    private val unlockForPowerButtonGestureRequests = Channel<String>()
 
     override suspend fun onActivated(): Nothing {
         coroutineScope {
@@ -283,6 +292,17 @@ constructor(
         lockNowRequests.trySend(debuggingReason)
     }
 
+    /**
+     * Unlocks the device instantly.
+     *
+     * Dangerous, obviously. The only current reason to do this is for the unlocked power button
+     * launch gesture, which has the unilateral authority to cancel a lock and go back to being
+     * unlocked.
+     */
+    fun unlockNowForPowerButtonGesture(debuggingReason: String) {
+        unlockForPowerButtonGestureRequests.trySend(debuggingReason)
+    }
+
     private suspend fun handleLockAndUnlockEvents() {
         try {
             Log.d(TAG, "started watching for lock and unlock events")
@@ -321,12 +341,19 @@ constructor(
                         merge(
                             // Device wakefulness events.
                             powerInteractor.detailedWakefulness
-                                .map { Pair(it.isAsleep(), it.lastSleepReason) }
+                                .map {
+                                    Triple(
+                                        it.isAsleep(),
+                                        it.lastSleepReason,
+                                        it.powerButtonLaunchGestureTriggered,
+                                    )
+                                }
                                 .distinctUntilChangedBy { it.first }
-                                .map { (isAsleep, lastSleepReason) ->
+                                .map { (isAsleep, lastSleepReason, launchGestureTriggered) ->
                                     if (isAsleep) {
                                         if (
                                             (lastSleepReason == WakeSleepReason.POWER_BUTTON) &&
+                                                !launchGestureTriggered &&
                                                 authenticationInteractor
                                                     .getPowerButtonInstantlyLocks()
                                         ) {

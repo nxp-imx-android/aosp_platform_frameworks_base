@@ -194,8 +194,17 @@ interface AuthenticationRepository {
      */
     suspend fun getMaximumTimeToLock(): Long
 
-    /** Returns `true` if the power button should instantly lock the device, `false` otherwise. */
-    suspend fun getPowerButtonInstantlyLocks(): Boolean
+    /**
+     * Returns true if the power button should instantly lock the device, false otherwise.
+     *
+     * If the device is not secure, return true - this is a quirk of the settings app. If you have
+     * swipe security set, you can no longer access the "power button locks instantly" setting in
+     * the UI and it defaults to true, so the swipe lockscreen will always show up after pressing
+     * the power button.
+     *
+     * WARNING: This causes a blocking IPC to LockPatternUtils (b/446735679).
+     */
+    fun getPowerButtonInstantlyLocks(): Boolean
 }
 
 @SysUISingleton
@@ -367,11 +376,9 @@ constructor(
         }
     }
 
-    /** Returns `true` if the power button should instantly lock the device, `false` otherwise. */
-    override suspend fun getPowerButtonInstantlyLocks(): Boolean {
-        return withContext(backgroundDispatcher) {
+    override fun getPowerButtonInstantlyLocks(): Boolean {
+        return !lockPatternUtils.isSecure(selectedUserId) ||
             lockPatternUtils.getPowerButtonInstantlyLocks(selectedUserId)
-        }
     }
 
     private val selectedUserId: Int

@@ -76,7 +76,7 @@ class FakeAuthenticationRepository(private val currentTimeMs: () -> Long) :
         get() = currentTimeMs().milliseconds
 
     var maximumTimeToLock: Long = 0
-    var powerButtonInstantlyLocks: Boolean = true
+    var fakePowerButtonInstantlyLocks: Boolean = true
 
     override suspend fun getAuthenticationMethod(): AuthenticationMethodModel {
         return authenticationMethod.value
@@ -190,8 +190,8 @@ class FakeAuthenticationRepository(private val currentTimeMs: () -> Long) :
         return maximumTimeToLock
     }
 
-    override suspend fun getPowerButtonInstantlyLocks(): Boolean {
-        return powerButtonInstantlyLocks
+    override fun getPowerButtonInstantlyLocks(): Boolean {
+        return fakePowerButtonInstantlyLocks
     }
 
     private fun getExpectedCredential(securityMode: SecurityMode): List<Any> {

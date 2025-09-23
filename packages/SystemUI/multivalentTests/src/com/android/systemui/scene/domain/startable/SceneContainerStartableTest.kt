@@ -873,6 +873,8 @@ class SceneContainerStartableTest : SysuiTestCase() {
     @Test
     fun switchToGoneWhenDoubleTapPowerGestureIsTriggeredFromGone() =
         kosmos.runTest {
+            val isUnlocked by
+                collectLastValue(deviceUnlockedInteractor.deviceUnlockStatus.map { it.isUnlocked })
             val currentSceneKey by collectLastValue(sceneInteractor.currentScene)
             val transitionStateFlow =
                 prepareState(
@@ -898,6 +900,7 @@ class SceneContainerStartableTest : SysuiTestCase() {
                 powerButtonLaunchGestureTriggered = true,
             )
             assertThat(currentSceneKey).isEqualTo(Scenes.Gone)
+            assertThat(isUnlocked).isTrue()
         }
 
     @Test
