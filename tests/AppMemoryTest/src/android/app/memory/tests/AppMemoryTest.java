@@ -175,17 +175,22 @@ public class AppMemoryTest {
         Log.i(TAG, "Heap dump successfully created at: " + profilePath);
 
         // Extract metrics and report them
-        Profile p = new Profile(profileFile);
-        final long p_allocated = p.size();
+        Profile profile = new Profile(profileFile);
+        final long profileAllocated = profile.size();
+        final long profileCount = profile.count();
 
         // Log the parsed size for debugging purposes.
-        Log.i(TAG, "Profile-parsed heap size (PSize): " + p_allocated);
+        Log.i(TAG, "Profile-parsed heap size (PSize): " + profileAllocated);
+        Log.i(TAG, "Profile-parsed object count (PCount): " + profileCount);
 
         // Send metrics to the automation system.
         Bundle stats = new Bundle();
         String key = "PSize" + suffix;
-        stats.putLong(key, p_allocated);
-        stats.putString(Instrumentation.REPORT_KEY_STREAMRESULT, key + ": " + p_allocated);
+        stats.putLong(key, profileAllocated);
+        stats.putString(Instrumentation.REPORT_KEY_STREAMRESULT, key + ": " + profileAllocated);
+        key = "PCount" + suffix;
+        stats.putLong(key, profileCount);
+        stats.putString(Instrumentation.REPORT_KEY_STREAMRESULT, key + ": " + profileCount);
         InstrumentationRegistry.getInstrumentation().sendStatus(Activity.RESULT_OK, stats);
     }
 

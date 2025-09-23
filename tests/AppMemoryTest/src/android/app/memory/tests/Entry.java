@@ -31,6 +31,11 @@ public class Entry {
         return 0;
     }
 
+    // Number of objects represented by this entry. Default is zero.
+    long count() {
+        return 0;
+    }
+
     // Print self to the output stream.
     void dump(PrintStream o) { }
 
@@ -246,6 +251,10 @@ public class Entry {
         long size() {
             return 0;
         }
+
+        long count() {
+            return 0;
+        }
     }
 
     static class UnknownAlloc extends Alloc {
@@ -437,6 +446,10 @@ public class Entry {
         @Override long size() {
             return mDataLen;
         }
+
+        @Override long count() {
+            return 1;
+        }
     }
 
     static class ObjectArray extends Alloc {
@@ -459,6 +472,10 @@ public class Entry {
         @Override long size() {
             return (long) mCount * 8;
         }
+
+        @Override long count() {
+            return 1;
+        }
     }
 
     static class PrimitiveArray extends Alloc {
@@ -476,6 +493,10 @@ public class Entry {
 
         @Override long size() {
             return mData.length;
+        }
+
+        @Override long count() {
+            return 1;
         }
 
         @Override void dump(PrintStream o) {
@@ -561,6 +582,23 @@ public class Entry {
                 }
             }
             return totalAppHeapSize;
+        }
+
+        @Override
+        long count() {
+            long totalAppHeapCount = 0;
+            boolean inAppHeap = false;
+
+            for (Alloc a : mAlloc) {
+                if (a instanceof DumpInfo) {
+                    // flip flag to indicate we are in app heap section
+                    DumpInfo info = (DumpInfo) a;
+                    inAppHeap = "app".equals(info.mHeapName);
+                } else if (inAppHeap) {
+                    totalAppHeapCount += a.count();
+                }
+            }
+            return totalAppHeapCount;
         }
 
         private Alloc alloc(Scanner s, Context c) {
