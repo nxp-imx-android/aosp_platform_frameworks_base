@@ -16,12 +16,15 @@
 
 package com.android.wm.shell.pip2.phone;
 
+import static android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM;
+
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.when;
@@ -55,6 +58,7 @@ import com.android.wm.shell.common.pip.PipBoundsState;
 import com.android.wm.shell.common.pip.PipDesktopState;
 import com.android.wm.shell.common.pip.PipDisplayLayoutState;
 import com.android.wm.shell.desktopmode.DesktopPipTransitionController;
+import com.android.wm.shell.desktopmode.DesktopTasksController;
 import com.android.wm.shell.pip.PipTransitionController;
 import com.android.wm.shell.pip2.PipSurfaceTransactionHelper;
 import com.android.wm.shell.pip2.animation.PipAlphaAnimator;
@@ -116,6 +120,7 @@ public class PipSchedulerTest {
     @Mock private PipAlphaAnimator mMockAlphaAnimator;
     @Mock private SplitScreenController mMockSplitScreenController;
     @Mock private DesktopPipTransitionController mMockDesktopPipTransitionController;
+    @Mock private DesktopTasksController mMockDesktopTasksController;
     @Mock private SurfaceControl mMockLeash;
     @Mock private DisplayLayout mMockDisplayLayout;
     @Mock private PipDisplayLayoutState mMockDisplayLayoutState;
@@ -160,6 +165,9 @@ public class PipSchedulerTest {
                 mDisplayAreaInfo);
         when(mMockPipDesktopState.getRootTaskDisplayAreaOrganizer()).thenReturn(
                 mMockRootTaskDisplayAreaOrganizer);
+        doNothing().when(mMockDesktopTasksController).setPipScheduler(any());
+        when(mMockDesktopPipTransitionController.getDesktopTasksController()).thenReturn(
+                mMockDesktopTasksController);
         when(mMockDisplayLayout.densityDpi()).thenReturn(DEFAULT_DPI);
         when(mDisplayController.getDisplayLayout(anyInt())).thenReturn(mMockDisplayLayout);
         mPipScheduler = new PipScheduler(mMockContext,
@@ -265,6 +273,28 @@ public class PipSchedulerTest {
 
         verify(mMockPipTransitionController, times(1))
                 .startExpandTransition(any(), anyBoolean(), eq(false));
+    }
+
+    @Test
+    public void scheduleExitPipViaExpand_onAnotherDisplay_expandTransitionCalled() {
+        setMockPipTaskToken();
+        ActivityManager.RunningTaskInfo pipTaskInfo = getTaskInfoWithLastParentBeforePip(1);
+        when(mMockPipTransitionState.getPipTaskInfo()).thenReturn(pipTaskInfo);
+        // Make sure task with the id = 1 isn't in split-screen.
+        when(mMockSplitScreenController.isTaskInSplitScreen(
+                ArgumentMatchers.eq(1))).thenReturn(false);
+
+        mPipScheduler.scheduleExitPipViaExpand(true, SECONDARY_DISPLAY_ID, TEST_BOUNDS,
+                WINDOWING_MODE_FREEFORM);
+
+        verify(mMockMainExecutor, times(1)).execute(mRunnableArgumentCaptor.capture());
+        assertNotNull(mRunnableArgumentCaptor.getValue());
+        mRunnableArgumentCaptor.getValue().run();
+
+        verify(mMockPipTransitionController, times(1))
+                .startExpandTransition(mWctArgumentCaptor.capture(), anyBoolean(), eq(true));
+        assertNotNull(mWctArgumentCaptor.getValue());
+        assertNotNull(mWctArgumentCaptor.getValue().getChanges());
     }
 
     @Test

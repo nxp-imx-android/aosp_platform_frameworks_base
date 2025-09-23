@@ -156,6 +156,8 @@ import com.android.wm.shell.desktopmode.multidesks.DesksTransitionObserver
 import com.android.wm.shell.desktopmode.multidesks.PreserveDisplayRequestHandler
 import com.android.wm.shell.draganddrop.DragAndDropController
 import com.android.wm.shell.freeform.FreeformTaskTransitionStarter
+import com.android.wm.shell.pip2.phone.PipScheduler
+import com.android.wm.shell.pip2.phone.PipTransitionState
 import com.android.wm.shell.recents.RecentTasksController
 import com.android.wm.shell.recents.RecentsTransitionHandler
 import com.android.wm.shell.recents.RecentsTransitionStateListener
@@ -269,6 +271,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     @Mock lateinit var desktopModeVisualIndicator: DesktopModeVisualIndicator
     @Mock lateinit var recentTasksController: RecentTasksController
     @Mock lateinit var snapEventHandler: SnapEventHandler
+    @Mock lateinit var pipScheduler: PipScheduler
     @Mock private lateinit var mockInteractionJankMonitor: InteractionJankMonitor
     @Mock private lateinit var mockSurface: SurfaceControl
     @Mock private lateinit var taskbarDesktopTaskListener: TaskbarDesktopTaskListener
@@ -306,6 +309,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     @Mock private lateinit var desktopFirstListenerManager: DesktopFirstListenerManager
     @Mock private lateinit var taskSnapshotManager: TaskSnapshotManager
     @Mock private lateinit var transactionPool: TransactionPool
+    @Mock private lateinit var pipTransitionState: PipTransitionState
     @Mock private lateinit var surfaceControlTransaction: SurfaceControl.Transaction
 
     private lateinit var controller: DesktopTasksController
@@ -486,6 +490,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
 
         controller.taskbarDesktopTaskListener = taskbarDesktopTaskListener
         controller.setSnapEventHandler(snapEventHandler)
+        controller.setPipScheduler(pipScheduler)
 
         taskRepository = userRepositories.current
         taskRepository.addDesk(displayId = DEFAULT_DISPLAY, deskId = DEFAULT_DISPLAY)
@@ -549,6 +554,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
             Optional.of(desktopFirstListenerManager),
             taskSnapshotManager,
             transactionPool,
+            Optional.of(pipTransitionState),
         )
 
     @After
@@ -10596,7 +10602,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     @EnableFlags(
         Flags.FLAG_ENABLE_DESKTOP_TAB_TEARING_MINIMIZE_ANIMATION_BUGFIX,
         Flags.FLAG_ENABLE_INTERACTION_DEPENDENT_TAB_TEARING_BOUNDS,
-        )
+    )
     @DisableFlags(Flags.FLAG_ENABLE_DESKTOP_TAB_TEARING_LAUNCH_ANIMATION)
     fun onUnhandledDrag_newFreeformIntent_tabTearingAnimationBugfixFlagEnabled_tabTearingLaunchAnimationFlagDisabled() {
         testOnUnhandledDrag(
@@ -10612,7 +10618,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     @EnableFlags(
         Flags.FLAG_ENABLE_DESKTOP_TAB_TEARING_LAUNCH_ANIMATION,
         Flags.FLAG_ENABLE_INTERACTION_DEPENDENT_TAB_TEARING_BOUNDS,
-        )
+    )
     @DisableFlags(Flags.FLAG_ENABLE_DESKTOP_TAB_TEARING_MINIMIZE_ANIMATION_BUGFIX)
     fun onUnhandledDrag_newFreeformIntent_tabTearingAnimationBugfixFlagDisabled_tabTearingLaunchAnimationFlagEnabled() {
         testOnUnhandledDrag(
