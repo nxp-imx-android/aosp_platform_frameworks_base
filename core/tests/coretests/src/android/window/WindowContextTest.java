@@ -472,9 +472,21 @@ public class WindowContextTest {
     }
 
     @Test
-    public void testSetFallbackWindowTypeAndAddView_Fallback_windowContextType_override() {
+    public void testSetFallbackWindowTypeAndAddView_invalidWindowContextType_override() {
         int windowType = mWindowContext.getWindowType();
         WindowManager.LayoutParams params = new WindowManager.LayoutParams();
+        mWindowContext.setFallbackWindowType(windowType);
+        final WindowManager wm = mWindowContext.getSystemService(WindowManager.class);
+        mInstrumentation.runOnMainSync(() -> wm.addView(new View(mWindowContext), params));
+
+        assertThat(params.type).isEqualTo(windowType);
+    }
+
+    @Test
+    public void testSetFallbackWindowTypeAndAddView_statusBarPanel_override() {
+        int windowType = mWindowContext.getWindowType();
+        WindowManager.LayoutParams params = new WindowManager.LayoutParams(
+                WindowManager.LayoutParams.TYPE_STATUS_BAR_PANEL);
         mWindowContext.setFallbackWindowType(windowType);
         final WindowManager wm = mWindowContext.getSystemService(WindowManager.class);
         mInstrumentation.runOnMainSync(() -> wm.addView(new View(mWindowContext), params));
