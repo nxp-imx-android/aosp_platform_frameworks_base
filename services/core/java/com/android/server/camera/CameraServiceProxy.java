@@ -93,6 +93,7 @@ import android.view.WindowManagerGlobal;
 import com.android.framework.protobuf.nano.MessageNano;
 import com.android.internal.R;
 import com.android.internal.annotations.GuardedBy;
+import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.camera.flags.Flags;
 import com.android.internal.util.DumpUtils;
 import com.android.internal.util.FrameworkStatsLog;
@@ -1177,7 +1178,11 @@ public class CameraServiceProxy extends SystemService
         if (!Flags.fixManagedProfilesReceiver()) {
             return;
         }
+        updateBroadcastReceiver(from, to);
+    }
 
+    @VisibleForTesting
+    void updateBroadcastReceiver(@Nullable TargetUser from, TargetUser to) {
         // TODO(b/442009819): optimize code below so it only registers the receiver when the to user
         // can have profiles
 
