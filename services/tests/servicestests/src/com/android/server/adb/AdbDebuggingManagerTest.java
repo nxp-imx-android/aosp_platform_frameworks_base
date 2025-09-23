@@ -838,8 +838,9 @@ public final class AdbDebuggingManagerTest {
 
     @Test
     public void testAdbKeyStore_adbWifiConnect_storesBssidWhenAlwaysAllow() throws Exception {
-        String trustedNetwork = "My Network";
-        mKeyStore.addTrustedNetwork(trustedNetwork);
+        String trustedNetworkBssid = "My Network BSSID";
+        String trustedNetworkSsid = "My Network SSID";
+        mKeyStore.addTrustedNetwork(trustedNetworkBssid, trustedNetworkSsid);
         persistKeyStore();
 
         AdbKeyStore newKeyStore = new AdbKeyStore(
@@ -850,7 +851,7 @@ public final class AdbDebuggingManagerTest {
 
         assertTrue(
                 "Persisted trusted network not found in new keystore instance.",
-                newKeyStore.isTrustedNetwork(trustedNetwork));
+                newKeyStore.isTrustedNetwork(trustedNetworkBssid));
     }
 
     @Test

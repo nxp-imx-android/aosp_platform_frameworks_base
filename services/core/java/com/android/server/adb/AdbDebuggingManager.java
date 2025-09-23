@@ -851,10 +851,12 @@ public class AdbDebuggingManager {
                     if (mAdbWifiEnabled) {
                         break;
                     }
-                    String bssid = (String) msg.obj;
+                    Bundle bundle = (Bundle) msg.obj;
+                    String bssid = bundle.getString("bssid");
+                    String ssid = bundle.getString("ssid");
                     boolean alwaysAllow = msg.arg1 == 1;
                     if (alwaysAllow) {
-                        mAdbKeyStore.addTrustedNetwork(bssid);
+                        mAdbKeyStore.addTrustedNetwork(bssid, ssid);
                     }
 
                     // Let's check again to make sure we didn't switch networks while verifying
@@ -1422,10 +1424,13 @@ public class AdbDebuggingManager {
      * Allows wireless debugging on the network identified by {@code bssid} either once or always if
      * {@code alwaysAllow} is {@code true}.
      */
-    public void allowWirelessDebugging(boolean alwaysAllow, String bssid) {
+    public void allowWirelessDebugging(boolean alwaysAllow, String bssid, String ssid) {
         Message msg = mHandler.obtainMessage(AdbDebuggingHandler.MSG_ADBWIFI_ALLOW);
         msg.arg1 = alwaysAllow ? 1 : 0;
-        msg.obj = bssid;
+        Bundle bundle = new Bundle();
+        bundle.putString("bssid", bssid);
+        bundle.putString("ssid", ssid);
+        msg.obj = bundle;
         mHandler.sendMessage(msg);
     }
 

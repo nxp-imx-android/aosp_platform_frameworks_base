@@ -52,8 +52,9 @@ interface IAdbManager {
      *
      * @param alwaysAllow if true, add permanently to list of allowed networks
      * @param bssid BSSID of the network
+     * @param ssid SSID of the network
      */
-    void allowWirelessDebugging(boolean alwaysAllow, String bssid);
+    void allowWirelessDebugging(boolean alwaysAllow, String bssid, String ssid);
 
     /**
      * Deny ADB wireless debugging on the connected network.

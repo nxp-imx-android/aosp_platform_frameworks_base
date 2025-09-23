@@ -313,10 +313,12 @@ public class AdbService extends IAdbManager.Stub {
     }
 
     @Override
-    public void allowWirelessDebugging(boolean alwaysAllow, @NonNull String bssid) {
+    public void allowWirelessDebugging(
+            boolean alwaysAllow, @NonNull String bssid, @NonNull String ssid) {
         mContext.enforceCallingOrSelfPermission(android.Manifest.permission.MANAGE_DEBUGGING, null);
         Preconditions.checkStringNotEmpty(bssid);
-        mDebuggingManager.allowWirelessDebugging(alwaysAllow, bssid);
+        Preconditions.checkStringNotEmpty(ssid);
+        mDebuggingManager.allowWirelessDebugging(alwaysAllow, bssid, ssid);
     }
 
     @Override
