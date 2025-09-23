@@ -48,7 +48,6 @@ import com.android.systemui.user.data.model.UserSwitcherSettingsModel
 import com.android.systemui.util.settings.fakeGlobalSettings
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.test.runTest
@@ -588,8 +587,6 @@ class UserRepositoryImplTest(flags: FlagsParameterization) : SysuiTestCase() {
     }
 
     companion object {
-        @JvmStatic private val IMMEDIATE = Dispatchers.Main.immediate
-
         @JvmStatic
         @Parameters(name = "{0}")
         fun getParams(): List<FlagsParameterization> {
