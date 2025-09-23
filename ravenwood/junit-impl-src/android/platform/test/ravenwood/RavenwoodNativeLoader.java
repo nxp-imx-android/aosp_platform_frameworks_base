@@ -177,6 +177,10 @@ public final class RavenwoodNativeLoader {
                 + ".dat";
         setProperty(ICU_DATA_PATH, icuData);
 
+        RavenwoodIntegrityChecker.checkForNativeAllocationRegistry(sLibandroidClasses);
+        RavenwoodIntegrityChecker.checkForNativeAllocationRegistry(sLibandroidExperimentalClasses);
+        RavenwoodIntegrityChecker.checkForNativeAllocationRegistry(sLibhwuiClasses);
+
         // Build the property values
         final var joiner = Collectors.joining(",");
 
