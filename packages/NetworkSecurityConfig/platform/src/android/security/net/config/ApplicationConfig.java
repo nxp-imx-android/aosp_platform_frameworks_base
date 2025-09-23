@@ -178,7 +178,10 @@ public final class ApplicationConfig {
         return getConfigForHostname(hostname).isCertificateTransparencyVerificationRequired();
     }
 
-    int getCertificateTransparencyVerificationReason(@NonNull String hostname) {
+    /**
+     * @hide
+     */
+    public int getCertificateTransparencyVerificationReason(@NonNull String hostname) {
         if (NetworkSecurityConfig.certificateTransparencyVerificationRequiredDefault()) {
             return CERTIFICATE_TRANSPARENCY_REASON_SDK_TARGET_DEFAULT_ENABLED;
         }
