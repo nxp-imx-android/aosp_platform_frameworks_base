@@ -16,8 +16,8 @@
 
 package com.android.systemui.communal.util
 
-import android.testing.AndroidTestingRunner
 import android.view.MotionEvent
+import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.kosmos.Kosmos
@@ -30,9 +30,8 @@ import kotlin.test.Test
 import org.junit.Ignore
 import org.junit.runner.RunWith
 
-@RunWith(AndroidTestingRunner::class)
+@RunWith(AndroidJUnit4::class)
 @SmallTest
-@Ignore("b/445467481")
 class UserTouchActivityNotifierTest : SysuiTestCase() {
     private val kosmos: Kosmos = testKosmos().useUnconfinedTestDispatcher()
 
