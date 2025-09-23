@@ -1155,6 +1155,16 @@ flag {
 }
 
 flag {
+  name: "restrict_communal_shade_to_when_idle"
+  namespace: "systemui"
+  description: "Only allow for the shade to be pulled down over the hub when idle on the hub"
+  bug: "446291379"
+  metadata {
+    purpose: PURPOSE_BUGFIX
+  }
+}
+
+flag {
   name: "communal_shade_touch_handling_fixes"
   namespace: "systemui"
   description: "Flags some minor bug fixes for opening the shade on the hub"
