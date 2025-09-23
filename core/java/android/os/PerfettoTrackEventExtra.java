@@ -41,7 +41,6 @@ public final class PerfettoTrackEventExtra {
             null, /* isCategoryEnabled= */ false);
     private static final ThreadLocal<PerfettoTrackEventExtra> sTrackEventExtra =
             ThreadLocal.withInitial(PerfettoTrackEventExtra::new);
-    private static final AtomicLong sNamedTrackId = new AtomicLong();
     private static final Supplier<Builder> sBuilderSupplier = Builder::new;
     private static final Supplier<FieldInt64> sFieldInt64Supplier = FieldInt64::new;
     private static final Supplier<FieldDouble> sFieldDoubleSupplier = FieldDouble::new;
@@ -359,7 +358,7 @@ public final class PerfettoTrackEventExtra {
          * Adds the events to a named track instead of the thread track where the
          * event occurred.
          */
-        public Builder usingNamedTrack(long parentUuid, String name) {
+        public Builder usingNamedTrack(long id, String name, long parentUuid) {
             if (!mIsCategoryEnabled) {
                 return this;
             }
@@ -369,7 +368,7 @@ public final class PerfettoTrackEventExtra {
 
             NamedTrack track = mNamedTrackCache.get(name.hashCode());
             if (track == null || !track.getName().equals(name)) {
-                track = new NamedTrack(name, parentUuid);
+                track = new NamedTrack(id, name, parentUuid);
                 mNamedTrackCache.put(name.hashCode(), track);
             }
             mExtra.addPerfettoPointer(track);
@@ -380,22 +379,22 @@ public final class PerfettoTrackEventExtra {
          * Adds the events to a process scoped named track instead of the thread track where the
          * event occurred.
          */
-        public Builder usingProcessNamedTrack(String name) {
+        public Builder usingProcessNamedTrack(long id, String name) {
             if (!mIsCategoryEnabled) {
                 return this;
             }
-            return usingNamedTrack(PerfettoTrace.getProcessTrackUuid(), name);
+            return usingNamedTrack(id, name, PerfettoTrace.getProcessTrackUuid());
         }
 
         /**
          * Adds the events to a thread scoped named track instead of the thread track where the
          * event occurred.
          */
-        public Builder usingThreadNamedTrack(long tid, String name) {
+        public Builder usingThreadNamedTrack(long id, String name, long tid) {
             if (!mIsCategoryEnabled) {
                 return this;
             }
-            return usingNamedTrack(PerfettoTrace.getThreadTrackUuid(tid), name);
+            return usingNamedTrack(id, name, PerfettoTrace.getThreadTrackUuid(tid));
         }
 
         /**
@@ -780,11 +779,13 @@ public final class PerfettoTrackEventExtra {
         private final long mPtr;
         private final long mExtraPtr;
         private final String mName;
+        private final long mId;
 
-        NamedTrack(String name, long parentUuid) {
-            mPtr = native_init(sNamedTrackId.incrementAndGet(), name, parentUuid);
+        NamedTrack(long id, String name, long parentUuid) {
+            mPtr = native_init(id, name, parentUuid);
             mExtraPtr = native_get_extra_ptr(mPtr);
             mName = name;
+            mId = id;
             sRegistry.registerNativeAllocation(this, mPtr);
         }
 
