@@ -912,6 +912,13 @@ class ShadeHeaderControllerTest : SysuiTestCase() {
     }
 
     @Test
+    fun onConfigChanged_refreshIconGroup() {
+        configurationController.notifyConfigurationChanged()
+
+        verify(statusBarIconController).refreshIconGroup(eq(iconManager))
+    }
+
+    @Test
     fun carrierStartPaddingIsSetOnClockLayout() {
         val clockWidth = 200
         val maxClockScale = context.resources.getFloat(R.dimen.qqs_expand_clock_scale)

@@ -329,6 +329,7 @@ constructor(
                         R.dimen.hover_system_icons_container_padding_bottom
                     ),
                 )
+                statusBarIconController.refreshIconGroup(iconManager)
             }
 
             override fun onDensityOrFontScaleChanged() {
