@@ -60,8 +60,7 @@ final class InteractiveMirrorDisplayImpl extends IInteractiveMirrorDisplay.Stub 
         DisplayManagerGlobal displayManager = DisplayManagerGlobal.getInstance();
         mVirtualDisplay = displayManager.createVirtualDisplayWrapper(
                 virtualDisplayConfig, virtualDisplayCallback, displayId);
-
-        createTouchscreen();
+        createTouchscreen(virtualDisplayConfig.getWidth(), virtualDisplayConfig.getHeight());
     }
 
     @Override
@@ -70,7 +69,7 @@ final class InteractiveMirrorDisplayImpl extends IInteractiveMirrorDisplay.Stub 
 
         // Since there is no way to resize a touchscreen, just recreate it.
         mVirtualTouchscreen.close();
-        createTouchscreen();
+        createTouchscreen(width, height);
     }
 
     @Override
@@ -84,7 +83,7 @@ final class InteractiveMirrorDisplayImpl extends IInteractiveMirrorDisplay.Stub 
         mVirtualTouchscreen.close();
     }
 
-    private void createTouchscreen() throws RemoteException {
+    private void createTouchscreen(int width, int height) throws RemoteException {
         Display display = mVirtualDisplay.getDisplay();
         // The display may no longer be valid if the session has been closed.
         if (!display.isValid()) {
@@ -92,7 +91,7 @@ final class InteractiveMirrorDisplayImpl extends IInteractiveMirrorDisplay.Stub 
         }
         String touchscreenName = display.getName() + "-touchscreen";
         VirtualTouchscreenConfig virtualTouchscreenConfig =
-                new VirtualTouchscreenConfig.Builder(display.getWidth(), display.getHeight())
+                new VirtualTouchscreenConfig.Builder(width, height)
                         .setAssociatedDisplayId(display.getDisplayId())
                         .setInputDeviceName(touchscreenName)
                         .build();
