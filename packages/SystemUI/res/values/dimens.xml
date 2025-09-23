@@ -2232,6 +2232,7 @@
     <dimen name="volume_dialog_background_top_margin">-28dp</dimen>
     <dimen name="volume_dialog_background_margin">6dp</dimen>
     <dimen name="volume_dialog_background_margin_negative">-6dp</dimen>
+    <dimen name="volume_dialog_background_surface_blur_radius">23dp</dimen>
 
     <dimen name="volume_dialog_window_margin">12dp</dimen>
     <dimen name="volume_dialog_components_spacing">4dp</dimen>
