@@ -24,6 +24,7 @@ import android.view.RoundedCorner;
 import android.view.SurfaceControl;
 
 import com.android.internal.annotations.VisibleForTesting;
+import com.android.window.flags.Flags;
 
 import java.util.function.Predicate;
 
@@ -95,6 +96,9 @@ class AppCompatRoundedCorners {
         // control is in the top left corner of an app window so offsetting bounds
         // accordingly.
         cropBounds.offsetTo(0, 0);
+        if (Flags.addSurfaceInsetsForCrop()) {
+            AppCompatUtils.adjustCropBoundsForSurfaceInsets(cropBounds, mainWindow);
+        }
         return cropBounds;
     }
 
