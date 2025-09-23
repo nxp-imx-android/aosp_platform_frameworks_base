@@ -1792,7 +1792,7 @@ public class DisplayModeDirector {
                         }
                     }
                 };
-        private boolean mThermalRegistered;
+        private boolean mThermalListenerRegistered;
 
         // Enable light sensor only when mShouldObserveAmbientLowChange is true or
         // mShouldObserveAmbientHighChange is true, screen is on, peak refresh rate
@@ -2535,11 +2535,12 @@ public class DisplayModeDirector {
                 unregisterSensorListener();
             }
 
-            if (registerForThermals && !mThermalRegistered) {
-                mThermalRegistered = mInjector.registerThermalServiceListener(mThermalListener);
-            } else if (!registerForThermals && mThermalRegistered) {
-                mInjector.unregisterThermalServiceListener(mThermalListener);
-                mThermalRegistered = false;
+            if (registerForThermals && !mThermalListenerRegistered) {
+                mThermalListenerRegistered = mInjector.registerThermalEventListener(
+                        mThermalListener);
+            } else if (!registerForThermals && mThermalListenerRegistered) {
+                mInjector.unregisterThermalEventListener(mThermalListener);
+                mThermalListenerRegistered = false;
                 synchronized (mLock) {
                     mThermalStatus = Temperature.THROTTLING_NONE; // reset
                 }
@@ -3111,8 +3112,8 @@ public class DisplayModeDirector {
 
         boolean isDozeState(Display d);
 
-        boolean registerThermalServiceListener(IThermalEventListener listener);
-        void unregisterThermalServiceListener(IThermalEventListener listener);
+        boolean registerThermalEventListener(IThermalEventListener listener);
+        void unregisterThermalEventListener(IThermalEventListener listener);
 
         boolean supportsFrameRateOverride();
 
@@ -3224,7 +3225,7 @@ public class DisplayModeDirector {
         }
 
         @Override
-        public boolean registerThermalServiceListener(IThermalEventListener listener) {
+        public boolean registerThermalEventListener(IThermalEventListener listener) {
             IThermalService thermalService = getThermalService();
             if (thermalService == null) {
                 Slog.w(TAG, "Could not observe thermal status. Service not available");
@@ -3241,7 +3242,7 @@ public class DisplayModeDirector {
         }
 
         @Override
-        public void unregisterThermalServiceListener(IThermalEventListener listener) {
+        public void unregisterThermalEventListener(IThermalEventListener listener) {
             IThermalService thermalService = getThermalService();
             if (thermalService == null) {
                 Slog.w(TAG, "Could not unregister thermal status. Service not available");

@@ -80,7 +80,7 @@ final class SkinThermalStatusObserver extends IThermalEventListener.Stub impleme
 
     void observe() {
         // if failed to register thermal service listener, don't register display listener
-        if (!mInjector.registerThermalServiceListener(this)) {
+        if (!mInjector.registerThermalEventListener(this)) {
             return;
         }
         registerDisplayListener();

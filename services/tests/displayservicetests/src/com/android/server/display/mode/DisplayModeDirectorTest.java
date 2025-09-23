@@ -1618,7 +1618,7 @@ public class DisplayModeDirectorTest {
         // Get the thermal listener so that we can give it new thermal conditions
         ArgumentCaptor<IThermalEventListener> thermalListenerCaptor =
                 ArgumentCaptor.forClass(IThermalEventListener.class);
-        verify(mInjector, atLeastOnce()).registerThermalServiceListener(
+        verify(mInjector, atLeastOnce()).registerThermalEventListener(
                 thermalListenerCaptor.capture());
         List<IThermalEventListener> thermalListeners = thermalListenerCaptor.getAllValues();
 
@@ -1718,7 +1718,7 @@ public class DisplayModeDirectorTest {
         // Get the thermal listener so that we can give it new thermal conditions
         ArgumentCaptor<IThermalEventListener> thermalListenerCaptor =
                 ArgumentCaptor.forClass(IThermalEventListener.class);
-        verify(mInjector, atLeastOnce()).registerThermalServiceListener(
+        verify(mInjector, atLeastOnce()).registerThermalEventListener(
                 thermalListenerCaptor.capture());
         List<IThermalEventListener> thermalListeners = thermalListenerCaptor.getAllValues();
 
@@ -3246,7 +3246,7 @@ public class DisplayModeDirectorTest {
         ArgumentCaptor<IThermalEventListener> thermalEventListener =
                 ArgumentCaptor.forClass(IThermalEventListener.class);
 
-        verify(mInjector).registerThermalServiceListener(thermalEventListener.capture());
+        verify(mInjector).registerThermalEventListener(thermalEventListener.capture());
         final IThermalEventListener listener = thermalEventListener.getValue();
 
         // Verify that there is no skin temperature vote initially.
@@ -3973,12 +3973,12 @@ public class DisplayModeDirectorTest {
         }
 
         @Override
-        public boolean registerThermalServiceListener(IThermalEventListener listener) {
+        public boolean registerThermalEventListener(IThermalEventListener listener) {
             return true;
         }
 
         @Override
-        public void unregisterThermalServiceListener(IThermalEventListener listener) {
+        public void unregisterThermalEventListener(IThermalEventListener listener) {
         }
 
         @Override
