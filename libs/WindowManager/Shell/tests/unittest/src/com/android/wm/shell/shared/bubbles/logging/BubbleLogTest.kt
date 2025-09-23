@@ -47,12 +47,13 @@ class BubbleLogTest {
     }
 
     @Test
-    fun addLogger_addedLoggerHasAllEvents() {
+    fun addLogger_addedLoggerHasAllNonHistoryEvents() {
         assertThat(BubbleLog.loggers.size).isEqualTo(1)
         val testLogger = TestLogger()
         val testData = "test data"
         BubbleLog.addLogger(testLogger)
 
+        BubbleLog.record("history event")
         BubbleLog.d("debug test message", eventData = testData)
         BubbleLog.v("verbose test message", eventData = testData)
         BubbleLog.i("info test message", eventData = testData)
@@ -83,12 +84,13 @@ class BubbleLogTest {
 
     @Test
     fun dump_logsHistoryEventLoggerOutput() {
+        BubbleLog.record("history test message string = %s", "stringArgument")
         BubbleLog.d("debug test message boolean = %b", false)
         BubbleLog.v("verbose test message int = %d", 1)
 
         val loggerOutput = getDumpOutput { BubbleLog.dump(pw = it) }
         assertThat(loggerOutput).contains("Bubbles events history:")
-        assertThat(getTrimmedLogLines().size).isEqualTo(2)
+        assertThat(getTrimmedLogLines().size).isEqualTo(3)
     }
 
     private fun getTrimmedLogLines(): List<String> {

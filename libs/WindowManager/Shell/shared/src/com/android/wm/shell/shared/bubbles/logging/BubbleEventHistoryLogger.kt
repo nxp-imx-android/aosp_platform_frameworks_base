@@ -20,6 +20,7 @@ import android.icu.text.SimpleDateFormat
 import android.text.TextUtils
 import androidx.annotation.VisibleForTesting
 import com.android.wm.shell.Flags
+import com.android.wm.shell.shared.bubbles.logging.BubbleEventHistoryLogger.Companion.MAX_EVENTS
 import java.io.PrintWriter
 import java.util.Locale
 
@@ -50,6 +51,16 @@ class BubbleEventHistoryLogger : DebugLogger {
 
     override fun e(message: String, vararg parameters: Any?, eventData: String?) {
         logEvent("e: ${TextUtils.formatSimple(message, *parameters)}", eventData)
+    }
+
+    /**
+     * Logs a RECORD level message.
+     *
+     * The [message] is a format string, with [parameters] substituted into it. An optional
+     * [eventData] string may also be provided, which implementations can include in the log output.
+     */
+    fun record(message: String, vararg parameters: Any?, eventData: String?) {
+        logEvent("r: ${TextUtils.formatSimple(message, *parameters)}", eventData)
     }
 
     @VisibleForTesting
