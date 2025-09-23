@@ -6793,6 +6793,8 @@ public class NotificationStackScrollLayout
      * Request an animation whenever the toppadding changes next
      */
     public void animateNextTopPaddingChange() {
+        // With SceneContainer enabled, NSSL receives smooth stackTop changes. No need to animate.
+        SceneContainerFlag.assertInLegacyMode();
         mAnimateNextTopPaddingChange = true;
     }
 
