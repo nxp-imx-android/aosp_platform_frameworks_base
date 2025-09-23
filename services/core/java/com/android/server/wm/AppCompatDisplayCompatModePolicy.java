@@ -120,12 +120,14 @@ class AppCompatDisplayCompatModePolicy {
         if (android.companion.virtualdevice.flags.Flags.computerControlConfigChangeOverride()) {
             VirtualDeviceManagerInternal vdmInternal =
                     LocalServices.getService(VirtualDeviceManagerInternal.class);
-            int previousDisplayId = previousDisplay.getDisplayId();
-            int newDisplayId = newDisplay.getDisplayId();
+            if (vdmInternal != null) {
+                int previousDisplayId = previousDisplay.getDisplayId();
+                int newDisplayId = newDisplay.getDisplayId();
 
-            if (vdmInternal.isComputerControlDisplay(previousDisplayId)
-                    || vdmInternal.isComputerControlDisplay(newDisplayId)) {
-                mDisplayChangedForComputerControlWithoutRestart = true;
+                if (vdmInternal.isComputerControlDisplay(previousDisplayId)
+                        || vdmInternal.isComputerControlDisplay(newDisplayId)) {
+                    mDisplayChangedForComputerControlWithoutRestart = true;
+                }
             }
         }
 
