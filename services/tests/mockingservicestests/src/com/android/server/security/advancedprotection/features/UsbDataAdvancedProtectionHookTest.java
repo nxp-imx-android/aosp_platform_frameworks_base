@@ -82,6 +82,7 @@ import android.platform.test.flag.junit.SetFlagsRule;
 import android.provider.Settings;
 import android.security.Flags;
 import android.security.advancedprotection.AdvancedProtectionProtoEnums;
+import android.security.advancedprotection.AdvancedProtectionManager;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import com.android.internal.R;
 import com.android.internal.util.FrameworkStatsLog;
@@ -108,7 +109,7 @@ import java.util.Map;
 /**
  * Unit tests for {@link UsbDataAdvancedProtectionHook}.
  *
- * <p>atest FrameworksMockingServicesTests:UsbDataAdvancedProtectionHookTest
+ * <p>atest FrameworksMockingServicesTests_advanced_protection_mode
  */
 @SuppressLint("VisibleForTests")
 @RunWith(AndroidJUnit4.class)
@@ -556,8 +557,8 @@ public class UsbDataAdvancedProtectionHookTest {
 
         verify(mAdvancedProtectionService)
                 .logDialogShown(
-                        eq(AdvancedProtectionProtoEnums.FEATURE_ID_DISALLOW_USB),
-                        eq(AdvancedProtectionProtoEnums.DIALOGUE_TYPE_BLOCKED_INTERACTION),
+                        eq(AdvancedProtectionManager.FEATURE_ID_DISALLOW_USB),
+                        eq(AdvancedProtectionManager.SUPPORT_DIALOG_TYPE_BLOCKED_INTERACTION),
                         eq(false));
         checkNotificationIntents(mNotificationCaptor.getValue());
         Notification notification = mNotificationCaptor.getValue();
@@ -652,8 +653,8 @@ public class UsbDataAdvancedProtectionHookTest {
                         anyString(), anyInt(), any(Notification.class), any(UserHandle.class));
         verify(mAdvancedProtectionService)
                 .logDialogShown(
-                        eq(AdvancedProtectionProtoEnums.FEATURE_ID_DISALLOW_USB),
-                        eq(AdvancedProtectionProtoEnums.DIALOGUE_TYPE_BLOCKED_INTERACTION),
+                        eq(AdvancedProtectionManager.FEATURE_ID_DISALLOW_USB),
+                        eq(AdvancedProtectionManager.SUPPORT_DIALOG_TYPE_BLOCKED_INTERACTION),
                         eq(false));
         verify(mNotificationManager)
                 .notifyAsUser(
@@ -843,8 +844,8 @@ public class UsbDataAdvancedProtectionHookTest {
         // Verify the silent notification was logged
         verify(mAdvancedProtectionService)
                 .logDialogShown(
-                        AdvancedProtectionProtoEnums.FEATURE_ID_DISALLOW_USB,
-                        AdvancedProtectionProtoEnums.DIALOGUE_TYPE_BLOCKED_INTERACTION_SILENT,
+                        AdvancedProtectionManager.FEATURE_ID_DISALLOW_USB,
+                        AdvancedProtectionManager.SUPPORT_DIALOG_TYPE_UNKNOWN,
                         false);
     }
 
