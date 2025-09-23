@@ -29,7 +29,7 @@ import android.window.TransitionInfo
 import android.window.TransitionRequestInfo
 import android.window.WindowContainerToken
 import androidx.test.filters.SmallTest
-import com.android.internal.hidden_from_bootclasspath.com.android.window.flags.Flags.FLAG_FIX_BUBBLE_TRAMPOLINE_ANIMATION
+import com.android.window.flags.Flags.FLAG_FIX_BUBBLE_TRAMPOLINE_ANIMATION
 import com.android.wm.shell.Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE
 import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.TestShellExecutor
