@@ -151,7 +151,6 @@ constructor(
 
     private fun setHandleTouchesDisregardingUdfpsOverlayViewLifecycle(): Boolean {
         return requestReason == REASON_AUTH_KEYGUARD &&
-            com.android.systemui.Flags.newDozingKeyguardStates() &&
             overlayParams.sensorType == TYPE_UDFPS_ULTRASONIC
     }
 

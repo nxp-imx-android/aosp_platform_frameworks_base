@@ -46,7 +46,6 @@ import com.android.keyguard.KeyguardUpdateMonitorCallback;
 import com.android.keyguard.KeyguardViewController;
 import com.android.keyguard.logging.BiometricUnlockLogger;
 import com.android.systemui.Dumpable;
-import com.android.systemui.Flags;
 import com.android.systemui.biometrics.AuthController;
 import com.android.systemui.dagger.SysUISingleton;
 import com.android.systemui.dagger.qualifiers.Main;
@@ -527,11 +526,6 @@ public class BiometricUnlockController extends KeyguardUpdateMonitorCallback imp
                 && mPowerManager.isInteractive() && mOrderUnlockAndWake
                 && mOrderUnlockAndWake;
 
-        if (!com.android.systemui.Flags.newDozingKeyguardStates()) {
-            if (mMode != MODE_NONE && !wakeInKeyguard) {
-                wakeUp.run();
-            }
-        }
         switch (mMode) {
             case MODE_DISMISS_BOUNCER:
                 Trace.beginSection("MODE_DISMISS_BOUNCER");
@@ -575,12 +569,11 @@ public class BiometricUnlockController extends KeyguardUpdateMonitorCallback imp
                 break;
         }
         onModeChanged(mMode, biometricUnlockSource);
-        if (com.android.systemui.Flags.newDozingKeyguardStates()) {
-            // wake up after biometric unlock mode is sent to listeners
-            if (mMode != MODE_NONE && !wakeInKeyguard) {
-                wakeUp.run();
-            }
+        // wake up after biometric unlock mode is sent to listeners
+        if (mMode != MODE_NONE && !wakeInKeyguard) {
+            wakeUp.run();
         }
+
         Trace.endSection();
     }
 
@@ -702,11 +695,7 @@ public class BiometricUnlockController extends KeyguardUpdateMonitorCallback imp
             } else if (!unlockingAllowed) {
                 return bypass ? MODE_SHOW_BOUNCER : MODE_NONE;
             } else if (mDozeScrimController.isPulsing()) {
-                if (Flags.newDozingKeyguardStates()) {
-                    return MODE_WAKE_AND_UNLOCK_PULSING; // always unlock from the pulsing state
-                } else {
-                    return bypass ? MODE_WAKE_AND_UNLOCK_PULSING : MODE_ONLY_WAKE;
-                }
+                return MODE_WAKE_AND_UNLOCK_PULSING; // always unlock from the pulsing state
             } else {
                 if (bypass) {
                     // Wake-up fading out nicely

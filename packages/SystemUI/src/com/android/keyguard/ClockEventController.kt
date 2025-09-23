@@ -466,9 +466,7 @@ constructor(
                 listenForAnyStateToAodTransition(this)
                 listenForAnyStateToLockscreenTransition(this)
                 listenForAnyStateToDozingTransition(this)
-                if (com.android.systemui.Flags.newDozingKeyguardStates()) {
-                    listenForDozingToLockscreen(this)
-                }
+                listenForDozingToLockscreen(this)
             }
         }
     }
@@ -643,9 +641,7 @@ constructor(
                 .transition(Edge.create(to = LOCKSCREEN))
                 .filter { it.transitionState == TransitionState.STARTED }
                 .filter { it.from != AOD }
-                .filter {
-                    !com.android.systemui.Flags.newDozingKeyguardStates() || it.from != DOZING
-                }
+                .filter { it.from != DOZING }
                 .collect { handleDoze(0f) }
         }
     }
