@@ -29,6 +29,7 @@ import static com.android.dx.mockito.inline.extended.ExtendedMockito.mockitoSess
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.spyOn;
 import static com.android.server.job.Flags.FLAG_BATCH_ACTIVE_BUCKET_JOBS;
 import static com.android.server.job.Flags.FLAG_BATCH_CONNECTIVITY_JOBS_PER_NETWORK;
+import static com.android.server.job.Flags.FLAG_ENHANCE_SYSTEM_JOB_LIMIT_EXCEPTION;
 import static com.android.server.job.Flags.FLAG_THERMAL_RESTRICTIONS_TO_FGS_JOBS;
 import static com.android.server.job.JobSchedulerService.ACTIVE_INDEX;
 import static com.android.server.job.JobSchedulerService.RARE_INDEX;
@@ -125,8 +126,11 @@ public class JobSchedulerServiceTest {
     private static final String SOURCE_PACKAGE = "com.android.frameworks.mockingservicestests";
     private static final String TAG = JobSchedulerServiceTest.class.getSimpleName();
     private static final int TEST_UID = 10123;
+    private static final String TEST_NAMESPACE = "JobSchedulerServiceTest";
+    private static final int TEST_MAX_JOBS_PER_APP = 5;
 
     private JobSchedulerService mService;
+    private JobStore mJobStore;
 
     private MockitoSession mMockingSession;
     @Mock
@@ -151,6 +155,11 @@ public class JobSchedulerServiceTest {
     private class TestJobSchedulerService extends JobSchedulerService {
         TestJobSchedulerService(Context context) {
             super(context);
+            mAppStateTracker = mock(AppStateTrackerImpl.class);
+        }
+
+        TestJobSchedulerService(Context context, int maxJobs, JobStore jobStore) {
+            super(context, maxJobs, jobStore);
             mAppStateTracker = mock(AppStateTrackerImpl.class);
         }
     }
@@ -229,7 +238,8 @@ public class JobSchedulerServiceTest {
         doReturn(mock(PlatformCompat.class))
                 .when(() -> ServiceManager.getService(Context.PLATFORM_COMPAT_SERVICE));
 
-        mService = new TestJobSchedulerService(mContext);
+        mJobStore = JobStore.initAndGetForTesting(mContext, mContext.getFilesDir());
+        mService = new TestJobSchedulerService(mContext, TEST_MAX_JOBS_PER_APP, mJobStore);
         mService.waitOnAsyncLoadingForTesting();
 
         verify(mBatteryManagerInternal).registerChargingPolicyChangeListener(
@@ -2740,6 +2750,79 @@ public class JobSchedulerServiceTest {
         doReturn(policy).when(mBatteryManagerInternal).getChargingPolicy();
         if (mChargingPolicyChangeListener != null) {
             mChargingPolicyChangeListener.onChargingPolicyChanged(policy);
+        }
+    }
+
+    @Test
+    @EnableFlags(FLAG_ENHANCE_SYSTEM_JOB_LIMIT_EXCEPTION)
+    public void testSchedule_jobCountLimit_systemUid_enhancedException() throws Exception {
+        // Schedule up to and including the max number of jobs.
+        for (int i = 0; i <= TEST_MAX_JOBS_PER_APP; i++) {
+            JobInfo job = createJobInfo(i).setMinimumLatency(3600_000).build();
+            assertEquals(JobScheduler.RESULT_SUCCESS, mService.scheduleAsPackage(
+                    job, null, Process.SYSTEM_UID, null, 0, TEST_NAMESPACE, ""));
+        }
+
+        JobInfo extraJob = createJobInfo(TEST_MAX_JOBS_PER_APP + 1).setMinimumLatency(
+                3600_000).build();
+        try {
+            mService.scheduleAsPackage(
+                    extraJob, null, Process.SYSTEM_UID, null, 0, TEST_NAMESPACE, "");
+            fail("Scheduling extra job should have thrown an exception");
+        } catch (IllegalStateException e) {
+            // Success
+            final int actualValue = TEST_MAX_JOBS_PER_APP + 1;
+            final String expected = "Apps may not schedule more than "
+                    + TEST_MAX_JOBS_PER_APP + " distinct jobs"
+                    + ". Top jobs: @" + TEST_NAMESPACE + "@foo/bar:" + actualValue;
+            assertEquals(expected, e.getMessage());
+        }
+    }
+
+    @Test
+    @DisableFlags(FLAG_ENHANCE_SYSTEM_JOB_LIMIT_EXCEPTION)
+    public void testSchedule_jobCountLimit_systemUid_regularException() throws Exception {
+        // Schedule up to and including the max number of jobs.
+        for (int i = 0; i <= TEST_MAX_JOBS_PER_APP; i++) {
+            JobInfo job = createJobInfo(i).setMinimumLatency(3600_000).build();
+            assertEquals(JobScheduler.RESULT_SUCCESS, mService.scheduleAsPackage(
+                    job, null, Process.SYSTEM_UID, null, 0, TEST_NAMESPACE, ""));
+        }
+
+        JobInfo extraJob = createJobInfo(TEST_MAX_JOBS_PER_APP + 1).setMinimumLatency(
+                3600_000).build();
+        try {
+            mService.scheduleAsPackage(
+                    extraJob, null, Process.SYSTEM_UID, null, 0, TEST_NAMESPACE, "");
+            fail("Scheduling extra job should have thrown an exception");
+        } catch (IllegalStateException e) {
+            // Success
+            final String expected = "Apps may not schedule more than "
+                    + TEST_MAX_JOBS_PER_APP + " distinct jobs";
+            assertEquals(expected, e.getMessage());
+        }
+    }
+
+    @Test
+    public void testSchedule_jobCountLimit_regularUid() throws Exception {
+        // Schedule up to and including the max number of jobs.
+        for (int i = 0; i <= TEST_MAX_JOBS_PER_APP; i++) {
+            JobInfo job = createJobInfo(i).setMinimumLatency(3600_000).build();
+            assertEquals(JobScheduler.RESULT_SUCCESS, mService.scheduleAsPackage(
+                    job, null, TEST_UID, null, 0, TEST_NAMESPACE, ""));
+        }
+
+        JobInfo extraJob = createJobInfo(TEST_MAX_JOBS_PER_APP + 1).setMinimumLatency(
+                3600_000).build();
+        try {
+            mService.scheduleAsPackage(
+                    extraJob, null, TEST_UID, null, 0, TEST_NAMESPACE, "");
+            fail("Scheduling extra job should have thrown an exception");
+        } catch (IllegalStateException e) {
+            // Success
+            final String expected = "Apps may not schedule more than "
+                    + TEST_MAX_JOBS_PER_APP + " distinct jobs";
+            assertEquals(expected, e.getMessage());
         }
     }
 }

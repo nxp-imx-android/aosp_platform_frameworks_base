@@ -186,7 +186,8 @@ public class JobSchedulerService extends com.android.server.SystemService
     public static final String TRACE_TRACK_NAME = "JobScheduler";
 
     /** The maximum number of jobs that we allow an app to schedule */
-    private static final int MAX_JOBS_PER_APP = 150;
+    private static final int DEFAULT_MAX_JOBS_PER_APP = 150;
+    private final int mMaxJobsPerApp;
     /** The number of the most recently completed jobs to keep track of for debugging purposes. */
     private static final int NUM_COMPLETED_JOB_HISTORY = 20;
 
@@ -1872,12 +1873,17 @@ public class JobSchedulerService extends com.android.server.SystemService
             if (DEBUG) Slog.d(TAG, "SCHEDULE: " + jobStatus.toShortString());
             // Jobs on behalf of others don't apply to the per-app job cap
             if (packageName == null) {
-                if (mJobs.countJobsForUid(callingUid) > MAX_JOBS_PER_APP) {
+                if (mJobs.countJobsForUid(callingUid) > mMaxJobsPerApp) {
                     Slog.w(TAG, "Too many jobs for uid " + callingUid);
                     Counter.logIncrementWithUid(
                             "job_scheduler.value_cntr_w_uid_max_scheduling_limit_hit", callingUid);
-                    throw new IllegalStateException("Apps may not schedule more than "
-                            + MAX_JOBS_PER_APP + " distinct jobs");
+                    String errorMsg = "Apps may not schedule more than "
+                            + mMaxJobsPerApp + " distinct jobs";
+                    if ((callingUid == Process.SYSTEM_UID)
+                            && Flags.enhanceSystemJobLimitException()) {
+                        errorMsg += ". Top jobs: " + mJobs.getTopJobsDebugStringForUid(callingUid);
+                    }
+                    throw new IllegalStateException(errorMsg);
                 }
             }
 
@@ -2603,8 +2609,10 @@ public class JobSchedulerService extends com.android.server.SystemService
      *
      * @param context The system server context.
      */
-    public JobSchedulerService(Context context) {
+    @VisibleForTesting
+    JobSchedulerService(Context context, int maxJobs, @Nullable JobStore jobStore) {
         super(context);
+        mMaxJobsPerApp = maxJobs;
 
         mLocalPM = LocalServices.getService(PackageManagerInternal.class);
         mActivityManagerInternal = Objects.requireNonNull(
@@ -2677,7 +2685,7 @@ public class JobSchedulerService extends com.android.server.SystemService
 
         // Initialize the job store and set up any persisted jobs
         mJobStoreLoadedLatch = new CountDownLatch(1);
-        mJobs = JobStore.get(this);
+        mJobs = jobStore == null ? JobStore.get(this) : jobStore;
         mJobs.initAsync(mJobStoreLoadedLatch);
 
         mBatteryStateTracker = new BatteryStateTracker();
@@ -2729,6 +2737,19 @@ public class JobSchedulerService extends com.android.server.SystemService
             Slog.w(TAG, "!!! RTC not yet good; tracking time updates for job scheduling");
             context.registerReceiver(mTimeSetReceiver, new IntentFilter(Intent.ACTION_TIME_CHANGED));
         }
+    }
+
+    /**
+     * Initializes the system service.
+     * <p>
+     * Subclasses must define a single argument constructor that accepts the context
+     * and passes it to super.
+     * </p>
+     *
+     * @param context The system server context.
+     */
+    public JobSchedulerService(Context context) {
+        this(context, DEFAULT_MAX_JOBS_PER_APP, null);
     }
 
     private final BroadcastReceiver mTimeSetReceiver = new BroadcastReceiver() {
