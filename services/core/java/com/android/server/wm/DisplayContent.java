@@ -3497,6 +3497,7 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
             super.removeImmediately();
             if (DEBUG_DISPLAY) Slog.v(TAG_WM, "Removing display=" + this);
             mPointerEventDispatcher.dispose();
+            mSystemGestureExclusionListeners.kill();
             // Unlink death from remote to clear the reference from binder -> mRemoteInsetsDeath
             // -> this DisplayContent.
             setRemoteInsetsController(null);

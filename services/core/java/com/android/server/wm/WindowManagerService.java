@@ -5201,9 +5201,11 @@ public class WindowManagerService extends IWindowManager.Stub
         synchronized (mGlobalLock) {
             final DisplayContent displayContent = mRoot.getDisplayContent(displayId);
             if (displayContent == null) {
-                throw new IllegalArgumentException(
+                Slog.w(
+                        TAG,
                         "Trying to unregister system gesture exclusion event for invalid display: "
                                 + displayId);
+                return;
             }
             displayContent.unregisterSystemGestureExclusionListener(listener);
         }
