@@ -202,7 +202,9 @@ constructor(
                 }
             }
         val showDualShadeSetting =
-            LocalResources.current.getBoolean(R.bool.config_useDualShadeSetting)
+            LocalResources.current.getBoolean(
+                com.android.settingslib.R.bool.config_useDualShadeSetting
+            )
         val actions =
             remember(topBarActionsViewModel, showDualShadeSetting) {
                 topBarActionsViewModel.actions(showDualShadeSetting).toMutableStateList()

@@ -52,10 +52,10 @@ val Kosmos.shadeMode by Fixture { shadeModeInteractor.shadeMode }
  */
 fun Kosmos.enableDualShade(wideLayout: Boolean? = null, enabledBySetting: Boolean = true) {
     if (enabledBySetting) {
-        overrideResource(R.bool.config_useDualShadeSetting, true)
+        overrideResource(com.android.settingslib.R.bool.config_useDualShadeSetting, true)
         runBlocking { secureSettingsRepository.setBoolean(Settings.Secure.DUAL_SHADE, true) }
     } else {
-        overrideResource(R.bool.config_useDualShadeSetting, false)
+        overrideResource(com.android.settingslib.R.bool.config_useDualShadeSetting, false)
         overrideResource(R.bool.config_dualShadeEnabledByDefault, true)
     }
     fakeConfigurationRepository.onAnyConfigurationChange()
@@ -69,10 +69,10 @@ fun Kosmos.enableDualShade(wideLayout: Boolean? = null, enabledBySetting: Boolea
 // TODO(b/391578667): Make this user-aware once supported by FakeSecureSettingsRepository.
 fun Kosmos.disableDualShade(disabledBySetting: Boolean = true) {
     if (disabledBySetting) {
-        overrideResource(R.bool.config_useDualShadeSetting, true)
+        overrideResource(com.android.settingslib.R.bool.config_useDualShadeSetting, true)
         runBlocking { secureSettingsRepository.setBoolean(Settings.Secure.DUAL_SHADE, false) }
     } else {
-        overrideResource(R.bool.config_useDualShadeSetting, false)
+        overrideResource(com.android.settingslib.R.bool.config_useDualShadeSetting, false)
         overrideResource(R.bool.config_dualShadeEnabledByDefault, false)
     }
     fakeConfigurationRepository.onAnyConfigurationChange()
