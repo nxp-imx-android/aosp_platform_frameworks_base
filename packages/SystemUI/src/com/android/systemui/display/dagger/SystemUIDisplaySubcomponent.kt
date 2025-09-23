@@ -87,6 +87,9 @@ interface SystemUIDisplaySubcomponent {
     /** Qualifier used to represent that the object is provided/bound with the proper display. */
     @Qualifier @Retention(AnnotationRetention.RUNTIME) annotation class DisplayAware
 
+    /** Same as [DisplayAware] but specific to status bar. */
+    @Qualifier @Retention(AnnotationRetention.RUNTIME) annotation class DisplayAwareStatusBar
+
     /** Annotates the display id inside the subcomponent. */
     @Qualifier @Retention(AnnotationRetention.RUNTIME) annotation class DisplayId
 

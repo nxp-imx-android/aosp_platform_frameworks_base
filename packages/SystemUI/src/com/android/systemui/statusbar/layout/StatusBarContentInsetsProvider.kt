@@ -37,6 +37,7 @@ import com.android.systemui.SysUICutoutInformation
 import com.android.systemui.SysUICutoutProvider
 import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent
 import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent.DisplayAware
+import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent.DisplayAwareStatusBar
 import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent.PerDisplaySingleton
 import com.android.systemui.dump.DumpManager
 import com.android.systemui.res.R
@@ -140,7 +141,7 @@ interface StatusBarContentInsetsProvider :
 class StatusBarContentInsetsProviderImpl
 @Inject
 constructor(
-    @DisplayAware val context: Context,
+    @DisplayAwareStatusBar val context: Context,
     @DisplayAware val configurationController: StatusBarConfigurationController,
     val dumpManager: DumpManager,
     val commandRegistry: CommandRegistry,

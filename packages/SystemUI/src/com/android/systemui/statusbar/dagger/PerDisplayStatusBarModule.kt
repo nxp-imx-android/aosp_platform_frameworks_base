@@ -17,11 +17,17 @@
 package com.android.systemui.statusbar.dagger
 
 import android.content.Context
+import android.os.Bundle
+import android.view.Display
+import android.view.WindowManager.LayoutParams.TYPE_STATUS_BAR
 import com.android.systemui.common.ui.ConfigurationState
 import com.android.systemui.common.ui.ConfigurationStateImpl
+import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent
 import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent.DisplayAware
+import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent.DisplayAwareStatusBar
 import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent.PerDisplaySingleton
+import com.android.systemui.res.R
 import com.android.systemui.statusbar.chips.ui.viewmodel.OngoingActivityChipsViewModel
 import com.android.systemui.statusbar.data.repository.StatusBarConfigurationController
 import com.android.systemui.statusbar.data.repository.StatusBarConfigurationControllerStore
@@ -63,6 +69,7 @@ interface PerDisplayStatusBarModule {
     ): StatusBarContentInsetsProvider
 
     @Binds
+    @DisplayAware
     @IntoSet
     fun statusBarContentInsetsProviderAsLifecycleListener(
         impl: StatusBarContentInsetsProviderImpl
@@ -119,6 +126,30 @@ interface PerDisplayStatusBarModule {
             @DisplayAware context: Context,
         ): ConfigurationState {
             return configStateFactory.create(context, configurationController)
+        }
+
+        /**
+         * Status Bar specific per display [Context]. For the default display it uses the default
+         * application [Context], which is all that is needed.
+         *
+         * For external displays, it will be a [WindowContext], which is tied to the display and
+         * also window type [TYPE_STATUS_BAR].
+         */
+        @Provides
+        @PerDisplaySingleton
+        @DisplayAwareStatusBar
+        fun provideStatusBarWindowContext(
+            display: Display,
+            @Application context: Context,
+        ): Context {
+            return if (display.displayId == Display.DEFAULT_DISPLAY) {
+                // No need to create a new context, if we already have one.
+                context
+            } else {
+                context
+                    .createWindowContext(display, TYPE_STATUS_BAR, /* options= */ Bundle.EMPTY)
+                    .also { it.setTheme(R.style.Theme_SystemUI) }
+            }
         }
     }
 }
