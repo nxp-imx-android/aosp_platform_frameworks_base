@@ -1505,6 +1505,23 @@ class DesktopModeWindowDecorViewModelTests : DesktopModeWindowDecorViewModelTest
     }
 
     @Test
+    @EnableFlags(Flags.FLAG_ROOT_TASK_FOR_BUBBLE)
+    fun testOnTaskOpening_startingAppBubbleTask_skipsWindowDecorationCreation() {
+        val taskInfo = createTask(windowingMode = WINDOWING_MODE_MULTI_WINDOW)
+        mockBubbleController.stub { on { shouldBeAppBubble(taskInfo) } doReturn true }
+
+        val isWindowDecorCreated =
+            desktopModeWindowDecorViewModel.onTaskOpening(
+                taskInfo,
+                SurfaceControl(), /* taskSurface */
+                StubTransaction(), /* startT */
+                StubTransaction(), /* finishT */
+            )
+
+        assertThat(isWindowDecorCreated).isFalse()
+    }
+
+    @Test
     fun testOnTaskOpening_expandedBubbleTask_skipsWindowDecorationCreation() {
         val taskInfo =
             createTask(windowingMode = WINDOWING_MODE_MULTI_WINDOW).apply {
