@@ -16,6 +16,7 @@
 
 package com.android.systemui.qs.tiles.impl.hearingdevices.domain.interactor
 
+import android.bluetooth.BluetoothProfile
 import android.os.UserHandle
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
@@ -36,9 +37,9 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.mockito.Mock
 import org.mockito.junit.MockitoJUnit
 import org.mockito.junit.MockitoRule
+import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
 
 @SmallTest
@@ -47,12 +48,10 @@ class HearingDevicesTileDataInteractorTest : SysuiTestCase() {
     private val kosmos = testKosmos()
     private val testScope = kosmos.testScope
     private val testUser = UserHandle.of(1)
-
     private val controller = kosmos.fakeBluetoothController
     private lateinit var underTest: HearingDevicesTileDataInteractor
-
     @Rule @JvmField val mockitoRule: MockitoRule = MockitoJUnit.rule()
-    @Mock private lateinit var checker: HearingDevicesChecker
+    private var checker = mock<HearingDevicesChecker>()
 
     @Before
     fun setup() {
@@ -60,11 +59,21 @@ class HearingDevicesTileDataInteractorTest : SysuiTestCase() {
     }
 
     @Test
-    fun availability_returnTrue() =
+    fun availability_supportHearingAidProfile_returnTrue() =
         testScope.runTest {
+            controller.supportedProfiles = listOf(BluetoothProfile.HEARING_AID)
             val availability by collectLastValue(underTest.availability(testUser))
 
             assertThat(availability).isTrue()
+        }
+
+    @Test
+    fun availability_notSupportRelatedProfile_returnFalse() =
+        testScope.runTest {
+            controller.supportedProfiles = listOf(BluetoothProfile.A2DP)
+            val availability by collectLastValue(underTest.availability(testUser))
+
+            assertThat(availability).isFalse()
         }
 
     @Test
