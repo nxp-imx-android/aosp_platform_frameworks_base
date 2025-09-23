@@ -562,6 +562,7 @@ public final class DisplayManagerService extends SystemService {
     // Whether default display should be included in the display topology. Note that this should
     // only be used for the devices in projected mode.
     private boolean mIncludeDefaultDisplayInTopology;
+    private final boolean mStableEdidsFlag;
 
     private final BroadcastReceiver mIdleModeReceiver = new BroadcastReceiver() {
         @Override
@@ -658,7 +659,11 @@ public final class DisplayManagerService extends SystemService {
         mHandlerExecutor = new HandlerExecutor(mHandler);
         mUiHandler = UiThread.getHandler();
         mPersistentDataStore = mInjector.getPersistentDataStore();
-        mDisplayDeviceRepo = new DisplayDeviceRepository(mSyncRoot, mPersistentDataStore);
+        mStableEdidsFlag = Boolean.parseBoolean(
+                SystemProperties.get("persist.debug.sf.stable_edid_ids", "false"))
+                ||  com.android.graphics.surfaceflinger.flags.Flags.stableEdidIds();
+        mDisplayDeviceRepo = new DisplayDeviceRepository(
+                mSyncRoot, mPersistentDataStore, mStableEdidsFlag);
         if (mFlags.isDisplayTopologyEnabled()) {
             final var backupManager = new BackupManager(mContext);
             Consumer<Pair<DisplayTopology, DisplayTopologyGraph>> topologyChangedCallback =
@@ -685,7 +690,7 @@ public final class DisplayManagerService extends SystemService {
                         && mDisplayTopologyCoordinator.isDisplayAllowedInTopology(info);
         mLogicalDisplayMapper = new LogicalDisplayMapper(mContext, foldSettingProvider,
                 mDisplayDeviceRepo, new LogicalDisplayListener(), mSyncRoot, mHandler, mFlags,
-                isDisplayAllowedInTopoogy);
+                isDisplayAllowedInTopoogy, mStableEdidsFlag);
         mDisplayModeDirector = new DisplayModeDirector(
                 context, mHandler, mFlags, mDisplayDeviceConfigProvider);
         mBrightnessSynchronizer = new BrightnessSynchronizer(mContext, displayThreadLooper);
@@ -2366,7 +2371,7 @@ public final class DisplayManagerService extends SystemService {
             // main display adapter
             registerDisplayAdapterLocked(mInjector.getLocalDisplayAdapter(mSyncRoot, mContext,
                     mHandler, mDisplayDeviceRepo, mFlags,
-                    mDisplayNotificationManager));
+                    mDisplayNotificationManager, mStableEdidsFlag));
 
             // Standalone VR devices rely on a virtual display as their primary display for
             // 2D UI. We register virtual display adapter along side the main display adapter
@@ -4087,9 +4092,9 @@ public final class DisplayManagerService extends SystemService {
         LocalDisplayAdapter getLocalDisplayAdapter(SyncRoot syncRoot, Context context,
                 Handler handler, DisplayAdapter.Listener displayAdapterListener,
                 DisplayManagerFlags flags,
-                DisplayNotificationManager displayNotificationManager) {
+                DisplayNotificationManager displayNotificationManager, boolean stableEdidsFlag) {
             return new LocalDisplayAdapter(syncRoot, context, handler, displayAdapterListener,
-                    flags, displayNotificationManager);
+                    flags, displayNotificationManager, stableEdidsFlag);
         }
 
         long getDefaultDisplayDelayTimeout() {

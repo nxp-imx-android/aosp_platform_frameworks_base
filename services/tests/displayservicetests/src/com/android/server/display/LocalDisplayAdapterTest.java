@@ -66,7 +66,7 @@ import androidx.test.runner.AndroidJUnit4;
 
 import com.android.dx.mockito.inline.extended.StaticMockitoSession;
 import com.android.internal.R;
-import com.android.server.LocalServices;
+import com.android.internal.util.test.LocalServiceKeeperRule;
 import com.android.server.display.LocalDisplayAdapter.BacklightAdapter;
 import com.android.server.display.color.ColorDisplayService;
 import com.android.server.display.feature.DisplayManagerFlags;
@@ -160,6 +160,8 @@ public class LocalDisplayAdapterTest {
 
     @Rule
     public final SetFlagsRule mSetFlagsRule = new SetFlagsRule();
+    @Rule
+    public LocalServiceKeeperRule mLocalServiceKeeperRule = new LocalServiceKeeperRule();
 
     @Before
     public void setUp() throws Exception {
@@ -169,15 +171,14 @@ public class LocalDisplayAdapterTest {
                 .startMocking();
         mHandler = new Handler(Looper.getMainLooper());
         doReturn(mMockedResources).when(mMockedContext).getResources();
-        LocalServices.removeServiceForTest(LightsManager.class);
-        LocalServices.addService(LightsManager.class, mMockedLightsManager);
-        LocalServices.removeServiceForTest(ColorDisplayService.ColorDisplayServiceInternal.class);
-        LocalServices.addService(ColorDisplayService.ColorDisplayServiceInternal.class,
+        mLocalServiceKeeperRule.overrideLocalService(LightsManager.class, mMockedLightsManager);
+        mLocalServiceKeeperRule.overrideLocalService(
+                ColorDisplayService.ColorDisplayServiceInternal.class,
                 mMockedColorDisplayServiceInternal);
         mInjector = new Injector();
         when(mSurfaceControlProxy.getBootDisplayModeSupport()).thenReturn(true);
         mAdapter = new LocalDisplayAdapter(mMockedSyncRoot, mMockedContext, mHandler,
-                mListener, mFlags, mMockedDisplayNotificationManager, mInjector);
+                mListener, mFlags, mMockedDisplayNotificationManager, mInjector, false);
         spyOn(mAdapter);
         doReturn(mMockedContext).when(mAdapter).getOverlayContext();
 
@@ -1967,7 +1968,8 @@ public class LocalDisplayAdapterTest {
 
         @Override
         public DisplayDeviceConfig createDisplayDeviceConfig(Context context,
-                long physicalDisplayId, boolean isFirstDisplay, DisplayManagerFlags flags) {
+                long physicalDisplayId, int port, boolean isFirstDisplay,
+                DisplayManagerFlags flags) {
             return mMockDisplayDeviceConfig;
         }
 

@@ -27,7 +27,6 @@ import android.view.DisplayAddress;
 
 import androidx.test.filters.SmallTest;
 
-import com.android.server.display.feature.DisplayManagerFlags;
 import com.android.server.display.layout.DisplayIdProducer;
 import com.android.server.display.layout.Layout;
 
@@ -48,7 +47,6 @@ public class DeviceStateToLayoutMapTest {
     private DeviceStateToLayoutMap mDeviceStateToLayoutMap;
 
     @Mock DisplayIdProducer mDisplayIdProducerMock;
-    @Mock DisplayManagerFlags mMockFlags;
 
     @Before
     public void setUp() throws IOException {
@@ -56,7 +54,7 @@ public class DeviceStateToLayoutMapTest {
 
         Mockito.when(mDisplayIdProducerMock.getId(false)).thenReturn(1);
 
-        setupDeviceStateToLayoutMap(getContent());
+        setupDeviceStateToLayoutMap(getContent(), /* stableEdidsFlag= */ false);
     }
 
     //////////////////
@@ -274,7 +272,8 @@ public class DeviceStateToLayoutMapTest {
 
     @Test
     public void testPortInLayout_readLayout() throws Exception {
-        setupDeviceStateToLayoutMap(getPortContent());
+        final boolean stableEdidsFlag = false;
+        setupDeviceStateToLayoutMap(getPortContent(), stableEdidsFlag);
 
         Layout configLayout = mDeviceStateToLayoutMap.get(0);
 
@@ -339,11 +338,12 @@ public class DeviceStateToLayoutMapTest {
                 /* powerThrottlingMapId= */ null);
     }
 
-    private void setupDeviceStateToLayoutMap(String content) throws IOException {
+    private void setupDeviceStateToLayoutMap(String content, boolean stableEdidsFlag)
+            throws IOException {
         Path tempFile = Files.createTempFile("device_state_layout_map", ".tmp");
         Files.write(tempFile, content.getBytes(StandardCharsets.UTF_8));
-        mDeviceStateToLayoutMap = new DeviceStateToLayoutMap(mDisplayIdProducerMock, mMockFlags,
-                tempFile.toFile());
+        mDeviceStateToLayoutMap = new DeviceStateToLayoutMap(mDisplayIdProducerMock,
+                tempFile.toFile(), stableEdidsFlag);
     }
 
     private String getPortContent() {
