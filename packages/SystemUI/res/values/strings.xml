@@ -3580,14 +3580,8 @@
     <!-- Controls menu, remove app [CHAR_LIMIT=30] -->
     <string name="controls_menu_remove">Remove app</string>
 
-    <!-- Title for the media output dialog with media related devices [CHAR LIMIT=50] -->
-    <string name="media_output_dialog_add_output">Add outputs</string>
     <!-- Title for the media output slice with group devices [CHAR LIMIT=50] -->
     <string name="media_output_dialog_group">Group</string>
-    <!-- Summary for media output group with only one device which is active [CHAR LIMIT=NONE] -->
-    <string name="media_output_dialog_single_device">1 device selected</string>
-    <!-- Summary for media output group with the active device count [CHAR LIMIT=NONE] -->
-    <string name="media_output_dialog_multiple_devices"><xliff:g id="count" example="2">%1$d</xliff:g> devices selected</string>
     <!-- Accessibility label for media output item connected state [CHAR LIMIT=50] -->
     <string name="media_output_item_connected_state">Connected</string>
     <!-- Summary for connecting error message [CHAR LIMIT=NONE] -->

@@ -204,7 +204,6 @@
     <color name="media_outlined_button_background">#4D000000</color> <!-- 30% -->
 
     <!-- media output dialog-->
-    <color name="media_dialog_item_main_content">@color/material_dynamic_primary20</color>
     <color name="media_dialog_primary">@android:color/system_primary_light</color>
     <color name="media_dialog_on_primary">@android:color/system_on_primary_light</color>
     <color name="media_dialog_secondary">@android:color/system_secondary_light</color>
