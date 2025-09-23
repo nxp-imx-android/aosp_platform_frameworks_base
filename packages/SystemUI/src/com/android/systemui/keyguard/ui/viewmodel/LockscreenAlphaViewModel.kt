@@ -55,15 +55,14 @@ constructor(
     private val dozingToLockscreenTransitionViewModel: DozingToLockscreenTransitionViewModel,
     private val dozingToOccludedTransitionViewModel: DozingToOccludedTransitionViewModel,
     private val lockscreenToAodTransitionViewModel: LockscreenToAodTransitionViewModel,
-    private val lockscreenToDozingTransitionViewModel: LockscreenToDozingTransitionViewModel,
     private val lockscreenToOccludedTransitionViewModel: LockscreenToOccludedTransitionViewModel,
     private val occludedToAlternateBouncerTransitionViewModel:
         OccludedToAlternateBouncerTransitionViewModel,
     private val occludedToAodTransitionViewModel: OccludedToAodTransitionViewModel,
-    private val occludedToDozingTransitionViewModel: OccludedToDozingTransitionViewModel,
     private val occludedToLockscreenTransitionViewModel: OccludedToLockscreenTransitionViewModel,
     private val offToLockscreenTransitionViewModel: OffToLockscreenTransitionViewModel,
     private val keyguardInteractor: KeyguardInteractor,
+    private val dozingTransitionFlows: DozingTransitionFlows,
     @Assisted private val viewStateAccessor: ViewStateAccessor,
 ) : HydratedActivatable() {
     /**
@@ -113,13 +112,12 @@ constructor(
                         dozingToOccludedTransitionViewModel.lockscreenAlpha(viewState),
                         lockscreenToAodTransitionViewModel.lockscreenAlpha(viewState),
                         lockscreenToAodTransitionViewModel.lockscreenAlphaOnFold,
-                        lockscreenToDozingTransitionViewModel.lockscreenAlpha,
                         lockscreenToOccludedTransitionViewModel.lockscreenAlpha,
                         occludedToAlternateBouncerTransitionViewModel.lockscreenAlpha,
                         occludedToAodTransitionViewModel.lockscreenAlpha,
-                        occludedToDozingTransitionViewModel.lockscreenAlpha,
                         occludedToLockscreenTransitionViewModel.lockscreenAlpha,
                         offToLockscreenTransitionViewModel.lockscreenAlpha,
+                        dozingTransitionFlows.lockscreenAlpha(null),
                     )
                     .onStart { emit(0f) },
             ) { hideKeyguard, alpha ->
