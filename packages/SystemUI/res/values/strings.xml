@@ -1902,10 +1902,13 @@
     <string name="monitoring_description_vpn_settings">Open VPN settings</string>
 
     <!-- Dialog that a user can access via Quick Settings. [CHAR LIMIT=NONE]-->
-    <string name="monitoring_description_parental_controls">This device is managed by your parent. Your parent can see and manage information such as the apps you use, your location, and your screen time.</string>
+    <string name="monitoring_description_parental_controls_legacy">This device is managed by your parent. Your parent can see and manage information such as the apps you use, your location, and your screen time.</string>
 
     <!-- Dialog that a user can access via Quick Settings. [CHAR LIMIT=NONE]-->
     <string name="monitoring_description_pin_protection">Some controls on your device, like daily limits \u0026 downtime, can only be changed with a PIN.</string>
+
+    <!-- Monitoring dialog: Description of a device supervised by a parent. [CHAR LIMIT=NONE]-->
+    <string name="monitoring_description_parental_controls">Some controls can only be changed by your parent</string>
 
     <!-- Name for a generic legacy VPN connection [CHAR LIMIT=20] -->
     <string name="legacy_vpn_name">VPN</string>
