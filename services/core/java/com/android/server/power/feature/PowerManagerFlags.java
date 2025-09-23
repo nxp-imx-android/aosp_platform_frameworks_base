@@ -89,6 +89,9 @@ public class PowerManagerFlags {
             Flags::wakeAdjacentDisplaysOnWakeupCall
     );
 
+    private final FlagState mWaitForUserBootComplete =
+            new FlagState(Flags.FLAG_WAIT_FOR_USER_BOOT_COMPLETE, Flags::waitForUserBootComplete);
+
     /** Returns whether early-screen-timeout-detector is enabled on not. */
     public boolean isEarlyScreenTimeoutDetectorEnabled() {
         return mEarlyScreenTimeoutDetectorFlagState.isEnabled();
@@ -181,6 +184,13 @@ public class PowerManagerFlags {
     }
 
     /**
+     * @return Whether the BootSuspendBlocker is held until ACTION_BOOT_COMPLETED is broadcast.
+     */
+    public boolean isWaitForUserBootCompleteEnabled() {
+        return mWaitForUserBootComplete.isEnabled();
+    }
+
+    /**
      * dumps all flagstates
      * @param pw printWriter
      */
@@ -198,6 +208,7 @@ public class PowerManagerFlags {
         pw.println(" " + mPartialSleepWakelocks);
         pw.println(" " + mSeparateTimeoutsFlicker);
         pw.println(" " + mWakeAdjacentDisplaysOnWakeupCall);
+        pw.println(" " + mWaitForUserBootComplete);
     }
 
     private static class FlagState {
