@@ -3371,7 +3371,11 @@ public final class SystemServer implements Dumpable {
                         Intent intent = new Intent();
                         intent.setComponent(wearServiceComponentName);
                         intent.addFlags(Intent.FLAG_DIRECT_BOOT_AUTO);
-                        context.startServiceAsUser(intent, UserHandle.SYSTEM);
+                        try {
+                            context.startServiceAsUser(intent, UserHandle.SYSTEM);
+                        } catch (Throwable e) {
+                            reportWtf("Starting WearServices: ", e);
+                        }
                     } else {
                         Slog.d(TAG, "Null wear service component name.");
                     }
