@@ -21,7 +21,7 @@
         <item name="android:textColor">@color/settingslib_materialColorOnSecondaryContainer</item>
         <item name="android:maxLines">1</item>
         <item name="android:ellipsize">marquee</item>
-        <item name="android:minHeight">@dimen/settingslib_expressive_space_medium3</item>
+        <item name="android:minHeight">@dimen/settingslib_expressive_space_medium4</item>
         <item name="android:paddingHorizontal">@dimen/settingslib_expressive_space_small1</item>
         <item name="android:paddingVertical">@dimen/settingslib_expressive_space_extrasmall5</item>
     </style>
