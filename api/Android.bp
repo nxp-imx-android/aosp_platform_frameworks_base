@@ -81,7 +81,6 @@ combined_apis {
         "framework-location",
         "framework-media",
         "framework-mediaprovider",
-        "framework-network-security-config",
         "framework-nfc",
         "framework-ondevicepersonalization",
         "framework-pdf",
@@ -118,7 +117,9 @@ combined_apis {
         true: [
             "framework-conscrypt-nsc",
         ],
-        default: [],
+        default: [
+            "framework-network-security-config",
+        ],
     }) + select(release_flag("RELEASE_RANGING_STACK"), {
         true: [
             "framework-ranging",
