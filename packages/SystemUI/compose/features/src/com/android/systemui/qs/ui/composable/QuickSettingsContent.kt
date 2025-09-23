@@ -22,16 +22,20 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.dimensionResource
 import androidx.lifecycle.compose.LifecycleStartEffect
 import com.android.compose.animation.scene.ContentScope
+import com.android.compose.gesture.gesturesDisabled
+import com.android.compose.modifiers.thenIf
 import com.android.systemui.brightness.ui.compose.BrightnessSliderContainer
 import com.android.systemui.brightness.ui.compose.ContainerColors
 import com.android.systemui.compose.modifiers.sysuiResTag
@@ -42,6 +46,7 @@ import com.android.systemui.qs.panels.ui.compose.TileGrid
 import com.android.systemui.qs.shared.ui.QuickSettings.Elements
 import com.android.systemui.qs.ui.viewmodel.QuickSettingsContainerViewModel
 import com.android.systemui.res.R
+import kotlinx.coroutines.flow.filterNotNull
 
 @Composable
 fun ContentScope.QuickSettingsContent(
@@ -52,6 +57,12 @@ fun ContentScope.QuickSettingsContent(
         brightness =
             @Composable {
                 if (viewModel.isBrightnessSliderVisible) {
+                    var isBrightnessSliderInteractable by remember { mutableStateOf(false) }
+                    LaunchedEffect(Unit) {
+                        snapshotFlow { Elements.QuickSettingsContent.currentAlpha() }
+                            .filterNotNull()
+                            .collect { isBrightnessSliderInteractable = it >= .5f }
+                    }
                     BrightnessSliderContainer(
                         viewModel.brightnessSliderViewModel,
                         containerColors =
@@ -61,8 +72,12 @@ fun ContentScope.QuickSettingsContent(
                             ),
                         modifier =
                             Modifier.padding(
-                                vertical = dimensionResource(id = R.dimen.qs_brightness_margin_top)
-                            ),
+                                    vertical =
+                                        dimensionResource(id = R.dimen.qs_brightness_margin_top)
+                                )
+                                .thenIf(!isBrightnessSliderInteractable) {
+                                    Modifier.gesturesDisabled()
+                                },
                     )
                 }
             },
