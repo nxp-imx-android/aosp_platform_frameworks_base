@@ -57,6 +57,8 @@ public abstract class GlobalActionsLayout extends MultiListLayout {
                     Utils.getThemeAttr(getContext(),
                             android.R.attr.dialogCornerRadius));
             blurDrawable.setCornerRadius(dialogCornerRadius);
+            blurDrawable.setBlurRadius(getResources().getDimensionPixelSize(
+                    R.dimen.global_actions_blur_radius));
             listBackground = blurDrawable;
         } else {
             int listBgColor = getResources().getColor(
