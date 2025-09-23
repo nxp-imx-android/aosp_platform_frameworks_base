@@ -46,7 +46,6 @@ import static com.android.dx.mockito.inline.extended.ExtendedMockito.times;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.verify;
 import static com.android.server.policy.WindowManagerPolicy.USER_ROTATION_FREE;
 import static com.android.server.wm.ActivityRecord.State.RESUMED;
-import static com.android.server.wm.AppCompatSandboxingPolicy.ConfigOverrideHint;
 import static com.android.server.wm.Task.FLAG_FORCE_HIDDEN_FOR_TASK_ORG;
 import static com.android.server.wm.TaskFragment.EMBEDDED_DIM_AREA_PARENT_TASK;
 import static com.android.server.wm.TaskFragment.TASK_FRAGMENT_VISIBILITY_VISIBLE_BEHIND_TRANSLUCENT;
@@ -960,13 +959,10 @@ public class TaskTests extends WindowTestsBase {
         // Without limiting to be inside the parent bounds, the out screen size should keep relative
         // to the input bounds.
         final ActivityRecord activity = new ActivityBuilder(mAtm).setTask(task).build();
-        final AppCompatDisplayInsets compatInsets =
-                new AppCompatDisplayInsets(
-                        display, activity, /* letterboxedContainerBounds */ null,
-                        /* useOverrideInsets */ false);
-        final ConfigOverrideHint overrideHint = activity.mResolveConfigHint;
-        overrideHint.mTmpCompatInsets = compatInsets;
-        task.computeConfigResourceOverrides(inOutConfig, parentConfig, overrideHint);
+        activity.mAppCompatController.getSizeCompatModePolicy().updateAppCompatDisplayInsets();
+        activity.resolveOverrideConfiguration(parentConfig);
+        task.computeConfigResourceOverrides(inOutConfig, parentConfig,
+                activity.mAppCompatController.getSandboxingPolicy().getResolveConfigHint());
 
         assertEquals(largerLandscapeBounds, inOutConfig.windowConfiguration.getAppBounds());
         final float density = parentConfig.densityDpi * DisplayMetrics.DENSITY_DEFAULT_SCALE;
