@@ -441,6 +441,13 @@
       ]
     },
     {
+      "name": "FunctionalTestsDesktopMode-keyboardshortcuts-CloseTaskViaKeyboardShortcutTest",
+      "keywords": [
+        "device",
+        "desktop"
+      ]
+    },
+    {
       "name": "FunctionalTestsDesktopMode-keyboardshortcuts-EnterDesktopFromKeyboardShortcutTest",
       "keywords": [
         "device",
@@ -498,6 +505,13 @@
     },
     {
       "name": "FunctionalTestsDesktopMode-mediaprojection-StartAppMediaProjectionWithMaxDesktopWindowsTest",
+      "keywords": [
+        "device",
+        "desktop"
+      ]
+    },
+    {
+      "name": "FunctionalTestsDesktopMode-mediaprojection-StartAppScreenRecordingFromNotificationTest",
       "keywords": [
         "device",
         "desktop"
