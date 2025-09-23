@@ -86,7 +86,8 @@ internal class OpenByDefaultDialog(
         DialogAnimationController<OpenByDefaultDialogView>(context, "OpenByDefaultDialog")
     private val domainVerificationManager =
         userContext.getSystemService(DomainVerificationManager::class.java)!!
-    private val packageName = taskInfo.baseActivity?.packageName!!
+    private val packageName = checkNotNull(taskInfo.baseActivity)
+    { "Expected non-null base activity" }.packageName
     private var linkHandlingAllowed: Boolean = false
 
     private var loadAppInfoJob: Job? = null
