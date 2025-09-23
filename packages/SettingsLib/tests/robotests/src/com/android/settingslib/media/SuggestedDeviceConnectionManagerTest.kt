@@ -120,8 +120,9 @@ class SuggestedDeviceConnectionManagerTest {
         )
         runCurrent()
 
+        // Scan should be started anyway to ensure the device is discoverable during connection.
+        verify(localMediaManager).startScan()
         verify(localMediaManager).connectDevice(mediaDevice1, ROUTING_CHANGE_INFO)
-        verify(localMediaManager, never()).startScan()
         assertThat(deviceCallbacks).hasSize(1) // Callback for connection state change
     }
 
