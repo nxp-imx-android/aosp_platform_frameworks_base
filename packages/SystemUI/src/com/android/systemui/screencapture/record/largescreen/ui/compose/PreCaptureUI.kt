@@ -112,39 +112,43 @@ fun PreCaptureUI(viewModel: PreCaptureViewModel) {
             }
 
             ScreenCaptureRegion.PARTIAL -> {
-                // TODO(b/427541309) Set the initial width and height of the RegionBox based on the
-                // viewmodel state.
-                val icon by
-                    loadIcon(
-                        viewModel = viewModel,
-                        resId = iconResourceId,
-                        contentDescription = null,
-                    )
-                RegionBox(
-                    initialRect = viewModel.regionBox,
-                    buttonText =
-                        stringResource(
-                            id =
-                                when (viewModel.captureType) {
-                                    ScreenCaptureType.SCREENSHOT ->
-                                        R.string.screen_capture_region_selection_button
-                                    ScreenCaptureType.RECORDING ->
-                                        R.string.screen_capture_record_region_selection_button
-                                }
-                        ),
-                    buttonIcon = icon,
-                    onRegionSelected = { regionBoxRect ->
-                        viewModel.updateRegionBoxBounds(regionBoxRect)
-                        viewModel.updateToolbarOpacityForRegionBox(
-                            isInteracting = false,
-                            regionBoxRect = regionBoxRect,
+                val regionBox = viewModel.regionBox
+                // To avoid a race condition where the UI is displayed before the initial region box
+                // dimensions are calculated, we only compose the RegionBox once its initial state
+                // is ready.
+                if (regionBox != null) {
+                    val icon by
+                        loadIcon(
+                            viewModel = viewModel,
+                            resId = iconResourceId,
+                            contentDescription = null,
                         )
-                    },
-                    onCaptureClick = viewModel::beginCapture,
-                    onInteractionStateChanged = { isInteracting ->
-                        viewModel.updateToolbarOpacityForRegionBox(isInteracting)
-                    },
-                )
+                    RegionBox(
+                        initialRect = regionBox,
+                        buttonText =
+                            stringResource(
+                                id =
+                                    when (viewModel.captureType) {
+                                        ScreenCaptureType.SCREENSHOT ->
+                                            R.string.screen_capture_region_selection_button
+                                        ScreenCaptureType.RECORDING ->
+                                            R.string.screen_capture_record_region_selection_button
+                                    }
+                            ),
+                        buttonIcon = icon,
+                        onRegionSelected = { regionBoxRect ->
+                            viewModel.updateRegionBoxBounds(regionBoxRect)
+                            viewModel.updateToolbarOpacityForRegionBox(
+                                isInteracting = false,
+                                regionBoxRect = regionBoxRect,
+                            )
+                        },
+                        onCaptureClick = viewModel::beginCapture,
+                        onInteractionStateChanged = { isInteracting ->
+                            viewModel.updateToolbarOpacityForRegionBox(isInteracting)
+                        },
+                    )
+                }
             }
 
             ScreenCaptureRegion.APP_WINDOW -> {}
