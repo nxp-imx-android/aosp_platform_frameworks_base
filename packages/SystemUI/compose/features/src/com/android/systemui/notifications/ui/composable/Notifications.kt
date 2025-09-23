@@ -129,6 +129,8 @@ import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import androidx.compose.material3.Text
+import androidx.compose.ui.platform.LocalContext
+import com.android.systemui.shade.ui.ShadeColors
 
 object Notifications {
     object Elements {
@@ -358,6 +360,7 @@ fun ContentScope.NotificationScrollingStack(
     jankMonitor: InteractionJankMonitor,
     maxScrimTop: () -> Float,
     shouldPunchHoleBehindScrim: Boolean,
+    isTransparencyEnabled: Boolean,
     stackTopPadding: Dp,
     stackBottomPadding: Dp,
     modifier: Modifier = Modifier,
@@ -392,7 +395,9 @@ fun ContentScope.NotificationScrollingStack(
     val density = LocalDensity.current
     val screenCornerRadius = LocalScreenCornerRadius.current
     val scrimCornerRadius = dimensionResource(R.dimen.notification_scrim_corner_radius)
-    val surfaceEffect0Color = LocalAndroidColorScheme.current.surfaceEffect0
+    val singleShadeNotificationScrimBgColor =
+        Color(ShadeColors.singleShadeNotificationScrimBg(LocalContext.current,
+            blurSupported = isTransparencyEnabled))
     val scrollState =
         shadeSession.rememberSaveableSession(saver = ScrollState.Saver, key = "ScrollState") {
             ScrollState(initial = 0)
@@ -720,7 +725,7 @@ fun ContentScope.NotificationScrollingStack(
                 Modifier.graphicsLayer {
                         alpha = (expansionFraction / EXPANSION_FOR_MAX_SCRIM_ALPHA).coerceAtMost(1f)
                     }
-                    .thenIf(shouldShowScrim) { Modifier.background(surfaceEffect0Color) }
+                    .thenIf(shouldShowScrim) { Modifier.background(color = singleShadeNotificationScrimBgColor) }
                     .thenIf(shouldFillMaxSize) { Modifier.fillMaxSize() }
                     .padding(
                         top = stackTopPadding,

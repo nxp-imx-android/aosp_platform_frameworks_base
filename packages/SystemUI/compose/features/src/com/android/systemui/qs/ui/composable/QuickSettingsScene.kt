@@ -408,6 +408,7 @@ private fun ContentScope.QuickSettingsContent(
             jankMonitor = jankMonitor,
             maxScrimTop = { minNotificationStackTop.toFloat() },
             shouldPunchHoleBehindScrim = shouldPunchHoleBehindScrim,
+            isTransparencyEnabled = viewModel.isTransparencyEnabled,
             stackTopPadding = notificationStackPadding,
             stackBottomPadding = navBarBottomHeight,
             shouldIncludeHeadsUpSpace = false,

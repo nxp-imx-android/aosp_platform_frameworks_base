@@ -17,6 +17,7 @@
 package com.android.systemui.shade.ui
 
 import android.content.Context
+import android.graphics.Color
 import com.android.internal.graphics.ColorUtils
 import com.android.systemui.res.R
 
@@ -61,6 +62,18 @@ object ShadeColors {
             context.theme,
         )
     }
+
+    @JvmStatic
+    fun singleShadeNotificationScrimBg(context: Context, blurSupported: Boolean): Int {
+        val surfaceEffect0Color =
+            context.resources.getColor(
+                com.android.internal.R.color.surface_effect_0,
+                context.theme,
+            )
+        val shadePanelWithScrim = shadePanel(context, blurSupported, withScrim = true)
+        return ColorUtils.compositeColors(surfaceEffect0Color, shadePanelWithScrim)
+    }
+
 
     @JvmStatic
     private fun shadePanelStandard(context: Context): Int {
