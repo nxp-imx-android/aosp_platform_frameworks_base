@@ -873,7 +873,7 @@ class SupervisionServiceTest {
             userData.map { (userId, flags) ->
                 UserInfo(userId, "user$userId", USER_ICON, flags, USER_TYPE)
             }
-        whenever(mockUserManagerInternal.getUsers(any())).thenReturn(userInfos)
+        whenever(mockUserManagerInternal.getUsers(any<Boolean>())).thenReturn(userInfos)
     }
 
     private fun addDefaultAndFullUsers() {
@@ -881,7 +881,7 @@ class SupervisionServiceTest {
             userData.map { (userId, flags) ->
                 UserInfo(userId, "user$userId", USER_ICON, flags, USER_TYPE)
             } + UserInfo(USER_ID, "user$USER_ID", USER_ICON, FLAG_FULL, USER_TYPE)
-        whenever(mockUserManagerInternal.getUsers(any())).thenReturn(userInfos)
+        whenever(mockUserManagerInternal.getUsers(any<Boolean>())).thenReturn(userInfos)
     }
 
     private fun putSecureSetting(name: String, value: Int) {

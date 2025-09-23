@@ -49,6 +49,8 @@ import static com.android.server.pm.UserJourneyLogger.USER_JOURNEY_REVOKE_ADMIN;
 import static com.android.server.pm.UserJourneyLogger.USER_JOURNEY_USER_CREATE;
 import static com.android.server.pm.UserJourneyLogger.USER_JOURNEY_USER_LIFECYCLE;
 import static com.android.server.pm.UserJourneyLogger.USER_JOURNEY_USER_REMOVE;
+import static com.android.server.pm.UserManagerInternal.USER_FILTER_WITH_ALL_COMPLETE_USERS;
+import static com.android.server.pm.UserManagerInternal.USER_FILTER_WITH_DYING_USERS;
 
 import android.Manifest;
 import android.accounts.Account;
@@ -1653,11 +1655,16 @@ public class UserManagerService extends IUserManager.Stub {
     @Override
     public @NonNull List<UserInfo> getUsers(boolean excludeDying) {
         checkCreateUsersPermission("query users");
-        return getUsersInternal(/* excludePartial= */ true, excludeDying,
-                /* resolveNullNames= */ true);
+        if (!android.multiuser.Flags.userFilterRefactoring()) {
+            return getUsersInternal(/* excludePartial= */ true, excludeDying,
+                    /* resolveNullNames= */ true);
+        }
+        var filter = getFilter(excludeDying);
+        return getUsers(filter);
     }
 
     // Used by cmd users
+    // TODO(b/419086491): remove once user_filter_refactoring flag is ramped  up
     /**
      * @deprecated should use {@link #getUsers(UserFilter)} instead.
      */
@@ -1671,6 +1678,7 @@ public class UserManagerService extends IUserManager.Stub {
         return getUsers(getFilter(excludePartial, excludeDying));
     }
 
+    // TODO(b/419086491): remove once user_filter_refactoring flag is ramped  up
     /**
      * @deprecated should use {@link #getUsers(UserFilter)} instead.
      */
@@ -1702,7 +1710,11 @@ public class UserManagerService extends IUserManager.Stub {
         return getUsersInternal(filter, converter);
     }
 
-    // TODO(b/419086491): use cached filters
+    private static UserFilter getFilter(boolean excludeDying) {
+        return excludeDying ? USER_FILTER_WITH_ALL_COMPLETE_USERS : USER_FILTER_WITH_DYING_USERS;
+    }
+
+    // TODO(b/419086491): remove once (deprecated) caller methods are removed
     private static UserFilter getFilter(boolean excludePartial, boolean excludeDying) {
         var builder = UserFilter.builder();
         if (!excludePartial) {
@@ -1714,7 +1726,14 @@ public class UserManagerService extends IUserManager.Stub {
         return builder.build();
     }
 
-    /** Gets the users that match the given {@code filter}. */
+    /**
+     * Gets the users that match the given {@code filter}.
+     *
+     * <p><b>Note: </b>for performance reasons, prefer using pre-existing filters from
+     * {@link UserManagerInternal}, like
+     * {@link UserManagerInternal#USER_FILTER_WITH_ALL_COMPLETE_USERS} or
+     * {@link UserManagerInternal#USER_FILTER_WITH_DYING_USERS}.
+     */
     List<UserInfo> getUsers(UserFilter filter) {
         return getUsersInternal(filter, /* converter= */ null);
     }
@@ -1722,7 +1741,13 @@ public class UserManagerService extends IUserManager.Stub {
     /**
      * Gets the converted users that match the given {@code filter}.
      *
-     * <p>Typically used with {@link #userWithName(UserInfo)} resolve {@code null} names.
+     * <p>Typically used with methods like {@link #userWithName(UserInfo)}, which need to resolve
+     * {@code null} names.
+     *
+     * <p><b>Note: </b>for performance reasons, prefer using pre-existing filters from
+     * {@link UserManagerInternal}, like
+     * {@link UserManagerInternal#USER_FILTER_WITH_ALL_COMPLETE_USERS} or
+     * {@link UserManagerInternal#USER_FILTER_WITH_DYING_USERS}.
      */
     @VisibleForTesting
     List<UserInfo> getUsers(UserFilter filter, Function<UserInfo, UserInfo> converter) {
@@ -5623,8 +5648,13 @@ public class UserManagerService extends IUserManager.Stub {
 
     /** Returns the oldest Full Admin user, or null is if there none. */
     private @Nullable UserInfo getEarliestCreatedFullUser() {
-        List<UserInfo> users = getUsersInternal(/* excludePartial= */ true,
-                /* excludeDying= */ true, /* resolveNullNames= */ false);
+        List<UserInfo> users;
+        if (!android.multiuser.Flags.userFilterRefactoring()) {
+            users = getUsersInternal(/* excludePartial= */ true,
+                    /* excludeDying= */ true, /* resolveNullNames= */ false);
+        } else {
+            users = getUsers(USER_FILTER_WITH_ALL_COMPLETE_USERS);
+        }
         UserInfo earliestUser = null;
         long earliestCreationTime = Long.MAX_VALUE;
         for (int i = 0; i < users.size(); i++) {
@@ -6922,8 +6952,14 @@ public class UserManagerService extends IUserManager.Stub {
     /** Writes a UserInfo pulled atom for each user on the device. */
     private int onPullAtom(int atomTag, List<StatsEvent> data) {
         if (atomTag == FrameworkStatsLog.USER_INFO) {
-            final List<UserInfo> users = getUsersInternal(/* excludePartial= */ true,
-                    /* excludeDying= */ true, /* resolveNullNames= */ false);
+            List<UserInfo> users;
+            if (!android.multiuser.Flags.userFilterRefactoring()) {
+                users = getUsersInternal(/* excludePartial= */ true, /* excludeDying= */ true,
+                        /* resolveNullNames= */ false);
+            } else {
+                users = getUsers(USER_FILTER_WITH_ALL_COMPLETE_USERS);
+            }
+
             final int size = users.size();
             if (size > 1) {
                 for (int idx = 0; idx < size; idx++) {
@@ -8729,8 +8765,17 @@ public class UserManagerService extends IUserManager.Stub {
 
         @Override
         public @NonNull List<UserInfo> getUsers(boolean excludeDying) {
-            return UserManagerService.this.getUsersInternal(/*excludePartial= */ true, excludeDying,
-                    /* resolveNullNames= */ true);
+            if (!android.multiuser.Flags.userFilterRefactoring()) {
+                return UserManagerService.this.getUsersInternal(/* excludePartial= */ true,
+                        excludeDying, /* resolveNullNames= */ true);
+            }
+            var filter = getFilter(excludeDying);
+            return getUsers(filter);
+        }
+
+        @Override
+        public List<UserInfo> getUsers(UserFilter userFilter) {
+            return UserManagerService.this.getUsers(userFilter, mNameConverter);
         }
 
         @Override
