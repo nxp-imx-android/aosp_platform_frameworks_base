@@ -420,6 +420,14 @@ flag {
 }
 
 flag {
+    name: "supplemental_security_patches"
+    is_exported: false
+    namespace: "dynamic_spl"
+    description: "access supplemental security files of CVEs patched beyond the SPL"
+    bug: "446032302"
+}
+
+flag {
     name: "update_engine_api"
     namespace: "art_mainline"
     description: "Update Engine APIs for ART"
