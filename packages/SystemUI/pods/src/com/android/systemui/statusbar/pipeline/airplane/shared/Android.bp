@@ -34,10 +34,9 @@ java_library {
         "impl/*.kt",
     ],
     libs: [
-        "com.android.systemui.dagger-api",
         "dagger2",
-        "com.android.systemui.log.table-api",
         "com.android.systemui.statusbar.pipeline.airplane.shared-api",
+        "SystemUISharedLib",
     ],
     defaults: [
         "SystemUI_pod_defaults_impl",

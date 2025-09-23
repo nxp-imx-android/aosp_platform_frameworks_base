@@ -16,7 +16,6 @@
 
 package com.android.systemui.rotation
 
-import com.android.internal.view.RotationPolicy
 import com.android.internal.view.RotationPolicy.RotationPolicyListener
 
 /**
@@ -24,11 +23,18 @@ import com.android.internal.view.RotationPolicy.RotationPolicyListener
  */
 public interface RotationPolicyWrapper {
     public fun setRotationLock(enabled: Boolean, caller: String)
+
     public fun setRotationLockAtAngle(enabled: Boolean, rotation: Int, caller: String)
+
     public fun setRotationAtAngleIfAllowed(rotation: Int, caller: String)
+
     public fun getRotationLockOrientation(): Int
+
     public fun isRotationLockToggleVisible(): Boolean
+
     public fun isRotationLocked(): Boolean
+
     public fun registerRotationPolicyListener(listener: RotationPolicyListener, userHandle: Int)
+
     public fun unregisterRotationPolicyListener(listener: RotationPolicyListener)
 }

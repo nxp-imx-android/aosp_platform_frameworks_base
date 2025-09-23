@@ -38,7 +38,7 @@ java_library {
     srcs: ["repository/impl/*.kt"],
     libs: [
         "kotlinx_coroutines",
-        "com.android.systemui.dagger-api",
+        "SystemUISharedLib",
         "com.android.systemui.util.settings-api",
         "SystemUICommon",
     ],
