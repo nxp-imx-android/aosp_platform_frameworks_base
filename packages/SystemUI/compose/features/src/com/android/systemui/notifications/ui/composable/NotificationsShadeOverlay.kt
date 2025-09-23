@@ -184,22 +184,20 @@ constructor(
                 }
 
                 val stackScrollView = stackScrollView.get()
-                NotificationScrollingStack(
+                ScrollingNotificationPanel(
                     shadeSession = shadeSession,
                     stackScrollView = stackScrollView,
                     viewModel = placeholderViewModel,
                     jankMonitor = jankMonitor,
-                    maxScrimTop = { 0f },
                     shouldPunchHoleBehindScrim = false,
                     isTransparencyEnabled = viewModel.isTransparencyEnabled,
                     stackTopPadding = notificationStackPadding,
                     stackBottomPadding = notificationStackPadding,
                     shouldFillMaxSize = false,
-                    shouldShowScrim = false,
-                    supportNestedScrolling = false,
+                    shouldDrawScrimBackground = false,
                     modifier =
                         Modifier.fillMaxWidth().focusProperties {
-                            // The `NotificationScrollingStack` is a compose placeholder. Therefore,
+                            // The `ScrollingNotificationPanel` is a compose placeholder. Therefore,
                             // focus on the view that actually shows notifications.
                             onEnter = { stackScrollView.asView().requestFocus() }
                         },

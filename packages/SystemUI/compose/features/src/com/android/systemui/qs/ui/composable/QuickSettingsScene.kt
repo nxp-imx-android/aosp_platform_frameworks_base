@@ -79,7 +79,7 @@ import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.lifecycle.ExclusiveActivatable
 import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.notifications.ui.composable.HeadsUpNotificationSpace
-import com.android.systemui.notifications.ui.composable.NotificationScrollingStack
+import com.android.systemui.notifications.ui.composable.ScrollingNotificationPanel
 import com.android.systemui.qs.composefragment.ui.GridAnchor
 import com.android.systemui.qs.footer.ui.compose.FooterActionsWithAnimatedVisibility
 import com.android.systemui.qs.panels.ui.compose.EditMode
@@ -401,18 +401,16 @@ private fun ContentScope.QuickSettingsContent(
         // the notification stack is entirely "below" the entire screen.
         val minNotificationStackTop = screenHeight.roundToInt() + 1
         val notificationStackPadding = dimensionResource(id = R.dimen.notification_side_paddings)
-        NotificationScrollingStack(
+        ScrollingNotificationPanel(
             shadeSession = shadeSession,
             stackScrollView = notificationStackScrollView,
             viewModel = notificationsPlaceholderViewModel,
             jankMonitor = jankMonitor,
-            maxScrimTop = { minNotificationStackTop.toFloat() },
             shouldPunchHoleBehindScrim = shouldPunchHoleBehindScrim,
             isTransparencyEnabled = viewModel.isTransparencyEnabled,
             stackTopPadding = notificationStackPadding,
             stackBottomPadding = navBarBottomHeight,
             shouldIncludeHeadsUpSpace = false,
-            supportNestedScrolling = false,
             modifier =
                 Modifier.fillMaxWidth()
                     // Match the screen height with the scrim, so it covers the whole screen,
