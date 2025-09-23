@@ -306,13 +306,3 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
-
-flag {
-    name: "virtual_camera_stable_stream_id"
-    namespace: "virtual_devices"
-    description: "Assign the index at which a stream has been added to the virtual camera config as its id."
-    bug: "430870772"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
