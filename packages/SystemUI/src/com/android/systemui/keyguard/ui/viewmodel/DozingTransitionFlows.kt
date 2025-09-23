@@ -20,6 +20,7 @@ import com.android.systemui.keyguard.domain.interactor.KeyguardInteractor
 import com.android.systemui.keyguard.domain.interactor.KeyguardTransitionInteractor
 import com.android.systemui.keyguard.shared.model.DozeStateModel
 import com.android.systemui.keyguard.shared.model.KeyguardState
+import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import javax.inject.Inject
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
@@ -28,6 +29,7 @@ import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
 
@@ -72,6 +74,14 @@ constructor(
                         .map { dozeModel -> dozeModel.to.nonAuthUIAlpha() }
                         .filterNotNull()
                         .distinctUntilChanged()
+                } else if (
+                    SceneContainerFlag.isEnabled &&
+                        it.from == KeyguardState.DOZING &&
+                        it.to != KeyguardState.UNDEFINED
+                ) {
+                    // When transitioning out of DOZING, always reset nonAuthUIAlpha to 1f,
+                    // unless we're changing scenes (KeyguardState.UNDEFINED).
+                    flowOf(1f)
                 } else {
                     emptyFlow()
                 }

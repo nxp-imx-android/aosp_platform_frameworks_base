@@ -41,6 +41,7 @@ import com.android.systemui.keyguard.ui.composable.elements.SmartspaceElementPro
 import com.android.systemui.keyguard.ui.composable.elements.StatusBarElementProvider
 import com.android.systemui.keyguard.ui.composable.layout.LockscreenSceneLayout
 import com.android.systemui.keyguard.ui.composable.modifier.burnInAware
+import com.android.systemui.keyguard.ui.composable.modifier.nonAuthUI
 import com.android.systemui.keyguard.ui.viewmodel.AodBurnInViewModel
 import com.android.systemui.keyguard.ui.viewmodel.KeyguardClockViewModel
 import com.android.systemui.keyguard.ui.viewmodel.LockscreenContentViewModel
@@ -141,6 +142,7 @@ constructor(
                             else -> {}
                         }
                     },
+                    nonAuthUIModifier = Modifier.nonAuthUI(viewModel),
                 )
 
             Elements(elementContext) { LockscreenSceneLayout(viewModel) }

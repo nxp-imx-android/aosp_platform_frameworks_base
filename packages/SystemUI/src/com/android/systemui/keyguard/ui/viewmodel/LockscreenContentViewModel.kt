@@ -88,6 +88,10 @@ constructor(
         lockscreenAlphaViewModelFactory.create(viewStateAccessor)
     }
 
+    /** Alpha value applied to all nonAuthUI LockscreenElements. */
+    val nonAuthUIAlpha: Float
+        get() = lockscreenAlphaViewModel.nonAuthUIAlpha
+
     override suspend fun onActivated(): Nothing {
         coroutineScope {
             try {

@@ -130,6 +130,11 @@ constructor(
             .distinctUntilChanged()
     }
 
+    private val nonAuthUiFlows: Flow<Float> = dozingTransitionFlows.nonAuthUIAlpha(null)
+
+    val nonAuthUIAlpha: Float by
+        nonAuthUiFlows.hydratedStateOf(traceName = "nonAuthUI", initialValue = 1f)
+
     @AssistedFactory
     interface Factory {
         fun create(viewStateAccessor: ViewStateAccessor): LockscreenAlphaViewModel

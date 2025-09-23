@@ -105,7 +105,8 @@ constructor(
                         start = dimensionResource(R.dimen.below_clock_padding_start_icons),
                         end = dimensionResource(R.dimen.shelf_icon_container_padding),
                     )
-                    .then(context.burnInModifier),
+                    .then(context.burnInModifier)
+                    .then(context.nonAuthUIModifier),
         ) {
             val scope = rememberCoroutineScope()
             AndroidView(
