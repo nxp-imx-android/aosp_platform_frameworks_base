@@ -31,6 +31,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.dimensionResource
+import androidx.compose.ui.unit.dp
 import androidx.window.core.layout.WindowSizeClass
 import com.android.compose.animation.Easings
 import com.android.compose.animation.scene.ContentScope
@@ -110,9 +111,9 @@ constructor(
         protected fun LockscreenScope<ContentScope>.AODNotifications(
             modifier: Modifier = Modifier
         ) {
-            AnimatedVisibility(viewModel.isDozing, modifier) {
+            Column(modifier) {
                 if (PromotedNotificationUi.isEnabled) {
-                    LockscreenElement(Notifications.AOD.Promoted)
+                    LockscreenElement(Notifications.AOD.Promoted, Modifier.padding(bottom = 4.dp))
                 }
                 LockscreenElement(Notifications.AOD.IconShelf)
             }
