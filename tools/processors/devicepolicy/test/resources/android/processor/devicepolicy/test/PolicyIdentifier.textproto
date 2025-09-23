@@ -8,7 +8,7 @@ policy_metadata {
   }
   allowed_scopes: POLICY_SCOPE_USER
   allowed_scopes: POLICY_SCOPE_DEVICE
-  affected_resource: 2
+  affected_resource: RESOURCE_PER_USER
 }
 policy_metadata {
   name: "android.app.admin.PolicyIdentifier.SIMPLE_ENUM_POLICY"
@@ -37,7 +37,7 @@ policy_metadata {
   }
   allowed_scopes: POLICY_SCOPE_DEVICE
   allowed_scopes: POLICY_SCOPE_PARENT_USER
-  affected_resource: 1
+  affected_resource: RESOURCE_DEVICE_WIDE
 }
 policy_metadata {
   name: "android.app.admin.PolicyIdentifier.SIMPLE_INTEGER_POLICY"
@@ -48,5 +48,5 @@ policy_metadata {
     }
   }
   allowed_scopes: POLICY_SCOPE_USER
-  affected_resource: 1
+  affected_resource: RESOURCE_DEVICE_WIDE
 }

@@ -19,11 +19,18 @@ message PolicyMetadata {
         POLICY_SCOPE_DEVICE = 2;
         POLICY_SCOPE_PARENT_USER = 3;
     }
-    // LINT.ThenChange(/frameworks/base/core/java/android/app/admin/DevicePolicyManager.java:policy_scope)
+    // LINT.ThenChange(/core/java/android/app/admin/DevicePolicyManager.java:policy_scope)
     repeated PolicyScope allowed_scopes = 5;
 
-    int32 affected_resource = 6;
-
+    // LINT.IfChange(resource_type)
+    enum ResourceType {
+        // Unspecified should not be used.
+        RESOURCE_TYPE_UNSPECIFIED = 0;
+        RESOURCE_DEVICE_WIDE = 1;
+        RESOURCE_PER_USER = 2;
+    }
+    // LINT.ThenChange(/core/java/android/app/admin/DevicePolicyManager.java:resource_type)
+    ResourceType affected_resource = 6;
 }
 
 message TypeSpecificPolicyMetadata {

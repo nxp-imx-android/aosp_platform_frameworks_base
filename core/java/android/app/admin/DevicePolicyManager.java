@@ -18677,8 +18677,9 @@ public class DevicePolicyManager {
     })
     @Retention(RetentionPolicy.SOURCE)
     public @interface PolicyScope {}
-    // LINT.ThenChange(/frameworks/base/tools/processors/devicepolicy/proto/policy_metadata.proto:policy_scope)
+    // LINT.ThenChange(/tools/processors/devicepolicy/proto/policy_metadata.proto:policy_scope)
 
+    // LINT.IfChange(resource_type)
     /**
      * Indicates that a policy has a device wide effect. There is a single final value that
      * controls what the behaviour of the system should be.
@@ -18694,6 +18695,7 @@ public class DevicePolicyManager {
      * @hide
      */
     public static final int RESOURCE_PER_USER = 0x0002;
+    // LINT.ThenChange(/tools/processors/devicepolicy/proto/policy_metadata.proto:resource_type)
 
     /**
      * Possible resource types
