@@ -26,6 +26,8 @@ import static android.security.Flags.shouldTrustManagerListenForPrimaryAuth;
 
 import static com.android.internal.widget.flags.Flags.enableDefaultVisibilityForSensitiveInputs;
 
+import static java.util.Objects.requireNonNullElse;
+
 import android.annotation.IntDef;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
@@ -519,24 +521,39 @@ public class LockPatternUtils {
     public boolean checkCredential(@NonNull LockscreenCredential credential, int userId,
             @Nullable CheckCredentialProgressCallback progressCallback)
             throws RequestThrottledException {
+        final VerifyCredentialResponse response =
+                checkCredentialWithResponse(credential, userId, progressCallback);
+        if (response.isMatched()) {
+            return true;
+        } else if (response.hasTimeout()) {
+            throw new RequestThrottledException(response.getTimeout());
+        }
+        return false;
+    }
+
+    /**
+     * Check to see if a credential matches the saved one.
+     *
+     * @param credential The credential to check.
+     * @param userId The user whose credential is being checked
+     * @param progressCallback callback to deliver early signal that the credential matches
+     */
+    public VerifyCredentialResponse checkCredentialWithResponse(
+            @NonNull LockscreenCredential credential,
+            int userId,
+            @Nullable CheckCredentialProgressCallback progressCallback) {
         throwIfCalledOnMainThread();
         try {
-            VerifyCredentialResponse response = getLockSettings().checkCredential(
-                    credential, userId, wrapCallback(progressCallback));
-            if (response == null) {
-                return false;
-            } else if (response.isMatched()) {
-                return true;
-            } else if (response.hasTimeout()) {
-                throw new RequestThrottledException(response.getTimeout());
-            } else {
-                return false;
-            }
+            final VerifyCredentialResponse response =
+                    getLockSettings()
+                            .checkCredential(credential, userId, wrapCallback(progressCallback));
+            return requireNonNullElse(response, VerifyCredentialResponse.OTHER_ERROR);
         } catch (RemoteException re) {
             Log.e(TAG, "failed to check credential", re);
-            return false;
+            return VerifyCredentialResponse.OTHER_ERROR;
         }
     }
+
 
     /**
      * Check if the credential of a managed profile with unified challenge matches. In this context,
