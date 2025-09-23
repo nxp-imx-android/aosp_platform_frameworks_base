@@ -1140,7 +1140,7 @@ class DesktopTasksController(
                     createDeskSuspending(
                         displayId = displayId,
                         userId = userId,
-                        enforceDeskLimit = true,
+                        enforceDeskLimit = false,
                     )
                 logD(
                     "restoreDisplay: created new desk deskId=$newDeskId " +
