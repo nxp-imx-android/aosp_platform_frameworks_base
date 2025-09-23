@@ -860,11 +860,12 @@ public class AdbDebuggingManager {
                     }
 
                     // Let's check again to make sure we didn't switch networks while verifying
-                    // the wifi bssid.
+                    // the wifi network trust status.
                     AdbConnectionInfo newInfo = getCurrentWifiApInfo();
-                    if (newInfo == null || !bssid.equals(newInfo.getBSSID())) {
+                    if (newInfo == null || !ssid.equals(newInfo.getSSID())) {
                         break;
                     }
+
                     mAdbConnectionInfo.copy(newInfo);
                     Settings.Global.putInt(mContentResolver, Settings.Global.ADB_WIFI_ENABLED, 1);
                     mAdbNetworkMonitor.register();
@@ -1128,7 +1129,7 @@ public class AdbDebuggingManager {
 
         private boolean verifyWifiNetwork(String bssid, String ssid) {
             // Check against a list of user-trusted networks.
-            if (mAdbKeyStore.isTrustedNetwork(bssid)) {
+            if (mAdbKeyStore.isTrustedNetwork(bssid, ssid)) {
                 return true;
             }
 

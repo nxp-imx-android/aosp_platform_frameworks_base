@@ -18,6 +18,7 @@ package com.android.server.adb;
 import android.annotation.NonNull;
 import android.content.Context;
 import android.provider.Settings;
+import android.text.TextUtils;
 
 import com.android.internal.annotations.VisibleForTesting;
 
@@ -315,12 +316,15 @@ class AdbKeyStore {
     }
 
     /**
-     * Returns whether the specified bssid is in the list of trusted networks. This requires that
-     * the user previously allowed wireless debugging on this network and selected the option to
-     * 'Always allow'.
+     * Returns whether the specified bssid or ssid is in the list of trusted networks. This requires
+     * that the user previously allowed wireless debugging on this network and selected the option
+     * to 'Always allow'.
      */
-    synchronized boolean isTrustedNetwork(String bssid) {
-        return mAuthEntries.trustedNetworks().stream().anyMatch(
-                network -> network.bssid().equals(bssid));
+    synchronized boolean isTrustedNetwork(@NonNull String bssid, @NonNull String ssid) {
+        return mAuthEntries.trustedNetworks().stream()
+                .anyMatch(
+                        network ->
+                                TextUtils.equals(bssid, network.bssid())
+                                        || TextUtils.equals(ssid, network.ssid()));
     }
 }

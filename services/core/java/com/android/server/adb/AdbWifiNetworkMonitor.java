@@ -22,6 +22,7 @@ import android.net.Network;
 import android.net.NetworkCapabilities;
 import android.net.NetworkRequest;
 import android.net.wifi.WifiInfo;
+import android.net.wifi.WifiManager;
 import android.provider.Settings;
 import android.text.TextUtils;
 import android.util.Slog;
@@ -45,24 +46,24 @@ public class AdbWifiNetworkMonitor extends ConnectivityManager.NetworkCallback
     private final IsTrustedNetworkChecker mIsTrustedNetworkChecker;
 
     /**
-     * Stores the BSSID of the most recently processed network.
+     * Stores the SSID of the most recently processed network.
      *
      * <p>This is used to deduplicate callbacks, which may fire multiple times for the same network
-     * change event. By comparing against the last known BSSID, we can ensure we only react to a
+     * change event. By comparing against the last known SSID, we can ensure we only react to a
      * given network update once.
      */
-    @Nullable private String mLastBSSID;
+    @Nullable private String mLastSSID;
 
     private boolean mStarted = false;
 
     @VisibleForTesting
     interface IsTrustedNetworkChecker {
-        boolean isTrusted(String bssid);
+        boolean isTrusted(String bssid, String ssid);
     }
 
     AdbWifiNetworkMonitor(
             @NonNull Context context, @NonNull IsTrustedNetworkChecker isTrustedNetworkChecker) {
-        // Flag is required to receive BSSID info in the callback.
+        // Flag is required to receive BSSID and SSID info in the callback.
         super(ConnectivityManager.NetworkCallback.FLAG_INCLUDE_LOCATION_INFO);
 
         mContext = context;
@@ -110,25 +111,32 @@ public class AdbWifiNetworkMonitor extends ConnectivityManager.NetworkCallback
 
     @Override
     public final void onLost(@NonNull Network network) {
-        mLastBSSID = null;
+        mLastSSID = null;
         setAdbWifiState(false, "Wi-Fi network lost. Disabling adb over Wi-Fi.");
     }
 
     private void processWifiConnection(WifiInfo wifiInfo) {
-        if (wifiInfo == null
-                || wifiInfo.getNetworkId() == -1
-                || TextUtils.isEmpty(wifiInfo.getBSSID())) {
-            setAdbWifiState(false, "Wi-Fi connection info is invalid. Disabling adb over Wi-Fi.");
+        if (wifiInfo.getNetworkId() == -1
+                || TextUtils.isEmpty(wifiInfo.getBSSID())
+                || TextUtils.isEmpty(wifiInfo.getSSID())
+                || TextUtils.equals(wifiInfo.getSSID(), WifiManager.UNKNOWN_SSID)) {
+            setAdbWifiState(
+                    false,
+                    TextUtils.formatSimple(
+                            "Wi-Fi connection info is invalid {networkId=%d, bssid=%s, ssid=%s}."
+                                    + " Disabling adb over Wi-Fi.",
+                            wifiInfo.getNetworkId(), wifiInfo.getBSSID(), wifiInfo.getSSID()));
             return;
         }
 
-        if (TextUtils.equals(wifiInfo.getBSSID(), mLastBSSID)) {
-            Slog.i(TAG, "Received the same Wi-Fi BSSID. Ignoring.");
+        if (TextUtils.equals(wifiInfo.getSSID(), mLastSSID)) {
+            Slog.i(TAG, "Received the same Wi-Fi SSID. Ignoring.");
             return;
         }
-        mLastBSSID = wifiInfo.getBSSID();
+        mLastSSID = wifiInfo.getSSID();
 
-        boolean isTrusted = mIsTrustedNetworkChecker.isTrusted(wifiInfo.getBSSID());
+        boolean isTrusted =
+                mIsTrustedNetworkChecker.isTrusted(wifiInfo.getBSSID(), wifiInfo.getSSID());
         if (isTrusted) {
             setAdbWifiState(true, "Connected to a trusted Wi-Fi network. Enabling adb over Wi-Fi.");
         } else {
