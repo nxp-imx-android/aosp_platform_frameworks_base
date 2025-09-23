@@ -109,7 +109,7 @@ import com.android.systemui.qs.footer.dagger.FooterActionsModule;
 import com.android.systemui.qs.tiles.impl.qr.ui.model.QRCodeScannerModule;
 import com.android.systemui.recents.Recents;
 import com.android.systemui.recordissue.RecordIssueModule;
-import com.android.systemui.retail.RetailModeModule;
+import com.android.systemui.retail.impl.RetailModeModule;
 import com.android.systemui.rotation.impl.RotationModule;
 import com.android.systemui.rotationlock.DeviceStateAutoRotateModule.BoundsDeviceStateAutoRotateModule;
 import com.android.systemui.scene.shared.model.SceneContainerConfig;
