@@ -191,6 +191,7 @@ constructor(
                     jankMonitor = jankMonitor,
                     maxScrimTop = { 0f },
                     shouldPunchHoleBehindScrim = false,
+                    isTransparencyEnabled = viewModel.isTransparencyEnabled,
                     stackTopPadding = notificationStackPadding,
                     stackBottomPadding = notificationStackPadding,
                     shouldFillMaxSize = false,

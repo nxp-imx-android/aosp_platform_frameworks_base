@@ -346,6 +346,7 @@ private fun ContentScope.SingleShade(
                     jankMonitor = jankMonitor,
                     maxScrimTop = { maxNotifScrimTop.toFloat() },
                     shouldPunchHoleBehindScrim = shouldPunchHoleBehindScrim,
+                    isTransparencyEnabled = viewModel.isTransparencyEnabled,
                     stackTopPadding = notificationStackPadding,
                     stackBottomPadding = navBarHeight,
                     supportNestedScrolling = true,
@@ -547,6 +548,7 @@ private fun ContentScope.SplitShade(
                     stackTopPadding = notificationStackPadding,
                     stackBottomPadding = notificationStackPadding,
                     shouldPunchHoleBehindScrim = false,
+                    isTransparencyEnabled = viewModel.isTransparencyEnabled,
                     supportNestedScrolling = false,
                     onEmptySpaceClick =
                         viewModel::onEmptySpaceClicked.takeIf { viewModel.isEmptySpaceClickable },
