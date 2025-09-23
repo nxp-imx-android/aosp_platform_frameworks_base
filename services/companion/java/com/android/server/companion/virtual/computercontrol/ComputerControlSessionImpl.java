@@ -136,7 +136,11 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
     private final Context mContext;
     private final IBinder mAppToken;
     private final ComputerControlSessionParams mParams;
+
+    private final UserHandle mOwnerUser;
+    private final Context mOwnerContext;
     private final String mOwnerPackageName;
+
     private final OnClosedListener mOnClosedListener;
     private final IVirtualDevice mVirtualDevice;
     private final int mVirtualDisplayId;
@@ -149,7 +153,6 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
     private final ScheduledExecutorService mScheduler =
             Executors.newSingleThreadScheduledExecutor();
 
-    private final PackageManager mPackageManager;
     private final WindowManagerInternal mWindowManagerInternal;
     private final InputMethodManagerInternal mInputMethodManagerInternal;
     private final UserManagerInternal mUserManagerInternal;
@@ -185,9 +188,12 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
         mTransactionSupplier = transactionSupplier;
         mAppToken = appToken;
         mParams = params;
+
+        mOwnerUser = UserHandle.getUserHandleForUid(attributionSource.getUid());
+        mOwnerContext = context.createContextAsUser(mOwnerUser, /* flags = */ 0);
         mOwnerPackageName = attributionSource.getPackageName();
+
         mOnClosedListener = onClosedListener;
-        mPackageManager = context.getPackageManager();
         mWindowManagerInternal = LocalServices.getService(WindowManagerInternal.class);
         mInputMethodManagerInternal = LocalServices.getService(
                 InputMethodManagerInternal.class);
@@ -197,7 +203,7 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
 
         // TODO(b/440005498): Consider using the display from the app's context instead.
         mMainDisplayId = mUserManagerInternal.getMainDisplayAssignedToUser(
-                UserHandle.getUserId(attributionSource.getUid()));
+                mOwnerUser.getIdentifier());
 
         final VirtualDeviceParams virtualDeviceParams = new VirtualDeviceParams.Builder()
                 .setName(mParams.getName())
@@ -302,7 +308,7 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
         } else {
             // This legacy policy allows all apps other than PermissionController to be automated.
             String permissionControllerPackage =
-                    mPackageManager.getPermissionControllerPackageName();
+                    mContext.getPackageManager().getPermissionControllerPackageName();
             exemptedPackageNames.add(permissionControllerPackage);
         }
         for (int i = 0; i < exemptedPackageNames.size(); i++) {
@@ -349,11 +355,10 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
             mVirtualDevice.addActivityPolicyExemption(
                     new ActivityPolicyExemption.Builder().setPackageName(packageName).build());
         }
-        final UserHandle user = Binder.getCallingUserHandle();
         Binder.withCleanCallingIdentity(() ->
                 mContext.startActivityAsUser(intent,
                         ActivityOptions.makeBasic()
-                                .setLaunchDisplayId(mVirtualDisplayId).toBundle(), user));
+                                .setLaunchDisplayId(mVirtualDisplayId).toBundle(), mOwnerUser));
     }
 
     @Override
@@ -652,13 +657,13 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
 
     private Intent getLaunchIntent(String packageName, String className) {
         if (className == null) {
-            return mPackageManager.getLaunchIntentForPackage(packageName);
+            return mOwnerContext.getPackageManager().getLaunchIntentForPackage(packageName);
         }
         final Intent intent = new Intent(Intent.ACTION_MAIN)
                 .addCategory(Intent.CATEGORY_LAUNCHER)
                 .setClassName(packageName, className);
-        final List<ResolveInfo> resolveInfos = mPackageManager.queryIntentActivities(
-                intent, ResolveInfoFlags.of(PackageManager.MATCH_ALL));
+        final List<ResolveInfo> resolveInfos = mOwnerContext.getPackageManager()
+                .queryIntentActivities(intent, ResolveInfoFlags.of(PackageManager.MATCH_ALL));
         if (resolveInfos.isEmpty()) {
             return null;
         }

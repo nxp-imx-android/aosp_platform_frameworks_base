@@ -117,6 +117,7 @@ public class ComputerControlSessionTest {
 
     private static final String PERMISSION_CONTROLLER_PACKAGE = "permission.controller.package";
 
+    private static final int USER_ID = UserHandle.USER_SYSTEM;
     private static final int MAIN_DISPLAY_ID = 41;
     private static final int VIRTUAL_DISPLAY_ID = 42;
     private static final int DISPLAY_WIDTH = 600;
@@ -136,10 +137,16 @@ public class ComputerControlSessionTest {
             spy(
                     new ContextWrapper(
                             InstrumentationRegistry.getInstrumentation().getTargetContext()));
+    private final Context mOwnerContext =
+            spy(
+                    new ContextWrapper(
+                            InstrumentationRegistry.getInstrumentation().getTargetContext()));
     @Mock
     private IDisplayManager mDisplayManager;
     @Mock
     private PackageManager mPackageManager;
+    @Mock
+    private PackageManager mOwnerPackageManager;
     @Mock
     private WindowManagerInternal mWindowManagerInternal;
     @Mock
@@ -192,7 +199,11 @@ public class ComputerControlSessionTest {
         mMockitoSession = MockitoAnnotations.openMocks(this);
         mTransaction = spy(new StubTransaction());
 
+        when(mContext.createContextAsUser(UserHandle.of(USER_ID), /* flags = */ 0))
+                .thenReturn(mOwnerContext);
         when(mContext.getPackageManager()).thenReturn(mPackageManager);
+        when(mOwnerContext.getPackageManager()).thenReturn(mOwnerPackageManager);
+
         LocalServices.removeAllServicesForTest();
         LocalServices.addService(WindowManagerInternal.class, mWindowManagerInternal);
         LocalServices.addService(UserManagerInternal.class, mUserManagerInternal);
@@ -333,7 +344,7 @@ public class ComputerControlSessionTest {
     @Test
     public void launchApplication_launchesApplication() throws RemoteException {
         createComputerControlSession(mDefaultParams);
-        when(mPackageManager.queryIntentActivities(any(), any()))
+        when(mOwnerPackageManager.queryIntentActivities(any(), any()))
                 .thenReturn(List.of(new ResolveInfo()));
 
         mSession.launchApplication(TARGET_PACKAGE_1, TARGET_CLASS);
@@ -345,7 +356,7 @@ public class ComputerControlSessionTest {
     @EnableFlags(Flags.FLAG_COMPUTER_CONTROL_ACTIVITY_POLICY_STRICT)
     public void launchApplication_strictActivityPolicy_addsExemption() throws RemoteException {
         createComputerControlSession(mDefaultParams);
-        when(mPackageManager.queryIntentActivities(any(), any()))
+        when(mOwnerPackageManager.queryIntentActivities(any(), any()))
                 .thenReturn(List.of(new ResolveInfo()));
 
         mSession.launchApplication(UNDECLARED_TARGET_PACKAGE, TARGET_CLASS);
@@ -358,7 +369,7 @@ public class ComputerControlSessionTest {
     @Test
     public void launchApplication_noLaunchIntent_throws() throws RemoteException {
         createComputerControlSession(mDefaultParams);
-        when(mPackageManager.queryIntentActivities(any(), any())).thenReturn(List.of());
+        when(mOwnerPackageManager.queryIntentActivities(any(), any())).thenReturn(List.of());
 
         assertThrows(IllegalArgumentException.class,
                 () -> mSession.launchApplication(TARGET_PACKAGE_1, TARGET_CLASS));
@@ -579,14 +590,14 @@ public class ComputerControlSessionTest {
         mSession = new ComputerControlSessionImpl(
                 mContext, displayManagerGlobal, mViewConfiguration, globalSessionTimeoutDurationMs,
                 () -> mTransaction, mAppToken, params,
-                new AttributionSource(100, "com.package", "tag"), mVirtualDeviceFactory,
-                ALLOWED_USERS, mOnClosedListener);
+                new AttributionSource(UserHandle.getUid(USER_ID, 0), "com.package", "tag"),
+                mVirtualDeviceFactory, ALLOWED_USERS, mOnClosedListener);
     }
 
     @SuppressLint("MissingPermission")
     private void assertLaunchedApplication(String packageName) {
         // Verifying resolution.
-        verify(mPackageManager).queryIntentActivities(mIntentArgumentCaptor.capture(), any());
+        verify(mOwnerPackageManager).queryIntentActivities(mIntentArgumentCaptor.capture(), any());
         assertLaunchIntent(mIntentArgumentCaptor.getValue(), packageName);
         // Verifying start.
         verify(mContext).startActivityAsUser(
