@@ -1822,13 +1822,6 @@ public class BubbleStackView extends FrameLayout
                 visibility = VISIBLE;
             }
         }
-        if (Flags.enableRetrievableBubbles()) {
-            if (BubbleOverflow.KEY.equals(mBubbleData.getSelectedBubbleKey())
-                    && !mBubbleData.hasBubbles()) {
-                // Hide overflow bubble icon if it is the only bubble
-                visibility = GONE;
-            }
-        }
         mBubbleOverflow.setVisible(visibility);
     }
 
@@ -2520,13 +2513,6 @@ public class BubbleStackView extends FrameLayout
                         + " mIsExpanded=%b", newlySelectedKey, previouslySelectedKey, mIsExpanded);
         if (mIsExpanded) {
             Runnable onImeHidden = () -> {
-                if (Flags.enableRetrievableBubbles()) {
-                    if (mBubbleData.getBubbles().size() == 1) {
-                        // First bubble, check if overflow visibility needs to change
-                        updateOverflowVisibility();
-                    }
-                }
-
                 // Make the container of the expanded view transparent before removing the expanded
                 // view from it. Otherwise a punch hole created by {@link android.view.SurfaceView}
                 // in the expanded view becomes visible on the screen. See b/126856255
@@ -2656,16 +2642,6 @@ public class BubbleStackView extends FrameLayout
             // the IME is already hidden, so run the runnable immediately
             onImeHidden.run();
         }
-    }
-
-    /**
-     * Check if we only have overflow expanded. Which is the case when we are launching bubbles from
-     * background.
-     */
-    private boolean isOnlyOverflowExpanded() {
-        boolean overflowExpanded = mExpandedBubble != null && BubbleOverflow.KEY.equals(
-                mExpandedBubble.getKey());
-        return overflowExpanded && !mBubbleData.hasBubbles();
     }
 
     /**
@@ -2912,11 +2888,7 @@ public class BubbleStackView extends FrameLayout
         mBubbleContainer.setActiveController(mExpandedAnimationController);
         updateOverflowVisibility();
 
-        if (Flags.enableRetrievableBubbles() && isOnlyOverflowExpanded()) {
-            animateOverflowExpansion();
-        } else {
-            expandBubble(animate);
-        }
+        expandBubble(animate);
     }
 
     private void expandBubble(boolean animate) {
