@@ -18,6 +18,7 @@ package com.android.systemui.statusbar.quickactions.av.domain.interactor
 
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.backgroundScope
+import com.android.systemui.kosmos.testDispatcher
 import com.android.systemui.user.domain.interactor.selectedUserInteractor
 import com.android.systemui.util.settings.data.repository.secureSettingsForUserRepository
 
@@ -25,6 +26,7 @@ val Kosmos.desktopEffectInteractor: DesktopEffectInteractor by
     Kosmos.Fixture {
         DesktopEffectInteractor(
             backgroundScope = backgroundScope,
+            bgDispatcher = testDispatcher,
             selectedUserInteractor = selectedUserInteractor,
             secureSettingsForUserRepository = secureSettingsForUserRepository,
         )

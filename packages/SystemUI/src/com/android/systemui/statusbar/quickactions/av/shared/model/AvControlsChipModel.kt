@@ -16,7 +16,23 @@
 
 package com.android.systemui.statusbar.quickactions.av.shared.model
 
+import android.graphics.drawable.Drawable
+
 /** Model used to display a VC/Privacy control chip in the status bar. */
 data class AvControlsChipModel(
-    val sensorActivityModel: SensorActivityModel = SensorActivityModel.Inactive
+    val sensorActivityModel: SensorActivityModel = SensorActivityModel.Inactive,
+    val sensorAccessList: List<SensorAccess> = emptyList(),
+)
+
+enum class Sensor {
+    CAMERA,
+    MICROPHONE,
+}
+
+/** Information about what app accesses which sensor. */
+data class SensorAccess(
+    val packageName: String,
+    val appName: String,
+    val sensor: Sensor,
+    val icon: Drawable? = null,
 )
