@@ -577,6 +577,10 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
             onTaskInfoChanged(taskInfo);
             return Unit.INSTANCE;
         });
+        mDesksOrganizer.addOnDesktopTaskVanishedListener((taskInfo) -> {
+            onTaskVanished(taskInfo);
+            return Unit.INSTANCE;
+        });
         mLockTaskChangeListener.addListener(this);
     }
 

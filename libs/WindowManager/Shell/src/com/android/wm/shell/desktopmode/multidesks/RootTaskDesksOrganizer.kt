@@ -77,6 +77,7 @@ class RootTaskDesksOrganizer(
     private val removeDeskRootRequests = mutableSetOf<Int>()
     @VisibleForTesting val childLeashes = SparseArray<SurfaceControl>()
     private val onTaskInfoChangedListeners = mutableListOf<(RunningTaskInfo) -> Unit>()
+    private val onTaskVanishedListeners = mutableListOf<(RunningTaskInfo) -> Unit>()
 
     init {
         if (DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
@@ -461,6 +462,11 @@ class RootTaskDesksOrganizer(
         onTaskInfoChangedListeners += listener
     }
 
+    override fun addOnDesktopTaskVanishedListener(listener: (RunningTaskInfo) -> Unit) {
+        if (listener in onTaskVanishedListeners) return
+        onTaskVanishedListeners += listener
+    }
+
     override fun onTaskAppeared(taskInfo: RunningTaskInfo, leash: SurfaceControl) {
         handleTaskAppeared(taskInfo, leash)
         updateLaunchAdjacentController()
@@ -481,6 +487,14 @@ class RootTaskDesksOrganizer(
 
     override fun onTaskVanished(taskInfo: RunningTaskInfo) {
         handleTaskVanished(taskInfo)
+        if (
+            taskInfo.taskId !in deskRootsByDeskId &&
+                deskMinimizationRootsByDeskId.values.none { it.rootId == taskInfo.taskId }
+        ) {
+            onTaskVanishedListeners.forEach { onTaskVanishedListener ->
+                onTaskVanishedListener(taskInfo)
+            }
+        }
         updateLaunchAdjacentController()
     }
 
