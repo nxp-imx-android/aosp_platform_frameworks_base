@@ -53,6 +53,7 @@ import android.telephony.TelephonyCallback;
 import android.telephony.TelephonyDisplayInfo;
 import android.telephony.TelephonyManager;
 import android.telephony.satellite.SatelliteManager;
+import android.testing.TestableContext;
 import android.testing.TestableLooper;
 import android.testing.TestableResources;
 import android.text.TextUtils;
@@ -72,6 +73,7 @@ import com.android.systemui.animation.DialogTransitionAnimator;
 import com.android.systemui.broadcast.BroadcastDispatcher;
 import com.android.systemui.flags.FakeFeatureFlags;
 import com.android.systemui.flags.Flags;
+import com.android.systemui.kosmos.KosmosJavaAdapter;
 import com.android.systemui.plugins.ActivityStarter;
 import com.android.systemui.res.R;
 import com.android.systemui.statusbar.connectivity.AccessPointController;
@@ -117,6 +119,8 @@ public class InternetDetailsContentControllerTest extends SysuiTestCase {
     private static final int GRAVITY_FLAGS = Gravity.FILL_HORIZONTAL | Gravity.FILL_VERTICAL;
     private static final int TOAST_MESSAGE_STRING_ID = 1;
     private static final String TOAST_MESSAGE_STRING = "toast message";
+
+    private final KosmosJavaAdapter mKosmos = new KosmosJavaAdapter(this);
 
     @Mock
     private WifiManager mWifiManager;
@@ -189,9 +193,13 @@ public class InternetDetailsContentControllerTest extends SysuiTestCase {
     @Mock
     private WifiConfiguration mWifiConfiguration;
 
+    // Let's create a second one, mainly to mock getSystemService call
+    private final TestableContext mShadeContext = spy(mContext.createDefaultDisplayContext());
+
     private FakeFeatureFlags mFlags = new FakeFeatureFlags();
 
     private TestableResources mTestableResources;
+    private TestableResources mShadeTestableResources;
     private InternetDetailsContentController mInternetDetailsContentController;
     private FakeExecutor mExecutor = new FakeExecutor(new FakeSystemClock());
     private List<WifiEntry> mAccessPoints = new ArrayList<>();
@@ -207,7 +215,10 @@ public class InternetDetailsContentControllerTest extends SysuiTestCase {
                 .strictness(Strictness.LENIENT)
                 .startMocking();
         MockitoAnnotations.initMocks(this);
+        mShadeTestableResources = mShadeContext.getOrCreateTestableResources();
         mTestableResources = mContext.getOrCreateTestableResources();
+        mKosmos.getShadeDialogContextInteractor().setContextOverride(mShadeContext);
+        when(mShadeContext.getSystemService(WindowManager.class)).thenReturn(mWindowManager);
         doReturn(mTelephonyManager).when(mTelephonyManager).createForSubscriptionId(anyInt());
         when(mTelephonyManager.getSignalStrength()).thenReturn(mSignalStrength);
         when(mSignalStrength.getLevel()).thenReturn(SIGNAL_STRENGTH_GREAT);
@@ -238,7 +249,8 @@ public class InternetDetailsContentControllerTest extends SysuiTestCase {
                 mConnectivityManager, mSatelliteManager, mHandler, mExecutor, mBroadcastDispatcher,
                 mock(KeyguardUpdateMonitor.class), mGlobalSettings, mKeyguardStateController,
                 mWindowManager, mToastFactory, mWorkerHandler, mCarrierConfigTracker,
-                mLocationController, mDialogTransitionAnimator, mWifiStateWorker, mFlags);
+            mLocationController, mDialogTransitionAnimator, mWifiStateWorker, mFlags,
+            mKosmos.getShadeDialogContextInteractor());
         mSubscriptionManager.addOnSubscriptionsChangedListener(mExecutor,
                 mInternetDetailsContentController.mOnSubscriptionsChangedListener);
         mInternetDetailsContentController.onStart(mInternetDialogCallback, true);
@@ -272,7 +284,7 @@ public class InternetDetailsContentControllerTest extends SysuiTestCase {
                 .thenReturn(false);
 
         when(mMergedCarrierEntry.canConnect()).thenReturn(true);
-        mTestableResources.addOverride(R.string.wifi_wont_autoconnect_for_now,
+        mShadeTestableResources.addOverride(R.string.wifi_wont_autoconnect_for_now,
             TOAST_MESSAGE_STRING);
 
         spyController.connectCarrierNetwork();
@@ -286,7 +298,7 @@ public class InternetDetailsContentControllerTest extends SysuiTestCase {
     public void connectCarrierNetwork_mergedCarrierEntryCanConnect_doNothingWhenSettingsOff() {
         InternetDetailsContentController spyController = spy(mInternetDetailsContentController);
         when(spyController.isMobileDataEnabled()).thenReturn(false);
-        mTestableResources.addOverride(R.string.wifi_wont_autoconnect_for_now,
+        mShadeTestableResources.addOverride(R.string.wifi_wont_autoconnect_for_now,
             TOAST_MESSAGE_STRING);
 
         spyController.connectCarrierNetwork();
@@ -302,7 +314,7 @@ public class InternetDetailsContentControllerTest extends SysuiTestCase {
         when(spyController.isMobileDataEnabled()).thenReturn(true);
         when(mKeyguardStateController.isUnlocked()).thenReturn(false);
 
-        mTestableResources.addOverride(R.string.wifi_wont_autoconnect_for_now,
+        mShadeTestableResources.addOverride(R.string.wifi_wont_autoconnect_for_now,
             TOAST_MESSAGE_STRING);
         spyController.connectCarrierNetwork();
 
@@ -320,7 +332,7 @@ public class InternetDetailsContentControllerTest extends SysuiTestCase {
         when(mNetworkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR))
                 .thenReturn(true);
 
-        mTestableResources.addOverride(R.string.wifi_wont_autoconnect_for_now,
+        mShadeTestableResources.addOverride(R.string.wifi_wont_autoconnect_for_now,
             TOAST_MESSAGE_STRING);
         mInternetDetailsContentController.connectCarrierNetwork();
 
@@ -331,7 +343,7 @@ public class InternetDetailsContentControllerTest extends SysuiTestCase {
 
     @Test
     public void makeOverlayToast_withGravityFlags_addViewWithLayoutParams() {
-        mTestableResources.addOverride(TOAST_MESSAGE_STRING_ID, TOAST_MESSAGE_STRING);
+        mShadeTestableResources.addOverride(TOAST_MESSAGE_STRING_ID, TOAST_MESSAGE_STRING);
 
         mInternetDetailsContentController.makeOverlayToast(TOAST_MESSAGE_STRING_ID);
 
@@ -347,7 +359,7 @@ public class InternetDetailsContentControllerTest extends SysuiTestCase {
 
     @Test
     public void makeOverlayToast_withAnimation_verifyAnimatorStart() {
-        mTestableResources.addOverride(TOAST_MESSAGE_STRING_ID, TOAST_MESSAGE_STRING);
+        mShadeTestableResources.addOverride(TOAST_MESSAGE_STRING_ID, TOAST_MESSAGE_STRING);
 
         mInternetDetailsContentController.makeOverlayToast(TOAST_MESSAGE_STRING_ID);
 

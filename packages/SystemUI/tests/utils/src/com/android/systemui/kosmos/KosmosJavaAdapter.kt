@@ -74,6 +74,8 @@ import com.android.systemui.settings.brightness.data.repository.brightnessMirror
 import com.android.systemui.settings.displayTracker
 import com.android.systemui.shade.data.repository.fakeFocusedDisplayRepository
 import com.android.systemui.shade.data.repository.fakeShadeDisplaysRepository
+import com.android.systemui.shade.data.repository.shadeConfigRepository
+import com.android.systemui.shade.data.repository.shadeDialogContextInteractor
 import com.android.systemui.shade.data.repository.shadeRepository
 import com.android.systemui.shade.domain.interactor.shadeInteractor
 import com.android.systemui.shade.domain.interactor.shadeLayoutParams
@@ -239,6 +241,7 @@ class KosmosJavaAdapter() {
     val mockNotificationDismissibilityProvider by lazy {
         kosmos.mockNotificationDismissibilityProvider
     }
+    val shadeDialogContextInteractor by lazy { kosmos.shadeDialogContextInteractor }
     val mockNotifCollection by lazy { kosmos.mockNotifCollection }
     val expandableNotificationRowLogger by lazy { kosmos.expandableNotificationRowLogger }
     val mockHeadsUpManager by lazy { kosmos.mockHeadsUpManager }
