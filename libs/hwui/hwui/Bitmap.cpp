@@ -394,7 +394,8 @@ Bitmap::~Bitmap() {
         case PixelStorageType::Heap:
             free(mPixelStorage.heap.address);
 #ifdef __ANDROID__
-            mallopt(M_PURGE, 0);
+            // Use a purge that will not block for a long time.
+            mallopt(M_PURGE_FAST, 0);
 #endif
             break;
         case PixelStorageType::Hardware:
