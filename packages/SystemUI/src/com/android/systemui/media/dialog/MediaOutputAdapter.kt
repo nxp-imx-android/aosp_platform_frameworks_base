@@ -54,12 +54,9 @@ class MediaOutputAdapter(controller: MediaSwitchingController) :
     MediaOutputAdapterBase(controller) {
 
     /** Refreshes the RecyclerView dataset and forces re-render. */
-    override fun updateItems() {
-        val newList =
-            mController.getMediaItemList(false /* addConnectNewDeviceButton */).toMutableList()
-
+    fun updateItems() {
         mMediaItemList.clear()
-        mMediaItemList.addAll(newList)
+        mMediaItemList.addAll(mController.getMediaItemList())
 
         notifyDataSetChanged()
     }

@@ -98,7 +98,7 @@ public abstract class MediaOutputBaseDialog extends SystemUIDialog
     private WallpaperColors mWallpaperColors;
     private boolean mDismissing;
 
-    MediaOutputAdapterBase mAdapter;
+    MediaOutputAdapter mAdapter;
 
     protected Executor mExecutor;
 
@@ -401,7 +401,7 @@ public abstract class MediaOutputBaseDialog extends SystemUIDialog
             mAudioSharingButton.setVisibility(View.GONE);
         }
 
-        if (mMediaSwitchingController.getConnectNewDeviceItem() != null) {
+        if (mMediaSwitchingController.hasConnectDeviceButton()) {
             showQuickAccessShelf = true;
             mConnectDeviceButton.setVisibility(View.VISIBLE);
             mConnectDeviceButton.setOnClickListener(

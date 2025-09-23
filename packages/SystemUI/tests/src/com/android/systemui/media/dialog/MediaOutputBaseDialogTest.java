@@ -87,7 +87,7 @@ public class MediaOutputBaseDialogTest extends SysuiTestCase {
     private final Kosmos mKosmos = SysuiTestCaseExtKt.testKosmos(this);
 
     // Mock
-    private MediaOutputAdapterBase mMediaOutputBaseAdapter = mock(MediaOutputAdapterBase.class);
+    private MediaOutputAdapter mMediaOutputAdapter = mock(MediaOutputAdapter.class);
     private MediaController mMediaController = mock(MediaController.class);
     private PlaybackState mPlaybackState = mock(PlaybackState.class);
     private MediaSessionManager mMediaSessionManager = mock(MediaSessionManager.class);
@@ -278,15 +278,15 @@ public class MediaOutputBaseDialogTest extends SysuiTestCase {
 
     @Test
     public void refresh_inDragging_notUpdateAdapter() {
-        when(mMediaOutputBaseAdapter.isDragging()).thenReturn(true);
+        when(mMediaOutputAdapter.isDragging()).thenReturn(true);
         mMediaOutputBaseDialogImpl.refresh();
 
-        verify(mMediaOutputBaseAdapter, never()).notifyDataSetChanged();
+        verify(mMediaOutputAdapter, never()).notifyDataSetChanged();
     }
 
     @Test
     public void refresh_inDragging_directSetRefreshingToFalse() {
-        when(mMediaOutputBaseAdapter.isDragging()).thenReturn(true);
+        when(mMediaOutputAdapter.isDragging()).thenReturn(true);
         mMediaOutputBaseDialogImpl.refresh();
 
         assertThat(mMediaSwitchingController.isRefreshing()).isFalse();
@@ -294,11 +294,11 @@ public class MediaOutputBaseDialogTest extends SysuiTestCase {
 
     @Test
     public void refresh_notInDragging_verifyUpdateAdapter() {
-        when(mMediaOutputBaseAdapter.getCurrentActivePosition()).thenReturn(-1);
-        when(mMediaOutputBaseAdapter.isDragging()).thenReturn(false);
+        when(mMediaOutputAdapter.getCurrentActivePosition()).thenReturn(-1);
+        when(mMediaOutputAdapter.isDragging()).thenReturn(false);
         mMediaOutputBaseDialogImpl.refresh();
 
-        verify(mMediaOutputBaseAdapter).updateItems();
+        verify(mMediaOutputAdapter).updateItems();
     }
 
     @Test
@@ -329,7 +329,7 @@ public class MediaOutputBaseDialogTest extends SysuiTestCase {
                     mediaSwitchingController, /* includePlaybackAndAppMetadata */
                     true);
 
-            mAdapter = mMediaOutputBaseAdapter;
+            mAdapter = mMediaOutputAdapter;
         }
 
         @Override

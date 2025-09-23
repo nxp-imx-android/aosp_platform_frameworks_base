@@ -43,14 +43,12 @@ public class MediaItem {
     @IntDef({
             MediaItemType.TYPE_DEVICE,
             MediaItemType.TYPE_GROUP_DIVIDER,
-            MediaItemType.TYPE_PAIR_NEW_DEVICE,
             MediaItemType.TYPE_DEVICE_GROUP
     })
     public @interface MediaItemType {
         int TYPE_DEVICE = 0;
         int TYPE_GROUP_DIVIDER = 1;
-        int TYPE_PAIR_NEW_DEVICE = 2;
-        int TYPE_DEVICE_GROUP = 3;
+        int TYPE_DEVICE_GROUP = 2;
     }
 
     /**
@@ -83,18 +81,6 @@ public class MediaItem {
                 /* title */ null,
                 /* type */ MediaItemType.TYPE_DEVICE_GROUP,
                 /* misFirstDeviceInGroup */ false);
-    }
-
-    /**
-     * Returns a new {@link MediaItemType#TYPE_PAIR_NEW_DEVICE} {@link MediaItem} with both {@link
-     * #getMediaDevice() media device} and title set to {@code null}.
-     */
-    public static MediaItem createPairNewDeviceMediaItem() {
-        return new MediaItem(
-                /* device */ null,
-                /* title */ null,
-                MediaItemType.TYPE_PAIR_NEW_DEVICE,
-                /* mIsFirstDeviceInGroup */ false);
     }
 
     /**
