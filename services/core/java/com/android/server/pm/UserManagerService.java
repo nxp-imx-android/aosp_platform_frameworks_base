@@ -7378,7 +7378,7 @@ public class UserManagerService extends IUserManager.Stub {
             return UserManager.REMOVE_RESULT_ALREADY_BEING_REMOVED;
         }
         if (userId == mDeviceOwnerUserId) {
-            return UserManager.REMOVE_RESULT_DEVICE_OWNER;
+            return UserManager.REMOVE_RESULT_ERROR_DEVICE_OWNER;
         }
         if (isNonRemovableLastAdminUserLU(userData.info)) {
             return UserManager.REMOVE_RESULT_ERROR_LAST_ADMIN_USER;
@@ -7404,7 +7404,7 @@ public class UserManagerService extends IUserManager.Stub {
             case UserManager.REMOVE_RESULT_ERROR_LAST_ADMIN_USER ->
                 Slogf.e(LOG_TAG, "User %d can not be %s, last admin user cannot be removed.",
                         userId, action);
-            case UserManager.REMOVE_RESULT_DEVICE_OWNER ->
+            case UserManager.REMOVE_RESULT_ERROR_DEVICE_OWNER ->
                     Slogf.w(LOG_TAG, "User %d can not be %s because it's the device owner", userId,
                             action);
             default -> {}
@@ -9315,6 +9315,7 @@ public class UserManagerService extends IUserManager.Stub {
             throw new UnsupportedOperationException(
                     "aconfig flag android.multiuser.disallow_removing_last_admin_user not enabled");
         }
+        checkQueryOrCreateUsersPermission("get user removability");
         synchronized (mUsersLock) {
             return getUserRemovabilityLockedLU(userId);
         }
