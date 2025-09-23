@@ -365,6 +365,7 @@ public class BubbleStackView extends FrameLayout
         pw.print("  expandedViewTemporarilyHidden: "); pw.println(mExpandedViewTemporarilyHidden);
         pw.print("  imeVisible:              "); pw.println(mIsImeVisible);
         pw.print("  gesture tracker:         "); pw.println(mBubblesNavBarGestureTracker);
+        pw.print("  is showing overflow:     "); pw.println(mShowingOverflow);
         mStackAnimationController.dump(pw);
         mExpandedAnimationController.dump(pw);
         mExpandedViewAnimationController.dump(pw);
