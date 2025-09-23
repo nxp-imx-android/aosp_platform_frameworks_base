@@ -71,7 +71,7 @@ import java.util.stream.Collectors;
  * Responsible for initializing and the environment.
  */
 public class RavenwoodDriver {
-    private static final String TAG = RavenwoodInternalUtils.TAG;
+    public static final String TAG = RavenwoodInternalUtils.TAG;
 
     private RavenwoodDriver() {
     }
@@ -220,6 +220,9 @@ public class RavenwoodDriver {
 
         // Make sure libandroid_runtime is loaded.
         RavenwoodNativeLoader.loadFrameworkNativeCode();
+
+        // Integrity check.
+        RavenwoodIntegrityChecker.onFrameworkNativeInitialized();
 
         // Start method logging.
         RavenwoodMethodCallLogger.getInstance().enable(sRawStdOut);

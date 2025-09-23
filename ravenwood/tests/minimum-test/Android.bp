@@ -20,7 +20,6 @@ java_defaults {
         "test/**/*.java",
     ],
     sdk_version: "test_current",
-    auto_gen_config: true,
 }
 
 // Minimum ravenwood test according to test-authors.md.
