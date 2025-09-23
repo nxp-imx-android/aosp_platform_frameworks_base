@@ -519,7 +519,7 @@ public class AuthContainerView extends LinearLayout
 
     @Override
     public void onAttachedToWindow() {
-        if (Flags.bpFallbackOptions() || (mIsWatch && Flags.bpInitializeComposeWatch())) {
+        if (Flags.bpFallbackOptions() || mIsWatch) {
             ComposeInitializer.INSTANCE.onAttachedToWindow(this);
         }
 
@@ -609,7 +609,7 @@ public class AuthContainerView extends LinearLayout
             findOnBackInvokedDispatcher().unregisterOnBackInvokedCallback(mBackCallback);
         }
         super.onDetachedFromWindow();
-        if (Flags.bpFallbackOptions() || (mIsWatch && Flags.bpInitializeComposeWatch())) {
+        if (Flags.bpFallbackOptions() || mIsWatch) {
             ComposeInitializer.INSTANCE.onDetachedFromWindow(this);
         }
         mWakefulnessLifecycle.removeObserver(this);
