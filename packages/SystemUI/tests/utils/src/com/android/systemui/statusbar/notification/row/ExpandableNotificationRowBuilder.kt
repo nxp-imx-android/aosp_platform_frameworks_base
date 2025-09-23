@@ -178,6 +178,7 @@ class ExpandableNotificationRowBuilder(
                 mTestScope,
                 mBgCoroutineContext,
                 mMainCoroutineContext,
+                context,
             )
 
         mSmartReplyConstants =

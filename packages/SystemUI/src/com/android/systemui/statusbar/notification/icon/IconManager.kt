@@ -35,6 +35,8 @@ import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.res.R
+import com.android.systemui.shade.ShadeDisplayAware
+import com.android.systemui.shade.shared.flag.ShadeWindowGoesAround
 import com.android.systemui.statusbar.StatusBarIconView
 import com.android.systemui.statusbar.core.StatusBarConnectedDisplays
 import com.android.systemui.statusbar.notification.InflationException
@@ -70,6 +72,7 @@ constructor(
     @Application private val applicationCoroutineScope: CoroutineScope,
     @Background private val bgCoroutineContext: CoroutineContext,
     @Main private val mainCoroutineContext: CoroutineContext,
+    @ShadeDisplayAware private val shadeContext: Context,
 ) : ConversationIconManager {
 
     /**
@@ -171,7 +174,12 @@ constructor(
             }
 
             // Construct the shelf icon view.
-            val shelfIcon = iconBuilder.createIconView(entry)
+            val shelfIcon =
+                if (ShadeWindowGoesAround.isEnabled) {
+                    iconBuilder.createIconView(entry, shadeContext)
+                } else {
+                    iconBuilder.createIconView(entry)
+                }
             shelfIcon.scaleType = ImageView.ScaleType.CENTER_INSIDE
             shelfIcon.visibility = View.INVISIBLE
 
@@ -291,7 +299,12 @@ constructor(
             }
 
             // Construct the shelf icon view.
-            val shelfIcon = iconBuilder.createIconView(entry)
+            val shelfIcon =
+                if (ShadeWindowGoesAround.isEnabled) {
+                    iconBuilder.createIconView(entry, context)
+                } else {
+                    iconBuilder.createIconView(entry)
+                }
             shelfIcon.scaleType = ImageView.ScaleType.CENTER_INSIDE
             shelfIcon.visibility = View.INVISIBLE
 
