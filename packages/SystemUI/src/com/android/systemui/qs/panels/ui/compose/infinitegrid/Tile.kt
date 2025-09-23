@@ -23,7 +23,6 @@ import android.content.res.Resources
 import android.os.Trace
 import android.service.quicksettings.Tile.STATE_ACTIVE
 import android.service.quicksettings.Tile.STATE_INACTIVE
-import android.service.quicksettings.Tile.STATE_UNAVAILABLE
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -183,7 +182,7 @@ fun ContentScope.Tile(
             produceState(tile.currentState.toUiState(resources), tile, resources) {
                 tile.state.collect { value = it.toUiState(resources) }
             }
-        val isClickable = uiState.state != STATE_UNAVAILABLE
+        val isClickable = uiState.handlesMainClick
 
         val icon by
             produceState(tile.currentState.toIconProvider(), tile) {
@@ -197,9 +196,9 @@ fun ContentScope.Tile(
             }
 
         // TODO(b/361789146): Draw the shapes instead of clipping
-        val tileShape by TileDefaults.animateTileShapeAsState(uiState.state)
+        val tileShape by TileDefaults.animateTileShapeAsState(uiState.visualState)
         val animatedColor by animateColorAsState(colors.background, label = "QSTileBackgroundColor")
-        val isDualTarget = uiState.handlesSecondaryClick
+        val isDualTarget = uiState.handlesToggleClick
 
         val surfaceRevealModifier: Modifier
         val contentRevealModifier: Modifier
@@ -250,7 +249,7 @@ fun ContentScope.Tile(
                             tile.mainClick(expandable)
                         }
                     }
-                    .takeIf { !useLongClickToSettings || uiState.handlesLongClick }
+                    .takeIf { !useLongClickToSettings || uiState.handlesSettingsClick }
 
             // Bounce the tile's container if it is toggleable and is not a large
             // dual target tile. These don't toggle on main click.
@@ -315,7 +314,7 @@ fun ContentScope.Tile(
                             },
                     )
                 } else {
-                    val iconShape by TileDefaults.animateIconShapeAsState(uiState.state)
+                    val iconShape by TileDefaults.animateIconShapeAsState(uiState.visualState)
                     val secondaryClick: (() -> Unit)? =
                         {
                                 hapticsViewModel?.setTileInteractionState(
@@ -338,7 +337,7 @@ fun ContentScope.Tile(
                         isVisible = isVisible,
                         textScale = { contentBounceable.textBounceScale },
                         modifier =
-                            Modifier.largeTilePadding(isDualTarget = uiState.handlesLongClick),
+                            Modifier.largeTilePadding(isDualTarget = uiState.handlesSettingsClick),
                     )
                 }
             }
@@ -403,7 +402,7 @@ fun LargeStaticTile(
 
     Box(
         modifier
-            .clip(TileDefaults.animateTileShapeAsState(state = uiState.state).value)
+            .clip(TileDefaults.animateTileShapeAsState(state = uiState.visualState).value)
             .background(colors.background)
             .height(TileHeight)
             .largeTilePadding()
@@ -545,9 +544,9 @@ private object TileDefaults {
     @Composable
     @ReadOnlyComposable
     fun getColorForState(uiState: TileUiState, iconOnly: Boolean): TileColors {
-        return when (uiState.state) {
+        return when (uiState.visualState) {
             STATE_ACTIVE -> {
-                if (uiState.handlesSecondaryClick && !iconOnly) {
+                if (uiState.handlesToggleClick && !iconOnly) {
                     activeDualTargetTileColors()
                 } else {
                     activeTileColors()
@@ -555,7 +554,7 @@ private object TileDefaults {
             }
 
             STATE_INACTIVE -> {
-                if (uiState.handlesSecondaryClick && !iconOnly) {
+                if (uiState.handlesToggleClick && !iconOnly) {
                     inactiveDualTargetTileColors()
                 } else {
                     inactiveTileColors()
