@@ -36,8 +36,6 @@ import static org.mockito.Mockito.when;
 
 import android.graphics.Color;
 import android.graphics.Rect;
-import android.platform.test.annotations.DisableFlags;
-import android.platform.test.annotations.EnableFlags;
 import android.testing.TestableLooper;
 
 import androidx.annotation.ColorInt;
@@ -436,25 +434,12 @@ public class LightBarControllerTest extends SysuiTestCase {
     }
 
     @Test
-    @EnableFlags(
-            android.view.accessibility.Flags.FLAG_LIGHT_BAR_UPDATE_BUTTON_TINT_ON_NAV_MODE_CHANGE)
     public void navModeChanges_3buttonNavigation_setsDark() {
         mLightBarController.setNavigationBar(mNavBarController);
         clearInvocations(mNavBarController);
 
         mLightBarController.onNavigationModeChanged(NAV_BAR_MODE_3BUTTON);
         verifyNavBarIconsWereChanged();
-    }
-
-    @Test
-    @DisableFlags(
-            android.view.accessibility.Flags.FLAG_LIGHT_BAR_UPDATE_BUTTON_TINT_ON_NAV_MODE_CHANGE)
-    public void navModeChanges_3buttonNavigation_doesNotSetDark() {
-        mLightBarController.setNavigationBar(mNavBarController);
-        clearInvocations(mNavBarController);
-
-        mLightBarController.onNavigationModeChanged(NAV_BAR_MODE_3BUTTON);
-        verifyNavBarIconsUnchanged();
     }
 
     private void verifyNavBarIconsWereChanged() {
