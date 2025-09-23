@@ -31,9 +31,6 @@ import androidx.compose.ui.res.dimensionResource
 import com.android.compose.animation.scene.ElementContentScope
 import com.android.systemui.keyguard.ui.viewmodel.LockscreenLowerRegionViewModel
 import com.android.systemui.lifecycle.rememberViewModel
-import com.android.systemui.log.LogBuffer
-import com.android.systemui.log.core.Logger
-import com.android.systemui.log.dagger.KeyguardBlueprintLog
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElement
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementKeys
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementKeys.IndicationArea
@@ -44,17 +41,14 @@ import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenSc
 import com.android.systemui.res.R
 import com.android.systemui.shade.ShadeDisplayAware
 import javax.inject.Inject
-import kotlin.collections.List
 
 /** Provides a combined element for all lockscreen ui above the lock icon */
 class LockscreenLowerRegionElementProvider
 @Inject
 constructor(
     @ShadeDisplayAware private val context: Context,
-    @KeyguardBlueprintLog private val blueprintLog: LogBuffer,
     private val viewModelFactory: LockscreenLowerRegionViewModel.Factory,
 ) : LockscreenElementProvider {
-    private val logger = Logger(blueprintLog, "LockscreenLowerRegionElementProvider")
     override val elements: List<LockscreenElement> by lazy { listOf(LowerRegionElement()) }
 
     private inner class LowerRegionElement : LockscreenElement {

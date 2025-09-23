@@ -36,9 +36,6 @@ import com.android.systemui.plugins.keyguard.ui.composable.elements.MovableLocks
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
-import kotlin.collections.filterNotNull
-import kotlin.collections.flatMap
-import kotlin.sequences.associateBy
 
 @Immutable
 class LockscreenElementFactoryImpl
