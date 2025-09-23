@@ -195,6 +195,8 @@ public class MirrorView extends FrameLayout {
 
         @Override
         public boolean onSurfaceTextureDestroyed(@NonNull SurfaceTexture surfaceTexture) {
+            mSurface.release();
+            mSurface = null;
             destroyMirror();
             return true;
         }
