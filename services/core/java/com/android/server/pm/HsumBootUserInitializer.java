@@ -15,6 +15,9 @@
  */
 package com.android.server.pm;
 
+import static android.content.pm.UserInfo.FLAG_ADMIN;
+import static android.content.pm.UserInfo.FLAG_FULL;
+
 import android.annotation.Nullable;
 import android.annotation.UserIdInt;
 import android.content.ContentResolver;
@@ -41,7 +44,6 @@ import com.android.server.utils.TimingsTraceAndSlog;
 
 import java.io.PrintWriter;
 import java.lang.ref.WeakReference;
-import java.util.Arrays;
 
 /**
  * Class responsible for booting the device in the proper user on headless system user mode.
@@ -243,22 +245,20 @@ public final class HsumBootUserInitializer {
     private boolean promoteAdminUserToMainUserIfNeeded(TimingsTraceAndSlog t) {
         t.traceBegin("promoteAdminUserToMainUserIfNeeded");
         try {
-            // TODO(b/419086491): use getUsers(Filter)
-            var users = mUms.getUsers(/* excludeDying= */ true);
-            int numberUsers = users.size();
-            for (int i = 0; i < numberUsers; i++) {
-                var user = users.get(i);
-                if (user.isFull() && user.isAdmin()) {
-                    Slogf.i(TAG, "Promoting admin user (%d) as main user", user.id);
-                    if (!mUms.setMainUser(user.id)) {
-                        Slogf.e(TAG, "Failed to promote admin user (%d) as main user", user.id);
-                        continue;
-                    }
-                    return true;
+            var filter = getFullAdminFilter();
+            var admins = mUms.getUsers(filter);
+            int numberAdmins = admins.size();
+            for (int i = 0; i < numberAdmins; i++) {
+                var admin = admins.get(i);
+                Slogf.i(TAG, "Promoting admin user (%d) as main user", admin.id);
+                if (!mUms.setMainUser(admin.id)) {
+                    Slogf.e(TAG, "Failed to promote admin user (%d) as main user", admin.id);
+                    continue;
                 }
+                return true;
             }
             if (DEBUG) {
-                Slogf.d(TAG, "No existing admin user was promoted as main user (users=%s)", users);
+                Slogf.d(TAG, "No existing admin was promoted as main user (admins=%s)", admins);
             }
             return false;
         } finally {
@@ -287,12 +287,12 @@ public final class HsumBootUserInitializer {
     private void createAdminUserIfNeeded(TimingsTraceAndSlog t) {
         t.traceBegin("createAdminUserIfNeeded");
         try {
-            // TODO(b/419086491): use getUsers(Filter)
-            int[] userIds = mUms.getUserIds();
-            if (userIds != null && userIds.length > 1) {
+            var filter = getFullAdminFilter();
+            int numberOfExistingAdmins = mUms.getNumberOfUsers(filter);
+            if (numberOfExistingAdmins > 0) {
                 if (DEBUG) {
-                    Slogf.d(TAG, "createAdminUserIfNeeded(): already have more than 1 user (%s)",
-                            Arrays.toString(userIds));
+                    Slogf.d(TAG, "createAdminUserIfNeeded(): already have %d admin(s)",
+                            numberOfExistingAdmins);
                 }
                 return;
             }
@@ -527,4 +527,9 @@ public final class HsumBootUserInitializer {
     static boolean createInitialUserOnBoot(Context context) {
         return context.getResources().getBoolean(R.bool.config_createInitialUser);
     }
+
+    private static UserFilter getFullAdminFilter() {
+        return UserFilter.builder().setRequiredFlags(FLAG_FULL | FLAG_ADMIN).build();
+    }
+
 }

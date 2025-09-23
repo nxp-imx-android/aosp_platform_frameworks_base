@@ -55,6 +55,7 @@ import android.platform.test.flag.junit.SetFlagsRule;
 import android.util.Log;
 
 import com.android.server.am.ActivityManagerService;
+import com.android.server.pm.UserFilter.DeathPredictor;
 import com.android.server.utils.TimingsTraceAndSlog;
 
 import com.google.common.truth.Expect;
@@ -66,14 +67,16 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
+import org.mockito.invocation.InvocationOnMock;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.List;
+import java.util.stream.Collectors;
 
 @RunWith(Parameterized.class)
 public final class HsumBootUserInitializerInitMethodTest {
@@ -150,7 +153,7 @@ public final class HsumBootUserInitializerInitMethodTest {
     { false, true, SYSTEM_AND_MAIN, MAIN_USER_DEMOTED },
     { false, true, SYSTEM_AND_ADMINS, NO_USER_CREATED },
     { false, true, SYSTEM_AND_ADMINS_FIRST_ADMIN_UNPROMOTABLE, NO_USER_CREATED },
-    { false, true, SYSTEM_AND_REGULAR, NO_USER_CREATED },
+    { false, true, SYSTEM_AND_REGULAR, ADMIN_USER_CREATED },
     // shouldAlwaysHaveMainUser=true, shouldCreateInitialUser=false
     { true, false, SYSTEM_ONLY, MAIN_USER_CREATED }, // index 10
     { true, false, SYSTEM_AND_MAIN, NO_USER_CREATED },
@@ -435,18 +438,30 @@ public final class HsumBootUserInitializerInitMethodTest {
     }
 
     private void mockGetUsers(UserInfo... users) {
-        List<UserInfo> asList = new ArrayList<>(users.length);
-        int[] userIds = new int[users.length];
-        for (int i = 0; i < users.length; i++) {
-            var user = users[i];
-            asList.add(user);
-            userIds[i] = user.id;
-        }
-        Log.d(TAG, "mockGetUsers(): returning " + asList + " for getUsers(), and "
-                + Arrays.toString(userIds) + " to getUserIds()");
-
-        when(mMockUms.getUsers(/* excludingDying= */ true)).thenReturn(asList);
-        when(mMockUms.getUserIds()).thenReturn(userIds);
+        DeathPredictor deathPredictor = user -> false;
+        when(mMockUms.getUsers(ArgumentCaptor.forClass(UserFilter.class).capture()))
+                .thenAnswer(invocation -> {
+                    log(invocation);
+                    var filter = (UserFilter) invocation.getArgument(0);
+                    ArrayList<UserInfo> matchedUsers = new ArrayList<>(users.length);
+                    for (var user : users) {
+                        if (filter.matches(deathPredictor, user)) {
+                            matchedUsers.add(user);
+                        }
+                    }
+                    Log.v(TAG, "getUsers(filter): returning " + matchedUsers);
+                    return matchedUsers;
+                });
+        when(mMockUms.getNumberOfUsers(ArgumentCaptor.forClass(UserFilter.class).capture()))
+                .thenAnswer(invocation -> {
+                    log(invocation);
+                    var filter = (UserFilter) invocation.getArgument(0);
+                    int number = (int) Arrays.stream(users)
+                            .filter(user -> filter.matches(deathPredictor, user))
+                            .count();
+                    Log.v(TAG, "getNumberOfUsers(filter): returning " + number);
+                    return number;
+                });
     }
 
     private void mockPromoteToMainUser(@UserIdInt int userId) {
@@ -463,6 +478,19 @@ public final class HsumBootUserInitializerInitMethodTest {
         return new UserInfo(userId, /* name= */ null, /* iconPath= */ null, flags,
                 // Not using userType (for now)
                 /* userType= */ "AB Positive");
+    }
+
+    // NOTE: copied from TestableDeviceConfig, should be moved to a helper class
+    private static void log(InvocationOnMock invocation) {
+        // InvocationOnMock.toString() prints one argument per line, which would spam logcat
+        try {
+            Log.v(TAG, "answering " + invocation.getMethod().getName() + "("
+                    + Arrays.stream(invocation.getArguments()).map(Object::toString)
+                    .collect(Collectors.joining(", ")) + ")");
+        } catch (Exception e) {
+            // Fallback in case logic above fails
+            Log.v(TAG, "answering " + invocation);
+        }
     }
 
     // NOTE: enums below must be public to be static imported
