@@ -2200,9 +2200,7 @@ final class DisplayPowerController implements AutomaticBrightnessController.Call
             blockScreenOnByDisplayOffload(mDisplayOffloadSession);
         } else if (!isOn && mScreenTurningOnWasBlockedByDisplayOffload) {
             // No longer turning screen on, so unblock previous screen on blocking immediately.
-            if (mFlags.isOffloadSessionCancelBlockScreenOnEnabled()) {
-                cancelUnblockScreenOnByDisplayOffload();
-            }
+            cancelUnblockScreenOnByDisplayOffload();
             unblockScreenOnByDisplayOffload();
             mScreenTurningOnWasBlockedByDisplayOffload = false;
         }
