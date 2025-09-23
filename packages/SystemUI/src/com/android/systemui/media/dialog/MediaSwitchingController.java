@@ -98,7 +98,6 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -170,12 +169,6 @@ public class MediaSwitchingController
     private boolean mInAudioSharing = false;
     @Nullable private Job mAudioShareJob = null;
 
-    private Optional<MediaDevice> mCurrentInputDevice;
-
-    public Optional<MediaDevice> getCurrentInputDevice() {
-        return mCurrentInputDevice;
-    }
-
     @VisibleForTesting
     final InputRouteManager.InputDeviceCallback mInputDeviceCallback =
             new InputRouteManager.InputDeviceCallback() {
@@ -183,8 +176,6 @@ public class MediaSwitchingController
                 public void onInputDeviceListUpdated(@NonNull List<MediaDevice> devices) {
                     synchronized (mInputMediaDevicesLock) {
                         buildInputMediaItems(devices);
-                        mCurrentInputDevice =
-                                devices.stream().filter(MediaDevice::isSelected).findFirst();
                         mCallback.onDeviceListChanged();
                     }
                 }
