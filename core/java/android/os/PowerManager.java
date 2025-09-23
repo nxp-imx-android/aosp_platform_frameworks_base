@@ -452,6 +452,14 @@ public final class PowerManager {
     @FlaggedApi(Flags.FLAG_LOW_LIGHT_DREAM_BEHAVIOR)
     public @interface FlagAmbientSuppression{}
 
+    /** @hide */
+    @IntDef(flag = true, prefix = {"USER_ACTIVITY_FLAG_"}, value = {
+            USER_ACTIVITY_FLAG_INDIRECT,
+            USER_ACTIVITY_FLAG_NO_CHANGE_LIGHTS,
+    })
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface UserActivityFlag{}
+
     /**
      *
      * Convert the user activity event to a string for debugging purposes.
@@ -1595,7 +1603,7 @@ public final class PowerManager {
             android.Manifest.permission.DEVICE_POWER,
             android.Manifest.permission.USER_ACTIVITY
     })
-    public void userActivity(long when, int event, int flags) {
+    public void userActivity(long when, @UserActivityEvent int event, @UserActivityFlag int flags) {
         try {
             mService.userActivity(mContext.getDisplayId(), when, event, flags);
         } catch (RemoteException e) {
