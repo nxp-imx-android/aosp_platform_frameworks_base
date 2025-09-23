@@ -637,8 +637,9 @@ public class DisplayManagerFlags {
 
         @Override
         public String toString() {
-            // remove "com.android.server.display.feature.flags." from the beginning of the name.
-            String shortName = TextUtils.substring(mName, 41, mName.length());
+            // remove the flag package from the beginning of the name.
+            String shortName = TextUtils.substring(mName, mName.lastIndexOf('.') + 1,
+                    mName.length());
 
             // align all isEnabled() values.
             return String.format("%-53s %b (def:%b)",
