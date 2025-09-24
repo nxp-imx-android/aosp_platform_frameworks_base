@@ -69,7 +69,7 @@ fun ShareContentSelector(
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             Text(
-                text = "Share an app",
+                text = stringResource(R.string.screen_share_app_window_sharing_title),
                 modifier = Modifier.padding(start = 8.dp, end = 8.dp).height(24.dp).fillMaxWidth(),
                 style = MaterialTheme.typography.titleMedium,
             )
@@ -130,10 +130,7 @@ private fun ItemPreview(
 @Composable
 private fun DisclaimerText() {
     Text(
-        text =
-            "Disclaimer When you’re sharing your entire screen, anything shown on your screen" +
-                " is recorded. So be careful with things like passwords, payment details," +
-                " messages, photos, and audio & video.",
+        text = stringResource(R.string.screen_share_disclaimer),
         style = MaterialTheme.typography.labelMedium,
         modifier = Modifier.padding(start = 8.dp, end = 8.dp).fillMaxWidth(),
     )
@@ -162,7 +159,7 @@ private fun AudioSwitch(
             modifier = Modifier.size(20.dp).padding(2.dp),
         )
         Text(
-            text = stringResource(R.string.screen_share_app_audio_sharing),
+            text = stringResource(R.string.screen_share_audio_sharing_text),
             style = MaterialTheme.typography.labelMedium,
             modifier = Modifier.width(452.dp),
         )
