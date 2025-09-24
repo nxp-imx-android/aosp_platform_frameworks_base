@@ -24,6 +24,8 @@ import static android.hardware.usb.UsbManager.ACTION_USB_ACCESSORY_DETACHED;
 import static android.hardware.usb.UsbManager.ACTION_USB_DEVICE_ATTACHED;
 import static android.hardware.usb.UsbManager.ACTION_USB_DEVICE_DETACHED;
 import static android.security.advancedprotection.AdvancedProtectionManager.FEATURE_ID_DISALLOW_USB;
+import static android.security.advancedprotection.AdvancedProtectionManager.SUPPORT_DIALOG_TYPE_BLOCKED_INTERACTION;
+import static android.security.advancedprotection.AdvancedProtectionManager.SUPPORT_DIALOG_TYPE_UNKNOWN;
 import static android.hardware.usb.UsbPortStatus.DATA_STATUS_DISABLED_FORCE;
 import static android.hardware.usb.UsbPortStatus.DATA_STATUS_ENABLED;
 import static android.hardware.usb.UsbPortStatus.POWER_ROLE_SINK;
@@ -527,8 +529,9 @@ public class UsbDataAdvancedProtectionHook extends AdvancedProtectionHook {
                 || (notificationType == NOTIFICATION_DATA && mSilenceDataNotification)) {
             // Log interactions that were suppressed due to silence flags
             mAdvancedProtectionService.logDialogShown(
-                    AdvancedProtectionProtoEnums.FEATURE_ID_DISALLOW_USB,
-                    AdvancedProtectionProtoEnums.DIALOGUE_TYPE_BLOCKED_INTERACTION_SILENT,
+                    FEATURE_ID_DISALLOW_USB,
+                    // TODO: (b/446947637) - Update to correct dialog type (requires update in AdvancedProtectionManager API)
+                    SUPPORT_DIALOG_TYPE_UNKNOWN,
                     false);
             return;
             // Last moment check to see if conditions are still met to show notification
@@ -568,8 +571,8 @@ public class UsbDataAdvancedProtectionHook extends AdvancedProtectionHook {
                 getAtomUsbNotificationType(notificationType));
 
         mAdvancedProtectionService.logDialogShown(
-                AdvancedProtectionProtoEnums.FEATURE_ID_DISALLOW_USB,
-                AdvancedProtectionProtoEnums.DIALOGUE_TYPE_BLOCKED_INTERACTION,
+                FEATURE_ID_DISALLOW_USB,
+                SUPPORT_DIALOG_TYPE_BLOCKED_INTERACTION,
                 false);
     }
 
