@@ -41,7 +41,11 @@ public final class PolicyIdentifier<T> {
                             1, // POLICY_SCOPE_USER
                             2  // POLICY_SCOPE_DEVICE
                     },
-                    affectedResource = 2 // RESOURCE_DEVICE_PER_USER
+                    affectedResource = 2, // RESOURCE_DEVICE_PER_USER
+                    requiredPermission =
+                            "android.permission.MANAGE_POLICY_SIMPLE_BOOLEAN",
+                    requiredCrossUserPermission =
+                            "android.permission.MANAGE_DEVICE_POLICY_ACROSS_USERS_FULL"
             )
     )
     public static final PolicyIdentifier<Boolean> SIMPLE_BOOLEAN_POLICY = new PolicyIdentifier<>(
@@ -86,7 +90,11 @@ public final class PolicyIdentifier<T> {
                             2, // POLICY_SCOPE_DEVICE
                             3  // POLICY_SCOPE_PARENT_USER
                     },
-                    affectedResource = 1 // RESOURCE_DEVICE_WIDE
+                    affectedResource = 1, // RESOURCE_DEVICE_WIDE
+                    requiredPermission =
+                            "android.permission.MANAGE_POLICY_SIMPLE_ENUM",
+                    requiredCrossUserPermission =
+                            "android.permission.MANAGE_DEVICE_POLICY_ACROSS_USERS"
             ),
             defaultValue = ENUM_ENTRY_2,
             intDef = SimpleEnumPolicyEnum.class
@@ -105,6 +113,7 @@ public final class PolicyIdentifier<T> {
                             1 // POLICY_SCOPE_USER
                     },
                     affectedResource = 1 // RESOURCE_DEVICE_WIDE
+                    // requiredPermission and requiredCrossUserPermission using the default values.
             )
     )
     public static final PolicyIdentifier<Integer> SIMPLE_INTEGER_POLICY = new PolicyIdentifier<>(

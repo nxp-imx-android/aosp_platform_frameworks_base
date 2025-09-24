@@ -50,4 +50,28 @@ public @interface PolicyDefinition {
      * All policies must define their resource type.
      */
     int affectedResource();
+
+    /**
+     * Indicate which permission is required for this policy to be controlled.
+     * Usually permissions for policy have the MANAGE_DEVICE_POLICY_ prefix.
+     * Can be set to "" to indicate that the handler for this policy uses custom access control.
+     */
+    String requiredPermission() default "";
+
+    /**
+     * Indicate which permission is required for this policy to be controlled.
+     * This permission is required in addition to the one indicated in {@link requiredPermission}
+     * when setting the policy with a scope of
+     * {@link android.app.admin.DevicePolicyManager.POLICY_SCOPE_DEVICE}
+     * or {@link android.app.admin.DevicePolicyManager.POLICY_SCOPE_PARENT_USER}.
+     * Can only be set to:
+     * <ul>
+     *   <li>{@link android.permission.MANAGE_DEVICE_POLICY_ACROSS_USERS}</li>
+     *   <li>{@link android.permission.MANAGE_DEVICE_POLICY_ACROSS_USERS_FULL}</li>
+     *   <li>{@link android.permission.MANAGE_DEVICE_POLICY_ACROSS_USERS_SECURITY_CRITICAL}</li>
+     *   <li> "" to indicate that the handler uses custom access control </li>
+     * </ul>
+     * If {@link requiredPermission has} a value, this should also have a value.
+     */
+    String requiredCrossUserPermission() default "";
 }

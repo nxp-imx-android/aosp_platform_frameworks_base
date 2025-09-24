@@ -338,4 +338,30 @@ class PolicyProcessorTest {
         assertThat(compilation).failed()
         assertThat(compilation).hadErrorContaining("affectedResource is set to an unknown value")
     }
+
+    @Test
+    fun test_invalid_failsToCompile() {
+        val policyIdentifier = buildPolicyIdentifier(
+            """
+            /**
+             * requiredCrossUserPermission only allows one of the 3 permissions.
+             */
+            @BooleanPolicyDefinition(
+                    base = @PolicyDefinition(
+                            allowedScopes = { POLICY_SCOPE_USER },
+                            affectedResource = RESOURCE_DEVICE_WIDE,
+                            requiredCrossUserPermission = "my.custom.PERMISSION"
+                    )
+            )
+            public static final PolicyIdentifier<Boolean> INVALID_PERMISSION =
+                new PolicyIdentifier<>("INVALID_PERMISSION");
+            """.trimIndent()
+        )
+
+        val compilation: Compilation = mCompiler.compile(policyIdentifier)
+
+        assertThat(mCompilerWithoutProcessor.compile(policyIdentifier)).succeeded()
+        assertThat(compilation).failed()
+        assertThat(compilation).hadErrorContaining("requiredCrossUserPermission was set to")
+    }
 }
