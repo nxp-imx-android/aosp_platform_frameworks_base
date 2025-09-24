@@ -2719,9 +2719,7 @@ public class MediaSessionService extends SystemService implements Monitor {
                                 reportedPackageName,
                                 needWakeLock ? mKeyEventReceiver.mLastTimeoutId : -1,
                                 mKeyEventReceiver,
-                                mHandler,
-                                MediaSessionDeviceConfig
-                                        .getMediaButtonReceiverFgsAllowlistDurationMs());
+                                mHandler);
                 if (sent) {
                     String pkgName = mediaButtonReceiverHolder.getPackageName();
                     for (FullUserRecord.OnMediaKeyEventDispatchedListenerRecord cr

@@ -22,8 +22,6 @@ import static android.media.VolumeProvider.VOLUME_CONTROL_RELATIVE;
 import static android.media.session.MediaController.PlaybackInfo.PLAYBACK_TYPE_LOCAL;
 import static android.media.session.MediaController.PlaybackInfo.PLAYBACK_TYPE_REMOTE;
 
-import static com.android.media.mediasession.flags.Flags.removeWiuAllowlistingFromMediacontrollerSendcommand;
-
 import android.Manifest;
 import android.annotation.IntDef;
 import android.annotation.NonNull;
@@ -1876,11 +1874,8 @@ public class MediaSessionRecord extends MediaSessionRecordImpl implements IBinde
         public void sendCommand(String packageName, int pid, int uid, String command, Bundle args,
                 ResultReceiver cb) {
             try {
-                if (!removeWiuAllowlistingFromMediacontrollerSendcommand()) {
-                    final String reason = TAG + ":" + command;
-                    mService.tempAllowlistTargetPkgIfPossible(
-                            getUid(), getPackageName(), pid, uid, packageName, reason);
-                }
+                // Intentionally not calling tempAllowlistTargetPkgIfPossible() here, as sendCommand
+                // is not a user-initiated action.
                 mCb.onCommand(packageName, pid, uid, command, args, cb);
             } catch (RemoteException e) {
                 Slog.e(TAG, "Remote failure in sendCommand.", e);
