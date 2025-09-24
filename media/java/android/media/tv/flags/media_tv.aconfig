@@ -151,3 +151,10 @@ flag {
     description: "Continue efforts for standardizing AIDL Extension Interface of TIS in Android 17"
     bug: "443346064"
 }
+
+flag {
+    name: "agentic_ai_tv_os"
+    namespace: "tv_os"
+    description: "Feature flag to enable agentic AI for TV OS using AppFunctions"
+    bug: "447154316"
+}
