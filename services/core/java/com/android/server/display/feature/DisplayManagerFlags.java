@@ -83,10 +83,6 @@ public class DisplayManagerFlags {
             Flags.FLAG_RESOLUTION_BACKUP_RESTORE,
             Flags::resolutionBackupRestore);
 
-    private final FlagState mBrightnessWearBedtimeModeClamperFlagState = new FlagState(
-            Flags.FLAG_BRIGHTNESS_WEAR_BEDTIME_MODE_CLAMPER,
-            Flags::brightnessWearBedtimeModeClamper);
-
     private final FlagState mAutoBrightnessModesFlagState = new FlagState(
             Flags.FLAG_AUTO_BRIGHTNESS_MODES,
             Flags::autoBrightnessModes);
@@ -308,10 +304,6 @@ public class DisplayManagerFlags {
         return mResolutionBackupRestore.isEnabled();
     }
 
-    public boolean isBrightnessWearBedtimeModeClamperEnabled() {
-        return mBrightnessWearBedtimeModeClamperFlagState.isEnabled();
-    }
-
     /**
      * @return Whether generic auto-brightness modes are enabled
      */
@@ -531,7 +523,6 @@ public class DisplayManagerFlags {
         pw.println(" " + mEvenDimmerFlagState);
         pw.println(" " + mSmallAreaDetectionFlagState);
         pw.println(" " + mSyncedResolutionSwitch);
-        pw.println(" " + mBrightnessWearBedtimeModeClamperFlagState);
         pw.println(" " + mAutoBrightnessModesFlagState);
         pw.println(" " + mFastHdrTransitions);
         pw.println(" " + mSensorBasedBrightnessThrottling);

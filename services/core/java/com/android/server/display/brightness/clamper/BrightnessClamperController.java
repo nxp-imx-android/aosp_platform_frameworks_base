@@ -309,10 +309,7 @@ public class BrightnessClamperController {
                 DisplayDeviceData data, float currentBrightness) {
             List<BrightnessStateModifier> modifiers = new ArrayList<>();
             modifiers.add(new BrightnessThermalModifier(handler, listener, data));
-            if (flags.isBrightnessWearBedtimeModeClamperEnabled()) {
-                modifiers.add(new BrightnessWearBedtimeModeModifier(handler, context,
-                        listener, data));
-            }
+            modifiers.add(new BrightnessWearBedtimeModeModifier(handler, context, listener, data));
             if (applyBrightnessClampingForModes()) {
                 modifiers.add(new ExternalBrightnessModifier(handler, listener));
             }
