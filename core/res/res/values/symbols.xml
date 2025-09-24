@@ -4263,6 +4263,7 @@
   <java-symbol type="bool" name="config_dozeTapGestureEnabled" />
   <java-symbol type="bool" name="config_dozeDoubleTapGestureEnabled" />
   <java-symbol type="bool" name="config_dozeAlwaysOnEnabled" />
+  <java-symbol type="bool" name="config_dozeSupportsAodInactivityDetection" />
   <java-symbol type="bool" name="config_dozeSupportsAodWallpaper" />
   <java-symbol type="bool" name="config_displayBlanksAfterDoze" />
   <java-symbol type="bool" name="config_displayBrightnessBucketsInDoze" />

@@ -53,6 +53,7 @@ import com.android.systemui.statusbar.policy.DevicePostureController;
 import com.android.systemui.statusbar.policy.KeyguardStateController;
 import com.android.systemui.user.domain.interactor.SelectedUserInteractor;
 import com.android.systemui.util.Assert;
+import com.android.systemui.util.sensors.ActivityDetectionProximitySensor;
 import com.android.systemui.util.sensors.AsyncSensorManager;
 import com.android.systemui.util.sensors.ProximityCheck;
 import com.android.systemui.util.sensors.ProximitySensor;
@@ -200,8 +201,8 @@ public class DozeTriggers implements DozeMachine.Part {
             AmbientDisplayConfiguration config,
             DozeParameters dozeParameters, AsyncSensorManager sensorManager,
             WakeLock wakeLock, DockManager dockManager,
-            ProximitySensor proximitySensor,
-            ProximityCheck proxCheck,
+            @ActivityDetectionProximitySensor ProximitySensor proximitySensor,
+            @ActivityDetectionProximitySensor ProximityCheck proxCheck,
             DozeLog dozeLog, BroadcastDispatcher broadcastDispatcher,
             SecureSettings secureSettings, AuthController authController,
             UiEventLogger uiEventLogger,
