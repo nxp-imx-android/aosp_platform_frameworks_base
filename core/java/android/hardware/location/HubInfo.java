@@ -19,6 +19,7 @@ import android.annotation.FlaggedApi;
 import android.annotation.IntDef;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.annotation.SystemApi;
 import android.chre.flags.Flags;
 import android.os.BadParcelableException;
 import android.os.Parcel;
@@ -32,7 +33,8 @@ import java.lang.annotation.RetentionPolicy;
  *
  * @hide
  */
-@FlaggedApi(Flags.FLAG_OFFLOAD_API)
+@FlaggedApi(Flags.FLAG_GET_HUBS_API)
+@SystemApi
 public final class HubInfo implements Parcelable {
 
     @Retention(RetentionPolicy.SOURCE)
@@ -95,6 +97,12 @@ public final class HubInfo implements Parcelable {
     @Nullable
     public ContextHubInfo getContextHubInfo() {
         return mContextHubInfo;
+    }
+
+    /** Get the {@link VendorHubInfo} object, null if type is not {@link TYPE_VENDOR_HUB} */
+    @Nullable
+    public VendorHubInfo getVendorHubInfo() {
+        return mVendorHubInfo;
     }
 
     /** Parcel implementation details */

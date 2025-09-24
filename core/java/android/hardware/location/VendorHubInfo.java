@@ -17,6 +17,7 @@ package android.hardware.location;
 
 import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
+import android.annotation.SystemApi;
 import android.chre.flags.Flags;
 import android.os.Parcel;
 import android.os.Parcelable;
@@ -29,7 +30,8 @@ import android.os.ParcelableHolder;
  *
  * @hide
  */
-@FlaggedApi(Flags.FLAG_OFFLOAD_API)
+@FlaggedApi(Flags.FLAG_GET_HUBS_API)
+@SystemApi
 public final class VendorHubInfo implements Parcelable {
     private final String mName;
     private final int mVersion;

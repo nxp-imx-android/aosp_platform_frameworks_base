@@ -508,11 +508,10 @@ public final class ContextHubManager {
      *
      * @return the list of HubInfo objects
      * @see HubInfo
-     * @hide
      */
     @RequiresPermission(android.Manifest.permission.ACCESS_CONTEXT_HUB)
     @NonNull
-    @FlaggedApi(Flags.FLAG_OFFLOAD_API)
+    @FlaggedApi(Flags.FLAG_GET_HUBS_API)
     public List<HubInfo> getHubs() {
         try {
             return mService.getHubs();
