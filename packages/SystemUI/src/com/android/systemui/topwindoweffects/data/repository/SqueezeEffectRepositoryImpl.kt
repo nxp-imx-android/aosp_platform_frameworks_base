@@ -21,7 +21,6 @@ import android.content.Context
 import android.hardware.input.InputManager
 import android.hardware.input.KeyGestureEvent
 import android.os.Bundle
-import android.os.SystemProperties
 import android.provider.Settings.Global.POWER_BUTTON_LONG_PRESS_DURATION_MS
 import com.android.internal.annotations.VisibleForTesting
 import com.android.systemui.assist.AssistManager
@@ -90,15 +89,6 @@ constructor(
 
     override fun getInvocationEffectOutAnimationDurationMillis(): Long {
         return preferences.getOutwardAnimationDurationMillis()
-    }
-
-    override fun useHapticRumble(): Boolean {
-        val hapticsOption =
-            SystemProperties.get(
-                /*key=*/ "persist.lpp_invocation.haptics",
-                /*def=*/ "no_rumble",
-            )
-        return hapticsOption == "with_rumble"
     }
 
     private fun setInvocationEffectPreferences(

@@ -35,7 +35,5 @@ interface SqueezeEffectRepository {
 
     fun getInvocationEffectOutAnimationDurationMillis(): Long
 
-    fun useHapticRumble(): Boolean
-
     fun dump(pw: PrintWriter, args: Array<out String>)
 }
