@@ -16,15 +16,26 @@
 
 package com.android.server.personalcontext.component.client;
 
+import android.annotation.PermissionManuallyEnforced;
 import android.content.Context;
 import android.content.pm.ServiceInfo;
+import android.os.IBinder;
+import android.os.ParcelUuid;
+import android.os.RemoteException;
 import android.service.personalcontext.hint.ContextHint;
+import android.service.personalcontext.hint.ContextHintWrapper;
+import android.service.personalcontext.refiner.IRefineCallback;
+import android.service.personalcontext.refiner.IRefiner;
+import android.util.Slog;
 
 import androidx.annotation.NonNull;
 
 import com.android.server.personalcontext.component.Refiner;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Consumer;
@@ -34,23 +45,52 @@ import java.util.function.Consumer;
  *
  * @hide
  */
-public class ServiceClientRefiner extends BaseServiceClientComponent implements Refiner {
-    private static final String TAG = "RefinerClient";
-
+public class ServiceClientRefiner extends BaseServiceClientComponent<IRefiner> implements Refiner {
     public ServiceClientRefiner(Context context, UUID componentId, ServiceInfo serviceInfo) {
         super(context, componentId, serviceInfo);
     }
 
     @Override
     public Set<Set<ContextHint>> getInterestingHintClusters(Set<ContextHint> unseenContextHints) {
-        // TODO: Implement this.
-        return Collections.emptySet();
+        // TODO(b/452425564): Implement this to use a filter in the package's manifest.
+        // For now this runs hints through the refiner one-by-one.
+        final Set<Set<ContextHint>> eachHint = new HashSet<>();
+        for (ContextHint hint : unseenContextHints) {
+            eachHint.add(Set.of(hint));
+        }
+        return eachHint;
     }
 
     @Override
-    public void refine(@NonNull Set<ContextHint> inputHints,
-            @NonNull Consumer<Set<ContextHint>> callback) {
-        // TODO: Implement this.
-        callback.accept(Collections.emptySet());
+    protected IRefiner getServiceWrapper(IBinder binder) {
+        return IRefiner.Stub.asInterface(binder);
+    }
+
+    @Override
+    protected void initializeClient(IRefiner client) throws RemoteException {
+        client.configure(new ParcelUuid(getComponentId()));
+    }
+
+    @Override
+    public void refine(
+            @NonNull Set<ContextHint> inputHints, @NonNull Consumer<Set<ContextHint>> callback) {
+        runWithBinder(binder -> {
+            try {
+                binder.refine(
+                        ContextHintWrapper.wrapList(new ArrayList<>(inputHints)),
+                        new IRefineCallback.Stub() {
+                            @PermissionManuallyEnforced
+                            @Override
+                            public void onHintsRefined(List<ContextHintWrapper> hints) {
+                                callback.accept(
+                                        ContextHintWrapper.unwrapInto(hints, new HashSet<>()));
+                            }
+                        });
+            } catch (RemoteException e) {
+                Slog.w(TAG, this + " refine() failed", e);
+
+                callback.accept(Collections.emptySet());
+            }
+        });
     }
 }

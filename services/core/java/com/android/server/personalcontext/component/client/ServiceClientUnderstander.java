@@ -20,37 +20,23 @@ import android.content.Context;
 import android.content.pm.ServiceInfo;
 import android.service.personalcontext.hint.ContextHint;
 
-import androidx.annotation.NonNull;
-
-import com.android.server.personalcontext.component.Refiner;
-
-import java.util.Collections;
 import java.util.Set;
 import java.util.UUID;
-import java.util.function.Consumer;
 
 /**
  * Client for understander services.
  *
  * @hide
  */
-public class ServiceClientUnderstander extends BaseServiceClientComponent implements Refiner {
-    private static final String TAG = "UnderstanderClient";
-
+public class ServiceClientUnderstander extends ServiceClientRefiner {
     public ServiceClientUnderstander(Context context, UUID componentId, ServiceInfo serviceInfo) {
         super(context, componentId, serviceInfo);
     }
 
     @Override
     public Set<Set<ContextHint>> getInterestingHintClusters(Set<ContextHint> unseenContextHints) {
-        // TODO: Implement this.
-        return Collections.emptySet();
-    }
-
-    @Override
-    public void refine(@NonNull Set<ContextHint> inputHints,
-            @NonNull Consumer<Set<ContextHint>> callback) {
-        // TODO: Implement this.
-        callback.accept(Collections.emptySet());
+        // TODO(b/452425566): Implement this to use a filter in the package's manifest.
+        // For now this runs hints through the understander in one big block.
+        return Set.of(unseenContextHints);
     }
 }

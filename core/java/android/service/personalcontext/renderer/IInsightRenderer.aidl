@@ -16,8 +16,8 @@
 
 package android.service.personalcontext.renderer;
 
+import android.os.ParcelUuid;
 import android.service.personalcontext.insight.ContextInsightWrapper;
-import android.service.personalcontext.renderer.RendererFilter;
 import android.service.personalcontext.RenderToken;
 
 /** @hide */
@@ -28,12 +28,8 @@ interface IInsightRenderer {
      */
     void render(in List<ContextInsightWrapper> insights, in boolean isFirst);
 
-    /**
-     * The personal context engine will call this method when the renderer is being registered. The
-     * renderer should return a {@link RendererFilter} to indicate what kinds of insights and hints
-     * it is interested in rendering.
-     */
-    RendererFilter onRegister(in String componentId);
+    /** Provides configuration information to the renderer. */
+    oneway void configure(in ParcelUuid componentId);
 
     /**
      * Ask the renderer to mint a new {@link RenderToken}.
