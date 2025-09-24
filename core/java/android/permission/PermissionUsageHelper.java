@@ -107,6 +107,7 @@ public class PermissionUsageHelper implements AppOpsManager.OnOpActiveChangedLis
             10_000L - DEFAULT_RUNNING_TIME_MS;
     // LINT.ThenChange(/packages/SystemUI/src/com/android/systemui/privacy/PrivacyItemController.kt, /packages/SystemUI/src/com/android/systemui/appops/AppOpsControllerImpl.java)
     private static final long DEFAULT_RECENT_TIME_MS = 15000L;
+    private static final long ADDITIONAL_RECENT_TIME_LOCATION_ONLY_MS = 5000L;
 
     private static boolean shouldShowIndicators() {
         return DeviceConfig.getBoolean(DeviceConfig.NAMESPACE_PRIVACY,
@@ -592,15 +593,6 @@ public class PermissionUsageHelper implements AppOpsManager.OnOpActiveChangedLis
                     AppOpsManager.AttributedOpEntry attrOpEntry =
                             opEntry.getAttributedOpEntries().get(attributionTag);
 
-                    long lastAccessTime = attrOpEntry.getLastAccessTime(opFlags);
-                    if (attrOpEntry.isRunning()) {
-                        lastAccessTime = now;
-                    }
-
-                    if (lastAccessTime < recentThreshold && !attrOpEntry.isRunning()) {
-                        continue;
-                    }
-
                     String permGroupName = getGroupForOp(op);
                     boolean isLocationOp =
                             android.location.flags.Flags.locationIndicatorsEnabled()
@@ -608,6 +600,19 @@ public class PermissionUsageHelper implements AppOpsManager.OnOpActiveChangedLis
                     long currentRunningThreshold =
                             runningThreshold
                                     - (isLocationOp ? ADDITIONAL_RUNNING_TIME_LOCATION_ONLY_MS : 0);
+                    long currentRecentThreshold =
+                            recentThreshold
+                                    - (isLocationOp ? ADDITIONAL_RECENT_TIME_LOCATION_ONLY_MS : 0);
+
+                    long lastAccessTime = attrOpEntry.getLastAccessTime(opFlags);
+                    if (attrOpEntry.isRunning()) {
+                        lastAccessTime = now;
+                    }
+
+                    if (lastAccessTime < currentRecentThreshold && !attrOpEntry.isRunning()) {
+                        continue;
+                    }
+
                     boolean isRunning =
                             attrOpEntry.isRunning() || lastAccessTime >= currentRunningThreshold;
 
@@ -626,7 +631,7 @@ public class PermissionUsageHelper implements AppOpsManager.OnOpActiveChangedLis
                         long lastFgAccess = attrOpEntry.getLastAccessForegroundTime(opFlags);
                         boolean isBackgroundAndNotRecentlyForeground =
                                 isBackgroundApp(uid)
-                                        && lastFgAccess < currentRunningThreshold
+                                        && lastFgAccess < currentRecentThreshold
                                         && !attrOpEntry.isRunning();
                         if (isSystemApp(op, packageName, user, uid)
                                 || isBackgroundAndNotRecentlyForeground) {
