@@ -882,8 +882,8 @@ class DragPositioningCallbackUtilityTest {
             PointF(STARTING_BOUNDS.right.toFloat(), STARTING_BOUNDS.bottom.toFloat())
         val repositionTaskBounds = Rect(STARTING_BOUNDS)
 
-        val limitRight = STABLE_BOUNDS.width() * 0.8f
-        val limitBottom = STABLE_BOUNDS.height() * 0.8f
+        val limitRight = STABLE_BOUNDS.width() * 0.7f
+        val limitBottom = STABLE_BOUNDS.height() * 0.7f
 
         val delta =
             DragPositioningCallbackUtility.calculateDelta(limitRight, limitBottom, startingPoint)

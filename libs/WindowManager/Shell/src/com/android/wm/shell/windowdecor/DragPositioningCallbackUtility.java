@@ -197,7 +197,7 @@ public class DragPositioningCallbackUtility {
 
     private static boolean isExceedingPinnedLayerConstraint(int taskDimension,
             int screenDimension) {
-        double maxDimension = screenDimension * 0.8;
+        double maxDimension = screenDimension * 0.7;
         return (double) taskDimension > maxDimension;
     }
 
