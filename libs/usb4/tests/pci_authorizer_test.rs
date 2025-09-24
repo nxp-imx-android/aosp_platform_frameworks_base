@@ -181,6 +181,23 @@ mod pci_authorizer_tests {
     }
 
     #[tokio::test]
+    async fn test_pci_tunnels_supported() {
+        let _ = env_logger::try_init();
+        let (temp_dir, sysfs_utils, uevent_socket) = setup_environment_for_pci_authorizer_new();
+        let root = temp_dir.path();
+        let _pci_authorizer =
+            PciAuthorizer::new(sysfs_utils.clone(), uevent_socket.into_box_trait());
+
+        // Without any devices, tunnels are not supported.
+        assert!(!sysfs_utils.check_pci_tunnels_supported());
+
+        let _tbt_dev_path = create_mock_tbt_device(root, "0-0", "0");
+
+        // Now that there's a device in the device path, tunnels should be considered as supported.
+        assert!(sysfs_utils.check_pci_tunnels_supported());
+    }
+
+    #[tokio::test]
     async fn test_full_authorization_flow() {
         let _ = env_logger::try_init();
         let (temp_dir, sysfs_utils, uevent_socket) = setup_environment_for_pci_authorizer_new();

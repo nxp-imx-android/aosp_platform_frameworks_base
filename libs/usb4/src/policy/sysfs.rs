@@ -55,6 +55,16 @@ impl SysfsUtils {
         self.root.join("sys").join(dev_path)
     }
 
+    /// Checks whether USB4/Thunderbolt is supported by checking for the existence
+    /// of the thunderbolt sysfs path and whether there are any devices within.
+    /// If there are no devices, there is no current support for USB4/TBT.
+    pub fn check_pci_tunnels_supported(&self) -> bool {
+        self.tbt_devices_path.exists()
+            && fs::read_dir(&self.tbt_devices_path)
+                .map(|mut rd| rd.any(|dir| dir.map(|d| d.path().is_dir()).unwrap_or(false)))
+                .unwrap_or(false)
+    }
+
     /// Sets the "authorized" attribute for a given device path.
     /// Returns `Ok(())` on success, `Err` on failure.
     fn set_authorized_attribute(&self, devpath: &Path, enable: bool) -> Result<()> {
