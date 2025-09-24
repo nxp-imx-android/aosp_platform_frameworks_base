@@ -17,13 +17,11 @@
 package com.android.wm.shell.bubbles
 
 import android.content.Context
-import android.content.Intent
 import android.content.pm.LauncherApps
 import android.content.pm.ShortcutInfo
 import android.content.res.Resources
 import android.graphics.Color
 import android.os.Handler
-import android.os.UserHandle
 import android.os.UserManager
 import android.view.IWindowManager
 import android.view.WindowManager
@@ -51,7 +49,6 @@ import com.android.wm.shell.common.SyncTransactionQueue
 import com.android.wm.shell.common.TaskStackListenerImpl
 import com.android.wm.shell.common.TestShellExecutor
 import com.android.wm.shell.shared.TransactionPool
-import com.android.wm.shell.shared.bubbles.model.BubbleIcon
 import com.android.wm.shell.sysui.ShellCommandHandler
 import com.android.wm.shell.sysui.ShellController
 import com.android.wm.shell.sysui.ShellInit
@@ -278,24 +275,6 @@ class BubbleViewInfoTaskTest {
     }
 
     @Test
-    fun appBubble_usesAppIcon() {
-        val bubble = createAppBubble()
-        val task = createBubbleViewInfoTask(bubble)
-        task.startSync()
-
-        assertThat(bubble.bubbleIcon).isInstanceOf(BubbleIcon.AppIcon::class.java)
-    }
-
-    @Test
-    fun chatBubble_usesCustomBubbleIcon() {
-        val bubble = createBubbleWithShortcut()
-        val task = createBubbleViewInfoTask(bubble)
-        task.startSync()
-
-        assertThat(bubble.bubbleIcon).isInstanceOf(BubbleIcon.Custom::class.java)
-    }
-
-    @Test
     fun cancel_beforeBackgroundWorkStarts_bubbleNotInflated() {
         val bubble = createBubbleWithShortcut()
         val task = createBubbleViewInfoTask(bubble)
@@ -356,11 +335,6 @@ class BubbleViewInfoTaskTest {
             bgExecutor,
             metadataFlagListener
         )
-    }
-
-    private fun createAppBubble(): Bubble {
-        val intent = Intent().apply { setPackage("com.app.bubble") }
-        return Bubble.createAppBubble(intent, UserHandle.of(0), null, mainExecutor, bgExecutor)
     }
 
     private fun createBubbleViewInfoTask(

@@ -20,6 +20,7 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.util.Log
 import com.android.wm.shell.bubbles.Bubble
+import com.android.wm.shell.bubbles.BubbleController
 import javax.inject.Inject
 
 /**
@@ -33,7 +34,8 @@ class PackageManagerBubbleAppInfoProvider @Inject constructor() : BubbleAppInfoP
     }
 
     override fun resolveAppInfo(context: Context, bubble: Bubble): BubbleAppInfo? {
-        val pm = context.packageManager
+        // App name & app icon
+        val pm = BubbleController.getPackageManagerForUser(context, bubble.user.identifier)
         try {
             val appInfo = pm.getApplicationInfo(
                 bubble.packageName,

@@ -35,6 +35,7 @@ import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.ShortcutInfo;
 import android.content.res.Resources;
+import android.graphics.Bitmap;
 import android.graphics.Path;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.Icon;
@@ -60,7 +61,6 @@ import com.android.wm.shell.shared.annotations.ShellMainThread;
 import com.android.wm.shell.shared.bubbles.BubbleInfo;
 import com.android.wm.shell.shared.bubbles.ParcelableFlyoutMessage;
 import com.android.wm.shell.shared.bubbles.logging.BubbleLog;
-import com.android.wm.shell.shared.bubbles.model.BubbleIcon;
 import com.android.wm.shell.taskview.TaskView;
 
 import java.io.PrintWriter;
@@ -154,7 +154,8 @@ public class Bubble implements BubbleViewProvider {
     }
 
     private FlyoutMessage mFlyoutMessage;
-    private BubbleIcon mBubbleIcon;
+    // The developer provided image for the bubble
+    private Bitmap mBubbleBitmap;
     // The app badge for the bubble
     private BitmapInfo mBadgeBitmap;
     // App badge without any markings for important conversations
@@ -541,8 +542,8 @@ public class Bubble implements BubbleViewProvider {
     }
 
     @Override
-    public BubbleIcon getBubbleIcon() {
-        return mBubbleIcon;
+    public Bitmap getBubbleIcon() {
+        return mBubbleBitmap;
     }
 
     @Override
@@ -809,7 +810,7 @@ public class Bubble implements BubbleViewProvider {
 
         mBadgeBitmap = info.badgeBitmap;
         mRawBadgeBitmap = info.rawBadgeBitmap;
-        mBubbleIcon = info.bubbleIcon;
+        mBubbleBitmap = info.bubbleBitmap;
 
         mDotColor = info.dotColor;
 
