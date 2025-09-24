@@ -20,12 +20,16 @@ import static android.view.WindowInsets.Type.navigationBars;
 import static android.view.WindowInsets.Type.statusBars;
 
 import static com.android.systemui.Flags.enableOutputSwitcherAudioSharingButton;
+import static com.android.systemui.FontStyles.GSF_LABEL_LARGE;
+import static com.android.systemui.FontStyles.GSF_TITLE_MEDIUM_EMPHASIZED;
+import static com.android.systemui.FontStyles.GSF_TITLE_SMALL;
 
 import android.annotation.NonNull;
 import android.app.WallpaperColors;
 import android.content.Context;
 import android.content.res.ColorStateList;
 import android.content.res.Configuration;
+import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.Icon;
 import android.os.Bundle;
@@ -45,6 +49,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.VisibleForTesting;
+import androidx.appcompat.content.res.AppCompatResources;
 import androidx.constraintlayout.helper.widget.Flow;
 import androidx.core.graphics.drawable.IconCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -185,6 +190,35 @@ public abstract class MediaOutputBaseDialog extends SystemUIDialog
 
         mDismissing = false;
 
+        // TODO(b/444172986): set these properties in the layout file.
+        // Reduce radius of dialog background.
+        mDialogView.setBackground(AppCompatResources.getDrawable(mContext,
+                R.drawable.media_output_dialog_background));
+        // Set non-transparent footer background to change it color on scroll.
+        mDialogFooter.setBackground(AppCompatResources.getDrawable(mContext,
+                R.drawable.media_output_dialog_footer_background));
+
+        // Update font family to Google Sans Flex.
+        Typeface buttonTypeface = Typeface.create(GSF_LABEL_LARGE, Typeface.NORMAL);
+        mDoneButton.setTypeface(buttonTypeface);
+        mStopButton.setTypeface(buttonTypeface);
+        mHeaderTitle
+                .setTypeface(Typeface.create(GSF_TITLE_MEDIUM_EMPHASIZED, Typeface.NORMAL));
+        mHeaderSubtitle
+                .setTypeface(Typeface.create(GSF_TITLE_SMALL, Typeface.NORMAL));
+        if (!isSmallScreenHeight) {
+            // Reduce the size of the app icon.
+            float appIconSize = mContext.getResources().getDimension(
+                    R.dimen.media_output_dialog_app_icon_size);
+            float appIconBottomMargin = mContext.getResources().getDimension(
+                    R.dimen.media_output_dialog_app_icon_bottom_margin);
+            ViewGroup.MarginLayoutParams params =
+                    (ViewGroup.MarginLayoutParams) mAppResourceIcon.getLayoutParams();
+            params.bottomMargin = (int) appIconBottomMargin;
+            params.width = (int) appIconSize;
+            params.height = (int) appIconSize;
+            mAppResourceIcon.setLayoutParams(params);
+        }
         // Change footer background color on scroll.
         mDevicesRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
@@ -308,6 +342,12 @@ public abstract class MediaOutputBaseDialog extends SystemUIDialog
         mStopButton.setEnabled(true);
         mStopButton.setText(getStopButtonText());
         mStopButton.setOnClickListener(v -> onStopButtonClick());
+
+        // Buttons stay towards the end.
+        mButtonsFlow.setHorizontalStyle(Flow.CHAIN_PACKED);
+        mButtonsFlow.setHorizontalBias(1.0f);
+        mButtonsFlow.setHorizontalGap(
+                (int) mContext.getResources().getDimension(R.dimen.media_output_dialog_button_gap));
 
         if (!mAdapter.isDragging()) {
             int currentActivePosition = mAdapter.getCurrentActivePosition();
