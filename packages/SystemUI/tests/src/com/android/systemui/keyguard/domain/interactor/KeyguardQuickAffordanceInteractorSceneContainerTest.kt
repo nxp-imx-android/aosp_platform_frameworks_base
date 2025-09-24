@@ -304,7 +304,7 @@ class KeyguardQuickAffordanceInteractorSceneContainerTest : SysuiTestCase() {
         underTest =
             KeyguardQuickAffordanceInteractor(
                 keyguardInteractor =
-                    KeyguardInteractorFactory.create(featureFlags = featureFlags)
+                    KeyguardInteractorFactory.create(context = context, featureFlags = featureFlags)
                         .keyguardInteractor,
                 shadeInteractor = kosmos.shadeInteractor,
                 lockPatternUtils = lockPatternUtils,
