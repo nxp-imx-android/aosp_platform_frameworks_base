@@ -19,9 +19,9 @@ package {
 }
 
 java_library {
-    name: "com.android.systemui.statusbar.pipeline.airplane.data.repository-api",
+    name: "com.android.systemui.statusbar.pipeline.airplane.data-api",
     srcs: [
-        "*.kt",
+        "repository/*.kt",
     ],
     static_libs: [
         "kotlinx_coroutines",
@@ -32,9 +32,9 @@ java_library {
 }
 
 java_library {
-    name: "com.android.systemui.statusbar.pipeline.airplane.data.repository-impl",
+    name: "com.android.systemui.statusbar.pipeline.airplane.data-impl",
     srcs: [
-        "impl/*.kt",
+        "repository/impl/*.kt",
     ],
     libs: [
         "com.android.systemui.log.table-api",
@@ -46,7 +46,7 @@ java_library {
         "SystemUISharedLib",
     ],
     static_libs: [
-        "com.android.systemui.statusbar.pipeline.airplane.data.repository-api",
+        "com.android.systemui.statusbar.pipeline.airplane.data-api",
     ],
     defaults: [
         "SystemUI_pod_defaults_impl",
