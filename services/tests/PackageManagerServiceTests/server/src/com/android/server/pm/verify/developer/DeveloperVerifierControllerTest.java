@@ -312,7 +312,7 @@ public class DeveloperVerifierControllerTest {
         ArgumentCaptor<DeveloperVerificationSession> captor =
                 ArgumentCaptor.forClass(DeveloperVerificationSession.class);
         assertThat(mDeveloperVerifierController.startVerificationSession(
-                mSnapshotSupplier, 0, TEST_ID, TEST_PACKAGE_NAME, TEST_PACKAGE_URI,
+                mSnapshotSupplier, mUserId, TEST_ID, TEST_PACKAGE_NAME, TEST_PACKAGE_URI,
                 TEST_SIGNING_INFO, mTestDeclaredLibraries, TEST_POLICY, mTestExtensionParams,
                 mSessionCallback, mOnConnectionEstablished, /* retry= */ true)).isTrue();
         // Test the auto-disconnect job is canceled when the request is sent out
@@ -389,7 +389,7 @@ public class DeveloperVerifierControllerTest {
                         })
                 .thenAnswer(i -> true);
         assertThat(mDeveloperVerifierController.startVerificationSession(
-                mSnapshotSupplier, 0, TEST_ID, TEST_PACKAGE_NAME, TEST_PACKAGE_URI,
+                mSnapshotSupplier, mUserId, TEST_ID, TEST_PACKAGE_NAME, TEST_PACKAGE_URI,
                 TEST_SIGNING_INFO, mTestDeclaredLibraries, TEST_POLICY, mTestExtensionParams,
                 mSessionCallback, mOnConnectionEstablished, /* retry= */ false)).isTrue();
         verify(mHandler, times(1)).sendMessageAtTime(
@@ -401,7 +401,7 @@ public class DeveloperVerifierControllerTest {
         ArgumentCaptor<DeveloperVerificationSession> captor =
                 ArgumentCaptor.forClass(DeveloperVerificationSession.class);
         assertThat(mDeveloperVerifierController.startVerificationSession(
-                mSnapshotSupplier, 0, TEST_ID, TEST_PACKAGE_NAME, TEST_PACKAGE_URI,
+                mSnapshotSupplier, mUserId, TEST_ID, TEST_PACKAGE_NAME, TEST_PACKAGE_URI,
                 TEST_SIGNING_INFO, mTestDeclaredLibraries, TEST_POLICY, mTestExtensionParams,
                 mSessionCallback, mOnConnectionEstablished, /* retry= */ true)).isTrue();
         verify(mMockService).onVerificationRetry(captor.capture());

@@ -129,6 +129,7 @@ public class BackAnimationController implements RemoteCallable<BackAnimationCont
     private boolean mOnBackStartDispatched = false;
     private boolean mThresholdCrossed = false;
     private boolean mPointersPilfered = false;
+    private boolean mBackAnimationTriggered = false;
     private final boolean mRequirePointerPilfer;
 
     /** Registry for the back animations */
@@ -480,9 +481,10 @@ public class BackAnimationController implements RemoteCallable<BackAnimationCont
             return;
         }
         mShellExecutor.execute(() -> {
-            if (!shouldDispatchToAnimator()) {
+            if (mBackAnimationTriggered || !shouldDispatchToAnimator()) {
                 return;
             }
+            mBackAnimationTriggered = true;
             boolean started;
             try {
                 started = mActivityTaskManager.startPredictiveBackAnimation();
@@ -555,11 +557,7 @@ public class BackAnimationController implements RemoteCallable<BackAnimationCont
                     }
                     mShouldStartOnNextMoveEvent = false;
                 } else {
-                    if (predictiveBackDelayWmTransition()) {
-                        onGestureStarted(touchX, touchY, swipeEdge);
-                    } else {
-                        mShouldStartOnNextMoveEvent = true;
-                    }
+                    mShouldStartOnNextMoveEvent = true;
                 }
             }
         } else if (keyAction == MotionEvent.ACTION_MOVE) {
@@ -612,6 +610,7 @@ public class BackAnimationController implements RemoteCallable<BackAnimationCont
             startSystemAnimation();
         } else {
             startBackNavigation(touchTracker);
+            startPredictiveBackAnimationIfNeeded();
         }
     }
 
@@ -899,6 +898,7 @@ public class BackAnimationController implements RemoteCallable<BackAnimationCont
         // Reset gesture states.
         mThresholdCrossed = false;
         mPointersPilfered = false;
+        mBackAnimationTriggered = false;
         mBackGestureStarted = false;
         activeTouchTracker.setState(BackTouchTracker.TouchTrackerState.FINISHED);
         mTransitionIdleRunner.mRequestCount = 0;
