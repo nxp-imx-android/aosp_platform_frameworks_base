@@ -308,4 +308,9 @@
     <item type="id" name="screen_off_animation_guard_set" />
     <item type="id" name="screen_off_animation_guard_reported_wtf" />
     <item type="id" name="screen_off_animation_guard_screen_off_updates" />
+
+    <!-- Used in nodes inside QSFragmentCompose -->
+    <item type="id" name="quick_settings_container" />
+    <item type="id" name="quick_settings_panel" />
+    <item type="id" name="qs_footer_actions" />
 </resources>
