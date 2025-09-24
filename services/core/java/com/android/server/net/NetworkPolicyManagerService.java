@@ -2312,7 +2312,9 @@ public class NetworkPolicyManagerService extends INetworkPolicyManager.Stub {
                     tmSub.getMergedImsisFromGroup());
             mergedSubscriberIdsList.add(mergedSubscriberId);
 
-            final PersistableBundle config = mCarrierConfigManager.getConfigForSubId(subId);
+            final PersistableBundle config = mCarrierConfigManager != null
+                    ? mCarrierConfigManager.getConfigForSubId(subId)
+                    : null;
             if (config != null) {
                 subIdToCarrierConfig.put(subId, config);
             } else {
@@ -3611,7 +3613,9 @@ public class NetworkPolicyManagerService extends INetworkPolicyManager.Stub {
         final TelephonyManager tm;
         final long token = Binder.clearCallingIdentity();
         try {
-            config = mCarrierConfigManager.getConfigForSubId(subId);
+            config = mCarrierConfigManager != null
+                ? mCarrierConfigManager.getConfigForSubId(subId)
+                : null;
             tm = mContext.getSystemService(TelephonyManager.class).createForSubscriptionId(subId);
         } finally {
             Binder.restoreCallingIdentity(token);
