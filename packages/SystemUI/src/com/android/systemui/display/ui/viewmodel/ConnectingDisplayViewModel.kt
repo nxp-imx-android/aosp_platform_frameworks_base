@@ -92,11 +92,7 @@ constructor(
         val pendingDisplayFlow = connectedDisplayInteractor.pendingDisplay
         val kioskModeFlow = kioskModeRepository.isInKioskMode
         val concurrentDisplaysInProgressFlow =
-            if (Flags.enableDualDisplayBlocking()) {
                 connectedDisplayInteractor.concurrentDisplaysInProgress
-            } else {
-                flow { emit(false) }
-            }
 
         // Let's debounce for 2 reasons:
         // - prevent fast dialog flashes where pending displays are available for just a few millis
