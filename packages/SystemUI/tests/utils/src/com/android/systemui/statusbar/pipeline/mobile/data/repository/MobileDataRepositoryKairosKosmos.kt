@@ -31,6 +31,7 @@ import com.android.systemui.kairos.buildSpec
 import com.android.systemui.kairos.kairos
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.Kosmos.Fixture
+import com.android.systemui.kosmos.applicationCoroutineScope
 import com.android.systemui.kosmos.testDispatcher
 import com.android.systemui.log.table.TableLogBuffer
 import com.android.systemui.log.table.logcatTableLogBuffer
@@ -48,6 +49,7 @@ import com.android.systemui.statusbar.pipeline.wifi.data.repository.demo.DemoMod
 import com.android.systemui.statusbar.pipeline.wifi.data.repository.demo.DemoModeWifiDataSourceKairos
 import com.android.systemui.statusbar.pipeline.wifi.data.repository.wifiRepository
 import com.android.systemui.util.mockito.mockFixture
+import org.mockito.Mockito.spy
 import org.mockito.kotlin.mock
 
 @ExperimentalKairosApi
@@ -76,7 +78,14 @@ val Kosmos.demoModeMobileConnectionDataSourceKairos:
     FakeDemoModeMobileConnectionDataSourceKairos(kairos)
 }
 
-val Kosmos.wifiDataSource: DemoModeWifiDataSource by mockFixture()
+val Kosmos.wifiDataSource: DemoModeWifiDataSource by Fixture {
+    spy(
+        DemoModeWifiDataSource(
+            demoModeController = demoModeController,
+            scope = applicationCoroutineScope,
+        )
+    )
+}
 
 @ExperimentalKairosApi
 val Kosmos.wifiDataSourceKairos: DemoModeWifiDataSourceKairos by ActivatedKairosFixture {
