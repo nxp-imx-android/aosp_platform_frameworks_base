@@ -22,7 +22,7 @@ import android.tools.NavBar
 import androidx.test.filters.RequiresDevice
 import com.android.wm.shell.Flags
 import com.android.wm.shell.Utils.testSetupRule
-import com.android.wm.shell.flicker.bubbles.testcase.ExpandBubbleTestCases
+import com.android.wm.shell.flicker.bubbles.testcase.ExpandBubbleFromHomeTestCases
 import com.android.wm.shell.flicker.bubbles.utils.AssumptionRule
 import com.android.wm.shell.flicker.bubbles.utils.BubbleFlickerTestHelper.collapseBubbleAppViaBackKey
 import com.android.wm.shell.flicker.bubbles.utils.BubbleFlickerTestHelper.expandBubbleAppViaTapOnBubbleStack
@@ -52,7 +52,7 @@ import org.junit.runners.Parameterized.Parameters
  * ```
  * Verified tests:
  * - [BubbleFlickerTestBase]
- * - [ExpandBubbleTestCases]
+ * - [ExpandBubbleFromHomeTestCases]
  */
 @RequiresFlagsEnabled(Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE)
 @RequiresDevice
@@ -60,7 +60,7 @@ import org.junit.runners.Parameterized.Parameters
 @Presubmit
 @RunWith(Parameterized::class)
 class ExpandBubbleViaBubbleStackTest(navBar: NavBar) : BubbleFlickerTestBase(),
-    ExpandBubbleTestCases {
+    ExpandBubbleFromHomeTestCases {
 
     companion object {
         private val recordTraceWithTransitionRule = RecordTraceWithTransitionRule(

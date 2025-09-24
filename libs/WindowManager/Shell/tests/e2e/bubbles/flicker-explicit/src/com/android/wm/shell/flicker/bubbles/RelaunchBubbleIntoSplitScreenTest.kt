@@ -92,7 +92,7 @@ class RelaunchBubbleIntoSplitScreenTest : BubbleFlickerTestBase(),
                     secondaryApp.openNewTaskWithRecycle(uiDevice, wmHelper) {
                         // TODO: b/432604687 - Expected behavior is blocked by WM core reparent.
                         // Reopen the collapsed bubble.
-                        // withBubbleAppInExpandedState(bubbleApp)
+                        // withBubbleExpanded(bubbleApp)
 
                         // Current behavior: Bubble task is converted into split.
                         withBubbleFullyDismissedAndGone()

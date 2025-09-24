@@ -27,7 +27,7 @@ import com.android.server.wm.flicker.helpers.ImeShownOnAppStartHelper
 import com.android.wm.shell.Flags
 import com.android.wm.shell.Utils.testSetupRule
 import com.android.wm.shell.flicker.bubbles.ExpandBubbleWithImeViaBubbleBarTest.Companion.testApp
-import com.android.wm.shell.flicker.bubbles.testcase.ExpandBubbleTestCases
+import com.android.wm.shell.flicker.bubbles.testcase.ExpandBubbleFromHomeTestCases
 import com.android.wm.shell.flicker.bubbles.testcase.ImeBecomesVisibleAndBubbleIsShrunkTestCase
 import com.android.wm.shell.flicker.bubbles.utils.AssumptionRule
 import com.android.wm.shell.flicker.bubbles.utils.BubbleFlickerTestHelper.collapseBubbleAppViaBackKey
@@ -58,7 +58,7 @@ import org.junit.runners.Parameterized.Parameters
  * ```
  * Verified tests:
  * - [BubbleFlickerTestBase]
- * - [ExpandBubbleTestCases]
+ * - [ExpandBubbleFromHomeTestCases]
  * - [ImeBecomesVisibleAndBubbleIsShrunkTestCase]
  */
 @RequiresFlagsEnabled(Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE, Flags.FLAG_ENABLE_BUBBLE_BAR)
@@ -68,7 +68,7 @@ import org.junit.runners.Parameterized.Parameters
 @FlakyTest(bugId = 421000153)
 @RunWith(Parameterized::class)
 class ExpandBubbleWithImeViaBubbleBarTest(navBar: NavBar) : BubbleFlickerTestBase(),
-    ExpandBubbleTestCases, ImeBecomesVisibleAndBubbleIsShrunkTestCase {
+    ExpandBubbleFromHomeTestCases, ImeBecomesVisibleAndBubbleIsShrunkTestCase {
 
     companion object {
         private val testApp = ImeShownOnAppStartHelper(instrumentation, Rotation.ROTATION_0)
