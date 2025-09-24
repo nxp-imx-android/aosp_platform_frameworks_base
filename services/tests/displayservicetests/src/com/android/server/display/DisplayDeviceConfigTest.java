@@ -121,7 +121,6 @@ public final class DisplayDeviceConfigTest {
     public void setUp() {
         MockitoAnnotations.initMocks(this);
         when(mContext.getResources()).thenReturn(mResources);
-        when(mFlags.areAutoBrightnessModesEnabled()).thenReturn(true);
         when(mFlags.isSensorBasedBrightnessThrottlingEnabled()).thenReturn(true);
         mockDeviceConfigs();
     }
@@ -984,26 +983,6 @@ public final class DisplayDeviceConfigTest {
                 mDisplayDeviceConfig.getAutoBrightnessBrighteningLevels(
                         AUTO_BRIGHTNESS_MODE_BEDTIME_WEAR,
                         Settings.System.SCREEN_BRIGHTNESS_AUTOMATIC_BRIGHT), SMALL_DELTA);
-    }
-
-    @Test
-    public void testAutoBrightnessBrighteningLevels_FeatureFlagOff() throws IOException {
-        when(mFlags.areAutoBrightnessModesEnabled()).thenReturn(false);
-        setupDisplayDeviceConfigFromConfigResourceFile();
-        setupDisplayDeviceConfigFromDisplayConfigFile(getContent(getValidLuxThrottling(),
-                getValidProxSensor(), /* includeIdleMode= */ false, /* enableEvenDimmer= */ false));
-
-        assertArrayEquals(new float[]{brightnessIntToFloat(50), brightnessIntToFloat(100),
-                        brightnessIntToFloat(150)},
-                mDisplayDeviceConfig.getAutoBrightnessBrighteningLevels(
-                        AUTO_BRIGHTNESS_MODE_DEFAULT,
-                        Settings.System.SCREEN_BRIGHTNESS_AUTOMATIC_NORMAL), SMALL_DELTA);
-        assertArrayEquals(new float[]{0, 110, 500},
-                mDisplayDeviceConfig.getAutoBrightnessBrighteningLevelsLux(
-                        AUTO_BRIGHTNESS_MODE_DEFAULT,
-                        Settings.System.SCREEN_BRIGHTNESS_AUTOMATIC_NORMAL), ZERO_DELTA);
-        assertArrayEquals(new float[]{2, 200, 600},
-                mDisplayDeviceConfig.getAutoBrightnessBrighteningLevelsNits(), SMALL_DELTA);
     }
 
     @Test
