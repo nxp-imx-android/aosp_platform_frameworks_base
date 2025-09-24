@@ -6874,6 +6874,17 @@ public abstract class Context {
 
     /**
      * Use with {@link #getSystemService(String)} to retrieve a
+     * {@link android.service.personalcontext.PersonalContextManager} for controlling
+     * PersonalContext.
+     *
+     * @see #getSystemService(String)
+
+     * @hide
+     */
+    public static final String PERSONAL_CONTEXT_SERVICE = "personal_context";
+
+    /**
+     * Use with {@link #getSystemService(String)} to retrieve a
      * {@link android.telephony.SmsManager} for accessing Sms functionality.
      *
      * @see #getSystemService(String)
