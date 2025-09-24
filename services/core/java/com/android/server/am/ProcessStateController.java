@@ -523,8 +523,7 @@ public class ProcessStateController {
         proc.setIsRunningRemoteAnimation(runningRemoteAnimation);
 
         if (Flags.autoTriggerOomadjUpdates()) {
-            enqueueUpdateTarget(proc);
-            runPendingUpdate(OOM_ADJ_REASON_UI_VISIBILITY);
+            runUpdate(proc, OOM_ADJ_REASON_UI_VISIBILITY);
         }
         return true;
     }
