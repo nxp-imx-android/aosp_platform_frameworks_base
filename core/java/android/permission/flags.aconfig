@@ -700,3 +700,11 @@ flag {
     bug: "396431730"
 }
 
+flag {
+    name: "restrict_assist_structure_screen_content_enabled"
+    is_exported: true
+    namespace: "permissions"
+    description: "enable restricted usage of assist_structure screen content via the new permission"
+    bug: "437416500"
+}
+
