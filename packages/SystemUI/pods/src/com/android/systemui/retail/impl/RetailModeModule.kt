@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.systemui.retail
+package com.android.systemui.retail.impl
 
 import com.android.systemui.retail.data.repository.RetailModeRepository
 import com.android.systemui.retail.data.repository.impl.RetailModeSettingsRepository

@@ -20,7 +20,7 @@ package {
 
 java_library {
     name: "com.android.systemui.retail-impl",
-    srcs: ["*.kt"],
+    srcs: ["impl/*.kt"],
     libs: [
         "dagger2",
         "SystemUICommon",
