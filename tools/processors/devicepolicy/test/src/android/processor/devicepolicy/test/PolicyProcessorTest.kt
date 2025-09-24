@@ -263,4 +263,82 @@ class PolicyProcessorTest {
         assertThat(compilation).failed()
         assertThat(compilation).hadErrorContaining("allowedScopes contains an unknown value")
     }
+
+    @Test
+    fun test_undefinedScope_failsToCompile() {
+        val policyIdentifier = buildPolicyIdentifier(
+            """
+            private static final String UNDEFINED_SCOPE_KEY = "undefined_scope_key";
+            /**
+             * Unspecified (0) scope should fail.
+             */
+            @BooleanPolicyDefinition(
+                    base = @PolicyDefinition(
+                            allowedScopes = {0},
+                            affectedResource = 2
+                    )
+            )
+            public static final PolicyIdentifier<Boolean> UNDEFINED_SCOPE = new PolicyIdentifier<>(
+                    UNDEFINED_SCOPE_KEY);
+            """.trimIndent()
+        )
+
+        val compilation: Compilation = mCompiler.compile(policyIdentifier)
+
+        assertThat(mCompilerWithoutProcessor.compile(policyIdentifier)).succeeded()
+        assertThat(compilation).failed()
+        assertThat(compilation).hadErrorContaining("allowedScopes contains an unknown value")
+    }
+
+    @Test
+    fun test_invalidAffectedResource_failsToCompile() {
+        val policyIdentifier = buildPolicyIdentifier(
+            """
+            private static final String INVALID_AFFECTED_RESOURCE_KEY = "invalid_affected_resource";
+            /**
+             * Invalid resource should fail.
+             */
+            @BooleanPolicyDefinition(
+                    base = @PolicyDefinition(
+                            allowedScopes = {1},
+                            affectedResource = 100
+                    )
+            )
+            public static final PolicyIdentifier<Boolean> INVALID_AFFECTED_RESOURCE_POLICY = new PolicyIdentifier<>(
+                    INVALID_AFFECTED_RESOURCE_KEY);
+            """.trimIndent()
+        )
+
+        val compilation: Compilation = mCompiler.compile(policyIdentifier)
+
+        assertThat(mCompilerWithoutProcessor.compile(policyIdentifier)).succeeded()
+        assertThat(compilation).failed()
+        assertThat(compilation).hadErrorContaining("affectedResource is set to an unknown value")
+    }
+
+    @Test
+    fun test_undefinedAffectedResource_failsToCompile() {
+        val policyIdentifier = buildPolicyIdentifier(
+            """
+            private static final String UNSPECIFIED_AFFECTED_RESOURCE_KEY = "unknown_affected_resource";
+            /**
+             * Unspecified (0) resource should fail.
+             */
+            @BooleanPolicyDefinition(
+                    base = @PolicyDefinition(
+                            allowedScopes = {1},
+                            affectedResource = 0
+                    )
+            )
+            public static final PolicyIdentifier<Boolean> UNSPECIFIED_AFFECTED_RESOURCE_POLICY = new PolicyIdentifier<>(
+                    UNSPECIFIED_AFFECTED_RESOURCE_KEY);
+            """.trimIndent()
+        )
+
+        val compilation: Compilation = mCompiler.compile(policyIdentifier)
+
+        assertThat(mCompilerWithoutProcessor.compile(policyIdentifier)).succeeded()
+        assertThat(compilation).failed()
+        assertThat(compilation).hadErrorContaining("affectedResource is set to an unknown value")
+    }
 }
