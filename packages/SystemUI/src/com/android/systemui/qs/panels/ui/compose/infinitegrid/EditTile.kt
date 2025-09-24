@@ -21,7 +21,6 @@ package com.android.systemui.qs.panels.ui.compose.infinitegrid
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColor
-import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.Spring
@@ -1074,12 +1073,6 @@ private fun LazyGridItemScope.TileGridCell(
         },
         contentDescription = decorationClickLabel,
     ) {
-        val placeableColor = MaterialTheme.colorScheme.primary.copy(alpha = .4f)
-        val backgroundColor by
-            animateColorAsState(
-                if (tileState == TileState.Placeable) placeableColor else colors.background
-            )
-
         // Rapidly composing elements with the draggable modifier can cause visual jank. This
         // usually happens when resizing a tile multiple times. We can fix this by applying the
         // draggable modifier after the first frame
@@ -1103,6 +1096,7 @@ private fun LazyGridItemScope.TileGridCell(
 
         val toggleSelectionLabel = stringResource(R.string.accessibility_qs_edit_toggle_selection)
         val placeTileLabel = stringResource(R.string.accessibility_qs_edit_place_tile_action)
+        val containerAlpha by animateFloatAsState(if (tileState == TileState.GreyedOut) .4f else 1f)
         Box(
             Modifier.fillMaxSize()
                 .clearAndSetSemantics {
@@ -1149,7 +1143,7 @@ private fun LazyGridItemScope.TileGridCell(
                     CornerSize(InactiveCornerRadius),
                 )
                 .thenIf(isSelectable) { draggableModifier }
-                .tileBackground { backgroundColor }
+                .tileBackground(alpha = { containerAlpha }, color = { colors.background })
                 .clickable { selectionState.onTap(cell.tile.tileSpec) }
                 .thenIf(isSelectable) { selectableModifier }
         ) {
@@ -1353,7 +1347,6 @@ fun EditTile(
     colors: TileColors = EditModeTileDefaults.editTileColors(),
 ) {
     val iconSizeDiff = CommonTileDefaults.IconSize - CommonTileDefaults.LargeTileIconSize
-    val containerAlpha by animateFloatAsState(if (tileState == TileState.GreyedOut) .4f else 1f)
     Row(
         horizontalArrangement = spacedBy(6.dp),
         verticalAlignment = Alignment.CenterVertically,
@@ -1386,8 +1379,7 @@ fun EditTile(
                         placeable.placeRelative(startPadding.roundToInt(), 0)
                     }
                 }
-                .largeTilePadding()
-                .graphicsLayer { this.alpha = containerAlpha },
+                .largeTilePadding(),
     ) {
         // Icon
         Box(
@@ -1419,9 +1411,11 @@ private fun MeasureScope.iconHorizontalCenter(containerSize: Int): Float {
         CommonTileDefaults.TileStartPadding.toPx()
 }
 
-private fun Modifier.tileBackground(color: () -> Color): Modifier {
+private fun Modifier.tileBackground(alpha: () -> Float = { 1f }, color: () -> Color): Modifier {
     // Clip tile contents from overflowing past the tile
-    return clip(RoundedCornerShape(InactiveCornerRadius)).drawBehind { drawRect(color()) }
+    return clip(RoundedCornerShape(InactiveCornerRadius)).drawBehind {
+        drawRect(color(), alpha = alpha())
+    }
 }
 
 private object EditModeTileDefaults {
