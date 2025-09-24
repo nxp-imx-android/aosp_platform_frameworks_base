@@ -33,14 +33,14 @@ class GlanceableHubToDozingTransitionViewModel
 @Inject
 constructor(
     animationFlow: KeyguardTransitionAnimationFlow,
-    private val blurComponentFactory: GlanceableHubBlurComponent.Factory,
+    blurComponentFactory: GlanceableHubBlurComponent.Factory,
     dozingTransitionFlows: DozingTransitionFlows,
 ) : GlanceableHubTransition {
     private val transitionAnimation =
         animationFlow
             .setup(
                 duration = TO_GLANCEABLE_HUB_DURATION,
-                edge = Edge.create(DOZING, Scenes.Communal),
+                edge = Edge.create(Scenes.Communal, DOZING),
             )
             .setupWithoutSceneContainer(edge = Edge.create(GLANCEABLE_HUB, DOZING))
 
