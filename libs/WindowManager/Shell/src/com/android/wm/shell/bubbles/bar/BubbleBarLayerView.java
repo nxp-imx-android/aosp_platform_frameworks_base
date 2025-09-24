@@ -62,6 +62,7 @@ import com.android.wm.shell.shared.bubbles.DragZone;
 import com.android.wm.shell.shared.bubbles.DragZoneFactory;
 import com.android.wm.shell.shared.bubbles.DraggedObject;
 import com.android.wm.shell.shared.bubbles.DropTargetManager;
+import com.android.wm.shell.shared.bubbles.logging.BubbleLog;
 
 import kotlin.Unit;
 
@@ -143,7 +144,10 @@ public class BubbleBarLayerView extends FrameLayout
         setUpDismissView();
         setupDropTargetManager();
         setupDragZoneFactory();
-        setOnClickListener(view -> hideModalOrCollapse());
+        setOnClickListener(view -> {
+            BubbleLog.d("BubbleBarLayerView.onClick() CLICK outside of bubbles");
+            hideModalOrCollapse();
+        });
     }
 
     private void setupDropTargetManager() {

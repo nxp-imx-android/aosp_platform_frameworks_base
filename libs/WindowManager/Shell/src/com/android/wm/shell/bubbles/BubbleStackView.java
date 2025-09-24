@@ -523,8 +523,15 @@ public class BubbleStackView extends FrameLayout
                         mExpandedAnimationController.dismissDraggedOutBubble(
                                 view /* bubble */,
                                 mDismissView.getHeight() /* translationYBy */,
-                                () -> dismissBubbleIfExists(
-                                        mBubbleData.getBubbleInStackWithView(view)) /* after */);
+                                () -> {
+                                    Bubble bubbleToDismiss =
+                                            mBubbleData.getBubbleInStackWithView(view);
+                                    BubbleLog.d(
+                                            "BubbleStackView.onReleasedInTarget() DROP bubble=%s "
+                                                    + "to dismiss", bubbleToDismiss == null ? "null"
+                                                    : bubbleToDismiss.getKey());
+                                    dismissBubbleIfExists(bubbleToDismiss);
+                                } /* after */);
                     }
 
                     mDismissView.hide();
@@ -558,6 +565,7 @@ public class BubbleStackView extends FrameLayout
                 @Override
                 public void onReleasedInTarget(@NonNull MagnetizedObject.MagneticTarget target,
                         @NonNull MagnetizedObject<?> draggedObject) {
+                    BubbleLog.d("BubbleStackView.onReleasedInTarget() DROP stack to dismiss");
                     mStackAnimationController.animateStackDismissal(
                             mDismissView.getHeight() /* translationYBy */,
                             () -> {
@@ -591,6 +599,10 @@ public class BubbleStackView extends FrameLayout
             if (clickedBubble == null) {
                 return;
             }
+
+            BubbleLog.d("BubbleStackView.onBubbleClick() CLICK on bubble=%s, expanded=%s",
+                    clickedBubble.getKey(), mExpandedBubble == null ? "null" :
+                            mExpandedBubble.getKey());
 
             final boolean clickedBubbleIsCurrentlyExpandedBubble = mExpandedBubble != null
                             && clickedBubble.getKey().equals(mExpandedBubble.getKey());
@@ -1567,6 +1579,7 @@ public class BubbleStackView extends FrameLayout
 
         mManageMenu.findViewById(R.id.bubble_manage_menu_dismiss_container).setOnClickListener(
                 view -> {
+                    BubbleLog.d("BubbleStackView.onDismissBubbleMenuClicked() CLICK");
                     showManageMenu(false /* show */);
                     dismissBubbleIfExists(mBubbleData.getSelectedBubble());
                 });
@@ -1604,6 +1617,7 @@ public class BubbleStackView extends FrameLayout
             fullscreenView.setVisibility(VISIBLE);
             fullscreenView.setOnClickListener(
                     view -> {
+                        BubbleLog.d("BubbleStackView.onMoveToFullScreenClicked() CLICK");
                         showManageMenu(false /* show */);
                         BubbleExpandedView expandedView = getExpandedView();
                         if (expandedView != null && expandedView.getTaskView() != null) {
