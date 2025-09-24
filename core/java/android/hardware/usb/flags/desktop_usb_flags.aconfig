@@ -25,6 +25,7 @@ flag {
 flag {
     name: "enable_pci_tunnel_control"
     namespace: "usb_desktop"
+    is_exported: true
     description: "This flag allows control of PCI tunneling if supported"
     bug: "447428699"
 }

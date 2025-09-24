@@ -16,22 +16,29 @@
 
 package com.android.server.usb;
 
+import static android.hardware.usb.InternalPciTunnelControlDisableReason.PCI_TUNNEL_CONTROL_DISABLE_REASON_APM;
+import static android.hardware.usb.InternalPciTunnelControlDisableReason.PCI_TUNNEL_CONTROL_DISABLE_REASON_ENTERPRISE;
+
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
-import static org.mockito.Mockito.anyLong;
-import static org.mockito.Mockito.anyBoolean;
-import static org.mockito.Mockito.doNothing;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import android.content.Context;
 import android.content.pm.UserInfo;
+import android.hardware.usb.UsbManager;
 import android.os.UserHandle;
 import android.os.UserManager;
 import android.platform.test.flag.junit.SetFlagsRule;
+
 import androidx.test.runner.AndroidJUnit4;
+
 import com.android.server.LocalServices;
 import com.android.server.usb.flags.Flags;
+
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -63,7 +70,8 @@ public class Usb4ManagerTest {
     @Before
     public void setUp() {
         mSetFlagsRule.enableFlags(Flags.FLAG_ENABLE_USB4);
-        mSetFlagsRule.disableFlags(Flags.FLAG_DEFAULT_ALLOW_PCI_TUNNELS);
+        mSetFlagsRule.enableFlags(Flags.FLAG_DEFAULT_ALLOW_PCI_TUNNELS);
+        mSetFlagsRule.enableFlags(android.hardware.usb.flags.Flags.FLAG_ENABLE_PCI_TUNNEL_CONTROL);
         LocalServices.removeAllServicesForTest();
         MockitoAnnotations.initMocks(this);
 
@@ -71,27 +79,100 @@ public class Usb4ManagerTest {
         when(mUserManager.getUserInfo(TEST_USER_ID_NOT_FULL)).thenReturn(TEST_USER_INFO_NOT_FULL);
         when(mUserManager.getUserInfo(TEST_USER_ID_NOT_ADMIN)).thenReturn(TEST_USER_INFO_NOT_ADMIN);
 
+        when(mUsb4ManagerNative.checkPciTunnelsSupported()).thenReturn(true);
+
         mUsb4Manager = new Usb4Manager(mContext, mUserManager, mUsb4ManagerNative);
     }
 
     /** Test that enabling PCI tunnels succeeds for a full admin user. */
     @Test
-    public void testOnEnablePciTunnels_successWithFullAdminUser() {
+    public void testSetPciTunnelingEnabled_successWithFullAdminUser() {
         mUsb4Manager.onUpdateLoggedInState(true, TEST_USER_ID);
-        mUsb4Manager.onEnablePciTunnels(true);
-        verify(mUsb4ManagerNative).enablePciTunnels(true);
+        mUsb4Manager.setPciTunnelingEnabled(true);
+        verify(mUsb4ManagerNative, times(2)).enablePciTunnels(true);
+        assertTrue(mUsb4Manager.isPciTunnelingEnabled());
     }
 
     /** Test that enabling PCI tunnels fails for a user that is not full or not admin. */
     @Test
-    public void testOnEnablePciTunnels_failsInvalidUser() {
+    public void testSetPciTunnelingEnabled_failsInvalidUser() {
         mUsb4Manager.onUpdateLoggedInState(true, TEST_USER_ID_NOT_FULL);
-        assertThrows(IllegalStateException.class, () -> mUsb4Manager.onEnablePciTunnels(true));
-        verify(mUsb4ManagerNative, never()).enablePciTunnels(true);
+        assertThrows(IllegalStateException.class, () -> mUsb4Manager.setPciTunnelingEnabled(true));
 
         mUsb4Manager.onUpdateLoggedInState(true, TEST_USER_ID_NOT_ADMIN);
-        assertThrows(IllegalStateException.class, () -> mUsb4Manager.onEnablePciTunnels(true));
-        verify(mUsb4ManagerNative, never()).enablePciTunnels(true);
+        assertThrows(IllegalStateException.class, () -> mUsb4Manager.setPciTunnelingEnabled(true));
+    }
+
+    /** Test that enabling PCI tunnels fails if tunnels are not supported. */
+    @Test
+    public void testSetPciTunnelingEnabled_failsWhenPciTunnelsNotSupported() {
+        when(mUsb4ManagerNative.checkPciTunnelsSupported()).thenReturn(false);
+
+        // Initially, we shouldn't be able to update tunnel control due to invalid user.
+        assertEquals(
+                mUsb4Manager.isPciTunnelingControlAllowed(),
+                UsbManager.PCI_TUNNEL_CTRL_DISALLOWED_FOR_NONADMIN_USER);
+
+        // After switching users, tunnel control should be updated to unsupported.
+        mUsb4Manager.onUpdateLoggedInState(true, TEST_USER_ID);
+        assertEquals(
+                mUsb4Manager.isPciTunnelingControlAllowed(),
+                UsbManager.PCI_TUNNEL_CTRL_UNSUPPORTED);
+        assertThrows(IllegalStateException.class, () -> mUsb4Manager.setPciTunnelingEnabled(true));
+
+        // Disabling PCI tunnels is still allowed when not supported.
+        mUsb4Manager.setPciTunnelingEnabled(false);
+        verify(mUsb4ManagerNative, times(1)).enablePciTunnels(false);
+    }
+
+    /** Test an invalid disable reason on setPciTunnelingControlAllowed */
+    @Test
+    public void testSetPciTunnelControlAllowed_failsOnInvalidReasons() {
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> mUsb4Manager.setPciTunnelingControlAllowed(false, 1234));
+    }
+
+    /** Test that setPciTunnelingControlAllowed accepts valid reasons and disables tunneling. */
+    @Test
+    public void testSetPciTunnelControlAllowed_acceptsAndDisablesOnValidReasons() {
+        // Start with tunnels enabled.
+        mUsb4Manager.onUpdateLoggedInState(true, TEST_USER_ID);
+        mUsb4Manager.setPciTunnelingEnabled(true);
+        assertTrue(mUsb4Manager.isPciTunnelingEnabled());
+
+        // Update disable reasons.
+        assertTrue(
+                mUsb4Manager.setPciTunnelingControlAllowed(
+                        false, PCI_TUNNEL_CONTROL_DISABLE_REASON_APM));
+        assertEquals(
+                mUsb4Manager.isPciTunnelingControlAllowed(),
+                UsbManager.PCI_TUNNEL_CTRL_DISALLOWED_BY_APM);
+        assertFalse(mUsb4Manager.isPciTunnelingEnabled());
+
+        assertTrue(
+                mUsb4Manager.setPciTunnelingControlAllowed(
+                        false, PCI_TUNNEL_CONTROL_DISABLE_REASON_ENTERPRISE));
+        assertEquals(
+                mUsb4Manager.isPciTunnelingControlAllowed(),
+                UsbManager.PCI_TUNNEL_CTRL_DISALLOWED_BY_ENTERPRISE_POLICY);
+        assertFalse(mUsb4Manager.isPciTunnelingEnabled());
+
+        // Remove reasons.
+        assertTrue(
+                mUsb4Manager.setPciTunnelingControlAllowed(
+                        true, PCI_TUNNEL_CONTROL_DISABLE_REASON_APM));
+        assertEquals(
+                mUsb4Manager.isPciTunnelingControlAllowed(),
+                UsbManager.PCI_TUNNEL_CTRL_DISALLOWED_BY_ENTERPRISE_POLICY);
+        assertTrue(
+                mUsb4Manager.setPciTunnelingControlAllowed(
+                        true, PCI_TUNNEL_CONTROL_DISABLE_REASON_ENTERPRISE));
+
+        // Revert to supported but don't restore tunnel enable state.
+        assertEquals(
+                mUsb4Manager.isPciTunnelingControlAllowed(), UsbManager.PCI_TUNNEL_CTRL_SUPPORTED);
+        assertFalse(mUsb4Manager.isPciTunnelingEnabled());
     }
 
     /** Test that updating the screen locked state succeeds. */
