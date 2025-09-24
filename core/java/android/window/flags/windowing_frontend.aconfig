@@ -464,3 +464,13 @@ flag {
     }
 }
 
+flag {
+    name: "sleep_wake_transitions"
+    namespace: "windowing_frontend"
+    description: "Make the rest of sleep/wake situations into transitions."
+    bug: "423701190"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
