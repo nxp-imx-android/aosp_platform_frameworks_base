@@ -22,6 +22,7 @@ import android.view.SurfaceControlViewHost;
 /**
  * @hide
  */
+@JavaDerive(toString=true, equals=true)
 parcelable WidgetInfo {
 
     /**

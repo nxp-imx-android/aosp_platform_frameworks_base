@@ -230,6 +230,15 @@ public abstract class SelectionToolbarRenderService extends Service {
         }
 
         @Override
+        public void onInvisible() {
+            try {
+                mRemoteCallback.onInvisible();
+            } catch (RemoteException e) {
+                // no-op
+            }
+        }
+
+        @Override
         public void onWidgetUpdated(WidgetInfo widgetInfo) {
             try {
                 mRemoteCallback.onWidgetUpdated(widgetInfo);
@@ -242,15 +251,6 @@ public abstract class SelectionToolbarRenderService extends Service {
         public void onMenuItemClicked(int itemIndex) {
             try {
                 mRemoteCallback.onMenuItemClicked(itemIndex);
-            } catch (RemoteException e) {
-                // no-op
-            }
-        }
-
-        @Override
-        public void onError(int errorCode, int sequenceNumber) {
-            try {
-                mRemoteCallback.onError(errorCode, sequenceNumber);
             } catch (RemoteException e) {
                 // no-op
             }
