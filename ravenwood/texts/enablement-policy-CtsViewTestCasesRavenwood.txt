@@ -25,7 +25,7 @@ android.view.cts.PointerCaptureTest never
 
 # AUTO-GENERATED START
 
-# Total=915 Passed=574 Failed=334 Skipped=7
+# Total=915 Passed=565 Failed=343 Skipped=7
 
 android.view.cts.AbsSavedStateTest#testConstructor disable
 android.view.cts.AbsSavedStateTest#testConstructorNullParcel
@@ -280,16 +280,16 @@ android.view.cts.ScrollCaptureSessionTest#testConstructor_requiresNonNullSurface
 android.view.cts.ScrollCaptureSessionTest#testGetPositionInWindow
 android.view.cts.ScrollCaptureSessionTest#testGetScrollBounds
 android.view.cts.ScrollCaptureSessionTest#testGetSurface
-android.view.cts.ScrollCaptureTargetTest#testCallback
-android.view.cts.ScrollCaptureTargetTest#testConstructor_requiresNonNullCallback
-android.view.cts.ScrollCaptureTargetTest#testConstructor_requiresNonNullPosition
-android.view.cts.ScrollCaptureTargetTest#testConstructor_requiresNonNullTarget
-android.view.cts.ScrollCaptureTargetTest#testConstructor_requiresNonNullVisibleRect
-android.view.cts.ScrollCaptureTargetTest#testContainingView
-android.view.cts.ScrollCaptureTargetTest#testHint
-android.view.cts.ScrollCaptureTargetTest#testLocalVisibleRect
+android.view.cts.ScrollCaptureTargetTest#testCallback disable
+android.view.cts.ScrollCaptureTargetTest#testConstructor_requiresNonNullCallback disable
+android.view.cts.ScrollCaptureTargetTest#testConstructor_requiresNonNullPosition disable
+android.view.cts.ScrollCaptureTargetTest#testConstructor_requiresNonNullTarget disable
+android.view.cts.ScrollCaptureTargetTest#testConstructor_requiresNonNullVisibleRect disable
+android.view.cts.ScrollCaptureTargetTest#testContainingView disable
+android.view.cts.ScrollCaptureTargetTest#testHint disable
+android.view.cts.ScrollCaptureTargetTest#testLocalVisibleRect disable
 android.view.cts.ScrollCaptureTargetTest#testPositionInWindow disable
-android.view.cts.ScrollCaptureTargetTest#testScrollBounds
+android.view.cts.ScrollCaptureTargetTest#testScrollBounds disable
 android.view.cts.ScrollFeedbackProviderTest#testApisDontCrash_allExistingInputSourceAndAxesCombinations
 android.view.cts.ScrollFeedbackProviderTest#testApisDontCrash_invalidDeviceIds
 android.view.cts.ScrollFeedbackProviderTest#testApisDontCrash_invalidInputSourceAndAxesCombinations

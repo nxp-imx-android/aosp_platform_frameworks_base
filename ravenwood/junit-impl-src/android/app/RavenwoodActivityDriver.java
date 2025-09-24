@@ -25,6 +25,7 @@ import android.platform.test.ravenwood.RavenwoodExperimentalApiChecker;
 import android.platform.test.ravenwood.RavenwoodUtils;
 import android.view.Display;
 import android.view.WindowManager;
+import android.view.WindowManager.LayoutParams;
 
 /**
  * Experimental implementation of launching activities.
@@ -137,6 +138,10 @@ public class RavenwoodActivityDriver {
         // Make visible -- this requires some setup, which is copied from ActivityController.
         activity.getWindow().getAttributes().type =
                 WindowManager.LayoutParams.TYPE_BASE_APPLICATION;
+
+        // b/447182552: Ravenwood can't initialize InputChannel yet.
+        activity.getWindow().getAttributes().inputFeatures
+                |= LayoutParams.INPUT_FEATURE_NO_INPUT_CHANNEL;
         activity.mDecor = activity.getWindow().getDecorView();
         activity.makeVisible();
 
