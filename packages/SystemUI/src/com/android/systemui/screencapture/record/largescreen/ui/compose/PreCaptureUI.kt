@@ -16,7 +16,6 @@
 
 package com.android.systemui.screencapture.record.largescreen.ui.compose
 
-import android.graphics.Rect
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -27,9 +26,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.layout.boundsInWindow
-import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
@@ -40,7 +36,6 @@ import com.android.systemui.screencapture.common.ui.compose.loadIcon
 import com.android.systemui.screencapture.record.largescreen.shared.model.ScreenCaptureRegion
 import com.android.systemui.screencapture.record.largescreen.shared.model.ScreenCaptureType
 import com.android.systemui.screencapture.record.largescreen.ui.viewmodel.PreCaptureViewModel
-import kotlin.math.roundToInt
 
 /** Main component for the pre-capture UI. */
 @Composable
@@ -54,22 +49,12 @@ fun PreCaptureUI(viewModel: PreCaptureViewModel) {
                     .zIndex(1f)
         ) {
             PreCaptureToolbar(
-                viewModel = viewModel,
-                expanded = true,
-                onCloseClick = { viewModel.closeFromToolbar() },
-                modifier =
-                    Modifier.onGloballyPositioned {
-                            val boundsInWindow = it.boundsInWindow()
-                            viewModel.updateToolbarBounds(
-                                Rect(
-                                    boundsInWindow.left.roundToInt(),
-                                    boundsInWindow.top.roundToInt(),
-                                    boundsInWindow.right.roundToInt(),
-                                    boundsInWindow.bottom.roundToInt(),
-                                )
-                            )
-                        }
-                        .graphicsLayer { alpha = viewModel.toolbarOpacity },
+                viewModel = viewModel.toolbarViewModel,
+                selectedCaptureType = viewModel.captureType,
+                selectedCaptureRegion = viewModel.captureRegion,
+                onCaptureTypeSelected = viewModel::updateCaptureType,
+                onCaptureRegionSelected = viewModel::updateCaptureRegion,
+                onCloseClick = viewModel::closeUi,
             )
         }
 
@@ -138,15 +123,18 @@ fun PreCaptureUI(viewModel: PreCaptureViewModel) {
                         buttonIcon = icon,
                         onRegionSelected = { regionBoxRect ->
                             viewModel.updateRegionBoxBounds(regionBoxRect)
-                            viewModel.updateToolbarOpacityForRegionBox(
+                            viewModel.toolbarViewModel.updateOpacityForRegionBox(
                                 isInteracting = false,
-                                regionBoxRect = regionBoxRect,
+                                regionBoxBounds = regionBoxRect,
+                            )
+                        },
+                        onInteractionStateChanged = { isInteracting ->
+                            viewModel.toolbarViewModel.updateOpacityForRegionBox(
+                                isInteracting = isInteracting,
+                                regionBoxBounds = viewModel.regionBox,
                             )
                         },
                         onCaptureClick = viewModel::beginCapture,
-                        onInteractionStateChanged = { isInteracting ->
-                            viewModel.updateToolbarOpacityForRegionBox(isInteracting)
-                        },
                     )
                 }
             }

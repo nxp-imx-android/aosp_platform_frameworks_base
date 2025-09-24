@@ -18,17 +18,13 @@ package com.android.systemui.screencapture.record.largescreen.ui.viewmodel
 
 import android.graphics.Bitmap
 import android.graphics.Rect
-import android.platform.test.annotations.DisableFlags
-import android.platform.test.annotations.EnableFlags
 import android.view.WindowManager
 import android.view.WindowMetrics
 import android.view.windowManager
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
-import com.android.internal.logging.uiEventLoggerFake
 import com.android.internal.util.ScreenshotRequest
 import com.android.internal.util.mockScreenshotHelper
-import com.android.systemui.Flags
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.kosmos.advanceTimeBy
 import com.android.systemui.kosmos.collectLastValue
@@ -36,8 +32,6 @@ import com.android.systemui.kosmos.runCurrent
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.lifecycle.activateIn
-import com.android.systemui.res.R
-import com.android.systemui.screencapture.ScreenCaptureEvent
 import com.android.systemui.screencapture.common.shared.model.LargeScreenCaptureUiParameters
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureUiState
 import com.android.systemui.screencapture.common.shared.model.largeScreenCaptureUiParameters
@@ -181,71 +175,6 @@ class PreCaptureViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    fun updateCaptureType_updatesSelectedCaptureTypeButtonViewModel() =
-        kosmos.runTest {
-            setupViewModel()
-
-            // Screenshot type is default selected
-            val (screenRecordButton, screenshotButton) = viewModel.captureTypeButtonViewModels
-            assertThat(screenRecordButton.isSelected).isFalse()
-            assertThat(screenshotButton.isSelected).isTrue()
-
-            viewModel.updateCaptureType(ScreenCaptureType.RECORDING)
-
-            val (screenRecordButton2, screenshotButton2) = viewModel.captureTypeButtonViewModels
-            assertThat(screenRecordButton2.isSelected).isTrue()
-            assertThat(screenshotButton2.isSelected).isFalse()
-        }
-
-    @Test
-    fun updateCaptureType_usesCorrectIconWhenSelected() =
-        kosmos.runTest {
-            setupViewModel()
-
-            val (screenRecordButton, screenshotButton) = viewModel.captureTypeButtonViewModels
-            assertThat(screenRecordButton.icon).isEqualTo(viewModel.icons?.screenRecord)
-            // Screenshot is selected by default.
-            assertThat(screenshotButton.icon).isEqualTo(viewModel.icons?.screenshotToolbar)
-
-            viewModel.updateCaptureType(ScreenCaptureType.RECORDING)
-
-            val (screenRecordButton2, screenshotButton2) = viewModel.captureTypeButtonViewModels
-            assertThat(screenRecordButton2.icon).isEqualTo(viewModel.icons?.screenRecord)
-            assertThat(screenshotButton2.icon)
-                .isEqualTo(viewModel.icons?.screenshotToolbarUnselected)
-        }
-
-    @Test
-    @EnableFlags(Flags.FLAG_LARGE_SCREEN_SCREENSHOT_APP_WINDOW)
-    fun updateCaptureRegion_updatesSelectedCaptureRegionButton() =
-        kosmos.runTest {
-            setupViewModel()
-
-            // Default region is fullscreen
-            val (appWindowButton, partialButton, fullscreenButton) =
-                viewModel.captureRegionButtonViewModels
-            assertThat(appWindowButton.isSelected).isFalse()
-            assertThat(partialButton.isSelected).isFalse()
-            assertThat(fullscreenButton.isSelected).isTrue()
-
-            viewModel.updateCaptureRegion(ScreenCaptureRegion.PARTIAL)
-
-            val (appWindowButton2, partialButton2, fullscreenButton2) =
-                viewModel.captureRegionButtonViewModels
-            assertThat(appWindowButton2.isSelected).isFalse()
-            assertThat(partialButton2.isSelected).isTrue()
-            assertThat(fullscreenButton2.isSelected).isFalse()
-
-            viewModel.updateCaptureRegion(ScreenCaptureRegion.APP_WINDOW)
-
-            val (appWindowButton3, partialButton3, fullscreenButton3) =
-                viewModel.captureRegionButtonViewModels
-            assertThat(appWindowButton3.isSelected).isTrue()
-            assertThat(partialButton3.isSelected).isFalse()
-            assertThat(fullscreenButton3.isSelected).isFalse()
-        }
-
-    @Test
     fun updateRegionBoxBounds_updatesState() =
         kosmos.runTest {
             setupViewModel()
@@ -367,82 +296,6 @@ class PreCaptureViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    @DisableFlags(Flags.FLAG_LARGE_SCREEN_SCREENSHOT_APP_WINDOW)
-    fun captureRegionButtonViewModels_excludesAppWindowWithFeatureDisabled() =
-        kosmos.runTest {
-            setupViewModel()
-
-            // TODO(b/430364500) Once a11y label is available, use it for a more robust assertion.
-            viewModel.updateCaptureRegion(ScreenCaptureRegion.APP_WINDOW)
-            assertThat(viewModel.captureRegionButtonViewModels.none { it.isSelected }).isTrue()
-        }
-
-    @Test
-    @EnableFlags(Flags.FLAG_LARGE_SCREEN_SCREENSHOT_APP_WINDOW)
-    fun captureRegionButtonViewModels_includesAppWindowWithFeatureEnabled() =
-        kosmos.runTest {
-            setupViewModel()
-
-            // TODO(b/430364500) Once a11y label is available, use it for a more robust assertion.
-            viewModel.updateCaptureRegion(ScreenCaptureRegion.APP_WINDOW)
-            assertThat(viewModel.captureRegionButtonViewModels.count { it.isSelected }).isEqualTo(1)
-        }
-
-    @Test
-    @EnableFlags(Flags.FLAG_LARGE_SCREEN_SCREENSHOT_APP_WINDOW)
-    fun captureRegionButtonViewModels_hasScreenshotContentDescriptions_byDefault() =
-        kosmos.runTest {
-            setupViewModel()
-
-            val (appWindowButton, partialButton, fullscreenButton) =
-                viewModel.captureRegionButtonViewModels
-
-            // Default capture type is SCREENSHOT.
-            assertThat(viewModel.captureType).isEqualTo(ScreenCaptureType.SCREENSHOT)
-            assertThat(appWindowButton.contentDescription)
-                .isEqualTo(
-                    context.getString(
-                        R.string.screen_capture_toolbar_app_window_button_screenshot_a11y
-                    )
-                )
-            assertThat(partialButton.contentDescription)
-                .isEqualTo(
-                    context.getString(R.string.screen_capture_toolbar_region_button_screenshot_a11y)
-                )
-            assertThat(fullscreenButton.contentDescription)
-                .isEqualTo(
-                    context.getString(
-                        R.string.screen_capture_toolbar_fullscreen_button_screenshot_a11y
-                    )
-                )
-        }
-
-    @Test
-    @EnableFlags(Flags.FLAG_LARGE_SCREEN_SCREENSHOT_APP_WINDOW)
-    fun captureRegionButtonViewModels_hasRecordContentDescriptions_whenCaptureTypeIsRecord() =
-        kosmos.runTest {
-            setupViewModel()
-
-            viewModel.updateCaptureType(ScreenCaptureType.RECORDING)
-
-            val (appWindowButton, partialButton, fullscreenButton) =
-                viewModel.captureRegionButtonViewModels
-
-            assertThat(appWindowButton.contentDescription)
-                .isEqualTo(
-                    context.getString(R.string.screen_capture_toolbar_app_window_button_record_a11y)
-                )
-            assertThat(partialButton.contentDescription)
-                .isEqualTo(
-                    context.getString(R.string.screen_capture_toolbar_region_button_record_a11y)
-                )
-            assertThat(fullscreenButton.contentDescription)
-                .isEqualTo(
-                    context.getString(R.string.screen_capture_toolbar_fullscreen_button_record_a11y)
-                )
-        }
-
-    @Test
     fun hideUi_updatesState() =
         kosmos.runTest {
             setupViewModel()
@@ -453,59 +306,12 @@ class PreCaptureViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    fun closeFromToolbar_dismissesWindow() =
+    fun closeUi_dismissesWindow() =
         kosmos.runTest {
             setupViewModel()
 
-            viewModel.closeFromToolbar()
+            viewModel.closeUi()
 
             assertUiClosed()
-        }
-
-    @Test
-    fun closeFromToolbar_logsEvent() =
-        kosmos.runTest {
-            setupViewModel()
-
-            viewModel.closeFromToolbar()
-
-            assertThat(uiEventLoggerFake.numLogs()).isEqualTo(1)
-            assertThat(uiEventLoggerFake.eventId(0))
-                .isEqualTo(
-                    ScreenCaptureEvent.SCREEN_CAPTURE_LARGE_SCREEN_CLOSE_UI_WITHOUT_CAPTURE.id
-                )
-        }
-
-    @Test
-    fun updateToolbarOpacityForRegionBox_isInteracting_opacityIsZero() =
-        kosmos.runTest {
-            setupViewModel()
-            viewModel.updateToolbarOpacityForRegionBox(isInteracting = true)
-
-            assertThat(viewModel.toolbarOpacity).isEqualTo(0f)
-        }
-
-    @Test
-    fun updateToolbarOpacityForRegionBox_notInteracting_noOverlap_opacityIsOne() =
-        kosmos.runTest {
-            setupViewModel()
-            viewModel.updateToolbarBounds(Rect(0, 0, 100, 100))
-            viewModel.updateRegionBoxBounds(Rect(200, 200, 300, 300))
-
-            viewModel.updateToolbarOpacityForRegionBox(isInteracting = false)
-
-            assertThat(viewModel.toolbarOpacity).isEqualTo(1f)
-        }
-
-    @Test
-    fun updateToolbarOpacityForRegionBox_notInteracting_overlap_opacityIsPoint15() =
-        kosmos.runTest {
-            setupViewModel()
-            viewModel.updateToolbarBounds(Rect(0, 0, 100, 100))
-            viewModel.updateRegionBoxBounds(Rect(50, 50, 150, 150))
-
-            viewModel.updateToolbarOpacityForRegionBox(isInteracting = false)
-
-            assertThat(viewModel.toolbarOpacity).isEqualTo(0.15f)
         }
 }
