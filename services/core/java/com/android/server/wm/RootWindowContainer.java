@@ -3085,16 +3085,18 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
 
     // Tries to put all activity tasks to sleep. Returns true if all tasks were
     // successfully put to sleep.
-    boolean putTasksToSleep(boolean allowDelay, boolean shuttingDown) {
+    boolean putTasksToSleep(boolean shuttingDown) {
         final boolean[] result = {true};
         forAllRootTasks(task -> {
-            if (allowDelay) {
-                result[0] &= task.goToSleepIfPossible(shuttingDown);
-            } else {
-                task.ensureActivitiesVisible(null /* starting */);
-            }
+            result[0] &= task.goToSleepIfPossible(shuttingDown);
         });
         return result[0];
+    }
+
+    void putTasksToSleepNow() {
+        forAllRootTasks(task -> {
+            task.ensureActivitiesVisible(null /* starting */);
+        });
     }
 
     ActivityRecord findActivity(Intent intent, ActivityInfo info, boolean compareIntentFilters) {
