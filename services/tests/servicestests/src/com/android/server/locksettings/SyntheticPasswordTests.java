@@ -93,7 +93,6 @@ public class SyntheticPasswordTests extends BaseLockSettingsServiceTests {
                 new MockSyntheticPasswordManager(
                         mContext,
                         mStorage,
-                        mGateKeeperService,
                         mUserManager,
                         mPasswordSlotManager,
                         mKeyStoreRule.getKeyStore());
@@ -120,7 +119,6 @@ public class SyntheticPasswordTests extends BaseLockSettingsServiceTests {
                 new MockSyntheticPasswordManager(
                         mContext,
                         mStorage,
-                        mGateKeeperService,
                         mUserManager,
                         mPasswordSlotManager,
                         mKeyStoreRule.getKeyStore());
@@ -697,7 +695,6 @@ public class SyntheticPasswordTests extends BaseLockSettingsServiceTests {
                 new MockSyntheticPasswordManager(
                         mContext,
                         mStorage,
-                        mGateKeeperService,
                         mUserManager,
                         mPasswordSlotManager,
                         mKeyStoreRule.getKeyStore());

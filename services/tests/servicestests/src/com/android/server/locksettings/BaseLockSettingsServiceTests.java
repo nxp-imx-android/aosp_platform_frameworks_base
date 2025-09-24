@@ -150,6 +150,8 @@ public abstract class BaseLockSettingsServiceTests {
         mStrongAuthTracker = mock(LockSettingsService.SynchronizedStrongAuthTracker.class);
         mInvalidateLockoutEndTimeCacheMock = mock(Runnable.class);
 
+        FakeKeyStore.setFakeGatekeeperService(mGateKeeperService);
+
         LocalServices.removeServiceForTest(LockSettingsInternal.class);
         LocalServices.removeServiceForTest(DevicePolicyManagerInternal.class);
         LocalServices.removeServiceForTest(WindowManagerInternal.class);
@@ -179,7 +181,6 @@ public abstract class BaseLockSettingsServiceTests {
                 new MockSyntheticPasswordManager(
                         mContext,
                         mStorage,
-                        mGateKeeperService,
                         mUserManager,
                         mPasswordSlotManager,
                         mKeyStoreRule.getKeyStore());

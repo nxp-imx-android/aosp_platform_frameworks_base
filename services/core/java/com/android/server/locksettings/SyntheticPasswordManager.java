@@ -1995,21 +1995,18 @@ class SyntheticPasswordManager {
         mStorage.deleteSyntheticPasswordState(userId, protectorId, stateName);
     }
 
-    @VisibleForTesting
-    protected byte[] decryptSpBlob(String protectorKeyAlias, byte[] blob, byte[] protectorSecret) {
+    private byte[] decryptSpBlob(String protectorKeyAlias, byte[] blob, byte[] protectorSecret) {
         return SyntheticPasswordCrypto.decryptBlob(
                 mKeyStore, protectorKeyAlias, blob, protectorSecret);
     }
 
-    @VisibleForTesting
-    protected byte[] createSpBlob(String protectorKeyAlias, byte[] data, byte[] protectorSecret,
-            long sid) {
+    private byte[] createSpBlob(
+            String protectorKeyAlias, byte[] data, byte[] protectorSecret, long sid) {
         return SyntheticPasswordCrypto.createBlob(
                 mKeyStore, protectorKeyAlias, data, protectorSecret, sid);
     }
 
-    @VisibleForTesting
-    protected void destroyProtectorKey(String keyAlias) {
+    private void destroyProtectorKey(String keyAlias) {
         SyntheticPasswordCrypto.destroyProtectorKey(mKeyStore, keyAlias);
     }
 
