@@ -42,6 +42,7 @@ import com.android.systemui.biometrics.AuthController;
 import com.android.systemui.dagger.SysUISingleton;
 import com.android.systemui.dagger.qualifiers.Application;
 import com.android.systemui.deviceentry.domain.interactor.DeviceEntryFingerprintAuthInteractor;
+import com.android.systemui.display.DisplayExtensionsKt;
 import com.android.systemui.doze.DozeHost;
 import com.android.systemui.doze.DozeLog;
 import com.android.systemui.doze.DozeReceiver;
@@ -437,6 +438,11 @@ public final class DozeServiceHost implements DozeHost {
     @Override
     public void onSlpiTap(float screenX, float screenY) {
         if (screenX < 0 || screenY < 0) return;
+        // Coordinates are reported in the highest resolution;
+        // scale the coordinates to the current resolution
+        float scaleFactor = DisplayExtensionsKt.getDisplayScaleFactor(mContext.getDisplay());
+        screenX *= scaleFactor;
+        screenY *= scaleFactor;
         dispatchTouchEventToAmbientIndicationContainer(screenX, screenY);
 
         mDozeInteractor.setLastTapToWakePosition(new Point((int) screenX, (int) screenY));
