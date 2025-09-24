@@ -381,12 +381,13 @@ public class DisplayModeDirector {
 
             if (modeSwitchingDisabled || primarySummary.disableRefreshRateSwitching) {
                 float fps = baseMode.getRefreshRate();
+                float vsyncRate = baseMode.getVsyncRate();
                 primarySummary.disableModeSwitching(fps);
                 if (modeSwitchingDisabled) {
                     appRequestSummary.disableModeSwitching(fps);
-                    primarySummary.disableRenderRateSwitching(fps);
+                    primarySummary.disableRenderRateSwitching(vsyncRate, fps);
                     if (mModeSwitchingType == DisplayManager.SWITCHING_TYPE_NONE) {
-                        appRequestSummary.disableRenderRateSwitching(fps);
+                        appRequestSummary.disableRenderRateSwitching(vsyncRate, fps);
                     }
                 }
             }
