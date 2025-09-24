@@ -166,6 +166,12 @@ class AppHeaderViewHolder(
         maximizeWindowButton.throttleFirstClicks(CLICK_DELAY) { v ->
             onCaptionButtonClickListener.onClick(v)
         }
+        minimizeWindowButton.throttleFirstClicks(CLICK_DELAY) { v ->
+            onCaptionButtonClickListener.onClick(v)
+        }
+        openMenuButton.throttleFirstClicks(CLICK_DELAY) { v ->
+            onCaptionButtonClickListener.onClick(v)
+        }
         maximizeWindowButton.setOnTouchListener(onCaptionTouchListener)
         maximizeWindowButton.setOnGenericMotionListener(onCaptionGenericMotionListener)
         maximizeWindowButton.onLongClickListener = onLongClickListener
