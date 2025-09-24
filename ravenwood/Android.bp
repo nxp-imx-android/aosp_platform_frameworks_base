@@ -600,7 +600,7 @@ android_ravenwood_libgroup {
         "ravenwood-junit-impl",
         "mockito-ravenwood-prebuilt",
         "framework-updatable-stubs-module_libs_api-for-host",
-        "all-updatable-modules-system-stubs-for-host",
+        "all-modules-system-stubs-for-host",
     ],
     jni_libs: [
         // Libraries has to be loaded in the following order
