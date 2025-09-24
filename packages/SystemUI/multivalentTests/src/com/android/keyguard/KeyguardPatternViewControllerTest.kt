@@ -192,7 +192,11 @@ class KeyguardPatternViewControllerTest : SysuiTestCase() {
         mKeyguardPatternViewController.onViewAttached()
         verify(mKeyguardMessageAreaController)
             .setMessage(context.resources.getString(R.string.keyguard_enter_your_pattern), false)
-        verify(mLockPatternUtils).getLockoutAttemptDeadline(anyInt())
+        if (android.security.Flags.manageLockoutEndTimeInService()) {
+            verify(mLockPatternUtils).getLockoutEndTime(anyInt())
+        } else {
+            verify(mLockPatternUtils).getLockoutAttemptDeadline(anyInt())
+        }
     }
 
     @Test
