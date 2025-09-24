@@ -499,7 +499,7 @@ public class NotificationRecordTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(com.android.server.notification.Flags.FLAG_NOTIFICATION_VIBRATION_IN_SOUND_URI)
+    @EnableFlags(Flags.FLAG_NOTIFICATION_VIBRATION_IN_SOUND_URI)
     public void testVibration_customVibrationForSound_withoutVibrationUri() {
         // prepare testing data
         Uri backupDefaultUri = RingtoneManager.getActualDefaultRingtoneUri(mMockContext,
@@ -527,8 +527,7 @@ public class NotificationRecordTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(com.android.server.notification.Flags
-            .FLAG_NOTIFICATION_VIBRATION_IN_SOUND_URI_FOR_CHANNEL)
+    @EnableFlags(Flags.FLAG_NOTIFICATION_VIBRATION_IN_SOUND_URI_FOR_CHANNEL)
     public void testVibration_customVibrationForSound_withVibrationUri() throws IOException {
         defaultChannel.enableVibration(true);
         VibrationInfo vibration = getTestingVibration(mVibrator);
@@ -542,6 +541,25 @@ public class NotificationRecordTest extends UiServiceTestCase {
         NotificationRecord record = new NotificationRecord(mMockContext, sbn, defaultChannel);
 
         assertEquals(vibration.mVibrationEffect, record.getVibration());
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_CHANNEL_VIBRATION_IGNORE_INVALID_PATTERN)
+    public void testVibration_invalidVibration_usesDefaultVibration() {
+        channel.setVibrationPattern(new long[0]);
+        channel.enableVibration(true);
+        Notification n = new Builder(mMockContext, channel.getId())
+                .setContentTitle("foo")
+                .setSmallIcon(android.R.drawable.sym_def_app_icon)
+                .setPriority(Notification.PRIORITY_HIGH)
+                .build();
+
+        NotificationRecord record = new NotificationRecord(mMockContext,
+                new StatusBarNotification(mPkg, mPkg, id1, tag1, uid, uid, n, mUser, null, uid),
+                channel);
+
+        assertThat(record.getVibration()).isEqualTo(
+                new VibratorHelper(mMockContext).createDefaultVibration(false));
     }
 
     @Test
