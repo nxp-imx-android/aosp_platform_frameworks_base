@@ -19,7 +19,6 @@ package com.android.server.locksettings;
 import android.security.AndroidKeyStoreMaintenance;
 import android.security.keystore.KeyProperties;
 import android.security.keystore.KeyProtection;
-import android.security.keystore2.AndroidKeyStoreLoadStoreParameter;
 import android.system.keystore2.Domain;
 import android.system.keystore2.KeyDescriptor;
 import android.text.TextUtils;
@@ -36,7 +35,6 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.security.UnrecoverableKeyException;
-import java.security.cert.CertificateException;
 import java.security.spec.InvalidParameterSpecException;
 import java.util.Arrays;
 
@@ -130,10 +128,9 @@ class SyntheticPasswordCrypto {
      * Decrypts a legacy SP blob which did the Keystore and software encryption layers in the wrong
      * order.
      */
-    public static byte[] decryptBlobV1(String protectorKeyAlias, byte[] blob,
-            byte[] protectorSecret) {
+    public static byte[] decryptBlobV1(
+            KeyStore keyStore, String protectorKeyAlias, byte[] blob, byte[] protectorSecret) {
         try {
-            KeyStore keyStore = getKeyStore();
             SecretKey protectorKey = (SecretKey) keyStore.getKey(protectorKeyAlias, null);
             if (protectorKey == null) {
                 throw new IllegalStateException("SP protector key is missing: "
@@ -155,21 +152,10 @@ class SyntheticPasswordCrypto {
         return KeyProperties.NAMESPACE_LOCKSETTINGS;
     }
 
-    static KeyStore getKeyStore()
-            throws KeyStoreException, CertificateException, NoSuchAlgorithmException, IOException {
-        KeyStore keyStore = KeyStore.getInstance(androidKeystoreProviderName());
-        keyStore.load(new AndroidKeyStoreLoadStoreParameter(keyNamespace()));
-        return keyStore;
-    }
-
-    /**
-     * Decrypts an SP blob that was created by {@link #createBlob}.
-     */
-    public static byte[] decryptBlob(String protectorKeyAlias, byte[] blob,
-            byte[] protectorSecret) {
+    /** Decrypts an SP blob that was created by {@link #createBlob}. */
+    public static byte[] decryptBlob(
+            KeyStore keyStore, String protectorKeyAlias, byte[] blob, byte[] protectorSecret) {
         try {
-            final KeyStore keyStore = getKeyStore();
-
             SecretKey protectorKey = (SecretKey) keyStore.getKey(protectorKeyAlias, null);
             if (protectorKey == null) {
                 throw new IllegalStateException("SP protector key is missing: "
@@ -177,10 +163,13 @@ class SyntheticPasswordCrypto {
             }
             byte[] intermediate = decrypt(protectorKey, blob);
             return decrypt(protectorSecret, PROTECTOR_SECRET_PERSONALIZATION, intermediate);
-        } catch (CertificateException | IOException | BadPaddingException
+        } catch (BadPaddingException
                 | IllegalBlockSizeException
-                | KeyStoreException | NoSuchPaddingException | NoSuchAlgorithmException
-                | InvalidKeyException | UnrecoverableKeyException
+                | KeyStoreException
+                | NoSuchPaddingException
+                | NoSuchAlgorithmException
+                | InvalidKeyException
+                | UnrecoverableKeyException
                 | InvalidAlgorithmParameterException e) {
             Slog.e(TAG, "Failed to decrypt blob", e);
             throw new IllegalStateException("Failed to decrypt blob", e);
@@ -188,23 +177,26 @@ class SyntheticPasswordCrypto {
     }
 
     /**
-     * Creates a new SP blob by encrypting the given data.  Two encryption layers are applied: an
+     * Creates a new SP blob by encrypting the given data. Two encryption layers are applied: an
      * inner layer using a hash of protectorSecret as the key, and an outer layer using the
-     * protector key, which is a Keystore key that is optionally bound to a SID.  This method
-     * creates the protector key and stores it under protectorKeyAlias.
+     * protector key, which is a Keystore key that is optionally bound to a SID. This method creates
+     * the protector key and stores it under protectorKeyAlias.
      *
-     * The reason we use a layer of software encryption, instead of using protectorSecret as the
+     * <p>The reason we use a layer of software encryption, instead of using protectorSecret as the
      * applicationId of the Keystore key, is to work around buggy KeyMint implementations that don't
-     * cryptographically bind the applicationId to the key.  The Keystore layer has to be the outer
+     * cryptographically bind the applicationId to the key. The Keystore layer has to be the outer
      * layer, so that LSKF verification is ratelimited by Gatekeeper when Weaver is unavailable.
      */
-    public static byte[] createBlob(String protectorKeyAlias, byte[] data, byte[] protectorSecret,
+    public static byte[] createBlob(
+            KeyStore keyStore,
+            String protectorKeyAlias,
+            byte[] data,
+            byte[] protectorSecret,
             long sid) {
         try {
             KeyGenerator keyGenerator = KeyGenerator.getInstance(KeyProperties.KEY_ALGORITHM_AES);
             keyGenerator.init(AES_GCM_KEY_SIZE * 8, new SecureRandom());
             SecretKey protectorKey = keyGenerator.generateKey();
-            final KeyStore keyStore = getKeyStore();
             KeyProtection.Builder builder = new KeyProtection.Builder(KeyProperties.PURPOSE_DECRYPT)
                     .setBlockModes(KeyProperties.BLOCK_MODE_GCM)
                     .setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_NONE)
@@ -229,9 +221,12 @@ class SyntheticPasswordCrypto {
 
             byte[] intermediate = encrypt(protectorSecret, PROTECTOR_SECRET_PERSONALIZATION, data);
             return encrypt(protectorKey, intermediate);
-        } catch (CertificateException | IOException | BadPaddingException
+        } catch (IOException
+                | BadPaddingException
                 | IllegalBlockSizeException
-                | KeyStoreException | NoSuchPaddingException | NoSuchAlgorithmException
+                | KeyStoreException
+                | NoSuchPaddingException
+                | NoSuchAlgorithmException
                 | InvalidKeyException
                 | InvalidParameterSpecException e) {
             Slog.e(TAG, "Failed to create blob", e);
@@ -239,14 +234,11 @@ class SyntheticPasswordCrypto {
         }
     }
 
-    public static void destroyProtectorKey(String keyAlias) {
-        KeyStore keyStore;
+    public static void destroyProtectorKey(KeyStore keyStore, String keyAlias) {
         try {
-            keyStore = getKeyStore();
             keyStore.deleteEntry(keyAlias);
             Slog.i(TAG, "Deleted SP protector key " + keyAlias);
-        } catch (KeyStoreException | NoSuchAlgorithmException | CertificateException
-                | IOException e) {
+        } catch (KeyStoreException e) {
             Slog.e(TAG, "Failed to delete SP protector key " + keyAlias, e);
         }
     }

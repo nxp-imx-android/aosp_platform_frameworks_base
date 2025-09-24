@@ -89,8 +89,14 @@ public class SyntheticPasswordTests extends BaseLockSettingsServiceTests {
     @Test
     public void testNoneLskfBasedProtector() throws RemoteException {
         final int USER_ID = 10;
-        MockSyntheticPasswordManager manager = new MockSyntheticPasswordManager(mContext, mStorage,
-                mGateKeeperService, mUserManager, mPasswordSlotManager);
+        MockSyntheticPasswordManager manager =
+                new MockSyntheticPasswordManager(
+                        mContext,
+                        mStorage,
+                        mGateKeeperService,
+                        mUserManager,
+                        mPasswordSlotManager,
+                        mKeyStoreRule.getKeyStore());
         SyntheticPassword sp = manager.newSyntheticPassword(USER_ID);
         assertFalse(lskfGatekeeperHandleExists(USER_ID));
         long protectorId = manager.createLskfBasedProtector(mGateKeeperService,
@@ -110,8 +116,14 @@ public class SyntheticPasswordTests extends BaseLockSettingsServiceTests {
         final int USER_ID = 10;
         final LockscreenCredential password = newPassword("user-password");
         final LockscreenCredential badPassword = newPassword("bad-password");
-        MockSyntheticPasswordManager manager = new MockSyntheticPasswordManager(mContext, mStorage,
-                mGateKeeperService, mUserManager, mPasswordSlotManager);
+        MockSyntheticPasswordManager manager =
+                new MockSyntheticPasswordManager(
+                        mContext,
+                        mStorage,
+                        mGateKeeperService,
+                        mUserManager,
+                        mPasswordSlotManager,
+                        mKeyStoreRule.getKeyStore());
         SyntheticPassword sp = manager.newSyntheticPassword(USER_ID);
         assertFalse(lskfGatekeeperHandleExists(USER_ID));
         long protectorId = manager.createLskfBasedProtector(mGateKeeperService, password, sp,
@@ -681,8 +693,14 @@ public class SyntheticPasswordTests extends BaseLockSettingsServiceTests {
     public void testStorePinLengthOnDisk() {
         int userId = 1;
         LockscreenCredential lockscreenCredentialPin = LockscreenCredential.createPin("123456");
-        MockSyntheticPasswordManager manager = new MockSyntheticPasswordManager(mContext, mStorage,
-                mGateKeeperService, mUserManager, mPasswordSlotManager);
+        MockSyntheticPasswordManager manager =
+                new MockSyntheticPasswordManager(
+                        mContext,
+                        mStorage,
+                        mGateKeeperService,
+                        mUserManager,
+                        mPasswordSlotManager,
+                        mKeyStoreRule.getKeyStore());
         SyntheticPassword sp = manager.newSyntheticPassword(userId);
         long protectorId = manager.createLskfBasedProtector(mGateKeeperService,
                 lockscreenCredentialPin, sp,

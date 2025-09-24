@@ -175,8 +175,14 @@ public abstract class BaseLockSettingsServiceTests {
             storageDir.mkdirs();
         }
 
-        mSpManager = new MockSyntheticPasswordManager(mContext, mStorage, mGateKeeperService,
-                mUserManager, mPasswordSlotManager);
+        mSpManager =
+                new MockSyntheticPasswordManager(
+                        mContext,
+                        mStorage,
+                        mGateKeeperService,
+                        mUserManager,
+                        mPasswordSlotManager,
+                        mKeyStoreRule.getKeyStore());
         mAuthSecretService = mock(IAuthSecret.class);
         mInjector =
                 new LockSettingsServiceTestable.MockInjector(

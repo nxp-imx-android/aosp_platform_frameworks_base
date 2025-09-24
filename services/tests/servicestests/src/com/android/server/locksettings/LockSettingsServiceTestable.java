@@ -139,7 +139,8 @@ public class LockSettingsServiceTestable extends LockSettingsService {
         }
 
         @Override
-        public SyntheticPasswordManager getSyntheticPasswordManager(LockSettingsStorage storage) {
+        public SyntheticPasswordManager getSyntheticPasswordManager(
+                LockSettingsStorage storage, KeyStore keyStore) {
             return mSpManager;
         }
 

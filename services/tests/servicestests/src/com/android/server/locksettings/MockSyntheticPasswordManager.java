@@ -26,6 +26,7 @@ import android.util.ArrayMap;
 import junit.framework.AssertionFailedError;
 
 import java.nio.ByteBuffer;
+import java.security.KeyStore;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 import java.time.Duration;
@@ -41,10 +42,14 @@ public class MockSyntheticPasswordManager extends SyntheticPasswordManager {
     private IWeaver mWeaverAidl;
     private android.hardware.weaver.V1_0.IWeaver mWeaverHidl;
 
-    public MockSyntheticPasswordManager(Context context, LockSettingsStorage storage,
-            FakeGateKeeperService gatekeeper, UserManager userManager,
-            PasswordSlotManager passwordSlotManager) {
-        super(context, storage, userManager, passwordSlotManager);
+    public MockSyntheticPasswordManager(
+            Context context,
+            LockSettingsStorage storage,
+            FakeGateKeeperService gatekeeper,
+            UserManager userManager,
+            PasswordSlotManager passwordSlotManager,
+            KeyStore keyStore) {
+        super(context, storage, userManager, passwordSlotManager, keyStore);
         mGateKeeper = gatekeeper;
     }
 

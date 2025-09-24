@@ -68,6 +68,7 @@ import libcore.util.HexEncoding;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.nio.ByteBuffer;
+import java.security.KeyStore;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.Collections;
@@ -541,18 +542,24 @@ class SyntheticPasswordManager {
     private volatile IWeaver mWeaver;
     private WeaverConfig mWeaverConfig;
     private PasswordSlotManager mPasswordSlotManager;
+    private final KeyStore mKeyStore;
 
     private final UserManager mUserManager;
 
     private final RemoteCallbackList<IWeakEscrowTokenRemovedListener> mListeners =
             new RemoteCallbackList<>();
 
-    public SyntheticPasswordManager(Context context, LockSettingsStorage storage,
-            UserManager userManager, PasswordSlotManager passwordSlotManager) {
+    SyntheticPasswordManager(
+            Context context,
+            LockSettingsStorage storage,
+            UserManager userManager,
+            PasswordSlotManager passwordSlotManager,
+            KeyStore keyStore) {
         mContext = context;
         mStorage = storage;
         mUserManager = userManager;
         mPasswordSlotManager = passwordSlotManager;
+        mKeyStore = keyStore;
     }
 
     private boolean isDeviceProvisioned() {
@@ -1705,8 +1712,12 @@ class SyntheticPasswordManager {
         }
         final byte[] spSecret;
         if (blob.mVersion == SYNTHETIC_PASSWORD_VERSION_V1) {
-            spSecret = SyntheticPasswordCrypto.decryptBlobV1(getProtectorKeyAlias(protectorId),
-                    blob.mContent, protectorSecret);
+            spSecret =
+                    SyntheticPasswordCrypto.decryptBlobV1(
+                            mKeyStore,
+                            getProtectorKeyAlias(protectorId),
+                            blob.mContent,
+                            protectorSecret);
         } else {
             spSecret = decryptSpBlob(getProtectorKeyAlias(protectorId), blob.mContent,
                     protectorSecret);
@@ -1986,18 +1997,20 @@ class SyntheticPasswordManager {
 
     @VisibleForTesting
     protected byte[] decryptSpBlob(String protectorKeyAlias, byte[] blob, byte[] protectorSecret) {
-        return SyntheticPasswordCrypto.decryptBlob(protectorKeyAlias, blob, protectorSecret);
+        return SyntheticPasswordCrypto.decryptBlob(
+                mKeyStore, protectorKeyAlias, blob, protectorSecret);
     }
 
     @VisibleForTesting
     protected byte[] createSpBlob(String protectorKeyAlias, byte[] data, byte[] protectorSecret,
             long sid) {
-        return SyntheticPasswordCrypto.createBlob(protectorKeyAlias, data, protectorSecret, sid);
+        return SyntheticPasswordCrypto.createBlob(
+                mKeyStore, protectorKeyAlias, data, protectorSecret, sid);
     }
 
     @VisibleForTesting
     protected void destroyProtectorKey(String keyAlias) {
-        SyntheticPasswordCrypto.destroyProtectorKey(keyAlias);
+        SyntheticPasswordCrypto.destroyProtectorKey(mKeyStore, keyAlias);
     }
 
     private static long generateProtectorId() {
