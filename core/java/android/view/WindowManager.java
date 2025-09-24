@@ -2678,8 +2678,7 @@ public interface WindowManager extends ViewManager {
          * @hide
          */
         public static boolean isSubWindowType(@WindowType int type) {
-            return (type >= FIRST_SUB_WINDOW && type <= LAST_SUB_WINDOW)
-                    || type == TYPE_STATUS_BAR_SUB_PANEL;
+            return (type >= FIRST_SUB_WINDOW && type <= LAST_SUB_WINDOW);
         }
 
         /** @deprecated this is ignored, this value is set automatically when needed. */
