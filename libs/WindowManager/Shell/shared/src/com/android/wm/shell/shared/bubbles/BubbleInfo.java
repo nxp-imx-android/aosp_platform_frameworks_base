@@ -51,11 +51,12 @@ public class BubbleInfo implements Parcelable {
     private final boolean mShowAppBadge;
     @Nullable
     private final ParcelableFlyoutMessage mParcelableFlyoutMessage;
+    private final boolean mIsApp;
 
     public BubbleInfo(String key, int flags, @Nullable String shortcutId, @Nullable Icon icon,
             int userId, String packageName, @Nullable String title, @Nullable String appName,
             boolean isImportantConversation, boolean showAppBadge,
-            @Nullable ParcelableFlyoutMessage flyoutMessage) {
+            @Nullable ParcelableFlyoutMessage flyoutMessage, boolean isApp) {
         mKey = key;
         mFlags = flags;
         mShortcutId = shortcutId;
@@ -67,6 +68,7 @@ public class BubbleInfo implements Parcelable {
         mIsImportantConversation = isImportantConversation;
         mShowAppBadge = showAppBadge;
         mParcelableFlyoutMessage = flyoutMessage;
+        mIsApp = isApp;
     }
 
     private BubbleInfo(Parcel source) {
@@ -82,6 +84,7 @@ public class BubbleInfo implements Parcelable {
         mShowAppBadge = source.readBoolean();
         mParcelableFlyoutMessage = source.readParcelable(
                 ParcelableFlyoutMessage.class.getClassLoader(), ParcelableFlyoutMessage.class);
+        mIsApp = source.readBoolean();
     }
 
     public String getKey() {
@@ -131,6 +134,10 @@ public class BubbleInfo implements Parcelable {
     @Nullable
     public ParcelableFlyoutMessage getParcelableFlyoutMessage() {
         return mParcelableFlyoutMessage;
+    }
+
+    public boolean isApp() {
+        return mIsApp;
     }
 
     /**
@@ -192,6 +199,7 @@ public class BubbleInfo implements Parcelable {
         parcel.writeBoolean(mIsImportantConversation);
         parcel.writeBoolean(mShowAppBadge);
         parcel.writeParcelable(mParcelableFlyoutMessage, flags);
+        parcel.writeBoolean(mIsApp);
     }
 
     @NonNull

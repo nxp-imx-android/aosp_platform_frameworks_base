@@ -492,7 +492,8 @@ public class Bubble implements BubbleViewProvider {
                 getAppName(),
                 isImportantConversation(),
                 showAppBadge(),
-                getParcelableFlyoutMessage());
+                getParcelableFlyoutMessage(),
+                isApp());
     }
 
     /** Creates a parcelable flyout message to send to launcher. */
