@@ -2080,7 +2080,7 @@ public abstract class OomAdjuster {
     /** Applies the computed oomadj, procstate and sched group values and freezes them in set* */
     @GuardedBy({"mService", "mProcLock"})
     protected boolean applyOomAdjLSP(ProcessRecordInternal state, boolean doingAll, long now,
-            long nowElapsed, @OomAdjReason int oomAdjReson, boolean isBatchingOomAdj) {
+            long nowElapsed, @OomAdjReason int oomAdjReason, boolean isBatchingOomAdj) {
         boolean success = true;
         final UidRecordInternal uidRec = state.getUidRecord();
 
@@ -2203,7 +2203,7 @@ public abstract class OomAdjuster {
             changes |= ActivityManagerService.ProcessChangeItem.CHANGE_ACTIVITIES;
         }
 
-        updateAppFreezeStateLSP(state, oomAdjReson, false, oldOomAdj);
+        updateAppFreezeStateLSP(state, oomAdjReason, false, oldOomAdj);
 
         if (state.getReportedProcState() != state.getCurProcState()) {
             state.setReportedProcState(state.getCurProcState());
