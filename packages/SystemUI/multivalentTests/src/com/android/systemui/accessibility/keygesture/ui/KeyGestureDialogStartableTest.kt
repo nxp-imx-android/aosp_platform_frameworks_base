@@ -41,6 +41,7 @@ import com.android.systemui.statusbar.phone.systemUIDialogFactory
 import com.android.systemui.testKosmosNew
 import com.google.common.truth.Truth.assertThat
 import org.junit.Before
+import org.junit.Ignore
 import org.junit.Test
 import org.junit.runner.RunWith
 
@@ -100,7 +101,7 @@ class KeyGestureDialogStartableTest : SysuiTestCase() {
             assertThat(underTest.currentDialog!!.isShowing).isTrue()
 
             // Then, we collect a flow for Screen reader.
-            sendIntentBroadcastForScreenReader()
+            sendIntentBroadcastForScreenReader(KeyGestureDialogInteractor.LAUNCH_DIALOG_ACTION)
 
             // Still show the Magnification dialog.
             assertThat(underTest.currentDialog!!.isShowing).isTrue()
@@ -210,7 +211,7 @@ class KeyGestureDialogStartableTest : SysuiTestCase() {
             val shortcutsRepository = kosmos.accessibilityShortcutsRepository
             underTest.start()
 
-            sendIntentBroadcastForScreenReader()
+            sendIntentBroadcastForScreenReader(KeyGestureDialogInteractor.LAUNCH_DIALOG_ACTION)
 
             assertThat(underTest.currentDialog!!.isShowing).isTrue()
             // Screen Reader dialog will create a `TtsPrompt`, so it shouldn't be null.
@@ -219,7 +220,57 @@ class KeyGestureDialogStartableTest : SysuiTestCase() {
             // dialog.
             // TODO: b/432568819 - Update the expected string here after we get the new tts text
             // from UXW to create the `TtsPrompt` for Screen Reader dialog in production code.
-            assertThat(shortcutsRepository.ttsText).isEqualTo("Screen Reader fakeContentText")
+            assertThat(shortcutsRepository.ttsText)
+                .isEqualTo("Press Action + Alt + T again to enable Screen Reader")
+            assertThat(shortcutsRepository.areShortcutsEnabled).isTrue()
+        }
+
+    @Test
+    @Ignore(
+        "b/432568819 - Add this unittest after ag/35100568, because we need to wait for the main thread idle to dismiss dialog"
+    )
+    fun start_screenReaderDialog_dismissDialog() =
+        kosmos.runTest {
+            underTest.start()
+            sendIntentBroadcastForScreenReader(KeyGestureDialogInteractor.LAUNCH_DIALOG_ACTION)
+            assertThat(underTest.currentDialog!!.isShowing).isTrue()
+            assertThat(underTest.dialogType)
+                .isEqualTo(KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_SCREEN_READER)
+
+            // While the Screen Reader dialog is showing, we received a dismissal request to dismiss
+            // it.
+            sendIntentBroadcastForScreenReader(KeyGestureDialogInteractor.DISMISS_DIALOG_ACTION)
+
+            assertThat(underTest.currentDialog).isNull()
+        }
+
+    @Test
+    fun start_magnificationDialog_receivedDismissScreenReaderDialogRequest_doNothing() =
+        kosmos.runTest {
+            underTest.start()
+            sendIntentBroadcastForMagnification()
+            assertThat(underTest.currentDialog!!.isShowing).isTrue()
+            assertThat(underTest.dialogType)
+                .isEqualTo(KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_MAGNIFICATION)
+
+            // While the Magnification dialog is showing, we received a dismissal request to dismiss
+            // it.
+            sendIntentBroadcastForScreenReader(KeyGestureDialogInteractor.DISMISS_DIALOG_ACTION)
+
+            // Because the current existing dialog type isn't Screen reader, so we will not dismiss
+            // it.
+            assertThat(underTest.currentDialog).isNotNull()
+        }
+
+    @Test
+    fun start_noExistingDialog_receivedDismissScreenReaderDialogRequest_doNothing() =
+        kosmos.runTest {
+            underTest.start()
+
+            // While there is no dialog, we received a dismissal request. It will do nothing.
+            sendIntentBroadcastForScreenReader(KeyGestureDialogInteractor.DISMISS_DIALOG_ACTION)
+
+            assertThat(underTest.currentDialog).isNull()
         }
 
     private fun sendIntentBroadcast(
@@ -228,10 +279,11 @@ class KeyGestureDialogStartableTest : SysuiTestCase() {
         keyCode: Int,
         targetName: String,
         displayId: Int,
+        intentAction: String = KeyGestureDialogInteractor.LAUNCH_DIALOG_ACTION,
     ) {
         val intent =
             Intent().apply {
-                action = KeyGestureDialogInteractor.ACTION
+                action = intentAction
                 putExtra(KeyGestureEventConstants.KEY_GESTURE_TYPE, keyGestureType)
                 putExtra(KeyGestureEventConstants.META_STATE, metaState)
                 putExtra(KeyGestureEventConstants.KEY_CODE, keyCode)
@@ -252,13 +304,14 @@ class KeyGestureDialogStartableTest : SysuiTestCase() {
         )
     }
 
-    private fun sendIntentBroadcastForScreenReader() {
+    private fun sendIntentBroadcastForScreenReader(intentAction: String) {
         sendIntentBroadcast(
             KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_SCREEN_READER,
             KeyEvent.META_META_ON or KeyEvent.META_ALT_ON,
             KeyEvent.KEYCODE_T,
             "targetNameForScreenReader",
             DEFAULT_DISPLAY,
+            intentAction,
         )
     }
 }

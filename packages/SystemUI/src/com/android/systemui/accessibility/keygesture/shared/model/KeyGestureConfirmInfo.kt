@@ -25,4 +25,5 @@ data class KeyGestureConfirmInfo(
     val targetName: String,
     @DrawableRes val actionKeyIconResId: Int,
     val displayId: Int,
+    val ttsText: CharSequence?,
 )

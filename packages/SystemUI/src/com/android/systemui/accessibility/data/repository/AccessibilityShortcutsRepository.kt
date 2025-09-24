@@ -31,6 +31,7 @@ import com.android.hardware.input.Flags
 import com.android.internal.accessibility.common.ShortcutConstants
 import com.android.internal.accessibility.util.FrameworkObjectProvider
 import com.android.internal.accessibility.util.TtsPrompt
+import com.android.systemui.accessibility.keygesture.shared.model.KeyGestureConfirmInfo
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Background
@@ -44,14 +45,13 @@ import kotlinx.coroutines.withContext
 
 /** Provides data related to first-time dialog for key gesture to enable accessibility services. */
 interface AccessibilityShortcutsRepository {
-    suspend fun getTitleToContentForKeyGestureDialog(
+    suspend fun getKeyGestureConfirmInfo(
         keyGestureType: Int,
         metaState: Int,
         keyCode: Int,
         targetName: String,
-    ): Pair<String, CharSequence>?
-
-    fun getActionKeyIconResId(): Int
+        displayId: Int,
+    ): KeyGestureConfirmInfo?
 
     fun createTtsPromptForText(text: CharSequence): TtsPrompt
 
@@ -83,12 +83,13 @@ constructor(
             KeyEvent.KEYCODE_V to "V",
         )
 
-    override suspend fun getTitleToContentForKeyGestureDialog(
+    override suspend fun getKeyGestureConfirmInfo(
         keyGestureType: Int,
         metaState: Int,
         keyCode: Int,
         targetName: String,
-    ): Pair<String, CharSequence>? {
+        displayId: Int,
+    ): KeyGestureConfirmInfo? {
         // TODO: b/419026315 - Update the secondary modifier key label.
         val secondaryModifierLabel =
             ShortcutHelperKeys.modifierLabels[MODIFIER_KEY xor metaState] ?: return null
@@ -108,7 +109,27 @@ constructor(
                         featureName,
                     ) ?: return null
 
-                return Pair(title, content)
+                val ttsText =
+                    if (keyGestureType == KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_SCREEN_READER) {
+                        resources.getString(
+                            R.string.accessibility_key_gesture_dialog_screen_reader_tts,
+                            secondaryModifierLabel.invoke(context),
+                            keyCodeLabel,
+                            featureName,
+                        )
+                    } else {
+                        null
+                    }
+
+                return KeyGestureConfirmInfo(
+                    keyGestureType,
+                    title,
+                    content,
+                    targetName,
+                    getActionKeyIconResId(),
+                    displayId,
+                    ttsText,
+                )
             }
             else -> {
                 val featureNameToIntro =
@@ -127,14 +148,17 @@ constructor(
                         featureNameToIntro.second,
                     )
 
-                return Pair(title, content)
+                return KeyGestureConfirmInfo(
+                    keyGestureType,
+                    title,
+                    content,
+                    targetName,
+                    getActionKeyIconResId(),
+                    displayId,
+                    null,
+                )
             }
         }
-    }
-
-    override fun getActionKeyIconResId(): Int {
-        // TODO: b/419026315 - Update the modifier key icon res id based on keyboard device.
-        return ShortcutHelperKeys.metaModifierIconResId
     }
 
     override fun createTtsPromptForText(text: CharSequence): TtsPrompt {
@@ -261,5 +285,10 @@ constructor(
     private fun formatFeatureName(label: CharSequence): CharSequence {
         val locale = context.resources.configuration.getLocales().get(0)
         return BidiFormatter.getInstance(locale).unicodeWrap(label)
+    }
+
+    private fun getActionKeyIconResId(): Int {
+        // TODO: b/419026315 - Update the modifier key icon res id based on keyboard device.
+        return ShortcutHelperKeys.metaModifierIconResId
     }
 }

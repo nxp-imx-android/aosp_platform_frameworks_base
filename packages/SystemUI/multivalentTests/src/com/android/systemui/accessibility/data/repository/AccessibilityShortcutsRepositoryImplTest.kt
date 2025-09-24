@@ -30,6 +30,7 @@ import android.platform.test.annotations.EnableFlags
 import android.platform.test.flag.junit.SetFlagsRule
 import android.text.Annotation
 import android.text.Spanned
+import android.view.Display.DEFAULT_DISPLAY
 import android.view.KeyEvent
 import android.view.accessibility.AccessibilityManager
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -88,42 +89,44 @@ class AccessibilityShortcutsRepositoryImplTest : SysuiTestCase() {
     }
 
     @Test
-    fun getTitleToContentForKeyGestureDialog_nonExistTypeReceived_isNull() {
+    fun getKeyGestureConfirmInfo_nonExistTypeReceived_isNull() {
         testScope.runTest {
             // Just test a random non-accessibility service type
-            val titleToContent =
-                underTest.getTitleToContentForKeyGestureDialog(
+            val info =
+                underTest.getKeyGestureConfirmInfo(
                     KeyGestureEvent.KEY_GESTURE_TYPE_HOME,
                     0,
                     0,
                     "empty",
+                    DEFAULT_DISPLAY,
                 )
 
-            assertThat(titleToContent).isNull()
+            assertThat(info).isNull()
         }
     }
 
     @EnableFlags(Flags.FLAG_ENABLE_MAGNIFY_MAGNIFICATION_KEY_GESTURE_DIALOG)
     @Test
-    fun getTitleToContentForKeyGestureDialog_onMagnificationTypeReceived_doNotEnableShortcut_getExpectedInfo() {
+    fun getKeyGestureConfirmInfo_onMagnificationTypeReceived_doNotEnableShortcut_getExpectedInfo() {
         testScope.runTest {
             val metaState = KeyEvent.META_META_ON or KeyEvent.META_ALT_ON
 
-            val titleToContent =
-                underTest.getTitleToContentForKeyGestureDialog(
+            val info =
+                underTest.getKeyGestureConfirmInfo(
                     KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_MAGNIFICATION,
                     metaState,
                     KeyEvent.KEYCODE_M,
                     getTargetNameByType(KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_MAGNIFICATION),
+                    DEFAULT_DISPLAY,
                 )
 
-            assertThat(titleToContent).isNotNull()
-            assertThat(titleToContent?.first).isEqualTo("Magnification keyboard shortcut turned on")
-            val contentText = titleToContent?.second
+            assertThat(info).isNotNull()
+            assertThat(info!!.title).isEqualTo("Magnification keyboard shortcut turned on")
+            val contentText = info.contentText
             assertThat(hasExpectedAnnotation(contentText)).isTrue()
             // `contentText` here is an instance of SpannableStringBuilder, so we only need to
             // compare its value here.
-            assertThat(contentText?.toString())
+            assertThat(contentText.toString())
                 .isEqualTo(
                     "Action icon + Alt + M is the keyboard shortcut to use Magnification, an" +
                         " accessibility feature. This allows you to quickly zoom in on the screen" +
@@ -135,25 +138,26 @@ class AccessibilityShortcutsRepositoryImplTest : SysuiTestCase() {
 
     @DisableFlags(Flags.FLAG_ENABLE_MAGNIFY_MAGNIFICATION_KEY_GESTURE_DIALOG)
     @Test
-    fun getTitleToContentForKeyGestureDialog_onMagnificationTypeReceived_enableShortcut_getExpectedInfo() {
+    fun getKeyGestureConfirmInfo_onMagnificationTypeReceived_enableShortcut_getExpectedInfo() {
         testScope.runTest {
             val metaState = KeyEvent.META_META_ON or KeyEvent.META_ALT_ON
 
-            val titleToContent =
-                underTest.getTitleToContentForKeyGestureDialog(
+            val info =
+                underTest.getKeyGestureConfirmInfo(
                     KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_MAGNIFICATION,
                     metaState,
                     KeyEvent.KEYCODE_M,
                     getTargetNameByType(KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_MAGNIFICATION),
+                    DEFAULT_DISPLAY,
                 )
 
-            assertThat(titleToContent).isNotNull()
-            assertThat(titleToContent?.first).isEqualTo("Turn on Magnification keyboard shortcut?")
-            val contentText = titleToContent?.second
+            assertThat(info).isNotNull()
+            assertThat(info!!.title).isEqualTo("Turn on Magnification keyboard shortcut?")
+            val contentText = info.contentText
             assertThat(hasExpectedAnnotation(contentText)).isTrue()
             // `contentText` here is an instance of SpannableStringBuilder, so we only need to
             // compare its value here.
-            assertThat(contentText?.toString())
+            assertThat(contentText.toString())
                 .isEqualTo(
                     "Action icon + Alt + M is the keyboard shortcut to use Magnification, an" +
                         " accessibility feature. This allows you to quickly zoom in on the screen" +
@@ -164,27 +168,28 @@ class AccessibilityShortcutsRepositoryImplTest : SysuiTestCase() {
     }
 
     @Test
-    fun getTitleToContentForKeyGestureDialog_serviceUninstalled_isNull() {
+    fun getKeyGestureConfirmInfo_serviceUninstalled_isNull() {
         testScope.runTest {
             val metaState = KeyEvent.META_META_ON or KeyEvent.META_ALT_ON
             // If voice access isn't installed on device.
             whenever(accessibilityManager.getInstalledServiceInfoWithComponentName(anyOrNull()))
                 .thenReturn(null)
 
-            val titleToContent =
-                underTest.getTitleToContentForKeyGestureDialog(
+            val info =
+                underTest.getKeyGestureConfirmInfo(
                     KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_VOICE_ACCESS,
                     metaState,
                     KeyEvent.KEYCODE_V,
                     getTargetNameByType(KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_VOICE_ACCESS),
+                    DEFAULT_DISPLAY,
                 )
 
-            assertThat(titleToContent).isNull()
+            assertThat(info).isNull()
         }
     }
 
     @Test
-    fun getTitleToContentForKeyGestureDialog_onVoiceAccessTypeReceived_getExpectedInfo() {
+    fun getKeyGestureConfirmInfo_onVoiceAccessTypeReceived_getExpectedInfo() {
         testScope.runTest {
             val metaState = KeyEvent.META_META_ON or KeyEvent.META_ALT_ON
             val type = KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_VOICE_ACCESS
@@ -197,21 +202,22 @@ class AccessibilityShortcutsRepositoryImplTest : SysuiTestCase() {
                 )
                 .thenReturn(a11yServiceInfo)
 
-            val titleToContent =
-                underTest.getTitleToContentForKeyGestureDialog(
+            val info =
+                underTest.getKeyGestureConfirmInfo(
                     type,
                     metaState,
                     KeyEvent.KEYCODE_V,
                     getTargetNameByType(type),
+                    DEFAULT_DISPLAY,
                 )
 
-            assertThat(titleToContent).isNotNull()
-            assertThat(titleToContent?.first).isEqualTo("Turn on Voice Access keyboard shortcut?")
-            val contentText = titleToContent?.second
+            assertThat(info).isNotNull()
+            assertThat(info!!.title).isEqualTo("Turn on Voice Access keyboard shortcut?")
+            val contentText = info.contentText
             assertThat(hasExpectedAnnotation(contentText)).isTrue()
             // The intro should be the string below instead of the intro from
             // AccessibilityServiceInfo.
-            assertThat(contentText?.toString())
+            assertThat(contentText.toString())
                 .isEqualTo(
                     "Pressing Action icon + Alt + V turns on Voice Access, an accessibility" +
                         " feature. This lets you control your device hands-free."
@@ -233,21 +239,22 @@ class AccessibilityShortcutsRepositoryImplTest : SysuiTestCase() {
                 )
                 .thenReturn(a11yServiceInfo)
 
-            val titleToContent =
-                underTest.getTitleToContentForKeyGestureDialog(
+            val info =
+                underTest.getKeyGestureConfirmInfo(
                     type,
                     metaState,
                     KeyEvent.KEYCODE_T,
                     getTargetNameByType(type),
+                    DEFAULT_DISPLAY,
                 )
 
-            assertThat(titleToContent).isNotNull()
-            assertThat(titleToContent?.first).isEqualTo("Turn on TalkBack keyboard shortcut?")
-            val contentText = titleToContent?.second
+            assertThat(info).isNotNull()
+            assertThat(info!!.title).isEqualTo("Turn on TalkBack keyboard shortcut?")
+            val contentText = info.contentText
             assertThat(hasExpectedAnnotation(contentText)).isTrue()
             // The intro should be the string below instead of the intro from
             // AccessibilityServiceInfo.
-            assertThat(contentText?.toString())
+            assertThat(contentText.toString())
                 .isEqualTo(
                     "Action icon + Alt + T is the keyboard shortcut to use TalkBack. TalkBack is a" +
                         " screen reader that allows you to hear items spoken aloud. It can be" +

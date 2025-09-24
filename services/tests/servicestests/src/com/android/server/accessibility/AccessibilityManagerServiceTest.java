@@ -42,6 +42,7 @@ import static com.android.internal.accessibility.common.ShortcutConstants.UserSh
 import static com.android.internal.accessibility.dialog.AccessibilityButtonChooserActivity.EXTRA_TYPE_TO_CHOOSE;
 import static com.android.server.accessibility.AccessibilityManagerService.ACTION_LAUNCH_HEARING_DEVICES_DIALOG;
 import static com.android.server.accessibility.AccessibilityManagerService.ACTION_LAUNCH_KEY_GESTURE_CONFIRM_DIALOG;
+import static com.android.server.accessibility.AccessibilityManagerService.ACTION_DISMISS_KEY_GESTURE_CONFIRM_DIALOG;
 
 import static com.google.common.truth.Truth.assertThat;
 
@@ -2438,7 +2439,6 @@ public class AccessibilityManagerServiceTest {
     @Test
     @EnableFlags(com.android.hardware.input.Flags.FLAG_ENABLE_TALKBACK_KEY_GESTURES)
     public void handleKeyGestureEvent_activateTalkBack_trustedService() {
-        setupAccessibilityServiceConnection(FLAG_REQUEST_ACCESSIBILITY_BUTTON);
         mFakePermissionEnforcer.grant(Manifest.permission.MANAGE_ACCESSIBILITY);
 
         final AccessibilityServiceInfo trustedService = mockAccessibilityServiceInfo(
@@ -2467,6 +2467,53 @@ public class AccessibilityManagerServiceTest {
                 .sendBroadcastAsUser(intentCaptor.capture(), eq(UserHandle.SYSTEM));
         assertThat(intentCaptor.getValue().getAction())
                 .isEqualTo(ACTION_LAUNCH_KEY_GESTURE_CONFIRM_DIALOG);
+        assertThat(
+                        intentCaptor
+                                .getValue()
+                                .getIntExtra(KeyGestureEventConstants.KEY_GESTURE_TYPE, 0))
+                .isEqualTo(KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_SCREEN_READER);
+    }
+
+    @Test
+    @EnableFlags(com.android.hardware.input.Flags.FLAG_ENABLE_TALKBACK_KEY_GESTURES)
+    public void handleKeyGestureEvent_afterTalkBackEnabled_sendDismissDialog_trustedService() {
+        mFakePermissionEnforcer.grant(Manifest.permission.MANAGE_ACCESSIBILITY);
+        final AccessibilityServiceInfo trustedService =
+                mockAccessibilityServiceInfo(
+                        new ComponentName("package_a", "class_a"),
+                        /* isSystemApp= */ true,
+                        /* isAlwaysOnService= */ true);
+        final String targetName = trustedService.getComponentName().flattenToString();
+        AccessibilityUserState userState = mA11yms.getCurrentUserState();
+        userState.mInstalledServices.add(trustedService);
+        mTestableContext
+                .getOrCreateTestableResources()
+                .addOverride(R.string.config_defaultAccessibilityService, targetName);
+        mTestableContext
+                .getOrCreateTestableResources()
+                .addOverride(
+                        R.array.config_trustedAccessibilityServices, new String[] {targetName});
+        // In production code, we enable shortcut in SysUi. For test here, we assume it already
+        // enabled before the second-time pressing "Action + Alt + T".
+        userState.updateShortcutTargetsLocked(Set.of(targetName), KEY_GESTURE);
+        mTestableLooper.processAllMessages();
+        assertThat(
+                        mA11yms.getAccessibilityShortcutTargets(
+                                KEY_GESTURE, mA11yms.getCurrentUserIdLocked()))
+                .containsExactly(targetName);
+
+        // Simulate the second-time pressing "Action + Alt + T"
+        sendKeyGestureEventComplete(
+                KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_SCREEN_READER,
+                KeyEvent.META_META_ON | KeyEvent.META_ALT_ON,
+                KeyEvent.KEYCODE_T);
+
+        // Send the expected broadcast for dismissing the system ui dialog
+        ArgumentCaptor<Intent> intentCaptor = ArgumentCaptor.forClass(Intent.class);
+        verify(mTestableContext.getMockContext())
+                .sendBroadcastAsUser(intentCaptor.capture(), eq(UserHandle.SYSTEM));
+        assertThat(intentCaptor.getValue().getAction())
+                .isEqualTo(ACTION_DISMISS_KEY_GESTURE_CONFIRM_DIALOG);
         assertThat(
                         intentCaptor
                                 .getValue()

@@ -65,7 +65,7 @@ class KeyGestureDialogInteractorTest : SysuiTestCase() {
     fun enableShortcutsForTargets_enabledShortcutsForFakeTarget() {
         val enabledTargetName = "fakeTargetName"
 
-        underTest.enableShortcutsForTargets(/* enable= */ true, enabledTargetName)
+        underTest.enableShortcutsForTargets(enable = true, enabledTargetName)
 
         verify(mockRepository).enableShortcutsForTargets(eq(true), eq(enabledTargetName))
     }
@@ -92,7 +92,7 @@ class KeyGestureDialogInteractorTest : SysuiTestCase() {
             )
             runCurrent()
 
-            assertThat(keyGestureConfirmInfo).isNull()
+            assertThat(keyGestureConfirmInfo?.second).isNull()
         }
     }
 
@@ -111,7 +111,7 @@ class KeyGestureDialogInteractorTest : SysuiTestCase() {
             )
             runCurrent()
 
-            assertThat(keyGestureConfirmInfo).isNull()
+            assertThat(keyGestureConfirmInfo?.second).isNull()
         }
     }
 
@@ -130,7 +130,7 @@ class KeyGestureDialogInteractorTest : SysuiTestCase() {
             )
             runCurrent()
 
-            assertThat(keyGestureConfirmInfo).isNull()
+            assertThat(keyGestureConfirmInfo?.second).isNull()
         }
     }
 
@@ -149,7 +149,7 @@ class KeyGestureDialogInteractorTest : SysuiTestCase() {
             )
             runCurrent()
 
-            assertThat(keyGestureConfirmInfo).isNull()
+            assertThat(keyGestureConfirmInfo?.second).isNull()
         }
     }
 
@@ -168,7 +168,7 @@ class KeyGestureDialogInteractorTest : SysuiTestCase() {
             )
             runCurrent()
 
-            assertThat(keyGestureConfirmInfo).isNull()
+            assertThat(keyGestureConfirmInfo?.second).isNull()
         }
     }
 
@@ -186,11 +186,12 @@ class KeyGestureDialogInteractorTest : SysuiTestCase() {
             runCurrent()
 
             verify(mockRepository)
-                .getTitleToContentForKeyGestureDialog(
+                .getKeyGestureConfirmInfo(
                     eq(keyGestureType),
                     eq(metaState),
                     eq(keyCode),
                     eq(testTargetName),
+                    eq(DEFAULT_DISPLAY),
                 )
         }
     }
@@ -204,7 +205,7 @@ class KeyGestureDialogInteractorTest : SysuiTestCase() {
     ) {
         val intent =
             Intent().apply {
-                action = KeyGestureDialogInteractor.ACTION
+                action = KeyGestureDialogInteractor.LAUNCH_DIALOG_ACTION
                 putExtra(KeyGestureEventConstants.KEY_GESTURE_TYPE, keyGestureType)
                 putExtra(KeyGestureEventConstants.META_STATE, metaState)
                 putExtra(KeyGestureEventConstants.KEY_CODE, keyCode)

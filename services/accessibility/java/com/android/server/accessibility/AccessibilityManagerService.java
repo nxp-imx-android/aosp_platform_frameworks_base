@@ -292,6 +292,10 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
     static final String ACTION_LAUNCH_KEY_GESTURE_CONFIRM_DIALOG =
             "com.android.systemui.action.LAUNCH_KEY_GESTURE_CONFIRM_DIALOG";
 
+    @VisibleForTesting
+    static final String ACTION_DISMISS_KEY_GESTURE_CONFIRM_DIALOG =
+            "com.android.systemui.action.DISMISS_KEY_GESTURE_CONFIRM_DIALOG";
+
     private static final char COMPONENT_NAME_SEPARATOR = ':';
 
     private static final int OWN_PROCESS_ID = android.os.Process.myPid();
@@ -843,12 +847,43 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
             }
             // Launch a systemui dialog to confirm enabling the service and to activate the first
             // time.
-            launchKeyGestureConfirmDialog(
-                    gestureType, event.getModifierState(), keyCodes[0], targetName, displayId);
+            processKeyGestureConfirmDialog(
+                    ACTION_LAUNCH_KEY_GESTURE_CONFIRM_DIALOG,
+                    gestureType,
+                    event.getModifierState(),
+                    keyCodes[0],
+                    targetName,
+                    displayId);
             return;
         }
 
         performAccessibilityShortcutInternal(displayId, KEY_GESTURE, targetName);
+
+        // The user is expected to trigger the screen reader shortcut a second time, while the
+        // dialog is already visible, in order to hide the dialog and enable the screen reader.
+        // Therefore, for the screen reader shortcut we need to send another broadcast to SysUI for
+        // this subsequent trigger (even though the shortcut is already set up) which SysUI will use
+        // to instead dismiss the dialog.
+        if (gestureType == KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_SCREEN_READER) {
+            // For the key gesture types above, there is one and only one keyCode.
+            int[] keyCodes = event.getKeycodes();
+            if (keyCodes.length != 1) {
+                Slog.w(
+                        LOG_TAG,
+                        "Can't continue launching the dialog, because there should be one"
+                                + " and only one keyCode for the gesture type instead of "
+                                + keyCodes.length);
+                return;
+            }
+
+            processKeyGestureConfirmDialog(
+                    ACTION_DISMISS_KEY_GESTURE_CONFIRM_DIALOG,
+                    gestureType,
+                    event.getModifierState(),
+                    keyCodes[0],
+                    targetName,
+                    displayId);
+        }
     }
 
     @Override
@@ -2626,13 +2661,14 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
         mContext.sendBroadcastAsUser(intent, UserHandle.SYSTEM);
     }
 
-    private void launchKeyGestureConfirmDialog(
+    private void processKeyGestureConfirmDialog(
+            String intentAction,
             @KeyGestureEvent.KeyGestureType int type,
             int metaState,
             int keyCode,
             String targetName,
             int displayId) {
-        final Intent intent = new Intent(ACTION_LAUNCH_KEY_GESTURE_CONFIRM_DIALOG);
+        final Intent intent = new Intent(intentAction);
         intent.setFlags(Intent.FLAG_RECEIVER_FOREGROUND);
         intent.setPackage(mContext.getString(com.android.internal.R.string.config_systemUi));
         intent.putExtra(KeyGestureEventConstants.KEY_GESTURE_TYPE, type);
