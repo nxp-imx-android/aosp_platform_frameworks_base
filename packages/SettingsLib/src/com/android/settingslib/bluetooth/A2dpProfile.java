@@ -329,11 +329,8 @@ public class A2dpProfile implements LocalBluetoothProfile {
            case BluetoothCodecConfig.SOURCE_CODEC_TYPE_LDAC:
                index = 5;
                break;
-            case BluetoothCodecConfig.SOURCE_CODEC_TYPE_LC3:
-                index = 6;
-                break;
             case BluetoothCodecConfig.SOURCE_CODEC_TYPE_OPUS:
-                index = 7;
+                index = 6;
                 break;
            }
 
