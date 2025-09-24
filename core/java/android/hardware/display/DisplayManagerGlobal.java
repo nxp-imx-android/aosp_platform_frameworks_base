@@ -1867,7 +1867,8 @@ public final class DisplayManagerGlobal {
         }
     }
 
-    private static String eventsToString(int eventMask) {
+    /** Converts an event mask to a string. */
+    public static String eventsToString(int eventMask) {
         if (eventMask == 0) {
             return "NONE";
         }
