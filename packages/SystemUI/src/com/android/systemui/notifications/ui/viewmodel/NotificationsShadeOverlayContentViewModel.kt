@@ -37,10 +37,10 @@ import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.shade.domain.interactor.ShadeInteractor
 import com.android.systemui.shade.domain.interactor.ShadeModeInteractor
+import com.android.systemui.shade.domain.interactor.ShadeStatusBarComponentsInteractor
 import com.android.systemui.shade.shared.model.ShadeMode
 import com.android.systemui.shade.ui.viewmodel.ShadeHeaderViewModel
 import com.android.systemui.statusbar.core.StatusBarForDesktop
-import com.android.systemui.statusbar.disableflags.domain.interactor.DisableFlagsInteractor
 import com.android.systemui.statusbar.notification.stack.ui.viewmodel.NotificationsPlaceholderViewModel
 import com.android.systemui.utils.coroutines.flow.flatMapLatestConflated
 import com.android.systemui.window.domain.interactor.WindowRootViewBlurInteractor
@@ -72,11 +72,11 @@ constructor(
     val sceneInteractor: SceneInteractor,
     private val shadeInteractor: ShadeInteractor,
     private val shadeModeInteractor: ShadeModeInteractor,
-    disableFlagsInteractor: DisableFlagsInteractor,
     private val mediaCarouselInteractor: MediaCarouselInteractor,
     val mediaViewModelFactory: MediaViewModel.Factory,
     private val blurConfig: BlurConfig,
     windowRootViewBlurInteractor: WindowRootViewBlurInteractor,
+    shadeStatusBarComponentsInteractor: ShadeStatusBarComponentsInteractor,
 ) : ExclusiveActivatable() {
 
     private val hydrator = Hydrator("NotificationsShadeOverlayContentViewModel.hydrator")
@@ -100,10 +100,10 @@ constructor(
         hydrator.hydratedStateOf(
             traceName = "showMedia",
             initialValue =
-                disableFlagsInteractor.disableFlags.value.isQuickSettingsEnabled() &&
+                shadeStatusBarComponentsInteractor.disableFlags.value.isQuickSettingsEnabled() &&
                     mediaCarouselInteractor.hasActiveMedia.value,
             source =
-                disableFlagsInteractor.disableFlags.flatMapLatestConflated {
+                shadeStatusBarComponentsInteractor.disableFlags.flatMapLatestConflated {
                     if (it.isQuickSettingsEnabled()) {
                         mediaCarouselInteractor.hasActiveMedia
                     } else {

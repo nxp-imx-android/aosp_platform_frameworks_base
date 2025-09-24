@@ -70,11 +70,11 @@ import com.android.systemui.res.R
 import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.shade.LargeScreenHeaderHelper
 import com.android.systemui.shade.ShadeDisplayAware
+import com.android.systemui.shade.domain.interactor.ShadeStatusBarComponentsInteractor
 import com.android.systemui.shade.transition.LargeScreenShadeInterpolator
 import com.android.systemui.statusbar.StatusBarState
 import com.android.systemui.statusbar.SysuiStatusBarStateController
 import com.android.systemui.statusbar.disableflags.data.repository.DisableFlagsRepository
-import com.android.systemui.statusbar.disableflags.domain.interactor.DisableFlagsInteractor
 import com.android.systemui.util.LargeScreenUtils
 import com.android.systemui.util.asIndenting
 import com.android.systemui.util.kotlin.emitOnStart
@@ -106,7 +106,6 @@ constructor(
     private val footerActionsController: FooterActionsController,
     private val sysuiStatusBarStateController: SysuiStatusBarStateController,
     deviceEntryBypassInteractor: DeviceEntryBypassInteractor,
-    disableFlagsInteractor: DisableFlagsInteractor,
     keyguardTransitionInteractor: KeyguardTransitionInteractor,
     private val largeScreenShadeInterpolator: LargeScreenShadeInterpolator,
     @ShadeDisplayAware configurationInteractor: ConfigurationInteractor,
@@ -123,6 +122,7 @@ constructor(
     @Assisted private val lifecycleScope: LifecycleCoroutineScope,
     private val mediaCarouselInteractor: MediaCarouselInteractor,
     val mediaViewModelFactory: MediaViewModel.Factory,
+    shadeStatusBarComponentsInteractor: ShadeStatusBarComponentsInteractor,
 ) : Dumpable, ExclusiveActivatable() {
 
     val containerViewModel = containerViewModelFactory.create(supportsBrightnessMirroring = true)
@@ -219,8 +219,10 @@ constructor(
     val isQsEnabled by
         hydrator.hydratedStateOf(
             traceName = "isQsEnabled",
-            initialValue = disableFlagsInteractor.disableFlags.value.isQuickSettingsEnabled(),
-            source = disableFlagsInteractor.disableFlags.map { it.isQuickSettingsEnabled() },
+            initialValue =
+                shadeStatusBarComponentsInteractor.disableFlags.value.isQuickSettingsEnabled(),
+            source =
+                shadeStatusBarComponentsInteractor.disableFlags.map { it.isQuickSettingsEnabled() },
         )
 
     var isInSplitShade by mutableStateOf(false)

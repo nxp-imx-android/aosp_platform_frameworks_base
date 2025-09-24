@@ -16,6 +16,7 @@
 
 package com.android.systemui.statusbar.pipeline.shared.domain.interactor
 
+import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent.DisplayAware
 import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent.PerDisplaySingleton
 import com.android.systemui.statusbar.disableflags.domain.interactor.DisableFlagsInteractor
 import com.android.systemui.statusbar.pipeline.airplane.domain.interactor.AirplaneModeInteractor
@@ -38,7 +39,7 @@ class HomeStatusBarInteractor
 constructor(
     airplaneModeInteractor: AirplaneModeInteractor,
     carrierConfigInteractor: CarrierConfigInteractor,
-    disableFlagsInteractor: DisableFlagsInteractor,
+    @DisplayAware disableFlagsInteractor: DisableFlagsInteractor,
 ) {
     /**
      * The visibilities of various status bar child views, based only on the information we received

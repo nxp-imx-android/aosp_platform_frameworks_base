@@ -16,14 +16,21 @@
 
 package com.android.systemui.statusbar.disableflags.domain.interactor
 
-import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.statusbar.disableflags.data.repository.DisableFlagsRepository
 import com.android.systemui.statusbar.disableflags.shared.model.DisableFlagsModel
-import javax.inject.Inject
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedFactory
+import dagger.assisted.AssistedInject
 import kotlinx.coroutines.flow.StateFlow
 
-@SysUISingleton
-class DisableFlagsInteractor @Inject constructor(repository: DisableFlagsRepository) {
+class DisableFlagsInteractor
+@AssistedInject
+constructor(@Assisted repository: DisableFlagsRepository) {
     /** A model of the disable flags last received from [IStatusBar]. */
     val disableFlags: StateFlow<DisableFlagsModel> = repository.disableFlags
+
+    @AssistedFactory
+    interface Factory {
+        fun create(repository: DisableFlagsRepository): DisableFlagsInteractor
+    }
 }

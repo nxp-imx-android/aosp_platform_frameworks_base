@@ -1925,6 +1925,16 @@ flag {
 }
 
 flag {
+   name: "disable_flags_per_display"
+   namespace: "systemui"
+   description: "Make sure DisableFlags are implemented per display"
+   bug: "437310166"
+   metadata {
+       purpose: PURPOSE_BUGFIX
+   }
+}
+
+flag {
     name: "screen_off_animation_guard_enabled"
     namespace: "systemui"
     description: "Reports Log.wtf statements if animations are running while screen is off."

@@ -20,6 +20,7 @@ import com.android.systemui.display.data.repository.displaySubcomponentPerDispla
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.applicationCoroutineScope
 import com.android.systemui.statusbar.data.repository.homeStatusBarComponentsRepository
+import com.android.systemui.statusbar.disableflags.domain.interactor.disableFlagsInteractor
 
 val Kosmos.shadeStatusBarComponentsInteractor by
     Kosmos.Fixture {
@@ -28,5 +29,6 @@ val Kosmos.shadeStatusBarComponentsInteractor by
             { shadeDisplaysInteractor },
             homeStatusBarComponentsRepository,
             displaySubcomponentPerDisplayRepository,
+            { disableFlagsInteractor },
         )
     }

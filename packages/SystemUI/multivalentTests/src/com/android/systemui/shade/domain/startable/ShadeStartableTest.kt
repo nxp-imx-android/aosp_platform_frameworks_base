@@ -92,9 +92,10 @@ class ShadeStartableTest(flags: FlagsParameterization) : SysuiTestCase() {
                 add(
                     Display.DEFAULT_DISPLAY,
                     createFakeDisplaySubcomponent(
-                        displayStateRepository = displayStateRepository,
-                        displayStateInteractor =
-                            createDisplayStateInteractor(displayStateRepository),
+                        displayStateRepository = { displayStateRepository },
+                        displayStateInteractor = {
+                            createDisplayStateInteractor(displayStateRepository)
+                        },
                     ),
                 )
             }

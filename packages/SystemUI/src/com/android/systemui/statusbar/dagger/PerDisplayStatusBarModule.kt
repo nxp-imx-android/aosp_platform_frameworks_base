@@ -20,9 +20,11 @@ import android.content.Context
 import android.os.Bundle
 import android.view.Display
 import android.view.WindowManager.LayoutParams.TYPE_STATUS_BAR
+import com.android.systemui.Flags
 import com.android.systemui.common.ui.ConfigurationState
 import com.android.systemui.common.ui.ConfigurationStateImpl
 import com.android.systemui.dagger.qualifiers.Application
+import com.android.systemui.dagger.qualifiers.Default
 import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent
 import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent.DisplayAware
 import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent.DisplayAwareStatusBar
@@ -31,6 +33,9 @@ import com.android.systemui.res.R
 import com.android.systemui.statusbar.chips.ui.viewmodel.OngoingActivityChipsViewModel
 import com.android.systemui.statusbar.data.repository.StatusBarConfigurationController
 import com.android.systemui.statusbar.data.repository.StatusBarConfigurationControllerStore
+import com.android.systemui.statusbar.disableflags.data.repository.DisableFlagsRepository
+import com.android.systemui.statusbar.disableflags.data.repository.DisableFlagsRepositoryImpl
+import com.android.systemui.statusbar.disableflags.domain.interactor.DisableFlagsInteractor
 import com.android.systemui.statusbar.domain.interactor.StatusBarIconRefreshInteractor
 import com.android.systemui.statusbar.domain.interactor.StatusBarIconRefreshInteractorImpl
 import com.android.systemui.statusbar.layout.StatusBarContentInsetsProvider
@@ -39,9 +44,11 @@ import com.android.systemui.statusbar.pipeline.shared.domain.interactor.HomeStat
 import com.android.systemui.statusbar.ui.SystemBarUtilsState
 import com.android.systemui.statusbar.window.StatusBarWindowStateController
 import dagger.Binds
+import dagger.Lazy
 import dagger.Module
 import dagger.Provides
 import dagger.multibindings.IntoSet
+import kotlinx.coroutines.CoroutineScope
 
 /**
  * Contains bindings that are [SystemUIDisplaySubcomponent.DisplayAware] related to the statusbar.
@@ -87,6 +94,37 @@ interface PerDisplayStatusBarModule {
     fun homeStatusBarInteractor(interactor: HomeStatusBarInteractor): HomeStatusBarInteractor
 
     companion object {
+        @Provides
+        @PerDisplaySingleton
+        @DisplayAware
+        fun disableFlagsRepo(
+            factory: DisableFlagsRepositoryImpl.Factory,
+            @DisplayAware actualDisplayId: Int,
+            @DisplayAware displayScope: CoroutineScope,
+            @Default defaultRepositoryLazy: Lazy<DisableFlagsRepository>,
+        ): DisableFlagsRepository {
+            return if (Flags.disableFlagsPerDisplay()) {
+                factory.create(actualDisplayId, displayScope)
+            } else {
+                defaultRepositoryLazy.get()
+            }
+        }
+
+        @Provides
+        @PerDisplaySingleton
+        @DisplayAware
+        fun disableFlagsInteractor(
+            factory: DisableFlagsInteractor.Factory,
+            @DisplayAware repo: DisableFlagsRepository,
+            @Default defaultInteractorLazy: Lazy<DisableFlagsInteractor>,
+        ): DisableFlagsInteractor {
+            return if (Flags.disableFlagsPerDisplay()) {
+                factory.create(repo)
+            } else {
+                defaultInteractorLazy.get()
+            }
+        }
+
         /**
          * Ideally StatusBarConfigurationControllerStore should be moved to [PerDisplaySingleton] in
          * the future, and the [StatusBarConfigurationControllerStore] return the instance from the

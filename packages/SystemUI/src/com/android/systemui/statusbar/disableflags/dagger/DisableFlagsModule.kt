@@ -16,14 +16,38 @@
 
 package com.android.systemui.statusbar.disableflags.dagger
 
+import com.android.systemui.dagger.SysUISingleton
+import com.android.systemui.dagger.qualifiers.Application
+import com.android.systemui.dagger.qualifiers.Default
+import com.android.systemui.dagger.qualifiers.DisplayId
 import com.android.systemui.statusbar.disableflags.data.repository.DisableFlagsRepository
 import com.android.systemui.statusbar.disableflags.data.repository.DisableFlagsRepositoryImpl
-import dagger.Binds
+import com.android.systemui.statusbar.disableflags.domain.interactor.DisableFlagsInteractor
 import dagger.Module
+import dagger.Provides
+import kotlinx.coroutines.CoroutineScope
 
 /** Provides information related to disable flags. */
 @Module
-abstract class DisableFlagsModule {
-    @Binds
-    abstract fun bindDisableFlagsRepo(impl: DisableFlagsRepositoryImpl): DisableFlagsRepository
+object DisableFlagsModule {
+    @Provides
+    @SysUISingleton
+    @Default // Dagger doesn't support providing AssistedInject classes without a qualifier
+    fun bindDisableFlagsInteractor(
+        factory: DisableFlagsInteractor.Factory,
+        @Default repository: DisableFlagsRepository,
+    ): DisableFlagsInteractor {
+        return factory.create(repository)
+    }
+
+    @Provides
+    @SysUISingleton
+    @Default // Dagger doesn't support providing AssistedInject classes without a qualifier
+    fun bindDisableFlagsRepo(
+        factory: DisableFlagsRepositoryImpl.Factory,
+        @DisplayId displayId: Int,
+        @Application scope: CoroutineScope,
+    ): DisableFlagsRepository {
+        return factory.create(displayId, scope)
+    }
 }
