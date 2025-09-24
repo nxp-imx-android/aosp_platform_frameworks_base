@@ -313,6 +313,29 @@ class AppIdAppFunctionAccessPolicy : SchemePolicy() {
         }
     }
 
+    override fun MutateStateScope.onStorageVolumeMounted(
+        volumeUuid: String?,
+        packageNames: List<String>,
+        isSystemUpdated: Boolean,
+    ) {
+        packageNames.forEachIndexed { _, packageName ->
+            val packageState =
+                newState.externalState.packageStates[packageName] ?: return@forEachIndexed
+            trimAccessFlags(packageState.appId)
+        }
+    }
+
+    override fun MutateStateScope.onPackageAdded(packageState: PackageState) {
+        trimAccessFlags(packageState.appId)
+    }
+
+    override fun MutateStateScope.onPackageRemoved(packageName: String, appId: Int) {
+        if (appId in newState.externalState.appIdPackageNames) {
+            trimAccessFlags(appId)
+        }
+        // Else, we will get an onAppIdRemoved call, which will handle state removal
+    }
+
     override fun MutateStateScope.onPackageUninstalled(
         packageName: String,
         appId: Int,
@@ -321,25 +344,39 @@ class AppIdAppFunctionAccessPolicy : SchemePolicy() {
         if (userId !in newState.userStates) {
             return
         }
-        val isValidAgentUid = anyInstalledPackageInUid(appId, userId) { isValidAgent(it, userId) }
-        if (!isValidAgentUid) {
-            if (appId in newState.userStates[userId]!!.appIdAppFunctionAccessFlags) {
-                newState.mutateUserState(userId)!!.mutateAppIdAppFunctionAccessFlags() -= appId
+        val packageState = newState.externalState.packageStates[packageName] ?: return
+        trimAccessFlags(packageState.appId, userId)
+    }
+
+    // Checks if the given app ID is a valid agent or target, and removes any invalid entries.
+    private fun MutateStateScope.trimAccessFlags(
+        appId: Int,
+        userIdToTrim: Int = UserHandle.USER_ALL,
+    ) {
+        newState.userStates.forEachIndexed { userIndex, userId, userState ->
+            if (userIdToTrim != UserHandle.USER_ALL && userIdToTrim != userId) {
+                return@forEachIndexed
             }
-        }
-        val isValidTargetUid = anyInstalledPackageInUid(appId, userId) { isValidTarget(it, userId) }
-        if (!isValidTargetUid) {
-            val uid = UserHandle.getUid(userId, appId)
-            newState.userStates.forEachIndexed { userIndex, _, userState ->
-                userState.appIdAppFunctionAccessFlags.forEachIndexed {
-                    appIdIndex,
-                    appId,
-                    accessFlags ->
-                    if (uid in accessFlags) {
-                        newState
-                            .mutateUserStateAt(userIndex)
-                            .mutateAppIdAppFunctionAccessFlags()
-                            .mutateAt(appIdIndex) -= uid
+            val isValidAgent = anyInstalledPackageInUid(appId, userId) { isValidAgent(it, userId) }
+            if (!isValidAgent && appId in userState.appIdAppFunctionAccessFlags) {
+                newState.mutateUserStateAt(userIndex).mutateAppIdAppFunctionAccessFlags() -= appId
+            }
+
+            val isValidTarget =
+                anyInstalledPackageInUid(appId, userId) { isValidTarget(it, userId) }
+            if (!isValidTarget) {
+                val uid = UserHandle.getUid(userId, appId)
+                newState.userStates.forEachIndexed { targetUserIndex, _, targetUserState ->
+                    targetUserState.appIdAppFunctionAccessFlags.forEachIndexed {
+                        appIdIndex,
+                        appId,
+                        accessFlags ->
+                        if (uid in accessFlags) {
+                            newState
+                                .mutateUserStateAt(targetUserIndex)
+                                .mutateAppIdAppFunctionAccessFlags()
+                                .mutateAt(appIdIndex) -= uid
+                        }
                     }
                 }
             }
