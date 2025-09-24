@@ -1977,6 +1977,8 @@ final class ActivityManagerConstants extends ContentObserver {
                 DeviceConfig.NAMESPACE_ACTIVITY_MANAGER,
                 KEY_SERVICE_BIND_ALMOST_PERCEPTIBLE_TIMEOUT_MS,
                 DEFAULT_SERVICE_BIND_ALMOST_PERCEPTIBLE_TIMEOUT_MS);
+        mService.mProcessStateController.setServiceBindAlmostPerceptibleTimeoutMs(
+                mServiceBindAlmostPerceptibleTimeoutMs);
     }
 
 
@@ -2346,6 +2348,14 @@ final class ActivityManagerConstants extends ContentObserver {
 
     boolean shouldEnableProcStateDebug() {
         return mProcStateDebugUids.size() > 0;
+    }
+
+    /** Creates and initializes an {@link OomAdjuster.Constants} instance with values. */
+    OomAdjuster.Constants createOomConstants() {
+        OomAdjuster.Constants oomConstants = new OomAdjuster.Constants();
+        oomConstants.mServiceBindAlmostPerceptibleTimeoutMs =
+                mServiceBindAlmostPerceptibleTimeoutMs;
+        return oomConstants;
     }
 
     @NeverCompile // Avoid size overhead of debugging code.

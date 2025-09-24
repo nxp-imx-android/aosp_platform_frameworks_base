@@ -304,7 +304,8 @@ public class MockingOomAdjusterTests {
 
         mCallback = spy(mService.new OomAdjusterCallback());
         mProcessStateController = new ProcessStateController.Builder(mService,
-                mService.mProcessList, mActiveUids, mCallback)
+                mService.mProcessList, mActiveUids, mService.mConstants.createOomConstants(),
+                mCallback)
                 .setProcessLruUpdater(lruUpdater)
                 .setOomAdjusterInjector(mInjector)
                 .build();

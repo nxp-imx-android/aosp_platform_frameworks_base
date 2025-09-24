@@ -2434,6 +2434,7 @@ public class ActivityManagerService extends IActivityManager.Stub
         mHandler = new MainHandler(handlerThread.getLooper());
         mHandlerThread = handlerThread;
         mConstants = new ActivityManagerConstants(mContext, this, mHandler);
+        final OomAdjuster.Constants oomConstants = mConstants.createOomConstants();
         final ActiveUids activeUids = new ActiveUids(null);
         mPlatformCompat = null;
         mProcessList = injector.getProcessList(this);
@@ -2443,7 +2444,7 @@ public class ActivityManagerService extends IActivityManager.Stub
 
         mCachedAppOptimizer = new CachedAppOptimizer(this);
         mProcessStateController = new ProcessStateController
-                .Builder(this, mProcessList, activeUids, new OomAdjusterCallback())
+                .Builder(this, mProcessList, activeUids, oomConstants, new OomAdjusterCallback())
                 .setHandlerThread(handlerThread)
                 .build();
         mOomAdjuster = mProcessStateController.getOomAdjuster();
@@ -2501,6 +2502,7 @@ public class ActivityManagerService extends IActivityManager.Stub
         mProcStartHandler = new ProcStartHandler(this, mProcStartHandlerThread.getLooper());
 
         mConstants = new ActivityManagerConstants(mContext, this, mHandler);
+        final OomAdjuster.Constants oomConstants = mConstants.createOomConstants();
         mAtmInternal = LocalServices.getService(ActivityTaskManagerInternal.class);
         final ActiveUids activeUids = new ActiveUids(mAtmInternal);
         mPlatformCompat = (PlatformCompat) ServiceManager.getService(
@@ -2513,7 +2515,7 @@ public class ActivityManagerService extends IActivityManager.Stub
         final Looper activityTaskLooper = DisplayThread.get().getLooper();
         mCachedAppOptimizer = new CachedAppOptimizer(this);
         mProcessStateController = new ProcessStateController
-                .Builder(this, mProcessList, activeUids, new OomAdjusterCallback())
+                .Builder(this, mProcessList, activeUids, oomConstants, new OomAdjusterCallback())
                 .setLockObject(this)
                 .setTopProcessChangeCallback(this::updateTopAppListeners)
                 .setProcessLruUpdater(mProcessList)
