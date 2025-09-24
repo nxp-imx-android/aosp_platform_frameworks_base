@@ -60,6 +60,9 @@ import javax.inject.Provider;
 
 /**
  * Manages Keyguard Presentations for non-primary display(s).
+ *
+ * Note that after [Flag.enableConnectedDisplaysWallpaperPresentations] is enabled, the presentation
+ * is set from [WallpaperPresentationManager].
  */
 @SysUISingleton
 public class KeyguardDisplayManager {
@@ -136,7 +139,7 @@ public class KeyguardDisplayManager {
         mIsCentralizedWallpaperPresentationEnabled = isCentralizedWallpaperPresentationEnabled;
         mDisplayRepository = displayRepository;
         if (ShadeWindowGoesAround.isEnabled()) {
-            collectFlow(appScope, shadePositionRepositoryProvider.get().getDisplayId(),
+            collectFlow(appScope, shadePositionRepositoryProvider.get().getPendingDisplayId(),
                     (id) -> onShadeWindowMovedToDisplayId(id));
         }
     }
@@ -157,7 +160,8 @@ public class KeyguardDisplayManager {
             return false;
         }
         if (ShadeWindowGoesAround.isEnabled()) {
-            int shadeDisplayId = mShadePositionRepositoryProvider.get().getDisplayId().getValue();
+            int shadeDisplayId = mShadePositionRepositoryProvider
+                    .get().getPendingDisplayId().getValue();
             if (display.getDisplayId() == shadeDisplayId) {
                 Log.i(
                     TAG,

@@ -24,6 +24,7 @@ import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent
 import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent.DisplayAware
+import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent.PerDisplaySingleton
 import com.android.systemui.log.DebugLogger.debugLog
 import com.android.systemui.wallpapers.domain.interactor.DisplayWallpaperPresentationInteractor
 import com.android.systemui.wallpapers.domain.interactor.DisplayWallpaperPresentationInteractor.WallpaperPresentationType
@@ -38,6 +39,7 @@ import kotlinx.coroutines.launch
 /**
  * A manager which controls the lifecycle of wallpaper [Presentation] on all compatible displays.
  */
+@PerDisplaySingleton
 class WallpaperPresentationManager
 @Inject
 constructor(
