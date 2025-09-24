@@ -23,7 +23,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.ButtonGroupDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -38,7 +37,7 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastForEachIndexed
-import com.android.systemui.common.shared.model.Icon as IconModel
+import com.android.systemui.common.shared.model.Icon
 import com.android.systemui.common.ui.compose.Icon
 
 private val ICON_SIZE = 20.dp
@@ -49,15 +48,32 @@ private val ICON_SIZE = 20.dp
  */
 data class RadioButtonGroupItem(
     val isSelected: Boolean,
-    val onClick: () -> Unit,
-    val icon: IconModel? = null,
+    val icon: Icon? = null,
     val label: String? = null,
     val contentDescription: String? = null,
     val hasTooltip: Boolean = false,
-)
+    val onClick: () -> Unit,
+) {
+    /** Secondary constructor for cases where the icon is different when selected vs unselected. */
+    constructor(
+        label: String? = null,
+        selectedIcon: Icon? = null,
+        unselectedIcon: Icon? = null,
+        isSelected: Boolean,
+        onClick: () -> Unit,
+        contentDescription: String? = null,
+        hasTooltip: Boolean = false,
+    ) : this(
+        label = label,
+        icon = if (isSelected) selectedIcon else unselectedIcon,
+        isSelected = isSelected,
+        onClick = onClick,
+        contentDescription = contentDescription,
+        hasTooltip = hasTooltip,
+    )
+}
 
 /** A group of N icon buttons where any single icon button is selected at a time. */
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RadioButtonGroup(
     items: List<RadioButtonGroupItem>,
@@ -98,7 +114,6 @@ fun RadioButtonGroup(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun ToggleRadioButton(
     item: RadioButtonGroupItem,
