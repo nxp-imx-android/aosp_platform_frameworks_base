@@ -21,6 +21,7 @@ import android.os.Parcel;
 import android.os.Parcelable;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -57,24 +58,34 @@ public final class ContextHintWrapper implements Parcelable {
     }
 
     /**
-     * Utility method to unwrap a list of {@link ContextHintWrapper} into a list of
+     * Utility method to unwrap a collection of {@link ContextHintWrapper} into a list of
      * {@link ContextHint}.
      */
     @NonNull
-    public static List<ContextHint> unwrapList(@NonNull List<ContextHintWrapper> wrappers) {
-        List<ContextHint> list = new ArrayList<>();
-        for (ContextHintWrapper wrapper : wrappers) {
-            list.add(wrapper.getContextHint());
-        }
-        return list;
+    public static List<ContextHint> unwrapList(@NonNull Collection<ContextHintWrapper> wrappers) {
+        return unwrapInto(wrappers, new ArrayList<>());
     }
 
     /**
-     * Utility method to wrap a list of {@link ContextHint} into a list of
+     * Utility method to unwrap a collection of {@link ContextHintWrapper} into a collection of
+     * {@link ContextHint}.
+     */
+    @NonNull
+    public static <T extends Collection<ContextHint>> T unwrapInto(
+            @NonNull Collection<ContextHintWrapper> wrappers,
+            @NonNull T into) {
+        for (ContextHintWrapper wrapper : wrappers) {
+            into.add(wrapper.getContextHint());
+        }
+        return into;
+    }
+
+    /**
+     * Utility method to wrap a collection of {@link ContextHint} into a list of
      * {@link ContextHintWrapper}.
      */
     @NonNull
-    public static List<ContextHintWrapper> wrapList(@NonNull List<ContextHint> hints) {
+    public static List<ContextHintWrapper> wrapList(@NonNull Collection<ContextHint> hints) {
         List<ContextHintWrapper> list = new ArrayList<>();
         for (ContextHint hint : hints) {
             list.add(new ContextHintWrapper(hint));

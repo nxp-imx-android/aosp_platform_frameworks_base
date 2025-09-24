@@ -22,6 +22,7 @@ import android.os.Parcelable;
 import androidx.annotation.NonNull;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -38,24 +39,36 @@ public final class ContextInsightWrapper implements Parcelable {
     }
 
     /**
-     * Utility method to unwrap a list of {@link ContextInsightWrapper} into a list of
+     * Utility method to unwrap a collection of {@link ContextInsightWrapper} into a list of
      * {@link ContextInsight}.
      */
     @NonNull
-    public static List<ContextInsight> unwrapList(@NonNull List<ContextInsightWrapper> wrappers) {
-        List<ContextInsight> list = new ArrayList<>();
-        for (ContextInsightWrapper wrapper : wrappers) {
-            list.add(wrapper.getContextInsight());
-        }
-        return list;
+    public static List<ContextInsight> unwrapList(
+            @NonNull Collection<ContextInsightWrapper> wrappers) {
+        return unwrapInto(wrappers, new ArrayList<>());
     }
 
     /**
-     * Utility method to wrap a list of {@link ContextInsight} into a list of
+     * Utility method to unwrap a collection of {@link ContextInsightWrapper} into a collection of
+     * {@link ContextInsight}.
+     */
+    @NonNull
+    public static <T extends Collection<ContextInsight>> T unwrapInto(
+            @NonNull Collection<ContextInsightWrapper> wrappers,
+            @NonNull T into) {
+        for (ContextInsightWrapper wrapper : wrappers) {
+            into.add(wrapper.getContextInsight());
+        }
+        return into;
+    }
+
+    /**
+     * Utility method to wrap a collection of {@link ContextInsight} into a list of
      * {@link ContextInsightWrapper}.
      */
     @NonNull
-    public static List<ContextInsightWrapper> wrapList(@NonNull List<ContextInsight> insights) {
+    public static List<ContextInsightWrapper> wrapList(
+            @NonNull Collection<ContextInsight> insights) {
         List<ContextInsightWrapper> list = new ArrayList<>();
         for (ContextInsight insight : insights) {
             list.add(new ContextInsightWrapper(insight));
