@@ -128,7 +128,6 @@ public class Watchdog implements Dumpable {
         "/system/bin/cameraserver",
         "/system/bin/drmserver",
         "/system/bin/idmap2d",
-        "/system/bin/keystore2",
         "/system/bin/mediadrmserver",
         "/system/bin/mediaserver",
         "/system/bin/netd",
