@@ -419,7 +419,7 @@ private fun addStartSideComposable(
             layoutParams =
                 LinearLayout.LayoutParams(
                         LinearLayout.LayoutParams.WRAP_CONTENT,
-                        LinearLayout.LayoutParams.WRAP_CONTENT,
+                        LinearLayout.LayoutParams.MATCH_PARENT,
                     )
                     .apply {
                         if (showDate) {
