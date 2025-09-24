@@ -58,8 +58,12 @@ public abstract class HintRefinerService extends Service {
 
     private UUID mComponentId = null;
 
-    @Nullable
+    /** @hide */
+    @NonNull
     public final UUID getComponentId() {
+        if (mComponentId == null) {
+            throw new IllegalStateException("Service has not been configured yet");
+        }
         return mComponentId;
     }
 
@@ -71,11 +75,11 @@ public abstract class HintRefinerService extends Service {
 
     private void configure(UUID componentId) {
         mComponentId = componentId;
-        onReady();
+        onConnected();
     }
 
-    /** Called when the refiner has been configured and is ready to receive events. */
-    public void onReady() {
+    /** Called when the refiner has been configured and is ready to receive hints. */
+    public void onConnected() {
         // Default implementation does nothing.
     }
 
