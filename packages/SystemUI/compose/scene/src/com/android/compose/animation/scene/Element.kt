@@ -730,7 +730,7 @@ internal inline fun elementState(
             states.fastForEachReversed { state ->
                 if (
                     isSharedElement(state, isInContent) ||
-                        hasTransformationForElement(state, elementKey)
+                        isElementAffectedByTransition(state, elementKey, isInContent)
                 ) {
                     return state
                 }
@@ -776,10 +776,22 @@ private inline fun isSharedElement(
         isInContent(state.toContent)
 }
 
-private fun hasTransformationForElement(state: TransitionState, elementKey: ElementKey): Boolean {
-    return state is TransitionState.Transition &&
-        (state.transformationSpec.hasTransformation(elementKey, state.fromContent) ||
-            state.transformationSpec.hasTransformation(elementKey, state.toContent))
+/**
+ * Returns true if the given [elementKey] is affected by the provided [state] transition. An element
+ * is affected if it has a transformation defined in either the [TransitionState.fromContent] or
+ * [TransitionState.toContent] and is present in that content.
+ */
+private inline fun isElementAffectedByTransition(
+    state: TransitionState,
+    elementKey: ElementKey,
+    isInContent: (ContentKey) -> Boolean,
+): Boolean {
+    if (state !is TransitionState.Transition) return false
+
+    return (state.transformationSpec.hasTransformation(elementKey, state.fromContent) &&
+        isInContent(state.fromContent)) ||
+        (state.transformationSpec.hasTransformation(elementKey, state.toContent) &&
+            isInContent(state.toContent))
 }
 
 internal inline fun elementContentWhenIdle(
