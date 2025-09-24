@@ -16,7 +16,7 @@ use crate::common::{PolicySourceData, TunnelControl, UserId};
 use crate::sysfs::SysfsUtils;
 use anyhow::Result;
 use kobject_uevent::ActionType;
-use log::{error, info};
+use log::{debug, error, info};
 use std::path::Path;
 use std::sync::Arc;
 use tokio::sync::mpsc;
@@ -93,7 +93,7 @@ impl PciAuthorizerTask {
                 }
             }
             Err(e) => {
-                error!("Error reading uevent: {}. Uevent listener might stop if this persists.", e);
+                debug!("Error reading uevent: {}. Uevent listener might stop if this persists.", e);
             }
         }
     }
@@ -126,7 +126,7 @@ impl PciAuthorizerTask {
             return true;
         }
 
-        info!("State transition: {:?} -> {:?}", old_state, new_state);
+        debug!("State transition: {:?} -> {:?}", old_state, new_state);
         self.current_pci_auth_state = new_state;
 
         match (old_state, new_state) {
@@ -155,12 +155,12 @@ impl PciAuthorizerTask {
                 }
                 Some(service_event) = self.event_receiver.recv() => {
                     if !self.handle_service_event(service_event) {
-                        info!("Shutdown event received.");
+                        debug!("Shutdown event received.");
                         break;
                     }
                 }
                 else => {
-                    info!("Event channel closed. Shutting down.");
+                    debug!("Event channel closed. Shutting down.");
                     break;
                 }
             }
@@ -243,7 +243,7 @@ impl Drop for PciAuthorizer {
         }
 
         if let Some(_handle) = self.service_task_handle.take() {
-            info!("PciAuthorizerTask shutdown initiated. The task will be managed by the Tokio runtime.");
+            debug!("PciAuthorizerTask shutdown initiated. The task will be managed by the Tokio runtime.");
         }
     }
 }

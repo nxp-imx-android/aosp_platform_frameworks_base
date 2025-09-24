@@ -20,6 +20,7 @@
 //! crate. It encapsulates the `PciAuthorizer`.
 
 use crate::common::{TunnelControl, UserId};
+use crate::mode_selector::ModeSelector;
 use crate::pci_authorizer::PciAuthorizer;
 use tokio::runtime::Runtime;
 
@@ -29,6 +30,8 @@ use tokio::runtime::Runtime;
 pub struct PolicyEngine {
     /// The embedded `PciAuthorizer` that handles core logic.
     pub pci_authorizer: PciAuthorizer,
+    /// The embedded `ModeSelector` that handles mode selection logic.
+    pub mode_selector: ModeSelector,
     /// The Tokio runtime for the PciAuthorizer's async tasks.
     _runtime: Runtime,
 }
@@ -40,9 +43,10 @@ impl PolicyEngine {
             .enable_all()
             .build()
             .expect("Failed to create Tokio runtime for PolicyEngine");
-        let pci_authorizer = runtime.block_on(async { PciAuthorizer::default() });
+        let (pci_authorizer, mode_selector) =
+            runtime.block_on(async { (PciAuthorizer::default(), ModeSelector::new()) });
 
-        Self { pci_authorizer, _runtime: runtime }
+        Self { pci_authorizer, mode_selector, _runtime: runtime }
     }
 }
 impl Default for PolicyEngine {
@@ -56,15 +60,18 @@ impl TunnelControl for PolicyEngine {
     /// Enables or disables the PCI tunneling feature globally.
     fn enable_pci_tunnels(&mut self, enable: bool) {
         self.pci_authorizer.enable_pci_tunnels(enable);
+        self.mode_selector.enable_pci_tunnels(enable);
     }
 
     /// Notifies the engine of a screen lock state change.
     fn update_lock_state(&mut self, locked: bool) {
         self.pci_authorizer.update_lock_state(locked);
+        self.mode_selector.update_lock_state(locked);
     }
 
     /// Notifies the engine of a user login or logout event.
     fn update_logged_in_state(&mut self, logged_in: bool, user_id: UserId) {
-        self.pci_authorizer.update_logged_in_state(logged_in, user_id);
+        self.pci_authorizer.update_logged_in_state(logged_in, user_id.clone());
+        self.mode_selector.update_logged_in_state(logged_in, user_id);
     }
 }
