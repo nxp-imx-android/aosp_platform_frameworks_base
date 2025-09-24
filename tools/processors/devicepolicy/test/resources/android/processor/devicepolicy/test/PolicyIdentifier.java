@@ -37,8 +37,11 @@ public final class PolicyIdentifier<T> {
      */
     @BooleanPolicyDefinition(
             base = @PolicyDefinition(
-                    allowedScopes = {1, 2},
-                    affectedResource = 2
+                    allowedScopes = {
+                            1, // POLICY_SCOPE_USER
+                            2  // POLICY_SCOPE_DEVICE
+                    },
+                    affectedResource = 2 // RESOURCE_DEVICE_PER_USER
             )
     )
     public static final PolicyIdentifier<Boolean> SIMPLE_BOOLEAN_POLICY = new PolicyIdentifier<>(
@@ -79,8 +82,11 @@ public final class PolicyIdentifier<T> {
      */
     @EnumPolicyDefinition(
             base = @PolicyDefinition(
-                    allowedScopes = {2, 3},
-                    affectedResource = 1
+                    allowedScopes = {
+                            2, // POLICY_SCOPE_DEVICE
+                            3  // POLICY_SCOPE_PARENT_USER
+                    },
+                    affectedResource = 1 // RESOURCE_DEVICE_WIDE
             ),
             defaultValue = ENUM_ENTRY_2,
             intDef = SimpleEnumPolicyEnum.class
@@ -95,8 +101,10 @@ public final class PolicyIdentifier<T> {
      */
     @IntegerPolicyDefinition(
             base = @PolicyDefinition(
-                    allowedScopes = {1},
-                    affectedResource = 1
+                    allowedScopes = {
+                            1 // POLICY_SCOPE_USER
+                    },
+                    affectedResource = 1 // RESOURCE_DEVICE_WIDE
             )
     )
     public static final PolicyIdentifier<Integer> SIMPLE_INTEGER_POLICY = new PolicyIdentifier<>(
