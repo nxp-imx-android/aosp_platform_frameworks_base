@@ -2915,7 +2915,7 @@ public class AudioService extends IAudioService.Stub
         int assistantStreamAlias = mContext.getResources().getBoolean(
                 com.android.internal.R.bool.config_useAssistantVolume) ?
                 AudioSystem.STREAM_ASSISTANT : AudioSystem.STREAM_MUSIC;
-        if (streamAssistantNotAliasedToMusic()) {
+        if (streamAssistantNotAliasedToMusic() && !mIsSingleVolume) {
             assistantStreamAlias = AudioSystem.STREAM_ASSISTANT;
         }
 
