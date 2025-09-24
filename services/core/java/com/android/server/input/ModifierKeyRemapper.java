@@ -20,19 +20,17 @@ import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
-import android.util.ArrayMap;
-import android.util.FeatureFlagUtils;
 
 import com.android.internal.annotations.GuardedBy;
 
 import java.util.Map;
 
 /**
- * A component of {@link InputManagerService} responsible for managing key remappings.
+ * A component of {@link InputManagerService} responsible for managing global modifier key remapping
  *
  * @hide
  */
-final class KeyRemapper {
+final class ModifierKeyRemapper {
 
     private static final int MSG_UPDATE_EXISTING_KEY_REMAPPING = 1;
     private static final int MSG_REMAP_KEY = 2;
@@ -45,7 +43,7 @@ final class KeyRemapper {
     private final PersistentDataStore mDataStore;
     private final Handler mHandler;
 
-    KeyRemapper(Context context, NativeInputManagerService nativeService,
+    ModifierKeyRemapper(Context context, NativeInputManagerService nativeService,
                 PersistentDataStore dataStore, Looper looper) {
         mContext = context;
         mNative = nativeService;
@@ -58,25 +56,16 @@ final class KeyRemapper {
     }
 
     public void remapKey(int fromKey, int toKey) {
-        if (!supportRemapping()) {
-            return;
-        }
         Message msg = Message.obtain(mHandler, MSG_REMAP_KEY, fromKey, toKey);
         mHandler.sendMessage(msg);
     }
 
     public void clearAllKeyRemappings() {
-        if (!supportRemapping()) {
-            return;
-        }
         Message msg = Message.obtain(mHandler, MSG_CLEAR_ALL_REMAPPING);
         mHandler.sendMessage(msg);
     }
 
     public Map<Integer, Integer> getKeyRemapping() {
-        if (!supportRemapping()) {
-            return new ArrayMap<>();
-        }
         synchronized (mDataStore) {
             return mDataStore.getKeyRemapping();
         }
@@ -124,9 +113,6 @@ final class KeyRemapper {
     }
 
     public void updateExistingKeyMapping() {
-        if (!supportRemapping()) {
-            return;
-        }
         setKeyRemapping(getKeyRemapping());
     }
 
@@ -143,10 +129,5 @@ final class KeyRemapper {
                 return true;
         }
         return false;
-    }
-
-    private boolean supportRemapping() {
-        return FeatureFlagUtils.isEnabled(mContext,
-                FeatureFlagUtils.SETTINGS_NEW_KEYBOARD_MODIFIER_KEY);
     }
 }
