@@ -25,11 +25,8 @@
     -->
     <dimen name="shade_panel_margin_horizontal">0dp</dimen>
 
-    <dimen name="overlay_shade_panel_shape_radius">
-        @dimen/aux_spacing_overlay_panel_shape_radius
-    </dimen>
+    <dimen name="overlay_shade_panel_shape_radius">46dp</dimen>
 
-    <dimen name="aux_spacing_overlay_panel_shape_radius">46dp</dimen>
     <dimen name="common_tile_default_icon_size">32dp</dimen>
     <dimen name="common_tile_default_inactive_corner_radius">50dp</dimen>
     <dimen name="common_tile_default_large_tile_icon_size">28dp</dimen>
