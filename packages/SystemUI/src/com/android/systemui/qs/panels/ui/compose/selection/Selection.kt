@@ -323,7 +323,7 @@ enum class TileState {
     Selected,
     /**
      * Tile placeable. This state means that the grid is in placement mode and this tile is
-     * selected. It should be highlighted to stand out in the grid.
+     * selected. It should have an highlighted border to stand out in the grid.
      */
     Placeable,
     /**
@@ -427,9 +427,9 @@ private object SelectionDefaults {
         return when (this) {
             Removable -> removalBadge()
             Selected -> resizingHandle()
+            Placeable -> placeable()
             New,
             None,
-            Placeable,
             GreyedOut -> NoDecoration
         }
     }
@@ -462,5 +462,18 @@ private object SelectionDefaults {
                 offset = Offset(-SelectedBorderWidth.toPx(), 0f),
             )
         }
+    }
+
+    @Composable
+    @ReadOnlyComposable
+    fun placeable(): VisibleDecoration {
+        return VisibleDecoration(
+            iconAlpha = 0f,
+            borderAlpha = 1f,
+            color = MaterialTheme.colorScheme.primary,
+            size = Size.Zero,
+            angle = 0f,
+            offset = Offset.Zero,
+        )
     }
 }
