@@ -2442,7 +2442,8 @@
              of Android higher than the number given here, the permission will not
              be created.  -->
         <attr name="maxSdkVersion" />
-        <!-- Optional: specify if valid purpose is required for this permission. True indicates
+        <!-- TODO(b/443057927): Remove when updating to specific purpose.
+             Optional: specify if valid purpose is required for this permission. True indicates
              it is required, false or not specifying the element indicates optional.
 
              <p>If set to true, {@link #AndroidManifestValidPurpose valid-purpose} tag must be used
@@ -2453,18 +2454,25 @@
              is currently only supported for normal permissions defined within the platform
              manifest. -->
         <attr name="requiresPurpose" format="boolean" />
-        <!-- Required to be set when {@code requiresPurpose} is {@code true}; optional otherwise.
+        <!-- TODO(b/443057927): Rename for specific purpose.
+             Required to be set when {@code requiresPurpose} is {@code true}; optional otherwise.
              Use it to specify the app's minimum target SDK version for which purpose validation
              should be enforced in order to prevent app compatibility issues. This must be set to
              at least SDK version 37. -->
         <attr name="requiresPurposeTargetSdkVersion"  format="integer" />
-</declare-styleable>
+        <!-- Used to specify the app's minimum target SDK version for which general purpose
+             validation should be enforced in order to prevent app compatibility issues. This must
+             be set to at least SDK version 37. -->
+        <attr name="requiresGeneralPurposeTargetSdkVersion"  format="integer" />
 
-    <!-- The <code>valid-purpose</code> tag is used to specify valid purpose(s) for a permission.
-         If there are multiple valid purposes, use multiple <code>valid-purpose</code> tags.
+    </declare-styleable>
 
-         <p>This appears as a child tag of the
-         {@link #AndroidManifestPermission permission} tag. -->
+     <!-- TODO(b/443057927): Rename for specific purpose.
+          The <code>valid-purpose</code> tag is used to specify valid purpose(s) for a permission.
+          If there are multiple valid purposes, use multiple <code>valid-purpose</code> tags.
+
+          <p>This appears as a child tag of the
+          {@link #AndroidManifestPermission permission} tag. -->
     <declare-styleable name="AndroidManifestValidPurpose" parent="AndroidManifestPermission">
         <!-- Specify the name of the valid purpose. -->
         <attr name="name" />
@@ -2475,6 +2483,24 @@
              be done retroactively on older platform versions. -->
         <attr name="maxTargetSdkVersion" format="integer" />
     </declare-styleable>
+
+     <!-- The <code>valid-general-purpose</code> tag is used to specify valid general purpose(s) for
+          a permission. If there are multiple valid purposes, use multiple
+          <code>valid-general-purpose</code> tags.
+
+          <p>This appears as a child tag of the
+          {@link #AndroidManifestPermission permission} tag. -->
+    <declare-styleable name="AndroidManifestValidGeneralPurpose" parent="AndroidManifestPermission">
+        <!-- Specify the name of the valid purpose. -->
+        <attr name="name" format="string"/>
+        <!-- Optional: This is mainly intended to deprecate a pre-defined purpose. Specify the max
+             target SDK version for which this purpose is valid. Not specifying this attribute
+             signifies the purpose is valid indefinitely. To avoid app compatibility issues, DO NOT
+             simply delete the purpose from the manifest. Note that deprecation of purposes cannot
+             be done retroactively on older platform versions. -->
+        <attr name="maxTargetSdkVersion" format="integer"/>
+    </declare-styleable>
+
 
     <!-- The <code>permission-group</code> tag declares a logical grouping of
          related permissions.
@@ -2604,6 +2630,30 @@
     <declare-styleable name="AndroidManifestPurpose" parent="AndroidManifestUsesPermission">
         <!-- Specify the name of the purpose. -->
         <attr name="name" />
+        <!-- Optional: specify the min SDK version for which the permission is requested with the
+             declared purpose. Not specifying this element implies there’s no lower bound on the
+             SDK version for which the purpose is declared. -->
+        <attr name="minSdkVersion" format="integer|string" />
+        <!-- Optional: specify the max SDK version for which the permission is requested with the
+             declared purpose. Not specifying this element implies there’s no upper bound on the SDK
+             version for which the purpose is declared. -->
+        <attr name="maxSdkVersion" format="integer" />
+    </declare-styleable>
+
+     <!-- Use <code>general-purpose</code> tag to specify general purpose(s) for requesting a
+          permission. General purpose(s) will need to be provided if the requested {@link
+          #AndroidManifestPermission permission} tag's <code>requiresGeneralPurposeTargetSdkVersion
+          </code> attribute is set to a value and the targeted SDK version is greater than or equal
+          to that value. Only valid purposes from the permission's {@link
+          #AndroidManifestValidGeneralPurpose valid-general-purpose} tags should be specified. If
+          there are multiple purposes for requesting the permission, use multiple <code>
+          general-purpose</code> tags.
+
+          <p>This appears as a child tag of the {@link
+          #AndroidManifestUsesPermission uses-permission} tag. -->
+    <declare-styleable name="AndroidManifestGeneralPurpose" parent="AndroidManifestUsesPermission">
+        <!-- Specify the name of the general purpose. -->
+        <attr name="name" format="string" />
         <!-- Optional: specify the min SDK version for which the permission is requested with the
              declared purpose. Not specifying this element implies there’s no lower bound on the
              SDK version for which the purpose is declared. -->
