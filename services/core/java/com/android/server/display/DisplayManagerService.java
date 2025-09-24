@@ -2496,7 +2496,7 @@ public final class DisplayManagerService extends SystemService {
         if (ExternalDisplayPolicy.isExternalDisplayLocked(display)) {
             mExternalDisplayPolicy.handleExternalDisplayConnectedLocked(display);
         } else {
-            sendDisplayEventLocked(display, DisplayManagerGlobal.EVENT_DISPLAY_CONNECTED);
+            sendDisplayEventsLocked(display, DisplayManagerGlobal.EVENT_DISPLAY_CONNECTED);
         }
 
         updateLogicalDisplayState(display);
@@ -2531,7 +2531,7 @@ public final class DisplayManagerService extends SystemService {
             mSyncRoot.notifyAll();
         }
 
-        sendDisplayEventIfEnabledLocked(display, DisplayManagerGlobal.EVENT_DISPLAY_ADDED);
+        sendDisplayEventsIfEnabledLocked(display, DisplayManagerGlobal.EVENT_DISPLAY_ADDED);
 
         updateLogicalDisplayState(display);
 
@@ -2557,7 +2557,7 @@ public final class DisplayManagerService extends SystemService {
         // We don't bother invalidating the display info caches here because any changes to the
         // display info will trigger a cache invalidation inside of LogicalDisplay before we hit
         // this point.
-        sendDisplayEventIfEnabledLocked(display, DisplayManagerGlobal.EVENT_DISPLAY_BASIC_CHANGED);
+        sendDisplayEventsIfEnabledLocked(display, DisplayManagerGlobal.EVENT_DISPLAY_BASIC_CHANGED);
 
         applyDisplayChangedLocked(display);
 
@@ -2617,7 +2617,7 @@ public final class DisplayManagerService extends SystemService {
         // We don't bother invalidating the display info caches here because any changes to the
         // display info will trigger a cache invalidation inside of LogicalDisplay before we hit
         // this point.
-        sendEventLocked(display, event, MSG_DELIVER_DISPLAY_EVENT_FRAME_RATE_OVERRIDE);
+        sendEventsLocked(display, event, MSG_DELIVER_DISPLAY_EVENT_FRAME_RATE_OVERRIDE);
         scheduleTraversalLocked(false);
     }
 
@@ -2629,7 +2629,7 @@ public final class DisplayManagerService extends SystemService {
         }
 
         // Note: This method is only called if the display was enabled before being removed.
-        sendDisplayEventLocked(display, DisplayManagerGlobal.EVENT_DISPLAY_REMOVED);
+        sendDisplayEventsLocked(display, DisplayManagerGlobal.EVENT_DISPLAY_REMOVED);
 
         if (display.isValidLocked()) {
             applyDisplayChangedLocked(display);
@@ -2665,7 +2665,7 @@ public final class DisplayManagerService extends SystemService {
             }
         }
 
-        sendDisplayEventLocked(display, event);
+        sendDisplayEventsLocked(display, event);
         scheduleTraversalLocked(false);
     }
 
@@ -2685,21 +2685,21 @@ public final class DisplayManagerService extends SystemService {
     }
 
     private void handleLogicalDisplayHdrSdrRatioChangedLocked(@NonNull LogicalDisplay display) {
-        sendDisplayEventIfEnabledLocked(display,
+        sendDisplayEventsIfEnabledLocked(display,
                 DisplayManagerGlobal.EVENT_DISPLAY_HDR_SDR_RATIO_CHANGED);
     }
 
     private void handleLogicalDisplayRefreshRateChangedLocked(@NonNull LogicalDisplay display) {
-        sendDisplayEventIfEnabledLocked(display,
+        sendDisplayEventsIfEnabledLocked(display,
                 DisplayManagerGlobal.EVENT_DISPLAY_REFRESH_RATE_CHANGED);
     }
 
     private void handleLogicalDisplayStateChangedLocked(@NonNull LogicalDisplay display) {
-        sendDisplayEventIfEnabledLocked(display, DisplayManagerGlobal.EVENT_DISPLAY_STATE_CHANGED);
+        sendDisplayEventsIfEnabledLocked(display, DisplayManagerGlobal.EVENT_DISPLAY_STATE_CHANGED);
     }
 
     private void handleLogicalDisplayCommittedStateChangedLocked(@NonNull LogicalDisplay display) {
-        sendDisplayEventIfEnabledLocked(display,
+        sendDisplayEventsIfEnabledLocked(display,
                 DisplayManagerGlobal.EVENT_DISPLAY_COMMITTED_STATE_CHANGED);
     }
 
@@ -2824,7 +2824,7 @@ public final class DisplayManagerService extends SystemService {
     private void updateCanHostTasksIfNeededLocked(LogicalDisplay display,
             boolean shouldSendDisplayChangeEvent) {
         if (display.setCanHostTasksLocked(!mMirrorBuiltInDisplay) && shouldSendDisplayChangeEvent) {
-            sendDisplayEventIfEnabledLocked(display,
+            sendDisplayEventsIfEnabledLocked(display,
                     DisplayManagerGlobal.EVENT_DISPLAY_BASIC_CHANGED);
         }
     }
@@ -3685,41 +3685,47 @@ public final class DisplayManagerService extends SystemService {
         }
     }
 
-    // Send a display event if the display is enabled
-    private void sendDisplayEventIfEnabledLocked(@NonNull LogicalDisplay display,
-                                                 @DisplayEvent int event) {
+    private boolean shouldSendDisplayEventsIfEnabledLocked(@NonNull LogicalDisplay display,
+            int eventMask) {
         final boolean displayIsEnabled = display.isEnabledLocked();
         if (Trace.isTagEnabled(Trace.TRACE_TAG_POWER)) {
             Trace.instant(Trace.TRACE_TAG_POWER,
-                    "sendDisplayEventLocked#event=" + event + ",displayEnabled="
-                            + displayIsEnabled);
+                    "sendDisplayEventsLocked#event=" + eventsToString(eventMask)
+                            + ",displayEnabled=" + displayIsEnabled);
         }
 
         // Only send updates outside of DisplayManagerService for enabled displays
         if (displayIsEnabled) {
-            sendDisplayEventLocked(display, event);
+            return true;
         } else if (mExtraDisplayEventLogging) {
-            Slog.i(TAG, "Not Sending Display Event; display is not enabled: " + display);
+            Slog.i(TAG, "Not Sending Display Events; display is not enabled: " + display);
+        }
+        return false;
+    }
+
+    // Send a display eventMask if the display is enabled
+    private void sendDisplayEventsIfEnabledLocked(@NonNull LogicalDisplay display, int eventMask) {
+        if (shouldSendDisplayEventsIfEnabledLocked(display, eventMask)) {
+            sendDisplayEventsLocked(display, eventMask);
         }
     }
 
-    private void sendEventLocked(@NonNull LogicalDisplay display,
-            @DisplayEvent int event, int messageType) {
+    private void sendEventsLocked(@NonNull LogicalDisplay display, int eventMask, int messageType) {
         int displayId = display.getDisplayIdLocked();
-        Message msg = mHandler.obtainMessage(messageType, displayId, event);
+        Message msg = mHandler.obtainMessage(messageType, displayId, eventMask);
         if (mFlags.isDisplayEventsLoggingEnabled()
-                && event == DisplayManagerGlobal.EVENT_DISPLAY_BASIC_CHANGED) {
+                && ((eventMask & DisplayManagerGlobal.EVENT_DISPLAY_BASIC_CHANGED) != 0)) {
             msg.obj = new DisplayInfoChangedFields(display.getDisplayInfoGroupsChangedLocked(),
                     display.getDisplayInfoChangeSource());
         }
         if (messageType == MSG_DELIVER_DISPLAY_EVENT && mExtraDisplayEventLogging) {
-            Slog.i(TAG, "Deliver Display Event on Handler: " + event);
+            Slog.i(TAG, "Deliver Display Events on Handler: " + eventsToString(eventMask));
         }
         mHandler.sendMessage(msg);
     }
 
-    private void sendDisplayEventLocked(@NonNull LogicalDisplay display, @DisplayEvent int event) {
-        sendEventLocked(display, event, MSG_DELIVER_DISPLAY_EVENT);
+    private void sendDisplayEventsLocked(@NonNull LogicalDisplay display, @DisplayEvent int event) {
+        sendEventsLocked(display, event, MSG_DELIVER_DISPLAY_EVENT);
     }
 
     private void sendDisplayGroupEvent(int groupId, int event) {
@@ -4218,7 +4224,7 @@ public final class DisplayManagerService extends SystemService {
 
     private void handleBrightnessChange(LogicalDisplay display) {
         synchronized (mSyncRoot) {
-            sendDisplayEventIfEnabledLocked(display,
+            sendDisplayEventsIfEnabledLocked(display,
                     DisplayManagerGlobal.EVENT_DISPLAY_BRIGHTNESS_CHANGED);
         }
     }
@@ -4666,7 +4672,7 @@ public final class DisplayManagerService extends SystemService {
          */
         private void transmitDisplayEvents(int displayId, int eventMask)
                 throws RemoteException {
-            // The client is ready to receive the eventMask(s).
+            // The client is ready to receive the event(s).
             mCallback.onDisplayEvent(displayId, eventMask);
         }
 
@@ -6563,7 +6569,7 @@ public final class DisplayManagerService extends SystemService {
         @Override
         public void sendExternalDisplayEventLocked(@NonNull final LogicalDisplay display,
                 @DisplayEvent int event) {
-            sendDisplayEventLocked(display, event);
+            sendDisplayEventsLocked(display, event);
         }
 
         /**
