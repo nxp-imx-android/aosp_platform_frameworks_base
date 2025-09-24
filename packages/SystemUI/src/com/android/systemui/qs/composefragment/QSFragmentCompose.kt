@@ -156,10 +156,8 @@ import com.android.systemui.shade.shared.flag.ShadeWindowGoesAround
 import com.android.systemui.statusbar.policy.ConfigurationController
 import com.android.systemui.statusbar.policy.ConfigurationController.ConfigurationListener
 import com.android.systemui.util.LifecycleFragment
-import com.android.systemui.util.animation.MeasurementInput
 import com.android.systemui.util.animation.UniqueObjectHostView
 import com.android.systemui.util.asIndenting
-import com.android.systemui.util.children
 import com.android.systemui.util.kotlin.pairwise
 import com.android.systemui.util.printSection
 import com.android.systemui.util.println
@@ -1424,30 +1422,7 @@ private fun ContentScope.MediaObject(
                             )
                     }
                 },
-                update = { view ->
-                    view.update()
-                    if (!Flags.mediaFrameDimensionsFix()) {
-                        // Update layout params if host view bounds are higher than its child.
-                        val height = mediaHost.hostView.height
-                        val width = mediaHost.hostView.width
-                        var measure = false
-                        mediaHost.hostView.children.forEach { child ->
-                            if (
-                                child is FrameLayout &&
-                                    (height > child.height || width > child.width)
-                            ) {
-                                measure = true
-                                child.layoutParams = FrameLayout.LayoutParams(width, height)
-                            }
-                        }
-                        if (measure) {
-                            mediaHost.hostView.measurementManager.onMeasure(
-                                MeasurementInput(width, height)
-                            )
-                            mediaLogger.logMediaSize("update size in compose", width, height)
-                        }
-                    }
-                },
+                update = { view -> view.update() },
                 onReset = {},
             )
         }
