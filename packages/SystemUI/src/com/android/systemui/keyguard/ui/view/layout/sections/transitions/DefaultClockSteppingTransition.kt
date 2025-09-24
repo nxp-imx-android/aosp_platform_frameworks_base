@@ -32,9 +32,7 @@ class DefaultClockSteppingTransition(private val clock: ClockController) : Trans
         interpolator = Interpolators.LINEAR
         duration = LockscreenUpperRegionElementProvider.ClockCenteringDurationMS.toLong()
         addTarget(clock.largeClock.view)
-        if (com.android.systemui.shared.Flags.clockReactiveSmartspaceLayout()) {
-            addTarget(sharedR.id.date_smartspace_view_large)
-        }
+        addTarget(sharedR.id.date_smartspace_view_large)
     }
 
     private fun captureValues(transitionValues: TransitionValues) {
