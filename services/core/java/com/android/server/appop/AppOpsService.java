@@ -1951,6 +1951,13 @@ public class AppOpsService extends IAppOpsService.Stub {
     public void getHistoricalOps(int uid, String packageName, String attributionTag,
             List<String> opNames, int dataType, int filter, long beginTimeMillis,
             long endTimeMillis, int flags, RemoteCallback callback) {
+        // TODO: b/446014831 - Remove this log when slow reads are triaged and fixed.
+        Slog.d(TAG, "getHistoricalOps uid: " + uid + ", packageName: " + packageName
+                + ", attributionTag: " + attributionTag + ", opNames: " + opNames
+                + ", dataType: " + dataType + ", filter: " + filter
+                + ", beginTimeMillis: " + beginTimeMillis + ", endTimeMillis: " + endTimeMillis
+                + ", flags: " + flags + ", calling Uid: " + Binder.getCallingUid());
+
         PackageManager pm = mContext.getPackageManager();
 
         ensureHistoricalOpRequestIsValid(uid, packageName, attributionTag, opNames, filter,
