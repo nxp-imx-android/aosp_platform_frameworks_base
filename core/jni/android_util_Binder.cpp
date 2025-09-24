@@ -1435,6 +1435,22 @@ static void android_os_BinderInternal_handleGc(JNIEnv* env, jobject clazz)
 static void android_os_BinderInternal_proxyLimitCallback(int uid)
 {
     JNIEnv *env = AndroidRuntime::getJNIEnv();
+    JavaVM* vm = AndroidRuntime::getJavaVM();
+    bool shouldDetach = false;
+
+    if (env == NULL) {
+        if (vm != NULL) {
+            jint result = vm->AttachCurrentThread(&env, NULL);
+            if (result == JNI_OK) {
+                shouldDetach = true;
+            } else {
+                ALOGE("Failed to attach thread for proxy limit callback (uid: %d)!", uid);
+                return;
+            }
+        } else {
+            LOG_ALWAYS_FATAL("No JavaVM instance available for proxy limit callback (uid: %d)!Aborting.", uid);
+        }
+    }
     env->CallStaticVoidMethod(gBinderInternalOffsets.mClass,
                               gBinderInternalOffsets.mProxyLimitCallback,
                               uid);
@@ -1444,11 +1460,31 @@ static void android_os_BinderInternal_proxyLimitCallback(int uid)
         binder_report_exception(env, excep.get(),
                                 "*** Uncaught exception in binderProxyLimitCallbackFromNative");
     }
+    if (shouldDetach) {
+        vm->DetachCurrentThread();
+    }
 }
 
 static void android_os_BinderInternal_proxyWarningCallback(int uid)
 {
     JNIEnv *env = AndroidRuntime::getJNIEnv();
+    JavaVM* vm = AndroidRuntime::getJavaVM();
+    bool shouldDetach = false;
+
+    if (env == NULL) {
+        if (vm != NULL) {
+            jint result = vm->AttachCurrentThread(&env, NULL);
+            if (result == JNI_OK) {
+                shouldDetach = true;
+            } else {
+                ALOGE("Failed to attach thread for proxy warn callback (uid: %d)!", uid);
+                return;
+            }
+        } else {
+            LOG_ALWAYS_FATAL("No JavaVM instance available for proxy warn callback (uid: %d)! Aborting.", uid);
+        }
+    }
+
     env->CallStaticVoidMethod(gBinderInternalOffsets.mClass,
                               gBinderInternalOffsets.mProxyWarningCallback,
                               uid);
@@ -1457,6 +1493,10 @@ static void android_os_BinderInternal_proxyWarningCallback(int uid)
         ScopedLocalRef<jthrowable> excep(env, env->ExceptionOccurred());
         binder_report_exception(env, excep.get(),
                                 "*** Uncaught exception in binderProxyWarningCallbackFromNative");
+    }
+
+    if (shouldDetach) {
+        vm->DetachCurrentThread();
     }
 }
 
