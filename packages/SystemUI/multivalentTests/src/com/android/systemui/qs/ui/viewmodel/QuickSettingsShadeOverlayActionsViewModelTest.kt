@@ -50,7 +50,10 @@ class QuickSettingsShadeOverlayActionsViewModelTest : SysuiTestCase() {
 
     private val kosmos = testKosmos().useUnconfinedTestDispatcher()
 
-    private val underTest by lazy { kosmos.quickSettingsShadeOverlayActionsViewModel }
+    private val underTest by lazy {
+        kosmos.quickSettingsShadeOverlayActionsViewModelFactory.create()
+    }
+
     private val actions by kosmos.testScope.collectLastValue(underTest.actions)
 
     @Before
