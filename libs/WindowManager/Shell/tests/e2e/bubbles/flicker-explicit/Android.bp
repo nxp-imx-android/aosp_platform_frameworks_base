@@ -37,7 +37,6 @@ android_test {
         "flag-junit",
         "flickerlib",
         "flickerlib-helpers",
-        "flickerlib-trace_processor_shell",
         "flickertestapplib",
         "platform-test-annotations",
         "systemui-tapl",

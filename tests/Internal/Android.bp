@@ -23,7 +23,6 @@ android_test {
         "platform-test-annotations",
         "flickerlib-parsers",
         "perfetto_trace_java_protos",
-        "flickerlib-trace_processor_shell",
         "ravenwood-junit",
     ],
     java_resource_dirs: ["res"],
