@@ -131,11 +131,13 @@ private fun SelectorItem(
                     Image(bitmap = icon.asImageBitmap(), contentDescription = label?.toString())
                 }
             }
-            Text(
-                text = label?.toString() ?: "Title",
-                style = MaterialTheme.typography.labelMedium,
-                modifier = Modifier.weight(1f),
-            )
+            if (label != null) {
+                Text(
+                    text = label.toString(),
+                    style = MaterialTheme.typography.labelMedium,
+                    modifier = Modifier.weight(1f),
+                )
+            }
         }
     }
 }
