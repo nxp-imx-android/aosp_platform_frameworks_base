@@ -46,9 +46,9 @@
             android:orientation="vertical">
             <ImageView
                 android:id="@+id/app_source_icon"
-                android:layout_width="@dimen/media_output_dialog_app_icon_size"
-                android:layout_height="@dimen/media_output_dialog_app_icon_size"
-                android:layout_marginBottom="@dimen/media_output_dialog_app_icon_bottom_margin"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_marginBottom="7dp"
                 android:gravity="center_vertical"
                 android:visibility="gone"
                 android:importantForAccessibility="no"/>
@@ -60,7 +60,7 @@
                 android:gravity="center_vertical"
                 android:maxLines="1"
                 android:textColor="?android:attr/textColorPrimary"
-                android:fontFamily="variable-title-medium-emphasized"
+                android:fontFamily="@*android:string/config_headlineFontFamilyMedium"
                 android:textSize="16sp"/>
             <TextView
                 android:id="@+id/header_subtitle"
@@ -70,7 +70,7 @@
                 android:ellipsize="end"
                 android:maxLines="1"
                 android:textColor="?android:attr/textColorSecondary"
-                android:fontFamily="variable-title-small"
+                android:fontFamily="@*android:string/config_bodyFontFamily"
                 android:textSize="14sp"/>
         </LinearLayout>
     </LinearLayout>
@@ -143,7 +143,6 @@
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/dialog_footer"
-        android:background="@drawable/media_output_dialog_footer_background"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:paddingTop="4dp"
@@ -156,7 +155,6 @@
         <Button
             android:id="@+id/stop"
             style="@style/Widget.Dialog.Button.BorderButton"
-            android:fontFamily="variable-label-large"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/media_output_dialog_button_stop_casting"
@@ -165,7 +163,6 @@
         <Button
             android:id="@+id/done"
             style="@style/Widget.Dialog.Button"
-            android:fontFamily="variable-label-large"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/inline_done_button"/>
@@ -180,9 +177,7 @@
             android:orientation="horizontal"
             app:flow_wrapMode="chain"
             app:constraint_referenced_ids="stop,done"
-            app:flow_horizontalBias="1.0"
-            app:flow_horizontalGap="@dimen/media_output_dialog_button_gap"
-            app:flow_horizontalStyle="packed"
+            app:flow_horizontalStyle="spread_inside"
             app:flow_verticalAlign="center" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 </LinearLayout>
