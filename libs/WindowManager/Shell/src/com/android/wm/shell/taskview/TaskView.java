@@ -115,13 +115,16 @@ public class TaskView extends SurfaceView implements SurfaceHolder.Callback,
      * from the old window and again with {@code false} before adding it to the new window.
      */
     public void setIsMovingWindows(boolean isMovingWindows) {
+        if (isMovingWindows == mIsMovingWindows) {
+            return;
+        }
         mIsMovingWindows = isMovingWindows;
-        if (isMovingWindows) {
-            getViewTreeObserver().removeOnComputeInternalInsetsListener(this);
-            mHandler = Handler.getMain();
-        } else {
+        if (!isMovingWindows && isAttachedToWindow()) {
             getViewTreeObserver().addOnComputeInternalInsetsListener(this);
             mHandler = getHandler();
+        } else {
+            getViewTreeObserver().removeOnComputeInternalInsetsListener(this);
+            mHandler = Handler.getMain();
         }
     }
 
