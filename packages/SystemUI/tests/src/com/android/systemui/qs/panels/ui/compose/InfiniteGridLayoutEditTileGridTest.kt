@@ -16,6 +16,7 @@
 
 package com.android.systemui.qs.panels.ui.compose
 
+import android.platform.test.flag.junit.FlagsParameterization
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -24,6 +25,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.test.click
 import androidx.compose.ui.test.doubleClick
 import androidx.compose.ui.test.hasText
+import androidx.compose.ui.test.junit4.ComposeContentTestRule
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
@@ -31,7 +33,6 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollToNode
 import androidx.compose.ui.test.performTouchInput
-import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.compose.theme.PlatformTheme
 import com.android.systemui.Flags.qsSplitInternetTile
@@ -45,6 +46,7 @@ import com.android.systemui.kosmos.collectLastValue
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.qs.composefragment.dagger.usingMediaInComposeFragment
+import com.android.systemui.qs.flags.QsEditModeV2
 import com.android.systemui.qs.panels.data.repository.defaultLargeTilesRepository
 import com.android.systemui.qs.panels.domain.interactor.iconTilesInteractor
 import com.android.systemui.qs.panels.ui.compose.infinitegrid.InfiniteGridLayout
@@ -62,10 +64,16 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
+import platform.test.runner.parameterized.ParameterizedAndroidJunit4
+import platform.test.runner.parameterized.Parameters
 
 @SmallTest
-@RunWith(AndroidJUnit4::class)
-class InfiniteGridLayoutEditTileGridTest : SysuiTestCase() {
+@RunWith(ParameterizedAndroidJunit4::class)
+class InfiniteGridLayoutEditTileGridTest(flags: FlagsParameterization) : SysuiTestCase() {
+
+    init {
+        mSetFlagsRule.setFlagsParameterization(flags)
+    }
 
     @get:Rule val composeRule = createComposeRule()
 
@@ -239,18 +247,14 @@ class InfiniteGridLayoutEditTileGridTest : SysuiTestCase() {
             composeRule.waitForIdle()
 
             // Perform first removal.
-            composeRule.onNodeWithContentDescription(internetTileSpec).performTouchInput {
-                click(position = topRight)
-            }
+            composeRule.removeTile(internetTileSpec)
             composeRule.waitForIdle()
 
             // Assert the removal happened
             assertThat(latest!!.find { it.tile.tileSpec == internetTileSpec }).isNull()
 
             // Perform second removal
-            composeRule.onNodeWithContentDescription("bt").performTouchInput {
-                click(position = topRight)
-            }
+            composeRule.removeTile("bt")
             composeRule.waitForIdle()
 
             // Assert the removal happened
@@ -330,6 +334,15 @@ class InfiniteGridLayoutEditTileGridTest : SysuiTestCase() {
             composeRule.onNodeWithContentDescription("Options").assertDoesNotExist()
         }
 
+    private fun ComposeContentTestRule.removeTile(label: String) {
+        if (QsEditModeV2.isEnabled) {
+            onNodeWithContentDescription(label).performClick()
+            onNodeWithText("Remove").performClick()
+        } else {
+            onNodeWithContentDescription(label).performTouchInput { click(position = topRight) }
+        }
+    }
+
     private fun assertLargeTiles(largeSpecs: Set<String>) =
         kosmos.run {
             assertThat(viewModelUnderTest.iconTilesViewModel.largeTilesState.value.map { it.spec })
@@ -337,6 +350,10 @@ class InfiniteGridLayoutEditTileGridTest : SysuiTestCase() {
         }
 
     companion object {
+
+        @Parameters(name = "{0}")
+        @JvmStatic
+        fun data() = FlagsParameterization.progressionOf(QsEditModeV2.FLAG_NAME)
 
         private val AVAILABLE_TILES_GRID_TEST_TAG = resIdToTestTag("AvailableTilesGrid")
         private const val OPTIONS_DROP_DOWN_TEST_TAG = "OptionsDropdown"

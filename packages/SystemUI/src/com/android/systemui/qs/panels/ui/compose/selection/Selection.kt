@@ -83,6 +83,7 @@ import com.android.systemui.qs.panels.ui.compose.selection.SelectionDefaults.Bad
 import com.android.systemui.qs.panels.ui.compose.selection.SelectionDefaults.SelectedBorderWidth
 import com.android.systemui.qs.panels.ui.compose.selection.SelectionDefaults.decoration
 import com.android.systemui.qs.panels.ui.compose.selection.TileState.GreyedOut
+import com.android.systemui.qs.panels.ui.compose.selection.TileState.New
 import com.android.systemui.qs.panels.ui.compose.selection.TileState.None
 import com.android.systemui.qs.panels.ui.compose.selection.TileState.Placeable
 import com.android.systemui.qs.panels.ui.compose.selection.TileState.Removable
@@ -309,6 +310,8 @@ private fun Modifier.resizable(selected: Boolean, state: ResizingState): Modifie
 }
 
 enum class TileState {
+    /** Tile is newly composed. This should not be assigned manually afterwards. */
+    New,
     /** Tile is displayed as-is, no additional decoration needed. */
     None,
     /** Tile can be removed by the user. This is displayed by a badge in the upper end corner. */
@@ -424,6 +427,7 @@ private object SelectionDefaults {
         return when (this) {
             Removable -> removalBadge()
             Selected -> resizingHandle()
+            New,
             None,
             Placeable,
             GreyedOut -> NoDecoration
