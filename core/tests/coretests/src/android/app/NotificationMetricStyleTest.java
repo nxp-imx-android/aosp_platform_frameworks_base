@@ -26,7 +26,7 @@ import android.app.Notification.Metric;
 import android.app.Notification.Metric.FixedDate;
 import android.app.Notification.Metric.FixedFloat;
 import android.app.Notification.Metric.FixedInt;
-import android.app.Notification.Metric.FixedString;
+import android.app.Notification.Metric.FixedText;
 import android.app.Notification.Metric.FixedTime;
 import android.app.Notification.Metric.MetricValue.ValueString;
 import android.app.Notification.Metric.TimeDifference;
@@ -186,9 +186,9 @@ public class NotificationMetricStyleTest {
                         new FixedFloat(12.345f, null, 0, 3),
                         "Active time"))
                 .addMetric(new Metric(
-                        new FixedString("A LOT", "things"), "With unit"))
+                        new FixedText("A LOT", "things"), "With unit"))
                 .addMetric(new Metric(
-                        new FixedString("This is the last"), "Last"));
+                        new FixedText("This is the last"), "Last"));
 
         original.addExtras(bundle);
         MetricStyle recovered = new MetricStyle();
@@ -246,14 +246,14 @@ public class NotificationMetricStyleTest {
                 .addMetric(new Metric(new FixedInt(1), "a"))
                 .addMetric(new Metric(new FixedInt(2), "b"))
                 .addMetric(new Metric(new FixedInt(3), "c"))
-                .addMetric(new Metric(new FixedString("Ignored thing"), "d"));
+                .addMetric(new Metric(new FixedText("Ignored thing"), "d"));
 
         MetricStyle style2 = new MetricStyle()
                 .addMetric(new Metric(new FixedInt(1), "a"))
                 .addMetric(new Metric(new FixedInt(2), "b"))
                 .addMetric(new Metric(new FixedInt(3), "c"))
-                .addMetric(new Metric(new FixedString("Also ignored"), "d"))
-                .addMetric(new Metric(new FixedString("And this too"), "e"));
+                .addMetric(new Metric(new FixedText("Also ignored"), "d"))
+                .addMetric(new Metric(new FixedText("And this too"), "e"));
 
         assertThat(style1.areNotificationsVisiblyDifferent(style2)).isFalse();
         assertThat(style2.areNotificationsVisiblyDifferent(style1)).isFalse();
@@ -424,11 +424,11 @@ public class NotificationMetricStyleTest {
     }
 
     @Test
-    public void valueToString_fixedString() {
-        FixedString withUnit = new FixedString("120/80", "mmHg");
+    public void valueToString_fixedText() {
+        FixedText withUnit = new FixedText("120/80", "mmHg");
         assertThat(withUnit.toValueString(mContext)).isEqualTo(new ValueString("120/80", "mmHg"));
 
-        FixedString noUnit = new FixedString("Boring");
+        FixedText noUnit = new FixedText("Boring");
         assertThat(noUnit.toValueString(mContext)).isEqualTo(new ValueString("Boring", null));
     }
 
