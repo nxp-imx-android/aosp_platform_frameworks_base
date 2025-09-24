@@ -16,21 +16,6 @@
 
 package com.android.systemui.settings.brightness.dagger
 
-import com.android.systemui.settings.brightness.BrightnessController
-import com.android.systemui.settings.brightness.BrightnessSliderController
-import dagger.Binds
 import dagger.Module
 
-@Module
-abstract class BrightnessSliderModule {
-
-    @Binds
-    abstract fun bindBrightnessSliderControllerFactory(
-        factory: BrightnessSliderController.BrightnessSliderControllerFactory
-    ): BrightnessSliderController.Factory
-
-    @Binds
-    abstract fun bindBrightnessControllerFactory(
-        factory: BrightnessController.BrightnessControllerFactory
-    ): BrightnessController.Factory
-}
+@Module abstract class BrightnessSliderModule
