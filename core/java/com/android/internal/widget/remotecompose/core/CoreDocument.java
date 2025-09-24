@@ -75,7 +75,7 @@ public class CoreDocument implements Serializable {
 
     // We also keep a more fine-grained BUILD number, exposed as
     // ID_API_LEVEL = DOCUMENT_API_LEVEL + BUILD
-    static final float BUILD = 0.1f;
+    static final float BUILD = 0.2f;
 
     private static final boolean UPDATE_VARIABLES_BEFORE_LAYOUT = false;
 
@@ -965,6 +965,9 @@ public class CoreDocument implements Serializable {
     @NonNull
     private final HashMap<Integer, Component> mComponentMap = new HashMap<Integer, Component>();
 
+    @NonNull
+    private final HashSet<LayoutCompute> mLayoutComputeOperations = new HashSet<>();
+
     /**
      * Register all the operations recursively
      *
@@ -974,6 +977,9 @@ public class CoreDocument implements Serializable {
     private void registerVariables(
             @NonNull RemoteContext context, @NonNull ArrayList<Operation> list) {
         for (Operation op : list) {
+            if (op instanceof LayoutCompute) {
+                registerLayoutCompute((LayoutCompute) op);
+            }
             if (op instanceof VariableSupport) {
                 ((VariableSupport) op).registerListening(context);
             }
@@ -998,9 +1004,16 @@ public class CoreDocument implements Serializable {
                     if (modifier instanceof VariableSupport) {
                         ((VariableSupport) modifier).registerListening(context);
                     }
+                    if (modifier instanceof LayoutCompute) {
+                        registerLayoutCompute((LayoutCompute) modifier);
+                    }
                 }
             }
         }
+    }
+
+    private void registerLayoutCompute(@NonNull LayoutCompute operation) {
+        mLayoutComputeOperations.add(operation);
     }
 
     /**
@@ -1352,7 +1365,8 @@ public class CoreDocument implements Serializable {
      *
      * @return array of named variables or null
      */
-    public @NonNull String [] getNamedVariables(int type) {
+    @NonNull
+    public String[] getNamedVariables(int type) {
         ArrayList<String> ret = new ArrayList<>();
         getNamedVars(type, mOperations, ret);
         return ret.toArray(new String[0]);
@@ -1472,6 +1486,20 @@ public class CoreDocument implements Serializable {
             if (context.mWidth != mRootLayoutComponent.getWidth()
                     || context.mHeight != mRootLayoutComponent.getHeight()) {
                 mRootLayoutComponent.invalidateMeasure();
+            }
+            if (!mLayoutComputeOperations.isEmpty()) {
+                int nbEvaluations = 0;
+                int maxEvaluations = 2;
+                boolean needsEvaluate = true;
+                while (needsEvaluate && nbEvaluations < maxEvaluations) {
+                    needsEvaluate = false;
+                    for (LayoutCompute operation : mLayoutComputeOperations) {
+                        if (operation.evaluateInLayout(context)) {
+                            needsEvaluate = true;
+                        }
+                    }
+                    nbEvaluations++;
+                }
             }
             if (mRootLayoutComponent.needsMeasure()) {
                 mRootLayoutComponent.layout(context);

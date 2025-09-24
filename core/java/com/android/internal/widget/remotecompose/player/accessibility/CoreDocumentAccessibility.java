@@ -15,7 +15,6 @@
  */
 package com.android.internal.widget.remotecompose.player.accessibility;
 
-
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.graphics.PointF;

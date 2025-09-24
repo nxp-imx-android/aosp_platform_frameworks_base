@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 package com.android.internal.widget.remotecompose.core.operations;
+
 import android.annotation.NonNull;
 
 /** Utilities to be used across all core operations */

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 The Android Open Source Project
+ * Copyright 2025 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 package com.android.internal.widget.remotecompose.player;
-
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
@@ -31,14 +30,12 @@ import java.io.InputStream;
 import java.time.Clock;
 import java.util.Map;
 
-/**
- * Public API to create a new RemoteComposeDocument coming from an input stream
- */
+/** Public API to create a new RemoteComposeDocument coming from an input stream */
 public class RemoteComposeDocument {
 
     private @NonNull CoreDocument mDocument;
 
-    public RemoteComposeDocument(@NonNull byte [] inputStream) {
+    public RemoteComposeDocument(@NonNull byte[] inputStream) {
         this(new ByteArrayInputStream(inputStream), new SystemClock());
     }
 
@@ -76,21 +73,17 @@ public class RemoteComposeDocument {
      * Called when an initialization is needed, allowing the document to eg load resources / cache
      * them.
      */
-    public void initializeContext(@NonNull RemoteContext context,
-                                  @Nullable Map<Integer, Object> map) {
+    public void initializeContext(
+            @NonNull RemoteContext context, @Nullable Map<Integer, Object> map) {
         mDocument.initializeContext(context, map);
     }
 
-    /**
-     * Returns the width of the document in pixels
-     */
+    /** Returns the width of the document in pixels */
     public int getWidth() {
         return mDocument.getWidth();
     }
 
-    /**
-     * Returns the height of the document in pixels
-     */
+    /** Returns the height of the document in pixels */
     public int getHeight() {
         return mDocument.getHeight();
     }
@@ -103,7 +96,7 @@ public class RemoteComposeDocument {
      * Paint the document
      *
      * @param context the provided PaintContext
-     * @param theme   the theme we want to use for this document.
+     * @param theme the theme we want to use for this document.
      */
     public void paint(@NonNull RemoteContext context, int theme) {
         mDocument.paint(context, theme);
@@ -139,6 +132,7 @@ public class RemoteComposeDocument {
      *
      * @return
      */
+    @Nullable
     public String[] getNamedColors() {
         return mDocument.getNamedColors();
     }
@@ -149,6 +143,7 @@ public class RemoteComposeDocument {
      * @param type the type of variable NamedVariable.COLOR_TYPE, STRING_TYPE, etc
      * @return array of name or null
      */
+    @NonNull
     public String[] getNamedVariables(int type) {
         return mDocument.getNamedVariables(type);
     }
@@ -159,13 +154,12 @@ public class RemoteComposeDocument {
      * @param id the component id
      * @return the corresponding component or null if not found
      */
+    @Nullable
     public Component getComponent(int id) {
         return mDocument.getComponent(id);
     }
 
-    /**
-     * Invalidate the document for layout measures. This will trigger a layout remeasure pass.
-     */
+    /** Invalidate the document for layout measures. This will trigger a layout remeasure pass. */
     public void invalidate() {
         mDocument.invalidateMeasure();
     }
@@ -175,6 +169,7 @@ public class RemoteComposeDocument {
      *
      * @return array of strings representing some useful statistics
      */
+    @NonNull
     public String[] getStats() {
         if (mDocument == null) {
             return new String[0];
@@ -188,7 +183,7 @@ public class RemoteComposeDocument {
      * @param ids
      * @return
      */
-    public int hasSensorListeners(int[] ids) {
+    public int hasSensorListeners(@NonNull int[] ids) {
         return 0;
     }
 
@@ -215,7 +210,7 @@ public class RemoteComposeDocument {
      *
      * @param serializer
      */
-    public void serialize(MapSerializer serializer) {
+    public void serialize(@NonNull MapSerializer serializer) {
         mDocument.serialize(serializer);
     }
 }
