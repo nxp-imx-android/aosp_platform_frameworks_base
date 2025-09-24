@@ -23,6 +23,7 @@ import android.view.WindowMetrics
 import android.view.windowManager
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
+import com.android.internal.logging.uiEventLoggerFake
 import com.android.internal.util.ScreenshotRequest
 import com.android.internal.util.mockScreenshotHelper
 import com.android.systemui.SysuiTestCase
@@ -32,6 +33,7 @@ import com.android.systemui.kosmos.runCurrent
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.lifecycle.activateIn
+import com.android.systemui.screencapture.ScreenCaptureEvent
 import com.android.systemui.screencapture.common.shared.model.LargeScreenCaptureUiParameters
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureUiState
 import com.android.systemui.screencapture.common.shared.model.largeScreenCaptureUiParameters
@@ -172,6 +174,96 @@ class PreCaptureViewModelTest : SysuiTestCase() {
 
             viewModel.updateCaptureRegion(ScreenCaptureRegion.PARTIAL)
             assertThat(viewModel.captureRegion).isEqualTo(ScreenCaptureRegion.PARTIAL)
+        }
+
+    @Test
+    fun updateCaptureType_toRecording_logsFullscreenRecording() =
+        kosmos.runTest {
+            setupViewModel()
+
+            viewModel.updateCaptureType(ScreenCaptureType.RECORDING)
+
+            assertThat(uiEventLoggerFake.numLogs()).isEqualTo(1)
+            assertThat(uiEventLoggerFake.eventId(0))
+                .isEqualTo(
+                    ScreenCaptureEvent.SCREEN_CAPTURE_LARGE_SCREEN_SELECTED_FULLSCREEN_RECORDING.id
+                )
+        }
+
+    @Test
+    fun updateCaptureType_toScreenshot_logsFullscreenScreenshot() =
+        kosmos.runTest {
+            setupViewModel(
+                LargeScreenCaptureUiParameters(defaultCaptureType = ScreenCaptureType.RECORDING)
+            )
+
+            viewModel.updateCaptureType(ScreenCaptureType.SCREENSHOT)
+
+            assertThat(uiEventLoggerFake.numLogs()).isEqualTo(1)
+            assertThat(uiEventLoggerFake.eventId(0))
+                .isEqualTo(
+                    ScreenCaptureEvent.SCREEN_CAPTURE_LARGE_SCREEN_SELECTED_FULLSCREEN_SCREENSHOT.id
+                )
+        }
+
+    @Test
+    fun updateCaptureRegion_toPartial_logsPartialScreenshot() =
+        kosmos.runTest {
+            setupViewModel()
+
+            viewModel.updateCaptureRegion(ScreenCaptureRegion.PARTIAL)
+
+            assertThat(uiEventLoggerFake.numLogs()).isEqualTo(1)
+            assertThat(uiEventLoggerFake.eventId(0))
+                .isEqualTo(
+                    ScreenCaptureEvent.SCREEN_CAPTURE_LARGE_SCREEN_SELECTED_PARTIAL_SCREENSHOT.id
+                )
+        }
+
+    @Test
+    fun updateCaptureRegion_toAppWindow_logsAppWindowScreenshot() =
+        kosmos.runTest {
+            setupViewModel()
+
+            viewModel.updateCaptureRegion(ScreenCaptureRegion.APP_WINDOW)
+
+            assertThat(uiEventLoggerFake.numLogs()).isEqualTo(1)
+            assertThat(uiEventLoggerFake.eventId(0))
+                .isEqualTo(
+                    ScreenCaptureEvent.SCREEN_CAPTURE_LARGE_SCREEN_SELECTED_APP_WINDOW_SCREENSHOT.id
+                )
+        }
+
+    @Test
+    fun updateCaptureRegion_toPartial_withRecording_logsPartialRecording() =
+        kosmos.runTest {
+            setupViewModel(
+                LargeScreenCaptureUiParameters(defaultCaptureType = ScreenCaptureType.RECORDING)
+            )
+
+            viewModel.updateCaptureRegion(ScreenCaptureRegion.PARTIAL)
+
+            assertThat(uiEventLoggerFake.numLogs()).isEqualTo(1)
+            assertThat(uiEventLoggerFake.eventId(0))
+                .isEqualTo(
+                    ScreenCaptureEvent.SCREEN_CAPTURE_LARGE_SCREEN_SELECTED_PARTIAL_RECORDING.id
+                )
+        }
+
+    @Test
+    fun updateCaptureRegion_toAppWindow_withRecording_logsAppWindowRecording() =
+        kosmos.runTest {
+            setupViewModel(
+                LargeScreenCaptureUiParameters(defaultCaptureType = ScreenCaptureType.RECORDING)
+            )
+
+            viewModel.updateCaptureRegion(ScreenCaptureRegion.APP_WINDOW)
+
+            assertThat(uiEventLoggerFake.numLogs()).isEqualTo(1)
+            assertThat(uiEventLoggerFake.eventId(0))
+                .isEqualTo(
+                    ScreenCaptureEvent.SCREEN_CAPTURE_LARGE_SCREEN_SELECTED_APP_WINDOW_RECORDING.id
+                )
         }
 
     @Test

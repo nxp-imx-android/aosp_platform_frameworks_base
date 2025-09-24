@@ -18,6 +18,8 @@ package com.android.systemui.screencapture
 
 import com.android.internal.logging.UiEvent
 import com.android.internal.logging.UiEventLogger.UiEventEnum
+import com.android.systemui.screencapture.record.largescreen.shared.model.ScreenCaptureRegion
+import com.android.systemui.screencapture.record.largescreen.shared.model.ScreenCaptureType
 
 /** Enum of available screen capture events. */
 enum class ScreenCaptureEvent(private val mId: Int) : UiEventEnum {
@@ -29,7 +31,57 @@ enum class ScreenCaptureEvent(private val mId: Int) : UiEventEnum {
     @UiEvent(doc = "Requested a partial screenshot from the large-screen pre-capture UI")
     SCREEN_CAPTURE_LARGE_SCREEN_PARTIAL_SCREENSHOT_REQUESTED(2491),
     @UiEvent(doc = "Invoked partial screenshot using the keyboard shortcut \"Meta + Ctrl + S\"")
-    SCREEN_CAPTURE_LARGE_SCREEN_PARTIAL_SCREENSHOT_KEYBOARD_SHORTCUT(2495);
+    SCREEN_CAPTURE_LARGE_SCREEN_PARTIAL_SCREENSHOT_KEYBOARD_SHORTCUT(2495),
+    @UiEvent(doc = "Selected fullscreen screenshot in the large-screen pre-capture UI")
+    SCREEN_CAPTURE_LARGE_SCREEN_SELECTED_FULLSCREEN_SCREENSHOT(2501),
+    @UiEvent(doc = "Selected fullscreen recording in the large-screen pre-capture UI")
+    SCREEN_CAPTURE_LARGE_SCREEN_SELECTED_FULLSCREEN_RECORDING(2502),
+    @UiEvent(doc = "Selected partial screenshot in the large-screen pre-capture UI")
+    SCREEN_CAPTURE_LARGE_SCREEN_SELECTED_PARTIAL_SCREENSHOT(2503),
+    @UiEvent(doc = "Selected partial recording in the large-screen pre-capture UI")
+    SCREEN_CAPTURE_LARGE_SCREEN_SELECTED_PARTIAL_RECORDING(2504),
+    @UiEvent(doc = "Selected app window screenshot in the large-screen pre-capture UI")
+    SCREEN_CAPTURE_LARGE_SCREEN_SELECTED_APP_WINDOW_SCREENSHOT(2505),
+    @UiEvent(doc = "Selected app window recording in the large-screen pre-capture UI")
+    SCREEN_CAPTURE_LARGE_SCREEN_SELECTED_APP_WINDOW_RECORDING(2506);
 
     override fun getId(): Int = mId
+
+    companion object {
+        /**
+         * Returns the corresponding [ScreenCaptureEvent] for the given [region] and [type]. The
+         * event name follows the convention SCREEN_CAPTURE_LARGE_SCREEN_SELECTED_[region]_[type].
+         */
+        fun fromRegionAndType(
+            region: ScreenCaptureRegion,
+            type: ScreenCaptureType,
+        ): ScreenCaptureEvent {
+            return when (region) {
+                ScreenCaptureRegion.FULLSCREEN -> {
+                    when (type) {
+                        ScreenCaptureType.SCREENSHOT ->
+                            SCREEN_CAPTURE_LARGE_SCREEN_SELECTED_FULLSCREEN_SCREENSHOT
+                        ScreenCaptureType.RECORDING ->
+                            SCREEN_CAPTURE_LARGE_SCREEN_SELECTED_FULLSCREEN_RECORDING
+                    }
+                }
+                ScreenCaptureRegion.PARTIAL -> {
+                    when (type) {
+                        ScreenCaptureType.SCREENSHOT ->
+                            SCREEN_CAPTURE_LARGE_SCREEN_SELECTED_PARTIAL_SCREENSHOT
+                        ScreenCaptureType.RECORDING ->
+                            SCREEN_CAPTURE_LARGE_SCREEN_SELECTED_PARTIAL_RECORDING
+                    }
+                }
+                ScreenCaptureRegion.APP_WINDOW -> {
+                    when (type) {
+                        ScreenCaptureType.SCREENSHOT ->
+                            SCREEN_CAPTURE_LARGE_SCREEN_SELECTED_APP_WINDOW_SCREENSHOT
+                        ScreenCaptureType.RECORDING ->
+                            SCREEN_CAPTURE_LARGE_SCREEN_SELECTED_APP_WINDOW_RECORDING
+                    }
+                }
+            }
+        }
+    }
 }
