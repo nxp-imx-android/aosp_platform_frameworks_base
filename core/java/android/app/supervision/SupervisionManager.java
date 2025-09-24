@@ -36,8 +36,8 @@ import android.app.supervision.flags.Flags;
 import android.compat.annotation.UnsupportedAppUsage;
 import android.content.Context;
 import android.content.Intent;
-import android.os.Bundle;
 import android.os.RemoteException;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -65,6 +65,11 @@ public class SupervisionManager {
                         } else {
                             onSupervisionDisabled(userId);
                         }
+                    }
+
+                    @Override
+                    public void onPolicyChanged(Policy policy) {
+                        // TODO (b/446219213): Implement listener
                     }
                 };
 
@@ -123,8 +128,8 @@ public class SupervisionManager {
             "android.app.supervision.action.DISABLE_SUPERVISION";
 
     /**
-     * SupervisionService's identifier for setting policies or restrictions in
-     * {@link DevicePolicyManager}.
+     * SupervisionService's identifier for setting policies or restrictions in {@link
+     * DevicePolicyManager}.
      *
      * @hide
      */

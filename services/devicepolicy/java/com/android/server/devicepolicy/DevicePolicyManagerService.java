@@ -14447,6 +14447,22 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
         return result;
     }
 
+    private void setApplicationHiddenBySystem(@NonNull String systemEntity, String packageName,
+            @UserIdInt int targetUser, boolean hidden) {
+        Objects.requireNonNull(systemEntity);
+        CallerIdentity caller = getCallerIdentity();
+
+        synchronized (getLockObject()) {
+            checkCanExecuteOrThrowUnsafe(DevicePolicyManager.OPERATION_SET_APPLICATION_HIDDEN);
+            EnforcingAdmin enforcingAdmin = EnforcingAdmin.createSystemEnforcingAdmin(systemEntity);
+            mDevicePolicyEngine.setLocalPolicy(
+                    PolicyDefinition.APPLICATION_HIDDEN(packageName),
+                    enforcingAdmin,
+                    new BooleanPolicyValue(hidden),
+                    targetUser);
+        }
+    }
+
     @Override
     public boolean isApplicationHidden(ComponentName who, String callerPackage,
             String packageName, boolean parent) {
@@ -16387,6 +16403,13 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
         @Override
         public List<String> getDefaultCrossProfilePackages() {
             return DevicePolicyManagerService.this.getDefaultCrossProfilePackages();
+        }
+
+        @Override
+        public void setApplicationHiddenBySystem(String systemEntity, String packageName,
+                int userId, boolean hidden) {
+            DevicePolicyManagerService.this.setApplicationHiddenBySystem(
+                    systemEntity, packageName, userId, hidden);
         }
 
         @Override

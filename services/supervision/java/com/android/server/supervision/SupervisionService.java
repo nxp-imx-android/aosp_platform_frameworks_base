@@ -41,6 +41,7 @@ import android.app.role.OnRoleHoldersChangedListener;
 import android.app.role.RoleManager;
 import android.app.supervision.ISupervisionListener;
 import android.app.supervision.ISupervisionManager;
+import android.app.supervision.PackagePolicy;
 import android.app.supervision.Policy;
 import android.app.supervision.SupervisionManager;
 import android.app.supervision.SupervisionManagerInternal;
@@ -337,6 +338,42 @@ public class SupervisionService extends ISupervisionManager.Stub {
     @Override
     public void setPolicy(@UserIdInt int userId, @NonNull Policy policy) {
         // TODO(b/446218039): Implement policy verification and storage.
+
+        executeOnServiceThread(
+                () -> {
+                    applyPolicy(userId, policy);
+                    dispatchSupervisionAppServiceEvent(
+                            userId, listener -> listener.onPolicyChanged(policy));
+                });
+    }
+
+    private void applyPolicy(@UserIdInt int userId, @NonNull Policy policy) {
+        switch (policy) {
+            case PackagePolicy pp -> applyPackagePolicy(userId, pp);
+            default -> Slogf.w(SupervisionLog.TAG, "Unsupported policy type.");
+        }
+    }
+
+    private void applyPackagePolicy(@UserIdInt int userId, PackagePolicy policy) {
+        String packageName = policy.getPackageName();
+        int restrictionType = policy.getRestrictionType();
+        switch (restrictionType) {
+            case PackagePolicy.RESTRICTION_TYPE_BLOCKED ->
+                    setApplicationHiddenForUser(userId, packageName, policy.isEnabled());
+            default -> Slogf.w(
+                    SupervisionLog.TAG,
+                    "Unsupported restriction type: %s for package: %s",
+                    restrictionType,
+                    packageName);
+        }
+    }
+
+    private void setApplicationHiddenForUser(
+            @UserIdInt int userId, String packageName, boolean hidden) {
+        DevicePolicyManagerInternal dpmi = mInjector.getDpmInternal();
+        if (dpmi != null) {
+            dpmi.setApplicationHiddenBySystem("supervisionservice", packageName, userId, hidden);
+        }
     }
 
     /**

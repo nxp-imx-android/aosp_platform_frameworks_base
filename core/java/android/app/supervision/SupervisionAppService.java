@@ -27,9 +27,9 @@ import android.content.Intent;
 import android.os.IBinder;
 
 /**
- * Base class for a service that the holders of the
- * {@link android.app.role.RoleManager#ROLE_SYSTEM_SUPERVISION} or
- * {@link android.app.role.RoleManager#ROLE_SUPERVISION} roles must extend.
+ * Base class for a service that the holders of the {@link
+ * android.app.role.RoleManager#ROLE_SYSTEM_SUPERVISION} or {@link
+ * android.app.role.RoleManager#ROLE_SUPERVISION} roles must extend.
  *
  * <p>When supervision is enabled, the system searches for this service from each supervision role
  * holder using an intent filter for the {@link #ACTION_SUPERVISION_APP_SERVICE} action. The system
@@ -38,8 +38,8 @@ import android.os.IBinder;
  * <p>If a supervision role holder's process crashes, the system will restart it and automatically
  * rebind to the service after a backoff period.
  *
- * <p>The service must be protected with the permission
- * {@link android.Manifest.permission#BIND_SUPERVISION_APP_SERVICE}.
+ * <p>The service must be protected with the permission {@link
+ * android.Manifest.permission#BIND_SUPERVISION_APP_SERVICE}.
  *
  * @hide
  */
@@ -64,6 +64,11 @@ public class SupervisionAppService extends Service {
                     } else {
                         SupervisionAppService.this.onSupervisionDisabled();
                     }
+                }
+
+                @Override
+                public void onPolicyChanged(Policy policy) {
+                    // TODO (b/446219213): Implement listener
                 }
             };
 

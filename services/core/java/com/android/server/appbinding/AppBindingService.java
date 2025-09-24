@@ -179,7 +179,7 @@ public class AppBindingService extends Binder {
     }
 
 
-    public <T> void dispatchAppServiceEvent(
+    public void dispatchAppServiceEvent(
             Class<? extends AppServiceFinder<?, ?>> finderClass,
             int userId, Consumer<AppServiceConnection> action) {
         List<AppServiceConnection> serviceConnections = new ArrayList<>();
