@@ -29,11 +29,13 @@ import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.lifecycle.HydratedActivatable
 import com.android.systemui.mediaprojection.MediaProjectionCaptureTarget
 import com.android.systemui.screencapture.common.ScreenCaptureUiScope
+import com.android.systemui.screencapture.common.domain.interactor.ScreenCaptureMarkupInteractor
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureTarget
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureType
 import com.android.systemui.screencapture.common.ui.viewmodel.DrawableLoaderViewModel
 import com.android.systemui.screencapture.common.ui.viewmodel.DrawableLoaderViewModelImpl
 import com.android.systemui.screencapture.domain.interactor.ScreenCaptureUiInteractor
+import com.android.systemui.screencapture.record.domain.interactor.ScreenCaptureRecordFeaturesInteractor
 import com.android.systemui.screencapture.record.ui.viewmodel.ScreenCaptureRecordParametersViewModel
 import com.android.systemui.screenrecord.domain.ScreenRecordingParameters
 import com.android.systemui.screenrecord.domain.interactor.ScreenRecordingServiceInteractor
@@ -56,6 +58,7 @@ constructor(
     recordDetailsTargetViewModelFactory: RecordDetailsTargetViewModel.Factory,
     private val drawableLoaderViewModelImpl: DrawableLoaderViewModelImpl,
     private val screenCaptureUiInteractor: ScreenCaptureUiInteractor,
+    private val markupInteractor: ScreenCaptureMarkupInteractor,
     private val activityManager: ActivityManagerWrapper,
 ) : HydratedActivatable(), DrawableLoaderViewModel by drawableLoaderViewModelImpl {
 
@@ -80,6 +83,14 @@ constructor(
     var shouldShowDetails: Boolean by
         mutableStateOf(!screenRecordingServiceInteractor.status.value.isRecording)
         private set
+
+    val markupEnabled: Boolean? by
+        markupInteractor.enabled.hydratedStateOf(
+            traceName = "SmallScreenCaptureRecordViewModel#markupEnabled",
+            initialValue = null,
+        )
+
+    val shouldShowMarkupButton: Boolean = ScreenCaptureRecordFeaturesInteractor.isMarkupAvailable
 
     val shouldShowSettingsButton: Boolean by
         screenRecordingServiceInteractor.status
@@ -119,6 +130,10 @@ constructor(
 
     fun showMarkupColorSelector() {
         detailsPopup = RecordDetailsPopupType.MarkupColorSelector
+    }
+
+    fun setMarkupEnabled(enabled: Boolean) {
+        markupInteractor.setEnabled(enabled)
     }
 
     fun dismiss() {

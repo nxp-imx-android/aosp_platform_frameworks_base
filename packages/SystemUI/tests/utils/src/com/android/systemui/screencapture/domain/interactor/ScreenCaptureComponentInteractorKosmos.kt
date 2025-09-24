@@ -23,7 +23,9 @@ import com.android.systemui.screencapture.common.ScreenCaptureUiComponent
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureType
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureUiParameters
 import com.android.systemui.screencapture.data.repository.screenCaptureComponentRepository
+import com.android.systemui.screencapture.ui.ScreenCaptureOverlayUi
 import com.android.systemui.screencapture.ui.ScreenCaptureUi
+import com.android.systemui.screencapture.ui.screenCaptureOverlayUi
 import com.android.systemui.screencapture.ui.screenCaptureUiFactory
 import com.android.systemui.screenrecord.domain.interactor.screenRecordingServiceInteractor
 import kotlinx.coroutines.CoroutineScope
@@ -60,6 +62,12 @@ private class FakeScreenCaptureComponentBuilder(private val kosmos: Kosmos) :
     override fun build(): ScreenCaptureComponent =
         object : ScreenCaptureComponent {
             override fun coroutineScope(): CoroutineScope = scope
+
+            override fun screenCaptureOverlayStateInteractor():
+                ScreenCaptureOverlayStateInteractor = kosmos.screenCaptureOverlayStateInteractor
+
+            override fun screenRecordOverlayUi(): ScreenCaptureOverlayUi =
+                kosmos.screenCaptureOverlayUi
 
             override fun screenCaptureUiFactory(): ScreenCaptureUi.Factory =
                 kosmos.screenCaptureUiFactory

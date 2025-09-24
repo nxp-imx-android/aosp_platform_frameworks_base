@@ -60,6 +60,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.android.compose.PlatformIconButton
@@ -134,6 +135,24 @@ constructor(private val viewModelFactory: SmallScreenCaptureRecordViewModel.Fact
                                         loadIcon(
                                                 viewModel = viewModel,
                                                 resId = R.drawable.ic_settings,
+                                                contentDescription = null,
+                                            )
+                                            .value,
+                                    modifier = Modifier.size(24.dp),
+                                )
+                            },
+                        )
+                    }
+                    AnimatedVisibility(visible = viewModel.shouldShowMarkupButton) {
+                        ToggleToolbarButton(
+                            checked = viewModel.markupEnabled == true,
+                            onCheckedChanged = { viewModel.setMarkupEnabled(it) },
+                            icon = {
+                                LoadingIcon(
+                                    icon =
+                                        loadIcon(
+                                                viewModel = viewModel,
+                                                resId = R.drawable.ic_markup,
                                                 contentDescription = null,
                                             )
                                             .value,
@@ -221,15 +240,15 @@ private fun ToggleToolbarButton(
     modifier: Modifier = Modifier,
 ) {
     val secondaryColor = MaterialTheme.colorScheme.secondary
+    val shape = RoundedCornerShape(12.dp)
     Box(
         contentAlignment = Alignment.Center,
         modifier =
             modifier
                 .size(48.dp)
                 .padding(6.dp)
-                .thenIf(checked) {
-                    Modifier.background(color = secondaryColor, shape = RoundedCornerShape(12.dp))
-                }
+                .clip(shape)
+                .thenIf(checked) { Modifier.background(color = secondaryColor, shape = shape) }
                 .clickable(onClick = { onCheckedChanged(!checked) }),
     ) {
         CompositionLocalProvider(

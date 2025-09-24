@@ -18,6 +18,8 @@ package com.android.systemui.screencapture.common
 
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureType
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureUiParameters
+import com.android.systemui.screencapture.domain.interactor.ScreenCaptureOverlayStateInteractor
+import com.android.systemui.screencapture.ui.ScreenCaptureOverlayUi
 import com.android.systemui.screencapture.ui.ScreenCaptureUi
 import dagger.BindsInstance
 import dagger.Subcomponent
@@ -42,6 +44,10 @@ interface ScreenCaptureComponent {
             @JvmSuppressWildcards
             ScreenCaptureUiComponent.Builder,
         >
+
+    fun screenCaptureOverlayStateInteractor(): ScreenCaptureOverlayStateInteractor
+
+    fun screenRecordOverlayUi(): ScreenCaptureOverlayUi
 
     /**
      * Dagger Subcomponent Builder for [ScreenCaptureComponent].
