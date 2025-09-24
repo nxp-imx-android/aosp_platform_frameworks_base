@@ -84,14 +84,14 @@ public final class PolicyIdentifier<T> {
     }
 
     /**
-     * Block screen capture. See {@link android.view.Display#FLAG_SECURE} for more details on how
-     * blocking works.
+     * Screen capture is disallowed. See {@link android.view.Display#FLAG_SECURE} for more details
+     * on how blocking works.
      */
     @FlaggedApi(FLAG_POLICY_STREAMLINING)
     public static final int SCREEN_CAPTURE_DISALLOWED = 1;
 
     /**
-     * Allow screen capture.
+     * Screen capture is allowed.
      */
     @FlaggedApi(FLAG_POLICY_STREAMLINING)
     public static final int SCREEN_CAPTURE_ALLOWED = 2;
@@ -111,14 +111,14 @@ public final class PolicyIdentifier<T> {
     private static final String SCREEN_CAPTURE_KEY = "screenCapture";
 
     /**
-     * Policy that controls whether the screen capture is enabled or disabled. Disabling
+     * Policy that controls whether the screen capture is allowed or disallowed. Disallowing
      * screen capture also prevents the content from being shown on display devices that do not have
      * a secure video output. See {@link android.view.Display#FLAG_SECURE} for more details about
      * secure surfaces and secure displays.
      * Throws SecurityException if the caller is not permitted to control screen capture policy.
      * If the scope is set to {@link DevicePolicyManager.POLICY_SCOPE_DEVICE} and the caller
-     * is not a profile owner of an organization-owned managed profile, a security exception will
-     * be thrown.
+     * is not a profile owner of an organization-owned managed profile or a device owner, a
+     * security exception will be thrown.
      */
     @FlaggedApi(FLAG_POLICY_STREAMLINING)
     @NonNull
