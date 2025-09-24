@@ -1623,12 +1623,9 @@
     <string name="gpsNotifMessage" msgid="7346649122793758032">"<xliff:g id="NAME">%1$s</xliff:g> (<xliff:g id="SERVICE">%2$s</xliff:g>) сурады"</string>
     <string name="gpsVerifYes" msgid="3719843080744112940">"Ооба"</string>
     <string name="gpsVerifNo" msgid="1671201856091564741">"Жок"</string>
-    <!-- no translation found for emergency_location_notification_title (917557758257778958) -->
-    <skip />
-    <!-- no translation found for emergency_location_notification_message (1877038822515882885) -->
-    <skip />
-    <!-- no translation found for emergency_location_notification_learn_more (8718634939217070481) -->
-    <skip />
+    <string name="emergency_location_notification_title" msgid="917557758257778958">"Кайда жүргөнүңүз өзгөчө кырдаалга байланыштуу көрсөтүлдү"</string>
+    <string name="emergency_location_notification_message" msgid="1877038822515882885">"Кырсыктаганда жардамга келчү кызматтар жүргөн жериңиз тууралуу маалыматты байланыш операторунан алышты"</string>
+    <string name="emergency_location_notification_learn_more" msgid="8718634939217070481">"Кеңири маалымат"</string>
     <string name="sync_too_many_deletes" msgid="6999440774578705300">"Жок кылуу чегинен ашты"</string>
     <string name="sync_too_many_deletes_desc" msgid="7409327940303504440">"<xliff:g id="ACCOUNT_NAME">%3$s</xliff:g> эсебине тиешелүү <xliff:g id="TYPE_OF_SYNC">%2$s</xliff:g> боюнча <xliff:g id="NUMBER_OF_DELETED_ITEMS">%1$d</xliff:g> өчүрүлгөн элемент бар. Мындан аркы кадамдарыңыз кандай болот?"</string>
     <string name="sync_really_delete" msgid="5657871730315579051">"Элементтерди жок кылуу"</string>
