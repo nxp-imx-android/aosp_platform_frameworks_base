@@ -57,10 +57,10 @@ import android.util.Slog;
 import com.android.internal.util.CollectionUtils;
 
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.HashSet;
 import java.util.function.Consumer;
 
 /** Utility methods for accessing {@link RoleManager} APIs. */
@@ -212,8 +212,14 @@ public final class RolesUtils {
      * Remove the role for the package association.
      */
     public static void removeRoleHolderForAssociation(
-            @NonNull Context context, int userId, String packageName, String deviceProfile) {
-        if (deviceProfile == null) return;
+            @NonNull Context context, int userId, String packageName, String deviceProfile,
+            Consumer<Boolean> callback) {
+        if (deviceProfile == null) {
+            if (callback != null) {
+                callback.accept(false);
+            }
+            return;
+        }
 
         // Check if the device profile has an alias.
         final String aliasedDeviceProfile =
@@ -227,15 +233,19 @@ public final class RolesUtils {
                 + " for userId=" + userId + ", packageName=" + packageName);
 
         Binder.withCleanCallingIdentity(() ->
-            roleManager.removeRoleHolderAsUser(aliasedDeviceProfile, packageName,
-                    MANAGE_HOLDERS_FLAG_DONT_KILL_APP, userHandle, context.getMainExecutor(),
-                    success -> {
-                        if (!success) {
-                            Slog.e(TAG, "Failed to remove userId=" + userId + ", packageName="
-                                    + packageName + " from the list of " + aliasedDeviceProfile
-                                    + " holders.");
-                        }
-                    })
+                roleManager.removeRoleHolderAsUser(aliasedDeviceProfile, packageName,
+                        MANAGE_HOLDERS_FLAG_DONT_KILL_APP, userHandle, context.getMainExecutor(),
+                        success -> {
+                            if (!success) {
+                                Slog.e(TAG, "Failed to remove userId=" + userId + ", packageName="
+                                        + packageName + " from the list of " + aliasedDeviceProfile
+                                        + " holders.");
+                            }
+
+                            if (callback != null) {
+                                callback.accept(success);
+                            }
+                        })
         );
     }
 
