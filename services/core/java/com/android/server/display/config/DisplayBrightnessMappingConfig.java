@@ -96,8 +96,7 @@ public class DisplayBrightnessMappingConfig {
      */
     public DisplayBrightnessMappingConfig(Context context, DisplayManagerFlags flags,
             AutoBrightness autoBrightnessConfig, Spline backlightToBrightnessSpline) {
-        if (flags.areAutoBrightnessModesEnabled() && autoBrightnessConfig != null
-                && autoBrightnessConfig.getLuxToBrightnessMapping() != null
+        if (autoBrightnessConfig != null && autoBrightnessConfig.getLuxToBrightnessMapping() != null
                 && autoBrightnessConfig.getLuxToBrightnessMapping().size() > 0) {
             for (LuxToBrightnessMapping mapping
                     : autoBrightnessConfig.getLuxToBrightnessMapping()) {

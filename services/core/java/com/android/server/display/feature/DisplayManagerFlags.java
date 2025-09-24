@@ -83,10 +83,6 @@ public class DisplayManagerFlags {
             Flags.FLAG_RESOLUTION_BACKUP_RESTORE,
             Flags::resolutionBackupRestore);
 
-    private final FlagState mAutoBrightnessModesFlagState = new FlagState(
-            Flags.FLAG_AUTO_BRIGHTNESS_MODES,
-            Flags::autoBrightnessModes);
-
     private final FlagState mFastHdrTransitions = new FlagState(
             Flags.FLAG_FAST_HDR_TRANSITIONS,
             Flags::fastHdrTransitions);
@@ -304,13 +300,6 @@ public class DisplayManagerFlags {
         return mResolutionBackupRestore.isEnabled();
     }
 
-    /**
-     * @return Whether generic auto-brightness modes are enabled
-     */
-    public boolean areAutoBrightnessModesEnabled() {
-        return mAutoBrightnessModesFlagState.isEnabled();
-    }
-
     public boolean isFastHdrTransitionsEnabled() {
         return mFastHdrTransitions.isEnabled();
     }
@@ -523,7 +512,6 @@ public class DisplayManagerFlags {
         pw.println(" " + mEvenDimmerFlagState);
         pw.println(" " + mSmallAreaDetectionFlagState);
         pw.println(" " + mSyncedResolutionSwitch);
-        pw.println(" " + mAutoBrightnessModesFlagState);
         pw.println(" " + mFastHdrTransitions);
         pw.println(" " + mSensorBasedBrightnessThrottling);
         pw.println(" " + mRefactorDisplayPowerController);

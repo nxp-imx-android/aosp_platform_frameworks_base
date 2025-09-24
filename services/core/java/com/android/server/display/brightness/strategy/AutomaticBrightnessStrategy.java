@@ -509,8 +509,7 @@ public class AutomaticBrightnessStrategy extends AutomaticBrightnessStrategy2
 
     private void switchMode(int state, boolean useNormalBrightnessForDoze, int policy,
             boolean isWearBedtimeModeEnabled, boolean sendUpdate) {
-        if (!mDisplayManagerFlags.areAutoBrightnessModesEnabled()
-                || mAutomaticBrightnessController == null
+        if (mAutomaticBrightnessController == null
                 || mAutomaticBrightnessController.isInIdleMode()) {
             return;
         }

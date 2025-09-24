@@ -1054,11 +1054,9 @@ final class DisplayPowerController implements AutomaticBrightnessController.Call
         mContext.getContentResolver().registerContentObserver(
                 Settings.System.getUriFor(Settings.System.SCREEN_BRIGHTNESS_MODE),
                 false /*notifyForDescendants*/, mSettingsObserver, UserHandle.USER_ALL);
-        if (mFlags.areAutoBrightnessModesEnabled()) {
-            mContext.getContentResolver().registerContentObserver(
-                    Settings.System.getUriFor(Settings.System.SCREEN_BRIGHTNESS_FOR_ALS),
-                    /* notifyForDescendants= */ false, mSettingsObserver, UserHandle.USER_ALL);
-        }
+        mContext.getContentResolver().registerContentObserver(
+                Settings.System.getUriFor(Settings.System.SCREEN_BRIGHTNESS_FOR_ALS),
+                /* notifyForDescendants= */ false, mSettingsObserver, UserHandle.USER_ALL);
         handleBrightnessModeChange();
     }
 
@@ -1093,12 +1091,11 @@ final class DisplayPowerController implements AutomaticBrightnessController.Call
         BrightnessMappingStrategy dozeModeBrightnessMapper =
                 BrightnessMappingStrategy.create(context, mDisplayDeviceConfig,
                         AUTO_BRIGHTNESS_MODE_DOZE, mDisplayWhiteBalanceController);
-        if (mFlags.areAutoBrightnessModesEnabled() && dozeModeBrightnessMapper != null) {
+        if (dozeModeBrightnessMapper != null) {
             brightnessMappers.put(AUTO_BRIGHTNESS_MODE_DOZE, dozeModeBrightnessMapper);
         }
 
-        if (mFlags.areAutoBrightnessModesEnabled()
-                && mFlags.isAutoBrightnessModeBedtimeWearEnabled()) {
+        if (mFlags.isAutoBrightnessModeBedtimeWearEnabled()) {
             BrightnessMappingStrategy bedtimeBrightnessMapper =
                     BrightnessMappingStrategy.create(context, mDisplayDeviceConfig,
                             AUTO_BRIGHTNESS_MODE_BEDTIME_WEAR, mDisplayWhiteBalanceController);
@@ -1434,7 +1431,7 @@ final class DisplayPowerController implements AutomaticBrightnessController.Call
 
         if (!mFlags.isRefactorDisplayPowerControllerEnabled()) {
             // Switch to doze auto-brightness mode if needed
-            if (mFlags.areAutoBrightnessModesEnabled() && mAutomaticBrightnessController != null
+            if (mAutomaticBrightnessController != null
                     && !mAutomaticBrightnessController.isInIdleMode()) {
                 // Set sendUpdate to false, we're already in updatePowerState() so there's no need
                 // to trigger it again
