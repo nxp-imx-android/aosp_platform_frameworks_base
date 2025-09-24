@@ -6357,4 +6357,7 @@
 
   <!-- For Interactive Doze -->
   <java-symbol type="bool" name="config_enableInteractiveDoze" />
+
+  <!-- Whether to force color fade. -->
+  <java-symbol type="bool" name="config_forceColorFade" />
 </resources>

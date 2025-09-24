@@ -468,3 +468,13 @@ flag {
     description: "Enables app dynamic resolution change configuration"
     bug: "414654227"
 }
+
+flag {
+    name: "force_color_fade"
+    namespace: "wear_systems"
+    description: "Force Color Fade."
+    bug: "420507333"
+    metadata {
+      purpose: PURPOSE_BUGFIX
+    }
+}

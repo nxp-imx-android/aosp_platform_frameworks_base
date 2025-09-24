@@ -7762,4 +7762,7 @@
 
     <!-- Whether the device supports Interactive Doze mode. -->
     <bool name="config_enableInteractiveDoze">false</bool>
+
+    <!-- Whether to force color fade. -->
+    <bool name="config_forceColorFade">false</bool>
 </resources>

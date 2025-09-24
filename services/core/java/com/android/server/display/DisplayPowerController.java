@@ -93,6 +93,7 @@ import com.android.server.display.color.ColorDisplayService.ReduceBrightColorsLi
 import com.android.server.display.config.HighBrightnessModeData;
 import com.android.server.display.config.HysteresisLevels;
 import com.android.server.display.feature.DisplayManagerFlags;
+import com.android.server.display.feature.flags.Flags;
 import com.android.server.display.layout.Layout;
 import com.android.server.display.plugin.PluginManager;
 import com.android.server.display.state.DisplayStateController;
@@ -682,7 +683,7 @@ final class DisplayPowerController implements AutomaticBrightnessController.Call
 
         setUpAutoBrightness(context, handler);
 
-        mColorFadeEnabled = mInjector.isColorFadeEnabled()
+        mColorFadeEnabled = mInjector.isColorFadeEnabled(context)
                 && !resources.getBoolean(
                   com.android.internal.R.bool.config_displayColorFadeDisabled);
         mColorFadeFadesConfig = resources.getBoolean(
@@ -3519,8 +3520,10 @@ final class DisplayPowerController implements AutomaticBrightnessController.Call
                     sensorManager, resources);
         }
 
-        boolean isColorFadeEnabled() {
-            return !ActivityManager.isLowRamDeviceStatic();
+        boolean isColorFadeEnabled(Context context) {
+            return !ActivityManager.isLowRamDeviceStatic()
+                    || (Flags.forceColorFade()
+                    && context.getResources().getBoolean(R.bool.config_forceColorFade));
         }
     }
 
