@@ -21,6 +21,7 @@ import android.platform.test.annotations.EnableFlags
 import android.testing.TestableLooper
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
+import com.android.internal.logging.uiEventLoggerFake
 import com.android.settingslib.media.InputMediaDevice
 import com.android.settingslib.media.MediaDevice
 import com.android.systemui.Flags
@@ -33,6 +34,7 @@ import com.android.systemui.lifecycle.activateIn
 import com.android.systemui.res.R
 import com.android.systemui.testKosmosNew
 import com.android.systemui.volume.panel.component.mediainput.data.repository.mediaInputComponentRepository
+import com.android.systemui.volume.panel.ui.VolumePanelUiEvent
 import com.google.common.truth.Truth.assertThat
 import org.junit.Before
 import org.junit.Test
@@ -112,6 +114,18 @@ class MediaInputViewModelTest : SysuiTestCase() {
             setCurrentInputDevice(testMediaDevice)
 
             assertThat(underTest.connectedDeviceIcon).isInstanceOf(Icon.Loaded::class.java)
+        }
+
+    @Test
+    fun clickCurrentInputDevice_logVolumePanelMediaInputClickedEvent() =
+        kosmos.runTest {
+            setCurrentInputDevice(testMediaDevice)
+
+            underTest.onBarClick(null)
+
+            assertThat(uiEventLoggerFake.numLogs()).isEqualTo(1)
+            val event = VolumePanelUiEvent.VOLUME_PANEL_MEDIA_INPUT_CLICKED
+            assertThat(uiEventLoggerFake.eventId(0)).isEqualTo(event.id)
         }
 
     private fun setCurrentInputDevice(device: MediaDevice?) {

@@ -17,18 +17,26 @@
 package com.android.systemui.volume.panel.component.mediainput.ui.viewmodel
 
 import androidx.compose.runtime.getValue
+import com.android.internal.logging.UiEventLogger
 import com.android.systemui.animation.Expandable
 import com.android.systemui.common.shared.model.Icon
 import com.android.systemui.lifecycle.HydratedActivatable
+import com.android.systemui.media.dialog.MediaSwitchingType
 import com.android.systemui.res.R
 import com.android.systemui.volume.panel.component.mediainput.domain.interactor.MediaInputComponentInteractor
+import com.android.systemui.volume.panel.component.mediaoutput.domain.interactor.MediaOutputActionsInteractor
+import com.android.systemui.volume.panel.ui.VolumePanelUiEvent
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.flow.map
 
 class MediaInputViewModel
 @AssistedInject
-constructor(mediaInputComponentInteractor: MediaInputComponentInteractor) : HydratedActivatable() {
+constructor(
+    mediaInputComponentInteractor: MediaInputComponentInteractor,
+    private val actionsInteractor: MediaOutputActionsInteractor,
+    private val uiEventLogger: UiEventLogger,
+) : HydratedActivatable() {
     val hasInputDevice: Boolean by
         mediaInputComponentInteractor.currentInputDevice
             .map { mediaDevice -> mediaDevice != null }
@@ -51,7 +59,8 @@ constructor(mediaInputComponentInteractor: MediaInputComponentInteractor) : Hydr
             )
 
     fun onBarClick(expandable: Expandable?) {
-        // TODO(b/442004274): Open input dialog when this function is triggered.
+        uiEventLogger.log(VolumePanelUiEvent.VOLUME_PANEL_MEDIA_INPUT_CLICKED)
+        actionsInteractor.onBarClick(/* model= */ null, expandable, MediaSwitchingType.INPUT)
     }
 
     @AssistedFactory
