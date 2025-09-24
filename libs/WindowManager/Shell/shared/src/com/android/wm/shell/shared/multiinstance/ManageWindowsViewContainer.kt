@@ -57,7 +57,18 @@ abstract class ManageWindowsViewContainer(
         val bitmapList = snapshotList
             .filter { it.second != null }
             .map { (index, snapshot) ->
-                index to Bitmap.wrapHardwareBuffer(snapshot!!.hardwareBuffer, snapshot.colorSpace)
+                if (com.android.window.flags.Flags.reduceTaskSnapshotMemoryUsage()) {
+                    snapshot.let {
+                        val b: Bitmap? = it!!.wrapToBitmap()
+                        it.closeBuffer()
+                        index to b
+                    }
+                } else {
+                    index to Bitmap.wrapHardwareBuffer(
+                        snapshot!!.hardwareBuffer,
+                        snapshot.colorSpace
+                    )
+                }
             }
         return createAndShowMenuView(
             bitmapList,

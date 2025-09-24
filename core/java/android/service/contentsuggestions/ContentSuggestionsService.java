@@ -76,7 +76,6 @@ public abstract class ContentSuggestionsService extends Service {
                         ContentSuggestionsManager.EXTRA_BITMAP, android.graphics.Bitmap.class);
             } else {
                 if (snapshot != null) {
-                    final HardwareBuffer snapshotBuffer = snapshot.getHardwareBuffer();
                     ColorSpace colorSpace = snapshot.getColorSpace();
                     int colorSpaceId = 0;
                     if (colorSpace != null) {
@@ -85,8 +84,14 @@ public abstract class ContentSuggestionsService extends Service {
                     if (colorSpaceId >= 0 && colorSpaceId < ColorSpace.Named.values().length) {
                         colorSpace = ColorSpace.get(ColorSpace.Named.values()[colorSpaceId]);
                     }
-                    wrappedBuffer = Bitmap.wrapHardwareBuffer(snapshotBuffer, colorSpace);
-                    snapshotBuffer.close();
+                    if (com.android.window.flags.Flags.reduceTaskSnapshotMemoryUsage()) {
+                        wrappedBuffer = snapshot.wrapToBitmap(colorSpace);
+                        snapshot.closeBuffer();
+                    } else {
+                        final HardwareBuffer snapshotBuffer = snapshot.getHardwareBuffer();
+                        wrappedBuffer = Bitmap.wrapHardwareBuffer(snapshotBuffer, colorSpace);
+                        snapshotBuffer.close();
+                    }
                 }
             }
 
