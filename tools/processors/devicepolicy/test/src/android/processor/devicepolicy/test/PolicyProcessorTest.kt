@@ -189,7 +189,7 @@ class PolicyProcessorTest {
 
         assertThat(mCompilerWithoutProcessor.compile(policyIdentifier)).succeeded()
         assertThat(compilation).failed()
-        assertThat(compilation).hadErrorContaining("@PolicyDefinition should not be applied to any element")
+        assertThat(compilation).hadErrorContaining("@PolicyDefinition can not be applied to any element, use a type-specific annotation such as @EnumPolicyDefinition instead")
     }
 
     @Test
