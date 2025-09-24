@@ -44,36 +44,16 @@ static std::optional<ScopedUtfChars> extract_jstring(JNIEnv* env, jstring manage
     return ScopedUtfChars(env, managed_string);
 }
 
-} // namespace
-
-namespace android {
-
-static jint android_os_NativeZygoteProcess_startNativeProcess(
-        JNIEnv* env, jclass /* classObj */, jobject sockFd, jint uid, jint gid, jlong startSeq,
-        jstring packageName, jstring niceName, jint targetSdkVersion, jboolean startChildZygote,
-        jint runtimeFlags, jstring seInfo) {
-    int fd = jniGetFDFromFileDescriptor(env, sockFd);
-    if (fd < 0) {
-        jniThrowIOException(env, errno);
-        return -1;
-    }
-    auto packageNameStr = extract_jstring(env, packageName);
-    auto niceNameStr = extract_jstring(env, niceName);
-    auto seInfoStr = extract_jstring(env, seInfo);
-    const char* packageNamePtr = packageNameStr ? packageNameStr.value().c_str() : nullptr;
-    const char* niceNamePtr = niceNameStr ? niceNameStr.value().c_str() : nullptr;
-    const char* seInfoPtr = seInfoStr ? seInfoStr.value().c_str() : nullptr;
-
-    flatbuffers::FlatBufferBuilder builder;
-    auto spawnAndroidNativeCmd =
-            CreateSpawnAndroidNativeDirect(builder, packageNamePtr, seInfoPtr, startSeq,
-                                           static_cast<unsigned>(runtimeFlags));
+static void CreateSpawnParcel(flatbuffers::FlatBufferBuilder& builder, JNIEnv* env, jint uid,
+                              jint gid, const char* niceNameStr, bool is_child_zygote,
+                              SpawnPayload payload_type, flatbuffers::Offset<void> payload) {
     int32_t priority_initial = -20;
     int32_t priority_final = 0;
     jintArray gids = nullptr;
-    bool is_child_zygote = startChildZygote == JNI_TRUE;
-    jlong capabilities = zygote::CalculateCapabilities(env, uid, gid, gids, is_child_zygote);
-    jlong bounding_capabilities = zygote::CalculateBoundingCapabilities(env, uid, gid, gids);
+    jlong capabilities =
+            android::zygote::CalculateCapabilities(env, uid, gid, gids, is_child_zygote);
+    jlong bounding_capabilities =
+            android::zygote::CalculateBoundingCapabilities(env, uid, gid, gids);
     uint64_t cap_effective = capabilities;
     uint64_t cap_permitted = capabilities;
     uint64_t cap_bound = bounding_capabilities;
@@ -81,21 +61,14 @@ static jint android_os_NativeZygoteProcess_startNativeProcess(
     std::vector<uint32_t> secondary_groups;
     std::vector<RLimitData> rlimits;
     auto spawnCmd =
-            CreateSpawnDirect(builder, uid, gid, niceNamePtr, priority_initial, priority_final,
+            CreateSpawnDirect(builder, uid, gid, niceNameStr, priority_initial, priority_final,
                               cap_effective, cap_permitted, cap_inheritable, cap_bound,
-                              &secondary_groups, &rlimits, SpawnPayload_SpawnAndroidNative,
-                              spawnAndroidNativeCmd.Union());
+                              &secondary_groups, &rlimits, payload_type, payload);
     auto parcel = CreateParcel(builder, Message_Spawn, spawnCmd.Union());
     builder.Finish(parcel);
-    uint8_t* buf = builder.GetBufferPointer();
-    ssize_t size = builder.GetSize();
+}
 
-    ssize_t written = write(fd, buf, size);
-    if (written == -1 || written != size) {
-        jniThrowIOException(env, errno);
-        return -1;
-    }
-
+static jint ReadSpawnResponse(int fd, JNIEnv* env) {
     uint8_t response_buf[RESPONSE_DATA_BUF_SIZE];
     memset(response_buf, 0, sizeof(response_buf));
     int received = read(fd, response_buf, sizeof(response_buf));
@@ -118,6 +91,45 @@ static jint android_os_NativeZygoteProcess_startNativeProcess(
             jniThrowRuntimeException(env, "Received an unexpected type response");
             return -1;
     }
+}
+
+} // namespace
+
+namespace android {
+
+static jint android_os_NativeZygoteProcess_startNativeProcess(
+        JNIEnv* env, jclass /* classObj */, jobject sockFd, jint uid, jint gid, jlong startSeq,
+        jstring packageName, jstring niceName, jint targetSdkVersion, jboolean startChildZygote,
+        jint runtimeFlags, jstring seInfo) {
+    int fd = jniGetFDFromFileDescriptor(env, sockFd);
+    if (fd < 0) {
+        jniThrowRuntimeException(env, "Failed to get a valid file descriptor");
+        return -1;
+    }
+    auto packageNameStr = extract_jstring(env, packageName);
+    auto niceNameStr = extract_jstring(env, niceName);
+    auto seInfoStr = extract_jstring(env, seInfo);
+    const char* packageNamePtr = packageNameStr ? packageNameStr.value().c_str() : nullptr;
+    const char* niceNamePtr = niceNameStr ? niceNameStr.value().c_str() : nullptr;
+    const char* seInfoPtr = seInfoStr ? seInfoStr.value().c_str() : nullptr;
+
+    flatbuffers::FlatBufferBuilder builder;
+    auto spawnAndroidNativeCmd =
+            CreateSpawnAndroidNativeDirect(builder, packageNamePtr, seInfoPtr, startSeq,
+                                           static_cast<unsigned>(runtimeFlags));
+    bool is_child_zygote = startChildZygote == JNI_TRUE;
+    CreateSpawnParcel(builder, env, uid, gid, niceNamePtr, is_child_zygote,
+                      SpawnPayload_SpawnAndroidNative, spawnAndroidNativeCmd.Union());
+    uint8_t* buf = builder.GetBufferPointer();
+    ssize_t size = builder.GetSize();
+
+    ssize_t written = write(fd, buf, size);
+    if (written == -1 || written != size) {
+        jniThrowIOException(env, errno);
+        return -1;
+    }
+
+    return ReadSpawnResponse(fd, env);
 }
 
 // ----------------------------------------------------------------------------
