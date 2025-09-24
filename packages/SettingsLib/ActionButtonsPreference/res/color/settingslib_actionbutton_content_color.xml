@@ -18,5 +18,5 @@
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
     <item android:state_enabled="false"
         android:alpha="@dimen/material_emphasis_disabled_background" android:color="@color/settingslib_materialColorOnSurface"/>
-    <item android:color="@color/settingslib_materialColorPrimary"/>
+    <item android:color="?android:attr/colorAccent"/>
 </selector>

@@ -24,6 +24,6 @@
         <item name="android:textColor">@color/settingslib_actionbutton_content_color</item>
         <item name="android:paddingTop">20dp</item>
         <item name="android:paddingBottom">20dp</item>
-        <item name="android:backgroundTint">@color/settingslib_materialColorSurfaceContainerHigh</item>
+        <item name="android:backgroundTint">@color/settingslib_colorSurface</item>
     </style>
 </resources>
