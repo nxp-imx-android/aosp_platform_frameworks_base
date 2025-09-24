@@ -263,3 +263,11 @@ flag {
   bug: "434885800"
 
 }
+
+flag {
+  name: "fix_dynamic_layout_builder_recycle"
+  namespace: "text"
+  description: "Fixing DynamicLayout.Builder forget to clean mMinimumFontMetrics during recycle."
+  bug: "434885800"
+
+}
