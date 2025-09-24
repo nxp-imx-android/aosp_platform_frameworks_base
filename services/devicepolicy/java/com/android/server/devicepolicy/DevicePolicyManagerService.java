@@ -25144,6 +25144,10 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
         if (!mHasFeature) {
             return;
         }
+        if (!Flags.policyStreamlining()) {
+            throw new UnsupportedOperationException("Policy streamlining is not enabled");
+        }
+
         setPolicy(getCallerIdentity(callerPackageName), id, scope, value);
     }
 
