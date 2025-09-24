@@ -20,8 +20,6 @@ This app fundamentally assumes that it is the only foreground app running on
 the device while testing.  If that assumption is broken, this app will log
 to logcat, at the "E"rror level, noting an "ASSUMPTION FAILURE".
 
-This app will log, at the "E"rror level, each time a frame is dropped.
-
 On a properly set up device, it is expected that this app never drops a frame.
 
 ### Helpful "flags" to flip
@@ -31,6 +29,9 @@ The source code (in
 few constants which can be changed to help with debugging and testing.  The
 app needs to be recompiled after any of these have been changed.
 
+* `LOG_DROPPED_FRAMES`  If changed to `true`, the app will log, at the "E"rror
+level, every frame drop detected in-app.  Note that trace-based frame drop
+detection is the golden standard; this is best effort.
 * `LOG_EVERY_FRAME`  If changed to `true`, the app will log, at the "D"ebug
 level, every (non-dropped) frame.
 * `FORCE_DROPPED_FRAMES`  If changed to `true`, the app will drop every 64th
