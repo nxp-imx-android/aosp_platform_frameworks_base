@@ -19,6 +19,7 @@ package com.android.systemui.qs.ui.viewmodel
 import android.view.Display
 import androidx.compose.runtime.getValue
 import com.android.systemui.brightness.ui.viewmodel.BrightnessSliderViewModel
+import com.android.systemui.display.data.repository.DisplayTypeRepository
 import com.android.systemui.lifecycle.ExclusiveActivatable
 import com.android.systemui.lifecycle.Hydrator
 import com.android.systemui.media.controls.domain.pipeline.interactor.MediaCarouselInteractor
@@ -30,10 +31,9 @@ import com.android.systemui.qs.panels.ui.viewmodel.DetailsViewModel
 import com.android.systemui.qs.panels.ui.viewmodel.EditModeViewModel
 import com.android.systemui.qs.panels.ui.viewmodel.MediaInRowInLandscapeViewModel
 import com.android.systemui.qs.panels.ui.viewmodel.TileGridViewModel
-import com.android.systemui.shade.domain.interactor.ShadeDisplaysInteractor
+import com.android.systemui.shade.ShadeDisplayAware
 import com.android.systemui.shade.shared.flag.ShadeWindowGoesAround
 import com.android.systemui.shade.ui.viewmodel.ShadeHeaderViewModel
-import dagger.Lazy
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
@@ -52,10 +52,10 @@ constructor(
     @Assisted private val supportsBrightnessMirroring: Boolean,
     val editModeViewModel: EditModeViewModel,
     val detailsViewModel: DetailsViewModel,
-    shadeDisplaysInteractor: Lazy<ShadeDisplaysInteractor>,
     private val mediaCarouselInteractor: MediaCarouselInteractor,
     val mediaViewModelFactory: MediaViewModel.Factory,
     mediaInRowInLandscapeViewModelFactory: MediaInRowInLandscapeViewModel.Factory,
+    @ShadeDisplayAware shadeDisplayTypeRepository: DisplayTypeRepository,
 ) : ExclusiveActivatable() {
 
     private val hydrator = Hydrator("QuickSettingsContainerViewModel.hydrator")
@@ -63,12 +63,12 @@ constructor(
     val isBrightnessSliderVisible by
         hydrator.hydratedStateOf(
             traceName = "isBrightnessSliderVisible",
-            initialValue = shouldBrightnessSliderBeVisible(Display.DEFAULT_DISPLAY),
+            initialValue = shadeDisplayTypeRepository.displayType.value == Display.TYPE_INTERNAL,
             source =
                 if (ShadeWindowGoesAround.isEnabled) {
-                    shadeDisplaysInteractor.get().pendingDisplayId.map {
-                        shouldBrightnessSliderBeVisible(it)
-                    }
+                    // The shade could be on an external display: in that case the slider shouldn't
+                    // be visible.
+                    shadeDisplayTypeRepository.displayType.map { it == Display.TYPE_INTERNAL }
                 } else {
                     flowOf(true)
                 },
@@ -110,13 +110,6 @@ constructor(
     }
 
     companion object {
-        private fun shouldBrightnessSliderBeVisible(displayId: Int): Boolean {
-            return if (ShadeWindowGoesAround.isEnabled) {
-                displayId == Display.DEFAULT_DISPLAY
-            } else {
-                true
-            }
-        }
 
         /** Behavior of the media carousel in quick settings */
         val mediaUiBehavior =
