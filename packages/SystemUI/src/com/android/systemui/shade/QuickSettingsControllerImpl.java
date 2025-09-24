@@ -64,6 +64,7 @@ import com.android.internal.policy.ScreenDecorationsUtils;
 import com.android.internal.policy.SystemBarUtils;
 import com.android.systemui.DejankUtils;
 import com.android.systemui.Dumpable;
+import com.android.systemui.Flags;
 import com.android.systemui.classifier.Classifier;
 import com.android.systemui.communal.ui.viewmodel.CommunalTransitionViewModel;
 import com.android.systemui.dagger.SysUISingleton;
@@ -684,7 +685,8 @@ public class QuickSettingsControllerImpl implements QuickSettingsController, Dum
     public boolean shouldQuickSettingsIntercept(float x, float y, float yDiff) {
         boolean keyguardShowing = mBarState == KEYGUARD;
         if (!isExpansionEnabled() || mCollapsedOnDown || (keyguardShowing
-                && mKeyguardBypassController.getBypassEnabled()) || mSplitShadeEnabled) {
+                && mKeyguardBypassController.getBypassEnabled() && !Flags.expandQsBypassEnabled())
+                || mSplitShadeEnabled) {
             return false;
         }
         int headerTop, headerBottom;

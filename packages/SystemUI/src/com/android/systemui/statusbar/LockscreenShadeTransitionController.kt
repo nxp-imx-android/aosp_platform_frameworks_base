@@ -14,6 +14,7 @@ import androidx.annotation.FloatRange
 import androidx.annotation.VisibleForTesting
 import com.android.systemui.Dumpable
 import com.android.systemui.ExpandHelper
+import com.android.systemui.Flags
 import com.android.systemui.Gefingerpoken
 import com.android.systemui.classifier.Classifier
 import com.android.systemui.classifier.FalsingCollector
@@ -403,7 +404,7 @@ constructor(
     internal val isDragDownAnywhereEnabled: Boolean
         get() =
             (statusBarStateController.getState() == StatusBarState.KEYGUARD &&
-                !keyguardBypassController.bypassEnabled &&
+                (!keyguardBypassController.bypassEnabled || Flags.expandQsBypassEnabled()) &&
                 (isQsFullyCollapsed || useSplitShade))
 
     /** The amount in pixels that the user has dragged down. */
