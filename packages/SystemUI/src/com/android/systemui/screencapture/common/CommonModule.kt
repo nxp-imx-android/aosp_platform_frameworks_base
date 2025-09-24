@@ -30,6 +30,8 @@ import com.android.systemui.screencapture.common.data.repository.ScreenCaptureRe
 import com.android.systemui.screencapture.common.data.repository.ScreenCaptureRecentTaskRepositoryImpl
 import com.android.systemui.screencapture.common.data.repository.ScreenCaptureThumbnailRepository
 import com.android.systemui.screencapture.common.data.repository.ScreenCaptureThumbnailRepositoryImpl
+import com.android.systemui.screencapture.common.ui.viewmodel.AppContentsViewModel
+import com.android.systemui.screencapture.common.ui.viewmodel.AppContentsViewModelImpl
 import com.android.systemui.screencapture.common.ui.viewmodel.RecentTasksViewModel
 import com.android.systemui.screencapture.common.ui.viewmodel.RecentTasksViewModelImpl
 import dagger.Binds
@@ -71,6 +73,11 @@ interface CommonModule {
     @Binds fun bindRecentTaskListProvider(impl: ShellRecentTaskListProvider): RecentTaskListProvider
 
     @Binds fun bindRecentTasksViewModel(impl: RecentTasksViewModelImpl): RecentTasksViewModel
+
+    @Binds
+    fun bindAppContentsViewModelFactory(
+        impl: AppContentsViewModelImpl.Factory
+    ): AppContentsViewModel.Factory
 
     companion object {
         @Provides

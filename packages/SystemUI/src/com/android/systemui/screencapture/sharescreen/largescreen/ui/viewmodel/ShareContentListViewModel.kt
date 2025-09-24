@@ -19,11 +19,13 @@ package com.android.systemui.screencapture.sharescreen.largescreen.ui.viewmodel
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import com.android.app.tracing.coroutines.launchTraced
 import com.android.systemui.lifecycle.HydratedActivatable
 import com.android.systemui.screencapture.common.ui.viewmodel.RecentTaskViewModel
 import com.android.systemui.screencapture.common.ui.viewmodel.RecentTasksViewModel
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
+import kotlinx.coroutines.coroutineScope
 
 /**
  * ViewModel for the Share Content list UI.
@@ -34,9 +36,18 @@ import dagger.assisted.AssistedInject
  */
 class ShareContentListViewModel
 @AssistedInject
-constructor(private val recentTasksViewModel: RecentTasksViewModel) :
-    HydratedActivatable(), RecentTasksViewModel by recentTasksViewModel {
+constructor(private val recentTasksViewModel: RecentTasksViewModel) : HydratedActivatable() {
+
+    val targets = recentTasksViewModel.targets
     var selectedRecentTaskViewModel by mutableStateOf<RecentTaskViewModel?>(null)
+
+    override suspend fun onActivated() {
+        coroutineScope {
+            launchTraced("ShareContentListViewModel#recentTasksViewModel") {
+                recentTasksViewModel.activate()
+            }
+        }
+    }
 
     @AssistedFactory
     interface Factory {

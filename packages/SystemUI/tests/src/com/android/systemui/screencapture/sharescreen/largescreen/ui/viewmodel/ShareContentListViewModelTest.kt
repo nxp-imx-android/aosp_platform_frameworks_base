@@ -34,7 +34,7 @@ class ShareContentListViewModelTest : SysuiTestCase() {
     private val kosmos = testKosmosNew()
     private val testScope = kosmos.testScope
 
-    private val viewModel: ShareContentListViewModel = kosmos.fakeShareContentListViewModel
+    private val viewModel: ShareContentListViewModel = kosmos.shareContentListViewModel
 
     @Before
     fun setUp() {

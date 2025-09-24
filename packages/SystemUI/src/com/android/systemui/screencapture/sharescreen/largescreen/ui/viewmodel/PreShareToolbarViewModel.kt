@@ -49,7 +49,7 @@ constructor(
     fun onShareClicked() {
         if (selectedScreenCaptureTarget is ScreenCaptureTarget.App) {
             shareContentListViewModel.selectedRecentTaskViewModel?.let {
-                screenCaptureUiInteractor.onScreenSharingApproved(it.task.taskId)
+                screenCaptureUiInteractor.onScreenSharingApproved(it.model.taskId)
             }
         }
         shareScreenPrivacyIndicatorInteractor.showChip()

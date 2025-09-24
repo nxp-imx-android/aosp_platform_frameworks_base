@@ -16,13 +16,20 @@
 
 package com.android.systemui.screencapture.common.ui.viewmodel
 
+import android.content.ComponentName
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.kosmos.runTest
+import com.android.systemui.kosmos.testScope
+import com.android.systemui.lifecycle.activateIn
+import com.android.systemui.mediaprojection.appselector.data.RecentTask
+import com.android.systemui.mediaprojection.appselector.data.RecentTask.UserType
+import com.android.systemui.screencapture.common.data.repository.fakeScreenCaptureRecentTaskRepository
 import com.android.systemui.screencapture.common.domain.interactor.screenCaptureRecentTaskInteractor
+import com.android.systemui.screencapture.common.domain.model.ScreenCaptureRecentTask
 import com.android.systemui.testKosmosNew
-import com.google.common.truth.Truth
+import com.google.common.truth.Truth.assertThat
 import org.junit.Test
 import org.junit.runner.RunWith
 
@@ -37,11 +44,26 @@ class RecentTasksViewModelImplTest : SysuiTestCase() {
         kosmos.runTest {
             // Arrange
             val viewModel = RecentTasksViewModelImpl(screenCaptureRecentTaskInteractor)
+            viewModel.activateIn(testScope)
+
+            val fakeRecentTask =
+                RecentTask(
+                    taskId = 1,
+                    displayId = 2,
+                    userId = 3,
+                    topActivityComponent = ComponentName("FakeTopPackage", "FakeTopClass"),
+                    baseIntentComponent = ComponentName("FakeBasePackage", "FakeBaseClass"),
+                    colorBackground = 0x12345699,
+                    isForegroundTask = true,
+                    userType = UserType.STANDARD,
+                    splitBounds = null,
+                )
 
             // Act
-            val result = viewModel.recentTasks
+            val result = viewModel.targets
+            fakeScreenCaptureRecentTaskRepository.setRecentTasks(fakeRecentTask)
 
             // Assert
-            Truth.assertThat(result).isSameInstanceAs(screenCaptureRecentTaskInteractor.recentTasks)
+            assertThat(result.value).containsExactly(ScreenCaptureRecentTask(fakeRecentTask))
         }
 }

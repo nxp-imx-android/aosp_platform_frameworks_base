@@ -38,5 +38,5 @@ val Kosmos.preShareToolbarViewModelFactory by Fixture {
 }
 
 val Kosmos.preShareToolbarViewModel by Fixture {
-    preShareToolbarViewModelFactory.create(fakeShareContentListViewModel)
+    preShareToolbarViewModelFactory.create(shareContentListViewModel)
 }

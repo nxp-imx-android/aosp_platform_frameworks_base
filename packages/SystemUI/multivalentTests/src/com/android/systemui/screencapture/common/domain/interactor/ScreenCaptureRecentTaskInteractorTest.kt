@@ -73,8 +73,7 @@ class ScreenCaptureRecentTaskInteractorTest : SysuiTestCase() {
             fakeScreenCaptureRecentTaskRepository.setRecentTasks(fakeTask)
 
             // Assert
-            assertThat(result).hasSize(2)
-            assertThat(result[0]).isNull()
-            assertThat(result[1]).containsExactly(ScreenCaptureRecentTask(task = fakeTask))
+            assertThat(result).hasSize(1)
+            assertThat(result[0]).containsExactly(ScreenCaptureRecentTask(task = fakeTask))
         }
 }
