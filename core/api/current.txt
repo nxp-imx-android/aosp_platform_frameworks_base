@@ -6695,14 +6695,19 @@ package android.app {
     method public int describeContents();
     method public boolean getAllowGeneratedReplies();
     method public android.app.RemoteInput[] getDataOnlyRemoteInputs();
+    method @FlaggedApi("android.app.api_notification_action_custom") public int getEmphasisHint();
     method public android.os.Bundle getExtras();
     method public android.graphics.drawable.Icon getIcon();
     method public android.app.RemoteInput[] getRemoteInputs();
     method public int getSemanticAction();
+    method @FlaggedApi("android.app.api_notification_action_custom") public int getStyleHint();
     method public boolean isAuthenticationRequired();
     method public boolean isContextual();
     method public void writeToParcel(android.os.Parcel, int);
     field @NonNull public static final android.os.Parcelable.Creator<android.app.Notification.Action> CREATOR;
+    field @FlaggedApi("android.app.api_notification_action_custom") public static final int EMPHASIS_AUTO = 0; // 0x0
+    field @FlaggedApi("android.app.api_notification_action_custom") public static final int EMPHASIS_PRIMARY = 1; // 0x1
+    field @FlaggedApi("android.app.api_notification_action_custom") public static final int EMPHASIS_SECONDARY = 2; // 0x2
     field public static final int SEMANTIC_ACTION_ARCHIVE = 5; // 0x5
     field public static final int SEMANTIC_ACTION_CALL = 10; // 0xa
     field public static final int SEMANTIC_ACTION_DELETE = 4; // 0x4
@@ -6714,6 +6719,10 @@ package android.app {
     field public static final int SEMANTIC_ACTION_THUMBS_DOWN = 9; // 0x9
     field public static final int SEMANTIC_ACTION_THUMBS_UP = 8; // 0x8
     field public static final int SEMANTIC_ACTION_UNMUTE = 7; // 0x7
+    field @FlaggedApi("android.app.api_notification_action_custom") public static final int STYLE_AUTO = 0; // 0x0
+    field @FlaggedApi("android.app.api_notification_action_custom") public static final int STYLE_ICON_AND_TEXT = 2; // 0x2
+    field @FlaggedApi("android.app.api_notification_action_custom") public static final int STYLE_ICON_ONLY = 3; // 0x3
+    field @FlaggedApi("android.app.api_notification_action_custom") public static final int STYLE_TEXT_ONLY = 1; // 0x1
     field public android.app.PendingIntent actionIntent;
     field @Deprecated public int icon;
     field public CharSequence title;
@@ -6731,7 +6740,9 @@ package android.app {
     method @NonNull public android.app.Notification.Action.Builder setAllowGeneratedReplies(boolean);
     method @NonNull public android.app.Notification.Action.Builder setAuthenticationRequired(boolean);
     method @NonNull public android.app.Notification.Action.Builder setContextual(boolean);
+    method @FlaggedApi("android.app.api_notification_action_custom") @NonNull public android.app.Notification.Action.Builder setEmphasisHint(int);
     method @NonNull public android.app.Notification.Action.Builder setSemanticAction(int);
+    method @FlaggedApi("android.app.api_notification_action_custom") @NonNull public android.app.Notification.Action.Builder setStyleHint(int);
   }
 
   public static interface Notification.Action.Extender {
