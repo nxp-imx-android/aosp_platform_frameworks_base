@@ -1006,6 +1006,9 @@ public class UserManagerService extends IUserManager.Stub {
 
     private final UserVisibilityMediator mUserVisibilityMediator;
 
+    @Nullable // only set on HSUM devices
+    private final HsuAllowlistsMediator mHam;
+
     @GuardedBy("mUsersLock")
     private @CanBeNULL @UserIdInt int mBootUser = UserHandle.USER_NULL;
 
@@ -1167,6 +1170,13 @@ public class UserManagerService extends IUserManager.Stub {
         mUser0Allocations = DBG_ALLOCATION ? new AtomicInteger() : null;
         mPrivateSpaceAutoLockSettingsObserver = new SettingsObserver(mHandler);
         emulateSystemUserModeIfNeeded();
+        // TODO(b/412177078): change emulateSystemUserModeIfNeeded() to return isHsum and remove
+        // comment below
+        // Must be set after emulateSystemUserModeIfNeeded()
+        // TODO(b/412176703): flag-check for (hsuAllowlistActivities()||hsuAllowlistNotifications())
+        mHam = Flags.hsuAllowlistActivities() && isDefaultHeadlessSystemUserMode()
+                ? new HsuAllowlistsMediator(context)
+                : null;
         initPropertyInvalidatedCaches();
     }
 
@@ -8279,6 +8289,13 @@ public class UserManagerService extends IUserManager.Stub {
                 case "--visibility-mediator":
                     mUserVisibilityMediator.dump(pw, args);
                     return;
+                case "--ham": // Hmmmm, ham!
+                    if (mHam != null) {
+                        mHam.dump(pw, args);
+                    } else {
+                        pw.println("Sorry, no ham on this device!");
+                    }
+                    return;
                 case "--non-compliance":
                     if (args.length > 1 && args[1].equals("reset")) {
                         mNonComplianceLogger.reset();
@@ -8350,6 +8367,11 @@ public class UserManagerService extends IUserManager.Stub {
         pw.println();
         mUserVisibilityMediator.dump(pw, args);
         pw.println();
+
+        if (mHam != null) {
+            mHam.dump(pw, args);
+            pw.println();
+        }
 
         // Dump some capabilities
         pw.println();
