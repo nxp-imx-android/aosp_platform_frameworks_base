@@ -15,6 +15,9 @@
  */
 package com.android.keyguard;
 
+import static android.animation.AnimatorInflater.loadStateListAnimator;
+import static android.security.Flags.lockscreenTimeoutDeactivatePinPad;
+
 import android.content.Context;
 import android.content.res.ColorStateList;
 import android.content.res.Configuration;
@@ -54,6 +57,11 @@ public class NumPadButton extends AlphaOptimizedImageButton implements NumPadAni
         super(context, attrs);
         mStyleAttr = attrs.getStyleAttribute();
         setupAnimator();
+
+        if (lockscreenTimeoutDeactivatePinPad()) {
+            setStateListAnimator(
+                    loadStateListAnimator(context, R.animator.numpad_key_alpha_animator));
+        }
     }
 
     @Override
@@ -88,6 +96,9 @@ public class NumPadButton extends AlphaOptimizedImageButton implements NumPadAni
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
+        if (lockscreenTimeoutDeactivatePinPad() && !isEnabled()) {
+            return super.onTouchEvent(event);
+        }
         switch(event.getActionMasked()) {
             case MotionEvent.ACTION_DOWN:
                 if (mAnimator != null) mAnimator.expand();
@@ -115,6 +126,10 @@ public class NumPadButton extends AlphaOptimizedImageButton implements NumPadAni
     public void setProgress(float progress) {
         if (mAnimator != null) {
             mAnimator.setProgress(progress);
+        }
+        if (lockscreenTimeoutDeactivatePinPad()) {
+            float targetAlpha = isEnabled() ? 1f : 0.2f;
+            setAlpha(progress * targetAlpha);
         }
     }
 
