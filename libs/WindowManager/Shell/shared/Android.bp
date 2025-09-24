@@ -59,7 +59,6 @@ android_library {
         "com_android_wm_shell_flags_lib",
         "com.android.window.flags.window-aconfig-java",
         "jsr330",
-        "iconloader",
         "kotlin-parcelize-runtime",
     ],
     kotlin_plugins: ["kotlin-parcelize-compiler-plugin"],
