@@ -16,7 +16,7 @@
 
 package com.android.internal.widget;
 
-import static com.android.internal.widget.flags.Flags.notificationTransparentBadgeRing;
+import static android.app.Flags.notificationTransparentBadgeRing;
 
 import android.annotation.AttrRes;
 import android.annotation.NonNull;

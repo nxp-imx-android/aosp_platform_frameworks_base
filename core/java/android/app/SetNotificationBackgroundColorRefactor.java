@@ -25,7 +25,7 @@ import android.app.Flags;
  */
 public class SetNotificationBackgroundColorRefactor {
     /** The aconfig flag name */
-    public static final String FLAG_NAME = Flags.FLAG_SET_NOTIFICATION_BACKGROUND_COLOR_REFACTOR;
+    public static final String FLAG_NAME = Flags.FLAG_NOTIFICATION_TRANSPARENT_BADGE_RING;
 
     /**
      * Is the flag enabled.
@@ -33,7 +33,7 @@ public class SetNotificationBackgroundColorRefactor {
      * @hide
      */
     public static boolean isEnabled() {
-        return Flags.setNotificationBackgroundColorRefactor();
+        return Flags.notificationTransparentBadgeRing();
     }
 
     /**
