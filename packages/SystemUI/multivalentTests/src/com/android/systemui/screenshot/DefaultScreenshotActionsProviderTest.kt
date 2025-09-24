@@ -21,9 +21,11 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Process
 import android.os.UserHandle
+import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.android.internal.logging.UiEventLogger
+import com.android.systemui.Flags as SysuiFlags
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.screenshot.ui.viewmodel.PreviewAction
 import com.android.systemui.shared.Flags
@@ -61,7 +63,8 @@ class DefaultScreenshotActionsProviderTest : SysuiTestCase() {
         )
 
     private val request = ScreenshotData.forTesting(userHandle = UserHandle.OWNER)
-    private val validResult = ScreenshotSavedResult(Uri.EMPTY, Process.myUserHandle(), 0)
+    private val validResult =
+        ScreenshotSavedResult(Uri.parse("test://uri"), Process.myUserHandle(), 0)
 
     private lateinit var actionsProvider: ScreenshotActionsProvider
 
@@ -154,11 +157,12 @@ class DefaultScreenshotActionsProviderTest : SysuiTestCase() {
         assertThat(intentCaptor.firstValue.action).isEqualTo(Intent.ACTION_EDIT)
     }
 
+    @DisableFlags(SysuiFlags.FLAG_DELETE_AFTER_SCROLL_CAPTURE)
     @Test
-    fun scrollChipClicked_callsOnClick() {
+    fun scrollChipClicked_callsOnClick_legacy() {
         actionsProvider = createActionsProvider()
 
-        val onScrollClick = mock<Runnable>()
+        val onScrollClick = mock<ScrollClickCallback>()
         actionsProvider.onScrollChipReady(onScrollClick)
         val actionButtonCaptor = argumentCaptor<() -> Unit>()
         // share, edit, scroll
@@ -166,14 +170,31 @@ class DefaultScreenshotActionsProviderTest : SysuiTestCase() {
             .provideActionButton(any(), any(), actionButtonCaptor.capture())
         actionButtonCaptor.thirdValue.invoke()
 
-        verify(onScrollClick).run()
+        verify(onScrollClick).invoke(Uri.EMPTY)
+    }
+
+    @EnableFlags(SysuiFlags.FLAG_DELETE_AFTER_SCROLL_CAPTURE)
+    @Test
+    fun scrollChipClicked_callsOnClick() {
+        actionsProvider = createActionsProvider()
+
+        val onScrollClick = mock<ScrollClickCallback>()
+        actionsProvider.onScrollChipReady(onScrollClick)
+        actionsProvider.setCompletedScreenshot(validResult)
+        val actionButtonCaptor = argumentCaptor<() -> Unit>()
+        // share, edit, scroll
+        verify(actionsCallback, times(3))
+            .provideActionButton(any(), any(), actionButtonCaptor.capture())
+        actionButtonCaptor.thirdValue.invoke()
+
+        verify(onScrollClick).invoke(validResult.uri)
     }
 
     @Test
     fun scrollChipClicked_afterInvalidate_doesNothing() {
         actionsProvider = createActionsProvider()
 
-        val onScrollClick = mock<Runnable>()
+        val onScrollClick = mock<ScrollClickCallback>()
         actionsProvider.onScrollChipReady(onScrollClick)
         val actionButtonCaptor = argumentCaptor<() -> Unit>()
         actionsProvider.onScrollChipInvalidated()
@@ -182,15 +203,16 @@ class DefaultScreenshotActionsProviderTest : SysuiTestCase() {
             .provideActionButton(any(), any(), actionButtonCaptor.capture())
         actionButtonCaptor.thirdValue.invoke()
 
-        verify(onScrollClick, never()).run()
+        verify(onScrollClick, never()).invoke(any())
     }
 
+    @DisableFlags(SysuiFlags.FLAG_DELETE_AFTER_SCROLL_CAPTURE)
     @Test
-    fun scrollChipClicked_afterUpdate_runsNewAction() {
+    fun scrollChipClicked_afterUpdate_runsNewAction_legacy() {
         actionsProvider = createActionsProvider()
 
-        val onScrollClick = mock<Runnable>()
-        val onScrollClick2 = mock<Runnable>()
+        val onScrollClick = mock<ScrollClickCallback>()
+        val onScrollClick2 = mock<ScrollClickCallback>()
 
         actionsProvider.onScrollChipReady(onScrollClick)
         actionsProvider.onScrollChipInvalidated()
@@ -201,8 +223,30 @@ class DefaultScreenshotActionsProviderTest : SysuiTestCase() {
             .provideActionButton(any(), any(), actionButtonCaptor.capture())
         actionButtonCaptor.thirdValue.invoke()
 
-        verify(onScrollClick2).run()
-        verify(onScrollClick, never()).run()
+        verify(onScrollClick2).invoke(Uri.EMPTY)
+        verify(onScrollClick, never()).invoke(any())
+    }
+
+    @EnableFlags(SysuiFlags.FLAG_DELETE_AFTER_SCROLL_CAPTURE)
+    @Test
+    fun scrollChipClicked_afterUpdate_runsNewAction() {
+        actionsProvider = createActionsProvider()
+
+        val onScrollClick = mock<ScrollClickCallback>()
+        val onScrollClick2 = mock<ScrollClickCallback>()
+
+        actionsProvider.onScrollChipReady(onScrollClick)
+        actionsProvider.onScrollChipInvalidated()
+        actionsProvider.onScrollChipReady(onScrollClick2)
+        actionsProvider.setCompletedScreenshot(validResult)
+        val actionButtonCaptor = argumentCaptor<() -> Unit>()
+        // share, edit, scroll
+        verify(actionsCallback, times(3))
+            .provideActionButton(any(), any(), actionButtonCaptor.capture())
+        actionButtonCaptor.thirdValue.invoke()
+
+        verify(onScrollClick2).invoke(validResult.uri)
+        verify(onScrollClick, never()).invoke(any())
     }
 
     private fun createActionsProvider(): ScreenshotActionsProvider {

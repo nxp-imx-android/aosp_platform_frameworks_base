@@ -2132,6 +2132,13 @@ flag {
 }
 
 flag {
+    name: "delete_after_scroll_capture"
+    namespace: "systemui"
+    description: "Delete original screenshot if scroll capture output is saved."
+    bug: "445482750"
+}
+
+flag {
     name: "wakefulness_for_animations"
     namespace: "systemui"
     description: "Changes the signal used for animation wakefulness on keyguard"
