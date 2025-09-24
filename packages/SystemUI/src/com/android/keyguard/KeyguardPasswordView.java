@@ -209,7 +209,9 @@ public class KeyguardPasswordView extends KeyguardAbsKeyInputView {
 
     @Override
     public int getWrongPasswordStringId(boolean isDuplicate) {
-        return R.string.kg_wrong_password;
+        return isDuplicate
+                ? R.string.kg_primary_auth_duplicate_guess_password
+                : R.string.kg_wrong_password;
     }
 
     @Override

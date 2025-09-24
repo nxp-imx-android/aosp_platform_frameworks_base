@@ -189,3 +189,10 @@ flag {
       purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "lockscreen_indicate_duplicate_guesses"
+    namespace: "security"
+    description: "Indicate explicitly that duplicate failed lockscreen guesses are duplicates"
+    bug: "322014085"
+}

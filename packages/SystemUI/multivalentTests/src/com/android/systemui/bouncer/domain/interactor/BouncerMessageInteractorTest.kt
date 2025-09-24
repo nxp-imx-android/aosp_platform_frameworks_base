@@ -316,6 +316,18 @@ class BouncerMessageInteractorTest : SysuiTestCase() {
             assertThat(primaryResMessage(bouncerMessage)).isEqualTo("Wrong PIN. Try again.")
         }
 
+    @Test
+    fun onIncorrectSecurityInputWithDuplicate_providesTheAppropriateValueForBouncerMessage() =
+        testScope.runTest {
+            init()
+            val bouncerMessage by collectLastValue(underTest.bouncerMessage)
+            underTest.onPrimaryAuthIncorrectAttempt(isDuplicate = true)
+
+            assertThat(bouncerMessage).isNotNull()
+            assertThat(primaryResMessage(bouncerMessage))
+                .isEqualTo("Already tried this PIN. Try another.")
+        }
+
     @EnableFlags(FLAG_SECURE_LOCK_DEVICE)
     @Test
     fun onIncorrectSecurityInput_whenSecureLockDeviceEnabled_providesCorrectBouncerMessage() =
@@ -332,6 +344,26 @@ class BouncerMessageInteractorTest : SysuiTestCase() {
             assertThat(bouncerMessage).isNotNull()
             val expectedTitle = resString(R.string.kg_prompt_title_after_secure_lock_device)
             val expectedSubtitle = resString(R.string.kg_wrong_pin_try_again)
+            assertThat(primaryResMessage(bouncerMessage)).isEqualTo(expectedTitle)
+            assertThat(secondaryResMessage(bouncerMessage)).isEqualTo(expectedSubtitle)
+        }
+
+    @EnableFlags(FLAG_SECURE_LOCK_DEVICE)
+    @Test
+    fun onIncorrectSecurityInputWithDuplicate_whenSecureLockDeviceEnabled_providesCorrectBouncerMessage() =
+        testScope.runTest {
+            init(
+                fingerprintAuthEnrolledAndEnabled = true,
+                fingerprintAuthCurrentlyAllowed = false,
+                secureLockDeviceEnabled = true,
+                secureLockDeviceBiometricAuthActive = false,
+            )
+            val bouncerMessage by collectLastValue(underTest.bouncerMessage)
+            underTest.onPrimaryAuthIncorrectAttempt(isDuplicate = true)
+
+            assertThat(bouncerMessage).isNotNull()
+            val expectedTitle = resString(R.string.kg_prompt_title_after_secure_lock_device)
+            val expectedSubtitle = resString(R.string.kg_primary_auth_duplicate_guess_pin)
             assertThat(primaryResMessage(bouncerMessage)).isEqualTo(expectedTitle)
             assertThat(secondaryResMessage(bouncerMessage)).isEqualTo(expectedSubtitle)
         }
