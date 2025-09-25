@@ -4515,7 +4515,7 @@ public class SizeCompatTests extends WindowTestsBase {
         mTask.mDisplayContent.getDefaultTaskDisplayArea()
                 .setWindowingMode(WindowConfiguration.WINDOWING_MODE_FREEFORM);
         mTask.setWindowingMode(WINDOWING_MODE_FREEFORM);
-        Rect appBounds = new Rect(0, 0, 1000, 500);
+        Rect appBounds = new Rect(0, 100, 1000, 600);
         Rect bounds = new Rect(0, 0, 1000, 600);
         mTask.getWindowConfiguration().setAppBounds(appBounds);
         mTask.getWindowConfiguration().setBounds(bounds);
