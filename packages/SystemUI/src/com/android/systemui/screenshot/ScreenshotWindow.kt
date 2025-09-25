@@ -38,8 +38,17 @@ import dagger.assisted.AssistedInject
 
 /** Creates and manages the window in which the screenshot UI is displayed. */
 open class ScreenshotWindow
-@AssistedInject
-constructor(context: Context, @Assisted private val display: Display) {
+protected constructor(
+    context: Context,
+    private val shouldConsumeInsets: Boolean,
+    private val display: Display,
+) {
+
+    @AssistedInject
+    constructor(
+        context: Context,
+        @Assisted display: Display,
+    ) : this(context = context, display = display, shouldConsumeInsets = true)
 
     private val windowContext =
         context
@@ -99,9 +108,12 @@ constructor(context: Context, @Assisted private val display: Display) {
         decorView.requireViewById<ViewGroup>(androidR.id.content).apply {
             clipChildren = false
             clipToPadding = false
-            // ignore system bar insets for the purpose of window layout
-            setOnApplyWindowInsetsListener { _, _ -> WindowInsets.CONSUMED }
+            if (shouldConsumeInsets) {
+                // ignore system bar insets for the purpose of window layout
+                setOnApplyWindowInsetsListener { _, _ -> WindowInsets.CONSUMED }
+            }
         }
+        onAttach()
     }
 
     fun whenWindowAttached(action: Runnable) {
@@ -131,6 +143,7 @@ constructor(context: Context, @Assisted private val display: Display) {
             if (LogConfig.DEBUG_WINDOW) {
                 Log.d(TAG, "Removing screenshot window")
             }
+            onDetach()
             windowManager.removeViewImmediate(decorView)
             detachRequested = false
         }
@@ -180,6 +193,10 @@ constructor(context: Context, @Assisted private val display: Display) {
     fun setActivityConfigCallback(callback: ViewRootImpl.ActivityConfigCallback) {
         window.peekDecorView().viewRootImpl.setActivityConfigCallback(callback)
     }
+
+    protected open fun onAttach() {}
+
+    protected open fun onDetach() {}
 
     @AssistedFactory
     interface Factory {

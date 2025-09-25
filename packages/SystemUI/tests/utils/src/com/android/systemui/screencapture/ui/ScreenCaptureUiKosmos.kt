@@ -23,7 +23,7 @@ import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.screencapture.common.screenCaptureUiComponentBuilder
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureType
 import com.android.systemui.screencapture.ui.viewmodel.screenCaptureUiViewModelFactory
-import com.android.systemui.statusbar.phone.systemUIDialogFactory
+import com.android.systemui.settings.userTracker
 
 val Kosmos.recordingScreenCaptureUi by
     Kosmos.Fixture {
@@ -40,13 +40,13 @@ val Kosmos.screenCaptureUiFactory by
                     display = display,
                     type = type,
                     context = applicationContext,
+                    userContextProvider = userTracker,
                     viewModelFactory = screenCaptureUiViewModelFactory,
                     componentBuilders =
                         ScreenCaptureType.entries.associateWith {
                             screenCaptureUiComponentBuilder(it)
                         },
                     defaultBuilder = { error("Provide one instead") },
-                    dialogFactory = systemUIDialogFactory,
                 )
         }
     }
