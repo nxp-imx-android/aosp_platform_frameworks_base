@@ -88,7 +88,7 @@ class NotificationEntryAdapter(
     }
 
     override fun getSummarization(): String? {
-        return entry.ranking?.summarization
+        return entry.summarization
     }
 
     override fun prepareForInflation() {

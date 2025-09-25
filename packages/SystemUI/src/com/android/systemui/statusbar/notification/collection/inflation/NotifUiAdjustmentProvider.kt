@@ -153,7 +153,7 @@ constructor(
                 },
             isChildInGroup = entry.hasEverBeenGroupChild(),
             isGroupSummary = entry.hasEverBeenGroupSummary(),
-            summarization = entry.ranking.summarization,
+            summarization = entry.summarization,
             isBundled = SYSTEM_RESERVED_IDS.contains(entry.ranking?.channel?.id),
         )
 }

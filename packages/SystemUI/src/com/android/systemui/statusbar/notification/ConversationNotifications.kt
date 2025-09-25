@@ -20,17 +20,14 @@ import android.app.Notification
 import android.app.Notification.EXTRA_SUMMARIZED_CONTENT
 import android.content.Context
 import android.content.pm.LauncherApps
-import android.graphics.Typeface
 import android.graphics.drawable.AnimatedImageDrawable
 import android.os.Handler
 import android.service.notification.NotificationListenerService.Ranking
 import android.service.notification.NotificationListenerService.RankingMap
 import android.text.SpannableString
 import android.text.SpannableStringBuilder
-import android.text.Spanned
 import android.text.TextUtils
 import android.text.style.ImageSpan
-import android.text.style.StyleSpan
 import com.android.internal.R
 import com.android.internal.widget.ConversationLayout
 import com.android.internal.widget.MessagingImageMessage
@@ -78,8 +75,8 @@ constructor(
             messagingStyle.shortcutIcon = launcherApps.getShortcutIcon(shortcutInfo)
             shortcutInfo.label?.let { label -> messagingStyle.conversationTitle = label }
         }
-        if (NmSummarizationUiFlag.isEnabled) {
-            if (!TextUtils.isEmpty(entry.ranking.summarization)) {
+        if (NmSummarizationUiFlag.isEnabled && !NmSummarizationAllFlag.isEnabled) {
+            if (!TextUtils.isEmpty(entry.summarization)) {
                 val icon = context.getDrawable(R.drawable.ic_notification_summarization)?.mutate()
                 val imageSpan =
                     icon?.let {
@@ -95,7 +92,7 @@ constructor(
                     SpannableStringBuilder()
                         .append("  ", imageSpan, 0)
                         .append(" ")
-                        .append(SpannableString(entry.ranking.summarization))
+                        .append(SpannableString(entry.summarization))
                 entry.sbn.notification.extras.putCharSequence(
                     EXTRA_SUMMARIZED_CONTENT,
                     decoratedSummary,

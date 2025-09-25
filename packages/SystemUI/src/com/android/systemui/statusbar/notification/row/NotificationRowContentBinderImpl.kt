@@ -50,6 +50,7 @@ import com.android.systemui.statusbar.NotificationRemoteInputManager
 import com.android.systemui.statusbar.notification.ConversationNotificationProcessor
 import com.android.systemui.statusbar.notification.CustomViewMemorySizeExceededException
 import com.android.systemui.statusbar.notification.InflationException
+import com.android.systemui.statusbar.notification.NmSummarizationAllFlag
 import com.android.systemui.statusbar.notification.NmSummarizationUiFlag
 import com.android.systemui.statusbar.notification.collection.NotificationEntry
 import com.android.systemui.statusbar.notification.logKey
@@ -699,7 +700,10 @@ constructor(
 
             // process conversations and extract the messaging style
             val messagingStyle =
-                if (NmSummarizationUiFlag.isEnabled || entry.ranking.isConversation) {
+                if (
+                    (NmSummarizationUiFlag.isEnabled && !NmSummarizationAllFlag.isEnabled) ||
+                        entry.ranking.isConversation
+                ) {
                     conversationProcessor.processNotification(entry, builder, logger)
                 } else null
 
