@@ -370,8 +370,8 @@
     <string name="permgroupdesc_xr_eye_sensitive" msgid="6050967250223079001">"မျက်လုံးလှုပ်ရှားမှုကို အတိအကျ ခြေရာခံသည်"</string>
     <string name="permgrouplab_xr_tracking" msgid="766634536453394700">"လှုပ်ရှားမှုနှင့် နေရာဆိုင်ရာ ဒေတာ"</string>
     <string name="permgroupdesc_xr_tracking" msgid="812429788288001595">"မျက်လုံး၊ မျက်နှာ၊ ခန္ဓာကိုယ်တို့ကို ခြေရာခံပြီး နေရာကို စကင်ဖတ်သည်"</string>
-    <string name="permgrouplab_xr_tracking_sensitive" msgid="4346975608010051186">"ဦးခေါင်းလှုပ်ရှားမှုအတိအကျ၊ နေရာ ဒေတာ"</string>
-    <string name="permgroupdesc_xr_tracking_sensitive" msgid="7925014193164562556">"ဦးခေါင်းကို အတိအကျ ခြေရာခံပြီး နေရာကို စကင်ဖတ်သည်"</string>
+    <string name="permgrouplab_xr_tracking_sensitive" msgid="6574264227123545314">"တိကျသောလှုပ်ရှားမှု၊ နေရာဆိုင်ရာ ဒေတာ"</string>
+    <string name="permgroupdesc_xr_tracking_sensitive" msgid="2480835734248509848">"နေရာကို အတိအကျ စကင်ဖတ်ပြီး ဦးခေါင်းကို ခြေရာခံနိုင်သည်"</string>
     <string name="capability_title_canRetrieveWindowContent" msgid="7554282892101587296">"ဝင်းဒိုးတွင် ပါရှိသည်များကို ပြန်လည်ရယူရန်"</string>
     <string name="capability_desc_canRetrieveWindowContent" msgid="6195610527625237661">"သင်အသုံးပြုနေသော ဝင်းဒိုးတွင် ပါရှိသည်များကို ကြည့်ရှုစစ်ဆေးသည်။"</string>
     <string name="capability_title_canRequestTouchExploration" msgid="327598364696316213">"တို့ထိခြင်းဖြင့် ရှာဖွေမှုကို ဖွင့်ရန်"</string>
@@ -685,7 +685,7 @@
     <string name="permdesc_scene_understanding_coarse" msgid="847344305502345475">"သင့်ပတ်ဝန်းကျင်ကို စကင်ဖတ်ရန် အက်ပ်အား ခွင့်ပြုသည်။"</string>
     <string name="permlab_scene_understanding_fine" msgid="2899904960307462936">"သင့်ပတ်ဝန်းကျင်နေရာကို အတိအကျ စကင်ဖတ်ခြင်း"</string>
     <string name="permdesc_scene_understanding_fine" msgid="4848943859506977588">"သင့်ပတ်ဝန်းကျင်ကို အတိအကျ စကင်ဖတ်ရန် အက်ပ်အား ခွင့်ပြုသည်။"</string>
-    <string name="permlab_xr_tracking_in_background" msgid="8659516810430027774">"XR ဒေတာကို နောက်ခံတွင် ခြေရာခံခြင်း"</string>
+    <string name="permlab_xr_tracking_in_background" msgid="1714941204255185460">"နောက်ခံတွင် XR ခြေရာခံမှုကို သုံးခြင်း"</string>
     <string name="permdesc_xr_tracking_in_background" msgid="3151744132692357005">"XR ဒေတာကို နောက်ခံတွင်သုံးရန် အက်ပ်အား ခွင့်ပြုသည်။"</string>
     <string name="permlab_capture_keyboard" msgid="4076894823382693032">"ကီးများ မှတ်သားခြင်း"</string>
     <string name="permdesc_capture_keyboard" msgid="4192269470684407219">"စနစ်က စနစ်ဖြတ်လမ်းနှင့် လုပ်ဆောင်ချက်များကို မဆောင်ရွက်မီ ကီးများကို အက်ပ်အား မှတ်သားခွင့်ပြုသည်။"</string>
@@ -1986,8 +1986,8 @@
     <string name="package_updated_device_owner" msgid="7770195449213776218">"သင့်စီမံခန့်ခွဲသူက အပ်ဒိတ်လုပ်ထားသည်။\nပေးထားသည့် ခွင့်ပြုချက်များကို ကြည့်ရန် ဆက်တင်များသို့ သွားပါ"</string>
     <string name="package_deleted_device_owner" msgid="2292335928930293023">"သင်၏ စီမံခန့်ခွဲသူက ဖျက်လိုက်ပါပြီ"</string>
     <string name="confirm_battery_saver" msgid="5247976246208245754">"OK"</string>
-    <string name="battery_saver_description_with_learn_more" msgid="5444908404021316250">"‘ဘက်ထရီ အားထိန်း’ က ‘အမှောင်နောက်ခံ’ ကို ဖွင့်ပြီး နောက်ခံလုပ်ဆောင်ချက်၊ ဖန်တီးပြသချက်အချို့၊ ဝန်ဆောင်မှုအချို့နှင့် ကွန်ရက်ချိတ်ဆက်မှုအချို့တို့ကို ကန့်သတ်သည် သို့မဟုတ် ပိတ်သည်။"</string>
-    <string name="battery_saver_description" msgid="8518809702138617167">"‘ဘက်ထရီ အားထိန်း’ က ‘အမှောင်နောက်ခံ’ ကို ဖွင့်ပြီး နောက်ခံလုပ်ဆောင်ချက်၊ ဖန်တီးပြသချက်အချို့၊ ဝန်ဆောင်မှုအချို့နှင့် ကွန်ရက်ချိတ်ဆက်မှုအချို့တို့ကို ကန့်သတ်သည် သို့မဟုတ် ပိတ်သည်။"</string>
+    <string name="battery_saver_description_with_learn_more" msgid="8969945879044849461">"‘ဘက်ထရီ အားထိန်း’ က အမှောင်အပြင်အဆင်ဖွင့်ပြီး နောက်ခံလုပ်ဆောင်ချက်၊ ပြသမှုဆိုင်ရာ အထူးပြုလုပ်ချက်အချို့၊ အချို့သောတူးလ်များ၊ ကွန်ရက်ချိတ်ဆက်မှုအချို့တို့ကို ကန့်သတ်သည် (သို့) ပိတ်သည်။"</string>
+    <string name="battery_saver_description" msgid="2820475140307374570">"‘ဘက်ထရီ အားထိန်း’ က အမှောင်အပြင်အဆင်ဖွင့်ပြီး နောက်ခံလုပ်ဆောင်ချက်၊ ပြသမှုဆိုင်ရာ အထူးပြုလုပ်ချက်အချို့၊ အချို့သောတူးလ်များ၊ ကွန်ရက်ချိတ်ဆက်မှုအချို့တို့ကို ကန့်သတ်သည် (သို့) ပိတ်သည်။"</string>
     <string name="data_saver_description" msgid="4995164271550590517">"ဒေတာအသုံးလျှော့ချနိုင်ရန်အတွက် အက်ပ်များကို နောက်ခံတွင် ဒေတာပို့ခြင်းနှင့် လက်ခံခြင်းမပြုရန် \'ဒေတာချွေတာမှု\' စနစ်က တားဆီးထားပါသည်။ ယခုအက်ပ်ဖြင့် ဒေတာအသုံးပြုနိုင်သော်လည်း အကြိမ်လျှော့၍သုံးရပါမည်။ ဥပမာ၊ သင်က မတို့မချင်း ပုံများပေါ်လာမည် မဟုတ်ပါ။"</string>
     <string name="data_saver_enable_title" msgid="7080620065745260137">"ဒေတာချွေတာမှုစနစ် ဖွင့်မလား။"</string>
     <string name="data_saver_enable_button" msgid="4399405762586419726">"ဖွင့်ရန်"</string>
@@ -2581,10 +2581,10 @@
     <string name="usb_apm_usb_plugged_in_when_locked_notification_app_title" msgid="285421860627714333">"လုံခြုံရေးနှင့် ကိုယ်ရေးအချက်အလက်လုံခြုံမှု"</string>
     <string name="usb_apm_usb_plugged_in_when_locked_replug_notification_title" msgid="3711633462195368964">"စခရင်ဖွင့်ပြီး USB ပြန်လည်ချိတ်ဆက်ပါ"</string>
     <string name="usb_apm_usb_plugged_in_when_locked_notification_title" msgid="2426356396215833585">"USB ချိတ်ဆက်ရန်အတွက် စခရင်ဖွင့်ပါ"</string>
-    <string name="usb_apm_usb_plugged_in_when_locked_replug_notification_text" msgid="3936428118409384816">"USB ချိတ်ဆက်နိုင်မှု စတင်ရန်အတွက် ‘အဆင့်မြင့်ကာကွယ်ရေး’ သည် သင့်စခရင်ကို ဖွင့်ထားရန်လိုအပ်သည်"</string>
-    <string name="usb_apm_usb_plugged_in_when_locked_data_notification_text" msgid="8392199274984083972">"USB ချိတ်ဆက်နိုင်မှု စတင်ရန်အတွက် ‘အဆင့်မြင့်ကာကွယ်ရေး’ သည် သင့်စခရင်ကို ဖွင့်ထားရန်လိုအပ်သည်"</string>
-    <string name="usb_apm_usb_plugged_in_when_locked_charge_notification_text" msgid="6563939109526112446">"အမြန်အားသွင်းရန်အတွက် ‘အဆင့်မြင့်ကာကွယ်ရေး’ သည် သင့်စခရင်ကို ဖွင့်ထားရန်လိုအပ်သည်"</string>
-    <string name="usb_apm_usb_plugged_in_when_locked_charge_data_notification_text" msgid="411509882563364946">"အမြန်အားသွင်းရန် (သို့) USB ချိတ်ဆက်နိုင်မှု စတင်ရန်အတွက် ‘အဆင့်မြင့်ကာကွယ်ရေး’ သည် သင့်စခရင်ကို ဖွင့်ထားရန်လိုအပ်သည်"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_replug_notification_text" msgid="3936428118409384816">"‘အဆင့်မြင့်ကာကွယ်ရေး’ ဖြင့် USB ချိတ်ဆက်မှု စတင်ရန်အတွက် သင့်စခရင်ကို ဖွင့်ထားရပါမည်"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_data_notification_text" msgid="8392199274984083972">"‘အဆင့်မြင့်ကာကွယ်ရေး’ ဖြင့် USB ချိတ်ဆက်မှု စတင်ရန်အတွက် သင့်စခရင်ကို ဖွင့်ထားရပါမည်"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_charge_notification_text" msgid="6563939109526112446">"‘အဆင့်မြင့်ကာကွယ်ရေး’ ဖြင့် အမြန်အားသွင်းရန်အတွက် သင့်စခရင်ကို ဖွင့်ထားရပါမည်"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_charge_data_notification_text" msgid="411509882563364946">"‘အဆင့်မြင့်ကာကွယ်ရေး’ ဖြင့် အမြန်အားသွင်းရန် (သို့) USB ချိတ်ဆက်မှု စတင်ရန်အတွက် သင့်စခရင်ကို ဖွင့်ထားရပါမည်"</string>
     <string name="usb_apm_usb_plugged_in_when_locked_notification_silence_action_text" msgid="5495539757631669634">"အသံတိတ်ရန်"</string>
     <string name="usb_apm_usb_notification_silenced_title" msgid="5114203793430169863">"အကြောင်းကြားချက်များ အသံတိတ်ထားသည်"</string>
     <string name="usb_apm_usb_notification_silenced_text" msgid="8394777105856033342">"သင့်စက်ပစ္စည်းကို ပြန်မစမချင်း ‘အဆင့်မြင့်ကာကွယ်ရေး’ USB အကြောင်းကြားချက်များကို ရရှိမည်မဟုတ်ပါ"</string>

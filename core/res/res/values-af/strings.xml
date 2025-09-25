@@ -370,8 +370,8 @@
     <string name="permgroupdesc_xr_eye_sensitive" msgid="6050967250223079001">"kontroleer oogbeweging presies"</string>
     <string name="permgrouplab_xr_tracking" msgid="766634536453394700">"Beweging- en areadata"</string>
     <string name="permgroupdesc_xr_tracking" msgid="812429788288001595">"kontroleer oë, gesig, liggaam en skandeerarea"</string>
-    <string name="permgrouplab_xr_tracking_sensitive" msgid="4346975608010051186">"Presiese kopbeweging- en areadata"</string>
-    <string name="permgroupdesc_xr_tracking_sensitive" msgid="7925014193164562556">"kontroleer kop en skandeerarea"</string>
+    <string name="permgrouplab_xr_tracking_sensitive" msgid="6574264227123545314">"Presiese beweging- en areadata"</string>
+    <string name="permgroupdesc_xr_tracking_sensitive" msgid="2480835734248509848">"skandeer area en volg kop presies"</string>
     <string name="capability_title_canRetrieveWindowContent" msgid="7554282892101587296">"Venster-inhoud ophaal"</string>
     <string name="capability_desc_canRetrieveWindowContent" msgid="6195610527625237661">"Die inhoud ondersoek van \'n venster waarmee jy interaksie het."</string>
     <string name="capability_title_canRequestTouchExploration" msgid="327598364696316213">"Verken-met-raak aanskakel"</string>
@@ -685,7 +685,7 @@
     <string name="permdesc_scene_understanding_coarse" msgid="847344305502345475">"Laat die app toe om jou omgewing te skandeer."</string>
     <string name="permlab_scene_understanding_fine" msgid="2899904960307462936">"skandeer jou omgewing presies"</string>
     <string name="permdesc_scene_understanding_fine" msgid="4848943859506977588">"Laat die app toe om jou omgewing presies te skandeer."</string>
-    <string name="permlab_xr_tracking_in_background" msgid="8659516810430027774">"kontroleeer UR-data in die agtergrond"</string>
+    <string name="permlab_xr_tracking_in_background" msgid="1714941204255185460">"Kry toegang tot UR-nasporing in die agtergrond"</string>
     <string name="permdesc_xr_tracking_in_background" msgid="3151744132692357005">"Laat die app toe om toegang tot UR-data in die agtergrond te kry."</string>
     <string name="permlab_capture_keyboard" msgid="4076894823382693032">"vang sleutels vas"</string>
     <string name="permdesc_capture_keyboard" msgid="4192269470684407219">"Laat die app toe om sleutels vas te vang voordat die stelsel stelselkortpaaie en -handelinge kan verwerk."</string>
@@ -1986,8 +1986,8 @@
     <string name="package_updated_device_owner" msgid="7770195449213776218">"Deur jou admin opgedateer.\nGaan na instellings om toegestaande toestemmings te sien"</string>
     <string name="package_deleted_device_owner" msgid="2292335928930293023">"Uitgevee deur jou administrateur"</string>
     <string name="confirm_battery_saver" msgid="5247976246208245754">"OK"</string>
-    <string name="battery_saver_description_with_learn_more" msgid="5444908404021316250">"Batterybespaarder skakel Donkertema aan en beperk of skakel agtergrondaktiwiteit, sommige visuele effekte, sekere kenmerke en sommige netwerkverbindings af"</string>
-    <string name="battery_saver_description" msgid="8518809702138617167">"Batterybespaarder skakel Donkertema aan en beperk of skakel agtergrondaktiwiteit, sommige visuele effekte, sekere kenmerke en sommige netwerkverbindings af"</string>
+    <string name="battery_saver_description_with_learn_more" msgid="8969945879044849461">"Batterybespaarder skakel donkertema aan en beperk of skakel agtergrondaktiwiteit, sommige visuele effekte, sekere kenmerke en sommige netwerkverbindings af."</string>
+    <string name="battery_saver_description" msgid="2820475140307374570">"Batterybespaarder skakel donkertema aan en beperk of skakel agtergrondaktiwiteit, sommige visuele effekte, sekere kenmerke en sommige netwerkverbindings af."</string>
     <string name="data_saver_description" msgid="4995164271550590517">"Databespaarder verhoed sommige apps om data op die agtergrond te stuur of te ontvang om datagebruik te help verminder. ’n App wat jy tans gebruik kan by data ingaan, maar sal dit dalk minder gereeld doen. Dit kan byvoorbeeld beteken dat prente nie wys voordat jy op hulle tik nie."</string>
     <string name="data_saver_enable_title" msgid="7080620065745260137">"Skakel Databespaarder aan?"</string>
     <string name="data_saver_enable_button" msgid="4399405762586419726">"Skakel aan"</string>

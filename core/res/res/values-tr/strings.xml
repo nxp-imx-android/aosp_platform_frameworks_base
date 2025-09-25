@@ -370,8 +370,8 @@
     <string name="permgroupdesc_xr_eye_sensitive" msgid="6050967250223079001">"göz hareketlerini tam olarak takip etme"</string>
     <string name="permgrouplab_xr_tracking" msgid="766634536453394700">"Hareket ve alan verileri"</string>
     <string name="permgroupdesc_xr_tracking" msgid="812429788288001595">"göz, yüz, vücut ve tarama alanını takip etme"</string>
-    <string name="permgrouplab_xr_tracking_sensitive" msgid="4346975608010051186">"Hassas baş hareketi ve alan verileri"</string>
-    <string name="permgroupdesc_xr_tracking_sensitive" msgid="7925014193164562556">"baş ve tarama alanını tam olarak takip etme"</string>
+    <string name="permgrouplab_xr_tracking_sensitive" msgid="6574264227123545314">"Hassas hareket ve alan verileri"</string>
+    <string name="permgroupdesc_xr_tracking_sensitive" msgid="2480835734248509848">"alanı hassas şekilde tarama ve başı takip etme"</string>
     <string name="capability_title_canRetrieveWindowContent" msgid="7554282892101587296">"Pencere içeriğini alma"</string>
     <string name="capability_desc_canRetrieveWindowContent" msgid="6195610527625237661">"Etkileşim kurduğunuz pencerenin içeriğini inceler."</string>
     <string name="capability_title_canRequestTouchExploration" msgid="327598364696316213">"Dokunarak Keşfet\'i açma"</string>
@@ -685,7 +685,7 @@
     <string name="permdesc_scene_understanding_coarse" msgid="847344305502345475">"Uygulamanın etrafınızı taramasına izin verir."</string>
     <string name="permlab_scene_understanding_fine" msgid="2899904960307462936">"çevrenizdeki alanı hassas bir şekilde tarama"</string>
     <string name="permdesc_scene_understanding_fine" msgid="4848943859506977588">"Uygulamanın etrafınızı tam olarak taramasına izin verir."</string>
-    <string name="permlab_xr_tracking_in_background" msgid="8659516810430027774">"arka planda XR verilerini takip etme"</string>
+    <string name="permlab_xr_tracking_in_background" msgid="1714941204255185460">"arka planda XR izlemeye erişme"</string>
     <string name="permdesc_xr_tracking_in_background" msgid="3151744132692357005">"Uygulamanın, arka planda XR verilerine erişmesine izin verir."</string>
     <string name="permlab_capture_keyboard" msgid="4076894823382693032">"tuşları yakala"</string>
     <string name="permdesc_capture_keyboard" msgid="4192269470684407219">"Sistem tarafından kısayollar ve işlemler işlenmeden önce uygulamanın tuşları yakalamasına izin verir."</string>
@@ -1986,8 +1986,8 @@
     <string name="package_updated_device_owner" msgid="7770195449213776218">"Yöneticiniz tarafından güncellendi.\nVerilen izinleri görüntülemek için ayarlara gidin"</string>
     <string name="package_deleted_device_owner" msgid="2292335928930293023">"Yöneticiniz tarafından silindi"</string>
     <string name="confirm_battery_saver" msgid="5247976246208245754">"Tamam"</string>
-    <string name="battery_saver_description_with_learn_more" msgid="5444908404021316250">"Pil Tasarrufu, Koyu temayı açıp arka plan etkinliğini, bazı görsel efektleri, belirli özellikleri ve bazı ağ bağlantılarını sınırlandırır veya kapatır."</string>
-    <string name="battery_saver_description" msgid="8518809702138617167">"Pil Tasarrufu, Koyu temayı açıp arka plan etkinliğini, bazı görsel efektleri, belirli özellikleri ve bazı ağ bağlantılarını sınırlandırır veya kapatır."</string>
+    <string name="battery_saver_description_with_learn_more" msgid="8969945879044849461">"Pil Tasarrufu, koyu temayı açıp arka plan etkinliğini, bazı görsel efektleri, belirli özellikleri ve bazı ağ bağlantılarını sınırlandırır veya kapatır."</string>
+    <string name="battery_saver_description" msgid="2820475140307374570">"Pil Tasarrufu, koyu temayı açıp arka plan etkinliğini, bazı görsel efektleri, belirli özellikleri ve bazı ağ bağlantılarını sınırlandırır veya kapatır."</string>
     <string name="data_saver_description" msgid="4995164271550590517">"Veri kullanımını azaltmaya yardımcı olması için Veri Tasarrufu, bazı uygulamaların arka planda veri göndermesini veya almasını engeller. Kullanmakta olduğunuz bir uygulama veri bağlantısına erişebilir, ancak bunu daha seyrek yapabilir. Bu durumda örneğin, siz resimlere dokunmadan resimler görüntülenmez."</string>
     <string name="data_saver_enable_title" msgid="7080620065745260137">"Veri Tasarrufu açılsın mı?"</string>
     <string name="data_saver_enable_button" msgid="4399405762586419726">"Aç"</string>

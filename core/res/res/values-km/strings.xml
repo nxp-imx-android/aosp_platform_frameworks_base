@@ -370,8 +370,8 @@
     <string name="permgroupdesc_xr_eye_sensitive" msgid="6050967250223079001">"តាមដានចលនាភ្នែកឱ្យបានជាក់លាក់"</string>
     <string name="permgrouplab_xr_tracking" msgid="766634536453394700">"ទិន្នន័យតំបន់ និងចលនា"</string>
     <string name="permgroupdesc_xr_tracking" msgid="812429788288001595">"តាមដានភ្នែក មុខ រាងកាយ និងតំបន់ស្កេន"</string>
-    <string name="permgrouplab_xr_tracking_sensitive" msgid="4346975608010051186">"ទិន្នន័យតំបន់ និងចលនាក្បាលជាក់លាក់"</string>
-    <string name="permgroupdesc_xr_tracking_sensitive" msgid="7925014193164562556">"តាមដានក្បាល និងតំបន់ស្កេនឱ្យបានជាក់លាក់"</string>
+    <string name="permgrouplab_xr_tracking_sensitive" msgid="6574264227123545314">"ទិន្នន័យទីតាំង និងចលនាជាក់លាក់"</string>
+    <string name="permgroupdesc_xr_tracking_sensitive" msgid="2480835734248509848">"ស្កេនទីតាំង និងតាមដានក្បាលយ៉ាងជាក់លាក់"</string>
     <string name="capability_title_canRetrieveWindowContent" msgid="7554282892101587296">"ទាញយក​ខ្លឹមសារ​វិនដូ"</string>
     <string name="capability_desc_canRetrieveWindowContent" msgid="6195610527625237661">"ពិនិត្យ​ខ្លឹមសារវិនដូ​ដែល​អ្នក​កំពុង​ធ្វើអន្តរកម្ម​ជា​មួយ។"</string>
     <string name="capability_title_canRequestTouchExploration" msgid="327598364696316213">"បើក​ការ​រក​មើល​​ដោយ​ប៉ះ"</string>
@@ -685,7 +685,7 @@
     <string name="permdesc_scene_understanding_coarse" msgid="847344305502345475">"អនុញ្ញាតឱ្យកម្មវិធីស្កេនមជ្ឈដ្ឋានជុំវិញរបស់អ្នក។"</string>
     <string name="permlab_scene_understanding_fine" msgid="2899904960307462936">"ស្កេនតំបន់ជុំវិញអ្នកឱ្យបានជាក់លាក់"</string>
     <string name="permdesc_scene_understanding_fine" msgid="4848943859506977588">"អនុញ្ញាតឱ្យកម្មវិធីស្កេនមជ្ឈដ្ឋានជុំវិញរបស់អ្នកឱ្យបានជាក់លាក់។"</string>
-    <string name="permlab_xr_tracking_in_background" msgid="8659516810430027774">"តាមដានទិន្នន័យ XR នៅផ្ទៃខាងក្រោយ"</string>
+    <string name="permlab_xr_tracking_in_background" msgid="1714941204255185460">"ចូលប្រើការតាមដាន XR នៅផ្ទៃខាងក្រោយ"</string>
     <string name="permdesc_xr_tracking_in_background" msgid="3151744132692357005">"អនុញ្ញាតឱ្យកម្មវិធីចូលប្រើទិន្នន័យ XR នៅផ្ទៃខាងក្រោយ។"</string>
     <string name="permlab_capture_keyboard" msgid="4076894823382693032">"ថតកូដ"</string>
     <string name="permdesc_capture_keyboard" msgid="4192269470684407219">"អនុញ្ញាតឱ្យកម្មវិធីថតកូដ មុនពេលប្រព័ន្ធអាចដំណើរការសកម្មភាព និងផ្លូវកាត់ប្រព័ន្ធ។"</string>
@@ -1986,8 +1986,8 @@
     <string name="package_updated_device_owner" msgid="7770195449213776218">"បានធ្វើបច្ចុប្បន្នភាពដោយអ្នកគ្រប់គ្រងរបស់អ្នក។\nចូលទៅកាន់ការកំណត់ ដើម្បីមើលការ​អនុញ្ញាតដែលផ្ដល់ឱ្យ"</string>
     <string name="package_deleted_device_owner" msgid="2292335928930293023">"លុប​ដោយ​អ្នកគ្រប់គ្រង​របស់​អ្នក"</string>
     <string name="confirm_battery_saver" msgid="5247976246208245754">"យល់ព្រម"</string>
-    <string name="battery_saver_description_with_learn_more" msgid="5444908404021316250">"មុខងារ​សន្សំថ្មបើកទម្រង់រចនាងងឹត និងដាក់កំហិត ឬបិទសកម្មភាពផ្ទៃខាងក្រោយ បែបផែនរូបភាពមួយចំនួន មុខងារជាក់លាក់ និងការតភ្ជាប់បណ្ដាញមួយចំនួន។"</string>
-    <string name="battery_saver_description" msgid="8518809702138617167">"មុខងារ​សន្សំថ្មបើកទម្រង់រចនាងងឹត និងដាក់កំហិត ឬបិទសកម្មភាពផ្ទៃខាងក្រោយ បែបផែនរូបភាពមួយចំនួន មុខងារជាក់លាក់ និងការតភ្ជាប់បណ្ដាញមួយចំនួន។"</string>
+    <string name="battery_saver_description_with_learn_more" msgid="8969945879044849461">"មុខងារ​សន្សំថ្មបើកទម្រង់រចនាងងឹត និងដាក់កំហិត ឬបិទសកម្មភាពផ្ទៃខាងក្រោយ បែបផែនរូបភាពមួយចំនួន មុខងារជាក់លាក់ និងការតភ្ជាប់បណ្ដាញមួយចំនួន។"</string>
+    <string name="battery_saver_description" msgid="2820475140307374570">"មុខងារ​សន្សំថ្មបើកទម្រង់រចនាងងឹត និងដាក់កំហិត ឬបិទសកម្មភាពផ្ទៃខាងក្រោយ បែបផែនរូបភាពមួយចំនួន មុខងារជាក់លាក់ និងការតភ្ជាប់បណ្ដាញមួយចំនួន។"</string>
     <string name="data_saver_description" msgid="4995164271550590517">"ដើម្បីជួយកាត់បន្ថយការប្រើប្រាស់ទិន្នន័យ មុខងារសន្សំសំចៃទិន្នន័យរារាំងកម្មវិធីមួយចំនួនមិនឲ្យបញ្ជូន ឬទទួលទិន្នន័យនៅផ្ទៃខាងក្រោយទេ។ កម្មវិធីដែលអ្នកកំពុងប្រើនាពេលបច្ចុប្បន្នអាចចូលប្រើប្រាស់​ទិន្នន័យបាន ប៉ុន្តែអាចនឹងមិនញឹកញាប់ដូចមុនទេ។ ឧទាហរណ៍ រូបភាពមិនបង្ហាញទេ លុះត្រាតែអ្នកប៉ះរូបភាពទាំងនោះ។"</string>
     <string name="data_saver_enable_title" msgid="7080620065745260137">"បើកកម្មវិធីសន្សំសំចៃទិន្នន័យ?"</string>
     <string name="data_saver_enable_button" msgid="4399405762586419726">"បើក"</string>

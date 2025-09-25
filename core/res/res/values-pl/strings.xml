@@ -372,8 +372,8 @@
     <string name="permgroupdesc_xr_eye_sensitive" msgid="6050967250223079001">"dokładne śledzenie ruchów gałek ocznych"</string>
     <string name="permgrouplab_xr_tracking" msgid="766634536453394700">"Dane o ruchu i obszarze"</string>
     <string name="permgroupdesc_xr_tracking" msgid="812429788288001595">"śledzenie oczu, twarzy i ciała oraz skanowanie obszaru"</string>
-    <string name="permgrouplab_xr_tracking_sensitive" msgid="4346975608010051186">"Dokładne dane o ruchach głowy i obszarze"</string>
-    <string name="permgroupdesc_xr_tracking_sensitive" msgid="7925014193164562556">"dokładne śledzenie ruchów głowy i skanowanie obszaru"</string>
+    <string name="permgrouplab_xr_tracking_sensitive" msgid="6574264227123545314">"Dokładne dane o ruchu i otoczeniu"</string>
+    <string name="permgroupdesc_xr_tracking_sensitive" msgid="2480835734248509848">"Dokładne skanowanie otoczenia i śledzenie ruchów głowy"</string>
     <string name="capability_title_canRetrieveWindowContent" msgid="7554282892101587296">"Pobieranie zawartości okna"</string>
     <string name="capability_desc_canRetrieveWindowContent" msgid="6195610527625237661">"Sprawdzanie zawartości okna, z którego korzystasz."</string>
     <string name="capability_title_canRequestTouchExploration" msgid="327598364696316213">"Włączenie czytania dotykiem"</string>
@@ -687,7 +687,7 @@
     <string name="permdesc_scene_understanding_coarse" msgid="847344305502345475">"Zezwala aplikacji na skanowanie otoczenia."</string>
     <string name="permlab_scene_understanding_fine" msgid="2899904960307462936">"dokładne skanowanie otoczenia"</string>
     <string name="permdesc_scene_understanding_fine" msgid="4848943859506977588">"Zezwala aplikacji na dokładne skanowanie otoczenia."</string>
-    <string name="permlab_xr_tracking_in_background" msgid="8659516810430027774">"śledzenie danych XR w tle"</string>
+    <string name="permlab_xr_tracking_in_background" msgid="1714941204255185460">"Dostęp do śledzenia w XR w tle"</string>
     <string name="permdesc_xr_tracking_in_background" msgid="3151744132692357005">"Zezwala aplikacji na dostęp do danych XR w tle."</string>
     <string name="permlab_capture_keyboard" msgid="4076894823382693032">"przechwytywanie klawiszy"</string>
     <string name="permdesc_capture_keyboard" msgid="4192269470684407219">"Zezwala aplikacji na przechwytywanie klawiszy, zanim system będzie mógł przetworzyć skróty i działania systemowe."</string>
@@ -1988,8 +1988,8 @@
     <string name="package_updated_device_owner" msgid="7770195449213776218">"Zaktualizowany przez administratora.\nAby zobaczyć przyznane uprawnienia, przejdź do ustawień"</string>
     <string name="package_deleted_device_owner" msgid="2292335928930293023">"Usunięty przez administratora"</string>
     <string name="confirm_battery_saver" msgid="5247976246208245754">"OK"</string>
-    <string name="battery_saver_description_with_learn_more" msgid="5444908404021316250">"Oszczędzanie baterii uruchamia ciemny motyw oraz wyłącza lub ogranicza aktywność w tle, niektóre efekty wizualne, pewne funkcje oraz wybrane połączenia sieciowe."</string>
-    <string name="battery_saver_description" msgid="8518809702138617167">"Oszczędzanie baterii uruchamia ciemny motyw oraz wyłącza lub ogranicza aktywność w tle, niektóre efekty wizualne, pewne funkcje oraz wybrane połączenia sieciowe."</string>
+    <string name="battery_saver_description_with_learn_more" msgid="8969945879044849461">"Oszczędzanie baterii włącza ciemny motyw i ogranicza lub wyłącza aktywność w tle oraz niektóre efekty wizualne, funkcje i połączenia sieciowe."</string>
+    <string name="battery_saver_description" msgid="2820475140307374570">"Oszczędzanie baterii włącza ciemny motyw i ogranicza lub wyłącza aktywność w tle oraz niektóre efekty wizualne, funkcje i połączenia sieciowe."</string>
     <string name="data_saver_description" msgid="4995164271550590517">"Oszczędzanie danych uniemożliwia niektórym aplikacjom wysyłanie i odbieranie danych w tle, zmniejszając w ten sposób ich użycie. Aplikacja, z której w tej chwili korzystasz, może uzyskiwać dostęp do danych, ale rzadziej. Może to powodować, że obrazy będą się wyświetlać dopiero po kliknięciu."</string>
     <string name="data_saver_enable_title" msgid="7080620065745260137">"Włączyć oszczędzanie danych?"</string>
     <string name="data_saver_enable_button" msgid="4399405762586419726">"Włącz"</string>

@@ -370,8 +370,8 @@
     <string name="permgroupdesc_xr_eye_sensitive" msgid="6050967250223079001">"डोळ्यांची हालचाल अचूकपणे ट्रॅक करा"</string>
     <string name="permgrouplab_xr_tracking" msgid="766634536453394700">"हालचाल आणि भाग यासंबंधी डेटा"</string>
     <string name="permgroupdesc_xr_tracking" msgid="812429788288001595">"डोळे, चेहरा, शरीर ट्रॅक करून तो भाग स्कॅन करा"</string>
-    <string name="permgrouplab_xr_tracking_sensitive" msgid="4346975608010051186">"डोक्याची अचूक हालचाल व भाग यासंबंधी डेटा"</string>
-    <string name="permgroupdesc_xr_tracking_sensitive" msgid="7925014193164562556">"डोके अचूकपणे ट्रॅक करून तो भाग स्कॅन करा"</string>
+    <string name="permgrouplab_xr_tracking_sensitive" msgid="6574264227123545314">"अचूक हालचाल आणि क्षेत्राशी संबंधित डेटा"</string>
+    <string name="permgroupdesc_xr_tracking_sensitive" msgid="2480835734248509848">"क्षेत्र अचूकपणे स्कॅन करण्याची आणि डोक्याच्या हालचाली ट्रॅक करण्याची परवानगी मिळते"</string>
     <string name="capability_title_canRetrieveWindowContent" msgid="7554282892101587296">"विंडोमधील आशय पुन्हा मिळवा"</string>
     <string name="capability_desc_canRetrieveWindowContent" msgid="6195610527625237661">"तुम्ही वापरत असलेल्‍या विंडोमधील आशय तपासा."</string>
     <string name="capability_title_canRequestTouchExploration" msgid="327598364696316213">"स्पर्श करून अन्वेषण सुरू करा"</string>
@@ -685,7 +685,7 @@
     <string name="permdesc_scene_understanding_coarse" msgid="847344305502345475">"अ‍ॅपला तुमच्या आजूबाजूचा परिसर स्कॅन करण्याची अनुमती देते."</string>
     <string name="permlab_scene_understanding_fine" msgid="2899904960307462936">"तुमच्या सभोवतालचा परिसर अचूकपणे स्कॅन करा"</string>
     <string name="permdesc_scene_understanding_fine" msgid="4848943859506977588">"अ‍ॅपला तुमच्या आजूबाजूचा परिसर अचूकपणे स्कॅन करण्याची अनुमती देते."</string>
-    <string name="permlab_xr_tracking_in_background" msgid="8659516810430027774">"बॅकग्राउंडमध्ये XR डेटा ट्रॅक करा"</string>
+    <string name="permlab_xr_tracking_in_background" msgid="1714941204255185460">"बॅकग्राउंडमध्ये XR ट्रॅकिंग अ‍ॅक्सेस करणे"</string>
     <string name="permdesc_xr_tracking_in_background" msgid="3151744132692357005">"अ‍ॅपला बॅकग्राउंडमध्ये XR डेटा अ‍ॅक्सेस करण्याची अनुमती देते."</string>
     <string name="permlab_capture_keyboard" msgid="4076894823382693032">"की कॅप्चर करा"</string>
     <string name="permdesc_capture_keyboard" msgid="4192269470684407219">"सिस्टीमचे शॉर्टकट आणि कृती यांवर सिस्टीमला प्रक्रिया करता येण्यापूर्वी अ‍ॅपला की कॅप्चर करण्याची अनुमती द्या."</string>
@@ -1986,8 +1986,8 @@
     <string name="package_updated_device_owner" msgid="7770195449213776218">"तुमच्या ॲडमिनने अपडेट केले आहे.\nदिलेल्या परवानग्या पाहण्यासाठी सेटिंग्जवर जा"</string>
     <string name="package_deleted_device_owner" msgid="2292335928930293023">"आपल्या प्रशासकाने हटवले"</string>
     <string name="confirm_battery_saver" msgid="5247976246208245754">"ओके"</string>
-    <string name="battery_saver_description_with_learn_more" msgid="5444908404021316250">"बॅटरी सेव्हर गडद थीम सुरू करते आणि बॅकग्राउंड ॲक्टिव्हिटी, काही व्हिज्युअल इफेक्ट, ठरावीक वैशिष्ट्ये व काही नेटवर्क कनेक्शन मर्यादित किंवा बंद करते."</string>
-    <string name="battery_saver_description" msgid="8518809702138617167">"बॅटरी सेव्हर गडद थीम सुरू करते आणि बॅकग्राउंड ॲक्टिव्हिटी, काही व्हिज्युअल इफेक्ट, ठरावीक वैशिष्ट्ये व काही नेटवर्क कनेक्शन मर्यादित किंवा बंद करते."</string>
+    <string name="battery_saver_description_with_learn_more" msgid="8969945879044849461">"बॅटरी सेव्हर गडद थीम सुरू करते आणि बॅकग्राउंड ॲक्टिव्हिटी, काही व्हिजुअल इफेक्ट, ठरावीक वैशिष्ट्ये व काही नेटवर्क कनेक्शन मर्यादित किंवा बंद करते."</string>
+    <string name="battery_saver_description" msgid="2820475140307374570">"बॅटरी सेव्हर गडद थीम सुरू करते आणि बॅकग्राउंड ॲक्टिव्हिटी, काही व्हिजुअल इफेक्ट, ठरावीक वैशिष्ट्ये व काही नेटवर्क कनेक्शन मर्यादित किंवा बंद करते."</string>
     <string name="data_saver_description" msgid="4995164271550590517">"डेटाचा वापर कमी करण्यात मदत करण्यासाठी काही अ‍ॅप्सना बॅकग्राउंडमध्ये डेटा पाठवण्यास किंवा मिळवण्यास डेटा सर्व्हर प्रतिबंध करते. तुम्ही सध्या वापरत असलेले अ‍ॅप डेटा अ‍ॅक्सेस करू शकते, पण तसे खूप कमी वेळा होते. याचाच अर्थ असा, की तुम्ही इमेजवर टॅप करेपर्यंत त्या डिस्प्ले होणार नाहीत."</string>
     <string name="data_saver_enable_title" msgid="7080620065745260137">"डेटा सेव्हर सुरू करायचे?"</string>
     <string name="data_saver_enable_button" msgid="4399405762586419726">"सुरू करा"</string>

@@ -372,8 +372,8 @@
     <string name="permgroupdesc_xr_eye_sensitive" msgid="6050967250223079001">"точно відстежувати рух очей"</string>
     <string name="permgrouplab_xr_tracking" msgid="766634536453394700">"Дані про рух і навколишню область"</string>
     <string name="permgroupdesc_xr_tracking" msgid="812429788288001595">"відстежувати рухи очей, обличчя, тіла й сканувати навколишню область"</string>
-    <string name="permgrouplab_xr_tracking_sensitive" msgid="4346975608010051186">"Точні дані про рухи головою і область"</string>
-    <string name="permgroupdesc_xr_tracking_sensitive" msgid="7925014193164562556">"точно відстежувати рухи головою і сканувати навколишню область"</string>
+    <string name="permgrouplab_xr_tracking_sensitive" msgid="6574264227123545314">"Точні дані про рух і навколишню область"</string>
+    <string name="permgroupdesc_xr_tracking_sensitive" msgid="2480835734248509848">"точно сканувати область і відстежувати рухи головою"</string>
     <string name="capability_title_canRetrieveWindowContent" msgid="7554282892101587296">"Отримувати вміст вікна"</string>
     <string name="capability_desc_canRetrieveWindowContent" msgid="6195610527625237661">"Перевіряти вміст вікна, з яким ви взаємодієте."</string>
     <string name="capability_title_canRequestTouchExploration" msgid="327598364696316213">"Увімкнути функцію дослідження дотиком"</string>
@@ -687,7 +687,7 @@
     <string name="permdesc_scene_understanding_coarse" msgid="847344305502345475">"Дозволяє додатку сканувати простір навколо вас."</string>
     <string name="permlab_scene_understanding_fine" msgid="2899904960307462936">"точно сканувати область навколо"</string>
     <string name="permdesc_scene_understanding_fine" msgid="4848943859506977588">"Дозволяє додатку детально сканувати простір навколо вас."</string>
-    <string name="permlab_xr_tracking_in_background" msgid="8659516810430027774">"відстежувати дані розширеної реальності у фоновому режимі"</string>
+    <string name="permlab_xr_tracking_in_background" msgid="1714941204255185460">"отримувати доступ до відстеження розширеної реальності у фоновому режимі"</string>
     <string name="permdesc_xr_tracking_in_background" msgid="3151744132692357005">"Дозволяє додатку отримувати доступ до даних розширеної реальності у фоновому режимі."</string>
     <string name="permlab_capture_keyboard" msgid="4076894823382693032">"записувати натискання клавіш"</string>
     <string name="permdesc_capture_keyboard" msgid="4192269470684407219">"Дозволяє додатку записувати натискання клавіш, перш ніж система зможе обробити системні комбінації клавіш і дії."</string>
@@ -1988,8 +1988,8 @@
     <string name="package_updated_device_owner" msgid="7770195449213776218">"Оновлено адміністратором.\nПерейдіть у налаштування, щоб переглянути надані дозволи."</string>
     <string name="package_deleted_device_owner" msgid="2292335928930293023">"Видалено адміністратором"</string>
     <string name="confirm_battery_saver" msgid="5247976246208245754">"ОК"</string>
-    <string name="battery_saver_description_with_learn_more" msgid="5444908404021316250">"У режимі енергозбереження вмикається темна тема й обмежуються чи вимикаються дії у фоновому режимі, а також деякі візуальні ефекти, функції та з’єднання з мережами."</string>
-    <string name="battery_saver_description" msgid="8518809702138617167">"У режимі енергозбереження вмикається темна тема й обмежуються чи вимикаються дії у фоновому режимі, а також деякі візуальні ефекти, функції та з’єднання з мережами."</string>
+    <string name="battery_saver_description_with_learn_more" msgid="8969945879044849461">"У режимі енергозбереження вмикається темна тема й обмежуються чи вимикаються дії у фоновому режимі, а також деякі візуальні ефекти, функції і з’єднання з мережами."</string>
+    <string name="battery_saver_description" msgid="2820475140307374570">"У режимі енергозбереження вмикається темна тема й обмежуються чи вимикаються дії у фоновому режимі, а також деякі візуальні ефекти, функції і з’єднання з мережами."</string>
     <string name="data_saver_description" msgid="4995164271550590517">"Щоб зменшити використання трафіку, функція \"Заощадження трафіку\" не дозволяє деяким додаткам надсилати чи отримувати дані у фоновому режимі. Поточний додаток зможе отримувати доступ до таких даних, але рідше. Наприклад, зображення не відображатиметься, доки ви не торкнетеся його."</string>
     <string name="data_saver_enable_title" msgid="7080620065745260137">"Увімкнути заощадження трафіку?"</string>
     <string name="data_saver_enable_button" msgid="4399405762586419726">"Увімкнути"</string>

@@ -370,8 +370,8 @@
     <string name="permgroupdesc_xr_eye_sensitive" msgid="6050967250223079001">"begi-mugimenduen jarraipen zehatza egin"</string>
     <string name="permgrouplab_xr_tracking" msgid="766634536453394700">"Mugimenduen eta inguruaren datuak"</string>
     <string name="permgroupdesc_xr_tracking" msgid="812429788288001595">"begien, aurpegiaren eta gorputzaren jarraipena egin eta ingurua aztertu"</string>
-    <string name="permgrouplab_xr_tracking_sensitive" msgid="4346975608010051186">"Buru-mugimendu zehatzen eta inguruaren datuak"</string>
-    <string name="permgroupdesc_xr_tracking_sensitive" msgid="7925014193164562556">"buruaren jarraipen zehatza egin eta ingurua aztertu"</string>
+    <string name="permgrouplab_xr_tracking_sensitive" msgid="6574264227123545314">"Mugimenduen eta inguruaren datu zehatzak"</string>
+    <string name="permgroupdesc_xr_tracking_sensitive" msgid="2480835734248509848">"ingurua zehaztasunez aztertu eta buruaren jarraipena egin"</string>
     <string name="capability_title_canRetrieveWindowContent" msgid="7554282892101587296">"Leihoko edukia eskuratu."</string>
     <string name="capability_desc_canRetrieveWindowContent" msgid="6195610527625237661">"Arakatu irekita daukazun leihoko edukia."</string>
     <string name="capability_title_canRequestTouchExploration" msgid="327598364696316213">"\"Arakatu ukituta\" aktibatu."</string>
@@ -685,7 +685,7 @@
     <string name="permdesc_scene_understanding_coarse" msgid="847344305502345475">"Zure ingurunea aztertzeko baimena ematen dio aplikazioari."</string>
     <string name="permlab_scene_understanding_fine" msgid="2899904960307462936">"ingurua zehaztasunez aztertu"</string>
     <string name="permdesc_scene_understanding_fine" msgid="4848943859506977588">"Zure ingurunea zehaztasunez aztertzeko baimena ematen dio aplikazioari."</string>
-    <string name="permlab_xr_tracking_in_background" msgid="8659516810430027774">"atzeko planoan EHko datuen jarraipena egin"</string>
+    <string name="permlab_xr_tracking_in_background" msgid="1714941204255185460">"EHko datuen jarraipena atzeko planoan atzitu"</string>
     <string name="permdesc_xr_tracking_in_background" msgid="3151744132692357005">"Atzeko planoan EHko datuak erabiltzeko baimena ematen dio aplikazioari."</string>
     <string name="permlab_capture_keyboard" msgid="4076894823382693032">"kapturatu gakoak"</string>
     <string name="permdesc_capture_keyboard" msgid="4192269470684407219">"Sistemak sistemaren lasterbideak eta ekintzak prozesatu ahal izan baino lehen gakoak kapturatzeko baimena ematen dio aplikazioari."</string>
@@ -1986,8 +1986,8 @@
     <string name="package_updated_device_owner" msgid="7770195449213776218">"Administratzaileak eguneratu du.\nEmandako baimenak ikusteko, joan ezarpenetara."</string>
     <string name="package_deleted_device_owner" msgid="2292335928930293023">"Administratzaileak ezabatu du"</string>
     <string name="confirm_battery_saver" msgid="5247976246208245754">"Ados"</string>
-    <string name="battery_saver_description_with_learn_more" msgid="5444908404021316250">"Bateria-aurreztaileak gai iluna aktibatzen du, eta atzeko planoko jarduerak, zenbait efektu bisual, eta eginbide jakin eta sareko konexio batzuk mugatzen edo desaktibatzen ditu."</string>
-    <string name="battery_saver_description" msgid="8518809702138617167">"Bateria-aurreztaileak gai iluna aktibatzen du, eta atzeko planoko jarduerak, zenbait efektu bisual, eta eginbide jakin eta sareko konexio batzuk mugatzen edo desaktibatzen ditu."</string>
+    <string name="battery_saver_description_with_learn_more" msgid="8969945879044849461">"Bateria-aurreztaileak gai iluna aktibatzen du, eta murriztu edo desaktibatu egiten ditu atzeko planoko jarduerak, zenbait efektu bisual, eta eginbide jakin eta sareko konexio batzuk."</string>
+    <string name="battery_saver_description" msgid="2820475140307374570">"Bateria-aurreztaileak gai iluna aktibatzen du, eta murriztu edo desaktibatu egiten ditu atzeko planoko jarduerak, zenbait efektu bisual, eta eginbide jakin eta sareko konexio batzuk."</string>
     <string name="data_saver_description" msgid="4995164271550590517">"Datu-erabilera murrizteko, atzeko planoan datuak bidaltzea eta jasotzea galarazten die datu-aurreztaileak aplikazio batzuei. Erabiltzen ari zaren aplikazioek datuak atzitu ahalko dituzte, baina baliteke maiztasun txikiagoarekin atzitzea. Ondorioz, adibidez, baliteke irudiak ez erakustea haiek sakatu arte."</string>
     <string name="data_saver_enable_title" msgid="7080620065745260137">"Datu-aurreztailea aktibatu nahi duzu?"</string>
     <string name="data_saver_enable_button" msgid="4399405762586419726">"Aktibatu"</string>
@@ -2585,7 +2585,7 @@
     <string name="usb_apm_usb_plugged_in_when_locked_data_notification_text" msgid="8392199274984083972">"USB bidezko konexioa abiarazteko, pantaila desblokeatuta egotea behar du Babes aurreratua programak"</string>
     <string name="usb_apm_usb_plugged_in_when_locked_charge_notification_text" msgid="6563939109526112446">"Bizkorrago kargatzeko, pantaila desblokeatuta egotea behar du Babes aurreratua programak"</string>
     <string name="usb_apm_usb_plugged_in_when_locked_charge_data_notification_text" msgid="411509882563364946">"Bizkorrago kargatzeko edo USB bidezko konexioa abiarazteko, pantaila desblokeatuta egotea behar du Babes aurreratua programak"</string>
-    <string name="usb_apm_usb_plugged_in_when_locked_notification_silence_action_text" msgid="5495539757631669634">"Desaktibatu audioa"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_notification_silence_action_text" msgid="5495539757631669634">"Desaktibatu jakinarazpenak"</string>
     <string name="usb_apm_usb_notification_silenced_title" msgid="5114203793430169863">"Jakinarazpenak desaktibatuta"</string>
     <string name="usb_apm_usb_notification_silenced_text" msgid="8394777105856033342">"Ez duzu jasoko Babes aurreratua programaren USB konexioei buruzko jakinarazpenik gailua berrabiarazi arte"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"USB bidezko jarduera susmagarriak"</string>

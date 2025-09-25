@@ -370,8 +370,8 @@
     <string name="permgroupdesc_xr_eye_sensitive" msgid="6050967250223079001">"கண் அசைவைத் துல்லியமாகக் கண்காணிக்கும்"</string>
     <string name="permgrouplab_xr_tracking" msgid="766634536453394700">"அசைவு மற்றும் பகுதித் தரவு"</string>
     <string name="permgroupdesc_xr_tracking" msgid="812429788288001595">"கண்கள், முகம், உடல் ஆகியவற்றைக் கண்காணிக்கும், பகுதியை ஸ்கேன் செய்யும்"</string>
-    <string name="permgrouplab_xr_tracking_sensitive" msgid="4346975608010051186">"துல்லியமான தலை அசைவு, பகுதித் தரவு"</string>
-    <string name="permgroupdesc_xr_tracking_sensitive" msgid="7925014193164562556">"தலையைத் துல்லியமாகக் கண்காணிக்கும், பகுதியை ஸ்கேன் செய்யும்"</string>
+    <string name="permgrouplab_xr_tracking_sensitive" msgid="6574264227123545314">"துல்லியமான அசைவு, பகுதித் தரவு"</string>
+    <string name="permgroupdesc_xr_tracking_sensitive" msgid="2480835734248509848">"பகுதியைத் துல்லியமாக ஸ்கேன் செய்யும், தலையைக் கண்காணிக்கும்"</string>
     <string name="capability_title_canRetrieveWindowContent" msgid="7554282892101587296">"சாளர உள்ளடக்கத்தைப் பெறும்"</string>
     <string name="capability_desc_canRetrieveWindowContent" msgid="6195610527625237661">"நீங்கள் பணியாற்றிக் கொண்டிருக்கும் சாளரத்தின் உள்ளடக்கத்தைப் பார்க்கலாம்."</string>
     <string name="capability_title_canRequestTouchExploration" msgid="327598364696316213">"தொடுவதன் மூலம் அறிவதை இயக்கும்"</string>
@@ -685,7 +685,7 @@
     <string name="permdesc_scene_understanding_coarse" msgid="847344305502345475">"உங்கள் சுற்றுப்புறங்களை ஸ்கேன் செய்ய ஆப்ஸை அனுமதிக்கும்."</string>
     <string name="permlab_scene_understanding_fine" msgid="2899904960307462936">"உங்கள் சுற்றுப்புறப் பகுதியைத் துல்லியமாக ஸ்கேன் செய்தல்"</string>
     <string name="permdesc_scene_understanding_fine" msgid="4848943859506977588">"உங்கள் சுற்றுப்புறங்களைத் துல்லியமாக ஸ்கேன் செய்ய ஆப்ஸை அனுமதிக்கும்."</string>
-    <string name="permlab_xr_tracking_in_background" msgid="8659516810430027774">"பின்னணியில் XR தரவைக் கண்காணித்தல்"</string>
+    <string name="permlab_xr_tracking_in_background" msgid="1714941204255185460">"XR கண்காணித்தலைப் பின்னணியில் அணுகுதல்"</string>
     <string name="permdesc_xr_tracking_in_background" msgid="3151744132692357005">"பின்னணியில் XR தரவை அணுக ஆப்ஸை அனுமதிக்கும்."</string>
     <string name="permlab_capture_keyboard" msgid="4076894823382693032">"பட்டன்களைக் கட்டுப்படுத்துதல்"</string>
     <string name="permdesc_capture_keyboard" msgid="4192269470684407219">"சிஸ்டம் ஷார்ட்கட்களையும் செயல்களையும் சிஸ்டம் செயலாக்குவதற்கு முன் பட்டன்களைக் கட்டுப்படுத்த ஆப்ஸை அனுமதிக்கும்."</string>
@@ -1054,7 +1054,7 @@
     <string name="lockscreen_pattern_correct" msgid="8050630103651508582">"சரி!"</string>
     <string name="lockscreen_pattern_wrong" msgid="2940138714468358458">"மீண்டும் முயற்சிக்கவும்"</string>
     <string name="lockscreen_password_wrong" msgid="8605355913868947490">"மீண்டும் முயற்சிக்கவும்"</string>
-    <string name="lockscreen_storage_locked" msgid="634993789186443380">"எல்லா அம்சங்கள் &amp; தரவை பெற, சாதனத்தை அன்லாக் செய்யவும்"</string>
+    <string name="lockscreen_storage_locked" msgid="634993789186443380">"எல்லா அம்சங்கள் &amp; தரவை பெற, அன்லாக் செய்யவும்"</string>
     <string name="faceunlock_multiple_failures" msgid="681991538434031708">"முகம் காட்டித் திறத்தல் அம்சத்தை அதிகமுறை பயன்படுத்துவிட்டீர்கள்"</string>
     <string name="lockscreen_missing_sim_message_short" msgid="1229301273156907613">"சிம் இல்லை"</string>
     <string name="lockscreen_missing_sim_message" product="tablet" msgid="3986843848305639161">"டேப்லெட்டில் சிம் இல்லை."</string>
@@ -1815,7 +1815,7 @@
     <string name="leave_accessibility_shortcut_on" msgid="6543362062336990814">"ஷார்ட்கட்டைப் பயன்படுத்து"</string>
     <string name="color_inversion_feature_name" msgid="2672824491933264951">"கலர் இன்வெர்ஷன்"</string>
     <string name="color_correction_feature_name" msgid="7975133554160979214">"கலர் கரெக்‌ஷன்"</string>
-    <string name="one_handed_mode_feature_name" msgid="2334330034828094891">"ஒற்றைக் கைப் பயன்முறை"</string>
+    <string name="one_handed_mode_feature_name" msgid="2334330034828094891">"ஒற்றைக் கை மோட்"</string>
     <string name="reduce_bright_colors_feature_name" msgid="3222994553174604132">"மிகக் குறைவான வெளிச்சம்"</string>
     <string name="hearing_aids_feature_name" msgid="1125892105105852542">"செவித்துணைக் கருவிகள்"</string>
     <string name="autoclick_feature_name" msgid="4056260617171267864">"ஆட்டோ கிளிக் (இருப்பு நேரம்)"</string>
@@ -1986,8 +1986,8 @@
     <string name="package_updated_device_owner" msgid="7770195449213776218">"உங்கள் நிர்வாகி புதுப்பித்துள்ளார்.\nவழங்கப்பட்டுள்ள அனுமதிகளைப் பார்க்க அமைப்புகளுக்குச் செல்லவும்"</string>
     <string name="package_deleted_device_owner" msgid="2292335928930293023">"உங்கள் நிர்வாகி நீக்கியுள்ளார்"</string>
     <string name="confirm_battery_saver" msgid="5247976246208245754">"சரி"</string>
-    <string name="battery_saver_description_with_learn_more" msgid="5444908404021316250">"பேட்டரி சேமிப்பான் அம்சம் டார்க் தீமை இயக்குவதோடு பின்னணிச் செயல்பாடு, சில விஷுவல் எஃபக்ட்கள், குறிப்பிட்ட அம்சங்கள், சில நெட்வொர்க் இணைப்புகள் ஆகியவற்றைக் கட்டுப்படுத்தும் அல்லது முடக்கும்."</string>
-    <string name="battery_saver_description" msgid="8518809702138617167">"பேட்டரி சேமிப்பான் டார்க் தீமினை ஆன் செய்து பின்னணிச் செயல்பாடு, சில விஷுவல் எஃபெக்ட்கள், குறிப்பிட்ட அம்சங்கள், சில நெட்வொர்க் இணைப்புகள் ஆகியவற்றைக் கட்டுப்படுத்தும் அல்லது ஆஃப் செய்யும்."</string>
+    <string name="battery_saver_description_with_learn_more" msgid="8969945879044849461">"பேட்டரி சேமிப்பு அம்சம் டார்க் தீமை ஆன் செய்வதோடு பின்னணிச் செயல்பாடு, சில விஷுவல் எஃபக்ட்கள், குறிப்பிட்ட அம்சங்கள், சில நெட்வொர்க் இணைப்புகள் ஆகியவற்றைக் குறைக்கும் அல்லது ஆஃப் செய்யும்."</string>
+    <string name="battery_saver_description" msgid="2820475140307374570">"பேட்டரி சேமிப்பு அம்சம் டார்க் தீமை ஆன் செய்வதோடு பின்னணிச் செயல்பாடு, சில விஷுவல் எஃபக்ட்கள், குறிப்பிட்ட அம்சங்கள், சில நெட்வொர்க் இணைப்புகள் ஆகியவற்றைக் குறைக்கும் அல்லது ஆஃப் செய்யும்."</string>
     <string name="data_saver_description" msgid="4995164271550590517">"டேட்டா உபயோகத்தைக் குறைப்பதற்கு உதவ, பின்புலத்தில் டேட்டாவை அனுப்புவது அல்லது பெறுவதிலிருந்து சில ஆப்ஸை டேட்டா சேமிப்பான் தடுக்கும். தற்போது பயன்படுத்தும் ஆப்ஸானது எப்போதாவது டேட்டாவை அணுகலாம். எடுத்துக்காட்டாக, படங்களை நீங்கள் தட்டும் வரை அவை காட்டப்படாது."</string>
     <string name="data_saver_enable_title" msgid="7080620065745260137">"டேட்டா சேமிப்பானை இயக்கவா?"</string>
     <string name="data_saver_enable_button" msgid="4399405762586419726">"இயக்கு"</string>

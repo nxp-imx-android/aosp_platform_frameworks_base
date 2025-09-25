@@ -372,8 +372,8 @@
     <string name="permgroupdesc_xr_eye_sensitive" msgid="6050967250223079001">"natančno sledenje premikom oči"</string>
     <string name="permgrouplab_xr_tracking" msgid="766634536453394700">"Podatki o premikih in območju"</string>
     <string name="permgroupdesc_xr_tracking" msgid="812429788288001595">"sledenje premikom oči, obraza, telesa in območje za zaznavanje"</string>
-    <string name="permgrouplab_xr_tracking_sensitive" msgid="4346975608010051186">"Natančni podatki o premikih glave in območju"</string>
-    <string name="permgroupdesc_xr_tracking_sensitive" msgid="7925014193164562556">"natančno sledenje premikom glave in območje za zaznavanje"</string>
+    <string name="permgrouplab_xr_tracking_sensitive" msgid="6574264227123545314">"Natančni podatki o premikih in okolici"</string>
+    <string name="permgroupdesc_xr_tracking_sensitive" msgid="2480835734248509848">"natančno zaznavanje okolice in sledenje premikom glave"</string>
     <string name="capability_title_canRetrieveWindowContent" msgid="7554282892101587296">"Pridobiti vsebino okna"</string>
     <string name="capability_desc_canRetrieveWindowContent" msgid="6195610527625237661">"Preverjanje vsebine okna, ki ga uporabljate."</string>
     <string name="capability_title_canRequestTouchExploration" msgid="327598364696316213">"Vklopiti raziskovanje z dotikom"</string>
@@ -687,7 +687,7 @@
     <string name="permdesc_scene_understanding_coarse" msgid="847344305502345475">"Aplikaciji omogoča zaznavanje okolice."</string>
     <string name="permlab_scene_understanding_fine" msgid="2899904960307462936">"natančno zaznavanje okolice"</string>
     <string name="permdesc_scene_understanding_fine" msgid="4848943859506977588">"Aplikaciji omogoča natančno zaznavanje okolice."</string>
-    <string name="permlab_xr_tracking_in_background" msgid="8659516810430027774">"sledenje podatkom RR v ozadju"</string>
+    <string name="permlab_xr_tracking_in_background" msgid="1714941204255185460">"dostop do podatkov razširjene resničnosti (RR) v ozadju"</string>
     <string name="permdesc_xr_tracking_in_background" msgid="3151744132692357005">"Aplikaciji omogoča dostop do podatkov razširjene resničnosti (RR) v ozadju."</string>
     <string name="permlab_capture_keyboard" msgid="4076894823382693032">"zajemanje tipk"</string>
     <string name="permdesc_capture_keyboard" msgid="4192269470684407219">"Aplikaciji omogoča zajemanje tipk, preden lahko sistem obdela sistemske bližnjice in dejanja."</string>
@@ -1988,8 +1988,8 @@
     <string name="package_updated_device_owner" msgid="7770195449213776218">"Posodobil skrbnik.\nV nastavitvah si oglejte odobrena dovoljenja"</string>
     <string name="package_deleted_device_owner" msgid="2292335928930293023">"Izbrisal skrbnik"</string>
     <string name="confirm_battery_saver" msgid="5247976246208245754">"V redu"</string>
-    <string name="battery_saver_description_with_learn_more" msgid="5444908404021316250">"Funkcija varčevanja z energijo baterije vklopi temno temo ter omeji ali izklopi dejavnost v ozadju, nekatere vizualne učinke, določene funkcije in nekatere omrežne povezave."</string>
-    <string name="battery_saver_description" msgid="8518809702138617167">"Funkcija varčevanja z energijo baterije vklopi temno temo ter omeji ali izklopi dejavnost v ozadju, nekatere vizualne učinke, določene funkcije in nekatere omrežne povezave."</string>
+    <string name="battery_saver_description_with_learn_more" msgid="8969945879044849461">"Funkcija varčevanja z energijo baterije vklopi temno temo ter omeji ali izklopi dejavnost v ozadju, nekatere vizualne učinke, določene funkcije in nekatere omrežne povezave."</string>
+    <string name="battery_saver_description" msgid="2820475140307374570">"Funkcija varčevanja z energijo baterije vklopi temno temo ter omeji ali izklopi dejavnost v ozadju, nekatere vizualne učinke, določene funkcije in nekatere omrežne povezave."</string>
     <string name="data_saver_description" msgid="4995164271550590517">"Zaradi zmanjševanja prenesene količine podatkov funkcija varčevanja s podatki nekaterim aplikacijam preprečuje, da bi v ozadju pošiljale ali prejemale podatke. Aplikacija, ki jo trenutno uporabljate, lahko dostopa do podatkov, vendar to morda počne manj pogosto. To na primer pomeni, da se slike ne prikažejo, dokler se jih ne dotaknete."</string>
     <string name="data_saver_enable_title" msgid="7080620065745260137">"Vklop varčevanja s podatki?"</string>
     <string name="data_saver_enable_button" msgid="4399405762586419726">"Vklopi"</string>

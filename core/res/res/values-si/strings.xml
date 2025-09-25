@@ -370,8 +370,8 @@
     <string name="permgroupdesc_xr_eye_sensitive" msgid="6050967250223079001">"අක්ෂි චලනය නිවැරදිව නිරීක්ෂණය කරන්න"</string>
     <string name="permgrouplab_xr_tracking" msgid="766634536453394700">"චලනය සහ ප්‍රදේශ දත්ත"</string>
     <string name="permgroupdesc_xr_tracking" msgid="812429788288001595">"ඇස්, මුහුණ, ශරීරය සහ ස්කෑන් ප්‍රදේශය නිරීක්ෂණය කරන්න"</string>
-    <string name="permgrouplab_xr_tracking_sensitive" msgid="4346975608010051186">"නිවැරදි හිස චලනය සහ ප්‍රදේශ දත්ත"</string>
-    <string name="permgroupdesc_xr_tracking_sensitive" msgid="7925014193164562556">"හිස සහ ස්කෑන් ප්‍රදේශය නිවැරදිව නිරීක්ෂණය කරන්න"</string>
+    <string name="permgrouplab_xr_tracking_sensitive" msgid="6574264227123545314">"නිරවද්‍ය චලන සහ ප්‍රදේශ දත්ත"</string>
+    <string name="permgroupdesc_xr_tracking_sensitive" msgid="2480835734248509848">"ප්‍රදේශය නිවැරදිව ස්කෑන් කර හිස ලුහුබඳින්න"</string>
     <string name="capability_title_canRetrieveWindowContent" msgid="7554282892101587296">"කවුළු අන්න්තර්ගතය ලබාගන්න"</string>
     <string name="capability_desc_canRetrieveWindowContent" msgid="6195610527625237661">"ඔබ අන්තර්ක්‍රියාකාරී වන කවුළුවේ අන්තර්ගතය පරීක්ෂා කරන්න."</string>
     <string name="capability_title_canRequestTouchExploration" msgid="327598364696316213">"ස්පර්ශයෙන් ගවේෂණය සක්‍රිය කරන්න"</string>
@@ -685,7 +685,7 @@
     <string name="permdesc_scene_understanding_coarse" msgid="847344305502345475">"ඔබේ වටපිටාව ස්කෑන් කිරීමට යෙදුමට ඉඩ දෙයි."</string>
     <string name="permlab_scene_understanding_fine" msgid="2899904960307462936">"ඔබේ අවට ප්‍රදේශය නිවැරදිව ස්කෑන් කරන්න"</string>
     <string name="permdesc_scene_understanding_fine" msgid="4848943859506977588">"යෙදුමට ඔබේ වටපිටාව නිවැරදිව ස්කෑන් කිරීමට ඉඩ දෙයි."</string>
-    <string name="permlab_xr_tracking_in_background" msgid="8659516810430027774">"පසුබිමේ XR දත්ත නිරීක්ෂණය කරන්න"</string>
+    <string name="permlab_xr_tracking_in_background" msgid="1714941204255185460">"පසුබිමේ XR ලුහුබැඳීමට ප්‍රවේශ වන්න"</string>
     <string name="permdesc_xr_tracking_in_background" msgid="3151744132692357005">"පසුබිමේ XR දත්ත වෙත ප්‍රවේශ වීමට යෙදුමට ඉඩ දෙයි."</string>
     <string name="permlab_capture_keyboard" msgid="4076894823382693032">"ග්‍රහණ යතුරු"</string>
     <string name="permdesc_capture_keyboard" msgid="4192269470684407219">"පද්ධතියට පද්ධති කෙටිමං සහ ක්‍රියා සැකසීමට පෙර යතුරු ග්‍රහණය කර ගැනීමට යෙදුමට ඉඩ දෙයි."</string>
@@ -1986,8 +1986,8 @@
     <string name="package_updated_device_owner" msgid="7770195449213776218">"ඔබේ පරිපාලක විසින් යාවත්කාලීන කරන ලදි.\n ලබා දී ඇති අවසර බැලීමට සැකසීම් වෙත යන්න"</string>
     <string name="package_deleted_device_owner" msgid="2292335928930293023">"ඔබගේ පරිපාලක මඟින් මකා දමා ඇත"</string>
     <string name="confirm_battery_saver" msgid="5247976246208245754">"හරි"</string>
-    <string name="battery_saver_description_with_learn_more" msgid="5444908404021316250">"බැටරි සුරැකුම අඳුරු තේමාව ක්‍රියාත්මක කර පසුබිම් ක්‍රියාකාරකම්, සමහර දෘශ්‍ය ප්‍රයෝග, යම් විශේෂාංග සහ සමහර ජාල සම්බන්ධතා සීමා හෝ ක්‍රියාවිරහිත කරයි."</string>
-    <string name="battery_saver_description" msgid="8518809702138617167">"බැටරි සුරැකුම අඳුරු තේමාව ක්‍රියාත්මක කර පසුබිම් ක්‍රියාකාරකම්, සමහර දෘශ්‍ය ප්‍රයෝග, යම් විශේෂාංග සහ සමහර ජාල සම්බන්ධතා සීමා හෝ ක්‍රියාවිරහිත කරයි."</string>
+    <string name="battery_saver_description_with_learn_more" msgid="8969945879044849461">"බැටරි සුරැකුම අඳුරු තේමාව ක්‍රියාත්මක කර පසුබිම් ක්‍රියාකාරකම්, සමහර දෘශ්‍ය ප්‍රයෝග, යම් විශේෂාංග සහ සමහර ජාල සම්බන්ධතා සීමා හෝ ක්‍රියාවිරහිත කරයි."</string>
+    <string name="battery_saver_description" msgid="2820475140307374570">"බැටරි සුරැකුම අඳුරු තේමාව ක්‍රියාත්මක කර පසුබිම් ක්‍රියාකාරකම්, සමහර දෘශ්‍ය ප්‍රයෝග, යම් විශේෂාංග සහ සමහර ජාල සම්බන්ධතා සීමා හෝ ක්‍රියාවිරහිත කරයි."</string>
     <string name="data_saver_description" msgid="4995164271550590517">"දත්ත භාවිතය අඩු කිරීමට උදවු වීමට, දත්ත සුරැකුම සමහර යෙදුම් පසුබිමින් දත්ත යැවීම සහ ලබා ගැනීම වළක්වයි. ඔබ දැනට භාවිත කරන යෙදුමකට දත්ත වෙත පිවිසීමට හැකිය, නමුත් එසේ කරන්නේ කලාතුරකින් විය හැකිය. මෙයින් අදහස් වන්නේ, උදාහරණයක් ලෙස, එම රූප ඔබ ඒවාට තට්ටු කරන තෙක් සංදර්ශනය නොවන බවය."</string>
     <string name="data_saver_enable_title" msgid="7080620065745260137">"දත්ත සුරැකුම ක්‍රියාත්මක කරන්නද?"</string>
     <string name="data_saver_enable_button" msgid="4399405762586419726">"ක්‍රියාත්මක කරන්න"</string>

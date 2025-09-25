@@ -370,8 +370,8 @@
     <string name="permgroupdesc_xr_eye_sensitive" msgid="6050967250223079001">"ճշգրտորեն հետագծել աչքերի շարժումները"</string>
     <string name="permgrouplab_xr_tracking" msgid="766634536453394700">"Շարժումների և տարածքի տվյալներ"</string>
     <string name="permgroupdesc_xr_tracking" msgid="812429788288001595">"հետագծել աչքերը, դեմքը, մարմինը և սկանավորել տարածքը"</string>
-    <string name="permgrouplab_xr_tracking_sensitive" msgid="4346975608010051186">"Գլխի ճշգրիտ շարժումներ, տարածքի տվյալներ"</string>
-    <string name="permgroupdesc_xr_tracking_sensitive" msgid="7925014193164562556">"ճշգրտորեն հետագծել գլուխը և սկանավորել տարածքը"</string>
+    <string name="permgrouplab_xr_tracking_sensitive" msgid="6574264227123545314">"Շարժման և տարածքի մասին ճշգրիտ տվյալներ"</string>
+    <string name="permgroupdesc_xr_tracking_sensitive" msgid="2480835734248509848">"տարածքի ճշգրիտ սկանավորում և գլխի շարժման հետագծում"</string>
     <string name="capability_title_canRetrieveWindowContent" msgid="7554282892101587296">"Առբերել պատուհանի բովանդակությունը"</string>
     <string name="capability_desc_canRetrieveWindowContent" msgid="6195610527625237661">"Վերլուծել գործող պատուհանի բովանդակությունը"</string>
     <string name="capability_title_canRequestTouchExploration" msgid="327598364696316213">"Միացնել Հպման միջոցով հետազոտումը"</string>
@@ -685,7 +685,7 @@
     <string name="permdesc_scene_understanding_coarse" msgid="847344305502345475">"Թույլ է տալիս հավելվածին սկանավորել ձեր շրջակայքը։"</string>
     <string name="permlab_scene_understanding_fine" msgid="2899904960307462936">"ճշգրտորեն սկանավորել ձեր շրջակայքը"</string>
     <string name="permdesc_scene_understanding_fine" msgid="4848943859506977588">"Թույլ է տալիս հավելվածին ճշգրտորեն սկանավորել ձեր շրջակայքը։"</string>
-    <string name="permlab_xr_tracking_in_background" msgid="8659516810430027774">"հետագծել XR տվյալները ֆոնային ռեժիմում"</string>
+    <string name="permlab_xr_tracking_in_background" msgid="1714941204255185460">"XR տվյալների հետագծման հասանելիություն ֆոնային ռեժիմում"</string>
     <string name="permdesc_xr_tracking_in_background" msgid="3151744132692357005">"Թույլ է տալիս հավելվածին ֆոնային ռեժիմում օգտագործել XR տվյալները։"</string>
     <string name="permlab_capture_keyboard" msgid="4076894823382693032">"պահել ստեղները"</string>
     <string name="permdesc_capture_keyboard" msgid="4192269470684407219">"Հավելվածին թույլ է տալիս պահել ստեղները, նախքան համակարգը կմշակի ստեղների համակարգային համադրությունը և համապատասխան գործողությունը։"</string>
@@ -1054,7 +1054,7 @@
     <string name="lockscreen_pattern_correct" msgid="8050630103651508582">"Ճիշտ է:"</string>
     <string name="lockscreen_pattern_wrong" msgid="2940138714468358458">"Կրկին փորձեք"</string>
     <string name="lockscreen_password_wrong" msgid="8605355913868947490">"Կրկին փորձեք"</string>
-    <string name="lockscreen_storage_locked" msgid="634993789186443380">"Ապակողպեք՝ բոլոր գործառույթներն ու տվյալներն օգտագործելու համար"</string>
+    <string name="lockscreen_storage_locked" msgid="634993789186443380">"Ապակողպեք՝ բոլոր գործառ․ ու տվյալների համար"</string>
     <string name="faceunlock_multiple_failures" msgid="681991538434031708">"Դեմքով ապակողպման փորձերի առավելագույն քանակը գերազանցված են"</string>
     <string name="lockscreen_missing_sim_message_short" msgid="1229301273156907613">"SIM քարտ չկա"</string>
     <string name="lockscreen_missing_sim_message" product="tablet" msgid="3986843848305639161">"Պլանշետում SIM քարտ չկա։"</string>
@@ -1451,7 +1451,7 @@
     <string name="perm_costs_money" msgid="749054595022779685">"Սա կարող է գումար պահանջել"</string>
     <string name="dlg_ok" msgid="5103447663504839312">"Հաստատել"</string>
     <string name="usb_charging_notification_title" msgid="1674124518282666955">"Սարքի լիցքավորում USB-ի միջոցով"</string>
-    <string name="usb_supplying_notification_title" msgid="5378546632408101811">"Միացված սարքի լիցքավորում USB-ի միջոցով"</string>
+    <string name="usb_supplying_notification_title" msgid="5378546632408101811">"Կապակցված սարքի լիցքավորում USB-ի միջոցով"</string>
     <string name="usb_mtp_notification_title" msgid="1065989144124499810">"Ֆայլերի փոխանցումը USB-ի միջոցով միացավ"</string>
     <string name="usb_ptp_notification_title" msgid="5043437571863443281">"PTP ռեժիմը USB-ի միջոցով միացավ"</string>
     <string name="usb_tether_notification_title" msgid="8828527870612663771">"USB մոդեմի ռեժիմը միացավ"</string>
@@ -1459,7 +1459,7 @@
     <string name="usb_uvc_notification_title" msgid="2030032862673400008">"Սարքը միացած է որպես վեբ տեսախցիկ"</string>
     <string name="usb_accessory_notification_title" msgid="1385394660861956980">"Միացվել է USB լրասարք"</string>
     <string name="usb_notification_message" msgid="4715163067192110676">"Հպեք՝ լրացուցիչ ընտրանքների համար:"</string>
-    <string name="usb_power_notification_message" msgid="7284765627437897702">"Միացված սարքի լիցքավորում: Հպեք՝ ավելի շատ ընտրանքների համար:"</string>
+    <string name="usb_power_notification_message" msgid="7284765627437897702">"Կապակցված սարքի լիցքավորում։ Հպեք՝ ավելի շատ ընտրանքներ տեսնելու համար։"</string>
     <string name="usb_unsupported_audio_accessory_title" msgid="2335775548086533065">"Հայտնաբերված է անալոգային աուդիո լրասարք"</string>
     <string name="usb_unsupported_audio_accessory_message" msgid="1300168007129796621">"Կցված սարքը համատեղելի չէ այս հեռախոսի հետ: Հպեք` ավելին իմանալու համար:"</string>
     <string name="adb_active_notification_title" msgid="408390247354560331">"USB-ով վրիպազերծումը միացված է"</string>
@@ -1986,8 +1986,8 @@
     <string name="package_updated_device_owner" msgid="7770195449213776218">"Թարմացվել է ձեր ադմինիստրատորի կողմից։\nԱնցեք կարգավորումներ՝ տրամադրված թույլտվությունները դիտելու համար"</string>
     <string name="package_deleted_device_owner" msgid="2292335928930293023">"Ջնջվել է ձեր ադմինիստրատորի կողմից"</string>
     <string name="confirm_battery_saver" msgid="5247976246208245754">"Եղավ"</string>
-    <string name="battery_saver_description_with_learn_more" msgid="5444908404021316250">"«Մարտկոցի տնտեսում» գործառույթը միացնում է մուգ թեման և անջատում կամ սահմանափակում է աշխատանքը ֆոնային ռեժիմում, որոշ վիզուալ էֆեկտներ, ցանցային միացումներ և այլ գործառույթներ։"</string>
-    <string name="battery_saver_description" msgid="8518809702138617167">"«Մարտկոցի տնտեսում» գործառույթը միացնում է մուգ թեման և անջատում կամ սահմանափակում է աշխատանքը ֆոնային ռեժիմում, որոշ վիզուալ էֆեկտներ, ցանցային միացումներ և այլ գործառույթներ։"</string>
+    <string name="battery_saver_description_with_learn_more" msgid="8969945879044849461">"«Մարտկոցի տնտեսում» գործառույթը միացնում է մուգ թեման և անջատում կամ սահմանափակում է աշխատանքը ֆոնային ռեժիմում, որոշ վիզուալ էֆեկտներ, ցանցային միացումներ և այլ գործառույթներ։"</string>
+    <string name="battery_saver_description" msgid="2820475140307374570">"«Մարտկոցի տնտեսում» գործառույթը միացնում է մուգ թեման և անջատում կամ սահմանափակում է աշխատանքը ֆոնային ռեժիմում, որոշ վիզուալ էֆեկտներ, ցանցային միացումներ և այլ գործառույթներ։"</string>
     <string name="data_saver_description" msgid="4995164271550590517">"Թրաֆիկի տնտեսման ռեժիմում որոշ հավելվածների համար տվյալների ֆոնային փոխանցումն անջատված է։ Հավելվածը, որն օգտագործում եք, կարող է տվյալներ փոխանցել և ստանալ, սակայն ոչ այնքան հաճախ: Օրինակ՝ պատկերները կցուցադրվեն միայն դրանց վրա սեղմելուց հետո։"</string>
     <string name="data_saver_enable_title" msgid="7080620065745260137">"Միացնե՞լ թրաֆիկի տնտեսումը"</string>
     <string name="data_saver_enable_button" msgid="4399405762586419726">"Միացնել"</string>

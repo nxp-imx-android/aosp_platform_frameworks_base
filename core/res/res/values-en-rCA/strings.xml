@@ -370,8 +370,8 @@
     <string name="permgroupdesc_xr_eye_sensitive" msgid="6050967250223079001">"precisely track eye movement"</string>
     <string name="permgrouplab_xr_tracking" msgid="766634536453394700">"Movement and area data"</string>
     <string name="permgroupdesc_xr_tracking" msgid="812429788288001595">"track eyes, face, body, and scan area"</string>
-    <string name="permgrouplab_xr_tracking_sensitive" msgid="4346975608010051186">"Precise head movement and area data"</string>
-    <string name="permgroupdesc_xr_tracking_sensitive" msgid="7925014193164562556">"precisely track head and scan area"</string>
+    <string name="permgrouplab_xr_tracking_sensitive" msgid="6574264227123545314">"Precise movement and area data"</string>
+    <string name="permgroupdesc_xr_tracking_sensitive" msgid="2480835734248509848">"precisely scan area and track head"</string>
     <string name="capability_title_canRetrieveWindowContent" msgid="7554282892101587296">"Retrieve window content"</string>
     <string name="capability_desc_canRetrieveWindowContent" msgid="6195610527625237661">"Inspect the content of a window you\'re interacting with."</string>
     <string name="capability_title_canRequestTouchExploration" msgid="327598364696316213">"Turn on Explore by Touch"</string>
@@ -685,7 +685,7 @@
     <string name="permdesc_scene_understanding_coarse" msgid="847344305502345475">"Allows the app to scan your surroundings."</string>
     <string name="permlab_scene_understanding_fine" msgid="2899904960307462936">"precisely scan your surrounding area"</string>
     <string name="permdesc_scene_understanding_fine" msgid="4848943859506977588">"Allows the app to precisely scan your surroundings."</string>
-    <string name="permlab_xr_tracking_in_background" msgid="8659516810430027774">"track XR data in the background"</string>
+    <string name="permlab_xr_tracking_in_background" msgid="1714941204255185460">"access XR tracking in the background"</string>
     <string name="permdesc_xr_tracking_in_background" msgid="3151744132692357005">"Allows the app to access XR data in the background."</string>
     <string name="permlab_capture_keyboard" msgid="4076894823382693032">"capture keys"</string>
     <string name="permdesc_capture_keyboard" msgid="4192269470684407219">"Allows the app to capture keys before system can process system shortcuts and actions."</string>
@@ -1986,8 +1986,8 @@
     <string name="package_updated_device_owner" msgid="7770195449213776218">"Updated by your admin.\nGo to settings to view granted permissions"</string>
     <string name="package_deleted_device_owner" msgid="2292335928930293023">"Deleted by your admin"</string>
     <string name="confirm_battery_saver" msgid="5247976246208245754">"OK"</string>
-    <string name="battery_saver_description_with_learn_more" msgid="5444908404021316250">"Battery Saver turns on Dark theme and limits or turns off background activity, some visual effects, certain features, and some network connections."</string>
-    <string name="battery_saver_description" msgid="8518809702138617167">"Battery Saver turns on Dark theme and limits or turns off background activity, some visual effects, certain features, and some network connections."</string>
+    <string name="battery_saver_description_with_learn_more" msgid="8969945879044849461">"Battery Saver turns on dark theme and limits or turns off background activity, some visual effects, certain features, and some network connections."</string>
+    <string name="battery_saver_description" msgid="2820475140307374570">"Battery Saver turns on dark theme and limits or turns off background activity, some visual effects, certain features, and some network connections."</string>
     <string name="data_saver_description" msgid="4995164271550590517">"To help reduce data usage, Data Saver prevents some apps from sending or receiving data in the background. An app you\'re currently using can access data, but may do so less frequently. This may mean, for example, that images don\'t display until you tap them."</string>
     <string name="data_saver_enable_title" msgid="7080620065745260137">"Turn on Data Saver?"</string>
     <string name="data_saver_enable_button" msgid="4399405762586419726">"Turn on"</string>

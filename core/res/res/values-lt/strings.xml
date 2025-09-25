@@ -372,8 +372,8 @@
     <string name="permgroupdesc_xr_eye_sensitive" msgid="6050967250223079001">"tiksliai stebėti akių judesius"</string>
     <string name="permgrouplab_xr_tracking" msgid="766634536453394700">"Judėjimo ir srities duomenys"</string>
     <string name="permgroupdesc_xr_tracking" msgid="812429788288001595">"stebėti akis, veidą, kūną ir nuskaitymo sritį"</string>
-    <string name="permgrouplab_xr_tracking_sensitive" msgid="4346975608010051186">"Tikslūs galvos judesiai ir srities duomenys"</string>
-    <string name="permgroupdesc_xr_tracking_sensitive" msgid="7925014193164562556">"tiksliai stebėti galvą ir nuskaitymo sritį"</string>
+    <string name="permgrouplab_xr_tracking_sensitive" msgid="6574264227123545314">"Tikslūs judėjimo ir srities duomenys"</string>
+    <string name="permgroupdesc_xr_tracking_sensitive" msgid="2480835734248509848">"tiksliai nuskaityti sritį ir stebėti galvą"</string>
     <string name="capability_title_canRetrieveWindowContent" msgid="7554282892101587296">"Gauti lango turinį"</string>
     <string name="capability_desc_canRetrieveWindowContent" msgid="6195610527625237661">"Tikrinti lango, su kuriuo sąveikaujate, turinį."</string>
     <string name="capability_title_canRequestTouchExploration" msgid="327598364696316213">"Įjungti „Naršyti paliečiant“"</string>
@@ -687,7 +687,7 @@
     <string name="permdesc_scene_understanding_coarse" msgid="847344305502345475">"Leidžiama programai nuskaityti aplinką."</string>
     <string name="permlab_scene_understanding_fine" msgid="2899904960307462936">"tiksliai nuskaityti aplinką"</string>
     <string name="permdesc_scene_understanding_fine" msgid="4848943859506977588">"Leidžiama programai tiksliai nuskaityti aplinką."</string>
-    <string name="permlab_xr_tracking_in_background" msgid="8659516810430027774">"stebėti XR duomenis fone"</string>
+    <string name="permlab_xr_tracking_in_background" msgid="1714941204255185460">"pasiekti XR stebėjimą fone"</string>
     <string name="permdesc_xr_tracking_in_background" msgid="3151744132692357005">"Leidžiama programai pasiekti XR duomenis fone."</string>
     <string name="permlab_capture_keyboard" msgid="4076894823382693032">"fiksuoti klavišus"</string>
     <string name="permdesc_capture_keyboard" msgid="4192269470684407219">"Leidžia programai užfiksuoti klavišus, kol sistema gali apdoroti sistemos šaukinius ir veiksmus."</string>
@@ -1988,8 +1988,8 @@
     <string name="package_updated_device_owner" msgid="7770195449213776218">"Atnaujino administratorius.\nEikite į nustatymus ir peržiūrėkite suteiktus leidimus"</string>
     <string name="package_deleted_device_owner" msgid="2292335928930293023">"Ištrynė administratorius"</string>
     <string name="confirm_battery_saver" msgid="5247976246208245754">"Gerai"</string>
-    <string name="battery_saver_description_with_learn_more" msgid="5444908404021316250">"Akumuliatoriaus tausojimo priemonė įjungia tamsiąją temą ir apriboja arba išjungia veiklą fone, kai kuriuos vaizdinius efektus, tam tikras funkcijas bei kai kuriuos tinklo ryšius."</string>
-    <string name="battery_saver_description" msgid="8518809702138617167">"Akumuliatoriaus tausojimo priemonė įjungia tamsiąją temą ir apriboja arba išjungia veiklą fone, kai kuriuos vaizdinius efektus, tam tikras funkcijas bei kai kuriuos tinklo ryšius."</string>
+    <string name="battery_saver_description_with_learn_more" msgid="8969945879044849461">"Akumuliatoriaus tausojimo priemonė įjungia tamsiąją temą ir apriboja arba išjungia veiklą fone, kai kuriuos vaizdinius efektus, tam tikras funkcijas bei kai kuriuos tinklo ryšius."</string>
+    <string name="battery_saver_description" msgid="2820475140307374570">"Akumuliatoriaus tausojimo priemonė įjungia tamsiąją temą ir apriboja arba išjungia veiklą fone, kai kuriuos vaizdinius efektus, tam tikras funkcijas bei kai kuriuos tinklo ryšius."</string>
     <string name="data_saver_description" msgid="4995164271550590517">"Kad padėtų sumažinti duomenų naudojimą, Duomenų taupymo priemonė neleidžia kai kurioms programoms siųsti ar gauti duomenų fone. Šiuo metu naudojama programa gali pasiekti duomenis, bet tai bus daroma rečiau. Tai gali reikšti, kad, pvz., vaizdai nebus pateikiami, jei jų nepaliesite."</string>
     <string name="data_saver_enable_title" msgid="7080620065745260137">"Įj. Duomenų taupymo priemonę?"</string>
     <string name="data_saver_enable_button" msgid="4399405762586419726">"Įjungti"</string>
@@ -2090,7 +2090,7 @@
     <string name="work_mode_turn_on" msgid="5316648862401307800">"Atšaukti pristabdymą"</string>
     <string name="work_mode_emergency_call_button" msgid="6818855962881612322">"Pagalbos tarnyba"</string>
     <string name="set_up_screen_lock_title" msgid="8346083801616474030">"Ekrano užrako nustatymas"</string>
-    <string name="set_up_screen_lock_action_label" msgid="2687634803649209367">"Nustatykite ekrano užraktą"</string>
+    <string name="set_up_screen_lock_action_label" msgid="2687634803649209367">"Nustatyti ekrano užraktą"</string>
     <string name="private_space_set_up_screen_lock_message" msgid="1109956797005149814">"Jei norite naudoti privačią erdvę, nustatykite ekrano užraktą šiame įrenginyje"</string>
     <string name="private_space_set_up_screen_lock_for_reset" msgid="7817091386408432097">"Jei norite ištrinti privačią erdvę, nustatykite ekrano užraktą šiame įrenginyje"</string>
     <string name="app_blocked_title" msgid="7353262160455028160">"Programa nepasiekiama."</string>

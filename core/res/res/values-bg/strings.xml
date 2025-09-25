@@ -370,8 +370,8 @@
     <string name="permgroupdesc_xr_eye_sensitive" msgid="6050967250223079001">"прецизно проследяване на движението на очите"</string>
     <string name="permgrouplab_xr_tracking" msgid="766634536453394700">"Данни за движението и средата"</string>
     <string name="permgroupdesc_xr_tracking" msgid="812429788288001595">"проследяване на очите, лицето, тялото и зоната за сканиране"</string>
-    <string name="permgrouplab_xr_tracking_sensitive" msgid="4346975608010051186">"Точни данни за движението на главата и средата"</string>
-    <string name="permgroupdesc_xr_tracking_sensitive" msgid="7925014193164562556">"прецизно проследяване на главата и зоната за сканиране"</string>
+    <string name="permgrouplab_xr_tracking_sensitive" msgid="6574264227123545314">"Точни данни за движението и зоната"</string>
+    <string name="permgroupdesc_xr_tracking_sensitive" msgid="2480835734248509848">"прецизно сканиране на зоната и проследяване на главата"</string>
     <string name="capability_title_canRetrieveWindowContent" msgid="7554282892101587296">"Извлича съдържанието от прозореца"</string>
     <string name="capability_desc_canRetrieveWindowContent" msgid="6195610527625237661">"Инспектира съдържанието на прозорец, с който взаимодействате."</string>
     <string name="capability_title_canRequestTouchExploration" msgid="327598364696316213">"Включи изследването чрез докосване"</string>
@@ -685,7 +685,7 @@
     <string name="permdesc_scene_understanding_coarse" msgid="847344305502345475">"Разрешава на приложението да сканира заобикалящата ви среда."</string>
     <string name="permlab_scene_understanding_fine" msgid="2899904960307462936">"сканиране на заобикалящата ви среда с висока точност"</string>
     <string name="permdesc_scene_understanding_fine" msgid="4848943859506977588">"Разрешава на приложението да сканира заобикалящата ви среда с висока точност."</string>
-    <string name="permlab_xr_tracking_in_background" msgid="8659516810430027774">"проследяване на данните за XR на заден план"</string>
+    <string name="permlab_xr_tracking_in_background" msgid="1714941204255185460">"достъп до XR за проследяване на заден план"</string>
     <string name="permdesc_xr_tracking_in_background" msgid="3151744132692357005">"Разрешава на приложението да осъществява достъп до данните за XR на заден план."</string>
     <string name="permlab_capture_keyboard" msgid="4076894823382693032">"записване на клавишите"</string>
     <string name="permdesc_capture_keyboard" msgid="4192269470684407219">"Разрешава на приложението да записва клавишите, преди системата да може да обработи системните клавишни комбинации и действия."</string>
@@ -1986,8 +1986,8 @@
     <string name="package_updated_device_owner" msgid="7770195449213776218">"Актуализирано от администратора ви.\nОтворете настройките, за да прегледате предоставените разрешения"</string>
     <string name="package_deleted_device_owner" msgid="2292335928930293023">"Изтрито от администратора ви"</string>
     <string name="confirm_battery_saver" msgid="5247976246208245754">"ОК"</string>
-    <string name="battery_saver_description_with_learn_more" msgid="5444908404021316250">"Режимът за запазване на батерията включва тъмната тема и ограничава или изключва активността на заден план, някои визуални ефекти, определени функции и някои връзки с мрежата."</string>
-    <string name="battery_saver_description" msgid="8518809702138617167">"Режимът за запазване на батерията включва тъмната тема и ограничава или изключва активността на заден план, някои визуални ефекти, определени функции и някои връзки с мрежата."</string>
+    <string name="battery_saver_description_with_learn_more" msgid="8969945879044849461">"Режимът за запазване на батерията включва тъмната тема и ограничава или изключва активността на заден план, някои визуални ефекти, определени функции и някои връзки с мрежата."</string>
+    <string name="battery_saver_description" msgid="2820475140307374570">"Режимът за запазване на батерията включва тъмната тема и ограничава или изключва активността на заден план, някои визуални ефекти, определени функции и някои връзки с мрежата."</string>
     <string name="data_saver_description" msgid="4995164271550590517">"С цел намаляване на преноса на данни функцията за икономия на данни не позволява на някои приложения да изпращат или получават данни на заден план. Понастоящем използвано от вас приложение може да използва данни, но по-рядко. Това например може да означава, че изображенията не се показват, докато не ги докоснете."</string>
     <string name="data_saver_enable_title" msgid="7080620065745260137">"Включване на „Икономия на данни“?"</string>
     <string name="data_saver_enable_button" msgid="4399405762586419726">"Включване"</string>
