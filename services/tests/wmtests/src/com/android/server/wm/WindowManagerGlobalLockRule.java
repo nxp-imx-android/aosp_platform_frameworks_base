@@ -62,8 +62,8 @@ class WindowManagerGlobalLockRule implements WindowTestRunner.MethodWrapper {
         return base;
     }
 
-    boolean runWithScissors(Handler handler, Runnable r, long timeout) {
-        return waitForLocked(() -> handler.runWithScissors(r, timeout));
+    void runWithScissors(Handler handler, Runnable r, long timeout) {
+        waitForLocked(() -> handler.runWithScissors(r, timeout));
     }
 
     void waitForLocked(Runnable r) {
