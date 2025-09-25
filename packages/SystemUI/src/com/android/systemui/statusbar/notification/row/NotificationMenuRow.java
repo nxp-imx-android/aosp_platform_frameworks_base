@@ -17,7 +17,6 @@
 package com.android.systemui.statusbar.notification.row;
 
 import static android.app.Flags.notificationsRedesignTemplates;
-import static android.view.HapticFeedbackConstants.CLOCK_TICK;
 
 import static com.android.systemui.SwipeHelper.SWIPED_FAR_ENOUGH_SIZE_FRACTION;
 
@@ -396,13 +395,7 @@ public class NotificationMenuRow implements NotificationMenuRowPlugin, View.OnCl
         }
         if (canBeDismissed()) {
             final float dismissThreshold = getDismissThreshold();
-            final boolean snappingToDismiss = delta < -dismissThreshold || delta > dismissThreshold;
-            if (mSnappingToDismiss != snappingToDismiss) {
-                if (!Flags.magneticNotificationSwipes()) {
-                    getMenuView().performHapticFeedback(CLOCK_TICK);
-                }
-            }
-            mSnappingToDismiss = snappingToDismiss;
+            mSnappingToDismiss = delta < -dismissThreshold || delta > dismissThreshold;
         }
     }
 
