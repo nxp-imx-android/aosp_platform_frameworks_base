@@ -64,6 +64,9 @@ per-file CarUserSwitchingDialog.java = file:platform/packages/services/Car:/OWNE
 # Activity Security
 per-file ActivityManager* = file:/ACTIVITY_SECURITY_OWNERS
 
+# Native Application
+per-file *NativeApplication* = file:/libs/native_activity_thread/OWNERS
+
 # Aconfig Flags
 per-file flags.aconfig = file:/ACTIVITY_MANAGER_OWNERS
 
