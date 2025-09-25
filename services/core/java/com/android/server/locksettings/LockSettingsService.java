@@ -115,6 +115,7 @@ import android.security.keystore.recovery.KeyChainProtectionParams;
 import android.security.keystore.recovery.KeyChainSnapshot;
 import android.security.keystore.recovery.RecoveryCertPath;
 import android.security.keystore.recovery.WrappedApplicationKey;
+import android.security.keystore2.AndroidKeyStoreLoadStoreParameter;
 import android.security.keystore2.AndroidKeyStoreProvider;
 import android.service.gatekeeper.IGateKeeperService;
 import android.service.notification.StatusBarNotification;
@@ -600,9 +601,10 @@ public class LockSettingsService extends ILockSettings.Stub {
             return LocalServices.getService(StorageManagerInternal.class);
         }
 
-        public SyntheticPasswordManager getSyntheticPasswordManager(LockSettingsStorage storage) {
-            return new SyntheticPasswordManager(getContext(), storage, getUserManager(),
-                    new PasswordSlotManager());
+        public SyntheticPasswordManager getSyntheticPasswordManager(
+                LockSettingsStorage storage, KeyStore keyStore) {
+            return new SyntheticPasswordManager(
+                    getContext(), storage, getUserManager(), new PasswordSlotManager(), keyStore);
         }
 
         public RebootEscrowManager getRebootEscrowManager(RebootEscrowManager.Callbacks callbacks,
@@ -641,7 +643,12 @@ public class LockSettingsService extends ILockSettings.Stub {
 
         public KeyStore getKeyStore() {
             try {
-                return SyntheticPasswordCrypto.getKeyStore();
+                KeyStore keyStore =
+                        KeyStore.getInstance(SyntheticPasswordCrypto.androidKeystoreProviderName());
+                keyStore.load(
+                        new AndroidKeyStoreLoadStoreParameter(
+                                SyntheticPasswordCrypto.keyNamespace()));
+                return keyStore;
             } catch (Exception e) {
                 throw new IllegalStateException("Cannot load keystore", e);
             }
@@ -744,7 +751,7 @@ public class LockSettingsService extends ILockSettings.Stub {
         mStrongAuthTracker.register(mStrongAuth);
         mGatekeeperPasswords = new LongSparseArray<>();
 
-        mSpManager = injector.getSyntheticPasswordManager(mStorage);
+        mSpManager = injector.getSyntheticPasswordManager(mStorage, mKeyStore);
         mUnifiedProfilePasswordCache = injector.getUnifiedProfilePasswordCache(mKeyStore);
         mBiometricDeferredQueue = new BiometricDeferredQueue(mSpManager);
 
