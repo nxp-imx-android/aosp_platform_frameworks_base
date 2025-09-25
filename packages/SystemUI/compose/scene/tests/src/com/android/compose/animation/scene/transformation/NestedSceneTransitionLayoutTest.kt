@@ -16,14 +16,28 @@
 
 package com.android.compose.animation.scene.transformation
 
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.android.compose.animation.scene.MutableSceneTransitionLayoutStateForTests
+import com.android.compose.animation.scene.SceneTransitionLayout
 import com.android.compose.animation.scene.SceneTransitionLayoutForTesting
 import com.android.compose.animation.scene.SceneTransitionLayoutImpl
+import com.android.compose.animation.scene.TestElements.Foo
 import com.android.compose.animation.scene.TestScenes
+import com.android.compose.animation.scene.TestScenes.SceneA
+import com.android.compose.animation.scene.TestScenes.SceneB
+import com.android.compose.animation.scene.TestScenes.SceneC
+import com.android.compose.animation.scene.and
+import com.android.compose.animation.scene.inContent
+import com.android.compose.animation.scene.rememberMutableSceneTransitionLayoutState
+import com.android.compose.animation.scene.transitions
+import com.android.compose.test.setContentAndCreateMainScope
+import com.android.compose.test.transition
 import com.google.common.truth.Truth.assertThat
+import kotlinx.coroutines.launch
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -72,5 +86,39 @@ class NestedSceneTransitionLayoutTest {
             assertThat(nullableLayoutImpl?.content(TestScenes.SceneE)?.globalZIndex)
                 .isEqualTo(1_002_001_000_000_000)
         }
+    }
+
+    @Test
+    // Regression test for b/442640840.
+    fun ancestorTransformationDefinedForNonExistentElement() {
+        val parentState =
+            rule.runOnUiThread {
+                MutableSceneTransitionLayoutStateForTests(
+                    SceneA,
+                    transitions {
+                        // Add a transformation that only applies to Foo in SceneB.
+                        from(SceneA, to = SceneB) { fade(Foo and inContent(SceneB)) }
+                    },
+                )
+            }
+
+        val scope =
+            rule.setContentAndCreateMainScope {
+                SceneTransitionLayout(state = parentState) {
+                    scene(SceneA) {
+                        val childState = rememberMutableSceneTransitionLayoutState(SceneC)
+                        NestedSceneTransitionLayout(state = childState, Modifier) {
+                            scene(SceneC) { Box(Modifier.element(Foo).fillMaxSize()) }
+                        }
+                    }
+
+                    // Don't have Foo in sceneB, so that A => B is not used to transform Foo.
+                    scene(SceneB) { Box(Modifier.fillMaxSize()) }
+                }
+            }
+
+        val transition = transition(SceneA, SceneB, progress = { 0.5f })
+        scope.launch { parentState.setTargetScene(SceneB, this) }
+        rule.waitForIdle()
     }
 }
