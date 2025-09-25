@@ -2043,28 +2043,15 @@ public class DisplayPolicy {
                 | WindowInsets.Type.navigationBars();
 
         static class Info {
-            // TODO(b/409608996):
-            //  Remove mNonDecorInsets, mConfigInsets -> always empty
             /**
-             * The insets for the areas that could never be removed, i.e. display cutout and
-             * navigation bar. Note that its meaning is actually "decor insets". The "non" is just
-             * because it is used to calculate {@link #mNonDecorFrame}.
-             */
-            final Rect mNonDecorInsets = new Rect();
-
-            /**
-             * The stable insets that can affect configuration. The sources are usually from
-             * display cutout, navigation bar, and status bar.
-             */
-            final Rect mConfigInsets = new Rect();
-
-            /**
-             * Override value of mConfigInsets for app compatibility purpose.
+             * Override value of stable insets (display cutout, navigation bar, and status bar)
+             * that can affect configuration for app compatibility purpose.
              */
             final Rect mOverrideConfigInsets = new Rect();
 
             /**
-             * Override value of mNonDecorInsets for app compatibility purpose.
+             * Override value of decor insets (display cutout and navigation bar) for
+             * app compatibility purpose.
              */
             final Rect mOverrideNonDecorInsets = new Rect();
 
@@ -2107,8 +2094,6 @@ public class DisplayPolicy {
             }
 
             void set(Info other) {
-                mNonDecorInsets.set(other.mNonDecorInsets);
-                mConfigInsets.set(other.mConfigInsets);
                 mOverrideConfigInsets.set(other.mOverrideConfigInsets);
                 mOverrideNonDecorInsets.set(other.mOverrideNonDecorInsets);
                 mOverrideConfigFrame.set(other.mOverrideConfigFrame);
@@ -2119,9 +2104,7 @@ public class DisplayPolicy {
             @Override
             public String toString() {
                 final StringBuilder tmpSb = new StringBuilder(32);
-                return "{nonDecorInsets=" + mNonDecorInsets.toShortString(tmpSb)
-                        + ", overrideNonDecorInsets=" + mOverrideNonDecorInsets.toShortString(tmpSb)
-                        + ", configInsets=" + mConfigInsets.toShortString(tmpSb)
+                return "{overrideNonDecorInsets=" + mOverrideNonDecorInsets.toShortString(tmpSb)
                         + ", overrideConfigInsets=" + mOverrideConfigInsets.toShortString(tmpSb)
                         + ", overrideNonDecorFrame=" + mOverrideNonDecorFrame.toShortString(tmpSb)
                         + ", overrideConfigFrame=" + mOverrideConfigFrame.toShortString(tmpSb)

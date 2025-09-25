@@ -3931,13 +3931,6 @@ public class SizeCompatTests extends WindowTestsBase {
                 .setCanRotate(true)
                 .build();
         display.setIgnoreOrientationRequest(true);
-        final DisplayPolicy policy = display.getDisplayPolicy();
-        DisplayPolicy.DecorInsets.Info decorInfo = policy.getDecorInsetsInfo(ROTATION_90,
-                display.mBaseDisplayHeight, display.mBaseDisplayWidth);
-        decorInfo.mNonDecorInsets.set(130, 0, 60, 0);
-        spyOn(policy);
-        doReturn(decorInfo).when(policy).getDecorInsetsInfo(ROTATION_90,
-                display.mBaseDisplayHeight, display.mBaseDisplayWidth);
         mWm.mAppCompatConfiguration.setLetterboxVerticalPositionMultiplier(0.5f);
 
         setUpApp(display);
@@ -4235,13 +4228,6 @@ public class SizeCompatTests extends WindowTestsBase {
                 .setCanRotate(true)
                 .build();
         display.setIgnoreOrientationRequest(true);
-        final DisplayPolicy policy = display.getDisplayPolicy();
-        DisplayPolicy.DecorInsets.Info decorInfo = policy.getDecorInsetsInfo(ROTATION_90,
-                display.mBaseDisplayHeight, display.mBaseDisplayWidth);
-        decorInfo.mNonDecorInsets.set(0, 130, 0, 60);
-        spyOn(policy);
-        doReturn(decorInfo).when(policy).getDecorInsetsInfo(ROTATION_90,
-                display.mBaseDisplayHeight, display.mBaseDisplayWidth);
         mWm.mAppCompatConfiguration.setLetterboxVerticalPositionMultiplier(0.5f);
 
         setUpApp(display);

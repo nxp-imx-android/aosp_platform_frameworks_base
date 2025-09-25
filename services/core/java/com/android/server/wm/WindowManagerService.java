@@ -7731,22 +7731,15 @@ public class WindowManagerService extends IWindowManager.Stub
         }
     }
 
+    /**
+     * This method should be no longer used. Preserve the declaration because it has the
+     * UnsupportedAppUsage annotation.
+     *
+     * @deprecated Use {@link WindowManager#getCurrentWindowMetrics()} instead.
+     */
     @Override
     public void getStableInsets(int displayId, Rect outInsets) throws RemoteException {
-        synchronized (mGlobalLock) {
-            getStableInsetsLocked(displayId, outInsets);
-        }
-    }
-
-    /** This is used when there's no app info available and shall return the system default.*/
-    void getStableInsetsLocked(int displayId, Rect outInsets) {
         outInsets.setEmpty();
-        final DisplayContent dc = mRoot.getDisplayContent(displayId);
-        if (dc != null) {
-            final DisplayInfo di = dc.getDisplayInfo();
-            outInsets.set(dc.getDisplayPolicy().getDecorInsetsInfo(
-                    di.rotation, di.logicalWidth, di.logicalHeight).mConfigInsets);
-        }
     }
 
     /**
