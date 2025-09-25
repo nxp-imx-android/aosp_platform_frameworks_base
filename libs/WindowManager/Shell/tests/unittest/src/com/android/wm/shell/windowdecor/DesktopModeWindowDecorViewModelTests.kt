@@ -361,6 +361,21 @@ class DesktopModeWindowDecorViewModelTests : DesktopModeWindowDecorViewModelTest
 
     @Test
     @EnableFlags(FLAG_CLOSE_FULLSCREEN_AND_SPLITSCREEN_KEYBOARD_SHORTCUT)
+    fun testCloseTask_lockTask_doesNothing() {
+        desktopModeWindowDecorViewModel.setFreeformTaskTransitionStarter(
+            mockFreeformTaskTransitionStarter
+        )
+        val task = createTask(windowingMode = WINDOWING_MODE_FULLSCREEN)
+        whenever(mockLockTaskChangeListener.isTaskLocked).thenReturn(true)
+
+        desktopModeWindowDecorViewModel.closeTask(task)
+
+        verify(mockTransitions, never())
+            .startTransition(eq(WindowManager.TRANSIT_CLOSE), any(), anyOrNull())
+    }
+
+    @Test
+    @EnableFlags(FLAG_CLOSE_FULLSCREEN_AND_SPLITSCREEN_KEYBOARD_SHORTCUT)
     fun testCloseTask_fullscreen_closesTask() {
         desktopModeWindowDecorViewModel.setFreeformTaskTransitionStarter(
             mockFreeformTaskTransitionStarter

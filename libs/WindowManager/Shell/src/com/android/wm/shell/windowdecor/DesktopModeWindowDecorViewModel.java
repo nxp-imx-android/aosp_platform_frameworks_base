@@ -1236,6 +1236,14 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
     }
 
     private void onCloseTask(int taskId) {
+        if (DesktopExperienceFlags
+                .CLOSE_FULLSCREEN_AND_SPLITSCREEN_KEYBOARD_SHORTCUT.isTrue()
+                && mLockTaskChangeListener.isTaskLocked()) {
+            ProtoLog.e(WM_SHELL_WINDOW_DECORATION,
+                    "%s: closeTask(taskId=%d): isTaskLocked() is true, ignoring", TAG,
+                    taskId);
+            return;
+        }
         if (isTaskInSplitScreen(taskId)) {
             if (DesktopExperienceFlags
                     .CLOSE_FULLSCREEN_AND_SPLITSCREEN_KEYBOARD_SHORTCUT.isTrue()
