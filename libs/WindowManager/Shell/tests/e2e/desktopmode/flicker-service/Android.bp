@@ -93,6 +93,7 @@ test_module_config {
         "com.android.wm.shell.flicker.multiinstance.ManageOpenInstancesFromAppHeaderFlickerTest",
         "com.android.wm.shell.flicker.multiinstance.ManageOpenInstancesFromAppMenuFlickerTest",
         "com.android.wm.shell.flicker.multiinstance.ManageOpenInstancesFromTaskbarMenuFlickerTest",
+        "com.android.wm.shell.flicker.overview.ClearOpenAppsFromOverviewFlickerTest",
         "com.android.wm.shell.flicker.resizing.ResizeAppToMaximumWindowSizeFlickerTest",
         "com.android.wm.shell.flicker.resizing.ResizeAppToMinimumWindowSizeFlickerTest",
         "com.android.wm.shell.flicker.resizing.ResizeAppWithCornerResizeFlickerTest",
@@ -458,6 +459,13 @@ test_module_config {
     base: "WMShellFlickerTestsDesktopMode",
     test_suites: ["device-tests"],
     include_filters: ["com.android.wm.shell.flicker.multiinstance.ManageOpenInstancesFromTaskbarMenuFlickerTest"],
+}
+
+test_module_config {
+    name: "WMShellFlickerTestsDesktopMode-overview-ClearOpenAppsFromOverviewFlickerTest",
+    base: "WMShellFlickerTestsDesktopMode",
+    test_suites: ["device-tests"],
+    include_filters: ["com.android.wm.shell.flicker.overview.ClearOpenAppsFromOverviewFlickerTest"],
 }
 
 test_module_config {

@@ -150,6 +150,7 @@ test_module_config {
         "com.android.wm.shell.functional.minimize.MinimizeWindowOnAppOpenViaIntentTest",
         "com.android.wm.shell.functional.multiinstance.LaunchNewInstanceFromAppWindowMenuTest",
         "com.android.wm.shell.functional.multiinstance.ManageOpenInstancesTest",
+        "com.android.wm.shell.functional.overview.ClearOpenAppsFromOverviewTest",
         "com.android.wm.shell.functional.resizing.ResizeAppCornerMultiWindowAndPipTest",
         "com.android.wm.shell.functional.resizing.ResizeAppCornerMultiWindowTest",
         "com.android.wm.shell.functional.resizing.ResizeAppWithCornerResizeTest",
@@ -715,6 +716,13 @@ test_module_config {
     base: "FunctionalTestsDesktopMode",
     test_suites: ["device-tests"],
     include_filters: ["com.android.wm.shell.functional.multiinstance.ManageOpenInstancesTest"],
+}
+
+test_module_config {
+    name: "FunctionalTestsDesktopMode-overview-ClearOpenAppsFromOverviewTest",
+    base: "FunctionalTestsDesktopMode",
+    test_suites: ["device-tests"],
+    include_filters: ["com.android.wm.shell.functional.overview.ClearOpenAppsFromOverviewTest"],
 }
 
 test_module_config {
