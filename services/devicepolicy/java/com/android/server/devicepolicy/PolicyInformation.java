@@ -25,18 +25,20 @@ import java.util.Set;
 
 public abstract class PolicyInformation<T> {
     private final PolicyIdentifier<T> mKey;
-    private final String mRequiredPermission;
     // TODO(443666602): Support multiple permissions and modeling of DO/PO.
+    private final String mRequiredPermission;
+    private final String mRequiredCrossUserPermission;
     private final Set<Integer> mAcceptedScopes;
 
     public PolicyInformation(
             @NonNull PolicyIdentifier<T> key,
             @NonNull Set<Integer> acceptedScopes,
-            @NonNull String requiredPermission
-    ) {
+            @NonNull String requiredPermission,
+            @NonNull String requiredCrossUserPermission) {
         mKey = key;
         mAcceptedScopes = Set.copyOf(acceptedScopes);
         mRequiredPermission = requiredPermission;
+        mRequiredCrossUserPermission = requiredCrossUserPermission;
     }
 
     @NonNull
@@ -52,6 +54,11 @@ public abstract class PolicyInformation<T> {
     @NonNull
     public String getRequiredPermission() {
         return mRequiredPermission;
+    }
+
+    @NonNull
+    public String getRequiredCrossUserPermission() {
+        return mRequiredCrossUserPermission;
     }
 
     /**

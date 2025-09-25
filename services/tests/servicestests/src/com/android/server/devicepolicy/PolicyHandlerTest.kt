@@ -22,12 +22,14 @@ import android.app.admin.DevicePolicyManager.POLICY_SCOPE_USER
 import android.app.admin.PolicyIdentifier
 import android.app.admin.PolicyValueTransport
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.android.server.devicepolicy.DevicePolicyManagerService.NOT_A_DPC
 import com.google.common.truth.Truth.assertThat
 import kotlin.test.assertFailsWith
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.Mockito
 import org.mockito.kotlin.verify
+import org.mockito.kotlin.verifyNoMoreInteractions
 
 /** A {@link PolicyHandler} that doesn't store the resulting policy value in the
  * {@link DevicePolicyEngine} but instead stores it locally in {@link resultValue}.
@@ -58,6 +60,7 @@ class PolicyHandlerTest {
     object EnumPolicy {
         val name = "theEnumPolicy"
         val permission = "thePermissionForTheEnumPolicy"
+        val crossUserPermission = "theCrossUserPermissionForTheEnumPolicy"
         const val VALUE_1 = 1
         const val VALUE_2 = 2
         val key = PolicyIdentifier<Int>(name)
@@ -66,6 +69,7 @@ class PolicyHandlerTest {
             setOf(VALUE_1, VALUE_2),
             setOf(POLICY_SCOPE_USER, POLICY_SCOPE_DEVICE),
             permission,
+            crossUserPermission
         )
         val anyTransportValue: PolicyValueTransport = PolicyValueTransport.integerField(VALUE_1)
     }
@@ -76,8 +80,11 @@ class PolicyHandlerTest {
     private val mockPermissionChecker = Mockito.mock(IPermissionChecker::class.java)
 
     private val delegate = object : PolicyHandler.Delegate {
+        // The DPC type of the caller. Returned by getDpcType.
+        var callerDpcType = NOT_A_DPC
+
         override fun getDpcType(caller: CallerIdentity): Int {
-            throw NotImplementedError()
+            return callerDpcType
         }
 
         override fun getPermissionChecker(): IPermissionChecker? {
@@ -90,13 +97,15 @@ class PolicyHandlerTest {
         key: PolicyIdentifier<Int>? = null,
         values: Set<Int>? = null,
         acceptedScopes: Set<Int>? = null,
-        requiredPermission: String? = null
+        requiredPermission: String? = null,
+        requiredCrossUserPermission: String? = null
     ): EnumPolicyInformation {
         return EnumPolicyInformation(
             key ?: source.key,
             values ?: source.values,
             acceptedScopes ?: source.acceptedScopes,
-            requiredPermission ?: source.requiredPermission
+            requiredPermission ?: source.requiredPermission,
+            requiredCrossUserPermission ?: source.requiredCrossUserPermission
         )
     }
 
@@ -135,12 +144,10 @@ class PolicyHandlerTest {
 
     @Test
     fun setPolicy_shouldValidateAcceptedScope() {
-        val allAcceptedScopes =
-            setOf(POLICY_SCOPE_DEVICE, POLICY_SCOPE_PARENT_USER)
+        val allAcceptedScopes = setOf(POLICY_SCOPE_DEVICE, POLICY_SCOPE_PARENT_USER)
         val someUnacceptedScopes = setOf(POLICY_SCOPE_USER, 111, 666)
         val information = copyOf(
-            EnumPolicy.information,
-            acceptedScopes = allAcceptedScopes
+            EnumPolicy.information, acceptedScopes = allAcceptedScopes
         )
         val handler = PolicyHandler<Int>(EnumPolicy.key, information, delegate)
 
@@ -158,14 +165,56 @@ class PolicyHandlerTest {
     }
 
     @Test
-    fun setPolicy_shouldCheckPermission() {
-        val policyInformation = copyOf(EnumPolicy.information, requiredPermission = "thePermission")
+    fun setPolicy_scopeUser_shouldCheckPermission() {
+        val policyInformation = copyOf(
+            EnumPolicy.information,
+            requiredPermission = "thePermission",
+            requiredCrossUserPermission = "shouldNotBeChecked",
+            acceptedScopes = setOf(POLICY_SCOPE_USER)
+        )
         val handler = PolicyHandler<Int>(EnumPolicy.key, policyInformation, delegate)
         val theCaller = anyCaller
 
-        handler.setPolicy(theCaller, anyScope, EnumPolicy.anyTransportValue)
+        handler.setPolicy(theCaller, POLICY_SCOPE_USER, EnumPolicy.anyTransportValue)
 
         verify(mockPermissionChecker).enforce("thePermission", theCaller)
+        verifyNoMoreInteractions(mockPermissionChecker)
+    }
+
+    @Test
+    fun setPolicy_scopeGlobal_shouldCheckPermissionAndCrossUserPermission() {
+        val policyInformation = copyOf(
+            EnumPolicy.information,
+            requiredPermission = "thePermission",
+            requiredCrossUserPermission = "theCrossUserPermission",
+            acceptedScopes = setOf(POLICY_SCOPE_DEVICE)
+        )
+        val handler = PolicyHandler<Int>(EnumPolicy.key, policyInformation, delegate)
+        val theCaller = anyCaller
+
+        handler.setPolicy(theCaller, POLICY_SCOPE_DEVICE, EnumPolicy.anyTransportValue)
+
+        verify(mockPermissionChecker).enforce("thePermission", theCaller)
+        verify(mockPermissionChecker).enforce("theCrossUserPermission", theCaller)
+        verifyNoMoreInteractions(mockPermissionChecker)
+    }
+
+    @Test
+    fun setPolicy_scopeParent_shouldCheckPermissionAndCrossUserPermission() {
+        val policyInformation = copyOf(
+            EnumPolicy.information,
+            requiredPermission = "permission",
+            requiredCrossUserPermission = "crossUserPermission",
+            acceptedScopes = setOf(POLICY_SCOPE_PARENT_USER)
+        )
+        val handler = PolicyHandler<Int>(EnumPolicy.key, policyInformation, delegate)
+        val theCaller = anyCaller
+
+        handler.setPolicy(theCaller, POLICY_SCOPE_PARENT_USER, EnumPolicy.anyTransportValue)
+
+        verify(mockPermissionChecker).enforce("permission", theCaller)
+        verify(mockPermissionChecker).enforce("crossUserPermission", theCaller)
+        verifyNoMoreInteractions(mockPermissionChecker)
     }
 
     @Test
