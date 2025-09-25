@@ -131,6 +131,20 @@ public class RemoteTransitionHandler implements Transitions.TransitionHandler {
             return false;
         }
         RemoteTransition pendingRemote = mRequestedRemotes.get(transition);
+        if (pendingRemote != null) {
+            final TransitionFilter filter = pendingRemote.getFilter();
+            if (filter != null && !filter.matches(info)) {
+                ProtoLog.v(ShellProtoLogGroup.WM_SHELL_TRANSITIONS, "Transition doesn't match its "
+                        + "explicit remote for %s", info);
+                try {
+                    pendingRemote.getRemoteTransition().onTransitionConsumed(transition, false);
+                } catch (RemoteException e) {
+                    Log.e(TAG, "Error delegating onTransitionConsumed()", e);
+                }
+                // The explicit remote isn't interested in this transition, so release it.
+                return false;
+            }
+        }
         if (pendingRemote == null) {
             ProtoLog.v(ShellProtoLogGroup.WM_SHELL_TRANSITIONS, "Transition doesn't have "
                     + "explicit remote, search filters for match for %s", info);
