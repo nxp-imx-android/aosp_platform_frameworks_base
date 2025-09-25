@@ -64,12 +64,8 @@ fun PreCaptureToolbar(
                     hasTooltip = false,
                 ),
                 RadioButtonGroupItem(
-                    icon =
-                        if (selectedCaptureType == ScreenCaptureType.SCREENSHOT) {
-                            icons?.screenshotToolbar
-                        } else {
-                            icons?.screenshotToolbarUnselected
-                        },
+                    selectedIcon = icons?.screenshotToolbar,
+                    unselectedIcon = icons?.screenshotToolbarUnselected,
                     label = screenshotButtonLabel,
                     isSelected = selectedCaptureType == ScreenCaptureType.SCREENSHOT,
                     onClick = { onCaptureTypeSelected(ScreenCaptureType.SCREENSHOT) },
