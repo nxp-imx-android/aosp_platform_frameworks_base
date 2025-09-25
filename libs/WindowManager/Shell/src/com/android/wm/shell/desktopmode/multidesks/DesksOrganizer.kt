@@ -98,6 +98,9 @@ interface DesksOrganizer {
     /** Allows for other classes to respond to task changes this organizer receives. */
     fun addOnDesktopTaskInfoChangedListener(listener: (ActivityManager.RunningTaskInfo) -> Unit)
 
+    /** Allows for other classes to respond to task vanishes this organizer receives. */
+    fun addOnDesktopTaskVanishedListener(listener: (ActivityManager.RunningTaskInfo) -> Unit)
+
     /** Move a desk to the given display area. */
     fun moveDeskToDisplay(
         wct: WindowContainerTransaction,
