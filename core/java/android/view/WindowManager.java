@@ -530,13 +530,6 @@ public interface WindowManager extends ViewManager {
     int TRANSIT_FLAG_KEYGUARD_UNOCCLUDING = (1 << 13); // 0x2000
 
     /**
-     * Transition flag: Indicates that there is a physical display switch
-     * TODO(b/316112906) remove after defer_display_updates flag roll out
-     * @hide
-     */
-    int TRANSIT_FLAG_PHYSICAL_DISPLAY_SWITCH = (1 << 14); // 0x4000
-
-    /**
      * Transition flag: Indicates that aod is showing hidden by entering doze
      * @hide
      */
@@ -574,7 +567,6 @@ public interface WindowManager extends ViewManager {
             TRANSIT_FLAG_KEYGUARD_APPEARING,
             TRANSIT_FLAG_KEYGUARD_OCCLUDING,
             TRANSIT_FLAG_KEYGUARD_UNOCCLUDING,
-            TRANSIT_FLAG_PHYSICAL_DISPLAY_SWITCH,
             TRANSIT_FLAG_AOD_APPEARING,
             TRANSIT_FLAG_AVOID_MOVE_TO_FRONT,
             TRANSIT_FLAG_DISPLAY_LEVEL_TRANSITION
