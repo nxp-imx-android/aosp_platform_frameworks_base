@@ -29,6 +29,7 @@ import android.util.ArraySet;
 
 import com.android.internal.annotations.GuardedBy;
 import com.android.server.am.psc.ProcessServiceRecordInternal;
+import com.android.server.am.psc.ServiceRecordInternal;
 import com.android.server.wm.WindowProcessController;
 
 import java.io.PrintWriter;
@@ -131,11 +132,11 @@ final class ProcessServiceRecord extends ProcessServiceRecordInternal {
 
     boolean hasUndemotedShortForegroundService(long nowUptime) {
         for (int i = mServices.size() - 1; i >= 0; i--) {
-            final ServiceRecord sr = mServices.valueAt(i);
-            if (!sr.isShortFgs() || !sr.hasShortFgsInfo()) {
+            final ServiceRecordInternal sr = mServices.valueAt(i);
+            if (!sr.isShortFgs() || !sr.hasShortFgsStartTime()) {
                 continue;
             }
-            if (sr.getShortFgsInfo().getProcStateDemoteTime() >= nowUptime) {
+            if (sr.getShortFgsDemoteTime() >= nowUptime) {
                 // This short fgs has not timed out yet.
                 return true;
             }

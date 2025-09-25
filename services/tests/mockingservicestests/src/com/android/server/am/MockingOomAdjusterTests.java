@@ -201,6 +201,7 @@ public class MockingOomAdjusterTests {
             + ProcessList.CACHED_APP_IMPORTANCE_LEVELS;
 
     private Context mContext;
+    private OomAdjuster.Constants mOomConstants;
     private ProcessStateController mProcessStateController;
     private ProcessStateController.ActivityStateAsyncUpdater mActivityStateAsyncUpdater;
     private ActiveUids mActiveUids;
@@ -309,6 +310,7 @@ public class MockingOomAdjusterTests {
                 .setProcessLruUpdater(lruUpdater)
                 .setOomAdjusterInjector(mInjector)
                 .build();
+        mOomConstants = mProcessStateController.getOomConstants();
         mActivityStateAsyncUpdater = mProcessStateController.createActivityStateAsyncUpdater(
                 mActivityStateHandlerThread.getLooper());
         mService.mProcessStateController = mProcessStateController;
@@ -802,7 +804,7 @@ public class MockingOomAdjusterTests {
     @Test
     public void testUpdateOomAdj_DoOne_FgService_ShortFgs() {
         mService.mConstants.TOP_TO_FGS_GRACE_DURATION = 100_000;
-        mService.mConstants.mShortFgsProcStateExtraWaitDuration = 200_000;
+        mOomConstants.mShortFgsProcStateExtraWaitDuration = 200_000;
 
         ServiceRecord s = ServiceRecord.newEmptyInstanceForTest(mService);
         s.appInfo = new ApplicationInfo();
@@ -856,8 +858,8 @@ public class MockingOomAdjusterTests {
         s.setIsForeground(true);
         s.setForegroundServiceType(FOREGROUND_SERVICE_TYPE_SHORT_SERVICE);
         mProcessStateController.setShortFgsInfo(s, SystemClock.uptimeMillis()
-                - mService.mConstants.mShortFgsTimeoutDuration
-                - mService.mConstants.mShortFgsProcStateExtraWaitDuration);
+                - mOomConstants.mShortFgsTimeoutDuration
+                - mOomConstants.mShortFgsProcStateExtraWaitDuration);
         {
             ProcessRecord app = makeDefaultProcessRecord(MOCKAPP_PID, MOCKAPP_UID,
                     MOCKAPP_PROCESSNAME, MOCKAPP_PACKAGENAME, true);

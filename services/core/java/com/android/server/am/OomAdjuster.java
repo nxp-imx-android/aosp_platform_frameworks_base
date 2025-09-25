@@ -455,6 +455,16 @@ public abstract class OomAdjuster {
          * "almost perceptible" after leaving the TOP process state.
          */
         public volatile long mServiceBindAlmostPerceptibleTimeoutMs;
+        /**
+         * The timeout duration (in milliseconds) for a service designated as
+         * `FOREGROUND_SERVICE_TYPE_SHORT_SERVICE` before it is considered timed out.
+         */
+        public volatile long mShortFgsTimeoutDuration;
+        /**
+         * The additional duration (in milliseconds) after `mShortFgsTimeoutDuration`
+         * before the process state of a timed-out short FGS is demoted.
+         */
+        public volatile long mShortFgsProcStateExtraWaitDuration;
         /** The maximum number of cached processes to keep before killing them. */
         public volatile int mCurMaxCachedProcesses;
         /** The maximum number of empty app processes to keep. */

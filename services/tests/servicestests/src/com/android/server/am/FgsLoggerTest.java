@@ -34,6 +34,7 @@ import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import android.content.pm.ServiceInfo;
 import android.platform.test.annotations.Presubmit;
@@ -65,6 +66,13 @@ public class FgsLoggerTest {
         doNothing().when(mFgsLogger)
                 .logFgsApiEventWithNoFgs(anyInt(),
                         anyInt(), anyInt(), anyLong());
+    }
+
+    private static ActivityManagerService createMockActivityManagerService() {
+        final ActivityManagerService ams = mock(ActivityManagerService.class);
+        ams.mProcessStateController = mock(ProcessStateController.class);
+        when(ams.mProcessStateController.getOomConstants()).thenReturn(new OomAdjuster.Constants());
+        return ams;
     }
 
     @Test
@@ -393,7 +401,7 @@ public class FgsLoggerTest {
     public void testMultipleFGS() throws InterruptedException {
         ServiceRecord record = ServiceRecord.newEmptyInstanceForTest(null);
         record.setForegroundServiceType(ServiceInfo.FOREGROUND_SERVICE_TYPE_CAMERA);
-        ActivityManagerService ams = mock(ActivityManagerService.class);
+        final ActivityManagerService ams = createMockActivityManagerService();
         ServiceRecord record2 = ServiceRecord.newEmptyInstanceForTest(ams);
         record2.setForegroundServiceType(ServiceInfo.FOREGROUND_SERVICE_TYPE_CAMERA);
         long timeStamp = mFgsLogger.logForegroundServiceApiEventBegin(
@@ -466,7 +474,7 @@ public class FgsLoggerTest {
         int expectedTypes = 1;
         ServiceRecord record = ServiceRecord.newEmptyInstanceForTest(null);
         record.setForegroundServiceType(ServiceInfo.FOREGROUND_SERVICE_TYPE_CAMERA);
-        ActivityManagerService ams = mock(ActivityManagerService.class);
+        final ActivityManagerService ams = createMockActivityManagerService();
         ServiceRecord record2 = ServiceRecord.newEmptyInstanceForTest(ams);
         record2.setForegroundServiceType(ServiceInfo.FOREGROUND_SERVICE_TYPE_CAMERA);
         long timeStamp = mFgsLogger.logForegroundServiceApiEventBegin(1, 1, 1, "aPackageHasNoName");

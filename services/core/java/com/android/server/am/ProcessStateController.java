@@ -113,6 +113,14 @@ public class ProcessStateController {
         mOomConstants.mServiceBindAlmostPerceptibleTimeoutMs = value;
     }
 
+    public void setShortFgsTimeoutDuration(long value) {
+        mOomConstants.mShortFgsTimeoutDuration = value;
+    }
+
+    public void setShortFgsProcStateExtraWaitDuration(long value) {
+        mOomConstants.mShortFgsProcStateExtraWaitDuration = value;
+    }
+
     public void setCurMaxCachedProcesses(int value) {
         mOomConstants.mCurMaxCachedProcesses = value;
     }
