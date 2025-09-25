@@ -2671,7 +2671,7 @@ class TaskFragment extends WindowContainer<WindowContainer> {
             DisplayInfo displayInfo, boolean useLegacyInsetsForStableBounds) {
         outNonDecorBounds.set(bounds);
         outStableBounds.set(bounds);
-        if (mDisplayContent == null) {
+        if (!useLegacyInsetsForStableBounds || mDisplayContent == null) {
             return;
         }
         mTmpBounds.set(0, 0, displayInfo.logicalWidth, displayInfo.logicalHeight);
@@ -2679,13 +2679,8 @@ class TaskFragment extends WindowContainer<WindowContainer> {
         final DisplayPolicy policy = mDisplayContent.getDisplayPolicy();
         final DisplayPolicy.DecorInsets.Info info = policy.getDecorInsetsInfo(
                 displayInfo.rotation, displayInfo.logicalWidth, displayInfo.logicalHeight);
-        if (!useLegacyInsetsForStableBounds) {
-            intersectWithInsetsIfFits(outStableBounds, mTmpBounds, info.mConfigInsets);
-            intersectWithInsetsIfFits(outNonDecorBounds, mTmpBounds, info.mNonDecorInsets);
-        } else {
-            intersectWithInsetsIfFits(outStableBounds, mTmpBounds, info.mOverrideConfigInsets);
-            intersectWithInsetsIfFits(outNonDecorBounds, mTmpBounds, info.mOverrideNonDecorInsets);
-        }
+        intersectWithInsetsIfFits(outStableBounds, mTmpBounds, info.mOverrideConfigInsets);
+        intersectWithInsetsIfFits(outNonDecorBounds, mTmpBounds, info.mOverrideNonDecorInsets);
     }
 
     /**

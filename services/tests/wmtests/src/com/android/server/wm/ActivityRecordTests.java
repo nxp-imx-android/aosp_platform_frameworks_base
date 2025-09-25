@@ -615,15 +615,6 @@ public class ActivityRecordTests extends WindowTestsBase {
         final Rect stableRect = new Rect();
         task.mDisplayContent.getStableRect(stableRect);
 
-        // Carve out non-decor insets from stableRect
-        final Rect insets = new Rect();
-        final DisplayInfo displayInfo = task.mDisplayContent.getDisplayInfo();
-        final DisplayPolicy policy = task.mDisplayContent.getDisplayPolicy();
-
-        insets.set(policy.getDecorInsetsInfo(displayInfo.rotation, displayInfo.logicalWidth,
-                displayInfo.logicalHeight).mConfigInsets);
-        Task.intersectWithInsetsIfFits(stableRect, stableRect, insets);
-
         final boolean isScreenPortrait = stableRect.width() <= stableRect.height();
         final Rect bounds = new Rect(stableRect);
         if (isScreenPortrait) {
@@ -657,14 +648,6 @@ public class ActivityRecordTests extends WindowTestsBase {
         rootTask.setWindowingMode(WINDOWING_MODE_MULTI_WINDOW);
         final Rect stableRect = new Rect();
         rootTask.mDisplayContent.getStableRect(stableRect);
-
-        // Carve out non-decor insets from stableRect
-        final Rect insets = new Rect();
-        final DisplayInfo displayInfo = rootTask.mDisplayContent.getDisplayInfo();
-        final DisplayPolicy policy = rootTask.mDisplayContent.getDisplayPolicy();
-        insets.set(policy.getDecorInsetsInfo(displayInfo.rotation, displayInfo.logicalWidth,
-                displayInfo.logicalHeight).mConfigInsets);
-        Task.intersectWithInsetsIfFits(stableRect, stableRect, insets);
 
         final boolean isScreenPortrait = stableRect.width() <= stableRect.height();
         final Rect bounds = new Rect(stableRect);

@@ -477,9 +477,6 @@ public class WindowProcessControllerTests extends WindowTestsBase {
         final DisplayPolicy displayPolicy = displayContent.getDisplayPolicy();
         // Setup the decor insets info.
         final DisplayPolicy.DecorInsets.Info decorInsetsInfo = new DisplayPolicy.DecorInsets.Info();
-        final Rect emptyRect = new Rect();
-        decorInsetsInfo.mNonDecorInsets.set(emptyRect);
-        decorInsetsInfo.mConfigInsets.set(emptyRect);
         decorInsetsInfo.mOverrideConfigInsets.set(new Rect(0, 100, 0, 200));
         decorInsetsInfo.mOverrideNonDecorInsets.set(new Rect(0, 0, 0, 200));
         decorInsetsInfo.mOverrideConfigFrame.set(new Rect(0, 100, 1000, 1300));
