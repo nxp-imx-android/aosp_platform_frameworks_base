@@ -301,8 +301,7 @@ public class NotificationPanelViewControllerBaseTest extends SysuiTestCase {
     protected View.OnLayoutChangeListener mLayoutChangeListener;
     protected ShadeRepository mShadeRepository;
     protected FakeMSDLPlayer mMSDLPlayer = mKosmos.getMsdlPlayer();
-    protected WindowRootViewBlurInteractor mWindowRootViewBlurInteractor =
-            mKosmos.getWindowRootViewBlurInteractor();
+    protected WindowRootViewBlurInteractor mWindowRootViewBlurInteractor;
 
     protected BrightnessMirrorShowingRepository mBrightnessMirrorShowingRepository =
             mKosmos.getBrightnessMirrorShowingRepository();
@@ -327,6 +326,7 @@ public class NotificationPanelViewControllerBaseTest extends SysuiTestCase {
         mFeatureFlags.set(Flags.QS_USER_DETAIL_SHORTCUT, false);
 
         mMainDispatcher = getMainDispatcher();
+        mWindowRootViewBlurInteractor = mKosmos.getWindowRootViewBlurInteractor();
         mFakeKeyguardRepository = mKosmos.getKeyguardRepository();
         mFakeKeyguardClockRepository = new FakeKeyguardClockRepository();
         mKeyguardClockInteractor = mKosmos.getKeyguardClockInteractor();
