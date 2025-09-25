@@ -1256,6 +1256,14 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
 
     private void onCloseTask(int taskId) {
         if (isTaskInSplitScreen(taskId)) {
+            if (DesktopExperienceFlags
+                    .CLOSE_FULLSCREEN_AND_SPLITSCREEN_KEYBOARD_SHORTCUT.isTrue()
+                    && mSplitScreenController.isDividerFlinging()) {
+                ProtoLog.i(WM_SHELL_WINDOW_DECORATION,
+                        "%s: closeTask(taskId=%d): isDividerFlinging is true. ignoring",
+                        TAG, taskId);
+                return;
+            }
             ProtoLog.i(WM_SHELL_WINDOW_DECORATION,
                     "%s: onCloseTask(taskId=%d): closing split screen", TAG, taskId);
             mSplitScreenController.moveTaskToFullscreen(getOtherSplitTask(taskId).taskId,
