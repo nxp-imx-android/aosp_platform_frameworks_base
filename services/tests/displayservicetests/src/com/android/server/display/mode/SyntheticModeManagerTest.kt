@@ -42,7 +42,6 @@ class SyntheticModeManagerTest {
 
     @Test
     fun testAppSupportedModes(@TestParameter testCase: AppSupportedModesTestCase) {
-        whenever(mockFlags.isSynthetic60HzModesEnabled).thenReturn(testCase.syntheticModesEnabled)
         whenever(mockFlags.hasArrSupportFlag()).thenReturn(testCase.hasArrSupport)
         whenever(mockConfig.isVrrSupportEnabled).thenReturn(testCase.vrrSupported)
         val syntheticModeManager = SyntheticModeManager(mockFlags)
@@ -55,30 +54,27 @@ class SyntheticModeManagerTest {
 
     // TODO(b/361433651) Remove vrrSupported once hasArrSupport is rolled out
     enum class AppSupportedModesTestCase(
-        val syntheticModesEnabled: Boolean,
         val vrrSupported: Boolean,
         val hasArrSupport: Boolean,
         val supportedModes: Array<Mode>,
         val expectedAppModes: Array<Mode>
     ) {
-        SYNTHETIC_MODES_NOT_SUPPORTED(false, true, true, DISPLAY_MODES, DISPLAY_MODES),
-        VRR_NOT_SUPPORTED(true, false, false, DISPLAY_MODES, DISPLAY_MODES),
-        VRR_SYNTHETIC_NOT_SUPPORTED(false, false, false, DISPLAY_MODES, DISPLAY_MODES),
-        SINGLE_RESOLUTION_MODES(true, true, true, DISPLAY_MODES, arrayOf(
+        VRR_NOT_SUPPORTED(false, false, DISPLAY_MODES, DISPLAY_MODES),
+        SINGLE_RESOLUTION_MODES(true, true, DISPLAY_MODES, arrayOf(
             Mode(2, 100, 100, 120f),
             Mode(3, -1, 0, 100, 100, 60f, 60f, floatArrayOf(), intArrayOf())
         )),
-        SINGLE_RESOLUTION_MODES_HASARR(true, false, true, DISPLAY_MODES, arrayOf(
+        SINGLE_RESOLUTION_MODES_HASARR(false, true, DISPLAY_MODES, arrayOf(
             Mode(2, 100, 100, 120f),
             Mode(3, -1, 0, 100, 100, 60f, 60f, floatArrayOf(), intArrayOf())
         )),
-        NO_60HZ_MODES(true, true, true, arrayOf(Mode(2, 100, 100, 120f)),
+        NO_60HZ_MODES(true, true, arrayOf(Mode(2, 100, 100, 120f)),
             arrayOf(
                 Mode(2, 100, 100, 120f),
                 Mode(3, -1, 0, 100, 100, 60f, 60f, floatArrayOf(), intArrayOf())
             )
         ),
-        MULTI_RESOLUTION_MODES(true, true, true,
+        MULTI_RESOLUTION_MODES(true, true,
             arrayOf(
                 Mode(1, 100, 100, 120f),
                 Mode(2, 200, 200, 60f),
@@ -93,7 +89,7 @@ class SyntheticModeManagerTest {
                 Mode(7, -1, 0, 300, 300, 60f, 60f, floatArrayOf(), intArrayOf())
             )
         ),
-        WITH_HDR_TYPES(true, true, true,
+        WITH_HDR_TYPES(true, true,
             arrayOf(
                 Mode(1, -1, 0, 100, 100, 120f, 120f, floatArrayOf(), intArrayOf(1, 2)),
                 Mode(2, -1, 0, 200, 200, 60f, 120f, floatArrayOf(), intArrayOf(3, 4)),
@@ -106,7 +102,7 @@ class SyntheticModeManagerTest {
                 Mode(5, -1, 0, 200, 200, 60f, 60f, floatArrayOf(), intArrayOf(5, 6)),
             )
         ),
-        UNACHIEVABLE_60HZ(true, true, true,
+        UNACHIEVABLE_60HZ(true, true,
             arrayOf(
                 Mode(1, 100, 100, 90f),
             ),
@@ -114,7 +110,7 @@ class SyntheticModeManagerTest {
                 Mode(1, 100, 100, 90f),
             )
         ),
-        MULTI_RESOLUTION_MODES_WITH_UNACHIEVABLE_60HZ(true, true, true,
+        MULTI_RESOLUTION_MODES_WITH_UNACHIEVABLE_60HZ(true, true,
             arrayOf(
                 Mode(1, 100, 100, 120f),
                 Mode(2, 200, 200, 90f),
@@ -125,7 +121,7 @@ class SyntheticModeManagerTest {
                 Mode(3, -1, 0, 100, 100, 60f, 60f, floatArrayOf(), intArrayOf()),
             )
         ),
-        LOWER_THAN_60HZ_MODES(true, true, true,
+        LOWER_THAN_60HZ_MODES(true, true,
             arrayOf(
                 Mode(1, 100, 100, 30f),
                 Mode(2, 100, 100, 45f),
