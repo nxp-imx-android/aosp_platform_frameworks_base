@@ -28,6 +28,8 @@ import android.os.Build;
 import android.os.Parcel;
 import android.os.ParcelFileDescriptor;
 import android.os.Parcelable;
+import android.os.PerfettoTrace;
+import android.os.PerfettoTrackEventExtra;
 import android.os.SharedMemory;
 import android.os.StrictMode;
 import android.os.Trace;
@@ -992,109 +994,150 @@ public final class Bitmap implements Parcelable {
             throw new IllegalArgumentException("cannot use a recycled source in createBitmap");
         }
 
-        // check if we can just return our argument unchanged
-        if (!source.isMutable() && x == 0 && y == 0 && width == source.getWidth() &&
-                height == source.getHeight() && (m == null || m.isIdentity())) {
-            return source;
+        final long flowId = source.mId;
+        final PerfettoTrace.Category category = PerfettoTrace.GFX_CATEGORY;
+        final boolean isTraceEnabled = category.isEnabled();
+        if (isTraceEnabled) {
+            PerfettoTrackEventExtra.Builder builder =
+                    PerfettoTrace.begin(category, "Bitmap_createBitmap").setFlow(flowId);
+            traceBitmap(builder, source);
+            builder.emit();
         }
 
-        boolean isHardware = source.getConfig() == Config.HARDWARE;
-        if (isHardware) {
-            source.noteHardwareBitmapSlowCall();
-            source = nativeCopyPreserveInternalConfig(source.mNativePtr);
-        }
-
-        int neww = width;
-        int newh = height;
-        Bitmap bitmap;
-        Paint paint;
-
-        Rect srcR = new Rect(x, y, x + width, y + height);
-        RectF dstR = new RectF(0, 0, width, height);
-        RectF deviceR = new RectF();
-
-        Config newConfig = Config.ARGB_8888;
-        final Config config = source.getConfig();
-        // GIF files generate null configs, assume ARGB_8888
-        if (config != null) {
-            switch (config) {
-                case RGB_565:
-                    newConfig = Config.RGB_565;
-                    break;
-                case ALPHA_8:
-                    newConfig = Config.ALPHA_8;
-                    break;
-                case RGBA_F16:
-                    newConfig = Config.RGBA_F16;
-                    break;
-                //noinspection deprecation
-                case ARGB_4444:
-                case ARGB_8888:
-                default:
-                    newConfig = Config.ARGB_8888;
-                    break;
+        Bitmap result = null;
+        try {
+            // check if we can just return our argument unchanged
+            if (!source.isMutable() && x == 0 && y == 0 && width == source.getWidth()
+                    && height == source.getHeight() && (m == null || m.isIdentity())) {
+                result = source;
+                return result;
             }
-        }
 
-        ColorSpace cs = source.getColorSpace();
+            boolean isHardware = source.getConfig() == Config.HARDWARE;
+            if (isHardware) {
+                source.noteHardwareBitmapSlowCall();
+                source = nativeCopyPreserveInternalConfig(source.mNativePtr);
+            }
 
-        if (m == null || m.isIdentity()) {
-            bitmap = createBitmap(null, neww, newh, newConfig, source.hasAlpha(), cs);
-            paint = null;   // not needed
-        } else {
-            final boolean transformed = !m.rectStaysRect();
+            int neww = width;
+            int newh = height;
+            Bitmap bitmap;
+            Paint paint;
 
-            m.mapRect(deviceR, dstR);
+            Rect srcR = new Rect(x, y, x + width, y + height);
+            RectF dstR = new RectF(0, 0, width, height);
+            RectF deviceR = new RectF();
 
-            neww = Math.round(deviceR.width());
-            newh = Math.round(deviceR.height());
-
-            Config transformedConfig = newConfig;
-            if (transformed) {
-                if (transformedConfig != Config.ARGB_8888 && transformedConfig != Config.RGBA_F16) {
-                    transformedConfig = Config.ARGB_8888;
-                    if (cs == null) {
-                        cs = ColorSpace.get(ColorSpace.Named.SRGB);
-                    }
+            Config newConfig = Config.ARGB_8888;
+            final Config config = source.getConfig();
+            // GIF files generate null configs, assume ARGB_8888
+            if (config != null) {
+                switch (config) {
+                    case RGB_565:
+                        newConfig = Config.RGB_565;
+                        break;
+                    case ALPHA_8:
+                        newConfig = Config.ALPHA_8;
+                        break;
+                    case RGBA_F16:
+                        newConfig = Config.RGBA_F16;
+                        break;
+                    //noinspection deprecation
+                    case ARGB_4444:
+                    case ARGB_8888:
+                    default:
+                        newConfig = Config.ARGB_8888;
+                        break;
                 }
             }
 
-            bitmap = createBitmap(null, neww, newh, transformedConfig,
-                    transformed || source.hasAlpha(), cs);
+            ColorSpace cs = source.getColorSpace();
 
-            paint = new Paint();
-            paint.setFilterBitmap(filter);
-            if (transformed) {
-                paint.setAntiAlias(true);
+            if (m == null || m.isIdentity()) {
+                bitmap = createBitmap(null, neww, newh, newConfig, source.hasAlpha(), cs);
+                paint = null;   // not needed
+            } else {
+                final boolean transformed = !m.rectStaysRect();
+
+                m.mapRect(deviceR, dstR);
+
+                neww = Math.round(deviceR.width());
+                newh = Math.round(deviceR.height());
+
+                Config transformedConfig = newConfig;
+                if (transformed) {
+                    if (transformedConfig != Config.ARGB_8888
+                            && transformedConfig != Config.RGBA_F16) {
+                        transformedConfig = Config.ARGB_8888;
+                        if (cs == null) {
+                            cs = ColorSpace.get(ColorSpace.Named.SRGB);
+                        }
+                    }
+                }
+
+                bitmap = createBitmap(null, neww, newh, transformedConfig,
+                        transformed || source.hasAlpha(), cs);
+
+                paint = new Paint();
+                paint.setFilterBitmap(filter);
+                if (transformed) {
+                    paint.setAntiAlias(true);
+                }
+            }
+
+            // The new bitmap was created from a known bitmap source so assume that
+            // they use the same density
+            bitmap.mDensity = source.mDensity;
+            bitmap.setHasAlpha(source.hasAlpha());
+            bitmap.setPremultiplied(source.mRequestPremultiplied);
+
+            Canvas canvas = new Canvas(bitmap);
+            canvas.translate(-deviceR.left, -deviceR.top);
+            canvas.concat(m);
+            canvas.drawBitmap(source, srcR, dstR, paint);
+            canvas.setBitmap(null);
+
+            // If the source has a gainmap, apply the same set of transformations to the gainmap
+            // and set it on the output
+            if (source.hasGainmap()) {
+                Bitmap newMapContents = transformGainmap(source, m, neww, newh, paint, srcR, dstR,
+                        deviceR);
+                if (newMapContents != null) {
+                    bitmap.setGainmap(new Gainmap(source.getGainmap(), newMapContents));
+                }
+            }
+
+            if (isHardware) {
+                result = bitmap.copy(Config.HARDWARE, false);
+                return result;
+            }
+            result = bitmap;
+            return result;
+        } finally {
+            if (isTraceEnabled) {
+                PerfettoTrackEventExtra.Builder builder = PerfettoTrace.end(category);
+                if (result != null) {
+                    traceBitmap(builder, result);
+                }
+                builder.emit();
             }
         }
+    }
 
-        // The new bitmap was created from a known bitmap source so assume that
-        // they use the same density
-        bitmap.mDensity = source.mDensity;
-        bitmap.setHasAlpha(source.hasAlpha());
-        bitmap.setPremultiplied(source.mRequestPremultiplied);
-
-        Canvas canvas = new Canvas(bitmap);
-        canvas.translate(-deviceR.left, -deviceR.top);
-        canvas.concat(m);
-        canvas.drawBitmap(source, srcR, dstR, paint);
-        canvas.setBitmap(null);
-
-        // If the source has a gainmap, apply the same set of transformations to the gainmap
-        // and set it on the output
-        if (source.hasGainmap()) {
-            Bitmap newMapContents = transformGainmap(source, m, neww, newh, paint, srcR, dstR,
-                    deviceR);
-            if (newMapContents != null) {
-                bitmap.setGainmap(new Gainmap(source.getGainmap(), newMapContents));
-            }
-        }
-
-        if (isHardware) {
-            return bitmap.copy(Config.HARDWARE, false);
-        }
-        return bitmap;
+    private static void traceBitmap(PerfettoTrackEventExtra.Builder builder, Bitmap b) {
+        if (b == null) return;
+        Config config = b.getConfig();
+        builder.beginProto()
+            .beginNested(2005 /* bitmap */)
+            .addField(1 /* size */, b.getAllocationByteCount())
+            .addField(2 /* width */, b.getWidth())
+            .addField(3 /* height */, b.getHeight())
+            .addField(4 /* density */, b.getDensity())
+            .addField(5 /* config */, config != null ? config.nativeInt : -1)
+            .addField(6 /* mutable_pixels */, b.isMutable() ? 1 : 0)
+            .addField(8 /* id */, b.mId)
+            .endNested()
+            .endProto();
     }
 
     private static Bitmap transformGainmap(Bitmap source, Matrix m, int neww, int newh, Paint paint,

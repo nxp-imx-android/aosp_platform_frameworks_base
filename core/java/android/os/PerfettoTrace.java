@@ -75,6 +75,18 @@ public final class PerfettoTrace {
         return new com.android.internal.dev.perfetto.sdk.PerfettoTrace.Category("mq");
     }
 
+    public static final PerfettoTrace.Category GFX_CATEGORY = new PerfettoTrace.Category("gfx");
+
+    // The same as a previous MQ_CATEGORY, but to be used with a V3 API.
+    public static final com.android.internal.dev.perfetto.sdk.PerfettoTrace.Category
+            GFX_CATEGORY_V3 = getGfxCategoryV3();
+
+    @RavenwoodIgnore // Just use null on Ravenwood.
+    private static com.android.internal.dev.perfetto.sdk.PerfettoTrace.Category
+            getGfxCategoryV3() {
+        return new com.android.internal.dev.perfetto.sdk.PerfettoTrace.Category("gfx");
+    }
+
     /**
      * This is temporary wrapper to check if either new or old APIs "mq" category is enabled, should
      * be called only from the MessageQueue.java and Looper.java.
@@ -410,8 +422,10 @@ public final class PerfettoTrace {
     public static void registerCategories() {
         if (IS_USE_SDK_TRACING_API_V3) {
             MQ_CATEGORY_V3.register();
+            GFX_CATEGORY_V3.register();
         } else {
             MQ_CATEGORY.register();
+            GFX_CATEGORY.register();
         }
     }
 
