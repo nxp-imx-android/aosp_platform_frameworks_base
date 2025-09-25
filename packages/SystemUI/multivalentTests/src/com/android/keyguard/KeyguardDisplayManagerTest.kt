@@ -194,7 +194,7 @@ class KeyguardDisplayManagerTest : SysuiTestCase() {
     fun show_shadeMovesDisplay_newPresentationCreated() {
         displayTracker.allDisplays = arrayOf(defaultDisplay, secondaryDisplay)
         // Shade in the default display, we expect the presentation to be in the secondary only
-        shadePositionRepository.setDisplayId(defaultDisplay.displayId)
+        shadePositionRepository.setPendingDisplayId(defaultDisplay.displayId)
 
         manager.show()
 
@@ -205,7 +205,7 @@ class KeyguardDisplayManagerTest : SysuiTestCase() {
 
         // Let's move it to the secondary display. We expect it will be added in the default
         // one.
-        shadePositionRepository.setDisplayId(secondaryDisplay.displayId)
+        shadePositionRepository.setPendingDisplayId(secondaryDisplay.displayId)
         testScope.advanceUntilIdle()
 
         verify(presentationFactory).create(eq(defaultDisplay))
@@ -213,7 +213,7 @@ class KeyguardDisplayManagerTest : SysuiTestCase() {
         whenever(presentationFactory.create(any())).thenReturn(connectedDisplayKeyguardPresentation)
 
         // Let's move it back! it should be re-created (it means it was removed before)
-        shadePositionRepository.setDisplayId(defaultDisplay.displayId)
+        shadePositionRepository.setPendingDisplayId(defaultDisplay.displayId)
         testScope.advanceUntilIdle()
 
         verify(presentationFactory).create(eq(secondaryDisplay))
@@ -223,7 +223,7 @@ class KeyguardDisplayManagerTest : SysuiTestCase() {
     @EnableFlags(Flags.FLAG_SHADE_WINDOW_GOES_AROUND)
     fun show_shadeInSecondaryDisplay_defaultOneHasPresentation() {
         displayTracker.allDisplays = arrayOf(defaultDisplay, secondaryDisplay)
-        shadePositionRepository.setDisplayId(secondaryDisplay.displayId)
+        shadePositionRepository.setPendingDisplayId(secondaryDisplay.displayId)
 
         manager.show()
 
@@ -234,7 +234,7 @@ class KeyguardDisplayManagerTest : SysuiTestCase() {
     @EnableFlags(Flags.FLAG_SHADE_WINDOW_GOES_AROUND)
     fun show_shadeInDefaultDisplay_secondaryOneHasPresentation() {
         displayTracker.allDisplays = arrayOf(defaultDisplay, secondaryDisplay)
-        shadePositionRepository.setDisplayId(defaultDisplay.displayId)
+        shadePositionRepository.setPendingDisplayId(defaultDisplay.displayId)
 
         manager.show()
 
