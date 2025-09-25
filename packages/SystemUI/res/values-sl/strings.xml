@@ -423,8 +423,7 @@
     <string name="quick_settings_cast_detail_empty_text" msgid="2846282280014617785">"Na voljo ni nobene naprave"</string>
     <string name="quick_settings_cast_no_network" msgid="3863016850468559522">"Ni povezave Wi‑Fi ali ethernetne povezave"</string>
     <string name="quick_settings_cast_disconnect" msgid="4836025217838730930">"Prekini povezavo"</string>
-    <!-- no translation found for quick_settings_audio_current_input (8219735427828862612) -->
-    <skip />
+    <string name="quick_settings_audio_current_input" msgid="8219735427828862612">"Trenutni mikrofon je"</string>
     <string name="quick_settings_brightness_dialog_title" msgid="4980669966716685588">"Svetlost"</string>
     <string name="quick_settings_inversion_label" msgid="3501527749494755688">"Inverzija barv"</string>
     <string name="quick_settings_color_correction_label" msgid="5636617913560474664">"Popravljanje barv"</string>
@@ -1378,10 +1377,7 @@
     <string name="controls_menu_edit" msgid="890623986951347062">"Uredite kontrolnike"</string>
     <string name="controls_menu_add_another_app" msgid="8661172304650786705">"Dodaj aplikacijo"</string>
     <string name="controls_menu_remove" msgid="3006525275966023468">"Odstrani aplikacijo"</string>
-    <string name="media_output_dialog_add_output" msgid="5642703238877329518">"Dodajanje izhodov"</string>
     <string name="media_output_dialog_group" msgid="5571251347877452212">"Skupina"</string>
-    <string name="media_output_dialog_single_device" msgid="3102758980643351058">"Izbrana je ena naprava"</string>
-    <string name="media_output_dialog_multiple_devices" msgid="1093771040315422350">"Izbranih je toliko naprav: <xliff:g id="COUNT">%1$d</xliff:g>"</string>
     <string name="media_output_item_connected_state" msgid="297439499870755458">"Povezano"</string>
     <string name="media_output_dialog_connect_failed" msgid="3080972621975339387">"Preklop ni mogoč. Če želite poskusiti znova, se dotaknite."</string>
     <string name="media_output_dialog_button_connect_device" msgid="2819038239946643550">"Poveži napravo"</string>
@@ -1720,6 +1716,7 @@
     <string name="back_button_on_bouncer" msgid="809134628434396761">"Nazaj"</string>
     <string name="pager_dots_previous_content_description" msgid="26963508904918908">"Nazaj"</string>
     <string name="pager_dots_next_content_description" msgid="613943992626163120">"Naprej"</string>
+    <string name="accessibility_pager_dots_navigate_to_next_page_action" msgid="7662720613169169465">"pomik na naslednjo stran"</string>
     <string name="ambient_cue_autofill_action" msgid="9213025887835308128">"samodejno izpolnjevanje"</string>
     <string name="ambient_cue_expand_action" msgid="6803711089932959312">"razširitev"</string>
 </resources>

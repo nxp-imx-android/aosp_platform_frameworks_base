@@ -1379,10 +1379,7 @@
     <string name="controls_menu_edit" msgid="890623986951347062">"コントロールを編集"</string>
     <string name="controls_menu_add_another_app" msgid="8661172304650786705">"アプリを追加"</string>
     <string name="controls_menu_remove" msgid="3006525275966023468">"アプリを削除"</string>
-    <string name="media_output_dialog_add_output" msgid="5642703238877329518">"出力の追加"</string>
     <string name="media_output_dialog_group" msgid="5571251347877452212">"グループ"</string>
-    <string name="media_output_dialog_single_device" msgid="3102758980643351058">"選択したデバイス: 1 台"</string>
-    <string name="media_output_dialog_multiple_devices" msgid="1093771040315422350">"選択したデバイス: <xliff:g id="COUNT">%1$d</xliff:g> 台"</string>
     <string name="media_output_item_connected_state" msgid="297439499870755458">"接続済み"</string>
     <string name="media_output_dialog_connect_failed" msgid="3080972621975339387">"切り替えられません。タップしてやり直してください。"</string>
     <string name="media_output_dialog_button_connect_device" msgid="2819038239946643550">"デバイスを接続"</string>
@@ -1721,6 +1718,7 @@
     <string name="back_button_on_bouncer" msgid="809134628434396761">"戻る"</string>
     <string name="pager_dots_previous_content_description" msgid="26963508904918908">"前へ"</string>
     <string name="pager_dots_next_content_description" msgid="613943992626163120">"次へ"</string>
+    <string name="accessibility_pager_dots_navigate_to_next_page_action" msgid="7662720613169169465">"次のページに移動"</string>
     <string name="ambient_cue_autofill_action" msgid="9213025887835308128">"自動入力"</string>
     <string name="ambient_cue_expand_action" msgid="6803711089932959312">"開く"</string>
 </resources>

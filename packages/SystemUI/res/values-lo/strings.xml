@@ -1377,10 +1377,7 @@
     <string name="controls_menu_edit" msgid="890623986951347062">"ແກ້ໄຂການຄວບຄຸມ"</string>
     <string name="controls_menu_add_another_app" msgid="8661172304650786705">"ເພີ່ມແອັບ"</string>
     <string name="controls_menu_remove" msgid="3006525275966023468">"ລຶບແອັບອອກ"</string>
-    <string name="media_output_dialog_add_output" msgid="5642703238877329518">"ເພີ່ມເອົ້າພຸດ"</string>
     <string name="media_output_dialog_group" msgid="5571251347877452212">"ກຸ່ມ"</string>
-    <string name="media_output_dialog_single_device" msgid="3102758980643351058">"ເລືອກ 1 ອຸປະກອນແລ້ວ"</string>
-    <string name="media_output_dialog_multiple_devices" msgid="1093771040315422350">"ເລືອກ <xliff:g id="COUNT">%1$d</xliff:g> ອຸປະກອນແລ້ວ"</string>
     <string name="media_output_item_connected_state" msgid="297439499870755458">"ເຊື່ອມຕໍ່ແລ້ວ"</string>
     <string name="media_output_dialog_connect_failed" msgid="3080972621975339387">"ບໍ່ສາມາດສະຫຼັບໄດ້. ແຕະເພື່ອລອງໃໝ່."</string>
     <string name="media_output_dialog_button_connect_device" msgid="2819038239946643550">"ເຊື່ອມຕໍ່ອຸປະກອນ"</string>
@@ -1719,6 +1716,7 @@
     <string name="back_button_on_bouncer" msgid="809134628434396761">"ກັບຄືນ"</string>
     <string name="pager_dots_previous_content_description" msgid="26963508904918908">"ກ່ອນໜ້າ"</string>
     <string name="pager_dots_next_content_description" msgid="613943992626163120">"ຕໍ່ໄປ"</string>
+    <string name="accessibility_pager_dots_navigate_to_next_page_action" msgid="7662720613169169465">"ນຳທາງໄປທີ່ໜ້າຖັດໄປ"</string>
     <string name="ambient_cue_autofill_action" msgid="9213025887835308128">"ຕື່ມຂໍ້ມູນອັດຕະໂນມັດ"</string>
     <string name="ambient_cue_expand_action" msgid="6803711089932959312">"ຂະຫຍາຍ"</string>
 </resources>
