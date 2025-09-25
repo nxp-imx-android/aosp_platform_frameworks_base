@@ -99,8 +99,6 @@ import com.android.systemui.biometrics.ui.viewmodel.PromptFallbackViewModel;
 import com.android.systemui.biometrics.ui.viewmodel.PromptViewModel;
 import com.android.systemui.display.data.repository.FocusedDisplayRepository;
 import com.android.systemui.keyguard.WakefulnessLifecycle;
-import com.android.systemui.keyguard.domain.interactor.KeyguardTransitionInteractor;
-import com.android.systemui.keyguard.shared.model.KeyguardState;
 import com.android.systemui.kosmos.KosmosJavaAdapter;
 import com.android.systemui.statusbar.CommandQueue;
 import com.android.systemui.statusbar.VibratorHelper;
@@ -188,8 +186,6 @@ public class AuthControllerTest extends SysuiTestCase {
     @Mock
     private PromptSelectorInteractor mPromptSelectionInteractor;
     @Mock
-    private KeyguardTransitionInteractor mKeyguardTransitionInteractor;
-    @Mock
     private CredentialViewModel mCredentialViewModel;
     @Mock
     private PromptViewModel mPromptViewModel;
@@ -254,8 +250,6 @@ public class AuthControllerTest extends SysuiTestCase {
 
         when(mFingerprintManager.isHardwareDetected()).thenReturn(true);
         when(mFaceManager.isHardwareDetected()).thenReturn(true);
-
-        when(mKeyguardTransitionInteractor.getCurrentState()).thenReturn(KeyguardState.UNDEFINED);
 
         final List<ComponentInfoInternal> fpComponentInfo = List.of(
                 new ComponentInfoInternal("faceSensor" /* componentId */,
@@ -1028,17 +1022,6 @@ public class AuthControllerTest extends SysuiTestCase {
     }
 
     @Test
-    public void testShowAuthenticationDialog_whenKeyguardIsShowing_dismisses()
-            throws RemoteException {
-        when(mKeyguardTransitionInteractor.getCurrentState()).thenReturn(KeyguardState.LOCKSCREEN);
-        mAuthController.showAuthenticationDialog(
-                new PromptInfo(), mReceiver, new int[0], false, false, 0, 0, "", 0);
-
-        verify(mReceiver).onDialogDismissed(
-                BiometricPrompt.DISMISSED_REASON_USER_CANCEL, null /* credentialAttestation */);
-    }
-
-    @Test
     public void testShowDialog_whenOwnerNotInForegroundAndNotVisible() {
         final PromptInfo promptInfo = createTestPromptInfo();
         promptInfo.setAllowBackgroundAuthentication(false);
@@ -1294,7 +1277,7 @@ public class AuthControllerTest extends SysuiTestCase {
                     () -> mCredentialViewModel, () -> mPromptViewModel, mInteractionJankMonitor,
                     mHandler, mBackgroundExecutor, mUdfpsUtils, mVibratorHelper, mKeyguardManager,
                     mMSDLPlayer, mWindowManagerProvider, mFallbackViewModelFactory,
-                    mFocusedDisplayRepository, () -> mKeyguardTransitionInteractor);
+                    mFocusedDisplayRepository);
         }
 
         @Override

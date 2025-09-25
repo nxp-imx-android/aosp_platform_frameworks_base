@@ -16,8 +16,6 @@ import com.android.systemui.biometrics.shared.model.FallbackOptionModel
 import com.android.systemui.biometrics.shared.model.PromptKind
 import com.android.systemui.biometrics.shared.model.WatchRangingState
 import com.android.systemui.dagger.qualifiers.Application
-import com.android.systemui.keyguard.domain.interactor.KeyguardTransitionInteractor
-import com.android.systemui.keyguard.shared.model.KeyguardState
 import com.android.systemui.res.R
 import com.android.systemui.shade.domain.interactor.ShadeInteractor
 import com.google.android.msdl.data.model.MSDLToken
@@ -30,7 +28,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.map
 
@@ -43,7 +40,6 @@ constructor(
     shadeInteractor: ShadeInteractor,
     private val promptSelectorInteractor: PromptSelectorInteractor,
     private val msdlPlayer: MSDLPlayer,
-    private val keyguardTransitionInteractor: KeyguardTransitionInteractor,
 ) {
     /**
      * Whether credential is allowed in the prompt True if bp caller requested credential and
@@ -97,27 +93,8 @@ constructor(
             }
         }
 
-    /**
-     * A dismissal signal for the prompt.
-     *
-     * This flow will emit `true` if the prompt should be dismissed due to outside interactions like
-     * the shade being pulled down or the keyguard becoming visible.
-     */
-    val shouldDismiss: Flow<Boolean> =
-        combine(
-                shadeInteractor.isUserInteracting,
-                keyguardTransitionInteractor.finishedKeyguardState,
-            ) { isShadeInteracted, keyguardState ->
-                // Dismiss if the keyguard is showing and not occluded. This is to prevent
-                // the biometric prompt from showing on top of the keyguard, where it's not
-                // expected.
-                val isKeyguardShowingAndNotOccluded =
-                    keyguardState != KeyguardState.GONE &&
-                        keyguardState != KeyguardState.UNDEFINED &&
-                        keyguardState != KeyguardState.OCCLUDED
-                isShadeInteracted || isKeyguardShowingAndNotOccluded
-            }
-            .distinctUntilChanged()
+    /** Whether the shade is being interacted with */
+    val isShadeInteracted = shadeInteractor.isUserInteracting
 
     /** If the back button should be shown. */
     val isBackButtonVisible: Flow<Boolean> = promptCredentialInteractor.isCredentialOnly

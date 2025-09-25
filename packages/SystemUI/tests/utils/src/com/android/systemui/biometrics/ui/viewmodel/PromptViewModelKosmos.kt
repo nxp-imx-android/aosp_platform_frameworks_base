@@ -27,7 +27,6 @@ import com.android.systemui.biometrics.domain.interactor.udfpsOverlayInteractor
 import com.android.systemui.biometrics.udfpsUtils
 import com.android.systemui.deviceentry.domain.interactor.deviceEntryUdfpsInteractor
 import com.android.systemui.display.domain.interactor.displayStateInteractor
-import com.android.systemui.keyguard.domain.interactor.keyguardTransitionInteractor
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.Kosmos.Fixture
 import com.android.systemui.shade.domain.interactor.shadeInteractor
@@ -50,7 +49,6 @@ val Kosmos.promptViewModel by Fixture {
         shadeInteractor = shadeInteractor,
         promptIconViewModelFactory = promptIconViewModelFactory,
         biometricAuthIconViewModelFactory = biometricAuthIconViewModelFactory_biometricPrompt,
-        keyguardTransitionInteractor = keyguardTransitionInteractor,
     )
 }
 
