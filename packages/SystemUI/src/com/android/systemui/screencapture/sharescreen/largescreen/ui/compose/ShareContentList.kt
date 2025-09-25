@@ -22,7 +22,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -63,7 +63,7 @@ fun ShareContentList(
     Surface(
         shape = RoundedCornerShape(20.dp),
         color = MaterialTheme.colorScheme.surfaceBright,
-        modifier = modifier.height(224.dp).width(286.dp),
+        modifier = modifier.heightIn(min = 24.dp, max = 224.dp).width(286.dp),
     ) {
         LazyColumn(verticalArrangement = Arrangement.spacedBy(2.dp)) {
             // Use the real list of recent tasks, handling the nullable case.
