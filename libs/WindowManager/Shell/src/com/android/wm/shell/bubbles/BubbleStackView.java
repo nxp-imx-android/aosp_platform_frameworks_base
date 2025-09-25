@@ -1342,6 +1342,23 @@ public class BubbleStackView extends FrameLayout
             return;
         }
         ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "BubbleStackView.animateConvert - converting");
+
+        final Runnable animFinishWrapper;
+        if (mIsExpansionAnimating) {
+            animFinishWrapper = () -> {
+                afterExpandedViewAnimation();
+                if (animFinish != null) {
+                    animFinish.run();
+                }
+            };
+            cancelAllExpandCollapseSwitchAnimations();
+            // Expansion animation starts with hiding the expanded view container.
+            // Make sure it is shown in case we cancel the expand animation before it was started.
+            mExpandedViewContainer.setVisibility(VISIBLE);
+        } else {
+            animFinishWrapper = animFinish;
+        }
+
         mIsBubbleSwitchAnimating = true;
         bev.setSurfaceZOrderedOnTop(true);
         bev.setContentAlpha(1);
@@ -1366,11 +1383,10 @@ public class BubbleStackView extends FrameLayout
             snapshot.release();
             bev.setSurfaceZOrderedOnTop(false);
             bev.setAnimating(false);
-            if (animFinish != null) {
-                animFinish.run();
+            if (animFinishWrapper != null) {
+                animFinishWrapper.run();
             }
         });
-
 
         a.setDuration(EXPANDED_VIEW_CONVERSION_ANIMATION_DURATION);
         a.setInterpolator(EMPHASIZED);
@@ -3302,7 +3318,9 @@ public class BubbleStackView extends FrameLayout
      * animating flags for those animations.
      */
     private void cancelDelayedExpandCollapseSwitchAnimations() {
-        mMainExecutor.removeCallbacks(mDelayedAnimation);
+        if (mDelayedAnimation != null) {
+            mMainExecutor.removeCallbacks(mDelayedAnimation);
+        }
 
         mIsExpansionAnimating = false;
         mIsBubbleSwitchAnimating = false;
@@ -3311,6 +3329,7 @@ public class BubbleStackView extends FrameLayout
     private void cancelAllExpandCollapseSwitchAnimations() {
         cancelDelayedExpandCollapseSwitchAnimations();
 
+        mExpandedViewAlphaAnimator.cancel();
         PhysicsAnimator.getInstance(mAnimatingOutSurfaceView).cancel();
         PhysicsAnimator.getInstance(mExpandedViewContainerMatrix).cancel();
 
