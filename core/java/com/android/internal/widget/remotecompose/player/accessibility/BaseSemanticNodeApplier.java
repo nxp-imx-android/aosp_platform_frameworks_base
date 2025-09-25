@@ -15,7 +15,6 @@
  */
 package com.android.internal.widget.remotecompose.player.accessibility;
 
-
 import android.graphics.Rect;
 import android.util.Log;
 

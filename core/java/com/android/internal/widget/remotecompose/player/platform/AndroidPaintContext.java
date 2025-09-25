@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 The Android Open Source Project
+ * Copyright 2025 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -85,16 +85,16 @@ public class AndroidPaintContext extends PaintContext {
     RenderNode mNode = null;
     Canvas mPreviousCanvas = null;
 
-    public AndroidPaintContext(RemoteContext context, Canvas canvas) {
+    public AndroidPaintContext(@NonNull RemoteContext context, @NonNull Canvas canvas) {
         super(context);
         this.mCanvas = canvas;
     }
 
-    public Canvas getCanvas() {
+    public @NonNull Canvas getCanvas() {
         return mCanvas;
     }
 
-    public void setCanvas(Canvas canvas) {
+    public void setCanvas(@NonNull Canvas canvas) {
         this.mCanvas = mMainCanvas = canvas;
     }
 

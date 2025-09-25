@@ -15,7 +15,6 @@
  */
 package com.android.internal.widget.remotecompose.player.accessibility;
 
-
 import android.view.View;
 
 import com.android.internal.widget.remotecompose.core.CoreDocument;
