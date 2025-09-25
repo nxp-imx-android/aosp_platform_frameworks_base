@@ -53,6 +53,16 @@ flag {
 }
 
 flag {
+    name: "fix_set_display_state_after_device_change"
+    namespace: "display_manager"
+    description: "Fix the display state code so that the state is set correctly after the underlying display device changes."
+    bug: "442587030"
+    metadata {
+      purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "enable_display_offload"
     namespace: "display_manager"
     description: "Feature flag for DisplayOffload"

@@ -145,6 +145,7 @@ import android.os.TestLooperManager;
 import android.os.UserHandle;
 import android.os.UserManager;
 import android.os.test.FakePermissionEnforcer;
+import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.RequiresFlagsEnabled;
 import android.platform.test.flag.junit.CheckFlagsRule;
 import android.platform.test.flag.junit.DeviceFlagsValueProvider;
@@ -230,6 +231,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.LongStream;
@@ -436,6 +438,7 @@ public class DisplayManagerServiceTest {
 
     private final DisplayManagerService.Injector mBasicInjector = new BasicInjector();
     private final FakeSettingsProvider mFakeSettingsProvider = new FakeSettingsProvider();
+    private final WindowManagerPolicy mWindowManagerPolicy = new FakeWindowManagerPolicy();
 
     @Mock DisplayNotificationManager mMockedDisplayNotificationManager;
     @Mock IMediaProjectionManager mMockProjectionService;
@@ -464,8 +467,6 @@ public class DisplayManagerServiceTest {
 
     @Captor ArgumentCaptor<ContentRecordingSession> mContentRecordingSessionCaptor;
     @Mock DisplayManagerFlags mMockFlags;
-
-    @Mock WindowManagerPolicy mMockedWindowManagerPolicy;
 
     @Mock IBatteryStats mMockedBatteryStats;
     @Mock WifiP2pManager mMockedWifiP2pManager;
@@ -503,7 +504,7 @@ public class DisplayManagerServiceTest {
         mLocalServiceKeeperRule.overrideLocalService(
                 ActivityTaskManagerInternal.class, mMockActivityTaskManagerInternal);
         mLocalServiceKeeperRule.overrideLocalService(
-                WindowManagerPolicy.class, mMockedWindowManagerPolicy);
+                WindowManagerPolicy.class, mWindowManagerPolicy);
         when(BatteryStatsService.getService()).thenReturn(null);
         Display display = mock(Display.class);
         when(display.getDisplayAdjustments()).thenReturn(new DisplayAdjustments());
@@ -1013,6 +1014,79 @@ public class DisplayManagerServiceTest {
         // Verify there are no display events before WM call
         inOrder.verify(displayChangesCallback, never()).onDisplayEvent(anyInt(), anyInt());
         inOrder.verify(mMockWindowManagerInternal).onDisplayManagerReceivedDeviceState(123);
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_FIX_SET_DISPLAY_STATE_AFTER_DEVICE_CHANGE)
+    public void testDockedDeviceState_displayStateUpdated() {
+        mDisplayManager = new DisplayManagerService(mContext,
+                mShortMockedInjector);
+        DisplayManagerService.LocalService localService = mDisplayManager.new LocalService();
+        LogicalDisplayMapper logicalDisplayMapper = mDisplayManager.getLogicalDisplayMapper();
+        registerDefaultDisplays(mDisplayManager);
+        mDisplayManager.windowManagerAndInputReady();
+        mDisplayManager.onBootPhase(SystemService.PHASE_BOOT_COMPLETED);
+        DeviceStateListener listener = mDisplayManager.new DeviceStateListener();
+        DisplayManagerService.BinderService displayManagerBinderService =
+                mDisplayManager.new BinderService();
+
+        DisplayDevice internalDisplayDevice = logicalDisplayMapper.getDisplayLocked(
+                Display.DEFAULT_DISPLAY).getPrimaryDisplayDeviceLocked();
+        // Create external display
+        FakeDisplayDevice externalDisplayDevice =
+                createFakeDisplayDevice(mDisplayManager, new float[]{60f}, Display.TYPE_EXTERNAL);
+        int externalDisplayId = getDisplayIdForDisplayDevice(mDisplayManager,
+                displayManagerBinderService, externalDisplayDevice);
+        initDisplayPowerController(localService);
+        mDisplayManager.enableConnectedDisplay(externalDisplayId, /* enabled= */ true);
+        int internalGroupId = logicalDisplayMapper.getDisplayGroupIdFromDisplayIdLocked(
+                Display.DEFAULT_DISPLAY);
+        int externalGroupId = logicalDisplayMapper.getDisplayGroupIdFromDisplayIdLocked(
+                externalDisplayId);
+        DisplayManagerInternal.DisplayPowerRequest dpr =
+                new DisplayManagerInternal.DisplayPowerRequest();
+        // Initialize DPCs
+        localService.requestPowerState(internalGroupId, dpr, /* waitForNegativeProximity= */ false);
+        localService.requestPowerState(externalGroupId, dpr, /* waitForNegativeProximity= */ false);
+        flushHandlers();
+
+        listener.onDeviceStateChanged(
+                new DeviceState(new DeviceState.Configuration.Builder(/* identifier= */ 123,
+                        /* name= */ "Docked").setPhysicalProperties(
+                        Set.of(DeviceState.PROPERTY_LAPTOP_HARDWARE_CONFIGURATION_DOCKED))
+                        .build()));
+        flushHandlers();
+        // Initialize any new DPCs
+        localService.requestPowerState(internalGroupId, dpr, /* waitForNegativeProximity= */ false);
+        localService.requestPowerState(externalGroupId, dpr, /* waitForNegativeProximity= */ false);
+        flushHandlers();
+
+        assertEquals(Display.STATE_OFF, mDisplayManager.getLogicalDisplayMapper().getDisplayLocked(
+                internalDisplayDevice).getPrimaryDisplayDeviceLocked().getDisplayDeviceInfoLocked()
+                .committedState);
+        assertEquals(Display.STATE_ON, mDisplayManager.getLogicalDisplayMapper().getDisplayLocked(
+                externalDisplayDevice).getPrimaryDisplayDeviceLocked().getDisplayDeviceInfoLocked()
+                .committedState);
+
+        listener.onDeviceStateChanged(
+                new DeviceState(new DeviceState.Configuration.Builder(/* identifier= */ 456,
+                        /* name= */ "Lid open").setPhysicalProperties(
+                                Set.of(DeviceState.PROPERTY_LAPTOP_HARDWARE_CONFIGURATION_LID_OPEN))
+                        .setSystemProperties(
+                                Set.of(DeviceState.PROPERTY_POWER_CONFIGURATION_TRIGGER_WAKE))
+                        .build()));
+        flushHandlers();
+        // Initialize any new DPCs
+        localService.requestPowerState(internalGroupId, dpr, /* waitForNegativeProximity= */ false);
+        localService.requestPowerState(externalGroupId, dpr, /* waitForNegativeProximity= */ false);
+        flushHandlers();
+
+        assertEquals(Display.STATE_ON, mDisplayManager.getLogicalDisplayMapper().getDisplayLocked(
+                internalDisplayDevice).getPrimaryDisplayDeviceLocked().getDisplayDeviceInfoLocked()
+                .committedState);
+        assertEquals(Display.STATE_ON, mDisplayManager.getLogicalDisplayMapper().getDisplayLocked(
+                externalDisplayDevice).getPrimaryDisplayDeviceLocked().getDisplayDeviceInfoLocked()
+                .committedState);
     }
 
     /**
