@@ -22,6 +22,7 @@ import static android.app.Notification.COLOR_INVALID;
 import android.annotation.Nullable;
 import android.app.Flags;
 import android.content.Context;
+import android.graphics.Typeface;
 import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.view.View;
@@ -48,6 +49,7 @@ public class HybridNotificationView extends AlphaOptimizedLinearLayout
     protected TextView mTextView;
     protected int mPrimaryTextColor = COLOR_INVALID;
     protected int mSecondaryTextColor = COLOR_INVALID;
+    private static final int MAX_SUMMARIZATION_LINES = 1;
 
     public HybridNotificationView(Context context) {
         this(context, null);
@@ -121,24 +123,25 @@ public class HybridNotificationView extends AlphaOptimizedLinearLayout
     }
 
     public void bind(@Nullable CharSequence title, @Nullable CharSequence text,
-            @Nullable View contentView) {
-        bind(/* title = */ title, /* text = */ text, /* stripSpans */ true);
-    }
-
-    public void bind(@Nullable CharSequence title, @Nullable CharSequence text,
-            boolean stripSpans) {
+            @Nullable CharSequence summarization) {
         mTitleView.setText(title != null ? title.toString() : title);
         mTitleView.setVisibility(TextUtils.isEmpty(title) ? GONE : VISIBLE);
-        if (TextUtils.isEmpty(text)) {
-            mTextView.setVisibility(GONE);
-            mTextView.setText(null);
+        if (TextUtils.isEmpty(summarization)) {
+            if (TextUtils.isEmpty(text)) {
+                mTextView.setVisibility(GONE);
+                mTextView.setText(null);
+            } else {
+                mTextView.setVisibility(VISIBLE);
+                mTextView.setText(text.toString());
+            }
+            mTextView.setSingleLine(true);
+            mTextView.setMaxLines(1);
         } else {
             mTextView.setVisibility(VISIBLE);
-            if (stripSpans) {
-                mTextView.setText(text.toString());
-            } else {
-                mTextView.setText(text);
-            }
+            mTextView.setText(summarization);
+            mTextView.setSingleLine(false);
+            mTextView.setMaxLines(MAX_SUMMARIZATION_LINES);
+            mTextView.setTypeface(Typeface.create("variable-body-medium", Typeface.ITALIC));
         }
         requestLayout();
     }

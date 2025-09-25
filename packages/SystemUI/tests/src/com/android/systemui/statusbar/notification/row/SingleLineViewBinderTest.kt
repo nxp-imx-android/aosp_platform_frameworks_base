@@ -24,6 +24,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.internal.R
 import com.android.systemui.SysuiTestCase
+import com.android.systemui.statusbar.notification.NmSummarizationAllFlag
 import com.android.systemui.statusbar.notification.collection.buildNotificationEntry
 import com.android.systemui.statusbar.notification.row.NotificationRowContentBinder.FLAG_CONTENT_VIEW_PUBLIC_SINGLE_LINE
 import com.android.systemui.statusbar.notification.row.NotificationRowContentBinder.FLAG_CONTENT_VIEW_SINGLE_LINE
@@ -264,15 +265,63 @@ class SingleLineViewBinderTest : SysuiTestCase() {
                 builder = notificationBuilder,
                 systemUiContext = context,
                 redactText = false,
-                summarization = "summary",
+                summarization = SUMMARIZATION,
             )
         // WHEN: binds the view
         SingleLineViewBinder.bind(viewModel, view)
 
         // THEN: the single-line conversation view should only include summarization content
-        assertEquals(viewModel.conversationData?.summarization, view.textView.text)
+        assertEquals(SUMMARIZATION, view.textView.text)
         assertEquals("", view.conversationSenderNameView.text)
         assertEquals(GONE, view.conversationSenderNameView.visibility)
+    }
+
+    @Test
+    @EnableFlags(NmSummarizationAllFlag.FLAG_NAME)
+    fun bindNonConversationSingleLineView_withSummarization() {
+        // GIVEN: a row with bigText style notification
+        val style = Notification.BigTextStyle().bigText(CONTENT_TEXT)
+        notificationBuilder.setStyle(style)
+        notificationBuilder.setSummarizedContent(SUMMARIZATION)
+        val notification = notificationBuilder.build()
+        val entry = kosmos.buildNotificationEntry(notification)
+
+        val view =
+            inflatePrivateSingleLineView(
+                isConversation = false,
+                reinflateFlags = FLAG_CONTENT_VIEW_SINGLE_LINE,
+                entry = entry,
+                context = context,
+                logger = mock(),
+            )
+
+        val publicView =
+            inflatePublicSingleLineView(
+                isConversation = false,
+                reinflateFlags = FLAG_CONTENT_VIEW_PUBLIC_SINGLE_LINE,
+                entry = entry,
+                context = context,
+                logger = mock(),
+            )
+        assertNotNull(publicView)
+
+        val viewModel =
+            SingleLineViewInflater.inflateSingleLineViewModel(
+                notification = notification,
+                messagingStyle = null,
+                builder = notificationBuilder,
+                systemUiContext = context,
+                redactText = false,
+                summarization = SUMMARIZATION,
+            )
+
+        // WHEN: binds the viewHolder
+        SingleLineViewBinder.bind(viewModel, view)
+
+        // THEN: the single-line view should be bind with viewModel's title and summarization text
+        assertEquals(viewModel.titleText, view?.titleView?.text)
+        assertEquals(viewModel.summarization, view?.textView?.text)
+        assertEquals(SUMMARIZATION, viewModel.summarization)
     }
 
     private companion object {
