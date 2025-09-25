@@ -12169,7 +12169,7 @@ public class Notification implements Parcelable
             private static final int TYPE_FIXED_TIME = 3;
             private static final int TYPE_FIXED_INT = 4;
             private static final int TYPE_FIXED_FLOAT = 5;
-            private static final int TYPE_FIXED_STRING = 6;
+            private static final int TYPE_FIXED_TEXT = 6;
 
             // Restrict inheritance to inner classes of Notification.
             private MetricValue() { }
@@ -12183,7 +12183,7 @@ public class Notification implements Parcelable
                     case TYPE_FIXED_TIME -> FixedTime.fromBundle(bundle);
                     case TYPE_FIXED_INT -> FixedInt.fromBundle(bundle);
                     case TYPE_FIXED_FLOAT -> FixedFloat.fromBundle(bundle);
-                    case TYPE_FIXED_STRING -> FixedString.fromBundle(bundle);
+                    case TYPE_FIXED_TEXT -> FixedText.fromBundle(bundle);
                     default -> null;
                 };
             }
@@ -12201,8 +12201,8 @@ public class Notification implements Parcelable
                     bundle.putInt(KEY_TYPE, TYPE_FIXED_INT);
                 } else if (value instanceof FixedFloat) {
                     bundle.putInt(KEY_TYPE, TYPE_FIXED_FLOAT);
-                } else if (value instanceof FixedString) {
-                    bundle.putInt(KEY_TYPE, TYPE_FIXED_STRING);
+                } else if (value instanceof FixedText) {
+                    bundle.putInt(KEY_TYPE, TYPE_FIXED_TEXT);
                 } else {
                     throw new AssertionError("Impossible MetricValue subclass: " + value);
                 }
@@ -12997,8 +12997,8 @@ public class Notification implements Parcelable
             }
         }
 
-        /** Metric corresponding to a string value. */
-        public static final class FixedString extends MetricValue {
+        /** Metric corresponding to a text value. */
+        public static final class FixedText extends MetricValue {
 
             private static final String KEY_VALUE = "value";
             private static final String KEY_UNIT = "unit";
@@ -13007,25 +13007,25 @@ public class Notification implements Parcelable
             private final String mUnit;
 
             /**
-             * Creates a {@link FixedString} instance with the specified String.
+             * Creates a {@link FixedText} instance with the specified text.
              */
-            public FixedString(@NonNull CharSequence value) {
+            public FixedText(@NonNull CharSequence value) {
                 this(value, null);
             }
 
             /**
-             * Creates a {@link FixedString} instance with the specified String.
+             * Creates a {@link FixedText} instance with the specified text.
              *
              * @param unit optional unit for the value. Limit this to a few characters.
              */
-            public FixedString(@NonNull CharSequence value, @Nullable CharSequence unit) {
+            public FixedText(@NonNull CharSequence value, @Nullable CharSequence unit) {
                 mValue = safeCharSequenceToString(requireNonNull(value));
                 mUnit = safeCharSequenceToString(unit);
             }
 
             @NonNull
-            private static FixedString fromBundle(Bundle bundle) {
-                return new FixedString(
+            private static FixedText fromBundle(Bundle bundle) {
+                return new FixedText(
                         bundle.getString(KEY_VALUE, ""),
                         bundle.getString(KEY_UNIT));
             }
@@ -13039,7 +13039,7 @@ public class Notification implements Parcelable
 
             @Override
             public boolean equals(Object obj) {
-                if (!(obj instanceof FixedString that)) return false;
+                if (!(obj instanceof FixedText that)) return false;
                 if (this == that) return true;
                 return Objects.equals(this.mValue, that.mValue)
                         && Objects.equals(this.mUnit, that.mUnit);
@@ -13058,7 +13058,7 @@ public class Notification implements Parcelable
                         + "}";
             }
 
-            /** The string value. */
+            /** The text value. */
             @NonNull
             public CharSequence getValue() {
                 return mValue;

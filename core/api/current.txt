@@ -7041,9 +7041,9 @@ package android.app {
     method public int getValue();
   }
 
-  public static final class Notification.Metric.FixedString extends android.app.Notification.Metric.MetricValue {
-    ctor public Notification.Metric.FixedString(@NonNull CharSequence);
-    ctor public Notification.Metric.FixedString(@NonNull CharSequence, @Nullable CharSequence);
+  public static final class Notification.Metric.FixedText extends android.app.Notification.Metric.MetricValue {
+    ctor public Notification.Metric.FixedText(@NonNull CharSequence);
+    ctor public Notification.Metric.FixedText(@NonNull CharSequence, @Nullable CharSequence);
     method @Nullable public CharSequence getUnit();
     method @NonNull public CharSequence getValue();
   }
