@@ -30,7 +30,6 @@ import static android.window.TransitionInfo.FLAG_MOVED_TO_TOP;
 import static android.window.TransitionInfo.FLAG_SHOW_WALLPAPER;
 
 import static com.android.internal.jank.InteractionJankMonitor.CUJ_PREDICTIVE_BACK_HOME;
-import static com.android.window.flags.Flags.predictiveBackDelayWmTransition;
 import static com.android.window.flags.Flags.predictiveBackStopKeycodeBackForwarding;
 import static com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_BACK_PREVIEW;
 
@@ -477,7 +476,7 @@ public class BackAnimationController implements RemoteCallable<BackAnimationCont
     }
 
     private void startPredictiveBackAnimationIfNeeded() {
-        if (!predictiveBackDelayWmTransition() || !mThresholdCrossed) {
+        if (!mThresholdCrossed) {
             return;
         }
         mShellExecutor.execute(() -> {
@@ -547,14 +546,9 @@ public class BackAnimationController implements RemoteCallable<BackAnimationCont
                 if (swipeEdge == EDGE_NONE) {
                     // start animation immediately for non-gestural sources (without ACTION_MOVE
                     // events)
-                    if (!predictiveBackDelayWmTransition()) {
-                        mThresholdCrossed = true;
-                    }
                     mPointersPilfered = true;
                     onGestureStarted(touchX, touchY, swipeEdge);
-                    if (predictiveBackDelayWmTransition()) {
-                        onThresholdCrossed();
-                    }
+                    onThresholdCrossed();
                     mShouldStartOnNextMoveEvent = false;
                 } else {
                     mShouldStartOnNextMoveEvent = true;
@@ -678,12 +672,6 @@ public class BackAnimationController implements RemoteCallable<BackAnimationCont
         }
         final boolean shouldDispatchToAnimator = shouldDispatchToAnimator();
         if (shouldDispatchToAnimator) {
-            if (!predictiveBackDelayWmTransition()) {
-                if (!mShellBackAnimationRegistry.startGesture(backType)) {
-                    mActiveCallback = null;
-                }
-                requestTopUi(true, backType);
-            }
             tryPilferPointers();
         } else {
             mActiveCallback = mBackNavigationInfo.getOnBackInvokedCallback();
@@ -697,7 +685,7 @@ public class BackAnimationController implements RemoteCallable<BackAnimationCont
     }
 
     private void onMove(@BackEvent.SwipeEdge int swipeEdge) {
-        if (predictiveBackDelayWmTransition() && mCurrentTracker.isActive()) {
+        if (mCurrentTracker.isActive()) {
             mCurrentTracker.updateSwipeEdge(swipeEdge);
         }
         if (!mBackGestureStarted
@@ -925,8 +913,7 @@ public class BackAnimationController implements RemoteCallable<BackAnimationCont
 
         final int backType = mBackNavigationInfo.getType();
         // Simply trigger and finish back navigation when no animator defined.
-        if (!shouldDispatchToAnimator()
-                || (!hasRequestAnimation && predictiveBackDelayWmTransition())
+        if (!shouldDispatchToAnimator() || !hasRequestAnimation
                 || mShellBackAnimationRegistry.isAnimationCancelledOrNull(backType)) {
             ProtoLog.d(WM_SHELL_BACK_PREVIEW, "Trigger back without dispatching to animator.");
             invokeOrCancelBack(mCurrentTracker);

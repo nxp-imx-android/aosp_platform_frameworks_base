@@ -374,7 +374,6 @@ public class BackAnimationControllerTest extends ShellTestCase {
         verify(mActivityTaskManager).startBackNavigation(any(), any());
     }
 
-    @EnableFlags(Flags.FLAG_PREDICTIVE_BACK_DELAY_WM_TRANSITION)
     @Test
     public void ensureStartBackAnimation_ThresholdBeforeStartBackNavigation()
             throws RemoteException {
@@ -389,7 +388,6 @@ public class BackAnimationControllerTest extends ShellTestCase {
         verify(mActivityTaskManager).startPredictiveBackAnimation();
     }
 
-    @EnableFlags(Flags.FLAG_PREDICTIVE_BACK_DELAY_WM_TRANSITION)
     @Test
     public void ensureStarBackAnimation_ThresholdAfterStartBackNavigation() throws RemoteException {
         registerAnimation(BackNavigationInfo.TYPE_RETURN_TO_HOME);
