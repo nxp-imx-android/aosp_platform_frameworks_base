@@ -838,12 +838,6 @@ class ActivityStarter {
             synchronized (mService.mGlobalLock) {
                 final boolean globalConfigWillChange = mRequest.globalConfig != null
                         && mService.getGlobalConfiguration().diff(mRequest.globalConfig) != 0;
-                final Task rootTask = mRootWindowContainer.getTopDisplayFocusedRootTask();
-                if (rootTask != null) {
-                    rootTask.mConfigWillChange = globalConfigWillChange;
-                }
-                ProtoLog.v(WM_DEBUG_CONFIGURATION, "Starting activity when config "
-                        + "will change = %b", globalConfigWillChange);
 
                 final long origId = Binder.clearCallingIdentity();
                 try {
@@ -868,9 +862,6 @@ class ActivityStarter {
                     mService.mAmInternal.enforceCallingPermission(
                             android.Manifest.permission.CHANGE_CONFIGURATION,
                             "updateConfiguration()");
-                    if (rootTask != null) {
-                        rootTask.mConfigWillChange = false;
-                    }
                     ProtoLog.v(WM_DEBUG_CONFIGURATION,
                                 "Updating to new configuration after starting activity.");
 

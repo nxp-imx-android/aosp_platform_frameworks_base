@@ -290,12 +290,6 @@ class Task extends TaskFragment {
     private ActivityRecord mPendingConvertFromTranslucentActivity = null;
 
     /**
-     * Set when we know we are going to be calling updateConfiguration()
-     * soon, so want to skip intermediate config checks.
-     */
-    boolean mConfigWillChange;
-
-    /**
      * Used to keep resumeTopActivityUncheckedLocked() from being entered recursively
      */
     boolean mInResumeTopActivity = false;
