@@ -117,6 +117,8 @@ public class LottieColorUtils {
                 Map.entry(".onSurfaceVariant", R.color.settingslib_materialColorOnSurfaceVariant),
                 Map.entry(".surfaceInverse", R.color.settingslib_materialColorSurfaceInverse),
                 Map.entry(".onSurfaceInverse", R.color.settingslib_materialColorOnSurfaceInverse),
+                Map.entry(".inverseSurface", R.color.settingslib_materialColorSurfaceInverse),
+                Map.entry(".inverseOnSurface", R.color.settingslib_materialColorOnSurfaceInverse),
                 Map.entry(".surfaceBright", R.color.settingslib_materialColorSurfaceBright),
                 Map.entry(".surfaceDim", R.color.settingslib_materialColorSurfaceDim),
                 Map.entry(".surfaceContainer", R.color.settingslib_materialColorSurfaceContainer),
