@@ -1526,6 +1526,43 @@ public class DisplayRotationTests {
                 mTarget.getFixedToUserRotationMode());
     }
 
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_AUTO_ROTATE_ON_SLATE_STATE)
+    public void testUpdateRotationOnlyInSlateState() throws Exception {
+        WindowTestsBase.setFieldValue(sMockWm, "mIsPc", true);
+
+        mBuilder.setIsLaptop(true);
+        mBuilder.build();
+        configureDisplayRotation(SCREEN_ORIENTATION_LANDSCAPE, false, false);
+
+        when(mMockDisplayPolicy.isScreenOnEarly()).thenReturn(true);
+        when(mMockDisplayPolicy.isAwake()).thenReturn(true);
+        when(mMockDisplayPolicy.isKeyguardDrawComplete()).thenReturn(true);
+        when(mMockDisplayPolicy.isWindowManagerDrawComplete()).thenReturn(true);
+
+        thawRotation();
+
+        mTarget.foldStateChanged(DeviceStateController.DeviceStateEnum.SLATE);
+        verifyOrientationListenerRegistration(1);
+
+        // Display rotation based on sensor input is enabled in SLATE state
+        mOrientationSensorListener.onSensorChanged(createSensorEvent(Surface.ROTATION_90));
+        assertEquals(Surface.ROTATION_90, mTarget.rotationForOrientation(
+                SCREEN_ORIENTATION_UNSPECIFIED, Surface.ROTATION_0));
+
+        mOrientationSensorListener.onSensorChanged(createSensorEvent(Surface.ROTATION_0));
+        assertEquals(Surface.ROTATION_0, mTarget.rotationForOrientation(
+                SCREEN_ORIENTATION_UNSPECIFIED, Surface.ROTATION_0));
+
+        // Display rotation based on sensor input is disabled in DOCKED state
+        mTarget.foldStateChanged(DeviceStateController.DeviceStateEnum.DOCKED);
+        mOrientationSensorListener.onSensorChanged(createSensorEvent(Surface.ROTATION_90));
+        assertEquals(Surface.ROTATION_0, mTarget.rotationForOrientation(
+                SCREEN_ORIENTATION_UNSPECIFIED, Surface.ROTATION_0));
+
+        WindowTestsBase.setFieldValue(sMockWm, "mIsPc", false);
+    }
+
     private DeviceStateAutoRotateSettingController createDeviceStateAutoRotateDependencies(
             boolean isFoldable, boolean autoRotateEnabled, boolean isDeviceStateConfigNonEmpty) {
         // init
