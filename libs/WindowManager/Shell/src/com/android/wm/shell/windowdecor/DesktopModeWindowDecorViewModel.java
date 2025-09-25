@@ -1216,6 +1216,16 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
         mCaptionTouchStatusListener = l;
     }
 
+    private void onCloseTask(int taskId) {
+        final WindowDecorationWrapper decoration = mWindowDecorByTaskId.get(taskId);
+        if (decoration == null) {
+            ProtoLog.e(WM_SHELL_WINDOW_DECORATION,
+                    "%s: onCloseTask(taskId=%d): decoration is null, ignoring", TAG, taskId);
+            return;
+        }
+        closeTask(decoration.getTaskInfo());
+    }
+
     /**
      * Closes a task.
      * This method closes a task as if the close button on the window decor is clicked.
@@ -1225,17 +1235,12 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
      * @param task Task to be closed.
      */
     public void closeTask(RunningTaskInfo task) {
+        final int taskId = task.taskId;
         if (mTaskOperations == null) {
             ProtoLog.e(WM_SHELL_WINDOW_DECORATION,
-                    "%s: handled close key gesture but mTaskOperations is null, ignoring", TAG);
+                    "%s: closeTask(taskId=%d): mTaskOperations is null, ignoring", TAG, taskId);
             return;
         }
-        ProtoLog.e(WM_SHELL_WINDOW_DECORATION,
-                "%s: close task %d vis key gesture", TAG, task.taskId);
-        onCloseTask(task.taskId);
-    }
-
-    private void onCloseTask(int taskId) {
         if (DesktopExperienceFlags
                 .CLOSE_FULLSCREEN_AND_SPLITSCREEN_KEYBOARD_SHORTCUT.isTrue()
                 && mLockTaskChangeListener.isTaskLocked()) {
@@ -1243,6 +1248,24 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                     "%s: closeTask(taskId=%d): isTaskLocked() is true, ignoring", TAG,
                     taskId);
             return;
+        }
+        if (DesktopExperienceFlags
+                .CLOSE_FULLSCREEN_AND_SPLITSCREEN_KEYBOARD_SHORTCUT.isTrue()) {
+            if (mDesktopModeCompatPolicy.shouldDisableDesktopEntryPoints(task)) {
+                ProtoLog.e(WM_SHELL_WINDOW_DECORATION,
+                        "%s: closeTask(taskId=%d): shouldDisableDesktopEntryPoints() is true, "
+                                + "ignoring",
+                        TAG,
+                        taskId);
+                return;
+            }
+        } else {
+            final WindowDecorationWrapper decoration = mWindowDecorByTaskId.get(taskId);
+            if (decoration == null) {
+                ProtoLog.e(WM_SHELL_WINDOW_DECORATION,
+                        "%s: closeTask(taskId=%d): decoration is null, ignoring", TAG, taskId);
+                return;
+            }
         }
         if (isTaskInSplitScreen(taskId)) {
             if (DesktopExperienceFlags
@@ -1254,31 +1277,24 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                 return;
             }
             ProtoLog.i(WM_SHELL_WINDOW_DECORATION,
-                    "%s: onCloseTask(taskId=%d): closing split screen", TAG, taskId);
+                    "%s: closeTask(taskId=%d): closing split screen", TAG, taskId);
             mSplitScreenController.moveTaskToFullscreen(getOtherSplitTask(taskId).taskId,
                     SplitScreenController.EXIT_REASON_DESKTOP_MODE);
             return;
         }
-        final WindowDecorationWrapper decoration = mWindowDecorByTaskId.get(taskId);
-        if (decoration == null) {
-            ProtoLog.e(WM_SHELL_WINDOW_DECORATION,
-                    "%s: onCloseTask(taskId=%d): decoration is null, ignoring", TAG, taskId);
-            return;
-        }
         if (DesktopExperienceFlags
                 .CLOSE_FULLSCREEN_AND_SPLITSCREEN_KEYBOARD_SHORTCUT.isTrue()
-                && decoration.getTaskInfo().getWindowingMode() == WINDOWING_MODE_FULLSCREEN) {
+                && task.getWindowingMode() == WINDOWING_MODE_FULLSCREEN) {
             ProtoLog.i(WM_SHELL_WINDOW_DECORATION,
-                    "%s: onCloseTask(taskId=%d): closing fullscreen task", TAG, taskId);
+                    "%s: closeTask(taskId=%d): closing fullscreen task", TAG, taskId);
             final WindowContainerTransaction wct = new WindowContainerTransaction();
-            wct.removeTask(decoration.getTaskInfo().token);
+            wct.removeTask(task.token);
             mTransitions.startTransition(WindowManager.TRANSIT_CLOSE, wct, null);
             return;
         }
         if (DesktopExperienceFlags
                 .ENABLE_DESKTOP_APP_HEADER_STATE_CHANGE_ANNOUNCEMENTS.isTrue()) {
-            final int nextFocusedTaskId = mDesktopTasksController.getNextFocusedTask(
-                    decoration.getTaskInfo());
+            final int nextFocusedTaskId = mDesktopTasksController.getNextFocusedTask(task);
             final WindowDecorationWrapper nextFocusedWindow =
                     mWindowDecorationFinder.apply(nextFocusedTaskId);
             if (nextFocusedWindow != null) {
@@ -1286,13 +1302,11 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
             }
         }
         ProtoLog.w(WM_SHELL_WINDOW_DECORATION,
-                "%s: onCloseTask(taskId=%d): closing desktop task", TAG, taskId);
+                "%s: closeTask(taskId=%d): closing desktop task", TAG, taskId);
         final WindowContainerTransaction wct = new WindowContainerTransaction();
         final Function1<IBinder, Unit> runOnTransitionStart =
-                mDesktopTasksController.onDesktopWindowClose(wct,
-                        decoration.getTaskInfo().displayId, decoration.getTaskInfo());
-        final IBinder transition = mTaskOperations.closeTask(
-                decoration.getTaskInfo().token, wct);
+                mDesktopTasksController.onDesktopWindowClose(wct, task.displayId, task);
+        final IBinder transition = mTaskOperations.closeTask(task.token, wct);
         if (transition != null && runOnTransitionStart != null) {
             runOnTransitionStart.invoke(transition);
         }

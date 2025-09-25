@@ -324,18 +324,11 @@ class DesktopModeWindowDecorViewModelTests : DesktopModeWindowDecorViewModelTest
     }
 
     @Test
-    fun testCloseTask_notInSplitScreen_closesTask() {
+    fun testCloseTask_desktop_closesTask() {
         desktopModeWindowDecorViewModel.setFreeformTaskTransitionStarter(
             mockFreeformTaskTransitionStarter
         )
         val decor = createOpenTaskDecoration(windowingMode = WINDOWING_MODE_FREEFORM)
-        val taskInfo = decor.taskInfo
-        whenever(mockSplitScreenController.isTaskInSplitScreen(eq(taskInfo.taskId)))
-            .thenReturn(false)
-        whenever(mockDesktopTasksController.getNextFocusedTask(eq(taskInfo))).thenReturn(-1)
-        whenever(mockDesktopTasksController.onDesktopWindowClose(any(), any(), any())).thenReturn {
-            binder: IBinder ->
-        }
 
         desktopModeWindowDecorViewModel.closeTask(decor.taskInfo)
 
