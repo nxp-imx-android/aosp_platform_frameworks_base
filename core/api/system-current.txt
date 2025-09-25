@@ -7812,6 +7812,7 @@ package android.hardware.usb {
     method @CheckResult @RequiresPermission(android.Manifest.permission.MANAGE_USB) public void resetUsbPort(@NonNull java.util.concurrent.Executor, @NonNull java.util.function.Consumer<java.lang.Integer>);
     method @RequiresPermission(android.Manifest.permission.MANAGE_USB) public void setRoles(int, int);
     method @CheckResult @RequiresPermission(android.Manifest.permission.MANAGE_USB) public boolean supportsComplianceWarnings();
+    method @FlaggedApi("android.hardware.usb.flags.enable_power_profile_reporting") public boolean supportsPartnerBc12Type();
     field public static final int ENABLE_LIMIT_POWER_TRANSFER_ERROR_INTERNAL = 1; // 0x1
     field public static final int ENABLE_LIMIT_POWER_TRANSFER_ERROR_NOT_SUPPORTED = 2; // 0x2
     field public static final int ENABLE_LIMIT_POWER_TRANSFER_ERROR_OTHER = 4; // 0x4
@@ -7843,6 +7844,7 @@ package android.hardware.usb {
     method public int getCurrentMode();
     method public int getCurrentPowerRole();
     method @Nullable public android.hardware.usb.DisplayPortAltModeInfo getDisplayPortAltModeInfo();
+    method @FlaggedApi("android.hardware.usb.flags.enable_power_profile_reporting") public int getPartnerBc12Type();
     method public int getPlugState();
     method public int getPowerBrickConnectionStatus();
     method public int getSupportedRoleCombinations();
@@ -7852,6 +7854,10 @@ package android.hardware.usb {
     method public boolean isPowerTransferLimited();
     method public boolean isRoleCombinationSupported(int, int);
     method public void writeToParcel(android.os.Parcel, int);
+    field @FlaggedApi("android.hardware.usb.flags.enable_power_profile_reporting") public static final int BC12_TYPE_CDP = 2; // 0x2
+    field @FlaggedApi("android.hardware.usb.flags.enable_power_profile_reporting") public static final int BC12_TYPE_DCP = 3; // 0x3
+    field @FlaggedApi("android.hardware.usb.flags.enable_power_profile_reporting") public static final int BC12_TYPE_SDP = 1; // 0x1
+    field @FlaggedApi("android.hardware.usb.flags.enable_power_profile_reporting") public static final int BC12_TYPE_UNKNOWN = 0; // 0x0
     field public static final int COMPLIANCE_WARNING_BC_1_2 = 3; // 0x3
     field public static final int COMPLIANCE_WARNING_DEBUG_ACCESSORY = 2; // 0x2
     field @FlaggedApi("android.hardware.usb.flags.enable_usb_data_compliance_warning") public static final int COMPLIANCE_WARNING_ENUMERATION_FAIL = 7; // 0x7

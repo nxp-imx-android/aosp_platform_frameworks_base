@@ -957,6 +957,8 @@ public class UsbPortManager implements IBinder.DeathRecipient {
                         portInfo.plugState,
                         portInfo.supportedAltModes,
                         portInfo.displayPortAltModeInfo,
+                        portInfo.supportsPartnerBc12Type,
+                        portInfo.partnerBc12Type,
                         pw);
             }
         } else {
@@ -978,6 +980,8 @@ public class UsbPortManager implements IBinder.DeathRecipient {
                         currentPortInfo.plugState,
                         currentPortInfo.supportedAltModes,
                         currentPortInfo.displayPortAltModeInfo,
+                        currentPortInfo.supportsPartnerBc12Type,
+                        currentPortInfo.partnerBc12Type,
                         pw);
             }
         }
@@ -1028,6 +1032,7 @@ public class UsbPortManager implements IBinder.DeathRecipient {
             int plugState,
             int supportedAltModes,
             DisplayPortAltModeInfo displayPortAltModeInfo,
+            boolean supportsPartnerBc12Type, int partnerBc12Type,
             IndentingPrintWriter pw) {
         // Only allow mode switch capability for dual role ports.
         // Validate that the current mode matches the supported modes we expect.
@@ -1083,14 +1088,16 @@ public class UsbPortManager implements IBinder.DeathRecipient {
                 supportsEnableContaminantPresenceProtection,
                 supportsEnableContaminantPresenceDetection,
                 supportsComplianceWarnings,
-                supportedAltModes);
+                supportedAltModes,
+                supportsPartnerBc12Type);
             portInfo.setStatus(currentMode, canChangeMode,
                     currentPowerRole, canChangePowerRole,
                     currentDataRole, canChangeDataRole,
                     supportedRoleCombinations, contaminantProtectionStatus,
                     contaminantDetectionStatus, usbDataStatus,
                     powerTransferLimited, powerBrickConnectionStatus,
-                    complianceWarnings, plugState, displayPortAltModeInfo);
+                    complianceWarnings, plugState, displayPortAltModeInfo,
+                    partnerBc12Type);
             mPorts.put(portId, portInfo);
         } else {
             // Validate that ports aren't changing definition out from under us.
@@ -1128,7 +1135,8 @@ public class UsbPortManager implements IBinder.DeathRecipient {
                     supportedRoleCombinations, contaminantProtectionStatus,
                     contaminantDetectionStatus, usbDataStatus,
                     powerTransferLimited, powerBrickConnectionStatus,
-                    complianceWarnings, plugState, displayPortAltModeInfo)) {
+                    complianceWarnings, plugState, displayPortAltModeInfo,
+                    partnerBc12Type)) {
                 portInfo.mDisposition = PortInfo.DISPOSITION_CHANGED;
             } else {
                 portInfo.mDisposition = PortInfo.DISPOSITION_READY;
@@ -1446,7 +1454,8 @@ public class UsbPortManager implements IBinder.DeathRecipient {
                 boolean supportsEnableContaminantPresenceProtection,
                 boolean supportsEnableContaminantPresenceDetection,
                 boolean supportsComplianceWarnings,
-                int supportedAltModes) {
+                int supportedAltModes,
+                boolean supportsPartnerBc12Type) {
             UsbPort.Builder builder = new UsbPort.Builder();
             builder.setId(portId);
             builder.setUsbManager(usbManager);
@@ -1458,6 +1467,7 @@ public class UsbPortManager implements IBinder.DeathRecipient {
                     supportsEnableContaminantPresenceDetection);
             builder.setSupportsComplianceWarnings(supportsComplianceWarnings);
             builder.setSupportedAltModes(supportedAltModes);
+            builder.setSupportsPartnerBc12Type(supportsPartnerBc12Type);
             mUsbPort = builder.build();
             mComplianceWarningChange = COMPLIANCE_WARNING_UNCHANGED;
             mDisplayPortAltModeChange = ALTMODE_INFO_UNCHANGED;
@@ -1593,7 +1603,8 @@ public class UsbPortManager implements IBinder.DeathRecipient {
                 int contaminantDetectionStatus, int usbDataStatus,
                 boolean powerTransferLimited, int powerBrickConnectionStatus,
                 @NonNull int[] complianceWarnings,
-                int plugState, DisplayPortAltModeInfo displayPortAltModeInfo) {
+                int plugState, DisplayPortAltModeInfo displayPortAltModeInfo,
+                int partnerBc12Type) {
             boolean dispositionChanged = false;
             boolean complianceChanged = false;
             boolean displayPortChanged = false;
@@ -1639,6 +1650,7 @@ public class UsbPortManager implements IBinder.DeathRecipient {
                 builder.setComplianceWarnings(complianceWarnings);
                 builder.setPlugState(plugState);
                 builder.setDisplayPortAltModeInfo(displayPortAltModeInfo);
+                builder.setPartnerBc12Type(partnerBc12Type);
                 mUsbPortStatus = builder.build();
                 dispositionChanged = true;
             // Case used in order to send compliance warning broadcast or signal DisplayPort
@@ -1656,6 +1668,7 @@ public class UsbPortManager implements IBinder.DeathRecipient {
                 builder.setComplianceWarnings(complianceWarnings);
                 builder.setPlugState(plugState);
                 builder.setDisplayPortAltModeInfo(displayPortAltModeInfo);
+                builder.setPartnerBc12Type(partnerBc12Type);
                 mUsbPortStatus = builder.build();
             }
 

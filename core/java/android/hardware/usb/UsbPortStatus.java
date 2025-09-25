@@ -56,6 +56,7 @@ public final class UsbPortStatus implements Parcelable {
      * is null if the device does not support DisplayPort Alt Mode.
      */
     private final @Nullable DisplayPortAltModeInfo mDisplayPortAltModeInfo;
+    private final @Bc12Type int mPartnerBc12Type;
 
 
     /**
@@ -385,6 +386,37 @@ public final class UsbPortStatus implements Parcelable {
      */
     public static final int PLUG_STATE_PLUGGED_ORIENTATION_FLIPPED = 4;
 
+    /**
+     * Indicates that the type of charger as defined by the Battery Charging Specification,
+     * Revision 1.2 (BC 1.2) has not been identified.
+     *
+     * <b><Note:</b> The BC 1.2 specification can be found <a href="https://www.usb.org/document-library/battery-charging-v12-spec-and-adopters-agreement">here</a>
+     *
+     */
+    @FlaggedApi(Flags.FLAG_ENABLE_POWER_PROFILE_REPORTING)
+    public static final int BC12_TYPE_UNKNOWN = 0;
+
+    /**
+     * Indicates that the BC 1.2 charger type is a Standard Downstream Port (SDP) as defined by
+     * the BC 1.2 specification.
+     */
+    @FlaggedApi(Flags.FLAG_ENABLE_POWER_PROFILE_REPORTING)
+    public static final int BC12_TYPE_SDP = 1;
+
+    /**
+     * Indicates that the BC 1.2 charger type is Charging Downstream Port (CDP) as defined by the
+     * BC 1.2 specification.
+     */
+    @FlaggedApi(Flags.FLAG_ENABLE_POWER_PROFILE_REPORTING)
+    public static final int BC12_TYPE_CDP = 2;
+
+    /**
+     * Indicates that the BC 1.2 charger type is Dedicated Charging Port (DCP) as defined by the
+     * BC 1.2 specification.
+     */
+    @FlaggedApi(Flags.FLAG_ENABLE_POWER_PROFILE_REPORTING)
+    public static final int BC12_TYPE_DCP = 3;
+
     @IntDef(prefix = { "CONTAMINANT_DETECTION_" }, value = {
             CONTAMINANT_DETECTION_NOT_SUPPORTED,
             CONTAMINANT_DETECTION_DISABLED,
@@ -462,6 +494,15 @@ public final class UsbPortStatus implements Parcelable {
     @Retention(RetentionPolicy.SOURCE)
     @interface PowerBrickConnectionStatus{}
 
+    @IntDef(prefix = { "BC12_TYPE_" }, value = {
+            BC12_TYPE_UNKNOWN,
+            BC12_TYPE_SDP,
+            BC12_TYPE_CDP,
+            BC12_TYPE_DCP,
+    })
+    @Retention(RetentionPolicy.SOURCE)
+    @interface Bc12Type{}
+
     /** @hide */
     public UsbPortStatus(Builder builder) {
         mCurrentMode = builder.mCurrentMode;
@@ -476,6 +517,7 @@ public final class UsbPortStatus implements Parcelable {
         mComplianceWarnings = builder.mComplianceWarnings;
         mPlugState = builder.mPlugState;
         mDisplayPortAltModeInfo = builder.mDisplayPortAltModeInfo;
+        mPartnerBc12Type = builder.mPartnerBc12Type;
     }
 
     /** @hide */
@@ -513,6 +555,7 @@ public final class UsbPortStatus implements Parcelable {
         mComplianceWarnings = complianceWarnings;
         mPlugState = plugState;
         mDisplayPortAltModeInfo = displayPortAltModeInfo;
+        mPartnerBc12Type = BC12_TYPE_UNKNOWN;
     }
 
     /** @hide */
@@ -701,6 +744,19 @@ public final class UsbPortStatus implements Parcelable {
         return (mDisplayPortAltModeInfo == null) ? null : mDisplayPortAltModeInfo;
     }
 
+    /**
+     * Returns the BC 1.2 Type of the connected port partner.
+     *
+     * @return a value of {@link #BC12_TYPE_UNKNOWN}, {@link #BC12_TYPE_SDP},
+     *          {@link #BC12_TYPE_CDP}, or {@link #BC12_TYPE_DCP} when
+     *          the USB port is capable of reporting the port partner BC 1.2 type,
+     *          {@link #BC12_TYPE_UNKNOWN} otherwise.
+     */
+    @FlaggedApi(Flags.FLAG_ENABLE_POWER_PROFILE_REPORTING)
+    public @Bc12Type int getPartnerBc12Type() {
+        return mPartnerBc12Type;
+    }
+
     @NonNull
     @Override
     public String toString() {
@@ -727,6 +783,8 @@ public final class UsbPortStatus implements Parcelable {
                         + getPlugState()
                 + ", displayPortAltModeInfo="
                         + mDisplayPortAltModeInfo
+                + ", bc12Type="
+                        + UsbPort.bc12TypeToString(mPartnerBc12Type)
                 + "}");
         return mString.toString();
     }
@@ -755,12 +813,14 @@ public final class UsbPortStatus implements Parcelable {
             dest.writeBoolean(true);
             mDisplayPortAltModeInfo.writeToParcel(dest, 0);
         }
+        dest.writeInt(mPartnerBc12Type);
     }
 
     public static final @NonNull Parcelable.Creator<UsbPortStatus> CREATOR =
             new Parcelable.Creator<UsbPortStatus>() {
         @Override
         public UsbPortStatus createFromParcel(Parcel in) {
+            UsbPortStatus.Builder builder = new UsbPortStatus.Builder();
             int currentMode = in.readInt();
             int currentPowerRole = in.readInt();
             int currentDataRole = in.readInt();
@@ -779,11 +839,22 @@ public final class UsbPortStatus implements Parcelable {
             } else {
                 displayPortAltModeInfo = null;
             }
-            return new UsbPortStatus(currentMode, currentPowerRole, currentDataRole,
-                    supportedRoleCombinations, contaminantProtectionStatus,
-                    contaminantDetectionStatus, usbDataStatus, powerTransferLimited,
-                    powerBrickConnectionStatus,
-                    complianceWarnings, plugState, displayPortAltModeInfo);
+            int bc12Type = in.readInt();
+
+            builder.setCurrentMode(currentMode);
+            builder.setCurrentRoles(currentPowerRole, currentDataRole);
+            builder.setSupportedRoleCombinations(supportedRoleCombinations);
+            builder.setContaminantStatus(contaminantProtectionStatus,
+                    contaminantDetectionStatus);
+            builder.setPowerTransferLimited(powerTransferLimited);
+            builder.setUsbDataStatus(usbDataStatus);
+            builder.setPowerBrickConnectionStatus(powerBrickConnectionStatus);
+            builder.setComplianceWarnings(complianceWarnings);
+            builder.setPlugState(plugState);
+            builder.setDisplayPortAltModeInfo(displayPortAltModeInfo);
+            builder.setPartnerBc12Type(bc12Type);
+
+            return new UsbPortStatus(builder);
         }
 
         @Override
@@ -810,6 +881,7 @@ public final class UsbPortStatus implements Parcelable {
         private @ComplianceWarning int[] mComplianceWarnings;
         private @PlugState int mPlugState;
         private @Nullable DisplayPortAltModeInfo mDisplayPortAltModeInfo;
+        private @Bc12Type int mPartnerBc12Type;
 
         public Builder() {
             mCurrentMode = MODE_NONE;
@@ -822,6 +894,7 @@ public final class UsbPortStatus implements Parcelable {
             mComplianceWarnings = new int[] {};
             mPlugState = PLUG_STATE_UNKNOWN;
             mDisplayPortAltModeInfo = null;
+            mPartnerBc12Type = BC12_TYPE_UNKNOWN;
         }
 
         /**
@@ -940,6 +1013,17 @@ public final class UsbPortStatus implements Parcelable {
         public Builder setDisplayPortAltModeInfo(
                 @Nullable DisplayPortAltModeInfo displayPortAltModeInfo) {
             mDisplayPortAltModeInfo = displayPortAltModeInfo;
+            return this;
+        }
+
+        /**
+         * Sets the BC 1.2 Type of {@link UsbPortStatus}
+         *
+         * @return Instance of {@link Builder}
+         */
+        @NonNull
+        public Builder setPartnerBc12Type(@Bc12Type int bc12Type) {
+            mPartnerBc12Type = bc12Type;
             return this;
         }
 

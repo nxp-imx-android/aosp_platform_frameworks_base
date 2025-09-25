@@ -698,6 +698,13 @@ public final class UsbPortAidl implements UsbPortHal {
                         .setSupportedAltModes(toSupportedAltModesInt(current.supportedAltModes))
                         .setDisplayPortAltModeInfo(formatDisplayPortAltModeInfo(
                             current.supportedAltModes));
+                if (getInterfaceVersion() >= 4) {
+                    builder.setSupportsPartnerBc12Type(current.supportsPartnerBc12Type);
+                    if (current.supportsPartnerBc12Type &&
+                        current.partnerStatus != null) {
+                        builder.setPartnerBc12Type(current.partnerStatus.bc12Type);
+                    }
+                }
 
                 newPortInfo.add(builder.build());
                 UsbPortManager.logAndPrint(Log.INFO, mPw, "ClientCallback AIDL V1: "

@@ -47,6 +47,8 @@ public final class RawPortInfo implements Parcelable {
     public int plugState;
     public int supportedAltModes;
     public DisplayPortAltModeInfo displayPortAltModeInfo;
+    public boolean supportsPartnerBc12Type;
+    public int partnerBc12Type;
 
     private RawPortInfo(Builder builder) {
         this.portId = builder.mPortId;
@@ -72,6 +74,8 @@ public final class RawPortInfo implements Parcelable {
         this.plugState = builder.mPlugState;
         this.supportedAltModes = builder.mSupportedAltModes;
         this.displayPortAltModeInfo = builder.mDisplayPortAltModeInfo;
+        this.supportsPartnerBc12Type = builder.mSupportsPartnerBc12Type;
+        this.partnerBc12Type = builder.mPartnerBc12Type;
     }
 
     private RawPortInfo(Parcel in) {
@@ -100,6 +104,9 @@ public final class RawPortInfo implements Parcelable {
         } else {
             this.displayPortAltModeInfo = null;
         }
+        this.supportsPartnerBc12Type = in.readByte() != 0;
+        this.partnerBc12Type = in.readInt();
+
     }
 
     @Override
@@ -132,6 +139,8 @@ public final class RawPortInfo implements Parcelable {
         if ((supportedAltModes & UsbPort.FLAG_ALT_MODE_TYPE_DISPLAYPORT) != 0) {
             displayPortAltModeInfo.writeToParcel(dest, 0);
         }
+        dest.writeBoolean(supportsPartnerBc12Type);
+        dest.writeInt(partnerBc12Type);
     }
 
     public static final Parcelable.Creator<RawPortInfo> CREATOR =
@@ -169,6 +178,8 @@ public final class RawPortInfo implements Parcelable {
         private int mPlugState;
         private int mSupportedAltModes;
         private DisplayPortAltModeInfo mDisplayPortAltModeInfo;
+        private boolean mSupportsPartnerBc12Type;
+        private int mPartnerBc12Type;
 
         public Builder(String portId) {
             this.mPortId = portId;
@@ -192,6 +203,8 @@ public final class RawPortInfo implements Parcelable {
             mPlugState = UsbPortStatus.PLUG_STATE_UNKNOWN;
             mSupportedAltModes = 0;
             mDisplayPortAltModeInfo = null;
+            mSupportsPartnerBc12Type = false;
+            mPartnerBc12Type = UsbPortStatus.BC12_TYPE_UNKNOWN;
         }
 
         /**
@@ -391,6 +404,26 @@ public final class RawPortInfo implements Parcelable {
          */
         public Builder setDisplayPortAltModeInfo(DisplayPortAltModeInfo val) {
             mDisplayPortAltModeInfo = val;
+            return this;
+        }
+
+        /**
+         * Sets the partner BC 1.2 type reporting capability of {@link RawPortInfo}
+         *
+         * @return instance of {@link Builder}
+         */
+        public Builder setSupportsPartnerBc12Type(boolean val) {
+            mSupportsPartnerBc12Type = val;
+            return this;
+        }
+
+        /**
+         * Sets the current partner BC 1.2 type of {@link RawPortInfo}
+         *
+         * @return instance of {@link Builder}
+         */
+        public Builder setPartnerBc12Type(int val) {
+            mPartnerBc12Type = val;
             return this;
         }
 
