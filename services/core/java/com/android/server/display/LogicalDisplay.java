@@ -45,12 +45,14 @@ import com.android.server.display.feature.flags.Flags;
 import com.android.server.display.layout.Layout;
 import com.android.server.display.mode.DisplayModeDirector;
 import com.android.server.display.mode.SyntheticModeManager;
+import com.android.server.display.utils.DebugUtils;
 import com.android.server.wm.utils.InsetUtils;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Arrays;
 import java.util.Objects;
+import java.util.concurrent.Executor;
 
 /**
  * Describes how a logical display is configured.
@@ -80,6 +82,11 @@ import java.util.Objects;
  */
 final class LogicalDisplay {
     private static final String TAG = "LogicalDisplay";
+
+    // To enable these logs, run:
+    // 'adb shell setprop log.tag.LogicalDisplay DEBUG && adb reboot'
+    private static final boolean DEBUG = DebugUtils.isDebuggable(TAG);
+
     // The layer stack we use when the display has been blanked to prevent any
     // of its content from appearing.
     private static final int BLANK_LAYER_STACK = -1;
@@ -752,23 +759,24 @@ final class LogicalDisplay {
     /**
      * Applies the layer stack and transformation to the given display device
      * so that it shows the contents of this logical display.
-     *
+     * <p>
      * We know that the given display device is only ever showing the contents of
      * a single logical display, so this method is expected to blow away all of its
      * transformation properties to make it happen regardless of what the
      * display device was previously showing.
-     *
+     * <p>
      * The caller must have an open Surface transaction.
-     *
+     * <p>
      * The display device may not be the primary display device, in the case
      * where the display is being mirrored.
      *
-     * @param device The display device to modify.
+     * @param device    The display device to modify.
      * @param isBlanked True if the device is being blanked.
+     * @param executor  Enables callback execution
      */
     public void configureDisplayLocked(SurfaceControl.Transaction t,
-            DisplayDevice device,
-            boolean isBlanked) {
+                                       DisplayDevice device,
+                                       boolean isBlanked, Executor executor) {
         // Set the layer stack.
         device.setLayerStackLocked(t, isBlanked ? BLANK_LAYER_STACK : mLayerStack, mDisplayId);
         // Also inform whether the device is the same one sent to inputflinger for its layerstack.
@@ -904,9 +912,32 @@ final class LogicalDisplay {
         mDisplayPosition.set(mTempDisplayRect.left, mTempDisplayRect.top);
 
         if (mSyncedResolutionSwitchEnabled || displayDeviceInfo.type == Display.TYPE_VIRTUAL) {
+            if (DEBUG) {
+                Slog.d(TAG, "Configuring Display Size. width=" + displayLogicalWidth
+                        + " height=" + displayLogicalHeight);
+            }
             device.configureDisplaySizeLocked(t);
         }
+        if (DEBUG) {
+            Slog.d(TAG, "Setting Projection. orientation=" + orientation
+                    + " mTempLayerStackRect=" + mTempLayerStackRect + " mTempDisplayRect="
+                    + mTempDisplayRect + ".");
+        }
         device.setProjectionLocked(t, orientation, mTempLayerStackRect, mTempDisplayRect);
+        if (DEBUG) {
+            final int requestedLogicalWidth = displayLogicalWidth;
+            final int requestedLogicalHeight = displayLogicalHeight;
+            final int requestedOrientation = orientation;
+            final Rect requestedDisplayRect = new Rect(mTempDisplayRect);
+            final Rect requestedLayerStackRect = new Rect(mTempLayerStackRect);
+            t.addTransactionCommittedListener(executor, () -> {
+                Slog.d(TAG, "Committed transaction for display configuration - width="
+                        + requestedLogicalWidth + " height=" + requestedLogicalHeight
+                        + " orientation=" + requestedOrientation + " mTempLayerStackRect="
+                        + requestedLayerStackRect + " mTempDisplayRect=" + requestedDisplayRect
+                        + ".");
+            });
+        }
         device.configureSurfaceLocked(t);
     }
 

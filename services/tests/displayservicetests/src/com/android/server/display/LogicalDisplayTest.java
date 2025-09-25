@@ -57,6 +57,7 @@ import org.mockito.AdditionalAnswers;
 
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.concurrent.Executor;
 
 @SmallTest
 public class LogicalDisplayTest {
@@ -78,6 +79,7 @@ public class LogicalDisplayTest {
     private DisplayDeviceRepository mDeviceRepo;
     private SyntheticModeManager mSyntheticModeManager;
     private final DisplayDeviceInfo mDisplayDeviceInfo = new DisplayDeviceInfo();
+    private Executor mExecutor = mock(Executor.class);
 
     @Before
     public void setUp() {
@@ -136,7 +138,7 @@ public class LogicalDisplayTest {
         assertEquals(DISPLAY_HEIGHT, originalDisplayInfo.logicalHeight);
 
         SurfaceControl.Transaction t = mock(SurfaceControl.Transaction.class);
-        mLogicalDisplay.configureDisplayLocked(t, mDisplayDevice, false);
+        mLogicalDisplay.configureDisplayLocked(t, mDisplayDevice, false, mExecutor);
         assertEquals(new Point(0, 0), mLogicalDisplay.getDisplayPosition());
 
         /*
@@ -157,7 +159,7 @@ public class LogicalDisplayTest {
         displayInfo.logicalHeight = DISPLAY_HEIGHT / 2;
         mLogicalDisplay.setDisplayInfoOverrideFromWindowManagerLocked(displayInfo);
 
-        mLogicalDisplay.configureDisplayLocked(t, mDisplayDevice, false);
+        mLogicalDisplay.configureDisplayLocked(t, mDisplayDevice, false, mExecutor);
         assertEquals(new Point(0, DISPLAY_HEIGHT / 4), mLogicalDisplay.getDisplayPosition());
     }
 
@@ -182,7 +184,7 @@ public class LogicalDisplayTest {
         assertEquals(DISPLAY_HEIGHT, originalDisplayInfo.logicalHeight);
 
         SurfaceControl.Transaction t = mock(SurfaceControl.Transaction.class);
-        mLogicalDisplay.configureDisplayLocked(t, mDisplayDevice, false);
+        mLogicalDisplay.configureDisplayLocked(t, mDisplayDevice, false, mExecutor);
 
         // Applications need to think that they are shown on a display with square pixels.
         // as applications can be displayed on multiple displays simultaneously (mirrored).
@@ -211,7 +213,7 @@ public class LogicalDisplayTest {
         assertEquals(DISPLAY_HEIGHT, originalDisplayInfo.logicalHeight);
 
         SurfaceControl.Transaction t = mock(SurfaceControl.Transaction.class);
-        mLogicalDisplay.configureDisplayLocked(t, mDisplayDevice, false);
+        mLogicalDisplay.configureDisplayLocked(t, mDisplayDevice, false, mExecutor);
 
         // Applications need to think that they are shown on a display with square pixels.
         // as applications can be displayed on multiple displays simultaneously (mirrored).
@@ -236,7 +238,7 @@ public class LogicalDisplayTest {
         mLogicalDisplay.updateLocked(mDeviceRepo, mSyntheticModeManager);
 
         SurfaceControl.Transaction t = mock(SurfaceControl.Transaction.class);
-        mLogicalDisplay.configureDisplayLocked(t, mDisplayDevice, false);
+        mLogicalDisplay.configureDisplayLocked(t, mDisplayDevice, false, mExecutor);
 
         assertEquals(new Point(0, 75), mLogicalDisplay.getDisplayPosition());
     }
@@ -261,7 +263,7 @@ public class LogicalDisplayTest {
         assertEquals(DISPLAY_HEIGHT, originalDisplayInfo.logicalHeight);
 
         SurfaceControl.Transaction t = mock(SurfaceControl.Transaction.class);
-        mLogicalDisplay.configureDisplayLocked(t, mDisplayDevice, false);
+        mLogicalDisplay.configureDisplayLocked(t, mDisplayDevice, false, mExecutor);
 
         assertEquals(new Point(0, 0), mLogicalDisplay.getDisplayPosition());
     }
@@ -298,7 +300,7 @@ public class LogicalDisplayTest {
          */
 
         SurfaceControl.Transaction t = mock(SurfaceControl.Transaction.class);
-        mLogicalDisplay.configureDisplayLocked(t, mDisplayDevice, false);
+        mLogicalDisplay.configureDisplayLocked(t, mDisplayDevice, false, mExecutor);
 
         assertEquals(new Point(75, 0), mLogicalDisplay.getDisplayPosition());
     }
@@ -324,7 +326,7 @@ public class LogicalDisplayTest {
         mLogicalDisplay.updateLocked(mDeviceRepo, mSyntheticModeManager);
 
         SurfaceControl.Transaction t = mock(SurfaceControl.Transaction.class);
-        mLogicalDisplay.configureDisplayLocked(t, mDisplayDevice, false);
+        mLogicalDisplay.configureDisplayLocked(t, mDisplayDevice, false, mExecutor);
 
         // Applications need to think that they are shown on a display with square pixels.
         // as applications can be displayed on multiple displays simultaneously (mirrored).
@@ -352,7 +354,7 @@ public class LogicalDisplayTest {
         assertEquals(DISPLAY_HEIGHT * 2, originalDisplayInfo.logicalHeight);
 
         SurfaceControl.Transaction t = mock(SurfaceControl.Transaction.class);
-        mLogicalDisplay.configureDisplayLocked(t, mDisplayDevice, false);
+        mLogicalDisplay.configureDisplayLocked(t, mDisplayDevice, false, mExecutor);
 
         // Applications need to think that they are shown on a display with square pixels.
         // as applications can be displayed on multiple displays simultaneously (mirrored).
@@ -385,12 +387,12 @@ public class LogicalDisplayTest {
         Point expectedPosition = new Point();
 
         SurfaceControl.Transaction t = mock(SurfaceControl.Transaction.class);
-        mLogicalDisplay.configureDisplayLocked(t, mDisplayDevice, false);
+        mLogicalDisplay.configureDisplayLocked(t, mDisplayDevice, false, mExecutor);
         assertEquals(expectedPosition, mLogicalDisplay.getDisplayPosition());
 
         expectedPosition.set(20, 40);
         mLogicalDisplay.setDisplayOffsetsLocked(20, 40);
-        mLogicalDisplay.configureDisplayLocked(t, mDisplayDevice, false);
+        mLogicalDisplay.configureDisplayLocked(t, mDisplayDevice, false, mExecutor);
         assertEquals(expectedPosition, mLogicalDisplay.getDisplayPosition());
 
         DisplayInfo displayInfo = new DisplayInfo();
@@ -403,7 +405,7 @@ public class LogicalDisplayTest {
         expectedPosition.set(115, -20);
         displayInfo.rotation = Surface.ROTATION_90;
         mLogicalDisplay.setDisplayInfoOverrideFromWindowManagerLocked(displayInfo);
-        mLogicalDisplay.configureDisplayLocked(t, mDisplayDevice, false);
+        mLogicalDisplay.configureDisplayLocked(t, mDisplayDevice, false, mExecutor);
         assertEquals(expectedPosition, mLogicalDisplay.getDisplayPosition());
 
         expectedPosition.set(40, -20);
@@ -413,7 +415,7 @@ public class LogicalDisplayTest {
         displayInfo.logicalHeight = DISPLAY_WIDTH;
         displayInfo.rotation = Surface.ROTATION_90;
         mLogicalDisplay.setDisplayInfoOverrideFromWindowManagerLocked(displayInfo);
-        mLogicalDisplay.configureDisplayLocked(t, mDisplayDevice, false);
+        mLogicalDisplay.configureDisplayLocked(t, mDisplayDevice, false, mExecutor);
         assertEquals(expectedPosition, mLogicalDisplay.getDisplayPosition());
     }
 
@@ -423,7 +425,7 @@ public class LogicalDisplayTest {
                 /*isSyncedResolutionSwitchEnabled=*/ true, true, false);
         mLogicalDisplay.updateLocked(mDeviceRepo, mSyntheticModeManager);
         SurfaceControl.Transaction t = mock(SurfaceControl.Transaction.class);
-        mLogicalDisplay.configureDisplayLocked(t, mDisplayDevice, false);
+        mLogicalDisplay.configureDisplayLocked(t, mDisplayDevice, false, mExecutor);
         verify(mDisplayDevice).configureDisplaySizeLocked(eq(t));
     }
 
@@ -442,28 +444,28 @@ public class LogicalDisplayTest {
             }
         };
         SurfaceControl.Transaction t = mock(SurfaceControl.Transaction.class);
-        mLogicalDisplay.configureDisplayLocked(t, displayDevice, false);
+        mLogicalDisplay.configureDisplayLocked(t, displayDevice, false, mExecutor);
         verify(t).setDisplayFlags(any(), eq(SurfaceControl.DISPLAY_RECEIVES_INPUT));
         reset(t);
 
         mDisplayDeviceInfo.touch = DisplayDeviceInfo.TOUCH_NONE;
-        mLogicalDisplay.configureDisplayLocked(t, displayDevice, false);
+        mLogicalDisplay.configureDisplayLocked(t, displayDevice, false, mExecutor);
         verify(t).setDisplayFlags(any(), eq(0));
         reset(t);
 
         mDisplayDeviceInfo.touch = DisplayDeviceInfo.TOUCH_VIRTUAL;
-        mLogicalDisplay.configureDisplayLocked(t, displayDevice, false);
+        mLogicalDisplay.configureDisplayLocked(t, displayDevice, false, mExecutor);
         verify(t).setDisplayFlags(any(), eq(SurfaceControl.DISPLAY_RECEIVES_INPUT));
         reset(t);
 
         mLogicalDisplay.setEnabledLocked(false);
-        mLogicalDisplay.configureDisplayLocked(t, displayDevice, false);
+        mLogicalDisplay.configureDisplayLocked(t, displayDevice, false, mExecutor);
         verify(t).setDisplayFlags(any(), eq(0));
         reset(t);
 
         mLogicalDisplay.setEnabledLocked(true);
         mDisplayDeviceInfo.touch = DisplayDeviceInfo.TOUCH_EXTERNAL;
-        mLogicalDisplay.configureDisplayLocked(t, displayDevice, false);
+        mLogicalDisplay.configureDisplayLocked(t, displayDevice, false, mExecutor);
         verify(t).setDisplayFlags(any(), eq(SurfaceControl.DISPLAY_RECEIVES_INPUT));
         reset(t);
     }

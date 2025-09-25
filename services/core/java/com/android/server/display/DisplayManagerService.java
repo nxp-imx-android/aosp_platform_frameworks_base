@@ -3618,7 +3618,8 @@ public final class DisplayManagerService extends SystemService {
                     + device.getDisplayDeviceInfoLocked());
             return;
         }
-        display.configureDisplayLocked(t, device, info.state == Display.STATE_OFF);
+        display.configureDisplayLocked(t, device, info.state == Display.STATE_OFF,
+                mHandlerExecutor);
         final Optional<Integer> viewportType = getViewportType(info);
         if (viewportType.isPresent()) {
             populateViewportLocked(viewportType.get(), display.getDisplayIdLocked(), device, info);
