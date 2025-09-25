@@ -8486,13 +8486,6 @@ final class ActivityRecord extends WindowToken {
      *         can't or the app handles the specific configuration that is changing.
      */
     boolean ensureActivityConfiguration(boolean ignoreVisibility) {
-        final Task rootTask = getRootTask();
-        if (rootTask.mConfigWillChange) {
-            ProtoLog.v(WM_DEBUG_CONFIGURATION, "Skipping config check "
-                    + "(will change): %s", this);
-            return true;
-        }
-
         // We don't worry about activities that are finishing.
         if (finishing) {
             ProtoLog.v(WM_DEBUG_CONFIGURATION, "Configuration doesn't matter "
