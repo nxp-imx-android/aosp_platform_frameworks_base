@@ -18,6 +18,7 @@ package android.os;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.app.LoadedApk;
 import android.content.pm.ApplicationInfo;
 import android.net.LocalSocket;
 import android.net.LocalSocketAddress;
@@ -29,6 +30,7 @@ import com.android.internal.os.Zygote;
 import java.io.FileDescriptor;
 import java.io.IOException;
 import java.util.Map;
+import java.util.UUID;
 
 /**
  * Maintains communication state with the native zygote processes. This class is responsible
@@ -70,6 +72,12 @@ public class NativeZygoteProcess implements IZygoteProcess {
             FileDescriptor fd, int uid, int gid, long startSeq, String packageName, String niceName,
             int targetSdkVersion, boolean startChildZygote, int runtimeFlags, String seInfo);
 
+    private static native int nativeStartNativeChildZygote(
+            FileDescriptor parentFd, int uid, int gid, String niceName, String seInfo,
+            int targetSdkVersion, int runtimeFlags, String serverAddress, int uidRangeStart,
+            int uidRangeEnd, String allowedLibPath, String librarySearchPaths, String libraryPath,
+            String preloadFunc);
+
     @Override
     public final Process.ProcessStartResult start(@NonNull final String processClass,
                                                   final String niceName,
@@ -109,6 +117,44 @@ public class NativeZygoteProcess implements IZygoteProcess {
         result.pid = pid;
         result.usingWrapper = false;
         return result;
+    }
+
+    @Override
+    public ChildZygoteProcess startChildZygote(final String processClass,
+                                               final String niceName,
+                                               int uid, int gid, int[] gids,
+                                               int runtimeFlags,
+                                               String seInfo,
+                                               String abi,
+                                               String acceptedAbiList,
+                                               String instructionSet,
+                                               int uidRangeStart,
+                                               int uidRangeEnd,
+                                               ApplicationInfo appInfo) {
+        // Create an unguessable address in the global abstract namespace.
+        String serverAddress = processClass + "/" + UUID.randomUUID().toString();
+        // The address of abstract socket should be prefixed with '@'.  LocalSocket.connect()
+        // internally adds a leading null-byte, but we have to explicitly add '@' when passing the
+        // path to Native Zygote over the JNI code.
+        String serverAddressForNative = "@" + serverAddress;
+
+        LoadedApk.LinkerNamespaceParams params = LoadedApk.createLinkerNamespaceParams(appInfo);
+
+        try {
+            connectToZygote();
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to connect to socket", e);
+        }
+
+        int pid = nativeStartNativeChildZygote(mSocket.getFileDescriptor(), uid, gid, niceName,
+                seInfo, appInfo.targetSdkVersion, runtimeFlags, serverAddressForNative,
+                uidRangeStart, uidRangeEnd, params.permittedLibsDir, params.libPath,
+                appInfo.zygotePreloadNativeLib, appInfo.zygotePreloadNativeFunc);
+        if (pid == -1) {
+            throw new RuntimeException("Failed to fork a native process");
+        }
+        return ChildZygoteProcess.createNativeChildZygoteProcess(
+                new LocalSocketAddress(serverAddress), pid, uid);
     }
 
     @Override

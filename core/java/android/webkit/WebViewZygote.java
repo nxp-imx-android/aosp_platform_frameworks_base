@@ -120,7 +120,8 @@ public class WebViewZygote {
                     TextUtils.join(",", Build.SUPPORTED_ABIS),
                     null, // instructionSet
                     Process.FIRST_ISOLATED_UID,
-                    Integer.MAX_VALUE); // TODO(b/123615476) deal with user-id ranges properly
+                    Integer.MAX_VALUE,  // TODO(b/123615476) deal with user-id ranges properly
+                    sPackage.applicationInfo);
             ZygoteProcess.waitForConnectionToZygote(
                     sZygote.getZygoteProcessAsManaged().getPrimarySocketAddress());
             sZygote.getZygoteProcessAsManaged().preloadApp(sPackage.applicationInfo, abi);
