@@ -182,7 +182,7 @@ class CommunalTransitionAnimatorControllerTest : SysuiTestCase() {
 
                 underTest.onTransitionAnimationEnd(isExpandingFullyAbove = true)
                 assertFalse(launching!!)
-                assertThat(scene).isEqualTo(Scenes.Lockscreen)
+                assertThat(scene).isEqualTo(Scenes.Communal)
                 verify(controller).onTransitionAnimationEnd(isExpandingFullyAbove = true)
             }
         }

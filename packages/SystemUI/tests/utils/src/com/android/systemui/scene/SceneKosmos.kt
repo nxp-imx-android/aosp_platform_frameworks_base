@@ -22,6 +22,7 @@ import com.android.systemui.scene.shared.model.SceneContainerConfig
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.scene.ui.FakeOverlay
 import com.android.systemui.scene.ui.composable.ConstantSceneContainerTransitionsBuilder
+import com.android.systemui.scene.ui.composable.SceneNavigationDistances
 import com.android.systemui.scene.ui.viewmodel.SceneContainerHapticsViewModel
 import com.android.systemui.scene.ui.viewmodel.SceneContainerViewModel
 import com.android.systemui.scene.ui.viewmodel.dualShadeEducationalTooltipsViewModelFactory
@@ -60,22 +61,11 @@ val Kosmos.overlays by Fixture { fakeOverlays }
 val Kosmos.sceneTransitionsBuilder by Fixture { ConstantSceneContainerTransitionsBuilder() }
 
 var Kosmos.sceneContainerConfig by Fixture {
-    val navigationDistances =
-        mapOf(
-            Scenes.Gone to 0,
-            Scenes.Lockscreen to 0,
-            Scenes.Occluded to 1,
-            Scenes.Communal to 1,
-            Scenes.Dream to 2,
-            Scenes.Shade to 3,
-            Scenes.QuickSettings to 4,
-        )
-
     SceneContainerConfig(
         sceneKeys = sceneKeys,
         initialSceneKey = initialSceneKey,
         overlayKeys = overlayKeys,
-        navigationDistances = navigationDistances,
+        navigationDistances = SceneNavigationDistances,
         transitionsBuilder = sceneTransitionsBuilder,
     )
 }

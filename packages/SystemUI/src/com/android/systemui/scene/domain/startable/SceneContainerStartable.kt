@@ -1002,19 +1002,23 @@ constructor(
 
     private fun handleOcclusion() {
         applicationScope.launch {
-            occlusionInteractor.isKeyguardOccluded.collect { occluded ->
-                // This does not use the scene family to resolve, as there is a race condition when
-                // they both update state based off of the isKeyguardOccluded value.
-                if (occluded) {
-                    switchToScene(Scenes.Occluded, "isKeyguardOccluded == true")
-                } else if (sceneInteractor.currentScene.value == Scenes.Occluded) {
-                    if (deviceEntryInteractor.isDeviceEntered.value) {
-                        switchToScene(Scenes.Gone, "unoccluded and device entered")
-                    } else {
-                        switchToScene(Scenes.Lockscreen, "unoccluded and device not entered")
+            occlusionInteractor.isKeyguardOccluded
+                .sample(sceneBackInteractor.backScene, ::Pair)
+                .collect { (occluded, backScene) ->
+                    // This does not use the scene family to resolve, as there is a race condition
+                    // when they both update state based off of the isKeyguardOccluded value.
+                    if (occluded) {
+                        switchToScene(Scenes.Occluded, "isKeyguardOccluded == true")
+                    } else if (sceneInteractor.currentScene.value == Scenes.Occluded) {
+                        if (backScene == Scenes.Communal) {
+                            switchToScene(Scenes.Communal, "unoccluded and previously on communal")
+                        } else if (deviceEntryInteractor.isDeviceEntered.value) {
+                            switchToScene(Scenes.Gone, "unoccluded and device entered")
+                        } else {
+                            switchToScene(Scenes.Lockscreen, "unoccluded and device not entered")
+                        }
                     }
                 }
-            }
         }
     }
 

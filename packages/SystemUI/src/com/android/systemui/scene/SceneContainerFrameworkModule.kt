@@ -29,6 +29,7 @@ import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.shared.model.SceneContainerConfig
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.scene.ui.composable.SceneContainerTransitions
+import com.android.systemui.scene.ui.composable.SceneNavigationDistances
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
@@ -106,16 +107,7 @@ interface SceneContainerFrameworkModule {
                         Overlays.QuickSettingsShade,
                         Overlays.Bouncer,
                     ),
-                navigationDistances =
-                    mapOf(
-                        Scenes.Gone to 0,
-                        Scenes.Lockscreen to 0,
-                        Scenes.Occluded to 0,
-                        Scenes.Communal to 1,
-                        Scenes.Dream to 2,
-                        Scenes.Shade to 3,
-                        Scenes.QuickSettings to 4,
-                    ),
+                navigationDistances = SceneNavigationDistances,
                 transitionsBuilder = SceneContainerTransitions(),
             )
         }
