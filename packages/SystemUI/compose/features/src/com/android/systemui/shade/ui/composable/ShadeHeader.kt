@@ -20,7 +20,6 @@ package com.android.systemui.shade.ui.composable
 import android.view.ContextThemeWrapper
 import android.view.Gravity
 import android.view.View
-import android.view.ViewGroup
 import androidx.annotation.ColorInt
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.CubicBezierEasing
@@ -78,9 +77,6 @@ import com.android.compose.animation.scene.animateElementFloatAsState
 import com.android.compose.animation.scene.content.state.TransitionState
 import com.android.compose.modifiers.thenIf
 import com.android.internal.policy.SystemBarUtils
-import com.android.settingslib.Utils
-import com.android.systemui.battery.BatteryMeterView
-import com.android.systemui.battery.BatteryMeterViewController
 import com.android.systemui.common.ui.compose.windowinsets.CutoutLocation
 import com.android.systemui.common.ui.compose.windowinsets.LocalDisplayCutout
 import com.android.systemui.common.ui.compose.windowinsets.LocalScreenCornerRadius
@@ -94,7 +90,6 @@ import com.android.systemui.scene.shared.model.DualShadeEducationElement
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.shade.ui.composable.ShadeHeader.Values.ClockScale
 import com.android.systemui.shade.ui.viewmodel.ShadeHeaderViewModel
-import com.android.systemui.statusbar.core.NewStatusBarIcons
 import com.android.systemui.statusbar.phone.StatusBarLocation
 import com.android.systemui.statusbar.pipeline.battery.ui.composable.BatteryWithEstimate
 import com.android.systemui.statusbar.pipeline.mobile.StatusBarMobileIconKairos
@@ -230,10 +225,7 @@ fun ContentScope.CollapsedShadeHeader(
                             }
                         }
                     ) {
-                        val paddingEnd =
-                            with(LocalDensity.current) {
-                                (if (NewStatusBarIcons.isEnabled) 3.sp else 6.sp).toDp()
-                            }
+                        val paddingEnd = with(LocalDensity.current) { 3.sp.toDp() }
                         StatusIcons(
                             viewModel = viewModel,
                             useExpandedFormat = useExpandedTextFormat,
@@ -312,10 +304,7 @@ fun ContentScope.ExpandedShadeHeader(
                     modifier = Modifier.widthIn(max = 90.dp),
                 )
                 ShadeHighlightChip {
-                    val paddingEnd =
-                        with(LocalDensity.current) {
-                            (if (NewStatusBarIcons.isEnabled) 3.sp else 6.sp).toDp()
-                        }
+                    val paddingEnd = with(LocalDensity.current) { 3.sp.toDp() }
                     StatusIcons(
                         viewModel = viewModel,
                         useExpandedFormat = useExpandedFormat,
@@ -404,11 +393,7 @@ fun ContentScope.OverlayShadeHeader(
                             },
                         ),
                 ) {
-                    val paddingEnd =
-                        with(LocalDensity.current) {
-                            (if (NewStatusBarIcons.isEnabled) 3.sp else 6.sp).toDp()
-                        }
-                    val isHighlighted = quickSettingsHighlight is ChipHighlightModel.Strong
+                    val paddingEnd = with(LocalDensity.current) { 3.sp.toDp() }
                     StatusIcons(
                         viewModel = viewModel,
                         useExpandedFormat = false,
@@ -416,12 +401,7 @@ fun ContentScope.OverlayShadeHeader(
                         foregroundColor = quickSettingsHighlight.foregroundColor.toArgb(),
                         backgroundColor = quickSettingsHighlight.backgroundColor.toArgb(),
                     )
-                    BatteryInfo(
-                        viewModel = viewModel,
-                        showIcon = true,
-                        useExpandedFormat = false,
-                        isHighlighted = isHighlighted,
-                    )
+                    BatteryInfo(viewModel = viewModel, showIcon = true, useExpandedFormat = false)
                 }
                 if (viewModel.isPrivacyChipVisible) {
                     Box(modifier = Modifier.fillMaxSize().padding(horizontal = horizontalPadding)) {
@@ -566,81 +546,15 @@ private fun BatteryInfo(
     showIcon: Boolean,
     useExpandedFormat: Boolean,
     modifier: Modifier = Modifier,
-    isHighlighted: Boolean = false,
     textColor: Color = MaterialTheme.colorScheme.onSurface,
 ) {
-    if (NewStatusBarIcons.isEnabled) {
-        BatteryWithEstimate(
-            viewModelFactory = viewModel.batteryViewModelFactory,
-            isDarkProvider = { viewModel.isShadeAreaDark },
-            showIcon = showIcon,
-            showEstimate = useExpandedFormat,
-            textColor = textColor,
-            modifier = modifier.sysuiResTag(ShadeHeader.TestTags.BatteryTestTag),
-        )
-    } else {
-        BatteryIconLegacy(
-            createBatteryMeterViewController = viewModel.createBatteryMeterViewController,
-            useExpandedFormat = useExpandedFormat,
-            modifier = modifier.sysuiResTag(ShadeHeader.TestTags.BatteryTestTagLegacy),
-            isHighlighted = isHighlighted,
-        )
-    }
-}
-
-@Composable
-private fun BatteryIconLegacy(
-    createBatteryMeterViewController: (ViewGroup, StatusBarLocation) -> BatteryMeterViewController,
-    useExpandedFormat: Boolean,
-    modifier: Modifier = Modifier,
-    isHighlighted: Boolean = false,
-) {
-    NewStatusBarIcons.assertInLegacyMode()
-
-    val localContext = LocalContext.current
-    val themedContext =
-        ContextThemeWrapper(localContext, R.style.Theme_SystemUI_QuickSettings_Header)
-    val primaryColor =
-        Utils.getColorAttrDefaultColor(themedContext, android.R.attr.textColorPrimary)
-    val inverseColor =
-        Utils.getColorAttrDefaultColor(themedContext, android.R.attr.textColorPrimaryInverse)
-
-    val cutout = LocalDisplayCutout.current
-
-    AndroidView(
-        factory = { context ->
-            val batteryIcon = BatteryMeterView(context, null)
-            batteryIcon.setPercentShowMode(BatteryMeterView.MODE_ON)
-
-            // [BatteryMeterView.updateColors] is an old method that was built to distinguish
-            // between dual-tone colors and single-tone. The current icon is only single-tone, so
-            // the final [fg] is the only one we actually need
-            batteryIcon.updateColors(primaryColor, inverseColor, primaryColor)
-
-            val batteryMaterViewController =
-                createBatteryMeterViewController(batteryIcon, StatusBarLocation.QS)
-            batteryMaterViewController.init()
-            batteryMaterViewController.ignoreTunerUpdates()
-
-            batteryIcon
-        },
-        update = { batteryIcon ->
-            val cutoutLocation = cutout().location
-            batteryIcon.setPercentShowMode(
-                if (useExpandedFormat || cutoutLocation != CutoutLocation.CENTER) {
-                    BatteryMeterView.MODE_ESTIMATE
-                } else {
-                    BatteryMeterView.MODE_ON
-                }
-            )
-            // TODO(b/397223606): Get the actual spec for this.
-            batteryIcon.updateColors(
-                primaryColor,
-                inverseColor,
-                if (isHighlighted) inverseColor else primaryColor,
-            )
-        },
-        modifier = modifier,
+    BatteryWithEstimate(
+        viewModelFactory = viewModel.batteryViewModelFactory,
+        isDarkProvider = { viewModel.isShadeAreaDark },
+        showIcon = showIcon,
+        showEstimate = useExpandedFormat,
+        textColor = textColor,
+        modifier = modifier.sysuiResTag(ShadeHeader.TestTags.BatteryTestTag),
     )
 }
 
