@@ -18,8 +18,10 @@ package com.android.systemui.screencapture.record.largescreen.ui.viewmodel
 
 import android.graphics.Rect
 import android.view.WindowManager
+import com.android.internal.logging.UiEventLogger
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.lifecycle.HydratedActivatable
+import com.android.systemui.screencapture.ScreenCaptureEvent
 import com.android.systemui.screencapture.common.ScreenCapture
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureUiParameters
 import com.android.systemui.screencapture.common.ui.viewmodel.DrawableLoaderViewModel
@@ -51,6 +53,7 @@ constructor(
     private val drawableLoaderViewModelImpl: DrawableLoaderViewModelImpl,
     private val screenCaptureUiInteractor: ScreenCaptureUiInteractor,
     private val screenRecordingServiceInteractor: ScreenRecordingServiceInteractor,
+    private val uiEventLogger: UiEventLogger,
     @ScreenCapture private val screenCaptureUiParams: ScreenCaptureUiParameters,
     toolbarViewModelFactory: PreCaptureToolbarViewModel.Factory,
 ) : HydratedActivatable(), DrawableLoaderViewModel by drawableLoaderViewModelImpl {
@@ -81,10 +84,16 @@ constructor(
 
     fun updateCaptureType(selectedType: ScreenCaptureType) {
         captureTypeSource.value = selectedType
+        uiEventLogger.log(
+            ScreenCaptureEvent.fromRegionAndType(captureRegionSource.value, selectedType)
+        )
     }
 
     fun updateCaptureRegion(selectedRegion: ScreenCaptureRegion) {
         captureRegionSource.value = selectedRegion
+        uiEventLogger.log(
+            ScreenCaptureEvent.fromRegionAndType(selectedRegion, captureTypeSource.value)
+        )
     }
 
     fun updateRegionBoxBounds(bounds: Rect) {
