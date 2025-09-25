@@ -226,6 +226,10 @@
             "file_patterns": ["(/|^)ContextImpl.java"]
         },
         {
+            "name": "CtsWindowManagerDeviceAppCompat_wm_cts",
+            "file_patterns": ["(/|^)ContextImpl.java"]
+        },
+        {
             "name": "CtsWindowManagerDeviceBackNavigation_wm_cts",
             "file_patterns": ["(/|^)ContextImpl.java"]
         },
