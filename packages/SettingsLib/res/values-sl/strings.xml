@@ -118,8 +118,8 @@
     <string name="bluetooth_hearing_aid_right_active" msgid="2244728507170385397">"Aktivno (samo desno)"</string>
     <string name="bluetooth_hearing_aid_left_and_right_active" msgid="4294571497939983181">"Aktivno (levo in desno)"</string>
     <string name="bluetooth_hearing_device_ambient_error" msgid="6035857289108813878">"Okolice ni bilo mogoče posodobiti"</string>
-    <!-- no translation found for bluetooth_hearing_aids_presets_error (4523942574698610976) -->
-    <skip />
+    <string name="bluetooth_hearing_aids_presets_error" msgid="4523942574698610976">"Prednastavljene vrednosti ni bilo mogoče posodobiti"</string>
+    <string name="hearing_device_spinner_item_selected" msgid="3884049360428514878">"Izbrano"</string>
     <string name="bluetooth_active_media_only_battery_level" msgid="7772517511061834073">"Aktivno (samo predstavnost). Baterija: <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE">%1$s</xliff:g>."</string>
     <string name="bluetooth_active_media_only_battery_level_untethered" msgid="7444753133664620926">"Aktivno (samo predstavnost), baterija – L: <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE_0">%1$s</xliff:g>, D: <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE_1">%2$s</xliff:g>."</string>
     <string name="bluetooth_guest_battery_level" msgid="2820003593899467676">"Naprava gosta. Baterija: <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE">%1$s</xliff:g>."</string>

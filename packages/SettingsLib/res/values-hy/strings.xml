@@ -118,8 +118,8 @@
     <string name="bluetooth_hearing_aid_right_active" msgid="2244728507170385397">"Ակտիվ է (միայն աջ)"</string>
     <string name="bluetooth_hearing_aid_left_and_right_active" msgid="4294571497939983181">"Ակտիվ է (ձախ և աջ)"</string>
     <string name="bluetooth_hearing_device_ambient_error" msgid="6035857289108813878">"Չհաջողվեց թարմացնել շրջակայքի կարգավիճակը"</string>
-    <!-- no translation found for bluetooth_hearing_aids_presets_error (4523942574698610976) -->
-    <skip />
+    <string name="bluetooth_hearing_aids_presets_error" msgid="4523942574698610976">"Չհաջողվեց թարմացնել կարգավորումների հավաքածուն"</string>
+    <string name="hearing_device_spinner_item_selected" msgid="3884049360428514878">"Ընտրված է"</string>
     <string name="bluetooth_active_media_only_battery_level" msgid="7772517511061834073">"Ակտիվ է (միայն մեդիա)։ Մարտկոցի լիցքը՝ <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE">%1$s</xliff:g>։"</string>
     <string name="bluetooth_active_media_only_battery_level_untethered" msgid="7444753133664620926">"Ակտիվ է (միայն մեդիա)։ Ձախ ականջակալի լիցքը՝ <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE_0">%1$s</xliff:g>, աջ ականջակալի լիցքը՝ <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE_1">%2$s</xliff:g>։"</string>
     <string name="bluetooth_guest_battery_level" msgid="2820003593899467676">"Հյուրի սարք։ Մարտկոցի լիցքը՝ <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE">%1$s</xliff:g>։"</string>
@@ -621,7 +621,7 @@
     <string name="media_transfer_this_device_name_tv" msgid="8508713779441163887">"Այս հեռուստացույցը"</string>
     <string name="media_transfer_dock_speaker_device_name" msgid="2856219597113881950">"Դոկ-կայանով բարձրախոս"</string>
     <string name="media_transfer_external_device_name" msgid="2588672258721846418">"Արտաքին սարք"</string>
-    <string name="media_transfer_default_device_name" msgid="4315604017399871828">"Միացված սարք"</string>
+    <string name="media_transfer_default_device_name" msgid="4315604017399871828">"Կապակցված սարք"</string>
     <string name="media_transfer_this_phone" msgid="7194341457812151531">"Այս հեռախոսը"</string>
     <string name="media_transfer_digital_line_name" msgid="312091711951124301">"S/PDIF"</string>
     <string name="media_transfer_analog_line_name" msgid="1841163866716302104">"Անալոգային"</string>

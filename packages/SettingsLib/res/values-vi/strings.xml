@@ -118,8 +118,8 @@
     <string name="bluetooth_hearing_aid_right_active" msgid="2244728507170385397">"Đang hoạt động (chỉ tai phải)"</string>
     <string name="bluetooth_hearing_aid_left_and_right_active" msgid="4294571497939983181">"Đang hoạt động (trái và phải)"</string>
     <string name="bluetooth_hearing_device_ambient_error" msgid="6035857289108813878">"Không cập nhật được âm lượng xung quanh"</string>
-    <!-- no translation found for bluetooth_hearing_aids_presets_error (4523942574698610976) -->
-    <skip />
+    <string name="bluetooth_hearing_aids_presets_error" msgid="4523942574698610976">"Không cập nhật được giá trị đặt trước"</string>
+    <string name="hearing_device_spinner_item_selected" msgid="3884049360428514878">"Đã chọn"</string>
     <string name="bluetooth_active_media_only_battery_level" msgid="7772517511061834073">"Đang hoạt động (chỉ phát nội dung đa phương tiện). Còn <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE">%1$s</xliff:g> pin."</string>
     <string name="bluetooth_active_media_only_battery_level_untethered" msgid="7444753133664620926">"Đang hoạt động (chỉ phát nội dung đa phương tiện). Bên trái: Còn <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE_0">%1$s</xliff:g> pin. Bên phải: Còn <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE_1">%2$s</xliff:g> pin."</string>
     <string name="bluetooth_guest_battery_level" msgid="2820003593899467676">"Thiết bị khách. Còn <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE">%1$s</xliff:g> pin."</string>

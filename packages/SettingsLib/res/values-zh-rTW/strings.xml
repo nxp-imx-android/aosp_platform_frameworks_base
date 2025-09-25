@@ -118,8 +118,8 @@
     <string name="bluetooth_hearing_aid_right_active" msgid="2244728507170385397">"使用中 (僅右側)"</string>
     <string name="bluetooth_hearing_aid_left_and_right_active" msgid="4294571497939983181">"使用中 (左右兩側)"</string>
     <string name="bluetooth_hearing_device_ambient_error" msgid="6035857289108813878">"無法更新環境狀態"</string>
-    <!-- no translation found for bluetooth_hearing_aids_presets_error (4523942574698610976) -->
-    <skip />
+    <string name="bluetooth_hearing_aids_presets_error" msgid="4523942574698610976">"無法更新預設設定"</string>
+    <string name="hearing_device_spinner_item_selected" msgid="3884049360428514878">"已選取"</string>
     <string name="bluetooth_active_media_only_battery_level" msgid="7772517511061834073">"已啟用 (僅限媒體)。電量：<xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE">%1$s</xliff:g>。"</string>
     <string name="bluetooth_active_media_only_battery_level_untethered" msgid="7444753133664620926">"已啟用 (僅限媒體)。左側電量：<xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE_0">%1$s</xliff:g>，右側電量：<xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE_1">%2$s</xliff:g>。"</string>
     <string name="bluetooth_guest_battery_level" msgid="2820003593899467676">"訪客裝置。電量：<xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE">%1$s</xliff:g>。"</string>
@@ -411,7 +411,7 @@
     <string name="show_hw_screen_updates" msgid="2021286231267747506">"顯示畫面更新"</string>
     <string name="show_hw_screen_updates_summary" msgid="3539770072741435691">"繪圖時在視窗中閃爍顯示畫面"</string>
     <string name="show_hw_layers_updates" msgid="5268370750002509767">"顯示硬體層更新"</string>
-    <string name="show_hw_layers_updates_summary" msgid="5850955890493054618">"在硬體層更新時閃綠燈"</string>
+    <string name="show_hw_layers_updates_summary" msgid="5850955890493054618">"在硬體層更新時閃爍綠色"</string>
     <string name="debug_hw_overdraw" msgid="8944851091008756796">"針對 GPU 過度繪製進行偵錯"</string>
     <string name="disable_overlays" msgid="4206590799671557143">"停用硬體重疊圖層"</string>
     <string name="disable_overlays_summary" msgid="1954852414363338166">"一律使用 GPU 進行畫面合成"</string>

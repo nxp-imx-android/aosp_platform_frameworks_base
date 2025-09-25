@@ -118,8 +118,8 @@
     <string name="bluetooth_hearing_aid_right_active" msgid="2244728507170385397">"使用中 (僅右側)"</string>
     <string name="bluetooth_hearing_aid_left_and_right_active" msgid="4294571497939983181">"使用中 (左右兩側)"</string>
     <string name="bluetooth_hearing_device_ambient_error" msgid="6035857289108813878">"無法更新環境聲音"</string>
-    <!-- no translation found for bluetooth_hearing_aids_presets_error (4523942574698610976) -->
-    <skip />
+    <string name="bluetooth_hearing_aids_presets_error" msgid="4523942574698610976">"無法更新預設"</string>
+    <string name="hearing_device_spinner_item_selected" msgid="3884049360428514878">"已選取"</string>
     <string name="bluetooth_active_media_only_battery_level" msgid="7772517511061834073">"啟用 (只限媒體)。<xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE">%1$s</xliff:g> 電量。"</string>
     <string name="bluetooth_active_media_only_battery_level_untethered" msgid="7444753133664620926">"啟用 (只限媒體)，左側：<xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE_0">%1$s</xliff:g> 電量，右側：<xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE_1">%2$s</xliff:g> 電量。"</string>
     <string name="bluetooth_guest_battery_level" msgid="2820003593899467676">"訪客裝置。<xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE">%1$s</xliff:g> 電量。"</string>
