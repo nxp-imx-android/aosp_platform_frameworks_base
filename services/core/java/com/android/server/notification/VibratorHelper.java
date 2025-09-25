@@ -92,7 +92,7 @@ public final class VibratorHelper {
             }
         } catch (IllegalArgumentException e) {
             Slog.e(TAG, "Error creating vibration waveform with pattern: "
-                    + Arrays.toString(pattern));
+                    + Arrays.toString(pattern), e);
         }
         return null;
     }

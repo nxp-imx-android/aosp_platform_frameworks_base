@@ -120,6 +120,13 @@ flag {
 }
 
 flag {
+  name: "channel_vibration_ignore_invalid_pattern"
+  namespace: "notifications"
+  description: "Ignore invalid patterns (e.g. empty array) and fall back to default vibration instead of none"
+  bug: "447121175"
+}
+
+flag {
   name: "nm_binder_perf_reduce_zen_broadcasts"
   namespace: "systemui"
   description: "Don't send duplicate zen-related (policy changed, etc) broadcasts"
