@@ -1143,7 +1143,10 @@ private fun LazyGridItemScope.TileGridCell(
                     CornerSize(InactiveCornerRadius),
                 )
                 .thenIf(isSelectable) { draggableModifier }
-                .tileBackground(alpha = { containerAlpha }, color = { colors.background })
+                .tileBackground(
+                    cornerRadius = InactiveCornerRadius,
+                    alpha = { containerAlpha },
+                    color = { colors.background })
                 .clickable { selectionState.onTap(cell.tile.tileSpec) }
                 .thenIf(isSelectable) { selectableModifier }
         ) {
@@ -1247,7 +1250,7 @@ private fun AvailableTileGridCell(
                         MaterialTheme.colorScheme.secondary,
                         CornerSize(InactiveCornerRadius),
                     )
-                    .tileBackground { colors.background }
+                    .tileBackground(cornerRadius = InactiveCornerRadius) { colors.background }
                     .clickable(
                         enabled = !cell.isCurrent,
                         onClick = onClick,
@@ -1347,6 +1350,7 @@ fun EditTile(
     colors: TileColors = EditModeTileDefaults.editTileColors(),
 ) {
     val iconSizeDiff = CommonTileDefaults.IconSize - CommonTileDefaults.LargeTileIconSize
+    val toggleTargetSize = ToggleTargetSize
     Row(
         horizontalArrangement = spacedBy(6.dp),
         verticalAlignment = Alignment.CenterVertically,
@@ -1365,12 +1369,20 @@ fun EditTile(
                     val startPadding =
                         if (currentProgress == 0f) {
                             // Find the center of the max width when the tile is icon only
-                            iconHorizontalCenter(constraints.maxWidth)
+                            iconHorizontalCenter(
+                                containerSize = constraints.maxWidth,
+                                toggleTargetSize = toggleTargetSize
+                            )
                         } else {
                             // Find the center of the minimum width to hold the same position as the
                             // tile is resized.
                             val basePadding =
-                                min?.let { iconHorizontalCenter(it.roundToInt()) } ?: 0f
+                                min?.let {
+                                    iconHorizontalCenter(
+                                        containerSize = it.roundToInt(),
+                                        toggleTargetSize = toggleTargetSize
+                                    )
+                                } ?: 0f
                             // Large tiles, represented with a progress of 1f, have a 0.dp padding
                             basePadding * (1f - currentProgress)
                         }
@@ -1383,9 +1395,11 @@ fun EditTile(
     ) {
         // Icon
         Box(
-            Modifier.size(ToggleTargetSize).thenIf(tile.isDualTarget) {
-                Modifier.drawBehind { drawCircle(colors.iconBackground, alpha = progress()) }
-            }
+            Modifier
+                .size(ToggleTargetSize)
+                .thenIf(tile.isDualTarget) {
+                    Modifier.drawBehind { drawCircle(colors.iconBackground, alpha = progress()) }
+                }
         ) {
             SmallTileContent(
                 iconProvider = { tile.icon },
@@ -1406,14 +1420,18 @@ fun EditTile(
     }
 }
 
-private fun MeasureScope.iconHorizontalCenter(containerSize: Int): Float {
-    return (containerSize - ToggleTargetSize.roundToPx()) / 2f -
+private fun MeasureScope.iconHorizontalCenter(containerSize: Int, toggleTargetSize: Dp): Float {
+    return (containerSize - toggleTargetSize.roundToPx()) / 2f -
         CommonTileDefaults.TileStartPadding.toPx()
 }
 
-private fun Modifier.tileBackground(alpha: () -> Float = { 1f }, color: () -> Color): Modifier {
+private fun Modifier.tileBackground(
+    cornerRadius: Dp,
+    alpha: () -> Float = { 1f },
+    color: () -> Color
+): Modifier {
     // Clip tile contents from overflowing past the tile
-    return clip(RoundedCornerShape(InactiveCornerRadius)).drawBehind {
+    return clip(RoundedCornerShape(cornerRadius)).drawBehind {
         drawRect(color(), alpha = alpha())
     }
 }

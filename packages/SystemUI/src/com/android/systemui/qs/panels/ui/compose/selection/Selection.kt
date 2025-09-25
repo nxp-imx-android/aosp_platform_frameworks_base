@@ -129,8 +129,9 @@ fun InteractiveTileContainer(
 
     Box(
         modifier.resizable(tileState == Selected, resizingState).selectionBorder(
-            MaterialTheme.colorScheme.primary,
-            SelectedBorderWidth,
+            selectionColor = MaterialTheme.colorScheme.primary,
+            selectionBorderWidth = SelectedBorderWidth,
+            cornerRadius = InactiveCornerRadius,
         ) {
             selectionBorderAlpha
         }
@@ -196,6 +197,7 @@ fun InteractiveTileContainer(
 private fun Modifier.selectionBorder(
     selectionColor: Color,
     selectionBorderWidth: Dp,
+    cornerRadius: Dp,
     selectionAlpha: () -> Float = { 0f },
 ): Modifier {
     return drawWithContent {
@@ -205,7 +207,7 @@ private fun Modifier.selectionBorder(
         val borderWidth = selectionBorderWidth.toPx()
         drawRoundRect(
             SolidColor(selectionColor),
-            cornerRadius = CornerRadius(InactiveCornerRadius.toPx()),
+            cornerRadius = CornerRadius(cornerRadius.toPx()),
             topLeft = Offset(borderWidth / 2, borderWidth / 2),
             size = Size(size.width - borderWidth, size.height - borderWidth),
             style = Stroke(borderWidth),

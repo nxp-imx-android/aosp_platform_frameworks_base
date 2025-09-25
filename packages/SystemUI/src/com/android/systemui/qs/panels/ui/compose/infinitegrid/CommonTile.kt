@@ -423,6 +423,11 @@ object CommonTileDefaults {
         @ReadOnlyComposable
         get() = dimensionResource(id = R.dimen.common_tile_default_icon_size)
 
+    val InactiveCornerRadius: Dp
+        @Composable
+        @ReadOnlyComposable
+        get() = dimensionResource(id = R.dimen.common_tile_default_inactive_corner_radius)
+
     val LargeTileIconSize: Dp
         @Composable
         @ReadOnlyComposable
@@ -433,15 +438,18 @@ object CommonTileDefaults {
         @ReadOnlyComposable
         get() = dimensionResource(id = R.dimen.common_tile_default_tile_height)
 
+    val ToggleTargetSize: Dp
+        @Composable
+        @ReadOnlyComposable
+        get() = dimensionResource(id = R.dimen.common_tile_default_toggle_target_size)
+
     val SideIconWidth = 32.dp
     val SideIconHeight = 20.dp
     val ChevronSize = 14.dp
-    val ToggleTargetSize = 56.dp
     val TileStartPadding = 8.dp
     val TileEndPadding = 12.dp
     val TileDualTargetEndPadding = 8.dp
     val TileArrangementPadding = 6.dp
-    val InactiveCornerRadius = 50.dp
     val TileLabelBlurWidth = 32.dp
     const val TILE_MARQUEE_ITERATIONS = 1
     const val TILE_INITIAL_DELAY_MILLIS = 2000
