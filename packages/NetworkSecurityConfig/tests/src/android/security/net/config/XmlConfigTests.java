@@ -16,6 +16,13 @@
 
 package android.security.net.config;
 
+import static android.security.Flags.FLAG_ENCRYPTED_CLIENT_HELLO_CONFIGURATION;
+import static android.security.NetworkSecurityPolicy.DOMAIN_ENCRYPTION_MODE_DISABLED;
+import static android.security.NetworkSecurityPolicy.DOMAIN_ENCRYPTION_MODE_FAIL_CLOSED;
+import static android.security.NetworkSecurityPolicy.DOMAIN_ENCRYPTION_MODE_OPPORTUNISTIC;
+import static android.security.NetworkSecurityPolicy.DOMAIN_ENCRYPTION_MODE_STRICT;
+import static android.security.net.config.NetworkSecurityConfig.DEFAULT_DOMAIN_ENCRYPTION_MODE;
+
 import static com.android.org.conscrypt.net.flags.Flags.FLAG_CERTIFICATE_TRANSPARENCY_DEFAULT_ENABLED;
 
 import static libcore.net.NetworkSecurityPolicy.CERTIFICATE_TRANSPARENCY_REASON_SDK_TARGET_DEFAULT_ENABLED;
@@ -633,5 +640,66 @@ public class XmlConfigTests {
 
         config = appConfig.getConfigForHostname("subdomain.android.com");
         assertTrue(config.isCertificateTransparencyVerificationRequired());
+    }
+
+    @Test
+    @RequiresFlagsEnabled(FLAG_ENCRYPTED_CLIENT_HELLO_CONFIGURATION)
+    public void testDomainEncryptionBaseConfig() throws Exception {
+        XmlConfigSource source = new XmlConfigSource(mContext, R.xml.domain_encryption_base_config,
+                TestUtils.makeApplicationInfo());
+        ApplicationConfig appConfig = new ApplicationConfig(source);
+        assertFalse(appConfig.hasPerDomainConfigs());
+        NetworkSecurityConfig config = appConfig.getConfigForHostname(/* hostname= */ "");
+        assertNotNull(config);
+
+        assertEquals(DOMAIN_ENCRYPTION_MODE_STRICT, config.getDomainEncryptionMode());
+    }
+
+    @Test
+    @RequiresFlagsEnabled(FLAG_ENCRYPTED_CLIENT_HELLO_CONFIGURATION)
+    public void testDomainEncryptionDomainConfig() throws Exception {
+        XmlConfigSource source = new XmlConfigSource(mContext,
+                R.xml.domain_encryption_domain_config, TestUtils.makeApplicationInfo());
+        ApplicationConfig appConfig = new ApplicationConfig(source);
+        assertTrue(appConfig.hasPerDomainConfigs());
+        NetworkSecurityConfig config = appConfig.getConfigForHostname(/* hostname= */ "");
+        assertNotNull(config);
+
+        // Assert base config setting
+        assertEquals(DOMAIN_ENCRYPTION_MODE_DISABLED, config.getDomainEncryptionMode());
+
+        // Assert domain config settings
+        config = appConfig.getConfigForHostname("android.com");
+        assertEquals(DOMAIN_ENCRYPTION_MODE_OPPORTUNISTIC, config.getDomainEncryptionMode());
+
+        config = appConfig.getConfigForHostname("strict.android.com");
+        assertEquals(DOMAIN_ENCRYPTION_MODE_STRICT, config.getDomainEncryptionMode());
+
+        config = appConfig.getConfigForHostname("closed.android.com");
+        assertEquals(DOMAIN_ENCRYPTION_MODE_FAIL_CLOSED, config.getDomainEncryptionMode());
+    }
+
+    @Test
+    @RequiresFlagsEnabled(FLAG_ENCRYPTED_CLIENT_HELLO_CONFIGURATION)
+    public void testDomainEncryptionInvalidValues() throws Exception {
+        XmlConfigSource source = new XmlConfigSource(mContext, R.xml.domain_encryption_invalid,
+                TestUtils.makeApplicationInfo());
+        ApplicationConfig appConfig = new ApplicationConfig(source);
+        assertTrue(appConfig.hasPerDomainConfigs());
+        NetworkSecurityConfig config = appConfig.getConfigForHostname(/* hostname= */ "");
+        assertNotNull(config);
+
+        // Assert default base config setting
+        assertEquals(DEFAULT_DOMAIN_ENCRYPTION_MODE, config.getDomainEncryptionMode());
+
+        // Assert domain config settings
+        config = appConfig.getConfigForHostname("android.com");
+        assertEquals(DEFAULT_DOMAIN_ENCRYPTION_MODE, config.getDomainEncryptionMode());
+
+        config = appConfig.getConfigForHostname("whitespace.android.com");
+        assertEquals(DEFAULT_DOMAIN_ENCRYPTION_MODE, config.getDomainEncryptionMode());
+
+        config = appConfig.getConfigForHostname("capitalized.android.com");
+        assertEquals(DEFAULT_DOMAIN_ENCRYPTION_MODE, config.getDomainEncryptionMode());
     }
 }

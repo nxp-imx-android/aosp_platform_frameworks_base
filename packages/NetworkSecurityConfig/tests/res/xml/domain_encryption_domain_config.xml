@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<network-security-config>
+  <base-config>
+      <domainEncryption mode="disabled" />
+  </base-config>
+  <domain-config>
+    <domainEncryption mode="opportunistic" />
+    <domain>android.com</domain>
+  </domain-config>
+  <domain-config>
+    <domainEncryption mode="strict" />
+    <domain>strict.android.com</domain>
+  </domain-config>
+  <domain-config>
+    <domainEncryption mode="closed" />
+    <domain>closed.android.com</domain>
+  </domain-config>
+</network-security-config>

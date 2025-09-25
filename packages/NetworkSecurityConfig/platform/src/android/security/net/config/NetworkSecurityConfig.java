@@ -66,7 +66,7 @@ public final class NetworkSecurityConfig {
      *
      * @hide
      */
-    static final int DEFAULT_DOMAIN_ENCRYPTION_MODE =
+    public static final int DEFAULT_DOMAIN_ENCRYPTION_MODE =
             DOMAIN_ENCRYPTION_MODE_OPPORTUNISTIC;
 
     private static final AtomicReference<Boolean>
