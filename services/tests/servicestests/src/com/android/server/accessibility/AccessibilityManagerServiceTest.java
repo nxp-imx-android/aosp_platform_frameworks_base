@@ -136,6 +136,8 @@ import com.android.internal.accessibility.common.KeyGestureEventConstants;
 import com.android.internal.accessibility.common.ShortcutConstants;
 import com.android.internal.accessibility.common.ShortcutConstants.FloatingMenuSize;
 import com.android.internal.accessibility.common.ShortcutConstants.UserShortcutType;
+import com.android.internal.accessibility.dialog.AccessibilityButtonChooserActivity;
+import com.android.internal.accessibility.dialog.AccessibilityShortcutChooserActivity;
 import com.android.internal.accessibility.util.AccessibilityUtils;
 import com.android.internal.accessibility.util.ShortcutUtils;
 import com.android.internal.compat.IPlatformCompat;
@@ -2086,7 +2088,8 @@ public class AccessibilityManagerServiceTest {
         mA11yms.notifyAccessibilityButtonLongClicked(Display.DEFAULT_DISPLAY);
         mTestableLooper.processAllMessages();
 
-        assertStartActivityWithExpectedShortcutType(mTestableContext.getMockContext(), SOFTWARE);
+        assertStartActivityWithExpectedParameters(mTestableContext.getMockContext(), SOFTWARE,
+                AccessibilityButtonChooserActivity.class.getName());
     }
 
     @Test
@@ -2101,7 +2104,23 @@ public class AccessibilityManagerServiceTest {
         mA11yms.notifyAccessibilityButtonLongClicked(Display.DEFAULT_DISPLAY);
         mTestableLooper.processAllMessages();
 
-        assertStartActivityWithExpectedShortcutType(mTestableContext.getMockContext(), GESTURE);
+        assertStartActivityWithExpectedParameters(mTestableContext.getMockContext(), GESTURE,
+                AccessibilityButtonChooserActivity.class.getName());
+    }
+
+    @Test
+    public void showAccessibilityTargetSelection_hardwareButton_hardwareExtra() {
+        mFakePermissionEnforcer.grant(Manifest.permission.MANAGE_ACCESSIBILITY);
+        final AccessibilityUserState userState = mA11yms.mUserStates.get(
+                mA11yms.getCurrentUserIdLocked());
+        userState.updateShortcutTargetsLocked(
+                Set.of("Foo", "Bar"), HARDWARE);
+
+        mA11yms.performAccessibilityShortcut(Display.DEFAULT_DISPLAY, HARDWARE, null);
+        mTestableLooper.processAllMessages();
+
+        assertStartActivityWithExpectedParameters(mTestableContext.getMockContext(), HARDWARE,
+                AccessibilityShortcutChooserActivity.class.getName());
     }
 
     @Test
@@ -2703,12 +2722,14 @@ public class AccessibilityManagerServiceTest {
         return lockState;
     }
 
-    private void assertStartActivityWithExpectedShortcutType(Context mockContext,
-            @UserShortcutType int shortcutType) {
+    private void assertStartActivityWithExpectedParameters(Context mockContext,
+            @UserShortcutType int shortcutType, String className) {
         verify(mockContext).startActivityAsUser(mIntentArgumentCaptor.capture(),
                 any(Bundle.class), any(UserHandle.class));
         assertThat(mIntentArgumentCaptor.getValue().getIntExtra(
                 EXTRA_TYPE_TO_CHOOSE, -1)).isEqualTo(shortcutType);
+        assertThat(mIntentArgumentCaptor.getValue().getComponent().getClassName())
+                .isEqualTo(className);
     }
 
     private void setupShortcutTargetServices() {
