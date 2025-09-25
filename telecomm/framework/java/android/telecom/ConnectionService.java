@@ -2017,6 +2017,14 @@ public abstract class ConnectionService extends Service {
             Log.d(this, "Adapter conference onRingback %b", ringback);
             mAdapter.setRingbackRequested(id, ringback);
         }
+
+        @Override
+        public void onConferenceMergeFailed(Conference conference) {
+            String id = mIdByConference.get(conference);
+            if (id != null) {
+                mAdapter.onConferenceMergeFailed(id);
+            }
+        }
     };
 
     private final Connection.Listener mConnectionListener = new Connection.Listener() {

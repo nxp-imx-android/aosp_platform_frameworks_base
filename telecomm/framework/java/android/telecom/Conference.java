@@ -80,6 +80,7 @@ public abstract class Conference extends Conferenceable {
                 Conference c, String callerDisplayName, int presentation) {}
         public void onCallDirectionChanged(Conference c, int callDirection) {}
         public void onRingbackRequested(Conference c, boolean ringback) {}
+        public void onConferenceMergeFailed(Conference c) {}
     }
 
     private final Set<Listener> mListeners = new CopyOnWriteArraySet<>();
@@ -1409,6 +1410,17 @@ public abstract class Conference extends Conferenceable {
     public void sendConferenceEvent(@NonNull String event, @Nullable Bundle extras) {
         for (Listener l : mListeners) {
             l.onConnectionEvent(this, event, extras);
+        }
+    }
+
+    /**
+     * Called by a {@link ConnectionService} to notify Telecom that a {@link Conference#onMerge()}
+     * request failed.
+     */
+    @FlaggedApi(Flags.FLAG_CONFERENCE_MODIFY_MERGE_FAIL)
+    public void notifyConferenceMergeFailed() {
+        for (Listener l : mListeners) {
+            l.onConferenceMergeFailed(this);
         }
     }
 }
