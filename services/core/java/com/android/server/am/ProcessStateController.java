@@ -295,7 +295,7 @@ public class ProcessStateController {
             return mIsAwake;
         }
 
-        public ProcessRecord getBackupTarget(@UserIdInt int userId) {
+        public ProcessRecordInternal getBackupTarget(@UserIdInt int userId) {
             return mBackupTargets.get(userId);
         }
 
