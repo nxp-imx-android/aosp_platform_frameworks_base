@@ -5030,6 +5030,15 @@ public abstract class PackageManager {
     public static final String FEATURE_XR_API_SPATIAL =
         "android.software.xr.api.spatial";
 
+    /**
+     * Feature for {@link #getSystemAvailableFeatures} and {@link #hasSystemFeature}: This device
+     * has a NPU (Neural Processing Unit) or similar hardware for accelerating AI workloads.
+     */
+    @FlaggedApi(com.android.npumanager.Flags.FLAG_NPUMANAGER_ENABLED)
+    @SdkConstant(SdkConstantType.FEATURE)
+    public static final String FEATURE_NEURAL_PROCESSING_UNIT =
+        "android.hardware.npu";
+
     /** @hide */
     public static final boolean APP_ENUMERATION_ENABLED_BY_DEFAULT = true;
 
