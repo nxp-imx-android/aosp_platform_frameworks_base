@@ -82,13 +82,19 @@ fun ContentScope.QuickSettingsContent(
             },
         media =
             @Composable {
-                Element(key = Media.Elements.mediaCarousel, modifier = Modifier) {
-                    Media(
-                        viewModelFactory = viewModel.mediaViewModelFactory,
-                        presentationStyle = MediaPresentationStyle.Default,
-                        behavior = QuickSettingsContainerViewModel.mediaUiBehavior,
-                        onDismissed = viewModel::onMediaSwipeToDismiss,
-                    )
+                if (isAlwaysComposedContentVisible()) {
+                    Element(key = Media.Elements.mediaCarousel, modifier = Modifier) {
+                        Media(
+                            viewModelFactory = viewModel.mediaViewModelFactory,
+                            presentationStyle = MediaPresentationStyle.Default,
+                            behavior = QuickSettingsContainerViewModel.mediaUiBehavior,
+                            onDismissed = viewModel::onMediaSwipeToDismiss,
+                        )
+                    }
+                } else {
+                    // Add an empty box when QS content is not visible to keep the same number of
+                    // elements.
+                    Box(modifier = Modifier)
                 }
             },
         mediaInRow = mediaInRow,
