@@ -309,6 +309,17 @@ final class AppCompatUtils {
         inOutConfig.windowConfiguration.getAppBounds().offset(offsetX, offsetY);
     }
 
+    static void adjustCropBoundsForSurfaceInsets(@NonNull Rect cropBounds,
+            @NonNull WindowState mainWindow) {
+        // Surface insets are usually set for dialog style window for shadow effect to expand
+        // the surface. If dialog inherits letterboxed bounds, this could lead to cropped dialog
+        // as surface is offset due to insets. Account for insets in the window crop.
+        cropBounds.right +=
+                mainWindow.mAttrs.surfaceInsets.left + mainWindow.mAttrs.surfaceInsets.right;
+        cropBounds.bottom +=
+                mainWindow.mAttrs.surfaceInsets.top + mainWindow.mAttrs.surfaceInsets.bottom;
+    }
+
     /**
      * Return {@code true} if window is currently in desktop mode.
      */
