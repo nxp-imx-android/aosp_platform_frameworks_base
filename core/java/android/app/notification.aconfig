@@ -47,7 +47,7 @@ flag {
   is_exported: true
   namespace: "notifications"
   description: "Adds APIs to control Notification Action emphasis and style (for RONs)"
-  bug: "444191392"
+  bug: "440125908"
 }
 
 flag {
