@@ -35,6 +35,7 @@ import com.android.server.display.BrightnessMappingStrategy;
 import com.android.server.display.BrightnessSetting;
 import com.android.server.display.DisplayBrightnessState;
 import com.android.server.display.DisplayDeviceConfig;
+import com.android.server.display.ScreenOffBrightnessSensorController;
 import com.android.server.display.brightness.strategy.AutoBrightnessFallbackStrategy;
 import com.android.server.display.brightness.strategy.AutomaticBrightnessStrategy2;
 import com.android.server.display.brightness.strategy.DisplayBrightnessStrategy;
@@ -456,6 +457,11 @@ public final class DisplayBrightnessController {
                 brightnessMappingStrategy, isDisplayEnabled, leadDisplayId);
     }
 
+    public ScreenOffBrightnessSensorController getScreenOffBrightnessSensorController() {
+        return mDisplayBrightnessStrategySelector.getAutoBrightnessFallbackStrategy()
+                .getScreenOffBrightnessSensorController();
+    }
+
     /**
      * TODO(b/253226419): Remove once auto-brightness is a fully-functioning strategy.
      */
@@ -656,8 +662,7 @@ public final class DisplayBrightnessController {
     /**
      * Returns the current selected DisplayBrightnessStrategy
      */
-    @VisibleForTesting
-    DisplayBrightnessStrategy getCurrentDisplayBrightnessStrategy() {
+    public DisplayBrightnessStrategy getCurrentDisplayBrightnessStrategy() {
         synchronized (mLock) {
             return mDisplayBrightnessStrategy;
         }

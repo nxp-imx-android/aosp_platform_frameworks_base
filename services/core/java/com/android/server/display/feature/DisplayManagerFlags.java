@@ -88,11 +88,6 @@ public class DisplayManagerFlags {
             Flags::sensorBasedBrightnessThrottling
     );
 
-    private final FlagState mRefactorDisplayPowerController = new FlagState(
-            Flags.FLAG_REFACTOR_DISPLAY_POWER_CONTROLLER,
-            Flags::refactorDisplayPowerController
-    );
-
     private final FlagState mDozeBrightnessStrategy = new FlagState(
             Flags.FLAG_DOZE_BRIGHTNESS_STRATEGY,
             Flags::dozeBrightnessStrategy
@@ -284,10 +279,6 @@ public class DisplayManagerFlags {
         return mSensorBasedBrightnessThrottling.isEnabled();
     }
 
-    public boolean isRefactorDisplayPowerControllerEnabled() {
-        return mRefactorDisplayPowerController.isEnabled();
-    }
-
     public boolean isDozeBrightnessStrategyEnabled() {
         return mDozeBrightnessStrategy.isEnabled();
     }
@@ -477,7 +468,6 @@ public class DisplayManagerFlags {
         pw.println(" " + mSyncedResolutionSwitch);
         pw.println(" " + mFastHdrTransitions);
         pw.println(" " + mSensorBasedBrightnessThrottling);
-        pw.println(" " + mRefactorDisplayPowerController);
         pw.println(" " + mDozeBrightnessStrategy);
         pw.println(" " + mResolutionBackupRestore);
         pw.println(" " + mUseFusionProxSensor);

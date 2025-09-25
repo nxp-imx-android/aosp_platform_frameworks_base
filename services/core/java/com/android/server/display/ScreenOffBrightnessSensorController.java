@@ -101,6 +101,15 @@ public class ScreenOffBrightnessSensorController implements SensorEventListener 
     }
 
     /**
+     * DO NOT USE THIS. This function exists purely as a workaround to test
+     * AutoBrightnessFallbackStrategy from DPC Tests
+     */
+    public void registerAndSetLastSensorValue(int value) {
+        mRegistered = true;
+        mLastSensorValue = value;
+    }
+
+    /**
      * Gets the automatic screen brightness based on the ambient lux
      */
     public float getAutomaticScreenBrightness() {
@@ -114,7 +123,6 @@ public class ScreenOffBrightnessSensorController implements SensorEventListener 
         if (lux < 0) {
             return PowerManager.BRIGHTNESS_INVALID_FLOAT;
         }
-
         return mBrightnessMapper.getBrightness(lux);
     }
 
