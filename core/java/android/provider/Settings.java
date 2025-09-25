@@ -19792,16 +19792,6 @@ public final class Settings {
                 "notification_snooze_options";
 
         /**
-         * When enabled, notifications the notification assistant service has modified will show an
-         * indicator. When tapped, this indicator will describe the adjustment made and solicit
-         * feedback. This flag will also add a "automatic" option to the long press menu.
-         *
-         * The value 1 - enable, 0 - disable
-         * @hide
-         */
-        public static final String NOTIFICATION_FEEDBACK_ENABLED = "notification_feedback_enabled";
-
-        /**
          * Configuration flags for SQLite Compatibility WAL. Encoded as a key-value list, separated
          * by commas. E.g.: compatibility_wal_supported=true, wal_syncmode=OFF
          *
@@ -19882,30 +19872,6 @@ public final class Settings {
          */
         @Readable
         public static final String CACHED_APPS_FREEZER_ENABLED = "cached_apps_freezer";
-
-        /**
-         * Configuration flags for smart replies in notifications.
-         * This is encoded as a key=value list, separated by commas. Ex:
-         *
-         * "enabled=1,max_squeeze_remeasure_count=3"
-         *
-         * The following keys are supported:
-         *
-         * <pre>
-         * enabled                           (boolean)
-         * requires_targeting_p              (boolean)
-         * max_squeeze_remeasure_attempts    (int)
-         * edit_choices_before_sending       (boolean)
-         * show_in_heads_up                  (boolean)
-         * min_num_system_generated_replies  (int)
-         * max_num_actions                   (int)
-         * </pre>
-         * @see com.android.systemui.statusbar.policy.SmartReplyConstants
-         * @hide
-         */
-        @Readable
-        public static final String SMART_REPLIES_IN_NOTIFICATIONS_FLAGS =
-                "smart_replies_in_notifications_flags";
 
         /**
          * If nonzero, crashes in foreground processes will bring up a dialog.
