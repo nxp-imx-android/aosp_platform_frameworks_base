@@ -23,10 +23,8 @@ import com.android.internal.view.RotationPolicy.RotationPolicyListener
 import com.android.systemui.rotation.RotationPolicyWrapper
 import javax.inject.Inject
 
-public class RotationPolicyWrapperImpl @Inject constructor(
-    private val context: Context,
-) :
-        RotationPolicyWrapper {
+public class RotationPolicyWrapperImpl @Inject constructor(private val context: Context) :
+    RotationPolicyWrapper {
 
     override fun setRotationLock(enabled: Boolean, caller: String) {
         traceSection("RotationPolicyWrapperImpl#setRotationLock") {
@@ -38,9 +36,7 @@ public class RotationPolicyWrapperImpl @Inject constructor(
         RotationPolicy.setRotationLockAtAngle(context, enabled, rotation, caller)
     }
 
-    /**
-     * Sets screen rotation to [rotation] if the value of [ACCELEROMETER_ROTATION] is false.
-     */
+    /** Sets screen rotation to [rotation] if the value of [ACCELEROMETER_ROTATION] is false. */
     override fun setRotationAtAngleIfAllowed(rotation: Int, caller: String) {
         traceSection("RotationPolicyWrapperImpl#setRotationAtAngleIfAllowed") {
             RotationPolicy.setRotationAtAngleIfAllowed(rotation, caller)
@@ -53,13 +49,9 @@ public class RotationPolicyWrapperImpl @Inject constructor(
     override fun isRotationLockToggleVisible(): Boolean =
         RotationPolicy.isRotationLockToggleVisible(context)
 
-    override fun isRotationLocked(): Boolean =
-        RotationPolicy.isRotationLocked(context)
+    override fun isRotationLocked(): Boolean = RotationPolicy.isRotationLocked(context)
 
-    override fun registerRotationPolicyListener(
-        listener: RotationPolicyListener,
-        userHandle: Int
-    ) {
+    override fun registerRotationPolicyListener(listener: RotationPolicyListener, userHandle: Int) {
         RotationPolicy.registerRotationPolicyListener(context, listener, userHandle)
     }
 

@@ -19,10 +19,12 @@ package {
 }
 
 java_library {
-    name: "com.android.systemui.rotation-api",
+    name: "com.android.systemui.statusbar.pipeline.airplane.data-api",
     srcs: [
-        "*.java",
-        "*.kt",
+        "repository/*.kt",
+    ],
+    static_libs: [
+        "kotlinx_coroutines",
     ],
     defaults: [
         "SystemUI_pod_defaults_api",
@@ -30,18 +32,21 @@ java_library {
 }
 
 java_library {
-    name: "com.android.systemui.rotation-impl",
+    name: "com.android.systemui.statusbar.pipeline.airplane.data-impl",
     srcs: [
-        "impl/*.java",
-        "impl/*.kt",
+        "repository/impl/*.kt",
     ],
     libs: [
-        "com.android.systemui.dagger-api",
+        "com.android.systemui.log.table-api",
+        "com.android.systemui.statusbar.pipeline.airplane.shared-api",
+        "com.android.systemui.util.kotlin",
+        "com.android.systemui.util.settings-api",
         "dagger2",
+        "kotlinx_coroutines",
+        "SystemUISharedLib",
     ],
     static_libs: [
-        "//frameworks/libs/systemui:tracinglib-platform",
-        "com.android.systemui.rotation-api",
+        "com.android.systemui.statusbar.pipeline.airplane.data-api",
     ],
     defaults: [
         "SystemUI_pod_defaults_impl",
