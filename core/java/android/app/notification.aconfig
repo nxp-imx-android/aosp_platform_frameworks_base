@@ -51,6 +51,14 @@ flag {
 }
 
 flag {
+  name: "api_notification_semantic_style"
+  is_exported: true
+  namespace: "notifications"
+  description: "Adds APIs to apply semantic style (color) to notification components"
+  bug: "440125908"
+}
+
+flag {
   name: "metric_style_unit_in_label"
   namespace: "notifications"
   description: "In MetricStyle, concatenate the unit of the MetricValue to the label, instead of displaying it next to the value. This flag is only for prototyping; either the flag-on or flag-off path will be inlined once the behavior is decided."
