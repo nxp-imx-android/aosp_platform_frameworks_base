@@ -343,14 +343,20 @@ class DesktopModeWindowDecorViewModelTests : DesktopModeWindowDecorViewModelTest
     }
 
     @Test
-    fun testCloseTask_noDecoration_doesNothing() {
-        val task = createTask(windowingMode = WINDOWING_MODE_FREEFORM)
-        // No decoration is created for this task.
+    fun testCloseTask_disabledDesktopEntry_doesNothing() {
+        desktopModeWindowDecorViewModel.setFreeformTaskTransitionStarter(
+            mockFreeformTaskTransitionStarter
+        )
+        val task = createTask(windowingMode = WINDOWING_MODE_FULLSCREEN)
+        ExtendedMockito.doReturn(true)
+            .whenever(desktopModeCompatPolicy)
+            .shouldDisableDesktopEntryPoints(task)
+        createOpenTaskDecoration(task)
 
         desktopModeWindowDecorViewModel.closeTask(task)
 
-        verify(mockSplitScreenController, never()).isTaskInSplitScreen(any())
-        verify(mockFreeformTaskTransitionStarter, never()).startRemoveTransition(any())
+        verify(mockTransitions, never())
+            .startTransition(eq(WindowManager.TRANSIT_CLOSE), any(), anyOrNull())
     }
 
     @Test
@@ -1808,16 +1814,13 @@ class DesktopModeWindowDecorViewModelTests : DesktopModeWindowDecorViewModelTest
         onCaptionButtonClickListener: KArgumentCaptor<View.OnClickListener> = argumentCaptor(),
         onCaptionButtonTouchListener: KArgumentCaptor<View.OnTouchListener> = argumentCaptor(),
     ): WindowDecorationWrapper {
-        val decor =
-            setUpMockDecorationForTask(
-                createTask(
-                    windowingMode = windowingMode,
-                    displayId = displayId,
-                    requestingImmersive = requestingImmersive,
-                )
+        val task =
+            createTask(
+                windowingMode = windowingMode,
+                displayId = displayId,
+                requestingImmersive = requestingImmersive,
             )
-        onTaskOpening(decor.taskInfo, taskSurface)
-        whenever(decor.taskSurface).thenReturn(taskSurface)
+        val decor = createOpenTaskDecoration(task, taskSurface)
         verify(decor)
             .setCaptionListeners(
                 onCaptionButtonClickListener.capture(),
@@ -1825,6 +1828,16 @@ class DesktopModeWindowDecorViewModelTests : DesktopModeWindowDecorViewModelTest
                 any(),
                 any(),
             )
+        return decor
+    }
+
+    private fun createOpenTaskDecoration(
+        task: RunningTaskInfo,
+        taskSurface: SurfaceControl = SurfaceControl(),
+    ): WindowDecorationWrapper {
+        val decor = setUpMockDecorationForTask(task)
+        onTaskOpening(decor.taskInfo, taskSurface)
+        whenever(decor.taskSurface).thenReturn(taskSurface)
         return decor
     }
 
