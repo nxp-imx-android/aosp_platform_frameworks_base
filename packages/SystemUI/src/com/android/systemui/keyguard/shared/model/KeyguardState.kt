@@ -35,6 +35,11 @@ enum class KeyguardState {
      * notifications is enabled, allowing the device to quickly wake up.
      */
     DOZING,
+    @Deprecated(
+        "This state won't exist anymore when scene container gets enabled. If you are " +
+            "writing prod code today, make sure to either use flag aware APIs in " +
+            "[KeyguardTransitionInteractor] or flag appropriately with [SceneContainerFlag]."
+    )
     /**
      * A device state after the device times out, which can be from both LOCKSCREEN or GONE states.
      * DOZING is an example of special version of this state. Dreams may be implemented by third
