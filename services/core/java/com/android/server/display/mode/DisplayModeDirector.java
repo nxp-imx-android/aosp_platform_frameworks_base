@@ -958,8 +958,6 @@ public class DisplayModeDirector {
         private final Uri mMatchContentFrameRateSetting =
                 Settings.Secure.getUriFor(Settings.Secure.MATCH_CONTENT_FRAME_RATE);
 
-        private final boolean mPeakRefreshRatePhysicalLimitEnabled;
-
         private final Context mContext;
         private final Handler mHandler;
         private float mDefaultPeakRefreshRate;
@@ -994,7 +992,6 @@ public class DisplayModeDirector {
             super(handler);
             mContext = context;
             mHandler = handler;
-            mPeakRefreshRatePhysicalLimitEnabled = flags.isPeakRefreshRatePhysicalLimitEnabled();
             // We don't want to load from the DeviceConfig while constructing since this leads to
             // a spike in the latency of DisplayManagerService startup. This happens because
             // reading from the DeviceConfig is an intensive IO operation and having it in the
@@ -1197,14 +1194,12 @@ public class DisplayModeDirector {
             // used to predict if we're going to be doing frequent refresh rate switching, and if
             // so, enable the brightness observer. The logic here is more complicated and fragile
             // than necessary, and we should improve it. See b/156304339 for more info.
-            if (mPeakRefreshRatePhysicalLimitEnabled) {
-                Vote peakVote = peakRefreshRate == 0f
-                        ? null
-                        : Vote.forPhysicalRefreshRates(0f,
-                                Math.max(minRefreshRate, peakRefreshRate));
-                mVotesStorage.updateVote(displayId, Vote.PRIORITY_USER_SETTING_PEAK_REFRESH_RATE,
-                        peakVote);
-            }
+            Vote peakVote = peakRefreshRate == 0f
+                    ? null
+                    : Vote.forPhysicalRefreshRates(0f,
+                            Math.max(minRefreshRate, peakRefreshRate));
+            mVotesStorage.updateVote(displayId, Vote.PRIORITY_USER_SETTING_PEAK_REFRESH_RATE,
+                    peakVote);
             Vote peakRenderVote = peakRefreshRate == 0f
                     ? null
                     : Vote.forRenderFrameRates(0f, Math.max(minRefreshRate, peakRefreshRate));

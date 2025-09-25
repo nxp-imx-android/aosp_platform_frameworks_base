@@ -146,9 +146,6 @@ class SettingsObserverTest {
 
     @Test
     fun testSettingsRefreshRates(@TestParameter testCase: SettingsRefreshRateTestCase) {
-        whenever(mockFlags.isPeakRefreshRatePhysicalLimitEnabled)
-                .thenReturn(testCase.peakRefreshRatePhysicalLimitEnabled)
-
         val displayModeDirector = DisplayModeDirector(
             spyContext, testHandler, mockInjector, mockFlags, mockDisplayDeviceConfigProvider)
 
@@ -205,46 +202,19 @@ class SettingsObserverTest {
         val minRefreshRate: Float,
         val peakRefreshRate: Float,
         val defaultRefreshRate: Float,
-        val peakRefreshRatePhysicalLimitEnabled: Boolean,
         val expectedPrimaryRefreshRateRanges: RefreshRateRanges,
         val expectedAppRefreshRateRanges: RefreshRateRanges,
     ) {
-        NO_LIMIT(0f, 0f, 0f, false, RANGES_NO_LIMIT, RANGES_NO_LIMIT),
-        NO_LIMIT_WITH_PHYSICAL_RR(0f, 0f, 0f, true, RANGES_NO_LIMIT, RANGES_NO_LIMIT),
-
-        LIMITS_0_0_90(0f, 0f, 90f, false, RANGES_NO_LIMIT_90, RANGES_NO_LIMIT),
-        LIMITS_0_0_90_WITH_PHYSICAL_RR(0f, 0f, 90f, true, RANGES_NO_LIMIT_90, RANGES_NO_LIMIT),
-
-        LIMITS_0_90_0(0f, 90f, 0f, false, RANGES_NO_LIMIT_90, RANGES_NO_LIMIT_90),
-        LIMITS_0_90_0_WITH_PHYSICAL_RR(0f, 90f, 0f, true, RANGES_90, RANGES_90),
-
-        LIMITS_0_90_60(0f, 90f, 60f, false, RANGES_NO_LIMIT_60, RANGES_NO_LIMIT_90),
-        LIMITS_0_90_60_WITH_PHYSICAL_RR(0f, 90f, 60f, true, RANGES_90_60, RANGES_90),
-
-        LIMITS_0_90_120(0f, 90f, 120f, false, RANGES_NO_LIMIT_90, RANGES_NO_LIMIT_90),
-        LIMITS_0_90_120_WITH_PHYSICAL_RR(0f, 90f, 120f, true, RANGES_90, RANGES_90),
-
-        LIMITS_90_0_0(90f, 0f, 0f, false, RANGES_MIN90, RANGES_NO_LIMIT),
-        LIMITS_90_0_0_WITH_PHYSICAL_RR(90f, 0f, 0f, true, RANGES_MIN90, RANGES_NO_LIMIT),
-
-        LIMITS_90_0_120(90f, 0f, 120f, false, RANGES_MIN90_90TO120, RANGES_NO_LIMIT),
-        LIMITS_90_0_120_WITH_PHYSICAL_RR(90f,
-            0f,
-            120f,
-            true,
-            RANGES_MIN90_90TO120,
-            RANGES_NO_LIMIT),
-
-        LIMITS_90_0_60(90f, 0f, 60f, false, RANGES_MIN90, RANGES_NO_LIMIT),
-        LIMITS_90_0_60_WITH_PHYSICAL_RR(90f, 0f, 60f, true, RANGES_MIN90, RANGES_NO_LIMIT),
-
-        LIMITS_90_120_0(90f, 120f, 0f, false, RANGES_MIN90_90TO120, RANGES_NO_LIMIT_120),
-        LIMITS_90_120_0_WITH_PHYSICAL_RR(90f, 120f, 0f, true, RANGES_90TO120, RANGES_120),
-
-        LIMITS_90_60_0(90f, 60f, 0f, false, RANGES_MIN90_90TO90, RANGES_NO_LIMIT_90),
-        LIMITS_90_60_0_WITH_PHYSICAL_RR(90f, 60f, 0f, true, RANGES_90TO90, RANGES_90),
-
-        LIMITS_60_120_90(60f, 120f, 90f, false, RANGES_MIN60_60TO90, RANGES_NO_LIMIT_120),
-        LIMITS_60_120_90_WITH_PHYSICAL_RR(60f, 120f, 90f, true, RANGES_60TO120_60TO90, RANGES_120),
+        NO_LIMIT_WITH_PHYSICAL_RR(0f, 0f, 0f, RANGES_NO_LIMIT, RANGES_NO_LIMIT),
+        LIMITS_0_0_90_WITH_PHYSICAL_RR(0f, 0f, 90f, RANGES_NO_LIMIT_90, RANGES_NO_LIMIT),
+        LIMITS_0_90_0_WITH_PHYSICAL_RR(0f, 90f, 0f, RANGES_90, RANGES_90),
+        LIMITS_0_90_60_WITH_PHYSICAL_RR(0f, 90f, 60f, RANGES_90_60, RANGES_90),
+        LIMITS_0_90_120_WITH_PHYSICAL_RR(0f, 90f, 120f, RANGES_90, RANGES_90),
+        LIMITS_90_0_0_WITH_PHYSICAL_RR(90f, 0f, 0f, RANGES_MIN90, RANGES_NO_LIMIT),
+        LIMITS_90_0_120_WITH_PHYSICAL_RR(90f, 0f, 120f, RANGES_MIN90_90TO120, RANGES_NO_LIMIT),
+        LIMITS_90_0_60_WITH_PHYSICAL_RR(90f, 0f, 60f, RANGES_MIN90, RANGES_NO_LIMIT),
+        LIMITS_90_120_0_WITH_PHYSICAL_RR(90f, 120f, 0f, RANGES_90TO120, RANGES_120),
+        LIMITS_90_60_0_WITH_PHYSICAL_RR(90f, 60f, 0f, RANGES_90TO90, RANGES_90),
+        LIMITS_60_120_90_WITH_PHYSICAL_RR(60f, 120f, 90f, RANGES_60TO120_60TO90, RANGES_120),
     }
 }

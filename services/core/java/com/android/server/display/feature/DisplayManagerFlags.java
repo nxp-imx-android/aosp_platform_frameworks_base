@@ -103,11 +103,6 @@ public class DisplayManagerFlags {
             Flags::useFusionProxSensor
     );
 
-    private final FlagState mPeakRefreshRatePhysicalLimit = new FlagState(
-            Flags.FLAG_ENABLE_PEAK_REFRESH_RATE_PHYSICAL_LIMIT,
-            Flags::enablePeakRefreshRatePhysicalLimit
-    );
-
     private final FlagState mSynthetic60hzModes = new FlagState(
             Flags.FLAG_ENABLE_SYNTHETIC_60HZ_MODES,
             Flags::enableSynthetic60hzModes
@@ -316,10 +311,6 @@ public class DisplayManagerFlags {
         return mUseFusionProxSensor.getName();
     }
 
-    public boolean isPeakRefreshRatePhysicalLimitEnabled() {
-        return mPeakRefreshRatePhysicalLimit.isEnabled();
-    }
-
     public boolean isSynthetic60HzModesEnabled() {
         return mSynthetic60hzModes.isEnabled();
     }
@@ -509,7 +500,6 @@ public class DisplayManagerFlags {
         pw.println(" " + mDozeBrightnessStrategy);
         pw.println(" " + mResolutionBackupRestore);
         pw.println(" " + mUseFusionProxSensor);
-        pw.println(" " + mPeakRefreshRatePhysicalLimit);
         pw.println(" " + mSynthetic60hzModes);
         pw.println(" " + mNormalBrightnessForDozeParameter);
         pw.println(" " + mEnableBatteryStatsForAllDisplays);
