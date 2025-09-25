@@ -12,7 +12,6 @@ import com.android.systemui.biometrics.promptInfo
 import com.android.systemui.biometrics.shared.model.BiometricModalities
 import com.android.systemui.biometrics.shared.model.PromptKind
 import com.android.systemui.haptics.msdl.msdlPlayer
-import com.android.systemui.keyguard.domain.interactor.keyguardTransitionInteractor
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.shade.domain.interactor.shadeInteractor
 import com.android.systemui.testKosmos
@@ -53,7 +52,6 @@ class CredentialViewModelTest : SysuiTestCase() {
                 kosmos.shadeInteractor,
                 kosmos.promptSelectorInteractor,
                 kosmos.msdlPlayer,
-                kosmos.keyguardTransitionInteractor,
             )
 
         kosmos.testScope.runCurrent()

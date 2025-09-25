@@ -311,8 +311,8 @@ object BiometricViewBinder {
                 }
 
                 launch {
-                    viewModel.shouldDismiss.collect { shouldDismiss ->
-                        if (shouldDismiss) {
+                    viewModel.isShadeInteracted.collect { isShadeInteracted ->
+                        if (isShadeInteracted) {
                             legacyCallback.onUserCanceled()
                         }
                     }
