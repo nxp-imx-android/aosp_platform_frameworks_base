@@ -83,7 +83,6 @@ android_test {
         "flag-junit",
         "flag-junit",
         "flickerlib-parsers",
-        "flickerlib-trace_processor_shell",
         "frameworks-base-testutils",
         "frameworks-core-util-lib",
         "guava",
