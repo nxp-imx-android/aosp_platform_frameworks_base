@@ -46774,6 +46774,7 @@ package android.telephony {
     method @NonNull public String getPrimaryImei();
     method @Nullable @RequiresPermission(allOf={android.Manifest.permission.READ_PHONE_STATE, android.Manifest.permission.ACCESS_COARSE_LOCATION}) public android.telephony.ServiceState getServiceState();
     method @Nullable @RequiresPermission(allOf={android.Manifest.permission.READ_PHONE_STATE, android.Manifest.permission.ACCESS_COARSE_LOCATION}) public android.telephony.ServiceState getServiceState(int);
+    method @FlaggedApi("com.android.internal.telephony.flags.get_service_state_for_slot") @Nullable @RequiresPermission(allOf={android.Manifest.permission.READ_PHONE_STATE, android.Manifest.permission.ACCESS_COARSE_LOCATION}) public android.telephony.ServiceState getServiceStateForSlot(int);
     method @Nullable public android.telephony.SignalStrength getSignalStrength();
     method public int getSimCarrierId();
     method @Nullable public CharSequence getSimCarrierIdName();
