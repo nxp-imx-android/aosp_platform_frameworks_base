@@ -23,16 +23,13 @@ import androidx.annotation.IdRes
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.res.ResourcesCompat
 import com.android.compose.animation.scene.ElementContentScope
 import com.android.compose.animation.scene.ElementKey
-import com.android.compose.modifiers.padding
 import com.android.systemui.animation.view.LaunchableImageView
 import com.android.systemui.keyguard.ui.binder.KeyguardQuickAffordanceViewBinder
 import com.android.systemui.keyguard.ui.viewmodel.KeyguardQuickAffordanceViewModel
@@ -83,12 +80,7 @@ constructor(
      *   shortcut is placed along the edges of the display.
      */
     @Composable
-    private fun Shortcut(
-        isStart: Boolean,
-        applyPadding: Boolean,
-        onTopChanged: ((Float) -> Unit)? = null,
-        modifier: Modifier = Modifier,
-    ) {
+    private fun Shortcut(isStart: Boolean, applyPadding: Boolean, modifier: Modifier = Modifier) {
         Shortcut(
             viewId = if (isStart) R.id.start_button else R.id.end_button,
             viewModel = if (isStart) viewModel.startButton else viewModel.endButton,
