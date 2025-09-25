@@ -59,6 +59,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * This class responsible for disassociation.
@@ -202,14 +203,18 @@ public class DisassociationProcessor {
                     association.getExtraPermissions(), association.getUserId());
         }
 
-        // TODO: Handle permission effects on a non-profile device when a role-holding
-        //  device disassociates. b/445751225
         // If role is not in use by other associations, revoke the role.
         // Do not need to remove the system role since it was pre-granted by the system.
         if (!isRoleInUseByOtherAssociations && deviceProfile != null && !deviceProfile.equals(
                 DEVICE_PROFILE_AUTOMOTIVE_PROJECTION)) {
             removeRoleHolderForAssociation(mContext, association.getUserId(),
-                    association.getPackageName(), association.getDeviceProfile());
+                    association.getPackageName(), association.getDeviceProfile(), (success) -> {
+                        if (success) {
+                            // If the permission is used by other non-profile devices, reconcile it.
+                            reconcileNonProfileDevicesPermissions(association.getPackageName(),
+                                    association.getUserId());
+                        }
+                    });
         }
         // Handle unbind in DevicePresenceProcessor instead.
         if (!Flags.notifyAssociationRemoved()) {
@@ -401,5 +406,29 @@ public class DisassociationProcessor {
                                     .flatMap(Collection::stream)
                                     .anyMatch(permission::equals);
                         });
+    }
+
+    private void reconcileNonProfileDevicesPermissions(String packageName, int userId) {
+        Binder.withCleanCallingIdentity(() -> {
+            final PackageManager packageManager = mContext.getPackageManager();
+            final UserHandle user = UserHandle.of(userId);
+
+            PermissionsUtils.getIndividualPermissionsFromKeys(
+                    mAssociationStore.getAssociationsByPackage(userId, packageName).stream()
+                            .filter(associationInfo ->
+                                    associationInfo.getDeviceProfile() == null
+                            )
+                            .flatMap(associationInfo ->
+                                    associationInfo.getExtraPermissions().stream()
+                            )
+                            .collect(Collectors.toSet())
+                    ).stream()
+                    .filter(permission ->
+                            packageManager.checkPermission(permission, packageName)
+                                    != PackageManager.PERMISSION_GRANTED
+                    )
+                    .forEach(permission ->
+                            packageManager.grantRuntimePermission(packageName, permission, user));
+        });
     }
 }
