@@ -102,12 +102,6 @@ public class DisplayManagerFlags {
             Flags.FLAG_USE_FUSION_PROX_SENSOR,
             Flags::useFusionProxSensor
     );
-
-    private final FlagState mSynthetic60hzModes = new FlagState(
-            Flags.FLAG_ENABLE_SYNTHETIC_60HZ_MODES,
-            Flags::enableSynthetic60hzModes
-    );
-
     private final FlagState mNormalBrightnessForDozeParameter = new FlagState(
             Flags.FLAG_NORMAL_BRIGHTNESS_FOR_DOZE_PARAMETER,
             Flags::normalBrightnessForDozeParameter
@@ -311,10 +305,6 @@ public class DisplayManagerFlags {
         return mUseFusionProxSensor.getName();
     }
 
-    public boolean isSynthetic60HzModesEnabled() {
-        return mSynthetic60hzModes.isEnabled();
-    }
-
     /**
      * @return Whether the useDozeBrightness parameter should be used
      */
@@ -500,7 +490,6 @@ public class DisplayManagerFlags {
         pw.println(" " + mDozeBrightnessStrategy);
         pw.println(" " + mResolutionBackupRestore);
         pw.println(" " + mUseFusionProxSensor);
-        pw.println(" " + mSynthetic60hzModes);
         pw.println(" " + mNormalBrightnessForDozeParameter);
         pw.println(" " + mEnableBatteryStatsForAllDisplays);
         pw.println(" " + mBlockAutobrightnessChangesOnStylusUsage);
