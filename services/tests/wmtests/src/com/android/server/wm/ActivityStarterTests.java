@@ -81,6 +81,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.notNull;
 
+import android.annotation.Nullable;
 import android.app.ActivityOptions;
 import android.app.AppOpsManager;
 import android.app.IApplicationThread;
@@ -97,6 +98,7 @@ import android.graphics.Rect;
 import android.os.Binder;
 import android.os.IBinder;
 import android.os.RemoteException;
+import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
 import android.platform.test.annotations.RequiresFlagsDisabled;
@@ -114,9 +116,11 @@ import androidx.test.filters.SmallTest;
 
 import com.android.compatibility.common.util.DeviceConfigStateHelper;
 import com.android.server.pm.PackageArchiver;
+import com.android.server.pm.UserManagerInternal;
 import com.android.server.pm.pkg.AndroidPackage;
 import com.android.server.wm.BackgroundActivityStartController.BalVerdict;
 import com.android.server.wm.LaunchParamsController.LaunchParamsModifier;
+import com.android.server.wm.WindowTestsBase.ActivityBuilder;
 import com.android.server.wm.utils.MockTracker;
 import com.android.window.flags.Flags;
 
@@ -130,6 +134,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Consumer;
 
 /**
  * Tests for the {@link ActivityStarter} class.
@@ -165,6 +170,7 @@ public class ActivityStarterTests extends WindowTestsBase {
     private ActivityStartController mController;
     private ActivityMetricsLogger mActivityMetricsLogger;
     private PackageManagerInternal mMockPackageManager;
+    private UserManagerInternal mMockUmi;
     private AppOpsManager mAppOpsManager;
 
     @Before
@@ -364,6 +370,12 @@ public class ActivityStarterTests extends WindowTestsBase {
         return prepareStarter(launchFlags, mockGetRootTask, LAUNCH_MULTIPLE);
     }
 
+    private ActivityStarter prepareStarter(@Intent.Flags int launchFlags,
+            boolean mockGetRootTask, int launchMode) {
+        return prepareStarter(launchFlags, mockGetRootTask, launchMode,
+                /* activityInfoVisitor= */ null);
+    }
+
     /**
      * Creates a {@link ActivityStarter} with default parameters and necessary mocks.
      *
@@ -372,10 +384,14 @@ public class ActivityStarterTests extends WindowTestsBase {
      *                           always launching to the testing stack. Set to false when allowing
      *                           the activity can be launched to any stack that is decided by real
      *                           implementation.
+     * @param activityInfoVisitor when not {@code null}, will be called after the ActivityInfo
+     *                           associated with the ActivityStarter is created and initially set.
+     *
      * @return A {@link ActivityStarter} with default setup.
      */
     private ActivityStarter prepareStarter(@Intent.Flags int launchFlags,
-            boolean mockGetRootTask, int launchMode) {
+            boolean mockGetRootTask, int launchMode,
+            @Nullable Consumer<ActivityInfo> activityInfoVisitor) {
         // always allow test to start activity.
         doReturn(true).when(mSupervisor).checkStartAnyActivityPermission(
                 any(), any(), any(), anyInt(), anyInt(), anyInt(), any(), any(),
@@ -420,6 +436,9 @@ public class ActivityStarterTests extends WindowTestsBase {
         doReturn(signingDetails).when(mockPackage).getSigningDetails();
         doReturn(false).when(signingDetails).hasAncestorOrSelfWithDigest(any());
 
+        mMockUmi = mock(UserManagerInternal.class);
+        doReturn(mMockUmi).when(mAtm).getUserManagerInternal();
+
         final Intent intent = new Intent();
         intent.addFlags(launchFlags);
         intent.setComponent(ActivityBuilder.getDefaultComponent());
@@ -429,6 +448,10 @@ public class ActivityStarterTests extends WindowTestsBase {
         info.applicationInfo = new ApplicationInfo();
         info.applicationInfo.packageName = ActivityBuilder.getDefaultComponent().getPackageName();
         info.launchMode = launchMode;
+
+        if (activityInfoVisitor != null) {
+            activityInfoVisitor.accept(info);
+        }
 
         return new ActivityStarter(mController, mAtm,
                 mAtm.mTaskSupervisor, mock(ActivityStartInterceptor.class))
@@ -748,6 +771,84 @@ public class ActivityStarterTests extends WindowTestsBase {
                 eq(FAKE_REAL_CALLING_UID), anyInt(), anyBoolean(), eq(false));
     }
 
+    /**
+     * This test ensures that UserManagerInternal is notified when an activity is launched on HSU
+     * (Headless System User).
+     */
+    @Test
+    @EnableFlags(android.multiuser.Flags.FLAG_HSU_ALLOWLIST_ACTIVITIES)
+    public void testHsuAllowlistIntegration_notifyWhenActivityIsLaunched() {
+        ActivityStarter starter = prepareStarter(FLAG_ACTIVITY_NEW_TASK);
+        mockIsHsum(true);
+
+        starter.setReason("testHsuAllowlistIntegration_notifyWhenActivityIsLaunch").execute();
+
+        verifyUmiNotifiedActivityLaunched();
+    }
+
+    /**
+     * This test ensures that UserManagerInternal is NOT notified when an activity is launched on
+     * HSU because the flag guarding that feature is disabled.
+     */
+    @Test
+    @DisableFlags(android.multiuser.Flags.FLAG_HSU_ALLOWLIST_ACTIVITIES)
+    public void testHsuAllowlistIntegration_dontNotifyWhenFlagIsDisabled() {
+        ActivityStarter starter = prepareStarter(FLAG_ACTIVITY_NEW_TASK);
+        mockIsHsum(true);
+
+        starter.setReason("testHsuAllowlistIntegration_dontNotifyWhenFlagIsDisabled").execute();
+
+        verifyUmiNotNotifiedActivityLaunched();
+    }
+
+    /**
+     * This test ensures that UserManagerInternal is NOT notified when an activity is launched on
+     * HSU because the device is not HSUM.
+     */
+    @Test
+    @EnableFlags(android.multiuser.Flags.FLAG_HSU_ALLOWLIST_ACTIVITIES)
+    public void testHsuAllowlistIntegration_dontNotifyWhenDeviceIsNotHsum() {
+        ActivityStarter starter = prepareStarter(FLAG_ACTIVITY_NEW_TASK);
+        mockIsHsum(false);
+
+        starter.setReason("testHsuAllowlistIntegration_dontNotifyWhenDeviceIsNotHsum").execute();
+
+        verifyUmiNotNotifiedActivityLaunched();
+    }
+
+    /**
+     * This test ensures that UserManagerInternal is NOT notified when an activity is launched on
+     * HSU because the user is not the HSU.
+     */
+    @Test
+    @EnableFlags(android.multiuser.Flags.FLAG_HSU_ALLOWLIST_ACTIVITIES)
+    public void testHsuAllowlistIntegration_dontNotifyWhenUserIsNotHsu() {
+        ActivityStarter starter = prepareStarter(FLAG_ACTIVITY_NEW_TASK,
+                /* mockGetRootTask= */ true, LAUNCH_MULTIPLE,
+                info -> info.applicationInfo.uid = 42_6666); // userId = 42
+        mockIsHsum(true);
+
+        starter.setReason("testHsuAllowlistIntegration_dontNotifyWhenUserIsNotHsu").execute();
+
+        verifyUmiNotNotifiedActivityLaunched();
+    }
+
+    /**
+     * This test ensures that UserManagerInternal is NOT notified when an activity is launched on
+     * HSU because the activity didn't start.
+     */
+    @Test
+    @EnableFlags(android.multiuser.Flags.FLAG_HSU_ALLOWLIST_ACTIVITIES)
+    public void testHsuAllowlistIntegration_dontNotifyWhenActivityDidntStart() {
+        ActivityStarter starter = prepareStarter(FLAG_ACTIVITY_NEW_TASK);
+        mockIsHsum(true);
+        spyOn(starter);
+        doReturn(START_ABORTED).when(starter).isAllowedToStart(any(), anyBoolean(), any());
+
+        starter.setReason("testHsuAllowlistIntegration_dontNotifyWhenActivityDidntStart").execute();
+
+        verifyUmiNotNotifiedActivityLaunched();
+    }
 
     /**
      * This test ensures that unsupported usecases are aborted when background starts are
@@ -1995,6 +2096,18 @@ public class ActivityStarterTests extends WindowTestsBase {
                 .setComponent(ActivityBuilder.getDefaultComponent())
                 .setActivityOptions(opts)
                 .build();
+    }
+
+    private void mockIsHsum(boolean value) {
+        doReturn(value).when(mMockUmi).isHeadlessSystemUserMode();
+    }
+
+    private void verifyUmiNotifiedActivityLaunched() {
+        verify(mMockUmi).logLaunchedHsuActivity(ActivityBuilder.getDefaultComponent());
+    }
+
+    private void verifyUmiNotNotifiedActivityLaunched() {
+        verify(mMockUmi, never()).logLaunchedHsuActivity(any());
     }
 
     private static void startActivityInner(ActivityStarter starter, ActivityRecord target,
