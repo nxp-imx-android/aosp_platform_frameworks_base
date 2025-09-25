@@ -17,7 +17,9 @@ package android.view.contentcapture;
 
 import static android.view.contentcapture.CustomTestActivity.VIEW_TYPE_CUSTOM_VIEW;
 import static android.view.contentcapture.CustomTestActivity.VIEW_TYPE_TEXT_VIEW;
+
 import static com.android.compatibility.common.util.ActivitiesWatcher.ActivityLifecycle.DESTROYED;
+
 import static com.google.common.truth.Truth.assertThat;
 
 import android.content.Intent;
@@ -29,6 +31,7 @@ import android.platform.test.flag.junit.DeviceFlagsValueProvider;
 import android.service.contentcapture.ContentCaptureService;
 import android.view.View;
 import android.view.contentcapture.flags.Flags;
+
 import androidx.test.filters.LargeTest;
 
 import com.android.compatibility.common.util.ActivitiesWatcher.ActivityWatcher;
@@ -291,7 +294,16 @@ public class LoginTest extends AbstractContentCapturePerfTestCase {
         CustomTestActivity activity = launchActivity(layoutId, numberOfViews, viewType);
         View rootView = activity.findViewById(R.id.group_root_view);
         long eventTimeoutMs = 20000;
+        int expectedFlushCount = 2;
         BenchmarkState state = mPerfStatusReporter.getBenchmarkState();
+        // Force flush the initial events.
+        state.pauseTiming();
+        sInstrumentation.runOnMainSync(() -> rootView.setVisibility(View.GONE));
+        sInstrumentation.waitForIdleSync();
+        sInstrumentation.runOnMainSync(() -> rootView.setVisibility(View.VISIBLE));
+        sInstrumentation.waitForIdleSync();
+        service.waitForFlushEvents(expectedFlushCount, eventTimeoutMs);
+        state.resumeTiming();
 
         // Act
         while (state.keepRunning()) {
@@ -304,7 +316,7 @@ public class LoginTest extends AbstractContentCapturePerfTestCase {
             sInstrumentation.runOnMainSync(() -> rootView.setVisibility(View.VISIBLE));
             sInstrumentation.waitForIdleSync();
             state.pauseTiming();
-            service.waitForAppearedEvents(expectedViewAppearedCounts, eventTimeoutMs);
+            service.waitForFlushEvents(expectedFlushCount, eventTimeoutMs);
 
             // Assert
             Assert.assertEquals("Expected " + expectedViewAppearedCounts
@@ -328,6 +340,14 @@ public class LoginTest extends AbstractContentCapturePerfTestCase {
         int expectedViewAppearedCount = 4;  // 3 TextViews + 1 container
         int eventTimeoutMs = 10000;
         BenchmarkState state = mPerfStatusReporter.getBenchmarkState();
+        // Force flush the initial events.
+        state.pauseTiming();
+        sInstrumentation.runOnMainSync(() -> groupRootView.setVisibility(View.GONE));
+        sInstrumentation.waitForIdleSync();
+        sInstrumentation.runOnMainSync(() -> groupRootView.setVisibility(View.VISIBLE));
+        sInstrumentation.waitForIdleSync();
+        service.waitForFlushEvents(expectedFlushCount, eventTimeoutMs);
+        state.resumeTiming();
 
         // Act
         while (state.keepRunning()) {
