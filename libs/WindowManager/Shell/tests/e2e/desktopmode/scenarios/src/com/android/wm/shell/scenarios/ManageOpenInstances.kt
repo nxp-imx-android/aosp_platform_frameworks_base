@@ -58,6 +58,7 @@ abstract class ManageOpenInstances(val rotation: Rotation = Rotation.ROTATION_0)
         tapl.showTaskbarIfHidden()
         openNewWindowFromTaskbarMenu()
         openNewWindowFromTaskbarMenu()
+        wmHelper.StateSyncBuilder().withAppTransitionIdle().waitForAndVerify()
     }
 
     @Test
