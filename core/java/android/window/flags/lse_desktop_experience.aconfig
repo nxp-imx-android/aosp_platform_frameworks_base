@@ -182,10 +182,11 @@ flag {
 }
 
 flag {
-    name: "enable_bounds_restoring_on_tiling_exit"
+    name: "enable_bounds_restoring_on_drag_exit"
     namespace: "lse_desktop_experience"
-    description: "Enables restoring to the pre-tiling bounds when exiting tiling."
-    bug: "379664001"
+    description: "Enables restoring to previous bounds when exiting via dragging for \n"
+                 "snapped, tiled and maximized windows in freeform."
+    bug: "447375505"
 }
 
 flag {
