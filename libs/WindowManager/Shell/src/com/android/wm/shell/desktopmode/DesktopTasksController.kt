@@ -2488,7 +2488,7 @@ class DesktopTasksController(
      * handled by [handleRequest]
      */
     fun startLaunchIntentTransition(
-        intent: Intent,
+        pendingIntent: PendingIntent,
         options: Bundle,
         displayId: Int,
         userId: Int = shellController.currentUserId,
@@ -2511,15 +2511,6 @@ class DesktopTasksController(
                 stableBounds,
             )
         }
-        val pendingIntent =
-            PendingIntent.getActivityAsUser(
-                context,
-                /* requestCode= */ 0,
-                intent,
-                PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_ONE_SHOT,
-                /* options= */ null,
-                UserHandle.of(userId),
-            )
         val ops =
             ActivityOptions.fromBundle(options).apply {
                 launchWindowingMode = WINDOWING_MODE_FREEFORM
@@ -2533,7 +2524,7 @@ class DesktopTasksController(
                 }
             }
 
-        wct.sendPendingIntent(pendingIntent, intent, ops.toBundle())
+        wct.sendPendingIntent(pendingIntent, null, ops.toBundle())
         startLaunchTransition(
             TRANSIT_OPEN,
             wct,
@@ -6824,9 +6815,13 @@ class DesktopTasksController(
             }
         }
 
-        override fun startLaunchIntentTransition(intent: Intent, options: Bundle, displayId: Int) {
+        override fun startLaunchIntentTransition(
+            pendingIntent: PendingIntent,
+            options: Bundle,
+            displayId: Int,
+        ) {
             executeRemoteCallWithTaskPermission(controller, "startLaunchIntentTransition") { c ->
-                c.startLaunchIntentTransition(intent, options, displayId)
+                c.startLaunchIntentTransition(pendingIntent, options, displayId)
             }
         }
 
