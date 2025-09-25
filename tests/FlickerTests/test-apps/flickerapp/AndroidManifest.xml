@@ -49,6 +49,7 @@
         <activity android:name=".ImeActivity"
                   android:taskAffinity="com.android.server.wm.flicker.testapp.ImeActivity"
                   android:label="ImeActivity"
+                  android:resizeableActivity="true"
                   android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
