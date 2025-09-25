@@ -109,7 +109,7 @@ private fun SelectorItem(
     val label = currentRecentTaskViewModel.label?.getOrNull()
 
     Surface(
-        shape = RoundedCornerShape(4.dp),
+        shape = if (isSelected) RoundedCornerShape(20.dp) else RoundedCornerShape(4.dp),
         color =
             if (isSelected) MaterialTheme.colorScheme.primary
             else MaterialTheme.colorScheme.surfaceContainer,
