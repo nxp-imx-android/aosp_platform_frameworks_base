@@ -360,7 +360,7 @@ public class DisplayContentDeferredUpdateTests extends WindowTestsBase {
 
         when(mDisplayContent.mTransitionController.inTransition()).thenReturn(false);
         final Transition transition = captureRequestedTransition().getValue();
-        makeTransitionTransactionPresented(transition);
+        transition.invokePresentedListenersForTest();
 
         // Verify that screen is unblocked as start transaction of the transition
         // has been completed
@@ -437,7 +437,7 @@ public class DisplayContentDeferredUpdateTests extends WindowTestsBase {
         // Mark start transactions as presented
         when(mDisplayContent.mTransitionController.inTransition()).thenReturn(false);
         captureRequestedTransition().getAllValues().forEach(
-                this::makeTransitionTransactionPresented);
+                Transition::invokePresentedListenersForTest);
 
         // Verify that the default screen unblocker is sent only after start transaction
         // of the Shell transition is presented
@@ -500,15 +500,6 @@ public class DisplayContentDeferredUpdateTests extends WindowTestsBase {
         verify(mDisplayContent.mTransitionController, atLeast(1))
                 .requestStartTransition(callbackCaptor.capture(), any(), any(), any());
         return callbackCaptor;
-    }
-
-    private void makeTransitionTransactionPresented(Transition transition) {
-        if (transition.mTransactionPresentedListeners != null) {
-            for (int i = 0; i < transition.mTransactionPresentedListeners.size(); i++) {
-                final Runnable listener = transition.mTransactionPresentedListeners.get(i);
-                listener.run();
-            }
-        }
     }
 
     private void performPhysicalDisplaySwitch() {

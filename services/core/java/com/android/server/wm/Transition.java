@@ -272,8 +272,7 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
 
     private static final Duration TRANSACTION_PRESENTED_TIMEOUT = Duration.ofSeconds(1);
 
-    @VisibleForTesting
-    ArrayList<Runnable> mTransactionPresentedListeners = null;
+    private ArrayList<Runnable> mTransactionPresentedListeners = null;
 
     private ArrayList<Runnable> mTransitionEndedListeners = null;
 
@@ -2305,6 +2304,16 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
                         onPresented.run();
                     }
                 });
+    }
+
+    @VisibleForTesting
+    void invokePresentedListenersForTest() {
+        if (mTransactionPresentedListeners != null) {
+            for (int i = 0; i < mTransactionPresentedListeners.size(); i++) {
+                final Runnable listener = mTransactionPresentedListeners.get(i);
+                listener.run();
+            }
+        }
     }
 
     private void waitForPresentFence(SyncFence fence, Runnable onPresented) {
