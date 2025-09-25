@@ -21,8 +21,8 @@
     xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
     <string name="app_label" msgid="4811759950673118541">"सिस्‍टम यूआई"</string>
     <string name="battery_low_title" msgid="5319680173344341779">"क्या आपको बैटरी सेवर मोड चालू करना है?"</string>
-    <string name="battery_low_description" msgid="3282977755476423966">"आपकी बैटरी <xliff:g id="PERCENTAGE">%s</xliff:g> बची है. बैटरी सेवर मोड पर, गहरे रंग वाली थीम चालू होती है और बैकग्राउंड में चल रही गतिविधियों पर रोक लग जाती है. इसके अलावा, आपको सूचनाएं भी देरी से मिलती हैं."</string>
-    <string name="battery_low_intro" msgid="5148725009653088790">"बैटरी सेवर मोड पर, गहरे रंग वाली थीम चालू होती है और बैकग्राउंड में चल रही गतिविधियों पर रोक लग जाती है. इसके अलावा, आपको सूचनाएं भी देरी से मिलती हैं."</string>
+    <string name="battery_low_description" msgid="7848989602036547056">"आपके डिवाइस में <xliff:g id="PERCENTAGE">%s</xliff:g> बैटरी बची है. बैटरी सेवर मोड, गहरे रंग वाली थीम चालू करता है और बैकग्राउंड में होने वाली गतिविधियों को कम कर देता है. साथ ही, यह आपको देर में सूचनाएं दिखता है."</string>
+    <string name="battery_low_intro" msgid="8033783734931200690">"बैटरी सेवर मोड, गहरे रंग वाली थीम चालू करता है और बैकग्राउंड में होने वाली गतिविधियों को कम कर देता है. साथ ही, यह आपको देर में सूचनाएं दिखता है."</string>
     <string name="battery_low_percent_format" msgid="4276661262843170964">"<xliff:g id="PERCENTAGE">%s</xliff:g> शेष"</string>
     <string name="invalid_charger_title" msgid="938685362320735167">"यूएसबी के ज़रिए चार्ज नहीं किया जा सकता"</string>
     <string name="invalid_charger_text" msgid="2339310107232691577">"अपने डिवाइस के साथ मिलने वाले चार्जर का इस्तेमाल करें"</string>
@@ -140,8 +140,7 @@
     <string name="screenrecord_stop_dialog_button" msgid="2883812564938194350">"रिकॉर्ड करना बंद करें"</string>
     <string name="screen_record_entire_screen" msgid="66944996337928170">"पूरी स्क्रीन"</string>
     <string name="screen_record_single_app" msgid="7355880948574569290">"एक ऐप्लिकेशन"</string>
-    <!-- no translation found for screen_record_single_app_hint (8404332826093639170) -->
-    <skip />
+    <string name="screen_record_single_app_hint" msgid="8404332826093639170">"रिकॉर्ड करने के लिए ऐप्लिकेशन"</string>
     <string name="screen_record_single_app_no_recents" msgid="1023249803854209330">"एक ऐप्लिकेशन (चुनने के लिए कोई ऐप्लिकेशन खोलें)"</string>
     <string name="screen_record_record_device_audio_label" msgid="5363057443124085198">"डिवाइस का ऑडियो रिकॉर्ड करें"</string>
     <string name="screen_record_record_microphone_label" msgid="4685753707185662381">"माइक्रोफ़ोन से ऑडियो रिकॉर्ड करें"</string>
@@ -149,11 +148,13 @@
     <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"टच करने से जुड़ी सेटिंग दिखाएं"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"स्क्रीन रिकॉर्ड करने के लिए कोई ऐप्लिकेशन चुनें"</string>
     <string name="screen_record_video_saved" msgid="1345283626390232282">"वीडियो सेव किया गया"</string>
-    <!-- no translation found for screen_record_undo (7942716736019800870) -->
-    <skip />
+    <string name="screen_record_video_deleted" msgid="30786214839944540">"वीडियो मिटाया गया"</string>
+    <string name="screen_record_undo" msgid="7942716736019800870">"पहले जैसा करें"</string>
     <string name="screen_record_retake" msgid="3846643688365398450">"फिर से शुरू करें"</string>
     <string name="screen_record_edit" msgid="8733014191240769309">"बदलाव करें"</string>
     <string name="screen_record_delete" msgid="1023421937978254537">"मिटाएं"</string>
+    <string name="screen_record_delete_dialog_title" msgid="5868561491974057044">"क्या इस रिकॉर्डिंग को मिटाना है?"</string>
+    <string name="screen_record_delete_dialog_content" msgid="2610040845214024496">"रिकॉर्डिंग को मिटाने पर, डिवाइस से इस वीडियो फ़ाइल को हमेशा के लिए मिटा दिया जाएगा."</string>
     <string name="screen_record_play" msgid="4732544724679889445">"चलाएं"</string>
     <string name="screen_record_pause" msgid="1715012292444967776">"रोकें"</string>
     <string name="screen_record_mute" msgid="8111682249858638168">"म्यूट करें"</string>
@@ -165,10 +166,8 @@
     <string name="screen_capture_toolbar_screenshot_button" msgid="5676585348709494125">"स्क्रीनशॉट"</string>
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"रिकॉर्डिंग टाइप चुनें"</string>
     <string name="screen_share_toolbar_share_button" msgid="9182050596136815833">"शेयर करें"</string>
-    <!-- no translation found for screen_share_no_select_app_thumbnail (1630012401570567430) -->
-    <skip />
-    <!-- no translation found for screen_share_app_audio_sharing (7201172218924898712) -->
-    <skip />
+    <string name="screen_share_no_select_app_thumbnail" msgid="1630012401570567430">"शेयर करने के लिए कोई ऐप्लिकेशन चुनें"</string>
+    <string name="screen_share_app_audio_sharing" msgid="7201172218924898712">"विंडो का ऑडियो शेयर करें"</string>
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"विंडो का स्क्रीनशॉट लें"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"विंडो को रिकॉर्ड करें"</string>
     <string name="screen_capture_toolbar_region_button_screenshot_a11y" msgid="2102262602357521192">"चुने गए हिस्से का स्क्रीनशॉट लें"</string>
@@ -176,7 +175,12 @@
     <string name="screen_capture_toolbar_fullscreen_button_screenshot_a11y" msgid="8699983355979869210">"पूरी स्क्रीन का स्क्रीनशॉट लें"</string>
     <string name="screen_capture_toolbar_fullscreen_button_record_a11y" msgid="852148867883959158">"पूरी स्क्रीन को रिकॉर्ड करें"</string>
     <string name="screen_capture_toolbar_settings_button_a11y" msgid="8014446956996739704">"स्क्रीन कैप्चर की सेटिंग"</string>
+    <string name="screen_capture_show_clicks_and_keys" msgid="2151690554364148717">"क्लिक और बटन दिखाएं"</string>
+    <string name="screen_capture_device_audio" msgid="1537290197773737349">"डिवाइस ऑडियो"</string>
+    <string name="screen_capture_microphone_audio" msgid="1698835678818747741">"माइक्रोफ़ोन"</string>
+    <string name="screen_capture_front_camera" msgid="1214647538302639358">"फ़्रंट कैमरा"</string>
     <string name="screen_capture_region_dimensions" msgid="2317064050253056256">"<xliff:g id="WIDTH">%1$d</xliff:g> x <xliff:g id="HEIGHT">%2$d</xliff:g>"</string>
+    <string name="screen_share_privacy_indicator_stop_sharing" msgid="2297045039651417274">"शेयर करना बंद करें"</string>
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"स्क्रीन शेयर की जा रही है"</string>
     <string name="share_to_app_chip_accessibility_label_generic" msgid="5517431657924536133">"कॉन्टेंट शेयर करें"</string>
     <string name="share_to_app_stop_dialog_title" msgid="9212915050910250438">"स्क्रीन शेयर की जा रही है, क्या इसे बंद करना है?"</string>
@@ -490,12 +494,13 @@
     <string name="accessibility_hearing_device_pair_new_device" msgid="8440082580186130090">"नया डिवाइस जोड़ने के लिए क्लिक करें"</string>
     <string name="hearing_devices_presets_error" msgid="350363093458408536">"प्रीसेट अपडेट नहीं किया जा सका"</string>
     <string name="hearing_devices_preset_label" msgid="7878267405046232358">"प्रीसेट"</string>
+    <string name="hearing_devices_preset_label_left" msgid="7427947566560179945">"लेफ़्ट प्रीसेट"</string>
+    <string name="hearing_devices_preset_label_right" msgid="1847206329436268522">"राइट प्रीसेट"</string>
     <string name="hearing_devices_input_routing_label" msgid="730396728151232306">"कॉल के लिए डिफ़ॉल्ट माइक्रोफ़ोन"</string>
   <string-array name="hearing_device_input_routing_options">
     <item msgid="4582190415045337003">"कान की मशीन के लिए माइक्रोफ़ोन"</item>
     <item msgid="8501466270452446450">"इस फ़ोन का माइक्रोफ़ोन"</item>
   </string-array>
-    <string name="hearing_devices_spinner_item_selected" msgid="3137083889662762383">"चुना गया"</string>
     <string name="hearing_devices_ambient_label" msgid="629440938614895797">"आस-पास का वॉल्यूम"</string>
     <string name="hearing_devices_ambient_control_left" msgid="3586965448230412600">"बाईं ओर के वॉल्यूम के लिए"</string>
     <string name="hearing_devices_ambient_control_right" msgid="6192137602448918383">"दाईं ओर के वॉल्यूम के लिए"</string>
@@ -750,7 +755,7 @@
     <string name="monitoring_description_pin_protection" msgid="1983580207046670355">"आपके डिवाइस पर मौजूद कुछ कंट्रोल, सिर्फ़ पिन की मदद से बदले जा सकते हैं. जैसे, रोज़ाना इस्तेमाल करने की समयसीमा और डाउनटाइम."</string>
     <string name="legacy_vpn_name" msgid="4174223520162559145">"वीपीएन"</string>
     <string name="keyguard_indication_trust_unlocked" msgid="7395154975733744547">"TrustAgent की वजह से अनलॉक रखा गया है"</string>
-    <string name="kg_prompt_after_adaptive_auth_lock" msgid="6065186971000690782">"स्क्रीन लॉक की गई. पुष्टि करने की कई कोशिशें की गईं."</string>
+    <string name="kg_prompt_after_adaptive_auth_lock" msgid="6065186971000690782">"स्क्रीन लॉक हो गई. पुष्टि करने की कई कोशिशें की गईं."</string>
     <string name="keyguard_indication_after_adaptive_auth_lock" msgid="5240600662061340872">"स्क्रीन लॉक हो गई है\nपुष्टि नहीं की जा सकी"</string>
     <string name="keyguard_indication_after_watch_disconnected" msgid="8133476870585660478">"आपकी स्मार्टवॉच से लॉक किया गया"</string>
     <string name="keyguard_indication_after_secure_lock_device" msgid="4358906300665255820">"दो चरणों में पुष्टि की सुविधा से डिवाइस लॉक है"</string>
@@ -891,7 +896,7 @@
     <string name="notification_guts_news_summary" msgid="638697931043407835">"लोकप्रिय खबरें, एडिटोरियल वगैरह"</string>
     <string name="notification_guts_social_summary" msgid="3749147631983977040">"पसंद, पोस्ट वगैरह"</string>
     <string name="notification_guts_recs_summary" msgid="8391881843238947007">"न्यूज़लेटर, सुझाया गया मीडिया वगैरह"</string>
-    <string name="notification_onboarding_summaries_turn_on" msgid="5050003857531272655">"चालू करें"</string>
+    <string name="notification_onboarding_summaries_turn_on" msgid="3831339570984683297">"सेटिंग में जाकर, इस सुविधा को चालू करें"</string>
     <string name="notification_onboarding_summaries_message" msgid="6061524903176459064">"अब आपको अपनी लंबी बातचीत की खास जानकारी, रीकैप के तौर पर तुरंत मिल सकती है"</string>
     <string name="notification_onboarding_bundles_message" msgid="4612908213178622912">"सूचनाओं को व्यवस्थित करने की सेटिंग, ऐसी सूचनाओं को बंडल करती है और उनकी आवाज़ बंद करती है जो ज़्यादा अहम नहीं होती हैं. सेटिंग में जाकर, ज़्यादा कैटगरी जोड़ें."</string>
     <string name="notification_bundle_header_counter" msgid="5515532701569242265">"{count,plural, =1{# सूचना}one{# सूचना}other{# सूचनाएं}}"</string>
@@ -1145,15 +1150,11 @@
     <string name="accessibility_key_gesture_dialog_content" msgid="4519838108423437794">"<xliff:g id="ID_3">^3</xliff:g> इस्तेमाल करने के लिए कीबोर्ड शॉर्टकट, ऐक्शन "<annotation id="action_key_icon">"आइकॉन"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> है. <xliff:g id="ID_4">^4</xliff:g>"</string>
     <string name="accessibility_key_gesture_dialog_talkback_intro" msgid="1617808784388544741">"<xliff:g id="ID_1">%1$s</xliff:g>, एक स्क्रीन रीडर है. इससे स्क्रीन पर मौजूद आइटम के बारे में तेज़ आवाज़ में सुना जा सकता है. यह ऐसे लोगों के लिए मददगार साबित हो सकता है जिन्हें स्क्रीन पर देखने में परेशानी होती है."</string>
     <string name="accessibility_key_gesture_dialog_positive_button_text" msgid="3670746017523589293">"चालू करें"</string>
-    <!-- no translation found for accessibility_key_gesture_shortcut_not_yet_enabled_dialog_title (5331043821287212071) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_shortcut_not_yet_enabled_negative_button_text (6711239406914231612) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_shortcut_not_yet_enabled_positive_button_text (7748487028569821131) -->
-    <skip />
+    <string name="accessibility_key_gesture_shortcut_not_yet_enabled_dialog_title" msgid="5331043821287212071">"क्या <xliff:g id="ID_1">%1$s</xliff:g> के लिए कीबोर्ड शॉर्टकट चालू करना है?"</string>
+    <string name="accessibility_key_gesture_shortcut_not_yet_enabled_negative_button_text" msgid="6711239406914231612">"नहीं"</string>
+    <string name="accessibility_key_gesture_shortcut_not_yet_enabled_positive_button_text" msgid="7748487028569821131">"शॉर्टकट चालू करें"</string>
     <string name="accessibility_key_gesture_magnification_dialog_title" msgid="5770691510738701250">"<xliff:g id="ID_1">%1$s</xliff:g> कीबोर्ड शॉर्टकट चालू किया गया"</string>
-    <!-- no translation found for accessibility_key_gesture_magnification_dialog_content (582920726242272572) -->
-    <skip />
+    <string name="accessibility_key_gesture_magnification_dialog_content" msgid="582920726242272572">"<xliff:g id="ID_3">^3</xliff:g> का इस्तेमाल करने के लिए कीबोर्ड शॉर्टकट, ऐक्शन "<annotation id="action_key_icon">"icon"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> है. यह एक सुलभता सुविधा है. इससे आपको स्क्रीन पर मौजूद कॉन्टेंट को झटपट ज़ूम इन करने की सुविधा मिलती है, ताकि आप उसे बड़े साइज़ में देख सकें. ज़ूम करने की सुविधा चालू होने के बाद, ज़ूम को अडजस्ट करने के लिए, ऐक्शन "<annotation id="action_key_icon">"icon"</annotation>" + <xliff:g id="ID_4">^1</xliff:g> और \"+\" या \"-\" दबाएं."</string>
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"शॉर्टकट बंद करें"</string>
     <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"चालू रखें"</string>
     <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="7934170819801013870">"ऐक्शन "<annotation id="action_key_icon">"आइकॉन"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> दबाने पर, सुलभता सुविधा <xliff:g id="ID_3">^3</xliff:g> चालू हो जाती है. इसका इस्तेमाल करके, डिवाइस को बोलकर दिए जाने वाले निर्देशों के ज़रिए कंट्रोल किया जा सकता है."</string>
@@ -1626,8 +1627,7 @@
     <string name="shortcut_helper_customize_dialog_reset_button_label" msgid="7645535254306312685">"हां, रीसेट करें"</string>
     <string name="shortcut_helper_customize_dialog_cancel_button_label" msgid="5595546460431741178">"रद्द करें"</string>
     <string name="shortcut_helper_add_shortcut_dialog_placeholder" msgid="9154297849458741995">"बटन दबाएं"</string>
-    <!-- no translation found for shortcut_helper_customizer_action_key_text (3979063901857046887) -->
-    <skip />
+    <string name="shortcut_helper_customizer_action_key_text" msgid="3979063901857046887">"कार्रवाई"</string>
     <string name="shortcut_customizer_key_combination_in_use_error_message" msgid="3325858369539848162">"बटन का यह कॉम्बिनेशन पहले से इस्तेमाल किया जा रहा है. कोई दूसरा कॉम्बिनेशन आज़माएं."</string>
     <string name="shortcut_customizer_generic_error_message" msgid="3128454624049722741">"शॉर्टकट सेट नहीं किया जा सकता."</string>
     <string name="shortcut_helper_plus_symbol" msgid="4534843157353732011">"+"</string>

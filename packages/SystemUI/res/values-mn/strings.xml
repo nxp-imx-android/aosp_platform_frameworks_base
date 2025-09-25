@@ -21,8 +21,8 @@
     xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
     <string name="app_label" msgid="4811759950673118541">"Систем UI"</string>
     <string name="battery_low_title" msgid="5319680173344341779">"Батарей хэмнэгчийг асаах уу?"</string>
-    <string name="battery_low_description" msgid="3282977755476423966">"Танд <xliff:g id="PERCENTAGE">%s</xliff:g> батарей үлдсэн байна. Батарей хэмнэгч нь Бараан загварыг асааж, дэвсгэрийн үйл ажиллагааг хязгаарлаж мөн мэдэгдлийг саатуулна."</string>
-    <string name="battery_low_intro" msgid="5148725009653088790">"Батарей хэмнэгч нь Бараан загварыг асааж, дэвсгэрийн үйл ажиллагааг хязгаарлаж мөн мэдэгдлийг саатуулна."</string>
+    <string name="battery_low_description" msgid="7848989602036547056">"Танд <xliff:g id="PERCENTAGE">%s</xliff:g> батарей үлдсэн байна. Батарей хэмнэгч нь бараан загварыг асааж, дэвсгэрийн үйл ажиллагааг хязгаарлаж, мэдэгдлийг саатуулна."</string>
+    <string name="battery_low_intro" msgid="8033783734931200690">"Батарей хэмнэгч нь бараан загварыг асааж, дэвсгэрийн үйл ажиллагааг хязгаарлаж, мэдэгдлийг саатуулна."</string>
     <string name="battery_low_percent_format" msgid="4276661262843170964">"<xliff:g id="PERCENTAGE">%s</xliff:g> үлдсэн"</string>
     <string name="invalid_charger_title" msgid="938685362320735167">"USB-р цэнэглэх боломжгүй байна"</string>
     <string name="invalid_charger_text" msgid="2339310107232691577">"Төхөөрөмждөө дагалдаж ирсэн цэнэглэгчийг ашиглах"</string>
@@ -140,8 +140,7 @@
     <string name="screenrecord_stop_dialog_button" msgid="2883812564938194350">"Бичихийг зогсоох"</string>
     <string name="screen_record_entire_screen" msgid="66944996337928170">"Бүтэн дэлгэц"</string>
     <string name="screen_record_single_app" msgid="7355880948574569290">"Нэг апп"</string>
-    <!-- no translation found for screen_record_single_app_hint (8404332826093639170) -->
-    <skip />
+    <string name="screen_record_single_app_hint" msgid="8404332826093639170">"Бичих апп"</string>
     <string name="screen_record_single_app_no_recents" msgid="1023249803854209330">"Нэг апп (сонгохын тулд апп нээ)"</string>
     <string name="screen_record_record_device_audio_label" msgid="5363057443124085198">"Төхөөрөмжийн аудиог бичнэ үү"</string>
     <string name="screen_record_record_microphone_label" msgid="4685753707185662381">"Микрофоныг бичнэ үү"</string>
@@ -149,11 +148,13 @@
     <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"Хүрэлтийг харуулна уу"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"Бичих апп сонгоно уу"</string>
     <string name="screen_record_video_saved" msgid="1345283626390232282">"Видеог хадгалсан"</string>
-    <!-- no translation found for screen_record_undo (7942716736019800870) -->
-    <skip />
+    <string name="screen_record_video_deleted" msgid="30786214839944540">"Видеог устгасан"</string>
+    <string name="screen_record_undo" msgid="7942716736019800870">"Болих"</string>
     <string name="screen_record_retake" msgid="3846643688365398450">"Дахиж бичих"</string>
     <string name="screen_record_edit" msgid="8733014191240769309">"Засах"</string>
     <string name="screen_record_delete" msgid="1023421937978254537">"Устгах"</string>
+    <string name="screen_record_delete_dialog_title" msgid="5868561491974057044">"Энэ бичлэгийг устгах уу?"</string>
+    <string name="screen_record_delete_dialog_content" msgid="2610040845214024496">"Энэ бичлэгийг устгах нь видео файлыг төхөөрөмжөөс бүрмөсөн устгана."</string>
     <string name="screen_record_play" msgid="4732544724679889445">"Тоглуулах"</string>
     <string name="screen_record_pause" msgid="1715012292444967776">"Түр зогсоох"</string>
     <string name="screen_record_mute" msgid="8111682249858638168">"Дууг хаах"</string>
@@ -174,7 +175,12 @@
     <string name="screen_capture_toolbar_fullscreen_button_screenshot_a11y" msgid="8699983355979869210">"Дэлгэцийн агшныг бүтэн дэлгэцээр нь авах"</string>
     <string name="screen_capture_toolbar_fullscreen_button_record_a11y" msgid="852148867883959158">"Бүтэн дэлгэцийг бичих"</string>
     <string name="screen_capture_toolbar_settings_button_a11y" msgid="8014446956996739704">"Дэлгэцийн зураг авах тохиргоо"</string>
+    <string name="screen_capture_show_clicks_and_keys" msgid="2151690554364148717">"Товшилт, товчийг харуулах"</string>
+    <string name="screen_capture_device_audio" msgid="1537290197773737349">"Төхөөрөмжийн аудио"</string>
+    <string name="screen_capture_microphone_audio" msgid="1698835678818747741">"Микрофон"</string>
+    <string name="screen_capture_front_camera" msgid="1214647538302639358">"Урд талын камер"</string>
     <string name="screen_capture_region_dimensions" msgid="2317064050253056256">"<xliff:g id="WIDTH">%1$d</xliff:g> x <xliff:g id="HEIGHT">%2$d</xliff:g>"</string>
+    <string name="screen_share_privacy_indicator_stop_sharing" msgid="2297045039651417274">"Хуваалцахыг зогсоох"</string>
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"Дэлгэцийг хуваалцаж байна"</string>
     <string name="share_to_app_chip_accessibility_label_generic" msgid="5517431657924536133">"Контент хуваалцаж байна"</string>
     <string name="share_to_app_stop_dialog_title" msgid="9212915050910250438">"Дэлгэц хуваалцахыг зогсоох уу?"</string>
@@ -488,12 +494,13 @@
     <string name="accessibility_hearing_device_pair_new_device" msgid="8440082580186130090">"Шинэ төхөөрөмж хослуулахын тулд товшино уу"</string>
     <string name="hearing_devices_presets_error" msgid="350363093458408536">"Урьдчилсан тохируулгыг шинэчилж чадсангүй"</string>
     <string name="hearing_devices_preset_label" msgid="7878267405046232358">"Урьдчилсан тохируулга"</string>
+    <string name="hearing_devices_preset_label_left" msgid="7427947566560179945">"Зүүн талын Урьдчилсан тохируулга"</string>
+    <string name="hearing_devices_preset_label_right" msgid="1847206329436268522">"Баруун талын Урьдчилсан тохируулга"</string>
     <string name="hearing_devices_input_routing_label" msgid="730396728151232306">"Дуудлагад ашиглах өгөгдмөл микрофон"</string>
   <string-array name="hearing_device_input_routing_options">
     <item msgid="4582190415045337003">"Сонсголын төхөөрөмжийн микрофон"</item>
     <item msgid="8501466270452446450">"Энэ утасны микрофон"</item>
   </string-array>
-    <string name="hearing_devices_spinner_item_selected" msgid="3137083889662762383">"Сонгосон"</string>
     <string name="hearing_devices_ambient_label" msgid="629440938614895797">"Орчин тойрон"</string>
     <string name="hearing_devices_ambient_control_left" msgid="3586965448230412600">"Зүүн"</string>
     <string name="hearing_devices_ambient_control_right" msgid="6192137602448918383">"Баруун"</string>
@@ -889,7 +896,7 @@
     <string name="notification_guts_news_summary" msgid="638697931043407835">"Шилдэг мэдээ, нийтлэл, редакторын нийтлэл болон бусад"</string>
     <string name="notification_guts_social_summary" msgid="3749147631983977040">"Таалагдсан, нийтлэл болон бусад"</string>
     <string name="notification_guts_recs_summary" msgid="8391881843238947007">"Мэдээллийн хуудас, санал болгосон медиа болон бусад"</string>
-    <string name="notification_onboarding_summaries_turn_on" msgid="5050003857531272655">"Асаах"</string>
+    <string name="notification_onboarding_summaries_turn_on" msgid="3831339570984683297">"Тохиргооноос асаах"</string>
     <string name="notification_onboarding_summaries_message" msgid="6061524903176459064">"Танд шуурхай тойм өгөхийн тулд таны урт харилцан яриаг одоо хураангуйлна"</string>
     <string name="notification_onboarding_bundles_message" msgid="4612908213178622912">"Мэдэгдэл эмхлэгч чухал биш мэдэгдлийг багцалж, чимээгүй болгоно. Тохиргооноос илүү олон ангилал нэмнэ үү."</string>
     <string name="notification_bundle_header_counter" msgid="5515532701569242265">"{count,plural, =1{# мэдэгдэл}other{# мэдэгдэл}}"</string>
@@ -1143,15 +1150,11 @@
     <string name="accessibility_key_gesture_dialog_content" msgid="4519838108423437794">"<xliff:g id="ID_3">^3</xliff:g>-г ашиглах товчлуурын шууд холбоос нь үйлдлийн "<annotation id="action_key_icon">"дүрс тэмдэг"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> юм. <xliff:g id="ID_4">^4</xliff:g>"</string>
     <string name="accessibility_key_gesture_dialog_talkback_intro" msgid="1617808784388544741">"<xliff:g id="ID_1">%1$s</xliff:g> нь танд зүйлийг чангаар уншихыг сонсох боломжийг олгодог дэлгэц уншигч юм. Энэ нь дэлгэц харахад хүндрэлтэй хүмүүст тустай байж болно."</string>
     <string name="accessibility_key_gesture_dialog_positive_button_text" msgid="3670746017523589293">"Асаах"</string>
-    <!-- no translation found for accessibility_key_gesture_shortcut_not_yet_enabled_dialog_title (5331043821287212071) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_shortcut_not_yet_enabled_negative_button_text (6711239406914231612) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_shortcut_not_yet_enabled_positive_button_text (7748487028569821131) -->
-    <skip />
+    <string name="accessibility_key_gesture_shortcut_not_yet_enabled_dialog_title" msgid="5331043821287212071">"<xliff:g id="ID_1">%1$s</xliff:g> товчлуурын шууд холбоосыг асаах уу?"</string>
+    <string name="accessibility_key_gesture_shortcut_not_yet_enabled_negative_button_text" msgid="6711239406914231612">"Бүү асаа"</string>
+    <string name="accessibility_key_gesture_shortcut_not_yet_enabled_positive_button_text" msgid="7748487028569821131">"Товчлолыг асаах"</string>
     <string name="accessibility_key_gesture_magnification_dialog_title" msgid="5770691510738701250">"<xliff:g id="ID_1">%1$s</xliff:g> товчлуурын шууд холбоосыг асаалаа"</string>
-    <!-- no translation found for accessibility_key_gesture_magnification_dialog_content (582920726242272572) -->
-    <skip />
+    <string name="accessibility_key_gesture_magnification_dialog_content" msgid="582920726242272572">"Үйлдлийн "<annotation id="action_key_icon">"дүрс тэмдэг"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> нь хялбар ашиглалтын онцлог болох <xliff:g id="ID_3">^3</xliff:g>-г ашиглах товчлуурын шууд холбоос юм. Та үүнийг ашиглан контентыг томруулахын тулд дэлгэц дээр хурдан томруулж болно. Томруулахыг ассаны дараа томруулалтыг тохируулахын тулд Үйлдлийн "<annotation id="action_key_icon">"дүрс тэмдэг"</annotation>" + <xliff:g id="ID_4">^1</xliff:g>, \"+\" эсвэл \"-\" дээр дарна уу."</string>
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"Товчлолыг унтраах"</string>
     <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"Асаалттай хэвээр байлгах"</string>
     <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="7934170819801013870">"Үйлдлийн "<annotation id="action_key_icon">"дүрс тэмдэг"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> дээр дарах нь хандалтын онцлог <xliff:g id="ID_3">^3</xliff:g>-г асаадаг. Энэ нь танд төхөөрөмжөө гараас хамаарахгүй хянахад тусална."</string>
@@ -1624,8 +1627,7 @@
     <string name="shortcut_helper_customize_dialog_reset_button_label" msgid="7645535254306312685">"Тэгье, шинэчилье"</string>
     <string name="shortcut_helper_customize_dialog_cancel_button_label" msgid="5595546460431741178">"Цуцлах"</string>
     <string name="shortcut_helper_add_shortcut_dialog_placeholder" msgid="9154297849458741995">"Товч дарна уу"</string>
-    <!-- no translation found for shortcut_helper_customizer_action_key_text (3979063901857046887) -->
-    <skip />
+    <string name="shortcut_helper_customizer_action_key_text" msgid="3979063901857046887">"Үйлдэл"</string>
     <string name="shortcut_customizer_key_combination_in_use_error_message" msgid="3325858369539848162">"Товчийн хослолыг аль хэдийн ашиглаж байна. Өөр хослол туршиж үзнэ үү."</string>
     <string name="shortcut_customizer_generic_error_message" msgid="3128454624049722741">"Товчлол тохируулах боломжгүй."</string>
     <string name="shortcut_helper_plus_symbol" msgid="4534843157353732011">"+"</string>

@@ -21,8 +21,8 @@
     xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
     <string name="app_label" msgid="4811759950673118541">"UI ប្រព័ន្ធ"</string>
     <string name="battery_low_title" msgid="5319680173344341779">"បើក​មុខងារ​សន្សំ​ថ្មឬ?"</string>
-    <string name="battery_low_description" msgid="3282977755476423966">"អ្នក​នៅសល់ថ្ម <xliff:g id="PERCENTAGE">%s</xliff:g> ទៀត។ មុខងារសន្សំថ្មបើករចនាប័ទ្មងងឹត ដាក់កំហិតសកម្មភាពនៅផ្ទៃខាងក្រោយ និងពន្យារពេលជូនដំណឹង។"</string>
-    <string name="battery_low_intro" msgid="5148725009653088790">"មុខងារសន្សំថ្មបើករចនាប័ទ្មងងឹត ដាក់កំហិតសកម្មភាពនៅផ្ទៃខាងក្រោយ និងពន្យារពេលជូនដំណឹង។"</string>
+    <string name="battery_low_description" msgid="7848989602036547056">"អ្នក​នៅសល់ថ្ម <xliff:g id="PERCENTAGE">%s</xliff:g> ទៀត។ មុខងារសន្សំថ្មបើកទម្រង់រចនាងងឹត ដាក់កំហិតសកម្មភាពនៅផ្ទៃខាងក្រោយ និងពន្យារពេលជូនដំណឹង។"</string>
+    <string name="battery_low_intro" msgid="8033783734931200690">"មុខងារសន្សំថ្មបើកទម្រង់រចនាងងឹត ដាក់កំហិតសកម្មភាពនៅផ្ទៃខាងក្រោយ និងពន្យារពេលជូនដំណឹង។"</string>
     <string name="battery_low_percent_format" msgid="4276661262843170964">"នៅ​សល់ <xliff:g id="PERCENTAGE">%s</xliff:g>"</string>
     <string name="invalid_charger_title" msgid="938685362320735167">"មិន​អាច​សាក​តាម USB បានទេ"</string>
     <string name="invalid_charger_text" msgid="2339310107232691577">"សូមប្រើ​ឆ្នាំង​សាក​ដែល​ភ្ជាប់​មក​ជាមួយ​ឧបករណ៍​របស់អ្នក"</string>
@@ -140,8 +140,7 @@
     <string name="screenrecord_stop_dialog_button" msgid="2883812564938194350">"ឈប់ថត"</string>
     <string name="screen_record_entire_screen" msgid="66944996337928170">"អេក្រង់​ទាំងមូល"</string>
     <string name="screen_record_single_app" msgid="7355880948574569290">"កម្មវិធីទោល"</string>
-    <!-- no translation found for screen_record_single_app_hint (8404332826093639170) -->
-    <skip />
+    <string name="screen_record_single_app_hint" msgid="8404332826093639170">"កម្មវិធីដែលត្រូវថត"</string>
     <string name="screen_record_single_app_no_recents" msgid="1023249803854209330">"កម្មវិធីទោល (បើកកម្មវិធី ដើម្បីរើស)"</string>
     <string name="screen_record_record_device_audio_label" msgid="5363057443124085198">"ថតសំឡេងឧបករណ៍"</string>
     <string name="screen_record_record_microphone_label" msgid="4685753707185662381">"ថតសំឡេង​ដោយ​ប្រើ​មីក្រូហ្វូន"</string>
@@ -149,11 +148,13 @@
     <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"បង្ហាញ​ការ​ចុច"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"ជ្រើសរើសកម្មវិធីដើម្បីថត"</string>
     <string name="screen_record_video_saved" msgid="1345283626390232282">"បាន​រក្សាទុក​វីដេអូ​"</string>
-    <!-- no translation found for screen_record_undo (7942716736019800870) -->
-    <skip />
+    <string name="screen_record_video_deleted" msgid="30786214839944540">"បាន​លុប​វីដេអូ"</string>
+    <string name="screen_record_undo" msgid="7942716736019800870">"ត្រឡប់វិញ"</string>
     <string name="screen_record_retake" msgid="3846643688365398450">"ថតឡើងវិញ"</string>
     <string name="screen_record_edit" msgid="8733014191240769309">"កែ"</string>
     <string name="screen_record_delete" msgid="1023421937978254537">"លុប"</string>
+    <string name="screen_record_delete_dialog_title" msgid="5868561491974057044">"លុប​សំឡេងថត​នេះឬ?"</string>
+    <string name="screen_record_delete_dialog_content" msgid="2610040845214024496">"ការលុបសំឡេងថតនេះនឹងលុបឯកសារវីដេអូពីឧបករណ៍របស់អ្នកជាអចិន្ត្រៃយ៍។"</string>
     <string name="screen_record_play" msgid="4732544724679889445">"ចាក់"</string>
     <string name="screen_record_pause" msgid="1715012292444967776">"ផ្អាក"</string>
     <string name="screen_record_mute" msgid="8111682249858638168">"បិទសំឡេង"</string>
@@ -174,7 +175,12 @@
     <string name="screen_capture_toolbar_fullscreen_button_screenshot_a11y" msgid="8699983355979869210">"ថតរូបអេក្រង់ទាំងមូល"</string>
     <string name="screen_capture_toolbar_fullscreen_button_record_a11y" msgid="852148867883959158">"ថតអេក្រង់ទាំងមូល"</string>
     <string name="screen_capture_toolbar_settings_button_a11y" msgid="8014446956996739704">"ការកំណត់​ការថតអេក្រង់"</string>
+    <string name="screen_capture_show_clicks_and_keys" msgid="2151690554364148717">"បង្ហាញការចុច និងគ្រាប់ចុច"</string>
+    <string name="screen_capture_device_audio" msgid="1537290197773737349">"សំឡេង​ឧបករណ៍"</string>
+    <string name="screen_capture_microphone_audio" msgid="1698835678818747741">"មីក្រូហ្វូន"</string>
+    <string name="screen_capture_front_camera" msgid="1214647538302639358">"កាមេរ៉ាខាងមុខ"</string>
     <string name="screen_capture_region_dimensions" msgid="2317064050253056256">"<xliff:g id="WIDTH">%1$d</xliff:g> x <xliff:g id="HEIGHT">%2$d</xliff:g>"</string>
+    <string name="screen_share_privacy_indicator_stop_sharing" msgid="2297045039651417274">"ឈប់​ចែក​រំលែក"</string>
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"កំពុងបង្ហាញអេក្រង់"</string>
     <string name="share_to_app_chip_accessibility_label_generic" msgid="5517431657924536133">"កំពុងចែករំលែកខ្លឹមសារ"</string>
     <string name="share_to_app_stop_dialog_title" msgid="9212915050910250438">"ឈប់បង្ហាញអេក្រង់ឬ?"</string>
@@ -488,12 +494,13 @@
     <string name="accessibility_hearing_device_pair_new_device" msgid="8440082580186130090">"ចុច ដើម្បីផ្គូផ្គងឧបករណ៍ថ្មី"</string>
     <string name="hearing_devices_presets_error" msgid="350363093458408536">"មិនអាច​ប្ដូរ​ការកំណត់ជាមុន​បានទេ"</string>
     <string name="hearing_devices_preset_label" msgid="7878267405046232358">"កំណត់ជាមុន"</string>
+    <string name="hearing_devices_preset_label_left" msgid="7427947566560179945">"ការកំណត់ជាមុននៅខាងឆ្វេង"</string>
+    <string name="hearing_devices_preset_label_right" msgid="1847206329436268522">"ការកំណត់ជាមុននៅខាងស្ដាំ"</string>
     <string name="hearing_devices_input_routing_label" msgid="730396728151232306">"មីក្រូហ្វូន​លំនាំ​ដើមសម្រាប់ការហៅទូរសព្ទ"</string>
   <string-array name="hearing_device_input_routing_options">
     <item msgid="4582190415045337003">"មីក្រូហ្វូនដែលមានឧបករណ៍​ជំនួយការ​ស្ដាប់"</item>
     <item msgid="8501466270452446450">"មីក្រូហ្វូនរបស់ទូរសព្ទនេះ"</item>
   </string-array>
-    <string name="hearing_devices_spinner_item_selected" msgid="3137083889662762383">"បានជ្រើសរើស"</string>
     <string name="hearing_devices_ambient_label" msgid="629440938614895797">"មជ្ឈដ្ឋានជុំវិញ"</string>
     <string name="hearing_devices_ambient_control_left" msgid="3586965448230412600">"ឆ្វេង"</string>
     <string name="hearing_devices_ambient_control_right" msgid="6192137602448918383">"ស្ដាំ"</string>
@@ -889,7 +896,7 @@
     <string name="notification_guts_news_summary" msgid="638697931043407835">"វិចារណកថា រឿងពេញនិយម និងច្រើនទៀត"</string>
     <string name="notification_guts_social_summary" msgid="3749147631983977040">"ការចូលចិត្ត សារបង្ហោះ និងច្រើនទៀត"</string>
     <string name="notification_guts_recs_summary" msgid="8391881843238947007">"ព្រឹត្តិបត្រ មេឌៀដែលបានណែនាំ និងច្រើនទៀត"</string>
-    <string name="notification_onboarding_summaries_turn_on" msgid="5050003857531272655">"បើក"</string>
+    <string name="notification_onboarding_summaries_turn_on" msgid="3831339570984683297">"បើកនៅក្នុងការកំណត់"</string>
     <string name="notification_onboarding_summaries_message" msgid="6061524903176459064">"ឥឡូវនេះ ការសន្ទនាវែងៗរបស់អ្នកអាចត្រូវបានសង្ខេប ដើម្បីផ្ដល់ការសង្ខេបខ្លីៗឱ្យអ្នក"</string>
     <string name="notification_onboarding_bundles_message" msgid="4612908213178622912">"សំឡេងស្ងាត់ និងកញ្ចប់កម្មវិធីរៀបចំការជូនដំណឹងបន្ថយការជូនដំណឹងអាទិភាព។ បញ្ចូលប្រភេទច្រើនទៀតនៅក្នុងការកំណត់។"</string>
     <string name="notification_bundle_header_counter" msgid="5515532701569242265">"{count,plural, =1{ការ​ជូន​ដំណឹង #}other{ការ​ជូនដំណឹង #}}"</string>
@@ -1143,15 +1150,11 @@
     <string name="accessibility_key_gesture_dialog_content" msgid="4519838108423437794">"សកម្មភាព "<annotation id="action_key_icon">"icon"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> គឺជាផ្លូវកាត់​ក្ដារ​ចុចដើម្បីប្រើ <xliff:g id="ID_3">^3</xliff:g>។ <xliff:g id="ID_4">^4</xliff:g>"</string>
     <string name="accessibility_key_gesture_dialog_talkback_intro" msgid="1617808784388544741">"<xliff:g id="ID_1">%1$s</xliff:g> គឺជាកម្មវិធី​អាន​អេក្រង់ដែលអនុញ្ញាតឱ្យអ្នកស្ដាប់ឮធាតុដែលត្រូវបានអានឮៗ។ វាអាច​មានប្រយោជន៍​ចំពោះអ្នក​ដែល​មាន​ភាពលំបាក​ក្នុងការ​មើល​អេក្រង់។"</string>
     <string name="accessibility_key_gesture_dialog_positive_button_text" msgid="3670746017523589293">"បើក"</string>
-    <!-- no translation found for accessibility_key_gesture_shortcut_not_yet_enabled_dialog_title (5331043821287212071) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_shortcut_not_yet_enabled_negative_button_text (6711239406914231612) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_shortcut_not_yet_enabled_positive_button_text (7748487028569821131) -->
-    <skip />
+    <string name="accessibility_key_gesture_shortcut_not_yet_enabled_dialog_title" msgid="5331043821287212071">"បើកផ្លូវកាត់​ក្ដារ​ចុច <xliff:g id="ID_1">%1$s</xliff:g> ឬ?"</string>
+    <string name="accessibility_key_gesture_shortcut_not_yet_enabled_negative_button_text" msgid="6711239406914231612">"កុំបើក"</string>
+    <string name="accessibility_key_gesture_shortcut_not_yet_enabled_positive_button_text" msgid="7748487028569821131">"បើកផ្លូវ​កាត់"</string>
     <string name="accessibility_key_gesture_magnification_dialog_title" msgid="5770691510738701250">"ផ្លូវកាត់​ក្ដារ​ចុចនៃ<xliff:g id="ID_1">%1$s</xliff:g>ត្រូវបានបើក"</string>
-    <!-- no translation found for accessibility_key_gesture_magnification_dialog_content (582920726242272572) -->
-    <skip />
+    <string name="accessibility_key_gesture_magnification_dialog_content" msgid="582920726242272572"><annotation id="action_key_icon">"រូប"</annotation>"សកម្មភាព + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> គឺជាផ្លូវកាត់​ក្ដារ​ចុចសម្រាប់ប្រើ <xliff:g id="ID_3">^3</xliff:g> ដែលជាមុខងារភាពងាយស្រួល។ វាអនុញ្ញាតឱ្យអ្នកពង្រីកនៅលើអេក្រង់យ៉ាងរហ័ស ដើម្បីធ្វើឱ្យខ្លឹមសារកាន់តែធំ។ នៅពេលការ​ពង្រីកត្រូវបានបើក សូមចុច"<annotation id="action_key_icon">"រូប"</annotation>"សកម្មភាព + <xliff:g id="ID_4">^1</xliff:g> and \"+\" ឬ \"-\" ដើម្បីកែតម្រូវការពង្រីកបង្រួម។"</string>
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"បិទ​ផ្លូវកាត់"</string>
     <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"បន្តបើក"</string>
     <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="7934170819801013870">"ការចុច"<annotation id="action_key_icon">"រូប"</annotation>"សកម្មភាព + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> នឹងបើក <xliff:g id="ID_3">^3</xliff:g> ដែលជាមុខងារភាពងាយស្រួល។ ការធ្វើបែបនេះអនុញ្ញាតឱ្យអ្នកគ្រប់គ្រងឧបករណ៍របស់អ្នកដោយមិនប្រើដៃ។"</string>
@@ -1624,8 +1627,7 @@
     <string name="shortcut_helper_customize_dialog_reset_button_label" msgid="7645535254306312685">"បាទ/ចាស កំណត់ឡើងវិញ"</string>
     <string name="shortcut_helper_customize_dialog_cancel_button_label" msgid="5595546460431741178">"បោះបង់"</string>
     <string name="shortcut_helper_add_shortcut_dialog_placeholder" msgid="9154297849458741995">"ចុចគ្រាប់ចុច"</string>
-    <!-- no translation found for shortcut_helper_customizer_action_key_text (3979063901857046887) -->
-    <skip />
+    <string name="shortcut_helper_customizer_action_key_text" msgid="3979063901857046887">"សកម្មភាព"</string>
     <string name="shortcut_customizer_key_combination_in_use_error_message" msgid="3325858369539848162">"កំពុងប្រើបន្សំគ្រាប់ចុចស្រាប់ហើយ។ សូមសាកល្បងបន្សំគ្រាប់ចុចផ្សេង។"</string>
     <string name="shortcut_customizer_generic_error_message" msgid="3128454624049722741">"មិនអាចកំណត់ផ្លូវកាត់បានទេ។"</string>
     <string name="shortcut_helper_plus_symbol" msgid="4534843157353732011">"+"</string>

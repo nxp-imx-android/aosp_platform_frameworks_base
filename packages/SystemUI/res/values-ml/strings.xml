@@ -21,8 +21,8 @@
     xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
     <string name="app_label" msgid="4811759950673118541">"സിസ്റ്റം UI"</string>
     <string name="battery_low_title" msgid="5319680173344341779">"ബാറ്ററി സേവർ ഓണാക്കണോ?"</string>
-    <string name="battery_low_description" msgid="3282977755476423966">"നിങ്ങളുടെ ബാറ്ററിയിൽ <xliff:g id="PERCENTAGE">%s</xliff:g> ചാർജ് ശേഷിക്കുന്നു. ബാറ്ററി സേവർ, ഡാർക്ക് തീം ഓണാക്കുകയും പശ്ചാത്തല ആക്‌റ്റിവിറ്റി നിയന്ത്രിക്കുകയും അറിയിപ്പുകൾ വെെകിപ്പിക്കുകയും ചെയ്യുന്നു."</string>
-    <string name="battery_low_intro" msgid="5148725009653088790">"ബാറ്ററി സേവർ, ഡാർക്ക് തീം ഓണാക്കുകയും പശ്ചാത്തല ആക്‌റ്റിവിറ്റി നിയന്ത്രിക്കുകയും അറിയിപ്പുകൾ വെെകിപ്പിക്കുകയും ചെയ്യുന്നു."</string>
+    <string name="battery_low_description" msgid="7848989602036547056">"നിങ്ങളുടെ ബാറ്ററിയിൽ <xliff:g id="PERCENTAGE">%s</xliff:g> ചാർജ് ശേഷിക്കുന്നു. ബാറ്ററി സേവർ, ഡാർക്ക് തീം ഓണാക്കുകയും പശ്ചാത്തല ആക്‌റ്റിവിറ്റി നിയന്ത്രിക്കുകയും അറിയിപ്പുകൾ വെെകിപ്പിക്കുകയും ചെയ്യുന്നു."</string>
+    <string name="battery_low_intro" msgid="8033783734931200690">"ബാറ്ററി സേവർ, ഡാർക്ക് തീം ഓണാക്കുകയും പശ്ചാത്തല ആക്‌റ്റിവിറ്റി നിയന്ത്രിക്കുകയും അറിയിപ്പുകൾ വെെകിപ്പിക്കുകയും ചെയ്യുന്നു."</string>
     <string name="battery_low_percent_format" msgid="4276661262843170964">"<xliff:g id="PERCENTAGE">%s</xliff:g> ശേഷിക്കുന്നു"</string>
     <string name="invalid_charger_title" msgid="938685362320735167">"USB വഴി ചാർജ് ചെയ്യാനാകില്ല"</string>
     <string name="invalid_charger_text" msgid="2339310107232691577">"ഉപകരണത്തിനൊപ്പം ലഭിച്ച ചാർജർ ഉപയോഗിക്കുക"</string>
@@ -140,8 +140,7 @@
     <string name="screenrecord_stop_dialog_button" msgid="2883812564938194350">"റെക്കോർഡിംഗ് നിർത്തുക"</string>
     <string name="screen_record_entire_screen" msgid="66944996337928170">"മുഴുവൻ സ്‌ക്രീൻ"</string>
     <string name="screen_record_single_app" msgid="7355880948574569290">"ഒരൊറ്റ ആപ്പ്"</string>
-    <!-- no translation found for screen_record_single_app_hint (8404332826093639170) -->
-    <skip />
+    <string name="screen_record_single_app_hint" msgid="8404332826093639170">"റെക്കോർഡ് ചെയ്യാനുള്ള ആപ്പ്"</string>
     <string name="screen_record_single_app_no_recents" msgid="1023249803854209330">"ഒരു ആപ്പ് (തിരഞ്ഞെടുക്കാൻ തുറക്കുക)"</string>
     <string name="screen_record_record_device_audio_label" msgid="5363057443124085198">"ഉപകരണ ഓഡിയോ റെക്കോർഡ് ചെയ്യുക"</string>
     <string name="screen_record_record_microphone_label" msgid="4685753707185662381">"മൈക്രോഫോൺ റെക്കോർഡ് ചെയ്യുക"</string>
@@ -149,11 +148,13 @@
     <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"ടച്ചുകൾ കാണിക്കുക"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"റെക്കോർഡ് ചെയ്യാൻ ഒരു ആപ്പ് തിരഞ്ഞെടുക്കുക"</string>
     <string name="screen_record_video_saved" msgid="1345283626390232282">"വീഡിയോ സംരക്ഷിച്ചു"</string>
-    <!-- no translation found for screen_record_undo (7942716736019800870) -->
-    <skip />
+    <string name="screen_record_video_deleted" msgid="30786214839944540">"വീഡിയോ ഇല്ലാതാക്കി"</string>
+    <string name="screen_record_undo" msgid="7942716736019800870">"പഴയപടിയാക്കുക"</string>
     <string name="screen_record_retake" msgid="3846643688365398450">"വീണ്ടും എടുക്കുക"</string>
     <string name="screen_record_edit" msgid="8733014191240769309">"എഡിറ്റ് ചെയ്യുക"</string>
     <string name="screen_record_delete" msgid="1023421937978254537">"ഇല്ലാതാക്കുക"</string>
+    <string name="screen_record_delete_dialog_title" msgid="5868561491974057044">"ഈ റെക്കോർഡിംഗ് ഇല്ലാതാക്കണോ?"</string>
+    <string name="screen_record_delete_dialog_content" msgid="2610040845214024496">"ഈ റെക്കോർഡിംഗ് ഇല്ലാതാക്കുന്നത് നിങ്ങളുടെ ഉപകരണത്തിൽ നിന്ന് വീഡിയോ ഫയൽ ശാശ്വതമായി ഇല്ലാതാക്കും."</string>
     <string name="screen_record_play" msgid="4732544724679889445">"പ്ലേ ചെയ്യുക"</string>
     <string name="screen_record_pause" msgid="1715012292444967776">"താൽക്കാലികമായി നിർത്തുക"</string>
     <string name="screen_record_mute" msgid="8111682249858638168">"മ്യൂട്ട് ചെയ്യുക"</string>
@@ -174,7 +175,12 @@
     <string name="screen_capture_toolbar_fullscreen_button_screenshot_a11y" msgid="8699983355979869210">"മുഴുവൻ സ്ക്രീനിന്റെ സ്ക്രീൻഷോട്ട് എടുക്കുക"</string>
     <string name="screen_capture_toolbar_fullscreen_button_record_a11y" msgid="852148867883959158">"സ്ക്രീൻ പൂർണ്ണമായി റെക്കോർഡ് ചെയ്യുക"</string>
     <string name="screen_capture_toolbar_settings_button_a11y" msgid="8014446956996739704">"സ്ക്രീൻ ക്യാപ്ച്ചർ ക്രമീകരണം"</string>
+    <string name="screen_capture_show_clicks_and_keys" msgid="2151690554364148717">"ക്ലിക്കുകളും കീകളും കാണിക്കുക"</string>
+    <string name="screen_capture_device_audio" msgid="1537290197773737349">"ഉപകരണത്തിന്റെ ഓഡിയോ"</string>
+    <string name="screen_capture_microphone_audio" msgid="1698835678818747741">"മൈക്രോഫോൺ"</string>
+    <string name="screen_capture_front_camera" msgid="1214647538302639358">"മുൻ ക്യാമറ"</string>
     <string name="screen_capture_region_dimensions" msgid="2317064050253056256">"<xliff:g id="WIDTH">%1$d</xliff:g> x <xliff:g id="HEIGHT">%2$d</xliff:g>"</string>
+    <string name="screen_share_privacy_indicator_stop_sharing" msgid="2297045039651417274">"പങ്കിടൽ നിർത്തുക"</string>
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"സ്‌ക്രീൻ പങ്കിടുന്നു"</string>
     <string name="share_to_app_chip_accessibility_label_generic" msgid="5517431657924536133">"ഉള്ളടക്കം പങ്കിടൽ"</string>
     <string name="share_to_app_stop_dialog_title" msgid="9212915050910250438">"സ്‌ക്രീൻ പങ്കിടുന്നത് നിർത്തണോ?"</string>
@@ -488,12 +494,13 @@
     <string name="accessibility_hearing_device_pair_new_device" msgid="8440082580186130090">"പുതിയ ഉപകരണം ജോടിയാക്കാൻ ക്ലിക്ക് ചെയ്യുക"</string>
     <string name="hearing_devices_presets_error" msgid="350363093458408536">"പ്രീസെറ്റ് അപ്ഡേറ്റ് ചെയ്യാനായില്ല"</string>
     <string name="hearing_devices_preset_label" msgid="7878267405046232358">"പ്രീസെറ്റ്"</string>
+    <string name="hearing_devices_preset_label_left" msgid="7427947566560179945">"ഇടത് പ്രീസെറ്റ്"</string>
+    <string name="hearing_devices_preset_label_right" msgid="1847206329436268522">"വലത് പ്രീസെറ്റ്"</string>
     <string name="hearing_devices_input_routing_label" msgid="730396728151232306">"കോളുകൾക്കുള്ള ഡിഫോൾട്ട് മൈക്രോഫോൺ"</string>
   <string-array name="hearing_device_input_routing_options">
     <item msgid="4582190415045337003">"ശ്രവണ സഹായി മൈക്രോഫോൺ"</item>
     <item msgid="8501466270452446450">"ഈ ഫോണിന്റെ മൈക്രോഫോൺ"</item>
   </string-array>
-    <string name="hearing_devices_spinner_item_selected" msgid="3137083889662762383">"തിരഞ്ഞെടുത്തു"</string>
     <string name="hearing_devices_ambient_label" msgid="629440938614895797">"സറൗണ്ടിംഗ്‌സ്"</string>
     <string name="hearing_devices_ambient_control_left" msgid="3586965448230412600">"ഇടത്"</string>
     <string name="hearing_devices_ambient_control_right" msgid="6192137602448918383">"വലത്"</string>
@@ -889,7 +896,7 @@
     <string name="notification_guts_news_summary" msgid="638697931043407835">"പ്രധാന വാർത്തകളും എഡിറ്റോറിയലുകളും മറ്റും"</string>
     <string name="notification_guts_social_summary" msgid="3749147631983977040">"ലൈക്കുകളും പോസ്റ്റുകളും മറ്റും"</string>
     <string name="notification_guts_recs_summary" msgid="8391881843238947007">"വാർത്താക്കുറിപ്പുകളും നിർദ്ദേശിക്കുന്ന മീഡിയയും മറ്റും"</string>
-    <string name="notification_onboarding_summaries_turn_on" msgid="5050003857531272655">"ഓണാക്കുക"</string>
+    <string name="notification_onboarding_summaries_turn_on" msgid="3831339570984683297">"ക്രമീകരണത്തിൽ ഓണാക്കുക"</string>
     <string name="notification_onboarding_summaries_message" msgid="6061524903176459064">"ഇപ്പോൾ നിങ്ങളുടെ ദൈർഘ്യമേറിയ സംഭാഷണങ്ങൾ സംഗ്രഹിച്ച് നിങ്ങൾക്ക് വേഗത്തിലുള്ള റീക്യാപ്പുകൾ നൽകാനാകും"</string>
     <string name="notification_onboarding_bundles_message" msgid="4612908213178622912">"അറിയിപ്പ് ഓർഗനൈസർ, മുൻഗണന കുറഞ്ഞ അറിയിപ്പുകൾ ബണ്ടിൽ ചെയ്യുകയും അവ നിശബ്ദമാക്കുകയും ചെയ്യുന്നു. ക്രമീകരണത്തിൽ കൂടുതൽ വിഭാഗങ്ങൾ ചേർക്കുക."</string>
     <string name="notification_bundle_header_counter" msgid="5515532701569242265">"{count,plural, =1{# അറിയിപ്പ്}other{# അറിയിപ്പുകൾ}}"</string>
@@ -1143,15 +1150,11 @@
     <string name="accessibility_key_gesture_dialog_content" msgid="4519838108423437794">"Action "<annotation id="action_key_icon">"icon"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> ആണ് <xliff:g id="ID_3">^3</xliff:g> ഉപയോഗിക്കുന്നതിനുള്ള കീബോഡ് കുറുക്കുവഴി. <xliff:g id="ID_4">^4</xliff:g>"</string>
     <string name="accessibility_key_gesture_dialog_talkback_intro" msgid="1617808784388544741">"സ്ക്രീനിലുള്ള കാര്യങ്ങൾ ഉറക്കെ വായിച്ചുകേൾക്കാൻ അനുവദിക്കുന്ന സ്ക്രീൻ റീഡറാണ് <xliff:g id="ID_1">%1$s</xliff:g>. സ്‌ക്രീൻ കാണാൻ ബുദ്ധിമുട്ടുള്ള ആളുകൾക്ക് ഇത് സഹായകരമായേക്കാം."</string>
     <string name="accessibility_key_gesture_dialog_positive_button_text" msgid="3670746017523589293">"ഓണാക്കുക"</string>
-    <!-- no translation found for accessibility_key_gesture_shortcut_not_yet_enabled_dialog_title (5331043821287212071) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_shortcut_not_yet_enabled_negative_button_text (6711239406914231612) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_shortcut_not_yet_enabled_positive_button_text (7748487028569821131) -->
-    <skip />
+    <string name="accessibility_key_gesture_shortcut_not_yet_enabled_dialog_title" msgid="5331043821287212071">"<xliff:g id="ID_1">%1$s</xliff:g> കീബോർഡ് കുറുക്കുവഴി ഓണാക്കണോ?"</string>
+    <string name="accessibility_key_gesture_shortcut_not_yet_enabled_negative_button_text" msgid="6711239406914231612">"ഓണാക്കരുത്"</string>
+    <string name="accessibility_key_gesture_shortcut_not_yet_enabled_positive_button_text" msgid="7748487028569821131">"കുറുക്കുവഴി ഓണാക്കുക"</string>
     <string name="accessibility_key_gesture_magnification_dialog_title" msgid="5770691510738701250">"<xliff:g id="ID_1">%1$s</xliff:g> കീബോർഡ് കുറുക്കുവഴി ഓണാക്കി"</string>
-    <!-- no translation found for accessibility_key_gesture_magnification_dialog_content (582920726242272572) -->
-    <skip />
+    <string name="accessibility_key_gesture_magnification_dialog_content" msgid="582920726242272572">"പ്രവർത്തന "<annotation id="action_key_icon">"ഐക്കൺ"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> ആണ് ഉപയോഗസഹായി ഫീച്ചറായ <xliff:g id="ID_3">^3</xliff:g> ഉപയോഗിക്കുന്നതിനുള്ള കീബോഡ് കുറുക്കുവഴി. ഉള്ളടക്കം വലുതാക്കുന്നതിനായി വേഗത്തിൽ സ്ക്രീനിൽ സൂം ഇൻ ചെയ്യാൻ ഇത് നിങ്ങളെ അനുവദിക്കുന്നു. മാഗ്നിഫിക്കേഷൻ ഓണായാൽ, സൂം ക്രമീകരിക്കാൻ പ്രവർത്തന "<annotation id="action_key_icon">"ഐക്കൺ"</annotation>" + <xliff:g id="ID_4">^1</xliff:g> ഒപ്പം \"+\" അല്ലെങ്കിൽ \"-\" അമർത്തുക."</string>
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"കുറുക്കുവഴി ഓഫാക്കുക"</string>
     <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"ഓണാക്കി നിർത്തുക"</string>
     <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="7934170819801013870">"പ്രവൃത്തി "<annotation id="action_key_icon">"ഐക്കൺ"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> അമർത്തുന്നതിലൂടെ ഉപയോഗസഹായി ഫീച്ചറായ <xliff:g id="ID_3">^3</xliff:g> ഓണാകുന്നു. ഉപകരണം ഹാൻഡ്‌സ്-ഫ്രീ ആയി നിയന്ത്രിക്കാൻ ഇത് നിങ്ങളെ അനുവദിക്കുന്നു."</string>
@@ -1624,8 +1627,7 @@
     <string name="shortcut_helper_customize_dialog_reset_button_label" msgid="7645535254306312685">"ഉവ്വ്, റീസെറ്റ് ചെയ്യുക"</string>
     <string name="shortcut_helper_customize_dialog_cancel_button_label" msgid="5595546460431741178">"റദ്ദാക്കുക"</string>
     <string name="shortcut_helper_add_shortcut_dialog_placeholder" msgid="9154297849458741995">"കീ അമർത്തുക"</string>
-    <!-- no translation found for shortcut_helper_customizer_action_key_text (3979063901857046887) -->
-    <skip />
+    <string name="shortcut_helper_customizer_action_key_text" msgid="3979063901857046887">"പ്രവർത്തനം"</string>
     <string name="shortcut_customizer_key_combination_in_use_error_message" msgid="3325858369539848162">"കീ കോമ്പിനേഷൻ ഇതിനകം ഉപയോഗത്തിലുണ്ട്. മറ്റൊരു കോമ്പിനേഷൻ ശ്രമിക്കുക."</string>
     <string name="shortcut_customizer_generic_error_message" msgid="3128454624049722741">"കുറുക്കുവഴി സജ്ജീകരിക്കാനാകില്ല."</string>
     <string name="shortcut_helper_plus_symbol" msgid="4534843157353732011">"+"</string>

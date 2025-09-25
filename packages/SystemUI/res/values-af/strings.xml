@@ -21,8 +21,8 @@
     xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
     <string name="app_label" msgid="4811759950673118541">"Stelsel-UI"</string>
     <string name="battery_low_title" msgid="5319680173344341779">"Skakel Batterybespaarder aan?"</string>
-    <string name="battery_low_description" msgid="3282977755476423966">"Jy het <xliff:g id="PERCENTAGE">%s</xliff:g> batterykrag oor. Batterybespaarder skakel Donkertema aan, beperk agtergrondaktiwiteit en vertraag kennisgewings."</string>
-    <string name="battery_low_intro" msgid="5148725009653088790">"Batterybespaarder skakel Donkertema aan, beperk agtergrondaktiwiteit en vertraag kennisgewings."</string>
+    <string name="battery_low_description" msgid="7848989602036547056">"Jy het <xliff:g id="PERCENTAGE">%s</xliff:g> batterykrag oor. Batterybespaarder skakel donkertema aan, beperk agtergrondaktiwiteit en vertraag kennisgewings."</string>
+    <string name="battery_low_intro" msgid="8033783734931200690">"Batterybespaarder skakel donkertema aan, beperk agtergrondaktiwiteit en vertraag kennisgewings."</string>
     <string name="battery_low_percent_format" msgid="4276661262843170964">"<xliff:g id="PERCENTAGE">%s</xliff:g> oor"</string>
     <string name="invalid_charger_title" msgid="938685362320735167">"Kan nie deur USB laai nie"</string>
     <string name="invalid_charger_text" msgid="2339310107232691577">"Gebruik die laaier wat jy saam met jou toestel gekry het"</string>
@@ -140,8 +140,7 @@
     <string name="screenrecord_stop_dialog_button" msgid="2883812564938194350">"Stop opname"</string>
     <string name="screen_record_entire_screen" msgid="66944996337928170">"Hele skerm"</string>
     <string name="screen_record_single_app" msgid="7355880948574569290">"Enkele app"</string>
-    <!-- no translation found for screen_record_single_app_hint (8404332826093639170) -->
-    <skip />
+    <string name="screen_record_single_app_hint" msgid="8404332826093639170">"App om op te neem"</string>
     <string name="screen_record_single_app_no_recents" msgid="1023249803854209330">"Enkele app (maak app oop en kies)"</string>
     <string name="screen_record_record_device_audio_label" msgid="5363057443124085198">"Neem toesteloudio op"</string>
     <string name="screen_record_record_microphone_label" msgid="4685753707185662381">"Neem mikrofoon op"</string>
@@ -149,11 +148,13 @@
     <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"Wys aanrakings"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"Kies ’n app om op te neem"</string>
     <string name="screen_record_video_saved" msgid="1345283626390232282">"Video is gestoor"</string>
-    <!-- no translation found for screen_record_undo (7942716736019800870) -->
-    <skip />
+    <string name="screen_record_video_deleted" msgid="30786214839944540">"Video is uitgevee"</string>
+    <string name="screen_record_undo" msgid="7942716736019800870">"Ontdoen"</string>
     <string name="screen_record_retake" msgid="3846643688365398450">"Neem weer"</string>
     <string name="screen_record_edit" msgid="8733014191240769309">"Wysig"</string>
     <string name="screen_record_delete" msgid="1023421937978254537">"Vee uit"</string>
+    <string name="screen_record_delete_dialog_title" msgid="5868561491974057044">"Vee hierdie opname uit?"</string>
+    <string name="screen_record_delete_dialog_content" msgid="2610040845214024496">"Uitvee van hierdie opname sal videolêer permanent van jou toestel af uitvee."</string>
     <string name="screen_record_play" msgid="4732544724679889445">"Speel"</string>
     <string name="screen_record_pause" msgid="1715012292444967776">"Onderbreek"</string>
     <string name="screen_record_mute" msgid="8111682249858638168">"Demp"</string>
@@ -165,10 +166,8 @@
     <string name="screen_capture_toolbar_screenshot_button" msgid="5676585348709494125">"Skermskoot"</string>
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"Neem op"</string>
     <string name="screen_share_toolbar_share_button" msgid="9182050596136815833">"Deel"</string>
-    <!-- no translation found for screen_share_no_select_app_thumbnail (1630012401570567430) -->
-    <skip />
-    <!-- no translation found for screen_share_app_audio_sharing (7201172218924898712) -->
-    <skip />
+    <string name="screen_share_no_select_app_thumbnail" msgid="1630012401570567430">"Kies ’n app om te deel"</string>
+    <string name="screen_share_app_audio_sharing" msgid="7201172218924898712">"Deel vensteroudio"</string>
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"Neem skermskoot van venster"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"Neem venster op"</string>
     <string name="screen_capture_toolbar_region_button_screenshot_a11y" msgid="2102262602357521192">"Neem ’n skermskoot van die geselekteerde area"</string>
@@ -176,7 +175,12 @@
     <string name="screen_capture_toolbar_fullscreen_button_screenshot_a11y" msgid="8699983355979869210">"Neem ’n skermskoot van die hele skerm"</string>
     <string name="screen_capture_toolbar_fullscreen_button_record_a11y" msgid="852148867883959158">"Neem die hele skerm op"</string>
     <string name="screen_capture_toolbar_settings_button_a11y" msgid="8014446956996739704">"Skermskootinstellings"</string>
+    <string name="screen_capture_show_clicks_and_keys" msgid="2151690554364148717">"Wys klikke en sleutels"</string>
+    <string name="screen_capture_device_audio" msgid="1537290197773737349">"Toesteloudio"</string>
+    <string name="screen_capture_microphone_audio" msgid="1698835678818747741">"Mikrofoon"</string>
+    <string name="screen_capture_front_camera" msgid="1214647538302639358">"Voorste kamera"</string>
     <string name="screen_capture_region_dimensions" msgid="2317064050253056256">"<xliff:g id="WIDTH">%1$d</xliff:g> x <xliff:g id="HEIGHT">%2$d</xliff:g>"</string>
+    <string name="screen_share_privacy_indicator_stop_sharing" msgid="2297045039651417274">"Hou op deel"</string>
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"Deel tans skerm"</string>
     <string name="share_to_app_chip_accessibility_label_generic" msgid="5517431657924536133">"Inhoud word gedeel"</string>
     <string name="share_to_app_stop_dialog_title" msgid="9212915050910250438">"Hou op om skerm te deel?"</string>
@@ -490,12 +494,13 @@
     <string name="accessibility_hearing_device_pair_new_device" msgid="8440082580186130090">"Klik om nuwe toestel saam te bind"</string>
     <string name="hearing_devices_presets_error" msgid="350363093458408536">"Kon nie voorafstelling opdateer nie"</string>
     <string name="hearing_devices_preset_label" msgid="7878267405046232358">"Voorafstelling"</string>
+    <string name="hearing_devices_preset_label_left" msgid="7427947566560179945">"Linkervoorafstelling"</string>
+    <string name="hearing_devices_preset_label_right" msgid="1847206329436268522">"Regtervoorafstelling"</string>
     <string name="hearing_devices_input_routing_label" msgid="730396728151232306">"Verstekmikrofoon vir oproepe"</string>
   <string-array name="hearing_device_input_routing_options">
     <item msgid="4582190415045337003">"Gehoortoestelmikrofoon"</item>
     <item msgid="8501466270452446450">"Hierdie foon se mikrofoon"</item>
   </string-array>
-    <string name="hearing_devices_spinner_item_selected" msgid="3137083889662762383">"Gekies"</string>
     <string name="hearing_devices_ambient_label" msgid="629440938614895797">"Omgewing"</string>
     <string name="hearing_devices_ambient_control_left" msgid="3586965448230412600">"Links"</string>
     <string name="hearing_devices_ambient_control_right" msgid="6192137602448918383">"Regs"</string>
@@ -891,7 +896,7 @@
     <string name="notification_guts_news_summary" msgid="638697931043407835">"Topstories, hoofartikels en meer"</string>
     <string name="notification_guts_social_summary" msgid="3749147631983977040">"Opduime, plasings en meer"</string>
     <string name="notification_guts_recs_summary" msgid="8391881843238947007">"Nuusbriewe, aanbevole media en meer"</string>
-    <string name="notification_onboarding_summaries_turn_on" msgid="5050003857531272655">"Skakel aan"</string>
+    <string name="notification_onboarding_summaries_turn_on" msgid="3831339570984683297">"Skakel aan in Instellings"</string>
     <string name="notification_onboarding_summaries_message" msgid="6061524903176459064">"Jou langer gesprekke kan nou opgesom word om vir jou vinnige samevattings te gee"</string>
     <string name="notification_onboarding_bundles_message" msgid="4612908213178622912">"Kennisgewingorganiseerder bondel en demp kennisgewings met laer prioritieit. Voeg nog kategorieë in Instellings by."</string>
     <string name="notification_bundle_header_counter" msgid="5515532701569242265">"{count,plural, =1{# kennisgewing}other{# kennisgewings}}"</string>
@@ -1145,15 +1150,11 @@
     <string name="accessibility_key_gesture_dialog_content" msgid="4519838108423437794"><annotation id="action_key_icon">"Handelingikoon"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> is die kortpadsleutel om <xliff:g id="ID_3">^3</xliff:g> te gebruik. <xliff:g id="ID_4">^4</xliff:g>"</string>
     <string name="accessibility_key_gesture_dialog_talkback_intro" msgid="1617808784388544741">"<xliff:g id="ID_1">%1$s</xliff:g> is ’n skermleser wat jou toelaat om items hardop te hoor. Dit kan nuttig wees vir mense wat sukkel om die skerm te sien."</string>
     <string name="accessibility_key_gesture_dialog_positive_button_text" msgid="3670746017523589293">"Skakel aan"</string>
-    <!-- no translation found for accessibility_key_gesture_shortcut_not_yet_enabled_dialog_title (5331043821287212071) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_shortcut_not_yet_enabled_negative_button_text (6711239406914231612) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_shortcut_not_yet_enabled_positive_button_text (7748487028569821131) -->
-    <skip />
+    <string name="accessibility_key_gesture_shortcut_not_yet_enabled_dialog_title" msgid="5331043821287212071">"Skakel <xliff:g id="ID_1">%1$s</xliff:g>-kortpadsleutel aan?"</string>
+    <string name="accessibility_key_gesture_shortcut_not_yet_enabled_negative_button_text" msgid="6711239406914231612">"Moenie aanskakel nie"</string>
+    <string name="accessibility_key_gesture_shortcut_not_yet_enabled_positive_button_text" msgid="7748487028569821131">"Skakel kortpad aan"</string>
     <string name="accessibility_key_gesture_magnification_dialog_title" msgid="5770691510738701250">"<xliff:g id="ID_1">%1$s</xliff:g>-kortpadsleutel is aangeskakel"</string>
-    <!-- no translation found for accessibility_key_gesture_magnification_dialog_content (582920726242272572) -->
-    <skip />
+    <string name="accessibility_key_gesture_magnification_dialog_content" msgid="582920726242272572">"Handeling-"<annotation id="action_key_icon">"ikoon"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> is die kortpadsleutels om <xliff:g id="ID_3">^3</xliff:g>, ’n toeganklikheidskenmerk, te gebruik. Jy kan daarmee vinnig op die skerm inzoem om inhoud groter te maak. Wanneer vergroting aan is, moet jy Handeling-"<annotation id="action_key_icon">"ikoon"</annotation>" + <xliff:g id="ID_4">^1</xliff:g> en “+” of “-” druk om zoem te verstel."</string>
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"Skakel kortpad af"</string>
     <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"Hou aan"</string>
     <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="7934170819801013870">"As jy die Handeling-"<annotation id="action_key_icon">"ikoon"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> druk, skakel dit <xliff:g id="ID_3">^3</xliff:g> aan, ’n toeganklikheidskenmerk. Dit laat jou toe om jou toestel handvry te beheer."</string>
@@ -1626,8 +1627,7 @@
     <string name="shortcut_helper_customize_dialog_reset_button_label" msgid="7645535254306312685">"Ja, stel terug"</string>
     <string name="shortcut_helper_customize_dialog_cancel_button_label" msgid="5595546460431741178">"Kanselleer"</string>
     <string name="shortcut_helper_add_shortcut_dialog_placeholder" msgid="9154297849458741995">"Druk sleutel"</string>
-    <!-- no translation found for shortcut_helper_customizer_action_key_text (3979063901857046887) -->
-    <skip />
+    <string name="shortcut_helper_customizer_action_key_text" msgid="3979063901857046887">"Handeling"</string>
     <string name="shortcut_customizer_key_combination_in_use_error_message" msgid="3325858369539848162">"Sleutelkombinasie is reeds in gebruik. Probeer ’n ander kombinasie."</string>
     <string name="shortcut_customizer_generic_error_message" msgid="3128454624049722741">"Kortpad kan nie gestel word nie."</string>
     <string name="shortcut_helper_plus_symbol" msgid="4534843157353732011">"+"</string>

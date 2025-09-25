@@ -21,8 +21,8 @@
     xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
     <string name="app_label" msgid="4811759950673118541">"Кориснички интерфејс на систем"</string>
     <string name="battery_low_title" msgid="5319680173344341779">"Да се вклучи „Штедачот на батерија“?"</string>
-    <string name="battery_low_description" msgid="3282977755476423966">"Имате уште <xliff:g id="PERCENTAGE">%s</xliff:g> батерија. „Штедачот на батерија“ ја вклучува „Темната тема“, ја ограничува активноста во заднина и ги одложува известувањата."</string>
-    <string name="battery_low_intro" msgid="5148725009653088790">"„Штедачот на батерија“ ја вклучува „Темната тема“, ја ограничува активноста во заднина и ги одложува известувањата."</string>
+    <string name="battery_low_description" msgid="7848989602036547056">"Имате уште <xliff:g id="PERCENTAGE">%s</xliff:g> од батеријата. „Штедачот на батерија“ ја вклучува „Темната тема“, ја ограничува активноста во заднина и ги одложува известувањата."</string>
+    <string name="battery_low_intro" msgid="8033783734931200690">"„Штедачот на батерија“ ја вклучува „Темната тема“, ја ограничува активноста во заднина и ги одложува известувањата."</string>
     <string name="battery_low_percent_format" msgid="4276661262843170964">"Преостануваат <xliff:g id="PERCENTAGE">%s</xliff:g>"</string>
     <string name="invalid_charger_title" msgid="938685362320735167">"Не може да се полни преку USB"</string>
     <string name="invalid_charger_text" msgid="2339310107232691577">"Користете го полначот што дојде со вашиот уред"</string>
@@ -140,8 +140,7 @@
     <string name="screenrecord_stop_dialog_button" msgid="2883812564938194350">"Сопри го снимањето"</string>
     <string name="screen_record_entire_screen" msgid="66944996337928170">"Цел екран"</string>
     <string name="screen_record_single_app" msgid="7355880948574569290">"Една апликација"</string>
-    <!-- no translation found for screen_record_single_app_hint (8404332826093639170) -->
-    <skip />
+    <string name="screen_record_single_app_hint" msgid="8404332826093639170">"Апликација за снимање"</string>
     <string name="screen_record_single_app_no_recents" msgid="1023249803854209330">"Една апликација (отворете апликација за да изберете)"</string>
     <string name="screen_record_record_device_audio_label" msgid="5363057443124085198">"Снимај аудио од уредот"</string>
     <string name="screen_record_record_microphone_label" msgid="4685753707185662381">"Снимај микрофон"</string>
@@ -149,11 +148,13 @@
     <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"Прикажувај допири"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"Изберете апликација за снимање"</string>
     <string name="screen_record_video_saved" msgid="1345283626390232282">"Видеото е зачувано"</string>
-    <!-- no translation found for screen_record_undo (7942716736019800870) -->
-    <skip />
+    <string name="screen_record_video_deleted" msgid="30786214839944540">"Видеото е избришано"</string>
+    <string name="screen_record_undo" msgid="7942716736019800870">"Врати"</string>
     <string name="screen_record_retake" msgid="3846643688365398450">"Сними повторно"</string>
     <string name="screen_record_edit" msgid="8733014191240769309">"Изменете"</string>
     <string name="screen_record_delete" msgid="1023421937978254537">"Избриши"</string>
+    <string name="screen_record_delete_dialog_title" msgid="5868561491974057044">"Да се избрише снимкава?"</string>
+    <string name="screen_record_delete_dialog_content" msgid="2610040845214024496">"Бришењето на снимкава трајно ќе ја избрише видеодатотеката од вашиот уред."</string>
     <string name="screen_record_play" msgid="4732544724679889445">"Пушти"</string>
     <string name="screen_record_pause" msgid="1715012292444967776">"Паузирај"</string>
     <string name="screen_record_mute" msgid="8111682249858638168">"Исклучи звук"</string>
@@ -165,10 +166,8 @@
     <string name="screen_capture_toolbar_screenshot_button" msgid="5676585348709494125">"Слика од екранот"</string>
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"Снимај"</string>
     <string name="screen_share_toolbar_share_button" msgid="9182050596136815833">"Сподели"</string>
-    <!-- no translation found for screen_share_no_select_app_thumbnail (1630012401570567430) -->
-    <skip />
-    <!-- no translation found for screen_share_app_audio_sharing (7201172218924898712) -->
-    <skip />
+    <string name="screen_share_no_select_app_thumbnail" msgid="1630012401570567430">"Изберете апликација за споделување"</string>
+    <string name="screen_share_app_audio_sharing" msgid="7201172218924898712">"Сподели аудио од прозорецот"</string>
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"Снимање слика од екранот на прозорецот"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"Снимање прозорец"</string>
     <string name="screen_capture_toolbar_region_button_screenshot_a11y" msgid="2102262602357521192">"Снимање слика од екранот на избраната област"</string>
@@ -176,7 +175,12 @@
     <string name="screen_capture_toolbar_fullscreen_button_screenshot_a11y" msgid="8699983355979869210">"Снимање слика од целиот екран"</string>
     <string name="screen_capture_toolbar_fullscreen_button_record_a11y" msgid="852148867883959158">"Снимање на целиот екран"</string>
     <string name="screen_capture_toolbar_settings_button_a11y" msgid="8014446956996739704">"Поставки за снимање на екранот"</string>
+    <string name="screen_capture_show_clicks_and_keys" msgid="2151690554364148717">"Прикажи кликнувања и копчиња"</string>
+    <string name="screen_capture_device_audio" msgid="1537290197773737349">"Аудио од уредот"</string>
+    <string name="screen_capture_microphone_audio" msgid="1698835678818747741">"Микрофон"</string>
+    <string name="screen_capture_front_camera" msgid="1214647538302639358">"Предна камера"</string>
     <string name="screen_capture_region_dimensions" msgid="2317064050253056256">"<xliff:g id="WIDTH">%1$d</xliff:g> x <xliff:g id="HEIGHT">%2$d</xliff:g>"</string>
+    <string name="screen_share_privacy_indicator_stop_sharing" msgid="2297045039651417274">"Сопри го споделувањето"</string>
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"Се споделува екранот"</string>
     <string name="share_to_app_chip_accessibility_label_generic" msgid="5517431657924536133">"Се споделуваат содржини"</string>
     <string name="share_to_app_stop_dialog_title" msgid="9212915050910250438">"Да се сопре споделувањето на екранот?"</string>
@@ -490,12 +494,13 @@
     <string name="accessibility_hearing_device_pair_new_device" msgid="8440082580186130090">"Кликнете за да спарите нов уред"</string>
     <string name="hearing_devices_presets_error" msgid="350363093458408536">"Не можеше да се ажурира зададената вредност"</string>
     <string name="hearing_devices_preset_label" msgid="7878267405046232358">"Зададени вредности"</string>
+    <string name="hearing_devices_preset_label_left" msgid="7427947566560179945">"Зададена вредност лево"</string>
+    <string name="hearing_devices_preset_label_right" msgid="1847206329436268522">"Зададена вредност десно"</string>
     <string name="hearing_devices_input_routing_label" msgid="730396728151232306">"Стандарден микрофон за повици"</string>
   <string-array name="hearing_device_input_routing_options">
     <item msgid="4582190415045337003">"Микрофон на слушно помагало"</item>
     <item msgid="8501466270452446450">"Микрофонот на овој телефон"</item>
   </string-array>
-    <string name="hearing_devices_spinner_item_selected" msgid="3137083889662762383">"Избрано"</string>
     <string name="hearing_devices_ambient_label" msgid="629440938614895797">"Опкружување"</string>
     <string name="hearing_devices_ambient_control_left" msgid="3586965448230412600">"Лево"</string>
     <string name="hearing_devices_ambient_control_right" msgid="6192137602448918383">"Десно"</string>
@@ -891,7 +896,7 @@
     <string name="notification_guts_news_summary" msgid="638697931043407835">"Најважни вести, воведни статии и друго"</string>
     <string name="notification_guts_social_summary" msgid="3749147631983977040">"Лајкови, објави и друго"</string>
     <string name="notification_guts_recs_summary" msgid="8391881843238947007">"Билтени, препорачани аудиовизуелни содржини и друго"</string>
-    <string name="notification_onboarding_summaries_turn_on" msgid="5050003857531272655">"Вклучи"</string>
+    <string name="notification_onboarding_summaries_turn_on" msgid="3831339570984683297">"Вклучете во „Поставки“"</string>
     <string name="notification_onboarding_summaries_message" msgid="6061524903176459064">"Отсега подолгите разговори може да се резимираат за да добивате брзи резимеа"</string>
     <string name="notification_onboarding_bundles_message" msgid="4612908213178622912">"„Организаторот за известувања“ ги групира и им го исклучува звукот на известувањата со помал приоритет. Додајте повеќе категории во „Поставки“."</string>
     <string name="notification_bundle_header_counter" msgid="5515532701569242265">"{count,plural, =1{# известување}one{# известување}other{# известувања}}"</string>
@@ -1145,15 +1150,11 @@
     <string name="accessibility_key_gesture_dialog_content" msgid="4519838108423437794"><annotation id="action_key_icon">"Икона"</annotation>" за дејство + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> е кратенката од тастатура за користење на <xliff:g id="ID_3">^3</xliff:g>. <xliff:g id="ID_4">^4</xliff:g>"</string>
     <string name="accessibility_key_gesture_dialog_talkback_intro" msgid="1617808784388544741">"<xliff:g id="ID_1">%1$s</xliff:g> е читач на екран што ви овозможува да слушате ставки изговорени наглас. Ова може да биде корисно за лица што имаат тешкотии да го видат екранот."</string>
     <string name="accessibility_key_gesture_dialog_positive_button_text" msgid="3670746017523589293">"Вклучи"</string>
-    <!-- no translation found for accessibility_key_gesture_shortcut_not_yet_enabled_dialog_title (5331043821287212071) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_shortcut_not_yet_enabled_negative_button_text (6711239406914231612) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_shortcut_not_yet_enabled_positive_button_text (7748487028569821131) -->
-    <skip />
+    <string name="accessibility_key_gesture_shortcut_not_yet_enabled_dialog_title" msgid="5331043821287212071">"Да се вклучи кратенката од тастатура за <xliff:g id="ID_1">%1$s</xliff:g>?"</string>
+    <string name="accessibility_key_gesture_shortcut_not_yet_enabled_negative_button_text" msgid="6711239406914231612">"Не вклучувај"</string>
+    <string name="accessibility_key_gesture_shortcut_not_yet_enabled_positive_button_text" msgid="7748487028569821131">"Вклучи ја кратенката"</string>
     <string name="accessibility_key_gesture_magnification_dialog_title" msgid="5770691510738701250">"Кратенката од тастатура за <xliff:g id="ID_1">%1$s</xliff:g> е вклучена"</string>
-    <!-- no translation found for accessibility_key_gesture_magnification_dialog_content (582920726242272572) -->
-    <skip />
+    <string name="accessibility_key_gesture_magnification_dialog_content" msgid="582920726242272572"><annotation id="action_key_icon">"Икона"</annotation>" за дејство + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> е кратенката од тастатура за користење на <xliff:g id="ID_3">^3</xliff:g>, функција за пристапност. Ова ви овозможува брзо да зумирате на екранот за да го зголемите приказот на содржините. Откако ќе се вклучи зголемувањето, притиснете ја "<annotation id="action_key_icon">"иконата"</annotation>" за дејство + <xliff:g id="ID_4">^1</xliff:g> и „+“ или „–“ за да го приспособите зумот."</string>
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"Исклучи ја кратенката"</string>
     <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"Не исклучувај"</string>
     <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="7934170819801013870">"Ако ја притиснете "<annotation id="action_key_icon">"иконата"</annotation>" за дејство + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> се вклучува <xliff:g id="ID_3">^3</xliff:g>, функција за пристапност. Ова ви овозможува да го контролирате вашиот уред без користење раце."</string>
@@ -1626,8 +1627,7 @@
     <string name="shortcut_helper_customize_dialog_reset_button_label" msgid="7645535254306312685">"Да, ресетирај"</string>
     <string name="shortcut_helper_customize_dialog_cancel_button_label" msgid="5595546460431741178">"Откажи"</string>
     <string name="shortcut_helper_add_shortcut_dialog_placeholder" msgid="9154297849458741995">"Притиснете копче"</string>
-    <!-- no translation found for shortcut_helper_customizer_action_key_text (3979063901857046887) -->
-    <skip />
+    <string name="shortcut_helper_customizer_action_key_text" msgid="3979063901857046887">"Дејство"</string>
     <string name="shortcut_customizer_key_combination_in_use_error_message" msgid="3325858369539848162">"Комбинацијата на копчиња веќе се користи. Обидете се со друга комбинација."</string>
     <string name="shortcut_customizer_generic_error_message" msgid="3128454624049722741">"Кратенката не може да се постави."</string>
     <string name="shortcut_helper_plus_symbol" msgid="4534843157353732011">"+"</string>

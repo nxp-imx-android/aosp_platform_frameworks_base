@@ -21,8 +21,8 @@
     xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
     <string name="app_label" msgid="4811759950673118541">"Sistemaren interfazea"</string>
     <string name="battery_low_title" msgid="5319680173344341779">"Bateria-aurreztailea aktibatu nahi duzu?"</string>
-    <string name="battery_low_description" msgid="3282977755476423966">"Bateriaren <xliff:g id="PERCENTAGE">%s</xliff:g> gelditzen zaizu. Bateria-aurreztaileak gai iluna aktibatzen du, atzeko planoko jarduerak murrizten, eta jakinarazpenak atzeratzen."</string>
-    <string name="battery_low_intro" msgid="5148725009653088790">"Bateria-aurreztaileak gai iluna aktibatzen du, atzeko planoko jarduerak murrizten, eta jakinarazpenak atzeratzen."</string>
+    <string name="battery_low_description" msgid="7848989602036547056">"Bateriaren <xliff:g id="PERCENTAGE">%s</xliff:g> gelditzen zaizu. Bateria-aurrezleak gai iluna aktibatzen du, atzeko planoko jarduerak murrizten, eta jakinarazpenak atzeratzen."</string>
+    <string name="battery_low_intro" msgid="8033783734931200690">"Bateria-aurrezleak gai iluna aktibatzen du, atzeko planoko jarduerak murrizten, eta jakinarazpenak atzeratzen."</string>
     <string name="battery_low_percent_format" msgid="4276661262843170964">"<xliff:g id="PERCENTAGE">%s</xliff:g> gelditzen da"</string>
     <string name="invalid_charger_title" msgid="938685362320735167">"Ezin da USB bidez kargatu"</string>
     <string name="invalid_charger_text" msgid="2339310107232691577">"Erabili gailuaren kargagailua"</string>
@@ -140,8 +140,7 @@
     <string name="screenrecord_stop_dialog_button" msgid="2883812564938194350">"Utzi grabatzeari"</string>
     <string name="screen_record_entire_screen" msgid="66944996337928170">"Pantaila osoa"</string>
     <string name="screen_record_single_app" msgid="7355880948574569290">"Aplikazio bakarra"</string>
-    <!-- no translation found for screen_record_single_app_hint (8404332826093639170) -->
-    <skip />
+    <string name="screen_record_single_app_hint" msgid="8404332826093639170">"Grabatzeko aplikazioa"</string>
     <string name="screen_record_single_app_no_recents" msgid="1023249803854209330">"Aplikazio bakarra (ireki bat aukeratzeko)"</string>
     <string name="screen_record_record_device_audio_label" msgid="5363057443124085198">"Grabatu gailuko audioa"</string>
     <string name="screen_record_record_microphone_label" msgid="4685753707185662381">"Grabatu mikrofono bidezko audioa"</string>
@@ -149,11 +148,13 @@
     <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"Erakutsi ukitutakoa"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"Aukeratu grabatzeko aplikazio bat"</string>
     <string name="screen_record_video_saved" msgid="1345283626390232282">"Gorde da bideoa"</string>
-    <!-- no translation found for screen_record_undo (7942716736019800870) -->
-    <skip />
+    <string name="screen_record_video_deleted" msgid="30786214839944540">"Ezabatu da bideoa"</string>
+    <string name="screen_record_undo" msgid="7942716736019800870">"Desegin"</string>
     <string name="screen_record_retake" msgid="3846643688365398450">"Atera berriro"</string>
     <string name="screen_record_edit" msgid="8733014191240769309">"Editatu"</string>
     <string name="screen_record_delete" msgid="1023421937978254537">"Ezabatu"</string>
+    <string name="screen_record_delete_dialog_title" msgid="5868561491974057044">"Grabaketa ezabatu nahi duzu?"</string>
+    <string name="screen_record_delete_dialog_content" msgid="2610040845214024496">"Grabaketa ezabatzen baduzu, betiko ezabatuko da bideo-fitxategia gailutik."</string>
     <string name="screen_record_play" msgid="4732544724679889445">"Erreproduzitu"</string>
     <string name="screen_record_pause" msgid="1715012292444967776">"Pausatu"</string>
     <string name="screen_record_mute" msgid="8111682249858638168">"Desaktibatu audioa"</string>
@@ -165,10 +166,8 @@
     <string name="screen_capture_toolbar_screenshot_button" msgid="5676585348709494125">"Pantaila-argazkia"</string>
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"Grabatu"</string>
     <string name="screen_share_toolbar_share_button" msgid="9182050596136815833">"Partekatu"</string>
-    <!-- no translation found for screen_share_no_select_app_thumbnail (1630012401570567430) -->
-    <skip />
-    <!-- no translation found for screen_share_app_audio_sharing (7201172218924898712) -->
-    <skip />
+    <string name="screen_share_no_select_app_thumbnail" msgid="1630012401570567430">"Hautatu partekatzeko aplikazio bat"</string>
+    <string name="screen_share_app_audio_sharing" msgid="7201172218924898712">"Partekatu leihoaren audioa"</string>
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"Atera leihoaren pantaila-argazkia"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"Grabatu leihoa"</string>
     <string name="screen_capture_toolbar_region_button_screenshot_a11y" msgid="2102262602357521192">"Atera hautatutako eremuaren pantaila-argazki bat"</string>
@@ -176,7 +175,12 @@
     <string name="screen_capture_toolbar_fullscreen_button_screenshot_a11y" msgid="8699983355979869210">"Atera pantaila osoaren pantaila-argazki bat"</string>
     <string name="screen_capture_toolbar_fullscreen_button_record_a11y" msgid="852148867883959158">"Grabatu pantaila osoko edukia"</string>
     <string name="screen_capture_toolbar_settings_button_a11y" msgid="8014446956996739704">"Pantaila-kapturaren ezarpenak"</string>
+    <string name="screen_capture_show_clicks_and_keys" msgid="2151690554364148717">"Erakutsi klikak eta teklak"</string>
+    <string name="screen_capture_device_audio" msgid="1537290197773737349">"Gailuaren audioa"</string>
+    <string name="screen_capture_microphone_audio" msgid="1698835678818747741">"Mikrofonoa"</string>
+    <string name="screen_capture_front_camera" msgid="1214647538302639358">"Aurreko kamera"</string>
     <string name="screen_capture_region_dimensions" msgid="2317064050253056256">"<xliff:g id="WIDTH">%1$d</xliff:g> × <xliff:g id="HEIGHT">%2$d</xliff:g>"</string>
+    <string name="screen_share_privacy_indicator_stop_sharing" msgid="2297045039651417274">"Utzi partekatzeari"</string>
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"Pantaila partekatzen"</string>
     <string name="share_to_app_chip_accessibility_label_generic" msgid="5517431657924536133">"Edukia partekatzen"</string>
     <string name="share_to_app_stop_dialog_title" msgid="9212915050910250438">"Pantaila partekatzeari utzi nahi diozu?"</string>
@@ -490,12 +494,13 @@
     <string name="accessibility_hearing_device_pair_new_device" msgid="8440082580186130090">"Egin klik beste gailu bat parekatzeko"</string>
     <string name="hearing_devices_presets_error" msgid="350363093458408536">"Ezin izan da eguneratu aurrezarpena"</string>
     <string name="hearing_devices_preset_label" msgid="7878267405046232358">"Aurrezarpena"</string>
+    <string name="hearing_devices_preset_label_left" msgid="7427947566560179945">"Ezkerreko gailuaren aurrezarpenak"</string>
+    <string name="hearing_devices_preset_label_right" msgid="1847206329436268522">"Eskuineko gailuaren aurrezarpenak"</string>
     <string name="hearing_devices_input_routing_label" msgid="730396728151232306">"Deiak egiteko mikrofono lehenetsia"</string>
   <string-array name="hearing_device_input_routing_options">
     <item msgid="4582190415045337003">"Audifonoaren mikrofonoa"</item>
     <item msgid="8501466270452446450">"Telefono honen mikrofonoa"</item>
   </string-array>
-    <string name="hearing_devices_spinner_item_selected" msgid="3137083889662762383">"Hautatuta"</string>
     <string name="hearing_devices_ambient_label" msgid="629440938614895797">"Ingurunea"</string>
     <string name="hearing_devices_ambient_control_left" msgid="3586965448230412600">"Ezkerrekoa"</string>
     <string name="hearing_devices_ambient_control_right" msgid="6192137602448918383">"Eskuinekoa"</string>
@@ -751,7 +756,7 @@
     <string name="legacy_vpn_name" msgid="4174223520162559145">"VPNa"</string>
     <string name="keyguard_indication_trust_unlocked" msgid="7395154975733744547">"TrustAgent bidez desblokeatuta"</string>
     <string name="kg_prompt_after_adaptive_auth_lock" msgid="6065186971000690782">"Pantaila blokeatu da. Autentifikatzeko saiakera gehiegi egin dira."</string>
-    <string name="keyguard_indication_after_adaptive_auth_lock" msgid="5240600662061340872">"Pantaila blokeatu da\nEzin izan da autentifikatu"</string>
+    <string name="keyguard_indication_after_adaptive_auth_lock" msgid="5240600662061340872">"Pantaila blokeatu da.\nEzin izan da autentifikatu."</string>
     <string name="keyguard_indication_after_watch_disconnected" msgid="8133476870585660478">"Erlojuak blokeatuta"</string>
     <string name="keyguard_indication_after_secure_lock_device" msgid="4358906300665255820">"2 urratseko egiaztapenarekin blokeatuta"</string>
     <string name="zen_mode_and_condition" msgid="5043165189511223718">"<xliff:g id="ZEN_MODE">%1$s</xliff:g>. <xliff:g id="EXIT_CONDITION">%2$s</xliff:g>"</string>
@@ -891,7 +896,7 @@
     <string name="notification_guts_news_summary" msgid="638697931043407835">"Albiste nagusiak, editorialak eta abar"</string>
     <string name="notification_guts_social_summary" msgid="3749147631983977040">"Gustatu izanaren adierazpenak, argitalpenak eta abar"</string>
     <string name="notification_guts_recs_summary" msgid="8391881843238947007">"Buletinak, gomendatutako multimedia-elementuak eta abar"</string>
-    <string name="notification_onboarding_summaries_turn_on" msgid="5050003857531272655">"Aktibatu"</string>
+    <string name="notification_onboarding_summaries_turn_on" msgid="3831339570984683297">"Aktibatu Ezarpenak atalean"</string>
     <string name="notification_onboarding_summaries_message" msgid="6061524903176459064">"Orain, elkarrizketa luzeak laburbildu egin daitezke, laburpen bizkorrak izan ditzazun"</string>
     <string name="notification_onboarding_bundles_message" msgid="4612908213178622912">"Jakinarazpenen antolatzaileak lehentasun txikiagoko jakinarazpenak multzokatzen ditu, eta audioa desaktibatzen die. Kategoriak gehitzeko, joan Ezarpenak atalera."</string>
     <string name="notification_bundle_header_counter" msgid="5515532701569242265">"{count,plural, =1{# jakinarazpen}other{# jakinarazpen}}"</string>
@@ -1145,15 +1150,11 @@
     <string name="accessibility_key_gesture_dialog_content" msgid="4519838108423437794"><annotation id="action_key_icon">"ikonoa"</annotation>" ekintza + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> da <xliff:g id="ID_3">^3</xliff:g> erabiltzeko lasterbidea. <xliff:g id="ID_4">^4</xliff:g>"</string>
     <string name="accessibility_key_gesture_dialog_talkback_intro" msgid="1617808784388544741">"<xliff:g id="ID_1">%1$s</xliff:g> elementuak ozen irakurrita entzuteko aukera ematen dizun pantaila-irakurgailu bat da. Pantaila ikusteko zailtasuna duten pertsonentzat da lagungarria."</string>
     <string name="accessibility_key_gesture_dialog_positive_button_text" msgid="3670746017523589293">"Aktibatu"</string>
-    <!-- no translation found for accessibility_key_gesture_shortcut_not_yet_enabled_dialog_title (5331043821287212071) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_shortcut_not_yet_enabled_negative_button_text (6711239406914231612) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_shortcut_not_yet_enabled_positive_button_text (7748487028569821131) -->
-    <skip />
+    <string name="accessibility_key_gesture_shortcut_not_yet_enabled_dialog_title" msgid="5331043821287212071">"<xliff:g id="ID_1">%1$s</xliff:g> lasterbidea aktibatu nahi duzu?"</string>
+    <string name="accessibility_key_gesture_shortcut_not_yet_enabled_negative_button_text" msgid="6711239406914231612">"Ez aktibatu"</string>
+    <string name="accessibility_key_gesture_shortcut_not_yet_enabled_positive_button_text" msgid="7748487028569821131">"Aktibatu lasterbidea"</string>
     <string name="accessibility_key_gesture_magnification_dialog_title" msgid="5770691510738701250">"<xliff:g id="ID_1">%1$s</xliff:g> erabiltzeko lasterbidea aktibatuta dago"</string>
-    <!-- no translation found for accessibility_key_gesture_magnification_dialog_content (582920726242272572) -->
-    <skip />
+    <string name="accessibility_key_gesture_magnification_dialog_content" msgid="582920726242272572"><annotation id="action_key_icon">"Ekintza-ikonoa"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> <xliff:g id="ID_3">^3</xliff:g> erabilerraztasun-eginbidea erabiltzeko lasterbidea da. Horri esker, bizkor handitu ahalko duzu pantaila, edukia hobeto ikusteko. Lupa aktibatu ondoren, sakatu "<annotation id="action_key_icon">"ekintza-ikonoa"</annotation>" + <xliff:g id="ID_4">^1</xliff:g> eta \"+\" edo \"-\" zooma doitzeko."</string>
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"Desaktibatu lasterbidea"</string>
     <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"Mantendu aktibatuta"</string>
     <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="7934170819801013870"><annotation id="action_key_icon">"Ekintza-ikonoa"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> sakatuta, <xliff:g id="ID_3">^3</xliff:g> erabilerraztasun-eginbidea aktibatzen da. Hura erabilita, eskurik erabili gabe kontrola dezakezu gailua."</string>
@@ -1626,8 +1627,7 @@
     <string name="shortcut_helper_customize_dialog_reset_button_label" msgid="7645535254306312685">"Bai, berrezarri"</string>
     <string name="shortcut_helper_customize_dialog_cancel_button_label" msgid="5595546460431741178">"Utzi"</string>
     <string name="shortcut_helper_add_shortcut_dialog_placeholder" msgid="9154297849458741995">"Sakatu tekla"</string>
-    <!-- no translation found for shortcut_helper_customizer_action_key_text (3979063901857046887) -->
-    <skip />
+    <string name="shortcut_helper_customizer_action_key_text" msgid="3979063901857046887">"Ekintza"</string>
     <string name="shortcut_customizer_key_combination_in_use_error_message" msgid="3325858369539848162">"Tekla-konbinazio hori erabili da dagoeneko. Probatu beste konbinazio batekin."</string>
     <string name="shortcut_customizer_generic_error_message" msgid="3128454624049722741">"Ezin da ezarri lasterbidea."</string>
     <string name="shortcut_helper_plus_symbol" msgid="4534843157353732011">"+"</string>

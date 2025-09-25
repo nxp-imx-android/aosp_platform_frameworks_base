@@ -21,8 +21,8 @@
     xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
     <string name="app_label" msgid="4811759950673118541">"Sistemos NS"</string>
     <string name="battery_low_title" msgid="5319680173344341779">"Įjungti Akumuliatoriaus tausojimo priemonę?"</string>
-    <string name="battery_low_description" msgid="3282977755476423966">"Liko <xliff:g id="PERCENTAGE">%s</xliff:g> akumuliatoriaus energijos. Kai naudojama Akumuliatoriaus tausojimo priemonė, įjungiama Tamsioji tema, apribojama veikla fone ir atidedami pranešimai."</string>
-    <string name="battery_low_intro" msgid="5148725009653088790">"Kai naudojama Akumuliatoriaus tausojimo priemonė, įjungiama Tamsioji tema, apribojama veikla fone ir atidedami pranešimai."</string>
+    <string name="battery_low_description" msgid="7848989602036547056">"Liko <xliff:g id="PERCENTAGE">%s</xliff:g> akumuliatoriaus energijos. Kai naudojama Akumuliatoriaus tausojimo priemonė, įjungiama tamsioji tema, apribojama veikla fone ir atidedami pranešimai."</string>
+    <string name="battery_low_intro" msgid="8033783734931200690">"Kai naudojama Akumuliatoriaus tausojimo priemonė, įjungiama tamsioji tema, apribojama veikla fone ir atidedami pranešimai."</string>
     <string name="battery_low_percent_format" msgid="4276661262843170964">"Liko <xliff:g id="PERCENTAGE">%s</xliff:g>"</string>
     <string name="invalid_charger_title" msgid="938685362320735167">"Negalima įkrauti naudojant USB"</string>
     <string name="invalid_charger_text" msgid="2339310107232691577">"Naudokite originalų su įrenginiu pateiktą įkroviklį"</string>
@@ -148,10 +148,13 @@
     <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"Rodyti palietimus"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"Norėdami įrašyti pasirinkite programą"</string>
     <string name="screen_record_video_saved" msgid="1345283626390232282">"Vaizdo įrašas išsaugotas"</string>
+    <string name="screen_record_video_deleted" msgid="30786214839944540">"Vaizdo įrašas ištrintas"</string>
     <string name="screen_record_undo" msgid="7942716736019800870">"Anuliuoti"</string>
     <string name="screen_record_retake" msgid="3846643688365398450">"Įrašyti iš naujo"</string>
     <string name="screen_record_edit" msgid="8733014191240769309">"Redaguoti"</string>
     <string name="screen_record_delete" msgid="1023421937978254537">"Ištrinti"</string>
+    <string name="screen_record_delete_dialog_title" msgid="5868561491974057044">"Ištrinti šį įrašą?"</string>
+    <string name="screen_record_delete_dialog_content" msgid="2610040845214024496">"Ištrynus šį įrašą vaizdo įrašo failas bus visam laikui ištrintas iš įrenginio."</string>
     <string name="screen_record_play" msgid="4732544724679889445">"Leisti"</string>
     <string name="screen_record_pause" msgid="1715012292444967776">"Pristabdyti"</string>
     <string name="screen_record_mute" msgid="8111682249858638168">"Nutildyti"</string>
@@ -172,7 +175,12 @@
     <string name="screen_capture_toolbar_fullscreen_button_screenshot_a11y" msgid="8699983355979869210">"Padaryti viso ekrano kopiją"</string>
     <string name="screen_capture_toolbar_fullscreen_button_record_a11y" msgid="852148867883959158">"Įrašyti visą ekraną"</string>
     <string name="screen_capture_toolbar_settings_button_a11y" msgid="8014446956996739704">"Ekrano fiksavimo nustatymai"</string>
+    <string name="screen_capture_show_clicks_and_keys" msgid="2151690554364148717">"Rodyti paspaudimus ir klavišus"</string>
+    <string name="screen_capture_device_audio" msgid="1537290197773737349">"Įrenginio garsas"</string>
+    <string name="screen_capture_microphone_audio" msgid="1698835678818747741">"Mikrofonas"</string>
+    <string name="screen_capture_front_camera" msgid="1214647538302639358">"Priekinis fotoaparatas"</string>
     <string name="screen_capture_region_dimensions" msgid="2317064050253056256">"<xliff:g id="WIDTH">%1$d</xliff:g> x <xliff:g id="HEIGHT">%2$d</xliff:g>"</string>
+    <string name="screen_share_privacy_indicator_stop_sharing" msgid="2297045039651417274">"Nebebendrinti"</string>
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"Bendrinamas ekranas"</string>
     <string name="share_to_app_chip_accessibility_label_generic" msgid="5517431657924536133">"Bendrint turinį"</string>
     <string name="share_to_app_stop_dialog_title" msgid="9212915050910250438">"Nebebendrinti ekrano?"</string>
@@ -486,12 +494,13 @@
     <string name="accessibility_hearing_device_pair_new_device" msgid="8440082580186130090">"Spustelėkite, kad susietumėte naują įrenginį"</string>
     <string name="hearing_devices_presets_error" msgid="350363093458408536">"Išankstinių nustatymų atnaujinti nepavyko"</string>
     <string name="hearing_devices_preset_label" msgid="7878267405046232358">"Išankstiniai nustatymai"</string>
+    <string name="hearing_devices_preset_label_left" msgid="7427947566560179945">"Kairiosios pusės išankstiniai nustatymai"</string>
+    <string name="hearing_devices_preset_label_right" msgid="1847206329436268522">"Dešiniosios pusės išankstiniai nustatymai"</string>
     <string name="hearing_devices_input_routing_label" msgid="730396728151232306">"Numatytasis mikrofonas skambučiams"</string>
   <string-array name="hearing_device_input_routing_options">
     <item msgid="4582190415045337003">"Klausos aparato mikrofonas"</item>
     <item msgid="8501466270452446450">"Šio telefono mikrofonas"</item>
   </string-array>
-    <string name="hearing_devices_spinner_item_selected" msgid="3137083889662762383">"Pasirinkta"</string>
     <string name="hearing_devices_ambient_label" msgid="629440938614895797">"Aplinka"</string>
     <string name="hearing_devices_ambient_control_left" msgid="3586965448230412600">"Kairė"</string>
     <string name="hearing_devices_ambient_control_right" msgid="6192137602448918383">"Dešinė"</string>
@@ -887,7 +896,7 @@
     <string name="notification_guts_news_summary" msgid="638697931043407835">"Svarbiausios istorijos, redakciniai straipsniai ir kt."</string>
     <string name="notification_guts_social_summary" msgid="3749147631983977040">"Mygtuko „Patinka“ paspaudimai, įrašai ir kt."</string>
     <string name="notification_guts_recs_summary" msgid="8391881843238947007">"Naujienlaiškiai, rekomenduojama medija ir kt."</string>
-    <string name="notification_onboarding_summaries_turn_on" msgid="5050003857531272655">"Įjungti"</string>
+    <string name="notification_onboarding_summaries_turn_on" msgid="3831339570984683297">"Įjungti nustatymuose"</string>
     <string name="notification_onboarding_summaries_message" msgid="6061524903176459064">"Dabar ilgesnius pokalbius galima apibendrinti, kad gautumėte trumpas santraukas"</string>
     <string name="notification_onboarding_bundles_message" msgid="4612908213178622912">"Pranešimų tvarkyklė sugrupuoja ir nutildo žemesnio prioriteto pranešimus. Pridėkite daugiau kategorijų skiltyje „Nustatymai“."</string>
     <string name="notification_bundle_header_counter" msgid="5515532701569242265">"{count,plural, =1{# pranešimas}one{# pranešimas}few{# pranešimai}many{# pranešimo}other{# pranešimų}}"</string>
