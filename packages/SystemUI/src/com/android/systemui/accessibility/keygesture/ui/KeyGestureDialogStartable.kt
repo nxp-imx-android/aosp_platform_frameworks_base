@@ -95,9 +95,10 @@ constructor(
     private abstract class BaseDialogDelegate(
         protected val interactor: KeyGestureDialogInteractor
     ) : DialogBehaviorDelegate {
-        override val negativeButtonTextId: Int = android.R.string.cancel
+        override val negativeButtonTextId: Int =
+            R.string.accessibility_key_gesture_shortcut_not_yet_enabled_negative_button_text
         override val positiveButtonTextId: Int =
-            R.string.accessibility_key_gesture_dialog_positive_button_text
+            R.string.accessibility_key_gesture_shortcut_not_yet_enabled_positive_button_text
 
         override fun onPositiveButtonClick(info: KeyGestureConfirmInfo) {
             interactor.enableShortcutsForTargets(enable = true, info.targetName)
@@ -110,18 +111,6 @@ constructor(
      */
     private class DefaultDialogDelegate(interactor: KeyGestureDialogInteractor) :
         BaseDialogDelegate(interactor)
-
-    /**
-     * Delegate for the Voice Access shortcut, which extends the base behavior except for the two
-     * button text.
-     */
-    private class VoiceAccessDialogDelegate(interactor: KeyGestureDialogInteractor) :
-        BaseDialogDelegate(interactor) {
-        override val negativeButtonTextId: Int =
-            R.string.accessibility_key_gesture_shortcut_not_yet_enabled_negative_button_text
-        override val positiveButtonTextId: Int =
-            R.string.accessibility_key_gesture_shortcut_not_yet_enabled_positive_button_text
-    }
 
     /**
      * Delegate for the screen reader shortcut, which extends the base behavior by adding a
@@ -138,15 +127,6 @@ constructor(
         override fun onDialogDismissed(info: KeyGestureConfirmInfo) {
             ttsPrompt?.dismiss()
         }
-    }
-
-    /** Delegate for the magnification shortcut. */
-    private class MagnificationDialogDelegate(interactor: KeyGestureDialogInteractor) :
-        BaseDialogDelegate(interactor) {
-        override val negativeButtonTextId: Int =
-            R.string.accessibility_key_gesture_shortcut_not_yet_enabled_negative_button_text
-        override val positiveButtonTextId: Int =
-            R.string.accessibility_key_gesture_shortcut_not_yet_enabled_positive_button_text
     }
 
     /**
@@ -180,12 +160,10 @@ constructor(
                 if (Flags.enableMagnifyMagnificationKeyGestureDialog()) {
                     MagnifyMagnificationDialogDelegate(interactor)
                 } else {
-                    MagnificationDialogDelegate(interactor)
+                    DefaultDialogDelegate(interactor)
                 }
             KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_SCREEN_READER ->
                 ScreenReaderDialogDelegate(interactor)
-            KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_VOICE_ACCESS ->
-                VoiceAccessDialogDelegate(interactor)
             else -> DefaultDialogDelegate(interactor)
         }
     }
