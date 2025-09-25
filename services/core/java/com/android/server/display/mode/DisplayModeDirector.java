@@ -181,8 +181,6 @@ public class DisplayModeDirector {
     @DisplayManager.SwitchingType
     private int mModeSwitchingType = DisplayManager.SWITCHING_TYPE_WITHIN_GROUPS;
 
-    private final boolean mIsBackUpSmoothDisplayAndForcePeakRefreshRateEnabled;
-
     private final boolean mHasArrSupportFlagEnabled;
 
     private final DisplayManagerFlags mDisplayManagerFlags;
@@ -200,8 +198,6 @@ public class DisplayModeDirector {
             @NonNull Injector injector,
             @NonNull DisplayManagerFlags displayManagerFlags,
             @NonNull DisplayDeviceConfigProvider displayDeviceConfigProvider) {
-        mIsBackUpSmoothDisplayAndForcePeakRefreshRateEnabled = displayManagerFlags
-                .isBackUpSmoothDisplayAndForcePeakRefreshRateEnabled();
         mHasArrSupportFlagEnabled = displayManagerFlags.hasArrSupportFlag();
         mDisplayManagerFlags = displayManagerFlags;
         mDisplayDeviceConfigProvider = displayDeviceConfigProvider;

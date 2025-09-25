@@ -59,10 +59,6 @@ public class DisplayManagerFlags {
             Flags.FLAG_ENABLE_CONNECTED_DISPLAY_ERROR_HANDLING,
             Flags::enableConnectedDisplayErrorHandling);
 
-    private final FlagState mBackUpSmoothDisplayAndForcePeakRefreshRateFlagState = new FlagState(
-            Flags.FLAG_BACK_UP_SMOOTH_DISPLAY_AND_FORCE_PEAK_REFRESH_RATE,
-            Flags::backUpSmoothDisplayAndForcePeakRefreshRate);
-
     private final FlagState mPowerThrottlingClamperFlagState = new FlagState(
             Flags.FLAG_ENABLE_POWER_THROTTLING_CLAMPER,
             Flags::enablePowerThrottlingClamper);
@@ -277,10 +273,6 @@ public class DisplayManagerFlags {
     /** Returns whether error notifications for connected displays are enabled on not */
     public boolean isConnectedDisplayErrorHandlingEnabled() {
         return mConnectedDisplayErrorHandlingFlagState.isEnabled();
-    }
-
-    public boolean isBackUpSmoothDisplayAndForcePeakRefreshRateEnabled() {
-        return mBackUpSmoothDisplayAndForcePeakRefreshRateFlagState.isEnabled();
     }
 
     /** Returns whether brightness range is allowed to extend below traditional range. */
@@ -503,7 +495,6 @@ public class DisplayManagerFlags {
     public void dump(PrintWriter pw) {
         pw.println("DisplayManagerFlags:");
         pw.println("--------------------");
-        pw.println(" " + mBackUpSmoothDisplayAndForcePeakRefreshRateFlagState);
         pw.println(" " + mConnectedDisplayErrorHandlingFlagState);
         pw.println(" " + mDisplayOffloadFlagState);
         pw.println(" " + mDisplayTopology);
