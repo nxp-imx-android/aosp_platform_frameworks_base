@@ -25,4 +25,6 @@ class LargeScreenCaptureFeaturesInteractor @Inject constructor() {
     val appWindowRegionSupported = Flags.largeScreenScreenshotAppWindow()
 
     val screenRecordingSupported = Flags.largeScreenRecording()
+
+    val customSaveLocationSupported = Flags.largeScreenScreenshotSaveLocation()
 }

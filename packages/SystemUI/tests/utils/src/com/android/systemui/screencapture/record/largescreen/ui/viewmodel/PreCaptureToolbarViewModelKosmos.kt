@@ -19,17 +19,21 @@ package com.android.systemui.screencapture.record.largescreen.ui.viewmodel
 import com.android.internal.logging.uiEventLogger
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.Kosmos.Fixture
+import com.android.systemui.kosmos.backgroundScope
 import com.android.systemui.screencapture.record.largescreen.domain.interactor.largeScreenCaptureFeaturesInteractor
+import com.android.systemui.screencapture.record.largescreen.domain.interactor.largeScreenCaptureParametersInteractor
 import com.android.systemui.screencapture.record.ui.viewmodel.screenCaptureRecordParametersViewModelFactory
 
 val Kosmos.preCaptureToolbarViewModelFactory by Fixture {
     object : PreCaptureToolbarViewModel.Factory {
         override fun create(): PreCaptureToolbarViewModel {
             return PreCaptureToolbarViewModel(
+                backgroundScope = backgroundScope,
                 uiEventLogger = uiEventLogger,
                 iconProvider = screenCaptureIconProviderKosmos,
                 featuresInteractor = largeScreenCaptureFeaturesInteractor,
                 recordParametersViewModelFactory = screenCaptureRecordParametersViewModelFactory,
+                largeScreenCaptureParametersInteractor = largeScreenCaptureParametersInteractor,
             )
         }
     }
