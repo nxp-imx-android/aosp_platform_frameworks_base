@@ -444,7 +444,9 @@ public class BubblesTest extends SysuiTestCase {
                 mNotificationShadeWindowModel,
                 mKosmos::getCommunalInteractor,
                 mKosmos.getShadeLayoutParams(),
-                mKosmos.getTopUiController()
+                mKosmos.getTopUiController(),
+                mKosmos.getKeyguardSurfaceBehindInteractor(),
+                mKosmos.getJavaAdapter()
         );
         mNotificationShadeWindowController.fetchWindowRootView();
         mNotificationShadeWindowController.attach();

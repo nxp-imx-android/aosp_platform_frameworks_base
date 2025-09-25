@@ -862,9 +862,16 @@ constructor(
         }
 
         applicationScope.launch {
-            deviceEntryInteractor.isDeviceEntered.collect { isDeviceEntered ->
-                windowController.setKeyguardShowing(!isDeviceEntered)
-            }
+            combine(deviceEntryInteractor.isDeviceEntered, sceneInteractor.transitionState, ::Pair)
+                .map { (isDeviceEntered, transitionState) ->
+                    !isDeviceEntered ||
+                        transitionState.isTransitioningSets(
+                            from = setOf(Scenes.Lockscreen, Scenes.Occluded, Overlays.Bouncer),
+                            to = setOf(Scenes.Gone),
+                        )
+                }
+                .distinctUntilChanged()
+                .collect { windowController.setKeyguardShowing(it) }
         }
 
         applicationScope.launch {
