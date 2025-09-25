@@ -17,7 +17,6 @@ package com.android.server.adb;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import android.util.Xml;
@@ -187,7 +186,7 @@ public class AdbAuthorizationStoreTest {
         AdbAuthorizationStore.Entries entries = mStore.load();
         assertEquals(1, entries.trustedNetworks().size());
         assertEquals("bssid1", entries.trustedNetworks().getFirst().bssid());
-        assertNull(entries.trustedNetworks().getFirst().ssid());
+        assertEquals("", entries.trustedNetworks().getFirst().ssid());
         assertTrue(entries.keys().isEmpty());
 
 
@@ -197,7 +196,7 @@ public class AdbAuthorizationStoreTest {
         entries = mStore.load();
         assertEquals(2, entries.trustedNetworks().size());
         assertEquals("bssid1", entries.trustedNetworks().get(0).bssid());
-        assertNull(entries.trustedNetworks().get(0).ssid());
+        assertEquals("", entries.trustedNetworks().get(0).ssid());
         assertEquals("bssid2", entries.trustedNetworks().get(1).bssid());
         assertEquals("ssid2", entries.trustedNetworks().get(1).ssid());
         assertTrue(entries.keys().isEmpty());
