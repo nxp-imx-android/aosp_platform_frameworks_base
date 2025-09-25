@@ -28,11 +28,11 @@
     <string name="chooser_title" msgid="2235819929238267637">"ସେଟ ଅପ କରିବାକୁ ଏକ <xliff:g id="PROFILE_NAME">%1$s</xliff:g> ବାଛନ୍ତୁ"</string>
     <string name="single_device_title" msgid="4199861437545438606">"ଏକ <xliff:g id="PROFILE_NAME">%1$s</xliff:g> ଖୋଜୁଛନ୍ତି"</string>
     <string name="summary_watch" msgid="8134580124808507407">"କଲ କରୁଥିବା ଯେ କୌଣସି ବ୍ୟକ୍ତିଙ୍କ ନାମ ପରି ସୂଚନା ସିଙ୍କ କରିବାକୁ ଏବଂ ଆପଣଙ୍କ <xliff:g id="DEVICE_TYPE">%1$s</xliff:g>ରେ ଏହି ଅନୁମତିଗୁଡ଼ିକୁ ଆକ୍ସେସ କରିବା ପାଇଁ ଏହି ଆପକୁ ଅନୁମତି ଦିଆଯିବ"</string>
-    <!-- no translation found for profile_name_fitness_tracker (3107192493390199691) -->
-    <skip />
+    <string name="profile_name_fitness_tracker" msgid="3107192493390199691">"ଫିଟନେସ ଟ୍ରାକର"</string>
     <string name="confirmation_title_glasses" msgid="8288346850537727333">"&lt;strong&gt;<xliff:g id="DEVICE_NAME">%2$s</xliff:g>&lt;/strong&gt;କୁ ପରିଚାଳନା କରିବା ପାଇଁ &lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt;କୁ ଅନୁମତି ଦେବେ?"</string>
     <string name="profile_name_glasses" msgid="3506504967216601277">"ଡିଭାଇସ"</string>
     <string name="summary_glasses" msgid="5469208629679579157">"ଆପଣଙ୍କ <xliff:g id="DEVICE_TYPE">%1$s</xliff:g>ରେ ଏହି ଅନୁମତିଗୁଡ଼ିକୁ ଆକ୍ସେସ କରିବା ପାଇଁ ଏହି ଆପକୁ ଅନୁମତି ଦିଆଯିବ"</string>
+    <string name="profile_name_medical" msgid="5617160509499466400">"ମେଡିକାଲ ଡିଭାଇସ"</string>
     <string name="title_app_streaming" msgid="237666000400427614">"ଆପଣଙ୍କ <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> ଏବଂ &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt; ମଧ୍ୟରେ ଆପ୍ସ ଏବଂ ସିଷ୍ଟମ ଫିଚରଗୁଡ଼ିକୁ ଷ୍ଟ୍ରିମ କରିବା ପାଇଁ &lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt;କୁ ଅନୁମତି ଦେବେ?"</string>
     <string name="summary_app_streaming" msgid="8346968726357732862">"<xliff:g id="APP_NAME">%1$s</xliff:g>କୁ ନିମ୍ନୋକ୍ତ ଅନୁମତିଗୁଡ଼ିକ ଦିଆଯିବ:"</string>
     <string name="summary_app_streaming_legacy" msgid="8994180646987541606">"ଅଡିଓ, ଫଟୋ, ପେମେଣ୍ଟ ସୂଚନା, ପାସୱାର୍ଡ ଏବଂ ମେସେଜ ସମେତ ଆପଣଙ୍କ <xliff:g id="DEVICE_TYPE">%2$s</xliff:g>ରେ ଦେଖାଯାଉଥିବା କିମ୍ବା ଚାଲୁଥିବା ସବୁକିଛିକୁ <xliff:g id="APP_NAME_0">%1$s</xliff:g>ର ଆକ୍ସେସ ରହିବ।&lt;br/&gt;&lt;br/&gt;ଆପଣ ଏହି ଅନୁମତିକୁ ଆକ୍ସେସ କାଢ଼ି ନଦେବା ପର୍ଯ୍ୟନ୍ତ <xliff:g id="APP_NAME_1">%1$s</xliff:g> <xliff:g id="DEVICE_NAME">%3$s</xliff:g>ରେ ଆପ୍ସକୁ ଷ୍ଟ୍ରିମ କରିବା ପାଇଁ ସକ୍ଷମ ହେବ।"</string>
@@ -73,6 +73,8 @@
     <string name="permission_create_virtual_device" msgid="1102905050922460040">"ଆପଣଙ୍କ <xliff:g id="DEVICE_TYPE">%1$s</xliff:g>ରେ ଡାଟା ଷ୍ଟ୍ରିମ କରନ୍ତୁ"</string>
     <string name="permission_add_mirror_display" msgid="3743433250535606288">"ଆପଣଙ୍କ ସ୍କ୍ରିନର ମିରର କରନ୍ତୁ"</string>
     <string name="permission_add_trusted_display" msgid="9052824856626276723">"ଆପ୍ସକୁ ଷ୍ଟ୍ରିମ କରନ୍ତୁ"</string>
+    <string name="permission_schedule_exact_alarm" msgid="5680932535987512225">"ଆଲାରାମ ଓ ରିମାଇଣ୍ଡର ସେଟ କରନ୍ତୁ"</string>
+    <string name="permission_bypass_dnd" msgid="1241123166903040347">"ଡୁ ନଟ ଡିଷ୍ଟର୍ବ ସେଟିଂସର ବାଇପାସ"</string>
     <string name="permission_phone_summary" msgid="8246321093970051702">"ଫୋନ କଲଗୁଡ଼ିକ କରିବା ଏବଂ ସେଗୁଡ଼ିକୁ ପରିଚାଳନା କରିବା"</string>
     <string name="permission_call_logs_summary" msgid="7545243592757693321">"ଫୋନ କଲ ଲଗକୁ ପଢ଼ିବା ଏବଂ ଲେଖିବା"</string>
     <string name="permission_sms_summary" msgid="8499509535410068616">"SMS ମେସେଜ ପଠାଇବା ଏବଂ ଭ୍ୟୁ କରିବା"</string>
@@ -88,6 +90,8 @@
     <string name="permission_add_mirror_display_summary" msgid="1385423940454941534">"&lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt;ରେ ଆପଣଙ୍କ <xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g>ର ସ୍କ୍ରିନ ରେକର୍ଡ, କାଷ୍ଟ କିମ୍ବା ସେୟାର କରନ୍ତୁ।&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>ର ଅଡିଓ, ଫଟୋ, ପେମେଣ୍ଟ ସୂଚନା, ପାସୱାର୍ଡ ଏବଂ ମେସେଜ ସମେତ ଆପଣଙ୍କ <xliff:g id="DEVICE_TYPE_1">%2$s</xliff:g>ରେ ଦୃଶ୍ୟମାନ ହେଉଥିବା କିମ୍ବା ଚାଲୁଥିବା ଯେ କୌଣସି ଜିନିଷକୁ ଆକ୍ସେସ ରହିବ।"</string>
     <string name="permission_add_trusted_display_summary" msgid="7399955172055281447">"&lt;strong&gt;<xliff:g id="DEVICE_NAME_1">%3$s</xliff:g>&lt;/strong&gt;ରେ ଆପଣଙ୍କ <xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g>ର ଆପ୍ସକୁ ଷ୍ଟ୍ରିମ କରନ୍ତୁ।&lt;br/&gt;&lt;br/&gt;ଆପଣଙ୍କ <xliff:g id="DEVICE_TYPE_3">%2$s</xliff:g> ଲକ ଥିବା ସମୟରେ ମଧ୍ୟ, <xliff:g id="APP_NAME">%1$s</xliff:g>ର ଅଡିଓ, ଫଟୋ, ପେମେଣ୍ଟ ସୂଚନା, ପାସୱାର୍ଡ ଏବଂ ମେସେଜ ପରି ଆପଣଙ୍କ <xliff:g id="DEVICE_NAME_2">%3$s</xliff:g>ରେ ଦୃଶ୍ୟମାନ ହେଉଥିବା କିମ୍ବା ଚାଲୁଥିବା ଯେ କୌଣସି ଜିନିଷକୁ ଆକ୍ସେସ ରହିବ।"</string>
     <string name="permission_media_routing_control_summary" msgid="2714631092321412250">"ଉପଲବ୍ଧ ଡିଭାଇସଗୁଡ଼ିକର ଏକ ତାଲିକାକୁ ଆକ୍ସେସ କରନ୍ତୁ ଏବଂ କେଉଁ ଡିଭାଇସ ଅନ୍ୟ ଆପ୍ସରୁ ଅଡିଓ କିମ୍ୱା ଭିଡିଓ ଷ୍ଟ୍ରିମ ବା କାଷ୍ଟ କରିବ ତାହା ନିୟନ୍ତ୍ରଣ କରନ୍ତୁ"</string>
+    <string name="permission_schedule_exact_alarm_summary" msgid="5938321911309800377"></string>
+    <string name="permission_bypass_dnd_summary" msgid="6221709271927387626"></string>
     <string name="device_type" product="default" msgid="8268703872070046263">"ଫୋନ"</string>
     <string name="device_type" product="tablet" msgid="5038791954983067774">"ଟାବଲେଟ"</string>
     <string name="device_type" product="tv" msgid="5355611506659405636">"ଟିଭି"</string>

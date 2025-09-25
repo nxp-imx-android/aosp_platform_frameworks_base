@@ -28,11 +28,11 @@
     <string name="chooser_title" msgid="2235819929238267637">"સેટઅપ કરવા માટે કોઈ <xliff:g id="PROFILE_NAME">%1$s</xliff:g> પસંદ કરો"</string>
     <string name="single_device_title" msgid="4199861437545438606">"<xliff:g id="PROFILE_NAME">%1$s</xliff:g> શોધી રહ્યાં છીએ"</string>
     <string name="summary_watch" msgid="8134580124808507407">"આ ઍપને, કૉલ કરનાર વ્યક્તિનું નામ જેવી માહિતી સિંક કરવાની અને તમારા <xliff:g id="DEVICE_TYPE">%1$s</xliff:g> પર આ પરવાનગીઓ ઍક્સેસ કરવાની મંજૂરી આપવામાં આવશે"</string>
-    <!-- no translation found for profile_name_fitness_tracker (3107192493390199691) -->
-    <skip />
+    <string name="profile_name_fitness_tracker" msgid="3107192493390199691">"ફિટનેસ ટ્રૅકર"</string>
     <string name="confirmation_title_glasses" msgid="8288346850537727333">"&lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt;ને &lt;strong&gt;<xliff:g id="DEVICE_NAME">%2$s</xliff:g>&lt;/strong&gt; મેનેજ કરવા માટે મંજૂરી આપીએ?"</string>
     <string name="profile_name_glasses" msgid="3506504967216601277">"ડિવાઇસ"</string>
     <string name="summary_glasses" msgid="5469208629679579157">"આ ઍપને તમારા <xliff:g id="DEVICE_TYPE">%1$s</xliff:g> પર આ પરવાનગીઓ ઍક્સેસ કરવાની મંજૂરી મળશે"</string>
+    <string name="profile_name_medical" msgid="5617160509499466400">"મેડિકલ ડિવાઇસ"</string>
     <string name="title_app_streaming" msgid="237666000400427614">"&lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt;ને તમારા <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> અને &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt; વચ્ચે ઍપ અને સિસ્ટમની સુવિધાઓ સ્ટ્રીમ કરવાની મંજૂરી આપીએ?"</string>
     <string name="summary_app_streaming" msgid="8346968726357732862">"<xliff:g id="APP_NAME">%1$s</xliff:g>ને નીચેની પરવાનગીઓ આપવમાં આવશે:"</string>
     <string name="summary_app_streaming_legacy" msgid="8994180646987541606">"<xliff:g id="APP_NAME_0">%1$s</xliff:g>ની પાસે તમારા <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> પર દેખાતા કે ચલાવવામાં આવતા કોઈપણ કન્ટેન્ટનો ઍક્સેસ હશે, જેમાં ઑડિયો, ફોટા, ચુકવણીની માહિતી, પાસવર્ડ અને મેસેજનો સમાવેશ થાય છે.&lt;br/&gt;&lt;br/&gt;જ્યાં સુધી તમે આ પરવાનગીનો ઍક્સેસ કાઢી નહીં નાખો, ત્યાં સુધી <xliff:g id="APP_NAME_1">%1$s</xliff:g> ઍપ અને સિસ્ટમની સુવિધાઓને <xliff:g id="DEVICE_NAME">%3$s</xliff:g> પર સ્ટ્રીમ કરી શકશે."</string>
@@ -73,6 +73,8 @@
     <string name="permission_create_virtual_device" msgid="1102905050922460040">"તમારા <xliff:g id="DEVICE_TYPE">%1$s</xliff:g> પર ડેટા સ્ટ્રીમ કરો"</string>
     <string name="permission_add_mirror_display" msgid="3743433250535606288">"તમારી સ્ક્રીન મિરર કરો"</string>
     <string name="permission_add_trusted_display" msgid="9052824856626276723">"ઍપ સ્ટ્રીમ કરો"</string>
+    <string name="permission_schedule_exact_alarm" msgid="5680932535987512225">"અલાર્મ અને રિમાઇન્ડર સેટ કરો"</string>
+    <string name="permission_bypass_dnd" msgid="1241123166903040347">"ખલેલ પાડશો નહીં સેટિંગને બાયપાસ કરો"</string>
     <string name="permission_phone_summary" msgid="8246321093970051702">"ફોન કૉલ કરવાની અને મેનેજ કરવાની"</string>
     <string name="permission_call_logs_summary" msgid="7545243592757693321">"ફોન કૉલ લૉગ વાંચવાની અને લખવાની"</string>
     <string name="permission_sms_summary" msgid="8499509535410068616">"SMS મેસેજ મોકલવાની અને જોવાની"</string>
@@ -88,6 +90,8 @@
     <string name="permission_add_mirror_display_summary" msgid="1385423940454941534">"<xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g>ની સ્ક્રીનને &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt; પર રેકોર્ડ, કાસ્ટ અથવા શેર કરો.&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME">%1$s</xliff:g> પાસે તમારા <xliff:g id="DEVICE_TYPE_1">%2$s</xliff:g> પર દેખાતા કે ચલાવવામાં આવતા કોઈપણ કન્ટેન્ટનો ઍક્સેસ હશે, જેમાં ઑડિયો, ફોટા, ચુકવણીની માહિતી, પાસવર્ડ અને મેસેજનો સમાવેશ થાય છે."</string>
     <string name="permission_add_trusted_display_summary" msgid="7399955172055281447">"<xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g>ની ઍપને &lt;strong&gt;<xliff:g id="DEVICE_NAME_1">%3$s</xliff:g>&lt;/strong&gt; પર સ્ટ્રીમ કરો&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME">%1$s</xliff:g> પાસે, તમારો <xliff:g id="DEVICE_TYPE_3">%2$s</xliff:g> લૉક હોય ત્યારે પણ, <xliff:g id="DEVICE_NAME_2">%3$s</xliff:g> પર દેખાતા કે ચલાવવામાં આવતા કોઈપણ કન્ટેન્ટનો ઍક્સેસ હશે, જેમાં ઑડિયો, ફોટા, ચુકવણીની માહિતી, પાસવર્ડ અને મેસેજનો સમાવેશ થાય છે."</string>
     <string name="permission_media_routing_control_summary" msgid="2714631092321412250">"ઉપલબ્ધ ડિવાઇસની સૂચિ ઍક્સેસ કરો અને અન્ય ઍપમાંથી ઑડિયો કે વીડિયો ક્યા ડિવાઇસ દ્વારા સ્ટ્રીમ કે કાસ્ટ કરવામાં આવે તેનું નિયંત્રણ કરો"</string>
+    <string name="permission_schedule_exact_alarm_summary" msgid="5938321911309800377"></string>
+    <string name="permission_bypass_dnd_summary" msgid="6221709271927387626"></string>
     <string name="device_type" product="default" msgid="8268703872070046263">"ફોન"</string>
     <string name="device_type" product="tablet" msgid="5038791954983067774">"ટૅબ્લેટ"</string>
     <string name="device_type" product="tv" msgid="5355611506659405636">"ટીવી"</string>

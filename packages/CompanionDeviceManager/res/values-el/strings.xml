@@ -28,11 +28,11 @@
     <string name="chooser_title" msgid="2235819929238267637">"Επιλέξτε ένα <xliff:g id="PROFILE_NAME">%1$s</xliff:g> για ρύθμιση"</string>
     <string name="single_device_title" msgid="4199861437545438606">"Αναζήτηση για <xliff:g id="PROFILE_NAME">%1$s</xliff:g>"</string>
     <string name="summary_watch" msgid="8134580124808507407">"Αυτή η εφαρμογή θα μπορεί να συγχρονίζει πληροφορίες, όπως το όνομα ενός ατόμου που σας καλεί, και να αποκτά πρόσβαση σε αυτές τις άδειες στο <xliff:g id="DEVICE_TYPE">%1$s</xliff:g>"</string>
-    <!-- no translation found for profile_name_fitness_tracker (3107192493390199691) -->
-    <skip />
+    <string name="profile_name_fitness_tracker" msgid="3107192493390199691">"συσκ. παρακολ. φυσ. κατάστασης"</string>
     <string name="confirmation_title_glasses" msgid="8288346850537727333">"Να επιτρέπεται στην εφαρμογή &lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; να διαχειρίζεται τη συσκευή &lt;strong&gt;<xliff:g id="DEVICE_NAME">%2$s</xliff:g>&lt;/strong&gt; ;"</string>
     <string name="profile_name_glasses" msgid="3506504967216601277">"συσκευή"</string>
     <string name="summary_glasses" msgid="5469208629679579157">"Αυτή η εφαρμογή θα μπορεί να έχει πρόσβαση σε αυτές τις άδειες στη συσκευή <xliff:g id="DEVICE_TYPE">%1$s</xliff:g>"</string>
+    <string name="profile_name_medical" msgid="5617160509499466400">"ιατρική συσκευή"</string>
     <string name="title_app_streaming" msgid="237666000400427614">"Να επιτρέπεται στην εφαρμογή &lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; η μετάδοση εφαρμογών και λειτουργιών συστήματος σε ροή μεταξύ της συσκευής <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> και της συσκευής &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt;;"</string>
     <string name="summary_app_streaming" msgid="8346968726357732862">"Η εφαρμογή <xliff:g id="APP_NAME">%1$s</xliff:g> θα αποκτήσει τις ακόλουθες άδειες:"</string>
     <string name="summary_app_streaming_legacy" msgid="8994180646987541606">"Η εφαρμογή <xliff:g id="APP_NAME_0">%1$s</xliff:g> θα έχει πρόσβαση σε οτιδήποτε είναι ορατό ή αναπαράγεται στη συσκευή <xliff:g id="DEVICE_TYPE">%2$s</xliff:g>, συμπεριλαμβανομένων ήχων, φωτογραφιών, στοιχείων πληρωμής, κωδικών πρόσβασης και μηνυμάτων.&lt;br/&gt;&lt;br/&gt;Η εφαρμογή <xliff:g id="APP_NAME_1">%1$s</xliff:g> θα έχει τη δυνατότητα μετάδοσης εφαρμογών σε ροή στη συσκευή <xliff:g id="DEVICE_NAME">%3$s</xliff:g>, μέχρι να καταργήσετε την πρόσβαση σε αυτή την άδεια."</string>
@@ -73,6 +73,8 @@
     <string name="permission_create_virtual_device" msgid="1102905050922460040">"Μετάδοση δεδομένων σε ροή στο <xliff:g id="DEVICE_TYPE">%1$s</xliff:g>"</string>
     <string name="permission_add_mirror_display" msgid="3743433250535606288">"Κατοπτρισμός της οθόνης"</string>
     <string name="permission_add_trusted_display" msgid="9052824856626276723">"Μετάδοση εφαρμογών σε ροή"</string>
+    <string name="permission_schedule_exact_alarm" msgid="5680932535987512225">"Ορισμός ξυπνητ. και υπενθυμ."</string>
+    <string name="permission_bypass_dnd" msgid="1241123166903040347">"Ρυθμ. παράβλεψης Μην ενοχλείτε"</string>
     <string name="permission_phone_summary" msgid="8246321093970051702">"Πραγματοποίηση και διαχείριση τηλεφωνικών κλήσεων"</string>
     <string name="permission_call_logs_summary" msgid="7545243592757693321">"Ανάγνωση και εγγραφή αρχείου καταγραφής τηλεφωνικών κλήσεων"</string>
     <string name="permission_sms_summary" msgid="8499509535410068616">"Αποστολή και προβολή μηνυμάτων SMS"</string>
@@ -88,6 +90,8 @@
     <string name="permission_add_mirror_display_summary" msgid="1385423940454941534">"Εγγράψτε, μεταδώστε ή μοιραστείτε την οθόνη της συσκευής <xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g> στο &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt;.&lt;br/&gt;&lt;br/&gt;Η εφαρμογή <xliff:g id="APP_NAME">%1$s</xliff:g> θα έχει πρόσβαση σε οτιδήποτε είναι ορατό ή αναπαράγεται στη συσκευή <xliff:g id="DEVICE_TYPE_1">%2$s</xliff:g>, συμπεριλαμβανομένων ήχων, φωτογραφιών, στοιχείων πληρωμής, κωδικών πρόσβασης και μηνυμάτων."</string>
     <string name="permission_add_trusted_display_summary" msgid="7399955172055281447">"Μεταδώστε σε ροή τις εφαρμογές της συσκευής <xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g> στη συσκευή &lt;strong&gt;<xliff:g id="DEVICE_NAME_1">%3$s</xliff:g>&lt;/strong&gt;.&lt;br/&gt;&lt;br/&gt;Η εφαρμογή <xliff:g id="APP_NAME">%1$s</xliff:g> θα έχει πρόσβαση σε οτιδήποτε είναι ορατό ή αναπαράγεται στη συσκευή <xliff:g id="DEVICE_NAME_2">%3$s</xliff:g>, συμπεριλαμβανομένων ήχων, φωτογραφιών, στοιχείων πληρωμής, κωδικών πρόσβασης και μηνυμάτων, ακόμα και όταν η συσκευή <xliff:g id="DEVICE_TYPE_3">%2$s</xliff:g> είναι κλειδωμένη."</string>
     <string name="permission_media_routing_control_summary" msgid="2714631092321412250">"Αποκτήστε πρόσβαση σε μια λίστα διαθέσιμων συσκευών και ελέγξτε ποιες κάνουν ροή ή μετάδοση ήχου ή βίντεο από άλλες εφαρμογές"</string>
+    <string name="permission_schedule_exact_alarm_summary" msgid="5938321911309800377"></string>
+    <string name="permission_bypass_dnd_summary" msgid="6221709271927387626"></string>
     <string name="device_type" product="default" msgid="8268703872070046263">"τηλέφωνο"</string>
     <string name="device_type" product="tablet" msgid="5038791954983067774">"tablet"</string>
     <string name="device_type" product="tv" msgid="5355611506659405636">"τηλεόραση"</string>

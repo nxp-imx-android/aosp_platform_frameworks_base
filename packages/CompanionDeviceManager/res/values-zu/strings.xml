@@ -28,11 +28,11 @@
     <string name="chooser_title" msgid="2235819929238267637">"Khetha i-<xliff:g id="PROFILE_NAME">%1$s</xliff:g> ukusetha"</string>
     <string name="single_device_title" msgid="4199861437545438606">"Ufuna i-<xliff:g id="PROFILE_NAME">%1$s</xliff:g>"</string>
     <string name="summary_watch" msgid="8134580124808507407">"Le app izovunyelwa ukuvumelanisa ulwazi, olufana negama lomuntu ofonayo, iphinde ifinyelele lezi zimvume ku-<xliff:g id="DEVICE_TYPE">%1$s</xliff:g> yakho"</string>
-    <!-- no translation found for profile_name_fitness_tracker (3107192493390199691) -->
-    <skip />
+    <string name="profile_name_fitness_tracker" msgid="3107192493390199691">"isilandeleli senhlalakahle"</string>
     <string name="confirmation_title_glasses" msgid="8288346850537727333">"Vumela i-&lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; ukuthi ifinyelele i-&lt;strong&gt;<xliff:g id="DEVICE_NAME">%2$s</xliff:g>&lt;/strong&gt;"</string>
     <string name="profile_name_glasses" msgid="3506504967216601277">"idivayisi"</string>
     <string name="summary_glasses" msgid="5469208629679579157">"Le-app izovunyelwa ukufinyelela lezi zimvume ku-<xliff:g id="DEVICE_TYPE">%1$s</xliff:g> yakho"</string>
+    <string name="profile_name_medical" msgid="5617160509499466400">"idivayisi yezokwelapha"</string>
     <string name="title_app_streaming" msgid="237666000400427614">"Vumela &lt;strong&gt;i-<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; ukuba isakaze ama-app kanye nezakhi zesistimu phakathi kwe-<xliff:g id="DEVICE_TYPE">%2$s</xliff:g> yakho &lt;strong&gt;ne=<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt;?"</string>
     <string name="summary_app_streaming" msgid="8346968726357732862">"I-<xliff:g id="APP_NAME">%1$s</xliff:g> izonikezwa izimvume ezilandelayo:"</string>
     <string name="summary_app_streaming_legacy" msgid="8994180646987541606">"I-<xliff:g id="APP_NAME_0">%1$s</xliff:g> izokwazi ukufinyelela kunoma yini ebonakalayo noma edlalwayo ku-<xliff:g id="DEVICE_TYPE">%2$s</xliff:g> yakho, okuhlanganisa umsindo, izithombe, ulwazi lokukhokha, amaphasiwedi, nemilayezo.&lt;br/&gt;&lt;br/&gt;I-<xliff:g id="APP_NAME_1">%1$s</xliff:g> izokwazi ukusakaza ama-app ku-<xliff:g id="DEVICE_NAME">%3$s</xliff:g> uze ususe ukufinyelela kule mvume."</string>
@@ -73,6 +73,8 @@
     <string name="permission_create_virtual_device" msgid="1102905050922460040">"Sakaza idatha ku-<xliff:g id="DEVICE_TYPE">%1$s</xliff:g> yakho"</string>
     <string name="permission_add_mirror_display" msgid="3743433250535606288">"Fanisa isikrini sakho"</string>
     <string name="permission_add_trusted_display" msgid="9052824856626276723">"Sakaza ama-app"</string>
+    <string name="permission_schedule_exact_alarm" msgid="5680932535987512225">"Setha i-alamu nezikhumbuzi"</string>
+    <string name="permission_bypass_dnd" msgid="1241123166903040347">"Dlula amasethingi Okungaphazamisi"</string>
     <string name="permission_phone_summary" msgid="8246321093970051702">"Yenza futhi ulawule amakholi efoni"</string>
     <string name="permission_call_logs_summary" msgid="7545243592757693321">"Funda futhi ubhale irekhodi lamakholi efoni"</string>
     <string name="permission_sms_summary" msgid="8499509535410068616">"Thumela futhi ubuke imiyalezo ye-SMS"</string>
@@ -88,6 +90,8 @@
     <string name="permission_add_mirror_display_summary" msgid="1385423940454941534">"Rekhoda, sakaza noma wabelane neskrini sakho se-<xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g> kokuthi &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt;.&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME">%1$s</xliff:g> izokwazi ukufinyelela kunoma yini ebonakalayo noma edlalwayo ku-<xliff:g id="DEVICE_TYPE_1">%2$s</xliff:g> yakho, okuhlanganisa umsindo, izithombe, ulwazi lokukhokha, amaphasiwedi, nemilayezo."</string>
     <string name="permission_add_trusted_display_summary" msgid="7399955172055281447">"Sakaza ama-app akho e-<xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g> kokuthi &lt;strong&gt;<xliff:g id="DEVICE_NAME_1">%3$s</xliff:g>&lt;/strong&gt;.&lt;br/&gt;&lt;br/&gt;i-<xliff:g id="APP_NAME">%1$s</xliff:g> izokwazi ukufinyelela kunoma yini ebonakalayo noma edlalwa ku-<xliff:g id="DEVICE_NAME_2">%3$s</xliff:g>, okuhlanganisa okulalelwayo, izithombe, ulwazi lokukhokha, amaphasiwedi, nemiyalezo, ngisho noma i-<xliff:g id="DEVICE_TYPE_3">%2$s</xliff:g> yakho ikhiyiwe."</string>
     <string name="permission_media_routing_control_summary" msgid="2714631092321412250">"Finyelela kuhlu lwamadivayisi atholakalayo futhi ulawule ukuthi iyiphi esakaza umsindo noma ividiyo kusuka kwamanye ama-app"</string>
+    <string name="permission_schedule_exact_alarm_summary" msgid="5938321911309800377"></string>
+    <string name="permission_bypass_dnd_summary" msgid="6221709271927387626"></string>
     <string name="device_type" product="default" msgid="8268703872070046263">"ifoni"</string>
     <string name="device_type" product="tablet" msgid="5038791954983067774">"ithebulethi"</string>
     <string name="device_type" product="tv" msgid="5355611506659405636">"i-tv"</string>

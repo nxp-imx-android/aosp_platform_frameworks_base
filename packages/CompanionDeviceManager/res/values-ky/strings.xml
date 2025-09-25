@@ -28,11 +28,11 @@
     <string name="chooser_title" msgid="2235819929238267637">"Тууралоо үчүн <xliff:g id="PROFILE_NAME">%1$s</xliff:g> тандаңыз"</string>
     <string name="single_device_title" msgid="4199861437545438606">"Түзмөк издөө (<xliff:g id="PROFILE_NAME">%1$s</xliff:g>)"</string>
     <string name="summary_watch" msgid="8134580124808507407">"Бул колдонмого маалыматты, мисалы, чалып жаткан адамдын аты-жөнүн шайкештирүүгө жана <xliff:g id="DEVICE_TYPE">%1$s</xliff:g> түзмөгүңүздө төмөнкүлөрдү аткарууга уруксат берилет"</string>
-    <!-- no translation found for profile_name_fitness_tracker (3107192493390199691) -->
-    <skip />
+    <string name="profile_name_fitness_tracker" msgid="3107192493390199691">"фитнес-трекер"</string>
     <string name="confirmation_title_glasses" msgid="8288346850537727333">"&lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; колдонмосуна &lt;strong&gt;<xliff:g id="DEVICE_NAME">%2$s</xliff:g>&lt;/strong&gt; түзмөгүн тескөөгө уруксат бересизби?"</string>
     <string name="profile_name_glasses" msgid="3506504967216601277">"түзмөк"</string>
     <string name="summary_glasses" msgid="5469208629679579157">"Бул колдонмого <xliff:g id="DEVICE_TYPE">%1$s</xliff:g> түзмөгүңүздө төмөнкүлөрдү аткарууга уруксат берилет"</string>
+    <string name="profile_name_medical" msgid="5617160509499466400">"медициналык түзмөк"</string>
     <string name="title_app_streaming" msgid="237666000400427614">"&lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; колдонмосуна <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> жана &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt; түзмөктөрүнүн ортосунда колдонмолорду жана тутумдун башка функцияларын иштетүүгө уруксат бересизби?"</string>
     <string name="summary_app_streaming" msgid="8346968726357732862">"<xliff:g id="APP_NAME">%1$s</xliff:g> колдонмосуна төмөнкү уруксаттар берилет:"</string>
     <string name="summary_app_streaming_legacy" msgid="8994180646987541606">"<xliff:g id="APP_NAME_0">%1$s</xliff:g> <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> түзмөгүңүздө көрүнгөн же ойнотулган бардык нерселерге, анын ичинде аудио, сүрөттөр, төлөм маалыматы, сырсөздөр жана билдирүүлөргө кире алат.&lt;br/&gt;&lt;br/&gt;Бул уруксатты алып салмайынча, <xliff:g id="APP_NAME_1">%1$s</xliff:g> <xliff:g id="DEVICE_NAME">%3$s</xliff:g> түзмөгүндөгү колдонмолорду алып ойното алат."</string>
@@ -73,6 +73,8 @@
     <string name="permission_create_virtual_device" msgid="1102905050922460040">"Дайындарды <xliff:g id="DEVICE_TYPE">%1$s</xliff:g> түзмөгүнө түз берүү"</string>
     <string name="permission_add_mirror_display" msgid="3743433250535606288">"Экраныңызды шайкештириңиз"</string>
     <string name="permission_add_trusted_display" msgid="9052824856626276723">"Колдонмолорду ойнотуу"</string>
+    <string name="permission_schedule_exact_alarm" msgid="5680932535987512225">"Ойготкучтарды жана эстеткичтерди коюу"</string>
+    <string name="permission_bypass_dnd" msgid="1241123166903040347">"\"Тынчымды алба\" параметрлерин кыйгап өтүү"</string>
     <string name="permission_phone_summary" msgid="8246321093970051702">"Телефон чалуу жана аларды башкаруу"</string>
     <string name="permission_call_logs_summary" msgid="7545243592757693321">"Телефондогу чалуулар тизмесин окуу жана жазуу"</string>
     <string name="permission_sms_summary" msgid="8499509535410068616">"SMS билдирүүлөрдү жөнөтүү жана көрсөтүү"</string>
@@ -88,6 +90,8 @@
     <string name="permission_add_mirror_display_summary" msgid="1385423940454941534">"<xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g> экранын &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>\\&lt;/strong&gt; түзмөгүнө жаздырып, тышкы экранга чыгарып же аны менен бөлүшүңүз.&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME">%1$s</xliff:g> колдонмосу <xliff:g id="DEVICE_TYPE_1">%2$s</xliff:g> түзмөгүңүздө көрүнгөн же ойнотулган бардык нерселерге, анын ичинде аудио, сүрөттөр, төлөм маалыматы, сырсөздөр жана билдирүүлөргө кире алат."</string>
     <string name="permission_add_trusted_display_summary" msgid="7399955172055281447">"<xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g> колдонмолорун &lt;strong&gt;<xliff:g id="DEVICE_NAME_1">%3$s</xliff:g>&lt;/strong&gt; түзмөгүнө алып ойнотуңуз.&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME">%1$s</xliff:g> колдонмосу <xliff:g id="DEVICE_NAME_2">%3$s</xliff:g> түзмөгүндө көрүнгөн же ойнотулган бардык нерселерге, анын ичинде аудио, сүрөттөр, төлөм маалыматы, сырсөздөр жана билдирүүлөргө <xliff:g id="DEVICE_TYPE_3">%2$s</xliff:g> кулпуланып турса да, кире алат."</string>
     <string name="permission_media_routing_control_summary" msgid="2714631092321412250">"Жеткиликтүү түзмөктөрдүн тизмесине кирип, кайсынысы башка колдонмолордон аудио же видеону алып ойнотуп же тышкы экранга чыгара турганын көзөмөлдөңүз"</string>
+    <string name="permission_schedule_exact_alarm_summary" msgid="5938321911309800377"></string>
+    <string name="permission_bypass_dnd_summary" msgid="6221709271927387626"></string>
     <string name="device_type" product="default" msgid="8268703872070046263">"телефон"</string>
     <string name="device_type" product="tablet" msgid="5038791954983067774">"планшет"</string>
     <string name="device_type" product="tv" msgid="5355611506659405636">"сыналгы"</string>

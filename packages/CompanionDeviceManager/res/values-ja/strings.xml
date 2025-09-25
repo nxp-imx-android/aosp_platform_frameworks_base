@@ -28,11 +28,11 @@
     <string name="chooser_title" msgid="2235819929238267637">"設定する<xliff:g id="PROFILE_NAME">%1$s</xliff:g>の選択"</string>
     <string name="single_device_title" msgid="4199861437545438606">"<xliff:g id="PROFILE_NAME">%1$s</xliff:g>を探しています"</string>
     <string name="summary_watch" msgid="8134580124808507407">"このアプリは、通話相手の名前などの情報を同期したり、<xliff:g id="DEVICE_TYPE">%1$s</xliff:g>の以下の権限にアクセスしたりできるようになります"</string>
-    <!-- no translation found for profile_name_fitness_tracker (3107192493390199691) -->
-    <skip />
+    <string name="profile_name_fitness_tracker" msgid="3107192493390199691">"フィットネス トラッカー"</string>
     <string name="confirmation_title_glasses" msgid="8288346850537727333">"&lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; に &lt;strong&gt;<xliff:g id="DEVICE_NAME">%2$s</xliff:g>&lt;/strong&gt; の管理を許可しますか？"</string>
     <string name="profile_name_glasses" msgid="3506504967216601277">"デバイス"</string>
     <string name="summary_glasses" msgid="5469208629679579157">"このアプリは、<xliff:g id="DEVICE_TYPE">%1$s</xliff:g>の以下の権限にアクセスできるようになります"</string>
+    <string name="profile_name_medical" msgid="5617160509499466400">"医療機器"</string>
     <string name="title_app_streaming" msgid="237666000400427614">"<xliff:g id="DEVICE_TYPE">%2$s</xliff:g> と &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt; との間でアプリやシステム機能をストリーミングすることを &lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; に許可しますか？"</string>
     <string name="summary_app_streaming" msgid="8346968726357732862">"<xliff:g id="APP_NAME">%1$s</xliff:g> には次の権限が付与されます。"</string>
     <string name="summary_app_streaming_legacy" msgid="8994180646987541606">"<xliff:g id="APP_NAME_0">%1$s</xliff:g> は、音声、写真、お支払い情報、パスワード、メッセージを含め、<xliff:g id="DEVICE_TYPE">%2$s</xliff:g> で表示、再生されるすべてのコンテンツにアクセスできるようになります。&lt;br/&gt;&lt;br/&gt;この権限へのアクセス権を削除するまで、<xliff:g id="APP_NAME_1">%1$s</xliff:g> は <xliff:g id="DEVICE_NAME">%3$s</xliff:g> にアプリをストリーミングできます。"</string>
@@ -73,6 +73,8 @@
     <string name="permission_create_virtual_device" msgid="1102905050922460040">"<xliff:g id="DEVICE_TYPE">%1$s</xliff:g> にデータをストリーミングする"</string>
     <string name="permission_add_mirror_display" msgid="3743433250535606288">"画面をミラーリングする"</string>
     <string name="permission_add_trusted_display" msgid="9052824856626276723">"アプリをストリーミングする"</string>
+    <string name="permission_schedule_exact_alarm" msgid="5680932535987512225">"アラームとリマインダーを設定"</string>
+    <string name="permission_bypass_dnd" msgid="1241123166903040347">"サイレントモード設定を回避"</string>
     <string name="permission_phone_summary" msgid="8246321093970051702">"電話の発信と管理"</string>
     <string name="permission_call_logs_summary" msgid="7545243592757693321">"通話履歴の読み取りと書き込み"</string>
     <string name="permission_sms_summary" msgid="8499509535410068616">"SMS メッセージの送信と表示"</string>
@@ -88,6 +90,8 @@
     <string name="permission_add_mirror_display_summary" msgid="1385423940454941534">"<xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g> の画面を &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt; に録画、キャスト、共有します。&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME">%1$s</xliff:g> は、音声、写真、お支払い情報、パスワード、メッセージを含め、<xliff:g id="DEVICE_TYPE_1">%2$s</xliff:g> で表示、再生されるすべてのコンテンツにアクセスできるようになります。"</string>
     <string name="permission_add_trusted_display_summary" msgid="7399955172055281447">"<xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g> のアプリを &lt;strong&gt;<xliff:g id="DEVICE_NAME_1">%3$s</xliff:g>&lt;/strong&gt; にストリーミングします。&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME">%1$s</xliff:g> は、<xliff:g id="DEVICE_TYPE_3">%2$s</xliff:g> がロックされている場合でも、音声、写真、お支払い情報、パスワード、メッセージを含め、<xliff:g id="DEVICE_NAME_2">%3$s</xliff:g> で表示、再生されるすべてのコンテンツにアクセスできるようになります。"</string>
     <string name="permission_media_routing_control_summary" msgid="2714631092321412250">"他のアプリから音声や動画をストリーミングまたはキャストする際に使用可能なデバイスとコントロールのリストにアクセスできます"</string>
+    <string name="permission_schedule_exact_alarm_summary" msgid="5938321911309800377"></string>
+    <string name="permission_bypass_dnd_summary" msgid="6221709271927387626"></string>
     <string name="device_type" product="default" msgid="8268703872070046263">"スマートフォン"</string>
     <string name="device_type" product="tablet" msgid="5038791954983067774">"タブレット"</string>
     <string name="device_type" product="tv" msgid="5355611506659405636">"テレビ"</string>

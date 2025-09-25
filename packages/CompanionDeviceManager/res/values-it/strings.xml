@@ -28,11 +28,11 @@
     <string name="chooser_title" msgid="2235819929238267637">"Scegli un <xliff:g id="PROFILE_NAME">%1$s</xliff:g> da configurare"</string>
     <string name="single_device_title" msgid="4199861437545438606">"Ricerca di un <xliff:g id="PROFILE_NAME">%1$s</xliff:g>"</string>
     <string name="summary_watch" msgid="8134580124808507407">"Questa app potrà sincronizzare informazioni, ad esempio il nome di un chiamante, e accedere alle seguenti autorizzazioni sul <xliff:g id="DEVICE_TYPE">%1$s</xliff:g>"</string>
-    <!-- no translation found for profile_name_fitness_tracker (3107192493390199691) -->
-    <skip />
+    <string name="profile_name_fitness_tracker" msgid="3107192493390199691">"fitness tracker"</string>
     <string name="confirmation_title_glasses" msgid="8288346850537727333">"Vuoi consentire all\'app &lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; di gestire &lt;strong&gt;<xliff:g id="DEVICE_NAME">%2$s</xliff:g>&lt;/strong&gt;?"</string>
     <string name="profile_name_glasses" msgid="3506504967216601277">"dispositivo"</string>
     <string name="summary_glasses" msgid="5469208629679579157">"Questa app potrà accedere alle seguenti autorizzazioni <xliff:g id="DEVICE_TYPE">%1$s</xliff:g>:"</string>
+    <string name="profile_name_medical" msgid="5617160509499466400">"dispositivo medico"</string>
     <string name="title_app_streaming" msgid="237666000400427614">"Consentire all\'app &lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; di riprodurre in streaming funzionalità di sistema e app tra <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> e &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt;?"</string>
     <string name="summary_app_streaming" msgid="8346968726357732862">"All\'app <xliff:g id="APP_NAME">%1$s</xliff:g> verranno concesse le seguenti autorizzazioni:"</string>
     <string name="summary_app_streaming_legacy" msgid="8994180646987541606">"<xliff:g id="APP_NAME_0">%1$s</xliff:g> avrà accesso a tutti i contenuti visibili o riprodotti da <xliff:g id="DEVICE_TYPE">%2$s</xliff:g>, inclusi audio, foto, dati di pagamento, password e messaggi.&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME_1">%1$s</xliff:g> sarà in grado di riprodurre in streaming le app su <xliff:g id="DEVICE_NAME">%3$s</xliff:g> finché non rimuoverai l\'accesso a questa autorizzazione."</string>
@@ -73,6 +73,8 @@
     <string name="permission_create_virtual_device" msgid="1102905050922460040">"Riprod. in streaming dati su <xliff:g id="DEVICE_TYPE">%1$s</xliff:g>"</string>
     <string name="permission_add_mirror_display" msgid="3743433250535606288">"Eseguire il mirroring schermo"</string>
     <string name="permission_add_trusted_display" msgid="9052824856626276723">"Trasmettere in streaming app"</string>
+    <string name="permission_schedule_exact_alarm" msgid="5680932535987512225">"Imposta sveglie e promemoria"</string>
+    <string name="permission_bypass_dnd" msgid="1241123166903040347">"Ignora impost. Non disturbare"</string>
     <string name="permission_phone_summary" msgid="8246321093970051702">"Esegue e gestisce le telefonate"</string>
     <string name="permission_call_logs_summary" msgid="7545243592757693321">"Legge e modifica il registro chiamate dello smartphone"</string>
     <string name="permission_sms_summary" msgid="8499509535410068616">"Invia e visualizza SMS"</string>
@@ -88,6 +90,8 @@
     <string name="permission_add_mirror_display_summary" msgid="1385423940454941534">"Registra, trasmetti o condividi lo schermo del tuo <xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g> su &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt;.&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME">%1$s</xliff:g> avrà accesso a tutto ciò che è visibile o riprodotto sul tuo <xliff:g id="DEVICE_TYPE_1">%2$s</xliff:g>, inclusi audio, foto, dati di pagamento, password e messaggi."</string>
     <string name="permission_add_trusted_display_summary" msgid="7399955172055281447">"Riproduci in streaming le app di <xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g> su &lt;strong&gt;<xliff:g id="DEVICE_NAME_1">%3$s</xliff:g>&lt;/strong&gt;.&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME">%1$s</xliff:g> avrà accesso a tutto ciò che è visibile o riprodotto su <xliff:g id="DEVICE_NAME_2">%3$s</xliff:g>, inclusi audio, foto, dati di pagamento, password e messaggi, anche quando <xliff:g id="DEVICE_TYPE_3">%2$s</xliff:g> è bloccato."</string>
     <string name="permission_media_routing_control_summary" msgid="2714631092321412250">"Accedi a un elenco di dispositivi disponibili e controlla quale di questi riproduce in streaming o trasmette audio o video da altre app"</string>
+    <string name="permission_schedule_exact_alarm_summary" msgid="5938321911309800377"></string>
+    <string name="permission_bypass_dnd_summary" msgid="6221709271927387626"></string>
     <string name="device_type" product="default" msgid="8268703872070046263">"telefono"</string>
     <string name="device_type" product="tablet" msgid="5038791954983067774">"tablet"</string>
     <string name="device_type" product="tv" msgid="5355611506659405636">"della TV"</string>

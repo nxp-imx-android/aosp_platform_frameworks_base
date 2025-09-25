@@ -28,11 +28,11 @@
     <string name="chooser_title" msgid="2235819929238267637">"ছেট আপ কৰিবলৈ এটা <xliff:g id="PROFILE_NAME">%1$s</xliff:g> বাছনি কৰক"</string>
     <string name="single_device_title" msgid="4199861437545438606">"কোনো <xliff:g id="PROFILE_NAME">%1$s</xliff:g> বিচাৰি থকা হৈছে"</string>
     <string name="summary_watch" msgid="8134580124808507407">"এই এপ্‌টোক ফ’ন কৰা লোকৰ নামৰ দৰে তথ্য ছিংক কৰিবলৈ আৰু আপোনাৰ <xliff:g id="DEVICE_TYPE">%1$s</xliff:g>ত এই অনুমতিসমূহ এক্সেছ কৰিবলৈ অনুমতি দিয়া হ’ব"</string>
-    <!-- no translation found for profile_name_fitness_tracker (3107192493390199691) -->
-    <skip />
+    <string name="profile_name_fitness_tracker" msgid="3107192493390199691">"ফিটনেছ ট্ৰেকাৰ"</string>
     <string name="confirmation_title_glasses" msgid="8288346850537727333">"&lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt;ক &lt;strong&gt;<xliff:g id="DEVICE_NAME">%2$s</xliff:g>&lt;/strong&gt; পৰিচালনা কৰিবলৈ দিবনে?"</string>
     <string name="profile_name_glasses" msgid="3506504967216601277">"ডিভাইচ"</string>
     <string name="summary_glasses" msgid="5469208629679579157">"এই এপ্‌টোক আপোনাৰ <xliff:g id="DEVICE_TYPE">%1$s</xliff:g>ত এই অনুমতিসমূহ এক্সেছ কৰিবলৈ অনুমতি দিয়া হ’ব"</string>
+    <string name="profile_name_medical" msgid="5617160509499466400">"চিকিৎসা সম্পৰ্কীয় ডিভাইচ"</string>
     <string name="title_app_streaming" msgid="237666000400427614">"&lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt;ক আপোনাৰ <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> আৰু &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt;ৰ মাজত এপ্ আৰু ছিষ্টেমৰ সুবিধাসমূহ ষ্ট্ৰীম কৰিবলৈ দিবনে?"</string>
     <string name="summary_app_streaming" msgid="8346968726357732862">"<xliff:g id="APP_NAME">%1$s</xliff:g>ক তলত দিয়া অনুমতিসমূহ দিয়া হ’ব:"</string>
     <string name="summary_app_streaming_legacy" msgid="8994180646987541606">"<xliff:g id="APP_NAME_0">%1$s</xliff:g>এ আপোনাৰ <xliff:g id="DEVICE_TYPE">%2$s</xliff:g>ত দৃশ্যমান বা প্লে’ কৰা অডিঅ’, ফট’ পৰিশোধৰ তথ্য, পাছৱৰ্ড আৰু বাৰ্তাকে ধৰি যিকোনো বস্তু এক্সেছ কৰিব পাৰিব।&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME_1">%1$s</xliff:g>এ আপুনি এই অনুমতিৰ এক্সেছ আঁতৰাই নিদিয়া পৰ্যন্ত <xliff:g id="DEVICE_NAME">%3$s</xliff:g>ত এপ্‌সমূহ ষ্ট্ৰীম কৰিব পাৰিব।"</string>
@@ -73,6 +73,8 @@
     <string name="permission_create_virtual_device" msgid="1102905050922460040">"আপোনাৰ <xliff:g id="DEVICE_TYPE">%1$s</xliff:g>ত ডেটা ষ্ট্ৰীম কৰক"</string>
     <string name="permission_add_mirror_display" msgid="3743433250535606288">"আপোনাৰ স্ক্ৰীন মিৰ’ৰ কৰক"</string>
     <string name="permission_add_trusted_display" msgid="9052824856626276723">"এপ্‌ ষ্ট্ৰীম কৰক"</string>
+    <string name="permission_schedule_exact_alarm" msgid="5680932535987512225">"এলাৰ্ম আৰু ৰিমাইণ্ডাৰ ছেট কৰক"</string>
+    <string name="permission_bypass_dnd" msgid="1241123166903040347">"অসুবিধা নিদিবৰ ছেটিং বাইপাছ কৰক"</string>
     <string name="permission_phone_summary" msgid="8246321093970051702">"ফ’ন কল কৰক আৰু সেয়া পৰিচলনা কৰক"</string>
     <string name="permission_call_logs_summary" msgid="7545243592757693321">"ফ’নৰ কল লগ পঢ়ক আৰু লিখক"</string>
     <string name="permission_sms_summary" msgid="8499509535410068616">"এছএমএছ বার্তাবোৰ প্ৰেৰণ কৰক আৰু চাওক"</string>
@@ -88,6 +90,8 @@
     <string name="permission_add_mirror_display_summary" msgid="1385423940454941534">"আপোনাৰ <xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g>ৰ স্ক্ৰীন &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt;ত ৰেকৰ্ড, কাষ্ট বা শ্বেয়াৰ কৰক।&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>এ আপোনাৰ <xliff:g id="DEVICE_TYPE_1">%2$s</xliff:g>ত দৃশ্যমান বা প্লে’ কৰা যিকোনো সমল এক্সেছ কৰিব পাৰিব, য’ত অডিঅ’, ফট’, পৰিশোধৰ তথ্য, পাছৱৰ্ড আৰু বাৰ্তা অন্তৰ্ভুক্ত।"</string>
     <string name="permission_add_trusted_display_summary" msgid="7399955172055281447">"আপোনাৰ <xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g>ৰ এপ্‌ &lt;strong&gt;<xliff:g id="DEVICE_NAME_1">%3$s</xliff:g>&lt;/strong&gt;ত ষ্ট্ৰীম কৰক।&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>এ <xliff:g id="DEVICE_NAME_2">%3$s</xliff:g>ত দৃশ্যমান বা প্লে’ কৰা হোৱা যিকোনো সমল আপোনাৰ <xliff:g id="DEVICE_TYPE_3">%2$s</xliff:g>লক কৰি থোৱা থাকিলেও এক্সেছ কৰিব পাৰিব, য’ত অডিঅ’, ফট’, পৰিশোধৰ তথ্য, পাছৱৰ্ড আৰু বাৰ্তা অন্তৰ্ভুক্ত।"</string>
     <string name="permission_media_routing_control_summary" msgid="2714631092321412250">"উপলব্ধ ডিভাইচৰ সূচী এখন এক্সেছ কৰক আৰু কোনটোৱে ষ্ট্ৰীম কৰে অথবা অন্য এপৰ পৰা অডিঅ’ অথবা ভিডিঅ’ কাষ্ট কৰে সেয়া নিয়ন্ত্ৰণ কৰক"</string>
+    <string name="permission_schedule_exact_alarm_summary" msgid="5938321911309800377"></string>
+    <string name="permission_bypass_dnd_summary" msgid="6221709271927387626"></string>
     <string name="device_type" product="default" msgid="8268703872070046263">"ফ’ন"</string>
     <string name="device_type" product="tablet" msgid="5038791954983067774">"টেবলেট"</string>
     <string name="device_type" product="tv" msgid="5355611506659405636">"টিভি"</string>

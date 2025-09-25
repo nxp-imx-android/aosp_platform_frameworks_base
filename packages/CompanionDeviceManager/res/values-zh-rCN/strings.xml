@@ -28,11 +28,11 @@
     <string name="chooser_title" msgid="2235819929238267637">"选择要设置的<xliff:g id="PROFILE_NAME">%1$s</xliff:g>"</string>
     <string name="single_device_title" msgid="4199861437545438606">"寻找<xliff:g id="PROFILE_NAME">%1$s</xliff:g>"</string>
     <string name="summary_watch" msgid="8134580124808507407">"该应用将能同步信息（例如来电者的姓名），并能获得您<xliff:g id="DEVICE_TYPE">%1$s</xliff:g>上的以下权限"</string>
-    <!-- no translation found for profile_name_fitness_tracker (3107192493390199691) -->
-    <skip />
+    <string name="profile_name_fitness_tracker" msgid="3107192493390199691">"运动手环"</string>
     <string name="confirmation_title_glasses" msgid="8288346850537727333">"允许&lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt;管理&lt;strong&gt;<xliff:g id="DEVICE_NAME">%2$s</xliff:g>&lt;/strong&gt;？"</string>
     <string name="profile_name_glasses" msgid="3506504967216601277">"设备"</string>
     <string name="summary_glasses" msgid="5469208629679579157">"该应用将能获得您<xliff:g id="DEVICE_TYPE">%1$s</xliff:g>上的以下权限"</string>
+    <string name="profile_name_medical" msgid="5617160509499466400">"医疗设备"</string>
     <string name="title_app_streaming" msgid="237666000400427614">"要允许&lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt;在您的<xliff:g id="DEVICE_TYPE">%2$s</xliff:g>和&lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt;之间流式传输应用和系统功能吗？"</string>
     <string name="summary_app_streaming" msgid="8346968726357732862">"“<xliff:g id="APP_NAME">%1$s</xliff:g>”将获得以下权限："</string>
     <string name="summary_app_streaming_legacy" msgid="8994180646987541606">"“<xliff:g id="APP_NAME_0">%1$s</xliff:g>”将能够访问您的<xliff:g id="DEVICE_TYPE">%2$s</xliff:g>上显示或播放的任何内容，包括音频、照片、支付信息、密码和消息。&lt;br/&gt;&lt;br/&gt;“<xliff:g id="APP_NAME_1">%1$s</xliff:g>”可将应用流式传输到“<xliff:g id="DEVICE_NAME">%3$s</xliff:g>”，除非您撤消此访问权限。"</string>
@@ -73,6 +73,8 @@
     <string name="permission_create_virtual_device" msgid="1102905050922460040">"将数据流式传输到<xliff:g id="DEVICE_TYPE">%1$s</xliff:g>"</string>
     <string name="permission_add_mirror_display" msgid="3743433250535606288">"镜像屏幕"</string>
     <string name="permission_add_trusted_display" msgid="9052824856626276723">"流式传输应用内容"</string>
+    <string name="permission_schedule_exact_alarm" msgid="5680932535987512225">"设置闹钟和提醒"</string>
+    <string name="permission_bypass_dnd" msgid="1241123166903040347">"绕过“勿扰”设置"</string>
     <string name="permission_phone_summary" msgid="8246321093970051702">"拨打电话和管理通话"</string>
     <string name="permission_call_logs_summary" msgid="7545243592757693321">"读取和写入手机通话记录"</string>
     <string name="permission_sms_summary" msgid="8499509535410068616">"发送和查看短信"</string>
@@ -88,6 +90,8 @@
     <string name="permission_add_mirror_display_summary" msgid="1385423940454941534">"录制<xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g>的屏幕、将其投放或分享至&lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt;。&lt;br/&gt;&lt;br/&gt;“<xliff:g id="APP_NAME">%1$s</xliff:g>”将能够访问<xliff:g id="DEVICE_TYPE_1">%2$s</xliff:g>上显示或播放的任何内容，包括音频、照片、支付信息、密码和消息。"</string>
     <string name="permission_add_trusted_display_summary" msgid="7399955172055281447">"将您<xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g>上的应用流式传输到&lt;strong&gt;<xliff:g id="DEVICE_NAME_1">%3$s</xliff:g>&lt;/strong&gt;。&lt;br/&gt;&lt;br/&gt;“<xliff:g id="APP_NAME">%1$s</xliff:g>”将能够访问“<xliff:g id="DEVICE_NAME_2">%3$s</xliff:g>”上显示或播放的任何内容，包括音频、照片、支付信息、密码和消息，即使您的<xliff:g id="DEVICE_TYPE_3">%2$s</xliff:g>处于锁定状态也没问题。"</string>
     <string name="permission_media_routing_control_summary" msgid="2714631092321412250">"访问可用设备列表，并控制哪个设备可流式传输或投放其他应用的音频/视频"</string>
+    <string name="permission_schedule_exact_alarm_summary" msgid="5938321911309800377"></string>
+    <string name="permission_bypass_dnd_summary" msgid="6221709271927387626"></string>
     <string name="device_type" product="default" msgid="8268703872070046263">"手机"</string>
     <string name="device_type" product="tablet" msgid="5038791954983067774">"平板电脑"</string>
     <string name="device_type" product="tv" msgid="5355611506659405636">"电视"</string>

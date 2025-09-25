@@ -28,11 +28,11 @@
     <string name="chooser_title" msgid="2235819929238267637">"የሚያዋቅሩት <xliff:g id="PROFILE_NAME">%1$s</xliff:g> ይምረጡ"</string>
     <string name="single_device_title" msgid="4199861437545438606">"<xliff:g id="PROFILE_NAME">%1$s</xliff:g> በመፈለግ ላይ"</string>
     <string name="summary_watch" msgid="8134580124808507407">"ይህ መተግበሪያ እንደ የሚደውል ሰው ስም ያለ መረጃን እንዲያሰምር እና እነዚህን ፈቃዶች በእርስዎ <xliff:g id="DEVICE_TYPE">%1$s</xliff:g> ላይ እንዲደርስ ይፈቀድለታል"</string>
-    <!-- no translation found for profile_name_fitness_tracker (3107192493390199691) -->
-    <skip />
+    <string name="profile_name_fitness_tracker" msgid="3107192493390199691">"የብቃት መከታተያ"</string>
     <string name="confirmation_title_glasses" msgid="8288346850537727333">"&lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; &lt;strong&gt;<xliff:g id="DEVICE_NAME">%2$s</xliff:g>&lt;/strong&gt;ን እንዲያስተዳድር ይፈቅዳሉ?"</string>
     <string name="profile_name_glasses" msgid="3506504967216601277">"መሣሪያ"</string>
     <string name="summary_glasses" msgid="5469208629679579157">"ይህ መተግበሪያ በእርስዎ <xliff:g id="DEVICE_TYPE">%1$s</xliff:g> ላይ እነዚህን ፈቃዶች እንዲደርስ ይፈቀድለታል"</string>
+    <string name="profile_name_medical" msgid="5617160509499466400">"የሕክምና መሣሪያ"</string>
     <string name="title_app_streaming" msgid="237666000400427614">"&lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; የመተግበሪያ እና የሥርዓት ባህሪያትን በእርስዎ <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> እና &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt; መካከል በዥረት እንዲለቅ ይፈቀድለት?"</string>
     <string name="summary_app_streaming" msgid="8346968726357732862">"<xliff:g id="APP_NAME">%1$s</xliff:g> የሚከተሉት ፈቃዶች ይሰጡታል፦"</string>
     <string name="summary_app_streaming_legacy" msgid="8994180646987541606">"<xliff:g id="APP_NAME_0">%1$s</xliff:g> ኦዲዮ፣ ፎቶዎች፣ የክፍያ መረጃ፣ የይለፍ ቃላት እና መልዕክቶችን ጨምሮ በእርስዎ <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> ላይ የሚታየውን ወይም የሚጫወተውን የማንኛውም ነገር መዳረሻ ይኖረዋል።&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME_1">%1$s</xliff:g> የዚህን መዳረሻ እስኪያስወግዱ ድረስ መተግበሪያዎችን ወደ <xliff:g id="DEVICE_NAME">%3$s</xliff:g> በዥረት መልቀቅ ይችላል።"</string>
@@ -73,6 +73,8 @@
     <string name="permission_create_virtual_device" msgid="1102905050922460040">"ውሂብ ወደ እርስዎ <xliff:g id="DEVICE_TYPE">%1$s</xliff:g> በዥረት ይልቀቁ"</string>
     <string name="permission_add_mirror_display" msgid="3743433250535606288">"ማያ ገፅዎን ያንጸባርቁ"</string>
     <string name="permission_add_trusted_display" msgid="9052824856626276723">"የዥረት መተግበሪያዎች"</string>
+    <string name="permission_schedule_exact_alarm" msgid="5680932535987512225">"ማንቂያዎችን ወይም አስታዋሾችን ያቀናብሩ"</string>
+    <string name="permission_bypass_dnd" msgid="1241123166903040347">"የአትረብሽ ቅንብሮችን ይለፉ"</string>
     <string name="permission_phone_summary" msgid="8246321093970051702">"የስልክ ጥሪዎች ያድርጉ እና ያስተዳድሩ"</string>
     <string name="permission_call_logs_summary" msgid="7545243592757693321">"የስልክ ጥሪ ምዝግብ ማስታወሻን ያንብቡ እና ይጻፉ"</string>
     <string name="permission_sms_summary" msgid="8499509535410068616">"የኤስኤምኤስ መልዕክቶችን ይላኩና ይመልከቱ"</string>
@@ -88,6 +90,8 @@
     <string name="permission_add_mirror_display_summary" msgid="1385423940454941534">"የእርስዎን <xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g> ማያ ገፅ ወደ &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt; ይቅዱ፣ ካስት ያድርጉ ወይም ያጋሩ። &lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME">%1$s</xliff:g> ኦዲዮ፣ ፎቶዎች፣ የክፍያ መረጃ፣ የይለፍ ቃሎች እና መልዕክቶችን ጨምሮ በእርስዎ <xliff:g id="DEVICE_TYPE_1">%2$s</xliff:g> ላይ የሚታየውን ወይም የሚጫወተውን ማንኛውንም ነገር መዳረሻ ይኖረዋል።"</string>
     <string name="permission_add_trusted_display_summary" msgid="7399955172055281447">"የእርስዎን <xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g> መተግበሪያዎች ወደ &lt;strong&gt;<xliff:g id="DEVICE_NAME_1">%3$s</xliff:g>&lt;/strong&gt; በዥረት ይልቀቁ። &lt;br/&gt;&lt;br/&gt;የእርስዎ<xliff:g id="DEVICE_TYPE_3">%2$s</xliff:g> ሲቆለፍ እንኳን <xliff:g id="APP_NAME">%1$s</xliff:g> ኦዲዮ፣ ፎቶዎች፣ የክፍያ መረጃ፣ የይለፍ ቃሎች እና መልዕክቶችን ጨምሮ በእርስዎ <xliff:g id="DEVICE_NAME_2">%3$s</xliff:g> ላይ የሚታየውን ወይም የሚጫወተውን ማንኛውንም ነገር መዳረሻ ይኖረዋል።"</string>
     <string name="permission_media_routing_control_summary" msgid="2714631092321412250">"የሚገኙትን መሣሪያዎች ዝርዝር ይድረሱ እና የትኛዎቹ ኦዲዮን ወይም ቪዲዮን ከሌሎች መተግበሪያዎች በዥረት እንደሚለቅቁ ይቆጣጠሩ"</string>
+    <string name="permission_schedule_exact_alarm_summary" msgid="5938321911309800377"></string>
+    <string name="permission_bypass_dnd_summary" msgid="6221709271927387626"></string>
     <string name="device_type" product="default" msgid="8268703872070046263">"ስልክ"</string>
     <string name="device_type" product="tablet" msgid="5038791954983067774">"ጡባዊ"</string>
     <string name="device_type" product="tv" msgid="5355611506659405636">"ቲቪ"</string>
