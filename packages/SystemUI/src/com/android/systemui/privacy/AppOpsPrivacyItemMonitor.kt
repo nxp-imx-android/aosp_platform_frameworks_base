@@ -457,6 +457,7 @@ constructor(
     private fun isSystemApp(item: AppOpItem): Boolean {
         return isSystemApp(item.code, item.uid, item.packageName)
     }
+
     private fun isSystemApp(code: Int, uid: Int, packageName: String): Boolean {
         val user = UserHandle.getUserHandleForUid(uid)
 
@@ -472,8 +473,7 @@ constructor(
         }
 
         val permission = AppOpsManager.opToPermission(code)
-        val permissionFlags: Int =
-            packageManager.getPermissionFlags(permission, packageName, user)
+        val permissionFlags: Int = packageManager.getPermissionFlags(permission, packageName, user)
         val isSystem =
             if (
                 PermissionChecker.checkPermissionForPreflight(
@@ -505,7 +505,7 @@ constructor(
                     ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND_SERVICE)
             }
         }
-        return false
+        return android.location.flags.Flags.locationIndicatorDefaultBackground()
     }
 
     override fun dump(pw: PrintWriter, args: Array<out String>) {

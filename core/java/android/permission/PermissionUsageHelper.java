@@ -531,7 +531,7 @@ public class PermissionUsageHelper implements AppOpsManager.OnOpActiveChangedLis
                         > ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND_SERVICE;
             }
         }
-        return false;
+        return android.location.flags.Flags.locationIndicatorDefaultBackground();
     }
 
     /**

@@ -18,10 +18,14 @@ package com.android.systemui.privacy
 
 import android.app.ActivityManager
 import android.app.ActivityManager.RunningAppProcessInfo.IMPORTANCE_CACHED
+import android.app.ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND_SERVICE
 import android.app.AppOpsManager
 import android.content.pm.PackageManager
 import android.content.pm.UserInfo
+import android.location.flags.Flags
 import android.os.UserHandle
+import android.platform.test.annotations.DisableFlags
+import android.platform.test.annotations.EnableFlags
 import android.testing.TestableLooper.RunWithLooper
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
@@ -300,9 +304,10 @@ class AppOpsPrivacyItemMonitorTest : SysuiTestCase() {
     @Test
     fun testLocationOpForeground() {
         setMapsToNonSystem()
-        // Default is foreground
+
         val process = ActivityManager.RunningAppProcessInfo()
         process.uid = TEST_UID
+        process.importance = IMPORTANCE_FOREGROUND_SERVICE
         doReturn(listOf(process)).`when`(activityManager).runningAppProcesses
 
         doReturn(
@@ -401,9 +406,10 @@ class AppOpsPrivacyItemMonitorTest : SysuiTestCase() {
     @Test
     fun testLocationOpForegroundOff() {
         setMapsToNonSystem()
-        // Default is foreground
+
         val process = ActivityManager.RunningAppProcessInfo()
         process.uid = TEST_UID
+        process.importance = IMPORTANCE_FOREGROUND_SERVICE
         doReturn(listOf(process)).`when`(activityManager).runningAppProcesses
 
         // First, location is used by a foreground app
@@ -514,6 +520,11 @@ class AppOpsPrivacyItemMonitorTest : SysuiTestCase() {
             .`when`(appOpsController)
             .getActiveAppOps(anyBoolean())
 
+        val process = ActivityManager.RunningAppProcessInfo()
+        process.uid = TEST_UID
+        process.importance = IMPORTANCE_FOREGROUND_SERVICE
+        doReturn(listOf(process)).`when`(activityManager).runningAppProcesses
+
         assertEquals(appOpsPrivacyItemMonitor.getActivePrivacyItems().size, 0)
         // Expect logs for SYSTEM_APP and ALL_APP when location is first used by a system app.
         assertEquals(uiEventLogger.numLogs(), 2)
@@ -572,6 +583,11 @@ class AppOpsPrivacyItemMonitorTest : SysuiTestCase() {
             .`when`(appOpsController)
             .getActiveAppOps(anyBoolean())
 
+        val process = ActivityManager.RunningAppProcessInfo()
+        process.uid = TEST_UID
+        process.importance = IMPORTANCE_FOREGROUND_SERVICE
+        doReturn(listOf(process)).`when`(activityManager).runningAppProcesses
+
         assertEquals(appOpsPrivacyItemMonitor.getActivePrivacyItems().size, 0)
         // Expect logs for SYSTEM_APP and ALL_APP.
         assertEquals(uiEventLogger.numLogs(), 2)
@@ -615,7 +631,8 @@ class AppOpsPrivacyItemMonitorTest : SysuiTestCase() {
             .getActiveAppOps(anyBoolean())
 
         assertEquals(appOpsPrivacyItemMonitor.getActivePrivacyItems().size, 0)
-        // Expect logs for BACKGROUND_APP and ALL_APP when location is first used by a background app.
+        // Expect logs for BACKGROUND_APP and ALL_APP when location is first used by a background
+        // app.
         assertEquals(uiEventLogger.numLogs(), 2)
         Truth.assertThat(
                 uiEventLogger.logs.any { log ->
@@ -668,6 +685,109 @@ class AppOpsPrivacyItemMonitorTest : SysuiTestCase() {
         // Set to background
         val process = ActivityManager.RunningAppProcessInfo()
         process.uid = TEST_UID
+        process.importance = IMPORTANCE_CACHED
+        doReturn(listOf(process)).`when`(activityManager).runningAppProcesses
+
+        doReturn(
+                listOf(
+                    // Regular item which should not be filtered
+                    AppOpItem(AppOpsManager.OP_FINE_LOCATION, TEST_UID, MAPS_PACKAGE_NAME, 0)
+                )
+            )
+            .`when`(appOpsController)
+            .getActiveAppOps(anyBoolean())
+
+        assertEquals(appOpsPrivacyItemMonitor.getActivePrivacyItems().size, 0)
+        // Expect logs for BACKGROUND_APP and ALL_APP.
+        assertEquals(uiEventLogger.numLogs(), 2)
+        Truth.assertThat(
+                uiEventLogger.logs.any { log ->
+                    log.eventId ==
+                        AppOpsPrivacyItemMonitor.LocationIndicatorEvent
+                            .LOCATION_INDICATOR_BACKGROUND_APP
+                            .id
+                }
+            )
+            .isTrue()
+        Truth.assertThat(
+                uiEventLogger.logs.any { log ->
+                    log.eventId ==
+                        AppOpsPrivacyItemMonitor.LocationIndicatorEvent.LOCATION_INDICATOR_ALL_APP
+                            .id
+                }
+            )
+            .isTrue()
+    }
+
+    @Test
+    @DisableFlags(Flags.FLAG_LOCATION_INDICATOR_DEFAULT_BACKGROUND)
+    fun testLocationOp_defaultForeground() {
+        setMapsToNonSystem()
+
+        // Make the test uid not found
+        val process = ActivityManager.RunningAppProcessInfo()
+        process.uid = TEST_UID + 1
+        process.importance = IMPORTANCE_CACHED
+        doReturn(listOf(process)).`when`(activityManager).runningAppProcesses
+
+        doReturn(
+                listOf(
+                    // Regular item which should not be filtered
+                    AppOpItem(AppOpsManager.OP_FINE_LOCATION, TEST_UID, MAPS_PACKAGE_NAME, 0)
+                )
+            )
+            .`when`(appOpsController)
+            .getActiveAppOps(anyBoolean())
+
+        assertEquals(appOpsPrivacyItemMonitor.getActivePrivacyItems().size, 1)
+        // Expect logs for NON_SYSTEM_APP, SYSTEM_APP, BACKGROUND_APP, and ALL_APP when location
+        // is first used.
+        assertEquals(uiEventLogger.numLogs(), 4)
+        Truth.assertThat(
+                uiEventLogger.logs.any { log ->
+                    log.eventId ==
+                        AppOpsPrivacyItemMonitor.LocationIndicatorEvent
+                            .LOCATION_INDICATOR_NON_SYSTEM_APP
+                            .id
+                }
+            )
+            .isTrue()
+        Truth.assertThat(
+                uiEventLogger.logs.any { log ->
+                    log.eventId ==
+                        AppOpsPrivacyItemMonitor.LocationIndicatorEvent
+                            .LOCATION_INDICATOR_SYSTEM_APP
+                            .id
+                }
+            )
+            .isTrue()
+        Truth.assertThat(
+                uiEventLogger.logs.any { log ->
+                    log.eventId ==
+                        AppOpsPrivacyItemMonitor.LocationIndicatorEvent
+                            .LOCATION_INDICATOR_BACKGROUND_APP
+                            .id
+                }
+            )
+            .isTrue()
+        Truth.assertThat(
+                uiEventLogger.logs.any { log ->
+                    log.eventId ==
+                        AppOpsPrivacyItemMonitor.LocationIndicatorEvent.LOCATION_INDICATOR_ALL_APP
+                            .id
+                }
+            )
+            .isTrue()
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_LOCATION_INDICATOR_DEFAULT_BACKGROUND)
+    fun testLocationOp_defaultBackground() {
+        setMapsToNonSystem()
+
+        // Make the test uid not found
+        val process = ActivityManager.RunningAppProcessInfo()
+        process.uid = TEST_UID + 1
         process.importance = IMPORTANCE_CACHED
         doReturn(listOf(process)).`when`(activityManager).runningAppProcesses
 
@@ -898,9 +1018,10 @@ class AppOpsPrivacyItemMonitorTest : SysuiTestCase() {
 
         // Given a non-system, foreground app is using location
         setMapsToNonSystem()
-        // Default is foreground
+
         val process = ActivityManager.RunningAppProcessInfo()
         process.uid = TEST_UID
+        process.importance = IMPORTANCE_FOREGROUND_SERVICE
         doReturn(listOf(process)).`when`(activityManager).runningAppProcesses
 
         doReturn(listOf(AppOpItem(AppOpsManager.OP_FINE_LOCATION, TEST_UID, MAPS_PACKAGE_NAME, 0)))
@@ -939,9 +1060,10 @@ class AppOpsPrivacyItemMonitorTest : SysuiTestCase() {
 
         // Given a non-system, foreground app is using location
         setMapsToNonSystem()
-        // Default is foreground
+
         val process = ActivityManager.RunningAppProcessInfo()
         process.uid = TEST_UID
+        process.importance = IMPORTANCE_FOREGROUND_SERVICE
         doReturn(listOf(process)).`when`(activityManager).runningAppProcesses
 
         val locationAppOp =
