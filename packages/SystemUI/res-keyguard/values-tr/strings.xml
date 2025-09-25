@@ -69,7 +69,7 @@
     <string name="kg_unlock_with_password_or_fp" msgid="2251295907826814237">"Şifre veya parmak iziyle kilidi açın"</string>
     <string name="kg_unlock_with_pattern_or_fp" msgid="2391870539909135046">"Desen veya parmak iziyle kilidi açın"</string>
     <string name="kg_prompt_after_dpm_lock" msgid="6002804765868345917">"Daha fazla güvenlik için cihaz, işletme politikası gereği kilitlendi"</string>
-    <string name="kg_prompt_title_after_secure_lock_device" msgid="2646423690908627259">"2 adımlı doğrulama"</string>
+    <string name="kg_prompt_title_after_secure_lock_device" msgid="2646423690908627259">"2 Adımlı Doğrulama"</string>
     <string name="kg_prompt_subtitle_for_secure_lock_device_biometric_auth_fingerprint" msgid="6596633555720510932">"Parmak İzi Kilidi kullanın"</string>
     <string name="kg_prompt_subtitle_for_secure_lock_device_biometric_auth_face" msgid="4550701327607935441">"Yüz Tanıma Kilidi kullanın"</string>
     <string name="kg_prompt_subtitle_for_secure_lock_device_biometric_auth_coex" msgid="2093026058274456330">"Parmak izi veya Yüz Tanıma Kilidi kullanın"</string>
