@@ -229,7 +229,7 @@ class DesktopImmersiveControllerTest : ShellTestCase() {
             finishTransaction = SurfaceControl.Transaction(),
         )
 
-        assertThat(desktopRepository.removeBoundsBeforeMaximize(task.taskId)).isNull()
+        assertThat(desktopRepository.removeBoundsBeforeSnapOrMaximize(task.taskId)).isNull()
     }
 
     @Test
@@ -620,7 +620,7 @@ class DesktopImmersiveControllerTest : ShellTestCase() {
             finishTransaction = SurfaceControl.Transaction(),
         )
 
-        assertThat(desktopRepository.removeBoundsBeforeMaximize(task.taskId)).isNull()
+        assertThat(desktopRepository.removeBoundsBeforeSnapOrMaximize(task.taskId)).isNull()
     }
 
     @Test
