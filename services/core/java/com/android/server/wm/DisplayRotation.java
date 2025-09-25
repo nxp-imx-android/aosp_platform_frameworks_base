@@ -2036,6 +2036,7 @@ public class DisplayRotation {
             } else {
                 setFixedToUserRotation(IWindowManager.FIXED_TO_USER_ROTATION_DEFAULT);
             }
+            updateOrientationListenerLw();
         }
     }
 
