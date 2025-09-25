@@ -553,6 +553,13 @@
       ]
     },
     {
+      "name": "FunctionalTestsDesktopMode-multiinstance-LaunchNewInstanceFromAppWindowMenuTest",
+      "keywords": [
+        "device",
+        "desktop"
+      ]
+    },
+    {
       "name": "FunctionalTestsDesktopMode-multiinstance-ManageOpenInstancesTest",
       "keywords": [
         "device",
