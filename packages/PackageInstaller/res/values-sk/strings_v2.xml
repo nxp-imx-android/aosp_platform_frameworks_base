@@ -96,22 +96,14 @@
     <string name="message_restore_error_installer_absent" msgid="8492838251989389724">"Ak chcete túto aplikáciu obnoviť, musíte si nainštalovať <xliff:g id="INSTALLER_NAME">%1$s</xliff:g>"</string>
     <string name="message_restore_error_generic" msgid="5903850636679929406">"Pri pokuse o obnovenie tejto aplikácie sa vyskytol problém"</string>
     <string name="message_uninstall_activity" msgid="3263352475743590167">"<xliff:g id="ACTIVITY_NAME">%1$s</xliff:g> je súčasťou nasledujúcej aplikácie: <xliff:g id="APP_NAME">%2$s</xliff:g>"</string>
-    <!-- no translation found for cannot_install_app_blocked_summary (2082063650842897085) -->
-    <skip />
-    <!-- no translation found for cannot_update_app_blocked_summary (7607734844900187499) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_no_internet_summary (7298957699553589600) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_no_internet_summary (8094414928318316598) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_summary (3830073638843524892) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_unavailable_summary (342184955548504019) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_fail_closed_summary (3552780111383069051) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_unavailable_fail_closed_summary (353457015429601377) -->
-    <skip />
+    <string name="cannot_install_app_blocked_summary" msgid="2082063650842897085">"&lt;p&gt;Táto aplikácia bola zablokovaná. Inštalovať si môžete iba aplikácie od overených vývojárov, pomôžete tým zaistiť bezpečnosť svojho zariadenia a údajov.&lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;Ďalšie informácie o overení vývojárov&lt;/a&gt;"</string>
+    <string name="cannot_update_app_blocked_summary" msgid="7607734844900187499">"&lt;p&gt;Táto aplikácia nebola aktualizovaná. Inštalovať si môžete iba aktualizácie od overených vývojárov, pomôžete tým zaistiť bezpečnosť svojho zariadenia a údajov.&lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;Ďalšie informácie o overení vývojárov&lt;/a&gt;"</string>
+    <string name="cannot_install_verification_no_internet_summary" msgid="7298957699553589600">"&lt;p&gt;Táto aplikácia nebola nainštalovaná. Aplikácie od neoverených vývojárov môžu byť nebezpečné.&lt;/p&gt; &lt;p&gt;Na overenie vývojára aplikácií sa vyžaduje internetové pripojenie. Skontrolujte pripojenie a skúste aplikáciu nainštalovať znova. &lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;Ďalšie informácie o overení vývojárov&lt;/a&gt;"</string>
+    <string name="cannot_update_verification_no_internet_summary" msgid="8094414928318316598">"&lt;p&gt;Táto aplikácia nebola aktualizovaná. Aktualizácie od neoverených vývojárov môžu byť nebezpečné.&lt;/p&gt; &lt;p&gt;Na overenie vývojára aplikácií sa vyžaduje internetové pripojenie. Skontrolujte pripojenie a skúste aplikáciu aktualizovať znova. &lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;Ďalšie informácie o overení vývojárov&lt;/a&gt;"</string>
+    <string name="cannot_install_verification_unavailable_summary" msgid="3830073638843524892">"&lt;p&gt;Pri overovaní vývojára tejto aplikácie sa vyskytol problém. Aplikácie od neoverených vývojárov môžu byť nebezpečné, preto aplikácia nebola nainštalovaná.&lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;Ďalšie informácie o overení vývojárov&lt;/a&gt;"</string>
+    <string name="cannot_update_verification_unavailable_summary" msgid="342184955548504019">"&lt;p&gt;Pri overovaní vývojára tejto aplikácie sa vyskytol problém. Aktualizácie od neoverených vývojárov môžu byť nebezpečné, preto aplikácia nebola aktualizovaná.&lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;Ďalšie informácie o overení vývojárov&lt;/a&gt;"</string>
+    <string name="cannot_install_verification_unavailable_fail_closed_summary" msgid="3552780111383069051">"&lt;p&gt;Táto aplikácia bola zablokovaná, pretože sa vyskytol problém s overením vývojára. Inštalovať si môžete iba aplikácie od overených vývojárov, pomôžete tým zaistiť bezpečnosť svojho zariadenia a údajov.&lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;Ďalšie informácie o overení vývojárov&lt;/a&gt;"</string>
+    <string name="cannot_update_verification_unavailable_fail_closed_summary" msgid="353457015429601377">"&lt;p&gt;Táto aplikácia nebola aktualizovaná, pretože sa vyskytol problém s overením vývojára. Inštalovať si môžete iba aktualizácie od overených vývojárov, pomôžete tým zaistiť bezpečnosť svojho zariadenia a údajov.&lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;Ďalšie informácie o overení vývojárov&lt;/a&gt;"</string>
     <string name="more_details_expanded_install_summary" msgid="3545896392881608712">"Ak aplikáciu nainštalujete bez overenia, pamätajte, že aplikácie od neoverených vývojárov môžu ohroziť vaše zariadenie aj údaje."</string>
     <string name="more_details_expanded_update_summary" msgid="2239162864839036480">"Ak aktualizujete bez overenia, pamätajte, že aktualizácie od neoverených vývojárov môžu ohroziť vaše zariadenie aj údaje."</string>
     <string name="cannot_install_app_blocked_title" msgid="6372444121824751694">"Vývojár aplikácie nie je overený"</string>

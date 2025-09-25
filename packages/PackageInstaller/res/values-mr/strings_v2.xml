@@ -96,22 +96,14 @@
     <string name="message_restore_error_installer_absent" msgid="8492838251989389724">"हे अ‍ॅप रिस्टोअर करण्यासाठी, तुम्हाला <xliff:g id="INSTALLER_NAME">%1$s</xliff:g> इंस्टॉल करावे लागेल"</string>
     <string name="message_restore_error_generic" msgid="5903850636679929406">"हे अ‍ॅप रिस्टोअर करण्याचा प्रयत्न करताना समस्या आली होती"</string>
     <string name="message_uninstall_activity" msgid="3263352475743590167">"<xliff:g id="ACTIVITY_NAME">%1$s</xliff:g> पुढील अ‍ॅपचा भाग आहे: <xliff:g id="APP_NAME">%2$s</xliff:g>"</string>
-    <!-- no translation found for cannot_install_app_blocked_summary (2082063650842897085) -->
-    <skip />
-    <!-- no translation found for cannot_update_app_blocked_summary (7607734844900187499) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_no_internet_summary (7298957699553589600) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_no_internet_summary (8094414928318316598) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_summary (3830073638843524892) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_unavailable_summary (342184955548504019) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_fail_closed_summary (3552780111383069051) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_unavailable_fail_closed_summary (353457015429601377) -->
-    <skip />
+    <string name="cannot_install_app_blocked_summary" msgid="2082063650842897085">"&lt;p&gt;हे अ‍ॅप ब्लॉक केले आहे. तुमचे डिव्हाइस आणि डेटा सुरक्षित ठेवण्यात मदत करण्यासाठी फक्त पडताळणी केलेल्या डेव्हलपरची अ‍ॅप्स इंस्टॉल केली जाऊ शकतात.&lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;डेव्हलपर पडताळणीबद्दल अधिक जाणून घ्या&lt;/a&gt;"</string>
+    <string name="cannot_update_app_blocked_summary" msgid="7607734844900187499">"&lt;p&gt;हे अ‍ॅप अपडेट केलेले नाही. तुमचे डिव्हाइस आणि डेटा सुरक्षित ठेवण्यात मदत करण्यासाठी फक्त पडताळणी केलेल्या डेव्हलपरची अपडेट इंस्टॉल केली जाऊ शकतात.&lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;डेव्हलपर पडताळणीबद्दल अधिक जाणून घ्या&lt;/a&gt;"</string>
+    <string name="cannot_install_verification_no_internet_summary" msgid="7298957699553589600">"&lt;p&gt;हे अ‍ॅप इंस्टॉल केलेले नाही. पडताळणी न केलेल्या डेव्हलपरची अ‍ॅप्स असुरक्षित असू शकतात.&lt;/p&gt; &lt;p&gt;अ‍ॅप डेव्हलपरची पडताळणी करण्यासाठी इंटरनेट कनेक्शन आवश्यक आहे. तुमचे कनेक्शन तपासा, त्यानंतर पुन्हा इंस्टॉल करण्याचा प्रयत्न करा. &lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;डेव्हलपर पडताळणीबद्दल अधिक जाणून घ्या&lt;/a&gt;"</string>
+    <string name="cannot_update_verification_no_internet_summary" msgid="8094414928318316598">"&lt;p&gt;हे अ‍ॅप अपडेट केलेले नाही. पडताळणी न केलेल्या डेव्हलपरकडील अपडेट असुरक्षित असू शकतात.&lt;/p&gt; &lt;p&gt;अ‍ॅप डेव्हलपरची पडताळणी करण्यासाठी इंटरनेट कनेक्शन आवश्यक आहे. तुमचे कनेक्शन तपासा, त्यानंतर पुन्हा अपडेट करण्याचा प्रयत्न करा. &lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;डेव्हलपर पडताळणीबद्दल अधिक जाणून घ्या&lt;/a&gt;"</string>
+    <string name="cannot_install_verification_unavailable_summary" msgid="3830073638843524892">"&lt;p&gt;या अ‍ॅपच्या डेव्हलपरची पडताळणी करताना समस्या आली. पडताळणी न केलेल्या डेव्हलपरची अ‍ॅप्स असुरक्षित असू शकतात, त्यामुळे अ‍ॅप इंस्टॉल केलेले नाही.&lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;डेव्हलपर पडताळणीबद्दल अधिक जाणून घ्या&lt;/a&gt;"</string>
+    <string name="cannot_update_verification_unavailable_summary" msgid="342184955548504019">"&lt;p&gt;या अ‍ॅपच्या डेव्हलपरची पडताळणी करताना समस्या आली. पडताळणी न केलेल्या डेव्हलपरकडील अपडेट असुरक्षित असू शकतात, त्यामुळे अ‍ॅप अपडेट केलेले नाही.&lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;डेव्हलपर पडताळणीबद्दल अधिक जाणून घ्या&lt;/a&gt;"</string>
+    <string name="cannot_install_verification_unavailable_fail_closed_summary" msgid="3552780111383069051">"&lt;p&gt;डेव्हलपरची पडताळणी करताना समस्या आल्यामुळे हे अ‍ॅप ब्लॉक करण्यात आले आहे. तुमचे डिव्हाइस आणि डेटा सुरक्षित ठेवण्यात मदत करण्यासाठी फक्त पडताळणी केलेल्या डेव्हलपरची अ‍ॅप्स इंस्टॉल केली जाऊ शकतात.&lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;डेव्हलपर पडताळणीबद्दल अधिक जाणून घ्या&lt;/a&gt;"</string>
+    <string name="cannot_update_verification_unavailable_fail_closed_summary" msgid="353457015429601377">"&lt;p&gt;डेव्हलपरची पडताळणी करताना समस्या आल्यामुळे हे अ‍ॅप अपडेट केलेले नाही. तुमचे डिव्हाइस आणि डेटा सुरक्षित ठेवण्यात मदत करण्यासाठी फक्त पडताळणी केलेल्या डेव्हलपरची अपडेट इंस्टॉल केली जाऊ शकतात.&lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;डेव्हलपर पडताळणीबद्दल अधिक जाणून घ्या&lt;/a&gt;"</string>
     <string name="more_details_expanded_install_summary" msgid="3545896392881608712">"तुम्ही पडताळणी न करता इंस्टॉल केल्यास लक्षात ठेवा, की पडताळणी न केलेल्या डेव्हलपरची अ‍ॅप्स तुमचे डिव्हाइस आणि डेटा धोक्यात आणू शकतात."</string>
     <string name="more_details_expanded_update_summary" msgid="2239162864839036480">"तुम्ही पडताळणी न करता अपडेट केल्यास लक्षात ठेवा, की पडताळणी न केलेल्या डेव्हलपरकडील अपडेट तुमचे डिव्हाइस आणि डेटा धोक्यात आणू शकतात."</string>
     <string name="cannot_install_app_blocked_title" msgid="6372444121824751694">"अ‍ॅप डेव्हलपरची पडताळणी केलेली नाही"</string>

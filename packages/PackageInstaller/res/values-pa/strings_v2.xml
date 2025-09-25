@@ -96,26 +96,18 @@
     <string name="message_restore_error_installer_absent" msgid="8492838251989389724">"ਇਸ ਐਪ ਨੂੰ ਮੁੜ-ਬਹਾਲ ਕਰਨ ਲਈ, ਤੁਹਾਨੂੰ <xliff:g id="INSTALLER_NAME">%1$s</xliff:g> ਨੂੰ ਸਥਾਪਤ ਕਰਨ ਦੀ ਲੋੜ ਪਵੇਗੀ"</string>
     <string name="message_restore_error_generic" msgid="5903850636679929406">"ਇਸ ਐਪ ਨੂੰ ਮੁੜ-ਬਹਾਲ ਕਰਨ ਦੀ ਕੋਸ਼ਿਸ਼ ਵੇਲੇ ਕੋਈ ਸਮੱਸਿਆ ਆਈ"</string>
     <string name="message_uninstall_activity" msgid="3263352475743590167">"<xliff:g id="ACTIVITY_NAME">%1$s</xliff:g> ਅੱਗੇ ਦਿੱਤੀ ਐਪ ਦਾ ਹਿੱਸਾ ਹੈ: <xliff:g id="APP_NAME">%2$s</xliff:g>"</string>
-    <!-- no translation found for cannot_install_app_blocked_summary (2082063650842897085) -->
-    <skip />
-    <!-- no translation found for cannot_update_app_blocked_summary (7607734844900187499) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_no_internet_summary (7298957699553589600) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_no_internet_summary (8094414928318316598) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_summary (3830073638843524892) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_unavailable_summary (342184955548504019) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_fail_closed_summary (3552780111383069051) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_unavailable_fail_closed_summary (353457015429601377) -->
-    <skip />
-    <string name="more_details_expanded_install_summary" msgid="3545896392881608712">"ਜੇ ਤੁਸੀਂ ਪੁਸ਼ਟੀ ਕਰਨ ਦੇ ਬਿਨਾਂ ਸਥਾਪਤ ਕਰਦੇ ਹੋ, ਤਾਂ ਧਿਆਨ ਵਿੱਚ ਰੱਖੋ ਕਿ ਗੈਰ-ਪੁਸ਼ਟੀਕਿਰਤ ਵਿਕਾਸਕਾਰਾਂ ਦੀਆਂ ਐਪਾਂ ਤੁਹਾਡੇ ਡੀਵਾਈਸ ਅਤੇ ਡਾਟੇ ਨੂੰ ਜੋਖਮ ਵਿੱਚ ਪਾ ਸਕਦੀਆਂ ਹਨ।"</string>
+    <string name="cannot_install_app_blocked_summary" msgid="2082063650842897085">"&lt;p&gt;ਇਹ ਐਪ ਬਲਾਕ ਕੀਤੀ ਗਈ ਸੀ। ਤੁਹਾਡੇ ਡੀਵਾਈਸ ਅਤੇ ਡਾਟੇ ਨੂੰ ਸੁਰੱਖਿਅਤ ਰੱਖਣ ਵਿੱਚ ਮਦਦ ਲਈ, ਸਿਰਫ਼ ਪੁਸ਼ਟੀਕਿਰਤ ਵਿਕਾਸਕਾਰਾਂ ਦੀਆਂ ਐਪਾਂ ਨੂੰ ਹੀ ਸਥਾਪਤ ਕੀਤਾ ਜਾ ਸਕਦਾ ਹੈ।&lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;ਵਿਕਾਸਕਰ ਪੁਸ਼ਟੀਕਰਨ ਬਾਰੇ ਹੋਰ ਜਾਣੋ&lt;/a&gt;"</string>
+    <string name="cannot_update_app_blocked_summary" msgid="7607734844900187499">"&lt;p&gt;ਇਹ ਐਪ ਅੱਪਡੇਟ ਨਹੀਂ ਕੀਤੀ ਗਈ। ਤੁਹਾਡੇ ਡੀਵਾਈਸ ਅਤੇ ਡਾਟੇ ਨੂੰ ਸੁਰੱਖਿਅਤ ਰੱਖਣ ਵਿੱਚ ਮਦਦ ਲਈ, ਸਿਰਫ਼ ਪੁਸ਼ਟੀਕਿਰਤ ਵਿਕਾਸਕਾਰਾਂ ਦੇ ਹੀ ਅੱਪਡੇਟ ਸਥਾਪਤ ਕੀਤੇ ਜਾ ਸਕਦੇ ਹਨ।&lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;ਵਿਕਾਸਕਾਰ ਪੁਸ਼ਟੀਕਰਨ ਬਾਰੇ ਹੋਰ ਜਾਣੋ&lt;/a&gt;"</string>
+    <string name="cannot_install_verification_no_internet_summary" msgid="7298957699553589600">"&lt;p&gt;ਇਹ ਐਪ ਸਥਾਪਤ ਨਹੀਂ ਕੀਤੀ ਗਈ। ਗੈਰ-ਪੁਸ਼ਟੀਕਿਰਤ ਵਿਕਾਸਕਾਰ ਦੀਆਂ ਐਪਾਂ ਅਸੁਰੱਖਿਅਤ ਹੋ ਸਕਦੀਆਂ ਹਨ।&lt;/p&gt; &lt;p&gt;ਐਪ ਵਿਕਾਸਕਾਰ ਦੀ ਪੁਸ਼ਟੀ ਕਰਨ ਲਈ ਇੰਟਰਨੈੱਟ ਕਨੈਕਸ਼ਨ ਲੋੜੀਂਦਾ ਹੈ। ਆਪਣੇ ਕਨੈਕਸ਼ਨ ਦੀ ਜਾਂਚ ਕਰੋ, ਫਿਰ ਦੁਬਾਰਾ ਸਥਾਪਤ ਕਰ ਕੇ ਦੇਖੋ। &lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;ਵਿਕਾਸਕਾਰ ਪੁਸ਼ਟੀਕਰਨ ਬਾਰੇ ਹੋਰ ਜਾਣੋ&lt;/a&gt;"</string>
+    <string name="cannot_update_verification_no_internet_summary" msgid="8094414928318316598">"&lt;p&gt;ਇਹ ਐਪ ਅੱਪਡੇਟ ਨਹੀਂ ਕੀਤੀ ਗਈ। ਗੈਰ-ਪੁਸ਼ਟੀਕਿਰਤ ਵਿਕਾਸਕਾਰਾਂ ਦੇ ਅੱਪਡੇਟ ਅਸੁਰੱਖਿਅਤ ਹੋ ਸਕਦੇ ਹਨ।&lt;/p&gt; &lt;p&gt;ਐਪ ਵਿਕਾਸਕਾਰ ਦੀ ਪੁਸ਼ਟੀ ਕਰਨ ਲਈ ਇੰਟਰਨੈੱਟ ਕਨੈਕਸ਼ਨ ਲੋੜੀਂਦਾ ਹੈ। ਆਪਣੇ ਕਨੈਕਸ਼ਨ ਦੀ ਜਾਂਚ ਕਰੋ, ਫਿਰ ਦੁਬਾਰਾ ਅੱਪਡੇਟ ਕਰ ਕੇ ਦੇਖੋ। &lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;ਵਿਕਾਸਕਾਰ ਪੁਸ਼ਟੀਕਰਨ ਬਾਰੇ ਹੋਰ ਜਾਣੋ&lt;/a&gt;"</string>
+    <string name="cannot_install_verification_unavailable_summary" msgid="3830073638843524892">"&lt;p&gt;ਇਸ ਐਪ ਦੇ ਵਿਕਾਸਕਾਰ ਦੀ ਪੁਸ਼ਟੀ ਕਰਨ ਵਿੱਚ ਸਮੱਸਿਆ ਹੋ ਗਈ। ਗੈਰ-ਪੁਸ਼ਟੀਕਿਰਤ ਵਿਕਾਸਕਾਰ ਦੀਆਂ ਐਪਾਂ ਅਸੁਰੱਖਿਅਤ ਹੋ ਸਕਦੀਆਂ ਹਨ, ਇਸ ਲਈ ਐਪ ਨੂੰ ਸਥਾਪਤ ਨਹੀਂ ਕੀਤਾ ਗਿਆ ਸੀ।&lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;ਵਿਕਾਸਕਾਰ ਪੁਸ਼ਟੀਕਰਨ ਬਾਰੇ ਹੋਰ ਜਾਣੋ&lt;/a&gt;"</string>
+    <string name="cannot_update_verification_unavailable_summary" msgid="342184955548504019">"&lt;p&gt;ਇਸ ਐਪ ਦੇ ਵਿਕਾਸਕਾਰ ਦੀ ਪੁਸ਼ਟੀ ਕਰਨ ਵਿੱਚ ਸਮੱਸਿਆ ਹੋ ਗਈ। ਗੈਰ-ਪੁਸ਼ਟੀਕਿਰਤ ਵਿਕਾਸਕਾਰ ਦੀਆਂ ਐਪਾਂ ਅਸੁਰੱਖਿਅਤ ਹੋ ਸਕਦੀਆਂ ਹਨ, ਇਸ ਲਈ ਐਪ ਨੂੰ ਅੱਪਡੇਟ ਨਹੀਂ ਕੀਤਾ ਗਿਆ ਸੀ।&lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;ਵਿਕਾਸਕਾਰ ਪੁਸ਼ਟੀਕਰਨ ਬਾਰੇ ਹੋਰ ਜਾਣੋ&lt;/a&gt;"</string>
+    <string name="cannot_install_verification_unavailable_fail_closed_summary" msgid="3552780111383069051">"&lt;p&gt;ਇਸ ਐਪ ਨੂੰ ਵਿਕਾਸਕਾਰ ਦੀ ਪੁਸ਼ਟੀ ਕਰਨ ਵਿੱਚ ਸਮੱਸਿਆ ਕਰਕੇ ਬਲਾਕ ਕੀਤਾ ਗਿਆ ਸੀ। ਤੁਹਾਡੇ ਡੀਵਾਈਸ ਅਤੇ ਡਾਟੇ ਨੂੰ ਸੁਰੱਖਿਅਤ ਰੱਖਣ ਵਿੱਚ ਮਦਦ ਲਈ, ਸਿਰਫ਼ ਪੁਸ਼ਟੀਕਿਰਤ ਵਿਕਾਸਕਾਰਾਂ ਦੀਆਂ ਐਪਾਂ ਨੂੰ ਹੀ ਸਥਾਪਤ ਕੀਤਾ ਜਾ ਸਕਦਾ ਹੈ।&lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;ਵਿਕਾਸਕਰ ਪੁਸ਼ਟੀਕਰਨ ਬਾਰੇ ਹੋਰ ਜਾਣੋ&lt;/a&gt;"</string>
+    <string name="cannot_update_verification_unavailable_fail_closed_summary" msgid="353457015429601377">"&lt;p&gt;ਇਸ ਐਪ ਨੂੰ ਵਿਕਾਸਕਾਰ ਦੀ ਪੁਸ਼ਟੀ ਕਰਨ ਵਿੱਚ ਸਮੱਸਿਆ ਕਰਕੇ ਅੱਪਡੇਟ ਨਹੀਂ ਕੀਤਾ ਗਿਆ ਸੀ। ਤੁਹਾਡੇ ਡੀਵਾਈਸ ਅਤੇ ਡਾਟੇ ਨੂੰ ਸੁਰੱਖਿਅਤ ਰੱਖਣ ਵਿੱਚ ਮਦਦ ਲਈ, ਸਿਰਫ਼ ਪੁਸ਼ਟੀਕਿਰਤ ਵਿਕਾਸਕਾਰਾਂ ਦੇ ਹੀ ਅੱਪਡੇਟ ਸਥਾਪਤ ਕੀਤੇ ਜਾ ਸਕਦੇ ਹਨ।&lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;ਵਿਕਾਸਕਾਰ ਪੁਸ਼ਟੀਕਰਨ ਬਾਰੇ ਹੋਰ ਜਾਣੋ&lt;/a&gt;"</string>
+    <string name="more_details_expanded_install_summary" msgid="3545896392881608712">"ਜੇ ਤੁਸੀਂ ਪੁਸ਼ਟੀ ਕੀਤੇ ਬਿਨਾਂ ਸਥਾਪਤ ਕਰਦੇ ਹੋ, ਤਾਂ ਧਿਆਨ ਵਿੱਚ ਰੱਖੋ ਕਿ ਗੈਰ-ਪੁਸ਼ਟੀਕਿਰਤ ਵਿਕਾਸਕਾਰਾਂ ਦੀਆਂ ਐਪਾਂ ਤੁਹਾਡੇ ਡੀਵਾਈਸ ਅਤੇ ਡਾਟੇ ਨੂੰ ਜੋਖਮ ਵਿੱਚ ਪਾ ਸਕਦੀਆਂ ਹਨ।"</string>
     <string name="more_details_expanded_update_summary" msgid="2239162864839036480">"ਜੇ ਤੁਸੀਂ ਬਿਨਾਂ ਪੁਸ਼ਟੀ ਕੀਤੇ ਅੱਪਡੇਟ ਕਰਦੇ ਹੋ, ਤਾਂ ਯਾਦ ਰੱਖੋ ਕਿ ਗੈਰ-ਪੁਸ਼ਟੀਕਿਰਤ ਵਿਕਾਸਕਾਰਾਂ ਦੇ ਅੱਪਡੇਟ ਤੁਹਾਡੇ ਡੀਵਾਈਸ ਅਤੇ ਡਾਟਾ ਨੂੰ ਖਤਰੇ ਵਿੱਚ ਪਾ ਸਕਦੇ ਹਨ।"</string>
     <string name="cannot_install_app_blocked_title" msgid="6372444121824751694">"ਐਪ ਵਿਕਾਸਕਾਰ ਗੈਰ-ਪੁਸ਼ਟੀਕਿਰਤ"</string>
-    <string name="cannot_install_verification_no_internet_title" msgid="2862046642298119581">"ਇੰਟਰਨੈੱਟ ਨਹੀਂ, ਐਪ ਵਿਕਾਸਕਾਰ ਦੀ ਪੁਸ਼ਟੀ ਨਹੀਂ ਕੀਤੀ ਜਾ ਸਕਦੀ"</string>
+    <string name="cannot_install_verification_no_internet_title" msgid="2862046642298119581">"ਇੰਟਰਨੈੱਟ ਨਹੀਂ ਹੈ, ਐਪ ਵਿਕਾਸਕਾਰ ਦੀ ਪੁਸ਼ਟੀ ਨਹੀਂ ਕੀਤੀ ਜਾ ਸਕਦੀ"</string>
     <string name="cannot_install_verification_unavailable_title" msgid="2038093442302309120">"ਐਪ ਵਿਕਾਸਕਾਰ ਦੀ ਪੁਸ਼ਟੀ ਨਹੀਂ ਕੀਤੀ ਜਾ ਸਕਦੀ"</string>
     <string name="install_without_verifying" msgid="5359680595440741626">"ਪੁਸ਼ਟੀ ਕੀਤੇ ਬਿਨਾਂ ਸਥਾਪਤ ਕਰੋ"</string>
     <string name="update_without_verifying" msgid="2841466981431484179">"ਬਿਨਾਂ ਪੁਸ਼ਟੀ ਕੀਤੇ ਅੱਪਡੇਟ ਕਰੋ"</string>

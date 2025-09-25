@@ -96,22 +96,14 @@
     <string name="message_restore_error_installer_absent" msgid="8492838251989389724">"Wenn du diese App wiederherstellen möchtest, musst du <xliff:g id="INSTALLER_NAME">%1$s</xliff:g> installieren"</string>
     <string name="message_restore_error_generic" msgid="5903850636679929406">"Beim Versuch, diese App wiederherzustellen, gab es ein Problem"</string>
     <string name="message_uninstall_activity" msgid="3263352475743590167">"„<xliff:g id="ACTIVITY_NAME">%1$s</xliff:g>“ gehört zu folgender App: <xliff:g id="APP_NAME">%2$s</xliff:g>"</string>
-    <!-- no translation found for cannot_install_app_blocked_summary (2082063650842897085) -->
-    <skip />
-    <!-- no translation found for cannot_update_app_blocked_summary (7607734844900187499) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_no_internet_summary (7298957699553589600) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_no_internet_summary (8094414928318316598) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_summary (3830073638843524892) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_unavailable_summary (342184955548504019) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_fail_closed_summary (3552780111383069051) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_unavailable_fail_closed_summary (353457015429601377) -->
-    <skip />
+    <string name="cannot_install_app_blocked_summary" msgid="2082063650842897085">"&lt;p&gt;Diese App wurde blockiert. Zum Schutz deines Geräts und deiner Daten können nur Apps von überprüften Entwicklern installiert werden.&lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;Weitere Informationen zur Entwicklerbestätigung&lt;/a&gt;"</string>
+    <string name="cannot_update_app_blocked_summary" msgid="7607734844900187499">"&lt;p&gt;Diese App wurde nicht aktualisiert. Zum Schutz deines Geräts und deiner Daten können nur Updates von überprüften Entwicklern installiert werden.&lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;Weitere Informationen zur Entwicklerbestätigung&lt;/a&gt;"</string>
+    <string name="cannot_install_verification_no_internet_summary" msgid="7298957699553589600">"&lt;p&gt;Diese App wurde nicht installiert. Apps von nicht überprüften Entwicklern können unsicher sein.&lt;/p&gt; &lt;p&gt;Zur Überprüfung von App-Entwicklern ist eine Internetverbindung erforderlich. Prüfe deine Verbindung und versuche dann noch einmal, die App zu installieren. &lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;Weitere Informationen zur Entwicklerbestätigung&lt;/a&gt;"</string>
+    <string name="cannot_update_verification_no_internet_summary" msgid="8094414928318316598">"&lt;p&gt;Diese App wurde nicht aktualisiert. Updates von nicht überprüften Entwicklern können unsicher sein.&lt;/p&gt; &lt;p&gt;Zur Überprüfung von App-Entwicklern ist eine Internetverbindung erforderlich. Prüfe deine Verbindung und versuche dann noch einmal, die App zu aktualisieren. &lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;Weitere Informationen zur Entwicklerbestätigung&lt;/a&gt;"</string>
+    <string name="cannot_install_verification_unavailable_summary" msgid="3830073638843524892">"&lt;p&gt;Beim Überprüfen des App-Entwicklers ist ein Problem aufgetreten. Apps von nicht überprüften Entwicklern können unsicher sein. Daher wurde die App nicht installiert.&lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;Weitere Informationen zur Entwicklerbestätigung&lt;/a&gt;"</string>
+    <string name="cannot_update_verification_unavailable_summary" msgid="342184955548504019">"&lt;p&gt;Beim Überprüfen des App-Entwicklers ist ein Problem aufgetreten. Updates von nicht überprüften Entwicklern können unsicher sein. Daher wurde die App nicht aktualisiert.&lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;Weitere Informationen zur Entwicklerbestätigung&lt;/a&gt;"</string>
+    <string name="cannot_install_verification_unavailable_fail_closed_summary" msgid="3552780111383069051">"&lt;p&gt;Diese App wurde blockiert, weil der Entwickler nicht überprüft werden konnte. Zum Schutz deines Geräts und deiner Daten können nur Apps von überprüften Entwicklern installiert werden.&lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;Weitere Informationen zur Entwicklerbestätigung&lt;/a&gt;"</string>
+    <string name="cannot_update_verification_unavailable_fail_closed_summary" msgid="353457015429601377">"&lt;p&gt;Diese App wurde nicht aktualisiert, da beim Überprüfen des Entwicklers ein Problem aufgetreten ist. Zum Schutz deines Geräts und deiner Daten können nur Updates von überprüften Entwicklern installiert werden.&lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;Weitere Informationen zur Entwicklerbestätigung&lt;/a&gt;"</string>
     <string name="more_details_expanded_install_summary" msgid="3545896392881608712">"Wenn du die Installation ohne Überprüfung durchführst, solltest du bedenken, dass Apps von nicht überprüften Entwicklern dein Gerät und deine Daten gefährden können."</string>
     <string name="more_details_expanded_update_summary" msgid="2239162864839036480">"Wenn du das Update ohne Überprüfung durchführst, solltest du bedenken, dass Updates von nicht überprüften Entwicklern dein Gerät und deine Daten gefährden können."</string>
     <string name="cannot_install_app_blocked_title" msgid="6372444121824751694">"App-Entwickler nicht überprüft"</string>

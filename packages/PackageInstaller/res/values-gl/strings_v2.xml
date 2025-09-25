@@ -37,7 +37,7 @@
     <string name="title_install_failed_less_storage" msgid="4854855960405469248">"Non hai almacenamento suficiente"</string>
     <string name="title_install_failed_not_installed" msgid="8014023519071426269">"A aplicación non está instalada"</string>
     <string name="title_uninstall" msgid="428653424812685605">"Queres desinstalar esta aplicación?"</string>
-    <string name="title_uninstall_clone" msgid="7974889929002929136">"Queres eliminar o clon desta aplicación?"</string>
+    <string name="title_uninstall_clone" msgid="7974889929002929136">"Queres eliminar este clon da aplicación?"</string>
     <string name="title_uninstall_updates_system_app" msgid="4827243291196043359">"Queres desinstalar as actualizacións da aplicación?"</string>
     <string name="title_uninstall_updates_system_app_all_users" msgid="5720572619103268328">"Queres desinstalar as actualizacións da aplicación para todos os usuarios?"</string>
     <string name="title_uninstall_all_users" msgid="2008934480150627653">"Queres desinstalar esta aplicación para todos os usuarios?"</string>
@@ -96,26 +96,18 @@
     <string name="message_restore_error_installer_absent" msgid="8492838251989389724">"Para restaurar esta aplicación, tes que instalar <xliff:g id="INSTALLER_NAME">%1$s</xliff:g>"</string>
     <string name="message_restore_error_generic" msgid="5903850636679929406">"Produciuse un problema ao restaurar esta aplicación"</string>
     <string name="message_uninstall_activity" msgid="3263352475743590167">"<xliff:g id="ACTIVITY_NAME">%1$s</xliff:g> forma parte da seguinte aplicación: <xliff:g id="APP_NAME">%2$s</xliff:g>"</string>
-    <!-- no translation found for cannot_install_app_blocked_summary (2082063650842897085) -->
-    <skip />
-    <!-- no translation found for cannot_update_app_blocked_summary (7607734844900187499) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_no_internet_summary (7298957699553589600) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_no_internet_summary (8094414928318316598) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_summary (3830073638843524892) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_unavailable_summary (342184955548504019) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_fail_closed_summary (3552780111383069051) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_unavailable_fail_closed_summary (353457015429601377) -->
-    <skip />
-    <string name="more_details_expanded_install_summary" msgid="3545896392881608712">"Se decides continuar coa instalación, lembra que as aplicacións de programadores sen verificar poden poñer en perigo o teu dispositivo e os teus datos."</string>
-    <string name="more_details_expanded_update_summary" msgid="2239162864839036480">"Se decides continuar, lembra que as actualizacións de programadores sen verificar poden poñer en perigo o teu dispositivo e os teus datos."</string>
-    <string name="cannot_install_app_blocked_title" msgid="6372444121824751694">"Programador da aplicación sen verificar"</string>
-    <string name="cannot_install_verification_no_internet_title" msgid="2862046642298119581">"Sen Internet, non se pode verificar o programador da aplicación"</string>
+    <string name="cannot_install_app_blocked_summary" msgid="2082063650842897085">"&lt;p&gt;Bloqueouse esta aplicación. Co fin de axudarche a protexer o teu dispositivo e os teus datos, só se poden instalar aplicacións de programadores verificados.&lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;Máis información sobre a verificación de programadores&lt;/a&gt;"</string>
+    <string name="cannot_update_app_blocked_summary" msgid="7607734844900187499">"&lt;p&gt;Esta aplicación non se actualizou. Co fin de axudarche a protexer o teu dispositivo e os teus datos, só se poden instalar actualizacións de programadores verificados.&lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;Máis información sobre a verificación de programadores&lt;/a&gt;"</string>
+    <string name="cannot_install_verification_no_internet_summary" msgid="7298957699553589600">"&lt;p&gt;Non se instalou esta aplicación. As aplicacións de programadores non verificados poden non ser seguras.&lt;/p&gt; &lt;p&gt;Cómpre dispor de conexión a Internet para realizar a verificación. Comproba a túa conexión e proba a instalar a aplicación de novo. &lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;Máis información sobre a verificación de programadores&lt;/a&gt;"</string>
+    <string name="cannot_update_verification_no_internet_summary" msgid="8094414928318316598">"&lt;p&gt;Esta aplicación non se actualizou. As actualizacións de programadores non verificados poden non ser seguras.&lt;/p&gt; &lt;p&gt;Cómpre dispor de conexión a Internet para verificar o programador da aplicación. Comproba a túa conexión e proba a actualizar a aplicación de novo. &lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;Máis información sobre a verificación de programadores&lt;/a&gt;"</string>
+    <string name="cannot_install_verification_unavailable_summary" msgid="3830073638843524892">"&lt;p&gt;Produciuse un problema ao verificar o programador desta aplicación. As aplicacións de programadores non verificados poden non ser seguras; por iso non se instalou esta.&lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;Máis información sobre a verificación de programadores&lt;/a&gt;"</string>
+    <string name="cannot_update_verification_unavailable_summary" msgid="342184955548504019">"&lt;p&gt;Produciuse un problema ao verificar o programador desta aplicación. As aplicacións de programadores non verificados poden non ser seguras; por iso non se actualizou esta.&lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;Máis información sobre a verificación de programadores&lt;/a&gt;"</string>
+    <string name="cannot_install_verification_unavailable_fail_closed_summary" msgid="3552780111383069051">"&lt;p&gt;Esta aplicación bloqueouse porque se produciu un problema ao verificar o programador. Co fin de axudarche a protexer o teu dispositivo e os teus datos, só se poden instalar aplicacións de programadores verificados.&lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;Máis información sobre a verificación de programadores&lt;/a&gt;"</string>
+    <string name="cannot_update_verification_unavailable_fail_closed_summary" msgid="353457015429601377">"&lt;p&gt;Esta aplicación non se actualizou porque se produciu un problema ao verificar o programador. Co fin de axudarche a protexer o teu dispositivo e os teus datos, só se poden instalar actualizacións de programadores verificados.&lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;Máis información sobre a verificación de programadores&lt;/a&gt;"</string>
+    <string name="more_details_expanded_install_summary" msgid="3545896392881608712">"Se decides continuar coa instalación, lembra que as aplicacións de programadores non verificados poden poñer en perigo o teu dispositivo e os teus datos."</string>
+    <string name="more_details_expanded_update_summary" msgid="2239162864839036480">"Se decides continuar, lembra que as actualizacións de programadores non verificados poden poñer en perigo o teu dispositivo e os teus datos."</string>
+    <string name="cannot_install_app_blocked_title" msgid="6372444121824751694">"Programador da aplicación non verificado"</string>
+    <string name="cannot_install_verification_no_internet_title" msgid="2862046642298119581">"Sen Internet; non se pode verificar o programador da aplicación"</string>
     <string name="cannot_install_verification_unavailable_title" msgid="2038093442302309120">"Non se puido verificar o programador da aplicación"</string>
     <string name="install_without_verifying" msgid="5359680595440741626">"Instalar sen verificar"</string>
     <string name="update_without_verifying" msgid="2841466981431484179">"Actualizar sen verificar"</string>

@@ -96,22 +96,14 @@
     <string name="message_restore_error_installer_absent" msgid="8492838251989389724">"اس ایپ کو بحال کرنے کے لیے، آپ کو <xliff:g id="INSTALLER_NAME">%1$s</xliff:g> انسٹال کرنا ہوگا"</string>
     <string name="message_restore_error_generic" msgid="5903850636679929406">"اس ایپ کو بحال کرنے کی کوشش میں ایک مسئلہ تھا"</string>
     <string name="message_uninstall_activity" msgid="3263352475743590167">"‫<xliff:g id="ACTIVITY_NAME">%1$s</xliff:g> درج ذیل ایپ کا حصہ ہے: <xliff:g id="APP_NAME">%2$s</xliff:g>"</string>
-    <!-- no translation found for cannot_install_app_blocked_summary (2082063650842897085) -->
-    <skip />
-    <!-- no translation found for cannot_update_app_blocked_summary (7607734844900187499) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_no_internet_summary (7298957699553589600) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_no_internet_summary (8094414928318316598) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_summary (3830073638843524892) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_unavailable_summary (342184955548504019) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_fail_closed_summary (3552780111383069051) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_unavailable_fail_closed_summary (353457015429601377) -->
-    <skip />
+    <string name="cannot_install_app_blocked_summary" msgid="2082063650842897085">"‏&lt;p&gt;یہ ایپ بلاک کر دی گئی ہے۔ اپنے آلے اور ڈیٹا کو محفوظ رکھنے میں مدد کے لیے، صرف توثیق شدہ ڈویلپرز کی ایپس ہی انسٹال کی جا سکتی ہیں۔&lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;ڈویلپر کی توثیق کے بارے میں مزید جانیں&lt;/a&gt;"</string>
+    <string name="cannot_update_app_blocked_summary" msgid="7607734844900187499">"‏&lt;p&gt;یہ ایپ اپ ڈیٹ نہیں ہوئی۔ اپنے آلے اور ڈیٹا کو محفوظ رکھنے میں مدد کے لیے، صرف توثیق شدہ ڈویلپرز کی اپ ڈیٹس ہی انسٹال کی جا سکتی ہیں۔&lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;ڈویلپر کی توثیق کے بارے میں مزید جانیں&lt;/a&gt;"</string>
+    <string name="cannot_install_verification_no_internet_summary" msgid="7298957699553589600">"‏&lt;p&gt;یہ ایپ انسٹال نہیں کی گئی۔ غیر توثیق شدہ ڈویلپرز کی ایپس غیر محفوظ ہو سکتی ہیں۔&lt;/p&gt; &lt;p&gt;ایپ ڈویلپر کی توثیق کرنے کے لیے انٹرنیٹ کنکشن کی ضرورت ہے۔ اپنا کنکشن چیک کریں، پھر دوبارہ انسٹال کرنے کی کوشش کریں۔ &lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;ڈویلپر کی توثیق کے بارے میں مزید جانیں&lt;/a&gt;"</string>
+    <string name="cannot_update_verification_no_internet_summary" msgid="8094414928318316598">"‏&lt;p&gt;یہ ایپ اپ ڈیٹ نہیں ہوئی۔ غیر توثیق شدہ ڈویلپرز کی اپ ڈیٹس غیر محفوظ ہو سکتی ہیں۔&lt;/p&gt; &lt;p&gt;ایپ ڈویلپر کی توثیق کرنے کے لیے انٹرنیٹ کنکشن کی ضرورت ہے۔ اپنا کنکشن چیک کریں، پھر دوبارہ اپ ڈیٹ کرنے کی کوشش کریں۔ &lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;ڈویلپر کی توثیق کے بارے میں مزید جانیں&lt;/a&gt;"</string>
+    <string name="cannot_install_verification_unavailable_summary" msgid="3830073638843524892">"‏&lt;p&gt;اس ایپ کے ڈویلپر کی توثیق کرنے میں ایک مسئلہ پیش آ گیا۔ غیر توثیق شدہ ڈویلپرز کی ایپس غیر محفوظ ہو سکتی ہیں، اس لیے ایپ انسٹال نہیں کی گئی۔&lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;ڈویلپر کی توثیق کے بارے میں مزید جانیں&lt;/a&gt;"</string>
+    <string name="cannot_update_verification_unavailable_summary" msgid="342184955548504019">"‏&lt;p&gt;اس ایپ کے ڈویلپر کی توثیق کرنے میں ایک مسئلہ پیش آ گیا۔ غیر توثیق شدہ ڈویلپرز کی اپ ڈیٹس غیر محفوظ ہو سکتی ہیں، اس لیے ایپ اپ ڈیٹ نہیں کی گئی۔&lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;ڈویلپر کی توثیق کے بارے میں مزید جانیں&lt;/a&gt;"</string>
+    <string name="cannot_install_verification_unavailable_fail_closed_summary" msgid="3552780111383069051">"‏&lt;p&gt;یہ ایپ بلاک کر دی گئی کیونکہ ڈویلپر کی توثیق کرنے میں ایک مسئلہ تھا۔ اپنے آلے اور ڈیٹا کو محفوظ رکھنے میں مدد کے لیے، صرف توثیق شدہ ڈویلپرز کی ایپس ہی انسٹال کی جا سکتی ہیں۔&lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;ڈویلپر کی توثیق کے بارے میں مزید جانیں&lt;/a&gt;"</string>
+    <string name="cannot_update_verification_unavailable_fail_closed_summary" msgid="353457015429601377">"‏&lt;p&gt;اس ایپ کو اپ ڈیٹ نہیں کیا گیا کیونکہ ڈویلپر کی توثیق کرنے میں ایک مسئلہ تھا۔ اپنے آلے اور ڈیٹا کو محفوظ رکھنے میں مدد کے لیے، صرف توثیق شدہ ڈویلپرز کی اپ ڈیٹس ہی انسٹال کی جا سکتی ہیں۔&lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;ڈویلپر کی توثیق کے بارے میں مزید جانیں&lt;/a&gt;"</string>
     <string name="more_details_expanded_install_summary" msgid="3545896392881608712">"اگر آپ بغیر تصدیق کیے انسٹال کرتے ہیں تو یاد رکھیں کہ غیر تصدیق شدہ ڈویلپرز کی ایپس آپ کے آلے اور ڈیٹا کو خطرے میں ڈال سکتی ہیں۔"</string>
     <string name="more_details_expanded_update_summary" msgid="2239162864839036480">"اگر آپ تصدیق کیے بغیر اپ ڈیٹ کرتے ہیں تو ذہن میں رکھیں کہ غیر تصدیق شدہ ڈویلپرز کی اپ ڈیٹس آپ کے آلے اور ڈیٹا کو خطرے میں ڈال سکتی ہیں۔"</string>
     <string name="cannot_install_app_blocked_title" msgid="6372444121824751694">"غیر تصدیق شدہ ایپ ڈویلپر"</string>
