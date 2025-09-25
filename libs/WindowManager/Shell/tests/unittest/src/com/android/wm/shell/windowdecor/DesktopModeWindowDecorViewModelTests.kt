@@ -236,9 +236,6 @@ class DesktopModeWindowDecorViewModelTests : DesktopModeWindowDecorViewModelTest
 
     @Test
     fun testBackEventHasRightDisplayId() {
-        desktopModeWindowDecorViewModel.setFreeformTaskTransitionStarter(
-            mockFreeformTaskTransitionStarter
-        )
         val secondaryDisplay = createVirtualDisplay() ?: return
         val secondaryDisplayId = secondaryDisplay.display.displayId
         val task =
@@ -268,9 +265,6 @@ class DesktopModeWindowDecorViewModelTests : DesktopModeWindowDecorViewModelTest
     @Test
     @DisableFlags(Flags.FLAG_ENABLE_DESKTOP_APP_HEADER_STATE_CHANGE_ANNOUNCEMENTS)
     fun testCloseButtonInFreeform_closeWindow() {
-        desktopModeWindowDecorViewModel.setFreeformTaskTransitionStarter(
-            mockFreeformTaskTransitionStarter
-        )
         val onClickListenerCaptor = argumentCaptor<View.OnClickListener>()
         val decor =
             createOpenTaskDecoration(
@@ -297,9 +291,6 @@ class DesktopModeWindowDecorViewModelTests : DesktopModeWindowDecorViewModelTest
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_APP_HEADER_STATE_CHANGE_ANNOUNCEMENTS)
     fun testCloseButtonInFreeform_withStateChangeAnnouncementFlag_closeWindow() {
-        desktopModeWindowDecorViewModel.setFreeformTaskTransitionStarter(
-            mockFreeformTaskTransitionStarter
-        )
         val onClickListenerCaptor = argumentCaptor<View.OnClickListener>()
         val decor =
             createOpenTaskDecoration(
@@ -325,9 +316,6 @@ class DesktopModeWindowDecorViewModelTests : DesktopModeWindowDecorViewModelTest
 
     @Test
     fun testCloseTask_desktop_closesTask() {
-        desktopModeWindowDecorViewModel.setFreeformTaskTransitionStarter(
-            mockFreeformTaskTransitionStarter
-        )
         val decor = createOpenTaskDecoration(windowingMode = WINDOWING_MODE_FREEFORM)
 
         desktopModeWindowDecorViewModel.closeTask(decor.taskInfo)
@@ -337,9 +325,6 @@ class DesktopModeWindowDecorViewModelTests : DesktopModeWindowDecorViewModelTest
 
     @Test
     fun testCloseTask_disabledDesktopEntry_doesNothing() {
-        desktopModeWindowDecorViewModel.setFreeformTaskTransitionStarter(
-            mockFreeformTaskTransitionStarter
-        )
         val task = createTask(windowingMode = WINDOWING_MODE_FULLSCREEN)
         ExtendedMockito.doReturn(true)
             .whenever(desktopModeCompatPolicy)
@@ -355,9 +340,6 @@ class DesktopModeWindowDecorViewModelTests : DesktopModeWindowDecorViewModelTest
     @Test
     @EnableFlags(FLAG_CLOSE_FULLSCREEN_AND_SPLITSCREEN_KEYBOARD_SHORTCUT)
     fun testCloseTask_lockTask_doesNothing() {
-        desktopModeWindowDecorViewModel.setFreeformTaskTransitionStarter(
-            mockFreeformTaskTransitionStarter
-        )
         val task = createTask(windowingMode = WINDOWING_MODE_FULLSCREEN)
         whenever(mockLockTaskChangeListener.isTaskLocked).thenReturn(true)
 
@@ -370,9 +352,6 @@ class DesktopModeWindowDecorViewModelTests : DesktopModeWindowDecorViewModelTest
     @Test
     @EnableFlags(FLAG_CLOSE_FULLSCREEN_AND_SPLITSCREEN_KEYBOARD_SHORTCUT)
     fun testCloseTask_fullscreen_closesTask() {
-        desktopModeWindowDecorViewModel.setFreeformTaskTransitionStarter(
-            mockFreeformTaskTransitionStarter
-        )
         val decor = createOpenTaskDecoration(windowingMode = WINDOWING_MODE_FULLSCREEN)
 
         desktopModeWindowDecorViewModel.closeTask(decor.taskInfo)
@@ -393,9 +372,6 @@ class DesktopModeWindowDecorViewModelTests : DesktopModeWindowDecorViewModelTest
 
     @Test
     fun testCloseTask_splitScreen_movesOtherToFullscreen() {
-        desktopModeWindowDecorViewModel.setFreeformTaskTransitionStarter(
-            mockFreeformTaskTransitionStarter
-        )
         val decor = createOpenTaskDecoration(windowingMode = WINDOWING_MODE_MULTI_WINDOW)
         val otherTask = createTask(windowingMode = WINDOWING_MODE_MULTI_WINDOW)
 
@@ -418,9 +394,6 @@ class DesktopModeWindowDecorViewModelTests : DesktopModeWindowDecorViewModelTest
     @Test
     @EnableFlags(FLAG_CLOSE_FULLSCREEN_AND_SPLITSCREEN_KEYBOARD_SHORTCUT)
     fun testCloseTask_splitScreen_dividerFlinging_doNothing() {
-        desktopModeWindowDecorViewModel.setFreeformTaskTransitionStarter(
-            mockFreeformTaskTransitionStarter
-        )
         val decor = createOpenTaskDecoration(windowingMode = WINDOWING_MODE_MULTI_WINDOW)
         val otherTask = createTask(windowingMode = WINDOWING_MODE_MULTI_WINDOW)
 
@@ -441,9 +414,6 @@ class DesktopModeWindowDecorViewModelTests : DesktopModeWindowDecorViewModelTest
     @EnableFlags(Flags.FLAG_ENABLE_MINIMIZE_BUTTON)
     @DisableFlags(Flags.FLAG_ENABLE_DESKTOP_APP_HEADER_STATE_CHANGE_ANNOUNCEMENTS)
     fun testMinimizeButtonInFreeform_minimizeWindow() {
-        desktopModeWindowDecorViewModel.setFreeformTaskTransitionStarter(
-            mockFreeformTaskTransitionStarter
-        )
         val onClickListenerCaptor = argumentCaptor<View.OnClickListener>()
         val decor =
             createOpenTaskDecoration(
@@ -466,9 +436,6 @@ class DesktopModeWindowDecorViewModelTests : DesktopModeWindowDecorViewModelTest
         Flags.FLAG_ENABLE_DESKTOP_APP_HEADER_STATE_CHANGE_ANNOUNCEMENTS,
     )
     fun testMinimizeButtonInFreeform_withStateChangeAnnouncementFlag_minimizeWindow() {
-        desktopModeWindowDecorViewModel.setFreeformTaskTransitionStarter(
-            mockFreeformTaskTransitionStarter
-        )
         val onClickListenerCaptor = argumentCaptor<View.OnClickListener>()
         val decor =
             createOpenTaskDecoration(
@@ -1127,9 +1094,6 @@ class DesktopModeWindowDecorViewModelTests : DesktopModeWindowDecorViewModelTest
 
     @Test
     fun testCloseButtonInFreeform_closeWindow_ignoreMoveEventsWithoutBoundsChange() {
-        desktopModeWindowDecorViewModel.setFreeformTaskTransitionStarter(
-            mockFreeformTaskTransitionStarter
-        )
         val onClickListenerCaptor = argumentCaptor<View.OnClickListener>()
         val onTouchListenerCaptor = argumentCaptor<View.OnTouchListener>()
         val decor =
