@@ -609,7 +609,8 @@ public class UsbDataAdvancedProtectionHook extends AdvancedProtectionHook {
                         .setContentTitle(title)
                         .setStyle(new Notification.BigTextStyle().bigText(message))
                         .setAutoCancel(true)
-                        .addExtras(notificationExtras);
+                        .addExtras(notificationExtras)
+                        .setVisibility(Notification.VISIBILITY_PUBLIC);
         if (silencePendingIntent != null) {
             notif.addAction(
                     0,
