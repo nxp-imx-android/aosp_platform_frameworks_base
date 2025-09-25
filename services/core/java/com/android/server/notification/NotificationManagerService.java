@@ -32,6 +32,7 @@ import static android.app.Flags.nmSummarization;
 import static android.app.Flags.nmSummarizationUi;
 import static android.app.Flags.notificationClassificationUi;
 import static android.app.Notification.BubbleMetadata.FLAG_SUPPRESS_NOTIFICATION;
+import static android.app.Notification.EXTRA_APP_SUMMARIZATION;
 import static android.app.Notification.EXTRA_BUILDER_APPLICATION_INFO;
 import static android.app.Notification.EXTRA_LARGE_ICON_BIG;
 import static android.app.Notification.EXTRA_SUB_TEXT;
@@ -9114,6 +9115,14 @@ public class NotificationManagerService extends SystemService {
                             + " without holding perm "
                             + Manifest.permission.SUBSTITUTE_NOTIFICATION_APP_NAME);
                 }
+            }
+        }
+
+        if (android.app.Flags.nmSummarizationAll()) {
+            if (!notification.supportsSummarization()
+                || !mAssistants.isAdjustmentAllowed(userId, KEY_SUMMARIZATION)
+                || !mAssistants.isAdjustmentAllowedForPackage(userId, KEY_SUMMARIZATION, pkg)) {
+                notification.extras.remove(EXTRA_APP_SUMMARIZATION);
             }
         }
 

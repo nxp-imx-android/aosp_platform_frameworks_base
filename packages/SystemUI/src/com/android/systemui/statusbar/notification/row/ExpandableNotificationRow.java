@@ -111,6 +111,7 @@ import com.android.systemui.statusbar.notification.BundleInteractionLogger;
 import com.android.systemui.statusbar.notification.ColorUpdateLogger;
 import com.android.systemui.statusbar.notification.FeedbackIcon;
 import com.android.systemui.statusbar.notification.LaunchAnimationParameters;
+import com.android.systemui.statusbar.notification.NmSummarizationAllFlag;
 import com.android.systemui.statusbar.notification.NmSummarizationUiFlag;
 import com.android.systemui.statusbar.notification.NotificationActivityStarter;
 import com.android.systemui.statusbar.notification.NotificationFadeAware;
@@ -929,8 +930,7 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
             }
         } else if (isCallLayout) {
             smallHeight = maxExpandedHeight;
-        } else if (NmSummarizationUiFlag.isEnabled()
-                && isMessagingLayout
+        } else if ((isMessagingLayout || NmSummarizationAllFlag.isEnabled())
                 && !TextUtils.isEmpty(summarization)) {
             smallHeight = mMaxSmallHeightWithSummarization;
         } else if (android.app.Flags.nmCollapsedLines()) {

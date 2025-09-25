@@ -28,8 +28,8 @@ import com.android.systemui.statusbar.RankingBuilder
 import com.android.systemui.statusbar.notification.NmSummarizationAllFlag
 import com.android.systemui.statusbar.notification.collection.NotifPipeline
 import com.android.systemui.statusbar.notification.collection.buildNotificationEntry
-import com.android.systemui.statusbar.notification.collection.listbuilder.OnBeforeRenderListListener
 import com.android.systemui.statusbar.notification.collection.makeEntryOfPeopleType
+import com.android.systemui.statusbar.notification.collection.notifcollection.NotifCollectionListener
 import com.android.systemui.testKosmos
 import com.android.systemui.util.mockito.mock
 import com.android.systemui.util.mockito.withArgCaptor
@@ -46,7 +46,7 @@ import org.mockito.MockitoAnnotations.initMocks
 @RunWithLooper
 class SummarizationCoordinatorTest : SysuiTestCase() {
     private lateinit var coordinator: SummarizationCoordinator
-    private lateinit var beforeRenderListListener: OnBeforeRenderListListener
+    private lateinit var notifCollectionListener: NotifCollectionListener
 
     @Mock private lateinit var pipeline: NotifPipeline
     private val kosmos = testKosmos()
@@ -56,8 +56,8 @@ class SummarizationCoordinatorTest : SysuiTestCase() {
         initMocks(this)
         coordinator = SummarizationCoordinator(mContext, kosmos.applicationCoroutineScope, mock())
         coordinator.attach(pipeline)
-        beforeRenderListListener = withArgCaptor {
-            verify(pipeline).addOnBeforeRenderListListener(capture())
+        notifCollectionListener = withArgCaptor {
+            verify(pipeline).addCollectionListener(capture())
         }
     }
 
@@ -68,7 +68,7 @@ class SummarizationCoordinatorTest : SysuiTestCase() {
         val entry = kosmos.makeEntryOfPeopleType()
         entry.setRanking(RankingBuilder(entry.ranking).setSummarization(summarization).build())
 
-        beforeRenderListListener.onBeforeRenderList(listOf(entry))
+        notifCollectionListener.onEntryAdded(entry)
 
         val processedSummary =
             entry.sbn.notification.extras.getCharSequence(EXTRA_SUMMARIZED_CONTENT)
@@ -90,21 +90,12 @@ class SummarizationCoordinatorTest : SysuiTestCase() {
     fun onBeforeRenderList_messagingStyleUpdateSummarizationToNull() {
         val entry = kosmos.makeEntryOfPeopleType()
         entry.setRanking(RankingBuilder(entry.ranking).setSummarization("hello").build())
-        beforeRenderListListener.onBeforeRenderList(listOf(entry))
+        notifCollectionListener.onEntryAdded(entry)
         assertThat(entry.sbn.notification.extras.getCharSequence(EXTRA_SUMMARIZED_CONTENT))
             .isNotNull()
 
         entry.setRanking(RankingBuilder(entry.ranking).setSummarization(null).build())
-        beforeRenderListListener.onBeforeRenderList(listOf(entry))
-        assertThat(entry.sbn.notification.extras.getCharSequence(EXTRA_SUMMARIZED_CONTENT)).isNull()
-    }
-
-    @Test
-    @EnableFlags(NmSummarizationAllFlag.FLAG_NAME)
-    fun onBeforeRenderList_messagingStyleWithoutSummarization() {
-        val entry = kosmos.makeEntryOfPeopleType()
-        beforeRenderListListener.onBeforeRenderList(listOf(entry))
-
+        notifCollectionListener.onEntryUpdated(entry)
         assertThat(entry.sbn.notification.extras.getCharSequence(EXTRA_SUMMARIZED_CONTENT)).isNull()
     }
 
@@ -117,10 +108,27 @@ class SummarizationCoordinatorTest : SysuiTestCase() {
                 modifyNotification(context).setSummarizedContent(summarization)
             }
 
-        beforeRenderListListener.onBeforeRenderList(listOf(entry))
+        notifCollectionListener.onEntryAdded(entry)
 
         val processedSummary =
             entry.sbn.notification.extras.getCharSequence(EXTRA_SUMMARIZED_CONTENT)
         assertThat(processedSummary.toString()).isEqualTo("   $summarization")
+        val checkSpans = SpannableStringBuilder(processedSummary)
+        assertThat(
+            checkSpans.getSpans(
+                /* queryStart = */ 0,
+                /* queryEnd = */ 2,
+                /* kind = */ ImageSpan::class.java,
+            )
+        ).isNotNull()
+    }
+
+    @Test
+    @EnableFlags(NmSummarizationAllFlag.FLAG_NAME)
+    fun onBeforeRenderList_messagingStyleWithoutSummarization() {
+        val entry = kosmos.makeEntryOfPeopleType()
+        notifCollectionListener.onEntryAdded(entry)
+
+        assertThat(entry.sbn.notification.extras.getCharSequence(EXTRA_SUMMARIZED_CONTENT)).isNull()
     }
 }
