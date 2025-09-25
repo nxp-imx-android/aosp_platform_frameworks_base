@@ -143,7 +143,7 @@
     <string name="collapse_menu_text" msgid="7515008122450342029">"Cerrar menú"</string>
     <string name="desktop_mode_app_header_chip_text" msgid="7617377295944971651">"<xliff:g id="APP_NAME">%1$s</xliff:g> (modo Ventanas)"</string>
     <string name="desktop_mode_maximize_menu_maximize_text" msgid="3275717276171114411">"Maximizar pantalla"</string>
-    <string name="desktop_mode_maximize_menu_snap_text" msgid="5673738963174074006">"Dividir pantalla"</string>
+    <string name="desktop_mode_maximize_menu_snap_text" msgid="5673738963174074006">"Cambiar tamaño"</string>
     <string name="desktop_mode_non_resizable_snap_text" msgid="3771776422751387878">"La aplicación no se puede mover aquí"</string>
     <string name="desktop_mode_talkback_state_opening" msgid="8505494249513712682">"Abriendo nueva ventana de la aplicación"</string>
     <string name="desktop_mode_talkback_state_closing" msgid="6791583518636526904">"Cerrando ventana de la aplicación"</string>
