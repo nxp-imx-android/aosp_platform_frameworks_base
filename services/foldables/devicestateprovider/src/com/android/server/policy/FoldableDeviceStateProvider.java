@@ -100,8 +100,6 @@ public final class FoldableDeviceStateProvider implements DeviceStateProvider,
 
     private final Sensor mHingeAngleSensor;
     private final DisplayManager mDisplayManager;
-    @Nullable
-    private final Sensor mHallSensor;
     private static final Predicate<FoldableDeviceStateProvider> ALLOWED = p -> true;
     @Nullable
     private final PowerManagerInternal mPowerManagerInternal;
@@ -113,8 +111,6 @@ public final class FoldableDeviceStateProvider implements DeviceStateProvider,
     private int mLastReportedState = INVALID_DEVICE_STATE_IDENTIFIER;
     @GuardedBy("mLock")
     private SensorEvent mLastHingeAngleSensorEvent = null;
-    @GuardedBy("mLock")
-    private SensorEvent mLastHallSensorEvent = null;
     @GuardedBy("mLock")
     private @PowerManager.ThermalStatus
     int mThermalStatus = PowerManager.THERMAL_STATUS_NONE;
@@ -130,13 +126,12 @@ public final class FoldableDeviceStateProvider implements DeviceStateProvider,
             @NonNull Context context,
             @NonNull SensorManager sensorManager,
             @NonNull Sensor hingeAngleSensor,
-            @Nullable Sensor hallSensor,
             @NonNull DisplayManager displayManager,
             @NonNull PowerManager powerManager,
             @NonNull PowerManagerInternal powerManagerInternal,
             @NonNull DeviceStatePredicateWrapper[] deviceStatePredicateWrappers) {
-        this(new FeatureFlagsImpl(), context, sensorManager, hingeAngleSensor, hallSensor,
-                displayManager, powerManager, powerManagerInternal, deviceStatePredicateWrappers);
+        this(new FeatureFlagsImpl(), context, sensorManager, hingeAngleSensor, displayManager,
+                powerManager, powerManagerInternal, deviceStatePredicateWrappers);
     }
 
     @VisibleForTesting
@@ -145,7 +140,6 @@ public final class FoldableDeviceStateProvider implements DeviceStateProvider,
             @NonNull Context context,
             @NonNull SensorManager sensorManager,
             @NonNull Sensor hingeAngleSensor,
-            @Nullable Sensor hallSensor,
             @NonNull DisplayManager displayManager,
             @NonNull PowerManager powerManager,
             @NonNull PowerManagerInternal powerManagerInternal,
@@ -154,16 +148,12 @@ public final class FoldableDeviceStateProvider implements DeviceStateProvider,
                 "Device state configurations array must not be empty");
 
         mHingeAngleSensor = hingeAngleSensor;
-        mHallSensor = hallSensor;
         mDisplayManager = displayManager;
         mConfigurations = deviceStatePredicateWrappers;
         mPowerManagerInternal = powerManagerInternal;
         mIsDualDisplayBlockingEnabled = featureFlags.enableDualDisplayBlocking();
 
         sensorManager.registerListener(this, mHingeAngleSensor, SENSOR_DELAY_FASTEST);
-        if (hallSensor != null) {
-            sensorManager.registerListener(this, mHallSensor, SENSOR_DELAY_FASTEST);
-        }
 
         mOrderedStates = new DeviceState[deviceStatePredicateWrappers.length];
         for (int i = 0; i < deviceStatePredicateWrappers.length; i++) {
@@ -357,9 +347,7 @@ public final class FoldableDeviceStateProvider implements DeviceStateProvider,
     @Override
     public void onSensorChanged(SensorEvent event) {
         synchronized (mLock) {
-            if (mHallSensor != null && event.sensor == mHallSensor) {
-                mLastHallSensorEvent = event;
-            } else if (event.sensor == mHingeAngleSensor) {
+            if (event.sensor == mHingeAngleSensor) {
                 mLastHingeAngleSensorEvent = event;
             }
         }
@@ -386,7 +374,6 @@ public final class FoldableDeviceStateProvider implements DeviceStateProvider,
     @GuardedBy("mLock")
     private void dumpSensorValues() {
         Slog.i(TAG, "Sensor values:");
-        dumpSensorValues(mHallSensor, mLastHallSensorEvent);
         dumpSensorValues(mHingeAngleSensor, mLastHingeAngleSensorEvent);
         Slog.i(TAG, "isScreenOn: " + isScreenOn());
     }
@@ -465,8 +452,6 @@ public final class FoldableDeviceStateProvider implements DeviceStateProvider,
             writer.println("  mThermalStatus = " + mThermalStatus);
             writer.println("  mLastHingeAngleSensorEvent = " +
                     toSensorValueString(mHingeAngleSensor, mLastHingeAngleSensorEvent));
-            writer.println("  mLastHallSensorEvent = " +
-                    toSensorValueString(mHallSensor, mLastHallSensorEvent));
         }
 
         writer.println();
@@ -556,70 +541,6 @@ public final class FoldableDeviceStateProvider implements DeviceStateProvider,
             return new DeviceStatePredicateWrapper(deviceState, activeStatePredicate,
                     availabilityPredicate);
         }
-
-        /**
-         * Creates a device state configuration for a closed tent-mode aware state.
-         * <p>
-         * During tent mode:
-         * - The inner display is OFF
-         * - The outer display is ON
-         * - The device is partially unfolded (left and right edges could be on the table)
-         * In this mode the device the device so it could be used in a posture where both left
-         * and right edges of the unfolded device are on the table.
-         * <p>
-         * The predicate returns false after the hinge angle reaches
-         * {@code tentModeSwitchAngleDegrees}. Then it switches back only when the hinge angle
-         * becomes less than {@code maxClosedAngleDegrees}. Hinge angle is 0 degrees when the device
-         * is fully closed and 180 degrees when it is fully unfolded.
-         * <p>
-         * For example, when tentModeSwitchAngleDegrees = 90 and maxClosedAngleDegrees = 5 degrees:
-         *  - when unfolding the device from fully closed posture (last state == closed or it is
-         *    undefined yet) this state will become not matching after reaching the angle
-         *    of 90 degrees, it allows the device to switch the outer display to the inner display
-         *    only when reaching this threshold
-         *  - when folding (last state != 'closed') this state will become matching after reaching
-         *    the angle less than 5 degrees and when hall sensor detected that the device is closed,
-         *    so the switch from the inner display to the outer will become only when the device
-         *    is fully closed.
-         *
-         * @param deviceState {@link DeviceState} that corresponds to this state.
-         * @param minClosedAngleDegrees minimum (inclusive) hinge angle value for the closed state
-         * @param maxClosedAngleDegrees maximum (non-inclusive) hinge angle value for the closed
-         *                              state
-         * @param tentModeSwitchAngleDegrees the angle when this state should switch when unfolding
-         * @return device state configuration
-         */
-        public static DeviceStatePredicateWrapper createTentModeClosedState(
-                @NonNull DeviceState deviceState,
-                int minClosedAngleDegrees,
-                int maxClosedAngleDegrees,
-                int tentModeSwitchAngleDegrees
-        ) {
-            return new DeviceStatePredicateWrapper(deviceState,
-                    (stateContext) -> {
-                        final boolean hallSensorClosed = stateContext.isHallSensorClosed();
-                        final float hingeAngle = stateContext.getHingeAngle();
-                        final int lastState = stateContext.getLastReportedDeviceState();
-                        final boolean isScreenOn = stateContext.isScreenOn();
-
-                        final int switchingDegrees =
-                                isScreenOn ? tentModeSwitchAngleDegrees : maxClosedAngleDegrees;
-
-                        final int closedDeviceState = deviceState.getIdentifier();
-                        final boolean isLastStateClosed = lastState == closedDeviceState
-                                || lastState == INVALID_DEVICE_STATE_IDENTIFIER;
-
-                        final boolean shouldBeClosedBecauseTentMode = isLastStateClosed
-                                && hingeAngle >= minClosedAngleDegrees
-                                && hingeAngle < switchingDegrees;
-
-                        final boolean shouldBeClosedBecauseFullyShut = hallSensorClosed
-                                && hingeAngle >= minClosedAngleDegrees
-                                && hingeAngle < maxClosedAngleDegrees;
-
-                        return shouldBeClosedBecauseFullyShut || shouldBeClosedBecauseTentMode;
-                    });
-        }
     }
 
     /**
@@ -646,15 +567,6 @@ public final class FoldableDeviceStateProvider implements DeviceStateProvider,
     public float getHingeAngle() {
         synchronized (mLock) {
             return getSensorValue(mLastHingeAngleSensorEvent);
-        }
-    }
-
-    /**
-     * @return true if hall sensor detected that the device is closed (fully shut)
-     */
-    public boolean isHallSensorClosed() {
-        synchronized (mLock) {
-            return getSensorValue(mLastHallSensorEvent) > 0f;
         }
     }
 

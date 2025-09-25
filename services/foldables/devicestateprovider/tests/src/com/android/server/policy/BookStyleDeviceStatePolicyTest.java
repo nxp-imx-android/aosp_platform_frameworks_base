@@ -136,7 +136,6 @@ public final class BookStyleDeviceStatePolicyTest {
     public void setup() {
         MockitoAnnotations.initMocks(this);
 
-        mFakeFeatureFlags.setFlag(Flags.FLAG_ENABLE_FOLDABLES_POSTURE_BASED_CLOSED_STATE, true);
         mFakeFeatureFlags.setFlag(Flags.FLAG_ENABLE_DUAL_DISPLAY_BLOCKING, true);
         mFakeFeatureFlags.setFlag(Flags.FLAG_FORCE_FOLDABLES_TENT_MODE_WITH_SCREEN_WAKELOCK, true);
 
@@ -238,23 +237,12 @@ public final class BookStyleDeviceStatePolicyTest {
     }
 
     @Test
-    public void test_postureBasedClosedState_createPolicy_doesNotRegisterHallSensor() {
-        mFakeFeatureFlags.setFlag(Flags.FLAG_ENABLE_FOLDABLES_POSTURE_BASED_CLOSED_STATE, true);
+    public void test_createPolicy_doesNotRegisterHallSensor() {
         clearInvocations(mSensorManager);
 
         mInstrumentation.runOnMainSync(() -> mProvider = createProvider());
 
         verify(mSensorManager, never()).registerListener(any(), eq(mHallSensor), anyInt());
-    }
-
-    @Test
-    public void test_postureBasedClosedStateDisabled_createPolicy_registersHallSensor() {
-        mFakeFeatureFlags.setFlag(Flags.FLAG_ENABLE_FOLDABLES_POSTURE_BASED_CLOSED_STATE, false);
-        clearInvocations(mSensorManager);
-
-        mInstrumentation.runOnMainSync(() -> mProvider = createProvider());
-
-        verify(mSensorManager).registerListener(any(), eq(mHallSensor), anyInt());
     }
 
     @Test
@@ -911,8 +899,7 @@ public final class BookStyleDeviceStatePolicyTest {
 
     private DeviceStateProvider createProvider() {
         mPolicy = new BookStyleDeviceStatePolicy(mFakeFeatureFlags, mContext, mHingeAngleSensor,
-                mHallSensor, mLeftAccelerometer, mRightAccelerometer,
-                /* closeAngleDegrees= */ null);
+                mLeftAccelerometer, mRightAccelerometer, /* closeAngleDegrees= */ null);
         return mPolicy.getDeviceStateProvider();
     }
 

@@ -120,7 +120,6 @@ public final class FoldableDeviceStateProviderTest {
     private Context mContext;
     @Mock
     private InputSensorInfo mInputSensorInfo;
-    private Sensor mHallSensor;
     private Sensor mHingeAngleSensor;
     @Mock
     private DisplayManager mDisplayManager;
@@ -142,7 +141,6 @@ public final class FoldableDeviceStateProviderTest {
         MockitoAnnotations.initMocks(this);
         mFakeFeatureFlags.setFlag(Flags.FLAG_ENABLE_DUAL_DISPLAY_BLOCKING, true);
 
-        mHallSensor = new Sensor(mInputSensorInfo);
         mHingeAngleSensor = new Sensor(mInputSensorInfo);
     }
 
@@ -218,24 +216,6 @@ public final class FoldableDeviceStateProviderTest {
     }
 
     @Test
-    public void test_hallSensorUpdatedFirstTime_switchesToMatchingState() throws Exception {
-        createProvider(createConfig(createDeviceState(1, "ONE"),
-                        (c) -> !c.isHallSensorClosed()),
-                createConfig(createDeviceState(2, "TWO"),
-                        FoldableDeviceStateProvider::isHallSensorClosed));
-        Listener listener = mock(Listener.class);
-        mProvider.setListener(listener);
-        verify(listener, never()).onStateChanged(anyInt());
-        clearInvocations(listener);
-
-        // Hall sensor value '1f' is for the closed state
-        sendSensorEvent(mHallSensor, /* value= */ 1f);
-
-        verify(listener).onStateChanged(mIntegerCaptor.capture());
-        assertEquals(2, mIntegerCaptor.getValue().intValue());
-    }
-
-    @Test
     public void test_hingeAngleUpdatedSecondTime_switchesToMatchingState() throws Exception {
         createProvider(createConfig(createDeviceState(1, "ONE"),
                         (c) -> c.getHingeAngle() < 90f),
@@ -249,26 +229,6 @@ public final class FoldableDeviceStateProviderTest {
         clearInvocations(listener);
 
         sendSensorEvent(mHingeAngleSensor, /* value= */ 100f);
-
-        verify(listener).onStateChanged(mIntegerCaptor.capture());
-        assertEquals(2, mIntegerCaptor.getValue().intValue());
-    }
-
-    @Test
-    public void test_hallSensorUpdatedSecondTime_switchesToMatchingState() throws Exception {
-        createProvider(createConfig(createDeviceState(1, "ONE"),
-                        (c) -> !c.isHallSensorClosed()),
-                createConfig(createDeviceState(2, "TWO"),
-                        FoldableDeviceStateProvider::isHallSensorClosed));
-        sendSensorEvent(mHallSensor, /* value= */ 0f);
-        Listener listener = mock(Listener.class);
-        mProvider.setListener(listener);
-        verify(listener).onStateChanged(mIntegerCaptor.capture());
-        assertEquals(1, mIntegerCaptor.getValue().intValue());
-        clearInvocations(listener);
-
-        // Hall sensor value '1f' is for the closed state
-        sendSensorEvent(mHallSensor, /* value= */ 1f);
 
         verify(listener).onStateChanged(mIntegerCaptor.capture());
         assertEquals(2, mIntegerCaptor.getValue().intValue());
@@ -704,8 +664,8 @@ public final class FoldableDeviceStateProviderTest {
 
     private void createProvider(DeviceStatePredicateWrapper... configurations) {
         mProvider = new FoldableDeviceStateProvider(mFakeFeatureFlags, mContext, mSensorManager,
-                mHingeAngleSensor, mHallSensor, mDisplayManager, mPowerManager,
-                mPowerManagerInternal, configurations);
+                mHingeAngleSensor, mDisplayManager, mPowerManager, mPowerManagerInternal,
+                configurations);
         verify(mDisplayManager)
                 .registerDisplayListener(
                         mDisplayListenerCaptor.capture(),
