@@ -54,8 +54,8 @@ public class ParsedProviderUtils {
     @NonNull
     public static ParseResult<ParsedProvider> parseProvider(String[] separateProcesses,
             ParsingPackage pkg, Resources res, XmlResourceParser parser, int flags,
-            boolean useRoundIcon, @Nullable String defaultSplitName, @NonNull ParseInput input)
-            throws IOException, XmlPullParserException {
+            boolean useRoundIcon, @Nullable String defaultSplitName, @NonNull ParseInput input,
+            boolean runInPccSandbox) throws IOException, XmlPullParserException {
         String authority;
         boolean visibleToEphemeral;
 
@@ -129,6 +129,10 @@ public class ParsedProviderUtils {
                     .setInitOrder(sa.getInt(R.styleable.AndroidManifestProvider_initOrder, 0))
                     .setFlags(provider.getFlags() | flag(ProviderInfo.FLAG_SINGLE_USER,
                             R.styleable.AndroidManifestProvider_singleUser, sa));
+
+            if (runInPccSandbox) {
+                provider.setFlags(provider.getFlags() | ProviderInfo.FLAG_RUN_IN_PCC_SANDBOX);
+            }
 
             if (Flags.enableSystemUserOnlyForServicesAndProviders()) {
                 provider.setFlags(provider.getFlags() | flag(ProviderInfo.FLAG_SYSTEM_USER_ONLY,

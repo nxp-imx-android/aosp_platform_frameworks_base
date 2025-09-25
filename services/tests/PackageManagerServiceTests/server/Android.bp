@@ -109,6 +109,7 @@ android_test {
         ":PackageParserTestApp8",
         ":PackageParserTestApp9",
         ":PackageParserTestApp10",
+        ":PackageParserTestPcc",
     ],
     resource_zips: [":PackageManagerServiceServerTests_apks_as_resources"],
 

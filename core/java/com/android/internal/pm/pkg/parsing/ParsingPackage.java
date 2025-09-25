@@ -427,6 +427,13 @@ public interface ParsingPackage {
      */
     ParsingPackage setAlternateLauncherLabelResIds(int[] alternateLauncherLabelResIds);
 
+    /**
+     * Sets whether this application has any component that should run in
+     * the Private Compute Core sandbox.
+     * @see android.R.styleable#AndroidManifestPrivateCompute
+     */
+    ParsingPackage setHasPccComponents(boolean hasPccComponents);
+
     @CallSuper
     ParsedPackage hideAsParsed();
 

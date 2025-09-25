@@ -96,6 +96,14 @@ public class ServiceInfo extends ComponentInfo
     public static final int FLAG_ALLOW_SHARED_ISOLATED_PROCESS = 0x0010;
 
     /**
+     * Bit in {@link #flags} indicating if the service should run in the Private Compute Core
+     * sandbox.
+     * @see android.R.styleable#AndroidManifestPrivateCompute
+     * @hide
+     */
+    public static final int FLAG_RUN_IN_PCC_SANDBOX = 0x80000;
+
+    /**
      * Bit in {@link #flags} indicating if the service is visible to ephemeral applications.
      * @hide
      */

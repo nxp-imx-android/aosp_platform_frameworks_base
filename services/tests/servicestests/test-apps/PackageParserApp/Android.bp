@@ -159,3 +159,19 @@ android_test_helper_app {
     },
     manifest: "AndroidManifestApp10.xml",
 }
+
+android_test_helper_app {
+    name: "PackageParserTestPcc",
+    sdk_version: "current",
+    srcs: ["**/*.java"],
+    dex_preopt: {
+        enabled: false,
+    },
+    optimize: {
+        enabled: false,
+    },
+    flags_packages: [
+        "android.app.privatecompute.flags-aconfig",
+    ],
+    manifest: "AndroidManifestPcc.xml",
+}

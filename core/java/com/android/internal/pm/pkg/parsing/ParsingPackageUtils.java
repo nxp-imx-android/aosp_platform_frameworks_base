@@ -108,7 +108,6 @@ import com.android.internal.pm.pkg.component.ParsedInstrumentationUtils;
 import com.android.internal.pm.pkg.component.ParsedIntentInfo;
 import com.android.internal.pm.pkg.component.ParsedIntentInfoImpl;
 import com.android.internal.pm.pkg.component.ParsedIntentInfoUtils;
-import com.android.internal.pm.pkg.component.ParsedMainComponent;
 import com.android.internal.pm.pkg.component.ParsedPermission;
 import com.android.internal.pm.pkg.component.ParsedPermissionGroup;
 import com.android.internal.pm.pkg.component.ParsedPermissionUtils;
@@ -877,66 +876,16 @@ public class ParsingPackageUtils {
                 continue;
             }
 
-            ParsedMainComponent mainComponent = null;
-
             final ParseResult result;
             String tagName = parser.getName();
-            boolean isActivity = false;
-            switch (tagName) {
-                case "activity":
-                    isActivity = true;
-                    // fall-through
-                case "receiver":
-                    ParseResult<ParsedActivity> activityResult =
-                            ParsedActivityUtils.parseActivityOrReceiver(mSeparateProcesses, pkg,
-                                    res, parser, flags, sUseRoundIcon, defaultSplitName, input);
-                    if (activityResult.isSuccess()) {
-                        ParsedActivity activity = activityResult.getResult();
-                        if (isActivity) {
-                            pkg.addActivity(activity);
-                        } else {
-                            pkg.addReceiver(activity);
-                        }
-                        mainComponent = activity;
-                    }
-                    result = activityResult;
-                    break;
-                case "service":
-                    ParseResult<ParsedService> serviceResult = ParsedServiceUtils.parseService(
-                            mSeparateProcesses, pkg, res, parser, flags, sUseRoundIcon,
-                            defaultSplitName, input);
-                    if (serviceResult.isSuccess()) {
-                        ParsedService service = serviceResult.getResult();
-                        pkg.addService(service);
-                        mainComponent = service;
-                    }
-                    result = serviceResult;
-                    break;
-                case "provider":
-                    ParseResult<ParsedProvider> providerResult =
-                            ParsedProviderUtils.parseProvider(mSeparateProcesses, pkg, res, parser,
-                                    flags, sUseRoundIcon, defaultSplitName, input);
-                    if (providerResult.isSuccess()) {
-                        ParsedProvider provider = providerResult.getResult();
-                        pkg.addProvider(provider);
-                        mainComponent = provider;
-                    }
-                    result = providerResult;
-                    break;
-                case "activity-alias":
-                    activityResult = ParsedActivityUtils.parseActivityAlias(pkg, res, parser,
-                            sUseRoundIcon, defaultSplitName, input);
-                    if (activityResult.isSuccess()) {
-                        ParsedActivity activity = activityResult.getResult();
-                        pkg.addActivity(activity);
-                        mainComponent = activity;
-                    }
-
-                    result = activityResult;
-                    break;
-                default:
-                    result = parseSplitBaseAppChildTags(input, tagName, pkg, res, parser);
-                    break;
+            if (isMainComponentTag(tagName)) {
+                result = parseMainComponent(input, pkg, res, parser, tagName, defaultSplitName,
+                        flags, /*runInPccSandbox*/ false);
+            } else if (android.app.privatecompute.flags.Flags.enablePccFrameworkSupport()
+                    && tagName.equals("private-compute")) {
+                result = parsePccComponents(input, pkg, res, parser, defaultSplitName, flags);
+            } else {
+                result = parseSplitBaseAppChildTags(input, tagName, pkg, res, parser);
             }
 
             if (result.isError()) {
@@ -2315,93 +2264,57 @@ public class ParsingPackageUtils {
 
             final ParseResult result;
             String tagName = parser.getName();
-            boolean isActivity = false;
-            switch (tagName) {
-                case "activity":
-                    isActivity = true;
-                    // fall-through
-                case "receiver":
-                    if (shouldSkipComponents) {
-                        continue;
-                    }
-                    ParseResult<ParsedActivity> activityResult =
-                            ParsedActivityUtils.parseActivityOrReceiver(mSeparateProcesses, pkg,
-                                    res, parser, flags, sUseRoundIcon, null /*defaultSplitName*/,
-                                    input);
-
-                    if (activityResult.isSuccess()) {
-                        ParsedActivity activity = activityResult.getResult();
-                        if (isActivity) {
-                            hasActivityOrder |= (activity.getOrder() != 0);
-                            pkg.addActivity(activity);
-                        } else {
-                            hasReceiverOrder |= (activity.getOrder() != 0);
-                            pkg.addReceiver(activity);
+            if (isMainComponentTag(tagName)) {
+                if (shouldSkipComponents) {
+                    continue;
+                }
+                ParseResult<ParseMainComponentResult> mainComponentResult =
+                        parseMainComponent(input, pkg, res, parser, tagName,
+                                /*defaultSplitName*/ null, flags, /*runInPccSandbox*/ false);
+                if (mainComponentResult.isSuccess()) {
+                    ParseMainComponentResult parseResult = mainComponentResult.getResult();
+                    hasActivityOrder |= parseResult.mHasActivityOrder;
+                    hasReceiverOrder |= parseResult.mHasReceiverOrder;
+                    hasServiceOrder |= parseResult.mHasServiceOrder;
+                }
+                result = mainComponentResult;
+            } else {
+                switch (tagName) {
+                    case "apex-system-service":
+                        ParseResult<ParsedApexSystemService> systemServiceResult =
+                                ParsedApexSystemServiceUtils.parseApexSystemService(res,
+                                        parser, input);
+                        if (systemServiceResult.isSuccess()) {
+                            ParsedApexSystemService systemService =
+                                    systemServiceResult.getResult();
+                            pkg.addApexSystemService(systemService);
                         }
-                    }
 
-                    result = activityResult;
-                    break;
-                case "service":
-                    if (shouldSkipComponents) {
-                        continue;
-                    }
-                    ParseResult<ParsedService> serviceResult =
-                            ParsedServiceUtils.parseService(mSeparateProcesses, pkg, res, parser,
-                                    flags, sUseRoundIcon, null /*defaultSplitName*/,
-                                    input);
-                    if (serviceResult.isSuccess()) {
-                        ParsedService service = serviceResult.getResult();
-                        hasServiceOrder |= (service.getOrder() != 0);
-                        pkg.addService(service);
-                    }
-
-                    result = serviceResult;
-                    break;
-                case "provider":
-                    if (shouldSkipComponents) {
-                        continue;
-                    }
-                    ParseResult<ParsedProvider> providerResult =
-                            ParsedProviderUtils.parseProvider(mSeparateProcesses, pkg, res, parser,
-                                    flags, sUseRoundIcon, null /*defaultSplitName*/,
-                                    input);
-                    if (providerResult.isSuccess()) {
-                        pkg.addProvider(providerResult.getResult());
-                    }
-
-                    result = providerResult;
-                    break;
-                case "activity-alias":
-                    if (shouldSkipComponents) {
-                        continue;
-                    }
-                    activityResult = ParsedActivityUtils.parseActivityAlias(pkg, res,
-                            parser, sUseRoundIcon, null /*defaultSplitName*/,
-                            input);
-                    if (activityResult.isSuccess()) {
-                        ParsedActivity activity = activityResult.getResult();
-                        hasActivityOrder |= (activity.getOrder() != 0);
-                        pkg.addActivity(activity);
-                    }
-
-                    result = activityResult;
-                    break;
-                case "apex-system-service":
-                    ParseResult<ParsedApexSystemService> systemServiceResult =
-                            ParsedApexSystemServiceUtils.parseApexSystemService(res,
-                                    parser, input);
-                    if (systemServiceResult.isSuccess()) {
-                        ParsedApexSystemService systemService =
-                                systemServiceResult.getResult();
-                        pkg.addApexSystemService(systemService);
-                    }
-
-                    result = systemServiceResult;
-                    break;
-                default:
-                    result = parseBaseAppChildTag(input, tagName, pkg, res, parser, flags);
-                    break;
+                        result = systemServiceResult;
+                        break;
+                    case "private-compute":
+                        if (android.app.privatecompute.flags.Flags.enablePccFrameworkSupport()) {
+                            if (shouldSkipComponents) {
+                                continue;
+                            }
+                            ParseResult<ParseMainComponentResult> parsePccComponentsResult =
+                                    parsePccComponents(input, pkg, res, parser,
+                                            /*defaultSplitName*/ null, flags);
+                            if (parsePccComponentsResult.isSuccess()) {
+                                ParseMainComponentResult parseResult =
+                                        parsePccComponentsResult.getResult();
+                                hasActivityOrder |= parseResult.mHasActivityOrder;
+                                hasReceiverOrder |= parseResult.mHasReceiverOrder;
+                                hasServiceOrder |= parseResult.mHasServiceOrder;
+                            }
+                            result = parsePccComponentsResult;
+                            break;
+                        }
+                        // fall through if the flag isn't enabled
+                    default:
+                        result = parseBaseAppChildTag(input, tagName, pkg, res, parser, flags);
+                        break;
+                }
             }
 
             if (result.isError()) {
@@ -2590,6 +2503,132 @@ public class ParsingPackageUtils {
             default:
                 return ParsingUtils.unknownTag("<application>", pkg, parser, input);
         }
+    }
+
+    private boolean isMainComponentTag(String tag) {
+        return tag.equals("activity") || tag.equals("service") || tag.equals("receiver")
+                || tag.equals("provider") || tag.equals("activity-alias");
+    }
+
+    @NonNull
+    private ParseResult<ParseMainComponentResult> parseMainComponent(ParseInput input,
+            ParsingPackage pkg, Resources res, XmlResourceParser parser, String tagName,
+            @Nullable String defaultSplitName, int flags, boolean runInPccSandbox)
+            throws XmlPullParserException, IOException {
+        final ParseMainComponentResult resultToReturn = new ParseMainComponentResult();
+        final ParseResult parseResult;
+        boolean isActivity = false;
+        switch (tagName) {
+            case "activity":
+                isActivity = true;
+                // fall-through
+            case "receiver":
+                ParseResult<ParsedActivity> activityResult =
+                        ParsedActivityUtils.parseActivityOrReceiver(mSeparateProcesses, pkg,
+                                res, parser, flags, sUseRoundIcon, defaultSplitName,
+                                input, runInPccSandbox);
+
+                if (activityResult.isSuccess()) {
+                    ParsedActivity activity = activityResult.getResult();
+                    if (isActivity) {
+                        resultToReturn.mHasActivityOrder |= (activity.getOrder() != 0);
+                        pkg.addActivity(activity);
+                    } else {
+                        resultToReturn.mHasReceiverOrder |= (activity.getOrder() != 0);
+                        pkg.addReceiver(activity);
+                    }
+                }
+
+                parseResult = activityResult;
+                break;
+            case "service":
+                ParseResult<ParsedService> serviceResult =
+                        ParsedServiceUtils.parseService(mSeparateProcesses, pkg, res, parser,
+                                flags, sUseRoundIcon, defaultSplitName, input, runInPccSandbox);
+                if (serviceResult.isSuccess()) {
+                    ParsedService service = serviceResult.getResult();
+                    resultToReturn.mHasServiceOrder |= (service.getOrder() != 0);
+                    pkg.addService(service);
+                }
+
+                parseResult = serviceResult;
+                break;
+            case "provider":
+                ParseResult<ParsedProvider> providerResult =
+                        ParsedProviderUtils.parseProvider(mSeparateProcesses, pkg, res, parser,
+                                flags, sUseRoundIcon, defaultSplitName, input, runInPccSandbox);
+                if (providerResult.isSuccess()) {
+                    pkg.addProvider(providerResult.getResult());
+                }
+
+                parseResult = providerResult;
+                break;
+            case "activity-alias":
+                activityResult = ParsedActivityUtils.parseActivityAlias(pkg, res,
+                        parser, sUseRoundIcon, defaultSplitName, input, runInPccSandbox);
+                if (activityResult.isSuccess()) {
+                    ParsedActivity activity = activityResult.getResult();
+                    resultToReturn.mHasActivityOrder |= (activity.getOrder() != 0);
+                    pkg.addActivity(activity);
+                }
+
+                parseResult = activityResult;
+                break;
+            default:
+                throw new IllegalArgumentException("Unknown tag passed to parseMainComponent: "
+                        + tagName);
+        }
+        if (parseResult.isError()) {
+            return input.error(parseResult);
+        }
+        return input.success(resultToReturn);
+    }
+
+    @NonNull
+    private ParseResult<ParseMainComponentResult> parsePccComponents(ParseInput input,
+            ParsingPackage pkg, Resources res, XmlResourceParser parser,
+            @Nullable String defaultSplitName, int flags)
+            throws XmlPullParserException, IOException {
+        final int depth = parser.getDepth();
+        int type;
+        final ParseMainComponentResult resultToReturn = new ParseMainComponentResult();
+        while ((type = parser.next()) != XmlPullParser.END_DOCUMENT
+                && (type != XmlPullParser.END_TAG
+                || parser.getDepth() > depth)) {
+            if (type != XmlPullParser.START_TAG) {
+                continue;
+            }
+            if (sAconfigFlags.skipCurrentElement(pkg, parser)) {
+                XmlUtils.skipCurrentTag(parser);
+                continue;
+            }
+
+            final ParseResult currentParseResult;
+            String tagName = parser.getName();
+            if (isMainComponentTag(tagName)) {
+                ParseResult<ParseMainComponentResult> mainComponentResult =
+                        parseMainComponent(input, pkg, res, parser, tagName, defaultSplitName,
+                                flags, /*runInPccSandbox*/ true);
+                if (mainComponentResult.isSuccess()) {
+                    ParseMainComponentResult mainComponent = mainComponentResult.getResult();
+                    resultToReturn.mHasActivityOrder |= mainComponent.mHasActivityOrder;
+                    resultToReturn.mHasReceiverOrder |= mainComponent.mHasReceiverOrder;
+                    resultToReturn.mHasServiceOrder |= mainComponent.mHasServiceOrder;
+
+                    // set the package to indicate it has pcc components
+                    pkg.setHasPccComponents(true);
+                }
+                currentParseResult = mainComponentResult;
+            } else {
+                currentParseResult = ParsingUtils.unknownTag("<private-compute>", pkg, parser,
+                        input);
+            }
+
+            if (currentParseResult.isError()) {
+                return input.error(currentParseResult);
+            }
+        }
+        return input.success(resultToReturn);
     }
 
     @NonNull
@@ -3694,5 +3733,11 @@ public class ParsingPackageUtils {
     @android.ravenwood.annotation.RavenwoodKeep
     public static AconfigFlags getAconfigFlags() {
         return sAconfigFlags;
+    }
+
+    private static class ParseMainComponentResult {
+        boolean mHasActivityOrder = false;
+        boolean mHasReceiverOrder = false;
+        boolean mHasServiceOrder = false;
     }
 }
