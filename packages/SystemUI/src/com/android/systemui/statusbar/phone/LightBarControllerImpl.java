@@ -481,9 +481,7 @@ public class LightBarControllerImpl implements
     @Override
     public void onNavigationModeChanged(int mode) {
         mNavigationMode = mode;
-        if (android.view.accessibility.Flags.lightBarUpdateButtonTintOnNavModeChange()) {
-            updateNavigation();
-        }
+        updateNavigation();
     }
 
     /** Injectable factory for creating a {@link LightBarControllerImpl}. */
