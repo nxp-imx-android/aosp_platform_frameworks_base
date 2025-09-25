@@ -194,6 +194,13 @@ flag {
 }
 
 flag {
+    name: "dual_shade"
+    namespace: "systemui"
+    description: "Enables the Dual Shade (go/bc25-dual-shade-design)."
+    bug: "337259436"
+}
+
+flag {
     name: "visual_interruptions_refactor"
     namespace: "systemui"
     description: "Enables the refactored version of the code to decide when notifications "
