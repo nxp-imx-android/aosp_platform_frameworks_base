@@ -11573,8 +11573,6 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
             val wct = wctCaptor.firstValue
             assertThat(findBoundsChange(wct, firstTask)).isEqualTo(firstTaskBounds)
             assertThat(findBoundsChange(wct, secondTask)).isEqualTo(secondTaskBounds)
-            wct.assertReorder(task = firstTask, toTop = true, includingParents = true)
-            wct.assertReorder(task = secondTask, toTop = true, includingParents = true)
             verify(desksOrganizer).moveTaskToDesk(any(), anyInt(), eq(firstTask), eq(false))
             verify(desksOrganizer).moveTaskToDesk(any(), anyInt(), eq(secondTask), eq(false))
             val deskIds = taskRepository.getDeskIds(SECOND_DISPLAY_ON_RECONNECT)

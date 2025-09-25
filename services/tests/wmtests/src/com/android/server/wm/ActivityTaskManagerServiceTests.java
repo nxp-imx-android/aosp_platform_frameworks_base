@@ -649,19 +649,31 @@ public class ActivityTaskManagerServiceTests extends WindowTestsBase {
     @Test
     public void testSetLockScreenShownWithAlwaysUnlockedVirtualDisplay() {
         assertEquals(Display.DEFAULT_DISPLAY, mRootWindowContainer.getChildAt(0).getDisplayId());
+        final KeyguardController keyguardController = mSupervisor.getKeyguardController();
 
+        // The default display is locked before creating the virtual display
+        mAtm.setLockScreenShown(true, true);
+
+        // Create the virtual display
         DisplayInfo displayInfo = new DisplayInfo();
         displayInfo.copyFrom(mDisplayInfo);
         displayInfo.type = Display.TYPE_VIRTUAL;
         displayInfo.displayGroupId = Display.DEFAULT_DISPLAY_GROUP + 1;
         displayInfo.flags = Display.FLAG_OWN_DISPLAY_GROUP | Display.FLAG_ALWAYS_UNLOCKED;
         DisplayContent newDisplay = createNewDisplay(displayInfo);
-        final KeyguardController keyguardController = mSupervisor.getKeyguardController();
 
-        // Make sure we're starting out with 2 unlocked displays
         assertEquals(2, mRootWindowContainer.getChildCount());
+        assertTrue(mDefaultDisplay.isKeyguardLocked());
+        assertFalse(newDisplay.isKeyguardLocked());
+
+        // Unlock the default display (this should have no effect for FLAG_ALWAYS_UNLOCKED)
+        mAtm.keyguardGoingAway(0x0);
+        mAtm.setLockScreenShown(false, false);
+
+        // Make sure we now have both displays unlocked
         mRootWindowContainer.forAllDisplays(displayContent -> {
             assertFalse(displayContent.isKeyguardLocked());
+            assertFalse(displayContent.isKeyguardGoingAway());
             assertFalse(keyguardController.isAodShowing(displayContent.mDisplayId));
         });
 

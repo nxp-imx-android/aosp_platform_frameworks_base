@@ -612,14 +612,13 @@ class KeyguardController {
     private KeyguardDisplayState getDisplayState(int displayId) {
         KeyguardDisplayState state = mDisplayStates.get(displayId);
         if (state == null) {
-            state = new KeyguardDisplayState(mService, displayId);
-            if (displayId != DEFAULT_DISPLAY) {
+            final DisplayContent dc = mRootWindowContainer.getDisplayContent(displayId);
+
+            if (displayId == DEFAULT_DISPLAY || dc == null || dc.isKeyguardAlwaysUnlocked()) {
+                state = new KeyguardDisplayState(mService, displayId);
+            } else {
                 final KeyguardDisplayState defaultState = mDisplayStates.get(DEFAULT_DISPLAY);
-                if (defaultState != null) {
-                    state.mKeyguardShowing = defaultState.mKeyguardShowing;
-                    state.mAodShowing = defaultState.mAodShowing;
-                    state.mKeyguardGoingAway = defaultState.mKeyguardGoingAway;
-                }
+                state = new KeyguardDisplayState(mService, displayId, defaultState);
             }
             mDisplayStates.append(displayId, state);
         }
@@ -727,6 +726,16 @@ class KeyguardController {
         KeyguardDisplayState(ActivityTaskManagerService service, int displayId) {
             mService = service;
             mDisplayId = displayId;
+        }
+
+        KeyguardDisplayState(ActivityTaskManagerService service, int displayId,
+                @Nullable KeyguardDisplayState copyFrom) {
+            this(service, displayId);
+            if (copyFrom != null) {
+                mKeyguardShowing = copyFrom.mKeyguardShowing;
+                mAodShowing = copyFrom.mAodShowing;
+                mKeyguardGoingAway = copyFrom.mKeyguardGoingAway;
+            }
         }
 
         void onRemoved(@NonNull DisplayContent dc) {
