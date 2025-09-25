@@ -1694,14 +1694,14 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
                     topVisibleActivities.add(new ActivityAssistInfo(activity));
                 }
             };
-            final Consumer<Task> collectFromDisplay = leafTaskFragment -> {
-                if (!leafTaskFragment.isVisibleRequested()) {
+            final Consumer<Task> collectFromDisplay = rootTask -> {
+                if (!rootTask.isVisibleRequested()) {
                     return;
                 }
-                if (leafTaskFragment.getRootTask() == topFocusedRootTask) {
-                    leafTaskFragment.forAllActivities(collectFromFocusedRoot);
+                if (rootTask == topFocusedRootTask) {
+                    rootTask.forAllActivities(collectFromFocusedRoot);
                 } else {
-                    leafTaskFragment.forAllActivities(collectFromNonFocusedRoot);
+                    rootTask.forAllActivities(collectFromNonFocusedRoot);
                 }
             };
 
