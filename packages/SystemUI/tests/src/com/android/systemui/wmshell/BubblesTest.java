@@ -1673,7 +1673,8 @@ public class BubblesTest extends SysuiTestCase {
         final Bubble bubble = createBubble(workProfileUserId, workPkg);
         assertEquals(workProfileUserId, bubble.getUser().getIdentifier());
 
-        final Context context = setUpContextWithPackageManager(workPkg, null /* AppInfo */);
+        final Context context =
+                setUpContextWithPackageManager(workPkg, mock(ApplicationInfo.class));
         when(context.getResources()).thenReturn(mContext.getResources());
         final Context userContext = setUpContextWithPackageManager(workPkg,
                 mock(ApplicationInfo.class));

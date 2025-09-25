@@ -35,7 +35,6 @@ import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.ShortcutInfo;
 import android.content.res.Resources;
-import android.graphics.Bitmap;
 import android.graphics.Path;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.Icon;
@@ -55,6 +54,7 @@ import com.android.launcher3.icons.BubbleIconFactory;
 import com.android.wm.shell.bubbles.appinfo.BubbleAppInfoProvider;
 import com.android.wm.shell.bubbles.bar.BubbleBarExpandedView;
 import com.android.wm.shell.bubbles.bar.BubbleBarLayerView;
+import com.android.wm.shell.bubbles.model.BubbleIcon;
 import com.android.wm.shell.common.ComponentUtils;
 import com.android.wm.shell.shared.annotations.ShellBackgroundThread;
 import com.android.wm.shell.shared.annotations.ShellMainThread;
@@ -154,8 +154,7 @@ public class Bubble implements BubbleViewProvider {
     }
 
     private FlyoutMessage mFlyoutMessage;
-    // The developer provided image for the bubble
-    private Bitmap mBubbleBitmap;
+    private BubbleIcon mBubbleIcon;
     // The app badge for the bubble
     private BitmapInfo mBadgeBitmap;
     // App badge without any markings for important conversations
@@ -493,7 +492,8 @@ public class Bubble implements BubbleViewProvider {
                 getAppName(),
                 isImportantConversation(),
                 showAppBadge(),
-                getParcelableFlyoutMessage());
+                getParcelableFlyoutMessage(),
+                isApp());
     }
 
     /** Creates a parcelable flyout message to send to launcher. */
@@ -542,8 +542,8 @@ public class Bubble implements BubbleViewProvider {
     }
 
     @Override
-    public Bitmap getBubbleIcon() {
-        return mBubbleBitmap;
+    public BubbleIcon getBubbleIcon() {
+        return mBubbleIcon;
     }
 
     @Override
@@ -810,7 +810,7 @@ public class Bubble implements BubbleViewProvider {
 
         mBadgeBitmap = info.badgeBitmap;
         mRawBadgeBitmap = info.rawBadgeBitmap;
-        mBubbleBitmap = info.bubbleBitmap;
+        mBubbleIcon = info.bubbleIcon;
 
         mDotColor = info.dotColor;
 
