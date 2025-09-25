@@ -67,13 +67,14 @@ constructor(
                 isKeyguardShowing,
                 isDeviceProvisioned,
                 shadeDisplayId ->
-                determinePresentationType(isKeyguardShowing, isDeviceProvisioned).also { type ->
-                    debugLog(enabled = DEBUG, tag = TAG) {
-                        "Display ${display.displayId} - isKeyguardShowing: $isKeyguardShowing, " +
-                            "isDeviceProvisioned: $isDeviceProvisioned, " +
-                            "shadeDisplayId: $shadeDisplayId -> presentationType: $type"
+                determinePresentationType(isKeyguardShowing, isDeviceProvisioned, shadeDisplayId)
+                    .also { type ->
+                        debugLog(enabled = DEBUG, tag = TAG) {
+                            "Display ${display.displayId} - isKeyguardShowing: $isKeyguardShowing, " +
+                                "isDeviceProvisioned: $isDeviceProvisioned, " +
+                                "shadeDisplayId: $shadeDisplayId -> presentationType: $type"
+                        }
                     }
-                }
             }
             .distinctUntilChanged()
             .stateIn(displayCoroutineScope, Eagerly, NONE)
@@ -82,6 +83,7 @@ constructor(
     private fun determinePresentationType(
         isKeyguardShowing: Boolean,
         isDeviceProvisioned: Boolean,
+        shadeDisplayId: Int,
     ): WallpaperPresentationType {
         return when {
             !isDeviceProvisioned ->
@@ -91,7 +93,7 @@ constructor(
                     NONE
                 }
             isKeyguardShowing ->
-                if (keyguardDisplayManager.get().isKeyguardShowable(display)) {
+                if (keyguardDisplayManager.get().isKeyguardShowable(display, shadeDisplayId)) {
                     KEYGUARD
                 } else {
                     NONE
