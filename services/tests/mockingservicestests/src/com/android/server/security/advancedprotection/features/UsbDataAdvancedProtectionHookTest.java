@@ -562,6 +562,7 @@ public class UsbDataAdvancedProtectionHookTest {
                         eq(false));
         checkNotificationIntents(mNotificationCaptor.getValue());
         Notification notification = mNotificationCaptor.getValue();
+        assertEquals(Notification.VISIBILITY_PUBLIC, notification.visibility);
         assertEquals(expectedTitle, notification.extras.getString(Notification.EXTRA_TITLE));
         assertEquals(expectedText, notification.extras.getString(Notification.EXTRA_BIG_TEXT));
     }
@@ -610,6 +611,7 @@ public class UsbDataAdvancedProtectionHookTest {
         assertNotNull(mNotificationCaptor.getValue());
         checkNotificationIntents(mNotificationCaptor.getValue());
         Notification notification = mNotificationCaptor.getValue();
+        assertEquals(Notification.VISIBILITY_PUBLIC, notification.visibility);
         assertEquals("Data Title", notification.extras.getString(Notification.EXTRA_TITLE));
         assertEquals("Data Text", notification.extras.getString(Notification.EXTRA_BIG_TEXT));
     }
@@ -665,6 +667,7 @@ public class UsbDataAdvancedProtectionHookTest {
 
         checkNotificationIntents(mNotificationCaptor.getValue());
         Notification notification = mNotificationCaptor.getValue();
+        assertEquals(Notification.VISIBILITY_PUBLIC, notification.visibility);
         assertEquals(expectedTitle, notification.extras.getString(Notification.EXTRA_TITLE));
         assertEquals(
                 expectedText, notification.extras.getString(Notification.EXTRA_BIG_TEXT));
@@ -782,6 +785,7 @@ public class UsbDataAdvancedProtectionHookTest {
                         mNotificationCaptor.capture(),
                         any(UserHandle.class));
         Notification notification = mNotificationCaptor.getValue();
+        assertEquals(Notification.VISIBILITY_PUBLIC, notification.visibility);
         assertEquals(expectedTitle, notification.extras.getString(Notification.EXTRA_TITLE));
         assertEquals(
                 expectedText, notification.extras.getString(Notification.EXTRA_BIG_TEXT));
