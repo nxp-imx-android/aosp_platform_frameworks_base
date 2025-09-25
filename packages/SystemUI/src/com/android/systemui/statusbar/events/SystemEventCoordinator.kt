@@ -18,6 +18,7 @@ package com.android.systemui.statusbar.events
 
 import android.annotation.IntRange
 import android.content.Context
+import android.location.flags.Flags.locationIndicatorsAnimation
 import android.location.flags.Flags.locationIndicatorsEnabled
 import android.provider.DeviceConfig
 import android.provider.DeviceConfig.NAMESPACE_PRIVACY
@@ -184,7 +185,9 @@ constructor(
                             // For location-only, we show an animation if the flag is enabled. The
                             // 10-minute debounce is handled in filterOutExemptItems.
                             val shouldAnimateLocation =
-                                hasOnlyLocationItems && locationIndicatorsEnabled()
+                                hasOnlyLocationItems &&
+                                    locationIndicatorsEnabled() &&
+                                    locationIndicatorsAnimation()
 
                             isChipAnimationEnabled() &&
                                 (shouldAnimateCameraMic || shouldAnimateLocation)
