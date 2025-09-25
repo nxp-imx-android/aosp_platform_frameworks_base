@@ -25,12 +25,15 @@ import androidx.test.filters.SmallTest
 import com.android.systemui.Flags
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.ambient.touch.TouchHandler.TouchSession
+import com.android.systemui.communal.domain.interactor.communalSceneInteractor
 import com.android.systemui.communal.domain.interactor.communalSettingsInteractor
+import com.android.systemui.communal.shared.model.CommunalScenes
 import com.android.systemui.communal.ui.viewmodel.CommunalViewModel
 import com.android.systemui.flags.Flags.COMMUNAL_SERVICE_ENABLED
 import com.android.systemui.flags.andSceneContainer
 import com.android.systemui.flags.fakeFeatureFlagsClassic
 import com.android.systemui.kosmos.testScope
+import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.scene.data.repository.sceneContainerRepository
 import com.android.systemui.scene.domain.interactor.sceneInteractor
 import com.android.systemui.scene.ui.view.WindowRootView
@@ -58,7 +61,7 @@ import platform.test.runner.parameterized.Parameters
 @SmallTest
 @RunWith(ParameterizedAndroidJunit4::class)
 class ShadeTouchHandlerTest(flags: FlagsParameterization) : SysuiTestCase() {
-    private var kosmos = testKosmos()
+    private var kosmos = testKosmos().useUnconfinedTestDispatcher()
     private var mCentralSurfaces = mock<CentralSurfaces>()
     private var mShadeViewController = mock<ShadeViewController>()
     private var mDreamManager = mock<DreamManager>()
@@ -85,6 +88,7 @@ class ShadeTouchHandlerTest(flags: FlagsParameterization) : SysuiTestCase() {
                 mDreamManager,
                 communalViewModel,
                 kosmos.communalSettingsInteractor,
+                kosmos.communalSceneInteractor,
                 kosmos.sceneInteractor,
                 Optional.of(Provider<WindowRootView> { windowRootView }),
                 TOUCH_HEIGHT,
@@ -112,7 +116,7 @@ class ShadeTouchHandlerTest(flags: FlagsParameterization) : SysuiTestCase() {
 
     // Verifies that a swipe down forwards captured touches to central surfaces for handling.
     @Test
-    @DisableFlags(Flags.FLAG_SCENE_CONTAINER)
+    @DisableFlags(Flags.FLAG_SCENE_CONTAINER, Flags.FLAG_RESTRICT_COMMUNAL_SHADE_TO_WHEN_IDLE)
     @EnableFlags(Flags.FLAG_COMMUNAL_HUB)
     fun testSwipeDown_communalEnabled_sentToCentralSurfaces() {
         kosmos.fakeFeatureFlagsClassic.set(COMMUNAL_SERVICE_ENABLED, true)
@@ -120,6 +124,31 @@ class ShadeTouchHandlerTest(flags: FlagsParameterization) : SysuiTestCase() {
         swipe(Direction.DOWN)
 
         // Both motion events are sent for central surfaces to process.
+        verify(mCentralSurfaces, times(2)).handleExternalShadeWindowTouch(any())
+    }
+
+    @Test
+    @DisableFlags(Flags.FLAG_SCENE_CONTAINER)
+    @EnableFlags(Flags.FLAG_COMMUNAL_HUB, Flags.FLAG_RESTRICT_COMMUNAL_SHADE_TO_WHEN_IDLE)
+    fun testSwipeDown_communalEnabled_restrictToIdleOnCommunal_sentToCentralSurfaces() {
+        kosmos.fakeFeatureFlagsClassic.set(COMMUNAL_SERVICE_ENABLED, true)
+
+        swipe(Direction.DOWN)
+
+        // Don't send motion events since we aren't idle on communal
+        verify(mCentralSurfaces, never()).handleExternalShadeWindowTouch(any())
+    }
+
+    @Test
+    @DisableFlags(Flags.FLAG_SCENE_CONTAINER)
+    @EnableFlags(Flags.FLAG_COMMUNAL_HUB, Flags.FLAG_RESTRICT_COMMUNAL_SHADE_TO_WHEN_IDLE)
+    fun testSwipeDown_communalEnabled_idleOnCommunal_sentToCentralSurfaces() {
+        kosmos.communalSceneInteractor.snapToScene(CommunalScenes.Communal, "test")
+        kosmos.fakeFeatureFlagsClassic.set(COMMUNAL_SERVICE_ENABLED, true)
+
+        swipe(Direction.DOWN)
+
+        // Don't send motion events since we aren't idle on communal
         verify(mCentralSurfaces, times(2)).handleExternalShadeWindowTouch(any())
     }
 
@@ -288,7 +317,10 @@ class ShadeTouchHandlerTest(flags: FlagsParameterization) : SysuiTestCase() {
         @JvmStatic
         @Parameters(name = "{0}")
         fun getParams(): List<FlagsParameterization> {
-            return FlagsParameterization.allCombinationsOf().andSceneContainer()
+            return FlagsParameterization.allCombinationsOf(
+                    Flags.FLAG_RESTRICT_COMMUNAL_SHADE_TO_WHEN_IDLE
+                )
+                .andSceneContainer()
         }
     }
 }
