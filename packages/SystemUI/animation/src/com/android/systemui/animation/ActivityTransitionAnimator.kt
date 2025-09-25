@@ -67,7 +67,7 @@ import com.android.systemui.animation.ActivityTransitionAnimator.Companion.LONG_
 import com.android.systemui.animation.ActivityTransitionAnimator.Companion.TRANSITION_TIMEOUT
 import com.android.systemui.animation.TransitionAnimator.Companion.toTransitionState
 import com.android.systemui.animation.TransitionAnimator.Controller
-import com.android.window.flags.Flags.enableCompatuiSysuiLauncherFix;
+import com.android.window.flags.Flags.enableCompatuiSysuiLauncherFix
 import com.android.wm.shell.shared.IShellTransitions
 import com.android.wm.shell.shared.ShellTransitions
 import com.android.wm.shell.shared.TransitionUtil
@@ -373,21 +373,18 @@ constructor(
         intentStarter: ((RemoteTransition?) -> Int)? = null,
         intentStarterLegacy: ((RemoteAnimationAdapter?) -> Int)? = null,
     ) {
+        val callback = validateCallback()
+        val hideKeyguardWithAnimation = callback.isOnKeyguard() && !showOverLockscreen
+
         if (intentStarter != null) {
             val cookie = controller?.transitionCookie
             if (cookie == null || scope == null || !animate) {
                 Log.i(TAG, "Starting intent with no animation")
                 intentStarter(null)
                 controller?.callOnIntentStartedOnMainThread(willAnimate = false)
+                if (hideKeyguardWithAnimation) callback.hideKeyguardWithAnimation(null)
                 return
             }
-
-            val callback =
-                this.callback
-                    ?: throw IllegalStateException(
-                        "ActivityTransitionAnimator.callback must be set before using this animator"
-                    )
-            val hideKeyguardWithAnimation = callback.isOnKeyguard() && !showOverLockscreen
 
             val (launchTransition, returnTransition) =
                 registerEphemeralTransitions(
@@ -434,11 +431,9 @@ constructor(
                 Log.i(TAG, "Starting intent with no animation")
                 intentStarterLegacy(null)
                 controller?.callOnIntentStartedOnMainThread(willAnimate = false)
+                if (hideKeyguardWithAnimation) callback.hideKeyguardWithAnimation(null)
                 return
             }
-
-            val callback = validateCallback()
-            val hideKeyguardWithAnimation = callback.isOnKeyguard() && !showOverLockscreen
 
             val runner = createEphemeralRunner(controller)
             val runnerDelegate = runner.delegate
@@ -532,7 +527,7 @@ constructor(
             Log.d(
                 TAG,
                 "Calling controller.onIntentStarted(willAnimate=$willAnimate) " +
-                        "[controller=$controller]",
+                    "[controller=$controller]",
             )
         }
         controller.onIntentStarted(willAnimate)
@@ -1002,7 +997,7 @@ constructor(
             "New usages should call the overload above",
             ReplaceWith("hideKeyguardWithAnimation(transition)"),
         )
-        fun hideKeyguardWithAnimation(runner: IRemoteAnimationRunner) {
+        fun hideKeyguardWithAnimation(runner: IRemoteAnimationRunner?) {
             throw UnsupportedOperationException()
         }
 

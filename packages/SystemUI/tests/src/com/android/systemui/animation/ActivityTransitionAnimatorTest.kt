@@ -291,6 +291,8 @@ class ActivityTransitionAnimatorTest : SysuiTestCase() {
     @Test
     fun startIntentWithAnimationDoesNotAnimate_ifCookieIsNull() {
         kosmos.runTest {
+            whenever(callback.isOnKeyguard()).thenReturn(true)
+
             val controller = createController()
             var startedIntent = false
             var originTransition: RemoteTransition? = null
@@ -306,6 +308,7 @@ class ActivityTransitionAnimatorTest : SysuiTestCase() {
             assertThat(startedIntent).isTrue()
             assertThat(originTransition).isNull()
             verify(controller).onIntentStarted(willAnimate = false)
+            verify(callback).hideKeyguardWithAnimation(null)
         }
     }
 
