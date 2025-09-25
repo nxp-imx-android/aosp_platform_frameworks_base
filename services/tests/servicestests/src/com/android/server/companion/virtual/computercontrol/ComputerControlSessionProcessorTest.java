@@ -55,7 +55,6 @@ import android.os.UserManager;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
 import android.platform.test.flag.junit.SetFlagsRule;
-import android.view.Surface;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.platform.app.InstrumentationRegistry;
@@ -82,17 +81,14 @@ public class ComputerControlSessionProcessorTest {
 
     private static final int CALLBACK_TIMEOUT_MS = 1_000;
     private static final String PACKAGE_NAME_PERMISSION_CONTROLLER = "permission.controller";
+    private static final String TARGET_PACKAGE = "com.android.foo";
     private static final int CALLING_USER_ID = 100;
     private static final AttributionSource ATTRIBUTION_SOURCE = new AttributionSource(
             UserHandle.getUid(CALLING_USER_ID, 0), "com.package", "tag");
     private static final ComputerControlSessionParams PARAMS =
             new ComputerControlSessionParams.Builder()
                     .setName(ComputerControlSessionTest.class.getSimpleName())
-                    .setDisplayDpi(100)
-                    .setDisplayHeightPx(200)
-                    .setDisplayWidthPx(300)
-                    .setDisplaySurface(new Surface())
-                    .setDisplayAlwaysUnlocked(true)
+                    .setTargetPackageNames(List.of(TARGET_PACKAGE))
                     .build();
 
     @Rule
@@ -122,7 +118,6 @@ public class ComputerControlSessionProcessorTest {
     @Captor
     private ArgumentCaptor<IComputerControlSession> mSessionArgumentCaptor;
 
-    private Context mContext;
     private ComputerControlSessionProcessor mProcessor;
 
     private AutoCloseable mMockitoSession;
@@ -137,12 +132,12 @@ public class ComputerControlSessionProcessorTest {
         LocalServices.removeServiceForTest(UserManagerInternal.class);
         LocalServices.addService(UserManagerInternal.class, mUserManagerInternal);
 
-        mContext = spy(new ContextWrapper(
+        Context context = spy(new ContextWrapper(
                 InstrumentationRegistry.getInstrumentation().getTargetContext()));
-        when(mContext.getSystemService(Context.KEYGUARD_SERVICE)).thenReturn(mKeyguardManager);
-        when(mContext.getSystemService(Context.APP_OPS_SERVICE)).thenReturn(mAppOpsManager);
-        when(mContext.getSystemService(Context.USER_SERVICE)).thenReturn(mUserManager);
-        when(mContext.getPackageManager()).thenReturn(mPackageManager);
+        when(context.getSystemService(Context.KEYGUARD_SERVICE)).thenReturn(mKeyguardManager);
+        when(context.getSystemService(Context.APP_OPS_SERVICE)).thenReturn(mAppOpsManager);
+        when(context.getSystemService(Context.USER_SERVICE)).thenReturn(mUserManager);
+        when(context.getPackageManager()).thenReturn(mPackageManager);
 
         when(mUserManager.getUserInfo(CALLING_USER_ID))
                 .thenReturn(new UserInfo(
@@ -153,13 +148,14 @@ public class ComputerControlSessionProcessorTest {
                 .thenReturn(AppOpsManager.MODE_ALLOWED);
 
         when(mPackageManager.getPermissionControllerPackageName())
-                .thenReturn("permission.controller");
+                .thenReturn(PACKAGE_NAME_PERMISSION_CONTROLLER);
+        when(mPackageManager.getLaunchIntentForPackage(TARGET_PACKAGE)).thenReturn(new Intent());
 
         when(mVirtualDeviceFactory.createVirtualDevice(any(), any(), any(), any()))
                 .thenReturn(mVirtualDevice);
         when(mComputerControlSessionCallback.asBinder()).thenReturn(new Binder());
         mProcessor = new ComputerControlSessionProcessor(
-                mContext, mVirtualDeviceFactory, mPendingIntentFactory);
+                context, mVirtualDeviceFactory, mPendingIntentFactory);
     }
 
     @After
@@ -264,16 +260,8 @@ public class ComputerControlSessionProcessorTest {
     @EnableFlags(Flags.FLAG_COMPUTER_CONTROL_ACTIVITY_POLICY_STRICT)
     @Test
     public void validateParams_packageNamesAreValid() throws Exception {
-        String packageName = "package.name";
-        ComputerControlSessionParams params = new ComputerControlSessionParams.Builder()
-                .setName(ComputerControlSessionTest.class.getSimpleName())
-                .setTargetPackageNames(List.of(packageName))
-                .build();
-
-        when(mPackageManager.getLaunchIntentForPackage(packageName)).thenReturn(new Intent());
-
         mProcessor.processNewSessionRequest(
-                ATTRIBUTION_SOURCE, params, mComputerControlSessionCallback);
+                ATTRIBUTION_SOURCE, PARAMS, mComputerControlSessionCallback);
 
         verify(mComputerControlSessionCallback, timeout(CALLBACK_TIMEOUT_MS))
                 .onSessionCreated(anyInt(), any(), any());
@@ -356,11 +344,7 @@ public class ComputerControlSessionProcessorTest {
     private ComputerControlSessionParams generateUniqueParams(int index) {
         return new ComputerControlSessionParams.Builder()
                 .setName(PARAMS.getName() + index)
-                .setDisplayDpi(PARAMS.getDisplayDpi())
-                .setDisplayHeightPx(PARAMS.getDisplayHeightPx())
-                .setDisplayWidthPx(PARAMS.getDisplayWidthPx())
-                .setDisplaySurface(PARAMS.getDisplaySurface())
-                .setDisplayAlwaysUnlocked(PARAMS.isDisplayAlwaysUnlocked())
+                .setTargetPackageNames(PARAMS.getTargetPackageNames())
                 .build();
     }
 }

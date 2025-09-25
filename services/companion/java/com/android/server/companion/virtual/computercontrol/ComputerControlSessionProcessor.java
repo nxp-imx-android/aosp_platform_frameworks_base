@@ -48,7 +48,6 @@ import android.os.ResultReceiver;
 import android.os.UserHandle;
 import android.util.ArraySet;
 import android.util.Slog;
-import android.view.Display;
 
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
@@ -170,15 +169,6 @@ public class ComputerControlSessionProcessor {
             }
         }
 
-        if (!Flags.computerControlActivityPolicyStrict()) {
-            return;
-        }
-
-        // TODO(b/437849228): Should be non-null
-        if (params.getTargetPackageNames() == null || params.getTargetPackageNames().isEmpty()) {
-            return;
-        }
-
         // Ensure all packages the ComputerControl session should be able to launch are:
         // 1) Applications with a valid launcher Intent
         // 2) NOT PermissionController
@@ -245,13 +235,9 @@ public class ComputerControlSessionProcessor {
             mSessions.add(session);
         }
 
-        // If the client provided a surface, disable the screenshot API.
-        // TODO(b/439774796): Do not allow client-provided surface and dimensions.
-        final int displayId = params.getDisplaySurface() == null
-                ? session.getVirtualDisplayId()
-                : Display.INVALID_DISPLAY;
         try {
-            callback.onSessionCreated(displayId, session.getVirtualDisplayToken(), session);
+            callback.onSessionCreated(
+                    session.getVirtualDisplayId(), session.getVirtualDisplayToken(), session);
         } catch (RemoteException e) {
             Slog.e(TAG, "Failed to notify ComputerControlSession " + params.getName()
                     + " about session creation success");

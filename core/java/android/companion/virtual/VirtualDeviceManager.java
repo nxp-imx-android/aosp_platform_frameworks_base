@@ -255,7 +255,7 @@ public final class VirtualDeviceManager {
         Objects.requireNonNull(callback, "callback must not be null");
         try {
             IComputerControlSessionCallback callbackProxy =
-                    new ComputerControlSession.CallbackProxy(executor, callback);
+                    new ComputerControlSession.CallbackProxy(mContext, executor, callback);
             mService.requestComputerControlSession(
                     mContext.getAttributionSource(), params, callbackProxy);
         } catch (RemoteException e) {

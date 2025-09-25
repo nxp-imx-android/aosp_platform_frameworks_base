@@ -16,89 +16,45 @@
 
 package com.android.extensions.computercontrol;
 
-import android.accessibilityservice.AccessibilityServiceInfo;
 import android.annotation.CallbackExecutor;
 import android.annotation.IntRange;
-import android.app.ActivityOptions;
+import android.app.Activity;
 import android.companion.virtual.computercontrol.ComputerControlSession.Action;
 import android.companion.virtual.computercontrol.InteractiveMirrorDisplay;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
-import android.hardware.display.VirtualDisplay;
-import android.hardware.input.VirtualKeyEvent;
-import android.hardware.input.VirtualTouchEvent;
+import android.content.IntentSender;
 import android.media.Image;
-import android.os.Bundle;
 import android.view.Surface;
-import android.view.accessibility.AccessibilityDisplayProxy;
-import android.view.accessibility.AccessibilityEvent;
-import android.view.accessibility.AccessibilityManager;
 import android.view.accessibility.AccessibilityWindowInfo;
 import android.view.inputmethod.InputConnection;
 
-import androidx.annotation.GuardedBy;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
-import com.android.extensions.computercontrol.input.KeyEvent;
-import com.android.extensions.computercontrol.input.TouchEvent;
-
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
 
 /**
  * Computer control sessions are used to allow a computer of some sort to control applications on
  * the Android device.
  *
- * <p>Applications can be launched in the computer control session via
- * {@link #startActivity(Context, Intent)}, which can then be controlled with input events injected
- * via {@link #sendTouchEvent(TouchEvent)} and {@link #sendKeyEvent(KeyEvent)}.</p>
+ * <p>Applications can be launched in the computer control session and can then be controlled by
+ * injecting input events into the session.</p>
  *
  * <p>When the session is no longer used it should be closed by calling {@link #close()} to clean up
  * resources and reduce the system-wide impact computer control sessions can have.</p>
  */
 public final class ComputerControlSession implements AutoCloseable {
     private final android.companion.virtual.computercontrol.ComputerControlSession mSession;
-    private final Params mParams;
-    private final int mVirtualDisplayId;
-    private final AccessibilityManager mAccessibilityManager;
-    private final ComputerControlAccessibilityProxy mAccessibilityProxy;
-    private TouchListener mTouchListener = null;
 
     @VisibleForTesting(otherwise = VisibleForTesting.PACKAGE_PRIVATE)
     ComputerControlSession(
-            @NonNull android.companion.virtual.computercontrol.ComputerControlSession session,
-            @NonNull Params params, @NonNull AccessibilityManager accessibilityManager) {
-        mSession = Objects.requireNonNull(session);
-        mParams = Objects.requireNonNull(params);
-        mVirtualDisplayId = session.getVirtualDisplayId();
-        mAccessibilityManager = Objects.requireNonNull(accessibilityManager);
-        mAccessibilityProxy = new ComputerControlAccessibilityProxy(mVirtualDisplayId);
-        mAccessibilityManager.registerDisplayProxy(mAccessibilityProxy);
-    }
-
-    /**
-     * Returns the {@link Params} for this session.
-     */
-    @NonNull
-    public Params getParams() {
-        return mParams;
-    }
-
-    /**
-     * Launches an Activity in the computer control session. This is used to start an application in
-     * the {@link VirtualDisplay} of the ComputerControl environment.
-     */
-    public void startActivity(Context context, Intent intent) {
-        Bundle activityOptionsBundle =
-                ActivityOptions.makeBasic().setLaunchDisplayId(mVirtualDisplayId).toBundle();
-        context.startActivity(intent, activityOptionsBundle);
-        mAccessibilityProxy.resetStabilityState();
+            @NonNull android.companion.virtual.computercontrol.ComputerControlSession session) {
+        mSession = session;
     }
 
     /**
@@ -108,8 +64,7 @@ public final class ComputerControlSession implements AutoCloseable {
      * @see Params#getTargetPackageNames()
      */
     public void launchApplication(@NonNull String packageName) {
-        mSession.launchApplication(Objects.requireNonNull(packageName));
-        mAccessibilityProxy.resetStabilityState();
+        mSession.launchApplication(packageName);
     }
 
     /**
@@ -119,8 +74,7 @@ public final class ComputerControlSession implements AutoCloseable {
      * @see Params#getTargetPackageNames()
      */
     public void launchApplication(@NonNull ComponentName component) {
-        mSession.launchApplication(Objects.requireNonNull(component));
-        mAccessibilityProxy.resetStabilityState();
+        mSession.launchApplication(component);
     }
 
     /**
@@ -155,7 +109,6 @@ public final class ComputerControlSession implements AutoCloseable {
      */
     public void tap(@IntRange(from = 0) int x, @IntRange(from = 0) int y) {
         mSession.tap(x, y);
-        mAccessibilityProxy.resetStabilityState();
     }
 
     /**
@@ -169,7 +122,6 @@ public final class ComputerControlSession implements AutoCloseable {
             @IntRange(from = 0) int fromX, @IntRange(from = 0) int fromY,
             @IntRange(from = 0) int toX, @IntRange(from = 0) int toY) {
         mSession.swipe(fromX, fromY, toX, toY);
-        mAccessibilityProxy.resetStabilityState();
     }
 
     /**
@@ -177,49 +129,6 @@ public final class ComputerControlSession implements AutoCloseable {
      */
     public void longPress(@IntRange(from = 0) int x, @IntRange(from = 0) int y) {
         mSession.longPress(x, y);
-        mAccessibilityProxy.resetStabilityState();
-    }
-
-    /**
-     * Injects a {@link TouchEvent} into the computer control session.
-     */
-    public void sendTouchEvent(TouchEvent touchEvent) {
-        VirtualTouchEvent virtualTouchEvent =
-                new VirtualTouchEvent.Builder()
-                        .setX(touchEvent.getX())
-                        .setY(touchEvent.getY())
-                        .setPressure(touchEvent.getPressure())
-                        .setToolType(touchEvent.getToolType())
-                        .setAction(touchEvent.getAction())
-                        .setPointerId(touchEvent.getPointerId())
-                        .setEventTimeNanos(touchEvent.getEventTimeNanos())
-                        .setMajorAxisSize(touchEvent.getMajorAxisSize())
-                        .build();
-        mSession.sendTouchEvent(virtualTouchEvent);
-
-        mAccessibilityProxy.resetStabilityState();
-
-        if (mTouchListener != null) {
-            mTouchListener.onTouchEvent(touchEvent);
-        }
-    }
-
-    /**
-     * Injects a {@link KeyEvent} into the computer control session.
-     *
-     * @deprecated use {@link #insertText(String, boolean, boolean)} for injecting text into the
-     * text field and use {@link #performAction(int)} to perform actions like "back navigation".
-     */
-    @Deprecated
-    public void sendKeyEvent(KeyEvent keyEvent) {
-        VirtualKeyEvent virtualKeyEvent = new VirtualKeyEvent.Builder()
-                                                  .setKeyCode(keyEvent.getKeyCode())
-                                                  .setAction(keyEvent.getAction())
-                                                  .setEventTimeNanos(keyEvent.getEventTimeNanos())
-                                                  .build();
-        mSession.sendKeyEvent(virtualKeyEvent);
-
-        mAccessibilityProxy.resetStabilityState();
     }
 
     /**
@@ -236,7 +145,6 @@ public final class ComputerControlSession implements AutoCloseable {
      */
     public void insertText(@NonNull String text, boolean replaceExisting, boolean commit) {
         mSession.insertText(text, replaceExisting, commit);
-        mAccessibilityProxy.resetStabilityState();
     }
 
     /**
@@ -244,7 +152,6 @@ public final class ComputerControlSession implements AutoCloseable {
      */
     public void performAction(@Action int actionCode) {
         mSession.performAction(actionCode);
-        mAccessibilityProxy.resetStabilityState();
     }
 
     /**
@@ -252,7 +159,7 @@ public final class ComputerControlSession implements AutoCloseable {
      */
     @NonNull
     public List<AccessibilityWindowInfo> getAccessibilityWindows() {
-        return mAccessibilityProxy.getWindows();
+        return mSession.getAccessibilityWindows();
     }
 
     /**
@@ -260,30 +167,12 @@ public final class ComputerControlSession implements AutoCloseable {
      */
     public InteractiveMirror createInteractiveMirror(
             int width, int height, @NonNull Surface surface) {
-        Objects.requireNonNull(surface);
-
         InteractiveMirrorDisplay interactiveMirrorDisplay =
                 mSession.createInteractiveMirrorDisplay(width, height, surface);
         if (interactiveMirrorDisplay == null) {
             return null;
         }
         return new InteractiveMirror(interactiveMirrorDisplay);
-    }
-
-    /**
-     * Add a callback to be notified when the computer control session is potentially stable.
-     * @deprecated use {@link #setStabilityListener(StabilityListener, Executor)}
-     */
-    public void addStabilityHintCallback(long timeoutMs, @NonNull StabilityHintCallback callback) {
-        mAccessibilityProxy.registerStabilityHintCallback(timeoutMs, callback);
-    }
-
-    /**
-     * Remove a stability hint callback that was previously added.
-     * @deprecated use {@link #clearStabilityListener()}
-     */
-    public void removeStabilityHintCallback(@NonNull StabilityHintCallback callback) {
-        mAccessibilityProxy.removeStabilityHintCallback(callback);
     }
 
     /**
@@ -294,7 +183,6 @@ public final class ComputerControlSession implements AutoCloseable {
      */
     public void setStabilityListener(@NonNull @CallbackExecutor Executor executor,
             @NonNull StabilityListener listener) {
-        Objects.requireNonNull(listener);
         mSession.setStabilityListener(executor, listener::onSessionStable);
     }
 
@@ -307,71 +195,24 @@ public final class ComputerControlSession implements AutoCloseable {
     }
 
     /**
-     * Callback used to inform the session owner that the computer control session has potentially
-     * reached a stable state. This can be used as a hint to determine when an action that was
-     * performed, such as app launch, has completed or finished animating.
-     */
-    public interface StabilityHintCallback {
-        /**
-         * Called when the computer control session has potentially reached a stable state.
-         *
-         * @param timedOut True if the system was unable to determine the stability of the session
-         *                 within the timeout.
-         */
-        void onStabilityHint(boolean timedOut);
-    }
-
-    /**
      * Closes the ComputerControl session and release resources. The session can no longer be used
      * after calling this method.
      */
     @Override
     public void close() {
-        if (mSession.isValid()) {
-            mAccessibilityManager.unregisterDisplayProxy(mAccessibilityProxy);
-            mSession.close();
-        }
-    }
-
-    /**
-     * Sets a {@link TouchListener} for this session.
-     */
-    public void setTouchListener(@Nullable TouchListener listener) {
-        mTouchListener = listener;
-    }
-
-    /**
-     * Used for listening to any {@link TouchEvent} injected via this session.
-     */
-    public interface TouchListener {
-        /**
-         * Indicates that the given {@link TouchEvent} has been injected.
-         */
-        void onTouchEvent(@NonNull TouchEvent event);
+        mSession.close();
     }
 
     public static class Params {
         @NonNull private final Context mContext;
         @NonNull private final String mName;
         @NonNull private final List<String> mTargetPackageNames;
-        private final int mDisplayWidthPx;
-        private final int mDisplayHeightPx;
-        private final int mDisplayDpi;
-        @Nullable private final Surface mDisplaySurface;
-        private final boolean mIsDisplayAlwaysUnlocked;
 
         private Params(@NonNull Context context, @NonNull String name,
-                @NonNull List<String> targetPackageNames, int displayWidthPx,
-                int displayHeightPx, int displayDpi, @Nullable Surface displaySurface,
-                boolean isDisplayAlwaysUnlocked) {
+                @NonNull List<String> targetPackageNames) {
             mContext = context;
             mName = name;
             mTargetPackageNames = targetPackageNames;
-            mDisplayWidthPx = displayWidthPx;
-            mDisplayHeightPx = displayHeightPx;
-            mDisplayDpi = displayDpi;
-            mDisplaySurface = displaySurface;
-            mIsDisplayAlwaysUnlocked = isDisplayAlwaysUnlocked;
         }
 
         /**
@@ -397,55 +238,9 @@ public final class ComputerControlSession implements AutoCloseable {
          *
          * @see Builder#setTargetPackageNames(List)
          */
-        @Nullable  // TODO(b/437849228): Should be non-null
+        @NonNull
         public List<String> getTargetPackageNames() {
             return mTargetPackageNames;
-        }
-
-        /**
-         * Returns the display width to use for the computer control session.
-         *
-         * @see Builder#setDisplayWidthPx(int)
-         */
-        public int getDisplayWidthPx() {
-            return mDisplayWidthPx;
-        }
-
-        /**
-         * Returns the display height to use for the computer control session.
-         *
-         * @see Builder#setDisplayHeightPx(int)
-         */
-        public int getDisplayHeightPx() {
-            return mDisplayHeightPx;
-        }
-
-        /**
-         * Returns the display DPI to use for the computer control session.
-         *
-         * @see Builder#setDisplayDpi(int) (int)
-         */
-        public int getDisplayDpi() {
-            return mDisplayDpi;
-        }
-
-        /**
-         * Returns the {@link Surface} to attach to the computer control session.
-         *
-         * @see Builder#setDisplaySurface(Surface)
-         */
-        @Nullable
-        public Surface getDisplaySurface() {
-            return mDisplaySurface;
-        }
-
-        /**
-         * Returns if the Virtual Display created should always remain unlocked
-         *
-         * @see Builder#setDisplayAlwaysUnlocked(boolean)
-         */
-        public boolean isDisplayAlwaysUnlocked() {
-            return mIsDisplayAlwaysUnlocked;
         }
 
         /**
@@ -453,16 +248,8 @@ public final class ComputerControlSession implements AutoCloseable {
          */
         public static class Builder {
             @NonNull private final Context mContext;
-            @Nullable private String mName;
-            @Nullable  // TODO(b/437849228): Should be non-null
+            private String mName;
             private List<String> mTargetPackageNames = new ArrayList<>();
-            private int mDisplayWidthPx;
-            private int mDisplayHeightPx;
-            private int mDisplayDpi;
-            @Nullable private Surface mDisplaySurface;
-
-            // By default, the displays created are always unlocked
-            private boolean mIsDisplayAlwaysUnlocked = true;
 
             /**
              * Create a new Builder.
@@ -475,7 +262,7 @@ public final class ComputerControlSession implements AutoCloseable {
              * Set the name of the session. Only used internally and not shown to users.
              */
             @NonNull
-            public Builder setName(@Nullable String name) {
+            public Builder setName(@NonNull String name) {
                 mName = name;
                 return this;
             }
@@ -496,96 +283,31 @@ public final class ComputerControlSession implements AutoCloseable {
             }
 
             /**
-             * Set the width of the display used for the session.
-             */
-            @NonNull
-            public Builder setDisplayWidthPx(int displayWidthPx) {
-                if (displayWidthPx <= 0) {
-                    throw new IllegalArgumentException("Invalid display width");
-                }
-                mDisplayWidthPx = displayWidthPx;
-                return this;
-            }
-
-            /**
-             * Set the height of the display used for the session.
-             */
-            @NonNull
-            public Builder setDisplayHeightPx(int displayHeightPx) {
-                if (displayHeightPx <= 0) {
-                    throw new IllegalArgumentException("Invalid display height");
-                }
-                mDisplayHeightPx = displayHeightPx;
-                return this;
-            }
-
-            /**
-             * Set the DPI of the display used for the session.
-             */
-            @NonNull
-            public Builder setDisplayDpi(int dpi) {
-                if (dpi <= 0) {
-                    throw new IllegalArgumentException("Invalid display DPI");
-                }
-                mDisplayDpi = dpi;
-                return this;
-            }
-
-            /**
-             * Set the {@link Surface} of the display used for the session.
-             */
-            @NonNull
-            public Builder setDisplaySurface(@NonNull Surface displaySurface) {
-                if (displaySurface == null) {
-                    throw new NullPointerException("Missing display surface");
-                }
-                mDisplaySurface = displaySurface;
-                return this;
-            }
-
-            /**
-             * Set the created display to always remain unlocked
-             */
-            @NonNull
-            public Builder setDisplayAlwaysUnlocked(boolean isDisplayAlwaysUnlocked) {
-                mIsDisplayAlwaysUnlocked = isDisplayAlwaysUnlocked;
-                return this;
-            }
-
-            /**
-             * Build a computer control session. Will throw when required values are not set.
+             * Build a computer control session.
              */
             @NonNull
             public Params build() {
-                if (mContext == null) {
-                    throw new NullPointerException("Missing Context");
-                }
-                if (mName == null) {
-                    mName = "ComputerControl-" + mContext.getPackageName();
-                }
-                if (mDisplaySurface != null) {
-                    if (mDisplayWidthPx <= 0) {
-                        throw new IllegalArgumentException(
-                                "Display width must be positive if surface is set");
-                    }
-                    if (mDisplayHeightPx <= 0) {
-                        throw new IllegalArgumentException(
-                                "Display height must be positive if surface is set");
-                    }
-                    if (mDisplayDpi <= 0) {
-                        throw new IllegalArgumentException(
-                                "Display DPI must be positive if surface is set");
-                    }
-                }
-
-                return new Params(mContext, mName, mTargetPackageNames, mDisplayWidthPx,
-                        mDisplayHeightPx, mDisplayDpi, mDisplaySurface, mIsDisplayAlwaysUnlocked);
+                return new Params(mContext, mName, mTargetPackageNames);
             }
         }
     }
 
     /** Callback for computer control session events. */
     public interface Callback {
+
+        /**
+         * Called when the session request needs to approved by the user.
+         *
+         * <p>Applications should launch the {@link Activity} "encapsulated" in {@code intentSender}
+         * {@link IntentSender} object by calling
+         * {@link Activity#startIntentSenderForResult(IntentSender, int, Intent, int, int, int)} or
+         * {@link Context#startIntentSender(IntentSender, Intent, int, int, int)}
+         *
+         * @param intentSender an {@link IntentSender} which applications should use to launch
+         *   the UI for the user to allow the creation of the session.
+         */
+        void onSessionPending(@NonNull IntentSender intentSender);
+
         /** Called when the session has been successfully created. */
         void onSessionCreated(@NonNull ComputerControlSession session);
 
@@ -608,78 +330,5 @@ public final class ComputerControlSession implements AutoCloseable {
     public interface StabilityListener {
         /** Called when the computer control session is considered stable. */
         void onSessionStable();
-    }
-
-    @VisibleForTesting
-    static class ComputerControlAccessibilityProxy extends AccessibilityDisplayProxy {
-        @Nullable
-        @GuardedBy("this")
-        private StabilityHintCallbackTracker mStabilityHintCallbackTracker;
-
-        ComputerControlAccessibilityProxy(int displayId) {
-            super(displayId, Executors.newSingleThreadExecutor(), getAccessibilityServiceInfos());
-        }
-
-        @Override
-        public void onAccessibilityEvent(@NonNull AccessibilityEvent event) {
-            synchronized (this) {
-                if (mStabilityHintCallbackTracker == null) {
-                    return;
-                }
-                mStabilityHintCallbackTracker.onAccessibilityEvent();
-            }
-        }
-
-        @VisibleForTesting
-        static List<AccessibilityServiceInfo> getAccessibilityServiceInfos() {
-            AccessibilityServiceInfo info = new AccessibilityServiceInfo();
-            info.flags = AccessibilityServiceInfo.FLAG_RETRIEVE_INTERACTIVE_WINDOWS
-                    | AccessibilityServiceInfo.FLAG_INCLUDE_NOT_IMPORTANT_VIEWS
-                    | AccessibilityServiceInfo.FLAG_REPORT_VIEW_IDS;
-            info.eventTypes = AccessibilityEvent.TYPES_ALL_MASK;
-            return List.of(info);
-        }
-
-        /**
-         * Called whenever something significant happens in the ComputerControl session (new input
-         * events, new apps launched, etc.).
-         */
-        public void resetStabilityState() {
-            synchronized (this) {
-                if (mStabilityHintCallbackTracker != null) {
-                    mStabilityHintCallbackTracker.resetStabilityState();
-                }
-            }
-        }
-
-        /**
-         * Register a new {@link StabilityHintCallback}
-         */
-        public void registerStabilityHintCallback(
-                long timeoutMs, @NonNull StabilityHintCallback callback) {
-            synchronized (this) {
-                if (mStabilityHintCallbackTracker != null) {
-                    throw new IllegalStateException(
-                            "A stability hint callback is already added; Only a single callback is "
-                            + "supported.");
-                }
-                mStabilityHintCallbackTracker =
-                        new StabilityHintCallbackTracker(callback, timeoutMs);
-            }
-        }
-
-        /**
-         * Unregister a {@link StabilityHintCallback}
-         */
-        public void removeStabilityHintCallback(@NonNull StabilityHintCallback callback) {
-            synchronized (this) {
-                if (mStabilityHintCallbackTracker == null
-                        || mStabilityHintCallbackTracker.getCallback() != callback) {
-                    throw new IllegalArgumentException("The callback was not previously added.");
-                }
-                mStabilityHintCallbackTracker.close();
-                mStabilityHintCallbackTracker = null;
-            }
-        }
     }
 }
