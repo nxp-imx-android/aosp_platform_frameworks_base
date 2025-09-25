@@ -2,13 +2,6 @@ package: "com.android.server.power.hint"
 container: "system"
 
 flag {
-    name: "reset_on_fork_enabled"
-    namespace: "game"
-    description: "Set reset_on_fork flag."
-    bug: "370988407"
-}
-
-flag {
     name: "use_sysui_session_tag"
     namespace: "window_surfaces"
     description: "Use SessionTag.SYSUI for system ui and launcher processes."
