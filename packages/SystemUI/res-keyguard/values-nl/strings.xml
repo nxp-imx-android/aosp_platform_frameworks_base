@@ -72,7 +72,7 @@
     <string name="kg_prompt_title_after_secure_lock_device" msgid="2646423690908627259">"Tweestapsverificatie"</string>
     <string name="kg_prompt_subtitle_for_secure_lock_device_biometric_auth_fingerprint" msgid="6596633555720510932">"Ontgrendelen met vingerafdruk gebruiken"</string>
     <string name="kg_prompt_subtitle_for_secure_lock_device_biometric_auth_face" msgid="4550701327607935441">"Ontgrendelen via gezichtsherkenning gebruiken"</string>
-    <string name="kg_prompt_subtitle_for_secure_lock_device_biometric_auth_coex" msgid="2093026058274456330">"Ontgrendelen met vingerafdruk of via gezichtsherkenning gebruiken"</string>
+    <string name="kg_prompt_subtitle_for_secure_lock_device_biometric_auth_coex" msgid="2093026058274456330">"Ontgrendelen met vingerafdruk of via gezichtsherkenning"</string>
     <string name="kg_prompt_after_user_lockdown_pin" msgid="5374732179740050373">"Na lockdown is de pincode vereist"</string>
     <string name="kg_prompt_after_user_lockdown_password" msgid="9097968458291129795">"Na lockdown is het wachtwoord vereist"</string>
     <string name="kg_prompt_after_user_lockdown_pattern" msgid="215072203613597906">"Na lockdown is het patroon vereist"</string>
