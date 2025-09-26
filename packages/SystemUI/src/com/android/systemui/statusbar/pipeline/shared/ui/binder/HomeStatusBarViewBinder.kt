@@ -24,6 +24,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.android.app.animation.Interpolators
+import com.android.systemui.Flags
 import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent.PerDisplaySingleton
 import com.android.systemui.lifecycle.repeatWhenAttached
 import com.android.systemui.res.R
@@ -281,7 +282,11 @@ constructor(
                         }
                     }
 
-                    launch { viewModel.isClockVisible.collect { clockView.adjustVisibility(it) } }
+                    if (!Flags.clockModernization()) {
+                        launch {
+                            viewModel.isClockVisible.collect { clockView.adjustVisibility(it) }
+                        }
+                    }
 
                     launch {
                         viewModel.isNotificationIconContainerVisible.collect {
