@@ -459,6 +459,14 @@ constructor(
 
     fun bind(parent: View): DisposableHandle {
         logger.i({ "bind($str1)" }) { str1 = "$parent" }
+        if (SceneContainerFlag.isEnabled) {
+            val keyguardState = keyguardTransitionInteractor.getStartedState()
+            if (keyguardState == AOD || keyguardState == DOZING) {
+                handleDoze(1f)
+            } else {
+                handleDoze(0f)
+            }
+        }
         return parent.repeatWhenAttached {
             repeatOnLifecycle(Lifecycle.State.CREATED) {
                 listenForDnd(this)
