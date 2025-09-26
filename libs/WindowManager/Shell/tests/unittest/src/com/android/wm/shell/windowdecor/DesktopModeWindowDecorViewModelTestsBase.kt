@@ -288,6 +288,9 @@ open class DesktopModeWindowDecorViewModelTestsBase : ShellTestCase() {
                 mockPinnedLayerController,
             )
         desktopModeWindowDecorViewModel.setSplitScreenController(mockSplitScreenController)
+        desktopModeWindowDecorViewModel.setFreeformTaskTransitionStarter(
+            mockFreeformTaskTransitionStarter
+        )
         whenever(mockDisplayController.getDisplayLayout(any())).thenReturn(mockDisplayLayout)
         whenever(mockDisplayLayout.stableInsets()).thenReturn(STABLE_INSETS)
         whenever(mockInputMonitorFactory.create(any(), any())).thenReturn(mockInputMonitor)
