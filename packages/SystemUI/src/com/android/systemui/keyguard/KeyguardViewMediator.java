@@ -2714,6 +2714,8 @@ public class KeyguardViewMediator implements CoreStartable,
      * This method should typically be called after {@link ViewMediatorCallback#keyguardDonePending}
      * was called, when we are ready to hide the keyguard. It will do nothing if we were not
      * expecting the keyguard to go away when called.
+     *
+     * @param runner Can be null, which will instead just dismiss the keyguard
      */
     public void hideWithAnimation(IRemoteAnimationRunner runner) {
         if (mKeyguardDonePendingForUser == NO_KEYGUARD_DONE_PENDING) {

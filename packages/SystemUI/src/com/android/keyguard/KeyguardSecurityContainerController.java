@@ -855,6 +855,7 @@ public class KeyguardSecurityContainerController extends ViewController<Keyguard
                         boolean didRunAnimation = controller.startDisappearAnimation(
                                 onFinishRunnable);
                         if (!didRunAnimation && onFinishRunnable != null) {
+                            Log.i(TAG, "View did not invoke onFinishRunnable directly");
                             onFinishRunnable.run();
                         }
                     });
