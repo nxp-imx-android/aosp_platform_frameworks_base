@@ -1130,6 +1130,12 @@ interface ITelephony {
      */
     boolean isTtyModeSupported();
 
+    /**
+     * Returns the current TTY mode of the device. For TTY to be on the user must enable it in
+     * settings and have a wired headset plugged in.
+     */
+    int getCurrentTtyMode();
+
     boolean isRttSupported(int subscriptionId);
 
     /**
