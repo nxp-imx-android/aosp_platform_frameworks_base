@@ -118,7 +118,8 @@ class LockscreenToPrimaryBouncerTransitionViewModelTest(flags: FlagsParameteriza
     @DisableSceneContainer
     fun lockscreenAlphaEndsWithZero() =
         testScope.runTest {
-            val alpha by collectLastValue(underTest.lockscreenAlpha)
+            val viewState = ViewStateAccessor(alpha = { 1f })
+            val alpha by collectLastValue(underTest.lockscreenAlpha(viewState))
 
             repository.sendTransitionStep(step(0f, TransitionState.STARTED))
             runCurrent()
