@@ -1129,6 +1129,8 @@ public class BubbleTransitionsTest extends ShellTestCase {
 
         bt.onInflated(mBubble);
 
+        verify(openingTaskView).addOnLayoutChangeListener(bt);
+
         // Start playing the transition
         bt.startAnimation(transitionToken, info, startT, finishT, finishCb);
 
@@ -1151,6 +1153,7 @@ public class BubbleTransitionsTest extends ShellTestCase {
 
         // Trigger animation callback to finish
         clearInvocations(mBubble);
+        clearInvocations(openingTaskView);
         assertThat(finishCalled[0]).isFalse();
         verify(mBubble, never()).setCurrentTransition(isNull());
         verify(closingBubble, never()).setCurrentTransition(isNull());
@@ -1159,6 +1162,64 @@ public class BubbleTransitionsTest extends ShellTestCase {
 
         // Verify cleanup
         assertThat(finishCalled[0]).isTrue();
+        verify(openingTaskView).removeOnLayoutChangeListener(bt);
+    }
+
+    @Test
+    public void testJumpcutBubbleSwitch_waitForRelayout() {
+        // Setup open Bubble
+        final TaskView openingTaskView = setUpBubbleTaskView(mBubble);
+        final ActivityManager.RunningTaskInfo openingTaskInfo = setupAppBubble(
+                mBubble, openingTaskView, mTaskViewTaskController);
+        // Setup close Bubble
+        final Bubble closingBubble = mock(Bubble.class);
+        setUpBubbleBarExpandedView(closingBubble);
+        final TaskView closingTaskView = setUpBubbleTaskView(closingBubble);
+        final ActivityManager.RunningTaskInfo closingTaskInfo = setupAppBubble(
+                closingBubble, closingTaskView, mTaskViewTaskController);
+        // Setup Transition
+        final IBinder transitionToken = mock(IBinder.class);
+        final Consumer<Transitions.TransitionHandler> onInflatedCallback = mock(Consumer.class);
+        final SurfaceControl openingTaskLeash =
+                new SurfaceControl.Builder().setName("openingTaskLeash").build();
+        final TransitionInfo.Change openingChg = new TransitionInfo.Change(openingTaskInfo.token,
+                openingTaskLeash);
+        openingChg.setTaskInfo(openingTaskInfo);
+        openingChg.setMode(TRANSIT_OPEN);
+        final SurfaceControl closingTaskLeash =
+                new SurfaceControl.Builder().setName("closingTaskLeash").build();
+        final TransitionInfo.Change closingChg = new TransitionInfo.Change(closingTaskInfo.token,
+                closingTaskLeash);
+        closingChg.setTaskInfo(openingTaskInfo);
+        closingChg.setMode(TRANSIT_CLOSE);
+        final TransitionInfo info = new TransitionInfo(TRANSIT_OPEN, 0);
+        info.addChange(openingChg);
+        info.addChange(closingChg);
+        final SurfaceControl.Transaction startT = spy(new SurfaceControl.Transaction());
+        final SurfaceControl.Transaction finishT = spy(new SurfaceControl.Transaction());
+        doNothing().when(startT).apply();
+        doNothing().when(finishT).apply();
+        final Transitions.TransitionFinishCallback finishCb = wct -> {};
+
+        final BubbleTransitions.JumpcutBubbleSwitchTransition bt =
+                (BubbleTransitions.JumpcutBubbleSwitchTransition) mBubbleTransitions
+                        .startJumpcutBubbleSwitchTransition(mBubble, closingBubble,
+                                mExpandedViewManager, mTaskViewFactory, mBubblePositioner,
+                                mStackView, mLayerView, mIconFactory, false /* inflateSync */,
+                                transitionToken, onInflatedCallback);
+
+        bt.onInflated(mBubble);
+        bt.startAnimation(transitionToken, info, startT, finishT, finishCb);
+
+        // When there is TaskView bounds changed, it will wait before play the animation.
+        bt.onTaskViewBoundsChanged(mBubble);
+        bt.surfaceCreated();
+
+        assertThat(bt.mHasPlayed).isFalse();
+
+        bt.onLayoutChange(openingTaskView, 0, 0, 0, 0, 0, 0, 0, 0);
+
+        assertThat(bt.mHasPlayed).isTrue();
     }
 
     /**

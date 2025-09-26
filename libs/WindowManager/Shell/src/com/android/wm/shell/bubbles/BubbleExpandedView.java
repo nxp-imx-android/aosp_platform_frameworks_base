@@ -278,15 +278,20 @@ public class BubbleExpandedView extends LinearLayout {
     }
 
 
-    /** Updates the width of the task view if it changed. */
-    void updateTaskViewContentWidth() {
+    /**
+     * Updates the width of the task view if it changed.
+     * @return whether the width is changed.
+     */
+    boolean updateTaskViewContentWidth() {
         if (mTaskView != null) {
             int width = getContentWidth();
             if (mTaskView.getWidth() != width) {
                 FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(width, MATCH_PARENT);
                 mTaskView.setLayoutParams(lp);
+                return true;
             }
         }
+        return false;
     }
 
     private int getContentWidth() {
@@ -848,9 +853,13 @@ public class BubbleExpandedView extends LinearLayout {
         return mUsingMaxHeight;
     }
 
-    void updateHeight() {
+    /**
+     * Updates the height of the expanded view if needed.
+     * @return whether the height is changed.
+     */
+    boolean updateHeight() {
         if (mExpandedViewContainerLocation == null) {
-            return;
+            return false;
         }
 
         if ((mBubble != null && mTaskView != null) || mIsOverflow) {
@@ -863,7 +872,8 @@ public class BubbleExpandedView extends LinearLayout {
             FrameLayout.LayoutParams lp = mIsOverflow
                     ? (FrameLayout.LayoutParams) mOverflowView.getLayoutParams()
                     : (FrameLayout.LayoutParams) mTaskView.getLayoutParams();
-            mNeedsNewHeight = lp.height != height;
+            final boolean isHeightChanged = lp.height != height;
+            mNeedsNewHeight = isHeightChanged;
             if (!mImeVisible) {
                 // If the ime is visible... don't adjust the height because that will cause
                 // a configuration change and the ime will be lost.
@@ -875,7 +885,9 @@ public class BubbleExpandedView extends LinearLayout {
                 }
                 mNeedsNewHeight = false;
             }
+            return isHeightChanged;
         }
+        return false;
     }
 
     /**
@@ -884,10 +896,11 @@ public class BubbleExpandedView extends LinearLayout {
      * @param containerLocationOnScreen The location on-screen of the container the expanded view is
      *                                  added to. This allows us to calculate max height without
      *                                  waiting for layout.
+     * @return whether the bounds is changed.
      */
-    public void updateView(int[] containerLocationOnScreen) {
+    public boolean updateView(int[] containerLocationOnScreen) {
         mExpandedViewContainerLocation = containerLocationOnScreen;
-        updateHeight();
+        final boolean hasHeightChanged = updateHeight();
         if (mTaskView != null
                 && mTaskView.getVisibility() == VISIBLE
                 && mTaskView.isAttachedToWindow()) {
@@ -904,6 +917,7 @@ public class BubbleExpandedView extends LinearLayout {
             // calculate row and column sizes correctly.
             post(() -> mOverflowView.show());
         }
+        return hasHeightChanged;
     }
 
     /**

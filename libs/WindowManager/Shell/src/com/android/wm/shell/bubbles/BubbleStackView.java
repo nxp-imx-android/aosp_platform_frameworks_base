@@ -4071,18 +4071,26 @@ public class BubbleStackView extends FrameLayout
                 mStackAnimationController.isStackOnLeftSide(), isOverflowExpanded);
         mExpandedViewContainer.setPadding(paddings[0], paddings[1], paddings[2], paddings[3]);
         BubbleExpandedView expandedView = getExpandedView();
+        boolean hasBoundsChanged = false;
         if (expandedView != null) {
             PointF p = mPositioner.getExpandedBubbleXY(getBubbleIndex(mExpandedBubble),
                     getState());
             mExpandedViewContainer.setTranslationY(mPositioner.getExpandedViewY(mExpandedBubble,
                     mPositioner.showBubblesVertically() ? p.y : p.x));
             mExpandedViewContainer.setTranslationX(0f);
-            expandedView.updateTaskViewContentWidth();
-            expandedView.updateView(mExpandedViewContainer.getLocationOnScreen());
+            hasBoundsChanged |= expandedView.updateTaskViewContentWidth();
+            hasBoundsChanged |= expandedView.updateView(
+                    mExpandedViewContainer.getLocationOnScreen());
             updatePointerPosition(false /* forIme */);
         }
 
         mStackOnLeftOrWillBe = mStackAnimationController.isStackOnLeftSide();
+
+        if (hasBoundsChanged && (mExpandedBubble instanceof Bubble bubble)
+                && bubble.getCurrentTransition() != null) {
+            // The transtiion may want to wait for the TaskView relayout.
+            bubble.getCurrentTransition().onTaskViewBoundsChanged(bubble);
+        }
     }
 
     /**
