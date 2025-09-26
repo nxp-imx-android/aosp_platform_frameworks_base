@@ -356,7 +356,7 @@ constructor(
                         lockscreenToGlanceableHubTransitionViewModel.keyguardAlpha,
                         lockscreenToGoneTransitionViewModel.lockscreenAlpha(viewState),
                         lockscreenToOccludedTransitionViewModel.lockscreenAlpha,
-                        lockscreenToPrimaryBouncerTransitionViewModel.lockscreenAlpha,
+                        lockscreenToPrimaryBouncerTransitionViewModel.lockscreenAlpha(viewState),
                         occludedToAlternateBouncerTransitionViewModel.lockscreenAlpha,
                         occludedToAodTransitionViewModel.lockscreenAlpha,
                         occludedToDozingTransitionViewModel.lockscreenAlpha,
