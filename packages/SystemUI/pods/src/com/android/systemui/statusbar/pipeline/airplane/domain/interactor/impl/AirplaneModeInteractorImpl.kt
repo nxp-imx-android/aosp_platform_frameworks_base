@@ -14,10 +14,12 @@
  * limitations under the License.
  */
 
-package com.android.systemui.statusbar.pipeline.airplane.domain.interactor
+package com.android.systemui.statusbar.pipeline.airplane.domain.interactor.impl
 
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.statusbar.pipeline.airplane.data.repository.AirplaneModeRepository
+import com.android.systemui.statusbar.pipeline.airplane.domain.interactor.AirplaneModeInteractor
+import com.android.systemui.statusbar.pipeline.airplane.domain.interactor.AirplaneModeInteractor.SetResult
 import com.android.systemui.statusbar.pipeline.mobile.data.repository.MobileConnectionsRepository
 import com.android.systemui.statusbar.pipeline.shared.data.model.ConnectivitySlot
 import com.android.systemui.statusbar.pipeline.shared.data.repository.ConnectivityRepository
@@ -26,33 +28,24 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
 
-/** The business logic layer for airplane mode. */
 @SysUISingleton
-class AirplaneModeInteractor
+public class AirplaneModeInteractorImpl
 @Inject
 constructor(
     private val airplaneModeRepository: AirplaneModeRepository,
     connectivityRepository: ConnectivityRepository,
     private val mobileConnectionsRepository: MobileConnectionsRepository,
-) {
-    /** True if the device is currently in airplane mode. */
-    val isAirplaneMode: StateFlow<Boolean> = airplaneModeRepository.isAirplaneMode
+) : AirplaneModeInteractor {
+    public override val isAirplaneMode: StateFlow<Boolean> = airplaneModeRepository.isAirplaneMode
 
-    /** True if we're configured to force-hide the airplane mode icon and false otherwise. */
-    val isForceHidden: Flow<Boolean> =
+    public override val isForceHidden: Flow<Boolean> =
         connectivityRepository.forceHiddenSlots.map { it.contains(ConnectivitySlot.AIRPLANE) }
 
-    /** Sets airplane mode state returning the result of the operation. */
-    suspend fun setIsAirplaneMode(isInAirplaneMode: Boolean): SetResult =
+    public override suspend fun setIsAirplaneMode(isInAirplaneMode: Boolean): SetResult =
         if (mobileConnectionsRepository.isInEcmMode()) {
             SetResult.BLOCKED_BY_ECM
         } else {
             airplaneModeRepository.setIsAirplaneMode(isInAirplaneMode)
             SetResult.SUCCESS
         }
-
-    enum class SetResult {
-        SUCCESS,
-        BLOCKED_BY_ECM,
-    }
 }
