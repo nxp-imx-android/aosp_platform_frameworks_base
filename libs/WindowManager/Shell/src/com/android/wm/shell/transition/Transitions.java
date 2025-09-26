@@ -469,21 +469,19 @@ public class Transitions implements RemoteCallable<Transitions>,
     }
 
     /**
-     * Register a remote transition to be used for all operations except takeovers when `filter`
+     * Register a remote transition to be used for all operations except takeovers when its filter
      * matches an incoming transition.
      */
-    public void registerRemote(@NonNull TransitionFilter filter,
-            @NonNull RemoteTransition remoteTransition) {
-        mRemoteTransitionHandler.addFiltered(filter, remoteTransition);
+    public void registerRemote(@NonNull RemoteTransition remoteTransition) {
+        mRemoteTransitionHandler.addFiltered(remoteTransition);
     }
 
     /**
-     * Register a remote transition to be used for all operations except takeovers when `filter`
+     * Register a remote transition to be used only for takeovers when `filter`
      * matches an incoming transition.
      */
-    public void registerRemoteForTakeover(@NonNull TransitionFilter filter,
-            @NonNull RemoteTransition remoteTransition) {
-        mRemoteTransitionHandler.addFilteredForTakeover(filter, remoteTransition);
+    public void registerRemoteForTakeover(@NonNull RemoteTransition remoteTransition) {
+        mRemoteTransitionHandler.addFilteredForTakeover(remoteTransition);
     }
 
     /** Unregisters a remote transition and all associated filters */
@@ -1644,17 +1642,15 @@ public class Transitions implements RemoteCallable<Transitions>,
     @ExternalThread
     private class ShellTransitionImpl implements ShellTransitions {
         @Override
-        public void registerRemote(@NonNull TransitionFilter filter,
-                @NonNull RemoteTransition remoteTransition) {
+        public void registerRemote(@NonNull RemoteTransition remoteTransition) {
             mMainExecutor.execute(
-                    () -> mRemoteTransitionHandler.addFiltered(filter, remoteTransition));
+                    () -> mRemoteTransitionHandler.addFiltered(remoteTransition));
         }
 
         @Override
-        public void registerRemoteForTakeover(@NonNull TransitionFilter filter,
-                @NonNull RemoteTransition remoteTransition) {
-            mMainExecutor.execute(() -> mRemoteTransitionHandler.addFilteredForTakeover(
-                    filter, remoteTransition));
+        public void registerRemoteForTakeover(@NonNull RemoteTransition remoteTransition) {
+            mMainExecutor.execute(() ->
+                    mRemoteTransitionHandler.addFilteredForTakeover(remoteTransition));
         }
 
         @Override
@@ -1701,19 +1697,17 @@ public class Transitions implements RemoteCallable<Transitions>,
         }
 
         @Override
-        public void registerRemote(@NonNull TransitionFilter filter,
-                @NonNull RemoteTransition remoteTransition) {
+        public void registerRemote(@NonNull RemoteTransition remoteTransition) {
             executeRemoteCallWithTaskPermission(mTransitions, "registerRemote",
                     (transitions) -> transitions.mRemoteTransitionHandler.addFiltered(
-                            filter, remoteTransition));
+                            remoteTransition));
         }
 
         @Override
-        public void registerRemoteForTakeover(@NonNull TransitionFilter filter,
-                @NonNull RemoteTransition remoteTransition) {
+        public void registerRemoteForTakeover(@NonNull RemoteTransition remoteTransition) {
             executeRemoteCallWithTaskPermission(mTransitions, "registerRemoteForTakeover",
                     (transitions) -> transitions.mRemoteTransitionHandler.addFilteredForTakeover(
-                            filter, remoteTransition));
+                            remoteTransition));
         }
 
         @Override

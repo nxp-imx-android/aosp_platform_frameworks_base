@@ -222,8 +222,7 @@ class ActivityTransitionAnimatorTest : SysuiTestCase() {
             }
 
             assertThat(originTransition).isNotNull()
-            assertThat(testShellTransitions.remotes.size).isEqualTo(1)
-            assertThat(testShellTransitions.remotes.values).contains(originTransition)
+            assertThat(testShellTransitions.remotes).containsExactly(originTransition)
         }
     }
 
@@ -753,14 +752,12 @@ class ActivityTransitionAnimatorTest : SysuiTestCase() {
             val cookie = ActivityTransitionAnimator.TransitionCookie("test_cookie")
             var factory = controllerFactory(controller, cookie)
             underTest.registerLongLivedTransitions(cookie, factory, testScope)
-            val transitions = testShellTransitions.remotes.values.toList()
+            val firstRegistered = testShellTransitions.remotes.toList()
 
             factory = controllerFactory(controller, cookie)
             underTest.registerLongLivedTransitions(cookie, factory, testScope)
             assertThat(testShellTransitions.remotes.size).isEqualTo(2)
-            for (transition in transitions) {
-                assertThat(testShellTransitions.remotes.values).doesNotContain(transition)
-            }
+            assertThat(testShellTransitions.remotes).containsNoneIn(firstRegistered)
         }
     }
 
@@ -1057,27 +1054,20 @@ class ActivityTransitionAnimatorTest : SysuiTestCase() {
  * allows inspection.
  */
 private class FakeShellTransitions : ShellTransitions {
-    val remotes = mutableMapOf<TransitionFilter, RemoteTransition>()
-    val remotesForTakeover = mutableMapOf<TransitionFilter, RemoteTransition>()
+    val remotes = mutableListOf<RemoteTransition>()
+    val remotesForTakeover = mutableListOf<RemoteTransition>()
 
-    override fun registerRemote(filter: TransitionFilter, remoteTransition: RemoteTransition) {
-        remotes[filter] = remoteTransition
+    override fun registerRemote(remoteTransition: RemoteTransition) {
+        remotes.add(remoteTransition)
     }
 
-    override fun registerRemoteForTakeover(
-        filter: TransitionFilter,
-        remoteTransition: RemoteTransition,
-    ) {
-        remotesForTakeover[filter] = remoteTransition
+    override fun registerRemoteForTakeover(remoteTransition: RemoteTransition) {
+        remotesForTakeover.add(remoteTransition)
     }
 
     override fun unregisterRemote(remoteTransition: RemoteTransition) {
-        while (remotes.containsValue(remoteTransition)) {
-            remotes.values.remove(remoteTransition)
-        }
-        while (remotesForTakeover.containsValue(remoteTransition)) {
-            remotesForTakeover.values.remove(remoteTransition)
-        }
+        remotes.remove(remoteTransition)
+        remotesForTakeover.remove(remoteTransition)
     }
 }
 

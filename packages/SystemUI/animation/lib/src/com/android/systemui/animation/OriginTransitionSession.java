@@ -109,22 +109,19 @@ public class OriginTransitionSession {
                 if (!mExitTransitionMap.isEmpty()) {
                     int index = 0;
                     final List<RemoteTransition> transitions = new ArrayList<>();
-                    final List<TransitionFilter> filters = new ArrayList<>();
                     for (Map.Entry<IRemoteTransition, TransitionFilter> entry
                             : mExitTransitionMap.entrySet()) {
                         transitions.add(new RemoteTransition(
-                                entry.getKey(), mName + "-exit:" + index));
-                        filters.add(entry.getValue());
+                                entry.getKey(), null, mName + "-exit:" + index, entry.getValue()));
                         logD("mapping exit transition[" + index + "]: "
                                 + entry.getKey() + " and filter: " + entry.getValue());
                         index++;
                     }
                     remoteTransition =
                             mOriginTransition =
-                                    mOriginTransitions.makeOriginTransitionWithReturnFilters(
+                                    mOriginTransitions.makeOriginTransitions(
                                         new RemoteTransition(mEntryTransition, mName + "-entry"),
-                                        transitions,
-                                        filters);
+                                        transitions);
                 }
             } catch (Exception e) {
                 logE("Unable to create origin transition!", e);

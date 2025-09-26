@@ -48,7 +48,8 @@ class RemoteTransitionHandlerTest : ShellTestCase() {
 
     private val testExecutor: TestSyncExecutor = TestSyncExecutor()
 
-    private val testRemoteTransition = RemoteTransition(TestRemoteTransition())
+    private val testRemoteTransition =
+            RemoteTransition(TestRemoteTransition()).setFilter(TransitionFilter())
     private val testRemoteTransitionInfo =
         TransitionRequestInfo.RemoteTransitionInfo(testRemoteTransition)
     private lateinit var handler: RemoteTransitionHandler
@@ -94,7 +95,7 @@ class RemoteTransitionHandlerTest : ShellTestCase() {
     fun startAnimation_remoteTransition_returnsTrue() {
         val request =
             TransitionRequestInfo(WindowManager.TRANSIT_OPEN, null, testRemoteTransitionInfo)
-        handler.addFiltered(TransitionFilter(), testRemoteTransition)
+        handler.addFiltered(testRemoteTransition)
         handler.handleRequest(mock(), request)
 
         val isHandled =
@@ -114,7 +115,7 @@ class RemoteTransitionHandlerTest : ShellTestCase() {
     fun startAnimation_remoteTransition_displayRotationChange_returnsFalse() {
         val request =
             TransitionRequestInfo(WindowManager.TRANSIT_CHANGE, null, testRemoteTransitionInfo)
-        handler.addFiltered(TransitionFilter(), testRemoteTransition)
+        handler.addFiltered(testRemoteTransition)
         handler.handleRequest(mock(), request)
         val transitionInfo =
             TransitionInfo(WindowManager.TRANSIT_CHANGE, /* flags= */ 0).apply {
@@ -142,7 +143,7 @@ class RemoteTransitionHandlerTest : ShellTestCase() {
     fun startAnimation_remoteTransition_orderOnlyDisplayChange_returnsTrue() {
         val request =
             TransitionRequestInfo(WindowManager.TRANSIT_OPEN, null, testRemoteTransitionInfo)
-        handler.addFiltered(TransitionFilter(), testRemoteTransition)
+        handler.addFiltered(testRemoteTransition)
         handler.handleRequest(mock(), request)
         val transitionInfo =
             TransitionInfo(WindowManager.TRANSIT_CHANGE, /* flags= */ 0).apply {

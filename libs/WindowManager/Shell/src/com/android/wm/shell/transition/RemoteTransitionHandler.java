@@ -77,14 +77,14 @@ public class RemoteTransitionHandler implements Transitions.TransitionHandler {
         mTransitionLeashManager = transitionLeashManager;
     }
 
-    void addFiltered(TransitionFilter filter, RemoteTransition remote) {
+    void addFiltered(RemoteTransition remote) {
         handleDeath(remote.asBinder(), null /* finishCallback */);
-        mFilters.add(new Pair<>(filter, remote));
+        mFilters.add(new Pair<>(remote.getFilter(), remote));
     }
 
-    void addFilteredForTakeover(TransitionFilter filter, RemoteTransition remote) {
+    void addFilteredForTakeover(RemoteTransition remote) {
         handleDeath(remote.asBinder(), null /* finishCallback */);
-        mTakeoverFilters.add(new Pair<>(filter, remote));
+        mTakeoverFilters.add(new Pair<>(remote.getFilter(), remote));
     }
 
     void removeFiltered(RemoteTransition remote) {
