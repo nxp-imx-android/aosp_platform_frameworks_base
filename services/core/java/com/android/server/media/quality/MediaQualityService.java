@@ -2468,6 +2468,7 @@ public class MediaQualityService extends SystemService {
                                 Slog.d(TAG, "The picture profile list is empty");
                             }
                             // Short term solution for b/422302653.
+                            // This has been fixed by b/442893627.
                             // Signal the HAL when the request stream status is not created by the
                             // APK.
                             PictureProfile currentSdr = getSdrPictureProfile(profileName, previous);
@@ -2478,11 +2479,9 @@ public class MediaQualityService extends SystemService {
                             PersistableBundle currentSdrParameter = currentSdr.getParameters();
                             currentSdrParameter.putString(
                                     STREAM_STATUS_NOT_CREATED, newStatus);
-                            currentSdrParameter.putString(STREAM_STATUS, PictureProfile.STATUS_SDR);
                             // Add previous stream status information so that application can use
                             // this flag to indicate that there is a onStreamStatusChange.
                             currentSdrParameter.putString(PREVIOUS_STREAM_STATUS, profileStatus);
-                            currentSdr.addStringParameter(STREAM_STATUS, PictureProfile.STATUS_SDR);
                             // PREVIOUS_STREAM_STATUS is used for one time, so copy the current
                             // profile
                             PictureProfile currentCopy = PictureProfile.copyFrom(currentSdr);
@@ -2503,11 +2502,9 @@ public class MediaQualityService extends SystemService {
                         }
                         PictureProfile current = list.get(0);
                         PersistableBundle currentProfileParameters = current.getParameters();
-                        currentProfileParameters.putString(STREAM_STATUS, newStatus);
                         // Add previous stream status information so that application can use this
                         // flag to indicate that there is a onStreamStatusChange.
                         currentProfileParameters.putString(PREVIOUS_STREAM_STATUS, profileStatus);
-                        current.addStringParameter(STREAM_STATUS, newStatus);
                         // PREVIOUS_STREAM_STATUS is used for one time, so copy the current profile
                         PictureProfile currentCopy = PictureProfile.copyFrom(current);
                         currentCopy.addStringParameter(PREVIOUS_STREAM_STATUS, profileStatus);
@@ -2538,12 +2535,9 @@ public class MediaQualityService extends SystemService {
                             return;
                         }
                         PersistableBundle currentProfileParameters = current.getParameters();
-                        currentProfileParameters.putString(
-                                STREAM_STATUS, PictureProfile.STATUS_SDR);
                         // Add previous stream status information so that application can use this
                         // flag to indicate that there is a onStreamStatusChange.
                         currentProfileParameters.putString(PREVIOUS_STREAM_STATUS, profileStatus);
-                        current.addStringParameter(STREAM_STATUS, PictureProfile.STATUS_SDR);
                         // PREVIOUS_STREAM_STATUS is used for one time, so copy the current profile
                         PictureProfile currentCopy = PictureProfile.copyFrom(current);
                         currentCopy.addStringParameter(PREVIOUS_STREAM_STATUS, profileStatus);

@@ -32,6 +32,7 @@ import android.hardware.tv.mediaquality.ParameterName;
 import android.hardware.tv.mediaquality.ParameterRange;
 import android.hardware.tv.mediaquality.PictureParameter;
 import android.hardware.tv.mediaquality.PictureQualityEventType;
+import android.hardware.tv.mediaquality.StreamStatus;
 import android.hardware.tv.mediaquality.QualityLevel;
 import android.hardware.tv.mediaquality.SoundParameter;
 import android.hardware.tv.mediaquality.SoundStyle;
@@ -84,6 +85,7 @@ public final class MediaQualityUtils {
     private static final Set<String> PREDEFINED_NAMES = new HashSet<>(Arrays.asList(
             PictureQuality.PARAMETER_BRIGHTNESS,
             PictureQuality.PARAMETER_CONTRAST,
+            PictureQuality.PARAMETER_STREAM_STATUS,
             PictureQuality.PARAMETER_SHARPNESS,
             PictureQuality.PARAMETER_SATURATION,
             PictureQuality.PARAMETER_HUE,
@@ -214,9 +216,6 @@ public final class MediaQualityUtils {
                         bundle.putDouble(PictureQuality.PARAMETER_BRIGHTNESS,
                                 (double) pp.getBrightness());
                     }
-                    break;
-                case PictureParameter.streamStatus:
-                    Log.d(TAG, "new version test");
                     break;
                 case PictureParameter.contrast:
                     if (pp.getContrast() > -1) {
@@ -519,7 +518,6 @@ public final class MediaQualityUtils {
                         bundle.putInt(PictureQuality.PARAMETER_OSD_BLUE_GAIN, pp.getOsdBlueGain());
                     }
                     break;
-
                 case PictureParameter.colorTunerSwitch:
                     if (pp.getColorTunerSwitch()) {
                         bundle.putBoolean(PictureQuality.PARAMETER_COLOR_TUNER_SWITCH, true);
@@ -691,6 +689,12 @@ public final class MediaQualityUtils {
                     if (pp.getPictureQualityEventType() > -1) {
                         bundle.putInt(PictureQuality.PARAMETER_PICTURE_QUALITY_EVENT_TYPE,
                                 pp.getPictureQualityEventType());
+                    }
+                    break;
+                case PictureParameter.streamStatus:
+                    if (pp.getStreamStatus() > -1) {
+                        bundle.putInt(PictureQuality.PARAMETER_STREAM_STATUS,
+                                pp.getStreamStatus());
                     }
                     break;
                 default:
@@ -1294,6 +1298,72 @@ public final class MediaQualityUtils {
             }
             params.remove(PictureQuality.PARAMETER_PICTURE_QUALITY_EVENT_TYPE);
         }
+        if (params.containsKey(PictureQuality.PARAMETER_STREAM_STATUS)) {
+            String streamStatusString = params.getString(PictureQuality.PARAMETER_STREAM_STATUS);
+            if (streamStatusString != null) {
+                byte streamStatusByte;
+                switch (streamStatusString) {
+                    case "SDR":
+                        streamStatusByte = StreamStatus.SDR;
+                        break;
+                    case "DOLBYVISION":
+                        streamStatusByte = StreamStatus.DOLBYVISION;
+                        break;
+                    case "HDR10":
+                        streamStatusByte = StreamStatus.HDR10;
+                        break;
+                    case "TCH":
+                        streamStatusByte = StreamStatus.TCH;
+                        break;
+                    case "HLG":
+                        streamStatusByte = StreamStatus.HLG;
+                        break;
+                    case "HDR10PLUS":
+                        streamStatusByte = StreamStatus.HDR10PLUS;
+                        break;
+                    case "HDRVIVID":
+                        streamStatusByte = StreamStatus.HDRVIVID;
+                        break;
+                    case "IMAXSDR":
+                        streamStatusByte = StreamStatus.IMAXSDR;
+                        break;
+                    case "IMAXHDR10":
+                        streamStatusByte = StreamStatus.IMAXHDR10;
+                        break;
+                    case "IMAXHDR10PLUS":
+                        streamStatusByte = StreamStatus.IMAXHDR10PLUS;
+                        break;
+                    case "FMMSDR":
+                        streamStatusByte = StreamStatus.FMMSDR;
+                        break;
+                    case "FMMHDR10":
+                        streamStatusByte = StreamStatus.FMMHDR10;
+                        break;
+                    case "FMMHDR10PLUS":
+                        streamStatusByte = StreamStatus.FMMHDR10PLUS;
+                        break;
+                    case "FMMHLG":
+                        streamStatusByte = StreamStatus.FMMHLG;
+                        break;
+                    case "FMMDOLBY":
+                        streamStatusByte = StreamStatus.FMMDOLBY;
+                        break;
+                    case "FMMTCH":
+                        streamStatusByte = StreamStatus.FMMTCH;
+                        break;
+                    case "FMMHDRVIVID":
+                        streamStatusByte = StreamStatus.FMMHDRVIVID;
+                        break;
+                    default:
+                        streamStatusByte = StreamStatus.SDR;
+                        Log.w("PictureParams", "Unknown stream status string: "
+                                + streamStatusString);
+                        break;
+                }
+                pictureParams.add(PictureParameter.streamStatus(streamStatusByte));
+            }
+            params.remove(PictureQuality.PARAMETER_STREAM_STATUS);
+        }
         return pictureParams.toArray(new PictureParameter[0]);
     }
 
@@ -1895,6 +1965,9 @@ public final class MediaQualityUtils {
         if (nameMap.contains(PictureQuality.PARAMETER_CONTRAST)) {
             bytes.add(ParameterName.CONTRAST);
         }
+        if (nameMap.contains(PictureQuality.PARAMETER_STREAM_STATUS)) {
+            bytes.add(ParameterName.STREAM_STATUS);
+        }
         if (nameMap.contains(PictureQuality.PARAMETER_SHARPNESS)) {
             bytes.add(ParameterName.SHARPNESS);
         }
@@ -2205,6 +2278,7 @@ public final class MediaQualityUtils {
         Map<Byte, String> parameterNameMap = new HashMap<>();
         parameterNameMap.put(ParameterName.BRIGHTNESS, PictureQuality.PARAMETER_BRIGHTNESS);
         parameterNameMap.put(ParameterName.CONTRAST, PictureQuality.PARAMETER_CONTRAST);
+        parameterNameMap.put(ParameterName.STREAM_STATUS, PictureQuality.PARAMETER_STREAM_STATUS);
         parameterNameMap.put(ParameterName.SHARPNESS, PictureQuality.PARAMETER_SHARPNESS);
         parameterNameMap.put(ParameterName.SATURATION, PictureQuality.PARAMETER_SATURATION);
         parameterNameMap.put(ParameterName.HUE, PictureQuality.PARAMETER_HUE);
