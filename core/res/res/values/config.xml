@@ -6178,12 +6178,20 @@
     <!-- The list of packages that will use ANGLE as the GLES driver -->
     <string-array name="config_angleAllowList"></string-array>
 
-    <!-- The list of packages that will not use ANGLE as the GLES driver -->
+    <!-- The list of packages that will not use ANGLE as the GLES driver, overridden by RRO -->
     <string-array name="config_angleDenyList"></string-array>
 
+    <!-- The global list of packages that should not use ANGLE as the GLES driver, they should
+         either not get modified or included in the device denylist above, and it's enforced by test
+         com.android.angle.denylist.app.GtsAngleDenyListDriverTest-->
+    <string-array name="config_angleGlobalDenyList">
+        <item>net.kishonti.gfxbench</item>
+        <item>net.kishonti.gfxbench.vulkan.v50005.corporate</item>
+    </string-array>
+
     <!-- The list of packages to automatically opt in to refresh rate suppressing by small area
-    detection. Format of this array should be packageName:threshold and threshold value should
-     be between 0 to 1-->
+         detection. Format of this array should be packageName:threshold and threshold value should
+         be between 0 to 1-->
     <string-array name="config_smallAreaDetectionAllowlist" translatable="false">
         <!-- Add packages:threshold here -->
     </string-array>
