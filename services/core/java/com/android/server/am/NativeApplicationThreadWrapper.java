@@ -283,7 +283,9 @@ public class NativeApplicationThreadWrapper extends IApplicationThread.Stub {
     public void scheduleApplicationInfoChanged(ApplicationInfo ai) {}
 
     @Override
-    public void updateTimeZone() {}
+    public void updateTimeZone() throws RemoteException {
+        mNativeThread.updateTimeZone();
+    }
 
     @Override
     public void clearDnsCache() {}

@@ -37,6 +37,7 @@ use crate::native_application_thread::{
     NativeApplicationThreadRequest, UnbindServiceRequest,
 };
 use crate::task::HandlerCallback;
+use crate::utils::reset_time_zone;
 
 struct NativeService {
     /// The linker namespace for the service. All libraries are loaded in this namespace.
@@ -225,6 +226,12 @@ impl NativeActivityThread {
 
     fn handle_bind_application_request(&mut self) -> Result<()> {
         atrace::trace_method!(AtraceTag::ActivityManager);
+
+        // Reset the time zone to be the system time zone. This needs to be done because the system
+        // time zone could have changed after the spawning of this process. Without doing this, this
+        // process would have the incorrect system time zone.
+        reset_time_zone();
+
         // We don't support calling Application.onCreate in native processes.
         self.activity_manager
             .finishAttachApplication(self.start_seq, 0)
