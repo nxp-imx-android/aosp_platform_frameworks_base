@@ -1,19 +1,16 @@
 package com.android.systemui.keyguard
 
-import android.app.ActivityManager
 import android.app.WallpaperManager
-import android.app.WindowConfiguration
-import android.graphics.Point
-import android.graphics.Rect
+import android.graphics.RectF
 import android.os.PowerManager
 import android.platform.test.annotations.DisableFlags
 import android.testing.TestableLooper.RunWithLooper
-import android.view.RemoteAnimationTarget
 import android.view.SurfaceControl
 import android.view.SyncRtSurfaceTransactionApplier
 import android.view.View
 import android.view.ViewRootImpl
 import android.view.WindowManager
+import android.window.WindowAnimationState
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.keyguard.KeyguardViewController
@@ -29,6 +26,7 @@ import com.android.systemui.statusbar.policy.KeyguardStateController
 import com.android.systemui.testKosmos
 import com.android.systemui.util.mockito.any
 import com.android.systemui.util.mockito.argThat
+import com.android.wm.shell.shared.compat.AnimatedSurface
 import java.util.function.Predicate
 import junit.framework.Assert.assertEquals
 import junit.framework.Assert.assertFalse
@@ -73,91 +71,19 @@ class KeyguardUnlockAnimationControllerTest : SysuiTestCase() {
     private lateinit var launcherUnlockAnimationController: ILauncherUnlockAnimationController.Stub
 
     private var surfaceControl1 = mock(SurfaceControl::class.java)
-    private var remoteTarget1 =
-        RemoteAnimationTarget(
-            0 /* taskId */,
-            0,
-            surfaceControl1,
-            false,
-            Rect(),
-            Rect(),
-            0,
-            Point(),
-            Rect(),
-            Rect(),
-            mock(WindowConfiguration::class.java),
-            false,
-            surfaceControl1,
-            Rect(),
-            mock(ActivityManager.RunningTaskInfo::class.java),
-            false,
-        )
+    private var animatedSurface1 = createSurface(surfaceControl1)
 
     private var surfaceControl2 = mock(SurfaceControl::class.java)
-    private var remoteTarget2 =
-        RemoteAnimationTarget(
-            1 /* taskId */,
-            0,
-            surfaceControl2,
-            false,
-            Rect(),
-            Rect(),
-            0,
-            Point(),
-            Rect(),
-            Rect(),
-            mock(WindowConfiguration::class.java),
-            false,
-            surfaceControl2,
-            Rect(),
-            mock(ActivityManager.RunningTaskInfo::class.java),
-            false,
-        )
-    private lateinit var remoteAnimationTargets: Array<RemoteAnimationTarget>
+    private var animatedSurface2 = createSurface(surfaceControl2)
+    private lateinit var animatedSurfaces: Array<AnimatedSurface>
 
     private var surfaceControlWp = mock(SurfaceControl::class.java)
-    private var wallpaperTarget =
-        RemoteAnimationTarget(
-            2 /* taskId */,
-            0,
-            surfaceControlWp,
-            false,
-            Rect(),
-            Rect(),
-            0,
-            Point(),
-            Rect(),
-            Rect(),
-            mock(WindowConfiguration::class.java),
-            false,
-            surfaceControlWp,
-            Rect(),
-            mock(ActivityManager.RunningTaskInfo::class.java),
-            false,
-        )
-    private lateinit var wallpaperTargets: Array<RemoteAnimationTarget>
+    private var wallpaper = createSurface(surfaceControlWp)
+    private lateinit var wallpaperTargets: Array<AnimatedSurface>
 
     private var surfaceControlLockWp = mock(SurfaceControl::class.java)
-    private var lockWallpaperTarget =
-        RemoteAnimationTarget(
-            3 /* taskId */,
-            0,
-            surfaceControlLockWp,
-            false,
-            Rect(),
-            Rect(),
-            0,
-            Point(),
-            Rect(),
-            Rect(),
-            mock(WindowConfiguration::class.java),
-            false,
-            surfaceControlLockWp,
-            Rect(),
-            mock(ActivityManager.RunningTaskInfo::class.java),
-            false,
-        )
-    private lateinit var lockWallpaperTargets: Array<RemoteAnimationTarget>
+    private var lockWallpaper = createSurface(surfaceControlLockWp)
+    private lateinit var lockWallpaperTargets: Array<AnimatedSurface>
     private var shouldPerformSmartspaceTransition = false
 
     @Before
@@ -191,9 +117,9 @@ class KeyguardUnlockAnimationControllerTest : SysuiTestCase() {
 
         // All of these fields are final, so we can't mock them, but are needed so that the surface
         // appear amount setter doesn't short circuit.
-        remoteAnimationTargets = arrayOf(remoteTarget1)
-        wallpaperTargets = arrayOf(wallpaperTarget)
-        lockWallpaperTargets = arrayOf(lockWallpaperTarget)
+        animatedSurfaces = arrayOf(animatedSurface1)
+        wallpaperTargets = arrayOf(wallpaper)
+        lockWallpaperTargets = arrayOf(lockWallpaper)
 
         // Set the surface applier to our mock so that we can verify the arguments passed to it.
         // This applier does not have any side effects within the unlock animation controller, so
@@ -218,7 +144,7 @@ class KeyguardUnlockAnimationControllerTest : SysuiTestCase() {
         whenever(biometricUnlockController.isWakeAndUnlock).thenReturn(true)
 
         keyguardUnlockAnimationController.notifyStartSurfaceBehindRemoteAnimation(
-            remoteAnimationTargets,
+            animatedSurfaces,
             arrayOf(),
             arrayOf(),
             0 /* startTime */,
@@ -250,7 +176,7 @@ class KeyguardUnlockAnimationControllerTest : SysuiTestCase() {
         whenever(biometricUnlockController.isWakeAndUnlock).thenReturn(false)
 
         keyguardUnlockAnimationController.notifyStartSurfaceBehindRemoteAnimation(
-            remoteAnimationTargets,
+            animatedSurfaces,
             wallpaperTargets,
             arrayOf(),
             0 /* startTime */,
@@ -273,7 +199,7 @@ class KeyguardUnlockAnimationControllerTest : SysuiTestCase() {
         keyguardUnlockAnimationController.addKeyguardUnlockAnimationListener(listener)
 
         keyguardUnlockAnimationController.notifyStartSurfaceBehindRemoteAnimation(
-            remoteAnimationTargets,
+            animatedSurfaces,
             wallpaperTargets,
             arrayOf(),
             0 /* startTime */,
@@ -294,7 +220,7 @@ class KeyguardUnlockAnimationControllerTest : SysuiTestCase() {
         keyguardUnlockAnimationController.addKeyguardUnlockAnimationListener(listener)
 
         keyguardUnlockAnimationController.notifyStartSurfaceBehindRemoteAnimation(
-            remoteAnimationTargets,
+            animatedSurfaces,
             wallpaperTargets,
             arrayOf(),
             0 /* startTime */,
@@ -318,7 +244,7 @@ class KeyguardUnlockAnimationControllerTest : SysuiTestCase() {
         whenever(keyguardStateController.isFlingingToDismissKeyguard).thenReturn(false)
 
         keyguardUnlockAnimationController.notifyStartSurfaceBehindRemoteAnimation(
-            remoteAnimationTargets,
+            animatedSurfaces,
             wallpaperTargets,
             arrayOf(),
             0 /* startTime */,
@@ -342,7 +268,7 @@ class KeyguardUnlockAnimationControllerTest : SysuiTestCase() {
         whenever(keyguardStateController.isFlingingToDismissKeyguard).thenReturn(true)
 
         keyguardUnlockAnimationController.notifyStartSurfaceBehindRemoteAnimation(
-            remoteAnimationTargets,
+            animatedSurfaces,
             wallpaperTargets,
             arrayOf(),
             0 /* startTime */,
@@ -364,7 +290,7 @@ class KeyguardUnlockAnimationControllerTest : SysuiTestCase() {
     @Test
     fun playCannedUnlockAnimation_ifDidNotRequestShowSurface() {
         keyguardUnlockAnimationController.notifyStartSurfaceBehindRemoteAnimation(
-            remoteAnimationTargets,
+            animatedSurfaces,
             wallpaperTargets,
             arrayOf(),
             0 /* startTime */,
@@ -380,7 +306,7 @@ class KeyguardUnlockAnimationControllerTest : SysuiTestCase() {
         whenever(notificationShadeWindowController.isLaunchingActivity).thenReturn(true)
 
         keyguardUnlockAnimationController.notifyStartSurfaceBehindRemoteAnimation(
-            remoteAnimationTargets,
+            animatedSurfaces,
             wallpaperTargets,
             arrayOf(),
             0 /* startTime */,
@@ -397,7 +323,7 @@ class KeyguardUnlockAnimationControllerTest : SysuiTestCase() {
         keyguardUnlockAnimationController.willUnlockWithInWindowLauncherAnimations = true
 
         keyguardUnlockAnimationController.notifyStartSurfaceBehindRemoteAnimation(
-            remoteAnimationTargets,
+            animatedSurfaces,
             wallpaperTargets,
             arrayOf(),
             0 /* startTime */,
@@ -417,7 +343,7 @@ class KeyguardUnlockAnimationControllerTest : SysuiTestCase() {
         var lastFadeOutAlpha = -1f
 
         keyguardUnlockAnimationController.notifyStartSurfaceBehindRemoteAnimation(
-            arrayOf(remoteTarget1, remoteTarget2),
+            arrayOf(animatedSurface1, animatedSurface2),
             wallpaperTargets,
             lockWallpaperTargets,
             0 /* startTime */,
@@ -461,7 +387,7 @@ class KeyguardUnlockAnimationControllerTest : SysuiTestCase() {
     @DisableFlags(Flags.FLAG_KEYGUARD_WM_STATE_REFACTOR)
     fun surfaceAnimation_multipleTargets() {
         keyguardUnlockAnimationController.notifyStartSurfaceBehindRemoteAnimation(
-            arrayOf(remoteTarget1, remoteTarget2),
+            arrayOf(animatedSurface1, animatedSurface2),
             wallpaperTargets,
             arrayOf(),
             0 /* startTime */,
@@ -513,7 +439,7 @@ class KeyguardUnlockAnimationControllerTest : SysuiTestCase() {
         whenever(powerManager.isInteractive).thenReturn(false)
 
         keyguardUnlockAnimationController.notifyStartSurfaceBehindRemoteAnimation(
-            remoteAnimationTargets,
+            animatedSurfaces,
             wallpaperTargets,
             arrayOf(),
             0 /* startTime */,
@@ -552,7 +478,7 @@ class KeyguardUnlockAnimationControllerTest : SysuiTestCase() {
         whenever(powerManager.isInteractive).thenReturn(true)
 
         keyguardUnlockAnimationController.notifyStartSurfaceBehindRemoteAnimation(
-            remoteAnimationTargets,
+            animatedSurfaces,
             wallpaperTargets,
             arrayOf(),
             0 /* startTime */,
@@ -699,6 +625,20 @@ class KeyguardUnlockAnimationControllerTest : SysuiTestCase() {
 
         fun getAllValues(): List<T> {
             return allArgs
+        }
+    }
+
+    companion object {
+        private fun createSurface(leash: SurfaceControl): AnimatedSurface {
+            return AnimatedSurface(
+                leash,
+                null /* startState */,
+                WindowAnimationState().apply { bounds = RectF() } /* endState */,
+                0 /* backgroundColor */,
+                false /* isTranslucent */,
+                null /* taskInfo */,
+                AnimatedSurface.Mode.OTHER,
+            )
         }
     }
 }

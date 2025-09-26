@@ -53,13 +53,17 @@ import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import android.app.ActivityManager;
 import android.app.AlarmManager;
 import android.app.IActivityManager;
 import android.app.IActivityTaskManager;
 import android.app.PendingIntent;
+import android.app.WindowConfiguration;
 import android.app.admin.DevicePolicyManager;
 import android.app.trust.TrustManager;
 import android.content.Context;
+import android.graphics.Point;
+import android.graphics.Rect;
 import android.os.PowerManager;
 import android.os.PowerManager.WakeLock;
 import android.os.RemoteException;
@@ -69,6 +73,7 @@ import android.testing.AndroidTestingRunner;
 import android.testing.TestableLooper;
 import android.view.IRemoteAnimationFinishedCallback;
 import android.view.RemoteAnimationTarget;
+import android.view.SurfaceControl;
 import android.view.View;
 import android.view.ViewRootImpl;
 import android.view.WindowManager;
@@ -371,10 +376,10 @@ public class KeyguardViewMediatorTest extends SysuiTestCase {
 
         // After that request has begun, have WM tell us to exit keyguard
         RemoteAnimationTarget[] apps = new RemoteAnimationTarget[]{
-                mock(RemoteAnimationTarget.class)
+                createTarget()
         };
         RemoteAnimationTarget[] wallpapers = new RemoteAnimationTarget[]{
-                mock(RemoteAnimationTarget.class)
+                createTarget()
         };
         IRemoteAnimationFinishedCallback callback = mock(IRemoteAnimationFinishedCallback.class);
         mViewMediator.startKeyguardExitAnimation(TRANSIT_OLD_KEYGUARD_GOING_AWAY, apps, wallpapers,
@@ -415,10 +420,10 @@ public class KeyguardViewMediatorTest extends SysuiTestCase {
 
         // WM will have started the exit animation...
         RemoteAnimationTarget[] apps = new RemoteAnimationTarget[]{
-                mock(RemoteAnimationTarget.class)
+                createTarget()
         };
         RemoteAnimationTarget[] wallpapers = new RemoteAnimationTarget[]{
-                mock(RemoteAnimationTarget.class)
+                createTarget()
         };
         IRemoteAnimationFinishedCallback callback = mock(IRemoteAnimationFinishedCallback.class);
         mViewMediator.startKeyguardExitAnimation(TRANSIT_OLD_KEYGUARD_GOING_AWAY, apps, wallpapers,
@@ -1318,10 +1323,10 @@ public class KeyguardViewMediatorTest extends SysuiTestCase {
         mViewMediator.setShowingLocked(true, "");
 
         RemoteAnimationTarget[] apps = new RemoteAnimationTarget[]{
-                mock(RemoteAnimationTarget.class)
+                createTarget()
         };
         RemoteAnimationTarget[] wallpapers = new RemoteAnimationTarget[]{
-                mock(RemoteAnimationTarget.class)
+                createTarget()
         };
         IRemoteAnimationFinishedCallback callback = mock(IRemoteAnimationFinishedCallback.class);
 
@@ -1639,6 +1644,27 @@ public class KeyguardViewMediatorTest extends SysuiTestCase {
 
         mViewMediator.registerCentralSurfaces(mCentralSurfaces, null, null, null, null);
         mViewMediator.onBootCompleted();
+    }
+
+    private RemoteAnimationTarget createTarget() {
+        SurfaceControl leash = mock(SurfaceControl.class);
+        return new RemoteAnimationTarget(
+                0,
+                0,
+                leash,
+                false,
+                new Rect(),
+                new Rect(),
+                0,
+                new Point(),
+                new Rect(),
+                new Rect(),
+                mock(WindowConfiguration.class),
+                false,
+                leash,
+                new Rect(),
+                mock(ActivityManager.RunningTaskInfo.class),
+                false);
     }
 
     private void captureKeyguardStateControllerCallback() {

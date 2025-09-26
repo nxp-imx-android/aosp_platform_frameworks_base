@@ -184,6 +184,8 @@ import com.android.systemui.util.time.SystemClock;
 import com.android.systemui.wallpapers.data.repository.WallpaperRepository;
 import com.android.window.flags.Flags;
 import com.android.wm.shell.keyguard.KeyguardTransitions;
+import com.android.wm.shell.shared.compat.AnimatedSurface;
+import com.android.wm.shell.shared.compat.SurfaceTransition;
 
 import dagger.Lazy;
 
@@ -1200,8 +1202,12 @@ public class KeyguardViewMediator implements CoreStartable,
             Trace.beginSection("mExitAnimationRunner.onAnimationStart#startKeyguardExitAnimation");
             startKeyguardExitAnimation(transit, apps, wallpapers, nonApps, finishedCallback);
             if (KeyguardWmStateRefactor.isEnabled()) {
-                mWmLockscreenVisibilityManager.get().onKeyguardGoingAwayRemoteAnimationStart(
-                        transit, apps, wallpapers, nonApps, finishedCallback);
+                SurfaceTransition.Params params =
+                        SurfaceTransition.Params.create(
+                                0 /* startTime */, 0 /* fadeoutDuration */, transit, apps,
+                                wallpapers, nonApps, finishedCallback);
+                mWmLockscreenVisibilityManager.get()
+                        .onKeyguardGoingAwayRemoteAnimationStart(params);
             }
             Trace.endSection();
         }
@@ -3502,21 +3508,24 @@ public class KeyguardViewMediator implements CoreStartable,
                                 CUJ_LOCKSCREEN_UNLOCK_ANIMATION, "DismissPanel"));
 
                 // Filter out any closing apps, such as the dream.
-                RemoteAnimationTarget[] openingApps = apps;
+                AnimatedSurface[] openingApps;
                 if (dismissDreamOnKeyguardDismiss()) {
                     openingApps = Arrays.stream(apps)
                             .filter(a -> a.mode == RemoteAnimationTarget.MODE_OPENING)
-                            .toArray(RemoteAnimationTarget[]::new);
+                            .map(AnimatedSurface::from).toArray(AnimatedSurface[]::new);
+                } else {
+                    openingApps = Arrays.stream(apps).map(AnimatedSurface::from)
+                            .toArray(AnimatedSurface[]::new);
                 }
 
                 // Pass the surface and metadata to the unlock animation controller.
-                RemoteAnimationTarget[] openingWallpapers = Arrays.stream(wallpapers).filter(
-                        w -> w.mode == RemoteAnimationTarget.MODE_OPENING).toArray(
-                        RemoteAnimationTarget[]::new);
+                AnimatedSurface[] openingWallpapers = Arrays.stream(wallpapers).filter(
+                        w -> w.mode == RemoteAnimationTarget.MODE_OPENING)
+                        .map(AnimatedSurface::from).toArray(AnimatedSurface[]::new);
 
-                RemoteAnimationTarget[] closingWallpapers = Arrays.stream(wallpapers).filter(
-                        w -> w.mode == RemoteAnimationTarget.MODE_CLOSING).toArray(
-                        RemoteAnimationTarget[]::new);
+                AnimatedSurface[] closingWallpapers = Arrays.stream(wallpapers).filter(
+                        w -> w.mode == RemoteAnimationTarget.MODE_CLOSING)
+                        .map(AnimatedSurface::from).toArray(AnimatedSurface[]::new);
 
                 mKeyguardUnlockAnimationControllerLazy.get()
                         .notifyStartSurfaceBehindRemoteAnimation(
