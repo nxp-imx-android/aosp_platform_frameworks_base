@@ -447,6 +447,27 @@ class DragZoneFactoryTest {
         }
     }
 
+    @Test
+    fun dragExpandedView_expandedViewDropTarget_shouldBeAboveBubbleBar() {
+        dragZoneFactory =
+            DragZoneFactory(
+                context,
+                tabletPortrait,
+                splitScreenModeChecker,
+                desktopWindowModeChecker,
+                bubbleBarPropertiesProvider,
+            )
+        val dragZones =
+            dragZoneFactory.createSortedDragZones(
+                DraggedObject.ExpandedView(BubbleBarLocation.LEFT)
+            )
+        val bubbleZone = dragZones.filterIsInstance<DragZone.Bubble.Left>().first()
+        val bubbleBarTopPosition =
+            tabletPortrait.windowBounds.bottom -
+                    bubbleBarPropertiesProvider.getBubbleBarTopFromScreenBottom()
+        assertThat(bubbleZone.dropTarget!!.rect.bottom).isLessThan(bubbleBarTopPosition)
+    }
+
     private inline fun <reified T> verifyInstance(): DragZoneVerifier = { dragZone ->
         assertThat(dragZone).isInstanceOf(T::class.java)
     }

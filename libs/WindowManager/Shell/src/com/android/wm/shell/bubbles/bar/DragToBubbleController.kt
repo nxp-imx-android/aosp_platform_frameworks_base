@@ -141,7 +141,10 @@ class DragToBubbleController(
             deviceConfig,
             { SplitScreenMode.UNSUPPORTED },
             { false },
-            object : BubbleBarPropertiesProvider {},
+            object : BubbleBarPropertiesProvider {
+                override fun getBubbleBarTopFromScreenBottom() =
+                    bubbleController.positioner.bubbleBarTopFromScreenBottom
+            },
         )
     }
 

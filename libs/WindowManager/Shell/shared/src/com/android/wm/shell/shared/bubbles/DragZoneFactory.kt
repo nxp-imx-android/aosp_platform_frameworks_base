@@ -61,11 +61,15 @@ class DragZoneFactory(
     private var desktopWindowDropTargetPaddingLarge = 0
     private var expandedViewDropTargetWidth = 0
     private var expandedViewDropTargetHeight = 0
-    private var expandedViewDropTargetPaddingBottom = 0
     private var expandedViewDropTargetPaddingHorizontal = 0
     private var bubbleBarDropTargetPaddingHorizontal = 0
+    private var spacingBetweenExpandedViewAndBubble = 0
 
     private var dropTargetCornerRadius = 0f
+
+    private val expandedViewDropTargetPaddingBottom: Int
+        get() = bubbleBarPropertiesProvider.getBubbleBarTopFromScreenBottom() +
+                spacingBetweenExpandedViewAndBubble
 
     private val fullScreenDropTarget: DropTargetRect
         get() =
@@ -186,9 +190,9 @@ class DragZoneFactory(
         desktopWindowDropTargetPaddingLarge = 130.dpToPx()
         expandedViewDropTargetWidth = 330.dpToPx()
         expandedViewDropTargetHeight = 578.dpToPx()
-        expandedViewDropTargetPaddingBottom = 108.dpToPx()
         expandedViewDropTargetPaddingHorizontal = 24.dpToPx()
         bubbleBarDropTargetPaddingHorizontal = 24.dpToPx()
+        spacingBetweenExpandedViewAndBubble = 16.dpToPx()
 
         dropTargetCornerRadius = 28.dpToPx().toFloat()
     }
@@ -706,5 +710,7 @@ class DragZoneFactory(
         fun getWidth(): Int = 0
 
         fun getBottomPadding(): Int = 0
+
+        fun getBubbleBarTopFromScreenBottom(): Int = getHeight() + getBottomPadding()
     }
 }

@@ -234,20 +234,9 @@ public class BubbleBarLayerView extends FrameLayout
 
         DragZoneFactory.BubbleBarPropertiesProvider bubbleBarPropertiesProvider =
                 new DragZoneFactory.BubbleBarPropertiesProvider() {
-                    // this is only used in launcher
                     @Override
-                    public int getBottomPadding() {
-                        return 0;
-                    }
-
-                    @Override
-                    public int getWidth() {
-                        return 0;
-                    }
-
-                    @Override
-                    public int getHeight() {
-                        return 0;
+                    public int getBubbleBarTopFromScreenBottom() {
+                        return mPositioner.getBubbleBarTopFromScreenBottom();
                     }
                 };
 
