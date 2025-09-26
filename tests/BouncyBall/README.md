@@ -84,6 +84,30 @@ This is the recommended approach not just for this example app, but real world
 apps and device performance in general.
 
 
+## GPU composition settings
+
+In automation, we test this both with the default GPU composition settings,
+and with GPU composition forced on.  GPU composition is a critical part of a
+device's graphics path which we want to test, but BouncyBall's simplicity has
+some devices avoid GPU composition by default.
+
+For local runs, force GPU composition on with:
+
+```
+$ adb shell sfdo force-client-composition enabled
+```
+
+Put GPU composition back in its default state with:
+
+```
+$ adb shell sfdo force-client-composition disabled
+```
+
+Note this latter command does not force GPU composition off.  There is no such
+standard command for that.  This just returns back to the default composition
+setup.
+
+
 ## How automation analyzes the test
 
 Automation uses a stripped down version of tracing.  It is only interested in
