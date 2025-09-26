@@ -48,7 +48,6 @@ import com.android.systemui.shade.domain.interactor.ShadeInteractor
 import com.android.systemui.statusbar.KeyguardIndicationController
 import com.android.systemui.statusbar.LightRevealScrim
 import com.android.systemui.statusbar.VibratorHelper
-import com.android.systemui.statusbar.phone.ScreenOffAnimationController
 import com.android.systemui.statusbar.phone.StatusBarKeyguardViewManager
 import com.android.systemui.temporarydisplay.chipbar.ChipbarCoordinator
 import com.android.systemui.wallpapers.ui.viewmodel.WallpaperViewModel
@@ -66,7 +65,6 @@ constructor(
     private val keyguardRootView: KeyguardRootView,
     private val keyguardRootViewModel: KeyguardRootViewModel,
     private val keyguardJankViewModel: KeyguardJankViewModel,
-    private val screenOffAnimationController: ScreenOffAnimationController,
     private val occludingAppDeviceEntryMessageViewModel: OccludingAppDeviceEntryMessageViewModel,
     private val chipbarCoordinator: ChipbarCoordinator,
     private val keyguardBlueprintViewModel: KeyguardBlueprintViewModel,

@@ -409,7 +409,6 @@ public class NotificationPanelViewControllerBaseTest extends SysuiTestCase {
         when(mFragmentService.getFragmentHostManager(mView)).thenReturn(mFragmentHostManager);
         FlingAnimationUtils.Builder flingAnimationUtilsBuilder = new FlingAnimationUtils.Builder(
                 mDisplayMetrics);
-        when(mScreenOffAnimationController.shouldAnimateClockChange()).thenReturn(true);
         when(mQs.getView()).thenReturn(mView);
         when(mQSFragment.getView()).thenReturn(mView);
         when(mNaturalScrollingSettingObserver.isNaturalScrollingEnabled()).thenReturn(true);
