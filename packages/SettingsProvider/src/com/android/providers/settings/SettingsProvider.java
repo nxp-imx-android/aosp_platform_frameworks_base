@@ -117,6 +117,7 @@ import android.util.ArrayMap;
 import android.util.ArraySet;
 import android.util.Log;
 import android.util.LongSparseArray;
+import android.util.MathUtils;
 import android.util.Slog;
 import android.util.SparseBooleanArray;
 import android.util.proto.ProtoOutputStream;
@@ -125,6 +126,7 @@ import com.android.internal.accessibility.util.AccessibilityUtils;
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.content.PackageMonitor;
+import com.android.internal.display.BrightnessUtils;
 import com.android.internal.display.RefreshRateSettingsUtils;
 import com.android.internal.os.BackgroundThread;
 import com.android.internal.util.FrameworkStatsLog;
@@ -4268,7 +4270,7 @@ public class SettingsProvider extends ContentProvider {
 
         @VisibleForTesting
         final class UpgradeController {
-            private static final int SETTINGS_VERSION = 231;
+            private static final int SETTINGS_VERSION = 232;
 
             private final int mUserId;
             private final int mDeviceId;
@@ -6794,6 +6796,37 @@ public class SettingsProvider extends ContentProvider {
                     }
 
                     currentVersion = 231;
+                }
+
+                // Version 231: Update the curve for the HDR brightness boost level
+                if (currentVersion == 231) {
+                    if (com.android.server.display.feature.flags.Flags.hdrBrightnessSetting()) {
+                        Setting hdrBrightnessBoostLevelSetting = secureSettings.getSettingLocked(
+                                Secure.HDR_BRIGHTNESS_BOOST_LEVEL);
+                        if (!hdrBrightnessBoostLevelSetting.isNull()) {
+                            try {
+                                float hdrBrightnessBoostLevel = Float.parseFloat(
+                                        hdrBrightnessBoostLevelSetting.getValue());
+                                if (hdrBrightnessBoostLevel > 0 && hdrBrightnessBoostLevel < 1) {
+                                    float ratioScaleFactor = BrightnessUtils.convertGammaToLinear(
+                                            hdrBrightnessBoostLevel);
+                                    float newHdrBrightnessBoostLevel = MathUtils.sqrt(
+                                            ratioScaleFactor);
+                                    secureSettings.insertSettingLocked(
+                                            Secure.HDR_BRIGHTNESS_BOOST_LEVEL,
+                                            String.valueOf(newHdrBrightnessBoostLevel),
+                                            /* tag= */ null,
+                                            /* makeDefault= */ false,
+                                            SettingsState.SYSTEM_PACKAGE_NAME);
+                                }
+                            } catch (NumberFormatException e) {
+                                secureSettings.deleteSettingLocked(
+                                        Secure.HDR_BRIGHTNESS_BOOST_LEVEL);
+                            }
+                        }
+                    }
+
+                    currentVersion = 232;
                 }
 
                 // vXXX: Add new settings above this point.
