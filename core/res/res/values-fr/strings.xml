@@ -372,7 +372,7 @@
     <string name="permgrouplab_xr_tracking" msgid="766634536453394700">"Données sur les mouvements et l\'environnement"</string>
     <string name="permgroupdesc_xr_tracking" msgid="812429788288001595">"suivre les mouvements des yeux, du visage, du corps, et analyser l\'environnement"</string>
     <string name="permgrouplab_xr_tracking_sensitive" msgid="6574264227123545314">"Environnement et mouvements précis"</string>
-    <string name="permgroupdesc_xr_tracking_sensitive" msgid="2480835734248509848">"Scanner l\'environnement et suivre les mouvements de tête précisément"</string>
+    <string name="permgroupdesc_xr_tracking_sensitive" msgid="2480835734248509848">"scanner l\'environnement et suivre les mouvements de tête précisément"</string>
     <string name="capability_title_canRetrieveWindowContent" msgid="7554282892101587296">"Récupérer le contenu d\'une fenêtre"</string>
     <string name="capability_desc_canRetrieveWindowContent" msgid="6195610527625237661">"Inspecte le contenu d\'une fenêtre avec laquelle vous interagissez."</string>
     <string name="capability_title_canRequestTouchExploration" msgid="327598364696316213">"Activer la fonctionnalité Explorer au toucher"</string>
@@ -1624,12 +1624,9 @@
     <string name="gpsNotifMessage" msgid="7346649122793758032">"Demande de <xliff:g id="NAME">%1$s</xliff:g> (<xliff:g id="SERVICE">%2$s</xliff:g>)"</string>
     <string name="gpsVerifYes" msgid="3719843080744112940">"Oui"</string>
     <string name="gpsVerifNo" msgid="1671201856091564741">"Non"</string>
-    <!-- no translation found for emergency_location_notification_title (917557758257778958) -->
-    <skip />
-    <!-- no translation found for emergency_location_notification_message (1877038822515882885) -->
-    <skip />
-    <!-- no translation found for emergency_location_notification_learn_more (8718634939217070481) -->
-    <skip />
+    <string name="emergency_location_notification_title" msgid="917557758257778958">"Position partagée en cas d\'urgence"</string>
+    <string name="emergency_location_notification_message" msgid="1877038822515882885">"Les services d\'urgence ont reçu votre position grâce à votre opérateur"</string>
+    <string name="emergency_location_notification_learn_more" msgid="8718634939217070481">"En savoir plus"</string>
     <string name="sync_too_many_deletes" msgid="6999440774578705300">"Le nombre maximal de suppressions a été atteint."</string>
     <string name="sync_too_many_deletes_desc" msgid="7409327940303504440">"<xliff:g id="NUMBER_OF_DELETED_ITEMS">%1$d</xliff:g> éléments vont être supprimés lors de la synchronisation <xliff:g id="TYPE_OF_SYNC">%2$s</xliff:g> pour le compte <xliff:g id="ACCOUNT_NAME">%3$s</xliff:g>. Que voulez-vous faire ?"</string>
     <string name="sync_really_delete" msgid="5657871730315579051">"Supprimer les éléments"</string>

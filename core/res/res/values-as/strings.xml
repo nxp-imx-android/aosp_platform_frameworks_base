@@ -1623,12 +1623,9 @@
     <string name="gpsNotifMessage" msgid="7346649122793758032">"<xliff:g id="NAME">%1$s</xliff:g> (<xliff:g id="SERVICE">%2$s</xliff:g>)এ অনুৰোধ কৰিছে"</string>
     <string name="gpsVerifYes" msgid="3719843080744112940">"হয়"</string>
     <string name="gpsVerifNo" msgid="1671201856091564741">"নহয়"</string>
-    <!-- no translation found for emergency_location_notification_title (917557758257778958) -->
-    <skip />
-    <!-- no translation found for emergency_location_notification_message (1877038822515882885) -->
-    <skip />
-    <!-- no translation found for emergency_location_notification_learn_more (8718634939217070481) -->
-    <skip />
+    <string name="emergency_location_notification_title" msgid="917557758257778958">"জৰুৰীকালীন পৰিস্থিতিৰ বাবে অৱস্থান শ্বেয়াৰ কৰা হৈছে"</string>
+    <string name="emergency_location_notification_message" msgid="1877038822515882885">"জৰুৰীকালীন সেৱাসমূহে আপোনাৰ বাহকৰ পৰা আপোনাৰ অৱস্থান পাইছে"</string>
+    <string name="emergency_location_notification_learn_more" msgid="8718634939217070481">"অধিক জানক"</string>
     <string name="sync_too_many_deletes" msgid="6999440774578705300">"মচি পেলোৱাৰ সীমা পাৰ হ’ল"</string>
     <string name="sync_too_many_deletes_desc" msgid="7409327940303504440">"এই <xliff:g id="ACCOUNT_NAME">%3$s</xliff:g> ৰ মচি থোৱা <xliff:g id="NUMBER_OF_DELETED_ITEMS">%1$d</xliff:g> টা <xliff:g id="TYPE_OF_SYNC">%2$s</xliff:g> বস্তু আছে। আপুনি কি কৰিব বিচাৰে?"</string>
     <string name="sync_really_delete" msgid="5657871730315579051">"বস্তুবোৰ মচক"</string>
