@@ -72,6 +72,7 @@ import static android.provider.Settings.Secure.VOLUME_HUSH_VIBRATE;
 
 import static com.android.internal.annotations.VisibleForTesting.Visibility.PACKAGE;
 import static com.android.media.audio.Flags.absVolumePrioritizesAbsDevice;
+import static com.android.media.audio.Flags.absVolumeStreamAlwaysMax;
 import static com.android.media.audio.Flags.alarmMinVolumeZero;
 import static com.android.media.audio.Flags.asDeviceConnectionFailure;
 import static com.android.media.audio.Flags.audioStreamBtScoCleanup;
@@ -4357,7 +4358,9 @@ public class AudioService extends IAudioService.Stub
 
             final boolean muted = streamState.mIsMuted;
             final int index = streamState.getIndex(deviceType);
-            handleAbsoluteVolume(streamType, streamTypeAlias, deviceAttr, index, muted, flags);
+
+            handleAbsoluteVolume(streamType, streamTypeAlias, deviceAttr, index, muted, flags,
+                    hasModifyAudioSettings);
         }
 
         final int newIndex = getVssForStreamOrDefault(streamType).getIndex(deviceType);
@@ -4431,8 +4434,67 @@ public class AudioService extends IAudioService.Stub
         sendVolumeUpdate(streamType, oldIndex, newIndex, flags, deviceType);
     }
 
+    private void updateToAbsoluteVolumeDrivingStreams(int streamType, int streamTypeAlias,
+            int streamDrivesAbs, int index, boolean muted, AudioDeviceAttributes deviceAttr,
+            int flags, boolean hasModifyAudioSettings) {
+        if (absVolumeStreamAlwaysMax()) {
+            final int deviceType = deviceAttr.getInternalType();
+            if (streamType == AudioSystem.STREAM_ASSISTANT && streamType != streamDrivesAbs
+                    && streamTypeAlias != streamDrivesAbs) {
+                final int driveIndex = rescaleIndex(index,
+                        AudioSystem.STREAM_ASSISTANT, streamDrivesAbs);
+                final VolumeStreamState vss = getVssForStreamOrDefault(streamDrivesAbs);
+                final int oldDriveIndex = vss.getIndex(deviceType);
+                if (driveIndex > oldDriveIndex) {
+                    vss.setIndex(driveIndex, deviceType, "updateToAbsoluteVolumeDrivingStreams",
+                            hasModifyAudioSettings);
+                    sendMsg(mAudioHandler,
+                            MSG_SET_DEVICE_VOLUME,
+                            SENDMSG_QUEUE,
+                            deviceType,
+                            0,
+                            vss,
+                            0);
+                    // will not cause endless recursion since streamType != streamDrivesAbs
+                    handleAbsoluteVolume(streamDrivesAbs, streamDrivesAbs, deviceAttr,
+                            driveIndex, muted, flags, hasModifyAudioSettings);
+                    sendVolumeUpdate(streamDrivesAbs, oldDriveIndex, driveIndex, flags,
+                            deviceType);
+                }
+            }
+            if ((streamType == streamDrivesAbs || streamTypeAlias == streamDrivesAbs)
+                    && streamType != AudioSystem.STREAM_ASSISTANT
+                    && streamTypeAlias != AudioSystem.STREAM_ASSISTANT) {
+                final int assistIndex = rescaleIndex(index,
+                        streamDrivesAbs, AudioSystem.STREAM_ASSISTANT);
+                final VolumeStreamState vss = getVssForStreamOrDefault(
+                        AudioSystem.STREAM_ASSISTANT);
+                final int oldAssistIndex = vss.getIndex(deviceType);
+                if (oldAssistIndex > assistIndex) {
+                    vss.setIndex(assistIndex, deviceType,
+                            "updateToAbsoluteVolumeDrivingStreams", hasModifyAudioSettings);
+                    sendMsg(mAudioHandler,
+                            MSG_SET_DEVICE_VOLUME,
+                            SENDMSG_QUEUE,
+                            deviceType,
+                            0,
+                            vss,
+                            0);
+                }
+            }
+        }
+    }
+
     private boolean handleAbsoluteVolume(int streamType, int streamTypeAlias,
-            @NonNull AudioDeviceAttributes ada, int newIndex, boolean muted, int flags) {
+            @NonNull AudioDeviceAttributes ada, int newIndex, boolean muted, int flags,
+            boolean hasModifyAudioSettings) {
+        final int streamDrivesAbs = mCachedAbsVolDrivingStreams.getOrDefault(ada.getInternalType(),
+                AudioSystem.STREAM_DEFAULT);
+        if (streamDrivesAbs != AudioSystem.STREAM_DEFAULT) {
+            updateToAbsoluteVolumeDrivingStreams(streamType, streamTypeAlias, streamDrivesAbs,
+                    newIndex, muted, ada, flags, hasModifyAudioSettings);
+        }
+
         // Check if volume update should be handled by an external volume controller
         boolean registeredAsAbsoluteVolume = false;
         boolean volumeHandled = false;
@@ -5498,6 +5560,8 @@ public class AudioService extends IAudioService.Stub
         pw.println("\tcom.android.media.audio.absVolumeIndexFix - EOL");
         pw.println("\tcom.android.media.audio.absVolumePrioritizesAbsDevice:"
                 + absVolumePrioritizesAbsDevice());
+        pw.println("\tcom.android.media.audio.absVolumeStreamAlwaysMax:"
+                + absVolumeStreamAlwaysMax());
         pw.println("\tcom.android.media.audio.audioStreamBtScoCleanup:"
                 + audioStreamBtScoCleanup());
         pw.println("\tcom.android.media.audio.vgsVssSyncMuteOrder - EOL");
@@ -5632,7 +5696,7 @@ public class AudioService extends IAudioService.Stub
         final int streamTypeAlias = sStreamVolumeAlias.get(streamType, /*valueIfKeyNotFound*/
                 streamType);
         if (!handleAbsoluteVolume(streamType, streamTypeAlias, device, index * 10, muted, /*flags=*/
-                0)) {
+                0, /*hasModifyAudioSettings=*/true)) {
             return;
         }
 
@@ -5729,7 +5793,7 @@ public class AudioService extends IAudioService.Stub
         index = streamState.getIndex(deviceType);
 
         handleAbsoluteVolume(streamType, streamTypeAlias, deviceAttr, index, streamState.mIsMuted,
-                flags);
+                flags, hasModifyAudioSettings);
 
         synchronized (mHdmiClientLock) {
             if (streamTypeAlias == AudioSystem.STREAM_MUSIC
