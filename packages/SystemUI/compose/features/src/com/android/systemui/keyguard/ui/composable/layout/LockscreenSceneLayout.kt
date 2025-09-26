@@ -118,7 +118,6 @@ fun LockscreenScope<ContentScope>.LockscreenSceneLayout(
             LockscreenElement(LockscreenElementKeys.StatusBar)
             LockscreenElement(LockscreenElementKeys.Region.Upper)
             LockscreenElement(LockscreenElementKeys.LockIcon)
-            LockscreenElement(LockscreenElementKeys.AmbientIndicationArea)
             LockscreenElement(LockscreenElementKeys.Region.Lower)
             LockscreenElement(LockscreenElementKeys.SettingsMenu)
         },
@@ -128,13 +127,12 @@ fun LockscreenScope<ContentScope>.LockscreenSceneLayout(
                 Modifier.graphicsLayer { alpha = 0f }
             },
     ) { measurables, constraints ->
-        check(measurables.size == 6)
+        check(measurables.size == 5)
         val statusBarMeasurable = measurables[0]
         val upperRegionMeasurable = measurables[1]
         val lockIconMeasurable = measurables[2]
-        val ambientIndicationMeasurable = measurables[3]
-        val lowerRegionMeasurable = measurables[4]
-        val settingsMenuMeasurable = measurables[5]
+        val lowerRegionMeasurable = measurables[3]
+        val settingsMenuMeasurable = measurables[4]
 
         val statusBarPlaceable =
             statusBarMeasurable.measure(constraints = Constraints.fixedWidth(constraints.maxWidth))
@@ -152,19 +150,8 @@ fun LockscreenScope<ContentScope>.LockscreenSceneLayout(
                 bottom = lockIconPlaceable[LockIconAlignmentLines.Bottom],
             )
 
-        val ambientIndicationPlaceable =
-            ambientIndicationMeasurable.measure(
-                constraints = Constraints.fixedWidth(constraints.maxWidth)
-            )
-
         var upperRegionMaxHeight = lockIconBounds.top - statusBarPlaceable.measuredHeight
         var lowerRegionMaxHeight = constraints.maxHeight - lockIconBounds.bottom
-
-        if (!viewModel.isUdfpsSupported) {
-            upperRegionMaxHeight -= ambientIndicationPlaceable.measuredHeight
-        } else {
-            lowerRegionMaxHeight -= ambientIndicationPlaceable.measuredHeight
-        }
 
         val upperRegionPlaceable =
             upperRegionMeasurable.measure(
@@ -192,12 +179,6 @@ fun LockscreenScope<ContentScope>.LockscreenSceneLayout(
             statusBarPlaceable.place(0, 0)
             upperRegionPlaceable.placeRelative(0, statusBarPlaceable.measuredHeight)
             lockIconPlaceable.place(lockIconBounds.left, lockIconBounds.top)
-
-            ambientIndicationPlaceable.place(
-                0,
-                if (viewModel.isUdfpsSupported) lockIconBounds.bottom
-                else lockIconBounds.top - ambientIndicationPlaceable.measuredHeight,
-            )
 
             lowerRegionPlaceable.place(
                 0,
