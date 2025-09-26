@@ -99,6 +99,7 @@ import android.app.IServiceConnection;
 import android.app.KeyguardManager;
 import android.app.admin.SecurityLog.SecurityEvent;
 import android.app.admin.flags.Flags;
+import android.app.admin.metadata.PolicyTransportValueConvertor;
 import android.app.compat.CompatChanges;
 import android.compat.annotation.ChangeId;
 import android.compat.annotation.EnabledSince;
@@ -18732,7 +18733,7 @@ public class DevicePolicyManager {
         if (mService != null) {
             try {
                 mService.setPolicy(mContext.getPackageName(), id.getId(), scope,
-                        policyValueToTransport(value));
+                        policyValueToTransport(id, value));
             } catch (RemoteException e) {
                 throw e.rethrowFromSystemServer();
             }
@@ -18740,15 +18741,15 @@ public class DevicePolicyManager {
     }
 
     @Nullable
-    private static PolicyValueTransport policyValueToTransport(@Nullable Object value) {
-        return switch (value) {
-            case null -> null;
-            case Integer i -> PolicyValueTransport.integerField(i);
-            case Boolean b -> PolicyValueTransport.booleanField(b);
-            default -> throw new IllegalArgumentException(
-                    "Type of policy is not supported: " + value + "(" + value.getClass().getName()
-                            + ")");
-        };
+    private static <T> PolicyValueTransport policyValueToTransport(
+            @NonNull PolicyIdentifier<T> id,
+            @Nullable T value
+    ) {
+        if (value == null) {
+            return null;
+        }
+
+        return PolicyTransportValueConvertor.getInstance(id).toTransport(value);
     }
 
     /**
