@@ -353,6 +353,19 @@ public class FingerprintProviderTest {
                 .scheduleClientMonitor(any(FingerprintGetAuthenticatorIdClient.class));
     }
 
+    @Test
+    public void testNullSensorProps() {
+        mFingerprintProvider = new FingerprintProvider(mContext,
+                mBiometricStateCallback, mAuthenticationStateListeners, null /* props */, TAG,
+                mLockoutResetDispatcher, mGestureAvailabilityDispatcher, mBiometricContext,
+                mDaemon, mBiometricHandlerProvider, (fqName) -> mDaemon,
+                false /* resetLockoutRequiresHardwareAuthToken */, true /* testHalEnabled */);
+
+        waitForIdle();
+
+        //No crash
+    }
+
     private void waitForIdle() {
         mLooper.dispatchAll();
     }

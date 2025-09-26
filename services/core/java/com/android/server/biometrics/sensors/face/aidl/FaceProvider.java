@@ -229,6 +229,10 @@ public class FaceProvider implements IBinder.DeathRecipient, ServiceProvider {
     }
 
     private void initSensors(boolean resetLockoutRequiresChallenge, SensorProps[] props) {
+        if (props == null) {
+            Slog.wtfStack(TAG, "Face properties is null");
+            return;
+        }
         if (resetLockoutRequiresChallenge) {
             Slog.d(getTag(), "Adding HIDL configs");
             for (SensorProps prop : props) {
