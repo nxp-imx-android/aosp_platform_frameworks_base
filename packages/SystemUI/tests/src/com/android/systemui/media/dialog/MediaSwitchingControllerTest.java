@@ -600,10 +600,9 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
 
         assertThat(devices.containsAll(mMediaDevices)).isTrue();
         assertThat(devices.size()).isEqualTo(mMediaDevices.size());
-        // There should be 2 non-MediaDevice items: the "Speakers & Display" title, and the "Connect
-        // a device" button.
+        // There should be 1 non-MediaDevice item - the "Speakers & Display" title.
         assertThat(mMediaSwitchingController.getMediaItemList().size())
-                .isEqualTo(mMediaDevices.size() + 2);
+                .isEqualTo(mMediaDevices.size() + 1);
         verify(mCb).onDeviceListChanged();
     }
 
@@ -620,11 +619,11 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
 
         assertThat(devices.containsAll(mMediaDevices)).isTrue();
         assertThat(devices.size()).isEqualTo(mMediaDevices.size());
-        // When input routing is enabled, there should be 4 non-MediaDevice items: one for
-        // the "Output" title, one for the "Speakers & Displays" title, one for the "Connect a
-        // device" button, and one for the "Input" title.
+        // When input routing is enabled, there should be 3 non-MediaDevice items: one for
+        // the "Output" title, one for the "Speakers & Displays" title, and one for the "Input"
+        // title.
         assertThat(mMediaSwitchingController.getMediaItemList().size())
-                .isEqualTo(mMediaDevices.size() + 4);
+                .isEqualTo(mMediaDevices.size() + 3);
         verify(mCb).onDeviceListChanged();
     }
 
@@ -1610,9 +1609,7 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
         mMediaSwitchingController.start(mCb);
         mMediaSwitchingController.onDeviceListUpdate(mMediaDevices);
 
-        List<MediaItem> resultList = mMediaSwitchingController.getMediaItemList();
-
-        assertThat(getNumberOfConnectDeviceButtons(resultList)).isEqualTo(0);
+        assertThat(mMediaSwitchingController.hasConnectDeviceButton()).isFalse();
     }
 
     @Test
@@ -1621,23 +1618,7 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
         mMediaSwitchingController.start(mCb);
         mMediaSwitchingController.onDeviceListUpdate(mMediaDevices);
 
-        List<MediaItem> resultList = mMediaSwitchingController.getMediaItemList();
-
-        assertThat(getNumberOfConnectDeviceButtons(resultList)).isEqualTo(1);
-        assertThat(resultList.get(resultList.size() - 1).getMediaItemType()).isEqualTo(
-                MediaItem.MediaItemType.TYPE_PAIR_NEW_DEVICE);
-    }
-
-    @Test
-    public void connectDeviceButton_localDeviceButtonDisabledByParam_noButton() {
-        when(mLocalMediaManager.getCurrentConnectedDevice()).thenReturn(mMediaDevice1);
-        mMediaSwitchingController.start(mCb);
-        mMediaSwitchingController.onDeviceListUpdate(mMediaDevices);
-
-        List<MediaItem> resultList = mMediaSwitchingController.getMediaItemList(
-                false /* addConnectDeviceButton */);
-
-        assertThat(getNumberOfConnectDeviceButtons(resultList)).isEqualTo(0);
+        assertThat(mMediaSwitchingController.hasConnectDeviceButton()).isTrue();
     }
 
     @Test
@@ -1650,18 +1631,15 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
         when(mMediaDevice2.isSelected()).thenReturn(false);
         mMediaSwitchingController.onDeviceListUpdate(mMediaDevices);
 
-        // Verify that there is initially one "Connect a device" button present.
-        assertThat(getNumberOfConnectDeviceButtons(
-                mMediaSwitchingController.getMediaItemList())).isEqualTo(1);
+        // Verify that there is initially the "Connect Device" button present.
+        assertThat(mMediaSwitchingController.hasConnectDeviceButton()).isTrue();
 
-        // Change the selected device, and verify that there is still one "Connect a device" button
-        // present.
+        // Change the selected device, and verify that the "Connect Device" button is still present.
         when(mMediaDevice1.isSelected()).thenReturn(false);
         when(mMediaDevice2.isSelected()).thenReturn(true);
         mMediaSwitchingController.onDeviceListUpdate(mMediaDevices);
 
-        assertThat(getNumberOfConnectDeviceButtons(
-                mMediaSwitchingController.getMediaItemList())).isEqualTo(1);
+        assertThat(mMediaSwitchingController.hasConnectDeviceButton()).isTrue();
     }
 
     @Test
@@ -1842,15 +1820,5 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
         when(mSpyContext.getResources()).thenReturn(spyResources);
         when(spyResources.getBoolean(
                 R.bool.config_enableInputRouting)).thenReturn(true);
-    }
-
-    private int getNumberOfConnectDeviceButtons(List<MediaItem> itemList) {
-        int numberOfConnectDeviceButtons = 0;
-        for (MediaItem item : itemList) {
-            if (item.getMediaItemType() == MediaItem.MediaItemType.TYPE_PAIR_NEW_DEVICE) {
-                numberOfConnectDeviceButtons++;
-            }
-        }
-        return numberOfConnectDeviceButtons;
     }
 }

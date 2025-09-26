@@ -76,7 +76,7 @@ class MediaOutputAdapterTest : SysuiTestCase() {
     @Before
     fun setUp() {
         mMediaSwitchingController.stub {
-            on { getMediaItemList(false) } doReturn mMediaItems
+            on { getMediaItemList() } doReturn mMediaItems
             on { hasAdjustVolumeUserRestriction() } doReturn false
             on { isAnyDeviceTransferring } doReturn false
             on { currentConnectedMediaDevice } doReturn mMediaDevice1
@@ -684,7 +684,7 @@ class MediaOutputAdapterTest : SysuiTestCase() {
         mMediaOutputAdapter.updateItems()
         val updatedList: MutableList<MediaItem> = ArrayList()
         updatedList.add(MediaItem.createDeviceGroupMediaItem())
-        whenever(mMediaSwitchingController.getMediaItemList(false)).doReturn(updatedList)
+        whenever(mMediaSwitchingController.getMediaItemList()).doReturn(updatedList)
         assertThat(mMediaOutputAdapter.itemCount).isEqualTo(mMediaItems.size)
 
         mMediaOutputAdapter.updateItems()
