@@ -2583,9 +2583,9 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
     private void showAccessibilityTargetsSelection(int displayId, int shortcutType,
             int userId) {
         final Intent intent = new Intent(AccessibilityManager.ACTION_CHOOSE_ACCESSIBILITY_BUTTON);
-        final String chooserClassName = (shortcutType == HARDWARE)
-                ? AccessibilityShortcutChooserActivity.class.getName()
-                : AccessibilityButtonChooserActivity.class.getName();
+        final String chooserClassName = (shortcutType == SOFTWARE || shortcutType == GESTURE)
+                ? AccessibilityButtonChooserActivity.class.getName()
+                : AccessibilityShortcutChooserActivity.class.getName();
         intent.setClassName(CHOOSER_PACKAGE_NAME, chooserClassName);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         intent.putExtra(EXTRA_TYPE_TO_CHOOSE, shortcutType);
