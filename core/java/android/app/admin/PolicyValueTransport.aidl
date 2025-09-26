@@ -20,7 +20,7 @@ package android.app.admin;
  * Internal IPC to send a policy value over the wire.
  * Currently only supports a limited set of built-in types.
  *
- * {@hide}
+ * @hide
  */
 union PolicyValueTransport {
     int integerField;
