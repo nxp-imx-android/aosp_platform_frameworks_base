@@ -4785,16 +4785,11 @@ public class MockingOomAdjusterTests {
     @SuppressWarnings("GuardedBy")
     private void setIsReceivingBroadcast(ProcessRecord app, boolean isReceivingBroadcast,
             int schedGroup) {
-        if (Flags.pushBroadcastStateToOomadjuster()) {
             if (isReceivingBroadcast) {
                 mProcessStateController.noteBroadcastDeliveryStarted(app, schedGroup);
             } else {
                 mProcessStateController.noteBroadcastDeliveryEnded(app);
             }
-        } else {
-            doReturn(isReceivingBroadcast).when(mService).isReceivingBroadcastLocked(
-                    any(ProcessRecord.class), any(int[].class));
-        }
     }
 
 
