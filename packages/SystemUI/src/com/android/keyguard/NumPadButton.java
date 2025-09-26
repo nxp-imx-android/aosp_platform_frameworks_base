@@ -15,8 +15,10 @@
  */
 package com.android.keyguard;
 
-import static android.animation.AnimatorInflater.loadStateListAnimator;
 import static android.security.Flags.lockscreenTimeoutDeactivatePinPad;
+
+import static com.android.keyguard.NumPadAnimatableKt.DISABLED_BACKGROUND_ALPHA;
+import static com.android.keyguard.NumPadAnimatableKt.DISABLED_FOREGROUND_ALPHA;
 
 import android.content.Context;
 import android.content.res.ColorStateList;
@@ -35,11 +37,11 @@ import com.android.systemui.Flags;
 import com.android.systemui.bouncer.shared.constants.PinBouncerConstants.Color;
 import com.android.systemui.bouncer.ui.BouncerColors;
 import com.android.systemui.res.R;
+import com.android.systemui.util.ColorUtilKt;
 
-/**
- * Similar to the {@link NumPadKey}, but displays an image.
- */
-public class NumPadButton extends AlphaOptimizedImageButton implements NumPadAnimationListener {
+/** Similar to the {@link NumPadKey}, but displays an image. */
+public class NumPadButton extends AlphaOptimizedImageButton
+        implements NumPadAnimationListener, NumPadAnimatable {
 
     @Nullable
     private NumPadAnimator mAnimator;
@@ -57,16 +59,30 @@ public class NumPadButton extends AlphaOptimizedImageButton implements NumPadAni
         super(context, attrs);
         mStyleAttr = attrs.getStyleAttribute();
         setupAnimator();
-
-        if (lockscreenTimeoutDeactivatePinPad()) {
-            setStateListAnimator(
-                    loadStateListAnimator(context, R.animator.numpad_key_alpha_animator));
-        }
     }
 
     @Override
     protected void onConfigurationChanged(Configuration newConfig) {
         mOrientation = newConfig.orientation;
+    }
+
+    @Override
+    public void setEnabled(boolean enabled) {
+        super.setEnabled(enabled);
+        if (mAnimator == null || !lockscreenTimeoutDeactivatePinPad()) {
+            return;
+        }
+        if (enabled) {
+            mAnimator.enable();
+        } else {
+            mAnimator.disable();
+        }
+    }
+
+    @Override
+    public void setAlpha(float fgAlpha, float bgAlpha) {
+        reloadIconTintWithAlpha(fgAlpha);
+        getBackground().mutate().setAlpha(i(bgAlpha));
     }
 
     @Override
@@ -117,19 +133,25 @@ public class NumPadButton extends AlphaOptimizedImageButton implements NumPadAni
     public void reloadColors() {
         if (mAnimator != null) mAnimator.reloadColors(getContext());
 
+        if (lockscreenTimeoutDeactivatePinPad()) {
+            reloadIconTintWithAlpha(isEnabled() ? 1f : DISABLED_FOREGROUND_ALPHA);
+            return;
+        }
         int textColorResId = mIsTransparentMode ? Color.actionWithAutoConfirm : Color.action;
         int imageColor = getContext().getColor(textColorResId);
         ((VectorDrawable) getDrawable()).setTintList(ColorStateList.valueOf(imageColor));
     }
 
+    private void reloadIconTintWithAlpha(float alpha) {
+        int textColorResId = mIsTransparentMode ? Color.actionWithAutoConfirm : Color.action;
+        int iconColor = ColorUtilKt.getColorWithAlpha(getContext().getColor(textColorResId), alpha);
+        getDrawable().mutate().setTint(iconColor);
+    }
+
     @Override
     public void setProgress(float progress) {
         if (mAnimator != null) {
-            mAnimator.setProgress(progress);
-        }
-        if (lockscreenTimeoutDeactivatePinPad()) {
-            float targetAlpha = isEnabled() ? 1f : 0.2f;
-            setAlpha(progress * targetAlpha);
+            mAnimator.setProgress(progress, isEnabled());
         }
     }
 
@@ -173,7 +195,7 @@ public class NumPadButton extends AlphaOptimizedImageButton implements NumPadAni
         Drawable background = getBackground();
         if (background instanceof GradientDrawable) {
             mAnimator = new NumPadAnimator(getContext(), background.mutate(),
-                    mStyleAttr, getDrawable());
+                    mStyleAttr, getDrawable(), this);
         } else {
             mAnimator = null;
         }

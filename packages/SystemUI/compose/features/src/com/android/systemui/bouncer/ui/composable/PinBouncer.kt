@@ -272,9 +272,6 @@ private fun PinPadButton(
             DurationUnit.MILLISECONDS
         )
 
-    val enabledAlpha by
-        animateFloatAsState(if (isEnabled) 1f else 0.2f, label = "Pin pad enabled alpha")
-
     val cornerRadius: Dp by
         animateDpAsState(
             if (isAnimationEnabled && isPressed) 24.dp else pinButtonMaxSize / 2,
@@ -286,6 +283,7 @@ private fun PinPadButton(
         animateColorAsState(
             when {
                 isAnimationEnabled && isPressed -> MaterialTheme.colorScheme.primary
+                lockscreenTimeoutDeactivatePinPad() && !isEnabled -> backgroundColor.copy(alpha = 0.18f)
                 else -> backgroundColor
             },
             label = "Pin button container color",
@@ -295,6 +293,7 @@ private fun PinPadButton(
         animateColorAsState(
             when {
                 isAnimationEnabled && isPressed -> MaterialTheme.colorScheme.onPrimary
+                lockscreenTimeoutDeactivatePinPad() && !isEnabled -> foregroundColor.copy(alpha = 0.38f)
                 else -> foregroundColor
             },
             label = "Pin button container color",
@@ -308,7 +307,6 @@ private fun PinPadButton(
                 .thenIf(!lockscreenTimeoutDeactivatePinPad() || isEnabled) {
                     Modifier.focusRequester(FocusRequester.Default).focusable()
                 }
-                .thenIf(lockscreenTimeoutDeactivatePinPad()) { Modifier.alpha(enabledAlpha) }
                 .sizeIn(maxWidth = pinButtonMaxSize, maxHeight = pinButtonMaxSize)
                 .aspectRatio(1f)
                 .drawBehind {
