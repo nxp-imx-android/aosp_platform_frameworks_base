@@ -58,3 +58,10 @@ xsd_config {
     api_dir: "device-state-config/schema",
     package_name: "com.android.server.policy.devicestate.config",
 }
+
+xsd_config {
+    name: "supplemental_security_patches_xsd",
+    srcs: ["supplemental_security_patches/supplemental_security_patches.xsd"],
+    api_dir: "supplemental_security_patches/schema",
+    package_name: "android.security.patches",
+}

@@ -133,6 +133,7 @@ java_library_static {
         ":display-device-config",
         ":display-layout-config",
         ":display-topology",
+        ":supplemental_security_patches_xsd",
         ":device-state-config",
         "java/com/android/server/EventLogTags.logtags",
         "java/com/android/server/am/EventLogTags.logtags",
