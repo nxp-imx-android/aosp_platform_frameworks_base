@@ -30,8 +30,8 @@ import android.hardware.display.DisplayManagerGlobal;
 import android.hardware.display.IDisplayManager;
 import android.hardware.display.IVirtualDisplayCallback;
 import android.os.RemoteException;
+import android.util.Size;
 import android.view.DisplayInfo;
-import android.view.Surface;
 import android.view.accessibility.AccessibilityManager;
 import android.view.accessibility.IAccessibilityManager;
 
@@ -63,7 +63,7 @@ public class ComputerControlSessionTest {
     @Mock
     private IVirtualDisplayCallback mVirtualDisplayCallback;
     @Mock
-    private IInteractiveMirrorDisplay mMockInteractiveMirrorDisplay;
+    private IInteractiveMirror mMockInteractiveMirror;
 
     private ComputerControlSession mSession;
 
@@ -103,12 +103,16 @@ public class ComputerControlSessionTest {
     }
 
     @Test
-    public void createInteractiveMirrorDisplay_returnsDisplay() throws RemoteException {
-        when(mMockSession.createInteractiveMirrorDisplay(eq(WIDTH), eq(HEIGHT), any()))
-                .thenReturn(mMockInteractiveMirrorDisplay);
-        InteractiveMirrorDisplay display =
-                mSession.createInteractiveMirrorDisplay(WIDTH, HEIGHT, new Surface());
-        assertThat(display).isNotNull();
+    public void createInteractiveMirror_returns() throws RemoteException {
+        when(mMockSession.createInteractiveMirror(any()))
+                .thenReturn(mMockInteractiveMirror);
+        InteractiveMirror mirror = mSession.createInteractiveMirror();
+        assertThat(mirror).isNotNull();
+    }
+
+    @Test
+    public void getDisplaySize_returns() {
+        assertThat(mSession.getDisplaySize()).isEqualTo(new Size(WIDTH, HEIGHT));
     }
 
     @Test

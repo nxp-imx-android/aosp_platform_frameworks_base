@@ -34,9 +34,10 @@ import android.media.Image;
 import android.media.ImageReader;
 import android.os.Binder;
 import android.os.RemoteException;
+import android.util.Size;
 import android.view.Display;
 import android.view.DisplayInfo;
-import android.view.Surface;
+import android.view.SurfaceControl;
 import android.view.accessibility.AccessibilityManager;
 import android.view.accessibility.AccessibilityWindowInfo;
 import android.view.inputmethod.InputConnection;
@@ -119,6 +120,8 @@ public final class ComputerControlSession implements AutoCloseable {
 
     @NonNull
     private final IComputerControlSession mSession;
+    @NonNull
+    private final Size mDisplaySize;
     private final Object mLock = new Object();
     @GuardedBy("mLock")
     @Nullable
@@ -146,6 +149,7 @@ public final class ComputerControlSession implements AutoCloseable {
         Objects.requireNonNull(display);
         final DisplayInfo displayInfo = new DisplayInfo();
         display.getDisplayInfo(displayInfo);
+        mDisplaySize = new Size(displayInfo.logicalWidth, displayInfo.logicalHeight);
 
         mImageReader = ImageReader.newInstance(displayInfo.logicalWidth,
                 displayInfo.logicalHeight,
@@ -311,23 +315,23 @@ public final class ComputerControlSession implements AutoCloseable {
 
     /** Creates an interactive virtual display, mirroring the trusted one. */
     @Nullable
-    public InteractiveMirrorDisplay createInteractiveMirrorDisplay(
-            @IntRange(from = 1) int width, @IntRange(from = 1) int height,
-            @NonNull Surface surface) {
-        Objects.requireNonNull(surface);
-        if (width <= 0 || height <= 0) {
-            throw new IllegalArgumentException("Display dimensions must be positive");
-        }
+    public InteractiveMirror createInteractiveMirror() {
         try {
-            IInteractiveMirrorDisplay display =
-                    mSession.createInteractiveMirrorDisplay(width, height, surface);
-            if (display == null) {
+            SurfaceControl mirrorSurface = new SurfaceControl();
+            IInteractiveMirror mirror = mSession.createInteractiveMirror(mirrorSurface);
+            if (mirror == null) {
                 return null;
             }
-            return new InteractiveMirrorDisplay(display);
+            return new InteractiveMirror(mirror, mirrorSurface);
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }
+    }
+
+    /** Get the size of the session's display. */
+    @NonNull
+    public Size getDisplaySize() {
+        return mDisplaySize;
     }
 
     /**

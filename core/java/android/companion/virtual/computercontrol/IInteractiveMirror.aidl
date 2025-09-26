@@ -19,17 +19,16 @@ package android.companion.virtual.computercontrol;
 import android.hardware.input.VirtualTouchEvent;
 
 /**
- * A display, mirroring a computer control session display, and its associated touchscreen.
+ * An interactive mirror of a computer control session display.
  *
  * @hide
  */
-oneway interface IInteractiveMirrorDisplay {
+// TODO(b/432678187): Replace the permission check with an alternative
+@RequiresNoPermission
+oneway interface IInteractiveMirror {
 
-    /** Resize the mirror display and updates the associated touchscreen. */
-    void resize(int width, int height);
-
-    /** Injects a touch event into the mirror display. */
-    void sendTouchEvent(in VirtualTouchEvent event);
+    /** Set whether the user can interact with the contents of the mirror. */
+    void setInteractive(boolean interactive);
 
     /** Closes this mirror display and the associated touchscreen. */
     void close();

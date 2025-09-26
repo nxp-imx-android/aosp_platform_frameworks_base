@@ -8559,6 +8559,26 @@ public class WindowManagerService extends IWindowManager.Stub
         }
 
         @Override
+        public SurfaceControl createMirrorForDisplayContent(int displayId) {
+            synchronized (mGlobalLock) {
+                final DisplayContent dc = mRoot.getDisplayContent(displayId);
+                if (dc == null) {
+                    Slog.e(TAG, "Failed to create mirror for display: "
+                            + displayId + " - DisplayContent not found.");
+                    return null;
+                }
+                final SurfaceControl sc = dc.getSurfaceControl();
+                if (sc == null) {
+                    Slog.e(TAG, "Failed to create mirror for display: " + displayId
+                            + " - SurfaceControl is not initialized.");
+                    return null;
+                }
+                // Return the mirror surface to avoid leaking the display surface outside of WM.
+                return SurfaceControl.mirrorSurface(sc);
+            }
+        }
+
+        @Override
         @ImeClientFocusResult
         public int hasInputMethodClientFocus(IBinder windowToken, int uid, int pid, int displayId) {
             if (displayId == Display.INVALID_DISPLAY) {
