@@ -62,6 +62,7 @@ import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import android.platform.test.flag.junit.FlagsParameterization
 import android.testing.TestableContext
+import android.util.Pair
 import android.view.Display
 import android.view.Display.DEFAULT_DISPLAY
 import android.view.Display.INVALID_DISPLAY
@@ -317,6 +318,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
 
     private lateinit var controller: DesktopTasksController
     private lateinit var shellInit: ShellInit
+    private lateinit var displayDisconnectTransitionHandler: DisplayDisconnectTransitionHandler
     private lateinit var taskRepository: DesktopRepository
     private lateinit var userRepositories: DesktopUserRepositories
     private lateinit var desktopTasksLimiter: DesktopTasksLimiter
@@ -484,6 +486,13 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         controller.setSplitScreenController(splitScreenController)
         controller.freeformTaskTransitionStarter = freeformTaskTransitionStarter
         controller.desktopModeEnterExitTransitionListener = desktopModeEnterExitTransitionListener
+
+        displayDisconnectTransitionHandler =
+            DisplayDisconnectTransitionHandler(
+                transitions = transitions,
+                shellInit = shellInit,
+                desktopTasksController = Optional.of(controller),
+            )
 
         shellInit.init()
 
@@ -5037,7 +5046,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     private fun minimizePipTask(task: RunningTaskInfo, appOpsAllowed: Boolean = true) {
         val handler = mock(TransitionHandler::class.java)
         whenever(transitions.dispatchRequest(any(), any(), anyOrNull()))
-            .thenReturn(android.util.Pair(handler, WindowContainerTransaction()))
+            .thenReturn(Pair(handler, WindowContainerTransaction()))
         mContext.addMockSystemService(Context.APP_OPS_SERVICE, mockAppOpsManager)
         mContext.setMockPackageManager(packageManager)
 
@@ -11595,7 +11604,10 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
             preserveRequested = true
         }
 
-        val wct = assertNotNull(controller.handleRequest(transition, transitionRequestInfo))
+        val wct =
+            assertNotNull(
+                displayDisconnectTransitionHandler.handleRequest(transition, transitionRequestInfo)
+            )
         assertThat(preserveRequested).isTrue()
 
         return wct
