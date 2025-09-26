@@ -27,6 +27,7 @@ import android.window.IRemoteTransitionFinishedCallback
 import android.window.TransitionInfo
 import com.android.systemui.animation.RemoteTransitionHelper
 import com.android.wm.shell.shared.CounterRotator
+import com.android.wm.shell.shared.TransitionUtil
 
 /**
  * RemoteTransitionHelper that initializes changes with particular attention to Keyguard
@@ -46,8 +47,11 @@ class KeyguardTransitionHelper : RemoteTransitionHelper {
         finishCallback: IRemoteTransitionFinishedCallback?,
     ) {
         info.changes.forEach { change ->
+            val isApp = TransitionUtil.LeafTaskFilter().test(change)
+            val isWallpaper = TransitionUtil.isWallpaper(change)
+
             // Make sure the wallpaper is rotated correctly.
-            if ((change.flags and TransitionInfo.FLAG_IS_WALLPAPER) != 0) {
+            if (isWallpaper) {
                 val rotationDelta =
                     RotationUtils.deltaRotation(change.startRotation, change.endRotation)
                 val wallpaperParent = change?.parent
@@ -79,7 +83,9 @@ class KeyguardTransitionHelper : RemoteTransitionHelper {
                 }
             }
 
-            if (RemoteTransitionHelper.OPENING_MODES.contains(change.mode)) {
+            if (
+                (isApp || isWallpaper) && RemoteTransitionHelper.OPENING_MODES.contains(change.mode)
+            ) {
                 transaction.setAlpha(change.leash, 0f)
             } else if (TransitionInfo.isIndependent(change, info)) {
                 // Set alpha back to 1 for the independent changes because we will be animating
