@@ -77,6 +77,7 @@ public final class ShortcutConstants {
             UserShortcutType.QUICK_SETTINGS,
             UserShortcutType.GESTURE,
             UserShortcutType.KEY_GESTURE,
+            UserShortcutType.TOP_ROW_KEY,
             UserShortcutType.ALL
     })
     public @interface UserShortcutType {
@@ -89,9 +90,10 @@ public final class ShortcutConstants {
         int QUICK_SETTINGS = 1 << 4;
         int GESTURE = 1 << 5;
         int KEY_GESTURE = 1 << 6;
+        int TOP_ROW_KEY = 1 << 7;
         // LINT.ThenChange(:shortcut_type_array)
         int ALL = SOFTWARE | HARDWARE | TRIPLETAP | TWOFINGER_DOUBLETAP | QUICK_SETTINGS | GESTURE
-                | KEY_GESTURE;
+                | KEY_GESTURE | TOP_ROW_KEY;
     }
 
     /**
@@ -106,7 +108,8 @@ public final class ShortcutConstants {
             UserShortcutType.TWOFINGER_DOUBLETAP,
             UserShortcutType.QUICK_SETTINGS,
             UserShortcutType.GESTURE,
-            UserShortcutType.KEY_GESTURE
+            UserShortcutType.KEY_GESTURE,
+            UserShortcutType.TOP_ROW_KEY,
             // LINT.ThenChange(:shortcut_type_intdef)
     };
 
@@ -117,7 +120,8 @@ public final class ShortcutConstants {
             Settings.Secure.ACCESSIBILITY_BUTTON_TARGETS,
             Settings.Secure.ACCESSIBILITY_SHORTCUT_TARGET_SERVICE,
             Settings.Secure.ACCESSIBILITY_QS_TARGETS,
-            Settings.Secure.ACCESSIBILITY_GESTURE_TARGETS
+            Settings.Secure.ACCESSIBILITY_GESTURE_TARGETS,
+            Settings.Secure.ACCESSIBILITY_TOP_ROW_KEY_TARGETS,
     };
 
     /**
@@ -128,7 +132,8 @@ public final class ShortcutConstants {
             Settings.Secure.ACCESSIBILITY_SHORTCUT_TARGET_SERVICE,
             Settings.Secure.ACCESSIBILITY_GESTURE_TARGETS,
             Settings.Secure.ACCESSIBILITY_DISPLAY_MAGNIFICATION_ENABLED,
-            Settings.Secure.ACCESSIBILITY_MAGNIFICATION_TWO_FINGER_TRIPLE_TAP_ENABLED
+            Settings.Secure.ACCESSIBILITY_MAGNIFICATION_TWO_FINGER_TRIPLE_TAP_ENABLED,
+            Settings.Secure.ACCESSIBILITY_TOP_ROW_KEY_TARGETS,
     };
 
     /**

@@ -22,8 +22,8 @@ import static android.accessibilityservice.AccessibilityService.SHOW_MODE_HARD_K
 import static android.accessibilityservice.AccessibilityService.SHOW_MODE_HIDDEN;
 import static android.accessibilityservice.AccessibilityService.SHOW_MODE_IGNORE_HARD_KEYBOARD;
 import static android.content.pm.PackageManager.FEATURE_WINDOW_MAGNIFICATION;
-import static android.provider.Settings.Secure.ACCESSIBILITY_MAGNIFICATION_CURSOR_FOLLOWING_MODE_CONTINUOUS;
 import static android.provider.Settings.Secure.ACCESSIBILITY_MAGNIFICATION_CURSOR_FOLLOWING_MODE_CENTER;
+import static android.provider.Settings.Secure.ACCESSIBILITY_MAGNIFICATION_CURSOR_FOLLOWING_MODE_CONTINUOUS;
 import static android.provider.Settings.Secure.ACCESSIBILITY_MAGNIFICATION_CURSOR_FOLLOWING_MODE_EDGE;
 import static android.provider.Settings.Secure.ACCESSIBILITY_MAGNIFICATION_MODE_FULLSCREEN;
 import static android.provider.Settings.Secure.ACCESSIBILITY_MAGNIFICATION_MODE_WINDOW;
@@ -38,6 +38,7 @@ import static com.android.internal.accessibility.common.ShortcutConstants.UserSh
 import static com.android.internal.accessibility.common.ShortcutConstants.UserShortcutType.KEY_GESTURE;
 import static com.android.internal.accessibility.common.ShortcutConstants.UserShortcutType.QUICK_SETTINGS;
 import static com.android.internal.accessibility.common.ShortcutConstants.UserShortcutType.SOFTWARE;
+import static com.android.internal.accessibility.common.ShortcutConstants.UserShortcutType.TOP_ROW_KEY;
 import static com.android.internal.accessibility.common.ShortcutConstants.UserShortcutType.TRIPLETAP;
 import static com.android.internal.accessibility.common.ShortcutConstants.UserShortcutType.TWOFINGER_DOUBLETAP;
 import static com.android.server.accessibility.AccessibilityUserState.doesShortcutTargetsStringContain;
@@ -179,6 +180,7 @@ public class AccessibilityUserStateTest {
         mUserState.updateShortcutTargetsLocked(Set.of(componentNameString), GESTURE);
         mUserState.updateShortcutTargetsLocked(Set.of(componentNameString), QUICK_SETTINGS);
         mUserState.updateShortcutTargetsLocked(Set.of(componentNameString), KEY_GESTURE);
+        mUserState.updateShortcutTargetsLocked(Set.of(componentNameString), TOP_ROW_KEY);
         mUserState.updateA11yTilesInQsPanelLocked(
                 Set.of(AccessibilityShortcutController.COLOR_INVERSION_TILE_COMPONENT_NAME));
         mUserState.setTargetAssignedToAccessibilityButton(componentNameString);
@@ -207,6 +209,7 @@ public class AccessibilityUserStateTest {
         assertTrue(mUserState.getShortcutTargetsLocked(GESTURE).isEmpty());
         assertTrue(mUserState.getShortcutTargetsLocked(QUICK_SETTINGS).isEmpty());
         assertTrue(mUserState.getShortcutTargetsLocked(KEY_GESTURE).isEmpty());
+        assertTrue(mUserState.getShortcutTargetsLocked(TOP_ROW_KEY).isEmpty());
         assertTrue(mUserState.getA11yQsTilesInQsPanel().isEmpty());
         assertNull(mUserState.getTargetAssignedToAccessibilityButton());
         assertFalse(mUserState.isTouchExplorationEnabledLocked());
