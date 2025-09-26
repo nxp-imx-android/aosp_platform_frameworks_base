@@ -91,6 +91,8 @@ public class CollapsingToolbarDelegate {
     @NonNull
     private Toolbar mToolbar;
     @Nullable
+    private View mToolbarButtonsContainer;
+    @Nullable
     private MaterialButton mPrimaryButton;
     @Nullable
     private MaterialButton mSecondaryButton;
@@ -189,6 +191,7 @@ public class CollapsingToolbarDelegate {
             }
         }
 
+        initToolbarButtonsContainer(view.findViewById(R.id.toolbar_buttons_container));
         initToolbarPrimaryButton(view.findViewById(R.id.primary_button));
         initToolbarSecondaryButton(view.findViewById(R.id.secondary_button));
         initToolbarActionButton(view.findViewById(R.id.action_button));
@@ -217,6 +220,11 @@ public class CollapsingToolbarDelegate {
             }
         }
         autoSetCollapsingToolbarLayoutScrolling(appBarLayout);
+    }
+
+    /** Initialize toolbar buttons container. */
+    public void initToolbarButtonsContainer(View toolbarButtonsContainer) {
+        mToolbarButtonsContainer = toolbarButtonsContainer;
     }
 
     /** Initialize toolbar's primary button. */
@@ -398,6 +406,7 @@ public class CollapsingToolbarDelegate {
         }
         int visibility = enabled ? View.VISIBLE : View.GONE;
         mPrimaryButton.setVisibility(visibility);
+        showOrHideToolbarButtonsContainer();
     }
 
     /** Set the icon to the primary button */
@@ -435,6 +444,7 @@ public class CollapsingToolbarDelegate {
         }
         int visibility = enabled ? View.VISIBLE : View.GONE;
         mSecondaryButton.setVisibility(visibility);
+        showOrHideToolbarButtonsContainer();
     }
 
     /** Set the icon to the secondary button */
@@ -472,6 +482,7 @@ public class CollapsingToolbarDelegate {
         }
         int visibility = enabled ? View.VISIBLE : View.GONE;
         mActionButton.setVisibility(visibility);
+        showOrHideToolbarButtonsContainer();
     }
 
     /**
@@ -571,5 +582,30 @@ public class CollapsingToolbarDelegate {
                     }
                 });
         params.setBehavior(behavior);
+    }
+
+    private void showOrHideToolbarButtonsContainer() {
+        if (mToolbarButtonsContainer == null) {
+            return;
+        }
+
+        boolean enabled = false;
+
+        // If at least one button inside toolbar buttons container is visible, make the container
+        // visible, otherwise it should be invisible to remove the custom padding it requires
+        if (mPrimaryButton != null) {
+            enabled |= mPrimaryButton.getVisibility() == View.VISIBLE;
+        }
+
+        if (mSecondaryButton != null) {
+            enabled |= mSecondaryButton.getVisibility() == View.VISIBLE;
+        }
+
+        if (mActionButton != null) {
+            enabled |= mActionButton.getVisibility() == View.VISIBLE;
+        }
+
+        int visibility = enabled ? View.VISIBLE : View.GONE;
+        mToolbarButtonsContainer.setVisibility(visibility);
     }
 }
