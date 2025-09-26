@@ -24,6 +24,7 @@ import static android.os.PowerManager.WAKE_REASON_DISPLAY_GROUP_ADDED;
 import static android.os.PowerManager.WAKE_REASON_DISPLAY_GROUP_TURNED_ON;
 import static android.os.PowerManagerInternal.MODE_DEVICE_IDLE;
 import static android.os.PowerManagerInternal.MODE_DISPLAY_INACTIVE;
+import static android.os.PowerManagerInternal.UserActivityListener;
 import static android.os.PowerManagerInternal.WAKEFULNESS_ASLEEP;
 import static android.os.PowerManagerInternal.WAKEFULNESS_AWAKE;
 import static android.os.PowerManagerInternal.WAKEFULNESS_DOZING;
@@ -39,6 +40,7 @@ import static com.android.internal.display.BrightnessUtils.INVALID_BRIGHTNESS_IN
 import static com.android.server.display.brightness.BrightnessUtils.isValidBrightnessValue;
 import static com.android.server.power.ScreenTimeoutOverridePolicy.RELEASE_REASON_NOT_ACQUIRED;
 import static com.android.server.power.ScreenTimeoutOverridePolicy.RELEASE_REASON_WAKE_LOCK_DEATH;
+import static com.android.server.power.feature.flags.Flags.interactiveDozeExperience;
 
 import android.annotation.IntDef;
 import android.annotation.NonNull;
@@ -89,6 +91,8 @@ import android.os.PowerManager;
 import android.os.PowerManager.FlagAmbientSuppression;
 import android.os.PowerManager.GoToSleepReason;
 import android.os.PowerManager.ServiceType;
+import android.os.PowerManager.UserActivityEvent;
+import android.os.PowerManager.UserActivityFlag;
 import android.os.PowerManager.WakeReason;
 import android.os.PowerManagerInternal;
 import android.os.PowerSaveState;
@@ -383,6 +387,10 @@ public final class PowerManagerService extends SystemService
 
     // Table of all wake locks acquired by applications.
     private final ArrayList<WakeLock> mWakeLocks = new ArrayList<>();
+
+    // All active user activity listeners.
+    @GuardedBy("mLock")
+    final ArrayList<UserActivityListener> mUserActivityListeners = new ArrayList<>();
 
     // A bitfield that summarizes the state of all active wakelocks.
     private int mWakeLockSummary;
@@ -2263,6 +2271,10 @@ public final class PowerManagerService extends SystemService
 
             if (mScreenTimeoutOverridePolicy != null) {
                 mScreenTimeoutOverridePolicy.onUserActivity(mWakeLockSummary, event, flags);
+            }
+
+            if (interactiveDozeExperience()) {
+                notifyUserActivityToListeners(eventTime, event, flags);
             }
 
             if (mUserInactiveOverrideFromWindowManager) {
@@ -4440,6 +4452,33 @@ public final class PowerManagerService extends SystemService
             EventLogTags.writeDeviceIdleOffPhase("power");
         }
         return true;
+    }
+
+    void registerUserActivityListenerInternal(UserActivityListener listener) {
+        synchronized (mLock) {
+            mUserActivityListeners.add(listener);
+        }
+    }
+
+    void unregisterUserActivityListenerInternal(UserActivityListener listener) {
+        synchronized (mLock) {
+            mUserActivityListeners.remove(listener);
+        }
+    }
+
+    private void notifyUserActivityToListeners(
+            long when, @UserActivityEvent int event, @UserActivityFlag int flags) {
+        UserActivityListener[] listeners;
+        synchronized (mLock) {
+            if (mUserActivityListeners.isEmpty()) {
+                return;
+            }
+            listeners = new UserActivityListener[mUserActivityListeners.size()];
+            listeners = mUserActivityListeners.toArray(listeners);
+        }
+        for (int i = 0; i < listeners.length; i++) {
+            listeners[i].onUserActivity(when, event, flags);
+        }
     }
 
     boolean setLightDeviceIdleModeInternal(boolean enabled) {
@@ -7730,6 +7769,16 @@ public final class PowerManagerService extends SystemService
                 Slog.w(TAG,
                         "Battery saver is not supported, no low power mode observer registered");
             }
+        }
+
+        @Override
+        public void registerUserActivityListener(UserActivityListener listener) {
+            registerUserActivityListenerInternal(listener);
+        }
+
+        @Override
+        public void unregisterUserActivityListener(UserActivityListener listener) {
+            unregisterUserActivityListenerInternal(listener);
         }
 
         @Override

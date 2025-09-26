@@ -29,6 +29,7 @@ import static android.os.PowerManager.FLAG_AMBIENT_SUPPRESSION_NONE;
 import static android.os.PowerManager.SCREEN_TIMEOUT_KEEP_DISPLAY_ON;
 import static android.os.PowerManager.SCREEN_TIMEOUT_ACTIVE;
 import static android.os.PowerManager.USER_ACTIVITY_EVENT_BUTTON;
+import static android.os.PowerManagerInternal.UserActivityListener;
 import static android.os.PowerManagerInternal.WAKEFULNESS_ASLEEP;
 import static android.os.PowerManagerInternal.WAKEFULNESS_AWAKE;
 import static android.os.PowerManagerInternal.WAKEFULNESS_DOZING;
@@ -65,9 +66,11 @@ import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import android.app.ActivityManagerInternal;
@@ -3405,6 +3408,60 @@ public class PowerManagerServiceTest {
 
         forceSleep();
         assertThat(mService.getGlobalWakefulnessLocked()).isNotEqualTo(WAKEFULNESS_DREAMING);
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_INTERACTIVE_DOZE_EXPERIENCE)
+    public void testUserActivity_notifiesListeners() {
+        createService();
+        startSystem();
+        advanceTime(1500);
+
+        UserActivityListener listener1 = mock(UserActivityListener.class);
+        UserActivityListener listener2 = mock(UserActivityListener.class);
+        mService.getLocalServiceInstance().registerUserActivityListener(listener1);
+        mService.getLocalServiceInstance().registerUserActivityListener(listener2);
+        mService.getBinderServiceInstance().userActivity(Display.DEFAULT_DISPLAY, mClock.now(),
+                PowerManager.USER_ACTIVITY_EVENT_OTHER, PowerManager.USER_ACTIVITY_FLAG_INDIRECT);
+        // Check that all listeners have been notified.
+        verify(listener1).onUserActivity(mClock.now(), PowerManager.USER_ACTIVITY_EVENT_OTHER,
+                PowerManager.USER_ACTIVITY_FLAG_INDIRECT);
+        verify(listener2).onUserActivity(mClock.now(), PowerManager.USER_ACTIVITY_EVENT_OTHER,
+                PowerManager.USER_ACTIVITY_FLAG_INDIRECT);
+
+        reset(listener1, listener2);
+        advanceTime(1000);
+        mService.getLocalServiceInstance().unregisterUserActivityListener(listener2);
+        mService.getBinderServiceInstance().userActivity(Display.DEFAULT_DISPLAY, mClock.now(),
+                PowerManager.USER_ACTIVITY_EVENT_BUTTON, /* flags= */ 0);
+        // Check that only listener1 is notified, because listener2 is unregistered.
+        verify(listener1).onUserActivity(
+                mClock.now(), PowerManager.USER_ACTIVITY_EVENT_BUTTON, /* flags= */ 0);
+        verifyNoInteractions(listener2);
+
+        reset(listener1, listener2);
+        advanceTime(1000);
+        mService.getLocalServiceInstance().unregisterUserActivityListener(listener1);
+        mService.getBinderServiceInstance().userActivity(Display.DEFAULT_DISPLAY, mClock.now(),
+                PowerManager.USER_ACTIVITY_EVENT_BUTTON, /* flags= */ 0);
+        // Check that no listener has been notified since they all have been removed.
+        verifyNoInteractions(listener1);
+        verifyNoInteractions(listener2);
+    }
+
+    @Test
+    @DisableFlags(Flags.FLAG_INTERACTIVE_DOZE_EXPERIENCE)
+    public void testUserActivity_interactiveDozeFlagOff_doesNotNotifyListeners() {
+        createService();
+        startSystem();
+        advanceTime(1500);
+
+        UserActivityListener listener = mock(UserActivityListener.class);
+        mService.getLocalServiceInstance().registerUserActivityListener(listener);
+        mService.getBinderServiceInstance().userActivity(Display.DEFAULT_DISPLAY, mClock.now(),
+                PowerManager.USER_ACTIVITY_EVENT_OTHER, PowerManager.USER_ACTIVITY_FLAG_INDIRECT);
+
+        verifyNoInteractions(listener);
     }
 
     @Test

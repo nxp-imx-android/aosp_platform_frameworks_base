@@ -16,6 +16,8 @@
 
 package android.os;
 
+import android.os.PowerManager.UserActivityEvent;
+import android.os.PowerManager.UserActivityFlag;
 import android.view.Display;
 import android.view.KeyEvent;
 
@@ -191,6 +193,32 @@ public abstract class PowerManagerInternal {
         int getServiceType();
         void onLowPowerModeChanged(PowerSaveState state);
     }
+
+    /** Interface for clients to receive callbacks related to user activity. */
+    public interface UserActivityListener {
+        /**
+         * Called when a user activity happens.
+         *
+         * @param when The time of the user activity, in the {@link SystemClock#uptimeMillis()}.
+         * @param event The type of the user activity.
+         * @param flags The flags associated with the user activity.
+         */
+        void onUserActivity(long when, @UserActivityEvent int event, @UserActivityFlag int flags);
+    }
+
+    /**
+     * Registers a listener to be notified about user activity events.
+     *
+     * @param listener the {@link UserActivityListener} to register.
+     */
+    public abstract void registerUserActivityListener(UserActivityListener listener);
+
+    /**
+     * Unregisters a listener that was registered via {@link #registerUserActivityListener}.
+     *
+     * @param listener the {@link UserActivityListener} to unregister.
+     */
+    public abstract void unregisterUserActivityListener(UserActivityListener listener);
 
     public abstract boolean setDeviceIdleMode(boolean enabled);
 
