@@ -25,4 +25,7 @@ data class LockscreenElementContext(
 
     /** Callback executed when an element is positioned by compose. */
     val onElementPositioned: (Key, VRectF) -> Unit = { _, _ -> },
+
+    /** Modifier to apply to elements that should be hidden when only showing authUI when dozing */
+    val nonAuthUIModifier: Modifier = Modifier,
 )

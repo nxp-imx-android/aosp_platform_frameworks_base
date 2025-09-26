@@ -23,7 +23,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.unit.dp
@@ -31,10 +30,8 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.android.compose.animation.scene.MovableElementContentScope
 import com.android.compose.animation.scene.MovableElementKey
-import com.android.compose.modifiers.padding
 import com.android.systemui.customization.clocks.R as clocksR
 import com.android.systemui.keyguard.KeyguardUnlockAnimationController
-import com.android.systemui.keyguard.ui.viewmodel.AodBurnInViewModel
 import com.android.systemui.keyguard.ui.viewmodel.KeyguardSmartspaceViewModel
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementKeys.Smartspace
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementProvider
@@ -44,7 +41,6 @@ import com.android.systemui.res.R
 import com.android.systemui.shade.ShadeDisplayAware
 import com.android.systemui.statusbar.lockscreen.LockscreenSmartspaceController
 import javax.inject.Inject
-import kotlin.collections.List
 
 class SmartspaceElementProvider
 @Inject
@@ -53,7 +49,6 @@ constructor(
     private val smartspaceController: LockscreenSmartspaceController,
     private val keyguardUnlockAnimationController: KeyguardUnlockAnimationController,
     private val keyguardSmartspaceViewModel: KeyguardSmartspaceViewModel,
-    private val aodBurnInViewModel: AodBurnInViewModel,
 ) : LockscreenElementProvider {
     override val elements: List<MovableLockscreenElement> by lazy {
         listOf(
@@ -86,7 +81,7 @@ constructor(
                         it.orientation = LinearLayout.VERTICAL
                     }
                 },
-                modifier = context.burnInModifier,
+                modifier = context.burnInModifier.then(context.nonAuthUIModifier),
             )
         }
     }
@@ -112,7 +107,7 @@ constructor(
                         it.orientation = LinearLayout.HORIZONTAL
                     }
                 },
-                modifier = context.burnInModifier,
+                modifier = context.burnInModifier.then(context.nonAuthUIModifier),
             )
         }
     }
@@ -167,7 +162,8 @@ constructor(
                             end = clockPadding,
                             bottom = dimensionResource(R.dimen.keyguard_status_view_bottom_margin),
                         )
-                        .then(context.burnInModifier),
+                        .then(context.burnInModifier)
+                        .then(context.nonAuthUIModifier),
             )
         }
     }
