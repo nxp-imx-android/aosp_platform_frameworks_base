@@ -28,12 +28,14 @@ import android.content.res.Resources;
 
 import com.android.dream.lowlight.dagger.LowLightDreamComponent;
 import com.android.settingslib.dream.DreamBackend;
+import com.android.systemui.CoreStartable;
 import com.android.systemui.ambient.touch.scrim.dagger.ScrimModule;
 import com.android.systemui.complication.dagger.RegisteredComplicationsModule;
 import com.android.systemui.dagger.SysUISingleton;
 import com.android.systemui.dagger.qualifiers.Main;
 import com.android.systemui.dreams.DreamOverlayNotificationCountProvider;
 import com.android.systemui.dreams.DreamOverlayService;
+import com.android.systemui.dreams.DreamStartable;
 import com.android.systemui.dreams.SystemDialogsCloser;
 import com.android.systemui.dreams.complication.dagger.DreamComplicationComponent;
 import com.android.systemui.dreams.homecontrols.HomeControlsDreamService;
@@ -286,4 +288,12 @@ public interface DreamModule {
             @Named(LOW_LIGHT_DREAM_SERVICE) ComponentName lowLightDreamService) {
         return factory.create(dreamManager, lowLightDreamService);
     }
+
+    /**
+     * Binds the DreamStartable to the map of CoreStartables.
+     */
+    @Binds
+    @IntoMap
+    @ClassKey(DreamStartable.class)
+    CoreStartable bindDreamStartable(DreamStartable impl);
 }
