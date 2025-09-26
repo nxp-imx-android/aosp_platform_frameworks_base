@@ -4031,7 +4031,6 @@ public class PowerManagerServiceTest {
      * Test IPowerManager.updateWakeLockUids() updates the workchain with the new uids
      */
     @Test
-    @RequiresFlagsEnabled({Flags.FLAG_WAKELOCK_ATTRIBUTION_VIA_WORKCHAIN})
     public void test_updateWakelockUids_updatesWorkchain() {
         createService();
         startSystem();

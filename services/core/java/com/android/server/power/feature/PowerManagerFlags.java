@@ -59,10 +59,6 @@ public class PowerManagerFlags {
             new FlagState(Flags.FLAG_LOCK_ON_UNPLUG,
                     Flags::lockOnUnplug);
 
-    private final FlagState mWakelockAttributionViaWorkchain =
-            new FlagState(Flags.FLAG_WAKELOCK_ATTRIBUTION_VIA_WORKCHAIN,
-                    Flags::wakelockAttributionViaWorkchain);
-
     private final FlagState mDisableFrozenProcessWakelocks =
             new FlagState(Flags.FLAG_DISABLE_FROZEN_PROCESS_WAKELOCKS,
                     Flags::disableFrozenProcessWakelocks);
@@ -134,13 +130,6 @@ public class PowerManagerFlags {
     }
 
     /**
-     * @return Whether the wakelock attribution via workchain is enabled
-     */
-    public boolean isWakelockAttributionViaWorkchainEnabled() {
-        return mWakelockAttributionViaWorkchain.isEnabled();
-    }
-
-    /**
      * @return Whether to lock when all remaining adjacent displays are asleep.
      */
     public boolean isLockOnUnplugEnabled() {
@@ -201,7 +190,6 @@ public class PowerManagerFlags {
         pw.println(" " + mPerDisplayWakeByTouch);
         pw.println(" " + mMoveWscLoggingToNotifier);
         pw.println(" " + mLockOnUnplug);
-        pw.println(" " + mWakelockAttributionViaWorkchain);
         pw.println(" " + mDisableFrozenProcessWakelocks);
         pw.println(" " + mForceDisableWakelocks);
         pw.println(" " + mEnableAppWakelockDataSource);
