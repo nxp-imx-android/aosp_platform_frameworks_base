@@ -57,6 +57,11 @@ class StatusBannerPreference @JvmOverloads constructor(
             field = value
             notifyChanged()
         }
+    var isButtonEnabled: Boolean = true
+        set(value) {
+            field = value
+            notifyChanged()
+        }
     private var buttonText: String = ""
         set(value) {
             field = value
@@ -151,6 +156,7 @@ class StatusBannerPreference @JvmOverloads constructor(
             text = buttonText
             setOnClickListener(listener)
             visibility = if (listener != null) View.VISIBLE else View.GONE
+            isEnabled = isButtonEnabled
         }
     }
 
