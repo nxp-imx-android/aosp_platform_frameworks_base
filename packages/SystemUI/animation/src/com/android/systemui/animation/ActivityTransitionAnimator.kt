@@ -70,6 +70,7 @@ import com.android.window.flags.Flags.enableCompatuiSysuiLauncherFix
 import com.android.wm.shell.shared.IShellTransitions
 import com.android.wm.shell.shared.ShellTransitions
 import com.android.wm.shell.shared.TransitionUtil
+import com.android.wm.shell.shared.compat.AnimatedSurface
 import java.util.concurrent.Executor
 import kotlin.math.roundToInt
 import kotlinx.coroutines.CoroutineScope
@@ -1830,7 +1831,7 @@ constructor(
             onAnimationFinished: () -> Unit,
         ) {
             impl.onAnimationStart(
-                resolveAnimatedWindow = { resolveAnimatedWindow(info) },
+                resolveAnimatedSurface = { resolveAnimatedSurface(info) },
                 startTransaction,
                 onAnimationFinished,
             )
@@ -1844,7 +1845,7 @@ constructor(
             states: Array<out WindowAnimationState>,
         ) {
             impl.takeOverAnimation(
-                resolveAnimatedWindow = { resolveAnimatedWindow(info, states) },
+                resolveAnimatedSurface = { resolveAnimatedSurface(info, states) },
                 startTransaction,
                 onAnimationFinished,
             )
@@ -1854,12 +1855,12 @@ constructor(
 
         /**
          * Extracts the [TransitionInfo.Change] representing the window to animate and its state
-         * from [info] and [startWindowStates], and wraps them in an [AnimatedWindow] object.
+         * from [info] and [startWindowStates], and wraps them in an [AnimatedSurface] object.
          */
-        private fun resolveAnimatedWindow(
+        private fun resolveAnimatedSurface(
             info: TransitionInfo?,
             startWindowStates: Array<out WindowAnimationState>? = null,
-        ): AnimatedWindow? {
+        ): AnimatedSurface? {
             if (info == null) {
                 return null
             }
@@ -1907,7 +1908,7 @@ constructor(
                 }
             }
 
-            return candidate?.let { AnimatedWindow.fromTransitionInfo(candidate, state) }
+            return candidate?.let { AnimatedSurface.from(candidate, state) }
         }
 
         private fun Rect.hasGreaterAreaThan(other: Rect): Boolean {
@@ -1965,7 +1966,7 @@ constructor(
             callback: IRemoteAnimationFinishedCallback?,
         ) {
             impl.onAnimationStart(
-                resolveAnimatedWindow = { resolveAnimatedWindow(apps) },
+                resolveAnimatedSurface = { resolveAnimatedSurface(apps) },
                 onAnimationFinished = { callback?.invoke() },
             )
         }
@@ -1978,7 +1979,7 @@ constructor(
             callback: IRemoteAnimationFinishedCallback?,
         ) {
             impl.takeOverAnimation(
-                resolveAnimatedWindow = { resolveAnimatedWindow(apps, startWindowStates) },
+                resolveAnimatedSurface = { resolveAnimatedSurface(apps, startWindowStates) },
                 startTransaction,
                 onAnimationFinished = { callback?.invoke() },
             )
@@ -1989,12 +1990,12 @@ constructor(
         /**
          * Extracts the [RemoteAnimationTarget] representing the window to animate and its state
          * from the list of [apps] participating in the transition and their [startWindowStates],
-         * and wraps them in an [AnimatedWindow] object.
+         * and wraps them in an [AnimatedSurface] object.
          */
-        private fun resolveAnimatedWindow(
+        private fun resolveAnimatedSurface(
             apps: Array<out RemoteAnimationTarget>?,
             startWindowStates: Array<out WindowAnimationState>? = null,
-        ): AnimatedWindow? {
+        ): AnimatedSurface? {
             if (apps == null) {
                 return null
             }
@@ -2047,7 +2048,7 @@ constructor(
                 }
             }
 
-            return candidate?.let { AnimatedWindow.fromRemoteAnimationTarget(it, state) }
+            return candidate?.let { AnimatedSurface.from(it, state) }
         }
 
         private fun IRemoteAnimationFinishedCallback.invoke() {
@@ -2060,60 +2061,6 @@ constructor(
 
         private fun Rect.hasGreaterAreaThan(other: Rect): Boolean {
             return (this.width() * this.height()) > (other.width() * other.height())
-        }
-    }
-
-    /**
-     * Abstraction layer for a window, used to hide the implementation details (i.e. the
-     * WindowManager API used) from the animation.
-     */
-    internal class AnimatedWindow
-    private constructor(
-        /** The [SurfaceControl] used to animate this window. */
-        val leash: SurfaceControl,
-
-        /** The state of this window at the beginning of the animation, if any. */
-        val startState: WindowAnimationState?,
-
-        /** The state of this window at the end of the animation. */
-        val endState: WindowAnimationState,
-
-        /** The background color of the task populating this window. */
-        val backgroundColor: Int,
-
-        /** Whether this window's background should be ignored and considered transparent. */
-        val isTranslucent: Boolean,
-
-        /** The [TaskInfo] representing the content of this window. */
-        val taskInfo: TaskInfo?,
-    ) {
-        companion object {
-            fun fromRemoteAnimationTarget(
-                window: RemoteAnimationTarget,
-                startState: WindowAnimationState?,
-            ): AnimatedWindow =
-                AnimatedWindow(
-                    leash = window.leash,
-                    startState = startState,
-                    endState =
-                        WindowAnimationState().apply { bounds = RectF(window.screenSpaceBounds) },
-                    backgroundColor = window.backgroundColor,
-                    isTranslucent = window.isTranslucent,
-                    taskInfo = window.taskInfo,
-                )
-
-            fun fromTransitionInfo(
-                window: TransitionInfo.Change,
-                startState: WindowAnimationState?,
-            ): AnimatedWindow =
-                AnimatedWindow(
-                    leash = window.leash,
-                    startState = startState,
-                    endState = WindowAnimationState().apply { bounds = RectF(window.endAbsBounds) },
-                    backgroundColor = window.backgroundColor,
-                    isTranslucent = (window.flags and TransitionInfo.FLAG_TRANSLUCENT) != 0,
-                    taskInfo = window.taskInfo,
-                )
         }
     }
 
@@ -2200,11 +2147,11 @@ constructor(
 
         @UiThread
         fun onAnimationStart(
-            resolveAnimatedWindow: () -> AnimatedWindow?,
+            resolveAnimatedSurface: () -> AnimatedSurface?,
             startTransaction: SurfaceControl.Transaction? = null,
             onAnimationFinished: () -> Unit,
         ) {
-            val window = setUpAnimation(resolveAnimatedWindow, onAnimationFinished) ?: return
+            val window = setUpAnimation(resolveAnimatedSurface, onAnimationFinished) ?: return
 
             if (controller.windowAnimatorState == null) {
                 startAnimation(
@@ -2220,16 +2167,16 @@ constructor(
 
         @UiThread
         fun takeOverAnimation(
-            resolveAnimatedWindow: () -> AnimatedWindow?,
+            resolveAnimatedSurface: () -> AnimatedSurface?,
             startTransaction: SurfaceControl.Transaction,
             onAnimationFinished: () -> Unit,
         ) {
-            val window = setUpAnimation(resolveAnimatedWindow, onAnimationFinished) ?: return
+            val window = setUpAnimation(resolveAnimatedSurface, onAnimationFinished) ?: return
             takeOverAnimationInternal(window, startTransaction, onAnimationFinished)
         }
 
         private fun takeOverAnimationInternal(
-            window: AnimatedWindow,
+            window: AnimatedSurface,
             startTransaction: SurfaceControl.Transaction?,
             onAnimationFinished: () -> Unit,
         ) {
@@ -2240,9 +2187,9 @@ constructor(
 
         @UiThread
         private fun setUpAnimation(
-            resolveAnimatedWindow: () -> AnimatedWindow?,
+            resolveAnimatedSurface: () -> AnimatedSurface?,
             onAnimationFinished: () -> Unit,
-        ): AnimatedWindow? {
+        ): AnimatedSurface? {
             removeTimeouts()
 
             // The animation was started too late and we already notified the controller that it
@@ -2258,7 +2205,7 @@ constructor(
                 return null
             }
 
-            val window = resolveAnimatedWindow()
+            val window = resolveAnimatedSurface()
             if (window == null) {
                 Log.i(TAG, "Aborting the animation as no window is opening")
                 onAnimationFinished()
@@ -2278,7 +2225,7 @@ constructor(
         }
 
         private fun startAnimation(
-            window: AnimatedWindow,
+            window: AnimatedSurface,
             useSpring: Boolean = false,
             startTransaction: SurfaceControl.Transaction? = null,
             onAnimationFinished: () -> Unit,
@@ -2533,7 +2480,7 @@ constructor(
         }
 
         private fun applyStateToWindow(
-            window: AnimatedWindow,
+            window: AnimatedSurface,
             state: TransitionAnimator.State,
             linearProgress: Float,
             useSpring: Boolean,
