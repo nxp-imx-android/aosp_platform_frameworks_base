@@ -423,8 +423,7 @@
     <string name="quick_settings_cast_detail_empty_text" msgid="2846282280014617785">"કોઈ ઉપકરણો ઉપલબ્ધ નથી"</string>
     <string name="quick_settings_cast_no_network" msgid="3863016850468559522">"કોઈ વાઇ-ફાઇ કે ઇથરનેટ કનેક્શન નથી"</string>
     <string name="quick_settings_cast_disconnect" msgid="4836025217838730930">"ડિસ્કનેક્ટ કરો"</string>
-    <!-- no translation found for quick_settings_audio_current_input (8219735427828862612) -->
-    <skip />
+    <string name="quick_settings_audio_current_input" msgid="8219735427828862612">"વર્તમાન માઇક આ છે"</string>
     <string name="quick_settings_brightness_dialog_title" msgid="4980669966716685588">"તેજ"</string>
     <string name="quick_settings_inversion_label" msgid="3501527749494755688">"વિપરીત રંગમાં બદલવું"</string>
     <string name="quick_settings_color_correction_label" msgid="5636617913560474664">"રંગ સુધારણા"</string>
@@ -1378,10 +1377,7 @@
     <string name="controls_menu_edit" msgid="890623986951347062">"નિયંત્રણોમાં ફેરફાર કરો"</string>
     <string name="controls_menu_add_another_app" msgid="8661172304650786705">"ઍપ ઉમેરો"</string>
     <string name="controls_menu_remove" msgid="3006525275966023468">"ઍપ કાઢી નાખો"</string>
-    <string name="media_output_dialog_add_output" msgid="5642703238877329518">"આઉટપુટ ઉમેરો"</string>
     <string name="media_output_dialog_group" msgid="5571251347877452212">"ગ્રૂપ"</string>
-    <string name="media_output_dialog_single_device" msgid="3102758980643351058">"1 ડિવાઇસ પસંદ કર્યું"</string>
-    <string name="media_output_dialog_multiple_devices" msgid="1093771040315422350">"<xliff:g id="COUNT">%1$d</xliff:g> ડિવાઇસ પસંદ કર્યા"</string>
     <string name="media_output_item_connected_state" msgid="297439499870755458">"કનેક્ટેડ"</string>
     <string name="media_output_dialog_connect_failed" msgid="3080972621975339387">"સ્વિચ કરી શકતા નથી. ફરી પ્રયાસ કરવા માટે ટૅપ કરો."</string>
     <string name="media_output_dialog_button_connect_device" msgid="2819038239946643550">"ડિવાઇસ કનેક્ટ કરો"</string>
@@ -1720,6 +1716,8 @@
     <string name="back_button_on_bouncer" msgid="809134628434396761">"પાછળ"</string>
     <string name="pager_dots_previous_content_description" msgid="26963508904918908">"પાછળ"</string>
     <string name="pager_dots_next_content_description" msgid="613943992626163120">"આગળ"</string>
+    <!-- no translation found for accessibility_pager_dots_navigate_to_next_page_action (7662720613169169465) -->
+    <skip />
     <string name="ambient_cue_autofill_action" msgid="9213025887835308128">"ઑટોમૅટિક રીતે ભરવાની સુવિધા"</string>
     <string name="ambient_cue_expand_action" msgid="6803711089932959312">"મોટું કરો"</string>
 </resources>
