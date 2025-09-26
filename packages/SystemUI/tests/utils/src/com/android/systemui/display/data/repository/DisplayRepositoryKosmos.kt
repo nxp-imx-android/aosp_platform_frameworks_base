@@ -40,6 +40,8 @@ import com.android.systemui.statusbar.core.statusBarIconRefreshInteractor
 import com.android.systemui.statusbar.disableflags.domain.interactor.DisableFlagsInteractor
 import com.android.systemui.statusbar.disableflags.domain.interactor.disableFlagsInteractor
 import com.android.systemui.statusbar.domain.interactor.StatusBarIconRefreshInteractor
+import com.android.systemui.statusbar.gesture.SwipeStatusBarAwayGestureHandler
+import com.android.systemui.statusbar.gesture.swipeStatusBarAwayGestureHandler
 import com.android.systemui.statusbar.layout.StatusBarContentInsetsProvider
 import com.android.systemui.statusbar.layout.mockStatusBarContentInsetsProvider
 import com.android.systemui.statusbar.mockCommandQueue
@@ -92,6 +94,9 @@ fun Kosmos.createFakeDisplaySubcomponent(
     systemBarUtilsState: () -> SystemBarUtilsState = { this.systemBarUtilsState },
     configurationState: () -> ConfigurationState = { this.configurationState },
     disableFlagsInteractor: () -> DisableFlagsInteractor = { this.disableFlagsInteractor },
+    swipeStatusBarAwayGestureHandler: () -> SwipeStatusBarAwayGestureHandler = {
+        this.swipeStatusBarAwayGestureHandler
+    },
 ): ReferenceSysUIDisplaySubcomponent {
     return object : ReferenceSysUIDisplaySubcomponent {
         override val displayCoroutineScope: CoroutineScope
@@ -126,6 +131,9 @@ fun Kosmos.createFakeDisplaySubcomponent(
 
         override val disableFlagsInteractor: DisableFlagsInteractor
             get() = disableFlagsInteractor()
+
+        override val swipeStatusBarAwayGestureHandler: SwipeStatusBarAwayGestureHandler
+            get() = swipeStatusBarAwayGestureHandler()
 
         override val homeStatusBarComponentFactory: HomeStatusBarComponent.Factory
             get() = mock<HomeStatusBarComponent.Factory>()

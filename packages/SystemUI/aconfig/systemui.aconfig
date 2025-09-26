@@ -1836,6 +1836,16 @@ flag {
 }
 
 flag {
+   name: "per_display_ongoing_call_status_bar_visibility"
+   namespace: "systemui"
+   description: "Adds per display implementation for the logic of whether the status bar should be visible for ongoing calls."
+   bug: "433704306"
+   metadata {
+     purpose: PURPOSE_BUGFIX
+   }
+}
+
+flag {
    name: "enable_desktop_growth"
    namespace: "systemui"
    description: "Enables the growth framework for desktop."
