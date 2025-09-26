@@ -30,7 +30,6 @@ import static com.android.internal.util.FrameworkStatsLog.GPU_HEADROOM_REPORTED_
 import static com.android.internal.util.FrameworkStatsLog.GPU_HEADROOM_REPORTED__TYPE__MIN;
 import static com.android.internal.util.FrameworkStatsLog.GPU_HEADROOM_REPORTED__TYPE__AVERAGE;
 import static com.android.internal.util.FrameworkStatsLog.GPU_HEADROOM_REPORTED__TYPE__UNKNOWN_CALCULATION_TYPE;
-import static com.android.server.power.hint.Flags.resetOnForkEnabled;
 import static com.android.server.power.hint.Flags.useSysuiSessionTag;
 
 import android.Manifest;
@@ -72,7 +71,6 @@ import android.os.PerformanceHintManager;
 import android.os.Process;
 import android.os.RemoteException;
 import android.os.ServiceManager;
-import android.os.ServiceSpecificException;
 import android.os.SessionCreationConfig;
 import android.os.SystemProperties;
 import android.os.UserHandle;
@@ -1375,24 +1373,23 @@ public final class HintManagerService extends SystemService {
                     Slogf.w(TAG, errMsg);
                     throw new SecurityException(errMsg);
                 }
-                if (resetOnForkEnabled()) {
-                    try {
-                        for (int tid : tids) {
-                            int policy = Process.getThreadScheduler(tid);
-                            // If the thread is not using the default scheduling policy (SCHED_OTHER),
-                            // we don't change it.
-                            if (policy != Process.SCHED_OTHER) {
-                                continue;
-                            }
-                            // set the SCHED_RESET_ON_FORK flag.
-                            int prio = Process.getThreadPriority(tid);
-                            Process.setThreadScheduler(tid, Process.SCHED_OTHER | Process.SCHED_RESET_ON_FORK, 0);
-                            Process.setThreadPriority(tid, prio);
+                try {
+                    for (int tid : tids) {
+                        int policy = Process.getThreadScheduler(tid);
+                        // If the thread is not using the default scheduling policy (SCHED_OTHER),
+                        // we don't change it.
+                        if (policy != Process.SCHED_OTHER) {
+                            continue;
                         }
-                    } catch (Exception e) {
-                        Slog.e(TAG, "Failed to set SCHED_RESET_ON_FORK for tids "
-                                + Arrays.toString(tids), e);
+                        // set the SCHED_RESET_ON_FORK flag.
+                        int prio = Process.getThreadPriority(tid);
+                        Process.setThreadScheduler(tid, Process.SCHED_OTHER
+                                | Process.SCHED_RESET_ON_FORK, 0);
+                        Process.setThreadPriority(tid, prio);
                     }
+                } catch (Exception e) {
+                    Slog.e(TAG, "Failed to set SCHED_RESET_ON_FORK for tids "
+                            + Arrays.toString(tids), e);
                 }
 
                 tag = updateSessionTag(tag, callingUid);
@@ -2350,24 +2347,23 @@ public final class HintManagerService extends SystemService {
                             Slogf.w(TAG, errMsg);
                             throw new SecurityException(errMsg);
                         }
-                        if (resetOnForkEnabled()) {
-                            try {
-                                for (int tid : tids) {
-                                    int policy = Process.getThreadScheduler(tid);
-                                    // If the thread is not using the default scheduling policy (SCHED_OTHER),
-                                    // we don't change it.
-                                    if (policy != Process.SCHED_OTHER) {
-                                        continue;
-                                    }
-                                    // set the SCHED_RESET_ON_FORK flag.
-                                    int prio = Process.getThreadPriority(tid);
-                                    Process.setThreadScheduler(tid, Process.SCHED_OTHER | Process.SCHED_RESET_ON_FORK, 0);
-                                    Process.setThreadPriority(tid, prio);
+                        try {
+                            for (int tid : tids) {
+                                int policy = Process.getThreadScheduler(tid);
+                                // If the thread is not using
+                                // the default scheduling policy (SCHED_OTHER), we don't change it.
+                                if (policy != Process.SCHED_OTHER) {
+                                    continue;
                                 }
-                            } catch (Exception e) {
-                                Slog.e(TAG, "Failed to set SCHED_RESET_ON_FORK for tids "
-                                        + Arrays.toString(tids), e);
+                                // set the SCHED_RESET_ON_FORK flag.
+                                int prio = Process.getThreadPriority(tid);
+                                Process.setThreadScheduler(tid, Process.SCHED_OTHER
+                                        | Process.SCHED_RESET_ON_FORK, 0);
+                                Process.setThreadPriority(tid, prio);
                             }
+                        } catch (Exception e) {
+                            Slog.e(TAG, "Failed to set SCHED_RESET_ON_FORK for tids "
+                                    + Arrays.toString(tids), e);
                         }
                         synchronized (mNonIsolatedTidsLock) {
                             for (int i = nonIsolated.size() - 1; i >= 0; i--) {
