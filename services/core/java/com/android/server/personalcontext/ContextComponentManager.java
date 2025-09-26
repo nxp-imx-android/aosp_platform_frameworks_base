@@ -51,7 +51,7 @@ import java.util.UUID;
  * Manages the collection of personal context components.
  * @hide
  */
-class ContextComponentManager {
+class ContextComponentManager implements RefinerWorkflow.ComponentProvider {
     // TODO(b/450089078): Move these actions to Intent.
     public static final String ACTION_REFINER_SERVICE =
             "android.service.personalcontext.RefinerService";
