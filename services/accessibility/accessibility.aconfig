@@ -105,6 +105,16 @@ flag {
 }
 
 flag {
+    name: "ignore_input_events_from_display_without_handler"
+    namespace: "accessibility"
+    description: "Fixes a bug in AccessibilityInputFilter so that input events from a display without an EventHandler are immediately passed through"
+    bug: "438713099"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "magnification_connection_approves_system_user"
     namespace: "accessibility"
     description: "Adds special case to automatically approve the system user when requesting connection"
