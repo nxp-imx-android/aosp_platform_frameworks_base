@@ -106,7 +106,6 @@ import com.android.systemui.shared.system.SysUiStatsLog;
 import com.android.systemui.statusbar.VibratorHelper;
 import com.android.systemui.statusbar.phone.StatusBarKeyguardViewManager;
 import com.android.systemui.statusbar.phone.SystemUIDialogManager;
-import com.android.systemui.statusbar.phone.UnlockedScreenOffAnimationController;
 import com.android.systemui.statusbar.policy.ConfigurationController;
 import com.android.systemui.statusbar.policy.KeyguardStateController;
 import com.android.systemui.user.domain.interactor.SelectedUserInteractor;
@@ -171,8 +170,6 @@ public class UdfpsController implements DozeReceiver, Dumpable {
     @NonNull private final AccessibilityManager mAccessibilityManager;
     @NonNull private final ConfigurationController mConfigurationController;
     @NonNull private final SystemClock mSystemClock;
-    @NonNull private final UnlockedScreenOffAnimationController
-            mUnlockedScreenOffAnimationController;
     @NonNull private final LatencyTracker mLatencyTracker;
     @VisibleForTesting @NonNull final BiometricDisplayListener mOrientationListener;
     @NonNull private final ActivityTransitionAnimator mActivityTransitionAnimator;
@@ -702,7 +699,6 @@ public class UdfpsController implements DozeReceiver, Dumpable {
             @Main Handler mainHandler,
             @NonNull @Main ConfigurationController configurationController,
             @NonNull SystemClock systemClock,
-            @NonNull UnlockedScreenOffAnimationController unlockedScreenOffAnimationController,
             @NonNull SystemUIDialogManager dialogManager,
             @NonNull LatencyTracker latencyTracker,
             @NonNull ActivityTransitionAnimator activityTransitionAnimator,
@@ -750,7 +746,6 @@ public class UdfpsController implements DozeReceiver, Dumpable {
         mScreenOn = screenLifecycle.getScreenState() == ScreenLifecycle.SCREEN_ON;
         mConfigurationController = configurationController;
         mSystemClock = systemClock;
-        mUnlockedScreenOffAnimationController = unlockedScreenOffAnimationController;
         mLatencyTracker = latencyTracker;
         mActivityTransitionAnimator = activityTransitionAnimator;
         mSensorProps = new FingerprintSensorPropertiesInternal(

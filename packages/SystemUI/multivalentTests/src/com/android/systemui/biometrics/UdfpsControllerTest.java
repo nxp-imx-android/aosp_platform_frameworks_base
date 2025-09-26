@@ -85,7 +85,6 @@ import com.android.systemui.statusbar.VibratorHelper;
 import com.android.systemui.statusbar.phone.ScreenOffAnimationController;
 import com.android.systemui.statusbar.phone.StatusBarKeyguardViewManager;
 import com.android.systemui.statusbar.phone.SystemUIDialogManager;
-import com.android.systemui.statusbar.phone.UnlockedScreenOffAnimationController;
 import com.android.systemui.statusbar.policy.ConfigurationController;
 import com.android.systemui.statusbar.policy.KeyguardStateController;
 import com.android.systemui.user.domain.interactor.SelectedUserInteractor;
@@ -168,8 +167,6 @@ public class UdfpsControllerTest extends SysuiTestCase {
     private ConfigurationController mConfigurationController;
     @Mock
     private SystemClock mSystemClock;
-    @Mock
-    private UnlockedScreenOffAnimationController mUnlockedScreenOffAnimationController;
     @Mock
     private LatencyTracker mLatencyTracker;
     private FakeExecutor mFgExecutor;
@@ -291,7 +288,6 @@ public class UdfpsControllerTest extends SysuiTestCase {
                 mHandler,
                 mConfigurationController,
                 mSystemClock,
-                mUnlockedScreenOffAnimationController,
                 mSystemUIDialogManager,
                 mLatencyTracker,
                 mActivityTransitionAnimator,
