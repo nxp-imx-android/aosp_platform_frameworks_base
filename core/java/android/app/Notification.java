@@ -4442,11 +4442,9 @@ public class Notification implements Parcelable
             flagStrings.add("USER_INITIATED_JOB");
             flags &= ~FLAG_USER_INITIATED_JOB;
         }
-        if (Flags.lifetimeExtensionRefactor()) {
-            if ((flags & FLAG_LIFETIME_EXTENDED_BY_DIRECT_REPLY) != 0) {
-                flagStrings.add("LIFETIME_EXTENDED_BY_DIRECT_REPLY");
-                flags &= ~FLAG_LIFETIME_EXTENDED_BY_DIRECT_REPLY;
-            }
+        if ((flags & FLAG_LIFETIME_EXTENDED_BY_DIRECT_REPLY) != 0) {
+            flagStrings.add("LIFETIME_EXTENDED_BY_DIRECT_REPLY");
+            flags &= ~FLAG_LIFETIME_EXTENDED_BY_DIRECT_REPLY;
         }
         if ((flags & FLAG_PROMOTED_ONGOING) != 0) {
             flagStrings.add("PROMOTED_ONGOING");

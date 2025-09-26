@@ -676,12 +676,6 @@ public class NotificationRemoteInputManager implements CoreStartable {
         }
     }
 
-    /** Returns whether the given notification is lifetime extended because of remote input */
-    public boolean isNotificationKeptForRemoteInputHistory(String key) {
-        return mRemoteInputListener != null
-                && mRemoteInputListener.isNotificationKeptForRemoteInputHistory(key);
-    }
-
     /** Returns whether the notification should be lifetime extended for remote input history */
     public boolean shouldKeepForRemoteInputHistory(NotificationEntry entry) {
         if (!FORCE_REMOTE_INPUT_HISTORY) {
@@ -894,9 +888,6 @@ public class NotificationRemoteInputManager implements CoreStartable {
 
         /** Called when the notification shade becomes fully closed */
         void onPanelCollapsed();
-
-        /** @return whether lifetime of a notification is being extended by the listener */
-        boolean isNotificationKeptForRemoteInputHistory(@NonNull String key);
 
         /** Called on user interaction to end lifetime extension for history */
         void releaseNotificationIfKeptForRemoteInputHistory(@NonNull String entryKey);

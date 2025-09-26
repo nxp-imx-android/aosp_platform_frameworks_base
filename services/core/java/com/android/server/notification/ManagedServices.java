@@ -16,7 +16,6 @@
 
 package com.android.server.notification;
 
-import static android.app.Flags.FLAG_LIFETIME_EXTENSION_REFACTOR;
 import static android.content.Context.BIND_ALLOW_WHITELIST_MANAGEMENT;
 import static android.content.Context.BIND_AUTO_CREATE;
 import static android.content.Context.BIND_FOREGROUND_SERVICE;
@@ -2196,7 +2195,6 @@ abstract public class ManagedServices {
         public ComponentName component;
         public int userid;
         public boolean isSystem;
-        @FlaggedApi(FLAG_LIFETIME_EXTENSION_REFACTOR)
         public boolean isSystemUi;
         public ServiceConnection connection;
         public int targetSdkVersion;
@@ -2246,7 +2244,6 @@ abstract public class ManagedServices {
             return isSystem;
         }
 
-        @FlaggedApi(FLAG_LIFETIME_EXTENSION_REFACTOR)
         public boolean isSystemUi() {
             return isSystemUi;
         }
