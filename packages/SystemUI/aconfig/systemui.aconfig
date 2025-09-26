@@ -398,16 +398,6 @@ flag {
 }
 
 flag {
-    name: "status_bar_share_dialog_with_app_name"
-    namespace: "systemui"
-    description: "Update the status bar share-to-app chip dialog to include the app name more often"
-    bug: "432665824"
-    metadata {
-      purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "status_bar_always_schedule_auto_hide"
     namespace: "systemui"
     description: "Schedule the status bar auto-hide functionality more often for fullscreen mode"
