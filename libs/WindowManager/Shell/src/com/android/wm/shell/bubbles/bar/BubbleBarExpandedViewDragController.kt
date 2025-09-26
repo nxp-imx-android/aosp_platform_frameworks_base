@@ -83,12 +83,7 @@ class BubbleBarExpandedViewDragController(
                 expandedViewInitialTranslationX = expandedView.translationX
                 expandedViewInitialTranslationY = expandedView.translationY
             }
-            val magnetConsumed = magnetizedExpandedView.maybeConsumeMotionEvent(event)
-            // Move events can be consumed by the magnetized object
-            if (event.actionMasked == MotionEvent.ACTION_MOVE && magnetConsumed) {
-                return@setOnTouchListener true
-            }
-            return@setOnTouchListener dragMotionEventHandler.onTouch(view, event) || magnetConsumed
+            dragMotionEventHandler.onTouch(view, event)
         }
     }
 
@@ -137,10 +132,17 @@ class BubbleBarExpandedViewDragController(
                 isMoving = true
                 animationHelper.animateStartDrag()
             }
+            dropTargetManager.onDragUpdated(ev.rawX.toInt(), ev.rawY.toInt())
+
+            // If we're dragging within the dismiss target, return immediately; the dragged object
+            // is manipulated by the dismiss target
+            if (magnetizedExpandedView.maybeConsumeMotionEvent(ev)) {
+                return
+            }
+
             expandedView.translationX = expandedViewInitialTranslationX + dx
             expandedView.translationY = expandedViewInitialTranslationY + dy
             dismissView.show()
-            dropTargetManager.onDragUpdated(ev.rawX.toInt(), ev.rawY.toInt())
         }
 
         override fun onUp(
@@ -153,6 +155,9 @@ class BubbleBarExpandedViewDragController(
             velX: Float,
             velY: Float,
         ) {
+            // if we're releasing in the dismiss target, return early since we'll handle this in the
+            // magnet listener
+            if (magnetizedExpandedView.maybeConsumeMotionEvent(ev)) return
             v.translationZ = 0f
             finishDrag()
         }
@@ -198,8 +203,8 @@ class BubbleBarExpandedViewDragController(
             target: MagnetizedObject.MagneticTarget,
             draggedObject: MagnetizedObject<*>,
         ) {
-            dragListener.onReleased(inDismiss = true)
             dropTargetManager.onDragEnded()
+            dragListener.onReleased(inDismiss = true)
             dismissView.hide()
         }
     }

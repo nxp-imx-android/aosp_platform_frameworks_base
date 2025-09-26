@@ -172,14 +172,16 @@ public class BubbleBarLayerView extends FrameLayout
                         }
                         if (zone instanceof DragZone.FullScreen) {
                             ((Bubble) mExpandedBubble).getTaskView().moveToFullscreen();
-                            // Make sure location change listener is updated with the initial
-                            // location -- even if we "switched sides" during the drag, since
-                            // we've ended up in fullscreen, the location shouldn't change.
-                            onRelease(mInitialLocation);
-                        } else if (isBubbleLeft) {
+                        }
+                        if (isBubbleLeft) {
                             onRelease(BubbleBarLocation.LEFT);
                         } else if (isBubbleRight) {
                             onRelease(BubbleBarLocation.RIGHT);
+                        } else {
+                            // Make sure location change listener is updated with the initial
+                            // location -- even if we "switched sides" during the drag, since we
+                            // didn't actually drop in a bubble zone, the location shouldn't change.
+                            onRelease(mInitialLocation);
                         }
                     }
 
