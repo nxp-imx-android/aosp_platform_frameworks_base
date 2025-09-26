@@ -78,9 +78,17 @@ class PolicyProcessorTest {
                 import java.lang.annotation.RetentionPolicy;
 
                 public final class PolicyIdentifier<T> {
+                    // Allow using the constants without having to build DevicePolicyManager
+                    // in our tests.
+                    public static final int POLICY_SCOPE_USER = 1;
+                    public static final int POLICY_SCOPE_DEVICE = 2;
+                    public static final int POLICY_SCOPE_PARENT_USER = 3;
+                    public static final int RESOURCE_DEVICE_WIDE = 1;
+                    public static final int RESOURCE_PER_USER = 2;
+
                     // We don't actually do anything with this.
                     public PolicyIdentifier(String id) {}
-                    
+
                     $policies
                 }
             """.trimIndent())
@@ -114,19 +122,17 @@ class PolicyProcessorTest {
                 public final class OtherClass {
                     public OtherClass(String id) {}
 
-                    private static final String TEST_POLICY_1_KEY = "test_policy_1_key";
-
                     /**
-                     * Test policy 1
+                     * Policies can only be defined in PolicyIdentifier.
                      */
                     @BooleanPolicyDefinition(
                             base = @PolicyDefinition(
-                                    allowedScopes = {0},
+                                    allowedScopes = { 1 },
                                     affectedResource = 1
                             )
                     )
-                    public static final PolicyIdentifier<Boolean> TEST_POLICY_1 = new PolicyIdentifier<>(
-                            TEST_POLICY_1_KEY);
+                    public static final PolicyIdentifier<Boolean> LOST_POLICY =
+                        new PolicyIdentifier<>("LOST_POLICY");
                 }
             """.trimIndent())
         val policyIdentifier = JavaFileObjects.forResource(POLICY_IDENTIFIER_JAVA)
@@ -142,18 +148,17 @@ class PolicyProcessorTest {
     fun test_invalidType_failsToCompile() {
         val policyIdentifier = buildPolicyIdentifier(
         """
-            private static final String TEST_POLICY_1_KEY = "test_policy_1_key";
             /**
-             * Test policy 1
+             * Type of metadata and identifier must match.
              */
             @BooleanPolicyDefinition(
                     base = @PolicyDefinition(
-                            allowedScopes = {1, 2},
-                            affectedResource = 1
+                            allowedScopes = { POLICY_SCOPE_DEVICE },
+                            affectedResource = RESOURCE_DEVICE_WIDE
                     )
             )
-            public static final PolicyIdentifier<Integer> TEST_POLICY_1 =
-                new PolicyIdentifier<>(TEST_POLICY_1_KEY);
+            public static final PolicyIdentifier<Integer> INVALID_TYPE =
+                new PolicyIdentifier<>("INVALID_TYPE");
             """.trimIndent()
         )
 
@@ -168,17 +173,15 @@ class PolicyProcessorTest {
     fun test_directPolicyDefinition_failsToCompile() {
         val policyIdentifier = buildPolicyIdentifier(
             """
-            private static final String TEST_POLICY_1_KEY = "test_policy_1_key";
             /**
-             * Test policy 1
+             * Don't use @PolicyDefinition
              */
             @PolicyDefinition(
-                    allowedScopes = {1, 2},
-                    affectedResource = 1
+                    allowedScopes = { POLICY_SCOPE_DEVICE },
+                    affectedResource = RESOURCE_DEVICE_WIDE
             )
-            public static final PolicyIdentifier<Boolean>
-                    TEST_POLICY_1 = new PolicyIdentifier<>(
-                    TEST_POLICY_1_KEY);
+            public static final PolicyIdentifier<Boolean> INVALID_ANNOTATION =
+                new PolicyIdentifier<>("INVALID_ANNOTATION");
             """.trimIndent()
         )
 
@@ -193,15 +196,14 @@ class PolicyProcessorTest {
     fun test_missingDocumentation_failsToCompile() {
         val policyIdentifier = buildPolicyIdentifier(
             """
-            private static final String TEST_POLICY_1_KEY = "test_policy_1_key";
             @BooleanPolicyDefinition(
                     base = @PolicyDefinition(
-                            allowedScopes = {2, 3},
-                            affectedResource = 1
+                            allowedScopes = { POLICY_SCOPE_DEVICE },
+                            affectedResource = RESOURCE_DEVICE_WIDE
                     )
             )
-            public static final PolicyIdentifier<Boolean> TEST_POLICY_1 = new PolicyIdentifier<>(
-                    TEST_POLICY_1_KEY);
+            public static final PolicyIdentifier<Boolean> MISSING_DOCS =
+                new PolicyIdentifier<>("MISSING_DOCS");
             """.trimIndent()
         )
 
@@ -216,18 +218,17 @@ class PolicyProcessorTest {
     fun test_emptyScope_failsToCompile() {
         val policyIdentifier = buildPolicyIdentifier(
             """
-            private static final String EMPTY_SCOPE_KEY = "empty_scope_key";
             /**
              * Empty allowedScopes should fail.
              */
             @BooleanPolicyDefinition(
                     base = @PolicyDefinition(
                             allowedScopes = {},
-                            affectedResource = 2
+                            affectedResource = RESOURCE_PER_USER
                     )
             )
-            public static final PolicyIdentifier<Boolean> EMPTY_SCOPE_POLICY = new PolicyIdentifier<>(
-                    EMPTY_SCOPE_KEY);
+            public static final PolicyIdentifier<Boolean> EMPTY_SCOPE_POLICY =
+                new PolicyIdentifier<>("EMPTY_SCOPE");
             """.trimIndent()
         )
 
@@ -242,18 +243,17 @@ class PolicyProcessorTest {
     fun test_invalidScopeValue_failsToCompile() {
         val policyIdentifier = buildPolicyIdentifier(
             """
-            private static final String INVALID_SCOPE_KEY = "invalid_scope_key";
             /**
              * Invalid scope should fail.
              */
             @BooleanPolicyDefinition(
                     base = @PolicyDefinition(
-                            allowedScopes = {100},
-                            affectedResource = 2
+                            allowedScopes = { 100 },
+                            affectedResource = RESOURCE_PER_USER
                     )
             )
-            public static final PolicyIdentifier<Boolean> EMPTY_SCOPE_POLICY = new PolicyIdentifier<>(
-                    INVALID_SCOPE_KEY);
+            public static final PolicyIdentifier<Boolean> EMPTY_SCOPE_POLICY =
+                new PolicyIdentifier<>("INVALID_SCOPE");
             """.trimIndent()
         )
 
@@ -268,18 +268,17 @@ class PolicyProcessorTest {
     fun test_undefinedScope_failsToCompile() {
         val policyIdentifier = buildPolicyIdentifier(
             """
-            private static final String UNDEFINED_SCOPE_KEY = "undefined_scope_key";
             /**
              * Unspecified (0) scope should fail.
              */
             @BooleanPolicyDefinition(
                     base = @PolicyDefinition(
-                            allowedScopes = {0},
-                            affectedResource = 2
+                            allowedScopes = { 0 },
+                            affectedResource = RESOURCE_PER_USER
                     )
             )
-            public static final PolicyIdentifier<Boolean> UNDEFINED_SCOPE = new PolicyIdentifier<>(
-                    UNDEFINED_SCOPE_KEY);
+            public static final PolicyIdentifier<Boolean> UNDEFINED_SCOPE =
+                new PolicyIdentifier<>("UNDEFINED_SCOPE");
             """.trimIndent()
         )
 
@@ -294,18 +293,17 @@ class PolicyProcessorTest {
     fun test_invalidAffectedResource_failsToCompile() {
         val policyIdentifier = buildPolicyIdentifier(
             """
-            private static final String INVALID_AFFECTED_RESOURCE_KEY = "invalid_affected_resource";
             /**
              * Invalid resource should fail.
              */
             @BooleanPolicyDefinition(
                     base = @PolicyDefinition(
-                            allowedScopes = {1},
+                            allowedScopes = { POLICY_SCOPE_USER },
                             affectedResource = 100
                     )
             )
-            public static final PolicyIdentifier<Boolean> INVALID_AFFECTED_RESOURCE_POLICY = new PolicyIdentifier<>(
-                    INVALID_AFFECTED_RESOURCE_KEY);
+            public static final PolicyIdentifier<Boolean> INVALID_AFFECTED_RESOURCE_POLICY =
+                new PolicyIdentifier<>("INVALID_AFFECTED_RESOURCE");
             """.trimIndent()
         )
 
@@ -320,18 +318,17 @@ class PolicyProcessorTest {
     fun test_undefinedAffectedResource_failsToCompile() {
         val policyIdentifier = buildPolicyIdentifier(
             """
-            private static final String UNSPECIFIED_AFFECTED_RESOURCE_KEY = "unknown_affected_resource";
             /**
              * Unspecified (0) resource should fail.
              */
             @BooleanPolicyDefinition(
                     base = @PolicyDefinition(
-                            allowedScopes = {1},
+                            allowedScopes = { POLICY_SCOPE_USER },
                             affectedResource = 0
                     )
             )
-            public static final PolicyIdentifier<Boolean> UNSPECIFIED_AFFECTED_RESOURCE_POLICY = new PolicyIdentifier<>(
-                    UNSPECIFIED_AFFECTED_RESOURCE_KEY);
+            public static final PolicyIdentifier<Boolean> UNSPECIFIED_AFFECTED_RESOURCE_POLICY =
+                new PolicyIdentifier<>("UNSPECIFIED_AFFECTED_RESOURCE");
             """.trimIndent()
         )
 
