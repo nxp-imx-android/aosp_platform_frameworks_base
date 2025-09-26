@@ -81,7 +81,6 @@ public class SecureLockDeviceSettingsManagerImpl implements SecureLockDeviceSett
                     UserManager.DISALLOW_DEBUGGING_FEATURES,
                     UserManager.DISALLOW_CHANGE_WIFI_STATE,
                     UserManager.DISALLOW_CONFIG_WIFI,
-                    UserManager.DISALLOW_OUTGOING_CALLS,
                     UserManager.DISALLOW_SMS,
                     UserManager.DISALLOW_USER_SWITCH);
 
