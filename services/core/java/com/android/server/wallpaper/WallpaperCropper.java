@@ -285,8 +285,8 @@ public class WallpaperCropper {
         Rect adjustedCrop = getAdjustedCrop(crop, bitmapSize, displaySize, true, rtl, ADD);
         // only keep the visible part (without parallax)
         float suggestedDisplayRatio = 1f * displaySize.x / displaySize.y;
-        int widthToRemove = (int) (adjustedCrop.width()
-                - (((float) adjustedCrop.height()) * suggestedDisplayRatio) + 0.5f);
+        int widthToRemove = (int) Math.max(0, (adjustedCrop.width()
+                - (((float) adjustedCrop.height()) * suggestedDisplayRatio) + 0.5f));
         if (rtl) {
             adjustedCrop.left += widthToRemove;
         } else {
@@ -368,7 +368,7 @@ public class WallpaperCropper {
                 adjustedCrop.left = 0;
                 adjustedCrop.right = bitmapSize.x;
             }
-            int heightToRemove = (int) (crop.height() - (adjustedCrop.width() / screenRatio));
+            int heightToRemove = Math.round(crop.height() - (adjustedCrop.width() / screenRatio));
             adjustedCrop.top += heightToRemove / 2 + heightToRemove % 2;
             adjustedCrop.bottom -= heightToRemove / 2;
         }
