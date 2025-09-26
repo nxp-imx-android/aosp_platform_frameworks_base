@@ -27,6 +27,7 @@ import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -37,6 +38,7 @@ import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyGridScope
 import androidx.compose.foundation.lazy.grid.LazyGridState
@@ -407,10 +409,35 @@ fun TileContainer(
 }
 
 @Composable
+fun SmallStaticTile(
+    uiState: TileUiState,
+    iconProvider: IconProvider,
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit = {},
+) {
+    val colors = TileDefaults.getColorForState(uiState = uiState, iconOnly = true)
+
+    Box(
+        modifier
+            .clip(TileDefaults.animateTileShapeAsState(uiState).value)
+            .background(colors.background)
+            .size(TileHeight)
+            .clickable(onClick = onClick)
+    ) {
+        SmallTileContent(
+            iconProvider = { getTileIcon(icon = iconProvider) },
+            color = colors.icon,
+            modifier = Modifier.align(Alignment.Center),
+        )
+    }
+}
+
+@Composable
 fun LargeStaticTile(
     uiState: TileUiState,
     iconProvider: IconProvider,
     modifier: Modifier = Modifier,
+    onClick: () -> Unit = {},
 ) {
     val colors = TileDefaults.getColorForState(uiState = uiState, iconOnly = false)
 
@@ -419,6 +446,7 @@ fun LargeStaticTile(
             .clip(TileDefaults.animateTileShapeAsState(uiState).value)
             .background(colors.background)
             .height(TileHeight)
+            .clickable(onClick = onClick)
             .largeTilePadding()
     ) {
         LargeTileContent(
