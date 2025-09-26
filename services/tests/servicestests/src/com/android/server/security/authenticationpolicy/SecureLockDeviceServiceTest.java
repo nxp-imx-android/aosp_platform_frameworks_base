@@ -32,7 +32,6 @@ import static android.hardware.biometrics.SensorProperties.STRENGTH_STRONG;
 import static android.hardware.biometrics.SensorProperties.STRENGTH_WEAK;
 import static android.os.UserManager.DISALLOW_CHANGE_WIFI_STATE;
 import static android.os.UserManager.DISALLOW_CONFIG_WIFI;
-import static android.os.UserManager.DISALLOW_OUTGOING_CALLS;
 import static android.os.UserManager.DISALLOW_SMS;
 import static android.os.UserManager.DISALLOW_USER_SWITCH;
 import static android.security.Flags.FLAG_SECURE_LOCKDOWN;
@@ -153,7 +152,6 @@ public class SecureLockDeviceServiceTest {
     private static final Set<String> DEVICE_POLICY_RESTRICTIONS = Set.of(
             DISALLOW_CHANGE_WIFI_STATE,
             DISALLOW_CONFIG_WIFI,
-            DISALLOW_OUTGOING_CALLS,
             DISALLOW_SMS,
             DISALLOW_USER_SWITCH
     );
