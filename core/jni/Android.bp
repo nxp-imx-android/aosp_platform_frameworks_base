@@ -552,7 +552,6 @@ cc_library_shared {
 cc_library_host_shared {
     name: "libandroid_runtime_ravenwood",
     defaults: ["libandroid_runtime_defaults"],
-    stem: "libandroid_runtime",
     installable: false,
     visibility: ["//frameworks/base/ravenwood"],
     cflags: [

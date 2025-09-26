@@ -35,7 +35,7 @@ public final class RavenwoodNativeLoader {
     public static final String KEYBOARD_PATHS = "keyboard_paths";
     public static final String GRAPHICS_NATIVE_CLASSES = "graphics_native_classes";
 
-    public static final String LIBANDROID_RUNTIME_NAME = "android_runtime";
+    public static final String LIBANDROID_RUNTIME_NAME = "android_runtime_ravenwood";
 
     /**
      * Classes with native methods that are backed by libandroid_runtime.
