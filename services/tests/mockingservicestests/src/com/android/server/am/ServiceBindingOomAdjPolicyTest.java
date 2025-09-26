@@ -29,6 +29,7 @@ import static android.content.Context.BIND_AUTO_CREATE;
 import static android.content.Context.BIND_INCLUDE_CAPABILITIES;
 import static android.content.Context.BIND_WAIVE_PRIORITY;
 import static android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_SYSTEM_EXEMPTED;
+import static android.os.Process.myUid;
 import static android.os.UserHandle.USER_SYSTEM;
 import static android.platform.test.flag.junit.SetFlagsRule.DefaultInitValueType.DEVICE_DEFAULT;
 
@@ -197,6 +198,9 @@ public final class ServiceBindingOomAdjPolicyTest {
         realProcessList.mService = mAms;
 
         doReturn(false).when(mPackageManagerInt).filterAppAccess(anyString(), anyInt(), anyInt());
+        // Necessary for calling package to match caller uid
+        doReturn(myUid()).when(mPackageManagerInt).getPackageUid(
+                eq(TEST_APP1_NAME), anyLong(), anyInt());
         doReturn(true).when(mIntentFirewall).checkService(any(), any(), anyInt(), anyInt(), any(),
                 any());
         doReturn(false).when(mAms.mAtmInternal).hasSystemAlertWindowPermission(anyInt(), anyInt(),

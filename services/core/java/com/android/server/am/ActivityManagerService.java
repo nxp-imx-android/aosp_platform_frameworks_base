@@ -3143,6 +3143,18 @@ public class ActivityManagerService extends IActivityManager.Stub
      * @throws SecurityException if the calling uid doesn't match uid of the package.
      */
     private void enforceCallingPackage(String packageName, int callingUid) {
+        if (packageName == null) {
+            throw new IllegalArgumentException("callingPackage cannot be null");
+        }
+        if (callingUid == ROOT_UID || callingUid == SYSTEM_UID) {
+            // System and Root are always allowed
+            return;
+        }
+        if (Process.isSdkSandboxUid(callingUid)) {
+            // Sdk sandbox uids are expected to call on behalf of other uids and have their own
+            // checks and restrictions
+            return;
+        }
         final int userId = UserHandle.getUserId(callingUid);
         final int packageUid = getPackageManagerInternal().getPackageUid(packageName,
                 /*flags=*/ 0, userId);
@@ -13782,6 +13794,13 @@ public class ActivityManagerService extends IActivityManager.Stub
             throws TransactionTooLargeException {
         enforceNotIsolatedCaller("startService");
         enforceAllowedToStartOrBindServiceIfSdkSandbox(service);
+        if (com.android.server.am.Flags.serviceCheckCallingPkg()) {
+            enforceCallingPackage(callingPackage, Binder.getCallingUid());
+        } else {
+            if (callingPackage == null) {
+                throw new IllegalArgumentException("callingPackage cannot be null");
+            }
+        }
         addCreatorToken(service, callingPackage);
         if (service != null) {
             // Refuse possible leaked file descriptors
@@ -13790,10 +13809,6 @@ public class ActivityManagerService extends IActivityManager.Stub
             }
             // Remove existing mismatch flag so it can be properly updated later
             service.removeExtendedFlags(Intent.EXTENDED_FLAG_FILTER_MISMATCH);
-        }
-
-        if (callingPackage == null) {
-            throw new IllegalArgumentException("callingPackage cannot be null");
         }
 
         if (isSdkSandboxService && instanceName == null) {
@@ -13877,13 +13892,16 @@ public class ActivityManagerService extends IActivityManager.Stub
     @Override
     public IBinder peekService(Intent service, String resolvedType, String callingPackage) {
         enforceNotIsolatedCaller("peekService");
+        if (com.android.server.am.Flags.serviceCheckCallingPkg()) {
+            enforceCallingPackage(callingPackage, Binder.getCallingUid());
+        } else {
+            if (callingPackage == null) {
+                throw new IllegalArgumentException("callingPackage cannot be null");
+            }
+        }
         // Refuse possible leaked file descriptors
         if (service != null && service.hasFileDescriptors() == true) {
             throw new IllegalArgumentException("File descriptors passed in Intent");
-        }
-
-        if (callingPackage == null) {
-            throw new IllegalArgumentException("callingPackage cannot be null");
         }
 
         synchronized(this) {
@@ -14026,6 +14044,13 @@ public class ActivityManagerService extends IActivityManager.Stub
             throws TransactionTooLargeException {
         enforceNotIsolatedCaller("bindService");
         enforceAllowedToStartOrBindServiceIfSdkSandbox(service);
+        if (com.android.server.am.Flags.serviceCheckCallingPkg()) {
+            enforceCallingPackage(callingPackage, Binder.getCallingUid());
+        } else {
+            if (callingPackage == null) {
+                throw new IllegalArgumentException("callingPackage cannot be null");
+            }
+        }
 
         if (service != null) {
             // Refuse possible leaked file descriptors
@@ -14034,10 +14059,6 @@ public class ActivityManagerService extends IActivityManager.Stub
             }
             // Remove existing mismatch flag so it can be properly updated later
             service.removeExtendedFlags(Intent.EXTENDED_FLAG_FILTER_MISMATCH);
-        }
-
-        if (callingPackage == null) {
-            throw new IllegalArgumentException("callingPackage cannot be null");
         }
 
         if (isSdkSandboxService && instanceName == null) {
