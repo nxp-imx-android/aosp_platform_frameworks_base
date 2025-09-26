@@ -24,7 +24,6 @@ import static android.view.WindowManager.LayoutParams.PRIVATE_FLAG_EXCLUDE_FROM_
 
 import static com.android.systemui.Flags.blockMouseEdgeBackGesture;
 import static com.android.systemui.Flags.edgebackGestureHandlerGetRunningTasksBackground;
-import static com.android.window.flags.Flags.predictiveBackDelayWmTransition;
 import static com.android.systemui.classifier.Classifier.BACK_GESTURE;
 import static com.android.systemui.navigationbar.gestural.Utilities.isTrackpadThreeFingerSwipe;
 import static com.android.systemui.shared.system.QuickStepContract.SYSUI_STATE_TOUCHPAD_GESTURES_DISABLED;
@@ -1309,9 +1308,6 @@ public class EdgeBackGestureHandler {
                         return;
                     } else if (dx > dy && dx > mTouchSlop) {
                         if (mAllowGesture) {
-                            if (!predictiveBackDelayWmTransition() && mBackAnimation != null) {
-                                mBackAnimation.onThresholdCrossed();
-                            }
                             if (mBackAnimation == null) {
                                 pilferPointers(ev.getDisplayId());
                             }
@@ -1331,8 +1327,7 @@ public class EdgeBackGestureHandler {
                     mEdgeBackPlugin.onMotionEvent(ev);
                 }
                 dispatchToBackAnimation(ev);
-                if (predictiveBackDelayWmTransition() && mBackAnimation != null
-                        && mThresholdCrossed && !mLastFrameThresholdCrossed) {
+                if (mBackAnimation != null && mThresholdCrossed && !mLastFrameThresholdCrossed) {
                     mBackAnimation.onThresholdCrossed();
                 }
             }

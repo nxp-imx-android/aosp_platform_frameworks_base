@@ -460,11 +460,7 @@ class BackNavigationController {
                                 removedWindowContainer);
                 mBackAnimationInProgress = builder != null;
                 if (mBackAnimationInProgress) {
-                    if (Flags.predictiveBackDelayWmTransition()) {
-                        mCurrentAnimationBuilder = builder;
-                    } else {
-                        scheduleAnimationInner(builder);
-                    }
+                    mCurrentAnimationBuilder = builder;
                 }
             }
             infoBuilder.setPrepareRemoteAnimation(prepareAnimation);
