@@ -23,17 +23,14 @@ import com.android.settingslib.mobile.TelephonyIcons
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.log.table.logcatTableLogBuffer
 import com.android.systemui.statusbar.phone.StatusBarLocation
-import com.android.systemui.statusbar.pipeline.airplane.data.repository.FakeAirplaneModeRepository
-import com.android.systemui.statusbar.pipeline.airplane.domain.interactor.AirplaneModeInteractor
+import com.android.systemui.statusbar.pipeline.airplane.domain.interactor.airplaneModeInteractor
 import com.android.systemui.statusbar.pipeline.mobile.data.model.SubscriptionModel
-import com.android.systemui.statusbar.pipeline.mobile.data.repository.fakeMobileConnectionsRepository
 import com.android.systemui.statusbar.pipeline.mobile.domain.interactor.FakeMobileIconsInteractor
 import com.android.systemui.statusbar.pipeline.mobile.domain.model.NetworkTypeIconModel
 import com.android.systemui.statusbar.pipeline.mobile.ui.MobileViewLogger
 import com.android.systemui.statusbar.pipeline.mobile.ui.VerboseMobileViewLogger
 import com.android.systemui.statusbar.pipeline.mobile.util.FakeMobileMappingsProxy
 import com.android.systemui.statusbar.pipeline.shared.ConnectivityConstants
-import com.android.systemui.statusbar.pipeline.shared.data.repository.FakeConnectivityRepository
 import com.android.systemui.testKosmos
 import com.android.systemui.util.mockito.mock
 import com.google.common.truth.Truth.assertThat
@@ -60,7 +57,6 @@ class MobileIconsViewModelTest : SysuiTestCase() {
     private lateinit var underTest: MobileIconsViewModel
     private val interactor = FakeMobileIconsInteractor(FakeMobileMappingsProxy(), mock())
 
-    private lateinit var airplaneModeInteractor: AirplaneModeInteractor
     @Mock private lateinit var logger: MobileViewLogger
     @Mock private lateinit var verboseLogger: VerboseMobileViewLogger
 
@@ -71,19 +67,12 @@ class MobileIconsViewModelTest : SysuiTestCase() {
     fun setUp() {
         MockitoAnnotations.initMocks(this)
 
-        airplaneModeInteractor =
-            AirplaneModeInteractor(
-                FakeAirplaneModeRepository(),
-                FakeConnectivityRepository(),
-                kosmos.fakeMobileConnectionsRepository,
-            )
-
         underTest =
             MobileIconsViewModel(
                 logger,
                 verboseLogger,
                 interactor,
-                airplaneModeInteractor,
+                kosmos.airplaneModeInteractor,
                 object : ConnectivityConstants {
                     override val hasDataCapabilities = true
                     override val shouldShowActivityConfig = false
@@ -367,7 +356,7 @@ class MobileIconsViewModelTest : SysuiTestCase() {
             interactor.isStackable.value = true
 
             // Enable APM
-            airplaneModeInteractor.setIsAirplaneMode(true)
+            kosmos.airplaneModeInteractor.setIsAirplaneMode(true)
 
             interactor.filteredSubscriptions.value = listOf(SUB_1, SUB_2)
 
@@ -385,7 +374,7 @@ class MobileIconsViewModelTest : SysuiTestCase() {
             interactor.isStackable.value = true
 
             // Disable APM
-            airplaneModeInteractor.setIsAirplaneMode(false)
+            kosmos.airplaneModeInteractor.setIsAirplaneMode(false)
 
             interactor.filteredSubscriptions.value = listOf(SUB_1, SUB_2)
 
