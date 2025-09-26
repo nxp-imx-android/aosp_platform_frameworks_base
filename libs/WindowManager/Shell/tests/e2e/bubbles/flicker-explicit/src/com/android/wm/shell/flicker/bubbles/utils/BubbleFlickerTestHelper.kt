@@ -258,27 +258,6 @@ internal object BubbleFlickerTestHelper {
     }
 
     /**
-     * Dismisses the bubble app via dragging it to dismiss view.
-     *
-     * @param testApp the bubble app to dismiss
-     * @param tapl the [LauncherInstrumentation]
-     * @param wmHelper the [WindowManagerStateHelper]
-     * @param previousApp the last focused bubble app, which defaults to `null`
-     */
-    fun dismissBubbleAppViaDrag(
-        testApp: StandardAppHelper,
-        tapl: LauncherInstrumentation,
-        wmHelper: WindowManagerStateHelper,
-        previousApp: StandardAppHelper? = null,
-    ) {
-        if (tapl.isTablet) {
-            dismissBubbleAppViaBubbleBarItem(testApp, wmHelper, previousApp)
-        } else {
-            dismissBubbleAppViaFloatingBubbleView(testApp, wmHelper, previousApp)
-        }
-    }
-
-    /**
      * Dismisses the bubble app via dragging the floating bubble to dismiss view.
      *
      * @param testApp the bubble app to dismiss
