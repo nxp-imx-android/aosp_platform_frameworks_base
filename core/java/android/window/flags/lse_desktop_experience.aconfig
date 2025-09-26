@@ -769,6 +769,16 @@ flag {
 }
 
 flag {
+    name: "enable_desktop_windowing_multi_activity_pip_keep_parent_open"
+    namespace: "lse_desktop_experience"
+    description: "Keeps the parent of a multi-activity PiP open in desktop windowing."
+    bug: "440427561"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "enable_desktop_windowing_multi_instance_features"
     namespace: "lse_desktop_experience"
     description: "Whether to enable multi-instance support in desktop windowing."

@@ -158,6 +158,9 @@ public enum DesktopExperienceFlags {
     ENABLE_DESKTOP_WINDOWING_ENTERPRISE_BUGFIX(
             Flags::enableDesktopWindowingEnterpriseBugfix,
             false, Flags.FLAG_ENABLE_DESKTOP_WINDOWING_ENTERPRISE_BUGFIX),
+    ENABLE_DESKTOP_WINDOWING_MULTI_ACTIVITY_PIP_KEEP_PARENT_OPEN(
+            Flags::enableDesktopWindowingMultiActivityPipKeepParentOpen, false,
+            Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MULTI_ACTIVITY_PIP_KEEP_PARENT_OPEN),
     ENABLE_DESKTOP_WINDOWING_PIP(Flags::enableDesktopWindowingPip, true,
             Flags.FLAG_ENABLE_DESKTOP_WINDOWING_PIP),
     ENABLE_DESKTOP_WINDOWING_PIP_IN_OVERVIEW_BUGFIX(
