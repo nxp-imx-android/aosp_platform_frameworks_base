@@ -40,6 +40,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.clipScrollableContainer
+import androidx.compose.foundation.focusable
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement.spacedBy
@@ -119,6 +120,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onKeyEvent
+import androidx.compose.ui.input.key.type
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.MeasureScope
@@ -1146,8 +1152,11 @@ private fun LazyGridItemScope.TileGridCell(
                 .tileBackground(
                     cornerRadius = InactiveCornerRadius,
                     alpha = { containerAlpha },
-                    color = { colors.background })
-                .clickable { selectionState.onTap(cell.tile.tileSpec) }
+                    color = { colors.background },
+                )
+                .keyboardShortcuts(cell.tile.tileSpec, selectionState) {
+                    onResize(FinalResizeOperation(cell.tile.tileSpec, !cell.isIcon))
+                }
                 .thenIf(isSelectable) { selectableModifier }
         ) {
             EditTile(
@@ -1371,7 +1380,7 @@ fun EditTile(
                             // Find the center of the max width when the tile is icon only
                             iconHorizontalCenter(
                                 containerSize = constraints.maxWidth,
-                                toggleTargetSize = toggleTargetSize
+                                toggleTargetSize = toggleTargetSize,
                             )
                         } else {
                             // Find the center of the minimum width to hold the same position as the
@@ -1380,7 +1389,7 @@ fun EditTile(
                                 min?.let {
                                     iconHorizontalCenter(
                                         containerSize = it.roundToInt(),
-                                        toggleTargetSize = toggleTargetSize
+                                        toggleTargetSize = toggleTargetSize,
                                     )
                                 } ?: 0f
                             // Large tiles, represented with a progress of 1f, have a 0.dp padding
@@ -1395,11 +1404,9 @@ fun EditTile(
     ) {
         // Icon
         Box(
-            Modifier
-                .size(ToggleTargetSize)
-                .thenIf(tile.isDualTarget) {
-                    Modifier.drawBehind { drawCircle(colors.iconBackground, alpha = progress()) }
-                }
+            Modifier.size(ToggleTargetSize).thenIf(tile.isDualTarget) {
+                Modifier.drawBehind { drawCircle(colors.iconBackground, alpha = progress()) }
+            }
         ) {
             SmallTileContent(
                 iconProvider = { tile.icon },
@@ -1428,11 +1435,37 @@ private fun MeasureScope.iconHorizontalCenter(containerSize: Int, toggleTargetSi
 private fun Modifier.tileBackground(
     cornerRadius: Dp,
     alpha: () -> Float = { 1f },
-    color: () -> Color
+    color: () -> Color,
 ): Modifier {
     // Clip tile contents from overflowing past the tile
-    return clip(RoundedCornerShape(cornerRadius)).drawBehind {
-        drawRect(color(), alpha = alpha())
+    return clip(RoundedCornerShape(cornerRadius)).drawBehind { drawRect(color(), alpha = alpha()) }
+}
+
+private fun Modifier.keyboardShortcuts(
+    tileSpec: TileSpec,
+    selectionState: MutableSelectionState,
+    onResize: () -> Unit,
+): Modifier {
+    return focusable().onKeyEvent {
+        if (it.type != KeyEventType.KeyUp) {
+            false
+        } else {
+            when (it.key) {
+                Key.Enter -> {
+                    selectionState.onTap(tileSpec)
+                    true
+                }
+                Key.M -> { // Move
+                    selectionState.enterPlacementMode(tileSpec)
+                    true
+                }
+                Key.R -> { // Resize
+                    onResize()
+                    true
+                }
+                else -> false
+            }
+        }
     }
 }
 
