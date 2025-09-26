@@ -147,6 +147,7 @@ import com.android.wm.shell.desktopmode.ToggleResizeDesktopTaskTransitionHandler
 import com.android.wm.shell.desktopmode.VisualIndicatorUpdateScheduler;
 import com.android.wm.shell.desktopmode.WindowDecorCaptionRepository;
 import com.android.wm.shell.desktopmode.WindowDragTransitionHandler;
+import com.android.wm.shell.desktopmode.clientfullscreenrequest.ClientFullscreenRequestTransitionHandler;
 import com.android.wm.shell.desktopmode.compatui.SystemModalsTransitionHandler;
 import com.android.wm.shell.desktopmode.data.DesktopRepositoryInitializer;
 import com.android.wm.shell.desktopmode.data.DesktopRepositoryInitializerImpl;
@@ -949,6 +950,7 @@ public abstract class WMShellModule {
             @DynamicOverride DesktopUserRepositories desktopUserRepositories,
             DesktopRepositoryInitializer desktopRepositoryInitializer,
             Optional<DesktopImmersiveController> desktopImmersiveController,
+            ClientFullscreenRequestTransitionHandler clientFullscreenRequestTransitionHandler,
             DesktopModeLoggerTransitionObserver desktopModeLoggerTransitionObserver,
             LaunchAdjacentController launchAdjacentController,
             RecentsTransitionHandler recentsTransitionHandler,
@@ -1001,6 +1003,7 @@ public abstract class WMShellModule {
                 toggleResizeDesktopTaskTransitionHandler,
                 dragToDesktopTransitionHandler,
                 desktopImmersiveController.get(),
+                clientFullscreenRequestTransitionHandler,
                 desktopUserRepositories,
                 desktopRepositoryInitializer,
                 recentsTransitionHandler,
@@ -1660,12 +1663,26 @@ public abstract class WMShellModule {
 
     @WMSingleton
     @Provides
+    static ClientFullscreenRequestTransitionHandler provideClientFullscreenRequestTransitionHandler(
+            Context context,
+            @DynamicOverride DesktopUserRepositories desktopUserRepositories,
+            DesksOrganizer desksOrganizer,
+            DesktopWallpaperActivityTokenProvider desktopWallpaperActivityTokenProvider,
+            DisplayController displayController
+    ) {
+        return new ClientFullscreenRequestTransitionHandler(context, desktopUserRepositories,
+                desksOrganizer, desktopWallpaperActivityTokenProvider, displayController);
+    }
+
+    @WMSingleton
+    @Provides
     static Optional<DesktopMixedTransitionHandler> provideDesktopMixedTransitionHandler(
             Context context,
             Transitions transitions,
             @DynamicOverride DesktopUserRepositories desktopUserRepositories,
             FreeformTaskTransitionHandler freeformTaskTransitionHandler,
             CloseDesktopTaskTransitionHandler closeDesktopTaskTransitionHandler,
+            ClientFullscreenRequestTransitionHandler clientFullscreenRequestTransitionHandler,
             Optional<DesktopImmersiveController> desktopImmersiveController,
             DesktopMinimizationTransitionHandler desktopMinimizationTransitionHandler,
             DesktopModeDragAndDropTransitionHandler desktopModeDragAndDropTransitionHandler,
@@ -1690,6 +1707,7 @@ public abstract class WMShellModule {
                         freeformTaskTransitionHandler,
                         closeDesktopTaskTransitionHandler,
                         desktopImmersiveController.get(),
+                        clientFullscreenRequestTransitionHandler,
                         desktopMinimizationTransitionHandler,
                         desktopModeDragAndDropTransitionHandler,
                         systemModalsTransitionHandler,
