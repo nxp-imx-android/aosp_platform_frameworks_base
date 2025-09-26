@@ -52,6 +52,7 @@ class StatusBannerPreference @JvmOverloads constructor(
             updateIconTint(value)
             notifyChanged()
         }
+    var applyIconTint: Boolean = true
     var buttonLevel: BannerStatus = BannerStatus.GENERIC
         set(value) {
             field = value
@@ -259,6 +260,9 @@ class StatusBannerPreference @JvmOverloads constructor(
      * no-op.
      */
     private fun updateIconTint(iconLevel: BannerStatus) {
+        if (!applyIconTint) {
+            return
+        }
         icon?.setTintList(ColorStateList.valueOf(getBackgroundColor(iconLevel)))
     }
 }
