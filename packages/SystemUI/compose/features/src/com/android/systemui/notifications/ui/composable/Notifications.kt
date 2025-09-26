@@ -49,6 +49,7 @@ import androidx.compose.foundation.layout.windowInsetsBottomHeight
 import androidx.compose.foundation.overscroll
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -80,6 +81,7 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.layout.positionInWindow
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.platform.LocalWindowInfo
@@ -105,7 +107,6 @@ import com.android.compose.modifiers.width
 import com.android.compose.nestedscroll.OnStopScope
 import com.android.compose.nestedscroll.PriorityNestedScrollConnection
 import com.android.compose.nestedscroll.ScrollController
-import com.android.compose.theme.LocalAndroidColorScheme
 import com.android.internal.jank.Cuj.CUJ_NOTIFICATION_SHADE_SCROLL_FLING
 import com.android.internal.jank.InteractionJankMonitor
 import com.android.systemui.common.ui.compose.windowinsets.LocalScreenCornerRadius
@@ -114,6 +115,7 @@ import com.android.systemui.scene.session.ui.composable.SaveableSession
 import com.android.systemui.scene.session.ui.composable.sessionCoroutineScope
 import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.shared.model.Scenes
+import com.android.systemui.shade.ui.ShadeColors
 import com.android.systemui.shade.ui.composable.ShadeHeader
 import com.android.systemui.statusbar.notification.stack.shared.model.AccessibilityScrollEvent
 import com.android.systemui.statusbar.notification.stack.shared.model.ShadeScrimBounds
@@ -128,9 +130,6 @@ import kotlin.math.roundToInt
 import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
-import androidx.compose.material3.Text
-import androidx.compose.ui.platform.LocalContext
-import com.android.systemui.shade.ui.ShadeColors
 
 object Notifications {
     object Elements {
@@ -185,7 +184,7 @@ fun ContentScope.HeadsUpNotificationSpace(
             Text(
                 text = "HeadsUpNotificationPlaceholder",
                 color = DEBUG_HUN_COLOR.copy(alpha = 0.7f),
-                modifier = Modifier.align(Alignment.TopCenter)
+                modifier = Modifier.align(Alignment.TopCenter),
             )
         }
     }
@@ -396,8 +395,12 @@ fun ContentScope.NotificationScrollingStack(
     val screenCornerRadius = LocalScreenCornerRadius.current
     val scrimCornerRadius = dimensionResource(R.dimen.notification_scrim_corner_radius)
     val singleShadeNotificationScrimBgColor =
-        Color(ShadeColors.singleShadeNotificationScrimBg(LocalContext.current,
-            blurSupported = isTransparencyEnabled))
+        Color(
+            ShadeColors.singleShadeNotificationScrimBg(
+                LocalContext.current,
+                blurSupported = isTransparencyEnabled,
+            )
+        )
     val scrollState =
         shadeSession.rememberSaveableSession(saver = ScrollState.Saver, key = "ScrollState") {
             ScrollState(initial = 0)
@@ -725,7 +728,9 @@ fun ContentScope.NotificationScrollingStack(
                 Modifier.graphicsLayer {
                         alpha = (expansionFraction / EXPANSION_FOR_MAX_SCRIM_ALPHA).coerceAtMost(1f)
                     }
-                    .thenIf(shouldShowScrim) { Modifier.background(color = singleShadeNotificationScrimBgColor) }
+                    .thenIf(shouldShowScrim) {
+                        Modifier.background(color = singleShadeNotificationScrimBgColor)
+                    }
                     .thenIf(shouldFillMaxSize) { Modifier.fillMaxSize() }
                     .padding(
                         top = stackTopPadding,
@@ -777,7 +782,7 @@ fun ContentScope.NotificationScrollingStack(
                     Text(
                         text = "NotificationScrollingStack",
                         color = DEBUG_BOX_COLOR.copy(alpha = 0.7f),
-                        modifier = Modifier.align(Alignment.CenterHorizontally)
+                        modifier = Modifier.align(Alignment.CenterHorizontally),
                     )
                 }
             }
@@ -866,7 +871,7 @@ private fun ContentScope.NotificationPlaceholder(
             Text(
                 text = "NotificationStackPlaceholder",
                 color = DEBUG_STACK_COLOR.copy(alpha = 0.7f),
-                modifier = Modifier.align(Alignment.TopCenter)
+                modifier = Modifier.align(Alignment.TopCenter),
             )
         }
     }
