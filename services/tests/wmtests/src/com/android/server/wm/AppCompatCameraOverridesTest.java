@@ -29,6 +29,7 @@ import static android.view.WindowManager.PROPERTY_CAMERA_COMPAT_ENABLE_REFRESH_V
 import static android.view.WindowManager.PROPERTY_COMPAT_ALLOW_MIN_ASPECT_RATIO_OVERRIDE;
 
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.spyOn;
+import static com.android.window.flags.Flags.FLAG_CAMERA_COMPAT_UNIFY_CAMERA_POLICIES;
 import static com.android.window.flags.Flags.FLAG_ENABLE_CAMERA_COMPAT_FOR_DESKTOP_WINDOWING;
 
 import android.compat.testing.PlatformCompatChangeRule;
@@ -277,6 +278,38 @@ public class AppCompatCameraOverridesTest extends WindowTestsBase {
             robot.applyOnActivity((a) -> {
                 a.createActivityWithComponentInNewTask();
                 robot.prop().enable(PROPERTY_CAMERA_COMPAT_ALLOW_SIMULATE_REQUESTED_ORIENTATION);
+            });
+
+            robot.checkShouldApplyFreeformTreatmentForCameraCompat(false);
+        });
+    }
+
+    @Test
+    @EnableFlags({FLAG_ENABLE_CAMERA_COMPAT_FOR_DESKTOP_WINDOWING,
+            FLAG_CAMERA_COMPAT_UNIFY_CAMERA_POLICIES})
+    public void testShouldApplyCameraCompatTreatment_forceRotateOptedOutViaOverride_returnsFalse() {
+        runTestScenario((robot) -> {
+            robot.conf().enableCameraCompatForceRotateTreatment(true);
+            robot.conf().enableCameraCompatSimulateRequestedOrientationTreatment(true);
+
+            robot.prop().disable(PROPERTY_CAMERA_COMPAT_ALLOW_FORCE_ROTATION);
+            robot.activity().createActivityWithComponentInNewTask();
+
+            robot.checkShouldApplyFreeformTreatmentForCameraCompat(false);
+        });
+    }
+
+
+    @Test
+    @EnableFlags({FLAG_ENABLE_CAMERA_COMPAT_FOR_DESKTOP_WINDOWING,
+            FLAG_CAMERA_COMPAT_UNIFY_CAMERA_POLICIES})
+    public void testShouldApplyCameraCompatTreatment_forceRotateOptedOutViaManifest_returnsFalse() {
+        runTestScenario((robot) -> {
+            robot.conf().enableCameraCompatForceRotateTreatment(true);
+            robot.conf().enableCameraCompatSimulateRequestedOrientationTreatment(false);
+            robot.applyOnActivity((a) -> {
+                a.createActivityWithComponentInNewTask();
+                robot.prop().disable(PROPERTY_CAMERA_COMPAT_ALLOW_FORCE_ROTATION);
             });
 
             robot.checkShouldApplyFreeformTreatmentForCameraCompat(false);
