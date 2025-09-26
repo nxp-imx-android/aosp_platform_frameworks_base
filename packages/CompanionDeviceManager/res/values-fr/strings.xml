@@ -73,7 +73,7 @@
     <string name="permission_create_virtual_device" msgid="1102905050922460040">"Streamer des données sur votre <xliff:g id="DEVICE_TYPE">%1$s</xliff:g>"</string>
     <string name="permission_add_mirror_display" msgid="3743433250535606288">"Dupliquer votre écran"</string>
     <string name="permission_add_trusted_display" msgid="9052824856626276723">"Streamer vos applis"</string>
-    <string name="permission_schedule_exact_alarm" msgid="5680932535987512225">"Définir des alarmes et des rappels"</string>
+    <string name="permission_schedule_exact_alarm" msgid="5680932535987512225">"Définir des alarmes et rappels"</string>
     <string name="permission_bypass_dnd" msgid="1241123166903040347">"Ignorer les paramètres Ne pas déranger"</string>
     <string name="permission_phone_summary" msgid="8246321093970051702">"Effectuer et gérer des appels téléphoniques"</string>
     <string name="permission_call_logs_summary" msgid="7545243592757693321">"Consulter et créer les journaux d\'appels du téléphone"</string>
