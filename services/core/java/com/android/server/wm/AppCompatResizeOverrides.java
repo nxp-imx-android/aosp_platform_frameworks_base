@@ -25,8 +25,12 @@ import static android.view.WindowManager.PROPERTY_COMPAT_ALLOW_RESTRICTED_RESIZA
 import static com.android.server.wm.AppCompatUtils.isChangeEnabled;
 
 import android.annotation.NonNull;
-import android.annotation.UserIdInt;
+import android.compat.annotation.ChangeId;
+import android.compat.annotation.EnabledAfter;
+import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
+import android.os.Build;
+import android.os.UserHandle;
 import android.util.proto.ProtoOutputStream;
 
 import com.android.server.wm.utils.OptPropFactory;
@@ -37,6 +41,15 @@ import java.util.function.BooleanSupplier;
  * Encapsulate app compat logic about resizability.
  */
 class AppCompatResizeOverrides {
+
+    /**
+     * Disable opting out the universal resizability on large screen devices.
+     * The property "android.window.PROPERTY_COMPAT_ALLOW_RESTRICTED_RESIZABILITY" will no longer
+     * take effect since Android 17 (API level 37).
+     */
+    @ChangeId
+    @EnabledAfter(targetSdkVersion = Build.VERSION_CODES.BAKLAVA)
+    static final long DISABLE_OPT_OUT_UNIVERSAL_RESIZABLE_BY_DEFAULT = 447301631L;
 
     @NonNull
     private final ActivityRecord mActivityRecord;
@@ -54,9 +67,14 @@ class AppCompatResizeOverrides {
         mAllowForceResizeOverrideOptProp = optPropBuilder.create(
                 PROPERTY_COMPAT_ALLOW_RESIZEABLE_ACTIVITY_OVERRIDES);
         mAllowRestrictedResizability = AppCompatUtils.asLazy(() -> {
+            if (com.android.window.flags.Flags.disableOptOutUniversalResizableByDefault()
+                    && mActivityRecord.info.applicationInfo.isChangeEnabled(
+                            DISABLE_OPT_OUT_UNIVERSAL_RESIZABLE_BY_DEFAULT)) {
+                return false;
+            }
             // Application level.
-            if (allowRestrictedResizability(packageManager, mActivityRecord.packageName,
-                    mActivityRecord.mUserId)) {
+            if (allowRestrictedResizability(packageManager, mActivityRecord.info.applicationInfo,
+                    true /* hasCheckedDisableOptOut */)) {
                 return true;
             }
             // Activity level.
@@ -73,10 +91,16 @@ class AppCompatResizeOverrides {
     }
 
     static boolean allowRestrictedResizability(@NonNull PackageManager pm,
-            @NonNull String packageName, @UserIdInt int userId) {
+            @NonNull ApplicationInfo appInfo, boolean hasCheckedDisableOptOut) {
+        if (com.android.window.flags.Flags.disableOptOutUniversalResizableByDefault()
+                && !hasCheckedDisableOptOut && appInfo.isChangeEnabled(
+                        DISABLE_OPT_OUT_UNIVERSAL_RESIZABLE_BY_DEFAULT)) {
+            return false;
+        }
         try {
-            return pm.getPropertyAsUser(PROPERTY_COMPAT_ALLOW_RESTRICTED_RESIZABILITY, packageName,
-                            null /* className */, userId).getBoolean();
+            return pm.getPropertyAsUser(PROPERTY_COMPAT_ALLOW_RESTRICTED_RESIZABILITY,
+                    appInfo.packageName, null /* className */,
+                    UserHandle.getUserId(appInfo.uid)).getBoolean();
         } catch (PackageManager.NameNotFoundException e) {
             return false;
         }
