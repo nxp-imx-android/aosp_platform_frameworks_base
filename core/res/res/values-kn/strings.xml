@@ -370,8 +370,8 @@
     <string name="permgroupdesc_xr_eye_sensitive" msgid="6050967250223079001">"ಕಣ್ಣಿನ ಚಲನೆಯನ್ನು ನಿಖರವಾಗಿ ಟ್ರ್ಯಾಕ್ ಮಾಡಿ"</string>
     <string name="permgrouplab_xr_tracking" msgid="766634536453394700">"ಚಲನೆ ಮತ್ತು ಪ್ರದೇಶದ ಡೇಟಾ"</string>
     <string name="permgroupdesc_xr_tracking" msgid="812429788288001595">"ಕಣ್ಣುಗಳು, ಮುಖ, ದೇಹ ಮತ್ತು ಸ್ಕ್ಯಾನ್ ಪ್ರದೇಶವನ್ನು ಟ್ರ್ಯಾಕ್ ಮಾಡಿ"</string>
-    <string name="permgrouplab_xr_tracking_sensitive" msgid="4346975608010051186">"ನಿಖರವಾದ ತಲೆಯ ಚಲನೆ ಮತ್ತು ಪ್ರದೇಶದ ಡೇಟಾ"</string>
-    <string name="permgroupdesc_xr_tracking_sensitive" msgid="7925014193164562556">"ತಲೆ ಮತ್ತು ಸ್ಕ್ಯಾನ್ ಪ್ರದೇಶವನ್ನು ನಿಖರವಾಗಿ ಟ್ರ್ಯಾಕ್ ಮಾಡಿ"</string>
+    <string name="permgrouplab_xr_tracking_sensitive" msgid="6574264227123545314">"ನಿಖರವಾದ ಚಲನೆ ಮತ್ತು ಪ್ರದೇಶದ ಡೇಟಾ"</string>
+    <string name="permgroupdesc_xr_tracking_sensitive" msgid="2480835734248509848">"ನಿಖರವಾಗಿ ಪ್ರದೇಶವನ್ನು ಸ್ಕ್ಯಾನ್ ಮಾಡಿ ಮತ್ತು ಹೆಡ್ ಅನ್ನು ಟ್ರ್ಯಾಕ್ ಮಾಡಿ"</string>
     <string name="capability_title_canRetrieveWindowContent" msgid="7554282892101587296">"ವಿಂಡೋ ವಿಷಯವನ್ನು ಹಿಂಪಡೆಯುತ್ತದೆ"</string>
     <string name="capability_desc_canRetrieveWindowContent" msgid="6195610527625237661">"ನೀವು ಸಂವಹನ ನಡೆಸುತ್ತಿರುವ ವಿಂಡೋದ ಕಂಟೆಂಟ್ ಅನ್ನು ಪರೀಕ್ಷಿಸಿ."</string>
     <string name="capability_title_canRequestTouchExploration" msgid="327598364696316213">"ಸ್ಪರ್ಶ-ಎಕ್ಸ್‌ಪ್ಲೋರ್ ಆನ್ ಮಾಡುತ್ತದೆ"</string>
@@ -685,7 +685,7 @@
     <string name="permdesc_scene_understanding_coarse" msgid="847344305502345475">"ನಿಮ್ಮ ಸುತ್ತಮುತ್ತಲಿನ ಪ್ರದೇಶಗಳನ್ನು ಸ್ಕ್ಯಾನ್ ಮಾಡಲು ಆ್ಯಪ್ ಅನ್ನು ಅನುಮತಿಸುತ್ತದೆ."</string>
     <string name="permlab_scene_understanding_fine" msgid="2899904960307462936">"ನಿಮ್ಮ ಸುತ್ತಮುತ್ತಲಿನ ಪ್ರದೇಶವನ್ನು ನಿಖರವಾಗಿ ಸ್ಕ್ಯಾನ್ ಮಾಡಿ"</string>
     <string name="permdesc_scene_understanding_fine" msgid="4848943859506977588">"ನಿಮ್ಮ ಸುತ್ತಮುತ್ತಲಿನ ಪ್ರದೇಶಗಳನ್ನು ನಿಖರವಾಗಿ ಸ್ಕ್ಯಾನ್ ಮಾಡಲು ಆ್ಯಪ್ ಅನ್ನು ಅನುಮತಿಸುತ್ತದೆ."</string>
-    <string name="permlab_xr_tracking_in_background" msgid="8659516810430027774">"ಹಿನ್ನೆಲೆಯಲ್ಲಿ XR ಡೇಟಾವನ್ನು ಟ್ರ್ಯಾಕ್ ಮಾಡಿ"</string>
+    <string name="permlab_xr_tracking_in_background" msgid="1714941204255185460">"ಹಿನ್ನೆಲೆಯಲ್ಲಿ XR ಟ್ರ್ಯಾಕಿಂಗ್ ಅನ್ನು ಆ್ಯಕ್ಸೆಸ್ ಮಾಡಿ"</string>
     <string name="permdesc_xr_tracking_in_background" msgid="3151744132692357005">"ಹಿನ್ನೆಲೆಯಲ್ಲಿ XR ಡೇಟಾವನ್ನು ಆ್ಯಕ್ಸೆಸ್ ಮಾಡಲು ಆ್ಯಪ್ ಅನ್ನು ಅನುಮತಿಸುತ್ತದೆ."</string>
     <string name="permlab_capture_keyboard" msgid="4076894823382693032">"ಕ್ಯಾಪ್ಚರ್ ಕೀಗಳು"</string>
     <string name="permdesc_capture_keyboard" msgid="4192269470684407219">"ಸಿಸ್ಟಂ ಶಾರ್ಟ್‌ಕಟ್‌ಗಳು ಮತ್ತು ಆ್ಯಕ್ಷನ್‌ಗಳನ್ನು ಸಿಸ್ಟಂ ಪ್ರಾಸೆಸ್ ಮಾಡುವ ಮೊದಲು ಕೀಗಳನ್ನು ಕ್ಯಾಪ್ಚರ್ ಮಾಡಲು ಆ್ಯಪ್‌ಗೆ ಅನುಮತಿಸುತ್ತದೆ."</string>
@@ -1054,7 +1054,7 @@
     <string name="lockscreen_pattern_correct" msgid="8050630103651508582">"ಸರಿಯಾಗಿದೆ!"</string>
     <string name="lockscreen_pattern_wrong" msgid="2940138714468358458">"ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ"</string>
     <string name="lockscreen_password_wrong" msgid="8605355913868947490">"ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ"</string>
-    <string name="lockscreen_storage_locked" msgid="634993789186443380">"ಎಲ್ಲ ವೈಶಿಷ್ಟ್ಯಗಳು ಮತ್ತು ಡೇಟಾಗೆ ಅನ್‌ಲಾಕ್ ಮಾಡಿ"</string>
+    <string name="lockscreen_storage_locked" msgid="634993789186443380">"ಎಲ್ಲ ಫೀಚರ್‌ಗಳು ಮತ್ತು ಡೇಟಾಗೆ ಅನ್‌ಲಾಕ್ ಮಾಡಿ"</string>
     <string name="faceunlock_multiple_failures" msgid="681991538434031708">"ಗರಿಷ್ಠ ಫೇಸ್ ಅನ್‍ಲಾಕ್ ಪ್ರಯತ್ನಗಳು ಮೀರಿವೆ"</string>
     <string name="lockscreen_missing_sim_message_short" msgid="1229301273156907613">"SIM ಇಲ್ಲ"</string>
     <string name="lockscreen_missing_sim_message" product="tablet" msgid="3986843848305639161">"ಟ್ಯಾಬ್ಲೆಟ್‌ನಲ್ಲಿ SIM ಇಲ್ಲ."</string>
@@ -1986,8 +1986,8 @@
     <string name="package_updated_device_owner" msgid="7770195449213776218">"ನಿಮ್ಮ ನಿರ್ವಾಹಕರು ಅಪ್‌ಡೇಟ್ ಮಾಡಿದ್ದಾರೆ.\nನೀಡಲಾದ ಅನುಮತಿಗಳನ್ನು ವೀಕ್ಷಿಸಲು ಸೆಟ್ಟಿಂಗ್‌ಗಳಿಗೆ ಹೋಗಿ"</string>
     <string name="package_deleted_device_owner" msgid="2292335928930293023">"ನಿಮ್ಮ ನಿರ್ವಾಹಕರು ಅಳಿಸಿದ್ದಾರೆ"</string>
     <string name="confirm_battery_saver" msgid="5247976246208245754">"ಸರಿ"</string>
-    <string name="battery_saver_description_with_learn_more" msgid="5444908404021316250">"ಬ್ಯಾಟರಿ ಸೇವರ್, ಡಾರ್ಕ್ ಥೀಮ್ ಅನ್ನು ಆನ್ ಮಾಡುತ್ತದೆ ಮತ್ತು ಹಿನ್ನೆಲೆ ಚಟುವಟಿಕೆ, ಕೆಲವು ವಿಷುವಲ್ ಎಫೆಕ್ಟ್‌ಗಳು, ಕೆಲವು ಫೀಚರ್‌ಗಳು ಮತ್ತು ಇತರ ನೆಟ್‌ವರ್ಕ್ ಸಂಪರ್ಕಗಳನ್ನು ಮಿತಿಗೊಳಿಸುತ್ತದೆ ಅಥವಾ ಆಫ್ ಮಾಡುತ್ತದೆ."</string>
-    <string name="battery_saver_description" msgid="8518809702138617167">"ಬ್ಯಾಟರಿ ಸೇವರ್ ಡಾರ್ಕ್ ಥೀಮ್ ಅನ್ನು ಆನ್ ಮಾಡುತ್ತದೆ ಮತ್ತು ಹಿನ್ನೆಲೆ ಚಟುವಟಿಕೆ, ಕೆಲವು ವಿಷುವಲ್ ಎಫೆಕ್ಟ್‌ಗಳು, ಕೆಲವು ಫೀಚರ್‌ಗಳು ಮತ್ತು ಇತರ ನೆಟ್‌ವರ್ಕ್ ಸಂಪರ್ಕಗಳನ್ನು ಮಿತಿಗೊಳಿಸುತ್ತದೆ ಅಥವಾ ಆಫ್ ಮಾಡುತ್ತದೆ."</string>
+    <string name="battery_saver_description_with_learn_more" msgid="8969945879044849461">"ಬ್ಯಾಟರಿ ಸೇವರ್ ಡಾರ್ಕ್ ಥೀಮ್ ಅನ್ನು ಆನ್ ಮಾಡುತ್ತದೆ ಮತ್ತು ಹಿನ್ನೆಲೆ ಚಟುವಟಿಕೆ, ಕೆಲವು ವಿಷುವಲ್ ಎಫೆಕ್ಟ್‌ಗಳು, ಕೆಲವು ಫೀಚರ್‌ಗಳು ಮತ್ತು ಕೆಲವು ನೆಟ್‌ವರ್ಕ್ ಕನೆಕ್ಷನ್‌ಗಳನ್ನು ಮಿತಿಗೊಳಿಸುತ್ತದೆ ಅಥವಾ ಆಫ್ ಮಾಡುತ್ತದೆ."</string>
+    <string name="battery_saver_description" msgid="2820475140307374570">"ಬ್ಯಾಟರಿ ಸೇವರ್ ಡಾರ್ಕ್ ಥೀಮ್ ಅನ್ನು ಆನ್ ಮಾಡುತ್ತದೆ ಮತ್ತು ಹಿನ್ನೆಲೆ ಚಟುವಟಿಕೆ, ಕೆಲವು ವಿಷುವಲ್ ಎಫೆಕ್ಟ್‌ಗಳು, ಕೆಲವು ಫೀಚರ್‌ಗಳು ಮತ್ತು ಕೆಲವು ನೆಟ್‌ವರ್ಕ್ ಕನೆಕ್ಷನ್‌ಗಳನ್ನು ಮಿತಿಗೊಳಿಸುತ್ತದೆ ಅಥವಾ ಆಫ್ ಮಾಡುತ್ತದೆ."</string>
     <string name="data_saver_description" msgid="4995164271550590517">"ಡೇಟಾ ಬಳಕೆ ಕಡಿಮೆ ಮಾಡಲು ನೆರವಾಗಲು, ಡೇಟಾ ಸೇವರ್ ಕೆಲವು ಆ್ಯಪ್‍ಗಳು ಹಿನ್ನೆಲೆಯಲ್ಲಿ ಡೇಟಾ ಕಳುಹಿಸುವುದನ್ನು ಅಥವಾ ಸ್ವೀಕರಿಸುವುದನ್ನು ತಡೆಯುತ್ತದೆ. ನೀವು ಪ್ರಸ್ತುತ ಬಳಸುತ್ತಿರುವ ಆ್ಯಪ್, ಡೇಟಾವನ್ನು ಆ್ಯಕ್ಸೆಸ್ ಮಾಡಬಹುದು ಆದರೆ ಅಷ್ಟೊಂದು ಪದೇ ಪದೇ ಆ್ಯಕ್ಸೆಸ್ ಮಾಡದಿರಬಹುದು. ಇದರರ್ಥ, ಉದಾಹರಣೆಗೆ, ನೀವು ಆ ಚಿತ್ರಗಳನ್ನು ಟ್ಯಾಪ್ ಮಾಡುವವರೆಗೆ ಅವುಗಳು ಕಾಣಿಸಿಕೊಳ್ಳುವುದಿಲ್ಲ."</string>
     <string name="data_saver_enable_title" msgid="7080620065745260137">"ಡೇಟಾ ಸೇವರ್ ಆನ್ ಮಾಡಬೇಕೇ?"</string>
     <string name="data_saver_enable_button" msgid="4399405762586419726">"ಆನ್‌ ಮಾಡಿ"</string>

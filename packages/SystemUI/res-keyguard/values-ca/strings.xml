@@ -68,7 +68,7 @@
     <string name="kg_unlock_with_pin_or_fp" msgid="5635161174698729890">"Desbloqueja amb PIN o empremta"</string>
     <string name="kg_unlock_with_password_or_fp" msgid="2251295907826814237">"Desbloqueja amb contrasenya o empremta"</string>
     <string name="kg_unlock_with_pattern_or_fp" msgid="2391870539909135046">"Desbloqueja amb patró o empremta"</string>
-    <string name="kg_prompt_after_dpm_lock" msgid="6002804765868345917">"Per política de treball, s\'ha bloquejat per seguretat"</string>
+    <string name="kg_prompt_after_dpm_lock" msgid="6002804765868345917">"Per política de treball, el dispositiu s\'ha bloquejat per seguretat"</string>
     <string name="kg_prompt_title_after_secure_lock_device" msgid="2646423690908627259">"Verificació en dos passos"</string>
     <string name="kg_prompt_subtitle_for_secure_lock_device_biometric_auth_fingerprint" msgid="6596633555720510932">"Utilitza Desbloqueig amb empremta digital"</string>
     <string name="kg_prompt_subtitle_for_secure_lock_device_biometric_auth_face" msgid="4550701327607935441">"Utilitza Desbloqueig facial"</string>

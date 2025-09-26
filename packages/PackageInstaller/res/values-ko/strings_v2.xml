@@ -96,22 +96,14 @@
     <string name="message_restore_error_installer_absent" msgid="8492838251989389724">"이 앱을 복원하려면 <xliff:g id="INSTALLER_NAME">%1$s</xliff:g>을 설치해야 합니다."</string>
     <string name="message_restore_error_generic" msgid="5903850636679929406">"이 앱을 복원하려고 시도하던 중 문제가 발생했습니다."</string>
     <string name="message_uninstall_activity" msgid="3263352475743590167">"<xliff:g id="ACTIVITY_NAME">%1$s</xliff:g>은(는) <xliff:g id="APP_NAME">%2$s</xliff:g> 앱의 일부입니다."</string>
-    <!-- no translation found for cannot_install_app_blocked_summary (2082063650842897085) -->
-    <skip />
-    <!-- no translation found for cannot_update_app_blocked_summary (7607734844900187499) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_no_internet_summary (7298957699553589600) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_no_internet_summary (8094414928318316598) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_summary (3830073638843524892) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_unavailable_summary (342184955548504019) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_fail_closed_summary (3552780111383069051) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_unavailable_fail_closed_summary (353457015429601377) -->
-    <skip />
+    <string name="cannot_install_app_blocked_summary" msgid="2082063650842897085">"&lt;p&gt;이 앱은 차단되었습니다. 기기 및 데이터를 안전하게 보호할 수 있도록, 인증된 개발자의 앱만 설치할 수 있습니다.&lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;개발자 인증에 대해 자세히 알아보기&lt;/a&gt;"</string>
+    <string name="cannot_update_app_blocked_summary" msgid="7607734844900187499">"&lt;p&gt;이 앱은 업데이트되지 않았습니다. 기기 및 데이터를 안전하게 보호할 수 있도록, 인증된 개발자의 업데이트만 설치할 수 있습니다.&lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;개발자 인증에 대해 자세히 알아보기&lt;/a&gt;"</string>
+    <string name="cannot_install_verification_no_internet_summary" msgid="7298957699553589600">"&lt;p&gt;이 앱은 설치되지 않았습니다. 인증되지 않은 개발자의 앱은 안전하지 않을 수 있습니다.&lt;/p&gt; &lt;p&gt;앱 개발자를 인증하려면 인터넷 연결이 필요합니다. 연결 상태를 확인한 후 설치를 다시 시도하세요. &lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;개발자 인증에 대해 자세히 알아보기&lt;/a&gt;"</string>
+    <string name="cannot_update_verification_no_internet_summary" msgid="8094414928318316598">"&lt;p&gt;이 앱은 업데이트되지 않았습니다. 인증되지 않은 개발자의 업데이트는 안전하지 않을 수 있습니다.&lt;/p&gt; &lt;p&gt;앱 개발자를 인증하려면 인터넷 연결이 필요합니다. 연결 상태를 확인한 후 업데이트를 다시 시도하세요. &lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;개발자 인증에 대해 자세히 알아보기&lt;/a&gt;"</string>
+    <string name="cannot_install_verification_unavailable_summary" msgid="3830073638843524892">"&lt;p&gt;이 앱의 개발자를 인증하는 중에 문제가 발생했습니다. 인증되지 않은 개발자의 앱은 안전하지 않을 수 있으므로 앱이 설치되지 않았습니다.&lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;개발자 인증에 대해 자세히 알아보기&lt;/a&gt;"</string>
+    <string name="cannot_update_verification_unavailable_summary" msgid="342184955548504019">"&lt;p&gt;이 앱의 개발자를 인증하는 중에 문제가 발생했습니다. 인증되지 않은 개발자의 업데이트는 안전하지 않을 수 있으므로 앱이 업데이트되지 않았습니다.&lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;개발자 인증에 대해 자세히 알아보기&lt;/a&gt;"</string>
+    <string name="cannot_install_verification_unavailable_fail_closed_summary" msgid="3552780111383069051">"&lt;p&gt;개발자를 인증하는 중에 문제가 발생하여 이 앱이 차단되었습니다. 기기 및 데이터를 안전하게 보호할 수 있도록, 인증된 개발자의 앱만 설치할 수 있습니다.&lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;개발자 인증에 대해 자세히 알아보기&lt;/a&gt;"</string>
+    <string name="cannot_update_verification_unavailable_fail_closed_summary" msgid="353457015429601377">"&lt;p&gt;개발자를 인증하는 중에 문제가 발생하여 이 앱이 업데이트되지 않았습니다. 기기 및 데이터를 안전하게 보호할 수 있도록, 인증된 개발자의 업데이트만 설치할 수 있습니다.&lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;개발자 인증에 대해 자세히 알아보기&lt;/a&gt;"</string>
     <string name="more_details_expanded_install_summary" msgid="3545896392881608712">"인증하지 않고 앱을 설치하는 경우, 인증되지 않은 개발자의 앱으로 인해 기기와 데이터가 위험에 노출될 수 있다는 점에 유의하시기 바랍니다."</string>
     <string name="more_details_expanded_update_summary" msgid="2239162864839036480">"인증하지 않고 업데이트하는 경우, 인증되지 않은 개발자의 업데이트로 인해 기기 및 데이터가 위험에 처할 수 있다는 점에 유의하시기 바랍니다."</string>
     <string name="cannot_install_app_blocked_title" msgid="6372444121824751694">"앱 개발자가 인증되지 않음"</string>

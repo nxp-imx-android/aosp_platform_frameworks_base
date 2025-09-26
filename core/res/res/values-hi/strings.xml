@@ -370,8 +370,8 @@
     <string name="permgroupdesc_xr_eye_sensitive" msgid="6050967250223079001">"इससे ऐप्लिकेशन को आंखों के मूवमेंट को सटीक तरीके से ट्रैक करने की अनुमति मिलती है"</string>
     <string name="permgrouplab_xr_tracking" msgid="766634536453394700">"मूवमेंट और आस-पास की चीज़ों जुड़ा डेटा"</string>
     <string name="permgroupdesc_xr_tracking" msgid="812429788288001595">"इससे ऐप्लिकेशन को आंखें, चेहरे, और शरीर के मूवमेंट और आस-पास की चीज़ें सटीक तरीके से ट्रैक करने की अनुमति मिलती है"</string>
-    <string name="permgrouplab_xr_tracking_sensitive" msgid="4346975608010051186">"सिर के मूवमेंट और आस-पास की चीज़ों से जुड़ा सटीक डेटा"</string>
-    <string name="permgroupdesc_xr_tracking_sensitive" msgid="7925014193164562556">"इससे ऐप्लिकेशन को सिर के मूवमेंट और आस-पास की चीज़ें सटीक तरीके से ट्रैक करने की अनुमति मिलती है."</string>
+    <string name="permgrouplab_xr_tracking_sensitive" msgid="6574264227123545314">"मूवमेंट और आस-पास की चीज़ों का सटीक डेटा"</string>
+    <string name="permgroupdesc_xr_tracking_sensitive" msgid="2480835734248509848">"इससे आस-पास की चीज़ों को सटीक तरीके से स्कैन करने और सिर के मूवमेंट को ट्रैक करने की अनुमति मिलती है"</string>
     <string name="capability_title_canRetrieveWindowContent" msgid="7554282892101587296">"विंडो का कॉन्टेंट वापस पाएं"</string>
     <string name="capability_desc_canRetrieveWindowContent" msgid="6195610527625237661">"विंडो पर नज़र आ रहे कॉन्टेंट की जांच करें."</string>
     <string name="capability_title_canRequestTouchExploration" msgid="327598364696316213">"छूकर, किसी चीज़ से जुड़ी जानकारी सुनने की सुविधा चालू करें"</string>
@@ -685,7 +685,7 @@
     <string name="permdesc_scene_understanding_coarse" msgid="847344305502345475">"इससे ऐप्लिकेशन को आपके आस-पास की चीज़ें स्कैन करने की अनुमति मिलती है."</string>
     <string name="permlab_scene_understanding_fine" msgid="2899904960307462936">"आस-पास की चीज़ों को सटीक तरीके से स्कैन करने की अनुमति दें"</string>
     <string name="permdesc_scene_understanding_fine" msgid="4848943859506977588">"इससे ऐप्लिकेशन को आपके आस-पास की चीज़ें सटीक तरीके से स्कैन करने की अनुमति मिलती है."</string>
-    <string name="permlab_xr_tracking_in_background" msgid="8659516810430027774">"बैकग्राउंड में एक्सआर डेटा ट्रैक करने की अनुमति दें"</string>
+    <string name="permlab_xr_tracking_in_background" msgid="1714941204255185460">"एक्सआर ट्रैकिंग को बैकग्राउंड में ऐक्सेस करना"</string>
     <string name="permdesc_xr_tracking_in_background" msgid="3151744132692357005">"इससे ऐप्लिकेशन को बैकग्राउंड में एक्सआर डेटा ऐक्सेस करने की अनुमति मिलती है."</string>
     <string name="permlab_capture_keyboard" msgid="4076894823382693032">"बटन कैप्चर करें"</string>
     <string name="permdesc_capture_keyboard" msgid="4192269470684407219">"इससे ऐप्लिकेशन को सिस्टम के शॉर्टकट और कार्रवाइयों को प्रोसेस करने से पहले बटन कैप्चर करने की अनुमति मिलती है."</string>
@@ -1462,8 +1462,8 @@
     <string name="usb_power_notification_message" msgid="7284765627437897702">"जोड़ा गया डिवाइस चार्ज हो रहा है. ज़्यादा विकल्पों के लिए टैप करें."</string>
     <string name="usb_unsupported_audio_accessory_title" msgid="2335775548086533065">"एनालॉग ऑडियो एक्सेसरी का पता चला"</string>
     <string name="usb_unsupported_audio_accessory_message" msgid="1300168007129796621">"अटैच किया गया डिवाइस इस फ़ोन से संगत नहीं है. ज़्यादा जानने के लिए टैप करें."</string>
-    <string name="adb_active_notification_title" msgid="408390247354560331">"यूएसबी डीबग करने के लिए adb कनेक्ट किया गया"</string>
-    <string name="adb_active_notification_message" msgid="5617264033476778211">"यूएसबी डीबग करने की सुविधा बंद करने के लिए टैप करें"</string>
+    <string name="adb_active_notification_title" msgid="408390247354560331">"यूएसबी से फ़ोन को डीबग करने के लिए एडीबी कनेक्ट किया गया"</string>
+    <string name="adb_active_notification_message" msgid="5617264033476778211">"यूएसबी से डीबग करने की सुविधा बंद करने के लिए टैप करें"</string>
     <string name="adb_active_notification_message" product="tv" msgid="6624498401272780855">"USB डीबग करना अक्षम करने के लिए चुनें."</string>
     <string name="adbwifi_active_notification_title" msgid="6147343659168302473">"वॉयरलेस डीबगिंग कनेक्ट है"</string>
     <string name="adbwifi_active_notification_message" msgid="930987922852867972">"वॉयरलेस डीबगिंग की सुविधा बंद करने के लिए टैप करें"</string>
@@ -1986,8 +1986,8 @@
     <string name="package_updated_device_owner" msgid="7770195449213776218">"इसे आपके एडमिन ने अपडेट किया है.\nजिन अनुमतियों को मंज़ूरी मिली है उन्हें देखने के लिए, सेटिंग में जाएं"</string>
     <string name="package_deleted_device_owner" msgid="2292335928930293023">"आपके व्यवस्थापक ने हटा दिया है"</string>
     <string name="confirm_battery_saver" msgid="5247976246208245754">"ठीक है"</string>
-    <string name="battery_saver_description_with_learn_more" msgid="5444908404021316250">"बैटरी सेवर, गहरे रंग वाली थीम को चालू करता है. साथ ही, इस मोड में बैकग्राउंड की गतिविधि, कुछ विज़ुअल इफ़ेक्ट, और कुछ खास सुविधाएं कम या बंद हो जाती हैं. कुछ इंटरनेट कनेक्शन भी पूरी तरह काम नहीं करते."</string>
-    <string name="battery_saver_description" msgid="8518809702138617167">"बैटरी सेवर, गहरे रंग वाली थीम को चालू करता है. साथ ही, इस मोड में बैकग्राउंड की गतिविधि, कुछ विज़ुअल इफ़ेक्ट, और कुछ सुविधाएं सीमित या बंद हो जाती हैं. कुछ इंटरनेट कनेक्शन भी पूरी तरह काम नहीं करते."</string>
+    <string name="battery_saver_description_with_learn_more" msgid="8969945879044849461">"बैटरी सेवर मोड, गहरे रंग वाली थीम चालू करता है और बैकग्राउंड में होने वाली गतिविधियों को कम या बंद कर देता है. इसके अलावा, यह कुछ विज़ुअल इफ़ेक्ट, इंटरनेट कनेक्शन, और चुनिंदा सुविधाओं के इस्तेमाल को भी कम या बंद कर देता है."</string>
+    <string name="battery_saver_description" msgid="2820475140307374570">"बैटरी सेवर मोड, गहरे रंग वाली थीम चालू करता है और बैकग्राउंड में होने वाली गतिविधियों को कम या बंद कर देता है. इसके अलावा, यह कुछ विज़ुअल इफ़ेक्ट, इंटरनेट कनेक्शन, और चुनिंदा सुविधाओं के इस्तेमाल को भी कम या बंद कर देता है."</string>
     <string name="data_saver_description" msgid="4995164271550590517">"डेटा खर्च को कम करने के लिए, डेटा बचाने की सेटिंग बैकग्राउंड में चलने वाले कुछ ऐप्लिकेशन को डेटा भेजने या पाने से रोकती है. हालांकि, फ़िलहाल इस्तेमाल किया जा रहा ऐप्लिकेशन, डेटा को ऐक्सेस कर सकता है, लेकिन वह अक्सर ऐसा नहीं कर पाएगा. उदाहरण के लिए, ऐसा हो सकता है कि इमेज तब तक न दिखें, जब तक आप उन पर टैप न करें."</string>
     <string name="data_saver_enable_title" msgid="7080620065745260137">"डेटा बचाने की सेटिंग चालू करनी है?"</string>
     <string name="data_saver_enable_button" msgid="4399405762586419726">"चालू करें"</string>

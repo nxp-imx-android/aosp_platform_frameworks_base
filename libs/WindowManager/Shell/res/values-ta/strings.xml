@@ -152,7 +152,7 @@
     <string name="desktop_mode_talkback_state_not_focused" msgid="4640618691603218929">"<xliff:g id="APP_NAME">%1$s</xliff:g> (மையப்படுத்தப்படவில்லை)"</string>
     <string name="desktop_mode_maximize_menu_immersive_button_text" msgid="559492223133829481">"முழுத்திரையும்"</string>
     <string name="desktop_mode_maximize_menu_immersive_restore_button_text" msgid="4900114367354709257">"மீட்டெடுக்கும்"</string>
-    <string name="desktop_mode_maximize_menu_maximize_button_text" msgid="3090199175564175845">"பெரிதாக்கும்"</string>
+    <string name="desktop_mode_maximize_menu_maximize_button_text" msgid="3090199175564175845">"பெரிதாக்கு"</string>
     <string name="desktop_mode_maximize_menu_restore_button_text" msgid="4234449220944704387">"மீட்டெடுக்கும்"</string>
     <string name="desktop_mode_maximize_menu_snap_left_button_text" msgid="8077452201179893424">"இடதுபுறம் நகர்த்தும்"</string>
     <string name="desktop_mode_maximize_menu_snap_right_button_text" msgid="7117751068945657304">"வலதுபுறம் நகர்த்தும்"</string>
@@ -169,7 +169,7 @@
     <string name="app_header_talkback_action_minimize_button_text" msgid="7491054416186901764">"ஆப்ஸ் சாளரத்தைச் சிறிதாக்கும்"</string>
     <string name="app_header_talkback_action_close_button_text" msgid="5159612596378268926">"ஆப்ஸ் சாளரத்தை மூடும்"</string>
     <string name="open_by_default_settings_text" msgid="2526548548598185500">"இயல்பாக அமைப்புகளைத் திறக்கும்"</string>
-    <string name="open_by_default_dialog_subheader_text" msgid="1729599730664063881">"இந்த ஆப்ஸில் வலை இணைப்புகளைத் திறக்கும் வழிமுறையைத் தேர்வுசெய்யுங்கள்"</string>
+    <string name="open_by_default_dialog_subheader_text" msgid="1729599730664063881">"இணைய இணைப்பைத் திறக்கும் முறையைத் தேர்வுசெய்க"</string>
     <string name="open_by_default_dialog_in_app_text" msgid="6978022419634199806">"ஆப்ஸில்"</string>
     <string name="open_by_default_dialog_in_browser_text" msgid="8042769465958497081">"உங்கள் பிரவுசரில்"</string>
     <string name="open_by_default_dialog_dismiss_button_text" msgid="3487238795534582291">"சரி"</string>

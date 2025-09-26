@@ -21,8 +21,8 @@
     xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
     <string name="app_label" msgid="4811759950673118541">"UI systému"</string>
     <string name="battery_low_title" msgid="5319680173344341779">"Chcete zapnúť šetrič batérie?"</string>
-    <string name="battery_low_description" msgid="3282977755476423966">"Zostáva vám <xliff:g id="PERCENTAGE">%s</xliff:g> batérie. Šetrič batérie zapne tmavý motív, obmedzí aktivity na pozadí a odloží upozornenia."</string>
-    <string name="battery_low_intro" msgid="5148725009653088790">"Šetrič batérie zapne tmavý motív, obmedzí aktivity na pozadí a odloží upozornenia."</string>
+    <string name="battery_low_description" msgid="7848989602036547056">"Zostáva vám <xliff:g id="PERCENTAGE">%s</xliff:g> batérie. Šetrič batérie zapne tmavý motív, obmedzí aktivity na pozadí a odloží upozornenia."</string>
+    <string name="battery_low_intro" msgid="8033783734931200690">"Šetrič batérie zapne tmavý motív, obmedzí aktivity na pozadí a odloží upozornenia."</string>
     <string name="battery_low_percent_format" msgid="4276661262843170964">"Zostáva <xliff:g id="PERCENTAGE">%s</xliff:g>"</string>
     <string name="invalid_charger_title" msgid="938685362320735167">"Nedá sa nabíjať cez USB"</string>
     <string name="invalid_charger_text" msgid="2339310107232691577">"Použite nabíjačku dodanú so zariadením"</string>
@@ -140,8 +140,7 @@
     <string name="screenrecord_stop_dialog_button" msgid="2883812564938194350">"Zastaviť nahrávanie"</string>
     <string name="screen_record_entire_screen" msgid="66944996337928170">"Celá obrazovka"</string>
     <string name="screen_record_single_app" msgid="7355880948574569290">"Jedna aplikácia"</string>
-    <!-- no translation found for screen_record_single_app_hint (8404332826093639170) -->
-    <skip />
+    <string name="screen_record_single_app_hint" msgid="8404332826093639170">"Aplikácia na nahrávanie"</string>
     <string name="screen_record_single_app_no_recents" msgid="1023249803854209330">"Jedna aplikácia (vyberte aplikáciu tak, že ju otvoríte)"</string>
     <string name="screen_record_record_device_audio_label" msgid="5363057443124085198">"Nahrávať zvuk zariadenia"</string>
     <string name="screen_record_record_microphone_label" msgid="4685753707185662381">"Nahrávať mikrofón"</string>
@@ -149,11 +148,13 @@
     <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"Zobraziť dotyky"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"Vyberte aplikáciu na nahrávanie"</string>
     <string name="screen_record_video_saved" msgid="1345283626390232282">"Video bolo uložené"</string>
-    <!-- no translation found for screen_record_undo (7942716736019800870) -->
-    <skip />
+    <string name="screen_record_video_deleted" msgid="30786214839944540">"Video bolo odstránené"</string>
+    <string name="screen_record_undo" msgid="7942716736019800870">"Späť"</string>
     <string name="screen_record_retake" msgid="3846643688365398450">"Znova nasnímať"</string>
     <string name="screen_record_edit" msgid="8733014191240769309">"Upraviť"</string>
     <string name="screen_record_delete" msgid="1023421937978254537">"Odstrániť"</string>
+    <string name="screen_record_delete_dialog_title" msgid="5868561491974057044">"Chcete odstrániť túto nahrávku?"</string>
+    <string name="screen_record_delete_dialog_content" msgid="2610040845214024496">"Odstránením tejto nahrávky natrvalo vymažete videosúbor zo zariadenia."</string>
     <string name="screen_record_play" msgid="4732544724679889445">"Prehrať"</string>
     <string name="screen_record_pause" msgid="1715012292444967776">"Pozastaviť"</string>
     <string name="screen_record_mute" msgid="8111682249858638168">"Vypnúť zvuk"</string>
@@ -174,7 +175,12 @@
     <string name="screen_capture_toolbar_fullscreen_button_screenshot_a11y" msgid="8699983355979869210">"Vytvoriť snímku celej obrazovky"</string>
     <string name="screen_capture_toolbar_fullscreen_button_record_a11y" msgid="852148867883959158">"Nahrávať celú obrazovku"</string>
     <string name="screen_capture_toolbar_settings_button_a11y" msgid="8014446956996739704">"Nastavenia snímania obrazovky"</string>
+    <string name="screen_capture_show_clicks_and_keys" msgid="2151690554364148717">"Zobraziť kliknutia a klávesy"</string>
+    <string name="screen_capture_device_audio" msgid="1537290197773737349">"Zvuk zariadenia"</string>
+    <string name="screen_capture_microphone_audio" msgid="1698835678818747741">"Mikrofón"</string>
+    <string name="screen_capture_front_camera" msgid="1214647538302639358">"Predná kamera"</string>
     <string name="screen_capture_region_dimensions" msgid="2317064050253056256">"<xliff:g id="WIDTH">%1$d</xliff:g> × <xliff:g id="HEIGHT">%2$d</xliff:g>"</string>
+    <string name="screen_share_privacy_indicator_stop_sharing" msgid="2297045039651417274">"Prestať zdieľať"</string>
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"Zdieľa sa obrazovka"</string>
     <string name="share_to_app_chip_accessibility_label_generic" msgid="5517431657924536133">"Obsah sa zdieľa"</string>
     <string name="share_to_app_stop_dialog_title" msgid="9212915050910250438">"Chcete prestať zdieľať obrazovku?"</string>
@@ -488,12 +494,13 @@
     <string name="accessibility_hearing_device_pair_new_device" msgid="8440082580186130090">"Kliknutím spárujete nové zariadenie"</string>
     <string name="hearing_devices_presets_error" msgid="350363093458408536">"Predvoľbu sa nepodarilo aktualizovať"</string>
     <string name="hearing_devices_preset_label" msgid="7878267405046232358">"Predvoľba"</string>
+    <string name="hearing_devices_preset_label_left" msgid="7427947566560179945">"Predvoľba pre ľavé"</string>
+    <string name="hearing_devices_preset_label_right" msgid="1847206329436268522">"Predvoľba pre pravé"</string>
     <string name="hearing_devices_input_routing_label" msgid="730396728151232306">"Predvolený mikrofón pre hovory"</string>
   <string-array name="hearing_device_input_routing_options">
     <item msgid="4582190415045337003">"Mikrofón načúvadla"</item>
     <item msgid="8501466270452446450">"Mikrofón tohto telefónu"</item>
   </string-array>
-    <string name="hearing_devices_spinner_item_selected" msgid="3137083889662762383">"Vybrané"</string>
     <string name="hearing_devices_ambient_label" msgid="629440938614895797">"Okolie"</string>
     <string name="hearing_devices_ambient_control_left" msgid="3586965448230412600">"Vľavo"</string>
     <string name="hearing_devices_ambient_control_right" msgid="6192137602448918383">"Vpravo"</string>
@@ -749,7 +756,7 @@
     <string name="legacy_vpn_name" msgid="4174223520162559145">"VPN"</string>
     <string name="keyguard_indication_trust_unlocked" msgid="7395154975733744547">"Odomknutie udržiava TrustAgent"</string>
     <string name="kg_prompt_after_adaptive_auth_lock" msgid="6065186971000690782">"Obrazovka je uzamknutá. Príliš veľa pokusov o overenie."</string>
-    <string name="keyguard_indication_after_adaptive_auth_lock" msgid="5240600662061340872">"Obrazovka je uzamknutá\nNepodarilo sa overiť"</string>
+    <string name="keyguard_indication_after_adaptive_auth_lock" msgid="5240600662061340872">"Obrazovka je uzamknutá\nOverenie sa nepodarilo"</string>
     <string name="keyguard_indication_after_watch_disconnected" msgid="8133476870585660478">"Uzamknuté hodinkami"</string>
     <string name="keyguard_indication_after_secure_lock_device" msgid="4358906300665255820">"Uzamknuté dvojstupňovým overením"</string>
     <string name="zen_mode_and_condition" msgid="5043165189511223718">"<xliff:g id="ZEN_MODE">%1$s</xliff:g>. <xliff:g id="EXIT_CONDITION">%2$s</xliff:g>"</string>
@@ -889,7 +896,7 @@
     <string name="notification_guts_news_summary" msgid="638697931043407835">"Najčítanejšie články, úvodníky a ďalší obsah"</string>
     <string name="notification_guts_social_summary" msgid="3749147631983977040">"Označenia páči sa, príspevky a ďalší obsah"</string>
     <string name="notification_guts_recs_summary" msgid="8391881843238947007">"Bulletiny, odporúčané médiá a ďalší obsah"</string>
-    <string name="notification_onboarding_summaries_turn_on" msgid="5050003857531272655">"Zapnúť"</string>
+    <string name="notification_onboarding_summaries_turn_on" msgid="3831339570984683297">"Zapnúť v Nastaveniach"</string>
     <string name="notification_onboarding_summaries_message" msgid="6061524903176459064">"Dlhšie konverzácie je možné teraz zhrnúť, aby ste mali k dispozícii rýchle súhrny"</string>
     <string name="notification_onboarding_bundles_message" msgid="4612908213178622912">"Nástroj na usporiadanie upozornení zoskupí upozornenia s nižšou prioritou a vypne ich zvuk. Ďalšie kategórie môžete pridať v Nastaveniach."</string>
     <string name="notification_bundle_header_counter" msgid="5515532701569242265">"{count,plural, =1{# upozornenie}few{# upozornenia}many{# notifications}other{# upozornení}}"</string>
@@ -1015,7 +1022,7 @@
     <string name="system_multitasking_splitscreen_focus_rhs" msgid="3838578650313318508">"Prechod na aplikáciu vpravo alebo dole pri rozdelenej obrazovke"</string>
     <string name="system_multitasking_splitscreen_focus_lhs" msgid="3164261844398662518">"Prechod na aplikáciu vľavo alebo hore pri rozdelenej obrazovke"</string>
     <string name="system_multitasking_replace" msgid="7410071959803642125">"Počas rozdelenej obrazovky: nahradenie aplikácie inou"</string>
-    <string name="system_multitasking_move_to_next_display" msgid="6169737557526976997">"Presun aktívneho okna medzi obrazovkami"</string>
+    <string name="system_multitasking_move_to_next_display" msgid="6169737557526976997">"Presunúť aktívne okno na ďalšiu obrazovku"</string>
     <string name="system_desktop_mode_snap_left_window" msgid="8636204689945162298">"Presun okna doľava"</string>
     <string name="system_desktop_mode_snap_right_window" msgid="2162560187639411929">"Presun okna doprava"</string>
     <string name="system_desktop_mode_toggle_maximize_window" msgid="4084100093691768239">"Maximalizovanie okna"</string>
@@ -1143,15 +1150,11 @@
     <string name="accessibility_key_gesture_dialog_content" msgid="4519838108423437794">"Ak chcete použiť <xliff:g id="ID_3">^3</xliff:g>, stlačte "<annotation id="action_key_icon">"ikonu"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g>. <xliff:g id="ID_4">^4</xliff:g>"</string>
     <string name="accessibility_key_gesture_dialog_talkback_intro" msgid="1617808784388544741">"<xliff:g id="ID_1">%1$s</xliff:g> je čítačka obrazovky, ktorá vám umožňuje vypočuť si predčítavané položky. Môže to byť užitočné pre ľudí, ktorí nevidia dobre obrazovku."</string>
     <string name="accessibility_key_gesture_dialog_positive_button_text" msgid="3670746017523589293">"Zapnúť"</string>
-    <!-- no translation found for accessibility_key_gesture_shortcut_not_yet_enabled_dialog_title (5331043821287212071) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_shortcut_not_yet_enabled_negative_button_text (6711239406914231612) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_shortcut_not_yet_enabled_positive_button_text (7748487028569821131) -->
-    <skip />
+    <string name="accessibility_key_gesture_shortcut_not_yet_enabled_dialog_title" msgid="5331043821287212071">"Chcete zapnúť klávesovú skratku <xliff:g id="ID_1">%1$s</xliff:g>?"</string>
+    <string name="accessibility_key_gesture_shortcut_not_yet_enabled_negative_button_text" msgid="6711239406914231612">"Nezapínať"</string>
+    <string name="accessibility_key_gesture_shortcut_not_yet_enabled_positive_button_text" msgid="7748487028569821131">"Zapnúť skratku"</string>
     <string name="accessibility_key_gesture_magnification_dialog_title" msgid="5770691510738701250">"Klávesová skratka <xliff:g id="ID_1">%1$s</xliff:g> je zapnutá"</string>
-    <!-- no translation found for accessibility_key_gesture_magnification_dialog_content (582920726242272572) -->
-    <skip />
+    <string name="accessibility_key_gesture_magnification_dialog_content" msgid="582920726242272572">"Ak chcete použiť funkciu dostupnosti <xliff:g id="ID_3">^3</xliff:g>, stlačte klávesovú skratku "<annotation id="action_key_icon">"ikona"</annotation>" akcie + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g>. Umožňuje rýchlo priblížiť obrazovku a zväčšiť tak obsah. Pri zapnutom zväčšení upravíte priblíženie stlačením "<annotation id="action_key_icon">"ikony"</annotation>" akcie + <xliff:g id="ID_4">^1</xliff:g> a znamienka + alebo -."</string>
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"Vypnúť skratku"</string>
     <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"Nechať zapnuté"</string>
     <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="7934170819801013870">"Stlačením klávesovej skratky "<annotation id="action_key_icon">"ikona"</annotation>" akcie + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> zapnete funkciu dostupnosti <xliff:g id="ID_3">^3</xliff:g>. Potom budete môcť ovládať svoje zariadenie handsfree."</string>
@@ -1624,8 +1627,7 @@
     <string name="shortcut_helper_customize_dialog_reset_button_label" msgid="7645535254306312685">"Resetovať"</string>
     <string name="shortcut_helper_customize_dialog_cancel_button_label" msgid="5595546460431741178">"Zrušiť"</string>
     <string name="shortcut_helper_add_shortcut_dialog_placeholder" msgid="9154297849458741995">"Stlačte kláves"</string>
-    <!-- no translation found for shortcut_helper_customizer_action_key_text (3979063901857046887) -->
-    <skip />
+    <string name="shortcut_helper_customizer_action_key_text" msgid="3979063901857046887">"Akcia"</string>
     <string name="shortcut_customizer_key_combination_in_use_error_message" msgid="3325858369539848162">"Kombinácia klávesov sa už používa. Skúste inú kombináciu."</string>
     <string name="shortcut_customizer_generic_error_message" msgid="3128454624049722741">"Skratku nie je možné nastaviť."</string>
     <string name="shortcut_helper_plus_symbol" msgid="4534843157353732011">"+"</string>

@@ -96,27 +96,19 @@
     <string name="message_restore_error_installer_absent" msgid="8492838251989389724">"Để khôi phục ứng dụng này, bạn cần cài đặt <xliff:g id="INSTALLER_NAME">%1$s</xliff:g>"</string>
     <string name="message_restore_error_generic" msgid="5903850636679929406">"Đã xảy ra vấn đề khi tìm cách khôi phục ứng dụng này"</string>
     <string name="message_uninstall_activity" msgid="3263352475743590167">"<xliff:g id="ACTIVITY_NAME">%1$s</xliff:g> là một phần của ứng dụng sau: <xliff:g id="APP_NAME">%2$s</xliff:g>"</string>
-    <!-- no translation found for cannot_install_app_blocked_summary (2082063650842897085) -->
-    <skip />
-    <!-- no translation found for cannot_update_app_blocked_summary (7607734844900187499) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_no_internet_summary (7298957699553589600) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_no_internet_summary (8094414928318316598) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_summary (3830073638843524892) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_unavailable_summary (342184955548504019) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_fail_closed_summary (3552780111383069051) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_unavailable_fail_closed_summary (353457015429601377) -->
-    <skip />
+    <string name="cannot_install_app_blocked_summary" msgid="2082063650842897085">"&lt;p&gt;Ứng dụng này đã bị chặn. Để giúp đảm bảo an toàn cho thiết bị và dữ liệu, bạn chỉ nên cài đặt ứng dụng của các nhà phát triển đã xác minh.&lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;Tìm hiểu thêm về quy trình xác minh nhà phát triển&lt;/a&gt;"</string>
+    <string name="cannot_update_app_blocked_summary" msgid="7607734844900187499">"&lt;p&gt;Ứng dụng này chưa được cập nhật. Để giúp đảm bảo an toàn cho thiết bị và dữ liệu, bạn chỉ nên cài đặt bản cập nhật của các nhà phát triển đã xác minh.&lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;Tìm hiểu thêm về quy trình xác minh nhà phát triển&lt;/a&gt;"</string>
+    <string name="cannot_install_verification_no_internet_summary" msgid="7298957699553589600">"&lt;p&gt;Ứng dụng này chưa được cài đặt. Các ứng dụng của nhà phát triển chưa được xác minh có thể không an toàn.&lt;/p&gt; &lt;p&gt;Bạn cần có kết nối Internet để xác minh nhà phát triển ứng dụng. Hãy kiểm tra kết nối của bạn rồi thử cài đặt lại. &lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;Tìm hiểu thêm về quy trình xác minh nhà phát triển&lt;/a&gt;"</string>
+    <string name="cannot_update_verification_no_internet_summary" msgid="8094414928318316598">"&lt;p&gt;Ứng dụng này chưa được cập nhật. Bản cập nhật của các nhà phát triển chưa được xác minh có thể không an toàn.&lt;/p&gt; &lt;p&gt;Bạn cần có kết nối Internet để xác minh nhà phát triển ứng dụng. Hãy kiểm tra kết nối của bạn rồi thử cập nhật lại. &lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;Tìm hiểu thêm về quy trình xác minh nhà phát triển&lt;/a&gt;"</string>
+    <string name="cannot_install_verification_unavailable_summary" msgid="3830073638843524892">"&lt;p&gt;Đã xảy ra sự cố khi xác minh nhà phát triển của ứng dụng này. Ứng dụng của các nhà phát triển chưa được xác minh có thể không an toàn nên ứng dụng này chưa được cài đặt.&lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;Tìm hiểu thêm về quy trình xác minh nhà phát triển&lt;/a&gt;"</string>
+    <string name="cannot_update_verification_unavailable_summary" msgid="342184955548504019">"&lt;p&gt;Đã xảy ra sự cố khi xác minh nhà phát triển của ứng dụng này. Bản cập nhật của các nhà phát triển chưa được xác minh có thể không an toàn nên ứng dụng này chưa được cập nhật.&lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;Tìm hiểu thêm về quy trình xác minh nhà phát triển&lt;/a&gt;"</string>
+    <string name="cannot_install_verification_unavailable_fail_closed_summary" msgid="3552780111383069051">"&lt;p&gt;Ứng dụng này bị chặn do đã xảy ra sự cố khi xác minh nhà phát triển. Để giúp đảm bảo an toàn cho thiết bị và dữ liệu, bạn chỉ nên cài đặt ứng dụng của các nhà phát triển đã xác minh.&lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;Tìm hiểu thêm về quy trình xác minh nhà phát triển&lt;/a&gt;"</string>
+    <string name="cannot_update_verification_unavailable_fail_closed_summary" msgid="353457015429601377">"&lt;p&gt;Ứng dụng này chưa được cập nhật vì đã xảy ra sự cố khi xác minh nhà phát triển. Để giúp đảm bảo an toàn cho thiết bị và dữ liệu, bạn chỉ nên cài đặt bản cập nhật của các nhà phát triển đã xác minh.&lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;Tìm hiểu thêm về quy trình xác minh nhà phát triển&lt;/a&gt;"</string>
     <string name="more_details_expanded_install_summary" msgid="3545896392881608712">"Xin lưu ý rằng nếu bạn cài đặt mà không xác minh, các ứng dụng của nhà phát triển chưa được xác minh có thể gây rủi ro cho thiết bị và dữ liệu của bạn."</string>
     <string name="more_details_expanded_update_summary" msgid="2239162864839036480">"Xin lưu ý rằng nếu bạn cập nhật mà không xác minh, các bản cập nhật của nhà phát triển chưa được xác minh có thể gây rủi ro cho thiết bị và dữ liệu của bạn."</string>
-    <string name="cannot_install_app_blocked_title" msgid="6372444121824751694">"Nhà phát triển ứng dụng chưa xác minh"</string>
-    <string name="cannot_install_verification_no_internet_title" msgid="2862046642298119581">"Không thể xác minh nhà phát triển ứng dụng vì không có Internet"</string>
-    <string name="cannot_install_verification_unavailable_title" msgid="2038093442302309120">"Không xác minh được nhà phát triển ứng dụng"</string>
+    <string name="cannot_install_app_blocked_title" msgid="6372444121824751694">"Nhà phát triển ứng dụng này chưa được xác minh"</string>
+    <string name="cannot_install_verification_no_internet_title" msgid="2862046642298119581">"Không thể xác minh nhà phát triển ứng dụng này vì không có Internet"</string>
+    <string name="cannot_install_verification_unavailable_title" msgid="2038093442302309120">"Không xác minh được nhà phát triển ứng dụng này"</string>
     <string name="install_without_verifying" msgid="5359680595440741626">"Cài đặt mà không xác minh"</string>
     <string name="update_without_verifying" msgid="2841466981431484179">"Cập nhật mà không xác minh"</string>
     <string name="button_install" msgid="7434013176505680162">"Cài đặt"</string>

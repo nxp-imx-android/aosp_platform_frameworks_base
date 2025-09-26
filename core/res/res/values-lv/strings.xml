@@ -371,8 +371,8 @@
     <string name="permgroupdesc_xr_eye_sensitive" msgid="6050967250223079001">"precīzi izsekot acu kustībām"</string>
     <string name="permgrouplab_xr_tracking" msgid="766634536453394700">"Kustību un apkārtnes dati"</string>
     <string name="permgroupdesc_xr_tracking" msgid="812429788288001595">"izsekot acu, sejas, ķermeņa kustībām un skenēt apkārtni"</string>
-    <string name="permgrouplab_xr_tracking_sensitive" msgid="4346975608010051186">"Precīzi galvas kustību un apkārtnes dati"</string>
-    <string name="permgroupdesc_xr_tracking_sensitive" msgid="7925014193164562556">"precīzi izsekot galvas kustībām un skenēt apkārtni"</string>
+    <string name="permgrouplab_xr_tracking_sensitive" msgid="6574264227123545314">"Precīzi kustību un apkārtnes dati"</string>
+    <string name="permgroupdesc_xr_tracking_sensitive" msgid="2480835734248509848">"precīzi skenēt apkārtni un izsekot galvas kustībām"</string>
     <string name="capability_title_canRetrieveWindowContent" msgid="7554282892101587296">"Izgūt loga saturu."</string>
     <string name="capability_desc_canRetrieveWindowContent" msgid="6195610527625237661">"Skatīt tā loga saturu, ar kuru mijiedarbojaties."</string>
     <string name="capability_title_canRequestTouchExploration" msgid="327598364696316213">"Aktivizēt funkciju “Pārlūkot pieskaroties”."</string>
@@ -686,7 +686,7 @@
     <string name="permdesc_scene_understanding_coarse" msgid="847344305502345475">"Ļauj lietotnei skenēt apkārtni."</string>
     <string name="permlab_scene_understanding_fine" msgid="2899904960307462936">"precīzi skenēt apkārtni"</string>
     <string name="permdesc_scene_understanding_fine" msgid="4848943859506977588">"Ļauj lietotnei precīzi skenēt apkārtni."</string>
-    <string name="permlab_xr_tracking_in_background" msgid="8659516810430027774">"izsekot PR datiem fonā"</string>
+    <string name="permlab_xr_tracking_in_background" msgid="1714941204255185460">"piekļūt PR izsekošanas datiem fonā"</string>
     <string name="permdesc_xr_tracking_in_background" msgid="3151744132692357005">"Ļauj lietotnei piekļūt PR datiem fonā."</string>
     <string name="permlab_capture_keyboard" msgid="4076894823382693032">"taustiņu uztveršana"</string>
     <string name="permdesc_capture_keyboard" msgid="4192269470684407219">"Ļauj lietotnei uztvert taustiņus, pirms sistēma var apstrādāt sistēmas saīsnes un darbības."</string>
@@ -1463,7 +1463,7 @@
     <string name="usb_power_notification_message" msgid="7284765627437897702">"Pievienotā ierīce tiek uzlādēta. Pieskarieties, lai skatītu citas opcijas."</string>
     <string name="usb_unsupported_audio_accessory_title" msgid="2335775548086533065">"Konstatēts analogs audio piederums"</string>
     <string name="usb_unsupported_audio_accessory_message" msgid="1300168007129796621">"Pievienotā ierīce nav saderīga ar šo tālruni. Pieskarieties, lai uzzinātu vairāk."</string>
-    <string name="adb_active_notification_title" msgid="408390247354560331">"USB atkļūdošana ir pievienota."</string>
+    <string name="adb_active_notification_title" msgid="408390247354560331">"Atkļūdošanas USB savienojums izveidots"</string>
     <string name="adb_active_notification_message" msgid="5617264033476778211">"Pieskarieties, lai izslēgtu USB atkļūdošanu"</string>
     <string name="adb_active_notification_message" product="tv" msgid="6624498401272780855">"Atlasiet, lai atspējotu USB atkļūdošanu."</string>
     <string name="adbwifi_active_notification_title" msgid="6147343659168302473">"Aktivizēta bezvadu atkļūdošana"</string>
@@ -1987,8 +1987,8 @@
     <string name="package_updated_device_owner" msgid="7770195449213776218">"Instalēja jūsu administrators.\nPārejiet uz iestatījumiem, lai skatītu piešķirtās atļaujas."</string>
     <string name="package_deleted_device_owner" msgid="2292335928930293023">"Dzēsa administrators"</string>
     <string name="confirm_battery_saver" msgid="5247976246208245754">"Labi"</string>
-    <string name="battery_saver_description_with_learn_more" msgid="5444908404021316250">"Akumulatora enerģijas taupīšanas režīmā tiek ieslēgts tumšais motīvs un tiek ierobežotas vai izslēgtas darbības fonā, daži vizuālie efekti, noteiktas funkcijas un noteikti tīkla savienojumi."</string>
-    <string name="battery_saver_description" msgid="8518809702138617167">"Akumulatora enerģijas taupīšanas režīmā tiek ieslēgts tumšais motīvs un tiek ierobežotas vai izslēgtas darbības fonā, daži vizuālie efekti, noteiktas funkcijas un noteikti tīkla savienojumi."</string>
+    <string name="battery_saver_description_with_learn_more" msgid="8969945879044849461">"Akumulatora enerģijas taupīšanas režīmā tiek ieslēgts tumšais motīvs un tiek ierobežotas vai izslēgtas fonā izpildāmas darbības, daži vizuālie efekti, noteiktas funkcijas un noteikti tīkla savienojumi."</string>
+    <string name="battery_saver_description" msgid="2820475140307374570">"Akumulatora enerģijas taupīšanas režīmā tiek ieslēgts tumšais motīvs un tiek ierobežotas vai izslēgtas fonā izpildāmas darbības, daži vizuālie efekti, noteiktas funkcijas un noteikti tīkla savienojumi."</string>
     <string name="data_saver_description" msgid="4995164271550590517">"Lai samazinātu datu lietojumu, datu lietojuma samazinātājs neļauj dažām lietotnēm fonā nosūtīt vai saņemt datus. Lietotne, kuru pašlaik izmantojat, var piekļūt datiem, bet, iespējams, piekļūs tiem retāk (piemēram, attēli tiks parādīti tikai tad, kad tiem pieskarsieties)."</string>
     <string name="data_saver_enable_title" msgid="7080620065745260137">"Vai ieslēgt datu lietojuma samazinātāju?"</string>
     <string name="data_saver_enable_button" msgid="4399405762586419726">"Ieslēgt"</string>

@@ -96,22 +96,14 @@
     <string name="message_restore_error_installer_absent" msgid="8492838251989389724">"Бул колдонмону калыбына келтирүү үчүн <xliff:g id="INSTALLER_NAME">%1$s</xliff:g> кызматын орнотуп алышыңыз керек"</string>
     <string name="message_restore_error_generic" msgid="5903850636679929406">"Бул колдонмону калыбына келтирүүдө маселе келип чыкты"</string>
     <string name="message_uninstall_activity" msgid="3263352475743590167">"<xliff:g id="ACTIVITY_NAME">%1$s</xliff:g> төмөнкү колдонмонун бөлүгү: <xliff:g id="APP_NAME">%2$s</xliff:g>"</string>
-    <!-- no translation found for cannot_install_app_blocked_summary (2082063650842897085) -->
-    <skip />
-    <!-- no translation found for cannot_update_app_blocked_summary (7607734844900187499) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_no_internet_summary (7298957699553589600) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_no_internet_summary (8094414928318316598) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_summary (3830073638843524892) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_unavailable_summary (342184955548504019) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_fail_closed_summary (3552780111383069051) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_unavailable_fail_closed_summary (353457015429601377) -->
-    <skip />
+    <string name="cannot_install_app_blocked_summary" msgid="2082063650842897085">"&lt;p&gt;Бул колдонмо бөгөттөлгөн. Түзмөгүңүздү жана маалыматтарыңызды коргоого жардам берүү үчүн текшерилген иштеп чыгуучулардын колдонмолорун гана орнотуңуз.&lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;Иштеп чыгуучуну текшерүү тууралуу кеңири маалымат&lt;/a&gt;"</string>
+    <string name="cannot_update_app_blocked_summary" msgid="7607734844900187499">"&lt;p&gt;Бул колдонмо жаңыртылган жок. Түзмөгүңүздү жана маалыматтарыңызды коргоого жардам берүү үчүн текшерилген иштеп чыгуучулардын жаңыртууларын гана орнотуңуз.&lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;Иштеп чыгуучуну текшерүү тууралуу кеңири маалымат&lt;/a&gt;"</string>
+    <string name="cannot_install_verification_no_internet_summary" msgid="7298957699553589600">"&lt;p&gt;Бул колдонмо орнотулган жок. Текшерилбеген иштеп чыгуучулардын колдонмолору кооптуу болушу мүмкүн.&lt;/p&gt; &lt;p&gt;Колдонмону иштеп чыгуучуну текшерүү үчүн Интернетке туташуу керек. Туташууңузду текшерип, кайра орнотуп көрүңүз. &lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;Иштеп чыгуучуну текшерүү тууралуу кеңири маалымат&lt;/a&gt;"</string>
+    <string name="cannot_update_verification_no_internet_summary" msgid="8094414928318316598">"&lt;p&gt;Бул колдонмо жаңыртылган жок. Текшерилбеген иштеп чыгуучулардын жаңыртуулары кооптуу болушу мүмкүн.&lt;/p&gt; &lt;p&gt;Колдонмону иштеп чыгуучуну текшерүү үчүн Интернетке туташуу керек. Туташууңузду текшерип, кайра жаңыртып көрүңүз. &lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;Иштеп чыгуучуну текшерүү тууралуу кеңири маалымат&lt;/a&gt;"</string>
+    <string name="cannot_install_verification_unavailable_summary" msgid="3830073638843524892">"&lt;p&gt;Бул колдонмонун иштеп чыгуучусун текшерүүдө маселе келип чыкты. Текшерилбеген иштеп чыгуучулардын колдонмолору кооптуу болушу мүмкүн.&lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;Иштеп чыгуучуну текшерүү тууралуу кеңири маалымат&lt;/a&gt;"</string>
+    <string name="cannot_update_verification_unavailable_summary" msgid="342184955548504019">"&lt;p&gt;Бул колдонмонун иштеп чыгуучусун текшерүүдө маселе келип чыкты. Бул колдонмо жаңыртылган жок, анткени текшерилбеген иштеп чыгуучулардын жаңыртуулары кооптуу болушу мүмкүн.&lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;Иштеп чыгуучуну текшерүү тууралуу кеңири маалымат&lt;/a&gt;"</string>
+    <string name="cannot_install_verification_unavailable_fail_closed_summary" msgid="3552780111383069051">"Иштеп чыгуучуну текшерүүдө маселе келип чыккандыктан, бул колдонмо бөгөттөлгөн. Түзмөгүңүздү жана маалыматтарыңызды коргоого жардам берүү үчүн текшерилген иштеп чыгуучулардын колдонмолорун гана орнотуңуз.&lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;Иштеп чыгуучуну текшерүү тууралуу кеңири маалымат&lt;/a&gt;"</string>
+    <string name="cannot_update_verification_unavailable_fail_closed_summary" msgid="353457015429601377">"Иштеп чыгуучуну текшерүүдө маселе келип чыккандыктан, бул колдонмо жаңыртылган эмес. Түзмөгүңүздү жана маалыматтарыңызды коргоого жардам берүү үчүн текшерилген иштеп чыгуучулардын жаңыртууларын гана орнотуңуз.&lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;Иштеп чыгуучуну текшерүү тууралуу кеңири маалымат&lt;/a&gt;"</string>
     <string name="more_details_expanded_install_summary" msgid="3545896392881608712">"Текшербей туруп орнотуп жатканда, текшерилбеген иштеп чыгуучулардын колдонмолору түзмөгүңүзгө жана маалыматтарыңызга коркунуч туудурушу мүмкүн экенин эске алыңыз."</string>
     <string name="more_details_expanded_update_summary" msgid="2239162864839036480">"Эгер текшерүүсүз жаңыртсаңыз, текшерилбеген иштеп чыгуучулардын жаңыртуулары түзмөгүңүз жана маалыматыңыз үчүн кооптуу болушу мүмкүн."</string>
     <string name="cannot_install_app_blocked_title" msgid="6372444121824751694">"Колдонмону иштеп чыгуучу текшерилген эмес"</string>

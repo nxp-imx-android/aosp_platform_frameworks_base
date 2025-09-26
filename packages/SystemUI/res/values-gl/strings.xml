@@ -21,8 +21,8 @@
     xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
     <string name="app_label" msgid="4811759950673118541">"IU do sistema"</string>
     <string name="battery_low_title" msgid="5319680173344341779">"Queres activar a función Aforro de batería?"</string>
-    <string name="battery_low_description" msgid="3282977755476423966">"Quédache un <xliff:g id="PERCENTAGE">%s</xliff:g> de batería. Coa función Aforro de batería, actívase o tema escuro, restrínxese a actividade en segundo plano e atrásanse as notificacións."</string>
-    <string name="battery_low_intro" msgid="5148725009653088790">"Coa función Aforro de batería, actívase o tema escuro, restrínxese a actividade en segundo plano e atrásanse as notificacións."</string>
+    <string name="battery_low_description" msgid="7848989602036547056">"Quédache un <xliff:g id="PERCENTAGE">%s</xliff:g> de batería. Coa función Aforro de batería, actívase o tema escuro, restrínxese a actividade en segundo plano e atrásanse as notificacións."</string>
+    <string name="battery_low_intro" msgid="8033783734931200690">"Coa función Aforro de batería, actívase o tema escuro, restrínxese a actividade en segundo plano e atrásanse as notificacións."</string>
     <string name="battery_low_percent_format" msgid="4276661262843170964">"<xliff:g id="PERCENTAGE">%s</xliff:g> restante"</string>
     <string name="invalid_charger_title" msgid="938685362320735167">"Non se puido realizar a carga por USB"</string>
     <string name="invalid_charger_text" msgid="2339310107232691577">"Utiliza o cargador que incluía o dispositivo"</string>
@@ -140,8 +140,7 @@
     <string name="screenrecord_stop_dialog_button" msgid="2883812564938194350">"Deter gravación"</string>
     <string name="screen_record_entire_screen" msgid="66944996337928170">"Toda a pantalla"</string>
     <string name="screen_record_single_app" msgid="7355880948574569290">"Unha soa aplicación"</string>
-    <!-- no translation found for screen_record_single_app_hint (8404332826093639170) -->
-    <skip />
+    <string name="screen_record_single_app_hint" msgid="8404332826093639170">"Aplicación para gravar"</string>
     <string name="screen_record_single_app_no_recents" msgid="1023249803854209330">"Unha soa aplicación (escóllea)"</string>
     <string name="screen_record_record_device_audio_label" msgid="5363057443124085198">"Gravar audio do dispositivo"</string>
     <string name="screen_record_record_microphone_label" msgid="4685753707185662381">"Gravar son do micrófono"</string>
@@ -149,11 +148,13 @@
     <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"Mostrar toques"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"Escoller unha aplicación para gravar"</string>
     <string name="screen_record_video_saved" msgid="1345283626390232282">"Gardouse o vídeo"</string>
-    <!-- no translation found for screen_record_undo (7942716736019800870) -->
-    <skip />
+    <string name="screen_record_video_deleted" msgid="30786214839944540">"Eliminouse o vídeo"</string>
+    <string name="screen_record_undo" msgid="7942716736019800870">"Desfacer"</string>
     <string name="screen_record_retake" msgid="3846643688365398450">"Repetir"</string>
     <string name="screen_record_edit" msgid="8733014191240769309">"Editar"</string>
     <string name="screen_record_delete" msgid="1023421937978254537">"Eliminar"</string>
+    <string name="screen_record_delete_dialog_title" msgid="5868561491974057044">"Queres eliminar esta gravación?"</string>
+    <string name="screen_record_delete_dialog_content" msgid="2610040845214024496">"Se eliminas a gravación, eliminarase o ficheiro de vídeo do teu dispositivo."</string>
     <string name="screen_record_play" msgid="4732544724679889445">"Reproducir"</string>
     <string name="screen_record_pause" msgid="1715012292444967776">"Pór en pausa"</string>
     <string name="screen_record_mute" msgid="8111682249858638168">"Silenciar"</string>
@@ -174,7 +175,12 @@
     <string name="screen_capture_toolbar_fullscreen_button_screenshot_a11y" msgid="8699983355979869210">"Facer unha captura de toda a pantalla"</string>
     <string name="screen_capture_toolbar_fullscreen_button_record_a11y" msgid="852148867883959158">"Gravar toda a pantalla"</string>
     <string name="screen_capture_toolbar_settings_button_a11y" msgid="8014446956996739704">"Configuración da captura de pantalla"</string>
+    <string name="screen_capture_show_clicks_and_keys" msgid="2151690554364148717">"Mostrar clics e teclas"</string>
+    <string name="screen_capture_device_audio" msgid="1537290197773737349">"Audio do dispositivo"</string>
+    <string name="screen_capture_microphone_audio" msgid="1698835678818747741">"Micrófono"</string>
+    <string name="screen_capture_front_camera" msgid="1214647538302639358">"Cámara dianteira"</string>
     <string name="screen_capture_region_dimensions" msgid="2317064050253056256">"<xliff:g id="WIDTH">%1$d</xliff:g> × <xliff:g id="HEIGHT">%2$d</xliff:g>"</string>
+    <string name="screen_share_privacy_indicator_stop_sharing" msgid="2297045039651417274">"Deixar de compartir"</string>
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"Compartindo pantalla"</string>
     <string name="share_to_app_chip_accessibility_label_generic" msgid="5517431657924536133">"Compartindo contido"</string>
     <string name="share_to_app_stop_dialog_title" msgid="9212915050910250438">"Queres deixar de compartir a pantalla?"</string>
@@ -488,12 +494,13 @@
     <string name="accessibility_hearing_device_pair_new_device" msgid="8440082580186130090">"Fai clic para vincular un novo dispositivo"</string>
     <string name="hearing_devices_presets_error" msgid="350363093458408536">"Non se puido actualizar a configuración predeterminada"</string>
     <string name="hearing_devices_preset_label" msgid="7878267405046232358">"Configuración predeterminada"</string>
+    <string name="hearing_devices_preset_label_left" msgid="7427947566560179945">"Preconfiguración do esquerdo"</string>
+    <string name="hearing_devices_preset_label_right" msgid="1847206329436268522">"Preconfiguración do dereito"</string>
     <string name="hearing_devices_input_routing_label" msgid="730396728151232306">"Micrófono predefinido para as chamadas"</string>
   <string-array name="hearing_device_input_routing_options">
     <item msgid="4582190415045337003">"O micrófono do audiófono"</item>
     <item msgid="8501466270452446450">"O micrófono deste teléfono"</item>
   </string-array>
-    <string name="hearing_devices_spinner_item_selected" msgid="3137083889662762383">"Elemento seleccionado"</string>
     <string name="hearing_devices_ambient_label" msgid="629440938614895797">"Ambiente"</string>
     <string name="hearing_devices_ambient_control_left" msgid="3586965448230412600">"Esquerdo"</string>
     <string name="hearing_devices_ambient_control_right" msgid="6192137602448918383">"Dereito"</string>
@@ -889,7 +896,7 @@
     <string name="notification_guts_news_summary" msgid="638697931043407835">"Editoriais, historias destacadas e moito máis"</string>
     <string name="notification_guts_social_summary" msgid="3749147631983977040">"Gústame, publicacións e moito máis"</string>
     <string name="notification_guts_recs_summary" msgid="8391881843238947007">"Boletíns informativos, contido multimedia recomendado e moito máis"</string>
-    <string name="notification_onboarding_summaries_turn_on" msgid="5050003857531272655">"Activar"</string>
+    <string name="notification_onboarding_summaries_turn_on" msgid="3831339570984683297">"Activar en Configuración"</string>
     <string name="notification_onboarding_summaries_message" msgid="6061524903176459064">"Podes obter resumos das túas conversas longas para ter unha idea do contido"</string>
     <string name="notification_onboarding_bundles_message" msgid="4612908213178622912">"O organizador de notificacións agrupa e silencia as notificacións de prioridade máis baixa. Engade máis categorías en Configuración."</string>
     <string name="notification_bundle_header_counter" msgid="5515532701569242265">"{count,plural, =1{# notificación}other{# notificacións}}"</string>
@@ -1143,15 +1150,11 @@
     <string name="accessibility_key_gesture_dialog_content" msgid="4519838108423437794">"O atallo de teclado para usar <xliff:g id="ID_3">^3</xliff:g> é "<annotation id="action_key_icon">"icona"</annotation>" de acción + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g>. <xliff:g id="ID_4">^4</xliff:g>"</string>
     <string name="accessibility_key_gesture_dialog_talkback_intro" msgid="1617808784388544741">"<xliff:g id="ID_1">%1$s</xliff:g> é un lector de pantalla que fai que se lean os elementos en alto para que os oias. Esta función pode ser útil para as persoas que teñan dificultades para ver a pantalla."</string>
     <string name="accessibility_key_gesture_dialog_positive_button_text" msgid="3670746017523589293">"Activar"</string>
-    <!-- no translation found for accessibility_key_gesture_shortcut_not_yet_enabled_dialog_title (5331043821287212071) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_shortcut_not_yet_enabled_negative_button_text (6711239406914231612) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_shortcut_not_yet_enabled_positive_button_text (7748487028569821131) -->
-    <skip />
+    <string name="accessibility_key_gesture_shortcut_not_yet_enabled_dialog_title" msgid="5331043821287212071">"Queres activar o atallo de teclado <xliff:g id="ID_1">%1$s</xliff:g>?"</string>
+    <string name="accessibility_key_gesture_shortcut_not_yet_enabled_negative_button_text" msgid="6711239406914231612">"Non activar"</string>
+    <string name="accessibility_key_gesture_shortcut_not_yet_enabled_positive_button_text" msgid="7748487028569821131">"Activar atallo"</string>
     <string name="accessibility_key_gesture_magnification_dialog_title" msgid="5770691510738701250">"O atallo do teclado para <xliff:g id="ID_1">%1$s</xliff:g> está activado"</string>
-    <!-- no translation found for accessibility_key_gesture_magnification_dialog_content (582920726242272572) -->
-    <skip />
+    <string name="accessibility_key_gesture_magnification_dialog_content" msgid="582920726242272572"><annotation id="action_key_icon">"icona"</annotation>" de acción + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> é o atallo para usar <xliff:g id="ID_3">^3</xliff:g>, unha función de accesibilidade que che permite achegar a pantalla rapidamente para ver o contido a maior tamaño. Cando a ampliación estea activada, preme a "<annotation id="action_key_icon">"icona"</annotation>" de acción + <xliff:g id="ID_4">^1</xliff:g> e \"+\" ou \"-\" para axustar o zoom."</string>
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"Desactivar atallo"</string>
     <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"Deixar opción activada"</string>
     <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="7934170819801013870">"Se premes Acción "<annotation id="action_key_icon">"icon"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g>, activarase <xliff:g id="ID_3">^3</xliff:g>, unha función de accesibilidade. Así poderás controlar o dispositivo sen usar as mans."</string>
@@ -1624,8 +1627,7 @@
     <string name="shortcut_helper_customize_dialog_reset_button_label" msgid="7645535254306312685">"Si, restablecer"</string>
     <string name="shortcut_helper_customize_dialog_cancel_button_label" msgid="5595546460431741178">"Cancelar"</string>
     <string name="shortcut_helper_add_shortcut_dialog_placeholder" msgid="9154297849458741995">"Preme unha tecla"</string>
-    <!-- no translation found for shortcut_helper_customizer_action_key_text (3979063901857046887) -->
-    <skip />
+    <string name="shortcut_helper_customizer_action_key_text" msgid="3979063901857046887">"Acción"</string>
     <string name="shortcut_customizer_key_combination_in_use_error_message" msgid="3325858369539848162">"Xa se está usando esta combinación de teclas. Proba con outra."</string>
     <string name="shortcut_customizer_generic_error_message" msgid="3128454624049722741">"Non se puido definir o atallo."</string>
     <string name="shortcut_helper_plus_symbol" msgid="4534843157353732011">"+"</string>

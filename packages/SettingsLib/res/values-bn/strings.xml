@@ -118,8 +118,8 @@
     <string name="bluetooth_hearing_aid_right_active" msgid="2244728507170385397">"চালু আছে (শুধু ডানদিক)"</string>
     <string name="bluetooth_hearing_aid_left_and_right_active" msgid="4294571497939983181">"চালু আছে (বাঁদিক ও ডানদিক)"</string>
     <string name="bluetooth_hearing_device_ambient_error" msgid="6035857289108813878">"সারাউন্ডিং আপডেট করা যায়নি"</string>
-    <!-- no translation found for bluetooth_hearing_aids_presets_error (4523942574698610976) -->
-    <skip />
+    <string name="bluetooth_hearing_aids_presets_error" msgid="4523942574698610976">"প্রিসেট আপডেট করা যায়নি"</string>
+    <string name="hearing_device_spinner_item_selected" msgid="3884049360428514878">"বেছে নেওয়া হয়েছে"</string>
     <string name="bluetooth_active_media_only_battery_level" msgid="7772517511061834073">"চালু আছে (শুধুমাত্র মিডিয়া)। <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE">%1$s</xliff:g> ব্যাটারি।"</string>
     <string name="bluetooth_active_media_only_battery_level_untethered" msgid="7444753133664620926">"চালু আছে (শুধুমাত্র মিডিয়া), বাঁদিক: <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE_0">%1$s</xliff:g>, ডানদিক: <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE_1">%2$s</xliff:g> ব্যাটারি।"</string>
     <string name="bluetooth_guest_battery_level" msgid="2820003593899467676">"অতিথি ডিভাইস। <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE">%1$s</xliff:g> ব্যাটারি।"</string>

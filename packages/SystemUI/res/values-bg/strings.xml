@@ -21,8 +21,8 @@
     xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
     <string name="app_label" msgid="4811759950673118541">"Системен ПИ"</string>
     <string name="battery_low_title" msgid="5319680173344341779">"Да се включи ли режимът за запазване на батерията?"</string>
-    <string name="battery_low_description" msgid="3282977755476423966">"Оставащ заряд на батерията: <xliff:g id="PERCENTAGE">%s</xliff:g>. Режимът за запазване на батерията включва тъмната тема, ограничава активността на заден план и отлага известията."</string>
-    <string name="battery_low_intro" msgid="5148725009653088790">"Режимът за запазване на батерията включва тъмната тема, ограничава активността на заден план и отлага известията."</string>
+    <string name="battery_low_description" msgid="7848989602036547056">"Оставащ заряд на батерията: <xliff:g id="PERCENTAGE">%s</xliff:g>. Режимът за запазване на батерията включва тъмната тема, ограничава активността на заден план и отлага известията."</string>
+    <string name="battery_low_intro" msgid="8033783734931200690">"Режимът за запазване на батерията включва тъмната тема, ограничава активността на заден план и отлага известията."</string>
     <string name="battery_low_percent_format" msgid="4276661262843170964">"Остава/т <xliff:g id="PERCENTAGE">%s</xliff:g>"</string>
     <string name="invalid_charger_title" msgid="938685362320735167">"Зареждането през USB не е възможно"</string>
     <string name="invalid_charger_text" msgid="2339310107232691577">"Използвайте оригиналното зарядно устройство"</string>
@@ -140,8 +140,7 @@
     <string name="screenrecord_stop_dialog_button" msgid="2883812564938194350">"Спиране на записа"</string>
     <string name="screen_record_entire_screen" msgid="66944996337928170">"Цял екран"</string>
     <string name="screen_record_single_app" msgid="7355880948574569290">"Едно приложение"</string>
-    <!-- no translation found for screen_record_single_app_hint (8404332826093639170) -->
-    <skip />
+    <string name="screen_record_single_app_hint" msgid="8404332826093639170">"Приложение, което да бъде записано"</string>
     <string name="screen_record_single_app_no_recents" msgid="1023249803854209330">"Едно приложение (отворете приложение, за да изберете)"</string>
     <string name="screen_record_record_device_audio_label" msgid="5363057443124085198">"Записване на звука от устройството"</string>
     <string name="screen_record_record_microphone_label" msgid="4685753707185662381">"Записване от микрофона"</string>
@@ -149,11 +148,13 @@
     <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"Показване на докосванията"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"Избор на приложение за записване"</string>
     <string name="screen_record_video_saved" msgid="1345283626390232282">"Видеокл. бе запазен"</string>
-    <!-- no translation found for screen_record_undo (7942716736019800870) -->
-    <skip />
+    <string name="screen_record_video_deleted" msgid="30786214839944540">"Видеоклипът е изтрит"</string>
+    <string name="screen_record_undo" msgid="7942716736019800870">"Отмяна"</string>
     <string name="screen_record_retake" msgid="3846643688365398450">"Нов опит"</string>
     <string name="screen_record_edit" msgid="8733014191240769309">"Редактиране"</string>
     <string name="screen_record_delete" msgid="1023421937978254537">"Изтриване"</string>
+    <string name="screen_record_delete_dialog_title" msgid="5868561491974057044">"Да се изтрие ли този запис?"</string>
+    <string name="screen_record_delete_dialog_content" msgid="2610040845214024496">"Изтриването на този запис ще изтрие за постоянно видеофайла от устройството ви."</string>
     <string name="screen_record_play" msgid="4732544724679889445">"Пускане"</string>
     <string name="screen_record_pause" msgid="1715012292444967776">"Пауза"</string>
     <string name="screen_record_mute" msgid="8111682249858638168">"Спиране на звука"</string>
@@ -174,7 +175,12 @@
     <string name="screen_capture_toolbar_fullscreen_button_screenshot_a11y" msgid="8699983355979869210">"Създаване на екранна снимка на целия екран"</string>
     <string name="screen_capture_toolbar_fullscreen_button_record_a11y" msgid="852148867883959158">"Записване на целия екран"</string>
     <string name="screen_capture_toolbar_settings_button_a11y" msgid="8014446956996739704">"Настройки за заснемане на екрана"</string>
+    <string name="screen_capture_show_clicks_and_keys" msgid="2151690554364148717">"Кликвания/клавиши: Показване"</string>
+    <string name="screen_capture_device_audio" msgid="1537290197773737349">"Звук от устройството"</string>
+    <string name="screen_capture_microphone_audio" msgid="1698835678818747741">"Микрофон"</string>
+    <string name="screen_capture_front_camera" msgid="1214647538302639358">"Предна камера"</string>
     <string name="screen_capture_region_dimensions" msgid="2317064050253056256">"<xliff:g id="WIDTH">%1$d</xliff:g> x <xliff:g id="HEIGHT">%2$d</xliff:g>"</string>
+    <string name="screen_share_privacy_indicator_stop_sharing" msgid="2297045039651417274">"Спиране на споделянето"</string>
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"Екранът се споделя"</string>
     <string name="share_to_app_chip_accessibility_label_generic" msgid="5517431657924536133">"Съдържанието се споделя"</string>
     <string name="share_to_app_stop_dialog_title" msgid="9212915050910250438">"Да се спре ли споделянето на екрана?"</string>
@@ -488,12 +494,13 @@
     <string name="accessibility_hearing_device_pair_new_device" msgid="8440082580186130090">"Кликнете за сдвояване на ново устройство"</string>
     <string name="hearing_devices_presets_error" msgid="350363093458408536">"Предварително зададените настройки не бяха актуализирани"</string>
     <string name="hearing_devices_preset_label" msgid="7878267405046232358">"Предварително зададено"</string>
+    <string name="hearing_devices_preset_label_left" msgid="7427947566560179945">"Предварително зададено за лявата страна"</string>
+    <string name="hearing_devices_preset_label_right" msgid="1847206329436268522">"Предварително зададено за дясната страна"</string>
     <string name="hearing_devices_input_routing_label" msgid="730396728151232306">"Микрофон по подразбиране за обажданията"</string>
   <string-array name="hearing_device_input_routing_options">
     <item msgid="4582190415045337003">"Микрофонът на слуховия апарат"</item>
     <item msgid="8501466270452446450">"Микрофонът на този телефон"</item>
   </string-array>
-    <string name="hearing_devices_spinner_item_selected" msgid="3137083889662762383">"Избрано"</string>
     <string name="hearing_devices_ambient_label" msgid="629440938614895797">"Околни звуци"</string>
     <string name="hearing_devices_ambient_control_left" msgid="3586965448230412600">"Ляво"</string>
     <string name="hearing_devices_ambient_control_right" msgid="6192137602448918383">"Дясно"</string>
@@ -889,7 +896,7 @@
     <string name="notification_guts_news_summary" msgid="638697931043407835">"Водещи материали, редакторски статии и др."</string>
     <string name="notification_guts_social_summary" msgid="3749147631983977040">"Харесвания, публикации и др."</string>
     <string name="notification_guts_recs_summary" msgid="8391881843238947007">"Бюлетини, препоръчани медии и др."</string>
-    <string name="notification_onboarding_summaries_turn_on" msgid="5050003857531272655">"Включване"</string>
+    <string name="notification_onboarding_summaries_turn_on" msgid="3831339570984683297">"Включване от настройките"</string>
     <string name="notification_onboarding_summaries_message" msgid="6061524903176459064">"По-дългите ви разговори вече могат да бъдат обобщени, за да получите кратка обзорна информация"</string>
     <string name="notification_onboarding_bundles_message" msgid="4612908213178622912">"Инструментът за организиране на известията групира и заглушава известията с по-нисък приоритет. Добавете още категории в настройките."</string>
     <string name="notification_bundle_header_counter" msgid="5515532701569242265">"{count,plural, =1{# известие}other{# известия}}"</string>
@@ -1143,15 +1150,11 @@
     <string name="accessibility_key_gesture_dialog_content" msgid="4519838108423437794"><annotation id="action_key_icon">"Иконата за действие"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> е клавишната комбинация за използване на <xliff:g id="ID_3">^3</xliff:g>. <xliff:g id="ID_4">^4</xliff:g>"</string>
     <string name="accessibility_key_gesture_dialog_talkback_intro" msgid="1617808784388544741">"<xliff:g id="ID_1">%1$s</xliff:g> е екранен четец, който ви дава възможност да чувате елементите, изговаряни на глас. Той може да е полезен за хора, които трудно виждат екрана."</string>
     <string name="accessibility_key_gesture_dialog_positive_button_text" msgid="3670746017523589293">"Включване"</string>
-    <!-- no translation found for accessibility_key_gesture_shortcut_not_yet_enabled_dialog_title (5331043821287212071) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_shortcut_not_yet_enabled_negative_button_text (6711239406914231612) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_shortcut_not_yet_enabled_positive_button_text (7748487028569821131) -->
-    <skip />
+    <string name="accessibility_key_gesture_shortcut_not_yet_enabled_dialog_title" msgid="5331043821287212071">"Искате ли да включите клавишната комбинация за <xliff:g id="ID_1">%1$s</xliff:g>?"</string>
+    <string name="accessibility_key_gesture_shortcut_not_yet_enabled_negative_button_text" msgid="6711239406914231612">"Без включване"</string>
+    <string name="accessibility_key_gesture_shortcut_not_yet_enabled_positive_button_text" msgid="7748487028569821131">"Включване на клавишната комбинация"</string>
     <string name="accessibility_key_gesture_magnification_dialog_title" msgid="5770691510738701250">"Клавишната комбинация за <xliff:g id="ID_1">%1$s</xliff:g> е включена"</string>
-    <!-- no translation found for accessibility_key_gesture_magnification_dialog_content (582920726242272572) -->
-    <skip />
+    <string name="accessibility_key_gesture_magnification_dialog_content" msgid="582920726242272572"><annotation id="action_key_icon">"Иконата"</annotation>" за действие + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> е клавишната комбинация за използване на „<xliff:g id="ID_3">^3</xliff:g>“ – функция за достъпност. Това ви дава възможност бързо да приближавате екрана, за да уголемите съдържанието. След като функцията за увеличаване бъде включена, натиснете "<annotation id="action_key_icon">"иконата"</annotation>" за действие + <xliff:g id="ID_4">^1</xliff:g> и „+“ или „-“, за да коригирате мащаба."</string>
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"Изключване на прекия път"</string>
     <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"Без изключване"</string>
     <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="7934170819801013870">"Натискането на "<annotation id="action_key_icon">"иконата"</annotation>" за действие + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> включва <xliff:g id="ID_3">^3</xliff:g> – функция за достъпност. Това ви дава възможност да контролирате устройството си в режим „свободни ръце“."</string>
@@ -1624,8 +1627,7 @@
     <string name="shortcut_helper_customize_dialog_reset_button_label" msgid="7645535254306312685">"Да, нулиране"</string>
     <string name="shortcut_helper_customize_dialog_cancel_button_label" msgid="5595546460431741178">"Отказ"</string>
     <string name="shortcut_helper_add_shortcut_dialog_placeholder" msgid="9154297849458741995">"Натиснете клавиш"</string>
-    <!-- no translation found for shortcut_helper_customizer_action_key_text (3979063901857046887) -->
-    <skip />
+    <string name="shortcut_helper_customizer_action_key_text" msgid="3979063901857046887">"Клавиш за действия"</string>
     <string name="shortcut_customizer_key_combination_in_use_error_message" msgid="3325858369539848162">"Клавишната комбинация вече се използва. Опитайте с друга."</string>
     <string name="shortcut_customizer_generic_error_message" msgid="3128454624049722741">"Прекият път не може да се зададе."</string>
     <string name="shortcut_helper_plus_symbol" msgid="4534843157353732011">"+"</string>

@@ -370,8 +370,8 @@
     <string name="permgroupdesc_xr_eye_sensitive" msgid="6050967250223079001">"آنکھوں کی حرکت کو درست طریقے سے ٹریک کریں"</string>
     <string name="permgrouplab_xr_tracking" msgid="766634536453394700">"حرکت اور ایریا کا ڈیٹا"</string>
     <string name="permgroupdesc_xr_tracking" msgid="812429788288001595">"آنکھیں، چہرہ، جسم اور اسکین ایریا کو ٹریک کریں"</string>
-    <string name="permgrouplab_xr_tracking_sensitive" msgid="4346975608010051186">"عین مطابق سر کی حرکت اور ایریا کا ڈیٹا"</string>
-    <string name="permgroupdesc_xr_tracking_sensitive" msgid="7925014193164562556">"سر اور اسکین ایریا کو درست طریقے سے ٹریک کریں"</string>
+    <string name="permgrouplab_xr_tracking_sensitive" msgid="6574264227123545314">"عین مطابق نقل و حرکت اور علاقے کا ڈیٹا"</string>
+    <string name="permgroupdesc_xr_tracking_sensitive" msgid="2480835734248509848">"قطعی طور پر علاقے اور ٹریک ہیڈ کو اسکین کریں"</string>
     <string name="capability_title_canRetrieveWindowContent" msgid="7554282892101587296">"ونڈو مواد بازیافت کرنے کی"</string>
     <string name="capability_desc_canRetrieveWindowContent" msgid="6195610527625237661">"کسی ایسی ونڈو کے مواد کا معائنہ کریں جس کے ساتھ آپ تعامل کر رہے ہیں۔"</string>
     <string name="capability_title_canRequestTouchExploration" msgid="327598364696316213">"ٹچ کے ذریعے دریافت کریں کو آن کرنے کی"</string>
@@ -685,7 +685,7 @@
     <string name="permdesc_scene_understanding_coarse" msgid="847344305502345475">"ایپ کو آپ کے گردونواح کو اسکین کرنے کی اجازت دیتا ہے۔"</string>
     <string name="permlab_scene_understanding_fine" msgid="2899904960307462936">"اپنے آس پاس کے علاقے کو درست طریقے سے اسکین کریں"</string>
     <string name="permdesc_scene_understanding_fine" msgid="4848943859506977588">"ایپ کو آپ کے گردونواح کو درست طریقے سے اسکین کرنے کی اجازت دیتا ہے۔"</string>
-    <string name="permlab_xr_tracking_in_background" msgid="8659516810430027774">"‏پس منظر میں XR ڈیٹا کو ٹریک کریں"</string>
+    <string name="permlab_xr_tracking_in_background" msgid="1714941204255185460">"‏پس منظر میں XR ٹریکنگ تک رسائی حاصل کریں"</string>
     <string name="permdesc_xr_tracking_in_background" msgid="3151744132692357005">"‏ایپ کو پس منظر میں XR ڈیٹا تک رسائی کی اجازت دیتا ہے۔"</string>
     <string name="permlab_capture_keyboard" msgid="4076894823382693032">"کلیدیں کیپچر کریں"</string>
     <string name="permdesc_capture_keyboard" msgid="4192269470684407219">"اس سے ایپ کو کلیدوں کو کیپچر کرنے کی اجازت ملتی ہے اس سے پہلے کہ سسٹم سسٹم کے شارٹ کٹس اور کارروائیوں پر کارروائی کرے۔"</string>
@@ -1986,8 +1986,8 @@
     <string name="package_updated_device_owner" msgid="7770195449213776218">"آپ کے منتظم نے اپ ڈیٹ کیا ہے۔\nدی گئی اجازتیں دیکھنے کیلئے ترتیبات پر جائیں"</string>
     <string name="package_deleted_device_owner" msgid="2292335928930293023">"آپ کے منتظم کے ذریعے حذف کیا گیا"</string>
     <string name="confirm_battery_saver" msgid="5247976246208245754">"ٹھیک ہے"</string>
-    <string name="battery_saver_description_with_learn_more" msgid="5444908404021316250">"بیٹری سیور گہری تھیم کو آن کرتی ہے اور پس منظر کی سرگرمی، کچھ بصری اثرات، مخصوص خصوصیات اور کچھ نیٹ ورک کنکشنز کو محدود یا آف کرتی ہے۔"</string>
-    <string name="battery_saver_description" msgid="8518809702138617167">"بیٹری سیور گہری تھیم کو آن کرتی ہے اور پس منظر کی سرگرمی، کچھ بصری اثرات، مخصوص خصوصیات اور کچھ نیٹ ورک کنکشنز کو محدود یا آف کرتی ہے۔"</string>
+    <string name="battery_saver_description_with_learn_more" msgid="8969945879044849461">"بیٹری سیور گہری تھیم کو آن کرتی ہے اور پس منظر کی سرگرمی، کچھ بصری اثرات، مخصوص خصوصیات اور کچھ نیٹ ورک کنکشنز کو محدود یا آف کرتی ہے۔"</string>
+    <string name="battery_saver_description" msgid="2820475140307374570">"بیٹری سیور گہری تھیم کو آن کرتی ہے اور پس منظر کی سرگرمی، کچھ بصری اثرات، مخصوص خصوصیات اور کچھ نیٹ ورک کنکشنز کو محدود یا آف کرتی ہے۔"</string>
     <string name="data_saver_description" msgid="4995164271550590517">"ڈیٹا کے استعمال کو کم کرنے میں مدد کیلئے، ڈیٹا سیور پس منظر میں کچھ ایپس کو ڈیٹا بھیجنے یا موصول کرنے سے روکتی ہے۔ آپ جو ایپ فی الحال استعمال کر رہے ہیں وہ ڈیٹا تک رسائی کر سکتی ہے مگر ہو سکتا ہے ایسا اکثر نہ ہو۔ اس کا مطلب مثال کے طور پر یہ ہو سکتا ہے کہ تصاویر تھپتھپانے تک ظاہر نہ ہوں۔"</string>
     <string name="data_saver_enable_title" msgid="7080620065745260137">"ڈیٹا سیور آن کریں؟"</string>
     <string name="data_saver_enable_button" msgid="4399405762586419726">"آن کریں"</string>

@@ -28,11 +28,11 @@
     <string name="chooser_title" msgid="2235819929238267637">"ជ្រើសរើស<xliff:g id="PROFILE_NAME">%1$s</xliff:g> ដើម្បីរៀបចំ"</string>
     <string name="single_device_title" msgid="4199861437545438606">"កំពុងស្វែងរក<xliff:g id="PROFILE_NAME">%1$s</xliff:g>"</string>
     <string name="summary_watch" msgid="8134580124808507407">"កម្មវិធីនេះនឹងត្រូវបានអនុញ្ញាតឱ្យធ្វើសមកាលកម្មព័ត៌មាន ដូចជាឈ្មោះមនុស្សដែលហៅទូរសព្ទជាដើម និងចូលប្រើការអនុញ្ញាតទាំងនេះនៅលើ <xliff:g id="DEVICE_TYPE">%1$s</xliff:g> របស់អ្នក"</string>
-    <!-- no translation found for profile_name_fitness_tracker (3107192493390199691) -->
-    <skip />
+    <string name="profile_name_fitness_tracker" msgid="3107192493390199691">"ឧបករណ៍តាមដានលំហាត់ប្រាណ"</string>
     <string name="confirmation_title_glasses" msgid="8288346850537727333">"អនុញ្ញាតឱ្យ &lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; គ្រប់គ្រង &lt;strong&gt;<xliff:g id="DEVICE_NAME">%2$s</xliff:g>&lt;/strong&gt; ឬ?"</string>
     <string name="profile_name_glasses" msgid="3506504967216601277">"ឧបករណ៍"</string>
     <string name="summary_glasses" msgid="5469208629679579157">"កម្មវិធីនេះ​នឹងត្រូវបានអនុញ្ញាតឱ្យ​ចូលប្រើការអនុញ្ញាតទាំងនេះ​នៅលើ <xliff:g id="DEVICE_TYPE">%1$s</xliff:g> របស់អ្នក"</string>
+    <string name="profile_name_medical" msgid="5617160509499466400">"ឧបករណ៍វេជ្ជសាស្ត្រ"</string>
     <string name="title_app_streaming" msgid="237666000400427614">"អនុញ្ញាតឱ្យ &lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; ផ្សាយកម្មវិធី និងមុខងារប្រព័ន្ធរវាង<xliff:g id="DEVICE_TYPE">%2$s</xliff:g> និង &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt; របស់អ្នកឬ?"</string>
     <string name="summary_app_streaming" msgid="8346968726357732862">"<xliff:g id="APP_NAME">%1$s</xliff:g> នឹងទទួលបានការអនុញ្ញាតខាងក្រោម៖"</string>
     <string name="summary_app_streaming_legacy" msgid="8994180646987541606">"<xliff:g id="APP_NAME_0">%1$s</xliff:g> នឹងមានសិទ្ធិចូលប្រើអ្វីៗដែលអាចមើលឃើញ ឬត្រូវបានចាក់នៅលើ<xliff:g id="DEVICE_TYPE">%2$s</xliff:g>របស់អ្នក រួមទាំងសំឡេង រូបថត ព័ត៌មាននៃការទូទាត់ប្រាក់ ពាក្យសម្ងាត់ និងសារ។&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME_1">%1$s</xliff:g> នឹងអាចផ្សាយកម្មវិធីទៅ <xliff:g id="DEVICE_NAME">%3$s</xliff:g> រហូតទាល់តែអ្នកដកសិទ្ធិចូលប្រើការអនុញ្ញាតនេះចេញ។"</string>
@@ -73,6 +73,8 @@
     <string name="permission_create_virtual_device" msgid="1102905050922460040">"ផ្សាយទិន្នន័យទៅ<xliff:g id="DEVICE_TYPE">%1$s</xliff:g>របស់អ្នក"</string>
     <string name="permission_add_mirror_display" msgid="3743433250535606288">"បញ្ចាំងអេក្រង់របស់អ្នក"</string>
     <string name="permission_add_trusted_display" msgid="9052824856626276723">"ផ្សាយកម្មវិធី"</string>
+    <string name="permission_schedule_exact_alarm" msgid="5680932535987512225">"កំណត់ម៉ោងរោទ៍ និងការរំលឹក"</string>
+    <string name="permission_bypass_dnd" msgid="1241123166903040347">"រំលងការកំណត់មុខងារកុំ​រំខាន"</string>
     <string name="permission_phone_summary" msgid="8246321093970051702">"ហៅទូរសព្ទ និងគ្រប់គ្រងការហៅទូរសព្ទ"</string>
     <string name="permission_call_logs_summary" msgid="7545243592757693321">"អាន និងសរសេរ​កំណត់ហេតុហៅទូរសព្ទ"</string>
     <string name="permission_sms_summary" msgid="8499509535410068616">"ផ្ញើ និងមើលសារ SMS"</string>
@@ -88,6 +90,8 @@
     <string name="permission_add_mirror_display_summary" msgid="1385423940454941534">"ថត បញ្ជូន ឬបង្ហាញអេក្រង់<xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g>របស់អ្នកទៅ &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt;។&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME">%1$s</xliff:g> នឹងមានសិទ្ធិចូលប្រើអ្វីៗដែលអាចមើលឃើញ ឬចាក់នៅលើ<xliff:g id="DEVICE_TYPE_1">%2$s</xliff:g>របស់អ្នក រួមទាំងសំឡេង រូបថត ព័ត៌មាននៃការទូទាត់ប្រាក់ ពាក្យសម្ងាត់ និងសារ។"</string>
     <string name="permission_add_trusted_display_summary" msgid="7399955172055281447">"ផ្សាយកម្មវិធី<xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g>របស់អ្នកទៅ &lt;strong&gt;<xliff:g id="DEVICE_NAME_1">%3$s</xliff:g>&lt;/strong&gt;។&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME">%1$s</xliff:g> នឹងមានសិទ្ធិចូលប្រើអ្វីៗដែលអាចមើលឃើញ ឬចាក់នៅលើ <xliff:g id="DEVICE_NAME_2">%3$s</xliff:g> រួមទាំងសំឡេង រូបថត ព័ត៌មាននៃការទូទាត់ប្រាក់ ពាក្យសម្ងាត់ និងសារ ទោះបីជា<xliff:g id="DEVICE_TYPE_3">%2$s</xliff:g>របស់អ្នកត្រូវបានចាក់សោក៏ដោយ។"</string>
     <string name="permission_media_routing_control_summary" msgid="2714631092321412250">"ចូលប្រើប្រាស់បញ្ជីឧបករណ៍ដែលអាចប្រើបាន និងគ្រប់គ្រងថាតើឧបករណ៍ណាចាក់ ឬបញ្ជូនសំឡេង ឬវីដេអូពីកម្មវិធីផ្សេងទៀត"</string>
+    <string name="permission_schedule_exact_alarm_summary" msgid="5938321911309800377"></string>
+    <string name="permission_bypass_dnd_summary" msgid="6221709271927387626"></string>
     <string name="device_type" product="default" msgid="8268703872070046263">"ទូរសព្ទ"</string>
     <string name="device_type" product="tablet" msgid="5038791954983067774">"ថេប្លេត"</string>
     <string name="device_type" product="tv" msgid="5355611506659405636">"ទូរទស្សន៍"</string>

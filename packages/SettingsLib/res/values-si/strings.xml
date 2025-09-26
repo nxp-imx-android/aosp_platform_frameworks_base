@@ -118,8 +118,8 @@
     <string name="bluetooth_hearing_aid_right_active" msgid="2244728507170385397">"සක්‍රිය (දකුණ පමණි)"</string>
     <string name="bluetooth_hearing_aid_left_and_right_active" msgid="4294571497939983181">"සක්‍රිය (වම සහ දකුණ)"</string>
     <string name="bluetooth_hearing_device_ambient_error" msgid="6035857289108813878">"වටපිටාව යාවත්කාලීන කළ නොහැකි විය"</string>
-    <!-- no translation found for bluetooth_hearing_aids_presets_error (4523942574698610976) -->
-    <skip />
+    <string name="bluetooth_hearing_aids_presets_error" msgid="4523942574698610976">"පෙර සැකසීම යාවත්කාලීන කළ නොහැකි විය"</string>
+    <string name="hearing_device_spinner_item_selected" msgid="3884049360428514878">"තෝරන ලදි"</string>
     <string name="bluetooth_active_media_only_battery_level" msgid="7772517511061834073">"ක්‍රියාත්මකයි (මාධ්‍ය පමණයි). බැටරිය <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE">%1$s</xliff:g>."</string>
     <string name="bluetooth_active_media_only_battery_level_untethered" msgid="7444753133664620926">"ක්‍රියාත්මකයි (මාධ්‍ය පමණයි), බැටරිය ව: <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE_0">%1$s</xliff:g>, ද: <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE_1">%2$s</xliff:g>."</string>
     <string name="bluetooth_guest_battery_level" msgid="2820003593899467676">"ආගන්තුක උපාංගය. බැටරිය <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE">%1$s</xliff:g>."</string>

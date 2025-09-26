@@ -370,8 +370,8 @@
     <string name="permgroupdesc_xr_eye_sensitive" msgid="6050967250223079001">"ଆଖିର ମୁଭମେଣ୍ଟକୁ ସଠିକ ଭାବେ ଟ୍ରାକ କରନ୍ତୁ"</string>
     <string name="permgrouplab_xr_tracking" msgid="766634536453394700">"ମୁଭମେଣ୍ଟ ଏବଂ ଏରିଆ ଡାଟା"</string>
     <string name="permgroupdesc_xr_tracking" msgid="812429788288001595">"ଆଖି, ଫେସ, ଶରୀର ଏବଂ ସ୍କାନ ଏରିଆକୁ ଟ୍ରାକ କରନ୍ତୁ"</string>
-    <string name="permgrouplab_xr_tracking_sensitive" msgid="4346975608010051186">"ସଠିକ ମୁଣ୍ଡର ମୁଭମେଣ୍ଟ ଏବଂ ଏରିଆ ଡାଟା"</string>
-    <string name="permgroupdesc_xr_tracking_sensitive" msgid="7925014193164562556">"ମୁଣ୍ଡ ଏବଂ ସ୍କାନ ଏରିଆକୁ ସଠିକ ଭାବେ ଟ୍ରାକ କରନ୍ତୁ"</string>
+    <string name="permgrouplab_xr_tracking_sensitive" msgid="6574264227123545314">"ସଠିକ ମୁଭମେଣ୍ଟ ଏବଂ ଏରିଆ ଡାଟା"</string>
+    <string name="permgroupdesc_xr_tracking_sensitive" msgid="2480835734248509848">"ସଠିକ ଭାବରେ ଏରିଆ ସ୍କାନ କରିବା ଏବଂ ମୁଣ୍ଡକୁ ଟ୍ରାକ କରିବା"</string>
     <string name="capability_title_canRetrieveWindowContent" msgid="7554282892101587296">"ୱିଣ୍ଡୋ କଣ୍ଟେଣ୍ଟ ହାସଲ କରନ୍ତୁ"</string>
     <string name="capability_desc_canRetrieveWindowContent" msgid="6195610527625237661">"ଆପଣ କାମ କରୁଥିବା ୱିଣ୍ଡୋର କଣ୍ଟେଣ୍ଟକୁ ଯାଞ୍ଚ କରନ୍ତୁ।"</string>
     <string name="capability_title_canRequestTouchExploration" msgid="327598364696316213">"ସ୍ପର୍ଶ ଦ୍ୱାରା ଏକ୍ସପ୍ଲୋର୍‍ ଅନ୍‍ କରନ୍ତୁ"</string>
@@ -685,7 +685,7 @@
     <string name="permdesc_scene_understanding_coarse" msgid="847344305502345475">"ଆପଣଙ୍କ ଚାରିପାଖକୁ ସ୍କାନ କରିବାକୁ ଆପକୁ ଅନୁମତି ଦିଏ।"</string>
     <string name="permlab_scene_understanding_fine" msgid="2899904960307462936">"ଆପଣଙ୍କ ଆଖପାଖର ଏରିଆକୁ ସଠିକ ଭାବରେ ସ୍କାନ କରନ୍ତୁ"</string>
     <string name="permdesc_scene_understanding_fine" msgid="4848943859506977588">"ଆପଣଙ୍କ ଚାରିପାଖକୁ ସଠିକ ଭାବେ ସ୍କାନ କରିବାକୁ ଆପକୁ ଅନୁମତି ଦିଏ।"</string>
-    <string name="permlab_xr_tracking_in_background" msgid="8659516810430027774">"ବେକଗ୍ରାଉଣ୍ଡରେ XR ଡାଟା ଟ୍ରାକ କରନ୍ତୁ"</string>
+    <string name="permlab_xr_tracking_in_background" msgid="1714941204255185460">"ବେକଗ୍ରାଉଣ୍ଡରେ XR ଟ୍ରାକିଂ ଆକ୍ସେସ କରିବା"</string>
     <string name="permdesc_xr_tracking_in_background" msgid="3151744132692357005">"ବେକଗ୍ରାଉଣ୍ଡରେ XR ଡାଟା ଆକ୍ସେସ କରିବା ପାଇଁ ଆପକୁ ଅନୁମତି ଦିଏ।"</string>
     <string name="permlab_capture_keyboard" msgid="4076894823382693032">"କୀଗୁଡ଼ିକୁ କେପଚର କରନ୍ତୁ"</string>
     <string name="permdesc_capture_keyboard" msgid="4192269470684407219">"ସିଷ୍ଟମ ସର୍ଟକଟ ଏବଂ କାର୍ଯ୍ୟଗୁଡ଼ିକୁ ସିଷ୍ଟମ ପ୍ରକ୍ରିୟାନ୍ୱିତ କରିବା ପୂର୍ବରୁ ଆପକୁ କୀଗୁଡ଼ିକୁ କେପଚର କରିବାକୁ ଅନୁମତି ଦିଏ।"</string>
@@ -1986,8 +1986,8 @@
     <string name="package_updated_device_owner" msgid="7770195449213776218">"ଆପଣଙ୍କ ଆଡମିନଙ୍କ ଦ୍ୱାରା ଅପଡେଟ କରାଯାଇଛି।\nଅନୁମୋଦିତ ଅମୁମତିଗୁଡ଼ିକ ଭ୍ୟୁ କରିବା ପାଇଁ ସେଟିଂସକୁ ଯାଆନ୍ତୁ"</string>
     <string name="package_deleted_device_owner" msgid="2292335928930293023">"ଆପଣଙ୍କ ଆଡମିନ୍‌‌ ଡିଲିଟ୍‍ କରିଛନ୍ତି"</string>
     <string name="confirm_battery_saver" msgid="5247976246208245754">"ଠିକ ଅଛି"</string>
-    <string name="battery_saver_description_with_learn_more" msgid="5444908404021316250">"ବେଟେରୀ ସେଭର ଗାଢ଼ା ଥିମକୁ ଚାଲୁ କରେ ଏବଂ ପୃଷ୍ଠପଟ କାର୍ଯ୍ୟକଳାପ, କିଛି ଭିଜୁଆଲ ଇଫେକ୍ଟ, କିଛି ଫିଚର ଏବଂ କିଛି ନେଟୱାର୍କ ସଂଯୋଗକୁ ସୀମିତ କିମ୍ବା ବନ୍ଦ କରେ।"</string>
-    <string name="battery_saver_description" msgid="8518809702138617167">"ବ୍ୟାଟେରୀ ସେଭର୍ ଗାଢ଼ା ଥିମକୁ ଚାଲୁ କରେ ଏବଂ ପୃଷ୍ଠପଟ କାର୍ଯ୍ୟକଳାପ, କିଛି ଭିଜୁଆଲ୍ ଇଫେକ୍ଟ, କିଛି ଫିଚର୍ ଏବଂ କିଛି ନେଟୱାର୍କ ସଂଯୋଗକୁ ସୀମିତ କିମ୍ବା ବନ୍ଦ କରେ।"</string>
+    <string name="battery_saver_description_with_learn_more" msgid="8969945879044849461">"ବେଟେରୀ ସେଭର ଡାର୍କ ଥିମକୁ ଚାଲୁ କରେ ଏବଂ ବେକଗ୍ରାଉଣ୍ଡ କାର୍ଯ୍ୟକଳାପ, କିଛି ଭିଜୁଆଲ ଇଫେକ୍ଟ, କିଛି ନିର୍ଦ୍ଦିଷ୍ଟ ଫିଚର ଏବଂ କିଛି ନେଟୱାର୍କ କନେକ୍ସନକୁ ସୀମିତ କିମ୍ବା ବନ୍ଦ କରେ।"</string>
+    <string name="battery_saver_description" msgid="2820475140307374570">"ବେଟେରୀ ସେଭର ଡାର୍କ ଥିମକୁ ଚାଲୁ କରେ ଏବଂ ବେକଗ୍ରାଉଣ୍ଡ କାର୍ଯ୍ୟକଳାପ, କିଛି ଭିଜୁଆଲ ଇଫେକ୍ଟ, କିଛି ନିର୍ଦ୍ଦିଷ୍ଟ ଫିଚର ଏବଂ କିଛି ନେଟୱାର୍କ କନେକ୍ସନକୁ ସୀମିତ କିମ୍ବା ବନ୍ଦ କରେ।"</string>
     <string name="data_saver_description" msgid="4995164271550590517">"ଡାଟାର ବ୍ୟବହାରକୁ କମ କରିବାରେ ସାହାଯ୍ୟ କରିବାକୁ, ଡାଟା ସେଭର ବେକଗ୍ରାଉଣ୍ଡରେ ଡାଟା ପଠାଇବା କିମ୍ବା ପାଇବାକୁ କିଛି ଆପ୍ସକୁ ବାରଣ କରେ। ଆପଣ ବର୍ତ୍ତମାନ ବ୍ୟବହାର କରୁଥିବା ଆପଟି ଡାଟାକୁ ଆକ୍ସେସ କରିପାରେ, କିନ୍ତୁ ଏହା କମ ଥର କରିପାରେ। ଏହାର ଅର୍ଥ ହୋଇପାରେ ଯେମିତି ଆପଣ ଇମେଜଗୁଡ଼ିକୁ ଟାପ ନକରିବା ପର୍ଯ୍ୟନ୍ତ ସେଗୁଡ଼ିକ ଡିସପ୍ଲେ ହୁଏ ନାହିଁ।"</string>
     <string name="data_saver_enable_title" msgid="7080620065745260137">"ଡାଟା ସେଭର ଚାଲୁ କରିବେ?"</string>
     <string name="data_saver_enable_button" msgid="4399405762586419726">"ଚାଲୁ କରନ୍ତୁ"</string>

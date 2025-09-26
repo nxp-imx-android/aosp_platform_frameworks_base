@@ -370,8 +370,8 @@
     <string name="permgroupdesc_xr_eye_sensitive" msgid="6050967250223079001">"spore øyebevegelser nøyaktig"</string>
     <string name="permgrouplab_xr_tracking" msgid="766634536453394700">"Bevegelses- og områdedata"</string>
     <string name="permgroupdesc_xr_tracking" msgid="812429788288001595">"spore øyne, ansikt og kropp og skanne området"</string>
-    <string name="permgrouplab_xr_tracking_sensitive" msgid="4346975608010051186">"Nøyaktige hodebevegelses- og områdedata"</string>
-    <string name="permgroupdesc_xr_tracking_sensitive" msgid="7925014193164562556">"spore hodet nøyaktig og skanne området"</string>
+    <string name="permgrouplab_xr_tracking_sensitive" msgid="6574264227123545314">"Nøyaktige bevegelses- og områdedata"</string>
+    <string name="permgroupdesc_xr_tracking_sensitive" msgid="2480835734248509848">"skann området nøyaktig og spor hodet"</string>
     <string name="capability_title_canRetrieveWindowContent" msgid="7554282892101587296">"hente innhold i vinduer"</string>
     <string name="capability_desc_canRetrieveWindowContent" msgid="6195610527625237661">"Appen analyserer innholdet i vinduer du samhandler med."</string>
     <string name="capability_title_canRequestTouchExploration" msgid="327598364696316213">"slå på berøringsutforsking"</string>
@@ -685,7 +685,7 @@
     <string name="permdesc_scene_understanding_coarse" msgid="847344305502345475">"Lar appen skanne omgivelsene dine."</string>
     <string name="permlab_scene_understanding_fine" msgid="2899904960307462936">"skanne området rundt deg nøyaktig"</string>
     <string name="permdesc_scene_understanding_fine" msgid="4848943859506977588">"Lar appen skanne omgivelsene dine nøyaktig."</string>
-    <string name="permlab_xr_tracking_in_background" msgid="8659516810430027774">"spore XR-data i bakgrunnen"</string>
+    <string name="permlab_xr_tracking_in_background" msgid="1714941204255185460">"bruk XR-sporing i bakgrunnen"</string>
     <string name="permdesc_xr_tracking_in_background" msgid="3151744132692357005">"Gir appen tilgang til XR-data i bakgrunnen."</string>
     <string name="permlab_capture_keyboard" msgid="4076894823382693032">"registrer taster"</string>
     <string name="permdesc_capture_keyboard" msgid="4192269470684407219">"Lar appen registrere taster før systemet kan behandle systemhurtigtaster og -handlinger."</string>
@@ -1986,8 +1986,8 @@
     <string name="package_updated_device_owner" msgid="7770195449213776218">"Oppdatert av administratoren din.\nGå til innstillingene for å se hvilke tillatelser som er gitt"</string>
     <string name="package_deleted_device_owner" msgid="2292335928930293023">"Slettet av administratoren din"</string>
     <string name="confirm_battery_saver" msgid="5247976246208245754">"OK"</string>
-    <string name="battery_saver_description_with_learn_more" msgid="5444908404021316250">"Batterisparing slår på mørkt tema og begrenser eller slår av bakgrunnsaktivitet, enkelte visuelle effekter, noen funksjoner og noen nettverkstilkoblinger."</string>
-    <string name="battery_saver_description" msgid="8518809702138617167">"Batterisparing slår på mørkt tema og begrenser eller slår av bakgrunnsaktivitet, enkelte visuelle effekter, noen funksjoner og noen nettverkstilkoblinger."</string>
+    <string name="battery_saver_description_with_learn_more" msgid="8969945879044849461">"Batterisparing slår på mørkt tema og begrenser eller slår av bakgrunnsaktivitet, enkelte visuelle effekter, noen funksjoner og noen nettverkstilkoblinger."</string>
+    <string name="battery_saver_description" msgid="2820475140307374570">"Batterisparing slår på mørkt tema og begrenser eller slår av bakgrunnsaktivitet, enkelte visuelle effekter, noen funksjoner og noen nettverkstilkoblinger."</string>
     <string name="data_saver_description" msgid="4995164271550590517">"Datasparing hindrer noen apper fra å sende og motta data i bakgrunnen, for å redusere dataforbruket. Aktive apper kan bruke data, men kanskje ikke så mye som ellers – for eksempel vises ikke bilder før du trykker på dem."</string>
     <string name="data_saver_enable_title" msgid="7080620065745260137">"Vil du slå på Datasparing?"</string>
     <string name="data_saver_enable_button" msgid="4399405762586419726">"Slå på"</string>

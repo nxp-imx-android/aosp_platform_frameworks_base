@@ -28,11 +28,11 @@
     <string name="chooser_title" msgid="2235819929238267637">"Изберете <xliff:g id="PROFILE_NAME">%1$s</xliff:g>, за да го настроите"</string>
     <string name="single_device_title" msgid="4199861437545438606">"Търси се <xliff:g id="PROFILE_NAME">%1$s</xliff:g>"</string>
     <string name="summary_watch" msgid="8134580124808507407">"Това приложение ще получи право да синхронизира различна информация, като например името на обаждащия се, и достъп до следните разрешения за вашия <xliff:g id="DEVICE_TYPE">%1$s</xliff:g>"</string>
-    <!-- no translation found for profile_name_fitness_tracker (3107192493390199691) -->
-    <skip />
+    <string name="profile_name_fitness_tracker" msgid="3107192493390199691">"фитнес тракер"</string>
     <string name="confirmation_title_glasses" msgid="8288346850537727333">"Разрешавате ли на &lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; да управлява устройството &lt;strong&gt;<xliff:g id="DEVICE_NAME">%2$s</xliff:g>&lt;/strong&gt;?"</string>
     <string name="profile_name_glasses" msgid="3506504967216601277">"устройство"</string>
     <string name="summary_glasses" msgid="5469208629679579157">"Това приложение ще има достъп до следните разрешения за вашите <xliff:g id="DEVICE_TYPE">%1$s</xliff:g>"</string>
+    <string name="profile_name_medical" msgid="5617160509499466400">"медицинско изделие"</string>
     <string name="title_app_streaming" msgid="237666000400427614">"Да се разреши ли на &lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; да предава поточно приложения и системни функции между вашия <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> и &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt;?"</string>
     <string name="summary_app_streaming" msgid="8346968726357732862">"На <xliff:g id="APP_NAME">%1$s</xliff:g> ще бъдат предоставени следните разрешения:"</string>
     <string name="summary_app_streaming_legacy" msgid="8994180646987541606">"<xliff:g id="APP_NAME_0">%1$s</xliff:g> ще има достъп до всичко, което се показва или възпроизвежда на вашия <xliff:g id="DEVICE_TYPE">%2$s</xliff:g>, включително аудио, снимки, данни за плащане, пароли и съобщения.&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME_1">%1$s</xliff:g> ще може да предава поточно приложения към устройството ви <xliff:g id="DEVICE_NAME">%3$s</xliff:g>, докато не премахнете това разрешение."</string>
@@ -73,6 +73,8 @@
     <string name="permission_create_virtual_device" msgid="1102905050922460040">"Поточно предаване към <xliff:g id="DEVICE_TYPE">%1$s</xliff:g>"</string>
     <string name="permission_add_mirror_display" msgid="3743433250535606288">"Дублиране на екрана ви"</string>
     <string name="permission_add_trusted_display" msgid="9052824856626276723">"Поточно предаване на прилож."</string>
+    <string name="permission_schedule_exact_alarm" msgid="5680932535987512225">"Будилници/напомняния: Задаване"</string>
+    <string name="permission_bypass_dnd" msgid="1241123166903040347">"Заобикаляне на „Не безпокойте“"</string>
     <string name="permission_phone_summary" msgid="8246321093970051702">"Извършване и управление на телефонни обаждания"</string>
     <string name="permission_call_logs_summary" msgid="7545243592757693321">"Четене и запис на списъка с обажданията"</string>
     <string name="permission_sms_summary" msgid="8499509535410068616">"Изпращане и преглед на SMS съобщения"</string>
@@ -88,6 +90,8 @@
     <string name="permission_add_mirror_display_summary" msgid="1385423940454941534">"Записвайте, предавайте или споделяйте екрана на вашия <xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g> с устройство &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt;.&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME">%1$s</xliff:g> ще има достъп до всичко, което се показва или възпроизвежда на вашия <xliff:g id="DEVICE_TYPE_1">%2$s</xliff:g>, включително аудио, снимки, данни за плащане, пароли и съобщения."</string>
     <string name="permission_add_trusted_display_summary" msgid="7399955172055281447">"Предавайте поточно приложенията от своя <xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g> към &lt;strong&gt;<xliff:g id="DEVICE_NAME_1">%3$s</xliff:g>&lt;/strong&gt;.&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME">%1$s</xliff:g> ще има достъп до всичко, което се показва или възпроизвежда на устройството <xliff:g id="DEVICE_NAME_2">%3$s</xliff:g>, включително аудио, снимки, данни за плащане, пароли и съобщения, дори когато вашият <xliff:g id="DEVICE_TYPE_3">%2$s</xliff:g> е заключен."</string>
     <string name="permission_media_routing_control_summary" msgid="2714631092321412250">"Осъществяване на достъп до списъка с налични устройства и контролиране на това кое да се използва за поточно предаване или предаване на аудио/видео от други приложения"</string>
+    <string name="permission_schedule_exact_alarm_summary" msgid="5938321911309800377"></string>
+    <string name="permission_bypass_dnd_summary" msgid="6221709271927387626"></string>
     <string name="device_type" product="default" msgid="8268703872070046263">"телефон"</string>
     <string name="device_type" product="tablet" msgid="5038791954983067774">"таблет"</string>
     <string name="device_type" product="tv" msgid="5355611506659405636">"телевизор"</string>

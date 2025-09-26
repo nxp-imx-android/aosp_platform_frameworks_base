@@ -21,8 +21,8 @@
     xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
     <string name="app_label" msgid="4811759950673118541">"UI ของระบบ"</string>
     <string name="battery_low_title" msgid="5319680173344341779">"เปิดโหมดประหยัดแบตเตอรี่ใช่ไหม"</string>
-    <string name="battery_low_description" msgid="3282977755476423966">"คุณมีแบตเตอรี่เหลืออยู่ <xliff:g id="PERCENTAGE">%s</xliff:g> โหมดประหยัดแบตเตอรี่จะเปิดธีมมืด จำกัดกิจกรรมในเบื้องหลัง และหน่วงเวลาการแจ้งเตือน"</string>
-    <string name="battery_low_intro" msgid="5148725009653088790">"โหมดประหยัดแบตเตอรี่จะเปิดธีมมืด จำกัดกิจกรรมในเบื้องหลัง และหน่วงเวลาการแจ้งเตือน"</string>
+    <string name="battery_low_description" msgid="7848989602036547056">"คุณมีแบตเตอรี่เหลืออยู่ <xliff:g id="PERCENTAGE">%s</xliff:g> โหมดประหยัดแบตเตอรี่จะเปิดธีมมืด จำกัดกิจกรรมในเบื้องหลัง และหน่วงเวลาการแจ้งเตือน"</string>
+    <string name="battery_low_intro" msgid="8033783734931200690">"โหมดประหยัดแบตเตอรี่จะเปิดธีมมืด จำกัดกิจกรรมในเบื้องหลัง และหน่วงเวลาการแจ้งเตือน"</string>
     <string name="battery_low_percent_format" msgid="4276661262843170964">"เหลืออีก <xliff:g id="PERCENTAGE">%s</xliff:g>"</string>
     <string name="invalid_charger_title" msgid="938685362320735167">"ชาร์จผ่าน USB ไม่ได้"</string>
     <string name="invalid_charger_text" msgid="2339310107232691577">"ใช้ที่ชาร์จที่ให้มาพร้อมกับอุปกรณ์"</string>
@@ -140,8 +140,7 @@
     <string name="screenrecord_stop_dialog_button" msgid="2883812564938194350">"หยุดบันทึก"</string>
     <string name="screen_record_entire_screen" msgid="66944996337928170">"ทั้งหน้าจอ"</string>
     <string name="screen_record_single_app" msgid="7355880948574569290">"แอปเดียว"</string>
-    <!-- no translation found for screen_record_single_app_hint (8404332826093639170) -->
-    <skip />
+    <string name="screen_record_single_app_hint" msgid="8404332826093639170">"แอปที่จะบันทึก"</string>
     <string name="screen_record_single_app_no_recents" msgid="1023249803854209330">"แอปเดียว (เปิดแอปเพื่อเลือก)"</string>
     <string name="screen_record_record_device_audio_label" msgid="5363057443124085198">"บันทึกเสียงจากอุปกรณ์"</string>
     <string name="screen_record_record_microphone_label" msgid="4685753707185662381">"บันทึกเสียงจากไมโครโฟน"</string>
@@ -149,11 +148,13 @@
     <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"แสดงการแตะ"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"เลือกแอปเพื่อบันทึก"</string>
     <string name="screen_record_video_saved" msgid="1345283626390232282">"บันทึกวิดีโอแล้ว"</string>
-    <!-- no translation found for screen_record_undo (7942716736019800870) -->
-    <skip />
+    <string name="screen_record_video_deleted" msgid="30786214839944540">"ลบวิดีโอแล้ว"</string>
+    <string name="screen_record_undo" msgid="7942716736019800870">"เลิกทำ"</string>
     <string name="screen_record_retake" msgid="3846643688365398450">"ถ่ายใหม่"</string>
     <string name="screen_record_edit" msgid="8733014191240769309">"แก้ไข"</string>
     <string name="screen_record_delete" msgid="1023421937978254537">"ลบ"</string>
+    <string name="screen_record_delete_dialog_title" msgid="5868561491974057044">"ลบการบันทึกนี้ใช่ไหม"</string>
+    <string name="screen_record_delete_dialog_content" msgid="2610040845214024496">"การลบการบันทึกนี้จะลบไฟล์วิดีโอจากอุปกรณ์อย่างถาวร"</string>
     <string name="screen_record_play" msgid="4732544724679889445">"เล่น"</string>
     <string name="screen_record_pause" msgid="1715012292444967776">"หยุดชั่วคราว"</string>
     <string name="screen_record_mute" msgid="8111682249858638168">"ปิดเสียง"</string>
@@ -174,7 +175,12 @@
     <string name="screen_capture_toolbar_fullscreen_button_screenshot_a11y" msgid="8699983355979869210">"ถ่ายภาพหน้าจอทั้งหน้า"</string>
     <string name="screen_capture_toolbar_fullscreen_button_record_a11y" msgid="852148867883959158">"บันทึกทั้งหน้าจอ"</string>
     <string name="screen_capture_toolbar_settings_button_a11y" msgid="8014446956996739704">"การตั้งค่าการจับภาพหน้าจอ"</string>
+    <string name="screen_capture_show_clicks_and_keys" msgid="2151690554364148717">"แสดงการคลิกและแป้นพิมพ์"</string>
+    <string name="screen_capture_device_audio" msgid="1537290197773737349">"เสียงจากอุปกรณ์"</string>
+    <string name="screen_capture_microphone_audio" msgid="1698835678818747741">"ไมโครโฟน"</string>
+    <string name="screen_capture_front_camera" msgid="1214647538302639358">"กล้องหน้า"</string>
     <string name="screen_capture_region_dimensions" msgid="2317064050253056256">"<xliff:g id="WIDTH">%1$d</xliff:g> x <xliff:g id="HEIGHT">%2$d</xliff:g>"</string>
+    <string name="screen_share_privacy_indicator_stop_sharing" msgid="2297045039651417274">"หยุดการแชร์"</string>
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"กำลังแชร์หน้าจอ"</string>
     <string name="share_to_app_chip_accessibility_label_generic" msgid="5517431657924536133">"กำลังแชร์เนื้อหา"</string>
     <string name="share_to_app_stop_dialog_title" msgid="9212915050910250438">"หยุดแชร์หน้าจอไหม"</string>
@@ -488,12 +494,13 @@
     <string name="accessibility_hearing_device_pair_new_device" msgid="8440082580186130090">"คลิกเพื่อจับคู่อุปกรณ์ใหม่"</string>
     <string name="hearing_devices_presets_error" msgid="350363093458408536">"ไม่สามารถอัปเดตค่าที่กำหนดล่วงหน้า"</string>
     <string name="hearing_devices_preset_label" msgid="7878267405046232358">"ค่าที่กำหนดล่วงหน้า"</string>
+    <string name="hearing_devices_preset_label_left" msgid="7427947566560179945">"ค่าที่กำหนดล่วงหน้าสำหรับด้านซ้าย"</string>
+    <string name="hearing_devices_preset_label_right" msgid="1847206329436268522">"ค่าที่กำหนดล่วงหน้าสำหรับด้านขวา"</string>
     <string name="hearing_devices_input_routing_label" msgid="730396728151232306">"ไมโครโฟนเริ่มต้นสำหรับการโทร"</string>
   <string-array name="hearing_device_input_routing_options">
     <item msgid="4582190415045337003">"ไมโครโฟนเครื่องช่วยฟัง"</item>
     <item msgid="8501466270452446450">"ไมโครโฟนของโทรศัพท์เครื่องนี้"</item>
   </string-array>
-    <string name="hearing_devices_spinner_item_selected" msgid="3137083889662762383">"เลือกแล้ว"</string>
     <string name="hearing_devices_ambient_label" msgid="629440938614895797">"เสียงแวดล้อม"</string>
     <string name="hearing_devices_ambient_control_left" msgid="3586965448230412600">"ซ้าย"</string>
     <string name="hearing_devices_ambient_control_right" msgid="6192137602448918383">"ขวา"</string>
@@ -889,7 +896,7 @@
     <string name="notification_guts_news_summary" msgid="638697931043407835">"เรื่องราวยอดนิยม บทความ และอื่นๆ"</string>
     <string name="notification_guts_social_summary" msgid="3749147631983977040">"การกดชอบ โพสต์ และอื่นๆ"</string>
     <string name="notification_guts_recs_summary" msgid="8391881843238947007">"จดหมายข่าว สื่อที่แนะนำ และอื่นๆ"</string>
-    <string name="notification_onboarding_summaries_turn_on" msgid="5050003857531272655">"เปิด"</string>
+    <string name="notification_onboarding_summaries_turn_on" msgid="3831339570984683297">"เปิดในการตั้งค่า"</string>
     <string name="notification_onboarding_summaries_message" msgid="6061524903176459064">"ตอนนี้บทสนทนายาวๆ สามารถย่อเป็นสรุปสั้นๆ ให้คุณได้อย่างรวดเร็ว"</string>
     <string name="notification_onboarding_bundles_message" msgid="4612908213178622912">"เครื่องมือจัดระเบียบการแจ้งเตือนจะจัดกลุ่มและปิดเสียงการแจ้งเตือนที่มีลำดับความสําคัญต่ำ เพิ่มหมวดหมู่อื่นๆ ในการตั้งค่า"</string>
     <string name="notification_bundle_header_counter" msgid="5515532701569242265">"{count,plural, =1{การแจ้งเตือน # รายการ}other{การแจ้งเตือน # รายการ}}"</string>
@@ -1143,15 +1150,11 @@
     <string name="accessibility_key_gesture_dialog_content" msgid="4519838108423437794">"ดำเนินการ "<annotation id="action_key_icon">"icon"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> คือแป้นพิมพ์ลัดเพื่อใช้ <xliff:g id="ID_3">^3</xliff:g> <xliff:g id="ID_4">^4</xliff:g>"</string>
     <string name="accessibility_key_gesture_dialog_talkback_intro" msgid="1617808784388544741">"โดย <xliff:g id="ID_1">%1$s</xliff:g> เป็นโปรแกรมอ่านหน้าจอที่ช่วยให้คุณฟังเสียงอ่านของรายการต่างๆ ได้ ซึ่งจะเป็นประโยชน์สำหรับบุคคลที่ประสบปัญหาในการมองเห็นหน้าจอ"</string>
     <string name="accessibility_key_gesture_dialog_positive_button_text" msgid="3670746017523589293">"เปิด"</string>
-    <!-- no translation found for accessibility_key_gesture_shortcut_not_yet_enabled_dialog_title (5331043821287212071) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_shortcut_not_yet_enabled_negative_button_text (6711239406914231612) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_shortcut_not_yet_enabled_positive_button_text (7748487028569821131) -->
-    <skip />
+    <string name="accessibility_key_gesture_shortcut_not_yet_enabled_dialog_title" msgid="5331043821287212071">"เปิดใช้แป้นพิมพ์ลัด <xliff:g id="ID_1">%1$s</xliff:g> ใช่ไหม"</string>
+    <string name="accessibility_key_gesture_shortcut_not_yet_enabled_negative_button_text" msgid="6711239406914231612">"ไม่ต้องเปิด"</string>
+    <string name="accessibility_key_gesture_shortcut_not_yet_enabled_positive_button_text" msgid="7748487028569821131">"เปิดแป้นพิมพ์ลัด"</string>
     <string name="accessibility_key_gesture_magnification_dialog_title" msgid="5770691510738701250">"เปิดแป้นพิมพ์ลัด<xliff:g id="ID_1">%1$s</xliff:g>แล้ว"</string>
-    <!-- no translation found for accessibility_key_gesture_magnification_dialog_content (582920726242272572) -->
-    <skip />
+    <string name="accessibility_key_gesture_magnification_dialog_content" msgid="582920726242272572"><annotation id="action_key_icon">"ไอคอน"</annotation>"การดำเนินการ + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> คือแป้นพิมพ์ลัดเพื่อใช้ <xliff:g id="ID_3">^3</xliff:g> ซึ่งเป็นฟีเจอร์การช่วยเหลือพิเศษ การดำเนินการนี้จะช่วยให้คุณซูมเข้าบนหน้าจอได้อย่างรวดเร็วเพื่อปรับเนื้อหาให้มีขนาดใหญ่ขึ้น เมื่อเปิดการขยายแล้ว ให้กด"<annotation id="action_key_icon">"ไอคอน"</annotation>"การดำเนินการ + <xliff:g id="ID_4">^1</xliff:g> และ \"+\" หรือ \"-\" เพื่อปรับการซูม"</string>
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"ปิดแป้นพิมพ์ลัด"</string>
     <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"เปิดไว้"</string>
     <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="7934170819801013870">"การกด"<annotation id="action_key_icon">"ไอคอน"</annotation>"การดำเนินการ + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> จะเปิด <xliff:g id="ID_3">^3</xliff:g> ซึ่งเป็นฟีเจอร์การช่วยเหลือพิเศษ ซึ่งช่วยให้คุณควบคุมอุปกรณ์ได้โดยไม่ต้องสัมผัส"</string>
@@ -1624,8 +1627,7 @@
     <string name="shortcut_helper_customize_dialog_reset_button_label" msgid="7645535254306312685">"ใช่ รีเซ็ต"</string>
     <string name="shortcut_helper_customize_dialog_cancel_button_label" msgid="5595546460431741178">"ยกเลิก"</string>
     <string name="shortcut_helper_add_shortcut_dialog_placeholder" msgid="9154297849458741995">"กดแป้น"</string>
-    <!-- no translation found for shortcut_helper_customizer_action_key_text (3979063901857046887) -->
-    <skip />
+    <string name="shortcut_helper_customizer_action_key_text" msgid="3979063901857046887">"ดำเนินการ"</string>
     <string name="shortcut_customizer_key_combination_in_use_error_message" msgid="3325858369539848162">"มีการใช้แป้นที่กดร่วมกันนี้แล้ว โปรดลองใช้ชุดค่าผสมอื่น"</string>
     <string name="shortcut_customizer_generic_error_message" msgid="3128454624049722741">"ตั้งค่าแป้นพิมพ์ลัดไม่ได้"</string>
     <string name="shortcut_helper_plus_symbol" msgid="4534843157353732011">"+"</string>

@@ -96,22 +96,14 @@
     <string name="message_restore_error_installer_absent" msgid="8492838251989389724">"За да възстановите това приложение, ще трябва да инсталирате <xliff:g id="INSTALLER_NAME">%1$s</xliff:g>"</string>
     <string name="message_restore_error_generic" msgid="5903850636679929406">"При опита за възстановяване на това приложение възникна проблем"</string>
     <string name="message_uninstall_activity" msgid="3263352475743590167">"<xliff:g id="ACTIVITY_NAME">%1$s</xliff:g> е част от следното приложение: <xliff:g id="APP_NAME">%2$s</xliff:g>"</string>
-    <!-- no translation found for cannot_install_app_blocked_summary (2082063650842897085) -->
-    <skip />
-    <!-- no translation found for cannot_update_app_blocked_summary (7607734844900187499) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_no_internet_summary (7298957699553589600) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_no_internet_summary (8094414928318316598) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_summary (3830073638843524892) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_unavailable_summary (342184955548504019) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_fail_closed_summary (3552780111383069051) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_unavailable_fail_closed_summary (353457015429601377) -->
-    <skip />
+    <string name="cannot_install_app_blocked_summary" msgid="2082063650842897085">"&lt;p&gt;Това приложение бе блокирано. С цел защита на устройството и данните ви могат да се инсталират само приложения от потвърдени програмисти.&lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;Научете повече за потвърждаването на програмистите&lt;/a&gt;"</string>
+    <string name="cannot_update_app_blocked_summary" msgid="7607734844900187499">"&lt;p&gt;Това приложение не бе актуализирано. С цел защита на устройството и данните ви могат да се инсталират само актуализации от потвърдени програмисти.&lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;Научете повече за потвърждаването на програмистите&lt;/a&gt;"</string>
+    <string name="cannot_install_verification_no_internet_summary" msgid="7298957699553589600">"&lt;p&gt;Това приложение не бе инсталирано. Приложенията от непотвърдени програмисти може да са опасни.&lt;/p&gt; &lt;p&gt;За потвърждаване на програмиста на приложението е необходима връзка с интернет. Проверете връзката си и опитайте да инсталирате отново. &lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;Научете повече за потвърждаването на програмистите&lt;/a&gt;"</string>
+    <string name="cannot_update_verification_no_internet_summary" msgid="8094414928318316598">"&lt;p&gt;Това приложение не бе актуализирано. Актуализациите от непотвърдени програмисти може да са опасни.&lt;/p&gt; &lt;p&gt;За потвърждаване на програмиста на приложението е необходима връзка с интернет. Проверете връзката си и опитайте да актуализирате отново. &lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;Научете повече за потвърждаването на програмистите&lt;/a&gt;"</string>
+    <string name="cannot_install_verification_unavailable_summary" msgid="3830073638843524892">"&lt;p&gt;Възникна проблем при потвърждаването на програмиста на това приложение. Приложенията от непотвърдени програмисти може да са опасни, затова приложението не бе инсталирано.&lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;Научете повече за потвърждаването на програмистите&lt;/a&gt;"</string>
+    <string name="cannot_update_verification_unavailable_summary" msgid="342184955548504019">"&lt;p&gt;Възникна проблем при потвърждаването на програмиста на това приложение. Актуализациите от непотвърдени програмисти може да са опасни, затова приложението не бе актуализирано.&lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;Научете повече за потвърждаването на програмистите&lt;/a&gt;"</string>
+    <string name="cannot_install_verification_unavailable_fail_closed_summary" msgid="3552780111383069051">"&lt;p&gt;Това приложение бе блокирано, защото възникна проблем при потвърждаването на програмиста. С цел защита на устройството и данните ви могат да се инсталират само приложения от потвърдени програмисти.&lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;Научете повече за потвърждаването на програмистите&lt;/a&gt;"</string>
+    <string name="cannot_update_verification_unavailable_fail_closed_summary" msgid="353457015429601377">"&lt;p&gt;Това приложение не бе актуализирано, защото възникна проблем при потвърждаването на програмиста. С цел защита на устройството и данните ви могат да се инсталират само актуализации от потвърдени програмисти.&lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;Научете повече за потвърждаването на програмистите&lt;/a&gt;"</string>
     <string name="more_details_expanded_install_summary" msgid="3545896392881608712">"Ако инсталирате без потвърждаване, имайте предвид, че приложенията от непотвърдени програмисти може да изложат устройството и данните ви на риск."</string>
     <string name="more_details_expanded_update_summary" msgid="2239162864839036480">"Ако актуализирате без потвърждаване, имайте предвид, че актуализациите от непотвърдени програмисти може да изложат устройството и данните ви на риск."</string>
     <string name="cannot_install_app_blocked_title" msgid="6372444121824751694">"Програмистът на приложението не е потвърден"</string>

@@ -28,11 +28,11 @@
     <string name="chooser_title" msgid="2235819929238267637">"<xliff:g id="PROFILE_NAME">%1$s</xliff:g> zum Einrichten auswählen"</string>
     <string name="single_device_title" msgid="4199861437545438606">"<xliff:g id="PROFILE_NAME">%1$s</xliff:g> wird gesucht"</string>
     <string name="summary_watch" msgid="8134580124808507407">"Diese App darf dann Daten wie den Namen eines Anrufers synchronisieren und auf diese Berechtigungen auf deinem Gerät (<xliff:g id="DEVICE_TYPE">%1$s</xliff:g>) zugreifen"</string>
-    <!-- no translation found for profile_name_fitness_tracker (3107192493390199691) -->
-    <skip />
+    <string name="profile_name_fitness_tracker" msgid="3107192493390199691">"Fitness-Tracker"</string>
     <string name="confirmation_title_glasses" msgid="8288346850537727333">"Zulassen, dass &lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; das Gerät &lt;strong&gt;<xliff:g id="DEVICE_NAME">%2$s</xliff:g>&lt;/strong&gt; verwalten darf?"</string>
     <string name="profile_name_glasses" msgid="3506504967216601277">"Gerät"</string>
     <string name="summary_glasses" msgid="5469208629679579157">"Diese App darf dann auf diese Berechtigungen auf deinem Gerät (<xliff:g id="DEVICE_TYPE">%1$s</xliff:g>) zugreifen:"</string>
+    <string name="profile_name_medical" msgid="5617160509499466400">"Medizinprodukt"</string>
     <string name="title_app_streaming" msgid="237666000400427614">"Der App &lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; erlauben, Apps und Systemfunktionen zwischen deinem <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> und deinem &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt; zu streamen?"</string>
     <string name="summary_app_streaming" msgid="8346968726357732862">"Die App „<xliff:g id="APP_NAME">%1$s</xliff:g>“ erhält die folgenden Berechtigungen:"</string>
     <string name="summary_app_streaming_legacy" msgid="8994180646987541606">"Die App „<xliff:g id="APP_NAME_0">%1$s</xliff:g>“ hat dann Zugriff auf alle Inhalte, die auf deinem <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> sichtbar sind oder abgespielt werden, einschließlich Audioinhalten, Fotos, Zahlungsinformationen, Passwörtern und Nachrichten.&lt;br/&gt;&lt;br/&gt; Die App „<xliff:g id="APP_NAME_1">%1$s</xliff:g>“ kann so lange Apps auf dein <xliff:g id="DEVICE_NAME">%3$s</xliff:g> streamen, bis du diese Berechtigung entfernst."</string>
@@ -73,6 +73,8 @@
     <string name="permission_create_virtual_device" msgid="1102905050922460040">"Daten auf dein Gerät (<xliff:g id="DEVICE_TYPE">%1$s</xliff:g>) streamen"</string>
     <string name="permission_add_mirror_display" msgid="3743433250535606288">"Bildschirm spiegeln"</string>
     <string name="permission_add_trusted_display" msgid="9052824856626276723">"Apps streamen"</string>
+    <string name="permission_schedule_exact_alarm" msgid="5680932535987512225">"Weckrufe &amp; Erinnerungen erstellen"</string>
+    <string name="permission_bypass_dnd" msgid="1241123166903040347">"„Bitte nicht stören“ umgehen"</string>
     <string name="permission_phone_summary" msgid="8246321093970051702">"Anrufe starten und verwalten"</string>
     <string name="permission_call_logs_summary" msgid="7545243592757693321">"Auf die Anrufliste zugreifen und sie bearbeiten"</string>
     <string name="permission_sms_summary" msgid="8499509535410068616">"SMS senden und ansehen"</string>
@@ -88,6 +90,8 @@
     <string name="permission_add_mirror_display_summary" msgid="1385423940454941534">"Bildschirm deines Geräts (<xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g>) aufzeichnen, streamen oder mit &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt; teilen.&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME">%1$s</xliff:g> hat dann Zugriff auf alles, was auf deinem Gerät (<xliff:g id="DEVICE_TYPE_1">%2$s</xliff:g>) sichtbar ist oder abgespielt wird, einschließlich Audioinhalten, Fotos, Zahlungsinformationen, Passwörtern und Nachrichten."</string>
     <string name="permission_add_trusted_display_summary" msgid="7399955172055281447">"Apps von deinem <xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g> auf dein &lt;strong&gt;<xliff:g id="DEVICE_NAME_1">%3$s</xliff:g>&lt;/strong&gt; streamen.&lt;br/&gt;&lt;br/&gt;Die App „<xliff:g id="APP_NAME">%1$s</xliff:g>“ hat dann Zugriff auf alles, was auf deinem <xliff:g id="DEVICE_NAME_2">%3$s</xliff:g> sichtbar ist oder abgespielt wird, einschließlich Audioinhalten, Fotos, Zahlungsinformationen, Passwörtern und Nachrichten, selbst wenn dein <xliff:g id="DEVICE_TYPE_3">%2$s</xliff:g> gesperrt ist."</string>
     <string name="permission_media_routing_control_summary" msgid="2714631092321412250">"Auf eine Liste mit verfügbaren Geräten zugreifen und festlegen, welches Gerät Audio- oder Videoinhalte aus anderen Apps streamt oder überträgt"</string>
+    <string name="permission_schedule_exact_alarm_summary" msgid="5938321911309800377"></string>
+    <string name="permission_bypass_dnd_summary" msgid="6221709271927387626"></string>
     <string name="device_type" product="default" msgid="8268703872070046263">"Smartphone"</string>
     <string name="device_type" product="tablet" msgid="5038791954983067774">"Tablet"</string>
     <string name="device_type" product="tv" msgid="5355611506659405636">"Fernseher"</string>

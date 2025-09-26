@@ -96,22 +96,14 @@
     <string name="message_restore_error_installer_absent" msgid="8492838251989389724">"Du måste installera <xliff:g id="INSTALLER_NAME">%1$s</xliff:g> om du vill återställa appen"</string>
     <string name="message_restore_error_generic" msgid="5903850636679929406">"Det gick inte att återställa appen"</string>
     <string name="message_uninstall_activity" msgid="3263352475743590167">"<xliff:g id="ACTIVITY_NAME">%1$s</xliff:g> är en del av följande app: <xliff:g id="APP_NAME">%2$s</xliff:g>"</string>
-    <!-- no translation found for cannot_install_app_blocked_summary (2082063650842897085) -->
-    <skip />
-    <!-- no translation found for cannot_update_app_blocked_summary (7607734844900187499) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_no_internet_summary (7298957699553589600) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_no_internet_summary (8094414928318316598) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_summary (3830073638843524892) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_unavailable_summary (342184955548504019) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_fail_closed_summary (3552780111383069051) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_unavailable_fail_closed_summary (353457015429601377) -->
-    <skip />
+    <string name="cannot_install_app_blocked_summary" msgid="2082063650842897085">"&lt;p&gt;Den här appen har blockerats. För att skydda enheten och din data kan du bara installera appar från verifierade utvecklare.&lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;Läs mer om utvecklarverifiering&lt;/a&gt;"</string>
+    <string name="cannot_update_app_blocked_summary" msgid="7607734844900187499">"&lt;p&gt;Appen uppdaterades inte. För att skydda enheten och din data kan du bara installera uppdateringar från verifierade utvecklare.&lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;Läs mer om utvecklarverifiering&lt;/a&gt;"</string>
+    <string name="cannot_install_verification_no_internet_summary" msgid="7298957699553589600">"&lt;p&gt;Appen installerades inte. Appar från overifierade utvecklare kan vara osäkra.&lt;/p&gt; &lt;p&gt;En internetanslutning krävs för att verifiera apputvecklaren. Kontrollera anslutningen och försök att installera igen. &lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;Läs mer om utvecklarverifiering&lt;/a&gt;"</string>
+    <string name="cannot_update_verification_no_internet_summary" msgid="8094414928318316598">"&lt;p&gt;Appen uppdaterades inte. Uppdateringar från overifierade utvecklare kan vara osäkra.&lt;/p&gt; &lt;p&gt;En internetanslutning krävs för att verifiera apputvecklaren. Kontrollera anslutningen och försök att uppdatera igen. &lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;Läs mer om utvecklarverifiering&lt;/a&gt;"</string>
+    <string name="cannot_install_verification_unavailable_summary" msgid="3830073638843524892">"&lt;p&gt;Det gick inte att verifiera appens utvecklare. Appar från overifierade utvecklare kan vara osäkra, så appen har inte installerats.&lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;Läs mer om utvecklarverifiering&lt;/a&gt;"</string>
+    <string name="cannot_update_verification_unavailable_summary" msgid="342184955548504019">"&lt;p&gt;Det gick inte att verifiera appens utvecklare. Uppdateringar från overifierade utvecklare kan vara osäkra, så appen har inte uppdaterats.&lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;Läs mer om utvecklarverifiering&lt;/a&gt;"</string>
+    <string name="cannot_install_verification_unavailable_fail_closed_summary" msgid="3552780111383069051">"&lt;p&gt;Appen har blockerats eftersom det uppstod ett problem med att verifiera utvecklaren. För att skydda enheten och din data kan du bara installera appar från verifierade utvecklare.&lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;Läs mer om utvecklarverifiering&lt;/a&gt;"</string>
+    <string name="cannot_update_verification_unavailable_fail_closed_summary" msgid="353457015429601377">"&lt;p&gt;Appen uppdaterades inte eftersom det uppstod ett problem med att verifiera utvecklaren. För att skydda enheten och din data kan du bara installera uppdateringar från verifierade utvecklare.&lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;Läs mer om utvecklarverifiering&lt;/a&gt;"</string>
     <string name="more_details_expanded_install_summary" msgid="3545896392881608712">"Om du installerar utan att verifiera bör du komma ihåg att appar från overifierade utvecklare kan utgöra en risk för din enhet och data."</string>
     <string name="more_details_expanded_update_summary" msgid="2239162864839036480">"Om du uppdaterar utan att verifiera bör du komma ihåg att uppdateringar från overifierade utvecklare kan utsätta enheten och din data för risker."</string>
     <string name="cannot_install_app_blocked_title" msgid="6372444121824751694">"Apputvecklaren är inte verifierad"</string>

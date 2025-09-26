@@ -28,11 +28,11 @@
     <string name="chooser_title" msgid="2235819929238267637">"Válassza ki a beállítani kívánt <xliff:g id="PROFILE_NAME">%1$s</xliff:g> nevét."</string>
     <string name="single_device_title" msgid="4199861437545438606">"Keresés – <xliff:g id="PROFILE_NAME">%1$s</xliff:g>"</string>
     <string name="summary_watch" msgid="8134580124808507407">"Ez az alkalmazás képes lesz szinkronizálni információkat (például a hívó fél nevét), és hozzáférhet majd ezekhez az engedélyekhez a <xliff:g id="DEVICE_TYPE">%1$s</xliff:g>"</string>
-    <!-- no translation found for profile_name_fitness_tracker (3107192493390199691) -->
-    <skip />
+    <string name="profile_name_fitness_tracker" msgid="3107192493390199691">"aktivitásmérő"</string>
     <string name="confirmation_title_glasses" msgid="8288346850537727333">"Engedélyezi, hogy a(z) &lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; kezelje a következő eszközt: &lt;strong&gt;<xliff:g id="DEVICE_NAME">%2$s</xliff:g>&lt;/strong&gt;?"</string>
     <string name="profile_name_glasses" msgid="3506504967216601277">"eszköz"</string>
     <string name="summary_glasses" msgid="5469208629679579157">"Az alkalmazás hozzáférhet majd ezekhez az engedélyekhez a következőn: <xliff:g id="DEVICE_TYPE">%1$s</xliff:g>"</string>
+    <string name="profile_name_medical" msgid="5617160509499466400">"orvosi eszköz"</string>
     <string name="title_app_streaming" msgid="237666000400427614">"Engedélyezi a(z) &lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; számára az alkalmazás- és rendszerfunkciók streamelését a(z) <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> és a(z) &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt; között?"</string>
     <string name="summary_app_streaming" msgid="8346968726357732862">"A(z) <xliff:g id="APP_NAME">%1$s</xliff:g> a következő engedélyeket kapja meg:"</string>
     <string name="summary_app_streaming_legacy" msgid="8994180646987541606">"A(z) <xliff:g id="APP_NAME_0">%1$s</xliff:g> hozzáférhet <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> eszköze minden látható vagy lejátszható tartalmához, így az audiotartalmakhoz, fényképekhez, fizetési adatokhoz, jelszavakhoz és üzenetekhez is.&lt;br/&gt;&lt;br/&gt;Amíg Ön el nem távolítja az ehhez az engedélyhez való hozzáférést, a(z) <xliff:g id="APP_NAME_1">%1$s</xliff:g> képes lesz majd az alkalmazások <xliff:g id="DEVICE_NAME">%3$s</xliff:g> eszközre való streamelésére."</string>
@@ -73,6 +73,8 @@
     <string name="permission_create_virtual_device" msgid="1102905050922460040">"Adatok streamelése <xliff:g id="DEVICE_TYPE">%1$s</xliff:g> eszközére"</string>
     <string name="permission_add_mirror_display" msgid="3743433250535606288">"Képernyőtükrözés"</string>
     <string name="permission_add_trusted_display" msgid="9052824856626276723">"Alkalmazások streamelése"</string>
+    <string name="permission_schedule_exact_alarm" msgid="5680932535987512225">"Ébresztések és emlékeztetők beállítása"</string>
+    <string name="permission_bypass_dnd" msgid="1241123166903040347">"A Ne zavarjanak beállításainak megkerülése"</string>
     <string name="permission_phone_summary" msgid="8246321093970051702">"Telefonhívások kezdeményezése és kezelése"</string>
     <string name="permission_call_logs_summary" msgid="7545243592757693321">"Hívásnapló olvasása és írása"</string>
     <string name="permission_sms_summary" msgid="8499509535410068616">"SMS-ek küldése és megtekintése"</string>
@@ -88,6 +90,8 @@
     <string name="permission_add_mirror_display_summary" msgid="1385423940454941534">"Rögzítheti, átküldheti vagy megoszthatja a(z) <xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g> képernyőjét a következővel: &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt;.&lt;br/&gt;&lt;br/&gt;A(z) <xliff:g id="APP_NAME">%1$s</xliff:g> hozzáférhet a(z) <xliff:g id="DEVICE_TYPE_1">%2$s</xliff:g> minden látható vagy lejátszható tartalmához, így az audiotartalmakhoz, fotókhoz, fizetési adatokhoz, jelszavakhoz és üzenetekhez is."</string>
     <string name="permission_add_trusted_display_summary" msgid="7399955172055281447">"Streamelheti <xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g> eszköze alkalmazásait a következőre: &lt;strong&gt;<xliff:g id="DEVICE_NAME_1">%3$s</xliff:g>&lt;/strong&gt;.&lt;br/&gt;&lt;br/&gt;A(z) <xliff:g id="APP_NAME">%1$s</xliff:g> még akkor is hozzáférhet mindenhez, ami látható vagy lejátszható a(z) <xliff:g id="DEVICE_NAME_2">%3$s</xliff:g> eszközön (pl. audiotartalmakhoz, fotókhoz, fizetési adatokhoz, jelszavakhoz és üzenetekhez), ha <xliff:g id="DEVICE_TYPE_3">%2$s</xliff:g> eszköze zárolva van."</string>
     <string name="permission_media_routing_control_summary" msgid="2714631092321412250">"Hozzáférhet a rendelkezésre álló eszközök listájához, és szabályozhatja, hogy melyik streamelhet vagy küldhet át hang- vagy videotartalmat más alkalmazásokból"</string>
+    <string name="permission_schedule_exact_alarm_summary" msgid="5938321911309800377"></string>
+    <string name="permission_bypass_dnd_summary" msgid="6221709271927387626"></string>
     <string name="device_type" product="default" msgid="8268703872070046263">"telefonján"</string>
     <string name="device_type" product="tablet" msgid="5038791954983067774">"táblagépén"</string>
     <string name="device_type" product="tv" msgid="5355611506659405636">"tévé"</string>

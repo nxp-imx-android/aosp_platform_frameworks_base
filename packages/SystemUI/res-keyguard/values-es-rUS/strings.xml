@@ -72,7 +72,7 @@
     <string name="kg_prompt_title_after_secure_lock_device" msgid="2646423690908627259">"Verificación en dos pasos"</string>
     <string name="kg_prompt_subtitle_for_secure_lock_device_biometric_auth_fingerprint" msgid="6596633555720510932">"Usa el Desbloqueo con huellas dactilares"</string>
     <string name="kg_prompt_subtitle_for_secure_lock_device_biometric_auth_face" msgid="4550701327607935441">"Usa el Desbloqueo facial"</string>
-    <string name="kg_prompt_subtitle_for_secure_lock_device_biometric_auth_coex" msgid="2093026058274456330">"Usa el Desbloqueo facial o con huellas dactilares"</string>
+    <string name="kg_prompt_subtitle_for_secure_lock_device_biometric_auth_coex" msgid="2093026058274456330">"Usa el Desbloqueo con huellas dactilares o facial"</string>
     <string name="kg_prompt_after_user_lockdown_pin" msgid="5374732179740050373">"Se requiere el PIN después del bloqueo"</string>
     <string name="kg_prompt_after_user_lockdown_password" msgid="9097968458291129795">"Se requiere la contraseña después del bloqueo"</string>
     <string name="kg_prompt_after_user_lockdown_pattern" msgid="215072203613597906">"Se requiere el patrón después del bloqueo"</string>

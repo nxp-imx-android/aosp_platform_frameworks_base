@@ -118,8 +118,8 @@
     <string name="bluetooth_hearing_aid_right_active" msgid="2244728507170385397">"Ativo (apenas o direito)"</string>
     <string name="bluetooth_hearing_aid_left_and_right_active" msgid="4294571497939983181">"Ativo (esquerdo e direito)"</string>
     <string name="bluetooth_hearing_device_ambient_error" msgid="6035857289108813878">"Não foi possível atualizar o som ambiente"</string>
-    <!-- no translation found for bluetooth_hearing_aids_presets_error (4523942574698610976) -->
-    <skip />
+    <string name="bluetooth_hearing_aids_presets_error" msgid="4523942574698610976">"Não foi possível atualizar a predefinição"</string>
+    <string name="hearing_device_spinner_item_selected" msgid="3884049360428514878">"Item selecionado"</string>
     <string name="bluetooth_active_media_only_battery_level" msgid="7772517511061834073">"Ativo (apenas mídia). <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE">%1$s</xliff:g> de bateria."</string>
     <string name="bluetooth_active_media_only_battery_level_untethered" msgid="7444753133664620926">"Ativo (apenas mídia). Lado esquerdo: <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE_0">%1$s</xliff:g> de bateria. Lado direito: <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE_1">%2$s</xliff:g> de bateria."</string>
     <string name="bluetooth_guest_battery_level" msgid="2820003593899467676">"Dispositivo convidado. <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE">%1$s</xliff:g> de bateria."</string>

@@ -28,11 +28,11 @@
     <string name="chooser_title" msgid="2235819929238267637">"Chagua <xliff:g id="PROFILE_NAME">%1$s</xliff:g> ili uweke mipangilio"</string>
     <string name="single_device_title" msgid="4199861437545438606">"Inatafuta <xliff:g id="PROFILE_NAME">%1$s</xliff:g>"</string>
     <string name="summary_watch" msgid="8134580124808507407">"Programu hii itaruhusiwa kusawazisha maelezo, kama vile jina la mtu anayepiga simu na kufikia ruhusa hizi kwenye <xliff:g id="DEVICE_TYPE">%1$s</xliff:g> yako"</string>
-    <!-- no translation found for profile_name_fitness_tracker (3107192493390199691) -->
-    <skip />
+    <string name="profile_name_fitness_tracker" msgid="3107192493390199691">"kifuatiliaji cha siha"</string>
     <string name="confirmation_title_glasses" msgid="8288346850537727333">"Ungependa kuruhusu &lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; idhibiti &lt;strong&gt;<xliff:g id="DEVICE_NAME">%2$s</xliff:g>&lt;/strong&gt;?"</string>
     <string name="profile_name_glasses" msgid="3506504967216601277">"kifaa"</string>
     <string name="summary_glasses" msgid="5469208629679579157">"Programu hii itaruhusiwa kufikia ruhusa hizi kwenye <xliff:g id="DEVICE_TYPE">%1$s</xliff:g> yako"</string>
+    <string name="profile_name_medical" msgid="5617160509499466400">"kifaa cha matibabu"</string>
     <string name="title_app_streaming" msgid="237666000400427614">"Ungependa kuruhusu &lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; itiririshe programu na vipengele vya mfumo kati ya <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> na &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt; yako?"</string>
     <string name="summary_app_streaming" msgid="8346968726357732862">"<xliff:g id="APP_NAME">%1$s</xliff:g> itapewa ruhusa zifuatazo:"</string>
     <string name="summary_app_streaming_legacy" msgid="8994180646987541606">"Programu ya <xliff:g id="APP_NAME_0">%1$s</xliff:g> itafikia chochote kinachoonekana au kuchezwa kwenye <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> yako, ikiwa ni pamoja na sauti, picha, maelezo ya malipo, manenosiri na ujumbe.&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME_1">%1$s</xliff:g> itaweza kutiririsha programu kwenye <xliff:g id="DEVICE_NAME">%3$s</xliff:g> hadi utakapoondoa ruhusa hii."</string>
@@ -73,6 +73,8 @@
     <string name="permission_create_virtual_device" msgid="1102905050922460040">"Kutiririsha data kwenye <xliff:g id="DEVICE_TYPE">%1$s</xliff:g>"</string>
     <string name="permission_add_mirror_display" msgid="3743433250535606288">"Kuakisi skrini yako"</string>
     <string name="permission_add_trusted_display" msgid="9052824856626276723">"Kutiririsha programu"</string>
+    <string name="permission_schedule_exact_alarm" msgid="5680932535987512225">"Kuweka kengele na vikumbusho"</string>
+    <string name="permission_bypass_dnd" msgid="1241123166903040347">"Kukwepa mipangilio ya Usinisumbue"</string>
     <string name="permission_phone_summary" msgid="8246321093970051702">"Kupiga na kudhibiti simu"</string>
     <string name="permission_call_logs_summary" msgid="7545243592757693321">"Kusoma na kuandika rekodi ya namba za simu"</string>
     <string name="permission_sms_summary" msgid="8499509535410068616">"Kutuma na kuona ujumbe wa SMS"</string>
@@ -88,6 +90,8 @@
     <string name="permission_add_mirror_display_summary" msgid="1385423940454941534">"Rekodi, tuma au uruhusu ufikiaji wa skrini ya <xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g> kwenye &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt;.&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME">%1$s</xliff:g> itafikia chochote kinachoonekana au kinachochezwa kwenye <xliff:g id="DEVICE_TYPE_1">%2$s</xliff:g>, ikiwa ni pamoja na sauti, picha, maelezo ya malipo, manenosiri na ujumbe."</string>
     <string name="permission_add_trusted_display_summary" msgid="7399955172055281447">"Tiririsha programu za <xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g> yako kwenye &lt;strong&gt;<xliff:g id="DEVICE_NAME_1">%3$s</xliff:g>&lt;/strong&gt;.&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME">%1$s</xliff:g> itafikia chochote kinachoonekana au kinachochezwa kwenye <xliff:g id="DEVICE_NAME_2">%3$s</xliff:g>, ikiwa ni pamoja na sauti, picha, maelezo ya malipo, manenosiri na ujumbe, hata wakati umefunga <xliff:g id="DEVICE_TYPE_3">%2$s</xliff:g> yako."</string>
     <string name="permission_media_routing_control_summary" msgid="2714631092321412250">"Fikia orodha ya vifaa vinavyopatikana na udhibiti unavyotumia kutiririsha au kutuma maudhui ya sauti au video kutoka kwenye programu nyingine`"</string>
+    <string name="permission_schedule_exact_alarm_summary" msgid="5938321911309800377"></string>
+    <string name="permission_bypass_dnd_summary" msgid="6221709271927387626"></string>
     <string name="device_type" product="default" msgid="8268703872070046263">"simu"</string>
     <string name="device_type" product="tablet" msgid="5038791954983067774">"kompyuta kibao"</string>
     <string name="device_type" product="tv" msgid="5355611506659405636">"TV"</string>

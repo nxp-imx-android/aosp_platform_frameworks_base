@@ -370,8 +370,8 @@
     <string name="permgroupdesc_xr_eye_sensitive" msgid="6050967250223079001">"കണ്ണിന്റെ ചലനം കൃത്യമായി ട്രാക്ക് ചെയ്യുന്നു"</string>
     <string name="permgrouplab_xr_tracking" msgid="766634536453394700">"ചലനവും ഏരിയ ഡാറ്റയും"</string>
     <string name="permgroupdesc_xr_tracking" msgid="812429788288001595">"കണ്ണുകൾ, മുഖം, ശരീരം, സ്‌കാൻ ഏരിയ എന്നിവ ട്രാക്ക് ചെയ്യുന്നു"</string>
-    <string name="permgrouplab_xr_tracking_sensitive" msgid="4346975608010051186">"തലയുടെ കൃത്യമായ ചലനവും ഏരിയ ഡാറ്റയും"</string>
-    <string name="permgroupdesc_xr_tracking_sensitive" msgid="7925014193164562556">"തലയും സ്‌കാൻ ഏരിയയും കൃത്യമായി ട്രാക്ക് ചെയ്യുന്നു"</string>
+    <string name="permgrouplab_xr_tracking_sensitive" msgid="6574264227123545314">"കൃത്യമായ ചലന, പ്രദേശ ഡാറ്റ"</string>
+    <string name="permgroupdesc_xr_tracking_sensitive" msgid="2480835734248509848">"പ്രദേശം കൃത്യമായി സ്‌കാൻ ചെയ്‌ത് തലയുടെ ചലനങ്ങൾ ട്രാക്ക് ചെയ്യുക"</string>
     <string name="capability_title_canRetrieveWindowContent" msgid="7554282892101587296">"വിൻഡോ ഉള്ളടക്കം വീണ്ടെടുക്കുക"</string>
     <string name="capability_desc_canRetrieveWindowContent" msgid="6195610527625237661">"നിങ്ങൾ സംവദിക്കുന്ന ഒരു വിൻഡോയുടെ ഉള്ളടക്കം പരിശോധിക്കുക."</string>
     <string name="capability_title_canRequestTouchExploration" msgid="327598364696316213">"സ്‌പർശനം വഴി പര്യവേക്ഷണം ചെയ്യുക, ഓണാക്കുക"</string>
@@ -685,7 +685,7 @@
     <string name="permdesc_scene_understanding_coarse" msgid="847344305502345475">"നിങ്ങളുടെ പരിസരം സ്‌കാൻ ചെയ്യാൻ ആപ്പിനെ അനുവദിക്കുന്നു."</string>
     <string name="permlab_scene_understanding_fine" msgid="2899904960307462936">"നിങ്ങളുടെ ചുറ്റുമുള്ള പ്രദേശം കൃത്യമായി സ്‌കാൻ ചെയ്യുന്നു"</string>
     <string name="permdesc_scene_understanding_fine" msgid="4848943859506977588">"നിങ്ങളുടെ പരിസരം കൃത്യമായി സ്‌കാൻ ചെയ്യാൻ ആപ്പിനെ അനുവദിക്കുന്നു."</string>
-    <string name="permlab_xr_tracking_in_background" msgid="8659516810430027774">"പശ്ചാത്തലത്തിൽ XR ഡാറ്റ ട്രാക്ക് ചെയ്യുന്നു"</string>
+    <string name="permlab_xr_tracking_in_background" msgid="1714941204255185460">"പശ്ചാത്തലത്തിൽ XR ട്രാക്കിംഗ് ആക്‌സസ് ചെയ്യുക"</string>
     <string name="permdesc_xr_tracking_in_background" msgid="3151744132692357005">"പശ്ചാത്തലത്തിൽ XR ഡാറ്റ ആക്‌സസ് ചെയ്യാൻ ആപ്പിനെ അനുവദിക്കുന്നു."</string>
     <string name="permlab_capture_keyboard" msgid="4076894823382693032">"കീകൾ ക്യാപ്‌ചർ ചെയ്യുക"</string>
     <string name="permdesc_capture_keyboard" msgid="4192269470684407219">"സിസ്റ്റം കുറുക്കുവഴികളും പ്രവർത്തനങ്ങളും സിസ്റ്റം പ്രോസസ് ചെയ്യുന്നതിന് മുമ്പ് കീകൾ ക്യാപ്‌ചർ ചെയ്യാൻ ആപ്പിനെ അനുവദിക്കുന്നു."</string>
@@ -1986,8 +1986,8 @@
     <string name="package_updated_device_owner" msgid="7770195449213776218">"നിങ്ങളുടെ അഡ്‌മിൻ അപ്‌ഡേറ്റ് ചെയ്തത്.\nനൽകിയ അനുമതികൾ കാണാൻ ക്രമീകരണത്തിലേക്ക് പോകുക"</string>
     <string name="package_deleted_device_owner" msgid="2292335928930293023">"നിങ്ങളുടെ അഡ്‌മിൻ ഇല്ലാതാക്കുന്നത്"</string>
     <string name="confirm_battery_saver" msgid="5247976246208245754">"ശരി"</string>
-    <string name="battery_saver_description_with_learn_more" msgid="5444908404021316250">"\'ബാറ്ററി സേവർ\' ഡാർക്ക് തീം ഓണാക്കുന്നു, ഒപ്പം പശ്ചാത്തല ആക്‌റ്റിവിറ്റിയും ചില വിഷ്വൽ ഇഫക്റ്റുകളും ചില ഫീച്ചറുകളും ചില നെറ്റ്‌വർക്ക് കണക്ഷനുകളും പരിമിതപ്പെടുത്തുകയോ ഓഫാക്കുകയോ ചെയ്യുന്നു."</string>
-    <string name="battery_saver_description" msgid="8518809702138617167">"ബാറ്ററി സേവർ ഡാർക്ക് തീം ഓണാക്കുന്നു, പശ്ചാത്തല ആക്‌റ്റിവിറ്റിയും ചില വിഷ്വൽ ഇഫക്റ്റുകളും ചില ഫീച്ചറുകളും ചില നെറ്റ്‌വർക്ക് കണക്ഷനുകളും അത് പരിമിതപ്പെടുത്തുകയോ ഓഫാക്കുകയോ ചെയ്യുന്നു."</string>
+    <string name="battery_saver_description_with_learn_more" msgid="8969945879044849461">"ബാറ്ററി സേവർ ഡാർക്ക് തീം ഓണാക്കുന്നു, പശ്ചാത്തല ആക്‌റ്റിവിറ്റിയും ചില വിഷ്വൽ ഇഫക്റ്റുകളും ചില ഫീച്ചറുകളും ചില നെറ്റ്‌വർക്ക് കണക്ഷനുകളും അത് പരിമിതപ്പെടുത്തുകയോ ഓഫാക്കുകയോ ചെയ്യുന്നു."</string>
+    <string name="battery_saver_description" msgid="2820475140307374570">"ബാറ്ററി സേവർ ഡാർക്ക് തീം ഓണാക്കുന്നു, പശ്ചാത്തല ആക്‌റ്റിവിറ്റിയും ചില വിഷ്വൽ ഇഫക്റ്റുകളും ചില ഫീച്ചറുകളും ചില നെറ്റ്‌വർക്ക് കണക്ഷനുകളും അത് പരിമിതപ്പെടുത്തുകയോ ഓഫാക്കുകയോ ചെയ്യുന്നു."</string>
     <string name="data_saver_description" msgid="4995164271550590517">"ഡാറ്റാ ഉപയോഗം കുറയ്ക്കാൻ സഹായിക്കുന്നതിനായി പശ്ചാത്തലത്തിൽ ഡാറ്റ അയയ്ക്കുകയോ സ്വീകരിക്കുകയോ ചെയ്യുന്നതിൽ നിന്ന് ചില ആപ്പുകളെ ഡാറ്റാ സേവർ തടയുന്നു. നിങ്ങൾ നിലവിൽ ഉപയോഗിക്കുന്ന ഒരു ആപ്പിന് ഡാറ്റ ആക്‌സസ് ചെയ്യാനാകും, എന്നാൽ വല്ലപ്പോഴും മാത്രമെ സംഭവിക്കുന്നുള്ളു. ഇതിനർത്ഥം, ഉദാഹരണമായി നിങ്ങൾ ടാപ്പ് ചെയ്യുന്നത് വരെ ചിത്രങ്ങൾ പ്രദ‍‍‍ർശിപ്പിക്കുകയില്ല എന്നാണ്."</string>
     <string name="data_saver_enable_title" msgid="7080620065745260137">"ഡാറ്റാ സേവർ ഓണാക്കണോ?"</string>
     <string name="data_saver_enable_button" msgid="4399405762586419726">"ഓണാക്കുക"</string>

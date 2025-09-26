@@ -118,8 +118,8 @@
     <string name="bluetooth_hearing_aid_right_active" msgid="2244728507170385397">"Aktiivinen (vain oikea)"</string>
     <string name="bluetooth_hearing_aid_left_and_right_active" msgid="4294571497939983181">"Aktiivinen (vasen ja oikea)"</string>
     <string name="bluetooth_hearing_device_ambient_error" msgid="6035857289108813878">"Ympäristön päivittäminen epäonnistui"</string>
-    <!-- no translation found for bluetooth_hearing_aids_presets_error (4523942574698610976) -->
-    <skip />
+    <string name="bluetooth_hearing_aids_presets_error" msgid="4523942574698610976">"Esiasetusta ei voitu muuttaa"</string>
+    <string name="hearing_device_spinner_item_selected" msgid="3884049360428514878">"Valittu"</string>
     <string name="bluetooth_active_media_only_battery_level" msgid="7772517511061834073">"Aktiivinen (vain media). <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE">%1$s</xliff:g> virtaa."</string>
     <string name="bluetooth_active_media_only_battery_level_untethered" msgid="7444753133664620926">"Aktiivinen (vain media). V: <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE_0">%1$s</xliff:g>, O: <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE_1">%2$s</xliff:g> virtaa."</string>
     <string name="bluetooth_guest_battery_level" msgid="2820003593899467676">"Vieraslaite. <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE">%1$s</xliff:g> virtaa."</string>
@@ -299,7 +299,7 @@
     <string name="keywords_adb_wireless" msgid="6507505581882171240">"adb, virheenkorjaus, kehittäminen"</string>
     <string name="bugreport_in_power" msgid="8664089072534638709">"Virheraportin pikakuvake"</string>
     <string name="bugreport_in_power_summary" msgid="1885529649381831775">"Näytä virheraporttipainike virtavalikossa"</string>
-    <string name="keep_screen_on" msgid="1187161672348797558">"Pysy käynnissä"</string>
+    <string name="keep_screen_on" msgid="1187161672348797558">"Pidä päällä"</string>
     <string name="keep_screen_on_summary" msgid="1510731514101925829">"Näyttö ei sammu puhelimen latautuessa"</string>
     <string name="bt_hci_snoop_log" msgid="7291287955649081448">"Ota Bluetoothin HCI-tarkkailuloki käyttöön"</string>
     <string name="bt_hci_snoop_log_summary" msgid="6808538971394092284">"Tallenna Bluetoothin HCl-paketit tiedostoon (ota Bluetooth käyttöön asetuksen muuttamisen jälkeen)"</string>

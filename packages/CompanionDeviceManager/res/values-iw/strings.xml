@@ -28,11 +28,11 @@
     <string name="chooser_title" msgid="2235819929238267637">"בחירת <xliff:g id="PROFILE_NAME">%1$s</xliff:g> להגדרה"</string>
     <string name="single_device_title" msgid="4199861437545438606">"מתבצע חיפוש של <xliff:g id="PROFILE_NAME">%1$s</xliff:g>"</string>
     <string name="summary_watch" msgid="8134580124808507407">"האפליקציה הזו תוכל לסנכרן מידע, כמו השם של מי שמתקשר, ולגשת להרשאות האלה ב<xliff:g id="DEVICE_TYPE">%1$s</xliff:g> שלך"</string>
-    <!-- no translation found for profile_name_fitness_tracker (3107192493390199691) -->
-    <skip />
+    <string name="profile_name_fitness_tracker" msgid="3107192493390199691">"צמיד כושר"</string>
     <string name="confirmation_title_glasses" msgid="8288346850537727333">"‏מתן הרשאה לאפליקציה ‎&lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&amp;g;‎‏ לנהל את ‎&lt;strong&gt;<xliff:g id="DEVICE_NAME">%2$s</xliff:g>&lt;/strong&gt;‎‏"</string>
     <string name="profile_name_glasses" msgid="3506504967216601277">"מכשיר"</string>
     <string name="summary_glasses" msgid="5469208629679579157">"האפליקציה הזו תוכל לגשת להרשאות האלה ב<xliff:g id="DEVICE_TYPE">%1$s</xliff:g> שלך"</string>
+    <string name="profile_name_medical" msgid="5617160509499466400">"מכשיר רפואי"</string>
     <string name="title_app_streaming" msgid="237666000400427614">"‏לאשר לאפליקציה &lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; לשדר תכונות מערכת ואפליקציות בין ה<xliff:g id="DEVICE_TYPE">%2$s</xliff:g> שלך לבין &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt;?"</string>
     <string name="summary_app_streaming" msgid="8346968726357732862">"‫<xliff:g id="APP_NAME">%1$s</xliff:g> תקבל את ההרשאות הבאות:"</string>
     <string name="summary_app_streaming_legacy" msgid="8994180646987541606">"‏לאפליקציה <xliff:g id="APP_NAME_0">%1$s</xliff:g> תהיה גישה לכל מה שמוצג או מופעל ב<xliff:g id="DEVICE_TYPE">%2$s</xliff:g>, כולל אודיו, תמונות, פרטי תשלום, סיסמאות והודעות.&lt;br/&gt;&lt;br/&gt;לאפליקציה <xliff:g id="APP_NAME_1">%1$s</xliff:g> תהיה אפשרות לשדר אפליקציות אל <xliff:g id="DEVICE_NAME">%3$s</xliff:g> עד שהגישה להרשאה הזו תוסר."</string>
@@ -73,6 +73,8 @@
     <string name="permission_create_virtual_device" msgid="1102905050922460040">"שידור נתונים אל ה<xliff:g id="DEVICE_TYPE">%1$s</xliff:g>"</string>
     <string name="permission_add_mirror_display" msgid="3743433250535606288">"שיקוף המסך"</string>
     <string name="permission_add_trusted_display" msgid="9052824856626276723">"שידור אפליקציות"</string>
+    <string name="permission_schedule_exact_alarm" msgid="5680932535987512225">"הגדרת התראות ותזכורות"</string>
+    <string name="permission_bypass_dnd" msgid="1241123166903040347">"עקיפת ההגדרות של \"נא לא להפריע\""</string>
     <string name="permission_phone_summary" msgid="8246321093970051702">"ביצוע וניהול של שיחות טלפון"</string>
     <string name="permission_call_logs_summary" msgid="7545243592757693321">"קריאה וכתיבה של נתוני יומן השיחות בטלפון"</string>
     <string name="permission_sms_summary" msgid="8499509535410068616">"‏שליחה של הודעות SMS וצפייה בהן"</string>
@@ -88,6 +90,8 @@
     <string name="permission_add_mirror_display_summary" msgid="1385423940454941534">"‏אפשר להקליט, להפעיל Cast או לשתף את המסך של ה<xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g> ב-&lt;strong&gt;‏<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt;.&lt;br/&gt;&lt;br/&gt;לאפליקציה <xliff:g id="APP_NAME">%1$s</xliff:g> תהיה גישה לכל מה שמוצג או מופעל ב<xliff:g id="DEVICE_TYPE_1">%2$s</xliff:g>, כולל אודיו, תמונות, פרטי תשלום, סיסמאות והודעות."</string>
     <string name="permission_add_trusted_display_summary" msgid="7399955172055281447">"‏שידור של האפליקציות מה<xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g> אל &lt;strong&gt;<xliff:g id="DEVICE_NAME_1">%3$s</xliff:g>&lt;/strong&gt;.&lt;br/&gt;&lt;br/&gt;לאפליקציה <xliff:g id="APP_NAME">%1$s</xliff:g> תהיה גישה לכל מה שמוצג או מופעל ב-<xliff:g id="DEVICE_NAME_2">%3$s</xliff:g>, כולל אודיו, תמונות, פרטי תשלום, סיסמאות והודעות, גם כשה<xliff:g id="DEVICE_TYPE_3">%2$s</xliff:g> נעול."</string>
     <string name="permission_media_routing_control_summary" msgid="2714631092321412250">"‏גישה לרשימה של מכשירים זמינים ובחירה איזה מהם ישמש כדי לשדר אודיו או וידאו או להפעיל Cast שלהם מאפליקציות אחרות"</string>
+    <string name="permission_schedule_exact_alarm_summary" msgid="5938321911309800377"></string>
+    <string name="permission_bypass_dnd_summary" msgid="6221709271927387626"></string>
     <string name="device_type" product="default" msgid="8268703872070046263">"טלפון"</string>
     <string name="device_type" product="tablet" msgid="5038791954983067774">"טאבלט"</string>
     <string name="device_type" product="tv" msgid="5355611506659405636">"טלוויזיה"</string>

@@ -28,11 +28,11 @@
     <string name="chooser_title" msgid="2235819929238267637">"Kies ’n <xliff:g id="PROFILE_NAME">%1$s</xliff:g> om op te stel"</string>
     <string name="single_device_title" msgid="4199861437545438606">"Soek tans vir ’n <xliff:g id="PROFILE_NAME">%1$s</xliff:g>"</string>
     <string name="summary_watch" msgid="8134580124808507407">"Hierdie app sal toegelaat word om inligting te sinkroniseer, soos die naam van iemand wat bel, en sal toegang tot hierdie toestemmings op jou <xliff:g id="DEVICE_TYPE">%1$s</xliff:g> hê"</string>
-    <!-- no translation found for profile_name_fitness_tracker (3107192493390199691) -->
-    <skip />
+    <string name="profile_name_fitness_tracker" msgid="3107192493390199691">"fiksheidmonitor"</string>
     <string name="confirmation_title_glasses" msgid="8288346850537727333">"Laat &lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; toe om &lt;strong&gt;<xliff:g id="DEVICE_NAME">%2$s</xliff:g>&lt;/strong&gt; te bestuur?"</string>
     <string name="profile_name_glasses" msgid="3506504967216601277">"toestel"</string>
     <string name="summary_glasses" msgid="5469208629679579157">"Hierdie app sal toegang tot hierdie toestemmings op jou <xliff:g id="DEVICE_TYPE">%1$s</xliff:g> hê"</string>
+    <string name="profile_name_medical" msgid="5617160509499466400">"mediese toestel"</string>
     <string name="title_app_streaming" msgid="237666000400427614">"Laat &lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; toe om apps en stelselkenmerke tussen jou <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> en &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt; te stroom?"</string>
     <string name="summary_app_streaming" msgid="8346968726357732862">"<xliff:g id="APP_NAME">%1$s</xliff:g> sal die volgende toestemmings kry:"</string>
     <string name="summary_app_streaming_legacy" msgid="8994180646987541606">"<xliff:g id="APP_NAME_0">%1$s</xliff:g> sal toegang hê tot enigiets wat sigbaar is of gespeel word op jou <xliff:g id="DEVICE_TYPE">%2$s</xliff:g>, insluitend oudio, foto’s, betaalinligting, wagwoorde en boodskappe.&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME_1">%1$s</xliff:g> sal apps na <xliff:g id="DEVICE_NAME">%3$s</xliff:g> kan stroom totdat jy toegang tot hierdie toestemming verwyder."</string>
@@ -73,6 +73,8 @@
     <string name="permission_create_virtual_device" msgid="1102905050922460040">"Stroom data na jou <xliff:g id="DEVICE_TYPE">%1$s</xliff:g> toe"</string>
     <string name="permission_add_mirror_display" msgid="3743433250535606288">"Weerspieël jou skerm"</string>
     <string name="permission_add_trusted_display" msgid="9052824856626276723">"Stroom apps"</string>
+    <string name="permission_schedule_exact_alarm" msgid="5680932535987512225">"Stel wekkers en onthounotas"</string>
+    <string name="permission_bypass_dnd" msgid="1241123166903040347">"Omseil Moenie Steur Nie-instellings"</string>
     <string name="permission_phone_summary" msgid="8246321093970051702">"Maak en bestuur foonoproepe"</string>
     <string name="permission_call_logs_summary" msgid="7545243592757693321">"Lees en skryf foonoproeprekord neer"</string>
     <string name="permission_sms_summary" msgid="8499509535410068616">"Stuur en bekyk SMS-boodskappe"</string>
@@ -88,6 +90,8 @@
     <string name="permission_add_mirror_display_summary" msgid="1385423940454941534">"Neem op, saai uit of deel jou <xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g> se skerm na &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt;.&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME">%1$s</xliff:g> sal tot enigiets wat sigbaar of gespeel is op jou <xliff:g id="DEVICE_TYPE_1">%2$s</xliff:g> toegang hê, insluitend oudio, foto\'s, betalingsinligting, wagwoorde en boodskappe."</string>
     <string name="permission_add_trusted_display_summary" msgid="7399955172055281447">"Stroom jou <xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g> se apps na &lt;strong&gt;<xliff:g id="DEVICE_NAME_1">%3$s</xliff:g>&lt;/strong&gt;.&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME">%1$s</xliff:g> sal tot enigiets wat sigbaar of gespeel is op jou <xliff:g id="DEVICE_NAME_2">%3$s</xliff:g> toegang hê, insluitend oudio, foto\'s, betalingsinligting, wagwoorde en boodskappe, selfs wanneer jou <xliff:g id="DEVICE_TYPE_3">%2$s</xliff:g> gesluit is."</string>
     <string name="permission_media_routing_control_summary" msgid="2714631092321412250">"Kry toegang tot ’n lys beskikbare toestelle en beheer watter een oudio of video van ander apps af stroom of uitsaai"</string>
+    <string name="permission_schedule_exact_alarm_summary" msgid="5938321911309800377"></string>
+    <string name="permission_bypass_dnd_summary" msgid="6221709271927387626"></string>
     <string name="device_type" product="default" msgid="8268703872070046263">"foon"</string>
     <string name="device_type" product="tablet" msgid="5038791954983067774">"tablet"</string>
     <string name="device_type" product="tv" msgid="5355611506659405636">"tv"</string>

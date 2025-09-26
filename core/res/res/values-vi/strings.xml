@@ -370,8 +370,8 @@
     <string name="permgroupdesc_xr_eye_sensitive" msgid="6050967250223079001">"theo dõi chính xác cử động mắt"</string>
     <string name="permgrouplab_xr_tracking" msgid="766634536453394700">"Dữ liệu về cử động và khu vực"</string>
     <string name="permgroupdesc_xr_tracking" msgid="812429788288001595">"theo dõi mắt, khuôn mặt, cơ thể và quét khu vực"</string>
-    <string name="permgrouplab_xr_tracking_sensitive" msgid="4346975608010051186">"Dữ liệu chính xác về cử động đầu và khu vực"</string>
-    <string name="permgroupdesc_xr_tracking_sensitive" msgid="7925014193164562556">"theo dõi chính xác cử động đầu và quét khu vực"</string>
+    <string name="permgrouplab_xr_tracking_sensitive" msgid="6574264227123545314">"Dữ liệu về khu vực và cử động chính xác"</string>
+    <string name="permgroupdesc_xr_tracking_sensitive" msgid="2480835734248509848">"quét chính xác khu vực và theo dõi cử động đầu"</string>
     <string name="capability_title_canRetrieveWindowContent" msgid="7554282892101587296">"Truy xuất nội dung cửa sổ"</string>
     <string name="capability_desc_canRetrieveWindowContent" msgid="6195610527625237661">"Kiểm tra nội dung của cửa sổ bạn đang tương tác."</string>
     <string name="capability_title_canRequestTouchExploration" msgid="327598364696316213">"Bật tính năng Khám phá bằng cách chạm"</string>
@@ -685,7 +685,7 @@
     <string name="permdesc_scene_understanding_coarse" msgid="847344305502345475">"Cho phép ứng dụng này quét môi trường xung quanh bạn."</string>
     <string name="permlab_scene_understanding_fine" msgid="2899904960307462936">"quét chính xác khu vực xung quanh bạn"</string>
     <string name="permdesc_scene_understanding_fine" msgid="4848943859506977588">"Cho phép ứng dụng này quét chính xác môi trường xung quanh bạn."</string>
-    <string name="permlab_xr_tracking_in_background" msgid="8659516810430027774">"theo dõi dữ liệu XR ở chế độ nền"</string>
+    <string name="permlab_xr_tracking_in_background" msgid="1714941204255185460">"truy cập chế độ theo dõi XR trong nền"</string>
     <string name="permdesc_xr_tracking_in_background" msgid="3151744132692357005">"Cho phép ứng dụng này truy cập vào dữ liệu XR ở chế độ nền."</string>
     <string name="permlab_capture_keyboard" msgid="4076894823382693032">"ghi lại các phím"</string>
     <string name="permdesc_capture_keyboard" msgid="4192269470684407219">"Cho phép ứng dụng ghi lại các phím trước khi hệ thống có thể xử lý các thao tác và phím tắt trên đó."</string>
@@ -1986,8 +1986,8 @@
     <string name="package_updated_device_owner" msgid="7770195449213776218">"Do quản trị viên của bạn cập nhật.\nChuyển đến phần cài đặt để xem các quyền được cấp"</string>
     <string name="package_deleted_device_owner" msgid="2292335928930293023">"Do quản trị viên của bạn xóa"</string>
     <string name="confirm_battery_saver" msgid="5247976246208245754">"OK"</string>
-    <string name="battery_saver_description_with_learn_more" msgid="5444908404021316250">"Trình tiết kiệm pin sẽ bật Giao diện tối, đồng thời hạn chế hoặc tắt hoạt động chạy trong nền, một số hiệu ứng hình ảnh, các tính năng nhất định và một số đường kết nối mạng."</string>
-    <string name="battery_saver_description" msgid="8518809702138617167">"Trình tiết kiệm pin sẽ bật Giao diện tối, đồng thời hạn chế hoặc tắt hoạt động chạy trong nền, một số hiệu ứng hình ảnh, các tính năng nhất định, và một số kết nối mạng."</string>
+    <string name="battery_saver_description_with_learn_more" msgid="8969945879044849461">"Trình tiết kiệm pin sẽ bật giao diện tối, đồng thời hạn chế hoặc tắt hoạt động trong nền, một số hiệu ứng hình ảnh, các tính năng nhất định và một số kết nối mạng."</string>
+    <string name="battery_saver_description" msgid="2820475140307374570">"Trình tiết kiệm pin sẽ bật giao diện tối, đồng thời hạn chế hoặc tắt hoạt động trong nền, một số hiệu ứng hình ảnh, các tính năng nhất định và một số kết nối mạng."</string>
     <string name="data_saver_description" msgid="4995164271550590517">"Để giúp giảm mức sử dụng dữ liệu, Trình tiết kiệm dữ liệu sẽ chặn một số ứng dụng gửi hoặc nhận dữ liệu trong nền. Ứng dụng mà bạn hiện sử dụng có thể dùng dữ liệu nhưng tần suất sẽ giảm. Ví dụ: hình ảnh sẽ không hiển thị cho đến khi bạn nhấn vào hình ảnh đó."</string>
     <string name="data_saver_enable_title" msgid="7080620065745260137">"Bật Trình tiết kiệm dữ liệu?"</string>
     <string name="data_saver_enable_button" msgid="4399405762586419726">"Bật"</string>

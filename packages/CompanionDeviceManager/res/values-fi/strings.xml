@@ -28,11 +28,11 @@
     <string name="chooser_title" msgid="2235819929238267637">"Valitse <xliff:g id="PROFILE_NAME">%1$s</xliff:g>, niin voit suorittaa käyttöönoton"</string>
     <string name="single_device_title" msgid="4199861437545438606">"Etsitään tätä: <xliff:g id="PROFILE_NAME">%1$s</xliff:g>"</string>
     <string name="summary_watch" msgid="8134580124808507407">"Sovellus saa luvan synkronoida tietoja (esimerkiksi soittajan nimen) ja pääsyn näihin lupiin laitteella (<xliff:g id="DEVICE_TYPE">%1$s</xliff:g>)"</string>
-    <!-- no translation found for profile_name_fitness_tracker (3107192493390199691) -->
-    <skip />
+    <string name="profile_name_fitness_tracker" msgid="3107192493390199691">"aktiivisuusranneke"</string>
     <string name="confirmation_title_glasses" msgid="8288346850537727333">"Salli, että &lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; saa ylläpitää laitetta: &lt;strong&gt;<xliff:g id="DEVICE_NAME">%2$s</xliff:g>&lt;/strong&gt;"</string>
     <string name="profile_name_glasses" msgid="3506504967216601277">"laite"</string>
     <string name="summary_glasses" msgid="5469208629679579157">"Sovellus saa käyttää näitä lupia <xliff:g id="DEVICE_TYPE">%1$s</xliff:g>"</string>
+    <string name="profile_name_medical" msgid="5617160509499466400">"lääkinnällinen laite"</string>
     <string name="title_app_streaming" msgid="237666000400427614">"Saako &lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; striimata sovelluksia ja järjestelmän ominaisuuksia laitteiden <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> ja &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt; välillä?"</string>
     <string name="summary_app_streaming" msgid="8346968726357732862">"<xliff:g id="APP_NAME">%1$s</xliff:g> saa seuraavat luvat:"</string>
     <string name="summary_app_streaming_legacy" msgid="8994180646987541606">"<xliff:g id="APP_NAME_0">%1$s</xliff:g> saa pääsyn kaikkeen laitteella (<xliff:g id="DEVICE_TYPE">%2$s</xliff:g>) näkyvään tai pelattavaan sisältöön, mukaan lukien audioon, kuviin, maksutietoihin, salasanoihin ja viesteihin.&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME_1">%1$s</xliff:g> voi striimata sovelluksia laitteelle (<xliff:g id="DEVICE_NAME">%3$s</xliff:g>), kunnes poistat luvan."</string>
@@ -73,6 +73,8 @@
     <string name="permission_create_virtual_device" msgid="1102905050922460040">"Striimaa dataa laitteelle <xliff:g id="DEVICE_TYPE">%1$s</xliff:g>"</string>
     <string name="permission_add_mirror_display" msgid="3743433250535606288">"Peilaa näyttö"</string>
     <string name="permission_add_trusted_display" msgid="9052824856626276723">"Striimaa sovelluksia"</string>
+    <string name="permission_schedule_exact_alarm" msgid="5680932535987512225">"Aseta herätyksiä, muistutuksia"</string>
+    <string name="permission_bypass_dnd" msgid="1241123166903040347">"Ohita Älä häiritse ‑asetukset"</string>
     <string name="permission_phone_summary" msgid="8246321093970051702">"soittaa ja hallinnoida puheluita"</string>
     <string name="permission_call_logs_summary" msgid="7545243592757693321">"lukea puhelulokia ja kirjoittaa siihen"</string>
     <string name="permission_sms_summary" msgid="8499509535410068616">"lähettää ja lukea tekstiviestejä"</string>
@@ -88,6 +90,8 @@
     <string name="permission_add_mirror_display_summary" msgid="1385423940454941534">"<xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g> voi tallentaa, striimata tai jakaa näytön laitteelle &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt;.&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME">%1$s</xliff:g> saa pääsyn kaikkeen sisältöön, jota <xliff:g id="DEVICE_TYPE_1">%2$s</xliff:g> näyttää tai toistaa, mukaan lukien audioon, kuviin, maksutietoihin, salasanoihin ja viesteihin."</string>
     <string name="permission_add_trusted_display_summary" msgid="7399955172055281447">"Striimaa laitteen (<xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g>) sovelluksia laitteelle &lt;strong&gt;<xliff:g id="DEVICE_NAME_1">%3$s</xliff:g>&lt;/strong&gt;.&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME">%1$s</xliff:g> saa pääsyn kaikkeen sisältöön, jota <xliff:g id="DEVICE_NAME_2">%3$s</xliff:g> näyttää tai toistaa, mukaan lukien audioon, kuviin, maksutietoihin, salasanoihin ja viesteihin myös silloin, kun <xliff:g id="DEVICE_TYPE_3">%2$s</xliff:g> on lukittu."</string>
     <string name="permission_media_routing_control_summary" msgid="2714631092321412250">"Näkee saatavilla olevat laitteet ja voi ohjata sitä, millä niistä striimataan muiden sovellusten audiota tai videota"</string>
+    <string name="permission_schedule_exact_alarm_summary" msgid="5938321911309800377"></string>
+    <string name="permission_bypass_dnd_summary" msgid="6221709271927387626"></string>
     <string name="device_type" product="default" msgid="8268703872070046263">"puhelin"</string>
     <string name="device_type" product="tablet" msgid="5038791954983067774">"tabletti"</string>
     <string name="device_type" product="tv" msgid="5355611506659405636">"TV:llä"</string>

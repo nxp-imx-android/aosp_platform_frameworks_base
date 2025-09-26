@@ -21,8 +21,8 @@
     xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
     <string name="app_label" msgid="4811759950673118541">"Інтэрфейс сістэмы"</string>
     <string name="battery_low_title" msgid="5319680173344341779">"Уключыць рэжым энергазберажэння?"</string>
-    <string name="battery_low_description" msgid="3282977755476423966">"Засталося <xliff:g id="PERCENTAGE">%s</xliff:g> зараду акумулятара. Рэжым энергазберажэння ўключае цёмную тэму, абмяжоўвае дзеянні ў фонавым рэжыме і затрымлівае апавяшчэнні."</string>
-    <string name="battery_low_intro" msgid="5148725009653088790">"Рэжым энергазберажэння ўключае цёмную тэму, абмяжоўвае дзеянні ў фонавым рэжыме і затрымлівае апавяшчэнні."</string>
+    <string name="battery_low_description" msgid="7848989602036547056">"Засталося <xliff:g id="PERCENTAGE">%s</xliff:g> зараду акумулятара. У рэжыме энергазберажэння ўключаецца цёмная тэма, абмяжоўваюцца дзеянні ў фонавым рэжыме і затрымліваюцца апавяшчэнні."</string>
+    <string name="battery_low_intro" msgid="8033783734931200690">"У рэжыме энергазберажэння ўключаецца цёмная тэма, абмяжоўваюцца дзеянні ў фонавым рэжыме і затрымліваюцца апавяшчэнні."</string>
     <string name="battery_low_percent_format" msgid="4276661262843170964">"Засталося <xliff:g id="PERCENTAGE">%s</xliff:g>"</string>
     <string name="invalid_charger_title" msgid="938685362320735167">"Не ўдалося выканаць зарадку праз USB"</string>
     <string name="invalid_charger_text" msgid="2339310107232691577">"Выкарыстоўвайце зараднае прыстасаванне з камплекта прылады"</string>
@@ -140,8 +140,7 @@
     <string name="screenrecord_stop_dialog_button" msgid="2883812564938194350">"Спыніць запіс"</string>
     <string name="screen_record_entire_screen" msgid="66944996337928170">"Увесь экран"</string>
     <string name="screen_record_single_app" msgid="7355880948574569290">"Адна праграма"</string>
-    <!-- no translation found for screen_record_single_app_hint (8404332826093639170) -->
-    <skip />
+    <string name="screen_record_single_app_hint" msgid="8404332826093639170">"Праграма для запісу"</string>
     <string name="screen_record_single_app_no_recents" msgid="1023249803854209330">"Адна праграма (адкрыйце для выбару)"</string>
     <string name="screen_record_record_device_audio_label" msgid="5363057443124085198">"Запіс аўдыя з прылады"</string>
     <string name="screen_record_record_microphone_label" msgid="4685753707185662381">"Запіс з мікрафона"</string>
@@ -149,11 +148,13 @@
     <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"Паказваць дотыкі"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"Выберыце праграму для запісу"</string>
     <string name="screen_record_video_saved" msgid="1345283626390232282">"Відэа захавана"</string>
-    <!-- no translation found for screen_record_undo (7942716736019800870) -->
-    <skip />
+    <string name="screen_record_video_deleted" msgid="30786214839944540">"Відэа выдалена"</string>
+    <string name="screen_record_undo" msgid="7942716736019800870">"Адрабіць"</string>
     <string name="screen_record_retake" msgid="3846643688365398450">"Перазняць"</string>
     <string name="screen_record_edit" msgid="8733014191240769309">"Змяніць"</string>
     <string name="screen_record_delete" msgid="1023421937978254537">"Выдаліць"</string>
+    <string name="screen_record_delete_dialog_title" msgid="5868561491974057044">"Выдаліць гэты запіс?"</string>
+    <string name="screen_record_delete_dialog_content" msgid="2610040845214024496">"Пры выдаленні гэтага запісу відэафайл будзе назаўсёды выдалены з прылады."</string>
     <string name="screen_record_play" msgid="4732544724679889445">"Прайграць"</string>
     <string name="screen_record_pause" msgid="1715012292444967776">"Прыпыніць"</string>
     <string name="screen_record_mute" msgid="8111682249858638168">"Выключыць гук"</string>
@@ -174,7 +175,12 @@
     <string name="screen_capture_toolbar_fullscreen_button_screenshot_a11y" msgid="8699983355979869210">"Зрабіць здымак усяго экрана"</string>
     <string name="screen_capture_toolbar_fullscreen_button_record_a11y" msgid="852148867883959158">"Запісаць змесціва ўсяго экрана"</string>
     <string name="screen_capture_toolbar_settings_button_a11y" msgid="8014446956996739704">"Налады здымання экрана"</string>
+    <string name="screen_capture_show_clicks_and_keys" msgid="2151690554364148717">"Паказваць націсканні"</string>
+    <string name="screen_capture_device_audio" msgid="1537290197773737349">"Аўдыя з прылады"</string>
+    <string name="screen_capture_microphone_audio" msgid="1698835678818747741">"Мікрафон"</string>
+    <string name="screen_capture_front_camera" msgid="1214647538302639358">"Пярэдняя камера"</string>
     <string name="screen_capture_region_dimensions" msgid="2317064050253056256">"<xliff:g id="WIDTH">%1$d</xliff:g> x <xliff:g id="HEIGHT">%2$d</xliff:g>"</string>
+    <string name="screen_share_privacy_indicator_stop_sharing" msgid="2297045039651417274">"Спыніць абагульванне"</string>
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"Экран абагульваецца"</string>
     <string name="share_to_app_chip_accessibility_label_generic" msgid="5517431657924536133">"Абагульваецца змесціва"</string>
     <string name="share_to_app_stop_dialog_title" msgid="9212915050910250438">"Спыніць абагульванне экрана?"</string>
@@ -488,12 +494,13 @@
     <string name="accessibility_hearing_device_pair_new_device" msgid="8440082580186130090">"Націсніце, каб спалучыць новую прыладу"</string>
     <string name="hearing_devices_presets_error" msgid="350363093458408536">"Не ўдалося абнавіць набор налад"</string>
     <string name="hearing_devices_preset_label" msgid="7878267405046232358">"Набор налад"</string>
+    <string name="hearing_devices_preset_label_left" msgid="7427947566560179945">"Набор налад для прылады злева"</string>
+    <string name="hearing_devices_preset_label_right" msgid="1847206329436268522">"Набор налад для прылады справа"</string>
     <string name="hearing_devices_input_routing_label" msgid="730396728151232306">"Стандартны мікрафон для выклікаў"</string>
   <string-array name="hearing_device_input_routing_options">
     <item msgid="4582190415045337003">"Мікрафон слыхавога апарата"</item>
     <item msgid="8501466270452446450">"Мікрафон гэтага тэлефона"</item>
   </string-array>
-    <string name="hearing_devices_spinner_item_selected" msgid="3137083889662762383">"Выбрана"</string>
     <string name="hearing_devices_ambient_label" msgid="629440938614895797">"Навакольныя гукі"</string>
     <string name="hearing_devices_ambient_control_left" msgid="3586965448230412600">"Левы бок"</string>
     <string name="hearing_devices_ambient_control_right" msgid="6192137602448918383">"Правы бок"</string>
@@ -889,7 +896,7 @@
     <string name="notification_guts_news_summary" msgid="638697931043407835">"Папулярныя гісторыі, рэдактарскія артыкулы і іншае змесціва"</string>
     <string name="notification_guts_social_summary" msgid="3749147631983977040">"Адзнакі \"Падабаецца\", запісы ў сацыяльных сетках і іншая інфармацыя"</string>
     <string name="notification_guts_recs_summary" msgid="8391881843238947007">"Рассылкі, рэкамендаваныя медыя і іншае змесціва"</string>
-    <string name="notification_onboarding_summaries_turn_on" msgid="5050003857531272655">"Уключыць"</string>
+    <string name="notification_onboarding_summaries_turn_on" msgid="3831339570984683297">"Уключыць у наладах"</string>
     <string name="notification_onboarding_summaries_message" msgid="6061524903176459064">"Цяпер доўгія размовы можна падсумоўваць у кароткія зводкі"</string>
     <string name="notification_onboarding_bundles_message" msgid="4612908213178622912">"Інструмент арганізацыі апавяшчэнняў групуе апавяшчэнні з нізкім прыярытэтам і выключае іх гук. Катэгорыі апавяшчэнняў можна дадаць у наладах."</string>
     <string name="notification_bundle_header_counter" msgid="5515532701569242265">"{count,plural, =1{# апавяшчэнне}one{# апавяшчэнне}few{# апавяшчэнні}many{# апавяшчэнняў}other{# апавяшчэння}}"</string>
@@ -1143,15 +1150,11 @@
     <string name="accessibility_key_gesture_dialog_content" msgid="4519838108423437794">"Дзеянне "<annotation id="action_key_icon">"icon"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> – гэта спалучэнне клавіш для выкарыстання функцыі \"<xliff:g id="ID_3">^3</xliff:g>\". <xliff:g id="ID_4">^4</xliff:g>"</string>
     <string name="accessibility_key_gesture_dialog_talkback_intro" msgid="1617808784388544741">"<xliff:g id="ID_1">%1$s</xliff:g> – гэта праграма чытання з экрана, якая агучвае апісанне элементаў на ім. Яна дапамагае людзям, у якіх узнікаюць складанасці з праглядам экрана."</string>
     <string name="accessibility_key_gesture_dialog_positive_button_text" msgid="3670746017523589293">"Уключыць"</string>
-    <!-- no translation found for accessibility_key_gesture_shortcut_not_yet_enabled_dialog_title (5331043821287212071) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_shortcut_not_yet_enabled_negative_button_text (6711239406914231612) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_shortcut_not_yet_enabled_positive_button_text (7748487028569821131) -->
-    <skip />
+    <string name="accessibility_key_gesture_shortcut_not_yet_enabled_dialog_title" msgid="5331043821287212071">"Уключыць спалучэнне клавіш для функцыі \"<xliff:g id="ID_1">%1$s</xliff:g>\"?"</string>
+    <string name="accessibility_key_gesture_shortcut_not_yet_enabled_negative_button_text" msgid="6711239406914231612">"Не ўключаць"</string>
+    <string name="accessibility_key_gesture_shortcut_not_yet_enabled_positive_button_text" msgid="7748487028569821131">"Уключыць спалучэнне клавіш"</string>
     <string name="accessibility_key_gesture_magnification_dialog_title" msgid="5770691510738701250">"Уключана спалучэнне клавіш для выкарыстання функцыі \"<xliff:g id="ID_1">%1$s</xliff:g>\""</string>
-    <!-- no translation found for accessibility_key_gesture_magnification_dialog_content (582920726242272572) -->
-    <skip />
+    <string name="accessibility_key_gesture_magnification_dialog_content" msgid="582920726242272572">"Клавіша дзеяння "<annotation id="action_key_icon">"icon"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> – гэта спалучэнне клавіш для выкарыстання функцыі спецыяльных магчымасцей \"<xliff:g id="ID_3">^3</xliff:g>\". Гэта функцыя дазваляе хутка павялічыць маштаб змесціва на экране. Каб скарэкціраваць маштаб, пасля ўключэння функцыі павелічэння націсніце клавішу дзеяння "<annotation id="action_key_icon">"icon"</annotation>" + <xliff:g id="ID_4">^1</xliff:g> і \"+\" або \"-\"."</string>
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"Выключыць спалучэнне клавіш"</string>
     <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"Не выключаць"</string>
     <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="7934170819801013870">"Калі націснуць клавішу дзеяння "<annotation id="action_key_icon">"icon"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g>, будзе ўключана функцыя спецыяльных магчымасцей \"<xliff:g id="ID_3">^3</xliff:g>\". Вы зможаце кіраваць прыладай з дапамогай галасавых каманд."</string>
@@ -1624,8 +1627,7 @@
     <string name="shortcut_helper_customize_dialog_reset_button_label" msgid="7645535254306312685">"Так, скінуць"</string>
     <string name="shortcut_helper_customize_dialog_cancel_button_label" msgid="5595546460431741178">"Скасаваць"</string>
     <string name="shortcut_helper_add_shortcut_dialog_placeholder" msgid="9154297849458741995">"Націсніце клавішу"</string>
-    <!-- no translation found for shortcut_helper_customizer_action_key_text (3979063901857046887) -->
-    <skip />
+    <string name="shortcut_helper_customizer_action_key_text" msgid="3979063901857046887">"Дзеянне"</string>
     <string name="shortcut_customizer_key_combination_in_use_error_message" msgid="3325858369539848162">"Гэта спалучэнне клавіш ужо выкарыстоўваецца. Паспрабуйце іншае спалучэнне."</string>
     <string name="shortcut_customizer_generic_error_message" msgid="3128454624049722741">"Не ўдаецца наладзіць спалучэнне клавіш."</string>
     <string name="shortcut_helper_plus_symbol" msgid="4534843157353732011">"+"</string>

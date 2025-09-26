@@ -21,8 +21,8 @@
     xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
     <string name="app_label" msgid="4811759950673118541">"واسط کاربری سیستم"</string>
     <string name="battery_low_title" msgid="5319680173344341779">"«بهینه‌سازی باتری» روشن شود؟"</string>
-    <string name="battery_low_description" msgid="3282977755476423966">"<xliff:g id="PERCENTAGE">%s</xliff:g> از باتری‌تان باقی مانده است. «بهینه‌سازی باتری» زمینه تاریک را روشن می‌کند، فعالیت‌های پس‌زمینه را محدود می‌کند، و اعلان‌ها را به‌تأخیر می‌اندازد."</string>
-    <string name="battery_low_intro" msgid="5148725009653088790">"«بهینه‌سازی باتری» زمینه «تیره» را روشن می‌کند، فعالیت‌های پس‌زمینه را محدود می‌کند، و اعلان‌ها را به‌تأخیر می‌اندازد."</string>
+    <string name="battery_low_description" msgid="7848989602036547056">"‏‫‎<xliff:g id="PERCENTAGE">%s</xliff:g> از شارژ باتری باقی مانده است. «بهینه‌سازی باتری» «زمینه تیره» را روشن می‌کند، فعالیت‌های پس‌زمینه را محدود می‌کند، و اعلان‌ها را به‌تأخیر می‌اندازد."</string>
+    <string name="battery_low_intro" msgid="8033783734931200690">"«بهینه‌سازی باتری» «زمینه تیره» را روشن می‌کند، فعالیت‌های پس‌زمینه را محدود می‌کند، و اعلان‌ها را به‌تأخیر می‌اندازد."</string>
     <string name="battery_low_percent_format" msgid="4276661262843170964">"<xliff:g id="PERCENTAGE">%s</xliff:g> باقی مانده است"</string>
     <string name="invalid_charger_title" msgid="938685362320735167">"‏ازطریق USB شارژ نمی‌شود"</string>
     <string name="invalid_charger_text" msgid="2339310107232691577">"از شارژر ارائه‌شده با دستگاه استفاده کنید"</string>
@@ -140,8 +140,7 @@
     <string name="screenrecord_stop_dialog_button" msgid="2883812564938194350">"توقف ضبط"</string>
     <string name="screen_record_entire_screen" msgid="66944996337928170">"کل صفحه"</string>
     <string name="screen_record_single_app" msgid="7355880948574569290">"برنامه واحد"</string>
-    <!-- no translation found for screen_record_single_app_hint (8404332826093639170) -->
-    <skip />
+    <string name="screen_record_single_app_hint" msgid="8404332826093639170">"برنامه برای ضبط"</string>
     <string name="screen_record_single_app_no_recents" msgid="1023249803854209330">"برنامه واحد (برای انتخاب کردن، برنامه ای را باز کنید)"</string>
     <string name="screen_record_record_device_audio_label" msgid="5363057443124085198">"ضبط صدای دستگاه"</string>
     <string name="screen_record_record_microphone_label" msgid="4685753707185662381">"ضبط میکروفون"</string>
@@ -149,11 +148,13 @@
     <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"نمایش نقاط لمس"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"برنامه‌ای را برای ضبط کردن انتخاب کنید"</string>
     <string name="screen_record_video_saved" msgid="1345283626390232282">"ویدیو ذخیره شد"</string>
-    <!-- no translation found for screen_record_undo (7942716736019800870) -->
-    <skip />
+    <string name="screen_record_video_deleted" msgid="30786214839944540">"ویدیو حذف شد"</string>
+    <string name="screen_record_undo" msgid="7942716736019800870">"واگرد"</string>
     <string name="screen_record_retake" msgid="3846643688365398450">"ضبط مجدد"</string>
     <string name="screen_record_edit" msgid="8733014191240769309">"ویرایش"</string>
     <string name="screen_record_delete" msgid="1023421937978254537">"حذف کردن"</string>
+    <string name="screen_record_delete_dialog_title" msgid="5868561491974057044">"این ضبط حذف شود؟"</string>
+    <string name="screen_record_delete_dialog_content" msgid="2610040845214024496">"حذف این ضبط موجب حذف دائم فایل ویدیویی از دستگاه می‌شود."</string>
     <string name="screen_record_play" msgid="4732544724679889445">"پخش کردن"</string>
     <string name="screen_record_pause" msgid="1715012292444967776">"توقف موقت"</string>
     <string name="screen_record_mute" msgid="8111682249858638168">"بی‌صدا کردن"</string>
@@ -165,10 +166,8 @@
     <string name="screen_capture_toolbar_screenshot_button" msgid="5676585348709494125">"نماگرفت"</string>
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"ضبط کردن"</string>
     <string name="screen_share_toolbar_share_button" msgid="9182050596136815833">"هم‌رسانی"</string>
-    <!-- no translation found for screen_share_no_select_app_thumbnail (1630012401570567430) -->
-    <skip />
-    <!-- no translation found for screen_share_app_audio_sharing (7201172218924898712) -->
-    <skip />
+    <string name="screen_share_no_select_app_thumbnail" msgid="1630012401570567430">"برنامه‌ای را برای هم‌رسانی انتخاب کنید."</string>
+    <string name="screen_share_app_audio_sharing" msgid="7201172218924898712">"هم‌رسانی صدای پنجره"</string>
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"نماگرفت پنجره"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"پنجره ضبط"</string>
     <string name="screen_capture_toolbar_region_button_screenshot_a11y" msgid="2102262602357521192">"گرفتن نماگرفت از ناحیه انتخاب شده"</string>
@@ -176,7 +175,12 @@
     <string name="screen_capture_toolbar_fullscreen_button_screenshot_a11y" msgid="8699983355979869210">"گرفتن اسکرین شات از کل صفحه"</string>
     <string name="screen_capture_toolbar_fullscreen_button_record_a11y" msgid="852148867883959158">"ضبط کل صفحه‌نمایش"</string>
     <string name="screen_capture_toolbar_settings_button_a11y" msgid="8014446956996739704">"تنظیمات ضبط صفحه"</string>
+    <string name="screen_capture_show_clicks_and_keys" msgid="2151690554364148717">"نمایش کلیک‌ها و کلیدها"</string>
+    <string name="screen_capture_device_audio" msgid="1537290197773737349">"صدای دستگاه"</string>
+    <string name="screen_capture_microphone_audio" msgid="1698835678818747741">"میکروفون"</string>
+    <string name="screen_capture_front_camera" msgid="1214647538302639358">"دوربین جلو"</string>
     <string name="screen_capture_region_dimensions" msgid="2317064050253056256">"‪<xliff:g id="WIDTH">%1$d</xliff:g> × <xliff:g id="HEIGHT">%2$d</xliff:g>"</string>
+    <string name="screen_share_privacy_indicator_stop_sharing" msgid="2297045039651417274">"توقف هم‌رسانی"</string>
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"درحال هم‌رسانی صفحه"</string>
     <string name="share_to_app_chip_accessibility_label_generic" msgid="5517431657924536133">"هم‌رسانی محتوا"</string>
     <string name="share_to_app_stop_dialog_title" msgid="9212915050910250438">"هم‌رسانی صفحه متوقف شود؟"</string>
@@ -430,7 +434,7 @@
     <string name="quick_settings_close_user_panel" msgid="5599724542275896849">"بستن"</string>
     <string name="quick_settings_connected" msgid="3873605509184830379">"متصل"</string>
     <string name="quick_settings_connecting" msgid="2381969772953268809">"در حال اتصال..."</string>
-    <string name="quick_settings_scanning_for_wifi" msgid="5875402701266073463">"‏درحال اسکن برای Wi-Fi..."</string>
+    <string name="quick_settings_scanning_for_wifi" msgid="5875402701266073463">"‏درحال اسکن کردن برای Wi-Fi…"</string>
     <string name="quick_settings_hotspot_label" msgid="1199196300038363424">"نقطه اتصال"</string>
     <string name="quick_settings_hotspot_secondary_label_transient" msgid="7585604088079160564">"روشن کردن…"</string>
     <string name="quick_settings_hotspot_secondary_label_data_saver_enabled" msgid="1280433136266439372">"صرفه‌جویی داده روشن است"</string>
@@ -490,12 +494,13 @@
     <string name="accessibility_hearing_device_pair_new_device" msgid="8440082580186130090">"برای جفت کردن دستگاه جدید، کلیک کنید"</string>
     <string name="hearing_devices_presets_error" msgid="350363093458408536">"پیش‌تنظیم به‌روزرسانی نشد"</string>
     <string name="hearing_devices_preset_label" msgid="7878267405046232358">"پیش‌تنظیم"</string>
+    <string name="hearing_devices_preset_label_left" msgid="7427947566560179945">"پیش‌تنظیم سمت چپ"</string>
+    <string name="hearing_devices_preset_label_right" msgid="1847206329436268522">"پیش‌تنظیم سمت راست"</string>
     <string name="hearing_devices_input_routing_label" msgid="730396728151232306">"میکروفون پیش‌فرض برای تماس‌ها"</string>
   <string-array name="hearing_device_input_routing_options">
     <item msgid="4582190415045337003">"میکروفون سمعک"</item>
     <item msgid="8501466270452446450">"میکروفون این تلفن"</item>
   </string-array>
-    <string name="hearing_devices_spinner_item_selected" msgid="3137083889662762383">"انتخاب‌شده"</string>
     <string name="hearing_devices_ambient_label" msgid="629440938614895797">"پیرامون"</string>
     <string name="hearing_devices_ambient_control_left" msgid="3586965448230412600">"چپ"</string>
     <string name="hearing_devices_ambient_control_right" msgid="6192137602448918383">"راست"</string>
@@ -646,7 +651,7 @@
     <string name="user_limit_reached_message" msgid="1070703858915935796">"{count,plural, =1{فقط یک کاربر می‌توان ایجاد کرد.}one{حداکثر # کاربر می‌توانید اضافه کنید.}other{حداکثر # کاربر می‌توانید اضافه کنید.}}"</string>
     <string name="user_remove_user_title" msgid="9124124694835811874">"کاربر حذف شود؟"</string>
     <string name="user_remove_user_message" msgid="6702834122128031833">"همه برنامه‌ها و داده‌های این کاربر حذف می‌شود."</string>
-    <string name="user_remove_user_remove" msgid="8387386066949061256">"حذف"</string>
+    <string name="user_remove_user_remove" msgid="8387386066949061256">"برداشتن"</string>
     <string name="media_projection_dialog_title" msgid="3316063622495360646">"ضبط یا پخش محتوا با <xliff:g id="APP_SEEKING_PERMISSION">%s</xliff:g> شروع شود؟"</string>
     <string name="media_projection_dialog_warning" msgid="1303664408388363598">"<xliff:g id="APP_SEEKING_PERMISSION">%s</xliff:g> به همه اطلاعاتی که روی صفحه‌نمایش قابل‌مشاهد است و هنگام ضبط کردن یا پخش محتوا از دستگاهتان پخش می‌شود دسترسی خواهد داشت. این شامل اطلاعاتی مانند گذرواژه‌ها، جزئیات پرداخت، عکس‌ها، پیام‌ها، و صداهایی که پخش می‌کنید می‌شود."</string>
     <string name="media_projection_sys_service_dialog_title" msgid="3751133258891897878">"ضبط یا پخش محتوا شروع شود؟"</string>
@@ -685,7 +690,7 @@
     <string name="media_projection_task_switcher_notification_channel" msgid="7613206306777814253">"تغییر برنامه"</string>
     <string name="screen_capturing_disabled_by_policy_dialog_title" msgid="2113331792064527203">"سرپرست فناوری اطلاعات آن را مسدود کرده است"</string>
     <string name="screen_capturing_disabled_by_policy_dialog_description" msgid="6015975736747696431">"«ضبط صفحه‌نمایش» به‌دلیل خط‌مشی دستگاه غیرفعال است"</string>
-    <string name="clear_all_notifications_text" msgid="348312370303046130">"پاک کردن همه موارد"</string>
+    <string name="clear_all_notifications_text" msgid="348312370303046130">"پاک کردن همه"</string>
     <string name="manage_notifications_text" msgid="6885645344647733116">"مدیریت"</string>
     <string name="manage_notifications_history_text" msgid="57055985396576230">"سابقه"</string>
     <string name="notification_settings_button_description" msgid="2441994740884163889">"تنظیمات اعلان"</string>
@@ -891,7 +896,7 @@
     <string name="notification_guts_news_summary" msgid="638697931043407835">"برترین داستان‌ها، سرمقاله‌ها، و…"</string>
     <string name="notification_guts_social_summary" msgid="3749147631983977040">"پسندیدن‌ها، پست‌ها، و…"</string>
     <string name="notification_guts_recs_summary" msgid="8391881843238947007">"خبرنامه‌ها، رسانه‌های توصیه‌شده، و…"</string>
-    <string name="notification_onboarding_summaries_turn_on" msgid="5050003857531272655">"روشن کردن"</string>
+    <string name="notification_onboarding_summaries_turn_on" msgid="3831339570984683297">"روشن کردن در «تنظیمات»"</string>
     <string name="notification_onboarding_summaries_message" msgid="6061524903176459064">"اکنون می‌توان مکالمه‌های طولانی‌تر را خلاصه کرد تا خلاصه‌ای سریع به شما ارائه شود"</string>
     <string name="notification_onboarding_bundles_message" msgid="4612908213178622912">"«سازمان‌دهنده اعلان» می‌تواند اعلان‌های دارای اولویت کمتر را بسته‌بندی و بی‌صدا کند. دسته‌های بیشتر در «تنظیمات» اضافه کنید."</string>
     <string name="notification_bundle_header_counter" msgid="5515532701569242265">"{count,plural, =1{‫# اعلان}one{‫# اعلان}other{‫# اعلان}}"</string>
@@ -1145,15 +1150,11 @@
     <string name="accessibility_key_gesture_dialog_content" msgid="4519838108423437794">"‏کنش "<annotation id="action_key_icon">"icon"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> میان‌بر صفحه‌کلید برای استفاده از <xliff:g id="ID_3">^3</xliff:g> است. <xliff:g id="ID_4">^4</xliff:g>"</string>
     <string name="accessibility_key_gesture_dialog_talkback_intro" msgid="1617808784388544741">"‫<xliff:g id="ID_1">%1$s</xliff:g> صفحه‌خوانی است که به شما امکان می‌دهد موارد روی صفحه را با صدای بلند بشنوید. این ویژگی برای افرادی که دیدن صفحه‌نمایش برایشان دشوار است می‌تواند مفید باشد."</string>
     <string name="accessibility_key_gesture_dialog_positive_button_text" msgid="3670746017523589293">"روشن کردن"</string>
-    <!-- no translation found for accessibility_key_gesture_shortcut_not_yet_enabled_dialog_title (5331043821287212071) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_shortcut_not_yet_enabled_negative_button_text (6711239406914231612) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_shortcut_not_yet_enabled_positive_button_text (7748487028569821131) -->
-    <skip />
+    <string name="accessibility_key_gesture_shortcut_not_yet_enabled_dialog_title" msgid="5331043821287212071">"میان‌بر صفحه‌کلید <xliff:g id="ID_1">%1$s</xliff:g> روشن شود؟"</string>
+    <string name="accessibility_key_gesture_shortcut_not_yet_enabled_negative_button_text" msgid="6711239406914231612">"روشن نشود"</string>
+    <string name="accessibility_key_gesture_shortcut_not_yet_enabled_positive_button_text" msgid="7748487028569821131">"میان‌بر روشن شود"</string>
     <string name="accessibility_key_gesture_magnification_dialog_title" msgid="5770691510738701250">"<xliff:g id="ID_1">%1$s</xliff:g> میان‌بر صفحه‌کلید فعال شد"</string>
-    <!-- no translation found for accessibility_key_gesture_magnification_dialog_content (582920726242272572) -->
-    <skip />
+    <string name="accessibility_key_gesture_magnification_dialog_content" msgid="582920726242272572">"نماد «کنش» "<annotation id="action_key_icon"></annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> میان‌بر صفحه‌کلید برای استفاده از <xliff:g id="ID_3">^3</xliff:g> است که یک ویژگی دسترس‌پذیری است. به شما امکان می‌دهد صفحه‌نمایش را به‌سرعت زوم‌پیش کنید تا محتوا درشت‌تر نمایش داده شود. پس‌از روشن شدن درشت‌نمایی، نماد «کنش» "<annotation id="action_key_icon"></annotation>" + <xliff:g id="ID_4">^1</xliff:g> و «+» یا «-» را برای تنظیم بزرگ‌نمایی فشار دهید."</string>
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"خاموش کردن میان‌بر"</string>
     <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"روشن بماند"</string>
     <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="7934170819801013870">"عمل فشار دادن"<annotation id="action_key_icon">"نماد"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> یک ویژگی دسترس‌پذیری را<xliff:g id="ID_3">^3</xliff:g> روشن می کند. «» به شما امکان می‌دهد دستگاه تان را به‌صورت دست‌آزاد کنترل کنید."</string>
@@ -1205,8 +1206,8 @@
     <string name="running_foreground_services_title" msgid="5137313173431186685">"برنامه‌هایی که در پس‌زمینه اجرا می‌شوند"</string>
     <string name="running_foreground_services_msg" msgid="3009459259222695385">"برای جزئیات مربوط به مصرف باتری و داده، تک‌ضرب بزنید"</string>
     <string name="mobile_data_disable_title" msgid="5366476131671617790">"داده تلفن همراه خاموش شود؟"</string>
-    <string name="mobile_data_enable_title" msgid="8259903353761259200">"داده تلفن همراه را روشن می کنید؟"</string>
-    <string name="mobile_data_enable_message" msgid="2013861580086078913">"استفاده از داده تلفن همراه ممکن است بسته به پلان خدمت تلفن همراه شما، هزینه‌هایی را در پی داشته باشد."</string>
+    <string name="mobile_data_enable_title" msgid="8259903353761259200">"داده تلفن همراه روشن شود؟"</string>
+    <string name="mobile_data_enable_message" msgid="2013861580086078913">"ممکن است بسته به طرح سرویس تلفن همراه شما، استفاده از داده تلفن همراه هزینه داشته باشد."</string>
     <string name="mobile_data_enable_turn_on" msgid="5577732543207882533">"روشن کردن"</string>
     <string name="mobile_data_disable_message" msgid="8604966027899770415">"‏نمی‌توانید ازطریق <xliff:g id="CARRIER">%s</xliff:g> به داده یا اینترنت دسترسی داشته باشید. اینترنت فقط ازطریق Wi-Fi در دسترس خواهد بود."</string>
     <string name="mobile_data_disable_message_default_carrier" msgid="6496033312431658238">"شرکت مخابراتی شما"</string>
@@ -1579,7 +1580,7 @@
     <string name="privacy_dialog_expand_action" msgid="9129262348628331377">"ازهم بازکردن و نمایش گزینه‌ها"</string>
     <string name="privacy_dialog_collapse_action" msgid="277419962019466347">"جمع کردن"</string>
     <string name="privacy_dialog_close_app_button" msgid="8006250171305878606">"بستن این برنامه"</string>
-    <string name="privacy_dialog_close_app_message" msgid="1316408652526310985">"<xliff:g id="APP_NAME">%1$s</xliff:g> بسته شد"</string>
+    <string name="privacy_dialog_close_app_message" msgid="1316408652526310985">"«<xliff:g id="APP_NAME">%1$s</xliff:g>» بسته است"</string>
     <string name="privacy_dialog_manage_service" msgid="8320590856621823604">"مدیریت سرویس"</string>
     <string name="privacy_dialog_manage_permissions" msgid="2543451567190470413">"مدیریت دسترسی"</string>
     <string name="privacy_dialog_active_call_usage" msgid="7858746847946397562">"تماس تلفنی از آن استفاده می‌کند"</string>
@@ -1626,8 +1627,7 @@
     <string name="shortcut_helper_customize_dialog_reset_button_label" msgid="7645535254306312685">"بله، بازنشانی شود"</string>
     <string name="shortcut_helper_customize_dialog_cancel_button_label" msgid="5595546460431741178">"لغو"</string>
     <string name="shortcut_helper_add_shortcut_dialog_placeholder" msgid="9154297849458741995">"کلید را فشار دهید"</string>
-    <!-- no translation found for shortcut_helper_customizer_action_key_text (3979063901857046887) -->
-    <skip />
+    <string name="shortcut_helper_customizer_action_key_text" msgid="3979063901857046887">"کنش"</string>
     <string name="shortcut_customizer_key_combination_in_use_error_message" msgid="3325858369539848162">"ترکیب کلید ازقبل درحال استفاده است. ترکیب دیگری را امتحان کنید."</string>
     <string name="shortcut_customizer_generic_error_message" msgid="3128454624049722741">"میان‌بر تنظیم نشد."</string>
     <string name="shortcut_helper_plus_symbol" msgid="4534843157353732011">"+"</string>

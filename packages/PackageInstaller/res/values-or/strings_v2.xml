@@ -96,24 +96,16 @@
     <string name="message_restore_error_installer_absent" msgid="8492838251989389724">"ଏହି ଆପକୁ ରିଷ୍ଟୋର କରିବା ପାଇଁ, ଆପଣଙ୍କୁ <xliff:g id="INSTALLER_NAME">%1$s</xliff:g> ଇନଷ୍ଟଲ କରିବାକୁ ହେବ"</string>
     <string name="message_restore_error_generic" msgid="5903850636679929406">"ଏହି ଆପକୁ ରିଷ୍ଟୋର କରିବା ପାଇଁ ଚେଷ୍ଟା କରିବା ସମୟରେ ଏକ ସମସ୍ୟା ହୋଇଛି"</string>
     <string name="message_uninstall_activity" msgid="3263352475743590167">"<xliff:g id="ACTIVITY_NAME">%1$s</xliff:g> ହେଉଛି ନିମ୍ନୋକ୍ତ ଆପର ଏକ ଅଂଶ: <xliff:g id="APP_NAME">%2$s</xliff:g>"</string>
-    <!-- no translation found for cannot_install_app_blocked_summary (2082063650842897085) -->
-    <skip />
-    <!-- no translation found for cannot_update_app_blocked_summary (7607734844900187499) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_no_internet_summary (7298957699553589600) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_no_internet_summary (8094414928318316598) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_summary (3830073638843524892) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_unavailable_summary (342184955548504019) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_fail_closed_summary (3552780111383069051) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_unavailable_fail_closed_summary (353457015429601377) -->
-    <skip />
+    <string name="cannot_install_app_blocked_summary" msgid="2082063650842897085">"&lt;p&gt;ଏହି ଆପକୁ ବ୍ଲକ କରାଯାଇଛି। ଆପଣଙ୍କ ଡିଭାଇସ ଏବଂ ଡାଟାକୁ ସୁରକ୍ଷିତ ରଖିବାରେ ସାହାଯ୍ୟ କରିବା ପାଇଁ କେବଳ ଯାଞ୍ଚ ହୋଇଥିବା ଡେଭେଲପରମାନଙ୍କର ଆପ୍ସକୁ ଇନଷ୍ଟଲ କରାଯାଇପାରିବ।&lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;ଡେଭେଲପର ଯାଞ୍ଚକରଣ ବିଷୟରେ ଅଧିକ ଜାଣନ୍ତୁ&lt;/a&gt;"</string>
+    <string name="cannot_update_app_blocked_summary" msgid="7607734844900187499">"&lt;p&gt;ଏହି ଆପକୁ ଅପଡେଟ କରାଯାଇନାହିଁ। ଆପଣଙ୍କ ଡିଭାଇସ ଏବଂ ଡାଟାକୁ ସୁରକ୍ଷିତ ରଖିବାରେ ସାହାଯ୍ୟ କରିବା ପାଇଁ, କେବଳ ଯାଞ୍ଚ ହୋଇଥିବା ଡେଭେଲପରମାନଙ୍କର ଅପଡେଟଗୁଡ଼ିକୁ ଇନଷ୍ଟଲ କରାଯାଇପାରିବ।&lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;ଡେଭେଲପର ଯାଞ୍ଚକରଣ ବିଷୟରେ ଅଧିକ ଜାଣନ୍ତୁ&lt;/a&gt;"</string>
+    <string name="cannot_install_verification_no_internet_summary" msgid="7298957699553589600">"&lt;p&gt;ଏହି ଆପକୁ ଇନଷ୍ଟଲ କରାଯାଇନାହିଁ। ଯାଞ୍ଚ ହୋଇନଥିବା ଡେଭେଲପରମାନଙ୍କର ଆପ୍ସ ଅସୁରକ୍ଷିତ ହୋଇପାରେ।&lt;/p&gt; &lt;p&gt;ଆପ ଡେଭେଲପରଙ୍କୁ ଯାଞ୍ଚ କରିବା ପାଇଁ ଏକ ଇଣ୍ଟର୍ନେଟ କନେକ୍ସନ ଆବଶ୍ୟକ। ଆପଣଙ୍କ କନେକ୍ସନ ଯାଞ୍ଚ କରନ୍ତୁ, ତା\'ପରେ ପୁଣି ଇନଷ୍ଟଲ କରିବାକୁ ଚେଷ୍ଟା କରନ୍ତୁ। &lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;ଡେଭେଲପର ଯାଞ୍ଚକରଣ ବିଷୟରେ ଅଧିକ ଜାଣନ୍ତୁ&lt;/a&gt;"</string>
+    <string name="cannot_update_verification_no_internet_summary" msgid="8094414928318316598">"&lt;p&gt;ଏହି ଆପକୁ ଅପଡେଟ କରାଯାଇନାହିଁ। ଯାଞ୍ଚ ହୋଇନଥିବା ଡେଭେଲପରମାନଙ୍କର ଅପଡେଟଗୁଡ଼ିକ ଅସୁରକ୍ଷିତ ହୋଇପାରେ।&lt;/p&gt; &lt;p&gt;ଆପ ଡେଭେଲପରଙ୍କୁ ଯାଞ୍ଚ କରିବା ପାଇଁ ଏକ ଇଣ୍ଟର୍ନେଟ କନେକ୍ସନ ଆବଶ୍ୟକ। ଆପଣଙ୍କ କନେକ୍ସନ ଯାଞ୍ଚ କରନ୍ତୁ, ତା\'ପରେ ପୁଣି ଅପଡେଟ କରିବାକୁ ଚେଷ୍ଟା କରନ୍ତୁ। &lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;ଡେଭେଲପର ଯାଞ୍ଚକରଣ ବିଷୟରେ ଅଧିକ ଜାଣନ୍ତୁ&lt;/a&gt;"</string>
+    <string name="cannot_install_verification_unavailable_summary" msgid="3830073638843524892">"&lt;p&gt;ଏହି ଆପର ଡେଭେଲପରଙ୍କୁ ଯାଞ୍ଚ କରିବାରେ ଏକ ସମସ୍ୟା ହୋଇଛି। ଯାଞ୍ଚ ହୋଇନଥିବା ଡେଭେଲପରମାନଙ୍କର ଆପ୍ସ ଅସୁରକ୍ଷିତ ହୋଇପାରେ, ତେଣୁ ଆପକୁ ଇନଷ୍ଟଲ କରାଯାଇନାହିଁ।&lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;ଡେଭେଲପର ଯାଞ୍ଚକରଣ ବିଷୟରେ ଅଧିକ ଜାଣନ୍ତୁ&lt;/a&gt;"</string>
+    <string name="cannot_update_verification_unavailable_summary" msgid="342184955548504019">"&lt;p&gt;ଏହି ଆପର ଡେଭେଲପରଙ୍କୁ ଯାଞ୍ଚ କରିବାରେ ଏକ ସମସ୍ୟା ହୋଇଛି। ଯାଞ୍ଚ ହୋଇନଥିବା ଡେଭେଲପରମାନଙ୍କର ଅପଡେଟଗୁଡ଼ିକ ଅସୁରକ୍ଷିତ ହୋଇପାରେ, ତେଣୁ ଆପକୁ ଅପଡେଟ କରାଯାଇନାହିଁ।&lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;ଡେଭେଲପର ଯାଞ୍ଚକରଣ ବିଷୟରେ ଅଧିକ ଜାଣନ୍ତୁ&lt;/a&gt;"</string>
+    <string name="cannot_install_verification_unavailable_fail_closed_summary" msgid="3552780111383069051">"&lt;p&gt;ଡେଭେଲପରଙ୍କୁ ଯାଞ୍ଚ କରିବାରେ ଏକ ସମସ୍ୟା ହୋଇଥିବା ଯୋଗୁଁ ଏହି ଆପକୁ ବ୍ଲକ କରାଯାଇଛି। ଆପଣଙ୍କ ଡିଭାଇସ ଏବଂ ଡାଟାକୁ ସୁରକ୍ଷିତ ରଖିବାରେ ସାହାଯ୍ୟ କରିବା ପାଇଁ କେବଳ ଯାଞ୍ଚ ହୋଇଥିବା ଡେଭେଲପରମାନଙ୍କର ଆପ୍ସକୁ ଇନଷ୍ଟଲ କରାଯାଇପାରିବ।&lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;ଡେଭେଲପର ଯାଞ୍ଚକରଣ ବିଷୟରେ ଅଧିକ ଜାଣନ୍ତୁ&lt;/a&gt;"</string>
+    <string name="cannot_update_verification_unavailable_fail_closed_summary" msgid="353457015429601377">"&lt;p&gt;ଡେଭେଲପରଙ୍କୁ ଯାଞ୍ଚ କରିବାରେ ଏକ ସମସ୍ୟା ହୋଇଥିବା ଯୋଗୁଁ ଏହି ଆପକୁ ଅପଡେଟ କରାଯାଇନାହିଁ। ଆପଣଙ୍କ ଡିଭାଇସ ଏବଂ ଡାଟାକୁ ସୁରକ୍ଷିତ ରଖିବାରେ ସାହାଯ୍ୟ କରିବା ପାଇଁ, କେବଳ ଯାଞ୍ଚ ହୋଇଥିବା ଡେଭେଲପରମାନଙ୍କର ଅପଡେଟଗୁଡ଼ିକୁ ଇନଷ୍ଟଲ କରାଯାଇପାରିବ।&lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;ଡେଭେଲପର ଯାଞ୍ଚକରଣ ବିଷୟରେ ଅଧିକ ଜାଣନ୍ତୁ&lt;/a&gt;"</string>
     <string name="more_details_expanded_install_summary" msgid="3545896392881608712">"ଯଦି ଆପଣ ଯାଞ୍ଚ ନକରି ଇନଷ୍ଟଲ କରନ୍ତି, ତେବେ ମନେରଖନ୍ତୁ ଯେ ଯାଞ୍ଚ ହୋଇନଥିବା ଡେଭେଲପରମାନଙ୍କଠାରୁ ଆପ୍ସ ଆପଣଙ୍କ ଡିଭାଇସ ଏବଂ ଡାଟାକୁ ବିପଦରେ ପକାଇପାରେ।"</string>
-    <string name="more_details_expanded_update_summary" msgid="2239162864839036480">"ଯଦି ଆପଣ ଅପଡେଟ ନକରି ଇନଷ୍ଟଲ କରନ୍ତି, ତେବେ ମନେରଖନ୍ତୁ ଯେ ଯାଞ୍ଚ ହୋଇନଥିବା ଡେଭେଲପରମାନଙ୍କଠାରୁ ଅପଡେଟଗୁଡ଼ିକ ଆପଣଙ୍କ ଡିଭାଇସ ଏବଂ ଡାଟାକୁ ବିପଦରେ ପକାଇପାରେ।"</string>
+    <string name="more_details_expanded_update_summary" msgid="2239162864839036480">"ଯଦି ଆପଣ ଯାଞ୍ଚ ନକରି ଅପଡେଟ କରନ୍ତି, ତେବେ ମନେରଖନ୍ତୁ ଯେ ଯାଞ୍ଚ ହୋଇନଥିବା ଡେଭେଲପରମାନଙ୍କଠାରୁ ଅପଡେଟଗୁଡ଼ିକ ଆପଣଙ୍କ ଡିଭାଇସ ଏବଂ ଡାଟାକୁ ବିପଦରେ ପକାଇପାରେ।"</string>
     <string name="cannot_install_app_blocked_title" msgid="6372444121824751694">"ଆପ ଡେଭେଲପରଙ୍କୁ ଯାଞ୍ଚ କରାଯାଇନାହିଁ"</string>
     <string name="cannot_install_verification_no_internet_title" msgid="2862046642298119581">"ଇଣ୍ଟର୍ନେଟ ନାହିଁ, ଆପ ଡେଭେଲପରଙ୍କୁ ଯାଞ୍ଚ କରାଯାଇପାରିବ ନାହିଁ"</string>
     <string name="cannot_install_verification_unavailable_title" msgid="2038093442302309120">"ଆପ ଡେଭେଲପରଙ୍କୁ ଯାଞ୍ଚ କରାଯାଇପାରିବ ନାହିଁ"</string>

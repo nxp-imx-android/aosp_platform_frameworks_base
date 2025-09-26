@@ -371,8 +371,8 @@
     <string name="permgroupdesc_xr_eye_sensitive" msgid="6050967250223079001">"precizno praćenje pokreta očiju"</string>
     <string name="permgrouplab_xr_tracking" msgid="766634536453394700">"Podaci o pokretima i području"</string>
     <string name="permgroupdesc_xr_tracking" msgid="812429788288001595">"praćenje očiju, lica i tijela te skeniranje područja"</string>
-    <string name="permgrouplab_xr_tracking_sensitive" msgid="4346975608010051186">"Precizni podaci o pokretima glave i području"</string>
-    <string name="permgroupdesc_xr_tracking_sensitive" msgid="7925014193164562556">"precizno praćenje pokreta glave i skeniranje područja"</string>
+    <string name="permgrouplab_xr_tracking_sensitive" msgid="6574264227123545314">"Precizni podaci o pokretima i području"</string>
+    <string name="permgroupdesc_xr_tracking_sensitive" msgid="2480835734248509848">"precizno skeniranje područja i praćenje glave"</string>
     <string name="capability_title_canRetrieveWindowContent" msgid="7554282892101587296">"preuzimati sadržaj prozora"</string>
     <string name="capability_desc_canRetrieveWindowContent" msgid="6195610527625237661">"Pregleda sadržaj prozora koji trenutno koristite."</string>
     <string name="capability_title_canRequestTouchExploration" msgid="327598364696316213">"uključiti Istraživanje dodirom"</string>
@@ -686,7 +686,7 @@
     <string name="permdesc_scene_understanding_coarse" msgid="847344305502345475">"Dozvoljava aplikaciji da skenira okruženje."</string>
     <string name="permlab_scene_understanding_fine" msgid="2899904960307462936">"precizno skeniranje okruženja"</string>
     <string name="permdesc_scene_understanding_fine" msgid="4848943859506977588">"Dozvoljava aplikaciji da precizno skenira okruženje."</string>
-    <string name="permlab_xr_tracking_in_background" msgid="8659516810430027774">"praćenje XR podataka u pozadini"</string>
+    <string name="permlab_xr_tracking_in_background" msgid="1714941204255185460">"pristup XR praćenju u pozadini"</string>
     <string name="permdesc_xr_tracking_in_background" msgid="3151744132692357005">"Dozvoljava aplikaciji da pristupa XR podacima dok je u pozadini."</string>
     <string name="permlab_capture_keyboard" msgid="4076894823382693032">"bilježenje pritisaka na tipke"</string>
     <string name="permdesc_capture_keyboard" msgid="4192269470684407219">"Dozvoljava aplikaciji da bilježi pritiske na tipke da sistem može obraditi prečice i radnje sistema."</string>
@@ -1987,8 +1987,8 @@
     <string name="package_updated_device_owner" msgid="7770195449213776218">"Ažurirao je vaš administrator.\nIdite u postavke da pregledate data odobrenja"</string>
     <string name="package_deleted_device_owner" msgid="2292335928930293023">"Izbrisao je vaš administrator"</string>
     <string name="confirm_battery_saver" msgid="5247976246208245754">"Uredu"</string>
-    <string name="battery_saver_description_with_learn_more" msgid="5444908404021316250">"Ušteda baterije uključuje tamnu temu i ograničava ili isključuje aktivnost u pozadini, određene vizuelne efekte i funkcije te neke mrežne veze."</string>
-    <string name="battery_saver_description" msgid="8518809702138617167">"Ušteda baterije uključuje tamnu temu i ograničava ili isključuje aktivnost u pozadini, određene vizuelne efekte i funkcije te neke mrežne veze."</string>
+    <string name="battery_saver_description_with_learn_more" msgid="8969945879044849461">"Ušteda baterije uključuje tamnu temu i ograničava ili isključuje aktivnost u pozadini, određene vizuelne efekte i funkcije te neke mrežne veze."</string>
+    <string name="battery_saver_description" msgid="2820475140307374570">"Ušteda baterije uključuje tamnu temu i ograničava ili isključuje aktivnost u pozadini, određene vizuelne efekte i funkcije te neke mrežne veze."</string>
     <string name="data_saver_description" msgid="4995164271550590517">"Radi smanjenja prenosa podataka, Ušteda podataka sprečava da neke aplikacije šalju ili primaju podatke u pozadini. Aplikacija koju trenutno koristite može pristupati podacima, ali će to činiti rjeđe. Naprimjer, to može značiti da se slike ne prikazuju dok ih ne dodirnete."</string>
     <string name="data_saver_enable_title" msgid="7080620065745260137">"Uključiti Uštedu podataka?"</string>
     <string name="data_saver_enable_button" msgid="4399405762586419726">"Uključi"</string>

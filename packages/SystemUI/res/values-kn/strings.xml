@@ -21,8 +21,8 @@
     xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
     <string name="app_label" msgid="4811759950673118541">"ಸಿಸ್ಟಂ UI"</string>
     <string name="battery_low_title" msgid="5319680173344341779">"ಬ್ಯಾಟರಿ ಸೇವರ್ ಅನ್ನು ಆನ್ ಮಾಡಬೇಕೇ?"</string>
-    <string name="battery_low_description" msgid="3282977755476423966">"ನಿಮ್ಮ ಬಳಿ <xliff:g id="PERCENTAGE">%s</xliff:g> ಬ್ಯಾಟರಿ ಉಳಿದಿದೆ. ಬ್ಯಾಟರಿ ಸೇವರ್ ಡಾರ್ಕ್ ಥೀಮ್ ಅನ್ನು ಆನ್ ಮಾಡುತ್ತದೆ, ಹಿನ್ನೆಲೆ ಚಟುವಟಿಕೆಯನ್ನು ನಿರ್ಬಂಧಿಸುತ್ತದೆ ಮತ್ತು ಅಧಿಸೂಚನೆಗಳನ್ನು ವಿಳಂಬಮಾಡುತ್ತದೆ."</string>
-    <string name="battery_low_intro" msgid="5148725009653088790">"ಬ್ಯಾಟರಿ ಸೇವರ್ ಡಾರ್ಕ್ ಥೀಮ್ ಅನ್ನು ಆನ್ ಮಾಡುತ್ತದೆ, ಹಿನ್ನೆಲೆ ಚಟುವಟಿಕೆಯನ್ನು ನಿರ್ಬಂಧಿಸುತ್ತದೆ ಮತ್ತು ಅಧಿಸೂಚನೆಗಳನ್ನು ವಿಳಂಬಮಾಡುತ್ತದೆ."</string>
+    <string name="battery_low_description" msgid="7848989602036547056">"ನಿಮ್ಮ ಬಳಿ <xliff:g id="PERCENTAGE">%s</xliff:g> ಬ್ಯಾಟರಿ ಉಳಿದಿದೆ. ಬ್ಯಾಟರಿ ಸೇವರ್ ಡಾರ್ಕ್ ಥೀಮ್ ಅನ್ನು ಆನ್ ಮಾಡುತ್ತದೆ, ಹಿನ್ನೆಲೆ ಚಟುವಟಿಕೆಯನ್ನು ನಿರ್ಬಂಧಿಸುತ್ತದೆ ಮತ್ತು ನೋಟಿಫಿಕೇಶನ್‌ಗಳನ್ನು ವಿಳಂಬಮಾಡುತ್ತದೆ."</string>
+    <string name="battery_low_intro" msgid="8033783734931200690">"ಬ್ಯಾಟರಿ ಸೇವರ್ ಡಾರ್ಕ್ ಥೀಮ್ ಅನ್ನು ಆನ್ ಮಾಡುತ್ತದೆ, ಹಿನ್ನೆಲೆ ಚಟುವಟಿಕೆಯನ್ನು ನಿರ್ಬಂಧಿಸುತ್ತದೆ ಮತ್ತು ನೋಟಿಫಿಕೇಶನ್‌ಗಳನ್ನು ವಿಳಂಬಮಾಡುತ್ತದೆ."</string>
     <string name="battery_low_percent_format" msgid="4276661262843170964">"<xliff:g id="PERCENTAGE">%s</xliff:g> ಉಳಿದಿದೆ"</string>
     <string name="invalid_charger_title" msgid="938685362320735167">"USB ಮೂಲಕ ಚಾರ್ಜ್‌ ಮಾಡಲು ಸಾಧ್ಯವಿಲ್ಲ"</string>
     <string name="invalid_charger_text" msgid="2339310107232691577">"ನಿಮ್ಮ ಸಾಧನದೊಂದಿಗೆ ನೀಡಲಾಗಿರುವ ಚಾರ್ಜರ್‌ ಬಳಸಿ"</string>
@@ -140,8 +140,7 @@
     <string name="screenrecord_stop_dialog_button" msgid="2883812564938194350">"ರೆಕಾರ್ಡಿಂಗ್ ನಿಲ್ಲಿಸಿ"</string>
     <string name="screen_record_entire_screen" msgid="66944996337928170">"ಸಂಪೂರ್ಣ ಸ್ಕ್ರೀನ್"</string>
     <string name="screen_record_single_app" msgid="7355880948574569290">"ಒಂದೇ ಆ್ಯಪ್"</string>
-    <!-- no translation found for screen_record_single_app_hint (8404332826093639170) -->
-    <skip />
+    <string name="screen_record_single_app_hint" msgid="8404332826093639170">"ರೆಕಾರ್ಡ್ ಮಾಡಲು ಆ್ಯಪ್"</string>
     <string name="screen_record_single_app_no_recents" msgid="1023249803854209330">"ಒಂದೇ ಆ್ಯಪ್ (ಆರಿಸಲು ಆ್ಯಪ್ ತೆರೆಯಿರಿ)"</string>
     <string name="screen_record_record_device_audio_label" msgid="5363057443124085198">"ಸಾಧನದ ಆಡಿಯೋವನ್ನು ರೆಕಾರ್ಡ್ ಮಾಡಿ"</string>
     <string name="screen_record_record_microphone_label" msgid="4685753707185662381">"ಮೈಕ್ರೊಫೋನ್‌ ಮೂಲಕ ರೆಕಾರ್ಡ್ ಮಾಡಿ"</string>
@@ -149,11 +148,13 @@
     <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"ಸ್ಪರ್ಶಗಳನ್ನು ತೋರಿಸಿ"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"ರೆಕಾರ್ಡ್ ಮಾಡಲು ಆ್ಯಪ್ ಅನ್ನು ಆಯ್ಕೆಮಾಡಿ"</string>
     <string name="screen_record_video_saved" msgid="1345283626390232282">"ವೀಡಿಯೊ ಸೇವ್ ಆಗಿದೆ"</string>
-    <!-- no translation found for screen_record_undo (7942716736019800870) -->
-    <skip />
+    <string name="screen_record_video_deleted" msgid="30786214839944540">"ವೀಡಿಯೊವನ್ನು ಅಳಿಸಲಾಗಿದೆ"</string>
+    <string name="screen_record_undo" msgid="7942716736019800870">"ರದ್ದುಮಾಡಿ"</string>
     <string name="screen_record_retake" msgid="3846643688365398450">"ಮತ್ತೆ ಸೆರೆಹಿಡಿಯಿರಿ"</string>
     <string name="screen_record_edit" msgid="8733014191240769309">"ಎಡಿಟ್ ಮಾಡಿ"</string>
     <string name="screen_record_delete" msgid="1023421937978254537">"ಅಳಿಸಿ"</string>
+    <string name="screen_record_delete_dialog_title" msgid="5868561491974057044">"ಈ ರೆಕಾರ್ಡಿಂಗ್ ಅನ್ನು ಅಳಿಸಬೇಕೇ?"</string>
+    <string name="screen_record_delete_dialog_content" msgid="2610040845214024496">"ಈ ರೆಕಾರ್ಡಿಂಗ್ ಅನ್ನು ಅಳಿಸುವುದರಿಂದ ನಿಮ್ಮ ಸಾಧನದಿಂದ ವೀಡಿಯೊ ಫೈಲ್ ಶಾಶ್ವತವಾಗಿ ಅಳಿಸಿಹೋಗುತ್ತದೆ."</string>
     <string name="screen_record_play" msgid="4732544724679889445">"ಪ್ಲೇ ಮಾಡಿ"</string>
     <string name="screen_record_pause" msgid="1715012292444967776">"ವಿರಾಮಗೊಳಿಸಿ"</string>
     <string name="screen_record_mute" msgid="8111682249858638168">"ಮ್ಯೂಟ್ ಮಾಡಿ"</string>
@@ -174,7 +175,12 @@
     <string name="screen_capture_toolbar_fullscreen_button_screenshot_a11y" msgid="8699983355979869210">"ಇಡೀ ಸ್ಕ್ರೀನ್‌ನ ಸ್ಕ್ರೀನ್‌ಶಾಟ್ ತೆಗೆದುಕೊಳ್ಳಿ"</string>
     <string name="screen_capture_toolbar_fullscreen_button_record_a11y" msgid="852148867883959158">"ಇಡೀ ಸ್ಕ್ರೀನ್ ಅನ್ನು ರೆಕಾರ್ಡ್ ಮಾಡಿ"</string>
     <string name="screen_capture_toolbar_settings_button_a11y" msgid="8014446956996739704">"ಸ್ಕ್ರೀನ್ ಕ್ಯಾಪ್ಚರ್ ಸೆಟ್ಟಿಂಗ್‌ಗಳು"</string>
+    <string name="screen_capture_show_clicks_and_keys" msgid="2151690554364148717">"ಕ್ಲಿಕ್‌ಗಳು ಮತ್ತು ಕೀಗಳನ್ನು ತೋರಿಸಿ"</string>
+    <string name="screen_capture_device_audio" msgid="1537290197773737349">"ಸಾಧನದ ಆಡಿಯೋ"</string>
+    <string name="screen_capture_microphone_audio" msgid="1698835678818747741">"ಮೈಕ್ರೊಫೋನ್‌"</string>
+    <string name="screen_capture_front_camera" msgid="1214647538302639358">"ಮುಂಬದಿಯ ಕ್ಯಾಮರಾ"</string>
     <string name="screen_capture_region_dimensions" msgid="2317064050253056256">"<xliff:g id="WIDTH">%1$d</xliff:g> x <xliff:g id="HEIGHT">%2$d</xliff:g>"</string>
+    <string name="screen_share_privacy_indicator_stop_sharing" msgid="2297045039651417274">"ಹಂಚಿಕೊಳ್ಳುವಿಕೆಯನ್ನು ನಿಲ್ಲಿಸಿ"</string>
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"ಪರದೆಯನ್ನು ಹಂಚಿಕೊಳ್ಳಲಾಗುತ್ತಿದೆ"</string>
     <string name="share_to_app_chip_accessibility_label_generic" msgid="5517431657924536133">"ಕಂಟೆಂಟ್‌ ಅನ್ನು ಹಂಚಿಕೊಳ್ಳಲಾಗುತ್ತಿದೆ"</string>
     <string name="share_to_app_stop_dialog_title" msgid="9212915050910250438">"ಸ್ಕ್ರೀನ್ ಹಂಚಿಕೊಳ್ಳುವಿಕೆಯನ್ನು ನಿಲ್ಲಿಸಬೇಕೆ?"</string>
@@ -488,12 +494,13 @@
     <string name="accessibility_hearing_device_pair_new_device" msgid="8440082580186130090">"ಹೊಸ ಸಾಧನವನ್ನು ಜೋಡಿಸಲು ಕ್ಲಿಕ್ ಮಾಡಿ"</string>
     <string name="hearing_devices_presets_error" msgid="350363093458408536">"ಪ್ರಿಸೆಟ್ ಅನ್ನು ಅಪ್‌ಡೇಟ್ ಮಾಡಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ"</string>
     <string name="hearing_devices_preset_label" msgid="7878267405046232358">"ಪ್ರಿಸೆಟ್‌"</string>
+    <string name="hearing_devices_preset_label_left" msgid="7427947566560179945">"ಎಡ ಪ್ರಿಸೆಟ್‌"</string>
+    <string name="hearing_devices_preset_label_right" msgid="1847206329436268522">"ಬಲ ಪ್ರಿಸೆಟ್‌"</string>
     <string name="hearing_devices_input_routing_label" msgid="730396728151232306">"ಕರೆಗಳಿಗಾಗಿ ಡೀಫಾಲ್ಟ್ ಮೈಕ್ರೊಫೋನ್"</string>
   <string-array name="hearing_device_input_routing_options">
     <item msgid="4582190415045337003">"ಶ್ರವಣ ಸಾಧನದ ಮೈಕ್ರೊಫೋನ್"</item>
     <item msgid="8501466270452446450">"ಈ ಫೋನ್‌ನ ಮೈಕ್ರೊಫೋನ್"</item>
   </string-array>
-    <string name="hearing_devices_spinner_item_selected" msgid="3137083889662762383">"ಆಯ್ಕೆಮಾಡಲಾಗಿದೆ"</string>
     <string name="hearing_devices_ambient_label" msgid="629440938614895797">"ಆ್ಯಂಬಿಯೆಂಟ್ ವಾಲ್ಯೂಮ್"</string>
     <string name="hearing_devices_ambient_control_left" msgid="3586965448230412600">"ಎಡ"</string>
     <string name="hearing_devices_ambient_control_right" msgid="6192137602448918383">"ಬಲ"</string>
@@ -748,8 +755,8 @@
     <string name="monitoring_description_pin_protection" msgid="1983580207046670355">"ನಿಮ್ಮ ಸಾಧನದಲ್ಲಿನ ಕೆಲವು ನಿಯಂತ್ರಣಗಳು, ಉದಾಹರಣೆಗೆ ದೈನಂದಿನ ಮಿತಿಗಳು ಮತ್ತು ಡೌನ್‌ಟೈಮ್, ಪಿನ್ ಮೂಲಕ ಮಾತ್ರ ಬದಲಾಯಿಸಬಹುದು."</string>
     <string name="legacy_vpn_name" msgid="4174223520162559145">"VPN"</string>
     <string name="keyguard_indication_trust_unlocked" msgid="7395154975733744547">"TrustAgent ನಿಂದ ಅನ್‌ಲಾಕ್ ಮಾಡಲಾಗಿದೆ"</string>
-    <string name="kg_prompt_after_adaptive_auth_lock" msgid="6065186971000690782">"ಸ್ಕ್ರೀನ್ ಲಾಕ್ ಆಗಿದೆ. ಹಲವಾರು ಪ್ರಮಾಣೀಕರಣ ಪ್ರಯತ್ನಗಳು."</string>
-    <string name="keyguard_indication_after_adaptive_auth_lock" msgid="5240600662061340872">"ಸ್ಕ್ರೀನ್ ಲಾಕ್ ಆಗಿದೆ\nಪ್ರಮಾಣೀಕರಣ ವಿಫಲವಾಗಿದೆ"</string>
+    <string name="kg_prompt_after_adaptive_auth_lock" msgid="6065186971000690782">"ಸ್ಕ್ರೀನ್ ಲಾಕ್ ಆಗಿದೆ. ಹಲವಾರು ದೃಢೀಕರಣ ಪ್ರಯತ್ನಗಳು."</string>
+    <string name="keyguard_indication_after_adaptive_auth_lock" msgid="5240600662061340872">"ಸ್ಕ್ರೀನ್ ಲಾಕ್ ಆಗಿದೆ\nದೃಢೀಕರಣ ವಿಫಲವಾಗಿದೆ"</string>
     <string name="keyguard_indication_after_watch_disconnected" msgid="8133476870585660478">"ನಿಮ್ಮ ವಾಚ್‌ನಿಂದ ಲಾಕ್ ಮಾಡಲಾಗಿದೆ"</string>
     <string name="keyguard_indication_after_secure_lock_device" msgid="4358906300665255820">"2-ಹಂತದ ದೃಢೀಕರಣ ಮೂಲಕ ಲಾಕ್ ಮಾಡಲಾಗಿದೆ"</string>
     <string name="zen_mode_and_condition" msgid="5043165189511223718">"<xliff:g id="ZEN_MODE">%1$s</xliff:g>. <xliff:g id="EXIT_CONDITION">%2$s</xliff:g>"</string>
@@ -889,7 +896,7 @@
     <string name="notification_guts_news_summary" msgid="638697931043407835">"ಟಾಪ್ ಸ್ಟೋರಿಗಳು, ಎಡಿಟೋರಿಯಲ್‌ಗಳು ಹಾಗೂ ಇನ್ನಷ್ಟು"</string>
     <string name="notification_guts_social_summary" msgid="3749147631983977040">"ಇಷ್ಟಗಳು, ಪೋಸ್ಟ್‌ಗಳು ಹಾಗೂ ಇನ್ನಷ್ಟು"</string>
     <string name="notification_guts_recs_summary" msgid="8391881843238947007">"ಸುದ್ಧಿ ಪತ್ರಗಳು, ಶಿಫಾರಸು ಮಾಡಿರುವ ಮಾಧ್ಯಮ ಹಾಗೂ ಇನ್ನಷ್ಟು"</string>
-    <string name="notification_onboarding_summaries_turn_on" msgid="5050003857531272655">"ಆನ್ ಮಾಡಿ"</string>
+    <string name="notification_onboarding_summaries_turn_on" msgid="3831339570984683297">"ಸೆಟ್ಟಿಂಗ್‌ಗಳಲ್ಲಿ ಆನ್ ಮಾಡಿ"</string>
     <string name="notification_onboarding_summaries_message" msgid="6061524903176459064">"ನಿಮ್ಮ ದೀರ್ಘ ಸಂಭಾಷಣೆಗಳನ್ನು ಈಗ ಸಂಕ್ಷಿಪ್ತಗೊಳಿಸಬಹುದು ಇದರಿಂದ ನಿಮಗೆ ತ್ವರಿತ ರೀಕ್ಯಾಪ್‌ಗಳು ದೊರೆಯುತ್ತವೆ"</string>
     <string name="notification_onboarding_bundles_message" msgid="4612908213178622912">"ನೋಟಿಫಿಕೇಶನ್ ಆರ್ಗನೈಜರ್ ಕಡಿಮೆ ಆದ್ಯತೆಯ ನೋಟಿಫಿಕೇಶನ್‌ಗಳನ್ನು ಬಂಡಲ್ ಮಾಡುತ್ತದೆ ಮತ್ತು ನಿಶ್ಯಬ್ದಗೊಳಿಸುತ್ತದೆ. ಸೆಟ್ಟಿಂಗ್‌ಗಳಲ್ಲಿ ಹೆಚ್ಚಿನ ವರ್ಗಗಳನ್ನು ಸೇರಿಸಿ."</string>
     <string name="notification_bundle_header_counter" msgid="5515532701569242265">"{count,plural, =1{# ನೋಟಿಫಿಕೇಶನ್}one{# ನೋಟಿಫಿಕೇಶನ್‌ಗಳು}other{# ನೋಟಿಫಿಕೇಶನ್‌ಗಳು}}"</string>
@@ -1143,15 +1150,11 @@
     <string name="accessibility_key_gesture_dialog_content" msgid="4519838108423437794">"ಆಕ್ಷನ್ "<annotation id="action_key_icon">"ಐಕಾನ್"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> ಎಂಬುದು <xliff:g id="ID_3">^3</xliff:g> ಬಳಸಲು ಕೀಬೋರ್ಡ್ ಶಾರ್ಟ್‌ಕಟ್ ಆಗಿದೆ. <xliff:g id="ID_4">^4</xliff:g>"</string>
     <string name="accessibility_key_gesture_dialog_talkback_intro" msgid="1617808784388544741">"<xliff:g id="ID_1">%1$s</xliff:g> ಎಂಬುದು ಸ್ಕ್ರೀನ್ ರೀಡರ್ ಆಗಿದ್ದು ಅದು ಸ್ಕ್ರೀನ್ ಮೇಲಿರುವುದನ್ನು ಗಟ್ಟಿಯಾಗಿ ಓದಲು ನಿಮಗೆ ಅನುವು ಮಾಡಿಕೊಡುತ್ತದೆ. ಸ್ಕ್ರೀನ್ ಅನ್ನು ನೋಡಲು ಕಷ್ಟಪಡುವ ಜನರಿಗೆ ಇದು ಸಹಾಯಕವಾಗಬಹುದು."</string>
     <string name="accessibility_key_gesture_dialog_positive_button_text" msgid="3670746017523589293">"ಆನ್ ಮಾಡಿ"</string>
-    <!-- no translation found for accessibility_key_gesture_shortcut_not_yet_enabled_dialog_title (5331043821287212071) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_shortcut_not_yet_enabled_negative_button_text (6711239406914231612) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_shortcut_not_yet_enabled_positive_button_text (7748487028569821131) -->
-    <skip />
+    <string name="accessibility_key_gesture_shortcut_not_yet_enabled_dialog_title" msgid="5331043821287212071">"<xliff:g id="ID_1">%1$s</xliff:g> ಕೀಬೋರ್ಡ್ ಶಾರ್ಟ್‌ಕಟ್ ಅನ್ನು ಆನ್ ಮಾಡಬೇಕೇ?"</string>
+    <string name="accessibility_key_gesture_shortcut_not_yet_enabled_negative_button_text" msgid="6711239406914231612">"ಆನ್ ಮಾಡಬೇಡಿ"</string>
+    <string name="accessibility_key_gesture_shortcut_not_yet_enabled_positive_button_text" msgid="7748487028569821131">"ಶಾರ್ಟ್‌ಕಟ್ ಅನ್ನು ಆನ್ ಮಾಡಿ"</string>
     <string name="accessibility_key_gesture_magnification_dialog_title" msgid="5770691510738701250">"<xliff:g id="ID_1">%1$s</xliff:g> ಕೀಬೋರ್ಡ್ ಶಾರ್ಟ್‌ಕಟ್ ಅನ್ನು ಆನ್ ಮಾಡಲಾಗಿದೆ"</string>
-    <!-- no translation found for accessibility_key_gesture_magnification_dialog_content (582920726242272572) -->
-    <skip />
+    <string name="accessibility_key_gesture_magnification_dialog_content" msgid="582920726242272572">"ಆ್ಯಕ್ಷನ್‌ "<annotation id="action_key_icon">"ಐಕಾನ್"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> ಎಂಬುದು <xliff:g id="ID_3">^3</xliff:g> ಅನ್ನು ಬಳಸಲು ಕೀಬೋರ್ಡ್ ಶಾರ್ಟ್‌ಕಟ್ ಆಗಿದ್ದು, ಇದು ಆ್ಯಕ್ಸೆಸಿಬಿಲಿಟಿ ಫೀಚರ್‌ ಆಗಿದೆ. ಕಂಟೆಂಟ್ ಅನ್ನು ದೊಡ್ಡದಾಗಿಸಲು ಸ್ಕ್ರೀನ್ ಮೇಲೆ ತ್ವರಿತವಾಗಿ ಝೂಮ್ ಇನ್ ಮಾಡಲು ಇದು ನಿಮಗೆ ಅವಕಾಶ ನೀಡುತ್ತದೆ. ಹಿಗ್ಗಿಸುವಿಕೆ ಆನ್ ಆದ ನಂತರ, ಝೂಮ್‌ ಅನ್ನು ಹೊಂದಿಸಲು ಆ್ಯಕ್ಷನ್‌ "<annotation id="action_key_icon">"ಐಕಾನ್"</annotation>" + <xliff:g id="ID_4">^1</xliff:g> ಮತ್ತು \"+\" ಅಥವಾ \"-\" ಅನ್ನು ಒತ್ತಿರಿ."</string>
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"ಶಾರ್ಟ್‌ಕಟ್ ಅನ್ನು ಆಫ್ ಮಾಡಿ"</string>
     <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"ಆನ್‌ನಲ್ಲಿ ಇರಿಸಿ"</string>
     <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="7934170819801013870">"ಆ್ಯಕ್ಷನ್ "<annotation id="action_key_icon">"ಐಕಾನ್"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> ಒತ್ತಿದರೆ <xliff:g id="ID_3">^3</xliff:g> ಆನ್ ಆಗುತ್ತದೆ, ಇದು ಆ್ಯಕ್ಸೆಸಿಬಿಲಿಟಿ ಫೀಚರ್ ಆಗಿದೆ. ಇದು ನಿಮ್ಮ ಸಾಧನವನ್ನು ಹ್ಯಾಂಡ್ಸ್-ಫ್ರೀ ಆಗಿ ನಿಯಂತ್ರಿಸಲು ನಿಮಗೆ ಅವಕಾಶ ನೀಡುತ್ತದೆ."</string>
@@ -1624,8 +1627,7 @@
     <string name="shortcut_helper_customize_dialog_reset_button_label" msgid="7645535254306312685">"ಹೌದು, ರೀಸೆಟ್ ಮಾಡಿ"</string>
     <string name="shortcut_helper_customize_dialog_cancel_button_label" msgid="5595546460431741178">"ರದ್ದುಮಾಡಿ"</string>
     <string name="shortcut_helper_add_shortcut_dialog_placeholder" msgid="9154297849458741995">"ಕೀ ಅನ್ನು ಒತ್ತಿರಿ"</string>
-    <!-- no translation found for shortcut_helper_customizer_action_key_text (3979063901857046887) -->
-    <skip />
+    <string name="shortcut_helper_customizer_action_key_text" msgid="3979063901857046887">"ಸಾಹಸ"</string>
     <string name="shortcut_customizer_key_combination_in_use_error_message" msgid="3325858369539848162">"ಕೀ ಸಂಯೋಜನೆಯು ಈಗಾಗಲೇ ಬಳಕೆಯಲ್ಲಿದೆ. ಮತ್ತೊಂದು ಸಂಯೋಜನೆಯನ್ನು ನೋಡಿ."</string>
     <string name="shortcut_customizer_generic_error_message" msgid="3128454624049722741">"ಶಾರ್ಟ್‌ಕಟ್‌ ಅನ್ನು ಸೆಟ್‌ ಮಾಡಲು ಸಾಧ್ಯವಿಲ್ಲ."</string>
     <string name="shortcut_helper_plus_symbol" msgid="4534843157353732011">"+"</string>
@@ -1649,7 +1651,7 @@
     <string name="touchpad_back_gesture_action_title" msgid="7199067250654332735">"ಹಿಂತಿರುಗಿ"</string>
     <string name="touchpad_back_gesture_guidance" msgid="5352221087725906542">"ನಿಮ್ಮ ಟಚ್‌ಪ್ಯಾಡ್‌ನಲ್ಲಿ ಮೂರು ಬೆರಳುಗಳನ್ನು ಬಳಸಿ ಎಡ ಅಥವಾ ಬಲಕ್ಕೆ ಸ್ವೈಪ್ ಮಾಡಿ"</string>
     <string name="touchpad_back_gesture_success_title" msgid="7370719098633023496">"ಚೆನ್ನಾಗಿದೆ!"</string>
-    <string name="touchpad_back_gesture_success_body" msgid="2324724953720741719">"ನೀವು ಗೋ ಬ್ಯಾಕ್ ಗೆಸ್ಚರ್ ಅನ್ನು ಪೂರ್ಣಗೊಳಿಸಿದ್ದೀರಿ."</string>
+    <string name="touchpad_back_gesture_success_body" msgid="2324724953720741719">"ನೀವು ಗೋ ಬ್ಯಾಕ್ ಜೆಸ್ಚರ್ ಅನ್ನು ಪೂರ್ಣಗೊಳಿಸಿದ್ದೀರಿ."</string>
     <string name="touchpad_back_gesture_error_body" msgid="7112668207481458792">"ನಿಮ್ಮ ಟಚ್‌ಪ್ಯಾಡ್ ಬಳಸಿಕೊಂಡು ಹಿಂತಿರುಗಲು, ಮೂರು ಬೆರಳುಗಳನ್ನು ಬಳಸಿ ಎಡಕ್ಕೆ ಅಥವಾ ಬಲಕ್ಕೆ ಸ್ವೈಪ್ ಮಾಡಿ"</string>
     <string name="touchpad_home_gesture_action_title" msgid="8885107349719257882">"ಮುಖಪುಟಕ್ಕೆ ಹೋಗಿ"</string>
     <string name="touchpad_home_gesture_guidance" msgid="4178219118381915899">"ಟಚ್‌ಪ್ಯಾಡ್‌ನಲ್ಲಿ ಮೂರು ಬೆರಳಿಂದ ಮೇಲಕ್ಕೆ ಸ್ವೈಪ್ ಮಾಡಿ"</string>
@@ -1664,7 +1666,7 @@
     <string name="touchpad_switch_apps_gesture_action_title" msgid="6835222344612924512">"ಆ್ಯಪ್‌ಗಳನ್ನು ಬದಲಿಸಿ"</string>
     <string name="touchpad_switch_apps_gesture_guidance" msgid="2554844933805502538">"ನಿಮ್ಮ ಟಚ್‌ಪ್ಯಾಡ್‌ನಲ್ಲಿ ನಾಲ್ಕು ಬೆರಳುಗಳನ್ನು ಬಳಸಿ ಬಲಕ್ಕೆ ಸ್ವೈಪ್ ಮಾಡಿ"</string>
     <string name="touchpad_switch_apps_gesture_success_title" msgid="4894947244328032458">"ಭೇಷ್!"</string>
-    <string name="touchpad_switch_apps_gesture_success_body" msgid="8151089866035126312">"ನೀವು ಆ್ಯಪ್‌ಗಳನ್ನು ಬದಲಾಯಿಸುವ ಗೆಸ್ಚರ್ ಅನ್ನು ಪೂರ್ಣಗೊಳಿಸಿದ್ದೀರಿ."</string>
+    <string name="touchpad_switch_apps_gesture_success_body" msgid="8151089866035126312">"ನೀವು ಆ್ಯಪ್‌ಗಳನ್ನು ಬದಲಾಯಿಸುವ ಜೆಸ್ಚರ್ ಅನ್ನು ಪೂರ್ಣಗೊಳಿಸಿದ್ದೀರಿ."</string>
     <string name="touchpad_switch_gesture_error_body" msgid="5895231916964677918">"ಆ್ಯಪ್‌ಗಳನ್ನು ಬದಲಾಯಿಸಲು ನಿಮ್ಮ ಟಚ್‌ಪ್ಯಾಡ್‌ನಲ್ಲಿ ನಾಲ್ಕು ಬೆರಳುಗಳನ್ನು ಬಳಸಿ ಬಲಕ್ಕೆ ಸ್ವೈಪ್ ಮಾಡಿ"</string>
     <string name="tutorial_action_key_title" msgid="8172535792469008169">"ಎಲ್ಲಾ ಆ್ಯಪ್‌ಗಳನ್ನು ವೀಕ್ಷಿಸಿ"</string>
     <string name="tutorial_action_key_guidance" msgid="5040613427202799294">"ನಿಮ್ಮ ಕೀಬೋರ್ಡ್‌ನಲ್ಲಿ ಆ್ಯಕ್ಷನ್‌ ಕೀಯನ್ನು ಒತ್ತಿ"</string>

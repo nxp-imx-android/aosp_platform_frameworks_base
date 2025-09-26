@@ -310,7 +310,7 @@
     <string name="notification_channel_car_mode" msgid="2123919247040988436">"Mode Voiture"</string>
     <string name="notification_channel_account" msgid="6436294521740148173">"État du compte"</string>
     <string name="notification_channel_developer" msgid="1691059964407549150">"Messages relatifs aux développeurs"</string>
-    <string name="notification_channel_developer_important" msgid="7197281908918789589">"Messages importants relatifs aux développeurs"</string>
+    <string name="notification_channel_developer_important" msgid="7197281908918789589">"Messages importants pour les développeurs"</string>
     <string name="notification_channel_updates" msgid="7907863984825495278">"Mises à jour"</string>
     <string name="notification_channel_network_status" msgid="2127687368725272809">"État du réseau"</string>
     <string name="notification_channel_network_alerts" msgid="6312366315654526528">"Alertes réseau"</string>
@@ -371,8 +371,8 @@
     <string name="permgroupdesc_xr_eye_sensitive" msgid="6050967250223079001">"suivre précisément les mouvements des yeux"</string>
     <string name="permgrouplab_xr_tracking" msgid="766634536453394700">"Données sur les mouvements et l\'environnement"</string>
     <string name="permgroupdesc_xr_tracking" msgid="812429788288001595">"suivre les mouvements des yeux, du visage, du corps, et analyser l\'environnement"</string>
-    <string name="permgrouplab_xr_tracking_sensitive" msgid="4346975608010051186">"Données précises sur l\'environnement et les mouvements de tête"</string>
-    <string name="permgroupdesc_xr_tracking_sensitive" msgid="7925014193164562556">"suivre précisément les mouvements de tête et analyser l\'environnement"</string>
+    <string name="permgrouplab_xr_tracking_sensitive" msgid="6574264227123545314">"Environnement et mouvements précis"</string>
+    <string name="permgroupdesc_xr_tracking_sensitive" msgid="2480835734248509848">"scanner l\'environnement et suivre les mouvements de tête précisément"</string>
     <string name="capability_title_canRetrieveWindowContent" msgid="7554282892101587296">"Récupérer le contenu d\'une fenêtre"</string>
     <string name="capability_desc_canRetrieveWindowContent" msgid="6195610527625237661">"Inspecte le contenu d\'une fenêtre avec laquelle vous interagissez."</string>
     <string name="capability_title_canRequestTouchExploration" msgid="327598364696316213">"Activer la fonctionnalité Explorer au toucher"</string>
@@ -686,7 +686,7 @@
     <string name="permdesc_scene_understanding_coarse" msgid="847344305502345475">"Autorise l\'appli à analyser votre environnement."</string>
     <string name="permlab_scene_understanding_fine" msgid="2899904960307462936">"analyser précisément la zone environnante"</string>
     <string name="permdesc_scene_understanding_fine" msgid="4848943859506977588">"Autorise l\'appli à analyser précisément votre environnement."</string>
-    <string name="permlab_xr_tracking_in_background" msgid="8659516810430027774">"suivre les données XR en arrière-plan"</string>
+    <string name="permlab_xr_tracking_in_background" msgid="1714941204255185460">"accéder au suivi XR en arrière-plan"</string>
     <string name="permdesc_xr_tracking_in_background" msgid="3151744132692357005">"Autorise l\'appli à accéder aux données XR en arrière-plan."</string>
     <string name="permlab_capture_keyboard" msgid="4076894823382693032">"touches de capture"</string>
     <string name="permdesc_capture_keyboard" msgid="4192269470684407219">"Permet à l\'application de capturer les touches avant que le système ne puisse traiter les raccourcis et actions système."</string>
@@ -1987,8 +1987,8 @@
     <string name="package_updated_device_owner" msgid="7770195449213776218">"Mis à jour par votre administrateur.\nAllez dans les paramètres pour consulter les autorisations accordées."</string>
     <string name="package_deleted_device_owner" msgid="2292335928930293023">"Supprimé par votre administrateur"</string>
     <string name="confirm_battery_saver" msgid="5247976246208245754">"OK"</string>
-    <string name="battery_saver_description_with_learn_more" msgid="5444908404021316250">"L\'économiseur de batterie active le thème sombre et limite ou désactive l\'activité en arrière-plan ainsi que certains effets visuels, fonctionnalités et connexions réseau."</string>
-    <string name="battery_saver_description" msgid="8518809702138617167">"L\'économiseur de batterie active le thème sombre et limite ou désactive les activités en arrière-plan ainsi que certains effets visuels, fonctionnalités et connexions réseau."</string>
+    <string name="battery_saver_description_with_learn_more" msgid="8969945879044849461">"L\'économiseur de batterie active le thème sombre et limite ou désactive les activités en arrière-plan ainsi que certains effets visuels, fonctionnalités et connexions réseau."</string>
+    <string name="battery_saver_description" msgid="2820475140307374570">"L\'économiseur de batterie active le thème sombre et limite ou désactive les activités en arrière-plan ainsi que certains effets visuels, fonctionnalités et connexions réseau."</string>
     <string name="data_saver_description" msgid="4995164271550590517">"Pour réduire la consommation des données, l\'Économiseur de données empêche certaines applis d\'envoyer ou de recevoir des données en arrière-plan. Les applis que vous utiliserez pourront toujours accéder aux données, mais le feront moins fréquemment. Par exemple, il se peut que les images ne s\'affichent pas tant que vous n\'appuyez pas dessus."</string>
     <string name="data_saver_enable_title" msgid="7080620065745260137">"Activer l\'Économiseur de données ?"</string>
     <string name="data_saver_enable_button" msgid="4399405762586419726">"Activer"</string>
@@ -2586,8 +2586,8 @@
     <string name="usb_apm_usb_plugged_in_when_locked_data_notification_text" msgid="8392199274984083972">"La Protection Avancée exige que votre écran soit déverrouillé pour lancer la connectivité USB"</string>
     <string name="usb_apm_usb_plugged_in_when_locked_charge_notification_text" msgid="6563939109526112446">"Pour une recharge plus rapide, la Protection Avancée exige que votre écran soit déverrouillé"</string>
     <string name="usb_apm_usb_plugged_in_when_locked_charge_data_notification_text" msgid="411509882563364946">"Pour une recharge plus rapide ou pour lancer la connectivité USB, la Protection Avancée exige que votre écran soit déverrouillé"</string>
-    <string name="usb_apm_usb_plugged_in_when_locked_notification_silence_action_text" msgid="5495539757631669634">"Couper le son"</string>
-    <string name="usb_apm_usb_notification_silenced_title" msgid="5114203793430169863">"Son des notifications coupé"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_notification_silence_action_text" msgid="5495539757631669634">"Désactiver notifications"</string>
+    <string name="usb_apm_usb_notification_silenced_title" msgid="5114203793430169863">"Notifications désactivées"</string>
     <string name="usb_apm_usb_notification_silenced_text" msgid="8394777105856033342">"Vous ne recevrez pas de notifications USB de la part de la Protection Avancée tant que vous n\'aurez pas redémarré votre appareil"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"Activité USB suspecte"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="5772698072220844779">"Le signal de données USB a été désactivé"</string>

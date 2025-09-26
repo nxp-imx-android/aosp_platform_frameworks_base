@@ -370,8 +370,8 @@
     <string name="permgroupdesc_xr_eye_sensitive" msgid="6050967250223079001">"i-track nang tumpak ang paggalaw ng mata"</string>
     <string name="permgrouplab_xr_tracking" msgid="766634536453394700">"Data ng paggalaw at lugar"</string>
     <string name="permgroupdesc_xr_tracking" msgid="812429788288001595">"i-track ang mga mata, mukha, katawan, at i-scan ang lugar"</string>
-    <string name="permgrouplab_xr_tracking_sensitive" msgid="4346975608010051186">"Data ng eksaktong paggalaw ng ulo at lugar"</string>
-    <string name="permgroupdesc_xr_tracking_sensitive" msgid="7925014193164562556">"i-track nang tumpak ang ulo, at i-scan ang lugar"</string>
+    <string name="permgrouplab_xr_tracking_sensitive" msgid="6574264227123545314">"Tumpak na data ng paggalaw at lugar"</string>
+    <string name="permgroupdesc_xr_tracking_sensitive" msgid="2480835734248509848">"tumpak na i-scan ang lugar at mag-track nang advance"</string>
     <string name="capability_title_canRetrieveWindowContent" msgid="7554282892101587296">"Kunin ang content ng window"</string>
     <string name="capability_desc_canRetrieveWindowContent" msgid="6195610527625237661">"Siyasatin ang nilalaman ng isang window kung saan ka nakikipag-ugnayan."</string>
     <string name="capability_title_canRequestTouchExploration" msgid="327598364696316213">"I-on ang Explore by Touch"</string>
@@ -685,7 +685,7 @@
     <string name="permdesc_scene_understanding_coarse" msgid="847344305502345475">"Pinapayagan ang app na i-scan ang iyong paligid."</string>
     <string name="permlab_scene_understanding_fine" msgid="2899904960307462936">"i-scan nang tumpak ang lugar sa iyong paligid"</string>
     <string name="permdesc_scene_understanding_fine" msgid="4848943859506977588">"Pinapayagan ang app na i-scan nang tumpak ang iyong paligid."</string>
-    <string name="permlab_xr_tracking_in_background" msgid="8659516810430027774">"i-track ang XR data sa background"</string>
+    <string name="permlab_xr_tracking_in_background" msgid="1714941204255185460">"i-access ang pag-track sa XR sa background"</string>
     <string name="permdesc_xr_tracking_in_background" msgid="3151744132692357005">"Pinapayagan ang app na i-access ang XR data sa background."</string>
     <string name="permlab_capture_keyboard" msgid="4076894823382693032">"mag-capture ng mga key"</string>
     <string name="permdesc_capture_keyboard" msgid="4192269470684407219">"Pinapayagan ang app na mag-capture ng mga key bago maproseso ng system ang mga shortcut at aksyon ng system."</string>
@@ -1986,8 +1986,8 @@
     <string name="package_updated_device_owner" msgid="7770195449213776218">"Na-update ng iyong admin.\nPumunta sa mga setting para makita ang mga ibinigay na pahintulot"</string>
     <string name="package_deleted_device_owner" msgid="2292335928930293023">"Na-delete ng iyong admin"</string>
     <string name="confirm_battery_saver" msgid="5247976246208245754">"OK"</string>
-    <string name="battery_saver_description_with_learn_more" msgid="5444908404021316250">"Ino-on ng Pantipid ng Baterya ang Madilim na tema at nililimitahan o ino-off nito ang aktibidad sa background, ilang visual effect, ilang partikular na feature, at ilang koneksyon sa network."</string>
-    <string name="battery_saver_description" msgid="8518809702138617167">"Ino-on ng Pantipid ng Baterya ang Madilim na tema at nililimitahan o ino-off nito ang aktibidad sa background, ilang visual effect, ilang partikular na feature, at ilang koneksyon sa network."</string>
+    <string name="battery_saver_description_with_learn_more" msgid="8969945879044849461">"Ino-on ng Pantipid ng Baterya ang dark theme at nililimitahan o ino-off nito ang aktibidad sa background, ilang visual effect, ilang partikular na feature, at ilang koneksyon sa network."</string>
+    <string name="battery_saver_description" msgid="2820475140307374570">"Ino-on ng Pantipid ng Baterya ang dark theme at nililimitahan o ino-off nito ang aktibidad sa background, ilang visual effect, ilang partikular na feature, at ilang koneksyon sa network."</string>
     <string name="data_saver_description" msgid="4995164271550590517">"Upang makatulong na mabawasan ang paggamit ng data, pinipigilan ng Data Saver ang ilang app na magpadala o makatanggap ng data sa background. Maaaring mag-access ng data ang isang app na ginagamit mo sa kasalukuyan, ngunit mas bihira na nito magagawa iyon. Halimbawa, maaaring hindi lumabas ang mga larawan hangga\'t hindi mo nata-tap ang mga ito."</string>
     <string name="data_saver_enable_title" msgid="7080620065745260137">"I-on ang Data Saver?"</string>
     <string name="data_saver_enable_button" msgid="4399405762586419726">"I-on"</string>

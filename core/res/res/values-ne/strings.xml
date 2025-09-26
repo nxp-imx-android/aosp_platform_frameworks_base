@@ -370,8 +370,8 @@
     <string name="permgroupdesc_xr_eye_sensitive" msgid="6050967250223079001">"आँखाको चाल सटीक तरिकाले ट्र्याक गर्न"</string>
     <string name="permgrouplab_xr_tracking" msgid="766634536453394700">"चाल र ठाउँसम्बन्धी डेटा"</string>
     <string name="permgroupdesc_xr_tracking" msgid="812429788288001595">"आँखा, अनुहार, शरीर र स्क्यान गरिएको ठाउँ ट्र्याक गर्न"</string>
-    <string name="permgrouplab_xr_tracking_sensitive" msgid="4346975608010051186">"टाउकोको चाल र ठाउँसम्बन्धी सटीक डेटा"</string>
-    <string name="permgroupdesc_xr_tracking_sensitive" msgid="7925014193164562556">"टाउको र स्क्यान गरिएको ठाउँ सटीक तरिकाले ट्र्याक गर्न"</string>
+    <string name="permgrouplab_xr_tracking_sensitive" msgid="6574264227123545314">"चाल र ठाउँसम्बन्धी सटीक डेटा"</string>
+    <string name="permgroupdesc_xr_tracking_sensitive" msgid="2480835734248509848">"सटीक तरिकाले ठाउँ स्क्यान गर्न र टाउकोका चाल ट्र्याक गर्न"</string>
     <string name="capability_title_canRetrieveWindowContent" msgid="7554282892101587296">"विन्डो सामग्रीको पुनःबहाली गर्नुहोस्।"</string>
     <string name="capability_desc_canRetrieveWindowContent" msgid="6195610527625237661">"तपाईँको अन्तरक्रिया भइरहेको विन्डोको सामग्रीको निरीक्षण गर्नुहोस्।"</string>
     <string name="capability_title_canRequestTouchExploration" msgid="327598364696316213">"छोएर गरिने खोजलाई सुचारु गर्नुहोस्"</string>
@@ -685,7 +685,7 @@
     <string name="permdesc_scene_understanding_coarse" msgid="847344305502345475">"तपाईंले यो अनुमति दिनुभयो भने यो एपले तपाईंको वरपरका ठाउँहरू स्क्यान गर्न सक्छ।"</string>
     <string name="permlab_scene_understanding_fine" msgid="2899904960307462936">"आफ्नो वरपरको ठाउँ सटीक तरिकाले स्क्यान गर्न"</string>
     <string name="permdesc_scene_understanding_fine" msgid="4848943859506977588">"तपाईंले यो अनुमति दिनुभयो भने यो एपले तपाईंको वरपरका ठाउँहरू सटीक तरिकाले स्क्यान गर्न सक्छ।"</string>
-    <string name="permlab_xr_tracking_in_background" msgid="8659516810430027774">"ब्याकग्राउन्डमा XR सम्बन्धी डेटा ट्र्याक गर्न"</string>
+    <string name="permlab_xr_tracking_in_background" msgid="1714941204255185460">"ब्याकग्राउन्डमा XR ट्र्याकिङ एक्सेस गर्न"</string>
     <string name="permdesc_xr_tracking_in_background" msgid="3151744132692357005">"तपाईंले यो अनुमति दिनुभयो भने यो एपले ब्याकग्राउन्डमा XR सम्बन्धी डेटा एक्सेस गर्न सक्छ।"</string>
     <string name="permlab_capture_keyboard" msgid="4076894823382693032">"कीहरू क्याप्चर गर्नुहोस्"</string>
     <string name="permdesc_capture_keyboard" msgid="4192269470684407219">"यो एपलाई सिस्टमले आफ्ना सर्टकट र कारबाहीहरू प्रोसेस गर्नुअघि कीहरू क्याप्चर गर्ने अनुमति दिन्छ।"</string>
@@ -1054,7 +1054,7 @@
     <string name="lockscreen_pattern_correct" msgid="8050630103651508582">"सही!"</string>
     <string name="lockscreen_pattern_wrong" msgid="2940138714468358458">"फेरि प्रयास गर्नुहोस्"</string>
     <string name="lockscreen_password_wrong" msgid="8605355913868947490">"फेरि प्रयास गर्नुहोस्"</string>
-    <string name="lockscreen_storage_locked" msgid="634993789186443380">"सबै सुविधाहरू र डेटाका लागि अनलक गर्नुहोस्"</string>
+    <string name="lockscreen_storage_locked" msgid="634993789186443380">"सबै सुविधा र डेटा एक्सेस गर्न अनलक गर्नुहोस्"</string>
     <string name="faceunlock_multiple_failures" msgid="681991538434031708">"फेस अनलक प्रयोग गरी अनलक गर्ने प्रयास अत्यधिक धेरै भयो"</string>
     <string name="lockscreen_missing_sim_message_short" msgid="1229301273156907613">"SIM कार्ड हालिएको छैन"</string>
     <string name="lockscreen_missing_sim_message" product="tablet" msgid="3986843848305639161">"ट्याब्लेटमा SIM कार्ड हालिएको छैन।"</string>
@@ -1986,8 +1986,8 @@
     <string name="package_updated_device_owner" msgid="7770195449213776218">"यो प्याकेज तपाईंका एड्मिनले अपडेट गर्नुभएको हो।\nकुन कुन अनुमति दिइएका छन् भन्ने कुरा हेर्न सेटिङमा जानुहोस्"</string>
     <string name="package_deleted_device_owner" msgid="2292335928930293023">"तपाईंका प्रशासकले मेट्नुभएको"</string>
     <string name="confirm_battery_saver" msgid="5247976246208245754">"ठिक छ"</string>
-    <string name="battery_saver_description_with_learn_more" msgid="5444908404021316250">"ब्याट्री सेभरले अँध्यारो थिम अन गर्छ र ब्याकग्राउन्डमा हुने क्रियाकलाप, केही भिजुअल इफेक्ट, निश्चित सुविधा र केही नेटवर्क कनेक्सनहरू अफ गर्छ वा सीमित रूपमा मात्र चल्न दिन्छ।"</string>
-    <string name="battery_saver_description" msgid="8518809702138617167">"ब्याट्री सेभरले अँध्यारो थिम अन गर्छ र ब्याकग्राउन्डमा हुने क्रियाकलाप, केही भिजुअल इफेक्ट, निश्चित सुविधा र केही नेटवर्क कनेक्सनहरू अफ गर्छ वा सीमित रूपमा मात्र चल्न दिन्छ।"</string>
+    <string name="battery_saver_description_with_learn_more" msgid="8969945879044849461">"ब्याट्री सेभरले अँध्यारो थिम अन गर्छ र ब्याकग्राउन्डमा हुने क्रियाकलाप, केही भिजुअल इफेक्ट, निश्चित सुविधा र केही नेटवर्क कनेक्सनहरू अफ गर्छ वा सीमित रूपमा मात्र चल्न दिन्छ।"</string>
+    <string name="battery_saver_description" msgid="2820475140307374570">"ब्याट्री सेभरले अँध्यारो थिम अन गर्छ र ब्याकग्राउन्डमा हुने क्रियाकलाप, केही भिजुअल इफेक्ट, निश्चित सुविधा र केही नेटवर्क कनेक्सनहरू अफ गर्छ वा सीमित रूपमा मात्र चल्न दिन्छ।"</string>
     <string name="data_saver_description" msgid="4995164271550590517">"डेटा सेभरले डेटा खपत कम गर्न केही एपहरूलाई ब्याकग्राउन्डमा डेटा पठाउन वा प्राप्त गर्न दिँदैन। तपाईंले अहिले प्रयोग गरिरहनुभएको एपले सीमित रूपमा मात्र डेटा चलाउन पाउँछ। उदाहरणका लागि, तपाईंले फोटोमा ट्याप गर्नुभयो भने मात्र फोटो देखिन्छ नत्र देखिँदैन।"</string>
     <string name="data_saver_enable_title" msgid="7080620065745260137">"डेटा सेभर अन गर्ने हो?"</string>
     <string name="data_saver_enable_button" msgid="4399405762586419726">"अन गर्नुहोस्"</string>

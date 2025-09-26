@@ -118,8 +118,8 @@
     <string name="bluetooth_hearing_aid_right_active" msgid="2244728507170385397">"Aktiv (yalnız sağ)"</string>
     <string name="bluetooth_hearing_aid_left_and_right_active" msgid="4294571497939983181">"Aktiv (sol və sağ)"</string>
     <string name="bluetooth_hearing_device_ambient_error" msgid="6035857289108813878">"Ətraf mühit güncəllənmədi"</string>
-    <!-- no translation found for bluetooth_hearing_aids_presets_error (4523942574698610976) -->
-    <skip />
+    <string name="bluetooth_hearing_aids_presets_error" msgid="4523942574698610976">"Hazır ayar güncəllənmədi"</string>
+    <string name="hearing_device_spinner_item_selected" msgid="3884049360428514878">"Seçilib"</string>
     <string name="bluetooth_active_media_only_battery_level" msgid="7772517511061834073">"Aktiv (yalnız media). <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE">%1$s</xliff:g> batareya."</string>
     <string name="bluetooth_active_media_only_battery_level_untethered" msgid="7444753133664620926">"Aktiv (yalnız media). Sol: <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE_0">%1$s</xliff:g>, Sağ: <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE_1">%2$s</xliff:g> batareya."</string>
     <string name="bluetooth_guest_battery_level" msgid="2820003593899467676">"Qonaq cihaz. <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE">%1$s</xliff:g> batareya."</string>

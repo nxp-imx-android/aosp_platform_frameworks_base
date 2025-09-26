@@ -370,8 +370,8 @@
     <string name="permgroupdesc_xr_eye_sensitive" msgid="6050967250223079001">"silmien liikkeiden tarkka seuranta"</string>
     <string name="permgrouplab_xr_tracking" msgid="766634536453394700">"Liike- ja aluedata"</string>
     <string name="permgroupdesc_xr_tracking" msgid="812429788288001595">"silmien, kasvojen ja vartalon seuranta sekä alueen skannaaminen"</string>
-    <string name="permgrouplab_xr_tracking_sensitive" msgid="4346975608010051186">"Tarkka data pään liikkeistä ja alueesta"</string>
-    <string name="permgroupdesc_xr_tracking_sensitive" msgid="7925014193164562556">"pään liikkeiden tarkka seuranta ja alueen skannaaminen"</string>
+    <string name="permgrouplab_xr_tracking_sensitive" msgid="6574264227123545314">"Tarkka liike- ja aluedata"</string>
+    <string name="permgroupdesc_xr_tracking_sensitive" msgid="2480835734248509848">"skannaa alueen tarkasti ja seuraa pään liikkeitä"</string>
     <string name="capability_title_canRetrieveWindowContent" msgid="7554282892101587296">"Noutaa ikkunan sisältöä"</string>
     <string name="capability_desc_canRetrieveWindowContent" msgid="6195610527625237661">"Tarkistaa käyttämäsi ikkunan sisältö."</string>
     <string name="capability_title_canRequestTouchExploration" msgid="327598364696316213">"Ottaa kosketuksella tutkimisen käyttöön"</string>
@@ -685,7 +685,7 @@
     <string name="permdesc_scene_understanding_coarse" msgid="847344305502345475">"Sallii sovelluksen skannata ympäristöä."</string>
     <string name="permlab_scene_understanding_fine" msgid="2899904960307462936">"ympäröivän alueen tarkka skannaaminen"</string>
     <string name="permdesc_scene_understanding_fine" msgid="4848943859506977588">"Sallii sovelluksen skannata ympäristöä tarkasti."</string>
-    <string name="permlab_xr_tracking_in_background" msgid="8659516810430027774">"XR-datan seuranta taustalla"</string>
+    <string name="permlab_xr_tracking_in_background" msgid="1714941204255185460">"pääsy XR-seurantaan taustalla"</string>
     <string name="permdesc_xr_tracking_in_background" msgid="3151744132692357005">"Sallii sovellukselle pääsyn XR-dataan taustalla."</string>
     <string name="permlab_capture_keyboard" msgid="4076894823382693032">"näppäinten kaappaus"</string>
     <string name="permdesc_capture_keyboard" msgid="4192269470684407219">"Antaa sovelluksen kaapata näppäimiä ennen kuin järjestelmä voi käsitellä järjestelmän pikanäppäimiä ja toimintoja."</string>
@@ -1986,8 +1986,8 @@
     <string name="package_updated_device_owner" msgid="7770195449213776218">"Järjestelmänvalvojan päivittämä.\nTarkista myönnetyt luvat asetuksista"</string>
     <string name="package_deleted_device_owner" msgid="2292335928930293023">"Järjestelmänvalvoja poisti tämän."</string>
     <string name="confirm_battery_saver" msgid="5247976246208245754">"OK"</string>
-    <string name="battery_saver_description_with_learn_more" msgid="5444908404021316250">"Virransäästö laittaa tumman teeman päälle ja rajoittaa tai laittaa pois päältä taustatoimintoja, tiettyjä ominaisuuksia sekä joitakin visuaalisia tehosteita ja verkkoyhteyksiä."</string>
-    <string name="battery_saver_description" msgid="8518809702138617167">"Virransäästö laittaa tumman teeman päälle ja rajoittaa tai laittaa pois päältä taustatoimintoja, tiettyjä ominaisuuksia sekä joitakin visuaalisia tehosteita ja verkkoyhteyksiä."</string>
+    <string name="battery_saver_description_with_learn_more" msgid="8969945879044849461">"Virransäästö laittaa tumman teeman päälle ja rajoittaa tai laittaa pois päältä taustatoimintoja, tiettyjä ominaisuuksia sekä joitakin visuaalisia tehosteita ja verkkoyhteyksiä."</string>
+    <string name="battery_saver_description" msgid="2820475140307374570">"Virransäästö laittaa tumman teeman päälle ja rajoittaa tai laittaa pois päältä taustatoimintoja, tiettyjä ominaisuuksia sekä joitakin visuaalisia tehosteita ja verkkoyhteyksiä."</string>
     <string name="data_saver_description" msgid="4995164271550590517">"Data Saver estää joitakin sovelluksia lähettämästä tai vastaanottamasta tietoja taustalla, jotta datan käyttöä voidaan vähentää. Käytössäsi oleva sovellus voi yhä käyttää dataa, mutta se saattaa tehdä niin tavallista harvemmin. Tämä voi tarkoittaa esimerkiksi sitä, että kuva ladataan vasta, kun kosketat sitä."</string>
     <string name="data_saver_enable_title" msgid="7080620065745260137">"Laitetaanko Data Saver päälle?"</string>
     <string name="data_saver_enable_button" msgid="4399405762586419726">"Laita päälle"</string>
@@ -2585,7 +2585,7 @@
     <string name="usb_apm_usb_plugged_in_when_locked_data_notification_text" msgid="8392199274984083972">"Lisäsuojaus edellyttää, että avaat näytön lukituksen USB-yhteyden muodostamista varten"</string>
     <string name="usb_apm_usb_plugged_in_when_locked_charge_notification_text" msgid="6563939109526112446">"Lisäsuojaus edellyttää, että näytön lukitus on avattu nopeampaa latausta varten"</string>
     <string name="usb_apm_usb_plugged_in_when_locked_charge_data_notification_text" msgid="411509882563364946">"Lisäsuojaus edellyttää, että avaat näytön lukituksen, jotta voit ladata laitteen nopeammin tai muodostaa USB-yhteyden"</string>
-    <string name="usb_apm_usb_plugged_in_when_locked_notification_silence_action_text" msgid="5495539757631669634">"Silence (Hiljennä)"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_notification_silence_action_text" msgid="5495539757631669634">"Hiljennä"</string>
     <string name="usb_apm_usb_notification_silenced_title" msgid="5114203793430169863">"Ilmoitukset hiljennetty"</string>
     <string name="usb_apm_usb_notification_silenced_text" msgid="8394777105856033342">"Et saa lisäsuojauksen USB-ilmoituksia ennen kuin käynnistät laitteen uudelleen"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"Epäilyttävää USB-toimintaa"</string>

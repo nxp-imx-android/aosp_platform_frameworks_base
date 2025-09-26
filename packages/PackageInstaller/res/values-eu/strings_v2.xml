@@ -96,26 +96,18 @@
     <string name="message_restore_error_installer_absent" msgid="8492838251989389724">"Aplikazioa leheneratzeko, <xliff:g id="INSTALLER_NAME">%1$s</xliff:g> instalatu beharko duzu"</string>
     <string name="message_restore_error_generic" msgid="5903850636679929406">"Arazo bat izan da aplikazioa leheneratzean"</string>
     <string name="message_uninstall_activity" msgid="3263352475743590167">"<xliff:g id="ACTIVITY_NAME">%1$s</xliff:g> aplikazio honen zati da: <xliff:g id="APP_NAME">%2$s</xliff:g>"</string>
-    <!-- no translation found for cannot_install_app_blocked_summary (2082063650842897085) -->
-    <skip />
-    <!-- no translation found for cannot_update_app_blocked_summary (7607734844900187499) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_no_internet_summary (7298957699553589600) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_no_internet_summary (8094414928318316598) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_summary (3830073638843524892) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_unavailable_summary (342184955548504019) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_fail_closed_summary (3552780111383069051) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_unavailable_fail_closed_summary (353457015429601377) -->
-    <skip />
+    <string name="cannot_install_app_blocked_summary" msgid="2082063650842897085">"&lt;p&gt;Aplikazio hau blokeatu egin da. Gailua eta datuak seguru mantentzeko, garatzaile egiaztatuen aplikazioak soilik instala daitezke.&lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;Lortu garatzaileak egiaztatzeari buruzko informazio gehiago&lt;/a&gt;"</string>
+    <string name="cannot_update_app_blocked_summary" msgid="7607734844900187499">"&lt;p&gt;Ez da eguneratu aplikazioa. Gailua eta datuak seguru mantentzeko, garatzaile egiaztatuen eguneratzeaksoilik instala daitezke.&lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;Lortu garatzaileak egiaztatzeari buruzko informazio gehiago&lt;/a&gt;"</string>
+    <string name="cannot_install_verification_no_internet_summary" msgid="7298957699553589600">"&lt;p&gt;Aplikazio hau ez da instalatu. Baliteke egiaztatu gabeko garatzaileen aplikazioak seguruak ez izatea.&lt;/p&gt; &lt;p&gt;Interneteko konexioa behar da aplikazioaren garatzailea egiaztatzeko. Egiaztatu konektatuta zaudela eta instala ezazu berriro. &lt;/p&gt; &lt;a href=https://g.co/android/developer&amp;gtLortu garatzaileak egiaztatzeari buruzko informazio gehiago&lt;/a&gt;"</string>
+    <string name="cannot_update_verification_no_internet_summary" msgid="8094414928318316598">"&lt;p&gt;Ez da eguneratu aplikazioa. Baliteke egiaztatu gabeko garatzaileen eguneratzeak seguruak ez izatea.&lt;/p&gt; &lt;p&gt;Interneteko konexioa behar da aplikazioaren garatzailea egiaztatzeko. Egiaztatu konektatuta zaudela eta egunera ezazu berriro. &lt;/p&gt; &lt;a href=https://g.co/android/developer&amp;gtLortu garatzaileak egiaztatzeari buruzko informazio gehiago&lt;/a&gt;"</string>
+    <string name="cannot_install_verification_unavailable_summary" msgid="3830073638843524892">"&lt;p&gt;Arazo bat izan da aplikazio honen garatzailea egiaztatzean. Baliteke egiaztatu gabeko garatzaileen aplikazioak seguruak ez izatea; beraz, ez da instalatu aplikazioa.&lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;Lortu garatzaileak egiaztatzeari buruzko informazio gehiago&lt;/a&gt;"</string>
+    <string name="cannot_update_verification_unavailable_summary" msgid="342184955548504019">"&lt;p&gt;Arazo bat izan da aplikazio honen garatzailea egiaztatzean. Baliteke egiaztatu gabeko garatzaileen eguneratzeak seguruak ez izatea; beraz, ez da eguneratu aplikazioa.&lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;Lortu garatzaileak egiaztatzeari buruzko informazio gehiago&lt;/a&gt;"</string>
+    <string name="cannot_install_verification_unavailable_fail_closed_summary" msgid="3552780111383069051">"&lt;p&gt;Aplikazioa blokeatu egin da, arazo bat izan delako garatzailea egiaztatzean. Gailua eta datuak seguru mantentzeko, garatzaile egiaztatuen aplikazioak soilik instala daitezke.&lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;Lortu garatzaileak egiaztatzeari buruzko informazio gehiago&lt;/a&gt;"</string>
+    <string name="cannot_update_verification_unavailable_fail_closed_summary" msgid="353457015429601377">"&lt;p&gt;Aplikazioa ez da eguneratu, arazo bat izan delako garatzailea egiaztatzean. Gailua eta datuak seguru mantentzeko, garatzaile egiaztatuen eguneratzeaksoilik instala daitezke.&lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;Lortu garatzaileak egiaztatzeari buruzko informazio gehiago&lt;/a&gt;"</string>
     <string name="more_details_expanded_install_summary" msgid="3545896392881608712">"Egiaztatu gabe instalatzen baduzu, gogoan izan egiaztatu gabeko garatzaileen aplikazioek gailua eta datuak arriskuan jarriko dituztela agian."</string>
     <string name="more_details_expanded_update_summary" msgid="2239162864839036480">"Egiaztatu gabe eguneratzen baduzu, gogoan izan egiaztatu gabeko garatzaileen eguneratzeek gailua eta datuak arriskuan jarriko dituztela agian."</string>
     <string name="cannot_install_app_blocked_title" msgid="6372444121824751694">"Ez da egiaztatu aplikazioaren garatzailea"</string>
-    <string name="cannot_install_verification_no_internet_title" msgid="2862046642298119581">"Ez dago Interneteko konexiorik; beraz, ezin da egiaztatu aplikazioaren garatzailea"</string>
+    <string name="cannot_install_verification_no_internet_title" msgid="2862046642298119581">"Internet gabe; ezin da egiaztatu garatzailea"</string>
     <string name="cannot_install_verification_unavailable_title" msgid="2038093442302309120">"Ezin da egiaztatu aplikazioaren garatzailea"</string>
     <string name="install_without_verifying" msgid="5359680595440741626">"Instalatu egiaztatu gabe"</string>
     <string name="update_without_verifying" msgid="2841466981431484179">"Eguneratu egiaztatu gabe"</string>

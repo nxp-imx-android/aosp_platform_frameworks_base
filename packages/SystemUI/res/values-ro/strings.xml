@@ -21,8 +21,8 @@
     xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
     <string name="app_label" msgid="4811759950673118541">"UI sistem"</string>
     <string name="battery_low_title" msgid="5319680173344341779">"Activezi Economisirea bateriei?"</string>
-    <string name="battery_low_description" msgid="3282977755476423966">"Mai ai <xliff:g id="PERCENTAGE">%s</xliff:g> din baterie. Economisirea bateriei activează Tema întunecată, restricționează activitatea în fundal și amână notificările."</string>
-    <string name="battery_low_intro" msgid="5148725009653088790">"Economisirea bateriei activează Tema întunecată, restricționează activitatea în fundal și amână notificările."</string>
+    <string name="battery_low_description" msgid="7848989602036547056">"Mai ai <xliff:g id="PERCENTAGE">%s</xliff:g> din baterie. Economisirea bateriei activează Tema întunecată, restricționează activitatea în fundal și amână notificările."</string>
+    <string name="battery_low_intro" msgid="8033783734931200690">"Economisirea bateriei activează Tema întunecată, restricționează activitatea în fundal și amână notificările."</string>
     <string name="battery_low_percent_format" msgid="4276661262843170964">"Procent rămas din baterie: <xliff:g id="PERCENTAGE">%s</xliff:g>"</string>
     <string name="invalid_charger_title" msgid="938685362320735167">"Nu se poate realiza încărcarea prin USB"</string>
     <string name="invalid_charger_text" msgid="2339310107232691577">"Folosește încărcătorul livrat împreună cu dispozitivul"</string>
@@ -140,8 +140,7 @@
     <string name="screenrecord_stop_dialog_button" msgid="2883812564938194350">"Oprește înregistrarea"</string>
     <string name="screen_record_entire_screen" msgid="66944996337928170">"Tot ecranul"</string>
     <string name="screen_record_single_app" msgid="7355880948574569290">"O aplicație"</string>
-    <!-- no translation found for screen_record_single_app_hint (8404332826093639170) -->
-    <skip />
+    <string name="screen_record_single_app_hint" msgid="8404332826093639170">"Aplicația pentru înregistrare"</string>
     <string name="screen_record_single_app_no_recents" msgid="1023249803854209330">"O aplicație (deschide ca să alegi)"</string>
     <string name="screen_record_record_device_audio_label" msgid="5363057443124085198">"Înregistrează audio de la dispozitiv"</string>
     <string name="screen_record_record_microphone_label" msgid="4685753707185662381">"Înregistrează microfonul"</string>
@@ -149,11 +148,13 @@
     <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"Afișează atingerile"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"Alege o aplicație pentru a înregistra"</string>
     <string name="screen_record_video_saved" msgid="1345283626390232282">"Videoclip salvat"</string>
-    <!-- no translation found for screen_record_undo (7942716736019800870) -->
-    <skip />
+    <string name="screen_record_video_deleted" msgid="30786214839944540">"Videoclip șters"</string>
+    <string name="screen_record_undo" msgid="7942716736019800870">"Anulează"</string>
     <string name="screen_record_retake" msgid="3846643688365398450">"Înregistrează iar"</string>
     <string name="screen_record_edit" msgid="8733014191240769309">"Editează"</string>
     <string name="screen_record_delete" msgid="1023421937978254537">"Șterge"</string>
+    <string name="screen_record_delete_dialog_title" msgid="5868561491974057044">"Ștergi înregistrarea?"</string>
+    <string name="screen_record_delete_dialog_content" msgid="2610040845214024496">"Dacă ștergi înregistrarea, fișierul video va fi șters definitiv de pe dispozitiv."</string>
     <string name="screen_record_play" msgid="4732544724679889445">"Redă"</string>
     <string name="screen_record_pause" msgid="1715012292444967776">"Întrerupe"</string>
     <string name="screen_record_mute" msgid="8111682249858638168">"Dezactivează sunetul"</string>
@@ -165,8 +166,8 @@
     <string name="screen_capture_toolbar_screenshot_button" msgid="5676585348709494125">"Captură de ecran"</string>
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"Înregistrează"</string>
     <string name="screen_share_toolbar_share_button" msgid="9182050596136815833">"Trimite"</string>
-    <string name="screen_share_no_select_app_thumbnail" msgid="1630012401570567430">"Selectează o aplicație pentru a trimite"</string>
-    <string name="screen_share_app_audio_sharing" msgid="7201172218924898712">"Trimite conținutul audio din fereastră"</string>
+    <string name="screen_share_no_select_app_thumbnail" msgid="1630012401570567430">"Selectează aplicația pentru a trimite"</string>
+    <string name="screen_share_app_audio_sharing" msgid="7201172218924898712">"Trimite audio din fereastră"</string>
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"Fă o captură de ecran a ferestrei"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"Înregistrează fereastra"</string>
     <string name="screen_capture_toolbar_region_button_screenshot_a11y" msgid="2102262602357521192">"Fă o captură de ecran a zonei selectate"</string>
@@ -174,7 +175,12 @@
     <string name="screen_capture_toolbar_fullscreen_button_screenshot_a11y" msgid="8699983355979869210">"Fă o captură de ecran a întregului ecran"</string>
     <string name="screen_capture_toolbar_fullscreen_button_record_a11y" msgid="852148867883959158">"Înregistrează tot ecranul"</string>
     <string name="screen_capture_toolbar_settings_button_a11y" msgid="8014446956996739704">"Setări pentru capturile de ecran"</string>
+    <string name="screen_capture_show_clicks_and_keys" msgid="2151690554364148717">"Afișează clicurile și tastele"</string>
+    <string name="screen_capture_device_audio" msgid="1537290197773737349">"Conținutul audio de la dispozitiv"</string>
+    <string name="screen_capture_microphone_audio" msgid="1698835678818747741">"Microfon"</string>
+    <string name="screen_capture_front_camera" msgid="1214647538302639358">"Camera foto frontală"</string>
     <string name="screen_capture_region_dimensions" msgid="2317064050253056256">"<xliff:g id="WIDTH">%1$d</xliff:g> x <xliff:g id="HEIGHT">%2$d</xliff:g>"</string>
+    <string name="screen_share_privacy_indicator_stop_sharing" msgid="2297045039651417274">"Nu mai permite accesul"</string>
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"Se permite accesul la ecran"</string>
     <string name="share_to_app_chip_accessibility_label_generic" msgid="5517431657924536133">"Se permite accesul la conținut"</string>
     <string name="share_to_app_stop_dialog_title" msgid="9212915050910250438">"Oprești accesul la ecran?"</string>
@@ -488,12 +494,13 @@
     <string name="accessibility_hearing_device_pair_new_device" msgid="8440082580186130090">"Dă clic pentru a asocia un nou dispozitiv"</string>
     <string name="hearing_devices_presets_error" msgid="350363093458408536">"Nu s-a putut actualiza presetarea"</string>
     <string name="hearing_devices_preset_label" msgid="7878267405046232358">"Presetare"</string>
+    <string name="hearing_devices_preset_label_left" msgid="7427947566560179945">"Presetarea pentru partea stângă"</string>
+    <string name="hearing_devices_preset_label_right" msgid="1847206329436268522">"Presetarea pentru partea dreaptă"</string>
     <string name="hearing_devices_input_routing_label" msgid="730396728151232306">"Microfon prestabilit pentru apeluri"</string>
   <string-array name="hearing_device_input_routing_options">
     <item msgid="4582190415045337003">"Microfonul aparatului auditiv"</item>
     <item msgid="8501466270452446450">"Microfonul acestui telefon"</item>
   </string-array>
-    <string name="hearing_devices_spinner_item_selected" msgid="3137083889662762383">"Selectat"</string>
     <string name="hearing_devices_ambient_label" msgid="629440938614895797">"Împrejurimi"</string>
     <string name="hearing_devices_ambient_control_left" msgid="3586965448230412600">"Stânga"</string>
     <string name="hearing_devices_ambient_control_right" msgid="6192137602448918383">"Dreapta"</string>
@@ -889,7 +896,7 @@
     <string name="notification_guts_news_summary" msgid="638697931043407835">"Cele mai populare subiecte, editoriale și altele"</string>
     <string name="notification_guts_social_summary" msgid="3749147631983977040">"Aprecieri, postări și altele"</string>
     <string name="notification_guts_recs_summary" msgid="8391881843238947007">"Buletine informative, conținut media recomandat și altele"</string>
-    <string name="notification_onboarding_summaries_turn_on" msgid="5050003857531272655">"Activează"</string>
+    <string name="notification_onboarding_summaries_turn_on" msgid="3831339570984683297">"Activează în Setări"</string>
     <string name="notification_onboarding_summaries_message" msgid="6061524903176459064">"Conversațiile mai lungi pot fi acum rezumate pentru a-ți oferi rezumate scurte"</string>
     <string name="notification_onboarding_bundles_message" msgid="4612908213178622912">"Organizatorul de notificări grupează și dezactivează sunetul notificărilor cu prioritate redusă. Adaugă mai multe categorii în Setări."</string>
     <string name="notification_bundle_header_counter" msgid="5515532701569242265">"{count,plural, =1{# notificare}few{# notificări}other{# de notificări}}"</string>
@@ -1143,15 +1150,11 @@
     <string name="accessibility_key_gesture_dialog_content" msgid="4519838108423437794"><annotation id="action_key_icon">"Pictograma"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> este comanda rapidă de la tastatură pentru a folosi <xliff:g id="ID_3">^3</xliff:g>. <xliff:g id="ID_4">^4</xliff:g>"</string>
     <string name="accessibility_key_gesture_dialog_talkback_intro" msgid="1617808784388544741">"<xliff:g id="ID_1">%1$s</xliff:g> este un cititor de ecran care îți permite să auzi elementele rostite cu voce tare. Le poate fi util persoanelor cu dificultăți în a vedea ecranul."</string>
     <string name="accessibility_key_gesture_dialog_positive_button_text" msgid="3670746017523589293">"Activează"</string>
-    <!-- no translation found for accessibility_key_gesture_shortcut_not_yet_enabled_dialog_title (5331043821287212071) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_shortcut_not_yet_enabled_negative_button_text (6711239406914231612) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_shortcut_not_yet_enabled_positive_button_text (7748487028569821131) -->
-    <skip />
+    <string name="accessibility_key_gesture_shortcut_not_yet_enabled_dialog_title" msgid="5331043821287212071">"Activezi comanda rapidă de la tastatură <xliff:g id="ID_1">%1$s</xliff:g>?"</string>
+    <string name="accessibility_key_gesture_shortcut_not_yet_enabled_negative_button_text" msgid="6711239406914231612">"Nu activa"</string>
+    <string name="accessibility_key_gesture_shortcut_not_yet_enabled_positive_button_text" msgid="7748487028569821131">"Activează comanda rapidă"</string>
     <string name="accessibility_key_gesture_magnification_dialog_title" msgid="5770691510738701250">"Comanda rapidă de la tastatură <xliff:g id="ID_1">%1$s</xliff:g> este activată"</string>
-    <!-- no translation found for accessibility_key_gesture_magnification_dialog_content (582920726242272572) -->
-    <skip />
+    <string name="accessibility_key_gesture_magnification_dialog_content" msgid="582920726242272572">"Acțiunea "<annotation id="action_key_icon">"pictogramă"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> este comanda rapidă de la tastatură pentru a folosi <xliff:g id="ID_3">^3</xliff:g>, o funcție de accesibilitate. Astfel, poți să mărești rapid imaginea de pe ecran pentru a mări conținutul. După ce ai activat mărirea, apasă pe Acțiunea "<annotation id="action_key_icon">"pictogramă"</annotation>" + <xliff:g id="ID_4">^1</xliff:g> și pe + sau – pentru a ajusta zoomul."</string>
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"Dezactivează comanda rapidă"</string>
     <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"Menține activată"</string>
     <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="7934170819801013870">"Dacă apeși pe pictograma "<annotation id="action_key_icon">"Acțiune"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g>, se activează <xliff:g id="ID_3">^3</xliff:g>, o funcție de accesibilitate. Astfel, poți controla dispozitivul hands-free."</string>
@@ -1624,8 +1627,7 @@
     <string name="shortcut_helper_customize_dialog_reset_button_label" msgid="7645535254306312685">"Resetează"</string>
     <string name="shortcut_helper_customize_dialog_cancel_button_label" msgid="5595546460431741178">"Anulează"</string>
     <string name="shortcut_helper_add_shortcut_dialog_placeholder" msgid="9154297849458741995">"Apasă tasta"</string>
-    <!-- no translation found for shortcut_helper_customizer_action_key_text (3979063901857046887) -->
-    <skip />
+    <string name="shortcut_helper_customizer_action_key_text" msgid="3979063901857046887">"Acțiune"</string>
     <string name="shortcut_customizer_key_combination_in_use_error_message" msgid="3325858369539848162">"Combinația de taste este deja folosită. Încearcă altă combinație."</string>
     <string name="shortcut_customizer_generic_error_message" msgid="3128454624049722741">"Comanda rapidă nu poate fi setată."</string>
     <string name="shortcut_helper_plus_symbol" msgid="4534843157353732011">"+"</string>

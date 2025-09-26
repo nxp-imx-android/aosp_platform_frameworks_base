@@ -370,8 +370,8 @@
     <string name="permgroupdesc_xr_eye_sensitive" msgid="6050967250223079001">"көздің қозғалуын дәл бақылау"</string>
     <string name="permgrouplab_xr_tracking" msgid="766634536453394700">"Қозғалыс және аймақ деректері"</string>
     <string name="permgroupdesc_xr_tracking" msgid="812429788288001595">"көзді, қол мен денені бақылау және аймақты сканерлеу"</string>
-    <string name="permgrouplab_xr_tracking_sensitive" msgid="4346975608010051186">"Бастың дәл қозғалысы және аймақ деректері"</string>
-    <string name="permgroupdesc_xr_tracking_sensitive" msgid="7925014193164562556">"басты дәл бақылау және аймақты сканерлеу"</string>
+    <string name="permgrouplab_xr_tracking_sensitive" msgid="6574264227123545314">"Дәл қозғалыс және аймақ деректері"</string>
+    <string name="permgroupdesc_xr_tracking_sensitive" msgid="2480835734248509848">"аймақты дәл сканерлеу және бас қозғалысын бақылау"</string>
     <string name="capability_title_canRetrieveWindowContent" msgid="7554282892101587296">"Терезе контентін оқып отыру"</string>
     <string name="capability_desc_canRetrieveWindowContent" msgid="6195610527625237661">"Ашық тұрған терезе контентін тексеру."</string>
     <string name="capability_title_canRequestTouchExploration" msgid="327598364696316213">"Түртілген элементтерді дыбыстау функциясын қосу"</string>
@@ -685,7 +685,7 @@
     <string name="permdesc_scene_understanding_coarse" msgid="847344305502345475">"Қолданбаға айналаны сканерлеуге мүмкіндік береді."</string>
     <string name="permlab_scene_understanding_fine" msgid="2899904960307462936">"айналадағы аймақты дәл сканерлеу"</string>
     <string name="permdesc_scene_understanding_fine" msgid="4848943859506977588">"Қолданбаға айналаны дәл сканерлеуге мүмкіндік береді."</string>
-    <string name="permlab_xr_tracking_in_background" msgid="8659516810430027774">"фондағы XR деректерін бақылау"</string>
+    <string name="permlab_xr_tracking_in_background" msgid="1714941204255185460">"бақылауға арналған XR деректерін фондық режимде пайдалану"</string>
     <string name="permdesc_xr_tracking_in_background" msgid="3151744132692357005">"Қолданбаға фондағы XR деректерін пайдалануға мүмкіндік береді."</string>
     <string name="permlab_capture_keyboard" msgid="4076894823382693032">"пернелерді алу"</string>
     <string name="permdesc_capture_keyboard" msgid="4192269470684407219">"Жүйе өзінің пернелер тіркесімдері мен әрекеттерін орындамай тұрып, қолданбаға пернелерді алуға мүмкіндік береді."</string>
@@ -888,11 +888,11 @@
     <string name="policylab_watchLogin" msgid="7599669460083719504">"Экран құлпын ашу әрекеттерін бақылау"</string>
     <string name="policydesc_watchLogin" product="tablet" msgid="2388436408621909298">"Экран құлпын ашқан кезде терілген қате құпия сөздердің саны бақыланып, тым көп қате құпия сөз терілген жағдайда, планшет құлыпталады немесе оның ішіндегі бүкіл дерек өшеді."</string>
     <string name="policydesc_watchLogin" product="tv" msgid="2140588224468517507">"Экранның құлпын ашу кезінде қате енгізілген құпия сөздердің санын бақылау, құпия сөз тым көп қате енгізілген жағдайда, Android TV құрылғысын құлыптау және Android TV құрылғыңыздың барлық деректерінен тазарту."</string>
-    <string name="policydesc_watchLogin" product="automotive" msgid="7011438994051251521">"Экран құлпын ашқан кезде, терілген қате құпия сөздердің саны бақыланады, сондай-ақ құпия сөздер бірнеше рет қате терілсе, ақпараттық-сауықтық жүйе құлыпталады немесе оның барлық дерегі жойылады."</string>
+    <string name="policydesc_watchLogin" product="automotive" msgid="7011438994051251521">"Экран құлпын ашқан кезде, терілген қате құпия сөздердің саны бақыланады, сондай-ақ құпия сөздер бірнеше рет қате терілсе, ақпарат және ойын-сауық жүйесі құлыпталады немесе оның барлық дерегі жойылады."</string>
     <string name="policydesc_watchLogin" product="default" msgid="4885030206253600299">"Экран құлпын ашқан кезде терілген қате құпия сөздердің санын бақылау және құпия сөз тым көп рет қате терілгенде, телефонды құлыптау немесе оның бүкіл деректерін өшіру."</string>
     <string name="policydesc_watchLogin_secondaryUser" product="tablet" msgid="2049038943004297474">"Экран бекітпесін ашқанда терілген қате құпия сөздердің санын бақылау және тым көп қате құпия сөздер терілсе, планшетті бекіту немесе осы пайдаланушының барлық деректерін өшіру."</string>
     <string name="policydesc_watchLogin_secondaryUser" product="tv" msgid="8965224107449407052">"Экранның құлпын ашу кезінде қате енгізілген құпия сөздердің санын бақылау, құпия сөз тым көп қате енгізілген жағдайда, Android TV құрылғысын құлыптау және барлық пайдаланушы деректерінен тазарту."</string>
-    <string name="policydesc_watchLogin_secondaryUser" product="automotive" msgid="7180857406058327941">"Экран құлпын ашқан кезде, терілген қате құпия сөздердің саны бақыланады, сондай-ақ құпия сөздер бірнеше рет қате терілсе, ақпараттық-сауықтық жүйе құлыпталады немесе осы профильдің барлық дерегі жойылады."</string>
+    <string name="policydesc_watchLogin_secondaryUser" product="automotive" msgid="7180857406058327941">"Экран құлпын ашқан кезде, терілген қате құпия сөздердің саны бақыланады, сондай-ақ құпия сөздер бірнеше рет қате терілсе, ақпарат және ойын-сауық жүйесі құлыпталады немесе осы профильдің барлық дерегі жойылады."</string>
     <string name="policydesc_watchLogin_secondaryUser" product="default" msgid="9177645136475155924">"Экран бекітпесін ашқанда терілген қате құпия сөздердің санын бақылау және тым көп қате құпия сөздер терілсе, телефонды бекіту немесе осы пайдаланушының барлық деректерін өшіру."</string>
     <string name="policylab_resetPassword" msgid="214556238645096520">"Экран құлпын өзгерту"</string>
     <string name="policydesc_resetPassword" msgid="4626419138439341851">"Экран құлпын өзгерте алады."</string>
@@ -901,13 +901,13 @@
     <string name="policylab_wipeData" msgid="1359485247727537311">"Барлық деректі өшіру"</string>
     <string name="policydesc_wipeData" product="tablet" msgid="7245372676261947507">"Планшет дерекқорын ескертусіз, зауыттық дерекқорын қайта реттеу арқылы өшіру."</string>
     <string name="policydesc_wipeData" product="tv" msgid="513862488950801261">"Зауыттық деректерді қалпына келтіру арқылы Android TV құрылғыңыздың деректерін ескертусіз тазартыңыз."</string>
-    <string name="policydesc_wipeData" product="automotive" msgid="660804547737323300">"Зауыттық деректерді қалпына келтіру арқылы ақпараттық-сауықтық жүйе дерегі ескертусіз өшіріледі."</string>
+    <string name="policydesc_wipeData" product="automotive" msgid="660804547737323300">"Зауыттық деректерді қалпына келтіру арқылы ақпарат және ойын-сауық жүйесі дерегі ескертусіз өшіріледі."</string>
     <string name="policydesc_wipeData" product="default" msgid="8036084184768379022">"Зауыттық деректерге қайтару арқылы телефон деректерін ескертусіз өшіре алады."</string>
     <string name="policylab_wipeData_secondaryUser" product="automotive" msgid="115034358520328373">"Профиль дерегін өшіру"</string>
     <string name="policylab_wipeData_secondaryUser" product="default" msgid="413813645323433166">"Пайдаланушы деректерін өшіру"</string>
     <string name="policydesc_wipeData_secondaryUser" product="tablet" msgid="2336676480090926470">"Осы пайдаланушының осы планшеттегі деректерін ескертусіз өшіре алады."</string>
     <string name="policydesc_wipeData_secondaryUser" product="tv" msgid="2293713284515865200">"Android TV құрылғысын осы пайдаланушы деректерінен ескертусіз тазартыңыз."</string>
-    <string name="policydesc_wipeData_secondaryUser" product="automotive" msgid="4658832487305780879">"Осы ақпараттық-сауықтық жүйедегі профиль дерегі ескертусіз өшіріледі."</string>
+    <string name="policydesc_wipeData_secondaryUser" product="automotive" msgid="4658832487305780879">"Осы ақпарат және ойын-сауық жүйесіндегі профиль дерегі ескертусіз өшіріледі."</string>
     <string name="policydesc_wipeData_secondaryUser" product="default" msgid="2788325512167208654">"Осы пайдаланушының осы телефондағы деректерін ескертусіз өшіре алады."</string>
     <string name="policylab_setGlobalProxy" msgid="215332221188670221">"Құрылғы жаһандық прокси қызметін орнату"</string>
     <string name="policydesc_setGlobalProxy" msgid="7149665222705519604">"Саясат қосулы болғанда пайдаланылатын құрылғының ғаламдық прокси-серверін орнатыңыз. Ғаламдық прокси-серверді тек құрылғы иесі орната алады."</string>
@@ -1986,8 +1986,8 @@
     <string name="package_updated_device_owner" msgid="7770195449213776218">"Әкімшіңіз жаңартты.\nБерілген рұқсаттарды көру үшін параметрлерге өтіңіз."</string>
     <string name="package_deleted_device_owner" msgid="2292335928930293023">"Әкімші жойған"</string>
     <string name="confirm_battery_saver" msgid="5247976246208245754">"Жарайды"</string>
-    <string name="battery_saver_description_with_learn_more" msgid="5444908404021316250">"Батареяны үнемдеу режимі қараңғы режимді іске қосады және фондық әрекеттерге, кейбір визуалдық әсерлерге, белгілі бір функциялар мен кейбір желі байланыстарына шектеу қояды немесе оларды өшіреді."</string>
-    <string name="battery_saver_description" msgid="8518809702138617167">"Батареяны үнемдеу режимі қараңғы режимді іске қосады және фондық әрекеттерге, кейбір визуалдық әсерлерге, белгілі бір функциялар мен кейбір желі байланыстарына шектеу қояды немесе оларды өшіреді."</string>
+    <string name="battery_saver_description_with_learn_more" msgid="8969945879044849461">"Батареяны үнемдеу режимі қараңғы режимді іске қосады және фондық әрекеттерге, кейбір визуалдық әсерлерге, белгілі бір функциялар мен кейбір желі байланыстарына шектеу қояды немесе оларды өшіреді."</string>
+    <string name="battery_saver_description" msgid="2820475140307374570">"Батареяны үнемдеу режимі қараңғы режимді іске қосады және фондық әрекеттерге, кейбір визуалдық әсерлерге, белгілі бір функциялар мен кейбір желі байланыстарына шектеу қояды немесе оларды өшіреді."</string>
     <string name="data_saver_description" msgid="4995164271550590517">"Дерек шығынын азайту үшін трафикті үнемдеу режимінде кейбір қолданбаларға деректі фондық режимде жіберуге және алуға тыйым салынады. Ашық тұрған қолданба деректі шектеулі шамада пайдаланады (мысалы, кескіндер оларды түрткенге дейін көрсетілмейді)."</string>
     <string name="data_saver_enable_title" msgid="7080620065745260137">"Трафикті үнемдеу режимі қосылсын ба?"</string>
     <string name="data_saver_enable_button" msgid="4399405762586419726">"Қосу"</string>
@@ -2581,13 +2581,13 @@
     <string name="usb_apm_usb_plugged_in_when_locked_notification_app_title" msgid="285421860627714333">"Қауіпсіздік және құпиялық"</string>
     <string name="usb_apm_usb_plugged_in_when_locked_replug_notification_title" msgid="3711633462195368964">"Экран құлпын ашып, USB-ді қайта жалғаңыз"</string>
     <string name="usb_apm_usb_plugged_in_when_locked_notification_title" msgid="2426356396215833585">"USB-ді жалғау үшін экран құлпын ашыңыз"</string>
-    <string name="usb_apm_usb_plugged_in_when_locked_replug_notification_text" msgid="3936428118409384816">"USB-ді жалғау үшін күшейтілген қорғанысқа экран құлпының ашылғаны қажет"</string>
-    <string name="usb_apm_usb_plugged_in_when_locked_data_notification_text" msgid="8392199274984083972">"USB-ді жалғау үшін күшейтілген қорғанысқа экран құлпының ашылғаны қажет"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_replug_notification_text" msgid="3936428118409384816">"USB арқылы жалғау үшін, \"Күшейтілген қорғаныс\" функциясына экран құлпының ашық болғаны қажет."</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_data_notification_text" msgid="8392199274984083972">"USB арқылы жалғау үшін, \"Күшейтілген қорғаныс\" функциясына экран құлпының ашық болғаны қажет."</string>
     <string name="usb_apm_usb_plugged_in_when_locked_charge_notification_text" msgid="6563939109526112446">"Жылдам зарядтау үшін күшейтілген қорғанысқа экран құлпының ашылғаны қажет"</string>
-    <string name="usb_apm_usb_plugged_in_when_locked_charge_data_notification_text" msgid="411509882563364946">"Жылдам зарядтау немесе USB-ді жалғау үшін күшейтілген қорғанысқа экран құлпының ашылғаны қажет"</string>
-    <string name="usb_apm_usb_plugged_in_when_locked_notification_silence_action_text" msgid="5495539757631669634">"Дыбысын өшіру"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_charge_data_notification_text" msgid="411509882563364946">"Жылдам зарядтау немесе USB арқылы жалғау үшін, \"Күшейтілген қорғаныс\" функциясына экран құлпының ашық болғаны қажет."</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_notification_silence_action_text" msgid="5495539757631669634">"Өшіру"</string>
     <string name="usb_apm_usb_notification_silenced_title" msgid="5114203793430169863">"Хабарландырулар дыбысы өшірілді"</string>
-    <string name="usb_apm_usb_notification_silenced_text" msgid="8394777105856033342">"Құрылғыны өшіріп қоспасаңыз, сізге күшейтілген қорғаныстың USB хабарландырулары келмейді"</string>
+    <string name="usb_apm_usb_notification_silenced_text" msgid="8394777105856033342">"Құрылғыны өшіріп қоспасаңыз, сізге \"Күшейтілген қорғаныс\" функциясының USB туралы хабарландырулары келмейді."</string>
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"USB-ге қатысты күдікті әрекет"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="5772698072220844779">"USB дерек сигналы өшірілді"</string>
     <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"Саусақ ізімен ашу функциясына қатысты мәселе шықты ма?"</string>

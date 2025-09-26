@@ -371,8 +371,8 @@
     <string name="permgroupdesc_xr_eye_sensitive" msgid="6050967250223079001">"să urmărească cu precizie mișcările ochilor"</string>
     <string name="permgrouplab_xr_tracking" msgid="766634536453394700">"Date despre mișcări și zonă"</string>
     <string name="permgroupdesc_xr_tracking" msgid="812429788288001595">"să urmărească ochii, fața, corpul și să scaneze zona"</string>
-    <string name="permgrouplab_xr_tracking_sensitive" msgid="4346975608010051186">"Date despre mișcările capului și zonă"</string>
-    <string name="permgroupdesc_xr_tracking_sensitive" msgid="7925014193164562556">"să urmărească cu precizie capul și să scaneze zona"</string>
+    <string name="permgrouplab_xr_tracking_sensitive" msgid="6574264227123545314">"Date precise despre mișcări și zonă"</string>
+    <string name="permgroupdesc_xr_tracking_sensitive" msgid="2480835734248509848">"să scaneze cu precizie zona și să urmărească capul;"</string>
     <string name="capability_title_canRetrieveWindowContent" msgid="7554282892101587296">"să preia conținutul ferestrei"</string>
     <string name="capability_desc_canRetrieveWindowContent" msgid="6195610527625237661">"Inspectează conținutul unei ferestre cu care interacționezi."</string>
     <string name="capability_title_canRequestTouchExploration" msgid="327598364696316213">"să activeze funcția Explorează prin atingere"</string>
@@ -686,7 +686,7 @@
     <string name="permdesc_scene_understanding_coarse" msgid="847344305502345475">"Permite aplicației să-ți scaneze împrejurimile."</string>
     <string name="permlab_scene_understanding_fine" msgid="2899904960307462936">"să scaneze cu precizie zona din jur"</string>
     <string name="permdesc_scene_understanding_fine" msgid="4848943859506977588">"Permite aplicației să-ți scaneze cu precizie împrejurimile."</string>
-    <string name="permlab_xr_tracking_in_background" msgid="8659516810430027774">"să urmărească datele XR în fundal"</string>
+    <string name="permlab_xr_tracking_in_background" msgid="1714941204255185460">"să acceseze urmărirea XR în fundal;"</string>
     <string name="permdesc_xr_tracking_in_background" msgid="3151744132692357005">"Permite aplicației să acceseze datele XR în fundal."</string>
     <string name="permlab_capture_keyboard" msgid="4076894823382693032">"să înregistreze tastele"</string>
     <string name="permdesc_capture_keyboard" msgid="4192269470684407219">"Permite aplicației să înregistreze tastele înainte ca sistemul să poată procesa comenzile rapide și acțiunile de sistem."</string>
@@ -1987,8 +1987,8 @@
     <string name="package_updated_device_owner" msgid="7770195449213776218">"Instalat de administrator.\nAccesează setările ca să vezi permisiunile acordate"</string>
     <string name="package_deleted_device_owner" msgid="2292335928930293023">"Șters de administrator"</string>
     <string name="confirm_battery_saver" msgid="5247976246208245754">"OK"</string>
-    <string name="battery_saver_description_with_learn_more" msgid="5444908404021316250">"Economisirea bateriei activează tema întunecată și restricționează sau dezactivează activitatea în fundal, unele efecte vizuale, alte funcții și câteva conexiuni la rețea."</string>
-    <string name="battery_saver_description" msgid="8518809702138617167">"Economisirea bateriei activează tema întunecată și restricționează sau dezactivează activitatea în fundal, unele efecte vizuale, alte funcții și câteva conexiuni la rețea."</string>
+    <string name="battery_saver_description_with_learn_more" msgid="8969945879044849461">"Economisirea bateriei activează Tema întunecată și restricționează sau dezactivează activitatea în fundal, unele efecte vizuale, anumite funcții și câteva conexiuni la rețea."</string>
+    <string name="battery_saver_description" msgid="2820475140307374570">"Economisirea bateriei activează Tema întunecată și restricționează sau dezactivează activitatea în fundal, unele efecte vizuale, anumite funcții și câteva conexiuni la rețea."</string>
     <string name="data_saver_description" msgid="4995164271550590517">"Pentru a contribui la reducerea utilizării de date, Economizorul de date împiedică unele aplicații să trimită sau să primească date în fundal. O aplicație pe care o folosești poate accesa datele, însă mai rar. Aceasta poate însemna, de exemplu, că imaginile se afișează numai după ce le atingi."</string>
     <string name="data_saver_enable_title" msgid="7080620065745260137">"Activezi Economizorul de date?"</string>
     <string name="data_saver_enable_button" msgid="4399405762586419726">"Activează"</string>

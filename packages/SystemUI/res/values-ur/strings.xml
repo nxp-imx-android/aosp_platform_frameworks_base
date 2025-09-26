@@ -21,8 +21,8 @@
     xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
     <string name="app_label" msgid="4811759950673118541">"‏سسٹم UI"</string>
     <string name="battery_low_title" msgid="5319680173344341779">"بیٹری سیور آن کریں؟"</string>
-    <string name="battery_low_description" msgid="3282977755476423966">"آپ کے پاس <xliff:g id="PERCENTAGE">%s</xliff:g> بیٹری باقی ہے۔ بیٹری سیور گہری تھیم کو آن، پس منظر کی سرگرمی کو محدود اور اطلاعات میں تاخیر کرتی ہے۔"</string>
-    <string name="battery_low_intro" msgid="5148725009653088790">"بیٹری سیور گہری تھیم کو آن، پس منظر کی سرگرمی کو محدود اور اطلاعات میں تاخیر کرتی ہے۔"</string>
+    <string name="battery_low_description" msgid="7848989602036547056">"آپ کے پاس <xliff:g id="PERCENTAGE">%s</xliff:g> بیٹری باقی ہے۔ بیٹری سیور گہری تھیم کو آن، پس منظر کی سرگرمی کو محدود اور اطلاعات میں تاخیر کرتی ہے۔"</string>
+    <string name="battery_low_intro" msgid="8033783734931200690">"بیٹری سیور گہری تھیم کو آن، پس منظر کی سرگرمی کو محدود اور اطلاعات میں تاخیر کرتی ہے۔"</string>
     <string name="battery_low_percent_format" msgid="4276661262843170964">"<xliff:g id="PERCENTAGE">%s</xliff:g> باقی ہے"</string>
     <string name="invalid_charger_title" msgid="938685362320735167">"‏USB کے ذریعے چارج نہیں کر سکتے"</string>
     <string name="invalid_charger_text" msgid="2339310107232691577">"اپنے آلہ کے ساتھ ملنے والے چارجر کا استعمال کریں"</string>
@@ -140,8 +140,7 @@
     <string name="screenrecord_stop_dialog_button" msgid="2883812564938194350">"ریکارڈنگ روکیں"</string>
     <string name="screen_record_entire_screen" msgid="66944996337928170">"پوری اسکرین"</string>
     <string name="screen_record_single_app" msgid="7355880948574569290">"سنگل ایپ"</string>
-    <!-- no translation found for screen_record_single_app_hint (8404332826093639170) -->
-    <skip />
+    <string name="screen_record_single_app_hint" msgid="8404332826093639170">"ریکارڈ کرنے کیلئے ایپ"</string>
     <string name="screen_record_single_app_no_recents" msgid="1023249803854209330">"سنگل ایپ (منتخب کرنے کے لیے ایک ایپ کھولیں)"</string>
     <string name="screen_record_record_device_audio_label" msgid="5363057443124085198">"آلے سے آڈیو ریکارڈ کریں"</string>
     <string name="screen_record_record_microphone_label" msgid="4685753707185662381">"مائیکروفون کے ذریعے ریکارڈ کریں"</string>
@@ -149,11 +148,13 @@
     <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"ٹچز دکھائیں"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"ریکارڈ کرنے کے لیے ایک ایپ منتخب کریں"</string>
     <string name="screen_record_video_saved" msgid="1345283626390232282">"ویڈیو محفوظ ہو گئی"</string>
-    <!-- no translation found for screen_record_undo (7942716736019800870) -->
-    <skip />
+    <string name="screen_record_video_deleted" msgid="30786214839944540">"ویڈیو حذف کر دی گئی"</string>
+    <string name="screen_record_undo" msgid="7942716736019800870">"کالعدم کریں"</string>
     <string name="screen_record_retake" msgid="3846643688365398450">"دوبارہ لیں"</string>
     <string name="screen_record_edit" msgid="8733014191240769309">"ترمیم کریں"</string>
     <string name="screen_record_delete" msgid="1023421937978254537">"حذف کریں"</string>
+    <string name="screen_record_delete_dialog_title" msgid="5868561491974057044">"اس ریکارڈنگ کو حذف کریں؟"</string>
+    <string name="screen_record_delete_dialog_content" msgid="2610040845214024496">"اس ریکارڈنگ کو حذف کرنے سے آپ کے آلے سے ویڈیو فائل مستقل طور پر حذف ہو جائے گی"</string>
     <string name="screen_record_play" msgid="4732544724679889445">"چلائیں"</string>
     <string name="screen_record_pause" msgid="1715012292444967776">"موقوف کریں"</string>
     <string name="screen_record_mute" msgid="8111682249858638168">"خاموش کریں"</string>
@@ -165,10 +166,8 @@
     <string name="screen_capture_toolbar_screenshot_button" msgid="5676585348709494125">"اسکرین شاٹ"</string>
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"ریکارڈ کریں"</string>
     <string name="screen_share_toolbar_share_button" msgid="9182050596136815833">"اشتراک کریں"</string>
-    <!-- no translation found for screen_share_no_select_app_thumbnail (1630012401570567430) -->
-    <skip />
-    <!-- no translation found for screen_share_app_audio_sharing (7201172218924898712) -->
-    <skip />
+    <string name="screen_share_no_select_app_thumbnail" msgid="1630012401570567430">"اشتراک کرنے کے لیے کوئی ایپ منتخب کریں"</string>
+    <string name="screen_share_app_audio_sharing" msgid="7201172218924898712">"ونڈو آڈیو کا اشتراک کریں"</string>
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"ونڈو کا اسکرین شاٹ لیں"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"ونڈو کو ریکارڈ کریں"</string>
     <string name="screen_capture_toolbar_region_button_screenshot_a11y" msgid="2102262602357521192">"منتخب ایریا کا اسکرین شاٹ لیں"</string>
@@ -176,7 +175,12 @@
     <string name="screen_capture_toolbar_fullscreen_button_screenshot_a11y" msgid="8699983355979869210">"پوری اسکرین کا اسکرین شاٹ لیں"</string>
     <string name="screen_capture_toolbar_fullscreen_button_record_a11y" msgid="852148867883959158">"پوری اسکرین کو ریکارڈ کریں"</string>
     <string name="screen_capture_toolbar_settings_button_a11y" msgid="8014446956996739704">"اسکرین کیپچر کی ترتیبات"</string>
+    <string name="screen_capture_show_clicks_and_keys" msgid="2151690554364148717">"کلکس اور کلیدیں دکھائیں"</string>
+    <string name="screen_capture_device_audio" msgid="1537290197773737349">"آلہ کا آڈیو"</string>
+    <string name="screen_capture_microphone_audio" msgid="1698835678818747741">"مائیکروفون"</string>
+    <string name="screen_capture_front_camera" msgid="1214647538302639358">"فرنٹ کیمرا"</string>
     <string name="screen_capture_region_dimensions" msgid="2317064050253056256">"<xliff:g id="HEIGHT">%2$d</xliff:g> x <xliff:g id="WIDTH">%1$d</xliff:g>"</string>
+    <string name="screen_share_privacy_indicator_stop_sharing" msgid="2297045039651417274">"اشتراک کرنا روکیں"</string>
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"اسکرین کا اشتراک ہو رہا ہے"</string>
     <string name="share_to_app_chip_accessibility_label_generic" msgid="5517431657924536133">"مواد کا اشتراک کیا جا رہا ہے"</string>
     <string name="share_to_app_stop_dialog_title" msgid="9212915050910250438">"اسکرین کا اشتراک روکیں؟"</string>
@@ -490,12 +494,13 @@
     <string name="accessibility_hearing_device_pair_new_device" msgid="8440082580186130090">"نئے آلے کا جوڑا بنانے کے لیے کلک کریں"</string>
     <string name="hearing_devices_presets_error" msgid="350363093458408536">"پہلے سے ترتیب شدہ کو اپ ڈیٹ نہیں کیا جا سکا"</string>
     <string name="hearing_devices_preset_label" msgid="7878267405046232358">"پہلے سے ترتیب شدہ"</string>
+    <string name="hearing_devices_preset_label_left" msgid="7427947566560179945">"بایاں پری سیٹ"</string>
+    <string name="hearing_devices_preset_label_right" msgid="1847206329436268522">"دایاں پری سیٹ"</string>
     <string name="hearing_devices_input_routing_label" msgid="730396728151232306">"کالز کے لیے ڈیفالٹ مائیکروفون"</string>
   <string-array name="hearing_device_input_routing_options">
     <item msgid="4582190415045337003">"سماعتی آلہ مائیکروفون"</item>
     <item msgid="8501466270452446450">"اس فون کا مائیکروفون"</item>
   </string-array>
-    <string name="hearing_devices_spinner_item_selected" msgid="3137083889662762383">"منتخب کردہ"</string>
     <string name="hearing_devices_ambient_label" msgid="629440938614895797">"اطراف"</string>
     <string name="hearing_devices_ambient_control_left" msgid="3586965448230412600">"دائیں"</string>
     <string name="hearing_devices_ambient_control_right" msgid="6192137602448918383">"بائیں"</string>
@@ -891,7 +896,7 @@
     <string name="notification_guts_news_summary" msgid="638697931043407835">"اہم خبریں، اداریے اور مزید"</string>
     <string name="notification_guts_social_summary" msgid="3749147631983977040">"پسندیدگیاں، پوسٹس اور مزید"</string>
     <string name="notification_guts_recs_summary" msgid="8391881843238947007">"نیوز لیٹرز، تجویز کردہ میڈیا اور مزید"</string>
-    <string name="notification_onboarding_summaries_turn_on" msgid="5050003857531272655">"آن کریں"</string>
+    <string name="notification_onboarding_summaries_turn_on" msgid="3831339570984683297">"ترتیبات میں آن کریں"</string>
     <string name="notification_onboarding_summaries_message" msgid="6061524903176459064">"آپ کو فوری جھلکیاں دینے کے لیے، اب آپ کی طویل گفتگوؤں کا خلاصہ کیا جا سکتا ہے"</string>
     <string name="notification_onboarding_bundles_message" msgid="4612908213178622912">"نوٹیفکیشن آرگنائزر کم ترجیحی اطلاعات کو بنڈل اور خاموش کر دیتا ہے۔ ترتیبات میں مزید زمرے شامل کریں۔"</string>
     <string name="notification_bundle_header_counter" msgid="5515532701569242265">"{count,plural, =1{‫# اطلاع}other{‫# اطلاعات}}"</string>
@@ -1145,15 +1150,11 @@
     <string name="accessibility_key_gesture_dialog_content" msgid="4519838108423437794">"‫<xliff:g id="ID_3">^3</xliff:g> استعمال کرنے کے لیے ایکشن "<annotation id="action_key_icon">"آئیکن"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> کی بورڈ شارٹ کٹ ہے۔ <xliff:g id="ID_4">^4</xliff:g>"</string>
     <string name="accessibility_key_gesture_dialog_talkback_intro" msgid="1617808784388544741">"‫<xliff:g id="ID_1">%1$s</xliff:g> ایک سکرین قاری ہے جو آپ کو بلند آواز میں بولے جانے والے آئٹمز کو سننے کی اجازت دیتی ہے۔ یہ ان لوگوں کیلئے مفید ثابت ہو سکتی ہے جنہیں اسکرین دیکھنے میں دشواری پیش آتی ہے۔"</string>
     <string name="accessibility_key_gesture_dialog_positive_button_text" msgid="3670746017523589293">"آن کریں"</string>
-    <!-- no translation found for accessibility_key_gesture_shortcut_not_yet_enabled_dialog_title (5331043821287212071) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_shortcut_not_yet_enabled_negative_button_text (6711239406914231612) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_shortcut_not_yet_enabled_positive_button_text (7748487028569821131) -->
-    <skip />
+    <string name="accessibility_key_gesture_shortcut_not_yet_enabled_dialog_title" msgid="5331043821287212071">"‫<xliff:g id="ID_1">%1$s</xliff:g> کی بورڈ شارٹ کٹ آن کریں؟"</string>
+    <string name="accessibility_key_gesture_shortcut_not_yet_enabled_negative_button_text" msgid="6711239406914231612">"آن نہ کریں"</string>
+    <string name="accessibility_key_gesture_shortcut_not_yet_enabled_positive_button_text" msgid="7748487028569821131">"شارٹ کٹ آن کریں"</string>
     <string name="accessibility_key_gesture_magnification_dialog_title" msgid="5770691510738701250">"<xliff:g id="ID_1">%1$s</xliff:g> کی بورڈ شارٹ کٹ آن ہے"</string>
-    <!-- no translation found for accessibility_key_gesture_magnification_dialog_content (582920726242272572) -->
-    <skip />
+    <string name="accessibility_key_gesture_magnification_dialog_content" msgid="582920726242272572">"‫<xliff:g id="ID_3">^3</xliff:g>، ایک ایکسیسبیلٹی خصوصیات کا استعمال کرنے کیلئے ایکشن "<annotation id="action_key_icon">"آئیکن"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g>، کی بورڈ شارٹ کٹ ہے۔ اس سے آپ کو مواد کو بڑا کرنے کیلئے اسکرین پر تیزی سے زوم ان کرنے کی سہولت حاصل ہوتی ہے۔ میگنیفکیشن آن ہونے پر، زوم کو ایڈجسٹ کرنے کیلئے، ایکشن "<annotation id="action_key_icon">"آئیکن"</annotation>" + <xliff:g id="ID_4">^1</xliff:g> اور \"+\" یا \"-\" دبائیں۔"</string>
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"شارٹ کٹ آف کریں"</string>
     <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"آن رکھیں"</string>
     <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="7934170819801013870">"ایکشن "<annotation id="action_key_icon">"آئیکن"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> کو دبانے سے <xliff:g id="ID_3">^3</xliff:g>، ایک ایکسیسبیلٹی خصوصیت آن ہو جاتی ہے۔ یہ آپ کو اپنے آلے کو ہینڈز فری کنٹرول کرنے دیتی ہے۔"</string>
@@ -1626,8 +1627,7 @@
     <string name="shortcut_helper_customize_dialog_reset_button_label" msgid="7645535254306312685">"ہاں، ری سیٹ کریں"</string>
     <string name="shortcut_helper_customize_dialog_cancel_button_label" msgid="5595546460431741178">"منسوخ کریں"</string>
     <string name="shortcut_helper_add_shortcut_dialog_placeholder" msgid="9154297849458741995">"کلید کو دبائیں"</string>
-    <!-- no translation found for shortcut_helper_customizer_action_key_text (3979063901857046887) -->
-    <skip />
+    <string name="shortcut_helper_customizer_action_key_text" msgid="3979063901857046887">"ایکشن"</string>
     <string name="shortcut_customizer_key_combination_in_use_error_message" msgid="3325858369539848162">"کلیدی مجموعہ پہلے سے استعمال میں ہے۔ دوسرا مجموعہ آزمائیں۔"</string>
     <string name="shortcut_customizer_generic_error_message" msgid="3128454624049722741">"شارٹ کٹ سیٹ نہیں کیا جا سکتا۔"</string>
     <string name="shortcut_helper_plus_symbol" msgid="4534843157353732011">"+"</string>

@@ -32,6 +32,7 @@
     <string name="confirmation_title_glasses" msgid="8288346850537727333">"Leisti &lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; valdyti &lt;strong&gt;<xliff:g id="DEVICE_NAME">%2$s</xliff:g>&lt;/strong&gt;?"</string>
     <string name="profile_name_glasses" msgid="3506504967216601277">"įrenginio"</string>
     <string name="summary_glasses" msgid="5469208629679579157">"Šiai programai bus leidžiama pasiekti toliau nurodytus leidimus jūsų <xliff:g id="DEVICE_TYPE">%1$s</xliff:g>."</string>
+    <string name="profile_name_medical" msgid="5617160509499466400">"medicinos įrenginys"</string>
     <string name="title_app_streaming" msgid="237666000400427614">"Leisti programai &lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; srautu perduoti programas ir sistemos funkcijas iš <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> į &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt;?"</string>
     <string name="summary_app_streaming" msgid="8346968726357732862">"Programai „<xliff:g id="APP_NAME">%1$s</xliff:g>“ bus suteikti toliau nurodyti leidimai."</string>
     <string name="summary_app_streaming_legacy" msgid="8994180646987541606">"Programa „<xliff:g id="APP_NAME_0">%1$s</xliff:g>“ galės pasiekti visą jūsų <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> matomą ar leidžiamą turinį, įskaitant garso įrašus, nuotraukas, mokėjimo informaciją, slaptažodžius ir pranešimus.&lt;br/&gt;&lt;br/&gt;Programa „<xliff:g id="APP_NAME_1">%1$s</xliff:g>“ galės perduoti srautu programas į „<xliff:g id="DEVICE_NAME">%3$s</xliff:g>“, kol pašalinsite prieigą prie šio leidimo."</string>
@@ -72,6 +73,8 @@
     <string name="permission_create_virtual_device" msgid="1102905050922460040">"Srautu perduoti duomenis į <xliff:g id="DEVICE_TYPE">%1$s</xliff:g>"</string>
     <string name="permission_add_mirror_display" msgid="3743433250535606288">"Bendrinti ekrano vaizdą"</string>
     <string name="permission_add_trusted_display" msgid="9052824856626276723">"Perduoti programas srautu"</string>
+    <string name="permission_schedule_exact_alarm" msgid="5680932535987512225">"Nustatyti signalus ir priminimus"</string>
+    <string name="permission_bypass_dnd" msgid="1241123166903040347">"Nepaisyti netrukdymo režimo nustatymų"</string>
     <string name="permission_phone_summary" msgid="8246321093970051702">"Skambinti ir tvarkyti telefonų skambučius"</string>
     <string name="permission_call_logs_summary" msgid="7545243592757693321">"Skaityti ir rašyti telefono skambučių žurnalą"</string>
     <string name="permission_sms_summary" msgid="8499509535410068616">"Siųsti ir peržiūrėti SMS pranešimus"</string>
@@ -87,6 +90,8 @@
     <string name="permission_add_mirror_display_summary" msgid="1385423940454941534">"Įrašykite, perduokite arba bendrinkite <xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g> ekrano vaizdą su &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt;.&lt;br/&gt;&lt;br/&gt;Programa „<xliff:g id="APP_NAME">%1$s</xliff:g>“ galės pasiekti visą turinį, kuris matomas ar leidžiamas <xliff:g id="DEVICE_TYPE_1">%2$s</xliff:g>, įskaitant garso įrašus, nuotraukas, mokėjimo informaciją, slaptažodžius ir pranešimus."</string>
     <string name="permission_add_trusted_display_summary" msgid="7399955172055281447">"Srautu perduokite <xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g> programas į &lt;strong&gt;<xliff:g id="DEVICE_NAME_1">%3$s</xliff:g>&lt;/strong&gt;.&lt;br/&gt;&lt;br/&gt;Programa „<xliff:g id="APP_NAME">%1$s</xliff:g>“ galės pasiekti visą turinį, kuris matomas ar leidžiamas „<xliff:g id="DEVICE_NAME_2">%3$s</xliff:g>“ įrenginyje, įskaitant garso įrašus, nuotraukas, mokėjimo informaciją, slaptažodžius ir pranešimus, net kai jūsų <xliff:g id="DEVICE_TYPE_3">%2$s</xliff:g> užrakintas."</string>
     <string name="permission_media_routing_control_summary" msgid="2714631092321412250">"Pasiekti pasiekiamų įrenginių sąrašą ir valdyti, kuris leidžia garso arba vaizdo įrašo srautą arba perduoda įrašą iš kitų programų"</string>
+    <string name="permission_schedule_exact_alarm_summary" msgid="5938321911309800377"></string>
+    <string name="permission_bypass_dnd_summary" msgid="6221709271927387626"></string>
     <string name="device_type" product="default" msgid="8268703872070046263">"telefone"</string>
     <string name="device_type" product="tablet" msgid="5038791954983067774">"planšetiniame kompiuteryje"</string>
     <string name="device_type" product="tv" msgid="5355611506659405636">"TV"</string>
