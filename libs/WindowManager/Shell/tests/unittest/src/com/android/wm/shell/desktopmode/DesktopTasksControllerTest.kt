@@ -1889,12 +1889,16 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
                 )
             )
             .thenReturn(Binder())
+        val pendingIntent =
+            PendingIntent.getActivity(
+                context,
+                /* requestCode= */ 0,
+                freeformTask.baseIntent,
+                PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_ONE_SHOT,
+                /* options= */ null,
+            )
 
-        controller.startLaunchIntentTransition(
-            freeformTask.baseIntent,
-            Bundle.EMPTY,
-            DEFAULT_DISPLAY,
-        )
+        controller.startLaunchIntentTransition(pendingIntent, Bundle.EMPTY, DEFAULT_DISPLAY)
 
         val wct = getLatestDesktopMixedTaskWct(type = TRANSIT_OPEN)
         assertThat(wct.hierarchyOps).hasSize(1)
@@ -1921,8 +1925,16 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
                 )
             )
             .thenReturn(Binder())
+        val pendingIntent =
+            PendingIntent.getActivity(
+                context,
+                /* requestCode= */ 0,
+                intent,
+                PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_ONE_SHOT,
+                /* options= */ null,
+            )
 
-        controller.startLaunchIntentTransition(intent, Bundle.EMPTY, SECOND_DISPLAY)
+        controller.startLaunchIntentTransition(pendingIntent, Bundle.EMPTY, SECOND_DISPLAY)
 
         val wct = getLatestDesktopMixedTaskWct(type = TRANSIT_OPEN)
         // We expect two actions: open the app and open the wallpaper.
@@ -1946,7 +1958,15 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         taskRepository.setTopTransparentFullscreenTaskData(DEFAULT_DISPLAY, topTransparentTask)
 
         val task = setUpFreeformTask()
-        controller.startLaunchIntentTransition(task.baseIntent, Bundle.EMPTY, DEFAULT_DISPLAY)
+        val pendingIntent =
+            PendingIntent.getActivity(
+                context,
+                /* requestCode= */ 0,
+                task.baseIntent,
+                PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_ONE_SHOT,
+                /* options= */ null,
+            )
+        controller.startLaunchIntentTransition(pendingIntent, Bundle.EMPTY, DEFAULT_DISPLAY)
 
         verify(desktopMixedTransitionHandler)
             .startLaunchTransition(
@@ -10600,7 +10620,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     @EnableFlags(
         Flags.FLAG_ENABLE_DESKTOP_TAB_TEARING_MINIMIZE_ANIMATION_BUGFIX,
         Flags.FLAG_ENABLE_INTERACTION_DEPENDENT_TAB_TEARING_BOUNDS,
-        )
+    )
     @DisableFlags(Flags.FLAG_ENABLE_DESKTOP_TAB_TEARING_LAUNCH_ANIMATION)
     fun onUnhandledDrag_newFreeformIntent_tabTearingAnimationBugfixFlagEnabled_tabTearingLaunchAnimationFlagDisabled() {
         testOnUnhandledDrag(
@@ -10616,7 +10636,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     @EnableFlags(
         Flags.FLAG_ENABLE_DESKTOP_TAB_TEARING_LAUNCH_ANIMATION,
         Flags.FLAG_ENABLE_INTERACTION_DEPENDENT_TAB_TEARING_BOUNDS,
-        )
+    )
     @DisableFlags(Flags.FLAG_ENABLE_DESKTOP_TAB_TEARING_MINIMIZE_ANIMATION_BUGFIX)
     fun onUnhandledDrag_newFreeformIntent_tabTearingAnimationBugfixFlagDisabled_tabTearingLaunchAnimationFlagEnabled() {
         testOnUnhandledDrag(
