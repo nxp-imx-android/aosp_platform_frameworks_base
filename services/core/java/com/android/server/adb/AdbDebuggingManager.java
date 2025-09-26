@@ -19,7 +19,6 @@ package com.android.server.adb;
 import static android.os.InputConstants.DEFAULT_DISPATCHING_TIMEOUT_MILLIS;
 
 import static com.android.internal.util.dump.DumpUtils.writeStringIfNotNull;
-import static com.android.server.adb.AdbDebuggingManager.AdbDebuggingHandler.MSG_START_ADB_WIFI;
 import static com.android.server.adb.AdbService.ADBD;
 
 import android.annotation.NonNull;
@@ -87,6 +86,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.TimeoutException;
@@ -291,11 +291,17 @@ public class AdbDebuggingManager {
                         break;
                     }
 
-                    Slog.d(TAG, "Recv packet: " + new String(Arrays.copyOfRange(buffer, 0, 2)));
-
                     // These messages are send from AdbdAuthContext::SendPacket
                     // in frameworks/native/libs/adbd_auth/adbd_auth.cpp
+                    AdbdMessage msgParser = new AdbdMessage(buffer);
+                    Optional<String> messageType = msgParser.readType();
+                    if (messageType.isEmpty()) {
+                        continue;
+                    }
 
+                    Slog.d(TAG, "Recv packet: " + messageType);
+
+                    // TODO, convert all these tests to check with messageType.
                     if (buffer[0] == 'P' && buffer[1] == 'K') {
                         // PK adbauth.AdbdAuthPacketRequestAuthorization
                         String key = new String(Arrays.copyOfRange(buffer, 2, count));
@@ -399,6 +405,51 @@ public class AdbDebuggingManager {
                                                 : AdbDebuggingHandler.MSG_SERVER_DISCONNECTED);
                         msg.obj = port;
                         mHandler.sendMessage(msg);
+                    } else if (messageType.get().equals(AdbdMessage.REGISTER_SERVICE)) {
+                        Optional<String> instanceName = msgParser.readU8String();
+                        if (instanceName.isEmpty()) {
+                            continue;
+                        }
+
+                        Optional<String> serviceType = msgParser.readU8String();
+                        if (serviceType.isEmpty()) {
+                            continue;
+                        }
+
+                        Optional<Integer> port = msgParser.readU16();
+                        if (port.isEmpty()) {
+                            continue;
+                        }
+
+                        Bundle bundle = new Bundle();
+                        bundle.putString("instanceName", instanceName.get());
+                        bundle.putString("serviceType", serviceType.get());
+                        bundle.putInt("port", port.get());
+
+                        mHandler.sendMessage(
+                                Message.obtain(
+                                        mHandler,
+                                        AdbDebuggingHandler.MSG_REGISTER_SERVICE,
+                                        bundle));
+                    } else if (messageType.get().equals(AdbdMessage.UNREGISTER_SERVICE)) {
+                        Optional<String> instanceName = msgParser.readU8String();
+                        if (instanceName.isEmpty()) {
+                            continue;
+                        }
+
+                        Optional<String> serviceType = msgParser.readU8String();
+                        if (serviceType.isEmpty()) {
+                            continue;
+                        }
+
+                        Bundle bundle = new Bundle();
+                        bundle.putString("instanceName", instanceName.get());
+                        bundle.putString("serviceType", serviceType.get());
+                        mHandler.sendMessage(
+                                Message.obtain(
+                                        mHandler,
+                                        AdbDebuggingHandler.MSG_UNREGISTER_SERVICE,
+                                        bundle));
                     } else {
                         Slog.e(
                                 TAG,
@@ -478,6 +529,8 @@ public class AdbDebuggingManager {
         private final AdbNetworkMonitor mAdbNetworkMonitor;
 
         private static final String ADB_NOTIFICATION_CHANNEL_ID_TV = "usbdevicemanager.adb.tv";
+
+        private final AdbdServicesManager mAdbdServicesManager;
 
         private boolean isTv() {
             return mContext.getPackageManager().hasSystemFeature(PackageManager.FEATURE_LEANBACK);
@@ -567,6 +620,9 @@ public class AdbDebuggingManager {
         // === Messages from other parts of the system
         private static final int MESSAGE_KEY_FILES_UPDATED = 28;
 
+        private static final int MSG_REGISTER_SERVICE = 29;
+        private static final int MSG_UNREGISTER_SERVICE = 30;
+
         // === Messages we can send to adbd ===========
         static final String MSG_DISCONNECT_DEVICE = "DD";
         static final String MSG_START_ADB_WIFI = "W1";
@@ -606,6 +662,7 @@ public class AdbDebuggingManager {
             } else {
                 mAdbNetworkMonitor = new AdbBroadcastReceiver(mContext, mAdbConnectionInfo);
             }
+            mAdbdServicesManager = new AdbdServicesManager(mContext);
         }
 
         // Show when at least one device is connected.
@@ -973,10 +1030,24 @@ public class AdbDebuggingManager {
                     if (mAdbWifiEnabled) {
                         // In scenarios where adbd is restarted, the tls port may change.
                         onAdbdWifiServerDisconnected(-1);
+                        mAdbdServicesManager.unregisterAll();
                     }
                 }
                 case MESSAGE_KEY_FILES_UPDATED -> {
                     mAdbKeyStore.reloadKeyMap();
+                }
+                case MSG_REGISTER_SERVICE -> {
+                    Bundle bundle = (Bundle) msg.obj;
+                    String instanceName = bundle.getString("instanceName");
+                    String serviceType = bundle.getString("serviceType");
+                    int port = bundle.getInt("port");
+                    mAdbdServicesManager.registerService(instanceName, serviceType, port);
+                }
+                case MSG_UNREGISTER_SERVICE -> {
+                    Bundle bundle = (Bundle) msg.obj;
+                    String instanceName = bundle.getString("instanceName");
+                    String serviceType = bundle.getString("serviceType");
+                    mAdbdServicesManager.unregisterService(instanceName, serviceType);
                 }
             }
         }
