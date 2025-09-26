@@ -35,7 +35,6 @@ abstract class LaunchNewInstanceFromAppWindowMenu(val rotation: Rotation = Rotat
     TestScenarioBase(rotation) {
 
     private val instrumentation: Instrumentation = InstrumentationRegistry.getInstrumentation()
-    private val tapl = LauncherInstrumentation()
     private val wmHelper = WindowManagerStateHelper(instrumentation)
     private val device = UiDevice.getInstance(instrumentation)
     private val browserApp = BrowserAppHelper(instrumentation)
@@ -43,6 +42,8 @@ abstract class LaunchNewInstanceFromAppWindowMenu(val rotation: Rotation = Rotat
 
     @Before
     fun setup() {
+        browserApp.launchViaIntent(wmHelper)
+        browserApp.closePopupsIfNeeded(device)
         testApp.enterDesktopMode(wmHelper, device)
     }
 
@@ -58,6 +59,9 @@ abstract class LaunchNewInstanceFromAppWindowMenu(val rotation: Rotation = Rotat
 
     @After
     fun teardown() {
+        // The test launches new windows. We want to make sure to clear storage (and remove all
+        // opened windows) to prevent hitting the Chrome window limit.
+        browserApp.clearStorage()
         testApp.exit(wmHelper)
     }
 
