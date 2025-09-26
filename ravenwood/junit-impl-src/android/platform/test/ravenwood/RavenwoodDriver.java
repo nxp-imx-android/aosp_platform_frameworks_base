@@ -56,6 +56,8 @@ import com.android.server.compat.PlatformCompat;
 
 import org.junit.internal.management.ManagementFactory;
 import org.junit.runner.Description;
+import org.mockito.Mockito;
+import org.mockito.internal.progress.ThreadSafeMockingProgress;
 
 import java.io.File;
 import java.io.IOException;
@@ -281,21 +283,32 @@ public class RavenwoodDriver {
     }
 
     /**
-     * Partially reset and initialize before each test class invocation
+     * Partially reset and reinitialize some global state before each test class invocation
      */
     public static void initForRunner() {
-        // Reset some global state
         UiAutomation_ravenwood.reset();
         Process_ravenwood.reset();
         DeviceConfig_ravenwood.reset();
         Binder.restoreCallingIdentity(
                 RavenwoodEnvironment.getInstance().getDefaultCallingIdentity());
-        RavenwoodAppDriver.getInstance().reset();
-        Looper.getMainLooper().getQueue().resetForTest();
+
+        // The following 2 resets only affect mocks on the test thread. We might need to do
+        // something for other threads, but let's deal with that when actual issues arise.
+        //
+        // In theory these resets are unnecessary (as indicated by ThreadSafeMockingProgress
+        // being in the org.mockito.internal package), however when running tests with
+        // RAVENWOOD_RUN_DISABLED_TESTS=1, Mockito's internal errors may cause itself to be
+        // left in an invalid state, which prevents any subsequent usage of Mockito on the same
+        // thread. These mocking progress resets are the least hacky way to recover from that
+        // situation, albeit still hacky in nature due to the fact that we are poking into
+        // Mockito internal APIs.
+        ThreadSafeMockingProgress.mockingProgress().clearListeners();
+        ThreadSafeMockingProgress.mockingProgress().reset();
+
+        // This invalidates all inline mocks globally (NOT thread-local like those above).
+        Mockito.framework().clearInlineMocks();
 
         SystemProperties.clearChangeCallbacksForTest();
-
-        RavenwoodErrorHandler.maybeThrowPendingRecoverableUncaughtExceptionAndClear();
     }
 
     /**

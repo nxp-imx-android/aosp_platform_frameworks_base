@@ -19,6 +19,7 @@ import static android.platform.test.ravenwood.RavenwoodDriver.sRawStdErr;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.os.Looper;
 import android.os.Message;
 import android.util.Log;
 
@@ -75,6 +76,16 @@ public class RavenwoodErrorHandler {
             sRawStdErr.println("-----SIGUSR1 HANDLER-----");
             RavenwoodErrorHandler.doBugreport(null, null, false);
         });
+    }
+
+    static void enterTestRunner() {
+        // Reset the main thread to clear pending messages in the queue
+        Looper.getMainLooper().getQueue().resetForTest();
+        // Wait until the main thread is idle to be 100% sure the queue is empty
+        RavenwoodUtils.waitForMainLooperDone();
+        // It's possible that an exception was thrown during the final msg on the main thread
+        // the moment the queue is reset. Ignore it as it's not relevant to the current test.
+        clearPendingRecoverableUncaughtException();
     }
 
     /**
@@ -160,20 +171,13 @@ public class RavenwoodErrorHandler {
             super(message, cause);
         }
 
-        @Override
-        public String getMessage() {
-            return super.getMessage() + " : " + getCause().getMessage();
-        }
-
         static RecoverableUncaughtException create(Throwable th) {
             if (th instanceof RecoverableUncaughtException r) {
                 return r;
             }
-            var outer = new RecoverableUncaughtException(
+            return new RecoverableUncaughtException(
                     "Uncaught exception detected on thread " + Thread.currentThread().getName()
-                            + ": *** Continuing running the remaining tests ***", th);
-            Log.e(TAG, outer.getMessage(), outer);
-            return outer;
+                            + ". *** Continue running remaining tests ***", th);
         }
     }
 
@@ -251,15 +255,12 @@ public class RavenwoodErrorHandler {
 
     private static void setPendingUnrecoverableUncaughtException(Thread thread, Throwable th) {
         var msg = String.format(
-                "Uncaught exception detected on thread %s, test=%s:"
-                        + " %s; Failing all subsequent tests. "
+                "Uncaught exception detected on thread %s, test=%s; Failing all subsequent tests.\n"
                         + "Run with `RAVENWOOD_TOLERATE_UNHANDLED_EXCEPTIONS=1 atest ...` to "
-                        + "force run subsequent tests",
-                thread, sCurrentDescription, RavenwoodInternalUtils.getStackTraceString(th));
+                        + "force run subsequent tests.", thread, sCurrentDescription);
 
         var outer = new Exception(msg, th);
-        Log.e(TAG, outer.getMessage(), outer);
-
+        Log.e(TAG, "", outer);
         sUnrecoverableUncaughtException.compareAndSet(null, outer);
     }
 
@@ -286,6 +287,10 @@ public class RavenwoodErrorHandler {
 
     private static boolean hasPendingRecoverableUncaughtException() {
         return sPendingRecoverableUncaughtException.get() != null;
+    }
+
+    private static void clearPendingRecoverableUncaughtException() {
+        sPendingRecoverableUncaughtException.set(null);
     }
 
     private static void maybeThrowPendingRecoverableUncaughtException(boolean clear) {
