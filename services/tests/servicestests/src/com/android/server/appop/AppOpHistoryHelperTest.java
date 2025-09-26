@@ -36,6 +36,7 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
+import java.util.Set;
 
 
 @RunWith(AndroidJUnit4.class)
@@ -399,6 +400,72 @@ public class AppOpHistoryHelperTest {
         assertThat(appOpAccessEvent.accessTimeMillis()).isEqualTo(accessTime);
         assertThat(appOpAccessEvent.totalDurationMillis()).isEqualTo(
                 Duration.ofMinutes(10).toMillis());
+    }
+
+    @Test
+    public void recentlyUsedDistinctPackageNames() {
+        long accessTime = System.currentTimeMillis();
+        long beforeAccessTime = accessTime - Duration.ofMinutes(5).toMillis();
+        long afterAccessTime = accessTime + Duration.ofMinutes(5).toMillis();
+
+        // Record 1: should be returned
+        mShortIntervalHelper.incrementOpAccessedCount(AppOpsManager.OP_FINE_LOCATION,
+                Process.myUid(), mContext.getPackageName(),
+                VirtualDeviceManager.PERSISTENT_DEVICE_ID_DEFAULT, null,
+                AppOpsManager.UID_STATE_FOREGROUND, AppOpsManager.OP_FLAG_SELF, accessTime,
+                AppOpsManager.ATTRIBUTION_FLAGS_NONE, AppOpsManager.ATTRIBUTION_CHAIN_ID_NONE, 1,
+                false);
+
+        // Record 2: should be returned
+        mShortIntervalHelper.incrementOpAccessedCount(AppOpsManager.OP_COARSE_LOCATION,
+                Process.myUid(), "com.example.app1",
+                VirtualDeviceManager.PERSISTENT_DEVICE_ID_DEFAULT, null,
+                AppOpsManager.UID_STATE_FOREGROUND, AppOpsManager.OP_FLAG_SELF, accessTime,
+                AppOpsManager.ATTRIBUTION_FLAGS_NONE, AppOpsManager.ATTRIBUTION_CHAIN_ID_NONE, 1,
+                false);
+
+        // Record 3: should be filtered out by op name
+        mShortIntervalHelper.incrementOpAccessedCount(AppOpsManager.OP_CAMERA,
+                Process.myUid(), "com.example.app2",
+                VirtualDeviceManager.PERSISTENT_DEVICE_ID_DEFAULT, null,
+                AppOpsManager.UID_STATE_FOREGROUND, AppOpsManager.OP_FLAG_SELF, accessTime,
+                AppOpsManager.ATTRIBUTION_FLAGS_NONE, AppOpsManager.ATTRIBUTION_CHAIN_ID_NONE, 1,
+                false);
+
+        // Record 4: duplicate package, should not appear twice in result
+        mShortIntervalHelper.incrementOpAccessedCount(AppOpsManager.OP_FINE_LOCATION,
+                Process.myUid(), mContext.getPackageName(),
+                VirtualDeviceManager.PERSISTENT_DEVICE_ID_DEFAULT, null,
+                AppOpsManager.UID_STATE_FOREGROUND, AppOpsManager.OP_FLAG_SELF, accessTime,
+                AppOpsManager.ATTRIBUTION_FLAGS_NONE, AppOpsManager.ATTRIBUTION_CHAIN_ID_NONE, 1,
+                false);
+
+        // Record 5: should be filtered out by op flag
+        mShortIntervalHelper.incrementOpAccessedCount(AppOpsManager.OP_FINE_LOCATION,
+                Process.myUid(), "com.example.app3",
+                VirtualDeviceManager.PERSISTENT_DEVICE_ID_DEFAULT, null,
+                AppOpsManager.UID_STATE_FOREGROUND, AppOpsManager.OP_FLAG_TRUSTED_PROXIED,
+                accessTime, AppOpsManager.ATTRIBUTION_FLAGS_NONE,
+                AppOpsManager.ATTRIBUTION_CHAIN_ID_NONE, 1, false);
+
+        // Record 6: should be filtered out by time
+        long muchBeforeAccessTime = beforeAccessTime - Duration.ofMinutes(1).toMillis();
+        mShortIntervalHelper.incrementOpAccessedCount(AppOpsManager.OP_FINE_LOCATION,
+                Process.myUid(), "com.example.app4",
+                VirtualDeviceManager.PERSISTENT_DEVICE_ID_DEFAULT, null,
+                AppOpsManager.UID_STATE_FOREGROUND, AppOpsManager.OP_FLAG_SELF,
+                muchBeforeAccessTime, AppOpsManager.ATTRIBUTION_FLAGS_NONE,
+                AppOpsManager.ATTRIBUTION_CHAIN_ID_NONE, 1, false);
+        mShortIntervalHelper.persistPendingHistory();
+
+        Set<String> recentPackages = mShortIntervalHelper.getRecentlyUsedPackageNames(
+                new String[]{AppOpsManager.OPSTR_FINE_LOCATION,
+                        AppOpsManager.OPSTR_COARSE_LOCATION},
+                AppOpsManager.FILTER_BY_OP_NAMES, beforeAccessTime, afterAccessTime,
+                AppOpsManager.OP_FLAG_SELF);
+        assertThat(recentPackages.size()).isEqualTo(2);
+        assertThat(recentPackages).containsAtLeast(mContext.getPackageName(),
+                "com.example.app1");
     }
 
     private long getAccessTimeMillis(int hours, int minutes, int seconds) {

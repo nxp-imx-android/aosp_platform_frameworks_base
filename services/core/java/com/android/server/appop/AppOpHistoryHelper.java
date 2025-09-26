@@ -46,6 +46,7 @@ import android.os.Looper;
 import android.os.Message;
 import android.os.Process;
 import android.util.ArrayMap;
+import android.util.ArraySet;
 import android.util.IntArray;
 import android.util.LongSparseArray;
 import android.util.Pair;
@@ -320,6 +321,14 @@ public class AppOpHistoryHelper {
 
     long getTotalRecordsCount() {
         return mDbHelper.getTotalRecordsCount();
+    }
+
+    @NonNull
+    ArraySet<String> getRecentlyUsedPackageNames(@NonNull String[] opNames,
+            @AppOpsManager.HistoricalOpsRequestFilter int filter, long beginTimeMillis,
+            long endTimeMillis, @AppOpsManager.OpFlags int opFlags) {
+        return mDbHelper.getRecentlyUsedPackageNames(opNames, filter, beginTimeMillis,
+             endTimeMillis, opFlags);
     }
 
     @VisibleForTesting
