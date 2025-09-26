@@ -268,3 +268,10 @@ flag {
     description: "Check Bluetooth HID profile connection state is changed before waking up the device."
     bug: "440645135"
 }
+
+flag {
+    name: "enable_contextual_search_desktop_entrypoints"
+    namespace: "input"
+    description: "Enables desktop entrypoints for contextual search"
+    bug: "442915863"
+}
