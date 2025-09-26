@@ -71,7 +71,7 @@ class AppPinnedController(
                         windowDecorationActions.onOpenIntent(taskInfo.taskId, it)
                     }
                 },
-                onCloseWindow = { windowDecorationActions.onClose(taskInfo.taskId) },
+                onCloseWindow = { windowDecorationActions.onClose(taskInfo) },
             )
             .also { viewHolder = it }
     }
