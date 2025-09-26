@@ -34,7 +34,7 @@ import android.annotation.FlaggedApi;
 @FlaggedApi(FLAG_ENABLE_CONTEXTUAL_APP_FUNCTIONS)
 public interface AppFunctionRegistration {
     /**
-     * Removed the associated {@link AppFunction} from the system. If the app function was already
+     * Removes the associated {@link AppFunction} from the system. If the app function was already
      * unregistered, this method is a no-op.
      */
     void unregister();

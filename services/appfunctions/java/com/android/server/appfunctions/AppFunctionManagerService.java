@@ -54,6 +54,7 @@ public class AppFunctionManagerService extends SystemService {
                                                 APP_FUNCTIONS_DIR),
                                         AGENT_ALLOWLIST_FILE_NAME)),
                         MultiUserAppFunctionAccessHistory.getInstance(context),
+                        MultiUserDynamicAppFunctionRegistry.getInstance(),
                         BackgroundThread.getExecutor());
     }
 
@@ -77,6 +78,11 @@ public class AppFunctionManagerService extends SystemService {
     @Override
     public void onUserStopping(@NonNull TargetUser user) {
         mServiceImpl.onUserStopping(user);
+    }
+
+    @Override
+    public void onUserStopped(@NonNull TargetUser user) {
+        mServiceImpl.onUserStopped(user);
     }
 
     @Override
