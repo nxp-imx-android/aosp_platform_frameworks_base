@@ -128,7 +128,7 @@ bool HintSessionWrapper::init() {
     return false;
 }
 
-void HintSessionWrapper::updateTargetWorkDuration(long targetWorkDurationNanos) {
+void HintSessionWrapper::updateTargetWorkDuration(int64_t targetWorkDurationNanos) {
     if (!init()) return;
     targetWorkDurationNanos = targetWorkDurationNanos * Properties::targetCpuTimePercentage / 100;
     if (targetWorkDurationNanos != mLastTargetWorkDuration &&
@@ -140,7 +140,7 @@ void HintSessionWrapper::updateTargetWorkDuration(long targetWorkDurationNanos) 
     mLastFrameNotification = systemTime();
 }
 
-void HintSessionWrapper::reportActualWorkDuration(long actualDurationNanos) {
+void HintSessionWrapper::reportActualWorkDuration(int64_t actualDurationNanos) {
     if (!init()) return;
     mResetsSinceLastReport = 0;
     if (actualDurationNanos > kSanityCheckLowerBound &&
