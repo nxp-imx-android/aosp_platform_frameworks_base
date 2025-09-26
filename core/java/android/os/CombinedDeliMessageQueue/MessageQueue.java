@@ -718,6 +718,11 @@ public final class MessageQueue {
         }
     }
 
+    @UnsupportedAppUsage(
+            maxTargetSdk = Build.VERSION_CODES.BAKLAVA,
+            publicAlternatives =
+                    "To manipulate the queue in Instrumentation tests, use {@link"
+                        + " android.os.TestLooperManager}")
     Message next() {
         if (sUseDeliQueue) {
             return nextDeliQueue();
