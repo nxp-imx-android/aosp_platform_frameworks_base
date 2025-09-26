@@ -130,7 +130,7 @@ constructor(
             .distinctUntilChanged()
     }
 
-    private val nonAuthUiFlows: Flow<Float> = dozingTransitionFlows.nonAuthUIAlpha(null)
+    private val nonAuthUiFlows: Flow<Float> = dozingTransitionFlows.nonAuthUIAlpha
 
     val nonAuthUIAlpha: Float by
         nonAuthUiFlows.hydratedStateOf(traceName = "nonAuthUI", initialValue = 1f)
