@@ -16,6 +16,8 @@
 
 package com.android.systemui.screenrecord.domain
 
+import android.os.Parcel
+import android.os.Parcelable
 import com.android.systemui.mediaprojection.MediaProjectionCaptureTarget
 import com.android.systemui.screenrecord.ScreenRecordingAudioSource
 
@@ -24,4 +26,37 @@ data class ScreenRecordingParameters(
     val audioSource: ScreenRecordingAudioSource,
     val displayId: Int,
     val shouldShowTaps: Boolean,
-)
+) : Parcelable {
+
+    constructor(
+        parcel: Parcel
+    ) : this(
+        parcel.readParcelable(
+            MediaProjectionCaptureTarget::class.java.classLoader,
+            MediaProjectionCaptureTarget::class.java,
+        ),
+        parcel.readSerializable(
+            ScreenRecordingAudioSource::class.java.classLoader,
+            ScreenRecordingAudioSource::class.java,
+        ) as ScreenRecordingAudioSource,
+        parcel.readInt(),
+        parcel.readBoolean(),
+    )
+
+    override fun describeContents(): Int = 0
+
+    override fun writeToParcel(parcel: Parcel, flags: Int) =
+        with(parcel) {
+            writeParcelable(captureTarget, flags)
+            writeSerializable(audioSource)
+            writeInt(displayId)
+            writeBoolean(shouldShowTaps)
+        }
+
+    companion object CREATOR : Parcelable.Creator<ScreenRecordingParameters> {
+        override fun createFromParcel(parcel: Parcel): ScreenRecordingParameters =
+            ScreenRecordingParameters(parcel)
+
+        override fun newArray(size: Int): Array<ScreenRecordingParameters?> = arrayOfNulls(size)
+    }
+}

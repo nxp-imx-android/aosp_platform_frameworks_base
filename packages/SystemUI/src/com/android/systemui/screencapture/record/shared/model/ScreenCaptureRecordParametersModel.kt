@@ -16,12 +16,10 @@
 
 package com.android.systemui.screencapture.record.shared.model
 
-import com.android.systemui.screencapture.common.shared.model.ScreenCaptureTarget
 import com.android.systemui.screenrecord.ScreenRecordingAudioSource
 
 /** Models a set of parameters necessary to start a screen recording. */
 data class ScreenCaptureRecordParametersModel(
-    val target: ScreenCaptureTarget,
     val audioSource: ScreenRecordingAudioSource,
     val shouldShowTaps: Boolean,
     val shouldShowFrontCamera: Boolean,
