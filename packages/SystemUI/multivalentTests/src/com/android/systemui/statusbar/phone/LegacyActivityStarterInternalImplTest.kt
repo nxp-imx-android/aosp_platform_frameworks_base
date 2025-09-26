@@ -43,6 +43,7 @@ import com.android.systemui.assist.AssistManager
 import com.android.systemui.communal.domain.interactor.CommunalSceneInteractor
 import com.android.systemui.communal.domain.interactor.CommunalSettingsInteractor
 import com.android.systemui.desktop.DesktopFirstRepository
+import com.android.systemui.display.data.repository.displaySubcomponentPerDisplayRepository
 import com.android.systemui.keyguard.KeyguardViewMediator
 import com.android.systemui.keyguard.WakefulnessLifecycle
 import com.android.systemui.kosmos.testScope
@@ -63,8 +64,6 @@ import com.android.systemui.statusbar.SysuiStatusBarStateController
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow
 import com.android.systemui.statusbar.policy.DeviceProvisionedController
 import com.android.systemui.statusbar.policy.KeyguardStateController
-import com.android.systemui.statusbar.window.StatusBarWindowController
-import com.android.systemui.statusbar.window.StatusBarWindowControllerStore
 import com.android.systemui.testKosmos
 import com.android.systemui.util.concurrency.FakeExecutor
 import com.android.systemui.util.time.FakeSystemClock
@@ -103,8 +102,6 @@ class LegacyActivityStarterInternalImplTest : SysuiTestCase() {
     @Mock private lateinit var activityTransitionAnimator: ActivityTransitionAnimator
     @Mock private lateinit var shadeDialogContextInteractor: ShadeDialogContextInteractor
     @Mock private lateinit var lockScreenUserManager: NotificationLockscreenUserManager
-    @Mock private lateinit var statusBarWindowController: StatusBarWindowController
-    @Mock private lateinit var statusBarWindowControllerStore: StatusBarWindowControllerStore
     @Mock private lateinit var notifShadeWindowController: NotificationShadeWindowController
     @Mock private lateinit var wakefulnessLifecycle: WakefulnessLifecycle
     @Mock private lateinit var keyguardStateController: KeyguardStateController
@@ -129,7 +126,6 @@ class LegacyActivityStarterInternalImplTest : SysuiTestCase() {
     @Before
     fun setUp() {
         MockitoAnnotations.initMocks(this)
-        `when`(statusBarWindowControllerStore.defaultDisplay).thenReturn(statusBarWindowController)
         `when`(perDisplaySysUiStateRepository[anyInt()]).thenReturn(sysUIState)
         underTest =
             LegacyActivityStarterInternalImpl(
@@ -146,7 +142,7 @@ class LegacyActivityStarterInternalImplTest : SysuiTestCase() {
                 activityTransitionAnimator = activityTransitionAnimator,
                 contextInteractor = shadeDialogContextInteractor,
                 lockScreenUserManager = lockScreenUserManager,
-                statusBarWindowControllerStore = statusBarWindowControllerStore,
+                perDisplaySubcomponentRepository = kosmos.displaySubcomponentPerDisplayRepository,
                 wakefulnessLifecycle = wakefulnessLifecycle,
                 keyguardStateController = keyguardStateController,
                 statusBarStateController = statusBarStateController,

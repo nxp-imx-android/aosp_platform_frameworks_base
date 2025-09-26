@@ -19,16 +19,19 @@ package com.android.systemui.shade;
 import android.content.ComponentCallbacks2;
 import android.os.Looper;
 import android.util.Log;
+import android.view.Display;
 import android.view.MotionEvent;
 import android.view.ViewTreeObserver;
 import android.view.WindowManagerGlobal;
 
+import com.android.app.displaylib.PerDisplayRepository;
 import com.android.keyguard.KeyguardViewController;
 import com.android.systemui.DejankUtils;
 import com.android.systemui.assist.AssistManager;
 import com.android.systemui.dagger.SysUISingleton;
 import com.android.systemui.dagger.qualifiers.DisplayId;
 import com.android.systemui.dagger.qualifiers.Main;
+import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent;
 import com.android.systemui.plugins.statusbar.StatusBarStateController;
 import com.android.systemui.scene.domain.interactor.WindowRootViewVisibilityInteractor;
 import com.android.systemui.scene.shared.flag.SceneContainerFlag;
@@ -38,7 +41,6 @@ import com.android.systemui.statusbar.StatusBarState;
 import com.android.systemui.statusbar.notification.row.NotificationGutsManager;
 import com.android.systemui.statusbar.policy.DeviceProvisionedController;
 import com.android.systemui.statusbar.policy.KeyguardStateController;
-import com.android.systemui.statusbar.window.StatusBarWindowControllerStore;
 
 import dagger.Lazy;
 
@@ -61,7 +63,8 @@ public final class ShadeControllerImpl extends BaseShadeControllerImpl {
     private final KeyguardStateController mKeyguardStateController;
     private final NotificationShadeWindowController mNotificationShadeWindowController;
     private final StatusBarStateController mStatusBarStateController;
-    private final StatusBarWindowControllerStore mStatusBarWindowControllerStore;
+    private final PerDisplayRepository<SystemUIDisplaySubcomponent>
+            mPerDisplaySubcomponentRepository;
     private final DeviceProvisionedController mDeviceProvisionedController;
 
     private final Lazy<NotificationShadeWindowViewController> mNotifShadeWindowViewController;
@@ -82,7 +85,7 @@ public final class ShadeControllerImpl extends BaseShadeControllerImpl {
             KeyguardStateController keyguardStateController,
             StatusBarStateController statusBarStateController,
             KeyguardViewController keyguardViewController,
-            StatusBarWindowControllerStore statusBarWindowControllerStore,
+            PerDisplayRepository<SystemUIDisplaySubcomponent> perDisplaySubcomponentRepository,
             DeviceProvisionedController deviceProvisionedController,
             NotificationShadeWindowController notificationShadeWindowController,
             @DisplayId int displayId,
@@ -101,7 +104,7 @@ public final class ShadeControllerImpl extends BaseShadeControllerImpl {
         mWindowRootViewVisibilityInteractor = windowRootViewVisibilityInteractor;
         mNpvc = shadeViewControllerLazy;
         mStatusBarStateController = statusBarStateController;
-        mStatusBarWindowControllerStore = statusBarWindowControllerStore;
+        mPerDisplaySubcomponentRepository = perDisplaySubcomponentRepository;
         mDeviceProvisionedController = deviceProvisionedController;
         mGutsManager = gutsManager;
         mNotificationShadeWindowController = notificationShadeWindowController;
@@ -313,8 +316,12 @@ public final class ShadeControllerImpl extends BaseShadeControllerImpl {
 
         // Update the visibility of notification shade and status bar window.
         mNotificationShadeWindowController.setPanelVisible(false);
-        mStatusBarWindowControllerStore.getDefaultDisplay().setForceStatusBarVisible(
-                false, /* source=*/ "ShadeControllerImpl#makeExpandedInvisible");
+        // TODO: b/444658034 - Use display specific instance of StatusBarWindowController
+        mPerDisplaySubcomponentRepository
+                .get(Display.DEFAULT_DISPLAY)
+                .getStatusBarWindowController()
+                .setForceStatusBarVisible(
+                        false, /* source= */ "ShadeControllerImpl#makeExpandedInvisible");
 
         // Close any guts that might be visible
         mGutsManager.get().closeAndSaveGuts(

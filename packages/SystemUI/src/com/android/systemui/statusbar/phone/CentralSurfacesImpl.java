@@ -217,7 +217,6 @@ import com.android.systemui.statusbar.policy.DeviceProvisionedController.DeviceP
 import com.android.systemui.statusbar.policy.ExtensionController;
 import com.android.systemui.statusbar.policy.KeyguardStateController;
 import com.android.systemui.statusbar.policy.UserInfoControllerImpl;
-import com.android.systemui.statusbar.window.StatusBarWindowControllerStore;
 import com.android.systemui.statusbar.window.StatusBarWindowStateController;
 import com.android.systemui.surfaceeffects.ripple.RippleShader.RippleShape;
 import com.android.systemui.topui.TopUiController;
@@ -376,7 +375,8 @@ public class CentralSurfacesImpl implements CoreStartable, CentralSurfaces {
     private final NotificationShadeWindowController mNotificationShadeWindowController;
     private final TopUiController mTopUiController;
     private final StatusBarInitializer mStatusBarInitializer;
-    private final StatusBarWindowControllerStore mStatusBarWindowControllerStore;
+    private final PerDisplayRepository<SystemUIDisplaySubcomponent>
+            mPerDisplaySubcomponentRepository;
     private final StatusBarModeRepositoryStore mStatusBarModeRepository;
     private final KeyguardUpdateMonitor mKeyguardUpdateMonitor;
     @VisibleForTesting
@@ -604,7 +604,6 @@ public class CentralSurfacesImpl implements CoreStartable, CentralSurfaces {
             LightBarController lightBarController,
             AutoHideController autoHideController,
             StatusBarInitializer statusBarInitializer,
-            StatusBarWindowControllerStore statusBarWindowControllerStore,
             PerDisplayRepository<SystemUIDisplaySubcomponent> perDisplaySubcomponentRepository,
             StatusBarModeRepositoryStore statusBarModeRepository,
             KeyguardUpdateMonitor keyguardUpdateMonitor,
@@ -712,7 +711,7 @@ public class CentralSurfacesImpl implements CoreStartable, CentralSurfaces {
         mLightBarController = lightBarController;
         mAutoHideController = autoHideController;
         mStatusBarInitializer = statusBarInitializer;
-        mStatusBarWindowControllerStore = statusBarWindowControllerStore;
+        mPerDisplaySubcomponentRepository = perDisplaySubcomponentRepository;
         mStatusBarModeRepository = statusBarModeRepository;
         mKeyguardUpdateMonitor = keyguardUpdateMonitor;
         mPulseExpansionHandler = pulseExpansionHandler;
@@ -1832,7 +1831,10 @@ public class CentralSurfacesImpl implements CoreStartable, CentralSurfaces {
         // When the StatusBarConnectedDisplays flag is enabled, this logic will be done in
         // StatusBarOrchestrator
         if (!StatusBarConnectedDisplays.isEnabled()) {
-            mStatusBarWindowControllerStore.getDefaultDisplay().attach();
+            mPerDisplaySubcomponentRepository
+                    .get(Display.DEFAULT_DISPLAY)
+                    .getStatusBarWindowController()
+                    .attach();
         }
     }
 

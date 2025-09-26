@@ -42,6 +42,8 @@ import com.android.systemui.statusbar.layout.StatusBarContentInsetsProvider
 import com.android.systemui.statusbar.layout.StatusBarContentInsetsProviderImpl
 import com.android.systemui.statusbar.pipeline.shared.domain.interactor.HomeStatusBarInteractor
 import com.android.systemui.statusbar.ui.SystemBarUtilsState
+import com.android.systemui.statusbar.window.StatusBarWindowController
+import com.android.systemui.statusbar.window.StatusBarWindowControllerImpl
 import com.android.systemui.statusbar.window.StatusBarWindowStateController
 import dagger.Binds
 import dagger.Lazy
@@ -62,6 +64,10 @@ interface PerDisplayStatusBarModule {
     fun bindsStatusBarIconRefreshInteractor(
         impl: StatusBarIconRefreshInteractorImpl
     ): StatusBarIconRefreshInteractor
+
+    @Binds
+    @DisplayAware
+    fun statusBarWindowController(impl: StatusBarWindowControllerImpl): StatusBarWindowController
 
     @Binds
     @DisplayAware

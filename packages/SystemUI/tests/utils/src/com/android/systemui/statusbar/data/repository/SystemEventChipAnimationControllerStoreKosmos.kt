@@ -21,7 +21,6 @@ import com.android.systemui.display.data.repository.displaySubcomponentPerDispla
 import com.android.systemui.display.data.repository.displayWindowPropertiesRepository
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.applicationCoroutineScope
-import com.android.systemui.statusbar.window.statusBarWindowControllerStore
 import org.mockito.kotlin.mock
 
 val Kosmos.fakeSystemEventChipAnimationControllerStore by
@@ -34,7 +33,6 @@ val Kosmos.systemEventChipAnimationControllerStoreImpl by
             displayRepository = displayRepository,
             factory = { _, _, _ -> mock() },
             displayWindowPropertiesRepository = displayWindowPropertiesRepository,
-            statusBarWindowControllerStore = statusBarWindowControllerStore,
             perDisplaySubcomponentRepo = displaySubcomponentPerDisplayRepository,
         )
     }

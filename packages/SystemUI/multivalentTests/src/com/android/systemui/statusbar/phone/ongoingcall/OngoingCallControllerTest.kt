@@ -29,6 +29,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.concurrency.fakeExecutor
+import com.android.systemui.display.data.repository.displaySubcomponentPerDisplayRepository
 import com.android.systemui.dump.DumpManager
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.log.logcatLogBuffer
@@ -46,8 +47,8 @@ import com.android.systemui.statusbar.notification.shared.ActiveNotificationMode
 import com.android.systemui.statusbar.notification.shared.CallType
 import com.android.systemui.statusbar.phone.ongoingcall.data.repository.ongoingCallRepository
 import com.android.systemui.statusbar.phone.ongoingcall.shared.model.OngoingCallModel
-import com.android.systemui.statusbar.window.StatusBarWindowController
-import com.android.systemui.statusbar.window.StatusBarWindowControllerStore
+import com.android.systemui.statusbar.window.mockStatusBarWindowController
+import com.android.systemui.statusbar.window.statusBarWindowController
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.test.runCurrent
@@ -71,7 +72,8 @@ import org.mockito.kotlin.whenever
 @TestableLooper.RunWithLooper
 @DisableFlags(StatusBarChipsModernization.FLAG_NAME, PromotedNotificationUi.FLAG_NAME)
 class OngoingCallControllerTest : SysuiTestCase() {
-    private val kosmos = testKosmos()
+    private val kosmos =
+        testKosmos().also { it.statusBarWindowController = it.mockStatusBarWindowController }
 
     private val mainExecutor = kosmos.fakeExecutor
     private val testScope = kosmos.testScope
@@ -84,8 +86,7 @@ class OngoingCallControllerTest : SysuiTestCase() {
     private val mockSwipeStatusBarAwayGestureHandler = mock<SwipeStatusBarAwayGestureHandler>()
     private val mockOngoingCallListener = mock<OngoingCallListener>()
     private val mockIActivityManager = mock<IActivityManager>()
-    private val mockStatusBarWindowController = mock<StatusBarWindowController>()
-    private val mockStatusBarWindowControllerStore = mock<StatusBarWindowControllerStore>()
+    private val mockStatusBarWindowController = kosmos.mockStatusBarWindowController
 
     private lateinit var chipView: View
 
@@ -97,8 +98,6 @@ class OngoingCallControllerTest : SysuiTestCase() {
                 LayoutInflater.from(mContext).inflate(R.layout.ongoing_activity_chip_primary, null)
         }
 
-        whenever(mockStatusBarWindowControllerStore.defaultDisplay)
-            .thenReturn(mockStatusBarWindowController)
         controller =
             OngoingCallController(
                 testScope.backgroundScope,
@@ -108,8 +107,8 @@ class OngoingCallControllerTest : SysuiTestCase() {
                 mainExecutor,
                 mockIActivityManager,
                 DumpManager(),
-                mockStatusBarWindowControllerStore,
                 mockSwipeStatusBarAwayGestureHandler,
+                kosmos.displaySubcomponentPerDisplayRepository,
                 statusBarModeRepository,
                 logcatLogBuffer("OngoingCallControllerViaRepoTest"),
             )

@@ -16,12 +16,15 @@
 
 package com.android.systemui.statusbar.phone.ongoingcall.domain.interactor
 
+import android.view.Display
 import androidx.annotation.VisibleForTesting
+import com.android.app.displaylib.PerDisplayRepository
 import com.android.systemui.CoreStartable
 import com.android.systemui.activity.data.repository.ActivityManagerRepository
 import com.android.systemui.ambient.statusbar.shared.flag.OngoingActivityChipsOnDream
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
+import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent
 import com.android.systemui.keyguard.domain.interactor.KeyguardInteractor
 import com.android.systemui.log.LogBuffer
 import com.android.systemui.log.core.Logger
@@ -31,7 +34,6 @@ import com.android.systemui.statusbar.notification.domain.interactor.ActiveNotif
 import com.android.systemui.statusbar.notification.shared.ActiveNotificationModel
 import com.android.systemui.statusbar.phone.ongoingcall.OngoingCallLog
 import com.android.systemui.statusbar.phone.ongoingcall.shared.model.OngoingCallModel
-import com.android.systemui.statusbar.window.StatusBarWindowControllerStore
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
@@ -62,7 +64,7 @@ constructor(
     @Application private val scope: CoroutineScope,
     private val activityManagerRepository: ActivityManagerRepository,
     private val statusBarModeRepositoryStore: StatusBarModeRepositoryStore,
-    private val statusBarWindowControllerStore: StatusBarWindowControllerStore,
+    private val perDisplaySubcomponentRepository: PerDisplayRepository<SystemUIDisplaySubcomponent>,
     private val swipeStatusBarAwayGestureHandler: SwipeStatusBarAwayGestureHandler,
     activeNotificationsInteractor: ActiveNotificationsInteractor,
     keyguardInteractor: KeyguardInteractor,
@@ -190,10 +192,12 @@ constructor(
         statusBarModeRepositoryStore.defaultDisplay.setOngoingProcessRequiresStatusBarVisible(
             statusBarRequired
         )
-        statusBarWindowControllerStore.defaultDisplay.setOngoingProcessRequiresStatusBarVisible(
-            statusBarRequired,
-            source = "OngoingCallInteractor",
-        )
+        perDisplaySubcomponentRepository[Display.DEFAULT_DISPLAY]!!
+            .statusBarWindowController
+            .setOngoingProcessRequiresStatusBarVisible(
+                statusBarRequired,
+                source = "OngoingCallInteractor",
+            )
     }
 
     private fun updateGestureListening(isEnabled: Boolean) {
