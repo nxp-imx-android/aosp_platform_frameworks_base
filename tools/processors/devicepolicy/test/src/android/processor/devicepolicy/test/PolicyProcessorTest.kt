@@ -384,4 +384,82 @@ class PolicyProcessorTest {
         assertThat(compilation).failed()
         assertThat(compilation).hadErrorContaining("requiredCrossUserPermission was set to")
     }
+
+    @Test
+    fun test_missingModifiers_failsToCompile() {
+        val policyIdentifier = buildPolicyIdentifier(
+            """
+            /**
+             * field must be public, static and final.
+             */
+            @BooleanPolicyDefinition(
+                    base = @PolicyDefinition(
+                            allowedScopes = { POLICY_SCOPE_USER },
+                            affectedResource = RESOURCE_DEVICE_WIDE
+                    )
+            )
+            private PolicyIdentifier<Boolean> MISSING_MODIFIERS =
+                new PolicyIdentifier<>("MISSING_MODIFIERS");
+            """.trimIndent()
+        )
+
+        val compilation: Compilation = mCompiler.compile(policyIdentifier)
+
+        assertThat(mCompilerWithoutProcessor.compile(policyIdentifier)).succeeded()
+        assertThat(compilation).failed()
+        assertThat(compilation).hadErrorContaining("Field must be static")
+        assertThat(compilation).hadErrorContaining("Field must be public")
+        assertThat(compilation).hadErrorContaining("Field must be final")
+    }
+
+    @Test
+    fun test_invalidInitializer_failsToCompile() {
+        val policyIdentifier = buildPolicyIdentifier(
+            """
+            private static final String INVALID_INITIALIZER_KEY = "INVALID_INITIALIZER";
+            /**
+             * Initializer must use a literal String.
+             */
+            @BooleanPolicyDefinition(
+                    base = @PolicyDefinition(
+                            allowedScopes = { POLICY_SCOPE_USER },
+                            affectedResource = RESOURCE_DEVICE_WIDE
+                    )
+            )
+            public static final PolicyIdentifier<Boolean> INVALID_INITIALIZER =
+                new PolicyIdentifier<>(INVALID_INITIALIZER_KEY);
+            """.trimIndent()
+        )
+
+        val compilation: Compilation = mCompiler.compile(policyIdentifier)
+
+        assertThat(mCompilerWithoutProcessor.compile(policyIdentifier)).succeeded()
+        assertThat(compilation).failed()
+        assertThat(compilation).hadErrorContaining("the argument to the constructor is not a literal")
+    }
+
+    @Test
+    fun test_wrongKey_failsToCompile() {
+        val policyIdentifier = buildPolicyIdentifier(
+            """
+            /**
+             * Initializer and keys must match .
+             */
+            @BooleanPolicyDefinition(
+                    base = @PolicyDefinition(
+                            allowedScopes = { POLICY_SCOPE_USER },
+                            affectedResource = RESOURCE_DEVICE_WIDE
+                    )
+            )
+            public static final PolicyIdentifier<Boolean> INVALID_KEY_POLICY =
+                new PolicyIdentifier<>("WRONG_KEY_POLICY");
+            """.trimIndent()
+        )
+
+        val compilation: Compilation = mCompiler.compile(policyIdentifier)
+
+        assertThat(mCompilerWithoutProcessor.compile(policyIdentifier)).succeeded()
+        assertThat(compilation).failed()
+        assertThat(compilation).hadErrorContaining("the argument to the constructor should be \"INVALID_KEY_POLICY\"")
+    }
 }

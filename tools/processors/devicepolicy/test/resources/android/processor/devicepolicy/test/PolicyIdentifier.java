@@ -36,8 +36,6 @@ public final class PolicyIdentifier<T> {
         return mId;
     }
 
-    private static final String SIMPLE_BOOLEAN_POLICY_KEY = "simple_boolean_policy_key";
-
     /**
      * Test policy 1
      */
@@ -54,10 +52,8 @@ public final class PolicyIdentifier<T> {
                             "android.permission.MANAGE_DEVICE_POLICY_ACROSS_USERS_FULL"
             )
     )
-    public static final PolicyIdentifier<Boolean> SIMPLE_BOOLEAN_POLICY = new PolicyIdentifier<>(
-            SIMPLE_BOOLEAN_POLICY_KEY);
-
-    private static final String SIMPLE_ENUM_POLICY_KEY = "simple_enum_policy_key";
+    public static final PolicyIdentifier<Boolean> SIMPLE_BOOLEAN_POLICY =
+            new PolicyIdentifier<>("SIMPLE_BOOLEAN_POLICY");
 
     /**
      * First entry
@@ -105,10 +101,8 @@ public final class PolicyIdentifier<T> {
             defaultValue = ENUM_ENTRY_2,
             intDef = SimpleEnumPolicyEnum.class
     )
-    public static final PolicyIdentifier<Integer> SIMPLE_ENUM_POLICY = new PolicyIdentifier<>(
-            SIMPLE_ENUM_POLICY_KEY);
-
-    private static final String SIMPLE_INTEGER_POLICY_KEY = "simple_integer_policy_key";
+    public static final PolicyIdentifier<Integer> SIMPLE_ENUM_POLICY =
+            new PolicyIdentifier<>("SIMPLE_ENUM_POLICY");
 
     /**
      * Test policy 3
@@ -122,6 +116,6 @@ public final class PolicyIdentifier<T> {
                     // requiredPermission and requiredCrossUserPermission using the default values.
             )
     )
-    public static final PolicyIdentifier<Integer> SIMPLE_INTEGER_POLICY = new PolicyIdentifier<>(
-            SIMPLE_INTEGER_POLICY_KEY);
+    public static final PolicyIdentifier<Integer> SIMPLE_INTEGER_POLICY =
+            new PolicyIdentifier<>("SIMPLE_INTEGER_POLICY");
 }

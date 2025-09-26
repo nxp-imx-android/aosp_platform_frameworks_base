@@ -110,8 +110,6 @@ public final class PolicyIdentifier<T> {
     })
     public @interface ScreenCaptureValue {}
 
-    private static final String SCREEN_CAPTURE_KEY = "screenCapture";
-
     /**
      * Policy that controls whether the screen capture is allowed or disallowed. Disallowing
      * screen capture also prevents the content from being shown on display devices that do not have
@@ -134,6 +132,6 @@ public final class PolicyIdentifier<T> {
             intDef = ScreenCaptureValue.class,
             defaultValue = SCREEN_CAPTURE_ALLOWED
     )
-    public static final PolicyIdentifier<Integer> SCREEN_CAPTURE = new PolicyIdentifier<>(
-            SCREEN_CAPTURE_KEY);
+    public static final PolicyIdentifier<Integer> SCREEN_CAPTURE =
+            new PolicyIdentifier<>("SCREEN_CAPTURE");
 }
