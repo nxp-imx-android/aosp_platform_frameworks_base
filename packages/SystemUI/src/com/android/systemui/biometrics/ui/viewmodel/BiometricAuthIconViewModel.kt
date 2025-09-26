@@ -30,6 +30,7 @@ import com.android.systemui.biometrics.domain.interactor.UdfpsOverlayInteractor
 import com.android.systemui.biometrics.shared.model.UdfpsOverlayParams
 import com.android.systemui.biometrics.ui.PromptIconState
 import com.android.systemui.dagger.qualifiers.Application
+import com.android.systemui.deviceentry.domain.interactor.DeviceEntryUdfpsInteractor
 import com.android.systemui.display.domain.interactor.DisplayStateInteractor
 import com.android.systemui.display.shared.model.DisplayRotation
 import com.android.systemui.lifecycle.HydratedActivatable
@@ -64,6 +65,7 @@ constructor(
     @Assisted val secureLockDeviceViewModel: SecureLockDeviceBiometricAuthContentViewModel? = null,
     @Application private val applicationContext: Context,
     private val displayStateInteractor: DisplayStateInteractor,
+    deviceEntryUdfpsInteractor: DeviceEntryUdfpsInteractor,
     udfpsOverlayInteractor: UdfpsOverlayInteractor,
 ) : HydratedActivatable() {
 
@@ -340,6 +342,12 @@ constructor(
                 )
             }
             .distinctUntilChanged()
+
+    val udfpsLocation by
+        deviceEntryUdfpsInteractor.udfpsLocation.hydratedStateOf(
+            traceName = "udfpsLocationState",
+            initialValue = null,
+        )
 
     /** The size of the biometric icon */
     val iconSize: Flow<Pair<Int, Int>> =
