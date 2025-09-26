@@ -17,8 +17,10 @@
 package com.android.systemui.scene.domain.interactor
 
 import android.content.pm.UserInfo
+import android.platform.test.annotations.EnableFlags
 import androidx.test.filters.SmallTest
 import com.android.compose.animation.scene.OverlayKey
+import com.android.systemui.Flags.FLAG_DUAL_SHADE
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.flags.EnableSceneContainer
 import com.android.systemui.kosmos.Kosmos
@@ -28,8 +30,8 @@ import com.android.systemui.kosmos.runCurrent
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.scene.domain.model.DualShadeEducationModel
 import com.android.systemui.scene.shared.model.Overlays
-import com.android.systemui.shade.domain.interactor.disableDualShade
 import com.android.systemui.shade.domain.interactor.enableDualShade
+import com.android.systemui.shade.domain.interactor.enableSingleShade
 import com.android.systemui.testKosmos
 import com.android.systemui.user.data.repository.fakeUserRepository
 import com.android.systemui.user.domain.interactor.selectedUserInteractor
@@ -43,6 +45,7 @@ import platform.test.runner.parameterized.Parameters
 @SmallTest
 @RunWith(ParameterizedAndroidJunit4::class)
 @EnableSceneContainer
+@EnableFlags(FLAG_DUAL_SHADE)
 class DualShadeEducationInteractorTest(private val forOverlay: OverlayKey) : SysuiTestCase() {
     private val kosmos = testKosmos()
     private lateinit var underTest: DualShadeEducationInteractor
@@ -121,7 +124,7 @@ class DualShadeEducationInteractorTest(private val forOverlay: OverlayKey) : Sys
     @Test
     fun notDualShadeMode_noEducation() =
         kosmos.runTest {
-            disableDualShade()
+            enableSingleShade()
             showOverlay(otherOverlay(forOverlay))
             advanceTimeBy(DualShadeEducationInteractor.TOOLTIP_APPEARANCE_DELAY_MS)
             assertEducation(DualShadeEducationModel.None)
