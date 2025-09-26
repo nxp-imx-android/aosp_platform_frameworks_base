@@ -66,7 +66,6 @@ import com.android.systemui.Flags.moveTransitionAnimationLayer
 import com.android.systemui.animation.ActivityTransitionAnimator.Companion.LONG_TRANSITION_TIMEOUT
 import com.android.systemui.animation.ActivityTransitionAnimator.Companion.TRANSITION_TIMEOUT
 import com.android.systemui.animation.TransitionAnimator.Companion.toTransitionState
-import com.android.systemui.animation.TransitionAnimator.Controller
 import com.android.window.flags.Flags.enableCompatuiSysuiLauncherFix
 import com.android.wm.shell.shared.IShellTransitions
 import com.android.wm.shell.shared.ShellTransitions
@@ -394,7 +393,16 @@ constructor(
                     includeReturn = animateReturn,
                 )
 
-            val launchResult = intentStarter(launchTransition)
+            // Only pass the transition to the intent starter if not animating alongside Keyguard.
+            // Otherwise, the transition is passed to [hideKeyguardWithAnimation()] later.
+            val launchResult =
+                intentStarter(
+                    if (!hideKeyguardWithAnimation) {
+                        launchTransition
+                    } else {
+                        null
+                    }
+                )
 
             // Only animate if the app is not already on top and will be opened, unless we are on
             // the keyguard.

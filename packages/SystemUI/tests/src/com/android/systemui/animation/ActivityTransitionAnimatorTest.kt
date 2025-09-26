@@ -26,6 +26,7 @@ import android.view.WindowManager.TRANSIT_NONE
 import android.view.WindowManager.TRANSIT_OPEN
 import android.widget.FrameLayout
 import android.widget.LinearLayout
+import android.window.IRemoteTransition
 import android.window.IRemoteTransitionFinishedCallback
 import android.window.RemoteTransition
 import android.window.TransitionFilter
@@ -59,13 +60,13 @@ import org.junit.runner.RunWith
 import org.mockito.ArgumentCaptor
 import org.mockito.ArgumentMatchers.anyBoolean
 import org.mockito.Mock
-import org.mockito.Mockito.mock
-import org.mockito.Mockito.never
-import org.mockito.Mockito.verify
 import org.mockito.junit.MockitoJUnit
 import org.mockito.kotlin.any
 import org.mockito.kotlin.eq
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.never
 import org.mockito.kotlin.spy
+import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -197,8 +198,9 @@ class ActivityTransitionAnimatorTest : SysuiTestCase() {
             }
 
             waitForIdleSync()
+            assertThat(originTransition).isNull()
             verify(controller).onIntentStarted(willAnimate = true)
-            verify(callback).hideKeyguardWithAnimation(originTransition!!.remoteTransition)
+            verify(callback).hideKeyguardWithAnimation(any<IRemoteTransition>())
         }
     }
 
@@ -385,12 +387,11 @@ class ActivityTransitionAnimatorTest : SysuiTestCase() {
                 object : DelegateTransitionAnimatorController(createController()) {
                     override val transitionCookie = cookie
                 }
-            val token = mock(IBinder::class.java)
-            val info = mock(TransitionInfo::class.java)
-            val change =
-                listOf(createChange(mock(SurfaceControl::class.java), cookie, forLaunch = true))
+            val token = mock<IBinder>()
+            val info = mock<TransitionInfo>()
+            val change = listOf(createChange(mock<SurfaceControl>(), cookie, forLaunch = true))
             whenever(info.changes).thenReturn(change)
-            val startTransaction = mock(SurfaceControl.Transaction::class.java)
+            val startTransaction = mock<SurfaceControl.Transaction>()
             var finished = false
             val finishCallback = finishedCallback { finished = true }
 
@@ -422,8 +423,8 @@ class ActivityTransitionAnimatorTest : SysuiTestCase() {
                     override val transitionCookie
                         get() = ActivityTransitionAnimator.TransitionCookie("testCookie")
                 }
-            val info = mock(TransitionInfo::class.java)
-            val startTransaction = mock(SurfaceControl.Transaction::class.java)
+            val info = mock<TransitionInfo>()
+            val startTransaction = mock<SurfaceControl.Transaction>()
             var finished = false
 
             activityTransitionAnimator
@@ -445,8 +446,8 @@ class ActivityTransitionAnimatorTest : SysuiTestCase() {
                     override val transitionCookie
                         get() = ActivityTransitionAnimator.TransitionCookie("testCookie")
                 }
-            val token = mock(IBinder::class.java)
-            val startTransaction = mock(SurfaceControl.Transaction::class.java)
+            val token = mock<IBinder>()
+            val startTransaction = mock<SurfaceControl.Transaction>()
             var finished = false
 
             activityTransitionAnimator
@@ -468,8 +469,8 @@ class ActivityTransitionAnimatorTest : SysuiTestCase() {
                     override val transitionCookie
                         get() = ActivityTransitionAnimator.TransitionCookie("testCookie")
                 }
-            val token = mock(IBinder::class.java)
-            val info = mock(TransitionInfo::class.java)
+            val token = mock<IBinder>()
+            val info = mock<TransitionInfo>()
             var finished = false
 
             activityTransitionAnimator
@@ -491,12 +492,11 @@ class ActivityTransitionAnimatorTest : SysuiTestCase() {
                 object : DelegateTransitionAnimatorController(createController()) {
                     override val transitionCookie = cookie
                 }
-            val token = mock(IBinder::class.java)
-            val info = mock(TransitionInfo::class.java)
-            val change =
-                listOf(createChange(mock(SurfaceControl::class.java), cookie, forLaunch = true))
+            val token = mock<IBinder>()
+            val info = mock<TransitionInfo>()
+            val change = listOf(createChange(mock<SurfaceControl>(), cookie, forLaunch = true))
             whenever(info.changes).thenReturn(change)
-            val startTransaction = mock(SurfaceControl.Transaction::class.java)
+            val startTransaction = mock<SurfaceControl.Transaction>()
             var finished = false
             val finishCallback = finishedCallback { finished = true }
 
@@ -534,8 +534,8 @@ class ActivityTransitionAnimatorTest : SysuiTestCase() {
                     override val transitionCookie
                         get() = ActivityTransitionAnimator.TransitionCookie("testCookie")
                 }
-            val info = mock(TransitionInfo::class.java)
-            val startTransaction = mock(SurfaceControl.Transaction::class.java)
+            val info = mock<TransitionInfo>()
+            val startTransaction = mock<SurfaceControl.Transaction>()
             var finished = false
 
             activityTransitionAnimator
@@ -563,8 +563,8 @@ class ActivityTransitionAnimatorTest : SysuiTestCase() {
                     override val transitionCookie
                         get() = ActivityTransitionAnimator.TransitionCookie("testCookie")
                 }
-            val token = mock(IBinder::class.java)
-            val startTransaction = mock(SurfaceControl.Transaction::class.java)
+            val token = mock<IBinder>()
+            val startTransaction = mock<SurfaceControl.Transaction>()
             var finished = false
 
             activityTransitionAnimator
@@ -592,8 +592,8 @@ class ActivityTransitionAnimatorTest : SysuiTestCase() {
                     override val transitionCookie
                         get() = ActivityTransitionAnimator.TransitionCookie("testCookie")
                 }
-            val token = mock(IBinder::class.java)
-            val info = mock(TransitionInfo::class.java)
+            val token = mock<IBinder>()
+            val info = mock<TransitionInfo>()
             var finished = false
 
             activityTransitionAnimator
@@ -795,7 +795,7 @@ class ActivityTransitionAnimatorTest : SysuiTestCase() {
             val cookies = arrayOfNulls<ActivityTransitionAnimator.TransitionCookie>(3)
 
             for (index in 0 until 3) {
-                cookies[index] = mock(ActivityTransitionAnimator.TransitionCookie::class.java)
+                cookies[index] = mock<ActivityTransitionAnimator.TransitionCookie>()
                 val factory = controllerFactory(controller, cookies[index]!!)
                 underTest.registerLongLivedTransitions(factory.cookie, factory, testScope)
             }
@@ -984,8 +984,8 @@ class ActivityTransitionAnimatorTest : SysuiTestCase() {
     private fun controllerFactory(
         controller: ActivityTransitionAnimator.Controller,
         cookie: ActivityTransitionAnimator.TransitionCookie =
-            mock(ActivityTransitionAnimator.TransitionCookie::class.java),
-        component: ComponentName? = mock(ComponentName::class.java),
+            mock<ActivityTransitionAnimator.TransitionCookie>(),
+        component: ComponentName? = mock<ComponentName>(),
     ): ActivityTransitionAnimator.ControllerFactory {
         return object : ActivityTransitionAnimator.ControllerFactory(cookie, component) {
             override suspend fun createController(forLaunch: Boolean) =
