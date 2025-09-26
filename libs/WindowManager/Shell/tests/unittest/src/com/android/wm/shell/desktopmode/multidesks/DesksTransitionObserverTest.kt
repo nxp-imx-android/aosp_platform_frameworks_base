@@ -1310,6 +1310,33 @@ class DesksTransitionObserverTest : ShellTestCase() {
 
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
+    fun independentDeskTransition_nullContainerChange_notTreatedAsWallpaperChange() =
+        testScope.runTest {
+            val displayId = DEFAULT_DISPLAY
+            // Set up a change with a null container
+            val nullContainerChange =
+                Change(null /* container */, mock()).apply {
+                    this.mode = TRANSIT_TO_FRONT
+                    this.taskInfo =
+                            createFullscreenTask(displayId).apply { this.userId = USER_ID_1 }
+                    setDisplayId(displayId, displayId)
+                }
+            // Ensure the wallpaper token provider returns null for this display
+            whenever(mockDesktopWallpaperActivityTokenProvider.getToken(displayId)).thenReturn(null)
+
+            observer.onTransitionReady(
+                transition = Binder(),
+                info = buildTransitionInfo().apply { addChange(nullContainerChange) }
+            )
+            runCurrent()
+
+            // Verify that no transition is started, because the change should not be identified
+            // as a desktop wallpaper change, and thus no action should be taken.
+            verify(mockTransitions, never()).startTransition(any(), any(), any())
+        }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun findDeskToDeskTransition_noRunningTransition_returnsNull() {
         val transition = Binder()
         val result = observer.findDeskToDeskTransition(transition)
