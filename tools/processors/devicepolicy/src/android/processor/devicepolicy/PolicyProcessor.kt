@@ -86,7 +86,7 @@ class PolicyProcessor : AbstractProcessor() {
 
     private fun reportUnexpectedAnnotations(roundEnvironment: RoundEnvironment) {
         roundEnvironment.getElementsAnnotatedWith(PolicyDefinition::class.java).mapNotNull {
-            printError(it, "@PolicyDefinition should not be applied to any element")
+            printError(it, "@PolicyDefinition can not be applied to any element, use a type-specific annotation such as @EnumPolicyDefinition instead")
         }
     }
 
