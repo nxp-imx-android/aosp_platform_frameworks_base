@@ -3310,7 +3310,7 @@ public class SettingsProvider extends ContentProvider {
 
         SettingsRegistry(Looper looper) {
             mHandler = new MyHandler(looper);
-            // TODO(b/394178333): getMaxSupportedUsers() no longer really exists. Revisit this.
+            // TODO(b/434038260): getMaxSupportedUsers() no longer really exists. Revisit this.
             mGenerationRegistry = new GenerationRegistry(UserManager.getMaxSupportedUsers());
             mBackupManager = new BackupManager(getContext());
         }
@@ -5799,7 +5799,7 @@ public class SettingsProvider extends ContentProvider {
                     if (magnificationCapabilities.isNull()) {
                         final int capability =
                                 supportMagnificationArea ? resources.getInteger(
-                                        R.integer.def_accessibility_magnification_capabilities) 
+                                        R.integer.def_accessibility_magnification_capabilities)
                                         : Secure.ACCESSIBILITY_MAGNIFICATION_MODE_FULLSCREEN;
                         secureSettings.insertSettingLocked(
                                 Secure.ACCESSIBILITY_MAGNIFICATION_CAPABILITY,
