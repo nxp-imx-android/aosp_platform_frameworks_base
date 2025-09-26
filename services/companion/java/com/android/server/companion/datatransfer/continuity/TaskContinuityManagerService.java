@@ -51,10 +51,9 @@ import java.util.Objects;
  * Service to handle task continuity features
  *
  * @hide
- *
  */
-public final class TaskContinuityManagerService
-    extends SystemService implements TaskContinuityMessenger.Listener {
+public final class TaskContinuityManagerService extends SystemService
+        implements TaskContinuityMessenger.Listener {
 
     private static final String TAG = "TaskContinuityManagerService";
 
@@ -71,12 +70,11 @@ public final class TaskContinuityManagerService
         mTaskContinuityMessenger = new TaskContinuityMessenger(context, this);
         mTaskBroadcaster = new TaskBroadcaster(context, mTaskContinuityMessenger);
         mRemoteTaskStore = new RemoteTaskStore();
-        mOutboundHandoffRequestController = new OutboundHandoffRequestController(
-            context,
-            mTaskContinuityMessenger,
-            mRemoteTaskStore);
-        mInboundHandoffRequestController = new InboundHandoffRequestController(
-            mTaskContinuityMessenger);
+        mOutboundHandoffRequestController =
+                new OutboundHandoffRequestController(
+                        context, mTaskContinuityMessenger, mRemoteTaskStore);
+        mInboundHandoffRequestController =
+                new InboundHandoffRequestController(mTaskContinuityMessenger);
     }
 
     @Override
@@ -106,9 +104,7 @@ public final class TaskContinuityManagerService
         @Override
         @EnforcePermission(REQUEST_TASK_HANDOFF)
         public void requestHandoff(
-            int associationId,
-            int remoteTaskId,
-            @NonNull IHandoffRequestCallback callback) {
+                int associationId, int remoteTaskId, @NonNull IHandoffRequestCallback callback) {
             requestHandoff_enforcePermission();
 
             Objects.requireNonNull(callback);
@@ -116,9 +112,7 @@ public final class TaskContinuityManagerService
             final long ident = Binder.clearCallingIdentity();
             try {
                 mOutboundHandoffRequestController.requestHandoff(
-                    associationId,
-                    remoteTaskId,
-                    callback);
+                        associationId, remoteTaskId, callback);
             } finally {
                 Binder.restoreCallingIdentity(ident);
             }
@@ -130,16 +124,14 @@ public final class TaskContinuityManagerService
         Objects.requireNonNull(associationInfo);
 
         mRemoteTaskStore.addDevice(
-            associationInfo.getId(),
-            associationInfo.getDisplayName().toString());
+                associationInfo.getId(), associationInfo.getDisplayName().toString());
 
         mTaskBroadcaster.onDeviceConnected(associationInfo.getId());
     }
 
     @Override
     public void onAssociationDisconnected(
-        int associationId,
-        @NonNull Collection<AssociationInfo> connectedAssociations) {
+            int associationId, @NonNull Collection<AssociationInfo> connectedAssociations) {
 
         Objects.requireNonNull(connectedAssociations);
 
@@ -151,8 +143,7 @@ public final class TaskContinuityManagerService
 
     @Override
     public void onMessageReceived(
-        int associationId,
-        @NonNull TaskContinuityMessage taskContinuityMessage) {
+            int associationId, @NonNull TaskContinuityMessage taskContinuityMessage) {
 
         Slog.v(TAG, "Received message from association id: " + associationId);
         switch (Objects.requireNonNull(taskContinuityMessage)) {
@@ -170,13 +161,11 @@ public final class TaskContinuityManagerService
                 break;
             case HandoffRequestResultMessage handoffRequestResultMessage:
                 mOutboundHandoffRequestController.onHandoffRequestResultMessageReceived(
-                    associationId,
-                    handoffRequestResultMessage);
+                        associationId, handoffRequestResultMessage);
                 break;
             case HandoffRequestMessage handoffRequestMessage:
                 mInboundHandoffRequestController.onHandoffRequestMessageReceived(
-                    associationId,
-                    handoffRequestMessage);
+                        associationId, handoffRequestMessage);
                 break;
             default:
                 Slog.w(TAG, "Received unknown message from device: " + associationId);
