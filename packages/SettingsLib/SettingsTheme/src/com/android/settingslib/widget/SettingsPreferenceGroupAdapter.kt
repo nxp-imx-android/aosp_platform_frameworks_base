@@ -193,7 +193,8 @@ open class SettingsPreferenceGroupAdapter(preferenceGroup: PreferenceGroup) :
     private fun updateBackground(holder: PreferenceViewHolder, position: Int) {
         val v = holder.itemView
         val drawableStateLayout = holder.itemView as? DrawableStateLayout
-        if (drawableStateLayout != null && mItemPositionStates[position] != 0) {
+        if (position < mItemPositionStates.size &&
+                drawableStateLayout != null && mItemPositionStates[position] != 0) {
             val background = v.background
             if (background != null) {
                 val backgroundPadding = Rect()
