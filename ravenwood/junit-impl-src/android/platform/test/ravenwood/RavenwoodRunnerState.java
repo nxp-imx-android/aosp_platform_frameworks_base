@@ -21,6 +21,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import android.app.RavenwoodAppDriver;
 import android.util.Log;
 import android.util.Pair;
 
@@ -66,6 +67,8 @@ public final class RavenwoodRunnerState {
             Log.v(TAG, "enterTestRunner: " + mRunner);
         }
         RavenwoodDriver.initForRunner();
+        RavenwoodAppDriver.getInstance().reset();
+        RavenwoodErrorHandler.enterTestRunner();
     }
 
     public void enterTestClass() {

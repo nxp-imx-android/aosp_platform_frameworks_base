@@ -42,7 +42,7 @@ public class RavenwoodRunnerExecutionTest extends RavenwoodRunnerTestBase {
     testSuiteStarted: classes
     testSuiteStarted: com.android.ravenwoodtest.runnercallbacktests.RavenwoodRunnerExecutionTest$MainThreadExceptionAndwaitForMainLooperDoneTest
     testStarted: testMainThreadException(com.android.ravenwoodtest.runnercallbacktests.RavenwoodRunnerExecutionTest$MainThreadExceptionAndwaitForMainLooperDoneTest)
-    testFailure: Uncaught exception detected on thread Ravenwood:Main: *** Continuing running the remaining tests *** : Intentional exception on the main thread!
+    testFailure: Uncaught exception detected on thread Ravenwood:Main. *** Continue running remaining tests ***
     testFinished: testMainThreadException(com.android.ravenwoodtest.runnercallbacktests.RavenwoodRunnerExecutionTest$MainThreadExceptionAndwaitForMainLooperDoneTest)
     testSuiteFinished: com.android.ravenwoodtest.runnercallbacktests.RavenwoodRunnerExecutionTest$MainThreadExceptionAndwaitForMainLooperDoneTest
     testSuiteFinished: classes
@@ -83,7 +83,7 @@ public class RavenwoodRunnerExecutionTest extends RavenwoodRunnerTestBase {
     testSuiteStarted: classes
     testSuiteStarted: com.android.ravenwoodtest.runnercallbacktests.RavenwoodRunnerExecutionTest$MainThreadExceptionAndPostTest
     testStarted: test1(com.android.ravenwoodtest.runnercallbacktests.RavenwoodRunnerExecutionTest$MainThreadExceptionAndPostTest)
-    testFailure: Uncaught exception detected on thread Ravenwood:Main: *** Continuing running the remaining tests *** : Intentional exception on the main thread!
+    testFailure: Uncaught exception detected on thread Ravenwood:Main. *** Continue running remaining tests ***
     testFinished: test1(com.android.ravenwoodtest.runnercallbacktests.RavenwoodRunnerExecutionTest$MainThreadExceptionAndPostTest)
     testSuiteFinished: com.android.ravenwoodtest.runnercallbacktests.RavenwoodRunnerExecutionTest$MainThreadExceptionAndPostTest
     testSuiteFinished: classes

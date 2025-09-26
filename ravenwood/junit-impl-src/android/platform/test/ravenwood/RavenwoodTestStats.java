@@ -207,12 +207,6 @@ public class RavenwoodTestStats {
                 failed += outcome.failedCount();
                 totalDuration = totalDuration.plus(outcome.duration);
 
-                // Skip the constructor method, which shows up as a result if a class
-                // has @DisabledOnRavenwood.
-                if ("<init>".equals(method)) {
-                    continue;
-                }
-
                 var rawMethodName = extractMethodName(method);
 
                 mOutputWriter.printf(FORMAT,
