@@ -574,6 +574,13 @@
       ]
     },
     {
+      "name": "FunctionalTestsDesktopMode-overview-SwitchBetweenDesktopAndSplitScreenTest",
+      "keywords": [
+        "device",
+        "desktop"
+      ]
+    },
+    {
       "name": "FunctionalTestsDesktopMode-resizing-ResizeAppCornerMultiWindowAndPipTest",
       "keywords": [
         "device",
