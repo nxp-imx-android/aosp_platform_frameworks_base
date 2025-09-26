@@ -954,8 +954,7 @@ public class SecureLockDeviceServiceTest {
     }
 
     private int disableSecureLockDevice(UserHandle user) {
-        return mSecureLockDeviceService.disableSecureLockDevice(user, mDisableParams,
-                /* authenticationComplete=*/ false);
+        return mSecureLockDeviceService.disableSecureLockDevice(user, mDisableParams);
     }
 
     private Bundle setToBundle(Set<String> restrictions) {
