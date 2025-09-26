@@ -1392,6 +1392,54 @@ public final class UserManagerServiceMockedTest {
         }
     }
 
+    /**
+     * Tests {@code getUsers(excludeDying)} - returned users should have name resolved.
+     */
+    @Test
+    @DisableFlags(FLAG_USER_FILTER_REFACTORING)
+    public void testGetUsers() {
+        var adminUser = addUser(new UserInfo(USER_ID, A_USER_HAS_NO_NAME, FLAG_FULL | FLAG_ADMIN));
+        var nonAdminUser = addUser(new UserInfo(USER_ID2, A_USER_HAS_NO_NAME, FLAG_FULL));
+        var partialUser = addUser(new UserInfo(USER_ID3, A_USER_HAS_NO_NAME, FLAG_FULL));
+        partialUser.partial = true;
+        // NOTE: user pre-creation is not supported anymore, so it won't be returned
+        var preCreatedUser = addUser(new UserInfo(USER_ID4, A_USER_HAS_NO_NAME, FLAG_FULL));
+        preCreatedUser.preCreated = true;
+        var dyingUser = addDyingUser(new UserInfo(USER_ID5, A_USER_HAS_NO_NAME, FLAG_FULL));
+        var namedUser = addUser(new UserInfo(USER_ID6, NAME, FLAG_FULL));
+
+        // NOTE: cannot check for users with resolved names on containsExactly() because
+        // UserInfo doesn't implement equals, hence checks below need to explicitly check them
+        List<UserInfo> resolvedNameUsers;
+
+        resolvedNameUsers = mUms.getUsers(EXCLUDE_DYING);
+        expect.withMessage("getUsers(%s)", EXCLUDE_DYING)
+                .that(resolvedNameUsers)
+                .hasSize(4);
+        expect.withMessage("getUsers(%s)", EXCLUDE_DYING)
+                .that(resolvedNameUsers)
+                .contains(namedUser);
+        assertDefaultSystemUserName(resolvedNameUsers);
+        assertDefaultNewUserName(resolvedNameUsers, adminUser.id, nonAdminUser.id);
+
+        resolvedNameUsers = mUms.getUsers(DONT_EXCLUDE_DYING);
+        expect.withMessage("getUsers(%s)", DONT_EXCLUDE_DYING)
+                .that(resolvedNameUsers)
+                .hasSize(5);
+        expect.withMessage("getUsers(%s)", DONT_EXCLUDE_DYING)
+                .that(resolvedNameUsers)
+                .contains(namedUser);
+        assertDefaultSystemUserName(resolvedNameUsers);
+        assertDefaultNewUserName(resolvedNameUsers, adminUser.id, nonAdminUser.id, dyingUser.id);
+    }
+
+    @Test
+    @EnableFlags(FLAG_USER_FILTER_REFACTORING)
+    public void testGetUsers_refactored() {
+        // Should behave exactly the same ways as without the flag
+        testGetUsers();
+    }
+
     @Test
     @DisableFlags(FLAG_USER_FILTER_REFACTORING)
     public void testGetUsersWithUnresolvedNames() {

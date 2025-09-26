@@ -203,15 +203,20 @@ public class UserManagerServiceShellCommand extends ShellCommand {
         }
         final IActivityManager am = ActivityManager.getService();
         List<UserInfo> users;
-        if (!android.multiuser.Flags.userFilterRefactoring()) {
-            users = mService.getUsersWithUnresolvedNames(/* excludePartial= */ !all,
-                    /* excludeDying= */ false);
-        } else {
-            var filterBuilder = UserFilter.builder().withDyingUsers();
-            if (all) {
-                filterBuilder.withPartialUsers();
+        if (verbose || veryVerbose) {
+            if (!android.multiuser.Flags.userFilterRefactoring()) {
+                users = mService.getUsersWithUnresolvedNames(/* excludePartial= */ !all,
+                        /* excludeDying= */ false);
+            } else {
+                var filterBuilder = UserFilter.builder().withDyingUsers();
+                if (all) {
+                    filterBuilder.withPartialUsers();
+                }
+                users = mService.getUsers(filterBuilder.build());
             }
-            users = mService.getUsers(filterBuilder.build());
+        } else {
+            // Must resolve names
+            users = mService.getUsers(/* excludeDying= */ false);
         }
         if (users == null) {
             pw.println("Error: couldn't get users");
