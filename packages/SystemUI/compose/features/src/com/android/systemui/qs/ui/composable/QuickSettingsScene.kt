@@ -78,7 +78,7 @@ import com.android.systemui.compose.modifiers.sysuiResTag
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.lifecycle.ExclusiveActivatable
 import com.android.systemui.lifecycle.rememberViewModel
-import com.android.systemui.notifications.ui.composable.HeadsUpNotificationSpace
+import com.android.systemui.notifications.ui.composable.HeadsUpNotificationPlaceholder
 import com.android.systemui.notifications.ui.composable.ScrollingNotificationPanel
 import com.android.systemui.qs.composefragment.ui.GridAnchor
 import com.android.systemui.qs.footer.ui.compose.FooterActionsWithAnimatedVisibility
@@ -381,7 +381,7 @@ private fun ContentScope.QuickSettingsContent(
                         .padding(horizontal = shadeHorizontalPadding),
             )
         }
-        HeadsUpNotificationSpace(
+        HeadsUpNotificationPlaceholder(
             stackScrollView = notificationStackScrollView,
             viewModel = notificationsPlaceholderViewModel,
             useHunBounds = { shouldUseQuickSettingsHunBounds(layoutState) },

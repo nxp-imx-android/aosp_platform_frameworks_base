@@ -18,28 +18,21 @@
 package com.android.systemui.notifications.ui.composable
 
 import android.util.Log
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.Orientation
-import androidx.compose.foundation.gestures.animateScrollBy
-import androidx.compose.foundation.gestures.rememberScrollableState
 import androidx.compose.foundation.gestures.scrollBy
-import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imeAnimationTarget
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.windowInsetsBottomHeight
 import androidx.compose.foundation.overscroll
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -54,7 +47,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -64,7 +56,6 @@ import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.graphics.toAndroidRectF
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollDispatcher
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
@@ -74,16 +65,12 @@ import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.findRootCoordinates
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.onSizeChanged
-import androidx.compose.ui.layout.positionInWindow
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalView
-import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.IntOffset
-import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastMaxOf
 import androidx.compose.ui.util.fastMinOf
@@ -97,7 +84,6 @@ import com.android.compose.animation.scene.SceneTransitionLayoutState
 import com.android.compose.gesture.effect.OffsetOverscrollEffect
 import com.android.compose.gesture.effect.rememberOffsetOverscrollEffect
 import com.android.compose.modifiers.thenIf
-import com.android.compose.modifiers.width
 import com.android.compose.nestedscroll.OnStopScope
 import com.android.compose.nestedscroll.PriorityNestedScrollConnection
 import com.android.compose.nestedscroll.ScrollController
@@ -118,184 +104,34 @@ import com.android.systemui.statusbar.notification.stack.ui.view.NotificationScr
 import com.android.systemui.statusbar.notification.stack.ui.viewmodel.NotificationTransitionThresholds.EXPANSION_FOR_MAX_CORNER_RADIUS
 import com.android.systemui.statusbar.notification.stack.ui.viewmodel.NotificationTransitionThresholds.EXPANSION_FOR_MAX_SCRIM_ALPHA
 import com.android.systemui.statusbar.notification.stack.ui.viewmodel.NotificationsPlaceholderViewModel
-import kotlinx.coroutines.awaitCancellation
-import kotlinx.coroutines.launch
 import kotlin.math.max
 import kotlin.math.roundToInt
+import kotlinx.coroutines.awaitCancellation
+import kotlinx.coroutines.launch
 
 object Notifications {
     object Elements {
+        /**
+         * The [ElementKey] identifying the rounded rect surface behind Notifications the shade.
+         * This surface is fully defined in Compose, so this key can be used to define the Scrim's
+         * behaviour during STL transitions.
+         */
         val NotificationScrim = ElementKey("NotificationScrim")
+        /**
+         * The [ElementKey] identifying the space reserved for the main list of notifications. This
+         * key only links to an empty box sized to the height of Notifications (placeholder), so STL
+         * transitions are not fully supported here, except vertical positioning.
+         */
         val NotificationStackPlaceholder = ElementKey("NotificationStackPlaceholder")
+        /**
+         * The [ElementKey] identifying the space reserved for the top HUN. This key only links to
+         * an empty box sized to the height of Notifications (placeholder), so STL transitions are
+         * not fully supported here, except vertical positioning.
+         */
         val HeadsUpNotificationPlaceholder =
             ElementKey("HeadsUpNotificationPlaceholder", contentPicker = LowestZIndexContentPicker)
     }
 }
-
-/**
- * Adds the space where heads up notifications can appear in the scene. This should generally be the
- * entire size of the scene.
- */
-@Composable
-fun ContentScope.HeadsUpNotificationSpace(
-    stackScrollView: NotificationScrollView,
-    viewModel: NotificationsPlaceholderViewModel,
-    useHunBounds: () -> Boolean = { true },
-    modifier: Modifier = Modifier,
-) {
-    Box(
-        modifier =
-            modifier
-                .element(Notifications.Elements.HeadsUpNotificationPlaceholder)
-                .fillMaxWidth()
-                .notificationHeadsUpHeight(stackScrollView)
-                .debugBackground(viewModel, DEBUG_HUN_COLOR)
-                .onGloballyPositioned { coordinates: LayoutCoordinates ->
-                    // This element is sometimes opted out of the shared element system, so there
-                    // can be multiple instances of it during a transition. Thus we need to
-                    // determine which instance should feed its bounds to NSSL to avoid providing
-                    // conflicting values.
-                    val useBounds = useHunBounds()
-                    if (useBounds) {
-                        val positionInWindow = coordinates.positionInWindow()
-                        val boundsInWindow = coordinates.boundsInWindow()
-                        debugLog(viewModel) {
-                            "HUNS onGloballyPositioned:" +
-                                " size=${coordinates.size}" +
-                                " bounds=$boundsInWindow"
-                        }
-                        // Note: boundsInWindow doesn't scroll off the screen, so use
-                        // positionInWindow for top bound, which can scroll off screen while
-                        // snoozing.
-                        stackScrollView.setHeadsUpTop(positionInWindow.y)
-                        stackScrollView.setHeadsUpBottom(boundsInWindow.bottom)
-                    }
-                }
-    ) {
-        if (viewModel.isVisualDebuggingEnabled) {
-            Text(
-                text = "HeadsUpNotificationPlaceholder",
-                color = DEBUG_HUN_COLOR.copy(alpha = 0.7f),
-                modifier = Modifier.align(Alignment.TopCenter),
-            )
-        }
-    }
-}
-
-/**
- * A version of [HeadsUpNotificationSpace] that can be swiped up off the top edge of the screen by
- * the user. When swiped up, the heads up notification is snoozed.
- *
- * @param useDrawBounds Whether to communicate drawBounds updated to the [stackScrollView]. This
- *   should be `true` when content rendering the regular stack is not setting draw bounds anymore,
- *   but HUNs can still appear.
- */
-@Composable
-fun ContentScope.SnoozeableHeadsUpNotificationSpace(
-    useDrawBounds: () -> Boolean,
-    stackScrollView: NotificationScrollView,
-    viewModel: NotificationsPlaceholderViewModel,
-    modifier: Modifier = Modifier,
-) {
-    val isSnoozable by viewModel.isHeadsUpOrAnimatingAway.collectAsStateWithLifecycle(false)
-
-    var scrollOffset by remember { mutableFloatStateOf(0f) }
-    val headsUpInset = with(LocalDensity.current) { headsUpTopInset().toPx() }
-    val minScrollOffset = -headsUpInset
-    val maxScrollOffset = 0f
-
-    val scrollableState = rememberScrollableState { delta ->
-        consumeDeltaWithinRange(
-            current = scrollOffset,
-            setCurrent = { scrollOffset = it },
-            min = minScrollOffset,
-            max = maxScrollOffset,
-            delta,
-        )
-    }
-
-    val snoozeScrollConnection =
-        object : NestedScrollConnection {
-            override suspend fun onPreFling(available: Velocity): Velocity {
-                if (
-                    velocityOrPositionalThresholdReached(scrollOffset, minScrollOffset, available.y)
-                ) {
-                    scrollableState.animateScrollBy(minScrollOffset, tween())
-                } else {
-                    scrollableState.animateScrollBy(-minScrollOffset, tween())
-                }
-                return available
-            }
-        }
-
-    val horizontalAlignment = viewModel.horizontalAlignment
-    val halfScreenWidth = LocalWindowInfo.current.containerSize.width / 2
-
-    LaunchedEffect(isSnoozable) { scrollOffset = 0f }
-
-    LaunchedEffect(scrollableState.isScrollInProgress) {
-        if (!scrollableState.isScrollInProgress && scrollOffset <= minScrollOffset) {
-            viewModel.setHeadsUpAnimatingAway(false)
-            viewModel.snoozeHun()
-        }
-    }
-
-    // Wait for being Idle on this content, otherwise LaunchedEffect would fire too soon, and
-    // another transition could override the NSSL stack bounds.
-    val updateDrawBounds = layoutState.transitionState.isIdle() && useDrawBounds()
-
-    LaunchedEffect(updateDrawBounds) {
-        if (updateDrawBounds) {
-            // Reset the stack bounds to avoid caching these values from the previous Scenes, and
-            // not to confuse the StackScrollAlgorithm when it displays a HUN over GONE.
-            stackScrollView.apply {
-                // use -headsUpInset to allow HUN translation outside bounds for snoozing
-                setStackTop(-headsUpInset)
-            }
-        }
-    }
-
-    HeadsUpNotificationSpace(
-        stackScrollView = stackScrollView,
-        viewModel = viewModel,
-        modifier =
-            modifier
-                // In side-aligned layouts, HUNs are limited to half the screen width.
-                .thenIf(horizontalAlignment != Alignment.CenterHorizontally) {
-                    Modifier.width { halfScreenWidth }
-                }
-                .offset {
-                    IntOffset(
-                        x = if (horizontalAlignment == Alignment.End) halfScreenWidth else 0,
-                        y =
-                            calculateHeadsUpPlaceholderYOffset(
-                                scrollOffset.roundToInt(),
-                                minScrollOffset.roundToInt(),
-                                stackScrollView.topHeadsUpHeight,
-                            ),
-                    )
-                }
-                .onGloballyPositioned {
-                    if (updateDrawBounds) {
-                        stackScrollView.updateDrawBounds(
-                            it.boundsInWindow().toAndroidRectF().apply {
-                                // extend bounds to the screen top to avoid cutting off HUN
-                                // transitions
-                                top = 0f
-                            }
-                        )
-                    }
-                }
-                .thenIf(isSnoozable) { Modifier.nestedScroll(snoozeScrollConnection) }
-                .scrollable(orientation = Orientation.Vertical, state = scrollableState),
-    )
-}
-
-/** Y position of the HUNs at rest, when the shade is closed. */
-@Composable
-fun headsUpTopInset(): Dp =
-    WindowInsets.safeDrawing.asPaddingValues().calculateTopPadding() +
-        dimensionResource(R.dimen.heads_up_status_bar_padding)
 
 /** Adds the space where notification stack should appear in the scene. */
 @Composable
@@ -327,7 +163,7 @@ fun ContentScope.ConstrainedNotificationStack(
                         )
                     },
         )
-        HeadsUpNotificationSpace(
+        HeadsUpNotificationPlaceholder(
             stackScrollView = stackScrollView,
             viewModel = viewModel,
             useHunBounds = {
@@ -700,7 +536,7 @@ fun ContentScope.NestedScrollingNotificationPanel(
             }
         }
         if (shouldIncludeHeadsUpSpace) {
-            HeadsUpNotificationSpace(
+            HeadsUpNotificationPlaceholder(
                 stackScrollView = stackScrollView,
                 viewModel = viewModel,
                 useHunBounds = {
@@ -710,47 +546,6 @@ fun ContentScope.NestedScrollingNotificationPanel(
                     )
                 },
                 modifier = Modifier.padding(top = stackTopPadding),
-            )
-        }
-    }
-}
-
-@Composable
-private fun ContentScope.NotificationPlaceholder(
-    stackScrollView: NotificationScrollView,
-    viewModel: NotificationsPlaceholderViewModel,
-    useStackBounds: () -> Boolean,
-    modifier: Modifier = Modifier,
-) {
-    Box(
-        modifier =
-            modifier
-                .element(Notifications.Elements.NotificationStackPlaceholder)
-                .debugBackground(viewModel, DEBUG_STACK_COLOR)
-                .onSizeChanged { size -> debugLog(viewModel) { "STACK onSizeChanged: size=$size" } }
-                .onGloballyPositioned { coordinates: LayoutCoordinates ->
-                    // This element is opted out of the shared element system, so there can be
-                    // multiple instances of it during a transition. Thus we need to determine which
-                    // instance should feed its bounds to NSSL to avoid providing conflicting values
-                    val useBounds = useStackBounds()
-                    if (useBounds) {
-                        // NOTE: positionInWindow.y scrolls off screen, but boundsInWindow.top won't
-                        val positionInWindow = coordinates.positionInWindow()
-                        debugLog(viewModel) {
-                            "STACK onGloballyPositioned:" +
-                                " size=${coordinates.size}" +
-                                " position=$positionInWindow" +
-                                " bounds=${coordinates.boundsInWindow()}"
-                        }
-                        stackScrollView.setStackTop(positionInWindow.y)
-                    }
-                }
-    ) {
-        if (viewModel.isVisualDebuggingEnabled) {
-            Text(
-                text = "NotificationStackPlaceholder",
-                color = DEBUG_STACK_COLOR.copy(alpha = 0.7f),
-                modifier = Modifier.align(Alignment.TopCenter),
             )
         }
     }
@@ -846,54 +641,13 @@ private fun calculateCornerRadius(
     }
 }
 
-private fun calculateHeadsUpPlaceholderYOffset(
-    scrollOffset: Int,
-    minScrollOffset: Int,
-    topHeadsUpHeight: Int,
-): Int {
-    return -minScrollOffset +
-        (scrollOffset * (-minScrollOffset + topHeadsUpHeight) / -minScrollOffset)
-}
-
-private fun velocityOrPositionalThresholdReached(
-    scrollOffset: Float,
-    minScrollOffset: Float,
-    availableVelocityY: Float,
-): Boolean {
-    return availableVelocityY < HUN_SNOOZE_VELOCITY_THRESHOLD ||
-        (availableVelocityY <= 0f &&
-            scrollOffset < minScrollOffset * HUN_SNOOZE_POSITIONAL_THRESHOLD_FRACTION)
-}
-
-/**
- * Takes a range, current value, and delta, and updates the current value by the delta, coercing the
- * result within the given range. Returns how much of the delta was consumed.
- */
-private fun consumeDeltaWithinRange(
-    current: Float,
-    setCurrent: (Float) -> Unit,
-    min: Float,
-    max: Float,
-    delta: Float,
-): Float {
-    return if (delta < 0 && current > min) {
-        val remainder = (current + delta - min).coerceAtMost(0f)
-        setCurrent((current + delta).coerceAtLeast(min))
-        delta - remainder
-    } else if (delta > 0 && current < max) {
-        val remainder = (current + delta).coerceAtLeast(0f)
-        setCurrent((current + delta).coerceAtMost(max))
-        delta - remainder
-    } else 0f
-}
-
-private inline fun debugLog(viewModel: NotificationsPlaceholderViewModel, msg: () -> Any) {
+internal inline fun debugLog(viewModel: NotificationsPlaceholderViewModel, msg: () -> Any) {
     if (viewModel.isDebugLoggingEnabled) {
         Log.d(TAG, msg().toString())
     }
 }
 
-private fun Modifier.debugBackground(
+internal fun Modifier.debugBackground(
     viewModel: NotificationsPlaceholderViewModel,
     color: Color,
 ): Modifier =
@@ -915,11 +669,7 @@ private fun ShadeScrimRounding.toRoundedCornerShape(radius: Dp): RoundedCornerSh
 }
 
 private const val TAG = "FlexiNotifs"
-private val DEBUG_STACK_COLOR = Color(1f, 0f, 0f, 0.2f)
-private val DEBUG_HUN_COLOR = Color(0f, 0f, 1f, 0.2f)
 private val DEBUG_BOX_COLOR = Color(0f, 1f, 0f, 0.2f)
-private const val HUN_SNOOZE_POSITIONAL_THRESHOLD_FRACTION = 0.25f
-private const val HUN_SNOOZE_VELOCITY_THRESHOLD = -70f
 
 /**
  * The boundaries of this layout relative to the window's origin, without being clipped to the

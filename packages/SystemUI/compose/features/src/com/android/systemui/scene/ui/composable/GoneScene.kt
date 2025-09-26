@@ -27,7 +27,7 @@ import com.android.compose.animation.scene.animateContentFloatAsState
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.lifecycle.ExclusiveActivatable
 import com.android.systemui.lifecycle.rememberViewModel
-import com.android.systemui.notifications.ui.composable.SnoozeableHeadsUpNotificationSpace
+import com.android.systemui.notifications.ui.composable.SnoozableHeadsUpNotificationPlaceholder
 import com.android.systemui.qs.shared.ui.QuickSettings
 import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.shared.model.Scenes
@@ -69,7 +69,7 @@ constructor(
             key = QuickSettings.SharedValues.TilesSquishiness,
         )
         Spacer(modifier.fillMaxSize())
-        SnoozeableHeadsUpNotificationSpace(
+        SnoozableHeadsUpNotificationPlaceholder(
             useDrawBounds = {
                 with(layoutState.transitionState) {
                     isIdle(key) &&
