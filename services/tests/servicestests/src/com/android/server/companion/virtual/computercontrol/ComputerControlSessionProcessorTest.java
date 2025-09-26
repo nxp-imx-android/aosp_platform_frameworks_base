@@ -82,7 +82,7 @@ public class ComputerControlSessionProcessorTest {
     private static final int CALLBACK_TIMEOUT_MS = 1_000;
     private static final String PACKAGE_NAME_PERMISSION_CONTROLLER = "permission.controller";
     private static final String TARGET_PACKAGE = "com.android.foo";
-    private static final int CALLING_USER_ID = 100;
+    private static final int CALLING_USER_ID = UserHandle.USER_SYSTEM;
     private static final AttributionSource ATTRIBUTION_SOURCE = new AttributionSource(
             UserHandle.getUid(CALLING_USER_ID, 0), "com.package", "tag");
     private static final ComputerControlSessionParams PARAMS =
