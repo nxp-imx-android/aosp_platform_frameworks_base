@@ -29,6 +29,7 @@ import com.android.internal.widget.remotecompose.core.operations.ColorConstant;
 import com.android.internal.widget.remotecompose.core.operations.ColorExpression;
 import com.android.internal.widget.remotecompose.core.operations.ComponentValue;
 import com.android.internal.widget.remotecompose.core.operations.ConditionalOperations;
+import com.android.internal.widget.remotecompose.core.operations.DataDynamicListFloat;
 import com.android.internal.widget.remotecompose.core.operations.DataListFloat;
 import com.android.internal.widget.remotecompose.core.operations.DataListIds;
 import com.android.internal.widget.remotecompose.core.operations.DataMapIds;
@@ -73,6 +74,7 @@ import com.android.internal.widget.remotecompose.core.operations.MatrixSkew;
 import com.android.internal.widget.remotecompose.core.operations.MatrixTranslate;
 import com.android.internal.widget.remotecompose.core.operations.NamedVariable;
 import com.android.internal.widget.remotecompose.core.operations.PaintData;
+import com.android.internal.widget.remotecompose.core.operations.ParticlesCompare;
 import com.android.internal.widget.remotecompose.core.operations.ParticlesCreate;
 import com.android.internal.widget.remotecompose.core.operations.ParticlesLoop;
 import com.android.internal.widget.remotecompose.core.operations.PathAppend;
@@ -97,6 +99,7 @@ import com.android.internal.widget.remotecompose.core.operations.TextSubtext;
 import com.android.internal.widget.remotecompose.core.operations.Theme;
 import com.android.internal.widget.remotecompose.core.operations.TimeAttribute;
 import com.android.internal.widget.remotecompose.core.operations.TouchExpression;
+import com.android.internal.widget.remotecompose.core.operations.UpdateDynamicFloatList;
 import com.android.internal.widget.remotecompose.core.operations.WakeIn;
 import com.android.internal.widget.remotecompose.core.operations.layout.CanvasContent;
 import com.android.internal.widget.remotecompose.core.operations.layout.CanvasOperations;
@@ -235,6 +238,8 @@ public class Operations {
     public static final int ID_LIST = 146;
     public static final int FLOAT_LIST = 147;
     public static final int DATA_LONG = 148;
+    public static final int DYNAMIC_FLOAT_LIST = 197;
+    public static final int UPDATE_DYNAMIC_FLOAT_LIST = 198;
     public static final int DRAW_BITMAP_SCALED = 149;
     public static final int TEXT_LOOKUP = 151;
     public static final int DRAW_ARC = 152;
@@ -276,6 +281,7 @@ public class Operations {
     public static final int WAKE_IN = 191;
     public static final int ID_LOOKUP = 192;
     public static final int PATH_EXPRESSION = 193;
+    public static final int PARTICLE_COMPARE = 194;
 
     ///////////////////////////////////////// ======================
 
@@ -450,6 +456,9 @@ public class Operations {
             sMapV7AndroidX.put(WAKE_IN, WakeIn::read);
             sMapV7AndroidX.put(ID_LOOKUP, IdLookup::read);
             sMapV7AndroidX.put(PATH_EXPRESSION, PathExpression::read);
+            sMapV7AndroidX.put(PARTICLE_COMPARE, ParticlesCompare::read);
+            sMapV7AndroidX.put(DYNAMIC_FLOAT_LIST, DataDynamicListFloat::read);
+            sMapV7AndroidX.put(UPDATE_DYNAMIC_FLOAT_LIST, UpdateDynamicFloatList::read);
         }
         return sMapV7AndroidX;
     }
@@ -482,6 +491,10 @@ public class Operations {
             sMapV7Widgets.put(WAKE_IN, WakeIn::read);
             sMapV7Widgets.put(ID_LOOKUP, IdLookup::read);
             sMapV7Widgets.put(PATH_EXPRESSION, PathExpression::read);
+            sMapV7Widgets.put(PARTICLE_COMPARE, ParticlesCompare::read);
+            sMapV7Widgets.put(DYNAMIC_FLOAT_LIST, DataDynamicListFloat::read);
+            sMapV7Widgets.put(UPDATE_DYNAMIC_FLOAT_LIST, UpdateDynamicFloatList::read);
+
         }
         return sMapV7Widgets;
     }
@@ -749,6 +762,5 @@ public class Operations {
         map.put(DEBUG_MESSAGE, DebugMessage::read);
         map.put(ATTRIBUTE_COLOR, ColorAttribute::read);
         // TODO ?? map.put(ACCESSIBILITY_CUSTOM_ACTION, CoreSemantics::read);
-
     }
 }
