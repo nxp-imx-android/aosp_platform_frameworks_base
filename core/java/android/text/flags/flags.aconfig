@@ -271,3 +271,10 @@ flag {
   bug: "434885800"
 
 }
+
+flag {
+    name: "insert_font_family"
+    namespace: "text"
+    description: "Feature flag for inserting new font family in front of an existing font family"
+    bug: "447199827"
+}
