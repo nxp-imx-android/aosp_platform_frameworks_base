@@ -256,25 +256,6 @@ class KeyguardClockViewModelTest(flags: FlagsParameterization) : SysuiTestCase()
         }
 
     @Test
-    @DisableFlags(com.android.systemui.shared.Flags.FLAG_CLOCK_REACTIVE_SMARTSPACE_LAYOUT)
-    fun dateWeatherBelowSmallClock_smartspacelayoutflag_off_true() =
-        kosmos.runTest {
-            val result by collectLastValue(underTest.shouldDateWeatherBeBelowSmallClock)
-
-            assertThat(result).isTrue()
-        }
-
-    @Test
-    @DisableFlags(com.android.systemui.shared.Flags.FLAG_CLOCK_REACTIVE_SMARTSPACE_LAYOUT)
-    fun dateWeatherBelowLargeClock_smartspacelayoutflag_off_false() =
-        kosmos.runTest {
-            val result by collectLastValue(underTest.shouldDateWeatherBeBelowLargeClock)
-
-            assertThat(result).isFalse()
-        }
-
-    @Test
-    @EnableFlags(com.android.systemui.shared.Flags.FLAG_CLOCK_REACTIVE_SMARTSPACE_LAYOUT)
     fun dateWeatherBelowSmallClock_defaultFontAndDisplaySize_shadeLayoutNotWide_false() =
         kosmos.runTest {
             enableSingleShade()
@@ -289,7 +270,6 @@ class KeyguardClockViewModelTest(flags: FlagsParameterization) : SysuiTestCase()
         }
 
     @Test
-    @EnableFlags(com.android.systemui.shared.Flags.FLAG_CLOCK_REACTIVE_SMARTSPACE_LAYOUT)
     fun dateWeatherBelowLargeClock_variousFontAndDisplaySize_true() =
         kosmos.runTest {
             mockConfiguration.fontScale = 1.0f
@@ -309,7 +289,6 @@ class KeyguardClockViewModelTest(flags: FlagsParameterization) : SysuiTestCase()
         }
 
     @Test
-    @EnableFlags(com.android.systemui.shared.Flags.FLAG_CLOCK_REACTIVE_SMARTSPACE_LAYOUT)
     fun dateWeatherBelowLargeClock_variousFontAndDisplaySize_false() =
         kosmos.runTest {
             enableSingleShade()
@@ -330,7 +309,6 @@ class KeyguardClockViewModelTest(flags: FlagsParameterization) : SysuiTestCase()
         }
 
     @Test
-    @EnableFlags(com.android.systemui.shared.Flags.FLAG_CLOCK_REACTIVE_SMARTSPACE_LAYOUT)
     fun dateWeatherBelowSmallClock_numberOverlapClock_variousFontAndDisplaySize_true() =
         kosmos.runTest {
             config = ClockConfig("DIGITAL_CLOCK_NUMBEROVERLAP", "Test", "")
@@ -343,7 +321,6 @@ class KeyguardClockViewModelTest(flags: FlagsParameterization) : SysuiTestCase()
         }
 
     @Test
-    @EnableFlags(com.android.systemui.shared.Flags.FLAG_CLOCK_REACTIVE_SMARTSPACE_LAYOUT)
     fun dateWeatherBelowLargeClock_metroClock_variousFontAndDisplaySize_false() =
         kosmos.runTest {
             config = ClockConfig("DIGITAL_CLOCK_METRO", "Test", "")
@@ -355,7 +332,6 @@ class KeyguardClockViewModelTest(flags: FlagsParameterization) : SysuiTestCase()
         }
 
     @Test
-    @EnableFlags(com.android.systemui.shared.Flags.FLAG_CLOCK_REACTIVE_SMARTSPACE_LAYOUT)
     fun dateWeatherBelowSmallClock_variousFontAndDisplaySize_shadeLayoutNotWide_false() =
         kosmos.runTest {
             enableSingleShade()
@@ -376,7 +352,6 @@ class KeyguardClockViewModelTest(flags: FlagsParameterization) : SysuiTestCase()
         }
 
     @Test
-    @EnableFlags(com.android.systemui.shared.Flags.FLAG_CLOCK_REACTIVE_SMARTSPACE_LAYOUT)
     fun dateWeatherBelowSmallClock_variousFontAndDisplaySize_shadeLayoutWide_false() =
         kosmos.runTest {
             enableSplitShade()
@@ -397,7 +372,6 @@ class KeyguardClockViewModelTest(flags: FlagsParameterization) : SysuiTestCase()
         }
 
     @Test
-    @EnableFlags(com.android.systemui.shared.Flags.FLAG_CLOCK_REACTIVE_SMARTSPACE_LAYOUT)
     fun dateWeatherBelowSmallClock_variousFontAndDisplaySize_shadeLayoutNotWide_true() =
         kosmos.runTest {
             enableSingleShade()
@@ -418,7 +392,6 @@ class KeyguardClockViewModelTest(flags: FlagsParameterization) : SysuiTestCase()
         }
 
     @Test
-    @EnableFlags(com.android.systemui.shared.Flags.FLAG_CLOCK_REACTIVE_SMARTSPACE_LAYOUT)
     fun dateWeatherBelowSmallClock_variousFontAndDisplaySize_shadeLayoutWide_true() =
         kosmos.runTest {
             enableSplitShade()

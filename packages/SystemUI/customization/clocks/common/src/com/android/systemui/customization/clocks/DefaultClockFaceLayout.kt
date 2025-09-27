@@ -23,7 +23,6 @@ import android.widget.FrameLayout
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.viewinterop.AndroidView
@@ -151,17 +150,9 @@ open class DefaultClockFaceLayout(val view: View) : ClockFaceLayout {
             constrainMaxHeight(ClockViewIds.LOCKSCREEN_CLOCK_VIEW_LARGE, 0)
 
             val largeClockTopMargin =
-                if (com.android.systemui.shared.Flags.clockReactiveSmartspaceLayout()) {
-                    view.context.getSafeStatusBarHeight() / 2 +
-                        res.getDimensionPixelSize(clocksR.dimen.keyguard_smartspace_top_offset) +
-                        res.getDimensionPixelSize(clocksR.dimen.enhanced_smartspace_height)
-                } else {
-                    view.context.getSafeStatusBarHeight() +
-                        res.getDimensionPixelSize(clocksR.dimen.small_clock_padding_top) +
-                        res.getDimensionPixelSize(clocksR.dimen.keyguard_smartspace_top_offset) +
-                        res.getDimensionPixelSize(clocksR.dimen.date_weather_view_height) +
-                        res.getDimensionPixelSize(clocksR.dimen.enhanced_smartspace_height)
-                }
+                view.context.getSafeStatusBarHeight() / 2 +
+                    res.getDimensionPixelSize(clocksR.dimen.keyguard_smartspace_top_offset) +
+                    res.getDimensionPixelSize(clocksR.dimen.enhanced_smartspace_height)
 
             connect(
                 ClockViewIds.LOCKSCREEN_CLOCK_VIEW_LARGE,
