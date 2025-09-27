@@ -56,7 +56,7 @@ public class AdbdServicesManager {
             unregisterService(listener.mInstanceName, listener.mServiceType);
         }
 
-        Slog.i(TAG, "Registering service '" + key + ":" + port + " with Framework");
+        Slog.i(TAG, "Registering service '" + key + ":" + port + "' with Framework");
 
         NsdServiceInfo serviceInfo = new NsdServiceInfo();
         serviceInfo.setServiceName(instanceName);
@@ -88,7 +88,7 @@ public class AdbdServicesManager {
             return;
         }
 
-        Slog.i(TAG, "Unregister service '" + instanceName + "." + serviceType + " with Framework");
+        Slog.i(TAG, "Unregister service '" + key + "' with Framework");
         try {
             mNsdManager.unregisterService(mRegisteredServices.get(key));
         } catch (Exception e) {
