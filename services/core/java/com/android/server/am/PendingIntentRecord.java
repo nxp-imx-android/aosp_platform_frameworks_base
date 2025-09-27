@@ -32,6 +32,7 @@ import static android.os.Process.SYSTEM_UID;
 import static com.android.server.am.ActivityManagerDebugConfig.TAG_AM;
 import static com.android.server.am.ActivityManagerDebugConfig.TAG_WITH_CLASS_NAME;
 import static com.android.window.flags.Flags.balCheckBroadcastWhenDispatched;
+import static com.android.window.flags.Flags.balDontAddBalTokenInSetAllowBgActivityStarts;
 
 import android.annotation.IntDef;
 import android.annotation.Nullable;
@@ -315,7 +316,9 @@ public final class PendingIntentRecord extends IIntentSender.Stub {
     void setAllowBgActivityStarts(IBinder token, int flags) {
         if (token == null) return;
         if ((flags & FLAG_ACTIVITY_SENDER) != 0) {
-            mAllowBgActivityStartsForActivitySender.add(token);
+            if (!balDontAddBalTokenInSetAllowBgActivityStarts()) {
+                mAllowBgActivityStartsForActivitySender.add(token);
+            }
         }
         if ((flags & FLAG_BROADCAST_SENDER) != 0) {
             mAllowBgActivityStartsForBroadcastSender.add(token);

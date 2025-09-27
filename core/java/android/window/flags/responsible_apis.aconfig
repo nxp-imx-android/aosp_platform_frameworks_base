@@ -38,6 +38,13 @@ flag {
 }
 
 flag {
+    name: "bal_dont_add_bal_token_in_set_allow_bg_activity_starts"
+    namespace: "responsible_apis"
+    description: "Do not add the BAL token in setAllowBgActivityStarts."
+    bug: "447255745"
+}
+
+flag {
     name: "bal_dont_bring_existing_background_task_stack_to_fg"
     namespace: "responsible_apis"
     description: "When starting a PendingIntent with ONLY creator privileges, don't bring the existing task stack to foreground"
