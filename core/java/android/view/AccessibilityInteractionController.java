@@ -648,19 +648,14 @@ public final class AccessibilityInteractionController {
 
     private void getWindowSurfaceInfoUiThread(IWindowSurfaceInfoCallback callback) {
         try {
-            if (Flags.copySurfaceControlForWindowScreenshots()) {
-                SurfaceControl sc = mViewRootImpl.getSurfaceControl();
-                if (sc.isValid()) {
-                    SurfaceControl copiedSc = new SurfaceControl(sc,
-                            "AccessibilityInteractionController"
-                                    + "#getWindowSurfaceInfoUiThread");
-                    callback.provideWindowSurfaceInfo(mViewRootImpl.getWindowFlags(),
-                            Process.myUid(),
-                            copiedSc);
-                }
-            } else {
-                callback.provideWindowSurfaceInfo(mViewRootImpl.getWindowFlags(), Process.myUid(),
-                        mViewRootImpl.getSurfaceControl());
+            SurfaceControl sc = mViewRootImpl.getSurfaceControl();
+            if (sc.isValid()) {
+                SurfaceControl copiedSc = new SurfaceControl(sc,
+                        "AccessibilityInteractionController"
+                                + "#getWindowSurfaceInfoUiThread");
+                callback.provideWindowSurfaceInfo(mViewRootImpl.getWindowFlags(),
+                        Process.myUid(),
+                        copiedSc);
             }
         } catch (RemoteException re) {
             // ignore - the other side will time out

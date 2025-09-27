@@ -1503,10 +1503,7 @@ abstract class AbstractAccessibilityServiceConnection extends IAccessibilityServ
                                     // ignore - the other side will time out
                                 }
                             }
-                            if (android.view.accessibility.Flags
-                                    .copySurfaceControlForWindowScreenshots()) {
-                                surfaceControl.release();
-                            }
+                            surfaceControl.release();
                         }
                     };
             connection.getRemote().getWindowSurfaceInfo(infoCallback);

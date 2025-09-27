@@ -148,22 +148,6 @@ public class AccessibilityInteractionControllerTest {
     }
 
     @Test
-    @DisableFlags(android.view.accessibility.Flags.FLAG_COPY_SURFACE_CONTROL_FOR_WINDOW_SCREENSHOTS)
-    public void getWindowSurfaceInfo_shouldCallCallbackWithWindowSurfaceDataFromVri()
-            throws Exception {
-        final ViewRootImpl vri = mButton.getRootView().getViewRootImpl();
-        IWindowSurfaceInfoCallback callback = Mockito.mock(IWindowSurfaceInfoCallback.class);
-
-        sInstrumentation.runOnMainSync(() ->
-                mAccessibilityInteractionController.getWindowSurfaceInfoClientThread(callback));
-        sInstrumentation.waitForIdleSync();
-
-        Mockito.verify(callback).provideWindowSurfaceInfo(
-                vri.getWindowFlags(), Process.myUid(), vri.getSurfaceControl());
-    }
-
-    @Test
-    @EnableFlags(android.view.accessibility.Flags.FLAG_COPY_SURFACE_CONTROL_FOR_WINDOW_SCREENSHOTS)
     public void getWindowSurfaceInfo_shouldCallCallbackWithWindowSurfaceData_CopiedFromVri()
             throws Exception {
         final ViewRootImpl vri = mButton.getRootView().getViewRootImpl();
