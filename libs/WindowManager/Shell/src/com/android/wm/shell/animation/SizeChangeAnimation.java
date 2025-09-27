@@ -321,6 +321,10 @@ public class SizeChangeAnimation {
         view.setClipBounds(mTmpRect);
 
         // this takes stuff out of mTmpT so mTmpT can be re-used immediately
-        view.getViewRootImpl().applyTransactionOnDraw(tmpT);
+        if (view.getViewRootImpl() != null) {
+            view.getViewRootImpl().applyTransactionOnDraw(tmpT);
+        } else {
+            tmpT.apply();
+        }
     }
 }
