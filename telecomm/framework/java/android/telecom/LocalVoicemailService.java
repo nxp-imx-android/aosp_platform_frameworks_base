@@ -119,8 +119,7 @@ public abstract class LocalVoicemailService extends Service {
 
     /**
      * Disconnects the current call and stops local voicemail processing.  The
-     * {@link LocalVoicemailService} is unbound after this method is called and you will no longer
-     * have access to the {@link AudioTrack} and {@link AudioRecord} for the call.
+     * {@link LocalVoicemailService} is unbound after this method is called.
      */
     public final void disconnectCall() {
         try {
@@ -186,7 +185,7 @@ public abstract class LocalVoicemailService extends Service {
             AudioManager audioManager = getApplicationContext().getSystemService(
                     AudioManager.class);
             Log.i(this,
-                    "isPstnCallAudioInterceptable: " + audioManager.isPstnCallAudioInterceptable());
+                    "handleLocalVoicemailRequest: " + call.getId());
 
             onVoicemailRequested(Call.Details.createFromParcelableCall(call));
         } catch (Exception e) {

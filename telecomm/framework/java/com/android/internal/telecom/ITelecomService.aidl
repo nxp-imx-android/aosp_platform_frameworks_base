@@ -451,4 +451,25 @@ interface ITelecomService {
     @JavaPassthrough(annotation="@android.annotation.RequiresPermission(android.Manifest.permission.MODIFY_PHONE_STATE)")
      void setVoipCallLogIntegrationEnabled(in String callingPackage, in String packageName,
          in boolean enabled);
+
+    /**
+     * @see TelecomServiceImpl#setTestLocalVoicemailService
+     */
+    void setTestLocalVoicemailService(in String packageName);
+
+    /**
+     * @see TelecomServiceImpl#isLocalVoicemailSupported
+     */
+    boolean isLocalVoicemailSupported(in String packageName);
+
+    /**
+     * @see TelecomServiceImpl#setLocalVoicemailTimeout
+     */
+    void setLocalVoicemailTimeout(in String packageName, in PhoneAccountHandle phoneAccountHandle,
+        long timeout);
+
+    /**
+     * @see TelecomServiceImpl#getLocalVoicemailTimeout
+     */
+    long getLocalVoicemailTimeout(in String packageName, in PhoneAccountHandle phoneAccountHandle);
 }
