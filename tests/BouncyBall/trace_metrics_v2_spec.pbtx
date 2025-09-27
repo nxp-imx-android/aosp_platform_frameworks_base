@@ -2,7 +2,10 @@
 
 # This is the "summary-spec" file we provide to "trace_processor_shell".
 
-# Most critically, we collect missed_app_frames.  Non-zero means we failed.
+# Most critically, we collect missed_frames.  Non-zero means we failed.
+# Currently, we're focused on frame drops, so we don't count Buffer Stuffing
+# issues.
+
 # For basic diagnostics, we also grab the total_frames, and frame duration
 # at the P50, P90, P99, and maximum.
 
@@ -14,8 +17,8 @@ metric_spec: {
   }
 }
 metric_spec: {
-  id: "missed_app_frames_bouncyball"
-  value: "missed_app_frames"
+  id: "missed_frames_bouncyball"
+  value: "missed_frames"
   query: {
     inner_query_id: "frame_timeline_summary_bouncyball"
   }
@@ -59,7 +62,10 @@ query: {
           process.upid,
           process.name AS process_name,
           timeline.name AS vsync,
-          jank_type GLOB '*App Deadline Missed*' AS missed_app_frame,
+          jank_type GLOB '*App Deadline Missed*'
+            OR jank_type GLOB '*SurfaceFlinger CPU Deadline Missed*'
+            OR jank_type GLOB '*SurfaceFlinger GPU Deadline Missed*'
+            OR jank_type GLOB '*Dropped Frame*' AS missed_frame,
           IIF(jank_type GLOB '*Dropped Frame*', NULL, timeline.dur) AS dur,
           timeline.ts AS frame_ts,
           timeline.dur AS frame_slice_dur
@@ -73,7 +79,7 @@ query: {
         CAST(PERCENTILE(f.dur, 90) AS INTEGER) AS frame_dur_p90,
         CAST(PERCENTILE(f.dur, 99) AS INTEGER) AS frame_dur_p99,
         MAX(f.dur) AS frame_dur_max,
-        SUM(f.missed_app_frame) AS missed_app_frames
+        SUM(f.missed_frame) AS missed_frames
       FROM frames AS f
       WHERE
         f.process_name = 'com.android.test.bouncyball' AND
@@ -105,7 +111,7 @@ query: {
     column_names: "frame_dur_p90"
     column_names: "frame_dur_p99"
     column_names: "frame_dur_max"
-    column_names: "missed_app_frames"
+    column_names: "missed_frames"
   }
   filters: {
     column_name: "process_name"

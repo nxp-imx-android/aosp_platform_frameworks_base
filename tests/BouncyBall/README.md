@@ -1,172 +1,106 @@
-# BouncyBall test app
+# BouncyBall Test App
 
-This is a simple graphics app which draws a ball bouncing around the screen.
+BouncyBall is a simple graphics app that draws a bouncing ball, used for
+automated testing to detect dropped frames.
 
-This app's primary use is in automated testing, to make sure no frames are
-dropped while running.
+It ensures basic graphics rendering remains smooth even as system resources
+fluctuate. For more details on performance evaluation, see
+[Evaluating performance](https://source.android.com/docs/core/tests/debug/eval_perf#touchlatency).
 
-The graphics tested here are quite simple.  This app is not just intended to
-assure that very basic graphics work, but that the system does not drop frames
-as CPUs/GPU get turned off and downclocked while in the steady state.
+## Building and Running
 
-See https://source.android.com/docs/core/tests/debug/eval_perf#touchlatency
-for more details.
+To build, install, and run the app locally:
 
-## Manual usage basics
-
-This app can be used outside of automation to check and debug this behavior.
-
-This app fundamentally assumes that it is the only foreground app running on
-the device while testing.  If that assumption is broken, this app will log
-to logcat, at the "E"rror level, noting an "ASSUMPTION FAILURE".
-
-This app will log, at the "E"rror level, each time a frame is dropped.
-
-On a properly set up device, it is expected that this app never drops a frame.
-
-### Helpful "flags" to flip
-
-The source code (in
-`app/src/main/java/com/android/test/bouncyball/BouncyBallActivity.java`) has a
-few constants which can be changed to help with debugging and testing.  The
-app needs to be recompiled after any of these have been changed.
-
-* `LOG_EVERY_FRAME`  If changed to `true`, the app will log, at the "D"ebug
-level, every (non-dropped) frame.
-* `FORCE_DROPPED_FRAMES`  If changed to `true`, the app will drop every 64th
-frame.  This can be helpful for debugging automation pipelines and confirming
-app behavior.
-* `ASSUMPTION_FAILURE_FORCES_EXIT`  If changed to `false`, if the app fails
-the assumption that it is always in foreground focus, then the app will
-keep running (even though we know the results will be wrong).
-
-
-## Local build and install/run/uninstall
-
-From the top of tree, in a shell that has been set up for building, compile
-the app with:
-
-```
+```bash
+# Build
 $ mmma -j frameworks/base/tests/BouncyBall
-```
 
-Install it to an adb-connected device with:
-
-```
+# Install
 $ adb install ${ANDROID_PRODUCT_OUT}/system/app/BouncyBallTest/BouncyBallTest.apk
-```
 
-This can be launched with:
-
-```
+# Start
 $ adb shell am start -W com.android.test.bouncyball/com.android.test.bouncyball.BouncyBallActivity
-```
 
-It can be stopped with:
-
-```
+# Stop
 $ adb shell am force-stop com.android.test.bouncyball
-```
 
-And it can be uninstalled with:
-
-```
+# Uninstall
 $ adb uninstall com.android.test.bouncyball
 ```
 
-## Debugging frame drops
+**Note:** The app assumes it is the only foreground app during testing. If not,
+it will log an "ASSUMPTION FAILURE" error. On a properly configured device, no
+frames should be dropped.
 
-See https://developer.android.com/topic/performance/tracing/on-device for
-detailed information on how to evaluate and debug performance issues with this,
-including any frame drops.
+## Debugging
 
-This is the recommended approach not just for this example app, but real world
-apps and device performance in general.
+You can change boolean constants in
+`app/src/main/java/com/android/test/bouncyball/BouncyBallActivity.java` to aid
+debugging. Recompile the app after any changes.
 
+*   `LOG_DROPPED_FRAMES`: Log every detected frame drop.
+*   `LOG_EVERY_FRAME`: Log every non-dropped frame.
+*   `FORCE_DROPPED_FRAMES`: Intentionally drop every 64th frame to test
+    detection.
+*   `ASSUMPTION_FAILURE_FORCES_EXIT`: Set to `false` to prevent the app from
+    exiting when it's not in the foreground.
 
-## GPU composition settings
+For detailed performance analysis and debugging frame drops, use on-device
+tracing. See
+[On-device tracing](https://developer.android.com/topic/performance/tracing/on-device)
+for guidance.
 
-In automation, we test this both with the default GPU composition settings,
-and with GPU composition forced on.  GPU composition is a critical part of a
-device's graphics path which we want to test, but BouncyBall's simplicity has
-some devices avoid GPU composition by default.
+## GPU Composition
 
-For local runs, force GPU composition on with:
+BouncyBall's simplicity may cause some devices to bypass GPU composition. You
+can force it on for testing:
 
-```
+```bash
+# Force GPU composition on
 $ adb shell sfdo force-client-composition enabled
-```
 
-Put GPU composition back in its default state with:
-
-```
+# Return to default GPU composition
 $ adb shell sfdo force-client-composition disabled
 ```
 
-Note this latter command does not force GPU composition off.  There is no such
-standard command for that.  This just returns back to the default composition
-setup.
+## Automation Analysis
 
+Automated testing uses Perfetto to trace frame drops. This analysis confirms
+whether frames were dropped but is not intended for debugging *why* they were
+dropped.
 
-## How automation analyzes the test
+### Running the Trace
 
-Automation uses a stripped down version of tracing.  It is only interested in
-whether or not frames were dropped (and how close we came to dropping them).
-
-In the interest of efficiency, it minimizes the information collected.
-
-Thus, it is not helpful for debugging why a frame was dropped.  See the section
-above for the best approach for that.
-
-However, in the interest of transparency, we give some information about the
-commands the automated testing setup uses.
-
-First, make sure the app is installed on the device (see sections above), but
-also make sure it's been stopped:
-
-```
+```bash
+# Ensure app is installed but stopped
 $ adb shell am force-stop com.android.test.bouncyball
-```
 
-From this directory do:
-
-```
-# Put perfetto config on the device
+# Set up and run Perfetto trace
 $ adb push automation_config.pbtx /data/misc/perfetto-configs/
-
-# Launch perfetto in the background
 $ adb shell /system/bin/perfetto --background --config /data/misc/perfetto-configs/automation_config.pbtx --txt --out /data/misc/perfetto-traces/bouncy_trace
-[This command will output the process ID for Perfetto (PERFETTO_PID)]
+# Note the PERFETTO_PID from the output
 
-# Now immediately launch the app, i.e.:
+# Launch the app
 $ adb shell am start -W com.android.test.bouncyball/com.android.test.bouncyball.BouncyBallActivity
 
-# Wait until Perfetto is done running.  Substitute "PERFETTO_PID" with the
-# value from above.
-$ adb shell 'while ps -p PERFETTO_PID 2> /dev/null > /dev/null; do sleep 1; done'
-[This will take a bit over two minutes]
+# Wait for Perfetto to finish (approx. 2 minutes)
+$ adb shell 'while ps -p PERFETTO_PID >/dev/null; do sleep 1; done'
 
-# Grab the trace results to the local machine
-$ adb pull /data/misc/perfetto-traces/bouncy_trace
-
-# Analyze the trace results
-$ ../../../../prebuilts/tools/linux-x86_64/perfetto/trace_processor_shell  --summary --summary-metrics-v2 all --summary-spec trace_metrics_v2_spec.pbtx bouncy_trace
+# Pull trace and analyze
+$ adb pull /data/misc/perfetto-traces/bouncy_trace .
+$ ../../../../prebuilts/tools/linux-x86_64/perfetto/trace_processor_shell \
+  --summary --summary-metrics-v2 all \
+  --summary-spec trace_metrics_v2_spec.pbtx bouncy_trace
 ```
 
-Look for `missed_app_frames_bouncyball` and confirm that its value is 0 (if
-it's non-zero, this is a failed run).  You'll also see various `frame_dur`
-values, in nanoseconds, of the frame duration for the app at various
-percentiles (where P50 is the median duration time).  (Note that automation
-actually passes `--summary-format binary` to `trace_processor_shell` and parses
-the output programatically).
+A successful run will show `missed_app_frames_bouncyball` as 0.
 
-Clean up afterwards with:
+### Cleanup
 
-```
-# Clean up the device
+```bash
+# Clean up device
 $ adb shell rm /data/misc/perfetto-configs/automation_config.pbtx /data/misc/perfetto-traces/bouncy_trace
 
-# Clean up the local directory
+# Clean up local directory
 $ rm bouncy_trace
 ```
-
