@@ -535,20 +535,6 @@ public abstract class StageCoordinatorAbstract implements SplitLayout.SplitLayou
     abstract @SplitPosition int getMainStagePosition();
 
     /**
-     * Returns the {@link SplitMultiDisplayHelper} object.
-     *
-     * @return the {@link SplitMultiDisplayHelper} object.
-     */
-    abstract SplitMultiDisplayHelper getSplitMultiDisplayHelper();
-
-    /**
-     * Sets the {@link SplitMultiDisplayHelper} object.
-     *
-     * @param splitMultiDisplayHelper the {@link SplitMultiDisplayHelper} object.
-     */
-    abstract void setSplitMultiDisplayHelper(SplitMultiDisplayHelper splitMultiDisplayHelper);
-
-    /**
      * Returns the last active stage.
      *
      * @return the last active stage.
