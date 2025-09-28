@@ -24,14 +24,6 @@ HSPLandroid/graphics/Color;->luminance()F
 # See: b/419605355
 HSPLandroid/os/MessageQueue$EnqueueOrder;->*
 
-# Concurrent MessageQueue uses ConcurrentSkipListMap.
-# See: b/415954362
-# TODO(shayba): clean up redundant entries after ag/33686358 is merged.
-HSPLjava/util/concurrent/ConcurrentSkipListMap;->*
-HSPLjava/util/concurrent/ConcurrentSkipListMap$KeyIterator;->*
-HSPLjava/util/concurrent/ConcurrentSkipListMap$KeySet;->*
-HSPLjava/util/concurrent/ConcurrentSkipListSet;->*
-
 # For now, also compile all method in the 'com.android.internal.dev.perfetto.sdk' Perfetto Trace API.
 # Similar to the existing Trace APIs, these new APIs can impact the performance
 # of many subsystems including MessageQueue. This also keeps benchmark
@@ -74,7 +66,11 @@ HSPLcom/android/internal/dev/perfetto/sdk/PerfettoNativeMemoryCleaner;->*
 HSPLcom/android/internal/dev/perfetto/sdk/PerfettoNativeMemoryCleaner$FreeNativeMemoryRunnable;->*
 HSPLcom/android/internal/dev/perfetto/sdk/PerfettoNativeMemoryCleaner$AllocationStats;->*
 
-# DeliQueue MessageQueue classes
+# Include all MessageQueue methods in the profile, while profiles are still biased
+# towards the legacy paths or the concurrent paths.
+# TODO(shayba): remove this after concurrent MessageQueue is fully rolled out.
+HSPLandroid/os/MessageQueue;->*
+# DeliQueue-related support classes
 # TODO(shayba): remove the below once they're in the generated boot-image-profile.txt
 HSPLandroid/os/MessageHeap;->*
 HSPLandroid/os/MessageStack;->*
