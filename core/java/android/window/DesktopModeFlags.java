@@ -131,7 +131,6 @@ public enum DesktopModeFlags {
             true),
     ENABLE_VISUAL_INDICATOR_IN_TRANSITION_BUGFIX(
             Flags::enableVisualIndicatorInTransitionBugfix, true),
-    ENABLE_WINDOWING_DYNAMIC_INITIAL_BOUNDS(Flags::enableWindowingDynamicInitialBounds, true),
     ENABLE_WINDOWING_EDGE_DRAG_RESIZE(Flags::enableWindowingEdgeDragResize, true),
     ENABLE_WINDOWING_SCALED_RESIZING(Flags::enableWindowingScaledResizing, true),
     EXCLUDE_CAPTION_FROM_APP_BOUNDS(Flags::excludeCaptionFromAppBounds, true),
