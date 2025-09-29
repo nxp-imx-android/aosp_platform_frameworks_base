@@ -18,6 +18,7 @@ package com.android.systemui.biometrics.ui.viewmodel
 
 import android.content.applicationContext
 import com.android.systemui.biometrics.domain.interactor.udfpsOverlayInteractor
+import com.android.systemui.deviceentry.domain.interactor.deviceEntryUdfpsInteractor
 import com.android.systemui.display.domain.interactor.displayStateInteractor
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.Kosmos.Fixture
@@ -34,6 +35,7 @@ val Kosmos.biometricAuthIconViewModelFactory_biometricPrompt by Fixture {
                 secureLockDeviceViewModel = null,
                 applicationContext = applicationContext,
                 displayStateInteractor = displayStateInteractor,
+                deviceEntryUdfpsInteractor = deviceEntryUdfpsInteractor,
                 udfpsOverlayInteractor = udfpsOverlayInteractor,
             )
         }
@@ -51,6 +53,7 @@ val Kosmos.biometricAuthIconViewModelFactory_secureLockDevice by Fixture {
                 secureLockDeviceViewModel = secureLockDeviceViewModel,
                 applicationContext = applicationContext,
                 displayStateInteractor = displayStateInteractor,
+                deviceEntryUdfpsInteractor = deviceEntryUdfpsInteractor,
                 udfpsOverlayInteractor = udfpsOverlayInteractor,
             )
         }

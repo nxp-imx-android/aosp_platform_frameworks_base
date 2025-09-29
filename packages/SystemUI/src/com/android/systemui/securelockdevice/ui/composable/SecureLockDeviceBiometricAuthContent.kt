@@ -29,6 +29,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
@@ -37,13 +38,18 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.LayoutCoordinates
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.positionInWindow
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.colorResource
@@ -151,17 +157,38 @@ fun SecureLockDeviceContent(
 
         val hasUdfps: Boolean = secureLockDeviceViewModel.iconViewModel.hasUdfpsState
         val iconSize: Pair<Int, Int> = secureLockDeviceViewModel.iconViewModel.iconSizeState
-        val iconBottomPadding =
-            dimensionResource(R.dimen.biometric_prompt_portrait_medium_bottom_padding)
+        var globalCoordinates by remember { mutableStateOf<LayoutCoordinates?>(null) }
 
-        Box(modifier = Modifier.fillMaxSize()) {
+        Box(
+            modifier =
+                Modifier.fillMaxSize().onGloballyPositioned { coordinates ->
+                    globalCoordinates = coordinates
+                }
+        ) {
+            val udfpsLocation = secureLockDeviceViewModel.iconViewModel.udfpsLocation
+            val iconModifier =
+                if (hasUdfps && udfpsLocation != null && globalCoordinates != null) {
+                    with(LocalDensity.current) {
+                        val yOffset = globalCoordinates?.positionInWindow()?.y ?: 0f
+                        Modifier.align(Alignment.TopStart)
+                            .offset(
+                                x = (udfpsLocation.centerX - udfpsLocation.radius).toDp(),
+                                y = (udfpsLocation.centerY - udfpsLocation.radius - yOffset).toDp(),
+                            )
+                    }
+                } else {
+                    Modifier.align(Alignment.BottomCenter)
+                        .padding(
+                            bottom =
+                                dimensionResource(
+                                    R.dimen.biometric_prompt_portrait_medium_bottom_padding
+                                )
+                        )
+                }
+
             BiometricIconLottie(
                 viewModel = secureLockDeviceViewModel,
-                modifier =
-                    Modifier.align(Alignment.BottomCenter)
-                        .padding(bottom = iconBottomPadding)
-                        .width { iconSize.first }
-                        .height { iconSize.second },
+                modifier = iconModifier.width { iconSize.first }.height { iconSize.second },
             )
         }
 
