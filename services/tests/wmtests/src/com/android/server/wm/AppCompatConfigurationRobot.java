@@ -69,6 +69,11 @@ class AppCompatConfigurationRobot {
                 .isCameraCompatSimulateRequestedOrientationTreatmentEnabled();
     }
 
+    void enableCameraCompatLandscapeToPortraitTreatment(boolean enabled) {
+        doReturn(enabled).when(mAppCompatConfiguration)
+                .isCameraCompatLandscapeTreatmentEnabled();
+    }
+
     void setCameraCompatAspectRatio(float aspectRatio) {
         doReturn(aspectRatio).when(mAppCompatConfiguration).getCameraCompatAspectRatio();
     }

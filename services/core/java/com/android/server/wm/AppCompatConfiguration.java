@@ -299,6 +299,14 @@ final class AppCompatConfiguration {
     // rotation to match what the apps most likely expect in their requested orientation
     private final boolean mIsCameraCompatSimulateRequestedOrientationTreatmentEnabled;
 
+    // Whether camera compat treatment that overrides landscape camera sensor to portrait is
+    // enabled.
+    // The purpose of the treatment is to mitigate issues caused by apps hardcoding camera sensor
+    // orientation (the way camera is mounted on the device) to portrait. The treatment changes
+    // reported camera sensor orientation to portrait, and rotates the camera feed to account for
+    // the difference in rotation.
+    private final boolean mIsCameraCompatLandscapeTreatmentEnabled;
+
     // Which aspect ratio to use when camera compat treatment is enabled and an activity eligible
     // for treatment is connected to the camera.
     private float mCameraCompatAspectRatio = DEFAULT_VALUE_CAMERA_COMPAT_MIN_ASPECT_RATIO;
@@ -386,6 +394,8 @@ final class AppCompatConfiguration {
         mIsCameraCompatSimulateRequestedOrientationTreatmentEnabled = mContext.getResources()
                 .getBoolean(R.bool
                         .config_isCameraCompatSimulateRequestedOrientationTreatmentEnabled);
+        mIsCameraCompatLandscapeTreatmentEnabled = mContext.getResources().getBoolean(
+                R.bool.config_isCameraCompatSimReqOrientationLandscapeTreatmentEnabled);
         mIsPolicyForIgnoringRequestedOrientationEnabled = mContext.getResources().getBoolean(
                 R.bool.config_letterboxIsPolicyForIgnoringRequestedOrientationEnabled);
 
@@ -1381,6 +1391,17 @@ final class AppCompatConfiguration {
      */
     boolean isCameraCompatSimulateRequestedOrientationTreatmentEnabled() {
         return mIsCameraCompatSimulateRequestedOrientationTreatmentEnabled;
+    }
+
+    /**
+     * Whether the camera compatibility treatment which overrides landscape camera orientation to
+     * portrait is allowed on this device.
+     *
+     * <p>For the treatment to activate, isCameraCompatSimulateRequestedOrientationTreatmentEnabled
+     * also needs to be true, given that the same policy is applying the treatment.
+     */
+    boolean isCameraCompatLandscapeTreatmentEnabled() {
+        return mIsCameraCompatLandscapeTreatmentEnabled;
     }
 
     /**

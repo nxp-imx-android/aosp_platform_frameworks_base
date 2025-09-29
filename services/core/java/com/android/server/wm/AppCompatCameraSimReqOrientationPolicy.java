@@ -395,13 +395,12 @@ final class AppCompatCameraSimReqOrientationPolicy implements AppCompatCameraSta
     }
 
     boolean isCameraRunningAndWindowingModeEligible(@NonNull ActivityRecord activity) {
-        return  activity.mAppCompatController.getCameraOverrides()
-                .shouldApplyCameraCompatSimReqOrientationTreatment()
+        return mCameraStateMonitor.isCameraRunningForActivity(activity)
+                && isWindowingModeEligible(activity)
+                && isTreatmentAllowedViaConfig(activity)
                 // Do not apply camera compat treatment when an app is running on a candybar
                 // display.
-                && activity.getDisplayContent().getIgnoreOrientationRequest()
-                && isWindowingModeEligible(activity)
-                && mCameraStateMonitor.isCameraRunningForActivity(activity);
+                && activity.getDisplayContent().getIgnoreOrientationRequest();
     }
 
     private boolean isWindowingModeEligible(@NonNull ActivityRecord activity) {
@@ -483,16 +482,18 @@ final class AppCompatCameraSimReqOrientationPolicy implements AppCompatCameraSta
     @VisibleForTesting
     boolean isCompatibilityTreatmentEnabledForActivity(@NonNull ActivityRecord activity,
             boolean checkOrientation) {
-        return activity.mAppCompatController.getCameraOverrides()
-                .shouldApplyCameraCompatSimReqOrientationTreatment()
-                // Do not apply camera compat treatment when an app is running on a candybar
-                // display. External displays should have this set to true.
-                && activity.getDisplayContent().getIgnoreOrientationRequest()
-                && mCameraStateMonitor.isCameraRunningForActivity(activity)
+        return isCameraRunningAndWindowingModeEligible(activity)
                 && isOrientationEligibleForTreatment(activity, checkOrientation)
-                && isWindowingModeEligible(activity)
                 // TODO(b/332665280): investigate whether we can support activity embedding.
                 && !activity.isEmbedded();
+    }
+
+    private boolean isTreatmentAllowedViaConfig(@NonNull ActivityRecord activity) {
+        return mCameraDisplayRotationProvider.isCameraDeviceNaturalOrientationPortrait()
+                ? activity.mAppCompatController.getCameraOverrides()
+                        .shouldApplyCameraCompatSimReqOrientationTreatment()
+                : activity.mAppCompatController.getCameraOverrides()
+                        .shouldApplyCameraCompatSimReqOrientationTreatmentForLandscapeCamera();
     }
 
     private boolean isOrientationEligibleForTreatment(@NonNull ActivityRecord activity,
@@ -523,15 +524,14 @@ final class AppCompatCameraSimReqOrientationPolicy implements AppCompatCameraSta
                 /* checkOrientation= */ true)) {
             return false;
         }
-        final boolean isSandboxAllowed = activity.mAppCompatController
-                .getCameraOverrides().shouldApplyCameraCompatSimReqOrientationTreatment();
+
         final boolean externalDisplay = activity.getDisplayContent().getDisplay().getType()
                 == TYPE_EXTERNAL;
         // If camera and external display rotations are the same, this treatment has no effect.
         final boolean externalDisplayDifferentOrientation = externalDisplay
                 && (activity.getDisplayContent().getRotation()
                 != mCameraDisplayRotationProvider.getCameraDeviceRotation());
-        return isSandboxAllowed && externalDisplayDifferentOrientation;
+        return externalDisplayDifferentOrientation && isTreatmentAllowedViaConfig(activity);
     }
 
     @Nullable
