@@ -781,7 +781,7 @@ constructor(
 
                 override fun onTransitionAnimationStart(isExpandingFullyAbove: Boolean) {
                     super.onTransitionAnimationStart(isExpandingFullyAbove)
-                    if (Flags.communalHub()) {
+                    if (Flags.communalHub() && !SceneContainerFlag.isEnabled) {
                         communalSceneInteractor.snapToScene(
                             newScene = CommunalScenes.Blank,
                             loggingReason = "ActivityStarterInternalImpl",

@@ -2339,6 +2339,28 @@ class SceneContainerStartableTest : SysuiTestCase() {
         }
 
     @Test
+    fun handleOcclusion_exitsToCommunal() =
+        kosmos.runTest {
+            val currentScene by collectLastValue(sceneInteractor.currentScene)
+            prepareState()
+            underTest.start()
+            sceneInteractor.changeScene(Scenes.Communal, "test")
+            runCurrent()
+
+            assertThat(currentScene).isEqualTo(Scenes.Communal)
+
+            keyguardOcclusionInteractor.setWmNotifiedShowWhenLockedActivityOnTop(true, mock())
+            runCurrent()
+
+            assertThat(currentScene).isEqualTo(Scenes.Occluded)
+
+            keyguardOcclusionInteractor.setWmNotifiedShowWhenLockedActivityOnTop(false, mock())
+            runCurrent()
+
+            assertThat(currentScene).isEqualTo(Scenes.Communal)
+        }
+
+    @Test
     fun switchToLockscreen_whenShadeBecomesNotTouchable() =
         kosmos.runTest {
             val currentScene by collectLastValue(sceneInteractor.currentScene)
