@@ -17,6 +17,8 @@
 
 package android.view.input;
 
+import static android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM;
+import static android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN;
 import static android.view.MotionEvent.ACTION_DOWN;
 import static android.view.MotionEvent.ACTION_MOVE;
 import static android.view.MotionEvent.ACTION_UP;
@@ -84,6 +86,8 @@ public class LetterboxScrollProcessorTest {
 
         // Set app bounds as if it was letterboxed.
         mContext.getResources().getConfiguration().windowConfiguration.setBounds(APP_BOUNDS);
+        mContext.getResources().getConfiguration().windowConfiguration.setWindowingMode(
+                WINDOWING_MODE_FULLSCREEN);
 
         // Recreate to reset LetterboxScrollProcessor state.
         mLetterboxScrollProcessor = new LetterboxScrollProcessor(mContext,
@@ -93,13 +97,22 @@ public class LetterboxScrollProcessorTest {
     @DisableFlags(Flags.FLAG_SCROLLING_FROM_LETTERBOX)
     @Test
     public void testCompatibilityNeededIfFlagIsDisabled() {
-        assertThat(LetterboxScrollProcessor.isCompatibilityNeeded()).isFalse();
+        assertThat(LetterboxScrollProcessor.isCompatibilityNeeded(mContext)).isFalse();
+    }
+
+    @EnableFlags(Flags.FLAG_SCROLLING_FROM_LETTERBOX)
+    @Test
+    public void testCompatibilityNeededIfInFreeform() {
+        mContext.getResources().getConfiguration().windowConfiguration.setWindowingMode(
+                WINDOWING_MODE_FREEFORM);
+
+        assertThat(LetterboxScrollProcessor.isCompatibilityNeeded(mContext)).isFalse();
     }
 
     @EnableFlags(Flags.FLAG_SCROLLING_FROM_LETTERBOX)
     @Test
     public void testCompatibilityNeededIfFlagIsEnabled() {
-        assertThat(LetterboxScrollProcessor.isCompatibilityNeeded()).isTrue();
+        assertThat(LetterboxScrollProcessor.isCompatibilityNeeded(mContext)).isTrue();
     }
 
     @Test

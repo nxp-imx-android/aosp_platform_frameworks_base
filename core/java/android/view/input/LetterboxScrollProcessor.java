@@ -16,6 +16,8 @@
 
 package android.view.input;
 
+import static android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM;
+
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.content.Context;
@@ -69,8 +71,9 @@ public class LetterboxScrollProcessor extends InputEventCompatProcessor {
         mScrollDetector = new GestureDetector(context, new ScrollListener(), handler);
     }
 
-    public static boolean isCompatibilityNeeded() {
-        return Flags.scrollingFromLetterbox();
+    /** Whether Scrolling from Letterbox area should be enabled. */
+    public static boolean isCompatibilityNeeded(@NonNull Context context) {
+        return Flags.scrollingFromLetterbox() && !appInFreeform(context);
     }
 
     @Nullable
@@ -140,6 +143,14 @@ public class LetterboxScrollProcessor extends InputEventCompatProcessor {
         }
 
         return makeNoAdjustments ? null : mProcessedEvents;
+    }
+
+    private static boolean appInFreeform(@NonNull Context context) {
+        // Apps in freeform don't need reachability. Also, freeform windows have a touchable header,
+        // and these events should not be altered, so scrolling from letterbox is disabled for them
+        // completely.
+        return context.getResources().getConfiguration().windowConfiguration.getWindowingMode()
+                == WINDOWING_MODE_FREEFORM;
     }
 
     @Nullable
