@@ -168,6 +168,7 @@ import com.android.wm.shell.shared.annotations.ExternalThread
 import com.android.wm.shell.shared.annotations.ShellDesktopThread
 import com.android.wm.shell.shared.annotations.ShellMainThread
 import com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper
+import com.android.wm.shell.shared.bubbles.logging.BubbleLog
 import com.android.wm.shell.shared.desktopmode.DesktopConfig
 import com.android.wm.shell.shared.desktopmode.DesktopFirstListener
 import com.android.wm.shell.shared.desktopmode.DesktopModeTransitionSource
@@ -5888,6 +5889,7 @@ class DesktopTasksController(
             dragToDesktopTransitionHandler.cancelDragToDesktopTransition(cancelState)
         } else {
             bubbleController.ifPresent {
+                BubbleLog.d("DesktopTaskController.requestFloat() DROP taskInfo=%s", taskInfo)
                 it.expandStackAndSelectBubble(taskInfo, /* dragData= */ null)
             }
         }
