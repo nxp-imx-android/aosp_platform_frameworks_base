@@ -4668,6 +4668,7 @@ public abstract class Context {
                 MEDIA_QUALITY_SERVICE,
                 ADVANCED_PROTECTION_SERVICE,
                 ANOMALY_DETECTOR_SERVICE,
+                TASK_CONTINUITY_SERVICE,
             })
     @Retention(RetentionPolicy.SOURCE)
     public @interface ServiceName {}
