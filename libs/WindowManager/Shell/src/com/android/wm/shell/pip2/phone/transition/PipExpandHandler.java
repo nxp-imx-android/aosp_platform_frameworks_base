@@ -65,7 +65,8 @@ import com.android.wm.shell.transition.Transitions;
 
 import java.util.Optional;
 
-public class PipExpandHandler implements Transitions.TransitionHandler {
+public class PipExpandHandler implements Transitions.TransitionHandler,
+        PipDisplayLayoutState.DisplayIdListener {
     private Context mContext;
     private final PipBoundsState mPipBoundsState;
     private final PipBoundsAlgorithm mPipBoundsAlgorithm;
@@ -118,6 +119,7 @@ public class PipExpandHandler implements Transitions.TransitionHandler {
     }
 
     /** Called by [PipTransition#onDisplayIdChanged] when the display id changes. */
+    @Override
     public void onDisplayIdChanged(Context context) {
         mContext = context;
     }
