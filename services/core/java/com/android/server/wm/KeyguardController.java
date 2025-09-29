@@ -219,7 +219,7 @@ class KeyguardController {
                 } else if (keyguardShowing && !state.mKeyguardShowing) {
                     transition.addFlag(TRANSIT_FLAG_KEYGUARD_APPEARING);
                 }
-                if (mWindowManager.mFlags.mAodTransition && aodShowing && !state.mAodShowing) {
+                if (Flags.aodTransition() && aodShowing && !state.mAodShowing) {
                     transition.addFlag(TRANSIT_FLAG_AOD_APPEARING);
                 }
             }
@@ -244,7 +244,7 @@ class KeyguardController {
         state.mAodShowing = aodShowing;
         state.writeEventLog("setKeyguardShown");
 
-        if (keyguardChanged || (mWindowManager.mFlags.mAodTransition && aodChanged)) {
+        if (keyguardChanged || (Flags.aodTransition() && aodChanged)) {
             if (keyguardChanged) {
                 // Irrelevant to AOD.
                 state.mKeyguardGoingAway = false;
@@ -254,7 +254,7 @@ class KeyguardController {
             }
             if (goingAwayRemoved
                     || (keyguardShowing && !Display.isOffState(dc.getDisplayInfo().state))
-                    || (mWindowManager.mFlags.mAodTransition && aodShowing)) {
+                    || (Flags.aodTransition() && aodShowing)) {
                 // Keyguard decided to show or stopped going away. Send a transition to animate back
                 // to the locked state before holding the sleep token again
                 if (!ENABLE_NEW_KEYGUARD_SHELL_TRANSITIONS) {
@@ -262,7 +262,7 @@ class KeyguardController {
                         dc.requestTransitionAndLegacyPrepare(TRANSIT_TO_FRONT,
                                 TRANSIT_FLAG_KEYGUARD_APPEARING, /* trigger= */ null, chain);
                     }
-                    if (mWindowManager.mFlags.mAodTransition && aodChanged && aodShowing) {
+                    if (Flags.aodTransition() && aodChanged && aodShowing) {
                         dc.requestTransitionAndLegacyPrepare(TRANSIT_TO_FRONT,
                                 TRANSIT_FLAG_AOD_APPEARING, /* trigger= */ null, chain);
                     }
