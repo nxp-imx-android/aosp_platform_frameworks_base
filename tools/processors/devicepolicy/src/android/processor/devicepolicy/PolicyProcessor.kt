@@ -19,6 +19,7 @@ package android.processor.devicepolicy
 import android.processor.devicepolicy.protos.PolicyMetadataList
 import android.processor.devicepolicy.protos.PolicyMetadata
 import com.google.protobuf.TextFormat
+import com.squareup.javapoet.JavaFile
 import java.io.Writer
 import javax.annotation.processing.AbstractProcessor
 import javax.annotation.processing.FilerException
@@ -71,7 +72,7 @@ class PolicyProcessor : AbstractProcessor() {
         ).flatten()
 
         try {
-            writePolicies(roundEnvironment, policies)
+            writePolicies(policies)
         } catch (e: FilerException) {
             processingEnv.messager.printMessage(
                 Diagnostic.Kind.WARNING,
@@ -98,10 +99,10 @@ class PolicyProcessor : AbstractProcessor() {
         }
     }
 
-    fun writePolicies(roundEnvironment: RoundEnvironment, policies: List<PolicyMetadata>) {
+    fun writePolicies(policies: List<PolicyMetadata>) {
         val policyMetadata = PolicyMetadataList.newBuilder().addAllPolicyMetadata(policies).build()
 
-        val protoWriter = createWriter(roundEnvironment, "policies.textproto")
+        val protoWriter = createResourceWriter("policies.textproto")
         try {
             TextFormat.printer().print(policyMetadata, protoWriter)
         } finally {
@@ -109,14 +110,31 @@ class PolicyProcessor : AbstractProcessor() {
         }
 
         val policiesClass = PolicyMetadataCodeGenerator.generate(policyMetadata)
-        policiesClass.writeTo(processingEnv.filer)
+        val policiesWriter = createSourceWriter(policiesClass)
+
+        try {
+            PolicyMetadataCodeGenerator.addLicense(policiesWriter)
+            policiesClass.writeTo(policiesWriter)
+        } finally {
+            policiesWriter.close()
+        }
     }
 
-    fun createWriter(roundEnvironment: RoundEnvironment, name: String): Writer {
-        return processingEnv.filer.createResource(
-            StandardLocation.SOURCE_OUTPUT, "android.processor.devicepolicy", name
-        ).openWriter()
-    }
+    fun createResourceWriter(name: String): Writer =
+        processingEnv
+            .filer
+            .createResource(
+                StandardLocation.SOURCE_OUTPUT,
+                "android.processor.devicepolicy",
+                name
+            )
+            .openWriter()
+
+    fun createSourceWriter(file: JavaFile): Writer =
+        processingEnv
+            .filer
+            .createSourceFile("${file.packageName}.${file.typeSpec.name}")
+            .openWriter()
 
     private fun printError(element: Element, message: String) {
         processingEnv.messager.printMessage(

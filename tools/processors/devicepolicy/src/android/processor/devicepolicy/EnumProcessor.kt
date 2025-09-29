@@ -36,7 +36,28 @@ import javax.lang.model.type.TypeMirror
  * as well. Since this processor is not the direct consumer of @IntDef and we want the names for the
  * enum entries, not just values, we will have to use the JDK to walk the AST.
  *
- * We extract:
+ * We extract:private fun CodeBlock.Builder.addPolicyArguments(policy: PolicyMetadata) : CodeBlock.Builder {
+        add("/* id= */ \$L,\n", policy.name)
+        add(
+            "/* allowedScopes= */ \$L,\n",
+            generateSetBuilder(policy.allowedScopesList.map { it.number })
+        )
+        add("/* affectedResource= */ \$L,\n", policy.affectedResource.number)
+
+        if (policy.requiredPermission.isEmpty()) {
+            add("/* requiredPermission= */ null,\n")
+        } else {
+            add("/* requiredPermission= */ \$S,\n", policy.requiredPermission)
+        }
+
+        if (policy.requiredCrossUserPermission.isEmpty()) {
+            add("/* requiredCrossUserPermission= */ null")
+        } else {
+            add("/* requiredCrossUserPermission= */ \$S", policy.requiredCrossUserPermission)
+        }
+
+        return this
+    }
  * <ul>
  *     <li> The default value. </li>
  *     <li> The documentation for the enumeration. </li>
