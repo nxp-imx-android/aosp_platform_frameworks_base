@@ -163,7 +163,10 @@ abstract class Processor<T : Annotation>(protected val processingEnv: Processing
             printError(element, "Missing JavaDoc")
         }
 
-        return PolicyMetadata
+        val requiredPermission = definition.requiredPermission
+        val requiredCrossUserPermission = definition.requiredCrossUserPermission
+
+        val builder = PolicyMetadata
             .newBuilder()
             .setName(name)
             .setType(type)
@@ -171,7 +174,29 @@ abstract class Processor<T : Annotation>(protected val processingEnv: Processing
             .setTypeSpecificMetadata(typeSpecificMetadata)
             .addAllAllowedScopes(allowedScopes)
             .setAffectedResource(affectedResource)
-            .build()
+
+        if (!requiredPermission.isEmpty()) {
+            builder.setRequiredPermission(requiredPermission)
+        }
+        if (!requiredCrossUserPermission.isEmpty()) {
+            validateRequiredCrossUserPermission(element, requiredCrossUserPermission)
+            builder.setRequiredCrossUserPermission(requiredCrossUserPermission)
+        }
+
+        return builder.build()
+    }
+
+    private fun validateRequiredCrossUserPermission(element: Element, requiredCrossUserPermission: String) {
+        if (requiredCrossUserPermission !in setOf(
+            "android.permission.MANAGE_DEVICE_POLICY_ACROSS_USERS",
+            "android.permission.MANAGE_DEVICE_POLICY_ACROSS_USERS_FULL",
+            "android.permission.MANAGE_DEVICE_POLICY_ACROSS_USERS_SECURITY_CRITICAL"
+        )) {
+            printError(
+                element,
+                "requiredCrossUserPermission was set to '$requiredCrossUserPermission', but can only be set to android.permission.MANAGE_DEVICE_POLICY_ACROSS_USERS, android.permission.MANAGE_DEVICE_POLICY_ACROSS_USERS_FULL, android.permission.MANAGE_DEVICE_POLICY_ACROSS_USERS_SECURITY_CRITICAL or left empty."
+            )
+        }
     }
 
     private fun convertScopes(element: Element, allowedScopes: List<Int>): List<PolicyMetadata.PolicyScope> {
