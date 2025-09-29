@@ -390,7 +390,7 @@ public class RavenwoodRunnerCallbackTest extends RavenwoodRunnerTestBase {
     }
 
     /**
-     * The test class is unloadable, but has a @DisabledOnRavenwood.
+     * The test class is unloadable, but does _not_ have a @DisabledOnRavenwood.
      */
     @RunWith(AndroidJUnit4.class)
     // CHECKSTYLE:OFF
@@ -398,13 +398,13 @@ public class RavenwoodRunnerCallbackTest extends RavenwoodRunnerTestBase {
     testRunStarted: classes
     testSuiteStarted: classes
     testSuiteStarted: com.android.ravenwoodtest.runnercallbacktests.RavenwoodRunnerCallbackTest$ClassUnloadbleAndEnabledTest
-    testSuiteFinished: com.android.ravenwoodtest.runnercallbacktests.RavenwoodRunnerCallbackTest$ClassUnloadbleAndEnabledTest
     testStarted: test1(com.android.ravenwoodtest.runnercallbacktests.RavenwoodRunnerCallbackTest$ClassUnloadbleAndEnabledTest)
     testFailure: Class unloadable!
     testFinished: test1(com.android.ravenwoodtest.runnercallbacktests.RavenwoodRunnerCallbackTest$ClassUnloadbleAndEnabledTest)
     testStarted: test2(com.android.ravenwoodtest.runnercallbacktests.RavenwoodRunnerCallbackTest$ClassUnloadbleAndEnabledTest)
-    testFailure: Class unloadable!
+    testFailure: Could not initialize class com.android.ravenwoodtest.runnercallbacktests.RavenwoodRunnerCallbackTest$ClassUnloadbleAndEnabledTest
     testFinished: test2(com.android.ravenwoodtest.runnercallbacktests.RavenwoodRunnerCallbackTest$ClassUnloadbleAndEnabledTest)
+    testSuiteFinished: com.android.ravenwoodtest.runnercallbacktests.RavenwoodRunnerCallbackTest$ClassUnloadbleAndEnabledTest
     testSuiteFinished: classes
     testRunFinished: 2,2,0,0
     """)

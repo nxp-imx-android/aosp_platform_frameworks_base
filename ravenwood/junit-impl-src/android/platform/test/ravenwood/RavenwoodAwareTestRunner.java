@@ -73,13 +73,8 @@ public final class RavenwoodAwareTestRunner extends RavenwoodAwareTestRunnerBase
     // A rule that does nothing
     private static final TestRule sNoopRule = (base, desc) -> base;
 
-    // The following four rule instances will be injected to tests by the Ravenizer tool.
-    // We only actually need the outer instance rule, to reduce unnecessary code logic and
-    // stack frames shown in stack trace, make all others no-op.
-    public static final TestRule sImplicitClassOuterRule = sNoopRule;
-    public static final TestRule sImplicitClassInnerRule = sNoopRule;
+    // The following rule will be injected to tests by the Ravenizer tool.
     public static final TestRule sImplicitInstOuterRule = new MethodOuterHook();
-    public static final TestRule sImplicitInstInnerRule = sNoopRule;
 
     /** Keeps track of the runner on the current thread. */
     private static final ThreadLocal<RavenwoodAwareTestRunner> sCurrentRunner = new ThreadLocal<>();
