@@ -23,6 +23,7 @@ import static android.view.WindowManager.TRANSIT_OPEN;
 import static android.view.WindowManager.TRANSIT_TO_BACK;
 import static android.view.WindowManager.TRANSIT_TO_FRONT;
 
+import static com.android.window.flags.Flags.FLAG_FIX_BUBBLE_TRAMPOLINE_LAUNCH_TWICE;
 import static com.android.window.flags.Flags.FLAG_ROOT_TASK_FOR_BUBBLE;
 import static com.android.wm.shell.Flags.FLAG_ENABLE_BUBBLE_BAR;
 import static com.android.wm.shell.Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE;
@@ -1016,6 +1017,44 @@ public class BubbleTransitionsTest extends ShellTestCase {
         assertThat(mBubbleTransitions.mEnterTransitions).doesNotContainKey(transitionToken);
         assertThat(mBubbleTransitions.mPendingEnterTransitions).doesNotContainKey(
                 bt.mLaunchCookie.binder);
+    }
+
+    @EnableFlags(FLAG_FIX_BUBBLE_TRAMPOLINE_LAUNCH_TWICE)
+    @Test
+    public void testLaunchOrConvert_canAnimationTransition_expandingExistingBubble() {
+        final TaskView existingTaskView = setUpBubbleTaskView(mBubble);
+        final ActivityManager.RunningTaskInfo existingTask = setupAppBubble(
+                mBubble, existingTaskView, mTaskViewTaskController);
+        final SurfaceControl existingTaskLeash =
+                new SurfaceControl.Builder().setName("existingTaskLeash").build();
+        doReturn(mBubble).when(mBubbleData).getBubbleInStackWithTaskId(existingTask.getTaskId());
+
+        final Bubble newBubble = mock(Bubble.class);
+        final TaskView newTaskView = setUpBubbleTaskView(newBubble);
+        setupAppBubble(newBubble, newTaskView, mTaskViewTaskController);
+        final String bubbleKey = "testingKey";
+        doReturn(bubbleKey).when(newBubble).getKey();
+        final BubbleTransitions.LaunchOrConvertToBubble bt =
+                (BubbleTransitions.LaunchOrConvertToBubble) mBubbleTransitions
+                        .startLaunchIntoOrConvertToBubble(
+                                newBubble, mExpandedViewManager, mTaskViewFactory,
+                                mBubblePositioner, mStackView, mLayerView, mIconFactory,
+                                false /* inflateSync */, BubbleBarLocation.RIGHT);
+        bt.onInflated(newBubble);
+
+        final TransitionInfo.Change toFront = new TransitionInfo.Change(existingTask.token,
+                existingTaskLeash);
+        toFront.setTaskInfo(existingTask);
+        toFront.setMode(TRANSIT_TO_FRONT);
+        final TransitionInfo info = new TransitionInfo(TRANSIT_TO_FRONT, 0);
+        info.addChange(toFront);
+
+        assertThat(bt.canAnimateTransition(info)).isFalse();
+        bt.onTransitionConsumed(bt.mTransition, true /* abort */,
+                mock(SurfaceControl.Transaction.class));
+
+        verify(mBubbleData).dismissBubbleWithKey(bubbleKey, Bubbles.DISMISS_REPLACE_BY_EXISTING);
+        verify(newBubble).setCurrentTransition(isNull());
     }
 
     @Test

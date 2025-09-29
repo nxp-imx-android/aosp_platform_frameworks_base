@@ -29,6 +29,7 @@ import android.window.TransitionInfo
 import android.window.TransitionRequestInfo
 import android.window.WindowContainerToken
 import androidx.test.filters.SmallTest
+import com.android.dx.mockito.inline.extended.ExtendedMockito.spyOn
 import com.android.window.flags.Flags.FLAG_FIX_BUBBLE_TRAMPOLINE_ANIMATION
 import com.android.wm.shell.Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE
 import com.android.wm.shell.ShellTestCase
@@ -43,6 +44,7 @@ import com.android.wm.shell.recents.RecentsTransitionHandler
 import com.android.wm.shell.splitscreen.SplitScreenController
 import com.android.wm.shell.splitscreen.StageCoordinator
 import com.android.wm.shell.sysui.ShellInit
+import com.android.wm.shell.transition.DefaultMixedHandler.MixedTransition.TYPE_LAUNCH_OR_CONVERT_TO_BUBBLE
 import com.android.wm.shell.unfold.UnfoldTransitionHandler
 import com.google.common.truth.Truth.assertThat
 import java.util.Optional
@@ -293,6 +295,27 @@ class DefaultMixedHandlerTest : ShellTestCase() {
 
         verify(bubbleTransitions).startTaskTrampolineBubbleLaunch(
             any(), eq(openingChange.taskInfo!!), eq(closingChange.taskInfo!!), any())
+    }
+
+    @Test
+    fun test_startAnimation_prevMixedCanNotAnimateTransition() {
+        spyOn(mixedHandler)
+        val transition = Binder()
+        val mixedTransition = spy(DefaultMixedTransition(
+            TYPE_LAUNCH_OR_CONVERT_TO_BUBBLE, transition, transitions, mixedHandler,
+            pipTransitionController, splitScreenController.getTransitionHandler(),
+            keyguardTransitionHandler, unfoldTransitionHandler, activityEmbeddingController,
+            desktopTasksController, bubbleTransitions
+        ))
+        mixedHandler.mActiveTransitions.add(mixedTransition)
+        val info = TransitionInfo(TRANSIT_OPEN, 0)
+        doReturn(false).`when`(mixedTransition).canAnimateTransition(transition, info)
+
+        mixedHandler.startAnimation(transition, info, mock<SurfaceControl.Transaction>(),
+            mock<SurfaceControl.Transaction>(), mock<Transitions.TransitionFinishCallback>())
+
+        verify(mixedTransition).onTransitionConsumed(eq(transition), eq(true), any())
+        assertThat(mixedHandler.mActiveTransitions.contains(mixedTransition)).isFalse()
     }
 
     private fun createTransitionRequestInfo(
