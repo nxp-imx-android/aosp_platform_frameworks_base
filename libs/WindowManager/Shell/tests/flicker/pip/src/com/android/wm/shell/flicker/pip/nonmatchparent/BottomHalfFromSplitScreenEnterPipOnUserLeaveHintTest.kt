@@ -76,7 +76,7 @@ class BottomHalfFromSplitScreenEnterPipOnUserLeaveHintTest(flicker: FlickerTest)
         setup {
             secondAppForSplitScreen.launchViaIntent(wmHelper)
             pipApp.launchViaIntent(wmHelper)
-            tapl.goHome()
+            device.pressHome()
             SplitScreenUtils.enterSplit(
                 wmHelper,
                 tapl,
@@ -97,6 +97,6 @@ class BottomHalfFromSplitScreenEnterPipOnUserLeaveHintTest(flicker: FlickerTest)
             pipApp.exit(wmHelper)
             secondAppForSplitScreen.exit(wmHelper)
         }
-        transitions { tapl.goHome() }
+        transitions { device.pressHome() }
     }
 }

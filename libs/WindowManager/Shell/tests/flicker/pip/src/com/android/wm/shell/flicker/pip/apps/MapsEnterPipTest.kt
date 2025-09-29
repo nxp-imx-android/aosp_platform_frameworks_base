@@ -137,7 +137,7 @@ open class MapsEnterPipTest(flicker: FlickerTest) : AppsEnterPipTransition(flick
         }
     }
 
-    override val thisTransition: FlickerBuilder.() -> Unit = { transitions { tapl.goHome() } }
+    override val thisTransition: FlickerBuilder.() -> Unit = { transitions { device.pressHome() } }
 
     /** Checks [pipApp] layer remains visible throughout the animation */
     @Postsubmit

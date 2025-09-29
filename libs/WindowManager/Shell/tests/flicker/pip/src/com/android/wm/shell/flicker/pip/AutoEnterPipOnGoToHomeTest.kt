@@ -64,7 +64,7 @@ import org.junit.runners.Parameterized
 open class AutoEnterPipOnGoToHomeTest(flicker: FlickerTest) : EnterPipTransition(flicker) {
     override val pipApp: PipAppHelper = PipAppHelper(instrumentation)
 
-    override val thisTransition: FlickerBuilder.() -> Unit = { transitions { tapl.goHome() } }
+    override val thisTransition: FlickerBuilder.() -> Unit = { transitions { device.pressHome() } }
 
     override val defaultEnterPip: FlickerBuilder.() -> Unit = {
         setup {

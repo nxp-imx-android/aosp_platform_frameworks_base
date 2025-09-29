@@ -130,7 +130,7 @@ object SplitScreenUtils {
         primaryApp.launchViaIntent(wmHelper)
         secondaryApp.launchViaIntent(wmHelper)
         ChangeDisplayOrientationRule.setRotation(rotation)
-        tapl.goHome()
+        device.pressHome()
         wmHelper.StateSyncBuilder().withHomeActivityVisible().waitForAndVerify()
         splitFromOverview(tapl, device, rotation)
         waitForSplitComplete(wmHelper, primaryApp, secondaryApp)
@@ -173,10 +173,10 @@ object SplitScreenUtils {
             }
             snapshots[0].click()
         } else {
-            val rotationCheckEnabled = tapl.getExpectedRotationCheckEnabled()
-            tapl.setExpectedRotationCheckEnabled(false) // disable rotation check to enter overview
+            val rotationCheckEnabled = tapl.expectedRotationCheckEnabled
+            tapl.expectedRotationCheckEnabled = false // disable rotation check to enter overview
             val home = tapl.workspace.switchToOverview()
-            tapl.setExpectedRotationCheckEnabled(rotationCheckEnabled) // restore rotation checks
+            tapl.expectedRotationCheckEnabled = rotationCheckEnabled // restore rotation checks
             ChangeDisplayOrientationRule.setRotation(rotation)
             home.currentTask.tapMenu().tapSplitMenuItem().currentTask.open()
         }
