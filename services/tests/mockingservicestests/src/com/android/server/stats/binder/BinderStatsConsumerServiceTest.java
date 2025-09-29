@@ -19,6 +19,7 @@ package com.android.server.stats.binder;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.verify;
 
 import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 
 import android.os.Process;
@@ -26,6 +27,9 @@ import android.os.RemoteException;
 import android.os.binder.BinderCallsStats;
 import android.os.binder.BinderSpamStats;
 import android.platform.test.annotations.Presubmit;
+import android.platform.test.annotations.RequiresFlagsEnabled;
+import android.platform.test.flag.junit.CheckFlagsRule;
+import android.platform.test.flag.junit.DeviceFlagsValueProvider;
 import android.util.StatsEvent;
 import android.util.StatsEventTestUtils;
 import android.util.StatsLog;
@@ -35,6 +39,8 @@ import androidx.test.filters.SmallTest;
 
 import com.android.modules.utils.testing.ExtendedMockitoRule;
 import com.android.os.AtomsProto;
+import com.android.server.LocalServices;
+import com.android.server.signalcollector.SignalCollectorManagerInternal;
 
 import com.google.protobuf.InvalidProtocolBufferException;
 
@@ -58,6 +64,8 @@ public class BinderStatsConsumerServiceTest {
     private static final int SPAM_STATS_ATOM_ID = 1064;
     private static final int CALL_STATS_ATOM_ID = 1090;
 
+    @Rule
+    public final CheckFlagsRule mCheckFlagsRule = DeviceFlagsValueProvider.createCheckFlagsRule();
     @Rule
     public final ExtendedMockitoRule mExtendedMockitoRule =
             new ExtendedMockitoRule.Builder(this).mockStatic(StatsLog.class).build();
@@ -116,6 +124,27 @@ public class BinderStatsConsumerServiceTest {
         assertEquals(expectedAtom, actualAtom);
     }
 
+    @RequiresFlagsEnabled(android.os.profiling.anomaly.flags.Flags.FLAG_ANOMALY_DETECTOR_CORE)
+    @Test
+    public void testReportSpamStatsToSignalCollector() {
+        SignalCollectorManagerInternal signalCollectorManagerInternal = mock(
+                SignalCollectorManagerInternal.class);
+        LocalServices.addService(SignalCollectorManagerInternal.class,
+                signalCollectorManagerInternal);
+        BinderSpamStats[] stats = new BinderSpamStats[1];
+        stats[0] = new BinderSpamStats();
+        stats[0].clientUid = 1000;
+        stats[0].interfaceDescriptor = "com.example.IFoo";
+        stats[0].aidlMethod = "bar";
+        stats[0].secondsWithAtLeast125Calls = 1;
+
+        mService.reportSpamStats(stats);
+
+        verify(signalCollectorManagerInternal).reportBinderStats(stats);
+
+        LocalServices.removeServiceForTest(SignalCollectorManagerInternal.class);
+    }
+
     @Test
     public void testReportSpamStats() throws RemoteException, InvalidProtocolBufferException {
         BinderSpamStats[] stats = new BinderSpamStats[1];
@@ -172,6 +201,33 @@ public class BinderStatsConsumerServiceTest {
         AtomsProto.Atom actualAtom2 = StatsEventTestUtils.convertToAtom(actualEvents.get(1));
         assertEquals(expectedAtom1, actualAtom1);
         assertEquals(expectedAtom2, actualAtom2);
+    }
+
+
+    @RequiresFlagsEnabled(android.os.profiling.anomaly.flags.Flags.FLAG_ANOMALY_DETECTOR_CORE)
+    @Test
+    public void testReportMultipleSpamStatsToSignalCollector() {
+        SignalCollectorManagerInternal signalCollectorManagerInternal = mock(
+                SignalCollectorManagerInternal.class);
+        LocalServices.addService(SignalCollectorManagerInternal.class,
+                signalCollectorManagerInternal);
+        BinderSpamStats[] stats = new BinderSpamStats[2];
+        stats[0] = new BinderSpamStats();
+        stats[0].clientUid = 1000;
+        stats[0].interfaceDescriptor = "com.example.IFoo";
+        stats[0].aidlMethod = "bar";
+        stats[0].secondsWithAtLeast125Calls = 10;
+
+        stats[1] = new BinderSpamStats();
+        stats[1].clientUid = 1001;
+        stats[1].interfaceDescriptor = "com.example.IBar";
+        stats[1].aidlMethod = "foo";
+        stats[1].secondsWithAtLeast125Calls = 20;
+
+        mService.reportSpamStats(stats);
+
+        verify(signalCollectorManagerInternal).reportBinderStats(stats);
+        LocalServices.removeServiceForTest(SignalCollectorManagerInternal.class);
     }
 
     @Test

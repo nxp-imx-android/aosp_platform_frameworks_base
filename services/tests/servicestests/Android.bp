@@ -34,7 +34,6 @@ android_test {
         "test-apps/TopologyTestApp/src/**/*.java",
     ],
 
-    exclude_srcs: ["src/com/android/server/signalcollector/**/*.java"],
     static_libs: [
         "ActivityContext",
         "CtsAccessibilityCommon",
@@ -95,13 +94,11 @@ android_test {
         // which provides assertThrows
         "testng",
         "truth",
+        "services.signal-collectors",
+        "services.signal-collector-manager-internal",
+        "service-anomaly-detector.impl",
     ] + select(soong_config_variable("ANDROID", "release_crashrecovery_module"), {
         "true": ["service-crashrecovery-pre-jarjar"],
-        default: [],
-    }) + select(release_flag("RELEASE_ANOMALY_DETECTOR"), {
-        true: [
-            "signal-collector-service-test",
-        ],
         default: [],
     }),
 
