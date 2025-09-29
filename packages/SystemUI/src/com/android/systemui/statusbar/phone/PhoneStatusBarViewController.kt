@@ -434,6 +434,7 @@ private constructor(
         private val windowRootView: Provider<WindowRootView>,
         private val shadeLogger: ShadeLogger,
         private val viewUtil: ViewUtil,
+        @DisplayAware
         private val statusBarConfigurationController: StatusBarConfigurationController,
         private val statusOverlayHoverListenerFactory: StatusOverlayHoverListenerFactory,
         @DisplayAware private val darkIconDispatcher: DarkIconDispatcher,

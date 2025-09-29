@@ -37,6 +37,7 @@ import com.android.systemui.plugins.fakeDarkIconDispatcher
 import com.android.systemui.statusbar.chips.ui.viewmodel.OngoingActivityChipsViewModel
 import com.android.systemui.statusbar.chips.ui.viewmodel.ongoingActivityChipsViewModel
 import com.android.systemui.statusbar.core.statusBarIconRefreshInteractor
+import com.android.systemui.statusbar.data.repository.StatusBarConfigurationController
 import com.android.systemui.statusbar.disableflags.domain.interactor.DisableFlagsInteractor
 import com.android.systemui.statusbar.disableflags.domain.interactor.disableFlagsInteractor
 import com.android.systemui.statusbar.domain.interactor.StatusBarIconRefreshInteractor
@@ -55,6 +56,7 @@ import com.android.systemui.statusbar.pipeline.shared.ui.viewmodel.HomeStatusBar
 import com.android.systemui.statusbar.pipeline.shared.ui.viewmodel.HomeStatusBarViewModel.HomeStatusBarViewModelFactory
 import com.android.systemui.statusbar.pipeline.shared.ui.viewmodel.homeStatusBarViewBinder
 import com.android.systemui.statusbar.pipeline.shared.ui.viewmodel.homeStatusBarViewModelFactory
+import com.android.systemui.statusbar.policy.statusBarConfigurationController
 import com.android.systemui.statusbar.ui.SystemBarUtilsState
 import com.android.systemui.statusbar.ui.systemBarUtilsState
 import com.android.systemui.statusbar.window.StatusBarWindowStateController
@@ -94,6 +96,9 @@ fun Kosmos.createFakeDisplaySubcomponent(
     swipeStatusBarAwayGestureHandler: () -> SwipeStatusBarAwayGestureHandler = {
         this.swipeStatusBarAwayGestureHandler
     },
+    statusBarConfigurationController: () -> StatusBarConfigurationController = {
+        this.statusBarConfigurationController
+    },
 ): ReferenceSysUIDisplaySubcomponent {
     return object : ReferenceSysUIDisplaySubcomponent {
         override val displayCoroutineScope: CoroutineScope
@@ -119,6 +124,9 @@ fun Kosmos.createFakeDisplaySubcomponent(
 
         override val systemBarUtilsState: SystemBarUtilsState
             get() = systemBarUtilsState()
+
+        override val statusBarConfigurationController: StatusBarConfigurationController
+            get() = statusBarConfigurationController()
 
         override val configurationState: ConfigurationState
             get() = configurationState()

@@ -35,7 +35,6 @@ import com.android.systemui.lifecycle.repeatWhenAttached
 import com.android.systemui.plugins.DarkIconDispatcher
 import com.android.systemui.res.R
 import com.android.systemui.statusbar.data.repository.StatusBarConfigurationController
-import com.android.systemui.statusbar.data.repository.StatusBarConfigurationControllerStore
 import com.android.systemui.statusbar.phone.SysuiDarkIconDispatcher.DarkChange
 import com.android.systemui.statusbar.policy.ConfigurationController
 import com.android.systemui.statusbar.policy.ConfigurationController.ConfigurationListener
@@ -51,7 +50,6 @@ constructor(
     @Main private val resources: Resources,
     private val configurationController: ConfigurationController,
     private val displaySubcomponentRepository: PerDisplayRepository<SystemUIDisplaySubcomponent>,
-    private val statusBarConfigurationControllerStore: StatusBarConfigurationControllerStore,
 ) {
 
     /** Creates listener always using the same light color for overlay */
@@ -89,7 +87,7 @@ constructor(
     }
 
     private val View.statusBarConfigurationController: StatusBarConfigurationController?
-        get() = statusBarConfigurationControllerStore.forDisplay(context.displayId)
+        get() = displaySubcomponentRepository[context.displayId]?.statusBarConfigurationController
 
     private val View.darkIconDispatcher: SysuiDarkIconDispatcher?
         get() = displaySubcomponentRepository[context.displayId]?.sysuiDarkIconDispatcher

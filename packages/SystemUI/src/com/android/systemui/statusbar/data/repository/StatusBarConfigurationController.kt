@@ -16,11 +16,7 @@
 
 package com.android.systemui.statusbar.data.repository
 
-import com.android.systemui.kosmos.Kosmos
+import com.android.systemui.statusbar.policy.ConfigurationController
 
-val Kosmos.fakeStatusBarConfigurationControllerStore by Kosmos.Fixture {
-    FakeStatusBarConfigurationControllerStore()
-}
-
-var Kosmos.statusBarConfigurationControllerStore: StatusBarConfigurationControllerStore by
-    Kosmos.Fixture { fakeStatusBarConfigurationControllerStore }
+/** Status bar specific interface to disambiguate from the global [ConfigurationController]. */
+interface StatusBarConfigurationController : ConfigurationController

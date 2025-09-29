@@ -23,7 +23,6 @@ import com.android.systemui.display.dagger.ReferenceSysUIDisplaySubcomponent
 import com.android.systemui.display.data.repository.DisplayRepository
 import com.android.systemui.display.data.repository.PerDisplayStore
 import com.android.systemui.display.data.repository.SingleDisplayStore
-import com.android.systemui.statusbar.data.repository.StatusBarConfigurationControllerStore
 import com.android.systemui.statusbar.data.repository.StatusBarModeRepositoryStore
 import com.android.systemui.statusbar.data.repository.StatusBarPerDisplayStoreImpl
 import com.android.systemui.statusbar.window.StatusBarWindowControllerStore
@@ -42,7 +41,6 @@ constructor(
     private val factory: StatusBarInitializer.Factory,
     private val statusBarWindowControllerStore: StatusBarWindowControllerStore,
     private val statusBarModeRepositoryStore: StatusBarModeRepositoryStore,
-    private val statusBarConfigurationControllerStore: StatusBarConfigurationControllerStore,
     private val displaySubComponentRepository:
         PerDisplayRepository<ReferenceSysUIDisplaySubcomponent>,
 ) :
@@ -57,17 +55,14 @@ constructor(
     }
 
     override fun createInstanceForDisplay(displayId: Int): StatusBarInitializer? {
+        val displaySubComponent = displaySubComponentRepository[displayId] ?: return null
         val statusBarWindowController =
             statusBarWindowControllerStore.forDisplay(displayId) ?: return null
         val statusBarModePerDisplayRepository =
             statusBarModeRepositoryStore.forDisplay(displayId) ?: return null
-        val statusBarConfigurationController =
-            statusBarConfigurationControllerStore.forDisplay(displayId) ?: return null
-        val displaySubComponent = displaySubComponentRepository[displayId] ?: return null
         return factory.create(
             statusBarWindowController,
             statusBarModePerDisplayRepository,
-            statusBarConfigurationController,
             displaySubComponent.statusBarFragmentProvider,
             displaySubComponent.statusBarRootFactory,
             displaySubComponent.homeStatusBarComponentFactory,

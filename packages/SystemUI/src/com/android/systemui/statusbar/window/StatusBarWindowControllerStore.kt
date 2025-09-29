@@ -28,7 +28,6 @@ import com.android.systemui.display.data.repository.DisplayWindowPropertiesRepos
 import com.android.systemui.display.data.repository.PerDisplayStore
 import com.android.systemui.display.data.repository.SingleDisplayStore
 import com.android.systemui.statusbar.core.StatusBarConnectedDisplays
-import com.android.systemui.statusbar.data.repository.StatusBarConfigurationControllerStore
 import com.android.systemui.statusbar.data.repository.StatusBarPerDisplayStoreImpl
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
@@ -43,7 +42,6 @@ constructor(
     @Background backgroundApplicationScope: CoroutineScope,
     private val controllerFactory: StatusBarWindowController.Factory,
     private val displayWindowPropertiesRepository: DisplayWindowPropertiesRepository,
-    private val statusBarConfigurationControllerStore: StatusBarConfigurationControllerStore,
     private val perDisplaySubcomponentRepo: PerDisplayRepository<SystemUIDisplaySubcomponent>,
     displayRepository: DisplayRepository,
 ) :
@@ -64,12 +62,10 @@ constructor(
                 displayId = displayId,
                 windowType = WindowManager.LayoutParams.TYPE_STATUS_BAR,
             ) ?: return null
-        val statusBarConfigurationController =
-            statusBarConfigurationControllerStore.forDisplay(displayId) ?: return null
         return controllerFactory.create(
             statusBarDisplayContext.context,
             statusBarDisplayContext.windowManager,
-            statusBarConfigurationController,
+            displaySubcomponent.statusBarConfigurationController,
             displaySubcomponent.statusBarContentInsetsProvider,
             displayId,
         )
@@ -89,7 +85,6 @@ constructor(
     context: Context,
     windowManager: WindowManager,
     factory: StatusBarWindowControllerImpl.Factory,
-    statusBarConfigurationControllerStore: StatusBarConfigurationControllerStore,
     perDisplaySubcomponentRepo: PerDisplayRepository<SystemUIDisplaySubcomponent>,
 ) :
     StatusBarWindowControllerStore,
@@ -97,7 +92,7 @@ constructor(
         factory.create(
             context,
             windowManager,
-            statusBarConfigurationControllerStore.defaultDisplay,
+            perDisplaySubcomponentRepo[Display.DEFAULT_DISPLAY]!!.statusBarConfigurationController,
             perDisplaySubcomponentRepo[Display.DEFAULT_DISPLAY]!!.statusBarContentInsetsProvider,
             Display.DEFAULT_DISPLAY,
         )

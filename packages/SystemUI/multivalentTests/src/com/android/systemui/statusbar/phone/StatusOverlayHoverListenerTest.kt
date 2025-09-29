@@ -35,7 +35,6 @@ import com.android.systemui.SysuiTestCase
 import com.android.systemui.display.data.repository.displaySubcomponentPerDisplayRepository
 import com.android.systemui.plugins.fakeDarkIconDispatcher
 import com.android.systemui.res.R
-import com.android.systemui.statusbar.data.repository.statusBarConfigurationControllerStore
 import com.android.systemui.statusbar.policy.FakeConfigurationController
 import com.android.systemui.testKosmos
 import com.android.systemui.util.mockito.argumentCaptor
@@ -61,7 +60,6 @@ class StatusOverlayHoverListenerTest : SysuiTestCase() {
             context.resources,
             FakeConfigurationController(),
             kosmos.displaySubcomponentPerDisplayRepository,
-            kosmos.statusBarConfigurationControllerStore,
         )
     private val view = TestableStatusContainer(context, viewOverlay)
 

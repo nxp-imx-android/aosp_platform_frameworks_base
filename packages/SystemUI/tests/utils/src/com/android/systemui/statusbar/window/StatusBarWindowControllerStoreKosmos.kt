@@ -21,7 +21,6 @@ import com.android.systemui.display.data.repository.displaySubcomponentPerDispla
 import com.android.systemui.display.data.repository.displayWindowPropertiesRepository
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.applicationCoroutineScope
-import com.android.systemui.statusbar.data.repository.statusBarConfigurationControllerStore
 import org.mockito.kotlin.mock
 
 val Kosmos.multiDisplayStatusBarWindowControllerStore by
@@ -30,7 +29,6 @@ val Kosmos.multiDisplayStatusBarWindowControllerStore by
             backgroundApplicationScope = applicationCoroutineScope,
             controllerFactory = { _, _, _, _, _ -> mock() },
             displayWindowPropertiesRepository = displayWindowPropertiesRepository,
-            statusBarConfigurationControllerStore = statusBarConfigurationControllerStore,
             perDisplaySubcomponentRepo = displaySubcomponentPerDisplayRepository,
             displayRepository = displayRepository,
         )

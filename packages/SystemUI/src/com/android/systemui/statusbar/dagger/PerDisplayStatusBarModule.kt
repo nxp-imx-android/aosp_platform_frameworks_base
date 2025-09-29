@@ -32,7 +32,6 @@ import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent.PerDispla
 import com.android.systemui.res.R
 import com.android.systemui.statusbar.chips.ui.viewmodel.OngoingActivityChipsViewModel
 import com.android.systemui.statusbar.data.repository.StatusBarConfigurationController
-import com.android.systemui.statusbar.data.repository.StatusBarConfigurationControllerStore
 import com.android.systemui.statusbar.disableflags.data.repository.DisableFlagsRepository
 import com.android.systemui.statusbar.disableflags.data.repository.DisableFlagsRepositoryImpl
 import com.android.systemui.statusbar.disableflags.domain.interactor.DisableFlagsInteractor
@@ -41,6 +40,7 @@ import com.android.systemui.statusbar.domain.interactor.StatusBarIconRefreshInte
 import com.android.systemui.statusbar.gesture.SwipeStatusBarAwayGestureHandler
 import com.android.systemui.statusbar.layout.StatusBarContentInsetsProvider
 import com.android.systemui.statusbar.layout.StatusBarContentInsetsProviderImpl
+import com.android.systemui.statusbar.phone.ConfigurationControllerImpl
 import com.android.systemui.statusbar.phone.ongoingcall.domain.interactor.OngoingCallStatusBarInteractor
 import com.android.systemui.statusbar.phone.ongoingcall.shared.PerDisplayOngoingCallStatusBarVisibility
 import com.android.systemui.statusbar.pipeline.shared.domain.interactor.HomeStatusBarInteractor
@@ -135,23 +135,14 @@ interface PerDisplayStatusBarModule {
             }
         }
 
-        /**
-         * Ideally StatusBarConfigurationControllerStore should be moved to [PerDisplaySingleton] in
-         * the future, and the [StatusBarConfigurationControllerStore] return the instance from the
-         * per-display component.
-         *
-         * Note that the error here will not cause SystemUI to crash, but just the subcomponent to
-         * not be instantiated correctly and be null.
-         */
         @Provides
         @PerDisplaySingleton
         @DisplayAware
         fun provideStatusBarConfigurationController(
-            @DisplayAware displayId: Int,
-            configurationControllerStore: StatusBarConfigurationControllerStore,
+            @DisplayAwareStatusBar context: Context,
+            configurationControllerFactory: ConfigurationControllerImpl.Factory,
         ): StatusBarConfigurationController {
-            return configurationControllerStore.forDisplay(displayId)
-                ?: error("No configuration controller for display $displayId")
+            return configurationControllerFactory.create(context)
         }
 
         @Provides
