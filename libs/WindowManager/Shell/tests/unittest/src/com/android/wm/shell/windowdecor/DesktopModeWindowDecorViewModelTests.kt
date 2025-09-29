@@ -499,27 +499,6 @@ class DesktopModeWindowDecorViewModelTests : DesktopModeWindowDecorViewModelTest
     }
 
     @Test
-    @DisableFlags(Flags.FLAG_DISABLE_NON_RESIZABLE_APP_SNAP_RESIZING)
-    fun testOnSnapResizeLeft_nonResizable_decorSnappedLeft() {
-        val windowDecorationActions = createDefaultWindowActions()
-        val decor =
-            createOpenTaskDecoration(windowingMode = WINDOWING_MODE_FREEFORM).apply {
-                taskInfo.isResizeable = false
-            }
-
-        windowDecorationActions.onLeftSnap(decor.taskInfo.taskId, InputMethod.UNKNOWN_INPUT_METHOD)
-
-        verify(mockDesktopTasksController)
-            .handleInstantSnapResizingTask(
-                eq(decor.taskInfo),
-                eq(SnapPosition.LEFT),
-                eq(ResizeTrigger.SNAP_LEFT_MENU),
-                eq(InputMethod.UNKNOWN_INPUT_METHOD),
-            )
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_DISABLE_NON_RESIZABLE_APP_SNAP_RESIZING)
     fun testOnSnapResizeLeft_nonResizable_decorNotSnapped() {
         val windowDecorationActions = createDefaultWindowActions()
         val decor =
@@ -558,27 +537,6 @@ class DesktopModeWindowDecorViewModelTests : DesktopModeWindowDecorViewModelTest
     }
 
     @Test
-    @DisableFlags(Flags.FLAG_DISABLE_NON_RESIZABLE_APP_SNAP_RESIZING)
-    fun testOnSnapResizeRight_nonResizable_decorSnappedRight() {
-        val windowDecorationActions = createDefaultWindowActions()
-        val decor =
-            createOpenTaskDecoration(windowingMode = WINDOWING_MODE_FREEFORM).apply {
-                taskInfo.isResizeable = false
-            }
-
-        windowDecorationActions.onRightSnap(decor.taskInfo.taskId, InputMethod.UNKNOWN_INPUT_METHOD)
-
-        verify(mockDesktopTasksController)
-            .handleInstantSnapResizingTask(
-                eq(decor.taskInfo),
-                eq(SnapPosition.RIGHT),
-                eq(ResizeTrigger.SNAP_RIGHT_MENU),
-                eq(InputMethod.UNKNOWN_INPUT_METHOD),
-            )
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_DISABLE_NON_RESIZABLE_APP_SNAP_RESIZING)
     fun testOnSnapResizeRight_nonResizable_decorNotSnapped() {
         val windowDecorationActions = createDefaultWindowActions()
         val decor =

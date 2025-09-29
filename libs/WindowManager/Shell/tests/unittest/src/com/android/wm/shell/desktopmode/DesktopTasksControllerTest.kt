@@ -10304,47 +10304,6 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
-    @DisableFlags(
-        Flags.FLAG_DISABLE_NON_RESIZABLE_APP_SNAP_RESIZING,
-        Flags.FLAG_ENABLE_TILE_RESIZING,
-    )
-    fun handleSnapResizingTaskOnDrag_nonResizable_snapsToHalfScreen() {
-        val task =
-            setUpFreeformTask(DEFAULT_DISPLAY, Rect(0, 0, 200, 100)).apply { isResizeable = false }
-        val preDragBounds = Rect(100, 100, 400, 500)
-        val currentDragBounds = Rect(0, 100, 300, 500)
-        val expectedBounds =
-            Rect(
-                STABLE_BOUNDS.left,
-                STABLE_BOUNDS.top,
-                STABLE_BOUNDS.right / 2,
-                STABLE_BOUNDS.bottom,
-            )
-
-        controller.handleSnapResizingTaskOnDrag(
-            task,
-            SnapPosition.LEFT,
-            mockSurface,
-            currentDragBounds,
-            preDragBounds,
-            motionEvent,
-        )
-        val wct = getLatestToggleResizeDesktopTaskWct(currentDragBounds)
-        assertThat(findBoundsChange(wct, task)).isEqualTo(expectedBounds)
-        verify(desktopModeEventLogger, times(1))
-            .logTaskResizingStarted(
-                resizeTrigger = ResizeTrigger.DRAG_LEFT,
-                inputMethod = InputMethod.UNKNOWN_INPUT_METHOD,
-                taskInfo = task,
-                taskWidth = preDragBounds.width(),
-                taskHeight = preDragBounds.height(),
-                displayController = displayController,
-                deskId = 0,
-            )
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_DISABLE_NON_RESIZABLE_APP_SNAP_RESIZING)
     fun handleSnapResizingTaskOnDrag_nonResizable_startsRepositionAnimation() {
         val task =
             setUpFreeformTask(DEFAULT_DISPLAY, Rect(0, 0, 200, 100)).apply { isResizeable = false }
@@ -10372,7 +10331,6 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_DISABLE_NON_RESIZABLE_APP_SNAP_RESIZING)
     fun handleInstantSnapResizingTask_nonResizable_animatorNotStartedAndShowsToast() {
         val taskBounds = Rect(0, 0, 200, 100)
         val task = setUpFreeformTask(DEFAULT_DISPLAY, taskBounds).apply { isResizeable = false }
@@ -10391,7 +10349,6 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_DISABLE_NON_RESIZABLE_APP_SNAP_RESIZING)
     @DisableFlags(Flags.FLAG_ENABLE_TILE_RESIZING)
     fun handleInstantSnapResizingTask_resizable_snapsToHalfScreenAndNotShowToast() {
         val taskBounds = Rect(0, 0, 200, 100)

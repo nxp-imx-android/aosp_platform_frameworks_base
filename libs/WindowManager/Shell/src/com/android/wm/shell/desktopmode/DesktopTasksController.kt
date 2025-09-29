@@ -74,7 +74,6 @@ import android.window.DesktopExperienceFlags.ENABLE_BUG_FIXES_FOR_SECONDARY_DISP
 import android.window.DesktopExperienceFlags.ENABLE_NON_DEFAULT_DISPLAY_SPLIT
 import android.window.DesktopExperienceFlags.ENABLE_PER_DISPLAY_DESKTOP_WALLPAPER_ACTIVITY
 import android.window.DesktopModeFlags
-import android.window.DesktopModeFlags.DISABLE_NON_RESIZABLE_APP_SNAP_RESIZE
 import android.window.DesktopModeFlags.ENABLE_DESKTOP_WALLPAPER_ACTIVITY_FOR_SYSTEM_USER
 import android.window.DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_WALLPAPER_ACTIVITY
 import android.window.RemoteTransition
@@ -3168,7 +3167,7 @@ class DesktopTasksController(
         resizeTrigger: ResizeTrigger,
         inputMethod: InputMethod,
     ) {
-        if (!isSnapResizingAllowed(taskInfo)) {
+        if (!taskInfo.isResizeable) {
             val displayContext = displayController.getDisplayContext(taskInfo.displayId) ?: context
             Toast.makeText(
                     displayContext,
@@ -3199,7 +3198,7 @@ class DesktopTasksController(
         motionEvent: MotionEvent,
     ) {
         releaseVisualIndicator()
-        if (!isSnapResizingAllowed(taskInfo)) {
+        if (!taskInfo.isResizeable) {
             interactionJankMonitor.begin(
                 taskSurface,
                 context,
@@ -3249,9 +3248,6 @@ class DesktopTasksController(
             )
         }
     }
-
-    private fun isSnapResizingAllowed(taskInfo: RunningTaskInfo) =
-        taskInfo.isResizeable || !DISABLE_NON_RESIZABLE_APP_SNAP_RESIZE.isTrue
 
     private fun getSnapBounds(displayId: Int, position: SnapPosition): Rect {
         val displayLayout = displayController.getDisplayLayout(displayId) ?: return Rect()
