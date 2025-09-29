@@ -144,6 +144,7 @@ import com.android.systemui.communal.domain.interactor.CommunalSettingsInteracto
 import com.android.systemui.communal.ui.viewmodel.CommunalTransitionViewModel;
 import com.android.systemui.dagger.qualifiers.Application;
 import com.android.systemui.dagger.qualifiers.UiBackground;
+import com.android.systemui.display.flags.DisplayComponentRepositoryFlag;
 import com.android.systemui.dreams.DreamOverlayStateController;
 import com.android.systemui.dreams.ui.viewmodel.DreamViewModel;
 import com.android.systemui.dump.DumpManager;
@@ -2808,13 +2809,20 @@ public class KeyguardViewMediator implements CoreStartable,
         }
     };
 
+    private Looper getHandlerLooper() {
+        if (DisplayComponentRepositoryFlag.INSTANCE.isEagerInitializationEnabled()) {
+            return Looper.getMainLooper();
+        }
+        return Looper.myLooper();
+    }
+
     /**
      * This handler will be associated with the policy thread, which will also be the UI thread of
      * the keyguard.  Since the apis of the policy, and therefore this class, can be called by other
      * threads, any action that directly interacts with the keyguard ui should be posted to this
      * handler, rather than called directly.
      */
-    private final Handler mHandler = new Handler(Looper.myLooper(), null, true /*async*/) {
+    private final Handler mHandler = new Handler(getHandlerLooper(), null, true /*async*/) {
         @Override
         public void handleMessage(Message msg) {
             String message = "";
