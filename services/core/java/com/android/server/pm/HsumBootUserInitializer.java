@@ -501,6 +501,11 @@ public final class HsumBootUserInitializer {
             // set the time now.
             mUms.setLastEnteredForegroundTimeToNow(bootUserId);
         }
+        // TODO(b/446947591): Remove the cast once Flags.hsuDeviceProvisioner() is completely
+        // pushed.
+        if (mDeviceProvisionedObserver instanceof HsuDeviceProvisioner) {
+            ((HsuDeviceProvisioner) mDeviceProvisionedObserver).setBootUser(bootUserId);
+        }
         final boolean started = mAms.startUserInForegroundWithListener(bootUserId,
                 /* unlockListener= */ null);
         if (!started) {
