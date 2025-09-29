@@ -30,10 +30,13 @@ import com.android.systemui.kosmos.testScope
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
+import java.util.concurrent.Executors
+import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.withContext
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -52,8 +55,10 @@ class PerDisplayInstanceRepositoryImplTest : SysuiTestCase() {
         kosmos.fakePerDisplayInstanceProviderWithSetupAndTeardown
     private val lifecycleManager = kosmos.fakeDisplayInstanceLifecycleManager
 
-    private val underTest: PerDisplayInstanceRepositoryImpl<TestPerDisplayInstance> =
+    // lazy as only certain tests use this. Other instantiate it from scratch.
+    private val underTest: PerDisplayInstanceRepositoryImpl<TestPerDisplayInstance> by lazy {
         kosmos.createPerDisplayInstanceRepository(overrideLifecycleManager = null)
+    }
 
     @Before
     fun addDisplays() = runBlocking {
@@ -133,6 +138,8 @@ class PerDisplayInstanceRepositoryImplTest : SysuiTestCase() {
 
     @Test
     fun start_registersDumpable() {
+        underTest
+
         verify(kosmos.dumpManager).registerNormalDumpable(anyString(), any())
     }
 
@@ -330,6 +337,58 @@ class PerDisplayInstanceRepositoryImplTest : SysuiTestCase() {
 
             assertThat(displayToInstanceMap[DEFAULT_DISPLAY_ID]).isNotNull()
             assertThat(displayToInstanceMap[NON_DEFAULT_DISPLAY_ID]).isNotNull()
+        }
+
+    @Test
+    fun perDisplay_creatingDefaultInstanceInMainThread_correctThread() =
+        testScope.runTest {
+            Executors.newSingleThreadExecutor().asCoroutineDispatcher().use { mainThreadContext ->
+                Executors.newSingleThreadExecutor().asCoroutineDispatcher().use { bgThreadContext ->
+                    Executors.newSingleThreadExecutor().asCoroutineDispatcher().use { waitContext ->
+                        val mainThreadId =
+                            withContext(mainThreadContext) { Thread.currentThread().threadId() }
+                        val bgThreadId =
+                            withContext(bgThreadContext) { Thread.currentThread().threadId() }
+                        assertThat(mainThreadId).isNotEqualTo(bgThreadId)
+
+                        lifecycleManager.displayIds.value = emptySet()
+
+                        kosmos.createPerDisplayInstanceRepository(
+                            overrideLifecycleManager = lifecycleManager,
+                            createInstanceEagerly = true,
+                            mainThreadForDefaultDisplayEagerlyCreation = true,
+                            mainThreadContext = mainThreadContext,
+                            bgThreadContext = bgThreadContext,
+                        )
+
+                        lifecycleManager.displayIds.value = setOf(DEFAULT_DISPLAY_ID)
+
+                        withContext(waitContext) {
+                            fakePerDisplayInstanceProviderWithTeardown.awaitCreation()
+                        }
+
+                        assertThat(
+                                fakePerDisplayInstanceProviderWithTeardown.created
+                                    .first()
+                                    .creationThread
+                            )
+                            .isEqualTo(mainThreadId)
+
+                        lifecycleManager.displayIds.value =
+                            setOf(DEFAULT_DISPLAY_ID, NON_DEFAULT_DISPLAY_ID)
+
+                        withContext(waitContext) {
+                            fakePerDisplayInstanceProviderWithTeardown.awaitCreation()
+                        }
+                        assertThat(
+                                fakePerDisplayInstanceProviderWithTeardown.created
+                                    .last()
+                                    .creationThread
+                            )
+                            .isEqualTo(bgThreadId)
+                    }
+                }
+            }
         }
 
     private fun createDisplay(displayId: Int): Display =

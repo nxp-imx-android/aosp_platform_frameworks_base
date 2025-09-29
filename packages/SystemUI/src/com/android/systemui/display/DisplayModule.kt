@@ -22,7 +22,7 @@ import android.view.Display
 import android.view.IWindowManager
 import com.android.app.displaylib.DisplayLibBackground
 import com.android.app.displaylib.DisplayLibComponent
-import com.android.app.displaylib.DisplayLibHandlerThreadBackground
+import com.android.app.displaylib.DisplayLibMainThread
 import com.android.app.displaylib.DisplaysWithDecorationsRepository
 import com.android.app.displaylib.DisplaysWithDecorationsRepositoryCompat
 import com.android.app.displaylib.PerDisplayRepository
@@ -30,6 +30,7 @@ import com.android.app.displaylib.createDisplayLibComponent
 import com.android.systemui.CoreStartable
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Background
+import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent
 import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent.DisplayLib
 import com.android.systemui.display.data.repository.DeviceStateRepository
@@ -57,11 +58,9 @@ import dagger.Module
 import dagger.Provides
 import dagger.multibindings.ClassKey
 import dagger.multibindings.IntoMap
-import java.util.concurrent.Executor
 import kotlin.coroutines.CoroutineContext
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.asCoroutineDispatcher
 
 /** Module binding display related classes. */
 @Module(includes = [DisplayWindowPropertiesInteractorModule::class, DisplayLibModule::class])
@@ -108,13 +107,11 @@ interface DisplayModule {
     @DisplayLibBackground
     fun bindDisplayLibBackground(@Background bgScope: CoroutineScope): CoroutineScope
 
-    companion object {
-        @Provides
-        @DisplayLibHandlerThreadBackground
-        fun provideDisplayLibHandlerThreadBackground(
-            @Background backgroundExecutor: Executor
-        ): CoroutineContext = backgroundExecutor.asCoroutineDispatcher()
+    @Binds
+    @DisplayLibMainThread
+    fun bindDisplayLibMainThread(@Main mainContext: CoroutineContext): CoroutineContext
 
+    companion object {
         @Provides
         fun displayStateInteractor(
             displayComponentRepo: PerDisplayRepository<SystemUIDisplaySubcomponent>
