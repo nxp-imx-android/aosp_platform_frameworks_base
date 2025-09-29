@@ -9498,6 +9498,19 @@
         android:protectionLevel="signature"
         android:featureFlag="android.permission.flags.content_restriction_role_enabled" />
 
+    <!-- @FlaggedApi(android.view.inputmethod.Flags.FLAG_GUARD_INPUT_METHOD_LIST_APIS)
+        Purpose guarded permission to query input method list APIs.
+        {@link android.view.inputmethod.InputMethodManager}
+        <p>Protection level: normal
+    -->
+    <permission android:name="android.permission.QUERY_INPUT_METHOD"
+            android:protectionLevel="normal"
+            android:featureFlag="android.view.inputmethod.guard_input_method_list_apis"
+            android:requiresPurpose="true"
+            android:requiresPurposeTargetSdkVersion="37">
+            <valid-purpose android:name="notForIdentification" />
+    </permission>
+
     <!-- Attribution for Geofencing service. -->
     <attribution android:tag="GeofencingService" android:label="@string/geofencing_service"/>
     <!-- Attribution for Country Detector. -->
