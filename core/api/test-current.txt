@@ -4641,6 +4641,7 @@ package android.window {
     field public final boolean isVisible;
     field public final boolean isWatchOutsideTouch;
     field @NonNull public final String name;
+    field @NonNull public final android.graphics.Region touchableRegion;
     field @NonNull public final android.graphics.Matrix transform;
     field @NonNull public final android.os.IBinder windowToken;
   }
