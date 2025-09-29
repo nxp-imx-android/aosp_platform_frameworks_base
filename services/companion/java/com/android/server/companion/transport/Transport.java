@@ -16,6 +16,7 @@
 
 package com.android.server.companion.transport;
 
+import static android.companion.CompanionDeviceManager.MESSAGE_ONEWAY_CROSS_DEVICE_SYNC;
 import static android.companion.CompanionDeviceManager.MESSAGE_ONEWAY_FROM_WEARABLE;
 import static android.companion.CompanionDeviceManager.MESSAGE_ONEWAY_PING;
 import static android.companion.CompanionDeviceManager.MESSAGE_ONEWAY_TO_WEARABLE;
@@ -314,7 +315,8 @@ public abstract class Transport {
             case MESSAGE_ONEWAY_PING:
             case MESSAGE_ONEWAY_FROM_WEARABLE:
             case MESSAGE_ONEWAY_TO_WEARABLE:
-            case MESSAGE_ONEWAY_TASK_CONTINUITY: {
+            case MESSAGE_ONEWAY_TASK_CONTINUITY:
+            case MESSAGE_ONEWAY_CROSS_DEVICE_SYNC: {
                 callback(message, data);
                 break;
             }
