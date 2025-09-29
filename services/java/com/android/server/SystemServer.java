@@ -3104,7 +3104,10 @@ public final class SystemServer implements Dumpable {
         // on it in their setup, but likely needs to be done after LockSettingsService is ready.
         final HsumBootUserInitializer hsumBootUserInitializer =
                 HsumBootUserInitializer.createInstance(mUserManagerService, mActivityManagerService,
-                        mPackageManagerService, mContentResolver, mSystemContext);
+                        // NOTE: there is no need to pass the whole dpms because it just need to
+                        // to check if the device is managed (at boot time).
+                        mPackageManagerService, dpms.isDeviceManaged(), mContentResolver,
+                        mSystemContext);
         if (hsumBootUserInitializer != null) {
             t.traceBegin("HsumBootUserInitializer.init");
             hsumBootUserInitializer.init(t);
