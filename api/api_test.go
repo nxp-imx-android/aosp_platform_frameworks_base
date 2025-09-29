@@ -47,6 +47,7 @@ func gatherRequiredDepsForTest() string {
 	var bp string
 
 	extraLibraryModules := []string{
+		"legacy.core.platform.api.stubs",
 		"stable.core.platform.api.stubs",
 		"core-lambda-stubs",
 		"core.current.stubs",
