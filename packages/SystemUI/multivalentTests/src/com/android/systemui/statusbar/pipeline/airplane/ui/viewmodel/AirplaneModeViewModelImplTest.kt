@@ -19,87 +19,56 @@ package com.android.systemui.statusbar.pipeline.airplane.ui.viewmodel
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
-import com.android.systemui.log.table.logcatTableLogBuffer
+import com.android.systemui.kosmos.Kosmos
+import com.android.systemui.kosmos.collectLastValue
+import com.android.systemui.kosmos.runTest
 import com.android.systemui.statusbar.pipeline.airplane.data.repository.airplaneModeRepository
-import com.android.systemui.statusbar.pipeline.airplane.domain.interactor.airplaneModeInteractor
 import com.android.systemui.statusbar.pipeline.shared.data.model.ConnectivitySlot
 import com.android.systemui.statusbar.pipeline.shared.data.repository.connectivityRepository
 import com.android.systemui.statusbar.pipeline.shared.data.repository.fake
-import com.android.systemui.testKosmos
+import com.android.systemui.testKosmosNew
 import com.google.common.truth.Truth.assertThat
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.runBlocking
-import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.mockito.MockitoAnnotations
 
 @SmallTest
 @Suppress("EXPERIMENTAL_IS_NOT_ENABLED")
 @RunWith(AndroidJUnit4::class)
 class AirplaneModeViewModelImplTest : SysuiTestCase() {
-    private val kosmos = testKosmos()
+    private val kosmos = testKosmosNew()
 
-    private lateinit var underTest: AirplaneModeViewModelImpl
-
-    private val logger = logcatTableLogBuffer(kosmos, "AirplaneModeViewModelImplTest")
-    private val airplaneModeRepository = kosmos.airplaneModeRepository
-    private val connectivityRepository = kosmos.connectivityRepository.fake
-    private val interactor = kosmos.airplaneModeInteractor
-    private lateinit var scope: CoroutineScope
-
-    @Before
-    fun setUp() {
-        MockitoAnnotations.initMocks(this)
-        scope = CoroutineScope(IMMEDIATE)
-
-        underTest = AirplaneModeViewModelImpl(interactor, logger, scope)
-    }
+    private val Kosmos.underTest by Kosmos.Fixture { airplaneModeViewModel }
 
     @Test
     fun isAirplaneModeIconVisible_notAirplaneMode_outputsFalse() =
-        runBlocking(IMMEDIATE) {
-            connectivityRepository.setForceHiddenIcons(setOf())
+        kosmos.runTest {
+            connectivityRepository.fake.setForceHiddenIcons(setOf())
             airplaneModeRepository.setIsAirplaneMode(false)
 
-            var latest: Boolean? = null
-            val job = underTest.isAirplaneModeIconVisible.onEach { latest = it }.launchIn(this)
+            val latest by collectLastValue(underTest.isAirplaneModeIconVisible)
 
             assertThat(latest).isFalse()
-
-            job.cancel()
         }
 
     @Test
     fun isAirplaneModeIconVisible_forceHidden_outputsFalse() =
-        runBlocking(IMMEDIATE) {
-            connectivityRepository.setForceHiddenIcons(setOf(ConnectivitySlot.AIRPLANE))
+        kosmos.runTest {
+            connectivityRepository.fake.setForceHiddenIcons(setOf(ConnectivitySlot.AIRPLANE))
             airplaneModeRepository.setIsAirplaneMode(true)
 
-            var latest: Boolean? = null
-            val job = underTest.isAirplaneModeIconVisible.onEach { latest = it }.launchIn(this)
+            val latest by collectLastValue(underTest.isAirplaneModeIconVisible)
 
             assertThat(latest).isFalse()
-
-            job.cancel()
         }
 
     @Test
     fun isAirplaneModeIconVisible_isAirplaneModeAndNotForceHidden_outputsTrue() =
-        runBlocking(IMMEDIATE) {
-            connectivityRepository.setForceHiddenIcons(setOf())
+        kosmos.runTest {
+            connectivityRepository.fake.setForceHiddenIcons(setOf())
             airplaneModeRepository.setIsAirplaneMode(true)
 
-            var latest: Boolean? = null
-            val job = underTest.isAirplaneModeIconVisible.onEach { latest = it }.launchIn(this)
+            val latest by collectLastValue(underTest.isAirplaneModeIconVisible)
 
             assertThat(latest).isTrue()
-
-            job.cancel()
         }
 }
-
-private val IMMEDIATE = Dispatchers.Main.immediate
