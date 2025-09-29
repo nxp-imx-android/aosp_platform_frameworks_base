@@ -20,11 +20,11 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.log.table.logcatTableLogBuffer
-import com.android.systemui.statusbar.pipeline.airplane.data.repository.FakeAirplaneModeRepository
-import com.android.systemui.statusbar.pipeline.airplane.domain.interactor.AirplaneModeInteractor
-import com.android.systemui.statusbar.pipeline.mobile.data.repository.fakeMobileConnectionsRepository
+import com.android.systemui.statusbar.pipeline.airplane.data.repository.airplaneModeRepository
+import com.android.systemui.statusbar.pipeline.airplane.domain.interactor.airplaneModeInteractor
 import com.android.systemui.statusbar.pipeline.shared.data.model.ConnectivitySlot
-import com.android.systemui.statusbar.pipeline.shared.data.repository.FakeConnectivityRepository
+import com.android.systemui.statusbar.pipeline.shared.data.repository.connectivityRepository
+import com.android.systemui.statusbar.pipeline.shared.data.repository.fake
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.CoroutineScope
@@ -46,30 +46,17 @@ class AirplaneModeViewModelImplTest : SysuiTestCase() {
     private lateinit var underTest: AirplaneModeViewModelImpl
 
     private val logger = logcatTableLogBuffer(kosmos, "AirplaneModeViewModelImplTest")
-    private lateinit var airplaneModeRepository: FakeAirplaneModeRepository
-    private lateinit var connectivityRepository: FakeConnectivityRepository
-    private lateinit var interactor: AirplaneModeInteractor
+    private val airplaneModeRepository = kosmos.airplaneModeRepository
+    private val connectivityRepository = kosmos.connectivityRepository.fake
+    private val interactor = kosmos.airplaneModeInteractor
     private lateinit var scope: CoroutineScope
 
     @Before
     fun setUp() {
         MockitoAnnotations.initMocks(this)
-        airplaneModeRepository = FakeAirplaneModeRepository()
-        connectivityRepository = FakeConnectivityRepository()
-        interactor =
-            AirplaneModeInteractor(
-                airplaneModeRepository,
-                connectivityRepository,
-                kosmos.fakeMobileConnectionsRepository,
-            )
         scope = CoroutineScope(IMMEDIATE)
 
-        underTest =
-            AirplaneModeViewModelImpl(
-                interactor,
-                logger,
-                scope,
-            )
+        underTest = AirplaneModeViewModelImpl(interactor, logger, scope)
     }
 
     @Test

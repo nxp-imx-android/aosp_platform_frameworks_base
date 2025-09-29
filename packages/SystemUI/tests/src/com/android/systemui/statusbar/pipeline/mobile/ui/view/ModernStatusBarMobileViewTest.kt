@@ -36,16 +36,16 @@ import com.android.systemui.log.table.logcatTableLogBuffer
 import com.android.systemui.res.R
 import com.android.systemui.statusbar.StatusBarIconView
 import com.android.systemui.statusbar.core.NewStatusBarIcons
-import com.android.systemui.statusbar.pipeline.airplane.data.repository.FakeAirplaneModeRepository
+import com.android.systemui.statusbar.pipeline.airplane.data.repository.AirplaneModeRepository
+import com.android.systemui.statusbar.pipeline.airplane.data.repository.airplaneModeRepository
 import com.android.systemui.statusbar.pipeline.airplane.domain.interactor.AirplaneModeInteractor
-import com.android.systemui.statusbar.pipeline.mobile.data.repository.fakeMobileConnectionsRepository
+import com.android.systemui.statusbar.pipeline.airplane.domain.interactor.airplaneModeInteractor
 import com.android.systemui.statusbar.pipeline.mobile.domain.interactor.FakeMobileIconInteractor
 import com.android.systemui.statusbar.pipeline.mobile.ui.MobileViewLogger
 import com.android.systemui.statusbar.pipeline.mobile.ui.viewmodel.LocationBasedMobileViewModel
 import com.android.systemui.statusbar.pipeline.mobile.ui.viewmodel.MobileIconViewModel
 import com.android.systemui.statusbar.pipeline.mobile.ui.viewmodel.QsMobileIconViewModel
 import com.android.systemui.statusbar.pipeline.shared.ConnectivityConstants
-import com.android.systemui.statusbar.pipeline.shared.data.repository.FakeConnectivityRepository
 import com.android.systemui.testKosmos
 import com.android.systemui.util.mockito.whenever
 import com.google.common.truth.Truth.assertThat
@@ -71,7 +71,7 @@ class ModernStatusBarMobileViewTest : SysuiTestCase() {
     @Mock private lateinit var viewLogger: MobileViewLogger
     @Mock private lateinit var constants: ConnectivityConstants
     private lateinit var interactor: FakeMobileIconInteractor
-    private lateinit var airplaneModeRepository: FakeAirplaneModeRepository
+    private lateinit var airplaneModeRepository: AirplaneModeRepository
     private lateinit var airplaneModeInteractor: AirplaneModeInteractor
 
     private lateinit var viewModelCommon: MobileIconViewModel
@@ -86,13 +86,8 @@ class ModernStatusBarMobileViewTest : SysuiTestCase() {
 
         testableLooper = TestableLooper.get(this)
 
-        airplaneModeRepository = FakeAirplaneModeRepository()
-        airplaneModeInteractor =
-            AirplaneModeInteractor(
-                airplaneModeRepository,
-                FakeConnectivityRepository(),
-                kosmos.fakeMobileConnectionsRepository,
-            )
+        airplaneModeInteractor = kosmos.airplaneModeInteractor
+        airplaneModeRepository = kosmos.airplaneModeRepository
 
         interactor =
             FakeMobileIconInteractor(logcatTableLogBuffer(kosmos, "ModernStatusBarMobileViewTest"))
