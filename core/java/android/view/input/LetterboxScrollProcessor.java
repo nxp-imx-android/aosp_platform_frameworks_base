@@ -81,10 +81,15 @@ public class LetterboxScrollProcessor extends InputEventCompatProcessor {
     public List<InputEvent> processInputEventForCompatibility(@NonNull InputEvent inputEvent) {
         if (!(inputEvent instanceof MotionEvent motionEvent)
                 || motionEvent.getAction() == MotionEvent.ACTION_OUTSIDE
-                || !motionEvent.isFromSource(InputDevice.SOURCE_CLASS_POINTER)) {
+                || !motionEvent.isFromSource(InputDevice.SOURCE_CLASS_POINTER)
+                || !isTheSameDisplay(inputEvent)) {
             return null;
         }
         return processMotionEvent(motionEvent);
+    }
+
+    private boolean isTheSameDisplay(InputEvent inputEvent) {
+        return mContext.getDisplayId() == inputEvent.getDisplayId();
     }
 
     private List<InputEvent> processMotionEvent(@NonNull MotionEvent motionEvent) {
