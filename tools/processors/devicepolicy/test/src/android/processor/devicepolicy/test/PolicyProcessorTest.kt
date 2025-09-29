@@ -41,6 +41,13 @@ class PolicyProcessorTest {
         const val POLICY_IDENTIFIER = "$RESOURCE_ROOT/PolicyIdentifier"
         const val POLICY_IDENTIFIER_JAVA = "$POLICY_IDENTIFIER.java"
         const val POLICY_IDENTIFIER_TEXTPROTO = "$POLICY_IDENTIFIER.textproto"
+        const val POLICY_METADATA_CODEGEN = "$RESOURCE_ROOT/Policies.java"
+
+        const val METADATA_DIRECTORY = "$RESOURCE_ROOT/metadata"
+        val METADATA_CLASS_NAMES = setOf(
+            "PolicyMetadata", "BooleanPolicyMetadata", "IntegerPolicyMetadata", "EnumPolicyMetadata"
+        )
+        val METADATA_FILES_JAVA = METADATA_CLASS_NAMES.map {"android/app/admin/metadata/$it.java"}.toSet()
 
         /**
          * Comes from the actual IntDef.java in the source, located in a different folder.
@@ -51,6 +58,11 @@ class PolicyProcessorTest {
          * Build path for the output.
          */
         const val POLICIES_TEXTPROTO_LOCATION = "android/processor/devicepolicy/policies.textproto"
+
+        /**
+         * Build path for the generated metadata.
+         */
+        const val POLICY_METADATA_CODEGEN_LOCATION = "android/app/admin/metadata/Policies.java"
 
         fun loadTextResource(path: String): String {
             try {
@@ -97,16 +109,24 @@ class PolicyProcessorTest {
     @Test
     fun test_policyIdentifierFake_generates() {
         val expectedOutput = loadTextResource(POLICY_IDENTIFIER_TEXTPROTO)
+        val expectedMetadata = loadTextResource(POLICY_METADATA_CODEGEN)
+
+        val metadataSources = METADATA_FILES_JAVA.map {
+            JavaFileObjects.forResource(it)
+        }.toTypedArray()
 
         val compilation: Compilation =
             mCompiler.compile(
                 JavaFileObjects.forResource(POLICY_IDENTIFIER_JAVA),
-                JavaFileObjects.forResource(INT_DEF_JAVA)
+                JavaFileObjects.forResource(INT_DEF_JAVA),
+                *metadataSources
             )
 
         assertThat(compilation).succeeded()
         assertThat(compilation).generatedFile(SOURCE_OUTPUT,
             POLICIES_TEXTPROTO_LOCATION).contentsAsUtf8String().isEqualTo(expectedOutput)
+        assertThat(compilation).generatedFile(SOURCE_OUTPUT,
+            POLICY_METADATA_CODEGEN_LOCATION).contentsAsUtf8String().isEqualTo(expectedMetadata)
     }
 
     @Test

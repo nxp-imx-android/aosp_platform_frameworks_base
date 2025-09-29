@@ -85,7 +85,7 @@ class PolicyProcessor : AbstractProcessor() {
     }
 
     private fun reportUnexpectedAnnotations(roundEnvironment: RoundEnvironment) {
-        roundEnvironment.getElementsAnnotatedWith(PolicyDefinition::class.java).mapNotNull {
+        roundEnvironment.getElementsAnnotatedWith(PolicyDefinition::class.java).forEach {
             printError(it, "@PolicyDefinition can not be applied to any element, use a type-specific annotation such as @EnumPolicyDefinition instead")
         }
     }
@@ -99,18 +99,22 @@ class PolicyProcessor : AbstractProcessor() {
     }
 
     fun writePolicies(roundEnvironment: RoundEnvironment, policies: List<PolicyMetadata>) {
-        val writer = createWriter(roundEnvironment)
+        val policyMetadata = PolicyMetadataList.newBuilder().addAllPolicyMetadata(policies).build()
+
+        val protoWriter = createWriter(roundEnvironment, "policies.textproto")
         try {
-            val output = PolicyMetadataList.newBuilder().addAllPolicyMetadata(policies).build()
-            TextFormat.printer().print(output, writer)
+            TextFormat.printer().print(policyMetadata, protoWriter)
         } finally {
-            writer.close()
+            protoWriter.close()
         }
+
+        val policiesClass = PolicyMetadataCodeGenerator.generate(policyMetadata)
+        policiesClass.writeTo(processingEnv.filer)
     }
 
-    fun createWriter(roundEnvironment: RoundEnvironment): Writer {
+    fun createWriter(roundEnvironment: RoundEnvironment, name: String): Writer {
         return processingEnv.filer.createResource(
-            StandardLocation.SOURCE_OUTPUT, "android.processor.devicepolicy", "policies.textproto"
+            StandardLocation.SOURCE_OUTPUT, "android.processor.devicepolicy", name
         ).openWriter()
     }
 
