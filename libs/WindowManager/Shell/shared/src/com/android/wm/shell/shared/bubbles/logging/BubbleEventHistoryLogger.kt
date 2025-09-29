@@ -97,7 +97,7 @@ class BubbleEventHistoryLogger : DebugLogger {
 
     companion object {
         const val DATE_FORMAT = "MM-dd HH:mm:ss.SSS"
-        const val MAX_EVENTS: Int = 25
+        const val MAX_EVENTS: Int = 200
         @VisibleForTesting
         val DATE_FORMATTER = SimpleDateFormat(DATE_FORMAT, Locale.US)
     }
