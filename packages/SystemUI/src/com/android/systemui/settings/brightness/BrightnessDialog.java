@@ -68,9 +68,6 @@ public class BrightnessDialog extends ComponentActivity {
     @VisibleForTesting
     static final int DIALOG_TIMEOUT_MILLIS = 3000;
 
-    private BrightnessController mBrightnessController;
-    private final BrightnessSliderController.Factory mToggleSliderFactory;
-    private final BrightnessController.Factory mBrightnessControllerFactory;
     private final DelayableExecutor mMainExecutor;
     private final AccessibilityManagerWrapper mAccessibilityMgr;
     private Runnable mCancelTimeoutRunnable;
@@ -79,15 +76,11 @@ public class BrightnessDialog extends ComponentActivity {
 
     @Inject
     public BrightnessDialog(
-            BrightnessSliderController.Factory brightnessSliderfactory,
-            BrightnessController.Factory brightnessControllerFactory,
             @Main DelayableExecutor mainExecutor,
             AccessibilityManagerWrapper accessibilityMgr,
             ShadeInteractor shadeInteractor,
             BrightnessSliderViewModel.Factory brightnessSliderViewModelFactory
     ) {
-        mToggleSliderFactory = brightnessSliderfactory;
-        mBrightnessControllerFactory = brightnessControllerFactory;
         mMainExecutor = mainExecutor;
         mAccessibilityMgr = accessibilityMgr;
         mShadeInteractor = shadeInteractor;

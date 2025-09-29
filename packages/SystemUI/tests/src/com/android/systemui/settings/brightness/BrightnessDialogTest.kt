@@ -36,7 +36,6 @@ import com.android.systemui.statusbar.policy.AccessibilityManagerWrapper
 import com.android.systemui.testKosmos
 import com.android.systemui.util.concurrency.DelayableExecutor
 import com.android.systemui.util.concurrency.FakeExecutor
-import com.android.systemui.util.mockito.any
 import com.android.systemui.util.mockito.whenever
 import com.android.systemui.util.time.FakeSystemClock
 import com.google.common.truth.Truth.assertThat
@@ -65,10 +64,6 @@ class BrightnessDialogTest : SysuiTestCase() {
 
     private val viewId = R.id.brightness_dialog_slider
 
-    @Mock private lateinit var brightnessSliderControllerFactory: BrightnessSliderController.Factory
-    @Mock private lateinit var brightnessSliderController: BrightnessSliderController
-    @Mock private lateinit var brightnessControllerFactory: BrightnessController.Factory
-    @Mock private lateinit var brightnessController: BrightnessController
     @Mock private lateinit var accessibilityMgr: AccessibilityManagerWrapper
     @Mock private lateinit var shadeInteractor: ShadeInteractor
 
@@ -85,8 +80,6 @@ class BrightnessDialogTest : SysuiTestCase() {
         ActivityTestRule(
             /* activityFactory= */ SingleActivityFactory {
                 TestDialog(
-                    brightnessSliderControllerFactory,
-                    brightnessControllerFactory,
                     mainExecutor,
                     accessibilityMgr,
                     shadeInteractor,
@@ -101,10 +94,6 @@ class BrightnessDialogTest : SysuiTestCase() {
     @Before
     fun setUp() {
         MockitoAnnotations.initMocks(this)
-        `when`(brightnessSliderControllerFactory.create(any(), any()))
-            .thenReturn(brightnessSliderController)
-        `when`(brightnessSliderController.rootView).thenReturn(View(context))
-        `when`(brightnessControllerFactory.create(any())).thenReturn(brightnessController)
         whenever(shadeInteractor.isQsExpanded).thenReturn(MutableStateFlow(false))
     }
 
@@ -211,8 +200,6 @@ class BrightnessDialogTest : SysuiTestCase() {
     }
 
     class TestDialog(
-        brightnessSliderControllerFactory: BrightnessSliderController.Factory,
-        brightnessControllerFactory: BrightnessController.Factory,
         mainExecutor: DelayableExecutor,
         accessibilityMgr: AccessibilityManagerWrapper,
         shadeInteractor: ShadeInteractor,
@@ -220,8 +207,6 @@ class BrightnessDialogTest : SysuiTestCase() {
         private val countdownLatch: CountDownLatch,
     ) :
         BrightnessDialog(
-            brightnessSliderControllerFactory,
-            brightnessControllerFactory,
             mainExecutor,
             accessibilityMgr,
             shadeInteractor,
