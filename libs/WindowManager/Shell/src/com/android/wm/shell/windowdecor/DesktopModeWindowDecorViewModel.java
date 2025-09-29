@@ -1260,17 +1260,13 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
         if (result != DesktopTasksController.CloseTaskResult.CLOSED_DESKTOP) {
             return;
         }
-        if (DesktopExperienceFlags
-                .ENABLE_DESKTOP_APP_HEADER_STATE_CHANGE_ANNOUNCEMENTS.isTrue()
-        ) {
-            final int nextFocusedTaskId = mDesktopTasksController.getNextFocusedTask(task);
-            final WindowDecorationWrapper nextFocusedWindow =
-                    mWindowDecorationFinder.apply(nextFocusedTaskId);
-            if (nextFocusedWindow == null) {
-                return;
-            }
-            nextFocusedWindow.a11yAnnounceNewFocusedWindow();
-        }
+
+        final int nextFocusedTaskId = mDesktopTasksController.getNextFocusedTask(task);
+        final WindowDecorationWrapper nextFocusedWindow =
+                mWindowDecorationFinder.apply(nextFocusedTaskId);
+        if (nextFocusedWindow == null) return;
+        nextFocusedWindow.a11yAnnounceNewFocusedWindow();
+
     }
 
     /** Listener for caption touch events. */
@@ -2049,15 +2045,10 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
 
         @Override
         public void onMinimize(@NonNull RunningTaskInfo taskInfo) {
-            if (DesktopExperienceFlags
-                    .ENABLE_DESKTOP_APP_HEADER_STATE_CHANGE_ANNOUNCEMENTS.isTrue()) {
-                final int nextFocusedTaskId = mDesktopTasksController.getNextFocusedTask(taskInfo);
-                WindowDecorationWrapper nextFocusedWindow =
-                        mViewModel.mWindowDecorByTaskId.get(nextFocusedTaskId);
-                if (nextFocusedWindow != null) {
-                    nextFocusedWindow.a11yAnnounceNewFocusedWindow();
-                }
-            }
+            final int nextFocusedTaskId = mDesktopTasksController.getNextFocusedTask(taskInfo);
+            WindowDecorationWrapper nextFocusedWindow =
+                    mViewModel.mWindowDecorByTaskId.get(nextFocusedTaskId);
+            if (nextFocusedWindow != null) nextFocusedWindow.a11yAnnounceNewFocusedWindow();
             mDesktopTasksController.minimizeTask(taskInfo, MinimizeReason.MINIMIZE_BUTTON);
         }
 
