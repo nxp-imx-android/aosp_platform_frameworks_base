@@ -23,6 +23,7 @@ import static android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM;
 import static android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN;
 import static android.app.WindowConfiguration.WINDOWING_MODE_MULTI_WINDOW;
 import static android.app.WindowConfiguration.WINDOWING_MODE_PINNED;
+import static android.app.WindowConfiguration.WINDOWING_MODE_UNDEFINED;
 import static android.content.pm.ActivityInfo.CONFIG_COLOR_MODE;
 import static android.content.pm.ActivityInfo.CONFIG_DENSITY;
 import static android.content.pm.ActivityInfo.CONFIG_ORIENTATION;
@@ -3612,6 +3613,32 @@ public class ActivityRecordTests extends WindowTestsBase {
         activity.setLastReportedConfiguration(new Configuration(), config);
 
         final Configuration newConfig = new Configuration();
+        newConfig.touchscreen = TOUCHSCREEN_NOTOUCH;
+        newConfig.densityDpi = 200;
+        newConfig.colorMode = COLOR_MODE_WIDE_COLOR_GAMUT_YES;
+        activity.resolveOverrideConfiguration(newConfig);
+
+        assertEquals(Configuration.TOUCHSCREEN_UNDEFINED,
+                activity.getRequestedOverrideConfiguration().touchscreen);
+        assertEquals(Configuration.DENSITY_DPI_UNDEFINED,
+                activity.getRequestedOverrideConfiguration().densityDpi);
+        assertEquals(Configuration.COLOR_MODE_UNDEFINED,
+                activity.getRequestedOverrideConfiguration().colorMode);
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_DENSITY_RESET_ON_CROSS_DISPLAYS_PIP_LAUNCH)
+    public void resolveOverrideConfiguration_exitingPipOnCrossDisplaysLaunch_resetsConfigs() {
+        final ActivityRecord activity = createActivityWithTask();
+        activity.mLastReportedPictureInPictureMode = true;
+        final Configuration config = new Configuration();
+        config.touchscreen = TOUCHSCREEN_FINGER;
+        config.densityDpi = 100;
+        config.colorMode = COLOR_MODE_WIDE_COLOR_GAMUT_NO;
+        activity.setLastReportedConfiguration(new Configuration(), config);
+
+        final Configuration newConfig = new Configuration();
+        newConfig.windowConfiguration.setWindowingMode(WINDOWING_MODE_UNDEFINED);
         newConfig.touchscreen = TOUCHSCREEN_NOTOUCH;
         newConfig.densityDpi = 200;
         newConfig.colorMode = COLOR_MODE_WIDE_COLOR_GAMUT_YES;

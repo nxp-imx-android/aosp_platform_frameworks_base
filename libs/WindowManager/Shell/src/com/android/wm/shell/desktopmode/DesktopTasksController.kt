@@ -85,6 +85,7 @@ import android.window.TransitionInfo
 import android.window.TransitionInfo.Change
 import android.window.TransitionRequestInfo
 import android.window.WindowContainerTransaction
+import android.window.WindowContainerTransaction.HierarchyOp.HIERARCHY_OP_TYPE_PENDING_INTENT
 import androidx.annotation.BinderThread
 import com.android.app.tracing.traceSection
 import com.android.internal.annotations.VisibleForTesting
@@ -152,6 +153,8 @@ import com.android.wm.shell.desktopmode.multidesks.OnDeskRemovedListener
 import com.android.wm.shell.desktopmode.multidesks.PreserveDisplayRequestHandler
 import com.android.wm.shell.draganddrop.DragAndDropController
 import com.android.wm.shell.freeform.FreeformTaskTransitionStarter
+import com.android.wm.shell.pip2.phone.PipScheduler
+import com.android.wm.shell.pip2.phone.PipTransitionState
 import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_DESKTOP_MODE
 import com.android.wm.shell.recents.RecentTasksController
 import com.android.wm.shell.recents.RecentsTransitionHandler
@@ -266,6 +269,7 @@ class DesktopTasksController(
     private val desktopFirstListenerManager: Optional<DesktopFirstListenerManager>,
     private val taskSnapshotManager: TaskSnapshotManager,
     private val transactionPool: TransactionPool,
+    private val pipTransitionState: Optional<PipTransitionState>,
 ) :
     RemoteCallable<DesktopTasksController>,
     TransitionHandler,
@@ -280,6 +284,7 @@ class DesktopTasksController(
 
     private val mOnAnimationFinishedCallback = { releaseVisualIndicator() }
     private lateinit var snapEventHandler: SnapEventHandler
+    private lateinit var mPipScheduler: PipScheduler
     private val dragToDesktopStateListener =
         object : DragToDesktopStateListener {
             override fun onCommitToDesktopAnimationStart() {
@@ -401,6 +406,11 @@ class DesktopTasksController(
     fun setSnapEventHandler(handler: SnapEventHandler) {
         snapEventHandler = handler
         desktopTasksLimiter.ifPresent { it.snapEventHandler = snapEventHandler }
+    }
+
+    /** Setter for PiP scheduler */
+    fun setPipScheduler(pipScheduler: PipScheduler) {
+        mPipScheduler = pipScheduler
     }
 
     /** Returns the transition type for the given remote transition. */
@@ -2299,6 +2309,7 @@ class DesktopTasksController(
         userId: Int,
         unminimizeReason: UnminimizeReason = UnminimizeReason.UNKNOWN,
         dragEvent: DragEvent? = null,
+        bounds: Rect? = null,
     ): IBinder {
         logV(
             "startLaunchTransition type=%s launchingTaskId=%d deskId=%d displayId=%d",
@@ -2360,6 +2371,30 @@ class DesktopTasksController(
                 )
             }
         }
+
+        // Return early to let PipScheduler handle exiting PiP via expand in Shell.
+        for (op in wct.hierarchyOps) {
+            if (
+                DesktopExperienceFlags.ENABLE_DENSITY_RESET_ON_CROSS_DISPLAYS_PIP_LAUNCH.isTrue &&
+                    op.type == HIERARCHY_OP_TYPE_PENDING_INTENT &&
+                    op.activityIntent?.component ==
+                        pipTransitionState.getOrNull()?.pipTaskInfo?.baseIntent?.component
+            ) {
+                if (deskId != null && launchingTaskId != null) {
+                    shellTaskOrganizer.getRunningTaskInfo(launchingTaskId)?.let {
+                        addMoveToDeskTaskChanges(wct, it, deskId)
+                    }
+                }
+                mPipScheduler.scheduleExitPipViaExpand(
+                    /* wasVisible= */ true,
+                    displayId,
+                    bounds,
+                    WINDOWING_MODE_FREEFORM,
+                )
+                return Binder()
+            }
+        }
+
         // Remove top transparent fullscreen task if needed.
         val closingTopTransparentTaskId =
             deskId?.let {
@@ -2537,6 +2572,7 @@ class DesktopTasksController(
             deskId = deskId,
             displayId = displayId,
             userId = userId,
+            bounds = bounds,
         )
     }
 

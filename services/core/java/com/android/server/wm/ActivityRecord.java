@@ -88,10 +88,13 @@ import static android.content.pm.ActivityInfo.RESIZE_MODE_UNRESIZEABLE;
 import static android.content.pm.ActivityInfo.SCREEN_ORIENTATION_BEHIND;
 import static android.content.pm.ActivityInfo.SCREEN_ORIENTATION_UNSET;
 import static android.content.res.Configuration.ASSETS_SEQ_UNDEFINED;
+import static android.content.res.Configuration.COLOR_MODE_UNDEFINED;
+import static android.content.res.Configuration.DENSITY_DPI_UNDEFINED;
 import static android.content.res.Configuration.EMPTY;
 import static android.content.res.Configuration.ORIENTATION_LANDSCAPE;
 import static android.content.res.Configuration.ORIENTATION_PORTRAIT;
 import static android.content.res.Configuration.ORIENTATION_UNDEFINED;
+import static android.content.res.Configuration.TOUCHSCREEN_UNDEFINED;
 import static android.content.res.Configuration.UI_MODE_TYPE_DESK;
 import static android.content.res.Configuration.UI_MODE_TYPE_MASK;
 import static android.internal.perfetto.protos.Windowmanagerservice.ActivityRecordProto.ALL_DRAWN;
@@ -142,6 +145,7 @@ import static android.view.WindowManager.PROPERTY_ALLOW_UNTRUSTED_ACTIVITY_EMBED
 import static android.view.WindowManager.TRANSIT_RELAUNCH;
 import static android.view.WindowManager.hasWindowExtensionsEnabled;
 import static android.window.DesktopExperienceFlags.ENABLE_AUTO_RESTART_ON_DISPLAY_MOVE;
+import static android.window.DesktopExperienceFlags.ENABLE_DENSITY_RESET_ON_CROSS_DISPLAYS_PIP_LAUNCH;
 import static android.window.DesktopExperienceFlags.ENABLE_DRAGGING_PIP_ACROSS_DISPLAYS;
 import static android.window.DesktopExperienceFlags.ENABLE_PIP_PARAMS_UPDATE_NOTIFICATION_BUGFIX;
 import static android.window.DesktopExperienceFlags.ENABLE_RESTART_MENU_FOR_CONNECTED_DISPLAYS;
@@ -472,7 +476,7 @@ final class ActivityRecord extends WindowToken {
     long topResumedStateLossTime; // last time we reported top resumed state loss to an activity
     // Last configuration reported to the activity in the client process.
     private final MergedConfiguration mLastReportedConfiguration;
-    private int mLastReportedDisplayId;
+    @VisibleForTesting int mLastReportedDisplayId;
     boolean mLastReportedMultiWindowMode;
     boolean mLastReportedPictureInPictureMode;
     private final ActivityWindowInfo mLastReportedActivityWindowInfo = new ActivityWindowInfo();
@@ -7613,6 +7617,18 @@ final class ActivityRecord extends WindowToken {
             if ((configChanges & ActivityInfo.CONFIG_DENSITY) == 0) {
                 requestedOverrideConfig.densityDpi = lastReportedMergedConfig.densityDpi;
             }
+        }
+
+        // Reset density and other configs when launching PiP as a full task on another display
+        // TODO(b/443008096): Remove this override once we find the root cause behind activity
+        // recycling leading to PiP removal
+        if (ENABLE_DENSITY_RESET_ON_CROSS_DISPLAYS_PIP_LAUNCH.isTrue()
+                && mLastReportedPictureInPictureMode
+                && newParentConfiguration.windowConfiguration.getWindowingMode()
+                != WINDOWING_MODE_PINNED) {
+            requestedOverrideConfig.colorMode = COLOR_MODE_UNDEFINED;
+            requestedOverrideConfig.touchscreen = TOUCHSCREEN_UNDEFINED;
+            requestedOverrideConfig.densityDpi = DENSITY_DPI_UNDEFINED;
         }
 
         super.resolveOverrideConfiguration(newParentConfiguration);

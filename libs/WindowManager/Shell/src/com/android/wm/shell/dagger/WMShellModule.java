@@ -178,6 +178,7 @@ import com.android.wm.shell.keyguard.KeyguardTransitionHandler;
 import com.android.wm.shell.onehanded.OneHandedController;
 import com.android.wm.shell.pinnedlayer.phone.PinnedLayerController;
 import com.android.wm.shell.pip.PipTransitionController;
+import com.android.wm.shell.pip2.phone.PipTransitionState;
 import com.android.wm.shell.recents.RecentTasksController;
 import com.android.wm.shell.recents.RecentsTransitionHandler;
 import com.android.wm.shell.shared.TransactionPool;
@@ -187,6 +188,7 @@ import com.android.wm.shell.shared.annotations.ShellDesktopThread;
 import com.android.wm.shell.shared.annotations.ShellMainThread;
 import com.android.wm.shell.shared.desktopmode.DesktopConfig;
 import com.android.wm.shell.shared.desktopmode.DesktopState;
+import com.android.wm.shell.shared.pip.PipFlags;
 import com.android.wm.shell.splitscreen.SplitScreenController;
 import com.android.wm.shell.sysui.ShellCommandHandler;
 import com.android.wm.shell.sysui.ShellController;
@@ -982,7 +984,8 @@ public abstract class WMShellModule {
             VisualIndicatorUpdateScheduler visualIndicatorUpdateScheduler,
             Optional<DesktopFirstListenerManager> desktopFirstListenerManager,
             TaskSnapshotManager taskSnapshotManager,
-            TransactionPool transactionPool) {
+            TransactionPool transactionPool,
+            PipTransitionState pipTransitionState) {
         return new DesktopTasksController(
                 context,
                 shellInit,
@@ -1034,7 +1037,9 @@ public abstract class WMShellModule {
                 visualIndicatorUpdateScheduler,
                 desktopFirstListenerManager,
                 taskSnapshotManager,
-                transactionPool);
+                transactionPool,
+                PipFlags.isPip2ExperimentEnabled() ? Optional.of(pipTransitionState)
+                        : Optional.empty());
     }
 
     @WMSingleton

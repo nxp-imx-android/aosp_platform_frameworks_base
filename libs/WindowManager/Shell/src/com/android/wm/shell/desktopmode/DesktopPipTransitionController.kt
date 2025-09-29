@@ -35,7 +35,7 @@ import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_DESKTOP_MODE
 /** Controller to perform extra handling to PiP transitions while in Desktop mode. */
 class DesktopPipTransitionController(
     private val shellTaskOrganizer: ShellTaskOrganizer,
-    private val desktopTasksController: DesktopTasksController,
+    val desktopTasksController: DesktopTasksController,
     private val desktopUserRepositories: DesktopUserRepositories,
     private val pipDesktopState: PipDesktopState,
 ) {

@@ -117,6 +117,9 @@ public class PipScheduler implements PipTransitionState.PipTransitionStateChange
         mPipSurfaceTransactionHelper = pipSurfaceTransactionHelper;
         mPipAlphaAnimatorSupplier = PipAlphaAnimator::new;
         mLastFocusedDisplayId = mPipDisplayLayoutState.getDisplayId();
+        mDesktopPipTransitionController.ifPresent(c-> {
+            c.getDesktopTasksController().setPipScheduler(this);
+        });
     }
 
     void setPipTransitionController(PipTransitionController pipTransitionController) {
@@ -168,6 +171,26 @@ public class PipScheduler implements PipTransitionState.PipTransitionStateChange
         return wct;
     }
 
+    /**
+     * Returns a wct for exiting PiP and expanding on a different display with specific bounds
+     * and windowing mode.
+     */
+    @Nullable
+    @VisibleForTesting
+    WindowContainerTransaction getExitPipViaExpandIntoDisplayTransaction(int displayId,
+            Rect bounds, int windowingMode) {
+        final WindowContainerTransaction wct = getExitPipViaExpandIntoDisplayTransaction(displayId);
+        final WindowContainerToken pipToken = mPipTransitionState.getPipTaskToken();
+
+        if (wct == null || pipToken == null) {
+            return null;
+        }
+
+        wct.setWindowingMode(pipToken, windowingMode);
+        wct.setBounds(pipToken, bounds);
+        return wct;
+    }
+
     @Nullable
     private WindowContainerTransaction getRemovePipTransaction() {
         WindowContainerToken pipTaskToken = mPipTransitionState.getPipTaskToken();
@@ -192,10 +215,28 @@ public class PipScheduler implements PipTransitionState.PipTransitionStateChange
      * Schedules exit PiP via expand transition.
      */
     public void scheduleExitPipViaExpand(boolean wasVisible) {
+        scheduleExitPipViaExpand(wasVisible, getExitPipViaExpandTransaction());
+    }
+
+    /**
+     * Returns a wct for exiting PiP and expanding on a different display.
+     */
+    public void scheduleExitPipViaExpand(boolean wasVisible, int displayId, Rect bounds,
+            int windowingMode) {
+        scheduleExitPipViaExpand(wasVisible,
+                getExitPipViaExpandIntoDisplayTransaction(displayId, bounds, windowingMode));
+    }
+
+    /**
+     * Private helper to handle the common logic for exiting PiP via expansion.
+     *
+     * @param wasVisible Whether the underlying activity was visible before entering PiP.
+     * @param expandWct wct for the expansion
+     */
+    private void scheduleExitPipViaExpand(boolean wasVisible,
+            WindowContainerTransaction expandWct) {
         mMainExecutor.execute(() -> {
             if (!mPipTransitionState.isInPip()) return;
-
-            final WindowContainerTransaction expandWct = getExitPipViaExpandTransaction();
             if (expandWct == null) return;
 
             final WindowContainerTransaction wct = new WindowContainerTransaction();
