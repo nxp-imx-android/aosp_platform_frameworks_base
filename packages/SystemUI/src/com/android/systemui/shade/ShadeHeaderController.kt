@@ -148,6 +148,8 @@ constructor(
                 ?.statusBarContentInsetsProvider
 
     companion object {
+        const val TRACK_NAME = "ShadeHeaderController"
+
         /** IDs for transitions and constraints for the [MotionLayout]. */
         @VisibleForTesting internal val HEADER_TRANSITION_ID = R.id.header_transition
 
@@ -329,6 +331,7 @@ constructor(
                         R.dimen.hover_system_icons_container_padding_bottom
                     ),
                 )
+                Trace.instantForTrack(Trace.TRACE_TAG_APP, TRACK_NAME, "onConfigChanged refreshIconGroup")
                 statusBarIconController.refreshIconGroup(iconManager)
             }
 
