@@ -93,7 +93,7 @@ $ ../../../../prebuilts/tools/linux-x86_64/perfetto/trace_processor_shell \
   --summary-spec trace_metrics_v2_spec.pbtx bouncy_trace
 ```
 
-A successful run will show `missed_app_frames_bouncyball` as 0.
+A successful run will show `missed_frames_bouncyball` as 0.
 
 ### Cleanup
 
