@@ -270,6 +270,12 @@ public class AssociationStore {
         }
 
         if (updated.isActive()) {
+            // Check if the data sync flags have changed.
+            if (updated.getSystemDataSyncFlags() != current.getSystemDataSyncFlags()) {
+                broadcastChange(CHANGE_TYPE_UPDATED_DATA_SYNC_TYPES, updated);
+                return;
+            }
+
             // Check if the MacAddress has changed.
             final MacAddress updatedAddress = updated.getDeviceMacAddress();
             final MacAddress currentAddress = current.getDeviceMacAddress();
@@ -278,10 +284,6 @@ public class AssociationStore {
             broadcastChange(macAddressChanged ? CHANGE_TYPE_UPDATED_ADDRESS_CHANGED
                     : CHANGE_TYPE_UPDATED_ADDRESS_UNCHANGED, updated);
             return;
-        }
-
-        if (updated.getSystemDataSyncFlags() != current.getSystemDataSyncFlags()) {
-            broadcastChange(CHANGE_TYPE_UPDATED_DATA_SYNC_TYPES, updated);
         }
     }
 
