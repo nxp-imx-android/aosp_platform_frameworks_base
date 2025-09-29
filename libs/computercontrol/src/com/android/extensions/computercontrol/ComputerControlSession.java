@@ -364,12 +364,14 @@ public final class ComputerControlSession implements AutoCloseable {
         void onSessionStable();
     }
 
-
     /**
      * Callback to be notified about the computer control session lifecycle changes.
      */
     public interface LifecycleCallback {
-        /** Called when the computer control session is closed. */
+        /**
+         * Called when the computer control session is closed. This marks the end of the session's
+         * lifecycle, and no further lifecycle updates will take place.
+         */
         void onClosed(@SessionCloseReason int reason);
     }
 }

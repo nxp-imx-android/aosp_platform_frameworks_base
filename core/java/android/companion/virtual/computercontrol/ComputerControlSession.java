@@ -151,12 +151,16 @@ public final class ComputerControlSession extends IComputerControlLifecycleCallb
     private final IComputerControlSession mSession;
     @NonNull
     private final Size mDisplaySize;
-    private final Object mLock = new Object();
-    @GuardedBy("mLock")
+
+    private final Object mImageReaderLock = new Object();
+    @GuardedBy("mImageReaderLock")
     @Nullable
     private ImageReader mImageReader;
-    @GuardedBy("mLock")
-    private LifecycleCallbackRecord mLifecycleCallback;
+
+    @GuardedBy("mLifecycle")
+    private final SessionLifecycleTracker mLifecycle = new SessionLifecycleTracker();
+    @GuardedBy("mLifecycle")
+    private LifecycleCallback mRegisteredLifecycleCallback = null;
 
     // TODO(b/419460558): Added to temporarily link {@link LifecycleCallback#onClosed(int)} with the
     //  existing {@link Callback#onSessionClosed()}. Remove once its migrated.
@@ -261,7 +265,7 @@ public final class ComputerControlSession extends IComputerControlLifecycleCallb
      */
     @Nullable
     public Image getScreenshot() {
-        synchronized (mLock) {
+        synchronized (mImageReaderLock) {
             return mImageReader == null ? null : mImageReader.acquireLatestImage();
         }
     }
@@ -411,11 +415,18 @@ public final class ComputerControlSession extends IComputerControlLifecycleCallb
             @NonNull LifecycleCallback callback) {
         Objects.requireNonNull(executor);
         Objects.requireNonNull(callback);
-        synchronized (mLock) {
-            if (mLifecycleCallback != null) {
+        synchronized (mLifecycle) {
+            if (mRegisteredLifecycleCallback != null) {
                 throw new IllegalStateException("Lifecycle callback was already registered!");
             }
-            mLifecycleCallback = new LifecycleCallbackRecord(executor, callback);
+            mRegisteredLifecycleCallback = new LifecycleCallback() {
+                @Override
+                public void onClosed(@SessionCloseReason int reason) {
+                    Binder.withCleanCallingIdentity(
+                            () -> executor.execute(() -> callback.onClosed(reason)));
+                }
+            };
+            mLifecycle.addCallback(mRegisteredLifecycleCallback);
         }
     }
 
@@ -426,21 +437,20 @@ public final class ComputerControlSession extends IComputerControlLifecycleCallb
      * @throws IllegalStateException if a callback was not previously set.
      */
     public void clearLifecycleCallback() {
-        synchronized (mLock) {
-            if (mLifecycleCallback == null) {
+        synchronized (mLifecycle) {
+            if (mRegisteredLifecycleCallback == null) {
                 throw new IllegalStateException("Lifecycle callback was never registered!");
             }
-            mLifecycleCallback = null;
+            mLifecycle.removeCallback(mRegisteredLifecycleCallback);
+            mRegisteredLifecycleCallback = null;
         }
     }
 
     @Override
     public void onClosed(@SessionCloseReason int closeReason) {
         releaseResources();
-        synchronized (mLock) {
-            if (mLifecycleCallback != null) {
-                mLifecycleCallback.onClosed(closeReason);
-            }
+        synchronized (mLifecycle) {
+            mLifecycle.onClosed(closeReason);
         }
         mOnClosedRunnable.run();
     }
@@ -463,7 +473,7 @@ public final class ComputerControlSession extends IComputerControlLifecycleCallb
     }
 
     private void releaseResources() {
-        synchronized (mLock) {
+        synchronized (mImageReaderLock) {
             if (mImageReader != null) {
                 mImageReader.close();
                 mImageReader = null;
@@ -526,7 +536,10 @@ public final class ComputerControlSession extends IComputerControlLifecycleCallb
      * Callback to be notified about the computer control session lifecycle changes.
      */
     public interface LifecycleCallback {
-        /** Called when the computer control session is closed. */
+        /**
+         * Called when the computer control session is closed. This marks the end of the session's
+         * lifecycle, and no further lifecycle updates will take place.
+         */
         void onClosed(@SessionCloseReason int reason);
     }
 
@@ -570,23 +583,6 @@ public final class ComputerControlSession extends IComputerControlLifecycleCallb
         private void onSessionClosed() {
             Binder.withCleanCallingIdentity(() ->
                     mExecutor.execute(mCallback::onSessionClosed));
-        }
-    }
-
-    private static class LifecycleCallbackRecord implements LifecycleCallback {
-
-        private final Executor mExecutor;
-        private final LifecycleCallback mCallback;
-
-        LifecycleCallbackRecord(@NonNull Executor executor, @NonNull LifecycleCallback callback) {
-            mExecutor = executor;
-            mCallback = callback;
-        }
-
-        @Override
-        public void onClosed(@SessionCloseReason int reason) {
-            Binder.withCleanCallingIdentity(
-                    () -> mExecutor.execute(() -> mCallback.onClosed(reason)));
         }
     }
 }
