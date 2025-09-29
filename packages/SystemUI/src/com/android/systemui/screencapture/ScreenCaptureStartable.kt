@@ -26,11 +26,13 @@ import com.android.systemui.screencapture.common.shared.model.ScreenCaptureType
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureUiState
 import com.android.systemui.screencapture.domain.interactor.ScreenCaptureComponentInteractor
 import com.android.systemui.screencapture.domain.interactor.ScreenCaptureUiInteractor
+import com.android.systemui.screencapture.ui.ScreenCaptureUi
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
 
 @SysUISingleton
@@ -61,12 +63,20 @@ constructor(
                     if (display == null) {
                         Log.e("ScreenCapture", "Couldn't find display for id=$displayId")
                         screenCaptureUiInteractor.hide(type)
+                        null
                     } else {
                         screenCaptureComponent
                             .screenCaptureUiFactory()
                             .create(type = state.parameters.screenCaptureType, display = display)
-                            .attachWindow()
                     }
+                } else {
+                    null
+                }
+            }
+            .mapLatest { screenCaptureUi: ScreenCaptureUi? ->
+                if (screenCaptureUi != null) {
+                    screenCaptureUi.show()
+                    screenCaptureUiInteractor.hide(type)
                 }
             }
             .launchIn(appScope)
