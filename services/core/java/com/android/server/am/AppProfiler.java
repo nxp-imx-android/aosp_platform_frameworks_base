@@ -1828,48 +1828,33 @@ public class AppProfiler {
                 + memInfo.getFreeSizeKb()));
         memInfoBuilder.append("\n");
         long kernelUsed = memInfo.getKernelUsedSizeKb();
-        final long ionHeap = Debug.getIonHeapsSizeKb();
-        final long ionPool = Debug.getIonPoolsSizeKb();
         final long dmabufMapped = Debug.getDmabufMappedSizeKb();
-        if (ionHeap >= 0 && ionPool >= 0) {
-            final long ionUnmapped = ionHeap - dmabufMapped;
-            memInfoBuilder.append("       ION: ");
-            memInfoBuilder.append(stringifyKBSize(ionHeap + ionPool));
+        final long totalExportedDmabuf = Debug.getDmabufTotalExportedKb();
+        if (totalExportedDmabuf >= 0) {
+            final long dmabufUnmapped = totalExportedDmabuf - dmabufMapped;
+            memInfoBuilder.append("DMA-BUF: ");
+            memInfoBuilder.append(stringifyKBSize(totalExportedDmabuf));
             memInfoBuilder.append("\n");
-            kernelUsed += ionUnmapped;
-            // Note: mapped ION memory is not accounted in PSS due to VM_PFNMAP flag being
-            // set on ION VMAs, however it might be included by the memtrack HAL.
+            // Account unmapped dmabufs as part of kernel memory allocations
+            kernelUsed += dmabufUnmapped;
             // Replace memtrack HAL reported Graphics category with mapped dmabufs
             totalPss -= totalMemtrackGraphics;
             totalPss += dmabufMapped;
-        } else {
-            final long totalExportedDmabuf = Debug.getDmabufTotalExportedKb();
-            if (totalExportedDmabuf >= 0) {
-                final long dmabufUnmapped = totalExportedDmabuf - dmabufMapped;
-                memInfoBuilder.append("DMA-BUF: ");
-                memInfoBuilder.append(stringifyKBSize(totalExportedDmabuf));
-                memInfoBuilder.append("\n");
-                // Account unmapped dmabufs as part of kernel memory allocations
-                kernelUsed += dmabufUnmapped;
-                // Replace memtrack HAL reported Graphics category with mapped dmabufs
-                totalPss -= totalMemtrackGraphics;
-                totalPss += dmabufMapped;
-            }
-            // These are included in the totalExportedDmabuf above and hence do not need to be added
-            // to kernelUsed.
-            final long totalExportedDmabufHeap = Debug.getDmabufHeapTotalExportedKb();
-            if (totalExportedDmabufHeap >= 0) {
-                memInfoBuilder.append("DMA-BUF Heap: ");
-                memInfoBuilder.append(stringifyKBSize(totalExportedDmabufHeap));
-                memInfoBuilder.append("\n");
-            }
+        }
+        // These are included in the totalExportedDmabuf above and hence do not need to be added
+        // to kernelUsed.
+        final long totalExportedDmabufHeap = Debug.getDmabufHeapTotalExportedKb();
+        if (totalExportedDmabufHeap >= 0) {
+            memInfoBuilder.append("DMA-BUF Heap: ");
+            memInfoBuilder.append(stringifyKBSize(totalExportedDmabufHeap));
+            memInfoBuilder.append("\n");
+        }
 
-            final long totalDmabufHeapPool = Debug.getDmabufHeapPoolsSizeKb();
-            if (totalDmabufHeapPool >= 0) {
-                memInfoBuilder.append("DMA-BUF Heaps pool: ");
-                memInfoBuilder.append(stringifyKBSize(totalDmabufHeapPool));
-                memInfoBuilder.append("\n");
-            }
+        final long totalDmabufHeapPool = Debug.getDmabufHeapPoolsSizeKb();
+        if (totalDmabufHeapPool >= 0) {
+            memInfoBuilder.append("DMA-BUF Heaps pool: ");
+            memInfoBuilder.append(stringifyKBSize(totalDmabufHeapPool));
+            memInfoBuilder.append("\n");
         }
 
         final long gpuUsage = Debug.getGpuTotalUsageKb();

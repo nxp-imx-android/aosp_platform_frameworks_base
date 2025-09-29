@@ -12857,57 +12857,36 @@ public class ActivityManagerService extends IActivityManager.Stub
                 }
             }
             long kernelUsed = memInfo.getKernelUsedSizeKb();
-            final long ionHeap = Debug.getIonHeapsSizeKb();
-            final long ionPool = Debug.getIonPoolsSizeKb();
             final long dmabufMapped = Debug.getDmabufMappedSizeKb();
-            if (ionHeap >= 0 && ionPool >= 0) {
-                final long ionUnmapped = ionHeap - dmabufMapped;
-                pw.print("      ION: ");
-                        pw.print(stringifyKBSize(ionHeap + ionPool));
-                        pw.print(" (");
-                        pw.print(stringifyKBSize(dmabufMapped));
-                        pw.print(" mapped + ");
-                        pw.print(stringifyKBSize(ionUnmapped));
-                        pw.print(" unmapped + ");
-                        pw.print(stringifyKBSize(ionPool));
-                        pw.println(" pools)");
-                kernelUsed += ionUnmapped;
-                // Note: mapped ION memory is not accounted in PSS due to VM_PFNMAP flag being
-                // set on ION VMAs, however it might be included by the memtrack HAL.
+            final long totalExportedDmabuf = Debug.getDmabufTotalExportedKb();
+            if (totalExportedDmabuf >= 0) {
+                final long dmabufUnmapped = totalExportedDmabuf - dmabufMapped;
+                pw.print("DMA-BUF: ");
+                pw.print(stringifyKBSize(totalExportedDmabuf));
+                pw.print(" (");
+                pw.print(stringifyKBSize(dmabufMapped));
+                pw.print(" mapped + ");
+                pw.print(stringifyKBSize(dmabufUnmapped));
+                pw.println(" unmapped)");
+                // Account unmapped dmabufs as part of kernel memory allocations
+                kernelUsed += dmabufUnmapped;
                 // Replace memtrack HAL reported Graphics category with mapped dmabufs
                 ss[INDEX_TOTAL_PSS] -= ss[INDEX_TOTAL_MEMTRACK_GRAPHICS];
                 ss[INDEX_TOTAL_PSS] += dmabufMapped;
-            } else {
-                final long totalExportedDmabuf = Debug.getDmabufTotalExportedKb();
-                if (totalExportedDmabuf >= 0) {
-                    final long dmabufUnmapped = totalExportedDmabuf - dmabufMapped;
-                    pw.print("DMA-BUF: ");
-                    pw.print(stringifyKBSize(totalExportedDmabuf));
-                    pw.print(" (");
-                    pw.print(stringifyKBSize(dmabufMapped));
-                    pw.print(" mapped + ");
-                    pw.print(stringifyKBSize(dmabufUnmapped));
-                    pw.println(" unmapped)");
-                    // Account unmapped dmabufs as part of kernel memory allocations
-                    kernelUsed += dmabufUnmapped;
-                    // Replace memtrack HAL reported Graphics category with mapped dmabufs
-                    ss[INDEX_TOTAL_PSS] -= ss[INDEX_TOTAL_MEMTRACK_GRAPHICS];
-                    ss[INDEX_TOTAL_PSS] += dmabufMapped;
-                }
+            }
 
-                // totalDmabufHeapExported is included in totalExportedDmabuf above and hence do not
-                // need to be added to kernelUsed.
-                final long totalDmabufHeapExported = Debug.getDmabufHeapTotalExportedKb();
-                if (totalDmabufHeapExported >= 0) {
-                    pw.print("DMA-BUF Heaps: ");
-                    pw.println(stringifyKBSize(totalDmabufHeapExported));
-                }
+            // totalDmabufHeapExported is included in totalExportedDmabuf above and hence do not
+            // need to be added to kernelUsed.
+            final long totalDmabufHeapExported = Debug.getDmabufHeapTotalExportedKb();
+            if (totalDmabufHeapExported >= 0) {
+                pw.print("DMA-BUF Heaps: ");
+                pw.println(stringifyKBSize(totalDmabufHeapExported));
+            }
 
-                final long totalDmabufHeapPool = Debug.getDmabufHeapPoolsSizeKb();
-                if (totalDmabufHeapPool >= 0) {
-                    pw.print("DMA-BUF Heaps pool: ");
-                    pw.println(stringifyKBSize(totalDmabufHeapPool));
-                }
+            final long totalDmabufHeapPool = Debug.getDmabufHeapPoolsSizeKb();
+            if (totalDmabufHeapPool >= 0) {
+                pw.print("DMA-BUF Heaps pool: ");
+                pw.println(stringifyKBSize(totalDmabufHeapPool));
             }
             final long gpuUsage = Debug.getGpuTotalUsageKb();
             if (gpuUsage >= 0) {
