@@ -68,6 +68,7 @@ public class AdbdServicesManager {
         serviceInfo.setAttribute(
                 "given_name",
                 Settings.Global.getString(mContentResolver, Settings.Global.DEVICE_NAME));
+        serviceInfo.setAttribute("serial", SystemProperties.get("ro.serialno", ""));
 
         AdbdRegistrationListener listener =
                 new AdbdRegistrationListener(instanceName, serviceType, port);
