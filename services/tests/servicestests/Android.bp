@@ -1110,3 +1110,13 @@ test_module_config {
     ],
     include_filters: ["com.android.server.incident"],
 }
+
+test_module_config {
+    name: "FrameworksServicesTests_adb",
+    base: "FrameworksServicesTests",
+    test_suites: [
+        "automotive-tests",
+        "device-tests",
+    ],
+    include_filters: ["com.android.server.adb"],
+}
