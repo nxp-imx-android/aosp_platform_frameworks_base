@@ -1009,7 +1009,7 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
                     break;
                 case MSG_SEND_SLEEP_TRANSITION:
                     synchronized (mService.mGlobalLock) {
-                        sendSleepTransition((DisplayContent) msg.obj);
+                        sendSleepTransition();
                     }
                     break;
                 default:
@@ -2587,39 +2587,39 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
         return result;
     }
 
-    void sendSleepTransition(final DisplayContent display) {
+    void sendSleepTransition() {
         // We don't actually care about collecting anything here. We really just want
         // this as a signal to the transition-player.
         final Transition transition = new Transition(TRANSIT_SLEEP, 0 /* flags */,
-                display.mTransitionController, mWmService.mSyncEngine);
+                mTransitionController, mWmService.mSyncEngine);
         final TransitionController.OnStartCollect sendSleepTransition = (deferred) -> {
-            if (deferred && !display.shouldSleep()) {
+            if (deferred && !mService.isSleepingOrShuttingDownLocked()) {
                 transition.abort();
             } else {
-                mService.mChainTracker.start("enterPip1", transition);
-                display.mTransitionController.requestStartTransition(transition,
+                mService.mChainTracker.start("deferredSleep", transition);
+                mTransitionController.requestStartTransition(transition,
                         null /* trigger */, null /* remote */, null /* display */);
                 mService.mChainTracker.end();
                 // Force playing immediately so that unrelated ops can't be collected.
                 transition.playNow();
             }
         };
-        if (!display.mTransitionController.isCollecting()) {
+        if (!mTransitionController.isCollecting()) {
             // Since this bypasses sync, submit directly ignoring whether sync-engine
             // is active.
             if (mWindowManager.mSyncEngine.hasActiveSync()) {
                 Slog.w(TAG, "Ongoing sync outside of a transition.");
             }
-            display.mTransitionController.moveToCollecting(transition);
+            mTransitionController.moveToCollecting(transition);
             sendSleepTransition.onCollectStarted(false /* deferred */);
         } else {
-            display.mTransitionController.startCollectOrQueue(transition,
-                    sendSleepTransition);
+            mTransitionController.startCollectOrQueue(transition, sendSleepTransition);
         }
     }
 
     void applySleepTokens(boolean applyToRootTasks) {
-        boolean scheduledSleepTransition = false;
+        boolean scheduleSleepTransition = false;
+        Transition newWakeTransition = null;
 
         for (int displayNdx = getChildCount() - 1; displayNdx >= 0; --displayNdx) {
             // Set the sleeping state of the display.
@@ -2630,19 +2630,7 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
             }
             final boolean wasSleeping = display.isSleeping();
             display.setIsSleeping(displayShouldSleep);
-
-            if (display.mTransitionController.isShellTransitionsEnabled()
-                    && !scheduledSleepTransition
-                    // Only care if there are actual sleep states.
-                    && displayShouldSleep && display.isScreenSleeping()) {
-                scheduledSleepTransition = true;
-
-                if (!mHandler.hasMessages(MSG_SEND_SLEEP_TRANSITION)) {
-                    mHandler.sendMessageDelayed(
-                            mHandler.obtainMessage(MSG_SEND_SLEEP_TRANSITION, display),
-                            SLEEP_TRANSITION_WAIT_MILLIS);
-                }
-            }
+            scheduleSleepTransition |= displayShouldSleep && display.isScreenSleeping();
 
             if (!applyToRootTasks) {
                 continue;
@@ -2666,6 +2654,7 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
                 }
                 chain.attachTransition(
                         display.mTransitionController.createTransition(transit, flags));
+                newWakeTransition = chain.getTransition();
                 display.mTransitionController.requestStartTransition(chain.getTransition(),
                         startTask, null /* remoteTransition */, null /* displayChange */);
             }
@@ -2696,9 +2685,18 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
             });
             mService.mChainTracker.endPartial();
         }
-
-        if (!scheduledSleepTransition) {
-            mHandler.removeMessages(MSG_SEND_SLEEP_TRANSITION);
+        if (newWakeTransition != null) {
+            newWakeTransition.setAllReady();
+        }
+        if (mService.getTransitionController().isShellTransitionsEnabled()) {
+            if (scheduleSleepTransition) {
+                if (!mHandler.hasMessages(MSG_SEND_SLEEP_TRANSITION)) {
+                    mHandler.sendMessageDelayed(mHandler.obtainMessage(MSG_SEND_SLEEP_TRANSITION),
+                            SLEEP_TRANSITION_WAIT_MILLIS);
+                }
+            } else {
+                mHandler.removeMessages(MSG_SEND_SLEEP_TRANSITION);
+            }
         }
     }
 
