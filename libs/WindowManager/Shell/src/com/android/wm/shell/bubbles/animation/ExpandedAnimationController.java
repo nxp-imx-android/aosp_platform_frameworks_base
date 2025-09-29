@@ -24,7 +24,6 @@ import static com.android.wm.shell.bubbles.animation.FlingToDismissUtils.getFlin
 import android.content.res.Resources;
 import android.graphics.Path;
 import android.graphics.PointF;
-import android.util.Log;
 import android.view.View;
 import android.view.animation.Interpolator;
 
@@ -40,6 +39,7 @@ import com.android.wm.shell.bubbles.BubblePositioner;
 import com.android.wm.shell.bubbles.BubbleStackView;
 import com.android.wm.shell.shared.animation.Interpolators;
 import com.android.wm.shell.shared.animation.PhysicsAnimator;
+import com.android.wm.shell.shared.bubbles.logging.BubbleLog;
 import com.android.wm.shell.shared.magnetictarget.MagnetizedObject;
 
 import com.google.android.collect.Sets;
@@ -54,8 +54,6 @@ import java.util.Set;
  */
 public class ExpandedAnimationController
         extends PhysicsAnimationLayout.PhysicsAnimationController {
-
-    private static final String TAG = "Bubbles.ExpCtrl";
 
     /**
      * How much to translate the bubbles when they're animating in/out. This value is multiplied by
@@ -196,7 +194,7 @@ public class ExpandedAnimationController
         mAnimatingExpandAsJumpcutSwitching = false;
         if (mAfterExpand != null || mAfterExpandAsJumpcutSwitching != null) {
             // This may result the previous mAfterExpand never being called.
-            Log.w(TAG, "Starting a new expandFromStack before the previous one has finished.");
+            BubbleLog.w("Starting a new expandFromStack before the previous one has finished.");
         }
         executeAfterExpandAsJumpcutSwitchingIfNeeded();
         mAfterExpand = after;
@@ -229,7 +227,7 @@ public class ExpandedAnimationController
         mAnimatingExpandAsJumpcutSwitching = false;
         if (mAfterExpand != null || mAfterExpandAsJumpcutSwitching != null) {
             // This may result the previous mAfterExpand never being called.
-            Log.w(TAG, "Starting collapseBackToStack before the previous expand has finished.");
+            BubbleLog.w("Starting collapseBackToStack before the previous expand has finished.");
         }
         executeAfterExpandAsJumpcutSwitchingIfNeeded();
         mPreparingToCollapse = false;
