@@ -52,6 +52,7 @@ import com.android.internal.protolog.ProtoLog;
 import com.android.internal.util.ToBooleanFunction;
 import com.android.server.wallpaper.WallpaperCropper;
 import com.android.server.wallpaper.WallpaperDefaultDisplayInfo;
+import com.android.window.flags.Flags;
 
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -139,8 +140,7 @@ class WallpaperController {
                 mFindResults.setWallpaperTarget(w);
                 return false;
             }
-        } else if (mService.mFlags.mAodTransition
-                && mDisplayContent.isKeyguardLockedOrAodShowing()) {
+        } else if (Flags.aodTransition() && mDisplayContent.isKeyguardLockedOrAodShowing()) {
             if (mService.mPolicy.isKeyguardHostWindow(w.mAttrs)
                     && w.mTransitionController.isInAodAppearTransition() && w.hasWallpaper()) {
                 if (DEBUG_WALLPAPER) Slog.v(TAG, "Found aod transition wallpaper target: " + w);
@@ -612,7 +612,7 @@ class WallpaperController {
         if (target == null) return null;
         WindowState window = mFindResults.getTopWallpaper(
                 (target.canShowWhenLocked() && mService.isKeyguardLocked())
-                        || (mService.mFlags.mAodTransition && mDisplayContent.isAodShowing()));
+                        || (Flags.aodTransition() && mDisplayContent.isAodShowing()));
         return window == null ? null : window.mToken.asWallpaperToken();
     }
 
@@ -631,7 +631,7 @@ class WallpaperController {
 
         if (mFindResults.wallpaperTarget == null && mFindResults.useTopWallpaperAsTarget) {
             mFindResults.setWallpaperTarget(
-                    mFindResults.getTopWallpaper(mService.mFlags.mAodTransition
+                    mFindResults.getTopWallpaper(Flags.aodTransition()
                             ? mDisplayContent.isKeyguardLockedOrAodShowing()
                             : mDisplayContent.isKeyguardLocked()));
         }
@@ -786,14 +786,14 @@ class WallpaperController {
         final boolean visibleRequested =
                 mWallpaperTarget != null && mWallpaperTarget.isVisibleRequested();
         updateWallpaperTokens(visibleRequested,
-                mService.mFlags.mAodTransition
+                Flags.aodTransition()
                         ? mDisplayContent.isKeyguardLockedOrAodShowing()
                         : mDisplayContent.isKeyguardLocked());
 
         ProtoLog.v(WM_DEBUG_WALLPAPER,
                 "Wallpaper at display %d - visibility: %b, keyguardLocked: %b",
                 mDisplayContent.getDisplayId(), visible,
-                mService.mFlags.mAodTransition
+                Flags.aodTransition()
                         ? mDisplayContent.isKeyguardLockedOrAodShowing()
                         : mDisplayContent.isKeyguardLocked());
 
