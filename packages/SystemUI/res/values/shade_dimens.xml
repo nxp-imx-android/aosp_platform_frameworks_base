@@ -35,4 +35,14 @@
     <dimen name="overlay_qs_layout_brightness_thumb_height">52dp</dimen>
     <dimen name="overlay_qs_layout_brightness_thumb_width">4dp</dimen>
     <dimen name="overlay_qs_layout_brightness_track_height">40dp</dimen>
+    <dimen name="overlay_qs_layout_volume_vertical_padding">4dp</dimen>
+    <dimen name="overlay_qs_layout_volume_thumb_height">
+        @dimen/overlay_qs_layout_brightness_thumb_height
+    </dimen>
+    <dimen name="overlay_qs_layout_volume_thumb_width">
+        @dimen/overlay_qs_layout_brightness_thumb_width
+    </dimen>
+    <dimen name="overlay_qs_layout_volume_track_height">
+        @dimen/overlay_qs_layout_brightness_track_height
+    </dimen>
 </resources>

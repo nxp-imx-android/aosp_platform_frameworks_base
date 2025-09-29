@@ -56,6 +56,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalResources
+import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -107,6 +108,7 @@ import com.android.systemui.statusbar.notification.stack.ui.view.NotificationScr
 import com.android.systemui.statusbar.notification.stack.ui.viewmodel.NotificationsPlaceholderViewModel
 import com.android.systemui.volume.panel.component.volume.slider.ui.viewmodel.AudioStreamSliderViewModel
 import com.android.systemui.volume.panel.component.volume.ui.composable.VolumeSlider
+import com.android.systemui.volume.panel.component.volume.ui.composable.VolumeSliderDimensions
 import dagger.Lazy
 import javax.inject.Inject
 import kotlin.math.roundToInt
@@ -412,6 +414,7 @@ private fun ContentScope.QuickSettingsLayout(
                             sliderColors = PlatformSliderDefaults.defaultPlatformSliderColors(),
                             hapticsViewModelFactory =
                                 volumeSliderViewModel.getSliderHapticsViewModelFactory(),
+                            dimensions = QuickSettingsShade.Dimensions.volumeSliderDimensions,
                         )
                         IconButton(
                             colors =
@@ -477,10 +480,40 @@ object QuickSettingsShade {
     }
 
     object Dimensions {
+        val volumeSliderDimensions: VolumeSliderDimensions
+            @Composable
+            @ReadOnlyComposable
+            get() = VolumeSliderDimensions(
+                volumeThumbHeight,
+                volumeThumbWidth,
+                volumeTrackHeight,
+                volumeVerticalPadding,
+            )
+
         // This is used around the header and toolbar
         val ShortPadding = 8.dp
         val Padding = 16.dp
         val ToolbarHeight = 48.dp
+
+        private val volumeVerticalPadding: Dp
+            @Composable
+            @ReadOnlyComposable
+            get() = dimensionResource(id = R.dimen.overlay_qs_layout_volume_vertical_padding)
+
+        private val volumeThumbHeight: Dp
+            @Composable
+            @ReadOnlyComposable
+            get() = dimensionResource(id = R.dimen.overlay_qs_layout_volume_thumb_height)
+
+        private val volumeThumbWidth: Dp
+            @Composable
+            @ReadOnlyComposable
+            get() = dimensionResource(id = R.dimen.overlay_qs_layout_volume_thumb_width)
+
+        private val volumeTrackHeight: Dp
+            @Composable
+            @ReadOnlyComposable
+            get() = dimensionResource(id = R.dimen.overlay_qs_layout_brightness_track_height)
     }
 
     /**

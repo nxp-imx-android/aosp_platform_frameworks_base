@@ -36,6 +36,7 @@ import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.qs.pipeline.domain.interactor.currentTilesInteractor
 import com.android.systemui.qs.pipeline.shared.TileSpec
+import com.android.systemui.res.R
 import com.android.systemui.shade.ui.composable.WithStatusIconContext
 import com.android.systemui.statusbar.phone.ui.tintedIconManagerFactory
 import com.android.systemui.testKosmos
@@ -82,5 +83,27 @@ class QuickSettingsShadeOverlayTest : SysuiTestCase() {
 
         composeTestRule.onNodeWithTag(resIdToTestTag("qs_tile_icon"), useUnmergedTree = true)
             .assertHeightIsEqualTo(32.dp)
+    }
+
+    @Test
+    fun testVolumeSlider() = kosmos.runTest {
+        overrideResource(R.bool.config_enableDesktopAudioTileDetailsView, true)
+
+        composeTestRule.setContent {
+            PlatformTheme {
+                WithStatusIconContext(kosmos.tintedIconManagerFactory) {
+                    with(quickSettingsShadeOverlay) {
+                        TestContentScope { Content(Modifier) }
+                    }
+                }
+            }
+        }
+
+        composeTestRule.waitForIdle()
+
+        // Verify the slider's height. "Media" is the tag of the volume slider.
+        composeTestRule
+            .onNodeWithTag(resIdToTestTag("Media"))
+            .assertHeightIsEqualTo(52.dp)
     }
 }
