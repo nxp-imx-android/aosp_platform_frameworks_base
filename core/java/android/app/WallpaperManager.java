@@ -1001,6 +1001,17 @@ public class WallpaperManager {
     }
 
     /**
+     * TODO (b/305908217) remove
+     * Temporary method for project b/197814683.
+     * @return true if the lockscreen wallpaper always uses a wallpaperService, not a static image
+     * @hide
+     */
+    @TestApi
+    public boolean isLockscreenLiveWallpaperEnabled() {
+        return true;
+    }
+
+    /**
      * Indicate whether wcg (Wide Color Gamut) should be enabled.
      * <p>
      * Some devices lack of capability of mixed color spaces composition,
