@@ -167,7 +167,12 @@
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"บันทึก"</string>
     <string name="screen_share_toolbar_share_button" msgid="9182050596136815833">"แชร์"</string>
     <string name="screen_share_no_select_app_thumbnail" msgid="1630012401570567430">"เลือกแอปที่จะแชร์"</string>
-    <string name="screen_share_app_audio_sharing" msgid="7201172218924898712">"แชร์เสียงของหน้าต่าง"</string>
+    <!-- no translation found for screen_share_audio_sharing_text (7829391478284315787) -->
+    <skip />
+    <!-- no translation found for screen_share_app_window_sharing_title (2063554880747318383) -->
+    <skip />
+    <!-- no translation found for screen_share_disclaimer (3953761426122528262) -->
+    <skip />
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"ถ่ายภาพหน้าจอของหน้าต่าง"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"บันทึกหน้าต่าง"</string>
     <string name="screen_capture_toolbar_region_button_screenshot_a11y" msgid="2102262602357521192">"ถ่ายภาพหน้าจอของพื้นที่ที่เลือก"</string>
@@ -750,8 +755,11 @@
     <string name="monitoring_description_personal_profile_named_vpn" msgid="5083909710727365452">"แอปส่วนตัวเชื่อมต่ออินเทอร์เน็ตผ่าน<xliff:g id="VPN_APP">%1$s</xliff:g> ผู้ให้บริการ VPN สามารถดูกิจกรรมที่คุณทำในเครือข่ายซึ่งรวมถึงอีเมลและข้อมูลการท่องเว็บได้"</string>
     <string name="monitoring_description_vpn_settings_separator" msgid="8292589617720435430">" "</string>
     <string name="monitoring_description_vpn_settings" msgid="5264167033247632071">"เปิดการตั้งค่า VPN"</string>
-    <string name="monitoring_description_parental_controls" msgid="8184693528917051626">"อุปกรณ์นี้จัดการโดยผู้ปกครอง ผู้ปกครองจะดูและจัดการข้อมูลต่างๆ ได้ เช่น แอปที่คุณใช้ ตำแหน่งของคุณ และเวลาอยู่หน้าจอ"</string>
+    <!-- no translation found for monitoring_description_parental_controls_legacy (3331029441820725897) -->
+    <skip />
     <string name="monitoring_description_pin_protection" msgid="1983580207046670355">"การควบคุมบางอย่างในอุปกรณ์ เช่น การจำกัดการใช้งานต่อวันและช่วงพักการใช้งาน จะเปลี่ยนได้ด้วย PIN เท่านั้น"</string>
+    <!-- no translation found for monitoring_description_parental_controls (4255592993669461543) -->
+    <skip />
     <string name="legacy_vpn_name" msgid="4174223520162559145">"VPN"</string>
     <string name="keyguard_indication_trust_unlocked" msgid="7395154975733744547">"ปลดล็อกไว้โดย TrustAgent"</string>
     <string name="kg_prompt_after_adaptive_auth_lock" msgid="6065186971000690782">"ล็อกหน้าจอแล้ว พยายามตรวจสอบสิทธิ์หลายครั้งเกินไป"</string>
@@ -1089,17 +1097,12 @@
     <string name="right_keycode" msgid="2480715509844798438">"Keycode ทางขวา"</string>
     <string name="left_icon" msgid="5036278531966897006">"ไอคอนทางซ้าย"</string>
     <string name="right_icon" msgid="1103955040645237425">"ไอคอนทางขวา"</string>
-    <string name="drag_to_add_tiles" msgid="8933270127508303672">"กดค้างแล้วลากเพื่อเพิ่มการ์ด"</string>
-    <string name="drag_to_rearrange_tiles" msgid="2143204300089638620">"กดค้างแล้วลากเพื่อจัดเรียงการ์ดใหม่"</string>
     <string name="select_to_rearrange_tiles" msgid="6166153534235179148">"เลือกการ์ดเพื่อจัดเรียงใหม่และปรับขนาด"</string>
     <string name="tap_to_remove_tiles" msgid="76564688376603718">"แตะเพื่อนำการ์ดออก"</string>
     <string name="resize_and_reorder_tiles" msgid="5530933353774871231">"ปรับขนาดและเรียงลำดับเลย์เอาต์ใหม่"</string>
     <string name="qs_edit_edit_tab" msgid="467315123555871860">"แก้ไข"</string>
     <string name="qs_edit_layout_tab" msgid="1935366846617681520">"เลย์เอาต์"</string>
     <string name="tap_to_position_tile" msgid="6282815817773342757">"แตะเพื่อกำหนดตำแหน่งการ์ด"</string>
-    <string name="drag_to_remove_tiles" msgid="4682194717573850385">"ลากมาที่นี่เพื่อนำออก"</string>
-    <string name="drag_to_remove_disabled" msgid="933046987838658850">"คุณต้องมีการ์ดอย่างน้อย <xliff:g id="MIN_NUM_TILES">%1$d</xliff:g> รายการ"</string>
-    <string name="qs_edit" msgid="5583565172803472437">"แก้ไข"</string>
     <string name="qs_edit_tiles" msgid="2105215324060865035">"แก้ไขการ์ด"</string>
     <string name="qs_edit_mode_tooltip" msgid="4164112885539479781">"ปรับขนาดการ์ดการตั้งค่าด่วน"</string>
     <string name="qs_edit_settings" msgid="3243175290660574156">"การตั้งค่า"</string>
@@ -1122,13 +1125,7 @@
     <string name="accessibility_qs_edit_place_tile_action" msgid="7073332873378207231">"วางการ์ด"</string>
     <string name="accessibility_qs_edit_toggle_placement_mode" msgid="3870429389210569610">"สลับโหมดตำแหน่ง"</string>
     <string name="accessibility_qs_edit_toggle_selection" msgid="2201248304072372239">"สลับการเลือก"</string>
-    <string name="accessibility_qs_edit_tile_add_action" msgid="7188303979684400620">"เพิ่มการ์ดไปยังตำแหน่งสุดท้าย"</string>
     <string name="accessibility_qs_edit_named_tile_add_action" msgid="7929752125913967625">"เพิ่ม <xliff:g id="NAME">%1$s</xliff:g> ไปยังตำแหน่งสุดท้าย"</string>
-    <string name="accessibility_qs_edit_tile_start_move" msgid="2009373939914517817">"ย้ายชิ้นส่วน"</string>
-    <string name="accessibility_qs_edit_tile_start_add" msgid="8141710006899065161">"เพิ่มการ์ดไปยังตำแหน่งที่ต้องการ"</string>
-    <string name="accessibility_qs_edit_tile_move_to_position" msgid="5198161544045930556">"ย้ายไปที่ <xliff:g id="POSITION">%1$d</xliff:g>"</string>
-    <string name="accessibility_qs_edit_tile_add_to_position" msgid="9029163095148274690">"เพิ่มไปยังตำแหน่ง <xliff:g id="POSITION">%1$d</xliff:g>"</string>
-    <string name="accessibilit_qs_edit_tile_add_move_invalid_position" msgid="2858467994472624487">"ตำแหน่งไม่ถูกต้อง"</string>
     <string name="accessibility_qs_edit_position" msgid="4509277359815711830">"ตำแหน่ง <xliff:g id="POSITION">%1$d</xliff:g>"</string>
     <string name="accessibility_qs_edit_tile_already_added" msgid="5900071201690226752">"เพิ่มการ์ดแล้ว"</string>
     <string name="accessibility_qs_edit_tile_added" msgid="9067146040380836334">"เพิ่มชิ้นส่วนแล้ว"</string>
@@ -1147,8 +1144,6 @@
     <string name="accessibility_quick_settings_page" msgid="7506322631645550961">"หน้า <xliff:g id="ID_1">%1$d</xliff:g> จาก <xliff:g id="ID_2">%2$d</xliff:g>"</string>
     <string name="accessibility_key_gesture_dialog_title" msgid="7614965716626605518">"ต้องการเปิด <xliff:g id="ID_1">%1$s</xliff:g> ใช่ไหม"</string>
     <string name="accessibility_key_gesture_dialog_content" msgid="4519838108423437794">"ดำเนินการ "<annotation id="action_key_icon">"icon"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> คือแป้นพิมพ์ลัดเพื่อใช้ <xliff:g id="ID_3">^3</xliff:g> <xliff:g id="ID_4">^4</xliff:g>"</string>
-    <string name="accessibility_key_gesture_dialog_talkback_intro" msgid="1617808784388544741">"โดย <xliff:g id="ID_1">%1$s</xliff:g> เป็นโปรแกรมอ่านหน้าจอที่ช่วยให้คุณฟังเสียงอ่านของรายการต่างๆ ได้ ซึ่งจะเป็นประโยชน์สำหรับบุคคลที่ประสบปัญหาในการมองเห็นหน้าจอ"</string>
-    <string name="accessibility_key_gesture_dialog_positive_button_text" msgid="3670746017523589293">"เปิด"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_dialog_title" msgid="5331043821287212071">"เปิดใช้แป้นพิมพ์ลัด <xliff:g id="ID_1">%1$s</xliff:g> ใช่ไหม"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_negative_button_text" msgid="6711239406914231612">"ไม่ต้องเปิด"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_positive_button_text" msgid="7748487028569821131">"เปิดแป้นพิมพ์ลัด"</string>
@@ -1156,6 +1151,8 @@
     <string name="accessibility_key_gesture_magnification_dialog_content" msgid="582920726242272572"><annotation id="action_key_icon">"ไอคอน"</annotation>"การดำเนินการ + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> คือแป้นพิมพ์ลัดเพื่อใช้ <xliff:g id="ID_3">^3</xliff:g> ซึ่งเป็นฟีเจอร์การช่วยเหลือพิเศษ การดำเนินการนี้จะช่วยให้คุณซูมเข้าบนหน้าจอได้อย่างรวดเร็วเพื่อปรับเนื้อหาให้มีขนาดใหญ่ขึ้น เมื่อเปิดการขยายแล้ว ให้กด"<annotation id="action_key_icon">"ไอคอน"</annotation>"การดำเนินการ + <xliff:g id="ID_4">^1</xliff:g> และ \"+\" หรือ \"-\" เพื่อปรับการซูม"</string>
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"ปิดแป้นพิมพ์ลัด"</string>
     <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"เปิดไว้"</string>
+    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_content (389338862762665003) -->
+    <skip />
     <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="7934170819801013870">"การกด"<annotation id="action_key_icon">"ไอคอน"</annotation>"การดำเนินการ + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> จะเปิด <xliff:g id="ID_3">^3</xliff:g> ซึ่งเป็นฟีเจอร์การช่วยเหลือพิเศษ ซึ่งช่วยให้คุณควบคุมอุปกรณ์ได้โดยไม่ต้องสัมผัส"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"หน้าจอล็อก"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"กำลังปิด…"</string>
@@ -1397,7 +1394,6 @@
     <string name="media_output_dialog_button_sharing_audio" msgid="8312910741492835648">"กำลังแชร์เสียง"</string>
     <string name="media_output_dialog_button_share_audio" msgid="827604934548421520">"แชร์เสียง"</string>
     <string name="build_number_clip_data_label" msgid="3623176728412560914">"หมายเลขบิลด์"</string>
-    <string name="build_number_copy_toast" msgid="877720921605503046">"คัดลอกหมายเลขบิลด์ไปยังคลิปบอร์ดแล้ว"</string>
     <string name="copy_to_clipboard_a11y_action" msgid="4312789069718446749">"คัดลอกไปยังคลิปบอร์ด"</string>
     <string name="basic_status" msgid="2315371112182658176">"เปิดการสนทนา"</string>
     <string name="select_conversation_title" msgid="6716364118095089519">"วิดเจ็ตการสนทนา"</string>
@@ -1716,8 +1712,7 @@
     <string name="back_button_on_bouncer" msgid="809134628434396761">"กลับ"</string>
     <string name="pager_dots_previous_content_description" msgid="26963508904918908">"ก่อนหน้า"</string>
     <string name="pager_dots_next_content_description" msgid="613943992626163120">"ถัดไป"</string>
-    <!-- no translation found for accessibility_pager_dots_navigate_to_next_page_action (7662720613169169465) -->
-    <skip />
+    <string name="accessibility_pager_dots_navigate_to_next_page_action" msgid="7662720613169169465">"ไปที่หน้าถัดไป"</string>
     <string name="ambient_cue_autofill_action" msgid="9213025887835308128">"ป้อนข้อความอัตโนมัติ"</string>
     <string name="ambient_cue_expand_action" msgid="6803711089932959312">"ขยาย"</string>
 </resources>

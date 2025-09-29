@@ -167,7 +167,12 @@
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"Regjistro"</string>
     <string name="screen_share_toolbar_share_button" msgid="9182050596136815833">"Ndaj"</string>
     <string name="screen_share_no_select_app_thumbnail" msgid="1630012401570567430">"Zgjidh një aplikacion për ta ndarë"</string>
-    <string name="screen_share_app_audio_sharing" msgid="7201172218924898712">"Ndaj audion e dritares"</string>
+    <!-- no translation found for screen_share_audio_sharing_text (7829391478284315787) -->
+    <skip />
+    <!-- no translation found for screen_share_app_window_sharing_title (2063554880747318383) -->
+    <skip />
+    <!-- no translation found for screen_share_disclaimer (3953761426122528262) -->
+    <skip />
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"Nxirr një pamje ekrani të dritares"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"Regjistro dritaren"</string>
     <string name="screen_capture_toolbar_region_button_screenshot_a11y" msgid="2102262602357521192">"Nxirr një pamje ekrani të zonës së zgjedhur"</string>
@@ -750,8 +755,11 @@
     <string name="monitoring_description_personal_profile_named_vpn" msgid="5083909710727365452">"Aplikacionet e tua personale janë të lidhura me internetin nëpërmjet <xliff:g id="VPN_APP">%1$s</xliff:g>. Aktiviteti yt në rrjet, duke përfshirë email-et e dhe të dhënat e shfletimit, është i dukshëm për ofruesin tënd të VPN-së."</string>
     <string name="monitoring_description_vpn_settings_separator" msgid="8292589617720435430">" "</string>
     <string name="monitoring_description_vpn_settings" msgid="5264167033247632071">"Hap cilësimet e VPN-së"</string>
-    <string name="monitoring_description_parental_controls" msgid="8184693528917051626">"Kjo pajisje menaxhohet nga prindi yt. Prindi yt mund të shikojë dhe menaxhojë informacionet, si p.sh. aplikacionet që përdor, vendndodhjen tënde dhe kohën para ekranit."</string>
+    <!-- no translation found for monitoring_description_parental_controls_legacy (3331029441820725897) -->
+    <skip />
     <string name="monitoring_description_pin_protection" msgid="1983580207046670355">"Disa kontrolle në pajisjen tënde, si p.sh. kufijtë ditorë dhe periudha joaktive, mund të ndryshohen me një kod PIN."</string>
+    <!-- no translation found for monitoring_description_parental_controls (4255592993669461543) -->
+    <skip />
     <string name="legacy_vpn_name" msgid="4174223520162559145">"VPN"</string>
     <string name="keyguard_indication_trust_unlocked" msgid="7395154975733744547">"Mbajtur shkyçur nga TrustAgent"</string>
     <string name="kg_prompt_after_adaptive_auth_lock" msgid="6065186971000690782">"Ekrani është kyçur. Shumë përpjekje vërtetimi."</string>
@@ -1089,17 +1097,12 @@
     <string name="right_keycode" msgid="2480715509844798438">"Kodi i tasteve djathtas"</string>
     <string name="left_icon" msgid="5036278531966897006">"Ikona majtas"</string>
     <string name="right_icon" msgid="1103955040645237425">"Ikona djathtas"</string>
-    <string name="drag_to_add_tiles" msgid="8933270127508303672">"Mbaje të shtypur dhe zvarrit për të shtuar pllakëza"</string>
-    <string name="drag_to_rearrange_tiles" msgid="2143204300089638620">"Mbaje të shtypur dhe zvarrit për të risistemuar pllakëzat"</string>
     <string name="select_to_rearrange_tiles" msgid="6166153534235179148">"Zgjidh pllakëzat për t\'i riorganizuar dhe ndryshuar përmasat"</string>
     <string name="tap_to_remove_tiles" msgid="76564688376603718">"Trokit për të hequr pllakëzat"</string>
     <string name="resize_and_reorder_tiles" msgid="5530933353774871231">"Ndrysho madhësinë dhe rirendit strukturën"</string>
     <string name="qs_edit_edit_tab" msgid="467315123555871860">"Modifiko"</string>
     <string name="qs_edit_layout_tab" msgid="1935366846617681520">"Struktura"</string>
     <string name="tap_to_position_tile" msgid="6282815817773342757">"Trokit për të pozicionuar pllakëzën"</string>
-    <string name="drag_to_remove_tiles" msgid="4682194717573850385">"Zvarrit këtu për ta hequr"</string>
-    <string name="drag_to_remove_disabled" msgid="933046987838658850">"Të duhen të paktën <xliff:g id="MIN_NUM_TILES">%1$d</xliff:g> pllakëza"</string>
-    <string name="qs_edit" msgid="5583565172803472437">"Redakto"</string>
     <string name="qs_edit_tiles" msgid="2105215324060865035">"Modifiko pllakëzat"</string>
     <string name="qs_edit_mode_tooltip" msgid="4164112885539479781">"Ndrysho përmasat e pllakëzave \"Cilësimet e shpejta\""</string>
     <string name="qs_edit_settings" msgid="3243175290660574156">"Cilësimet"</string>
@@ -1122,13 +1125,7 @@
     <string name="accessibility_qs_edit_place_tile_action" msgid="7073332873378207231">"Vendos pllakëzën"</string>
     <string name="accessibility_qs_edit_toggle_placement_mode" msgid="3870429389210569610">"aktivizuar/çaktivizuar modalitetin e vendosjes"</string>
     <string name="accessibility_qs_edit_toggle_selection" msgid="2201248304072372239">"aktivizuar/çaktivizuar përzgjedhjen"</string>
-    <string name="accessibility_qs_edit_tile_add_action" msgid="7188303979684400620">"Shto pllakëzën në pozicionin e fundit"</string>
     <string name="accessibility_qs_edit_named_tile_add_action" msgid="7929752125913967625">"Shto <xliff:g id="NAME">%1$s</xliff:g> te pozicioni i fundit"</string>
-    <string name="accessibility_qs_edit_tile_start_move" msgid="2009373939914517817">"Zhvendos pllakëzën"</string>
-    <string name="accessibility_qs_edit_tile_start_add" msgid="8141710006899065161">"Shto pllakëzën në pozicionin e dëshiruar"</string>
-    <string name="accessibility_qs_edit_tile_move_to_position" msgid="5198161544045930556">"Zhvendos te <xliff:g id="POSITION">%1$d</xliff:g>"</string>
-    <string name="accessibility_qs_edit_tile_add_to_position" msgid="9029163095148274690">"Shto te pozicioni <xliff:g id="POSITION">%1$d</xliff:g>"</string>
-    <string name="accessibilit_qs_edit_tile_add_move_invalid_position" msgid="2858467994472624487">"Pozicion i pavlefshëm."</string>
     <string name="accessibility_qs_edit_position" msgid="4509277359815711830">"Pozicioni <xliff:g id="POSITION">%1$d</xliff:g>"</string>
     <string name="accessibility_qs_edit_tile_already_added" msgid="5900071201690226752">"Pllakëza është shtuar tashmë"</string>
     <string name="accessibility_qs_edit_tile_added" msgid="9067146040380836334">"Pllakëza u shtua"</string>
@@ -1147,8 +1144,6 @@
     <string name="accessibility_quick_settings_page" msgid="7506322631645550961">"Faqja <xliff:g id="ID_1">%1$d</xliff:g> nga <xliff:g id="ID_2">%2$d</xliff:g>"</string>
     <string name="accessibility_key_gesture_dialog_title" msgid="7614965716626605518">"Të aktivizohet \"<xliff:g id="ID_1">%1$s</xliff:g>\"?"</string>
     <string name="accessibility_key_gesture_dialog_content" msgid="4519838108423437794">"Veprimi "<annotation id="action_key_icon">"ikona"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> është shkurtorja e tastierës për të përdorur \"<xliff:g id="ID_3">^3</xliff:g>\". <xliff:g id="ID_4">^4</xliff:g>"</string>
-    <string name="accessibility_key_gesture_dialog_talkback_intro" msgid="1617808784388544741">"<xliff:g id="ID_1">%1$s</xliff:g> është një lexues ekrani që të lejon t\'i dëgjosh artikujt të lexuar me zë. Kjo mund të jetë e dobishme për njerëzit që kanë vështirësi në shikimin e ekranit."</string>
-    <string name="accessibility_key_gesture_dialog_positive_button_text" msgid="3670746017523589293">"Aktivizo"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_dialog_title" msgid="5331043821287212071">"Të aktivizohet shkurtorja e tastierës për \"<xliff:g id="ID_1">%1$s</xliff:g>\"?"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_negative_button_text" msgid="6711239406914231612">"Mos e aktivizo"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_positive_button_text" msgid="7748487028569821131">"Aktivizo shkurtoren"</string>
@@ -1156,6 +1151,8 @@
     <string name="accessibility_key_gesture_magnification_dialog_content" msgid="582920726242272572">"Veprimi "<annotation id="action_key_icon">"ikona"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> është shkurtorja e tastierës për të përdorur <xliff:g id="ID_3">^3</xliff:g>, një veçori qasshmërie. Kjo të lejon që të zmadhosh me shpejtësi në ekran për ta bërë përmbajtjen më të madhe. Pasi të aktivizohet zmadhimi, shtyp veprimin "<annotation id="action_key_icon">"ikona"</annotation>" + <xliff:g id="ID_4">^1</xliff:g> dhe \"+\" ose \"-\" për të rregulluar zmadhimin."</string>
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"Çaktivizo shkurtoren"</string>
     <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"Mbaje të aktivizuar"</string>
+    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_content (389338862762665003) -->
+    <skip />
     <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="7934170819801013870">"Shtypja e "<annotation id="action_key_icon">"ikonës"</annotation>" së veprimit + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> aktivizon <xliff:g id="ID_3">^3</xliff:g>, një veçori të qasshmërisë. Kjo të lejon ta kontrollosh pajisjen tënde pa përdorur duart."</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"Ekrani i kyçjes"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"Po fiket…"</string>
@@ -1397,7 +1394,6 @@
     <string name="media_output_dialog_button_sharing_audio" msgid="8312910741492835648">"Audioja po ndahet"</string>
     <string name="media_output_dialog_button_share_audio" msgid="827604934548421520">"Ndaj audion"</string>
     <string name="build_number_clip_data_label" msgid="3623176728412560914">"Numri i ndërtimit"</string>
-    <string name="build_number_copy_toast" msgid="877720921605503046">"Numri i ndërtimit u kopjua te kujtesa e fragmenteve"</string>
     <string name="copy_to_clipboard_a11y_action" msgid="4312789069718446749">"kopjo në kujtesën e fragmenteve."</string>
     <string name="basic_status" msgid="2315371112182658176">"Hap bisedën"</string>
     <string name="select_conversation_title" msgid="6716364118095089519">"Miniaplikacionet e bisedave"</string>
@@ -1716,8 +1712,7 @@
     <string name="back_button_on_bouncer" msgid="809134628434396761">"Prapa"</string>
     <string name="pager_dots_previous_content_description" msgid="26963508904918908">"Prapa"</string>
     <string name="pager_dots_next_content_description" msgid="613943992626163120">"Para"</string>
-    <!-- no translation found for accessibility_pager_dots_navigate_to_next_page_action (7662720613169169465) -->
-    <skip />
+    <string name="accessibility_pager_dots_navigate_to_next_page_action" msgid="7662720613169169465">"navigo në faqen tjetër"</string>
     <string name="ambient_cue_autofill_action" msgid="9213025887835308128">"plotëso automatikisht"</string>
     <string name="ambient_cue_expand_action" msgid="6803711089932959312">"zgjero"</string>
 </resources>

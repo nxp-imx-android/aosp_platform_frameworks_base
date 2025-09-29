@@ -167,7 +167,12 @@
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"Enregistrer"</string>
     <string name="screen_share_toolbar_share_button" msgid="9182050596136815833">"Partager"</string>
     <string name="screen_share_no_select_app_thumbnail" msgid="1630012401570567430">"Sélectionner une appli à partager"</string>
-    <string name="screen_share_app_audio_sharing" msgid="7201172218924898712">"Partager le son de la fenêtre"</string>
+    <!-- no translation found for screen_share_audio_sharing_text (7829391478284315787) -->
+    <skip />
+    <!-- no translation found for screen_share_app_window_sharing_title (2063554880747318383) -->
+    <skip />
+    <!-- no translation found for screen_share_disclaimer (3953761426122528262) -->
+    <skip />
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"Prendre une capture d\'écran de la fenêtre"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"Enregistrer la fenêtre"</string>
     <string name="screen_capture_toolbar_region_button_screenshot_a11y" msgid="2102262602357521192">"Prendre une capture d\'écran de la zone sélectionnée"</string>
@@ -750,8 +755,11 @@
     <string name="monitoring_description_personal_profile_named_vpn" msgid="5083909710727365452">"Vos applis personnelles sont connectées à Internet par l\'intermédiaire de <xliff:g id="VPN_APP">%1$s</xliff:g>. Votre activité réseau, y compris les courriels et les données de navigation, est visible par votre fournisseur de RPV."</string>
     <string name="monitoring_description_vpn_settings_separator" msgid="8292589617720435430">" "</string>
     <string name="monitoring_description_vpn_settings" msgid="5264167033247632071">"Ouvrir les paramètres RPV"</string>
-    <string name="monitoring_description_parental_controls" msgid="8184693528917051626">"Cet appareil est géré par ton parent. Ton parent peut voir et gérer de l\'information, comme les applis que tu utilises, ta position et ton temps d\'utilisation des écrans."</string>
+    <!-- no translation found for monitoring_description_parental_controls_legacy (3331029441820725897) -->
+    <skip />
     <string name="monitoring_description_pin_protection" msgid="1983580207046670355">"Certaines commandes de votre appareil, comme les limites quotidiennes et le temps d\'arrêt, ne peuvent être modifiées qu\'à l\'aide d\'un NIP."</string>
+    <!-- no translation found for monitoring_description_parental_controls (4255592993669461543) -->
+    <skip />
     <string name="legacy_vpn_name" msgid="4174223520162559145">"RPV"</string>
     <string name="keyguard_indication_trust_unlocked" msgid="7395154975733744547">"Maintenu déverrouillé par TrustAgent"</string>
     <string name="kg_prompt_after_adaptive_auth_lock" msgid="6065186971000690782">"Écran verrouillé. Trop de tentatives d\'authentification."</string>
@@ -788,7 +796,7 @@
     <string name="screen_pinning_negative" msgid="6882816864569211666">"Non, merci"</string>
     <string name="screen_pinning_start" msgid="7483998671383371313">"Appli épinglée"</string>
     <string name="screen_pinning_exit" msgid="4553787518387346893">"L\'épinglage de l\'appli a été annulé"</string>
-    <string name="stream_voice_call" msgid="7468348170702375660">"Appeler"</string>
+    <string name="stream_voice_call" msgid="7468348170702375660">"Appel"</string>
     <string name="stream_system" msgid="7663148785370565134">"Système"</string>
     <string name="stream_ring" msgid="7550670036738697526">"Sonnerie"</string>
     <string name="stream_music" msgid="2188224742361847580">"Multimédia"</string>
@@ -1089,17 +1097,12 @@
     <string name="right_keycode" msgid="2480715509844798438">"Code de touche droit"</string>
     <string name="left_icon" msgid="5036278531966897006">"Icône à gauche"</string>
     <string name="right_icon" msgid="1103955040645237425">"Icône droite"</string>
-    <string name="drag_to_add_tiles" msgid="8933270127508303672">"Sélectionnez et faites glisser les tuiles pour les ajouter"</string>
-    <string name="drag_to_rearrange_tiles" msgid="2143204300089638620">"Faites glisser les tuiles pour les réorganiser"</string>
     <string name="select_to_rearrange_tiles" msgid="6166153534235179148">"Sélectionnez les tuiles à réorganiser et à redimensionner"</string>
     <string name="tap_to_remove_tiles" msgid="76564688376603718">"Toucher pour retirer les tuiles"</string>
     <string name="resize_and_reorder_tiles" msgid="5530933353774871231">"Redimensionner et réorganiser la mise en page"</string>
     <string name="qs_edit_edit_tab" msgid="467315123555871860">"Modifier"</string>
     <string name="qs_edit_layout_tab" msgid="1935366846617681520">"Mise en page"</string>
     <string name="tap_to_position_tile" msgid="6282815817773342757">"Toucher pour positionner la tuile"</string>
-    <string name="drag_to_remove_tiles" msgid="4682194717573850385">"Faites glisser les tuiles ici pour les retirer"</string>
-    <string name="drag_to_remove_disabled" msgid="933046987838658850">"Vous avez besoin d\'au moins <xliff:g id="MIN_NUM_TILES">%1$d</xliff:g> tuiles"</string>
-    <string name="qs_edit" msgid="5583565172803472437">"Modifier"</string>
     <string name="qs_edit_tiles" msgid="2105215324060865035">"Modifier les tuiles"</string>
     <string name="qs_edit_mode_tooltip" msgid="4164112885539479781">"Redimensionner les tuiles des paramètres rapides"</string>
     <string name="qs_edit_settings" msgid="3243175290660574156">"Paramètres"</string>
@@ -1122,13 +1125,7 @@
     <string name="accessibility_qs_edit_place_tile_action" msgid="7073332873378207231">"Placer la tuile"</string>
     <string name="accessibility_qs_edit_toggle_placement_mode" msgid="3870429389210569610">"Activer/Désactiver le mode de placement"</string>
     <string name="accessibility_qs_edit_toggle_selection" msgid="2201248304072372239">"Activer/Désactiver la sélection"</string>
-    <string name="accessibility_qs_edit_tile_add_action" msgid="7188303979684400620">"Ajouter une tuile à la dernière position"</string>
     <string name="accessibility_qs_edit_named_tile_add_action" msgid="7929752125913967625">"Ajouter <xliff:g id="NAME">%1$s</xliff:g> à la dernière position"</string>
-    <string name="accessibility_qs_edit_tile_start_move" msgid="2009373939914517817">"Déplacer la tuile"</string>
-    <string name="accessibility_qs_edit_tile_start_add" msgid="8141710006899065161">"Ajouter une tuile à la position désirée"</string>
-    <string name="accessibility_qs_edit_tile_move_to_position" msgid="5198161544045930556">"Déplacer vers <xliff:g id="POSITION">%1$d</xliff:g>"</string>
-    <string name="accessibility_qs_edit_tile_add_to_position" msgid="9029163095148274690">"Ajouter à la position <xliff:g id="POSITION">%1$d</xliff:g>"</string>
-    <string name="accessibilit_qs_edit_tile_add_move_invalid_position" msgid="2858467994472624487">"Position incorrecte."</string>
     <string name="accessibility_qs_edit_position" msgid="4509277359815711830">"Position <xliff:g id="POSITION">%1$d</xliff:g>"</string>
     <string name="accessibility_qs_edit_tile_already_added" msgid="5900071201690226752">"Tuile déjà ajoutée"</string>
     <string name="accessibility_qs_edit_tile_added" msgid="9067146040380836334">"Tuile ajoutée"</string>
@@ -1147,8 +1144,6 @@
     <string name="accessibility_quick_settings_page" msgid="7506322631645550961">"Page <xliff:g id="ID_1">%1$d</xliff:g> sur <xliff:g id="ID_2">%2$d</xliff:g>"</string>
     <string name="accessibility_key_gesture_dialog_title" msgid="7614965716626605518">"Activer <xliff:g id="ID_1">%1$s</xliff:g>?"</string>
     <string name="accessibility_key_gesture_dialog_content" msgid="4519838108423437794">"L\'icône d\'action "<annotation id="action_key_icon"></annotation>"+<xliff:g id="ID_1">^1</xliff:g>+<xliff:g id="ID_2">^2</xliff:g> est le raccourci-clavier à utiliser pour <xliff:g id="ID_3">^3</xliff:g>. <xliff:g id="ID_4">^4</xliff:g>"</string>
-    <string name="accessibility_key_gesture_dialog_talkback_intro" msgid="1617808784388544741">"<xliff:g id="ID_1">%1$s</xliff:g> est un lecteur d\'écran qui vous permet d\'entendre les éléments lus à voix haute. Cela peut être utile aux personnes qui ont du mal à voir l\'écran."</string>
-    <string name="accessibility_key_gesture_dialog_positive_button_text" msgid="3670746017523589293">"Activer"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_dialog_title" msgid="5331043821287212071">"Activer le raccourci-clavier <xliff:g id="ID_1">%1$s</xliff:g>?"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_negative_button_text" msgid="6711239406914231612">"Ne pas activer"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_positive_button_text" msgid="7748487028569821131">"Activer le raccourci"</string>
@@ -1156,6 +1151,8 @@
     <string name="accessibility_key_gesture_magnification_dialog_content" msgid="582920726242272572">"L’"<annotation id="action_key_icon">"icône"</annotation>" d\'action + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> est le raccourci-clavier à utiliser pour <xliff:g id="ID_3">^3</xliff:g>, une fonctionnalité d\'accessibilité. Cette action vous permet de zoomer rapidement sur l\'écran pour agrandir le contenu. Une fois l\'agrandissement activé, appuyez sur l’"<annotation id="action_key_icon">"icône"</annotation>" d\'action + <xliff:g id="ID_4">^1</xliff:g> et « + » ou « - » pour ajuster le zoom."</string>
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"Désactiver le raccourci"</string>
     <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"Ne pas désactiver"</string>
+    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_content (389338862762665003) -->
+    <skip />
     <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="7934170819801013870">"En appuyant sur "<annotation id="action_key_icon">"l\'icône"</annotation>" Action+<xliff:g id="ID_1">^1</xliff:g>+<xliff:g id="ID_2">^2</xliff:g>, vous activez <xliff:g id="ID_3">^3</xliff:g>, une fonctionnalité d\'accessibilité. Cela vous permet de contrôler votre appareil en mode Mains libres."</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"Écran de verrouillage"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"Arrêt en cours…"</string>
@@ -1397,7 +1394,6 @@
     <string name="media_output_dialog_button_sharing_audio" msgid="8312910741492835648">"Partage de l\'audio en cours…"</string>
     <string name="media_output_dialog_button_share_audio" msgid="827604934548421520">"Partager l\'audio"</string>
     <string name="build_number_clip_data_label" msgid="3623176728412560914">"Numéro de version"</string>
-    <string name="build_number_copy_toast" msgid="877720921605503046">"Le numéro de version a été copié dans le presse-papiers."</string>
     <string name="copy_to_clipboard_a11y_action" msgid="4312789069718446749">"Copier le contenu dans le presse-papiers"</string>
     <string name="basic_status" msgid="2315371112182658176">"Ouvrir la conversation"</string>
     <string name="select_conversation_title" msgid="6716364118095089519">"Widgets de conversation"</string>
@@ -1716,8 +1712,7 @@
     <string name="back_button_on_bouncer" msgid="809134628434396761">"Retour"</string>
     <string name="pager_dots_previous_content_description" msgid="26963508904918908">"Précédent"</string>
     <string name="pager_dots_next_content_description" msgid="613943992626163120">"Suivant"</string>
-    <!-- no translation found for accessibility_pager_dots_navigate_to_next_page_action (7662720613169169465) -->
-    <skip />
+    <string name="accessibility_pager_dots_navigate_to_next_page_action" msgid="7662720613169169465">"accéder à la page suivante"</string>
     <string name="ambient_cue_autofill_action" msgid="9213025887835308128">"Remplir automatiquement"</string>
     <string name="ambient_cue_expand_action" msgid="6803711089932959312">"Développer"</string>
 </resources>

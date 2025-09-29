@@ -167,7 +167,12 @@
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"Grava"</string>
     <string name="screen_share_toolbar_share_button" msgid="9182050596136815833">"Comparteix"</string>
     <string name="screen_share_no_select_app_thumbnail" msgid="1630012401570567430">"Selecciona una aplicació per compartir"</string>
-    <string name="screen_share_app_audio_sharing" msgid="7201172218924898712">"Comparteix l\'àudio de la finestra"</string>
+    <!-- no translation found for screen_share_audio_sharing_text (7829391478284315787) -->
+    <skip />
+    <!-- no translation found for screen_share_app_window_sharing_title (2063554880747318383) -->
+    <skip />
+    <!-- no translation found for screen_share_disclaimer (3953761426122528262) -->
+    <skip />
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"Fes una captura de pantalla de la finestra"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"Grava la finestra"</string>
     <string name="screen_capture_toolbar_region_button_screenshot_a11y" msgid="2102262602357521192">"Fes una captura de pantalla de l\'àrea seleccionada"</string>
@@ -750,8 +755,11 @@
     <string name="monitoring_description_personal_profile_named_vpn" msgid="5083909710727365452">"Les aplicacions personals es connecten a Internet a través de <xliff:g id="VPN_APP">%1$s</xliff:g>. El teu proveïdor de VPN pot veure l\'activitat de la teva xarxa, inclosos els correus electrònics i les dades de navegació."</string>
     <string name="monitoring_description_vpn_settings_separator" msgid="8292589617720435430">" "</string>
     <string name="monitoring_description_vpn_settings" msgid="5264167033247632071">"Obre la configuració de la VPN"</string>
-    <string name="monitoring_description_parental_controls" msgid="8184693528917051626">"El teu pare o mare gestionen aquest dispositiu, i poden veure i gestionar informació com ara les aplicacions que utilitzes, la teva ubicació i el teu temps de connexió."</string>
+    <!-- no translation found for monitoring_description_parental_controls_legacy (3331029441820725897) -->
+    <skip />
     <string name="monitoring_description_pin_protection" msgid="1983580207046670355">"Alguns controls del dispositiu, com ara els límits diaris i el temps d\'inactivitat, només es poden canviar amb un PIN."</string>
+    <!-- no translation found for monitoring_description_parental_controls (4255592993669461543) -->
+    <skip />
     <string name="legacy_vpn_name" msgid="4174223520162559145">"VPN"</string>
     <string name="keyguard_indication_trust_unlocked" msgid="7395154975733744547">"Desbloquejat per TrustAgent"</string>
     <string name="kg_prompt_after_adaptive_auth_lock" msgid="6065186971000690782">"Pantalla bloquejada. S\'han fet massa intents d\'autenticació."</string>
@@ -1089,17 +1097,12 @@
     <string name="right_keycode" msgid="2480715509844798438">"Codi de tecla de la dreta"</string>
     <string name="left_icon" msgid="5036278531966897006">"Icona de l\'esquerra"</string>
     <string name="right_icon" msgid="1103955040645237425">"Icona de la dreta"</string>
-    <string name="drag_to_add_tiles" msgid="8933270127508303672">"Mantén premudes les icones i arrossega-les per afegir-les"</string>
-    <string name="drag_to_rearrange_tiles" msgid="2143204300089638620">"Mantén premudes les icones i arrossega-les per reordenar-les"</string>
     <string name="select_to_rearrange_tiles" msgid="6166153534235179148">"Selecciona les icones per canviar-les d\'ordre i de mida"</string>
     <string name="tap_to_remove_tiles" msgid="76564688376603718">"Toca per suprimir les icones"</string>
     <string name="resize_and_reorder_tiles" msgid="5530933353774871231">"Canvia la mida i reordena el disseny"</string>
     <string name="qs_edit_edit_tab" msgid="467315123555871860">"Edita"</string>
     <string name="qs_edit_layout_tab" msgid="1935366846617681520">"Disseny"</string>
     <string name="tap_to_position_tile" msgid="6282815817773342757">"Toca per col·locar la icona"</string>
-    <string name="drag_to_remove_tiles" msgid="4682194717573850385">"Arrossega aquí per suprimir"</string>
-    <string name="drag_to_remove_disabled" msgid="933046987838658850">"Necessites com a mínim <xliff:g id="MIN_NUM_TILES">%1$d</xliff:g> mosaics"</string>
-    <string name="qs_edit" msgid="5583565172803472437">"Edita"</string>
     <string name="qs_edit_tiles" msgid="2105215324060865035">"Edita les icones"</string>
     <string name="qs_edit_mode_tooltip" msgid="4164112885539479781">"Canvia la mida de les icones de configuració ràpida"</string>
     <string name="qs_edit_settings" msgid="3243175290660574156">"Configuració"</string>
@@ -1122,13 +1125,7 @@
     <string name="accessibility_qs_edit_place_tile_action" msgid="7073332873378207231">"Col·loca la icona"</string>
     <string name="accessibility_qs_edit_toggle_placement_mode" msgid="3870429389210569610">"commuta el mode d\'emplaçament"</string>
     <string name="accessibility_qs_edit_toggle_selection" msgid="2201248304072372239">"commuta la selecció"</string>
-    <string name="accessibility_qs_edit_tile_add_action" msgid="7188303979684400620">"Afegir la icona a la darrera posició"</string>
     <string name="accessibility_qs_edit_named_tile_add_action" msgid="7929752125913967625">"Afegeix <xliff:g id="NAME">%1$s</xliff:g> a la darrera posició"</string>
-    <string name="accessibility_qs_edit_tile_start_move" msgid="2009373939914517817">"Mou el mosaic"</string>
-    <string name="accessibility_qs_edit_tile_start_add" msgid="8141710006899065161">"Afegeix una icona a la posició que vulguis"</string>
-    <string name="accessibility_qs_edit_tile_move_to_position" msgid="5198161544045930556">"Mou a la posició <xliff:g id="POSITION">%1$d</xliff:g>"</string>
-    <string name="accessibility_qs_edit_tile_add_to_position" msgid="9029163095148274690">"Afegeix a la posició <xliff:g id="POSITION">%1$d</xliff:g>"</string>
-    <string name="accessibilit_qs_edit_tile_add_move_invalid_position" msgid="2858467994472624487">"La posició no és vàlida."</string>
     <string name="accessibility_qs_edit_position" msgid="4509277359815711830">"Posició <xliff:g id="POSITION">%1$d</xliff:g>"</string>
     <string name="accessibility_qs_edit_tile_already_added" msgid="5900071201690226752">"La targeta ja s\'ha afegit"</string>
     <string name="accessibility_qs_edit_tile_added" msgid="9067146040380836334">"El mosaic s\'ha afegit"</string>
@@ -1147,8 +1144,6 @@
     <string name="accessibility_quick_settings_page" msgid="7506322631645550961">"Pàgina <xliff:g id="ID_1">%1$d</xliff:g> (<xliff:g id="ID_2">%2$d</xliff:g> en total)"</string>
     <string name="accessibility_key_gesture_dialog_title" msgid="7614965716626605518">"Vols activar <xliff:g id="ID_1">%1$s</xliff:g>?"</string>
     <string name="accessibility_key_gesture_dialog_content" msgid="4519838108423437794">"La tecla de drecera "<annotation id="action_key_icon">"icona"</annotation>" d\'acció+<xliff:g id="ID_1">^1</xliff:g>+<xliff:g id="ID_2">^2</xliff:g> serveix per utilitzar <xliff:g id="ID_3">^3</xliff:g>. <xliff:g id="ID_4">^4</xliff:g>"</string>
-    <string name="accessibility_key_gesture_dialog_talkback_intro" msgid="1617808784388544741">"<xliff:g id="ID_1">%1$s</xliff:g> és un lector de pantalla que et permet escoltar els elements en veu alta. Pot ser útil per a persones amb dificultats per veure la pantalla."</string>
-    <string name="accessibility_key_gesture_dialog_positive_button_text" msgid="3670746017523589293">"Activa"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_dialog_title" msgid="5331043821287212071">"Vols activar les tecles de drecera de <xliff:g id="ID_1">%1$s</xliff:g>?"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_negative_button_text" msgid="6711239406914231612">"No activis"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_positive_button_text" msgid="7748487028569821131">"Activa la drecera"</string>
@@ -1156,6 +1151,8 @@
     <string name="accessibility_key_gesture_magnification_dialog_content" msgid="582920726242272572">"Les tecles de drecera "<annotation id="action_key_icon">"icona"</annotation>" d\'acció+<xliff:g id="ID_1">^1</xliff:g>+<xliff:g id="ID_2">^2</xliff:g> serveixen per utilitzar <xliff:g id="ID_3">^3</xliff:g>, una funció d\'accessibilitat. Això et permet ampliar ràpidament la pantalla per fer el contingut més gran. Un cop activada l\'ampliació, prem la "<annotation id="action_key_icon">"icona"</annotation>" d\'acció+<xliff:g id="ID_4">^1</xliff:g> i \"+\" o \"-\" per ajustar el zoom."</string>
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"Desactiva la drecera"</string>
     <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"Mantén activada"</string>
+    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_content (389338862762665003) -->
+    <skip />
     <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="7934170819801013870">"Si prems la "<annotation id="action_key_icon">"icona"</annotation>" d\'acció+<xliff:g id="ID_1">^1</xliff:g>+<xliff:g id="ID_2">^2</xliff:g>, s\'activarà <xliff:g id="ID_3">^3</xliff:g>, una funció d\'accessibilitat. Et permet controlar el dispositiu amb mans lliures."</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"Pantalla de bloqueig"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"S\'està apagant…"</string>
@@ -1397,7 +1394,6 @@
     <string name="media_output_dialog_button_sharing_audio" msgid="8312910741492835648">"S\'està compartint l\'àudio"</string>
     <string name="media_output_dialog_button_share_audio" msgid="827604934548421520">"Comparteix l\'àudio"</string>
     <string name="build_number_clip_data_label" msgid="3623176728412560914">"Número de compilació"</string>
-    <string name="build_number_copy_toast" msgid="877720921605503046">"El número de compilació s\'ha copiat al porta-retalls."</string>
     <string name="copy_to_clipboard_a11y_action" msgid="4312789069718446749">"copiar al porta-retalls."</string>
     <string name="basic_status" msgid="2315371112182658176">"Conversa oberta"</string>
     <string name="select_conversation_title" msgid="6716364118095089519">"Widgets de conversa"</string>
@@ -1716,8 +1712,7 @@
     <string name="back_button_on_bouncer" msgid="809134628434396761">"Enrere"</string>
     <string name="pager_dots_previous_content_description" msgid="26963508904918908">"Anterior"</string>
     <string name="pager_dots_next_content_description" msgid="613943992626163120">"Següent"</string>
-    <!-- no translation found for accessibility_pager_dots_navigate_to_next_page_action (7662720613169169465) -->
-    <skip />
+    <string name="accessibility_pager_dots_navigate_to_next_page_action" msgid="7662720613169169465">"navega fins a la pàgina següent"</string>
     <string name="ambient_cue_autofill_action" msgid="9213025887835308128">"emplenament automàtic"</string>
     <string name="ambient_cue_expand_action" msgid="6803711089932959312">"desplegar"</string>
 </resources>

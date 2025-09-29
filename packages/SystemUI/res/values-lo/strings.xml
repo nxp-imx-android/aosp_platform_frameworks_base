@@ -167,7 +167,12 @@
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"ບັນທຶກ"</string>
     <string name="screen_share_toolbar_share_button" msgid="9182050596136815833">"ແບ່ງປັນ"</string>
     <string name="screen_share_no_select_app_thumbnail" msgid="1630012401570567430">"ເລືອກແອັບທີ່ຈະແບ່ງປັນ"</string>
-    <string name="screen_share_app_audio_sharing" msgid="7201172218924898712">"ແບ່ງປັນສຽງຂອງໜ້າຈໍ"</string>
+    <!-- no translation found for screen_share_audio_sharing_text (7829391478284315787) -->
+    <skip />
+    <!-- no translation found for screen_share_app_window_sharing_title (2063554880747318383) -->
+    <skip />
+    <!-- no translation found for screen_share_disclaimer (3953761426122528262) -->
+    <skip />
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"ຖ່າຍຮູບໜ້າຈໍ"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"ບັນທຶກໜ້າຈໍ"</string>
     <string name="screen_capture_toolbar_region_button_screenshot_a11y" msgid="2102262602357521192">"ຖ່າຍຮູບໜ້າຈໍຂອງພື້ນທີ່ທີ່ເລືອກ"</string>
@@ -750,8 +755,11 @@
     <string name="monitoring_description_personal_profile_named_vpn" msgid="5083909710727365452">"ແອັບສ່ວນຕົວຂອງທ່ານເຊື່ອມຕໍ່ອິນເຕີເນັດຜ່ານ <xliff:g id="VPN_APP">%1$s</xliff:g>. ການເຄື່ອນໄຫວເຄືອຂ່າຍຂອງທ່ານ, ຮວມທັງອີເມວ ແລະ ຂໍ້ມູນການນຳໃຊ້, ແມ່ນສະແດງໃຫ້ຜູ້ໃຫ້ບໍລິການ VPN ຂອງທ່ານເຫັນໄດ້."</string>
     <string name="monitoring_description_vpn_settings_separator" msgid="8292589617720435430">" "</string>
     <string name="monitoring_description_vpn_settings" msgid="5264167033247632071">"ເປີດການຕັ້ງຄ່າ VPN"</string>
-    <string name="monitoring_description_parental_controls" msgid="8184693528917051626">"ອຸປະກອນນີ້ແມ່ນຈັດການໂດຍພໍ່ແມ່ຂອງທ່ານ. ພໍ່ແມ່ຂອງທ່ານສາມາດເບິ່ງ ແລະ ຈັດການຂໍ້ມູນໄດ້ ເຊັ່ນ: ແອັບທີ່ທ່ານໃຊ້, ສະຖານທີ່ ແລະ ເວລາໜ້າຈໍຂອງທ່ານ."</string>
+    <!-- no translation found for monitoring_description_parental_controls_legacy (3331029441820725897) -->
+    <skip />
     <string name="monitoring_description_pin_protection" msgid="1983580207046670355">"ການຄວບຄຸມບາງຢ່າງໃນອຸປະກອນຂອງທ່ານ ເຊັ່ນ: ຂີດຈຳກັດປະຈຳວັນ ແລະ ເວລາປິດເຮັດວຽກ, ຈະສາມາດປ່ຽນໄດ້ດ້ວຍ PIN ເທົ່ານັ້ນ."</string>
+    <!-- no translation found for monitoring_description_parental_controls (4255592993669461543) -->
+    <skip />
     <string name="legacy_vpn_name" msgid="4174223520162559145">"VPN"</string>
     <string name="keyguard_indication_trust_unlocked" msgid="7395154975733744547">"ປັອດລັອກປະໄວ້ໂດຍ TrustAgent"</string>
     <string name="kg_prompt_after_adaptive_auth_lock" msgid="6065186971000690782">"ລັອກໜ້າຈໍແລ້ວ. ພະຍາຍາມພິສູດຢືນຢັນຫຼາຍເທື່ອເກີນໄປ."</string>
@@ -1089,17 +1097,12 @@
     <string name="right_keycode" msgid="2480715509844798438">"ລະຫັດປຸ່ມຂວາ"</string>
     <string name="left_icon" msgid="5036278531966897006">"ໄອຄອນຊ້າຍ"</string>
     <string name="right_icon" msgid="1103955040645237425">"ໄອຄອນຂວາ"</string>
-    <string name="drag_to_add_tiles" msgid="8933270127508303672">"ກົດຄ້າງໄວ້ແລ້ວລາກເພື່ອເພີ່ມຊ່ອງ"</string>
-    <string name="drag_to_rearrange_tiles" msgid="2143204300089638620">"ກົດຄ້າງໄວ້ແລ້ວລາກເພື່ອຈັດຮຽງໃໝ່"</string>
     <string name="select_to_rearrange_tiles" msgid="6166153534235179148">"ເລືອກແຜ່ນເພື່ອຈັດຮຽງໃໝ່ ແລະ ປັບຂະໜາດ"</string>
     <string name="tap_to_remove_tiles" msgid="76564688376603718">"ແຕະເພື່ອລຶບແຜ່ນອອກ"</string>
     <string name="resize_and_reorder_tiles" msgid="5530933353774871231">"ປັບຂະໜາດ ແລະ ຈັດຮຽງໂຄງຮ່າງຄືນໃໝ່"</string>
     <string name="qs_edit_edit_tab" msgid="467315123555871860">"ແກ້ໄຂ"</string>
     <string name="qs_edit_layout_tab" msgid="1935366846617681520">"ໂຄງຮ່າງ"</string>
     <string name="tap_to_position_tile" msgid="6282815817773342757">"ແຕະເພື່ອວາງຕຳແໜ່ງແຜ່ນ"</string>
-    <string name="drag_to_remove_tiles" msgid="4682194717573850385">"ລາກມາບ່ອນນີ້ເພື່ອລຶບອອກ"</string>
-    <string name="drag_to_remove_disabled" msgid="933046987838658850">"ທ່ານຍຕ້ອງໃຊ້ຢ່າງໜ້ອຍ <xliff:g id="MIN_NUM_TILES">%1$d</xliff:g> ຊ່ອງ"</string>
-    <string name="qs_edit" msgid="5583565172803472437">"ແກ້ໄຂ"</string>
     <string name="qs_edit_tiles" msgid="2105215324060865035">"ແກ້ໄຂແຜ່ນ"</string>
     <string name="qs_edit_mode_tooltip" msgid="4164112885539479781">"ປັບຂະໜາດແຜ່ນການຕັ້ງຄ່າດ່ວນ"</string>
     <string name="qs_edit_settings" msgid="3243175290660574156">"ການຕັ້ງຄ່າ"</string>
@@ -1122,13 +1125,7 @@
     <string name="accessibility_qs_edit_place_tile_action" msgid="7073332873378207231">"ວາງແຜ່ນ"</string>
     <string name="accessibility_qs_edit_toggle_placement_mode" msgid="3870429389210569610">"ສະ​ຫຼັບໂໝດການຈັດວາງ"</string>
     <string name="accessibility_qs_edit_toggle_selection" msgid="2201248304072372239">"ສະຫຼັບການເລືອກ"</string>
-    <string name="accessibility_qs_edit_tile_add_action" msgid="7188303979684400620">"ເພີ່ມແຜ່ນໃສ່ໃນຕຳແໜ່ງສຸດທ້າຍ"</string>
     <string name="accessibility_qs_edit_named_tile_add_action" msgid="7929752125913967625">"ເພີ່ມ <xliff:g id="NAME">%1$s</xliff:g> ໃສ່ຕຳແໜ່ງສຸດທ້າຍ"</string>
-    <string name="accessibility_qs_edit_tile_start_move" msgid="2009373939914517817">"ຍ້າຍແຜ່ນ"</string>
-    <string name="accessibility_qs_edit_tile_start_add" msgid="8141710006899065161">"ເພີ່ມແຜ່ນໃສ່ຕຳແໜ່ງທີ່ຕ້ອງການ"</string>
-    <string name="accessibility_qs_edit_tile_move_to_position" msgid="5198161544045930556">"ຍ້າຍໄປ <xliff:g id="POSITION">%1$d</xliff:g>"</string>
-    <string name="accessibility_qs_edit_tile_add_to_position" msgid="9029163095148274690">"ເພີ່ມໃສ່ຕຳແໜ່ງ <xliff:g id="POSITION">%1$d</xliff:g>"</string>
-    <string name="accessibilit_qs_edit_tile_add_move_invalid_position" msgid="2858467994472624487">"ຕຳແໜ່ງບໍ່ຖືກຕ້ອງ."</string>
     <string name="accessibility_qs_edit_position" msgid="4509277359815711830">"ຕຳແໜ່ງ <xliff:g id="POSITION">%1$d</xliff:g>"</string>
     <string name="accessibility_qs_edit_tile_already_added" msgid="5900071201690226752">"ເພີ່ມແຜ່ນແລ້ວ"</string>
     <string name="accessibility_qs_edit_tile_added" msgid="9067146040380836334">"ເພີ່ມແຜ່ນແລ້ວ"</string>
@@ -1147,8 +1144,6 @@
     <string name="accessibility_quick_settings_page" msgid="7506322631645550961">"<xliff:g id="ID_1">%1$d</xliff:g> ຈາກທັງໝົດ <xliff:g id="ID_2">%2$d</xliff:g>"</string>
     <string name="accessibility_key_gesture_dialog_title" msgid="7614965716626605518">"ເປີດໃຊ້ <xliff:g id="ID_1">%1$s</xliff:g> ບໍ?"</string>
     <string name="accessibility_key_gesture_dialog_content" msgid="4519838108423437794">"ຄຳສັ່ງ "<annotation id="action_key_icon">"ໄອຄອນ"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> ແມ່ນຄີລັດເພື່ອໃຊ້ <xliff:g id="ID_3">^3</xliff:g>. <xliff:g id="ID_4">^4</xliff:g>"</string>
-    <string name="accessibility_key_gesture_dialog_talkback_intro" msgid="1617808784388544741">"<xliff:g id="ID_1">%1$s</xliff:g> ແມ່ນໂປຣແກຣມອ່ານໜ້າຈໍທີ່ອະນຸຍາດໃຫ້ທ່ານໄດ້ຍິນລາຍການເວົ້າດັງໆ. ມັນສາມາດເປັນປະໂຫຍດສຳລັບບຸກຄົນທີ່ປະສົບບັນຫາໃນການເບິ່ງເຫັນໜ້າຈໍ."</string>
-    <string name="accessibility_key_gesture_dialog_positive_button_text" msgid="3670746017523589293">"ເປີດ"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_dialog_title" msgid="5331043821287212071">"ເປີດໃຊ້ຄີລັດ <xliff:g id="ID_1">%1$s</xliff:g> ບໍ?"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_negative_button_text" msgid="6711239406914231612">"ບໍ່ຕ້ອງເປີດ"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_positive_button_text" msgid="7748487028569821131">"ເປີດໃຊ້ທາງລັດ"</string>
@@ -1156,6 +1151,8 @@
     <string name="accessibility_key_gesture_magnification_dialog_content" msgid="582920726242272572"><annotation id="action_key_icon">"ໄອຄອນ"</annotation>" ຄຳສັ່ງ + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> ແມ່ນຄີລັດເພື່ອໃຊ້ <xliff:g id="ID_3">^3</xliff:g>, ເຊິ່ງເປັນຄຸນສົມບັດການຊ່ວຍເຂົ້າເຖິງ. ເຊິ່ງຈະຊ່ວຍໃຫ້ທ່ານຊູມເຂົ້າຢູ່ໜ້າຈໍໄດ້ຢ່າງວ່ອງໄວເພື່ອປັບເນື້ອຫາໃຫ້ມີຂະໜາດໃຫຍ່ຂຶ້ນ. ເມື່ອເປີດການຂະຫຍາຍແລ້ວ, ໃຫ້ກົດ "<annotation id="action_key_icon">"ໄອຄອນ"</annotation>" ຄຳສັ່ງ + <xliff:g id="ID_4">^1</xliff:g> ແລະ \"+\" ຫຼື \"-\" ເພື່ອປັບການຊູມ."</string>
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"ປິດທາງລັດ"</string>
     <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"ເປີດໄວ້"</string>
+    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_content (389338862762665003) -->
+    <skip />
     <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="7934170819801013870">"ກດ "<annotation id="action_key_icon">"ໄອຄອນ"</annotation>" ຄຳສັ່ງ + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> ເປີດໃຊ້ <xliff:g id="ID_3">^3</xliff:g>, ເຊິ່ງເປັນຄຸນສົມບັດການຊ່ວຍເຂົ້າເຖິງ. ນີ້ຈະຊ່ວຍໃຫ້ທ່ານຄວບຄຸມອຸປະກອນໄດ້ແບບແຮນຟຣີ."</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"ໜ້າຈໍລັອກ"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"ກຳລັງປິດເຄື່ອງ…"</string>
@@ -1397,7 +1394,6 @@
     <string name="media_output_dialog_button_sharing_audio" msgid="8312910741492835648">"ກຳລັງແບ່ງປັນສຽງ"</string>
     <string name="media_output_dialog_button_share_audio" msgid="827604934548421520">"ແບ່ງປັນສຽງ"</string>
     <string name="build_number_clip_data_label" msgid="3623176728412560914">"ໝາຍເລກສ້າງ"</string>
-    <string name="build_number_copy_toast" msgid="877720921605503046">"ສຳເນົາໝາຍເລກສ້າງໄປໃສ່ຄລິບບອດແລ້ວ."</string>
     <string name="copy_to_clipboard_a11y_action" msgid="4312789069718446749">"ສຳເນົາໄປໃສ່ຄລິບບອດ."</string>
     <string name="basic_status" msgid="2315371112182658176">"ເປີດການສົນທະນາ"</string>
     <string name="select_conversation_title" msgid="6716364118095089519">"ວິດເຈັດການສົນທະນາ"</string>

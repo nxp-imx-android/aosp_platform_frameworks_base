@@ -167,7 +167,12 @@
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"Снимање екрана"</string>
     <string name="screen_share_toolbar_share_button" msgid="9182050596136815833">"Дели"</string>
     <string name="screen_share_no_select_app_thumbnail" msgid="1630012401570567430">"Изаберите апликацију за дељење"</string>
-    <string name="screen_share_app_audio_sharing" msgid="7201172218924898712">"Дели звук прозора"</string>
+    <!-- no translation found for screen_share_audio_sharing_text (7829391478284315787) -->
+    <skip />
+    <!-- no translation found for screen_share_app_window_sharing_title (2063554880747318383) -->
+    <skip />
+    <!-- no translation found for screen_share_disclaimer (3953761426122528262) -->
+    <skip />
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"Направи снимак екрана прозора апликације"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"Сними прозор апликације"</string>
     <string name="screen_capture_toolbar_region_button_screenshot_a11y" msgid="2102262602357521192">"Направи снимак екрана изабране области"</string>
@@ -750,8 +755,11 @@
     <string name="monitoring_description_personal_profile_named_vpn" msgid="5083909710727365452">"Ваше личне апликације су повезане на интернет преко: <xliff:g id="VPN_APP">%1$s</xliff:g>. Ваша активност на мрежи, укључујући имејлове и податке прегледања, видљива је добављачу VPN-а."</string>
     <string name="monitoring_description_vpn_settings_separator" msgid="8292589617720435430">" "</string>
     <string name="monitoring_description_vpn_settings" msgid="5264167033247632071">"Отвори подешавања VPN-а"</string>
-    <string name="monitoring_description_parental_controls" msgid="8184693528917051626">"Овим уређајем управља родитељ. Родитељ може да види информације, као што су апликације које користиш, твоју локацију и време испред екрана, и да управља њима."</string>
+    <!-- no translation found for monitoring_description_parental_controls_legacy (3331029441820725897) -->
+    <skip />
     <string name="monitoring_description_pin_protection" msgid="1983580207046670355">"Неке контроле на уређају, попут дневних ограничења и периода за одмор, могу да се промене само помоћу PIN-а."</string>
+    <!-- no translation found for monitoring_description_parental_controls (4255592993669461543) -->
+    <skip />
     <string name="legacy_vpn_name" msgid="4174223520162559145">"VPN"</string>
     <string name="keyguard_indication_trust_unlocked" msgid="7395154975733744547">"Поуздани агент спречава закључавање"</string>
     <string name="kg_prompt_after_adaptive_auth_lock" msgid="6065186971000690782">"Екран је закључан. Превише покушаја потврде идентитета."</string>
@@ -1089,17 +1097,12 @@
     <string name="right_keycode" msgid="2480715509844798438">"Десно дугме за кôд тастера"</string>
     <string name="left_icon" msgid="5036278531966897006">"Лева икона"</string>
     <string name="right_icon" msgid="1103955040645237425">"Десна икона"</string>
-    <string name="drag_to_add_tiles" msgid="8933270127508303672">"Задржите и превуците да бисте додали плочице"</string>
-    <string name="drag_to_rearrange_tiles" msgid="2143204300089638620">"Задржите и превуците да бисте променили распоред плочица"</string>
     <string name="select_to_rearrange_tiles" msgid="6166153534235179148">"Изаберите плочице да бисте им променили распоред и величину"</string>
     <string name="tap_to_remove_tiles" msgid="76564688376603718">"Додирните да бисте уклонили плочице"</string>
     <string name="resize_and_reorder_tiles" msgid="5530933353774871231">"Промените величину и редослед распореда"</string>
     <string name="qs_edit_edit_tab" msgid="467315123555871860">"Измени"</string>
     <string name="qs_edit_layout_tab" msgid="1935366846617681520">"Распоред"</string>
     <string name="tap_to_position_tile" msgid="6282815817773342757">"Додирните да бисте поставили плочицу"</string>
-    <string name="drag_to_remove_tiles" msgid="4682194717573850385">"Превуците овде да бисте уклонили"</string>
-    <string name="drag_to_remove_disabled" msgid="933046987838658850">"Минималан број плочица је <xliff:g id="MIN_NUM_TILES">%1$d</xliff:g>"</string>
-    <string name="qs_edit" msgid="5583565172803472437">"Измени"</string>
     <string name="qs_edit_tiles" msgid="2105215324060865035">"Измените плочице"</string>
     <string name="qs_edit_mode_tooltip" msgid="4164112885539479781">"Промени величину плочица Брзих подешавања"</string>
     <string name="qs_edit_settings" msgid="3243175290660574156">"Подешавања"</string>
@@ -1122,13 +1125,7 @@
     <string name="accessibility_qs_edit_place_tile_action" msgid="7073332873378207231">"Поставите плочицу"</string>
     <string name="accessibility_qs_edit_toggle_placement_mode" msgid="3870429389210569610">"укључивање или искључивање режима постављања"</string>
     <string name="accessibility_qs_edit_toggle_selection" msgid="2201248304072372239">"потврдили или опозвали избор"</string>
-    <string name="accessibility_qs_edit_tile_add_action" msgid="7188303979684400620">"Додајте плочицу на последњу позицију"</string>
     <string name="accessibility_qs_edit_named_tile_add_action" msgid="7929752125913967625">"Додајте <xliff:g id="NAME">%1$s</xliff:g> на последњу позицију"</string>
-    <string name="accessibility_qs_edit_tile_start_move" msgid="2009373939914517817">"Преместите плочицу"</string>
-    <string name="accessibility_qs_edit_tile_start_add" msgid="8141710006899065161">"Додајте плочицу на жељену позицију"</string>
-    <string name="accessibility_qs_edit_tile_move_to_position" msgid="5198161544045930556">"Преместите на <xliff:g id="POSITION">%1$d</xliff:g>. позицију"</string>
-    <string name="accessibility_qs_edit_tile_add_to_position" msgid="9029163095148274690">"Додајте на <xliff:g id="POSITION">%1$d</xliff:g>. позицију"</string>
-    <string name="accessibilit_qs_edit_tile_add_move_invalid_position" msgid="2858467994472624487">"Позиција је неважећа."</string>
     <string name="accessibility_qs_edit_position" msgid="4509277359815711830">"<xliff:g id="POSITION">%1$d</xliff:g>. позиција"</string>
     <string name="accessibility_qs_edit_tile_already_added" msgid="5900071201690226752">"Плочица је већ додата"</string>
     <string name="accessibility_qs_edit_tile_added" msgid="9067146040380836334">"Плочица је додата"</string>
@@ -1147,8 +1144,6 @@
     <string name="accessibility_quick_settings_page" msgid="7506322631645550961">"<xliff:g id="ID_1">%1$d</xliff:g>. страна од <xliff:g id="ID_2">%2$d</xliff:g>"</string>
     <string name="accessibility_key_gesture_dialog_title" msgid="7614965716626605518">"Желите да укључите функцију <xliff:g id="ID_1">%1$s</xliff:g>?"</string>
     <string name="accessibility_key_gesture_dialog_content" msgid="4519838108423437794">"Радња "<annotation id="action_key_icon">"icon"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> је тастерска пречица за коришћење функције <xliff:g id="ID_3">^3</xliff:g>. <xliff:g id="ID_4">^4</xliff:g>"</string>
-    <string name="accessibility_key_gesture_dialog_talkback_intro" msgid="1617808784388544741">"<xliff:g id="ID_1">%1$s</xliff:g> је читач екрана који вам омогућава да чујете наглас изговорене називе ставки. Може да буде користан људима који имају потешкоћа са видом."</string>
-    <string name="accessibility_key_gesture_dialog_positive_button_text" msgid="3670746017523589293">"Укључи"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_dialog_title" msgid="5331043821287212071">"Желите да укључите тастерску пречицу за <xliff:g id="ID_1">%1$s</xliff:g>?"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_negative_button_text" msgid="6711239406914231612">"Не укључуј"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_positive_button_text" msgid="7748487028569821131">"Укључи пречицу"</string>
@@ -1156,6 +1151,8 @@
     <string name="accessibility_key_gesture_magnification_dialog_content" msgid="582920726242272572"><annotation id="action_key_icon">"Икона"</annotation>" Радња + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> је тастерска пречица за коришћење функције приступачности за <xliff:g id="ID_3">^3</xliff:g>. То вам омогућава да брзо зумирате екран да би садржај био већи. Када је увећање укључено, притисните "<annotation id="action_key_icon">"икону"</annotation>" Радња + <xliff:g id="ID_4">^1</xliff:g> и „+“ или „–“ да бисте прилагодили зумирање."</string>
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"Искључи пречицу"</string>
     <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"Не искључуј"</string>
+    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_content (389338862762665003) -->
+    <skip />
     <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="7934170819801013870">"Када притиснете "<annotation id="action_key_icon">"икону"</annotation>" Радња + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g>, укључује се функцијa приступачности за <xliff:g id="ID_3">^3</xliff:g>. Ово вам омогућава да контролишете уређај хендсфри."</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"Закључан екран"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"Искључује се…"</string>
@@ -1397,7 +1394,6 @@
     <string name="media_output_dialog_button_sharing_audio" msgid="8312910741492835648">"Дели се звук"</string>
     <string name="media_output_dialog_button_share_audio" msgid="827604934548421520">"Дели звук"</string>
     <string name="build_number_clip_data_label" msgid="3623176728412560914">"Број верзије"</string>
-    <string name="build_number_copy_toast" msgid="877720921605503046">"Број верзије је копиран у привремену меморију."</string>
     <string name="copy_to_clipboard_a11y_action" msgid="4312789069718446749">"копирајте у привремену меморију."</string>
     <string name="basic_status" msgid="2315371112182658176">"Отворите конверзацију"</string>
     <string name="select_conversation_title" msgid="6716364118095089519">"Виџети за конверзацију"</string>
@@ -1716,8 +1712,7 @@
     <string name="back_button_on_bouncer" msgid="809134628434396761">"Назад"</string>
     <string name="pager_dots_previous_content_description" msgid="26963508904918908">"Претходно"</string>
     <string name="pager_dots_next_content_description" msgid="613943992626163120">"Следеће"</string>
-    <!-- no translation found for accessibility_pager_dots_navigate_to_next_page_action (7662720613169169465) -->
-    <skip />
+    <string name="accessibility_pager_dots_navigate_to_next_page_action" msgid="7662720613169169465">"идите на следећу страницу"</string>
     <string name="ambient_cue_autofill_action" msgid="9213025887835308128">"аутоматско попуњавање"</string>
     <string name="ambient_cue_expand_action" msgid="6803711089932959312">"прошири"</string>
 </resources>

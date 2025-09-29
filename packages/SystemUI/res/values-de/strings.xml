@@ -167,7 +167,12 @@
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"Bildschirmaufzeichnung"</string>
     <string name="screen_share_toolbar_share_button" msgid="9182050596136815833">"Teilen"</string>
     <string name="screen_share_no_select_app_thumbnail" msgid="1630012401570567430">"App zum Teilen auswählen"</string>
-    <string name="screen_share_app_audio_sharing" msgid="7201172218924898712">"Audio des Fensters teilen"</string>
+    <!-- no translation found for screen_share_audio_sharing_text (7829391478284315787) -->
+    <skip />
+    <!-- no translation found for screen_share_app_window_sharing_title (2063554880747318383) -->
+    <skip />
+    <!-- no translation found for screen_share_disclaimer (3953761426122528262) -->
+    <skip />
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"Screenshot des Fensters erstellen"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"Fenster aufnehmen"</string>
     <string name="screen_capture_toolbar_region_button_screenshot_a11y" msgid="2102262602357521192">"Screenshot des ausgewählten Bereichs erstellen"</string>
@@ -750,8 +755,11 @@
     <string name="monitoring_description_personal_profile_named_vpn" msgid="5083909710727365452">"Deine privaten Apps sind über <xliff:g id="VPN_APP">%1$s</xliff:g> mit dem Internet verbunden. Deine Netzwerkaktivitäten, einschließlich E-Mails und Browserdaten, sind für deinen VPN-Anbieter sichtbar."</string>
     <string name="monitoring_description_vpn_settings_separator" msgid="8292589617720435430">" "</string>
     <string name="monitoring_description_vpn_settings" msgid="5264167033247632071">"VPN-Einstellungen öffnen"</string>
-    <string name="monitoring_description_parental_controls" msgid="8184693528917051626">"Dieses Gerät wird von deinen Eltern verwaltet. Sie können unter anderem Informationen über deine genutzten Apps, deinen Standort und deine Bildschirmzeit einsehen und verwalten."</string>
+    <!-- no translation found for monitoring_description_parental_controls_legacy (3331029441820725897) -->
+    <skip />
     <string name="monitoring_description_pin_protection" msgid="1983580207046670355">"Einige Einstellungen auf deinem Gerät, z. B. Tageslimits und Ruhezeit, können nur mit einer PIN geändert werden."</string>
+    <!-- no translation found for monitoring_description_parental_controls (4255592993669461543) -->
+    <skip />
     <string name="legacy_vpn_name" msgid="4174223520162559145">"VPN"</string>
     <string name="keyguard_indication_trust_unlocked" msgid="7395154975733744547">"Durch TrustAgent entsperrt"</string>
     <string name="kg_prompt_after_adaptive_auth_lock" msgid="6065186971000690782">"Display gesperrt. Zu viele Authentifizierungsversuche."</string>
@@ -1089,17 +1097,12 @@
     <string name="right_keycode" msgid="2480715509844798438">"Rechter Keycode"</string>
     <string name="left_icon" msgid="5036278531966897006">"Linkes Symbol"</string>
     <string name="right_icon" msgid="1103955040645237425">"Rechtes Symbol"</string>
-    <string name="drag_to_add_tiles" msgid="8933270127508303672">"Zum Hinzufügen Kachel halten und ziehen"</string>
-    <string name="drag_to_rearrange_tiles" msgid="2143204300089638620">"Zum Verschieben Kachel halten und ziehen"</string>
     <string name="select_to_rearrange_tiles" msgid="6166153534235179148">"Kacheln zum Neuanordnen und Anpassen der Größe auswählen"</string>
     <string name="tap_to_remove_tiles" msgid="76564688376603718">"Zum Entfernen von Kacheln tippen"</string>
     <string name="resize_and_reorder_tiles" msgid="5530933353774871231">"Layout ändern und neu anordnen"</string>
     <string name="qs_edit_edit_tab" msgid="467315123555871860">"Bearbeiten"</string>
     <string name="qs_edit_layout_tab" msgid="1935366846617681520">"Layout"</string>
     <string name="tap_to_position_tile" msgid="6282815817773342757">"Zum Positionieren der Kachel tippen"</string>
-    <string name="drag_to_remove_tiles" msgid="4682194717573850385">"Zum Entfernen hierher ziehen"</string>
-    <string name="drag_to_remove_disabled" msgid="933046987838658850">"Du brauchst mindestens <xliff:g id="MIN_NUM_TILES">%1$d</xliff:g> Kacheln"</string>
-    <string name="qs_edit" msgid="5583565172803472437">"Bearbeiten"</string>
     <string name="qs_edit_tiles" msgid="2105215324060865035">"Kacheln bearbeiten"</string>
     <string name="qs_edit_mode_tooltip" msgid="4164112885539479781">"Größe der Schnelleinstellungen-Kacheln anpassen"</string>
     <string name="qs_edit_settings" msgid="3243175290660574156">"Einstellungen"</string>
@@ -1122,13 +1125,7 @@
     <string name="accessibility_qs_edit_place_tile_action" msgid="7073332873378207231">"Kachel platzieren"</string>
     <string name="accessibility_qs_edit_toggle_placement_mode" msgid="3870429389210569610">"Platzierungsmodus ein-/ausschalten"</string>
     <string name="accessibility_qs_edit_toggle_selection" msgid="2201248304072372239">"Auswahl wechseln"</string>
-    <string name="accessibility_qs_edit_tile_add_action" msgid="7188303979684400620">"Kachel an letzter Position hinzufügen"</string>
     <string name="accessibility_qs_edit_named_tile_add_action" msgid="7929752125913967625">"„<xliff:g id="NAME">%1$s</xliff:g>“ an letzter Position hinzufügen"</string>
-    <string name="accessibility_qs_edit_tile_start_move" msgid="2009373939914517817">"Kachel verschieben"</string>
-    <string name="accessibility_qs_edit_tile_start_add" msgid="8141710006899065161">"Kachel an gewünschter Position hinzufügen"</string>
-    <string name="accessibility_qs_edit_tile_move_to_position" msgid="5198161544045930556">"Auf Position <xliff:g id="POSITION">%1$d</xliff:g> verschieben"</string>
-    <string name="accessibility_qs_edit_tile_add_to_position" msgid="9029163095148274690">"Zur Position <xliff:g id="POSITION">%1$d</xliff:g> hinzufügen"</string>
-    <string name="accessibilit_qs_edit_tile_add_move_invalid_position" msgid="2858467994472624487">"Position ist ungültig."</string>
     <string name="accessibility_qs_edit_position" msgid="4509277359815711830">"Position <xliff:g id="POSITION">%1$d</xliff:g>"</string>
     <string name="accessibility_qs_edit_tile_already_added" msgid="5900071201690226752">"Kachel bereits hinzugefügt"</string>
     <string name="accessibility_qs_edit_tile_added" msgid="9067146040380836334">"Ansicht hinzugefügt"</string>
@@ -1147,8 +1144,6 @@
     <string name="accessibility_quick_settings_page" msgid="7506322631645550961">"Seite <xliff:g id="ID_1">%1$d</xliff:g> von <xliff:g id="ID_2">%2$d</xliff:g>"</string>
     <string name="accessibility_key_gesture_dialog_title" msgid="7614965716626605518">"<xliff:g id="ID_1">%1$s</xliff:g> aktivieren?"</string>
     <string name="accessibility_key_gesture_dialog_content" msgid="4519838108423437794">"Die Aktion "<annotation id="action_key_icon">"Symbol"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> ist die Tastenkombination zum Verwenden von <xliff:g id="ID_3">^3</xliff:g>. <xliff:g id="ID_4">^4</xliff:g>"</string>
-    <string name="accessibility_key_gesture_dialog_talkback_intro" msgid="1617808784388544741">"<xliff:g id="ID_1">%1$s</xliff:g> ist ein Screenreader, mit dem du dir Text vorlesen lassen kannst. Das kann Nutzern helfen, die den Bildschirm nur schlecht oder gar nicht sehen können."</string>
-    <string name="accessibility_key_gesture_dialog_positive_button_text" msgid="3670746017523589293">"Aktivieren"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_dialog_title" msgid="5331043821287212071">"Tastenkombination für „<xliff:g id="ID_1">%1$s</xliff:g>“ aktivieren?"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_negative_button_text" msgid="6711239406914231612">"Nicht aktivieren"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_positive_button_text" msgid="7748487028569821131">"Tastenkombination aktivieren"</string>
@@ -1156,6 +1151,8 @@
     <string name="accessibility_key_gesture_magnification_dialog_content" msgid="582920726242272572">"Aktionstaste "<annotation id="action_key_icon">"Symbol"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> ist die Tastenkombination zum Verwenden von „<xliff:g id="ID_3">^3</xliff:g>“, einer Bedienungshilfe. Dadurch kannst du schnell auf dem Display heranzoomen, um Inhalte zu vergrößern. Wenn die Vergrößerung aktiviert ist, drücke die Aktionstaste "<annotation id="action_key_icon">"Symbol"</annotation>" + <xliff:g id="ID_4">^1</xliff:g> und „+“ oder „-“, um den Zoom anzupassen."</string>
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"Verknüpfung deaktivieren"</string>
     <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"Aktiviert lassen"</string>
+    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_content (389338862762665003) -->
+    <skip />
     <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="7934170819801013870">"Wenn du die Aktionstaste "<annotation id="action_key_icon">"Symbol"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> drückst, wird die Bedienungshilfe <xliff:g id="ID_3">^3</xliff:g> aktiviert. Damit kannst du dein Gerät per Sprachbefehl steuern."</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"Sperrbildschirm"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"Wird heruntergefahren…"</string>
@@ -1397,7 +1394,6 @@
     <string name="media_output_dialog_button_sharing_audio" msgid="8312910741492835648">"Audio wird freigegeben"</string>
     <string name="media_output_dialog_button_share_audio" msgid="827604934548421520">"Audio freigeben"</string>
     <string name="build_number_clip_data_label" msgid="3623176728412560914">"Build-Nummer"</string>
-    <string name="build_number_copy_toast" msgid="877720921605503046">"Build-Nummer in Zwischenablage kopiert."</string>
     <string name="copy_to_clipboard_a11y_action" msgid="4312789069718446749">"In die Zwischenablage kopieren."</string>
     <string name="basic_status" msgid="2315371112182658176">"Offene Unterhaltung"</string>
     <string name="select_conversation_title" msgid="6716364118095089519">"Unterhaltungs-Widgets"</string>
@@ -1716,8 +1712,7 @@
     <string name="back_button_on_bouncer" msgid="809134628434396761">"Zurück"</string>
     <string name="pager_dots_previous_content_description" msgid="26963508904918908">"Zurück"</string>
     <string name="pager_dots_next_content_description" msgid="613943992626163120">"Weiter"</string>
-    <!-- no translation found for accessibility_pager_dots_navigate_to_next_page_action (7662720613169169465) -->
-    <skip />
+    <string name="accessibility_pager_dots_navigate_to_next_page_action" msgid="7662720613169169465">"zur nächsten Seite zu gehen"</string>
     <string name="ambient_cue_autofill_action" msgid="9213025887835308128">"automatisch ausfüllen"</string>
     <string name="ambient_cue_expand_action" msgid="6803711089932959312">"maximieren"</string>
 </resources>

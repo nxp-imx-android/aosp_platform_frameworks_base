@@ -167,7 +167,12 @@
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"রেকর্ড করুন"</string>
     <string name="screen_share_toolbar_share_button" msgid="9182050596136815833">"শেয়ার করুন"</string>
     <string name="screen_share_no_select_app_thumbnail" msgid="1630012401570567430">"শেয়ার করার জন্য একটি অ্যাপ বেছে নিন"</string>
-    <string name="screen_share_app_audio_sharing" msgid="7201172218924898712">"উইন্ডো অডিও শেয়ার করুন"</string>
+    <!-- no translation found for screen_share_audio_sharing_text (7829391478284315787) -->
+    <skip />
+    <!-- no translation found for screen_share_app_window_sharing_title (2063554880747318383) -->
+    <skip />
+    <!-- no translation found for screen_share_disclaimer (3953761426122528262) -->
+    <skip />
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"উইন্ডোর স্ক্রিনশট নিন"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"উইন্ডো রেকর্ড করুন"</string>
     <string name="screen_capture_toolbar_region_button_screenshot_a11y" msgid="2102262602357521192">"বেছে নেওয়া অংশের স্ক্রিনশট নিন"</string>
@@ -750,8 +755,11 @@
     <string name="monitoring_description_personal_profile_named_vpn" msgid="5083909710727365452">"<xliff:g id="VPN_APP">%1$s</xliff:g>-এর মাধ্যমে আপনার ব্যক্তিগত অ্যাপ ইন্টারনেটের সাথে কানেক্ট করা আছে। ইমেল ও ব্রাউজ করা ডেটা সহ নেটওয়ার্ক অ্যাক্টিভিটি আপনার ভিপিএন প্রদানকারী দেখতে পারবেন।"</string>
     <string name="monitoring_description_vpn_settings_separator" msgid="8292589617720435430">" "</string>
     <string name="monitoring_description_vpn_settings" msgid="5264167033247632071">"VPN সেটিংস খুলুন"</string>
-    <string name="monitoring_description_parental_controls" msgid="8184693528917051626">"আপনার অভিভাবক এই ডিভাইস ম্যানেজ করেন। আপনার অভিভাবক আপনার ব্যবহার করা অ্যাপ, লোকেশন ও স্ক্রিন টাইমের মতো তথ্যগুলি দেখতে এবং ম্যানেজ করতে পারেন।"</string>
+    <!-- no translation found for monitoring_description_parental_controls_legacy (3331029441820725897) -->
+    <skip />
     <string name="monitoring_description_pin_protection" msgid="1983580207046670355">"আপনার ডিভাইসের কিছু কন্ট্রোল, যেমন দৈনিক সীমা এবং ডাউনটাইম, একটি পিন দিয়ে শুধুমাত্র পরিবর্তন করা যেতে পারে।"</string>
+    <!-- no translation found for monitoring_description_parental_controls (4255592993669461543) -->
+    <skip />
     <string name="legacy_vpn_name" msgid="4174223520162559145">"VPN"</string>
     <string name="keyguard_indication_trust_unlocked" msgid="7395154975733744547">"TrustAgent দিয়ে আনলক করে রাখা হয়েছে"</string>
     <string name="kg_prompt_after_adaptive_auth_lock" msgid="6065186971000690782">"স্ক্রিন লক করা আছে। যাচাইকরণের জন্য অসংখ্য বার চেষ্টা করা হয়েছে।"</string>
@@ -1089,17 +1097,12 @@
     <string name="right_keycode" msgid="2480715509844798438">"ডানদিকের কিকোড"</string>
     <string name="left_icon" msgid="5036278531966897006">"বাঁ দিকের আইকন"</string>
     <string name="right_icon" msgid="1103955040645237425">"ডানদিকের আইকন"</string>
-    <string name="drag_to_add_tiles" msgid="8933270127508303672">"টাইল যোগ করতে ধরে থেকে টেনে আনুন"</string>
-    <string name="drag_to_rearrange_tiles" msgid="2143204300089638620">"টাইলগুলি আবার সাজানোর জন্য ধরে থেকে টেনে আনুন"</string>
     <string name="select_to_rearrange_tiles" msgid="6166153534235179148">"আবার সাজাতে এবং ছোট বড় করতে টাইল বেছে নিন"</string>
     <string name="tap_to_remove_tiles" msgid="76564688376603718">"টাইল সরাতে ট্যাপ করুন"</string>
     <string name="resize_and_reorder_tiles" msgid="5530933353774871231">"লেআউটের আকার পরিবর্তন করুন এবং আবার সাজান"</string>
     <string name="qs_edit_edit_tab" msgid="467315123555871860">"এডিট করুন"</string>
     <string name="qs_edit_layout_tab" msgid="1935366846617681520">"লেআউট"</string>
     <string name="tap_to_position_tile" msgid="6282815817773342757">"টাইল সঠিক জায়গায় রাখার জন্য ট্যাপ করুন"</string>
-    <string name="drag_to_remove_tiles" msgid="4682194717573850385">"সরানোর জন্য এখানে টেনে আনুন"</string>
-    <string name="drag_to_remove_disabled" msgid="933046987838658850">"আপনাকে কমপক্ষে <xliff:g id="MIN_NUM_TILES">%1$d</xliff:g>টি টাইল রাখতে হবে"</string>
-    <string name="qs_edit" msgid="5583565172803472437">"এডিট করুন"</string>
     <string name="qs_edit_tiles" msgid="2105215324060865035">"টাইল এডিট করুন"</string>
     <string name="qs_edit_mode_tooltip" msgid="4164112885539479781">"কুইক সেটিংস টাইল ছোট বড় করুন"</string>
     <string name="qs_edit_settings" msgid="3243175290660574156">"সেটিংস"</string>
@@ -1122,13 +1125,7 @@
     <string name="accessibility_qs_edit_place_tile_action" msgid="7073332873378207231">"টাইল প্লেস করুন"</string>
     <string name="accessibility_qs_edit_toggle_placement_mode" msgid="3870429389210569610">"প্লেসমেন্ট মোড টগল করুন"</string>
     <string name="accessibility_qs_edit_toggle_selection" msgid="2201248304072372239">"বেছে নেওয়া বিকল্প টগল করুন"</string>
-    <string name="accessibility_qs_edit_tile_add_action" msgid="7188303979684400620">"শেষ জায়গাতে টাইল যোগ করুন"</string>
     <string name="accessibility_qs_edit_named_tile_add_action" msgid="7929752125913967625">"শেষ পজিশনে <xliff:g id="NAME">%1$s</xliff:g>-কে যোগ করুন"</string>
-    <string name="accessibility_qs_edit_tile_start_move" msgid="2009373939914517817">"টাইল সরান"</string>
-    <string name="accessibility_qs_edit_tile_start_add" msgid="8141710006899065161">"আপনার পছন্দের জায়গাতে টাইল যোগ করুন"</string>
-    <string name="accessibility_qs_edit_tile_move_to_position" msgid="5198161544045930556">"<xliff:g id="POSITION">%1$d</xliff:g>-এ সরান"</string>
-    <string name="accessibility_qs_edit_tile_add_to_position" msgid="9029163095148274690">"অবস্থান <xliff:g id="POSITION">%1$d</xliff:g>-এ যোগ করুন"</string>
-    <string name="accessibilit_qs_edit_tile_add_move_invalid_position" msgid="2858467994472624487">"পজিশন সঠিক নয়।"</string>
     <string name="accessibility_qs_edit_position" msgid="4509277359815711830">"অবস্থান <xliff:g id="POSITION">%1$d</xliff:g>"</string>
     <string name="accessibility_qs_edit_tile_already_added" msgid="5900071201690226752">"টাইল আগেই যোগ করা হয়েছে"</string>
     <string name="accessibility_qs_edit_tile_added" msgid="9067146040380836334">"টাইল যোগ করা হয়েছে"</string>
@@ -1147,8 +1144,6 @@
     <string name="accessibility_quick_settings_page" msgid="7506322631645550961">"<xliff:g id="ID_2">%2$d</xliff:g>টির মধ্যে <xliff:g id="ID_1">%1$d</xliff:g> নং পৃষ্ঠা"</string>
     <string name="accessibility_key_gesture_dialog_title" msgid="7614965716626605518">"<xliff:g id="ID_1">%1$s</xliff:g> চালু করতে চান?"</string>
     <string name="accessibility_key_gesture_dialog_content" msgid="4519838108423437794">"<xliff:g id="ID_3">^3</xliff:g> ব্যবহার করার জন্য কীবোর্ড শর্টকাট হল অ্যাকশন "<annotation id="action_key_icon">"আইকন"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g>। <xliff:g id="ID_4">^4</xliff:g>"</string>
-    <string name="accessibility_key_gesture_dialog_talkback_intro" msgid="1617808784388544741">"<xliff:g id="ID_1">%1$s</xliff:g> হল একটি স্ক্রিন রিডার যা আপনাকে আইটেম জোরে পড়ে শোনানোর অনুমতি দেয়। স্ক্রিন দেখতে যাদের অসুবিধা হয় তাদের জন্য এটি সহায়ক হতে পারে।"</string>
-    <string name="accessibility_key_gesture_dialog_positive_button_text" msgid="3670746017523589293">"চালু করুন"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_dialog_title" msgid="5331043821287212071">"<xliff:g id="ID_1">%1$s</xliff:g> কীবোর্ড শর্টকাট চালু করতে চান?"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_negative_button_text" msgid="6711239406914231612">"চালু করবেন না"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_positive_button_text" msgid="7748487028569821131">"শর্টকাট চালু করুন"</string>
@@ -1156,6 +1151,8 @@
     <string name="accessibility_key_gesture_magnification_dialog_content" msgid="582920726242272572">"অ্যাক্সেসিবিলিটি ফিচার <xliff:g id="ID_3">^3</xliff:g> ব্যবহার করার জন্য কীবোর্ড শর্টকাট হল অ্যাকশন "<annotation id="action_key_icon">"আইকন"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g>। এটি আপনাকে কন্টেন্ট বড় করে দেখার জন্য স্ক্রিনে দ্রুত জুম-ইন করার সুবিধা দেয়। \'বড় করে দেখা\' ফিচার চালু হয়ে গেলে, জুম অ্যাডজাস্ট করতে অ্যাকশন "<annotation id="action_key_icon">"আইকন"</annotation>" + <xliff:g id="ID_4">^1</xliff:g> এবং \"+\" বা \"-\" প্রেস করুন।"</string>
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"শর্টকাট বন্ধ করুন"</string>
     <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"চালু রাখুন"</string>
+    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_content (389338862762665003) -->
+    <skip />
     <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="7934170819801013870">"অ্যাকশন "<annotation id="action_key_icon">"আইকন"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> প্রেস করলে, অ্যাক্সেসিবিলিটি ফিচার <xliff:g id="ID_3">^3</xliff:g> চালু হয়ে যায়। এটি আপনাকে হ্যান্ডস-ফ্রি সুবিধা ব্যবহার করে ডিভাইস কন্ট্রোল করতে দেয়।"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"লক স্ক্রিন"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"বন্ধ হচ্ছে…"</string>
@@ -1397,7 +1394,6 @@
     <string name="media_output_dialog_button_sharing_audio" msgid="8312910741492835648">"অডিও শেয়ার করা হচ্ছে"</string>
     <string name="media_output_dialog_button_share_audio" msgid="827604934548421520">"অডিও শেয়ার করুন"</string>
     <string name="build_number_clip_data_label" msgid="3623176728412560914">"বিল্ড নম্বর"</string>
-    <string name="build_number_copy_toast" msgid="877720921605503046">"বিল্ড নম্বর ক্লিপবোর্ডে কপি করা হয়েছে।"</string>
     <string name="copy_to_clipboard_a11y_action" msgid="4312789069718446749">"ক্লিপবোর্ডে কপি করুন।"</string>
     <string name="basic_status" msgid="2315371112182658176">"খোলা কথোপকথন"</string>
     <string name="select_conversation_title" msgid="6716364118095089519">"কথোপকথন উইজেট"</string>
@@ -1716,8 +1712,7 @@
     <string name="back_button_on_bouncer" msgid="809134628434396761">"ফিরে যান"</string>
     <string name="pager_dots_previous_content_description" msgid="26963508904918908">"পূর্ববর্তী"</string>
     <string name="pager_dots_next_content_description" msgid="613943992626163120">"পরবর্তী"</string>
-    <!-- no translation found for accessibility_pager_dots_navigate_to_next_page_action (7662720613169169465) -->
-    <skip />
+    <string name="accessibility_pager_dots_navigate_to_next_page_action" msgid="7662720613169169465">"পরের পৃষ্ঠায় যান"</string>
     <string name="ambient_cue_autofill_action" msgid="9213025887835308128">"অটোফিল"</string>
     <string name="ambient_cue_expand_action" msgid="6803711089932959312">"বড় করুন"</string>
 </resources>

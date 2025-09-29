@@ -167,7 +167,12 @@
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"रेकॉर्ड करा"</string>
     <string name="screen_share_toolbar_share_button" msgid="9182050596136815833">"शेअर करा"</string>
     <string name="screen_share_no_select_app_thumbnail" msgid="1630012401570567430">"शेअर करण्यासाठी ॲप निवडा"</string>
-    <string name="screen_share_app_audio_sharing" msgid="7201172218924898712">"विंडो ऑडिओ शेअर करा"</string>
+    <!-- no translation found for screen_share_audio_sharing_text (7829391478284315787) -->
+    <skip />
+    <!-- no translation found for screen_share_app_window_sharing_title (2063554880747318383) -->
+    <skip />
+    <!-- no translation found for screen_share_disclaimer (3953761426122528262) -->
+    <skip />
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"विंडोचा स्क्रीनशॉट घ्या"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"विंडो रेकॉर्ड करा"</string>
     <string name="screen_capture_toolbar_region_button_screenshot_a11y" msgid="2102262602357521192">"निवडलेल्या भागाचा स्क्रीनशॉट घ्या"</string>
@@ -750,8 +755,11 @@
     <string name="monitoring_description_personal_profile_named_vpn" msgid="5083909710727365452">"तुमची वैयक्तिक ॲप्स <xliff:g id="VPN_APP">%1$s</xliff:g> द्वारे इंटरनेटशी कनेक्ट केलेली आहेत. ईमेल आणि ब्राउझिंग डेटासोबतच, तुमची नेटवर्क अ‍ॅक्टिव्हिटी तुमच्या VPN पुरवठादाराला दृश्यमान आहे."</string>
     <string name="monitoring_description_vpn_settings_separator" msgid="8292589617720435430">" "</string>
     <string name="monitoring_description_vpn_settings" msgid="5264167033247632071">"VPN सेटिंग्ज उघडा"</string>
-    <string name="monitoring_description_parental_controls" msgid="8184693528917051626">"हे डिव्हाइस तुमच्या पालकाने व्यवस्थापित केले आहे. तुम्ही वापरत असलेली ॲप्स, तुमचे स्थान आणि तुमचा स्क्रीन वेळ यांसारखी माहिती तुमचे पालक पाहू आणि व्यवस्‍थापित करू शकतात."</string>
+    <!-- no translation found for monitoring_description_parental_controls_legacy (3331029441820725897) -->
+    <skip />
     <string name="monitoring_description_pin_protection" msgid="1983580207046670355">"तुमच्या डिव्हाइसवरील काही नियंत्रणे, जसे की दैनिक मर्यादा आणि डाउनटाइम फक्त पिन वापरून बदलता येतात."</string>
+    <!-- no translation found for monitoring_description_parental_controls (4255592993669461543) -->
+    <skip />
     <string name="legacy_vpn_name" msgid="4174223520162559145">"VPN"</string>
     <string name="keyguard_indication_trust_unlocked" msgid="7395154975733744547">"TrustAgent ने अनलॉक ठेवले"</string>
     <string name="kg_prompt_after_adaptive_auth_lock" msgid="6065186971000690782">"स्क्रीन लॉक केली आहे. ऑथेंटिकेशनचे खूप जास्त प्रयत्न केले आहेत."</string>
@@ -1089,17 +1097,12 @@
     <string name="right_keycode" msgid="2480715509844798438">"उजवा कीकोड"</string>
     <string name="left_icon" msgid="5036278531966897006">"डावे आयकन"</string>
     <string name="right_icon" msgid="1103955040645237425">"उजवे आयकन"</string>
-    <string name="drag_to_add_tiles" msgid="8933270127508303672">"टाइल जोडण्यासाठी धरून ठेवून ड्रॅग करा"</string>
-    <string name="drag_to_rearrange_tiles" msgid="2143204300089638620">"टाइलची पुनर्रचना करण्यासाठी धरून ठेवून ड्रॅग करा"</string>
     <string name="select_to_rearrange_tiles" msgid="6166153534235179148">"पुन्हा संगतवार लावण्यासाठी आणि आकार बदलण्यासाठी टाइल निवडा"</string>
     <string name="tap_to_remove_tiles" msgid="76564688376603718">"टाइल काढून टाकण्यासाठी टॅप करा"</string>
     <string name="resize_and_reorder_tiles" msgid="5530933353774871231">"लेआउटचा आकार बदला आणि तो पुन्हा क्रमाने लावा"</string>
     <string name="qs_edit_edit_tab" msgid="467315123555871860">"संपादित करा"</string>
     <string name="qs_edit_layout_tab" msgid="1935366846617681520">"लेआउट"</string>
     <string name="tap_to_position_tile" msgid="6282815817773342757">"टाइलचे स्थान निर्धारित करण्यासाठी टॅप करा"</string>
-    <string name="drag_to_remove_tiles" msgid="4682194717573850385">"काढण्यासाठी येथे ड्रॅग करा"</string>
-    <string name="drag_to_remove_disabled" msgid="933046987838658850">"तुम्हाला किमान <xliff:g id="MIN_NUM_TILES">%1$d</xliff:g> टाइलची गरज आहे"</string>
-    <string name="qs_edit" msgid="5583565172803472437">"संपादित करा"</string>
     <string name="qs_edit_tiles" msgid="2105215324060865035">"टाइल संपादित करा"</string>
     <string name="qs_edit_mode_tooltip" msgid="4164112885539479781">"क्विक सेटिंग्ज टाइलचा आकार बदला"</string>
     <string name="qs_edit_settings" msgid="3243175290660574156">"सेटिंग्ज"</string>
@@ -1122,13 +1125,7 @@
     <string name="accessibility_qs_edit_place_tile_action" msgid="7073332873378207231">"टाइल ठेवा"</string>
     <string name="accessibility_qs_edit_toggle_placement_mode" msgid="3870429389210569610">"प्लेसमेंट मोड टॉगल करा"</string>
     <string name="accessibility_qs_edit_toggle_selection" msgid="2201248304072372239">"निवड टॉगल करा"</string>
-    <string name="accessibility_qs_edit_tile_add_action" msgid="7188303979684400620">"शेवटच्या स्थानावर टाइल जोडा"</string>
     <string name="accessibility_qs_edit_named_tile_add_action" msgid="7929752125913967625">"शेवटच्या स्थानावर <xliff:g id="NAME">%1$s</xliff:g> जोडा"</string>
-    <string name="accessibility_qs_edit_tile_start_move" msgid="2009373939914517817">"टाइल हलवा"</string>
-    <string name="accessibility_qs_edit_tile_start_add" msgid="8141710006899065161">"हव्या असलेल्या स्थानावर टाइल जोडा"</string>
-    <string name="accessibility_qs_edit_tile_move_to_position" msgid="5198161544045930556">"<xliff:g id="POSITION">%1$d</xliff:g> यावर हलवा"</string>
-    <string name="accessibility_qs_edit_tile_add_to_position" msgid="9029163095148274690">"<xliff:g id="POSITION">%1$d</xliff:g> स्थानावर जोडा"</string>
-    <string name="accessibilit_qs_edit_tile_add_move_invalid_position" msgid="2858467994472624487">"स्थान चुकीचे आहे."</string>
     <string name="accessibility_qs_edit_position" msgid="4509277359815711830">"स्थान <xliff:g id="POSITION">%1$d</xliff:g>"</string>
     <string name="accessibility_qs_edit_tile_already_added" msgid="5900071201690226752">"टाइल आधीपासून जोडली आहे"</string>
     <string name="accessibility_qs_edit_tile_added" msgid="9067146040380836334">"टाइल जोडली"</string>
@@ -1147,8 +1144,6 @@
     <string name="accessibility_quick_settings_page" msgid="7506322631645550961">"<xliff:g id="ID_2">%2$d</xliff:g> पैकी <xliff:g id="ID_1">%1$d</xliff:g> पेज"</string>
     <string name="accessibility_key_gesture_dialog_title" msgid="7614965716626605518">"<xliff:g id="ID_1">%1$s</xliff:g> सुरू करायचे आहे का?"</string>
     <string name="accessibility_key_gesture_dialog_content" msgid="4519838108423437794">"कृती "<annotation id="action_key_icon">"आयकन"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> हा <xliff:g id="ID_3">^3</xliff:g> वापरण्यासाठीचा कीबोर्ड शॉर्टकट आहे. <xliff:g id="ID_4">^4</xliff:g>"</string>
-    <string name="accessibility_key_gesture_dialog_talkback_intro" msgid="1617808784388544741">"<xliff:g id="ID_1">%1$s</xliff:g> हा स्क्रीन रीडर आहे, ज्यामुळे तुम्हाला मोठ्याने बोललेले आयटम ऐकू येतात. स्क्रीनकडे पाहण्यात समस्या असलेल्या लोकांसाठी ते उपयुक्त असू शकते."</string>
-    <string name="accessibility_key_gesture_dialog_positive_button_text" msgid="3670746017523589293">"सुरू करा"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_dialog_title" msgid="5331043821287212071">"<xliff:g id="ID_1">%1$s</xliff:g> हा कीबोर्ड शॉर्टकट सुरू करायचा आहे का?"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_negative_button_text" msgid="6711239406914231612">"सुरू करू नका"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_positive_button_text" msgid="7748487028569821131">"शॉर्टकट सुरू करा"</string>
@@ -1156,6 +1151,8 @@
     <string name="accessibility_key_gesture_magnification_dialog_content" msgid="582920726242272572">"कृती "<annotation id="action_key_icon">"आयकन"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> हा <xliff:g id="ID_3">^3</xliff:g> हे अ‍ॅक्सेसिबिलिटी वैशिष्ट्य वापरण्यासाठीचा कीबोर्ड शॉर्टकट आहे. यामुळे तुम्हाला आशय मोठा करण्यासाठी स्क्रीनवर झटपट झूम इन करता येते. मॅग्निफिकेशन सुरू झाल्यानंतर, झूम अ‍ॅडजस्ट करण्यासाठी कृती "<annotation id="action_key_icon">"आयकन"</annotation>" + <xliff:g id="ID_4">^1</xliff:g> आणि \"+\" किंवा \"-\" प्रेस करा."</string>
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"शॉर्टकट बंद करा"</string>
     <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"सुरू ठेवा"</string>
+    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_content (389338862762665003) -->
+    <skip />
     <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="7934170819801013870">"Action "<annotation id="action_key_icon">"icon"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> प्रेस केल्याने, <xliff:g id="ID_3">^3</xliff:g> हे अ‍ॅक्सेसिबिलिटी वैशिष्ट्ये सुरू होते. यामुळे तुम्हाला तुमचे डिव्हाइस हँड्स-फ्री नियंत्रित करता येते."</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"लॉक स्‍क्रीन"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"बंद होत आहे…"</string>
@@ -1397,7 +1394,6 @@
     <string name="media_output_dialog_button_sharing_audio" msgid="8312910741492835648">"ऑडिओ शेअर करत आहे"</string>
     <string name="media_output_dialog_button_share_audio" msgid="827604934548421520">"ऑडिओ शेअर करा"</string>
     <string name="build_number_clip_data_label" msgid="3623176728412560914">"बिल्ड नंबर"</string>
-    <string name="build_number_copy_toast" msgid="877720921605503046">"बिल्ड नंबर क्लिपबोर्डवर कॉपी केला."</string>
     <string name="copy_to_clipboard_a11y_action" msgid="4312789069718446749">"क्लिपबोर्डवर कॉपी करा."</string>
     <string name="basic_status" msgid="2315371112182658176">"संभाषण उघडा"</string>
     <string name="select_conversation_title" msgid="6716364118095089519">"संभाषण विजेट"</string>
@@ -1716,8 +1712,7 @@
     <string name="back_button_on_bouncer" msgid="809134628434396761">"मागे जा"</string>
     <string name="pager_dots_previous_content_description" msgid="26963508904918908">"मागील"</string>
     <string name="pager_dots_next_content_description" msgid="613943992626163120">"पुढील"</string>
-    <!-- no translation found for accessibility_pager_dots_navigate_to_next_page_action (7662720613169169465) -->
-    <skip />
+    <string name="accessibility_pager_dots_navigate_to_next_page_action" msgid="7662720613169169465">"पुढील पेजवर नेव्हिगेट करा"</string>
     <string name="ambient_cue_autofill_action" msgid="9213025887835308128">"ऑटोफिल"</string>
     <string name="ambient_cue_expand_action" msgid="6803711089932959312">"विस्तार करा"</string>
 </resources>

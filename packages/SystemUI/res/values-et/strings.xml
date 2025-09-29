@@ -167,7 +167,12 @@
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"Salvestamine"</string>
     <string name="screen_share_toolbar_share_button" msgid="9182050596136815833">"Jaga"</string>
     <string name="screen_share_no_select_app_thumbnail" msgid="1630012401570567430">"Jagamiseks valige rakendus."</string>
-    <string name="screen_share_app_audio_sharing" msgid="7201172218924898712">"Akna heli jagamine"</string>
+    <!-- no translation found for screen_share_audio_sharing_text (7829391478284315787) -->
+    <skip />
+    <!-- no translation found for screen_share_app_window_sharing_title (2063554880747318383) -->
+    <skip />
+    <!-- no translation found for screen_share_disclaimer (3953761426122528262) -->
+    <skip />
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"Tee aknast ekraanipilt"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"Salvesta akent"</string>
     <string name="screen_capture_toolbar_region_button_screenshot_a11y" msgid="2102262602357521192">"Tee valitud alast ekraanipilt"</string>
@@ -750,8 +755,11 @@
     <string name="monitoring_description_personal_profile_named_vpn" msgid="5083909710727365452">"Teie isiklikud rakendused on internetiga rakenduse <xliff:g id="VPN_APP">%1$s</xliff:g> kaudu ühendatud. Teie võrgutegevus, sealhulgas meilid ja sirvimisandmed, on nähtav teie VPN-i teenusepakkujale."</string>
     <string name="monitoring_description_vpn_settings_separator" msgid="8292589617720435430">" "</string>
     <string name="monitoring_description_vpn_settings" msgid="5264167033247632071">"VPN-i seadete avamine"</string>
-    <string name="monitoring_description_parental_controls" msgid="8184693528917051626">"Seda seadet haldab sinu vanem. Sinu vanem näeb ja saab hallata teavet, näiteks kasutatavaid rakendusi, sinu asukohta ja ekraaniaega."</string>
+    <!-- no translation found for monitoring_description_parental_controls_legacy (3331029441820725897) -->
+    <skip />
     <string name="monitoring_description_pin_protection" msgid="1983580207046670355">"Mõnesid teie seadme juhtelemente, nagu päevased piirangud ja puhkeaeg, saab muuta ainult PIN-koodiga."</string>
+    <!-- no translation found for monitoring_description_parental_controls (4255592993669461543) -->
+    <skip />
     <string name="legacy_vpn_name" msgid="4174223520162559145">"VPN"</string>
     <string name="keyguard_indication_trust_unlocked" msgid="7395154975733744547">"Avatuna hoiab TrustAgent"</string>
     <string name="kg_prompt_after_adaptive_auth_lock" msgid="6065186971000690782">"Ekraan on lukus. Liiga palju autentimise katseid."</string>
@@ -1089,17 +1097,12 @@
     <string name="right_keycode" msgid="2480715509844798438">"Parem võtmekood"</string>
     <string name="left_icon" msgid="5036278531966897006">"Vasak ikoon"</string>
     <string name="right_icon" msgid="1103955040645237425">"Parem ikoon"</string>
-    <string name="drag_to_add_tiles" msgid="8933270127508303672">"Paanide lisamiseks hoidke all ja lohistage"</string>
-    <string name="drag_to_rearrange_tiles" msgid="2143204300089638620">"Paanide ümberpaigutamiseks hoidke neid all ja lohistage."</string>
     <string name="select_to_rearrange_tiles" msgid="6166153534235179148">"Valige ümberkorraldamiseks ja suuruse muutmiseks paanid."</string>
     <string name="tap_to_remove_tiles" msgid="76564688376603718">"Paanide eemaldamiseks puudutage"</string>
     <string name="resize_and_reorder_tiles" msgid="5530933353774871231">"Suuruse muutmine ja küljenduse ümberjärjestamine"</string>
     <string name="qs_edit_edit_tab" msgid="467315123555871860">"Muuda"</string>
     <string name="qs_edit_layout_tab" msgid="1935366846617681520">"Paigutus"</string>
     <string name="tap_to_position_tile" msgid="6282815817773342757">"Paani paigutamiseks puudutage"</string>
-    <string name="drag_to_remove_tiles" msgid="4682194717573850385">"Lohistage eemaldamiseks siia"</string>
-    <string name="drag_to_remove_disabled" msgid="933046987838658850">"Teil on vaja vähemalt <xliff:g id="MIN_NUM_TILES">%1$d</xliff:g> paani"</string>
-    <string name="qs_edit" msgid="5583565172803472437">"Muutmine"</string>
     <string name="qs_edit_tiles" msgid="2105215324060865035">"Paanide muutmine"</string>
     <string name="qs_edit_mode_tooltip" msgid="4164112885539479781">"Kiirseadete paanide suuruse muutmine"</string>
     <string name="qs_edit_settings" msgid="3243175290660574156">"Seaded"</string>
@@ -1122,13 +1125,7 @@
     <string name="accessibility_qs_edit_place_tile_action" msgid="7073332873378207231">"Paani asetamine"</string>
     <string name="accessibility_qs_edit_toggle_placement_mode" msgid="3870429389210569610">"paigutuse režiimi lülitamiseks"</string>
     <string name="accessibility_qs_edit_toggle_selection" msgid="2201248304072372239">"valiku vahetamiseks"</string>
-    <string name="accessibility_qs_edit_tile_add_action" msgid="7188303979684400620">"Paani lisamine viimasesse asukohta"</string>
     <string name="accessibility_qs_edit_named_tile_add_action" msgid="7929752125913967625">"Lisa <xliff:g id="NAME">%1$s</xliff:g> viimasele positsioonile"</string>
-    <string name="accessibility_qs_edit_tile_start_move" msgid="2009373939914517817">"Teisalda paan"</string>
-    <string name="accessibility_qs_edit_tile_start_add" msgid="8141710006899065161">"Lisage paan soovitud asukohta"</string>
-    <string name="accessibility_qs_edit_tile_move_to_position" msgid="5198161544045930556">"Teisaldamine asendisse <xliff:g id="POSITION">%1$d</xliff:g>"</string>
-    <string name="accessibility_qs_edit_tile_add_to_position" msgid="9029163095148274690">"Lisamine asendisse <xliff:g id="POSITION">%1$d</xliff:g>"</string>
-    <string name="accessibilit_qs_edit_tile_add_move_invalid_position" msgid="2858467994472624487">"Sobimatu asukoht."</string>
     <string name="accessibility_qs_edit_position" msgid="4509277359815711830">"Asend <xliff:g id="POSITION">%1$d</xliff:g>"</string>
     <string name="accessibility_qs_edit_tile_already_added" msgid="5900071201690226752">"Paan on juba lisatud"</string>
     <string name="accessibility_qs_edit_tile_added" msgid="9067146040380836334">"Paan on lisatud"</string>
@@ -1147,8 +1144,6 @@
     <string name="accessibility_quick_settings_page" msgid="7506322631645550961">"Leht <xliff:g id="ID_1">%1$d</xliff:g>/<xliff:g id="ID_2">%2$d</xliff:g>"</string>
     <string name="accessibility_key_gesture_dialog_title" msgid="7614965716626605518">"Kas lülitada <xliff:g id="ID_1">%1$s</xliff:g> sisse?"</string>
     <string name="accessibility_key_gesture_dialog_content" msgid="4519838108423437794">"Toiming "<annotation id="action_key_icon">"ikoon"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> on klaviatuuri otsetee funktsiooni <xliff:g id="ID_3">^3</xliff:g> kasutamiseks. <xliff:g id="ID_4">^4</xliff:g>"</string>
-    <string name="accessibility_key_gesture_dialog_talkback_intro" msgid="1617808784388544741">"<xliff:g id="ID_1">%1$s</xliff:g> on ekraanilugeja, mis võimaldab teil kuulata ette loetavaid üksusi. See on abiks kehva nägemisvõimega inimestele."</string>
-    <string name="accessibility_key_gesture_dialog_positive_button_text" msgid="3670746017523589293">"Lülita sisse"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_dialog_title" msgid="5331043821287212071">"Kas soovite rakenduse <xliff:g id="ID_1">%1$s</xliff:g> klaviatuuri otsetee sisse lülitada?"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_negative_button_text" msgid="6711239406914231612">"Ära lülita sisse"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_positive_button_text" msgid="7748487028569821131">"Lülita otsetee sisse"</string>
@@ -1156,6 +1151,8 @@
     <string name="accessibility_key_gesture_magnification_dialog_content" msgid="582920726242272572">"Toimingu "<annotation id="action_key_icon">"ikoon"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> on klaviatuuri otsetee funktsiooni <xliff:g id="ID_3">^3</xliff:g>, juurdepääsetavuse funktsiooni kasutamiseks. See võimaldab teil kiiresti sisse suumida, et muuta ekraanil kuvatav sisu suuremaks. Kui suurendus on sisse lülitatud, vajutage suumi reguleerimiseks järgmist klahvikombinatsiooni: toimingu "<annotation id="action_key_icon">"ikoon"</annotation>" + <xliff:g id="ID_4">^1</xliff:g> ja „+“ või „-“."</string>
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"Lülita otsetee välja"</string>
     <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"Hoia sisselülitatuna"</string>
+    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_content (389338862762665003) -->
+    <skip />
     <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="7934170819801013870">"Kui vajutate klahve Action "<annotation id="action_key_icon">"icon"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g>, lülitatakse sisse juurdepääsetavuse funktsioon <xliff:g id="ID_3">^3</xliff:g>. See võimaldab teil seadet juhtida käsi kasutamata."</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"Lukustuskuva"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"Väljalülitamine …"</string>
@@ -1397,7 +1394,6 @@
     <string name="media_output_dialog_button_sharing_audio" msgid="8312910741492835648">"Heli jagamine"</string>
     <string name="media_output_dialog_button_share_audio" msgid="827604934548421520">"Jaga heli"</string>
     <string name="build_number_clip_data_label" msgid="3623176728412560914">"Järgunumber"</string>
-    <string name="build_number_copy_toast" msgid="877720921605503046">"Järgunumber kopeeriti lõikelauale."</string>
     <string name="copy_to_clipboard_a11y_action" msgid="4312789069718446749">"lõikelauale kopeerimine."</string>
     <string name="basic_status" msgid="2315371112182658176">"Avage vestlus"</string>
     <string name="select_conversation_title" msgid="6716364118095089519">"Vestlusvidinad"</string>
@@ -1716,8 +1712,7 @@
     <string name="back_button_on_bouncer" msgid="809134628434396761">"Tagasi"</string>
     <string name="pager_dots_previous_content_description" msgid="26963508904918908">"Eelmine"</string>
     <string name="pager_dots_next_content_description" msgid="613943992626163120">"Järgmine"</string>
-    <!-- no translation found for accessibility_pager_dots_navigate_to_next_page_action (7662720613169169465) -->
-    <skip />
+    <string name="accessibility_pager_dots_navigate_to_next_page_action" msgid="7662720613169169465">"navigeerige järgmisele lehele"</string>
     <string name="ambient_cue_autofill_action" msgid="9213025887835308128">"automaattäide"</string>
     <string name="ambient_cue_expand_action" msgid="6803711089932959312">"laiendamine"</string>
 </resources>
