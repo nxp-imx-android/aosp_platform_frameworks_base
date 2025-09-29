@@ -162,6 +162,16 @@ flag {
 }
 
 flag {
+    name: "shell_command_enforce_permission"
+    namespace: "accessibility"
+    description: "Adds a permission check to 'cmd accessibility' shell command"
+    bug: "227200331"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "throttle_motion_events_for_ui_update"
     namespace: "accessibility"
     description: "Throttles motion events for requesting the System UI to update magnification UIs."
