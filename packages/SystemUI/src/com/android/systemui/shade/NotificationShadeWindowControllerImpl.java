@@ -58,6 +58,7 @@ import com.android.systemui.dagger.qualifiers.Main;
 import com.android.systemui.dump.DumpManager;
 import com.android.systemui.dump.DumpsysTableLogger;
 import com.android.systemui.keyguard.KeyguardViewMediator;
+import com.android.systemui.keyguard.domain.interactor.KeyguardSurfaceBehindInteractor;
 import com.android.systemui.plugins.statusbar.StatusBarStateController;
 import com.android.systemui.plugins.statusbar.StatusBarStateController.StateListener;
 import com.android.systemui.res.R;
@@ -79,6 +80,7 @@ import com.android.systemui.statusbar.policy.ConfigurationController.Configurati
 import com.android.systemui.statusbar.policy.KeyguardStateController;
 import com.android.systemui.topui.TopUiController;
 import com.android.systemui.user.domain.interactor.SelectedUserInteractor;
+import com.android.systemui.util.kotlin.JavaAdapter;
 
 import dagger.Lazy;
 
@@ -148,6 +150,7 @@ public class NotificationShadeWindowControllerImpl implements NotificationShadeW
             new NotificationShadeWindowState.Buffer(MAX_STATE_CHANGES_BUFFER_SIZE);
 
     private final TopUiController mTopUiController;
+    private final KeyguardSurfaceBehindInteractor mKeyguardSurfaceBehindInteractor;
 
     @Inject
     public NotificationShadeWindowControllerImpl(
@@ -173,7 +176,9 @@ public class NotificationShadeWindowControllerImpl implements NotificationShadeW
             NotificationShadeWindowModel notificationShadeWindowModel,
             Lazy<CommunalInteractor> communalInteractor,
             @ShadeDisplayAware LayoutParams shadeWindowLayoutParams,
-            TopUiController topUiController) {
+            TopUiController topUiController,
+            KeyguardSurfaceBehindInteractor keyguardSurfaceBehindInteractor,
+            JavaAdapter javaAdapter) {
         mContext = context;
         mWindowRootViewComponentFactory = windowRootViewComponentFactory;
         mWindowManager = windowManager;
@@ -225,6 +230,16 @@ public class NotificationShadeWindowControllerImpl implements NotificationShadeW
         mKeyguardMaxRefreshRate = context.getResources()
                 .getInteger(R.integer.config_keyguardMaxRefreshRate);
         mTopUiController = topUiController;
+        mKeyguardSurfaceBehindInteractor = keyguardSurfaceBehindInteractor;
+
+        if (SceneContainerFlag.isEnabled()) {
+            javaAdapter.alwaysCollectFlow(
+                    mKeyguardSurfaceBehindInteractor.isAnimatingSurface(),
+                    (animating) -> {
+                        mCurrentState.isAnimatingSurfaceBehind = animating;
+                        applyKeyguardFlags(mCurrentState);
+                    });
+        }
     }
 
     /**
@@ -402,7 +417,9 @@ public class NotificationShadeWindowControllerImpl implements NotificationShadeW
         final boolean keyguardOrAod = state.keyguardShowing
                 || (state.dozing && mDozeParameters.getAlwaysOn());
         if ((keyguardOrAod && !state.mediaBackdropShowing && !state.lightRevealScrimOpaque)
-                || mKeyguardViewMediator.isAnimatingBetweenKeyguardAndSurfaceBehind()
+                || (!SceneContainerFlag.isEnabled()
+                    && mKeyguardViewMediator.isAnimatingBetweenKeyguardAndSurfaceBehind())
+                || (SceneContainerFlag.isEnabled() && state.isAnimatingSurfaceBehind)
                 || (EnsureWallpaperDrawnOnDisplaySwitch.isEnabled() && state.pendingDisplayChange)
         ) {
             // Show the wallpaper if we're on keyguard/AOD and the wallpaper is not occluded by a
@@ -673,7 +690,8 @@ public class NotificationShadeWindowControllerImpl implements NotificationShadeW
                 state.scrimsVisibility,
                 state.backgroundBlurRadius,
                 state.communalVisible,
-                state.isOnOrGoingToDream
+                state.isOnOrGoingToDream,
+                state.isAnimatingSurfaceBehind
         );
     }
 

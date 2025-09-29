@@ -54,6 +54,7 @@ import com.android.systemui.keyguard.domain.interactor.fromPrimaryBouncerTransit
 import com.android.systemui.keyguard.domain.interactor.keyguardClockInteractor
 import com.android.systemui.keyguard.domain.interactor.keyguardInteractor
 import com.android.systemui.keyguard.domain.interactor.keyguardOcclusionInteractor
+import com.android.systemui.keyguard.domain.interactor.keyguardSurfaceBehindInteractor
 import com.android.systemui.keyguard.domain.interactor.keyguardTransitionInteractor
 import com.android.systemui.keyguard.domain.interactor.pulseExpansionInteractor
 import com.android.systemui.keyguard.ui.viewmodel.glanceableHubToLockscreenTransitionViewModel
@@ -258,6 +259,7 @@ class KosmosJavaAdapter() {
     val systemUIDialogManager by lazy { kosmos.systemUIDialogManager }
     val displayRepository by lazy { kosmos.displayRepository }
     val shadeStatusBarComponentsInteractor by lazy { kosmos.shadeStatusBarComponentsInteractor }
+    val keyguardSurfaceBehindInteractor by lazy { kosmos.keyguardSurfaceBehindInteractor }
 
     /** Use if you need a unique or mutate-able row */
     fun createRow(): ExpandableNotificationRow {

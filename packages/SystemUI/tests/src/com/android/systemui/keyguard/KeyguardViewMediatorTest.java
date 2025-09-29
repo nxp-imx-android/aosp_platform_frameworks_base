@@ -286,7 +286,9 @@ public class KeyguardViewMediatorTest extends SysuiTestCase {
                 mKosmos.getNotificationShadeWindowModel(),
                 mKosmos::getCommunalInteractor,
                 mKosmos.getShadeLayoutParams(),
-                mKosmos.getTopUiController());
+                mKosmos.getTopUiController(),
+                mKosmos.getKeyguardSurfaceBehindInteractor(),
+                mKosmos.getJavaAdapter());
         mFeatureFlags = new FakeFeatureFlags();
         mSetFlagsRule.disableFlags(FLAG_KEYGUARD_WM_STATE_REFACTOR);
 
