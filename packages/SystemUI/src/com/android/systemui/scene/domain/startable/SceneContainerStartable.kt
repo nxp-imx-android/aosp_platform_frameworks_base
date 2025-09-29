@@ -307,13 +307,13 @@ constructor(
                                 val visibilityForTransitionState =
                                     when (transitionState) {
                                         is ObservableTransitionState.Idle -> {
-                                            if (transitionState.currentScene == Scenes.Dream) {
-                                                false to "dream is showing"
-                                            } else if (
+                                            if (
                                                 transitionState.currentScene != Scenes.Gone &&
-                                                    transitionState.currentScene != Scenes.Occluded
+                                                    transitionState.currentScene !=
+                                                        Scenes.Occluded &&
+                                                    transitionState.currentScene != Scenes.Dream
                                             ) {
-                                                true to "scene is not Gone and not Occluded"
+                                                true to "scene is not Gone, Occluded, or Dream"
                                             } else if (
                                                 transitionState.currentOverlays.isNotEmpty()
                                             ) {
