@@ -19,7 +19,9 @@ package android.companion.virtual.computercontrol;
 import static com.google.common.truth.Truth.assertThat;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.testng.Assert.assertThrows;
@@ -42,8 +44,12 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
+
+import java.util.concurrent.Executor;
 
 @RunWith(AndroidJUnit4.class)
 public class ComputerControlSessionTest {
@@ -64,6 +70,8 @@ public class ComputerControlSessionTest {
     private IVirtualDisplayCallback mVirtualDisplayCallback;
     @Mock
     private IInteractiveMirror mMockInteractiveMirror;
+    @Mock
+    private Runnable mMockOnClosedRunnable;
 
     private ComputerControlSession mSession;
 
@@ -82,7 +90,8 @@ public class ComputerControlSessionTest {
                 context, context.getMainThreadHandler(), mAccessibilityManager, 0, true);
 
         mSession = new ComputerControlSession(DISPLAY_ID, mVirtualDisplayCallback, mMockSession,
-                accessibilityManager, new DisplayManagerGlobal(mDisplayManager));
+                accessibilityManager, mMockOnClosedRunnable,
+                new DisplayManagerGlobal(mDisplayManager));
     }
 
     @After
@@ -175,5 +184,46 @@ public class ComputerControlSessionTest {
     public void longPressNotInRange_throws() {
         assertThrows(IllegalArgumentException.class, () -> mSession.longPress(-1, 2));
         assertThrows(IllegalArgumentException.class, () -> mSession.longPress(1, -2));
+    }
+
+    @Test
+    public void setLifecycleCallback_providesLifecycleCallbacks() throws RemoteException {
+        ComputerControlSession.LifecycleCallback mockCallback = Mockito.mock(
+                ComputerControlSession.LifecycleCallback.class);
+
+        mSession.setLifecycleCallback(new TestExecutor(), mockCallback);
+        ArgumentCaptor<IComputerControlLifecycleCallback> lifecycleCallbackCaptor =
+                ArgumentCaptor.forClass(IComputerControlLifecycleCallback.class);
+        verify(mMockSession).setLifecycleCallback(lifecycleCallbackCaptor.capture());
+
+        lifecycleCallbackCaptor.getValue().onClosed(123);
+        verify(mockCallback).onClosed(eq(123));
+        verify(mMockOnClosedRunnable).run();
+    }
+
+    @Test
+    public void clearLifecycleCallback_stopsLifecycleCallbacks() throws RemoteException {
+        ComputerControlSession.LifecycleCallback mockCallback = Mockito.mock(
+                ComputerControlSession.LifecycleCallback.class);
+        mSession.setLifecycleCallback(new TestExecutor(), mockCallback);
+        ArgumentCaptor<IComputerControlLifecycleCallback> lifecycleCallbackCaptor =
+                ArgumentCaptor.forClass(IComputerControlLifecycleCallback.class);
+        verify(mMockSession).setLifecycleCallback(lifecycleCallbackCaptor.capture());
+
+        mSession.clearLifecycleCallback();
+
+        lifecycleCallbackCaptor.getValue().onClosed(123);
+        verify(mockCallback, never()).onClosed(anyInt());
+        verify(mMockOnClosedRunnable).run();
+    }
+
+    /**
+     * A mock Executor that runs the runnable immediately on the calling thread.
+     */
+    private static final class TestExecutor implements Executor {
+        @Override
+        public void execute(Runnable command) {
+            command.run();
+        }
     }
 }

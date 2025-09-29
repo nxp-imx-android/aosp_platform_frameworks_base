@@ -61,7 +61,8 @@ import java.util.concurrent.Executor;
  *
  * @hide
  */
-public final class ComputerControlSession implements AutoCloseable {
+public final class ComputerControlSession extends IComputerControlLifecycleCallback.Stub
+        implements AutoCloseable {
 
     /** @hide */
     public static final String ACTION_REQUEST_ACCESS =
@@ -105,6 +106,34 @@ public final class ComputerControlSession implements AutoCloseable {
     }
 
     /**
+     * Close reason indicating the session was closed by the caller.
+     *
+     * @see ComputerControlSession#close()
+     */
+    public static final int CLOSE_REASON_CALLER_INITIATED = 1;
+
+    /**
+     * Close reason indicating the session was closed by the user during an auth flow or to take
+     * control of the app under automation, etc.
+     */
+    public static final int CLOSE_REASON_USER_INITIATED = 2;
+
+    /**
+     * Close reason indicating the session timed out.
+     */
+    public static final int CLOSE_REASON_SESSION_TIMED_OUT = 3;
+
+    /** @hide */
+    @Retention(RetentionPolicy.SOURCE)
+    @IntDef(prefix = "CLOSE_REASON_", value = {
+            CLOSE_REASON_CALLER_INITIATED,
+            CLOSE_REASON_USER_INITIATED,
+            CLOSE_REASON_SESSION_TIMED_OUT})
+    @Target({ElementType.TYPE_PARAMETER, ElementType.TYPE_USE})
+    public @interface SessionCloseReason {
+    }
+
+    /**
      * Computer control action that performs back navigation.
      */
     public static final int ACTION_GO_BACK = 1;
@@ -126,14 +155,22 @@ public final class ComputerControlSession implements AutoCloseable {
     @GuardedBy("mLock")
     @Nullable
     private ImageReader mImageReader;
+    @GuardedBy("mLock")
+    private LifecycleCallbackRecord mLifecycleCallback;
+
+    // TODO(b/419460558): Added to temporarily link {@link LifecycleCallback#onClosed(int)} with the
+    //  existing {@link Callback#onSessionClosed()}. Remove once its migrated.
+    @NonNull
+    private final Runnable mOnClosedRunnable;
 
     private final ComputerControlAccessibilityProxy mAccessibilityProxy;
 
     /** @hide */
     public ComputerControlSession(int displayId, @NonNull IVirtualDisplayCallback displayToken,
             @NonNull IComputerControlSession session,
-            @NonNull AccessibilityManager accessibilityManager) {
-        this(displayId, displayToken, session, accessibilityManager,
+            @NonNull AccessibilityManager accessibilityManager,
+            @NonNull Runnable onClosedRunnable) {
+        this(displayId, displayToken, session, accessibilityManager, onClosedRunnable,
                 DisplayManagerGlobal.getInstance());
     }
 
@@ -142,8 +179,15 @@ public final class ComputerControlSession implements AutoCloseable {
     public ComputerControlSession(int displayId, @NonNull IVirtualDisplayCallback displayToken,
             @NonNull IComputerControlSession session,
             @NonNull AccessibilityManager accessibilityManager,
+            @NonNull Runnable onClosedRunnable,
             @NonNull DisplayManagerGlobal displayManagerGlobal) {
         mSession = Objects.requireNonNull(session);
+        mOnClosedRunnable = onClosedRunnable;
+        try {
+            mSession.setLifecycleCallback(this);
+        } catch (RemoteException e) {
+            e.rethrowFromSystemServer();
+        }
 
         final Display display = displayManagerGlobal.getRealDisplay(displayId);
         Objects.requireNonNull(display);
@@ -358,6 +402,50 @@ public final class ComputerControlSession implements AutoCloseable {
     }
 
     /**
+     * Sets a {@link LifecycleCallback} to be notified about the computer control session lifecycle
+     * changes.
+     *
+     * @throws IllegalStateException if a callback was previously set.
+     */
+    public void setLifecycleCallback(@NonNull @CallbackExecutor Executor executor,
+            @NonNull LifecycleCallback callback) {
+        Objects.requireNonNull(executor);
+        Objects.requireNonNull(callback);
+        synchronized (mLock) {
+            if (mLifecycleCallback != null) {
+                throw new IllegalStateException("Lifecycle callback was already registered!");
+            }
+            mLifecycleCallback = new LifecycleCallbackRecord(executor, callback);
+        }
+    }
+
+    /**
+     * Clears any {@link LifecycleCallback} that was previously set using
+     * {@link #setLifecycleCallback(Executor, LifecycleCallback)}.
+     *
+     * @throws IllegalStateException if a callback was not previously set.
+     */
+    public void clearLifecycleCallback() {
+        synchronized (mLock) {
+            if (mLifecycleCallback == null) {
+                throw new IllegalStateException("Lifecycle callback was never registered!");
+            }
+            mLifecycleCallback = null;
+        }
+    }
+
+    @Override
+    public void onClosed(@SessionCloseReason int closeReason) {
+        releaseResources();
+        synchronized (mLock) {
+            if (mLifecycleCallback != null) {
+                mLifecycleCallback.onClosed(closeReason);
+            }
+        }
+        mOnClosedRunnable.run();
+    }
+
+    /**
      * Returns all windows on the display associated with the {@link ComputerControlSession}.
      */
     @NonNull
@@ -412,7 +500,11 @@ public final class ComputerControlSession implements AutoCloseable {
         /**
          * Called when the session has been closed, either via an explicit call to {@link #close()},
          * or due to an automatic closure event, triggered by the framework.
+         *
+         * @deprecated use {@link LifecycleCallback}
+         * @see LifecycleCallback#setLifecycleCallback(Executor, LifecycleCallback)
          */
+        @Deprecated
         void onSessionClosed();
     }
 
@@ -428,6 +520,14 @@ public final class ComputerControlSession implements AutoCloseable {
     public interface StabilityListener {
         /** Called when the computer control session is considered stable. */
         void onSessionStable();
+    }
+
+    /**
+     * Callback to be notified about the computer control session lifecycle changes.
+     */
+    public interface LifecycleCallback {
+        /** Called when the computer control session is closed. */
+        void onClosed(@SessionCloseReason int reason);
     }
 
     /** @hide */
@@ -456,7 +556,7 @@ public final class ComputerControlSession implements AutoCloseable {
         public void onSessionCreated(int displayId, IVirtualDisplayCallback displayToken,
                 IComputerControlSession session) {
             mSession = new ComputerControlSession(displayId, displayToken, session,
-                    mContext.getSystemService(AccessibilityManager.class));
+                    mContext.getSystemService(AccessibilityManager.class), this::onSessionClosed);
             Binder.withCleanCallingIdentity(() ->
                     mExecutor.execute(() -> mCallback.onSessionCreated(mSession)));
         }
@@ -467,11 +567,26 @@ public final class ComputerControlSession implements AutoCloseable {
                     mExecutor.execute(() -> mCallback.onSessionCreationFailed(errorCode)));
         }
 
-        @Override
-        public void onSessionClosed() {
-            mSession.releaseResources();
+        private void onSessionClosed() {
             Binder.withCleanCallingIdentity(() ->
-                    mExecutor.execute(() -> mCallback.onSessionClosed()));
+                    mExecutor.execute(mCallback::onSessionClosed));
+        }
+    }
+
+    private static class LifecycleCallbackRecord implements LifecycleCallback {
+
+        private final Executor mExecutor;
+        private final LifecycleCallback mCallback;
+
+        LifecycleCallbackRecord(@NonNull Executor executor, @NonNull LifecycleCallback callback) {
+            mExecutor = executor;
+            mCallback = callback;
+        }
+
+        @Override
+        public void onClosed(@SessionCloseReason int reason) {
+            Binder.withCleanCallingIdentity(
+                    () -> mExecutor.execute(() -> mCallback.onClosed(reason)));
         }
     }
 }

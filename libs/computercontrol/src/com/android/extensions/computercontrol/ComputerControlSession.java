@@ -20,6 +20,7 @@ import android.annotation.CallbackExecutor;
 import android.annotation.IntRange;
 import android.app.Activity;
 import android.companion.virtual.computercontrol.ComputerControlSession.Action;
+import android.companion.virtual.computercontrol.ComputerControlSession.SessionCloseReason;
 import android.companion.virtual.computercontrol.InteractiveMirror;
 import android.content.ComponentName;
 import android.content.Context;
@@ -36,6 +37,7 @@ import androidx.annotation.VisibleForTesting;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.Executor;
 
 /**
@@ -197,6 +199,28 @@ public final class ComputerControlSession implements AutoCloseable {
     }
 
     /**
+     * Sets a {@link LifecycleCallback} to be notified about the computer control session lifecycle
+     * changes.
+     *
+     * @throws IllegalStateException if a callback was previously set.
+     */
+    public void setLifecycleCallback(@NonNull @CallbackExecutor Executor executor,
+            @NonNull LifecycleCallback callback) {
+        Objects.requireNonNull(callback);
+        mSession.setLifecycleCallback(executor, callback::onClosed);
+    }
+
+    /**
+     * Clears any {@link LifecycleCallback} that was previously set using
+     * {@link #setLifecycleCallback(Executor, LifecycleCallback)}.
+     *
+     * @throws IllegalStateException if a callback was not previously set.
+     */
+    public void clearLifecycleCallback() {
+        mSession.clearLifecycleCallback();
+    }
+
+    /**
      * Closes the ComputerControl session and release resources. The session can no longer be used
      * after calling this method.
      */
@@ -316,7 +340,13 @@ public final class ComputerControlSession implements AutoCloseable {
         /** Called when the session failed to be created. */
         void onSessionCreationFailed(int errorCode);
 
-        /** Called when the session has been closed. */
+        /**
+         * Called when the session has been closed.
+         *
+         * @deprecated use {@link LifecycleCallback} instead
+         * @see ComputerControlSession#setLifecycleCallback(Executor, LifecycleCallback)
+         */
+        @Deprecated
         void onSessionClosed();
     }
 
@@ -332,5 +362,14 @@ public final class ComputerControlSession implements AutoCloseable {
     public interface StabilityListener {
         /** Called when the computer control session is considered stable. */
         void onSessionStable();
+    }
+
+
+    /**
+     * Callback to be notified about the computer control session lifecycle changes.
+     */
+    public interface LifecycleCallback {
+        /** Called when the computer control session is closed. */
+        void onClosed(@SessionCloseReason int reason);
     }
 }

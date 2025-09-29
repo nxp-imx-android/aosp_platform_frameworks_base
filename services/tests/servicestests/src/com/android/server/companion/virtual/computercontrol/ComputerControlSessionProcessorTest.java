@@ -27,7 +27,6 @@ import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.timeout;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.testng.Assert.assertFalse;
@@ -192,9 +191,6 @@ public class ComputerControlSessionProcessorTest {
 
             // Close the first session.
             mSessionArgumentCaptor.getAllValues().getFirst().close();
-            // Closing an already-closed session should be a no-op.
-            mSessionArgumentCaptor.getAllValues().getFirst().close();
-            verify(mComputerControlSessionCallback, times(1)).onSessionClosed();
 
             mProcessor.processNewSessionRequest(
                     ATTRIBUTION_SOURCE, generateUniqueParams(-1), mComputerControlSessionCallback);
@@ -205,8 +201,6 @@ public class ComputerControlSessionProcessorTest {
             for (IComputerControlSession session : mSessionArgumentCaptor.getAllValues()) {
                 session.close();
             }
-            verify(mComputerControlSessionCallback, times(MAXIMUM_CONCURRENT_SESSIONS + 1))
-                    .onSessionClosed();
         }
     }
 
