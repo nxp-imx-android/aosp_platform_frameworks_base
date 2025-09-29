@@ -228,6 +228,10 @@ public class FingerprintProvider implements IBinder.DeathRecipient, ServiceProvi
 
     private void initSensors(boolean resetLockoutRequiresHardwareAuthToken, SensorProps[] props,
             GestureAvailabilityDispatcher gestureAvailabilityDispatcher) {
+        if (props == null) {
+            Slog.wtfStack(TAG, "Fingerprint properties is null");
+            return;
+        }
         if (!resetLockoutRequiresHardwareAuthToken) {
             Slog.d(getTag(), "Adding HIDL configs");
             for (SensorProps sensorConfig: props) {

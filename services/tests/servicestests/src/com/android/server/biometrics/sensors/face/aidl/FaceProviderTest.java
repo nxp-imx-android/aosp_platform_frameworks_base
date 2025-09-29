@@ -317,6 +317,18 @@ public class FaceProviderTest {
                 .scheduleClientMonitor(any(FaceGetAuthenticatorIdClient.class));
     }
 
+    @Test
+    public void testNullSensorProps() {
+        mFaceProvider = new FaceProvider(mContext, mBiometricStateCallback,
+                mAuthenticationStateListeners, null /* props */, TAG, mLockoutResetDispatcher,
+                mBiometricContext, mDaemon, mBiometricHandlerProvider, (fqName) -> mDaemon,
+                false /* resetLockoutRequiresChallenge */, false /* testHalEnabled */);
+
+        waitForIdle();
+
+        //No crash
+    }
+
     private void waitForIdle() {
         mLooper.dispatchAll();
     }
