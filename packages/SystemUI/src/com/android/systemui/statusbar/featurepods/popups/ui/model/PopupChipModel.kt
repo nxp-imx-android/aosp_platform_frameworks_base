@@ -28,6 +28,8 @@ sealed class PopupChipId(val value: String) {
     data object AvControlsIndicator : PopupChipId("AvControlsIndicator")
 
     data object ShareScreenPrivacyIndicator : PopupChipId("ShareScreenPrivacyIndicator")
+
+    data object AssistantIcon : PopupChipId("AssistantIcon")
 }
 
 /** Model for an optionally clickable icon that is displayed on the chip. */
@@ -43,6 +45,7 @@ sealed interface HoverBehavior {
 }
 
 /** Model for individual status bar popup chips. */
+// TODO(b/433589833): rename PopupChipModel to something more appropriate.
 sealed class PopupChipModel {
     abstract val logName: String
     abstract val chipId: PopupChipId

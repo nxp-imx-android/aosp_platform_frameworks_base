@@ -601,6 +601,13 @@ flag {
 }
 
 flag {
+    name: "status_bar_assistant_icon"
+    namespace: "systemui"
+    description: "Feature flag for the assistant icon in desktop status bar"
+    bug: "440281094"
+}
+
+flag {
     name: "new_volume_panel"
     namespace: "systemui"
     description: "Switches to the new volume panel (without Slices)."
