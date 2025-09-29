@@ -467,7 +467,11 @@ constructor(
                 keyguardTransitionInteractor.startedKeyguardTransitionStep.map {
                     it.to == KeyguardState.LOCKSCREEN || it.to == KeyguardState.GLANCEABLE_HUB
                 }
-            allOf(inAllowedDeviceState, inAllowedKeyguardState)
+            allOf(
+                inAllowedDeviceState,
+                inAllowedKeyguardState,
+                not(shadeInteractor.isAnyFullyExpanded),
+            )
         } else {
             inAllowedDeviceState
         }

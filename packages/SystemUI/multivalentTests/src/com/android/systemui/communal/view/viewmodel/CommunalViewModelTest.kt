@@ -1040,6 +1040,8 @@ class CommunalViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
             communalSettingsInteractor.setSuppressionReasons(
                 listOf(SuppressionReason.ReasonUnknown(FEATURE_MANUAL_OPEN))
             )
+            // Shade not expanded
+            shadeTestUtil.setLockscreenShadeExpansion(0f)
 
             val viewModel = createViewModel()
             val swipeToHubEnabled by collectLastValue(viewModel.swipeToHubEnabled)
@@ -1054,6 +1056,30 @@ class CommunalViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
                 transitionState = TransitionState.STARTED,
             )
             assertThat(swipeToHubEnabled).isFalse()
+        }
+
+    @Test
+    @EnableFlags(FLAG_GLANCEABLE_HUB_V2)
+    fun swipeToCommunal_falseWhenShadeExpanded() =
+        kosmos.runTest {
+            fakeKeyguardRepository.setStatusBarState(StatusBarState.KEYGUARD)
+            setCommunalV2ConfigEnabled(true)
+            fakeKeyguardTransitionRepository.sendTransitionStep(
+                from = KeyguardState.AOD,
+                to = KeyguardState.LOCKSCREEN,
+                transitionState = TransitionState.STARTED,
+            )
+            // Shade expanded
+            shadeTestUtil.setLockscreenShadeExpansion(1f)
+            communalSettingsInteractor.setSuppressionReasons(emptyList())
+
+            val viewModel = createViewModel()
+            val swipeToHubEnabled by collectLastValue(viewModel.swipeToHubEnabled)
+            assertThat(swipeToHubEnabled).isFalse()
+
+            // Shade collapsed
+            shadeTestUtil.setLockscreenShadeExpansion(0f)
+            assertThat(swipeToHubEnabled).isTrue()
         }
 
     @Test
