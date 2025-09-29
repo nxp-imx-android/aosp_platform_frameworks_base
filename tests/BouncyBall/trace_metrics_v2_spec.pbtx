@@ -90,8 +90,6 @@ query: {
           WHERE
             pct.upid = f.upid AND
             pct.name = 'relevant_frame' AND
-            /* TODO(b/437906487#comment12): Note we strongly suspect there is
-             *     a bug in this area. */
             /* 2 is the value of TRACE_STATE_IN_TEST_TIME in the APK.  We limit
              * our data to frames that happen while the app is in this state. */
             /*
