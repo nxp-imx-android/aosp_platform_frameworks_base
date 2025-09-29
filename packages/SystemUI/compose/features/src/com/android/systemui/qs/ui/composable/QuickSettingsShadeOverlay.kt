@@ -79,7 +79,7 @@ import com.android.systemui.development.ui.viewmodel.BuildNumberViewModel
 import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.media.remedia.ui.compose.Media
 import com.android.systemui.media.remedia.ui.compose.MediaPresentationStyle
-import com.android.systemui.notifications.ui.composable.SnoozeableHeadsUpNotificationSpace
+import com.android.systemui.notifications.ui.composable.SnoozableHeadsUpNotificationPlaceholder
 import com.android.systemui.qs.composefragment.ui.GridAnchor
 import com.android.systemui.qs.flags.QsDetailedView
 import com.android.systemui.qs.panels.ui.compose.EditMode
@@ -220,7 +220,7 @@ constructor(
                     containerViewModel = quickSettingsContainerViewModel,
                 )
             }
-            SnoozeableHeadsUpNotificationSpace(
+            SnoozableHeadsUpNotificationPlaceholder(
                 useDrawBounds = {
                     with(layoutState.transitionState) {
                         // When overlaid on top of the lock screen, drawBounds updates are already

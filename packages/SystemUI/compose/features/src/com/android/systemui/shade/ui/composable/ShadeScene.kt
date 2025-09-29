@@ -18,6 +18,7 @@ package com.android.systemui.shade.ui.composable
 
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement.spacedBy
 import androidx.compose.foundation.layout.Box
@@ -40,18 +41,14 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.graphics.CompositingStrategy
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.layout.Layout
-import androidx.compose.ui.layout.layoutId
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.dimensionResource
@@ -66,6 +63,7 @@ import com.android.compose.animation.scene.UserActionResult
 import com.android.compose.animation.scene.animateContentFloatAsState
 import com.android.compose.animation.scene.rememberMutableSceneTransitionLayoutState
 import com.android.compose.animation.scene.transitions
+import com.android.compose.gesture.effect.rememberOffsetOverscrollEffect
 import com.android.compose.gesture.gesturesDisabled
 import com.android.compose.lifecycle.LaunchedEffectWithLifecycle
 import com.android.compose.modifiers.padding
@@ -79,7 +77,8 @@ import com.android.systemui.lifecycle.ExclusiveActivatable
 import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.media.remedia.ui.compose.Media
 import com.android.systemui.media.remedia.ui.compose.MediaPresentationStyle
-import com.android.systemui.notifications.ui.composable.NotificationScrollingStack
+import com.android.systemui.notifications.ui.composable.NestedScrollingNotificationPanel
+import com.android.systemui.notifications.ui.composable.ScrollingNotificationPanel
 import com.android.systemui.qs.composefragment.ui.GridAnchor
 import com.android.systemui.qs.footer.ui.compose.FooterActionsWithAnimatedVisibility
 import com.android.systemui.qs.panels.ui.compose.EditMode
@@ -104,7 +103,6 @@ import com.android.systemui.statusbar.notification.stack.ui.viewmodel.Notificati
 import dagger.Lazy
 import javax.inject.Inject
 import kotlin.math.roundToInt
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 
 object Shade {
@@ -236,7 +234,6 @@ private fun ContentScope.SingleShade(
     val cutoutLocation = LocalDisplayCutout.current().location
     val cutoutInsets = WindowInsets.Companion.displayCutout
 
-    var maxNotifScrimTop by remember { mutableIntStateOf(0) }
     val tileSquishiness by
         animateContentFloatAsState(
             value = 1f,
@@ -257,19 +254,6 @@ private fun ContentScope.SingleShade(
 
     val shadeHorizontalPadding =
         dimensionResource(id = R.dimen.notification_panel_margin_horizontal)
-    val shadeMeasurePolicy =
-        remember(cutoutLocation, cutoutInsets) {
-            SingleShadeMeasurePolicy(
-                onNotificationsTopChanged = { maxNotifScrimTop = it },
-                cutoutInsetsProvider = {
-                    if (cutoutLocation == CutoutLocation.CENTER) {
-                        null
-                    } else {
-                        cutoutInsets
-                    }
-                },
-            )
-        }
 
     Box(
         modifier =
@@ -279,28 +263,38 @@ private fun ContentScope.SingleShade(
                 Modifier.graphicsLayer(compositingStrategy = CompositingStrategy.Offscreen)
             }
     ) {
+        val scrollState =
+            shadeSession.rememberSaveableSession(
+                saver = ScrollState.Saver,
+                key = "NestedScrollState",
+            ) {
+                ScrollState(initial = 0)
+            }
+        val scrimOverscrollEffect = rememberOffsetOverscrollEffect()
+
         ShadePanelScrim(viewModel.isTransparencyEnabled)
-        Layout(
+        SingleShadeNestedScrollLayout(
             modifier =
                 Modifier.thenIf(viewModel.isEmptySpaceClickable) {
                     Modifier.clickable(interactionSource = null, indication = null) {
                         viewModel.onEmptySpaceClicked()
                     }
                 },
-            content = {
-                CollapsedShadeHeader(
-                    viewModel = headerViewModel,
-                    isSplitShade = false,
-                    modifier = Modifier.layoutId(SingleShadeMeasurePolicy.LayoutId.ShadeHeader),
-                )
-
+            shadeSession = shadeSession,
+            viewModel = notificationsPlaceholderViewModel,
+            scrollState = scrollState,
+            scrimOverScrollEffect = scrimOverscrollEffect,
+            jankMonitor = jankMonitor,
+            statusBarHeader = {
+                CollapsedShadeHeader(viewModel = headerViewModel, isSplitShade = false)
+            },
+            mediaAndQqsHeader = {
                 val qqsLayoutPaddingBottom = 16.dp
                 val qsHorizontalMargin =
                     shadeHorizontalPadding + dimensionResource(id = R.dimen.qs_horizontal_margin)
                 MediaAndQqsLayout(
                     modifier =
                         Modifier.element(QuickSettings.Elements.QuickQuickSettingsAndMedia)
-                            .layoutId(SingleShadeMeasurePolicy.LayoutId.MediaAndQqs)
                             .padding(bottom = qqsLayoutPaddingBottom)
                             .padding(horizontal = qsHorizontalMargin),
                     tiles = {
@@ -318,56 +312,56 @@ private fun ContentScope.SingleShade(
                             }
                         }
                     },
-                    media =
-                        @Composable {
-                            if (isAlwaysComposedContentVisible()) {
-                                if (viewModel.isQsEnabled && viewModel.showMedia) {
-                                    Element(
-                                        key = Media.Elements.mediaCarousel,
-                                        modifier = Modifier,
-                                    ) {
-                                        Media(
-                                            viewModelFactory = viewModel.mediaViewModelFactory,
-                                            presentationStyle =
-                                                if (mediaInRow) {
-                                                    MediaPresentationStyle.Compressed
-                                                } else {
-                                                    MediaPresentationStyle.Default
-                                                },
-                                            behavior =
-                                                ShadeSceneContentViewModel.qqsMediaUiBehavior,
-                                            onDismissed = viewModel::onMediaSwipeToDismiss,
-                                        )
-                                    }
+                    media = {
+                        if (isAlwaysComposedContentVisible()) {
+                            if (viewModel.isQsEnabled && viewModel.showMedia) {
+                                Element(key = Media.Elements.mediaCarousel, modifier = Modifier) {
+                                    Media(
+                                        viewModelFactory = viewModel.mediaViewModelFactory,
+                                        presentationStyle =
+                                            if (mediaInRow) {
+                                                MediaPresentationStyle.Compressed
+                                            } else {
+                                                MediaPresentationStyle.Default
+                                            },
+                                        behavior = ShadeSceneContentViewModel.qqsMediaUiBehavior,
+                                        onDismissed = viewModel::onMediaSwipeToDismiss,
+                                    )
                                 }
-                            } else {
-                                // Add an empty box when QQS content is not visible to keep the same
-                                // number of elements.
-                                Box(modifier = Modifier)
                             }
-                        },
+                        } else {
+                            // Add an empty box when QQS content is not visible to keep the same
+                            // number of elements.
+                            Box(modifier = Modifier)
+                        }
+                    },
                     mediaInRow = mediaInRow,
                 )
-
-                NotificationScrollingStack(
+            },
+            scrollableScrim = { onContentHeightChanged ->
+                NestedScrollingNotificationPanel(
                     shadeSession = shadeSession,
                     stackScrollView = notificationStackScrollView,
                     viewModel = notificationsPlaceholderViewModel,
-                    jankMonitor = jankMonitor,
-                    maxScrimTop = { maxNotifScrimTop.toFloat() },
                     shouldPunchHoleBehindScrim = shouldPunchHoleBehindScrim,
                     isTransparencyEnabled = viewModel.isTransparencyEnabled,
                     stackTopPadding = notificationStackPadding,
                     stackBottomPadding = navBarHeight,
-                    supportNestedScrolling = true,
+                    scrollState = scrollState,
+                    overscrollEffect = scrimOverscrollEffect,
                     onEmptySpaceClick =
                         viewModel::onEmptySpaceClicked.takeIf { viewModel.isEmptySpaceClickable },
-                    modifier =
-                        Modifier.layoutId(SingleShadeMeasurePolicy.LayoutId.Notifications)
-                            .padding(horizontal = shadeHorizontalPadding),
+                    modifier = Modifier.padding(horizontal = shadeHorizontalPadding),
+                    onStackHeightChanged = { onContentHeightChanged.invoke(it) },
                 )
             },
-            measurePolicy = shadeMeasurePolicy,
+            cutoutInsetsProvider = {
+                if (cutoutLocation == CutoutLocation.CENTER) {
+                    null
+                } else {
+                    cutoutInsets
+                }
+            },
         )
         Box(
             modifier =
@@ -548,18 +542,15 @@ private fun ContentScope.SplitShade(
                         }
                     }
                 }
-
-                NotificationScrollingStack(
+                ScrollingNotificationPanel(
                     shadeSession = shadeSession,
                     stackScrollView = notificationStackScrollView,
                     viewModel = notificationsPlaceholderViewModel,
                     jankMonitor = jankMonitor,
-                    maxScrimTop = { 0f },
                     stackTopPadding = notificationStackPadding,
                     stackBottomPadding = notificationStackPadding,
                     shouldPunchHoleBehindScrim = false,
                     isTransparencyEnabled = viewModel.isTransparencyEnabled,
-                    supportNestedScrolling = false,
                     onEmptySpaceClick =
                         viewModel::onEmptySpaceClicked.takeIf { viewModel.isEmptySpaceClickable },
                     modifier =
