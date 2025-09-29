@@ -24,7 +24,6 @@ import android.content.Context;
 import android.graphics.Path;
 import android.graphics.PointF;
 import android.util.FloatProperty;
-import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewPropertyAnimator;
@@ -37,6 +36,7 @@ import androidx.dynamicanimation.animation.SpringForce;
 
 import com.android.wm.shell.Flags;
 import com.android.wm.shell.R;
+import com.android.wm.shell.shared.bubbles.logging.BubbleLog;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -52,7 +52,6 @@ import java.util.Set;
  * See physics-animation-layout.md.
  */
 public class PhysicsAnimationLayout extends FrameLayout {
-    private static final String TAG = "Bubbs.PAL";
 
     /**
      * Controls the construction, configuration, and use of the physics animations supplied by this
@@ -939,7 +938,8 @@ public class PhysicsAnimationLayout extends FrameLayout {
          */
         public void start(Runnable... after) {
             if (!isActiveController(mAssociatedController)) {
-                Log.w(TAG, "Only the active animation controller is allowed to start animations. "
+                BubbleLog.w("Only the active animation controller is allowed to start "
+                        + "animations. "
                         + "Use PhysicsAnimationLayout#setActiveController to set the active "
                         + "animation controller.");
                 return;
