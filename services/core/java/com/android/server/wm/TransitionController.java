@@ -1674,7 +1674,7 @@ class TransitionController {
     Transition createAndStartCollecting(int type) {
         if (isFlushing()) {
             if (Flags.fallbackTransitionPlayer()) {
-                throw new IllegalStateException("Can't create transition while flushing");
+                Slog.wtf(TAG, "Trying to create a transition while flushing");
             }
             return null;
         }
