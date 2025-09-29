@@ -6674,11 +6674,19 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
                 mInjector.binderRestoreCallingIdentity(ident);
             }
         }
-        DevicePolicyEventLogger
-                .createEvent(DevicePolicyEnums.LOCK_NOW)
-                .setAdmin(adminComponent)
-                .setInt(flags)
-                .write();
+        if (Flags.lockNowCoexistence()) {
+            DevicePolicyEventLogger
+                    .createEvent(DevicePolicyEnums.LOCK_NOW)
+                    .setAdmin(caller.getPackageName())
+                    .setInt(flags)
+                    .write();
+        } else {
+            DevicePolicyEventLogger
+                    .createEvent(DevicePolicyEnums.LOCK_NOW)
+                    .setAdmin(adminComponent)
+                    .setInt(flags)
+                    .write();
+        }
     }
 
     @Override
