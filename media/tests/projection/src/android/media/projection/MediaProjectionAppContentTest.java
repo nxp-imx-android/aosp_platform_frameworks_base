@@ -35,8 +35,10 @@ public class MediaProjectionAppContentTest {
         Bitmap mockBitmap = Bitmap.createBitmap(100, 100, Bitmap.Config.ARGB_8888);
 
         // Create a MediaProjectionAppContent object
-        MediaProjectionAppContent content = new MediaProjectionAppContent(mockBitmap, "Test Title",
-                123);
+        MediaProjectionAppContent content = new MediaProjectionAppContent.Builder(123)
+                .setThumbnail(mockBitmap)
+                .setTitle("Test Title")
+                .build();
 
         // Verify the values using getters
         assertThat(content.getTitle()).isEqualTo("Test Title");
@@ -53,8 +55,10 @@ public class MediaProjectionAppContentTest {
         Bitmap mockBitmap = Bitmap.createBitmap(100, 100, Bitmap.Config.ARGB_8888);
 
         // Create a MediaProjectionAppContent object
-        MediaProjectionAppContent content = new MediaProjectionAppContent(mockBitmap, "Test Title",
-                123);
+        MediaProjectionAppContent content = new MediaProjectionAppContent.Builder(123)
+                .setThumbnail(mockBitmap)
+                .setTitle("Test Title")
+                .build();
 
         // Parcel and unparcel the object
         Parcel parcel = Parcel.obtain();

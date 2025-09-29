@@ -75,7 +75,12 @@ class AppContentsViewModelImplTest : SysuiTestCase() {
             )
         }
     private val Kosmos.fakeMediaProjectionAppContent by
-        Kosmos.Fixture { MediaProjectionAppContent(fakeThumbnail, "FakeLabel", 123) }
+        Kosmos.Fixture {
+            MediaProjectionAppContent.Builder(123)
+                .setThumbnail(fakeThumbnail)
+                .setTitle("FakeLabel")
+                .build()
+        }
     private val Kosmos.fakeAppContent by
         Kosmos.Fixture { ScreenCaptureAppContent("FakeBasePackage", fakeMediaProjectionAppContent) }
     private val Kosmos.fakeAppContentViewModel by

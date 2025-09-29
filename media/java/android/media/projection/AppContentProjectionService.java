@@ -20,7 +20,6 @@ import android.annotation.EnforcePermission;
 import android.annotation.FlaggedApi;
 import android.annotation.SdkConstant;
 import android.app.Service;
-import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.IBinder;
@@ -46,7 +45,7 @@ import java.util.List;
  *     <li> set {@code android:exported="true"}
  *     <li> be protected by {@value android.Manifest.permission#MANAGE_MEDIA_PROJECTION}
  *     <li> set
- *     {@link MediaProjectionConfig.Builder#setOwnAppContentProvided(Context, boolean)} to
+ *     {@link MediaProjectionConfig.Builder#setOwnAppContentProvided(boolean)} to
  *     {@code true}
  * </ol>
  * <p>

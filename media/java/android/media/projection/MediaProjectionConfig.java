@@ -26,10 +26,6 @@ import android.annotation.IntRange;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.SuppressLint;
-import android.content.Context;
-import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.content.pm.ResolveInfo;
 import android.os.Parcelable;
 
 import com.android.media.projection.flags.Flags;
@@ -408,7 +404,7 @@ public final class MediaProjectionConfig implements Parcelable {
      * <p> If set, the requesting app's content will replace any other app content that might
      * have been enabled.
      *
-     * @see Builder#setOwnAppContentProvided(Context, boolean)
+     * @see Builder#setOwnAppContentProvided(boolean)
      * @see Builder#setSourceEnabled(int, boolean)
      * @see #PROJECTION_SOURCE_APP_CONTENT
      */
@@ -528,17 +524,7 @@ public final class MediaProjectionConfig implements Parcelable {
          */
         @NonNull
         @SuppressLint({"MissingGetterMatchingBuilder", "RequiresPermission"})
-        public Builder setOwnAppContentProvided(@NonNull Context context, boolean isEnabled) {
-            Intent checkIntent = new Intent(AppContentProjectionService.SERVICE_INTERFACE);
-            checkIntent.setPackage(context.getPackageName());
-            ResolveInfo appContentServiceResolveInfo = context.getPackageManager()
-                    .resolveService(checkIntent, PackageManager.MATCH_ALL);
-
-            if (appContentServiceResolveInfo == null) {
-                throw new IllegalStateException(
-                        "No service with an <intent-filter> defining action=%s found".formatted(
-                                AppContentProjectionService.SERVICE_INTERFACE));
-            }
+        public Builder setOwnAppContentProvided(boolean isEnabled) {
             mOwnAppContentProvided = isEnabled;
             return this;
         }
@@ -555,6 +541,7 @@ public final class MediaProjectionConfig implements Parcelable {
          * Note that setting this won't hide or change the name of the application
          * requesting the session.
          *
+         * @param requesterHint the text representing the requester of this session.
          * @return instance of this {@link Builder}.
          */
         @NonNull
@@ -595,5 +582,4 @@ public final class MediaProjectionConfig implements Parcelable {
                     mInitialSelection, mOwnAppContentProvided);
         }
     }
-
 }

@@ -34,7 +34,13 @@ constructor(@Assisted override val model: ScreenCaptureAppContent) : TargetViewM
 
     override val label: Result<CharSequence>? = Result.success(model.label)
 
-    override val thumbnail: Result<Bitmap>? = Result.success(model.thumbnail)
+    override val thumbnail: Result<Bitmap>? =
+        model.thumbnail?.let { Result.success(it) }
+            ?: Result.failure(
+                IllegalStateException(
+                    "No thumbnail for content ${model.packageName} ${model.contentId}"
+                )
+            )
 
     override val backgroundColorOpaque: Color = Color.Black
 
