@@ -602,6 +602,7 @@ public final class DisplayManagerGlobal {
 
     private void handleDisplayEvents(int displayId, int eventMask, boolean forceUpdate) {
         final DisplayInfo info;
+        boolean shouldNotifyNativeListeners  = false;
         synchronized (mLock) {
             info = getDisplayInfoLocked(displayId);
             if ((((eventMask & EVENT_DISPLAY_BASIC_CHANGED) != 0)
@@ -610,17 +611,30 @@ public final class DisplayManagerGlobal {
                 // Choreographer only supports a single display, so only dispatch refresh rate
                 // changes for the default display.
                 if (displayId == Display.DEFAULT_DISPLAY) {
-                    // We can likely save a binder hop if we attach the refresh rate onto the
-                    // listener.
-                    DisplayInfo display = getDisplayInfoLocked(displayId);
-                    if (display != null
-                            && mNativeCallbackReportedRefreshRate != display.getRefreshRate()) {
-                        mNativeCallbackReportedRefreshRate = display.getRefreshRate();
-                        // Signal native callbacks if we ever set a refresh rate.
-                        nSignalNativeCallbacks(mNativeCallbackReportedRefreshRate);
+                    if (Flags.nativeRrCallbacksOutsideLock()) {
+                        if (info != null
+                                && mNativeCallbackReportedRefreshRate != info.getRefreshRate()) {
+                            mNativeCallbackReportedRefreshRate = info.getRefreshRate();
+                            shouldNotifyNativeListeners = true;
+                        }
+                    } else {
+                        // We can likely save a binder hop if we attach the refresh rate onto the
+                        // listener.
+                        DisplayInfo display = getDisplayInfoLocked(displayId);
+                        if (display != null
+                                && mNativeCallbackReportedRefreshRate != display.getRefreshRate()) {
+                            mNativeCallbackReportedRefreshRate = display.getRefreshRate();
+                            // Signal native callbacks if we ever set a refresh rate.
+                            nSignalNativeCallbacks(mNativeCallbackReportedRefreshRate);
+                        }
                     }
                 }
             }
+        }
+
+        if (shouldNotifyNativeListeners) {
+            // Signal native callbacks if we ever set a refresh rate.
+            nSignalNativeCallbacks(mNativeCallbackReportedRefreshRate);
         }
         // Accepting an Executor means the listener may be synchronously invoked, so we must
         // not be holding mLock when we do so
