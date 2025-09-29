@@ -48,7 +48,7 @@ class OpenTrampolineAppInDesktopModeTaskPositionFlickerTest(flicker: FlickerTest
 
     @Rule
     @JvmField
-    val testSetupRule = Utils.testSetupRule(NavBar.MODE_GESTURAL, flicker.scenario.startRotation)
+    val testSetupRule = Utils.testSetupRule(NavBar.MODE_3BUTTON, flicker.scenario.startRotation)
     val scenario = OpenTrampolineAppInDesktopModeTaskPositionScenario()
     val finalTrampolineActivity = ActivityOptions.TrampolineFinishActivity.COMPONENT.toFlickerComponent()
 
@@ -83,7 +83,7 @@ class OpenTrampolineAppInDesktopModeTaskPositionFlickerTest(flicker: FlickerTest
         @JvmStatic
         fun getParams(): Collection<FlickerChecker> {
             return FlickerTestFactory.nonRotationTests(
-                supportedNavigationModes = listOf(NavBar.MODE_GESTURAL)
+                supportedNavigationModes = listOf(NavBar.MODE_3BUTTON)
             )
         }
     }
