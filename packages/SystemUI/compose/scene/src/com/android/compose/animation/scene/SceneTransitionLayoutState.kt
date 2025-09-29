@@ -643,6 +643,7 @@ internal class MutableSceneTransitionLayoutStateImpl(
         // Update the transition specs.
         val spec = transitions.transitionSpec(fromContent, toContent, key = transition.key)
         transition._cuj = spec.cuj
+        transition._cujTag = spec.cujTag
         transition.transformationSpec = spec.transformationSpec(transition)
         transition.previewTransformationSpec = spec.previewTransformationSpec(transition)
     }

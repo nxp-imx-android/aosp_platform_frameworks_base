@@ -140,6 +140,7 @@ fun SceneContainer(
                     from = transition.fromContent,
                     to = transition.toContent,
                     cuj = transition.cuj,
+                    cujTag = transition.cujTag,
                 )
             },
             onTransitionEnd = { transition ->

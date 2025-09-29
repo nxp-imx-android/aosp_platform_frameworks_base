@@ -59,6 +59,7 @@ interface SceneTransitionsBuilder {
         to: ContentKey,
         key: TransitionKey? = null,
         @CujType cuj: Int? = null,
+        cujTag: String? = null,
         preview: (TransitionBuilder.() -> Unit)? = null,
         reversePreview: (TransitionBuilder.() -> Unit)? = null,
         builder: TransitionBuilder.() -> Unit = {},
@@ -86,6 +87,7 @@ interface SceneTransitionsBuilder {
         to: ContentKey? = null,
         key: TransitionKey? = null,
         @CujType cuj: Int? = null,
+        cujTag: String? = null,
         preview: (TransitionBuilder.() -> Unit)? = null,
         reversePreview: (TransitionBuilder.() -> Unit)? = null,
         builder: TransitionBuilder.() -> Unit = {},
@@ -154,6 +156,9 @@ interface TransitionBuilder : BaseTransitionBuilder {
 
     /** The CUJ associated to this transitions. */
     @CujType var cuj: Int?
+
+    /** The string appended to the CUJ */
+    var cujTag: String?
 
     /**
      * Define a timestamp-based range for the transformations inside [builder].

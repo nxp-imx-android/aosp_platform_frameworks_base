@@ -108,6 +108,21 @@ public class InteractionJankMonitorTest {
     }
 
     @Test
+    public void testBeginEnd_inputView_withTag() {
+        InteractionJankMonitor monitor = createMockedInteractionJankMonitor();
+        FrameTracker tracker = createMockedFrameTracker();
+        doReturn(tracker).when(monitor).createFrameTracker(any());
+        doNothing().when(tracker).begin();
+        doReturn(true).when(tracker).end(anyInt());
+
+        // Simulate a trace session and see if begin / end are invoked.
+        assertThat(monitor.begin(mView, Cuj.CUJ_NOTIFICATION_SHADE_EXPAND_COLLAPSE, "t")).isTrue();
+        verify(tracker).begin();
+        assertThat(monitor.end(Cuj.CUJ_NOTIFICATION_SHADE_EXPAND_COLLAPSE)).isTrue();
+        verify(tracker).end(REASON_END_NORMAL);
+    }
+
+    @Test
     public void testBeginEnd_inputSurfaceControl() {
         InteractionJankMonitor monitor = createMockedInteractionJankMonitor();
         FrameTracker tracker = createMockedFrameTracker();

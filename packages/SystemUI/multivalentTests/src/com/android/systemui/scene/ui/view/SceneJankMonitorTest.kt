@@ -74,6 +74,22 @@ class SceneJankMonitorTest : SysuiTestCase() {
         }
 
     @Test
+    fun onTransitionStart_withProvidedCujTag_beginsThatCuj() =
+        kosmos.runTest {
+            val cuj = 1337
+            val cujTag = "Expand"
+            underTest.onTransitionStart(
+                view = mock(),
+                from = Scenes.Communal,
+                to = Scenes.Dream,
+                cuj = cuj,
+                cujTag = cujTag,
+            )
+            verify(interactionJankMonitor).begin(any(), eq(cuj), eq(cujTag))
+            verify(interactionJankMonitor, never()).end(anyInt())
+        }
+
+    @Test
     fun onTransitionEnd_withProvidedCuj_endsThatCuj() =
         kosmos.runTest {
             val cuj = 1337
