@@ -32,9 +32,7 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.LocalContext
@@ -44,7 +42,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import com.android.compose.animation.scene.ElementContentScope
 import com.android.compose.modifiers.height
-import com.android.compose.modifiers.padding
 import com.android.compose.theme.PlatformTheme
 import com.android.keyguard.dagger.KeyguardStatusBarViewComponent
 import com.android.systemui.common.shared.model.Icon as IconModel
@@ -155,7 +152,6 @@ constructor(
 
     @Composable
     private fun SignOutButton() {
-        val context = LocalContext.current
         if (viewModel.isSignOutButtonVisible) {
             Button(
                 onClick = viewModel::onSignOut,

@@ -234,10 +234,10 @@ constructor(
                     },
                 transitions = {
                     from(from = WideScenes.CenteredClock, to = WideScenes.TwoColumn.LargeClock) {
-                        spec = tween(ClockCenteringDurationMS, easing = Easings.Emphasized)
+                        spec = tween(CLOCK_CENTERING_DURATION_MILLIS, easing = Easings.Emphasized)
                     }
                     from(from = WideScenes.TwoColumn.LargeClock, to = WideScenes.CenteredClock) {
-                        spec = tween(ClockCenteringDurationMS, easing = Easings.Emphasized)
+                        spec = tween(CLOCK_CENTERING_DURATION_MILLIS, easing = Easings.Emphasized)
                     }
                     from(from = WideScenes.CenteredClock, to = WideScenes.TwoColumn.SmallClock) {
                         configureClockTransition(
@@ -383,7 +383,7 @@ constructor(
     }
 
     companion object {
-        const val ClockCenteringDurationMS = 1000
+        const val CLOCK_CENTERING_DURATION_MILLIS = 1000
 
         enum class LayoutType {
             WIDE,

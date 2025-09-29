@@ -30,7 +30,7 @@ import com.android.systemui.shared.R as sharedR
 class DefaultClockSteppingTransition(private val clock: ClockController) : Transition() {
     init {
         interpolator = Interpolators.LINEAR
-        duration = LockscreenUpperRegionElementProvider.ClockCenteringDurationMS.toLong()
+        duration = LockscreenUpperRegionElementProvider.CLOCK_CENTERING_DURATION_MILLIS.toLong()
         addTarget(clock.largeClock.view)
         addTarget(sharedR.id.date_smartspace_view_large)
     }
