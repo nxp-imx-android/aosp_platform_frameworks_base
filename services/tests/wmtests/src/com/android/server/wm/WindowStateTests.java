@@ -104,7 +104,6 @@ import android.os.Build;
 import android.os.IBinder;
 import android.os.InputConfig;
 import android.os.RemoteException;
-import android.os.UserHandle;
 import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
@@ -134,7 +133,6 @@ import androidx.test.filters.SmallTest;
 
 import com.android.compatibility.common.util.SystemUtil;
 import com.android.internal.R;
-import com.android.server.am.UserState;
 import com.android.server.inputmethod.InputMethodManagerInternal;
 import com.android.server.testutils.StubTransaction;
 import com.android.server.wm.SensitiveContentPackages.PackageInfo;
@@ -935,12 +933,13 @@ public class WindowStateTests extends WindowTestsBase {
     @Test
     @EnableFlags(com.android.server.accessibility
             .Flags.FLAG_ENABLE_MAGNIFICATION_MAGNIFY_NAV_BAR_AND_IME)
-    public void testSwitchUser_settingValueIsDisabled_shouldNotMagnify() {
+    @DisableFlags(Flags.FLAG_APPLY_DESK_ACTIVATION_ON_USER_SWITCH)
+    public void testSwitchUser_settingValueIsDisabled_shouldNotMagnify_deskUserSwitchDisabled() {
         final ContentResolver cr = useFakeSettingsProvider();
         Settings.Secure.putIntForUser(cr,
                 Settings.Secure.ACCESSIBILITY_MAGNIFICATION_MAGNIFY_NAV_AND_IME, 0, 1);
 
-        mWm.setCurrentUser(1, new UserState(UserHandle.of(1)));
+        mWm.setCurrentUser(1);
 
         assertFalse(mWm.isMagnifyImeEnabled());
     }
@@ -948,12 +947,41 @@ public class WindowStateTests extends WindowTestsBase {
     @Test
     @EnableFlags(com.android.server.accessibility
             .Flags.FLAG_ENABLE_MAGNIFICATION_MAGNIFY_NAV_BAR_AND_IME)
+    @DisableFlags(Flags.FLAG_APPLY_DESK_ACTIVATION_ON_USER_SWITCH)
+    public void testSwitchUser_settingValueIsEnabled_shouldMagnify_deskUserSwitchDisabled() {
+        final ContentResolver cr = useFakeSettingsProvider();
+        Settings.Secure.putIntForUser(cr,
+                Settings.Secure.ACCESSIBILITY_MAGNIFICATION_MAGNIFY_NAV_AND_IME, 1, 2);
+
+        mWm.setCurrentUser(2);
+
+        assertTrue(mWm.isMagnifyImeEnabled());
+    }
+
+    @Test
+    @EnableFlags({com.android.server.accessibility
+            .Flags.FLAG_ENABLE_MAGNIFICATION_MAGNIFY_NAV_BAR_AND_IME,
+            Flags.FLAG_APPLY_DESK_ACTIVATION_ON_USER_SWITCH})
+    public void testSwitchUser_settingValueIsDisabled_shouldNotMagnify() {
+        final ContentResolver cr = useFakeSettingsProvider();
+        Settings.Secure.putIntForUser(cr,
+                Settings.Secure.ACCESSIBILITY_MAGNIFICATION_MAGNIFY_NAV_AND_IME, 0, 1);
+
+        mWm.prepareUserStart(1);
+
+        assertFalse(mWm.isMagnifyImeEnabled());
+    }
+
+    @Test
+    @EnableFlags({com.android.server.accessibility
+            .Flags.FLAG_ENABLE_MAGNIFICATION_MAGNIFY_NAV_BAR_AND_IME,
+            Flags.FLAG_APPLY_DESK_ACTIVATION_ON_USER_SWITCH})
     public void testSwitchUser_settingValueIsEnabled_shouldMagnify() {
         final ContentResolver cr = useFakeSettingsProvider();
         Settings.Secure.putIntForUser(cr,
                 Settings.Secure.ACCESSIBILITY_MAGNIFICATION_MAGNIFY_NAV_AND_IME, 1, 2);
 
-        mWm.setCurrentUser(2, new UserState(UserHandle.of(2)));
+        mWm.prepareUserStart(2);
 
         assertTrue(mWm.isMagnifyImeEnabled());
     }

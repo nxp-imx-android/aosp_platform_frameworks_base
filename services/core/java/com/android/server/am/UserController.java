@@ -2267,7 +2267,11 @@ class UserController implements Handler.Callback {
             // it should be moved outside, but for now it's not as there are many calls to
             // external components here afterwards
             updateProfileRelatedCaches();
-            mInjector.getWindowManager().setCurrentUser(userId, uss);
+            if (DesktopExperienceFlags.ENABLE_APPLY_DESK_ACTIVATION_ON_USER_SWITCH.isTrue()) {
+                mInjector.getWindowManager().prepareUserStart(userId);
+            } else {
+                mInjector.getWindowManager().setCurrentUser(userId);
+            }
             mInjector.reportCurWakefulnessUsageEvent();
             // Once the internal notion of the active user has switched, we lock the device
             // with the option to show the user switcher on the keyguard.
@@ -2395,7 +2399,13 @@ class UserController implements Handler.Callback {
 
         if (foreground) {
             t.traceBegin("moveUserToForeground");
-            moveUserToForeground(uss, userId);
+            if (DesktopExperienceFlags.ENABLE_APPLY_DESK_ACTIVATION_ON_USER_SWITCH.isTrue()) {
+                mInjector.getWindowManager().startUserSwitchTransition(oldCurUserId, userId, uss);
+            } else {
+                mInjector.getWindowManager().moveUserToForeground(userId, uss,
+                        "continueStartUserInternal");
+            }
+            EventLogTags.writeAmSwitchUser(userId);
             t.traceEnd();
         } else {
             t.traceBegin("finishUserBoot");
@@ -3219,20 +3229,6 @@ class UserController implements Handler.Callback {
         } else {
             runnable.run();
         }
-    }
-
-    private void moveUserToForeground(UserState uss, int newUserId) {
-        if (DesktopExperienceFlags.ENABLE_APPLY_DESK_ACTIVATION_ON_USER_SWITCH.isTrue()) {
-            mInjector.taskSupervisorResumeFocusedStackTopActivity();
-        } else {
-            boolean homeInFront = mInjector.taskSupervisorSwitchUser(newUserId, uss);
-            if (homeInFront) {
-                mInjector.startHomeActivity(newUserId, "moveUserToForeground");
-            } else {
-                mInjector.taskSupervisorResumeFocusedStackTopActivity();
-            }
-        }
-        EventLogTags.writeAmSwitchUser(newUserId);
     }
 
     // The two methods sendUserStartedBroadcast() and sendUserStartingBroadcast()
