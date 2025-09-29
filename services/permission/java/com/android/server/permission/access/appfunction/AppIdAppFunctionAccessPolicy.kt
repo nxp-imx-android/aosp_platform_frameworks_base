@@ -224,7 +224,7 @@ class AppIdAppFunctionAccessPolicy : SchemePolicy() {
             return false
         }
 
-        return allowedAgent.certificateDigestOrNull == null ||
+        return !allowedAgent.hasCertificateDigest() ||
             possibleAgent.androidPackage
                 ?.signingDetails
                 ?.hasSha256Certificate(allowedAgent.certificateDigest) == true
