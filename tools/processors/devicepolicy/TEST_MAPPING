@@ -2,11 +2,15 @@
   "postsubmit": [
     {
       "name": "DevicePolicyAnnotationProcessorTests"
+    }, {
+      "name": "FrameworksServicesTests_devicepolicy"
     }
   ],
   "presubmit": [
     {
       "name": "DevicePolicyAnnotationProcessorTests"
+    }, {
+      "name": "FrameworksServicesTests_devicepolicy"
     }
   ]
 }
