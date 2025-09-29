@@ -20,6 +20,7 @@ import com.android.systemui.authentication.domain.interactor.authenticationInter
 import com.android.systemui.bouncer.domain.interactor.alternateBouncerInteractor
 import com.android.systemui.deviceentry.data.repository.deviceEntryRepository
 import com.android.systemui.keyguard.dismissCallbackRegistry
+import com.android.systemui.keyguard.domain.interactor.keyguardDismissActionInteractor
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.applicationCoroutineScope
 import com.android.systemui.log.table.logcatTableLogBuffer
@@ -38,5 +39,6 @@ val Kosmos.deviceEntryInteractor by
             dismissCallbackRegistry = { dismissCallbackRegistry },
             sceneBackInteractor = { sceneBackInteractor },
             tableLogBuffer = { logcatTableLogBuffer(this, "sceneFrameworkTableLogBuffer") },
+            keyguardDismissActionInteractor = { keyguardDismissActionInteractor },
         )
     }
