@@ -67,6 +67,8 @@ public final class MultiuserNonComplianceLoggerTest {
 
                            0 apps called isMainUser()
 
+                           0 activities blocked on HSU
+
                            0 activities launched on HSU
                            """);
     }
@@ -99,6 +101,27 @@ public final class MultiuserNonComplianceLoggerTest {
                              UID 10001 (pkg3): 2 calls
                              UID 10002 (unknown): 1 calls
 
+                           0 activities blocked on HSU
+
+                           0 activities launched on HSU
+                           """);
+    }
+
+    @Test
+    public void testLogBlockedHsuActivity() {
+        mLogger.logBlockedHsuActivity(ComponentName.createRelative("some.pkg", ".SomeActivity"));
+        mHandler.flush();
+
+        assertWithMessage("dump() after logging a blocked activity on HSU")
+                .that(dump(mLogger))
+                .isEqualTo("""
+                           0 apps called getMainUser()
+
+                           0 apps called isMainUser()
+
+                           1 activities blocked on HSU
+                             some.pkg/.SomeActivity
+
                            0 activities launched on HSU
                            """);
     }
@@ -108,15 +131,39 @@ public final class MultiuserNonComplianceLoggerTest {
         mLogger.logLaunchedHsuActivity(ComponentName.createRelative("some.pkg", ".SomeActivity"));
         mHandler.flush();
 
-        assertWithMessage("dump() after logging an activity on HSU")
+        assertWithMessage("dump() after logging a launched activity on HSU")
                 .that(dump(mLogger))
                 .isEqualTo("""
                            0 apps called getMainUser()
 
                            0 apps called isMainUser()
 
+                           0 activities blocked on HSU
+
                            1 activities launched on HSU
                              some.pkg/.SomeActivity
+                           """);
+    }
+
+    @Test
+    public void testLogBlockedAndLaunchedHsuActivities() {
+        mLogger.logBlockedHsuActivity(ComponentName.createRelative("some.pkg", ".SomeActivity"));
+        mLogger.logLaunchedHsuActivity(
+                ComponentName.createRelative("some.pkg", ".AwesomeActivity"));
+        mHandler.flush();
+
+        assertWithMessage("dump() after logging blocked and launched activities on HSU")
+                .that(dump(mLogger))
+                .isEqualTo("""
+                           0 apps called getMainUser()
+
+                           0 apps called isMainUser()
+
+                           1 activities blocked on HSU
+                             some.pkg/.SomeActivity
+
+                           1 activities launched on HSU
+                             some.pkg/.AwesomeActivity
                            """);
     }
 
@@ -134,6 +181,8 @@ public final class MultiuserNonComplianceLoggerTest {
                            0 apps called getMainUser()
 
                            0 apps called isMainUser()
+
+                           0 activities blocked on HSU
 
                            0 activities launched on HSU
                            """);
