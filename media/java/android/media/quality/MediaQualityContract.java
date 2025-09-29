@@ -775,6 +775,14 @@ public class MediaQualityContract {
         public static final String PARAMETER_PICTURE_QUALITY_EVENT_TYPE =
                 "picture_quality_event_type";
 
+        /**
+         * @hide
+         *
+         */
+        public static final String PARAMETER_STREAM_STATUS =
+                "stream_status";
+
+
         private PictureQuality() {
         }
     }
