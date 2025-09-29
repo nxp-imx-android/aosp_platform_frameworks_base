@@ -20,9 +20,9 @@ import android.content.Intent
 import android.platform.test.annotations.EnableFlags
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
-import com.android.systemui.Flags
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.broadcast.broadcastDispatcher
+import com.android.systemui.clock.ClockModernization
 import com.android.systemui.clock.domain.interactor.ClockInteractor
 import com.android.systemui.clock.domain.interactor.clockInteractor
 import com.android.systemui.kosmos.Kosmos
@@ -234,7 +234,7 @@ class ClockViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(Flags.FLAG_CLOCK_MODERNIZATION)
+    @EnableFlags(ClockModernization.FLAG_NAME)
     fun showSeconds_is24HourFormatTrue_clockTextUpdates() =
         kosmos.runTest {
             fakeSystemClock.setCurrentTimeMillis(CURRENT_TIME_MILLIS)
@@ -255,7 +255,7 @@ class ClockViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(Flags.FLAG_CLOCK_MODERNIZATION)
+    @EnableFlags(ClockModernization.FLAG_NAME)
     fun showSeconds_is24HourFormatFalse_clockTextUpdates() =
         kosmos.runTest {
             fakeSystemClock.setCurrentTimeMillis(CURRENT_TIME_MILLIS)
