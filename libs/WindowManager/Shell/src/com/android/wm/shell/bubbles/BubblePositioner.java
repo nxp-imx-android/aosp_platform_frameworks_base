@@ -927,6 +927,11 @@ public class BubblePositioner implements BubbleDropTargetBoundsProvider {
         return mBubbleBarTopOnScreen;
     }
 
+    /** Returns the distance between the bubble bar top position and the bottom of the screen. */
+    public int getBubbleBarTopFromScreenBottom() {
+        return getScreenRect().bottom - getBubbleBarTopOnScreen();
+    }
+
     /**
      * How wide the expanded view should be when showing from the bubble bar.
      */
