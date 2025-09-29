@@ -415,17 +415,20 @@ public class NavigationBarControllerImpl implements
             return;
         }
 
-        // We may show TaskBar on the default display for large screen device. Don't need to create
-        // navigation bar for this case.
-        if (isOnDefaultDisplay && initializeTaskbarIfNecessary()) {
+        // Taskbar on connected displays will be created by TaskbarManager through display
+        // decoration callback.
+        if (!isOnDefaultDisplay) {
             return;
         }
 
-        final Context context = isOnDefaultDisplay
-                ? mContext
-                : mContext.createDisplayContext(display);
+        // We may show TaskBar on the default display for large screen device. Don't need to create
+        // navigation bar for this case.
+        if (initializeTaskbarIfNecessary()) {
+            return;
+        }
+
         NavigationBarComponent component = mNavigationBarComponentFactory.create(
-                context, savedState);
+                mContext, savedState);
         NavigationBar navBar = component.getNavigationBar();
         navBar.init();
         mNavigationBars.put(displayId, navBar);
