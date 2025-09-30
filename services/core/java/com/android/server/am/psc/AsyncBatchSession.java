@@ -109,7 +109,7 @@ public class AsyncBatchSession extends BatchSession {
     }
 
     @Override
-    protected void onClose() {
+    protected void onLastClose() {
         final ArrayList<Runnable> list = new ArrayList<>(mBatchList);
         final boolean runUpdate = mRunUpdate;
 

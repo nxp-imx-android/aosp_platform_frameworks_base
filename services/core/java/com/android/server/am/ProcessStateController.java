@@ -166,8 +166,8 @@ public class ProcessStateController {
 
     private SyncBatchSession getBatchSession() {
         if (mBatchSession == null) {
-            mBatchSession = new SyncBatchSession(this::runFullUpdateImpl,
-                    this::runPendingUpdateImpl);
+            mBatchSession = new SyncBatchSession(this::enqueueUpdateTargetImpl,
+                    this::runFullUpdateImpl, this::runPendingUpdateImpl);
         }
         return mBatchSession;
     }
@@ -186,6 +186,16 @@ public class ProcessStateController {
      */
     @GuardedBy("mLock")
     public void enqueueUpdateTarget(@Nullable ProcessRecord proc) {
+        if (mBatchSession != null && mBatchSession.isActive()) {
+            // BatchSession is active and a process has been enqueued for an update.
+            getBatchSession().maybeEnqueueProcess(proc);
+            return;
+        }
+        enqueueUpdateTargetImpl(proc);
+    }
+
+    @GuardedBy("mLock")
+    private void enqueueUpdateTargetImpl(@Nullable ProcessRecordInternal proc) {
         mOomAdjuster.enqueueOomAdjTargetLocked(proc);
     }
 
@@ -232,7 +242,7 @@ public class ProcessStateController {
     }
 
     @GuardedBy("mLock")
-    private void runPendingUpdateImpl(@OomAdjReason int oomAdjReason) {
+    public void runPendingUpdateImpl(@OomAdjReason int oomAdjReason) {
         commitStagedEvents();
         mOomAdjuster.updateOomAdjPendingTargetsLocked(oomAdjReason);
     }

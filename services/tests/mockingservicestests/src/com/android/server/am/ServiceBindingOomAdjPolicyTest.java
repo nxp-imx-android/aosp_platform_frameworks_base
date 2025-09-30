@@ -702,7 +702,7 @@ public final class ServiceBindingOomAdjPolicyTest {
                 USER_SYSTEM            // userId
         ));
 
-        verify(mAms.mProcessStateController, bindMode).runPendingUpdate(anyInt());
+        verify(mAms.mProcessStateController, bindMode).runPendingUpdateImpl(anyInt());
         clearInvocations(mAms.mProcessStateController);
 
         if (clientApp.isFreezable()) {
@@ -714,7 +714,7 @@ public final class ServiceBindingOomAdjPolicyTest {
         // Unbind the service.
         mAms.unbindService(serviceConnection);
 
-        verify(mAms.mProcessStateController, unbindMode).runPendingUpdate(anyInt());
+        verify(mAms.mProcessStateController, unbindMode).runPendingUpdateImpl(anyInt());
         clearInvocations(mAms.mProcessStateController);
 
         removeProcessRecord(clientApp);
