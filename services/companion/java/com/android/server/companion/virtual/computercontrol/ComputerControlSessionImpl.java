@@ -20,6 +20,8 @@ import static android.companion.virtual.VirtualDeviceParams.DEVICE_POLICY_CUSTOM
 import static android.companion.virtual.VirtualDeviceParams.POLICY_TYPE_ACTIVITY;
 import static android.companion.virtual.VirtualDeviceParams.POLICY_TYPE_AUDIO;
 import static android.companion.virtual.VirtualDeviceParams.POLICY_TYPE_BLOCKED_ACTIVITY;
+import static android.companion.virtual.computercontrol.ComputerControlSession.CLOSE_REASON_CALLER_INITIATED;
+import static android.companion.virtual.computercontrol.ComputerControlSession.CLOSE_REASON_SESSION_TIMED_OUT;
 
 import android.annotation.IntRange;
 import android.annotation.NonNull;
@@ -35,6 +37,7 @@ import android.companion.virtual.VirtualDeviceParams;
 import android.companion.virtual.audio.VirtualAudioDevice;
 import android.companion.virtual.computercontrol.ComputerControlSession;
 import android.companion.virtual.computercontrol.ComputerControlSessionParams;
+import android.companion.virtual.computercontrol.IComputerControlLifecycleCallback;
 import android.companion.virtual.computercontrol.IComputerControlSession;
 import android.companion.virtual.computercontrol.IInteractiveMirror;
 import android.companion.virtual.computercontrol.InteractiveMirror;
@@ -72,6 +75,7 @@ import android.view.SurfaceControl;
 import android.view.ViewConfiguration;
 import android.view.WindowManager;
 
+import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.inputmethod.IRemoteComputerControlInputConnection;
 import com.android.internal.inputmethod.InputConnectionCommandHeader;
@@ -172,6 +176,10 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
     private ScheduledFuture<?> mSwipeFuture;
     private ScheduledFuture<?> mInsertTextFuture;
     private ScheduledFuture<?> mCloseSessionFuture;
+
+    private final Object mLifecycleCallbackLock = new Object();
+    @GuardedBy("mLifecycleCallbackLock")
+    private IComputerControlLifecycleCallback mLifecycleCallback;
 
     ComputerControlSessionImpl(Context context, IBinder appToken,
             ComputerControlSessionParams params, AttributionSource attributionSource,
@@ -501,7 +509,33 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
     }
 
     @Override
+    public void setLifecycleCallback(IComputerControlLifecycleCallback callback) {
+        synchronized (mLifecycleCallbackLock) {
+            mLifecycleCallback = callback;
+        }
+    }
+
+    @Override
     public void close() throws RemoteException {
+        close(CLOSE_REASON_CALLER_INITIATED);
+    }
+
+    void close(@ComputerControlSession.SessionCloseReason int closeReason)
+            throws RemoteException {
+        releaseResources();
+        synchronized (mLifecycleCallbackLock) {
+            if (mLifecycleCallback != null) {
+                try {
+                    mLifecycleCallback.onClosed(closeReason);
+                    mLifecycleCallback = null;
+                } catch (RemoteException e) {
+                    Slog.w(TAG, "Failed to send LifeCycleCallback#onClosed");
+                }
+            }
+        }
+    }
+
+    private void releaseResources() throws RemoteException {
         cancelOngoingKeyGestures();
         cancelOngoingTouchGestures();
         cancelPendingCloseSession();
@@ -581,13 +615,13 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
 
     private void startSessionCloseGlobalTimeout() {
         mCloseSessionFuture = mScheduler.schedule(() -> {
-                    try {
-                        close();
-                    } catch (RemoteException e) {
-                        throw e.rethrowFromSystemServer();
-                    }
-                },
-                mGlobalSessionTimeoutDurationMs, TimeUnit.MILLISECONDS);
+            try {
+                close(CLOSE_REASON_SESSION_TIMED_OUT);
+            } catch (RemoteException e) {
+                throw e.rethrowFromSystemServer();
+            }
+        },
+        mGlobalSessionTimeoutDurationMs, TimeUnit.MILLISECONDS);
     }
 
     private void cancelOngoingKeyGestures() {

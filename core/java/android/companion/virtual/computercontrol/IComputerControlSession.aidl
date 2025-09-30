@@ -16,6 +16,7 @@
 
 package android.companion.virtual.computercontrol;
 
+import android.companion.virtual.computercontrol.IComputerControlLifecycleCallback;
 import android.companion.virtual.computercontrol.IInteractiveMirror;
 import android.view.SurfaceControl;
 
@@ -57,6 +58,9 @@ interface IComputerControlSession {
 
     /** Performs computer control action on the computer control display. */
     void performAction(int actionCode);
+
+    /** Sets a callback to be notified about computer control lifecycle changes. */
+    void setLifecycleCallback(in IComputerControlLifecycleCallback listener);
 
     /** Closes this session. */
     void close();

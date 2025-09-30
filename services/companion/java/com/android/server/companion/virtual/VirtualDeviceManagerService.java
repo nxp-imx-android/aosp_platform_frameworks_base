@@ -650,7 +650,7 @@ public class VirtualDeviceManagerService extends SystemService {
             return mAutomatedPackagesRepository.createAutomatedAppLaunchWarningIntent(
                     packageName, userId, /* callingPackageName= */ null,
                     /* deviceOwnerForLaunchDisplayId= */ null,
-                    mComputerControlSessionProcessor::closeSession);
+                    mComputerControlSessionProcessor::closeSessionByUserIntent);
         }
 
         @Override // Binder call
@@ -983,7 +983,7 @@ public class VirtualDeviceManagerService extends SystemService {
             final String deviceOwnerForLaunchDisplayId = getDeviceOwnerForDisplayId(displayId);
             return mAutomatedPackagesRepository.createAutomatedAppLaunchWarningIntent(
                     packageName, userId, callingPackageName, deviceOwnerForLaunchDisplayId,
-                    mComputerControlSessionProcessor::closeSession);
+                    mComputerControlSessionProcessor::closeSessionByUserIntent);
         }
 
         @Override
