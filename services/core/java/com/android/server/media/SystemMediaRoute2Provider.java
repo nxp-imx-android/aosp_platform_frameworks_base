@@ -35,6 +35,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.UserHandle;
 import android.text.TextUtils;
+import android.util.ArraySet;
 import android.util.Log;
 import android.util.Slog;
 
@@ -47,7 +48,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * Provides routes for local playbacks such as phone speaker, wired headset, or Bluetooth speakers.
@@ -362,15 +362,16 @@ class SystemMediaRoute2Provider extends MediaRoute2Provider {
                     new RoutingSessionInfo.Builder(SYSTEM_SESSION_ID, packageName)
                             .setSystemSession(true);
             Set<String> selectedRouteIds =
-                    selectedDeviceRoutes.stream()
-                            .map(MediaRoute2Info::getId)
-                            .collect(Collectors.toUnmodifiableSet());
+                    new ArraySet<>(/* capacity= */ selectedDeviceRoutes.size());
+            for (var selectedRoute : selectedDeviceRoutes) {
+                var routeId = selectedRoute.getId();
+                selectedRouteIds.add(routeId);
+                builder.addSelectedRoute(routeId);
+            }
 
             for (MediaRoute2Info route : mDeviceRouteController.getAvailableRoutes()) {
                 String routeId = route.getId();
-                if (selectedRouteIds.contains(routeId)) {
-                    builder.addSelectedRoute(routeId);
-                } else {
+                if (!selectedRouteIds.contains(routeId)) {
                     builder.addTransferableRoute(routeId);
                 }
             }
