@@ -16,10 +16,16 @@
 package com.android.server.usb.hal.port;
 
 import android.hardware.usb.DisplayPortAltModeInfo;
+import android.hardware.usb.PowerProfileInfo;
+import android.hardware.usb.PowerProfileMatchInfo;
 import android.hardware.usb.UsbPort;
 import android.hardware.usb.UsbPortStatus;
 import android.os.Parcel;
 import android.os.Parcelable;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * Used for storing the raw data from the HAL.
@@ -49,6 +55,13 @@ public final class RawPortInfo implements Parcelable {
     public DisplayPortAltModeInfo displayPortAltModeInfo;
     public boolean supportsPartnerBc12Type;
     public int partnerBc12Type;
+    public boolean supportsPowerProfiles;
+    public ArrayList<PowerProfileInfo> portSinkPowerProfiles;
+    public ArrayList<PowerProfileInfo> portSourcePowerProfiles;
+    public ArrayList<PowerProfileInfo> partnerSinkPowerProfiles;
+    public ArrayList<PowerProfileInfo> partnerSourcePowerProfiles;
+    public ArrayList<PowerProfileMatchInfo> portSinkPowerProfileMatches;
+    public ArrayList<PowerProfileMatchInfo> portSourcePowerProfileMatches;
 
     private RawPortInfo(Builder builder) {
         this.portId = builder.mPortId;
@@ -76,6 +89,13 @@ public final class RawPortInfo implements Parcelable {
         this.displayPortAltModeInfo = builder.mDisplayPortAltModeInfo;
         this.supportsPartnerBc12Type = builder.mSupportsPartnerBc12Type;
         this.partnerBc12Type = builder.mPartnerBc12Type;
+        this.supportsPowerProfiles = builder.mSupportsPowerProfiles;
+        this.portSinkPowerProfiles = builder.mPortSinkPowerProfiles;
+        this.portSourcePowerProfiles = builder.mPortSourcePowerProfiles;
+        this.partnerSinkPowerProfiles = builder.mPartnerSinkPowerProfiles;
+        this.partnerSourcePowerProfiles = builder.mPartnerSourcePowerProfiles;
+        this.portSinkPowerProfileMatches = builder.mPortSinkPowerProfileMatches;
+        this.portSourcePowerProfileMatches = builder.mPortSourcePowerProfileMatches;
     }
 
     private RawPortInfo(Parcel in) {
@@ -106,7 +126,31 @@ public final class RawPortInfo implements Parcelable {
         }
         this.supportsPartnerBc12Type = in.readByte() != 0;
         this.partnerBc12Type = in.readInt();
-
+        this.supportsPowerProfiles = in.readByte() != 0;
+        ArrayList<PowerProfileInfo> portSinkPowerProfiles = new ArrayList<>();
+        ArrayList<PowerProfileInfo> portSourcePowerProfiles = new ArrayList<>();
+        ArrayList<PowerProfileInfo> partnerSinkPowerProfiles = new ArrayList<>();
+        ArrayList<PowerProfileInfo> partnerSourcePowerProfiles = new ArrayList<>();
+        in.readParcelableList(portSinkPowerProfiles, ClassLoader.getSystemClassLoader(),
+                PowerProfileInfo.class);
+        in.readParcelableList(portSourcePowerProfiles, ClassLoader.getSystemClassLoader(),
+                PowerProfileInfo.class);
+        in.readParcelableList(partnerSinkPowerProfiles, ClassLoader.getSystemClassLoader(),
+                PowerProfileInfo.class);
+        in.readParcelableList(partnerSourcePowerProfiles, ClassLoader.getSystemClassLoader(),
+                PowerProfileInfo.class);
+        this.portSinkPowerProfiles = portSinkPowerProfiles;
+        this.portSourcePowerProfiles = portSourcePowerProfiles;
+        this.partnerSinkPowerProfiles = partnerSinkPowerProfiles;
+        this.partnerSourcePowerProfiles = partnerSourcePowerProfiles;
+        ArrayList<PowerProfileMatchInfo> portSinkPowerProfileMatches = new ArrayList<>();
+        ArrayList<PowerProfileMatchInfo> portSourcePowerProfileMatches = new ArrayList<>();
+        in.readParcelableList(portSinkPowerProfileMatches, ClassLoader.getSystemClassLoader(),
+                PowerProfileMatchInfo.class);
+        in.readParcelableList(portSourcePowerProfileMatches,
+                ClassLoader.getSystemClassLoader(), PowerProfileMatchInfo.class);
+        this.portSinkPowerProfileMatches = portSinkPowerProfileMatches;
+        this.portSourcePowerProfileMatches = portSourcePowerProfileMatches;
     }
 
     @Override
@@ -141,6 +185,13 @@ public final class RawPortInfo implements Parcelable {
         }
         dest.writeBoolean(supportsPartnerBc12Type);
         dest.writeInt(partnerBc12Type);
+        dest.writeBoolean(supportsPowerProfiles);
+        dest.writeParcelableList(portSinkPowerProfiles, 0);
+        dest.writeParcelableList(portSourcePowerProfiles, 0);
+        dest.writeParcelableList(partnerSinkPowerProfiles, 0);
+        dest.writeParcelableList(partnerSourcePowerProfiles, 0);
+        dest.writeParcelableList(portSinkPowerProfileMatches, 0);
+        dest.writeParcelableList(portSourcePowerProfileMatches, 0);
     }
 
     public static final Parcelable.Creator<RawPortInfo> CREATOR =
@@ -180,6 +231,13 @@ public final class RawPortInfo implements Parcelable {
         private DisplayPortAltModeInfo mDisplayPortAltModeInfo;
         private boolean mSupportsPartnerBc12Type;
         private int mPartnerBc12Type;
+        private boolean mSupportsPowerProfiles;
+        private ArrayList<PowerProfileInfo> mPortSinkPowerProfiles;
+        private ArrayList<PowerProfileInfo> mPortSourcePowerProfiles;
+        private ArrayList<PowerProfileInfo> mPartnerSinkPowerProfiles;
+        private ArrayList<PowerProfileInfo> mPartnerSourcePowerProfiles;
+        private ArrayList<PowerProfileMatchInfo> mPortSinkPowerProfileMatches;
+        private ArrayList<PowerProfileMatchInfo> mPortSourcePowerProfileMatches;
 
         public Builder(String portId) {
             this.mPortId = portId;
@@ -205,6 +263,13 @@ public final class RawPortInfo implements Parcelable {
             mDisplayPortAltModeInfo = null;
             mSupportsPartnerBc12Type = false;
             mPartnerBc12Type = UsbPortStatus.BC12_TYPE_UNKNOWN;
+            mSupportsPowerProfiles = false;
+            mPortSinkPowerProfiles = new ArrayList<>();
+            mPortSourcePowerProfiles = new ArrayList<>();
+            mPartnerSinkPowerProfiles = new ArrayList<>();
+            mPartnerSourcePowerProfiles = new ArrayList<>();
+            mPortSinkPowerProfileMatches = new ArrayList<>();
+            mPortSourcePowerProfileMatches = new ArrayList<>();
         }
 
         /**
@@ -424,6 +489,58 @@ public final class RawPortInfo implements Parcelable {
          */
         public Builder setPartnerBc12Type(int val) {
             mPartnerBc12Type = val;
+            return this;
+        }
+
+        /**
+         * Sets the power profile reporting capability of {@link RawPortInfo}
+         *
+         * @return instance of {@link Builder}
+         */
+        public Builder setSupportsPowerProfiles(boolean val) {
+            mSupportsPowerProfiles = val;
+            return this;
+        }
+
+        /**
+         * Sets the port power profiles of {@link RawPortInfo}
+         *
+         * @return Instance of {@link Builder}
+         */
+        public Builder setPortPowerProfiles(PowerProfileInfo[] sinkPowerProfiles,
+                                            PowerProfileInfo[] sourcePowerProfiles) {
+            List<PowerProfileInfo> sinkProfilesList = Arrays.asList(sinkPowerProfiles);
+            List<PowerProfileInfo> sourceProfilesList = Arrays.asList(sourcePowerProfiles);
+            mPortSinkPowerProfiles.addAll(new ArrayList<>(sinkProfilesList));
+            mPortSourcePowerProfiles.addAll(new ArrayList<>(sourceProfilesList));
+            return this;
+        }
+
+        /**
+         * Sets the partner power profiles of {@link RawPortInfo}
+         *
+         * @return Instance of {@link Builder}
+         */
+        public Builder setPartnerPowerProfiles(PowerProfileInfo[] sinkPowerProfiles,
+                                               PowerProfileInfo[] sourcePowerProfiles) {
+            List<PowerProfileInfo> sinkProfilesList = Arrays.asList(sinkPowerProfiles);
+            List<PowerProfileInfo> sourceProfilesList = Arrays.asList(sourcePowerProfiles);
+            mPartnerSinkPowerProfiles.addAll(new ArrayList<>(sinkProfilesList));
+            mPartnerSourcePowerProfiles.addAll(new ArrayList<>(sourceProfilesList));
+            return this;
+        }
+
+        /**
+         * Sets the power profile match results of {@link RawPortInfo}
+         *
+         * @return Instance of {@link Builder}
+         */
+        public Builder setPowerProfileMatchInfo(PowerProfileMatchInfo[] portSinkMatches,
+                PowerProfileMatchInfo[] portSourceMatches) {
+            List<PowerProfileMatchInfo> portSinkMatchList = Arrays.asList(portSinkMatches);
+            List<PowerProfileMatchInfo> portSourceMatchList = Arrays.asList(portSourceMatches);
+            mPortSinkPowerProfileMatches.addAll(new ArrayList<>(portSinkMatchList));
+            mPortSourcePowerProfileMatches.addAll(new ArrayList<>(portSourceMatchList));
             return this;
         }
 

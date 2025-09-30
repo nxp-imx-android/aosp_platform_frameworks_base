@@ -108,6 +108,7 @@ public final class UsbPort {
     private final boolean mSupportsComplianceWarnings;
     private final @AltModeType int mSupportedAltModes;
     private final boolean mSupportsPartnerBc12Type;
+    private final boolean mSupportsPowerProfiles;
 
     private static final int NUM_DATA_ROLES = Constants.PortDataRole.NUM_DATA_ROLES;
     /**
@@ -299,6 +300,7 @@ public final class UsbPort {
         mSupportsComplianceWarnings = builder.mSupportsComplianceWarnings;
         mSupportedAltModes = builder.mSupportedAltModes;
         mSupportsPartnerBc12Type = builder.mSupportsPartnerBc12Type;
+        mSupportsPowerProfiles = builder.mSupportsPowerProfiles;
     }
 
     /** @hide */
@@ -334,6 +336,7 @@ public final class UsbPort {
         mSupportsComplianceWarnings = supportsComplianceWarnings;
         mSupportedAltModes = supportedAltModes;
         mSupportsPartnerBc12Type = false;
+        mSupportsPowerProfiles = false;
     }
 
     /**
@@ -464,6 +467,22 @@ public final class UsbPort {
     @FlaggedApi(Flags.FLAG_ENABLE_POWER_PROFILE_REPORTING)
     public boolean supportsPartnerBc12Type() {
         return mSupportsPartnerBc12Type;
+    }
+
+    /**
+     * Returns whether the port supports reporting port and partner source/sink power profiles.
+     * If the port does not support this feature, then
+     * {@link UsbPortStatus#getPortSinkPowerProfiles},
+     * {@link UsbPortStatus#getPortSourcePowerProfiles},
+     * {@link UsbPortStatus#getPartnerSinkPowerProfiles},
+     * and {@link UsbPortStatus#getPartnerSourcePowerProfiles} will all return an empty List.
+     *
+     * @return true if the local port reports port and partner source/sink power profiles,
+     *         false otherwise
+     */
+    @FlaggedApi(Flags.FLAG_ENABLE_POWER_PROFILE_REPORTING)
+    public boolean supportsPowerProfiles() {
+        return mSupportsPowerProfiles;
     }
 
     /**
@@ -951,7 +970,9 @@ public final class UsbPort {
                 + ", supportsComplianceWarnings="
                 + mSupportsComplianceWarnings
                 + ", supportsPartnerBc12Type="
-                + mSupportsPartnerBc12Type;
+                + mSupportsPartnerBc12Type
+                + ", supportsPowerProfiles="
+                + mSupportsPowerProfiles;
     }
 
     /**
@@ -969,6 +990,7 @@ public final class UsbPort {
         private boolean mSupportsComplianceWarnings;
         private @AltModeType int mSupportedAltModes;
         private boolean mSupportsPartnerBc12Type;
+        private boolean mSupportsPowerProfiles;
 
         public Builder() {
             mId = "";
@@ -1080,6 +1102,18 @@ public final class UsbPort {
         @NonNull
         public Builder setSupportsPartnerBc12Type(boolean supportsFeature) {
             mSupportsPartnerBc12Type = supportsFeature;
+            return this;
+        }
+
+        /**
+         * Sets whether or not the {@link UsbPort} supports reporting local and partner port
+         * power profile information.
+         *
+         * @return Instance of {@link Builder}
+         */
+        @NonNull
+        public Builder setSupportsPowerProfiles(boolean supportsFeature) {
+            mSupportsPowerProfiles = supportsFeature;
             return this;
         }
 

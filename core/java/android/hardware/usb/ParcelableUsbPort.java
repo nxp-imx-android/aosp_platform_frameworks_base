@@ -37,6 +37,7 @@ public final class ParcelableUsbPort implements Parcelable {
     private final boolean mSupportsComplianceWarnings;
     private final int mSupportedAltModesMask;
     private final boolean mSupportsPartnerBc12Type;
+    private final boolean mSupportsPowerProfiles;
 
     private ParcelableUsbPort(@NonNull String id, int supportedModes,
             int supportedContaminantProtectionModes,
@@ -44,7 +45,8 @@ public final class ParcelableUsbPort implements Parcelable {
             boolean supportsEnableContaminantPresenceDetection,
             boolean supportsComplianceWarnings,
             int supportedAltModesMask,
-            boolean supportsPartnerBc12Type) {
+            boolean supportsPartnerBc12Type,
+            boolean supportsPowerProfiles) {
         mId = id;
         mSupportedModes = supportedModes;
         mSupportedContaminantProtectionModes = supportedContaminantProtectionModes;
@@ -56,6 +58,7 @@ public final class ParcelableUsbPort implements Parcelable {
                 supportsComplianceWarnings;
         mSupportedAltModesMask = supportedAltModesMask;
         mSupportsPartnerBc12Type = supportsPartnerBc12Type;
+        mSupportsPowerProfiles = supportsPowerProfiles;
     }
 
     /**
@@ -72,7 +75,8 @@ public final class ParcelableUsbPort implements Parcelable {
                 port.supportsEnableContaminantPresenceDetection(),
                 port.supportsComplianceWarnings(),
                 port.getSupportedAltModesMask(),
-                port.supportsPartnerBc12Type());
+                port.supportsPartnerBc12Type(),
+                port.supportsPowerProfiles());
     }
 
     /**
@@ -95,6 +99,7 @@ public final class ParcelableUsbPort implements Parcelable {
         builder.setSupportsComplianceWarnings(mSupportsComplianceWarnings);
         builder.setSupportedAltModes(mSupportedAltModesMask);
         builder.setSupportsPartnerBc12Type(mSupportsPartnerBc12Type);
+        builder.setSupportsPowerProfiles(mSupportsPowerProfiles);
 
         return builder.build();
     }
@@ -114,6 +119,7 @@ public final class ParcelableUsbPort implements Parcelable {
         dest.writeBoolean(mSupportsComplianceWarnings);
         dest.writeInt(mSupportedAltModesMask);
         dest.writeBoolean(mSupportsPartnerBc12Type);
+        dest.writeBoolean(mSupportsPowerProfiles);
     }
 
     public static final @android.annotation.NonNull Creator<ParcelableUsbPort> CREATOR =
@@ -128,6 +134,7 @@ public final class ParcelableUsbPort implements Parcelable {
                     boolean supportsComplianceWarnings = in.readBoolean();
                     int supportedAltModesMask = in.readInt();
                     boolean supportsPartnerBc12Type = in.readBoolean();
+                    boolean supportsPowerProfiles = in.readBoolean();
 
                     return new ParcelableUsbPort(id, supportedModes,
                             supportedContaminantProtectionModes,
@@ -135,7 +142,8 @@ public final class ParcelableUsbPort implements Parcelable {
                             supportsEnableContaminantPresenceDetection,
                             supportsComplianceWarnings,
                             supportedAltModesMask,
-                            supportsPartnerBc12Type);
+                            supportsPartnerBc12Type,
+                            supportsPowerProfiles);
                 }
 
                 @Override

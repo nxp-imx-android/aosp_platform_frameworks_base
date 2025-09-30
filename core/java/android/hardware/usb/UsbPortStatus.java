@@ -30,6 +30,9 @@ import com.android.internal.annotations.Immutable;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Describes the status of a USB port.
@@ -57,7 +60,12 @@ public final class UsbPortStatus implements Parcelable {
      */
     private final @Nullable DisplayPortAltModeInfo mDisplayPortAltModeInfo;
     private final @Bc12Type int mPartnerBc12Type;
-
+    private final @NonNull List<PowerProfileInfo> mPortSinkPowerProfiles;
+    private final @NonNull List<PowerProfileInfo> mPortSourcePowerProfiles;
+    private final @NonNull List<PowerProfileInfo> mPartnerSinkPowerProfiles;
+    private final @NonNull List<PowerProfileInfo> mPartnerSourcePowerProfiles;
+    private final @NonNull List<PowerProfileMatchInfo> mPortSinkPowerProfileMatches;
+    private final @NonNull List<PowerProfileMatchInfo> mPortSourcePowerProfileMatches;
 
     /**
      * Power role: This USB port does not have a power role.
@@ -505,6 +513,9 @@ public final class UsbPortStatus implements Parcelable {
 
     /** @hide */
     public UsbPortStatus(Builder builder) {
+        int portIndex;
+        int partnerIndex;
+
         mCurrentMode = builder.mCurrentMode;
         mCurrentPowerRole = builder.mCurrentPowerRole;
         mCurrentDataRole = builder.mCurrentDataRole;
@@ -518,6 +529,31 @@ public final class UsbPortStatus implements Parcelable {
         mPlugState = builder.mPlugState;
         mDisplayPortAltModeInfo = builder.mDisplayPortAltModeInfo;
         mPartnerBc12Type = builder.mPartnerBc12Type;
+        mPortSinkPowerProfiles = builder.mPortSinkPowerProfiles;
+        mPortSourcePowerProfiles = builder.mPortSourcePowerProfiles;
+        mPartnerSinkPowerProfiles = builder.mPartnerSinkPowerProfiles;
+        mPartnerSourcePowerProfiles = builder.mPartnerSourcePowerProfiles;
+        mPortSinkPowerProfileMatches = builder.mPortSinkPowerProfileMatches;
+        mPortSourcePowerProfileMatches = builder.mPortSourcePowerProfileMatches;
+
+        // Assign Matching Profiles to Power Profiles + Match Info
+        for (PowerProfileMatchInfo matchInfo : mPortSinkPowerProfileMatches) {
+            portIndex = matchInfo.getPortIndex();
+            partnerIndex = matchInfo.getPartnerIndex();
+            mPortSinkPowerProfiles.get(portIndex).addMatchingPowerProfile(
+                mPartnerSourcePowerProfiles.get(partnerIndex), matchInfo);
+            mPartnerSourcePowerProfiles.get(partnerIndex).addMatchingPowerProfile(
+                mPortSinkPowerProfiles.get(portIndex), matchInfo);
+        }
+
+        for (PowerProfileMatchInfo matchInfo : mPortSourcePowerProfileMatches) {
+            portIndex = matchInfo.getPortIndex();
+            partnerIndex = matchInfo.getPartnerIndex();
+            mPortSourcePowerProfiles.get(portIndex).addMatchingPowerProfile(
+                mPartnerSinkPowerProfiles.get(partnerIndex), matchInfo);
+            mPartnerSinkPowerProfiles.get(partnerIndex).addMatchingPowerProfile(
+                mPortSourcePowerProfiles.get(portIndex), matchInfo);
+        }
     }
 
     /** @hide */
@@ -556,6 +592,12 @@ public final class UsbPortStatus implements Parcelable {
         mPlugState = plugState;
         mDisplayPortAltModeInfo = displayPortAltModeInfo;
         mPartnerBc12Type = BC12_TYPE_UNKNOWN;
+        mPortSinkPowerProfiles = Collections.emptyList();
+        mPortSourcePowerProfiles = Collections.emptyList();
+        mPartnerSinkPowerProfiles = Collections.emptyList();
+        mPartnerSourcePowerProfiles = Collections.emptyList();
+        mPortSinkPowerProfileMatches = Collections.emptyList();
+        mPortSourcePowerProfileMatches = Collections.emptyList();
     }
 
     /** @hide */
@@ -757,6 +799,64 @@ public final class UsbPortStatus implements Parcelable {
         return mPartnerBc12Type;
     }
 
+    /**
+     * Returns the port sink power profiles.
+     *
+     * @return a {@link #List} containing {@link #PowerProfileInfo} objects that describe the
+     * USB power sink capabilities for the {@link #UsbPort} that this {@link #UsbPortStatus}
+     * corresponds to. The list will be empty if the USB port does not support reporting
+     * power profiles, or if the USB port does not sink power over USB.
+     */
+    @FlaggedApi(Flags.FLAG_ENABLE_POWER_PROFILE_REPORTING)
+    @NonNull
+    public List<PowerProfileInfo> getPortSinkPowerProfiles() {
+        return Collections.unmodifiableList(mPortSinkPowerProfiles);
+    }
+
+    /**
+     * Returns the port source power profiles
+     *
+     * @return a {@link #List} containing {@link #PowerProfileInfo} objects that describe the
+     * USB power source capabilities for the {@link #UsbPort} that this {@link #UsbPortStatus}
+     * corresponds to. The list will be empty if the USB port does not support reporting
+     * power profiles, or if the USB port does not source power over USB.
+     */
+    @FlaggedApi(Flags.FLAG_ENABLE_POWER_PROFILE_REPORTING)
+    @NonNull
+    public List<PowerProfileInfo> getPortSourcePowerProfiles() {
+        return Collections.unmodifiableList(mPortSourcePowerProfiles);
+    }
+
+    /**
+     * Returns the partner sink power profiles
+     *
+     * @return a {@link #List} containing {@link #PowerProfileInfo} objects that describe the
+     * USB power sink capabilities for the port partner of the {@link #UsbPort}
+     * that this {@link #UsbPortStatus} corresponds to. The list will be empty if the USB port
+     * does not support reporting power profiles, or if the USB port partner does not sink
+     * power over USB.
+     */
+    @FlaggedApi(Flags.FLAG_ENABLE_POWER_PROFILE_REPORTING)
+    @NonNull
+    public List<PowerProfileInfo> getPartnerSinkPowerProfiles() {
+        return Collections.unmodifiableList(mPartnerSinkPowerProfiles);
+    }
+
+    /**
+     * Returns the partner source power profiles
+     *
+     * @return a {@link #List} containing {@link #PowerProfileInfo} objects that describe the
+     * USB power source capabilities for the port partner of the {@link #UsbPort}
+     * that this {@link #UsbPortStatus} corresponds to. The list will be empty if the USB port
+     * does not support reporting power profiles, or if the USB port partner does not source
+     * power over USB.
+     */
+    @FlaggedApi(Flags.FLAG_ENABLE_POWER_PROFILE_REPORTING)
+    @NonNull
+    public List<PowerProfileInfo> getPartnerSourcePowerProfiles() {
+        return Collections.unmodifiableList(mPartnerSourcePowerProfiles);
+    }
+
     @NonNull
     @Override
     public String toString() {
@@ -784,8 +884,38 @@ public final class UsbPortStatus implements Parcelable {
                 + ", displayPortAltModeInfo="
                         + mDisplayPortAltModeInfo
                 + ", bc12Type="
-                        + UsbPort.bc12TypeToString(mPartnerBc12Type)
-                + "}");
+                        + UsbPort.bc12TypeToString(mPartnerBc12Type));
+        mString.append(", mPortSinkPowerProfiles={");
+        for (PowerProfileInfo profile : mPortSinkPowerProfiles) {
+            mString.append(profile.toString());
+            mString.append(", ");
+        }
+        mString.append("} , mPortSourcePowerProfiles={");
+        for (PowerProfileInfo profile : mPortSourcePowerProfiles) {
+            mString.append(profile.toString());
+            mString.append(", ");
+        }
+        mString.append("} , mPartnerSinkPowerProfiles={");
+        for (PowerProfileInfo profile : mPartnerSinkPowerProfiles) {
+            mString.append(profile.toString());
+            mString.append(", ");
+        }
+        mString.append("} , mPartnerSourcePowerProfiles={");
+        for (PowerProfileInfo profile : mPartnerSourcePowerProfiles) {
+            mString.append(profile.toString());
+            mString.append(", ");
+        }
+        mString.append("} , mPortSinkPowerProfileMatches={");
+        for (PowerProfileMatchInfo matchInfo : mPortSinkPowerProfileMatches) {
+            mString.append(matchInfo.toString());
+            mString.append(", ");
+        }
+        mString.append("} , mPortSourcePowerProfileMatches={");
+        for (PowerProfileMatchInfo matchInfo : mPortSourcePowerProfileMatches) {
+            mString.append(matchInfo.toString());
+            mString.append(", ");
+        }
+        mString.append("}");
         return mString.toString();
     }
 
@@ -814,6 +944,12 @@ public final class UsbPortStatus implements Parcelable {
             mDisplayPortAltModeInfo.writeToParcel(dest, 0);
         }
         dest.writeInt(mPartnerBc12Type);
+        dest.writeParcelableList(mPortSinkPowerProfiles, 0);
+        dest.writeParcelableList(mPortSourcePowerProfiles, 0);
+        dest.writeParcelableList(mPartnerSinkPowerProfiles, 0);
+        dest.writeParcelableList(mPartnerSourcePowerProfiles, 0);
+        dest.writeParcelableList(mPortSinkPowerProfileMatches, 0);
+        dest.writeParcelableList(mPortSourcePowerProfileMatches, 0);
     }
 
     public static final @NonNull Parcelable.Creator<UsbPortStatus> CREATOR =
@@ -840,6 +976,24 @@ public final class UsbPortStatus implements Parcelable {
                 displayPortAltModeInfo = null;
             }
             int bc12Type = in.readInt();
+            List<PowerProfileInfo> portSinkPowerProfiles = new ArrayList<>();
+            List<PowerProfileInfo> portSourcePowerProfiles = new ArrayList<>();
+            List<PowerProfileInfo> partnerSinkPowerProfiles = new ArrayList<>();
+            List<PowerProfileInfo> partnerSourcePowerProfiles = new ArrayList<>();
+            List<PowerProfileMatchInfo> portSinkMatches = new ArrayList<>();
+            List<PowerProfileMatchInfo> portSourceMatches = new ArrayList<>();
+            in.readParcelableList(portSinkPowerProfiles, ClassLoader.getSystemClassLoader(),
+                    PowerProfileInfo.class);
+            in.readParcelableList(portSourcePowerProfiles, ClassLoader.getSystemClassLoader(),
+                    PowerProfileInfo.class);
+            in.readParcelableList(partnerSinkPowerProfiles, ClassLoader.getSystemClassLoader(),
+                    PowerProfileInfo.class);
+            in.readParcelableList(partnerSourcePowerProfiles, ClassLoader.getSystemClassLoader(),
+                    PowerProfileInfo.class);
+            in.readParcelableList(portSinkMatches, ClassLoader.getSystemClassLoader(),
+                    PowerProfileMatchInfo.class);
+            in.readParcelableList(portSourceMatches, ClassLoader.getSystemClassLoader(),
+                    PowerProfileMatchInfo.class);
 
             builder.setCurrentMode(currentMode);
             builder.setCurrentRoles(currentPowerRole, currentDataRole);
@@ -853,6 +1007,9 @@ public final class UsbPortStatus implements Parcelable {
             builder.setPlugState(plugState);
             builder.setDisplayPortAltModeInfo(displayPortAltModeInfo);
             builder.setPartnerBc12Type(bc12Type);
+            builder.setPortPowerProfiles(portSinkPowerProfiles, portSourcePowerProfiles);
+            builder.setPartnerPowerProfiles(partnerSinkPowerProfiles, partnerSourcePowerProfiles);
+            builder.setPowerProfileMatchInfo(portSinkMatches, portSourceMatches);
 
             return new UsbPortStatus(builder);
         }
@@ -882,6 +1039,12 @@ public final class UsbPortStatus implements Parcelable {
         private @PlugState int mPlugState;
         private @Nullable DisplayPortAltModeInfo mDisplayPortAltModeInfo;
         private @Bc12Type int mPartnerBc12Type;
+        private List<PowerProfileInfo> mPortSinkPowerProfiles;
+        private List<PowerProfileInfo> mPortSourcePowerProfiles;
+        private List<PowerProfileInfo> mPartnerSinkPowerProfiles;
+        private List<PowerProfileInfo> mPartnerSourcePowerProfiles;
+        private List<PowerProfileMatchInfo> mPortSinkPowerProfileMatches;
+        private List<PowerProfileMatchInfo> mPortSourcePowerProfileMatches;
 
         public Builder() {
             mCurrentMode = MODE_NONE;
@@ -895,6 +1058,12 @@ public final class UsbPortStatus implements Parcelable {
             mPlugState = PLUG_STATE_UNKNOWN;
             mDisplayPortAltModeInfo = null;
             mPartnerBc12Type = BC12_TYPE_UNKNOWN;
+            mPortSinkPowerProfiles = Collections.emptyList();
+            mPortSourcePowerProfiles = Collections.emptyList();
+            mPartnerSinkPowerProfiles = Collections.emptyList();
+            mPartnerSourcePowerProfiles = Collections.emptyList();
+            mPortSinkPowerProfileMatches = Collections.emptyList();
+            mPortSourcePowerProfileMatches = Collections.emptyList();
         }
 
         /**
@@ -1024,6 +1193,45 @@ public final class UsbPortStatus implements Parcelable {
         @NonNull
         public Builder setPartnerBc12Type(@Bc12Type int bc12Type) {
             mPartnerBc12Type = bc12Type;
+            return this;
+        }
+
+        /**
+         * Sets the port power profiles of {@link UsbPortStatus}
+         *
+         * @return Instance of {@link Builder}
+         */
+        @NonNull
+        public Builder setPortPowerProfiles(@NonNull List<PowerProfileInfo> sinkPowerProfiles,
+                                            @NonNull List<PowerProfileInfo> sourcePowerProfiles) {
+            mPortSinkPowerProfiles = sinkPowerProfiles;
+            mPortSourcePowerProfiles = sourcePowerProfiles;
+            return this;
+        }
+
+        /**
+         * Sets the partner power profiles of {@link UsbPortStatus}
+         *
+         * @return Instance of {@link Builder}
+         */
+        @NonNull
+        public Builder setPartnerPowerProfiles(@NonNull List<PowerProfileInfo> sinkPowerProfiles,
+                @NonNull List<PowerProfileInfo> sourcePowerProfiles) {
+            mPartnerSinkPowerProfiles = sinkPowerProfiles;
+            mPartnerSourcePowerProfiles = sourcePowerProfiles;
+            return this;
+        }
+
+        /**
+         * Sets the power profile match info of {@link UsbPortStatus}
+         *
+         * @return Instance of {@link Builder}
+         */
+        public Builder setPowerProfileMatchInfo(
+                @NonNull List<PowerProfileMatchInfo> portSinkMatches,
+                @NonNull List<PowerProfileMatchInfo> portSourceMatches) {
+            mPortSinkPowerProfileMatches = portSinkMatches;
+            mPortSourcePowerProfileMatches = portSourceMatches;
             return this;
         }
 

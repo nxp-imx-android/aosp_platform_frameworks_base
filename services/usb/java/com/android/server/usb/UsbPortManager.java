@@ -48,6 +48,8 @@ import android.hardware.usb.DisplayPortAltModeInfo;
 import android.hardware.usb.IDisplayPortAltModeInfoListener;
 import android.hardware.usb.IUsbOperationInternal;
 import android.hardware.usb.ParcelableUsbPort;
+import android.hardware.usb.PowerProfileInfo;
+import android.hardware.usb.PowerProfileMatchInfo;
 import android.hardware.usb.UsbManager;
 import android.hardware.usb.UsbPort;
 import android.hardware.usb.UsbPortStatus;
@@ -78,6 +80,7 @@ import com.android.server.usb.hal.port.UsbPortHalInstance;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -959,6 +962,13 @@ public class UsbPortManager implements IBinder.DeathRecipient {
                         portInfo.displayPortAltModeInfo,
                         portInfo.supportsPartnerBc12Type,
                         portInfo.partnerBc12Type,
+                        portInfo.supportsPowerProfiles,
+                        portInfo.portSinkPowerProfiles,
+                        portInfo.portSourcePowerProfiles,
+                        portInfo.partnerSinkPowerProfiles,
+                        portInfo.partnerSourcePowerProfiles,
+                        portInfo.portSinkPowerProfileMatches,
+                        portInfo.portSourcePowerProfileMatches,
                         pw);
             }
         } else {
@@ -982,6 +992,13 @@ public class UsbPortManager implements IBinder.DeathRecipient {
                         currentPortInfo.displayPortAltModeInfo,
                         currentPortInfo.supportsPartnerBc12Type,
                         currentPortInfo.partnerBc12Type,
+                        currentPortInfo.supportsPowerProfiles,
+                        currentPortInfo.portSinkPowerProfiles,
+                        currentPortInfo.portSourcePowerProfiles,
+                        currentPortInfo.partnerSinkPowerProfiles,
+                        currentPortInfo.partnerSourcePowerProfiles,
+                        currentPortInfo.portSinkPowerProfileMatches,
+                        currentPortInfo.portSourcePowerProfileMatches,
                         pw);
             }
         }
@@ -1033,6 +1050,13 @@ public class UsbPortManager implements IBinder.DeathRecipient {
             int supportedAltModes,
             DisplayPortAltModeInfo displayPortAltModeInfo,
             boolean supportsPartnerBc12Type, int partnerBc12Type,
+            boolean supportsPowerProfiles,
+            @NonNull List<PowerProfileInfo> portSinkPowerProfiles,
+            @NonNull List<PowerProfileInfo> portSourcePowerProfiles,
+            @NonNull List<PowerProfileInfo> partnerSinkPowerProfiles,
+            @NonNull List<PowerProfileInfo> partnerSourcePowerProfiles,
+            @NonNull List<PowerProfileMatchInfo> portSinkPowerProfileMatchInfo,
+            @NonNull List<PowerProfileMatchInfo> portSourcePowerProfileMatchInfo,
             IndentingPrintWriter pw) {
         // Only allow mode switch capability for dual role ports.
         // Validate that the current mode matches the supported modes we expect.
@@ -1089,7 +1113,8 @@ public class UsbPortManager implements IBinder.DeathRecipient {
                 supportsEnableContaminantPresenceDetection,
                 supportsComplianceWarnings,
                 supportedAltModes,
-                supportsPartnerBc12Type);
+                supportsPartnerBc12Type,
+                supportsPowerProfiles);
             portInfo.setStatus(currentMode, canChangeMode,
                     currentPowerRole, canChangePowerRole,
                     currentDataRole, canChangeDataRole,
@@ -1097,7 +1122,9 @@ public class UsbPortManager implements IBinder.DeathRecipient {
                     contaminantDetectionStatus, usbDataStatus,
                     powerTransferLimited, powerBrickConnectionStatus,
                     complianceWarnings, plugState, displayPortAltModeInfo,
-                    partnerBc12Type);
+                    partnerBc12Type, portSinkPowerProfiles, portSourcePowerProfiles,
+                    partnerSinkPowerProfiles, partnerSourcePowerProfiles,
+                    portSinkPowerProfileMatchInfo, portSourcePowerProfileMatchInfo);
             mPorts.put(portId, portInfo);
         } else {
             // Validate that ports aren't changing definition out from under us.
@@ -1136,7 +1163,9 @@ public class UsbPortManager implements IBinder.DeathRecipient {
                     contaminantDetectionStatus, usbDataStatus,
                     powerTransferLimited, powerBrickConnectionStatus,
                     complianceWarnings, plugState, displayPortAltModeInfo,
-                    partnerBc12Type)) {
+                    partnerBc12Type, portSinkPowerProfiles, portSourcePowerProfiles,
+                    partnerSinkPowerProfiles, partnerSourcePowerProfiles,
+                    portSinkPowerProfileMatchInfo, portSourcePowerProfileMatchInfo)) {
                 portInfo.mDisposition = PortInfo.DISPOSITION_CHANGED;
             } else {
                 portInfo.mDisposition = PortInfo.DISPOSITION_READY;
@@ -1455,7 +1484,8 @@ public class UsbPortManager implements IBinder.DeathRecipient {
                 boolean supportsEnableContaminantPresenceDetection,
                 boolean supportsComplianceWarnings,
                 int supportedAltModes,
-                boolean supportsPartnerBc12Type) {
+                boolean supportsPartnerBc12Type,
+                boolean supportsPowerProfiles) {
             UsbPort.Builder builder = new UsbPort.Builder();
             builder.setId(portId);
             builder.setUsbManager(usbManager);
@@ -1468,6 +1498,7 @@ public class UsbPortManager implements IBinder.DeathRecipient {
             builder.setSupportsComplianceWarnings(supportsComplianceWarnings);
             builder.setSupportedAltModes(supportedAltModes);
             builder.setSupportsPartnerBc12Type(supportsPartnerBc12Type);
+            builder.setSupportsPowerProfiles(supportsPowerProfiles);
             mUsbPort = builder.build();
             mComplianceWarningChange = COMPLIANCE_WARNING_UNCHANGED;
             mDisplayPortAltModeChange = ALTMODE_INFO_UNCHANGED;
@@ -1604,7 +1635,13 @@ public class UsbPortManager implements IBinder.DeathRecipient {
                 boolean powerTransferLimited, int powerBrickConnectionStatus,
                 @NonNull int[] complianceWarnings,
                 int plugState, DisplayPortAltModeInfo displayPortAltModeInfo,
-                int partnerBc12Type) {
+                int partnerBc12Type,
+                @NonNull List<PowerProfileInfo> portSinkPowerProfiles,
+                @NonNull List<PowerProfileInfo> portSourcePowerProfiles,
+                @NonNull List<PowerProfileInfo> partnerSinkPowerProfiles,
+                @NonNull List<PowerProfileInfo> partnerSourcePowerProfiles,
+                @NonNull List<PowerProfileMatchInfo> portSinkMatches,
+                @NonNull List<PowerProfileMatchInfo> portSourceMatches) {
             boolean dispositionChanged = false;
             boolean complianceChanged = false;
             boolean displayPortChanged = false;
@@ -1651,6 +1688,10 @@ public class UsbPortManager implements IBinder.DeathRecipient {
                 builder.setPlugState(plugState);
                 builder.setDisplayPortAltModeInfo(displayPortAltModeInfo);
                 builder.setPartnerBc12Type(partnerBc12Type);
+                builder.setPortPowerProfiles(portSinkPowerProfiles, portSourcePowerProfiles);
+                builder.setPartnerPowerProfiles(partnerSinkPowerProfiles,
+                        partnerSourcePowerProfiles);
+                builder.setPowerProfileMatchInfo(portSinkMatches, portSourceMatches);
                 mUsbPortStatus = builder.build();
                 dispositionChanged = true;
             // Case used in order to send compliance warning broadcast or signal DisplayPort
@@ -1669,6 +1710,10 @@ public class UsbPortManager implements IBinder.DeathRecipient {
                 builder.setPlugState(plugState);
                 builder.setDisplayPortAltModeInfo(displayPortAltModeInfo);
                 builder.setPartnerBc12Type(partnerBc12Type);
+                builder.setPortPowerProfiles(portSinkPowerProfiles, portSourcePowerProfiles);
+                builder.setPartnerPowerProfiles(partnerSinkPowerProfiles,
+                        partnerSourcePowerProfiles);
+                builder.setPowerProfileMatchInfo(portSinkMatches, portSourceMatches);
                 mUsbPortStatus = builder.build();
             }
 
