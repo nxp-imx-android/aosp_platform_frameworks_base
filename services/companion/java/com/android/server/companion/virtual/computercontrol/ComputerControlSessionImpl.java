@@ -28,11 +28,10 @@ import android.annotation.IntRange;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.SuppressLint;
-import android.annotation.UserIdInt;
 import android.app.ActivityOptions;
 import android.companion.virtual.ActivityPolicyExemption;
 import android.companion.virtual.IVirtualDevice;
-import android.companion.virtual.IVirtualDeviceActivityListener;
+import android.companion.virtual.VirtualDeviceManager;
 import android.companion.virtual.VirtualDeviceManager.VirtualDevice;
 import android.companion.virtual.VirtualDeviceParams;
 import android.companion.virtual.audio.VirtualAudioDevice;
@@ -252,8 +251,9 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
 
         try {
             mVirtualDevice = virtualDeviceFactory.createVirtualDevice(mAppToken, attributionSource,
-                    virtualDeviceParams, new ComputerControlActivityListener());
+                    virtualDeviceParams);
             mVirtualDeviceId = mVirtualDevice.getDeviceId();
+            mVirtualDevice.addActivityListener(mScheduler, new ComputerControlActivityListener());
 
             applyActivityPolicy();
 
@@ -672,10 +672,9 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
                 : prefix;
     }
 
-    private class ComputerControlActivityListener extends IVirtualDeviceActivityListener.Stub {
+    private class ComputerControlActivityListener implements VirtualDeviceManager.ActivityListener {
         @Override
-        public void onTopActivityChanged(int displayId, ComponentName topActivity,
-                @UserIdInt int userId) {}
+        public void onTopActivityChanged(int displayId, @NonNull ComponentName topActivity) {}
 
         @Override
         public void onDisplayEmpty(int displayId) {}

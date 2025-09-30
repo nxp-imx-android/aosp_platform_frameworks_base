@@ -27,7 +27,6 @@ import android.app.ActivityOptions;
 import android.app.AppOpsManager;
 import android.app.KeyguardManager;
 import android.app.PendingIntent;
-import android.companion.virtual.IVirtualDeviceActivityListener;
 import android.companion.virtual.VirtualDeviceManager.VirtualDevice;
 import android.companion.virtual.VirtualDeviceParams;
 import android.companion.virtual.computercontrol.ComputerControlSession;
@@ -382,8 +381,7 @@ public class ComputerControlSessionProcessor {
         VirtualDevice createVirtualDevice(
                 IBinder token,
                 AttributionSource attributionSource,
-                VirtualDeviceParams params,
-                IVirtualDeviceActivityListener activityListener);
+                VirtualDeviceParams params);
     }
 
     /**

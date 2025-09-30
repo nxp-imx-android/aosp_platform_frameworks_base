@@ -251,7 +251,7 @@ public class ComputerControlSessionTest {
 
         when(mPackageManager.getPermissionControllerPackageName())
                 .thenReturn(PERMISSION_CONTROLLER_PACKAGE);
-        when(mVirtualDeviceFactory.createVirtualDevice(any(), any(), any(), any()))
+        when(mVirtualDeviceFactory.createVirtualDevice(any(), any(), any()))
                 .thenReturn(mVirtualDevice);
 
         when(mVirtualDevice.createVirtualDisplay(any(), any(), any())).thenReturn(mVirtualDisplay);
@@ -282,7 +282,7 @@ public class ComputerControlSessionTest {
         createComputerControlSession(mDefaultParams);
 
         verify(mVirtualDeviceFactory).createVirtualDevice(
-                eq(mAppToken), any(), mVirtualDeviceParamsArgumentCaptor.capture(), any());
+                eq(mAppToken), any(), mVirtualDeviceParamsArgumentCaptor.capture());
         assertThat(mVirtualDeviceParamsArgumentCaptor.getValue().getName())
                 .isEqualTo(mDefaultParams.getName());
         assertThat(mVirtualDeviceParamsArgumentCaptor.getValue()

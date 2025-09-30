@@ -199,11 +199,10 @@ public class VirtualDeviceManagerService extends SystemService {
         mLocalService = new LocalService();
         mComputerControlSessionProcessor =
                 new ComputerControlSessionProcessor(context,
-                        (token, attributionSource, params, activityListener) ->
+                        (token, attributionSource, params) ->
                                 new VirtualDeviceManager.VirtualDevice(context,
                                         mImpl.createLocalVirtualDevice(
-                                                token, attributionSource, params,
-                                                activityListener)));
+                                                token, attributionSource, params)));
         mAutomatedPackagesRepository = new AutomatedPackagesRepository(mHandler);
     }
 
@@ -542,10 +541,9 @@ public class VirtualDeviceManagerService extends SystemService {
         private IVirtualDevice createLocalVirtualDevice(
                 IBinder token,
                 AttributionSource attributionSource,
-                @NonNull VirtualDeviceParams params,
-                @NonNull IVirtualDeviceActivityListener activityListener) {
+                @NonNull VirtualDeviceParams params) {
             return createVirtualDevice(token, attributionSource, /* associationInfo= */ null,
-                    params, activityListener, /* soundEffectListener= */ null);
+                    params, /* activityListener= */ null, /* soundEffectListener= */ null);
         }
 
         private IVirtualDevice createVirtualDevice(
