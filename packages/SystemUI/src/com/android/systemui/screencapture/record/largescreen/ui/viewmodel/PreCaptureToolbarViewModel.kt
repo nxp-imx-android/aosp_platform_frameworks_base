@@ -18,12 +18,15 @@ package com.android.systemui.screencapture.record.largescreen.ui.viewmodel
 
 import android.graphics.Rect
 import com.android.internal.logging.UiEventLogger
+import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.lifecycle.HydratedActivatable
 import com.android.systemui.screencapture.ScreenCaptureEvent
 import com.android.systemui.screencapture.record.largescreen.domain.interactor.LargeScreenCaptureFeaturesInteractor
+import com.android.systemui.screencapture.record.largescreen.domain.interactor.LargeScreenCaptureParametersInteractor
 import com.android.systemui.screencapture.record.ui.viewmodel.ScreenCaptureRecordParametersViewModel
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
@@ -32,10 +35,12 @@ import kotlinx.coroutines.launch
 class PreCaptureToolbarViewModel
 @AssistedInject
 constructor(
+    @Background private val backgroundScope: CoroutineScope,
     private val uiEventLogger: UiEventLogger,
     private val iconProvider: ScreenCaptureIconProvider,
     featuresInteractor: LargeScreenCaptureFeaturesInteractor,
     recordParametersViewModelFactory: ScreenCaptureRecordParametersViewModel.Factory,
+    private val largeScreenCaptureParametersInteractor: LargeScreenCaptureParametersInteractor,
 ) : HydratedActivatable() {
     private val toolbarBoundsSource = MutableStateFlow(Rect())
     private val toolbarOpacitySource = MutableStateFlow(1f)
@@ -47,6 +52,13 @@ constructor(
     val appWindowRegionSupported = featuresInteractor.appWindowRegionSupported
 
     val screenRecordingSupported = featuresInteractor.screenRecordingSupported
+
+    val customSaveLocationSupported = featuresInteractor.customSaveLocationSupported
+
+    val customSaveLocationUriString: String by
+        largeScreenCaptureParametersInteractor.customSaveLocationUriString.hydratedStateOf(
+            initialValue = ""
+        )
 
     val toolbarOpacity: Float by toolbarOpacitySource.hydratedStateOf()
 
@@ -78,6 +90,12 @@ constructor(
             toolbarOpacitySource.value = 0.15f
         } else {
             toolbarOpacitySource.value = 1f
+        }
+    }
+
+    fun updateCustomSaveLocationUriString(uriString: String) {
+        backgroundScope.launch {
+            largeScreenCaptureParametersInteractor.setCustomSaveLocation(uriString)
         }
     }
 
