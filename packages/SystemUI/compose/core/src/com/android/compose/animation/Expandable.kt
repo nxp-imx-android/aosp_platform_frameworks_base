@@ -381,7 +381,12 @@ private fun Modifier.expandable(
                 .then(clickModifier(controller, onClick, onClickLabel, interactionSource))
                 .animatedBackground(controller.color, shape = controller.shape)
         }
-        .onPlaced { controller.boundsInComposeViewRoot = it.boundsInRoot() }
+        .onPlaced { coords ->
+            // TODO(b/415570057): Remove this check.
+            if (coords.isAttached) {
+                controller.boundsInComposeViewRoot = coords.boundsInRoot()
+            }
+        }
         .drawWithContent {
             graphicsLayer.record { this@drawWithContent.drawContent() }
 
