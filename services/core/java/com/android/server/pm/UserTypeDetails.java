@@ -659,6 +659,10 @@ public final class UserTypeDetails {
                     ((mBaseType & UserInfo.FLAG_SYSTEM) != 0) ==
                             ((mDefaultUserInfoPropertyFlags & UserInfo.FLAG_PRIMARY) != 0),
                     "UserTypeDetails %s cannot be SYSTEM xor PRIMARY.", mName);
+            // You certainly cannot have more than 1 of the same type of system user.
+            Preconditions.checkArgument(
+                    ((mBaseType & UserInfo.FLAG_SYSTEM) == 0) || mMaxAllowed <= 1,
+                    "UserTypeDetails %s cannot have a SYSTEM user with mMaxAllowed > 1.", mName);
             // At most one MainUser is ever allowed at a time.
             Preconditions.checkArgument(
                     ((mDefaultUserInfoPropertyFlags & UserInfo.FLAG_MAIN) == 0) || mMaxAllowed == 1,
