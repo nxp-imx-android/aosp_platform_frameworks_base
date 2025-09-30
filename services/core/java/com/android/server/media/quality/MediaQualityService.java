@@ -150,6 +150,8 @@ public class MediaQualityService extends SystemService {
             new HashMap<>();
     private final BiMap<Long, Long> mCurrentPictureHandleToOriginal = new BiMap<>();
     private final Set<Long> mPictureProfileForHal = new HashSet<>();
+    private final HashMap<String, Runnable> mPendingUpdates = new HashMap<>();
+    private static final int UPDATE_DELAY_MS = 1000; // Delay in milliseconds for debouncing
 
     public MediaQualityService(Context context) {
         super(context);
@@ -347,78 +349,84 @@ public class MediaQualityService extends SystemService {
             }
             int callingUid = Binder.getCallingUid();
             int callingPid = Binder.getCallingPid();
-            mHandler.post(() -> {
-                Long dbId = mPictureProfileTempIdMap.getKey(id);
-                if (dbId == null) {
-                    mMqManagerNotifier.notifyOnPictureProfileError(
-                            id, PictureProfile.ERROR_INVALID_ARGUMENT, callingUid, callingPid);
-                    Slog.e(TAG, "updatePictureProfile: "
-                            + "dbId not found in mPictureProfileTempIdMap");
-                    return;
+            Long dbId = mPictureProfileTempIdMap.getKey(id);
+            if (mPictureProfileForHal.contains(dbId)) {
+                mHalNotifier.notifyHalOnPictureProfileChange(dbId, pp.getParameters());
+            }
+            synchronized (mPictureProfileLock) {
+                Runnable oldTask = mPendingUpdates.remove(id);
+                if (oldTask != null) {
+                    mHandler.removeCallbacks(oldTask);
                 }
-                if (DEBUG) {
-                    Slog.d(TAG, "the dbId associated with id is " + dbId);
-                }
-                if (!hasPermissionToUpdatePictureProfile(dbId, pp, callingUid, callingPid)) {
-                    mMqManagerNotifier.notifyOnPictureProfileError(
-                            id, PictureProfile.ERROR_NO_PERMISSION, callingUid, callingPid);
-                    Slog.e(TAG, "updatePictureProfile: "
-                            + "no permission to update picture profile");
-                    return;
-                }
-                synchronized (mPictureProfileLock) {
-                    ContentValues values = MediaQualityUtils.getContentValues(dbId,
-                            pp.getProfileType(),
-                            pp.getName(),
-                            pp.getPackageName(),
-                            pp.getInputId(),
-                            pp.getParameters());
-                    if (mPictureProfileForHal.contains(dbId)) {
-                        if (DEBUG) {
-                            Slog.d(TAG, "updatePictureProfile: "
-                                    + "notify manager and HAL about the picture profile update");
-                        }
-                        updateDatabaseOnPictureProfileAndNotifyManager(
-                                values, pp.getParameters(), callingUid, callingPid, true);
-                    } else {
-                        if (DEBUG) {
-                            Slog.d(TAG, "updatePictureProfile: "
-                                    + "notify manager about the picture profile update");
-                        }
-                        updateDatabaseOnPictureProfileAndNotifyManager(
-                                values, pp.getParameters(), callingUid, callingPid, false);
-                    }
-                    // Keep cache in sync with database, and check for profile id and handle of the
-                    // updated picture profile, because user might call this with a picture profile
-                    // without handle or profileId.
-                    Long originalHandle = mCurrentPictureHandleToOriginal.getValue(dbId);
-                    if (originalHandle != null) {
-                        PictureProfile cachedPp = mOriginalHandleToCurrentPictureProfile
-                                .get(originalHandle);
-                        if (cachedPp != null) {
-                            if (pp.getProfileId() == null
-                                    || pp.getHandle() == PictureProfileHandle.NONE) {
-                                cachedPp = new PictureProfile.Builder(cachedPp)
-                                        .setProfileId(cachedPp.getProfileId())
-                                        .setParameters(pp.getParameters())
-                                        .build();
-                                mOriginalHandleToCurrentPictureProfile
-                                        .put(originalHandle, cachedPp);
-                            } else {
-                                mOriginalHandleToCurrentPictureProfile.put(originalHandle, pp);
-                            }
-                        }
+
+                Runnable newTask = () -> {
+                    synchronized (mPictureProfileLock) {
+                        mPendingUpdates.remove(id);
                     }
 
-                    if (isPackageDefaultPictureProfile(pp)) {
-                        if (DEBUG) {
-                            Slog.d(TAG, "updatePictureProfile: "
-                                    + "updated picture profile is package default picture profile");
-                        }
-                        mPackageDefaultPictureProfileHandleMap.put(pp.getPackageName(), dbId);
+                    if (dbId == null) {
+                        mMqManagerNotifier.notifyOnPictureProfileError(
+                                id, PictureProfile.ERROR_INVALID_ARGUMENT, callingUid, callingPid);
+                        Slog.e(TAG, "updatePictureProfile: "
+                                + "dbId not found in mPictureProfileTempIdMap");
+                        return;
                     }
-                }
-            });
+                    if (DEBUG) {
+                        Slog.d(TAG, "the dbId associated with id is " + dbId);
+                    }
+                    if (!hasPermissionToUpdatePictureProfile(dbId, pp, callingUid, callingPid)) {
+                        mMqManagerNotifier.notifyOnPictureProfileError(
+                                id, PictureProfile.ERROR_NO_PERMISSION, callingUid, callingPid);
+                        Slog.e(TAG, "updatePictureProfile: "
+                                + "no permission to update picture profile");
+                        return;
+                    }
+
+                    synchronized (mPictureProfileLock) {
+                        ContentValues values = MediaQualityUtils.getContentValues(dbId,
+                                pp.getProfileType(),
+                                pp.getName(),
+                                pp.getPackageName(),
+                                pp.getInputId(),
+                                pp.getParameters());
+
+                        Slog.d(TAG, "update database");
+                        updateDatabaseOnPictureProfileAndNotifyManager(
+                                values, pp.getParameters(), callingUid, callingPid, false);
+                        // Keep cache in sync with database, and check for profile id and handle
+                        // of the updated picture profile, because user might call this with a
+                        // picture profile without handle or profileId.
+                        Long originalHandle = mCurrentPictureHandleToOriginal.getValue(dbId);
+                        if (originalHandle != null) {
+                            PictureProfile cachedPp = mOriginalHandleToCurrentPictureProfile
+                                    .get(originalHandle);
+                            if (cachedPp != null) {
+                                if (pp.getProfileId() == null
+                                        || pp.getHandle() == PictureProfileHandle.NONE) {
+                                    cachedPp = new PictureProfile.Builder(cachedPp)
+                                            .setProfileId(cachedPp.getProfileId())
+                                            .setParameters(pp.getParameters())
+                                            .build();
+                                    mOriginalHandleToCurrentPictureProfile
+                                            .put(originalHandle, cachedPp);
+                                } else {
+                                    mOriginalHandleToCurrentPictureProfile.put(originalHandle, pp);
+                                }
+                            }
+                        }
+
+                        if (isPackageDefaultPictureProfile(pp)) {
+                            if (DEBUG) {
+                                Slog.d(TAG, "updatePictureProfile: updated picture profile is "
+                                        + "package default picture profile");
+                            }
+                            mPackageDefaultPictureProfileHandleMap.put(pp.getPackageName(), dbId);
+                        }
+                    }
+                };
+                mHandler.postDelayed(newTask, UPDATE_DELAY_MS);
+                mPendingUpdates.put(id, newTask);
+            }
         }
 
         private boolean hasPermissionToUpdatePictureProfile(
