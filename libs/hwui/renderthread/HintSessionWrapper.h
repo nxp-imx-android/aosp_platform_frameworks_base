@@ -40,8 +40,8 @@ public:
     HintSessionWrapper(pid_t uiThreadId, pid_t renderThreadId);
     ~HintSessionWrapper();
 
-    void updateTargetWorkDuration(long targetDurationNanos);
-    void reportActualWorkDuration(long actualDurationNanos);
+    void updateTargetWorkDuration(int64_t targetWorkDurationNanos);
+    void reportActualWorkDuration(int64_t actualDurationNanos);
     void sendCpuLoadResetHint();
     void sendCpuLoadIncreaseHint();
     void sendGpuLoadIncreaseHint();
