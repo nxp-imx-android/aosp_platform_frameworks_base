@@ -106,8 +106,13 @@ constructor(
     /** Whether we're on dream or transitioning to dream. */
     val isOnOrGoingToDream: Flow<Boolean> =
         combine(
-                keyguardTransitionInteractor.transitionValue(DREAMING).map { it == 1f },
-                keyguardTransitionInteractor.isInTransition(Edge.create(to = DREAMING)),
+                keyguardTransitionInteractor
+                    .transitionValue(Scenes.Dream, stateWithoutSceneContainer = DREAMING)
+                    .map { it == 1f },
+                keyguardTransitionInteractor.isInTransition(
+                    Edge.create(to = Scenes.Dream),
+                    edgeWithoutSceneContainer = Edge.create(to = DREAMING),
+                ),
             ) { onDream, transitioningToDream ->
                 onDream || transitioningToDream
             }
