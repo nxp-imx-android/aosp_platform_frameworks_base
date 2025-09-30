@@ -47,6 +47,7 @@ import android.util.ArraySet;
 import android.util.Slog;
 import android.view.accessibility.AccessibilityManager;
 
+import com.android.internal.R;
 import com.android.internal.accessibility.common.ShortcutConstants.UserShortcutType;
 
 import java.util.Collections;
@@ -241,6 +242,27 @@ public final class ShortcutUtils {
             case Settings.Secure.ACCESSIBILITY_TOP_ROW_KEY_TARGETS -> TOP_ROW_KEY;
             default -> throw new IllegalArgumentException(
                     "Unsupported user shortcut key: " + key);
+        };
+    }
+
+    /**
+     * Returns a string resource to label the given {@link UserShortcutType}.
+     *
+     * @param type The shortcut type.
+     * @return An appropriate string resource for the type.
+     */
+    @SuppressLint("SwitchIntDef")
+    public static int typeToString(@UserShortcutType int type) {
+        return switch (type) {
+            case SOFTWARE -> R.string.accessibility_shortcut_label_button;
+            case GESTURE -> R.string.accessibility_shortcut_label_gesture;
+            case HARDWARE -> R.string.accessibility_shortcut_label_volume_keys;
+            case QUICK_SETTINGS -> R.string.accessibility_shortcut_label_quick_settings;
+            case TRIPLETAP -> R.string.accessibility_shortcut_label_triple_tap;
+            // TWOFINGER_DOUBLETAP is currently unsupported.
+            // KEY_GESTURE is not user-facing, so it has no label.
+            case TOP_ROW_KEY -> R.string.accessibility_shortcut_label_top_row_key;
+            default -> throw new IllegalStateException("Unsupported user shortcut type " + type);
         };
     }
 
