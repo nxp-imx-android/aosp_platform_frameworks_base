@@ -26,17 +26,63 @@ public sealed interface SessionLifecycleTrackerState {
     final class Active implements SessionLifecycleTrackerState {
         private Active() {
         }
+
+        @Override
+        public String toString() {
+            return "Active";
+        }
     }
 
     /** Singleton object for the Active state. */
     SessionLifecycleTrackerState ACTIVE = new Active();
 
+    /** The blocked state, where the agent cannot see nor interact with the session contents. */
+    final class Blocked implements SessionLifecycleTrackerState {
+        public final @ComputerControlSession.SessionBlockReason int reason;
+
+        public Blocked(@ComputerControlSession.SessionBlockReason int reason) {
+            this.reason = reason;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (!(o instanceof Blocked blocked)) return false;
+            return reason == blocked.reason;
+        }
+
+        @Override
+        public int hashCode() {
+            return reason;
+        }
+
+        @Override
+        public String toString() {
+            return "Blocked(reason=" + reason + ")";
+        }
+    }
+
     /** State indicating the session has been closed. */
     final class Closed implements SessionLifecycleTrackerState {
         public final @ComputerControlSession.SessionCloseReason int reason;
 
-        Closed(@ComputerControlSession.SessionCloseReason int reason) {
+        public Closed(@ComputerControlSession.SessionCloseReason int reason) {
             this.reason = reason;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (!(o instanceof Closed closed)) return false;
+            return reason == closed.reason;
+        }
+
+        @Override
+        public int hashCode() {
+            return reason;
+        }
+
+        @Override
+        public String toString() {
+            return "Closed(reason=" + reason + ")";
         }
     }
 }

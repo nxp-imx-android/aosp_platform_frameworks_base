@@ -20,10 +20,12 @@ import static android.companion.virtual.computercontrol.SessionLifecycleTrackerS
 
 import android.annotation.NonNull;
 import android.companion.virtual.computercontrol.SessionLifecycleTrackerState.Active;
+import android.companion.virtual.computercontrol.SessionLifecycleTrackerState.Blocked;
 import android.companion.virtual.computercontrol.SessionLifecycleTrackerState.Closed;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Tracks the lifecycle state transitions for a ComputerControlSession. It is used to notify
@@ -38,7 +40,10 @@ import java.util.List;
  */
 public final class SessionLifecycleTracker implements ComputerControlSession.LifecycleCallback {
 
-    private static final SessionLifecycleTrackerState INITIAL_STATE = ACTIVE;
+    // This is the initial state that callbacks are expected to be in before they are added.
+    // If this changes, we must also update the LifecycleCallback documentation.
+    // Callbacks will start in an "uninitialized" state.
+    private static final SessionLifecycleTrackerState INITIAL_STATE = null;
 
     private final List<ComputerControlSession.LifecycleCallback> mCallbacks = new ArrayList<>();
 
@@ -53,6 +58,9 @@ public final class SessionLifecycleTracker implements ComputerControlSession.Lif
             throw new IllegalStateException("Callback already registered");
         }
         mCallbacks.add(callback);
+        if (Objects.equals(mState, INITIAL_STATE)) {
+            return;
+        }
         notifyCallback(callback);
     }
 
@@ -73,12 +81,20 @@ public final class SessionLifecycleTracker implements ComputerControlSession.Lif
 
     private void notifyCallback(ComputerControlSession.LifecycleCallback callback) {
         switch (mState) {
-            case Active ignored -> {
-            }
-            case Closed closed -> {
-                callback.onClosed(closed.reason);
-            }
+            case Active active -> callback.onActive();
+            case Blocked blocked -> callback.onBlocked(blocked.reason);
+            case Closed closed -> callback.onClosed(closed.reason);
         }
+    }
+
+    @Override
+    public void onActive() {
+        transitionTo(ACTIVE);
+    }
+
+    @Override
+    public void onBlocked(@ComputerControlSession.SessionBlockReason int initialBlockReason) {
+        transitionTo(new Blocked(initialBlockReason));
     }
 
     @Override
@@ -86,7 +102,17 @@ public final class SessionLifecycleTracker implements ComputerControlSession.Lif
         if (mState instanceof Closed) {
             return;
         }
-        mState = new Closed(reason);
+        transitionTo(new Closed(reason));
+    }
+
+    private void transitionTo(SessionLifecycleTrackerState state) {
+        if (mState instanceof Closed) {
+            throw new IllegalStateException("Cannot change state: Session is closed");
+        }
+        if (Objects.equals(state, mState)) {
+            throw new IllegalStateException("Cannot change state: Session is already in:" + state);
+        }
+        mState = state;
         notifyAllCallbacks();
     }
 }

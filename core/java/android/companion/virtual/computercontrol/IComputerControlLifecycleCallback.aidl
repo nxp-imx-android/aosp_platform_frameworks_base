@@ -21,8 +21,13 @@
  * @hide
  */
 oneway interface IComputerControlLifecycleCallback {
-    /**
-     * Called when the session is closed.
-     */
+
+    /** Called when the session is active. */
+    void onActive();
+
+    /** Called when the session is blocked. */
+    void onBlocked(int blockReason);
+
+    /** Called when the session is closed. */
     void onClosed(int closeReason);
 }

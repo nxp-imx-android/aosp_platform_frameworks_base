@@ -20,6 +20,7 @@ import android.annotation.CallbackExecutor;
 import android.annotation.IntRange;
 import android.app.Activity;
 import android.companion.virtual.computercontrol.ComputerControlSession.Action;
+import android.companion.virtual.computercontrol.ComputerControlSession.SessionBlockReason;
 import android.companion.virtual.computercontrol.ComputerControlSession.SessionCloseReason;
 import android.companion.virtual.computercontrol.InteractiveMirror;
 import android.content.ComponentName;
@@ -207,7 +208,24 @@ public final class ComputerControlSession implements AutoCloseable {
     public void setLifecycleCallback(@NonNull @CallbackExecutor Executor executor,
             @NonNull LifecycleCallback callback) {
         Objects.requireNonNull(callback);
-        mSession.setLifecycleCallback(executor, callback::onClosed);
+        mSession.setLifecycleCallback(executor,
+                new android.companion.virtual.computercontrol.ComputerControlSession
+                        .LifecycleCallback() {
+                    @Override
+                    public void onActive() {
+                        callback.onActive();
+                    }
+
+                    @Override
+                    public void onBlocked(@SessionBlockReason int initialBlockReason) {
+                        callback.onBlocked(initialBlockReason);
+                    }
+
+                    @Override
+                    public void onClosed(@SessionCloseReason int reason) {
+                        callback.onClosed(reason);
+                    }
+                });
     }
 
     /**
@@ -366,8 +384,55 @@ public final class ComputerControlSession implements AutoCloseable {
 
     /**
      * Callback to be notified about the computer control session lifecycle changes.
+     *
+     * <p>When the callback is first added, implementers of the callback should not make any
+     * assumptions about the starting state of the session. The callback will be notified of the
+     * starting state after being added.
+     *
+     * @see #setLifecycleCallback(Executor, LifecycleCallback)
      */
     public interface LifecycleCallback {
+
+        /**
+         * Called when the computer control session enters the active state.
+         *
+         * <p>When the session is active, the following will apply:
+         *
+         * <ul>
+         *   <li>Interactions with the session (e.g. {@link #tap(int, int)} are allowed.
+         *   <li>Taking screenshots of the content using {@link #getScreenshot()} is allowed.
+         *   <li>Getting Accessibility windows for the session using
+         *     {@link #getAccessibilityWindows()} is allowed.
+         * </ul>
+         */
+        void onActive();
+
+        /**
+         * Called when the computer control session enters the blocked state.
+         *
+         * <p>When the session is blocked, the application will generally not be able to interact
+         * with or access the content of the session:
+         *
+         * <ul>
+         *   <li>Interactions with the session (e.g. {@link #tap(int, int)} are NOT allowed.
+         *   <li>Taking screenshots of the content using {@link #getScreenshot()} is NOT allowed.
+         *   <li>Getting Accessibility windows for the session using
+         *     {@link #getAccessibilityWindows()} is NOT allowed.
+         * </ul>
+         *
+         * <p>However, users can still interact with the contents of the session using the
+         * interactive mirror. The application may choose to guide users to take over the session
+         * using either the {@link #handOverApplications()} API or the interactive mirror.
+         *
+         * @param reason the reason that the session initially entered the blocked
+         *               state.
+         */
+        // TODO: b/441475896: Block interactions and screenshots for
+        //  BLOCK_REASON_DISALLOWED_ACTIVITY_LAUNCH. Until then, a dialog indicating the blockage
+        //  will show up in the session, and the agent must dismiss it by interacting with the
+        //  session to exit the blocked state.
+        void onBlocked(@SessionBlockReason int reason);
+
         /**
          * Called when the computer control session is closed. This marks the end of the session's
          * lifecycle, and no further lifecycle updates will take place.

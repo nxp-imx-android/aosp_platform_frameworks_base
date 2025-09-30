@@ -41,7 +41,7 @@ import android.companion.virtual.computercontrol.IComputerControlLifecycleCallba
 import android.companion.virtual.computercontrol.IComputerControlSession;
 import android.companion.virtual.computercontrol.IInteractiveMirror;
 import android.companion.virtual.computercontrol.InteractiveMirror;
-import android.companion.virtual.computercontrol.SessionLifecycleTracker;
+import android.companion.virtual.computercontrol.SessionLifecycleTrackerState;
 import android.companion.virtualdevice.flags.Flags;
 import android.content.AttributionSource;
 import android.content.ComponentName;
@@ -68,6 +68,7 @@ import android.os.Binder;
 import android.os.IBinder;
 import android.os.RemoteException;
 import android.os.UserHandle;
+import android.util.ArraySet;
 import android.util.Slog;
 import android.view.DisplayInfo;
 import android.view.KeyCharacterMap;
@@ -89,7 +90,6 @@ import com.android.server.wm.WindowManagerInternal;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -181,10 +181,34 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
     private ScheduledFuture<?> mInsertTextFuture;
     private ScheduledFuture<?> mCloseSessionFuture;
 
-    @GuardedBy("mLifecycle")
-    private final SessionLifecycleTracker mLifecycle = new SessionLifecycleTracker();
-    @GuardedBy("mLifecycle")
-    private boolean mIsRemoteCallbackAdded = false;
+    // Keeps track of the current lifecycle state. Thread safe.
+    private final SessionLifecycle mLifecycle = new SessionLifecycle();
+
+    @GuardedBy("mAllowlistedPackages")
+    private final Set<String> mAllowlistedPackages = new ArraySet<>();
+
+    // Handle state transitions for the session lifecycle.
+    private final ComputerControlSession.LifecycleCallback mStateTransitions =
+            new ComputerControlSession.LifecycleCallback() {
+                @Override
+                public void onActive() {
+                    // TODO: b/441475896 - Lock activity policy; Unblock input and display surface.
+                }
+
+                @Override
+                public void onBlocked(@ComputerControlSession.SessionCloseReason int reason) {
+                    cancelOngoingKeyGestures();
+                    cancelOngoingTouchGestures();
+                    // In the short term, we don't do anything special when entering the blocked
+                    // state. The state exists to notify the client through the callback.
+                    // TODO: b/441475896 - Block input and display surface; Unlock activity policy.
+                }
+
+                @Override
+                public void onClosed(@ComputerControlSession.SessionCloseReason int reason) {
+                    releaseResources();
+                }
+            };
 
     ComputerControlSessionImpl(Context context, IBinder appToken,
             ComputerControlSessionParams params, AttributionSource attributionSource,
@@ -227,6 +251,13 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
         // TODO(b/440005498): Consider using the display from the app's context instead.
         mMainDisplayId = mUserManagerInternal.getMainDisplayAssignedToUser(
                 mOwnerUser.getIdentifier());
+
+        // This assumes that {@link ComputerControlSessionParams#getTargetPackageNames()}
+        // never contains any packageNames that the session owner should never be able to
+        // launch. This is validated in {@link ComputerControlSessionProcessor} prior to
+        // creating the session.
+        mAllowlistedPackages.addAll(mParams.getTargetPackageNames());
+        mAllowlistedPackages.add(CUSTOM_BLOCKED_APP_PACKAGE);
 
         final VirtualDeviceParams virtualDeviceParams = new VirtualDeviceParams.Builder()
                 .setName(mParams.getName())
@@ -318,23 +349,19 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
 
             mAppToken.linkToDeath(this, 0);
             startSessionCloseGlobalTimeout();
+
+            mLifecycle.initializeLifecycle(mStateTransitions);
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }
     }
 
-    /**
-     * This assumes that {@link ComputerControlSessionParams#getTargetPackageNames()} never contains
-     * any packageNames that the session owner should never be able to launch. This is validated in
-     * {@link ComputerControlSessionProcessor} prior to creating the session.
-     */
     private void applyActivityPolicy() throws RemoteException {
         List<String> exemptedPackageNames = new ArrayList<>();
         if (Flags.computerControlActivityPolicyStrict()) {
             mVirtualDevice.setDevicePolicy(POLICY_TYPE_ACTIVITY, DEVICE_POLICY_CUSTOM);
 
-            exemptedPackageNames.addAll(mParams.getTargetPackageNames());
-            exemptedPackageNames.add(CUSTOM_BLOCKED_APP_PACKAGE);
+            exemptedPackageNames.addAll(mAllowlistedPackages);
         } else {
             // This legacy policy allows all apps other than PermissionController to be automated.
             String permissionControllerPackage =
@@ -382,6 +409,13 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
         if (Flags.computerControlActivityPolicyStrict()) {
             // TODO(b/444600407): Remove this once the consent model is per-target app. While the
             // consent is general, the caller can extend the list of target packages dynamically.
+            if (!(mLifecycle.getCurrentState() instanceof SessionLifecycleTrackerState.Active)) {
+                Slog.e(TAG, "Cannot launch application: Agent interaction is not available");
+                return;
+            }
+            synchronized (mAllowlistedPackages) {
+                mAllowlistedPackages.add(packageName);
+            }
             mVirtualDevice.addActivityPolicyExemption(
                     new ActivityPolicyExemption.Builder().setPackageName(packageName).build());
         }
@@ -524,22 +558,7 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
 
     @Override
     public void setLifecycleCallback(IComputerControlLifecycleCallback callback) {
-        synchronized (mLifecycle) {
-            if (mIsRemoteCallbackAdded) {
-                throw new IllegalStateException("Callback already set");
-            }
-            mIsRemoteCallbackAdded = true;
-            mLifecycle.addCallback(new ComputerControlSession.LifecycleCallback() {
-                @Override
-                public void onClosed(@ComputerControlSession.SessionCloseReason int reason) {
-                    try {
-                        callback.onClosed(reason);
-                    } catch (RemoteException e) {
-                        throw e.rethrowFromSystemServer();
-                    }
-                }
-            });
-        }
+        mLifecycle.setRemoteCallback(callback);
     }
 
     @Override
@@ -547,15 +566,16 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
         close(CLOSE_REASON_CALLER_INITIATED);
     }
 
-    void close(@ComputerControlSession.SessionCloseReason int closeReason)
-            throws RemoteException {
-        releaseResources();
-        synchronized (mLifecycle) {
-            mLifecycle.onClosed(closeReason);
-        }
+    void close(@ComputerControlSession.SessionCloseReason int closeReason) {
+        mLifecycle.updateLifecycleState((config) -> {
+            if (config.mClosed != null) {
+                return;
+            }
+            config.mClosed = new SessionLifecycleTrackerState.Closed(closeReason);
+        });
     }
 
-    private void releaseResources() throws RemoteException {
+    private void releaseResources() {
         cancelOngoingKeyGestures();
         cancelOngoingTouchGestures();
         cancelPendingCloseSession();
@@ -634,14 +654,8 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
     }
 
     private void startSessionCloseGlobalTimeout() {
-        mCloseSessionFuture = mScheduler.schedule(() -> {
-            try {
-                close(CLOSE_REASON_SESSION_TIMED_OUT);
-            } catch (RemoteException e) {
-                throw e.rethrowFromSystemServer();
-            }
-        },
-        mGlobalSessionTimeoutDurationMs, TimeUnit.MILLISECONDS);
+        mCloseSessionFuture = mScheduler.schedule(() -> close(CLOSE_REASON_SESSION_TIMED_OUT),
+                mGlobalSessionTimeoutDurationMs, TimeUnit.MILLISECONDS);
     }
 
     private void cancelOngoingKeyGestures() {
@@ -651,7 +665,7 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
         }
     }
 
-    private void cancelOngoingTouchGestures() throws RemoteException {
+    private void cancelOngoingTouchGestures() {
         if (mSwipeFuture != null && mSwipeFuture.cancel(false)) {
             mVirtualTouchscreen.sendTouchEvent(
                     createTouchEvent(0, 0, VirtualTouchEvent.ACTION_CANCEL));
@@ -674,36 +688,72 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
 
     private class ComputerControlActivityListener implements VirtualDeviceManager.ActivityListener {
         @Override
-        public void onTopActivityChanged(int displayId, @NonNull ComponentName topActivity) {}
+        public void onTopActivityChanged(int displayId, @NonNull ComponentName topActivity) {
+            Slog.v(TAG, "Top activity changed to " + topActivity);
+            synchronized (mAllowlistedPackages) {
+                mLifecycle.updateLifecycleState((config) -> {
+                    if (config.mBlockedActivityVisible && mAllowlistedPackages.contains(
+                            topActivity.getPackageName())) {
+                        // In the short term, stay in the blocked state as long as content from the
+                        // custom blocked dialog package is visible.
+                        // TODO: b/441475896 - Remove this condition when we stop showing the
+                        //  custom blocked dialog activity.
+                        if (topActivity.getPackageName().equals(CUSTOM_BLOCKED_APP_PACKAGE)) {
+                            return;
+                        }
+                        // The top activity is now no longer a blocked activity so unblock the
+                        // session.
+                        // TODO: b/441475896 - Do not rely only on the top activity, but took a
+                        //  all running activities on the display.
+                        config.mBlockedActivityVisible = false;
+                    }
+                });
+            }
+        }
 
         @Override
-        public void onDisplayEmpty(int displayId) {}
+        public void onDisplayEmpty(int displayId) {
+            Slog.v(TAG, "Display empty");
+            mLifecycle.updateLifecycleState((config) -> {
+                config.mBlockedActivityVisible = false;
+                // We cannot currently assume all secure windows are gone when the display is empty.
+                // Therefore mSecureWindowVisible cannot be update here for now.
+                // TODO: b/449765707 - Investigate and update mSecureWindowVisible.
+            });
+        }
 
         @Override
         @SuppressLint("AndroidFrameworkRequiresPermission")
         public void onActivityLaunchBlocked(int displayId, ComponentName componentName,
                 UserHandle user, IntentSender intentSender) {
-            Slog.d(TAG, "Blocked activity launch for " + componentName + " on session "
+            Slog.v(TAG, "Blocked activity launch for " + componentName + " on session "
                     + mParams.getName());
-            if (Objects.equals(CUSTOM_BLOCKED_APP_ACTIVITY, componentName)) {
-                return;
+            final var changedState = mLifecycle.updateLifecycleState(
+                    (config) -> config.mBlockedActivityVisible = true);
+            if (changedState instanceof SessionLifecycleTrackerState.Blocked) {
+                Intent intent = new Intent()
+                        .setComponent(CUSTOM_BLOCKED_APP_ACTIVITY)
+                        .putExtra(Intent.EXTRA_COMPONENT_NAME, componentName);
+                mContext.startActivityAsUser(
+                        intent.addFlags(
+                                Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK),
+                        ActivityOptions.makeBasic().setLaunchDisplayId(displayId).toBundle(),
+                        UserHandle.SYSTEM);
             }
-            Intent intent = new Intent()
-                    .setComponent(CUSTOM_BLOCKED_APP_ACTIVITY)
-                    .putExtra(Intent.EXTRA_COMPONENT_NAME, componentName);
-            mContext.startActivityAsUser(
-                    intent.addFlags(
-                            Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK),
-                    ActivityOptions.makeBasic().setLaunchDisplayId(displayId).toBundle(),
-                    UserHandle.SYSTEM);
         }
 
         @Override
         public void onSecureWindowShown(int displayId, ComponentName componentName,
-                UserHandle user) {}
+                UserHandle user) {
+            Slog.v(TAG, "Secure window shown for " + componentName);
+            mLifecycle.updateLifecycleState((config) -> config.mSecureWindowVisible = true);
+        }
 
         @Override
-        public void onSecureWindowHidden(int displayId) {}
+        public void onSecureWindowHidden(int displayId) {
+            Slog.v(TAG, "Secure window hidden");
+            mLifecycle.updateLifecycleState((config) -> config.mSecureWindowVisible = false);
+        }
     }
 
     /** Interface for listening for closing of sessions. */
