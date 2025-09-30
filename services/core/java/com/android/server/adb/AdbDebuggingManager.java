@@ -456,10 +456,7 @@ public class AdbDebuggingManager {
                                         AdbDebuggingHandler.MSG_UNREGISTER_SERVICE,
                                         bundle));
                     } else {
-                        Slog.e(
-                                TAG,
-                                "Wrong message: " + (new String(Arrays.copyOfRange(buffer, 0, 2))));
-                        break;
+                        Slog.e(TAG, "Skipping unknown message type: " + messageType.get());
                     }
                 }
             } finally {
