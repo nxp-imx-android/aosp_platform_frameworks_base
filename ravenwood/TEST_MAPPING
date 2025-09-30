@@ -1,7 +1,9 @@
 {
   "presubmit": [
     // Non-ravenwood host side tests.
-    { "name": "tiny-framework-dump-test" },
+
+    // TODO(b/395891737) Re-enable it after dealing with JDK21 / JDK25 dual environment issue.
+    // { "name": "tiny-framework-dump-test" },
     { "name": "hoststubgentest" },
     { "name": "ravenhelpertest" },
     { "name": "hoststubgen-test-tiny-test" },
