@@ -25,6 +25,7 @@ import android.companion.AssociationInfo;
 import android.companion.datatransfer.continuity.IHandoffRequestCallback;
 import android.companion.datatransfer.continuity.ITaskContinuityManager;
 import android.companion.datatransfer.continuity.IRemoteTaskListener;
+import android.companion.datatransfer.continuity.IHandoffFeatureStateListener;
 import android.companion.datatransfer.continuity.RemoteTask;
 import android.content.Context;
 import android.os.Binder;
@@ -116,6 +117,23 @@ public final class TaskContinuityManagerService extends SystemService
             } finally {
                 Binder.restoreCallingIdentity(ident);
             }
+        }
+
+        @Override
+        public void enableHandoffForDevice(boolean enabled) {
+            // TODO: Implement this method.
+        }
+
+        @Override
+        public void registerHandoffFeatureStateListener(
+            @NonNull IHandoffFeatureStateListener listener) {
+            // TODO: Implement this method.
+        }
+
+        @Override
+        public void unregisterHandoffFeatureStateListener(
+            @NonNull IHandoffFeatureStateListener listener) {
+            // TODO: Implement this method.
         }
     }
 
