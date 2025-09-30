@@ -180,3 +180,10 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "type_speech_state_change_allowed"
+    namespace: "accessibility"
+    description: "Allow global dispatch for TYPE_SPEECH_STATE_CHANGE"
+    bug: "444032233"
+}
