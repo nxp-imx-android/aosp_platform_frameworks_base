@@ -2079,7 +2079,11 @@ public final class Debug
     /** @hide */
     public static final int MEMINFO_SWAP_CACHED = 26;
     /** @hide */
-    public static final int MEMINFO_COUNT = 27;
+    public static final int MEMINFO_SEC_PAGE_TABLES = 27;
+    /** @hide */
+    public static final int MEMINFO_PERCPU = 28;
+    /** @hide */
+    public static final int MEMINFO_COUNT = 29;
 
     /**
      * Retrieves /proc/meminfo.  outSizes is filled with fields
