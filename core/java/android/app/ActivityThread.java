@@ -8151,7 +8151,7 @@ public final class ActivityThread extends ClientTransactionHandler
                                 data.appInfo.packageName,
                                 PackageManager.GET_META_DATA /*flags*/,
                                 UserHandle.myUserId());
-                if (info.metaData != null) {
+                if (info != null && info.metaData != null) {
                     final int preloadedFontsResource = info.metaData.getInt(
                             ApplicationInfo.METADATA_PRELOADED_FONTS, 0);
                     if (preloadedFontsResource != 0) {
