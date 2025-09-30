@@ -3342,6 +3342,11 @@
          1 : boot to the first switchable full user for initial boot (unprovisioned device), else to the headless system user, i.e. user 0. -->
     <integer name="config_hsumBootStrategy">0</integer>
 
+    <!-- List of activities (flattened component names) allowed to be launched when the current user is the Headless System User -->
+    <string-array name="config_hsu_allowlist_activitivies" translatable="false">
+       <!-- default empty (meaning all activities will be allowed) -->
+    </string-array>
+
     <!-- Whether multiple admins are allowed on the device. If set to true, new users can be created
          with admin privileges and admin privileges can be granted/revoked from existing users. -->
     <bool name="config_enableMultipleAdmins">false</bool>
