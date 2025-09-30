@@ -18,7 +18,7 @@ package com.android.systemui.kairos
 
 import com.android.systemui.kairos.internal.DemuxImpl
 import com.android.systemui.kairos.internal.constInit
-import com.android.systemui.kairos.internal.demuxMap
+import com.android.systemui.kairos.internal.demuxImpl
 import com.android.systemui.kairos.util.Either
 import com.android.systemui.kairos.util.NameData
 import com.android.systemui.kairos.util.These
@@ -65,7 +65,7 @@ fun <K, A> Events<Map<K, A>>.groupByKey(numKeys: Int? = null): KeyedEvents<K, A>
 internal fun <K, A> Events<Map<K, A>>.groupByKey(
     nameData: NameData,
     numKeys: Int? = null,
-): KeyedEvents<K, A> = KeyedEvents(demuxMap(nameData, { init.connect(this) }, numKeys))
+): KeyedEvents<K, A> = KeyedEvents(demuxImpl(nameData, { init.connect(this) }, numKeys))
 
 /**
  * Returns a [KeyedEvents] that can be used to efficiently split a single [Events] into multiple
