@@ -336,6 +336,11 @@ public abstract class DevicePolicyManagerInternal {
     public abstract boolean isUserOrganizationManaged(@UserIdInt int userId);
 
     /**
+     * True if the entire device is organization managed.
+     */
+    public abstract boolean isDeviceOrganizationManaged();
+
+    /**
      * Returns a map of admin to {@link Bundle} map of restrictions set by the admins for the
      * provided {@code packageName} in the provided {@code userId}.
      *
