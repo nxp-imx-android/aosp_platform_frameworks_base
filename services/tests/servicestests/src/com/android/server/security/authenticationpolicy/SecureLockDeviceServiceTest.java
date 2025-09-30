@@ -343,7 +343,7 @@ public class SecureLockDeviceServiceTest {
                 mVoiceInteractionManagerService
         );
         mSecureLockDeviceSettingsManager.initSettingsControllerDependencies(
-                mDevicePolicyManager, null /* nfcAdapter */, mUsbManager, mUsbManagerInternal);
+                mDevicePolicyManager, mUsbManager, mUsbManagerInternal);
 
         mSecureLockDeviceService =
                 new SecureLockDeviceService(
