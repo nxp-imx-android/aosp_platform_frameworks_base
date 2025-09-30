@@ -290,8 +290,18 @@ flag {
 flag {
     name: "gwpc_secure_window_state_tracking"
     namespace: "virtual_devices"
-    description: "Track secure states across activity launches in GenericWindowPolicyController"
+    description: "Track secure window states across activity launches in GenericWindowPolicyController"
     bug: "449765707"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
+    name: "computer_control_allowlists"
+    namespace: "virtual_devices"
+    description: "Use DeviceConfig to configure allowlists (agents, automatable apps) for ComputerControl."
+    bug: "432678187"
     metadata {
         purpose: PURPOSE_BUGFIX
     }

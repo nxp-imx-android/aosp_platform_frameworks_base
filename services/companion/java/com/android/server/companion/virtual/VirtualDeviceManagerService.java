@@ -284,6 +284,8 @@ public class VirtualDeviceManagerService extends SystemService {
             mStrongAuthTracker = new StrongAuthTracker(getContext());
             new LockPatternUtils(getContext()).registerStrongAuthTracker(mStrongAuthTracker);
         }
+
+        mComputerControlSessionProcessor.initialize();
     }
 
     // Called when the global lockdown state changes, i.e. lockdown is considered active if any user
@@ -520,7 +522,6 @@ public class VirtualDeviceManagerService extends SystemService {
                 @NonNull AttributionSource attributionSource,
                 @NonNull ComputerControlSessionParams params,
                 @NonNull IComputerControlSessionCallback callback) {
-            // TODO(b/432678187): Replace the permission check with an alternative
             requestComputerControlSession_enforcePermission();
             if (!android.companion.virtualdevice.flags.Flags.computerControlAccess()) {
                 throw new IllegalStateException(
