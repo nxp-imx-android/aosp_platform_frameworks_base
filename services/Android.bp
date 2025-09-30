@@ -503,7 +503,6 @@ stubs_defaults {
     installable: false,
     flags: [
         "--show-annotation android.annotation.SystemApi\\(client=android.annotation.SystemApi.Client.SYSTEM_SERVER\\)",
-        "--hide-annotation android.annotation.Hide",
         "--hide InternalClasses", // com.android.* classes are okay in this interface
         // TODO: remove the --hide options below
         "--hide DeprecationMismatch",
