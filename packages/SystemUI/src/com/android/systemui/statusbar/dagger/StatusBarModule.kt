@@ -44,6 +44,11 @@ import com.android.systemui.statusbar.phone.ongoingcall.domain.interactor.Ongoin
 import com.android.systemui.statusbar.phone.ongoingcall.shared.PerDisplayOngoingCallStatusBarVisibility
 import com.android.systemui.statusbar.ui.StatusBarUiLayerModule
 import com.android.systemui.statusbar.ui.SystemBarUtilsProxyImpl
+import com.android.systemui.statusbar.window.MultiDisplayStatusBarWindowControllerStore
+import com.android.systemui.statusbar.window.SingleDisplayStatusBarWindowControllerStore
+import com.android.systemui.statusbar.window.StatusBarWindowController
+import com.android.systemui.statusbar.window.StatusBarWindowControllerImpl
+import com.android.systemui.statusbar.window.StatusBarWindowControllerStore
 import com.android.systemui.statusbar.window.StatusBarWindowLog
 import dagger.Binds
 import dagger.Lazy
@@ -79,6 +84,12 @@ interface StatusBarModule {
     @IntoMap
     @ClassKey(StatusBarSignalPolicy::class)
     fun bindStatusBarSignalPolicy(impl: StatusBarSignalPolicy): CoreStartable
+
+    @Binds
+    @SysUISingleton
+    fun statusBarWindowControllerFactory(
+        implFactory: StatusBarWindowControllerImpl.Factory
+    ): StatusBarWindowController.Factory
 
     @Binds @SysUISingleton fun autoHideController(impl: AutoHideControllerImpl): AutoHideController
 
@@ -116,6 +127,19 @@ interface StatusBarModule {
 
         @Provides
         @SysUISingleton
+        fun windowControllerStore(
+            multiDisplayImplLazy: Lazy<MultiDisplayStatusBarWindowControllerStore>,
+            singleDisplayImplLazy: Lazy<SingleDisplayStatusBarWindowControllerStore>,
+        ): StatusBarWindowControllerStore {
+            return if (StatusBarConnectedDisplays.isEnabled) {
+                multiDisplayImplLazy.get()
+            } else {
+                singleDisplayImplLazy.get()
+            }
+        }
+
+        @Provides
+        @SysUISingleton
         @IntoMap
         @ClassKey(ShareToAppChipViewModel::class)
         fun providesShareToAppChipViewModel(
@@ -123,6 +147,20 @@ interface StatusBarModule {
         ): CoreStartable {
             return if (com.android.media.projection.flags.Flags.showStopDialogPostCallEnd()) {
                 shareToAppChipViewModelLazy.get()
+            } else {
+                CoreStartable.NOP
+            }
+        }
+
+        @Provides
+        @SysUISingleton
+        @IntoMap
+        @ClassKey(MultiDisplayStatusBarWindowControllerStore::class)
+        fun multiDisplayControllerStoreAsCoreStartable(
+            storeLazy: Lazy<MultiDisplayStatusBarWindowControllerStore>
+        ): CoreStartable {
+            return if (StatusBarConnectedDisplays.isEnabled) {
+                storeLazy.get()
             } else {
                 CoreStartable.NOP
             }

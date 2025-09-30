@@ -28,6 +28,7 @@ import com.android.systemui.display.data.repository.PerDisplayStore
 import com.android.systemui.statusbar.core.StatusBarConnectedDisplays
 import com.android.systemui.statusbar.events.SystemEventChipAnimationController
 import com.android.systemui.statusbar.events.SystemEventChipAnimationControllerImpl
+import com.android.systemui.statusbar.window.StatusBarWindowControllerStore
 import dagger.Binds
 import dagger.Lazy
 import dagger.Module
@@ -49,6 +50,7 @@ constructor(
     displayRepository: DisplayRepository,
     private val factory: SystemEventChipAnimationControllerImpl.Factory,
     private val displayWindowPropertiesRepository: DisplayWindowPropertiesRepository,
+    private val statusBarWindowControllerStore: StatusBarWindowControllerStore,
     private val perDisplaySubcomponentRepo: PerDisplayRepository<SystemUIDisplaySubcomponent>,
 ) :
     SystemEventChipAnimationControllerStore,
@@ -65,9 +67,11 @@ constructor(
         val displaySubcomponent = perDisplaySubcomponentRepo[displayId] ?: return null
         val displayWindowProperties =
             displayWindowPropertiesRepository.get(displayId, TYPE_STATUS_BAR) ?: return null
+        val statusBarWindowController =
+            statusBarWindowControllerStore.forDisplay(displayId) ?: return null
         return factory.create(
             displayWindowProperties.context,
-            displaySubcomponent.statusBarWindowController,
+            statusBarWindowController,
             displaySubcomponent.statusBarContentInsetsProvider,
         )
     }

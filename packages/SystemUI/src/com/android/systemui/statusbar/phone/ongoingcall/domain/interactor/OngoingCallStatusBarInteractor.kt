@@ -30,7 +30,7 @@ import com.android.systemui.statusbar.gesture.SwipeStatusBarAwayGestureHandler
 import com.android.systemui.statusbar.phone.ongoingcall.OngoingCallLog
 import com.android.systemui.statusbar.phone.ongoingcall.shared.PerDisplayOngoingCallStatusBarVisibility
 import com.android.systemui.statusbar.phone.ongoingcall.shared.model.OngoingCallModel
-import com.android.systemui.statusbar.window.StatusBarWindowController
+import com.android.systemui.statusbar.window.StatusBarWindowControllerStore
 import javax.inject.Inject
 import kotlin.coroutines.CoroutineContext
 import kotlinx.coroutines.CoroutineScope
@@ -60,7 +60,7 @@ constructor(
     @DisplayAware private val displayId: Int,
     @DisplayAware private val scope: CoroutineScope,
     private val statusBarModeRepositoryStore: StatusBarModeRepositoryStore,
-    @DisplayAware private val statusBarWindowController: StatusBarWindowController,
+    private val statusBarWindowControllerStore: StatusBarWindowControllerStore,
     @DisplayAware private val swipeStatusBarAwayGestureHandler: SwipeStatusBarAwayGestureHandler,
     private val ongoingCallInteractor: OngoingCallInteractor,
     keyguardInteractor: KeyguardInteractor,
@@ -138,10 +138,12 @@ constructor(
             .forDisplay(displayId)
             ?.setOngoingProcessRequiresStatusBarVisible(statusBarRequired)
 
-        statusBarWindowController.setOngoingProcessRequiresStatusBarVisible(
-            statusBarRequired,
-            source = "OngoingCallStatusBarInteractor[displayId=$displayId]",
-        )
+        statusBarWindowControllerStore
+            .forDisplay(displayId)
+            ?.setOngoingProcessRequiresStatusBarVisible(
+                statusBarRequired,
+                source = "OngoingCallStatusBarInteractor[displayId=$displayId]",
+            )
     }
 
     private fun updateGestureListening(isEnabled: Boolean) {

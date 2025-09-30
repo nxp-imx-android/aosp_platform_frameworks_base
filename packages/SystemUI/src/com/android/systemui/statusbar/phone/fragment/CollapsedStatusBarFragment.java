@@ -80,6 +80,8 @@ import com.android.systemui.statusbar.pipeline.shared.ui.binder.StatusBarVisibil
 import com.android.systemui.statusbar.pipeline.shared.ui.viewmodel.HomeStatusBarViewModel;
 import com.android.systemui.statusbar.pipeline.shared.ui.viewmodel.HomeStatusBarViewModel.HomeStatusBarViewModelFactory;
 import com.android.systemui.statusbar.policy.KeyguardStateController;
+import com.android.systemui.statusbar.window.StatusBarWindowController;
+import com.android.systemui.statusbar.window.StatusBarWindowControllerStore;
 import com.android.systemui.statusbar.window.StatusBarWindowStateController;
 import com.android.systemui.statusbar.window.StatusBarWindowStateListener;
 import com.android.systemui.util.CarrierConfigTracker;
@@ -160,6 +162,7 @@ public class CollapsedStatusBarFragment extends Fragment implements CommandQueue
     private final KeyguardUpdateMonitor mKeyguardUpdateMonitor;
     private final NotificationIconContainerStatusBarViewBinder mNicViewBinder;
     private final DemoModeController mDemoModeController;
+    private final StatusBarWindowControllerStore mStatusBarWindowControllerStore;
     private final StatusBarConfigurationControllerStore mStatusBarConfigurationControllerStore;
 
     private List<String> mBlockedIcons = new ArrayList<>();
@@ -269,6 +272,7 @@ public class CollapsedStatusBarFragment extends Fragment implements CommandQueue
             @DisplayAware StatusBarWindowStateController statusBarWindowStateController,
             KeyguardUpdateMonitor keyguardUpdateMonitor,
             DemoModeController demoModeController,
+            StatusBarWindowControllerStore statusBarWindowControllerStore,
             StatusBarConfigurationControllerStore statusBarConfigurationControllerStore) {
         mHomeStatusBarComponentFactory = homeStatusBarComponentFactory;
         mOngoingCallController = ongoingCallController;
@@ -293,6 +297,7 @@ public class CollapsedStatusBarFragment extends Fragment implements CommandQueue
         mStatusBarWindowStateController = statusBarWindowStateController;
         mKeyguardUpdateMonitor = keyguardUpdateMonitor;
         mDemoModeController = demoModeController;
+        mStatusBarWindowControllerStore = statusBarWindowControllerStore;
         mStatusBarConfigurationControllerStore = statusBarConfigurationControllerStore;
     }
 
@@ -350,10 +355,16 @@ public class CollapsedStatusBarFragment extends Fragment implements CommandQueue
         if (configurationController == null) {
             return;
         }
+        StatusBarWindowController statusBarWindowController =
+                mStatusBarWindowControllerStore.forDisplay(displayId);
+        if (statusBarWindowController == null) {
+            return;
+        }
         mHomeStatusBarComponent =
                 mHomeStatusBarComponentFactory.create(
                         (PhoneStatusBarView) getView(),
-                        configurationController);
+                        configurationController,
+                        statusBarWindowController);
         mHomeStatusBarComponent.init();
         mStartableStates.clear();
         for (Startable startable : mHomeStatusBarComponent.getStartables()) {

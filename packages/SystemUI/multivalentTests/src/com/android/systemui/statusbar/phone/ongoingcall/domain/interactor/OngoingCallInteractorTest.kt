@@ -40,8 +40,7 @@ import com.android.systemui.statusbar.phone.ongoingcall.shared.model.OngoingCall
 import com.android.systemui.statusbar.phone.ongoingcall.shared.model.OngoingCallTestHelper
 import com.android.systemui.statusbar.phone.ongoingcall.shared.model.OngoingCallTestHelper.addOngoingCallState
 import com.android.systemui.statusbar.phone.ongoingcall.shared.model.OngoingCallTestHelper.removeOngoingCallState
-import com.android.systemui.statusbar.window.fakeStatusBarWindowController
-import com.android.systemui.statusbar.window.statusBarWindowController
+import com.android.systemui.statusbar.window.fakeStatusBarWindowControllerStore
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.test.runTest
@@ -58,10 +57,7 @@ import org.mockito.kotlin.verify
 @RunWith(AndroidJUnit4::class)
 @EnableChipsModernization
 class OngoingCallInteractorTest : SysuiTestCase() {
-    private val kosmos =
-        testKosmos().useUnconfinedTestDispatcher().also {
-            it.statusBarWindowController = it.fakeStatusBarWindowController
-        }
+    private val kosmos = testKosmos().useUnconfinedTestDispatcher()
     private val underTest = kosmos.ongoingCallInteractor
 
     @Before
@@ -212,7 +208,8 @@ class OngoingCallInteractorTest : SysuiTestCase() {
                 )
             val requiresStatusBarVisibleInWindowController by
                 collectLastValue(
-                    kosmos.fakeStatusBarWindowController.ongoingProcessRequiresStatusBarVisible
+                    kosmos.fakeStatusBarWindowControllerStore.defaultDisplay
+                        .ongoingProcessRequiresStatusBarVisible
                 )
             addOngoingCallState()
 
@@ -233,7 +230,8 @@ class OngoingCallInteractorTest : SysuiTestCase() {
                 )
             val requiresStatusBarVisibleInWindowController by
                 collectLastValue(
-                    kosmos.fakeStatusBarWindowController.ongoingProcessRequiresStatusBarVisible
+                    kosmos.fakeStatusBarWindowControllerStore.defaultDisplay
+                        .ongoingProcessRequiresStatusBarVisible
                 )
 
             addOngoingCallState(key = "testKey")
@@ -258,7 +256,8 @@ class OngoingCallInteractorTest : SysuiTestCase() {
                 )
             val requiresStatusBarVisibleInWindowController by
                 collectLastValue(
-                    kosmos.fakeStatusBarWindowController.ongoingProcessRequiresStatusBarVisible
+                    kosmos.fakeStatusBarWindowControllerStore.defaultDisplay
+                        .ongoingProcessRequiresStatusBarVisible
                 )
 
             addOngoingCallState(uid = UID, isAppVisible = false)
@@ -338,7 +337,8 @@ class OngoingCallInteractorTest : SysuiTestCase() {
                 )
             val requiresStatusBarVisibleInWindowController by
                 collectLastValue(
-                    kosmos.fakeStatusBarWindowController.ongoingProcessRequiresStatusBarVisible
+                    kosmos.fakeStatusBarWindowControllerStore.defaultDisplay
+                        .ongoingProcessRequiresStatusBarVisible
                 )
 
             // Start with an ongoing call (which should set status bar required)
@@ -371,7 +371,8 @@ class OngoingCallInteractorTest : SysuiTestCase() {
                 )
             val requiresStatusBarVisibleInWindowController by
                 collectLastValue(
-                    kosmos.fakeStatusBarWindowController.ongoingProcessRequiresStatusBarVisible
+                    kosmos.fakeStatusBarWindowControllerStore.defaultDisplay
+                        .ongoingProcessRequiresStatusBarVisible
                 )
             addOngoingCallState()
 
@@ -399,7 +400,8 @@ class OngoingCallInteractorTest : SysuiTestCase() {
                 )
             val requiresStatusBarVisibleInWindowController by
                 collectLastValue(
-                    kosmos.fakeStatusBarWindowController.ongoingProcessRequiresStatusBarVisible
+                    kosmos.fakeStatusBarWindowControllerStore.defaultDisplay
+                        .ongoingProcessRequiresStatusBarVisible
                 )
             addOngoingCallState()
 

@@ -43,7 +43,7 @@ import com.android.systemui.shade.ShadeExpandsOnStatusBarLongPress;
 import com.android.systemui.shade.StatusBarLongPressGestureDetector;
 import com.android.systemui.statusbar.core.StatusBarConnectedDisplays;
 import com.android.systemui.statusbar.phone.userswitcher.StatusBarUserSwitcherContainer;
-import com.android.systemui.statusbar.window.StatusBarWindowController;
+import com.android.systemui.statusbar.window.StatusBarWindowControllerStore;
 import com.android.systemui.user.ui.binder.StatusBarUserChipViewBinder;
 import com.android.systemui.user.ui.viewmodel.StatusBarUserChipViewModel;
 import com.android.systemui.util.leak.RotationUtils;
@@ -54,7 +54,7 @@ import java.util.function.BooleanSupplier;
 public class PhoneStatusBarView extends FrameLayout {
     private static final String TAG = "PhoneStatusBarView";
 
-    private StatusBarWindowController mStatusBarWindowController;
+    private StatusBarWindowControllerStore mStatusBarWindowControllerStore;
     private boolean mShouldUpdateStatusBarHeightWhenControllerSet = false;
     private int mRotationOrientation = -1;
     @Nullable
@@ -289,18 +289,18 @@ public class PhoneStatusBarView extends FrameLayout {
     }
 
     /**
-     * Sets the status bar window controller.
+     * Sets the store responsible for managing the status bar window controller.
      *
      * <p>This setter is used to facilitate dependency injection for the
-     * {@link PhoneStatusBarViewController}, which receives the controller via Dagger. This avoids
+     * {@link PhoneStatusBarViewController}, which receives the store via Dagger. This avoids
      * using the legacy {@link com.android.systemui.Dependency} pattern directly in the constructor.
      *
-     * @param statusBarWindowController The {@link StatusBarWindowController} instance
+     * @param statusBarWindowControllerStore The {@link StatusBarWindowControllerStore} instance
      * to set
      */
-    public void setStatusBarWindowController(
-            StatusBarWindowController statusBarWindowController) {
-        mStatusBarWindowController = statusBarWindowController;
+    public void setStatusBarWindowControllerStore(
+            StatusBarWindowControllerStore statusBarWindowControllerStore) {
+        mStatusBarWindowControllerStore = statusBarWindowControllerStore;
         if (mShouldUpdateStatusBarHeightWhenControllerSet) {
             mShouldUpdateStatusBarHeightWhenControllerSet = false;
             updateWindowHeight();
@@ -405,10 +405,10 @@ public class PhoneStatusBarView extends FrameLayout {
             // Handled directly from StatusBarWindowControllerImpl (for each display)
             return;
         }
-        if (mStatusBarWindowController != null) {
-            mStatusBarWindowController.refreshStatusBarHeight();
+        if (mStatusBarWindowControllerStore != null) {
+            mStatusBarWindowControllerStore.getDefaultDisplay().refreshStatusBarHeight();
         } else {
-            Log.e(TAG, "mStatusBarWindowController unexpectedly null");
+            Log.e(TAG, "mStatusBarWindowControllerStore unexpectedly null");
             mShouldUpdateStatusBarHeightWhenControllerSet = true;
         }
     }

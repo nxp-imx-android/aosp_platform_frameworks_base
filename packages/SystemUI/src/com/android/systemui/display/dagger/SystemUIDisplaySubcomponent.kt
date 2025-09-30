@@ -29,7 +29,6 @@ import com.android.systemui.statusbar.gesture.SwipeStatusBarAwayGestureHandler
 import com.android.systemui.statusbar.layout.StatusBarContentInsetsProvider
 import com.android.systemui.statusbar.phone.SysuiDarkIconDispatcher
 import com.android.systemui.statusbar.ui.SystemBarUtilsState
-import com.android.systemui.statusbar.window.StatusBarWindowController
 import com.android.systemui.statusbar.window.StatusBarWindowStateController
 import dagger.BindsInstance
 import dagger.Subcomponent
@@ -61,8 +60,6 @@ interface SystemUIDisplaySubcomponent {
     @get:DisplayAware val lifecycleListeners: Set<LifecycleListener>
 
     @get:DisplayAware val statusBarWindowStateController: StatusBarWindowStateController
-
-    @get:DisplayAware val statusBarWindowController: StatusBarWindowController
 
     @get:DisplayAware val ongoingActivityChipsViewModel: OngoingActivityChipsViewModel
 
