@@ -19,6 +19,7 @@ package com.android.server.companion.virtual.computercontrol;
 import static android.companion.virtual.VirtualDeviceParams.DEVICE_POLICY_CUSTOM;
 import static android.companion.virtual.VirtualDeviceParams.POLICY_TYPE_ACTIVITY;
 import static android.companion.virtual.VirtualDeviceParams.POLICY_TYPE_BLOCKED_ACTIVITY;
+import static android.companion.virtual.VirtualDeviceParams.POLICY_TYPE_DEFAULT_DEVICE_CAMERA_ACCESS;
 import static android.companion.virtual.computercontrol.ComputerControlSession.CLOSE_REASON_CALLER_INITIATED;
 import static android.companion.virtual.computercontrol.ComputerControlSession.CLOSE_REASON_SESSION_TIMED_OUT;
 
@@ -217,6 +218,7 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
         final VirtualDeviceParams virtualDeviceParams = new VirtualDeviceParams.Builder()
                 .setName(mParams.getName())
                 .setDevicePolicy(POLICY_TYPE_BLOCKED_ACTIVITY, DEVICE_POLICY_CUSTOM)
+                .setDevicePolicy(POLICY_TYPE_DEFAULT_DEVICE_CAMERA_ACCESS, DEVICE_POLICY_CUSTOM)
                 .setAllowedUsers(allowedUsers)
                 .build();
 
