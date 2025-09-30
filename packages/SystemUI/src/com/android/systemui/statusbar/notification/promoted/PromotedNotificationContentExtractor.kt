@@ -35,12 +35,14 @@ import android.app.Notification.EXTRA_TITLE_BIG
 import android.app.Notification.EXTRA_VERIFICATION_ICON
 import android.app.Notification.EXTRA_VERIFICATION_TEXT
 import android.app.Notification.InboxStyle
+import android.app.Notification.MetricStyle
 import android.app.Notification.ProgressStyle
 import android.app.Person
 import android.content.Context
 import android.graphics.drawable.Icon
 import android.os.UserHandle
 import android.service.notification.StatusBarNotification
+import android.text.TextUtils
 import android.view.LayoutInflater
 import androidx.compose.ui.util.trace
 import com.android.internal.R
@@ -52,6 +54,7 @@ import com.android.systemui.statusbar.notification.collection.NotificationEntry
 import com.android.systemui.statusbar.notification.promoted.AutomaticPromotionCoordinator.Companion.EXTRA_AUTOMATICALLY_EXTRACTED_SHORT_CRITICAL_TEXT
 import com.android.systemui.statusbar.notification.promoted.AutomaticPromotionCoordinator.Companion.EXTRA_WAS_AUTOMATICALLY_PROMOTED
 import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModel
+import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModel.Metric
 import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModel.NotifIcon
 import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModel.OldProgress
 import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModel.Style
@@ -254,7 +257,12 @@ constructor(
                 primaryTextColor = colorsFromNotif.primaryTextColor,
             )
 
-        recoveredBuilder.extractStyleContent(notification, contentBuilder, imageModelProvider)
+        recoveredBuilder.extractStyleContent(
+            notification,
+            contentBuilder,
+            imageModelProvider,
+            systemUiContext,
+        )
         inflateNotificationView(contentBuilder, systemUiContext)
 
         return contentBuilder.build()
@@ -267,7 +275,6 @@ constructor(
         systemUiContext: Context,
     ) {
         val style = contentBuilder.style ?: return
-
         val res = getLayoutSource(style) ?: return
         // Inflating with `sysuiContext` is intentional here.
         // As we transition to Jetpack Compose, the view layer will no longer have direct
@@ -298,6 +305,8 @@ constructor(
                 Style.Call -> R.layout.notification_2025_template_expanded_call
                 Style.CollapsedCall -> R.layout.notification_2025_template_collapsed_call
                 Style.Progress -> R.layout.notification_2025_template_expanded_progress
+                Style.Metric -> R.layout.notification_2025_template_expanded_metric
+                Style.MetricSingle -> R.layout.notification_2025_template_expanded_single_metric
                 Style.Ineligible -> null
             }
         } else {
@@ -308,6 +317,8 @@ constructor(
                 Style.Call -> R.layout.notification_template_material_big_call
                 Style.CollapsedCall -> R.layout.notification_template_material_call
                 Style.Progress -> R.layout.notification_template_material_progress
+                Style.Metric -> R.layout.notification_2025_template_expanded_metric
+                Style.MetricSingle -> R.layout.notification_2025_template_expanded_single_metric
                 Style.Ineligible -> null
             }
         }
@@ -428,6 +439,7 @@ constructor(
         notification: Notification,
         contentBuilder: PromotedNotificationContentModel.Builder,
         imageModelProvider: ImageModelProvider,
+        systemUiContext: Context,
     ) {
         val style = this.style
 
@@ -449,7 +461,66 @@ constructor(
                     Style.Progress
                 }
 
+                is MetricStyle -> {
+                    style.extractMetricStyleContent(systemUiContext, contentBuilder)
+                    if (style.metrics.size == 1) Style.MetricSingle else Style.Metric
+                }
+
                 else -> Style.Ineligible
+            }
+    }
+
+    private fun MetricStyle.extractMetricStyleContent(
+        systemUiContext: Context,
+        contentBuilder: PromotedNotificationContentModel.Builder,
+    ) {
+        contentBuilder.metrics =
+            metrics.map { metric ->
+                val metricValue = metric.value
+                val valueString = metricValue.toValueString(systemUiContext)
+                val label =
+                    if (!TextUtils.isEmpty(valueString.subtext())) {
+                        systemUiContext.getString(
+                            R.string.notification_metric_label_unit,
+                            metric.label,
+                            valueString.subtext(),
+                        )
+                    } else {
+                        metric.label
+                    }
+                when (metricValue) {
+                    is Notification.Metric.TimeDifference -> {
+                        val useAdaptiveFormat =
+                            metricValue.format == Notification.Metric.TimeDifference.FORMAT_ADAPTIVE
+                        val isTimer = metricValue.isTimer
+                        when {
+                            metricValue.zeroTime != null ->
+                                Metric.TimeDifference.Instant(
+                                    zeroTime = checkNotNull(metricValue.zeroTime),
+                                    isTimer = isTimer,
+                                    useAdaptiveFormat = useAdaptiveFormat,
+                                    label = label,
+                                )
+                            metricValue.zeroElapsedRealtime != null ->
+                                Metric.TimeDifference.ElapsedRealtime(
+                                    zeroElapsedRealtime =
+                                        checkNotNull(metricValue.zeroElapsedRealtime),
+                                    isTimer = isTimer,
+                                    useAdaptiveFormat = useAdaptiveFormat,
+                                    label = label,
+                                )
+                            metricValue.pausedDuration != null ->
+                                Metric.TimeDifference.Paused(
+                                    pausedDuration = checkNotNull(metricValue.pausedDuration),
+                                    isTimer = isTimer,
+                                    useAdaptiveFormat = useAdaptiveFormat,
+                                    label = label,
+                                )
+                            else -> Metric.Text(valueString.text(), label)
+                        }
+                    }
+                    else -> Metric.Text(valueString.text(), label)
+                }
             }
     }
 
