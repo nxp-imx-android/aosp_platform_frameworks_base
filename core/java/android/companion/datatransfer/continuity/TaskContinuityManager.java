@@ -17,6 +17,7 @@
 package android.companion.datatransfer.continuity;
 
 import android.companion.datatransfer.continuity.IHandoffRequestCallback;
+import android.companion.datatransfer.continuity.IHandoffFeatureStateListener;
 import android.companion.datatransfer.continuity.IRemoteTaskListener;
 import android.companion.datatransfer.continuity.RemoteTask;
 
@@ -55,7 +56,40 @@ public class TaskContinuityManager {
     private final Context mContext;
     private final ITaskContinuityManager mService;
 
-    private final RemoteTaskListenerHolder mListenerHolder;
+    private final RemoteTaskListenerHolder mRemoteTaskListenerHolder;
+    private final HandoffFeatureStateListenerHolder mHandoffFeatureStateListenerHolder;
+
+    /** @hide */
+    @IntDef(
+            prefix = {"HANDOFF_AVAILABILITY_STATUS"},
+            value = {
+                HANDOFF_AVAILABILITY_STATUS_AVAILABLE,
+                HANDOFF_AVAILABILITY_STATUS_DISABLED_BY_POLICY,
+                HANDOFF_AVAILABILITY_STATUS_UNSUPPORTED_HARDWARE,
+            })
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface HandoffAvailabilityStatus {}
+
+    /**
+     * Indicates that handoff is available for the current device. The current device will only
+     * display tasks on remote devices when Handoff is available and enabled, and is only capable of
+     * both receiving and sending Handoff requests when available and enabled.
+     *
+     * @see #enableHandoffForDevice(boolean)
+     */
+    public static final int HANDOFF_AVAILABILITY_STATUS_AVAILABLE = 0;
+
+    /**
+     * Indicates that handoff is unavailable for the current device because it is blocked
+     * system-wide by an enterprise policy.
+     */
+    public static final int HANDOFF_AVAILABILITY_STATUS_DISABLED_BY_POLICY = 1;
+
+    /**
+     * Indicates that handoff is unavailable for the current device because it is not supported on
+     * the hardware.
+     */
+    public static final int HANDOFF_AVAILABILITY_STATUS_UNSUPPORTED_HARDWARE = 2;
 
     /** @hide */
     @IntDef(
@@ -113,7 +147,8 @@ public class TaskContinuityManager {
 
         mContext = context;
         mService = service;
-        mListenerHolder = new RemoteTaskListenerHolder(service);
+        mRemoteTaskListenerHolder = new RemoteTaskListenerHolder(service);
+        mHandoffFeatureStateListenerHolder = new HandoffFeatureStateListenerHolder(service);
     }
 
     /** Listener to be notified when the list of remote tasks changes. */
@@ -124,6 +159,23 @@ public class TaskContinuityManager {
          * @param remoteTasks The list of remote tasks.
          */
         void onRemoteTasksChanged(@NonNull List<RemoteTask> remoteTasks);
+    }
+
+    /**
+     * Listener to the feature state of Handoff on the current device. Feature state includes
+     * whether Handoff is available on the current device, as well is if it is currently enabled.
+     * Handoff may be unavailable on the device due to unsupported hardware or enterprise policy.
+     * See #enableHandoffForDevice(boolean) for more details.
+     */
+    public interface HandoffFeatureStateListener {
+        /**
+         * Invoked when the feature state of Handoff changes.
+         *
+         * @param availabilityStatus The availability status of Handoff on the current device.
+         * @param enabled Whether Handoff is enabled on the current device.
+         */
+        void onHandoffFeatureStateChanged(
+                @HandoffAvailabilityStatus int availabilityStatus, boolean enabled);
     }
 
     /** Callback to be invoked when a handoff request is completed. */
@@ -156,7 +208,7 @@ public class TaskContinuityManager {
         Objects.requireNonNull(listener);
 
         try {
-            mListenerHolder.registerListener(executor, listener);
+            mRemoteTaskListenerHolder.registerListener(executor, listener);
             // TODO: joeantonetti - Send an initial notification to the listener after it's
             // attached.
         } catch (RemoteException e) {
@@ -176,7 +228,7 @@ public class TaskContinuityManager {
         Objects.requireNonNull(listener);
 
         try {
-            mListenerHolder.unregisterListener(listener);
+            mRemoteTaskListenerHolder.unregisterListener(listener);
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }
@@ -213,6 +265,64 @@ public class TaskContinuityManager {
         }
     }
 
+    /**
+     * Enables or disables handoff for the current device if Handoff is available on the current
+     * device. If Handoff is not available, this operation will have no effect. By default, Handoff
+     * is enabled. This method will also notify registered listeners from {@link
+     * #registerHandoffFeatureStateListener} if the enablement status has changed.
+     *
+     * @param enabled Whether handoff should be enabled or disabled.
+     */
+    public void enableHandoffForDevice(boolean enabled) {
+        // TODO: joeantonetti - Add a permission check here.
+
+        try {
+            mService.enableHandoffForDevice(enabled);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    /**
+     * Registers a listener to be notified when the handoff's feature state changes.
+     *
+     * @param executor The executor to be used to invoke the listener.
+     * @param listener The listener to be registered.
+     */
+    public void registerHandoffFeatureStateListener(
+            @NonNull Executor executor, @NonNull HandoffFeatureStateListener listener) {
+
+        // TODO: joeantonetti - Add a permission check here.
+
+        Objects.requireNonNull(executor);
+        Objects.requireNonNull(listener);
+
+        try {
+            mHandoffFeatureStateListenerHolder.registerListener(executor, listener);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    /**
+     * Unregisters a listener previously registered with {@link
+     * #registerHandoffFeatureStateListener}.
+     *
+     * @param listener The listener to be unregistered.
+     */
+    public void unregisterHandoffFeatureStateListener(
+            @NonNull HandoffFeatureStateListener listener) {
+        Objects.requireNonNull(listener);
+
+        // TODO: joeantonetti - Add a permission check here.
+
+        try {
+            mHandoffFeatureStateListenerHolder.unregisterListener(listener);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
     private final class HandoffRequestCallbackHolder extends IHandoffRequestCallback.Stub {
         private final Executor mExecutor;
         private final HandoffRequestCallback mCallback;
@@ -232,6 +342,92 @@ public class TaskContinuityManager {
                     () ->
                             mCallback.onHandoffRequestFinished(
                                     associationId, remoteTaskId, resultCode));
+        }
+    }
+
+    private final class HandoffFeatureStateListenerHolder
+            extends IHandoffFeatureStateListener.Stub {
+
+        @GuardedBy("mListeners")
+        private final Map<HandoffFeatureStateListener, Executor> mListeners = new ArrayMap<>();
+
+        @GuardedBy("mListeners")
+        private boolean mRegistered = false;
+
+        @GuardedBy("mListeners")
+        private @HandoffAvailabilityStatus int mLastReceivedAvailabilityStatus =
+                HANDOFF_AVAILABILITY_STATUS_AVAILABLE;
+
+        @GuardedBy("mListeners")
+        private boolean mLastReceivedEnabled = false;
+
+        public HandoffFeatureStateListenerHolder(ITaskContinuityManager service) {}
+
+        /**
+         * Registers a listener to be notified of Handoff feature state changes.
+         *
+         * @param executor The executor on which the listener should be invoked.
+         * @param listener The listener to register.
+         */
+        public void registerListener(
+                @NonNull Executor executor, @NonNull HandoffFeatureStateListener listener)
+                throws RemoteException {
+
+            Objects.requireNonNull(executor);
+            Objects.requireNonNull(listener);
+
+            synchronized (mListeners) {
+                if (!mRegistered) {
+                    mService.registerHandoffFeatureStateListener(this);
+                    mRegistered = true;
+                } else {
+                    executor.execute(
+                            () ->
+                                    listener.onHandoffFeatureStateChanged(
+                                            mLastReceivedAvailabilityStatus, mLastReceivedEnabled));
+                }
+
+                mListeners.put(listener, executor);
+            }
+        }
+
+        /**
+         * Unregisters a previously registered listener.
+         *
+         * @param listener The listener to unregister.
+         */
+        public void unregisterListener(@NonNull HandoffFeatureStateListener listener)
+                throws RemoteException {
+
+            Objects.requireNonNull(listener);
+
+            synchronized (mListeners) {
+                mListeners.remove(listener);
+                if (mListeners.isEmpty() && mRegistered) {
+                    mRegistered = false;
+                    mService.unregisterHandoffFeatureStateListener(this);
+                }
+            }
+        }
+
+        @Override
+        public void onHandoffFeatureStateChanged(
+                @HandoffAvailabilityStatus int availabilityStatus, boolean enabled)
+                throws RemoteException {
+            synchronized (mListeners) {
+                mLastReceivedAvailabilityStatus = availabilityStatus;
+                mLastReceivedEnabled = enabled;
+
+                for (Map.Entry<HandoffFeatureStateListener, Executor> entry :
+                        mListeners.entrySet()) {
+                    HandoffFeatureStateListener listener = entry.getKey();
+                    Executor executor = entry.getValue();
+                    executor.execute(
+                            () ->
+                                    listener.onHandoffFeatureStateChanged(
+                                            mLastReceivedAvailabilityStatus, mLastReceivedEnabled));
+                }
+            }
         }
     }
 
