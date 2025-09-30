@@ -401,13 +401,13 @@ public abstract class WallpaperService extends Service {
 
             @Override
             public void onRelayoutContainer() {
-                Message msg = mCaller.obtainMessage(MSG_UPDATE_SURFACE);
+                Message msg = mCaller.obtainMessageI(MSG_UPDATE_SURFACE, /* forceRelayout= */ 1);
                 mCaller.sendMessage(msg);
             }
 
             @Override
             public void onUpdateSurface() {
-                Message msg = mCaller.obtainMessage(MSG_UPDATE_SURFACE);
+                Message msg = mCaller.obtainMessageI(MSG_UPDATE_SURFACE, /* forceRelayout= */ 1);
                 mCaller.sendMessage(msg);
             }
 
@@ -717,7 +717,8 @@ public abstract class WallpaperService extends Service {
                     ? (mWindowFlags&~WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
                     : (mWindowFlags|WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
             if (mCreated) {
-                updateSurface(false, -1, false);
+                Message msg = mCaller.obtainMessageI(MSG_UPDATE_SURFACE, /* forceRelayout= */ 0);
+                mCaller.sendMessage(msg);
             }
         }
 
@@ -732,11 +733,12 @@ public abstract class WallpaperService extends Service {
         public void setOffsetNotificationsEnabled(boolean enabled) {
             mWindowPrivateFlags = enabled
                     ? (mWindowPrivateFlags |
-                        WindowManager.LayoutParams.PRIVATE_FLAG_WANTS_OFFSET_NOTIFICATIONS)
+                    WindowManager.LayoutParams.PRIVATE_FLAG_WANTS_OFFSET_NOTIFICATIONS)
                     : (mWindowPrivateFlags &
-                        ~WindowManager.LayoutParams.PRIVATE_FLAG_WANTS_OFFSET_NOTIFICATIONS);
+                            ~WindowManager.LayoutParams.PRIVATE_FLAG_WANTS_OFFSET_NOTIFICATIONS);
             if (mCreated) {
-                updateSurface(false, -1, false);
+                Message msg = mCaller.obtainMessageI(MSG_UPDATE_SURFACE, /* forceRelayout= */ 0);
+                mCaller.sendMessage(msg);
             }
         }
 
@@ -2775,7 +2777,7 @@ public abstract class WallpaperService extends Service {
                     return;
                 }
                 case MSG_UPDATE_SURFACE:
-                    mEngine.updateSurface(true, -1, false);
+                    mEngine.updateSurface(message.arg1 != 0, -1, false);
                     break;
                 case MSG_ZOOM:
                     mEngine.setZoom(Float.intBitsToFloat(message.arg1));
