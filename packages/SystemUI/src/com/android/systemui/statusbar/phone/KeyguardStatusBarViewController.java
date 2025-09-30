@@ -454,7 +454,7 @@ public class KeyguardStatusBarViewController extends ViewController<KeyguardStat
     }
 
     private StatusBarContentInsetsProvider insetsProvider() {
-        return mPerDisplaySubcomponentRepo.get(
+        return mPerDisplaySubcomponentRepo.getOrDefault(
                 mContext.getDisplayId()).getStatusBarContentInsetsProvider();
     }
 
