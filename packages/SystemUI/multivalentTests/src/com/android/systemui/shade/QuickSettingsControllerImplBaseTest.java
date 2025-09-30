@@ -26,7 +26,6 @@ import static org.mockito.Mockito.when;
 import android.content.res.Resources;
 import android.os.Handler;
 import android.os.Looper;
-import android.view.ViewGroup;
 import android.view.ViewParent;
 import android.view.WindowManager;
 import android.view.accessibility.AccessibilityManager;
@@ -113,7 +112,6 @@ public class QuickSettingsControllerImplBaseTest extends SysuiTestCase {
     @Mock protected Lazy<NotificationPanelViewController> mPanelViewControllerLazy;
     @Mock protected NotificationPanelViewController mNotificationPanelViewController;
     @Mock protected NotificationPanelView mPanelView;
-    @Mock protected ViewGroup mQsHeader;
     @Mock protected ViewParent mPanelViewParent;
     @Mock protected QsFrameTranslateController mQsFrameTranslateController;
     @Mock protected PulseExpansionHandler mPulseExpansionHandler;
@@ -211,8 +209,6 @@ public class QuickSettingsControllerImplBaseTest extends SysuiTestCase {
         when(mPanelView.findViewById(R.id.qs_frame)).thenReturn(mQsFrame);
         when(mQsFrame.getX()).thenReturn(QS_FRAME_START_X);
         when(mQsFrame.getWidth()).thenReturn(QS_FRAME_WIDTH);
-        when(mQsHeader.getTop()).thenReturn(QS_FRAME_TOP);
-        when(mQsHeader.getBottom()).thenReturn(QS_FRAME_BOTTOM);
         when(mQs.getHeaderTop()).thenReturn(QS_FRAME_TOP);
         when(mQs.getHeaderBottom()).thenReturn(QS_FRAME_BOTTOM);
         when(mPanelView.getY()).thenReturn((float) QS_FRAME_TOP);
@@ -224,8 +220,6 @@ public class QuickSettingsControllerImplBaseTest extends SysuiTestCase {
                 .thenReturn(false);
 
         when(mPanelView.getParent()).thenReturn(mPanelViewParent);
-        when(mQs.getHeader()).thenReturn(mQsHeader);
-        when(mQSFragment.getHeader()).thenReturn(mQsHeader);
 
         doAnswer(invocation -> {
             mLockscreenShadeTransitionCallback = invocation.getArgument(0);

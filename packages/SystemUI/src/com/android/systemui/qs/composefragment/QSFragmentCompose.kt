@@ -524,28 +524,12 @@ constructor(
         viewModel.proposedTranslation = headerTranslation
     }
 
-    override fun setHeaderListening(listening: Boolean) {
-        // Not needed, header will start listening as soon as it's composed
-    }
-
-    override fun notifyCustomizeChanged() {
-        // Not needed, only called from inside customizer
-    }
-
     override fun setContainerController(controller: QSContainerController?) {
         qsContainerController.value = controller
     }
 
     override fun setCollapseExpandAction(action: Runnable?) {
         viewModel.collapseExpandAccessibilityAction = action
-    }
-
-    override fun getHeightDiff(): Int {
-        return viewModel.heightDiff
-    }
-
-    override fun getHeader(): View? {
-        return null
     }
 
     override fun setShouldUpdateSquishinessOnMedia(shouldUpdate: Boolean) {

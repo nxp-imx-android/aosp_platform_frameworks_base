@@ -254,7 +254,6 @@ public class NotificationPanelViewControllerBaseTest extends SysuiTestCase {
     @Mock protected UnlockedScreenOffAnimationController mUnlockedScreenOffAnimationController;
     @Mock protected QS mQs;
     @Mock protected QSFragmentCompose mQSFragment;
-    @Mock protected ViewGroup mQsHeader;
     @Mock protected ViewParent mViewParent;
     @Mock protected ViewTreeObserver mViewTreeObserver;
     @Mock protected DreamingToLockscreenTransitionViewModel
@@ -501,7 +500,6 @@ public class NotificationPanelViewControllerBaseTest extends SysuiTestCase {
             }
         }).when(mViewTreeObserver).addOnGlobalLayoutListener(any());
         when(mView.getParent()).thenReturn(mViewParent);
-        when(mQs.getHeader()).thenReturn(mQsHeader);
         when(mDownMotionEvent.getAction()).thenReturn(MotionEvent.ACTION_DOWN);
         when(mSysUiState.setFlag(anyLong(), anyBoolean())).thenReturn(mSysUiState);
 
