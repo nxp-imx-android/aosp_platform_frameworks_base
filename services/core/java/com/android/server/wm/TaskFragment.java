@@ -3305,45 +3305,18 @@ class TaskFragment extends WindowContainer<WindowContainer> {
         return forAllWindows(getDimBehindWindow, true);
     }
 
-    // It is replaced by WindowState#getDimController().
-    @Deprecated
-    @Override
-    Dimmer getDimmer() {
-        // If this is in an embedded TaskFragment and we want the dim applies on the TaskFragment.
-        if (mIsEmbedded && !isDimmingOnParentTask()) {
-            return mDimmer;
-        }
-
-        return super.getDimmer();
-    }
-
     /** Bounds to be used for dimming, as well as touch related tests. */
     void getDimBounds(@NonNull Rect out) {
-        if (com.android.window.flags.Flags.removeGetDimmer()) {
-            if (mIsEmbedded && isDimmingOnParentTask()) {
-                // Return the task bounds if the dimmer is showing and should cover on the Task
-                // (not just on this embedded TaskFragment).
-                final Task task = getTask();
-                if (task != null && task.mDimmer.hasDimState()) {
-                    out.set(task.getBounds());
-                    return;
-                }
-            }
-            out.set(getBounds());
-            return;
-        }
-
-        if (mDimmer.hasDimState()) {
-            out.set(mDimmer.getDimBounds());
-        } else {
-            if (mIsEmbedded && isDimmingOnParentTask() && getDimmer().getDimBounds() != null) {
-                // Return the task bounds if the dimmer is showing and should cover on the Task (not
-                // just on this embedded TaskFragment).
-                out.set(getTask().getBounds());
-            } else {
-                out.set(getBounds());
+        if (mIsEmbedded && isDimmingOnParentTask()) {
+            // Return the task bounds if the dimmer is showing and should cover on the Task
+            // (not just on this embedded TaskFragment).
+            final Task task = getTask();
+            if (task != null && task.mDimmer.hasDimState()) {
+                out.set(task.getBounds());
+                return;
             }
         }
+        out.set(getBounds());
     }
 
     void setEmbeddedDimArea(@EmbeddedDimArea int embeddedDimArea) {
