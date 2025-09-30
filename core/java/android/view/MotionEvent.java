@@ -1749,7 +1749,7 @@ public final class MotionEvent extends InputEvent implements Parcelable {
     public static final int TOOL_TYPE_UNKNOWN = 0;
 
     /**
-     * Tool type constant: The tool is a finger.
+     * Tool type constant: The tool is a finger, touching a touchscreen or touchpad.
      *
      * @see #getToolType
      */
@@ -2428,7 +2428,20 @@ public final class MotionEvent extends InputEvent implements Parcelable {
         return nativeGetDeviceId(mNativePtr);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     * <p>
+     * <b>Note:</b> for events from touchpads, this method will normally only return
+     * {@link InputDevice#SOURCE_MOUSE}. To distinguish touchpad events from mouse events, check the
+     * return value of {@link #getToolType(int)} for pointer 0. If it's {@link #TOOL_TYPE_FINGER},
+     * the event is from a touchpad; if it's {@link #TOOL_TYPE_MOUSE}, the event is from a mouse.
+     * <p>
+     * The exception to this is when the touchpad is
+     * {@linkplain View#requestPointerCapture() captured}, in which case
+     * {@link InputDevice#SOURCE_TOUCHPAD} will be returned as expected.
+     */
+    // TODO(b/403531245): update the last paragraph of the JavaDoc to specify that SOURCE_TOUCHPAD
+    //  will only be used when the touchpad is captured in absolute mode.
     @Override
     public final int getSource() {
         return nativeGetSource(mNativePtr);
