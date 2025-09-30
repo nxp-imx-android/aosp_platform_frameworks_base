@@ -178,7 +178,16 @@ public class InstallStart extends Activity {
             mAbortInstall = true;
         }
 
-        checkDevicePolicyRestrictions(isTrustedSource);
+        // Bypass the unknown source user restrictions check when either of the following
+        // two conditions is met:
+        // 1. the installation is not triggered via ACTION_VIEW or ACTION_INSTALL_PACKAGE
+        // 2. the value of the Intent.EXTRA_NOT_UNKNOWN_SOURCE is TRUE and the caller is
+        //    a privileged app
+        final boolean isIntentInstall =
+                Intent.ACTION_VIEW.equals(intentAction)
+                        || Intent.ACTION_INSTALL_PACKAGE.equals(intentAction);
+        final boolean bypassUnknownSourceRestrictions = !isIntentInstall || isPrivilegedAndKnown;
+        checkDevicePolicyRestrictions(bypassUnknownSourceRestrictions);
 
         final String installerPackageNameFromIntent = getIntent().getStringExtra(
                 Intent.EXTRA_INSTALLER_PACKAGE_NAME);
@@ -344,9 +353,9 @@ public class InstallStart extends Activity {
         return callingUid == installerUid;
     }
 
-    private void checkDevicePolicyRestrictions(boolean isTrustedSource) {
+    private void checkDevicePolicyRestrictions(boolean bypassUnknownSourceRestrictions) {
         String[] restrictions;
-        if(isTrustedSource) {
+        if (bypassUnknownSourceRestrictions) {
             restrictions = new String[] { UserManager.DISALLOW_INSTALL_APPS };
         } else {
             restrictions =  new String[] {
