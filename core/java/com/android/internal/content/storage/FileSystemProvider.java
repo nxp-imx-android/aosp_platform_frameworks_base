@@ -654,7 +654,8 @@ public abstract class FileSystemProvider extends DocumentsProvider {
 
     protected final Cursor queryTrashDocuments(File parent, String[] projection)
             throws FileNotFoundException {
-        MatrixCursor result = new MatrixCursor(resolveProjection(projection));
+        String docId = getDocIdForFile(parent);
+        MatrixCursor result = new DirectoryCursor(resolveProjection(projection), docId, parent);
         includeTrashFiles(result, parent);
         // include MediaStore trashed files which are not in .trash-storage location
         includeMediaStoreTrashFiles(result);
